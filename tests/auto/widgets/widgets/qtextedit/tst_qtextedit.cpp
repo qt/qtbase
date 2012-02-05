@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -70,13 +70,13 @@ Q_DECLARE_METATYPE(keyPairType);
 Q_DECLARE_METATYPE(QList<bool>);
 Q_DECLARE_METATYPE(QList<int>);
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #include <Carbon/Carbon.h>
 #endif
 
 bool nativeClipboardWorking()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     PasteboardRef pasteboard;
     OSStatus status = PasteboardCreate(0, &pasteboard);
     if (status == noErr)
@@ -215,7 +215,7 @@ private:
 
 bool tst_QTextEdit::nativeClipboardWorking()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     PasteboardRef pasteboard;
     OSStatus status = PasteboardCreate(0, &pasteboard);
     if (status == noErr)
@@ -475,14 +475,14 @@ void tst_QTextEdit::createSelection()
 {
     QTest::keyClicks(ed, "Hello World");
     /* go to start */
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QTest::keyClick(ed, Qt::Key_Home, Qt::ControlModifier);
 #else
     QTest::keyClick(ed, Qt::Key_Home);
 #endif
     QCOMPARE(ed->textCursor().position(), 0);
     /* select until end of text */
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QTest::keyClick(ed, Qt::Key_End, Qt::ControlModifier | Qt::ShiftModifier);
 #else
     QTest::keyClick(ed, Qt::Key_End, Qt::ShiftModifier);
@@ -1355,7 +1355,7 @@ void tst_QTextEdit::copyAvailable()
     QFETCH(QList<bool>, copyAvailable);
     QFETCH(QString, function);
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QSKIP("QTBUG-22283: copyAvailable has never passed on Mac");
 #endif
     ed->clear();
@@ -2407,11 +2407,16 @@ void tst_QTextEdit::inputMethodQuery()
     ed->setText(text);
     ed->selectAll();
 
-    QInputMethodQueryEvent event(Qt::ImQueryInput);
+    QInputMethodQueryEvent event(Qt::ImQueryInput | Qt::ImEnabled);
     QGuiApplication::sendEvent(ed, &event);
     int anchor = event.value(Qt::ImAnchorPosition).toInt();
     int position = event.value(Qt::ImCursorPosition).toInt();
     QCOMPARE(qAbs(position - anchor), text.length());
+    QCOMPARE(event.value(Qt::ImEnabled).toBool(), true);
+
+    ed->setEnabled(false);
+    QGuiApplication::sendEvent(ed, &event);
+    QCOMPARE(event.value(Qt::ImEnabled).toBool(), false);
 }
 
 QTEST_MAIN(tst_QTextEdit)

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,7 +62,7 @@
 #include "QtWidgets/qstyleoption.h"
 #include "QtCore/qpointer.h"
 #include "QtGui/qclipboard.h"
-#include "QtGui/qinputpanel.h"
+#include "QtGui/qinputmethod.h"
 #include "QtCore/qpoint.h"
 #include "QtWidgets/qcompleter.h"
 #include "QtCore/qthread.h"
@@ -79,7 +79,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class Q_WIDGETS_EXPORT QWidgetLineControl : public QObject
 {
@@ -233,7 +232,7 @@ public:
     void setText(const QString &txt)
     {
         if (composeMode())
-            qApp->inputPanel()->reset();
+            qApp->inputMethod()->reset();
         m_tentativeCommit.clear();
         internalSetText(txt, -1, false);
     }
@@ -319,7 +318,7 @@ public:
     Qt::LayoutDirection layoutDirection() const {
         if (m_layoutDirection == Qt::LayoutDirectionAuto) {
             if (m_text.isEmpty())
-                return qApp->inputPanel()->inputDirection();
+                return qApp->inputMethod()->inputDirection();
             return m_text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
         }
         return m_layoutDirection;

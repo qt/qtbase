@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,7 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_SIZEGRIP
 class QSizeGripPrivate;
@@ -72,9 +71,6 @@ protected:
     void hideEvent(QHideEvent *hideEvent);
     bool eventFilter(QObject *, QEvent *);
     bool event(QEvent *);
-#ifdef Q_WS_WIN
-    bool winEvent(MSG *m, long *result);
-#endif
 
 public:
 

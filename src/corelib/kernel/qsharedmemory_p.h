@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -69,13 +69,8 @@ namespace QSharedMemoryPrivate
 #include "qsystemsemaphore.h"
 #include "private/qobject_p.h"
 
-#ifdef Q_OS_WIN
-#include <qt_windows.h>
-#elif defined(Q_OS_SYMBIAN)
-#include <e32std.h>
-#include <sys/types.h>
-#else
-#include <sys/sem.h>
+#ifndef Q_OS_WIN
+#  include <sys/sem.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -134,7 +129,7 @@ public:
     static QString makePlatformSafeKey(const QString &key,
             const QString &prefix = QLatin1String("qipc_sharedmemory_"));
 #ifdef Q_OS_WIN
-    HANDLE handle();
+    Qt::HANDLE handle();
 #else
     key_t handle();
 #endif
@@ -144,11 +139,7 @@ public:
     bool attach(QSharedMemory::AccessMode mode);
     bool detach();
 
-#ifdef Q_OS_SYMBIAN
-    void setErrorString(const QString &function, TInt errorCode);
-#else
     void setErrorString(const QString &function);
-#endif
 
 #ifndef QT_NO_SYSTEMSEMAPHORE
     bool tryLocker(QSharedMemoryLocker *locker, const QString function) {
@@ -163,9 +154,7 @@ public:
 
 private:
 #ifdef Q_OS_WIN
-    HANDLE hand;
-#elif defined(Q_OS_SYMBIAN)
-    RChunk chunk;
+    Qt::HANDLE hand;
 #else
     key_t unix_key;
 #endif

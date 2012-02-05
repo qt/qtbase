@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -94,10 +94,12 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
         haveData = true;
         int infoLevel = 0 ;         // FindExInfoStandard;
         DWORD dwAdditionalFlags  = 0;
+#ifndef Q_OS_WINCE
         if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
             dwAdditionalFlags = 2;  // FIND_FIRST_EX_LARGE_FETCH
             infoLevel = 1 ;         // FindExInfoBasic;
         }
+#endif
         int searchOps =  0;         // FindExSearchNameMatch
         if (onlyDirs)
             searchOps = 1 ;         // FindExSearchLimitToDirectories

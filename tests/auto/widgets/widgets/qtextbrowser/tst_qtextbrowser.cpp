@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -120,11 +120,13 @@ tst_QTextBrowser::tst_QTextBrowser()
 tst_QTextBrowser::~tst_QTextBrowser()
 {
 }
+
 void tst_QTextBrowser::init()
 {
-#if !defined(Q_OS_IRIX) && !defined(Q_OS_WINCE)
-    QDir::setCurrent(SRCDIR);
-#endif
+    QString prefix = QFileInfo(QFINDTESTDATA("subdir")).absolutePath();
+    QVERIFY2(!prefix.isEmpty(), "Test data directory not found");
+    QDir::setCurrent(prefix);
+
     browser = new TestBrowser;
     browser->show();
 }
@@ -252,18 +254,18 @@ void tst_QTextBrowser::relativeLinks()
 
     qRegisterMetaType<QUrl>("QUrl");
     QSignalSpy sourceChangedSpy(browser, SIGNAL(sourceChanged(const QUrl &)));
-    browser->setSource(QUrl("../qtextbrowser.html"));
+    browser->setSource(QUrl("subdir/../qtextbrowser.html"));
     QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
-    QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("../qtextbrowser.html"));
-    browser->setSource(QUrl("qtextbrowser/subdir/index.html"));
+    QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("subdir/../qtextbrowser.html"));
+    browser->setSource(QUrl("subdir/index.html"));
     QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
-    QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("qtextbrowser/subdir/index.html"));
-    browser->setSource(QUrl("../anchor.html"));
+    QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("subdir/index.html"));
+    browser->setSource(QUrl("anchor.html"));
     QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
-    QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("../anchor.html"));
+    QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("anchor.html"));
     browser->setSource(QUrl("subdir/index.html"));
     QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
@@ -274,10 +276,10 @@ void tst_QTextBrowser::relativeLinks()
     QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("file:anchor.html"));
-    browser->setSource(QUrl("../qtextbrowser.html"));
+    browser->setSource(QUrl("subdir/../qtextbrowser.html"));
     QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
-    QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("../qtextbrowser.html"));
+    QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("subdir/../qtextbrowser.html"));
 }
 
 void tst_QTextBrowser::anchors()

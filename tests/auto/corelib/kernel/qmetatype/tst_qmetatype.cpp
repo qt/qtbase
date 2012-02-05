@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -89,6 +89,7 @@ private slots:
     void isRegistered();
     void unregisterType();
     void registerStreamBuiltin();
+    void automaticTemplateRegistration();
 };
 
 struct Foo { int i; };
@@ -570,15 +571,12 @@ FOR_EACH_CORE_METATYPE(RETURN_CREATE_COPY_FUNCTION)
     TypeTestFunctionGetter::get(type)();
 }
 
-template<typename T> struct SafeSizeOf { enum {Size = sizeof(T)}; };
-template<> struct SafeSizeOf<void> { enum {Size = 0}; };
-
 void tst_QMetaType::sizeOf_data()
 {
     QTest::addColumn<QMetaType::Type>("type");
     QTest::addColumn<int>("size");
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
-    QTest::newRow(#RealType) << QMetaType::MetaTypeName << int(SafeSizeOf<RealType>::Size);
+    QTest::newRow(#RealType) << QMetaType::MetaTypeName << int(QTypeInfo<RealType>::sizeOf);
 FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
 }
@@ -596,21 +594,50 @@ Q_DECLARE_TYPEINFO(CustomMovable, Q_MOVABLE_TYPE);
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(CustomMovable);
 
+class CustomObject : public QObject
+{
+    Q_OBJECT
+public:
+    CustomObject(QObject *parent = 0)
+      : QObject(parent)
+    {
+
+    }
+};
+Q_DECLARE_METATYPE(CustomObject*);
+
+struct SecondBase {};
+
+class CustomMultiInheritanceObject : public QObject, SecondBase
+{
+    Q_OBJECT
+public:
+    CustomMultiInheritanceObject(QObject *parent = 0)
+      : QObject(parent)
+    {
+
+    }
+};
+Q_DECLARE_METATYPE(CustomMultiInheritanceObject*);
+
 void tst_QMetaType::flags_data()
 {
     QTest::addColumn<int>("type");
     QTest::addColumn<bool>("isMovable");
     QTest::addColumn<bool>("isComplex");
+    QTest::addColumn<bool>("isPointerToQObject");
 
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
-    QTest::newRow(#RealType) << MetaTypeId << bool(!QTypeInfo<RealType>::isStatic) << bool(QTypeInfo<RealType>::isComplex);
+    QTest::newRow(#RealType) << MetaTypeId << bool(!QTypeInfo<RealType>::isStatic) << bool(QTypeInfo<RealType>::isComplex) << bool(QtPrivate::IsPointerToTypeDerivedFromQObject<RealType>::Value);
 QT_FOR_EACH_STATIC_CORE_CLASS(ADD_METATYPE_TEST_ROW)
 QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(ADD_METATYPE_TEST_ROW)
 QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
-    QTest::newRow("TestSpace::Foo") << ::qMetaTypeId<TestSpace::Foo>() << false << true;
-    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << false << true;
-    QTest::newRow("CustomMovable") << ::qMetaTypeId<CustomMovable>() << true << true;
+    QTest::newRow("TestSpace::Foo") << ::qMetaTypeId<TestSpace::Foo>() << false << true << false;
+    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << false << true << false;
+    QTest::newRow("CustomMovable") << ::qMetaTypeId<CustomMovable>() << true << true << false;
+    QTest::newRow("CustomObject*") << ::qMetaTypeId<CustomObject*>() << true << false << true;
+    QTest::newRow("CustomMultiInheritanceObject*") << ::qMetaTypeId<CustomMultiInheritanceObject*>() << true << false << true;
 }
 
 void tst_QMetaType::flags()
@@ -618,10 +645,12 @@ void tst_QMetaType::flags()
     QFETCH(int, type);
     QFETCH(bool, isMovable);
     QFETCH(bool, isComplex);
+    QFETCH(bool, isPointerToQObject);
 
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsConstruction), isComplex);
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsDestruction), isComplex);
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::MovableType), isMovable);
+    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::PointerToQObject), isPointerToQObject);
 }
 
 void tst_QMetaType::construct_data()
@@ -856,6 +885,64 @@ void tst_QMetaType::registerStreamBuiltin()
     qRegisterMetaTypeStreamOperators<QString>("QString");
     qRegisterMetaTypeStreamOperators<QVariant>("QVariant");
 }
+
+Q_DECLARE_METATYPE(QSharedPointer<QObject>)
+
+void tst_QMetaType::automaticTemplateRegistration()
+{
+  {
+    QList<int> intList;
+    intList << 42;
+    QVERIFY(QVariant::fromValue(intList).value<QList<int> >().first() == 42);
+    QVector<QList<int> > vectorList;
+    vectorList << intList;
+    QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<int> > >().first().first() == 42);
+  }
+
+  {
+    QList<QByteArray> bytearrayList;
+    bytearrayList << QByteArray("foo");
+    QVERIFY(QVariant::fromValue(bytearrayList).value<QList<QByteArray> >().first() == QByteArray("foo"));
+    QVector<QList<QByteArray> > vectorList;
+    vectorList << bytearrayList;
+    QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<QByteArray> > >().first().first() == QByteArray("foo"));
+  }
+
+  QCOMPARE(::qMetaTypeId<QVariantList>(), (int)QMetaType::QVariantList);
+  QCOMPARE(::qMetaTypeId<QList<QVariant> >(), (int)QMetaType::QVariantList);
+
+  {
+    QList<QVariant> variantList;
+    variantList << 42;
+    QVERIFY(QVariant::fromValue(variantList).value<QList<QVariant> >().first() == 42);
+    QVector<QList<QVariant> > vectorList;
+    vectorList << variantList;
+    QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<QVariant> > >().first().first() == 42);
+  }
+
+  {
+    QList<QSharedPointer<QObject> > sharedPointerList;
+    QObject *testObject = new QObject;
+    sharedPointerList << QSharedPointer<QObject>(testObject);
+    QVERIFY(QVariant::fromValue(sharedPointerList).value<QList<QSharedPointer<QObject> > >().first() == testObject);
+    QVector<QList<QSharedPointer<QObject> > > vectorList;
+    vectorList << sharedPointerList;
+    QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<QSharedPointer<QObject> > > >().first().first() == testObject);
+  }
+}
+
+// Compile-time test, it should be possible to register function pointer types
+class Undefined;
+
+typedef Undefined (*UndefinedFunction0)();
+typedef Undefined (*UndefinedFunction1)(Undefined);
+typedef Undefined (*UndefinedFunction2)(Undefined, Undefined);
+typedef Undefined (*UndefinedFunction3)(Undefined, Undefined, Undefined);
+
+Q_DECLARE_METATYPE(UndefinedFunction0);
+Q_DECLARE_METATYPE(UndefinedFunction1);
+Q_DECLARE_METATYPE(UndefinedFunction2);
+Q_DECLARE_METATYPE(UndefinedFunction3);
 
 QTEST_MAIN(tst_QMetaType)
 #include "tst_qmetatype.moc"

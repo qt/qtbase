@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1028,6 +1028,19 @@ void tst_QFileInfo::fileTimes()
     //In Vista the last-access timestamp is not updated when the file is accessed/touched (by default).
     //To enable this the HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsDisableLastAccessUpdate
     //is set to 0, in the test machine.
+#ifdef Q_OS_WIN
+    HKEY key;
+    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\FileSystem",
+        0, KEY_READ, &key)) {
+            DWORD disabledAccessTimes = 0;
+            DWORD size = sizeof(DWORD);
+            LONG error = RegQueryValueEx(key, L"NtfsDisableLastAccessUpdate"
+                , NULL, NULL, (LPBYTE)&disabledAccessTimes, &size);
+            if (ERROR_SUCCESS == error && disabledAccessTimes)
+                QEXPECT_FAIL("", "File access times are disabled in windows registry (this is the default setting)", Continue);
+            RegCloseKey(key);
+    }
+#endif
 #ifdef Q_OS_WINCE
     QEXPECT_FAIL("simple", "WinCE only stores date of access data, not the time", Continue);
 #endif
@@ -1362,7 +1375,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
     QString junction = "junction_pwd";
     FileSystem::createNtfsJunction(target, junction);
     QFileInfo targetInfo(target);
-    QTest::newRow("junction_pwd") << junction << true << targetInfo.absoluteFilePath() << targetInfo.canonicalFilePath();
+    QTest::newRow("junction_pwd") << junction << false << QString() << QString();
 
     QFileInfo fileInJunction(targetInfo.absoluteFilePath().append("/file"));
     QFile file(fileInJunction.absoluteFilePath());
@@ -1375,7 +1388,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
     junction = "junction_root";
     FileSystem::createNtfsJunction(target, junction);
     targetInfo.setFile(target);
-    QTest::newRow("junction_root") << junction << true << targetInfo.absoluteFilePath() << targetInfo.canonicalFilePath();
+    QTest::newRow("junction_root") << junction << false << QString() << QString();
 
     //Mountpoint
     typedef BOOLEAN (WINAPI *PtrGetVolumeNameForVolumeMountPointW)(LPCWSTR, LPWSTR, DWORD);
@@ -1390,7 +1403,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
         junction = "mountpoint";
         rootVolume.replace("\\\\?\\","\\??\\");
         FileSystem::createNtfsJunction(rootVolume, junction);
-        QTest::newRow("mountpoint") << junction << true <<  QDir::fromNativeSeparators(rootPath) << QDir::rootPath();
+        QTest::newRow("mountpoint") << junction << false << QString() << QString();
     }
 }
 
@@ -1403,8 +1416,10 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
 
     QFileInfo fi(path);
     QCOMPARE(fi.isSymLink(), isSymLink);
-    QCOMPARE(fi.symLinkTarget(), linkTarget);
-    QCOMPARE(fi.canonicalFilePath(), canonicalFilePath);
+    if (isSymLink) {
+        QCOMPARE(fi.symLinkTarget(), linkTarget);
+        QCOMPARE(fi.canonicalFilePath(), canonicalFilePath);
+    }
 }
 
 void tst_QFileInfo::brokenShortcut()
@@ -1632,6 +1647,12 @@ BOOL IsUserAdmin()
 }
 #endif
 
+#if defined(Q_OS_WIN)
+QT_BEGIN_NAMESPACE
+extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
+QT_END_NAMESPACE
+#endif
+
 void tst_QFileInfo::owner()
 {
     QString userName;
@@ -1672,7 +1693,6 @@ void tst_QFileInfo::owner()
                 NetApiBufferFree(pBuf);
         }
     }
-    extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
     qt_ntfs_permission_lookup = 1;
 #endif
     if (userName.isEmpty())

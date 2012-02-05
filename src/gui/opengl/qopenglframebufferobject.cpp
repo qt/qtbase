@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -412,8 +412,18 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
         glBindTexture(target, texture);
         glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        if (mipmap)
-            funcs.glGenerateMipmap(GL_TEXTURE_2D);
+        if (mipmap) {
+            int width = size.width();
+            int height = size.height();
+            int level = 0;
+            while (width > 1 || height > 1) {
+                width = (width + 1) >> 1;
+                height = (height + 1) >> 1;
+                ++level;
+                glTexImage2D(target, level, internal_format, width, height, 0,
+                        GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            }
+        }
         glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -882,8 +892,8 @@ bool QOpenGLFramebufferObject::release()
 #endif
 
     if (current) {
-        current->d_func()->current_fbo = current->d_func()->default_fbo;
-        d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, current->d_func()->default_fbo);
+        current->d_func()->current_fbo = current->defaultFramebufferObject();
+        d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, current->d_func()->current_fbo);
     }
 
     return true;
@@ -1047,8 +1057,8 @@ bool QOpenGLFramebufferObject::bindDefault()
     QOpenGLFunctions functions(ctx);
 
     if (ctx) {
-        ctx->d_func()->current_fbo = ctx->d_func()->default_fbo;
-        functions.glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_func()->default_fbo);
+        ctx->d_func()->current_fbo = ctx->defaultFramebufferObject();
+        functions.glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_func()->current_fbo);
 #ifdef QT_DEBUG
     } else {
         qWarning("QOpenGLFramebufferObject::bindDefault() called without current context.");
@@ -1132,8 +1142,24 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
                                                QOpenGLFramebufferObject *source,
                                                GLbitfield buffers, GLenum filter)
 {
-    blitFramebuffer(target, QRect(QPoint(0, 0), target->size()),
-                    source, QRect(QPoint(0, 0), source->size()),
+    if (!target && !source)
+        return;
+
+    QSize targetSize;
+    QSize sourceSize;
+
+    if (target)
+        targetSize = target->size();
+    if (source)
+        sourceSize = source->size();
+
+    if (targetSize.isEmpty())
+        targetSize = sourceSize;
+    else if (sourceSize.isEmpty())
+        sourceSize = targetSize;
+
+    blitFramebuffer(target, QRect(QPoint(0, 0), targetSize),
+                    source, QRect(QPoint(0, 0), sourceSize),
                     buffers, filter);
 }
 

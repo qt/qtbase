@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,30 +55,15 @@
 
 #include "QtWidgets/qmenubar.h"
 #include "QtWidgets/qstyleoption.h"
-#ifdef Q_OS_MAC
-#include "QtWidgets/qmacdefines_mac.h"
-#endif
 #include "QtCore/qdatetime.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qbasictimer.h"
 #include "private/qwidget_p.h"
 
-
-#ifdef Q_WS_S60
-class CEikMenuPane;
-#define QT_SYMBIAN_FIRST_MENU_ITEM 32000
-#define QT_SYMBIAN_LAST_MENU_ITEM 41999 // 10000 items ought to be enough for anybody...
-#endif
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MENU
-
-#ifdef Q_WS_S60
-void qt_symbian_next_menu_from_action(QWidget* actionContainer);
-void qt_symbian_show_toplevel(CEikMenuPane* menuPane);
-void qt_symbian_show_submenu(CEikMenuPane* menuPane, int id);
-#endif // Q_WS_S60
 
 class QTornOffMenu;
 class QEventLoop;
@@ -89,15 +74,6 @@ struct QWceMenuAction {
     QPointer<QAction> action;
     HMENU menuHandle;
     QWceMenuAction() : menuHandle(0), command(0) {}
-};
-#endif
-#ifdef Q_WS_S60
-struct QSymbianMenuAction {
-    uint command;
-    int parent;
-    CEikMenuPane* menuPane;
-    QPointer<QAction> action;
-    QSymbianMenuAction() : command(0) {}
 };
 #endif
 
@@ -118,9 +94,6 @@ public:
 #if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
                       ,wce_menu(0)
 #endif
-#ifdef Q_WS_S60
-                      ,symbian_menu(0)
-#endif
     { }
     ~QMenuPrivate()
     {
@@ -129,10 +102,6 @@ public:
 #if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
         delete wce_menu;
 #endif
-#ifdef Q_WS_S60
-        delete symbian_menu;
-#endif
-
     }
     void init();
 
@@ -283,28 +252,6 @@ public:
     } *wce_menu;
     HMENU wceMenu();
     QAction* wceCommands(uint command);
-#endif
-#if defined(Q_WS_S60)
-    struct QSymbianMenuPrivate {
-        QList<QSymbianMenuAction*> actionItems;
-        QSymbianMenuPrivate();
-        ~QSymbianMenuPrivate();
-        void addAction(QAction *, QSymbianMenuAction* =0);
-        void addAction(QSymbianMenuAction *, QSymbianMenuAction* =0);
-        void syncAction(QSymbianMenuAction *);
-        inline void syncAction(QAction *a) { syncAction(findAction(a)); }
-        void removeAction(QSymbianMenuAction *);
-        void rebuild(bool reCreate = false);
-        inline void removeAction(QAction *a) { removeAction(findAction(a)); }
-        inline QSymbianMenuAction *findAction(QAction *a) {
-            for(int i = 0; i < actionItems.size(); i++) {
-                QSymbianMenuAction *act = actionItems[i];
-                if(a == act->action)
-                    return act;
-            }
-            return 0;
-        }
-    } *symbian_menu;
 #endif
     QPointer<QWidget> noReplayFor;
 };

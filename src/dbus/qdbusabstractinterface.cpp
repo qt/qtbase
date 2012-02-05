@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -125,7 +125,7 @@ void QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, QVariant &
 
     // is this metatype registered?
     const char *expectedSignature = "";
-    if (mp.type() != 0xff) {
+    if (int(mp.type()) != QMetaType::QVariant) {
         expectedSignature = QDBusMetaType::typeToSignature(where.userType());
         if (expectedSignature == 0) {
             qWarning("QDBusAbstractInterface: type %s must be registered with QtDBus before it can be "
@@ -164,7 +164,7 @@ void QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, QVariant &
     const char *foundType = 0;
     QVariant value = qvariant_cast<QDBusVariant>(reply.arguments().at(0)).variant();
 
-    if (value.userType() == where.userType() || mp.type() == 0xff
+    if (value.userType() == where.userType() || mp.userType() == QMetaType::QVariant
         || (expectedSignature[0] == 'v' && expectedSignature[1] == '\0')) {
         // simple match
         where = value;

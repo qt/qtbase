@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,7 +58,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class QTextCodec;
 class QTextDecoder;
@@ -175,7 +174,6 @@ public:
     QTextStream &operator>>(QByteArray &array);
     QTextStream &operator>>(char *c);
 
-    QTextStream &operator<<(QBool b);
     QTextStream &operator<<(QChar ch);
     QTextStream &operator<<(char ch);
     QTextStream &operator<<(signed short i);
@@ -189,6 +187,7 @@ public:
     QTextStream &operator<<(float f);
     QTextStream &operator<<(double f);
     QTextStream &operator<<(const QString &s);
+    QTextStream &operator<<(const QLatin1String &s);
     QTextStream &operator<<(const QByteArray &array);
     QTextStream &operator<<(const char *c);
     QTextStream &operator<<(const void *ptr);
@@ -208,6 +207,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QTextStream::NumberFlags)
 typedef QTextStream & (*QTextStreamFunction)(QTextStream &);// manipulator function
 typedef void (QTextStream::*QTSMFI)(int); // manipulator w/int argument
 typedef void (QTextStream::*QTSMFC)(QChar); // manipulator w/QChar argument
+
 
 class Q_CORE_EXPORT QTextStreamManipulator
 {

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,7 +59,7 @@
 #include <QStyleOptionTitleBar>
 #include <QPushButton>
 #include <QSizeGrip>
-#if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
 #endif
 
@@ -189,7 +189,7 @@ private slots:
     void setWindowTitle();
     void resizeEvents_data();
     void resizeEvents();
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     void defaultSizeGrip();
 #endif
     void hideAndShow();
@@ -197,7 +197,7 @@ private slots:
     void explicitlyHiddenWidget();
     void resizeTimer();
     void fixedMinMaxSize();
-#if !defined (Q_WS_MAC) && !defined (Q_OS_WINCE)
+#if !defined (Q_OS_MAC) && !defined (Q_OS_WINCE)
     void replaceMenuBarWhileMaximized();
     void closeOnDoubleClick();
 #endif
@@ -374,7 +374,7 @@ void tst_QMdiSubWindow::mainWindowSupport()
     qApp->setActiveWindow(&mainWindow);
 
     // QMainWindow's window title is empty
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     {
     QCOMPARE(mainWindow.windowTitle(), QString());
     QMdiSubWindow *window = workspace->addSubWindow(new QPushButton(QLatin1String("Test")));
@@ -426,7 +426,7 @@ void tst_QMdiSubWindow::mainWindowSupport()
         window->showMaximized();
         qApp->processEvents();
         QVERIFY(window->isMaximized());
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
         QVERIFY(window->maximizedButtonsWidget());
         QCOMPARE(window->maximizedButtonsWidget(), mainWindow.menuBar()->cornerWidget(Qt::TopRightCorner));
         QVERIFY(window->maximizedSystemMenuIconWidget());
@@ -448,13 +448,13 @@ void tst_QMdiSubWindow::mainWindowSupport()
         QVERIFY(!nestedWindow->maximizedButtonsWidget());
         QVERIFY(!nestedWindow->maximizedSystemMenuIconWidget());
 
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
         QCOMPARE(mainWindow.windowTitle(), QString::fromLatin1("%1 - [%2]")
                                            .arg(originalWindowTitle, window->widget()->windowTitle()));
 #endif
     }
 
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
     return;
 #endif
 
@@ -605,7 +605,7 @@ void tst_QMdiSubWindow::showShaded()
     int offset = window->style()->pixelMetric(QStyle::PM_MDIFrameWidth) / 2;
     QPoint mousePosition(window->width() - qMax(offset, 2), window->height() - qMax(offset, 2));
     QWidget *mouseReceiver = 0;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (qobject_cast<QMacStyle*>(window->style()))
         mouseReceiver = qFindChild<QSizeGrip *>(window);
     else
@@ -789,7 +789,7 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
     QStyleOptionTitleBar options;
     options.initFrom(window);
     int height = window->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options);
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     // ### Remove this after mac style has been fixed
     height -= 4;
 #endif
@@ -1039,7 +1039,7 @@ void tst_QMdiSubWindow::setSystemMenu()
     systemMenu->hide();
     QVERIFY(!qApp->activePopupWidget());
 
-#if !defined (Q_WS_MAC) && !defined (Q_OS_WINCE)
+#if !defined (Q_OS_MAC) && !defined (Q_OS_WINCE)
     // System menu in menu bar.
     subWindow->showMaximized();
     QVERIFY(subWindow->isMaximized());
@@ -1072,7 +1072,7 @@ void tst_QMdiSubWindow::setSystemMenu()
     systemMenu->hide();
     QVERIFY(!qApp->activePopupWidget());
 
-#if !defined (Q_WS_MAC) && !defined (Q_OS_WINCE)
+#if !defined (Q_OS_MAC) && !defined (Q_OS_WINCE)
     // System menu in menu bar in reverse mode.
     subWindow->showMaximized();
     QVERIFY(subWindow->isMaximized());
@@ -1422,7 +1422,7 @@ void tst_QMdiSubWindow::resizeEvents()
     QCOMPARE(widgetResizeEventSpy.count(), expectedWidgetResizeEvents);
 }
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
 void tst_QMdiSubWindow::defaultSizeGrip()
 {
     if (!qApp->style()->inherits("QMacStyle"))
@@ -1463,7 +1463,7 @@ void tst_QMdiSubWindow::hideAndShow()
     QVERIFY(!menuBar->cornerWidget(Qt::TopRightCorner));
     QMdiSubWindow *subWindow = mdiArea->addSubWindow(new QTextEdit);
     subWindow->showMaximized();
-#if !defined (Q_WS_MAC) && !defined (Q_OS_WINCE)
+#if !defined (Q_OS_MAC) && !defined (Q_OS_WINCE)
     QVERIFY(menuBar->cornerWidget(Qt::TopRightCorner));
     QCOMPARE(menuBar->cornerWidget(Qt::TopRightCorner), subWindow->maximizedButtonsWidget());
 #endif
@@ -1478,7 +1478,7 @@ void tst_QMdiSubWindow::hideAndShow()
     // Show QMdiArea.
     tabWidget->setCurrentIndex(0);
 
-#if !defined (Q_WS_MAC) && !defined (Q_OS_WINCE)
+#if !defined (Q_OS_MAC) && !defined (Q_OS_WINCE)
     QVERIFY(menuBar->cornerWidget(Qt::TopRightCorner));
     QVERIFY(subWindow->maximizedButtonsWidget());
     QVERIFY(subWindow->maximizedSystemMenuIconWidget());
@@ -1500,7 +1500,7 @@ void tst_QMdiSubWindow::hideAndShow()
     QVERIFY(subWindow);
     QCOMPARE(mdiArea->activeSubWindow(), subWindow);
 
-#if !defined (Q_WS_MAC) && !defined (Q_OS_WINCE)
+#if !defined (Q_OS_MAC) && !defined (Q_OS_WINCE)
     QVERIFY(menuBar->cornerWidget(Qt::TopRightCorner));
     QVERIFY(subWindow->maximizedButtonsWidget());
     QVERIFY(subWindow->maximizedSystemMenuIconWidget());
@@ -1515,7 +1515,7 @@ void tst_QMdiSubWindow::hideAndShow()
         QCOMPARE(window->size(), window->sizeHint());
 
     subWindow->showMaximized();
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QCOMPARE(menuBar->cornerWidget(Qt::TopRightCorner), subWindow->maximizedButtonsWidget());
 #endif
 
@@ -1525,7 +1525,7 @@ void tst_QMdiSubWindow::hideAndShow()
     QVERIFY(!menuBar->cornerWidget(Qt::TopRightCorner));
 
     subWindow->show();
-#if !defined (Q_WS_MAC) && !defined (Q_OS_WINCE)
+#if !defined (Q_OS_MAC) && !defined (Q_OS_WINCE)
     QVERIFY(subWindow->maximizedButtonsWidget());
     QVERIFY(subWindow->maximizedSystemMenuIconWidget());
     QCOMPARE(menuBar->cornerWidget(Qt::TopRightCorner), subWindow->maximizedButtonsWidget());
@@ -1539,7 +1539,7 @@ void tst_QMdiSubWindow::hideAndShow()
 
     // Show QMainWindow.
     mainWindow.show();
-#if !defined (Q_WS_MAC) && !defined (Q_OS_WINCE)
+#if !defined (Q_OS_MAC) && !defined (Q_OS_WINCE)
     QVERIFY(subWindow->maximizedButtonsWidget());
     QVERIFY(subWindow->maximizedSystemMenuIconWidget());
     QCOMPARE(menuBar->cornerWidget(Qt::TopRightCorner), subWindow->maximizedButtonsWidget());
@@ -1686,7 +1686,7 @@ void tst_QMdiSubWindow::fixedMinMaxSize()
     QStyleOptionTitleBar options;
     options.initFrom(subWindow);
     int minimizedHeight = subWindow->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options);
-#if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
     // ### Remove this after mac style has been fixed
     if (qobject_cast<QMacStyle *>(subWindow->style()))
         minimizedHeight -= 4;
@@ -1720,7 +1720,7 @@ void tst_QMdiSubWindow::fixedMinMaxSize()
     QCOMPARE(subWindow->size(), minimumSize);
 }
 
-#if !defined( Q_WS_MAC) && !defined( Q_OS_WINCE)
+#if !defined( Q_OS_MAC) && !defined( Q_OS_WINCE)
 void tst_QMdiSubWindow::replaceMenuBarWhileMaximized()
 {
 
@@ -1894,7 +1894,7 @@ void tst_QMdiSubWindow::mdiArea()
 
 void tst_QMdiSubWindow::task_182852()
 {
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
 
     QMdiArea *workspace = new QMdiArea;
     QMainWindow mainWindow;

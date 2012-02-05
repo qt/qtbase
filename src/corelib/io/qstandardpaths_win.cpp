@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,19 +34,16 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "qstandardpaths.h"
 
-#include <qsettings.h>
 #include <qdir.h>
 #include <private/qsystemlibrary_p.h>
-#include <qurl.h>
 #include <qstringlist.h>
-#include <qprocess.h>
-#include <qtemporaryfile.h>
 #include <qcoreapplication.h>
 
 #include <qt_windows.h>

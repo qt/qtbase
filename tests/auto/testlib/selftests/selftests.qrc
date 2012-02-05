@@ -37,6 +37,10 @@
         <file>expected_commandlinedata.txt</file>
         <file>expected_commandlinedata.xml</file>
         <file>expected_commandlinedata.xunitxml</file>
+        <file>expected_counting.lightxml</file>
+        <file>expected_counting.txt</file>
+        <file>expected_counting.xml</file>
+        <file>expected_counting.xunitxml</file>
         <file>expected_crashes.lightxml</file>
         <file>expected_crashes.xml</file>
         <file>expected_crashes.xunitxml</file>

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,7 +55,6 @@ QT_BEGIN_NAMESPACE
 static const char boilerplate_unsuported[] =
     "\nQt %1 Evaluation License\n"
     "Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).\n"
-    "All rights reserved.\n\n"
     "This trial version may only be used for evaluation purposes\n"
     "and will shut down after 120 minutes.\n"
     "Registered to:\n"
@@ -66,7 +65,6 @@ static const char boilerplate_unsuported[] =
 static const char boilerplate_supported[] =
     "\nQt %1 Evaluation License\n"
     "Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).\n"
-    "All rights reserved.\n\n"
     "This trial version may only be used for evaluation purposes\n"
     "Registered to:\n"
     "   Licensee: %2\n\n"

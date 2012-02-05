@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -2228,9 +2228,12 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
         int glyphsEnd = (relativeTo == eng->length(&si))
                          ? si.num_glyphs - 1
                          : logClusters[relativeTo];
+        // the glyph index right next to the requested range
+        int nextGlyphIndex = relativeTo < eng->length(&si) - 1 ? logClusters[relativeTo + 1] : si.num_glyphs;
+        if (nextGlyphIndex - 1 > glyphsEnd)
+            glyphsEnd = nextGlyphIndex - 1;
         bool startsInsideLigature = relativeFrom > 0 && logClusters[relativeFrom - 1] == glyphsStart;
-        bool endsInsideLigature = relativeTo < eng->length(&si) - 1
-                               && logClusters[relativeTo + 1] == glyphsEnd;
+        bool endsInsideLigature = nextGlyphIndex == glyphsEnd;
 
         int itemGlyphsStart = logClusters[iterator.itemStart - si.position];
         int itemGlyphsEnd = logClusters[iterator.itemEnd - 1 - si.position];

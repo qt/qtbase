@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -233,7 +233,6 @@ private slots:
     void statesStructTest();
     void navigateHierarchy();
     void sliderTest();
-    void navigateCovered();
     void textAttributes();
     void hideShowTest();
 
@@ -511,112 +510,6 @@ void tst_QAccessibility::sliderTest()
 
     delete iface;
     delete slider;
-    }
-    QTestAccessibility::clearEvents();
-}
-
-void tst_QAccessibility::navigateCovered()
-{
-    {
-    QWidget *w = new QWidget(0);
-    w->setObjectName(QString("Harry"));
-    QWidget *w1 = new QWidget(w);
-    w1->setObjectName(QString("1"));
-    QWidget *w2 = new QWidget(w);
-    w2->setObjectName(QString("2"));
-    w->show();
-#if defined(Q_OS_UNIX)
-    QCoreApplication::processEvents();
-    QTest::qWait(100);
-#endif
-
-    w->setFixedSize(6, 6);
-    w1->setFixedSize(5, 5);
-    w2->setFixedSize(5, 5);
-    w2->move(0, 0);
-    w1->raise();
-
-    QAccessibleInterface *iface1 = QAccessible::queryAccessibleInterface(w1);
-    QVERIFY(iface1 != 0);
-    QVERIFY(iface1->isValid());
-    QAccessibleInterface *iface2 = QAccessible::queryAccessibleInterface(w2);
-    QVERIFY(iface2 != 0);
-    QVERIFY(iface2->isValid());
-    QAccessibleInterface *iface3 = 0;
-
-    QCOMPARE(iface1->navigate(QAccessible::Covers, -42, &iface3), -1);
-    QVERIFY(iface3 == 0);
-    QCOMPARE(iface1->navigate(QAccessible::Covers, 0, &iface3), -1);
-    QVERIFY(iface3 == 0);
-    QCOMPARE(iface1->navigate(QAccessible::Covers, 2, &iface3), -1);
-    QVERIFY(iface3 == 0);
-
-    for (int loop = 0; loop < 2; ++loop) {
-        for (int x = 0; x < w->width(); ++x) {
-            for (int y = 0; y < w->height(); ++y) {
-                w1->move(x, y);
-                if (w1->geometry().intersects(w2->geometry())) {
-                    QVERIFY(iface1->relationTo(iface2) & QAccessible::Covers);
-                    QVERIFY(iface2->relationTo(iface1) & QAccessible::Covered);
-                    QCOMPARE(iface1->navigate(QAccessible::Covered, 1, &iface3), 0);
-                    QVERIFY(iface3 != 0);
-                    QVERIFY(iface3->isValid());
-                    QCOMPARE(iface3->object(), iface2->object());
-                    delete iface3; iface3 = 0;
-                    QCOMPARE(iface2->navigate(QAccessible::Covers, 1, &iface3), 0);
-                    QVERIFY(iface3 != 0);
-                    QVERIFY(iface3->isValid());
-                    QCOMPARE(iface3->object(), iface1->object());
-                    delete iface3; iface3 = 0;
-                } else {
-                    QVERIFY(!(iface1->relationTo(iface2) & QAccessible::Covers));
-                    QVERIFY(!(iface2->relationTo(iface1) & QAccessible::Covered));
-                    QCOMPARE(iface1->navigate(QAccessible::Covered, 1, &iface3), -1);
-                    QVERIFY(iface3 == 0);
-                    QCOMPARE(iface1->navigate(QAccessible::Covers, 1, &iface3), -1);
-                    QVERIFY(iface3 == 0);
-                    QCOMPARE(iface2->navigate(QAccessible::Covered, 1, &iface3), -1);
-                    QVERIFY(iface3 == 0);
-                    QCOMPARE(iface2->navigate(QAccessible::Covers, 1, &iface3), -1);
-                    QVERIFY(iface3 == 0);
-                }
-            }
-        }
-        if (!loop) {
-            // switch children for second loop
-            w2->raise();
-            QAccessibleInterface *temp = iface1;
-            iface1 = iface2;
-            iface2 = temp;
-        }
-    }
-    delete iface1; iface1 = 0;
-    delete iface2; iface2 = 0;
-    iface1 = QAccessible::queryAccessibleInterface(w1);
-    QVERIFY(iface1 != 0);
-    QVERIFY(iface1->isValid());
-    iface2 = QAccessible::queryAccessibleInterface(w2);
-    QVERIFY(iface2 != 0);
-    QVERIFY(iface2->isValid());
-
-    w1->move(0,0);
-    w2->move(0,0);
-    w1->raise();
-    QVERIFY(iface1->relationTo(iface2) & QAccessible::Covers);
-    QVERIFY(iface2->relationTo(iface1) & QAccessible::Covered);
-    QVERIFY(!iface1->state().invisible);
-    w1->hide();
-    QVERIFY(iface1->state().invisible);
-    QVERIFY(!(iface1->relationTo(iface2) & QAccessible::Covers));
-    QVERIFY(!(iface2->relationTo(iface1) & QAccessible::Covered));
-    QCOMPARE(iface2->navigate(QAccessible::Covered, 1, &iface3), -1);
-    QVERIFY(iface3 == 0);
-    QCOMPARE(iface1->navigate(QAccessible::Covers, 1, &iface3), -1);
-    QVERIFY(iface3 == 0);
-
-    delete iface1; iface1 = 0;
-    delete iface2; iface2 = 0;
-    delete w;
     }
     QTestAccessibility::clearEvents();
 }
@@ -1366,7 +1259,7 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(iSeparator->role(), QAccessible::Separator);
     QCOMPARE(iHelp->role(), QAccessible::MenuItem);
     QCOMPARE(iAction->role(), QAccessible::MenuItem);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
 #ifdef Q_OS_WINCE
     if (!IsValidCEPlatform())
         QSKIP("Tests do not work on Mobile platforms due to native menus");
@@ -2794,7 +2687,7 @@ void tst_QAccessibility::accelerators()
     label->setText(tr("Q &&A"));
     QCOMPARE(accLineEdit->text(QAccessible::Accelerator), QString());
 
-#if !defined(QT_NO_DEBUG) && !defined(Q_WS_MAC)
+#if !defined(QT_NO_DEBUG) && !defined(Q_OS_MAC)
     QTest::ignoreMessage(QtWarningMsg, "QKeySequence::mnemonic: \"Q &A&B\" contains multiple occurrences of '&'");
 #endif
     label->setText(tr("Q &A&B"));

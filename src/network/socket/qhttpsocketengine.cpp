@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,7 +43,7 @@
 #include "qtcpsocket.h"
 #include "qhostaddress.h"
 #include "qurl.h"
-#include "private/qhttpheader_p.h"
+#include "private/qhttpnetworkreply_p.h"
 #include "qelapsedtimer.h"
 #include "qnetworkinterface.h"
 
@@ -72,6 +72,7 @@ bool QHttpSocketEngine::initialize(QAbstractSocket::SocketType type, QAbstractSo
     setProtocol(protocol);
     setSocketType(type);
     d->socket = new QTcpSocket(this);
+    d->reply = new QHttpNetworkReply(QUrl(), this);
 #ifndef QT_NO_BEARERMANAGEMENT
     d->socket->setProperty("_q_networkSession", property("_q_networkSession"));
 #endif
@@ -214,7 +215,7 @@ void QHttpSocketEngine::close()
 qint64 QHttpSocketEngine::bytesAvailable() const
 {
     Q_D(const QHttpSocketEngine);
-    return d->readBuffer.size() + (d->socket ? d->socket->bytesAvailable() : 0);
+    return d->socket ? d->socket->bytesAvailable() : 0;
 }
 
 qint64 QHttpSocketEngine::read(char *data, qint64 maxlen)
@@ -567,20 +568,21 @@ void QHttpSocketEngine::slotSocketReadNotification()
         return;
     }
 
-    // Still in handshake mode. Wait until we've got a full response.
-    bool done = false;
-    do {
-        d->readBuffer += d->socket->readLine();
-    } while (!(done = d->readBuffer.endsWith("\r\n\r\n")) && d->socket->canReadLine());
-
-    if (!done) {
-        // Wait for more.
-        return;
+    bool ok = true;
+    if (d->reply->d_func()->state == QHttpNetworkReplyPrivate::NothingDoneState)
+        d->reply->d_func()->state = QHttpNetworkReplyPrivate::ReadingStatusState;
+    if (d->reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingStatusState) {
+        ok = d->reply->d_func()->readStatus(d->socket) != -1;
+        if (ok && d->reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingStatusState)
+            return; //Not done parsing headers yet, wait for more data
     }
-
-    if (!d->readBuffer.startsWith("HTTP/1.")) {
+    if (ok && d->reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingHeaderState) {
+        ok = d->reply->d_func()->readHeader(d->socket) != -1;
+        if (ok && d->reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingHeaderState)
+            return; //Not done parsing headers yet, wait for more data
+    }
+    if (!ok) {
         // protocol error, this isn't HTTP
-        d->readBuffer.clear();
         d->socket->close();
         setState(QAbstractSocket::UnconnectedState);
         setError(QAbstractSocket::ProxyProtocolError, tr("Did not receive HTTP response from proxy"));
@@ -588,10 +590,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
         return;
     }
 
-    QHttpResponseHeader responseHeader(QString::fromLatin1(d->readBuffer));
-    d->readBuffer.clear(); // we parsed the proxy protocol response. from now on direct socket reading will be done
-
-    int statusCode = responseHeader.statusCode();
+    int statusCode = d->reply->statusCode();
     QAuthenticatorPrivate *priv = 0;
     if (statusCode == 200) {
         d->state = Connected;
@@ -613,7 +612,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
             d->authenticator.detach();
         priv = QAuthenticatorPrivate::getPrivate(d->authenticator);
 
-        priv->parseHttpResponse(responseHeader, true);
+        priv->parseHttpResponse(d->reply->header(), true);
 
         if (priv->phase == QAuthenticatorPrivate::Invalid) {
             // problem parsing the reply
@@ -625,21 +624,21 @@ void QHttpSocketEngine::slotSocketReadNotification()
         }
 
         bool willClose;
-        QString proxyConnectionHeader = responseHeader.value(QLatin1String("Proxy-Connection"));
+        QByteArray proxyConnectionHeader = d->reply->headerField("Proxy-Connection");
         // Although most proxies use the unofficial Proxy-Connection header, the Connection header
         // from http spec is also allowed.
         if (proxyConnectionHeader.isEmpty())
-            proxyConnectionHeader = responseHeader.value(QLatin1String("Connection"));
+            proxyConnectionHeader = d->reply->headerField("Connection");
         proxyConnectionHeader = proxyConnectionHeader.toLower();
-        if (proxyConnectionHeader == QLatin1String("close")) {
+        if (proxyConnectionHeader == "close") {
             willClose = true;
-        } else if (proxyConnectionHeader == QLatin1String("keep-alive")) {
+        } else if (proxyConnectionHeader == "keep-alive") {
             willClose = false;
         } else {
             // no Proxy-Connection header, so use the default
             // HTTP 1.1's default behaviour is to keep persistent connections
             // HTTP 1.0 or earlier, so we expect the server to close
-            willClose = (responseHeader.majorVersion() * 0x100 + responseHeader.minorVersion()) <= 0x0100;
+            willClose = (d->reply->majorVersion() * 0x100 + d->reply->minorVersion()) <= 0x0100;
         }
 
         if (willClose) {
@@ -647,6 +646,9 @@ void QHttpSocketEngine::slotSocketReadNotification()
             // especially since the signal below may trigger a new event loop
             d->socket->disconnectFromHost();
             d->socket->readAll();
+            //We're done with the reply and need to reset it for the next connection
+            delete d->reply;
+            d->reply = new QHttpNetworkReply;
         }
 
         if (priv->phase == QAuthenticatorPrivate::Done)
@@ -662,7 +664,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
                 d->socket->connectToHost(d->proxy.hostName(), d->proxy.port());
             } else {
                 bool ok;
-                int contentLength = responseHeader.value(QLatin1String("Content-Length")).toInt(&ok);
+                int contentLength = d->reply->headerField("Content-Length").toInt(&ok);
                 if (ok && contentLength > 0) {
                     d->state = ReadResponseContent;
                     d->pendingResponseData = contentLength;
@@ -708,7 +710,6 @@ void QHttpSocketEngine::slotSocketBytesWritten()
 void QHttpSocketEngine::slotSocketError(QAbstractSocket::SocketError error)
 {
     Q_D(QHttpSocketEngine);
-    d->readBuffer.clear();
 
     if (d->state != Connected) {
         // we are in proxy handshaking stages
@@ -811,6 +812,7 @@ QHttpSocketEnginePrivate::QHttpSocketEnginePrivate()
     , pendingResponseData(0)
 {
     socket = 0;
+    reply = 0;
     state = QHttpSocketEngine::None;
 }
 

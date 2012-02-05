@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,7 +58,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QPlatformBackingStore;
 class QPlatformOpenGLContext;
@@ -99,8 +98,7 @@ public:
     virtual QSizeF physicalSize() const;
     virtual QDpi logicalDpi() const;
 
-    virtual Qt::ScreenOrientation currentOrientation() const;
-    virtual Qt::ScreenOrientation primaryOrientation() const;
+    virtual Qt::ScreenOrientation orientation() const;
 
     virtual QWindow *topLevelAt(const QPoint &point) const;
     virtual QList<QPlatformScreen *> virtualSiblings() const;

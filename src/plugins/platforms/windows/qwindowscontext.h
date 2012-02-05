@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QWindow;
 class QPlatformScreen;
+class QWindowsScreenManager;
 class QWindowsWindow;
 class QWindowsMimeConverter;
 struct QWindowCreationContext;
@@ -102,6 +103,8 @@ class QWindowsContext
 {
     Q_DISABLE_COPY(QWindowsContext)
 public:
+    typedef bool (*EventFilter)(void *message, long *result);
+
     enum SystemInfoFlags
     {
         SI_RTL_Extensions = 0x1,
@@ -135,6 +138,8 @@ public:
     HDC displayContext() const;
     int screenDepth() const;
 
+    EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter);
+
     static QWindowsContext *instance();
 
     static QString windowsErrorMessage(unsigned long errorCode);
@@ -162,6 +167,7 @@ public:
     unsigned systemInfo() const;
 
     QWindowsMimeConverter &mimeConverter() const;
+    QWindowsScreenManager &screenManager();
 
     static QWindowsUser32DLL user32dll;
     static QWindowsShell32DLL shell32dll;

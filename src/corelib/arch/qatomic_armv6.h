@@ -1,8 +1,8 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Copyright (C) 2011 Thiago Macieira <thiago@kde.org>
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +35,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,77 +43,72 @@
 #ifndef QATOMIC_ARMV6_H
 #define QATOMIC_ARMV6_H
 
+#include <QtCore/qgenericatomic.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+#if 0
+#pragma qt_sync_stop_processing
+#endif
+
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
-
-inline bool QBasicAtomicInt::isReferenceCountingNative()
-{ return true; }
-inline bool QBasicAtomicInt::isReferenceCountingWaitFree()
-{ return false; }
-
 #define Q_ATOMIC_INT_TEST_AND_SET_IS_ALWAYS_NATIVE
-
-inline bool QBasicAtomicInt::isTestAndSetNative()
-{ return true; }
-inline bool QBasicAtomicInt::isTestAndSetWaitFree()
-{ return false; }
-
 #define Q_ATOMIC_INT_FETCH_AND_STORE_IS_ALWAYS_NATIVE
-
-inline bool QBasicAtomicInt::isFetchAndStoreNative()
-{ return true; }
-inline bool QBasicAtomicInt::isFetchAndStoreWaitFree()
-{ return false; }
-
 #define Q_ATOMIC_INT_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
-inline bool QBasicAtomicInt::isFetchAndAddNative()
-{ return true; }
-inline bool QBasicAtomicInt::isFetchAndAddWaitFree()
-{ return false; }
+#define Q_ATOMIC_INT32_IS_SUPPORTED
+#define Q_ATOMIC_INT32_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT32_TEST_AND_SET_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT32_FETCH_AND_STORE_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT32_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
 #define Q_ATOMIC_POINTER_TEST_AND_SET_IS_ALWAYS_NATIVE
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isTestAndSetNative()
-{ return true; }
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isTestAndSetWaitFree()
-{ return false; }
-
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_ALWAYS_NATIVE
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndStoreNative()
-{ return true; }
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndStoreWaitFree()
-{ return false; }
-
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddNative()
-{ return true; }
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
-{ return false; }
+template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
+
+template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
+{
+    static void orderedMemoryFence();
+
+    static inline bool isReferenceCountingNative() { return true; }
+    template <typename T> static bool ref(T &_q_value);
+    template <typename T> static bool deref(T &_q_value);
+
+    static inline bool isTestAndSetNative() { return true; }
+    static inline bool isTestAndSetWaitFree() { return false; }
+    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue);
+
+    static inline bool isFetchAndStoreNative() { return true; }
+    template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue);
+
+    static inline bool isFetchAndAddNative() { return true; }
+    template <typename T> static
+    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd);
+};
+
+template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
+{
+    typedef T Type;
+};
 
 #ifndef Q_CC_RVCT
 
 #ifndef Q_DATA_MEMORY_BARRIER
-# define Q_DATA_MEMORY_BARRIER asm volatile("":::"memory")
+# define Q_DATA_MEMORY_BARRIER asm volatile("mcr     p15, 0, r0, c7, c10, 5":::"memory")
 #endif
 #ifndef Q_COMPILER_MEMORY_BARRIER
 # define Q_COMPILER_MEMORY_BARRIER asm volatile("":::"memory")
 #endif
 
-inline bool QBasicAtomicInt::ref()
+template<> template<typename T> inline
+bool QBasicAtomicOps<4>::ref(T &_q_value)
 {
-    register int newValue;
+    register T newValue;
     register int result;
     asm volatile("0:\n"
                  "ldrex %[newValue], [%[_q_value]]\n"
@@ -128,9 +124,10 @@ inline bool QBasicAtomicInt::ref()
     return newValue != 0;
 }
 
-inline bool QBasicAtomicInt::deref()
+template<> template <typename T> inline
+bool QBasicAtomicOps<4>::deref(T &_q_value)
 {
-    register int newValue;
+    register T newValue;
     register int result;
     asm volatile("0:\n"
                  "ldrex %[newValue], [%[_q_value]]\n"
@@ -146,7 +143,8 @@ inline bool QBasicAtomicInt::deref()
     return newValue != 0;
 }
 
-inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
+template<> template <typename T> inline
+bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
 {
     register int result;
     asm volatile("0:\n"
@@ -165,9 +163,10 @@ inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
     return result == 0;
 }
 
-inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
+template<> template <typename T> inline
+T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue)
 {
-    register int originalValue;
+    register T originalValue;
     register int result;
     asm volatile("0:\n"
                  "ldrex %[originalValue], [%[_q_value]]\n"
@@ -183,10 +182,11 @@ inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
     return originalValue;
 }
 
-inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
+template<> template <typename T> inline
+T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
 {
-    register int originalValue;
-    register int newValue;
+    register T originalValue;
+    register T newValue;
     register int result;
     asm volatile("0:\n"
                  "ldrex %[originalValue], [%[_q_value]]\n"
@@ -198,21 +198,94 @@ inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
                    [newValue] "=&r" (newValue),
                    [result] "=&r" (result),
                    "+m" (_q_value)
-                 : [valueToAdd] "r" (valueToAdd),
+                 : [valueToAdd] "r" (valueToAdd * QAtomicAdditiveType<T>::AddScale),
                    [_q_value] "r" (&_q_value)
                  : "cc");
     return originalValue;
 }
 
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
+#if defined(__ARM_ARCH_7__) \
+    || defined(__ARM_ARCH_7A__) \
+    || defined(__ARM_ARCH_7R__) \
+    || defined(__ARM_ARCH_7M__) \
+    || defined(__ARM_ARCH_6K__)
+// LDREXB, LDREXH and LDREXD are available on ARMv6K or higher
+
+template<> struct QAtomicIntegerTraits<char> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<signed char> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned char> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<short> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned short> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<long> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
+
+#define Q_ATOMIC_INT8_IS_SUPPORTED
+#define Q_ATOMIC_INT8_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT8_TEST_AND_SET_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT8_FETCH_AND_STORE_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT8_FETCH_AND_ADD_IS_ALWAYS_NATIVE
+
+#define Q_ATOMIC_INT16_IS_SUPPORTED
+#define Q_ATOMIC_INT16_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT16_TEST_AND_SET_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT16_FETCH_AND_STORE_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_ALWAYS_NATIVE
+
+#define Q_ATOMIC_INT64_IS_SUPPORTED
+#define Q_ATOMIC_INT64_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT64_TEST_AND_SET_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT64_FETCH_AND_STORE_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_ALWAYS_NATIVE
+
+template<> template<typename T> inline
+bool QBasicAtomicOps<1>::ref(T &_q_value)
 {
-    register T *result;
+    register T newValue;
+    register int result;
     asm volatile("0:\n"
-                 "ldrex %[result], [%[_q_value]]\n"
+                 "ldrexb %[newValue], [%[_q_value]]\n"
+                 "add %[newValue], %[newValue], #1\n"
+                 "strexb %[result], %[newValue], [%[_q_value]]\n"
+                 "teq %[result], #0\n"
+                 "bne 0b\n"
+                 : [newValue] "=&r" (newValue),
+                   [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [_q_value] "r" (&_q_value)
+                 : "cc", "memory");
+    return newValue != 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<1>::deref(T &_q_value)
+{
+    register T newValue;
+    register int result;
+    asm volatile("0:\n"
+                 "ldrexb %[newValue], [%[_q_value]]\n"
+                 "sub %[newValue], %[newValue], #1\n"
+                 "strexb %[result], %[newValue], [%[_q_value]]\n"
+                 "teq %[result], #0\n"
+                 "bne 0b\n"
+                 : [newValue] "=&r" (newValue),
+                   [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [_q_value] "r" (&_q_value)
+                 : "cc", "memory");
+    return newValue != 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+{
+    register T result;
+    asm volatile("0:\n"
+                 "ldrexb %[result], [%[_q_value]]\n"
                  "eors %[result], %[result], %[expectedValue]\n"
                  "itt eq\n"
-                 "strexeq %[result], %[newValue], [%[_q_value]]\n"
+                 "strexbeq %[result], %[newValue], [%[_q_value]]\n"
                  "teqeq %[result], #1\n"
                  "beq 0b\n"
                  : [result] "=&r" (result),
@@ -224,14 +297,14 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValu
     return result == 0;
 }
 
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
+template<> template <typename T> inline
+T QBasicAtomicOps<1>::fetchAndStoreRelaxed(T &_q_value, T newValue)
 {
-    register T *originalValue;
+    register T originalValue;
     register int result;
     asm volatile("0:\n"
-                 "ldrex %[originalValue], [%[_q_value]]\n"
-                 "strex %[result], %[newValue], [%[_q_value]]\n"
+                 "ldrexb %[originalValue], [%[_q_value]]\n"
+                 "strexb %[result], %[newValue], [%[_q_value]]\n"
                  "teq %[result], #0\n"
                  "bne 0b\n"
                  : [originalValue] "=&r" (originalValue),
@@ -243,27 +316,238 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
     return originalValue;
 }
 
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd)
+template<> template <typename T> inline
+T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
 {
-    register T *originalValue;
-    register T *newValue;
+    register T originalValue;
+    register T newValue;
     register int result;
     asm volatile("0:\n"
-                 "ldrex %[originalValue], [%[_q_value]]\n"
+                 "ldrexb %[originalValue], [%[_q_value]]\n"
                  "add %[newValue], %[originalValue], %[valueToAdd]\n"
-                 "strex %[result], %[newValue], [%[_q_value]]\n"
+                 "strexb %[result], %[newValue], [%[_q_value]]\n"
                  "teq %[result], #0\n"
                  "bne 0b\n"
                  : [originalValue] "=&r" (originalValue),
                    [newValue] "=&r" (newValue),
                    [result] "=&r" (result),
                    "+m" (_q_value)
-                 : [valueToAdd] "r" (valueToAdd * sizeof(T)),
+                 : [valueToAdd] "r" (valueToAdd * QAtomicAdditiveType<T>::AddScale),
                    [_q_value] "r" (&_q_value)
                  : "cc");
     return originalValue;
 }
+
+template<> template<typename T> inline
+bool QBasicAtomicOps<2>::ref(T &_q_value)
+{
+    register T newValue;
+    register int result;
+    asm volatile("0:\n"
+                 "ldrexh %[newValue], [%[_q_value]]\n"
+                 "add %[newValue], %[newValue], #1\n"
+                 "strexh %[result], %[newValue], [%[_q_value]]\n"
+                 "teq %[result], #0\n"
+                 "bne 0b\n"
+                 : [newValue] "=&r" (newValue),
+                   [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [_q_value] "r" (&_q_value)
+                 : "cc", "memory");
+    return newValue != 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<2>::deref(T &_q_value)
+{
+    register T newValue;
+    register int result;
+    asm volatile("0:\n"
+                 "ldrexh %[newValue], [%[_q_value]]\n"
+                 "sub %[newValue], %[newValue], #1\n"
+                 "strexh %[result], %[newValue], [%[_q_value]]\n"
+                 "teq %[result], #0\n"
+                 "bne 0b\n"
+                 : [newValue] "=&r" (newValue),
+                   [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [_q_value] "r" (&_q_value)
+                 : "cc", "memory");
+    return newValue != 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+{
+    register T result;
+    asm volatile("0:\n"
+                 "ldrexh %[result], [%[_q_value]]\n"
+                 "eors %[result], %[result], %[expectedValue]\n"
+                 "strexheq %[result], %[newValue], [%[_q_value]]\n"
+                 "teqeq %[result], #1\n"
+                 "beq 0b\n"
+                 : [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [expectedValue] "r" (expectedValue),
+                   [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    return result == 0;
+}
+
+template<> template <typename T> inline
+T QBasicAtomicOps<2>::fetchAndStoreRelaxed(T &_q_value, T newValue)
+{
+    register T originalValue;
+    register int result;
+    asm volatile("0:\n"
+                 "ldrexh %[originalValue], [%[_q_value]]\n"
+                 "strexh %[result], %[newValue], [%[_q_value]]\n"
+                 "teq %[result], #0\n"
+                 "bne 0b\n"
+                 : [originalValue] "=&r" (originalValue),
+                   [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    return originalValue;
+}
+
+template<> template <typename T> inline
+T QBasicAtomicOps<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+{
+    register T originalValue;
+    register T newValue;
+    register int result;
+    asm volatile("0:\n"
+                 "ldrexh %[originalValue], [%[_q_value]]\n"
+                 "add %[newValue], %[originalValue], %[valueToAdd]\n"
+                 "strexh %[result], %[newValue], [%[_q_value]]\n"
+                 "teq %[result], #0\n"
+                 "bne 0b\n"
+                 : [originalValue] "=&r" (originalValue),
+                   [newValue] "=&r" (newValue),
+                   [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [valueToAdd] "r" (valueToAdd * QAtomicAdditiveType<T>::AddScale),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    return originalValue;
+}
+
+// Explanation from GCC's source code (config/arm/arm.c) on the modifiers below:
+// Whenever you use "r" (dwordVariable), you get assigned a register pair:
+//  %[reg]  - lower-numbered register
+//  %H[reg] - higher-numbered register
+//  %Q[reg] - low part of the value
+//  %R[reg] - high part of the value
+// If this is a little-endian build, H and R are the same; otherwise, H and Q are the same.
+
+template<> template<typename T> inline
+bool QBasicAtomicOps<8>::ref(T &_q_value)
+{
+    register T newValue;
+    register int result;
+    asm volatile("0:\n"
+                 "ldrexd %[newValue], %H[newValue], [%[_q_value]]\n"
+                 "adds %Q[newValue], %Q[newValue], #1\n"
+                 "adc %R[newValue], %R[newValue], #0\n"
+                 "strexd %[result], %[newValue], %H[newValue], [%[_q_value]]\n"
+                 "teq %[result], #0\n"
+                 "bne 0b\n"
+                 : [newValue] "=&r" (newValue),
+                   [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [_q_value] "r" (&_q_value)
+                 : "cc", "memory");
+    return newValue != 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<8>::deref(T &_q_value)
+{
+    register T newValue;
+    register int result;
+    asm volatile("0:\n"
+                 "ldrexd %[newValue], %H[newValue], [%[_q_value]]\n"
+                 "subs %Q[newValue], %Q[newValue], #1\n"
+                 "sbc %R[newValue], %R[newValue], #0\n"
+                 "strexd %[result], %[newValue], %H[newValue], [%[_q_value]]\n"
+                 "teq %[result], #0\n"
+                 "bne 0b\n"
+                 : [newValue] "=&r" (newValue),
+                   [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [_q_value] "r" (&_q_value)
+                 : "cc", "memory");
+    return newValue != 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+{
+    register T result;
+    asm volatile("0:\n"
+                 "ldrexd %[result], %H[result], [%[_q_value]]\n"
+                 "eor %[result], %[result], %[expectedValue]\n"
+                 "eor %H[result], %H[result], %H[expectedValue]\n"
+                 "orrs %[result], %[result], %H[result]\n"
+                 "strexdeq %[result], %[newValue], %H[newValue], [%[_q_value]]\n"
+                 "teqeq %[result], #1\n"
+                 "beq 0b\n"
+                 : [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [expectedValue] "r" (expectedValue),
+                   [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    return quint32(result) == 0;
+}
+
+template<> template <typename T> inline
+T QBasicAtomicOps<8>::fetchAndStoreRelaxed(T &_q_value, T newValue)
+{
+    register T originalValue;
+    register int result;
+    asm volatile("0:\n"
+                 "ldrexd %[originalValue], %H[originalValue], [%[_q_value]]\n"
+                 "strexd %[result], %[newValue], %H[newValue], [%[_q_value]]\n"
+                 "teq %[result], #0\n"
+                 "bne 0b\n"
+                 : [originalValue] "=&r" (originalValue),
+                   [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    return originalValue;
+}
+
+template<> template <typename T> inline
+T QBasicAtomicOps<8>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+{
+    register T originalValue;
+    register T newValue;
+    register int result;
+    asm volatile("0:\n"
+                 "ldrexd %[originalValue], %H[originalValue], [%[_q_value]]\n"
+                 "adds %Q[newValue], %Q[originalValue], %Q[valueToAdd]\n"
+                 "adc %R[newValue], %R[originalValue], %R[valueToAdd]\n"
+                 "strexd %[result], %[newValue], %H[newValue], [%[_q_value]]\n"
+                 "teq %[result], #0\n"
+                 "bne 0b\n"
+                 : [originalValue] "=&r" (originalValue),
+                   [newValue] "=&r" (newValue),
+                   [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [valueToAdd] "r" (valueToAdd * QAtomicAdditiveType<T>::AddScale),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    return originalValue;
+}
+
+#endif
 
 #else
 // This is Q_CC_RVCT
@@ -415,140 +699,10 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueTo
 
 // common code
 
-inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
-{
-    bool returnValue = testAndSetRelaxed(expectedValue, newValue);
-    Q_DATA_MEMORY_BARRIER;
-    return returnValue;
-}
-
-inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
+template <int size> inline
+void QBasicAtomicOps<size>::orderedMemoryFence()
 {
     Q_DATA_MEMORY_BARRIER;
-    return testAndSetRelaxed(expectedValue, newValue);
-}
-
-inline bool QBasicAtomicInt::testAndSetOrdered(int expectedValue, int newValue)
-{
-    Q_DATA_MEMORY_BARRIER;
-    bool returnValue = testAndSetRelaxed(expectedValue, newValue);
-    Q_COMPILER_MEMORY_BARRIER;
-    return returnValue;
-}
-
-inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
-{
-    int returnValue = fetchAndStoreRelaxed(newValue);
-    Q_DATA_MEMORY_BARRIER;
-    return returnValue;
-}
-
-inline int QBasicAtomicInt::fetchAndStoreRelease(int newValue)
-{
-    Q_DATA_MEMORY_BARRIER;
-    return fetchAndStoreRelaxed(newValue);
-}
-
-inline int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
-{
-    Q_DATA_MEMORY_BARRIER;
-    int returnValue = fetchAndStoreRelaxed(newValue);
-    Q_COMPILER_MEMORY_BARRIER;
-    return returnValue;
-}
-
-
-inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
-{
-    int returnValue = fetchAndAddRelaxed(valueToAdd);
-    Q_DATA_MEMORY_BARRIER;
-    return returnValue;
-}
-
-inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
-{
-    Q_DATA_MEMORY_BARRIER;
-    return fetchAndAddRelaxed(valueToAdd);
-}
-
-inline int QBasicAtomicInt::fetchAndAddOrdered(int valueToAdd)
-{
-    Q_DATA_MEMORY_BARRIER;
-    int returnValue = fetchAndAddRelaxed(valueToAdd);
-    Q_COMPILER_MEMORY_BARRIER;
-    return returnValue;
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValue, T *newValue)
-{
-    bool returnValue = testAndSetRelaxed(expectedValue, newValue);
-    Q_DATA_MEMORY_BARRIER;
-    return returnValue;
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValue, T *newValue)
-{
-    Q_DATA_MEMORY_BARRIER;
-    return testAndSetRelaxed(expectedValue, newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValue, T *newValue)
-{
-    Q_DATA_MEMORY_BARRIER;
-    bool returnValue = testAndSetAcquire(expectedValue, newValue);
-    Q_COMPILER_MEMORY_BARRIER;
-    return returnValue;
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
-{
-    T *returnValue = fetchAndStoreRelaxed(newValue);
-    Q_DATA_MEMORY_BARRIER;
-    return returnValue;
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
-{
-    Q_DATA_MEMORY_BARRIER;
-    return fetchAndStoreRelaxed(newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
-{
-    Q_DATA_MEMORY_BARRIER;
-    T *returnValue = fetchAndStoreRelaxed(newValue);
-    Q_COMPILER_MEMORY_BARRIER;
-    return returnValue;
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueToAdd)
-{
-    T *returnValue = fetchAndAddRelaxed(valueToAdd);
-    Q_DATA_MEMORY_BARRIER;
-    return returnValue;
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueToAdd)
-{
-    Q_DATA_MEMORY_BARRIER;
-    return fetchAndAddRelaxed(valueToAdd);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueToAdd)
-{
-    Q_DATA_MEMORY_BARRIER;
-    T *returnValue = fetchAndAddRelaxed(valueToAdd);
-    Q_COMPILER_MEMORY_BARRIER;
-    return returnValue;
 }
 
 #undef Q_DATA_MEMORY_BARRIER

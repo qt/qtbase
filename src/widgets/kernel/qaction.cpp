@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -661,10 +661,6 @@ QActionGroup *QAction::actionGroup() const
     In toolbars, the icon is used as the tool button icon; in menus,
     it is displayed to the left of the menu text. There is no default
     icon.
-
-    On Symbian the icons which are passed to softkeys, i.e. to actions with
-    softkey role, need to have pixmap alpha channel correctly set otherwise
-    drawing artifacts will appear when softkey is pressed down.
 
     If a null icon (QIcon::isNull() is passed into this function,
     the icon of the action is cleared.

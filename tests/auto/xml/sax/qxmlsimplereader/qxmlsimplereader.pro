@@ -12,8 +12,4 @@ CONFIG += no_batch
 QT += network xml testlib
 QT -= gui
 
-wince* {
-   addFiles.files = encodings parser xmldocs
-   addFiles.path = .
-   DEPLOYMENT += addFiles
-}
+TESTDATA += encodings/* xmldocs/*

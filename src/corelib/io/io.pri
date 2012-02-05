@@ -87,7 +87,11 @@ win32 {
     wince* {
         SOURCES += io/qprocess_wince.cpp
     } else {
-        SOURCES += io/qprocess_win.cpp
+        HEADERS += \
+            io/qwinoverlappedionotifier_p.h
+        SOURCES += \
+            io/qprocess_win.cpp \
+            io/qwinoverlappedionotifier.cpp
     }
 } else:unix|integrity {
         SOURCES += \

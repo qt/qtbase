@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -188,7 +188,7 @@ Configure::Configure(int& argc, char** argv)
             if (syncqt_bat.open(QFile::WriteOnly)) {
                 QTextStream stream(&syncqt_bat);
                 stream << "@echo off" << endl
-                       << "call " << fixSeparators(sourcePath) << fixSeparators("/bin/syncqt.bat -outdir \"") << fixSeparators(buildPath) << "\" \"" << fixSeparators(sourcePath) << "\"" << endl;
+                       << "call " << fixSeparators(sourcePath) << fixSeparators("/bin/syncqt.bat -qtdir \"") << fixSeparators(buildPath) << "\" %*" << endl;
                 syncqt_bat.close();
             }
         }
@@ -244,19 +244,11 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "CE_CRT" ]          = "no";
     dictionary[ "CETEST" ]          = "auto";
     dictionary[ "CE_SIGNATURE" ]    = "no";
-    dictionary[ "SCRIPT" ]          = "auto";
-    dictionary[ "SCRIPTTOOLS" ]     = "auto";
-    dictionary[ "XMLPATTERNS" ]     = "auto";
-    dictionary[ "PHONON" ]          = "auto";
     dictionary[ "PHONON_BACKEND" ]  = "yes";
-    dictionary[ "MULTIMEDIA" ]      = "yes";
     dictionary[ "AUDIO_BACKEND" ]   = "auto";
     dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "DIRECTSHOW" ]      = "no";
-    dictionary[ "WEBKIT" ]          = "auto";
-    dictionary[ "V8" ]              = "yes";
     dictionary[ "V8SNAPSHOT" ]      = "auto";
-    dictionary[ "DECLARATIVE" ]     = "auto";
     dictionary[ "DECLARATIVE_DEBUG" ]= "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
     dictionary[ "DIRECTWRITE" ]     = "no";
@@ -305,15 +297,13 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "ZLIB" ]            = "auto";
 
+    dictionary[ "PCRE" ]            = "auto";
+
     dictionary[ "GIF" ]             = "auto";
-    dictionary[ "TIFF" ]            = "auto";
     dictionary[ "JPEG" ]            = "auto";
     dictionary[ "PNG" ]             = "auto";
-    dictionary[ "MNG" ]             = "auto";
-    dictionary[ "LIBTIFF" ]         = "auto";
     dictionary[ "LIBJPEG" ]         = "auto";
     dictionary[ "LIBPNG" ]          = "auto";
-    dictionary[ "LIBMNG" ]          = "auto";
     dictionary[ "FREETYPE" ]        = "yes";
 
     dictionary[ "ACCESSIBILITY" ]   = "yes";
@@ -410,7 +400,7 @@ void Configure::parseCmdLine()
 {
     int argCount = configCmdLine.size();
     int i = 0;
-    const QStringList imageFormats = QStringList() << "gif" << "png" << "mng" << "jpeg" << "tiff";
+    const QStringList imageFormats = QStringList() << "gif" << "png" << "jpeg";
 
 #if !defined(EVAL)
     if (argCount < 1) // skip rest if no arguments
@@ -547,18 +537,15 @@ void Configure::parseCmdLine()
             dictionary[ "ZLIB" ] = "system";
         }
 
+        else if (configCmdLine.at(i) == "-qt-pcre") {
+            dictionary[ "PCRE" ] = "qt";
+        } else if (configCmdLine.at(i) == "-system-pcre") {
+            dictionary[ "PCRE" ] = "system";
+        }
+
         // Image formats --------------------------------------------
         else if (configCmdLine.at(i) == "-no-gif")
             dictionary[ "GIF" ] = "no";
-
-        else if (configCmdLine.at(i) == "-no-libtiff") {
-            dictionary[ "TIFF"] = "no";
-            dictionary[ "LIBTIFF" ] = "no";
-        } else if (configCmdLine.at(i) == "-qt-libtiff") {
-            dictionary[ "LIBTIFF" ] = "qt";
-        } else if (configCmdLine.at(i) == "-system-libtiff") {
-            dictionary[ "LIBTIFF" ] = "system";
-        }
 
         else if (configCmdLine.at(i) == "-no-libjpeg") {
             dictionary[ "JPEG" ] = "no";
@@ -576,15 +563,6 @@ void Configure::parseCmdLine()
             dictionary[ "LIBPNG" ] = "qt";
         } else if (configCmdLine.at(i) == "-system-libpng") {
             dictionary[ "LIBPNG" ] = "system";
-        }
-
-        else if (configCmdLine.at(i) == "-no-libmng") {
-            dictionary[ "MNG" ] = "no";
-            dictionary[ "LIBMNG" ] = "no";
-        } else if (configCmdLine.at(i) == "-qt-libmng") {
-            dictionary[ "LIBMNG" ] = "qt";
-        } else if (configCmdLine.at(i) == "-system-libmng") {
-            dictionary[ "LIBMNG" ] = "system";
         }
 
         // Text Rendering --------------------------------------------
@@ -882,50 +860,16 @@ void Configure::parseCmdLine()
             dictionary[ "DBUS" ] = "yes";
         } else if (configCmdLine.at(i) == "-dbus-linked") {
             dictionary[ "DBUS" ] = "linked";
-        } else if (configCmdLine.at(i) == "-no-script") {
-            dictionary[ "SCRIPT" ] = "no";
-        } else if (configCmdLine.at(i) == "-script") {
-            dictionary[ "SCRIPT" ] = "yes";
-        } else if (configCmdLine.at(i) == "-no-scripttools") {
-            dictionary[ "SCRIPTTOOLS" ] = "no";
-        } else if (configCmdLine.at(i) == "-scripttools") {
-            dictionary[ "SCRIPTTOOLS" ] = "yes";
-        } else if (configCmdLine.at(i) == "-no-xmlpatterns") {
-            dictionary[ "XMLPATTERNS" ] = "no";
-        } else if (configCmdLine.at(i) == "-xmlpatterns") {
-            dictionary[ "XMLPATTERNS" ] = "yes";
-        } else if (configCmdLine.at(i) == "-no-multimedia") {
-            dictionary[ "MULTIMEDIA" ] = "no";
-        } else if (configCmdLine.at(i) == "-multimedia") {
-            dictionary[ "MULTIMEDIA" ] = "yes";
         } else if (configCmdLine.at(i) == "-audio-backend") {
             dictionary[ "AUDIO_BACKEND" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-audio-backend") {
             dictionary[ "AUDIO_BACKEND" ] = "no";
-        } else if (configCmdLine.at(i) == "-no-phonon") {
-            dictionary[ "PHONON" ] = "no";
-        } else if (configCmdLine.at(i) == "-phonon") {
-            dictionary[ "PHONON" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-phonon-backend") {
             dictionary[ "PHONON_BACKEND" ] = "no";
         } else if (configCmdLine.at(i) == "-phonon-backend") {
             dictionary[ "PHONON_BACKEND" ] = "yes";
         } else if (configCmdLine.at(i) == "-phonon-wince-ds9") {
             dictionary[ "DIRECTSHOW" ] = "yes";
-        } else if (configCmdLine.at(i) == "-no-webkit") {
-            dictionary[ "WEBKIT" ] = "no";
-        } else if (configCmdLine.at(i) == "-webkit") {
-            dictionary[ "WEBKIT" ] = "yes";
-        } else if (configCmdLine.at(i) == "-webkit-debug") {
-            dictionary[ "WEBKIT" ] = "debug";
-        } else if (configCmdLine.at(i) == "-no-v8") {
-            dictionary[ "V8" ] = "no";
-        } else if (configCmdLine.at(i) == "-v8") {
-            dictionary[ "V8" ] = "yes";
-        } else if (configCmdLine.at(i) == "-no-declarative") {
-            dictionary[ "DECLARATIVE" ] = "no";
-        } else if (configCmdLine.at(i) == "-declarative") {
-            dictionary[ "DECLARATIVE" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-declarative-debug") {
             dictionary[ "DECLARATIVE_DEBUG" ] = "no";
         } else if (configCmdLine.at(i) == "-declarative-debug") {
@@ -1442,8 +1386,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "MMX" ]                 = "no";
         dictionary[ "IWMMXT" ]              = "no";
         dictionary[ "CE_CRT" ]              = "yes";
-        dictionary[ "WEBKIT" ]              = "no";
-        dictionary[ "PHONON" ]              = "yes";
         dictionary[ "DIRECTSHOW" ]          = "no";
         // We only apply MMX/IWMMXT for mkspecs we know they work
         if (dictionary[ "XQMAKESPEC" ].startsWith("wincewm")) {
@@ -1519,10 +1461,6 @@ bool Configure::displayHelp()
 {
     if (dictionary[ "HELP" ] == "yes") {
         desc("Usage: configure\n"
-//      desc("Usage: configure [-prefix dir] [-bindir <dir>] [-libdir <dir>]\n"
-//                  "[-docdir <dir>] [-headerdir <dir>] [-plugindir <dir>]\n"
-//                  "[-importdir <dir>] [-datadir <dir>] [-translationdir <dir>]\n"
-//                  "[-examplesdir <dir>]\n"
                     "[-release] [-debug] [-debug-and-release] [-shared] [-static]\n"
                     "[-no-fast] [-fast] [-no-exceptions] [-exceptions]\n"
                     "[-no-accessibility] [-accessibility] [-no-rtti] [-rtti]\n"
@@ -1533,11 +1471,10 @@ bool Configure::displayHelp()
                     "[-no-qmake] [-qmake] [-dont-process] [-process]\n"
                     "[-no-style-<style>] [-qt-style-<style>] [-redo]\n"
                     "[-saveconfig <config>] [-loadconfig <config>]\n"
-                    "[-qt-zlib] [-system-zlib] [-no-gif] [-no-libpng]\n"
-                    "[-qt-libpng] [-system-libpng] [-no-libtiff] [-qt-libtiff]\n"
-                    "[-system-libtiff] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
-                    "[-no-libmng] [-qt-libmng] [-system-libmng] [-mmx]\n"
-                    "[-no-mmx] [-3dnow] [-no-3dnow] [-sse] [-no-sse] [-sse2] [-no-sse2]\n"
+                    "[-qt-zlib] [-system-zlib] [-qt-pcre] [-system-pcre] [-no-gif]\n"
+                    "[-no-libpng] [-qt-libpng] [-system-libpng]\n"
+                    "[-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
+                    "[-mmx] [-no-mmx] [-3dnow] [-no-3dnow] [-sse] [-no-sse] [-sse2] [-no-sse2]\n"
                     "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
                     "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
@@ -1550,24 +1487,6 @@ bool Configure::displayHelp()
         desc("Installation options:\n\n");
 
 #if !defined(EVAL)
-/*
-        desc(" These are optional, but you may specify install directories.\n\n", 0, 1);
-
-        desc(                   "-prefix dir",          "This will install everything relative to dir\n(default $QT_INSTALL_PREFIX)\n");
-
-        desc(" You may use these to separate different parts of the install:\n\n", 0, 1);
-
-        desc(                   "-bindir <dir>",        "Executables will be installed to dir\n(default PREFIX/bin)");
-        desc(                   "-libdir <dir>",        "Libraries will be installed to dir\n(default PREFIX/lib)");
-        desc(                   "-docdir <dir>",        "Documentation will be installed to dir\n(default PREFIX/doc)");
-        desc(                   "-headerdir <dir>",     "Headers will be installed to dir\n(default PREFIX/include)");
-        desc(                   "-plugindir <dir>",     "Plugins will be installed to dir\n(default PREFIX/plugins)");
-        desc(                   "-importdir <dir>",     "Imports for QML will be installed to dir\n(default PREFIX/imports)");
-        desc(                   "-datadir <dir>",       "Data used by Qt programs will be installed to dir\n(default PREFIX)");
-        desc(                   "-translationdir <dir>","Translations of Qt programs will be installed to dir\n(default PREFIX/translations)\n");
-        desc(                   "-examplesdir <dir>",   "Examples will be installed to dir\n(default PREFIX/examples)");
-*/
-
         desc("Configure options:\n\n");
 
         desc(" The defaults (*) are usually acceptable. A plus (+) denotes a default value"
@@ -1655,19 +1574,14 @@ bool Configure::displayHelp()
         desc("ZLIB", "qt",      "-qt-zlib",             "Use the zlib bundled with Qt.");
         desc("ZLIB", "system",  "-system-zlib",         "Use zlib from the operating system.\nSee http://www.gzip.org/zlib\n");
 
+        desc("PCRE", "qt",       "-qt-pcre",            "Use the PCRE library bundled with Qt.");
+        desc("PCRE", "qt",       "-system-pcre",        "Use the PCRE library from the operating system.\nSee http://pcre.org/\n");
+
         desc("GIF", "no",       "-no-gif",              "Do not compile GIF reading support.");
 
         desc("LIBPNG", "no",    "-no-libpng",           "Do not compile PNG support.");
         desc("LIBPNG", "qt",    "-qt-libpng",           "Use the libpng bundled with Qt.");
         desc("LIBPNG", "system","-system-libpng",       "Use libpng from the operating system.\nSee http://www.libpng.org/pub/png\n");
-
-        desc("LIBMNG", "no",    "-no-libmng",           "Do not compile MNG support.");
-        desc("LIBMNG", "qt",    "-qt-libmng",           "Use the libmng bundled with Qt.");
-        desc("LIBMNG", "system","-system-libmng",       "Use libmng from the operating system.\nSee See http://www.libmng.com\n");
-
-        desc("LIBTIFF", "no",    "-no-libtiff",         "Do not compile TIFF support.");
-        desc("LIBTIFF", "qt",    "-qt-libtiff",         "Use the libtiff bundled with Qt.");
-        desc("LIBTIFF", "system","-system-libtiff",     "Use libtiff from the operating system.\nSee http://www.libtiff.org\n");
 
         desc("LIBJPEG", "no",    "-no-libjpeg",         "Do not compile JPEG support.");
         desc("LIBJPEG", "qt",    "-qt-libjpeg",         "Use the libjpeg bundled with Qt.");
@@ -1714,25 +1628,10 @@ bool Configure::displayHelp()
         desc("DBUS", "no",       "-no-dbus",            "Do not compile in D-Bus support");
         desc("DBUS", "yes",      "-dbus",               "Compile in D-Bus support and load libdbus-1 dynamically");
         desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1");
-        desc("PHONON", "no",    "-no-phonon",           "Do not compile in the Phonon module");
-        desc("PHONON", "yes",   "-phonon",              "Compile the Phonon module (Phonon is built if a decent C++ compiler is used.)");
         desc("PHONON_BACKEND","no", "-no-phonon-backend","Do not compile the platform-specific Phonon backend-plugin");
         desc("PHONON_BACKEND","yes","-phonon-backend",  "Compile in the platform-specific Phonon backend-plugin");
-        desc("MULTIMEDIA", "no", "-no-multimedia",      "Do not compile the multimedia module");
-        desc("MULTIMEDIA", "yes","-multimedia",         "Compile in multimedia module");
         desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into QtMultimedia");
         desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into QtMultimedia");
-        desc("WEBKIT", "no",    "-no-webkit",           "Do not compile in the WebKit module");
-        desc("WEBKIT", "yes",   "-webkit",              "Compile in the WebKit module (WebKit is built if a decent C++ compiler is used.)");
-        desc("WEBKIT", "debug", "-webkit-debug",        "Compile in the WebKit module with debug symbols.");
-        desc("SCRIPT", "no",    "-no-script",           "Do not build the QtScript module.");
-        desc("SCRIPT", "yes",   "-script",              "Build the QtScript module.");
-        desc("SCRIPTTOOLS", "no", "-no-scripttools",    "Do not build the QtScriptTools module.");
-        desc("SCRIPTTOOLS", "yes", "-scripttools",      "Build the QtScriptTools module.");
-        desc("V8", "no",        "-no-v8",               "Do not build the V8 module.");
-        desc("V8", "yes",       "-v8",                  "Build the V8 module.");
-        desc("DECLARATIVE", "no",    "-no-declarative", "Do not build the declarative module");
-        desc("DECLARATIVE", "yes",   "-declarative",    "Build the declarative module");
         desc("DECLARATIVE_DEBUG", "no",    "-no-declarative-debug", "Do not build the declarative debugging support");
         desc("DECLARATIVE_DEBUG", "yes",   "-declarative-debug",    "Build the declarative debugging support");
         desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering");
@@ -1873,10 +1772,9 @@ QString Configure::defaultTo(const QString &option)
 {
     // We prefer using the system version of the 3rd party libs
     if (option == "ZLIB"
+        || option == "PCRE"
         || option == "LIBJPEG"
-        || option == "LIBPNG"
-        || option == "LIBMNG"
-        || option == "LIBTIFF")
+        || option == "LIBPNG")
         return "system";
 
     // PNG is always built-in, never a plugin
@@ -1897,8 +1795,6 @@ QString Configure::defaultTo(const QString &option)
             || option == "SQL_SQLITE2"
             || option == "SQL_IBASE"
             || option == "JPEG"
-            || option == "MNG"
-            || option == "TIFF"
             || option == "GIF")
             return "plugin";
     }
@@ -1931,14 +1827,13 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "ZLIB")
         available = findFile("zlib.h");
 
+    else if (part == "PCRE")
+        available = findFile("pcre.h");
+
     else if (part == "LIBJPEG")
         available = findFile("jpeglib.h");
     else if (part == "LIBPNG")
         available = findFile("png.h");
-    else if (part == "LIBMNG")
-        available = findFile("libmng.h");
-    else if (part == "LIBTIFF")
-        available = findFile("tiffio.h");
     else if (part == "SQL_MYSQL")
         available = findFile("mysql.h") && findFile("libmySQL.lib");
     else if (part == "SQL_ODBC")
@@ -1998,8 +1893,6 @@ bool Configure::checkAvailability(const QString &part)
     }
     else if (part == "INCREDIBUILD_XGE")
         available = findFile("BuildConsole.exe") && findFile("xgConsole.exe");
-    else if (part == "XMLPATTERNS")
-        available = dictionary.value("EXCEPTIONS") == "yes";
     else if (part == "PHONON") {
         available = findFile("vmr9.h") && findFile("dshow.h") && findFile("dmo.h") && findFile("dmodshow.h")
             && (findFile("strmiids.lib") || findFile("libstrmiids.a"))
@@ -2020,17 +1913,8 @@ bool Configure::checkAvailability(const QString &part)
         }
     } else if (part == "WMSDK") {
         available = findFile("wmsdk.h");
-    } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS" || part == "V8" || part == "DECLARATIVE") {
-        available = true;
     } else if (part == "V8SNAPSHOT") {
         available = true;
-    } else if (part == "WEBKIT") {
-        available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-msvc2010") || (dictionary.value("QMAKESPEC") == "win32-g++");
-        if (dictionary[ "SHARED" ] == "no") {
-            cout << endl << "WARNING: Using static linking will disable the WebKit module." << endl
-                 << endl;
-            available = false;
-        }
     } else if (part == "AUDIO_BACKEND") {
         available = true;
     } else if (part == "DIRECTWRITE") {
@@ -2055,6 +1939,10 @@ void Configure::autoDetection()
     if (dictionary["ZLIB"] == "auto")
         dictionary["ZLIB"] =  checkAvailability("ZLIB") ? defaultTo("ZLIB") : "qt";
 
+    // PCRE detection
+    if (dictionary["PCRE"] == "auto")
+        dictionary["PCRE"] = checkAvailability("PCRE") ? defaultTo("PCRE") : "qt";
+
     // Image format detection
     if (dictionary["GIF"] == "auto")
         dictionary["GIF"] = defaultTo("GIF");
@@ -2062,18 +1950,10 @@ void Configure::autoDetection()
         dictionary["JPEG"] = defaultTo("JPEG");
     if (dictionary["PNG"] == "auto")
         dictionary["PNG"] = defaultTo("PNG");
-    if (dictionary["MNG"] == "auto")
-        dictionary["MNG"] = defaultTo("MNG");
-    if (dictionary["TIFF"] == "auto")
-        dictionary["TIFF"] = dictionary["ZLIB"] == "no" ? "no" : defaultTo("TIFF");
     if (dictionary["LIBJPEG"] == "auto")
         dictionary["LIBJPEG"] = checkAvailability("LIBJPEG") ? defaultTo("LIBJPEG") : "qt";
     if (dictionary["LIBPNG"] == "auto")
         dictionary["LIBPNG"] = checkAvailability("LIBPNG") ? defaultTo("LIBPNG") : "qt";
-    if (dictionary["LIBMNG"] == "auto")
-        dictionary["LIBMNG"] = checkAvailability("LIBMNG") ? defaultTo("LIBMNG") : "qt";
-    if (dictionary["LIBTIFF"] == "auto")
-        dictionary["LIBTIFF"] = checkAvailability("LIBTIFF") ? defaultTo("LIBTIFF") : "qt";
 
     // SQL detection (not on by default)
     if (dictionary["SQL_MYSQL"] == "auto")
@@ -2111,22 +1991,8 @@ void Configure::autoDetection()
         dictionary["OPENSSL"] = checkAvailability("OPENSSL") ? "yes" : "no";
     if (dictionary["DBUS"] == "auto")
         dictionary["DBUS"] = checkAvailability("DBUS") ? "yes" : "no";
-    if (dictionary["SCRIPT"] == "auto")
-        dictionary["SCRIPT"] = checkAvailability("SCRIPT") ? "yes" : "no";
-    if (dictionary["SCRIPTTOOLS"] == "auto")
-        dictionary["SCRIPTTOOLS"] = dictionary["SCRIPT"] == "yes" ? "yes" : "no";
-    if (dictionary["XMLPATTERNS"] == "auto")
-        dictionary["XMLPATTERNS"] = checkAvailability("XMLPATTERNS") ? "yes" : "no";
-    if (dictionary["PHONON"] == "auto")
-        dictionary["PHONON"] = checkAvailability("PHONON") ? "yes" : "no";
-    if (dictionary["WEBKIT"] == "auto")
-        dictionary["WEBKIT"] = checkAvailability("WEBKIT") ? "yes" : "no";
-    if (dictionary["V8"] == "auto")
-        dictionary["V8"] = checkAvailability("V8") ? "yes" : "no";
     if (dictionary["V8SNAPSHOT"] == "auto")
         dictionary["V8SNAPSHOT"] = (dictionary["V8"] == "yes") && checkAvailability("V8SNAPSHOT") ? "yes" : "no";
-    if (dictionary["DECLARATIVE"] == "auto")
-        dictionary["DECLARATIVE"] = dictionary["V8"] == "yes" ? "yes" : "no";
     if (dictionary["DECLARATIVE_DEBUG"] == "auto")
         dictionary["DECLARATIVE_DEBUG"] = dictionary["DECLARATIVE"] == "yes" ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
@@ -2184,16 +2050,6 @@ bool Configure::verifyConfiguration()
             if (!(l.contains(dictionary["ARM_FPU_TYPE"])))
                     cout << QString("WARNING: Using unsupported fpu flag: %1").arg(dictionary["ARM_FPU_TYPE"]) << endl;
     }
-    if (dictionary["DECLARATIVE"] == "yes" && dictionary["V8"] == "no") {
-        cout << "WARNING: To be able to compile QtDeclarative we need to also compile the" << endl
-             << "V8 module. If you continue, we will turn on the V8 module." << endl
-             << "(Press any key to continue..)";
-        if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
-            exit(0);      // Exit cleanly for Ctrl+C
-
-        dictionary["SCRIPT"] = "yes";
-    }
-
     if (dictionary["DIRECTWRITE"] == "yes" && !checkAvailability("DIRECTWRITE")) {
         cout << "WARNING: To be able to compile the DirectWrite font engine you will" << endl
              << "need the Microsoft DirectWrite and Microsoft Direct2D development" << endl
@@ -2217,10 +2073,8 @@ bool Configure::verifyConfiguration()
 
  Things that do not affect the Qt API/ABI:
      system-jpeg no-jpeg jpeg
-     system-mng no-mng mng
      system-png no-png png
      system-zlib no-zlib zlib
-     system-tiff no-tiff tiff
      no-gif gif
      dll staticlib
 
@@ -2276,18 +2130,15 @@ void Configure::generateOutputVars()
     else if (dictionary[ "ZLIB" ] == "system")
         qtConfig += "system-zlib";
 
+    // PCRE ---------------------------------------------------------
+    if (dictionary[ "PCRE" ] == "qt")
+        qmakeConfig += "pcre";
+
     // Image formates -----------------------------------------------
     if (dictionary[ "GIF" ] == "no")
         qtConfig += "no-gif";
     else if (dictionary[ "GIF" ] == "yes")
         qtConfig += "gif";
-
-    if (dictionary[ "TIFF" ] == "no")
-        qtConfig += "no-tiff";
-    else if (dictionary[ "TIFF" ] == "yes")
-        qtConfig += "tiff";
-    if (dictionary[ "LIBTIFF" ] == "system")
-        qtConfig += "system-tiff";
 
     if (dictionary[ "JPEG" ] == "no")
         qtConfig += "no-jpeg";
@@ -2302,13 +2153,6 @@ void Configure::generateOutputVars()
         qtConfig += "png";
     if (dictionary[ "LIBPNG" ] == "system")
         qtConfig += "system-png";
-
-    if (dictionary[ "MNG" ] == "no")
-        qtConfig += "no-mng";
-    else if (dictionary[ "MNG" ] == "yes")
-        qtConfig += "mng";
-    if (dictionary[ "LIBMNG" ] == "system")
-        qtConfig += "system-mng";
 
     // Text rendering --------------------------------------------------
     if (dictionary[ "FREETYPE" ] == "yes")
@@ -2401,6 +2245,9 @@ void Configure::generateOutputVars()
     qmakeConfig += dictionary[ "BUILD" ];
     dictionary[ "QMAKE_OUTDIR" ] = dictionary[ "BUILD" ];
 
+    if (dictionary["MSVC_MP"] == "yes")
+        qmakeConfig += "msvc_mp";
+
     if (dictionary[ "SHARED" ] == "yes") {
         QString version = dictionary[ "VERSION" ];
         if (!version.isEmpty()) {
@@ -2439,6 +2286,7 @@ void Configure::generateOutputVars()
         qtConfig += "egl";
     }
 
+    // ### Vestige
      if (dictionary["DIRECTSHOW"] == "yes")
         qtConfig += "directshow";
 
@@ -2455,52 +2303,13 @@ void Configure::generateOutputVars()
     if (dictionary[ "CETEST" ] == "yes")
         qtConfig += "cetest";
 
-// No longer needed after modularization
-//    if (dictionary[ "SCRIPT" ] == "yes")
-//        qtConfig += "script";
+    // ### Vestige
+    if (dictionary["PHONON_BACKEND"] == "yes")
+        qtConfig += "phonon-backend";
 
-// No longer needed after modularization
-//    if (dictionary[ "SCRIPTTOOLS" ] == "yes") {
-//        if (dictionary[ "SCRIPT" ] == "no") {
-//            cout << "QtScriptTools was requested, but it can't be built due to QtScript being "
-//                    "disabled." << endl;
-//            dictionary[ "DONE" ] = "error";
-//        }
-//        qtConfig += "scripttools";
-//    }
-
-// No longer needed after modularization
-//    if (dictionary[ "XMLPATTERNS" ] == "yes")
-//        qtConfig += "xmlpatterns";
-
-    if (dictionary["PHONON"] == "yes") {
-        // No longer needed after modularization
-        //qtConfig += "phonon";
-        if (dictionary["PHONON_BACKEND"] == "yes")
-            qtConfig += "phonon-backend";
-    }
-
-    if (dictionary["MULTIMEDIA"] == "yes") {
-        // No longer needed after modularization
-        //qtConfig += "multimedia";
-        if (dictionary["AUDIO_BACKEND"] == "yes")
-            qtConfig += "audio-backend";
-    }
-
-    if (dictionary["WEBKIT"] != "no") {
-        if (dictionary["WEBKIT"] == "debug")
-            qtConfig += "webkit-debug";
-    }
-
-// No longer needed after modularization
-//    if (dictionary["DECLARATIVE"] == "yes") {
-//        if (dictionary[ "V8" ] == "no") {
-//            cout << "QtDeclarative was requested, but it can't be built due to V8 being "
-//                    "disabled." << endl;
-//            dictionary[ "DONE" ] = "error";
-//        }
-//        qtConfig += "declarative";
-//    }
+    // ### Vestige
+    if (dictionary["AUDIO_BACKEND"] == "yes")
+        qtConfig += "audio-backend";
 
     if (dictionary["DIRECTWRITE"] == "yes")
         qtConfig += "directwrite";
@@ -2508,14 +2317,12 @@ void Configure::generateOutputVars()
     if (dictionary[ "NATIVE_GESTURES" ] == "yes")
         qtConfig += "native-gestures";
 
-    // We currently have no switch for QtSvg, so add it unconditionally.
-    qtConfig += "svg";
+    // We currently have no switch for QtConcurrent, so add it unconditionally.
+    qtConfig += "concurrent";
 
-    if (dictionary[ "V8" ] == "yes") {
-        qtConfig += "v8";
-        if (dictionary[ "V8SNAPSHOT" ] == "yes")
-            qtConfig += "v8snapshot";
-    }
+    // ### Vestige
+    if (dictionary[ "V8SNAPSHOT" ] == "yes")
+        qtConfig += "v8snapshot";
 
     // Add config levels --------------------------------------------
     QStringList possible_configs = QStringList()
@@ -2646,7 +2453,7 @@ void Configure::generateCachefile()
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
             cacheStream << (*var) << endl;
         }
-        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << " incremental msvc_mp depend_includepath no_private_qt_headers_warning QTDIR_build" << endl;
+        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << " incremental depend_includepath no_private_qt_headers_warning QTDIR_build" << endl;
 
         cacheStream.flush();
         cacheFile.close();
@@ -2742,8 +2549,6 @@ void Configure::generateCachefile()
 
         if (dictionary[ "LTCG" ] == "yes")
             configStream << " ltcg";
-        if (dictionary[ "MSVC_MP" ] == "yes")
-            configStream << " msvc_mp";
         if (dictionary[ "STL" ] == "yes")
             configStream << " stl";
         if (dictionary[ "EXCEPTIONS" ] == "yes")
@@ -2903,9 +2708,7 @@ void Configure::generateConfigfiles()
 
         if (dictionary["GIF"] == "yes")              qconfigList += "QT_BUILTIN_GIF_READER=1";
         if (dictionary["PNG"] != "yes")              qconfigList += "QT_NO_IMAGEFORMAT_PNG";
-        if (dictionary["MNG"] != "yes")              qconfigList += "QT_NO_IMAGEFORMAT_MNG";
         if (dictionary["JPEG"] != "yes")             qconfigList += "QT_NO_IMAGEFORMAT_JPEG";
-        if (dictionary["TIFF"] != "yes")             qconfigList += "QT_NO_IMAGEFORMAT_TIFF";
         if (dictionary["ZLIB"] == "no") {
             qconfigList += "QT_NO_ZLIB";
             qconfigList += "QT_NO_COMPRESS";
@@ -2921,15 +2724,7 @@ void Configure::generateConfigfiles()
         }
         if (dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if (dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
-        if (dictionary["WEBKIT"] == "no")            qconfigList += "QT_NO_WEBKIT";
-        if (dictionary["V8"] == "no")                qconfigList += "QT_NO_V8";
-        if (dictionary["DECLARATIVE"] == "no")       qconfigList += "QT_NO_DECLARATIVE";
         if (dictionary["DECLARATIVE_DEBUG"] == "no") qconfigList += "QDECLARATIVE_NO_DEBUG_PROTOCOL";
-        if (dictionary["PHONON"] == "no")            qconfigList += "QT_NO_PHONON";
-        if (dictionary["MULTIMEDIA"] == "no")        qconfigList += "QT_NO_MULTIMEDIA";
-        if (dictionary["XMLPATTERNS"] == "no")       qconfigList += "QT_NO_XMLPATTERNS";
-        if (dictionary["SCRIPT"] == "no")            qconfigList += "QT_NO_SCRIPT";
-        if (dictionary["SCRIPTTOOLS"] == "no")       qconfigList += "QT_NO_SCRIPTTOOLS";
         if (dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
         if (dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
@@ -3190,33 +2985,14 @@ void Configure::displayConfig()
     cout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
     cout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
     cout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
-    cout << "QtXmlPatterns support......." << dictionary[ "XMLPATTERNS" ] << endl;
-    cout << "Phonon support.............." << dictionary[ "PHONON" ] << endl;
-    cout << "QtMultimedia support........" << dictionary[ "MULTIMEDIA" ] << endl;
-    {
-        QString webkit = dictionary[ "WEBKIT" ];
-        if (webkit == "debug")
-            webkit = "yes (debug)";
-        cout << "WebKit support.............." << webkit << endl;
-    }
-    {
-        QString declarative = dictionary[ "DECLARATIVE" ];
-        cout << "Declarative support........." << declarative << endl;
-        if (declarative == "yes")
-            cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
-    }
-    cout << "V8 support.................." << dictionary[ "V8" ] << endl;
-    cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
-    cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
+    cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
     cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
 
     cout << "Third Party Libraries:" << endl;
     cout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;
     cout << "    GIF support............." << dictionary[ "GIF" ] << endl;
-    cout << "    TIFF support............" << dictionary[ "TIFF" ] << endl;
     cout << "    JPEG support............" << dictionary[ "JPEG" ] << endl;
     cout << "    PNG support............." << dictionary[ "PNG" ] << endl;
-    cout << "    MNG support............." << dictionary[ "MNG" ] << endl;
     cout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl << endl;
 
     cout << "Styles:" << endl;
@@ -3260,9 +3036,6 @@ void Configure::displayConfig()
         cout << "Cetest support.............." << dictionary[ "CETEST" ] << endl;
         cout << "Signature..................." << dictionary[ "CE_SIGNATURE"] << endl << endl;
     }
-
-    if (dictionary["ASSISTANT_WEBKIT"] == "yes")
-        cout << "Using WebKit as html rendering engine in Qt Assistant." << endl;
 
     if (checkAvailability("INCREDIBUILD_XGE"))
         cout << "Using IncrediBuild XGE......" << dictionary["INCREDIBUILD_XGE"] << endl;
@@ -3319,6 +3092,7 @@ void Configure::generateHeaders()
             cout << "Running syncqt..." << endl;
             QStringList args;
             args += buildPath + "/bin/syncqt.bat";
+            args += sourcePath;
             QStringList env;
             env += QString("QTDIR=" + sourcePath);
             env += QString("PATH=" + buildPath + "/bin/;" + qgetenv("PATH"));
@@ -3349,8 +3123,8 @@ void Configure::buildQmake()
             if (out.open(QFile::WriteOnly | QFile::Text)) {
                 QTextStream stream(&out);
                 stream << "#AutoGenerated by configure.exe" << endl
-                    << "BUILD_PATH = " << QDir::convertSeparators(buildPath) << endl
-                    << "SOURCE_PATH = " << QDir::convertSeparators(sourcePath) << endl;
+                    << "BUILD_PATH = " << QDir::toNativeSeparators(buildPath) << endl
+                    << "SOURCE_PATH = " << QDir::toNativeSeparators(sourcePath) << endl;
                 stream << "QMAKESPEC = " << dictionary["QMAKESPEC"] << endl
                        << "QT_VERSION = " << dictionary["VERSION"] << endl;
 

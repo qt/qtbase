@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,34 +45,46 @@
 #include <QtCore/qnamespace.h>
 #include <QtGui/qsurfaceformat.h>
 
+#include <QtCore/qsize.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QPlatformSurface;
+
+class QSurfacePrivate;
 
 class Q_GUI_EXPORT QSurface
 {
 public:
-    enum SurfaceType {
+    enum SurfaceClass {
         Window
+    };
+
+    enum SurfaceType {
+        RasterSurface,
+        OpenGLSurface
     };
 
     virtual ~QSurface();
 
-    SurfaceType surfaceType() const;
+    SurfaceClass surfaceClass() const;
 
     virtual QSurfaceFormat format() const = 0;
     virtual QPlatformSurface *surfaceHandle() const = 0;
 
-private:
-    QSurface(SurfaceType type);
+    virtual SurfaceType surfaceType() const = 0;
 
-    SurfaceType m_type;
+    virtual QSize size() const = 0;
 
-    friend class QWindow;
+protected:
+    QSurface(SurfaceClass type);
+
+    SurfaceClass m_type;
+
+    QSurfacePrivate *m_reserved;
 };
 
 QT_END_NAMESPACE

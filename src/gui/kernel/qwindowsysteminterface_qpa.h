@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,7 +60,6 @@ QT_BEGIN_NAMESPACE
 class QMimeData;
 class QTouchDevice;
 
-QT_MODULE(Gui)
 
 class Q_GUI_EXPORT QWindowSystemInterface
 {
@@ -120,6 +119,8 @@ public:
     // Drag and drop. These events are sent immediately.
     static Qt::DropAction handleDrag(QWindow *w, QMimeData *dropData, const QPoint &p);
     static Qt::DropAction handleDrop(QWindow *w, QMimeData *dropData, const QPoint &p);
+
+    static bool handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
 
     // Changes to the screen
     static void handleScreenOrientationChange(QScreen *screen, Qt::ScreenOrientation newOrientation);

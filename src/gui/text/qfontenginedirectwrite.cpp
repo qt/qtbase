@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -641,10 +641,11 @@ QImage QFontEngineDirectWrite::imageForGlyph(glyph_t t,
 
 QImage QFontEngineDirectWrite::alphaRGBMapForGlyph(glyph_t t,
                                                    QFixed subPixelPosition,
-                                                   int margin,
                                                    const QTransform &xform)
 {
-    QImage mask = imageForGlyph(t, subPixelPosition, margin, xform);
+    QImage mask = imageForGlyph(t, subPixelPosition,
+                                glyphMargin(QFontEngineGlyphCache::Raster_RGBMask),
+                                xform);
     return mask.depth() == 32
            ? mask
            : mask.convertToFormat(QImage::Format_RGB32);

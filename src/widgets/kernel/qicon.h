@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,11 +51,9 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QIconPrivate;
 class QIconEngine;
-class QIconEngineV2;
 
 class Q_WIDGETS_EXPORT QIcon
 {
@@ -68,7 +66,6 @@ public:
     QIcon(const QIcon &other);
     explicit QIcon(const QString &fileName); // file or resource name
     explicit QIcon(QIconEngine *engine);
-    explicit QIcon(QIconEngineV2 *engine);
     ~QIcon();
     QIcon &operator=(const QIcon &other);
 #ifdef Q_COMPILER_RVALUE_REFS

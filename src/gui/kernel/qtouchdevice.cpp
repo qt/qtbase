@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -177,11 +177,11 @@ void QTouchDevice::setName(const QString &name)
 
 typedef QList<QTouchDevice *> TouchDevices;
 Q_GLOBAL_STATIC(TouchDevices, deviceList)
-Q_GLOBAL_STATIC(QMutex, devicesMutex)
+static QBasicMutex devicesMutex;
 
 static void cleanupDevicesList()
 {
-    QMutexLocker lock(devicesMutex());
+    QMutexLocker lock(&devicesMutex);
     qDeleteAll(*deviceList());
     deviceList()->clear();
 }
@@ -193,7 +193,7 @@ static void cleanupDevicesList()
   */
 QList<const QTouchDevice *> QTouchDevice::devices()
 {
-    QMutexLocker lock(devicesMutex());
+    QMutexLocker lock(&devicesMutex);
     QList<QTouchDevice *> *devList = deviceList();
     QList<const QTouchDevice *> constDevList;
     for (int i = 0, count = devList->count(); i != count; ++i)
@@ -206,7 +206,7 @@ QList<const QTouchDevice *> QTouchDevice::devices()
   */
 bool QTouchDevicePrivate::isRegistered(QTouchDevice *dev)
 {
-    QMutexLocker lock(devicesMutex());
+    QMutexLocker lock(&devicesMutex);
     return deviceList()->contains(dev);
 }
 
@@ -215,7 +215,7 @@ bool QTouchDevicePrivate::isRegistered(QTouchDevice *dev)
   */
 void QTouchDevicePrivate::registerDevice(QTouchDevice *dev)
 {
-    QMutexLocker lock(devicesMutex());
+    QMutexLocker lock(&devicesMutex);
     if (deviceList()->isEmpty())
         qAddPostRoutine(cleanupDevicesList);
     deviceList()->append(dev);

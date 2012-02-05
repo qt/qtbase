@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,19 +50,18 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class Q_GUI_EXPORT QPlatformSurface
 {
 public:
     virtual QSurfaceFormat format() const = 0;
 
-    QSurface::SurfaceType surfaceType() const;
+    QSurface::SurfaceClass surfaceClass() const;
 
 private:
-    QPlatformSurface(QSurface::SurfaceType type);
+    QPlatformSurface(QSurface::SurfaceClass type);
 
-    QSurface::SurfaceType m_type;
+    QSurface::SurfaceClass m_type;
 
     friend class QPlatformWindow;
 };

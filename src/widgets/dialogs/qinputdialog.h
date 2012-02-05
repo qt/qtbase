@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,7 +50,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_INPUTDIALOG
 
@@ -167,7 +166,6 @@ public:
 
     void setVisible(bool visible);
 
-#ifdef Q_QDOC
     static QString getText(QWidget *parent, const QString &title, const QString &label,
                            QLineEdit::EchoMode echo = QLineEdit::Normal,
                            const QString &text = QString(), bool *ok = 0, Qt::WindowFlags flags = 0,
@@ -176,22 +174,7 @@ public:
                            const QStringList &items, int current = 0, bool editable = true,
                            bool *ok = 0, Qt::WindowFlags flags = 0,
                            Qt::InputMethodHints inputMethodHints = Qt::ImhNone);
-#else
-    static QString getText(QWidget *parent, const QString &title, const QString &label,
-                           QLineEdit::EchoMode echo = QLineEdit::Normal,
-                           const QString &text = QString(), bool *ok = 0, Qt::WindowFlags flags = 0);
-    static QString getItem(QWidget *parent, const QString &title, const QString &label,
-                           const QStringList &items, int current = 0, bool editable = true,
-                           bool *ok = 0, Qt::WindowFlags flags = 0);
-    static QString getText(QWidget *parent, const QString &title, const QString &label,
-                           QLineEdit::EchoMode echo,
-                           const QString &text, bool *ok, Qt::WindowFlags flags,
-                           Qt::InputMethodHints inputMethodHints);
-    static QString getItem(QWidget *parent, const QString &title, const QString &label,
-                           const QStringList &items, int current, bool editable,
-                           bool *ok, Qt::WindowFlags flags,
-                           Qt::InputMethodHints inputMethodHints);
-#endif
+
     static int getInt(QWidget *parent, const QString &title, const QString &label, int value = 0,
                       int minValue = -2147483647, int maxValue = 2147483647,
                       int step = 1, bool *ok = 0, Qt::WindowFlags flags = 0);
@@ -199,11 +182,14 @@ public:
                             double minValue = -2147483647, double maxValue = 2147483647,
                             int decimals = 1, bool *ok = 0, Qt::WindowFlags flags = 0);
 
-    // obsolete
-    static int getInteger(QWidget *parent, const QString &title, const QString &label, int value = 0,
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED static inline int getInteger(QWidget *parent, const QString &title, const QString &label, int value = 0,
                           int minValue = -2147483647, int maxValue = 2147483647,
-                          int step = 1, bool *ok = 0, Qt::WindowFlags flags = 0);
-
+                          int step = 1, bool *ok = 0, Qt::WindowFlags flags = 0)
+    {
+        return getInt(parent, title, label, value, minValue, maxValue, step, ok, flags);
+    }
+#endif
 
 Q_SIGNALS:
     // ### emit signals!
@@ -214,9 +200,8 @@ Q_SIGNALS:
     void doubleValueChanged(double value);
     void doubleValueSelected(double value);
 
-
 public:
-    void done(int result); // ### Qt 5: Make protected.
+    void done(int result);
 
 private:
     Q_DISABLE_COPY(QInputDialog)

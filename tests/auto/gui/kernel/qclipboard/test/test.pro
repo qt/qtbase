@@ -12,12 +12,11 @@ win32 {
 }
 
 wince* {
-  copier.files = ../copier/copier.exe
-  copier.path = copier
-  paster.files = ../paster/paster.exe  
-  paster.path = paster
-  
-  DEPLOYMENT += copier paster rsc reg_resource
+  DEPLOYMENT += rsc reg_resource
 }
 
 mac: CONFIG += insignificant_test # QTBUG-23057
+
+load(testcase) # for target.path and installTestHelperApp()
+installTestHelperApp("../copier/copier",copier,copier)
+installTestHelperApp("../paster/paster",paster,paster)

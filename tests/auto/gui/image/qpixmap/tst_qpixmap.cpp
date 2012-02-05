@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -79,6 +79,7 @@ public:
 public slots:
     void init();
     void cleanup();
+    void cleanupTestCase();
 
 private slots:
     void swap();
@@ -215,6 +216,11 @@ void tst_QPixmap::cleanup()
 {
 }
 
+void tst_QPixmap::cleanupTestCase()
+{
+    QFile::remove(QLatin1String("temp_image.png"));
+}
+
 void tst_QPixmap::swap()
 {
     QPixmap p1( 16, 16 ), p2( 32, 32 );
@@ -300,7 +306,7 @@ void tst_QPixmap::convertFromImage_data()
 {
     QTest::addColumn<QImage>("img1");
     QTest::addColumn<QImage>("img2");
-    const QString prefix = QLatin1String(SRCDIR) + "/convertFromImage";
+    const QString prefix = QFINDTESTDATA("convertFromImage");
 
     {
         QImage img1;
@@ -853,12 +859,14 @@ void tst_QPixmap::convertFromImageDetach()
 
 #if defined(Q_OS_WIN)
 
+QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap);
 Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
 Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &p);
 Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h);
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
+QT_END_NAMESPACE
 
 void tst_QPixmap::toWinHBITMAP_data()
 {
@@ -994,7 +1002,7 @@ void tst_QPixmap::toWinHICON_data()
     QTest::addColumn<int>("width");
     QTest::addColumn<int>("height");
 
-    const QString prefix = QLatin1String(SRCDIR) + "/convertFromToHICON";
+    const QString prefix = QFINDTESTDATA("convertFromToHICON");
 
     QTest::newRow("32bpp_16x16") << prefix + QLatin1String("/icon_32bpp") << 16 << 16;
     QTest::newRow("32bpp_32x32") << prefix + QLatin1String("/icon_32bpp") << 32 << 32;
@@ -1290,7 +1298,7 @@ void tst_QPixmap::loadFromDataImage_data()
 {
     QTest::addColumn<QString>("imagePath");
 
-    const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
+    const QString prefix = QFINDTESTDATA("loadFromData");
 
     QTest::newRow("designer_argb32.png") << prefix + "/designer_argb32.png";
     // When no extension is provided we try all extensions that has been registered by image providers
@@ -1324,7 +1332,7 @@ void tst_QPixmap::fromImageReader_data()
 {
     QTest::addColumn<QString>("imagePath");
 
-    const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
+    const QString prefix = QFINDTESTDATA("loadFromData");
 
     QTest::newRow("designer_argb32.png") << prefix + "/designer_argb32.png";
     QTest::newRow("designer_indexed8_no_alpha.png") << prefix + "/designer_indexed8_no_alpha.png";
@@ -1362,7 +1370,7 @@ void tst_QPixmap::fromImageReaderAnimatedGif()
 {
     QFETCH(QString, imagePath);
 
-    const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
+    const QString prefix = QFINDTESTDATA("loadFromData");
     const QString path = prefix + imagePath;
 
     QImageReader referenceReader(path);

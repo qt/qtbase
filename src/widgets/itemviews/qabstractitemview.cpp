@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1098,7 +1098,7 @@ void QAbstractItemView::reset()
     d->delayedReset.stop(); //make sure we stop the timer
     foreach (const QEditorInfo &info, d->indexEditorHash) {
         if (info.widget)
-            d->releaseEditor(info.widget.data());
+            d->releaseEditor(info.widget.data(), d->indexForEditor(info.widget.data()));
     }
     d->editorIndexHash.clear();
     d->indexEditorHash.clear();
@@ -1112,7 +1112,7 @@ void QAbstractItemView::reset()
 #ifdef Q_WS_X11
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(this)->table2Interface()->modelReset();
-        QAccessible::updateAccessibility(this, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, this, 0));
     }
 #endif
 #endif
@@ -2778,7 +2778,7 @@ void QAbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndE
         editor = ed;
 
         if (!isPersistent && editor)
-            d->releaseEditor(editor);
+            d->releaseEditor(editor, index);
     }
 
     // The EndEditHint part
@@ -3102,7 +3102,7 @@ void QAbstractItemView::closePersistentEditor(const QModelIndex &index)
             closeEditor(editor, QAbstractItemDelegate::RevertModelCache);
         d->persistent.remove(editor);
         d->removeEditor(editor);
-        d->releaseEditor(editor);
+        d->releaseEditor(editor, index);
     }
 }
 
@@ -3314,7 +3314,7 @@ void QAbstractItemView::rowsAboutToBeRemoved(const QModelIndex &parent, int star
             QEditorInfo info = d->indexEditorHash.take(index);
             i = d->editorIndexHash.erase(i);
             if (info.widget)
-                d->releaseEditor(editor);
+                d->releaseEditor(editor, index);
         } else {
             ++i;
         }
@@ -3342,7 +3342,7 @@ void QAbstractItemViewPrivate::_q_rowsRemoved(const QModelIndex &index, int star
 #ifdef Q_WS_X11
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(q)->table2Interface()->rowsRemoved(index, start, end);
-        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
     }
 #endif
 #endif
@@ -3393,7 +3393,7 @@ void QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &par
             QEditorInfo info = indexEditorHash.take(it.value());
             it = editorIndexHash.erase(it);
             if (info.widget)
-                releaseEditor(editor);
+                releaseEditor(editor, index);
         } else {
             ++it;
         }
@@ -3422,7 +3422,7 @@ void QAbstractItemViewPrivate::_q_columnsRemoved(const QModelIndex &index, int s
 #ifdef Q_WS_X11
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(q)->table2Interface()->columnsRemoved(index, start, end);
-        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
     }
 #endif
 #endif
@@ -3445,7 +3445,7 @@ void QAbstractItemViewPrivate::_q_rowsInserted(const QModelIndex &index, int sta
     Q_Q(QAbstractItemView);
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(q)->table2Interface()->rowsInserted(index, start, end);
-        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
     }
 #endif
 #endif
@@ -3469,7 +3469,7 @@ void QAbstractItemViewPrivate::_q_columnsInserted(const QModelIndex &index, int 
 #ifdef Q_WS_X11
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(q)->table2Interface()->columnsInserted(index, start, end);
-        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
     }
 #endif
 #endif
@@ -3497,7 +3497,7 @@ void QAbstractItemViewPrivate::_q_layoutChanged()
     Q_Q(QAbstractItemView);
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(q)->table2Interface()->modelReset();
-        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
     }
 #endif
 #endif
@@ -3608,38 +3608,37 @@ void QAbstractItemView::startDrag(Qt::DropActions supportedActions)
 QStyleOptionViewItem QAbstractItemView::viewOptions() const
 {
     Q_D(const QAbstractItemView);
-    QStyleOptionViewItem option;
-    option.init(this);
-    option.state &= ~QStyle::State_MouseOver;
-    option.font = font();
-
-#ifndef Q_WS_MAC
-    // On mac the focus appearance follows window activation
-    // not widget activation
-    if (!hasFocus())
-        option.state &= ~QStyle::State_Active;
-#endif
-
-    option.state &= ~QStyle::State_HasFocus;
-    if (d->iconSize.isValid()) {
-        option.decorationSize = d->iconSize;
-    } else {
-        int pm = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
-        option.decorationSize = QSize(pm, pm);
-    }
-    option.decorationPosition = QStyleOptionViewItem::Left;
-    option.decorationAlignment = Qt::AlignCenter;
-    option.displayAlignment = Qt::AlignLeft|Qt::AlignVCenter;
-    option.textElideMode = d->textElideMode;
-    option.rect = QRect();
-    option.showDecorationSelected = style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, 0, this);
-    return option;
+    return d->viewOptionsV4();
 }
 
 QStyleOptionViewItemV4 QAbstractItemViewPrivate::viewOptionsV4() const
 {
     Q_Q(const QAbstractItemView);
-    QStyleOptionViewItemV4 option = q->viewOptions();
+    QStyleOptionViewItemV4 option;
+    option.init(q);
+    option.state &= ~QStyle::State_MouseOver;
+    option.font = q->font();
+
+#ifndef Q_WS_MAC
+    // On mac the focus appearance follows window activation
+    // not widget activation
+    if (!q->hasFocus())
+        option.state &= ~QStyle::State_Active;
+#endif
+
+    option.state &= ~QStyle::State_HasFocus;
+    if (iconSize.isValid()) {
+        option.decorationSize = iconSize;
+    } else {
+        int pm = q->style()->pixelMetric(QStyle::PM_SmallIconSize, 0, q);
+        option.decorationSize = QSize(pm, pm);
+    }
+    option.decorationPosition = QStyleOptionViewItem::Left;
+    option.decorationAlignment = Qt::AlignCenter;
+    option.displayAlignment = Qt::AlignLeft|Qt::AlignVCenter;
+    option.textElideMode = textElideMode;
+    option.rect = QRect();
+    option.showDecorationSelected = q->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, 0, q);
     if (wrapItemText)
         option.features = QStyleOptionViewItemV2::WrapText;
     option.locale = q->locale();

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,8 @@
 #include "qdbusargument.h"
 #include "qdbusintrospection_p.h"
 #include "qdbusabstractinterface_p.h"
+
+#include <private/qmetaobject_p.h>
 
 #ifndef QT_NO_DBUS
 
@@ -89,47 +91,7 @@ private:
         QByteArray name;
     };
 
-    enum PropertyFlags  {
-        Invalid = 0x00000000,
-        Readable = 0x00000001,
-        Writable = 0x00000002,
-        Resettable = 0x00000004,
-        EnumOrFlag = 0x00000008,
-        StdCppSet = 0x00000100,
-  //    Override = 0x00000200,
-        Designable = 0x00001000,
-        ResolveDesignable = 0x00002000,
-        Scriptable = 0x00004000,
-        ResolveScriptable = 0x00008000,
-        Stored = 0x00010000,
-        ResolveStored = 0x00020000,
-        Editable = 0x00040000,
-        ResolveEditable = 0x00080000,
-        User = 0x00100000,
-        ResolveUser = 0x00200000
-    };
-
-    enum MethodFlags  {
-        AccessPrivate = 0x00,
-        AccessProtected = 0x01,
-        AccessPublic = 0x02,
-        AccessMask = 0x03, //mask
-
-        MethodMethod = 0x00,
-        MethodSignal = 0x04,
-        MethodSlot = 0x08,
-        MethodTypeMask = 0x0c,
-
-        MethodCompatibility = 0x10,
-        MethodCloned = 0x20,
-        MethodScriptable = 0x40
-    };
-
-    enum MetaObjectFlags {
-        DynamicMetaObject = 0x01,
-        RequiresVariantMetaObject = 0x02
-    };
-
+    QMap<QByteArray, Method> signals_;
     QMap<QByteArray, Method> methods;
     QMap<QByteArray, Property> properties;
     
@@ -148,19 +110,8 @@ private:
 static const int intsPerProperty = 2;
 static const int intsPerMethod = 5;
 
-// ### from kernel/qmetaobject.cpp (Qt 4.1.2):
-struct QDBusMetaObjectPrivate
+struct QDBusMetaObjectPrivate : public QMetaObjectPrivate
 {
-    int revision;
-    int className;
-    int classInfoCount, classInfoData;
-    int methodCount, methodData;
-    int propertyCount, propertyData;
-    int enumeratorCount, enumeratorData;
-    int constructorCount, constructorData; // since revision 2
-    int flags; // since revision 3
-    
-    // this is specific for QDBusMetaObject:
     int propertyDBusData;
     int methodDBusData;
 };
@@ -202,9 +153,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
         // verify that it's a valid one
         if (!typeName.isEmpty()) {
             // type name found
-            type = QVariant::nameToType(typeName);
-            if (type == QVariant::UserType)
-                type = QMetaType::type(typeName);
+            type = QMetaType::type(typeName);
         }
 
         if (type == QVariant::Invalid || signature != QDBusMetaType::typeToSignature(type)) {
@@ -371,7 +320,7 @@ void QDBusMetaObjectGenerator::parseSignals()
         mm.flags = AccessProtected | MethodSignal | MethodScriptable;
 
         // add
-        methods.insert(QMetaObject::normalizedSignature(prototype), mm);
+        signals_.insert(QMetaObject::normalizedSignature(prototype), mm);
     }
 }
 
@@ -399,7 +348,7 @@ void QDBusMetaObjectGenerator::parseProperties()
             mp.flags |= Writable;
 
         if (mp.typeName == "QDBusVariant")
-            mp.flags |= 0xff << 24;
+            mp.flags |= QMetaType::QVariant << 24;
         else if (mp.type < 0xff)
             // encode the type in the flags
             mp.flags |= mp.type << 24;
@@ -423,11 +372,12 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     idata.resize(sizeof(QDBusMetaObjectPrivate) / sizeof(int));
 
     QDBusMetaObjectPrivate *header = reinterpret_cast<QDBusMetaObjectPrivate *>(idata.data());
-    header->revision = 3;
+    Q_STATIC_ASSERT_X(QMetaObjectPrivate::OutputRevision == 6, "QtDBus meta-object generator should generate the same version as moc");
+    header->revision = QMetaObjectPrivate::OutputRevision;
     header->className = 0;
     header->classInfoCount = 0;
     header->classInfoData = 0;
-    header->methodCount = methods.count();
+    header->methodCount = signals_.count() + methods.count();
     header->methodData = idata.size();
     header->propertyCount = properties.count();
     header->propertyData = header->methodData + header->methodCount * 5;
@@ -436,12 +386,16 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     header->constructorCount = 0;
     header->constructorData = 0;
     header->flags = RequiresVariantMetaObject;
+    header->signalCount = signals_.count();
+    // These are specific to QDBusMetaObject:
     header->propertyDBusData = header->propertyData + header->propertyCount * 3;
     header->methodDBusData = header->propertyDBusData + header->propertyCount * intsPerProperty;
 
     int data_size = idata.size() +
                     (header->methodCount * (5+intsPerMethod)) +
                     (header->propertyCount * (3+intsPerProperty));
+    foreach (const Method &mm, signals_)
+        data_size += 2 + mm.inputTypes.count() + mm.outputTypes.count();
     foreach (const Method &mm, methods)
         data_size += 2 + mm.inputTypes.count() + mm.outputTypes.count();
     idata.resize(data_size + 1);
@@ -457,44 +411,48 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     idata[typeidOffset++] = 0;                           // eod
 
     // add each method:
-    for (QMap<QByteArray, Method>::ConstIterator it = methods.constBegin();
-         it != methods.constEnd(); ++it) {
-        // form "prototype\0parameters\0typeName\0tag\0methodname\0inputSignature\0outputSignature"
-        const Method &mm = it.value();
+    for (int x = 0; x < 2; ++x) {
+        // Signals must be added before other methods, to match moc.
+        QMap<QByteArray, Method> &map = (x == 0) ? signals_ : methods;
+        for (QMap<QByteArray, Method>::ConstIterator it = map.constBegin();
+             it != map.constEnd(); ++it) {
+            // form "prototype\0parameters\0typeName\0tag\0methodname\0inputSignature\0outputSignature"
+            const Method &mm = it.value();
 
-        idata[offset++] = stringdata.length();
-        stringdata += it.key();                 // prototype
-        stringdata += null;
-        idata[offset++] = stringdata.length();
-        stringdata += mm.parameters;
-        stringdata += null;
-        idata[offset++] = stringdata.length();
-        stringdata += mm.typeName;
-        stringdata += null;
-        idata[offset++] = stringdata.length();
-        stringdata += mm.tag;
-        stringdata += null;
-        idata[offset++] = mm.flags;
+            idata[offset++] = stringdata.length();
+            stringdata += it.key();                 // prototype
+            stringdata += null;
+            idata[offset++] = stringdata.length();
+            stringdata += mm.parameters;
+            stringdata += null;
+            idata[offset++] = stringdata.length();
+            stringdata += mm.typeName;
+            stringdata += null;
+            idata[offset++] = stringdata.length();
+            stringdata += mm.tag;
+            stringdata += null;
+            idata[offset++] = mm.flags;
 
-        idata[signatureOffset++] = stringdata.length();
-        stringdata += mm.name;
-        stringdata += null;
-        idata[signatureOffset++] = stringdata.length();
-        stringdata += mm.inputSignature;
-        stringdata += null;
-        idata[signatureOffset++] = stringdata.length();
-        stringdata += mm.outputSignature;
-        stringdata += null;
+            idata[signatureOffset++] = stringdata.length();
+            stringdata += mm.name;
+            stringdata += null;
+            idata[signatureOffset++] = stringdata.length();
+            stringdata += mm.inputSignature;
+            stringdata += null;
+            idata[signatureOffset++] = stringdata.length();
+            stringdata += mm.outputSignature;
+            stringdata += null;
 
-        idata[signatureOffset++] = typeidOffset;
-        idata[typeidOffset++] = mm.inputTypes.count();
-        memcpy(idata.data() + typeidOffset, mm.inputTypes.data(), mm.inputTypes.count() * sizeof(int));
-        typeidOffset += mm.inputTypes.count();
+            idata[signatureOffset++] = typeidOffset;
+            idata[typeidOffset++] = mm.inputTypes.count();
+            memcpy(idata.data() + typeidOffset, mm.inputTypes.data(), mm.inputTypes.count() * sizeof(int));
+            typeidOffset += mm.inputTypes.count();
 
-        idata[signatureOffset++] = typeidOffset;
-        idata[typeidOffset++] = mm.outputTypes.count();
-        memcpy(idata.data() + typeidOffset, mm.outputTypes.data(), mm.outputTypes.count() * sizeof(int));
-        typeidOffset += mm.outputTypes.count();
+            idata[signatureOffset++] = typeidOffset;
+            idata[typeidOffset++] = mm.outputTypes.count();
+            memcpy(idata.data() + typeidOffset, mm.outputTypes.data(), mm.outputTypes.count() * sizeof(int));
+            typeidOffset += mm.outputTypes.count();
+        }
     }
 
     Q_ASSERT(offset == header->propertyData);

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -2324,15 +2324,6 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
 }
 
 /*!
-    \internal
-    \overload
-*/
-QTextStream &QTextStream::operator<<(QBool b)
-{
-    return *this << bool(b);
-}
-
-/*!
     Writes the character \a c to the stream, then returns a reference
     to the QTextStream.
 
@@ -2536,6 +2527,21 @@ QTextStream &QTextStream::operator<<(const QString &string)
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
     d->putString(string);
+    return *this;
+}
+
+/*!
+    \overload
+
+    Writes \a string to the stream, and returns a reference to the
+    QTextStream. The contents of \a string are converted with the
+    QString constructor that takes a QLatin1String as argument.
+*/
+QTextStream &QTextStream::operator<<(const QLatin1String &string)
+{
+    Q_D(QTextStream);
+    CHECK_VALID_STREAM(*this);
+    d->putString(QString(string));
     return *this;
 }
 

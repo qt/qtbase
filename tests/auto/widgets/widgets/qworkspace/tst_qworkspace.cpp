@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -230,7 +230,7 @@ void tst_QWorkspace::windowActivated()
         workspace->addWindow(widget);
         widget->showMaximized();
         qApp->sendPostedEvents();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         QEXPECT_FAIL("", "This test has never passed on Mac. QWorkspace is obsoleted -> won't fix", Abort);
 #endif
         QCOMPARE(spy.count(), 0);

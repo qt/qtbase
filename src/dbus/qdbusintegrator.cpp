@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -645,7 +645,7 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
         if (paren != name.length() || !slotname.startsWith(name))
             continue;
 
-        int returnType = qDBusNameToTypeId(mm.typeName());
+        int returnType = QMetaType::type(mm.typeName());
         bool isAsync = qDBusCheckAsyncTag(mm.tag());
         bool isScriptable = mm.attributes() & QMetaMethod::Scriptable;
 

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -468,8 +468,7 @@ QWidget *QStyledItemDelegate::createEditor(QWidget *parent,
     Q_D(const QStyledItemDelegate);
     if (!index.isValid())
         return 0;
-    QVariant::Type t = static_cast<QVariant::Type>(index.data(Qt::EditRole).userType());
-    return d->editorFactory()->createEditor(t, parent);
+    return d->editorFactory()->createEditor(index.data(Qt::EditRole).userType(), parent);
 }
 
 /*!
@@ -505,7 +504,7 @@ void QStyledItemDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
 
     // ### Qt 5: give QComboBox a USER property
     if (n.isEmpty() && editor->inherits("QComboBox"))
-        n = d->editorFactory()->valuePropertyName(static_cast<QVariant::Type>(v.userType()));
+        n = d->editorFactory()->valuePropertyName(v.userType());
     if (!n.isEmpty()) {
         if (!v.isValid())
             v = QVariant(editor->property(n).userType(), (const void *)0);
@@ -539,7 +538,7 @@ void QStyledItemDelegate::setModelData(QWidget *editor,
     QByteArray n = editor->metaObject()->userProperty().name();
     if (n.isEmpty())
         n = d->editorFactory()->valuePropertyName(
-            static_cast<QVariant::Type>(model->data(index, Qt::EditRole).userType()));
+            model->data(index, Qt::EditRole).userType());
     if (!n.isEmpty())
         model->setData(index, editor->property(n), Qt::EditRole);
 #endif

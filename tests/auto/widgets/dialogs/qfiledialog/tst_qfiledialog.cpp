@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -329,8 +329,8 @@ void tst_QFiledialog::filterSelectedSignal()
     filterChoices << "Image files (*.png *.xpm *.jpg)"
                   << "Text files (*.txt)"
                   << "Any files (*.*)";
-    fd.setFilters(filterChoices);
-    QCOMPARE(fd.filters(), filterChoices);
+    fd.setNameFilters(filterChoices);
+    QCOMPARE(fd.nameFilters(), filterChoices);
 
     QComboBox *filters = qFindChild<QComboBox*>(&fd, "fileTypeCombo");
     QVERIFY(filters);
@@ -354,7 +354,7 @@ void tst_QFiledialog::args()
 #ifndef Q_OS_WIN
     QCOMPARE(fd.directory(), QDir(directory));
 #endif
-    QCOMPARE(fd.filters(), QStringList(filter));
+    QCOMPARE(fd.nameFilters(), QStringList(filter));
 }
 
 void tst_QFiledialog::directory()
@@ -648,7 +648,7 @@ void tst_QFiledialog::filters()
     QSignalSpy spyDirectoryEntered(&fd, SIGNAL(directoryEntered(const QString &)));
     QSignalSpy spyFilesSelected(&fd, SIGNAL(filesSelected(const QStringList &)));
     QSignalSpy spyFilterSelected(&fd, SIGNAL(filterSelected(const QString &)));
-    QCOMPARE(fd.filters(), QStringList("All Files (*)"));
+    QCOMPARE(fd.nameFilters(), QStringList("All Files (*)"));
 
     // effects
     QList<QComboBox*> views = qFindChildren<QComboBox*>(&fd, "fileTypeCombo");
@@ -659,14 +659,14 @@ void tst_QFiledialog::filters()
     filters << "Image files (*.png *.xpm *.jpg)"
          << "Text files (*.txt)"
          << "Any files (*.*)";
-    fd.setFilters(filters);
+    fd.setNameFilters(filters);
     QCOMPARE(views.at(0)->isVisible(), false);
     fd.show();
     fd.setAcceptMode(QFileDialog::AcceptSave);
     QCOMPARE(views.at(0)->isVisible(), true);
-    QCOMPARE(fd.filters(), filters);
-    fd.setFilter("Image files (*.png *.xpm *.jpg);;Text files (*.txt);;Any files (*.*)");
-    QCOMPARE(fd.filters(), filters);
+    QCOMPARE(fd.nameFilters(), filters);
+    fd.setNameFilter("Image files (*.png *.xpm *.jpg);;Text files (*.txt);;Any files (*.*)");
+    QCOMPARE(fd.nameFilters(), filters);
     QCOMPARE(spyCurrentChanged.count(), 0);
     QCOMPARE(spyDirectoryEntered.count(), 0);
     QCOMPARE(spyFilesSelected.count(), 0);
@@ -682,38 +682,38 @@ void tst_QFiledialog::filters()
     QStringList expected;
     expected << "C++ Source Files(*.cpp)";
     expected << "Any(*.*)";
-    fd2.setFilter("C++ Source Files(*.cpp);;Any(*.*)");
-    QCOMPARE(expected, fd2.filters());
-    fd2.setFilter("C++ Source Files(*.cpp) ;;Any(*.*)");
-    QCOMPARE(expected, fd2.filters());
-    fd2.setFilter("C++ Source Files(*.cpp);; Any(*.*)");
-    QCOMPARE(expected, fd2.filters());
-    fd2.setFilter(" C++ Source Files(*.cpp);; Any(*.*)");
-    QCOMPARE(expected, fd2.filters());
-    fd2.setFilter("C++ Source Files(*.cpp) ;; Any(*.*)");
-    QCOMPARE(expected, fd2.filters());
+    fd2.setNameFilter("C++ Source Files(*.cpp);;Any(*.*)");
+    QCOMPARE(expected, fd2.nameFilters());
+    fd2.setNameFilter("C++ Source Files(*.cpp) ;;Any(*.*)");
+    QCOMPARE(expected, fd2.nameFilters());
+    fd2.setNameFilter("C++ Source Files(*.cpp);; Any(*.*)");
+    QCOMPARE(expected, fd2.nameFilters());
+    fd2.setNameFilter(" C++ Source Files(*.cpp);; Any(*.*)");
+    QCOMPARE(expected, fd2.nameFilters());
+    fd2.setNameFilter("C++ Source Files(*.cpp) ;; Any(*.*)");
+    QCOMPARE(expected, fd2.nameFilters());
 }
 
 void tst_QFiledialog::selectFilter()
 {
     QNonNativeFileDialog fd;
     QSignalSpy spyFilterSelected(&fd, SIGNAL(filterSelected(const QString &)));
-    QCOMPARE(fd.selectedFilter(), QString("All Files (*)"));
+    QCOMPARE(fd.selectedNameFilter(), QString("All Files (*)"));
     QStringList filters;
     filters << "Image files (*.png *.xpm *.jpg)"
          << "Text files (*.txt)"
          << "Any files (*.*)";
-    fd.setFilters(filters);
-    QCOMPARE(fd.selectedFilter(), filters.at(0));
-    fd.selectFilter(filters.at(1));
-    QCOMPARE(fd.selectedFilter(), filters.at(1));
-    fd.selectFilter(filters.at(2));
-    QCOMPARE(fd.selectedFilter(), filters.at(2));
+    fd.setNameFilters(filters);
+    QCOMPARE(fd.selectedNameFilter(), filters.at(0));
+    fd.selectNameFilter(filters.at(1));
+    QCOMPARE(fd.selectedNameFilter(), filters.at(1));
+    fd.selectNameFilter(filters.at(2));
+    QCOMPARE(fd.selectedNameFilter(), filters.at(2));
 
-    fd.selectFilter("bob");
-    QCOMPARE(fd.selectedFilter(), filters.at(2));
-    fd.selectFilter("");
-    QCOMPARE(fd.selectedFilter(), filters.at(2));
+    fd.selectNameFilter("bob");
+    QCOMPARE(fd.selectedNameFilter(), filters.at(2));
+    fd.selectNameFilter("");
+    QCOMPARE(fd.selectedNameFilter(), filters.at(2));
     QCOMPARE(spyFilterSelected.count(), 0);
 }
 
@@ -909,8 +909,8 @@ void tst_QFiledialog::selectFiles()
     QVERIFY(listView);
     for (int i = 0; i < list.count(); ++i) {
         fd.selectFile(fd.directory().path() + "/" + list.at(i));
-#if defined(Q_WS_MAC) || defined(Q_WS_WIN)
-    QEXPECT_FAIL("", "This test does not work on Mac or Windows", Abort);
+#if defined(Q_WS_WIN)
+    QEXPECT_FAIL("", "This test does not work on Windows", Abort);
 #endif
         QTRY_VERIFY(!listView->selectionModel()->selectedRows().isEmpty());
         toSelect.append(listView->selectionModel()->selectedRows().last());
@@ -1004,8 +1004,8 @@ void tst_QFiledialog::proxymodel()
 void tst_QFiledialog::setNameFilter()
 {
     QNonNativeFileDialog fd;
-    fd.setFilter(QString());
-    fd.setFilters(QStringList());
+    fd.setNameFilter(QString());
+    fd.setNameFilters(QStringList());
 }
 
 void tst_QFiledialog::focus()
@@ -1223,13 +1223,16 @@ void tst_QFiledialog::clearLineEdit()
     list->setEditFocus(true);
 #endif
     QTest::keyClick(list, Qt::Key_Down);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QTest::keyClick(list, Qt::Key_Return);
 #else
     QTest::keyClick(list, Qt::Key_O, Qt::ControlModifier);
 #endif
 
     QTest::qWait(2000);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23703", Abort);
+#endif
     QVERIFY(fd.directory().absolutePath() != QDir::home().absolutePath());
     QVERIFY(!lineEdit->text().isEmpty());
 
@@ -1240,7 +1243,7 @@ void tst_QFiledialog::clearLineEdit()
 
     QTest::qWait(1000);
     QTest::keyClick(list, Qt::Key_Down);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QTest::keyClick(list, Qt::Key_Return);
 #else
     QTest::keyClick(list, Qt::Key_O, Qt::ControlModifier);

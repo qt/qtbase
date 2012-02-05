@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QPlatformScreen;
 class QPlatformWindowPrivate;
@@ -95,7 +94,8 @@ public:
     virtual void setOpacity(qreal level);
     virtual void requestActivateWindow();
 
-    virtual void setOrientation(Qt::ScreenOrientation orientation);
+    virtual void handleContentOrientationChange(Qt::ScreenOrientation orientation);
+    virtual Qt::ScreenOrientation requestWindowOrientation(Qt::ScreenOrientation orientation);
 
     virtual bool setKeyboardGrabEnabled(bool grab);
     virtual bool setMouseGrabEnabled(bool grab);

@@ -11,7 +11,6 @@ libpng/projects/visualc71/libpng.sln      -crlf
 libpng/projects/visualc71/libpng.vcproj   -crlf
 libpng/projects/visualc71/pngtest.vcproj  -crlf
 libpng/projects/visualc71/zlib.vcproj     -crlf
-libtiff/nmake.opt                         -crlf
 zlib/projects/visualc6/example.dsp        -crlf
 zlib/projects/visualc6/minigzip.dsp       -crlf
 zlib/projects/visualc6/README.txt         -crlf

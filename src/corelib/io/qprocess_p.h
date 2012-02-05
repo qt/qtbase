@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -74,12 +74,10 @@ typedef int Q_PIPE;
 QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
+class QWindowsPipeReader;
 class QWindowsPipeWriter;
 class QWinEventNotifier;
 class QTimer;
-#if defined(Q_OS_SYMBIAN)
-class RProcess;
-#endif
 
 #ifdef Q_OS_WIN
 class QProcEnvKey : public QString
@@ -279,7 +277,7 @@ public:
 
     QString program;
     QStringList arguments;
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     QString nativeArguments;
 #endif
     QProcessEnvironment environment;
@@ -291,17 +289,22 @@ public:
     Q_PIPE childStartedPipe[2];
     Q_PIPE deathPipe[2];
     void destroyPipe(Q_PIPE pipe[2]);
+    void destroyChannel(Channel *channel);
 
     QSocketNotifier *startupSocketNotifier;
     QSocketNotifier *deathNotifier;
 
+#ifdef Q_OS_WIN
     // the wonderful windows notifier
     QTimer *notifier;
+    QWindowsPipeReader *stdoutReader;
+    QWindowsPipeReader *stderrReader;
     QWindowsPipeWriter *pipeWriter;
     QWinEventNotifier *processFinishedNotifier;
+#endif
 
     void startProcess();
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     void execChild(const char *workingDirectory, char **path, char **argv, char **envp);
 #endif
     bool processStarted();
@@ -341,11 +344,6 @@ public:
     void cleanup();
 #ifdef Q_OS_UNIX
     static void initializeProcessManager();
-#endif
-
-#ifdef Q_OS_SYMBIAN
-    bool processLaunched;
-    RProcess* symbianProcess;
 #endif
 };
 

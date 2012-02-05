@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -205,6 +205,8 @@ HB_Error QFreetypeFace::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 p
     return HB_Err_Ok;
 }
 
+extern QByteArray qt_fontdata_from_index(int);
+
 /*
  * One font file can contain more than one font (bold/italic for example)
  * find the right one and return it.
@@ -232,7 +234,6 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
             QFile file(QString::fromUtf8(face_id.filename));
             if (face_id.filename.startsWith(":qmemoryfonts/")) {
                 // from qfontdatabase.cpp
-                extern QByteArray qt_fontdata_from_index(int);
                 QByteArray idx = face_id.filename;
                 idx.remove(0, 14); // remove ':qmemoryfonts/'
                 bool ok = false;
@@ -1896,17 +1897,17 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
     return img;
 }
 
-QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, int margin, const QTransform &t)
+QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)
 {
     if (t.type() > QTransform::TxTranslate)
-        return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, margin, t);
+        return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
 
     lockFace();
 
     Glyph *glyph = loadGlyphFor(g, subPixelPosition, Format_A32);
     if (!glyph) {
         unlockFace();
-        return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, margin, t);
+        return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
     }
 
     QImage img(glyph->width, glyph->height, QImage::Format_RGB32);
@@ -2058,7 +2059,7 @@ bool QFontEngineFT::initFromFontEngine(const QFontEngineFT *fe)
 
 QFontEngine *QFontEngineFT::cloneWithSize(qreal pixelSize) const
 {
-    QFontDef fontDef;
+    QFontDef fontDef(this->fontDef);
     fontDef.pixelSize = pixelSize;
     QFontEngineFT *fe = new QFontEngineFT(fontDef);
     if (!fe->initFromFontEngine(this)) {

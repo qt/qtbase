@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -172,6 +172,27 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
+    \enum QPlatformIntegration::Capability
+
+    Capabilities are used to determing specific features of a platform integration
+
+    \value ThreadedPixmaps The platform uses a pixmap implementation that is reentrant
+    and can be used from multiple threads, like the raster paint engine and QImage based
+    pixmaps.
+
+    \value OpenGL The platform supports OpenGL
+
+    \value ThreadedOpenGL The platform supports using OpenGL outside the GUI thread.
+
+    \value SharedGraphicsCache The platform supports a shared graphics cache
+
+    \value BufferQueueingOpenGL The OpenGL implementation on the platform will queue
+    up buffers when swapBuffers() is called and block only when its buffer pipeline
+    is full, rather than block immediately.
+ */
+
+
+/*!
 
     \fn QAbstractEventDispatcher *QPlatformIntegration::guiThreadEventDispatcher() const = 0
 
@@ -198,6 +219,17 @@ QPlatformOpenGLContext *QPlatformIntegration::createPlatformOpenGLContext(QOpenG
 {
     Q_UNUSED(context);
     qWarning("This plugin does not support createPlatformOpenGLContext!");
+    return 0;
+}
+
+/*!
+   Factory function for QPlatformSharedGraphicsCache. This function will return 0 if the platform
+   integration does not support any shared graphics cache mechanism for the given \a cacheId.
+*/
+QPlatformSharedGraphicsCache *QPlatformIntegration::createPlatformSharedGraphicsCache(const char *cacheId) const
+{
+    qWarning("This plugin does not support createPlatformSharedGraphicsBuffer for cacheId: %s!",
+             cacheId);
     return 0;
 }
 

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Stephen Kelly <stephen.kelly@kdab.com>
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,7 +51,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class QIdentityProxyModelPrivate;
 
@@ -68,6 +67,7 @@ public:
     QModelIndex mapToSource(const QModelIndex& proxyIndex) const;
     QModelIndex parent(const QModelIndex& child) const;
     int rowCount(const QModelIndex& parent = QModelIndex()) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
 
     QItemSelection mapSelectionFromSource(const QItemSelection& selection) const;

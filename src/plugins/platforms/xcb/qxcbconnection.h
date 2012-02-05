@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -66,6 +66,7 @@ class QXcbDrag;
 class QXcbKeyboard;
 class QXcbClipboard;
 class QXcbWMSupport;
+class QXcbNativeInterface;
 
 typedef QHash<xcb_window_t, QXcbWindow *> WindowMapper;
 
@@ -243,6 +244,10 @@ namespace QXcbAtom {
         AbsMTTrackingID,
         MaxContacts,
 
+#if XCB_USE_MAEMO_WINDOW_PROPERTIES
+        MeegoTouchOrientationAngle,
+#endif
+
         NPredefinedAtoms,
 
         _QT_SETTINGS_TIMESTAMP = NPredefinedAtoms,
@@ -285,7 +290,7 @@ class QXcbConnection : public QObject
 {
     Q_OBJECT
 public:
-    QXcbConnection(const char *displayName = 0);
+    QXcbConnection(QXcbNativeInterface *nativeInterface, const char *displayName = 0);
     ~QXcbConnection();
 
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
@@ -386,6 +391,7 @@ private:
     QXcbClipboard *m_clipboard;
     QXcbDrag *m_drag;
     QScopedPointer<QXcbWMSupport> m_wmSupport;
+    QXcbNativeInterface *m_nativeInterface;
 
 #if defined(XCB_USE_XLIB)
     void *m_xlib_display;

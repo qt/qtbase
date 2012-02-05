@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -3479,7 +3479,7 @@ void DomWidget::read(QXmlStreamReader &reader)
             continue;
         }
         if (name == QStringLiteral("native")) {
-            setAttributeNative((attribute.value().toString() == QLatin1String("true") ? true : false));
+            setAttributeNative((attribute.value().toString() == QStringLiteral("true") ? true : false));
             continue;
         }
         reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
@@ -4853,23 +4853,23 @@ void DomFont::read(QXmlStreamReader &reader)
                 continue;
             }
             if (tag == QStringLiteral("italic")) {
-                setElementItalic((reader.readElementText() == QLatin1String("true") ? true : false));
+                setElementItalic((reader.readElementText() == QStringLiteral("true") ? true : false));
                 continue;
             }
             if (tag == QStringLiteral("bold")) {
-                setElementBold((reader.readElementText() == QLatin1String("true") ? true : false));
+                setElementBold((reader.readElementText() == QStringLiteral("true") ? true : false));
                 continue;
             }
             if (tag == QStringLiteral("underline")) {
-                setElementUnderline((reader.readElementText() == QLatin1String("true") ? true : false));
+                setElementUnderline((reader.readElementText() == QStringLiteral("true") ? true : false));
                 continue;
             }
             if (tag == QStringLiteral("strikeout")) {
-                setElementStrikeOut((reader.readElementText() == QLatin1String("true") ? true : false));
+                setElementStrikeOut((reader.readElementText() == QStringLiteral("true") ? true : false));
                 continue;
             }
             if (tag == QStringLiteral("antialiasing")) {
-                setElementAntialiasing((reader.readElementText() == QLatin1String("true") ? true : false));
+                setElementAntialiasing((reader.readElementText() == QStringLiteral("true") ? true : false));
                 continue;
             }
             if (tag == QStringLiteral("stylestrategy")) {
@@ -4877,7 +4877,7 @@ void DomFont::read(QXmlStreamReader &reader)
                 continue;
             }
             if (tag == QStringLiteral("kerning")) {
-                setElementKerning((reader.readElementText() == QLatin1String("true") ? true : false));
+                setElementKerning((reader.readElementText() == QStringLiteral("true") ? true : false));
                 continue;
             }
             reader.raiseError(QStringLiteral("Unexpected element ") + tag);
@@ -6028,6 +6028,9 @@ void DomStringList::clear(bool clear_all)
 
     if (clear_all) {
     m_text.clear();
+    m_has_attr_notr = false;
+    m_has_attr_comment = false;
+    m_has_attr_extraComment = false;
     }
 
     m_children = 0;
@@ -6036,6 +6039,9 @@ void DomStringList::clear(bool clear_all)
 DomStringList::DomStringList()
 {
     m_children = 0;
+    m_has_attr_notr = false;
+    m_has_attr_comment = false;
+    m_has_attr_extraComment = false;
 }
 
 DomStringList::~DomStringList()
@@ -6045,6 +6051,23 @@ DomStringList::~DomStringList()
 
 void DomStringList::read(QXmlStreamReader &reader)
 {
+
+    foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
+        QStringRef name = attribute.name();
+        if (name == QStringLiteral("notr")) {
+            setAttributeNotr(attribute.value().toString());
+            continue;
+        }
+        if (name == QStringLiteral("comment")) {
+            setAttributeComment(attribute.value().toString());
+            continue;
+        }
+        if (name == QStringLiteral("extracomment")) {
+            setAttributeExtraComment(attribute.value().toString());
+            continue;
+        }
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
+    }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
@@ -6073,6 +6096,15 @@ void DomStringList::read(QXmlStreamReader &reader)
 void DomStringList::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("stringlist") : tagName.toLower());
+
+    if (hasAttributeNotr())
+        writer.writeAttribute(QStringLiteral("notr"), attributeNotr());
+
+    if (hasAttributeComment())
+        writer.writeAttribute(QStringLiteral("comment"), attributeComment());
+
+    if (hasAttributeExtraComment())
+        writer.writeAttribute(QStringLiteral("extracomment"), attributeExtraComment());
 
     for (int i = 0; i < m_string.size(); ++i) {
         QString v = m_string[i];

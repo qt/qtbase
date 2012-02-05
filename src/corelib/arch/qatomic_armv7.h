@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,14 +34,13 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #ifndef QATOMIC_ARMV7_H
 #define QATOMIC_ARMV7_H
-
-QT_BEGIN_HEADER
 
 // use the DMB instruction when compiling for ARMv7, ...
 #ifndef Q_CC_RCVT
@@ -52,10 +50,6 @@ QT_BEGIN_HEADER
 #endif
 
 // ... but the implementation is otherwise identical to that for ARMv6
-QT_BEGIN_INCLUDE_HEADER
 #include "QtCore/qatomic_armv6.h"
-QT_END_INCLUDE_HEADER
-
-QT_END_HEADER
 
 #endif // QATOMIC_ARMV7_H

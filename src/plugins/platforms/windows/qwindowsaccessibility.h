@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,17 +45,23 @@
 #include "qtwindowsglobal.h"
 #include <QtGui/QPlatformAccessibility>
 
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
+
 class QWindowsAccessibility : public QPlatformAccessibility
 {
 public:
     QWindowsAccessibility();
     static bool handleAccessibleObjectFromWindowRequest(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult);
-    virtual void notifyAccessibilityUpdate(QObject *o, int who, QAccessible::Event reason);
+    virtual void notifyAccessibilityUpdate(const QAccessibleEvent &event);
     /*
     virtual void setRootObject(QObject *o);
     virtual void initialize();
     virtual void cleanup();
-*/
+    */
 };
+
+QT_END_NAMESPACE
+QT_END_HEADER
 
 #endif // QWINDOWSACCESSIBILITY_H

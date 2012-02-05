@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,14 +56,12 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QSessionManager;
 class QDesktopWidget;
 class QStyle;
 class QEventLoop;
 class QIcon;
-class QInputContext;
 template <typename T> class QList;
 class QLocale;
 class QPlatformNativeInterface;
@@ -88,7 +86,6 @@ class Q_WIDGETS_EXPORT QApplication : public QGuiApplication
     Q_PROPERTY(QSize globalStrut READ globalStrut WRITE setGlobalStrut)
     Q_PROPERTY(int startDragTime  READ startDragTime WRITE setStartDragTime)
     Q_PROPERTY(int startDragDistance  READ startDragDistance WRITE setStartDragDistance)
-    Q_PROPERTY(bool quitOnLastWindowClosed  READ quitOnLastWindowClosed WRITE setQuitOnLastWindowClosed)
 #ifndef QT_NO_STYLE_STYLESHEET
     Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
 #endif
@@ -222,16 +219,11 @@ public:
     virtual void saveState(QSessionManager& sm);
 #endif
 
-#ifndef QT_NO_IM
-    QInputContext *inputContext() const;
-#endif
+    QT_DEPRECATED static QLocale keyboardInputLocale();
+    QT_DEPRECATED static Qt::LayoutDirection keyboardInputDirection();
 
     static int exec();
     bool notify(QObject *, QEvent *);
-
-
-    static void setQuitOnLastWindowClosed(bool quit);
-    static bool quitOnLastWindowClosed();
 
 #ifdef QT_KEYPAD_NAVIGATION
     static Q_DECL_DEPRECATED void setKeypadNavigationEnabled(bool);
@@ -303,7 +295,6 @@ private:
     friend class QAction;
 
 #if defined(Q_WS_QWS)
-    friend class QInputContext;
     friend class QWSDirectPainterSurface;
     friend class QDirectPainter;
     friend class QDirectPainterPrivate;

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,26 +44,7 @@
 
 #include <math.h>
 
-#ifdef Q_OS_SYMBIAN
-# include <e32std.h>
-typedef RMutex NativeMutexType;
-void NativeMutexInitialize(NativeMutexType *mutex)
-{
-    mutex->CreateLocal();
-}
-void NativeMutexDestroy(NativeMutexType *mutex)
-{
-    mutex->Close();
-}
-void NativeMutexLock(NativeMutexType *mutex)
-{
-    mutex->Wait();
-}
-void NativeMutexUnlock(NativeMutexType *mutex)
-{
-    mutex->Signal();
-}
-#elif defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX)
 #  include <pthread.h>
 #  include <errno.h>
 typedef pthread_mutex_t NativeMutexType;

@@ -1,0 +1,141 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Robin Burchell <robin+qt@viroteck.net>
+** Contact: http://www.qt-project.org/
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights. These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include <QtTest/QtTest>
+
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <algorithm>
+#include <qalgorithms.h>
+#include <QStringList>
+#include <QString>
+#include <QVector>
+
+using namespace std;
+
+class tst_QAlgorithms : public QObject
+{
+    Q_OBJECT
+private slots:
+    void stableSort_data();
+    void stableSort();
+
+    void sort_data();
+    void sort();
+};
+
+template <typename DataType>
+QVector<DataType> generateData(QString dataSetType, const int length)
+{
+    QVector<DataType> container;
+    if (dataSetType == "Random") {
+        for (int i = 0; i < length; ++i)
+            container.append(rand());
+    } else if (dataSetType == "Ascending") {
+        for (int i = 0; i < length; ++i)
+            container.append(i);
+    } else if (dataSetType == "Descending") {
+        for (int i = 0; i < length; ++i)
+            container.append(length - i);
+    } else if (dataSetType == "Equal") {
+        for (int i = 0; i < length; ++i)
+            container.append(43);
+    } else if (dataSetType == "Duplicates") {
+        for (int i = 0; i < length; ++i)
+            container.append(i % 10);
+    } else if (dataSetType == "Almost Sorted") {
+        for (int i = 0; i < length; ++i)
+            container.append(i);
+        for (int i = 0; i<= length / 10; ++i) {
+            const int iswap = i * 9;
+            DataType tmp = container.at(iswap);
+            container[iswap] = container.at(iswap + 1);
+            container[iswap + 1] = tmp;
+        }
+    }
+
+    return container;
+}
+
+Q_DECLARE_METATYPE(QVector<int>)
+
+void tst_QAlgorithms::stableSort_data()
+{
+    const int dataSize = 5000;
+    QTest::addColumn<QVector<int> >("unsorted");
+    QTest::newRow("Equal") << (generateData<int>("Equal", dataSize));
+    QTest::newRow("Ascending") << (generateData<int>("Ascending", dataSize));
+    QTest::newRow("Descending") << (generateData<int>("Descending", dataSize));
+    QTest::newRow("Duplicates") << (generateData<int>("Duplicates", dataSize));
+    QTest::newRow("Almost Sorted") << (generateData<int>("Almost Sorted", dataSize));
+}
+
+void tst_QAlgorithms::stableSort()
+{
+    QFETCH(QVector<int>, unsorted);
+
+    QBENCHMARK {
+        QVector<int> sorted = unsorted;
+        qStableSort(sorted.begin(), sorted.end());
+    }
+}
+
+void tst_QAlgorithms::sort_data()
+{
+    stableSort_data();
+}
+
+void tst_QAlgorithms::sort()
+{
+    QFETCH(QVector<int>, unsorted);
+
+    QBENCHMARK {
+        QVector<int> sorted = unsorted;
+        qSort(sorted.begin(), sorted.end());
+    }
+}
+
+
+QTEST_MAIN(tst_QAlgorithms)
+#include "tst_qalgorithms.moc"
+

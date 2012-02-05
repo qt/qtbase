@@ -15,7 +15,7 @@ INSTALLS += target sources
 
 
 wince* {
-   DEPLOYMENT_PLUGIN += qjpeg qgif qtiff
+   DEPLOYMENT_PLUGIN += qjpeg qgif
 }
 
 QT += widgets

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,6 +60,7 @@ public:
 public slots:
     void init();
     void cleanup();
+    void cleanupTestCase();
 
 private slots:
     void defaultPageSizeHandling();
@@ -83,6 +84,14 @@ void tst_QTextDocumentLayout::cleanup()
 {
     delete doc;
     doc = 0;
+}
+
+void tst_QTextDocumentLayout::cleanupTestCase()
+{
+    if (qgetenv("QTEST_KEEP_IMAGEDATA").toInt() == 0) {
+        QFile::remove(QLatin1String("expected.png"));
+        QFile::remove(QLatin1String("img.png"));
+    }
 }
 
 void tst_QTextDocumentLayout::defaultPageSizeHandling()

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,7 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_WIZARD
 
@@ -190,8 +189,8 @@ protected:
     bool event(QEvent *event);
     void resizeEvent(QResizeEvent *event);
     void paintEvent(QPaintEvent *event);
-#if defined(Q_WS_WIN)
-    bool winEvent(MSG * message, long * result);
+#ifdef Q_OS_WIN
+    bool nativeEvent(const QByteArray &eventType, void * message, long * result);
 #endif
     void done(int result);
     virtual void initializePage(int id);

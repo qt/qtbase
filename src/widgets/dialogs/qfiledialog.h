@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,7 +50,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_FILEDIALOG
 
@@ -85,7 +84,6 @@ public:
     enum AcceptMode { AcceptOpen, AcceptSave };
     enum DialogLabel { LookIn, FileName, FileType, Accept, Reject };
 
-    // ### Rename to FileDialogOption and FileDialogOptions for Qt 5.0
     enum Option
     {
         ShowDirsOnly          = 0x00000001,
@@ -112,13 +110,6 @@ public:
     void selectFile(const QString &filename);
     QStringList selectedFiles() const;
 
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED void setFilter(const QString &filter);
-    QT_DEPRECATED void setFilters(const QStringList &filters);
-    QT_DEPRECATED QStringList filters() const;
-    QT_DEPRECATED void selectFilter(const QString &filter);
-    QT_DEPRECATED QString selectedFilter() const;
-#endif
     void setNameFilterDetailsVisible(bool enabled);
     bool isNameFilterDetailsVisible() const;
 

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
    also have accessors to some relevant data in the physical font.
 
    QRawFont only provides support for the main font technologies: GDI and DirectWrite on Windows
-   platforms, FreeType on Symbian and Linux platforms and CoreText on Mac OS X. For other
+   platforms, FreeType on Linux platforms and CoreText on Mac OS X. For other
    font back-ends, the APIs will be disabled.
 
    QRawFont can be constructed in a number of ways:
@@ -250,7 +250,7 @@ QImage QRawFont::alphaMapForGlyph(quint32 glyphIndex, AntialiasingType antialias
         return QImage();
 
     if (antialiasingType == SubPixelAntialiasing)
-        return d->fontEngine->alphaRGBMapForGlyph(glyphIndex, QFixed(), 0, transform);
+        return d->fontEngine->alphaRGBMapForGlyph(glyphIndex, QFixed(), transform);
 
     return d->fontEngine->alphaMapForGlyph(glyphIndex, QFixed(), transform);
 }

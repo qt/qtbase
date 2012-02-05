@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -618,7 +618,7 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, con
     return i;
 }
 
-QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition*/, int /* margin */, const QTransform &t)
+QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition*/, const QTransform &t)
 {
     QImage alphaMask = alphaMapForGlyph(glyph, t);
     QImage rgbMask(alphaMask.width(), alphaMask.height(), QImage::Format_RGB32);
@@ -664,7 +664,7 @@ QImage *QFontEngine::lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPositi
     if (neededFormat != Format_A32)
         currentlyLockedAlphaMap = alphaMapForGlyph(glyph, subPixelPosition, t);
     else
-        currentlyLockedAlphaMap = alphaRGBMapForGlyph(glyph, subPixelPosition, 0, t);
+        currentlyLockedAlphaMap = alphaRGBMapForGlyph(glyph, subPixelPosition, t);
 
     if (offset != 0)
         *offset = QPoint(0, 0);
@@ -1747,11 +1747,11 @@ QImage QFontEngineMulti::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition
     return engine(which)->alphaMapForGlyph(stripped(glyph), subPixelPosition, t);
 }
 
-QImage QFontEngineMulti::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosition, int margin, const QTransform &t)
+QImage QFontEngineMulti::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
 {
     const int which = highByte(glyph);
     Q_ASSERT(which < engines.size());
-    return engine(which)->alphaRGBMapForGlyph(stripped(glyph), subPixelPosition, margin, t);
+    return engine(which)->alphaRGBMapForGlyph(stripped(glyph), subPixelPosition, t);
 }
 
 QT_END_NAMESPACE

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,6 +61,8 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
         return static_cast<QCocoaWindow *>(window->handle())->currentContext()->nsOpenGLContext();
     } else if (resourceString == "nsview") {
         return static_cast<QCocoaWindow *>(window->handle())->m_contentView;
+    } else if (resourceString == "nswindow") {
+        return static_cast<QCocoaWindow *>(window->handle())->m_nsWindow;
     }
     return 0;
 }

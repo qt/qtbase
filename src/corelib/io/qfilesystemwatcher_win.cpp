@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,7 +52,14 @@
 #include <qdir.h>
 #include <qtextstream.h>
 
+#include <qt_windows.h>
+
 QT_BEGIN_NAMESPACE
+
+QWindowsFileSystemWatcherEngine::Handle::Handle()
+    : handle(INVALID_HANDLE_VALUE), flags(0u)
+{
+}
 
 QWindowsFileSystemWatcherEngine::~QWindowsFileSystemWatcherEngine()
 {

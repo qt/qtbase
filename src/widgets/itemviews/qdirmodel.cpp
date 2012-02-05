@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -854,10 +854,8 @@ QModelIndex QDirModel::index(const QString &path, int column) const
         return QModelIndex();
 
     QString absolutePath = QDir(path).absolutePath();
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
-    absolutePath = absolutePath.toLower();
-#endif
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    absolutePath = absolutePath.toLower();
     // On Windows, "filename......." and "filename" are equivalent
     if (absolutePath.endsWith(QLatin1Char('.'))) {
         int i;
@@ -899,7 +897,7 @@ QModelIndex QDirModel::index(const QString &path, int column) const
             emit const_cast<QDirModel*>(this)->layoutChanged();
     } else 
 #endif
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if (pathElements.at(0).endsWith(QLatin1Char(':'))) {
         pathElements[0] += QLatin1Char('/');
     }
@@ -923,7 +921,7 @@ QModelIndex QDirModel::index(const QString &path, int column) const
             const QFileInfo& fi = parent->children.at(j).info;
             QString childFileName;
             childFileName = idx.isValid() ? fi.fileName() : fi.absoluteFilePath();
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
             childFileName = childFileName.toLower();
 #endif
             if (childFileName == element) {
@@ -1299,8 +1297,6 @@ QString QDirModelPrivate::name(const QModelIndex &index) const
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
         if (name.startsWith(QLatin1Char('/'))) // UNC host
             return info.fileName();
-#endif        
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
         if (name.endsWith(QLatin1Char('/')))
             name.chop(1);
 #endif

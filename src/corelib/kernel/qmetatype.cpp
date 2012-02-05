@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -79,40 +79,40 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 template<typename T>
-struct TypeDefiniton {
+struct TypeDefinition {
     static const bool IsAvailable = true;
 };
 
 struct DefinedTypesFilter {
     template<typename T>
     struct Acceptor {
-        static const bool IsAccepted = TypeDefiniton<T>::IsAvailable && QTypeModuleInfo<T>::IsCore;
+        static const bool IsAccepted = TypeDefinition<T>::IsAvailable && QTypeModuleInfo<T>::IsCore;
     };
 };
 
 // Ignore these types, as incomplete
 #ifdef QT_NO_GEOM_VARIANT
-template<> struct TypeDefiniton<QRect> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QRectF> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QSize> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QSizeF> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QLine> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QLineF> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QPoint> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QPointF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QRect> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QRectF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QSize> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QSizeF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QLine> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QLineF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QPoint> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QPointF> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_BOOTSTRAPPED
-template<> struct TypeDefiniton<QVariantMap> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QVariantHash> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QVariantList> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QVariant> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QBitArray> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QUrl> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QEasingCurve> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QModelIndex> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QVariantMap> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QVariantHash> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QVariantList> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QVariant> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QBitArray> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QUrl> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QEasingCurve> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_REGEXP
-template<> struct TypeDefiniton<QRegExp> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = false; };
 #endif
 } // namespace
 
@@ -228,14 +228,13 @@ template<> struct TypeDefiniton<QRegExp> { static const bool IsAvailable = false
 
     \value User  Base value for user types
 
-    \omitvalue FirstCoreExtType
     \omitvalue FirstGuiType
     \omitvalue FirstWidgetsType
-    \omitvalue LastCoreExtType
     \omitvalue LastCoreType
     \omitvalue LastGuiType
     \omitvalue LastWidgetsType
     \omitvalue QReal
+    \omitvalue HighestInternalId
 
     Additional types can be registered using Q_DECLARE_METATYPE().
 
@@ -362,10 +361,10 @@ const char *QMetaType::typeName(int type)
     // In theory it can be filled during compilation time, but for some reason template code
     // that is able to do it causes GCC 4.6 to generate additional 3K of executable code. Probably
     // it is not worth of it.
-    static const char *namesCache[QMetaType::LastCoreExtType + 1];
+    static const char *namesCache[QMetaType::HighestInternalId + 1];
 
     const char *result;
-    if (type <= QMetaType::LastCoreExtType && ((result = namesCache[type])))
+    if (type <= QMetaType::HighestInternalId && ((result = namesCache[type])))
         return result;
 
 #define QT_METATYPE_TYPEID_TYPENAME_CONVERTER(MetaTypeName, TypeId, RealName) \
@@ -388,7 +387,7 @@ const char *QMetaType::typeName(int type)
     }
 #undef QT_METATYPE_TYPEID_TYPENAME_CONVERTER
 
-    Q_ASSERT(type <= QMetaType::LastCoreExtType);
+    Q_ASSERT(type <= QMetaType::HighestInternalId);
     namesCache[type] = result;
     return result;
 }
@@ -634,6 +633,7 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::VoidStar:
     case QMetaType::QObjectStar:
     case QMetaType::QWidgetStar:
+    case QMetaType::QModelIndex:
         return false;
     case QMetaType::Long:
         stream << qlonglong(*static_cast<const long *>(data));
@@ -838,6 +838,7 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::VoidStar:
     case QMetaType::QObjectStar:
     case QMetaType::QWidgetStar:
+    case QMetaType::QModelIndex:
         return false;
     case QMetaType::Long: {
         qlonglong l;
@@ -1262,6 +1263,60 @@ void *QMetaType::create(int type, const void *copy)
     return creator(copy);
 }
 
+namespace {
+class TypeDestroyer {
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
+    struct DestroyerImpl {
+        static void Destroy(const int /* type */, T *where) { delete where; }
+    };
+    template<typename T>
+    struct DestroyerImpl<T, /* IsAcceptedType = */ false> {
+        static void Destroy(const int type, void *where)
+        {
+            if (QTypeModuleInfo<T>::IsGui) {
+                if (qMetaTypeGuiHelper)
+                    qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].deleter(where);
+                return;
+            }
+            if (QTypeModuleInfo<T>::IsWidget) {
+                if (qMetaTypeWidgetsHelper)
+                    qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].deleter(where);
+                return;
+            }
+            // This point can be reached only for known types that definition is not available, for example
+            // in bootstrap mode. We have no other choice then ignore it.
+        }
+    };
+public:
+    TypeDestroyer(const int type)
+        : m_type(type)
+    {}
+
+    template<typename T>
+    void delegate(const T *where) { DestroyerImpl<T>::Destroy(m_type, const_cast<T*>(where)); }
+    void delegate(const void *) {}
+    void delegate(const QMetaTypeSwitcher::UnknownType *where) { customTypeDestroyer(m_type, (void*)where); }
+
+private:
+    static void customTypeDestroyer(const int type, void *where)
+    {
+        QMetaType::Destructor deleter;
+        const QVector<QCustomTypeInfo> * const ct = customTypes();
+        {
+            QReadLocker locker(customTypesLock());
+            if (Q_UNLIKELY(type < QMetaType::User || !ct || ct->count() <= type - QMetaType::User))
+                return;
+            deleter = ct->at(type - QMetaType::User).deleter;
+        }
+        if (Q_LIKELY(deleter))
+            deleter(where);
+    }
+
+    const int m_type;
+};
+} // namespace
+
+
 /*!
     Destroys the \a data, assuming it is of the \a type given.
 
@@ -1269,173 +1324,8 @@ void *QMetaType::create(int type, const void *copy)
 */
 void QMetaType::destroy(int type, void *data)
 {
-    if (!data)
-        return;
-    switch(type) {
-    case QMetaType::VoidStar:
-    case QMetaType::QObjectStar:
-    case QMetaType::QWidgetStar:
-        delete static_cast<void**>(data);
-        break;
-    case QMetaType::Long:
-        delete static_cast<long*>(data);
-        break;
-    case QMetaType::Int:
-        delete static_cast<int*>(data);
-        break;
-    case QMetaType::Short:
-        delete static_cast<short*>(data);
-        break;
-    case QMetaType::Char:
-        delete static_cast<char*>(data);
-        break;
-    case QMetaType::ULong:
-        delete static_cast<ulong*>(data);
-        break;
-    case QMetaType::LongLong:
-        delete static_cast<qlonglong*>(data);
-        break;
-    case QMetaType::ULongLong:
-        delete static_cast<qulonglong*>(data);
-        break;
-    case QMetaType::UInt:
-        delete static_cast<uint*>(data);
-        break;
-    case QMetaType::UShort:
-        delete static_cast<ushort*>(data);
-        break;
-    case QMetaType::UChar:
-        delete static_cast<uchar*>(data);
-        break;
-    case QMetaType::Bool:
-        delete static_cast<bool*>(data);
-        break;
-    case QMetaType::Float:
-        delete static_cast<float*>(data);
-        break;
-    case QMetaType::Double:
-        delete static_cast<double*>(data);
-        break;
-    case QMetaType::QChar:
-        delete static_cast< NS(QChar)* >(data);
-        break;
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QVariantMap:
-        delete static_cast< NS(QVariantMap)* >(data);
-        break;
-    case QMetaType::QVariantHash:
-        delete static_cast< NS(QVariantHash)* >(data);
-        break;
-    case QMetaType::QVariantList:
-        delete static_cast< NS(QVariantList)* >(data);
-        break;
-    case QMetaType::QVariant:
-        delete static_cast< NS(QVariant)* >(data);
-        break;
-#endif
-    case QMetaType::QByteArray:
-        delete static_cast< NS(QByteArray)* >(data);
-        break;
-    case QMetaType::QString:
-        delete static_cast< NS(QString)* >(data);
-        break;
-    case QMetaType::QStringList:
-        delete static_cast< NS(QStringList)* >(data);
-        break;
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QBitArray:
-        delete static_cast< NS(QBitArray)* >(data);
-        break;
-#endif
-    case QMetaType::QDate:
-        delete static_cast< NS(QDate)* >(data);
-        break;
-    case QMetaType::QTime:
-        delete static_cast< NS(QTime)* >(data);
-        break;
-    case QMetaType::QDateTime:
-        delete static_cast< NS(QDateTime)* >(data);
-        break;
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QUrl:
-        delete static_cast< NS(QUrl)* >(data);
-#endif
-        break;
-    case QMetaType::QLocale:
-        delete static_cast< NS(QLocale)* >(data);
-        break;
-#ifndef QT_NO_GEOM_VARIANT
-    case QMetaType::QRect:
-        delete static_cast< NS(QRect)* >(data);
-        break;
-    case QMetaType::QRectF:
-        delete static_cast< NS(QRectF)* >(data);
-        break;
-    case QMetaType::QSize:
-        delete static_cast< NS(QSize)* >(data);
-        break;
-    case QMetaType::QSizeF:
-        delete static_cast< NS(QSizeF)* >(data);
-        break;
-    case QMetaType::QLine:
-        delete static_cast< NS(QLine)* >(data);
-        break;
-    case QMetaType::QLineF:
-        delete static_cast< NS(QLineF)* >(data);
-        break;
-    case QMetaType::QPoint:
-        delete static_cast< NS(QPoint)* >(data);
-        break;
-    case QMetaType::QPointF:
-        delete static_cast< NS(QPointF)* >(data);
-        break;
-#endif
-#ifndef QT_NO_REGEXP
-    case QMetaType::QRegExp:
-        delete static_cast< NS(QRegExp)* >(data);
-        break;
-#endif
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QEasingCurve:
-        delete static_cast< NS(QEasingCurve)* >(data);
-        break;
-#endif
-    case QMetaType::QUuid:
-        delete static_cast< NS(QUuid)* >(data);
-        break;
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QModelIndex:
-        delete static_cast< NS(QModelIndex)* >(data);
-        break;
-#endif
-    case QMetaType::Void:
-        break;
-    default: {
-        const QVector<QCustomTypeInfo> * const ct = customTypes();
-        Deleter deleter = 0;
-        if (type >= FirstGuiType && type <= LastGuiType) {
-            Q_ASSERT(qMetaTypeGuiHelper);
-
-            if (!qMetaTypeGuiHelper)
-                return;
-            deleter = qMetaTypeGuiHelper[type - FirstGuiType].deleter;
-        } else if (type >= FirstWidgetsType && type <= LastWidgetsType) {
-            Q_ASSERT(qMetaTypeWidgetsHelper);
-
-            if (!qMetaTypeWidgetsHelper)
-                return;
-            deleter = qMetaTypeWidgetsHelper[type - FirstWidgetsType].deleter;
-        } else {
-            QReadLocker locker(customTypesLock());
-            if (type < User || !ct || ct->count() <= type - User)
-                break;
-            if (ct->at(type - User).typeName.isEmpty())
-                break;
-            deleter = ct->at(type - User).deleter;
-        }
-        deleter(data);
-        break; }
-    }
+    TypeDestroyer deleter(type);
+    QMetaTypeSwitcher::switcher<void>(deleter, type, data);
 }
 
 namespace {
@@ -1547,8 +1437,10 @@ class TypeDestructor {
                 if (!qMetaTypeWidgetsHelper)
                     return;
                 dtor = qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].destructor;
-            } else
+            } else {
                 customTypeDestructor(type, where);
+                return;
+            }
             dtor(where);
         }
     };
@@ -1605,7 +1497,7 @@ namespace {
 class SizeOf {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct SizeOfImpl {
-        static int Size(const int) { return sizeof(T); }
+        static int Size(const int) { return QTypeInfo<T>::sizeOf; }
     };
     template<typename T>
     struct SizeOfImpl<T, /* IsAcceptedType = */ false> {
@@ -1631,7 +1523,6 @@ public:
 
     template<typename T>
     int delegate(const T*) { return SizeOfImpl<T>::Size(m_type); }
-    int delegate(const void*) { return 0; }
     int delegate(const QMetaTypeSwitcher::UnknownType*) { return customTypeSizeOf(m_type); }
 private:
     static int customTypeSizeOf(const int type)
@@ -1670,11 +1561,13 @@ class Flags
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct FlagsImpl
     {
-        static quint32 Flags(const int)
+        static quint32 Flags(const int type)
         {
             return (!QTypeInfo<T>::isStatic * QMetaType::MovableType)
                     | (QTypeInfo<T>::isComplex * QMetaType::NeedsConstruction)
-                    | (QTypeInfo<T>::isComplex * QMetaType::NeedsDestruction);
+                    | (QTypeInfo<T>::isComplex * QMetaType::NeedsDestruction)
+                    | (type == QMetaType::QObjectStar ? QMetaType::PointerToQObject : 0)
+                    | (type == QMetaType::QWidgetStar ? QMetaType::PointerToQObject : 0);
         }
     };
     template<typename T>

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,6 +44,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qbytearray.h>
 
 #include <new>
 
@@ -55,7 +56,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 // F is a tuple: (QMetaType::TypeName, QMetaType::TypeNameID, RealType)
 #define QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F)\
@@ -66,16 +66,16 @@ QT_MODULE(Core)
     F(LongLong, 4, qlonglong) \
     F(ULongLong, 5, qulonglong) \
     F(Double, 6, double) \
-    F(Long, 129, long) \
-    F(Short, 130, short) \
-    F(Char, 131, char) \
-    F(ULong, 132, ulong) \
-    F(UShort, 133, ushort) \
-    F(UChar, 134, uchar) \
-    F(Float, 135, float) \
+    F(Long, 32, long) \
+    F(Short, 33, short) \
+    F(Char, 34, char) \
+    F(ULong, 35, ulong) \
+    F(UShort, 36, ushort) \
+    F(UChar, 37, uchar) \
+    F(Float, 38, float) \
 
 #define QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(F)\
-    F(VoidStar, 128, void*) \
+    F(VoidStar, 31, void*) \
 
 #define QT_FOR_EACH_STATIC_CORE_CLASS(F)\
     F(QChar, 7, QChar) \
@@ -99,12 +99,12 @@ QT_MODULE(Core)
     F(QRegExp, 27, QRegExp) \
     F(QEasingCurve, 29, QEasingCurve) \
     F(QUuid, 30, QUuid) \
-    F(QModelIndex, 31, QModelIndex) \
-    F(QVariant, 138, QVariant) \
+    F(QVariant, 41, QVariant) \
+    F(QModelIndex, 42, QModelIndex) \
 
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
-    F(QObjectStar, 136, QObject*) \
-    F(QWidgetStar, 137, QWidget*) \
+    F(QObjectStar, 39, QObject*) \
+    F(QWidgetStar, 40, QWidget*) \
 
 #define QT_FOR_EACH_STATIC_CORE_TEMPLATE(F)\
     F(QVariantMap, 8, QVariantMap) \
@@ -189,13 +189,12 @@ public:
         LastGuiType = QPolygonF,
         FirstWidgetsType = QIcon,
         LastWidgetsType = QSizePolicy,
-        FirstCoreExtType = VoidStar,
-        LastCoreExtType = QVariant,
+        HighestInternalId = LastWidgetsType,
 
 // This logic must match the one in qglobal.h
 #if defined(QT_COORD_TYPE)
         QReal = 0,
-#elif defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
+#elif defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE)
         QReal = Float,
 #else
         QReal = Double,
@@ -207,7 +206,8 @@ public:
     enum TypeFlag {
         NeedsConstruction = 0x1,
         NeedsDestruction = 0x2,
-        MovableType = 0x4
+        MovableType = 0x4,
+        PointerToQObject = 0x8
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
@@ -315,6 +315,9 @@ struct QMetaTypeId2
     static inline int qt_metatype_id() { return QMetaTypeId<T>::qt_metatype_id(); }
 };
 
+class QObject;
+class QWidget;
+
 namespace QtPrivate {
     template <typename T, bool Defined = QMetaTypeId2<T>::Defined>
     struct QMetaTypeIdHelper {
@@ -325,6 +328,49 @@ namespace QtPrivate {
         static inline int qt_metatype_id()
         { return -1; }
     };
+
+    template<typename T>
+    struct IsPointerToTypeDerivedFromQObject
+    {
+        enum { Value = false };
+    };
+
+    // Specialize to avoid sizeof(void) warning
+    template<>
+    struct IsPointerToTypeDerivedFromQObject<void*>
+    {
+        enum { Value = false };
+    };
+    template<>
+    struct IsPointerToTypeDerivedFromQObject<QObject*>
+    {
+        enum { Value = true };
+    };
+    template<>
+    struct IsPointerToTypeDerivedFromQObject<QWidget*>
+    {
+        enum { Value = true };
+    };
+
+    template<typename T>
+    struct IsPointerToTypeDerivedFromQObject<T*>
+    {
+        typedef qint8 yes_type;
+        typedef qint64 no_type;
+
+#ifndef QT_NO_QOBJECT
+        static yes_type checkType(QObject* );
+#endif
+        static no_type checkType(...);
+        Q_STATIC_ASSERT_X(sizeof(T), "Type argument of Q_DECLARE_METATYPE(T*) must be fully defined");
+        enum { Value = sizeof(checkType(static_cast<T*>(0))) == sizeof(yes_type) };
+    };
+
+    // Function pointers don't derive from QObject
+    template <class Result> struct IsPointerToTypeDerivedFromQObject<Result(*)()> { enum { Value = false }; };
+    template <class Result, class Arg0> struct IsPointerToTypeDerivedFromQObject<Result(*)(Arg0)> { enum { Value = false }; };
+    template <class Result, class Arg0, class Arg1> struct IsPointerToTypeDerivedFromQObject<Result(*)(Arg0, Arg1)> { enum { Value = false }; };
+    template <class Result, class Arg0, class Arg1, class Arg2> struct IsPointerToTypeDerivedFromQObject<Result(*)(Arg0, Arg1, Arg2)> { enum { Value = false }; };
 }
 
 template <typename T>
@@ -354,6 +400,8 @@ int qRegisterMetaType(const char *typeName
         flags |= QMetaType::NeedsConstruction;
         flags |= QMetaType::NeedsDestruction;
     }
+    if (QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value)
+        flags |= QMetaType::PointerToQObject;
 
     return QMetaType::registerType(typeName, reinterpret_cast<QMetaType::Deleter>(dptr),
                                    reinterpret_cast<QMetaType::Creator>(cptr),
@@ -459,15 +507,43 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_FORWARD_DECLARE_STATIC_TYPES_ITER)
 
 #undef QT_FORWARD_DECLARE_STATIC_TYPES_ITER
 
-class QWidget;
-class QObject;
 template <class T> class QList;
+template <class T> class QLinkedList;
+template <class T> class QVector;
+template <class T> class QQueue;
+template <class T> class QStack;
+template <class T> class QSet;
+template <class T> class QSharedPointer;
 template <class T1, class T2> class QMap;
 template <class T1, class T2> class QHash;
 typedef QList<QVariant> QVariantList;
 typedef QMap<QString, QVariant> QVariantMap;
 typedef QHash<QString, QVariant> QVariantHash;
 
+#define Q_DECLARE_METATYPE_TEMPLATE_1ARG(SINGLE_ARG_TEMPLATE) \
+template <typename T> \
+struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
+{ \
+    enum { \
+        Defined = QMetaTypeId2<T>::Defined \
+    }; \
+    static int qt_metatype_id() \
+    { \
+        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
+        if (!metatype_id.load()) \
+            metatype_id.storeRelease(qRegisterMetaType< SINGLE_ARG_TEMPLATE<T> >( QByteArray(QByteArray(#SINGLE_ARG_TEMPLATE "<") + QMetaType::typeName(qMetaTypeId<T>()) + ">"), \
+                        reinterpret_cast< SINGLE_ARG_TEMPLATE<T> *>(quintptr(-1)))); \
+        return metatype_id.loadAcquire(); \
+    } \
+};
+
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QList)
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QVector)
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QQueue)
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QStack)
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSet)
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSharedPointer)
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QLinkedList)
 
 QT_END_NAMESPACE
 

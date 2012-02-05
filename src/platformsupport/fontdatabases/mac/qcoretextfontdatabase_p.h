@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,6 +43,8 @@
 #define QCORETEXTFONTDATABASE_H
 
 #include <QPlatformFontDatabase>
+
+QT_BEGIN_NAMESPACE
 
 class QCoreTextFontDatabase : public QPlatformFontDatabase
 {
@@ -60,5 +62,7 @@ private:
     mutable QString defaultFontName;
     QHash<QFont::StyleHint, QStringList> fallbackLists;
 };
+
+QT_END_NAMESPACE
 
 #endif // QCORETEXTFONTDATABASE_H

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,7 +56,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qbytearray.h>
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
 #define QFILESYSTEMENTRY_NATIVE_PATH_IS_UTF16
 #endif
 
@@ -93,7 +93,7 @@ public:
     bool isRelative() const;
     bool isClean() const;
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     bool isDriveRoot() const;
 #endif
     bool isRoot() const;

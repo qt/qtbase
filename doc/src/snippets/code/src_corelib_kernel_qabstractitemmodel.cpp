@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,6 +33,7 @@
 ** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -86,3 +86,14 @@ beginMoveRows(parent, 2, 2, parent, 0);
 //! [9]
 beginMoveRows(parent, 2, 2, parent, 4);
 //! [9]
+
+//! [10]
+myData.clear();
+reset();
+//! [10]
+
+//! [11]
+beginResetModel();
+myData.clear();
+endResetModel();
+//! [11]

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,7 +52,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QStringList;
 template <class T> class QList;
@@ -162,7 +161,6 @@ private:
     friend class QFontDialogPrivate;
     friend class QFontEngineMultiXLFD;
     friend class QFontEngineMultiQWS;
-    friend class QFontEngineMultiS60;
     friend class QFontEngineMultiQPA;
 #ifdef QT_BUILD_INTERNAL
     friend class ::tst_QFont;

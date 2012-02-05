@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -169,16 +169,14 @@ private:
 };
 
 
-Q_GLOBAL_STATIC(QMutex, processManagerGlobalMutex)
-
 static QProcessManager *processManagerInstance = 0;
 
 static QProcessManager *processManager()
 {
     // The constructor of QProcessManager should be called only once
     // so we cannot use Q_GLOBAL_STATIC directly for QProcessManager
-    QMutex *mutex = processManagerGlobalMutex();
-    QMutexLocker locker(mutex);
+    static QBasicMutex processManagerGlobalMutex;
+    QMutexLocker locker(&processManagerGlobalMutex);
 
     if (!processManagerInstance)
         QProcessPrivate::initializeProcessManager();
@@ -355,6 +353,11 @@ void QProcessPrivate::destroyPipe(int *pipe)
         qt_safe_close(pipe[0]);
         pipe[0] = -1;
     }
+}
+
+void QProcessPrivate::destroyChannel(Channel *channel)
+{
+    destroyPipe(channel->pipe);
 }
 
 /*
@@ -545,10 +548,6 @@ inline pid_t qt_fork()
 #endif
 }
 
-#ifdef Q_OS_MAC
-Q_GLOBAL_STATIC(QMutex, cfbundleMutex);
-#endif
-
 void QProcessPrivate::startProcess()
 {
     Q_Q(QProcess);
@@ -599,7 +598,8 @@ void QProcessPrivate::startProcess()
         {
             // CFBundle is not reentrant, since CFBundleCreate might return a reference
             // to a cached bundle object. Protect the bundle calls with a mutex lock.
-            QMutexLocker lock(cfbundleMutex());
+            static QBasicMutex cfbundleMutex;
+            QMutexLocker lock(&cfbundleMutex);
             QCFType<CFBundleRef> bundle = CFBundleCreate(0, url);
             url = CFBundleCopyExecutableURL(bundle);
         }

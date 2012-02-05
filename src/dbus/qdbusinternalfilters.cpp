@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -324,19 +324,15 @@ static int writeProperty(QObject *obj, const QByteArray &property_name, QVariant
 
     // we found our property
     // do we have the right type?
-    int id = mp.type();
-    if (id == QVariant::UserType) {
-        // dynamic type
-        id = qDBusNameToTypeId(mp.typeName());
-        if (id == -1) {
-            // type not registered?
-            qWarning("QDBusConnection: Unable to handle unregistered datatype '%s' for property '%s::%s'",
-                     mp.typeName(), mo->className(), property_name.constData());
-            return PropertyWriteFailed;
-        }
+    int id = mp.userType();
+    if (!id){
+        // type not registered or invalid / void?
+        qWarning("QDBusConnection: Unable to handle unregistered datatype '%s' for property '%s::%s'",
+                 mp.typeName(), mo->className(), property_name.constData());
+        return PropertyWriteFailed;
     }
 
-    if (id != 0xff && value.userType() == QDBusMetaTypeId::argument) {
+    if (id != QMetaType::QVariant && value.userType() == QDBusMetaTypeId::argument) {
         // we have to demarshall before writing
         void *null = 0;
         QVariant other(id, null);
@@ -434,7 +430,7 @@ static QVariantMap readAllProperties(QObject *object, int flags)
             continue;
 
         // is it a registered property?
-        int typeId = qDBusNameToTypeId(mp.typeName());
+        int typeId = mp.userType();
         if (!typeId)
             continue;
         const char *signature = QDBusMetaType::typeToSignature(typeId);

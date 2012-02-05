@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -67,19 +67,14 @@ QT_END_NAMESPACE
 #include "qstringlist.h"
 #include "qvariant.h"
 #include "qstringbuilder.h"
-#if defined(Q_OS_WIN)
-#   include "qt_windows.h"
-#   include <time.h>
-#endif
 #include "private/qnumeric_p.h"
 #include "private/qsystemlibrary_p.h"
+#ifdef Q_OS_WIN
+#   include <qt_windows.h>
+#   include <time.h>
+#endif
 
 QT_BEGIN_NAMESPACE
-
-#if defined(Q_OS_SYMBIAN)
-void qt_symbianUpdateSystemPrivate();
-void qt_symbianInitSystemLocale();
-#endif
 
 #ifndef QT_NO_SYSTEMLOCALE
 static QSystemLocale *_systemLocale = 0;
@@ -474,9 +469,6 @@ static const QSystemLocale *systemLocale()
 {
     if (_systemLocale)
         return _systemLocale;
-#if defined(Q_OS_SYMBIAN)
-    qt_symbianInitSystemLocale();
-#endif
     return QSystemLocale_globalSystemLocale();
 }
 
@@ -490,10 +482,6 @@ void QLocalePrivate::updateSystemPrivate()
     sys_locale->query(QSystemLocale::LocaleChanged, QVariant());
 
     *system_lp = *sys_locale->fallbackLocale().d();
-
-#if defined(Q_OS_SYMBIAN)
-    qt_symbianUpdateSystemPrivate();
-#endif
 
     QVariant res = sys_locale->query(QSystemLocale::LanguageId, QVariant());
     if (!res.isNull()) {
@@ -1033,11 +1021,7 @@ QString QLocale::scriptToString(QLocale::Script script)
 }
 
 /*!
-    Returns the short int represented by the localized string \a s,
-    using base \a base. If \a base is 0 the base is determined
-    automatically using the following rules: If the string begins with
-    "0x", it is assumed to be hexadecimal; if it begins with "0", it
-    is assumed to be octal; otherwise it is assumed to be decimal.
+    Returns the short int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
 
@@ -1049,9 +1033,9 @@ QString QLocale::scriptToString(QLocale::Script script)
     \sa toUShort(), toString()
 */
 
-short QLocale::toShort(const QString &s, bool *ok, int base) const
+short QLocale::toShort(const QString &s, bool *ok) const
 {
-    qlonglong i = toLongLong(s, ok, base);
+    qlonglong i = toLongLong(s, ok);
     if (i < SHRT_MIN || i > SHRT_MAX) {
         if (ok != 0)
             *ok = false;
@@ -1061,11 +1045,7 @@ short QLocale::toShort(const QString &s, bool *ok, int base) const
 }
 
 /*!
-    Returns the unsigned short int represented by the localized string
-    \a s, using base \a base. If \a base is 0 the base is determined
-    automatically using the following rules: If the string begins with
-    "0x", it is assumed to be hexadecimal; if it begins with "0", it
-    is assumed to be octal; otherwise it is assumed to be decimal.
+    Returns the unsigned short int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
 
@@ -1077,9 +1057,9 @@ short QLocale::toShort(const QString &s, bool *ok, int base) const
     \sa toShort(), toString()
 */
 
-ushort QLocale::toUShort(const QString &s, bool *ok, int base) const
+ushort QLocale::toUShort(const QString &s, bool *ok) const
 {
-    qulonglong i = toULongLong(s, ok, base);
+    qulonglong i = toULongLong(s, ok);
     if (i > USHRT_MAX) {
         if (ok != 0)
             *ok = false;
@@ -1089,11 +1069,7 @@ ushort QLocale::toUShort(const QString &s, bool *ok, int base) const
 }
 
 /*!
-    Returns the int represented by the localized string \a s, using
-    base \a base. If \a base is 0 the base is determined automatically
-    using the following rules: If the string begins with "0x", it is
-    assumed to be hexadecimal; if it begins with "0", it is assumed to
-    be octal; otherwise it is assumed to be decimal.
+    Returns the int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
 
@@ -1105,9 +1081,9 @@ ushort QLocale::toUShort(const QString &s, bool *ok, int base) const
     \sa toUInt(), toString()
 */
 
-int QLocale::toInt(const QString &s, bool *ok, int base) const
+int QLocale::toInt(const QString &s, bool *ok) const
 {
-    qlonglong i = toLongLong(s, ok, base);
+    qlonglong i = toLongLong(s, ok);
     if (i < INT_MIN || i > INT_MAX) {
         if (ok != 0)
             *ok = false;
@@ -1117,11 +1093,7 @@ int QLocale::toInt(const QString &s, bool *ok, int base) const
 }
 
 /*!
-    Returns the unsigned int represented by the localized string \a s,
-    using base \a base. If \a base is 0 the base is determined
-    automatically using the following rules: If the string begins with
-    "0x", it is assumed to be hexadecimal; if it begins with "0", it
-    is assumed to be octal; otherwise it is assumed to be decimal.
+    Returns the unsigned int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
 
@@ -1133,9 +1105,9 @@ int QLocale::toInt(const QString &s, bool *ok, int base) const
     \sa toInt(), toString()
 */
 
-uint QLocale::toUInt(const QString &s, bool *ok, int base) const
+uint QLocale::toUInt(const QString &s, bool *ok) const
 {
-    qulonglong i = toULongLong(s, ok, base);
+    qulonglong i = toULongLong(s, ok);
     if (i > UINT_MAX) {
         if (ok != 0)
             *ok = false;
@@ -1145,11 +1117,7 @@ uint QLocale::toUInt(const QString &s, bool *ok, int base) const
 }
 
 /*!
-    Returns the long long int represented by the localized string \a
-    s, using base \a base. If \a base is 0 the base is determined
-    automatically using the following rules: If the string begins with
-    "0x", it is assumed to be hexadecimal; if it begins with "0", it
-    is assumed to be octal; otherwise it is assumed to be decimal.
+    Returns the long long int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
 
@@ -1162,25 +1130,21 @@ uint QLocale::toUInt(const QString &s, bool *ok, int base) const
 */
 
 
-qlonglong QLocale::toLongLong(const QString &s, bool *ok, int base) const
+qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
 {
     QLocalePrivate::GroupSeparatorMode mode
         = p.numberOptions & RejectGroupSeparator
             ? QLocalePrivate::FailOnGroupSeparators
             : QLocalePrivate::ParseGroupSeparators;
 
-    return d()->stringToLongLong(s, base, ok, mode);
+    return d()->stringToLongLong(s, 10, ok, mode);
 }
 
 // ### Qt5: make the return type for toULongLong() qulonglong.
 
 /*!
     Returns the unsigned long long int represented by the localized
-    string \a s, using base \a base. If \a base is 0 the base is
-    determined automatically using the following rules: If the string
-    begins with "0x", it is assumed to be hexadecimal; if it begins
-    with "0", it is assumed to be octal; otherwise it is assumed to be
-    decimal.
+    string \a s.
 
     If the conversion fails the function returns 0.
 
@@ -1192,14 +1156,14 @@ qlonglong QLocale::toLongLong(const QString &s, bool *ok, int base) const
     \sa toLongLong(), toInt(), toDouble(), toString()
 */
 
-qlonglong QLocale::toULongLong(const QString &s, bool *ok, int base) const
+qlonglong QLocale::toULongLong(const QString &s, bool *ok) const
 {
     QLocalePrivate::GroupSeparatorMode mode
         = p.numberOptions & RejectGroupSeparator
             ? QLocalePrivate::FailOnGroupSeparators
             : QLocalePrivate::ParseGroupSeparators;
 
-    return d()->stringToUnsLongLong(s, base, ok, mode);
+    return d()->stringToUnsLongLong(s, 10, ok, mode);
 }
 
 /*!

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1088,15 +1088,6 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
         if (readSoFar)
             debugBinaryString(data, int(readSoFar));
 #endif
-#if defined(Q_OS_SYMBIAN)
-        // Open C fgets strips '\r' but readSoFar gets returned as if it was still there
-        if ((d->openMode & Text) &&
-            readSoFar > 1 &&
-            data[readSoFar - 1] == '\0' &&
-            data[readSoFar - 2] == '\n') {
-            --readSoFar;
-        }
-#endif
         if (readSoFar && data[readSoFar - 1] == '\n') {
             if (d->openMode & Text) {
                 // QRingBuffer::readLine() isn't Text aware.
@@ -1135,12 +1126,6 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
     data[readSoFar] = '\0';
 
     if (d->openMode & Text) {
-#if defined(Q_OS_SYMBIAN)
-        // Open C fgets strips '\r' but readSoFar gets returned as if it was still there
-        if (readSoFar > 1 && data[readSoFar - 1] == '\0' && data[readSoFar - 2] == '\n') {
-            --readSoFar;
-        }
-#endif
         if (readSoFar > 1 && data[readSoFar - 1] == '\n' && data[readSoFar - 2] == '\r') {
             data[readSoFar - 2] = '\n';
             data[readSoFar - 1] = '\0';

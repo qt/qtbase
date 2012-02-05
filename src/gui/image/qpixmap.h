@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QImageWriter;
 class QImageReader;
@@ -146,7 +145,7 @@ public:
     inline void scroll(int dx, int dy, int x, int y, int width, int height, QRegion *exposed = 0);
     void scroll(int dx, int dy, const QRect &rect, QRegion *exposed = 0);
 
-#ifdef QT_DEPRECATED
+#if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED int serialNumber() const;
 #endif
     qint64 cacheKey() const;

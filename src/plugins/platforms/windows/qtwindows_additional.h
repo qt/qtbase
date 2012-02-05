@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,6 +56,7 @@
 #    define SPI_GETFONTSMOOTHINGTYPE 0x200A
 #    define FE_FONTSMOOTHINGCLEARTYPE 0x0002
 #    define CLEARTYPE_QUALITY       5
+#    define SPI_GETDROPSHADOW 0x1024
 
 #    define CF_DIBV5 17
 

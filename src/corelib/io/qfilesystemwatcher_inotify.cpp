@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -131,7 +131,7 @@
 # define __NR_inotify_rm_watch  286
 # define __NR_inotify_init1     328
 #else
-# error "This architecture is not supported. Please talk to qt-info@nokia.com"
+# error "This architecture is not supported. Please see http://www.qt-project.org/"
 #endif
 
 #if !defined(IN_CLOEXEC) && defined(O_CLOEXEC) && defined(__NR_inotify_init1)
@@ -277,7 +277,7 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                        | IN_MOVE_SELF
                                        | IN_DELETE_SELF
                                        )));
-        if (wd <= 0) {
+        if (wd < 0) {
             perror("QInotifyFileSystemWatcherEngine::addPaths: inotify_add_watch failed");
             continue;
         }

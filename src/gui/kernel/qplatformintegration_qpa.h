@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,7 +50,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QPlatformWindow;
 class QWindow;
@@ -65,6 +64,8 @@ class QAbstractEventDispatcher;
 class QPlatformInputContext;
 class QPlatformAccessibility;
 class QPlatformTheme;
+class QPlatformDialogHelper;
+class QPlatformSharedGraphicsCache;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -72,7 +73,10 @@ public:
     enum Capability {
         ThreadedPixmaps = 1,
         OpenGL = 2,
-        ThreadedOpenGL = 3
+        ThreadedOpenGL = 3,
+        SharedGraphicsCache = 4,
+        BufferQueueingOpenGL = 5
+
     };
 
     virtual ~QPlatformIntegration() { }
@@ -83,6 +87,7 @@ public:
     virtual QPlatformWindow *createPlatformWindow(QWindow *window) const = 0;
     virtual QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const = 0;
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    virtual QPlatformSharedGraphicsCache *createPlatformSharedGraphicsCache(const char *cacheId) const;
 
 // Event dispatcher:
     virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const = 0;

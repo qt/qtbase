@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -343,9 +343,9 @@ void tst_QFile::cleanup()
 
 void tst_QFile::initTestCase()
 {
-    // chdir to testdata directory and use relative paths.
-    QString testdata_dir = QFileInfo(QFINDTESTDATA("testfile.txt")).absolutePath();
-    QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
+    QString workingDir = QFileInfo(QFINDTESTDATA("stdinprocess")).absolutePath();
+    QVERIFY2(!workingDir.isEmpty(), qPrintable("Could not find working directory!"));
+    QVERIFY2(QDir::setCurrent(workingDir), qPrintable("Could not chdir to " + workingDir));
 
     QFile::remove("noreadfile");
 
@@ -832,7 +832,7 @@ void tst_QFile::readAllStdin()
     QByteArray lotsOfData(1024, '@'); // 10 megs
 
     QProcess process;
-    process.start(QFINDTESTDATA("stdinprocess/stdinprocess")+" all");
+    process.start("stdinprocess/stdinprocess all");
     QVERIFY( process.waitForStarted() );
     for (int i = 0; i < 5; ++i) {
         QTest::qWait(1000);
@@ -867,7 +867,7 @@ void tst_QFile::readLineStdin()
 
     for (int i = 0; i < 2; ++i) {
         QProcess process;
-        process.start((QFINDTESTDATA("stdinprocess/stdinprocess")+QString(" line %1").arg(i)), QIODevice::Text | QIODevice::ReadWrite);
+        process.start((QString("stdinprocess/stdinprocess line %1").arg(i)), QIODevice::Text | QIODevice::ReadWrite);
         for (int i = 0; i < 5; ++i) {
             QTest::qWait(1000);
             process.write(lotsOfData);
@@ -901,7 +901,7 @@ void tst_QFile::readLineStdin_lineByLine()
 #else
     for (int i = 0; i < 2; ++i) {
         QProcess process;
-        process.start(QFINDTESTDATA("stdinprocess/stdinprocess")+ QString(" line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
+        process.start(QString("stdinprocess/stdinprocess line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
         QVERIFY(process.waitForStarted());
 
         for (int j = 0; j < 3; ++j) {

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -90,7 +90,7 @@ void tst_QPrinterInfo::macFixNameFormat(QString *printerName)
 {
 // Modify the format of the printer name to match Qt, lpstat returns
 // foo___domain_no, Qt returns foo @ domain.no
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     printerName->replace(QLatin1String("___"), QLatin1String(" @ "));
     printerName->replace(QLatin1String("_"), QLatin1String("."));
 #else

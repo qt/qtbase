@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -266,7 +266,7 @@ void tst_QFileDialog2::showNameFilterDetails()
     filterChoices << "Image files (*.png *.xpm *.jpg)"
                   << "Text files (*.txt)"
                   << "Any files (*.*)";
-    fd.setFilters(filterChoices);
+    fd.setNameFilters(filterChoices);
 
     fd.setNameFilterDetailsVisible(false);
     QCOMPARE(filters->itemText(0), QString("Image files"));
@@ -515,6 +515,9 @@ void tst_QFileDialog2::task227930_correctNavigationKeyboardBehavior()
     QTest::keyClick(list, Qt::Key_Down);
     QTest::keyClick(list, Qt::Key_Return);
     QTest::qWait(200);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "This test currently fails on Mac OS X, see QTBUG-23602", Continue);
+#endif
     QCOMPARE(fd.isVisible(), true);
     QTest::qWait(200);
     file.close();

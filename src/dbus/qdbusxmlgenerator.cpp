@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -101,7 +101,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
             if (mp.isWritable())
                 access |= 2;
 
-            int typeId = qDBusNameToTypeId(mp.typeName());
+            int typeId = mp.userType();
             if (!typeId)
                 continue;
             const char *signature = QDBusMetaType::typeToSignature(typeId);
@@ -150,7 +150,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
                       .arg(QLatin1String(signature.left(paren)));
 
         // check the return type first
-        int typeId = qDBusNameToTypeId(mm.typeName());
+        int typeId = QMetaType::type(mm.typeName());
         if (typeId) {
             const char *typeName = QDBusMetaType::typeToSignature(typeId);
             if (typeName) {

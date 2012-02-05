@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,13 +45,13 @@
 #include "qreadwritelock.h"
 #include "qlist.h"
 #include "qalgorithms.h"
-#include "qt_windows.h"
 
 #ifndef QT_NO_THREAD
 
 #define Q_MUTEX_T void*
 #include <private/qmutex_p.h>
 #include <private/qreadwritelock_p.h>
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

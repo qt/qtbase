@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -75,6 +75,7 @@ private slots:
     void findChildren();
     void connectDisconnectNotify_data();
     void connectDisconnectNotify();
+    void connectNotifyPtr();
     void emitInDefinedOrder();
     void customTypes();
     void streamCustomTypes();
@@ -134,6 +135,7 @@ private slots:
     void returnValue();
     void returnValue2_data();
     void returnValue2();
+    void connectVirtualSlots();
 };
 
 class SenderObject : public QObject
@@ -843,6 +845,19 @@ void tst_QObject::connectDisconnectNotify()
     QObject::disconnect( (SenderObject*)s, signal, (ReceiverObject*)r, method );
     QCOMPARE( s->org_signal, s->nw_signal );
     QCOMPARE( s->org_signal.toLatin1(), QMetaObject::normalizedSignature(a_signal.toLatin1().constData()) );
+
+    delete s;
+    delete r;
+}
+
+void tst_QObject::connectNotifyPtr()
+{
+    NotifyObject *s = new NotifyObject;
+    NotifyObject *r = new NotifyObject;
+
+    connect( (SenderObject*)s, &SenderObject::signal1, (ReceiverObject*)r, &ReceiverObject::slot1 );
+    QCOMPARE( s->org_signal, s->nw_signal );
+    QCOMPARE( s->org_signal.toLatin1(), QMetaObject::normalizedSignature(SIGNAL(signal1())));
 
     delete s;
     delete r;
@@ -1670,7 +1685,7 @@ void tst_QObject::property()
 
     const int idx = mo->indexOfProperty("variant");
     QVERIFY(idx != -1);
-    QVERIFY(mo->property(idx).type() == QVariant::LastType);
+    QCOMPARE(QMetaType::Type(mo->property(idx).type()), QMetaType::QVariant);
     QCOMPARE(object.property("variant"), QVariant());
     QVariant variant1(42);
     QVariant variant2("string");
@@ -3363,7 +3378,7 @@ void tst_QObject::deleteQObjectWhenDeletingEvent()
     };
 
     QObject o;
-    QGuiApplication::postEvent(&o, new MyEvent);
+    QCoreApplication::postEvent(&o, new MyEvent);
     QCoreApplication::removePostedEvents(&o); // here you would get a deadlock
 }
 
@@ -4128,11 +4143,17 @@ void tst_QObject::pointerConnect()
     r1->reset();
     r2->reset();
     ReceiverObject::sequence = 0;
+    QTimer timer;
 
     QVERIFY( connect( s, &SenderObject::signal1 , r1, &ReceiverObject::slot1 ) );
     QVERIFY( connect( s, &SenderObject::signal1 , r2, &ReceiverObject::slot1 ) );
     QVERIFY( connect( s, &SenderObject::signal1 , r1, &ReceiverObject::slot3 ) );
     QVERIFY( connect( s, &SenderObject::signal3 , r1, &ReceiverObject::slot3 ) );
+#if defined(Q_CC_GNU) && defined(Q_OS_UNIX)
+    QEXPECT_FAIL("", "Test may fail due to failing comparison of pointers to member functions caused by problems with -reduce-relocations on this platform.", Continue);
+#endif
+    QVERIFY2( connect( &timer, &QTimer::timeout, r1, &ReceiverObject::deleteLater ),
+             "Signal connection failed most likely due to failing comparison of pointers to member functions caused by problems with -reduce-relocations on this platform.");
 
     s->emitSignal1();
     s->emitSignal2();
@@ -5150,6 +5171,52 @@ void tst_QObject::returnValue2()
     }
 }
 
+class VirtualSlotsObjectBase : public QObject {
+    Q_OBJECT
+public slots:
+    virtual void slot1() {
+        base_counter1++;
+    }
+public:
+    VirtualSlotsObjectBase() : base_counter1(0) {}
+    int base_counter1;
+signals:
+    void signal1();
+};
+
+class VirtualSlotsObject : public VirtualSlotsObjectBase {
+    Q_OBJECT
+public slots:
+    virtual void slot1() {
+        derived_counter1++;
+    }
+public:
+    VirtualSlotsObject() : derived_counter1(0) {}
+    int derived_counter1;
+};
+
+void tst_QObject::connectVirtualSlots()
+{
+    VirtualSlotsObject obj;
+    QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObjectBase::slot1, Qt::UniqueConnection));
+    QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObjectBase::slot1, Qt::UniqueConnection));
+
+    emit obj.signal1();
+    QCOMPARE(obj.base_counter1, 0);
+    QCOMPARE(obj.derived_counter1, 1);
+
+    QVERIFY(QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObjectBase::slot1));
+    QVERIFY(!QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObjectBase::slot1));
+
+    emit obj.signal1();
+    QCOMPARE(obj.base_counter1, 0);
+    QCOMPARE(obj.derived_counter1, 1);
+
+    /* the C++ standard say the comparison between pointer to virtual member function is unspecified
+    QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObjectBase::slot1, Qt::UniqueConnection));
+    QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObject::slot1, Qt::UniqueConnection));
+    */
+}
 
 QTEST_MAIN(tst_QObject)
 #include "tst_qobject.moc"

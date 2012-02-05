@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,16 +48,13 @@
 @class QCocoaAccessibleElement;
 
 @interface QCocoaAccessibleElement : NSObject {
-    NSUInteger index;
     NSString *role;
     NSObject * parent;
     void *accessibleInterface;
-
 }
 
-- (id)initWithIndex:(int)aIndex parent:(id)aParent accessibleInterface:(void *)anQAccessibleInterface;
-+ (QCocoaAccessibleElement *)elementWithIndex:(int)aIndex parent:(id)aParent accessibleInterface:(void *)anQAccessibleInterface;
-- (NSUInteger)index;
+- (id)initWithInterface:(void *)anQAccessibleInterface parent:(id)aParent;
++ (QCocoaAccessibleElement *)elementWithInterface:(void *)anQAccessibleInterface parent:(id)aParent;
 
 @end
 

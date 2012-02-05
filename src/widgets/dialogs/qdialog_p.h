@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,7 +58,7 @@
 #include "QtCore/qpointer.h"
 #include "QtWidgets/qdialog.h"
 #include "QtWidgets/qpushbutton.h"
-#include "QtWidgets/qplatformdialoghelper_qpa.h"
+#include <QtGui/QPlatformDialogHelper>
 
 QT_BEGIN_NAMESPACE
 

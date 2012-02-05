@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -138,7 +138,7 @@ QT_BEGIN_NAMESPACE
 
     \value SystemTime         The human-readable system time. This clock is not monotonic.
     \value MonotonicClock     The system's monotonic clock, usually found in Unix systems. This clock is monotonic and does not overflow.
-    \value TickCounter        The system's tick counter, used on Windows and Symbian systems. This clock may overflow.
+    \value TickCounter        The system's tick counter, used on Windows systems. This clock may overflow.
     \value MachAbsoluteTime   The Mach kernel's absolute time (Mac OS X). This clock is monotonic and does not overflow.
     \value PerformanceCounter The high-resolution performance counter provided by Windows. This clock is monotonic and does not overflow.
 
@@ -164,7 +164,7 @@ QT_BEGIN_NAMESPACE
 
     The tick counter clock type is based on the system's or the processor's
     tick counter, multiplied by the duration of a tick. This clock type is
-    used on Windows and Symbian platforms. If the high-precision performance
+    used on Windows platforms. If the high-precision performance
     counter is available on Windows, the \tt{PerformanceCounter} clock type
     is used instead.
 
@@ -177,12 +177,6 @@ QT_BEGIN_NAMESPACE
     the time since the reference may be different by multiples of 2^32
     milliseconds. When comparing such values, it's recommended that the high
     32 bits of the millisecond count be masked off.
-
-    On Symbian systems, the overflow happens after 2^32 ticks, the duration
-    of which can be obtained from the platform HAL using the constant
-    HAL::ENanoTickPeriod. When comparing values between processes, it's
-    necessary to divide the value by the tick duration and mask off the high
-    32 bits.
 
     \section2 MachAbsoluteTime
 
@@ -236,7 +230,7 @@ void QElapsedTimer::invalidate()
 }
 
 /*!
-    Returns true if this object was invalidated by a call to invalidate() and
+    Returns false if this object was invalidated by a call to invalidate() and
     has not been restarted since.
 
     \sa invalidate(), start(), restart()

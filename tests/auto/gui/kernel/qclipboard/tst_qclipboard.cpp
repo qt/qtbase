@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,7 +46,7 @@
 #include <QtCore/QDir>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #include <Carbon/Carbon.h>
 #endif
 
@@ -74,7 +74,7 @@ void tst_QClipboard::init()
 
 bool tst_QClipboard::nativeClipboardWorking()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     PasteboardRef pasteboard;
     OSStatus status = PasteboardCreate(0, &pasteboard);
     if (status == noErr)
@@ -295,7 +295,7 @@ void tst_QClipboard::setMimeData()
     QCOMPARE(spySelection.count(), 1);
     QCOMPARE(spyData.count(), 1);
     QCOMPARE(spyFindBuffer.count(), 0);
-#elif defined(Q_WS_MAC)
+#elif defined(Q_OS_MAC)
     QCOMPARE(spySelection.count(), 0);
     QCOMPARE(spyData.count(), 1);
     QCOMPARE(spyFindBuffer.count(), 1);
@@ -328,7 +328,7 @@ void tst_QClipboard::setMimeData()
     QCOMPARE(spySelection.count(), 1);
     QCOMPARE(spyData.count(), 1);
     QCOMPARE(spyFindBuffer.count(), 0);
-#elif defined(Q_WS_MAC)
+#elif defined(Q_OS_MAC)
     QCOMPARE(spySelection.count(), 0);
     QCOMPARE(spyData.count(), 1);
     QCOMPARE(spyFindBuffer.count(), 1);

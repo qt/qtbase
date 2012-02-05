@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -143,25 +143,7 @@ public:
 
     QLineEdit *lineEdit() const;
 
-    int maxNameLength(const QString &path) {
-#if defined(Q_OS_UNIX)
-        return ::pathconf(QFile::encodeName(path).data(), _PC_NAME_MAX);
-#elif defined(Q_OS_WIN)
-#ifndef Q_OS_WINCE
-        DWORD maxLength;
-        QString drive = path.left(3);
-        if (::GetVolumeInformation(reinterpret_cast<const wchar_t *>(drive.utf16()), NULL, 0, NULL, &maxLength, NULL, NULL, 0) == FALSE)
-            return -1;
-        return maxLength;
-#else
-        Q_UNUSED(path);
-        return MAX_PATH;
-#endif //Q_OS_WINCE
-#else
-        Q_UNUSED(path);
-#endif
-        return -1;
-    }
+    static int maxNameLength(const QString &path);
 
     QString basename(const QString &path) const
     {
@@ -187,7 +169,7 @@ public:
 
     static inline QString toInternal(const QString &path)
     {
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
         QString n(path);
         n.replace(QLatin1Char('\\'), QLatin1Char('/'));
 #if defined(Q_OS_WINCE)

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1845,8 +1845,10 @@ void QIBaseDriver::qHandleEventNotification(void *updatedResultBuffer)
         isc_event_counts(counts, eBuffer->bufferLength, eBuffer->eventBuffer, eBuffer->resultBuffer);
         if (counts[0]) {
 
-            if (eBuffer->subscriptionState == QIBaseEventBuffer::Subscribed)
+            if (eBuffer->subscriptionState == QIBaseEventBuffer::Subscribed) {
                 emit notification(i.key());
+                emit notification(i.key(), QSqlDriver::UnknownSource);
+            }
             else if (eBuffer->subscriptionState == QIBaseEventBuffer::Starting)
                 eBuffer->subscriptionState = QIBaseEventBuffer::Subscribed;
 

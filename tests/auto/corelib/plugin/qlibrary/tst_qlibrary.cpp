@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -103,8 +103,8 @@
 
 static QString sys_qualifiedLibraryName(const QString &fileName)
 {
-    QString currDir = QDir::currentPath();
-    return currDir + "/" + PREFIX + fileName + SUFFIX;
+    QString appDir = QCoreApplication::applicationDirPath();
+    return appDir + "/" + PREFIX + fileName + SUFFIX;
 }
 
 QT_FORWARD_DECLARE_CLASS(QLibrary)
@@ -170,8 +170,8 @@ void tst_QLibrary::version()
     QFETCH( int, resultversion );
 
 #if !defined(Q_OS_AIX) && !defined(Q_OS_WIN)
-    QString currDir = QDir::currentPath();
-    QLibrary library( currDir + QLatin1Char('/') + lib, loadversion );
+    QString appDir = QCoreApplication::applicationDirPath();
+    QLibrary library( appDir + QLatin1Char('/') + lib, loadversion );
     QVERIFY2(library.load(), qPrintable(library.errorString()));
 
     VersionFunction fnVersion = (VersionFunction)library.resolve("mylibversion");
@@ -190,24 +190,24 @@ void tst_QLibrary::load_data()
     QTest::addColumn<QString>("lib");
     QTest::addColumn<bool>("result");
 
-    QString currDir = QDir::currentPath();
+    QString appDir = QCoreApplication::applicationDirPath();
 
-    QTest::newRow( "ok00" ) << currDir + "/mylib" << true;
-    QTest::newRow( "notexist" ) << currDir + "/nolib" << false;
-    QTest::newRow( "badlibrary" ) << currDir + "/qlibrary.pro" << false;
+    QTest::newRow( "ok00" ) << appDir + "/mylib" << true;
+    QTest::newRow( "notexist" ) << appDir + "/nolib" << false;
+    QTest::newRow( "badlibrary" ) << appDir + "/qlibrary.pro" << false;
 
 #ifdef Q_OS_MAC
-    QTest::newRow("ok (libmylib ver. 1)") << currDir + "/libmylib" <<true;
+    QTest::newRow("ok (libmylib ver. 1)") << appDir + "/libmylib" <<true;
 #endif
 
 # if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    QTest::newRow( "ok01 (with suffix)" ) << currDir + "/mylib.dll" << true;
-    QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/mylib.dl2" << true;
-    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.qt.test.mylib.dll" << true;
+    QTest::newRow( "ok01 (with suffix)" ) << appDir + "/mylib.dll" << true;
+    QTest::newRow( "ok02 (with non-standard suffix)" ) << appDir + "/mylib.dl2" << true;
+    QTest::newRow( "ok03 (with many dots)" ) << appDir + "/system.qt.test.mylib.dll" << true;
 # elif defined Q_OS_UNIX
-    QTest::newRow( "ok01 (with suffix)" ) << currDir + "/libmylib" SUFFIX << true;
-    QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/libmylib.so2" << true;
-    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.qt.test.mylib.so" << true;
+    QTest::newRow( "ok01 (with suffix)" ) << appDir + "/libmylib" SUFFIX << true;
+    QTest::newRow( "ok02 (with non-standard suffix)" ) << appDir + "/libmylib.so2" << true;
+    QTest::newRow( "ok03 (with many dots)" ) << appDir + "/system.qt.test.mylib.so" << true;
 # endif  // Q_OS_UNIX
 }
 
@@ -231,14 +231,14 @@ void tst_QLibrary::unload_data()
     QTest::addColumn<QString>("lib");
     QTest::addColumn<bool>("result");
 
-    QString currDir = QDir::currentPath();
+    QString appDir = QCoreApplication::applicationDirPath();
 
-    QTest::newRow( "mylib" ) << currDir + "/mylib" << true;
+    QTest::newRow( "mylib" ) << appDir + "/mylib" << true;
 #ifdef Q_OS_MAC
     if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_3)
         QEXPECT_FAIL("mylib", "dlcompat cannot unload libraries", Continue);
 #endif
-    QTest::newRow( "ok01" ) << currDir + "/nolib" << false;
+    QTest::newRow( "ok01" ) << appDir + "/nolib" << false;
 }
 
 void tst_QLibrary::unload()
@@ -272,11 +272,11 @@ void tst_QLibrary::resolve_data()
     QTest::addColumn<QString>("symbol");
     QTest::addColumn<bool>("goodPointer");
 
-    QString currDir = QDir::currentPath();
+    QString appDir = QCoreApplication::applicationDirPath();
 
-    QTest::newRow( "ok00" ) << currDir + "/mylib" << QString("mylibversion") << true;
-    QTest::newRow( "bad00" ) << currDir + "/mylib" << QString("nosym") << false;
-    QTest::newRow( "bad01" ) << currDir + "/nolib" << QString("nosym") << false;
+    QTest::newRow( "ok00" ) << appDir + "/mylib" << QString("mylibversion") << true;
+    QTest::newRow( "bad00" ) << appDir + "/mylib" << QString("nosym") << false;
+    QTest::newRow( "bad01" ) << appDir + "/nolib" << QString("nosym") << false;
 }
 
 void tst_QLibrary::resolve()
@@ -353,16 +353,16 @@ void tst_QLibrary::errorString_data()
     QTest::addColumn<bool>("success");
     QTest::addColumn<QString>("errorString");
 
-    QString currDir = QDir::currentPath();
+    QString appDir = QCoreApplication::applicationDirPath();
 
     QTest::newRow("bad load()") << (int)Load << QString("nosuchlib") << false << QString("Cannot load library nosuchlib: .*");
     QTest::newRow("call errorString() on QLibrary with no d-pointer (crashtest)") << (int)(Load | DontSetFileName) << QString() << false << QString("Unknown error");
 #ifdef Q_OS_WINCE
-    QTest::newRow("bad resolve") << (int)Resolve << currDir + "/mylib" << false << QString("Cannot resolve symbol \"nosuchsymbol\" in .*: .*");
+    QTest::newRow("bad resolve") << (int)Resolve << appDir + "/mylib" << false << QString("Cannot resolve symbol \"nosuchsymbol\" in .*: .*");
 #else
-    QTest::newRow("bad resolve") << (int)Resolve << currDir + "/mylib" << false << QString("Cannot resolve symbol \"nosuchsymbol\" in \\S+: .*");
+    QTest::newRow("bad resolve") << (int)Resolve << appDir + "/mylib" << false << QString("Cannot resolve symbol \"nosuchsymbol\" in \\S+: .*");
 #endif
-    QTest::newRow("good resolve") << (int)Resolve << currDir + "/mylib" << true << QString("Unknown error");
+    QTest::newRow("good resolve") << (int)Resolve << appDir + "/mylib" << true << QString("Unknown error");
 
 #ifdef Q_OS_WIN
     QTest::newRow("bad load() with .dll suffix") << (int)Load << QString("nosuchlib.dll") << false << QString("Cannot load library nosuchlib.dll: The specified module could not be found.");
@@ -431,17 +431,17 @@ void tst_QLibrary::loadHints_data()
     }
 #endif
 
-    QString currDir = QDir::currentPath();
+    QString appDir = QCoreApplication::applicationDirPath();
 
     lh |= QLibrary::ResolveAllSymbolsHint;
 # if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    QTest::newRow( "ok01 (with suffix)" ) << currDir + "/mylib.dll" << int(lh) << true;
-    QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/mylib.dl2" << int(lh) << true;
-    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.qt.test.mylib.dll" << int(lh) << true;
+    QTest::newRow( "ok01 (with suffix)" ) << appDir + "/mylib.dll" << int(lh) << true;
+    QTest::newRow( "ok02 (with non-standard suffix)" ) << appDir + "/mylib.dl2" << int(lh) << true;
+    QTest::newRow( "ok03 (with many dots)" ) << appDir + "/system.qt.test.mylib.dll" << int(lh) << true;
 # elif defined Q_OS_UNIX
-    QTest::newRow( "ok01 (with suffix)" ) << currDir + "/libmylib" SUFFIX << int(lh) << true;
-    QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/libmylib.so2" << int(lh) << true;
-    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.qt.test.mylib.so" << int(lh) << true;
+    QTest::newRow( "ok01 (with suffix)" ) << appDir + "/libmylib" SUFFIX << int(lh) << true;
+    QTest::newRow( "ok02 (with non-standard suffix)" ) << appDir + "/libmylib.so2" << int(lh) << true;
+    QTest::newRow( "ok03 (with many dots)" ) << appDir + "/system.qt.test.mylib.so" << int(lh) << true;
 # endif  // Q_OS_UNIX
 }
 
@@ -504,7 +504,7 @@ void tst_QLibrary::fileName()
 
 void tst_QLibrary::multipleInstancesForOneLibrary()
 {
-    QString lib = QDir::currentPath() + "/mylib";
+    QString lib = QCoreApplication::applicationDirPath() + "/mylib";
 
     {
         QLibrary lib1(lib);

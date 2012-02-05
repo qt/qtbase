@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,7 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_MESSAGEBOX
 
@@ -62,7 +61,6 @@ class Q_WIDGETS_EXPORT QMessageBox : public QDialog
     Q_ENUMS(Icon)
     Q_FLAGS(StandardButtons)
     Q_PROPERTY(QString text READ text WRITE setText)
-    // ### Qt 5: Rename 'icon' 'standardIcon' and 'iconPixmap' 'icon' (and use QIcon?)
     Q_PROPERTY(Icon icon READ icon WRITE setIcon)
     Q_PROPERTY(QPixmap iconPixmap READ iconPixmap WRITE setIconPixmap)
     Q_PROPERTY(Qt::TextFormat textFormat READ textFormat WRITE setTextFormat)
@@ -191,10 +189,8 @@ public:
     static StandardButton information(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,
          StandardButton defaultButton = NoButton);
-    // ### Qt 5: Replace Ok with Yes|No in question() function.
-    //     Also consider if Ok == Yes and Cancel == No.
     static StandardButton question(QWidget *parent, const QString &title,
-         const QString &text, StandardButtons buttons = Ok,
+         const QString &text, StandardButtons buttons = StandardButtons(Yes | No),
          StandardButton defaultButton = NoButton);
     static StandardButton warning(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,
@@ -204,8 +200,6 @@ public:
          StandardButton defaultButton = NoButton);
     static void about(QWidget *parent, const QString &title, const QString &text);
     static void aboutQt(QWidget *parent, const QString &title = QString());
-
-    QSize sizeHint() const;
 
     // the following functions are obsolete:
 

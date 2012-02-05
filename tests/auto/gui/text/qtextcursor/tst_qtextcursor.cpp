@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,6 +50,7 @@
 #include <qabstracttextdocumentlayout.h>
 #include <qtextlayout.h>
 #include <qtextcursor.h>
+#include <qtextobject.h>
 #include <qdebug.h>
 
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
@@ -151,6 +152,8 @@ private slots:
     void cursorPositionWithBlockUndoAndRedo();
     void cursorPositionWithBlockUndoAndRedo2();
     void cursorPositionWithBlockUndoAndRedo3();
+
+    void joinNonEmptyRemovedBlockUserState();
 
 private:
     int blockCount();
@@ -1974,6 +1977,21 @@ void tst_QTextCursor::cursorPositionWithBlockUndoAndRedo3()
     QCOMPARE(cursor.position(), 5);
     doc->undo(&cursor);
     QCOMPARE(cursor.position(), cursorPositionBefore);
+}
+
+void tst_QTextCursor::joinNonEmptyRemovedBlockUserState()
+{
+    cursor.insertText("Hello");
+    cursor.insertBlock();
+    cursor.insertText("World");
+    cursor.block().setUserState(10);
+
+    cursor.movePosition(QTextCursor::EndOfBlock);
+    cursor.movePosition(QTextCursor::PreviousBlock, QTextCursor::KeepAnchor);
+    cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+    cursor.removeSelectedText();
+
+    QCOMPARE(cursor.block().userState(), 10);
 }
 
 QTEST_MAIN(tst_QTextCursor)

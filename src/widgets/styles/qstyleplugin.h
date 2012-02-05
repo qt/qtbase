@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,7 +49,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QStyle;
 
@@ -58,7 +57,7 @@ struct Q_WIDGETS_EXPORT QStyleFactoryInterface : public QFactoryInterface
     virtual QStyle *create(const QString &key) = 0;
 };
 
-#define QStyleFactoryInterface_iid "com.trolltech.Qt.QStyleFactoryInterface"
+#define QStyleFactoryInterface_iid "org.qt-project.Qt.QStyleFactoryInterface"
 
 Q_DECLARE_INTERFACE(QStyleFactoryInterface, QStyleFactoryInterface_iid)
 

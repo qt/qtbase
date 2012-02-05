@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1838,7 +1838,7 @@ void tst_QTreeWidget::setData()
                     item->setBackground(j, backgroundColor);
                     QCOMPARE(itemChangedSpy.count(), 0);
 
-                    QColor textColor((i == i) ? Qt::green : Qt::cyan);
+                    QColor textColor((i == 1) ? Qt::green : Qt::cyan);
                     item->setTextColor(j, textColor);
                     QCOMPARE(item->textColor(j), textColor);
                     QCOMPARE(itemChangedSpy.count(), 1);
@@ -2978,6 +2978,10 @@ void tst_QTreeWidget::task191552_rtl()
     QStyleOptionViewItem opt;
     opt.initFrom(&tw);
     opt.rect = tw.visualItemRect(item);
+    // mimic QStyledItemDelegate::initStyleOption logic
+    opt.features = QStyleOptionViewItem::HasDisplay | QStyleOptionViewItem::HasCheckIndicator;
+    opt.checkState = Qt::Checked;
+    opt.widget = &tw;
     const QRect checkRect = tw.style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &opt, &tw);
     QTest::mouseClick(tw.viewport(), Qt::LeftButton, Qt::NoModifier, checkRect.center());
     QTest::qWait(200);

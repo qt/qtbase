@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -72,7 +72,7 @@
 #include <private/qgraphicsview_p.h>
 #include "../../../platformquirks.h"
 #include "../../shared/platforminputcontext.h"
-#include <private/qinputpanel_p.h>
+#include <private/qinputmethod_p.h>
 
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<QRectF>)
@@ -83,7 +83,7 @@ Q_DECLARE_METATYPE(QPolygonF)
 Q_DECLARE_METATYPE(QRectF)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 //On mac we get full update. So check that the expected region is contained inside the actual
 #define COMPARE_REGIONS(ACTUAL, EXPECTED) QVERIFY((EXPECTED).subtracted(ACTUAL).isEmpty())
 #else
@@ -264,8 +264,8 @@ void tst_QGraphicsView::initTestCase()
 void tst_QGraphicsView::cleanup()
 {
     // ensure not even skipped tests with custom input context leave it dangling
-    QInputPanelPrivate *inputPanelPrivate = QInputPanelPrivate::get(qApp->inputPanel());
-    inputPanelPrivate->testContext = 0;
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = 0;
 }
 
 void tst_QGraphicsView::construction()
@@ -2515,7 +2515,7 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState()
     view.setOptimizationFlags(QGraphicsView::DontSavePainterState);
     view.viewport()->repaint();
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // Repaint on Mac OS X actually does require spinning the event loop.
     QTest::qWait(100);
 #endif
@@ -3361,9 +3361,6 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     int a = adjustForAntialiasing ? 2 : 1;
     expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
     expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "This will fail with Cocoa because paint events are not send in the order expected by graphicsview", Continue);
-#endif
     COMPARE_REGIONS(view.lastPaintedRegion, expectedRegion);
 }
 
@@ -4112,8 +4109,8 @@ void tst_QGraphicsView::inputMethodSensitivity()
 void tst_QGraphicsView::inputContextReset()
 {
     PlatformInputContext inputContext;
-    QInputPanelPrivate *inputPanelPrivate = QInputPanelPrivate::get(qApp->inputPanel());
-    inputPanelPrivate->testContext = &inputContext;
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = &inputContext;
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);
@@ -4319,7 +4316,9 @@ void tst_QGraphicsView::task259503_scrollingArtifacts()
             {
 //                qDebug() << event->region();
 //                qDebug() << updateRegion;
+#ifndef Q_OS_MAC
                 QEXPECT_FAIL("", "The event region doesn't include the original item position region. See QTBUG-4416", Continue);
+#endif
                 QCOMPARE(event->region(), updateRegion);
             }
         }

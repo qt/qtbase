@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -429,6 +429,11 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
         eventState |= Qt::WindowActive;
     QWindowStateChangeEvent widgetEvent(eventState);
     QGuiApplication::sendSpontaneousEvent(m_widget, &widgetEvent);
+}
+
+bool QWidgetWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
+{
+    return m_widget->nativeEvent(eventType, message, result);
 }
 
 QT_END_NAMESPACE

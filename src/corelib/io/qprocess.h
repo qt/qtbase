@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,11 +50,10 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 #ifndef QT_NO_PROCESS
 
-#if (!defined(Q_OS_WIN32) && !defined(Q_OS_WINCE)) || defined(qdoc)
+#if !defined(Q_OS_WIN) || defined(qdoc)
 typedef qint64 Q_PID;
 #else
 QT_END_NAMESPACE
@@ -152,7 +151,7 @@ public:
     void setStandardErrorFile(const QString &fileName, OpenMode mode = Truncate);
     void setStandardOutputProcess(QProcess *destination);
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     QString nativeArguments() const;
     void setNativeArguments(const QString &arguments);
 #endif

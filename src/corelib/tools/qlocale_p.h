@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,11 +59,72 @@
 
 #include "qlocale.h"
 
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
-class CEnvironmentChangeNotifier;
-#endif
-
 QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_SYSTEMLOCALE
+class QSystemLocale
+{
+public:
+    QSystemLocale();
+    virtual ~QSystemLocale();
+
+    struct CurrencyToStringArgument
+    {
+        CurrencyToStringArgument() { }
+        CurrencyToStringArgument(const QVariant &v, const QString &s)
+            : value(v), symbol(s) { }
+        QVariant value;
+        QString symbol;
+    };
+
+    enum QueryType {
+        LanguageId, // uint
+        CountryId, // uint
+        DecimalPoint, // QString
+        GroupSeparator, // QString
+        ZeroDigit, // QString
+        NegativeSign, // QString
+        DateFormatLong, // QString
+        DateFormatShort, // QString
+        TimeFormatLong, // QString
+        TimeFormatShort, // QString
+        DayNameLong, // QString, in: int
+        DayNameShort, // QString, in: int
+        MonthNameLong, // QString, in: int
+        MonthNameShort, // QString, in: int
+        DateToStringLong, // QString, in: QDate
+        DateToStringShort, // QString in: QDate
+        TimeToStringLong, // QString in: QTime
+        TimeToStringShort, // QString in: QTime
+        DateTimeFormatLong, // QString
+        DateTimeFormatShort, // QString
+        DateTimeToStringLong, // QString in: QDateTime
+        DateTimeToStringShort, // QString in: QDateTime
+        MeasurementSystem, // uint
+        PositiveSign, // QString
+        AMText, // QString
+        PMText, // QString
+        FirstDayOfWeek, // Qt::DayOfWeek
+        Weekdays, // QList<Qt::DayOfWeek>
+        CurrencySymbol, // QString in: CurrencyToStringArgument
+        CurrencyToString, // QString in: qlonglong, qulonglong or double
+        UILanguages, // QStringList
+        StringToStandardQuotation, // QString in: QStringRef to quote
+        StringToAlternateQuotation, // QString in: QStringRef to quote
+        ScriptId, // uint
+        ListToSeparatedString, // QString
+        LocaleChanged, // system locale changed
+        NativeLanguageName, // QString
+        NativeCountryName // QString
+    };
+    virtual QVariant query(QueryType type, QVariant in) const;
+    virtual QLocale fallbackLocale() const;
+
+private:
+    QSystemLocale(bool);
+    friend QSystemLocale *QSystemLocale_globalSystemLocale();
+};
+#endif
 
 struct Q_CORE_EXPORT QLocalePrivate
 {
@@ -257,20 +318,6 @@ inline char QLocalePrivate::digitToCLocale(const QChar &in) const
     return 0;
 }
 
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
-class QEnvironmentChangeNotifier
-{
-public:
-    QEnvironmentChangeNotifier();
-    ~QEnvironmentChangeNotifier();
-
-    static TInt localeChanged(TAny *data);
-
-private:
-    CEnvironmentChangeNotifier *iChangeNotifier;
-};
-#endif
-
 QString qt_readEscapedFormatString(const QString &format, int *idx);
 bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);
 int qt_repeatCount(const QString &s, int i);
@@ -279,5 +326,8 @@ QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QStringRef)
 Q_DECLARE_METATYPE(QList<Qt::DayOfWeek>)
+#ifndef QT_NO_SYSTEMLOCALE
+Q_DECLARE_METATYPE(QSystemLocale::CurrencyToStringArgument)
+#endif
 
 #endif // QLOCALE_P_H

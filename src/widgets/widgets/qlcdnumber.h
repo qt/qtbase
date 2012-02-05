@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,7 +49,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_LCDNUMBER
 
@@ -59,7 +58,7 @@ class Q_WIDGETS_EXPORT QLCDNumber : public QFrame // LCD number widget
     Q_OBJECT
     Q_ENUMS(Mode SegmentStyle)
     Q_PROPERTY(bool smallDecimalPoint READ smallDecimalPoint WRITE setSmallDecimalPoint)
-    Q_PROPERTY(int numDigits READ numDigits WRITE setNumDigits)
+    Q_PROPERTY(int numDigits READ digitCount WRITE setDigitCount)
     Q_PROPERTY(int digitCount READ digitCount WRITE setDigitCount)
     Q_PROPERTY(Mode mode READ mode WRITE setMode)
     Q_PROPERTY(SegmentStyle segmentStyle READ segmentStyle WRITE setSegmentStyle)
@@ -79,10 +78,6 @@ public:
     };
 
     bool smallDecimalPoint() const;
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED int numDigits() const;
-    QT_DEPRECATED void setNumDigits(int nDigits);
-#endif
     int digitCount() const;
     void setDigitCount(int nDigits);
 

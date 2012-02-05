@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,16 +48,16 @@
 #include "qdatetime.h"
 #include "qregexp.h"
 #include "qdebug.h"
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-#include <qt_windows.h>
-#endif
 #ifndef Q_OS_WIN
 #include <locale.h>
 #endif
 
 #include <time.h>
-#if defined(Q_OS_WINCE)
-#include "qfunctions_wince.h"
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#  ifdef Q_OS_WINCE
+#    include "qfunctions_wince.h"
+#  endif
 #endif
 
 //#define QDATETIMEPARSER_DEBUG
@@ -73,23 +73,16 @@
 #include <private/qcore_mac_p.h>
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-#include <e32std.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 enum {
-    FIRST_YEAR = -4713,
-    FIRST_MONTH = 1,
-    FIRST_DAY = 2,  // ### Qt 5: make FIRST_DAY = 1, by support jd == 0 as valid
     SECS_PER_DAY = 86400,
     MSECS_PER_DAY = 86400000,
     SECS_PER_HOUR = 3600,
     MSECS_PER_HOUR = 3600000,
     SECS_PER_MIN = 60,
     MSECS_PER_MIN = 60000,
-    JULIAN_DAY_FOR_EPOCH = 2440588 // result of julianDayFromGregorianDate(1970, 1, 1)
+    JULIAN_DAY_FOR_EPOCH = 2440588 // result of julianDayFromDate(1970, 1, 1)
 };
 
 static inline QDate fixedDate(int y, int m, int d)
@@ -99,67 +92,41 @@ static inline QDate fixedDate(int y, int m, int d)
     return result;
 }
 
-static inline uint julianDayFromGregorianDate(int year, int month, int day)
+static inline qint64 julianDayFromDate(qint64 year, int month, int day)
 {
-    // Gregorian calendar starting from October 15, 1582
+    // Gregorian calendar
     // Algorithm from Henry F. Fliegel and Thomas C. Van Flandern
+
+    if (year < 0)
+        ++year;
+
     return (1461 * (year + 4800 + (month - 14) / 12)) / 4
            + (367 * (month - 2 - 12 * ((month - 14) / 12))) / 12
            - (3 * ((year + 4900 + (month - 14) / 12) / 100)) / 4
            + day - 32075;
 }
 
-static uint julianDayFromDate(int year, int month, int day)
-{
-    if (year < 0)
-        ++year;
-
-    if (year > 1582 || (year == 1582 && (month > 10 || (month == 10 && day >= 15)))) {
-        return julianDayFromGregorianDate(year, month, day);
-    } else if (year < 1582 || (year == 1582 && (month < 10 || (month == 10 && day <= 4)))) {
-        // Julian calendar until October 4, 1582
-        // Algorithm from Frequently Asked Questions about Calendars by Claus Toendering
-        int a = (14 - month) / 12;
-        return (153 * (month + (12 * a) - 3) + 2) / 5
-               + (1461 * (year + 4800 - a)) / 4
-               + day - 32083;
-    } else {
-        // the day following October 4, 1582 is October 15, 1582
-        return 0;
-    }
-}
-
-static void getDateFromJulianDay(uint julianDay, int *year, int *month, int *day)
+static void getDateFromJulianDay(qint64 julianDay, int *year, int *month, int *day)
 {
     int y, m, d;
 
-    if (julianDay >= 2299161) {
-        // Gregorian calendar starting from October 15, 1582
-        // This algorithm is from Henry F. Fliegel and Thomas C. Van Flandern
-        qulonglong ell, n, i, j;
-        ell = qulonglong(julianDay) + 68569;
-        n = (4 * ell) / 146097;
-        ell = ell - (146097 * n + 3) / 4;
-        i = (4000 * (ell + 1)) / 1461001;
-        ell = ell - (1461 * i) / 4 + 31;
-        j = (80 * ell) / 2447;
-        d = ell - (2447 * j) / 80;
-        ell = j / 11;
-        m = j + 2 - (12 * ell);
-        y = 100 * (n - 49) + i + ell;
-    } else {
-        // Julian calendar until October 4, 1582
-        // Algorithm from Frequently Asked Questions about Calendars by Claus Toendering
-        julianDay += 32082;
-        int dd = (4 * julianDay + 3) / 1461;
-        int ee = julianDay - (1461 * dd) / 4;
-        int mm = ((5 * ee) + 2) / 153;
-        d = ee - (153 * mm + 2) / 5 + 1;
-        m = mm + 3 - 12 * (mm / 10);
-        y = dd - 4800 + (mm / 10);
-        if (y <= 0)
-            --y;
-    }
+    // Gregorian calendar
+    // This algorithm is from Henry F. Fliegel and Thomas C. Van Flandern
+    qint64 ell, n, i, j;  //TODO These will need to be bigger to prevent overflow!!!
+    ell = julianDay + 68569;
+    n = (4 * ell) / 146097;
+    ell = ell - (146097 * n + 3) / 4;
+    i = (4000 * (ell + 1)) / 1461001;
+    ell = ell - (1461 * i) / 4 + 31;
+    j = (80 * ell) / 2447;
+    d = ell - (2447 * j) / 80;
+    ell = j / 11;
+    m = j + 2 - (12 * ell);
+    y = 100 * (n - 49) + i + ell;
+
+    if (y<= 0)
+        --y;
+
     if (year)
         *year = y;
     if (month)
@@ -205,12 +172,10 @@ static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* d
 
 
     A QDate object contains a calendar date, i.e. year, month, and day
-    numbers, in the Gregorian calendar. (see \l{QDate G and J} {Use of
-    Gregorian and Julian Calendars} for dates prior to 15 October
-    1582). It can read the current date from the system clock. It
-    provides functions for comparing dates, and for manipulating
-    dates. For example, it is possible to add and subtract days,
-    months, and years to dates.
+    numbers, in the Gregorian calendar. It can read the current date
+    from the system clock. It provides functions for comparing dates,
+    and for manipulating dates. For example, it is possible to add
+    and subtract days, months, and years to dates.
 
     A QDate object is typically created either by giving the year,
     month, and day numbers explicitly. Note that QDate interprets two
@@ -241,40 +206,31 @@ static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* d
 
     \section1
 
-    \target QDate G and J
-    \section2 Use of Gregorian and Julian Calendars
-
-    QDate uses the Gregorian calendar in all locales, beginning
-    on the date 15 October 1582. For dates up to and including 4
-    October 1582, the Julian calendar is used.  This means there is a
-    10-day gap in the internal calendar between the 4th and the 15th
-    of October 1582. When you use QDateTime for dates in that epoch,
-    the day after 4 October 1582 is 15 October 1582, and the dates in
-    the gap are invalid.
-
-    The Julian to Gregorian changeover date used here is the date when
-    the Gregorian calendar was first introduced, by Pope Gregory
-    XIII. That change was not universally accepted and some localities
-    only executed it at a later date (if at all).  QDateTime
-    doesn't take any of these historical facts into account. If an
-    application must support a locale-specific dating system, it must
-    do so on its own, remembering to convert the dates using the
-    Julian day.
-
     \section2 No Year 0
 
     There is no year 0. Dates in that year are considered invalid. The
     year -1 is the year "1 before Christ" or "1 before current era."
-    The day before 0001-01-01 is December 31st, 1 BCE.
+    The day before 1 January 1 CE is 31 December 1 BCE.
 
     \section2 Range of Valid Dates
 
-    The range of valid dates is from January 2nd, 4713 BCE, to
-    sometime in the year 11 million CE. The Julian Day returned by
-    QDate::toJulianDay() is a number in the contiguous range from 1 to
-    \e{overflow}, even across QDateTime's "date holes". It is suitable
-    for use in applications that must convert a QDateTime to a date in
-    another calendar system, e.g., Hebrew, Islamic or Chinese.
+    Dates are stored internally as a Julian Day number, an interger count of
+    every day in a contiguous range, with 24 November 4714 BCE in the Gregorian
+    calendar being Julian Day 0 (1 January 4713 BCE in the Julian calendar).
+    As well as being an efficient and accurate way of storing an absolute date,
+    it is suitable for converting a Date into other calendar systems such as
+    Hebrew, Islamic or Chinese. The Julian Day number can be obtained using
+    QDate::toJulianDay() and can be set using QDate::fromJulianDay().
+
+    The range of dates able to be stored by QDate as a Julian Day number is
+    limited for convenience from std::numeric_limits<qint64>::min() / 2 to
+    std::numeric_limits<qint64>::max() / 2, which on most platforms means
+    from around 2.5 quadrillion BCE to around 2.5 quadrillion CE, effectively
+    covering the full range of astronomical time. The range of Julian Days
+    able to be accurately converted to and from valid YMD form Dates is
+    restricted to 1 January 4800 BCE to 31 December 1400000 CE due to
+    shortcomings in the available conversion formulas. Conversions outside this
+    range are not guaranteed to be correct. This may change in the future.
 
     \sa QTime, QDateTime, QDateEdit, QDateTimeEdit, QCalendarWidget
 */
@@ -291,8 +247,7 @@ static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* d
     Constructs a date with year \a y, month \a m and day \a d.
 
     If the specified date is invalid, the date is not set and
-    isValid() returns false. A date before 2 January 4713 B.C. is
-    considered invalid.
+    isValid() returns false.
 
     \warning Years 0 to 99 are interpreted as is, i.e., years
              0-99.
@@ -319,26 +274,28 @@ QDate::QDate(int y, int m, int d)
 
 
 /*!
+    \fn bool isValid() const
+
     Returns true if this date is valid; otherwise returns false.
 
     \sa isNull()
 */
 
-bool QDate::isValid() const
-{
-    return !isNull();
-}
-
 
 /*!
     Returns the year of this date. Negative numbers indicate years
-    before 1 A.D. = 1 C.E., such that year -44 is 44 B.C.
+    before 1 CE, such that year -44 is 44 BCE.
+
+    Returns 0 if the date is invalid.
 
     \sa month(), day()
 */
 
 int QDate::year() const
 {
+    if (isNull())
+        return 0;
+
     int y;
     getDateFromJulianDay(jd, &y, 0, 0);
     return y;
@@ -363,11 +320,16 @@ int QDate::year() const
     \i 12 = "December"
     \endlist
 
+    Returns 0 if the date is invalid.
+
     \sa year(), day()
 */
 
 int QDate::month() const
 {
+    if (isNull())
+        return 0;
+
     int m;
     getDateFromJulianDay(jd, 0, &m, 0);
     return m;
@@ -376,51 +338,76 @@ int QDate::month() const
 /*!
     Returns the day of the month (1 to 31) of this date.
 
+    Returns 0 if the date is invalid.
+
     \sa year(), month(), dayOfWeek()
 */
 
 int QDate::day() const
 {
+    if (isNull())
+        return 0;
+
     int d;
     getDateFromJulianDay(jd, 0, 0, &d);
     return d;
 }
 
 /*!
-    Returns the weekday (1 to 7) for this date.
+    Returns the weekday (1 = Monday to 7 = Sunday) for this date.
+
+    Returns 0 if the date is invalid.
 
     \sa day(), dayOfYear(), Qt::DayOfWeek
 */
 
 int QDate::dayOfWeek() const
 {
-    return (jd % 7) + 1;
+    if (isNull())
+        return 0;
+
+    if (jd >= 0)
+        return (jd % 7) + 1;
+    else
+        return ((jd + 1) % 7) + 7;
 }
 
 /*!
     Returns the day of the year (1 to 365 or 366 on leap years) for
     this date.
 
+    Returns 0 if the date is invalid.
+
     \sa day(), dayOfWeek()
 */
 
 int QDate::dayOfYear() const
 {
+    if (isNull())
+        return 0;
+
     return jd - julianDayFromDate(year(), 1, 1) + 1;
 }
 
 /*!
     Returns the number of days in the month (28 to 31) for this date.
 
+    Returns 0 if the date is invalid.
+
     \sa day(), daysInYear()
 */
 
 int QDate::daysInMonth() const
 {
-    int y, m, d;
-    getDateFromJulianDay(jd, &y, &m, &d);
+    if (isNull())
+        return 0;
+
+    int y, m;
+    getDateFromJulianDay(jd, &y, &m, 0);
     if (m == 2 && isLeapYear(y))
         return 29;
+    else if (m < 1 || m > 12)
+        return 0;
     else
         return monthDays[m];
 }
@@ -428,13 +415,18 @@ int QDate::daysInMonth() const
 /*!
     Returns the number of days in the year (365 or 366) for this date.
 
+    Returns 0 if the date is invalid.
+
     \sa day(), daysInMonth()
 */
 
 int QDate::daysInYear() const
 {
-    int y, m, d;
-    getDateFromJulianDay(jd, &y, &m, &d);
+    if (isNull())
+        return 0;
+
+    int y;
+    getDateFromJulianDay(jd, &y, 0, 0);
     return isLeapYear(y) ? 366 : 365;
 }
 
@@ -546,14 +538,16 @@ int QDate::weekNumber(int *yearNumber) const
     The month names will be localized according to the system's locale
     settings.
 
+    Returns an empty string if the date is invalid.
+
     \sa toString(), longMonthName(), shortDayName(), longDayName()
 */
 
 QString QDate::shortMonthName(int month, QDate::MonthNameType type)
 {
-    if (month < 1 || month > 12) {
-        month = 1;
-    }
+    if (month < 1 || month > 12)
+        return QString();
+
     switch (type) {
     case QDate::DateFormat:
         return QLocale::system().monthName(month, QLocale::ShortFormat);
@@ -591,14 +585,16 @@ QString QDate::shortMonthName(int month, QDate::MonthNameType type)
     The month names will be localized according to the system's locale
     settings.
 
+    Returns an empty string if the date is invalid.
+
     \sa toString(), shortMonthName(), shortDayName(), longDayName()
 */
 
 QString QDate::longMonthName(int month, MonthNameType type)
 {
-    if (month < 1 || month > 12) {
-        month = 1;
-    }
+    if (month < 1 || month > 12)
+        return QString();
+
     switch (type) {
     case QDate::DateFormat:
         return QLocale::system().monthName(month, QLocale::LongFormat);
@@ -631,14 +627,16 @@ QString QDate::longMonthName(int month, MonthNameType type)
     The day names will be localized according to the system's locale
     settings.
 
+    Returns an empty string if the date is invalid.
+
     \sa toString(), shortMonthName(), longMonthName(), longDayName()
 */
 
 QString QDate::shortDayName(int weekday, MonthNameType type)
 {
-    if (weekday < 1 || weekday > 7) {
-        weekday = 1;
-    }
+    if (weekday < 1 || weekday > 7)
+        return QString();
+
     switch (type) {
     case QDate::DateFormat:
         return QLocale::system().dayName(weekday, QLocale::ShortFormat);
@@ -671,14 +669,16 @@ QString QDate::shortDayName(int weekday, MonthNameType type)
     The day names will be localized according to the system's locale
     settings.
 
+    Returns an empty string if the date is invalid.
+
     \sa toString(), shortDayName(), shortMonthName(), longMonthName()
 */
 
 QString QDate::longDayName(int weekday, MonthNameType type)
 {
-    if (weekday < 1 || weekday > 7) {
-        weekday = 1;
-    }
+    if (weekday < 1 || weekday > 7)
+        return QString();
+
     switch (type) {
     case QDate::DateFormat:
         return QLocale::system().dayName(weekday, QLocale::LongFormat);
@@ -836,7 +836,9 @@ QString QDate::toString(const QString& format) const
 #endif //QT_NO_DATESTRING
 
 /*!
-    \obsolete
+    \fn bool setYMD(int y, int m, int d)
+
+    \deprecated in 5.0, use setDate() instead.
 
     Sets the date's year \a y, month \a m, and day \a d.
 
@@ -846,13 +848,6 @@ QString QDate::toString(const QString& format) const
     Use setDate() instead.
 */
 
-bool QDate::setYMD(int y, int m, int d)
-{
-    if (uint(y) <= 99)
-        y += 1900;
-    return setDate(y, m, d);
-}
-
 /*!
     \since 4.2
 
@@ -860,19 +855,21 @@ bool QDate::setYMD(int y, int m, int d)
     the date is valid; otherwise returns false.
 
     If the specified date is invalid, the QDate object is set to be
-    invalid. Any date before 2 January 4713 B.C. is considered
     invalid.
+
+    Note that any date before 4800 BCE or after about 1.4 million CE
+    may not be accurately stored.
 
     \sa isValid()
 */
 bool QDate::setDate(int year, int month, int day)
 {
-    if (!isValid(year, month, day)) {
-        jd = 0;
-    } else {
+    if (isValid(year, month, day))
         jd = julianDayFromDate(year, month, day);
-    }
-    return jd != 0;
+    else
+        jd = nullJd();
+
+    return isValid();
 }
 
 /*!
@@ -881,28 +878,55 @@ bool QDate::setDate(int year, int month, int day)
     Extracts the date's year, month, and day, and assigns them to
     *\a year, *\a month, and *\a day. The pointers may be null.
 
+    Returns 0 if the date is invalid.
+
+    Note that any date before 4800 BCE or after about 1.4 million CE
+    may not be accurately stored.
+
     \sa year(), month(), day(), isValid()
 */
 void QDate::getDate(int *year, int *month, int *day)
 {
-    getDateFromJulianDay(jd, year, month, day);
+    if (isValid()) {
+        getDateFromJulianDay(jd, year, month, day);
+    } else {
+        if (year)
+            *year = 0;
+        if (month)
+            *month = 0;
+        if (day)
+            *day = 0;
+    }
 }
 
 /*!
     Returns a QDate object containing a date \a ndays later than the
     date of this object (or earlier if \a ndays is negative).
 
+    Returns a null date if the current date is invalid or the new date is
+    out-of-range.
+
     \sa addMonths() addYears() daysTo()
 */
 
-QDate QDate::addDays(int ndays) const
+QDate QDate::addDays(qint64 ndays) const
 {
+    if (isNull())
+        return QDate();
+
     QDate d;
+    quint64 diff = 0;
+
     // this is basically "d.jd = jd + ndays" with checks for integer overflow
+    // Due to limits on minJd() and maxJd() we know diff will never overflow
     if (ndays >= 0)
-        d.jd = (jd + ndays >= jd) ? jd + ndays : 0;
+        diff = maxJd() - jd;
     else
-        d.jd = (jd + ndays < jd) ? jd + ndays : 0;
+        diff = jd - minJd();
+
+    if (abs(ndays) <= diff)
+        d.jd = jd + ndays;
+
     return d;
 }
 
@@ -913,11 +937,6 @@ QDate QDate::addDays(int ndays) const
     \note If the ending day/month combination does not exist in the
     resulting month/year, this function will return a date that is the
     latest valid date.
-
-    \warning QDate has a date hole around the days introducing the
-    Gregorian calendar (the days 5 to 14 October 1582, inclusive, do
-    not exist). If the calculation ends in one of those days, QDate
-    will return either October 4 or October 15.
 
     \sa addDays() addYears()
 */
@@ -968,10 +987,6 @@ QDate QDate::addMonths(int nmonths) const
         // yes, adjust the date by +1 or -1 years
         y += increasing ? +1 : -1;
 
-    // did we end up in the Gregorian/Julian conversion hole?
-    if (y == 1582 && m == 10 && d > 4 && d < 15)
-        d = increasing ? 15 : 4;
-
     return fixedDate(y, m, d);
 }
 
@@ -1011,14 +1026,20 @@ QDate QDate::addYears(int nyears) const
     Returns the number of days from this date to \a d (which is
     negative if \a d is earlier than this date).
 
+    Returns 0 if either date is invalid.
+
     Example:
     \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 0
 
     \sa addDays()
 */
 
-int QDate::daysTo(const QDate &d) const
+qint64 QDate::daysTo(const QDate &d) const
 {
+    if (isNull() || d.isNull())
+        return 0;
+
+    // Due to limits on minJd() and maxJd() we know this will never overflow
     return d.jd - jd;
 }
 
@@ -1255,16 +1276,9 @@ QDate QDate::fromString(const QString &string, const QString &format)
 
 bool QDate::isValid(int year, int month, int day)
 {
-    if (year < FIRST_YEAR
-        || (year == FIRST_YEAR &&
-            (month < FIRST_MONTH
-             || (month == FIRST_MONTH && day < FIRST_DAY)))
-        || year == 0) // there is no year 0 in the Julian calendar
+    // there is no year 0 in the Gregorian calendar
+    if (year == 0)
         return false;
-
-    // passage from Julian to Gregorian calendar
-    if (year == 1582 && month == 10 && day > 4 && day < 15)
-        return 0;
 
     return (day > 0 && month > 0 && month <= 12) &&
            (day <= monthDays[month] || (day == 29 && month == 2 && isLeapYear(year)));
@@ -1279,14 +1293,11 @@ bool QDate::isValid(int year, int month, int day)
 
 bool QDate::isLeapYear(int y)
 {
-    if (y < 1582) {
-        if ( y < 1) {  // No year 0 in Julian calendar, so -1, -5, -9 etc are leap years
-            ++y;
-        }
-        return y % 4 == 0;
-    } else {
-        return (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
-    }
+    // No year 0 in Gregorian calendar, so -1, -5, -9 etc are leap years
+    if ( y < 1)
+        ++y;
+
+    return (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
 }
 
 /*! \fn static QDate QDate::fromJulianDay(int jd)
@@ -1403,44 +1414,64 @@ bool QTime::isValid() const
 /*!
     Returns the hour part (0 to 23) of the time.
 
+    Returns -1 if the time is invalid.
+
     \sa minute(), second(), msec()
 */
 
 int QTime::hour() const
 {
+    if (!isValid())
+        return -1;
+
     return ds() / MSECS_PER_HOUR;
 }
 
 /*!
     Returns the minute part (0 to 59) of the time.
 
+    Returns -1 if the time is invalid.
+
     \sa hour(), second(), msec()
 */
 
 int QTime::minute() const
 {
+    if (!isValid())
+        return -1;
+
     return (ds() % MSECS_PER_HOUR) / MSECS_PER_MIN;
 }
 
 /*!
     Returns the second part (0 to 59) of the time.
 
+    Returns -1 if the time is invalid.
+
     \sa hour(), minute(), msec()
 */
 
 int QTime::second() const
 {
+    if (!isValid())
+        return -1;
+
     return (ds() / 1000)%SECS_PER_MIN;
 }
 
 /*!
     Returns the millisecond part (0 to 999) of the time.
 
+    Returns -1 if the time is invalid.
+
     \sa hour(), minute(), second()
 */
 
 int QTime::msec() const
 {
+    if (!isValid())
+        return -1;
+
     return ds() % 1000;
 }
 
@@ -1588,6 +1619,8 @@ bool QTime::setHMS(int h, int m, int s, int ms)
 
     Note that the time will wrap if it passes midnight.
 
+    Returns a null time if this time is invalid.
+
     Example:
 
     \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 5
@@ -1610,11 +1643,16 @@ QTime QTime::addSecs(int s) const
 
     secsTo() does not take into account any milliseconds.
 
+    Returns 0 if either time is invalid.
+
     \sa addSecs(), QDateTime::secsTo()
 */
 
 int QTime::secsTo(const QTime &t) const
 {
+    if (!isValid() || !t.isValid())
+        return 0;
+
     return (t.ds() - ds()) / 1000;
 }
 
@@ -1625,18 +1663,22 @@ int QTime::secsTo(const QTime &t) const
     Note that the time will wrap if it passes midnight. See addSecs()
     for an example.
 
+    Returns a null time if this time is invalid.
+
     \sa addSecs(), msecsTo(), QDateTime::addMSecs()
 */
 
 QTime QTime::addMSecs(int ms) const
 {
     QTime t;
-    if (ms < 0) {
-        // % not well-defined for -ve, but / is.
-        int negdays = (MSECS_PER_DAY - ms) / MSECS_PER_DAY;
-        t.mds = (ds() + ms + negdays * MSECS_PER_DAY) % MSECS_PER_DAY;
-    } else {
-        t.mds = (ds() + ms) % MSECS_PER_DAY;
+    if (isValid()) {
+        if (ms < 0) {
+            // % not well-defined for -ve, but / is.
+            int negdays = (MSECS_PER_DAY - ms) / MSECS_PER_DAY;
+            t.mds = (ds() + ms + negdays * MSECS_PER_DAY) % MSECS_PER_DAY;
+        } else {
+            t.mds = (ds() + ms) % MSECS_PER_DAY;
+        }
     }
 #if defined(Q_OS_WINCE)
     if (startTick > NullTime)
@@ -1654,11 +1696,15 @@ QTime QTime::addMSecs(int ms) const
     seconds in a day, the result is always between -86400000 and
     86400000 ms.
 
+    Returns 0 if either time is invalid.
+
     \sa secsTo(), addMSecs(), QDateTime::msecsTo()
 */
 
 int QTime::msecsTo(const QTime &t) const
 {
+    if (!isValid() || !t.isValid())
+        return 0;
 #if defined(Q_OS_WINCE)
     // GetLocalTime() for Windows CE has no milliseconds resolution
     if (t.startTick > NullTime && startTick > NullTime)
@@ -1979,50 +2025,31 @@ int QTime::elapsed() const
 
     \section1
 
-    \target QDateTime G and J
-    \section2 Use of Gregorian and Julian Calendars
-
-    QDate uses the Gregorian calendar in all locales, beginning
-    on the date 15 October 1582. For dates up to and including 4
-    October 1582, the Julian calendar is used.  This means there is a
-    10-day gap in the internal calendar between the 4th and the 15th
-    of October 1582. When you use QDateTime for dates in that epoch,
-    the day after 4 October 1582 is 15 October 1582, and the dates in
-    the gap are invalid.
-
-    The Julian to Gregorian changeover date used here is the date when
-    the Gregorian calendar was first introduced, by Pope Gregory
-    XIII. That change was not universally accepted and some localities
-    only executed it at a later date (if at all).  QDateTime
-    doesn't take any of these historical facts into account. If an
-    application must support a locale-specific dating system, it must
-    do so on its own, remembering to convert the dates using the
-    Julian day.
-
     \section2 No Year 0
 
     There is no year 0. Dates in that year are considered invalid. The
     year -1 is the year "1 before Christ" or "1 before current era."
-    The day before 0001-01-01 is December 31st, 1 BCE.
+    The day before 1 January 1 CE is 31 December 1 BCE.
 
     \section2 Range of Valid Dates
 
-    The range of valid dates is from January 2nd, 4713 BCE, to
-    sometime in the year 11 million CE. The Julian Day returned by
-    QDate::toJulianDay() is a number in the contiguous range from 1 to
-    \e{overflow}, even across QDateTime's "date holes". It is suitable
-    for use in applications that must convert a QDateTime to a date in
-    another calendar system, e.g., Hebrew, Islamic or Chinese.
+    Dates are stored internally as a Julian Day number, an interger count of
+    every day in a contiguous range, with 24 November 4714 BCE in the Gregorian
+    calendar being Julian Day 0 (1 January 4713 BCE in the Julian calendar).
+    As well as being an efficient and accurate way of storing an absolute date,
+    it is suitable for converting a Date into other calendar systems such as
+    Hebrew, Islamic or Chinese. The Julian Day number can be obtained using
+    QDate::toJulianDay() and can be set using QDate::fromJulianDay().
 
-    The Gregorian calendar was introduced in different places around
-    the world on different dates. QDateTime uses QDate to store the
-    date, so it uses the Gregorian calendar for all locales, beginning
-    on the date 15 October 1582. For dates up to and including 4
-    October 1582, QDateTime uses the Julian calendar.  This means
-    there is a 10-day gap in the QDateTime calendar between the 4th
-    and the 15th of October 1582. When you use QDateTime for dates in
-    that epoch, the day after 4 October 1582 is 15 October 1582, and
-    the dates in the gap are invalid.
+    The range of dates able to be stored by QDate as a Julian Day number is
+    limited for convenience from std::numeric_limits<qint64>::min() / 2 to
+    std::numeric_limits<qint64>::max() / 2, which on most platforms means
+    from around 2.5 quadrillion BCE to around 2.5 quadrillion CE, effectively
+    covering the full range of astronomical time. The range of Julian Days
+    able to be accurately converted to and from valid YMD form Dates is
+    restricted to 1 January 4800 BCE to 31 December 1400000 CE due to
+    shortcomings in the available conversion formulas. Conversions outside this
+    range are not guaranteed to be correct. This may change in the future.
 
     \section2
     Use of System Timezone
@@ -2269,7 +2296,7 @@ qint64 QDateTime::toMSecsSinceEpoch() const
     QTime utcTime;
     d->getUTC(utcDate, utcTime);
 
-    return toMSecsSinceEpoch_helper(utcDate.jd, utcTime.ds());
+    return toMSecsSinceEpoch_helper(utcDate.toJulianDay(), QTime(0, 0, 0).msecsTo(utcTime));
 }
 
 /*!
@@ -2331,7 +2358,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
     }
 
     d->date = QDate(1970, 1, 1).addDays(ddays);
-    d->time = QTime().addMSecs(msecs);
+    d->time = QTime(0, 0, 0).addMSecs(msecs);
     d->spec = QDateTimePrivate::UTC;
 
     if (oldSpec != QDateTimePrivate::UTC)
@@ -2356,7 +2383,7 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
     QDateTimePrivate::Spec oldSpec = d->spec;
 
     d->date = QDate(1970, 1, 1).addDays(secsSince1Jan1970UTC / SECS_PER_DAY);
-    d->time = QTime().addSecs(secsSince1Jan1970UTC % SECS_PER_DAY);
+    d->time = QTime(0, 0, 0).addSecs(secsSince1Jan1970UTC % SECS_PER_DAY);
     d->spec = QDateTimePrivate::UTC;
 
     if (oldSpec != QDateTimePrivate::UTC)
@@ -2563,7 +2590,7 @@ QString QDateTime::toString(const QString& format) const
     \sa daysTo(), addMonths(), addYears(), addSecs()
 */
 
-QDateTime QDateTime::addDays(int ndays) const
+QDateTime QDateTime::addDays(qint64 ndays) const
 {
     return QDateTime(d->date.addDays(ndays), d->time, timeSpec());
 }
@@ -2614,8 +2641,8 @@ QDateTime QDateTimePrivate::addMSecs(const QDateTime &dt, qint64 msecs)
  */
 void QDateTimePrivate::addMSecs(QDate &utcDate, QTime &utcTime, qint64 msecs)
 {
-    uint dd = utcDate.jd;
-    int tt = utcTime.ds();
+    qint64 dd = utcDate.toJulianDay();
+    int tt = QTime(0, 0, 0).msecsTo(utcTime);
     int sign = 1;
     if (msecs < 0) {
         msecs = -msecs;
@@ -2637,8 +2664,8 @@ void QDateTimePrivate::addMSecs(QDate &utcDate, QTime &utcTime, qint64 msecs)
         tt = tt % MSECS_PER_DAY;
     }
 
-    utcDate.jd = dd;
-    utcTime.mds = tt;
+    utcDate = QDate::fromJulianDay(dd);
+    utcTime = QTime(0, 0, 0).addMSecs(tt);
 }
 
 /*!
@@ -2674,7 +2701,7 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
     \sa addDays(), secsTo(), msecsTo()
 */
 
-int QDateTime::daysTo(const QDateTime &other) const
+qint64 QDateTime::daysTo(const QDateTime &other) const
 {
     return d->date.daysTo(other.d->date);
 }
@@ -2688,6 +2715,8 @@ int QDateTime::daysTo(const QDateTime &other) const
     to Qt::UTC to ensure that the result is correct if one of the two
     datetimes has daylight saving time (DST) and the other doesn't.
 
+    Returns 0 if either time is invalid.
+
     Example:
     \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 11
 
@@ -2696,6 +2725,9 @@ int QDateTime::daysTo(const QDateTime &other) const
 
 int QDateTime::secsTo(const QDateTime &other) const
 {
+    if (!isValid() || !other.isValid())
+        return 0;
+
     QDate date1, date2;
     QTime time1, time2;
 
@@ -2714,11 +2746,16 @@ int QDateTime::secsTo(const QDateTime &other) const
     to Qt::UTC to ensure that the result is correct if one of the two
     datetimes has daylight saving time (DST) and the other doesn't.
 
+    Returns 0 if either time is null.
+
     \sa addMSecs(), daysTo(), QTime::msecsTo()
 */
 
 qint64 QDateTime::msecsTo(const QDateTime &other) const
 {
+    if (!isValid() || !other.isValid())
+        return 0;
+
     QDate selfDate;
     QDate otherDate;
     QTime selfTime;
@@ -2882,7 +2919,7 @@ QTime QTime::currentTime()
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
     GetLocalTime(&st);
-    ct.mds = msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+    ct.setHMS(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 #if defined(Q_OS_WINCE)
     ct.startTick = GetTickCount() % MSECS_PER_DAY;
 #endif
@@ -2922,78 +2959,8 @@ qint64 QDateTime::currentMSecsSinceEpoch()
     GetSystemTime(&st);
 
     return msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds) +
-            qint64(julianDayFromGregorianDate(st.wYear, st.wMonth, st.wDay)
-                   - julianDayFromGregorianDate(1970, 1, 1)) * Q_INT64_C(86400000);
-}
-
-#elif defined(Q_OS_SYMBIAN)
-QDate QDate::currentDate()
-{
-    QDate d;
-    TTime localTime;
-    localTime.HomeTime();
-    TDateTime localDateTime = localTime.DateTime();
-    // months and days are zero indexed
-    d.jd = julianDayFromDate(localDateTime.Year(), localDateTime.Month() + 1, localDateTime.Day() + 1 );
-    return d;
-}
-
-QTime QTime::currentTime()
-{
-    QTime ct;
-    TTime localTime;
-    localTime.HomeTime();
-    TDateTime localDateTime = localTime.DateTime();
-    ct.mds = msecsFromDecomposed(localDateTime.Hour(), localDateTime.Minute(),
-                                 localDateTime.Second(), localDateTime.MicroSecond() / 1000);
-    return ct;
-}
-
-QDateTime QDateTime::currentDateTime()
-{
-    QDate d;
-    QTime ct;
-    TTime localTime;
-    localTime.HomeTime();
-    TDateTime localDateTime = localTime.DateTime();
-    // months and days are zero indexed
-    d.jd = julianDayFromDate(localDateTime.Year(), localDateTime.Month() + 1, localDateTime.Day() + 1);
-    ct.mds = msecsFromDecomposed(localDateTime.Hour(), localDateTime.Minute(),
-                                 localDateTime.Second(), localDateTime.MicroSecond() / 1000);
-    return QDateTime(d, ct);
-}
-
-QDateTime QDateTime::currentDateTimeUtc()
-{
-    QDate d;
-    QTime ct;
-    TTime gmTime;
-    gmTime.UniversalTime();
-    TDateTime gmtDateTime = gmTime.DateTime();
-    // months and days are zero indexed
-    d.jd = julianDayFromDate(gmtDateTime.Year(), gmtDateTime.Month() + 1, gmtDateTime.Day() + 1);
-    ct.mds = msecsFromDecomposed(gmtDateTime.Hour(), gmtDateTime.Minute(),
-                                 gmtDateTime.Second(), gmtDateTime.MicroSecond() / 1000);
-    return QDateTime(d, ct, Qt::UTC);
-}
-
-qint64 QDateTime::currentMSecsSinceEpoch()
-{
-    QDate d;
-    QTime ct;
-    TTime gmTime;
-    gmTime.UniversalTime();
-    TDateTime gmtDateTime = gmTime.DateTime();
-
-    // according to the documentation, the value is:
-    // "a date and time as a number of microseconds since midnight, January 1st, 0 AD nominal Gregorian"
-    qint64 value = gmTime.Int64();
-
-    // whereas 1970-01-01T00:00:00 is (in the same representation):
-    //   ((1970 * 365) + (1970 / 4) - (1970 / 100) + (1970 / 400) - 13) * 86400 * 1000000
-    static const qint64 unixEpoch = Q_INT64_C(0xdcddb30f2f8000);
-
-    return (value - unixEpoch) / 1000;
+            qint64(julianDayFromDate(st.wYear, st.wMonth, st.wDay)
+                   - julianDayFromDate(1970, 1, 1)) * Q_INT64_C(86400000);
 }
 
 #elif defined(Q_OS_UNIX)
@@ -3544,7 +3511,7 @@ void QDateTime::detach()
 
 QDataStream &operator<<(QDataStream &out, const QDate &date)
 {
-    return out << (quint32)(date.jd);
+    return out << (qint64)(date.jd);
 }
 
 /*!
@@ -3557,7 +3524,7 @@ QDataStream &operator<<(QDataStream &out, const QDate &date)
 
 QDataStream &operator>>(QDataStream &in, QDate &date)
 {
-    quint32 jd;
+    qint64 jd;
     in >> jd;
     date.jd = jd;
     return in;
@@ -3859,7 +3826,7 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
     QDate fakeDate = adjustDate(date);
 
     // won't overflow because of fakeDate
-    time_t secsSince1Jan1970UTC = toMSecsSinceEpoch_helper(fakeDate.toJulianDay(), QTime().msecsTo(time)) / 1000;
+    time_t secsSince1Jan1970UTC = toMSecsSinceEpoch_helper(fakeDate.toJulianDay(), QTime(0, 0, 0).msecsTo(time)) / 1000;
     tm *brokenDown = 0;
 
 #if defined(Q_OS_WINCE)
@@ -3877,27 +3844,6 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
     res.tm_mon = sysTime.wMonth - 1;
     res.tm_year = sysTime.wYear - 1900;
     brokenDown = &res;
-#elif defined(Q_OS_SYMBIAN)
-    // months and days are zero index based
-    _LIT(KUnixEpoch, "19700000:000000.000000");
-    TTimeIntervalSeconds utcOffset = User::UTCOffset();
-    TTimeIntervalSeconds tTimeIntervalSecsSince1Jan1970UTC(secsSince1Jan1970UTC);
-    TTime epochTTime;
-    TInt err = epochTTime.Set(KUnixEpoch);
-    tm res;
-    if(err == KErrNone) {
-        TTime utcTTime = epochTTime + tTimeIntervalSecsSince1Jan1970UTC;
-        utcTTime = utcTTime + utcOffset;
-        TDateTime utcDateTime = utcTTime.DateTime();
-        res.tm_sec = utcDateTime.Second();
-        res.tm_min = utcDateTime.Minute();
-        res.tm_hour = utcDateTime.Hour();
-        res.tm_mday = utcDateTime.Day() + 1; // non-zero based index for tm struct
-        res.tm_mon = utcDateTime.Month();
-        res.tm_year = utcDateTime.Year() - 1900;
-        res.tm_isdst = 0;
-        brokenDown = &res;
-    }
 #elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of localtime() where available
     tzset();
@@ -3943,7 +3889,7 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
     localTM.tm_mon = fakeDate.month() - 1;
     localTM.tm_year = fakeDate.year() - 1900;
     localTM.tm_isdst = (int)isdst;
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
     time_t secsSince1Jan1970UTC = (toMSecsSinceEpoch_helper(fakeDate.toJulianDay(), QTime().msecsTo(time)) / 1000);
 #else
 #if defined(Q_OS_WIN)
@@ -3968,27 +3914,6 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
     res.tm_year = sysTime.wYear - 1900;
     res.tm_isdst = (int)isdst;
     brokenDown = &res;
-#elif defined(Q_OS_SYMBIAN)
-    // months and days are zero index based
-    _LIT(KUnixEpoch, "19700000:000000.000000");
-    TTimeIntervalSeconds utcOffset = TTimeIntervalSeconds(0 - User::UTCOffset().Int());
-    TTimeIntervalSeconds tTimeIntervalSecsSince1Jan1970UTC(secsSince1Jan1970UTC);
-    TTime epochTTime;
-    TInt err = epochTTime.Set(KUnixEpoch);
-    tm res;
-    if(err == KErrNone) {
-        TTime utcTTime = epochTTime + tTimeIntervalSecsSince1Jan1970UTC;
-        utcTTime = utcTTime + utcOffset;
-        TDateTime utcDateTime = utcTTime.DateTime();
-        res.tm_sec = utcDateTime.Second();
-        res.tm_min = utcDateTime.Minute();
-        res.tm_hour = utcDateTime.Hour();
-        res.tm_mday = utcDateTime.Day() + 1; // non-zero based index for tm struct
-        res.tm_mon = utcDateTime.Month();
-        res.tm_year = utcDateTime.Year() - 1900;
-        res.tm_isdst = (int)isdst;
-        brokenDown = &res;
-    }
 #elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of gmtime() where available
     tm res;
@@ -4772,7 +4697,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
             const int max = qMin(sectionmaxsize, sectiontextSize);
             for (int digits = max; digits >= 1; --digits) {
                 digitsStr.truncate(digits);
-                int tmp = (int)loc.toUInt(digitsStr, &ok, 10);
+                int tmp = (int)loc.toUInt(digitsStr, &ok);
                 if (ok && sn.type == Hour12Section) {
                     if (tmp > 12) {
                         tmp = -1;
@@ -5709,42 +5634,6 @@ bool operator==(const QDateTimeParser::SectionNode &s1, const QDateTimeParser::S
 {
     return (s1.type == s2.type) && (s1.pos == s2.pos) && (s1.count == s2.count);
 }
-
-#ifdef Q_OS_SYMBIAN
-const static TTime UnixEpochOffset(I64LIT(0xdcddb30f2f8000));
-const static TInt64 MinimumMillisecondTime(KMinTInt64 / 1000);
-const static TInt64 MaximumMillisecondTime(KMaxTInt64 / 1000);
-QDateTime qt_symbian_TTime_To_QDateTime(const TTime& time)
-{
-    TTimeIntervalMicroSeconds absolute = time.MicroSecondsFrom(UnixEpochOffset);
-
-    return QDateTime::fromMSecsSinceEpoch(absolute.Int64() / 1000);
-}
-
-TTime qt_symbian_QDateTime_To_TTime(const QDateTime& datetime)
-{
-    qint64 absolute = datetime.toMSecsSinceEpoch();
-    if(absolute > MaximumMillisecondTime)
-        return TTime(KMaxTInt64);
-    if(absolute < MinimumMillisecondTime)
-        return TTime(KMinTInt64);
-    return TTime(absolute * 1000);
-}
-
-time_t qt_symbian_TTime_To_time_t(const TTime& time)
-{
-    TTimeIntervalSeconds interval;
-    TInt err = time.SecondsFrom(UnixEpochOffset, interval);
-    if (err || interval.Int() < 0)
-        return (time_t) 0;
-    return (time_t) interval.Int();
-}
-
-TTime qt_symbian_time_t_To_TTime(time_t time)
-{
-    return UnixEpochOffset + TTimeIntervalSeconds(time);
-}
-#endif //Q_OS_SYMBIAN
 
 #endif // QT_BOOTSTRAPPED
 

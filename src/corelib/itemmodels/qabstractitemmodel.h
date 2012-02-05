@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,7 +51,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class QAbstractItemModel;
 class QPersistentModelIndex;
@@ -194,27 +193,35 @@ public:
 
     virtual QStringList mimeTypes() const;
     virtual QMimeData *mimeData(const QModelIndexList &indexes) const;
+    virtual bool canDropMimeData(const QMimeData *data, Qt::DropAction action,
+                                 int row, int column, const QModelIndex &parent) const;
     virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action,
                               int row, int column, const QModelIndex &parent);
     virtual Qt::DropActions supportedDropActions() const;
 
     virtual Qt::DropActions supportedDragActions() const;
 #if QT_DEPRECATED_SINCE(5, 0)
-    void setSupportedDragActions(Qt::DropActions actions)
-    {
-      doSetSupportedDragActions(actions);
-    }
+    QT_DEPRECATED void setSupportedDragActions(Qt::DropActions actions)
+    { doSetSupportedDragActions(actions); }
 #endif
 
     virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
     virtual bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex());
     virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
     virtual bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex());
+    virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
+                          const QModelIndex &destinationParent, int destinationChild);
+    virtual bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count,
+                             const QModelIndex &destinationParent, int destinationChild);
 
     inline bool insertRow(int row, const QModelIndex &parent = QModelIndex());
     inline bool insertColumn(int column, const QModelIndex &parent = QModelIndex());
     inline bool removeRow(int row, const QModelIndex &parent = QModelIndex());
     inline bool removeColumn(int column, const QModelIndex &parent = QModelIndex());
+    inline bool moveRow(const QModelIndex &sourceParent, int sourceRow,
+                        const QModelIndex &destinationParent, int destinationChild);
+    inline bool moveColumn(const QModelIndex &sourceParent, int sourceColumn,
+                           const QModelIndex &destinationParent, int destinationChild);
 
     virtual void fetchMore(const QModelIndex &parent);
     virtual bool canFetchMore(const QModelIndex &parent) const;
@@ -298,7 +305,14 @@ protected:
     bool beginMoveColumns(const QModelIndex &sourceParent, int sourceFirst, int sourceLast, const QModelIndex &destinationParent, int destinationColumn);
     void endMoveColumns();
 
-    void reset();
+
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED void reset()
+    {
+        beginResetModel();
+        endResetModel();
+    }
+#endif
 
     void beginResetModel();
     void endResetModel();
@@ -330,7 +344,12 @@ inline bool QAbstractItemModel::removeRow(int arow, const QModelIndex &aparent)
 { return removeRows(arow, 1, aparent); }
 inline bool QAbstractItemModel::removeColumn(int acolumn, const QModelIndex &aparent)
 { return removeColumns(acolumn, 1, aparent); }
-
+inline bool QAbstractItemModel::moveRow(const QModelIndex &sourceParent, int sourceRow,
+                                        const QModelIndex &destinationParent, int destinationChild)
+{ return moveRows(sourceParent, sourceRow, 1, destinationParent, destinationChild); }
+inline bool QAbstractItemModel::moveColumn(const QModelIndex &sourceParent, int sourceColumn,
+                                           const QModelIndex &destinationParent, int destinationChild)
+{ return moveRows(sourceParent, sourceColumn, 1, destinationParent, destinationChild); }
 inline QModelIndex QAbstractItemModel::createIndex(int arow, int acolumn, void *adata) const
 { return QModelIndex(arow, acolumn, adata, this); }
 inline QModelIndex QAbstractItemModel::createIndex(int arow, int acolumn, int aid) const

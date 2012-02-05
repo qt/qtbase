@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,7 @@
 #include "qxcbnativeinterface.h"
 #include "qxcbclipboard.h"
 #include "qxcbdrag.h"
+#include "qxcbsharedgraphicscache.h"
 
 #include <xcb/xcb.h>
 
@@ -90,13 +91,14 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
 #ifdef XCB_USE_XLIB
     XInitThreads();
 #endif
+    m_nativeInterface.reset(new QXcbNativeInterface);
 
-    m_connections << new QXcbConnection;
+    m_connections << new QXcbConnection(m_nativeInterface.data());
 
     for (int i = 0; i < parameters.size() - 1; i += 2) {
         qDebug() << parameters.at(i) << parameters.at(i+1);
         QString display = parameters.at(i) + ':' + parameters.at(i+1);
-        m_connections << new QXcbConnection(display.toAscii().constData());
+        m_connections << new QXcbConnection(m_nativeInterface.data(), display.toAscii().constData());
     }
 
     foreach (QXcbConnection *connection, m_connections)
@@ -104,9 +106,12 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
             screenAdded(screen);
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
-    m_nativeInterface.reset(new QXcbNativeInterface);
     m_inputContext.reset(QPlatformInputContextFactory::create());
     m_accessibility.reset(new QPlatformAccessibility());
+
+#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
+    m_sharedGraphicsCache.reset(new QXcbSharedGraphicsCache);
+#endif
 }
 
 QXcbIntegration::~QXcbIntegration()
@@ -186,6 +191,10 @@ QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *wind
 bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
+#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
+    case SharedGraphicsCache: return true;
+#endif
+
     case ThreadedPixmaps: return true;
     case OpenGL: return true;
     case ThreadedOpenGL:
@@ -238,5 +247,25 @@ QPlatformAccessibility *QXcbIntegration::accessibility() const
 {
     return m_accessibility.data();
 }
+
+#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
+static bool sharedGraphicsCacheDisabled()
+{
+    static const char *environmentVariable = "QT_DISABLE_SHARED_CACHE";
+    static bool cacheDisabled = !qgetenv(environmentVariable).isEmpty()
+            && qgetenv(environmentVariable).toInt() != 0;
+    return cacheDisabled;
+}
+
+QPlatformSharedGraphicsCache *QXcbIntegration::createPlatformSharedGraphicsCache(const char *cacheId) const
+{
+    Q_UNUSED(cacheId);
+
+    if (sharedGraphicsCacheDisabled())
+        return 0;
+
+    return m_sharedGraphicsCache.data();
+}
+#endif
 
 QT_END_NAMESPACE

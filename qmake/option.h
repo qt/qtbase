@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the qmake application of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -115,7 +115,8 @@ struct Option
         FixEnvVars              = 0x01,
         FixPathCanonicalize     = 0x02,
         FixPathToLocalSeparators  = 0x04,
-        FixPathToTargetSeparators = 0x08
+        FixPathToTargetSeparators = 0x08,
+        FixPathToNormalSeparators = 0x10
     };
     static QString fixString(QString string, uchar flags);
 
@@ -135,6 +136,15 @@ struct Option
         if(fix_env)
             flags |= FixEnvVars;
         if(canonical)
+            flags |= FixPathCanonicalize;
+        return fixString(in, flags);
+    }
+    inline static QString normalizePath(const QString &in, bool fix_env=true, bool canonical=true)
+    {
+        uchar flags = FixPathToNormalSeparators;
+        if (fix_env)
+            flags |= FixEnvVars;
+        if (canonical)
             flags |= FixPathCanonicalize;
         return fixString(in, flags);
     }

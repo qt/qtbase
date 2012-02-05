@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,7 +53,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class QRegExp;
 
@@ -77,7 +76,7 @@ public:
     inline QString join(const QString &sep) const;
 
     inline QStringList filter(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    inline QBool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline bool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     inline QStringList &replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs = Qt::CaseSensitive);
 
@@ -107,6 +106,8 @@ public:
 #endif
 };
 
+Q_DECLARE_TYPEINFO(QStringList, Q_MOVABLE_TYPE);
+
 namespace QtPrivate {
     void Q_CORE_EXPORT QStringList_sort(QStringList *that);
     int Q_CORE_EXPORT QStringList_removeDuplicates(QStringList *that);
@@ -114,7 +115,7 @@ namespace QtPrivate {
     QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, const QString &str,
                                                Qt::CaseSensitivity cs);
 
-    QBool Q_CORE_EXPORT QStringList_contains(const QStringList *that, const QString &str, Qt::CaseSensitivity cs);
+    bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, const QString &str, Qt::CaseSensitivity cs);
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QString &before, const QString &after,
                                       Qt::CaseSensitivity cs);
 
@@ -148,7 +149,7 @@ inline QStringList QStringList::filter(const QString &str, Qt::CaseSensitivity c
     return QtPrivate::QStringList_filter(this, str, cs);
 }
 
-inline QBool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
+inline bool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
 {
     return QtPrivate::QStringList_contains(this, str, cs);
 }

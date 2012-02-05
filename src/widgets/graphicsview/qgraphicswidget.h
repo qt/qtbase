@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,7 +51,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QFont;
 class QFontMetrics;
@@ -62,7 +61,7 @@ class QGraphicsSceneResizeEvent;
 class QStyle;
 class QStyleOption;
 
-#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
+#if !defined(QT_NO_GRAPHICSVIEW)
 
 class QGraphicsWidgetPrivate;
 
@@ -212,17 +211,13 @@ protected:
     virtual bool focusNextPrevChild(bool next);
     void focusOutEvent(QFocusEvent *event);
     virtual void hideEvent(QHideEvent *event);
-    //virtual bool macEvent(EventHandlerCallRef caller, EventRef event);
     //virtual int metric(PaintDeviceMetric m ) const;
     virtual void moveEvent(QGraphicsSceneMoveEvent *event);
     virtual void polishEvent();
-    //virtual bool qwsEvent(QWSEvent *event);
     //void resetInputContext ();
     virtual void resizeEvent(QGraphicsSceneResizeEvent *event);
     virtual void showEvent(QShowEvent *event);
     //virtual void tabletEvent(QTabletEvent *event);
-    //virtual bool winEvent(MSG *message, long *result);
-    //virtual bool x11Event(XEvent *event);
     virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     virtual void grabMouseEvent(QEvent *event);

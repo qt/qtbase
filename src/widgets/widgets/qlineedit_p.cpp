@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,7 +51,7 @@
 #include "qaccessible.h"
 #endif
 #ifndef QT_NO_IM
-#include "qinputpanel.h"
+#include "qinputmethod.h"
 #include "qlist.h"
 #endif
 
@@ -133,7 +133,7 @@ void QLineEditPrivate::_q_editFocusChange(bool e)
 void QLineEditPrivate::_q_selectionChanged()
 {
     Q_Q(QLineEdit);
-    if (!control->text().isEmpty() && control->preeditAreaText().isEmpty()) {
+    if (control->preeditAreaText().isEmpty()) {
         QStyleOptionFrameV2 opt;
         q->initStyleOption(&opt);
         bool showCursor = control->hasSelectedText() ?
@@ -143,6 +143,9 @@ void QLineEditPrivate::_q_selectionChanged()
     }
 
     emit q->selectionChanged();
+#ifndef QT_NO_ACCESSIBILITY
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TextSelectionChanged, q, 0));
+#endif
 }
 
 void QLineEditPrivate::_q_updateNeeded(const QRect &rect)
@@ -239,17 +242,17 @@ void QLineEditPrivate::updatePasswordEchoEditing(bool editing)
     q->setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod());
 }
 
-void QLineEditPrivate::resetInputPanel()
+void QLineEditPrivate::resetInputMethod()
 {
     Q_Q(QLineEdit);
     if (q->hasFocus() && qApp) {
-        qApp->inputPanel()->reset();
+        qApp->inputMethod()->reset();
     }
 }
 
 /*!
   This function is not intended as polymorphic usage. Just a shared code
-  fragment that calls QInputPanel::invokeAction for this
+  fragment that calls QInputMethod::invokeAction for this
   class.
 */
 bool QLineEditPrivate::sendMouseEventToInputContext( QMouseEvent *e )
@@ -263,7 +266,7 @@ bool QLineEditPrivate::sendMouseEventToInputContext( QMouseEvent *e )
 
         if (mousePos >= 0) {
             if (e->type() == QEvent::MouseButtonRelease)
-                qApp->inputPanel()->invokeAction(QInputPanel::Click, mousePos);
+                qApp->inputMethod()->invokeAction(QInputMethod::Click, mousePos);
 
             return true;
         }

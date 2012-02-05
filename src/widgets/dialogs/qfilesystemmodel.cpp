@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,10 +49,8 @@
 #include <qapplication.h>
 
 #ifdef Q_OS_WIN
-#include <qt_windows.h>
-#endif
-#ifdef Q_OS_WIN32
-#include <QtCore/QVarLengthArray>
+#  include <QtCore/QVarLengthArray>
+#  include <qt_windows.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -367,7 +365,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
     // ### TODO can we use bool QAbstractFileEngine::caseSensitive() const?
     QStringList pathElements = absolutePath.split(QLatin1Char('/'), QString::SkipEmptyParts);
     if ((pathElements.isEmpty())
-#if (!defined(Q_OS_WIN) || defined(Q_OS_WINCE)) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WIN) || defined(Q_OS_WINCE)
         && QDir::fromNativeSeparators(longPath) != QLatin1String("/")
 #endif
         )
@@ -399,11 +397,9 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
     } else
 #endif
 
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     {
         if (!pathElements.at(0).contains(QLatin1String(":"))) {
-            // The reason we express it like this instead of with anonymous, temporary
-            // variables, is to workaround a compiler crash with Q_CC_NOKIAX86.
             QString rootPath = QDir(longPath).rootPath();
             pathElements.prepend(rootPath);
         }
@@ -1314,7 +1310,7 @@ QString QFileSystemModelPrivate::filePath(const QModelIndex &index) const
     if ((fullPath.length() > 2) && fullPath[0] == QLatin1Char('/') && fullPath[1] == QLatin1Char('/'))
         fullPath = fullPath.mid(1);
 #endif
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     if (fullPath.length() == 2 && fullPath.endsWith(QLatin1Char(':')))
         fullPath.append(QLatin1Char('/'));
 #endif
@@ -1655,25 +1651,13 @@ void QFileSystemModelPrivate::_q_directoryChanged(const QString &directory, cons
     if (parentNode->children.count() == 0)
         return;
     QStringList toRemove;
-#if defined(Q_OS_SYMBIAN)
-    // Filename case must be exact in qBinaryFind below, so create a list of all lowercase names.
-    QStringList newFiles;
-    for(int i = 0; i < files.size(); i++) {
-        newFiles << files.at(i).toLower();
-    }
-#else
     QStringList newFiles = files;
-#endif
     qSort(newFiles.begin(), newFiles.end());
     QHash<QString, QFileSystemNode*>::const_iterator i = parentNode->children.constBegin();
     while (i != parentNode->children.constEnd()) {
         QStringList::iterator iterator;
         iterator = qBinaryFind(newFiles.begin(), newFiles.end(),
-#if defined(Q_OS_SYMBIAN)
-                    i.value()->fileName.toLower());
-#else
                     i.value()->fileName);
-#endif
         if (iterator == newFiles.end()) {
             toRemove.append(i.value()->fileName);
         }
@@ -1978,8 +1962,8 @@ bool QFileSystemModelPrivate::filtersAcceptsNode(const QFileSystemNode *node) co
     const bool hideHidden        = !(filters & QDir::Hidden);
     const bool hideSystem        = !(filters & QDir::System);
     const bool hideSymlinks      = (filters & QDir::NoSymLinks);
-    const bool hideDot           = (filters & QDir::NoDot) || (filters & QDir::NoDotAndDotDot); // ### Qt5: simplify (because NoDotAndDotDot=NoDot|NoDotDot)
-    const bool hideDotDot        = (filters & QDir::NoDotDot) || (filters & QDir::NoDotAndDotDot); // ### Qt5: simplify (because NoDotAndDotDot=NoDot|NoDotDot)
+    const bool hideDot           = (filters & QDir::NoDot);
+    const bool hideDotDot        = (filters & QDir::NoDotDot);
 
     // Note that we match the behavior of entryList and not QFileInfo on this and this
     // incompatibility won't be fixed until Qt 5 at least

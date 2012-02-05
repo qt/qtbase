@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,7 +50,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QImage;
 class QRect;
@@ -120,7 +119,7 @@ struct Q_GUI_EXPORT QImageIOHandlerFactoryInterface : public QFactoryInterface
     virtual QImageIOHandler *create(QIODevice *device, const QByteArray &format = QByteArray()) const = 0;
 };
 
-#define QImageIOHandlerFactoryInterface_iid "com.trolltech.Qt.QImageIOHandlerFactoryInterface"
+#define QImageIOHandlerFactoryInterface_iid "org.qt-project.Qt.QImageIOHandlerFactoryInterface"
 Q_DECLARE_INTERFACE(QImageIOHandlerFactoryInterface, QImageIOHandlerFactoryInterface_iid)
 
 class Q_GUI_EXPORT QImageIOPlugin : public QObject, public QImageIOHandlerFactoryInterface

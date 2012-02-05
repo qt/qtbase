@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -64,27 +64,25 @@
 
 #include <private/qfunctions_p.h>
 
-#if defined(Q_OS_WINCE)
-#include <windows.h>
-#include <winnls.h>
-#endif
-
-#ifdef Q_OS_SYMBIAN
-#include <e32cmn.h>
-#endif
-
 #include <limits.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 
-#ifdef truncate
-#undef truncate
-#endif
-
 #include "qchar.cpp"
 #include "qstringmatcher.cpp"
+
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#  ifdef Q_OS_WINCE
+#    include <winnls.h>
+#  endif
+#endif
+
+#ifdef truncate
+#  undef truncate
+#endif
 
 #ifndef LLONG_MAX
 #define LLONG_MAX qint64_C(9223372036854775807)
@@ -166,7 +164,7 @@ static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const u
 }
 
 // Case-insensitive comparison between a Unicode string and a QLatin1String
-static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
+static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b, const uchar *be)
 {
     if (a == 0) {
         if (b == 0)
@@ -176,7 +174,11 @@ static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
     if (b == 0)
         return -1;
 
-    while (a < ae && *b) {
+    const ushort *e = ae;
+    if (be - b < ae - a)
+        e = a + (be - b);
+
+    while (a < e) {
         int diff = foldCase(*a) - foldCase(*b);
         if ((diff))
             return diff;
@@ -184,7 +186,7 @@ static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
         ++b;
     }
     if (a == ae) {
-        if (!*b)
+        if (b == be)
             return 0;
         return -1;
     }
@@ -1459,7 +1461,7 @@ QString &QString::insert(int i, const QLatin1String &str)
     if (i < 0 || !s || !(*s))
         return *this;
 
-    int len = qstrlen(str.latin1());
+    int len = str.size();
     expand(qMax(d->size, i) + len - 1);
 
     ::memmove(d->data() + i + len, d->data() + i, (d->size - i - len) * sizeof(QChar));
@@ -1560,7 +1562,7 @@ QString &QString::append(const QLatin1String &str)
 {
     const uchar *s = (const uchar *)str.latin1();
     if (s) {
-        int len = qstrlen((char *)s);
+        int len = str.size();
         if (d->ref.isShared() || d->size + len > int(d->alloc))
             realloc(grow(d->size + len));
         ushort *i = d->data() + d->size;
@@ -2057,11 +2059,11 @@ QString &QString::replace(const QLatin1String &before,
                           const QLatin1String &after,
                           Qt::CaseSensitivity cs)
 {
-    int alen = qstrlen(after.latin1());
+    int alen = after.size();
     QVarLengthArray<ushort> a(alen);
     for (int i = 0; i < alen; ++i)
         a[i] = (uchar)after.latin1()[i];
-    int blen = qstrlen(before.latin1());
+    int blen = before.size();
     QVarLengthArray<ushort> b(blen);
     for (int i = 0; i < blen; ++i)
         b[i] = (uchar)before.latin1()[i];
@@ -2236,7 +2238,7 @@ bool QString::operator<(const QLatin1String &other) const
         ++uc;
         ++c;
     }
-    return (uc == (d->data() + d->size) ? *c : *uc < *c);
+    return (uc == e ? d->size < other.size() : *uc < *c);
 }
 
 /*! \fn bool QString::operator<(const QByteArray &other) const
@@ -2329,7 +2331,7 @@ bool QString::operator>(const QLatin1String &other) const
     if (!c || *c == '\0')
         return !isEmpty();
 
-    const ushort *uc = d->data();;
+    const ushort *uc = d->data();
     const ushort *e = uc + qMin(d->size, other.size());
 
     while (uc < e) {
@@ -2338,7 +2340,7 @@ bool QString::operator>(const QLatin1String &other) const
         ++uc;
         ++c;
     }
-    return (uc == (d->data() + d->size) ? false : *uc > *c);
+    return (uc == e) ? d->size > other.size() : *uc > *c;
 }
 
 /*! \fn bool QString::operator>(const QByteArray &other) const
@@ -3389,7 +3391,7 @@ QString QString::right(int n) const
 
 QString QString::mid(int position, int n) const
 {
-    if (d == &shared_null.str || position >= d->size)
+    if (d == &shared_null.str || position > d->size)
         return QString();
     if (n < 0)
         n = d->size - position;
@@ -4610,22 +4612,31 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
                             Qt::CaseSensitivity cs)
 {
     const ushort *uc = reinterpret_cast<const ushort *>(data1);
-    const ushort *e = uc + length1;
+    const ushort *uce = uc + length1;
     const uchar *c = (uchar *)s2.latin1();
 
     if (!c)
         return length1;
 
     if (cs == Qt::CaseSensitive) {
-        while (uc < e && *c && *uc == *c)
+        const ushort *e = uc + length1;
+        if (s2.size() < length1)
+            e = uc + s2.size();
+        while (uc < e) {
+            int diff = *uc - *c;
+            if (diff)
+                return diff;
             uc++, c++;
+        }
 
-        if (uc == e)
-            return -*c;
-
-        return *uc - *c;
+        if (uc == uce) {
+            if (c == (const uchar *)s2.latin1() + s2.size())
+                return 0;
+            return -1;
+        }
+        return 1;
     } else {
-        return ucstricmp(uc, e, c);
+        return ucstricmp(uc, uce, c, c + s2.size());
     }
 }
 
@@ -4701,12 +4712,6 @@ int QString::localeAwareCompare(const QString &other) const
     return localeAwareCompare_helper(constData(), length(), other.constData(), other.length());
 }
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-QT_END_NAMESPACE
-#include "qt_windows.h"
-QT_BEGIN_NAMESPACE
-#endif
-
 /*!
     \internal
     \since 4.5
@@ -4745,10 +4750,6 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
     CFRelease(thisString);
     CFRelease(otherString);
     return result;
-#elif defined(Q_OS_SYMBIAN)
-    TPtrC p1 = TPtrC16(reinterpret_cast<const TUint16 *>(data1), length1);
-    TPtrC p2 = TPtrC16(reinterpret_cast<const TUint16 *>(data2), length2);
-    return p1.CompareC(p2);
 #elif defined(Q_OS_UNIX)
 #  if defined(QT_USE_ICU)
     int res;
@@ -5432,11 +5433,14 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toLongLong()
+
     Example:
 
     \snippet doc/src/snippets/qstring/main.cpp 74
 
-    \sa number(), toULongLong(), toInt()
+    \sa number(), toULongLong(), toInt(), QLocale::toLongLong()
 */
 
 qint64 QString::toLongLong(bool *ok, int base) const
@@ -5447,15 +5451,6 @@ qint64 QString::toLongLong(bool *ok, int base) const
         base = 10;
     }
 #endif
-
-    bool my_ok;
-    QLocale def_locale;
-    qint64 result = def_locale.d()->stringToLongLong(*this, base, &my_ok, QLocalePrivate::FailOnGroupSeparators);
-    if (my_ok) {
-        if (ok != 0)
-            *ok = true;
-        return result;
-    }
 
     QLocale c_locale(QLocale::C);
     return c_locale.d()->stringToLongLong(*this, base, ok, QLocalePrivate::FailOnGroupSeparators);
@@ -5473,11 +5468,14 @@ qint64 QString::toLongLong(bool *ok, int base) const
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toULongLong()
+
     Example:
 
     \snippet doc/src/snippets/qstring/main.cpp 79
 
-    \sa number(), toLongLong()
+    \sa number(), toLongLong(), QLocale::toULongLong()
 */
 
 quint64 QString::toULongLong(bool *ok, int base) const
@@ -5488,15 +5486,6 @@ quint64 QString::toULongLong(bool *ok, int base) const
         base = 10;
     }
 #endif
-
-    bool my_ok;
-    QLocale def_locale;
-    quint64 result = def_locale.d()->stringToUnsLongLong(*this, base, &my_ok, QLocalePrivate::FailOnGroupSeparators);
-    if (my_ok) {
-        if (ok != 0)
-            *ok = true;
-        return result;
-    }
 
     QLocale c_locale(QLocale::C);
     return c_locale.d()->stringToUnsLongLong(*this, base, ok, QLocalePrivate::FailOnGroupSeparators);
@@ -5516,11 +5505,14 @@ quint64 QString::toULongLong(bool *ok, int base) const
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toLong()
+
     Example:
 
     \snippet doc/src/snippets/qstring/main.cpp 73
 
-    \sa number(), toULong(), toInt()
+    \sa number(), toULong(), toInt(), QLocale::toLong()
 */
 
 long QString::toLong(bool *ok, int base) const
@@ -5548,11 +5540,14 @@ long QString::toLong(bool *ok, int base) const
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toULong()
+
     Example:
 
     \snippet doc/src/snippets/qstring/main.cpp 78
 
-    \sa number()
+    \sa number(), QLocale::toULong()
 */
 
 ulong QString::toULong(bool *ok, int base) const
@@ -5579,11 +5574,14 @@ ulong QString::toULong(bool *ok, int base) const
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toInt()
+
     Example:
 
     \snippet doc/src/snippets/qstring/main.cpp 72
 
-    \sa number(), toUInt(), toDouble()
+    \sa number(), toUInt(), toDouble(), QLocale::toInt()
 */
 
 int QString::toInt(bool *ok, int base) const
@@ -5609,11 +5607,14 @@ int QString::toInt(bool *ok, int base) const
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toUInt()
+
     Example:
 
     \snippet doc/src/snippets/qstring/main.cpp 77
 
-    \sa number(), toInt()
+    \sa number(), toInt(), QLocale::toUInt()
 */
 
 uint QString::toUInt(bool *ok, int base) const
@@ -5639,11 +5640,14 @@ uint QString::toUInt(bool *ok, int base) const
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toShort()
+
     Example:
 
     \snippet doc/src/snippets/qstring/main.cpp 76
 
-    \sa number(), toUShort(), toInt()
+    \sa number(), toUShort(), toInt(), QLocale::toShort()
 */
 
 short QString::toShort(bool *ok, int base) const
@@ -5669,11 +5673,14 @@ short QString::toShort(bool *ok, int base) const
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toUShort()
+
     Example:
 
     \snippet doc/src/snippets/qstring/main.cpp 80
 
-    \sa number(), toShort()
+    \sa number(), toShort(), QLocale::toUShort()
 */
 
 ushort QString::toUShort(bool *ok, int base) const
@@ -5703,37 +5710,22 @@ ushort QString::toUShort(bool *ok, int base) const
 
     \snippet doc/src/snippets/qstring/main.cpp 67
 
-    This function tries to interpret the string according to the
-    current locale. The current locale is determined from the
-    system at application startup and can be changed by calling
-    QLocale::setDefault(). If the string cannot be interpreted
-    according to the current locale, this function falls back
-    on the "C" locale.
-
-    \snippet doc/src/snippets/qstring/main.cpp 69
-    \snippet doc/src/snippets/qstring/main.cpp 70
-
-    Due to the ambiguity between the decimal point and thousands group
-    separator in various locales, this function does not handle
-    thousands group separators. If you need to convert such numbers,
-    see QLocale::toDouble().
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toDouble()
 
     \snippet doc/src/snippets/qstring/main.cpp 68
+
+    For historic reasons, this function does not handle
+    thousands group separators. If you need to convert such numbers,
+    use QLocale::toDouble().
+
+    \snippet doc/src/snippets/qstring/main.cpp 69
 
     \sa number() QLocale::setDefault() QLocale::toDouble() trimmed()
 */
 
 double QString::toDouble(bool *ok) const
 {
-    bool my_ok;
-    QLocale def_locale;
-    double result = def_locale.d()->stringToDouble(*this, &my_ok, QLocalePrivate::FailOnGroupSeparators);
-    if (my_ok) {
-        if (ok != 0)
-            *ok = true;
-        return result;
-    }
-
     QLocale c_locale(QLocale::C);
     return c_locale.d()->stringToDouble(*this, ok, QLocalePrivate::FailOnGroupSeparators);
 }
@@ -5744,11 +5736,14 @@ double QString::toDouble(bool *ok) const
     If a conversion error occurs, *\a{ok} is set to false; otherwise
     *\a{ok} is set to true. Returns 0.0 if the conversion fails.
 
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toFloat()
+
     Example:
 
     \snippet doc/src/snippets/qstring/main.cpp 71
 
-    \sa number(), toDouble(), toInt()
+    \sa number(), toDouble(), toInt(), QLocale::toFloat()
 */
 
 #define QT_MAX_FLOAT 3.4028234663852886e+38
@@ -5850,8 +5845,9 @@ QString &QString::setNum(qulonglong n, int base)
     The \a format can be 'f', 'F', 'e', 'E', 'g' or 'G' (see the
     arg() function documentation for an explanation of the formats).
 
-    Unlike QLocale::toString(), this function doesn't honor the
-    user's locale settings.
+    The formatting always uses QLocale::C, i.e., English/UnitedStates.
+    To get a localized string representation of a number, use
+    QLocale::toString() with the appropriate locale.
 */
 
 QString &QString::setNum(double n, char f, int prec)
@@ -5892,6 +5888,10 @@ QString &QString::setNum(double n, char f, int prec)
     Sets the string to the printed value of \a n, formatted according
     to the given \a format and \a precision, and returns a reference
     to the string.
+
+    The formatting always uses QLocale::C, i.e., English/UnitedStates.
+    To get a localized string representation of a number, use
+    QLocale::toString() with the appropriate locale.
 */
 
 
@@ -5904,6 +5904,10 @@ QString &QString::setNum(double n, char f, int prec)
     The base is 10 by default and must be between 2
     and 36. For bases other than 10, \a n is treated as an
     unsigned integer.
+
+    The formatting always uses QLocale::C, i.e., English/UnitedStates.
+    To get a localized string representation of a number, use
+    QLocale::toString() with the appropriate locale.
 
     \snippet doc/src/snippets/qstring/main.cpp 35
 
@@ -7164,9 +7168,27 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \sa latin1()
 */
 
+/*! \fn QLatin1String::QLatin1String(const char *str, int size)
+
+    Constructs a QLatin1String object that stores \a str with \a size.
+    Note that if \a str is 0, an empty string is created; this case
+    is handled by QString.
+
+    The string data is \e not copied. The caller must be able to
+    guarantee that \a str will not be deleted or modified as long as
+    the QLatin1String object exists.
+
+    \sa latin1()
+*/
+
 /*! \fn const char *QLatin1String::latin1() const
 
     Returns the Latin-1 string stored in this object.
+*/
+
+/*! \fn int QLatin1String::size() const
+
+    Returns the size of the Latin-1 string stored in this object.
 */
 
 /*! \fn bool QLatin1String::operator==(const QString &other) const
@@ -7324,37 +7346,37 @@ QString &QString::setRawData(const QChar *unicode, int size)
 
 
 
-/* \fn bool operator==(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator==(const QLatin1String &s1, const QLatin1String &s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically equal to string \a s2; otherwise
    returns false.
 */
-/* \fn bool operator!=(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator!=(const QLatin1String &s1, const QLatin1String &s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically unequal to string \a s2; otherwise
    returns false.
 */
-/* \fn bool operator<(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator<(const QLatin1String &s1, const QLatin1String &s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically smaller than string \a s2; otherwise
    returns false.
 */
-/* \fn bool operator<=(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator<=(const QLatin1String &s1, const QLatin1String &s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically smaller than or equal to string \a s2; otherwise
    returns false.
 */
-/* \fn bool operator>(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator>(const QLatin1String &s1, const QLatin1String &s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically greater than string \a s2; otherwise
    returns false.
 */
-/* \fn bool operator>=(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator>=(const QLatin1String &s1, const QLatin1String &s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically greater than or equal to
@@ -7678,6 +7700,9 @@ bool operator==(const QString &s1,const QStringRef &s2)
 */
 bool operator==(const QLatin1String &s1, const QStringRef &s2)
 {
+    if (s1.size() != s2.size())
+        return false;
+
     const ushort *uc = reinterpret_cast<const ushort *>(s2.unicode());
     const ushort *e = uc + s2.size();
     const uchar *c = reinterpret_cast<const uchar *>(s1.latin1());
@@ -8019,7 +8044,7 @@ QStringRef QString::rightRef(int n) const
     Returns a substring reference to \a n characters of this string,
     starting at the specified \a position.
 
-    If the \a position exceeds the length of the string, an empty
+    If the \a position exceeds the length of the string, a null
     reference is returned.
 
     If there are less than \a n characters available in the string,
@@ -8036,7 +8061,7 @@ QStringRef QString::rightRef(int n) const
 
 QStringRef QString::midRef(int position, int n) const
 {
-    if (d == &shared_null.str || position >= d->size)
+    if (d == &shared_null.str || position > d->size)
         return QStringRef();
     if (n < 0)
         n = d->size - position;

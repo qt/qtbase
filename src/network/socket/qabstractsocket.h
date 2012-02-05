@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,7 +52,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Network)
 
 class QHostAddress;
 #ifndef QT_NO_NETWORKPROXY
@@ -98,6 +97,8 @@ public:
         ProxyNotFoundError,
         ProxyProtocolError,
         OperationError,
+        SslInternalError,                       /* 20 */
+        SslInvalidUserDataError,
 
         UnknownSocketError = -1
     };
@@ -124,9 +125,18 @@ public:
         ReuseAddressHint = 0x4
     };
     Q_DECLARE_FLAGS(BindMode, BindFlag)
+    enum PauseMode {
+        PauseNever = 0x0,
+        PauseOnNotify = 0x1
+    };
+    Q_DECLARE_FLAGS(PauseModes, PauseMode)
 
     QAbstractSocket(SocketType socketType, QObject *parent);
     virtual ~QAbstractSocket();
+
+    virtual void resume(); // to continue after proxy authentication required, SSL errors etc.
+    PauseModes pauseMode() const;
+    void setPauseMode(PauseModes pauseMode);
 
     bool bind(const QHostAddress &address, quint16 port = 0, BindMode mode = DefaultForPlatform);
     bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform);
@@ -148,20 +158,17 @@ public:
     QHostAddress peerAddress() const;
     QString peerName() const;
 
-    // ### Qt 5: Make setReadBufferSize() virtual
     qint64 readBufferSize() const;
-    void setReadBufferSize(qint64 size);
+    virtual void setReadBufferSize(qint64 size);
 
     void abort();
 
-    // ### Qt 5: Make socketDescriptor() and setSocketDescriptor() virtual.
-    qintptr socketDescriptor() const;
-    bool setSocketDescriptor(qintptr socketDescriptor, SocketState state = ConnectedState,
+    virtual qintptr socketDescriptor() const;
+    virtual bool setSocketDescriptor(qintptr socketDescriptor, SocketState state = ConnectedState,
                              OpenMode openMode = ReadWrite);
 
-    // ### Qt 5: Make virtual?
-    void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value);
-    QVariant socketOption(QAbstractSocket::SocketOption option);
+    virtual void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value);
+    virtual QVariant socketOption(QAbstractSocket::SocketOption option);
 
     SocketType socketType() const;
     SocketState state() const;
@@ -174,11 +181,10 @@ public:
     bool flush();
 
     // for synchronous access
-    // ### Qt 5: Make waitForConnected() and waitForDisconnected() virtual.
-    bool waitForConnected(int msecs = 30000);
+    virtual bool waitForConnected(int msecs = 30000);
     bool waitForReadyRead(int msecs = 30000);
     bool waitForBytesWritten(int msecs = 30000);
-    bool waitForDisconnected(int msecs = 30000);
+    virtual bool waitForDisconnected(int msecs = 30000);
 
 #ifndef QT_NO_NETWORKPROXY
     void setProxy(const QNetworkProxy &networkProxy);
@@ -223,6 +229,7 @@ private:
 
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractSocket::BindMode)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractSocket::PauseModes)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, QAbstractSocket::SocketError);

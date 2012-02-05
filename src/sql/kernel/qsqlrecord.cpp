@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -243,8 +243,9 @@ int QSqlRecord::indexOf(const QString& name) const
 }
 
 /*!
-    Returns the field at position \a index. If the position is out of
-    range, an empty field is returned.
+    Returns the field at position \a index. If the \a index
+    is out of range, function returns
+    a \l{default-constructed value}.
  */
 QSqlField QSqlRecord::field(int index) const
 {

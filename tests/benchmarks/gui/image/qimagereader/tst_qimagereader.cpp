@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -116,10 +116,6 @@ tst_QImageReader::tst_QImageReader()
 #if defined QTEST_HAVE_GIF
     images << QPair<QString, QByteArray>(QLatin1String("earth.gif"), QByteArray("gif"));
     images << QPair<QString, QByteArray>(QLatin1String("trolltech.gif"), QByteArray("gif"));
-#endif
-#if defined QTEST_HAVE_MNG
-    images << QPair<QString, QByteArray>(QLatin1String("ball.mng"), QByteArray("mng"));
-    images << QPair<QString, QByteArray>(QLatin1String("fire.mng"), QByteArray("mng"));
 #endif
 }
 

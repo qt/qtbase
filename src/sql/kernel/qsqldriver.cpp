@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -126,6 +126,17 @@ QSqlDriver::~QSqlDriver()
 
     This signal is emitted when the database posts an event notification
     that the driver subscribes to. \a name identifies the event notification.
+
+    \sa subscribeToNotification()
+*/
+
+/*!
+    \since 5.0
+
+    \fn QSqlDriver::notification(const QString &name, NotificationSource source)
+
+    This signal is emitted when the database posts an event notification
+    that the driver subscribes to. \a name identifies the event notification, \a source indicates the signal source.
 
     \sa subscribeToNotification()
 */
@@ -235,6 +246,16 @@ bool QSqlDriver::isOpenError() const
 
     \value FieldName A SQL field name
     \value TableName A SQL table name
+*/
+
+/*!
+    \enum QSqlDriver::NotificationSource
+
+    This enum contains a list of SQL notification sources.
+
+    \value UnknownSource The notification source is unknown
+    \value SelfSource The notification source is this connection
+    \value OtherSource The notification source is another connection
 */
 
 /*!

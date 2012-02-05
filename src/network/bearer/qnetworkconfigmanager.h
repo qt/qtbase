@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,7 +50,6 @@
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-QT_MODULE(Network)
 
 class QNetworkConfigurationManagerPrivate;
 class Q_NETWORK_EXPORT QNetworkConfigurationManager : public QObject
@@ -90,6 +89,9 @@ Q_SIGNALS:
     void configurationChanged(const QNetworkConfiguration &config);
     void onlineStateChanged(bool isOnline);
     void updateCompleted();
+
+private:
+    Q_DISABLE_COPY(QNetworkConfigurationManager)
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkConfigurationManager::Capabilities)

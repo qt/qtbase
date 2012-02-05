@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,7 +60,7 @@
 #include <QtGui/qplatformnativeinterface_qpa.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qaccessible2.h>
-#include <OleAcc.h>
+#include <oleacc.h>
 
 //#include <uiautomationcoreapi.h>
 #ifndef UiaRootObjectId
@@ -694,7 +694,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
     case NAVDIR_LEFT:
     case NAVDIR_RIGHT:
         if (QAccessibleInterface *pIface = accessible->parent()) {
-
+            const int indexOfOurself = pIface->indexOfChild(accessible);
             QRect startg = accessible->rect();
             QPoint startc = startg.center();
             QAccessibleInterface *candidate = 0;
@@ -704,7 +704,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
                 QAccessibleInterface *sibling = 0;
                 sibling = pIface->child(i);
                 Q_ASSERT(sibling);
-                if ((accessible->relationTo(sibling) & QAccessible::Self) || sibling->state().invisible) {
+                if (i == indexOfOurself || sibling->state().invisible) {
                     //ignore ourself and invisible siblings
                     delete sibling;
                     continue;
@@ -1296,10 +1296,10 @@ QWindowsAccessibility::QWindowsAccessibility()
 }
 
 
-void QWindowsAccessibility::notifyAccessibilityUpdate(QObject *o, int who, QAccessible::Event reason)
+void QWindowsAccessibility::notifyAccessibilityUpdate(const QAccessibleEvent &event)
 {
     QString soundName;
-    switch (reason) {
+    switch (event.type()) {
     case QAccessible::PopupMenuStart:
         soundName = QLatin1String("MenuPopup");
         break;
@@ -1370,8 +1370,9 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QObject *o, int who, QAcce
 
     // An event has to be associated with a window,
     // so find the first parent that is a widget and that has a WId
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(o);
+    QAccessibleInterface *iface = event.accessibleInterface();
     QWindow *window = iface ? window_helper(iface) : 0;
+    delete iface;
 
     if (!window) {
         window = QGuiApplication::activeWindow();
@@ -1382,18 +1383,17 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QObject *o, int who, QAcce
     QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
     HWND hWnd = (HWND)platform->nativeResourceForWindow("handle", window);
 
-    if (reason != QAccessible::MenuCommand) { // MenuCommand is faked
+    if (event.type() != QAccessible::MenuCommand) { // MenuCommand is faked
         // See comment "SENDING EVENTS TO OBJECTS WITH NO WINDOW HANDLE"
         eventNum %= 50;              //[0..49]
         int eventId = - eventNum - 1;
 
-        qAccessibleRecentSentEvents()->insert(eventId, qMakePair(o, who));
-        ptrNotifyWinEvent(reason, hWnd, OBJID_CLIENT, eventId );
+        qAccessibleRecentSentEvents()->insert(eventId, qMakePair(event.object(), event.child()));
+        ptrNotifyWinEvent(event.type(), hWnd, OBJID_CLIENT, eventId );
 
         ++eventNum;
     }
 #endif // Q_WS_WINCE
-
 }
 
 /*

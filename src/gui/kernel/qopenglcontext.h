@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,17 +42,24 @@
 #ifndef QOPENGLCONTEXT_H
 #define QOPENGLCONTEXT_H
 
+#ifndef QT_NO_OPENGL
+
 #include <QtCore/qnamespace.h>
 #include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
 
 #include <QtGui/QSurfaceFormat>
 
+#ifdef __GLEW_H__
+#warning qopenglfunctions.h is not compatible with GLEW, GLEW defines will be undefined
+#warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h
+#endif
+
+#include <QtGui/qopengl.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
 
 class QOpenGLContextPrivate;
 class QOpenGLContextGroupPrivate;
@@ -102,6 +109,8 @@ public:
     QOpenGLContextGroup *shareGroup() const;
     QScreen *screen() const;
 
+    GLuint defaultFramebufferObject() const;
+
     bool makeCurrent(QSurface *surface);
     void doneCurrent();
 
@@ -145,5 +154,7 @@ private:
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_OPENGL
 
 #endif // QGUIGLCONTEXT_H

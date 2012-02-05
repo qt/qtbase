@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,9 +48,11 @@
 #include "qwindowsmime.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowsaccessibility.h"
+#include "qwindowsscreen.h"
 
 #include <QtGui/QWindow>
 #include <QtGui/QWindowSystemInterface>
+#include <QtGui/QPlatformNativeInterface>
 
 #include <QtCore/QSet>
 #include <QtCore/QHash>
@@ -218,6 +220,14 @@ QWindowsContext *QWindowsContext::m_instance = 0;
 typedef QHash<HWND, QWindowsWindow *> HandleBaseWindowHash;
 
 struct QWindowsContextPrivate {
+    typedef QPlatformNativeInterface::EventFilter EventFilter;
+
+    enum EventFilterType
+    {
+        GenericWindowsEventFilter,
+        EventFilterTypeCount
+    };
+
     QWindowsContextPrivate();
 
     unsigned m_systemInfo;
@@ -228,15 +238,19 @@ struct QWindowsContextPrivate {
     QWindowsKeyMapper m_keyMapper;
     QWindowsMouseHandler m_mouseHandler;
     QWindowsMimeConverter m_mimeConverter;
+    QWindowsScreenManager m_screenManager;
     QSharedPointer<QWindowCreationContext> m_creationContext;
     const HRESULT m_oleInitializeResult;
+    const QByteArray m_eventType;
+    EventFilter m_eventFilters[EventFilterTypeCount];
 };
 
 QWindowsContextPrivate::QWindowsContextPrivate() :
     m_systemInfo(0),
     m_displayContext(GetDC(0)),
     m_defaultDPI(GetDeviceCaps(m_displayContext,LOGPIXELSY)),
-    m_oleInitializeResult(OleInitialize(NULL))
+    m_oleInitializeResult(OleInitialize(NULL)),
+    m_eventType(QByteArrayLiteral("windows_generic_MSG"))
 {
     QWindowsContext::user32dll.init();
     QWindowsContext::shell32dll.init();
@@ -250,6 +264,7 @@ QWindowsContextPrivate::QWindowsContextPrivate() :
         m_systemInfo |= QWindowsContext::SI_RTL_Extensions;
         m_keyMapper.setUseRTLExtensions(true);
     }
+    qFill(m_eventFilters, m_eventFilters + EventFilterTypeCount, EventFilter(0));
 }
 
 QWindowsContext::QWindowsContext() :
@@ -278,6 +293,7 @@ QWindowsContext::~QWindowsContext()
     if (d->m_oleInitializeResult == S_OK || d->m_oleInitializeResult == S_FALSE)
         OleUninitialize();
 
+    d->m_screenManager.clearScreens(); // Order: Potentially calls back to the windows.
     m_instance = 0;
 }
 
@@ -330,7 +346,7 @@ QString QWindowsContext::registerWindowClass(const QWindow *w, bool isGL)
 
     uint style = 0;
     bool icon = false;
-    QString cname = "Qt5";
+    QString cname = QStringLiteral("Qt5");
     if (w && isGL) {
         cname += QStringLiteral("QGLWindow");
         style = CS_DBLCLKS|CS_OWNDC;
@@ -541,6 +557,11 @@ QWindowsMimeConverter &QWindowsContext::mimeConverter() const
     return d->m_mimeConverter;
 }
 
+QWindowsScreenManager &QWindowsContext::screenManager()
+{
+    return d->m_screenManager;
+}
+
 /*!
     \brief Convenience to create a non-visible, message-only dummy
     window for example used as clipboard watcher or for GL.
@@ -606,6 +627,27 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
 }
 
 /*!
+     \brief Set event filter.
+
+     \sa QWindowsNativeInterface
+*/
+
+QWindowsContext::EventFilter QWindowsContext::setEventFilter(const QByteArray &eventType, EventFilter filter)
+{
+    int eventFilterType = -1;
+    if (eventType == d->m_eventType)
+        eventFilterType = QWindowsContextPrivate::GenericWindowsEventFilter;
+    if (eventFilterType < 0) {
+        qWarning("%s: Attempt to set unsupported event filter '%s'.",
+                 __FUNCTION__, eventType.constData());
+        return 0;
+    }
+    const EventFilter previous = d->m_eventFilters[eventFilterType];
+    d->m_eventFilters[eventFilterType] = filter;
+    return previous;
+}
+
+/*!
      \brief Main windows procedure registered for windows.
 
      \sa QWindowsGuiEventDispatcher
@@ -616,6 +658,22 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
                                   WPARAM wParam, LPARAM lParam, LRESULT *result)
 {
     *result = 0;
+
+    MSG msg;
+    msg.hwnd = hwnd;         // re-create MSG structure
+    msg.message = message;   // time and pt fields ignored
+    msg.wParam = wParam;
+    msg.lParam = lParam;
+    msg.pt.x = GET_X_LPARAM(lParam);
+    msg.pt.y = GET_Y_LPARAM(lParam);
+
+    long filterResult = 0;
+    if (d->m_eventFilters[QWindowsContextPrivate::GenericWindowsEventFilter]) {
+        if (d->m_eventFilters[QWindowsContextPrivate::GenericWindowsEventFilter](&msg, &filterResult)) {
+            *result = LRESULT(filterResult);
+            return true;
+        }
+    }
     // Events without an associated QWindow or events we are not interested in.
     switch (et) {
     case QtWindows::DeactivateApplicationEvent:
@@ -641,6 +699,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return false;
     case QtWindows::AccessibleObjectFromWindowRequest:
         return QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(hwnd, wParam, lParam, result);
+    case QtWindows::DisplayChangedEvent:
+        return d->m_screenManager.handleDisplayChange(wParam, lParam);
     default:
         break;
     }
@@ -676,13 +736,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return false;
     }
 
-    MSG msg;
-    msg.hwnd = hwnd;         // re-create MSG structure
-    msg.message = message;   // time and pt fields ignored
-    msg.wParam = wParam;
-    msg.lParam = lParam;
-    msg.pt.x = GET_X_LPARAM(lParam);
-    msg.pt.y = GET_Y_LPARAM(lParam);
+    filterResult = 0;
+    if (QWindowSystemInterface::handleNativeEvent(platformWindow->window(), d->m_eventType, &msg, &filterResult)) {
+        *result = LRESULT(filterResult);
+        return true;
+    }
 
     switch (et) {
     case QtWindows::KeyDownEvent:
@@ -747,18 +805,11 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
     LRESULT result;
     const QtWindows::WindowsEventType et = windowsEventType(message, wParam);
     const bool handled = QWindowsContext::instance()->windowsProc(hwnd, message, et, wParam, lParam, &result);
-    const bool guiEventsQueued = QWindowSystemInterface::windowSystemEventsQueued();
     if (QWindowsContext::verboseEvents > 1)
         if (const char *eventName = QWindowsGuiEventDispatcher::windowsMessageName(message))
-            qDebug("EVENT: hwd=%p %s msg=0x%x et=0x%x wp=%d at %d,%d handled=%d gui=%d",
+            qDebug("EVENT: hwd=%p %s msg=0x%x et=0x%x wp=%d at %d,%d handled=%d",
                    hwnd, eventName, message, et, int(wParam),
-                   GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), handled, guiEventsQueued);
-    if (guiEventsQueued) {
-        const QWindowsGuiEventDispatcher::DispatchContext dispatchContext =
-            QWindowsGuiEventDispatcher::currentDispatchContext();
-        if (dispatchContext.first)
-            QWindowSystemInterface::sendWindowSystemEvents(dispatchContext.first, dispatchContext.second);
-    }
+                   GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), handled);
     if (!handled)
         result = DefWindowProc(hwnd, message, wParam, lParam);
     return result;

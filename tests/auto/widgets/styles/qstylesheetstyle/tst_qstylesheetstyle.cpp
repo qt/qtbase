@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -781,6 +781,10 @@ void tst_QStyleSheetStyle::focusColors()
                 + " did not contain background color #e8ff66, using style "
                 + QString::fromLatin1(qApp->style()->metaObject()->className()))
                 .toLocal8Bit().constData());
+#ifdef Q_OS_MAC
+        if (widget == widgets.first())
+            QEXPECT_FAIL("", "Failure only for first widget, the QPushButton, see QTBUG-23686", Continue);
+#endif
         QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
                 (QString::fromLatin1(widget->metaObject()->className())
                 + " did not contain text color #ff0084, using style "
@@ -832,14 +836,23 @@ void tst_QStyleSheetStyle::hoverColors()
         QTest::mouseMove ( widget, QPoint(6,6));
         QTest::qWait(60);
 
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Numerous failures related to Qt::WA_UnderMouse, see QTBUGT-23685", Continue);
+#endif
         QVERIFY(widget->testAttribute(Qt::WA_UnderMouse));
 
         QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
         frame.render(&image);
 
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Numerous failures related to Qt::WA_UnderMouse, see QTBUGT-23685", Continue);
+#endif
         QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
                   (QString::fromLatin1(widget->metaObject()->className())
                   + " did not contain background color #e8ff66").toLocal8Bit().constData());
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Numerous failures related to Qt::WA_UnderMouse, see QTBUGT-23685", Continue);
+#endif
         QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
                  (QString::fromLatin1(widget->metaObject()->className())
                   + " did not contain text color #ff0084").toLocal8Bit().constData());
@@ -1027,7 +1040,13 @@ void tst_QStyleSheetStyle::minmaxSizes()
     QVERIFY(qAbs(page3->minimumSize().height() - 250 - 2) <= 2);
     QTabBar *bar = qFindChild<QTabBar*>(&tabWidget);
     QVERIFY(bar);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23686", Continue);
+#endif
     QVERIFY(qAbs(bar->tabRect(index1).width() - 100 - 2) <= 2);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23686", Continue);
+#endif
     QVERIFY(qAbs(bar->tabRect(index3).width() - 130 - 2) <= 2);
 }
 

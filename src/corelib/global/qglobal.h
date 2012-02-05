@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -143,20 +143,15 @@ namespace QT_NAMESPACE {}
 #if defined(Q_OS_MAC) && !defined(Q_CC_INTEL)
 #define QT_BEGIN_HEADER extern "C++" {
 #define QT_END_HEADER }
-#define QT_BEGIN_INCLUDE_HEADER }
-#define QT_END_INCLUDE_HEADER extern "C++" {
 #else
 #define QT_BEGIN_HEADER
 #define QT_END_HEADER
-#define QT_BEGIN_INCLUDE_HEADER
-#define QT_END_INCLUDE_HEADER extern "C++"
 #endif
 
 /*
    The operating system, must be one of: (Q_OS_x)
 
      DARWIN   - Darwin OS (synonym for Q_OS_MAC)
-     SYMBIAN  - Symbian
      MSDOS    - MS-DOS and Windows
      OS2      - OS/2
      OS2EMX   - XFree86 on OS/2 (not PM)
@@ -195,10 +190,6 @@ namespace QT_NAMESPACE {}
 #  else
 #    define Q_OS_DARWIN32
 #  endif
-#elif defined(__SYMBIAN32__) || defined(SYMBIAN)
-#  define Q_OS_SYMBIAN
-#  define Q_NO_POSIX_SIGNALS
-#  define QT_NO_GETIFADDRS
 #elif defined(__CYGWIN__)
 #  define Q_OS_CYGWIN
 #elif !defined(SAG_COM) && (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))
@@ -210,8 +201,6 @@ namespace QT_NAMESPACE {}
 #  else
 #    define Q_OS_WIN32
 #  endif
-#elif defined(__MWERKS__) && defined(__INTEL__)
-#  define Q_OS_WIN32
 #elif defined(__sun) || defined(sun)
 #  define Q_OS_SOLARIS
 #elif defined(hpux) || defined(__hpux)
@@ -264,7 +253,7 @@ namespace QT_NAMESPACE {}
 #  define Q_OS_VXWORKS
 #elif defined(__MAKEDEPEND__)
 #else
-#  error "Qt has not been ported to this OS - talk to qt-info@nokia.com"
+#  error "Qt has not been ported to this OS - see http://www.qt-project.org/"
 #endif
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WIN64) || defined(Q_OS_WINCE)
@@ -330,7 +319,6 @@ namespace QT_NAMESPACE {}
    The compiler, must be one of: (Q_CC_x)
 
      SYM      - Digital Mars C/C++ (used to be Symantec C++)
-     MWERKS   - Metrowerks CodeWarrior
      MSVC     - Microsoft Visual C/C++, Intel C++ for Windows
      BOR      - Borland/Turbo C++
      WAT      - Watcom C++
@@ -349,9 +337,7 @@ namespace QT_NAMESPACE {}
      HIGHC    - MetaWare High C/C++
      PGI      - Portland Group C++
      GHS      - Green Hills Optimizing C++ Compilers
-     GCCE     - GCCE (Symbian GCCE builds)
      RVCT     - ARM Realview Compiler Suite
-     NOKIAX86 - Nokia x86 (Symbian WINSCW builds)
      CLANG    - C++ front-end for the LLVM compiler
 
 
@@ -366,13 +352,6 @@ namespace QT_NAMESPACE {}
 #    define Q_NO_EXPLICIT_KEYWORD
 #  endif
 #  define Q_NO_USING_KEYWORD
-
-#elif defined(__MWERKS__)
-#  define Q_CC_MWERKS
-#  if defined(__EMU_SYMBIAN_OS__)
-#    define Q_CC_NOKIAX86
-#  endif
-/* "explicit" recognized since 4.0d1 */
 
 #elif defined(_MSC_VER)
 #  define Q_CC_MSVC
@@ -415,14 +394,6 @@ namespace QT_NAMESPACE {}
 
 #elif defined(__WATCOMC__)
 #  define Q_CC_WAT
-
-/* Symbian GCCE */
-#elif defined(__GCCE__)
-#  define Q_CC_GCCE
-#  define QT_VISIBILITY_AVAILABLE
-#  if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__)
-#    define QT_HAVE_ARMV6
-#  endif
 
 /* ARM Realview Compiler Suite
    RVCT compiler also defines __EDG__ and __GNUC__ (if --gnu flag is given),
@@ -523,7 +494,6 @@ namespace QT_NAMESPACE {}
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 407
        /* C++0x features supported in GCC 4.7: */
 #      define Q_COMPILER_EXPLICIT_OVERRIDES
-#      define Q_COMPILER_FINAL
 #    endif
 
 #  endif
@@ -760,11 +730,8 @@ namespace QT_NAMESPACE {}
 #  endif
 #  define Q_NO_USING_KEYWORD /* ### check "using" status */
 
-#elif defined(__WINSCW__) && !defined(Q_CC_NOKIAX86)
-#  define Q_CC_NOKIAX86
-
 #else
-#  error "Qt has not been tested with this compiler - talk to qt-info@nokia.com"
+#  error "Qt has not been tested with this compiler - see http://www.qt-project.org/"
 #endif
 
 
@@ -815,16 +782,24 @@ namespace QT_NAMESPACE {}
 #      define Q_COMPILER_RANGE_FOR
 #      define Q_COMPILER_UNICODE_STRINGS
 #    endif
-#    if 0 /*) not implemented in clang */
-#      define Q_COMPILER_ATOMICS
+        /* not implemented in clang yet */
+#    if __has_feature(cxx_constexpr)
 #      define Q_COMPILER_CONSTEXPR
-#      define Q_COMPILER_FINAL
-#      define Q_COMPILER_INITIALIZER_LISTS
+#    endif
+#    if __has_feature(cxx_lambdas)
 #      define Q_COMPILER_LAMBDA
+#    endif
+#    if __has_feature(cxx_generalized_initializers)
+#      define Q_COMPILER_INITIALIZER_LISTS
+#    endif
+#    if __has_feature(cxx_unrestricted_unions)
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #    endif
+#    if 0
+#      define Q_COMPILER_ATOMICS
+#    endif
 #  endif
-#endif
+#endif // Q_CC_CLANG
 
 #ifndef Q_PACKED
 #  define Q_PACKED
@@ -893,7 +868,7 @@ typedef short qint16;              /* 16 bit signed */
 typedef unsigned short quint16;    /* 16 bit unsigned */
 typedef int qint32;                /* 32 bit signed */
 typedef unsigned int quint32;      /* 32 bit unsigned */
-#if defined(Q_OS_WIN) && !defined(Q_CC_GNU) && !defined(Q_CC_MWERKS)
+#if defined(Q_OS_WIN) && !defined(Q_CC_GNU)
 #  define Q_INT64_C(c) c ## i64    /* signed 64 bit constant */
 #  define Q_UINT64_C(c) c ## ui64   /* unsigned 64 bit constant */
 typedef __int64 qint64;            /* 64 bit signed */
@@ -911,7 +886,7 @@ typedef quint64 qulonglong;
 #ifndef QT_POINTER_SIZE
 #  if defined(Q_OS_WIN64)
 #   define QT_POINTER_SIZE 8
-#  elif defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#  elif defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
 #   define QT_POINTER_SIZE 4
 #  endif
 #endif
@@ -1121,13 +1096,9 @@ QT_END_INCLUDE_NAMESPACE
 
 #ifdef Q_COMPILER_EXPLICIT_OVERRIDES
 # define Q_DECL_OVERRIDE override
-#else
-# define Q_DECL_OVERRIDE
-#endif
-
-#ifdef Q_COMPILER_FINAL
 # define Q_DECL_FINAL final
 #else
+# define Q_DECL_OVERRIDE
 # define Q_DECL_FINAL
 #endif
 
@@ -1220,7 +1191,7 @@ class QDataStream;
 #endif
 
 #ifndef Q_DECL_EXPORT
-#  if defined(Q_OS_WIN) || defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
+#  if defined(Q_OS_WIN) || defined(Q_CC_RVCT)
 #    define Q_DECL_EXPORT __declspec(dllexport)
 #  elif defined(QT_VISIBILITY_AVAILABLE)
 #    define Q_DECL_EXPORT __attribute__((visibility("default")))
@@ -1231,7 +1202,7 @@ class QDataStream;
 #  endif
 #endif
 #ifndef Q_DECL_IMPORT
-#  if defined(Q_OS_WIN) || defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
+#  if defined(Q_OS_WIN) || defined(Q_CC_RVCT)
 #    define Q_DECL_IMPORT __declspec(dllimport)
 #  else
 #    define Q_DECL_IMPORT
@@ -1355,6 +1326,11 @@ class QDataStream;
 #      define Q_DBUS_EXPORT Q_DECL_IMPORT
 #    endif
 #    define Q_TEMPLATEDLL
+#    if defined(QT_BUILD_CONCURRENT_LIB)
+#      define Q_CONCURRENT_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_CONCURRENT_EXPORT Q_DECL_IMPORT
+#    endif
 #  elif defined(QT_DLL) /* use a Qt DLL library */
 #    define Q_CORE_EXPORT Q_DECL_IMPORT
 #    define Q_GUI_EXPORT Q_DECL_IMPORT
@@ -1376,6 +1352,7 @@ class QDataStream;
 #    define Q_SCRIPTTOOLS_EXPORT Q_DECL_IMPORT
 #    define Q_COMPAT_EXPORT Q_DECL_IMPORT
 #    define Q_DBUS_EXPORT Q_DECL_IMPORT
+#    define Q_CONCURRENT_EXPORT Q_DECL_IMPORT
 #    define Q_TEMPLATEDLL
 #  endif
 #  define Q_NO_DECLARED_NOT_DEFINED
@@ -1409,6 +1386,7 @@ class QDataStream;
 #    define Q_SCRIPTTOOLS_EXPORT Q_DECL_EXPORT
 #    define Q_COMPAT_EXPORT Q_DECL_EXPORT
 #    define Q_DBUS_EXPORT Q_DECL_EXPORT
+#    define Q_CONCURRENT_EXPORT Q_DECL_EXPORT
 #  else
 #    define Q_CORE_EXPORT
 #    define Q_GUI_EXPORT
@@ -1429,6 +1407,7 @@ class QDataStream;
 #    define Q_SCRIPTTOOLS_EXPORT
 #    define Q_COMPAT_EXPORT
 #    define Q_DBUS_EXPORT
+#    define Q_CONCURRENT_EXPORT
 #  endif
 #endif
 
@@ -1666,64 +1645,11 @@ inline void qUnused(T &x) { (void)x; }
 #  define qPrintable(string) QString(string).toLocal8Bit().constData()
 #endif
 
-Q_CORE_EXPORT void qDebug(const char *, ...) /* print debug message */
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-    __attribute__ ((format (printf, 1, 2)))
-#endif
-;
-
-Q_CORE_EXPORT void qWarning(const char *, ...) /* print warning message */
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-    __attribute__ ((format (printf, 1, 2)))
-#endif
-;
-
 class QString;
 Q_CORE_EXPORT QString qt_error_string(int errorCode = -1);
-Q_CORE_EXPORT void qCritical(const char *, ...) /* print critical message */
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-    __attribute__ ((format (printf, 1, 2)))
-#endif
-;
-Q_CORE_EXPORT void qFatal(const char *, ...) /* print fatal message and exit */
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-    __attribute__ ((format (printf, 1, 2)))
-#endif
-;
 
 Q_CORE_EXPORT void qErrnoWarning(int code, const char *msg, ...);
 Q_CORE_EXPORT void qErrnoWarning(const char *msg, ...);
-
-/*
-  Forward declarations only.
-
-  In order to use the qDebug() stream, you must #include<QDebug>
-*/
-class QDebug;
-class QNoDebug;
-#if !defined(QT_NO_DEBUG_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
-Q_CORE_EXPORT_INLINE QDebug qDebug();
-#else
-inline QNoDebug qDebug();
-#endif
-#if !defined(QT_NO_WARNING_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
-Q_CORE_EXPORT_INLINE QDebug qWarning();
-#else
-inline QNoDebug qWarning();
-#endif
-#if !defined(QT_NO_DEBUG_STREAM)
-Q_CORE_EXPORT_INLINE QDebug qCritical();
-#endif
-
-#define QT_NO_QDEBUG_MACRO while (false) qDebug
-#ifdef QT_NO_DEBUG_OUTPUT
-#  define qDebug QT_NO_QDEBUG_MACRO
-#endif
-#define QT_NO_QWARNING_MACRO while (false) qWarning
-#ifdef QT_NO_WARNING_OUTPUT
-#  define qWarning QT_NO_QWARNING_MACRO
-#endif
-
 
 Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line);
 
@@ -1751,8 +1677,8 @@ Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *
 
 
 #ifdef Q_COMPILER_STATIC_ASSERT
-#define Q_STATIC_ASSERT(Condition) static_assert(Condition, #Condition)
-#define Q_STATIC_ASSERT_X(Condition, Message) static_assert(Condition, Message)
+#define Q_STATIC_ASSERT(Condition) static_assert(bool(Condition), #Condition)
+#define Q_STATIC_ASSERT_X(Condition, Message) static_assert(bool(Condition), Message)
 #else
 // Intentionally undefined
 template <bool Test> class QStaticAssertFailure;
@@ -1797,18 +1723,12 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 #   endif
     /* The MIPSpro and RVCT compilers postpones macro expansion,
        and therefore macros must be in scope when being used. */
-#   if !defined(Q_CC_MIPS) && !defined(Q_CC_RVCT) && !defined(Q_CC_NOKIAX86)
+#   if !defined(Q_CC_MIPS) && !defined(Q_CC_RVCT)
 #       undef QT_STRINGIFY2
 #       undef QT_STRINGIFY
 #   endif
 #endif
 
-enum QtMsgType { QtDebugMsg, QtWarningMsg, QtCriticalMsg, QtFatalMsg, QtSystemMsg = QtCriticalMsg };
-
-Q_CORE_EXPORT void qt_message_output(QtMsgType, const char *buf);
-
-typedef void (*QtMsgHandler)(QtMsgType, const char *);
-Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
 
 typedef void (*QFunctionPointer)();
 
@@ -1935,23 +1855,6 @@ public:
 
 #endif
 
-class QBool
-{
-    bool b;
-
-public:
-    inline explicit QBool(bool B) : b(B) {}
-    inline operator const void *() const
-    { return b ? static_cast<const void *>(this) : static_cast<const void *>(0); }
-};
-
-inline bool operator==(QBool b1, bool b2) { return !b1 == !b2; }
-inline bool operator==(bool b1, QBool b2) { return !b1 == !b2; }
-inline bool operator==(QBool b1, QBool b2) { return !b1 == !b2; }
-inline bool operator!=(QBool b1, bool b2) { return !b1 != !b2; }
-inline bool operator!=(bool b1, QBool b2) { return !b1 != !b2; }
-inline bool operator!=(QBool b1, QBool b2) { return !b1 != !b2; }
-
 Q_DECL_CONSTEXPR static inline bool qFuzzyCompare(double p1, double p2)
 {
     return (qAbs(p1 - p2) <= 0.000000000001 * qMin(qAbs(p1), qAbs(p2)));
@@ -2051,7 +1954,8 @@ public:
         isComplex = true,
         isStatic = true,
         isLarge = (sizeof(T)>sizeof(void*)),
-        isDummy = false
+        isDummy = false,
+        sizeOf = sizeof(T)
     };
 };
 
@@ -2064,7 +1968,8 @@ public:
         isComplex = false,
         isStatic = false,
         isLarge = false,
-        isDummy = false
+        isDummy = false,
+        sizeOf = 0
     };
 };
 
@@ -2077,9 +1982,36 @@ public:
         isComplex = false,
         isStatic = false,
         isLarge = false,
-        isDummy = false
+        isDummy = false,
+        sizeOf = sizeof(T*)
     };
 };
+
+
+#define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
+template <typename T> class CONTAINER; \
+template <typename T> \
+class QTypeInfo< CONTAINER<T> > \
+{ \
+public: \
+    enum { \
+        isPointer = false, \
+        isComplex = true, \
+        isStatic = false, \
+        isLarge = (sizeof(CONTAINER<T>) > sizeof(void*)), \
+        isDummy = false, \
+        sizeOf = sizeof(CONTAINER<T>) \
+    }; \
+};
+
+Q_DECLARE_MOVABLE_CONTAINER(QList)
+Q_DECLARE_MOVABLE_CONTAINER(QVector)
+Q_DECLARE_MOVABLE_CONTAINER(QQueue)
+Q_DECLARE_MOVABLE_CONTAINER(QStack)
+Q_DECLARE_MOVABLE_CONTAINER(QLinkedList)
+Q_DECLARE_MOVABLE_CONTAINER(QSet)
+
+#undef Q_DECLARE_MOVABLE_CONTAINER
 
 /*
    Specialize a specific type with:
@@ -2106,7 +2038,8 @@ public: \
         isStatic = (((FLAGS) & (Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE)) == 0), \
         isLarge = (sizeof(TYPE)>sizeof(void*)), \
         isPointer = false, \
-        isDummy = (((FLAGS) & Q_DUMMY_TYPE) != 0) \
+        isDummy = (((FLAGS) & Q_DUMMY_TYPE) != 0), \
+        sizeOf = sizeof(TYPE) \
     }; \
     static inline const char *name() { return #TYPE; } \
 }
@@ -2476,138 +2409,7 @@ inline int qIntCast(float f) { return int(f); }
 Q_CORE_EXPORT void qsrand(uint seed);
 Q_CORE_EXPORT int qrand();
 
-/*
-   This gives us the possibility to check which modules the user can
-   use. These are purely compile time checks and will generate no code.
-*/
-
-/* Qt modules */
-#define QT_MODULE_CORE                 0x000001
-#define QT_MODULE_GUI                  0x000002
-#define QT_MODULE_NETWORK              0x000004
-#define QT_MODULE_OPENGL               0x000008
-#define QT_MODULE_SQL                  0x000010
-#define QT_MODULE_XML                  0x000020
-#define QT_MODULE_SVG                  0x000100
-#define QT_MODULE_ACTIVEQT             0x000200
-#define QT_MODULE_GRAPHICSVIEW         0x000400
-#define QT_MODULE_SCRIPT               0x000800
-#define QT_MODULE_XMLPATTERNS          0x001000
-#define QT_MODULE_HELP                 0x002000
-#define QT_MODULE_TEST                 0x004000
-#define QT_MODULE_DBUS                 0x008000
-#define QT_MODULE_SCRIPTTOOLS          0x010000
-#define QT_MODULE_OPENVG               0x020000
-#define QT_MODULE_MULTIMEDIA           0x040000
-#define QT_MODULE_DECLARATIVE          0x080000
-
-/* Qt editions */
-#define QT_EDITION_CONSOLE      (QT_MODULE_CORE \
-                                 | QT_MODULE_NETWORK \
-                                 | QT_MODULE_SQL \
-                                 | QT_MODULE_SCRIPT \
-                                 | QT_MODULE_MULTIMEDIA \
-                                 | QT_MODULE_XML \
-                                 | QT_MODULE_XMLPATTERNS \
-                                 | QT_MODULE_TEST \
-                                 | QT_MODULE_DBUS)
-#define QT_EDITION_DESKTOPLIGHT (QT_MODULE_CORE \
-                                 | QT_MODULE_GUI \
-                                 | QT_MODULE_TEST \
-                                 | QT_MODULE_DBUS)
-#define QT_EDITION_OPENSOURCE   (QT_MODULE_CORE \
-                                 | QT_MODULE_GUI \
-                                 | QT_MODULE_NETWORK \
-                                 | QT_MODULE_OPENGL \
-                                 | QT_MODULE_OPENVG \
-                                 | QT_MODULE_SQL \
-                                 | QT_MODULE_MULTIMEDIA \
-                                 | QT_MODULE_XML \
-                                 | QT_MODULE_XMLPATTERNS \
-                                 | QT_MODULE_SCRIPT \
-                                 | QT_MODULE_SCRIPTTOOLS \
-                                 | QT_MODULE_SVG \
-                                 | QT_MODULE_DECLARATIVE \
-                                 | QT_MODULE_GRAPHICSVIEW \
-                                 | QT_MODULE_HELP \
-                                 | QT_MODULE_TEST \
-                                 | QT_MODULE_DBUS \
-                                 | QT_MODULE_ACTIVEQT)
-#define QT_EDITION_DESKTOP      (QT_EDITION_OPENSOURCE)
-#define QT_EDITION_UNIVERSAL    QT_EDITION_DESKTOP
-#define QT_EDITION_ACADEMIC     QT_EDITION_DESKTOP
-#define QT_EDITION_EDUCATIONAL  QT_EDITION_DESKTOP
-#define QT_EDITION_EVALUATION   QT_EDITION_DESKTOP
-
-/* Determine which modules can be used */
-#ifndef QT_EDITION
-#  ifdef QT_BUILD_QMAKE
-#    define QT_EDITION QT_EDITION_DESKTOP
-#  else
-#    error "Qt not configured correctly, please run configure"
-#  endif
-#endif
-
-#define QT_LICENSED_MODULE(x) \
-    enum QtValidLicenseFor##x##Module { Licensed##x = true };
-
-/* qdoc is really unhappy with the following block of preprocessor checks,
-   making it difficult to document classes properly after this point. */
-
-#if (QT_EDITION & QT_MODULE_CORE)
-QT_LICENSED_MODULE(Core)
-#endif
-#if (QT_EDITION & QT_MODULE_GUI)
-QT_LICENSED_MODULE(Gui)
-#endif
-#if (QT_EDITION & QT_MODULE_NETWORK)
-QT_LICENSED_MODULE(Network)
-#endif
-#if (QT_EDITION & QT_MODULE_OPENGL)
-QT_LICENSED_MODULE(OpenGL)
-#endif
-#if (QT_EDITION & QT_MODULE_OPENVG)
-QT_LICENSED_MODULE(OpenVG)
-#endif
-#if (QT_EDITION & QT_MODULE_SQL)
-QT_LICENSED_MODULE(Sql)
-#endif
-#if (QT_EDITION & QT_MODULE_MULTIMEDIA)
-QT_LICENSED_MODULE(Multimedia)
-#endif
-#if (QT_EDITION & QT_MODULE_XML)
-QT_LICENSED_MODULE(Xml)
-#endif
-#if (QT_EDITION & QT_MODULE_XMLPATTERNS)
-QT_LICENSED_MODULE(XmlPatterns)
-#endif
-#if (QT_EDITION & QT_MODULE_HELP)
-QT_LICENSED_MODULE(Help)
-#endif
-#if (QT_EDITION & QT_MODULE_SCRIPT) || defined(QT_BUILD_QMAKE)
-QT_LICENSED_MODULE(Script)
-#endif
-#if (QT_EDITION & QT_MODULE_SCRIPTTOOLS)
-QT_LICENSED_MODULE(ScriptTools)
-#endif
-#if (QT_EDITION & QT_MODULE_SVG)
-QT_LICENSED_MODULE(Svg)
-#endif
-#if (QT_EDITION & QT_MODULE_DECLARATIVE)
-QT_LICENSED_MODULE(Declarative)
-#endif
-#if (QT_EDITION & QT_MODULE_ACTIVEQT)
-QT_LICENSED_MODULE(ActiveQt)
-#endif
-#if (QT_EDITION & QT_MODULE_TEST)
-QT_LICENSED_MODULE(Test)
-#endif
-#if (QT_EDITION & QT_MODULE_DBUS)
-QT_LICENSED_MODULE(DBus)
-#endif
-
-#define QT_MODULE(x) \
-    typedef QtValidLicenseFor##x##Module Qt##x##Module;
+#define QT_MODULE(x)
 
 #ifdef QT_NO_CONCURRENT
 #  define QT_NO_QFUTURE
@@ -2645,6 +2447,9 @@ template <typename T> struct QEnableIf<true, T> { typedef T Type; };
 
 QT_END_NAMESPACE
 QT_END_HEADER
+
+// qDebug and friends
+#include "qlogging.h"
 
 #endif /* __cplusplus */
 

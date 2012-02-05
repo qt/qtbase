@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -98,9 +98,7 @@ private slots:
     void rawFontSetPixelSize_data();
     void rawFontSetPixelSize();
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC)
     void multipleRawFontsFromData();
-#endif
 private:
     QString testFont;
     QString testFontBoldItalic;
@@ -867,7 +865,6 @@ void tst_QRawFont::rawFontSetPixelSize()
     QCOMPARE(rawFont.pixelSize(), 24.0);
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC)
 void tst_QRawFont::multipleRawFontsFromData()
 {
     QFile file(testFont);
@@ -884,7 +881,6 @@ void tst_QRawFont::multipleRawFontsFromData()
     QVERIFY(testFont.familyName() != (testFontBoldItalic.familyName())
             || testFont.styleName() != (testFontBoldItalic.styleName()));
 }
-#endif
 
 #endif // QT_NO_RAWFONT
 

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,10 +62,6 @@
 #   include <sys/types.h>
 #endif
 
-#ifdef Q_OS_SYMBIAN
-class RSemaphore;
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QSystemSemaphorePrivate
@@ -80,11 +76,8 @@ public:
     }
 
 #ifdef Q_OS_WIN
-    HANDLE handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
+    Qt::HANDLE handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
     void setErrorString(const QString &function);
-#elif defined(Q_OS_SYMBIAN)
-    int handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
-    void setErrorString(const QString &function,int err = 0);
 #else
     key_t handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
     void setErrorString(const QString &function);
@@ -96,10 +89,8 @@ public:
     QString fileName;
     int initialValue;
 #ifdef Q_OS_WIN
-    HANDLE semaphore;
-    HANDLE semaphoreLock;
-#elif defined(Q_OS_SYMBIAN)
-    RSemaphore semaphore;
+    Qt::HANDLE semaphore;
+    Qt::HANDLE semaphoreLock;
 #else
     int semaphore;
     bool createdFile;

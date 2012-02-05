@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -76,6 +76,7 @@ public:
 public slots:
     void init();
     void cleanup();
+    void cleanupTestCase();
 private slots:
     void getSetCheck();
     void isEmpty();
@@ -231,7 +232,6 @@ tst_QTextDocument::tst_QTextDocument()
 
 tst_QTextDocument::~tst_QTextDocument()
 {
-    QFile::remove(QLatin1String("foo.png"));
 }
 
 void tst_QTextDocument::init()
@@ -256,6 +256,11 @@ void tst_QTextDocument::cleanup()
     cursor = QTextCursor();
     delete doc;
     doc = 0;
+}
+
+void tst_QTextDocument::cleanupTestCase()
+{
+    QFile::remove(QLatin1String("foo.png"));
 }
 
 void tst_QTextDocument::isEmpty()

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -95,10 +95,6 @@ QT_END_NAMESPACE
 
 #ifdef Q_OS_WIN
 #include <qwineventnotifier.h>
-#endif
-
-#ifdef Q_OS_SYMBIAN
-#include <e32std.h>
 #endif
 
 #ifndef QT_NO_PROCESS
@@ -473,7 +469,7 @@ void QProcessPrivate::Channel::clear()
     used as an input source for QXmlReader, or for generating data to
     be uploaded using QNetworkAccessManager.
 
-    \note On Windows CE and Symbian, reading and writing to a process
+    \note On Windows CE, reading and writing to a process
     is not supported.
 
     When the process exits, QProcess reenters the \l NotRunning state
@@ -524,10 +520,6 @@ void QProcessPrivate::Channel::clear()
     setWorkingDirectory(). By default, processes are run in the
     current working directory of the calling process.
 
-    \note On Symbian, setting environment or working directory
-    is not supported. The working directory will always be the private
-    directory of the running process.
-
     \section1 Synchronous Process API
 
     QProcess provides a set of functions which allow it to be used
@@ -563,16 +555,6 @@ void QProcessPrivate::Channel::clear()
     it won't work. One possible solution is to execute the command
     interpreter itself (\c{cmd.exe} on some Windows systems), and ask
     the interpreter to execute the desired command.
-
-    \section1 Symbian Platform Security Requirements
-
-    On Symbian, processes which use the functions kill() or terminate()
-    must have the \c PowerMgmt platform security capability. If the client
-    process lacks this capability, these functions will fail.
-
-    Platform security capabilities are added via the
-    \l{qmake-variable-reference.html#target-capability}{TARGET.CAPABILITY}
-    qmake variable.
 
     \sa QBuffer, QFile, QTcpSocket
 */
@@ -761,8 +743,6 @@ QProcessPrivate::QProcessPrivate()
     exitStatus = QProcess::NormalExit;
     startupSocketNotifier = 0;
     deathNotifier = 0;
-    notifier = 0;
-    pipeWriter = 0;
     childStartedPipe[0] = INVALID_Q_PIPE;
     childStartedPipe[1] = INVALID_Q_PIPE;
     deathPipe[0] = INVALID_Q_PIPE;
@@ -773,15 +753,14 @@ QProcessPrivate::QProcessPrivate()
     emittedReadyRead = false;
     emittedBytesWritten = false;
 #ifdef Q_OS_WIN
+    notifier = 0;
+    stdoutReader = 0;
+    stderrReader = 0;
     pipeWriter = 0;
     processFinishedNotifier = 0;
 #endif // Q_OS_WIN
 #ifdef Q_OS_UNIX
     serial = 0;
-#endif
-#ifdef Q_OS_SYMBIAN
-    symbianProcess = NULL;
-    processLaunched = false;
 #endif
 }
 
@@ -843,24 +822,19 @@ void QProcessPrivate::cleanup()
         qDeleteInEventHandler(deathNotifier);
         deathNotifier = 0;
     }
+#ifdef Q_OS_WIN
     if (notifier) {
         qDeleteInEventHandler(notifier);
         notifier = 0;
     }
-    destroyPipe(stdoutChannel.pipe);
-    destroyPipe(stderrChannel.pipe);
-    destroyPipe(stdinChannel.pipe);
+#endif
+    destroyChannel(&stdoutChannel);
+    destroyChannel(&stderrChannel);
+    destroyChannel(&stdinChannel);
     destroyPipe(childStartedPipe);
     destroyPipe(deathPipe);
 #ifdef Q_OS_UNIX
     serial = 0;
-#endif
-#ifdef Q_OS_SYMBIAN
-    if (symbianProcess) {
-        symbianProcess->Close();
-        delete symbianProcess;
-        symbianProcess = NULL;
-    }
 #endif
 }
 
@@ -873,7 +847,7 @@ bool QProcessPrivate::_q_canReadStandardOutput()
     if (available == 0) {
         if (stdoutChannel.notifier)
             stdoutChannel.notifier->setEnabled(false);
-        destroyPipe(stdoutChannel.pipe);
+        destroyChannel(&stdoutChannel);
 #if defined QPROCESS_DEBUG
         qDebug("QProcessPrivate::canReadStandardOutput(), 0 bytes available");
 #endif
@@ -928,7 +902,7 @@ bool QProcessPrivate::_q_canReadStandardError()
     if (available == 0) {
         if (stderrChannel.notifier)
             stderrChannel.notifier->setEnabled(false);
-        destroyPipe(stderrChannel.pipe);
+        destroyChannel(&stderrChannel);
         return false;
     }
 
@@ -981,7 +955,7 @@ bool QProcessPrivate::_q_canWrite()
     qint64 written = writeToStdin(writeBuffer.readPointer(),
                                       writeBuffer.nextDataBlockSize());
     if (written < 0) {
-        destroyPipe(stdinChannel.pipe);
+        destroyChannel(&stdinChannel);
         processError = QProcess::WriteError;
         q->setErrorString(QProcess::tr("Error writing to process"));
         emit q->error(processError);
@@ -1125,7 +1099,7 @@ void QProcessPrivate::closeWriteChannel()
     // instead.
     flushPipeWriter();
 #endif
-    destroyPipe(stdinChannel.pipe);
+    destroyChannel(&stdinChannel);
 }
 
 /*!
@@ -1397,15 +1371,14 @@ void QProcess::setStandardOutputProcess(QProcess *destination)
     dto->stdinChannel.pipeFrom(dfrom);
 }
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
 
 /*!
     \since 4.7
 
     Returns the additional native command line arguments for the program.
 
-    \note This function is available only on the Windows and Symbian
-    platforms.
+    \note This function is available only on the Windows platform.
 
     \sa setNativeArguments()
 */
@@ -1428,8 +1401,7 @@ QString QProcess::nativeArguments() const
     string which is \e appended to the string composed from the usual
     argument list, with a delimiting space.
 
-    \note This function is available only on the Windows and Symbian
-    platforms.
+    \note This function is available only on the Windows platform.
 
     \sa nativeArguments()
 */
@@ -1460,10 +1432,6 @@ QString QProcess::workingDirectory() const
     Sets the working directory to \a dir. QProcess will start the
     process in this directory. The default behavior is to start the
     process in the working directory of the calling process.
-
-    \note The working directory setting is ignored on Symbian;
-    the private directory of the process is considered its working
-    directory.
 
     \sa workingDirectory(), start()
 */
@@ -1610,7 +1578,7 @@ void QProcess::setEnvironment(const QStringList &environment)
     using setEnvironment() or setEnvironmentHash(). If no environment
     has been set, the environment of the calling process will be used.
 
-    \note The environment settings are ignored on Windows CE and Symbian,
+    \note The environment settings are ignored on Windows CE,
     as there is no concept of an environment.
 
     \sa processEnvironment(), setEnvironment(), systemEnvironment()
@@ -2076,13 +2044,6 @@ void QProcess::start(const QString &program, OpenMode mode)
     event loop does not handle the WM_CLOSE message, can only be terminated by
     calling kill().
 
-    On Symbian, this function requires platform security capability
-    \c PowerMgmt. If absent, the process will panic with KERN-EXEC 46.
-
-    \note Terminating running processes from other processes will typically
-    cause a panic in Symbian due to platform security.
-
-    \sa {Symbian Platform Security Requirements}
     \sa kill()
 */
 void QProcess::terminate()
@@ -2097,13 +2058,6 @@ void QProcess::terminate()
     On Windows, kill() uses TerminateProcess, and on Unix and Mac OS X, the
     SIGKILL signal is sent to the process.
 
-    On Symbian, this function requires platform security capability
-    \c PowerMgmt. If absent, the process will panic with KERN-EXEC 46.
-
-    \note Killing running processes from other processes will typically
-    cause a panic in Symbian due to platform security.
-
-    \sa {Symbian Platform Security Requirements}
     \sa terminate()
 */
 void QProcess::kill()
@@ -2256,7 +2210,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
-#elif defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN) || (defined(Q_OS_MAC) && defined(QT_NO_CORESERVICES))
+#elif defined(Q_OS_WINCE) || (defined(Q_OS_MAC) && defined(QT_NO_CORESERVICES))
   static char *qt_empty_environ[] = { 0 };
 #define environ qt_empty_environ
 #elif !defined(Q_OS_WIN)
@@ -2317,7 +2271,7 @@ QStringList QProcess::systemEnvironment()
     \relates QProcess
 
     Typedef for the identifiers used to represent processes on the underlying
-    platform. On Unix and Symbian, this corresponds to \l qint64; on Windows, it
+    platform. On Unix, this corresponds to \l qint64; on Windows, it
     corresponds to \c{_PROCESS_INFORMATION*}.
 
     \sa QProcess::pid()

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -35,11 +34,13 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "qgl_p.h"
+#include <qglframebufferobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -395,9 +396,6 @@ bool qt_resolve_version_2_0_functions(QGLContext *ctx)
         gl2supported = false;
 
     if (!qt_resolve_version_1_3_functions(ctx))
-        gl2supported = false;
-
-    if (!qt_resolve_framebufferobject_extensions(ctx))
         gl2supported = false;
 
     if (glStencilOpSeparate)

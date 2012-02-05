@@ -22,6 +22,12 @@ SUBDIRS=\
     qtemporaryfile \
     qtextstream \
     qurl \
+    qwinoverlappedionotifier \
+
+!win32|wince* {
+    SUBDIRS -=\
+        qwinoverlappedionotifier
+}
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qfileinfo

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,12 +43,53 @@
 
 QT_BEGIN_NAMESPACE
 
-QSurface::QSurface(SurfaceType type)
-    : m_type(type)
+
+/*!
+    \class QSurface
+    \brief The QSurface class is an abstraction of renderable surfaces in Qt.
+
+    The size of the surface is accessible with the size() function. The rendering
+    specific attributes of the surface are accessible through the format() function.
+ */
+
+
+/*!
+    \enum QSurface::SurfaceClass
+
+    The SurfaceClass enum describes the actual subclass of the surface.
+
+    \value Window The surface is an instance of QWindow.
+ */
+
+
+/*!
+    \enum QSurface::SurfaceType
+
+    The SurfaceType enum describes what type of surface the.
+
+    \value RasterSurface The surface is is composed of pixels and can be rendered to using
+    a software rasterizer like Qt's raster paint engine.
+    \value OpenGLSurface The surface is an OpenGL compatible surface and can be used
+    in conjunction with QOpenGLContext.
+ */
+
+
+/*!
+    QSize QSurface::size() const
+
+    Returns the size of the surface in pixels.
+ */
+
+
+
+QSurface::QSurface(SurfaceClass type)
+    : m_type(type), m_reserved(0)
 {
 }
 
-QSurface::SurfaceType QSurface::surfaceType() const
+
+
+QSurface::SurfaceClass QSurface::surfaceClass() const
 {
     return m_type;
 }

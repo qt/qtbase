@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,6 +43,8 @@
   Note: The qdoc comments for QMacStyle are contained in
   .../doc/src/qstyles.qdoc. 
 */
+
+#include <Cocoa/Cocoa.h>
 
 #include "qmacstyle_mac.h"
 #include "qmacstyle_mac_p.h"
@@ -2103,7 +2105,7 @@ void QMacStyle::unpolish(QWidget* w)
         }
     }
 
-    if (QRubberBand *rubber = ::qobject_cast<QRubberBand*>(w)) {
+    if (QRubberBand *rubber = qobject_cast<QRubberBand*>(w)) {
         rubber->setWindowOpacity(1.0);
         rubber->setAttribute(Qt::WA_PaintOnScreen, true);
         rubber->setAttribute(Qt::WA_NoSystemBackground, true);
@@ -3536,7 +3538,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         QCommonStyle::drawControl(ce, opt, p, w);
         break;
     case CE_PushButtonBevel:
-        if (const QStyleOptionButton *btn = ::qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             if (!(btn->state & (State_Raised | State_Sunken | State_On)))
                 break;
 

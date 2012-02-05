@@ -9,6 +9,7 @@
     "QtNetwork" => "$basedir/src/network",
     "QtTest" => "$basedir/src/testlib",
     "QtDBus" => "$basedir/src/dbus",
+    "QtConcurrent" => "$basedir/src/concurrent",
     "QtPlatformSupport" => "$basedir/src/platformsupport",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
@@ -40,6 +41,7 @@
     "qtxmlversion.h" => "QtXmlVersion",
     "qtwidgetsversion.h" => "QtWidgetsVersion",
     "qtprintsupportversion.h" => "QtPrintSupportVersion",
+    "qtconcurrentversion.h" => "QtConcurrentVersion",
     "qtplatformsupportversion.h" => "QtPlatformSupportVersion",
 );
 %mastercontent = (
@@ -50,6 +52,7 @@
     "network" => "#include <QtNetwork/QtNetwork>\n",
     "opengl" => "#include <QtOpenGL/QtOpenGL>\n",
     "xml" => "#include <QtXml/QtXml>\n",
+    "concurrent" => "#include <QtConcurrent/QtConcurrent>\n",
 );
 %modulepris = (
     "QtCore" => "$basedir/src/modules/qt_core.pri",
@@ -62,6 +65,7 @@
     "QtSql" => "$basedir/src/modules/qt_sql.pri",
     "QtTest" => "$basedir/src/modules/qt_testlib.pri",
     "QtXml" => "$basedir/src/modules/qt_xml.pri",
+    "QtConcurrent" => "$basedir/src/modules/qt_concurrent.pri",
     "QtPlatformSupport" => "$basedir/src/modules/qt_platformsupport.pri",
 );
 %explicitheaders = (

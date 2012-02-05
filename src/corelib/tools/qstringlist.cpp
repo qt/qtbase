@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -266,7 +266,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString
 
 
 /*!
-    \fn QBool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
+    \fn bool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
 
     Returns true if the list contains the string \a str; otherwise
     returns false. The search is case insensitive if \a cs is
@@ -274,15 +274,15 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString
 
     \sa indexOf(), lastIndexOf(), QString::contains()
  */
-QBool QtPrivate::QStringList_contains(const QStringList *that, const QString &str,
-                                      Qt::CaseSensitivity cs)
+bool QtPrivate::QStringList_contains(const QStringList *that, const QString &str,
+                                     Qt::CaseSensitivity cs)
 {
     for (int i = 0; i < that->size(); ++i) {
         const QString & string = that->at(i);
         if (string.length() == str.length() && str.compare(string, cs) == 0)
-            return QBool(true);
+            return true;
     }
-    return QBool(false);
+    return false;
 }
 
 #ifndef QT_NO_REGEXP

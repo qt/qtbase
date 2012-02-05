@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -273,13 +273,6 @@ Q_CORE_EXPORT bool operator==(const QDateTimeParser::SectionNode &s1, const QDat
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeParser::Sections)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeParser::FieldInfo)
-
-#ifdef Q_OS_SYMBIAN
-QDateTime qt_symbian_TTime_To_QDateTime(const TTime& time);
-TTime qt_symbian_QDateTime_To_TTime(const QDateTime& datetime);
-time_t qt_symbian_TTime_To_time_t(const TTime& time);
-TTime qt_symbian_time_t_To_TTime(time_t time);
-#endif //Q_OS_SYMBIAN
 
 #endif // QT_BOOTSTRAPPED
 

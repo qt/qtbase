@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -290,18 +290,20 @@ void tst_QDom::setContent()
 void tst_QDom::toString_01_data()
 {
     QTest::addColumn<QString>("fileName");
+    const QString prefix = QFINDTESTDATA("testdata/toString_01");
+    if (prefix.isEmpty())
+        QFAIL("Cannot find testdata directory!");
+    QTest::newRow( "01" ) << QString(prefix + "/doc01.xml");
+    QTest::newRow( "02" ) << QString(prefix + "/doc02.xml");
+    QTest::newRow( "03" ) << QString(prefix + "/doc03.xml");
+    QTest::newRow( "04" ) << QString(prefix + "/doc04.xml");
+    QTest::newRow( "05" ) << QString(prefix + "/doc05.xml");
 
-    QTest::newRow( "01" ) << QString(SRCDIR "testdata/toString_01/doc01.xml");
-    QTest::newRow( "02" ) << QString(SRCDIR "testdata/toString_01/doc02.xml");
-    QTest::newRow( "03" ) << QString(SRCDIR "testdata/toString_01/doc03.xml");
-    QTest::newRow( "04" ) << QString(SRCDIR "testdata/toString_01/doc04.xml");
-    QTest::newRow( "05" ) << QString(SRCDIR "testdata/toString_01/doc05.xml");
-
-    QTest::newRow( "euc-jp" ) << QString(SRCDIR "testdata/toString_01/doc_euc-jp.xml");
-    QTest::newRow( "iso-2022-jp" ) << QString(SRCDIR "testdata/toString_01/doc_iso-2022-jp.xml");
-    QTest::newRow( "little-endian" ) << QString(SRCDIR "testdata/toString_01/doc_little-endian.xml");
-    QTest::newRow( "utf-16" ) << QString(SRCDIR "testdata/toString_01/doc_utf-16.xml");
-    QTest::newRow( "utf-8" ) << QString(SRCDIR "testdata/toString_01/doc_utf-8.xml");
+    QTest::newRow( "euc-jp" ) << QString(prefix + "/doc_euc-jp.xml");
+    QTest::newRow( "iso-2022-jp" ) << QString(prefix + "/doc_iso-2022-jp.xml");
+    QTest::newRow( "little-endian" ) << QString(prefix + "/doc_little-endian.xml");
+    QTest::newRow( "utf-16" ) << QString(prefix + "/doc_utf-16.xml");
+    QTest::newRow( "utf-8" ) << QString(prefix + "/doc_utf-8.xml");
 
 }
 
@@ -471,7 +473,10 @@ void tst_QDom::save()
 
 void tst_QDom::initTestCase()
 {
-    QFile file(SRCDIR "testdata/excludedCodecs.txt");
+    QString testFile = QFINDTESTDATA("testdata/excludedCodecs.txt");
+    if (testFile.isEmpty())
+        QFAIL("Cannot find testdata/excludedCodecs.txt");
+    QFile file(testFile);
     QVERIFY(file.open(QIODevice::ReadOnly|QIODevice::Text));
 
     QByteArray codecName;
@@ -546,19 +551,21 @@ void tst_QDom::saveWithSerialization() const
 void tst_QDom::saveWithSerialization_data() const
 {
     QTest::addColumn<QString>("fileName");
+    const QString prefix = QFINDTESTDATA("testdata/toString_01");
+    if (prefix.isEmpty())
+        QFAIL("Cannot find testdata!");
+    QTest::newRow("doc01.xml") << QString(prefix + "/doc01.xml");
+    QTest::newRow("doc01.xml") << QString(prefix + "/doc01.xml");
+    QTest::newRow("doc02.xml") << QString(prefix + "/doc02.xml");
+    QTest::newRow("doc03.xml") << QString(prefix + "/doc03.xml");
+    QTest::newRow("doc04.xml") << QString(prefix + "/doc04.xml");
+    QTest::newRow("doc05.xml") << QString(prefix + "/doc05.xml");
 
-    QTest::newRow("doc01.xml") << QString(SRCDIR "testdata/toString_01/doc01.xml");
-    QTest::newRow("doc01.xml") << QString(SRCDIR "testdata/toString_01/doc01.xml");
-    QTest::newRow("doc02.xml") << QString(SRCDIR "testdata/toString_01/doc02.xml");
-    QTest::newRow("doc03.xml") << QString(SRCDIR "testdata/toString_01/doc03.xml");
-    QTest::newRow("doc04.xml") << QString(SRCDIR "testdata/toString_01/doc04.xml");
-    QTest::newRow("doc05.xml") << QString(SRCDIR "testdata/toString_01/doc05.xml");
-
-    QTest::newRow("doc_euc-jp.xml") << QString(SRCDIR "testdata/toString_01/doc_euc-jp.xml");
-    QTest::newRow("doc_iso-2022-jp.xml") << QString(SRCDIR "testdata/toString_01/doc_iso-2022-jp.xml");
-    QTest::newRow("doc_little-endian.xml") << QString(SRCDIR "testdata/toString_01/doc_little-endian.xml");
-    QTest::newRow("doc_utf-16.xml") << QString(SRCDIR "testdata/toString_01/doc_utf-16.xml");
-    QTest::newRow("doc_utf-8.xml") << QString(SRCDIR "testdata/toString_01/doc_utf-8.xml");
+    QTest::newRow("doc_euc-jp.xml") << QString(prefix + "/doc_euc-jp.xml");
+    QTest::newRow("doc_iso-2022-jp.xml") << QString(prefix + "/doc_iso-2022-jp.xml");
+    QTest::newRow("doc_little-endian.xml") << QString(prefix + "/doc_little-endian.xml");
+    QTest::newRow("doc_utf-16.xml") << QString(prefix + "/doc_utf-16.xml");
+    QTest::newRow("doc_utf-8.xml") << QString(prefix + "/doc_utf-8.xml");
 }
 
 void tst_QDom::cloneNode_data()
@@ -1775,7 +1782,10 @@ void tst_QDom::doubleNamespaceDeclarations() const
 {
     QDomDocument doc; 
 
-    QFile file(SRCDIR "doubleNamespaces.xml" );
+    QString testFile = QFINDTESTDATA("doubleNamespaces.xml");
+    if (testFile.isEmpty())
+        QFAIL("Cannot find test file doubleNamespaces.xml!");
+    QFile file(testFile);
     QVERIFY(file.open(QIODevice::ReadOnly));
 
     QXmlSimpleReader reader; 

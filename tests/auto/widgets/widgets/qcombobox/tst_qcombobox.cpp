@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,7 +58,7 @@
 #include <qtablewidget.h>
 #include <qscrollbar.h>
 #include <qboxlayout.h>
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #include <qmacstyle_mac.h>
 #elif defined Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -455,7 +455,7 @@ void tst_QComboBox::setEditable()
 
 void tst_QComboBox::setPalette()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (qobject_cast<QMacStyle *>(testWidget->style())) {
         QSKIP("This test doesn't make sense for pixmap-based styles");
     }
@@ -907,6 +907,9 @@ void tst_QComboBox::hide()
     QTRY_VERIFY(testWidget->view()->isVisible());
     testWidget->hidePopup();
     //allow combobox effect to complete
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23678", Continue);
+#endif
     QTRY_VERIFY(!testWidget->view()->isVisible());
     testWidget->hide();
     QVERIFY(!testWidget->isVisible());

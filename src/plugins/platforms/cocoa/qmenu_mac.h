@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,11 +34,12 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#include <private/qt_mac_p.h>
+#include "qt_mac_p.h"
 #include <QtCore/qpointer.h>
 #include <QtWidgets/qmenu.h>
 #include <QtWidgets/qmenubar.h>

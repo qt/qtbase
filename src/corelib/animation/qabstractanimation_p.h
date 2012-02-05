@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,10 +59,6 @@
 #include <QtCore/qelapsedtimer.h>
 #include <private/qobject_p.h>
 #include <qabstractanimation.h>
-
-#ifdef Q_OS_WIN
-#include <qt_windows.h>
-#endif
 
 #ifndef QT_NO_ANIMATION
 

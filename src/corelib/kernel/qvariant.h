@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class QBitArray;
 class QDataStream;
@@ -380,7 +379,7 @@ protected:
 #ifndef Q_NO_TEMPLATE_FRIENDS
     template<typename T>
     friend inline T qvariant_cast(const QVariant &);
-private:
+protected:
 #else
 public:
 #endif
@@ -503,7 +502,7 @@ template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
     return v;
 }
 
-#ifdef QT_DEPRECATED
+#if QT_DEPRECATED_SINCE(5, 0)
 template<typename T>
 inline QT_DEPRECATED T qVariantValue(const QVariant &variant)
 { return qvariant_cast<T>(variant); }

@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
-SUBDIRS = test \
-	  desktopsettingsaware \
-          modal \
-      wincmdline
 
+SUBDIRS = desktopsettingsaware modal
 
+win32:!wince*:SUBDIRS += wincmdline
+test.depends += $$SUBDIRS
+SUBDIRS += test

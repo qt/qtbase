@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,7 +53,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QPainterPath;
 class QVariant;
@@ -102,9 +101,6 @@ public:
 
     bool isInvertible() const { return !qFuzzyIsNull(_m11*_m22 - _m12*_m21); }
     qreal determinant() const { return _m11*_m22 - _m12*_m21; }
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED qreal det() const { return _m11*_m22 - _m12*_m21; }
-#endif
 
     QMatrix inverted(bool *invertible = 0) const;
 

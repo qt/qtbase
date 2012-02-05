@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -133,6 +133,8 @@ private slots:
     void rootItemFlags();
     void treeDragAndDrop();
     void removeRowsAndColumns();
+
+    void itemRoleNames();
 
 private:
     QAbstractItemModel *m_model;
@@ -1655,6 +1657,24 @@ void tst_QStandardItemModel::removeRowsAndColumns()
     for (int r = 0; r < row_list.count(); r++)
         QCOMPARE(col_taken[r]->text() , row_list[r] + "x" + col_list[10]);
     col_list.remove(10);
+    VERIFY_MODEL
+}
+
+void tst_QStandardItemModel::itemRoleNames()
+{
+    QVector<QString> row_list = QString("1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20").split(',').toVector();
+    QVector<QString> col_list = row_list;
+    QStandardItemModel model;
+    for (int c = 0; c < col_list.count(); c++)
+        for (int r = 0; r < row_list.count(); r++)
+            model.setItem(r, c, new QStandardItem(row_list[r] + "x" + col_list[c]));
+    VERIFY_MODEL
+
+    QHash<int, QByteArray> newRoleNames;
+    newRoleNames.insert(Qt::DisplayRole, "Name");
+    newRoleNames.insert(Qt::DecorationRole, "Avatar");
+    model.setItemRoleNames(newRoleNames);
+    QCOMPARE(model.roleNames(), newRoleNames);
     VERIFY_MODEL
 }
 

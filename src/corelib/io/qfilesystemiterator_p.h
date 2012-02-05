@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -65,10 +65,7 @@
 #include <QtCore/private/qfilesystemmetadata_p.h>
 
 // Platform-specific headers
-#if defined(Q_OS_WIN)
-#elif defined (Q_OS_SYMBIAN)
-#include <f32file.h>
-#else
+#if !defined(Q_OS_WIN)
 #include <QtCore/qscopedpointer.h>
 #endif
 
@@ -95,11 +92,6 @@ private:
     bool uncFallback;
     int uncShareIndex;
     bool onlyDirs;
-#elif defined (Q_OS_SYMBIAN)
-    RDir dirHandle;
-    TEntryArray entries;
-    TInt lastError;
-    TInt entryIndex;
 #else
     QT_DIR *dir;
     QT_DIRENT *dirEntry;

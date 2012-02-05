@@ -179,9 +179,7 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
 
 #if defined(WIN32) || defined(_Windows) || defined(_WINDOWS) || \
     defined(_WIN32) || defined(__WIN32__)
-#  if !defined(__SYMBIAN32__)
-#    include <windows.h>  /* defines _WINDOWS_ macro */
-#  endif
+#  include <windows.h>  /* defines _WINDOWS_ macro */
 #endif
 
 /* Moved here around 1.5.0beta36 from pngconf.h */

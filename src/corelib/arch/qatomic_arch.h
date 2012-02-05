@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,24 +52,10 @@ QT_BEGIN_HEADER
 #  include "QtCore/qatomic_vxworks.h"
 #elif defined(QT_ARCH_ALPHA)
 #  include "QtCore/qatomic_alpha.h"
-#elif defined(QT_ARCH_ARM)
-#  include "QtCore/qatomic_arm.h"
-#elif defined(QT_ARCH_ARMV6)
-#  include "QtCore/qatomic_armv6.h"
-#elif defined(QT_ARCH_AVR32)
-#  include "QtCore/qatomic_avr32.h"
 #elif defined(QT_ARCH_BFIN)
 #  include "QtCore/qatomic_bfin.h"
 #elif defined(QT_ARCH_GENERIC)
 #  include "QtCore/qatomic_generic.h"
-#elif defined(QT_ARCH_I386)
-#  include "QtCore/qatomic_i386.h"
-#elif defined(QT_ARCH_IA64)
-#  include "QtCore/qatomic_ia64.h"
-#elif defined(QT_ARCH_MACOSX)
-#  include "QtCore/qatomic_macosx.h"
-#elif defined(QT_ARCH_MIPS)
-#  include "QtCore/qatomic_mips.h"
 #elif defined(QT_ARCH_PARISC)
 #  include "QtCore/qatomic_parisc.h"
 #elif defined(QT_ARCH_POWERPC)
@@ -78,18 +64,10 @@ QT_BEGIN_HEADER
 #  include "QtCore/qatomic_s390.h"
 #elif defined(QT_ARCH_SPARC)
 #  include "QtCore/qatomic_sparc.h"
-#elif defined(QT_ARCH_WINDOWS)
-#  include "QtCore/qatomic_windows.h"
-#elif defined(QT_ARCH_WINDOWSCE)
-#  include "QtCore/qatomic_windowsce.h"
-#elif defined(QT_ARCH_X86_64)
-#  include "QtCore/qatomic_x86_64.h"
 #elif defined(QT_ARCH_SH)
 #  include "QtCore/qatomic_sh.h"
 #elif defined(QT_ARCH_SH4A)
 #  include "QtCore/qatomic_sh4a.h"
-#elif defined(QT_ARCH_NACL)
-#  include "QtCore/qatomic_generic.h"
 #else
 #  error "Qt has not been ported to this architecture"
 #endif

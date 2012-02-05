@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -343,35 +343,38 @@ QRect QScreen::availableVirtualGeometry() const
 }
 
 /*!
-    \property QScreen::primaryOrientation
-    \brief the primary screen orientation
+    \property QScreen::orientation
+    \brief the screen orientation
 
-    The primary screen orientation is the orientation that corresponds
-    to an un-rotated screen buffer. When the current orientation is equal
-    to the primary orientation no rotation needs to be done by the
-    application.
+    The screen orientation represents the physical orientation
+    of the display. For example, the screen orientation of a mobile device
+    will change based on the device is being held, and a desktop display
+    might be rotated so that it's in portrait mode.
+
+    Qt::PrimaryOrientation is never returned.
+
+    \sa primaryOrientation(), orientationChanged()
 */
-Qt::ScreenOrientation QScreen::primaryOrientation() const
+Qt::ScreenOrientation QScreen::orientation() const
 {
     Q_D(const QScreen);
-    return d->platformScreen->primaryOrientation();
+    return d->orientation == Qt::PrimaryOrientation ? primaryOrientation() : d->orientation;
 }
 
 /*!
     \property QScreen::primaryOrientation
-    \brief the current screen orientation
+    \brief the primary screen orientation
 
-    The current orientation is a hint to the application saying
-    what the preferred application orientation should be, based on the
-    current orientation of the physical display and / or other factors.
+    The primary screen orientation is Qt::LandscapeOrientation
+    if the screen geometry's width is greater than or equal to its
+    height, or Qt::PortraitOrientation otherwise.
 
-    \sa primaryOrientation()
-    \sa currentOrientationChanged()
+    \sa primaryOrientationChanged()
 */
-Qt::ScreenOrientation QScreen::currentOrientation() const
+Qt::ScreenOrientation QScreen::primaryOrientation() const
 {
     Q_D(const QScreen);
-    return d->currentOrientation;
+    return d->primaryOrientation;
 }
 
 // i must be power of two
@@ -393,10 +396,18 @@ static int log2(uint i)
     rotation \a a to rotation \a b.
 
     The result will be 0, 90, 180, or 270.
+
+    Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */
 int QScreen::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b)
 {
-    if (a == Qt::UnknownOrientation || b == Qt::UnknownOrientation || a == b)
+    if (a == Qt::PrimaryOrientation)
+        a = primaryOrientation();
+
+    if (b == Qt::PrimaryOrientation)
+        b = primaryOrientation();
+
+    if (a == b)
         return 0;
 
     int ia = log2(uint(a));
@@ -420,10 +431,18 @@ int QScreen::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b)
     the resulting transform will be such that the point QPoint(0, 0) is mapped to QPoint(0, w),
     and QPoint(h, w) is mapped to QPoint(0, h). Thus, the landscape coordinate system QRect(0, 0, h, w)
     is mapped (with a 90 degree rotation) into the portrait coordinate system QRect(0, 0, w, h).
+
+    Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */
 QTransform QScreen::transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target)
 {
-    if (a == Qt::UnknownOrientation || b == Qt::UnknownOrientation || a == b)
+    if (a == Qt::PrimaryOrientation)
+        a = primaryOrientation();
+
+    if (b == Qt::PrimaryOrientation)
+        b = primaryOrientation();
+
+    if (a == b)
         return QTransform();
 
     int angle = angleBetween(a, b);
@@ -453,10 +472,18 @@ QTransform QScreen::transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientat
     This will flip the x and y dimensions of the rectangle if orientation \a is
     Qt::PortraitOrientation or Qt::InvertedPortraitOrientation and orientation \b is
     Qt::LandscapeOrientation or Qt::InvertedLandscapeOrientation, or vice versa.
+
+    Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */
 QRect QScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect)
 {
-    if (a == Qt::UnknownOrientation || b == Qt::UnknownOrientation || a == b)
+    if (a == Qt::PrimaryOrientation)
+        a = primaryOrientation();
+
+    if (b == Qt::PrimaryOrientation)
+        b = primaryOrientation();
+
+    if (a == b)
         return rect;
 
     if ((a == Qt::PortraitOrientation || a == Qt::InvertedPortraitOrientation)
@@ -469,14 +496,50 @@ QRect QScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, cons
 }
 
 /*!
-    \fn QScreen::currentOrientationChanged(Qt::ScreenOrientation orientation)
+    Convenience function to check if a screen orientation is either portrait
+    or inverted portrait.
 
-    This signal is emitted when the current orientation of the screen
-    changes. The current orientation is a hint to the application saying
-    what the preferred application orientation should be, based on the
-    current orientation of the physical display and / or other factors.
-
-    \sa currentOrientation()
+    Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */
+bool QScreen::isPortrait(Qt::ScreenOrientation o)
+{
+    return o == Qt::PortraitOrientation || o == Qt::InvertedPortraitOrientation
+        || (o == Qt::PrimaryOrientation && primaryOrientation() == Qt::PortraitOrientation);
+}
+
+/*!
+    Convenience function to check if a screen orientation is either landscape
+    or inverted landscape.
+
+    Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
+*/
+bool QScreen::isLandscape(Qt::ScreenOrientation o)
+{
+    return o == Qt::LandscapeOrientation || o == Qt::InvertedLandscapeOrientation
+        || (o == Qt::PrimaryOrientation && primaryOrientation() == Qt::LandscapeOrientation);
+}
+
+/*!
+    \fn QScreen::orientationChanged(Qt::ScreenOrientation orientation)
+
+    This signal is emitted when the orientation of the screen
+    changes.
+
+    \sa orientation()
+*/
+
+/*!
+    \fn QScreen::primaryOrientationChanged(Qt::ScreenOrientation orientation)
+
+    This signal is emitted when the primary orientation of the screen
+    changes.
+
+    \sa primaryOrientation()
+*/
+
+void QScreenPrivate::updatePrimaryOrientation()
+{
+    primaryOrientation = geometry.width() >= geometry.height() ? Qt::LandscapeOrientation : Qt::PortraitOrientation;
+}
 
 QT_END_NAMESPACE

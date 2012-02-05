@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,14 +48,12 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QMenu;
 class QMenuBar;
 class QPlatformMenu;
 class QPlatformMenuBar;
 class QPlatformDialogHelper;
-class QDialog;
 class QVariant;
 
 class Q_GUI_EXPORT QPlatformTheme
@@ -67,11 +65,17 @@ public:
         MaximumScrollBarDragDistance
     };
 
+    enum DialogType {
+        FileDialog,
+        ColorDialog,
+        FontDialog
+    };
+
     virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
     virtual QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
 
-    virtual bool usePlatformNativeDialog(const QDialog *dialog = 0) const;
-    virtual QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
+    virtual bool usePlatformNativeDialog(DialogType type) const;
+    virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
 
     virtual QVariant themeHint(ThemeHint hint) const;
 };

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,13 +34,17 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-
 #include <QtCore/QtCore>
 #include <QtTest/QtTest>
+
+#include <private/qcoreapplication_p.h>
+#include <private/qeventloop_p.h>
+#include <private/qthread_p.h>
 
 class tst_QCoreApplication: public QObject
 {
@@ -63,6 +66,7 @@ private slots:
     void execAfterExit();
     void eventLoopExecAfterExit();
     void customEventDispatcher();
+    void testQuitLock();
 };
 
 class EventSpy : public QObject
@@ -127,7 +131,7 @@ void tst_QCoreApplication::argc()
         char *argv[] = { "tst_qcoreapplication" };
         QCoreApplication app(argc, argv);
         QCOMPARE(argc, 1);
-        QCOMPARE(app.argc(), 1);
+        QCOMPARE(app.arguments().count(), 1);
     }
 
     {
@@ -135,7 +139,7 @@ void tst_QCoreApplication::argc()
         char *argv[] = { "tst_qcoreapplication", "arg1", "arg2", "arg3" };
         QCoreApplication app(argc, argv);
         QCOMPARE(argc, 4);
-        QCOMPARE(app.argc(), 4);
+        QCOMPARE(app.arguments().count(), 4);
     }
 
     {
@@ -143,7 +147,7 @@ void tst_QCoreApplication::argc()
         char **argv = 0;
         QCoreApplication app(argc, argv);
         QCOMPARE(argc, 0);
-        QCOMPARE(app.argc(), 0);
+        QCOMPARE(app.arguments().count(), 0);
     }
 
     {
@@ -151,7 +155,7 @@ void tst_QCoreApplication::argc()
         char *argv[] = { "tst_qcoreapplication", "-qmljsdebugger=port:3768,block" };
         QCoreApplication app(argc, argv);
         QCOMPARE(argc, 1);
-        QCOMPARE(app.argc(), 1);
+        QCOMPARE(app.arguments().count(), 1);
     }
 }
 
@@ -639,6 +643,114 @@ void tst_QCoreApplication::customEventDispatcher()
     // ED has been deleted?
     QVERIFY(weak_ed.isNull());
 }
+
+class JobObject : public QObject
+{
+    Q_OBJECT
+public:
+
+    explicit JobObject(QEventLoop *loop, QObject *parent = 0)
+        : QObject(parent), locker(loop)
+    {
+        QTimer::singleShot(1000, this, SLOT(timeout()));
+    }
+
+    explicit JobObject(QObject *parent = 0)
+        : QObject(parent)
+    {
+        QTimer::singleShot(1000, this, SLOT(timeout()));
+    }
+
+public slots:
+    void startSecondaryJob()
+    {
+        new JobObject();
+    }
+
+private slots:
+    void timeout()
+    {
+        emit done();
+        deleteLater();
+    }
+
+signals:
+    void done();
+
+private:
+    QEventLoopLocker locker;
+};
+
+class QuitTester : public QObject
+{
+    Q_OBJECT
+public:
+    QuitTester(QObject *parent = 0)
+      : QObject(parent)
+    {
+        QTimer::singleShot(0, this, SLOT(doTest()));
+    }
+
+private slots:
+    void doTest()
+    {
+        QCoreApplicationPrivate *privateClass = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(qApp));
+
+        {
+            QCOMPARE(privateClass->quitLockRef.load(), 0);
+            // Test with a lock active so that the refcount doesn't drop to zero during these tests, causing a quit.
+            // (until we exit the scope)
+            QEventLoopLocker locker;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 1);
+
+            JobObject *job1 = new JobObject(this);
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            delete job1;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 1);
+
+            job1 = new JobObject(this);
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            JobObject *job2 = new JobObject(this);
+
+            QCOMPARE(privateClass->quitLockRef.load(), 3);
+
+            delete job1;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            JobObject *job3 = new JobObject(job2);
+
+            QCOMPARE(privateClass->quitLockRef.load(), 3);
+
+            JobObject *job4 = new JobObject(job2);
+
+            QCOMPARE(privateClass->quitLockRef.load(), 4);
+
+            delete job2;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 1);
+
+        }
+        QCOMPARE(privateClass->quitLockRef.load(), 0);
+    }
+};
+
+void tst_QCoreApplication::testQuitLock()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QCoreApplication app(argc, argv);
+
+    QuitTester tester;
+    app.exec();
+}
+
 
 QTEST_APPLESS_MAIN(tst_QCoreApplication)
 #include "tst_qcoreapplication.moc"

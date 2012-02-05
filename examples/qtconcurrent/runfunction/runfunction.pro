@@ -12,6 +12,6 @@ sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro *.png
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qtconcurrent/runfunction
 INSTALLS += target sources
 
-QT += widgets
+QT += concurrent widgets
 
 simulator: warning(This example does not work on Simulator platform)

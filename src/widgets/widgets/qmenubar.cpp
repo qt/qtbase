@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -531,8 +531,8 @@ void QMenuBarPrivate::_q_actionHovered()
         if (QAccessible::isActive()) {
             int actionIndex = actions.indexOf(action);
             ++actionIndex;
-            QAccessible::updateAccessibility(q, actionIndex, QAccessible::Focus);
-            QAccessible::updateAccessibility(q, actionIndex, QAccessible::Selection);
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, q, actionIndex));
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, q, actionIndex));
         }
 #endif //QT_NO_ACCESSIBILITY
     }
@@ -788,10 +788,6 @@ QMenuBar::~QMenuBar()
     if (qt_wince_is_mobile())
         d->wceDestroyMenuBar();
 #endif
-#ifdef Q_WS_S60
-    Q_D(QMenuBar);
-    d->symbianDestroyMenuBar();
-#endif
 }
 
 /*!
@@ -1043,7 +1039,7 @@ void QMenuBar::paintEvent(QPaintEvent *e)
 */
 void QMenuBar::setVisible(bool visible)
 {
-#if defined(Q_OS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
     if (isNativeMenuBar()) {
         if (!visible)
             QWidget::setVisible(false);
@@ -1249,9 +1245,7 @@ void QMenuBar::actionEvent(QActionEvent *e)
 
     if (d->platformMenuBar) {
         QPlatformMenuBar *nativeMenuBar = d->platformMenuBar;
-#if defined(Q_WS_S60)
-        QMenuBarPrivate::QSymbianMenuBarPrivate *nativeMenuBar = d->symbian_menubar;
-#elif defined(Q_WS_WINCE)
+#if defined(Q_WS_WINCE)
         QMenuBarPrivate::QWceMenuBarPrivate *nativeMenuBar = d->wce_menubar;
 #endif
         if (!nativeMenuBar)
@@ -1348,38 +1342,6 @@ void QMenuBarPrivate::handleReparent()
     if (qt_wince_is_mobile() && wce_menubar)
         wce_menubar->rebuild();
 #endif
-#ifdef Q_WS_S60
-
-    // Construct symbian_menubar when this code path is entered first time
-    // and when newParent != NULL
-    if (!symbian_menubar)
-        symbianCreateMenuBar(newParent);
-
-    // Reparent and rebuild menubar when parent is changed
-    if (symbian_menubar) {
-        if (oldParent != newParent)
-            reparentMenuBar(oldParent, newParent);
-        q->hide();
-        symbian_menubar->rebuild();
-    }
-
-#ifdef QT_SOFTKEYS_ENABLED
-    // Constuct menuBarAction when this code path is entered first time
-    if (!menuBarAction) {
-        if (newParent) {
-            menuBarAction = QSoftKeyManager::createAction(QSoftKeyManager::MenuSoftKey, newParent);
-            newParent->addAction(menuBarAction);
-        }
-    } else {
-        // If reparenting i.e. we already have menuBarAction, remove it from old parent
-        // and add for a new parent
-        if (oldParent)
-            oldParent->removeAction(menuBarAction);
-        if (newParent)
-            newParent->addAction(menuBarAction);
-    }
-#endif // QT_SOFTKEYS_ENABLED
-#endif // Q_WS_S60
 }
 
 /*!
@@ -1564,7 +1526,7 @@ QRect QMenuBar::actionGeometry(QAction *act) const
 QSize QMenuBar::minimumSizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_OS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60)
+#if defined(Q_OS_MAC) || defined(Q_WS_WINCE)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1620,7 +1582,7 @@ QSize QMenuBar::minimumSizeHint() const
 QSize QMenuBar::sizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_OS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60)
+#if defined(Q_OS_MAC) || defined(Q_WS_WINCE)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1679,7 +1641,7 @@ QSize QMenuBar::sizeHint() const
 int QMenuBar::heightForWidth(int) const
 {
     Q_D(const QMenuBar);
-#if defined(Q_OS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60)
+#if defined(Q_OS_MAC) || defined(Q_WS_WINCE)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1823,6 +1785,8 @@ QWidget *QMenuBar::cornerWidget(Qt::Corner corner) const
     The default is to follow whether the Qt::AA_DontUseNativeMenuBar attribute
     is set for the application. Explicitly settings this property overrides
     the presence (or abscence) of the attribute.
+
+    \sa void-qt-mac-set-native-menubar-bool-enable
 */
 
 void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
@@ -1919,6 +1883,8 @@ QAction *QMenuBar::defaultAction() const
     This signal is emitted when an action in a menu belonging to this menubar
     is triggered as a result of a mouse click; \a action is the action that
     caused the signal to be emitted.
+
+    \note QMenuBar has to have ownership of the QMenu in order this signal to work.
 
     Normally, you connect each menu action to a single slot using
     QAction::triggered(), but sometimes you will want to connect

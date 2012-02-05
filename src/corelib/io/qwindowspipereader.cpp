@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,16 +34,17 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "qwindowspipereader_p.h"
+#include "qwinoverlappedionotifier_p.h"
 #include <qdebug.h>
 #include <qelapsedtimer.h>
 #include <qeventloop.h>
 #include <qtimer.h>
-#include <qwineventnotifier.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -53,21 +53,23 @@ QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
       handle(INVALID_HANDLE_VALUE),
       readBufferMaxSize(0),
       actualReadBufferSize(0),
+      readSequenceStarted(false),
       emitReadyReadTimer(new QTimer(this)),
-      pipeBroken(false)
+      pipeBroken(false),
+      readyReadEmitted(false)
 {
     emitReadyReadTimer->setSingleShot(true);
     connect(emitReadyReadTimer, SIGNAL(timeout()), SIGNAL(readyRead()));
-
-    ZeroMemory(&overlapped, sizeof(overlapped));
-    overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-    dataReadNotifier = new QWinEventNotifier(overlapped.hEvent, this);
-    connect(dataReadNotifier, SIGNAL(activated(HANDLE)), SLOT(readEventSignalled()));
+    dataReadNotifier = new QWinOverlappedIoNotifier(this);
+    connect(dataReadNotifier, &QWinOverlappedIoNotifier::notified, this, &QWindowsPipeReader::notified);
 }
 
 QWindowsPipeReader::~QWindowsPipeReader()
 {
-    CloseHandle(overlapped.hEvent);
+    if (readSequenceStarted) {
+        CancelIo(handle);
+        dataReadNotifier->waitForNotified(-1);
+    }
 }
 
 /*!
@@ -78,8 +80,13 @@ void QWindowsPipeReader::setHandle(HANDLE hPipeReadEnd)
     readBuffer.clear();
     actualReadBufferSize = 0;
     handle = hPipeReadEnd;
+    ZeroMemory(&overlapped, sizeof(overlapped));
     pipeBroken = false;
-    dataReadNotifier->setEnabled(true);
+    readyReadEmitted = false;
+    if (hPipeReadEnd != INVALID_HANDLE_VALUE) {
+        dataReadNotifier->setHandle(hPipeReadEnd);
+        dataReadNotifier->setEnabled(true);
+    }
 }
 
 /*!
@@ -92,7 +99,6 @@ void QWindowsPipeReader::stop()
     dataReadNotifier->setEnabled(false);
     readSequenceStarted = false;
     handle = INVALID_HANDLE_VALUE;
-    ResetEvent(overlapped.hEvent);
 }
 
 /*!
@@ -149,19 +155,18 @@ bool QWindowsPipeReader::canReadLine() const
 /*!
     \internal
     Will be called whenever the read operation completes.
-    Returns true, if readyRead() has been emitted.
  */
-bool QWindowsPipeReader::readEventSignalled()
+void QWindowsPipeReader::notified(DWORD numberOfBytesRead, DWORD errorCode)
 {
-    if (!completeAsyncRead()) {
+    if (!completeAsyncRead(numberOfBytesRead, errorCode)) {
         pipeBroken = true;
         emit pipeClosed();
-        return false;
+        return;
     }
     startAsyncRead();
     emitReadyReadTimer->stop();
+    readyReadEmitted = true;
     emit readyRead();
-    return true;
 }
 
 /*!
@@ -170,56 +175,50 @@ bool QWindowsPipeReader::readEventSignalled()
  */
 void QWindowsPipeReader::startAsyncRead()
 {
-    do {
-        DWORD bytesToRead = checkPipeState();
-        if (pipeBroken)
-            return;
+    const DWORD minReadBufferSize = 4096;
+    DWORD bytesToRead = qMax(checkPipeState(), minReadBufferSize);
+    if (pipeBroken)
+        return;
 
+    if (readBufferMaxSize && bytesToRead > (readBufferMaxSize - readBuffer.size())) {
+        bytesToRead = readBufferMaxSize - readBuffer.size();
         if (bytesToRead == 0) {
-            // There are no bytes in the pipe but we need to
-            // start the overlapped read with some buffer size.
-            bytesToRead = initialReadBufferSize;
+            // Buffer is full. User must read data from the buffer
+            // before we can read more from the pipe.
+            return;
         }
+    }
 
-        if (readBufferMaxSize && bytesToRead > (readBufferMaxSize - readBuffer.size())) {
-            bytesToRead = readBufferMaxSize - readBuffer.size();
-            if (bytesToRead == 0) {
-                // Buffer is full. User must read data from the buffer
-                // before we can read more from the pipe.
+    char *ptr = readBuffer.reserve(bytesToRead);
+
+    readSequenceStarted = true;
+    if (ReadFile(handle, ptr, bytesToRead, NULL, &overlapped)) {
+        // We get notified by the QWinOverlappedIoNotifier - even in the synchronous case.
+        return;
+    } else {
+        switch (GetLastError()) {
+        case ERROR_IO_PENDING:
+            // This is not an error. We're getting notified, when data arrives.
+            return;
+        case ERROR_MORE_DATA:
+            // This is not an error. The synchronous read succeeded.
+            // We're connected to a message mode pipe and the message
+            // didn't fit into the pipe's system buffer.
+            // We're getting notified by the QWinOverlappedIoNotifier.
+            break;
+        case ERROR_PIPE_NOT_CONNECTED:
+            {
+                // It may happen, that the other side closes the connection directly
+                // after writing data. Then we must set the appropriate socket state.
+                pipeBroken = true;
+                emit pipeClosed();
                 return;
             }
+        default:
+            emit winError(GetLastError(), QLatin1String("QWindowsPipeReader::startAsyncRead"));
+            return;
         }
-
-        char *ptr = readBuffer.reserve(bytesToRead);
-
-        readSequenceStarted = true;
-        if (ReadFile(handle, ptr, bytesToRead, NULL, &overlapped)) {
-            completeAsyncRead();
-        } else {
-            switch (GetLastError()) {
-                case ERROR_IO_PENDING:
-                    // This is not an error. We're getting notified, when data arrives.
-                    return;
-                case ERROR_MORE_DATA:
-                    // This is not an error. The synchronous read succeeded.
-                    // We're connected to a message mode pipe and the message
-                    // didn't fit into the pipe's system buffer.
-                    completeAsyncRead();
-                    break;
-                case ERROR_PIPE_NOT_CONNECTED:
-                    {
-                        // It may happen, that the other side closes the connection directly
-                        // after writing data. Then we must set the appropriate socket state.
-                        pipeBroken = true;
-                        emit pipeClosed();
-                        return;
-                    }
-                default:
-                    emit winError(GetLastError(), QLatin1String("QWindowsPipeReader::startAsyncRead"));
-                    return;
-            }
-        }
-    } while (!readSequenceStarted);
+    }
 }
 
 /*!
@@ -227,26 +226,24 @@ void QWindowsPipeReader::startAsyncRead()
     Sets the correct size of the read buffer after a read operation.
     Returns false, if an error occurred or the connection dropped.
  */
-bool QWindowsPipeReader::completeAsyncRead()
+bool QWindowsPipeReader::completeAsyncRead(DWORD bytesRead, DWORD errorCode)
 {
-    ResetEvent(overlapped.hEvent);
     readSequenceStarted = false;
 
-    DWORD bytesRead;
-    if (!GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE)) {
-        switch (GetLastError()) {
-        case ERROR_MORE_DATA:
-            // This is not an error. We're connected to a message mode
-            // pipe and the message didn't fit into the pipe's system
-            // buffer. We will read the remaining data in the next call.
-            break;
-        case ERROR_BROKEN_PIPE:
-        case ERROR_PIPE_NOT_CONNECTED:
-            return false;
-        default:
-            emit winError(GetLastError(), QLatin1String("QWindowsPipeReader::completeAsyncRead"));
-            return false;
-        }
+    switch (errorCode) {
+    case ERROR_SUCCESS:
+        break;
+    case ERROR_MORE_DATA:
+        // This is not an error. We're connected to a message mode
+        // pipe and the message didn't fit into the pipe's system
+        // buffer. We will read the remaining data in the next call.
+        break;
+    case ERROR_BROKEN_PIPE:
+    case ERROR_PIPE_NOT_CONNECTED:
+        return false;
+    default:
+        emit winError(errorCode, QLatin1String("QWindowsPipeReader::completeAsyncRead"));
+        return false;
     }
 
     actualReadBufferSize += bytesRead;
@@ -281,17 +278,11 @@ DWORD QWindowsPipeReader::checkPipeState()
  */
 bool QWindowsPipeReader::waitForReadyRead(int msecs)
 {
-    Q_ASSERT(readSequenceStarted);
-    DWORD result = WaitForSingleObject(overlapped.hEvent, msecs == -1 ? INFINITE : msecs);
-    switch (result) {
-        case WAIT_OBJECT_0:
-            return readEventSignalled();
-        case WAIT_TIMEOUT:
-            return false;
-    }
-
-    qWarning("QWindowsPipeReader::waitForReadyRead WaitForSingleObject failed with error code %d.", int(GetLastError()));
-    return false;
+    if (!readSequenceStarted)
+        return false;
+    readyReadEmitted = false;
+    dataReadNotifier->waitForNotified(msecs);
+    return readyReadEmitted;
 }
 
 /*!

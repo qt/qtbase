@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,14 +48,9 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
 
-#if defined(Q_OS_WIN) && defined(interface)
-#undef interface
-#endif
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-QT_MODULE(Network)
 
 class QNetworkConfigurationPrivate;
 class Q_NETWORK_EXPORT QNetworkConfiguration
@@ -108,10 +103,6 @@ public:
     Type type() const;
     Purpose purpose() const;
 
-#ifdef QT_DEPRECATED
-    // Required to maintain source compatibility with Qt Mobility.
-    QT_DEPRECATED inline QString bearerName() const { return bearerTypeName(); }
-#endif
     BearerType bearerType() const;
     QString bearerTypeName() const;
 

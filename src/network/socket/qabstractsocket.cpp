@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -317,6 +317,10 @@
            because the response from the proxy server could not be understood.
     \value OperationError An operation was attempted while the socket was in a state that
            did not permit it.
+    \value SslInternalError The SSL library being used reported a internal error, this is
+           probably the result of a bad installation or misconfiguration of the library.
+    \value SslInvalidUserDataError Invalid data(certificate, key, cypher, etc.) was
+           provided and its use resulted in an error in the SSL library.
 
     \value UnknownSocketError An unidentified error occurred.
     \sa QAbstractSocket::error()
@@ -425,6 +429,19 @@
     + ReuseAddressHint), and on Windows, its equivalent to ShareAddress.
 */
 
+/*! \enum QAbstractSocket::PauseMode
+    \since 5.0
+
+    This enum describes the behavior of when the socket should hold
+    back with continuing data transfer.
+
+    \value PauseNever Do not pause data transfer on the socket. This is the
+    default and matches the behaviour of Qt 4.
+    \value PauseOnNotify Pause data transfer on the socket upon receiving a
+    notification. The only notification currently supported is
+    QSslSocket::sslErrors().
+*/
+
 #include "qabstractsocket.h"
 #include "qabstractsocket_p.h"
 
@@ -529,6 +546,7 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       abortCalled(false),
       closeCalled(false),
       pendingClose(false),
+      pauseMode(QAbstractSocket::PauseNever),
       port(0),
       localPort(0),
       peerPort(0),
@@ -797,7 +815,7 @@ bool QAbstractSocketPrivate::flush()
         && socketEngine->bytesToWrite() == 0)) {
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::flush() nothing to do: valid ? %s, writeBuffer.isEmpty() ? %s",
-           socketEngine->isValid() ? "yes" : "no", writeBuffer.isEmpty() ? "yes" : "no");
+           (socketEngine && socketEngine->isValid()) ? "yes" : "no", writeBuffer.isEmpty() ? "yes" : "no");
 #endif
 
         // this covers the case when the buffer was empty, but we had to wait for the socket engine to finish
@@ -1354,6 +1372,55 @@ QAbstractSocket::~QAbstractSocket()
 /*!
     \since 5.0
 
+    Continues data transfer on the socket. This method should only be used
+    after the socket has been set to pause upon notifications and a
+    notification has been received.
+    The only notification currently supported is QSslSocket::sslErrors().
+    Calling this method if the socket is not paused results in undefined
+    behavior.
+
+    \sa pauseMode(), setPauseMode()
+*/
+void QAbstractSocket::resume()
+{
+    Q_D(QAbstractSocket);
+    d->resumeSocketNotifiers(this);
+}
+
+/*!
+    \since 5.0
+
+    Returns the pause mode of this socket.
+
+    \sa setPauseMode(), resume()
+*/
+QAbstractSocket::PauseModes QAbstractSocket::pauseMode() const
+{
+    return d_func()->pauseMode;
+}
+
+
+/*!
+    \since 5.0
+
+    Controls whether to pause upon receiving a notification. The only notification
+    currently supported is QSslSocket::sslErrors(). If set to PauseOnNotify,
+    data transfer on the socket will be paused and needs to be enabled explicitly
+    again by calling resume().
+    By default this option is set to PauseNever.
+    This option must be called before connecting to the server, otherwise it will
+    result in undefined behavior.
+
+    \sa pauseMode(), resume()
+*/
+void QAbstractSocket::setPauseMode(PauseModes pauseMode)
+{
+    d_func()->pauseMode = pauseMode;
+}
+
+/*!
+    \since 5.0
+
     Binds to \a address on port \a port, using the BindMode \a mode.
 
     Binds this socket to the address \a address and the port \a port.
@@ -1734,10 +1801,6 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
                                           OpenMode openMode)
 {
     Q_D(QAbstractSocket);
-#ifndef QT_NO_OPENSSL
-    if (QSslSocket *socket = qobject_cast<QSslSocket *>(this))
-        return socket->setSocketDescriptor(socketDescriptor, socketState, openMode);
-#endif
 
     d->resetSocketLayer();
     d->socketEngine = QAbstractSocketEngine::createSocketEngine(socketDescriptor, this);
@@ -1786,13 +1849,6 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
 */
 void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value)
 {
-#ifndef QT_NO_OPENSSL
-    if (QSslSocket *sslSocket = qobject_cast<QSslSocket*>(this)) {
-        sslSocket->setSocketOption(option, value);
-        return;
-    }
-#endif
-
     if (!d_func()->socketEngine)
         return;
 
@@ -1827,12 +1883,6 @@ void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, cons
 */
 QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
 {
-#ifndef QT_NO_OPENSSL
-    if (QSslSocket *sslSocket = qobject_cast<QSslSocket*>(this)) {
-        return sslSocket->socketOption(option);
-    }
-#endif
-
     if (!d_func()->socketEngine)
         return QVariant();
 
@@ -1912,13 +1962,6 @@ bool QAbstractSocket::waitForConnected(int msecs)
 #endif
         return true;
     }
-
-#ifndef QT_NO_OPENSSL
-    // Manual polymorphism; this function is not virtual, but has an overload
-    // in QSslSocket.
-    if (QSslSocket *socket = qobject_cast<QSslSocket *>(this))
-        return socket->waitForConnected(msecs);
-#endif
 
     bool wasPendingClose = d->pendingClose;
     d->pendingClose = false;
@@ -2139,12 +2182,6 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
 bool QAbstractSocket::waitForDisconnected(int msecs)
 {
     Q_D(QAbstractSocket);
-#ifndef QT_NO_OPENSSL
-    // Manual polymorphism; this function is not virtual, but has an overload
-    // in QSslSocket.
-    if (QSslSocket *socket = qobject_cast<QSslSocket *>(this))
-        return socket->waitForDisconnected(msecs);
-#endif
 
     // require calling connectToHost() before waitForDisconnected()
     if (state() == UnconnectedState) {
@@ -2755,15 +2792,6 @@ qint64 QAbstractSocket::readBufferSize() const
 void QAbstractSocket::setReadBufferSize(qint64 size)
 {
     Q_D(QAbstractSocket);
-
-#ifndef QT_NO_OPENSSL
-    // Manual polymorphism; setReadBufferSize() isn't virtual, but QSslSocket overloads
-    // it.
-    if (QSslSocket *socket = qobject_cast<QSslSocket *>(this)) {
-        socket->setReadBufferSize(size);
-        return;
-    }
-#endif
 
     if (d->readBufferMaxSize == size)
         return;

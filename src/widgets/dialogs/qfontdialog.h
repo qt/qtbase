@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,7 +50,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_FONTDIALOG
 
@@ -97,13 +96,9 @@ public:
 
     void setVisible(bool visible);
 
-    // ### Qt 5: merge overloads
-    static QFont getFont(bool *ok, const QFont &initial, QWidget *parent, const QString &title,
-                         FontDialogOptions options);
-    static QFont getFont(bool *ok, const QFont &initial, QWidget *parent, const QString &title);
-    static QFont getFont(bool *ok, const QFont &initial, QWidget *parent = 0);
     static QFont getFont(bool *ok, QWidget *parent = 0);
-
+    static QFont getFont(bool *ok, const QFont &initial, QWidget *parent = 0, const QString &title = QString(),
+                         FontDialogOptions options = 0);
 
 Q_SIGNALS:
     void currentFontChanged(const QFont &font);
@@ -112,11 +107,9 @@ Q_SIGNALS:
 protected:
     void changeEvent(QEvent *event);
     void done(int result);
-
-private:
-    // ### Qt 5: make protected
     bool eventFilter(QObject *object, QEvent *event);
 
+private:
     Q_DISABLE_COPY(QFontDialog)
 
     Q_PRIVATE_SLOT(d_func(), void _q_sizeChanged(const QString &))

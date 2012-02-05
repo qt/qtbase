@@ -20,7 +20,6 @@ HEADERS += \
         kernel/qiconloader_p.h \
         kernel/qiconengine.h \
         kernel/qiconengineplugin.h \
-        kernel/qinputcontext.h \
         kernel/qlayout.h \
 	kernel/qlayout_p.h \
 	kernel/qlayoutengine_p.h \
@@ -44,8 +43,7 @@ HEADERS += \
         kernel/qguiplatformplugin_p.h \
         kernel/qdesktopwidget_qpa_p.h \
         kernel/qwidgetwindow_qpa_p.h \
-        kernel/qplatformmenu_qpa.h \
-        kernel/qplatformdialoghelper_qpa.h
+        kernel/qplatformmenu_qpa.h
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -59,7 +57,6 @@ SOURCES += \
         kernel/qiconloader.cpp \
         kernel/qiconengine.cpp \
         kernel/qiconengineplugin.cpp \
-        kernel/qinputcontext.cpp \
         kernel/qlayout.cpp \
 	kernel/qlayoutengine.cpp \
 	kernel/qlayoutitem.cpp \
@@ -81,8 +78,7 @@ SOURCES += \
         kernel/qdesktopwidget_qpa.cpp \
         kernel/qwidget_qpa.cpp \
         kernel/qwidgetwindow_qpa.cpp \
-        kernel/qplatformmenu_qpa.cpp \
-        kernel/qplatformdialoghelper_qpa.cpp
+        kernel/qplatformmenu_qpa.cpp
 
 # TODO
 false:!x11:mac {

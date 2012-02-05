@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -142,6 +142,7 @@ void tst_qstandardpaths::testLocateAll()
 
     setCustomLocations();
     const QStringList allFiles = QStandardPaths::locateAll(QStandardPaths::ConfigLocation, "qstandardpaths.pro");
+    QVERIFY2(allFiles.count() > 0, "qstandardpaths.pro not found in config locations!");
     QCOMPARE(allFiles.first(), QString(m_thisDir + QString::fromLatin1("/qstandardpaths.pro")));
 #endif
 }

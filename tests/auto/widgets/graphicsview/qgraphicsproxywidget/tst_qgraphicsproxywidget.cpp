@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,7 +45,7 @@
 #include <QtWidgets>
 #include <private/qgraphicsproxywidget_p.h>
 #include <private/qlayoutengine_p.h>    // qSmartMin functions...
-#if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
 #endif
 #ifdef Q_WS_X11
@@ -2640,6 +2640,9 @@ void tst_QGraphicsProxyWidget::tooltip_basic()
                 foundTipLabel = true;
         }
         QVERIFY(foundView);
+#ifdef Q_OS_MAC
+        QEXPECT_FAIL("", "QTBUG-23707", Continue);
+#endif
         QVERIFY(foundTipLabel);
     }
 }
@@ -2724,7 +2727,7 @@ void tst_QGraphicsProxyWidget::childPos()
         QVERIFY(proxyChild);
         QVERIFY(proxyChild->isVisible());
         qreal expectedXPosition = 0.0;
-#if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
         // The Mac style wants the popup to show up at QPoint(4 - 11, 1).
         // See QMacStyle::subControlRect SC_ComboBoxListBoxPopup.
         if (qobject_cast<QMacStyle *>(QApplication::style()))
@@ -3377,6 +3380,9 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     proxy->update();
     proxy->hide();
     QTRY_COMPARE(view.npaints, 1);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23700", Continue);
+#endif
     QCOMPARE(view.paintEventRegion, expectedRegion);
 
     proxy->show();

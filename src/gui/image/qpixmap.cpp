@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1253,8 +1253,7 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     screen. Alternatively, if no manipulation is desired, the image
     file can be loaded directly into a QPixmap. On Windows, the
     QPixmap class also supports conversion between \c HBITMAP and
-    QPixmap. On Symbian, the QPixmap class also supports conversion
-    between CFbsBitmap and QPixmap.
+    QPixmap.
 
     QPixmap provides a collection of functions that can be used to
     obtain a variety of information about the pixmap. In addition,
@@ -1361,12 +1360,6 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     and from HICON: the toWinHICON() function creates a HICON equivalent
     to the QPixmap, and returns the HICON handle. The fromWinHICON()
     function returns a QPixmap that is equivalent to the given icon.
-
-    In addition, on Symbian, the QPixmap class supports conversion to
-    and from CFbsBitmap: the toSymbianCFbsBitmap() function creates
-    CFbsBitmap equivalent to the QPixmap, based on given mode and returns
-    a CFbsBitmap object. The fromSymbianCFbsBitmap() function returns a
-    QPixmap that is equivalent to the given bitmap and given mode.
 
     \section1 Pixmap Transformations
 

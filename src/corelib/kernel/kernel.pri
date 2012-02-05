@@ -90,6 +90,8 @@ mac {
 mac:!nacl {
        SOURCES += \
                 kernel/qcore_mac.cpp
+       OBJECTIVE_SOURCES += \
+                kernel/qcore_mac_objc.mm
 }
 
 nacl {

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -829,6 +829,8 @@ void tst_QRegExp::testEscapingWildcard_data(){
     QTest::newRow("? Escaped") << "\\?O;" <<  "?O;" << true;
 
     QTest::newRow("[] not escaped") << "[lL]" <<  "l" << true;
+    QTest::newRow("[] escaped") << "\\[\\]" <<  "[]" << true;
+
     QTest::newRow("case [[]") << "[[abc]" <<  "[" << true;
     QTest::newRow("case []abc] match ]") << "[]abc]" <<  "]" << true;
     QTest::newRow("case []abc] match a") << "[]abc]" <<  "a" << true;
@@ -844,7 +846,7 @@ void tst_QRegExp::testEscapingWildcard_data(){
 
     QTest::newRow("a true '\\' in input") << "\\Qt;" <<  "\\Qt;" << true;
     QTest::newRow("two true '\\' in input") << "\\\\Qt;" <<  "\\\\Qt;" << true;
-    QTest::newRow("a '\\' at the end") << "\\\\Qt;" <<  "\\\\Qt;" << true;
+    QTest::newRow("a '\\' at the end") << "\\\\Qt;\\" <<  "\\\\Qt;\\" << true;
 }
 
 void tst_QRegExp::testEscapingWildcard(){
@@ -1309,7 +1311,7 @@ void tst_QRegExp::posAndCapConsistency()
     QFETCH( QString, cap2 );
 
     QRegExp re(reStr);
-    QCOMPARE(re.numCaptures(), 2);
+    QCOMPARE(re.captureCount(), 2);
     QCOMPARE(re.capturedTexts().size(), 3);
 
     QCOMPARE(re.indexIn(text), matchIndex);

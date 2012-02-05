@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,12 +48,12 @@
 #endif
 
 #include <QtOpenGL/qgl.h>
+#include <QtGui/qopenglcontext.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(OpenGL)
 
 // Types that aren't defined in all system's gl.h files.
 typedef ptrdiff_t qgl_GLintptr;
@@ -451,6 +451,8 @@ inline void QGLFunctions::glBindBuffer(GLenum target, GLuint buffer)
 
 inline void QGLFunctions::glBindFramebuffer(GLenum target, GLuint framebuffer)
 {
+    if (framebuffer == 0)
+        framebuffer = QOpenGLContext::currentContext()->defaultFramebufferObject();
 #if defined(QT_OPENGL_ES_2)
     ::glBindFramebuffer(target, framebuffer);
 #else

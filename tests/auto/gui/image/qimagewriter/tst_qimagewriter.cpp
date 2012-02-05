@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -71,6 +71,7 @@ public:
 
 public slots:
     void init();
+    void initTestCase();
     void cleanup();
 
 private slots:
@@ -81,13 +82,6 @@ private slots:
     void writeImage2();
     void supportedFormats();
 
-    void readWriteNonDestructive_data();
-    void readWriteNonDestructive();
-
-#if defined QTEST_HAVE_TIFF
-    void largeTiff();
-#endif
-
     void writeToInvalidDevice();
 
     void supportsOption_data();
@@ -96,13 +90,16 @@ private slots:
     void saveWithNoFormat_data();
     void saveWithNoFormat();
 
-    void resolution_data();
-    void resolution();
-
     void saveToTemporaryFile();
+private:
+    QString prefix;
 };
 
-static const QLatin1String prefix(SRCDIR "/images/");
+// helper to skip an autotest when the given image format is not supported
+#define SKIP_IF_UNSUPPORTED(format) do {                                                          \
+    if (!QByteArray(format).isEmpty() && !QImageReader::supportedImageFormats().contains(format)) \
+        QSKIP("\"" + QByteArray(format) + "\" images are not supported");             \
+} while (0)
 
 static void initializePadding(QImage *image)
 {
@@ -113,6 +110,13 @@ static void initializePadding(QImage *image)
     for (int y = 0; y < image->height(); ++y) {
         qMemSet(image->scanLine(y) + effectiveBytesPerLine, 0, paddingBytes);
     }
+}
+
+void tst_QImageWriter::initTestCase()
+{
+    prefix = QFINDTESTDATA("images/");
+    if (prefix.isEmpty())
+        QFAIL("Can't find images directory!");
 }
 
 // Testing get/set functions
@@ -194,9 +198,6 @@ void tst_QImageWriter::writeImage_data()
     QTest::newRow("PBM: ship63") << QString("ship63.pbm") << true << QByteArray("pbm");
     QTest::newRow("XBM: gnus") << QString("gnus.xbm") << false << QByteArray("xbm");
     QTest::newRow("JPEG: beavis") << QString("beavis.jpg") << true << QByteArray("jpeg");
-#if defined QTEST_HAVE_TIFF
-    QTest::newRow("TIFF: teapot") << QString("teapot.tiff") << false << QByteArray("tiff");
-#endif
 }
 
 void tst_QImageWriter::writeImage()
@@ -204,6 +205,8 @@ void tst_QImageWriter::writeImage()
     QFETCH(QString, fileName);
     QFETCH(bool, lossy);
     QFETCH(QByteArray, format);
+
+    SKIP_IF_UNSUPPORTED(format);
 
     QImage image;
     {
@@ -217,15 +220,22 @@ void tst_QImageWriter::writeImage()
     }
 
     {
-        // Shouldn't be able to write to read-only file
-        QFile sourceFile(prefix + "gen-" + fileName);
-        QFile::Permissions permissions = sourceFile.permissions();
-        QVERIFY(sourceFile.setPermissions(QFile::ReadOwner | QFile::ReadUser | QFile::ReadGroup | QFile::ReadOther));
+        bool skip = false;
+#if defined(Q_OS_UNIX)
+        if (::geteuid() == 0)
+            skip = true;
+#endif
+        if (!skip) {
+            // Shouldn't be able to write to read-only file
+            QFile sourceFile(prefix + "gen-" + fileName);
+            QFile::Permissions permissions = sourceFile.permissions();
+            QVERIFY(sourceFile.setPermissions(QFile::ReadOwner | QFile::ReadUser | QFile::ReadGroup | QFile::ReadOther));
 
-        QImageWriter writer(prefix + "gen-" + fileName, format);
-        QVERIFY(!writer.write(image));
+            QImageWriter writer(prefix + "gen-" + fileName, format);
+            QVERIFY(!writer.write(image));
 
-        QVERIFY(sourceFile.setPermissions(permissions));
+            QVERIFY(sourceFile.setPermissions(permissions));
+        }
     }
 
     QImage image2;
@@ -267,41 +277,6 @@ void tst_QImageWriter::writeImage2_data()
         imgFormat = QImage::Format(int(imgFormat) + 1);
     }
 }
-
-#if defined QTEST_HAVE_TIFF
-void tst_QImageWriter::largeTiff()
-{
-#if !defined(Q_OS_WINCE)
-    QImage img(4096, 2048, QImage::Format_ARGB32);
-
-    QPainter p(&img);
-    img.fill(0x0);
-    p.fillRect(0, 0, 4096, 2048, QBrush(Qt::CrossPattern));
-    p.end();
-
-    QByteArray array;
-    QBuffer writeBuffer(&array);
-    writeBuffer.open(QIODevice::WriteOnly);
-
-    QImageWriter writer(&writeBuffer, "tiff");
-    QVERIFY(writer.write(img));
-
-    writeBuffer.close();
-
-    QBuffer readBuffer(&array);
-    readBuffer.open(QIODevice::ReadOnly);
-
-    QImageReader reader(&readBuffer, "tiff");
-
-    QImage img2 = reader.read();
-    QVERIFY(!img2.isNull());
-
-    QCOMPARE(img, img2);
-#else
-    QWARN("not tested on WinCE");
-#endif
-}
-#endif
 
 /*
     Workaround for the equality operator for indexed formats
@@ -377,39 +352,6 @@ void tst_QImageWriter::supportedFormats()
     QCOMPARE(formatSet.size(), formats.size());
 }
 
-void tst_QImageWriter::readWriteNonDestructive_data()
-{
-    QTest::addColumn<QImage::Format>("format");
-    QTest::addColumn<QImage::Format>("expectedFormat");
-    QTest::addColumn<bool>("grayscale");
-    QTest::newRow("tiff mono") << QImage::Format_Mono << QImage::Format_Mono << false;
-    QTest::newRow("tiff indexed") << QImage::Format_Indexed8 << QImage::Format_Indexed8 << false;
-    QTest::newRow("tiff rgb32") << QImage::Format_ARGB32 << QImage::Format_ARGB32 << false;
-    QTest::newRow("tiff grayscale") << QImage::Format_Indexed8 << QImage::Format_Indexed8 << true;
-}
-
-void tst_QImageWriter::readWriteNonDestructive()
-{
-    QFETCH(QImage::Format, format);
-    QFETCH(QImage::Format, expectedFormat);
-    QFETCH(bool, grayscale);
-    QImage image = QImage(prefix + "colorful.bmp").convertToFormat(format);
-
-    if (grayscale) {
-        QVector<QRgb> colors;
-        for (int i = 0; i < 256; ++i)
-            colors << qRgb(i, i, i);
-        image.setColorTable(colors);
-    }
-
-    QVERIFY(image.save(prefix + "gen-readWriteNonDestructive.tiff"));
-
-    QImage image2 = QImage(prefix + "gen-readWriteNonDestructive.tiff");
-    QImage::Format readFormat = image2.format();
-    QCOMPARE(readFormat, expectedFormat);
-    QCOMPARE(image, image2);
-}
-
 void tst_QImageWriter::writeToInvalidDevice()
 {
     QLatin1String fileName("/these/directories/do/not/exist/001.png");
@@ -449,15 +391,12 @@ void tst_QImageWriter::supportsOption_data()
                               << QImageIOHandler::Description
                               << QImageIOHandler::Quality
                               << QImageIOHandler::Size);
-#if defined QTEST_HAVE_TIFF
-    QTest::newRow("tiff") << QString("gen-black.tiff")
-                          << (QIntList() << QImageIOHandler::Size
-                              << QImageIOHandler::CompressionRatio);
-#endif
 }
 
 void tst_QImageWriter::supportsOption()
 {
+    SKIP_IF_UNSUPPORTED(QTest::currentDataTag());
+
     QFETCH(QString, fileName);
     QFETCH(QIntList, options);
 
@@ -500,9 +439,6 @@ void tst_QImageWriter::saveWithNoFormat_data()
     QTest::newRow("png") << prefix + QString("gen-out.png") << QByteArray("png") << QImageWriter::ImageWriterError(0);
     QTest::newRow("ppm") << prefix + QString("gen-out.ppm") << QByteArray("ppm") << QImageWriter::ImageWriterError(0);
     QTest::newRow("pbm") << prefix + QString("gen-out.pbm") << QByteArray("pbm") << QImageWriter::ImageWriterError(0);
-#if defined QTEST_HAVE_TIFF
-    QTest::newRow("tiff") << prefix + QString("gen-out.tiff") << QByteArray("tiff") << QImageWriter::ImageWriterError(0);
-#endif
 }
 
 void tst_QImageWriter::saveWithNoFormat()
@@ -510,6 +446,8 @@ void tst_QImageWriter::saveWithNoFormat()
     QFETCH(QString, fileName);
     QFETCH(QByteArray, format);
     QFETCH(QImageWriter::ImageWriterError, error);
+
+    SKIP_IF_UNSUPPORTED(format);
 
     QImage niceImage(64, 64, QImage::Format_ARGB32);
     qMemSet(niceImage.bits(), 0, niceImage.byteCount());
@@ -530,39 +468,6 @@ void tst_QImageWriter::saveWithNoFormat()
 
     QImage outImage = reader.read();
     QVERIFY2(!outImage.isNull(), qPrintable(reader.errorString()));
-}
-
-void tst_QImageWriter::resolution_data()
-{
-    QTest::addColumn<QString>("filename");
-    QTest::addColumn<int>("expectedDotsPerMeterX");
-    QTest::addColumn<int>("expectedDotsPerMeterY");
-#if defined QTEST_HAVE_TIFF
-    QTest::newRow("TIFF: 100 dpi") << ("image_100dpi.tif") << qRound(100 * (100 / 2.54)) << qRound(100 * (100 / 2.54));
-    QTest::newRow("TIFF: 50 dpi") << ("image_50dpi.tif") << qRound(50 * (100 / 2.54)) << qRound(50 * (100 / 2.54));
-    QTest::newRow("TIFF: 300 dot per meter") << ("image_300dpm.tif") << 300 << 300;
-#endif
-}
-
-void tst_QImageWriter::resolution()
-{
-    QFETCH(QString, filename);
-    QFETCH(int, expectedDotsPerMeterX);
-    QFETCH(int, expectedDotsPerMeterY);
-
-    QImage image(prefix + QLatin1String("colorful.bmp"));
-    image.setDotsPerMeterX(expectedDotsPerMeterX);
-    image.setDotsPerMeterY(expectedDotsPerMeterY);
-    const QString generatedFilepath = prefix + "gen-" + filename;
-    {
-        QImageWriter writer(generatedFilepath);
-        QVERIFY(writer.write(image));
-    }
-    QImageReader reader(generatedFilepath);
-    const QImage generatedImage = reader.read();
-
-    QCOMPARE(expectedDotsPerMeterX, generatedImage.dotsPerMeterX());
-    QCOMPARE(expectedDotsPerMeterY, generatedImage.dotsPerMeterY());
 }
 
 void tst_QImageWriter::saveToTemporaryFile()

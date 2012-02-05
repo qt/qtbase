@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -264,8 +264,6 @@ QString QFileInfoGatherer::translateDriveName(const QFileInfo &drive) const
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if (driveName.startsWith(QLatin1Char('/'))) // UNC host
         return drive.fileName();
-#endif
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     if (driveName.endsWith(QLatin1Char('/')))
         driveName.chop(1);
 #endif

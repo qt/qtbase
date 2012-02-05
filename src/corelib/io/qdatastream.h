@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class QByteArray;
 class QIODevice;
@@ -88,7 +87,7 @@ public:
         Qt_4_7 = Qt_4_6,
         Qt_4_8 = Qt_4_7,
         Qt_4_9 = Qt_4_8,
-        Qt_5_0 = Qt_4_8
+        Qt_5_0 = 13
 #if QT_VERSION >= 0x050100
 #error Add the datastream version for this Qt version
 #endif

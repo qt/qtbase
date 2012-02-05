@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -3169,7 +3169,7 @@ void QListView::currentChanged(const QModelIndex &current, const QModelIndex &pr
     if (QAccessible::isActive()) {
         if (current.isValid()) {
             int entry = visualIndex(current) + 1;
-            QAccessible::updateAccessibility(this, entry, QAccessible::Focus);
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, this, entry));
         }
     }
 #endif
@@ -3188,12 +3188,12 @@ void QListView::selectionChanged(const QItemSelection &selected,
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
             int entry = visualIndex(sel) + 1;
-            QAccessible::updateAccessibility(this, entry, QAccessible::Selection);
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, this, entry));
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
             int entry = visualIndex(desel) + 1;
-            QAccessible::updateAccessibility(this, entry, QAccessible::SelectionRemove);
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::SelectionRemove, this, entry));
         }
     }
 #endif

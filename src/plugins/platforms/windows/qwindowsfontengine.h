@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,10 +53,7 @@
 // We mean it.
 //
 
-// Enable access to HB_Face in harfbuzz includes included by qfontengine_p.h.
-#define QT_BUILD_GUI_LIB
 #include <QtGui/private/qfontengine_p.h>
-#undef QT_BUILD_GUI_LIB
 
 #include <QtGui/QImage>
 #include <QtCore/QSharedPointer>
@@ -118,7 +115,7 @@ public:
 
     virtual QImage alphaMapForGlyph(glyph_t t) { return alphaMapForGlyph(t, QTransform()); }
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &xform);
-    virtual QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform);
+    virtual QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, const QTransform &xform);
 
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
 

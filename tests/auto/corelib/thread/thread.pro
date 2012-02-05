@@ -9,6 +9,7 @@ SUBDIRS=\
     qsemaphore \
     qthread \
     qthreadonce \
+    qthreadpool \
     qthreadstorage \
     qwaitcondition \
     qwritelocker

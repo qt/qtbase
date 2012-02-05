@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -88,8 +88,6 @@ QT_BEGIN_NAMESPACE
    )
 
 // common DC for all fonts
-
-QT_BEGIN_NAMESPACE
 
 typedef BOOL (WINAPI *PtrGetCharWidthI)(HDC, UINT, UINT, LPWORD, LPINT);
 static PtrGetCharWidthI ptrGetCharWidthI = 0;
@@ -1096,7 +1094,7 @@ QImage QWindowsFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &xfo
 #define SPI_GETFONTSMOOTHINGCONTRAST           0x200C
 #define SPI_SETFONTSMOOTHINGCONTRAST           0x200D
 
-QImage QWindowsFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed, int margin, const QTransform &t)
+QImage QWindowsFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed, const QTransform &t)
 {
     HFONT font = hfont;
 
@@ -1104,6 +1102,7 @@ QImage QWindowsFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed, int margin
     SystemParametersInfo(SPI_GETFONTSMOOTHINGCONTRAST, 0, &contrast, 0);
     SystemParametersInfo(SPI_SETFONTSMOOTHINGCONTRAST, 0, (void *) 1000, 0);
 
+    int margin = glyphMargin(QFontEngineGlyphCache::Raster_RGBMask);
     QWindowsNativeImage *mask = drawGDIGlyph(font, glyph, margin, t, QImage::Format_RGB32);
     SystemParametersInfo(SPI_SETFONTSMOOTHINGCONTRAST, 0, (void *) contrast, 0);
 

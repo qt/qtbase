@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -71,15 +71,28 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
 
     GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),format);
 
-    m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, m_shareContext, TRUE);
-    if (!m_context && m_shareContext) {
-        // re-try without a shared glx context
-        m_shareContext = 0;
-        m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, 0, TRUE);
-    }
+    if (config) {
+        m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, m_shareContext, TRUE);
+        if (!m_context && m_shareContext) {
+            // re-try without a shared glx context
+            m_shareContext = 0;
+            m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, 0, TRUE);
+        }
 
-    if (m_context)
-        m_format = qglx_surfaceFormatFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
+        if (m_context)
+            m_format = qglx_surfaceFormatFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
+    } else {
+        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen), screen->screenNumber(), format);
+        if (!visualInfo)
+            qFatal("Could not initialize GLX");
+        m_context = glXCreateContext(DISPLAY_FROM_XCB(screen), visualInfo, m_shareContext, true);
+        if (!m_context && m_shareContext) {
+            // re-try without a shared glx context
+            m_shareContext = 0;
+            m_context = glXCreateContext(DISPLAY_FROM_XCB(screen), visualInfo, 0, true);
+        }
+        XFree(visualInfo);
+    }
 }
 
 QGLXContext::~QGLXContext()

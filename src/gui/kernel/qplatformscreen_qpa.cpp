@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -160,36 +160,15 @@ QDpi QPlatformScreen::logicalDpi() const
 }
 
 /*!
-    Reimplement this function in subclass to return the primary orientation
-    of the screen, i.e. the orientation the display controller or equivalent
-    expects.
-
-    The default implementation returns Qt::PortraitOrientation if the
-    geometry's height is greater or Qt::LandscapeOrientation if the geometry's
-    width is greater.
-*/
-Qt::ScreenOrientation QPlatformScreen::primaryOrientation() const
-{
-    return geometry().height() > geometry().width() ? Qt::PortraitOrientation :
-        Qt::LandscapeOrientation;
-}
-
-/*!
     Reimplement this function in subclass to return the current orientation
     of the screen, for example based on accelerometer data to determine
-    the physical screen orientation.
+    the device orientation.
 
-    The current orientation is only a hint to the application saying
-    what the preferred application orientation should be, the application
-    is free to limit itself to a certain set of supported orientations.
-
-    The default implementation returns the same as primaryOrientation().
-
-    \sa primaryOrientation()
+    The default implementation returns Qt::PrimaryOrientation.
 */
-Qt::ScreenOrientation QPlatformScreen::currentOrientation() const
+Qt::ScreenOrientation QPlatformScreen::orientation() const
 {
-    return primaryOrientation();
+    return Qt::PrimaryOrientation;
 }
 
 QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *window)

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -99,46 +99,46 @@ Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler();
 
 namespace {
 template<typename T>
-struct TypeDefiniton {
+struct TypeDefinition {
     static const bool IsAvailable = true;
 };
 // Ignore these types, as incomplete
 #ifdef QT_NO_GEOM_VARIANT
-template<> struct TypeDefiniton<QRect> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QRectF> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QSize> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QSizeF> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QLine> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QLineF> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QPoint> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QPointF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QRect> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QRectF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QSize> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QSizeF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QLine> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QLineF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QPoint> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QPointF> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_SHORTCUT
-template<> struct TypeDefiniton<QKeySequence> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QKeySequence> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_CURSOR
-template<> struct TypeDefiniton<QCursor> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QCursor> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_MATRIX4X4
-template<> struct TypeDefiniton<QMatrix4x4> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QMatrix4x4> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_VECTOR2D
-template<> struct TypeDefiniton<QVector2D> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QVector2D> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_VECTOR3D
-template<> struct TypeDefiniton<QVector3D> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QVector3D> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_VECTOR4D
-template<> struct TypeDefiniton<QVector4D> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QVector4D> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_QUATERNION
-template<> struct TypeDefiniton<QQuaternion> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QQuaternion> { static const bool IsAvailable = false; };
 #endif
 
 struct GuiTypesFilter {
     template<typename T>
     struct Acceptor {
-        static const bool IsAccepted = QTypeModuleInfo<T>::IsGui && TypeDefiniton<T>::IsAvailable;
+        static const bool IsAccepted = QTypeModuleInfo<T>::IsGui && TypeDefinition<T>::IsAvailable;
     };
 };
 } // namespace used to hide TypeDefinition

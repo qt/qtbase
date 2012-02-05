@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -64,7 +64,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QLayout;
 class QWSRegionManager;
@@ -91,7 +90,6 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QShowEvent;
 class QHideEvent;
-class QInputContext;
 class QIcon;
 class QBackingStore;
 class QPlatformWindow;
@@ -600,8 +598,6 @@ public:
 
     void ensurePolished() const;
 
-    QInputContext *inputContext();
-
     bool isAncestorOf(const QWidget *child) const;
 
 #ifdef QT_KEYPAD_NAVIGATION
@@ -661,19 +657,7 @@ protected:
 
     virtual void showEvent(QShowEvent *);
     virtual void hideEvent(QHideEvent *);
-
-#if defined(Q_WS_MAC)
-    virtual bool macEvent(EventHandlerCallRef, EventRef);
-#endif
-#if defined(Q_WS_WIN)
-    virtual bool winEvent(MSG *message, long *result);
-#endif
-#if defined(Q_WS_X11)
-    virtual bool x11Event(XEvent *);
-#endif
-#if defined(Q_WS_QWS)
-    virtual bool qwsEvent(QWSEvent *);
-#endif
+    virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 
     // Misc. protected functions
     virtual void changeEvent(QEvent *);

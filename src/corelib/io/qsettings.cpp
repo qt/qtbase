@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -68,16 +68,16 @@
 #include "qcoreapplication.h"
 #endif
 
-#ifdef Q_OS_WIN // for homedirpath reading from registry
-#include "qt_windows.h"
-#include <private/qsystemlibrary_p.h>
-#endif
-
 #ifdef Q_OS_VXWORKS
 #  include <ioLib.h>
 #endif
 
 #include <stdlib.h>
+
+#ifdef Q_OS_WIN // for homedirpath reading from registry
+#  include <private/qsystemlibrary_p.h>
+#  include <qt_windows.h>
+#endif
 
 #ifndef CSIDL_COMMON_APPDATA
 #define CSIDL_COMMON_APPDATA	0x0023  // All Users\Application Data
@@ -122,7 +122,9 @@ Q_GLOBAL_STATIC(ConfFileHash, usedHashFunc)
 Q_GLOBAL_STATIC(ConfFileCache, unusedCacheFunc)
 Q_GLOBAL_STATIC(PathHash, pathHashFunc)
 Q_GLOBAL_STATIC(CustomFormatVector, customFormatVectorFunc)
-Q_GLOBAL_STATIC(QMutex, globalMutex)
+
+static QBasicMutex settingsGlobalMutex;
+
 static QSettings::Format globalDefaultFormat = QSettings::NativeFormat;
 
 #ifndef Q_OS_WIN
@@ -277,7 +279,7 @@ QConfFile *QConfFile::fromName(const QString &fileName, bool _userPerms)
     ConfFileCache *unusedCache = unusedCacheFunc();
 
     QConfFile *confFile = 0;
-    QMutexLocker locker(globalMutex());
+    QMutexLocker locker(&settingsGlobalMutex);
 
     if (!(confFile = usedHash->value(absPath))) {
         if ((confFile = unusedCache->take(absPath)))
@@ -292,7 +294,7 @@ QConfFile *QConfFile::fromName(const QString &fileName, bool _userPerms)
 
 void QConfFile::clearCache()
 {
-    QMutexLocker locker(globalMutex());
+    QMutexLocker locker(&settingsGlobalMutex);
     unusedCacheFunc()->clear();
 }
 
@@ -992,7 +994,7 @@ void QConfFileSettingsPrivate::initFormat()
 #endif
 
     if (format > QSettings::IniFormat) {
-        QMutexLocker locker(globalMutex());
+        QMutexLocker locker(&settingsGlobalMutex);
         const CustomFormatVector *customFormatVector = customFormatVectorFunc();
 
         int i = (int)format - (int)QSettings::CustomFormat1;
@@ -1127,7 +1129,7 @@ static QString getPath(QSettings::Format format, QSettings::Scope scope)
     Q_ASSERT((int)QSettings::NativeFormat == 0);
     Q_ASSERT((int)QSettings::IniFormat == 1);
 
-    QMutexLocker locker(globalMutex());
+    QMutexLocker locker(&settingsGlobalMutex);
     PathHash *pathHash = pathHashFunc();
     if (pathHash->isEmpty())
         initDefaultPaths(&locker);
@@ -1195,7 +1197,7 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(const QString &fileName,
 
 QConfFileSettingsPrivate::~QConfFileSettingsPrivate()
 {
-    QMutexLocker locker(globalMutex());
+    QMutexLocker locker(&settingsGlobalMutex);
     ConfFileHash *usedHash = usedHashFunc();
     ConfFileCache *unusedCache = unusedCacheFunc();
 
@@ -3437,7 +3439,7 @@ void QSettings::setUserIniPath(const QString &dir)
 */
 void QSettings::setPath(Format format, Scope scope, const QString &path)
 {
-    QMutexLocker locker(globalMutex());
+    QMutexLocker locker(&settingsGlobalMutex);
     PathHash *pathHash = pathHashFunc();
     if (pathHash->isEmpty())
         initDefaultPaths(&locker);
@@ -3520,7 +3522,7 @@ QSettings::Format QSettings::registerFormat(const QString &extension, ReadFunc r
     Q_ASSERT(caseSensitivity == Qt::CaseSensitive);
 #endif
 
-    QMutexLocker locker(globalMutex());
+    QMutexLocker locker(&settingsGlobalMutex);
     CustomFormatVector *customFormatVector = customFormatVectorFunc();
     int index = customFormatVector->size();
     if (index == 16) // the QSettings::Format enum has room for 16 custom formats

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -397,14 +397,6 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
 }
 
 /*!
-    \fn QString QNetworkConfiguration::bearerName() const
-    \deprecated
-
-    This function is deprecated.  It is equivalent to calling bearerTypeName(), however
-    bearerType() should be used in preference.
-*/
-
-/*!
     Returns the type of bearer used by this network configuration.
 
     If the bearer type is \l {QNetworkConfiguration::BearerUnknown}{unknown} the bearerTypeName()
@@ -483,27 +475,26 @@ QString QNetworkConfiguration::bearerTypeName() const
         return QString();
 
     switch (d->bearerType) {
-    case BearerUnknown:
-        return d->bearerTypeName();
     case BearerEthernet:
-        return QLatin1String("Ethernet");
+        return QStringLiteral("Ethernet");
     case BearerWLAN:
-        return QLatin1String("WLAN");
+        return QStringLiteral("WLAN");
     case Bearer2G:
-        return QLatin1String("2G");
+        return QStringLiteral("2G");
     case BearerCDMA2000:
-        return QLatin1String("CDMA2000");
+        return QStringLiteral("CDMA2000");
     case BearerWCDMA:
-        return QLatin1String("WCDMA");
+        return QStringLiteral("WCDMA");
     case BearerHSPA:
-        return QLatin1String("HSPA");
+        return QStringLiteral("HSPA");
     case BearerBluetooth:
-        return QLatin1String("Bluetooth");
+        return QStringLiteral("Bluetooth");
     case BearerWiMAX:
-        return QLatin1String("WiMAX");
+        return QStringLiteral("WiMAX");
+    case BearerUnknown:
+        break;
     }
-
-    return QLatin1String("Unknown");
+    return QStringLiteral("Unknown");
 }
 
 QT_END_NAMESPACE

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,6 +57,8 @@ private slots:
     void touchToMouseTranslation();
     void mouseToTouchTranslation();
     void mouseToTouchLoop();
+    void orientation();
+    void close();
     void initTestCase()
     {
         touchDevice = new QTouchDevice;
@@ -246,16 +248,26 @@ public:
         keyReleaseCode = event->key();
     }
     void mousePressEvent(QMouseEvent *event) {
-        if (ignoreMouse)
+        if (ignoreMouse) {
             event->ignore();
-        else
+        } else {
             mousePressButton = event->button();
+            mousePressScreenPos = event->screenPos();
+        }
     }
     void mouseReleaseEvent(QMouseEvent *event) {
         if (ignoreMouse)
             event->ignore();
         else
             mouseReleaseButton = event->button();
+    }
+    void mouseMoveEvent(QMouseEvent *event) {
+        if (ignoreMouse) {
+            event->ignore();
+        } else {
+            mouseMoveButton = event->button();
+            mouseMoveScreenPos = event->screenPos();
+        }
     }
     void touchEvent(QTouchEvent *event) {
         if (ignoreTouch) {
@@ -285,7 +297,8 @@ public:
     }
 
     int keyPressCode, keyReleaseCode;
-    int mousePressButton, mouseReleaseButton;
+    int mousePressButton, mouseReleaseButton, mouseMoveButton;
+    QPointF mousePressScreenPos, mouseMoveScreenPos;
     int touchPressedCount, touchReleasedCount;
 
     bool ignoreMouse, ignoreTouch;
@@ -339,10 +352,23 @@ void tst_QWindow::touchToMouseTranslation()
 
     QList<QWindowSystemInterface::TouchPoint> points;
     QWindowSystemInterface::TouchPoint tp1, tp2;
+    const QRectF pressArea(101, 102, 4, 4);
+    const QRectF moveArea(105, 108, 4, 4);
     tp1.id = 1;
     tp1.state = Qt::TouchPointPressed;
+    tp1.area = pressArea;
     tp2.id = 2;
     tp2.state = Qt::TouchPointPressed;
+    points << tp1 << tp2;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    // Now an update but with changed list order. The mouse event should still
+    // be generated from the point with id 1.
+    tp1.id = 2;
+    tp1.state = Qt::TouchPointStationary;
+    tp2.id = 1;
+    tp2.state = Qt::TouchPointMoved;
+    tp2.area = moveArea;
+    points.clear();
     points << tp1 << tp2;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     points[0].state = Qt::TouchPointReleased;
@@ -352,6 +378,8 @@ void tst_QWindow::touchToMouseTranslation()
 
     QTRY_COMPARE(window.mousePressButton, int(Qt::LeftButton));
     QTRY_COMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
+    QTRY_COMPARE(window.mousePressScreenPos, pressArea.center());
+    QTRY_COMPARE(window.mouseMoveScreenPos, moveArea.center());
 
     window.mousePressButton = 0;
     window.mouseReleaseButton = 0;
@@ -453,6 +481,42 @@ void tst_QWindow::mouseToTouchLoop()
 
     qApp->setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, false);
     qApp->setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, false);
+}
+
+void tst_QWindow::orientation()
+{
+    QWindow window;
+    window.setGeometry(80, 80, 40, 40);
+    window.create();
+
+    window.reportContentOrientationChange(Qt::PortraitOrientation);
+    QCOMPARE(window.contentOrientation(), Qt::PortraitOrientation);
+
+    window.reportContentOrientationChange(Qt::PrimaryOrientation);
+    QCOMPARE(window.contentOrientation(), Qt::PrimaryOrientation);
+
+    QVERIFY(!window.requestWindowOrientation(Qt::LandscapeOrientation) || window.windowOrientation() == Qt::LandscapeOrientation);
+    QVERIFY(!window.requestWindowOrientation(Qt::PortraitOrientation) || window.windowOrientation() == Qt::PortraitOrientation);
+    QVERIFY(!window.requestWindowOrientation(Qt::PrimaryOrientation) || window.windowOrientation() == Qt::PrimaryOrientation);
+
+    QSignalSpy spy(&window, SIGNAL(contentOrientationChanged(Qt::ScreenOrientation)));
+    window.reportContentOrientationChange(Qt::LandscapeOrientation);
+    QCOMPARE(spy.count(), 1);
+}
+
+void tst_QWindow::close()
+{
+    QWindow a;
+    QWindow b;
+    QWindow c(&a);
+
+    a.show();
+    b.show();
+
+    // we can not close a non top level window
+    QVERIFY(!c.close());
+    QVERIFY(a.close());
+    QVERIFY(b.close());
 }
 
 #include <tst_qwindow.moc>

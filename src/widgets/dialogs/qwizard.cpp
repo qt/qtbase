@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -2975,11 +2975,7 @@ QSize QWizard::sizeHint() const
 {
     Q_D(const QWizard);
     QSize result = d->mainLayout->totalSizeHint();
-#ifdef Q_WS_S60
-    QSize extra(QApplication::desktop()->availableGeometry(QCursor::pos()).size());
-#else
     QSize extra(500, 360);
-#endif
     if (d->wizStyle == MacStyle && d->current != -1) {
         QSize pixmap(currentPage()->pixmap(BackgroundPixmap).size());
         extra.setWidth(616);
@@ -3205,16 +3201,17 @@ void QWizard::paintEvent(QPaintEvent * event)
 #endif
 }
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 /*!
     \reimp
 */
-bool QWizard::winEvent(MSG *message, long *result)
+bool QWizard::nativeEvent(const QByteArray &eventType, void *message, long *result)
 {
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
     Q_D(QWizard);
-    if (d->isVistaThemeEnabled()) {
-        const bool winEventResult = d->vistaHelper->handleWinEvent(message, result);
+    if (d->isVistaThemeEnabled() && eventType == QByteArrayLiteral("windows_generic_MSG")) {
+        MSG *windowsMessage = static_cast<MSG *>(message);
+        const bool winEventResult = d->vistaHelper->handleWinEvent(windowsMessage, result);
         if (QVistaHelper::vistaState() != d->vistaState) {
             d->vistaState = QVistaHelper::vistaState();
             d->vistaStateChanged = true;
@@ -3222,10 +3219,10 @@ bool QWizard::winEvent(MSG *message, long *result)
         }
         return winEventResult;
     } else {
-        return QDialog::winEvent(message, result);
+        return QDialog::nativeEvent(eventType, message, result);
     }
 #else
-    return QDialog::winEvent(message, result);
+    return QDialog::nativeEvent(eventType, message, result);
 #endif
 }
 #endif

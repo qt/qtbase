@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -63,6 +63,7 @@ QT_BEGIN_NAMESPACE
 #if !defined(QT_NO_NETWORKPROXY) && !defined(QT_NO_HTTP)
 
 class QTcpSocket;
+class QHttpNetworkReply;
 class QHttpSocketEnginePrivate;
 
 class Q_AUTOTEST_EXPORT QHttpSocketEngine : public QAbstractSocketEngine
@@ -171,7 +172,7 @@ public:
     QNetworkProxy proxy;
     QString peerName;
     QTcpSocket *socket;
-    QByteArray readBuffer; // only used for parsing the proxy response
+    QHttpNetworkReply *reply; // only used for parsing the proxy response
     QHttpSocketEngine::HttpState state;
     QAuthenticator authenticator;
     bool readNotificationEnabled;

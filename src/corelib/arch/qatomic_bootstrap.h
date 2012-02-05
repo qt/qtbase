@@ -1,8 +1,8 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Copyright (C) 2011 Thiago Macieira <thiago@kde.org>
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +35,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,76 +43,54 @@
 #ifndef QATOMIC_BOOTSTRAP_H
 #define QATOMIC_BOOTSTRAP_H
 
+#include <QtCore/qgenericatomic.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-inline bool QBasicAtomicInt::ref()
-{
-    return ++_q_value != 0;
-}
+#if 0
+#pragma qt_sync_stop_processing
+#endif
 
-inline bool QBasicAtomicInt::deref()
+template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
+template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
 {
-    return --_q_value != 0;
-}
+    typedef T Type;
 
-inline bool QBasicAtomicInt::testAndSetOrdered(int expectedValue, int newValue)
-{
-    if (_q_value == expectedValue) {
-        _q_value = newValue;
-        return true;
+    static bool ref(T &_q_value)
+    {
+        return ++_q_value != 0;
     }
-    return false;
-}
-
-inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-inline int QBasicAtomicInt::fetchAndAddOrdered(int valueToAdd)
-{
-    int returnValue = _q_value;
-    _q_value += valueToAdd;
-    return returnValue;
-}
-
-inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValue, T *newValue)
-{
-    if (_q_value == expectedValue) {
-        _q_value = newValue;
-        return true;
+    static bool deref(T &_q_value)
+    {
+        return --_q_value != 0;
     }
-    return false;
-}
+
+    static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+    {
+        if (_q_value == expectedValue) {
+            _q_value = newValue;
+            return true;
+        }
+        return false;
+    }
+
+    static T fetchAndStoreRelaxed(T &_q_value, T newValue)
+    {
+        T tmp = _q_value;
+        _q_value = newValue;
+        return tmp;
+    }
+
+    static
+    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+    {
+        T returnValue = _q_value;
+        _q_value += valueToAdd;
+        return returnValue;
+    }
+};
 
 QT_END_NAMESPACE
 

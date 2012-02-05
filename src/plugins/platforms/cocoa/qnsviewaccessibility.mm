@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -75,7 +75,7 @@
         int numKids = m_accessibleRoot->childCount();
         NSMutableArray *kids = [NSMutableArray arrayWithCapacity:numKids];
         for (int i = 0; i < numKids; ++i) {
-            [kids addObject:[QCocoaAccessibleElement elementWithIndex:i parent:self accessibleInterface:(void*)m_accessibleRoot->child(i)]];
+            [kids addObject:[QCocoaAccessibleElement elementWithInterface: m_accessibleRoot->child(i) parent:self ]];
         }
 
         return NSAccessibilityUnignoredChildren(kids);
@@ -96,8 +96,8 @@
     }
 
     // Hit a child, forward to child accessible interface.
-    int childIndex = m_accessibleRoot->indexOfChild(childInterface);
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:childIndex -1 parent:self accessibleInterface: childInterface];
+
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithInterface: childInterface parent:self ];
     return [accessibleElement accessibilityHitTest:point];
 }
 

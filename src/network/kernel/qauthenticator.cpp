@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,7 +45,6 @@
 #include <qhash.h>
 #include <qbytearray.h>
 #include <qcryptographichash.h>
-#include <private/qhttpheader_p.h>
 #include <qiodevice.h>
 #include <qdatastream.h>
 #include <qendian.h>
@@ -338,21 +337,6 @@ QAuthenticatorPrivate::QAuthenticatorPrivate()
                                       QCryptographicHash::Md5).toHex();
     nonceCount = 0;
 }
-
-#ifndef QT_NO_HTTP
-void QAuthenticatorPrivate::parseHttpResponse(const QHttpResponseHeader &header, bool isProxy)
-{
-    const QList<QPair<QString, QString> > values = header.values();
-    QList<QPair<QByteArray, QByteArray> > rawValues;
-
-    QList<QPair<QString, QString> >::const_iterator it, end;
-    for (it = values.constBegin(), end = values.constEnd(); it != end; ++it)
-        rawValues.append(qMakePair(it->first.toLatin1(), it->second.toUtf8()));
-
-    // continue in byte array form
-    parseHttpResponse(rawValues, isProxy);
-}
-#endif
 
 void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray> > &values, bool isProxy)
 {

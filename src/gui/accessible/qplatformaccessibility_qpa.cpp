@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,6 +44,8 @@
 #include "qaccessibleobject.h"
 #include "qaccessiblebridge.h"
 #include <QtGui/QGuiApplication>
+
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -73,33 +75,15 @@ QPlatformAccessibility::~QPlatformAccessibility()
 {
 }
 
-void QPlatformAccessibility::notifyAccessibilityUpdate(QObject *o,
-                                                       int who,
-                                                       QAccessible::Event reason)
+void QPlatformAccessibility::notifyAccessibilityUpdate(const QAccessibleEvent &event)
 {
     initialize();
 
     if (!bridges() || bridges()->isEmpty())
         return;
 
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(o);
-    if (!iface)
-        return;
-
-    // updates for List/Table/Tree should send child
-    if (who) {
-        QAccessibleInterface *child = iface->child(who - 1);
-        if (child) {
-            delete iface;
-            iface = child;
-            who = 0;
-        }
-    }
-
     for (int i = 0; i < bridges()->count(); ++i)
-        bridges()->at(i)->notifyAccessibilityUpdate(reason, iface, who);
-    delete iface;
-
+        bridges()->at(i)->notifyAccessibilityUpdate(event);
 }
 
 void QPlatformAccessibility::setRootObject(QObject *o)

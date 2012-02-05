@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,6 +45,8 @@
 #include <QtCore/QList>
 #include <QtPrintSupport/QPlatformPrinterSupport>
 
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
 
 class QWin32PrintEngine;
 
@@ -64,5 +66,8 @@ private:
     QList<QPrinterInfo> mPrinterList;
     QPrinter::PrinterMode mCurrentMode;
 };
+
+QT_END_NAMESPACE
+QT_END_HEADER
 
 #endif // WINDOWSPRINTERSUPPORT_H

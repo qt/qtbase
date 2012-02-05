@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1143,7 +1143,7 @@ QByteArray &QByteArray::operator=(const char *str)
     \overload
 */
 
-/*! \fn QBool QByteArray::contains(const QByteArray &ba) const
+/*! \fn bool QByteArray::contains(const QByteArray &ba) const
 
     Returns true if the byte array contains an occurrence of the byte
     array \a ba; otherwise returns false.
@@ -1151,7 +1151,7 @@ QByteArray &QByteArray::operator=(const char *str)
     \sa indexOf(), count()
 */
 
-/*! \fn QBool QByteArray::contains(const char *str) const
+/*! \fn bool QByteArray::contains(const char *str) const
 
     \overload
 
@@ -1159,7 +1159,7 @@ QByteArray &QByteArray::operator=(const char *str)
     otherwise returns false.
 */
 
-/*! \fn QBool QByteArray::contains(char ch) const
+/*! \fn bool QByteArray::contains(char ch) const
 
     \overload
 
@@ -2660,7 +2660,7 @@ QByteArray QByteArray::right(int len) const
 
 QByteArray QByteArray::mid(int pos, int len) const
 {
-    if (d == &shared_null.ba || d == &shared_empty.ba || pos >= d->size)
+    if (d == &shared_null.ba || d == &shared_empty.ba || pos > d->size)
         return QByteArray();
     if (len < 0)
         len = d->size - pos;

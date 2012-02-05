@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,14 +55,14 @@ class tst_QInputDialog : public QObject
     QWidget *parent;
     QDialog::DialogCode doneCode;
     void (*testFunc)(QInputDialog *);
-    static void testFuncGetInteger(QInputDialog *dialog);
+    static void testFuncGetInt(QInputDialog *dialog);
     static void testFuncGetDouble(QInputDialog *dialog);
     static void testFuncGetText(QInputDialog *dialog);
     static void testFuncGetItem(QInputDialog *dialog);
     void timerEvent(QTimerEvent *event);
 private slots:
-    void getInteger_data();
-    void getInteger();
+    void getInt_data();
+    void getInt();
     void getDouble_data();
     void getDouble();
     void task255502getDouble();
@@ -222,7 +222,7 @@ void testGetItem(QInputDialog *dialog)
     QVERIFY(okButton->isEnabled());
 }
 
-void tst_QInputDialog::testFuncGetInteger(QInputDialog *dialog)
+void tst_QInputDialog::testFuncGetInt(QInputDialog *dialog)
 {
     testGetNumeric<QSpinBox, int>(dialog);
 }
@@ -252,29 +252,29 @@ void tst_QInputDialog::timerEvent(QTimerEvent *event)
     dialog->done(doneCode); // cause static function call to return
 }
 
-void tst_QInputDialog::getInteger_data()
+void tst_QInputDialog::getInt_data()
 {
     QTest::addColumn<int>("min");
     QTest::addColumn<int>("max");
-    QTest::newRow("getInteger() - -") << -20 << -10;
-    QTest::newRow("getInteger() - 0") << -20 <<   0;
-    QTest::newRow("getInteger() - +") << -20 <<  20;
-    QTest::newRow("getInteger() 0 +") <<   0 <<  20;
-    QTest::newRow("getInteger() + +") <<  10 <<  20;
+    QTest::newRow("getInt() - -") << -20 << -10;
+    QTest::newRow("getInt() - 0") << -20 <<   0;
+    QTest::newRow("getInt() - +") << -20 <<  20;
+    QTest::newRow("getInt() 0 +") <<   0 <<  20;
+    QTest::newRow("getInt() + +") <<  10 <<  20;
 }
 
-void tst_QInputDialog::getInteger()
+void tst_QInputDialog::getInt()
 {
     QFETCH(int, min);
     QFETCH(int, max);
     QVERIFY(min < max);
     parent = new QWidget;
     doneCode = QDialog::Accepted;
-    testFunc = &tst_QInputDialog::testFuncGetInteger;
+    testFunc = &tst_QInputDialog::testFuncGetInt;
     startTimer(0);
     bool ok = false;
     const int value = min + (max - min) / 2;
-    const int result = QInputDialog::getInteger(parent, "", "", value, min, max, 1, &ok);
+    const int result = QInputDialog::getInt(parent, "", "", value, min, max, 1, &ok);
     QVERIFY(ok);
     QCOMPARE(result, value);
     delete parent;

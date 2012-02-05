@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,9 +60,6 @@
 #ifndef QT_NO_ACCESSIBILITY
 # include "qaccessible.h"
 #endif
-#if defined(Q_WS_WIN)
-# include "qt_windows.h"
-#endif
 #ifdef Q_WS_MAC
 # include "qt_mac_p.h"
 # include "qt_cocoa_helpers_mac_p.h"
@@ -78,10 +75,9 @@
 #include "qdebug.h"
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
-#include "qinputcontext.h"
 #include "qfileinfo.h"
 #include "private/qsoftkeymanager_p.h"
-#include <QtGui/qinputpanel.h>
+#include <QtGui/qinputmethod.h>
 
 #include <private/qgraphicseffect_p.h>
 #include <qbackingstore.h>
@@ -92,6 +88,7 @@
 #include <private/qpaintengine_raster_p.h>
 
 #include "qwidget_p.h"
+#include <QtGui/private/qwindow_p.h>
 #include "qaction_p.h"
 #include "qlayout_p.h"
 #include "QtWidgets/qgraphicsproxywidget.h"
@@ -107,9 +104,6 @@
 #include "qtabwidget.h" // Needed in inTabWidget()
 #endif // QT_KEYPAD_NAVIGATION
 
-#ifdef Q_WS_S60
-#include <aknappui.h>
-#endif
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -355,30 +349,12 @@ void QWidgetPrivate::scrollChildren(int dx, int dy)
 void QWidgetPrivate::updateWidgetTransform()
 {
     Q_Q(QWidget);
-    if (q == qApp->inputPanel()->inputItem()) {
+    if (q == qGuiApp->focusObject()) {
         QTransform t;
         QPoint p = q->mapTo(q->topLevelWidget(), QPoint(0,0));
         t.translate(p.x(), p.y());
-        qApp->inputPanel()->setInputItemTransform(t);
+        qApp->inputMethod()->setInputItemTransform(t);
     }
-}
-
-/*!
-    This function returns the QInputContext for this widget. By
-    default the input context is inherited from the widgets
-    parent. For toplevels it is inherited from QApplication.
-
-    You can override this and set a special input context for this
-    widget by using the setInputContext() method.
-
-    \sa setInputContext()
-*/
-QInputContext *QWidget::inputContext()
-{
-    if (!testAttribute(Qt::WA_InputMethodEnabled))
-        return 0;
-
-    return qApp->inputContext();
 }
 
 #ifdef QT_KEYPAD_NAVIGATION
@@ -407,8 +383,7 @@ bool QWidget::hasEditFocus() const
     normally; otherwise, Qt::Key_Up and Qt::Key_Down are used to
     change focus.
 
-    This feature is only available in Qt for Embedded Linux and Qt
-    for Symbian.
+    This feature is only available in Qt for Embedded Linux.
 
     \sa hasEditFocus(), QApplication::keypadNavigationEnabled()
 */
@@ -2052,14 +2027,6 @@ void QWidgetPrivate::updateIsOpaque()
     }
 #endif
 
-#ifdef Q_WS_S60
-    if (q->windowType() == Qt::Dialog && q->testAttribute(Qt::WA_TranslucentBackground)
-                && S60->avkonComponentsSupportTransparency) {
-        setOpaque(false);
-        return;
-    }
-#endif
-
     if (q->testAttribute(Qt::WA_OpaquePaintEvent) || q->testAttribute(Qt::WA_PaintOnScreen)) {
         setOpaque(true);
         return;
@@ -2126,11 +2093,6 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrus
         extern void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush);
         qt_mac_fill_background(painter, rgn, brush);
 #else
-#if !defined(QT_NO_STYLE_S60)
-        // Defined in qs60style.cpp
-        extern bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush);
-        if (!qt_s60_fill_background(painter, rgn, brush))
-#endif // !defined(QT_NO_STYLE_S60)
         {
             const QRect rect(rgn.boundingRect());
             painter->setClipRegion(rgn);
@@ -3125,10 +3087,10 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 
         if (enable) {
             if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
-                qApp->inputPanel()->setInputItem(focusWidget);
+                qApp->inputMethod()->update(Qt::ImEnabled);
         } else {
-            qApp->inputPanel()->reset();
-            qApp->inputPanel()->setInputItem(0);
+            qApp->inputMethod()->reset();
+            qApp->inputMethod()->update(Qt::ImEnabled);
         }
     }
 #endif //QT_NO_IM
@@ -6003,7 +5965,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
         // menus update the focus manually and this would create bogus events
         if (!(f->inherits("QMenuBar") || f->inherits("QMenu") || f->inherits("QMenuItem")))
 # endif
-            QAccessible::updateAccessibility(f, 0, QAccessible::Focus);
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, f, 0));
 #endif
 #ifndef QT_NO_GRAPHICSVIEW
         if (QWExtra *topData = window()->d_func()->extra) {
@@ -6083,7 +6045,7 @@ void QWidget::clearFocus()
 #endif
         {
 #ifndef QT_NO_ACCESSIBILITY
-            QAccessible::updateAccessibility(this, 0, QAccessible::Focus);
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, this, 0));
 #endif
         }
     }
@@ -7090,7 +7052,7 @@ void QWidgetPrivate::show_helper()
 
 #ifndef QT_NO_ACCESSIBILITY
     if (q->windowType() != Qt::ToolTip)     // Tooltips are read aloud twice in MS narrator.
-        QAccessible::updateAccessibility(q, 0, QAccessible::ObjectShow);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ObjectShow, q, 0));
 #endif
 
     if (QApplicationPrivate::hidden_focus_widget == q) {
@@ -7181,7 +7143,7 @@ void QWidgetPrivate::hide_helper()
 
 #ifndef QT_NO_ACCESSIBILITY
     if (wasVisible)
-        QAccessible::updateAccessibility(q, 0, QAccessible::ObjectHide);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ObjectHide, q, 0));
 #endif
 }
 
@@ -7416,7 +7378,7 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
         qApp->d_func()->sendSyntheticEnterLeave(widget);
 #ifndef QT_NO_ACCESSIBILITY
         if (!spontaneous)
-            QAccessible::updateAccessibility(widget, 0, QAccessible::ObjectHide);
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ObjectHide, widget, 0));
 #endif
     }
 }
@@ -7451,22 +7413,10 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
     // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
     quitOnClose = quitOnClose && (parentWidget.isNull() || !parentWidget->isVisible());
 
-    if (quitOnClose) {
-        /* if there is no non-withdrawn primary window left (except
-           the ones without QuitOnClose), we emit the lastWindowClosed
-           signal */
-        QWidgetList list = QApplication::topLevelWidgets();
-        bool lastWindowClosed = true;
-        for (int i = 0; i < list.size(); ++i) {
-            QWidget *w = list.at(i);
-            if (!w->isVisible() || w->parentWidget() || !w->testAttribute(Qt::WA_QuitOnClose))
-                continue;
-            lastWindowClosed = false;
-            break;
-        }
-        if (lastWindowClosed)
-            QApplicationPrivate::emitLastWindowClosed();
+    if (quitOnClose && q->windowHandle()) {
+        static_cast<QWindowPrivate*>(QObjectPrivate::get(q->windowHandle()))->maybeQuitOnLastWindowClosed();
     }
+
 
     if (!that.isNull()) {
         data.is_closing = 0;
@@ -7929,6 +7879,8 @@ bool QWidget::event(QEvent *event)
                 Qt::InputMethodQuery q = (Qt::InputMethodQuery)(int)(queries & (1<<i));
                 if (q) {
                     QVariant v = inputMethodQuery(q);
+                    if (q == Qt::ImEnabled && !v.isValid() && isEnabled())
+                        v = QVariant(true); // special case for Qt4 compatibility
                     query->setValue(q, v);
                 }
             }
@@ -8280,7 +8232,7 @@ void QWidget::changeEvent(QEvent * event)
     case QEvent::EnabledChange:
         update();
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(this, 0, QAccessible::StateChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::StateChanged, this, 0));
 #endif
         break;
 
@@ -8781,7 +8733,7 @@ void QWidget::inputMethodEvent(QInputMethodEvent *event)
 
     \a query specifies which property is queried.
 
-    \sa inputMethodEvent(), QInputMethodEvent, QInputContext, inputMethodHints
+    \sa inputMethodEvent(), QInputMethodEven, inputMethodHints
 */
 QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 {
@@ -8819,7 +8771,7 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 
     \since 4.6
 
-    \sa inputMethodQuery(), QInputContext
+    \sa inputMethodQuery()
 */
 Qt::InputMethodHints QWidget::inputMethodHints() const
 {
@@ -8840,7 +8792,7 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 #ifndef QT_NO_IM
     Q_D(QWidget);
     d->imHints = hints;
-    qApp->inputPanel()->update(Qt::ImHints);
+    qApp->inputMethod()->update(Qt::ImHints);
 #endif //QT_NO_IM
 }
 
@@ -8961,110 +8913,35 @@ void QWidget::hideEvent(QHideEvent *)
 {
 }
 
-/*
-    \fn QWidget::x11Event(MSG *)
+/*!
+    This special event handler can be reimplemented in a subclass to
+    receive native platform events identified by \a eventType
+    which are passed in the \a message parameter.
 
-    This special event handler can be reimplemented in a subclass to receive
-    native X11 events.
-
-    In your reimplementation of this function, if you want to stop Qt from
-    handling the event, return true. If you return false, this native event
-    is passed back to Qt, which translates it into a Qt event and sends it to
-    the widget.
+    In your reimplementation of this function, if you want to stop the
+    event being handled by Qt, return true and set \a result.
+    If you return false, this native event is passed back to Qt,
+    which translates the event into a Qt event and sends it to the widget.
 
     \note Events are only delivered to this event handler if the widget is
-    native.
+    has a native Window handle.
 
-    \warning This function is not portable.
+    \note This function superseedes the event filter functions
+    x11Event(), winEvent() and macEvent() of Qt 4.
 
-    \sa QApplication::x11EventFilter(), QWidget::winId()
+    \table
+    \header \i Platform \i Event Type Identifier \i Message Type \i Result Type
+    \row \i Windows \i "windows_generic_MSG" \i MSG * \i LRESULT
+    \endtable
 */
 
-
-#if defined(Q_WS_MAC)
-
-/*!
-    \fn bool QWidget::macEvent(EventHandlerCallRef caller, EventRef event)
-
-    This special event handler can be reimplemented in a subclass to
-    receive native Macintosh events.
-
-    The parameters are a bit different depending if Qt is build against Carbon
-    or Cocoa.  In Carbon, \a caller and \a event are the corresponding
-    EventHandlerCallRef and EventRef that correspond to the Carbon event
-    handlers that are installed. In Cocoa, \a caller is always 0 and the
-    EventRef is the EventRef generated from the NSEvent.
-
-    In your reimplementation of this function, if you want to stop the
-    event being handled by Qt, return true. If you return false, this
-    native event is passed back to Qt, which translates the event into
-    a Qt event and sends it to the widget.
-
-    \warning This function is not portable.
-
-    \warning This function was not called inside of Qt until Qt 4.4.
-    If you need compatibility with earlier versions of Qt, consider QApplication::macEventFilter() instead.
-
-    \sa QApplication::macEventFilter()
-*/
-
-bool QWidget::macEvent(EventHandlerCallRef, EventRef)
+bool QWidget::nativeEvent(const QByteArray &eventType, void *message, long *result)
 {
-    return false;
-}
-
-#endif
-#if defined(Q_WS_WIN)
-
-/*!
-    This special event handler can be reimplemented in a subclass to
-    receive native Windows events which are passed in the \a message
-    parameter.
-
-    In your reimplementation of this function, if you want to stop the
-    event being handled by Qt, return true and set \a result to the value
-    that the window procedure should return. If you return false, this
-    native event is passed back to Qt, which translates the event into
-    a Qt event and sends it to the widget.
-
-    \warning This function is not portable.
-
-    \sa QApplication::winEventFilter()
-*/
-bool QWidget::winEvent(MSG *message, long *result)
-{
+    Q_UNUSED(eventType);
     Q_UNUSED(message);
     Q_UNUSED(result);
     return false;
 }
-
-#endif
-#if defined(Q_WS_X11)
-
-/*!
-    \fn bool QWidget::x11Event(XEvent *event)
-
-    This special event handler can be reimplemented in a subclass to receive
-    native X11 events passed in the \a event parameter.
-
-    In your reimplementation of this function, if you want to stop Qt from
-    handling the event, return true. If you return false, this native event
-    is passed back to Qt, which translates it into a Qt event and sends it to
-    the widget.
-
-    \note Events are only delivered to this event handler if the widget is
-    native.
-
-    \warning This function is not portable.
-
-    \sa QApplication::x11EventFilter(), QWidget::winId()
-*/
-bool QWidget::x11Event(XEvent *)
-{
-    return false;
-}
-
-#endif
 
 /*!
     Ensures that the widget has been polished by QStyle (i.e., has a
@@ -10134,8 +10011,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         QWidget *focusWidget = d->effectiveFocusWidget();
         if (on && !internalWinId() && hasFocus()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            qApp->inputPanel()->reset();
-            qApp->inputPanel()->setInputItem(0);
+            qApp->inputMethod()->reset();
+            qApp->inputMethod()->update(Qt::ImEnabled);
         }
         if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget()
 #ifdef Q_WS_MAC
@@ -10149,7 +10026,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->createWinId();
         if (isEnabled() && focusWidget->isEnabled()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            qApp->inputPanel()->setInputItem(focusWidget);
+            qApp->inputMethod()->update(Qt::ImEnabled);
         }
 #endif //QT_NO_IM
         break;
@@ -10182,13 +10059,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_InputMethodEnabled: {
 #ifndef QT_NO_IM
-        QWidget *focusWidget = d->effectiveFocusWidget();
-        if (on && hasFocus() && isEnabled()
-            && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            qApp->inputPanel()->setInputItem(focusWidget);
-        } else if (!on && qApp->inputPanel()->inputItem() == focusWidget) {
-            qApp->inputPanel()->reset();
-            qApp->inputPanel()->setInputItem(0);
+        if (qApp->focusObject() == this) {
+            if (!on)
+                qApp->inputMethod()->reset();
+            qApp->inputMethod()->update(Qt::ImEnabled);
         }
 #endif //QT_NO_IM
         break;
@@ -10490,7 +10364,7 @@ void QWidget::setAccessibleName(const QString &name)
 {
     Q_D(QWidget);
     d->accessibleName = name;
-    QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this, 0));
 }
 
 QString QWidget::accessibleName() const
@@ -10512,7 +10386,7 @@ void QWidget::setAccessibleDescription(const QString &description)
 {
     Q_D(QWidget);
     d->accessibleDescription = description;
-    QAccessible::updateAccessibility(this, 0, QAccessible::DescriptionChanged);
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::DescriptionChanged, this, 0));
 }
 
 QString QWidget::accessibleDescription() const
@@ -10614,18 +10488,16 @@ void QWidget::setShortcutAutoRepeat(int id, bool enable)
 
 /*!
     Updates the widget's micro focus.
-
-    \sa QInputContext
 */
 void QWidget::updateMicroFocus()
 {
     // updating everything since this is currently called for any kind of state change
-    qApp->inputPanel()->update(Qt::ImQueryAll);
+    qApp->inputMethod()->update(Qt::ImQueryAll);
 
 #ifndef QT_NO_ACCESSIBILITY
     if (isVisible()) {
         // ##### is this correct
-        QAccessible::updateAccessibility(this, 0, QAccessible::StateChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::StateChanged, this, 0));
     }
 #endif
 }

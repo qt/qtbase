@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -726,14 +726,6 @@ void tst_QDateTime::addSecs_data()
     QTest::newRow("toPositive") << QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59), Qt::UTC)
                                 << 1
                                 << QDateTime(QDate(1, 1, 1), QTime(0, 0, 0), Qt::UTC);
-
-    // Gregorian/Julian switchover
-    QTest::newRow("toGregorian") << QDateTime(QDate(1582, 10, 4), QTime(23, 59, 59))
-                                 << 1
-                                 << QDateTime(QDate(1582, 10, 15), QTime(0, 0, 0));
-    QTest::newRow("toJulian") << QDateTime(QDate(1582, 10, 15), QTime(0, 0, 0))
-                              << -1
-                              << QDateTime(QDate(1582, 10, 4), QTime(23, 59, 59));
 }
 
 void tst_QDateTime::addSecs()
@@ -883,22 +875,22 @@ void tst_QDateTime::daysTo()
     QDateTime dt2(QDate(1760, 2, 2), QTime());
     QDateTime dt3(QDate(1760, 3, 2), QTime());
 
-    QCOMPARE(dt1.daysTo(dt2), 31);
+    QCOMPARE(dt1.daysTo(dt2), (qint64) 31);
     QCOMPARE(dt1.addDays(31), dt2);
 
-    QCOMPARE(dt2.daysTo(dt3), 29);
+    QCOMPARE(dt2.daysTo(dt3), (qint64) 29);
     QCOMPARE(dt2.addDays(29), dt3);
 
-    QCOMPARE(dt1.daysTo(dt3), 60);
+    QCOMPARE(dt1.daysTo(dt3), (qint64) 60);
     QCOMPARE(dt1.addDays(60), dt3);
 
-    QCOMPARE(dt2.daysTo(dt1), -31);
+    QCOMPARE(dt2.daysTo(dt1), (qint64) -31);
     QCOMPARE(dt2.addDays(-31), dt1);
 
-    QCOMPARE(dt3.daysTo(dt2), -29);
+    QCOMPARE(dt3.daysTo(dt2), (qint64) -29);
     QCOMPARE(dt3.addDays(-29), dt2);
 
-    QCOMPARE(dt3.daysTo(dt1), -60);
+    QCOMPARE(dt3.daysTo(dt1), (qint64) -60);
     QCOMPARE(dt3.addDays(-60), dt1);
 }
 

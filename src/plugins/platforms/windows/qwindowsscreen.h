@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,12 @@ QT_BEGIN_NAMESPACE
 
 struct QWindowsScreenData
 {
+    enum Flags
+    {
+        PrimaryScreen = 0x1,
+        VirtualDesktop = 0x2
+    };
+
     QWindowsScreenData();
 
     QRect geometry;
@@ -60,7 +66,9 @@ struct QWindowsScreenData
     QSizeF physicalSizeMM;
     int depth;
     QImage::Format format;
-    bool primary;
+    unsigned flags;
+    QString name;
+    Qt::ScreenOrientation orientation;
 };
 
 class QWindowsScreen : public QPlatformScreen
@@ -76,7 +84,9 @@ public:
     virtual QImage::Format format() const { return m_data.format; }
     virtual QSizeF physicalSize() const { return m_data.physicalSizeMM; }
     virtual QDpi logicalDpi() const { return m_data.dpi; }
-
+    virtual QString name() const { return m_data.name; }
+    virtual Qt::ScreenOrientation primaryOrientation() { return m_data.orientation; }
+    virtual QList<QPlatformScreen *> virtualSiblings() const;
     virtual QWindow *topLevelAt(const QPoint &point) const
         {  return QWindowsScreen::findTopLevelAt(point, CWP_SKIPINVISIBLE);  }
 
@@ -84,16 +94,38 @@ public:
     static QWindow *windowAt(const QPoint &point, unsigned flags = CWP_SKIPINVISIBLE);
     static QWindow *windowUnderMouse(unsigned flags = CWP_SKIPINVISIBLE);
 
-    static QList<QPlatformScreen *> screens();
-
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
-    const QWindowsCursor &cursor() const { return m_cursor; }
-    QWindowsCursor &cursor() { return m_cursor; }
+    inline void handleChanges(const QWindowsScreenData &newData);
+
+    const QWindowsCursor &cursor() const    { return m_cursor; }
+    QWindowsCursor &cursor()                { return m_cursor; }
+
+    const QWindowsScreenData &data() const  { return m_data; }
 
 private:
-    const QWindowsScreenData m_data;
+    QWindowsScreenData m_data;
     QWindowsCursor m_cursor;
+};
+
+class QWindowsScreenManager
+{
+public:
+    typedef QList<QWindowsScreen *> WindowsScreenList;
+
+    QWindowsScreenManager();
+
+    inline void clearScreens() { qDeleteAll(m_screens); m_screens.clear(); }
+
+    void handleScreenChanges();
+    bool handleDisplayChange(WPARAM wParam, LPARAM lParam);
+    const WindowsScreenList &screens() const { return m_screens; }
+
+private:
+    WindowsScreenList m_screens;
+    int m_lastDepth;
+    WORD m_lastHorizontalResolution;
+    WORD m_lastVerticalResolution;
 };
 
 QT_END_NAMESPACE

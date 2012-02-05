@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -2025,7 +2025,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
      }
 #endif
 
-     saveCoverageTool(argv[0], QTestResult::failCount());
+     saveCoverageTool(argv[0], QTestLog::failCount());
 
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess)
@@ -2033,7 +2033,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
     // make sure our exit code is never going above 127
     // since that could wrap and indicate 0 test fails
-    return qMin(QTestResult::failCount(), 127);
+    return qMin(QTestLog::failCount(), 127);
 }
 
 /*!
@@ -2118,7 +2118,7 @@ void QTest::qWarn(const char *message, const char *file, int line)
 */
 void QTest::ignoreMessage(QtMsgType type, const char *message)
 {
-    QTestResult::ignoreMessage(type, message);
+    QTestLog::ignoreMessage(type, message);
 }
 
 /*! \internal
@@ -2286,6 +2286,7 @@ QTestData &QTest::newRow(const char *dataTag)
     QTEST_ASSERT_X(dataTag, "QTest::newRow()", "Data tag can not be null");
     QTestTable *tbl = QTestTable::currentTestTable();
     QTEST_ASSERT_X(tbl, "QTest::newRow()", "Cannot add testdata outside of a _data slot.");
+    QTEST_ASSERT_X(tbl->elementCount(), "QTest::newRow()", "Must add columns before attempting to add rows.");
 
     return *tbl->newData(dataTag);
 }

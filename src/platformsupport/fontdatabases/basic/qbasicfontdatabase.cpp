@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,6 +55,8 @@
 
 #include <ft2build.h>
 #include FT_TRUETYPE_TABLES_H
+
+QT_BEGIN_NAMESPACE
 
 #define SimplifiedChineseCsbBit 18
 #define TraditionalChineseCsbBit 20
@@ -322,9 +324,10 @@ void QBasicFontDatabase::releaseHandle(void *handle)
     delete file;
 }
 
+extern FT_Library qt_getFreetype();
+
 QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
 {
-    extern FT_Library qt_getFreetype();
     FT_Library library = qt_getFreetype();
 
     int index = 0;
@@ -425,3 +428,5 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
     } while (index < numFaces);
     return families;
 }
+
+QT_END_NAMESPACE

@@ -9,6 +9,7 @@ HEADERS += graphicsview/qgraphicsgridlayout.h \
     graphicsview/qgraphicslayoutitem_p.h \
     graphicsview/qgraphicslinearlayout.h \
     graphicsview/qgraphicsproxywidget.h \
+    graphicsview/qgraphicsproxywidget_p.h \
     graphicsview/qgraphicsscene.h \
     graphicsview/qgraphicsscene_bsp_p.h \
     graphicsview/qgraphicsscene_p.h \

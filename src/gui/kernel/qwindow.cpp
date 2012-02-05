@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,8 +43,10 @@
 
 #include "qplatformwindow_qpa.h"
 #include "qsurfaceformat.h"
+#ifndef QT_NO_OPENGL
 #include "qplatformopenglcontext_qpa.h"
 #include "qopenglcontext.h"
+#endif
 #include "qscreen.h"
 
 #include "qwindow_p.h"
@@ -60,7 +62,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QWindow
-    \brief The QWindow class encapsulates an independent windw in a Windowing System.
+    \brief The QWindow class encapsulates an independent window in a Windowing System.
 
     A window that is supplied a parent become a native child window of
     their parent window.
@@ -70,8 +72,24 @@ QT_BEGIN_NAMESPACE
     to support double and triple buffering. To release a windows memory
     resources, the destroy() function.
 
- */
+    \section1 Window and content orientation
 
+    QWindow has reportContentOrientationChange() and
+    requestWindowOrientation() that can be used to specify the
+    layout of the window contents in relation to the screen. The
+    window orientation determines the actual buffer layout of the
+    window, and the windowing system uses this value to rotate the
+    window before it ends up on the display, and to ensure that input
+    coordinates are in the correct coordinate space relative to the
+    application.
+
+    On the other hand, the content orientation is simply a hint to the
+    windowing system about which orientation the window contents are in.
+    It's useful when you wish to keep the same buffer layout, but rotate
+    the contents instead, especially when doing rotation animations
+    between different orientations. The windowing system might use this
+    value to determine the layout of system popups or dialogs.
+*/
 QWindow::QWindow(QScreen *targetScreen)
     : QObject(*new QWindowPrivate(), 0)
     , QSurface(QSurface::Window)
@@ -147,6 +165,14 @@ void QWindow::setVisible(bool visible)
         return;
     d->visible = visible;
     emit visibleChanged(visible);
+    if (QCoreApplication::instance() && !transientParent()) {
+        QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
+        if (visible) {
+            applicationPrivate->ref();
+        } else {
+            applicationPrivate->deref();
+        }
+    }
 
     if (!d->platformWindow)
         create();
@@ -373,42 +399,86 @@ bool QWindow::isActive() const
 }
 
 /*!
-  Returns the window's currently set orientation.
-
-  The default value is Qt::UnknownOrientation.
-
-  \sa setOrientation(), QScreen::currentOrientation()
-*/
-Qt::ScreenOrientation QWindow::orientation() const
-{
-    Q_D(const QWindow);
-    return d->orientation;
-}
-
-/*!
-  Set the orientation of the window's contents.
+  Reports that the orientation of the window's contents have changed.
 
   This is a hint to the window manager in case it needs to display
   additional content like popups, dialogs, status bars, or similar
   in relation to the window.
 
-  The recommended orientation is QScreen::currentOrientation() but
+  The recommended orientation is QScreen::orientation() but
   an application doesn't have to support all possible orientations,
   and thus can opt to ignore the current screen orientation.
 
-  \sa QScreen::currentOrientation()
+  The difference between the window and the content orientation
+  determines how much to rotate the content by. QScreen::angleBetween(),
+  QScreen::transformBetween(), and QScreen::mapBetween() can be used
+  to compute the necessary transform.
+
+  \sa requestWindowOrientation(), QScreen::orientation()
 */
-void QWindow::setOrientation(Qt::ScreenOrientation orientation)
+void QWindow::reportContentOrientationChange(Qt::ScreenOrientation orientation)
 {
     Q_D(QWindow);
-    if (orientation == d->orientation)
+    if (d->contentOrientation == orientation)
         return;
+    if (!d->platformWindow)
+        create();
+    Q_ASSERT(d->platformWindow);
+    d->contentOrientation = orientation;
+    d->platformWindow->handleContentOrientationChange(orientation);
+    emit contentOrientationChanged(orientation);
+}
 
-    d->orientation = orientation;
-    if (d->platformWindow) {
-        d->platformWindow->setOrientation(orientation);
-    }
-    emit orientationChanged(orientation);
+/*!
+  Returns the actual content orientation.
+
+  This is the last value set with reportContentOrientationChange(). It defaults
+  to Qt::PrimaryOrientation.
+*/
+Qt::ScreenOrientation QWindow::contentOrientation() const
+{
+    Q_D(const QWindow);
+    return d->contentOrientation;
+}
+
+/*!
+  Requests the given window orientation.
+
+  The window orientation specifies how the window should be rotated
+  by the window manager in order to be displayed. Input events will
+  be correctly mapped to the given orientation.
+
+  The return value is false if the system doesn't support the given
+  orientation (for example when requesting a portrait orientation
+  on a device that only handles landscape buffers, typically a desktop
+  system).
+
+  If the return value is false, call windowOrientation() to get the actual
+  supported orientation.
+
+  \sa windowOrientation(), reportContentOrientationChange(), QScreen::orientation()
+*/
+bool QWindow::requestWindowOrientation(Qt::ScreenOrientation orientation)
+{
+    Q_D(QWindow);
+    if (!d->platformWindow)
+        create();
+    Q_ASSERT(d->platformWindow);
+    d->windowOrientation = d->platformWindow->requestWindowOrientation(orientation);
+    return d->windowOrientation == orientation;
+}
+
+/*!
+  Returns the actual window orientation.
+
+  The default value is Qt::PrimaryOrientation.
+
+  \sa requestWindowOrientation()
+*/
+Qt::ScreenOrientation QWindow::windowOrientation() const
+{
+    Q_D(const QWindow);
+    return d->windowOrientation;
 }
 
 Qt::WindowState QWindow::windowState() const
@@ -437,7 +507,19 @@ void QWindow::setWindowState(Qt::WindowState state)
 void QWindow::setTransientParent(QWindow *parent)
 {
     Q_D(QWindow);
+
+    QWindow *previousParent = d->transientParent;
+
     d->transientParent = parent;
+
+    if (QCoreApplication::instance() && d->visible) {
+        QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
+        if (parent && !previousParent) {
+            applicationPrivate->deref();
+        } else if (!parent && previousParent) {
+            applicationPrivate->ref();
+        }
+    }
 }
 
 QWindow *QWindow::transientParent() const
@@ -735,6 +817,13 @@ QAccessibleInterface *QWindow::accessibleRoot() const
 }
 
 /*!
+    \fn QWindow::focusObjectChanged(QObject *focusObject)
+
+    This signal is emitted when final receiver of events tied to focus is changed.
+    \sa focusObject()
+*/
+
+/*!
   Returns the QObject that will be the final receiver of events tied focus, such
   as key events.
 */
@@ -783,8 +872,28 @@ void QWindow::showNormal()
 
 bool QWindow::close()
 {
-    //should we have close?
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    Q_D(QWindow);
+
+    // Do not close non top level windows
+    if (parent())
+        return false;
+
+    if (QGuiApplicationPrivate::focus_window == this)
+        QGuiApplicationPrivate::focus_window = 0;
+
+    QObjectList childrenWindows = children();
+    for (int i = 0; i < childrenWindows.size(); i++) {
+        QObject *object = childrenWindows.at(i);
+        if (object->isWindowType()) {
+            QWindow *w = static_cast<QWindow*>(object);
+            QGuiApplicationPrivate::window_list.removeAll(w);
+            w->destroy();
+        }
+    }
+
+    QGuiApplicationPrivate::window_list.removeAll(this);
+    destroy();
+    d->maybeQuitOnLastWindowClosed();
     return true;
 }
 
@@ -944,6 +1053,14 @@ void QWindow::wheelEvent(QWheelEvent *ev)
 void QWindow::touchEvent(QTouchEvent *ev)
 {
     ev->ignore();
+}
+
+bool QWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
+{
+    Q_UNUSED(eventType);
+    Q_UNUSED(message);
+    Q_UNUSED(result);
+    return false;
 }
 
 /*!

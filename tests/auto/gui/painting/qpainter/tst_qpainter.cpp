@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -89,6 +89,7 @@ public:
 public slots:
     void init();
     void cleanup();
+    void cleanupTestCase();
 private slots:
     void getSetCheck();
     void drawPixmap_comp_data();
@@ -364,6 +365,13 @@ void tst_QPainter::cleanup()
 {
 }
 
+void tst_QPainter::cleanupTestCase()
+{
+    QFile::remove(QLatin1String("dest.png"));
+    QFile::remove(QLatin1String("expected.png"));
+    QFile::remove(QLatin1String("foo.png"));
+}
+
 static const char* const maskSource_data[] = {
 "16 13 6 1",
 ". c None",
@@ -453,7 +461,7 @@ QRgb qt_compose_alpha(QRgb source, QRgb dest)
 */
 void tst_QPainter::drawPixmap_comp()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QSKIP("Mac has other ideas about alpha composition");
 #endif
     QFETCH(uint, dest);
@@ -1363,7 +1371,7 @@ void tst_QPainter::drawRoundRect()
     QFETCH(QRect, rect);
     QFETCH(bool, usePen);
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (QTest::currentDataTag() == QByteArray("rect(6, 12, 3, 14) with pen") ||
         QTest::currentDataTag() == QByteArray("rect(6, 17, 3, 25) with pen") ||
         QTest::currentDataTag() == QByteArray("rect(10, 6, 10, 3) with pen") ||
@@ -3108,7 +3116,7 @@ void tst_QPainter::drawImage_task217400()
 {
     QFETCH(QImage::Format, format);
 
-    const QImage src = QImage(QString(SRCDIR) + "/task217400.png")
+    const QImage src = QImage(QFINDTESTDATA("task217400.png"))
                        .convertToFormat(format);
     QVERIFY(!src.isNull());
 

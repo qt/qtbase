@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -126,30 +126,30 @@ public:
 */
 
 /*!
-    Creates an editor widget with the given \a parent for the specified \a type of data,
+    Creates an editor widget with the given \a parent for the specified \a userType of data,
     and returns it as a QWidget.
 
     \sa registerEditor()
 */
-QWidget *QItemEditorFactory::createEditor(QVariant::Type type, QWidget *parent) const
+QWidget *QItemEditorFactory::createEditor(int userType, QWidget *parent) const
 {
-    QItemEditorCreatorBase *creator = creatorMap.value(type, 0);
+    QItemEditorCreatorBase *creator = creatorMap.value(userType, 0);
     if (!creator) {
         const QItemEditorFactory *dfactory = defaultFactory();
-        return dfactory == this ? 0 : dfactory->createEditor(type, parent);
+        return dfactory == this ? 0 : dfactory->createEditor(userType, parent);
     }
     return creator->createWidget(parent);
 }
 
 /*!
-    Returns the property name used to access data for the given \a type of data.
+    Returns the property name used to access data for the given \a userType of data.
 */
-QByteArray QItemEditorFactory::valuePropertyName(QVariant::Type type) const
+QByteArray QItemEditorFactory::valuePropertyName(int userType) const
 {
-    QItemEditorCreatorBase *creator = creatorMap.value(type, 0);
+    QItemEditorCreatorBase *creator = creatorMap.value(userType, 0);
     if (!creator) {
         const QItemEditorFactory *dfactory = defaultFactory();
-        return dfactory == this ? QByteArray() : dfactory->valuePropertyName(type);
+        return dfactory == this ? QByteArray() : dfactory->valuePropertyName(userType);
     }
     return creator->valuePropertyName();
 }
@@ -166,16 +166,16 @@ QItemEditorFactory::~QItemEditorFactory()
 }
 
 /*!
-    Registers an item editor creator specified by \a creator for the given \a type of data.
+    Registers an item editor creator specified by \a creator for the given \a userType of data.
 
     \bold{Note:} The factory takes ownership of the item editor creator and will destroy
     it if a new creator for the same type is registered later.
 
     \sa createEditor()
 */
-void QItemEditorFactory::registerEditor(QVariant::Type type, QItemEditorCreatorBase *creator)
+void QItemEditorFactory::registerEditor(int userType, QItemEditorCreatorBase *creator)
 {
-    QHash<QVariant::Type, QItemEditorCreatorBase *>::iterator it = creatorMap.find(type);
+    QHash<int, QItemEditorCreatorBase *>::iterator it = creatorMap.find(userType);
     if (it != creatorMap.end()) {
         QItemEditorCreatorBase *oldCreator = it.value();
         Q_ASSERT(oldCreator);
@@ -184,20 +184,20 @@ void QItemEditorFactory::registerEditor(QVariant::Type type, QItemEditorCreatorB
             delete oldCreator; // if it is no more in use we can delete it
     }
 
-    creatorMap[type] = creator;
+    creatorMap[userType] = creator;
 }
 
 class QDefaultItemEditorFactory : public QItemEditorFactory
 {
 public:
     inline QDefaultItemEditorFactory() {}
-    QWidget *createEditor(QVariant::Type type, QWidget *parent) const;
-    QByteArray valuePropertyName(QVariant::Type) const;
+    QWidget *createEditor(int userType, QWidget *parent) const;
+    QByteArray valuePropertyName(int) const;
 };
 
-QWidget *QDefaultItemEditorFactory::createEditor(QVariant::Type type, QWidget *parent) const
+QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) const
 {
-    switch (type) {
+    switch (userType) {
 #ifndef QT_NO_COMBOBOX
     case QVariant::Bool: {
         QBooleanComboBox *cb = new QBooleanComboBox(parent);
@@ -258,9 +258,9 @@ QWidget *QDefaultItemEditorFactory::createEditor(QVariant::Type type, QWidget *p
     return 0;
 }
 
-QByteArray QDefaultItemEditorFactory::valuePropertyName(QVariant::Type type) const
+QByteArray QDefaultItemEditorFactory::valuePropertyName(int userType) const
 {
-    switch (type) {
+    switch (userType) {
 #ifndef QT_NO_COMBOBOX
     case QVariant::Bool:
         return "currentIndex";

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,15 +43,12 @@
 #define QDESKTOPSERVICES_H
 
 #include <QtCore/qstring.h>
-#if QT_DEPRECATED_SINCE(5, 0)
 #include <QtCore/qstandardpaths.h>
-#endif
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_DESKTOPSERVICES
 
@@ -67,7 +64,7 @@ public:
     static void unsetUrlHandler(const QString &scheme);
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    enum StandardLocation {
+    QT_DEPRECATED enum StandardLocation {
         DesktopLocation,
         DocumentsLocation,
         FontsLocation,

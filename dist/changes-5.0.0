@@ -39,6 +39,12 @@ information about a particular change.
 - Qt::escape() is deprecated (but can be enabled via
   QT_DISABLE_DEPRECATED_BEFORE), use QString::toHtmlEscaped() instead.
 
+- QBool is gone. QString::contains, QByteArray::contains, and QList::contains
+  used to return an internal QBool class so that the Qt3 code
+  "if (a.contains() == 2)" wouldn't compile anymore. Such code cannot exist
+  in Qt4, so these methods return a bool now. If your code used the undocumented
+  QBool, simply replace it with bool.
+
 - QMetaType::construct() has been renamed to QMetaType::create().
 
 - QTestLib:
@@ -96,6 +102,9 @@ information about a particular change.
 
 - QSound has been moved from QtGui to QtMultimedia
 
+- QTabletEvent::QTabletEvent does not take a hiResGlobalPos argument anymore,
+  as all coordinates are floating point based now.
+
 - QTouchEvent:
 
   * The DeviceType enum and deviceType() have been deprecated due to
@@ -110,6 +119,16 @@ information about a particular change.
 
   * QWidget *widget() has been removed and is replaced by QObject
     *target() in order to avoid QWidget dependencies.
+
+- QMetaType
+
+  * It is no longer possible to use Q_DECLARE_METATYPE(Foo*) where Foo is only
+    forward declared - it must be fully defined.
+
+- QItemEditorFactory
+
+  * The signature of the createEditor and valuePropertyName methods
+    have been changed to take arguments of type int instead of QVariant::Type.
 
 - QWindowSystemInterface:
 
@@ -157,6 +176,29 @@ information about a particular change.
 
 - QTcpServer::incomingConnection() now takes a qintptr instead of an int.
 
+- QNetworkConfiguration::bearerName() removed, and bearerTypeName() should be used.
+
+- QDir::convertSeparators() (deprecated since Qt 4.2) has been removed. Use
+  QDir::toNativeSeparators() instead.
+
+- QIconEngineV2 was merged into QIconEngine
+  You might need to adjust your code if it used a QIconEngine.
+
+- qmake
+  * several functions and built-in variables were modified to return normalized paths.
+
+- QTextCodecPlugin has been removed since it is no longer used. All text codecs
+  are now built into QtCore.
+
+- QDir::NoDotAndDotDot is QDir::NoDot|QDir::NoDotDot therefore there is no need
+  to use or check both.
+
+- QLocale
+  * toShort(), toUShort(), toInt(), toUInt(), toLongLong() and toULongLong() no
+    longer take a parameter for base, they will only perform localised base 10
+    conversions. For converting other bases use the QString methods instead.
+
+- QSystemLocale has been removed from the public API.
 
 ****************************************************************************
 *                           General                                        *
@@ -200,6 +242,39 @@ QtCore
   altering the watchlist in both the singular and QStringList overloads of
   addPath and removePath.
 
+* QString::mid, QString::midRef and QByteArray::mid, if the position passed
+  is equal to the length (that is, right after the last character/byte),
+  now return an empty QString, QStringRef or QByteArray respectively.
+  in Qt 4 they returned a null QString or a null QStringRef.
+
+* QString methods toLongLong(), toULongLong(), toLong(), toULong(), toInt(),
+  toUInt(), toShort(), toUShort(), toDouble(), and toFloat() no longer use the
+  default or system locale, they will always use the C locale. This is to
+  guarantee consistent default conversion of strings. For locale-aware conversions
+  use the equivalent QLocale methods.
+
+* QDate, QTime, and QDateTime have undergone important behavioural changes:
+  * QDate only implements the Gregorian calendar, the switch to the Julian
+    calendar before 1582 has been removed. This means all QDate methods will
+    return different results for dates prior to 15 October 1582, and there is
+    no longer a gap between 4 October 1582 and 15 October 1582.
+  * QDate::setYMD() is deprecated, use QDate::setDate() instead
+  * Most methods now apply strict validity checks and will return appropriate
+    and consistent values when invalid.  For example, QDate::year() will return
+    0 and QDate::shortMonthName() will return QString().
+  * Adding days to a null QDate or seconds to a null QTime will no longer return
+    a valid QDate/QTime.
+  * QDate stores the Julian Day as a qint64 extending date support across a
+    more interesting range, see the class documentation for details.
+    * Conversion to YMD form dates is only accurate between to 4800 BCE to
+      1.4 million CE
+    * The QDate::addDays() and QDateTime::addDays() methods now take a qint64
+    * The QDate::daysTo() and QDateTime::daysTo() methods now return a qint64
+
+
+* QIntValidator and QDoubleValidator no longer fall back to using the C locale if
+  the requested locale fails to validate the input.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via
@@ -212,8 +287,20 @@ QtGui
 
 QtWidgets
 ---------
-* QWidget::setInputContext() and QApplication::setInputContext() are removed.
+* QInputContext removed as well as related getters and setters on QWidget and QApplication.
   Input contexts are now platform specific.
+
+* QInputDialog::getInteger() has been obsoleted. Use QInputDialog::getInt() instead.
+
+* In Qt 4, many QStyleOption subclasses were introduced in order to keep
+  binary compatibility -- QStyleOption was designed to be extended this way,
+  in fact it embeds a version number. In Qt 5 the various QStyleOption*V{2,3,4}
+  classes have been removed, and their members merged into the respective
+  base classes. Those classes were left as typedefs to keep existing code
+  working. Still, some minor adjustements could be necessary, especially in code
+  that uses QStyleOption directly and does not initialize all the members using
+  the proper Qt API: due to the version bump, QStyle will try to use the additional
+  QStyleOption members, which are left default-initialized.
 
 QtNetwork
 ---------
@@ -288,6 +375,9 @@ Qt for Windows CE
 - Assistant
 
 - Designer
+  * [QTBUG-8926] [QTBUG-20440] Properties of type QStringList now have
+    translation attributes which apply to all items.
+    They are by default translatable.
 
 - Linguist
 
@@ -321,7 +411,7 @@ Qt for Windows CE
 ****************************************************************************
 *                          Plugins                                         *
 ****************************************************************************
-
+- The text codecs that were previously plugins are now built into QtCore.
 
 ****************************************************************************
 *                   Important Behavior Changes                             *
@@ -345,3 +435,10 @@ Qt for Windows CE
      construction would not be affected by the QPointer, but now that QPointer
      is implemented using QWeakPoiner, constructing the QSharedPointer will
      cause an abort().
+
+
+- QMessageBox
+
+     * The static function QMessageBox::question has changed the default argument
+     for buttons. Before the default was to have an Ok button. That is changed
+     to having a yes and a no button.

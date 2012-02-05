@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,7 +50,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 struct QRegExpPrivate;
 class QStringList;
@@ -100,9 +99,6 @@ public:
     int lastIndexIn(const QString &str, int offset = -1, CaretMode caretMode = CaretAtZero) const;
     int matchedLength() const;
 #ifndef QT_NO_REGEXP_CAPTURE
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED int numCaptures() const;
-#endif
     int captureCount() const;
     QStringList capturedTexts() const;
     QStringList capturedTexts();

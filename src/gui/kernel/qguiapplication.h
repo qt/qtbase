@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,6 +44,7 @@
 
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qwindowdefs.h>
+#include <QtGui/qinputpanel.h>
 #include <QtCore/qlocale.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
@@ -52,14 +53,12 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QGuiApplicationPrivate;
 class QPlatformNativeInterface;
 class QPalette;
 class QScreen;
 class QStyleHints;
-class QInputPanel;
 
 #if defined(qApp)
 #undef qApp
@@ -82,6 +81,7 @@ public:
     QGuiApplication(int &argc, char **argv, int = ApplicationFlags);
     virtual ~QGuiApplication();
 
+    static QWindowList allWindows();
     static QWindowList topLevelWindows();
     static QWindow *topLevelAt(const QPoint &pos);
 
@@ -89,6 +89,7 @@ public:
     static QT_DEPRECATED QWindow *activeWindow() { return focusWindow(); }
 #endif
     static QWindow *focusWindow();
+    static QObject *focusObject();
 
     static QScreen *primaryScreen();
     static QList<QScreen *> screens();
@@ -119,11 +120,9 @@ public:
     static inline bool isRightToLeft() { return layoutDirection() == Qt::RightToLeft; }
     static inline bool isLeftToRight() { return layoutDirection() == Qt::LeftToRight; }
 
-    QT_DEPRECATED static QLocale keyboardInputLocale();
-    QT_DEPRECATED static Qt::LayoutDirection keyboardInputDirection();
-
     QStyleHints *styleHints() const;
-    QInputPanel *inputPanel() const;
+    QT_DEPRECATED QInputPanel *inputPanel() const;
+    QInputMethod *inputMethod() const;
 
     static QPlatformNativeInterface *platformNativeInterface();
 
@@ -137,6 +136,7 @@ Q_SIGNALS:
     void fontDatabaseChanged();
     void screenAdded(QScreen *screen);
     void lastWindowClosed();
+    void focusObjectChanged(QObject *focusObject);
 
 protected:
     bool event(QEvent *);

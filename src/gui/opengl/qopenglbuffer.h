@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,12 +34,15 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #ifndef QOPENGLBUFFER_H
 #define QOPENGLBUFFER_H
+
+#ifndef QT_NO_OPENGL
 
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/qopengl.h>
@@ -49,7 +51,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QOpenGLBufferPrivate;
 
@@ -128,5 +129,7 @@ private:
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_OPENGL
 
 #endif

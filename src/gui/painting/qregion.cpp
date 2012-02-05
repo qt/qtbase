@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -3930,7 +3930,7 @@ void QRegion::translate(int dx, int dy)
     OffsetRegion(*d->qt_rgn, dx, dy);
 }
 
-QRegion QRegion::unite(const QRegion &r) const
+QRegion QRegion::united(const QRegion &r) const
 {
     if (isEmptyHelper(d->qt_rgn))
         return r;
@@ -3993,7 +3993,7 @@ QRegion& QRegion::operator+=(const QRegion &r)
     }
 }
 
-QRegion QRegion::unite(const QRect &r) const
+QRegion QRegion::united(const QRect &r) const
 {
     if (isEmptyHelper(d->qt_rgn))
         return r;
@@ -4054,7 +4054,7 @@ QRegion& QRegion::operator+=(const QRect &r)
     }
 }
 
-QRegion QRegion::intersect(const QRegion &r) const
+QRegion QRegion::intersected(const QRegion &r) const
 {
     if (isEmptyHelper(d->qt_rgn) || isEmptyHelper(r.d->qt_rgn)
         || !EXTENTCHECK(&d->qt_rgn->extents, &r.d->qt_rgn->extents))
@@ -4099,7 +4099,7 @@ QRegion QRegion::intersect(const QRegion &r) const
     return result;
 }
 
-QRegion QRegion::intersect(const QRect &r) const
+QRegion QRegion::intersected(const QRect &r) const
 {
     if (isEmptyHelper(d->qt_rgn) || r.isEmpty()
         || !EXTENTCHECK(&d->qt_rgn->extents, &r))
@@ -4125,7 +4125,7 @@ QRegion QRegion::intersect(const QRect &r) const
     return result;
 }
 
-QRegion QRegion::subtract(const QRegion &r) const
+QRegion QRegion::subtracted(const QRegion &r) const
 {
     if (isEmptyHelper(d->qt_rgn) || isEmptyHelper(r.d->qt_rgn))
         return *this;
@@ -4150,7 +4150,7 @@ QRegion QRegion::subtract(const QRegion &r) const
     return result;
 }
 
-QRegion QRegion::eor(const QRegion &r) const
+QRegion QRegion::xored(const QRegion &r) const
 {
     if (isEmptyHelper(d->qt_rgn)) {
         return r;
@@ -4255,11 +4255,6 @@ void QRegion::setRects(const QRect *rects, int num)
         }
         d->qt_rgn->extents = QRect(QPoint(left, top), QPoint(right, bottom));
     }
-}
-
-int QRegion::numRects() const
-{
-    return (d->qt_rgn ? d->qt_rgn->numRects : 0);
 }
 
 int QRegion::rectCount() const

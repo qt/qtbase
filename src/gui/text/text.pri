@@ -9,7 +9,6 @@ HEADERS += \
 	text/qfontmetrics.h \
 	text/qfont_p.h \
 	text/qfontsubset_p.h \
-        text/qlinecontrol_p.h \
         text/qtextengine_p.h \
 	text/qtextlayout.h \
 	text/qtextformat.h \
@@ -23,8 +22,6 @@ HEADERS += \
 	text/qtexthtmlparser_p.h \
 	text/qabstracttextdocumentlayout.h \
 	text/qtextdocumentlayout_p.h \
-        text/qtextcontrol_p.h \
-        text/qtextcontrol_p_p.h \
         text/qtextcursor.h \
         text/qtextcursor_p.h \
 	text/qtextdocumentfragment.h \
@@ -53,8 +50,6 @@ SOURCES += \
 	text/qfontsubset.cpp \
 	text/qfontmetrics.cpp \
 	text/qfontdatabase.cpp \
-        text/qlinecontrol.cpp \
-        text/qtextcontrol.cpp \
         text/qtextengine.cpp \
 	text/qtextlayout.cpp \
 	text/qtextformat.cpp \
@@ -106,26 +101,6 @@ SOURCES += \
 
 HEADERS += \
       text/qplatformfontdatabase_qpa.h
-
-symbian {
-	SOURCES += \
-		text/qfont_s60.cpp
-	contains(QT_CONFIG, freetype) {
-		SOURCES += \
-                        text/qfontengine_ft.cpp \
-                        text/qrawfont_ft.cpp
-		HEADERS += \
-			text/qfontengine_ft_p.h
-		DEFINES += \
-			QT_NO_FONTCONFIG
-	} else {
-		SOURCES += \
-			text/qfontengine_s60.cpp
-		HEADERS += \
-			text/qfontengine_s60_p.h
-	}
-	LIBS += -lfntstr -lecom
-}
 
 DEFINES += QT_NO_OPENTYPE
 INCLUDEPATH += ../3rdparty/harfbuzz/src

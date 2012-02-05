@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -552,15 +552,6 @@ public:
     struct ApplicationFont {
         QString fileName;
         QByteArray data;
-#if defined(Q_OS_WIN)
-        HANDLE handle;
-        bool memoryFont;
-        QVector<FONTSIGNATURE> signatures;
-#elif defined(Q_OS_SYMBIAN)
-        QString temporaryFileName;
-        TInt screenDeviceFontFileId;
-        TUid fontStoreFontFileUid;
-#endif
         QStringList families;
     };
     QVector<ApplicationFont> applicationFonts;
@@ -2197,8 +2188,6 @@ bool QFontDatabasePrivate::isApplicationFont(const QString &fileName)
     \note Adding application fonts on Unix/X11 platforms without fontconfig is
     currently not supported.
 
-    \note On Symbian, the font family names get truncated to a length of 20 characters.
-
     \sa addApplicationFontFromData(), applicationFontFamilies(), removeApplicationFont()
 */
 int QFontDatabase::addApplicationFont(const QString &fileName)
@@ -2228,8 +2217,6 @@ int QFontDatabase::addApplicationFont(const QString &fileName)
 
     \bold{Note:} Adding application fonts on Unix/X11 platforms without fontconfig is
     currently not supported.
-
-    \note On Symbian, the font family names get truncated to a length of 20 characters.
 
     \sa addApplicationFont(), applicationFontFamilies(), removeApplicationFont()
 */

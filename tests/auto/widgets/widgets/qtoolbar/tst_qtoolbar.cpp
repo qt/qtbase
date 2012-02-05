@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1018,10 +1018,15 @@ void tst_QToolBar::widgetAction()
     delete a;
 }
 
+#ifdef Q_OS_MAC
+QT_BEGIN_NAMESPACE
+extern void qt_set_sequence_auto_mnemonic(bool b);
+QT_END_NAMESPACE
+#endif
+
 void tst_QToolBar::accel()
 {
-#ifdef Q_WS_MAC
-    extern void qt_set_sequence_auto_mnemonic(bool b);
+#ifdef Q_OS_MAC
     qt_set_sequence_auto_mnemonic(true);
 #endif
     QMainWindow mw;
@@ -1040,7 +1045,7 @@ void tst_QToolBar::accel()
     QTest::qWait(300);
 
     QTRY_COMPARE(spy.count(), 1);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     qt_set_sequence_auto_mnemonic(false);
 #endif
 }

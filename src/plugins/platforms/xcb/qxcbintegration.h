@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 class QXcbConnection;
 class QAbstractEventDispatcher;
+class QXcbNativeInterface;
 
 class QXcbIntegration : public QPlatformIntegration
 {
@@ -76,16 +77,24 @@ public:
 
     QPlatformAccessibility *accessibility() const;
 
+#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
+    QPlatformSharedGraphicsCache *createPlatformSharedGraphicsCache(const char *cacheId) const;
+#endif
+
 private:
     QList<QXcbConnection *> m_connections;
 
     QScopedPointer<QPlatformFontDatabase> m_fontDatabase;
-    QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
+    QScopedPointer<QXcbNativeInterface> m_nativeInterface;
 
     QScopedPointer<QPlatformInputContext> m_inputContext;
     QAbstractEventDispatcher *m_eventDispatcher;
 
     QScopedPointer<QPlatformAccessibility> m_accessibility;
+
+#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
+    QScopedPointer<QPlatformSharedGraphicsCache> m_sharedGraphicsCache;
+#endif
 };
 
 QT_END_NAMESPACE

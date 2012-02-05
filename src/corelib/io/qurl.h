@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,7 +52,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class QUrlPrivate;
 class QDataStream;
@@ -86,9 +85,7 @@ public:
 #ifdef QT_NO_URL_CAST_FROM_STRING
     explicit
 #endif
-    QUrl(const QString &url);
-    QUrl(const QString &url, ParsingMode mode);
-    // ### Qt 5: merge the two constructors, with mode = TolerantMode
+    QUrl(const QString &url, ParsingMode mode = TolerantMode);
     QUrl(const QUrl &copy);
     QUrl &operator =(const QUrl &copy);
 #ifndef QT_NO_URL_CAST_FROM_STRING
@@ -102,12 +99,9 @@ public:
 
     inline void swap(QUrl &other) { qSwap(d, other.d); }
 
-    void setUrl(const QString &url);
-    void setUrl(const QString &url, ParsingMode mode);
-    // ### Qt 5: merge the two setUrl() functions, with mode = TolerantMode
-    void setEncodedUrl(const QByteArray &url);
-    void setEncodedUrl(const QByteArray &url, ParsingMode mode);
-    // ### Qt 5: merge the two setEncodedUrl() functions, with mode = TolerantMode
+    void setUrl(const QString &url, ParsingMode mode = TolerantMode);
+    QString url(FormattingOptions options = None) const;
+    QString toString(FormattingOptions options = None) const;
 
     bool isValid() const;
 
@@ -140,9 +134,7 @@ public:
     QByteArray encodedHost() const;
 
     void setPort(int port);
-    int port() const;
-    int port(int defaultPort) const;
-    // ### Qt 5: merge the two port() functions, with defaultPort = -1
+    int port(int defaultPort = -1) const;
 
     void setPath(const QString &path);
     QString path() const;
@@ -194,12 +186,7 @@ public:
     QString toLocalFile() const;
     bool isLocalFile() const;
 
-    QString toString(FormattingOptions options = None) const;
-
     QByteArray toEncoded(FormattingOptions options = None) const;
-    static QUrl fromEncoded(const QByteArray &url);
-    static QUrl fromEncoded(const QByteArray &url, ParsingMode mode);
-    // ### Qt 5: merge the two fromEncoded() functions, with mode = TolerantMode
 
     static QUrl fromUserInput(const QString &userInput);
 
@@ -222,6 +209,13 @@ public:
     static void setIdnWhitelist(const QStringList &);
 
     QString errorString() const;
+
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED void setEncodedUrl(const QByteArray &url, ParsingMode mode = TolerantMode)
+    { setUrl(QString::fromUtf8(url.constData(), url.size()), mode); }
+    QT_DEPRECATED static QUrl fromEncoded(const QByteArray &url, ParsingMode mode = TolerantMode)
+    { return QUrl(QString::fromUtf8(url.constData(), url.size()), mode); }
+#endif
 
 private:
     QUrlPrivate *d;

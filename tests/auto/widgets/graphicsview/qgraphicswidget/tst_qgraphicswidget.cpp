@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1157,7 +1157,7 @@ void tst_QGraphicsWidget::initStyleOption()
     bool hasFocus = option.state & QStyle::State_HasFocus;
     QCOMPARE(hasFocus, focus);
     bool isUnderMouse = option.state & QStyle::State_MouseOver;
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_MAC)
     QEXPECT_FAIL("all", "QTBUG-22457", Abort);
     QCOMPARE(isUnderMouse, underMouse);
 #endif
@@ -1806,6 +1806,9 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     QVERIFY(w);
     QTest::mouseMove(view.viewport());
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23699", Continue);
+#endif
     QTRY_COMPARE(qApp->activeWindow(), static_cast<QWidget *>(&view));
     QTRY_COMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(w));
 }
@@ -3192,7 +3195,9 @@ void tst_QGraphicsWidget::initialShow2()
     view.show();
     QTest::qWaitForWindowShown(&view);
 
+#ifndef Q_OS_MAC
     QEXPECT_FAIL("", "QTBUG-20778", Abort);
+#endif
     QTRY_COMPARE(widget->repaints, expectedRepaintCount);
 }
 

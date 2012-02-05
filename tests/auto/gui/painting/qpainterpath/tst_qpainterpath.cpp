@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,8 @@ class tst_QPainterPath : public QObject
     Q_OBJECT
 
 public:
-
+public slots:
+    void cleanupTestCase();
 private slots:
     void getSetCheck();
     void swap();
@@ -114,6 +115,11 @@ private slots:
 
     void lineWithinBounds();
 };
+
+void tst_QPainterPath::cleanupTestCase()
+{
+    QFile::remove(QLatin1String("data"));
+}
 
 // Testing get/set functions
 void tst_QPainterPath::getSetCheck()

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -70,9 +70,19 @@ QGLXContext::QGLXContext(QXlibScreen *screen, const QSurfaceFormat &format, QPla
     if (share)
         shareGlxContext = static_cast<const QGLXContext*>(share)->glxContext();
 
-    GLXFBConfig config = qglx_findConfig(screen->display()->nativeDisplay(),screen->xScreenNumber(),format);
-    m_context = glXCreateNewContext(screen->display()->nativeDisplay(),config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
-    m_windowFormat = qglx_surfaceFormatFromGLXFBConfig(screen->display()->nativeDisplay(),config,m_context);
+    Display *xDisplay = screen->display()->nativeDisplay();
+
+    GLXFBConfig config = qglx_findConfig(xDisplay,screen->xScreenNumber(),format);
+    if (config) {
+        m_context = glXCreateNewContext(xDisplay,config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
+        m_windowFormat = qglx_surfaceFormatFromGLXFBConfig(xDisplay,config,m_context);
+    } else {
+        XVisualInfo *visualInfo = qglx_findVisualInfo(xDisplay, screen->xScreenNumber(), format);
+        if (!visualInfo)
+            qFatal("Could not initialize GLX");
+        m_context = glXCreateContext(xDisplay, visualInfo, shareGlxContext, true);
+        XFree(visualInfo);
+    }
 
 #ifdef MYX11_DEBUG
     qDebug() << "QGLXGLContext::create context" << m_context;

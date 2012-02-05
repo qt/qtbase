@@ -2,6 +2,7 @@ TEMPLATE = app
 TARGET = mapdemo
 DEPENDPATH += .
 INCLUDEPATH += .
+QT += concurrent widgets
 
 # Input
 SOURCES += main.cpp
@@ -12,7 +13,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qtconcurrent/map
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro *.png
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qtconcurrent/map
 INSTALLS += target sources
-
-QT += widgets
 
 simulator: warning(This example does not work on Simulator platform)

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,11 +55,11 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_ACCESSIBILITY
 
 class QAccessibleInterface;
+class QAccessibleEvent;
 class QWindow;
 
 // We need to inherit QObject to expose the enums to QML.
@@ -306,12 +306,6 @@ public:
 
     enum RelationFlag {
         Unrelated     = 0x00000000,
-        Self          = 0x00000001,
-
-        Covers        = 0x00001000,
-        Covered       = 0x00002000,
-        GeometryMask  = 0x0000ff00,
-
         FocusChild    = 0x00010000,
         Label         = 0x00020000,
         Labelled      = 0x00040000,
@@ -333,7 +327,7 @@ public:
     };
 
     typedef QAccessibleInterface*(*InterfaceFactory)(const QString &key, QObject*);
-    typedef void(*UpdateHandler)(QObject*, int who, Event reason);
+    typedef void(*UpdateHandler)(const QAccessibleEvent &event);
     typedef void(*RootObjectHandler)(QObject*);
 
     static void installFactory(InterfaceFactory);
@@ -342,7 +336,10 @@ public:
     static RootObjectHandler installRootObjectHandler(RootObjectHandler);
 
     static QAccessibleInterface *queryAccessibleInterface(QObject *);
+
     static void updateAccessibility(QObject *object, int child, Event reason);
+    static void updateAccessibility(const QAccessibleEvent &event);
+
     static bool isActive();
     static void setRootObject(QObject *object);
 
@@ -432,7 +429,29 @@ public:
 private:
 };
 
-#define QAccessibleInterface_iid "com.trolltech.Qt.QAccessibleInterface"
+class Q_GUI_EXPORT QAccessibleEvent
+{
+public:
+    inline QAccessibleEvent(QAccessible::Event type, QObject *object, int child = -1)
+        : m_type(type), m_object(object), m_child(child)
+    {
+        Q_ASSERT(object);
+    }
+
+    QAccessible::Event type() const { return m_type; }
+    QObject *object() const { return m_object; }
+    int child() const { return m_child; }
+
+    QAccessibleInterface *accessibleInterface() const;
+
+private:
+    QAccessible::Event m_type;
+    QObject *m_object;
+    int m_child;
+};
+
+
+#define QAccessibleInterface_iid "org.qt-project.Qt.QAccessibleInterface"
 Q_DECLARE_INTERFACE(QAccessibleInterface, QAccessibleInterface_iid)
 
 Q_GUI_EXPORT const char *qAccessibleRoleString(QAccessible::Role role);

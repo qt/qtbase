@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -101,7 +101,7 @@ static bool tabBetweenSubWindowsIn(QMdiArea *mdiArea, int tabCount = -1, bool re
 
     Qt::KeyboardModifiers modifiers = reverse ? Qt::ShiftModifier : Qt::NoModifier;
     Qt::Key key;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     key = Qt::Key_Meta;
     modifiers |= Qt::MetaModifier;
 #else
@@ -194,7 +194,7 @@ static bool verifyArrangement(QMdiArea *mdiArea, Arrangement arrangement, const 
         QStyleOptionTitleBar options;
         options.initFrom(firstSubWindow);
         int titleBarHeight = firstSubWindow->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         // ### Remove this after the mac style has been fixed
         if (qobject_cast<QMacStyle *>(firstSubWindow->style()))
             titleBarHeight -= 4;
@@ -444,7 +444,7 @@ void tst_QMdiArea::subWindowActivated()
     }
 }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #include <Security/AuthSession.h>
 bool macHasAccessToWindowsServer()
 {
@@ -519,7 +519,7 @@ void tst_QMdiArea::subWindowActivated2()
     mdiArea.showMinimized();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&mdiArea);
-#elif defined (Q_WS_MAC)
+#elif defined (Q_OS_MAC)
     if (!macHasAccessToWindowsServer())
         QEXPECT_FAIL("", "showMinimized doesn't really minimize if you don't have access to the server", Abort);
 #endif
@@ -657,7 +657,7 @@ void tst_QMdiArea::changeWindowTitle()
 #else
     widget->setWindowState(Qt::WindowMaximized);
 #endif
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
 #endif
 
@@ -667,7 +667,7 @@ void tst_QMdiArea::changeWindowTitle()
     qApp->processEvents();
     QTest::qWaitForWindowShown(mw);
 
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
 #endif
 
@@ -685,7 +685,7 @@ void tst_QMdiArea::changeWindowTitle()
     widget->setWindowState(Qt::WindowMaximized);
 #endif
     qApp->processEvents();
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
     widget->setWindowTitle( wc2 );
     QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc2) );
@@ -703,7 +703,7 @@ void tst_QMdiArea::changeWindowTitle()
 #endif
 
     qApp->processEvents();
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc2).arg(wc2) );
 #endif
 #ifdef USE_SHOW
@@ -712,7 +712,7 @@ void tst_QMdiArea::changeWindowTitle()
     widget->setWindowState(Qt::WindowNoState);
 #endif
     qApp->processEvents();
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
     QCOMPARE(mw->windowTitle(), mwc);
 #else
     QCOMPARE( mw->windowTitle(), mwc2 );
@@ -724,7 +724,7 @@ void tst_QMdiArea::changeWindowTitle()
     widget->setWindowState(Qt::WindowMaximized);
 #endif
     qApp->processEvents();
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc2).arg(wc2) );
 #endif
 
@@ -773,7 +773,7 @@ void tst_QMdiArea::changeModified()
     QCOMPARE( mw->isWindowModified(), false);
     QCOMPARE( widget->isWindowModified(), true);
     widget->setWindowState(Qt::WindowMaximized);
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     QCOMPARE( mw->isWindowModified(), true);
 #endif
     QCOMPARE( widget->isWindowModified(), true);
@@ -783,7 +783,7 @@ void tst_QMdiArea::changeModified()
     QCOMPARE( widget->isWindowModified(), true);
 
     widget->setWindowState(Qt::WindowMaximized);
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     QCOMPARE( mw->isWindowModified(), true);
 #endif
     QCOMPARE( widget->isWindowModified(), true);
@@ -793,7 +793,7 @@ void tst_QMdiArea::changeModified()
     QCOMPARE( widget->isWindowModified(), false);
 
     widget->setWindowModified(true);
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     QCOMPARE( mw->isWindowModified(), true);
 #endif
     QCOMPARE( widget->isWindowModified(), true);
@@ -1029,7 +1029,7 @@ void tst_QMdiArea::activeSubWindow()
     qApp->setActiveWindow(&mainWindow);
     QCOMPARE(mdiArea->activeSubWindow(), subWindow);
 
-#if !defined(Q_WS_MAC) && !defined(Q_WS_WIN)
+#if !defined(Q_OS_MAC) && !defined(Q_WS_WIN)
     qApp->setActiveWindow(0);
     QVERIFY(!mdiArea->activeSubWindow());
 #endif
@@ -1114,7 +1114,7 @@ void tst_QMdiArea::currentSubWindow()
     QVERIFY(mdiArea.activeSubWindow());
     QVERIFY(mdiArea.currentSubWindow());
 
-#if !defined(Q_WS_MAC) && !defined(Q_WS_WIN)
+#if !defined(Q_OS_MAC) && !defined(Q_WS_WIN)
     qApp->setActiveWindow(0);
     QVERIFY(!mdiArea.activeSubWindow());
     QVERIFY(mdiArea.currentSubWindow());
@@ -2042,7 +2042,7 @@ void tst_QMdiArea::delayedPlacement()
 
 void tst_QMdiArea::iconGeometryInMenuBar()
 {
-#if !defined (Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined (Q_OS_MAC) && !defined(Q_OS_WINCE)
     QMainWindow mainWindow;
     QMenuBar *menuBar = mainWindow.menuBar();
     QMdiArea *mdiArea = new QMdiArea;

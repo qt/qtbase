@@ -2,8 +2,7 @@ load(qt_module)
 
 TARGET = QtDBus
 QPRO_PWD = $$PWD
-QT = core-private \
-    xml
+QT = core-private
 
 CONFIG += link_pkgconfig module
 MODULE_PRI = ../modules/qt_dbus.pri
@@ -21,8 +20,7 @@ unix|win32-g++* {
     QMAKE_PKGCONFIG_DESCRIPTION = Qt \
         DBus \
         module
-    QMAKE_PKGCONFIG_REQUIRES = QtCore \
-        QtXml
+    QMAKE_PKGCONFIG_REQUIRES = QtCore
 }
 win32 { 
     wince*:LIBS_PRIVATE += -lws2

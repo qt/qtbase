@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,9 +62,6 @@ QT_BEGIN_NAMESPACE
     reflected in the native page setup dialogs. Additionally, custom
     page margins set on a QPrinter won't show in the native Mac OS X
     page setup dialog.
-
-    In Symbian, there is no support for printing. Hence, this dialog should not
-    be used in Symbian.
 
     \sa QPrinter, QPrintDialog
 */

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -243,7 +243,7 @@
 #include <QtWidgets/qstyleoption.h>
 #include <QtWidgets/qtooltip.h>
 #include <QtGui/qtransform.h>
-#include <QtGui/qinputpanel.h>
+#include <QtGui/qinputmethod.h>
 #include <QtWidgets/qgraphicseffect.h>
 #ifndef QT_NO_ACCESSIBILITY
 # include <QtGui/qaccessible.h>
@@ -822,7 +822,7 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
             // the views, but if we are changing focus, we have to
             // do it ourselves.
             if (qApp)
-                qApp->inputPanel()->reset();
+                qApp->inputMethod()->reset();
         }
 
         focusItem = 0;
@@ -843,7 +843,7 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
 #ifndef QT_NO_ACCESSIBILITY
     if (focusItem) {
         if (QGraphicsObject *focusObj = focusItem->toGraphicsObject()) {
-            QAccessible::updateAccessibility(focusObj, 0, QAccessible::Focus);
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, focusObj, 0));
         }
     }
 #endif

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -198,7 +198,7 @@ void tst_QWidget_window::tst_windowFilePathAndwindowTitle_data()
     QTest::newRow("always set title, not appName") << true << true << validPath << QString() << windowTitle << windowTitle << windowTitle;
 
     QString platString =
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         fileNameOnly;
 #else
         fileAndApp;
@@ -233,12 +233,19 @@ void tst_QWidget_window::tst_windowFilePathAndwindowTitle()
         widget.setWindowTitle(indyWindowTitle);
     }
     widget.setWindowFilePath(filePath);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("never Set Title, yes AppName", "QTBUG-23682", Continue);
+    QEXPECT_FAIL("set title after only, yes AppName", "QTBUG-23682", Continue);
+#endif
     QCOMPARE(finalTitleBefore, widget.windowTitle());
     QCOMPARE(widget.windowFilePath(), filePath);
 
     if (setWindowTitleAfter) {
         widget.setWindowTitle(indyWindowTitle);
     }
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("never Set Title, yes AppName", "QTBUG-23682", Continue);
+#endif
     QCOMPARE(finalTitleAfter, widget.windowTitle());
     QCOMPARE(widget.windowFilePath(), filePath);
 }

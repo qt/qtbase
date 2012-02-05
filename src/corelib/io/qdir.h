@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,7 +51,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class QDirPrivate;
 
@@ -78,9 +77,9 @@ public:
 
                   AllDirs       = 0x400,
                   CaseSensitive = 0x800,
-                  NoDotAndDotDot = 0x1000, // ### Qt5 NoDotAndDotDot = NoDot|NoDotDot
                   NoDot         = 0x2000,
                   NoDotDot      = 0x4000,
+                  NoDotAndDotDot = NoDot | NoDotDot,
 
                   NoFilter = -1
     };
@@ -131,9 +130,6 @@ public:
     QString absoluteFilePath(const QString &fileName) const;
     QString relativeFilePath(const QString &fileName) const;
 
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED static QString convertSeparators(const QString &pathName);
-#endif
     static QString toNativeSeparators(const QString &pathName);
     static QString fromNativeSeparators(const QString &pathName);
 

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,12 +34,15 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #ifndef QOPENGLFUNCTIONS_H
 #define QOPENGLFUNCTIONS_H
+
+#ifndef QT_NO_OPENGL
 
 #ifdef __GLEW_H__
 #warning qopenglfunctions.h is not compatible with GLEW, GLEW defines will be undefined
@@ -71,7 +73,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 // Types that aren't defined in all system's gl.h files.
 typedef ptrdiff_t qopengl_GLintptr;
@@ -477,6 +478,8 @@ inline void QOpenGLFunctions::glBindBuffer(GLenum target, GLuint buffer)
 
 inline void QOpenGLFunctions::glBindFramebuffer(GLenum target, GLuint framebuffer)
 {
+    if (framebuffer == 0)
+        framebuffer = QOpenGLContext::currentContext()->defaultFramebufferObject();
 #if defined(QT_OPENGL_ES_2)
     ::glBindFramebuffer(target, framebuffer);
 #else
@@ -2419,5 +2422,7 @@ inline void QOpenGLFunctions::glVertexAttribPointer(GLuint indx, GLint size, GLe
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_OPENGL
 
 #endif

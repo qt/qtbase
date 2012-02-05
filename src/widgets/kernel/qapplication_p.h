@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -79,7 +79,6 @@ QT_BEGIN_NAMESPACE
 
 class QClipboard;
 class QGraphicsScene;
-class QInputContext;
 class QObject;
 class QWidget;
 class QSocketNotifier;
@@ -188,8 +187,6 @@ public:
     static bool qws_apply_settings();
     static QWidget *findWidget(const QObjectList&, const QPoint &, bool rec);
 #endif
-    static bool quitOnLastWindowClosed;
-    static void emitLastWindowClosed();
 #ifdef Q_WS_WINCE
     static int autoMaximizeThreshold;
 #endif
@@ -250,12 +247,6 @@ public:
     QBasicTimer toolTipWakeUp, toolTipFallAsleep;
     QPoint toolTipPos, toolTipGlobalPos, hoverGlobalPos;
     QPointer<QWidget> toolTipWidget;
-
-#ifndef QT_NO_IM
-    void setInputContext(QInputContext *);
-#endif
-
-    static QInputContext *inputContext;
 
     static Qt::MouseButtons mouse_buttons;
     static Qt::KeyboardModifiers modifier_buttons;
@@ -350,11 +341,23 @@ public:
                                QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver,
                                bool spontaneous = true);
     void sendSyntheticEnterLeave(QWidget *widget);
-#ifdef Q_OS_WIN
-    static HWND getHWNDForWidget(QWidget *widget)
+
+    static QWindow *windowForWidget(const QWidget *widget)
     {
-        QWindow *window = widget->windowHandle();
-        return static_cast<HWND> (QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", window));
+        if (QWindow *window = widget->windowHandle())
+            return window;
+        if (const QWidget *nativeParent = widget->nativeParentWidget())
+            return nativeParent->windowHandle();
+        return 0;
+    }
+
+#ifdef Q_OS_WIN
+    static HWND getHWNDForWidget(const QWidget *widget)
+    {
+        if (QWindow *window = windowForWidget(widget))
+            return static_cast<HWND> (QGuiApplication::platformNativeInterface()->
+                                      nativeResourceForWindow(QByteArrayLiteral("handle"), window));
+        return 0;
     }
 #endif
 

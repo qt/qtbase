@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class QCoreApplicationPrivate;
 class QTextCodec;
@@ -72,6 +71,7 @@ class Q_CORE_EXPORT QCoreApplication : public QObject
     Q_PROPERTY(QString applicationVersion READ applicationVersion WRITE setApplicationVersion)
     Q_PROPERTY(QString organizationName READ organizationName WRITE setOrganizationName)
     Q_PROPERTY(QString organizationDomain READ organizationDomain WRITE setOrganizationDomain)
+    Q_PROPERTY(bool quitLockEnabled READ isQuitLockEnabled WRITE setQuitLockEnabled)
 
     Q_DECLARE_PRIVATE(QCoreApplication)
 public:
@@ -88,10 +88,6 @@ public:
 
     ~QCoreApplication();
 
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED static int argc();
-    QT_DEPRECATED static char **argv();
-#endif
     static QStringList arguments();
 
     static void setAttribute(Qt::ApplicationAttribute attribute, bool on = true);
@@ -157,13 +153,16 @@ public:
     virtual bool winEventFilter(MSG *message, long *result);
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     static void watchUnixSignal(int signal, bool watch);
 #endif
 
     typedef bool (*EventFilter)(void *message, long *result);
     EventFilter setEventFilter(EventFilter filter);
     bool filterEvent(void *message, long *result);
+
+    static bool isQuitLockEnabled();
+    static void setQuitLockEnabled(bool enabled);
 
 public Q_SLOTS:
     static void quit();
@@ -188,7 +187,7 @@ private:
     void init();
 
     static QCoreApplication *self;
-    
+
     Q_DISABLE_COPY(QCoreApplication)
 
     friend class QEventDispatcherUNIXPrivate;

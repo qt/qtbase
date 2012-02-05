@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -21,6 +20,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -32,14 +32,7 @@
     The XML HTML Info example provides a simple command line utility that
     scans the current directory for HTML files and prints statistics about
     them to standard out.
-    
-    \note Standard out is redirected on some platforms. On Symbian using Open
-    C \c stdout is by default directed to the console window, but this window
-    may not always be visible. To redirect to a file instead, locate the \c
-    c:\\system\\data\\config.ini file (on either the emulator or the device)
-    and change \c STDOUT to point to \c MEDIA4. This will redirect the console
-    to \c c:\\system\\data\\out.txt.
-    
+
     The files are parsed using a QXmlStreamReader object. If the file does
     not contain a well-formed XML document, a description of the error is
     printed to the standard error console.

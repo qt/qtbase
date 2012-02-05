@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -144,12 +144,6 @@
 #ifndef QT_NO_IMAGEFORMAT_JPEG
 #include <private/qjpeghandler_p.h>
 #endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-#include <private/qmnghandler_p.h>
-#endif
-#ifndef QT_NO_IMAGEFORMAT_TIFF
-#include <private/qtiffhandler_p.h>
-#endif
 #ifdef QT_BUILTIN_GIF_READER
 #include <private/qgifhandler_p.h>
 #endif
@@ -167,12 +161,6 @@ enum _qt_BuiltInFormatType {
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
     _qt_JpgFormat,
-#endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-    _qt_MngFormat,
-#endif
-#ifndef QT_NO_IMAGEFORMAT_TIFF
-    _qt_TifFormat,
 #endif
 #ifdef QT_BUILTIN_GIF_READER
     _qt_GifFormat,
@@ -205,12 +193,6 @@ static const _qt_BuiltInFormatStruct _qt_BuiltInFormats[] = {
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
     {_qt_JpgFormat, "jpg"},
-#endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-    {_qt_MngFormat, "mng"},
-#endif
-#ifndef QT_NO_IMAGEFORMAT_TIFF
-    {_qt_TifFormat, "tif"},
 #endif
 #ifdef QT_BUILTIN_GIF_READER
     {_qt_GifFormat, "gif"},
@@ -344,14 +326,6 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
         } else if (testFormat == "jpg" || testFormat == "jpeg") {
             handler = new QJpegHandler;
 #endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-        } else if (testFormat == "mng") {
-            handler = new QMngHandler;
-#endif
-#ifndef QT_NO_IMAGEFORMAT_TIFF
-        } else if (testFormat == "tif" || testFormat == "tiff") {
-            handler = new QTiffHandler;
-#endif
 #ifdef QT_BUILTIN_GIF_READER
         } else if (testFormat == "gif") {
             handler = new QGifHandler;
@@ -438,18 +412,6 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
             case _qt_JpgFormat:
                 if (QJpegHandler::canRead(device))
                     handler = new QJpegHandler;
-                break;
-#endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-            case _qt_MngFormat:
-                if (QMngHandler::canRead(device))
-                    handler = new QMngHandler;
-                break;
-#endif
-#ifndef QT_NO_IMAGEFORMAT_TIFF
-            case _qt_TifFormat:
-                if (QTiffHandler::canRead(device))
-                    handler = new QTiffHandler;
                 break;
 #endif
 #ifdef QT_BUILTIN_GIF_READER
@@ -1466,23 +1428,18 @@ QByteArray QImageReader::imageFormat(QIODevice *device)
     \row    \o GIF    \o Graphic Interchange Format (optional)
     \row    \o JPG    \o Joint Photographic Experts Group
     \row    \o JPEG   \o Joint Photographic Experts Group
-    \row    \o MNG    \o Multiple-image Network Graphics
     \row    \o PNG    \o Portable Network Graphics
     \row    \o PBM    \o Portable Bitmap
     \row    \o PGM    \o Portable Graymap
     \row    \o PPM    \o Portable Pixmap
-    \row    \o TIFF   \o Tagged Image File Format
     \row    \o XBM    \o X11 Bitmap
     \row    \o XPM    \o X11 Pixmap
     \row    \o SVG    \o Scalable Vector Graphics
     \endtable
 
     Reading and writing SVG files is supported through Qt's
-    \l{QtSvg Module}{SVG Module}.
-
-    To configure Qt with GIF support, pass \c -qt-gif to the \c
-    configure script or check the appropriate option in the graphical
-    installer.
+    \l{QtSvg Module}{SVG Module}. The \l{QtImageFormats Module}{Image Formats Module}
+    provides support for additional image formats.
 
     Note that the QApplication instance must be created before this function is
     called.

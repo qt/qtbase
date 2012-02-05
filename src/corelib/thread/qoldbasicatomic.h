@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,12 +34,13 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#ifndef QBASICATOMIC_H
-#define QBASICATOMIC_H
+#ifndef QOLDBASICATOMIC_H
+#define QOLDBASICATOMIC_H
 
 #include <QtCore/qglobal.h>
 
@@ -48,7 +48,11 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
+
+#if 0
+#pragma qt_no_master_include
+#pragma qt_sync_stop_processing
+#endif
 
 class Q_CORE_EXPORT QBasicAtomicInt
 {
@@ -166,10 +170,6 @@ public:
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#if defined(QT_MOC) || defined(QT_BUILD_QMAKE) || defined(QT_RCC) || defined(QT_UIC) || defined(QT_BOOTSTRAPPED)
-#  include <QtCore/qatomic_bootstrap.h>
-#else
 #  include <QtCore/qatomic_arch.h>
-#endif
 
 #endif // QBASIC_ATOMIC

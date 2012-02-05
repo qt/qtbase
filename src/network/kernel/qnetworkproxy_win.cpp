@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,11 +47,11 @@
 #include <qstringlist.h>
 #include <qregexp.h>
 #include <qurl.h>
+#include <private/qsystemlibrary_p.h>
 
 #include <string.h>
 #include <qt_windows.h>
 #include <wininet.h>
-#include <private/qsystemlibrary_p.h>
 
 /*
  * Information on the WinHTTP DLL:

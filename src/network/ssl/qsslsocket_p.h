@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
     typedef OSStatus (*PtrSecTrustSettingsCopyCertificates)(int, CFArrayRef*);
     typedef OSStatus (*PtrSecTrustCopyAnchorCertificates)(CFArrayRef*);
 #elif defined(Q_OS_WIN)
-#include <windows.h>
+#include <QtCore/qt_windows.h>
 #include <wincrypt.h>
 #ifndef HCRYPTPROV_LEGACY
 #define HCRYPTPROV_LEGACY HCRYPTPROV
@@ -149,6 +149,7 @@ public:
     void createPlainSocket(QIODevice::OpenMode openMode);
     static void pauseSocketNotifiers(QSslSocket*);
     static void resumeSocketNotifiers(QSslSocket*);
+    bool isPaused() const;
     void _q_connectedSlot();
     void _q_hostFoundSlot();
     void _q_disconnectedSlot();
@@ -158,6 +159,7 @@ public:
     void _q_bytesWrittenSlot(qint64);
     void _q_flushWriteBuffer();
     void _q_flushReadBuffer();
+    void _q_resumeImplementation();
 
     // Platform specific functions
     virtual void startClientEncryption() = 0;
@@ -166,6 +168,7 @@ public:
     virtual void disconnectFromHost() = 0;
     virtual void disconnected() = 0;
     virtual QSslCipher sessionCipher() const = 0;
+    virtual void continueHandshake() = 0;
 
 private:
     static bool ensureLibraryLoaded();
@@ -174,8 +177,10 @@ private:
     static bool s_libraryLoaded;
     static bool s_loadedCiphersAndCerts;
 protected:
+    bool verifyErrorsHaveBeenIgnored();
     static bool s_loadRootCertsOnDemand;
     static QList<QByteArray> unixRootCertDirectories();
+    bool paused;
 };
 
 QT_END_NAMESPACE

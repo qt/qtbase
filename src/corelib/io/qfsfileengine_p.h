@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,10 +59,6 @@
 #include <QtCore/private/qfilesystementry_p.h>
 #include <QtCore/private/qfilesystemmetadata_p.h>
 #include <qhash.h>
-
-#ifdef Q_OS_SYMBIAN
-#include <f32file.h>
-#endif
 
 #ifndef QT_NO_FSFILEENGINE
 
@@ -117,31 +113,6 @@ public:
     mutable QFileSystemMetaData metaData;
 
     FILE *fh;
-#ifdef Q_OS_SYMBIAN
-#ifdef  SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
-    RFile64 symbianFile;
-    TInt64 symbianFilePos;
-#else
-    RFile symbianFile;
-    
-    /**
-     * The cursor position in the underlying file.  This differs
-     * from devicePos because the latter is updated on calls to
-     * writeData, even if no data was physically transferred to
-     * the file, but instead stored in the write buffer.
-     * 
-     * iFilePos is updated on calls to RFile::Read and
-     * RFile::Write.  It is also updated on calls to seek() but
-     * RFile::Seek is not called when that happens because
-     * Symbian supports positioned reads and writes, saving a file
-     * server call, and because Symbian does not support seeking
-     * past the end of a file.  
-     */
-    TInt symbianFilePos;
-#endif
-    mutable int fileHandleForMaps;
-    int getMapHandle();
-#endif
 
 #ifdef Q_OS_WIN
     HANDLE fileHandle;

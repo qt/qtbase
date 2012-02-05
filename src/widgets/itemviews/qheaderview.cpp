@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -481,15 +481,17 @@ void QHeaderView::setOffset(int newOffset)
 
 /*!
     \since 4.2
-    Sets the offset to the start of the section at the given \a visualIndex.
+    Sets the offset to the start of the section at the given \a visualSectionNumber.
+    \a visualSectionNumber is the actual visible section when hiddenSections are
+    not considered. That is not always the same as \a visualIndex.
 
     \sa setOffset(), sectionPosition()
 */
-void QHeaderView::setOffsetToSectionPosition(int visualIndex)
+void QHeaderView::setOffsetToSectionPosition(int visualSectionNumber)
 {
     Q_D(QHeaderView);
-    if (visualIndex > -1 && visualIndex < d->sectionCount) {
-        int position = d->headerSectionPosition(d->adjustedVisualIndex(visualIndex));
+    if (visualSectionNumber > -1 && visualSectionNumber < d->sectionCount) {
+        int position = d->headerSectionPosition(d->adjustedVisualIndex(visualSectionNumber));
         setOffset(position);
     }
 }
@@ -517,6 +519,8 @@ void QHeaderView::setOffsetToLastSection()
 int QHeaderView::length() const
 {
     Q_D(const QHeaderView);
+    d->executePostedLayout();
+    d->executePostedResize();
     //Q_ASSERT(d->headerLength() == d->length);
     return d->length;
 }
@@ -870,7 +874,7 @@ void QHeaderView::swapSections(int first, int second)
 void QHeaderView::resizeSection(int logical, int size)
 {
     Q_D(QHeaderView);
-    if (logical < 0 || logical >= count())
+    if (logical < 0 || logical >= count() || size < 0)
         return;
 
     if (isSectionHidden(logical)) {
@@ -895,6 +899,8 @@ void QHeaderView::resizeSection(int logical, int size)
     d->createSectionSpan(visual, visual, size, d->headerSectionResizeMode(visual));
 
     if (!updatesEnabled()) {
+        if (d->hasAutoResizeSections())
+            d->doDelayedResizeSections();
         emit sectionResized(logical, oldSize, size);
         return;
     }
@@ -1934,7 +1940,7 @@ void QHeaderView::initializeSections(int start, int end)
 
     if (end + 1 < d->sectionCount) {
         int newCount = end + 1;
-        d->removeSectionsFromSpans(newCount, d->sectionCount);
+        d->removeSectionsFromSpans(newCount, d->sectionCount - 1);
         if (!d->hiddenSectionSize.isEmpty()) {
             if (d->sectionCount - newCount > d->hiddenSectionSize.count()) {
                 for (int i = end + 1; i < d->sectionCount; ++i)

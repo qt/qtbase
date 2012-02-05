@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>stream/qt4.9/</file>
+    <file>stream/qt5.0/</file>
+</qresource>
+</RCC>

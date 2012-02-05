@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -64,10 +64,6 @@
 #include <qvalidator.h>
 #include <private/qdialog_p.h>
 #include <private/qfont_p.h>
-
-#if defined(Q_WS_S60)
-#include <QtWidgets/qdesktopwidget.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -322,8 +318,6 @@ void QFontDialogPrivate::init()
 
 #if defined(Q_WS_WINCE)
     q->resize(180, 120);
-#elif defined(Q_WS_S60)
-    q->resize(QApplication::desktop()->availableGeometry(QCursor::pos()).size());
 #else
     q->resize(500, 360);
 #endif // Q_WS_WINCE
@@ -381,23 +375,6 @@ QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget *parent, cons
                            FontDialogOptions options)
 {
     return QFontDialogPrivate::getFont(ok, initial, parent, title, options);
-}
-
-/*!
-    \overload
-    \since 4.5
-*/
-QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget *parent, const QString &title)
-{
-    return QFontDialogPrivate::getFont(ok, initial, parent, title, 0);
-}
-
-/*!
-    \overload
-*/
-QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget *parent)
-{
-    return QFontDialogPrivate::getFont(ok, initial, parent, QString(), 0);
 }
 
 /*!
@@ -782,11 +759,7 @@ void QFontDialogPrivate::retranslateStrings()
     familyAccel->setText(QFontDialog::tr("&Font"));
     styleAccel->setText(QFontDialog::tr("Font st&yle"));
     sizeAccel->setText(QFontDialog::tr("&Size"));
-#ifndef Q_WS_S60
-    // Removed the title due to lack of screen estate in small S60 screen.
-    // The effects are descriptive without a title (strikeout, underline).
     effects->setTitle(QFontDialog::tr("Effects"));
-#endif
     strikeout->setText(QFontDialog::tr("Stri&keout"));
     underline->setText(QFontDialog::tr("&Underline"));
     sample->setTitle(QFontDialog::tr("Sample"));

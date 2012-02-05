@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,6 +59,23 @@
 Q_DECLARE_METATYPE(QRect)
 
 QT_FORWARD_DECLARE_CLASS(QPrinter)
+
+// Helper class to make sure temp files are cleaned up after test complete
+class TempFileCleanup
+{
+public:
+    TempFileCleanup(const QString &file)
+        : m_file(file)
+    {
+    }
+
+    ~TempFileCleanup()
+    {
+        QFile::remove(m_file);
+    }
+private:
+    QString m_file;
+};
 
 class tst_QPrinter : public QObject
 {
@@ -288,6 +305,7 @@ void tst_QPrinter::testPageRectAndPaperRect()
     QPrinter printer(QPrinter::HighResolution);
     printer.setOrientation(QPrinter::Orientation(orientation));
     printer.setOutputFileName("silly");
+    TempFileCleanup tmpFile("silly");
 
     QRect pageRect = doPaperRect ? printer.paperRect() : printer.pageRect();
     float inchesX = float(pageRect.width()) / float(printer.resolution());
@@ -376,6 +394,7 @@ void tst_QPrinter::testMargins()
 
     if (painter)
         delete painter;
+    QFile::remove("silly");
 }
 
 void tst_QPrinter::testNonExistentPrinter()
@@ -505,6 +524,7 @@ void tst_QPrinter::outputFormatFromSuffix()
     QPrinter p;
     QVERIFY(p.outputFormat() == QPrinter::NativeFormat);
     p.setOutputFileName("test.pdf");
+    TempFileCleanup tmpFile("test.pdf");
     QVERIFY(p.outputFormat() == QPrinter::PdfFormat);
     p.setOutputFileName(QString());
     QVERIFY(p.outputFormat() == QPrinter::NativeFormat);
@@ -865,6 +885,7 @@ void tst_QPrinter::errorReporting()
     QCOMPARE(painter.begin(&p), false); // it should check the output file is writable
 #endif
     p.setOutputFileName("test.pdf");
+    TempFileCleanup tmpFile("test.pdf");
     QCOMPARE(painter.begin(&p), true); // it should check the output
     QCOMPARE(p.isValid(), true);
     painter.end();
@@ -891,6 +912,7 @@ void tst_QPrinter::printDialogCompleter()
 {
     QPrintDialog dialog;
     dialog.printer()->setOutputFileName("file.pdf");
+    TempFileCleanup tmpFile("file.pdf");
     dialog.setEnabledOptions(QAbstractPrintDialog::PrintToFile);
     dialog.show();
 
@@ -917,6 +939,9 @@ static void printPage(QPainter *painter)
 
 void tst_QPrinter::taskQTBUG4497_reusePrinterOnDifferentFiles()
 {
+    TempFileCleanup tmpFile1("out1.ps");
+    TempFileCleanup tmpFile2("out2.ps");
+
     QPrinter printer;
     {
 
@@ -978,6 +1003,7 @@ void tst_QPrinter::testPdfTitle()
         painter.begin(&printer);
         painter.end();
     }
+    TempFileCleanup tmpFile("file.pdf");
     QFile file("file.pdf");
     QVERIFY(file.open(QIODevice::ReadOnly));
     // The we expect the title to appear in the PDF as:

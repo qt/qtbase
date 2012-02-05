@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1510,7 +1510,7 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
        Cursor attributes and render them as specified.
     \endlist
 
-    \sa QInputContext
+    \sa QInputMethod
 */
 
 /*!
@@ -1872,14 +1872,13 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
   \sa pos() globalPos() device() pressure() xTilt() yTilt() uniqueId(), rotation(), tangentialPressure(), z()
 */
 
-QTabletEvent::QTabletEvent(Type type, const QPoint &pos, const QPoint &globalPos,
-                           const QPointF &hiResGlobalPos, int device, int pointerType,
+QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalPos,
+                           int device, int pointerType,
                            qreal pressure, int xTilt, int yTilt, qreal tangentialPressure,
                            qreal rotation, int z, Qt::KeyboardModifiers keyState, qint64 uniqueID)
     : QInputEvent(type, keyState),
       mPos(pos),
       mGPos(globalPos),
-      mHiResGlobalPos(hiResGlobalPos),
       mDev(device),
       mPointerType(pointerType),
       mXT(xTilt),
@@ -2208,7 +2207,7 @@ QDragMoveEvent::~QDragMoveEvent()
     The states of the mouse buttons and keyboard modifiers at the time of
     the drop are specified by \a buttons and \a modifiers.
 */ // ### pos is in which coordinate system?
-QDropEvent::QDropEvent(const QPoint& pos, Qt::DropActions actions, const QMimeData *data,
+QDropEvent::QDropEvent(const QPointF& pos, Qt::DropActions actions, const QMimeData *data,
                        Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type)
     : QEvent(type), p(pos), mouseState(buttons),
       modState(modifiers), act(actions),
@@ -2743,7 +2742,7 @@ QShowEvent::~QShowEvent()
     This event is only used to notify the application of a request.
     It may be safely ignored.
 
-    \note This class is currently supported for Mac OS X and Symbian only.
+    \note This class is currently supported for Mac OS X only.
 */
 
 QFileOpenEventPrivate::~QFileOpenEventPrivate()
@@ -2807,8 +2806,6 @@ QUrl QFileOpenEvent::url() const
 
     This is necessary as some files cannot be opened by name, but require specific
     information stored in this event.
-    For example, if this QFileOpenEvent contains a request to open a Symbian data caged file,
-    the QFile could only be opened from the Symbian RFile used in the construction of this event.
 
     \since 4.8
 */
@@ -3570,9 +3567,8 @@ QTouchEvent::TouchPoint::~TouchPoint()
 /*!
     Returns the id number of this touch point.
 
-    Id numbers are globally sequential, starting at zero, meaning the
-    first touch point in the application has id 0, the second has id 1,
-    and so on.
+    Do not assume that id numbers start at zero or that they are sequential.
+    Such an assumption is often false due to the way the underlying drivers work.
 */
 int QTouchEvent::TouchPoint::id() const
 {

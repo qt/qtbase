@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -75,7 +75,7 @@
 #include <qvariant.h>
 #include <qurl.h>
 #include <qdesktopservices.h>
-#include <qinputpanel.h>
+#include <qinputmethod.h>
 #include <qtooltip.h>
 #include <qstyleoption.h>
 #include <QtWidgets/qlineedit.h>
@@ -1689,7 +1689,7 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
             _q_updateCurrentCharFormatAndSelection();
 #ifndef QT_NO_IM
             if (contextWidget)
-                qApp->inputPanel()->update(Qt::ImQueryInput);
+                qApp->inputMethod()->update(Qt::ImQueryInput);
 #endif //QT_NO_IM
         } else {
             //emit q->visibilityRequest(QRectF(mousePos, QSizeF(1, 1)));
@@ -1836,7 +1836,7 @@ bool QWidgetTextControlPrivate::sendMouseEventToInputContext(
 
         if (cursorPos >= 0) {
             if (e->type() == QEvent::MouseButtonRelease)
-                qApp->inputPanel()->invokeAction(QInputPanel::Click, cursorPos);
+                qApp->inputMethod()->invokeAction(QInputMethod::Click, cursorPos);
 
             e->setAccepted(true);
             return true;
@@ -2755,7 +2755,7 @@ void QWidgetTextControlPrivate::commitPreedit()
         return;
 
     cursor.beginEditBlock();
-    qApp->inputPanel()->reset();
+    qApp->inputMethod()->reset();
 
     if (!tentativeCommit.isEmpty()) {
         cursor.insertText(tentativeCommit);

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -65,19 +65,22 @@
 #include <QtGui/qfontmetrics.h>
 #include <QtGui/qclipboard.h>
 
-#ifndef QT_NO_STYLE_S60
-#include <qs60style.h>
-#endif
-
-#ifdef Q_WS_WINCE
-extern bool qt_wince_is_mobile();    //defined in qguifunctions_wince.cpp
-extern bool qt_wince_is_smartphone();//defined in qguifunctions_wince.cpp
-extern bool qt_wince_is_pocket_pc(); //defined in qguifunctions_wince.cpp
-
-#include "qguifunctions_wince.h"
+#ifdef Q_OS_WIN
+#    include <QtCore/qt_windows.h>
+#    include <QtGui/QPlatformNativeInterface>
 #endif
 
 QT_BEGIN_NAMESPACE
+
+#ifdef Q_OS_WIN
+HMENU qt_getWindowsSystemMenu(const QWidget *w)
+{
+    if (QWindow *window = QApplicationPrivate::windowForWidget(w))
+        if (void *handle = QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", window))
+            return GetSystemMenu(reinterpret_cast<HWND>(handle), FALSE);
+    return 0;
+}
+#endif
 
 enum Button { Old_Ok = 1, Old_Cancel = 2, Old_Yes = 3, Old_No = 4, Old_Abort = 5, Old_Retry = 6,
               Old_Ignore = 7, Old_YesAll = 8, Old_NoAll = 9, Old_ButtonMask = 0xFF,
@@ -346,15 +349,6 @@ void QMessageBoxPrivate::updateSize()
             width = hardLimit;
         }
     }
-#ifdef Q_WS_S60
-        // in S60 portait messageBoxes should always occupy maximum width
-        if (QApplication::desktop()->size().height() > QApplication::desktop()->size().width()){
-            width = hardLimit;
-        } else {
-            // in landscape the messageBoxes should be of same width as in portrait
-            width = qMin(QApplication::desktop()->size().height(), hardLimit);
-        }
-#endif
 
     if (informativeLabel) {
         label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
@@ -384,15 +378,6 @@ void QMessageBoxPrivate::updateSize()
     int height = (layout->hasHeightForWidth())
                      ? layout->totalHeightForWidth(width)
                      : layout->totalMinimumSize().height();
-
-#ifndef QT_NO_STYLE_S60
-        QS60Style *s60Style = 0;
-        s60Style = qobject_cast<QS60Style *>(QApplication::style());
-
-        //use custom pixel metric to deduce the minimum height of the messagebox
-        if (s60Style)
-            height = qMax(height, s60Style->pixelMetric((QStyle::PixelMetric)PM_MessageBoxHeight));
-#endif
 
     q->setFixedSize(width, height);
     QCoreApplication::removePostedEvents(q, QEvent::LayoutRequest);
@@ -1478,15 +1463,12 @@ void QMessageBox::showEvent(QShowEvent *e)
     d->updateSize();
 
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(this, 0, QAccessible::Alert);
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Alert, this, 0));
 #endif
-#ifdef Q_WS_WIN
-    HMENU systemMenu = GetSystemMenu((HWND)winId(), FALSE);
-    if (!d->detectedEscapeButton) {
-        EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
-    }
-    else {
-        EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_ENABLED);
+#ifdef Q_OS_WIN
+    if (const HMENU systemMenu = qt_getWindowsSystemMenu(this)) {
+        EnableMenuItem(systemMenu, SC_CLOSE, d->detectedEscapeButton ?
+                       MF_BYCOMMAND|MF_ENABLED : MF_BYCOMMAND|MF_GRAYED);
     }
 #endif
     QDialog::showEvent(e);
@@ -1808,15 +1790,6 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
 #else
     msgBox->exec();
 #endif
-}
-
-/*!
-    \internal
-*/
-QSize QMessageBox::sizeHint() const
-{
-    // ### Qt 5: remove
-    return QDialog::sizeHint();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

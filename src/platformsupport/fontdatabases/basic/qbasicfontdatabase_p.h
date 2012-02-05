@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,6 +45,8 @@
 #include <QPlatformFontDatabase>
 #include <QtCore/QByteArray>
 #include <QtCore/QString>
+
+QT_BEGIN_NAMESPACE
 
 struct FontFile
 {
@@ -65,5 +67,7 @@ public:
     static QStringList addTTFile(const QByteArray &fontData, const QByteArray &file);
     static QSupportedWritingSystems determineWritingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2]);
 };
+
+QT_END_NAMESPACE
 
 #endif // QBASICFONTDATABASE_H

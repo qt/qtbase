@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -64,9 +64,9 @@
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #  include <qlibrary.h>
-#  include <windows.h>
+#  include <qt_windows.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -304,11 +304,6 @@ void QAbstractScrollAreaPrivate::init()
 #ifndef Q_WS_MAC
 #  ifndef QT_NO_GESTURES
     viewport->grabGesture(Qt::PanGesture);
-#  endif
-#endif
-#ifdef Q_WS_MAEMO_5
-#  ifndef QT_NO_GESTURES
-    // viewport->grabGesture(Qt::TouchFlickGesture);
 #  endif
 #endif
 }
@@ -562,11 +557,6 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
 #ifndef Q_WS_MAC
 #ifndef QT_NO_GESTURES
         d->viewport->grabGesture(Qt::PanGesture);
-#endif
-#endif
-#ifdef Q_WS_MAEMO_5
-#ifndef QT_NO_GESTURES
-//        d->viewport->grabGesture(Qt::TouchFlickGesture);
 #endif
 #endif
         d->layoutChildren();

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -144,6 +144,8 @@ private slots:
 
     void deepCopyWhenPaintingActive();
     void scaled_QTBUG19157();
+
+    void cleanupFunctions();
 };
 
 tst_QImage::tst_QImage()
@@ -261,7 +263,10 @@ void tst_QImage::formatHandlersInput_data()
 {
     QTest::addColumn<QString>("testFormat");
     QTest::addColumn<QString>("testFile");
-    const QString prefix = QLatin1String(SRCDIR) + "/images/";
+
+    const QString prefix = QFINDTESTDATA("images/");
+    if (prefix.isEmpty())
+        QFAIL("can not find images directory!");
 
     // add a new line here when a file is added
     QTest::newRow("ICO") << "ICO" << prefix + "image.ico";
@@ -274,9 +279,6 @@ void tst_QImage::formatHandlersInput_data()
     QTest::newRow("PPM") << "PPM" << prefix + "image.ppm";
     QTest::newRow("XBM") << "XBM" << prefix + "image.xbm";
     QTest::newRow("XPM") << "XPM" << prefix + "image.xpm";
-#if defined QTEST_HAVE_TIFF
-    QTest::newRow("TIFF") << "TIFF" << prefix + "image.tif";
-#endif
 }
 
 void tst_QImage::formatHandlersInput()
@@ -1995,6 +1997,41 @@ void tst_QImage::scaled_QTBUG19157()
     QImage foo(5000, 1, QImage::Format_RGB32);
     foo = foo.scaled(1024, 1024, Qt::KeepAspectRatio);
     QVERIFY(!foo.isNull());
+}
+
+static void cleanupFunction(void* info)
+{
+    bool *called = static_cast<bool*>(info);
+    *called = true;
+}
+
+void tst_QImage::cleanupFunctions()
+{
+    QImage bufferImage(64, 64, QImage::Format_ARGB32);
+    bufferImage.fill(0);
+
+    bool called;
+
+    {
+        called = false;
+        {
+            QImage image(bufferImage.bits(), bufferImage.width(), bufferImage.height(), bufferImage.format(), cleanupFunction, &called);
+        }
+        QVERIFY(called);
+    }
+
+    {
+        called = false;
+        QImage *copy = 0;
+        {
+            QImage image(bufferImage.bits(), bufferImage.width(), bufferImage.height(), bufferImage.format(), cleanupFunction, &called);
+            copy = new QImage(image);
+        }
+        QVERIFY(!called);
+        delete copy;
+        QVERIFY(called);
+    }
+
 }
 
 QTEST_MAIN(tst_QImage)

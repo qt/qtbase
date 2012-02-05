@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,18 +49,18 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_ACCESSIBILITY
 
 class QAccessibleInterface;
+class QAccessibleEvent;
 
 class QAccessibleBridge
 {
 public:
     virtual ~QAccessibleBridge() {}
     virtual void setRootObject(QAccessibleInterface *) = 0;
-    virtual void notifyAccessibilityUpdate(int, QAccessibleInterface*, int) = 0;
+    virtual void notifyAccessibilityUpdate(const QAccessibleEvent &event) = 0;
 };
 
 struct Q_GUI_EXPORT QAccessibleBridgeFactoryInterface : public QFactoryInterface
@@ -68,7 +68,7 @@ struct Q_GUI_EXPORT QAccessibleBridgeFactoryInterface : public QFactoryInterface
     virtual QAccessibleBridge *create(const QString& name) = 0;
 };
 
-#define QAccessibleBridgeFactoryInterface_iid "com.trolltech.Qt.QAccessibleBridgeFactoryInterface"
+#define QAccessibleBridgeFactoryInterface_iid "org.qt-project.Qt.QAccessibleBridgeFactoryInterface"
 Q_DECLARE_INTERFACE(QAccessibleBridgeFactoryInterface, QAccessibleBridgeFactoryInterface_iid)
 
 class Q_GUI_EXPORT QAccessibleBridgePlugin : public QObject, public QAccessibleBridgeFactoryInterface

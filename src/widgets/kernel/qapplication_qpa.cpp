@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,6 @@
 #include "private/qplatformintegrationfactory_qpa_p.h"
 #include <qdesktopwidget.h>
 
-#include <qinputcontext.h>
 #include <QPlatformCursor>
 #include <qdebug.h>
 #include <QWindowSystemInterface>
@@ -63,6 +62,10 @@
 
 #include "qdesktopwidget_qpa_p.h"
 #include "qwidgetwindow_qpa_p.h"
+
+#ifdef Q_OS_WIN
+#  include <QtCore/qt_windows.h> // for qt_win_display_dc()
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -391,13 +394,10 @@ void qt_init(QApplicationPrivate *priv, int type)
     QColormap::initialize();
 
     qApp->setObjectName(appName);
-
-#ifndef QT_NO_QWS_INPUTMETHODS
-    priv->setInputContext(new QInputContext(qApp));
-#endif
 }
 
 #ifdef Q_OS_WIN
+// #fixme: Remove.
 static HDC         displayDC        = 0;                // display device context
 
 Q_WIDGETS_EXPORT HDC qt_win_display_dc()                        // get display DC
@@ -413,8 +413,6 @@ void qt_cleanup()
 {
     QPixmapCache::clear();
     QColormap::cleanup();
-    delete QApplicationPrivate::inputContext;
-    QApplicationPrivate::inputContext = 0;
 
     QApplicationPrivate::active_window = 0; //### this should not be necessary
 #ifdef Q_OS_WIN

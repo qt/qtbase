@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,7 @@
 #include "qdir.h"
 #include "qstringlist.h"
 #include "qdatetime.h"
+#include "qdebug.h"
 
 #ifndef QT_NO_QOBJECT
 #include <private/qthread_p.h>
@@ -442,8 +443,12 @@ QT_BEGIN_NAMESPACE
 
     Finally, the QtMsgType definition identifies the various messages
     that can be generated and sent to a Qt message handler;
-    QtMsgHandler is a type definition for a pointer to a function with
-    the signature \c {void myMsgHandler(QtMsgType, const char *)}.
+    QMessageHandler is a type definition for a pointer to a function with
+    the signature
+    \c {void myMessageHandler(QtMsgType, const QMessageLogContext &, const char *)}.
+    QMessageLogContext class contains the line, file, and function the
+    message was logged at. This information is created by the QMessageLogger
+    class.
 
     \section1 Functions
 
@@ -473,8 +478,8 @@ QT_BEGIN_NAMESPACE
     The remaining functions are qRound() and qRound64(), which both
     accept a \l qreal value as their argument returning the value
     rounded up to the nearest integer and 64-bit integer respectively,
-    the qInstallMsgHandler() function which installs the given
-    QtMsgHandler, and the qVersion() function which returns the
+    the qInstallMessageHandler() function which installs the given
+    QMessageHandler, and the qVersion() function which returns the
     version number of Qt at run-time as a string.
 
     \section1 Macros
@@ -675,14 +680,30 @@ QT_BEGIN_NAMESPACE
 /*!
     \typedef QtMsgHandler
     \relates <QtGlobal>
+    \deprecated
 
     This is a typedef for a pointer to a function with the following
     signature:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 7
 
-    \sa QtMsgType, qInstallMsgHandler()
+    This typedef is deprecated, you should use QMessageHandler instead.
+    \sa QtMsgType, QMessageHandler, qInstallMsgHandler(), qInstallMessageHandler()
 */
+
+/*!
+    \typedef QMessageHandler
+    \relates <QtGlobal>
+    \since 5.0
+
+    This is a typedef for a pointer to a function with the following
+    signature:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 49
+
+    \sa QtMsgType, qInstallMessageHandler()
+*/
+
 
 /*!
     \enum QtMsgType
@@ -704,7 +725,7 @@ QT_BEGIN_NAMESPACE
     \value QtSystemMsg
 
 
-    \sa QtMsgHandler, qInstallMsgHandler()
+    \sa QMessageHandler, qInstallMessageHandler()
 */
 
 /*! \typedef QFunctionPointer
@@ -1232,14 +1253,6 @@ bool qSharedBuild()
 */
 
 /*!
-    \macro Q_CC_MWERKS
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Metrowerks
-    CodeWarrior.
-*/
-
-/*!
     \macro Q_CC_MSVC
     \relates <QtGlobal>
 
@@ -1375,13 +1388,6 @@ bool qSharedBuild()
   \relates <QtGlobal>
 
   Defined on MAC OS (synonym for Darwin).
- */
-
-/*!
-  \macro Q_OS_SYMBIAN
-  \relates <QtGlobal>
-
-  Defined on Symbian.
  */
 
 /*!
@@ -1720,21 +1726,8 @@ Q_CORE_EXPORT unsigned int qt_int_sqrt(unsigned int n)
 void *qMemCopy(void *dest, const void *src, size_t n) { return memcpy(dest, src, n); }
 void *qMemSet(void *dest, int c, size_t n) { return memset(dest, c, n); }
 
-static QtMsgHandler handler = 0;                // pointer to debug handler
-
-#if defined(Q_CC_MWERKS) && defined(Q_OS_MACX)
-extern bool qt_is_gui_used;
-static void mac_default_handler(const char *msg)
-{
-    if (qt_is_gui_used) {
-        Str255 pmsg;
-        qt_mac_to_pascal_string(msg, pmsg);
-        DebugStr(pmsg);
-    } else {
-        fprintf(stderr, msg);
-    }
-}
-#endif // Q_CC_MWERKS && Q_OS_MACX
+static QtMsgHandler msgHandler = 0;                // pointer to debug handler (without context)
+static QMessageHandler messageHandler = 0;         // pointer to debug handler (with context)
 
 #if !defined(Q_OS_WIN) && !defined(QT_NO_THREAD) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_QNX) && \
     defined(_POSIX_THREAD_SAFE_FUNCTIONS) && _POSIX_VERSION >= 200112L
@@ -1815,10 +1808,22 @@ QString qt_error_string(int errorCode)
     return ret.trimmed();
 }
 
-
 /*!
     \fn QtMsgHandler qInstallMsgHandler(QtMsgHandler handler)
     \relates <QtGlobal>
+    \deprecated
+
+    Installs a Qt message \a handler which has been defined
+    previously. This method is deprecated, use qInstallMessageHandler
+    instead.
+
+    \sa QtMsgHandler, qInstallMessageHandler
+*/
+
+/*!
+    \fn QMessageHandler qInstallMessageHandler(QMessageHandler handler)
+    \relates <QtGlobal>
+    \since 5.0
 
     Installs a Qt message \a handler which has been defined
     previously. Returns a pointer to the previous message handler
@@ -1840,7 +1845,7 @@ QString qt_error_string(int errorCode)
     Only one message handler can be defined, since this is usually
     done on an application-wide basis to control debug output.
 
-    To restore the message handler, call \c qInstallMsgHandler(0).
+    To restore the message handler, call \c qInstallMessageHandler(0).
 
     Example:
 
@@ -1849,9 +1854,12 @@ QString qt_error_string(int errorCode)
     \sa qDebug(), qWarning(), qCritical(), qFatal(), QtMsgType,
     {Debugging Techniques}
 */
+
 #if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
 extern bool usingWinMain;
-extern Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char* str);
+extern Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char *str);
+extern Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogContext &context,
+                                             const char *str);
 #endif
 
 /*!
@@ -1859,9 +1867,7 @@ extern Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char* str);
 */
 static void qDefaultMsgHandler(QtMsgType, const char *buf)
 {
-#if defined(Q_CC_MWERKS) && defined(Q_OS_MACX)
-        mac_default_handler(buf);
-#elif defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE)
         QString fstr = QString::fromLatin1(buf);
         fstr += QLatin1Char('\n');
         OutputDebugString(reinterpret_cast<const wchar_t *> (fstr.utf16()));
@@ -1871,17 +1877,38 @@ static void qDefaultMsgHandler(QtMsgType, const char *buf)
 #endif
 }
 
+/*!
+    \internal
+*/
+static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &, const char *buf)
+{
+    qDefaultMsgHandler(type, buf);
+}
+
+QMessageHandler qInstallMessageHandler(QMessageHandler h)
+{
+    if (!messageHandler)
+        messageHandler = qDefaultMessageHandler;
+    QMessageHandler old = messageHandler;
+    messageHandler = h;
+#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
+    if (!messageHandler && usingWinMain)
+        messageHandler = qWinMessageHandler;
+#endif
+    return old;
+}
+
 QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
 {
     //if handler is 0, set it to the
     //default message handler
-    if (!handler)
-        handler = qDefaultMsgHandler;
-    QtMsgHandler old = handler;
-    handler = h;
+    if (!msgHandler)
+        msgHandler = qDefaultMsgHandler;
+    QtMsgHandler old = msgHandler;
+    msgHandler = h;
 #if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-    if (!handler && usingWinMain)
-        handler = qWinMsgHandler;
+    if (!msgHandler && usingWinMain)
+        msgHandler = qWinMsgHandler;
 #endif
     return old;
 }
@@ -1889,11 +1916,20 @@ QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
 /*!
     \internal
 */
-void qt_message_output(QtMsgType msgType, const char *buf)
+void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, const char *buf)
 {
-    if (!handler)
-        handler = qDefaultMsgHandler;
-     (*handler)(msgType, buf);
+    if (!msgHandler)
+        msgHandler = qDefaultMsgHandler;
+    if (!messageHandler)
+        messageHandler = qDefaultMessageHandler;
+
+    // prefer new message handler over the old one
+    if (msgHandler == qDefaultMsgHandler
+            || messageHandler != qDefaultMessageHandler) {
+        (*messageHandler)(msgType, context, buf);
+    } else {
+        (*msgHandler)(msgType, buf);
+    }
 
     if (msgType == QtFatalMsg
         || (msgType == QtWarningMsg
@@ -1935,14 +1971,15 @@ static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
     emergency_buf[255] = '\0';
     if (msg)
         qvsnprintf(emergency_buf, 255, msg, ap);
-    qt_message_output(msgType, emergency_buf);
+    QMessageLogContext context;
+    qt_message_output(msgType, context, emergency_buf);
 }
 #endif
 
 /*!
     \internal
 */
-static void qt_message(QtMsgType msgType, const char *msg, va_list ap)
+static void qt_message(QtMsgType msgType, const QMessageLogContext &context, const char *msg, va_list ap)
 {
 #if !defined(QT_NO_EXCEPTIONS)
     if (std::uncaught_exception()) {
@@ -1962,11 +1999,12 @@ static void qt_message(QtMsgType msgType, const char *msg, va_list ap)
 #endif
         }
     }
-    qt_message_output(msgType, buf.constData());
+    qt_message_output(msgType, context, buf.constData());
 }
 
 #undef qDebug
 /*!
+    \fn qDebug(const char *message, ...)
     \relates <QtGlobal>
 
     Calls the message handler with the debug message \a msg. If no
@@ -1995,21 +2033,42 @@ static void qt_message(QtMsgType msgType, const char *msg, va_list ap)
     the end. It supports many C++ and Qt types.
 
     To suppress the output at run-time, install your own message handler
-    with qInstallMsgHandler().
+    with qInstallMessageHandler().
 
-    \sa qWarning(), qCritical(), qFatal(), qInstallMsgHandler(),
+    \sa qWarning(), qCritical(), qFatal(), qInstallMessageHandler(),
         {Debugging Techniques}
 */
-void qDebug(const char *msg, ...)
+
+void QMessageLogger::debug(const char *msg, ...)
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    qt_message(QtDebugMsg, msg, ap);
+    qt_message(QtDebugMsg, context, msg, ap);
     va_end(ap);
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+
+QDebug QMessageLogger::debug()
+{
+    QDebug dbg = QDebug(QtDebugMsg);
+    QMessageLogContext &ctxt = dbg.stream->context;
+    ctxt.file = context.file;
+    ctxt.line = context.line;
+    ctxt.function = context.function;
+    return dbg;
+}
+
+QNoDebug QMessageLogger::noDebug()
+{
+    return QNoDebug();
+}
+
+#endif
+
 #undef qWarning
 /*!
+    \fn qWarning(const char *message, ...)
     \relates <QtGlobal>
 
     Calls the message handler with the warning message \a msg. If no
@@ -2035,20 +2094,35 @@ void qDebug(const char *msg, ...)
     appends a newline at the end.
 
     To suppress the output at runtime, install your own message handler
-    with qInstallMsgHandler().
+    with qInstallMessageHandler().
 
-    \sa qDebug(), qCritical(), qFatal(), qInstallMsgHandler(),
+    \sa qDebug(), qCritical(), qFatal(), qInstallMessageHandler(),
         {Debugging Techniques}
 */
-void qWarning(const char *msg, ...)
+
+void QMessageLogger::warning(const char *msg, ...)
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    qt_message(QtWarningMsg, msg, ap);
+    qt_message(QtWarningMsg, context, msg, ap);
     va_end(ap);
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug QMessageLogger::warning()
+{
+    QDebug dbg = QDebug(QtWarningMsg);
+    QMessageLogContext &ctxt = dbg.stream->context;
+    ctxt.file = context.file;
+    ctxt.line = context.line;
+    ctxt.function = context.function;
+    return dbg;
+}
+#endif
+
+#undef qCritical
 /*!
+    \fn qCritical(const char *message, ...)
     \relates <QtGlobal>
 
     Calls the message handler with the critical message \a msg. If no
@@ -2071,18 +2145,31 @@ void qWarning(const char *msg, ...)
     appended at the end.
 
     To suppress the output at runtime, install your own message handler
-    with qInstallMsgHandler().
+    with qInstallMessageHandler().
 
-    \sa qDebug(), qWarning(), qFatal(), qInstallMsgHandler(),
+    \sa qDebug(), qWarning(), qFatal(), qInstallMessageHandler(),
         {Debugging Techniques}
 */
-void qCritical(const char *msg, ...)
+
+void QMessageLogger::critical(const char *msg, ...)
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    qt_message(QtCriticalMsg, msg, ap);
+    qt_message(QtCriticalMsg, context, msg, ap);
     va_end(ap);
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug QMessageLogger::critical()
+{
+    QDebug dbg = QDebug(QtCriticalMsg);
+    QMessageLogContext &ctxt = dbg.stream->context;
+    ctxt.file = context.file;
+    ctxt.line = context.line;
+    ctxt.function = context.function;
+    return dbg;
+}
+#endif
 
 void qErrnoWarning(const char *msg, ...)
 {
@@ -2095,7 +2182,8 @@ void qErrnoWarning(const char *msg, ...)
         buf.vsprintf(msg, ap);
     va_end(ap);
 
-    qCritical("%s (%s)", buf.toLocal8Bit().constData(), qt_error_string(-1).toLocal8Bit().constData());
+    QMessageLogger().critical("%s (%s)", buf.toLocal8Bit().constData(),
+                             qt_error_string(-1).toLocal8Bit().constData());
 }
 
 void qErrnoWarning(int code, const char *msg, ...)
@@ -2109,10 +2197,13 @@ void qErrnoWarning(int code, const char *msg, ...)
         buf.vsprintf(msg, ap);
     va_end(ap);
 
-    qCritical("%s (%s)", buf.toLocal8Bit().constData(), qt_error_string(code).toLocal8Bit().constData());
+    QMessageLogger().critical("%s (%s)", buf.toLocal8Bit().constData(),
+                             qt_error_string(code).toLocal8Bit().constData());
 }
 
+#undef qFatal
 /*!
+    \fn qFatal(const char *message, ...)
     \relates <QtGlobal>
 
     Calls the message handler with the fatal message \a msg. If no
@@ -2131,16 +2222,17 @@ void qErrnoWarning(int code, const char *msg, ...)
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 30
 
     To suppress the output at runtime, install your own message handler
-    with qInstallMsgHandler().
+    with qInstallMessageHandler().
 
-    \sa qDebug(), qCritical(), qWarning(), qInstallMsgHandler(),
+    \sa qDebug(), qCritical(), qWarning(), qInstallMessageHandler(),
         {Debugging Techniques}
 */
-void qFatal(const char *msg, ...)
+
+void QMessageLogger::fatal(const char *msg, ...)
 {
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    qt_message(QtFatalMsg, msg, ap);
+    qt_message(QtFatalMsg, context, msg, ap);
     va_end(ap);
 }
 

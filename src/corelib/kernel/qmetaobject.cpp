@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -2105,8 +2105,6 @@ QVariant::Type QMetaProperty::type() const
     uint flags = mobj->d.data[handle + 2];
 
     uint type = flags >> 24;
-    if (type == 0xff) // special value for QVariant
-        type = QVariant::LastType;
     if (type)
         return QVariant::Type(type);
     if (isEnumType()) {
@@ -2241,8 +2239,6 @@ QVariant QMetaProperty::read(const QObject *object) const
         uint flags = mobj->d.data[handle + 2];
         const char *typeName = mobj->d.stringdata + mobj->d.data[handle + 1];
         t = (flags >> 24);
-        if (t == 0xff) // special value for QVariant
-            t = QVariant::LastType;
         if (t == QVariant::Invalid)
             t = QMetaType::type(typeName);
         if (t == QVariant::Invalid)
@@ -2262,7 +2258,7 @@ QVariant QMetaProperty::read(const QObject *object) const
     int status = -1;
     QVariant value;
     void *argv[] = { 0, &value, &status };
-    if (t == QVariant::LastType) {
+    if (t == QMetaType::QVariant) {
         argv[0] = &value;
     } else {
         value = QVariant(t, (void*)0);
@@ -2273,7 +2269,7 @@ QVariant QMetaProperty::read(const QObject *object) const
 
     if (status != -1)
         return value;
-    if (t != QVariant::LastType && argv[0] != value.data())
+    if (t != QMetaType::QVariant && argv[0] != value.data())
         // pointer or reference
         return QVariant((QVariant::Type)t, argv[0]);
     return value;
@@ -2312,8 +2308,6 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
         int handle = priv(mobj->d.data)->propertyData + 3*idx;
         uint flags = mobj->d.data[handle + 2];
         t = flags >> 24;
-        if (t == 0xff) // special value for QVariant
-            t = QVariant::LastType;
         if (t == QVariant::Invalid) {
             const char *typeName = mobj->d.stringdata + mobj->d.data[handle + 1];
             const char *vtypeName = value.typeName();
@@ -2324,7 +2318,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
         }
         if (t == QVariant::Invalid)
             return false;
-        if (t != QVariant::LastType && t != (uint)value.userType() && (t < QMetaType::User && !v.convert((QVariant::Type)t)))
+        if (t != QMetaType::QVariant && t != (uint)value.userType() && (t < QMetaType::User && !v.convert((QVariant::Type)t)))
             return false;
     }
 
@@ -2338,7 +2332,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
     // interception of property writes.
     int flags = 0;
     void *argv[] = { 0, &v, &status, &flags };
-    if (t == QVariant::LastType)
+    if (t == QMetaType::QVariant)
         argv[0] = &v;
     else
         argv[0] = v.data();

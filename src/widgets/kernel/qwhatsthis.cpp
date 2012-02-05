@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -411,7 +411,7 @@ QWhatsThisPrivate::QWhatsThisPrivate()
 #endif
     }
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(this, 0, QAccessible::ContextHelpStart);
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ContextHelpStart, this, 0));
 #endif
 }
 
@@ -423,7 +423,7 @@ QWhatsThisPrivate::~QWhatsThisPrivate()
     QApplication::restoreOverrideCursor();
 #endif
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(this, 0, QAccessible::ContextHelpEnd);
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ContextHelpEnd, this, 0));
 #endif
     instance = 0;
 }

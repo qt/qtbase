@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -108,7 +108,11 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
 
     free(reply);
 
-    m_syncRequestSupported = m_windowManagerName != QLatin1String("KWin");
+    const xcb_query_extension_reply_t *sync_reply = xcb_get_extension_data(xcb_connection(), &xcb_sync_id);
+    if (!sync_reply || !sync_reply->present)
+        m_syncRequestSupported = false;
+    else
+        m_syncRequestSupported = m_windowManagerName != QLatin1String("KWin");
 
     m_clientLeader = xcb_generate_id(xcb_connection());
     Q_XCB_CALL2(xcb_create_window(xcb_connection(),

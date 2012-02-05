@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -869,7 +869,7 @@ void **QListData::erase(void **xi)
     \sa indexOf()
 */
 
-/*! \fn QBool QList::contains(const T &value) const
+/*! \fn bool QList::contains(const T &value) const
 
     Returns true if the list contains an occurrence of \a value;
     otherwise returns false.

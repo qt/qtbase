@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Network)
 
 #ifndef QT_NO_SSL
 
@@ -83,6 +82,7 @@ public:
 
     QSslSocket(QObject *parent = 0);
     ~QSslSocket();
+    void resume(); // to continue after proxy authentication required, SSL errors etc.
 
     // Autostarting the SSL client handshake.
     void connectToHostEncrypted(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
@@ -90,12 +90,12 @@ public:
     bool setSocketDescriptor(qintptr socketDescriptor, SocketState state = ConnectedState,
                              OpenMode openMode = ReadWrite);
 
+    using QAbstractSocket::connectToHost;
     void connectToHost(const QString &hostName, quint16 port, OpenMode openMode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
     void disconnectFromHost();
 
-    // ### Qt 5: Make virtual
-    void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value);
-    QVariant socketOption(QAbstractSocket::SocketOption option);
+    virtual void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value);
+    virtual QVariant socketOption(QAbstractSocket::SocketOption option);
 
     SslMode mode() const;
     bool isEncrypted() const;
@@ -212,6 +212,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_bytesWrittenSlot(qint64))
     Q_PRIVATE_SLOT(d_func(), void _q_flushWriteBuffer())
     Q_PRIVATE_SLOT(d_func(), void _q_flushReadBuffer())
+    Q_PRIVATE_SLOT(d_func(), void _q_resumeImplementation())
     friend class QSslSocketBackendPrivate;
 };
 

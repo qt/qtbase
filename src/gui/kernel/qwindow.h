@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,7 +57,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QWindowPrivate;
 
@@ -91,10 +90,9 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
     Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
     Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
-    Q_PROPERTY(Qt::ScreenOrientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
+    Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
 
 public:
-    enum SurfaceType { RasterSurface, OpenGLSurface };
 
     QWindow(QScreen *screen = 0);
     QWindow(QWindow *parent);
@@ -133,8 +131,11 @@ public:
 
     bool isActive() const;
 
-    Qt::ScreenOrientation orientation() const;
-    void setOrientation(Qt::ScreenOrientation orientation);
+    void reportContentOrientationChange(Qt::ScreenOrientation orientation);
+    Qt::ScreenOrientation contentOrientation() const;
+
+    bool requestWindowOrientation(Qt::ScreenOrientation orientation);
+    Qt::ScreenOrientation windowOrientation() const;
 
     Qt::WindowState windowState() const;
     void setWindowState(Qt::WindowState state);
@@ -252,16 +253,15 @@ Q_SIGNALS:
     void screenChanged(QScreen *screen);
 
     void xChanged(int arg);
-
     void yChanged(int arg);
 
     void widthChanged(int arg);
-
     void heightChanged(int arg);
 
     void visibleChanged(bool arg);
+    void contentOrientationChanged(Qt::ScreenOrientation orientation);
 
-    void orientationChanged(Qt::ScreenOrientation arg);
+    void focusObjectChanged(QObject *object);
 
 private Q_SLOTS:
     void screenDestroyed(QObject *screen);
@@ -287,6 +287,7 @@ protected:
     virtual void wheelEvent(QWheelEvent *);
 #endif
     virtual void touchEvent(QTouchEvent *);
+    virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 
     QWindow(QWindowPrivate &dd, QWindow *parent);
 

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -122,9 +122,6 @@ private slots:
     void dateTimeFormat();
     void monthName();
     void standaloneMonthName();
-
-    // QSystemLocale tests
-    void queryDateTime();
 
     void ampm();
     void currency();
@@ -1776,43 +1773,6 @@ a(QLatin1String("0.0000000000000000000000000000000000000000000000000000000000000
     a = QLatin1String("-9223372036854775809");
     a.toLongLong(&ok);
     QVERIFY(!ok);
-}
-
-class SystemLocale : public QSystemLocale
-{
-public:
-    virtual QVariant query(QueryType type, QVariant in) const
-    {
-        switch (type) {
-        case DateTimeFormatLong: return QLatin1String("dddd ddd dd d MMMM MMM MM M yyyy hh:mm:ss.zzz");
-        case DateTimeFormatShort: return QLatin1String("d M yy h:m");
-        case DateTimeToStringLong:
-        case DateTimeToStringShort:
-            return in.toDateTime().toString(type == DateTimeToStringShort
-                                            ? QLatin1String("dMyyhm")
-                                            : QLatin1String("ddMMyyyyhhmmsszzz"));
-        default:
-            break;
-        }
-        return QSystemLocale::query(type, in);
-    }
-};
-
-
-
-void tst_QLocale::queryDateTime()
-{
-    SystemLocale loc;
-    QCOMPARE(QLocale::system().dateTimeFormat(QLocale::LongFormat),
-             loc.query(QSystemLocale::DateTimeFormatLong, QVariant()).toString());
-    QCOMPARE(QLocale::system().dateTimeFormat(QLocale::ShortFormat),
-             loc.query(QSystemLocale::DateTimeFormatShort, QVariant()).toString());
-    QCOMPARE(QLocale::system().toString(QDateTime(QDate(1974, 12, 1), QTime(1, 2, 3, 4)), QLocale::ShortFormat),
-             QString("1127412"));
-    QCOMPARE(QLocale::system().toString(QDateTime(QDate(1974, 12, 1), QTime(1, 2, 3, 4)), QLocale::NarrowFormat),
-             QLocale::system().toString(QDateTime(QDate(1974, 12, 1), QTime(1, 2, 3, 4)), QLocale::ShortFormat));
-    QCOMPARE(QLocale::system().toString(QDateTime(QDate(1974, 12, 1), QTime(1, 2, 3, 4)), QLocale::LongFormat),
-             QString("01121974010203004"));
 }
 
 void tst_QLocale::ampm()

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,10 +42,9 @@
 #ifndef QWINDOWSDIALOGHELPER_H
 #define QWINDOWSDIALOGHELPER_H
 
-#ifdef QT_WIDGETS_LIB
-
 #include "qtwindows_additional.h"
-#include <QtWidgets/qplatformdialoghelper_qpa.h>
+#include <QtGui/QPlatformDialogHelper>
+#include <QtGui/QPlatformTheme>
 #include <QtCore/QStringList>
 
 QT_BEGIN_NAMESPACE
@@ -56,13 +55,10 @@ class QWindowsNativeDialogBase;
 
 namespace QWindowsDialogs
 {
-    enum Type { UnknownType, ColorDialog, FontDialog, FileDialog };
-
-    Type dialogType(const QDialog *dialog);
     void eatMouseMove();
 
-    bool useHelper(const QDialog *dialog = 0);
-    QPlatformDialogHelper *createHelper(QDialog *dialog = 0);
+    bool useHelper(QPlatformTheme::DialogType type);
+    QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type);
 } // namespace QWindowsDialogs
 
 template <class BaseClass>
@@ -97,5 +93,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_WIDGETS_LIB
 #endif // QWINDOWSDIALOGHELPER_H

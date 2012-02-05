@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -137,7 +137,7 @@ void tst_QSizeGrip::hideAndShowOnWindowStateChange()
     QVERIFY(sizeGrip->isVisible());
 
     widget->showMaximized();
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QVERIFY(!sizeGrip->isVisible());
 #else
     QVERIFY(sizeGrip->isVisible());

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -214,6 +214,12 @@ void tst_QIntValidator::validateFrench()
     QCOMPARE(validator.validate(s, i), QValidator::Intermediate);
     validator.fixup(s);
     QCOMPARE(s, validator.locale().toString(1000));
+
+    // Confim no fallback to C locale
+    s = QLatin1String("1,000");
+    QCOMPARE(validator.validate(s, i), QValidator::Invalid);
+    validator.setLocale(QLocale::C);
+    QCOMPARE(validator.validate(s, i), QValidator::Acceptable);
 }
 
 void tst_QIntValidator::validate()
@@ -231,33 +237,53 @@ void tst_QIntValidator::validate()
 
 void tst_QIntValidator::notifySignals()
 {
+    QLocale::setDefault(QLocale("C"));
+
     QIntValidator iv(0, 10, 0);
     QSignalSpy topSpy(&iv, SIGNAL(topChanged(int)));
     QSignalSpy bottomSpy(&iv, SIGNAL(bottomChanged(int)));
+    QSignalSpy changedSpy(&iv, SIGNAL(changed()));
+
     iv.setTop(9);
     QCOMPARE(topSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 1);
     QVERIFY(iv.top() == 9);
     iv.setBottom(1);
     QCOMPARE(bottomSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 2);
     QVERIFY(iv.bottom() == 1);
 
     iv.setRange(1, 8);
     QCOMPARE(topSpy.count(), 2);
     QCOMPARE(bottomSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 3);
     QVERIFY(iv.top() == 8);
     QVERIFY(iv.bottom() == 1);
 
     iv.setRange(2, 8);
     QCOMPARE(topSpy.count(), 2);
     QCOMPARE(bottomSpy.count(), 2);
+    QCOMPARE(changedSpy.count(), 4);
     QVERIFY(iv.top() == 8);
     QVERIFY(iv.bottom() == 2);
 
     iv.setRange(3, 7);
     QCOMPARE(topSpy.count(), 3);
     QCOMPARE(bottomSpy.count(), 3);
+    QCOMPARE(changedSpy.count(), 5);
     QVERIFY(iv.top() == 7);
     QVERIFY(iv.bottom() == 3);
+
+    iv.setRange(3, 7);
+    QCOMPARE(topSpy.count(), 3);
+    QCOMPARE(bottomSpy.count(), 3);
+    QCOMPARE(changedSpy.count(), 5);
+
+    iv.setLocale(QLocale("C"));
+    QCOMPARE(changedSpy.count(), 5);
+
+    iv.setLocale(QLocale("en"));
+    QCOMPARE(changedSpy.count(), 6);
 }
 
 QTEST_MAIN(tst_QIntValidator)

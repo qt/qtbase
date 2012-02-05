@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,7 +49,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Network)
 
 class QNetworkCookie;
 
@@ -64,9 +63,14 @@ public:
     virtual QList<QNetworkCookie> cookiesForUrl(const QUrl &url) const;
     virtual bool setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const QUrl &url);
 
+    virtual bool insertCookie(const QNetworkCookie &cookie);
+    virtual bool updateCookie(const QNetworkCookie &cookie);
+    virtual bool deleteCookie(const QNetworkCookie &cookie);
+
 protected:
     QList<QNetworkCookie> allCookies() const;
     void setAllCookies(const QList<QNetworkCookie> &cookieList);
+    virtual bool validateCookie(const QNetworkCookie &cookie, const QUrl &url) const;
 
 private:
     Q_DECLARE_PRIVATE(QNetworkCookieJar)

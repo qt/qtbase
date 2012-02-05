@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -501,7 +501,7 @@ void tst_QGraphicsGridLayout::alignment_data()
 // public Qt::Alignment alignment(QGraphicsLayoutItem* item) const
 void tst_QGraphicsGridLayout::alignment()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QSKIP("Resizing a QGraphicsWidget to effectiveSizeHint(Qt::MaximumSize) is currently not supported on mac");
 #endif
     QFETCH(bool, hasHeightForWidth);
@@ -575,7 +575,7 @@ void tst_QGraphicsGridLayout::columnAlignment_data()
 // public Qt::Alignment columnAlignment(int column) const
 void tst_QGraphicsGridLayout::columnAlignment()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QSKIP("Resizing a QGraphicsWidget to effectiveSizeHint(Qt::MaximumSize) is currently not supported on mac");
 #endif
     QFETCH(bool, hasHeightForWidth);

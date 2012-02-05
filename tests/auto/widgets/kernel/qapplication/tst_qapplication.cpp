@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,13 +49,13 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
 #include <QtCore/QProcess>
+#include <QtCore/private/qeventloop_p.h>
 
 #include <QtGui/QFontDatabase>
 #include <QtGui/QClipboard>
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
-#include <QtWidgets/QInputContext>
 #include <QtWidgets/QStyleFactory>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QPushButton>
@@ -138,6 +138,16 @@ private slots:
 
     void qtbug_12673();
 
+    void testQuitLockRef();
+    void testQuitLock1();
+    void testQuitLock2();
+    void testQuitLock3();
+    void testQuitLock4();
+    void testQuitLock5();
+    void testQuitLock6();
+    void testQuitLock7();
+    void testQuitLock8();
+
     void globalStaticObjectDestruction(); // run this last
 };
 
@@ -189,7 +199,6 @@ public:
         dialog.show();
         dialog.close();
 
-        hide();
         event->ignore();
     }
 };
@@ -516,6 +525,7 @@ void tst_QApplication::lastWindowClosed()
 
     QPointer<CloseWidget>widget = new CloseWidget;
     QVERIFY(widget->testAttribute(Qt::WA_QuitOnClose));
+    widget->show();
     QObject::connect(&app, SIGNAL(lastWindowClosed()), widget, SLOT(deleteLater()));
     app.exec();
     QVERIFY(!widget);
@@ -815,7 +825,7 @@ void tst_QApplication::libraryPaths()
 {
     {
 #ifndef Q_OS_WINCE
-        QString testDir = QDir::current().canonicalPath() + "/test";
+        QString testDir = QFileInfo(QFINDTESTDATA("test/test.pro")).absolutePath();
 #else
         // On Windows CE we need QApplication object to have valid
         // current Path. Therefore we need to identify it ourselves
@@ -861,7 +871,7 @@ void tst_QApplication::libraryPaths()
                             "\nexpected:\n - " + expected.join("\n - ")));
 
         // setting the library paths overrides everything
-        QString testDir = QDir::currentPath() + "/test";
+        QString testDir = QFileInfo(QFINDTESTDATA("test/test.pro")).absolutePath();
         QApplication::setLibraryPaths(QStringList() << testDir);
         QVERIFY2(isPathListIncluded(QApplication::libraryPaths(), (QStringList() << testDir)),
                  qPrintable("actual:\n - " + QApplication::libraryPaths().join("\n - ") +
@@ -884,8 +894,8 @@ void tst_QApplication::libraryPaths()
         qDebug() << "After adding plugins path:" << QApplication::libraryPaths();
 #endif
         QCOMPARE(QApplication::libraryPaths().count(), count);
-
-        QApplication::addLibraryPath(QDir::currentPath() + "/test");
+        QString testDir = QFileInfo(QFINDTESTDATA("test/test.pro")).absolutePath();
+        QApplication::addLibraryPath(testDir);
         QCOMPARE(QApplication::libraryPaths().count(), count + 1);
 
         // creating QApplication adds the applicationDirPath to the libraryPath
@@ -1258,15 +1268,12 @@ public slots:
     {
         QApplication::processEvents();
     }
-    void processEventsWithDeferredDeletion()
-    {
-        QApplication::processEvents(QEventLoop::DeferredDeletion);
-    }
     void sendPostedEventsWithDeferredDelete()
     {
         QApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     }
-    void deleteLaterAndProcessEvents1()
+
+    void deleteLaterAndProcessEvents()
     {
         QEventLoop eventLoop;
 
@@ -1276,48 +1283,6 @@ public slots:
         // trying to delete this object in a deeper eventloop just won't work
         QMetaObject::invokeMethod(this,
                                   "processEventsOnly",
-                                  Qt::QueuedConnection);
-        QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);
-        eventLoop.exec();
-        QVERIFY(p);
-        QMetaObject::invokeMethod(this,
-                                  "processEventsWithDeferredDeletion",
-                                  Qt::QueuedConnection);
-        QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);
-        eventLoop.exec();
-        QVERIFY(p);
-        QMetaObject::invokeMethod(this,
-                                  "sendPostedEventsWithDeferredDelete",
-                                  Qt::QueuedConnection);
-        QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);
-        eventLoop.exec();
-        QVERIFY(p);
-
-        // trying to delete it from this eventloop still doesn't work
-        QApplication::processEvents();
-        QVERIFY(p);
-
-        // however, it *will* work with this magic incantation
-        QApplication::processEvents(QEventLoop::DeferredDeletion);
-        QVERIFY(!p);
-    }
-
-    void deleteLaterAndProcessEvents2()
-    {
-        QEventLoop eventLoop;
-
-        QPointer<QObject> p = this;
-        deleteLater();
-
-        // trying to delete this object in a deeper eventloop just won't work
-        QMetaObject::invokeMethod(this,
-                                  "processEventsOnly",
-                                  Qt::QueuedConnection);
-        QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);
-        eventLoop.exec();
-        QVERIFY(p);
-        QMetaObject::invokeMethod(this,
-                                  "processEventsWithDeferredDeletion",
                                   Qt::QueuedConnection);
         QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);
         eventLoop.exec();
@@ -1355,16 +1320,7 @@ void tst_QApplication::testDeleteLaterProcessEvents()
         QApplication app(argc, 0, QApplication::GuiServer);
         // If you call processEvents() with an event dispatcher present, but
         // outside any event loops, deferred deletes are not processed unless
-        // QEventLoop::DeferredDeletion is passed.
-        object = new QObject;
-        p = object;
-        object->deleteLater();
-        app.processEvents();
-        QVERIFY(p);
-        app.processEvents(QEventLoop::ProcessEventsFlag(0x10)); // 0x10 == QEventLoop::DeferredDeletion
-        QVERIFY(!p);
-
-        // sendPostedEvents(0, DeferredDelete); also works
+        // sendPostedEvents(0, DeferredDelete) is called.
         object = new QObject;
         p = object;
         object->deleteLater();
@@ -1423,22 +1379,7 @@ void tst_QApplication::testDeleteLaterProcessEvents()
         EventLoopNester *nester = new EventLoopNester();
         p = nester;
         QTimer::singleShot(3000, &loop, SLOT(quit()));
-        QTimer::singleShot(0, nester, SLOT(deleteLaterAndProcessEvents1()));
-
-        loop.exec();
-        QVERIFY(!p);
-    }
-
-    {
-        // when the event loop that calls deleteLater() also calls
-        // processEvents() immediately afterwards, the object should
-        // not die until the parent loop continues
-        QApplication app(argc, 0, QApplication::GuiServer);
-        QEventLoop loop;
-        EventLoopNester *nester = new EventLoopNester();
-        p = nester;
-        QTimer::singleShot(3000, &loop, SLOT(quit()));
-        QTimer::singleShot(0, nester, SLOT(deleteLaterAndProcessEvents2()));
+        QTimer::singleShot(0, nester, SLOT(deleteLaterAndProcessEvents()));
 
         loop.exec();
         QVERIFY(!p);
@@ -1575,7 +1516,7 @@ void tst_QApplication::focusChanged()
     QTestMouseEvent click(QTest::MouseClick, Qt::LeftButton, 0, QPoint(5, 5), 0);
 
     bool tabAllControls = true;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // Mac has two modes, one where you tab to everything, one where you can
     // only tab to input controls, here's what we get. Determine which ones we
     // should get.
@@ -2116,6 +2057,509 @@ void tst_QApplication::qtbug_12673()
     QVERIFY(testProcess.waitForFinished(20000));
     QCOMPARE(testProcess.exitStatus(), QProcess::NormalExit);
 }
+
+class JobObject : public QObject
+{
+    Q_OBJECT
+public:
+    JobObject(int milliseconds, QObject *parent = 0)
+        : QObject(parent)
+    {
+        QTimer::singleShot(milliseconds, this, SLOT(timeout()));
+    }
+
+    JobObject(QObject *parent = 0)
+        : QObject(parent)
+    {
+        QTimer::singleShot(1000, this, SLOT(timeout()));
+    }
+
+private slots:
+    void timeout()
+    {
+        emit done();
+        deleteLater();
+    }
+
+signals:
+    void done();
+
+private:
+    QEventLoopLocker locker;
+};
+
+class QuitLockRefTester : public QObject
+{
+    Q_OBJECT
+public:
+    QuitLockRefTester(QObject *parent = 0)
+      : QObject(parent)
+    {
+        QTimer::singleShot(0, this, SLOT(doTest()));
+    }
+
+private slots:
+    void doTest()
+    {
+        QApplicationPrivate *privateClass = static_cast<QApplicationPrivate*>(QObjectPrivate::get(qApp));
+
+        {
+            QDialog *win1 = new QDialog;
+
+            // Test with a lock active so that the refcount doesn't drop to zero during these tests, causing a quit.
+            // (until we exit the scope)
+            QEventLoopLocker locker;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 1);
+
+            win1->show();
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            QDialog *win2 = new QDialog;
+
+            win2->show();
+
+            QCOMPARE(privateClass->quitLockRef.load(), 3);
+
+            delete win1;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            delete win2;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 1);
+
+            win1 = new QDialog;
+
+            win1->show();
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            JobObject *job1 = new JobObject(this);
+
+            QCOMPARE(privateClass->quitLockRef.load(), 3);
+
+            delete win1;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            delete job1;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 1);
+
+            QWidget *w1 = new QWidget;
+
+            w1->show();
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            QWidget *w2 = new QMainWindow;
+
+            w2->show();
+
+            QCOMPARE(privateClass->quitLockRef.load(), 3);
+
+            QWidget *w3 = new QWidget(0, Qt::Dialog);
+
+            w3->show();
+
+            QCOMPARE(privateClass->quitLockRef.load(), 4);
+
+            delete w3;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 3);
+
+            delete w2;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            QWidget *subWidget1 = new QWidget(w1, Qt::Window);
+
+            // Even though We create a new widget and show it,
+            // the ref count does not go up because it is a child of
+            // w1, which is the top-level, and what we are actually
+            // refcounting.
+            subWidget1->show();
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            // When we use setParent(0) and re-show, the
+            // ref count does increase:
+            QCOMPARE(subWidget1->isVisible(), true);
+            subWidget1->setParent(0);
+            QCOMPARE(subWidget1->isVisible(), false);
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            subWidget1->show();
+            QCOMPARE(subWidget1->isVisible(), true);
+            QCOMPARE(privateClass->quitLockRef.load(), 3);
+
+            subWidget1->setParent(w1);
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            QWidget *subWidget2 = new QWidget(w1);
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            subWidget2->show();
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            delete subWidget2;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            QWidget *subWidget3 = new QWidget(w1);
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            subWidget3->show();
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            subWidget3->hide();
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            delete subWidget3;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            QWidget *subWidget4 = new QWidget(subWidget1);
+            QWidget *subWidget5 = new QWidget(subWidget1);
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            QWidget *subWidget6 = new QWidget(subWidget4, Qt::Window);
+
+            subWidget6->show();
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            delete w1;
+
+            QCOMPARE(privateClass->quitLockRef.load(), 1);
+
+            w1 = new QWidget;
+            w2 = new QWidget;
+            w3 = new QWidget;
+
+            QHBoxLayout *layout = new QHBoxLayout(w1);
+
+            layout->addWidget(w2);
+            layout->addWidget(w3);
+
+            QCOMPARE(privateClass->quitLockRef.load(), 1);
+
+            w1->show();
+
+            QCOMPARE(privateClass->quitLockRef.load(), 2);
+
+            w1->hide();
+            QCOMPARE(privateClass->quitLockRef.load(), 1);
+
+            delete w1;
+
+        }
+        QCOMPARE(privateClass->quitLockRef.load(), 0);
+    }
+};
+
+void tst_QApplication::testQuitLockRef()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qapplication" };
+    QApplication app(argc, argv);
+
+    QuitLockRefTester tester;
+
+    app.exec();
+}
+
+void tst_QApplication::testQuitLock1()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QApplication app(argc, argv);
+
+    QWidget *w = new QWidget;
+
+    w->show();
+
+    QMetaObject::invokeMethod(w, "close", Qt::QueuedConnection);
+
+    app.exec();
+
+    // No hang = pass.
+}
+
+void tst_QApplication::testQuitLock2()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QApplication app(argc, argv);
+
+    QWidget *w1 = new QWidget;
+
+    w1->show();
+
+    QWidget *w2 = new QWidget;
+
+    w2->show();
+
+    QMetaObject::invokeMethod(w1, "deleteLater", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(w2, "hide", Qt::QueuedConnection);
+
+    app.exec();
+
+    // No hang = pass.
+}
+
+class Result : public QObject
+{
+    Q_OBJECT
+public:
+    Result(QObject *parent = 0)
+        : QObject(parent), m_passes(false)
+    {
+
+    }
+
+    bool result() const
+    {
+        return m_passes;
+    }
+
+public slots:
+
+    void setPasses()
+    {
+        setResult(true);
+    }
+
+    void setFails()
+    {
+        setResult(false);
+    }
+
+    void setResult(bool result)
+    {
+        m_passes = result;
+    }
+
+private:
+    bool m_passes;
+};
+
+void tst_QApplication::testQuitLock3()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QApplication app(argc, argv);
+
+    Result *result = new Result(&app);
+
+    JobObject *job = new JobObject(&app);
+
+    QObject::connect(job, SIGNAL(done()), result, SLOT(setPasses()));
+
+    app.exec();
+
+    QVERIFY(result->result());
+}
+
+void tst_QApplication::testQuitLock4()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QApplication app(argc, argv);
+
+    QWidget *w = new QWidget;
+
+    w->show();
+
+    Result *result = new Result(&app);
+    JobObject *job = new JobObject(1000, &app);
+
+    QTimer::singleShot(500, w, SLOT(deleteLater()));
+
+    QObject::connect(w, SIGNAL(destroyed()), result, SLOT(setFails()));
+    QObject::connect(job, SIGNAL(done()), result, SLOT(setPasses()));
+
+    app.exec();
+
+    QVERIFY(result->result());
+}
+
+class JobBeforeWindowRunner : public QObject
+{
+    Q_OBJECT
+public:
+    JobBeforeWindowRunner(QObject *parent = 0)
+    : QObject(parent), m_result(new Result(this))
+    {
+
+    }
+
+    void start()
+    {
+        JobObject *job = new JobObject(this);
+        connect(job, SIGNAL(done()), m_result, SLOT(setFails()));
+        connect(job, SIGNAL(destroyed()), SLOT(showWindowDelayed()), Qt::QueuedConnection);
+    }
+
+    bool result() const { return m_result->result(); }
+
+private slots:
+    void showWindowDelayed()
+    {
+        qApp->setQuitLockEnabled(true);
+        QTimer::singleShot(500, this, SLOT(showWindow()));
+    }
+
+    void showWindow()
+    {
+        QWidget *w = new QWidget;
+        w->show();
+        w->deleteLater();
+        connect(w, SIGNAL(destroyed()), m_result, SLOT(setPasses()));
+    }
+
+private:
+    Result * const m_result;
+};
+
+void tst_QApplication::testQuitLock5()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QApplication app(argc, argv);
+    app.setQuitLockEnabled(false);
+    // Run a job before showing a window, and only enable the refcounting
+    // after doing so.
+    // Although the job brings the refcount to zero, the app does not exit
+    // until setQuitLockEnabled is called and the feature re-enabled.
+
+    JobBeforeWindowRunner *eventRunner = new JobBeforeWindowRunner(&app);
+
+    eventRunner->start();
+
+    app.exec();
+
+    QVERIFY(eventRunner->result());
+}
+
+class JobDuringWindowRunner : public QObject
+{
+    Q_OBJECT
+public:
+    JobDuringWindowRunner(QObject *parent = 0)
+        : QObject(parent), m_result(new Result(this))
+    {
+
+    }
+
+    void start()
+    {
+        JobObject *job = new JobObject(this);
+
+        QWidget *w = new QWidget;
+        w->show();
+        w->deleteLater();
+
+        QObject::connect(w, SIGNAL(destroyed()), m_result, SLOT(setFails()));
+        QObject::connect(job, SIGNAL(done()), m_result, SLOT(setPasses()));
+    }
+
+    bool result() const { return m_result->result(); }
+
+private:
+    Result * const m_result;
+};
+
+void tst_QApplication::testQuitLock6()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QApplication app(argc, argv);
+
+    // A job runs, and while it is running, a window is shown and closed,
+    // then the job ends, which causes the quit.
+
+    JobDuringWindowRunner *eventRunner = new JobDuringWindowRunner(&app);
+
+    eventRunner->start();
+
+    app.exec();
+
+    QVERIFY(eventRunner->result());
+}
+class JobWindowJobWindowRunner : public QObject
+{
+    Q_OBJECT
+public:
+    JobWindowJobWindowRunner(QObject *parent = 0)
+        : QObject(parent), m_result(new Result(this))
+    {
+
+    }
+
+    void start()
+    {
+        JobObject *job = new JobObject(500, this);
+
+        QWidget *w = new QWidget;
+        w->show();
+        QTimer::singleShot(1000, w, SLOT(deleteLater()));
+
+        QObject::connect(w, SIGNAL(destroyed()), m_result, SLOT(setPasses()));
+        QObject::connect(job, SIGNAL(done()), m_result, SLOT(setFails()));
+    }
+
+    bool result() const { return m_result->result(); }
+private:
+    Result * const m_result;
+};
+
+void tst_QApplication::testQuitLock7()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QApplication app(argc, argv);
+
+    // A job runs, and while it is running, a window is shown
+    // then the job ends, then the window is closed, which causes the quit.
+
+    JobWindowJobWindowRunner *eventRunner = new JobWindowJobWindowRunner(&app);
+
+    eventRunner->start();
+
+    app.exec();
+
+    QVERIFY(eventRunner->result());
+}
+
+void tst_QApplication::testQuitLock8()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QApplication app(argc, argv);
+
+    QMainWindow *mw1 = new QMainWindow;
+    mw1->show();
+    QMainWindow *mw2 = new QMainWindow;
+    mw2->show();
+
+    QMetaObject::invokeMethod(mw1, "close", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(mw2, "close", Qt::QueuedConnection);
+
+    app.exec();
+
+    // No hang = pass
+}
+
 
 /*
     This test is meant to ensure that certain objects (public & commonly used)

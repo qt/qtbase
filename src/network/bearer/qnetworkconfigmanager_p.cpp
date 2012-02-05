@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -66,11 +66,31 @@ QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
     qRegisterMetaType<QNetworkConfigurationPrivatePointer>("QNetworkConfigurationPrivatePointer");
 }
 
+void QNetworkConfigurationManagerPrivate::initialize()
+{
+    //Two stage construction, because we only want to do this heavyweight work for the winner of the Q_GLOBAL_STATIC race.
+    bearerThread = new QThread();
+    bearerThread->moveToThread(QCoreApplicationPrivate::mainThread()); // because cleanup() is called in main thread context.
+    moveToThread(bearerThread);
+    bearerThread->start();
+    updateConfigurations();
+}
+
 QNetworkConfigurationManagerPrivate::~QNetworkConfigurationManagerPrivate()
 {
     QMutexLocker locker(&mutex);
 
     qDeleteAll(sessionEngines);
+    if (bearerThread)
+        bearerThread->quit();
+}
+
+void QNetworkConfigurationManagerPrivate::cleanup()
+{
+    QThread* thread = bearerThread;
+    deleteLater();
+    if (thread->wait(5000))
+        delete thread;
 }
 
 QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration() const
@@ -350,13 +370,6 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         if (qobject_cast<QBearerEngine *>(sender()))
             return;
 
-        if (thread() != QCoreApplicationPrivate::mainThread()) {
-            if (thread() != QThread::currentThread())
-                return;
-
-            moveToThread(QCoreApplicationPrivate::mainThread());
-        }
-
         updating = false;
 
 #ifndef QT_NO_LIBRARY
@@ -375,7 +388,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                 else
                     sessionEngines.append(engine);
 
-                engine->moveToThread(QCoreApplicationPrivate::mainThread());
+                engine->moveToThread(bearerThread);
 
                 connect(engine, SIGNAL(updateCompleted()),
                         this, SLOT(updateConfigurations()));
@@ -411,14 +424,9 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
     if (firstUpdate) {
         firstUpdate = false;
         QList<QBearerEngine*> enginesToInitialize = sessionEngines; //shallow copy the list in case it is modified when we unlock mutex
-        Qt::ConnectionType connectionType;
-        if (QCoreApplicationPrivate::mainThread() == QThread::currentThread())
-            connectionType = Qt::DirectConnection;
-        else
-            connectionType = Qt::BlockingQueuedConnection;
         locker.unlock();
         foreach (QBearerEngine* engine, enginesToInitialize) {
-                QMetaObject::invokeMethod(engine, "initialize", connectionType);
+            QMetaObject::invokeMethod(engine, "initialize", Qt::BlockingQueuedConnection);
         }
     }
 }

@@ -58,7 +58,7 @@ contains(QT_CONFIG, freetype) {
                $$QT_FREETYPE_DIR/src/autofit/afloader.c\
                $$QT_FREETYPE_DIR/src/autofit/autofit.c
 
-   symbian|win32 {
+   win32 {
        SOURCES += \
                   $$QT_FREETYPE_DIR/src/base/ftsystem.c
    } else {

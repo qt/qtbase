@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -262,6 +262,19 @@ private slots:
     void forwardDeclare();
     void debugStream_data();
     void debugStream();
+
+    void loadQt4Stream_data();
+    void loadQt4Stream();
+    void saveQt4Stream_data();
+    void saveQt4Stream();
+    void loadQt5Stream_data();
+    void loadQt5Stream();
+    void saveQt5Stream_data();
+    void saveQt5Stream();
+private:
+    void dataStream_data(QDataStream::Version version);
+    void loadQVariantFromDataStream(QDataStream::Version version);
+    void saveQVariantFromDataStream(QDataStream::Version version);
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -1906,7 +1919,7 @@ void tst_QVariant::typeName_data()
     QTest::newRow("39") << int(QVariant::RectF) << QByteArray("QRectF");
     QTest::newRow("40") << int(QVariant::PointF) << QByteArray("QPointF");
     QTest::newRow("41") << int(QVariant::RegExp) << QByteArray("QRegExp");
-    QTest::newRow("42") << int(QVariant::UserType) << QByteArray("UserType");
+    QTest::newRow("42") << int(QVariant::UserType) << QByteArray();
     QTest::newRow("43") << int(QVariant::Matrix) << QByteArray("QMatrix");
     QTest::newRow("44") << int(QVariant::Transform) << QByteArray("QTransform");
     QTest::newRow("45") << int(QVariant::Hash) << QByteArray("QVariantHash");
@@ -1948,7 +1961,14 @@ void tst_QVariant::typeToName()
     QVERIFY( QVariant::nameToType( 0 ) == QVariant::Invalid );
     QVERIFY( QVariant::nameToType( "" ) == QVariant::Invalid );
     QVERIFY( QVariant::nameToType( "foo" ) == QVariant::Invalid );
-    QCOMPARE(QVariant::nameToType("QIconSet"), QVariant::Icon);
+
+    QCOMPARE(QVariant::nameToType("UserType"), QVariant::Invalid);
+
+    // We don't support these old (Qt3) types anymore.
+    QCOMPARE(QVariant::nameToType("QIconSet"), QVariant::Invalid);
+    QCOMPARE(QVariant::nameToType("Q3CString"), QVariant::Invalid);
+    QCOMPARE(QVariant::nameToType("Q_LLONG"), QVariant::Invalid);
+    QCOMPARE(QVariant::nameToType("Q_ULLONG"), QVariant::Invalid);
 }
 
 void tst_QVariant::streamInvalidVariant()
@@ -2002,13 +2022,6 @@ Q_DECLARE_METATYPE(MyType*)
 
 void tst_QVariant::userType()
 {
-    {
-        QVariant userVariant(QVariant::UserType);
-
-        QVERIFY(userVariant.isValid());
-        QVERIFY(userVariant.isNull());
-    }
-
     {
         MyType data(1, "eins");
         MyType data2(2, "zwei");
@@ -3248,6 +3261,34 @@ void tst_QVariant::moreCustomTypes()
         PLAY_WITH_VARIANT(d, false, QString(), 0, false);
     }
     QCOMPARE(MyMovable::count, 0);
+
+    {
+        QList<QList<int> > data;
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+        data << (QList<int>() << 42);
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+    }
+
+    {
+        QList<QVector<int> > data;
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+        data << (QVector<int>() << 42);
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+    }
+
+    {
+        QList<QSet<int> > data;
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+        data << (QSet<int>() << 42);
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+    }
+
+    {
+        QList<QLinkedList<int> > data;
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+        data << (QLinkedList<int>() << 42);
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+    }
 }
 
 void tst_QVariant::movabilityTest()
@@ -3324,6 +3365,11 @@ void tst_QVariant::colorInteger()
 }
 
 class Forward;
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<Forward*> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(Forward*);
 
 void tst_QVariant::forwardDeclare()
@@ -3333,6 +3379,123 @@ void tst_QVariant::forwardDeclare()
     QCOMPARE(qvariant_cast<Forward*>(v), f);
 }
 
+void tst_QVariant::loadQt5Stream_data()
+{
+    dataStream_data(QDataStream::Qt_5_0);
+}
+
+void tst_QVariant::loadQt5Stream()
+{
+    loadQVariantFromDataStream(QDataStream::Qt_5_0);
+}
+
+void tst_QVariant::saveQt5Stream_data()
+{
+    dataStream_data(QDataStream::Qt_5_0);
+}
+
+void tst_QVariant::saveQt5Stream()
+{
+    saveQVariantFromDataStream(QDataStream::Qt_5_0);
+}
+
+void tst_QVariant::loadQt4Stream_data()
+{
+    dataStream_data(QDataStream::Qt_4_9);
+}
+
+void tst_QVariant::loadQt4Stream()
+{
+    loadQVariantFromDataStream(QDataStream::Qt_4_9);
+}
+
+void tst_QVariant::saveQt4Stream_data()
+{
+    dataStream_data(QDataStream::Qt_4_9);
+}
+
+void tst_QVariant::saveQt4Stream()
+{
+    saveQVariantFromDataStream(QDataStream::Qt_4_9);
+}
+
+void tst_QVariant::dataStream_data(QDataStream::Version version)
+{
+    QTest::addColumn<QString>("fileName");
+
+    QString path;
+    switch (version) {
+    case QDataStream::Qt_4_9:
+        path = QString::fromLatin1("qt4.9");
+        break;
+    case QDataStream::Qt_5_0:
+        path = QString::fromLatin1("qt5.0");
+        break;
+    default:
+        Q_UNIMPLEMENTED();
+    }
+
+    path = path.prepend(":/stream/").append("/");
+    QDir dir(path);
+    uint i = 0;
+    foreach (const QFileInfo &fileInfo, dir.entryInfoList(QStringList() << "*.bin")) {
+        QTest::newRow((path + fileInfo.fileName()).toLatin1()) << fileInfo.filePath();
+        i += 1;
+    }
+    QVERIFY(i > 10);
+}
+
+void tst_QVariant::loadQVariantFromDataStream(QDataStream::Version version)
+{
+    QFETCH(QString, fileName);
+
+    QFile file(fileName);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+
+    QDataStream stream(&file);
+    stream.setVersion(version);
+
+    QString typeName;
+    QVariant loadedVariant;
+    stream >> typeName >> loadedVariant;
+
+    const int id = QMetaType::type(typeName.toLatin1());
+    QVariant constructedVariant(static_cast<QVariant::Type>(id));
+    QCOMPARE(constructedVariant.userType(), id);
+    QCOMPARE(QMetaType::typeName(loadedVariant.userType()), typeName.toLatin1().constData());
+    QCOMPARE(loadedVariant.userType(), constructedVariant.userType());
+}
+
+void tst_QVariant::saveQVariantFromDataStream(QDataStream::Version version)
+{
+    QFETCH(QString, fileName);
+
+    QFile file(fileName);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QDataStream dataFileStream(&file);
+
+    QString typeName;
+    dataFileStream >> typeName;
+    QByteArray data = file.readAll();
+    const int id = QMetaType::type(typeName.toLatin1());
+
+    QBuffer buffer;
+    buffer.open(QIODevice::ReadWrite);
+    QDataStream stream(&buffer);
+    stream.setVersion(version);
+
+    QVariant constructedVariant(static_cast<QVariant::Type>(id));
+    QCOMPARE(constructedVariant.userType(), id);
+    stream << constructedVariant;
+
+    // We are testing QVariant there is no point in testing full array.
+    QCOMPARE(buffer.data().left(5), data.left(5));
+
+    buffer.seek(0);
+    QVariant recunstructedVariant;
+    stream >> recunstructedVariant;
+    QCOMPARE(recunstructedVariant.userType(), constructedVariant.userType());
+}
 
 class MessageHandler {
 public:
@@ -3391,7 +3554,6 @@ void tst_QVariant::debugStream()
     qDebug() << variant;
     QVERIFY(msgHandler.testPassed());
 }
-
 
 QTEST_MAIN(tst_QVariant)
 #include "tst_qvariant.moc"

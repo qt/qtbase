@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -104,9 +104,6 @@ public:
         QPF1,
         QPF2,
         Proxy,
-
-        // S60 types
-        S60FontEngine, // Cannot be simply called "S60". Reason is qt_s60Data.h
 
         DirectWrite,
 
@@ -189,7 +186,7 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
     virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage *lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
                                            GlyphFormat neededFormat,
                                            const QTransform &t = QTransform(),
@@ -231,6 +228,7 @@ public:
     virtual Type type() const = 0;
 
     virtual int glyphCount() const;
+    virtual int glyphMargin(QFontEngineGlyphCache::Type type) { return type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0; }
 
     virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return 0; }
 
@@ -370,7 +368,7 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
     virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
 
     virtual QFixed lineThickness() const;
     virtual QFixed underlinePosition() const;

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,12 +34,15 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #ifndef QOPENGL_H
 #define QOPENGL_H
+
+#ifndef QT_NO_OPENGL
 
 #include <QtCore/qglobal.h>
 
@@ -73,10 +75,11 @@ typedef GLfloat GLdouble;
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_OPENGL
 
 #endif // QOPENGL_H

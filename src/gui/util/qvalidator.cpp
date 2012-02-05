@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -131,6 +131,12 @@ QT_BEGIN_NAMESPACE
     \omitvalue Valid
 */
 
+/*!
+    \fn void QValidator::changed()
+
+    This signal is emitted when any property that may affect the validity of
+    a string has changed.
+*/
 
 /*!
     \fn void QIntValidator::topChanged(int top)
@@ -247,7 +253,10 @@ QLocale QValidator::locale() const
 void QValidator::setLocale(const QLocale &locale)
 {
     Q_D(QValidator);
-    d->locale = locale;
+    if (d->locale != locale) {
+        d->locale = locale;
+        emit changed();
+    }
 }
 
 /*!
@@ -312,9 +321,7 @@ void QValidator::fixup(QString &) const
     or individually with setBottom() and setTop().
 
     QIntValidator uses its locale() to interpret the number. For example,
-    in Arabic locales, QIntValidator will accept Arabic digits. In addition,
-    QIntValidator is always guaranteed to accept a number formatted according
-    to the "C" locale.
+    in Arabic locales, QIntValidator will accept Arabic digits.
 
     \sa QDoubleValidator, QRegExpValidator, {Line Edits Example}
 */
@@ -394,9 +401,7 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
 {
     QByteArray buff;
     if (!locale().d()->validateChars(input, QLocalePrivate::IntegerMode, &buff)) {
-        QLocale cl(QLocale::C);
-        if (!cl.d()->validateChars(input, QLocalePrivate::IntegerMode, &buff))
-            return Invalid;
+        return Invalid;
     }
 
     if (buff.isEmpty())
@@ -417,7 +422,7 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
         return Invalid;
 
     if (entered >= b && entered <= t) {
-        locale().toInt(input, &ok, 10);
+        locale().toInt(input, &ok);
         return ok ? Acceptable : Intermediate;
     }
 
@@ -435,9 +440,7 @@ void QIntValidator::fixup(QString &input) const
 {
     QByteArray buff;
     if (!locale().d()->validateChars(input, QLocalePrivate::IntegerMode, &buff)) {
-        QLocale cl(QLocale::C);
-        if (!cl.d()->validateChars(input, QLocalePrivate::IntegerMode, &buff))
-            return;
+        return;
     }
     bool ok, overflow;
     qlonglong entered = QLocalePrivate::bytearrayToLongLong(buff.constData(), 10, &ok, &overflow);
@@ -452,15 +455,21 @@ void QIntValidator::fixup(QString &input) const
 
 void QIntValidator::setRange(int bottom, int top)
 {
+    bool rangeChanged = false;
     if (b != bottom) {
         b = bottom;
+        rangeChanged = true;
         emit bottomChanged(b);
     }
 
     if (t != top) {
         t = top;
+        rangeChanged = true;
         emit topChanged(t);
     }
+
+    if (rangeChanged)
+        emit changed();
 }
 
 
@@ -545,10 +554,6 @@ public:
     QDoubleValidator uses its locale() to interpret the number. For example,
     in the German locale, "1,234" will be accepted as the fractional number
     1.234. In Arabic locales, QDoubleValidator will accept Arabic digits.
-
-    In addition, QDoubleValidator is always guaranteed to accept a number
-    formatted according to the "C" locale. QDoubleValidator will not accept
-    numbers with thousand-separators.
 
     \sa QIntValidator, QRegExpValidator, {Line Edits Example}
 */
@@ -643,11 +648,7 @@ QValidator::State QDoubleValidator::validate(QString & input, int &) const
             break;
     }
 
-    State currentLocaleValidation = d->validateWithLocale(input, numMode, locale());
-    if (currentLocaleValidation == Acceptable || locale().language() == QLocale::C)
-        return currentLocaleValidation;
-    State cLocaleValidation = d->validateWithLocale(input, numMode, QLocale(QLocale::C));
-    return qMax(currentLocaleValidation, cLocaleValidation);
+    return d->validateWithLocale(input, numMode, locale());
 }
 
 QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QLocalePrivate::NumberMode numMode, const QLocale &locale) const
@@ -697,20 +698,26 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
 
 void QDoubleValidator::setRange(double minimum, double maximum, int decimals)
 {
+    bool rangeChanged = false;
     if (b != minimum) {
         b = minimum;
+        rangeChanged = true;
         emit bottomChanged(b);
     }
 
     if (t != maximum) {
         t = maximum;
+        rangeChanged = true;
         emit topChanged(t);
     }
 
     if (dec != decimals) {
         dec = decimals;
+        rangeChanged = true;
         emit decimalsChanged(dec);
     }
+    if (rangeChanged)
+        emit changed();
 }
 
 /*!
@@ -772,6 +779,7 @@ void QDoubleValidator::setNotation(Notation newNotation)
     if (d->notation != newNotation) {
         d->notation = newNotation;
         emit notationChanged(d->notation);
+        emit changed();
     }
 }
 
@@ -888,6 +896,7 @@ void QRegExpValidator::setRegExp(const QRegExp& rx)
     if (r != rx) {
         r = rx;
         emit regExpChanged(r);
+        emit changed();
     }
 }
 

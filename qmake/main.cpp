@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the qmake application of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -103,8 +103,8 @@ int runQMake(int argc, char **argv)
     if(!(oldpwd.length() == 3 && oldpwd[0].isLetter() && oldpwd.endsWith(":/")))
 #endif
     {
-        if(oldpwd.right(1) != QString(QChar(QDir::separator())))
-            oldpwd += QDir::separator();
+        if(!oldpwd.endsWith(QLatin1Char('/')))
+            oldpwd += QLatin1Char('/');
     }
     Option::output_dir = oldpwd; //for now this is the output dir
 
@@ -141,28 +141,33 @@ int runQMake(int argc, char **argv)
     for(QStringList::Iterator pfile = files.begin(); pfile != files.end(); pfile++) {
         if(Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
            Option::qmake_mode == Option::QMAKE_GENERATE_PRL) {
-            QString fn = Option::fixPathToLocalOS((*pfile));
+            QString fn = Option::normalizePath(*pfile);
             if(!QFile::exists(fn)) {
-                fprintf(stderr, "Cannot find file: %s.\n", fn.toLatin1().constData());
+                fprintf(stderr, "Cannot find file: %s.\n",
+                        QDir::toNativeSeparators(fn).toLatin1().constData());
                 exit_val = 2;
                 continue;
             }
 
             //setup pwd properly
-            debug_msg(1, "Resetting dir to: %s", oldpwd.toLatin1().constData());
+            debug_msg(1, "Resetting dir to: %s",
+                      QDir::toNativeSeparators(oldpwd).toLatin1().constData());
             qmake_setpwd(oldpwd); //reset the old pwd
-            int di = fn.lastIndexOf(QDir::separator());
+            int di = fn.lastIndexOf(QLatin1Char('/'));
             if(di != -1) {
-                debug_msg(1, "Changing dir to: %s", fn.left(di).toLatin1().constData());
+                debug_msg(1, "Changing dir to: %s",
+                          QDir::toNativeSeparators(fn.left(di)).toLatin1().constData());
                 if(!qmake_setpwd(fn.left(di)))
-                    fprintf(stderr, "Cannot find directory: %s\n", fn.left(di).toLatin1().constData());
+                    fprintf(stderr, "Cannot find directory: %s\n",
+                            QDir::toNativeSeparators(fn.left(di)).toLatin1().constData());
                 fn = fn.right(fn.length() - di - 1);
             }
 
             // read project..
             if(!project.read(fn)) {
                 fprintf(stderr, "Error processing project file: %s\n",
-                        fn == "-" ? "(stdin)" : (*pfile).toLatin1().constData());
+                        fn == QLatin1String("-") ?
+                            "(stdin)" : QDir::toNativeSeparators(*pfile).toLatin1().constData());
                 exit_val = 3;
                 continue;
             }
@@ -179,7 +184,8 @@ int runQMake(int argc, char **argv)
             if(Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT)
                 fprintf(stderr, "Unable to generate project file.\n");
             else
-                fprintf(stderr, "Unable to generate makefile for: %s\n", (*pfile).toLatin1().constData());
+                fprintf(stderr, "Unable to generate makefile for: %s\n",
+                        QDir::toNativeSeparators(*pfile).toLatin1().constData());
             exit_val = 5;
         }
         delete mkfile;

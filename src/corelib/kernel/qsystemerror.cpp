@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,7 +52,7 @@
 #  endif
 #endif
 #ifdef Q_OS_WIN
-#include <windows.h>
+#  include <qt_windows.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -141,76 +141,12 @@ static QString standardLibraryErrorString(int errorCode)
     return ret.trimmed();
 }
 
-#ifdef Q_OS_SYMBIAN
-static QString symbianErrorString(int errorCode)
-{
-    switch (errorCode) {
-    case KErrNotFound:
-        return QLatin1String("not found");
-    case KErrCancel:
-        return QLatin1String("cancelled");
-    case KErrNoMemory:
-        return QLatin1String("out of memory");
-    case KErrNotSupported:
-        return QLatin1String("not supported");
-    case KErrBadHandle:
-        return QLatin1String("bad handle"); //KERN-EXEC 0 panic is more likely
-    case KErrAlreadyExists:
-        return QLatin1String("already exists");
-    case KErrPathNotFound:
-        return QLatin1String("path not found");
-    case KErrInUse:
-        return QLatin1String("in use");
-    case KErrNotReady:
-        return QLatin1String("not ready (e.g. FS dismounted, network down)");
-    case KErrCorrupt:
-        return QLatin1String("corrupt");
-    case KErrAccessDenied:
-        return QLatin1String("access denied");
-    case KErrLocked:
-        return QLatin1String("locked");
-    case KErrWrite:
-        return QLatin1String("incomplete write error");
-    case KErrDisMounted:
-        return QLatin1String("file system dismounted during operation"); //i.e. a forcible dismount was done while we had files open
-    case KErrEof:
-        return QLatin1String("end of file");
-    case KErrDiskFull:
-        return QLatin1String("no space in file system");
-    case KErrBadName:
-        return QLatin1String("invalid filename");
-    case KErrTimedOut:
-        return QLatin1String("timed out");
-    case KErrBadDescriptor:
-        return QLatin1String("bad descriptor (passed address on stack to async call?)");
-    case KErrAbort:
-        return QLatin1String("aborted");
-    case KErrTooBig:
-        return QLatin1String("too big"); //e.g. trying to open a >2GB file with 32 bit API
-    case KErrBadPower:
-        return QLatin1String("insufficient power");
-    case KErrDirFull:
-        return QLatin1String("no space in directory table");
-    case KErrHardwareNotAvailable:
-        return QLatin1String("hardware not available");
-    case KErrSessionClosed:
-        return QLatin1String("session closed");
-    case KErrPermissionDenied:
-        return QLatin1String("permission denied");
-    default:
-        return QString(QLatin1String("symbian error %1")).arg(errorCode);
-    }    
-}
-#endif
-
 QString QSystemError::toString()
 {
     switch(errorScope) {
     case NativeError:
 #if defined (Q_OS_WIN)
         return windowsErrorString(errorCode);
-#elif defined (Q_OS_SYMBIAN)
-        return symbianErrorString(errorCode);
 #else
         //unix: fall through as native and standard library are the same
 #endif

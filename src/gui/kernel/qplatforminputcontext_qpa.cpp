@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
     QPlatformInputContext provides an interface the actual input methods
     can derive from by reimplementing methods.
 
-    \sa QInputPanel
+    \sa QInputMethod
 */
 
 /*!
@@ -94,7 +94,7 @@ bool QPlatformInputContext::isValid() const
 }
 
 /*!
-    Method to be called when input method needs to be reset. Called by QInputPanel::reset().
+    Method to be called when input method needs to be reset. Called by QInputMethod::reset().
     No further QInputMethodEvents should be sent as response.
  */
 void QPlatformInputContext::reset()
@@ -106,7 +106,7 @@ void QPlatformInputContext::commit()
 }
 
 /*!
-    Notification on editor updates. Called by QInputPanel::update().
+    Notification on editor updates. Called by QInputMethod::update().
  */
 void QPlatformInputContext::update(Qt::InputMethodQueries)
 {
@@ -117,12 +117,12 @@ void QPlatformInputContext::update(Qt::InputMethodQueries)
     the user. Input methods often use this information to offer more word
     suggestions to the user.
  */
-void QPlatformInputContext::invokeAction(QInputPanel::Action action, int cursorPosition)
+void QPlatformInputContext::invokeAction(QInputMethod::Action action, int cursorPosition)
 {
     Q_UNUSED(cursorPosition)
     // Default behavior for simple ephemeral input contexts. Some
     // complex input contexts should not be reset here.
-    if (action == QInputPanel::Click)
+    if (action == QInputMethod::Click)
         reset();
 }
 
@@ -148,17 +148,17 @@ QRectF QPlatformInputContext::keyboardRect() const
 }
 
 /*!
-    Active QPlatformInputContext is responsible for providing keyboardRectangle property to QInputPanel.
+    Active QPlatformInputContext is responsible for providing keyboardRectangle property to QInputMethod.
     In addition of providing the value in keyboardRect function, it also needs to call this emit
     function whenever the property changes.
  */
 void QPlatformInputContext::emitKeyboardRectChanged()
 {
-    emit qApp->inputPanel()->keyboardRectangleChanged();
+    emit qApp->inputMethod()->keyboardRectangleChanged();
 }
 
 /*!
-    This function can be reimplemented to return true whenever input panel is animating
+    This function can be reimplemented to return true whenever input method is animating
     shown or hidden. Default implementation returns false.
  */
 bool QPlatformInputContext::isAnimating() const
@@ -167,13 +167,13 @@ bool QPlatformInputContext::isAnimating() const
 }
 
 /*!
-    Active QPlatformInputContext is responsible for providing animating property to QInputPanel.
+    Active QPlatformInputContext is responsible for providing animating property to QInputMethod.
     In addition of providing the value in isAnimation function, it also needs to call this emit
     function whenever the property changes.
  */
 void QPlatformInputContext::emitAnimatingChanged()
 {
-    emit qApp->inputPanel()->animatingChanged();
+    emit qApp->inputMethod()->animatingChanged();
 }
 
 /*!
@@ -199,13 +199,13 @@ bool QPlatformInputContext::isInputPanelVisible() const
 }
 
 /*!
-    Active QPlatformInputContext is responsible for providing visible property to QInputPanel.
+    Active QPlatformInputContext is responsible for providing visible property to QInputMethod.
     In addition of providing the value in isInputPanelVisible function, it also needs to call this emit
     function whenever the property changes.
  */
 void QPlatformInputContext::emitInputPanelVisibleChanged()
 {
-    emit qApp->inputPanel()->visibleChanged();
+    emit qApp->inputMethod()->visibleChanged();
 }
 
 QLocale QPlatformInputContext::locale() const
@@ -215,7 +215,7 @@ QLocale QPlatformInputContext::locale() const
 
 void QPlatformInputContext::emitLocaleChanged()
 {
-    emit qApp->inputPanel()->localeChanged();
+    emit qApp->inputMethod()->localeChanged();
 }
 
 Qt::LayoutDirection QPlatformInputContext::inputDirection() const
@@ -225,7 +225,7 @@ Qt::LayoutDirection QPlatformInputContext::inputDirection() const
 
 void QPlatformInputContext::emitInputDirectionChanged(Qt::LayoutDirection newDirection)
 {
-    emit qApp->inputPanel()->inputDirectionChanged(newDirection);
+    emit qApp->inputMethod()->inputDirectionChanged(newDirection);
 }
 
 

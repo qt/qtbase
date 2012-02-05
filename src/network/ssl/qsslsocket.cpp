@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -353,6 +353,24 @@ QSslSocket::~QSslSocket()
 #endif
     delete d->plainSocket;
     d->plainSocket = 0;
+}
+
+/*!
+    \reimp
+
+    \since 5.0
+
+    Continues data transfer on the socket after it has been paused. If
+    "setPauseMode(QAbstractSocket::PauseOnNotify);" has been called on
+    this socket and a sslErrors() signal is received, calling this method
+    is necessary for the socket to continue.
+
+    \sa QAbstractSocket::pauseMode(), QAbstractSocket::setPauseMode()
+*/
+void QSslSocket::resume()
+{
+    // continuing might emit signals, rather do this through the event loop
+    QMetaObject::invokeMethod(this, "_q_resumeImplementation", Qt::QueuedConnection);
 }
 
 /*!
@@ -1860,6 +1878,7 @@ QSslSocketPrivate::QSslSocketPrivate()
     , readyReadEmittedPointer(0)
     , allowRootCertOnDemandLoading(true)
     , plainSocket(0)
+    , paused(false)
 {
     QSslConfigurationPrivate::deepCopyDefaultConfiguration(&configuration);
 }
@@ -1935,7 +1954,6 @@ void QSslSocketPrivate::setDefaultSupportedCiphers(const QList<QSslCipher> &ciph
 */
 QList<QSslCertificate> QSslSocketPrivate::defaultCaCertificates()
 {
-    // ### Qt5: rename everything containing "caCertificates" to "rootCertificates" or similar
     QSslSocketPrivate::ensureInitialized();
     QMutexLocker locker(&globalData()->mutex);
     return globalData()->config->caCertificates;
@@ -2114,6 +2132,11 @@ void QSslSocketPrivate::resumeSocketNotifiers(QSslSocket *socket)
     QAbstractSocketPrivate::resumeSocketNotifiers(socket->d_func()->plainSocket);
 }
 
+bool QSslSocketPrivate::isPaused() const
+{
+    return paused;
+}
+
 /*!
     \internal
 */
@@ -2255,6 +2278,55 @@ void QSslSocketPrivate::_q_flushReadBuffer()
     // trigger a read from the plainSocket into SSL
     if (mode != QSslSocket::UnencryptedMode)
         transmit();
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::_q_resumeImplementation()
+{
+    Q_Q(QSslSocket);
+    if (plainSocket)
+        plainSocket->resume();
+    paused = false;
+    if (!connectionEncrypted) {
+        if (verifyErrorsHaveBeenIgnored()) {
+            continueHandshake();
+        } else {
+            q->setErrorString(sslErrors.first().errorString());
+            q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
+            emit q->error(QAbstractSocket::SslHandshakeFailedError);
+            plainSocket->disconnectFromHost();
+            return;
+        }
+    }
+    transmit();
+}
+
+/*!
+    \internal
+*/
+bool QSslSocketPrivate::verifyErrorsHaveBeenIgnored()
+{
+    bool doEmitSslError;
+    if (!ignoreErrorsList.empty()) {
+        // check whether the errors we got are all in the list of expected errors
+        // (applies only if the method QSslSocket::ignoreSslErrors(const QList<QSslError> &errors)
+        // was called)
+        doEmitSslError = false;
+        for (int a = 0; a < sslErrors.count(); a++) {
+            if (!ignoreErrorsList.contains(sslErrors.at(a))) {
+                doEmitSslError = true;
+                break;
+            }
+        }
+    } else {
+        // if QSslSocket::ignoreSslErrors(const QList<QSslError> &errors) was not called and
+        // we get an SSL error, emit a signal unless we ignored all errors (by calling
+        // QSslSocket::ignoreSslErrors() )
+        doEmitSslError = !ignoreAllSslErrors;
+    }
+    return !doEmitSslError;
 }
 
 /*!

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,7 +56,7 @@
 
 
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC)
+#if defined(Q_WS_X11) || defined(Q_OS_MAC)
 #define private public
 #include <private/qtextengine_p.h>
 #include <qtextlayout.h>
@@ -102,6 +102,8 @@ private slots:
 
     void mirroredChars_data();
     void mirroredChars();
+
+    void thaiIsolatedSaraAm();
 
 private:
     bool haveTestFonts;
@@ -1161,7 +1163,7 @@ void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
 
 void tst_QTextScriptEngine::combiningMarks_qtbug15675()
 {
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     QString s;
     s.append(QChar(0x0061));
     s.append(QChar(0x0062));
@@ -1211,7 +1213,7 @@ void tst_QTextScriptEngine::mirroredChars_data()
 
 void tst_QTextScriptEngine::mirroredChars()
 {
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     QSKIP("Not supported on Mac");
 #endif
     QFETCH(int, hintingPreference);
@@ -1254,6 +1256,28 @@ void tst_QTextScriptEngine::mirroredChars()
         QCOMPARE(glyphLayout.glyphs[0], rightParenthesis);
         QCOMPARE(glyphLayout.glyphs[1], leftParenthesis);
     }
+}
+
+void tst_QTextScriptEngine::thaiIsolatedSaraAm()
+{
+    if (QFontDatabase().families(QFontDatabase::Any).contains("Waree")) {
+        QString s;
+        s.append(QChar(0x0e33));
+
+        QTextLayout layout(s, QFont("Waree"));
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+
+        QTextEngine *e = layout.engine();
+        e->itemize();
+        e->shape(0);
+        QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(3));
+
+        unsigned short *logClusters = e->layoutData->logClustersPtr;
+        QCOMPARE(logClusters[0], ushort(0));
+    } else
+        QSKIP("Cannot find Waree.");
 }
 
 QTEST_MAIN(tst_QTextScriptEngine)

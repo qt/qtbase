@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -84,15 +84,7 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
 #endif
         separatorPos = tmpPath.indexOf(slash, separatorPos + 1);
         QString prefix = separatorPos == -1 ? tmpPath : tmpPath.left(separatorPos);
-        if (
-#ifdef Q_OS_SYMBIAN
-            // Symbian doesn't support directory symlinks, so do not check for link unless we
-            // are handling the last path element. This not only slightly improves performance,
-            // but also saves us from lot of unnecessary platform security check failures
-            // when dealing with files under *:/private directories.
-            separatorPos == -1 &&
-#endif
-            !nonSymlinks.contains(prefix)) {
+        if (!nonSymlinks.contains(prefix)) {
             fi.setFile(prefix);
             if (fi.isSymLink()) {
                 QString target = fi.symLinkTarget();
@@ -276,20 +268,16 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
 #endif
 
     // Times
-#ifdef Q_OS_SYMBIAN
-    modificationTime_ = qt_symbian_time_t_To_TTime(statBuffer.st_mtime);
-#else
     creationTime_ = statBuffer.st_ctime ? statBuffer.st_ctime : statBuffer.st_mtime;
     modificationTime_ = statBuffer.st_mtime;
     accessTime_ = statBuffer.st_atime;
     userId_ = statBuffer.st_uid;
     groupId_ = statBuffer.st_gid;
-#endif
 }
 
 void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
 {
-#if defined(_DIRENT_HAVE_D_TYPE) || defined(Q_OS_BSD4) || defined(Q_OS_SYMBIAN)
+#if defined(_DIRENT_HAVE_D_TYPE) || defined(Q_OS_BSD4)
     // BSD4 includes Mac OS X
 
     // ### This will clear all entry flags and knownFlagsMask
@@ -357,11 +345,7 @@ void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
 //static
 QString QFileSystemEngine::resolveUserName(const QFileSystemEntry &entry, QFileSystemMetaData &metaData)
 {
-#if defined (Q_OS_SYMBIAN)
-    Q_UNUSED(entry);
-    Q_UNUSED(metaData);
-    return QString();
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     Q_UNUSED(metaData);
     return QFileSystemEngine::owner(entry, QAbstractFileEngine::OwnerUser);
 #else //(Q_OS_UNIX)
@@ -374,11 +358,7 @@ QString QFileSystemEngine::resolveUserName(const QFileSystemEntry &entry, QFileS
 //static
 QString QFileSystemEngine::resolveGroupName(const QFileSystemEntry &entry, QFileSystemMetaData &metaData)
 {
-#if defined (Q_OS_SYMBIAN)
-    Q_UNUSED(entry);
-    Q_UNUSED(metaData);
-    return QString();
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     Q_UNUSED(metaData);
     return QFileSystemEngine::owner(entry, QAbstractFileEngine::OwnerGroup);
 #else //(Q_OS_UNIX)

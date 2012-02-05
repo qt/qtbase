@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,7 +51,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #define QWINDOWSIZE_MAX ((1<<24)-1)
 
@@ -76,7 +75,8 @@ public:
         , windowState(Qt::WindowNoState)
         , resizeEventPending(true)
         , positionPolicy(WindowFrameExclusive)
-        , orientation(Qt::UnknownOrientation)
+        , contentOrientation(Qt::PrimaryOrientation)
+        , windowOrientation(Qt::PrimaryOrientation)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
         , modality(Qt::NonModal)
         , transientParent(0)
@@ -111,7 +111,8 @@ public:
     Qt::WindowState windowState;
     bool resizeEventPending;
     PositionPolicy positionPolicy;
-    Qt::ScreenOrientation orientation;
+    Qt::ScreenOrientation contentOrientation;
+    Qt::ScreenOrientation windowOrientation;
 
     QSize minimumSize;
     QSize maximumSize;

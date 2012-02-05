@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the qmake application of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -75,13 +75,14 @@ QMakeMetaInfo::readLib(QString lib)
                 meta_type = "libtool";
         } else if(meta_file.endsWith(Option::prl_ext)) {
             QMakeProject proj;
-            if(!proj.read(Option::fixPathToLocalOS(meta_file), QMakeProject::ReadProFile))
+            if(!proj.read(Option::normalizePath(meta_file), QMakeProject::ReadProFile))
                 return false;
             meta_type = "qmake";
             vars = proj.variables();
             ret = true;
         } else {
-            warn_msg(WarnLogic, "QMakeMetaInfo: unknown file format for %s", meta_file.toLatin1().constData());
+            warn_msg(WarnLogic, "QMakeMetaInfo: unknown file format for %s",
+                     QDir::toNativeSeparators(meta_file).toLatin1().constData());
         }
     }
     if(ret)
@@ -102,8 +103,8 @@ QMakeMetaInfo::findLib(QString lib)
 {
     if((lib[0] == '\'' || lib[0] == '"') &&
        lib[lib.length()-1] == lib[0])
-	lib = lib.mid(1, lib.length()-2);
-    lib = Option::fixPathToLocalOS(lib);
+    lib = lib.mid(1, lib.length()-2);
+    lib = Option::normalizePath(lib);
 
     QString ret;
     QString extns[] = { Option::prl_ext, /*Option::pkgcfg_ext, Option::libtool_ext,*/ QString() };
@@ -133,13 +134,14 @@ QMakeMetaInfo::readLibtoolFile(const QString &f)
 {
     /* I can just run the .la through the .pro parser since they are compatible.. */
     QMakeProject proj;
-    if(!proj.read(Option::fixPathToLocalOS(f), QMakeProject::ReadProFile))
+    QString nf = Option::normalizePath(f);
+    if(!proj.read(nf, QMakeProject::ReadProFile))
         return false;
-    QString dirf = Option::fixPathToTargetOS(f).section(Option::dir_sep, 0, -2);
-    if(dirf == f)
+    QString dirf = nf.section(QLatin1Char('/'), 0, -2);
+    if(dirf == nf)
         dirf = "";
     else if(!dirf.isEmpty() && !dirf.endsWith(Option::output_dir))
-        dirf += Option::dir_sep;
+        dirf += QLatin1Char('/');
     QHash<QString, QStringList> &v = proj.variables();
     for(QHash<QString, QStringList>::Iterator it = v.begin(); it != v.end(); ++it) {
         QStringList lst = it.value();
@@ -152,18 +154,18 @@ QMakeMetaInfo::readLibtoolFile(const QString &f)
             if((dir.startsWith("'") || dir.startsWith("\"")) && dir.endsWith(QString(dir[0])))
                 dir = dir.mid(1, dir.length() - 2);
             dir = dir.trimmed();
-            if(!dir.isEmpty() && !dir.endsWith(Option::dir_sep))
-                dir += Option::dir_sep;
+            if(!dir.isEmpty() && !dir.endsWith(QLatin1Char('/')))
+                dir += QLatin1Char('/');
             if(lst.count() == 1)
                 lst = lst.first().split(" ");
             for(QStringList::Iterator lst_it = lst.begin(); lst_it != lst.end(); ++lst_it) {
                 bool found = false;
-                QString dirs[] = { "", dir, dirf, dirf + ".libs" + QDir::separator(), "(term)" };
+                QString dirs[] = { "", dir, dirf, dirf + ".libs/", "(term)" };
                 for(int i = 0; !found && dirs[i] != "(term)"; i++) {
                     if(QFile::exists(dirs[i] + (*lst_it))) {
                         QString targ = dirs[i] + (*lst_it);
                         if(QDir::isRelativePath(targ))
-                            targ.prepend(qmake_getpwd() + QDir::separator());
+                            targ.prepend(qmake_getpwd() + QLatin1Char('/'));
                         vars["QMAKE_PRL_TARGET"] << targ;
                         found = true;
                     }

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -34,12 +33,14 @@
 ** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include <QGuiApplication>
 #include <QScreen>
+#include <QRect>
 
 #include "window.h"
 
@@ -63,6 +64,9 @@ int main(int argc, char **argv)
         if (screen == app.primaryScreen())
             continue;
         Window *window = new Window(screen);
+        QRect geometry = window->geometry();
+        geometry.moveCenter(screen->availableGeometry().center());
+        window->setGeometry(geometry);
         window->setVisible(true);
         window->setWindowTitle(screen->name());
     }

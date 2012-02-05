@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -87,6 +87,8 @@ public:
     virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
     virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
     virtual void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *bs);
+    virtual EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter)
+        { return QWindowsContext::instance()->setEventFilter(eventType, filter); }
 };
 
 void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
@@ -178,8 +180,7 @@ QWindowsIntegration::QWindowsIntegration() :
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(d->m_eventDispatcher);
     d->m_clipboard.registerViewer();
-    foreach (QPlatformScreen *pscr, QWindowsScreen::screens())
-        screenAdded(pscr);
+    d->m_context.screenManager().handleScreenChanges();
 }
 
 QWindowsIntegration::~QWindowsIntegration()
@@ -292,6 +293,7 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
     case QPlatformIntegration::StartDragDistance:
     case QPlatformIntegration::MouseDoubleClickInterval:
     case QPlatformIntegration::KeyboardInputInterval:
+    case QPlatformIntegration::ShowIsFullScreen:
         break; // Not implemented
     }
     return QPlatformIntegration::styleHint(hint);

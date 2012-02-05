@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,14 +52,14 @@
 // Big Codecs
 //#define QT_NO_BIG_CODECS
 
+// QClipboard
+//#define QT_NO_CLIPBOARD
+
 // Color Names
 //#define QT_NO_COLORNAMES
 
 // QtConcurrent
 //#define QT_NO_CONCURRENT
-
-// QCopChannel
-//#define QT_NO_COP
 
 // CssParser
 //#define QT_NO_CSSPARSER
@@ -69,9 +69,6 @@
 
 // QDesktopServices
 //#define QT_NO_DESKTOPSERVICES
-
-// QDirectPainter
-//#define QT_NO_DIRECTPAINTER
 
 // Document Object Model
 //#define QT_NO_DOM
@@ -94,6 +91,9 @@
 // QGroupBox
 //#define QT_NO_GROUPBOX
 
+// QHostInfo
+//#define QT_NO_HOSTINFO
+
 // QImageIOPlugin
 //#define QT_NO_IMAGEFORMATPLUGIN
 
@@ -111,6 +111,9 @@
 
 // XBM Image Format
 //#define QT_NO_IMAGEFORMAT_XBM
+
+// XPM Image Format
+//#define QT_NO_IMAGEFORMAT_XPM
 
 // QImage::createHeuristicMask()
 //#define QT_NO_IMAGE_HEURISTIC_MASK
@@ -142,24 +145,6 @@
 // Painting Debug Utilities
 //#define QT_NO_PAINT_DEBUG
 
-// Phonon::AbstractMediaStream
-//#define QT_NO_PHONON_ABSTRACTMEDIASTREAM
-
-// Support for Audio Capture
-//#define QT_NO_PHONON_AUDIOCAPTURE
-
-// Phonon::Effect
-//#define QT_NO_PHONON_EFFECT
-
-// Phonon::MediaController
-//#define QT_NO_PHONON_MEDIACONTROLLER
-
-// Phonon::ObjectDescriptionModel
-//#define QT_NO_PHONON_OBJECTDESCRIPTIONMODEL
-
-// Phonon::VideoWidget
-//#define QT_NO_PHONON_VIDEO
-
 // QPicture
 //#define QT_NO_PICTURE
 
@@ -174,42 +159,6 @@
 
 //  Universally Unique Identifier Convertion
 //#define QT_NO_QUUID_STRING
-
-// QWSEmbedWidget
-//#define QT_NO_QWSEMBEDWIDGET
-
-// Alpha Cursor
-//#define QT_NO_QWS_ALPHA_CURSOR
-
-// Decoration
-//#define QT_NO_QWS_DECORATION_DEFAULT
-
-// Keyboard
-//#define QT_NO_QWS_KEYBOARD
-
-// Mouse
-//#define QT_NO_QWS_MOUSE
-
-// Mouse (Auto)
-//#define QT_NO_QWS_MOUSE_AUTO
-
-// Mouse (Non-Auto)
-//#define QT_NO_QWS_MOUSE_MANUAL
-
-// Multi-Process
-//#define QT_NO_QWS_MULTIPROCESS
-
-// Properties
-//#define QT_NO_QWS_PROPERTIES
-
-// QProxyScreen
-//#define QT_NO_QWS_PROXYSCREEN
-
-// Qt Prerendered Font Format
-//#define QT_NO_QWS_QPF
-
-// Qt Prerendered Font Format 2
-//#define QT_NO_QWS_QPF2
 
 // Raster Paint Engine callback functions
 //#define QT_NO_RASTERCALLBACKS
@@ -323,11 +272,6 @@
 #define QT_NO_BUTTONGROUP
 #endif
 
-// QClipboard
-#if !defined(QT_NO_CLIPBOARD) && (defined(QT_NO_QWS_PROPERTIES))
-#define QT_NO_CLIPBOARD
-#endif
-
 // Codecs
 #if !defined(QT_NO_CODECS) && (defined(QT_NO_TEXTCODEC))
 #define QT_NO_CODECS
@@ -343,9 +287,19 @@
 #define QT_NO_DIAL
 #endif
 
+// Drag and drop
+#if !defined(QT_NO_DRAGANDDROP) && (defined(QT_NO_IMAGEFORMAT_XPM))
+#define QT_NO_DRAGANDDROP
+#endif
+
 // QFileSystemModel
 #if !defined(QT_NO_FILESYSTEMMODEL) && (defined(QT_NO_FILESYSTEMWATCHER))
 #define QT_NO_FILESYSTEMMODEL
+#endif
+
+// Hyper Text Transfer Protocol
+#if !defined(QT_NO_HTTP) && (defined(QT_NO_HOSTINFO))
+#define QT_NO_HTTP
 #endif
 
 // QLibrary
@@ -363,64 +317,9 @@
 #define QT_NO_NETWORKDISKCACHE
 #endif
 
-// Phonon::SeekSlider
-#if !defined(QT_NO_PHONON_SEEKSLIDER) && (defined(QT_NO_SLIDER))
-#define QT_NO_PHONON_SEEKSLIDER
-#endif
-
-// Phonon::AbstractMediaStream
-#if !defined(QT_NO_PHONON_SETTINGSGROUP) && (defined(QT_NO_SETTINGS))
-#define QT_NO_PHONON_SETTINGSGROUP
-#endif
-
-// Phonon::VideoPlayer
-#if !defined(QT_NO_PHONON_VIDEOPLAYER) && (defined(QT_NO_PHONON_VIDEO))
-#define QT_NO_PHONON_VIDEOPLAYER
-#endif
-
-// Phonon::VolumeFaderEffect
-#if !defined(QT_NO_PHONON_VOLUMEFADEREFFECT) && (defined(QT_NO_PHONON_EFFECT))
-#define QT_NO_PHONON_VOLUMEFADEREFFECT
-#endif
-
 // QProgressDialog
 #if !defined(QT_NO_PROGRESSDIALOG) && (defined(QT_NO_PROGRESSBAR))
 #define QT_NO_PROGRESSDIALOG
-#endif
-
-// Cursor
-#if !defined(QT_NO_QWS_CURSOR) && (defined(QT_NO_CURSOR))
-#define QT_NO_QWS_CURSOR
-#endif
-
-// Decoration (Styled)
-#if !defined(QT_NO_QWS_DECORATION_STYLED) && (defined(QT_NO_QWS_DECORATION_DEFAULT))
-#define QT_NO_QWS_DECORATION_STYLED
-#endif
-
-// Decoration (Windows Style)
-#if !defined(QT_NO_QWS_DECORATION_WINDOWS) && (defined(QT_NO_QWS_DECORATION_DEFAULT))
-#define QT_NO_QWS_DECORATION_WINDOWS
-#endif
-
-// Dynamic screen transformation.
-#if !defined(QT_NO_QWS_DYNAMICSCREENTRANSFORMATION) && (defined(QT_NO_QWS_PROXYSCREEN))
-#define QT_NO_QWS_DYNAMICSCREENTRANSFORMATION
-#endif
-
-// Manager
-#if !defined(QT_NO_QWS_MANAGER) && (defined(QT_NO_QWS_DECORATION_DEFAULT))
-#define QT_NO_QWS_MANAGER
-#endif
-
-// QVncTransformed
-#if !defined(QT_NO_QWS_TRANSFORMED) && (defined(QT_NO_QWS_PROXYSCREEN))
-#define QT_NO_QWS_TRANSFORMED
-#endif
-
-// QVncScreen
-#if !defined(QT_NO_QWS_VNC) && (defined(QT_NO_QWS_PROXYSCREEN))
-#define QT_NO_QWS_VNC
 #endif
 
 // QScrollBar
@@ -458,11 +357,6 @@
 #define QT_NO_STYLE_WINDOWSXP
 #endif
 
-// SXE
-#if !defined(QT_NO_SXE) && (defined(QT_NO_QWS_MULTIPROCESS))
-#define QT_NO_SXE
-#endif
-
 // QToolButton
 #if !defined(QT_NO_TOOLBUTTON) && (defined(QT_NO_ACTION))
 #define QT_NO_TOOLBUTTON
@@ -471,11 +365,6 @@
 // QUndoStack
 #if !defined(QT_NO_UNDOSTACK) && (defined(QT_NO_UNDOCOMMAND))
 #define QT_NO_UNDOSTACK
-#endif
-
-// ActiveQt
-#if !defined(QT_NO_WIN_ACTIVEQT) && (defined(QT_NO_PROPERTIES))
-#define QT_NO_WIN_ACTIVEQT
 #endif
 
 // QWizard
@@ -518,14 +407,34 @@
 #define QT_NO_IM
 #endif
 
-// Phonon::PlatformPlugin
-#if !defined(QT_NO_PHONON_PLATFORMPLUGIN) && (defined(QT_NO_LIBRARY))
-#define QT_NO_PHONON_PLATFORMPLUGIN
+// QPrinter
+#if !defined(QT_NO_PRINTER) && (defined(QT_NO_PICTURE) || defined(QT_NO_TEMPORARYFILE))
+#define QT_NO_PRINTER
 #endif
 
 // QScrollArea
 #if !defined(QT_NO_SCROLLAREA) && (defined(QT_NO_SCROLLBAR))
 #define QT_NO_SCROLLAREA
+#endif
+
+// QCleanLooksStyle
+#if !defined(QT_NO_STYLE_CLEANLOOKS) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_IMAGEFORMAT_XPM))
+#define QT_NO_STYLE_CLEANLOOKS
+#endif
+
+// QPlastiqueStyle
+#if !defined(QT_NO_STYLE_PLASTIQUE) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_IMAGEFORMAT_XPM))
+#define QT_NO_STYLE_PLASTIQUE
+#endif
+
+// QWindowsCEStyle
+#if !defined(QT_NO_STYLE_WINDOWSCE) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_IMAGEFORMAT_XPM))
+#define QT_NO_STYLE_WINDOWSCE
+#endif
+
+// QWindowsMobileStyle
+#if !defined(QT_NO_STYLE_WINDOWSMOBILE) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_IMAGEFORMAT_XPM))
+#define QT_NO_STYLE_WINDOWSMOBILE
 #endif
 
 // QWindowsVistaStyle
@@ -558,19 +467,9 @@
 #define QT_NO_WHATSTHIS
 #endif
 
-// Drag and drop
-#if !defined(QT_NO_DRAGANDDROP) && (defined(QT_NO_QWS_PROPERTIES) || defined(QT_NO_IMAGEFORMAT_XPM))
-#define QT_NO_DRAGANDDROP
-#endif
-
 // QGraphicsView
 #if !defined(QT_NO_GRAPHICSVIEW) && (defined(QT_NO_SCROLLAREA))
 #define QT_NO_GRAPHICSVIEW
-#endif
-
-// Hyper Text Transfer Protocol
-#if !defined(QT_NO_HTTP) && defined(QT_NO_HOSTINFO)
-#define QT_NO_HTTP
 #endif
 
 // QMdiArea
@@ -578,34 +477,9 @@
 #define QT_NO_MDIAREA
 #endif
 
-// Phonon::VolumeSlider
-#if !defined(QT_NO_PHONON_VOLUMESLIDER) && (defined(QT_NO_SLIDER) || defined(QT_NO_TOOLBUTTON))
-#define QT_NO_PHONON_VOLUMESLIDER
-#endif
-
-// QPrinter
-#if !defined(QT_NO_PRINTER) && (defined(QT_NO_PICTURE) || defined(QT_NO_TEMPORARYFILE))
-#define QT_NO_PRINTER
-#endif
-
-// QWSInputMethod
-#if !defined(QT_NO_QWS_INPUTMETHODS) && (defined(QT_NO_IM))
-#define QT_NO_QWS_INPUTMETHODS
-#endif
-
 // QSpinBox
 #if !defined(QT_NO_SPINBOX) && (defined(QT_NO_SPINWIDGET) || defined(QT_NO_LINEEDIT) || defined(QT_NO_VALIDATOR))
 #define QT_NO_SPINBOX
-#endif
-
-// QCleanLooksStyle
-#if !defined(QT_NO_STYLE_CLEANLOOKS) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_IMAGEFORMAT_XPM))
-#define QT_NO_STYLE_CLEANLOOKS
-#endif
-
-// QPlastiqueStyle
-#if !defined(QT_NO_STYLE_PLASTIQUE) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_IMAGEFORMAT_XPM))
-#define QT_NO_STYLE_PLASTIQUE
 #endif
 
 // QStyleSheetStyle
@@ -613,29 +487,9 @@
 #define QT_NO_STYLE_STYLESHEET
 #endif
 
-// QWindowsCEStyle
-#if !defined(QT_NO_STYLE_WINDOWSCE) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_IMAGEFORMAT_XPM))
-#define QT_NO_STYLE_WINDOWSCE
-#endif
-
-// QWindowsMobileStyle
-#if !defined(QT_NO_STYLE_WINDOWSMOBILE) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_IMAGEFORMAT_XPM))
-#define QT_NO_STYLE_WINDOWSMOBILE
-#endif
-
-// QtSvg module
-#if !defined(QT_NO_SVG) && (defined(QT_NO_XMLSTREAMREADER) || defined(QT_NO_CSSPARSER))
-#define QT_NO_SVG
-#endif
-
 // Q3TabDialog
 #if !defined(QT_NO_TABDIALOG) && (defined(QT_NO_TABBAR))
 #define QT_NO_TABDIALOG
-#endif
-
-// QTextCodecPlugin
-#if !defined(QT_NO_TEXTCODECPLUGIN) && (defined(QT_NO_TEXTCODEC) || defined(QT_NO_LIBRARY))
-#define QT_NO_TEXTCODECPLUGIN
 #endif
 
 // QColorDialog
@@ -658,21 +512,6 @@
 #define QT_NO_MENUBAR
 #endif
 
-// Sound Server
-#if !defined(QT_NO_QWS_SOUNDSERVER) && (defined(QT_NO_SOUND) || defined(QT_NO_HOSTINFO) || defined(QT_NO_QWS_MULTIPROCESS))
-#define QT_NO_QWS_SOUNDSERVER
-#endif
-
-// QSvgGenerator
-#if !defined(QT_NO_SVGGENERATOR) && (defined(QT_NO_SVG))
-#define QT_NO_SVGGENERATOR
-#endif
-
-// QSvgRenderer
-#if !defined(QT_NO_SVGRENDERER) && (defined(QT_NO_SVG))
-#define QT_NO_SVGRENDERER
-#endif
-
 // QTabWidget
 #if !defined(QT_NO_TABWIDGET) && (defined(QT_NO_TABBAR) || defined(QT_NO_STACKEDWIDGET))
 #define QT_NO_TABWIDGET
@@ -681,6 +520,11 @@
 // QTextEdit
 #if !defined(QT_NO_TEXTEDIT) && (defined(QT_NO_SCROLLAREA) || defined(QT_NO_PROPERTIES))
 #define QT_NO_TEXTEDIT
+#endif
+
+// Common UNIX Printing System
+#if !defined(QT_NO_CUPS) && (defined(QT_NO_PRINTER) || defined(QT_NO_LIBRARY))
+#define QT_NO_CUPS
 #endif
 
 // QErrorMessage
@@ -711,11 +555,6 @@
 // QStringListModel
 #if !defined(QT_NO_STRINGLISTMODEL) && (defined(QT_NO_ITEMVIEWS))
 #define QT_NO_STRINGLISTMODEL
-#endif
-
-// QSvgWidget
-#if !defined(QT_NO_SVGWIDGET) && (defined(QT_NO_SVGRENDERER))
-#define QT_NO_SVGWIDGET
 #endif
 
 // QSyntaxHighlighter
@@ -756,11 +595,6 @@
 // QCompleter
 #if !defined(QT_NO_COMPLETER) && (defined(QT_NO_PROXYMODEL))
 #define QT_NO_COMPLETER
-#endif
-
-// Common UNIX Printing System
-#if !defined(QT_NO_CUPS) && (defined(QT_NO_PRINTER) || defined(QT_NO_LIBRARY))
-#define QT_NO_CUPS
 #endif
 
 // QDataWidgetMapper
@@ -813,24 +647,19 @@
 #define QT_NO_FSCOMPLETER
 #endif
 
-// QGraphicsSvgItem
-#if !defined(QT_NO_GRAPHICSSVGITEM) && (defined(QT_NO_SVGRENDERER) || defined(QT_NO_GRAPHICSVIEW))
-#define QT_NO_GRAPHICSSVGITEM
-#endif
-
 // QComboBox
 #if !defined(QT_NO_COMBOBOX) && (defined(QT_NO_LINEEDIT) || defined(QT_NO_STANDARDITEMMODEL) || defined(QT_NO_LISTVIEW))
 #define QT_NO_COMBOBOX
 #endif
 
-// QWorkSpace
-#if !defined(QT_NO_WORKSPACE) && (defined(QT_NO_SCROLLBAR) || defined(QT_NO_MAINWINDOW) || defined(QT_NO_MENUBAR))
-#define QT_NO_WORKSPACE
-#endif
-
 // QPrintPreviewWidget
 #if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER) || defined(QT_NO_MAINWINDOW))
 #define QT_NO_PRINTPREVIEWWIDGET
+#endif
+
+// QWorkSpace
+#if !defined(QT_NO_WORKSPACE) && (defined(QT_NO_SCROLLBAR) || defined(QT_NO_MAINWINDOW) || defined(QT_NO_MENUBAR))
+#define QT_NO_WORKSPACE
 #endif
 
 // QCalendarWidget
@@ -846,11 +675,6 @@
 // QInputDialog
 #if !defined(QT_NO_INPUTDIALOG) && (defined(QT_NO_COMBOBOX) || defined(QT_NO_SPINBOX) || defined(QT_NO_STACKEDWIDGET))
 #define QT_NO_INPUTDIALOG
-#endif
-
-// Phonon::EffectWidget
-#if !defined(QT_NO_PHONON_EFFECTWIDGET) && (defined(QT_NO_PHONON_EFFECT) || defined(QT_NO_COMBOBOX) || defined(QT_NO_SPINBOX))
-#define QT_NO_PHONON_EFFECTWIDGET
 #endif
 
 // QFontComboBox

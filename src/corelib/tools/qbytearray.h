@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -68,7 +68,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 /*****************************************************************************
   Safe and portable C string functions; extensions to standard string.h
@@ -232,9 +231,9 @@ public:
     int lastIndexOf(const char *c, int from = -1) const;
     int lastIndexOf(const QByteArray &a, int from = -1) const;
 
-    QBool contains(char c) const;
-    QBool contains(const char *a) const;
-    QBool contains(const QByteArray &a) const;
+    bool contains(char c) const;
+    bool contains(const char *a) const;
+    bool contains(const QByteArray &a) const;
     int count(char c) const;
     int count(const char *a) const;
     int count(const QByteArray &a) const;
@@ -524,10 +523,10 @@ inline void QByteArray::push_front(const char *c)
 { prepend(c); }
 inline void QByteArray::push_front(const QByteArray &a)
 { prepend(a); }
-inline QBool QByteArray::contains(const QByteArray &a) const
-{ return QBool(indexOf(a) != -1); }
-inline QBool QByteArray::contains(char c) const
-{ return QBool(indexOf(c) != -1); }
+inline bool QByteArray::contains(const QByteArray &a) const
+{ return indexOf(a) != -1; }
+inline bool QByteArray::contains(char c) const
+{ return indexOf(c) != -1; }
 inline bool operator==(const QByteArray &a1, const QByteArray &a2)
 { return (a1.size() == a2.size()) && (memcmp(a1.constData(), a2.constData(), a1.size())==0); }
 inline bool operator==(const QByteArray &a1, const char *a2)
@@ -576,8 +575,8 @@ inline const QByteArray operator+(const char *a1, const QByteArray &a2)
 inline const QByteArray operator+(char a1, const QByteArray &a2)
 { return QByteArray(&a1, 1) += a2; }
 #endif // QT_USE_QSTRINGBUILDER
-inline QBool QByteArray::contains(const char *c) const
-{ return QBool(indexOf(c) != -1); }
+inline bool QByteArray::contains(const char *c) const
+{ return indexOf(c) != -1; }
 inline QByteArray &QByteArray::replace(char before, const char *c)
 { return replace(&before, 1, c, qstrlen(c)); }
 inline QByteArray &QByteArray::replace(const QByteArray &before, const char *c)

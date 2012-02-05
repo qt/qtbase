@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,7 +49,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_PICTURE)
 
@@ -66,7 +65,7 @@ struct Q_GUI_EXPORT QPictureFormatInterface : public QFactoryInterface
     virtual bool installIOHandler(const QString &) = 0;
 };
 
-#define QPictureFormatInterface_iid "com.trolltech.Qt.QPictureFormatInterface"
+#define QPictureFormatInterface_iid "org.qt-project.Qt.QPictureFormatInterface"
 Q_DECLARE_INTERFACE(QPictureFormatInterface, QPictureFormatInterface_iid)
 
 

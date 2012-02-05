@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -76,6 +76,10 @@
 
 #ifndef QT_NO_CORESERVICES
 #include <CoreServices/CoreServices.h>
+#endif
+
+#ifdef __OBJC__
+#include <Foundation/Foundation.h>
 #endif
 
 #undef DEBUG
@@ -144,6 +148,11 @@ public:
     operator CFStringRef() const;
     static QString toQString(CFStringRef cfstr);
     static CFStringRef toCFStringRef(const QString &str);
+#ifdef __OBJC__
+    static QString toQString(const NSString *nsstr);
+    static  NSString *toNSString(const QString &string);
+#endif
+
 private:
     QString string;
 };

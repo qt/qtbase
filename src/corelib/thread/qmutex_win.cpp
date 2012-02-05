@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,15 +34,15 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#include <qt_windows.h>
-
 #include "qmutex.h"
 #include <qatomic.h>
 #include "qmutex_p.h"
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

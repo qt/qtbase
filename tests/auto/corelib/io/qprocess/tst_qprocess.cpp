@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1000,9 +1000,21 @@ public:
         }
     }
 
+    void writeAfterStart(const char *buf, int count)
+    {
+        dataToWrite = QByteArray(buf, count);
+    }
+
+    void start(const QString &program)
+    {
+        QProcess::start(program);
+        writePendingData();
+    }
+
 public slots:
     void terminateSlot()
     {
+        writePendingData(); // In cases 3 and 4 we haven't written the data yet.
         if (killing || (n == 4 && state() != Running)) {
             // Don't try to kill the process before it is running - that can
             // be hazardous, as the actual child process might not be running
@@ -1025,8 +1037,18 @@ public slots:
     }
 
 private:
+    void writePendingData()
+    {
+        if (!dataToWrite.isEmpty()) {
+            write(dataToWrite);
+            dataToWrite.clear();
+        }
+    }
+
+private:
     int n;
     bool killing;
+    QByteArray dataToWrite;
 };
 
 //-----------------------------------------------------------------------------
@@ -1049,11 +1071,10 @@ void tst_QProcess::softExitInSlots()
 
     for (int i = 0; i < 5; ++i) {
         SoftExitProcess proc(i);
+        proc.writeAfterStart("OLEBOLE", 8); // include the \0
         proc.start(appName);
-        proc.write("OLEBOLE", 8); // include the \0
-        QTestEventLoop::instance().enterLoop(10);
+        QTRY_VERIFY(proc.waitedForFinished);
         QCOMPARE(proc.state(), QProcess::NotRunning);
-        QVERIFY(proc.waitedForFinished);
     }
 }
 

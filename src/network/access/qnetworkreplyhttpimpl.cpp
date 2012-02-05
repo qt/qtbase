@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1499,10 +1499,11 @@ bool QNetworkReplyHttpImplPrivate::start()
 {
 #ifndef QT_NO_BEARERMANAGEMENT
     if (!managerPrivate->networkSession) {
+#endif
         postRequest();
         return true;
+#ifndef QT_NO_BEARERMANAGEMENT
     }
-#endif
 
     // This is not ideal.
     const QString host = url.host();
@@ -1513,15 +1514,14 @@ bool QNetworkReplyHttpImplPrivate::start()
         return true;
     }
 
-#ifndef QT_NO_BEARERMANAGEMENT
     if (managerPrivate->networkSession->isOpen() &&
         managerPrivate->networkSession->state() == QNetworkSession::Connected) {
         postRequest();
         return true;
     }
-#endif
 
     return false;
+#endif
 }
 
 void QNetworkReplyHttpImplPrivate::_q_startOperation()
@@ -1533,13 +1533,12 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
     }
     state = Working;
 
+    if (!start()) {
 #ifndef QT_NO_BEARERMANAGEMENT
-    if (!start()) { // ### we should call that method even if bearer is not used
         // backend failed to start because the session state is not Connected.
         // QNetworkAccessManager will call reply->backend->start() again for us when the session
         // state changes.
         state = WaitingForSession;
-
         QNetworkSession *session = managerPrivate->networkSession.data();
 
         if (session) {
@@ -1553,10 +1552,9 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
         } else {
             qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
         }
-
+#endif
         return;
     }
-#endif
 
     if (synchronous) {
         state = Finished;
@@ -1964,7 +1962,7 @@ void QNetworkReplyHttpImplPrivate::setCachingEnabled(bool enable)
 
     if (enable) {
         if (bytesDownloaded) {
-            qDebug("setCachingEnabled: %d bytesDownloaded", bytesDownloaded);
+            qDebug("setCachingEnabled: %lld bytesDownloaded", bytesDownloaded);
             // refuse to enable in this case
             qCritical("QNetworkReplyImpl: backend error: caching was enabled after some bytes had been written");
             return;

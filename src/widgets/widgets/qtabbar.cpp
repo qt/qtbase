@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -65,10 +65,6 @@
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
-#endif
-
-#ifndef QT_NO_STYLE_S60
-#include "qs60style.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -495,9 +491,6 @@ void QTabBarPrivate::layoutTabs()
 
     if (useScrollButtons && tabList.count() && last > available) {
         int extra = extraWidth();
-#ifndef QT_NO_STYLE_S60
-        QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style());
-#endif
         if (!vertTabs) {
             Qt::LayoutDirection ld = q->layoutDirection();
             QRect arrows = QStyle::visualRect(ld, q->rect(),
@@ -505,57 +498,25 @@ void QTabBarPrivate::layoutTabs()
             int buttonOverlap = q->style()->pixelMetric(QStyle::PM_TabBar_ScrollButtonOverlap, 0, q);
 
             if (ld == Qt::LeftToRight) {
-// In S60style, tab scroll buttons are layoutted separately, on the sides of the tabbar.
-#ifndef QT_NO_STYLE_S60
-                if (s60Style) {
-                    rightB->setGeometry(arrows.left() + extra / 2, arrows.top(), extra / 2, arrows.height());
-                    leftB->setGeometry(0, arrows.top(), extra / 2, arrows.height());
-                } else {
-#endif
                 leftB->setGeometry(arrows.left(), arrows.top(), extra/2, arrows.height());
                 rightB->setGeometry(arrows.right() - extra/2 + buttonOverlap, arrows.top(),
                                     extra/2, arrows.height());
-#ifndef QT_NO_STYLE_S60
-                }
-#endif
                 leftB->setArrowType(Qt::LeftArrow);
                 rightB->setArrowType(Qt::RightArrow);
             } else {
-#ifndef QT_NO_STYLE_S60
-                if (s60Style) {
-                    rightB->setGeometry(arrows.left() + extra / 2, arrows.top(), extra / 2, arrows.height());
-                    leftB->setGeometry(0, arrows.top(), extra / 2, arrows.height());
-                } else {
-#endif
                 rightB->setGeometry(arrows.left(), arrows.top(), extra/2, arrows.height());
                 leftB->setGeometry(arrows.right() - extra/2 + buttonOverlap, arrows.top(),
                                     extra/2, arrows.height());
-#ifndef QT_NO_STYLE_S60
-                }
-#endif
                 rightB->setArrowType(Qt::LeftArrow);
                 leftB->setArrowType(Qt::RightArrow);
             }
         } else {
-#ifndef QT_NO_STYLE_S60
-            if (s60Style) {
-                QRect arrows = QRect(0, 0, size.width(), available );
-                leftB->setGeometry(arrows.left(), arrows.top(), arrows.width(), extra / 2);
-                leftB->setArrowType(Qt::UpArrow);
-                rightB->setGeometry(arrows.left(), arrows.bottom() - extra / 2 + 1,
-                                    arrows.width(), extra / 2);
-                rightB->setArrowType(Qt::DownArrow);
-            } else {
-#endif
             QRect arrows = QRect(0, available - extra, size.width(), extra );
             leftB->setGeometry(arrows.left(), arrows.top(), arrows.width(), extra/2);
             leftB->setArrowType(Qt::UpArrow);
             rightB->setGeometry(arrows.left(), arrows.bottom() - extra/2 + 1,
                                 arrows.width(), extra/2);
             rightB->setArrowType(Qt::DownArrow);
-#ifndef QT_NO_STYLE_S60
-            }
-#endif
         }
         leftB->setEnabled(scrollOffset > 0);
         rightB->setEnabled(last - scrollOffset >= available - extra);
@@ -1222,8 +1183,8 @@ void QTabBar::setCurrentIndex(int index)
         d->layoutTab(index);
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
-            QAccessible::updateAccessibility(this, index + 1, QAccessible::Focus);
-            QAccessible::updateAccessibility(this, index + 1, QAccessible::Selection);
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, this, index + 1));
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, this, index + 1));
         }
 #endif
         emit currentChanged(index);

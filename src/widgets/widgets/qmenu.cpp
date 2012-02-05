@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -73,12 +73,6 @@
 #ifdef Q_WS_X11
 #   include <private/qt_x11_p.h>
 #endif
-
-#if defined(Q_OS_MAC) && !defined(QT_NO_EFFECTS)
-#   include <private/qcore_mac_p.h>
-#   include <private/qt_cocoa_helpers_mac_p.h>
-#endif
-
 
 QT_BEGIN_NAMESPACE
 
@@ -1091,8 +1085,8 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
             int actionIndex = indexOf(action) + 1;
-            QAccessible::updateAccessibility(q, actionIndex, QAccessible::Focus);
-            QAccessible::updateAccessibility(q, actionIndex, QAccessible::Selection);
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, q, actionIndex));
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, q, actionIndex));
         }
 #endif
         action->showStatusText(topCausedWidget());
@@ -1977,7 +1971,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     }
 
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(this, 0, QAccessible::PopupMenuStart);
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::PopupMenuStart, this ,0));
 #endif
 }
 
@@ -2123,7 +2117,7 @@ void QMenu::hideEvent(QHideEvent *)
         d->eventLoop->exit();
     d->setCurrentAction(0);
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(this, 0, QAccessible::PopupMenuEnd);
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::PopupMenuEnd, this, 0));
 #endif
 #ifndef QT_NO_MENUBAR
     if (QMenuBar *mb = qobject_cast<QMenuBar*>(d->causedPopup.widget))
@@ -2899,16 +2893,6 @@ void QMenu::actionEvent(QActionEvent *e)
         d->wce_menu->syncAction(e->action());
 #endif
 
-#ifdef Q_WS_S60
-    if (!d->symbian_menu)
-        d->symbian_menu = new QMenuPrivate::QSymbianMenuPrivate;
-    if (e->type() == QEvent::ActionAdded)
-        d->symbian_menu->addAction(e->action(), d->symbian_menu->findAction(e->before()));
-    else if (e->type() == QEvent::ActionRemoved)
-        d->symbian_menu->removeAction(e->action());
-    else if (e->type() == QEvent::ActionChanged)
-        d->symbian_menu->syncAction(e->action());
-#endif
     if (isVisible()) {
         d->updateActionRects();
         resize(sizeHint());

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,13 +59,11 @@
 #include <QtCore/qabstractfileengine.h>
 
 // Platform-specific includes
-#if defined(Q_OS_WIN)
-#ifndef IO_REPARSE_TAG_SYMLINK
-#define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
-#endif
-#elif defined(Q_OS_SYMBIAN)
-#include <f32file.h>
-#include <QtCore/private/qdatetime_p.h>
+#ifdef Q_OS_WIN
+#  include <QtCore/qt_windows.h>
+#  ifndef IO_REPARSE_TAG_SYMLINK
+#     define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
+#  endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -99,11 +97,7 @@ public:
         Permissions         = OtherPermissions | GroupPermissions | UserPermissions | OwnerPermissions,
 
         // Type
-#ifdef Q_OS_SYMBIAN
-        LinkType            = 0,
-#else
         LinkType            = 0x00010000,
-#endif
         FileType            = 0x00020000,
         DirectoryType       = 0x00040000,
 #if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
@@ -154,12 +148,6 @@ public:
                             | QFileSystemMetaData::Times
                             | QFileSystemMetaData::OwnerIds,
 
-        SymbianTEntryFlags  = QFileSystemMetaData::Permissions
-                            | QFileSystemMetaData::FileType
-                            | QFileSystemMetaData::DirectoryType
-                            | QFileSystemMetaData::SequentialType
-                            | QFileSystemMetaData::Attributes
-                            | QFileSystemMetaData::Times,
 #if defined(Q_OS_WIN)
         WinStatFlags        = QFileSystemMetaData::FileType
                             | QFileSystemMetaData::DirectoryType
@@ -227,10 +215,6 @@ public:
     void fillFromStatBuf(const QT_STATBUF &statBuffer);
     void fillFromDirEnt(const QT_DIRENT &statBuffer);
 #endif
-#ifdef Q_OS_SYMBIAN
-    void fillFromTEntry(const TEntry& entry);
-    void fillFromVolumeInfo(const TVolumeInfo& info);
-#endif
 
 #if defined(Q_OS_WIN)
     inline void fillFromFileAttribute(DWORD fileAttribute, bool isDriveRoot = false);
@@ -251,8 +235,6 @@ private:
     FILETIME creationTime_;
     FILETIME lastAccessTime_;
     FILETIME lastWriteTime_;
-#elif defined(Q_OS_SYMBIAN)
-    TTime modificationTime_;
 #else
     time_t creationTime_;
     time_t modificationTime_;
@@ -274,7 +256,7 @@ inline bool QFileSystemMetaData::isBundle() const                   { return fal
 inline bool QFileSystemMetaData::isAlias() const                    { return false; }
 #endif
 
-#if (defined(Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)) || defined (Q_OS_WIN)
+#if defined(Q_OS_UNIX) || defined (Q_OS_WIN)
 inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime time) const
 {
     switch (time) {
@@ -292,7 +274,7 @@ inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime tim
 }
 #endif
 
-#if defined(Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
 inline QDateTime QFileSystemMetaData::creationTime() const          { return QDateTime::fromTime_t(creationTime_); }
 inline QDateTime QFileSystemMetaData::modificationTime() const      { return QDateTime::fromTime_t(modificationTime_); }
 inline QDateTime QFileSystemMetaData::accessTime() const            { return QDateTime::fromTime_t(accessTime_); }
@@ -306,25 +288,6 @@ inline uint QFileSystemMetaData::ownerId(QAbstractFileEngine::FileOwner owner) c
         return userId();
     else
         return groupId();
-}
-#endif
-
-#ifdef Q_OS_SYMBIAN
-inline QDateTime QFileSystemMetaData::creationTime() const          { return modificationTime(); }
-inline QDateTime QFileSystemMetaData::modificationTime() const      { return qt_symbian_TTime_To_QDateTime(modificationTime_); }
-inline QDateTime QFileSystemMetaData::accessTime() const            { return modificationTime(); }
-
-inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime time) const
-{
-    Q_UNUSED(time);
-    return modificationTime();
-}
-inline uint QFileSystemMetaData::userId() const                     { return (uint) -2; }
-inline uint QFileSystemMetaData::groupId() const                    { return (uint) -2; }
-inline uint QFileSystemMetaData::ownerId(QAbstractFileEngine::FileOwner owner) const
-{
-    Q_UNUSED(owner);
-    return (uint) -2;
 }
 #endif
 

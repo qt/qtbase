@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -69,14 +69,7 @@ public:
     QIconPrivate();
 
     ~QIconPrivate() {
-        if (engine_version == 1) {
-            if (!v1RefCount->deref()) {
-                delete engine;
-                delete v1RefCount;
-            }
-        } else if (engine_version == 2) {
-            delete engine;
-        }
+        delete engine;
     }
 
     QIconEngine *engine;
@@ -84,9 +77,6 @@ public:
     QAtomicInt ref;
     int serialNum;
     int detach_no;
-    int engine_version;
-
-    QAtomicInt *v1RefCount;
 };
 
 
@@ -107,7 +97,7 @@ struct QPixmapIconEngineEntry
 
 
 
-class QPixmapIconEngine : public QIconEngineV2 {
+class QPixmapIconEngine : public QIconEngine {
 public:
     QPixmapIconEngine();
     QPixmapIconEngine(const QPixmapIconEngine &);
@@ -119,9 +109,8 @@ public:
     void addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state);
     void addFile(const QString &fileName, const QSize &size, QIcon::Mode mode, QIcon::State state);
 
-    // v2 functions
     QString key() const;
-    QIconEngineV2 *clone() const;
+    QIconEngine *clone() const;
     bool read(QDataStream &in);
     bool write(QDataStream &out) const;
     void virtual_hook(int id, void *data);

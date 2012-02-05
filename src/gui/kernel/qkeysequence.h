@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,7 +49,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_SHORTCUT
 
@@ -154,7 +153,7 @@ public:
     QKeySequence(StandardKey key);
     ~QKeySequence();
 
-    uint count() const; // ### Qt 5: return 'int'
+    int count() const;
     bool isEmpty() const;
 
     enum SequenceMatch {
@@ -170,10 +169,11 @@ public:
     static QKeySequence mnemonic(const QString &text);
     static QList<QKeySequence> keyBindings(StandardKey key);
 
-    // ### Qt 5: kill 'operator QString' - it's evil
-    operator QString() const;
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED operator QString() const { return toString(QKeySequence::NativeText); }
+    QT_DEPRECATED operator int() const { if (1 <= count()) return operator [](0); return 0; }
+#endif
     operator QVariant() const;
-    operator int() const;
     int operator[](uint i) const;
     QKeySequence &operator=(const QKeySequence &other);
 #ifdef Q_COMPILER_RVALUE_REFS

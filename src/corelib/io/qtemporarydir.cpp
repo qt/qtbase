@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,8 +53,8 @@
 
 #include <stdlib.h> // mkdtemp
 #ifdef Q_OS_WIN
-#include <windows.h>
 #include <private/qfsfileengine_p.h>
+#include <qt_windows.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -94,6 +94,42 @@ static QString defaultTemplateName()
 
     return QDir::tempPath() + QLatin1Char('/') + baseName + QLatin1String("-XXXXXX");
 }
+
+#ifdef Q_OS_QNX
+static char *mkdtemp(char *templateName)
+{
+    static const char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    const int length = strlen(templateName);
+
+    char *XXXXXX = templateName + length - 6;
+
+    if ((length < 6) || strncmp(XXXXXX, "XXXXXX", 6))
+        return 0;
+
+    for (int i = 0; i < 256; ++i) {
+        int v = qrand();
+
+        /* Fill in the random bits.  */
+        XXXXXX[0] = letters[v % 62];
+        v /= 62;
+        XXXXXX[1] = letters[v % 62];
+        v /= 62;
+        XXXXXX[2] = letters[v % 62];
+        v /= 62;
+        XXXXXX[3] = letters[v % 62];
+        v /= 62;
+        XXXXXX[4] = letters[v % 62];
+        v /= 62;
+        XXXXXX[5] = letters[v % 62];
+
+        if (!mkdir(templateName, 0700))
+            return templateName;
+    }
+
+    return 0;
+}
+#endif
 
 void QTemporaryDirPrivate::create(const QString &templateName)
 {
@@ -163,12 +199,32 @@ void QTemporaryDirPrivate::create(const QString &templateName)
     \sa QDir::tempPath(), QDir, QTemporaryFile
 */
 
+/*!
+    Constructs a QTemporaryDir using as template the application name
+    returned by QCoreApplication::applicationName() (otherwise \c qt_temp).
+    The directory is stored in the system's temporary directory, QDir::tempPath().
+
+    \sa QDir::tempPath()
+*/
 QTemporaryDir::QTemporaryDir()
     : d_ptr(new QTemporaryDirPrivate)
 {
     d_ptr->create(defaultTemplateName());
 }
 
+/*!
+    Constructs a QTemporaryFile with a template name of \a templateName.
+
+    If \a templateName is a relative path, the path will be relative to the
+    current working directory. You can use QDir::tempPath() to construct \a
+    templateName if you want use the system's temporary directory.
+
+    If the \a templateName ends with XXXXXX it will be used as the dynamic portion
+    of the directory name, otherwise it will be appended.
+    Unlike QTemporaryFile, XXXXXX in the middle of the template string is not supported.
+
+    \sa QDir::tempPath()
+*/
 QTemporaryDir::QTemporaryDir(const QString &templateName)
     : d_ptr(new QTemporaryDirPrivate)
 {

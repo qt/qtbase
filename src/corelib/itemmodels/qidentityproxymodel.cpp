@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Stephen Kelly <stephen.kelly@kdab.com>
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -314,6 +314,15 @@ int QIdentityProxyModel::rowCount(const QModelIndex& parent) const
     Q_ASSERT(parent.isValid() ? parent.model() == this : true);
     Q_D(const QIdentityProxyModel);
     return d->model->rowCount(mapToSource(parent));
+}
+
+/*!
+    \reimp
+ */
+QVariant QIdentityProxyModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    Q_D(const QIdentityProxyModel);
+    return d->model->headerData(section, orientation, role);
 }
 
 /*!

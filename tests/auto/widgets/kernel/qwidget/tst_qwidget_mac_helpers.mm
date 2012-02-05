@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -35,49 +34,37 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#include "tst_qwidget_mac_helpers.h"
-#include <private/qt_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
+// some versions of CALayer.h use 'slots' as an identifier
+#define QT_NO_KEYWORDS
 
+#include "tst_qwidget_mac_helpers.h"
+#include <QApplication>
+#include <QPlatformNativeInterface>
+#include <private/qcore_mac_p.h>
+
+#include <Cocoa/Cocoa.h>
 
 QString nativeWindowTitle(QWidget *window, Qt::WindowState state)
 {
-    OSWindowRef windowRef = qt_mac_window_for(window);
+    QWindow *qwindow = window->windowHandle();
+    NSWindow *nswindow = (NSWindow *) qApp->platformNativeInterface()->nativeResourceForWindow("nswindow", qwindow);
     QCFString macTitle;
     if (state == Qt::WindowMinimized) {
-        macTitle = reinterpret_cast<CFStringRef>([[windowRef miniwindowTitle] retain]);
+        macTitle = reinterpret_cast<CFStringRef>([[nswindow miniwindowTitle] retain]);
     } else {
-        macTitle = reinterpret_cast<CFStringRef>([[windowRef title] retain]);
+        macTitle = reinterpret_cast<CFStringRef>([[nswindow title] retain]);
     }
     return macTitle;
 }
 
 bool nativeWindowModified(QWidget *widget)
 {
-    return [qt_mac_window_for(widget) isDocumentEdited];
+    QWindow *qwindow = widget->windowHandle();
+    NSWindow *nswindow = (NSWindow *) qApp->platformNativeInterface()->nativeResourceForWindow("nswindow", qwindow);
+    return [nswindow isDocumentEdited];
 }
-
-bool testAndRelease(const WId view)
-{
-    if ([id(view) retainCount] != 2)
-        return false;
-    [id(view) release];
-    [id(view) release];
-    return true;
-}
-
-WidgetViewPair createAndRetain(QWidget * const parent)
-{
-    QWidget * const widget = new QWidget(parent);
-    const WId view = widget->winId();
-    // Retain twice so we can safely call retainCount even if the retain count
-    // is off by one because of a double release.
-    [id(view) retain];
-    [id(view) retain];
-    return qMakePair(widget, view);
-}
-

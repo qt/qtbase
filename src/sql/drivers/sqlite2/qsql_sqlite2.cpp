@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,6 +60,14 @@
 
 typedef struct sqlite_vm sqlite_vm;
 
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<sqlite_vm*> {
+    enum { Value = false };
+};
+template <> struct IsPointerToTypeDerivedFromQObject<sqlite*> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(sqlite_vm*)
 Q_DECLARE_METATYPE(sqlite*)
 

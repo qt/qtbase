@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,7 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class QEventLoopPrivate;
 
@@ -66,12 +65,9 @@ public:
         ExcludeUserInputEvents = 0x01,
         ExcludeSocketNotifiers = 0x02,
         WaitForMoreEvents = 0x04,
-	X11ExcludeTimers = 0x08
-#ifdef QT_DEPRECATED
-	, DeferredDeletion = 0x10
-#endif
-        , EventLoopExec = 0x20
-        , DialogExec = 0x40
+        X11ExcludeTimers = 0x08,
+        EventLoopExec = 0x20,
+        DialogExec = 0x40
     };
     Q_DECLARE_FLAGS(ProcessEventsFlags, ProcessEventsFlag)
 
@@ -84,11 +80,28 @@ public:
 
     void wakeUp();
 
+    bool event(QEvent *event);
+
 public Q_SLOTS:
     void quit();
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QEventLoop::ProcessEventsFlags)
+
+
+class QEventLoopLockerPrivate;
+
+class Q_CORE_EXPORT QEventLoopLocker
+{
+public:
+    QEventLoopLocker();
+    explicit QEventLoopLocker(QEventLoop *loop);
+    ~QEventLoopLocker();
+
+private:
+    Q_DISABLE_COPY(QEventLoopLocker)
+    QEventLoopLockerPrivate *d_ptr;
+};
 
 QT_END_NAMESPACE
 

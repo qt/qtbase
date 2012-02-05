@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,12 +45,12 @@
 #include <QtCore/qnamespace.h>
 #include <QtGui/qsurfaceformat.h>
 #include <QtGui/qwindow.h>
+#include <QtGui/qopengl.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QPlatformOpenGLContextPrivate;
 
@@ -64,6 +64,8 @@ public:
     virtual QSurfaceFormat format() const = 0;
 
     virtual void swapBuffers(QPlatformSurface *surface) = 0;
+
+    virtual GLuint defaultFramebufferObject(QPlatformSurface *surface) const;
 
     virtual bool makeCurrent(QPlatformSurface *surface) = 0;
     virtual void doneCurrent() = 0;

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,17 +53,6 @@ uint qvariant_nameToType(const char* name)
 {
     if (!name)
         return 0;
-
-    if (strcmp(name, "QVariant") == 0)
-        return 0xffffffff;
-    if (strcmp(name, "QCString") == 0)
-        return QMetaType::QByteArray;
-    if (strcmp(name, "Q_LLONG") == 0)
-        return QMetaType::LongLong;
-    if (strcmp(name, "Q_ULLONG") == 0)
-        return QMetaType::ULongLong;
-    if (strcmp(name, "QIconSet") == 0)
-        return QMetaType::QIcon;
 
     uint tp = QMetaType::type(name);
     return tp < QMetaType::User ? tp : 0;
@@ -173,7 +162,7 @@ void Generator::generateCode()
     int index = 14;
     fprintf(out, "static const uint qt_meta_data_%s[] = {\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "\n // content:\n");
-    fprintf(out, "    %4d,       // revision\n", 6);
+    fprintf(out, "    %4d,       // revision\n", int(QMetaObjectPrivate::OutputRevision));
     fprintf(out, "    %4d,       // classname\n", strreg(cdef->qualified));
     fprintf(out, "    %4d, %4d, // classinfo\n", cdef->classInfoList.count(), cdef->classInfoList.count() ? index : 0);
     index += cdef->classInfoList.count() * 2;

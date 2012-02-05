@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1753,6 +1753,28 @@ QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
 }
 
 /*!
+    Returns whether a model can accept a drop of data.
+
+    This can be used to indicate whether a drop of certain data is allowed, for example
+    by using a 'forbidden' emblem on a mouse cursor during a drag operation.
+
+    This method returns true by default.
+
+    \sa dropMimeData(), {Using drag and drop with item views}
+ */
+bool QAbstractItemModel::canDropMimeData(const QMimeData *data, Qt::DropAction action,
+                                         int row, int column,
+                                         const QModelIndex &parent) const
+{
+    Q_UNUSED(data)
+    Q_UNUSED(action)
+    Q_UNUSED(row)
+    Q_UNUSED(column)
+    Q_UNUSED(parent)
+    return true;
+}
+
+/*!
     Handles the \a data supplied by a drag and drop operation that ended with
     the given \a action.
 
@@ -1773,7 +1795,7 @@ QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
     greater than or equal zero, it means that the drop occurred just before the
     specified \a row and \a column in the specified \a parent.
 
-    \sa supportedDropActions(), {Using drag and drop with item views}
+    \sa supportedDropActions(), canDropMimeData(), {Using drag and drop with item views}
 */
 bool QAbstractItemModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                                       int row, int column, const QModelIndex &parent)
@@ -1849,6 +1871,7 @@ void QAbstractItemModel::doSetSupportedDragActions(Qt::DropActions actions)
 /*!
     \since 4.2
     \obsolete
+    \fn void QAbstractItemModel::setSupportedDragActions(Qt::DropActions actions)
 
     Sets the supported drag \a actions for the items in the model.
 
@@ -1954,6 +1977,48 @@ bool QAbstractItemModel::removeRows(int, int, const QModelIndex &)
         endRemoveColumns()
 */
 bool QAbstractItemModel::removeColumns(int, int, const QModelIndex &)
+{
+    return false;
+}
+
+/*!
+    On models that support this, moves \a count rows starting with the given
+    \a sourceRow under parent \a sourceParent to row \a destinationChild under
+    \a parent \a destinationParent.
+
+    Returns true if the rows were successfully moved; otherwise returns
+    false.
+
+    The base class implementation does nothing and returns false.
+
+    If you implement your own model, you can reimplement this function if you
+    want to support moving. Alternatively, you can provide your own API for
+    altering the data.
+
+    \sa beginMoveRows(), endMoveRows()
+*/
+bool QAbstractItemModel::moveRows(const QModelIndex &, int , int , const QModelIndex &, int)
+{
+    return false;
+}
+
+/*!
+    On models that support this, moves \a count columns starting with the given
+    \a sourceColumn under parent \a sourceParent to column \a destinationChild under
+    \a parent \a destinationParent.
+
+    Returns true if the columns were successfully moved; otherwise returns
+    false.
+
+    The base class implementation does nothing and returns false.
+
+    If you implement your own model, you can reimplement this function if you
+    want to support moving. Alternatively, you can provide your own API for
+    altering the data.
+
+    \sa beginMoveColumns(), endMoveColumns()
+*/
+bool QAbstractItemModel::moveColumns(const QModelIndex &, int , int , const QModelIndex &, int)
 {
     return false;
 }
@@ -2141,9 +2206,7 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
     Sets the model's role names to \a roleNames.
 
     This function allows mapping of role identifiers to role property names in
-    Declarative UI.  This function must be called before the model is used.
-    Modifying the role names after the model has been set may result in
-    undefined behaviour.
+    scripting languages.
 
     \sa roleNames()
 */
@@ -2887,19 +2950,25 @@ void QAbstractItemModel::endMoveColumns()
 }
 
 /*!
+    \obsolete
+
     Resets the model to its original state in any attached views.
+
+    This function emits the signals modelAboutToBeReset() and modelReset().
 
     \note Use beginResetModel() and endResetModel() instead whenever possible.
     Use this method only if there is no way to call beginResetModel() before invalidating the model.
     Otherwise it could lead to unexpected behaviour, especially when used with proxy models.
+
+    For example, in this code both signals modelAboutToBeReset() and modelReset()
+    are emitted \e after the data changes:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 10
+
+    Instead you should use:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 11
 */
-void QAbstractItemModel::reset()
-{
-    Q_D(QAbstractItemModel);
-    emit modelAboutToBeReset();
-    d->invalidatePersistentIndexes();
-    emit modelReset();
-}
 
 /*!
     Begins a model reset operation.
@@ -2919,6 +2988,8 @@ void QAbstractItemModel::reset()
     You must call this function before resetting any internal data structures in your model
     or proxy model.
 
+    This function emits the signal modelAboutToBeReset().
+
     \sa modelAboutToBeReset(), modelReset(), endResetModel()
     \since 4.6
 */
@@ -2932,6 +3003,8 @@ void QAbstractItemModel::beginResetModel()
 
     You must call this function after resetting any internal data structure in your model
     or proxy model.
+
+    This function emits the signal modelReset().
 
     \sa beginResetModel()
     \since 4.6
@@ -3417,8 +3490,13 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     \fn QAbstractItemModel::modelReset()
     \since 4.1
 
-    This signal is emitted when reset() is called, after the model's internal
-    state (e.g. persistent model indexes) has been invalidated.
+    This signal is emitted when reset() or endResetModel() is called, after the
+    model's internal state (e.g. persistent model indexes) has been invalidated.
+
+    Note that if a model is reset it should be considered that all information
+    previously retrieved from it is invalid. This includes but is not limited
+    to the rowCount() and columnCount(), flags(), data retrieved through data(),
+    and roleNames().
 
     \sa endResetModel(), modelAboutToBeReset()
 */

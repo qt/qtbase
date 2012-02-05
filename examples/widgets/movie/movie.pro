@@ -4,16 +4,15 @@ SOURCES     = main.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/movie
-sources.files = $$SOURCES $$HEADERS $$RESOURCES movie.pro animation.mng
+sources.files = $$SOURCES $$HEADERS $$RESOURCES movie.pro animation.gif
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/movie
 INSTALLS += target sources
 
 
 wince*: {
-   addFiles.files += *.mng
+   addFiles.files += *.gif
    addFiles.path = .
    DEPLOYMENT += addFiles
-   DEPLOYMENT_PLUGIN += qmng
 }
 
 QT += widgets

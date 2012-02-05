@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -398,18 +398,6 @@ QLCDNumber::~QLCDNumber()
 
 
 /*!
-    \deprecated
-    \property QLCDNumber::numDigits
-    \brief the current number of digits displayed
-    \sa digitCount
-*/
-
-void QLCDNumber::setNumDigits(int numDigits)
-{
-    setDigitCount(numDigits);
-}
-
-/*!
     \since 4.6
     \property QLCDNumber::digitCount
     \brief the current number of digits displayed
@@ -474,12 +462,6 @@ void QLCDNumber::setDigitCount(int numDigits)
             display(value());
         update();
     }
-}
-
-int QLCDNumber::numDigits() const
-{
-    Q_D(const QLCDNumber);
-    return d->ndigits;
 }
 
 /*!

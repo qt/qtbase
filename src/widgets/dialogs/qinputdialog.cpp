@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1173,17 +1173,6 @@ QString QInputDialog::getText(QWidget *parent, const QString &title, const QStri
 }
 
 /*!
-    \internal
-*/
-// ### Qt 5: Use only the version above.
-QString QInputDialog::getText(QWidget *parent, const QString &title, const QString &label,
-                              QLineEdit::EchoMode mode, const QString &text, bool *ok,
-                              Qt::WindowFlags flags)
-{
-    return getText(parent, title, label, mode, text, ok, flags, Qt::ImhNone);
-}
-
-/*!
     \since 4.5
 
     Static convenience function to get an integer input from the user.
@@ -1342,29 +1331,6 @@ QString QInputDialog::getItem(QWidget *parent, const QString &title, const QStri
 }
 
 /*!
-    \internal
-*/
-// ### Qt 5: Use only the version above.
-QString QInputDialog::getItem(QWidget *parent, const QString &title, const QString &label,
-                              const QStringList &items, int current, bool editable, bool *ok,
-                              Qt::WindowFlags flags)
-{
-    return getItem(parent, title, label, items, current, editable, ok, flags, Qt::ImhNone);
-}
-
-/*!
-    \obsolete
-
-    Use getInt() instead.
-*/
-int QInputDialog::getInteger(QWidget *parent, const QString &title, const QString &label,
-                             int value, int min, int max, int step, bool *ok,
-                             Qt::WindowFlags flags)
-{
-    return getInt(parent, title, label, value, min, max, step, ok, flags);
-}
-
-/*!
     \fn QString QInputDialog::getText(const QString &title, const QString &label,
                                       QLineEdit::EchoMode echo = QLineEdit::Normal,
                                       const QString &text = QString(), bool *ok = 0,
@@ -1372,19 +1338,6 @@ int QInputDialog::getInteger(QWidget *parent, const QString &title, const QStrin
 
     Call getText(\a parent, \a title, \a label, \a echo, \a text, \a
     ok, \a flags) instead.
-
-    The \a name parameter is ignored.
-*/
-
-/*!
-    \fn int QInputDialog::getInteger(const QString &title, const QString &label, int value = 0,
-                                     int min = -2147483647, int max = 2147483647,
-                                     int step = 1, bool *ok = 0,
-                                     QWidget *parent = 0, const char *name = 0, Qt::WindowFlags flags = 0)
-
-
-    Call getInteger(\a parent, \a title, \a label, \a value, \a
-    min, \a max, \a step, \a ok, \a flags) instead.
 
     The \a name parameter is ignored.
 */

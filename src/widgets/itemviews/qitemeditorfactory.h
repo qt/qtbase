@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,7 +51,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_ITEMVIEWS
 
@@ -103,16 +102,16 @@ public:
     inline QItemEditorFactory() {}
     virtual ~QItemEditorFactory();
 
-    virtual QWidget *createEditor(QVariant::Type type, QWidget *parent) const;
-    virtual QByteArray valuePropertyName(QVariant::Type type) const;
+    virtual QWidget *createEditor(int userType, QWidget *parent) const;
+    virtual QByteArray valuePropertyName(int userType) const;
 
-    void registerEditor(QVariant::Type type, QItemEditorCreatorBase *creator);
+    void registerEditor(int userType, QItemEditorCreatorBase *creator);
 
     static const QItemEditorFactory *defaultFactory();
     static void setDefaultFactory(QItemEditorFactory *factory);
 
 private:
-    QHash<QVariant::Type, QItemEditorCreatorBase *> creatorMap;
+    QHash<int, QItemEditorCreatorBase *> creatorMap;
 };
 
 #endif // QT_NO_ITEMVIEWS

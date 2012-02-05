@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -352,8 +352,13 @@ void tst_QMenu::keyboardNavigation()
 
     QTest::keyClick(lastMenu, key, modifiers);
     if (expected_activated) {
+#ifdef Q_OS_MAC
+        QEXPECT_FAIL("shortcut0", "Shortcut navication fails, see QTBUG-23684", Continue);
+#endif
         QCOMPARE(activated, builtins[expected_action]);
+#ifndef Q_OS_MAC
         QEXPECT_FAIL("shortcut0", "QTBUG-22449: QMenu doesn't remove highlight if a menu item is activated by a shortcut", Abort);
+#endif
         QCOMPARE(menus[expected_menu]->activeAction(), (QAction *)0);
     } else {
         QCOMPARE(menus[expected_menu]->activeAction(), builtins[expected_action]);
@@ -365,7 +370,7 @@ void tst_QMenu::keyboardNavigation()
         QCOMPARE(highlighted, (QAction *)0);
 }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 QT_BEGIN_NAMESPACE
     extern bool qt_tab_all_widgets; // from qapplication.cpp
 QT_END_NAMESPACE
@@ -378,7 +383,7 @@ void tst_QMenu::focus()
     menu.addAction("Two");
     menu.addAction("Three");
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (!qt_tab_all_widgets)
         QSKIP("Computer is currently set up to NOT tab to all widgets,"
              " this test assumes you can tab to all widgets");
@@ -418,7 +423,7 @@ void tst_QMenu::overrideMenuAction()
 
     // On Mac and Windows CE, we need to create native key events to test menu
     // action activation, so skip this part of the test.
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     QAction *aQuit = new QAction("Quit", &w);
     aQuit->setShortcut(QKeySequence("Ctrl+X"));
     m->addAction(aQuit);
@@ -557,7 +562,9 @@ void tst_QMenu::tearOff()
     QTest::mouseClick(menu, Qt::LeftButton, 0, QPoint(3, 3), 10);
     QTest::qWait(100);
 
+#ifndef Q_OS_MAC
     QEXPECT_FAIL("", "QTBUG-22565", Abort);
+#endif
     QVERIFY(menu->isTearOffMenuVisible());
     QPointer<QMenu> torn = 0;
     foreach (QWidget *w, QApplication::allWidgets()) {
@@ -935,6 +942,10 @@ private:
 
 void tst_QMenu::QTBUG_10735_crashWithDialog()
 {
+#ifdef Q_OS_MAC
+    QSKIP("Test currently hangs on Mac OS X, see QTBUG-23677");
+#endif
+
     MyMenu menu;
 
     QTimer::singleShot(1000, &menu, SLOT(activateLastAction()));

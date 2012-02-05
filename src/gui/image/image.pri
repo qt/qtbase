@@ -48,12 +48,7 @@ SOURCES += \
 SOURCES += image/qpixmap_qpa.cpp
 win32: SOURCES += image/qpixmap_win.cpp
 
-!symbian|contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2) {
-    SOURCES += image/qvolatileimagedata.cpp
-}
-else {
-    SOURCES += image/qvolatileimagedata_symbian.cpp
-}
+SOURCES += image/qvolatileimagedata.cpp
 
 # Built-in image format support
 HEADERS += \
@@ -72,8 +67,6 @@ SOURCES += \
 else:DEFINES *= QT_NO_IMAGEFORMAT_PNG
 
 contains(QT_CONFIG, jpeg):include($$PWD/qjpeghandler.pri)
-contains(QT_CONFIG, mng):include($$PWD/qmnghandler.pri)
-contains(QT_CONFIG, tiff):include($$PWD/qtiffhandler.pri)
 contains(QT_CONFIG, gif):include($$PWD/qgifhandler.pri)
 
 # SIMD

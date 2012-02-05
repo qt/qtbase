@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,6 +46,8 @@
 #include <qprintengine_win_p.h>
 #include <private/qpaintengine_alpha_p.h>
 #include <private/qprinterinfo_p.h>
+
+QT_BEGIN_NAMESPACE
 
 QWindowsPrinterSupport::QWindowsPrinterSupport()
     : QPlatformPrinterSupport()
@@ -100,3 +102,5 @@ QList<QPrinterInfo> QWindowsPrinterSupport::availablePrinters()
 {
     return mPrinterList;
 }
+
+QT_END_NAMESPACE

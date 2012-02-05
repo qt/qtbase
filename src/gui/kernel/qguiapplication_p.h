@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,7 +59,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
 {
@@ -96,7 +95,6 @@ public:
         KB_KDE = 8,
         KB_Gnome = 16,
         KB_CDE = 32,
-        KB_S60 = 64,
         KB_All = 0xffff
     };
 
@@ -122,6 +120,7 @@ public:
 
     static void processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
 
+    static void reportScreenOrientationChange(QScreen *screen);
     static void reportScreenOrientationChange(QWindowSystemInterfacePrivate::ScreenOrientationEvent *e);
     static void reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e);
     static void reportAvailableGeometryChange(QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e);
@@ -134,6 +133,8 @@ public:
 
     static Qt::DropAction processDrag(QWindow *w, QMimeData *dropData, const QPoint &p);
     static Qt::DropAction processDrop(QWindow *w, QMimeData *dropData, const QPoint &p);
+
+    static bool processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
 
     static inline Qt::Alignment visualAlignment(Qt::LayoutDirection direction, Qt::Alignment alignment)
     {
@@ -180,9 +181,7 @@ public:
     static QFont *app_font;
 
     QStyleHints *styleHints;
-    QInputPanel *inputPanel;
-
-    static bool quitOnLastWindowClosed;
+    QInputMethod *inputMethod;
 
     static QList<QObject *> generic_plugin_list;
 #ifndef QT_NO_SHORTCUT
@@ -206,6 +205,7 @@ private:
 
     static QGuiApplicationPrivate *self;
     static QTouchDevice *m_fakeTouchDevice;
+    static int m_fakeMouseSourcePointId;
 };
 
 Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k);

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the qmake application of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -532,24 +532,24 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
 {
     QStringList concat;
     {
-        const QString base_concat = QDir::separator() + QString("features");
+        const QString base_concat = QLatin1String("/features");
         switch(Option::target_mode) {
         case Option::TARG_MACX_MODE:                     //also a unix
-            concat << base_concat + QDir::separator() + "mac";
-            concat << base_concat + QDir::separator() + "macx";
-            concat << base_concat + QDir::separator() + "unix";
+            concat << base_concat + QLatin1String("/mac");
+            concat << base_concat + QLatin1String("/macx");
+            concat << base_concat + QLatin1String("/unix");
             break;
         default: // Can't happen, just make the compiler shut up
         case Option::TARG_UNIX_MODE:
-            concat << base_concat + QDir::separator() + "unix";
+            concat << base_concat + QLatin1String("/unix");
             break;
         case Option::TARG_WIN_MODE:
-            concat << base_concat + QDir::separator() + "win32";
+            concat << base_concat + QLatin1String("/win32");
             break;
         }
         concat << base_concat;
     }
-    const QString mkspecs_concat = QDir::separator() + QString("mkspecs");
+    const QString mkspecs_concat = QLatin1String("/mkspecs");
     QStringList feature_roots;
     QByteArray mkspec_path = qgetenv("QMAKEFEATURES");
     if(!mkspec_path.isNull())
@@ -558,9 +558,9 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         feature_roots += splitPathList(prop->value("QMAKEFEATURES"));
     if(!Option::mkfile::cachefile.isEmpty()) {
         QString path;
-        int last_slash = Option::mkfile::cachefile.lastIndexOf(QDir::separator());
+        int last_slash = Option::mkfile::cachefile.lastIndexOf(QLatin1Char('/'));
         if(last_slash != -1)
-            path = Option::fixPathToLocalOS(Option::mkfile::cachefile.left(last_slash), false);
+            path = Option::normalizePath(Option::mkfile::cachefile.left(last_slash), false);
         for(QStringList::Iterator concat_it = concat.begin();
             concat_it != concat.end(); ++concat_it)
             feature_roots << (path + (*concat_it));
@@ -575,14 +575,14 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         }
     }
     if(!Option::mkfile::qmakespec.isEmpty())
-        feature_roots << Option::mkfile::qmakespec + QDir::separator() + "features";
+        feature_roots << Option::mkfile::qmakespec + QLatin1String("/features");
     if(!Option::mkfile::qmakespec.isEmpty()) {
         QFileInfo specfi(Option::mkfile::qmakespec);
         QDir specdir(specfi.absoluteFilePath());
         while(!specdir.isRoot()) {
             if(!specdir.cdUp() || specdir.isRoot())
                 break;
-            if(QFile::exists(specdir.path() + QDir::separator() + "features")) {
+            if(QFile::exists(specdir.path() + QLatin1String("/features"))) {
                 for(QStringList::Iterator concat_it = concat.begin();
                     concat_it != concat.end(); ++concat_it)
                     feature_roots << (specdir.path() + (*concat_it));
@@ -604,7 +604,7 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
 QStringList qmake_mkspec_paths()
 {
     QStringList ret;
-    const QString concat = QDir::separator() + QString("mkspecs");
+    const QString concat = QLatin1String("/mkspecs");
     QByteArray qmakepath = qgetenv("QMAKEPATH");
     if (!qmakepath.isEmpty()) {
         const QStringList lst = splitPathList(QString::fromLocal8Bit(qmakepath));
@@ -1232,10 +1232,10 @@ QMakeProject::read(const QString &file, QHash<QString, QStringList> &place)
     reset();
 
     const QString oldpwd = qmake_getpwd();
-    QString filename = Option::fixPathToLocalOS(file, false);
+    QString filename = Option::normalizePath(file, false);
     bool ret = false, using_stdin = false;
     QFile qfile;
-    if(!strcmp(filename.toLatin1(), "-")) {
+    if(filename == QLatin1String("-")) {
         qfile.setFileName("");
         ret = qfile.open(stdin, QIODevice::ReadOnly);
         using_stdin = true;
@@ -1288,10 +1288,10 @@ QMakeProject::read(uchar cmd)
             int cache_depth = -1;
             QString qmake_cache = Option::mkfile::cachefile;
             if(qmake_cache.isEmpty())  { //find it as it has not been specified
-                QString dir = QDir::toNativeSeparators(Option::output_dir);
-                while(!QFile::exists((qmake_cache = dir + QDir::separator() + ".qmake.cache"))) {
-                    dir = dir.left(dir.lastIndexOf(QDir::separator()));
-                    if(dir.isEmpty() || dir.indexOf(QDir::separator()) == -1) {
+                QString dir = Option::output_dir;
+                while(!QFile::exists((qmake_cache = dir + QLatin1String("/.qmake.cache")))) {
+                    dir = dir.left(dir.lastIndexOf(QLatin1Char('/')));
+                    if(dir.isEmpty() || dir.indexOf(QLatin1Char('/')) == -1) {
                         qmake_cache = "";
                         break;
                     }
@@ -1306,6 +1306,7 @@ QMakeProject::read(uchar cmd)
                     cache_depth = Option::output_dir.mid(abs_cache.length()).count('/');
             }
             if(!qmake_cache.isEmpty()) {
+                QHash<QString, QStringList> cache;
                 if(read(qmake_cache, cache)) {
                     Option::mkfile::cachefile_depth = cache_depth;
                     Option::mkfile::cachefile = qmake_cache;
@@ -1321,7 +1322,7 @@ QMakeProject::read(uchar cmd)
                       mkspec_roots.join("::").toLatin1().constData());
             if(qmakespec.isEmpty()) {
                 for(QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
-                    QString mkspec = (*it) + QDir::separator() + "default";
+                    QString mkspec = (*it) + QLatin1String("/default");
                     QFileInfo default_info(mkspec);
                     if(default_info.exists() && default_info.isDir()) {
                         qmakespec = mkspec;
@@ -1343,7 +1344,7 @@ QMakeProject::read(uchar cmd)
                 } else {
                     bool found_mkspec = false;
                     for(QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
-                        QString mkspec = (*it) + QDir::separator() + qmakespec;
+                        QString mkspec = (*it) + QLatin1Char('/') + qmakespec;
                         if(QFile::exists(mkspec)) {
                             found_mkspec = true;
                             Option::mkfile::qmakespec = qmakespec = mkspec;
@@ -1359,9 +1360,9 @@ QMakeProject::read(uchar cmd)
             }
 
             // parse qmake configuration
-            while(qmakespec.endsWith(QString(QChar(QDir::separator()))))
+            while(qmakespec.endsWith(QLatin1Char('/')))
                 qmakespec.truncate(qmakespec.length()-1);
-            QString spec = qmakespec + QDir::separator() + "qmake.conf";
+            QString spec = qmakespec + QLatin1String("/qmake.conf");
             debug_msg(1, "QMAKESPEC conf: reading %s", spec.toLatin1().constData());
             if(!read(spec, base_vars)) {
                 fprintf(stderr, "Failure to read QMAKESPEC conf file %s.\n", spec.toLatin1().constData());
@@ -1635,7 +1636,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
         if(!file.endsWith(Option::prf_ext))
             file += Option::prf_ext;
         validateModes(); // init dir_sep
-        if(file.indexOf(Option::dir_sep) == -1 || !QFile::exists(file)) {
+        if(file.indexOf(QLatin1Char('/')) == -1 || !QFile::exists(file)) {
             static QStringList *feature_roots = 0;
             if(!feature_roots) {
                 feature_roots = new QStringList(qmake_feature_paths(prop));
@@ -1650,7 +1651,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
                     currFile = QFileInfo(currFile.canonicalFilePath());
                     for(int root = 0; root < feature_roots->size(); ++root) {
                         prfFile = QFileInfo(feature_roots->at(root) +
-                                            QDir::separator() + file).canonicalFilePath();
+                                            QLatin1Char('/') + file).canonicalFilePath();
                         if(prfFile == currFile) {
                             start_root = root+1;
                             break;
@@ -1659,7 +1660,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
                 }
             }
             for(int root = start_root; root < feature_roots->size(); ++root) {
-                QString prf(feature_roots->at(root) + QDir::separator() + file);
+                QString prf(feature_roots->at(root) + QLatin1Char('/') + file);
                 if(QFile::exists(prf + Option::js_ext)) {
                     format = JSFormat;
                     file = prf + Option::js_ext;
@@ -1683,9 +1684,9 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
             include_roots << qmake_getpwd();
         include_roots << Option::output_dir;
         for(int root = 0; root < include_roots.size(); ++root) {
-            QString testName = QDir::toNativeSeparators(include_roots[root]);
-            if (!testName.endsWith(QString(QDir::separator())))
-                testName += QDir::separator();
+            QString testName = QDir::fromNativeSeparators(include_roots[root]);
+            if (!testName.endsWith(QLatin1Char('/')))
+                testName += QLatin1Char('/');
             testName += file;
             if(QFile::exists(testName)) {
                 file = testName;
@@ -1711,10 +1712,10 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
               file.toLatin1().constData());
 
     QString orig_file = file;
-    int di = file.lastIndexOf(QDir::separator());
+    int di = file.lastIndexOf(QLatin1Char('/'));
     QString oldpwd = qmake_getpwd();
     if(di != -1) {
-        if(!qmake_setpwd(file.left(file.lastIndexOf(QDir::separator())))) {
+        if(!qmake_setpwd(file.left(file.lastIndexOf(QLatin1Char('/'))))) {
             fprintf(stderr, "Cannot find directory: %s\n", file.left(di).toLatin1().constData());
             return IncludeFailure;
         }
@@ -1903,8 +1904,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             fprintf(stderr, "%s:%d: cat(file) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         } else {
-            QString file = args[0];
-            file = Option::fixPathToLocalOS(file);
+            QString file = Option::normalizePath(args[0]);
 
             bool singleLine = true;
             if(args.count() > 1)
@@ -1927,8 +1927,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             fprintf(stderr, "%s:%d: fromfile(file, variable) requires two arguments.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         } else {
-            QString file = args[0], seek_var = args[1];
-            file = Option::fixPathToLocalOS(file);
+            QString seek_var = args[1], file = Option::normalizePath(args[0]);
 
             QHash<QString, QStringList> tmp;
             if(doProjectInclude(file, IncludeFlagNewParser, tmp) == IncludeSuccess) {
@@ -2171,8 +2170,8 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             if(args.count() == 2)
                 recursive = (args[1].toLower() == "true" || args[1].toInt());
             QStringList dirs;
-            QString r = Option::fixPathToLocalOS(args[0]);
-            int slash = r.lastIndexOf(QDir::separator());
+            QString r = Option::normalizePath(args[0]);
+            int slash = r.lastIndexOf(QLatin1Char('/'));
             if(slash != -1) {
                 dirs.append(r.left(slash));
                 r = r.mid(slash+1);
@@ -2183,7 +2182,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             const QRegExp regex(r, Qt::CaseSensitive, QRegExp::Wildcard);
             for(int d = 0; d < dirs.count(); d++) {
                 QString dir = dirs[d];
-                if(!dir.isEmpty() && !dir.endsWith(QDir::separator()))
+                if (!dir.isEmpty() && !dir.endsWith(QLatin1Char('/')))
                     dir += "/";
 
                 QDir qdir(dir);
@@ -2411,14 +2410,13 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
                     parser.line_no);
             return false;
         }
-        QString file = args.first();
-        file = Option::fixPathToLocalOS(file);
+        QString file = Option::normalizePath(args.first());
 
         if(QFile::exists(file))
             return true;
         //regular expression I guess
         QString dirstr = qmake_getpwd();
-        int slsh = file.lastIndexOf(QDir::separator());
+        int slsh = file.lastIndexOf(QLatin1Char('/'));
         if(slsh != -1) {
             dirstr = file.left(slsh+1);
             file = file.right(file.length() - slsh - 1);
@@ -2580,7 +2578,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
 
         bool ret = false;
         QHash<QString, QStringList> tmp;
-        if(doProjectInclude(Option::fixPathToLocalOS(args[0]), IncludeFlagNewParser, tmp) == IncludeSuccess) {
+        if(doProjectInclude(Option::normalizePath(args[0]), IncludeFlagNewParser, tmp) == IncludeSuccess) {
             if(tmp.contains("QMAKE_INTERNAL_INCLUDED_FILES")) {
                 QStringList &out = place["QMAKE_INTERNAL_INCLUDED_FILES"];
                 const QStringList &in = tmp["QMAKE_INTERNAL_INCLUDED_FILES"];
@@ -2658,8 +2656,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
                     parser.line_no, func_desc.toLatin1().constData());
             return false;
         }
-        QString file = args.first();
-        file = Option::fixPathToLocalOS(file);
+        QString file = Option::normalizePath(args.first());
         uchar flags = IncludeFlagNone;
         if(!include_statement)
             flags |= IncludeFlagFeature;

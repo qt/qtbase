@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS = \
         io \
+        json \
         kernel \
         thread \
         tools \

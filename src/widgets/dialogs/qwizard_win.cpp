@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -318,10 +318,10 @@ bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
     return value;
 }
 
+Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &);
+
 void QVistaHelper::drawTitleBar(QPainter *painter)
 {
-    Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &);
-
     Q_ASSERT(backButton_);
     QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
     QBackingStore *backingStore = backButton_->backingStore();
@@ -399,12 +399,13 @@ bool QVistaHelper::winEvent(MSG* msg, long* result)
         *result = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
         break;
     }
-    case WM_NCCALCSIZE: {
-        NCCALCSIZE_PARAMS* lpncsp = (NCCALCSIZE_PARAMS*)msg->lParam;
-        *result = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
-        lpncsp->rgrc[0].top -= (vistaState() == VistaAero ? titleBarSize() : 0);
-        break;
-    }
+//    case WM_NCCALCSIZE: { #fixme: If the frame size is changed, it needs to be communicated to the QWindow.
+//        NCCALCSIZE_PARAMS* lpncsp = (NCCALCSIZE_PARAMS*)msg->lParam;
+//        *result = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
+//        lpncsp->rgrc[0].top -= (vistaState() == VistaAero ? titleBarSize() : 0);
+//
+//        break;
+//    }
     default:
         retval = false;
     }
@@ -480,8 +481,8 @@ bool QVistaHelper::handleWinEvent(MSG *message, long *result)
     if (wizard->wizardStyle() == QWizard::AeroStyle && vistaState() == VistaAero) {
         status = winEvent(message, result);
         if (message->message == WM_NCCALCSIZE) {
-            if (status)
-                collapseTopFrameStrut();
+//          if (status) #fixme
+//                collapseTopFrameStrut();
         } else if (message->message == WM_NCPAINT) {
             wizard->update();
         }

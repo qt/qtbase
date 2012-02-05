@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -64,29 +64,22 @@ class QSqlTableModelPrivate: public QSqlQueryModelPrivate
 
 public:
     QSqlTableModelPrivate()
-        : editIndex(-1), insertIndex(-1), sortColumn(-1),
+        : sortColumn(-1),
           sortOrder(Qt::AscendingOrder),
           strategy(QSqlTableModel::OnRowChange)
     {}
     void clear();
     QSqlRecord primaryValues(int index);
-    virtual void clearEditBuffer();
     virtual void clearCache();
-    static void clearGenerated(QSqlRecord &rec);
-    static void setGeneratedValue(QSqlRecord &rec, int c, QVariant v);
     QSqlRecord record(const QVector<QVariant> &values) const;
 
     bool exec(const QString &stmt, bool prepStatement,
               const QSqlRecord &rec, const QSqlRecord &whereValues);
     virtual void revertCachedRow(int row);
-    void revertInsertedRow();
-    bool setRecord(int row, const QSqlRecord &record);
     virtual int nameToIndex(const QString &name) const;
     void initRecordAndPrimaryIndex();
 
     QSqlDatabase db;
-    int editIndex;
-    int insertIndex;
 
     int sortColumn;
     Qt::SortOrder sortOrder;
@@ -102,14 +95,21 @@ public:
 
     struct ModifiedRow
     {
-        ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord()): op(o), rec(r) { clearGenerated(rec);}
-        ModifiedRow(const ModifiedRow &other): op(other.op), rec(other.rec), primaryValues(other.primaryValues) {}
+        inline ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord(), const QSqlRecord &pVals = QSqlRecord())
+            : op(o), rec(r), primaryValues(pVals)
+        {
+            for (int i = rec.count() - 1; i >= 0; --i)
+                rec.setGenerated(i, false);
+        }
+        inline void setValue(int c, const QVariant &v)
+        {
+            rec.setValue(c, v);
+            rec.setGenerated(c, true);
+        }
         Op op;
         QSqlRecord rec;
-		QSqlRecord primaryValues;
+        QSqlRecord primaryValues;
     };
-
-    QSqlRecord editBuffer;
 
     typedef QMap<int, ModifiedRow> CacheMap;
     CacheMap cache;

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -73,9 +73,6 @@
 #endif
 #ifndef QT_NO_EFFECTS
 # include <private/qeffects_p.h>
-#endif
-#if defined(Q_WS_S60)
-#include "private/qt_s60_p.h"
 #endif
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
@@ -549,10 +546,8 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
     QStyleOptionComboBox opt = comboStyleOption();
     const bool usePopup = combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo);
 #ifndef QT_NO_SCROLLBAR
-#ifndef Q_WS_S60
     if (usePopup)
         view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-#endif
 #endif
     if (combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking, &opt, combo) ||
         usePopup) {
@@ -992,7 +987,7 @@ void QComboBoxPrivate::_q_dataChanged(const QModelIndex &topLeft, const QModelIn
         q->update();
     }
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(q, 0, QAccessible::NameChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, q, 0));
 #endif
 }
 
@@ -1248,7 +1243,7 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
     emit q->currentIndexChanged(index.row());
     emit q->currentIndexChanged(itemText(index));
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(q, 0, QAccessible::NameChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, q, 0));
 #endif
 }
 
@@ -2339,11 +2334,7 @@ void QComboBox::showPopup()
     initStyleOption(&opt);
     QRect listRect(style->subControlRect(QStyle::CC_ComboBox, &opt,
                                          QStyle::SC_ComboBoxListBoxPopup, this));
-#ifndef Q_WS_S60
     QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
-#else
-    QRect screen = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
-#endif
 
     QPoint below = mapToGlobal(listRect.bottomLeft());
     int belowHeight = screen.bottom() - below.y();
@@ -2436,14 +2427,11 @@ void QComboBox::showPopup()
         // Position horizontally.
         listRect.moveLeft(above.x());
 
-#ifndef Q_WS_S60
         // Position vertically so the curently selected item lines up
         // with the combo box.
         const QRect currentItemRect = view()->visualRect(view()->currentIndex());
         const int offset = listRect.top() - currentItemRect.top();
         listRect.moveTop(above.y() + offset - listRect.top());
-#endif
-
 
         // Clamp the listRect height and vertical position so we don't expand outside the
         // available screen geometry.This may override the vertical position, but it is more
@@ -2457,23 +2445,6 @@ void QComboBox::showPopup()
             if (listRect.bottom() > screen.bottom())
                 listRect.moveBottom(screen.bottom());
         }
-#ifdef Q_WS_S60
-        if (screen.width() < screen.height()) {
-            // in portait, menu should be positioned above softkeys
-            listRect.moveBottom(screen.bottom());
-        } else {
-            TRect staConTopRect = TRect();
-            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStaconTop, staConTopRect);
-            listRect.setWidth(listRect.height());
-            //by default popup is centered on screen in landscape
-            listRect.moveCenter(screen.center());
-            if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
-                // landscape without stacon, menu should be at the right
-                (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
-                                                     listRect.setLeft(screen.left());
-            }
-        }
-#endif
     } else if (!boundToScreen || listRect.height() <= belowHeight) {
         listRect.moveTopLeft(below);
     } else if (listRect.height() <= aboveHeight) {
@@ -2487,7 +2458,7 @@ void QComboBox::showPopup()
     }
 
     if (qApp) {
-        qApp->inputPanel()->reset();
+        qApp->inputMethod()->reset();
     }
 
     QScrollBar *sb = view()->horizontalScrollBar();
@@ -2612,7 +2583,7 @@ void QComboBox::clear()
     Q_D(QComboBox);
     d->model->removeRows(0, d->model->rowCount(d->root), d->root);
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this, 0));
 #endif
 }
 
@@ -2631,7 +2602,7 @@ void QComboBox::clearEditText()
     if (d->lineEdit)
         d->lineEdit->clear();
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this, 0));
 #endif
 }
 
@@ -2644,7 +2615,7 @@ void QComboBox::setEditText(const QString &text)
     if (d->lineEdit)
         d->lineEdit->setText(text);
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this, 0));
 #endif
 }
 
@@ -2692,39 +2663,6 @@ void QComboBox::changeEvent(QEvent *e)
             d->updateLineEditGeometry();
         d->setLayoutItemMargins(QStyle::SE_ComboBoxLayoutItem);
 
-#ifdef Q_WS_S60
-        if (d->container) {
-            QStyleOptionComboBox opt;
-            initStyleOption(&opt);
-
-            if (style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, this)) {
-                QRect screen = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
-
-                QRect listRect(style()->subControlRect(QStyle::CC_ComboBox, &opt,
-                    QStyle::SC_ComboBoxListBoxPopup, this));
-                listRect.setHeight(qMin(screen.height(), screen.width()));
-
-                if (screen.width() < screen.height()) {
-                    // in portait, menu should be positioned above softkeys
-                    listRect.moveBottom(screen.bottom());
-                } else {
-                    TRect staConTopRect = TRect();
-                    AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStaconTop, staConTopRect);
-                    listRect.setWidth(listRect.height());
-                    //by default popup is centered on screen in landscape
-                    listRect.moveCenter(screen.center());
-                    if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {
-                        // landscape without stacon, menu should be at the right
-                        (opt.direction == Qt::LeftToRight) ? listRect.setRight(screen.right()) :
-                                                             listRect.setLeft(screen.left());
-                    }
-                }
-                
-                d->container->setGeometry(listRect);
-            }
-        }
-#endif
-
         // ### need to update scrollers etc. as well here
         break;
     case QEvent::EnabledChange:
@@ -2753,10 +2691,6 @@ void QComboBox::changeEvent(QEvent *e)
 void QComboBox::resizeEvent(QResizeEvent *)
 {
     Q_D(QComboBox);
-#ifdef Q_WS_S60
-    if (d->viewContainer() && d->viewContainer()->isVisible())
-        showPopup();
-#endif
     d->updateLineEditGeometry();
 }
 

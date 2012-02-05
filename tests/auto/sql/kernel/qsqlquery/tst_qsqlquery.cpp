@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -218,6 +218,9 @@ private slots:
 
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
+
+    void sqlite_real_data() { generic_data("QSQLITE"); }
+    void sqlite_real();
 
 private:
     // returns all database connections
@@ -3307,6 +3310,33 @@ void tst_QSqlQuery::sqlite_constraint()
 
     QVERIFY(!q.exec("DELETE FROM "+qtest));
     QCOMPARE(q.lastError().databaseText(), QLatin1String("Raised Abort successfully"));
+}
+
+void tst_QSqlQuery::sqlite_real()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    const QString tableName(qTableName("sqliterealtype", __FILE__));
+    tst_Databases::safeDropTable( db, tableName );
+
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INTEGER, realVal REAL)"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, realVal) VALUES (1, 2.3)"));
+    QVERIFY_SQL(q, exec("SELECT realVal FROM " + tableName));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toDouble(), 2.3);
+    QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+    q.prepare("INSERT INTO " + tableName + " (id, realVal) VALUES (?, ?)");
+    QVariant var((double)5.6);
+    q.addBindValue(4);
+    q.addBindValue(var);
+    QVERIFY_SQL(q, exec());
+
+    QVERIFY_SQL(q, exec("SELECT realVal FROM " + tableName + " WHERE ID=4"));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toDouble(), 5.6);
 }
 
 QTEST_MAIN( tst_QSqlQuery )

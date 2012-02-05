@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,6 @@
 //
 
 #include <QtCore/qmap.h>
-#include <QtXml/qdom.h>
 #include <qdbusmacros.h>
 #include "qdbusintrospection_p.h"
 
@@ -69,17 +68,15 @@ class QDBusXmlParser
 {
     QString m_service;
     QString m_path;
-    QDomElement m_node;
+    QSharedDataPointer<QDBusIntrospection::Object> m_object;
+    QDBusIntrospection::Interfaces m_interfaces;
 
 public:
     QDBusXmlParser(const QString& service, const QString& path,
                    const QString& xmlData);
-    QDBusXmlParser(const QString& service, const QString& path,
-                   const QDomElement& node);
 
-    QDBusIntrospection::Interfaces interfaces() const;
-    QSharedDataPointer<QDBusIntrospection::Object> object() const;
-    QSharedDataPointer<QDBusIntrospection::ObjectTree> objectTree() const;
+    inline QDBusIntrospection::Interfaces interfaces() const { return m_interfaces; }
+    inline QSharedDataPointer<QDBusIntrospection::Object> object() const { return m_object; }
 };
 
 QT_END_NAMESPACE

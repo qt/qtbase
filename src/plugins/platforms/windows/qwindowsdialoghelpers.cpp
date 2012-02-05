@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,13 +34,12 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "qwindowsdialoghelpers.h"
-
-#ifdef QT_WIDGETS_LIB
 
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
@@ -66,8 +64,8 @@
 #include "qtwindows_additional.h"
 
 #define STRICT_TYPED_ITEMIDS
-#include <ShlObj.h>
-#include <Shlwapi.h>
+#include <shlobj.h>
+#include <shlwapi.h>
 
 // #define USE_NATIVE_COLOR_DIALOG /* Testing purposes only */
 
@@ -339,17 +337,6 @@ void eatMouseMove()
         PostMessage(msg.hwnd, msg.message, 0, msg.lParam);
     if (QWindowsContext::verboseDialogs)
         qDebug("%s triggered=%d" , __FUNCTION__, msg.message == WM_MOUSEMOVE);
-}
-
-Type dialogType(const QDialog *dialog)
-{
-    if (qobject_cast<const QFileDialog *>(dialog))
-        return FileDialog;
-    if (qobject_cast<const QFontDialog *>(dialog))
-        return FontDialog;
-    if (qobject_cast<const QColorDialog *>(dialog))
-        return ColorDialog;
-    return UnknownType;
 }
 
 } // namespace QWindowsDialogs
@@ -1359,40 +1346,36 @@ QWindowsNativeDialogBase *QWindowsColorDialogHelper::createNativeDialog()
 namespace QWindowsDialogs {
 
 // QWindowsDialogHelperBase creation functions
-bool useHelper(const QDialog *dialog)
+bool useHelper(QPlatformTheme::DialogType type)
 {
-    if (dialog) {
-        switch (QWindowsDialogs::dialogType(dialog)) {
-        case QWindowsDialogs::FileDialog:
-            return true;
-        case QWindowsDialogs::ColorDialog:
+    switch (type) {
+    case QPlatformTheme::FileDialog:
+        return true;
+        break;
+    case QPlatformTheme::ColorDialog:
 #ifdef USE_NATIVE_COLOR_DIALOG
-            return true;
+        return true;
+#else
+        break;
 #endif
-        case QWindowsDialogs::FontDialog:
-        case QWindowsDialogs::UnknownType:
-            break;
-        }
+    case QPlatformTheme::FontDialog:
+        break;
     }
     return false;
 }
 
-QPlatformDialogHelper *createHelper(QDialog *dialog)
+QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type)
 {
-    if (QWindowsContext::verboseDialogs)
-        qDebug("%s %p %s" , __FUNCTION__, dialog, dialog->metaObject()->className());
-    if (!dialog)
-        return 0;
-
-    switch (QWindowsDialogs::dialogType(dialog)) {
-    case QWindowsDialogs::FileDialog:
+    switch (type) {
+    case QPlatformTheme::FileDialog:
         return new QWindowsFileDialogHelper();
-    case QWindowsDialogs::ColorDialog:
+    case QPlatformTheme::ColorDialog:
 #ifdef USE_NATIVE_COLOR_DIALOG
         return new QWindowsColorDialogHelper();
+#else
+        break;
 #endif
-    case QWindowsDialogs::FontDialog:
-    case QWindowsDialogs::UnknownType:
+    case QPlatformTheme::FontDialog:
         break;
     }
     return 0;
@@ -1402,5 +1385,3 @@ QPlatformDialogHelper *createHelper(QDialog *dialog)
 QT_END_NAMESPACE
 
 #include "qwindowsdialoghelpers.moc"
-
-#endif // QT_WIDGETS_LIB

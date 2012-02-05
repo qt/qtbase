@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -105,11 +105,13 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
                               const FONTSIGNATURE *signature,
                               int type)
 {
+    typedef QPair<QString, QStringList> FontKey;
+
     // the "@family" fonts are just the same as "family". Ignore them.
     if (familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QStringLiteral("WST_")))
         return false;
 
-    const int separatorPos = familyName.indexOf("::");
+    const int separatorPos = familyName.indexOf(QStringLiteral("::"));
     const QString faceName =
             separatorPos != -1 ? familyName.left(separatorPos) : familyName;
     const QString fullName =
@@ -169,20 +171,33 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
             writingSystems.setSupported(ws);
     }
 
-    const QSettings fontRegistry("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts",
+    const QSettings fontRegistry(QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts"),
                                 QSettings::NativeFormat);
 
-    QByteArray value;
+    static QVector<FontKey> allFonts;
+    if (allFonts.isEmpty()) {
+        const QStringList allKeys = fontRegistry.allKeys();
+        allFonts.reserve(allKeys.size());
+        const QString trueType = QStringLiteral("(TrueType)");
+        foreach (const QString &key, allKeys) {
+            QString realKey = key;
+            realKey.remove(trueType);
+            QStringList fonts;
+            const QStringList fontNames = realKey.trimmed().split(QLatin1Char('&'));
+            foreach (const QString &fontName, fontNames)
+                fonts.push_back(fontName.trimmed());
+            allFonts.push_back(FontKey(key, fonts));
+        }
+    }
+
+    QString value;
     int index = 0;
-    foreach (const QString &key, fontRegistry.allKeys()) {
-        QString realKey = key;
-        realKey = realKey.replace("(TrueType)", "");
-        realKey = realKey.trimmed();
-        QStringList fonts = realKey.split('&');
-        for (int i = 0; i < fonts.length(); ++i) {
-            const QString font = fonts[i].trimmed();
+    for (int k = 0; k < allFonts.size(); ++k) {
+        const FontKey &fontKey = allFonts.at(k);
+        for (int i = 0; i < fontKey.second.length(); ++i) {
+            const QString &font = fontKey.second.at(i);
             if (font == faceName || (faceName != fullName && fullName == font)) {
-                value = fontRegistry.value(key).toByteArray();
+                value = fontRegistry.value(fontKey.first).toString();
                 index = i;
                 break;
             }
@@ -195,7 +210,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
         return false;
 
     if (!QDir::isAbsolutePath(value))
-        value = qgetenv("windir") + "\\Fonts\\" + value;
+        value.prepend(QString::fromLocal8Bit(qgetenv("windir") + "\\Fonts\\"));
 
     // Pointer is deleted in QBasicFontDatabase::releaseHandle(void *handle)
     FontFile *fontFile = new FontFile;
@@ -221,7 +236,9 @@ static int CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
                               int type, LPARAM namesSetIn)
 {
     typedef QSet<QString> StringSet;
-    const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName) + "::" + QString::fromWCharArray(f->elfFullName);
+    const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName)
+                               + QStringLiteral("::")
+                               + QString::fromWCharArray(f->elfFullName);
     const QString script = QString::fromWCharArray(f->elfScript);
 
     const FONTSIGNATURE signature = textmetric->ntmFontSig;

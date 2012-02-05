@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,8 +61,18 @@ public:
         EglContext
     };
 
+    enum EventFilterType {
+        GenericEventFilter,
+        EventFilterCount
+    };
+
+    QXcbNativeInterface();
+
     void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context);
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
+
+    EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter);
+    EventFilter eventFilter(EventFilterType type) const { return m_eventFilters[type]; }
 
     void *displayForWindow(QWindow *window);
     void *eglDisplayForWindow(QWindow *window);
@@ -73,6 +83,8 @@ public:
     void *eglContextForContext(QOpenGLContext *context);
 
 private:
+    EventFilter m_eventFilters[EventFilterCount];
+
     static QXcbScreen *qPlatformScreenForWindow(QWindow *window);
 };
 

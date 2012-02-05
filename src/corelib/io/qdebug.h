@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,10 +57,10 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class Q_CORE_EXPORT QDebug
 {
+    friend class QMessageLogger;
     struct Stream {
         Stream(QIODevice *device) : ts(device), ref(1), type(QtDebugMsg), space(true), message_output(false) {}
         Stream(QString *string) : ts(string, QIODevice::WriteOnly), ref(1), type(QtDebugMsg), space(true), message_output(false) {}
@@ -71,6 +71,7 @@ class Q_CORE_EXPORT QDebug
         QtMsgType type;
         bool space;
         bool message_output;
+        QMessageLogContext context;
     } *stream;
 public:
     inline QDebug(QIODevice *device) : stream(new Stream(device)) {}
@@ -82,7 +83,9 @@ public:
         if (!--stream->ref) {
             if(stream->message_output) {
                 QT_TRY {
-                    qt_message_output(stream->type, stream->buffer.toLocal8Bit().data());
+                    qt_message_output(stream->type,
+                                      stream->context,
+                                      stream->buffer.toLocal8Bit().data());
                 } QT_CATCH(std::bad_alloc&) { /* We're out of memory - give up. */ }
             }
             delete stream;
@@ -93,7 +96,6 @@ public:
     inline QDebug &maybeSpace() { if (stream->space) stream->ts << ' '; return *this; }
 
     inline QDebug &operator<<(QChar t) { stream->ts << '\'' << t << '\''; return maybeSpace(); }
-    inline QDebug &operator<<(QBool t) { stream->ts << (bool(t != 0) ? "true" : "false"); return maybeSpace(); }
     inline QDebug &operator<<(bool t) { stream->ts << (t ? "true" : "false"); return maybeSpace(); }
     inline QDebug &operator<<(char t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(signed short t) { stream->ts << t; return maybeSpace(); }
@@ -111,7 +113,7 @@ public:
     inline QDebug &operator<<(const char* t) { stream->ts << QString::fromAscii(t); return maybeSpace(); }
     inline QDebug &operator<<(const QString & t) { stream->ts << '\"' << t  << '\"'; return maybeSpace(); }
     inline QDebug &operator<<(const QStringRef & t) { return operator<<(t.toString()); }
-    inline QDebug &operator<<(const QLatin1String &t) { stream->ts << '\"'  << t.latin1() << '\"'; return maybeSpace(); }
+    inline QDebug &operator<<(const QLatin1String &t) { stream->ts << '\"'  << t << '\"'; return maybeSpace(); }
     inline QDebug &operator<<(const QByteArray & t) { stream->ts  << '\"' << t << '\"'; return maybeSpace(); }
     inline QDebug &operator<<(const void * t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(QTextStreamFunction f) {
@@ -270,27 +272,6 @@ inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
     debug << ')';
     return debug.space();
 }
-
-#if !defined(QT_NO_DEBUG_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
-Q_CORE_EXPORT_INLINE QDebug qDebug() { return QDebug(QtDebugMsg); }
-#else
-#undef qDebug
-inline QNoDebug qDebug() { return QNoDebug(); }
-#define qDebug QT_NO_QDEBUG_MACRO
-#endif
-
-#if !defined(QT_NO_WARNING_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
-Q_CORE_EXPORT_INLINE QDebug qWarning() { return QDebug(QtWarningMsg); }
-#else
-#undef qWarning
-inline QNoDebug qWarning() { return QNoDebug(); }
-#define qWarning QT_NO_QWARNING_MACRO
-#endif
-
-#if !defined(QT_NO_DEBUG_STREAM)
-Q_CORE_EXPORT_INLINE QDebug qCritical() { return QDebug(QtCriticalMsg); }
-#endif
-
 
 QT_END_NAMESPACE
 

@@ -21,9 +21,6 @@ HEADERS += \
         kernel/qplatformthemefactory_qpa_p.h \
         kernel/qplatformthemeplugin_qpa.h \
         kernel/qplatformwindow_qpa.h \
-        kernel/qplatformopenglcontext_qpa.h \
-        kernel/qopenglcontext.h \
-        kernel/qopenglcontext_p.h \
         kernel/qplatformcursor_qpa.h \
         kernel/qplatformclipboard_qpa.h \
         kernel/qplatformnativeinterface_qpa.h \
@@ -41,6 +38,8 @@ HEADERS += \
         kernel/qdnd_p.h \
         kernel/qevent.h \
         kernel/qevent_p.h \
+        kernel/qinputmethod.h \
+        kernel/qinputmethod_p.h \
         kernel/qinputpanel.h \
         kernel/qinputpanel_p.h \
         kernel/qkeysequence.h \
@@ -54,7 +53,9 @@ HEADERS += \
         kernel/qscreen_p.h \
         kernel/qstylehints.h \
         kernel/qtouchdevice.h \
-        kernel/qtouchdevice_p.h
+        kernel/qtouchdevice_p.h \
+        kernel/qplatformsharedgraphicscache_qpa.h \
+        kernel/qplatformdialoghelper_qpa.h
 
 SOURCES += \
         kernel/qclipboard_qpa.cpp \
@@ -71,8 +72,6 @@ SOURCES += \
         kernel/qplatformthemefactory_qpa.cpp \
         kernel/qplatformthemeplugin_qpa.cpp \
         kernel/qplatformwindow_qpa.cpp \
-        kernel/qplatformopenglcontext_qpa.cpp \
-        kernel/qopenglcontext.cpp \
         kernel/qplatformcursor_qpa.cpp \
         kernel/qplatformclipboard_qpa.cpp \
         kernel/qplatformnativeinterface_qpa.cpp \
@@ -87,7 +86,7 @@ SOURCES += \
         kernel/qdrag.cpp \
         kernel/qdnd.cpp \
         kernel/qevent.cpp \
-        kernel/qinputpanel.cpp \
+        kernel/qinputmethod.cpp \
         kernel/qkeysequence.cpp \
         kernel/qkeymapper.cpp \
         kernel/qkeymapper_qpa.cpp \
@@ -96,6 +95,19 @@ SOURCES += \
         kernel/qscreen.cpp \
         kernel/qshortcutmap.cpp \
         kernel/qstylehints.cpp \
-        kernel/qtouchdevice.cpp
+        kernel/qtouchdevice.cpp \
+        kernel/qplatformsharedgraphicscache_qpa.cpp \
+        kernel/qplatformdialoghelper_qpa.cpp
+
+contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2)|contains(QT_CONFIG, egl) {
+    HEADERS += \
+            kernel/qplatformopenglcontext_qpa.h \
+            kernel/qopenglcontext.h \
+            kernel/qopenglcontext_p.h
+
+    SOURCES += \
+            kernel/qplatformopenglcontext_qpa.cpp \
+            kernel/qopenglcontext.cpp
+}
 
 win32:HEADERS+=kernel/qwindowdefs_win.h

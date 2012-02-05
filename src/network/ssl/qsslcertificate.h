@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,7 +56,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Network)
 
 #ifndef QT_NO_SSL
 
@@ -84,8 +83,7 @@ public:
     };
 
     QSslCertificate(QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
-    QSslCertificate( // ### s/encoded/data (to be consistent with signature in .cpp file) ?
-        const QByteArray &encoded = QByteArray(), QSsl::EncodingFormat format = QSsl::Pem);
+    QSslCertificate(const QByteArray &data = QByteArray(), QSsl::EncodingFormat format = QSsl::Pem);
     QSslCertificate(const QSslCertificate &other);
     ~QSslCertificate();
     QSslCertificate &operator=(const QSslCertificate &other);

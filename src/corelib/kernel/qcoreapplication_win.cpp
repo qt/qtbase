@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,13 +42,13 @@
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
 #include "qstringlist.h"
-#include "qt_windows.h"
 #include "qvector.h"
 #include "qmutex.h"
 #include "qfileinfo.h"
 #include "qcorecmdlineargs_p.h"
 #include <private/qthread_p.h>
 #include <ctype.h>
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -161,6 +161,10 @@ Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char* str)
     staticCriticalSection.unlock();
 }
 
+Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogContext &, const char* str)
+{
+    qWinMsgHandler(t, str);
+}
 
 /*****************************************************************************
   qWinMain() - Initializes Windows. Called from WinMain() in qtmain_win.cpp

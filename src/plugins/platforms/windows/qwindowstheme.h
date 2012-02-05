@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,8 +51,8 @@ class QWindowsTheme : public QPlatformTheme
 public:
     QWindowsTheme();
 
-    virtual bool usePlatformNativeDialog(const QDialog *dialog = 0) const;
-    virtual QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
+    virtual bool usePlatformNativeDialog(DialogType type) const;
+    virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
     virtual QVariant themeHint(ThemeHint) const;
 };
 

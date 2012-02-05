@@ -10,3 +10,5 @@ wince*: {
 } else {
   win32:LIBS += -lws2_32
 }
+
+linux-*:CONFIG+=insignificant_test    # QTBUG-23837 - test is unstable

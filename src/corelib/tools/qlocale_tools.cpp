@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -257,13 +257,6 @@ bool removeGroupSeparators(QLocalePrivate::CharBuff *num)
 
     return true;
 }
-
-#if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
-inline bool isascii(int c)
-{
-        return (c >= 0 && c <=127);
-}
-#endif
 
 /*-
  * Copyright (c) 1992, 1993

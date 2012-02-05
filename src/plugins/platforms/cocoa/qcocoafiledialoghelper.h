@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,7 +53,7 @@ class QFileDialogPrivate;
 class QCocoaFileDialogHelper : public QPlatformFileDialogHelper
 {
 public:
-    QCocoaFileDialogHelper(QFileDialog *dialog);
+    QCocoaFileDialogHelper();
     virtual ~QCocoaFileDialogHelper();
 
     void platformNativeDialogModalHelp();
@@ -84,7 +84,6 @@ public:
     void QNSOpenSavePanelDelegate_filterSelected(int menuIndex);
 
 private:
-    QFileDialog *qtFileDialog;
     void *mDelegate;
 };
 

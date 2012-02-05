@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,20 +34,21 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "qelapsedtimer.h"
-#include <windows.h>
-
-// Result of QueryPerformanceFrequency, 0 indicates that the high resolution timer is unavailable
-static quint64 counterFrequency = 0;
+#include <qt_windows.h>
 
 typedef ULONGLONG (WINAPI *PtrGetTickCount64)(void);
 static PtrGetTickCount64 ptrGetTickCount64 = 0;
 
 QT_BEGIN_NAMESPACE
+
+// Result of QueryPerformanceFrequency, 0 indicates that the high resolution timer is unavailable
+static quint64 counterFrequency = 0;
 
 static void resolveLibs()
 {

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -404,23 +404,6 @@ QDBusIntrospection::parseObject(const QString &xml, const QString &service, cons
     QSharedDataPointer<QDBusIntrospection::Object> retval = parser.object();
     if (!retval)
         return QDBusIntrospection::Object();
-    return *retval;
-}
-
-/*!
-    Parses the XML document fragment (given by \a xml) containing one object node and returns all
-    the information about the interfaces and sub-objects, found at the service \a service and path
-    \a path.
-
-    The Objects map returned will contain the absolute path names in the key.
-*/
-QDBusIntrospection::ObjectTree
-QDBusIntrospection::parseObjectTree(const QString &xml, const QString &service, const QString &path)
-{
-    QDBusXmlParser parser(service, path, xml);
-    QSharedDataPointer<QDBusIntrospection::ObjectTree> retval = parser.objectTree();
-    if (!retval)
-        return QDBusIntrospection::ObjectTree();
     return *retval;
 }
 

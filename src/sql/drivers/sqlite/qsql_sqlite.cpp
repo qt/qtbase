@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,7 +59,18 @@
 
 #include <sqlite3.h>
 
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<sqlite3*> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(sqlite3*)
+
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<sqlite3_stmt*> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(sqlite3_stmt*)
 
 QT_BEGIN_NAMESPACE
@@ -84,6 +95,7 @@ static QVariant::Type qGetColumnType(const QString &tpName)
         return QVariant::Int;
     if (typeName == QLatin1String("double")
         || typeName == QLatin1String("float")
+        || typeName == QLatin1String("real")
         || typeName.startsWith(QLatin1String("numeric")))
         return QVariant::Double;
     if (typeName == QLatin1String("blob"))

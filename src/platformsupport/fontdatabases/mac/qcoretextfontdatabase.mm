@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,6 +43,8 @@
 #include "qfontengine_coretext_p.h"
 #include <QtCore/QSettings>
 #import <Foundation/Foundation.h>
+
+QT_BEGIN_NAMESPACE
 
 // this could become a list of all languages used for each writing
 // system, instead of using the single most common language.
@@ -83,9 +85,6 @@ static const char *languageForWritingSystem[] = {
     0 // N'Ko
 };
 enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) };
-
-inline QString qt_mac_NSStringToQString(const NSString *nsstr)
-{ return QCFString::toQString(reinterpret_cast<const CFStringRef>(nsstr)); }
 
 int qt_antialiasing_threshold = 0;
 bool qt_enable_font_smoothing = true;
@@ -139,7 +138,7 @@ QCoreTextFontDatabase::~QCoreTextFontDatabase()
 static QString familyNameFromPostScriptName(QHash<QString, QString> &psNameToFamily,
                                             NSString *psName)
 {
-    QString name = qt_mac_NSStringToQString(psName);
+    QString name = QCFString::toQString(psName);
     if (psNameToFamily.contains(name))
         return psNameToFamily[name];
     else {
@@ -238,7 +237,7 @@ void QCoreTextFontDatabase::populateFontDatabase()
                                             pixelSize, fixedPitch, writingSystems, (void *) font);
         CFStringRef psName = (CFStringRef) CTFontDescriptorCopyAttribute(font, kCTFontNameAttribute);
         // we need PostScript Name to family name mapping for fallback list construction
-        psNameToFamily[qt_mac_NSStringToQString((NSString *) psName)] = familyName;
+        psNameToFamily[QCFString::toQString((NSString *) psName)] = familyName;
         CFRelease(psName);
     }
 
@@ -320,6 +319,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString family, cons
     return fallbackLists[styleHint];
 }
 
+OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref);
 QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
     ATSFontContainerRef fontContainer;
@@ -330,7 +330,6 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
                                       kATSFontContextLocal, kATSFontFormatUnspecified, NULL,
                                       kATSOptionFlagsDefault, &fontContainer);
     } else {
-        OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref);
         FSRef ref;
         if (qt_mac_create_fsref(fileName, &ref) != noErr)
             return QStringList();
@@ -370,4 +369,6 @@ QFont QCoreTextFontDatabase::defaultFont() const
 
     return QFont(defaultFontName);
 }
+
+QT_END_NAMESPACE
 

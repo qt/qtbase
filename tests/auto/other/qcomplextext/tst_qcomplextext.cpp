@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,7 +42,7 @@
 
 // Horrible hack, but this get this out of the way for now
 // Carlos Duclos, 2007-12-11
-#if !defined(Q_WS_MAC)
+#if !defined(Q_OS_MAC)
 
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
@@ -286,5 +286,5 @@ void tst_QComplexText::bidiCursor_PDF()
 QTEST_MAIN(tst_QComplexText)
 #include "tst_qcomplextext.moc"
 
-#endif // Q_WS_MAC
+#endif // Q_OS_MAC
 

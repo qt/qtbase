@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -71,16 +71,16 @@
 //   #include "qbezier_p.h"
 #include "qoutlinemapper_p.h"
 
-#if defined(Q_OS_WIN)
-#  include <qt_windows.h>
+#include <limits.h>
+
+#ifdef Q_OS_WIN
 #  include <qvarlengtharray.h>
 #  include <private/qfontengine_p.h>
+#  include <qt_windows.h>
+#ifdef Q_OS_WIN64
+#    include <malloc.h>
+#  endif
 #endif
-
-#if defined(Q_OS_WIN64)
-#  include <malloc.h>
-#endif
-#include <limits.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -2747,7 +2747,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
         else if (depth == 1)
             rightShift = 3; // divide by 8
 
-        int margin = cache->glyphMargin();
+        int margin = fontEngine->glyphMargin(glyphType);
         const QFixed offs = QFixed::fromReal(aliasedCoordinateDelta);
         const uchar *bits = image.bits();
         for (int i=0; i<numGlyphs; ++i) {

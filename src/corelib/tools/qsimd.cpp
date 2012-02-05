@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,15 +43,14 @@
 #include <QByteArray>
 #include <stdio.h>
 
-#if defined(Q_OS_WINCE)
-#include <windows.h>
-#endif
-
-#if defined(Q_OS_WIN64) && !defined(Q_CC_GNU)
-#include <intrin.h>
-#endif
-
-#if defined(Q_OS_LINUX) && defined(__arm__)
+#if defined(Q_OS_WIN)
+#  if defined(Q_OS_WINCE)
+#    include <qt_windows.h>
+#  endif
+#  if defined(Q_OS_WIN64) && !defined(Q_CC_GNU)
+#    include <intrin.h>
+#  endif
+#elif defined(Q_OS_LINUX) && defined(__arm__)
 #include "private/qcore_unix_p.h"
 
 // the kernel header definitions for HWCAP_*

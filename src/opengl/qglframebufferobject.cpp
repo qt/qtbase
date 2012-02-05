@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -454,8 +454,18 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         glBindTexture(target, texture);
         glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        if (mipmap)
-            glGenerateMipmap(GL_TEXTURE_2D);
+        if (mipmap) {
+            int width = size.width();
+            int height = size.height();
+            int level = 0;
+            while (width > 1 || height > 1) {
+                width = (width + 1) >> 1;
+                height = (height + 1) >> 1;
+                ++level;
+                glTexImage2D(target, level, internal_format, width, height, 0,
+                        GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            }
+        }
         glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

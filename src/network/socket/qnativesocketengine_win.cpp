@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -732,6 +732,8 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &a, quint16 port)
             ipv6only = 1;
             ipv6only = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
         }
+#else
+        Q_UNUSED(ipv6only)
 #endif
         break;
     case QAbstractSocket::IPv4Protocol:
@@ -1335,10 +1337,10 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxLength)
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     if (ret != -2) {
-        qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %l) == %li",
+        qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %li) == %li",
                data, qt_prettyDebug(data, qMin((int)bytesRead, 16), (int)bytesRead).data(), (int)maxLength, (int)ret);
     } else {
-        qDebug("QNativeSocketEnginePrivate::nativeRead(%p, %l) == -2 (WOULD BLOCK)",
+        qDebug("QNativeSocketEnginePrivate::nativeRead(%p, %li) == -2 (WOULD BLOCK)",
                data, int(maxLength));
     }
 #endif

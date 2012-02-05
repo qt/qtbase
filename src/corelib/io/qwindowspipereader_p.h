@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,17 +56,16 @@
 #include <qbytearray.h>
 #include <qobject.h>
 #include <qtimer.h>
-#include <qt_windows.h>
-
 #include <private/qringbuffer_p.h>
+
+#include <qt_windows.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
-class QWinEventNotifier;
+class QWinOverlappedIoNotifier;
 
 class Q_CORE_EXPORT QWindowsPipeReader : public QObject
 {
@@ -89,7 +88,7 @@ public:
     bool waitForPipeClosed(int msecs);
 
     void startAsyncRead();
-    bool completeAsyncRead();
+    bool isReadOperationActive() const { return readSequenceStarted; }
 
 Q_SIGNALS:
     void winError(ulong, const QString &);
@@ -97,22 +96,23 @@ Q_SIGNALS:
     void pipeClosed();
 
 private Q_SLOTS:
-    bool readEventSignalled();
+    void notified(DWORD numberOfBytesRead, DWORD errorCode);
 
 private:
+    bool completeAsyncRead(DWORD bytesRead, DWORD errorCode);
     DWORD checkPipeState();
 
 private:
     HANDLE handle;
     OVERLAPPED overlapped;
-    QWinEventNotifier *dataReadNotifier;
+    QWinOverlappedIoNotifier *dataReadNotifier;
     qint64 readBufferMaxSize;
     QRingBuffer readBuffer;
     int actualReadBufferSize;
     bool readSequenceStarted;
     QTimer *emitReadyReadTimer;
     bool pipeBroken;
-    static const qint64 initialReadBufferSize = 4096;
+    bool readyReadEmitted;
 };
 
 QT_END_NAMESPACE

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,7 +50,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QOpenGLContext;
 class QWindow;
@@ -69,6 +68,9 @@ public:
     virtual QVariant windowProperty(QPlatformWindow *window, const QString &name) const;
     virtual QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const;
     virtual void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value);
+
+    typedef bool (*EventFilter)(void *message, long *result);
+    virtual EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter);
 
 Q_SIGNALS:
     void windowPropertyChanged(QPlatformWindow *window, const QString &propertyName);

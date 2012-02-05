@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -72,6 +72,7 @@ private slots:
     void match();
     void dropMimeData_data();
     void dropMimeData();
+    void canDropMimeData();
     void changePersistentIndex();
     void movePersistentIndex();
 
@@ -79,6 +80,8 @@ private slots:
     void insertColumns();
     void removeRows();
     void removeColumns();
+    void moveRows();
+    void moveColumns();
 
     void reset();
 
@@ -142,7 +145,14 @@ public:
     void setPersistent(const QModelIndex &from, const QModelIndex &to);
     bool removeRows ( int row, int count, const QModelIndex & parent = QModelIndex() );
     bool removeColumns( int column, int count, const QModelIndex & parent = QModelIndex());
+    bool moveRows (const QModelIndex &sourceParent, int sourceRow, int count,
+                   const QModelIndex &destinationParent, int destinationChild);
+    bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count,
+                     const QModelIndex &destinationParent, int destinationChild);
     void reset();
+
+    bool canDropMimeData(const QMimeData *data, Qt::DropAction action,
+                                 int row, int column, const QModelIndex &parent) const;
 
     int cCount, rCount;
     mutable bool wrongIndex;
@@ -246,9 +256,86 @@ bool QtTestModel::removeColumns(int column, int count, const QModelIndex & paren
     return true;
 }
 
+bool QtTestModel::moveRows(const QModelIndex &sourceParent, int src, int cnt,
+                           const QModelIndex &destinationParent, int dst)
+{
+    if (!QAbstractItemModel::beginMoveRows(sourceParent, src, src + cnt - 1,
+                                           destinationParent, dst))
+        return false;
+
+    QVector<QString> buf;
+    if (dst < src) {
+        for (int i  = 0; i < cnt; ++i) {
+            buf.swap(table[src + i]);
+            table.remove(src + 1);
+            table.insert(dst, buf);
+        }
+    } else if (src < dst) {
+        for (int i  = 0; i < cnt; ++i) {
+            buf.swap(table[src]);
+            table.remove(src);
+            table.insert(dst + i, buf);
+        }
+    }
+
+    rCount = table.count();
+
+    QAbstractItemModel::endMoveRows();
+    return true;
+}
+
+bool QtTestModel::moveColumns(const QModelIndex &sourceParent, int src, int cnt,
+                              const QModelIndex &destinationParent, int dst)
+{
+    if (!QAbstractItemModel::beginMoveColumns(sourceParent, src, src + cnt - 1,
+                                              destinationParent, dst))
+        return false;
+
+    for (int r = 0; r < rCount; ++r) {
+        QString buf;
+        if (dst < src) {
+            for (int i  = 0; i < cnt; ++i) {
+                buf = table[r][src + i];
+                table[r].remove(src + 1);
+                table[r].insert(dst, buf);
+            }
+        } else if (src < dst) {
+            for (int i  = 0; i < cnt; ++i) {
+                buf = table[r][src];
+                table[r].remove(src);
+                table[r].insert(dst + i, buf);
+            }
+        }
+    }
+
+    cCount = table.at(0).count();
+
+    QAbstractItemModel::endMoveColumns();
+    return true;
+}
+
 void QtTestModel::reset()
 {
     QAbstractItemModel::reset();
+}
+
+bool QtTestModel::canDropMimeData(const QMimeData *data, Qt::DropAction action,
+                                 int row, int column, const QModelIndex &parent) const
+{
+    Q_UNUSED(data);
+    Q_UNUSED(action);
+
+    // For testing purposes, we impose some arbitrary rules on what may be dropped.
+    if (!parent.isValid() && row < 0 && column < 0) {
+        // a drop in emtpy space in the view is allowed.
+        // For example, in a filesystem view, a file may be dropped into empty space
+        // if it represents a writable directory.
+        return true;
+    }
+
+    // We then arbitrarily decide to only allow drops on odd rows.
+    // A filesystem view/model might be able to drop onto (writable) directories.
+    return row % 2 == 0;
 }
 
 /**
@@ -691,6 +778,15 @@ void tst_QAbstractItemModel::dropMimeData()
     }
 }
 
+void tst_QAbstractItemModel::canDropMimeData()
+{
+    QtTestModel model(3, 3);
+
+    QVERIFY(model.canDropMimeData(0, Qt::CopyAction, -1, -1, QModelIndex()));
+    QVERIFY(model.canDropMimeData(0, Qt::CopyAction, 0, 0, QModelIndex()));
+    QVERIFY(!model.canDropMimeData(0, Qt::CopyAction, 1, 0, QModelIndex()));
+}
+
 void tst_QAbstractItemModel::changePersistentIndex()
 {
     QtTestModel model(3, 3);
@@ -779,6 +875,36 @@ void tst_QAbstractItemModel::insertColumns()
     QCOMPARE(model.insertColumns(6, 4), true);
     QCOMPARE(columnsAboutToBeInsertedSpy.count(), 1);
     QCOMPARE(columnsInsertedSpy.count(), 1);
+}
+
+void tst_QAbstractItemModel::moveRows()
+{
+    QtTestModel model(10, 10);
+
+    QSignalSpy rowsAboutToBeMovedSpy(&model, SIGNAL(rowsAboutToBeMoved(const QModelIndex &, int , int, const QModelIndex &, int)));
+    QSignalSpy rowsMovedSpy(&model, SIGNAL(rowsMoved(const QModelIndex &, int , int, const QModelIndex &, int)));
+
+    QVERIFY(rowsAboutToBeMovedSpy.isValid());
+    QVERIFY(rowsMovedSpy.isValid());
+
+    QCOMPARE(model.moveRows(QModelIndex(), 6, 4, QModelIndex(), 1), true);
+    QCOMPARE(rowsAboutToBeMovedSpy.count(), 1);
+    QCOMPARE(rowsMovedSpy.count(), 1);
+}
+
+void tst_QAbstractItemModel::moveColumns()
+{
+    QtTestModel model(10, 10);
+
+    QSignalSpy columnsAboutToBeMovedSpy(&model, SIGNAL(columnsAboutToBeMoved(const QModelIndex &, int , int, const QModelIndex &, int)));
+    QSignalSpy columnsMovedSpy(&model, SIGNAL(columnsMoved(const QModelIndex &, int , int, const QModelIndex &, int)));
+
+    QVERIFY(columnsAboutToBeMovedSpy.isValid());
+    QVERIFY(columnsMovedSpy.isValid());
+
+    QCOMPARE(model.moveColumns(QModelIndex(), 6, 4, QModelIndex(), 1), true);
+    QCOMPARE(columnsAboutToBeMovedSpy.count(), 1);
+    QCOMPARE(columnsMovedSpy.count(), 1);
 }
 
 void tst_QAbstractItemModel::reset()
@@ -1669,6 +1795,19 @@ private:
 };
 
 
+class ModelWithCustomRole : public QStringListModel
+{
+  Q_OBJECT
+public:
+  ModelWithCustomRole(QObject *parent = 0)
+    : QStringListModel(parent)
+  {
+    QHash<int, QByteArray> roleNames_ = roleNames();
+    roleNames_.insert(Qt::UserRole + 1, "custom");
+    setRoleNames(roleNames_);
+  }
+};
+
 ListenerObject::ListenerObject(QAbstractProxyModel *parent)
     : QObject(parent), m_model(parent)
 {
@@ -1722,7 +1861,7 @@ void tst_QAbstractItemModel::testReset()
     nullProxy->setSourceModel(m_model);
 
     // Makes sure the model and proxy are in a consistent state. before and after reset.
-    new ListenerObject(nullProxy);
+    ListenerObject *listener = new ListenerObject(nullProxy);
 
     ModelResetCommandFixed *resetCommand = new ModelResetCommandFixed(m_model, this);
 
@@ -1741,6 +1880,28 @@ void tst_QAbstractItemModel::testReset()
     QVERIFY(m_model->rowCount() == 9);
     QModelIndex destIndex = m_model->index(4, 0);
     QVERIFY(m_model->rowCount(destIndex) == 11);
+
+    // Delete it because its slots test things which are not true after this point.
+    delete listener;
+
+    QSignalSpy proxyBeforeResetSpy(nullProxy, SIGNAL(modelAboutToBeReset()));
+    QSignalSpy proxyAfterResetSpy(nullProxy, SIGNAL(modelReset()));
+
+    // Before setting it, it does not have custom roles.
+    QCOMPARE(nullProxy->roleNames().value(Qt::UserRole + 1), QByteArray());
+
+    nullProxy->setSourceModel(new ModelWithCustomRole(this));
+    QVERIFY(proxyBeforeResetSpy.size() == 1);
+    QVERIFY(proxyAfterResetSpy.size() == 1);
+
+    QCOMPARE(nullProxy->roleNames().value(Qt::UserRole + 1), QByteArray("custom"));
+
+    nullProxy->setSourceModel(m_model);
+    QVERIFY(proxyBeforeResetSpy.size() == 2);
+    QVERIFY(proxyAfterResetSpy.size() == 2);
+
+    // After being reset the proxy must be queried again.
+    QCOMPARE(nullProxy->roleNames().value(Qt::UserRole + 1), QByteArray());
 }
 
 class CustomRoleModel : public QStringListModel

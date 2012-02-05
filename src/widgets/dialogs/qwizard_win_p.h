@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,12 +56,12 @@
 #ifndef QT_NO_WIZARD
 #ifndef QT_NO_STYLE_WINDOWSVISTA
 
-#include <qt_windows.h>
 #include <qobject.h>
 #include <qwidget.h>
 #include <qabstractbutton.h>
 #include <QtWidgets/private/qwidget_p.h>
 #include <QtWidgets/private/qstylehelper_p.h>
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

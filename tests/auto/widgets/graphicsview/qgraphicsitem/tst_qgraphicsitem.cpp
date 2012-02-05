@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -81,7 +81,7 @@ Q_DECLARE_METATYPE(QRectF)
 #define Q_CHECK_PAINTEVENTS
 #endif
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
 // On mac (cocoa) we always get full update.
 // So check that the expected region is contained inside the actual
 #define COMPARE_REGIONS(ACTUAL, EXPECTED) QVERIFY((EXPECTED).subtracted(ACTUAL).isEmpty())
@@ -1069,6 +1069,9 @@ void tst_QGraphicsItem::toolTip()
                 foundTipLabel = true;
         }
         QVERIFY(foundView);
+#ifdef Q_OS_MAC
+        QEXPECT_FAIL("", "QTBUG-23707", Continue);
+#endif
         QVERIFY(foundTipLabel);
     }
 
@@ -4240,14 +4243,14 @@ void tst_QGraphicsItem::textControlGetterSetter()
 {
     QGraphicsTextItem *item = new QGraphicsTextItem;
     QVERIFY(item->textControl()->parent() == item);
-    QPointer<QTextControl> control = item->textControl();
+    QPointer<QWidgetTextControl> control = item->textControl();
     delete item;
     QVERIFY(!control);
 
     item = new QGraphicsTextItem;
 
-    QPointer<QTextControl> oldControl = control;
-    control = new QTextControl;
+    QPointer<QWidgetTextControl> oldControl = control;
+    control = new QWidgetTextControl;
 
     item->setTextControl(control);
     QVERIFY(item->textControl() == control);
@@ -4266,7 +4269,7 @@ void tst_QGraphicsItem::textControlGetterSetter()
     // test that on setting a control the item size
     // is adjusted
     oldControl = control;
-    control = new QTextControl;
+    control = new QWidgetTextControl;
     control->setPlainText("foo!");
     item->setTextControl(control);
     QCOMPARE(item->boundingRect().size(), control->document()->documentLayout()->documentSize());
@@ -6092,7 +6095,7 @@ void tst_QGraphicsItem::untransformable()
 
 // Painting with the DiagCrossPattern is really slow on Mac
 // when zoomed out. (The test times out). Task to fix is 155567.
-#if !defined(Q_WS_MAC) || 1
+#if !defined(Q_OS_MAC) || 1
     view.setBackgroundBrush(QBrush(Qt::black, Qt::DiagCrossPattern));
 #endif
 
@@ -8117,7 +8120,7 @@ void tst_QGraphicsItem::sorting()
     _paintedItems.clear();
 
     view.viewport()->repaint();
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     // There's no difference between repaint and update on the Mac,
     // so we have to process events here to make sure we get the event.
     QTest::qWait(100);
@@ -8152,7 +8155,7 @@ void tst_QGraphicsItem::itemHasNoContents()
     _paintedItems.clear();
 
     view.viewport()->repaint();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // There's no difference between update() and repaint() on the Mac,
     // so we have to process events here to make sure we get the event.
     QTest::qWait(10);

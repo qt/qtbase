@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,20 +46,18 @@
 #include <qapplication.h>
 #include <qdir.h>
 #include <qpixmapcache.h>
+#include <private/qfunctions_p.h>
+#include <private/qguiplatformplugin_p.h>
+
 #if defined(Q_OS_WIN)
 #  define _WIN32_IE 0x0500
 #  include <qt_windows.h>
 #  include <commctrl.h>
 #  include <objbase.h>
 
-Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
-
 #elif defined(Q_WS_MAC)
 #  include <private/qt_cocoa_helpers_mac_p.h>
 #endif
-
-#include <private/qfunctions_p.h>
-#include <private/qguiplatformplugin_p.h>
 
 #if defined(Q_WS_X11) && !defined(Q_NO_STYLE_GTK)
 #  include <private/qgtkstyle_p.h>
@@ -72,6 +70,10 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
 #endif
 
 QT_BEGIN_NAMESPACE
+
+#if defined (Q_OS_WIN)
+Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
+#endif
 
 /*!
   \class QFileIconProvider

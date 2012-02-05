@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,18 +34,15 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 #include <QtCore/QString>
 #include <QtCore/QPair>
-#include <QtGui/QWidget>
+#include <QtWidgets/QWidget>
 
 #pragma once // Yeah, it's deprecated in general, but it's standard practive for Mac OS X.
 
 QString nativeWindowTitle(QWidget *widget, Qt::WindowState state);
 bool nativeWindowModified(QWidget *widget);
-
-typedef QPair<QWidget *, WId> WidgetViewPair;
-bool testAndRelease(const WId);
-WidgetViewPair createAndRetain(QWidget * const parent = 0);

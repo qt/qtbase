@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -76,7 +76,7 @@ void tst_QDoubleValidator::validateThouSep_data()
     QTest::newRow("1.000de") << "de" << QString("1.000") << ACC;
 
     QTest::newRow(".C") << "C" << QString(".") << ITM;
-    QTest::newRow(".de") << "de" << QString(".") << ITM;
+    QTest::newRow(".de") << "de" << QString(".") << INV;
     QTest::newRow(",C") << "C" << QString(",") << INV;
     QTest::newRow(",de") << "de" << QString(",") << ITM;
 }
@@ -173,7 +173,7 @@ void tst_QDoubleValidator::validate_data()
     QTest::newRow("data_de8")  << "de" << -100.0 << 100.0 << 1 << QString("-100") << ACC << ACC;
     QTest::newRow("data_de9")  << "de" << -100.0 << -10.0 << 1 << QString("10") << ITM << ITM;
     QTest::newRow("data_de10") << "de" << 0.3 << 0.5 << 5 << QString("0,34567") << ACC << ACC;
-    QTest::newRow("data_de11") << "de" << -0.3 << -0.5 << 5 << QString("-0,345678") << ITM << INV;
+    QTest::newRow("data_de11") << "de" << -0.3 << -0.5 << 5 << QString("-0,345678") << INV << INV;
     QTest::newRow("data_de12") << "de" << -0.32 << 0.32 << 1 << QString("0") << ACC << ACC;
     QTest::newRow("data_de13") << "de" << 0.0 << 100.0 << 1 << QString("3456a") << INV << INV;
     QTest::newRow("data_de14") << "de" << -100.0 << 100.0 << 1 << QString("-3456a") << INV << INV;
@@ -216,12 +216,9 @@ void tst_QDoubleValidator::validate_data()
     arabicNum += QChar(1636);
     QTest::newRow("arabic") << "ar" << 0.0 << 20.0 << 2 << arabicNum << ACC << ACC;
 
-    QTest::newRow("data_QTBUG_14935-1") << "de" << 0.0 << 1.0 << 5 << QString("0.31") << ACC << ACC;
-    QTest::newRow("data_QTBUG_14935-2") << "de" << 0.0 << 1000000.0 << 5 << QString("3.123") << ACC << ACC;
-    QTest::newRow("data_QTBUG_14935-3") << "de" << 0.0 << 1000000.0 << 5 << QString("123,345.678") << ACC << ACC;
-
-    QTest::newRow("data_de_problem-1") << "de" << 0.0 << 10.0 << 0 << QString("1.0") << ITM << ITM;
-    QTest::newRow("data_de_problem-2") << "de" << 0.0 << 10.0 << 0 << QString("0.1") << INV << INV;
+    // Confim no fallback to C locale
+    QTest::newRow("data_C1") << "de" << 0.0 << 1000.0 << 2 << QString("1.000,00") << ACC << ACC;
+    QTest::newRow("data_C2") << "de" << 0.0 << 1000.0 << 2 << QString("1,000.00") << INV << INV;
 }
 
 void tst_QDoubleValidator::validate()
@@ -234,9 +231,6 @@ void tst_QDoubleValidator::validate()
     QFETCH(QValidator::State, scientific_state);
     QFETCH(QValidator::State, standard_state);
 
-    QEXPECT_FAIL("data_de_problem-1", "To be fixed. See QTBUG-15210.", Abort);
-    QEXPECT_FAIL("data_de_problem-2", "To be fixed. See QTBUG-15210.", Abort);
-
     QLocale::setDefault(QLocale(localeName));
 
     QDoubleValidator dv(minimum, maximum, decimals, 0);
@@ -247,25 +241,31 @@ void tst_QDoubleValidator::validate()
 }
 void tst_QDoubleValidator::notifySignals()
 {
+    QLocale::setDefault(QLocale("C"));
+
     QDoubleValidator dv(0.1, 0.9, 10, 0);
     QSignalSpy topSpy(&dv, SIGNAL(topChanged(double)));
     QSignalSpy bottomSpy(&dv, SIGNAL(bottomChanged(double)));
     QSignalSpy decSpy(&dv, SIGNAL(decimalsChanged(int)));
+    QSignalSpy changedSpy(&dv, SIGNAL(changed()));
 
     qRegisterMetaType<QDoubleValidator::Notation>("QDoubleValidator::Notation");
     QSignalSpy notSpy(&dv, SIGNAL(notationChanged(QDoubleValidator::Notation)));
 
     dv.setTop(0.8);
     QCOMPARE(topSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 1);
     QVERIFY(dv.top() == 0.8);
     dv.setBottom(0.2);
     QCOMPARE(bottomSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 2);
     QVERIFY(dv.bottom() == 0.2);
 
     dv.setRange(0.2, 0.7);
     QCOMPARE(topSpy.count(), 2);
     QCOMPARE(bottomSpy.count(), 1);
     QCOMPARE(decSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 3);
     QVERIFY(dv.bottom() == 0.2);
     QVERIFY(dv.top() == 0.7);
     QVERIFY(dv.decimals() == 0.);
@@ -273,6 +273,7 @@ void tst_QDoubleValidator::notifySignals()
     dv.setRange(0.3, 0.7);
     QCOMPARE(topSpy.count(), 2);
     QCOMPARE(bottomSpy.count(), 2);
+    QCOMPARE(changedSpy.count(), 4);
     QVERIFY(dv.bottom() == 0.3);
     QVERIFY(dv.top() == 0.7);
     QVERIFY(dv.decimals() == 0.);
@@ -280,12 +281,14 @@ void tst_QDoubleValidator::notifySignals()
     dv.setRange(0.4, 0.6);
     QCOMPARE(topSpy.count(), 3);
     QCOMPARE(bottomSpy.count(), 3);
+    QCOMPARE(changedSpy.count(), 5);
     QVERIFY(dv.bottom() == 0.4);
     QVERIFY(dv.top() == 0.6);
     QVERIFY(dv.decimals() == 0.);
 
     dv.setDecimals(10);
     QCOMPARE(decSpy.count(), 2);
+    QCOMPARE(changedSpy.count(), 6);
     QVERIFY(dv.decimals() == 10.);
 
 
@@ -293,13 +296,31 @@ void tst_QDoubleValidator::notifySignals()
     QCOMPARE(topSpy.count(), 3);
     QCOMPARE(bottomSpy.count(), 3);
     QCOMPARE(decSpy.count(), 3);
+    QCOMPARE(changedSpy.count(), 7);
     QVERIFY(dv.bottom() == 0.4);
     QVERIFY(dv.top() == 0.6);
     QVERIFY(dv.decimals() == 100.);
 
     dv.setNotation(QDoubleValidator::StandardNotation);
     QCOMPARE(notSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 8);
     QVERIFY(dv.notation() == QDoubleValidator::StandardNotation);
+
+    dv.setRange(dv.bottom(), dv.top(), dv.decimals());
+    QCOMPARE(topSpy.count(), 3);
+    QCOMPARE(bottomSpy.count(), 3);
+    QCOMPARE(decSpy.count(), 3);
+    QCOMPARE(changedSpy.count(), 8);
+
+    dv.setNotation(dv.notation());
+    QCOMPARE(notSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 8);
+
+    dv.setLocale(QLocale("C"));
+    QCOMPARE(changedSpy.count(), 8);
+
+    dv.setLocale(QLocale("en"));
+    QCOMPARE(changedSpy.count(), 9);
 }
 
 void tst_QDoubleValidator::validateIntEquiv_data()

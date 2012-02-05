@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,23 +43,14 @@
 
 #include "qabstracteventdispatcher.h"
 #include "qcoreapplication.h"
+#include "qcoreapplication_p.h"
 #include "qelapsedtimer.h"
 
 #include "qobject_p.h"
+#include "qeventloop_p.h"
 #include <private/qthread_p.h>
 
 QT_BEGIN_NAMESPACE
-
-class QEventLoopPrivate : public QObjectPrivate
-{
-    Q_DECLARE_PUBLIC(QEventLoop)
-public:
-    inline QEventLoopPrivate()
-        : exit(true), inExec(false), returnCode(-1)
-    { }
-    bool exit, inExec;
-    int returnCode;
-};
 
 /*!
     \class QEventLoop
@@ -96,11 +87,8 @@ public:
     available.
 
     \omitvalue X11ExcludeTimers
-    \omitvalue ExcludeUserInput
-    \omitvalue WaitForMore
     \omitvalue EventLoopExec
     \omitvalue DialogExec
-    \value DeferredDeletion deprecated - do not use.
 
     \sa processEvents()
 */
@@ -144,8 +132,6 @@ bool QEventLoop::processEvents(ProcessEventsFlags flags)
     Q_D(QEventLoop);
     if (!d->threadData->eventDispatcher)
         return false;
-    if (flags & DeferredDeletion)
-        QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     return d->threadData->eventDispatcher->processEvents(flags);
 }
 
@@ -252,13 +238,9 @@ void QEventLoop::processEvents(ProcessEventsFlags flags, int maxTime)
 
     QElapsedTimer start;
     start.start();
-    if (flags & DeferredDeletion)
-        QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     while (processEvents(flags & ~WaitForMoreEvents)) {
         if (start.elapsed() > maxTime)
             break;
-        if (flags & DeferredDeletion)
-            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     }
 }
 
@@ -314,6 +296,17 @@ void QEventLoop::wakeUp()
     d->threadData->eventDispatcher->wakeUp();
 }
 
+
+bool QEventLoop::event(QEvent *event)
+{
+    if (event->type() == QEvent::Quit) {
+        quit();
+        return true;
+    } else {
+        return QObject::event(event);
+    }
+}
+
 /*!
     Tells the event loop to exit normally.
 
@@ -323,5 +316,86 @@ void QEventLoop::wakeUp()
 */
 void QEventLoop::quit()
 { exit(0); }
+
+
+class QEventLoopLockerPrivate
+{
+public:
+    explicit QEventLoopLockerPrivate(QEventLoopPrivate *loop)
+      : loop(loop), app(0)
+    {
+        loop->ref();
+    }
+
+    explicit QEventLoopLockerPrivate(QCoreApplicationPrivate *app)
+      : loop(0), app(app)
+    {
+        app->ref();
+    }
+
+    ~QEventLoopLockerPrivate()
+    {
+        if (loop)
+            loop->deref();
+        else
+            app->deref();
+    }
+
+private:
+    QEventLoopPrivate *loop;
+    QCoreApplicationPrivate *app;
+};
+
+/*!
+    \class QEventLoopLocker
+    \brief The QEventLoopLocker class provides a means to quit an event loop when it is no longer needed.
+
+    The QEventLoopLocker operates on particular objects - either a QCoreApplication
+    instance or a QEventLoop instance.
+
+    This makes it possible to, for example, run a batch of jobs with an event loop
+    and exit that event loop after the last job is finished. That is accomplished
+    by keeping a QEventLoopLocker with each job instance.
+
+    The variant which operates on QCoreApplication makes it possible to finish
+    asynchronously running jobs after the last gui window has been closed. This
+    can be useful for example for running a job which uploads data to a network.
+
+    \sa QEventLoop, QCoreApplication
+*/
+
+/*!
+    Creates an event locker operating on the \p app.
+
+    The application will quit when there are no more QEventLoopLockers operating on it.
+
+    \sa QCoreApplication::quit(), QCoreApplication::isQuitLockEnabled()
+ */
+QEventLoopLocker::QEventLoopLocker()
+  : d_ptr(new QEventLoopLockerPrivate(static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()))))
+{
+
+}
+
+/*!
+    Creates an event locker operating on the \p app.
+
+    This particular QEventLoop will quit when there are no more QEventLoopLockers operating on it.
+
+    \sa QEventLoop::quit()
+ */
+QEventLoopLocker::QEventLoopLocker(QEventLoop *loop)
+  : d_ptr(new QEventLoopLockerPrivate(static_cast<QEventLoopPrivate*>(QObjectPrivate::get(loop))))
+{
+
+}
+
+/*!
+    Destroys this event loop locker object
+ */
+QEventLoopLocker::~QEventLoopLocker()
+{
+    delete d_ptr;
+}
 
 QT_END_NAMESPACE

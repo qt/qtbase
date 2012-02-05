@@ -5,6 +5,8 @@ INCLUDEPATH += $$PWD
 
 HEADERS += kernel/qauthenticator.h \
 	   kernel/qauthenticator_p.h \
+           kernel/qdnslookup.h \
+           kernel/qdnslookup_p.h \
            kernel/qhostaddress.h \
            kernel/qhostinfo.h \
            kernel/qhostinfo_p.h \
@@ -14,15 +16,16 @@ HEADERS += kernel/qauthenticator.h \
 	   kernel/qnetworkinterface_p.h
 
 SOURCES += kernel/qauthenticator.cpp \
+           kernel/qdnslookup.cpp \
            kernel/qhostaddress.cpp \
            kernel/qhostinfo.cpp \
            kernel/qurlinfo.cpp \
            kernel/qnetworkproxy.cpp \
 	   kernel/qnetworkinterface.cpp
 
-unix:SOURCES += kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
-win32:SOURCES += kernel/qhostinfo_win.cpp kernel/qnetworkinterface_win.cpp
-integrity:SOURCES += kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
+unix:SOURCES += kernel/qdnslookup_unix.cpp kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
+win32:SOURCES += kernel/qdnslookup_win.cpp kernel/qhostinfo_win.cpp kernel/qnetworkinterface_win.cpp
+integrity:SOURCES += kernel/qdnslookup_unix.cpp kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
 
 mac:LIBS_PRIVATE += -framework SystemConfiguration -framework CoreFoundation
 mac:SOURCES += kernel/qnetworkproxy_mac.cpp

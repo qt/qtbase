@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -64,11 +64,6 @@ private slots:
     void getSetCheck();
     void stream_bool_data();
     void stream_bool();
-
-    void stream_QBool_data();
-    void stream_QBool();
-
-    void stream_QBool_in_4_0();
 
     void stream_QBitArray_data();
     void stream_QBitArray();
@@ -193,7 +188,6 @@ private slots:
 
 private:
     void writebool(QDataStream *s);
-    void writeQBool(QDataStream *s);
     void writeQBitArray(QDataStream *s);
     void writeQBrush(QDataStream *s);
     void writeQColor(QDataStream *s);
@@ -221,7 +215,6 @@ private:
     void writeQEasingCurve(QDataStream *s);
 
     void readbool(QDataStream *s);
-    void readQBool(QDataStream *s);
     void readQBitArray(QDataStream *s);
     void readQBrush(QDataStream *s);
     void readQColor(QDataStream *s);
@@ -262,7 +255,8 @@ static int NColorRoles[] = {
     QPalette::ToolTipText + 1,     // Qt_4_4
     QPalette::ToolTipText + 1,     // Qt_4_5
     QPalette::ToolTipText + 1,     // Qt_4_6
-    0                              // add the correct value for Qt_4_7 here later
+    QPalette::ToolTipText + 1,     // Qt_5_0
+    0                              // add the correct value for Qt_5_1 here later
 };
 
 // Testing get/set functions
@@ -292,6 +286,7 @@ void tst_QDataStream::getSetCheck()
 void tst_QDataStream::cleanupTestCase()
 {
     QFile::remove(QLatin1String("qdatastream.out"));
+    QFile::remove(QLatin1String("datastream.tmp"));
 }
 
 static int dataIndex(const QString &tag)
@@ -793,57 +788,6 @@ void tst_QDataStream::readbool(QDataStream *s)
     bool d1;
     *s >> d1;
     QVERIFY(d1 == expected);
-}
-
-// ************************************
-
-static QBool QBoolData(int index)
-{
-    switch (index) {
-    case 0: return QBool(true);
-    case 1: return QBool(false);
-    case 2: return QBool(bool(2));
-    case 3: return QBool(bool(-1));
-    case 4: return QBool(bool(127));
-    }
-
-    return QBool(false);
-}
-
-void tst_QDataStream::stream_QBool_data()
-{
-    stream_data(5);
-}
-
-void tst_QDataStream::stream_QBool()
-{
-    STREAM_IMPL(QBool);
-}
-
-void tst_QDataStream::writeQBool(QDataStream *s)
-{
-    QBool d1 = QBoolData(dataIndex(QTest::currentDataTag()));
-    *s << d1;
-}
-
-void tst_QDataStream::readQBool(QDataStream *s)
-{
-    QBool expected = QBoolData(dataIndex(QTest::currentDataTag()));
-
-    bool d1 = true;
-    *s >> d1;
-    QVERIFY(d1 == expected);
-}
-
-void tst_QDataStream::stream_QBool_in_4_0()
-{
-    QByteArray byteArray;
-    QDataStream out(&byteArray, QIODevice::WriteOnly);
-
-    QString str("ABC");
-    out << str.contains('A') << str.contains('Z');
-
-    QCOMPARE(byteArray.size(), 2);
 }
 
 // ************************************

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -202,7 +202,7 @@ static QObjectList topLevelObjects()
         if (w->windowType() != Qt::Popup && w->windowType() != Qt::Desktop) {
             if (QAccessibleInterface *root = w->accessibleRoot()) {
                 if (root->object())
-                    list.append(w->accessibleRoot()->object());
+                    list.append(root->object());
                 delete root;
             }
         }
@@ -222,20 +222,6 @@ int QAccessibleApplication::indexOfChild(const QAccessibleInterface *child) cons
 {
     const QObjectList tlw(topLevelObjects());
     return tlw.indexOf(child->object());
-}
-
-/*! \reimp */
-QAccessible::Relation QAccessibleApplication::relationTo(const QAccessibleInterface *other) const
-{
-    QObject *o = other ? other->object() : 0;
-    if (!o)
-        return QAccessible::Unrelated;
-
-    if(o == object()) {
-        return QAccessible::Self;
-    }
-
-    return QAccessible::Unrelated;
 }
 
 QAccessibleInterface *QAccessibleApplication::parent() const
@@ -262,9 +248,6 @@ int QAccessibleApplication::navigate(QAccessible::RelationFlag relation, int,
     QObject *targetObject = 0;
 
     switch (relation) {
-    case QAccessible::Self:
-        targetObject = object();
-        break;
     case QAccessible::FocusChild:
         if (QWindow *window = QGuiApplication::activeWindow()) {
             *target = window->accessibleRoot();

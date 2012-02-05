@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,20 +58,10 @@
 #include "QtCore/qsettings.h"
 #include "private/qobject_p.h"
 
-#ifdef Q_OS_SYMBIAN
-#include <f32file.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 typedef QList<QTranslator*> QTranslatorList;
 
-#if defined(Q_OS_SYMBIAN)
-#  if !defined(QT_NO_SYSTEMLOCALE)
-class QEnvironmentChangeNotifier;
-#  endif
-class CApaCommandLine;
-#endif
 class QAbstractEventDispatcher;
 
 class Q_CORE_EXPORT QCoreApplicationPrivate : public QObjectPrivate
@@ -99,12 +89,16 @@ public:
     static QString macMenuBarName();
 #endif
 
+    QAtomicInt quitLockRef;
+    void ref();
+    void deref();
+
     static QThread *theMainThread;
     static QThread *mainThread();
     static bool checkInstance(const char *method);
     static void sendPostedEvents(QObject *receiver, int event_type, QThreadData *data);
 
-#if !defined (QT_NO_DEBUG) || defined (QT_MAC_FRAMEWORK_BUILD) || defined (Q_OS_SYMBIAN)
+#if !defined (QT_NO_DEBUG) || defined (QT_MAC_FRAMEWORK_BUILD)
     void checkReceiverThread(QObject *receiver);
 #endif
     int &argc;
@@ -124,13 +118,6 @@ public:
     bool threadData_clean;
     QString cachedApplicationDirPath;
     QString cachedApplicationFilePath;
-#if defined(Q_OS_SYMBIAN)
-#  if !defined(QT_NO_SYSTEMLOCALE)
-    QScopedPointer<QEnvironmentChangeNotifier> environmentChangeNotifier;
-    void symbianInit();
-#  endif
-    static CApaCommandLine* symbianCommandLine();
-#endif
 
     static bool isTranslatorInstalled(QTranslator *translator);
 

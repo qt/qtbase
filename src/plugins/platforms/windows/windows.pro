@@ -4,8 +4,6 @@ load(qt_plugin)
 QT *= core-private
 QT *= gui-private
 QT *= platformsupport-private
-# ### fixme: Remove widgets dependencies of dialog helpers
-QT *= widgets
 
 INCLUDEPATH += ../../../3rdparty/harfbuzz/src
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
@@ -15,6 +13,8 @@ LIBS *= -lOpenGL32 -lGdi32 -lUser32 -lOle32 -lWinspool -lImm32 -lWinmm  -lOleaut
 win32-g++: LIBS *= -luuid
 # For the dialog helpers:
 LIBS *= -lshlwapi -lShell32
+
+DEFINES *= QT_NO_CAST_FROM_ASCII
 
 contains(QT_CONFIG, directwrite) {
     LIBS *= -ldwrite

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -63,10 +63,7 @@
 #endif
 
 #if defined (QT_NO_GETADDRINFO)
-#include <qmutex.h>
-QT_BEGIN_NAMESPACE
-Q_GLOBAL_STATIC(QMutex, getHostByNameMutex)
-QT_END_NAMESPACE
+static QBasicMutex getHostByNameMutex;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -267,7 +264,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     // reentrant on all platforms. For now this is okay since we only
     // use one QHostInfoAgent, but if more agents are introduced, locking
     // must be provided.
-    QMutexLocker locker(::getHostByNameMutex());
+    QMutexLocker locker(&getHostByNameMutex);
     hostent *result = gethostbyname(aceHostname.constData());
     if (result) {
         if (result->h_addrtype == AF_INET) {
@@ -348,7 +345,7 @@ QString QHostInfo::localDomainName()
 #if defined(QT_NO_GETADDRINFO)
         // We have to call res_init to be sure that _res was initialized
         // So, for systems without getaddrinfo (which is thread-safe), we lock the mutex too
-        QMutexLocker locker(::getHostByNameMutex());
+        QMutexLocker locker(&getHostByNameMutex);
 #endif
         local_res_init();
         QString domainName = QUrl::fromAce(local_res->defdname);

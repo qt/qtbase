@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,6 +33,7 @@
 ** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -246,27 +246,27 @@ const TInputType &myMin(const TInputType &value1, const TInputType &value2)
 #include <stdio.h>
 #include <stdlib.h>
 
-void myMessageOutput(QtMsgType type, const char *msg)
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const char *msg)
 {
     switch (type) {
     case QtDebugMsg:
-        fprintf(stderr, "Debug: %s\n", msg);
+        fprintf(stderr, "Debug: %s (%s:%u, %s)\n", msg, context.file, context.line, context.function);
         break;
     case QtWarningMsg:
-        fprintf(stderr, "Warning: %s\n", msg);
+        fprintf(stderr, "Warning: %s (%s:%u, %s)\n", msg, context.file, context.line, context.function);
         break;
     case QtCriticalMsg:
-        fprintf(stderr, "Critical: %s\n", msg);
+        fprintf(stderr, "Critical: %s (%s:%u, %s)\n", msg, context.file, context.line, context.function);
         break;
     case QtFatalMsg:
-        fprintf(stderr, "Fatal: %s\n", msg);
+        fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", msg, context.file, context.line, context.function);
         abort();
     }
 }
 
 int main(int argc, char **argv)
 {
-    qInstallMsgHandler(myMessageOutput);
+    qInstallMessageHandler(myMessageOutput);
     QApplication app(argc, argv);
     ...
     return app.exec();
@@ -531,6 +531,11 @@ class MyClass : public QObject
 //! [47]
 CApaApplication *myApplicationFactory();
 //! [47]
+
+
+//! [49]
+void myMessageHandler(QtMsgType, const QMessageLogContext &, const char *);
+//! [49]
 
 //! [qlikely]
     // the condition inside the "if" will be successful most of the times

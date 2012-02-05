@@ -13,6 +13,3 @@ SOURCES += main.cpp
 CONFIG += qt warn_on create_prl link_prl
 CONFIG -= app_bundle
 
-# This app is testdata for tst_qapplication
-target.path = $$[QT_INSTALL_TESTS]/tst_qapplication/$$TARGET
-INSTALLS += target

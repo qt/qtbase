@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -466,11 +466,12 @@ void WriteInitialization::LayoutDefaultHandler::writeProperties(const QString &i
                   layoutmargins[marginType], suppressMarginDefault, str);
 }
 
-static bool needsTranslation(DomString *str)
+template <class DomElement> // (DomString, DomStringList)
+static bool needsTranslation(const DomElement *element)
 {
-    if (!str)
+    if (!element)
         return false;
-    return !str->hasAttributeNotr() || !toBool(str->attributeNotr());
+    return !element->hasAttributeNotr() || !toBool(element->attributeNotr());
 }
 
 // ---  WriteInitialization
@@ -1128,6 +1129,25 @@ void WriteInitialization::acceptActionRef(DomActionRef *node)
     m_actionOut << m_indent << varName << "->addAction(" << actionName << ");\n";
 }
 
+QString WriteInitialization::writeStringListProperty(const DomStringList *list) const
+{
+    QString propertyValue;
+    QTextStream str(&propertyValue);
+    str << "QStringList()";
+    const QStringList values = list->elementString();
+    if (values.isEmpty())
+        return propertyValue;
+    if (needsTranslation(list)) {
+        const QString comment = list->attributeComment();
+        for (int i = 0; i < values.size(); ++i)
+            str << '\n' << m_indent << "    << " << trCall(values.at(i), comment);
+    } else {
+        for (int i = 0; i < values.size(); ++i)
+            str << " << QString::fromUtf8(" << fixString(values.at(i), m_dindent) << ')';
+    }
+    return propertyValue;
+}
+
 void WriteInitialization::writeProperties(const QString &varName,
                                           const QString &className,
                                           const DomPropertyList &lst,
@@ -1434,15 +1454,7 @@ void WriteInitialization::writeProperties(const QString &varName,
             break;
         }
         case DomProperty::StringList:
-            propertyValue = QLatin1String("QStringList()");
-            if (p->elementStringList()->elementString().size()) {
-                const QStringList lst = p->elementStringList()->elementString();
-                for (int i=0; i<lst.size(); ++i) {
-                    propertyValue += QLatin1String(" << QString::fromUtf8(");
-                    propertyValue += fixString(lst.at(i), m_dindent);
-                    propertyValue += QLatin1Char(')');
-                }
-            }
+            propertyValue = writeStringListProperty(p->elementStringList());
             break;
 
         case DomProperty::Url: {
@@ -1469,7 +1481,7 @@ void WriteInitialization::writeProperties(const QString &varName,
             else if (propertyName == QLatin1String("accessibleName") || propertyName == QLatin1String("accessibleDescription"))
                 defineC = accessibilityDefineC;
 
-            QTextStream &o = autoTrOutput(p->elementString());
+            QTextStream &o = autoTrOutput(p);
 
             if (defineC)
                 openIfndef(o, QLatin1String(defineC));
@@ -2357,7 +2369,17 @@ QString WriteInitialization::autoTrCall(DomString *str, const QString &defaultSt
     return noTrCall(str, defaultString);
 }
 
-QTextStream &WriteInitialization::autoTrOutput(DomString *str, const QString &defaultString)
+QTextStream &WriteInitialization::autoTrOutput(const DomProperty *property)
+{
+    if (const DomString *str = property->elementString())
+        return autoTrOutput(str);
+    if (const DomStringList *list = property->elementStringList())
+        if (needsTranslation(list))
+            return m_refreshOut;
+    return m_output;
+}
+
+QTextStream &WriteInitialization::autoTrOutput(const DomString *str, const QString &defaultString)
 {
     if ((!str && !defaultString.isEmpty()) || needsTranslation(str))
         return m_refreshOut;

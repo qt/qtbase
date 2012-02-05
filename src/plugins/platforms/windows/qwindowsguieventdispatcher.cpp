@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -95,6 +95,13 @@ bool QWindowsGuiEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags fl
     if (QWindowsContext::verboseEvents > 2)
         qDebug("<%s %s returns %d", __FUNCTION__, qPrintable(objectName()), rc);
     return rc;
+}
+
+void QWindowsGuiEventDispatcher::sendPostedEvents()
+{
+    QWindowsGuiEventDispatcher::DispatchContext context = currentDispatchContext();
+    Q_ASSERT(context.first != 0);
+    QWindowSystemInterface::sendWindowSystemEvents(context.first, context.second);
 }
 
 QWindowsGuiEventDispatcher::DispatchContext QWindowsGuiEventDispatcher::currentDispatchContext()
@@ -195,7 +202,8 @@ messageDebugEntries[] = {
     {WM_IME_COMPOSITION, "WM_IME_COMPOSITION"},
     {WM_IME_ENDCOMPOSITION, "WM_IME_ENDCOMPOSITION"},
     {WM_IME_NOTIFY, "WM_IME_NOTIFY"},
-    {WM_IME_REQUEST, "WM_IME_REQUEST"}
+    {WM_IME_REQUEST, "WM_IME_REQUEST"},
+    {WM_DISPLAYCHANGE, "WM_DISPLAYCHANGE"}
 };
 
 static inline const MessageDebugEntry *messageDebugEntry(UINT msg)

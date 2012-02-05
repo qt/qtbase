@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,7 +52,6 @@
 // classes found in qsharedpointer.h
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
-QT_MODULE(Core)
 QT_END_NAMESPACE
 QT_END_HEADER
 #pragma qt_sync_stop_processing
@@ -66,7 +65,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 // Macro QSHAREDPOINTER_VERIFY_AUTO_CAST
 //  generates a compiler error if the following construct isn't valid:
@@ -130,9 +128,7 @@ namespace QtSharedPointer {
     template <class T>
     class Basic
     {
-#ifndef Q_CC_NOKIAX86
         typedef T *Basic:: *RestrictedBool;
-#endif
     public:
         typedef T Type;
         typedef T element_type;
@@ -145,11 +141,7 @@ namespace QtSharedPointer {
 
         inline T *data() const { return value; }
         inline bool isNull() const { return !data(); }
-#ifndef Q_CC_NOKIAX86
         inline operator RestrictedBool() const { return isNull() ? 0 : &Basic::value; }
-#else
-        inline operator bool() const { return isNull() ? 0 : &Basic::value; }
-#endif
         inline bool operator !() const { return isNull(); }
         inline T &operator*() const { return *data(); }
         inline T *operator->() const { return data(); }
@@ -563,9 +555,7 @@ public:
 template <class T>
 class QWeakPointer
 {
-#ifndef Q_CC_NOKIAX86
     typedef T *QWeakPointer:: *RestrictedBool;
-#endif
     typedef QtSharedPointer::ExternalRefCountData Data;
 
 public:
@@ -578,11 +568,7 @@ public:
     typedef qptrdiff difference_type;
 
     inline bool isNull() const { return d == 0 || d->strongref.load() == 0 || value == 0; }
-#ifndef Q_CC_NOKIAX86
     inline operator RestrictedBool() const { return isNull() ? 0 : &QWeakPointer::value; }
-#else
-    inline operator bool() const { return isNull() ? 0 : &QWeakPointer::value; }
-#endif
     inline bool operator !() const { return isNull(); }
     inline T *data() const { return d == 0 || d->strongref.load() == 0 ? 0 : value; }
 

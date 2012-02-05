@@ -18,12 +18,12 @@ HEADERS += $$QT_SOURCE_TREE/src/corelib/qtcoreversion.h
 
 include(animation/animation.pri)
 include(arch/arch.pri)
-include(concurrent/concurrent.pri)
 include(global/global.pri)
 include(thread/thread.pri)
 include(tools/tools.pri)
 include(io/io.pri)
 include(itemmodels/itemmodels.pri)
+include(json/json.pri)
 include(plugin/plugin.pri)
 include(kernel/kernel.pri)
 include(codecs/codecs.pri)
@@ -34,6 +34,7 @@ mac|darwin {
     contains(QT_CONFIG, coreservices) {
         LIBS_PRIVATE += -framework ApplicationServices
         LIBS_PRIVATE += -framework CoreServices
+        LIBS_PRIVATE += -framework Foundation
     }
     LIBS_PRIVATE += -framework CoreFoundation
 }
@@ -45,14 +46,3 @@ QMAKE_LIBS += $$QMAKE_LIBS_CORE
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtCore.dynlist
 
 contains(DEFINES,QT_EVAL):include(eval.pri)
-
-symbian: {
-    TARGET.UID3=0x2001B2DC
-
-    # Problems using data exports from this DLL mean that we can't page it on releases that don't support
-    # data exports (currently that's any release before Symbian^3)
-    pagingBlock = "$${LITERAL_HASH}ifndef SYMBIAN_DLL_DATA_EXPORTS_SUPPORTED" \
-                  "UNPAGED" \
-                  "$${LITERAL_HASH}endif"
-    MMP_RULES += pagingBlock
-}

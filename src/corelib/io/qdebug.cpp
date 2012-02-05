@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -161,14 +161,6 @@
     \fn QDebug &QDebug::operator<<(QChar t)
 
     Writes the character, \a t, to the stream and returns a reference to the
-    stream.
-*/
-
-/*!
-    \fn QDebug &QDebug::operator<<(QBool t)
-    \internal
-
-    Writes the boolean value, \a t, to the stream and returns a reference to the
     stream.
 */
 

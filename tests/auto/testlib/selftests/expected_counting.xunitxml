@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="6" failures="6" tests="11" name="tst_Counting">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="testPassPass"/>
+  <testcase name="testPassSkip">
+    <!-- tag="row 2" message="Skipping" type="skip" -->
+  </testcase>
+  <testcase result="fail" name="testPassFail">
+    <failure tag="row 2" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="testSkipPass">
+    <!-- tag="row 1" message="Skipping" type="skip" -->
+  </testcase>
+  <testcase name="testSkipSkip">
+    <!-- tag="row 1" message="Skipping" type="skip" -->
+    <!-- tag="row 2" message="Skipping" type="skip" -->
+  </testcase>
+  <testcase result="fail" name="testSkipFail">
+    <!-- tag="row 1" message="Skipping" type="skip" -->
+    <failure tag="row 2" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="testFailPass">
+    <failure tag="row 1" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="testFailSkip">
+    <failure tag="row 1" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+    <!-- tag="row 2" message="Skipping" type="skip" -->
+  </testcase>
+  <testcase result="fail" name="testFailFail">
+    <failure tag="row 1" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+    <failure tag="row 2" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[Skipping]]>
+<![CDATA[Skipping]]>
+<![CDATA[Skipping]]>
+<![CDATA[Skipping]]>
+<![CDATA[Skipping]]>
+<![CDATA[Skipping]]>
+  </system-err>
+</testsuite>

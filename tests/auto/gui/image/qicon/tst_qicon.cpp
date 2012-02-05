@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,9 +54,6 @@ public:
     tst_QIcon();
 
 private slots:
-    void init();
-    void cleanup();
-
     void actualSize_data(); // test with 1 pixmap
     void actualSize();
     void actualSize2_data(); // test with 2 pixmaps with different aspect ratio
@@ -77,12 +74,9 @@ private slots:
 
     void task184901_badCache();
     void task223279_inconsistentAddFile();
-    void task239461_custom_iconengine_crash();
 
 private:
     bool haveImageFormat(QByteArray const&);
-
-    QString oldCurrentDir;
 
     const static QIcon staticIcon;
 };
@@ -90,22 +84,6 @@ private:
 // Creating an icon statically should not cause a crash. 
 // But we do not officially support this. See QTBUG-8666
 const QIcon tst_QIcon::staticIcon = QIcon::fromTheme("edit-find");
-
-void tst_QIcon::init()
-{
-    QString srcdir(QLatin1String(SRCDIR));
-    if (!srcdir.isEmpty()) {
-        oldCurrentDir = QDir::current().absolutePath();
-        QDir::setCurrent(srcdir);
-    }
-}
-
-void tst_QIcon::cleanup()
-{
-    if (!oldCurrentDir.isEmpty()) {
-        QDir::setCurrent(oldCurrentDir);
-    }
-}
 
 bool tst_QIcon::haveImageFormat(QByteArray const& desiredFormat)
 {
@@ -136,7 +114,7 @@ void tst_QIcon::actualSize_data()
     QTest::newRow("resource9") << ":/rect.png" << QSize( 15,  50) << QSize( 15,  30);
     QTest::newRow("resource10") << ":/rect.png" << QSize( 25,  50) << QSize( 20,  40);
 
-    const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
+    const QString prefix = QFileInfo(QFINDTESTDATA("icons")).absolutePath() + "/";
     QTest::newRow("external0") << prefix + "image.png" << QSize(128, 128) << QSize(128, 128);
     QTest::newRow("external1") << prefix + "image.png" << QSize( 64,  64) << QSize( 64,  64);
     QTest::newRow("external2") << prefix + "image.png" << QSize( 32,  64) << QSize( 32,  32);
@@ -191,7 +169,7 @@ void tst_QIcon::actualSize2_data()
 void tst_QIcon::actualSize2()
 {
     QIcon icon;
-    const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
+    const QString prefix = QFileInfo(QFINDTESTDATA("icons")).absolutePath() + "/";
 
     icon.addPixmap(QPixmap(prefix + "image.png"));
     icon.addPixmap(QPixmap(prefix + "rect.png"));
@@ -209,7 +187,7 @@ void tst_QIcon::svgActualSize()
         QSKIP("SVG support is not available");
     }
 
-    const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
+    const QString prefix = QFileInfo(QFINDTESTDATA("icons")).absolutePath() + "/";
     QIcon icon(prefix + "rect.svg");
     QCOMPARE(icon.actualSize(QSize(16, 16)), QSize(16, 2));
     QCOMPARE(icon.pixmap(QSize(16, 16)).size(), QSize(16, 2));
@@ -252,7 +230,7 @@ void tst_QIcon::isNull() {
     QVERIFY(!iconNoFileSuffix.isNull());
     QVERIFY(!iconNoFileSuffix.actualSize(QSize(32, 32)).isValid());
 
-    const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
+    const QString prefix = QFileInfo(QFINDTESTDATA("icons")).absolutePath() + "/";
     // test string constructor with existing file but unsupported format
     QIcon iconUnsupportedFormat = QIcon(prefix + "tst_qicon.cpp");
     QVERIFY(!iconUnsupportedFormat.isNull());
@@ -406,7 +384,7 @@ void tst_QIcon::detach()
     img.fill(0xffff0000);
     QIcon icon1(QPixmap::fromImage(img));
     QIcon icon2 = icon1;
-    icon2.addFile("image.png", QSize(64, 64));
+    icon2.addFile(QFINDTESTDATA("image.png"), QSize(64, 64));
 
     QImage img1 = icon1.pixmap(64, 64).toImage();
     QImage img2 = icon2.pixmap(64, 64).toImage();
@@ -648,7 +626,7 @@ static inline bool operator<(const QSize &lhs, const QSize &rhs)
 
 void tst_QIcon::task184901_badCache()
 {
-    QPixmap pm("image.png");
+    QPixmap pm(QFINDTESTDATA("image.png"));
     QIcon icon(pm);
 
     //the disabled icon must have an effect (grayed)
@@ -740,33 +718,6 @@ void tst_QIcon::task223279_inconsistentAddFile()
     QCOMPARE(pm1.size(), QSize(16,16));
     QCOMPARE(pm1.isNull(), pm2.isNull());
     QCOMPARE(pm1.size(), pm2.size());
-}
-
-
-// During detach, v2 engines are cloned, while v1 engines are only
-// passed on, so v1 engines need to be referenced counted. This test
-// verifies that the engine is destroyed once and only once.
-
-class IconEngine : public QIconEngine
-{
-public:
-    ~IconEngine() { destructorCalled++; }
-    virtual void paint(QPainter *, const QRect &, QIcon::Mode, QIcon::State) { }
-    static int destructorCalled;
-};
-int IconEngine::destructorCalled = 0;
-
-void tst_QIcon::task239461_custom_iconengine_crash()
-{
-    QIconEngine *engine = new IconEngine();
-    {
-        QIcon icon(engine);
-        QIcon icon2 = icon;
-
-        QPixmap pixmap(32, 32);
-        icon.addPixmap(pixmap);
-    }
-    QCOMPARE(IconEngine::destructorCalled, 1);
 }
 
 

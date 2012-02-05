@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -773,7 +773,7 @@ static QString wc2rx(const QString &wc_str, const bool enableEscaping)
                 if (isEscaping) {
                     rx += QLatin1String("\\\\");
                 } // we insert the \\ later if necessary
-                if (i+1 == wclen) { // the end
+                if (i == wclen) { // the end
                     rx += QLatin1String("\\\\");
                 }
             } else {
@@ -3809,7 +3809,7 @@ uint qHash(const QRegExpEngineKey &key)
 
 typedef QCache<QRegExpEngineKey, QRegExpEngine> EngineCache;
 Q_GLOBAL_STATIC(EngineCache, globalEngineCache)
-Q_GLOBAL_STATIC(QMutex, mutex)
+static QBasicMutex globalEngineCacheMutex;
 #endif // QT_NO_REGEXP_OPTIM
 
 static void derefEngine(QRegExpEngine *eng, const QRegExpEngineKey &key)
@@ -3817,7 +3817,7 @@ static void derefEngine(QRegExpEngine *eng, const QRegExpEngineKey &key)
     if (!eng->ref.deref()) {
 #if !defined(QT_NO_REGEXP_OPTIM)
         if (globalEngineCache()) {
-            QMutexLocker locker(mutex());
+            QMutexLocker locker(&globalEngineCacheMutex);
             QT_TRY {
                 globalEngineCache()->insert(key, eng, 4 + key.pattern.length() / 4);
             } QT_CATCH(const std::bad_alloc &) {
@@ -3839,7 +3839,7 @@ static void prepareEngine_helper(QRegExpPrivate *priv)
     bool initMatchState = !priv->eng;
 #if !defined(QT_NO_REGEXP_OPTIM)
     if (!priv->eng && globalEngineCache()) {
-        QMutexLocker locker(mutex());
+        QMutexLocker locker(&globalEngineCacheMutex);
         priv->eng = globalEngineCache()->take(priv->engineKey);
         if (priv->eng != 0)
             priv->eng->ref.ref();
@@ -4316,18 +4316,13 @@ int QRegExp::matchedLength() const
 
 #ifndef QT_NO_REGEXP_CAPTURE
 
-#ifndef QT_NO_DEPRECATED
 /*!
+  \fn int QRegExp::numCaptures() const
   \obsolete
   Returns the number of captures contained in the regular expression.
 
   \sa captureCount()
  */
-int QRegExp::numCaptures() const
-{
-    return captureCount();
-}
-#endif
 
 /*!
   \since 4.6

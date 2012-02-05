@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -426,10 +426,12 @@ xcb_cursor_t QXcbCursor::createNonStandardCursor(int cshape)
     } else if (cshape == Qt::DragCopyCursor || cshape == Qt::DragMoveCursor
                || cshape == Qt::DragLinkCursor) {
         QImage image = QGuiApplicationPrivate::instance()->getPixmapCursor(static_cast<Qt::CursorShape>(cshape)).toImage();
-        xcb_pixmap_t pm = qt_xcb_XPixmapFromBitmap(m_screen, image);
-        xcb_pixmap_t pmm = qt_xcb_XPixmapFromBitmap(m_screen, image.createAlphaMask());
-        cursor = xcb_generate_id(conn);
-        xcb_create_cursor(conn, cursor, pm, pmm, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF, 8, 8);
+        if (!image.isNull()) {
+            xcb_pixmap_t pm = qt_xcb_XPixmapFromBitmap(m_screen, image);
+            xcb_pixmap_t pmm = qt_xcb_XPixmapFromBitmap(m_screen, image.createAlphaMask());
+            cursor = xcb_generate_id(conn);
+            xcb_create_cursor(conn, cursor, pm, pmm, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF, 8, 8);
+        }
     }
 
     return cursor;

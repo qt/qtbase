@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,7 +60,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class QEvent;
 class QTimerEvent;
@@ -437,7 +436,7 @@ T qFindChild(const QObject *o, const QString &name = QString());
 QList<T> qFindChildren(const QObject *oobj, const QString &name = QString());
 QList<T> qFindChildren(const QObject *o, const QRegExp &re);
 #endif
-#ifdef QT_DEPRECATED
+#if QT_DEPRECATED_SINCE(5, 0)
 template<typename T>
 inline QT_DEPRECATED T qFindChild(const QObject *o, const QString &name = QString())
 { return o->findChild<T>(name); }

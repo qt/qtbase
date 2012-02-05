@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -98,33 +98,33 @@ public:
 
 namespace {
 template<typename T>
-struct TypeDefiniton {
+struct TypeDefinition {
     static const bool IsAvailable = true;
 };
 
 // Ignore these types, as incomplete
 #ifdef QT_BOOTSTRAPPED
-template<> struct TypeDefiniton<QEasingCurve> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QModelIndex> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QEasingCurve> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_GEOM_VARIANT
-template<> struct TypeDefiniton<QRect> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QRectF> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QSize> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QSizeF> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QLine> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QLineF> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QPoint> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QPointF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QRect> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QRectF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QSize> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QSizeF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QLine> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QLineF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QPoint> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QPointF> { static const bool IsAvailable = false; };
 #endif
 
 struct CoreTypesFilter {
     template<typename T>
     struct Acceptor {
-        static const bool IsAccepted = QTypeModuleInfo<T>::IsCore && TypeDefiniton<T>::IsAvailable;
+        static const bool IsAccepted = QTypeModuleInfo<T>::IsCore && TypeDefinition<T>::IsAvailable;
     };
 };
-} // annonymous used to hide TypeDefiniton
+} // annonymous used to hide TypeDefinition
 
 namespace { // annonymous used to hide QVariant handlers
 
@@ -980,6 +980,7 @@ Q_CORE_EXPORT void QVariantPrivate::unregisterHandler(const int /* Modules::Name
 */
 
 /*!
+    \obsolete Use QMetaType::Type instead
     \enum QVariant::Type
 
     This enum type defines the types of variable that a QVariant can
@@ -1589,8 +1590,6 @@ const char *QVariant::typeToName(Type typ)
 {
     if (typ == Invalid)
         return 0;
-    if (typ == UserType)
-        return "UserType";
 
     return QMetaType::typeName(typ);
 }
@@ -1607,16 +1606,6 @@ QVariant::Type QVariant::nameToType(const char *name)
 {
     if (!name || !*name)
         return Invalid;
-    if (strcmp(name, "Q3CString") == 0)
-        return ByteArray;
-    if (strcmp(name, "Q_LLONG") == 0)
-        return LongLong;
-    if (strcmp(name, "Q_ULLONG") == 0)
-        return ULongLong;
-    if (strcmp(name, "QIconSet") == 0)
-        return Icon;
-    if (strcmp(name, "UserType") == 0)
-        return UserType;
 
     int metaType = QMetaType::type(name);
     return metaType <= int(LastGuiType) ? QVariant::Type(metaType) : UserType;
@@ -1624,7 +1613,7 @@ QVariant::Type QVariant::nameToType(const char *name)
 
 #ifndef QT_NO_DATASTREAM
 enum { MapFromThreeCount = 36 };
-static const ushort map_from_three[MapFromThreeCount] =
+static const ushort mapIdFromQt3ToCurrent[MapFromThreeCount] =
 {
     QVariant::Invalid,
     QVariant::Map,
@@ -1638,7 +1627,7 @@ static const ushort map_from_three[MapFromThreeCount] =
     QVariant::Size,
     QVariant::Color,
     QVariant::Palette,
-    63, // ColorGroup
+    0, // ColorGroup
     QVariant::Icon,
     QVariant::Point,
     QVariant::Image,
@@ -1674,26 +1663,45 @@ void QVariant::load(QDataStream &s)
 {
     clear();
 
-    quint32 u;
-    s >> u;
+    quint32 typeId;
+    s >> typeId;
     if (s.version() < QDataStream::Qt_4_0) {
-        if (u >= MapFromThreeCount)
+        if (typeId >= MapFromThreeCount)
             return;
-        u = map_from_three[u];
+        typeId = mapIdFromQt3ToCurrent[typeId];
+    } else if (s.version() < QDataStream::Qt_5_0) {
+        if (typeId >= 128 && typeId != QVariant::UserType) {
+            // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
+            // by moving all ids down by 97.
+            typeId -= 97;
+        } else if (typeId == 69 /* QIcon */) {
+            // In Qt5 after modularization project this types where moved to a separate module (and ids were downgraded)
+            typeId = QMetaType::QIcon;
+        } else if (typeId == 75 /* QSizePolicy */) {
+            typeId = QMetaType::QSizePolicy;
+        } else if (typeId >= 70) {
+            // and as a result this types recieved lower ids too
+            if (typeId <= 74) { // QImage QPolygon QRegion QBitmap QCursor
+                typeId -=1;
+            } else if (typeId <= 86) { // QKeySequence QPen QTextLength QTextFormat QMatrix QTransform QMatrix4x4 QVector2D QVector3D QVector4D QQuaternion
+                typeId -=2;
+            }
+        }
     }
+
     qint8 is_null = false;
     if (s.version() >= QDataStream::Qt_4_2)
         s >> is_null;
-    if (u == QVariant::UserType) {
+    if (typeId == QVariant::UserType) {
         QByteArray name;
         s >> name;
-        u = QMetaType::type(name);
-        if (!u) {
+        typeId = QMetaType::type(name);
+        if (!typeId) {
             s.setStatus(QDataStream::ReadCorruptData);
             return;
         }
     }
-    create(static_cast<int>(u), 0);
+    create(static_cast<int>(typeId), 0);
     d.is_null = is_null;
 
     if (!isValid()) {
@@ -1719,12 +1727,12 @@ void QVariant::load(QDataStream &s)
 */
 void QVariant::save(QDataStream &s) const
 {
-    quint32 tp = type();
+    quint32 typeId = type();
     if (s.version() < QDataStream::Qt_4_0) {
         int i;
         for (i = MapFromThreeCount - 1; i >= 0; i--) {
-            if (map_from_three[i] == tp) {
-                tp = i;
+            if (mapIdFromQt3ToCurrent[i] == typeId) {
+                typeId = i;
                 break;
             }
         }
@@ -1732,11 +1740,29 @@ void QVariant::save(QDataStream &s) const
             s << QVariant();
             return;
         }
+    } else if (s.version() < QDataStream::Qt_5_0) {
+        if (typeId >= 128 - 97 && typeId <= LastCoreType) {
+            // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
+            // by moving all ids down by 97.
+            typeId += 97;
+        } else if (typeId == QMetaType::QIcon) {
+            // In Qt5 after modularization project this types where moved to a separate module (and ids were downgraded)
+            typeId = 69;
+        } else if (typeId == QMetaType::QSizePolicy) {
+            typeId = 75;
+        } else if (typeId >= QMetaType::QImage) {
+            // and as a result this types recieved lower ids too
+            if (typeId <= QMetaType::QCursor) {
+                typeId +=1;
+            } else if (typeId <= QMetaType::QQuaternion) {
+                typeId +=2;
+            }
+        }
     }
-    s << tp;
+    s << typeId;
     if (s.version() >= QDataStream::Qt_4_2)
         s << qint8(d.is_null);
-    if (tp == QVariant::UserType) {
+    if (typeId == QVariant::UserType) {
         s << QMetaType::typeName(userType());
     }
 
@@ -1746,8 +1772,8 @@ void QVariant::save(QDataStream &s) const
     }
 
     if (!QMetaType::save(s, d.type, constData())) {
+        qWarning("QVariant::save: unable to save type '%s' (type id: %d).\n", QMetaType::typeName(d.type), d.type);
         Q_ASSERT_X(false, "QVariant::save", "Invalid type to save");
-        qWarning("QVariant::save: unable to save type %d.", d.type);
     }
 }
 
@@ -2410,17 +2436,15 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 */
 bool QVariant::canConvert(Type t) const
 {
-    //we can treat floats as double
-    //the reason for not doing it the "proper" way is that QMetaType::Float's value is 135,
-    //which can't be handled by qCanConvertMatrix
-    //In addition QVariant::Type doesn't have a Float value, so we're using QMetaType::Float
+    // TODO Reimplement this function, currently it works but it is a historical mess.
     const uint currentType = ((d.type == QMetaType::Float) ? QVariant::Double : d.type);
     if (uint(t) == uint(QMetaType::Float)) t = QVariant::Double;
 
     if (currentType == uint(t))
         return true;
 
-    if (currentType > QVariant::LastCoreType || t > QVariant::LastCoreType) {
+    // FIXME It should be LastCoreType intead of Uuid
+    if (currentType > QVariant::Uuid || t > QVariant::Uuid) {
         switch (uint(t)) {
         case QVariant::Int:
             return currentType == QVariant::KeySequence

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1124,15 +1124,14 @@ QStyle* QFormLayoutPrivate::getStyle() const
 
     \value DontWrapRows
            Fields are always laid out next to their label.  This is
-           the default policy for all styles except Qt Extended styles
-           and QS60Style.
+           the default policy for all styles except Qt Extended styles.
 
     \value WrapLongRows
            Labels are given enough horizontal space to fit the widest label,
            and the rest of the space is given to the fields. If the minimum
            size of a field pair is wider than the available space, the field
            is wrapped to the next line.  This is the default policy for
-           Qt Extended styles and and QS60Style.
+           Qt Extended styles.
 
     \value WrapAllRows
            Fields are always laid out below their label.
@@ -1721,7 +1720,7 @@ QFormLayout::FieldGrowthPolicy QFormLayout::fieldGrowthPolicy() const
     \brief the way in which the form's rows wrap
 
     The default value depends on the widget or application style. For
-    Qt Extended styles and QS60Style, the default is WrapLongRows;
+    Qt Extended styles, the default is WrapLongRows;
     for the other styles, the default is DontWrapRows.
 
     If you want to display each label above its associated field

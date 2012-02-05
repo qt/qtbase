@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,7 +57,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QIODevice;
 class QStringList;
@@ -71,7 +70,7 @@ struct QImageData;
 class QImageDataMisc; // internal
 #ifndef QT_NO_IMAGE_TEXT
 #if QT_DEPRECATED_SINCE(5, 0)
-class Q_GUI_EXPORT QImageTextKeyLang {
+class QT_DEPRECATED QImageTextKeyLang {
 public:
     QImageTextKeyLang(const char* k, const char* l) : key(k), lang(l) { }
     QImageTextKeyLang() { }
@@ -89,6 +88,7 @@ public:
 #endif
 #endif //QT_NO_IMAGE_TEXT
 
+typedef void (*QImageCleanupFunction)(void*);
 
 class Q_GUI_EXPORT QImage : public QPaintDevice
 {
@@ -129,10 +129,10 @@ public:
     QImage();
     QImage(const QSize &size, Format format);
     QImage(int width, int height, Format format);
-    QImage(uchar *data, int width, int height, Format format);
-    QImage(const uchar *data, int width, int height, Format format);
-    QImage(uchar *data, int width, int height, int bytesPerLine, Format format);
-    QImage(const uchar *data, int width, int height, int bytesPerLine, Format format);
+    QImage(uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
+    QImage(const uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
+    QImage(uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
+    QImage(const uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
 
 #ifndef QT_NO_IMAGEFORMAT_XPM
     explicit QImage(const char * const xpm[]);
@@ -271,11 +271,11 @@ public:
     void setText(const QString &key, const QString &value);
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    inline QString text(const char* key, const char* lang=0) const;
-    inline QList<QImageTextKeyLang> textList() const;
-    inline QStringList textLanguages() const;
-    inline QString text(const QImageTextKeyLang&) const;
-    inline void setText(const char* key, const char* lang, const QString&);
+    QT_DEPRECATED inline QString text(const char* key, const char* lang=0) const;
+    QT_DEPRECATED inline QList<QImageTextKeyLang> textList() const;
+    QT_DEPRECATED inline QStringList textLanguages() const;
+    QT_DEPRECATED inline QString text(const QImageTextKeyLang&) const;
+    QT_DEPRECATED inline void setText(const char* key, const char* lang, const QString&);
 #endif
 #endif
 
@@ -383,6 +383,7 @@ inline void QImage::setText(const char* key, const char* lang, const QString &s)
     setText(k, s);
 }
 #endif
+
 inline int QImage::numColors() const
 {
     return colorCount();

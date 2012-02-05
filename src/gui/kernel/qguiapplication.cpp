@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,6 +54,7 @@
 #include <QtCore/private/qabstracteventdispatcher_p.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/private/qthread_p.h>
+#include <QtCore/qdir.h>
 #include <QtDebug>
 #include <qpalette.h>
 #include <qscreen.h>
@@ -107,13 +108,12 @@ int QGuiApplicationPrivate::mousePressX = 0;
 int QGuiApplicationPrivate::mousePressY = 0;
 int QGuiApplicationPrivate::mouse_double_click_distance = 5;
 
-bool QGuiApplicationPrivate::quitOnLastWindowClosed = true;
-
 static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
 static bool force_reverse = false;
 
 QGuiApplicationPrivate *QGuiApplicationPrivate::self = 0;
 QTouchDevice *QGuiApplicationPrivate::m_fakeTouchDevice = 0;
+int QGuiApplicationPrivate::m_fakeMouseSourcePointId = 0;
 
 #ifndef QT_NO_CLIPBOARD
 QClipboard *QGuiApplicationPrivate::qt_clipboard = 0;
@@ -124,7 +124,7 @@ QList<QScreen *> QGuiApplicationPrivate::screen_list;
 QWindowList QGuiApplicationPrivate::window_list;
 QWindow *QGuiApplicationPrivate::focus_window = 0;
 
-Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
+static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;
 
 extern void qRegisterGuiVariant();
@@ -184,7 +184,7 @@ QGuiApplication::~QGuiApplication()
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
     : QCoreApplicationPrivate(argc, argv, flags),
       styleHints(0),
-      inputPanel(0)
+      inputMethod(0)
 {
     self = this;
     application_type = QCoreApplication::GuiClient;
@@ -195,9 +195,54 @@ QWindow *QGuiApplication::focusWindow()
     return QGuiApplicationPrivate::focus_window;
 }
 
-QWindowList QGuiApplication::topLevelWindows()
+/*!
+    \fn QGuiApplication::focusObjectChanged(QObject *focusObject)
+
+    This signal is emitted when final receiver of events tied to focus is changed.
+    \sa focusObject()
+*/
+
+/*!
+    Returns the QObject in currently active window that will be final receiver of events
+    tied focus, such as key events.
+ */
+QObject *QGuiApplication::focusObject()
+{
+    if (focusWindow())
+        return focusWindow()->focusObject();
+    return 0;
+}
+
+/*!
+    \fn QGuiApplication::allWindows()
+
+    Returns a list of all the windows in the application.
+
+    The list is empty if there are no windows.
+
+    \sa topLevelWindows()
+ */
+QWindowList QGuiApplication::allWindows()
 {
     return QGuiApplicationPrivate::window_list;
+}
+
+/*!
+    \fn QGuiApplication::topLevelWindows()
+
+    Returns a list of the top-level windows in the application.
+
+    \sa allWindows()
+ */
+QWindowList QGuiApplication::topLevelWindows()
+{
+    const QWindowList &list = QGuiApplicationPrivate::window_list;
+    QWindowList topLevelWindows;
+    for (int i = 0; i < list.size(); i++) {
+        if (!list.at(i)->parent())
+            topLevelWindows.prepend(list.at(i));
+    }
+    return topLevelWindows;
 }
 
 QScreen *QGuiApplication::primaryScreen()
@@ -340,8 +385,9 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     // TODO (msorvig): Create proper cross-platform solution for loading
     // deployed platform plugins
 #ifdef Q_OS_MAC
-    if (platformPluginPath.isEmpty()) {
-        platformPluginPath = QCoreApplication::applicationDirPath() + QLatin1String("../Plugins/");
+    const QString bundlePluginPath = QCoreApplication::applicationDirPath() + QLatin1String("../Plugins/");
+    if (platformPluginPath.isEmpty() && QDir(bundlePluginPath).exists()) {
+        platformPluginPath = bundlePluginPath;
     }
 #endif
 
@@ -437,8 +483,6 @@ void QGuiApplicationPrivate::init()
     if (platform_integration == 0)
         createPlatformIntegration();
 
-    init_plugins(pluginList);
-
     // Set up which span functions should be used in raster engine...
     qInitDrawhelperAsm();
     // and QImage conversion functions
@@ -454,6 +498,8 @@ void QGuiApplicationPrivate::init()
     qRegisterGuiVariant();
 
     is_app_running = true;
+    init_plugins(pluginList);
+    QWindowSystemInterface::sendWindowSystemEvents(QCoreApplicationPrivate::eventDispatcher, QEventLoop::AllEvents);
 }
 
 QGuiApplicationPrivate::~QGuiApplicationPrivate()
@@ -465,6 +511,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
         delete generic_plugin_list.at(i);
     generic_plugin_list.clear();
 
+    delete app_font;
+    app_font = 0;
     QFont::cleanup();
 
 #ifndef QT_NO_CURSOR
@@ -476,7 +524,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     cleanupThreadData();
 
     delete styleHints;
-    delete inputPanel;
+    delete inputMethod;
 
     delete platform_integration;
     platform_integration = 0;
@@ -550,6 +598,11 @@ bool QGuiApplication::event(QEvent *e)
 bool QGuiApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents)
 {
     return QCoreApplication::compressEvent(event, receiver, postedEvents);
+}
+
+bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result)
+{
+    return window->nativeEvent(eventType, message, result);
 }
 
 void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
@@ -791,9 +844,13 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     if (previous == QGuiApplicationPrivate::focus_window)
         return;
 
+    QObject *previousFocusObject = previous ? previous->focusObject() : 0;
+
     if (previous) {
         QFocusEvent focusOut(QEvent::FocusOut);
         QCoreApplication::sendSpontaneousEvent(previous, &focusOut);
+        QObject::disconnect(previous, SIGNAL(focusObjectChanged(QObject*)),
+                            qApp, SIGNAL(focusObjectChanged(QObject*)));
     } else {
         QEvent appActivate(QEvent::ApplicationActivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
@@ -802,6 +859,8 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     if (QGuiApplicationPrivate::focus_window) {
         QFocusEvent focusIn(QEvent::FocusIn);
         QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
+        QObject::connect(QGuiApplicationPrivate::focus_window, SIGNAL(focusObjectChanged(QObject*)),
+                         qApp, SIGNAL(focusObjectChanged(QObject*)));
     } else {
         QEvent appActivate(QEvent::ApplicationDeactivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
@@ -809,6 +868,9 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
 
     if (self)
         self->notifyActiveWindowChange(previous);
+
+    if (previousFocusObject != qApp->focusObject())
+        emit qApp->focusObjectChanged(qApp->focusObject());
 }
 
 void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *wse)
@@ -1036,11 +1098,22 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             if (touchEvent.device()->type() != QTouchDevice::TouchPad) {
                 Qt::MouseButtons b = eventType == QEvent::TouchEnd ? Qt::NoButton : Qt::LeftButton;
 
-                const QTouchEvent::TouchPoint &touchPoint = touchEvent.touchPoints().first();
+                QList<QTouchEvent::TouchPoint> touchPoints = touchEvent.touchPoints();
+                if (eventType == QEvent::TouchBegin)
+                    m_fakeMouseSourcePointId = touchPoints.first().id();
 
-                QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp, touchPoint.pos(), touchPoint.screenPos(), b, e->modifiers);
-                fake.synthetic = true;
-                processMouseEvent(&fake);
+                for (int i = 0; i < touchPoints.count(); ++i) {
+                    const QTouchEvent::TouchPoint &touchPoint = touchPoints.at(i);
+                    if (touchPoint.id() == m_fakeMouseSourcePointId) {
+                        QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp,
+                                                                       touchPoint.pos(),
+                                                                       touchPoint.screenPos(),
+                                                                       b, e->modifiers);
+                        fake.synthetic = true;
+                        processMouseEvent(&fake);
+                        break;
+                    }
+                }
             }
         }
     }
@@ -1066,11 +1139,16 @@ void QGuiApplicationPrivate::reportScreenOrientationChange(QWindowSystemInterfac
         return;
 
     QScreen *s = e->screen.data();
-    s->d_func()->currentOrientation = e->orientation;
+    s->d_func()->orientation = e->orientation;
 
-    emit s->currentOrientationChanged(s->currentOrientation());
+    reportScreenOrientationChange(s);
+}
 
-    QScreenOrientationChangeEvent event(s, s->currentOrientation());
+void QGuiApplicationPrivate::reportScreenOrientationChange(QScreen *s)
+{
+    emit s->orientationChanged(s->orientation());
+
+    QScreenOrientationChangeEvent event(s, s->orientation());
     QCoreApplication::sendEvent(QCoreApplication::instance(), &event);
 }
 
@@ -1086,6 +1164,10 @@ void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate:
     QScreen *s = e->screen.data();
     s->d_func()->geometry = e->geometry;
 
+    Qt::ScreenOrientation primaryOrientation = s->primaryOrientation();
+    Qt::ScreenOrientation orientation = s->orientation();
+    s->d_func()->updatePrimaryOrientation();
+
     emit s->sizeChanged(s->size());
     emit s->geometryChanged(s->geometry());
     emit s->physicalDotsPerInchXChanged(s->physicalDotsPerInchX());
@@ -1093,6 +1175,12 @@ void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate:
     emit s->physicalDotsPerInchChanged(s->physicalDotsPerInch());
     emit s->availableSizeChanged(s->availableSize());
     emit s->availableGeometryChanged(s->availableGeometry());
+
+    if (s->primaryOrientation() != primaryOrientation)
+        emit s->primaryOrientationChanged(s->primaryOrientation());
+
+    if (s->orientation() != orientation)
+        reportScreenOrientationChange(s);
 }
 
 void QGuiApplicationPrivate::reportAvailableGeometryChange(
@@ -1241,7 +1329,7 @@ void QGuiApplication::setPalette(const QPalette &pal)
 
 QFont QGuiApplication::font()
 {
-    QMutexLocker locker(applicationFontMutex());
+    QMutexLocker locker(&applicationFontMutex);
     if (!QGuiApplicationPrivate::app_font)
         QGuiApplicationPrivate::app_font =
             new QFont(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont());
@@ -1250,7 +1338,7 @@ QFont QGuiApplication::font()
 
 void QGuiApplication::setFont(const QFont &font)
 {
-    QMutexLocker locker(applicationFontMutex());
+    QMutexLocker locker(&applicationFontMutex);
     if (!QGuiApplicationPrivate::app_font)
         QGuiApplicationPrivate::app_font = new QFont(font);
     else
@@ -1300,14 +1388,14 @@ void QGuiApplicationPrivate::notifyActiveWindowChange(QWindow *)
 
 void QGuiApplication::setQuitOnLastWindowClosed(bool quit)
 {
-    QGuiApplicationPrivate::quitOnLastWindowClosed = quit;
+    QCoreApplication::setQuitLockEnabled(quit);
 }
 
 
 
 bool QGuiApplication::quitOnLastWindowClosed()
 {
-    return QGuiApplicationPrivate::quitOnLastWindowClosed;
+    return QCoreApplication::isQuitLockEnabled();
 }
 
 
@@ -1315,11 +1403,6 @@ bool QGuiApplication::quitOnLastWindowClosed()
 void QGuiApplicationPrivate::emitLastWindowClosed()
 {
     if (qGuiApp && qGuiApp->d_func()->in_exec) {
-        if (QGuiApplicationPrivate::quitOnLastWindowClosed) {
-            // get ready to quit, this event might be removed if the
-            // event loop is re-entered, however
-            QGuiApplication::postEvent(qApp, new QEvent(QEvent::Quit));
-        }
         emit qGuiApp->lastWindowClosed();
     }
 }
@@ -1491,12 +1574,17 @@ QStyleHints *QGuiApplication::styleHints() const
 
   \sa QInputPanel
   */
-QInputPanel *QGuiApplication::inputPanel() const
+QInputMethod *QGuiApplication::inputMethod() const
 {
     Q_D(const QGuiApplication);
-    if (!d->inputPanel)
-        const_cast<QGuiApplicationPrivate *>(d)->inputPanel = new QInputPanel();
-    return d->inputPanel;
+    if (!d->inputMethod)
+        const_cast<QGuiApplicationPrivate *>(d)->inputMethod = new QInputMethod();
+    return d->inputMethod;
+}
+
+QInputPanel *QGuiApplication::inputPanel() const
+{
+    return inputMethod();
 }
 
 
@@ -1518,28 +1606,6 @@ uint QGuiApplicationPrivate::currentKeyPlatform()
 #endif
 #endif
     return platform;
-}
-
-/*!
-    \since 4.2
-    \obsolete
-
-    Returns the current keyboard input locale. Replaced with QInputPanel::locale()
-*/
-QLocale QGuiApplication::keyboardInputLocale()
-{
-    return qApp ? qApp->inputPanel()->locale() : QLocale::c();
-}
-
-/*!
-    \since 4.2
-    \obsolete
-
-    Returns the current keyboard input direction. Replaced with QInputPanel::inputDirection()
-*/
-Qt::LayoutDirection QGuiApplication::keyboardInputDirection()
-{
-    return qApp ? qApp->inputPanel()->inputDirection() : Qt::LeftToRight;
 }
 
 /*!

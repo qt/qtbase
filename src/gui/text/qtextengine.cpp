@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,7 @@
 #include <private/qunicodetables_p.h>
 #include "qtextdocument_p.h"
 #include <qguiapplication.h>
-#include <qinputpanel.h>
+#include <qinputmethod.h>
 #include <stdlib.h>
 
 
@@ -1409,7 +1409,7 @@ bool QTextEngine::isRightToLeft() const
         itemize();
     // this places the cursor in the right position depending on the keyboard layout
     if (layoutData->string.isEmpty())
-        return qApp ? qApp->inputPanel()->inputDirection() == Qt::RightToLeft : false;
+        return qApp ? qApp->inputMethod()->inputDirection() == Qt::RightToLeft : false;
     return layoutData->string.isRightToLeft();
 }
 
@@ -2526,7 +2526,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
                         // fall through
                     case QTextOption::RightTab:
                         tab = QFixed::fromReal(tabSpec.position) * dpiScale - length;
-                        if (tab < 0) // default to tab taking no space
+                        if (tab < x) // default to tab taking no space
                             return QFixed();
                         break;
                     case QTextOption::LeftTab:

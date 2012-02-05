@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
 **
@@ -35,11 +34,12 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#include "qhash_string.h"
+#include "main.h"
 
 static void doHash(const unsigned short *p, uint &h)
 {
@@ -84,6 +84,30 @@ uint qHash(const String &str)
     doHash(p, h);
     doHash(p + s / 2 - 2, h);
     doHash(p + s - 4, h);
+    return h;
+}
+
+// The Java's hashing algorithm for strings is a variation of D. J. Bernstein
+// hashing algorithm appeared here http://cr.yp.to/cdb/cdb.txt
+// and informally known as DJB33XX - DJB's 33 Times Xor.
+// Java uses DJB31XA, that is, 31 Times Add.
+// The original algorithm was a loop around  "(h << 5) + h ^ c",
+// which is indeed "h * 33 ^ c"; it was then changed to
+// "(h << 5) - h ^ c", so "h * 31 ^ c", and the XOR changed to a sum:
+// "(h << 5) - h + c", which can save some assembly instructions.
+// Still, we can avoid writing the multiplication as "(h << 5) - h"
+// -- the compiler will turn it into a shift and an addition anyway
+// (for instance, gcc 4.4 does that even at -O0).
+uint qHash(const JavaString &str)
+{
+    const unsigned short *p = (unsigned short *)str.constData();
+    const int len = str.size();
+
+    uint h = 0;
+
+    for (int i = 0; i < len; ++i)
+        h = 31 * h + p[i];
+
     return h;
 }
 

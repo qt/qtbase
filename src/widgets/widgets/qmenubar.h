@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,16 +43,11 @@
 #define QMENUBAR_H
 
 #include <QtWidgets/qmenu.h>
-#ifdef Q_OS_MAC
-#include "QtWidgets/qmacdefines_mac.h"
-#endif
-
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_MENUBAR
 
@@ -157,12 +152,6 @@ private:
     friend class QMenu;
     friend class QMenuPrivate;
     friend class QWindowsStyle;
-
-#ifdef Q_OS_MAC
-    friend class QApplicationPrivate;
-    friend class QWidgetPrivate;
-    friend bool qt_mac_activate_action(MenuRef, uint, QAction::ActionEvent, bool);
-#endif
 };
 
 #endif // QT_NO_MENUBAR

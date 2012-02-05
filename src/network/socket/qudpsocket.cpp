@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -317,9 +317,6 @@ qint64 QUdpSocket::pendingDatagramSize() const
     as even if they are sent successfully, they are likely to be
     fragmented by the IP layer before arriving at their final
     destination.
-
-    \warning In S60 5.0 and earlier versions, the writeDatagram return
-    value is not reliable for large datagrams.
 
     \warning Calling this function on a connected UDP socket may
     result in an error and no packet being sent. If you are using a

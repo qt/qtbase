@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -117,12 +117,6 @@
 #ifndef QT_NO_IMAGEFORMAT_JPEG
 #include <private/qjpeghandler_p.h>
 #endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-#include <private/qmnghandler_p.h>
-#endif
-#ifndef QT_NO_IMAGEFORMAT_TIFF
-#include <private/qtiffhandler_p.h>
-#endif
 #ifdef QT_BUILTIN_GIF_READER
 #include <private/qgifhandler_p.h>
 #endif
@@ -185,14 +179,6 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
 #ifndef QT_NO_IMAGEFORMAT_JPEG
         } else if (testFormat == "jpg" || testFormat == "jpeg") {
             handler = new QJpegHandler;
-#endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-        } else if (testFormat == "mng") {
-            handler = new QMngHandler;
-#endif
-#ifndef QT_NO_IMAGEFORMAT_TIFF
-        } else if (testFormat == "tif" || testFormat == "tiff") {
-            handler = new QTiffHandler;
 #endif
 #ifdef QT_BUILTIN_GIF_READER
         } else if (testFormat == "gif") {
@@ -673,13 +659,13 @@ bool QImageWriter::supportsOption(QImageIOHandler::ImageOption option) const
     \row    \o JPEG   \o Joint Photographic Experts Group
     \row    \o PNG    \o Portable Network Graphics
     \row    \o PPM    \o Portable Pixmap
-    \row    \o TIFF   \o Tagged Image File Format
     \row    \o XBM    \o X11 Bitmap
     \row    \o XPM    \o X11 Pixmap
     \endtable
 
     Reading and writing SVG files is supported through Qt's
-    \l{QtSvg Module}{SVG Module}.
+    \l{QtSvg Module}{SVG Module}. The \l{QtImageFormats Module}{Image Formats Module}
+    provides support for additional image formats.
 
     Note that the QApplication instance must be created before this function is
     called.
@@ -704,12 +690,6 @@ QList<QByteArray> QImageWriter::supportedImageFormats()
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
     formats << "jpg" << "jpeg";
-#endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-    formats << "mng";
-#endif
-#ifndef QT_NO_IMAGEFORMAT_TIFF
-    formats << "tif" << "tiff";
 #endif
 #ifdef QT_BUILTIN_GIF_READER
     formats << "gif";

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -63,7 +63,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 template <typename T> class QVector;
 template <typename T> class QSet;
@@ -170,7 +169,7 @@ public:
     void swap(int i, int j);
     int indexOf(const T &t, int from = 0) const;
     int lastIndexOf(const T &t, int from = -1) const;
-    QBool contains(const T &t) const;
+    bool contains(const T &t) const;
     int count(const T &t) const;
 
     class const_iterator;
@@ -859,14 +858,14 @@ Q_OUTOFLINE_TEMPLATE int QList<T>::lastIndexOf(const T &t, int from) const
 }
 
 template <typename T>
-Q_OUTOFLINE_TEMPLATE QBool QList<T>::contains(const T &t) const
+Q_OUTOFLINE_TEMPLATE bool QList<T>::contains(const T &t) const
 {
     Node *b = reinterpret_cast<Node *>(p.begin());
     Node *i = reinterpret_cast<Node *>(p.end());
     while (i-- != b)
         if (i->t() == t)
-            return QBool(true);
-    return QBool(false);
+            return true;
+    return false;
 }
 
 template <typename T>

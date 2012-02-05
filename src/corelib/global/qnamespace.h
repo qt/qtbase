@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,7 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 #ifndef Q_MOC_RUN
 namespace
@@ -292,6 +291,7 @@ public:
         WindowShadeButtonHint = 0x00020000,
         WindowStaysOnTopHint = 0x00040000,
         WindowTransparentForInput = 0x00080000,
+        WindowOverridesSystemGestures = 0x00100000,
 
         CustomizeWindowHint = 0x02000000,
         WindowStaysOnBottomHint = 0x04000000,
@@ -317,7 +317,7 @@ public:
     Q_DECLARE_FLAGS(WindowStates, WindowState)
 
     enum ScreenOrientation {
-        UnknownOrientation           = 0x00000000,
+        PrimaryOrientation           = 0x00000000,
         PortraitOrientation          = 0x00000001,
         LandscapeOrientation         = 0x00000002,
         InvertedPortraitOrientation  = 0x00000004,
@@ -1416,11 +1416,7 @@ public:
     };
     Q_DECLARE_FLAGS(MatchFlags, MatchFlag)
 
-#if defined(Q_OS_SYMBIAN)
-    typedef unsigned long int HANDLE; // equivalent to TUint32
-#else
     typedef void * HANDLE;
-#endif
     typedef WindowFlags WFlags;
 
     enum WindowModality {

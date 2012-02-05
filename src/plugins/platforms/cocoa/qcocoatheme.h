@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,8 +57,8 @@ public:
     QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
     QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
 
-    bool usePlatformNativeDialog(const QDialog *dialog = 0) const;
-    QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
+    bool usePlatformNativeDialog(DialogType dialogType) const;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const;
 };
 
 QT_END_NAMESPACE

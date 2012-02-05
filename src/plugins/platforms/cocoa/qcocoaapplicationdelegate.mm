@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -219,7 +219,7 @@ static void cleanupCocoaApplicationDelegate()
     Q_UNUSED(sender);
 /*
     for (NSString *fileName in filenames) {
-        QString qtFileName = qt_mac_NSStringToQString(fileName);
+        QString qtFileName = QCFString::toQString(fileName);
         if (inLaunch) {
             // We need to be careful because Cocoa will be nice enough to take
             // command line arguments and send them to us as events. Given the history
@@ -336,7 +336,7 @@ static void cleanupCocoaApplicationDelegate()
     Q_UNUSED(replyEvent);
 /*
     NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-    QUrl url(qt_mac_NSStringToQString(urlString));
+    QUrl url(QCFString::toQString(urlString));
     QFileOpenEvent qtEvent(url);
     qt_sendSpontaneousEvent(qAppInstance(), &qtEvent);
 */

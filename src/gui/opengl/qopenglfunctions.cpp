@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -477,6 +477,9 @@ void QOpenGLFunctions::initializeGLFunctions()
     \fn void QOpenGLFunctions::glBindFramebuffer(GLenum target, GLuint framebuffer)
 
     Convenience function that calls glBindFramebuffer(\a target, \a framebuffer).
+
+    Note that Qt will translate a \a framebuffer argument of 0 to the currently
+    bound QOpenGLContext's defaultFramebufferObject().
 
     For more information, see the OpenGL/ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glBindFramebuffer.xml}{glBindFramebuffer()}.

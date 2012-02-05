@@ -5,4 +5,5 @@ SUBDIRS=\
     qgetputenv \
     qglobal \
     qnumeric \
-    qrand
+    qrand \
+    qmessagehandler

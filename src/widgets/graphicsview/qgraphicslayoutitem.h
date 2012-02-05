@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,9 +50,8 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
-#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
+#if !defined(QT_NO_GRAPHICSVIEW)
 
 class QGraphicsLayoutItemPrivate;
 class QGraphicsItem;
@@ -122,7 +121,7 @@ private:
     friend class QGraphicsLayout;
 };
 
-Q_DECLARE_INTERFACE(QGraphicsLayoutItem, "com.trolltech.Qt.QGraphicsLayoutItem")
+Q_DECLARE_INTERFACE(QGraphicsLayoutItem, "org.qt-project.Qt.QGraphicsLayoutItem")
 
 inline void QGraphicsLayoutItem::setMinimumSize(qreal aw, qreal ah)
 { setMinimumSize(QSizeF(aw, ah)); }

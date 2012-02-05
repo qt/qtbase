@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,11 +34,14 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "qplatformopenglcontext_qpa.h"
+
+#include <QOpenGLFunctions>
 
 QT_BEGIN_NAMESPACE
 
@@ -92,6 +94,16 @@ QPlatformOpenGLContext::QPlatformOpenGLContext()
 
 QPlatformOpenGLContext::~QPlatformOpenGLContext()
 {
+}
+
+/*!
+    Reimplement in subclass if your platform uses framebuffer objects for surfaces.
+
+    The default implementation returns 0.
+*/
+GLuint QPlatformOpenGLContext::defaultFramebufferObject(QPlatformSurface *) const
+{
+    return 0;
 }
 
 QOpenGLContext *QPlatformOpenGLContext::context() const

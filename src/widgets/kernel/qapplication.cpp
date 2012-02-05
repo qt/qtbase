@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -69,9 +69,8 @@
 #include "qmessagebox.h"
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtGui/qstylehints.h>
-#include <QtGui/qinputpanel.h>
+#include <QtGui/qinputmethod.h>
 
-#include "qinputcontext.h"
 #include "private/qkeymapper_p.h"
 
 #ifdef Q_WS_X11
@@ -141,10 +140,6 @@ Q_CORE_EXPORT void qt_call_post_routines();
 
 QApplicationPrivate *QApplicationPrivate::self = 0;
 
-QInputContext *QApplicationPrivate::inputContext = 0;
-
-bool QApplicationPrivate::quitOnLastWindowClosed = true;
-
 #ifdef Q_WS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
@@ -160,8 +155,6 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
 #ifndef QT_NO_SESSIONMANAGER
     is_session_restored = false;
 #endif
-
-    quitOnLastWindowClosed = true;
 
 #if defined(Q_WS_QWS) && !defined(QT_NO_DIRECTPAINTER)
     directPainters = 0;
@@ -1204,7 +1197,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     a virtual keyboard on devices which have very few or no keys.
 
     \bold{ The property only has an effect on platforms which use software input
-    panels, such as Windows CE and Symbian.}
+    panels, such as Windows CE.}
 
     The default is platform dependent.
 */
@@ -1980,8 +1973,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                      // or it is not created fully yet.
                      || (focus_widget && (!focus_widget->testAttribute(Qt::WA_InputMethodEnabled)
                                           || !focus_widget->testAttribute(Qt::WA_WState_Created))))) {
-            qApp->inputPanel()->reset();
-            qApp->inputPanel()->setInputItem(0);
+            qApp->inputMethod()->reset();
         }
 #endif //QT_NO_IM
 
@@ -2005,13 +1997,6 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                     QApplication::sendEvent(that->style(), &out);
             }
             if(focus && QApplicationPrivate::focus_widget == focus) {
-#ifndef QT_NO_IM
-                if (focus->testAttribute(Qt::WA_InputMethodEnabled)
-                    && focus->testAttribute(Qt::WA_WState_Created)
-                    && focus->isEnabled()) {
-                    qApp->inputPanel()->setInputItem(focus);
-                }
-#endif //QT_NO_IM
                 QFocusEvent in(QEvent::FocusIn, reason);
                 QPointer<QWidget> that = focus;
                 QApplication::sendEvent(focus, &in);
@@ -2019,6 +2004,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                     QApplication::sendEvent(that->style(), &in);
             }
             emit qApp->focusChanged(prev, focus_widget);
+            emit qApp->focusObjectChanged(focus_widget);
         }
     }
 }
@@ -2111,29 +2097,6 @@ void QApplication::aboutQt()
             );
 #endif // QT_NO_MESSAGEBOX
 }
-
-
-/*!
-    \fn void QApplication::lastWindowClosed()
-
-    This signal is emitted from QApplication::exec() when the last visible
-    primary window (i.e. window with no parent) with the Qt::WA_QuitOnClose
-    attribute set is closed.
-
-    By default,
-
-    \list
-        \o  this attribute is set for all widgets except transient windows such
-            as splash screens, tool windows, and popup menus
-
-        \o  QApplication implicitly quits when this signal is emitted.
-    \endlist
-
-    This feature can be turned off by setting \l quitOnLastWindowClosed to
-    false.
-
-    \sa QWidget::close()
-*/
 
 /*!
     \since 4.1
@@ -3700,11 +3663,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         {
             QWidget *w = static_cast<QWidget *>(receiver);
             QTabletEvent *tablet = static_cast<QTabletEvent*>(e);
-            QPoint relpos = tablet->pos();
+            QPointF relpos = tablet->posF();
             bool eventAccepted = tablet->isAccepted();
             while (w) {
-                QTabletEvent te(tablet->type(), relpos, tablet->globalPos(),
-                                tablet->hiResGlobalPos(), tablet->device(), tablet->pointerType(),
+                QTabletEvent te(tablet->type(), relpos, tablet->globalPosF(),
+                                tablet->device(), tablet->pointerType(),
                                 tablet->pressure(), tablet->xTilt(), tablet->yTilt(),
                                 tablet->tangentialPressure(), tablet->rotation(), tablet->z(),
                                 tablet->modifiers(), tablet->uniqueId());
@@ -3799,7 +3762,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 }
                 if (w->isWindow())
                     break;
-                dragEvent->p = w->mapToParent(dragEvent->p);
+                dragEvent->p = w->mapToParent(dragEvent->p.toPoint());
                 w = w->parentWidget();
             }
         }
@@ -3838,7 +3801,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 QDropEvent *dragEvent = static_cast<QDropEvent *>(e);
                 QWidget *origReciver = static_cast<QWidget *>(receiver);
                 while (origReciver && w != origReciver) {
-                    dragEvent->p = origReciver->mapToParent(dragEvent->p);
+                    dragEvent->p = origReciver->mapToParent(dragEvent->p.toPoint());
                     origReciver = origReciver->parentWidget();
                 }
             }
@@ -3907,10 +3870,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
     }
     case QEvent::RequestSoftwareInputPanel:
-        inputPanel()->show();
+        inputMethod()->show();
         break;
     case QEvent::CloseSoftwareInputPanel:
-        inputPanel()->hide();
+        inputMethod()->hide();
         break;
 
 #ifndef QT_NO_GESTURES
@@ -4609,45 +4572,6 @@ bool QApplicationPrivate::inPopupMode() const
     return QApplicationPrivate::popupWidgets != 0;
 }
 
-/*!
-    \property QApplication::quitOnLastWindowClosed
-
-    \brief whether the application implicitly quits when the last window is
-    closed.
-
-    The default is true.
-
-    If this property is true, the applications quits when the last visible
-    primary window (i.e. window with no parent) with the Qt::WA_QuitOnClose
-    attribute set is closed. By default this attribute is set for all widgets
-    except for sub-windows. Refer to \l{Qt::WindowType} for a detailed list of
-    Qt::Window objects.
-
-    \sa quit(), QWidget::close()
- */
-
-void QApplication::setQuitOnLastWindowClosed(bool quit)
-{
-    QApplicationPrivate::quitOnLastWindowClosed = quit;
-}
-
-bool QApplication::quitOnLastWindowClosed()
-{
-    return QApplicationPrivate::quitOnLastWindowClosed;
-}
-
-void QApplicationPrivate::emitLastWindowClosed()
-{
-    if (qApp && qApp->d_func()->in_exec) {
-        if (QApplicationPrivate::quitOnLastWindowClosed) {
-            // get ready to quit, this event might be removed if the
-            // event loop is re-entered, however
-            QApplication::postEvent(qApp, new QEvent(QEvent::Quit));
-        }
-        emit qApp->lastWindowClosed();
-    }
-}
-
 /*! \variable QApplication::NormalColors
     \compat
 
@@ -4664,18 +4588,12 @@ void QApplicationPrivate::emitLastWindowClosed()
 /*!
     Sets the kind of focus navigation Qt should use to \a mode.
 
-    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
+    This feature is available in Qt for Embedded Linux, and Windows CE
     only.
 
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
-
-    \note On Symbian, setting the mode to Qt::NavigationModeCursorAuto will enable a
-          virtual mouse cursor on non touchscreen devices, which is controlled
-          by the cursor keys if there is no analog pointer device.
-          On other platforms and on touchscreen devices, it has the same
-          meaning as Qt::NavigationModeNone.
 
     \since 4.6
 
@@ -4689,15 +4607,11 @@ void QApplication::setNavigationMode(Qt::NavigationMode mode)
 /*!
     Returns what kind of focus navigation Qt is using.
 
-    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
-    only.
+    This feature is available in Qt for Embedded Linux, and Windows CE only.
 
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
-
-    \note On Symbian, the default mode is Qt::NavigationModeNone for touch
-          devices, and Qt::NavigationModeKeypadDirectional.
 
     \since 4.6
 
@@ -4712,8 +4626,7 @@ Qt::NavigationMode QApplication::navigationMode()
     Sets whether Qt should use focus navigation suitable for use with a
     minimal keypad.
 
-    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
-    only.
+    This feature is available in Qt for Embedded Linux, and Windows CE only.
 
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
@@ -4734,10 +4647,9 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
 
 /*!
     Returns true if Qt is set to use keypad navigation; otherwise returns
-    false.  The default value is true on Symbian, but false on other platforms.
+    false.  The default value is false.
 
-    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
-    only.
+    This feature is available in Qt for Embedded Linux, and Windows CE only.
 
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
@@ -4932,40 +4844,27 @@ int QApplication::keyboardInputInterval()
     \sa QCoreApplication::instance()
 */
 
-#ifndef QT_NO_IM
-// ************************************************************************
-// Input Method support
-// ************************************************************************
+/*!
+    \since 4.2
+    \obsolete
 
-/*
-    This function replaces the QInputContext instance used by the application
-    with \a inputContext.
-
-    Qt takes ownership of the given \a inputContext.
+    Returns the current keyboard input locale. Replaced with QInputMethod::locale()
 */
-void QApplicationPrivate::setInputContext(QInputContext *newInputContext)
+QLocale QApplication::keyboardInputLocale()
 {
-    Q_Q(QApplication);
-
-    if (newInputContext == inputContext)
-        return;
-    if (!newInputContext) {
-        qWarning("QApplicationPrivate::setInputContext: called with 0 input context");
-        return;
-    }
-    delete inputContext;
-    inputContext = newInputContext;
-    inputContext->setParent(q);
+    return qApp ? qApp->inputMethod()->locale() : QLocale::c();
 }
 
 /*!
-    Returns the QInputContext instance used by the application.
+    \since 4.2
+    \obsolete
+
+    Returns the current keyboard input direction. Replaced with QInputMethod::inputDirection()
 */
-QInputContext *QApplication::inputContext() const
+Qt::LayoutDirection QApplication::keyboardInputDirection()
 {
-    return QApplicationPrivate::inputContext;
+    return qApp ? qApp->inputMethod()->inputDirection() : Qt::LeftToRight;
 }
-#endif // QT_NO_IM
 
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event)
 {

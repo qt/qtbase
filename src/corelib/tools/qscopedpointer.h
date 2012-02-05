@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,7 +46,6 @@
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
-QT_MODULE(Core)
 
 template <typename T>
 struct QScopedPointerDeleter
@@ -86,9 +85,7 @@ struct QScopedPointerPodDeleter
 template <typename T, typename Cleanup = QScopedPointerDeleter<T> >
 class QScopedPointer
 {
-#ifndef Q_CC_NOKIAX86
     typedef T *QScopedPointer:: *RestrictedBool;
-#endif
 public:
     explicit inline QScopedPointer(T *p = 0) : d(p)
     {
@@ -118,7 +115,7 @@ public:
         return !d;
     }
 
-#if defined(Q_CC_NOKIAX86) || defined(Q_QDOC)
+#if defined(Q_QDOC)
     inline operator bool() const
     {
         return isNull() ? 0 : &QScopedPointer::d;

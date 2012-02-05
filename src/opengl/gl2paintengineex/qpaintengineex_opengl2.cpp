@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1438,7 +1438,8 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
                                                 ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
                                                 : d->glyphCacheType;
         if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-            if (d->device->alphaRequested() || s->matrix.type() > QTransform::TxTranslate
+            if (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
+                || d->device->alphaRequested() || s->matrix.type() > QTransform::TxTranslate
                 || (s->composition_mode != QPainter::CompositionMode_Source
                 && s->composition_mode != QPainter::CompositionMode_SourceOver))
             {
@@ -1500,7 +1501,8 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
 
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-        if (d->device->alphaRequested() || txtype > QTransform::TxTranslate
+        if (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
+            || d->device->alphaRequested() || txtype > QTransform::TxTranslate
             || (state()->composition_mode != QPainter::CompositionMode_Source
             && state()->composition_mode != QPainter::CompositionMode_SourceOver))
         {
@@ -1567,11 +1569,12 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     void *cacheKey = const_cast<QGLContext *>(QGLContextPrivate::contextGroup(ctx)->context());
     bool recreateVertexArrays = false;
 
+    QFontEngine *fe = staticTextItem->fontEngine();
     QGLTextureGlyphCache *cache =
-            (QGLTextureGlyphCache *) staticTextItem->fontEngine()->glyphCache(cacheKey, glyphType, QTransform());
+            (QGLTextureGlyphCache *) fe->glyphCache(cacheKey, glyphType, QTransform());
     if (!cache || cache->cacheType() != glyphType || cache->contextGroup() == 0) {
         cache = new QGLTextureGlyphCache(glyphType, QTransform());
-        staticTextItem->fontEngine()->setGlyphCache(cacheKey, cache);
+        fe->setGlyphCache(cacheKey, cache);
         recreateVertexArrays = true;
     }
 
@@ -1595,11 +1598,11 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     // cache so this text is performed before we test if the cache size has changed.
     if (recreateVertexArrays) {
         cache->setPaintEnginePrivate(this);
-        if (!cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+        if (!cache->populate(fe, staticTextItem->numGlyphs,
                              staticTextItem->glyphs, staticTextItem->glyphPositions)) {
             // No space for glyphs in cache. We need to reset it and try again.
             cache->clear();
-            cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+            cache->populate(fe, staticTextItem->numGlyphs,
                             staticTextItem->glyphs, staticTextItem->glyphPositions);
         }
         cache->fillInPendingGlyphs();
@@ -1610,7 +1613,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
     transferMode(TextDrawingMode);
 
-    int margin = cache->glyphMargin();
+    int margin = fe->glyphMargin(glyphType);
 
     GLfloat dx = 1.0 / cache->width();
     GLfloat dy = 1.0 / cache->height();
@@ -1650,11 +1653,11 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         vertexCoordinates->clear();
         textureCoordinates->clear();
 
-        bool supportsSubPixelPositions = staticTextItem->fontEngine()->supportsSubPixelPositions();
+        bool supportsSubPixelPositions = fe->supportsSubPixelPositions();
         for (int i=0; i<staticTextItem->numGlyphs; ++i) {
             QFixed subPixelPosition;
             if (supportsSubPixelPositions)
-                subPixelPosition = staticTextItem->fontEngine()->subPixelPositionForX(staticTextItem->glyphPositions[i].x);
+                subPixelPosition = fe->subPixelPositionForX(staticTextItem->glyphPositions[i].x);
 
             QTextureGlyphCache::GlyphAndSubPixelPosition glyph(staticTextItem->glyphs[i], subPixelPosition);
 
@@ -1980,7 +1983,9 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
 #if !defined(QT_OPENGL_ES_2)
     bool success = qt_resolve_version_2_0_functions(d->ctx)
-                   && qt_resolve_buffer_extensions(d->ctx);
+                   && qt_resolve_buffer_extensions(d->ctx)
+                   && (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
+                       || qt_resolve_framebufferobject_extensions(d->ctx));
     Q_ASSERT(success);
     Q_UNUSED(success);
 #endif

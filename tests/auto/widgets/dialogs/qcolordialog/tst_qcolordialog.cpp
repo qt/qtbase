@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,7 +53,7 @@ public:
     tst_QColorDialog();
     virtual ~tst_QColorDialog();
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
 public slots:
     void postKeyReturn();
 private slots:
@@ -125,7 +125,7 @@ void tst_QColorDialog::cleanup()
 {
 }
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
 //copied from QFontDialogTest
 void tst_QColorDialog::postKeyReturn() {
     QWidgetList list = QApplication::topLevelWidgets();

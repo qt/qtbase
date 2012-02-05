@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -130,10 +130,8 @@ static inline QImage::Format imageFormatForDepth(int depth)
         case 32: return QImage::Format_ARGB32_Premultiplied;
         case 24: return QImage::Format_RGB32;
         case 16: return QImage::Format_RGB16;
-        default: break;
+        default: return QImage::Format_Invalid;
     }
-    qFatal("Unsupported display depth %d", depth);
-    return QImage::Format_Invalid;
 }
 
 QXcbWindow::QXcbWindow(QWindow *window)
@@ -211,7 +209,8 @@ void QXcbWindow::create()
     {
 #if defined(XCB_USE_GLX)
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window()->format());
-
+        if (!visualInfo)
+            qFatal("Could not initialize GLX");
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
         EGLConfig eglConfig = q_configFromGLFormat(eglDisplay, window()->format(), true);
@@ -224,25 +223,25 @@ void QXcbWindow::create()
         XVisualInfo *visualInfo;
         int matchingCount = 0;
         visualInfo = XGetVisualInfo(DISPLAY_FROM_XCB(this), VisualIDMask, &visualInfoTemplate, &matchingCount);
+        if (!visualInfo)
+            qFatal("Could not initialize EGL");
 #endif //XCB_USE_GLX
-        if (visualInfo) {
-            m_depth = visualInfo->depth;
-            m_imageFormat = imageFormatForDepth(m_depth);
-            Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), xcb_parent_id, visualInfo->visual, AllocNone);
+        m_depth = visualInfo->depth;
+        m_imageFormat = imageFormatForDepth(m_depth);
+        Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), xcb_parent_id, visualInfo->visual, AllocNone);
 
-            XSetWindowAttributes a;
-            a.background_pixel = WhitePixel(DISPLAY_FROM_XCB(this), m_screen->screenNumber());
-            a.border_pixel = BlackPixel(DISPLAY_FROM_XCB(this), m_screen->screenNumber());
-            a.colormap = cmap;
+        XSetWindowAttributes a;
+        a.background_pixel = WhitePixel(DISPLAY_FROM_XCB(this), m_screen->screenNumber());
+        a.border_pixel = BlackPixel(DISPLAY_FROM_XCB(this), m_screen->screenNumber());
+        a.colormap = cmap;
 
-            m_visualId = visualInfo->visualid;
+        m_visualId = visualInfo->visualid;
 
-            m_window = XCreateWindow(DISPLAY_FROM_XCB(this), xcb_parent_id, rect.x(), rect.y(), rect.width(), rect.height(),
-                                      0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                      CWBackPixel|CWBorderPixel|CWColormap, &a);
-        } else {
-            qFatal("no window!");
-        }
+        m_window = XCreateWindow(DISPLAY_FROM_XCB(this), xcb_parent_id, rect.x(), rect.y(), rect.width(), rect.height(),
+                                  0, visualInfo->depth, InputOutput, visualInfo->visual,
+                                  CWBackPixel|CWBorderPixel|CWColormap, &a);
+
+        XFree(visualInfo);
     } else
 #endif //defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     {
@@ -1147,6 +1146,23 @@ void QXcbWindow::requestActivateWindow()
     }
     connection()->sync();
 }
+
+#if XCB_USE_MAEMO_WINDOW_PROPERTIES
+void QXcbWindow::setOrientation(Qt::ScreenOrientation orientation)
+{
+    int angle = 0;
+    switch (orientation) {
+        case Qt::PortraitOrientation: angle = 270; break;
+        case Qt::LandscapeOrientation: angle = 0; break;
+        case Qt::InvertedPortraitOrientation: angle = 90; break;
+        case Qt::InvertedLandscapeOrientation: angle = 180; break;
+        case Qt::PrimaryOrientation: break;
+    }
+    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                   atom(QXcbAtom::MeegoTouchOrientationAngle), XCB_ATOM_CARDINAL, 32,
+                                   1, &angle));
+}
+#endif
 
 QSurfaceFormat QXcbWindow::format() const
 {

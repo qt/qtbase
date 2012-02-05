@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -206,7 +206,7 @@ void QWidgetLineControl::commitPreedit()
     if (!composeMode())
         return;
 
-    qApp->inputPanel()->reset();
+    qApp->inputMethod()->reset();
 
     if (!m_tentativeCommit.isEmpty()) {
         internalInsert(m_tentativeCommit);
@@ -758,7 +758,7 @@ void QWidgetLineControl::internalSetText(const QString &txt, int pos, bool edite
 
 #ifndef QT_NO_ACCESSIBILITY
     if (changed)
-        QAccessible::updateAccessibility(parent(), 0, QAccessible::TextUpdated);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TextUpdated, parent(), 0));
 #endif
 }
 
@@ -1357,7 +1357,7 @@ void QWidgetLineControl::emitCursorPositionChanged()
         m_lastCursorPos = m_cursor;
         cursorPositionChanged(oldLast, m_cursor);
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(parent(), 0, QAccessible::TextCaretMoved);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TextCaretMoved, parent(), 0));
 #endif
     }
 }

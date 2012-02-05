@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Test)
 
 #define QVERIFY(statement) \
 do {\
@@ -128,8 +127,8 @@ do {\
 #define QSKIP(statement, ...) \
 do {\
     if (strcmp(#__VA_ARGS__, "") != 0)\
-        QTest::qWarn("The two argument version of QSKIP is deprecated and will be removed soon. "\
-                     "Please update this test by removing the second parameter.", __FILE__, __LINE__);\
+        QTest::qFail("The two argument version of QSKIP is no longer available. "\
+                     "Please update this test by removing the second argument in each QSKIP.", __FILE__, __LINE__);\
     QTest::qSkip(statement, __FILE__, __LINE__);\
     return;\
 } while (0)

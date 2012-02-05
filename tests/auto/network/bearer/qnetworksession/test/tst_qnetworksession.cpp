@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -273,17 +273,17 @@ void tst_QNetworkSession::sessionProperties()
                                                  << QLatin1String("WiMAX");
 
     if (!configuration.isValid()) {
-        QVERIFY(configuration.bearerName().isEmpty());
+        QVERIFY(configuration.bearerTypeName().isEmpty());
     } else {
         switch (configuration.type())
         {
             case QNetworkConfiguration::ServiceNetwork:
             case QNetworkConfiguration::UserChoice:
             default:
-                QVERIFY(configuration.bearerName().isEmpty());
+                QVERIFY(configuration.bearerTypeName().isEmpty());
                 break;
             case QNetworkConfiguration::InternetAccessPoint:
-                QVERIFY(validBearerNames.contains(configuration.bearerName()));
+                QVERIFY(validBearerNames.contains(configuration.bearerTypeName()));
                 break;
         }
     }
@@ -1016,15 +1016,15 @@ QNetworkConfiguration suitableConfiguration(QString bearerType, QNetworkConfigur
             discoveredConfigs.removeOne(config);
         } else if ((config.type() == QNetworkConfiguration::InternetAccessPoint) &&
                     bearerType == "cellular") { // 'cellular' bearertype is for convenience
-            if (config.bearerName() != "2G" &&
-                config.bearerName() != "CDMA2000" &&
-                config.bearerName() != "WCDMA" &&
-                config.bearerName() != "HSPA") {
+            if (config.bearerTypeName() != "2G" &&
+                config.bearerTypeName() != "CDMA2000" &&
+                config.bearerTypeName() != "WCDMA" &&
+                config.bearerTypeName() != "HSPA") {
                 // qDebug() << "Dumping config because bearer mismatches (cellular): " << config.name();
                 discoveredConfigs.removeOne(config);
             }
         } else if ((config.type() == QNetworkConfiguration::InternetAccessPoint) && 
-                    bearerType != config.bearerName()) {
+                    bearerType != config.bearerTypeName()) {
             // qDebug() << "Dumping config because bearer mismatches (WLAN): " << config.name();
             discoveredConfigs.removeOne(config);
         }

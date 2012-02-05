@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,87 +42,16 @@
 #ifndef QINPUTPANEL_H
 #define QINPUTPANEL_H
 
-#include <QtCore/qobject.h>
+#include <QtGui/qinputmethod.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
-class QInputPanelPrivate;
-class QWindow;
-class QRectF;
-class QTransform;
-
-class Q_GUI_EXPORT QInputPanel : public QObject
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QInputPanel)
-    Q_PROPERTY(QObject *inputItem READ inputItem WRITE setInputItem NOTIFY inputItemChanged)
-    Q_PROPERTY(QRectF cursorRectangle READ cursorRectangle NOTIFY cursorRectangleChanged)
-    Q_PROPERTY(QRectF keyboardRectangle READ keyboardRectangle NOTIFY keyboardRectangleChanged)
-    Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
-    Q_PROPERTY(bool animating READ isAnimating NOTIFY animatingChanged)
-    Q_PROPERTY(QLocale locale READ locale NOTIFY localeChanged)
-    Q_PROPERTY(Qt::LayoutDirection inputDirection READ inputDirection NOTIFY inputDirectionChanged)
-
-    Q_ENUMS(Action)
-public:
-    QObject *inputItem() const;
-    void setInputItem(QObject *inputItemChanged);
-
-    // the window containing the editor
-    QWindow *inputWindow() const;
-
-    QTransform inputItemTransform() const;
-    void setInputItemTransform(const QTransform &transform);
-
-    // in window coordinates
-    QRectF cursorRectangle() const; // ### what if we have rotations for the item?
-
-    // keyboard geometry in window coords
-    QRectF keyboardRectangle() const;
-
-    enum Action {
-        Click,
-        ContextMenu
-    };
-
-    bool visible() const;
-    void setVisible(bool visible);
-
-    bool isAnimating() const;
-
-    QLocale locale() const;
-    Qt::LayoutDirection inputDirection() const;
-
-public Q_SLOTS:
-    void show();
-    void hide();
-
-    void update(Qt::InputMethodQueries queries);
-    void reset();
-    void commit();
-
-    void invokeAction(Action a, int cursorPosition);
-
-Q_SIGNALS:
-    void inputItemChanged();
-    void cursorRectangleChanged();
-    void keyboardRectangleChanged();
-    void visibleChanged();
-    void animatingChanged();
-    void localeChanged();
-    void inputDirectionChanged(Qt::LayoutDirection newDirection);
-
-private:
-    friend class QGuiApplication;
-    friend class QGuiApplicationPrivate;
-    friend class QPlatformInputContext;
-    QInputPanel();
-    ~QInputPanel();
-};
+#if 0
+#pragma qt_class(QInputPanel)
+#endif
+#define QInputPanel QInputMethod
 
 QT_END_NAMESPACE
 

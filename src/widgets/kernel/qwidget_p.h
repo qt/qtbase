@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,7 +59,7 @@
 #include "QtCore/qlocale.h"
 #include "QtCore/qset.h"
 #include "QtGui/qregion.h"
-#include "QtGui/qinputpanel.h"
+#include "QtGui/qinputmethod.h"
 #include "QtWidgets/qsizepolicy.h"
 #include "QtWidgets/qstyle.h"
 #include "QtWidgets/qapplication.h"
@@ -416,7 +416,7 @@ public:
     void syncBackingStore();
     void syncBackingStore(const QRegion &region);
 
-    // tells the input panel about the widgets transform
+    // tells the input method about the widgets transform
     void updateWidgetTransform();
 
     void reparentFocusWidgets(QWidget *oldtlw);
@@ -573,7 +573,7 @@ public:
             QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
                     q->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
             if (!clickCausedFocus || behavior == QStyle::RSIP_OnMouseClick) {
-                qApp->inputPanel()->show();
+                qApp->inputMethod()->show();
             }
         }
     }

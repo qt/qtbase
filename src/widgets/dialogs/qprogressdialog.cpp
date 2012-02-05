@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,10 +60,6 @@
 #if defined(QT_SOFTKEYS_ENABLED)
 #include <qaction.h>
 #endif
-#ifdef Q_WS_S60
-#include <QtWidgets/qdesktopwidget.h>
-#endif
-
 
 QT_BEGIN_NAMESPACE
 
@@ -730,14 +726,7 @@ QSize QProgressDialog::sizeHint() const
     int h = margin * 2 + bh.height() + sh.height() + spacing;
     if (d->cancel)
         h += d->cancel->sizeHint().height() + spacing;
-#ifdef Q_WS_S60
-    if (QApplication::desktop()->size().height() > QApplication::desktop()->size().width())
-        return QSize(qMax(QApplication::desktop()->size().width(), sh.width() + 2 * margin), h);
-    else
-        return QSize(qMax(QApplication::desktop()->size().height(), sh.width() + 2 * margin), h);
-#else
     return QSize(qMax(200, sh.width() + 2 * margin), h);
-#endif
 }
 
 /*!\reimp

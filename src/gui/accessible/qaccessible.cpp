@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -654,13 +654,29 @@ void QAccessible::setRootObject(QObject *object)
 }
 
 /*!
-  Notifies accessibility clients about a change in \a object's
-  accessibility information.
+  \deprecated
 
-  \a reason specifies the cause of the change, for example,
-  \c ValueChange when the position of a slider has been changed. \a
-  child is the (1-based) index of the child element that has changed.
-  When \a child is 0, the object itself has changed.
+  Use the version with a single \l QAccessibleEvent paremeter instead.
+*/
+void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
+{
+    Q_ASSERT(object);
+
+    qWarning("QAccessible::updateAccessibility is deprecated.");
+
+    QAccessibleEvent event = QAccessibleEvent(reason, object, child);
+    updateAccessibility(event);
+}
+
+/*!
+  Notifies about a change that might be relevant for accessibility clients.
+
+  \a event gives the details about the change.
+  This includes the source of the change and what the actual change is.
+  There should be sufficient details delivered with this event to give meaningful notifications.
+
+  For example, the type \c ValueChange indicates that the position of
+  a slider has been changed.
 
   Call this function whenever the state of your accessible object or
   one of its sub-elements has been changed either programmatically
@@ -671,12 +687,10 @@ void QAccessible::setRootObject(QObject *object)
   the parameters of the call is expensive you can test isActive() to
   avoid unnecessary computations.
 */
-void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
+void QAccessible::updateAccessibility(const QAccessibleEvent &event)
 {
-    Q_ASSERT(object);
-
     if (updateHandler) {
-        updateHandler(object, child, reason);
+        updateHandler(event);
         return;
     }
 
@@ -684,9 +698,43 @@ void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
         return;
 
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
-        pfAccessibility->notifyAccessibilityUpdate(object, child, reason);
+        pfAccessibility->notifyAccessibilityUpdate(event);
 }
 
+/*!
+    \class QAccessibleEvent
+    \brief The QAccessibleEvent is use to notify about changes that are
+    relevant for accessibility in the application.
+
+    \ingroup accessibility
+    \inmodule QtGui
+
+    This class should be created on the stack and used as parameter for
+    \l QAccessible::updateAccessibility().
+*/
+
+/*!
+    Returns the QAccessibleInterface associated with the event.
+
+    The caller of this function takes ownership of the returned interface.
+*/
+QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
+{
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
+    if (!iface)
+        return 0;
+
+    if (m_child >= 0) {
+        QAccessibleInterface *child = iface->child(m_child);
+        if (child) {
+            delete iface;
+            iface = child;
+        } else {
+            qWarning() << "Cannot creat accessible child interface for object: " << m_object << " index: " << m_child;
+        }
+    }
+    return iface;
+}
 
 /*!
     \class QAccessibleInterface

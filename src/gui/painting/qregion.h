@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 template <class T> class QVector;
 class QVariant;
@@ -92,20 +91,21 @@ public:
     QRegion translated(int dx, int dy) const;
     inline QRegion translated(const QPoint &p) const { return translated(p.x(), p.y()); }
 
-    // ### Qt 5: make these four functions QT4_SUPPORT
-    QRegion unite(const QRegion &r) const;
-    QRegion unite(const QRect &r) const;
-    QRegion intersect(const QRegion &r) const;
-    QRegion intersect(const QRect &r) const;
-    QRegion subtract(const QRegion &r) const;
-    QRegion eor(const QRegion &r) const;
+    QRegion united(const QRegion &r) const;
+    QRegion united(const QRect &r) const;
+    QRegion intersected(const QRegion &r) const;
+    QRegion intersected(const QRect &r) const;
+    QRegion subtracted(const QRegion &r) const;
+    QRegion xored(const QRegion &r) const;
 
-    inline QRegion united(const QRegion &r) const { return unite(r); }
-    inline QRegion united(const QRect &r) const { return unite(r); }
-    inline QRegion intersected(const QRegion &r) const { return intersect(r); }
-    inline QRegion intersected(const QRect &r) const { return intersect(r); }
-    inline QRegion subtracted(const QRegion &r) const { return subtract(r); }
-    inline QRegion xored(const QRegion &r) const { return eor(r); }
+#if QT_DEPRECATED_SINCE(5, 0)
+    inline QT_DEPRECATED QRegion unite(const QRegion &r) const { return united(r); }
+    inline QT_DEPRECATED QRegion unite(const QRect &r) const { return united(r); }
+    inline QT_DEPRECATED QRegion intersect(const QRegion &r) const { return intersected(r); }
+    inline QT_DEPRECATED QRegion intersect(const QRect &r) const { return intersected(r); }
+    inline QT_DEPRECATED QRegion subtract(const QRegion &r) const { return subtracted(r); }
+    inline QT_DEPRECATED QRegion eor(const QRegion &r) const { return xored(r); }
+#endif
 
     bool intersects(const QRegion &r) const;
     bool intersects(const QRect &r) const;
@@ -113,9 +113,6 @@ public:
     QRect boundingRect() const;
     QVector<QRect> rects() const;
     void setRects(const QRect *rect, int num);
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED int numRects() const;
-#endif
     int rectCount() const;
 
     const QRegion operator|(const QRegion &r) const;

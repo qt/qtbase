@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -441,11 +441,14 @@ void tst_QWizard::setPixmap()
     QVERIFY(wizard.pixmap(QWizard::BannerPixmap).isNull());
     QVERIFY(wizard.pixmap(QWizard::LogoPixmap).isNull());
     QVERIFY(wizard.pixmap(QWizard::WatermarkPixmap).isNull());
-#ifdef Q_WS_MAC
-    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_3)
+#ifdef Q_OS_MAC
+    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_3) {
+        QEXPECT_FAIL("", "QTBUG-23701", Continue);
         QVERIFY(wizard.pixmap(QWizard::BackgroundPixmap).isNull() == false);
-    else  // fall through since the image doesn't exist on a 10.3 system.
+    } else {
+        // fall through since the image doesn't exist on a 10.3 system.
         QVERIFY(page->pixmap(QWizard::BackgroundPixmap).isNull());
+    }
 #else
     QVERIFY(wizard.pixmap(QWizard::BackgroundPixmap).isNull());
 #endif
@@ -453,11 +456,14 @@ void tst_QWizard::setPixmap()
     QVERIFY(page->pixmap(QWizard::BannerPixmap).isNull());
     QVERIFY(page->pixmap(QWizard::LogoPixmap).isNull());
     QVERIFY(page->pixmap(QWizard::WatermarkPixmap).isNull());
-#ifdef Q_WS_MAC
-    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_3)
+#ifdef Q_OS_MAC
+    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_3) {
+        QEXPECT_FAIL("", "QTBUG-23701", Continue);
         QVERIFY(wizard.pixmap(QWizard::BackgroundPixmap).isNull() == false);
-    else  // fall through since the image doesn't exist on a 10.3 system.
+    } else {
+        // fall through since the image doesn't exist on a 10.3 system.
         QVERIFY(page->pixmap(QWizard::BackgroundPixmap).isNull());
+    }
 #else
     QVERIFY(page->pixmap(QWizard::BackgroundPixmap).isNull());
 #endif

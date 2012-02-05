@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -92,7 +92,7 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
     }
 
     // Load and instantiate nib file from temp
-    NSURL *nibUrl = [NSURL fileURLWithPath : const_cast<NSString *>(reinterpret_cast<const NSString *>(QCFString::toCFStringRef(nibDir)))];
+    NSURL *nibUrl = [NSURL fileURLWithPath : QCFString::toNSString(nibDir)];
     [nibUrl autorelease];
     NSNib *nib = [[NSNib alloc] initWithContentsOfURL : nibUrl];
     [nib autorelease];
@@ -282,13 +282,13 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
     qDebug() << "qtTranslateApplicationMenu";
 
 #ifndef QT_NO_TRANSLATION
-    [servicesItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(0))];
-    [hideItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(1).arg(qt_mac_applicationName()))];
-    [hideAllOthersItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(2))];
-    [showAllItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(3))];
-    [preferencesItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(4))];
-    [quitItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(5).arg(qt_mac_applicationName()))];
-    [aboutItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(6).arg(qt_mac_applicationName()))];
+    [servicesItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(0))];
+    [hideItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(1).arg(qt_mac_applicationName()))];
+    [hideAllOthersItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(2))];
+    [showAllItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(3))];
+    [preferencesItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(4))];
+    [quitItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(5).arg(qt_mac_applicationName()))];
+    [aboutItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(6).arg(qt_mac_applicationName()))];
 #endif
 }
 

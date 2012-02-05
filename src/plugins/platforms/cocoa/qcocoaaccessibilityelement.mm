@@ -1,43 +1,43 @@
 /****************************************************************************
- **
- ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
- ** All rights reserved.
- ** Contact: Nokia Corporation (qt-info@nokia.com)
- **
- ** This file is part of the plugins of the Qt Toolkit.
- **
- ** $QT_BEGIN_LICENSE:LGPL$
- ** GNU Lesser General Public License Usage
- ** This file may be used under the terms of the GNU Lesser General Public
- ** License version 2.1 as published by the Free Software Foundation and
- ** appearing in the file LICENSE.LGPL included in the packaging of this
- ** file. Please review the following information to ensure the GNU Lesser
- ** General Public License version 2.1 requirements will be met:
- ** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
- **
- ** In addition, as a special exception, Nokia gives you certain additional
- ** rights. These rights are described in the Nokia Qt LGPL Exception
- ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
- **
- ** GNU General Public License Usage
- ** Alternatively, this file may be used under the terms of the GNU General
- ** Public License version 3.0 as published by the Free Software Foundation
- ** and appearing in the file LICENSE.GPL included in the packaging of this
- ** file. Please review the following information to ensure the GNU General
- ** Public License version 3.0 requirements will be met:
- ** http://www.gnu.org/copyleft/gpl.html.
- **
- ** Other Usage
- ** Alternatively, this file may be used in accordance with the terms and
- ** conditions contained in a signed written agreement between you and Nokia.
- **
- **
- **
- **
- **
- ** $QT_END_LICENSE$
- **
- ****************************************************************************/
+**
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/
+**
+** This file is part of the plugins of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights. These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
 #include "qcocoaaccessibilityelement.h"
 #include "qcocoaaccessibility.h"
 #include "qcocoahelpers.h"
@@ -54,23 +54,21 @@ static QAccessibleInterface *acast(void *ptr)
 
 @implementation QCocoaAccessibleElement
 
-- (id)initWithIndex:(int)aIndex parent:(id)aParent accessibleInterface:(void *)anQAccessibleInterface
+- (id)initWithInterface:(void *)anQAccessibleInterface parent:(id)aParent
 {
     self = [super init];
     if (self) {
-        index = aIndex;
         accessibleInterface = anQAccessibleInterface;
         role = QCocoaAccessible::macRole(acast(accessibleInterface)->role());
         parent = aParent;
-
     }
 
     return self;
 }
 
-+ (QCocoaAccessibleElement *)elementWithIndex:(int)aIndex parent:(id)aParent accessibleInterface:(void *)anQAccessibleInterface
++ (QCocoaAccessibleElement *)elementWithInterface:(void *)anQAccessibleInterface parent:(id)aParent
 {
-    return [[[self alloc] initWithIndex:aIndex parent:aParent accessibleInterface:anQAccessibleInterface] autorelease];
+    return [[[self alloc] initWithInterface:anQAccessibleInterface parent:aParent] autorelease];
 }
 
 - (void)dealloc {
@@ -80,17 +78,14 @@ static QAccessibleInterface *acast(void *ptr)
 - (BOOL)isEqual:(id)object {
     if ([object isKindOfClass:[QCocoaAccessibleElement class]]) {
         QCocoaAccessibleElement *other = object;
-        return (index == other->index) && [role isEqualToString:other->role] && [parent isEqual:other->parent];
-    } else
+        return acast(other->accessibleInterface)->object() == acast(accessibleInterface)->object();
+    } else {
         return NO;
+    }
 }
 
 - (NSUInteger)hash {
-    return [parent hash] + index;
-}
-
-- (NSUInteger)index {
-    return index;
+    return qHash(acast(accessibleInterface)->object());
 }
 
 //
@@ -129,7 +124,7 @@ static QAccessibleInterface *acast(void *ptr)
         NSMutableArray *kids = [NSMutableArray arrayWithCapacity:numKids];
         for (int i = 0; i < numKids; ++i) {
             QAccessibleInterface *childInterface = acast(accessibleInterface)->child(i);
-            [kids addObject:[QCocoaAccessibleElement elementWithIndex:i parent:self accessibleInterface:(void*)childInterface]];
+            [kids addObject:[QCocoaAccessibleElement elementWithInterface:(void*)childInterface parent:self]];
         }
 
         return NSAccessibilityUnignoredChildren(kids);
@@ -153,7 +148,7 @@ static QAccessibleInterface *acast(void *ptr)
         QSize qtSize = acast(accessibleInterface)->rect().size();
         return [NSValue valueWithSize: NSMakeSize(qtSize.width(), qtSize.height())];
     } else if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
-        return qt_mac_QStringToNSString(acast(accessibleInterface)->text(QAccessible::Name));
+        return QCFString::toNSString(acast(accessibleInterface)->text(QAccessible::Name));
     }
 
     return nil;
@@ -195,11 +190,12 @@ static QAccessibleInterface *acast(void *ptr)
 
 - (NSString *)accessibilityActionDescription:(NSString *)action {
     QAccessibleActionInterface *actionInterface = acast(accessibleInterface)->actionInterface();
-    if (actionInterface) {
-        QString qtAction = QCocoaAccessible::translateAction(action);
+    QString qtAction = QCocoaAccessible::translateAction(action);
+
+    // Return a description from the action interface if this action is not known to the OS.
+    if (qtAction.isEmpty()) {
         QString description = actionInterface->localizedActionDescription(qtAction);
-        if (!description.isEmpty())
-            return qt_mac_QStringToNSString(description);
+        return QCFString::toNSString(description);
     }
 
     return NSAccessibilityActionDescription(action);
@@ -231,8 +227,7 @@ static QAccessibleInterface *acast(void *ptr)
     }
 
     // hit a child, forward to child accessible interface.
-    int childIndex = acast(accessibleInterface)->indexOfChild(childInterface);
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:childIndex parent:self accessibleInterface: childInterface];
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithInterface:childInterface parent:self];
     return [accessibleElement accessibilityHitTest:point];
 }
 

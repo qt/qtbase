@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -107,7 +107,18 @@
 template <typename T>
 inline void PQfreemem(T *t, int = 0) { free(t); }
 
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<PGconn*> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(PGconn*)
+
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<PGresult*> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(PGresult*)
 
 QT_BEGIN_NAMESPACE
@@ -1359,8 +1370,13 @@ void QPSQLDriver::_q_handleNotification(int)
     PGnotify *notify = 0;
     while((notify = PQnotifies(d->connection)) != 0) {
         QString name(QLatin1String(notify->relname));
-        if (d->seid.contains(name))
+        if (d->seid.contains(name)) {
             emit notification(name);
+            if (notify->be_pid == PQbackendPID(d->connection))
+                emit notification(name, QSqlDriver::SelfSource);
+            else
+                emit notification(name, QSqlDriver::OtherSource);
+        }
         else
             qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.",
                     qPrintable(name));

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -76,6 +76,11 @@ public:
 
 Q_GLOBAL_STATIC(QXcbResourceMap, qXcbResourceMap)
 
+QXcbNativeInterface::QXcbNativeInterface()
+{
+    qFill(m_eventFilters, m_eventFilters + EventFilterCount, EventFilter(0));
+}
+
 void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
@@ -116,6 +121,21 @@ void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
         result = 0;
     }
     return result;
+}
+
+QPlatformNativeInterface::EventFilter QXcbNativeInterface::setEventFilter(const QByteArray &eventType, QPlatformNativeInterface::EventFilter filter)
+{
+    int type = -1;
+    if (eventType == QByteArrayLiteral("xcb_generic_event_t"))
+        type = GenericEventFilter;
+    if (type == -1) {
+        qWarning("%s: Attempt to set invalid event filter type '%s'.",
+                 Q_FUNC_INFO, eventType.constData());
+        return 0;
+    }
+    const EventFilter oldFilter = m_eventFilters[type];
+    m_eventFilters[type] = filter;
+    return oldFilter;
 }
 
 QXcbScreen *QXcbNativeInterface::qPlatformScreenForWindow(QWindow *window)

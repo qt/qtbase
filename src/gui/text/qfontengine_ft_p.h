@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -255,7 +255,7 @@ private:
     virtual void recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const;
     virtual QImage alphaMapForGlyph(glyph_t g) { return alphaMapForGlyph(g, 0); }
     virtual QImage alphaMapForGlyph(glyph_t, QFixed);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph,
                                                 QFixed subPixelPosition,
                                                 const QTransform &matrix,
@@ -267,6 +267,7 @@ private:
     virtual void unlockAlphaMapForGlyph();
 
     virtual void removeGlyphFromCache(glyph_t glyph);
+    virtual int glyphMargin(QFontEngineGlyphCache::Type /* type */) { return 0; }
 
     virtual int glyphCount() const;
 

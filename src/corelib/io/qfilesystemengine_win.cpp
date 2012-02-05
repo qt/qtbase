@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -158,6 +158,12 @@ typedef VOID (WINAPI *PtrBuildTrusteeWithSidW)(PTRUSTEE_W, PSID);
 static PtrBuildTrusteeWithSidW ptrBuildTrusteeWithSidW = 0;
 typedef DWORD (WINAPI *PtrGetEffectiveRightsFromAclW)(PACL, PTRUSTEE_W, OUT PACCESS_MASK);
 static PtrGetEffectiveRightsFromAclW ptrGetEffectiveRightsFromAclW = 0;
+typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)(HANDLE, LPWSTR, LPDWORD);
+static PtrGetUserProfileDirectoryW ptrGetUserProfileDirectoryW = 0;
+typedef BOOL (WINAPI *PtrGetVolumePathNamesForVolumeNameW)(LPCWSTR,LPWSTR,DWORD,PDWORD);
+static PtrGetVolumePathNamesForVolumeNameW ptrGetVolumePathNamesForVolumeNameW = 0;
+QT_END_INCLUDE_NAMESPACE
+
 static TRUSTEE_W currentUserTrusteeW;
 static TRUSTEE_W worldTrusteeW;
 static PSID currentUserSID = 0;
@@ -174,7 +180,7 @@ public:
 
 SidCleanup::~SidCleanup()
 {
-    qFree(currentUserSID);
+    free(currentUserSID);
     currentUserSID = 0;
 
     // worldSID was allocated with AllocateAndInitializeSid so it needs to be freed with FreeSid
@@ -185,13 +191,6 @@ SidCleanup::~SidCleanup()
 }
 
 Q_GLOBAL_STATIC(SidCleanup, initSidCleanup)
-
-typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)(HANDLE, LPWSTR, LPDWORD);
-static PtrGetUserProfileDirectoryW ptrGetUserProfileDirectoryW = 0;
-typedef BOOL (WINAPI *PtrGetVolumePathNamesForVolumeNameW)(LPCWSTR,LPWSTR,DWORD,PDWORD);
-static PtrGetVolumePathNamesForVolumeNameW ptrGetVolumePathNamesForVolumeNameW = 0;
-QT_END_INCLUDE_NAMESPACE
-
 
 static void resolveLibs()
 {
@@ -233,15 +232,15 @@ static void resolveLibs()
                 // doing a dummy GetTokenInformation call.
                 ::GetTokenInformation(token, TokenUser, 0, 0, &retsize);
                 if (retsize) {
-                    void *tokenBuffer = qMalloc(retsize);
+                    void *tokenBuffer = malloc(retsize);
                     if (::GetTokenInformation(token, TokenUser, tokenBuffer, retsize, &retsize)) {
                         PSID tokenSid = reinterpret_cast<PTOKEN_USER>(tokenBuffer)->User.Sid;
                         DWORD sidLen = ::GetLengthSid(tokenSid);
-                        currentUserSID = reinterpret_cast<PSID>(qMalloc(sidLen));
+                        currentUserSID = reinterpret_cast<PSID>(malloc(sidLen));
                         if (::CopySid(sidLen, currentUserSID, tokenSid))
                             ptrBuildTrusteeWithSidW(&currentUserTrusteeW, currentUserSID);
                     }
-                    qFree(tokenBuffer);
+                    free(tokenBuffer);
                 }
                 ::CloseHandle(token);
             }
@@ -357,7 +356,7 @@ static QString readSymLink(const QFileSystemEntry &link)
 static QString readLink(const QFileSystemEntry &link)
 {
 #if !defined(Q_OS_WINCE)
-#if !defined(QT_NO_LIBRARY) && !defined(Q_CC_MWERKS)
+#if !defined(QT_NO_LIBRARY)
     QString ret;
 
     bool neededCoInit = false;

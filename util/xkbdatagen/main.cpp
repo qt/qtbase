@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the utils of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -417,8 +417,7 @@ int main(int argc, char **argv)
     printf("/****************************************************************************\n"
            "**\n"
            "** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).\n"
-           "** All rights reserved.\n"
-           "** Contact: Nokia Corporation (qt-info@nokia.com)\n"
+           "** Contact: http://www.qt-project.org/\n"
            "**\n"
            "** This file is part of the QtGui module of the Qt Toolkit.\n"
            "**\n"
@@ -446,6 +445,7 @@ int main(int argc, char **argv)
            "** Other Usage\n"
            "** Alternatively, this file may be used in accordance with the terms and\n"
            "** conditions contained in a signed written agreement between you and Nokia.\n"
+           "**\n"
            "**\n"
            "**\n"
            "**\n"

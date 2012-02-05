@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -80,8 +80,6 @@ private:
 
 tst_QIcoImageFormat::tst_QIcoImageFormat()
 {
-    m_IconPath = QLatin1String(SRCDIR) + "/icons";
-    qDebug() << m_IconPath;
 }
 
 tst_QIcoImageFormat::~tst_QIcoImageFormat()
@@ -101,7 +99,9 @@ void tst_QIcoImageFormat::cleanup()
 
 void tst_QIcoImageFormat::initTestCase()
 {
-
+    m_IconPath = QFINDTESTDATA("icons");
+    if (m_IconPath.isEmpty())
+        QFAIL("Cannot find icons directory containing testdata!");
 }
 
 void tst_QIcoImageFormat::cleanupTestCase()
