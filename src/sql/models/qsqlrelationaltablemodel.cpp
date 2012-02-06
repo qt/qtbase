@@ -299,9 +299,7 @@ void QSqlRelationalTableModelPrivate::revertCachedRow(int row)
 
 int QSqlRelationalTableModelPrivate::nameToIndex(const QString &name) const
 {
-    QString fieldname = name;
-    if (db.driver()->isIdentifierEscaped(fieldname, QSqlDriver::FieldName))
-        fieldname = db.driver()->stripDelimiters(fieldname, QSqlDriver::FieldName);
+    QString fieldname = strippedFieldName(name);
     int idx = baseRec.indexOf(fieldname);
     if (idx == -1) {
         // If the name is an alias we can find it here.

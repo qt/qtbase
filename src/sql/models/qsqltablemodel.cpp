@@ -68,10 +68,15 @@ QSqlRecord QSqlTableModelPrivate::record(const QVector<QVariant> &values) const
 
 int QSqlTableModelPrivate::nameToIndex(const QString &name) const
 {
+    return rec.indexOf(strippedFieldName(name));
+}
+
+QString QSqlTableModelPrivate::strippedFieldName(const QString &name) const
+{
     QString fieldname = name;
     if (db.driver()->isIdentifierEscaped(fieldname, QSqlDriver::FieldName))
         fieldname = db.driver()->stripDelimiters(fieldname, QSqlDriver::FieldName);
-    return rec.indexOf(fieldname);
+    return fieldname;
 }
 
 void QSqlTableModelPrivate::initRecordAndPrimaryIndex()

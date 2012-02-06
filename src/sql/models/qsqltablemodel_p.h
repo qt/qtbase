@@ -77,6 +77,7 @@ public:
               const QSqlRecord &rec, const QSqlRecord &whereValues);
     virtual void revertCachedRow(int row);
     virtual int nameToIndex(const QString &name) const;
+    QString strippedFieldName(const QString &name) const;
     void initRecordAndPrimaryIndex();
 
     QSqlDatabase db;
