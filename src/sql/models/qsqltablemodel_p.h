@@ -66,7 +66,8 @@ public:
     QSqlTableModelPrivate()
         : sortColumn(-1),
           sortOrder(Qt::AscendingOrder),
-          strategy(QSqlTableModel::OnRowChange)
+          strategy(QSqlTableModel::OnRowChange),
+          busyInsertingRows(false)
     {}
     void clear();
     QSqlRecord primaryValues(int index);
@@ -86,6 +87,7 @@ public:
     Qt::SortOrder sortOrder;
 
     QSqlTableModel::EditStrategy strategy;
+    bool busyInsertingRows;
 
     QSqlQuery editQuery;
     QSqlIndex primaryIndex;

@@ -256,7 +256,9 @@ QSqlRecord QSqlTableModelPrivate::primaryValues(int row)
     initiated in the given \a row of the currently active database
     table. The \a record parameter can be written to (since it is a
     reference), for example to populate some fields with default
-    values.
+    values and set the generated flags of the fields. Do not try to
+    edit the record via other means such as setData() or setRecord()
+    while handling this signal.
 */
 
 /*!
@@ -479,6 +481,9 @@ bool QSqlTableModel::isDirty(const QModelIndex &index) const
 bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     Q_D(QSqlTableModel);
+    if (d->busyInsertingRows)
+        return false;
+
     if (role != Qt::EditRole)
         return QSqlQueryModel::setData(index, value, role);
 
@@ -512,19 +517,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
             select();
     }
 
-    // historical bug: dataChanged() is suppressed for OnFieldChange and OnRowChange
-    // when operating on an "insert" record. This is to accomodate
-    // applications that call setData() while handling primeInsert().
-    // Otherwise dataChanged() would be emitted between beginInsert()
-    // and endInsert().
-    // The price of this workaround is that, although the view making
-    // the change will already display the new value, other views connected
-    // to the model probably will not.
-    // It's not clear why OnManualSubmit is excluded from this workaround.
-    // Calling setData() while handling primeInsert() is arguably very wrong anyway.
-    // primeInsert() provides a ref to the record for settings values.
-    if (d->strategy == OnManualSubmit || row.op() != QSqlTableModelPrivate::Insert)
-        emit dataChanged(index, index);
+    emit dataChanged(index, index);
 
     return isOk;
 }
@@ -1049,6 +1042,7 @@ bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
     if (d->strategy != OnManualSubmit && count != 1)
         return false;
 
+    d->busyInsertingRows = true;
     beginInsertRows(parent, row, row + count - 1);
 
     if (d->strategy != OnManualSubmit)
@@ -1071,6 +1065,7 @@ bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
     }
 
     endInsertRows();
+    d->busyInsertingRows = false;
     return true;
 }
 
@@ -1205,6 +1200,9 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
 {
     Q_D(QSqlTableModel);
     Q_ASSERT_X(row >= 0, "QSqlTableModel::setRecord()", "Cannot set a record to a row less than 0");
+    if (d->busyInsertingRows)
+        return false;
+
     if (row >= rowCount())
         return false;
 
@@ -1233,10 +1231,8 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
             // historical bug: it's a bad idea to check for change here
             // historical bug: should test oldValue.isNull() != value.isNull()
             if (oldValue.isNull() || oldValue != value) {
-            // historical bug: dataChanged() is suppressed for Insert. See also setData().
                 mrow.setValue(idx, record.value(i));
-                if (mrow.op() != QSqlTableModelPrivate::Insert)
-                    emit dataChanged(cIndex, cIndex);
+                emit dataChanged(cIndex, cIndex);
             }
         } else {
             mrow.setValue(idx, record.value(i));

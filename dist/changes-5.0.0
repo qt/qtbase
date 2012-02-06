@@ -328,6 +328,20 @@ QTestLib
 * [QTBUG-20615] Autotests can now log test output to multiple destinations
   and log formats simultaneously.
 
+QtSql
+-----
+QSqlTableModel/QSqlRelationalTableModel
+
+* The dataChanged() signal is now emitted for changes made to an inserted
+record that has not yet been committed. Previously, dataChanged() was
+suppressed in this case for OnRowChange and OnFieldChange. This was probably
+an attempt to avoid trouble if setData() was called while handling
+primeInsert(). By emitting dataChanged(), we ensure that all views are aware
+of the change.
+
+* While handling primeInsert() signal, the record must be manipulated using
+the provided reference. Do not attempt to manipulate the records using the
+model methods setData() or setRecord().
 
 * removeRows() no longer emits extra beforeDelete signal for out of range row.
 
