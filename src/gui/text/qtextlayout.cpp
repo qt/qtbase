@@ -2124,8 +2124,8 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
     Q_ASSERT(glyphsArray.size() == positionsArray.size());
 
     qreal fontHeight = font.ascent() + font.descent();
-    qreal minY;
-    qreal maxY;
+    qreal minY = 0;
+    qreal maxY = 0;
     QVector<quint32> glyphs;
     QVector<QPointF> positions;
     for (int i=0; i<glyphsArray.size(); ++i) {
