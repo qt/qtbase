@@ -34,7 +34,8 @@ HEADERS += \
         painting/qtextureglyphcache_p.h \
         painting/qtransform.h \
         painting/qplatformbackingstore_qpa.h \
-        painting/qpaintbuffer_p.h
+        painting/qpaintbuffer_p.h \
+        painting/qpathsimplifier_p.h
 
 
 SOURCES += \
@@ -68,7 +69,8 @@ SOURCES += \
         painting/qtextureglyphcache.cpp \
         painting/qtransform.cpp \
         painting/qplatformbackingstore_qpa.cpp \
-        painting/qpaintbuffer.cpp
+        painting/qpaintbuffer.cpp \
+        painting/qpathsimplifier.cpp
 
         SOURCES +=                                      \
                 painting/qpaintengine_raster.cpp        \
