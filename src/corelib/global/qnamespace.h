@@ -184,6 +184,7 @@ public:
         ExtraButton22    = 0x01000000,
         ExtraButton23    = 0x02000000,
         ExtraButton24    = 0x04000000,
+        AllButtons       = 0x07ffffff,
         MaxMouseButton   = ExtraButton24,
         // 4 high-order bits remain available for future use (0x08000000 through 0x40000000).
         MouseButtonMask  = 0xffffffff
