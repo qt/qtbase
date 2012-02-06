@@ -9226,19 +9226,12 @@ int QWidget::heightForWidth(int w) const
 
 
 /*!
-    \internal
-
-    *virtual private*
-
-    This is a bit hackish, but ideally we would have created a virtual function
-    in the public API (however, too late...) so that subclasses could reimplement 
-    their own function.
-    Instead we add a virtual function to QWidgetPrivate.
-    ### Qt5: move to public class and make virtual
+    Returns true if the widget's preferred height depends on its width; otherwise returns false.
 */ 
-bool QWidgetPrivate::hasHeightForWidth() const
+bool QWidget::hasHeightForWidth() const
 {
-    return layout ? layout->hasHeightForWidth() : size_policy.hasHeightForWidth();
+    Q_D(const QWidget);
+    return d->layout ? d->layout->hasHeightForWidth() : d->size_policy.hasHeightForWidth();
 }
 
 /*!

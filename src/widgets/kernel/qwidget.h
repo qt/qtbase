@@ -524,6 +524,7 @@ public:
     void setSizePolicy(QSizePolicy);
     inline void setSizePolicy(QSizePolicy::Policy horizontal, QSizePolicy::Policy vertical);
     virtual int heightForWidth(int) const;
+    virtual bool hasHeightForWidth() const;
 
     QRegion visibleRegion() const;
 

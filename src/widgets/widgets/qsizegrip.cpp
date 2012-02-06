@@ -301,7 +301,7 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
     // Use a native X11 sizegrip for "real" top-level windows if supported.
     if (tlw->isWindow() && X11->isSupportedByWM(ATOM(_NET_WM_MOVERESIZE))
         && !(tlw->windowFlags() & Qt::X11BypassWindowManagerHint)
-        && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !qt_widget_private(tlw)->hasHeightForWidth()) {
+        && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !tlw->hasHeightForWidth()) {
         XEvent xev;
         xev.xclient.type = ClientMessage;
         xev.xclient.message_type = ATOM(_NET_WM_MOVERESIZE);
@@ -323,7 +323,7 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
     }
 #endif // Q_WS_X11
 #ifdef Q_OS_WIN
-    if (tlw->isWindow() && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !qt_widget_private(tlw)->hasHeightForWidth()) {
+    if (tlw->isWindow() && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !tlw->hasHeightForWidth()) {
         uint orientation = 0;
         if (d->atBottom())
             orientation = d->atLeft() ? SZ_SIZEBOTTOMLEFT : SZ_SIZEBOTTOMRIGHT;
@@ -413,11 +413,11 @@ void QSizeGrip::mouseMoveEvent(QMouseEvent * e)
 #ifdef Q_WS_X11
     if (tlw->isWindow() && X11->isSupportedByWM(ATOM(_NET_WM_MOVERESIZE))
         && tlw->isTopLevel() && !(tlw->windowFlags() & Qt::X11BypassWindowManagerHint)
-        && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !qt_widget_private(tlw)->hasHeightForWidth())
+        && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !tlw->hasHeightForWidth())
         return;
 #endif
 #ifdef Q_OS_WIN
-    if (tlw->isWindow() && qt_getWindowsSystemMenu(tlw) && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !qt_widget_private(tlw)->hasHeightForWidth()) {
+    if (tlw->isWindow() && qt_getWindowsSystemMenu(tlw) && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !tlw->hasHeightForWidth()) {
         if (const HWND hwnd = QApplicationPrivate::getHWNDForWidget(tlw)) {
             MSG msg;
             while (PeekMessage(&msg, hwnd, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) ;
