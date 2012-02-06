@@ -3165,8 +3165,14 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
             QString ret, type = var.mid(13);
             if(type == "arch") {
                 QString paths = qgetenv("PATH");
-                QString vcBin64 = qgetenv("VCINSTALLDIR").append("\\bin\\amd64");
-                QString vcBinX86_64 = qgetenv("VCINSTALLDIR").append("\\bin\\x86_amd64");
+                QString vcBin64 = qgetenv("VCINSTALLDIR");
+                if (!vcBin64.endsWith('\\'))
+                    vcBin64.append('\\');
+                vcBin64.append("bin\\amd64");
+                QString vcBinX86_64 = qgetenv("VCINSTALLDIR");
+                if (!vcBinX86_64.endsWith('\\'))
+                    vcBinX86_64.append('\\');
+                vcBinX86_64.append("bin\\x86_amd64");
                 if(paths.contains(vcBin64,Qt::CaseInsensitive) || paths.contains(vcBinX86_64,Qt::CaseInsensitive))
                     ret = "x86_64";
                 else
