@@ -78,7 +78,7 @@ contains(DEFINES, XCB_USE_DRI2) {
     HEADERS += qdri2context.h
     SOURCES += qdri2context.cpp
 
-} else {
+} else:contains(QT_CONFIG, opengl) {
     contains(QT_CONFIG, opengles2) {
         DEFINES += XCB_USE_EGL
         LIBS += -lEGL

@@ -171,6 +171,7 @@ private:
 };
 #endif
 
+#ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
@@ -185,6 +186,7 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
     qWarning("Cannot create platform GL context, none of GLX, EGL, DRI2 is enabled");
     return 0;
 }
+#endif
 
 QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *window) const
 {
