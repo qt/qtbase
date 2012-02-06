@@ -1217,15 +1217,8 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
         } else if (d->strategy != OnManualSubmit) {
             // historical bug: this could all be simple like OnManualSubmit, but isn't
             const QModelIndex cIndex = createIndex(row, idx);
-            // historical bug: comparing EditRole with DisplayRole values here
-            const QVariant oldValue = data(cIndex);
-            const QVariant value = record.value(i);
-            // historical bug: it's a bad idea to check for change here
-            // historical bug: should test oldValue.isNull() != value.isNull()
-            if (oldValue.isNull() || oldValue != value) {
-                mrow.setValue(idx, record.value(i));
-                emit dataChanged(cIndex, cIndex);
-            }
+            mrow.setValue(idx, record.value(i));
+            emit dataChanged(cIndex, cIndex);
         } else {
             mrow.setValue(idx, record.value(i));
         }
