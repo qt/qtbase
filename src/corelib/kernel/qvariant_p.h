@@ -53,9 +53,6 @@
 // We mean it.
 //
 
-// takes a type, returns the internal void* pointer cast
-// to a pointer of the input type
-
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/private/qmetatype_p.h>
@@ -79,6 +76,8 @@ Q_STATIC_ASSERT(QVariantIntegrator<qulonglong>::CanUseInternalSpace);
 
 #ifdef Q_CC_SUN // Sun CC picks the wrong overload, so introduce awful hack
 
+// takes a type, returns the internal void* pointer cast
+// to a pointer of the input type
 template <typename T>
 inline T *v_cast(const QVariant::Private *nd, T * = 0)
 {
