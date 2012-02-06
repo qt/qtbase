@@ -1860,7 +1860,7 @@ void tst_QNetworkReply::putToFtp()
 
     QObject::connect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
-    QObject::disconnect(r, SIGNAL(finished(bool)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QObject::disconnect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
     QByteArray uploaded = r->readAll();
     QCOMPARE(uploaded.size(), data.size());
@@ -3911,7 +3911,7 @@ void tst_QNetworkReply::ioPutToFtpFromFile()
 
     QObject::connect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(3);
-    QObject::disconnect(r, SIGNAL(finished(bool)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QObject::disconnect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
     QByteArray uploaded = r->readAll();
     QCOMPARE(qint64(uploaded.size()), sourceFile.size());
