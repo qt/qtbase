@@ -974,13 +974,20 @@ bool QSqlTableModel::removeColumns(int column, int count, const QModelIndex &par
     does not support hierarchical structures, \a parent must be
     an invalid model index.
 
-    Emits the beforeDelete() signal before a row is deleted. When
-    the edit strategy is OnManualSubmit signal emission is delayed
-    until submitAll() is called.
+    When the edit strategy is OnManualSubmit, deletion of rows from
+    the database is delayed until submitAll() is called; otherwise,
+    deletions are immediate.
 
-    Returns true if all rows could be removed; otherwise returns
-    false. Detailed error information can be retrieved using
-    lastError().
+    Inserted but not yet submitted rows in the range to be removed
+    are immediately removed from the model.
+
+    Before a row is deleted from the database, the beforeDelete()
+    signal is emitted.
+
+    If row < 0 or row + count > rowCount(), no action is taken and
+    false is returned. Returns true if all rows could be removed;
+    otherwise returns false. Detailed database error information
+    can be retrieved using lastError().
 
     \sa removeColumns(), insertRows()
 */
@@ -989,9 +996,12 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
     Q_D(QSqlTableModel);
     if (parent.isValid() || row < 0 || count <= 0)
         return false;
+    else if (row + count > rowCount())
+        return false;
+    else if (!count)
+        return true;
 
-    int i;
-    for (i = 0; i < count && row + i < rowCount(); ++i) {
+    for (int i = 0; i < count; ++i) {
         int idx = row + i;
         if (d->cache.value(idx).op() == QSqlTableModelPrivate::Insert) {
             revertRow(idx);
@@ -1007,11 +1017,8 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
         }
     }
 
-    if (d->strategy != OnManualSubmit && i > 0)
-        submit();
-
-    if (i < count)
-        return false;
+    if (d->strategy != OnManualSubmit)
+        return submit();
 
     return true;
 }

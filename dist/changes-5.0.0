@@ -331,6 +331,11 @@ QTestLib
 
 * removeRows() no longer emits extra beforeDelete signal for out of range row.
 
+* removeRows() now requires the whole range of targetted rows to be valid
+before doing anything. Previously, it would remove what it could and
+ignore the rest of the range.
+
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
