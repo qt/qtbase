@@ -51,7 +51,6 @@
 #if !defined(Q_OS_WINCE)
 #  include <intshcut.h>
 #else
-#  include <qguifunctions_wince.h>
 #  if !defined(STANDARDSHELL_UI_MODEL)
 #    include <winx.h>
 #  endif
