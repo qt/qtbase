@@ -1246,7 +1246,7 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
     if (d->strategy == OnManualSubmit && isOk)
         emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
     else if (d->strategy == OnFieldChange)
-        return submitAll();
+        return submit();
     else if (d->strategy == OnManualSubmit)
         return isOk;
 
