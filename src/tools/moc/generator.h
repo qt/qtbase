@@ -63,6 +63,7 @@ private:
     void generateMetacall();
     void generateStaticMetacall();
     void generateSignal(FunctionDef *def, int index);
+    void generatePluginMetaData();
 
     int strreg(const char *); // registers a string and returns its id
     QList<QByteArray> strings;

@@ -76,6 +76,7 @@ class QString;
 # define emit
 #endif
 #define Q_CLASSINFO(name, value)
+#define Q_PLUGIN_METADATA(x)
 #define Q_INTERFACES(x)
 #define Q_PROPERTY(text)
 #define Q_PRIVATE_PROPERTY(d, text)

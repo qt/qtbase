@@ -59,15 +59,33 @@ QT_BEGIN_NAMESPACE
 #endif
 
 typedef QObject *(*QtPluginInstanceFunction)();
+typedef const char *(*QtPluginMetaDataFunction)();
 
-void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunction function);
+struct QStaticPlugin
+{
+    QtPluginInstanceFunction instance;
+    QtPluginMetaDataFunction metaData;
+};
+
+void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
+
+#if defined (Q_OF_ELF) && defined (Q_CC_GNU)
+#  define QT_PLUGIN_VERIFICATION_SECTION \
+    __attribute__ ((section (".qtplugin"))) __attribute__((used))
+#  define QT_PLUGIN_METADATA_SECTION \
+    __attribute__ ((section (".qtmetadata"))) __attribute__((used))
+#else
+#  define QT_PLUGIN_VERIFICATION_SECTION
+#  define QT_PLUGIN_METADATA_SECTION
+#endif
+
 
 #define Q_IMPORT_PLUGIN(PLUGIN) \
-        extern QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance_##PLUGIN(); \
+        extern const QT_PREPEND_NAMESPACE(QStaticPlugin) qt_static_plugin_##PLUGIN(); \
         class Static##PLUGIN##PluginInstance{ \
         public: \
                 Static##PLUGIN##PluginInstance() { \
-                qRegisterStaticPluginInstanceFunction(qt_plugin_instance_##PLUGIN); \
+                    qRegisterStaticPluginFunction(qt_static_plugin_##PLUGIN()); \
                 } \
         }; \
        static Static##PLUGIN##PluginInstance static##PLUGIN##Instance;
@@ -80,21 +98,43 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
             return _instance; \
         }
 
-#  define Q_EXPORT_PLUGIN(PLUGIN) \
-            Q_EXPORT_PLUGIN2(PLUGIN, PLUGIN)
+#if defined(QT_STATICPLUGIN)
 
-#  define Q_EXPORT_STATIC_PLUGIN(PLUGIN) \
-            Q_EXPORT_STATIC_PLUGIN2(PLUGIN, PLUGIN)
+#  define QT_MOC_EXPORT_PLUGIN(PLUGINCLASS) \
+    static QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance() \
+    Q_PLUGIN_INSTANCE(PLUGINCLASS) \
+    static const char *qt_plugin_query_metadata() { return (const char *)qt_pluginMetaData; } \
+    const QT_PREPEND_NAMESPACE(QStaticPlugin) qt_static_plugin_##PLUGINCLASS() { \
+        QT_PREPEND_NAMESPACE(QStaticPlugin) plugin = { qt_plugin_instance, qt_plugin_query_metadata }; \
+        return plugin; \
+    }
+
+#else
+
+#  define QT_MOC_EXPORT_PLUGIN(PLUGINCLASS)      \
+            Q_EXTERN_C Q_DECL_EXPORT \
+            const char *qt_plugin_query_metadata() \
+            { return (const char *)qt_pluginMetaData; } \
+            Q_EXTERN_C Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance() \
+            Q_PLUGIN_INSTANCE(PLUGINCLASS)
+
+#endif
+
+
+#define Q_EXPORT_PLUGIN(PLUGIN) \
+            Q_EXPORT_PLUGIN2(PLUGIN, PLUGIN)
+#define Q_EXPORT_STATIC_PLUGIN(PLUGIN)
+#define Q_EXPORT_STATIC_PLUGIN2(PLUGIN, PLUGINCLASS)
 
 #if defined(QT_STATICPLUGIN)
 
 #  define Q_EXPORT_PLUGIN2(PLUGIN, PLUGINCLASS) \
-            QT_PREPEND_NAMESPACE(QObject) \
-                *qt_plugin_instance_##PLUGIN() \
-            Q_PLUGIN_INSTANCE(PLUGINCLASS)
-
-#  define Q_EXPORT_STATIC_PLUGIN2(PLUGIN, PLUGINCLASS) \
-            Q_EXPORT_PLUGIN2(PLUGIN, PLUGINCLASS)
+    static QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance() \
+    Q_PLUGIN_INSTANCE(PLUGINCLASS) \
+    const QT_PREPEND_NAMESPACE(QStaticPlugin) qt_static_plugin_##PLUGIN() { \
+        QT_PREPEND_NAMESPACE(QStaticPlugin) plugin = { qt_plugin_instance, 0 }; \
+        return plugin; \
+    }
 
 #else
 // NOTE: if you change pattern, you MUST change the pattern in
@@ -118,25 +158,13 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
       "version="QT_VERSION_STR"\n" \
       "debug="QPLUGIN_DEBUG_STR;
 
-#  if defined (Q_OF_ELF) && defined (Q_CC_GNU)
-#  define Q_PLUGIN_VERIFICATION_SECTION \
-    __attribute__ ((section (".qtplugin"))) __attribute__((used))
-#  else
-#  define Q_PLUGIN_VERIFICATION_SECTION
-#  endif
-
-#  if defined (Q_OS_WIN32) && defined(Q_CC_BOR)
-#     define Q_STANDARD_CALL __stdcall
-#  else
-#     define Q_STANDARD_CALL
-#  endif
 
 #  define Q_EXPORT_PLUGIN2(PLUGIN, PLUGINCLASS)      \
-            Q_PLUGIN_VERIFICATION_SECTION Q_PLUGIN_VERIFICATION_DATA \
+            QT_PLUGIN_VERIFICATION_SECTION Q_PLUGIN_VERIFICATION_DATA \
             Q_EXTERN_C Q_DECL_EXPORT \
-            const char * Q_STANDARD_CALL qt_plugin_query_verification_data() \
+            const char * qt_plugin_query_verification_data() \
             { return qt_plugin_verification_data; } \
-            Q_EXTERN_C Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) * Q_STANDARD_CALL qt_plugin_instance() \
+            Q_EXTERN_C Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) * qt_plugin_instance() \
             Q_PLUGIN_INSTANCE(PLUGINCLASS)
 
 #  define Q_EXPORT_STATIC_PLUGIN2(PLUGIN, PLUGINCLASS)

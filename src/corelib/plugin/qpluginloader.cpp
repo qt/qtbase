@@ -291,8 +291,8 @@ QString QPluginLoader::errorString() const
     return (!d || d->errorString.isEmpty()) ? tr("Unknown error") : d->errorString;
 }
 
-typedef QList<QtPluginInstanceFunction> StaticInstanceFunctionList;
-Q_GLOBAL_STATIC(StaticInstanceFunctionList, staticInstanceFunctionList)
+typedef QVector<QStaticPlugin> StaticPluginList;
+Q_GLOBAL_STATIC(StaticPluginList, staticPluginList)
 
 /*! \since 4.4
 
@@ -329,13 +329,13 @@ QLibrary::LoadHints QPluginLoader::loadHints() const
 
 /*!
     \relates QPluginLoader
-    \since 4.4
+    \since 5.0
 
-    Registers the given \a function with the plugin loader.
+    Registers the given \a plugin with the plugin loader.
 */
-void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunction function)
+void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin plugin)
 {
-    staticInstanceFunctionList()->append(function);
+    staticPluginList()->append(plugin);
 }
 
 /*!
@@ -345,12 +345,21 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
 QObjectList QPluginLoader::staticInstances()
 {
     QObjectList instances;
-    StaticInstanceFunctionList *functions = staticInstanceFunctionList();
-    if (functions) {
-        for (int i = 0; i < functions->count(); ++i)
-            instances.append((*functions)[i]());
+    const StaticPluginList *plugins = staticPluginList();
+    if (plugins) {
+        for (int i = 0; i < plugins->size(); ++i)
+            instances += plugins->at(i).instance();
     }
     return instances;
+}
+
+
+QVector<QStaticPlugin> QLibraryPrivate::staticPlugins()
+{
+    StaticPluginList *plugins = staticPluginList();
+    if (plugins)
+        return *plugins;
+    return QVector<QStaticPlugin>();
 }
 
 QT_END_NAMESPACE

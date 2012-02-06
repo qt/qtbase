@@ -58,6 +58,9 @@
 #include "QtCore/qstringlist.h"
 #include "QtCore/qplugin.h"
 #include "QtCore/qsharedpointer.h"
+#include "QtCore/qjsonobject.h"
+#include "QtCore/qjsondocument.h"
+#include "QtCore/qendian.h"
 #ifdef Q_OS_WIN
 #  include "QtCore/qt_windows.h"
 #endif
@@ -90,16 +93,26 @@ public:
 
     static QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version = QString());
 
+    static QVector<QStaticPlugin> staticPlugins();
+
+
     QWeakPointer<QObject> inst;
     QtPluginInstanceFunction instance;
-    uint qt_version;
-    QString lastModified;
+    QJsonObject metaData;
+    bool compatPlugin;
 
     QString errorString;
     QLibrary::LoadHints loadHints;
 
     bool isPlugin();
 
+    static inline QJsonDocument fromRawMetaData(const char *raw) {
+        raw += strlen("QTMETADATA  ");
+        // the size of the embedded JSON object can be found 8 bytes into the data (see qjson_p.h),
+        // but doesn't include the size of the header (8 bytes)
+        QByteArray json(raw, qFromLittleEndian<uint>(*(uint *)(raw + 8)) + 8);
+        return QJsonDocument::fromBinaryData(json);
+    }
 
 private:
     explicit QLibraryPrivate(const QString &canonicalFileName, const QString &version);
@@ -112,7 +125,7 @@ private:
     QAtomicInt libraryRefCount;
     QAtomicInt libraryUnloadCount;
 
-    enum {IsAPlugin, IsNotAPlugin, MightBeAPlugin } pluginState;
+    enum { IsAPlugin, IsNotAPlugin, MightBeAPlugin } pluginState;
     friend class QLibraryPrivateHasFriends;
 };
 

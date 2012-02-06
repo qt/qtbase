@@ -43,6 +43,11 @@
 #include "outputrevision.h"
 #include "utils.h"
 #include <QtCore/qmetatype.h>
+#include <QtCore/qjsondocument.h>
+#include <QtCore/qjsonobject.h>
+#include <QtCore/qjsonvalue.h>
+#include <QtCore/qjsonarray.h>
+#include <QtCore/qplugin.h>
 #include <stdio.h>
 
 #include <private/qmetaobject_p.h> //for the flags.
@@ -421,6 +426,11 @@ void Generator::generateCode()
 //
     for (int signalindex = 0; signalindex < cdef->signalList.size(); ++signalindex)
         generateSignal(&cdef->signalList[signalindex], signalindex);
+
+//
+// Generate plugin meta data
+//
+    generatePluginMetaData();
 }
 
 
@@ -1049,6 +1059,44 @@ void Generator::generateSignal(FunctionDef *def,int index)
     if (def->normalizedType.size())
         fprintf(out, "    return _t0;\n");
     fprintf(out, "}\n");
+}
+
+void Generator::generatePluginMetaData()
+{
+    if (cdef->pluginData.iid.isEmpty())
+        return;
+
+    QJsonObject data;
+    data.insert(QLatin1String("IID"), QLatin1String(cdef->pluginData.iid.constData()));
+    data.insert(QLatin1String("className"), QLatin1String(cdef->classname.constData()));
+    data.insert(QLatin1String("version"), (int)QT_VERSION);
+    data.insert(QLatin1String("debug"),
+#ifdef QT_NO_DEBUG
+                false
+#else
+                true
+#endif
+                );
+    data.insert(QLatin1String("MetaData"), cdef->pluginData.metaData.object());
+    QJsonDocument doc(data);
+
+    fprintf(out, "\nQT_PLUGIN_METADATA_SECTION const uint qt_section_alignment_dummy = 42;\n");
+    fprintf(out,
+            "\nQT_PLUGIN_METADATA_SECTION\n"
+            "static const unsigned char qt_pluginMetaData[] = {\n"
+            "    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', ' ',\n   ");
+#if 0
+    fprintf(out, "\"%s\";\n", doc.toJson().constData());
+#else
+    QByteArray binary = doc.toBinaryData();
+    for (int i = 0; i < binary.size() - 1; ++i) {
+        fprintf(out, " 0x%02x,", (uchar)binary.at(i));
+        if (!((i + 1) % 8))
+            fprintf(out, "\n   ");
+    }
+    fprintf(out, " 0x%02x\n};\n", (uchar)binary.at(binary.size() - 1));
+#endif
+    fprintf(out, "QT_MOC_EXPORT_PLUGIN(%s)\n\n", cdef->classname.constData());
 }
 
 QT_END_NAMESPACE

@@ -44,6 +44,9 @@
 #include "qdatetime.h"
 #include "utils.h"
 #include "outputrevision.h"
+#include <QtCore/qfile.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qdir.h>
 
 // for normalizeTypeInternal
 #include <private/qmetaobject_moc_p.h>
@@ -673,6 +676,9 @@ void Moc::parse()
                 case Q_PROPERTY_TOKEN:
                     parseProperty(&def);
                     break;
+                case Q_PLUGIN_METADATA_TOKEN:
+                    parsePluginData(&def);
+                    break;
                 case Q_ENUMS_TOKEN:
                     parseEnumOrFlag(&def, false);
                     break;
@@ -813,6 +819,8 @@ void Moc::generate(FILE *out)
 
     if (mustIncludeQMetaTypeH)
         fprintf(out, "#include <QtCore/qmetatype.h>\n");
+    if (mustIncludeQPluginH)
+        fprintf(out, "#include <QtCore/qplugin.h>\n");
 
     fprintf(out, "#if !defined(Q_MOC_OUTPUT_REVISION)\n"
             "#error \"The header file '%s' doesn't include <QObject>.\"\n", (const char *)fn);
@@ -1078,6 +1086,50 @@ void Moc::parseProperty(ClassDef *def)
     if (propDef.revision > 0)
         ++def->revisionedProperties;
     def->propertyList += propDef;
+}
+
+void Moc::parsePluginData(ClassDef *def)
+{
+    next(LPAREN);
+    QByteArray metaData;
+    while (test(IDENTIFIER)) {
+        QByteArray l = lexem();
+        if (l == "IID") {
+            next(STRING_LITERAL);
+            def->pluginData.iid = unquotedLexem();
+        } else if (l == "FILE") {
+            next(STRING_LITERAL);
+            QByteArray metaDataFile = unquotedLexem();
+            QFileInfo fi(QFileInfo(QString::fromLocal8Bit(currentFilenames.top())).dir(), QString::fromLocal8Bit(metaDataFile));
+            if (!fi.exists()) {
+                QByteArray msg;
+                msg += "Plugin Metadata file ";
+                msg += lexem();
+                msg += " does not exist. Declaration will be ignored";
+                warning(msg.constData());
+                return;
+            }
+            QFile file(fi.canonicalFilePath());
+            file.open(QFile::ReadOnly);
+            metaData = file.readAll();
+        }
+    }
+
+    if (!metaData.isEmpty()) {
+        def->pluginData.metaData = QJsonDocument::fromJson(metaData);
+        if (!def->pluginData.metaData.isObject()) {
+            QByteArray msg;
+            msg += "Plugin Metadata file ";
+            msg += lexem();
+            msg += " does not contain a valid JSON object. Declaration will be ignored";
+            warning(msg.constData());
+            def->pluginData.iid = QByteArray();
+            return;
+        }
+    }
+
+    mustIncludeQPluginH = true;
+    next(RPAREN);
 }
 
 void Moc::parsePrivateProperty(ClassDef *def)

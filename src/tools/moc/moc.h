@@ -46,6 +46,7 @@
 #include <QStringList>
 #include <QMap>
 #include <QPair>
+#include <QJsonDocument>
 #include <stdio.h>
 #include <ctype.h>
 
@@ -167,6 +168,11 @@ struct ClassDef {
     bool hasQObject;
     bool hasQGadget;
 
+    struct PluginData {
+        QByteArray iid;
+        QJsonDocument metaData;
+    } pluginData;
+
     QList<FunctionDef> constructorList;
     QList<FunctionDef> signalList, slotList, methodList, publicList;
     int notifyableProperties;
@@ -192,7 +198,7 @@ class Moc : public Parser
 {
 public:
     Moc()
-        : noInclude(false), generatedCode(false), mustIncludeQMetaTypeH(false)
+        : noInclude(false), generatedCode(false), mustIncludeQMetaTypeH(false), mustIncludeQPluginH(false)
         {}
 
     QByteArray filename;
@@ -200,6 +206,7 @@ public:
     bool noInclude;
     bool generatedCode;
     bool mustIncludeQMetaTypeH;
+    bool mustIncludeQPluginH;
     QByteArray includePath;
     QList<QByteArray> includeFiles;
     QList<ClassDef> classList;
@@ -229,6 +236,7 @@ public:
     void parseSlots(ClassDef *def, FunctionDef::Access access);
     void parseSignals(ClassDef *def);
     void parseProperty(ClassDef *def);
+    void parsePluginData(ClassDef *def);
     void createPropertyDef(PropertyDef &def);
     void parseEnumOrFlag(ClassDef *def, bool isFlag);
     void parseFlag(ClassDef *def);

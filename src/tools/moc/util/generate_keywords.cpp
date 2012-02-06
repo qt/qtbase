@@ -228,6 +228,7 @@ static const Keyword keywords[] = {
     { "Q_OBJECT", "Q_OBJECT_TOKEN" },
     { "Q_GADGET", "Q_GADGET_TOKEN" },
     { "Q_PROPERTY", "Q_PROPERTY_TOKEN" },
+    { "Q_PLUGIN_METADATA", "Q_PLUGIN_METADATA_TOKEN" },
     { "Q_ENUMS", "Q_ENUMS_TOKEN" },
     { "Q_FLAGS", "Q_FLAGS_TOKEN" },
     { "Q_DECLARE_FLAGS", "Q_DECLARE_FLAGS_TOKEN" },
