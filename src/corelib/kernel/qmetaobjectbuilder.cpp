@@ -1070,21 +1070,35 @@ int QMetaObjectBuilder::indexOfClassInfo(const QByteArray& name)
 #define ALIGN(size,type)    \
     (size) = ((size) + sizeof(type) - 1) & ~(sizeof(type) - 1)
 
-// Build a string into a QMetaObject representation.  Returns the
-// position in the string table where the string was placed.
-static int buildString
-    (char *buf, char *str, int *offset, const QByteArray& value, int empty)
+class MetaStringTable
 {
-    if (value.size() == 0 && empty >= 0)
-        return empty;
-    if (buf) {
-        memcpy(str + *offset, value.constData(), value.size());
-        str[*offset + value.size()] = '\0';
+public:
+    typedef QHash<QByteArray, int> Entries; // string --> offset mapping
+    typedef Entries::const_iterator const_iterator;
+    Entries::const_iterator constBegin() const
+    { return m_entries.constBegin(); }
+    Entries::const_iterator constEnd() const
+    { return m_entries.constEnd(); }
+
+    MetaStringTable() : m_offset(0) {}
+
+    int enter(const QByteArray &value)
+    {
+        Entries::iterator it = m_entries.find(value);
+        if (it != m_entries.end())
+            return it.value();
+        int pos = m_offset;
+        m_entries.insert(value, pos);
+        m_offset += value.size() + 1;
+        return pos;
     }
-    int posn = *offset;
-    *offset += value.size() + 1;
-    return posn;
-}
+
+    int arraySize() const { return m_offset; }
+
+private:
+    Entries m_entries;
+    int m_offset;
+};
 
 // Build the parameter array string for a method.
 static QByteArray buildParameterNames
@@ -1240,19 +1254,14 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     // Reset the current data position to just past the QMetaObjectPrivate.
     dataIndex = MetaObjectPrivateFieldCount;
 
-    // Add the class name to the string table.
-    int offset = 0;
-    buildString(buf, str, &offset, d->className, -1);
-
-    // Add a common empty string, which is used to indicate "void"
-    // method returns, empty tag strings, etc.
-    int empty = buildString(buf, str, &offset, QByteArray(), -1);
+    MetaStringTable strings;
+    strings.enter(d->className);
 
     // Output the class infos,
     Q_ASSERT(!buf || dataIndex == pmeta->classInfoData);
     for (index = 0; index < d->classInfoNames.size(); ++index) {
-        int name = buildString(buf, str, &offset, d->classInfoNames[index], empty);
-        int value = buildString(buf, str, &offset, d->classInfoValues[index], empty);
+        int name = strings.enter(d->classInfoNames[index]);
+        int value = strings.enter(d->classInfoValues[index]);
         if (buf) {
             data[dataIndex] = name;
             data[dataIndex + 1] = value;
@@ -1264,13 +1273,13 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     Q_ASSERT(!buf || dataIndex == pmeta->methodData);
     for (index = 0; index < d->methods.size(); ++index) {
         QMetaMethodBuilderPrivate *method = &(d->methods[index]);
-        int sig = buildString(buf, str, &offset, method->signature, empty);
+        int sig = strings.enter(method->signature);
         int params;
         QByteArray names = buildParameterNames
             (method->signature, method->parameterNames);
-        params = buildString(buf, str, &offset, names, empty);
-        int ret = buildString(buf, str, &offset, method->returnType, empty);
-        int tag = buildString(buf, str, &offset, method->tag, empty);
+        params = strings.enter(names);
+        int ret = strings.enter(method->returnType);
+        int tag = strings.enter(method->tag);
         int attrs = method->attributes;
         if (buf) {
             data[dataIndex]     = sig;
@@ -1296,8 +1305,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     Q_ASSERT(!buf || dataIndex == pmeta->propertyData);
     for (index = 0; index < d->properties.size(); ++index) {
         QMetaPropertyBuilderPrivate *prop = &(d->properties[index]);
-        int name = buildString(buf, str, &offset, prop->name, empty);
-        int type = buildString(buf, str, &offset, prop->type, empty);
+        int name = strings.enter(prop->name);
+        int type = strings.enter(prop->type);
         int flags = prop->flags;
 
         if (!isVariantType(prop->type)) {
@@ -1338,7 +1347,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     Q_ASSERT(!buf || dataIndex == pmeta->enumeratorData);
     for (index = 0; index < d->enumerators.size(); ++index) {
         QMetaEnumBuilderPrivate *enumerator = &(d->enumerators[index]);
-        int name = buildString(buf, str, &offset, enumerator->name, empty);
+        int name = strings.enter(enumerator->name);
         int isFlag = (int)(enumerator->isFlag);
         int count = enumerator->keys.size();
         int enumOffset = enumIndex;
@@ -1349,7 +1358,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             data[dataIndex + 3] = enumOffset;
         }
         for (int key = 0; key < count; ++key) {
-            int keyIndex = buildString(buf, str, &offset, enumerator->keys[key], empty);
+            int keyIndex = strings.enter(enumerator->keys[key]);
             if (buf) {
                 data[enumOffset++] = keyIndex;
                 data[enumOffset++] = enumerator->values[key];
@@ -1363,13 +1372,13 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     Q_ASSERT(!buf || dataIndex == pmeta->constructorData);
     for (index = 0; index < d->constructors.size(); ++index) {
         QMetaMethodBuilderPrivate *method = &(d->constructors[index]);
-        int sig = buildString(buf, str, &offset, method->signature, empty);
+        int sig = strings.enter(method->signature);
         int params;
         QByteArray names = buildParameterNames
             (method->signature, method->parameterNames);
-        params = buildString(buf, str, &offset, names, empty);
-        int ret = buildString(buf, str, &offset, method->returnType, empty);
-        int tag = buildString(buf, str, &offset, method->tag, empty);
+        params = strings.enter(names);
+        int ret = strings.enter(method->returnType);
+        int tag = strings.enter(method->tag);
         int attrs = method->attributes;
         if (buf) {
             data[dataIndex]     = sig;
@@ -1381,9 +1390,16 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         dataIndex += 5;
     }
 
-    // One more empty string to act as a terminator.
-    buildString(buf, str, &offset, QByteArray(), -1);
-    size += offset;
+    size += strings.arraySize();
+
+    if (buf) {
+        // Write strings to string data array.
+        MetaStringTable::const_iterator it;
+        for (it = strings.constBegin(); it != strings.constEnd(); ++it) {
+            memcpy(str + it.value(), it.key().constData(), it.key().size());
+            str[it.value() + it.key().size()] = '\0';
+        }
+    }
 
     // Output the zero terminator in the data array.
     if (buf)
