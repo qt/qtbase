@@ -5542,8 +5542,8 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
         if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists glesv2 2>/dev/null; then
-            QMAKE_INCDIR_OPENGL_ES2=`$PKG_CONFIG --variable=includedir glesv2 2>/dev/null`
-            QMAKE_LIBDIR_OPENGL_ES2=`$PKG_CONFIG --variable=libdir glesv2 2>/dev/null`
+            QMAKE_INCDIR_OPENGL_ES2=`$PKG_CONFIG --cflags-only-I glesv2 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
+            QMAKE_LIBDIR_OPENGL_ES2=`$PKG_CONFIG --libs-only-L glesv2 2>/dev/null | sed -e 's,^-L,,g' -e 's, -L, ,g'`
             QMAKE_LIBS_OPENGL_ES2=`$PKG_CONFIG --libs glesv2 2>/dev/null`
             QMAKE_CFLAGS_OPENGL_ES2=`$PKG_CONFIG --cflags glesv2 2>/dev/null`
             QMakeVar set QMAKE_INCDIR_OPENGL_ES2 "$QMAKE_INCDIR_OPENGL_ES2"
@@ -5597,8 +5597,8 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists wayland-client 2>/dev/null; then
             QMAKE_CFLAGS_WAYLAND=`$PKG_CONFIG --cflags wayland-client 2>/dev/null`
             QMAKE_LIBS_WAYLAND=`$PKG_CONFIG --libs wayland-client 2>/dev/null`
-            QMAKE_INCDIR_WAYLAND=`$PKG_CONFIG --variable=includedir wayland-client 2>/dev/null`
-            QMAKE_LIBDIR_WAYLAND=`$PKG_CONFIG --variable=libdir wayland-client 2>/dev/null`
+            QMAKE_INCDIR_WAYLAND=`$PKG_CONFIG --cflags-only-I wayland-client 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
+            QMAKE_LIBDIR_WAYLAND=`$PKG_CONFIG --libs-only-L wayland-client 2>/dev/null | sed -e 's,^-L,,g' -e 's, -L, ,g'`
         fi
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/wayland "Wayland" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_WAYLAND $QMAKE_LIBS_WAYLAND; then
             CFG_WAYLAND=yes
