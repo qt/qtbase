@@ -63,4 +63,13 @@
 # include "QtCore/qatomic_armv5.h"
 #endif
 
+#if 0
+// silence syncqt warnings
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
+
+QT_END_NAMESPACE
+QT_END_HEADER
+#endif
+
 #endif // QATOMIC_ARM_H
