@@ -731,6 +731,15 @@ void QWindow::setWindowIcon(const QImage &icon) const
 void QWindow::destroy()
 {
     Q_D(QWindow);
+    QObjectList childrenWindows = children();
+    for (int i = 0; i < childrenWindows.size(); i++) {
+        QObject *object = childrenWindows.at(i);
+        if (object->isWindowType()) {
+            QWindow *w = static_cast<QWindow*>(object);
+            QGuiApplicationPrivate::window_list.removeAll(w);
+            w->destroy();
+        }
+    }
     setVisible(false);
     delete d->platformWindow;
     d->platformWindow = 0;
@@ -880,16 +889,6 @@ bool QWindow::close()
 
     if (QGuiApplicationPrivate::focus_window == this)
         QGuiApplicationPrivate::focus_window = 0;
-
-    QObjectList childrenWindows = children();
-    for (int i = 0; i < childrenWindows.size(); i++) {
-        QObject *object = childrenWindows.at(i);
-        if (object->isWindowType()) {
-            QWindow *w = static_cast<QWindow*>(object);
-            QGuiApplicationPrivate::window_list.removeAll(w);
-            w->destroy();
-        }
-    }
 
     QGuiApplicationPrivate::window_list.removeAll(this);
     destroy();
