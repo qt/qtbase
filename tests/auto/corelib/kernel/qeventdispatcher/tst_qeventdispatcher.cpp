@@ -76,6 +76,7 @@ private slots:
     void registerTimer();
     /* void registerSocketNotifier(); */ // Not implemented here, see tst_QSocketNotifier instead
     /* void registerEventNotifiier(); */ // Not implemented here, see tst_QWinEventNotifier instead
+    void sendPostedEvents_data();
     void sendPostedEvents();
 };
 
@@ -178,9 +179,20 @@ void tst_QEventDispatcher::registerTimer()
 #undef FIND_TIMERS
 }
 
+void tst_QEventDispatcher::sendPostedEvents_data()
+{
+    QTest::addColumn<int>("processEventsFlagsInt");
+
+    QTest::newRow("WaitForMoreEvents") << int(QEventLoop::WaitForMoreEvents);
+    QTest::newRow("AllEvents") << int(QEventLoop::AllEvents);
+}
+
 // test that the eventDispatcher sends posted events correctly
 void tst_QEventDispatcher::sendPostedEvents()
 {
+    QFETCH(int, processEventsFlagsInt);
+    QEventLoop::ProcessEventsFlags processEventsFlags = QEventLoop::ProcessEventsFlags(processEventsFlagsInt);
+
     QElapsedTimer elapsedTimer;
     elapsedTimer.start();
     while (!elapsedTimer.hasExpired(200)) {
@@ -191,7 +203,7 @@ void tst_QEventDispatcher::sendPostedEvents()
         QCOMPARE(receivedEventType, -1);
 
         // since there is a pending posted event, this should not actually block, it should send the posted event and return
-        QVERIFY(eventDispatcher->processEvents(QEventLoop::WaitForMoreEvents));
+        QVERIFY(eventDispatcher->processEvents(processEventsFlags));
         // event shouldn't be delivered as a result of posting
         QCOMPARE(receivedEventType, int(QEvent::User));
     }
