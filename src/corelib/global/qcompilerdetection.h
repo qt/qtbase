@@ -42,20 +42,6 @@
 #ifndef QCOMPILERDETECTION_H
 #define QCOMPILERDETECTION_H
 
-#if 0
-// header is automatically included in qglobal.h
-#pragma qt_no_master_include
-
-// silence syncqt warnings (QT_* macros are not yet defined)
-QT_BEGIN_HEADER
-QT_BEGIN_NAMESPACE
-
-QT_END_NAMESPACE
-QT_END_HEADER
-
-#pragma qt_sync_stop_processing
-#endif
-
 /*
    The compiler, must be one of: (Q_CC_x)
 
