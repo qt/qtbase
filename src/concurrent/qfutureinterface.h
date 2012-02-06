@@ -60,7 +60,7 @@ class QFutureInterfaceBasePrivate;
 class QFutureWatcherBase;
 class QFutureWatcherBasePrivate;
 
-class Q_CORE_EXPORT QFutureInterfaceBase
+class Q_CONCURRENT_EXPORT QFutureInterfaceBase
 {
 public:
     enum State {

@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 class QEvent;
 
 class QFutureWatcherBasePrivate;
-class Q_CORE_EXPORT QFutureWatcherBase : public QObject
+class Q_CONCURRENT_EXPORT QFutureWatcherBase : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFutureWatcherBase)

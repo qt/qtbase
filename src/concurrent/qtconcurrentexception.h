@@ -62,14 +62,14 @@ namespace QtConcurrent
 
 #ifndef QT_NO_EXCEPTIONS
 
-class Q_CORE_EXPORT Exception : public std::exception
+class Q_CONCURRENT_EXPORT Exception : public std::exception
 {
 public:
     virtual void raise() const;
     virtual Exception *clone() const;
 };
 
-class Q_CORE_EXPORT UnhandledException : public Exception
+class Q_CONCURRENT_EXPORT UnhandledException : public Exception
 {
 public:
     void raise() const;
@@ -90,7 +90,7 @@ public:
     QExplicitlySharedDataPointer<Base> base;
 };
 
-class Q_CORE_EXPORT ExceptionStore
+class Q_CONCURRENT_EXPORT ExceptionStore
 {
 public:
     void setException(const Exception &e);
@@ -107,7 +107,7 @@ public:
 
 namespace internal {
 
-class Q_CORE_EXPORT ExceptionStore
+class Q_CONCURRENT_EXPORT ExceptionStore
 {
 public:
     ExceptionStore() { }

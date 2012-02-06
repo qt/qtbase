@@ -80,7 +80,7 @@ namespace QtConcurrent {
     management is done on the basis of the median of several timing measuremens,
     and it is done induvidualy for each thread.
 */
-class Q_CORE_EXPORT BlockSizeManager
+class Q_CONCURRENT_EXPORT BlockSizeManager
 {
 public:
     BlockSizeManager(int iterationCount);

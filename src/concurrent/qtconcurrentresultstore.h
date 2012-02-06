@@ -78,7 +78,7 @@ public:
     const void *result; // if count is 0 it's a result, otherwise it's a vector.
 };
 
-class Q_CORE_EXPORT ResultIteratorBase
+class Q_CONCURRENT_EXPORT ResultIteratorBase
 {
 public:
     ResultIteratorBase();
@@ -119,7 +119,7 @@ public:
     }
 };
 
-class Q_CORE_EXPORT ResultStoreBase
+class Q_CONCURRENT_EXPORT ResultStoreBase
 {
 public:
     ResultStoreBase();

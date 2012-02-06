@@ -93,7 +93,7 @@ enum ThreadFunctionResult { ThrottleThread, ThreadFinished };
 // Can be run in three modes: single threaded, multi-threaded blocking
 // and multi-threaded asynchronous.
 // The code for the single threaded mode is
-class Q_CORE_EXPORT ThreadEngineBase: public QRunnable
+class Q_CONCURRENT_EXPORT ThreadEngineBase: public QRunnable
 {
 public:
     // Public API:
