@@ -136,6 +136,11 @@ public:
     {
         attributes = ((attributes & ~AccessMask) | (int)value);
     }
+
+    QList<QByteArray> parameterTypes() const
+    {
+        return QMetaObjectPrivate::parameterTypeNamesFromSignature(signature);
+    }
 };
 
 class QMetaPropertyBuilderPrivate
@@ -1936,13 +1941,27 @@ QByteArray QMetaMethodBuilder::returnType() const
     is empty, then the method's return type is \c{void}.  The \a value
     will be normalized before it is added to the method.
 
-    \sa returnType(), signature()
+    \sa returnType(), parameterTypes(), signature()
 */
 void QMetaMethodBuilder::setReturnType(const QByteArray& value)
 {
     QMetaMethodBuilderPrivate *d = d_func();
     if (d)
         d->returnType = QMetaObject::normalizedType(value);
+}
+
+/*!
+    Returns the list of parameter types for this method.
+
+    \sa returnType(), parameterNames()
+*/
+QList<QByteArray> QMetaMethodBuilder::parameterTypes() const
+{
+    QMetaMethodBuilderPrivate *d = d_func();
+    if (d)
+        return d->parameterTypes();
+    else
+        return QList<QByteArray>();
 }
 
 /*!
