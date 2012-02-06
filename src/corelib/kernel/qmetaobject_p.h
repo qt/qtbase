@@ -152,6 +152,10 @@ struct QMetaObjectPrivate
 #endif
 };
 
+// For meta-object generators
+
+enum { MetaObjectPrivateFieldCount = sizeof(QMetaObjectPrivate) / sizeof(int) };
+
 #ifndef UTILS_H
 // mirrored in moc's utils.h
 static inline bool is_ident_char(char s)

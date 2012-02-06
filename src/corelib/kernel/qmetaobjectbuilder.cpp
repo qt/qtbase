@@ -1160,7 +1160,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     QMetaObjectPrivate *pmeta
         = reinterpret_cast<QMetaObjectPrivate *>(buf + size);
     int pmetaSize = size;
-    dataIndex = 14;     // Number of fields in the QMetaObjectPrivate.
+    dataIndex = MetaObjectPrivateFieldCount;
     for (index = 0; index < d->properties.size(); ++index) {
         if (d->properties[index].notifySignal != -1) {
             hasNotifySignals = true;
@@ -1238,7 +1238,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     }
 
     // Reset the current data position to just past the QMetaObjectPrivate.
-    dataIndex = 14;
+    dataIndex = MetaObjectPrivateFieldCount;
 
     // Add the class name to the string table.
     int offset = 0;
