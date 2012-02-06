@@ -45,6 +45,9 @@
 #include "qendian.h"
 #include "qdebug.h"
 
+#ifndef QT_BOOTSTRAPPED
+#include "qcryptographichash.h"
+#endif
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_QUUID_STRING
@@ -133,6 +136,7 @@ bool _q_uuidFromHex(const Char *&src, uint &d1, ushort &d2, ushort &d3, uchar (&
 }
 #endif
 
+#ifndef QT_BOOTSTRAPPED
 static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCryptographicHash::Algorithm algorithm, int version)
 {
     QByteArray hashResult;
@@ -155,6 +159,7 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 
     return result;
 }
+#endif
 
 /*!
     \class QUuid
@@ -437,7 +442,7 @@ QUuid::QUuid(const QByteArray &text)
 
   \sa variant(), version(), createUuidV3()
 */
-
+#ifndef QT_BOOTSTRAPPED
 QUuid QUuid::createUuidV3(const QUuid &ns, const QByteArray &baseData)
 {
     return createFromName(ns, baseData, QCryptographicHash::Md5, 3);
@@ -447,6 +452,7 @@ QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData)
 {
     return createFromName(ns, baseData, QCryptographicHash::Sha1, 5);
 }
+#endif
 
 /*!
   Creates a QUuid object from the binary representation of the UUID, as

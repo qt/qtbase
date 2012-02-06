@@ -60,7 +60,7 @@ hpux-acc*|hpuxi-acc* {
     else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
     else:LIBS += zdll.lib
 }
-win32:LIBS += -luser32
+win32:LIBS += -luser32 -lole32
 
 mac {
     CONFIG -= incremental
