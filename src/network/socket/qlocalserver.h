@@ -58,11 +58,22 @@ class Q_NETWORK_EXPORT QLocalServer : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QLocalServer)
+    Q_PROPERTY(SocketOptions socketOptions READ socketOptions WRITE setSocketOptions)
+    Q_FLAGS(SocketOption SocketOptions)
 
 Q_SIGNALS:
     void newConnection();
 
 public:
+    enum SocketOption {
+        NoOptions = 0x0,
+        UserAccessOption = 0x01,
+        GroupAccessOption = 0x2,
+        OtherAccessOption = 0x4,
+        WorldAccessOption = 0x7
+    };
+    Q_DECLARE_FLAGS(SocketOptions, SocketOption)
+
     QLocalServer(QObject *parent = 0);
     ~QLocalServer();
 
@@ -80,6 +91,9 @@ public:
     void setMaxPendingConnections(int numConnections);
     bool waitForNewConnection(int msec = 0, bool *timedOut = 0);
 
+    void setSocketOptions(SocketOptions options);
+    SocketOptions socketOptions() const;
+
 protected:
     virtual void incomingConnection(quintptr socketDescriptor);
 
@@ -87,6 +101,8 @@ private:
     Q_DISABLE_COPY(QLocalServer)
     Q_PRIVATE_SLOT(d_func(), void _q_onNewConnection())
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QLocalServer::SocketOptions)
 
 #endif // QT_NO_LOCALSERVER
 

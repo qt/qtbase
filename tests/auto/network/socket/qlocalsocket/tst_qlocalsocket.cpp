@@ -48,6 +48,8 @@
 
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketError)
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketState)
+Q_DECLARE_METATYPE(QLocalServer::SocketOption)
+Q_DECLARE_METATYPE(QFile::Permissions)
 
 class tst_QLocalSocket : public QObject
 {
@@ -104,12 +106,17 @@ private slots:
     void bytesWrittenSignal();
     void syncDisconnectNotify();
     void asyncDisconnectNotify();
+
+    void verifySocketOptions();
+    void verifySocketOptions_data();
 };
 
 void tst_QLocalSocket::init()
 {
     qRegisterMetaType<QLocalSocket::LocalSocketState>("QLocalSocket::LocalSocketState");
     qRegisterMetaType<QLocalSocket::LocalSocketError>("QLocalSocket::LocalSocketError");
+    qRegisterMetaType<QLocalServer::SocketOption>("QLocalServer::SocketOption");
+    qRegisterMetaType<QFile::Permissions>("QFile::Permissions");
 }
 
 void tst_QLocalSocket::cleanup()
@@ -1008,6 +1015,54 @@ void tst_QLocalSocket::asyncDisconnectNotify()
     QVERIFY(serverSocket);
     delete serverSocket;
     QTRY_VERIFY(!disconnectedSpy.isEmpty());
+}
+
+void tst_QLocalSocket::verifySocketOptions_data()
+{
+#ifdef Q_OS_LINUX
+    QTest::addColumn<QString>("service");
+    QTest::addColumn<QLocalServer::SocketOption>("opts");
+    QTest::addColumn<QFile::Permissions>("perms");
+
+    QFile::Permissions p = QFile::ExeOwner|QFile::WriteOwner|QFile::ReadOwner |
+                           QFile::ExeUser|QFile::WriteUser|QFile::ReadUser;
+    QTest::newRow("user")  << "userPerms"  << QLocalServer::UserAccess << p;
+
+    p = QFile::ExeGroup|QFile::WriteGroup|QFile::ReadGroup;
+    QTest::newRow("group") << "groupPerms" << QLocalServer::GroupAccess << p;
+
+    p = QFile::ExeOther|QFile::WriteOther|QFile::ReadOther;
+    QTest::newRow("other") << "otherPerms" << QLocalServer::OtherAccess << p;
+
+    p = QFile::ExeOwner|QFile::WriteOwner|QFile::ReadOwner|
+        QFile::ExeUser|QFile::WriteUser|QFile::ReadUser |
+        QFile::ExeGroup|QFile::WriteGroup|QFile::ReadGroup|
+        QFile::ExeOther|QFile::WriteOther|QFile::ReadOther;
+    QTest::newRow("all")   << "worldPerms" << QLocalServer::WorldAccess << p;
+#endif
+}
+
+void tst_QLocalSocket::verifySocketOptions()
+{
+    // These are only guaranteed to be useful on linux at this time
+#ifdef Q_OS_LINUX
+   QFETCH(QString, service);
+   QFETCH(QLocalServer::SocketOption, opts);
+   QFETCH(QFile::Permissions, perms);
+
+
+   QLocalServer::removeServer(service);
+   QLocalServer server;
+   server.setSocketOptions(opts);
+   QVERIFY2(server.listen(service), "service failed to start listening");
+
+   // find the socket
+   QString fullServerPath = QDir::cleanPath(QDir::tempPath());
+   fullServerPath += QLatin1Char('/') + service;
+
+   QFile socketFile(fullServerPath);
+   QVERIFY2(perms == socketFile.permissions(), "permissions on the socket don't match");
+#endif
 }
 
 QTEST_MAIN(tst_QLocalSocket)

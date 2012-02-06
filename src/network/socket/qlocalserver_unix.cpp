@@ -44,6 +44,7 @@
 #include "qlocalsocket.h"
 #include "qlocalsocket_p.h"
 #include "qnet_unix_p.h"
+#include "qtemporarydir.h"
 
 #ifndef QT_NO_LOCALSERVER
 
@@ -92,6 +93,20 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     }
     serverName = requestedServerName;
 
+    QString tempPath;
+    QScopedPointer<QTemporaryDir> tempDir;
+
+    // Check any of the flags
+    if (socketOptions & QLocalServer::WorldAccessOption) {
+        tempDir.reset(new QTemporaryDir(fullServerName));
+        if (!tempDir->isValid()) {
+            setError(QLatin1String("QLocalServer::listen"));
+            return false;
+        }
+        tempPath = tempDir->path();
+        tempPath += QLatin1Char('/') + requestedServerName;
+    }
+
     // create the unix socket
     listenSocket = qt_safe_socket(PF_UNIX, SOCK_STREAM, 0);
     if (-1 == listenSocket) {
@@ -108,8 +123,26 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
         closeServer();
         return false;
     }
-    ::memcpy(addr.sun_path, fullServerName.toLatin1().data(),
-             fullServerName.toLatin1().size() + 1);
+
+    if (socketOptions & QLocalServer::WorldAccessOption) {
+        if (sizeof(addr.sun_path) < (uint)tempPath.toLatin1().size() + 1) {
+            setError(QLatin1String("QLocalServer::listen"));
+            closeServer();
+            return false;
+        }
+        ::memcpy(addr.sun_path, tempPath.toLatin1().data(),
+                 tempPath.toLatin1().size() + 1);
+
+        if (-1 == ::fchmod(listenSocket, 0)) {
+            setError(QLatin1String("QLocalServer::listen"));
+            closeServer();
+            return false;
+        }
+
+    } else {
+        ::memcpy(addr.sun_path, fullServerName.toLatin1().data(),
+                 fullServerName.toLatin1().size() + 1);
+    }
 
     // bind
     if(-1 == QT_SOCKET_BIND(listenSocket, (sockaddr *)&addr, sizeof(sockaddr_un))) {
@@ -133,6 +166,34 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
             QFile::remove(fullServerName);
         return false;
     }
+
+    if (socketOptions & QLocalServer::WorldAccessOption) {
+            mode_t mode = 000;
+
+            if (socketOptions & QLocalServer::UserAccessOption) {
+                mode |= S_IRWXU;
+            }
+            if (socketOptions & QLocalServer::GroupAccessOption) {
+                mode |= S_IRWXG;
+            }
+            if (socketOptions & QLocalServer::OtherAccessOption) {
+                mode |= S_IRWXO;
+            }
+
+            if (mode) {
+                if (-1 == ::chmod(tempPath.toLatin1(), mode)) {
+                    setError(QLatin1String("QLocalServer::listen"));
+                    closeServer();
+                    return false;
+                }
+            }
+            if (-1 == ::rename(tempPath.toLatin1(), fullServerName.toLatin1())){
+                setError(QLatin1String("QLocalServer::listen"));
+                closeServer();
+                return false;
+            }
+    }
+
     Q_ASSERT(!socketNotifier);
     socketNotifier = new QSocketNotifier(listenSocket,
                                          QSocketNotifier::Read, q);
