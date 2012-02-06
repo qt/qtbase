@@ -703,10 +703,9 @@ void tst_QSqlTableModel::removeRows()
     QVERIFY(!model.removeRows(1, 0, model.index(2, 0))); // can't pass a valid modelindex
 
     QVERIFY_SQL(model, removeRows(0, 2));
-    QCOMPARE(beforeDeleteSpy.count(), 3);
-    QVERIFY(beforeDeleteSpy.at(0).at(0).toInt() == 5);
-    QVERIFY(beforeDeleteSpy.at(1).at(0).toInt() == 0);
-    QVERIFY(beforeDeleteSpy.at(2).at(0).toInt() == 1);
+    QCOMPARE(beforeDeleteSpy.count(), 2);
+    QVERIFY(beforeDeleteSpy.at(0).at(0).toInt() == 0);
+    QVERIFY(beforeDeleteSpy.at(1).at(0).toInt() == 1);
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("vohi"));
     model.clear();

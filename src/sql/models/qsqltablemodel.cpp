@@ -990,8 +990,6 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
     if (parent.isValid() || row < 0 || count <= 0)
         return false;
 
-    int initialRowCount = rowCount();
-
     int i;
     for (i = 0; i < count && row + i < rowCount(); ++i) {
         int idx = row + i;
@@ -1011,12 +1009,6 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
 
     if (d->strategy != OnManualSubmit && i > 0)
         submit();
-
-    // historical bug: emit beforeDelete for 1st row beyond end
-    if (d->strategy != OnManualSubmit) {
-        if (row + count > initialRowCount)
-            emit beforeDelete(qMax(initialRowCount, row));
-    }
 
     if (i < count)
         return false;

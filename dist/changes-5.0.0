@@ -329,6 +329,8 @@ QTestLib
   and log formats simultaneously.
 
 
+* removeRows() no longer emits extra beforeDelete signal for out of range row.
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
