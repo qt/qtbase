@@ -3695,6 +3695,8 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
             // don't clear dest_fetch as it sets up the pointer correctly to save one copy
             break;
         default: {
+            if (data->type == QSpanData::Texture && data->texture.const_alpha != 256)
+                break;
             const QSpan *lastSpan = spans + spanCount;
             bool alphaSpans = false;
             while (spans < lastSpan) {
