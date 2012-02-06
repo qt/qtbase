@@ -1792,7 +1792,7 @@ QT_END_NAMESPACE
 QT_END_HEADER
 
 // qDebug and friends
-#include "qlogging.h"
+#include <QtCore/qlogging.h>
 
 #endif /* __cplusplus */
 
