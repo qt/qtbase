@@ -1212,21 +1212,16 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
     bool isOk = true;
     for (int i = 0; i < record.count(); ++i) {
         int idx = d->nameToIndex(record.fieldName(i));
-        if (idx == -1) {
+        if (idx == -1)
             isOk = false;
-        } else if (d->strategy != OnManualSubmit) {
-            // historical bug: this could all be simple like OnManualSubmit, but isn't
-            const QModelIndex cIndex = createIndex(row, idx);
+        else
             mrow.setValue(idx, record.value(i));
-            emit dataChanged(cIndex, cIndex);
-        } else {
-            mrow.setValue(idx, record.value(i));
-        }
     }
 
-    if (d->strategy == OnManualSubmit && isOk)
+    if (columnCount())
         emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
-    else if (d->strategy == OnFieldChange)
+
+    if (d->strategy == OnFieldChange)
         return submit();
     else if (d->strategy == OnManualSubmit)
         return isOk;

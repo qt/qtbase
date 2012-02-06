@@ -412,10 +412,10 @@ void tst_QSqlTableModel::setRecord()
                 model.submit();
             else {
                 // dataChanged() is not emitted when submitAll() is called
-                QCOMPARE(spy.count(), model.columnCount());
+                QCOMPARE(spy.count(), 1);
                 QCOMPARE(spy.at(0).count(), 2);
-                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(0)), model.index(i, 1));
-                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(1)), model.index(i, 1));
+                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 0));
+                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, rec.count() - 1));
             }
         }
 
