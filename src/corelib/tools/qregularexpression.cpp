@@ -1977,6 +1977,43 @@ QDebug operator<<(QDebug debug, const QRegularExpression &re)
 }
 
 /*!
+    \relates QRegularExpression
+
+    Writes the pattern options \a patternOptions into the debug object \a debug
+    for debugging purposes.
+
+    \sa {Debugging Techniques}
+*/
+QDebug operator<<(QDebug debug, QRegularExpression::PatternOptions patternOptions)
+{
+    QStringList flags;
+
+    if (patternOptions == QRegularExpression::NoPatternOption) {
+        flags << QLatin1String("NoPatternOption");
+    } else {
+        if (patternOptions & QRegularExpression::CaseInsensitiveOption)
+            flags << QLatin1String("CaseInsensitiveOption");
+        if (patternOptions & QRegularExpression::DotMatchesEverythingOption)
+            flags << QLatin1String("DotMatchesEverythingOption");
+        if (patternOptions & QRegularExpression::MultilineOption)
+            flags << QLatin1String("MultilineOption");
+        if (patternOptions & QRegularExpression::ExtendedPatternSyntaxOption)
+            flags << QLatin1String("ExtendedPatternSyntaxOption");
+        if (patternOptions & QRegularExpression::InvertedGreedinessOption)
+            flags << QLatin1String("InvertedGreedinessOption");
+        if (patternOptions & QRegularExpression::DontCaptureOption)
+            flags << QLatin1String("DontCaptureOption");
+        if (patternOptions & QRegularExpression::UseUnicodePropertiesOption)
+            flags << QLatin1String("UseUnicodePropertiesOption");
+    }
+
+    debug.nospace() << "QRegularExpression::PatternOptions("
+                    << qPrintable(flags.join(QLatin1String("|")))
+                    << ")";
+
+    return debug.space();
+}
+/*!
     \relates QRegularExpressionMatch
 
     Writes the match object \a match into the debug object \a debug for

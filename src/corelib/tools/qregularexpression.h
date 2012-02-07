@@ -142,6 +142,7 @@ Q_CORE_EXPORT QDataStream &operator>>(QDataStream &in, QRegularExpression &re);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QRegularExpression &re);
+Q_CORE_EXPORT QDebug operator<<(QDebug debug, QRegularExpression::PatternOptions patternOptions);
 #endif
 
 struct QRegularExpressionMatchPrivate;
