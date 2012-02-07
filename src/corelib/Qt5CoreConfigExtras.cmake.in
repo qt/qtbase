@@ -5,3 +5,5 @@ get_filename_component(_qt5_corelib_install_prefix ${CMAKE_CURRENT_LIST_DIR}/$${
 set(QT_QMAKE_EXECUTABLE \"${_qt5_corelib_install_prefix}/$$CMAKE_BIN_DIR/qmake$$CMAKE_BIN_SUFFIX\")
 set(QT_MOC_EXECUTABLE \"${_qt5_corelib_install_prefix}/$$CMAKE_BIN_DIR/moc$$CMAKE_BIN_SUFFIX\")
 set(QT_RCC_EXECUTABLE \"${_qt5_corelib_install_prefix}/$$CMAKE_BIN_DIR/rcc$$CMAKE_BIN_SUFFIX\")
+
+list(APPEND Qt5Core_INCLUDE_DIRS \"${_qt5_corelib_install_prefix}/mkspecs/default\")
