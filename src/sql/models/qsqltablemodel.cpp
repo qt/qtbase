@@ -1062,11 +1062,11 @@ bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
 }
 
 /*!
-    Inserts the \a record after \a row. If \a row is negative, the
-    record will be appended to the end. Calls insertRows() and
+    Inserts the \a record at position \a row. If \a row is negative,
+    the record will be appended to the end. Calls insertRows() and
     setRecord() internally.
 
-    Returns true if the row could be inserted, otherwise false.
+    Returns true if the record could be inserted, otherwise false.
 
     \sa insertRows(), removeRows()
 */
