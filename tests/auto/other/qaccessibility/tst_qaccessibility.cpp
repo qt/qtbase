@@ -1516,6 +1516,12 @@ void tst_QAccessibility::textEditTest()
     QCOMPARE(iface->textInterface()->characterRect(0, QAccessible2::RelativeToParent).size(), QSize(fm.width("h"), fm.height()));
     QCOMPARE(iface->textInterface()->characterRect(5, QAccessible2::RelativeToParent).size(), QSize(fm.width(" "), fm.height()));
     QCOMPARE(iface->textInterface()->characterRect(6, QAccessible2::RelativeToParent).size(), QSize(fm.width("w"), fm.height()));
+
+    iface->editableTextInterface()->copyText(6, 11);
+    QCOMPARE(QApplication::clipboard()->text(), QLatin1String("world"));
+    iface->editableTextInterface()->cutText(12, 16);
+    QCOMPARE(QApplication::clipboard()->text(), QLatin1String("how "));
+    QCOMPARE(iface->textInterface()->text(12, 15), QLatin1String("are"));
     }
     QTestAccessibility::clearEvents();
 }

@@ -87,7 +87,7 @@ QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel)
         if (!w)
             continue;
         QString objectName = w->objectName();
-        if ((includeTopLevel || !w->isWindow()) 
+        if ((includeTopLevel || !w->isWindow())
               && !qobject_cast<QFocusFrame*>(w)
               && !qobject_cast<QMenu*>(w)
               && objectName != QLatin1String("qt_rubberband")
@@ -483,12 +483,17 @@ static QTextCursor cursorForRange(QTextEdit *textEdit, int startOffset, int endO
 
 void QAccessibleTextEdit::copyText(int startOffset, int endOffset) const
 {
+#ifndef QT_NO_CLIPBOARD
+    QTextCursor previousCursor = textEdit()->textCursor();
     QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
 
     if (!cursor.hasSelection())
         return;
 
-//     QApplication::clipboard()->setMimeData(new QTextEditMimeData(cursor.selection()));
+    textEdit()->setTextCursor(cursor);
+    textEdit()->copy();
+    textEdit()->setTextCursor(previousCursor);
+#endif
 }
 
 void QAccessibleTextEdit::deleteText(int startOffset, int endOffset)
@@ -508,13 +513,15 @@ void QAccessibleTextEdit::insertText(int offset, const QString &text)
 
 void QAccessibleTextEdit::cutText(int startOffset, int endOffset)
 {
+#ifndef QT_NO_CLIPBOARD
     QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
 
     if (!cursor.hasSelection())
         return;
 
-//     QApplication::clipboard()->setMimeData(new QTextEditMimeData(cursor.selection()));
-    cursor.removeSelectedText();
+    textEdit()->setTextCursor(cursor);
+    textEdit()->cut();
+#endif
 }
 
 void QAccessibleTextEdit::pasteText(int offset)
