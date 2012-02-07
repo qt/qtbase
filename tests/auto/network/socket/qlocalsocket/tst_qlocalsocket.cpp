@@ -53,10 +53,6 @@ class tst_QLocalSocket : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QLocalSocket();
-    virtual ~tst_QLocalSocket();
-
 public Q_SLOTS:
     void init();
     void cleanup();
@@ -109,20 +105,6 @@ private slots:
     void syncDisconnectNotify();
     void asyncDisconnectNotify();
 };
-
-tst_QLocalSocket::tst_QLocalSocket()
-{
-    if (!QFile::exists("lackey/lackey"
-#ifdef Q_OS_WIN
-    ".exe"
-#endif
-                ))
-        qWarning() << "lackey executable doesn't exists!";
-}
-
-tst_QLocalSocket::~tst_QLocalSocket()
-{
-}
 
 void tst_QLocalSocket::init()
 {
@@ -749,6 +731,16 @@ void tst_QLocalSocket::processConnection_data()
  */
 void tst_QLocalSocket::processConnection()
 {
+#ifdef Q_OS_WIN
+#  define EXE_SUFFIX ".exe"
+#else
+#  define EXE_SUFFIX
+#endif
+
+// ### lackey is currently not build
+    QEXPECT_FAIL("", "lackey is currently not built due to qscript dependency, QTBUG-24142", Abort);
+    QVERIFY(QFile::exists("lackey/lackey" EXE_SUFFIX));
+
     QFETCH(int, processes);
     QStringList serverArguments = QStringList() << SRCDIR "lackey/scripts/server.js" << QString::number(processes);
     QProcess producer;
@@ -758,7 +750,7 @@ void tst_QLocalSocket::processConnection()
 #endif
     QList<QProcess*> consumers;
     producer.start("lackey/lackey", serverArguments);
-    QVERIFY(producer.waitForStarted(-1));
+    QVERIFY2(producer.waitForStarted(-1), qPrintable(producer.errorString()));
     QTest::qWait(2000);
     for (int i = 0; i < processes; ++i) {
        QStringList arguments = QStringList() << SRCDIR "lackey/scripts/client.js";
