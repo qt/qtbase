@@ -76,7 +76,12 @@
 
 static const IID   IID_IFileOpenDialog   = {0xd57c7288, 0xd4ad, 0x4768, {0xbe, 0x02, 0x9d, 0x96, 0x95, 0x32, 0xd9, 0x60}};
 static const IID   IID_IFileSaveDialog   = {0x84bccd23, 0x5fde, 0x4cdb,{0xae, 0xa4, 0xaf, 0x64, 0xb8, 0x3d, 0x78, 0xab}};
+#ifdef __MINGW64_VERSION_MAJOR
+static const IID   q_IID_IShellItem      = {0x43826d1e, 0xe718, 0x42ee, {0xbc, 0x55, 0xa1, 0xe2, 0x61, 0xc3, 0x7b, 0xfe}};
+#define IID_IShellItem q_IID_IShellItem
+#else
 static const IID   IID_IShellItem        = {0x43826d1e, 0xe718, 0x42ee, {0xbc, 0x55, 0xa1, 0xe2, 0x61, 0xc3, 0x7b, 0xfe}};
+#endif
 static const IID   IID_IFileDialogEvents = {0x973510db, 0x7d7f, 0x452b,{0x89, 0x75, 0x74, 0xa8, 0x58, 0x28, 0xd3, 0x54}};
 static const CLSID CLSID_FileOpenDialog  = {0xdc1c5a9c, 0xe88a, 0x4dde, {0xa5, 0xa1, 0x60, 0xf8, 0x2a, 0x20, 0xae, 0xf7}};
 static const CLSID CLSID_FileSaveDialog  = {0xc0b4e2f3, 0xba21, 0x4773,{0x8d, 0xba, 0x33, 0x5e, 0xc9, 0x46, 0xeb, 0x8b}};
@@ -141,6 +146,7 @@ typedef enum {
     SIATTRIBFLAGS_APPCOMPAT     = 0x3,
     SIATTRIBFLAGS_MASK  = 0x3
 }       SIATTRIBFLAGS;
+#ifndef __MINGW64_VERSION_MAJOR
 typedef enum {
     SIGDN_NORMALDISPLAY = 0x00000000,
     SIGDN_PARENTRELATIVEPARSING = 0x80018001,
@@ -151,6 +157,7 @@ typedef enum {
     SIGDN_FILESYSPATH = 0x80058000,
     SIGDN_URL = 0x80068000
 } SIGDN;
+#endif
 typedef enum {
     FDAP_BOTTOM = 0x00000000,
     FDAP_TOP = 0x00000001
@@ -193,6 +200,7 @@ typedef struct {
 
 DECLARE_INTERFACE(IFileDialogEvents);
 
+#ifndef __MINGW64_VERSION_MAJOR
 DECLARE_INTERFACE_(IShellItem, IUnknown)
 {
     STDMETHOD(BindToHandler)(THIS_ IBindCtx *pbc, REFGUID bhid, REFIID riid, void **ppv) PURE;
@@ -201,6 +209,7 @@ DECLARE_INTERFACE_(IShellItem, IUnknown)
     STDMETHOD(GetAttributes)(THIS_ ULONG sfgaoMask, ULONG *psfgaoAttribs) PURE;
     STDMETHOD(Compare)(THIS_ IShellItem *psi, DWORD hint, int *piOrder) PURE;
 };
+#endif
 
 DECLARE_INTERFACE_(IShellItemFilter, IUnknown)
 {
@@ -227,10 +236,12 @@ DECLARE_INTERFACE_(IShellItemArray, IUnknown)
     STDMETHOD(EnumItems)(THIS_ IEnumShellItems **ppenumShellItems) PURE;
 };
 
+#ifndef __MINGW64_VERSION_MAJOR
 DECLARE_INTERFACE_(IModalWindow, IUnknown)
 {
     STDMETHOD(Show)(THIS_ HWND hwndParent) PURE;
 };
+#endif
 
 DECLARE_INTERFACE_(IFileDialog, IModalWindow)
 {
@@ -754,7 +765,7 @@ void QWindowsNativeFileDialogBase::setDirectory(const QString &directory)
 QString QWindowsNativeFileDialogBase::directory() const
 {
     IShellItem *item = 0;
-    return (SUCCEEDED(m_fileDialog) && item) ?
+    return (m_fileDialog && item) ?
         QWindowsNativeFileDialogBase::itemPath(item) : QString();
 }
 

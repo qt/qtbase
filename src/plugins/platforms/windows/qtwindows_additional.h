@@ -66,6 +66,8 @@
 #define IFACEMETHODIMP STDMETHODIMP
 #define IFACEMETHODIMP_(type) STDMETHODIMP_(type)
 
+#if !defined(__MINGW64_VERSION_MAJOR)
+
 typedef struct tagUPDATELAYEREDWINDOWINFO {
   DWORD               cbSize;
   HDC                 hdcDst;
@@ -78,6 +80,8 @@ typedef struct tagUPDATELAYEREDWINDOWINFO {
   DWORD               dwFlags;
   const RECT          *prcDirty;
 } UPDATELAYEREDWINDOWINFO, *PUPDATELAYEREDWINDOWINFO;
+
+#endif // if !defined(__MINGW64_VERSION_MAJOR)
 
 // OpenGL Pixelformat flags.
 #define PFD_SUPPORT_DIRECTDRAW      0x00002000

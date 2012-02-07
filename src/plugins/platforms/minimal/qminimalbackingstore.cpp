@@ -53,7 +53,7 @@ QMinimalBackingStore::QMinimalBackingStore(QWindow *window)
     if (QT_PREPEND_NAMESPACE(qgetenv)("QT_DEBUG_BACKINGSTORE").toInt() > 0)
         mDebug = true;
     if (mDebug)
-        qDebug() << "QMinimalBackingStore::QMinimalBackingStore:" << (long)this;
+        qDebug() << "QMinimalBackingStore::QMinimalBackingStore:" << (quintptr)this;
 }
 
 QMinimalBackingStore::~QMinimalBackingStore()

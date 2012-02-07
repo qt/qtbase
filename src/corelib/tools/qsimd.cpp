@@ -47,7 +47,7 @@
 #  if defined(Q_OS_WINCE)
 #    include <qt_windows.h>
 #  endif
-#  if defined(Q_OS_WIN64) && !defined(Q_CC_GNU)
+#  if defined(Q_OS_WIN64)
 #    include <intrin.h>
 #  endif
 #elif defined(Q_OS_LINUX) && defined(__arm__)

@@ -62,6 +62,10 @@ QT_BEGIN_HEADER
 #undef QT_HAVE_MMX
 #endif
 
+#ifdef __MINGW64_VERSION_MAJOR
+#include <intrin.h>
+#endif
+
 // SSE intrinsics
 #if defined(QT_HAVE_SSE2) && (defined(__SSE2__) || defined(Q_CC_MSVC))
 #if defined(QT_LINUXBASE)
