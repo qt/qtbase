@@ -63,14 +63,11 @@ class QTestData;
 class Q_TESTLIB_EXPORT QTestResult
 {
 public:
-    enum TestLocation { NoWhere = 0, DataFunc = 1, InitFunc = 2, Func = 3, CleanupFunc = 4 };
-
     static const char *currentTestObjectName();
     static bool currentTestFailed();
     static QTestData *currentTestData();
     static QTestData *currentGlobalTestData();
     static const char *currentTestFunction();
-    static TestLocation currentTestLocation();
     static const char *currentDataTag();
     static const char *currentGlobalDataTag();
     static void finishedCurrentTestData();
@@ -86,7 +83,6 @@ public:
     static void setCurrentGlobalTestData(QTestData *data);
     static void setCurrentTestData(QTestData *data);
     static void setCurrentTestFunction(const char *func);
-    static void setCurrentTestLocation(TestLocation loc);
     static void setCurrentTestObject(const char *name);
     static void addSkip(const char *message, const char *file, int line);
     static bool expectFail(const char *dataIndex, const char *comment,

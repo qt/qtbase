@@ -59,7 +59,6 @@ namespace QTest
     static const char *currentTestObjectName = 0;
     static bool failed = false;
     static bool skipCurrentTest = false;
-    static QTestResult::TestLocation location = QTestResult::NoWhere;
 
     static const char *expectFailComment = 0;
     static int expectFailMode = 0;
@@ -74,7 +73,6 @@ void QTestResult::reset()
     QTest::currentTestFunc = 0;
     QTest::currentTestObjectName = 0;
     QTest::failed = false;
-    QTest::location = QTestResult::NoWhere;
 
     QTest::expectFailComment = 0;
     QTest::expectFailMode = 0;
@@ -112,8 +110,6 @@ void QTestResult::setCurrentTestFunction(const char *func)
 {
     QTest::currentTestFunc = func;
     QTest::failed = false;
-    if (!func)
-        QTest::location = NoWhere;
     if (func)
         QTestLog::enterTestFunction(func);
 }
@@ -152,7 +148,6 @@ void QTestResult::finishedCurrentTestFunction()
 {
     QTest::currentTestFunc = 0;
     QTest::failed = false;
-    QTest::location = NoWhere;
 
     QTestLog::leaveTestFunction();
 }
@@ -287,16 +282,6 @@ void QTestResult::addSkip(const char *message, const char *file, int line)
     clearExpectFail();
 
     QTestLog::addSkip(message, file, line);
-}
-
-QTestResult::TestLocation QTestResult::currentTestLocation()
-{
-    return QTest::location;
-}
-
-void QTestResult::setCurrentTestLocation(TestLocation loc)
-{
-    QTest::location = loc;
 }
 
 void QTestResult::setCurrentTestObject(const char *name)

@@ -1499,12 +1499,9 @@ static void qInvokeTestMethodDataEntry(char *slot)
         /* Benchmarking: for each accumulation iteration*/
         bool invokeOk;
         do {
-            QTestResult::setCurrentTestLocation(QTestResult::InitFunc);
             invokeMethod(QTest::currentTestObject, "init()");
             if (QTestResult::skipCurrentTest())
                 break;
-
-            QTestResult::setCurrentTestLocation(QTestResult::Func);
 
             QBenchmarkTestMethodData::current->result = QBenchmarkResult();
             QBenchmarkTestMethodData::current->resultAccepted = false;
@@ -1521,10 +1518,8 @@ static void qInvokeTestMethodDataEntry(char *slot)
 
             QTestResult::finishedCurrentTestData();
 
-            QTestResult::setCurrentTestLocation(QTestResult::CleanupFunc);
             invokeMethod(QTest::currentTestObject, "cleanup()");
             QTestResult::finishedCurrentTestDataCleanup();
-            QTestResult::setCurrentTestLocation(QTestResult::NoWhere);
 
             // If this test method has a benchmark, repeat until all measurements are
             // acceptable.
@@ -1593,7 +1588,6 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
             QTestResult::setCurrentGlobalTestData(gTable->testData(curGlobalDataIndex));
 
         if (curGlobalDataIndex == 0) {
-            QTestResult::setCurrentTestLocation(QTestResult::DataFunc);
             qsnprintf(member, 512, "%s_data()", slot);
             invokeMethod(QTest::currentTestObject, member);
         }
@@ -1747,12 +1741,10 @@ static void qInvokeTestMethods(QObject *testObject)
     QTEST_ASSERT(metaObject);
     QTestLog::startLogging();
     QTestResult::setCurrentTestFunction("initTestCase");
-    QTestResult::setCurrentTestLocation(QTestResult::DataFunc);
     QTestTable::globalTestTable();
     invokeMethod(testObject, "initTestCase_data()");
 
     if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
-        QTestResult::setCurrentTestLocation(QTestResult::InitFunc);
         invokeMethod(testObject, "initTestCase()");
 
         // finishedCurrentTestDataCleanup() resets QTestResult::currentTestFailed(), so use a local copy.
