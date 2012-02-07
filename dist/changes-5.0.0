@@ -355,6 +355,8 @@ ignore the rest of the range.
   is consistent with the meaning of the flag.
   -Require all fields to map correctly. Previously fields that didn't
   map were simply ignored.
+  -For OnManualSubmit, insertRecord() no longer leaves behind an empty
+  row if setRecord() fails.
 
 ****************************************************************************
 *                          Database Drivers                                *

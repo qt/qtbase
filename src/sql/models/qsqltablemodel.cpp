@@ -1079,8 +1079,11 @@ bool QSqlTableModel::insertRecord(int row, const QSqlRecord &record)
         row = rowCount();
     if (!insertRow(row, QModelIndex()))
         return false;
-    if (!setRecord(row, record))
+    if (!setRecord(row, record)) {
+        if (d->strategy == OnManualSubmit)
+            revertRow(row);
         return false;
+    }
     if (d->strategy == OnFieldChange || d->strategy == OnRowChange)
         return submit();
     return true;
