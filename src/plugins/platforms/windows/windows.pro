@@ -75,6 +75,9 @@ HEADERS += \
     qwindowstheme.h \
     qwindowsdialoghelpers.h
 
+# Enable access to HB_Face in harfbuzz includes included by qfontengine_p.h.
+DEFINES *= QT_COMPILES_IN_HARFBUZZ
+
 contains(QT_CONFIG, freetype) {
     DEFINES *= QT_NO_FONTCONFIG
     DEFINES *= QT_COMPILES_IN_HARFBUZZ
