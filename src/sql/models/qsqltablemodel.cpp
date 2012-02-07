@@ -1066,6 +1066,8 @@ bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
     the record will be appended to the end. Calls insertRows() and
     setRecord() internally.
 
+    Only fields where the generated flag is true will be included.
+
     Returns true if the record could be inserted, otherwise false.
 
     \sa insertRows(), removeRows()
@@ -1183,8 +1185,10 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
 
 /*!
     Sets the values at the specified \a row to the values of \a
-    record. Returns true if all the values could be set; otherwise
-    returns false.
+    record for fields where generated flag is true.
+
+    Returns true if all the values could be set; otherwise returns
+    false.
 
     \sa record()
 */
@@ -1203,28 +1207,34 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
     else if (d->strategy == OnRowChange && !d->cache.isEmpty() && !d->cache.contains(row))
         submit();
 
+    // Check field names and remember mapping
+    typedef QMap<int, int> Map;
+    Map map;
+    for (int i = 0; i < record.count(); ++i) {
+        if (record.isGenerated(i)) {
+            int idx = d->nameToIndex(record.fieldName(i));
+            if (idx == -1)
+                return false;
+            map[i] = idx;
+        }
+    }
+
     QSqlTableModelPrivate::ModifiedRow &mrow = d->cache[row];
     if (mrow.op() == QSqlTableModelPrivate::None)
         mrow = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
                                                   d->rec,
                                                   d->primaryValues(indexInQuery(createIndex(row, 0)).row()));
 
-    bool isOk = true;
-    for (int i = 0; i < record.count(); ++i) {
-        int idx = d->nameToIndex(record.fieldName(i));
-        if (idx == -1)
-            isOk = false;
-        else
-            mrow.setValue(idx, record.value(i));
-    }
+    Map::const_iterator i = map.constBegin();
+    const Map::const_iterator e = map.constEnd();
+    for ( ; i != e; ++i)
+         mrow.setValue(i.value(), record.value(i.key()));
 
     if (columnCount())
         emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
 
     if (d->strategy == OnFieldChange)
         return submit();
-    else if (d->strategy == OnManualSubmit)
-        return isOk;
 
     return true;
 }

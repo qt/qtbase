@@ -350,6 +350,11 @@ model methods setData() or setRecord().
 before doing anything. Previously, it would remove what it could and
 ignore the rest of the range.
 
+* setRecord() and insertRecord()
+  -Only use fields where generated flag is set to true. This is
+  is consistent with the meaning of the flag.
+  -Require all fields to map correctly. Previously fields that didn't
+  map were simply ignored.
 
 ****************************************************************************
 *                          Database Drivers                                *
