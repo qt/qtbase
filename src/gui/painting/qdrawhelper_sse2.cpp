@@ -629,8 +629,9 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
         int x = 0;
 
         ALIGNMENT_PROLOGUE_16BYTES(dst, x, w) {
-            uint s = src[(srcx + x*ix) >> 16];
+            uint s = src[srcx >> 16];
             dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
+            srcx += ix;
         }
 
         __m128i srcxVector = _mm_set_epi32(srcx, srcx + ix, srcx + ix + ix, srcx + ix + ix + ix);
@@ -646,7 +647,7 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
         }
 
         for (; x<w; x++) {
-            uint s = src[(srcx + x*ix) >> 16];
+            uint s = src[(basex + x*ix) >> 16];
             dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
         }
         dst = (quint32 *)(((uchar *) dst) + dbpl);
