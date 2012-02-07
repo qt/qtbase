@@ -2264,11 +2264,13 @@ bool QTextEdit::canPaste() const
 
     \sa QTextDocument::print()
 */
+#ifndef QT_NO_PRINTER
 void QTextEdit::print(QPagedPaintDevice *printer) const
 {
     Q_D(const QTextEdit);
     d->control->print(printer);
 }
+#endif
 
 /*! \property QTextEdit::tabChangesFocus
   \brief whether \gui Tab changes focus or is accepted as input

@@ -2441,6 +2441,7 @@ bool QWidgetTextControl::isWordSelectionEnabled() const
     return d->wordSelectionEnabled;
 }
 
+#ifndef QT_NO_PRINTER
 void QWidgetTextControl::print(QPagedPaintDevice *printer) const
 {
     Q_D(const QWidgetTextControl);
@@ -2465,6 +2466,7 @@ void QWidgetTextControl::print(QPagedPaintDevice *printer) const
     doc->print(printer);
     delete tempDoc;
 }
+#endif
 
 QMimeData *QWidgetTextControl::createMimeDataFromSelection() const
 {
