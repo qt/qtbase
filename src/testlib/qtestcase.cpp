@@ -1931,6 +1931,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
     SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
 #endif
 
