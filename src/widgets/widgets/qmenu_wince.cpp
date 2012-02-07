@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 //Native menubars are only supported for Windows Mobile not the standard SDK/generic WinCE
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 #include "qmenu.h"
 #include "qt_windows.h"
 #include "qapplication.h"
@@ -665,4 +665,4 @@ void QMenuBarPrivate::QWceMenuBarPrivate::rebuild()
 QT_END_NAMESPACE
 
 #endif //QT_NO_MENUBAR
-#endif //Q_WS_WINCE
+#endif //Q_OS_WINCE

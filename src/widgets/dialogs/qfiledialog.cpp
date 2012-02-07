@@ -2002,7 +2002,7 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
 
 #if defined(Q_WS_WIN)
     if (QGuiApplicationPrivate::platformIntegration()->usePlatformNativeDialog() && !(args.options & DontUseNativeDialog) && (options & ShowDirsOnly)
-#if defined(Q_WS_WINCE)
+#if defined(Q_OS_WINCE)
         && qt_priv_ptr_valid
 #endif
         ) {

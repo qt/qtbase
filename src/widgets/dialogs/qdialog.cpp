@@ -404,8 +404,8 @@ void QDialogPrivate::resetModalitySetByOpen()
     resetModalityTo = -1;
 }
 
-#if defined(Q_WS_WINCE)
-#ifdef Q_WS_WINCE_WM
+#if defined(Q_OS_WINCE)
+#ifdef Q_OS_WINCE_WM
 void QDialogPrivate::_q_doneAction()
 {
     //Done...
@@ -419,7 +419,7 @@ void QDialogPrivate::_q_doneAction()
 bool QDialog::event(QEvent *e)
 {
     bool result = QWidget::event(e);
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     if (e->type() == QEvent::OkRequest) {
         accept();
         result = true;

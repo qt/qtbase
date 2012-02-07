@@ -187,7 +187,7 @@ public:
     static bool qws_apply_settings();
     static QWidget *findWidget(const QObjectList&, const QPoint &, bool rec);
 #endif
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     static int autoMaximizeThreshold;
 #endif
     static bool autoSipEnabled;

@@ -1060,7 +1060,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     gl->setMargin(gl->spacing());
     lab = new QColorShowLabel(this);
 
-#ifndef Q_WS_WINCE
+#ifndef Q_OS_WINCE
 #ifdef QT_SMALL_COLORDIALOG
     lab->setMinimumHeight(60);
 #endif
@@ -1452,7 +1452,7 @@ void QColorDialogPrivate::init(const QColor &initial)
 
     leftLay = 0;
 
-#if defined(Q_WS_WINCE) || defined(QT_SMALL_COLORDIALOG)
+#if defined(Q_OS_WINCE) || defined(QT_SMALL_COLORDIALOG)
     smallDisplay = true;
     const int lumSpace = 20;
 #else
@@ -1477,7 +1477,7 @@ void QColorDialogPrivate::init(const QColor &initial)
         leftLay->addWidget(lblBasicColors);
         leftLay->addWidget(standard);
 
-#if !defined(Q_WS_WINCE)
+#if !defined(Q_OS_WINCE)
         leftLay->addStretch();
 #endif
 

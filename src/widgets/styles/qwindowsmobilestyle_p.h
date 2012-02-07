@@ -71,7 +71,7 @@ public:
     QWindowsMobileStylePrivate();
     bool doubleControls;
     bool smartphone;
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
     bool wm65;
 #endif
 
@@ -95,7 +95,7 @@ public:
 
     void setupWindowsMobileStyle65();
 
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
     //Windows Mobile 6.5 images
     QImage imageScrollbarHandleUp;
     QImage imageScrollbarHandleDown;
@@ -119,7 +119,7 @@ public:
     void tintImagesButton(QColor color);
     void tintListViewHighlight(QColor color);
 
-#endif //Q_WS_WINCE_WM
+#endif //Q_OS_WINCE_WM
 
     void drawScrollbarHandleUp(QPainter *p, QStyleOptionSlider *opt, bool completeFrame = false, bool secondScrollBar = false);
     void drawScrollbarHandleDown(QPainter *p, QStyleOptionSlider *opt, bool completeFrame = false, bool secondScrollBar = false);

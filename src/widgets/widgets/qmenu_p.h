@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
 class QTornOffMenu;
 class QEventLoop;
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 struct QWceMenuAction {
     uint command;
     QPointer<QAction> action;
@@ -91,7 +91,7 @@ public:
                       scroll(0), eventLoop(0), tearoff(0), tornoff(0), tearoffHighlighted(0),
                       hasCheckableItems(0), sloppyAction(0), doChildEffects(false), platformMenu(0)
 
-#if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
+#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
                       ,wce_menu(0)
 #endif
     { }
@@ -99,7 +99,7 @@ public:
     {
         delete scroll;
         delete platformMenu;
-#if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
+#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
         delete wce_menu;
 #endif
     }
@@ -228,7 +228,7 @@ public:
 
     QPointer<QAction> actionAboutToTrigger;
 
-#if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
+#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
     struct QWceMenuPrivate {
         QList<QWceMenuAction*> actionItems;
         HMENU menuHandle;

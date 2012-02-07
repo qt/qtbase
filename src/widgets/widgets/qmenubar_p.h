@@ -57,7 +57,7 @@
 #include "QtWidgets/qstyleoption.h"
 #include <private/qmenu_p.h> // Mac needs what in this file!
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 #include "qguifunctions_wince.h"
 #endif
 
@@ -73,14 +73,14 @@ public:
                          closePopupMode(0), defaultPopDown(1), popupState(0), keyboardState(0), altPressed(0),
                          nativeMenuBar(-1), doChildEffects(false), platformMenuBar(0)
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
                          , wce_menubar(0), wceClassicMenu(false)
 #endif
         { }
     ~QMenuBarPrivate()
         {
             delete platformMenuBar;
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
             delete wce_menubar;
 #endif
         }
@@ -124,7 +124,7 @@ public:
     void _q_internalShortcutActivated(int);
     void _q_updateLayout();
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     void _q_updateDefaultAction();
 #endif
 
@@ -150,7 +150,7 @@ public:
     QBasicTimer autoReleaseTimer;
     QPlatformMenuBar *platformMenuBar;
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     void wceCreateMenuBar(QWidget *);
     void wceDestroyMenuBar();
     struct QWceMenuBarPrivate {

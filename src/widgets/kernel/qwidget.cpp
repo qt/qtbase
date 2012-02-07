@@ -1095,7 +1095,7 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
     if (customize)
         ; // don't modify window flags if the user explicitly set them.
     else if (type == Qt::Dialog || type == Qt::Sheet)
-#ifndef Q_WS_WINCE
+#ifndef Q_OS_WINCE
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint;
 #else
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
@@ -4150,7 +4150,7 @@ const QPalette &QWidget::palette() const
     if (!isEnabled()) {
         data->pal.setCurrentColorGroup(QPalette::Disabled);
     } else if ((!isVisible() || isActiveWindow())
-#if defined(Q_OS_WIN) && !defined(Q_WS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
         && !QApplicationPrivate::isBlockedByModal(const_cast<QWidget *>(this))
 #endif
         ) {
@@ -7579,7 +7579,7 @@ QSize QWidgetPrivate::adjustedSize() const
 #else // all others
         QRect screen = QApplication::desktop()->screenGeometry(q->pos());
 #endif
-#if defined (Q_WS_WINCE)
+#if defined (Q_OS_WINCE)
         s.setWidth(qMin(s.width(), screen.width()));
         s.setHeight(qMin(s.height(), screen.height()));
 #else

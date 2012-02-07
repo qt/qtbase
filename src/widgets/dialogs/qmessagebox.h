@@ -143,7 +143,7 @@ public:
     QPushButton *addButton(StandardButton button);
     void removeButton(QAbstractButton *button);
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     void setVisible(bool visible);
 #endif
 

@@ -104,7 +104,7 @@
 #include "qlibrary.h"
 #endif
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 #include "qdatetime.h"
 #include "qguifunctions_wince.h"
 extern bool qt_wince_is_smartphone(); //qguifunctions_wince.cpp
@@ -122,7 +122,7 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 
 static void initResources()
 {
-#if defined(Q_WS_WINCE)
+#if defined(Q_OS_WINCE)
     Q_INIT_RESOURCE_EXTERN(qstyle_wince)
     Q_INIT_RESOURCE(qstyle_wince);
 #else
@@ -140,7 +140,7 @@ Q_CORE_EXPORT void qt_call_post_routines();
 
 QApplicationPrivate *QApplicationPrivate::self = 0;
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
 #else
@@ -873,7 +873,7 @@ void QApplicationPrivate::initialize()
     if (qgetenv("QT_USE_NATIVE_WINDOWS").toInt() > 0)
         q->setAttribute(Qt::AA_NativeWindows);
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 #ifdef QT_AUTO_MAXIMIZE_THRESHOLD
     autoMaximizeThreshold = QT_AUTO_MAXIMIZE_THRESHOLD;
 #else
@@ -882,7 +882,7 @@ void QApplicationPrivate::initialize()
     else
         autoMaximizeThreshold = -1;
 #endif //QT_AUTO_MAXIMIZE_THRESHOLD
-#endif //Q_WS_WINCE
+#endif //Q_OS_WINCE
 
 #ifndef QT_NO_WHEELEVENT
     QApplicationPrivate::wheel_scroll_lines = 3;
@@ -1202,7 +1202,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     The default is platform dependent.
 */
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 void QApplication::setAutoMaximizeThreshold(const int threshold)
 {
     QApplicationPrivate::autoMaximizeThreshold = threshold;
@@ -3993,7 +3993,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     if (receiver->isWidgetType()) {
         QWidget *widget = static_cast<QWidget *>(receiver);
 
-#if !defined(Q_WS_WINCE) || (defined(GWES_ICONCURS) && !defined(QT_NO_CURSOR))
+#if !defined(Q_OS_WINCE) || (defined(GWES_ICONCURS) && !defined(QT_NO_CURSOR))
         // toggle HasMouse widget state on enter and leave
         if ((e->type() == QEvent::Enter || e->type() == QEvent::DragEnter) &&
             (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == widget->window()))

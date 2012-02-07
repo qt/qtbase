@@ -61,7 +61,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 extern bool qt_wince_is_mobile();    //defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_high_dpi();  //defined in qguifunctions_wince.cpp
 
@@ -107,7 +107,7 @@ public:
 
 QSize QErrorMessageTextView::minimumSizeHint() const
 {
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     if (qt_wince_is_mobile())
          if (qt_wince_is_high_dpi())
             return QSize(200, 200);
@@ -122,7 +122,7 @@ QSize QErrorMessageTextView::minimumSizeHint() const
 
 QSize QErrorMessageTextView::sizeHint() const
 {
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     if (qt_wince_is_mobile())
          if (qt_wince_is_high_dpi())
             return QSize(400, 200);
@@ -132,7 +132,7 @@ QSize QErrorMessageTextView::sizeHint() const
       return QSize(300, 100);
 #else
     return QSize(250, 75);
-#endif //Q_WS_WINCE
+#endif //Q_OS_WINCE
 }
 
 /*!
@@ -255,7 +255,7 @@ QErrorMessage::QErrorMessage(QWidget * parent)
 #endif
 
 
-#if defined(Q_WS_WINCE)
+#if defined(Q_OS_WINCE)
     d->ok->setFixedSize(0,0);
 #endif
     connect(d->ok, SIGNAL(clicked()), this, SLOT(accept()));

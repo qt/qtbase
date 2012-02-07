@@ -69,7 +69,7 @@
 
 #include <winuser.h>
 #if !defined(WINABLEAPI)
-#  if defined(Q_WS_WINCE)
+#  if defined(Q_OS_WINCE)
 #    include <bldver.h>
 #  endif
 #  include <winable.h>
@@ -80,7 +80,7 @@
 #include <comdef.h>
 #endif
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 #include "qguifunctions_wince.h"
 #endif
 
@@ -1344,7 +1344,7 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(const QAccessibleEvent &ev
 
     typedef void (WINAPI *PtrNotifyWinEvent)(DWORD, HWND, LONG, LONG);
 
-#if defined(Q_WS_WINCE) // ### TODO: check for NotifyWinEvent in CE 6.0
+#if defined(Q_OS_WINCE) // ### TODO: check for NotifyWinEvent in CE 6.0
     // There is no user32.lib nor NotifyWinEvent for CE
     return;
 #else
@@ -1382,7 +1382,7 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(const QAccessibleEvent &ev
 
         ++eventNum;
     }
-#endif // Q_WS_WINCE
+#endif // Q_OS_WINCE
 }
 
 /*
