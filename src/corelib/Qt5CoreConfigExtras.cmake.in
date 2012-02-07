@@ -7,3 +7,7 @@ set(QT_MOC_EXECUTABLE \"${_qt5_corelib_install_prefix}/$$CMAKE_BIN_DIR/moc$$CMAK
 set(QT_RCC_EXECUTABLE \"${_qt5_corelib_install_prefix}/$$CMAKE_BIN_DIR/rcc$$CMAKE_BIN_SUFFIX\")
 
 list(APPEND Qt5Core_INCLUDE_DIRS \"${_qt5_corelib_install_prefix}/mkspecs/default\")
+
+if (NOT \"$${CMAKE_ADD_FPIE_FLAGS}\" STREQUAL \"\")
+    set(Qt5Core_COMPILE_FLAGS "-fPIE")
+endif()

@@ -31,6 +31,8 @@ CMAKE_RELATIVE_INSTALL_DIR = "../../../"
 
 static|staticlib:CMAKE_STATIC_TYPE = true
 
+contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
+
 macx {
     CONFIG(qt_framework, qt_framework|qt_no_framework) {
         CMAKE_LIB_FILE_LOCATION_DEBUG = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.framework/Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}
