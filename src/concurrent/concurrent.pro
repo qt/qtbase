@@ -1,3 +1,5 @@
+load(qt_module)
+
 TARGET     = QtConcurrent
 QPRO_PWD   = $$PWD
 QT         = core-private
@@ -12,7 +14,7 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 load(qt_module_config)
 
-HEADERS += $$QT_SOURCE_TREE/src/xml/qtconcurrentversion.h
+HEADERS += $$QT_SOURCE_TREE/src/concurrent/qtconcurrentversion.h
 
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 
