@@ -390,6 +390,7 @@ QAccessibleInterface *QAccessibleWidget::focusChild() const
 
     if (isAncestor(widget(), fw) || fw == widget())
         return QAccessible::queryAccessibleInterface(fw);
+    return 0;
 }
 
 /*! \reimp */

@@ -106,30 +106,6 @@ QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel)
   \internal
 */
 
-static QTextBlock qTextBlockAt(const QTextDocument *doc, int pos)
-{
-    Q_ASSERT(pos >= 0);
-
-    QTextBlock block = doc->begin();
-    int i = 0;
-    while (block.isValid() && i < pos) {
-        block = block.next();
-        ++i;
-    }
-    return block;
-}
-
-static int qTextBlockPosition(QTextBlock block)
-{
-    int child = 0;
-    while (block.isValid()) {
-        block = block.previous();
-        ++child;
-    }
-
-    return child;
-}
-
 /*!
   \fn QAccessibleTextEdit::QAccessibleTextEdit(QWidget* widget)
 
