@@ -5,7 +5,8 @@ unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
 !wince*:include(tools/tools.pro)
 SRC_SUBDIRS += src_corelib
-SRC_SUBDIRS += src_network src_sql src_gui src_xml src_widgets src_printsupport src_testlib src_platformsupport
+SRC_SUBDIRS += src_network src_sql src_gui src_xml src_widgets src_testlib src_platformsupport
+!wince*:SRC_SUBDIRS += src_printsupport
 nacl: SRC_SUBDIRS -= src_network src_testlib
 contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 contains(QT_CONFIG, concurrent):SRC_SUBDIRS += src_concurrent
@@ -35,8 +36,10 @@ src_plugins.subdir = $$QT_SOURCE_TREE/src/plugins
 src_plugins.target = sub-plugins
 src_widgets.subdir = $$QT_SOURCE_TREE/src/widgets
 src_widgets.target = sub-widgets
-src_printsupport.subdir = $$QT_SOURCE_TREE/src/printsupport
-src_printsupport.target = sub-printsupport
+!wince*: {
+    src_printsupport.subdir = $$QT_SOURCE_TREE/src/printsupport
+    src_printsupport.target = sub-printsupport
+}
 src_testlib.subdir = $$QT_SOURCE_TREE/src/testlib
 src_testlib.target = sub-testlib
 src_platformsupport.subdir = $$QT_SOURCE_TREE/src/platformsupport
