@@ -68,7 +68,7 @@ QXlibIntegration::QXlibIntegration()
 
     XInitThreads();
 
-    mPrimaryScreen = new QXlibScreen();
+    mPrimaryScreen = new QXlibScreen(mNativeInterface);
     mScreens.append(mPrimaryScreen);
     screenAdded(mPrimaryScreen);
 }

@@ -50,6 +50,7 @@
 #include "qxlibstatic.h"
 #include "qxlibclipboard.h"
 #include "qxlibdisplay.h"
+#include "qxlibnativeinterface.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QSocketNotifier>
@@ -190,8 +191,9 @@ qDebug() << "qt_x_errhandler" << err->error_code;
     return 0;
 }
 
-QXlibScreen::QXlibScreen()
-        : mFormat(QImage::Format_RGB32)
+QXlibScreen::QXlibScreen(QXlibNativeInterface *nativeInterface)
+        : mNativeInterface(nativeInterface)
+        , mFormat(QImage::Format_RGB32)
 #if !defined(QT_NO_OPENGL) && defined(QT_OPENGL_ES_2)
         , mEGLDisplay(0)
 #endif
@@ -263,6 +265,11 @@ unsigned long QXlibScreen::whitePixel()
 
 bool QXlibScreen::handleEvent(XEvent *xe)
 {
+    if (QPlatformNativeInterface::EventFilter filter = mNativeInterface->eventFilterForEventType(QByteArrayLiteral("XEvent"))) {
+        if (filter(xe, 0))
+            return true;
+    }
+
     int quit = false;
     QXlibWindow *platformWindow = QXlibWindow::platformWindowForXWindow(xe->xany.window);
     if (!platformWindow)

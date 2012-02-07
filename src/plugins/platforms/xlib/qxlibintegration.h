@@ -54,6 +54,7 @@
 QT_BEGIN_NAMESPACE
 
 class QXlibScreen;
+class QXlibNativeInterface;
 
 class QXlibIntegration : public QPlatformIntegration
 {
@@ -82,7 +83,7 @@ private:
     QList<QPlatformScreen *> mScreens;
     QPlatformFontDatabase *mFontDb;
     QPlatformClipboard *mClipboard;
-    QPlatformNativeInterface *mNativeInterface;
+    QXlibNativeInterface *mNativeInterface;
     QAbstractEventDispatcher *mEventDispatcher;
 };
 
