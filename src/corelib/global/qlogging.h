@@ -67,8 +67,8 @@ class QMessageLogContext
     Q_DISABLE_COPY(QMessageLogContext)
 public:
     QMessageLogContext() : version(1), line(0), file(0), function(0) {}
-    Q_DECL_CONSTEXPR QMessageLogContext(const char *file, int line, const char *function)
-        : version(1), line(line), file(file), function(function) {}
+    Q_DECL_CONSTEXPR QMessageLogContext(const char *fileName, int lineNumber, const char *functionName)
+        : version(1), line(lineNumber), file(fileName), function(functionName) {}
 
     int version;
     int line;
