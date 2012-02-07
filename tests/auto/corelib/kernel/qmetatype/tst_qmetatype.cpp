@@ -94,6 +94,7 @@ private slots:
     void isRegistered();
     void isRegisteredStaticLess_data();
     void isRegisteredStaticLess();
+    void isEnum();
     void registerStreamBuiltin();
     void automaticTemplateRegistration();
 };
@@ -1040,6 +1041,39 @@ void tst_QMetaType::isRegistered()
     QFETCH(int, typeId);
     QFETCH(bool, registered);
     QCOMPARE(QMetaType::isRegistered(typeId), registered);
+}
+
+enum isEnumTest_Enum0 {};
+struct isEnumTest_Struct0 { enum A{}; };
+
+enum isEnumTest_Enum1 {};
+struct isEnumTest_Struct1 {};
+
+Q_DECLARE_METATYPE(isEnumTest_Struct1)
+Q_DECLARE_METATYPE(isEnumTest_Enum1)
+
+void tst_QMetaType::isEnum()
+{
+    int type0 = qRegisterMetaType<int>("int");
+    QVERIFY((QMetaType::typeFlags(type0) & QMetaType::IsEnumeration) == 0);
+
+    int type1 = qRegisterMetaType<isEnumTest_Enum0>("isEnumTest_Enum0");
+    QVERIFY((QMetaType::typeFlags(type1) & QMetaType::IsEnumeration) == QMetaType::IsEnumeration);
+
+    int type2 = qRegisterMetaType<isEnumTest_Struct0>("isEnumTest_Struct0");
+    QVERIFY((QMetaType::typeFlags(type2) & QMetaType::IsEnumeration) == 0);
+
+    int type3 = qRegisterMetaType<isEnumTest_Enum0 *>("isEnumTest_Enum0 *");
+    QVERIFY((QMetaType::typeFlags(type3) & QMetaType::IsEnumeration) == 0);
+
+    int type4 = qRegisterMetaType<isEnumTest_Struct0::A>("isEnumTest_Struct0::A");
+    QVERIFY((QMetaType::typeFlags(type4) & QMetaType::IsEnumeration) == QMetaType::IsEnumeration);
+
+    int type5 = ::qMetaTypeId<isEnumTest_Struct1>();
+    QVERIFY((QMetaType::typeFlags(type5) & QMetaType::IsEnumeration) == 0);
+
+    int type6 = ::qMetaTypeId<isEnumTest_Enum1>();
+    QVERIFY((QMetaType::typeFlags(type6) & QMetaType::IsEnumeration) == QMetaType::IsEnumeration);
 }
 
 void tst_QMetaType::isRegisteredStaticLess_data()

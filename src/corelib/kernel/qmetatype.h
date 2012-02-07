@@ -45,6 +45,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qisenum.h>
 
 #include <new>
 
@@ -209,7 +210,8 @@ public:
         NeedsConstruction = 0x1,
         NeedsDestruction = 0x2,
         MovableType = 0x4,
-        PointerToQObject = 0x8
+        PointerToQObject = 0x8,
+        IsEnumeration = 0x10
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
@@ -455,6 +457,8 @@ int qRegisterMetaType(const char *typeName
     }
     if (QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value)
         flags |= QMetaType::PointerToQObject;
+    if (Q_IS_ENUM(T))
+        flags |= QMetaType::IsEnumeration;
 
     return QMetaType::registerType(typeName, qMetaTypeDeleteHelper<T>,
                                    qMetaTypeCreateHelper<T>,

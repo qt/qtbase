@@ -11,7 +11,9 @@ HEADERS +=  \
         global/qnumeric.h \
         global/qlogging.h \
         global/qtypeinfo.h \
-        global/qsysinfo.h
+        global/qsysinfo.h \
+        global/qisenum.h \
+        global/qtypetraits.h
 
 SOURCES += \
 	global/qglobal.cpp \
