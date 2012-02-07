@@ -29,7 +29,7 @@ CFLAGS_EXTRA      = /MP
 !endif
 
 CFLAGS_BARE = -c -Fo./ \
-              -W3 -nologo -O2 \
+              -W3 -nologo -O1 \
               $(CFLAGS_EXTRA) \
               -I. -Igenerators -Igenerators\unix -Igenerators\win32 -Igenerators\mac -Igenerators\integrity \
               -I$(BUILD_PATH)\include -I$(BUILD_PATH)\include\QtCore -I$(BUILD_PATH)\include\QtCore\$(QT_VERSION) -I$(BUILD_PATH)\include\QtCore\$(QT_VERSION)\QtCore \
