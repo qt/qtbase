@@ -844,6 +844,12 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
             QString dst_pc = pkgConfigFileName(false);
             if (!dst_pc.isEmpty()) {
                 dst_pc = filePrefixRoot(root, targetdir + dst_pc);
+                const QString dst_pc_dir = fileInfo(dst_pc).path();
+                if (!dst_pc_dir.isEmpty()) {
+                    if (!ret.isEmpty())
+                        ret += "\n\t";
+                    ret += mkdir_p_asstring(dst_pc_dir, true);
+                }
                 if(!ret.isEmpty())
                     ret += "\n\t";
                 ret += "-$(INSTALL_FILE) \"" + pkgConfigFileName(true) + "\" \"" + dst_pc + "\"";
