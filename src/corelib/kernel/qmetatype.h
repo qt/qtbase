@@ -530,7 +530,7 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
     { \
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
         if (!metatype_id.load()) \
-            metatype_id.storeRelease(qRegisterMetaType< SINGLE_ARG_TEMPLATE<T> >( QByteArray(QByteArray(#SINGLE_ARG_TEMPLATE "<") + QMetaType::typeName(qMetaTypeId<T>()) + ">"), \
+            metatype_id.storeRelease(qRegisterMetaType< SINGLE_ARG_TEMPLATE<T> >( QByteArray(QByteArray(#SINGLE_ARG_TEMPLATE "<") + QMetaType::typeName(qMetaTypeId<T>()) + ">").constData(), \
                         reinterpret_cast< SINGLE_ARG_TEMPLATE<T> *>(quintptr(-1)))); \
         return metatype_id.loadAcquire(); \
     } \
