@@ -509,6 +509,22 @@ QT_BEGIN_NAMESPACE
     QRegExp::CaretAtOffset behaviour. There is no equivalent for the other
     QRegExp::CaretMode modes.
 
+    \section1 Debugging code that uses QRegularExpression
+
+    QRegularExpression internally uses a just in time compiler (JIT) to
+    optimize the execution of the matching algorithm. The JIT makes extensive
+    usage of self-modifying code, which can lead debugging tools such as
+    Valgrind to crash. You must enable all checks for self-modifying code if
+    you want to debug programs using QRegularExpression (f.i., see Valgrind's
+    \c{--smc-check} command line option). The downside of enabling such checks
+    is that your program will run considerably slower.
+
+    To avoid that, the JIT is disabled by default if you compile Qt in debug
+    mode. It is possible to override the default and enable or disable the JIT
+    usage (both in debug or release mode) by setting the
+    \c{QT_ENABLE_REGEXP_JIT} environment variable to a non-zero or zero value
+    respectively.
+
     \sa QRegularExpressionMatch, QRegularExpressionMatchIterator
 */
 
@@ -972,6 +988,25 @@ void QRegularExpressionPrivate::getPatternInfo()
 /*!
     \internal
 */
+static bool isJitEnabled()
+{
+    QByteArray jitEnvironment = qgetenv("QT_ENABLE_REGEXP_JIT");
+    if (!jitEnvironment.isEmpty()) {
+        bool ok;
+        int enableJit = jitEnvironment.toInt(&ok);
+        return ok ? (enableJit != 0) : true;
+    }
+
+#ifdef QT_DEBUG
+    return false;
+#else
+    return true;
+#endif
+}
+
+/*!
+    \internal
+*/
 void QRegularExpressionPrivate::optimizePattern()
 {
     Q_ASSERT(compiledPattern);
@@ -981,7 +1016,12 @@ void QRegularExpressionPrivate::optimizePattern()
     if (studyData || (++usedCount != OPTIMIZE_AFTER_USE_COUNT))
         return;
 
-    int studyOptions = PCRE_STUDY_JIT_COMPILE;
+    static const bool enableJit = isJitEnabled();
+
+    int studyOptions = 0;
+    if (enableJit)
+        studyOptions |= PCRE_STUDY_JIT_COMPILE;
+
     const char *err;
     studyData = pcre16_study(compiledPattern, studyOptions, &err);
 
