@@ -506,6 +506,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     }
 
     row.setValue(index.column(), value);
+    emit dataChanged(index, index);
 
     bool isOk = true;
     if (d->strategy == OnFieldChange && row.op() != QSqlTableModelPrivate::Insert) {
@@ -516,8 +517,6 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
         if (isOk)
             select();
     }
-
-    emit dataChanged(index, index);
 
     return isOk;
 }
