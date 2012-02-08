@@ -42,6 +42,7 @@
 #include "environment.h"
 
 #include <process.h>
+#include <errno.h>
 #include <iostream>
 #include <qdebug.h>
 #include <QDir>
