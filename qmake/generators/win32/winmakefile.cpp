@@ -649,6 +649,7 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     t << "DEF_FILE      = " << varList("DEF_FILE") << endl;
     t << "RES_FILE      = " << varList("RES_FILE") << endl; // Not on mingw, can't see why not though...
     t << "COPY          = " << var("QMAKE_COPY") << endl;
+    t << "SED           = " << var("QMAKE_STREAM_EDITOR") << endl;
     t << "COPY_FILE     = " << var("QMAKE_COPY_FILE") << endl;
     t << "COPY_DIR      = " << var("QMAKE_COPY_DIR") << endl;
     t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
@@ -852,7 +853,22 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
                 }
                 if(!ret.isEmpty())
                     ret += "\n\t";
-                ret += "-$(INSTALL_FILE) \"" + pkgConfigFileName(true) + "\" \"" + dst_pc + "\"";
+                const QString replace_rule("QMAKE_PKGCONFIG_INSTALL_REPLACE");
+                if (project->isEmpty(replace_rule)
+                    || project->isActiveConfig("no_sed_meta_install")
+                    || project->isEmpty("QMAKE_STREAM_EDITOR")) {
+                    ret += "-$(INSTALL_FILE) \"" + pkgConfigFileName(true) + "\" \"" + dst_pc + "\"";
+                } else {
+                    ret += "-$(SED)";
+                    QStringList replace_rules = project->values(replace_rule);
+                    for (int r = 0; r < replace_rules.size(); ++r) {
+                        const QString match = project->first(replace_rules.at(r) + ".match"),
+                                    replace = project->first(replace_rules.at(r) + ".replace");
+                        if (!match.isEmpty() /*&& match != replace*/)
+                            ret += " -e \"s," + match + "," + replace + ",g\"";
+                    }
+                    ret += " \"" + pkgConfigFileName(true) + "\" >\"" + dst_pc + "\"";
+                }
                 if(!uninst.isEmpty())
                     uninst.append("\n\t");
                 uninst.append("-$(DEL_FILE) \"" + dst_pc + "\"");
