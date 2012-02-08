@@ -74,7 +74,7 @@ static void to_tis620(const HB_UChar16 *string, hb_uint32 len, const char *cstr)
     for (i = 0; i < len; ++i) {
         if (string[i] <= 0xa0)
             result[i] = (unsigned char)string[i];
-        if (string[i] >= 0xe01 && string[i] <= 0xe5b)
+        else if (string[i] >= 0xe01 && string[i] <= 0xe5b)
             result[i] = (unsigned char)(string[i] - 0xe00 + 0xa0);
         else
             result[i] = '?';
