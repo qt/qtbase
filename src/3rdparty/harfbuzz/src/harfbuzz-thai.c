@@ -353,7 +353,7 @@ HB_Bool HB_ThaiShape (HB_ShaperItem *shaper_item)
     const int availableGlyphs = shaper_item->num_glyphs;
     if ( HB_SelectScript (shaper_item, thai_features) ) {
         HB_OpenTypeShape (shaper_item, /*properties*/0);
-        return HB_OpenTypePosition (shaper_item, availableGlyphs, /*doLogClusters*/false);
+        return HB_OpenTypePosition (shaper_item, availableGlyphs, /*doLogClusters*/true);
     }
 #endif
 
