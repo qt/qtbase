@@ -64,6 +64,7 @@ private slots:
     void staticMetacall();
     void copyMetaObject();
     void serialize();
+    void relocatableData();
     void removeNotifySignal();
 
     void usage_signal();
@@ -1027,6 +1028,39 @@ void tst_QMetaObjectBuilder::serialize()
     QCOMPARE(builder.property(0).type(), builder2.property(0).type());
     }
 }
+
+void tst_QMetaObjectBuilder::relocatableData()
+{
+    QMetaObjectBuilder builder;
+    builder.setClassName("TestObject");
+
+    QMetaMethodBuilder intPropChanged = builder.addSignal("intPropChanged(int)");
+    intPropChanged.setParameterNames(QList<QByteArray>() << "newIntPropValue");
+
+    QMetaPropertyBuilder prop = builder.addProperty("intProp", "int");
+    prop.setNotifySignal(intPropChanged);
+
+    QMetaMethodBuilder voidSlotInt = builder.addSlot("voidSlotInt(int)");
+    voidSlotInt.setParameterNames(QList<QByteArray>() << "slotIntArg");
+
+    QMetaMethodBuilder listInvokableQRealQString = builder.addMethod("listInvokableQRealQString(qreal,QString)");
+    listInvokableQRealQString.setReturnType("QVariantList");
+    listInvokableQRealQString.setParameterNames(QList<QByteArray>() << "qrealArg" << "qstringArg");
+
+    bool ok = false;
+    QByteArray data = builder.toRelocatableData(&ok);
+    QVERIFY(ok);
+
+    QMetaObjectBuilder builder2;
+    QMetaObject meta2;
+    builder2.fromRelocatableData(&meta2, &QObject::staticMetaObject, data);
+
+    QMetaObject *meta = builder.toMetaObject();
+
+    QVERIFY(sameMetaObject(meta, &meta2));
+    free(meta);
+}
+
 
 // Check that removing a method updates notify signals appropriately
 void tst_QMetaObjectBuilder::removeNotifySignal()
