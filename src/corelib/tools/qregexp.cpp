@@ -426,7 +426,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 
     For historical reasons, quantifiers (e.g. \bold{*}) that apply to
     capturing parentheses are more "greedy" than other quantifiers.
-    For example, \bold{a*(a)*} will match "aaa" with cap(1) == "aaa".
+    For example, \bold{a*(a*)} will match "aaa" with cap(1) == "aaa".
     This behavior is different from what other regexp engines do
     (notably, Perl). To obtain a more intuitive capturing behavior,
     specify QRegExp::RegExp2 to the QRegExp constructor or call

@@ -103,6 +103,10 @@ QT_BEGIN_NAMESPACE
     any way, but for a linear layout, the order is essential. When writing your own
     layout subclass, you are free to choose the API that best suits your layout.
 
+    QGraphicsLayout provides the addChildLayoutItem() convenience function to add
+    layout items to a custom layout. The function will automatically reparent
+    graphics items, if required.
+
     \section1 Activating the Layout
 
     When the layout's geometry changes, QGraphicsLayout immediately rearranges

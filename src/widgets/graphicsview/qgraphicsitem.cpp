@@ -11064,9 +11064,9 @@ QGraphicsItemGroup::~QGraphicsItemGroup()
 }
 
 /*!
-    Adds the given \a item to this item group. The item will be
-    reparented to this group, but its position and transformation
-    relative to the scene will stay intact.
+    Adds the given \a item and item's child items to this item group.
+    The item and child items will be reparented to this group, but its
+    position and transformation relative to the scene will stay intact.
 
     \sa removeFromGroup(), QGraphicsScene::createItemGroup()
 */

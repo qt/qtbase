@@ -510,7 +510,7 @@
 
     When using signals and slots with multiple threads, see \l{Signals and Slots Across Threads}.
 
-    \sa {Thread Support in Qt}, QObject::connect(), qRegisterMetaType()
+    \sa {Thread Support in Qt}, QObject::connect(), qRegisterMetaType(), Q_DECLARE_METATYPE()
 */
 
 /*!

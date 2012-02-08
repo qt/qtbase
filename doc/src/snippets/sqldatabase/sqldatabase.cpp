@@ -284,12 +284,12 @@ void QSqlTableModel_snippets()
     model->setTable("employee");
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model->select();
-    model->removeColumn(0); // don't show the ID
     model->setHeaderData(0, Qt::Horizontal, tr("Name"));
     model->setHeaderData(1, Qt::Horizontal, tr("Salary"));
 
     QTableView *view = new QTableView;
     view->setModel(model);
+    view->hideColumn(0); // don't show the ID
     view->show();
 //! [24]
 

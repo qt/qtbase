@@ -2951,7 +2951,7 @@ QDomElement QDomNode::firstChildElement(const QString &tagName) const
 
 /*!
     Returns the last child element with tag name \a tagName if tagName is non-empty;
-    otherwise returns the first child element. Returns a null element if no
+    otherwise returns the last child element. Returns a null element if no
     such child exists.
 
     \sa firstChildElement() previousSiblingElement() nextSiblingElement()

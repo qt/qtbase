@@ -2247,7 +2247,7 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
     call qRegisterMetaType() to register the data type before you
     establish the connection.
 
-    \sa disconnect(), sender(), qRegisterMetaType()
+    \sa disconnect(), sender(), qRegisterMetaType(), Q_DECLARE_METATYPE()
 */
 QMetaObject::Connection QObject::connect(const QObject *sender, const char *signal,
                                      const QObject *receiver, const char *method,
