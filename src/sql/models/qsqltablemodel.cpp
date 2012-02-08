@@ -508,17 +508,10 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     row.setValue(index.column(), value);
     emit dataChanged(index, index);
 
-    bool isOk = true;
-    if (d->strategy == OnFieldChange && row.op() != QSqlTableModelPrivate::Insert) {
-        // historical bug: bad style to call updateRowInTable.
-        // Should call submit(), but maybe the author wanted to avoid
-        // clearing the cache on failure.
-        isOk = updateRowInTable(index.row(), row.rec());
-        if (isOk)
-            select();
-    }
+    if (d->strategy == OnFieldChange && row.op() != QSqlTableModelPrivate::Insert)
+        return submit();
 
-    return isOk;
+    return true;
 }
 
 /*!
