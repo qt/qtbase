@@ -918,6 +918,29 @@ bool QFileInfo::isHidden() const
 }
 
 /*!
+    \since 5.0
+    Returns true if the file path can be used directly with native APIs.
+    Returns false if the file is otherwise supported by a virtual file system
+    inside Qt, such as \l{the Qt Resource System}.
+
+    \bold{Note:} Native paths may still require conversion of path separators
+    and character encoding, depending on platform and input requirements of the
+    native API.
+
+    \sa QDir::toNativeSeparators(), QFile::encodeName(), filePath(),
+    absoluteFilePath(), canonicalFilePath()
+*/
+bool QFileInfo::isNativePath() const
+{
+    Q_D(const QFileInfo);
+    if (d->isDefaultConstructed)
+        return false;
+    if (d->fileEngine == 0)
+        return true;
+    return d->getFileFlags(QAbstractFileEngine::LocalDiskFlag);
+}
+
+/*!
     Returns true if this object points to a file or to a symbolic
     link to a file. Returns false if the
     object points to something which isn't a file, such as a directory.

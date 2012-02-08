@@ -159,8 +159,8 @@ private slots:
     void isBundle_data();
     void isBundle();
 
-    void isLocalFs_data();
-    void isLocalFs();
+    void isNativePath_data();
+    void isNativePath();
 
     void refresh();
 
@@ -1222,10 +1222,13 @@ void tst_QFileInfo::isBundle()
     QCOMPARE(fi.isBundle(), isBundle);
 }
 
-void tst_QFileInfo::isLocalFs_data()
+void tst_QFileInfo::isNativePath_data()
 {
     QTest::addColumn<QString>("path");
-    QTest::addColumn<bool>("isLocalFs");
+    QTest::addColumn<bool>("isNativePath");
+
+    QTest::newRow("default-constructed") << QString() << false;
+    QTest::newRow("empty") << QString("") << true;
 
     QTest::newRow("local root") << QString::fromLatin1("/") << true;
     QTest::newRow("local non-existent file") << QString::fromLatin1("/abrakadabra.boo") << true;
@@ -1233,17 +1236,15 @@ void tst_QFileInfo::isLocalFs_data()
     QTest::newRow("qresource root") << QString::fromLatin1(":/") << false;
 }
 
-void tst_QFileInfo::isLocalFs()
+void tst_QFileInfo::isNativePath()
 {
     QFETCH(QString, path);
-    QFETCH(bool, isLocalFs);
+    QFETCH(bool, isNativePath);
 
     QFileInfo info(path);
-    QFileInfoPrivate *privateInfo = getPrivate(info);
-    QCOMPARE((privateInfo->fileEngine == 0), isLocalFs);
-    if (privateInfo->fileEngine)
-       QCOMPARE(bool(privateInfo->fileEngine->fileFlags(QAbstractFileEngine::LocalDiskFlag)
-                     & QAbstractFileEngine::LocalDiskFlag), isLocalFs);
+    if (path.isNull())
+        info = QFileInfo();
+    QCOMPARE(info.isNativePath(), isNativePath);
 }
 
 void tst_QFileInfo::refresh()
