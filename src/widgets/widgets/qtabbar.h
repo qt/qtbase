@@ -178,6 +178,7 @@ Q_SIGNALS:
 
 protected:
     virtual QSize tabSizeHint(int index) const;
+    virtual QSize minimumTabSizeHint(int index) const;
     virtual void tabInserted(int index);
     virtual void tabRemoved(int index);
     virtual void tabLayoutChange();
