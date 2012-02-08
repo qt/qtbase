@@ -294,7 +294,7 @@ void tst_QHttpSocketEngine::errorTest()
 
     connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)),
             &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(5);
+    QTestEventLoop::instance().enterLoop(30);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(int(socket.error()), expectedError);
@@ -371,7 +371,7 @@ void tst_QHttpSocketEngine::simpleErrorsAndStates()
         QVERIFY(socketDevice.state() == QAbstractSocket::UnconnectedState);
         QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverName()), 8088));
         QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
-        if (socketDevice.waitForWrite(15000)) {
+        if (socketDevice.waitForWrite(30000)) {
             QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState ||
                     socketDevice.state() == QAbstractSocket::UnconnectedState);
         } else {
@@ -425,7 +425,7 @@ void tst_QHttpSocketEngine::tcpLoopbackPerformance()
     QTime timer;
     timer.start();
     qlonglong readBytes = 0;
-    while (timer.elapsed() < 5000) {
+    while (timer.elapsed() < 30000) {
         qlonglong written = serverSocket.write(message1.data(), message1.size());
         while (written > 0) {
             client.waitForRead();
@@ -458,7 +458,7 @@ void tst_QHttpSocketEngine::tcpSocketBlockingTest()
     QCOMPARE(socket.state(), QTcpSocket::ConnectedState);
 
     // Read greeting
-    QVERIFY(socket.waitForReadyRead(5000));
+    QVERIFY(socket.waitForReadyRead(30000));
     QString s = socket.readLine();
     QVERIFY2(QtNetworkSettings::compareReplyIMAP(s.toLatin1()), qPrintable(s));
 
@@ -466,7 +466,7 @@ void tst_QHttpSocketEngine::tcpSocketBlockingTest()
     QCOMPARE((int) socket.write("1 NOOP\r\n", 8), 8);
 
     if (!socket.canReadLine())
-        QVERIFY(socket.waitForReadyRead(5000));
+        QVERIFY(socket.waitForReadyRead(30000));
 
     // Read response
     s = socket.readLine();
@@ -476,14 +476,14 @@ void tst_QHttpSocketEngine::tcpSocketBlockingTest()
     QCOMPARE((int) socket.write("2 LOGOUT\r\n", 10), 10);
 
     if (!socket.canReadLine())
-        QVERIFY(socket.waitForReadyRead(5000));
+        QVERIFY(socket.waitForReadyRead(30000));
 
     // Read two lines of respose
     s = socket.readLine();
     QCOMPARE(s.toLatin1().constData(), "* BYE LOGOUT received\r\n");
 
     if (!socket.canReadLine())
-        QVERIFY(socket.waitForReadyRead(5000));
+        QVERIFY(socket.waitForReadyRead(30000));
 
     s = socket.readLine();
     QCOMPARE(s.toLatin1().constData(), "2 OK Completed\r\n");
