@@ -724,7 +724,7 @@ static void match(int script, const QFontDef &request,
                   const QString &family_name, const QString &foundry_name, int force_encoding_id,
                   QtFontDesc *desc, const QList<int> &blacklistedFamilies = QList<int>(), bool forceXLFD=false);
 
-static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDef *fontDef)
+static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDef *fontDef, bool multi)
 {
     fontDef->family = desc.family->name;
     if (! desc.foundry->name.isEmpty() && desc.family->count > 1) {
@@ -743,8 +743,10 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
     fontDef->styleHint     = request.styleHint;
     fontDef->styleStrategy = request.styleStrategy;
 
-    fontDef->weight        = desc.style->key.weight;
-    fontDef->style         = desc.style->key.style;
+    if (!multi)
+        fontDef->weight    = desc.style->key.weight;
+    if (!multi)
+        fontDef->style     = desc.style->key.style;
     fontDef->fixedPitch    = desc.family->fixedPitch;
     fontDef->stretch       = desc.style->key.stretch;
     fontDef->ignorePitch   = false;

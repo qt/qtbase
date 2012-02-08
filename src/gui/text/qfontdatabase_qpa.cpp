@@ -278,7 +278,7 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
     }
 
     if (engine && engine->type() != QFontEngine::TestFontEngine) {
-        initFontDef(desc, request, &engine->fontDef);
+        initFontDef(desc, request, &engine->fontDef, engine->type() == QFontEngine::Multi);
 
         if (fp) {
             QFontDef def = request;
@@ -305,7 +305,7 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
                     }
                     engine = loadEngine(script, def, desc.family, desc.foundry, desc.style, desc.size);
                     if (engine) {
-                        initFontDef(desc, def, &engine->fontDef);
+                        initFontDef(desc, def, &engine->fontDef, engine->type() == QFontEngine::Multi);
                     }
                 }
             }
