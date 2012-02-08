@@ -41,6 +41,7 @@
 
 #include "qprocess.h"
 #include "qprocess_p.h"
+#include "qwindowspipewriter_p.h"
 
 #include <qdir.h>
 #include <qfileinfo.h>
@@ -48,6 +49,7 @@
 #include <qtimer.h>
 #include <qwineventnotifier.h>
 #include <qdebug.h>
+#include <private/qthread_p.h>
 
 #ifndef QT_NO_PROCESS
 
