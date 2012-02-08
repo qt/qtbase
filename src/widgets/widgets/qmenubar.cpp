@@ -784,7 +784,6 @@ QMenuBar::~QMenuBar()
     d->platformMenuBar = 0;
 
 #ifdef Q_OS_WINCE
-    Q_D(QMenuBar);
     if (qt_wince_is_mobile())
         d->wceDestroyMenuBar();
 #endif
@@ -1244,8 +1243,9 @@ void QMenuBar::actionEvent(QActionEvent *e)
     d->itemsDirty = true;
 
     if (d->platformMenuBar) {
+#if !defined(Q_OS_WINCE)
         QPlatformMenuBar *nativeMenuBar = d->platformMenuBar;
-#if defined(Q_OS_WINCE)
+#else
         QMenuBarPrivate::QWceMenuBarPrivate *nativeMenuBar = d->wce_menubar;
 #endif
         if (!nativeMenuBar)

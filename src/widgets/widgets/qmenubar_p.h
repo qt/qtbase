@@ -168,6 +168,7 @@ public:
 
         QWceMenuBarPrivate(QMenuBarPrivate *menubar);
         ~QWceMenuBarPrivate();
+        void addAction(QAction *, QAction *);
         void addAction(QAction *, QWceMenuAction* =0);
         void addAction(QWceMenuAction *, QWceMenuAction* =0);
         void syncAction(QWceMenuAction *);

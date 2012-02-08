@@ -377,7 +377,8 @@ void QMenuBarPrivate::wceCreateMenuBar(QWidget *parent)
     Q_Q(QMenuBar);
     wce_menubar = new QWceMenuBarPrivate(this);
 
-    wce_menubar->parentWindowHandle = parent ? parent->winId() : q->winId();
+    wce_menubar->parentWindowHandle = parent ? QApplicationPrivate::getHWNDForWidget(parent) :
+                                               QApplicationPrivate::getHWNDForWidget(q);
     wce_menubar->leftButtonAction = defaultAction;
 
     wce_menubar->menubarHandle = qt_wce_create_menubar(wce_menubar->parentWindowHandle, (HINSTANCE)qWinAppInst(), 0, SHCMBF_EMPTYBAR);
@@ -547,7 +548,8 @@ void QMenuBarPrivate::_q_updateDefaultAction()
 void QMenuBarPrivate::QWceMenuBarPrivate::rebuild()
 {
     d->q_func()->resize(0,0);
-    parentWindowHandle = d->q_func()->parentWidget() ? d->q_func()->parentWidget()->winId() : d->q_func()->winId();
+    parentWindowHandle = d->q_func()->parentWidget() ? QApplicationPrivate::getHWNDForWidget(d->q_func()->parentWidget()) :
+                                                       QApplicationPrivate::getHWNDForWidget(d->q_func());
     if (d->wceClassicMenu) {
         QList<QAction*> actions = d->actions;
         int maxEntries;
