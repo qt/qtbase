@@ -71,6 +71,8 @@ private slots:
     void globalMatch();
     void serialize_data();
     void serialize();
+    void operatoreq_data();
+    void operatoreq();
 
 private:
     void provideRegularExpressions();
@@ -347,11 +349,6 @@ void tst_QRegularExpression::gettersSetters()
         QRegularExpression re(pattern, patternOptions);
         QCOMPARE(re.pattern(), pattern);
         QCOMPARE(re.patternOptions(), patternOptions);
-    }
-    {
-        QRegularExpression re(pattern, patternOptions);
-        QRegularExpression re2(pattern, patternOptions);
-        QVERIFY(re == re2);
     }
 }
 
@@ -1142,6 +1139,63 @@ void tst_QRegularExpression::serialize()
         in >> inRe;
     }
     QCOMPARE(inRe, outRe);
+}
+
+static void verifyEquality(const QRegularExpression &re1, const QRegularExpression &re2)
+{
+    QVERIFY(re1 == re2);
+    QVERIFY(re2 == re1);
+    QVERIFY(!(re1 != re2));
+    QVERIFY(!(re2 != re1));
+
+    QRegularExpression re3(re1);
+
+    QVERIFY(re1 == re3);
+    QVERIFY(re3 == re1);
+    QVERIFY(!(re1 != re3));
+    QVERIFY(!(re3 != re1));
+
+    QVERIFY(re2 == re3);
+    QVERIFY(re3 == re2);
+    QVERIFY(!(re2 != re3));
+    QVERIFY(!(re3 != re2));
+
+    re3 = re2;
+    QVERIFY(re1 == re3);
+    QVERIFY(re3 == re1);
+    QVERIFY(!(re1 != re3));
+    QVERIFY(!(re3 != re1));
+
+    QVERIFY(re2 == re3);
+    QVERIFY(re3 == re2);
+    QVERIFY(!(re2 != re3));
+    QVERIFY(!(re3 != re2));
+}
+
+void tst_QRegularExpression::operatoreq_data()
+{
+    provideRegularExpressions();
+}
+
+void tst_QRegularExpression::operatoreq()
+{
+    QFETCH(QString, pattern);
+    QFETCH(QRegularExpression::PatternOptions, patternOptions);
+    {
+        QRegularExpression re1(pattern);
+        QRegularExpression re2(pattern);
+        verifyEquality(re1, re2);
+    }
+    {
+        QRegularExpression re1(QString(), patternOptions);
+        QRegularExpression re2(QString(), patternOptions);
+        verifyEquality(re1, re2);
+    }
+    {
+        QRegularExpression re1(pattern, patternOptions);
+        QRegularExpression re2(pattern, patternOptions);
+        verifyEquality(re1, re2);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QRegularExpression)

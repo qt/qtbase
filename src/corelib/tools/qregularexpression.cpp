@@ -1395,7 +1395,8 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QString &s
 */
 bool QRegularExpression::operator==(const QRegularExpression &re) const
 {
-    return (pattern() == re.pattern() && patternOptions() == re.patternOptions());
+    return (d == re.d) ||
+           (d->pattern == re.d->pattern && d->patternOptions == re.d->patternOptions);
 }
 
 /*!
