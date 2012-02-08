@@ -1722,7 +1722,13 @@ void tst_QFileInfo::group()
 #if defined(Q_OS_UNIX)
     struct group *gr;
     gid_t gid = getegid();
+
+    errno = 0;
     gr = getgrgid(gid);
+
+    QVERIFY2(gr, qPrintable(
+        QString("getgrgid returned 0: %1, cannot determine my own group")
+        .arg(QString::fromLocal8Bit(strerror(errno)))));
     expected = QString::fromLocal8Bit(gr->gr_name);
 #endif
 
