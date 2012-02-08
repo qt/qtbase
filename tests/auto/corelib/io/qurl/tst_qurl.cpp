@@ -350,6 +350,8 @@ void tst_QUrl::setUrl()
         QVERIFY(url.authority().isEmpty());
         QVERIFY(url.fragment().isEmpty());
         QCOMPARE(url.port(), -1);
+        QCOMPARE(url.toString(), QString::fromLatin1("file:///"));
+        QCOMPARE(url.toDisplayString(), QString::fromLatin1("file:///"));
     }
 
     {
@@ -363,6 +365,8 @@ void tst_QUrl::setUrl()
         QCOMPARE(url.host(), QString::fromLatin1("www.foo.bar"));
         QCOMPARE(url.authority(), QString::fromLatin1("www.foo.bar:80"));
         QCOMPARE(url.port(), 80);
+        QCOMPARE(url.toString(), QString::fromLatin1("http://www.foo.bar:80"));
+        QCOMPARE(url.toDisplayString(), QString::fromLatin1("http://www.foo.bar:80"));
 
         QUrl url2("//www1.foo.bar");
         QCOMPARE(url.resolved(url2).toString(), QString::fromLatin1("http://www1.foo.bar"));
@@ -379,6 +383,8 @@ void tst_QUrl::setUrl()
         QCOMPARE(url.host(), QString::fromLatin1("56::56:56:56:127.0.0.1"));
         QCOMPARE(url.authority(), QString::fromLatin1("user:pass@[56::56:56:56:127.0.0.1]:99"));
         QCOMPARE(url.port(), 99);
+        QCOMPARE(url.url(), QString::fromLatin1("http://user:pass@[56::56:56:56:127.0.0.1]:99"));
+        QCOMPARE(url.toDisplayString(), QString::fromLatin1("http://user@[56::56:56:56:127.0.0.1]:99"));
     }
 
     {

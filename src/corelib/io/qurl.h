@@ -102,6 +102,7 @@ public:
     void setUrl(const QString &url, ParsingMode mode = TolerantMode);
     QString url(FormattingOptions options = None) const;
     QString toString(FormattingOptions options = None) const;
+    QString toDisplayString(FormattingOptions options = None) const;
 
     bool isValid() const;
 
