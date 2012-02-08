@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,23 +39,38 @@
 **
 ****************************************************************************/
 
-#include <qdebug.h>
-#include <qurl.h>
+#ifndef QGENERICUNIXDESKTOPSERVICES_H
+#define QGENERICUNIXDESKTOPSERVICES_H
+
+#include <QtGui/qplatformservices_qpa.h>
+#include <QtCore/QString>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-static bool launchWebBrowser(const QUrl &url)
+class QGenericUnixServices : public QPlatformServices
 {
-    Q_UNUSED(url);
-    qWarning("QDesktopServices::launchWebBrowser not implemented");
-    return false;
-}
+public:
+    enum DesktopEnvironment {
+        DE_UNKNOWN,
+        DE_KDE,
+        DE_GNOME
+    };
 
-static bool openDocument(const QUrl &file)
-{
-    Q_UNUSED(file);
-    qWarning("QDesktopServices::openDocument not implemented");
-    return false;
-}
+    QGenericUnixServices();
+
+    virtual bool openUrl(const QUrl &url);
+    virtual bool openDocument(const QUrl &url);
+
+private:
+    const DesktopEnvironment m_desktopEnvironment;
+    QString m_webBrowser;
+    QString m_documentLauncher;
+};
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QGENERICUNIXDESKTOPSERVICES_H

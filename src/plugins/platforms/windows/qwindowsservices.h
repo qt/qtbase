@@ -39,68 +39,20 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBINTEGRATION_H
-#define QXCBINTEGRATION_H
+#ifndef QWINDOWSDESKTOPSERVICES_H
+#define QWINDOWSDESKTOPSERVICES_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+#include <QtGui/qplatformservices_qpa.h>
 
 QT_BEGIN_NAMESPACE
 
-class QXcbConnection;
-class QAbstractEventDispatcher;
-class QXcbNativeInterface;
-
-class QXcbIntegration : public QPlatformIntegration
+class QWindowsServices : public QPlatformServices
 {
 public:
-    QXcbIntegration(const QStringList &parameters);
-    ~QXcbIntegration();
-
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-
-    bool hasCapability(Capability cap) const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-
-    void moveToScreen(QWindow *window, int screen);
-
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface()const;
-
-    QPlatformClipboard *clipboard() const;
-    QPlatformDrag *drag() const;
-
-    QPlatformInputContext *inputContext() const;
-
-    QPlatformAccessibility *accessibility() const;
-
-#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
-    QPlatformSharedGraphicsCache *createPlatformSharedGraphicsCache(const char *cacheId) const;
-#endif
-
-    QPlatformServices *services() const;
-
-private:
-    QList<QXcbConnection *> m_connections;
-
-    QScopedPointer<QPlatformFontDatabase> m_fontDatabase;
-    QScopedPointer<QXcbNativeInterface> m_nativeInterface;
-
-    QScopedPointer<QPlatformInputContext> m_inputContext;
-    QAbstractEventDispatcher *m_eventDispatcher;
-
-    QScopedPointer<QPlatformAccessibility> m_accessibility;
-
-#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
-    QScopedPointer<QPlatformSharedGraphicsCache> m_sharedGraphicsCache;
-#endif
-
-    QScopedPointer<QPlatformServices> m_services;
+    bool openUrl(const QUrl &url);
+    bool openDocument(const QUrl &url);
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QWINDOWSDESKTOPSERVICES_H

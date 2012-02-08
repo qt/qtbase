@@ -66,6 +66,7 @@ class QPlatformAccessibility;
 class QPlatformTheme;
 class QPlatformDialogHelper;
 class QPlatformSharedGraphicsCache;
+class QPlatformServices;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -105,6 +106,8 @@ public:
 
     // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;
+
+    virtual QPlatformServices *services() const;
 
     enum StyleHint {
         CursorFlashTime,

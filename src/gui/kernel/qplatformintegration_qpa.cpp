@@ -107,6 +107,11 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
     return 0;
 }
 
+QPlatformServices *QPlatformIntegration::services() const
+{
+    return 0;
+}
+
 /*!
     \class QPlatformIntegration
     \since 4.8

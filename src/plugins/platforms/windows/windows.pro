@@ -13,6 +13,7 @@ LIBS *= -lOpenGL32 -lGdi32 -lUser32 -lOle32 -lWinspool -lImm32 -lWinmm  -lOleaut
 win32-g++: LIBS *= -luuid
 # For the dialog helpers:
 LIBS *= -lshlwapi -lShell32
+LIBS *= -lAdvapi32
 
 DEFINES *= QT_NO_CAST_FROM_ASCII
 
@@ -46,7 +47,8 @@ SOURCES += \
     qwindowsinputcontext.cpp \
     qwindowsaccessibility.cpp \
     qwindowstheme.cpp \
-    qwindowsdialoghelpers.cpp
+    qwindowsdialoghelpers.cpp \
+    qwindowsservices.cpp
 
 HEADERS += \
     qwindowsnativeimage.h \
@@ -73,7 +75,8 @@ HEADERS += \
     qwindowsinputcontext.h \
     qwindowsaccessibility.h \
     qwindowstheme.h \
-    qwindowsdialoghelpers.h
+    qwindowsdialoghelpers.h \
+    qwindowsservices.h
 
 # Enable access to HB_Face in harfbuzz includes included by qfontengine_p.h.
 DEFINES *= QT_COMPILES_IN_HARFBUZZ

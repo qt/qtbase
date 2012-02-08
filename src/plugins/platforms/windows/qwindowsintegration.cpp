@@ -46,6 +46,7 @@
 #include "qwindowsglcontext.h"
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
+#include "qwindowsservices.h"
 #ifndef QT_NO_FREETYPE
 #include "qwindowsfontdatabase_ft.h"
 #endif
@@ -162,6 +163,7 @@ struct QWindowsIntegrationPrivate
     QWindowsInputContext m_inputContext;
     QWindowsAccessibility m_accessibility;
     QWindowsTheme m_theme;
+    QWindowsServices m_services;
 };
 
 QWindowsIntegrationPrivate::QWindowsIntegrationPrivate()
@@ -337,6 +339,11 @@ QAbstractEventDispatcher * QWindowsIntegration::guiThreadEventDispatcher() const
 QPlatformTheme *QWindowsIntegration::platformTheme() const
 {
     return &d->m_theme;
+}
+
+QPlatformServices *QWindowsIntegration::services() const
+{
+    return &d->m_services;
 }
 
 QT_END_NAMESPACE

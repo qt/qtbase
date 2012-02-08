@@ -53,6 +53,8 @@
 
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtPlatformSupport/private/qgenericunixservices_p.h>
 
 #include <stdio.h>
 
@@ -84,7 +86,8 @@
 QT_BEGIN_NAMESPACE
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters)
-    : m_eventDispatcher(createUnixEventDispatcher())
+    : m_eventDispatcher(createUnixEventDispatcher()),
+      m_services(new QGenericUnixServices)
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
 
@@ -267,5 +270,10 @@ QPlatformSharedGraphicsCache *QXcbIntegration::createPlatformSharedGraphicsCache
     return m_sharedGraphicsCache.data();
 }
 #endif
+
+QPlatformServices *QXcbIntegration::services() const
+{
+    return m_services.data();
+}
 
 QT_END_NAMESPACE

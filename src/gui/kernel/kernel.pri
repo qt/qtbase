@@ -55,7 +55,8 @@ HEADERS += \
         kernel/qtouchdevice.h \
         kernel/qtouchdevice_p.h \
         kernel/qplatformsharedgraphicscache_qpa.h \
-        kernel/qplatformdialoghelper_qpa.h
+        kernel/qplatformdialoghelper_qpa.h \
+        kernel/qplatformservices_qpa.h
 
 SOURCES += \
         kernel/qclipboard_qpa.cpp \
@@ -97,7 +98,8 @@ SOURCES += \
         kernel/qstylehints.cpp \
         kernel/qtouchdevice.cpp \
         kernel/qplatformsharedgraphicscache_qpa.cpp \
-        kernel/qplatformdialoghelper_qpa.cpp
+        kernel/qplatformdialoghelper_qpa.cpp \
+        kernel/qplatformservices_qpa.cpp
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2)|contains(QT_CONFIG, egl) {
     HEADERS += \

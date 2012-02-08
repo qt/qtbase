@@ -45,14 +45,14 @@
 
 #include <qdebug.h>
 
-#include "qdesktopservices_qpa.cpp"
-
 #include <qstandardpaths.h>
 #include <qhash.h>
 #include <qobject.h>
 #include <qcoreapplication.h>
+#include <private/qguiapplication_p.h>
 #include <qurl.h>
 #include <qmutex.h>
+#include <qplatformservices_qpa.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -185,14 +185,15 @@ bool QDesktopServices::openUrl(const QUrl &url)
             return result; // ### support bool slot return type
         }
     }
-
-    bool result;
-    if (url.scheme() == QLatin1String("file"))
-        result = openDocument(url);
-    else
-        result = launchWebBrowser(url);
-
-    return result;
+    if (!url.isValid())
+        return false;
+    QPlatformServices *platformServices = QGuiApplicationPrivate::platformIntegration()->services();
+    if (!platformServices) {
+        qWarning("%s: The platform plugin does not support services.", Q_FUNC_INFO);
+        return false;
+    }
+    return url.scheme() == QStringLiteral("file") ?
+           platformServices->openDocument(url) : platformServices->openUrl(url);
 }
 
 /*!

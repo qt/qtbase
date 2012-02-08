@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,48 +39,27 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSINTEGRATION_H
-#define QWINDOWSINTEGRATION_H
+#ifndef QPLATFORMSERVICES_QPA_H
+#define QPLATFORMSERVICES_QPA_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtCore/QScopedPointer>
+#include <QtCore/QtGlobal>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-struct QWindowsIntegrationPrivate;
+class QUrl;
 
-class QWindowsIntegration : public QPlatformIntegration
+class Q_GUI_EXPORT QPlatformServices
 {
 public:
-    QWindowsIntegration();
-    virtual ~QWindowsIntegration();
+    virtual ~QPlatformServices() { }
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-
-    virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-
-    virtual QPlatformClipboard *clipboard() const;
-    virtual QPlatformDrag *drag() const;
-    virtual QPlatformInputContext *inputContext() const;
-    virtual QPlatformAccessibility *accessibility() const;
-    virtual QPlatformNativeInterface *nativeInterface() const;
-    virtual QPlatformFontDatabase *fontDatabase() const;
-    virtual QPlatformTheme *platformTheme() const;
-    QPlatformServices *services() const;
-    virtual QVariant styleHint(StyleHint hint) const;
-
-    static QWindowsIntegration *instance();
-
-    inline void emitScreenAdded(QPlatformScreen *s) { screenAdded(s); }
-
-private:
-    QScopedPointer<QWindowsIntegrationPrivate> d;
+    virtual bool openUrl(const QUrl &url);
+    virtual bool openDocument(const QUrl &url);
 };
 
 QT_END_NAMESPACE
+QT_END_HEADER
 
-#endif
+#endif // QPLATFORMSERVICES_QPA_H

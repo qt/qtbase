@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,48 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSINTEGRATION_H
-#define QWINDOWSINTEGRATION_H
+#include "qplatformservices_qpa.h"
 
-#include <QtGui/QPlatformIntegration>
-#include <QtCore/QScopedPointer>
+#include <QtCore/QUrl>
+#include <QtCore/QString>
+#include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
 
-struct QWindowsIntegrationPrivate;
+/*!
+    \class QPlatformServices
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
 
-class QWindowsIntegration : public QPlatformIntegration
+    \brief The QPlatformServices provides the backend for desktop-related functionality.
+*/
+
+bool QPlatformServices::openUrl(const QUrl &url)
 {
-public:
-    QWindowsIntegration();
-    virtual ~QWindowsIntegration();
+    qWarning("This plugin does not support QPlatformServices::openUrl() for '%s'.",
+             qPrintable(url.toString()));
+    return false;
+}
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-
-    virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-
-    virtual QPlatformClipboard *clipboard() const;
-    virtual QPlatformDrag *drag() const;
-    virtual QPlatformInputContext *inputContext() const;
-    virtual QPlatformAccessibility *accessibility() const;
-    virtual QPlatformNativeInterface *nativeInterface() const;
-    virtual QPlatformFontDatabase *fontDatabase() const;
-    virtual QPlatformTheme *platformTheme() const;
-    QPlatformServices *services() const;
-    virtual QVariant styleHint(StyleHint hint) const;
-
-    static QWindowsIntegration *instance();
-
-    inline void emitScreenAdded(QPlatformScreen *s) { screenAdded(s); }
-
-private:
-    QScopedPointer<QWindowsIntegrationPrivate> d;
-};
+bool QPlatformServices::openDocument(const QUrl &url)
+{
+    qWarning("This plugin does not support QPlatformServices::openDocument() for '%s'.",
+             qPrintable(url.toString()));
+    return false;
+}
 
 QT_END_NAMESPACE
-
-#endif
