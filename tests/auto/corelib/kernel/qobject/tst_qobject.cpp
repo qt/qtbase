@@ -1703,6 +1703,7 @@ void tst_QObject::property()
     QVERIFY(property.isWritable());
     QVERIFY(!property.isEnumType());
     QCOMPARE(property.typeName(), "CustomType*");
+    qRegisterMetaType<CustomType*>();
     QCOMPARE(property.type(), QVariant::UserType);
     QCOMPARE(property.userType(), qMetaTypeId<CustomType*>());
 
