@@ -248,6 +248,12 @@ QUnifiedTimer *QUnifiedTimer::instance()
     return instance(true);
 }
 
+void QUnifiedTimer::maybeUpdateAnimationsToCurrentTime()
+{
+    if (time.elapsed() - lastTick > 50)
+        updateAnimationTimers(driver->elapsed());
+}
+
 void QUnifiedTimer::updateAnimationTimers(qint64 currentTick)
 {
     //setCurrentTime can get this called again while we're the for loop. At least with pauseAnimations
@@ -590,7 +596,7 @@ void QAnimationTimer::startAnimations()
     startAnimationPending = false;
     //force timer to update, which prevents large deltas for our newly added animations
     if (!animations.isEmpty())
-        QUnifiedTimer::instance()->updateAnimationTimers(-1);
+        QUnifiedTimer::instance()->maybeUpdateAnimationsToCurrentTime();
 
     //we transfer the waiting animations into the "really running" state
     animations += animationsToStart;

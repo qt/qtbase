@@ -185,6 +185,7 @@ public:
     bool canUninstallAnimationDriver(QAnimationDriver *driver);
 
     void restart();
+    void maybeUpdateAnimationsToCurrentTime();
     void updateAnimationTimers(qint64 currentTick);
 
     //useful for profiling/debugging
