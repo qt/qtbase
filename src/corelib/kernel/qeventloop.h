@@ -96,6 +96,7 @@ class Q_CORE_EXPORT QEventLoopLocker
 public:
     QEventLoopLocker();
     explicit QEventLoopLocker(QEventLoop *loop);
+    explicit QEventLoopLocker(QThread *thread);
     ~QEventLoopLocker();
 
 private:

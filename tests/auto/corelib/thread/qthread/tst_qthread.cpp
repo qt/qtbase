@@ -107,6 +107,8 @@ private slots:
     void customEventDispatcher();
 
     void stressTest();
+
+    void quitLock();
 };
 
 enum { one_minute = 60 * 1000, five_minutes = 5 * one_minute };
@@ -1283,6 +1285,53 @@ void tst_QThread::customEventDispatcher()
     QVERIFY(thr.wait(30000));
     // test that ED has been deleted
     QVERIFY(weak_ed.isNull());
+}
+
+class Job : public QObject
+{
+    Q_OBJECT
+public:
+    Job(QThread *thread, int deleteDelay, QObject *parent = 0)
+      : QObject(parent), quitLocker(thread), exitThreadCalled(false)
+    {
+        moveToThread(thread);
+        QTimer::singleShot(deleteDelay, this, SLOT(deleteLater()));
+        QTimer::singleShot(1000, this, SLOT(exitThread()));
+    }
+
+private slots:
+    void exitThread()
+    {
+        exitThreadCalled = true;
+        thread()->exit(1);
+    }
+
+private:
+    QEventLoopLocker quitLocker;
+public:
+    bool exitThreadCalled;
+};
+
+void tst_QThread::quitLock()
+{
+    QThread thread;
+
+    QEventLoop loop;
+    connect(&thread, SIGNAL(finished()), &loop, SLOT(quit()));
+
+    Job *job;
+
+    thread.start();
+    job = new Job(&thread, 500);
+    QCOMPARE(job->thread(), &thread);
+    loop.exec();
+    QVERIFY(!job->exitThreadCalled);
+
+    thread.start();
+    job = new Job(&thread, 2500);
+    QCOMPARE(job->thread(), &thread);
+    loop.exec();
+    QVERIFY(job->exitThreadCalled);
 }
 
 QTEST_MAIN(tst_QThread)

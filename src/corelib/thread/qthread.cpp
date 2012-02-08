@@ -763,5 +763,14 @@ void QThread::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
     }
 }
 
+bool QThread::event(QEvent *event)
+{
+    if (event->type() == QEvent::Quit) {
+        quit();
+        return true;
+    } else {
+        return QObject::event(event);
+    }
+}
 
 QT_END_NAMESPACE

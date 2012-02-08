@@ -60,6 +60,7 @@
 #include "QtCore/qstack.h"
 #include "QtCore/qwaitcondition.h"
 #include "QtCore/qmap.h"
+#include "QtCore/qcoreapplication.h"
 #include "private/qobject_p.h"
 
 
@@ -144,6 +145,7 @@ public:
     ~QThreadPrivate();
 
     mutable QMutex mutex;
+    QAtomicInt quitLockRef;
 
     bool running;
     bool finished;
@@ -179,6 +181,18 @@ public:
     QThreadData *data;
 
     static void createEventDispatcher(QThreadData *data);
+
+    void ref()
+    {
+        quitLockRef.ref();
+    }
+
+    void deref()
+    {
+        if (!quitLockRef.deref() && running) {
+            QCoreApplication::instance()->postEvent(q_ptr, new QEvent(QEvent::Quit));
+        }
+    }
 };
 
 #else // QT_NO_THREAD
@@ -194,6 +208,9 @@ public:
     static void setCurrentThread(QThread*) {}
     static QThread *threadForId(int) { return QThread::currentThread(); }
     static void createEventDispatcher(QThreadData *data);
+
+    void ref() {}
+    void deref() {}
 
     Q_DECLARE_PUBLIC(QThread)
 };

@@ -322,13 +322,19 @@ class QEventLoopLockerPrivate
 {
 public:
     explicit QEventLoopLockerPrivate(QEventLoopPrivate *loop)
-      : loop(loop), app(0)
+      : loop(loop), thread(0), app(0)
     {
         loop->ref();
     }
 
+    explicit QEventLoopLockerPrivate(QThreadPrivate *thread)
+      : loop(0), thread(thread), app(0)
+    {
+        thread->ref();
+    }
+
     explicit QEventLoopLockerPrivate(QCoreApplicationPrivate *app)
-      : loop(0), app(app)
+      : loop(0), thread(0), app(app)
     {
         app->ref();
     }
@@ -337,12 +343,15 @@ public:
     {
         if (loop)
             loop->deref();
+        else if (thread)
+            thread->deref();
         else
             app->deref();
     }
 
 private:
     QEventLoopPrivate *loop;
+    QThreadPrivate *thread;
     QCoreApplicationPrivate *app;
 };
 
@@ -386,6 +395,12 @@ QEventLoopLocker::QEventLoopLocker()
  */
 QEventLoopLocker::QEventLoopLocker(QEventLoop *loop)
   : d_ptr(new QEventLoopLockerPrivate(static_cast<QEventLoopPrivate*>(QObjectPrivate::get(loop))))
+{
+
+}
+
+QEventLoopLocker::QEventLoopLocker(QThread *thread)
+  : d_ptr(new QEventLoopLockerPrivate(static_cast<QThreadPrivate*>(QObjectPrivate::get(thread))))
 {
 
 }
