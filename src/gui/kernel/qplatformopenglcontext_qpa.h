@@ -42,6 +42,8 @@
 #ifndef QPLATFORMGLCONTEXT_H
 #define QPLATFORMGLCONTEXT_H
 
+#ifndef QT_NO_OPENGL
+
 #include <QtCore/qnamespace.h>
 #include <QtGui/qsurfaceformat.h>
 #include <QtGui/qwindow.h>
@@ -91,5 +93,6 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
+#endif // QT_NO_OPENGL
 
 #endif // QPLATFORMGLCONTEXT_H

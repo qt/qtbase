@@ -42,6 +42,8 @@
 #ifndef QGL_H
 #define QGL_H
 
+#ifndef QT_NO_OPENGL
+
 #include <QtWidgets/qwidget.h>
 #include <QtGui/qpaintengine.h>
 #include <QtOpenGL/qglcolormap.h>
@@ -551,4 +553,5 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
+#endif // QT_NO_OPENGL
 #endif // QGL_H
