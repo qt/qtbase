@@ -385,6 +385,10 @@ void tst_QDir::removeRecursively()
 
 void tst_QDir::removeRecursivelyFailure()
 {
+#ifdef Q_OS_UNIX
+    if (::getuid() == 0)
+        QSKIP("Running this test as root doesn't make sense");
+#endif
     const QString tmpdir = QDir::currentPath() + "/tmpdir/";
     const QString path = tmpdir + "undeletable";
     QDir().mkpath(path);
@@ -1932,6 +1936,10 @@ void tst_QDir::isRelative()
 
 void tst_QDir::isReadable()
 {
+#ifdef Q_OS_UNIX
+    if (::getuid() == 0)
+        QSKIP("Running this test as root doesn't make sense");
+#endif
     QDir dir;
 
     QVERIFY(dir.isReadable());
@@ -1961,7 +1969,10 @@ void tst_QDir::cdBelowRoot()
     QCOMPARE(root.path(), ROOT);
     QVERIFY(root.cd(CD_INTO));
     QCOMPARE(root.path(), DIR);
-
+#ifdef Q_OS_UNIX
+    if (::getuid() == 0)
+        QSKIP("Running this test as root doesn't make sense");
+#endif
     QDir dir(DIR);
     QVERIFY(!dir.cd("../.."));
     QCOMPARE(dir.path(), DIR);
