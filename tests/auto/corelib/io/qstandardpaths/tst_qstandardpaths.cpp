@@ -229,6 +229,11 @@ void tst_qstandardpaths::testRuntimeDirectory()
 
 void tst_qstandardpaths::testCustomRuntimeDirectory()
 {
+#if defined(Q_OS_UNIX)
+    if (::getuid() == 0)
+        QSKIP("Running this test as root doesn't make sense");
+#endif
+
 #ifdef Q_XDG_PLATFORM
     qputenv("XDG_RUNTIME_DIR", QFile::encodeName("/tmp"));
     // It's very unlikely that /tmp is 0600 or that we can chmod it
