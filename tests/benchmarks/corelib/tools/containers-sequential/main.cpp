@@ -133,7 +133,7 @@ struct Large { // A "large" item type
 };
 
 // Embedded devices typically have limited memory
-#if defined(Q_WS_WINCE)
+#if defined(Q_OS_WINCE)
 #  define LARGE_MAX_SIZE 2000
 #else
 #  define LARGE_MAX_SIZE 20000
