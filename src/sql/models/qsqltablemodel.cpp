@@ -384,12 +384,6 @@ QVariant QSqlTableModel::data(const QModelIndex &index, int role) const
     if (!index.isValid() || (role != Qt::DisplayRole && role != Qt::EditRole))
         return QVariant();
 
-    // Problem.. we need to use QSQM::indexInQuery to handle inserted columns
-    // but inserted rows we need to handle
-    // and indexInQuery is not virtual (grrr) so any values we pass to QSQM need
-    // to handle the insertedRows
-    QModelIndex item = indexInQuery(index);
-
     if (d->cache.contains(index.row())) {
         const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
 
@@ -397,25 +391,24 @@ QVariant QSqlTableModel::data(const QModelIndex &index, int role) const
         case OnFieldChange:
         case OnRowChange:
             if (row.op() == QSqlTableModelPrivate::Insert) {
-                if (item.column() < 0 || item.column() >= row.rec().count())
+                if (index.column() < 0 || index.column() >= row.rec().count())
                     return QVariant();
-                return row.rec().value(item.column());
+                return row.rec().value(index.column());
             } else if (row.op() == QSqlTableModelPrivate::Update) {
-                if (row.rec().isGenerated(item.column()))
-                    return row.rec().value(item.column());
+                if (row.rec().isGenerated(index.column()))
+                    return row.rec().value(index.column());
             }
             break;
         case OnManualSubmit:
             if (row.op() == QSqlTableModelPrivate::Insert
                 || (row.op() != QSqlTableModelPrivate::None
-                    && row.rec().isGenerated(item.column())))
-                return row.rec().value(item.column());
+                    && row.rec().isGenerated(index.column())))
+                return row.rec().value(index.column());
             break;
         }
     }
 
-    // We need to handle row mapping here, but not column mapping
-    return QSqlQueryModel::data(index.sibling(item.row(), index.column()), role);
+    return QSqlQueryModel::data(index, role);
 }
 
 /*!
@@ -1122,15 +1115,14 @@ int QSqlTableModel::rowCount(const QModelIndex &parent) const
 QModelIndex QSqlTableModel::indexInQuery(const QModelIndex &item) const
 {
     Q_D(const QSqlTableModel);
-    const QModelIndex it = QSqlQueryModel::indexInQuery(item); // this adjusts columns only
     int rowOffset = 0;
     QSqlTableModelPrivate::CacheMap::ConstIterator i = d->cache.constBegin();
-    while (i != d->cache.constEnd() && i.key() <= it.row()) {
+    while (i != d->cache.constEnd() && i.key() <= item.row()) {
         if (i.value().op() == QSqlTableModelPrivate::Insert)
             ++rowOffset;
         ++i;
     }
-    return createIndex(it.row() - rowOffset, it.column(), it.internalPointer());
+    return QSqlQueryModel::indexInQuery(createIndex(item.row() - rowOffset, item.column(), item.internalPointer()));
 }
 
 /*!

@@ -213,6 +213,8 @@ information about a particular change.
 
 - QSystemLocale has been removed from the public API.
 
+- QSqlQueryModel::indexInQuery() is now virtual. See note below under QSql.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
@@ -367,6 +369,10 @@ ignore the rest of the range.
   map were simply ignored.
   -For OnManualSubmit, insertRecord() no longer leaves behind an empty
   row if setRecord() fails.
+
+* QSqlQueryModel::indexInQuery() is now virtual. See
+QSqlTableModel::indexInQuery() as example of how to implement in a
+subclass.
 
 ****************************************************************************
 *                          Database Drivers                                *
