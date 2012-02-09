@@ -199,6 +199,13 @@ public:
         QTouchEvent::TouchPoint touchPoint;
     };
     QHash<ActiveTouchPointsKey, ActiveTouchPointsValue> activeTouchPoints;
+    QEvent::Type lastTouchType;
+    struct SynthesizedMouseData {
+        SynthesizedMouseData(const QPointF &p, const QPointF &sp) : pos(p), screenPos(sp) { }
+        QPointF pos;
+        QPointF screenPos;
+    };
+    QHash<QWindow *, SynthesizedMouseData> synthesizedMousePoints;
 
 private:
     void init();

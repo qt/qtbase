@@ -57,6 +57,8 @@ private slots:
     void touchToMouseTranslation();
     void mouseToTouchTranslation();
     void mouseToTouchLoop();
+    void touchCancel();
+    void touchCancelWithTouchToMouse();
     void orientation();
     void close();
     void initTestCase()
@@ -274,6 +276,7 @@ public:
             event->ignore();
             return;
         }
+        touchEventType = event->type();
         QList<QTouchEvent::TouchPoint> points = event->touchPoints();
         for (int i = 0; i < points.count(); ++i) {
             switch (points.at(i).state()) {
@@ -282,6 +285,9 @@ public:
                 break;
             case Qt::TouchPointReleased:
                 ++touchReleasedCount;
+                break;
+            case Qt::TouchPointMoved:
+                ++touchMovedCount;
                 break;
             default:
                 break;
@@ -292,14 +298,15 @@ public:
     InputTestWindow() {
         keyPressCode = keyReleaseCode = 0;
         mousePressButton = mouseReleaseButton = 0;
-        touchPressedCount = touchReleasedCount = 0;
-        ignoreMouse = ignoreTouch = 0;
+        touchPressedCount = touchReleasedCount = touchMovedCount = 0;
+        ignoreMouse = ignoreTouch = false;
     }
 
     int keyPressCode, keyReleaseCode;
     int mousePressButton, mouseReleaseButton, mouseMoveButton;
     QPointF mousePressScreenPos, mouseMoveScreenPos;
-    int touchPressedCount, touchReleasedCount;
+    int touchPressedCount, touchReleasedCount, touchMovedCount;
+    QEvent::Type touchEventType;
 
     bool ignoreMouse, ignoreTouch;
 };
@@ -480,7 +487,108 @@ void tst_QWindow::mouseToTouchLoop()
     QCoreApplication::processEvents();
 
     qApp->setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, false);
-    qApp->setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, false);
+    qApp->setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, true);
+}
+
+void tst_QWindow::touchCancel()
+{
+    InputTestWindow window;
+    window.setGeometry(80, 80, 40, 40);
+    window.show();
+    QTest::qWaitForWindowShown(&window);
+
+    QList<QWindowSystemInterface::TouchPoint> points;
+    QWindowSystemInterface::TouchPoint tp1;
+    tp1.id = 1;
+
+    // Start a touch.
+    tp1.state = Qt::TouchPointPressed;
+    tp1.area = QRect(10, 10, 4, 4);
+    points << tp1;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.touchEventType, QEvent::TouchBegin);
+    QTRY_COMPARE(window.touchPressedCount, 1);
+
+    // Cancel the active touch sequence.
+    QWindowSystemInterface::handleTouchCancelEvent(&window, touchDevice);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.touchEventType, QEvent::TouchCancel);
+
+    // Send a move -> will not be delivered due to the cancellation.
+    QTRY_COMPARE(window.touchMovedCount, 0);
+    points[0].state = Qt::TouchPointMoved;
+    tp1.area.adjust(2, 2, 2, 2);
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.touchMovedCount, 0);
+
+    // Likewise. The only allowed transition is TouchCancel -> TouchBegin.
+    QTRY_COMPARE(window.touchReleasedCount, 0);
+    points[0].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.touchReleasedCount, 0);
+
+    // Start a new sequence -> from this point on everything should go through normally.
+    points[0].state = Qt::TouchPointPressed;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.touchEventType, QEvent::TouchBegin);
+    QTRY_COMPARE(window.touchPressedCount, 2);
+
+    points[0].state = Qt::TouchPointMoved;
+    tp1.area.adjust(2, 2, 2, 2);
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.touchMovedCount, 1);
+
+    points[0].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.touchReleasedCount, 1);
+}
+
+void tst_QWindow::touchCancelWithTouchToMouse()
+{
+    InputTestWindow window;
+    window.ignoreTouch = true;
+    window.setGeometry(80, 80, 40, 40);
+    window.show();
+    QTest::qWaitForWindowShown(&window);
+
+    QList<QWindowSystemInterface::TouchPoint> points;
+    QWindowSystemInterface::TouchPoint tp1;
+    tp1.id = 1;
+
+    tp1.state = Qt::TouchPointPressed;
+    tp1.area = QRect(100, 100, 4, 4);
+    points << tp1;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.mousePressButton, int(Qt::LeftButton));
+    QTRY_COMPARE(window.mousePressScreenPos, points[0].area.center());
+
+    // Cancel the touch. Should result in a mouse release for windows that have
+    // have an active touch-to-mouse sequence.
+    QWindowSystemInterface::handleTouchCancelEvent(0, touchDevice);
+    QCoreApplication::processEvents();
+
+    QTRY_COMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
+
+    // Now change the window to accept touches.
+    window.mousePressButton = window.mouseReleaseButton = 0;
+    window.ignoreTouch = false;
+
+    // Send a touch, there will be no mouse event generated.
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.mousePressButton, 0);
+
+    // Cancel the touch. It should not result in a mouse release with this window.
+    QWindowSystemInterface::handleTouchCancelEvent(0, touchDevice);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.mouseReleaseButton, 0);
 }
 
 void tst_QWindow::orientation()

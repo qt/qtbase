@@ -296,6 +296,22 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTo
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::handleTouchCancelEvent(QWindow *w, QTouchDevice *device,
+                                                    Qt::KeyboardModifiers mods)
+{
+    unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleTouchCancelEvent(w, time, device, mods);
+}
+
+void QWindowSystemInterface::handleTouchCancelEvent(QWindow *w, ulong timestamp, QTouchDevice *device,
+                                                    Qt::KeyboardModifiers mods)
+{
+    QWindowSystemInterfacePrivate::TouchEvent *e =
+            new QWindowSystemInterfacePrivate::TouchEvent(w, timestamp, QEvent::TouchCancel, device,
+                                                         QList<QTouchEvent::TouchPoint>(), mods);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
 void QWindowSystemInterface::handleScreenOrientationChange(QScreen *screen, Qt::ScreenOrientation orientation)
 {
     QWindowSystemInterfacePrivate::ScreenOrientationEvent *e =

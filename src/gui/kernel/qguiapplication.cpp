@@ -184,7 +184,8 @@ QGuiApplication::~QGuiApplication()
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
     : QCoreApplicationPrivate(argc, argv, flags),
       styleHints(0),
-      inputMethod(0)
+      inputMethod(0),
+      lastTouchType(QEvent::TouchEnd)
 {
     self = this;
     application_type = QCoreApplication::GuiClient;
@@ -950,8 +951,53 @@ Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey 
 
 void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *e)
 {
-    QWindow *window = e->window.data();
     QGuiApplicationPrivate *d = self;
+
+    if (e->touchType == QEvent::TouchCancel) {
+        // The touch sequence has been canceled (e.g. by the compositor).
+        // Send the TouchCancel to all windows with active touches and clean up.
+        QTouchEvent touchEvent(QEvent::TouchCancel, e->device, e->modifiers);
+        touchEvent.setTimestamp(e->timestamp);
+        QHash<ActiveTouchPointsKey, ActiveTouchPointsValue>::const_iterator it
+                = self->activeTouchPoints.constBegin(), ite = self->activeTouchPoints.constEnd();
+        QSet<QWindow *> windowsNeedingCancel;
+        while (it != ite) {
+            QWindow *w = it->window.data();
+            if (w)
+                windowsNeedingCancel.insert(w);
+            ++it;
+        }
+        for (QSet<QWindow *>::const_iterator winIt = windowsNeedingCancel.constBegin(),
+             winItEnd = windowsNeedingCancel.constEnd(); winIt != winItEnd; ++winIt) {
+            touchEvent.setWindow(*winIt);
+            QGuiApplication::sendSpontaneousEvent(*winIt, &touchEvent);
+        }
+        if (!self->synthesizedMousePoints.isEmpty() && !e->synthetic) {
+            for (QHash<QWindow *, SynthesizedMouseData>::const_iterator synthIt = self->synthesizedMousePoints.constBegin(),
+                 synthItEnd = self->synthesizedMousePoints.constEnd(); synthIt != synthItEnd; ++synthIt) {
+                QWindowSystemInterfacePrivate::MouseEvent fake(synthIt.key(),
+                                                               e->timestamp,
+                                                               synthIt->pos,
+                                                               synthIt->screenPos,
+                                                               Qt::NoButton,
+                                                               e->modifiers);
+                fake.synthetic = true;
+                processMouseEvent(&fake);
+            }
+            self->synthesizedMousePoints.clear();
+        }
+        self->activeTouchPoints.clear();
+        self->lastTouchType = e->touchType;
+        return;
+    }
+
+    // Prevent sending ill-formed event sequences: Cancel can only be followed by a Begin.
+    if (self->lastTouchType == QEvent::TouchCancel && e->touchType != QEvent::TouchBegin)
+        return;
+
+    self->lastTouchType = e->touchType;
+
+    QWindow *window = e->window.data();
     typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
     QHash<QWindow *, StatesAndTouchPoints> windowsNeedingEvents;
 
@@ -1101,6 +1147,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             // exclude touchpads as those generate their own mouse events
             if (touchEvent.device()->type() != QTouchDevice::TouchPad) {
                 Qt::MouseButtons b = eventType == QEvent::TouchEnd ? Qt::NoButton : Qt::LeftButton;
+                if (b == Qt::NoButton)
+                    self->synthesizedMousePoints.clear();
 
                 QList<QTouchEvent::TouchPoint> touchPoints = touchEvent.touchPoints();
                 if (eventType == QEvent::TouchBegin)
@@ -1109,6 +1157,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 for (int i = 0; i < touchPoints.count(); ++i) {
                     const QTouchEvent::TouchPoint &touchPoint = touchPoints.at(i);
                     if (touchPoint.id() == m_fakeMouseSourcePointId) {
+                        if (b != Qt::NoButton)
+                            self->synthesizedMousePoints.insert(w, SynthesizedMouseData(
+                                                                    touchPoint.pos(), touchPoint.screenPos()));
                         QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp,
                                                                        touchPoint.pos(),
                                                                        touchPoint.screenPos(),

@@ -943,6 +943,7 @@ bool QWindow::event(QEvent *ev)
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
+    case QEvent::TouchCancel:
         touchEvent(static_cast<QTouchEvent *>(ev));
         break;
 

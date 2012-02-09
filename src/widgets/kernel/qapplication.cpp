@@ -5200,6 +5200,28 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
     }
 }
 
+void QApplicationPrivate::translateTouchCancel(QTouchDevice *device, ulong timestamp)
+{
+    QTouchEvent touchEvent(QEvent::TouchCancel, device, QApplication::keyboardModifiers());
+    touchEvent.setTimestamp(timestamp);
+    QHash<ActiveTouchPointsKey, ActiveTouchPointsValue>::const_iterator it
+            = self->activeTouchPoints.constBegin(), ite = self->activeTouchPoints.constEnd();
+    QSet<QWidget *> widgetsNeedingCancel;
+    while (it != ite) {
+        QWidget *widget = static_cast<QWidget *>(it->target.data());
+        if (widget)
+            widgetsNeedingCancel.insert(widget);
+        ++it;
+    }
+    for (QSet<QWidget *>::const_iterator widIt = widgetsNeedingCancel.constBegin(),
+         widItEnd = widgetsNeedingCancel.constEnd(); widIt != widItEnd; ++widIt) {
+        QWidget *widget = *widIt;
+        touchEvent.setWindow(widget->windowHandle());
+        touchEvent.setTarget(widget);
+        QApplication::sendSpontaneousEvent(widget, &touchEvent);
+    }
+}
+
 #ifndef QT_NO_GESTURES
 QGestureManager* QGestureManager::instance()
 {

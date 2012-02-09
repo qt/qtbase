@@ -386,6 +386,7 @@ public:
                                        QTouchDevice *device,
                                        const QList<QTouchEvent::TouchPoint> &touchPoints,
                                        ulong timestamp);
+    static void translateTouchCancel(QTouchDevice *device, ulong timestamp);
 
 private:
 #ifdef Q_WS_QWS
