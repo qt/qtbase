@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG -= app_bundle
 TARGET = ../tst_qlibrary
 QT = core testlib
 SOURCES = ../tst_qlibrary.cpp
