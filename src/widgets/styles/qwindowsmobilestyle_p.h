@@ -62,7 +62,6 @@ QT_BEGIN_NAMESPACE
 
 class QStyleOptionTab;
 class QStyleOptionSlider;
-class QStyleOptionViewItemV4;
 
 class QWindowsMobileStylePrivate : public QWindowsStylePrivate
 {
