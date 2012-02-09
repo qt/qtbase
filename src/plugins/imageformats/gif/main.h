@@ -42,10 +42,6 @@
 #include <qimageiohandler.h>
 #include <qstringlist.h>
 
-#ifndef QT_NO_IMAGEFORMATPLUGIN
-
-#include "main.h"
-
 #ifdef QT_NO_IMAGEFORMAT_GIF
 #undef QT_NO_IMAGEFORMAT_GIF
 #endif
@@ -53,35 +49,17 @@
 
 QT_BEGIN_NAMESPACE
 
-
-QGifPlugin::QGifPlugin()
+class QGifPlugin : public QImageIOPlugin
 {
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QImageIOHandlerFactoryInterface" FILE "gif.json")
+public:
+    QGifPlugin();
+    ~QGifPlugin();
 
-QGifPlugin::~QGifPlugin()
-{
-}
-
-QStringList QGifPlugin::keys() const
-{
-    return QStringList() << QLatin1String("gif");
-}
-
-QImageIOPlugin::Capabilities QGifPlugin::capabilities(QIODevice *device, const QByteArray &format) const
-{
-    if (format == "gif" || (device && device->isReadable() && QGifHandler::canRead(device)))
-        return Capabilities(CanRead);
-    return 0;
-}
-
-QImageIOHandler *QGifPlugin::create(QIODevice *device, const QByteArray &format) const
-{
-    QImageIOHandler *handler = new QGifHandler;
-    handler->setDevice(device);
-    handler->setFormat(format);
-    return handler;
-}
-
-#endif // QT_NO_IMAGEFORMATPLUGIN
+    QStringList keys() const;
+    Capabilities capabilities(QIODevice *device, const QByteArray &format) const;
+    QImageIOHandler *create(QIODevice *device, const QByteArray &format = QByteArray()) const;
+};
 
 QT_END_NAMESPACE
