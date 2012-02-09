@@ -3287,6 +3287,7 @@ MakefileGenerator::writePkgConfigFile()
     } else {
         pkgConfiglibDir = "-L${libdir}";
         pkgConfiglibName = "-l" + lname.left(lname.length()-Option::libtool_ext.length());
+        pkgConfiglibName += project->first("TARGET_VERSION_EXT");
     }
     t << pkgConfiglibDir << " " << pkgConfiglibName << " " << endl;
 
