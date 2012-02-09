@@ -41,6 +41,7 @@
 
 #include "qscreen.h"
 #include "qscreen_p.h"
+#include "qpixmap.h"
 #include "qplatformscreen_qpa.h"
 
 #include <QtCore/private/qobject_p.h>
@@ -540,6 +541,53 @@ bool QScreen::isLandscape(Qt::ScreenOrientation o)
 void QScreenPrivate::updatePrimaryOrientation()
 {
     primaryOrientation = geometry.width() >= geometry.height() ? Qt::LandscapeOrientation : Qt::PortraitOrientation;
+}
+
+/*!
+    Creates and returns a pixmap constructed by grabbing the contents
+    of the given \a window restricted by QRect(\a x, \a y, \a width,
+    \a height).
+
+    The arguments (\a{x}, \a{y}) specify the offset in the window,
+    whereas (\a{width}, \a{height}) specify the area to be copied.  If
+    \a width is negative, the function copies everything to the right
+    border of the window. If \a height is negative, the function
+    copies everything to the bottom of the window.
+
+    The window system identifier (\c WId) can be retrieved using the
+    QWidget::winId() function. The rationale for using a window
+    identifier and not a QWidget, is to enable grabbing of windows
+    that are not part of the application, window system frames, and so
+    on.
+
+    The grabWindow() function grabs pixels from the screen, not from
+    the window, i.e. if there is another window partially or entirely
+    over the one you grab, you get pixels from the overlying window,
+    too. The mouse cursor is generally not grabbed.
+
+    Note on X11 that if the given \a window doesn't have the same depth
+    as the root window, and another window partially or entirely
+    obscures the one you grab, you will \e not get pixels from the
+    overlying window.  The contents of the obscured areas in the
+    pixmap will be undefined and uninitialized.
+
+    On Windows Vista and above grabbing a layered window, which is
+    created by setting the Qt::WA_TranslucentBackground attribute, will
+    not work. Instead grabbing the desktop widget should work.
+
+    \warning In general, grabbing an area outside the screen is not
+    safe. This depends on the underlying window system.
+    \since 5.0
+*/
+
+QPixmap QScreen::grabWindow(WId window, int x, int y, int w, int h) const
+{
+    const QPlatformScreen *platformScreen = handle();
+    if (!platformScreen) {
+        qWarning("%s invoked with handle==0", Q_FUNC_INFO);
+        return QPixmap();
+    }
+    return platformScreen->grabWindow(window, x, y, w, h);
 }
 
 QT_END_NAMESPACE

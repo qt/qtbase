@@ -45,7 +45,6 @@ SOURCES += \
         image/qimagepixmapcleanuphooks.cpp \
         image/qvolatileimage.cpp
 
-SOURCES += image/qpixmap_qpa.cpp
 win32: SOURCES += image/qpixmap_win.cpp
 
 SOURCES += image/qvolatileimagedata.cpp
