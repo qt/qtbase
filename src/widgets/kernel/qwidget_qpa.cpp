@@ -424,6 +424,19 @@ void QWidget::activateWindow()
         windowHandle()->requestActivateWindow();
 }
 
+// Position top level windows at the center, avoid showing
+// Windows at the default 0,0 position excluding the frame.
+static inline QRect positionTopLevelWindow(QRect geometry, const QScreen *screen)
+{
+    if (screen && geometry.x() == 0 && geometry.y() == 0) {
+       const QRect availableGeometry = screen->availableGeometry();
+        if (availableGeometry.width() > geometry.width()
+            && availableGeometry.height() > geometry.height())
+            geometry.moveCenter(availableGeometry.center());
+    }
+    return geometry;
+}
+
 void QWidgetPrivate::show_sys()
 {
     Q_Q(QWidget);
@@ -441,7 +454,10 @@ void QWidgetPrivate::show_sys()
     QWindow *window = q->windowHandle();
     if (window) {
         QRect geomRect = q->geometry();
-        if (!q->isWindow()) {
+        if (q->isWindow()) {
+            if (!q->testAttribute(Qt::WA_Moved))
+                geomRect = positionTopLevelWindow(geomRect, window->screen());
+        } else {
             QPoint topLeftOfWindow = q->mapTo(q->nativeParentWidget(),QPoint());
             geomRect.moveTopLeft(topLeftOfWindow);
         }
