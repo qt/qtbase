@@ -1158,60 +1158,24 @@ QColor QAccessibleInterface::backgroundColor() const
 /*!
     \class QAccessibleEvent
 
-    \internal
+    \brief The QAccessibleEvent class is used to give detailed updates to the
+    accessibility framework. It is used together with \l QAccessible::updateAccessibility.
 
-    \brief The QAccessibleEvent class is used to query addition
-    accessibility information about complex widgets.
-
-    The event can be of type QEvent::AccessibilityDescription or
-    QEvent::AccessibilityHelp.
-
-    Some QAccessibleInterface implementations send QAccessibleEvents
-    to the widget they wrap to obtain the description or help text of
-    a widget or of its children. The widget can answer by calling
-    setValue() with the requested information.
-
-    The default QWidget::event() implementation simply sets the text
-    to be the widget's \l{QWidget::toolTip}{tooltip} (for \l
-    AccessibilityDescription event) or its
-    \l{QWidget::whatsThis}{"What's This?" text} (for \l
-    AccessibilityHelp event).
+    The event is one of the \l QAccessible::Event which depending on the type of event needs to use
+    one of the subclasses of QAccessibleEvent.
 
     \ingroup accessibility
-    \ingroup events
-    \inmodule QtWidgets
+    \inmodule QtGui
 */
 
 /*!
-    \fn QAccessibleEvent::QAccessibleEvent(Type type)
+    \fn QAccessibleEvent::QAccessibleEvent(QAccessible::Event type, QObject *object, int child = -1)
 
-    Constructs an accessibility event of the given \a type, which
-    must be QEvent::AccessibilityDescription or
-    QEvent::AccessibilityHelp.
-*/
+    Constructs an accessibility event of the given \a type.
+    It also requires an \a object as source of the event and optionally a \a child index,
+    if the event comes from a child of the object.
 
-/*!
-    \fn int QAccessibleEvent::child() const
-
-    Returns the (1-based) index of the child to which the request
-    applies. If the child is 0, the request is for the widget itself.
-*/
-
-/*!
-    \fn QString QAccessibleEvent::value() const
-
-    Returns the text set using setValue().
-
-    \sa setValue()
-*/
-
-/*!
-    \fn void QAccessibleEvent::setValue(const QString &text)
-
-    Set the description or help text for the given child() to \a
-    text, thereby answering the request.
-
-    \sa value()
+    Using a \a child index maybe more efficient than creating the accessible interface for the child.
 */
 
 /*!
