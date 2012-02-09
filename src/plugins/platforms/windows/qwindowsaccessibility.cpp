@@ -988,6 +988,17 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accKeyboardShortcut(VARIANT va
     return *pszKeyboardShortcut ? S_OK : S_FALSE;
 }
 
+static QAccessibleInterface *relatedInterface(QAccessibleInterface *iface, QAccessible::RelationFlag flag)
+{
+    typedef QPair<QAccessibleInterface *, QAccessible::Relation> RelationPair;
+    QVector<RelationPair> rels = iface->relations(flag);
+
+    for (int i = 1; i < rels.count(); ++i)
+        delete rels.at(i).first;
+
+    return rels.value(0).first;
+}
+
 // moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accName(VARIANT varID, BSTR* pszName)
 {
@@ -1001,8 +1012,20 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accName(VARIANT varID, BSTR* p
         if (!child)
             return E_FAIL;
         name = child->text(QAccessible::Name);
+        if (name.isEmpty()) {
+            if (QAccessibleInterface *labelInterface = relatedInterface(child.data(), QAccessible::Label)) {
+                name = labelInterface->text(QAccessible::Name);
+                delete labelInterface;
+            }
+        }
     } else {
         name = accessible->text(QAccessible::Name);
+        if (name.isEmpty()) {
+            if (QAccessibleInterface *labelInterface = relatedInterface(accessible, QAccessible::Label)) {
+                name = labelInterface->text(QAccessible::Name);
+                delete labelInterface;
+            }
+        }
     }
     if (name.size()) {
         *pszName = QStringToBSTR(name);

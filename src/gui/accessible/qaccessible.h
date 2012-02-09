@@ -306,12 +306,11 @@ public:
     };
 
     enum RelationFlag {
-        Unrelated     = 0x00000000,
         Label         = 0x00020000,
         Labelled      = 0x00040000,
         Controller    = 0x00080000,
         Controlled    = 0x00100000,
-        LogicalMask   = 0x00ff0000
+        AllRelations  = 0xffffffff
     };
     Q_DECLARE_FLAGS(Relation, RelationFlag)
 
@@ -380,7 +379,7 @@ public:
 
     // relations
     virtual QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
-    virtual QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations() const;
+    virtual QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations(QAccessible::Relation match = QAccessible::AllRelations) const;
     virtual QAccessibleInterface *focusChild() const;
 
     virtual QAccessibleInterface *childAt(int x, int y) const = 0;

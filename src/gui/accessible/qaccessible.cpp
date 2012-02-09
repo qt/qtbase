@@ -894,17 +894,19 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
 */
 QAccessible::Relation QAccessibleInterface::relationTo(const QAccessibleInterface *) const
 {
-    return QAccessible::Unrelated;
+    return QAccessible::Relation();
 }
 
 /*!
     Returns the meaningful relations to other widgets. Usually this will not return parent/child
     relations, unless they are handled in a specific way such as in tree views.
     It will typically return the labelled-by and label relations.
+    It should never return itself.
 
     \sa relationTo(), navigate()
 */
-QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterface::relations() const
+QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
+QAccessibleInterface::relations(QAccessible::Relation /*match = QAccessible::AllRelations*/) const
 {
     return QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >();
 }

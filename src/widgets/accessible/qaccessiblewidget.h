@@ -61,14 +61,13 @@ public:
     QWindow *window() const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
+    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations(QAccessible::Relation match = QAccessible::AllRelations) const;
     QAccessibleInterface *focusChild() const;
 
     QRect rect() const;
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
-    int navigate(QAccessible::RelationFlag rel, int entry, QAccessibleInterface **target) const;
 
     QString text(QAccessible::Text t) const;
     QAccessible::Role role() const;
