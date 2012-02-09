@@ -62,8 +62,6 @@
 #   include <windowsm.h>
 #endif
 
-#include "qguifunctions_wince.h"
-
 #ifndef QT_NO_MENUBAR
 
 #ifndef SHCMBF_EMPTYBAR

@@ -137,9 +137,8 @@ false:!x11:mac {
 wince*: {
         HEADERS += \
                 ../corelib/kernel/qfunctions_wince.h \
-                kernel/qguifunctions_wince.h
+                kernel/qwidgetsfunctions_wince.h
 
         SOURCES += \
-                ../corelib/kernel/qfunctions_wince.cpp \
-                kernel/qguifunctions_wince.cpp
+                kernel/qwidgetsfunctions_wince.cpp
 }

@@ -106,7 +106,6 @@
 
 #ifdef Q_OS_WINCE
 #include "qdatetime.h"
-#include "qguifunctions_wince.h"
 extern bool qt_wince_is_smartphone(); //qguifunctions_wince.cpp
 extern bool qt_wince_is_mobile();     //qguifunctions_wince.cpp
 extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp

@@ -74,7 +74,6 @@
 
 #ifdef Q_OS_WINCE
 #include "qt_windows.h"
-#include "qguifunctions_wince.h"
 extern bool qt_wince_is_high_dpi();          //defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_smartphone();        //defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_windows_mobile_65(); //defined in qguifunctions_wince.cpp

@@ -57,10 +57,6 @@
 #include "QtWidgets/qstyleoption.h"
 #include <private/qmenu_p.h> // Mac needs what in this file!
 
-#ifdef Q_OS_WINCE
-#include "qguifunctions_wince.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MENUBAR
