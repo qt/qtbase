@@ -79,6 +79,7 @@ public:
     virtual void revertCachedRow(int row);
     virtual int nameToIndex(const QString &name) const;
     QString strippedFieldName(const QString &name) const;
+    int insertCount(int maxRow = -1) const;
     void initRecordAndPrimaryIndex();
 
     QSqlDatabase db;

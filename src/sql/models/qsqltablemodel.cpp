@@ -79,6 +79,21 @@ QString QSqlTableModelPrivate::strippedFieldName(const QString &name) const
     return fieldname;
 }
 
+int QSqlTableModelPrivate::insertCount(int maxRow) const
+{
+    int cnt = 0;
+    CacheMap::ConstIterator i = cache.constBegin();
+    const CacheMap::ConstIterator e = cache.constEnd();
+    for (;
+         i != e && (maxRow < 0 || i.key() <= maxRow);
+         ++i) {
+        if (i.value().op() == Insert)
+            ++cnt;
+    }
+
+    return cnt;
+}
+
 void QSqlTableModelPrivate::initRecordAndPrimaryIndex()
 {
     rec = db.record(tableName);
@@ -1091,13 +1106,7 @@ int QSqlTableModel::rowCount(const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
 
-    int rc = QSqlQueryModel::rowCount();
-    for (QSqlTableModelPrivate::CacheMap::ConstIterator it = d->cache.constBegin();
-         it != d->cache.constEnd(); ++it) {
-         if (it.value().op() == QSqlTableModelPrivate::Insert)
-             ++rc;
-    }
-    return rc;
+    return QSqlQueryModel::rowCount() + d->insertCount();
 }
 
 /*!
@@ -1115,13 +1124,7 @@ int QSqlTableModel::rowCount(const QModelIndex &parent) const
 QModelIndex QSqlTableModel::indexInQuery(const QModelIndex &item) const
 {
     Q_D(const QSqlTableModel);
-    int rowOffset = 0;
-    QSqlTableModelPrivate::CacheMap::ConstIterator i = d->cache.constBegin();
-    while (i != d->cache.constEnd() && i.key() <= item.row()) {
-        if (i.value().op() == QSqlTableModelPrivate::Insert)
-            ++rowOffset;
-        ++i;
-    }
+    const int rowOffset = d->insertCount(item.row());
     return QSqlQueryModel::indexInQuery(createIndex(item.row() - rowOffset, item.column(), item.internalPointer()));
 }
 
