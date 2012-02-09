@@ -521,7 +521,10 @@ void tst_QByteArray::qvsnprintf()
 
     QCOMPARE(::qsnprintf(buf, 10, "%s", "bubu"), 4);
     QCOMPARE(static_cast<const char *>(buf), "bubu");
+#ifndef Q_CC_MSVC
+    // MSVC implementation of vsnprintf overwrites bytes after null terminator so this would fail.
     QCOMPARE(buf[5], char(42));
+#endif
 
     qMemSet(buf, 42, sizeof(buf));
     QCOMPARE(::qsnprintf(buf, 5, "%s", "bubu"), 4);

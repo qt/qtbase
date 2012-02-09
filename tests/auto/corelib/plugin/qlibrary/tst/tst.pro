@@ -12,3 +12,5 @@ win32 {
 }
 
 TESTDATA += ../library_path/invalid.so
+
+win32:CONFIG += insignificant_test # QTBUG-24151

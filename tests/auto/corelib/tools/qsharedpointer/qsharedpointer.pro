@@ -13,3 +13,5 @@ HEADERS = forwarddeclared.h \
 TESTDATA += forwarddeclared.cpp forwarddeclared.h
 
 include(externaltests.pri)
+
+win32:CONFIG += insignificant_test # QTBUG-24160

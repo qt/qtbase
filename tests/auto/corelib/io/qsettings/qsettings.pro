@@ -7,3 +7,4 @@ RESOURCES += qsettings.qrc
 win32-msvc*:LIBS += advapi32.lib
 
 mac: CONFIG += insignificant_test # QTBUG-22745
+win32: CONFIG += insignificant_test # QTBUG-24145
