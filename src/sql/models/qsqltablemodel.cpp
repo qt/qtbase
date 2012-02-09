@@ -669,7 +669,6 @@ bool QSqlTableModel::submitAll()
         case QSqlTableModelPrivate::Insert:
             if (!insertRowIntoTable(it.value().rec()))
                 return false;
-            d->bottom = d->bottom.sibling(d->bottom.row() + 1, d->bottom.column());
             break;
         case QSqlTableModelPrivate::Update:
             if (!updateRowInTable(it.key(), it.value().rec()))
@@ -682,6 +681,19 @@ bool QSqlTableModel::submitAll()
         case QSqlTableModelPrivate::None:
             Q_ASSERT_X(false, "QSqlTableModel::submitAll()", "Invalid cache operation");
             break;
+        }
+    }
+
+    // all changes have been committed
+
+    // clean up inserted rows
+    QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.end();
+    while (it != d->cache.constBegin()) {
+        --it;
+        if (it.value().op()  == QSqlTableModelPrivate::Insert) {
+            beginRemoveRows(QModelIndex(), it.key(), it.key());
+            it = d->cache.erase(it);
+            endRemoveRows();
         }
     }
     d->clearCache();

@@ -1199,9 +1199,13 @@ void tst_QSqlTableModel::insertRecordsInLoop()
     model.submitAll(); // submitAll() calls select() which clears and repopulates the table
 
     int firstRowIndex = 0, lastRowIndex = 12;
-    QCOMPARE(spyRowsRemoved.count(), 1);
-    QCOMPARE(spyRowsRemoved.at(0).at(1).toInt(), firstRowIndex);
-    QCOMPARE(spyRowsRemoved.at(0).at(2).toInt(), lastRowIndex);
+    QCOMPARE(spyRowsRemoved.count(), 11);
+    // QSqlTableModel emits 10 signals for its 10 inserted rows
+    QCOMPARE(spyRowsRemoved.at(0).at(1).toInt(), lastRowIndex);
+    QCOMPARE(spyRowsRemoved.at(9).at(1).toInt(), firstRowIndex + 3);
+    // QSqlQueryModel emits 1 signal for its 3 rows
+    QCOMPARE(spyRowsRemoved.at(10).at(1).toInt(), firstRowIndex);
+    QCOMPARE(spyRowsRemoved.at(10).at(2).toInt(), firstRowIndex + 2);
 
     QCOMPARE(spyRowsInserted.at(10).at(1).toInt(), firstRowIndex);
     QCOMPARE(spyRowsInserted.at(10).at(2).toInt(), lastRowIndex);
