@@ -25,8 +25,6 @@ win32-msvc* {
 PRECOMPILED_HEADER = configure_pch.h
 
 INCLUDEPATH += \
-           $$QT_SOURCE_TREE/src/corelib/arch/generic \
-           $$QT_SOURCE_TREE/src/corelib/global \
            $$QT_BUILD_TREE/include \
            $$QT_BUILD_TREE/include/QtCore \
            $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION \
@@ -129,7 +127,3 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/tools/shared/windows/registry.cpp
 
 DEFINES += COMMERCIAL_VERSION
-
-INCLUDEPATH += $$QT_SOURCE_TREE/src/corelib/arch/generic \
-               $$QT_SOURCE_TREE/include/QtCore \
-               $$QT_SOURCE_TREE/tools/shared
