@@ -2349,6 +2349,13 @@ void tst_QFile::rename()
     QFETCH(QString, destination);
     QFETCH(bool, result);
 
+#if defined(Q_OS_UNIX)
+    if (strcmp(QTest::currentDataTag(), "renamefile -> /etc/renamefile") == 0) {
+        if (::getuid() == 0)
+            QSKIP("Running this test as root doesn't make sense");
+    }
+#endif
+
     QFile::remove("renamedfile");
     QFile f("renamefile");
     f.open(QFile::WriteOnly);
