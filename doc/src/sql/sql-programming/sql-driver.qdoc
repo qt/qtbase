@@ -494,7 +494,7 @@
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 15
 
     Users of MinGW may wish to consult the following online document:
-    \l{Compiling PostgreSQL On Native Win32 FAQ}.
+    \l{PostgreSQL MinGW/Native Windows}.
 
     \bold{Note:} This database plugin is not supported for Windows CE.
 

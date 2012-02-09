@@ -1440,7 +1440,7 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
 /*!
     \fn QList<QNetworkProxy> QNetworkProxyFactory::queryProxy(const QNetworkProxyQuery &query)
 
-    This function examines takes the query request, \a query,
+    This function takes the query request, \a query,
     examines the details of the type of socket or request and returns
     a list of QNetworkProxy objects that indicate the proxy servers to
     be used, in order of preference.
@@ -1461,7 +1461,7 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
 /*!
     \fn QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &query)
 
-    This function examines takes the query request, \a query,
+    This function takes the query request, \a query,
     examines the details of the type of socket or request and returns
     a list of QNetworkProxy objects that indicate the proxy servers to
     be used, in order of preference.
@@ -1507,7 +1507,7 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
 */
 
 /*!
-    This function examines takes the query request, \a query,
+    This function takes the query request, \a query,
     examines the details of the type of socket or request and returns
     a list of QNetworkProxy objects that indicate the proxy servers to
     be used, in order of preference.

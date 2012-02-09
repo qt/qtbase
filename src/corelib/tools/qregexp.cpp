@@ -670,7 +670,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 
     Wildcard matching can be convenient because of its simplicity, but
     any wildcard regexp can be defined using full regexps, e.g.
-    \bold{.*\.html$}. Notice that we can't match both \c .html and \c
+    \bold{.*\\.html$}. Notice that we can't match both \c .html and \c
     .htm files with a wildcard unless we use \bold{*.htm*} which will
     also match 'test.html.bak'. A full regexp gives us the precision
     we need, \bold{.*\\.html?$}.

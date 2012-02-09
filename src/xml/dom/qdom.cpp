@@ -6561,6 +6561,10 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
     element is available using documentElement(). The textual
     representation of the document can be obtained using toString().
 
+    \note The DOM tree might end up reserving a lot of memory if the XML
+    document is big. For such documents, the QXmlStreamReader or the
+    QXmlQuery classes might be better solutions.
+
     It is possible to insert a node from another document into the
     document using importNode().
 

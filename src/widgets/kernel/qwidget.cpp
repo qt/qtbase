@@ -3018,8 +3018,8 @@ QList<QAction*> QWidget::actions() const
     \property QWidget::enabled
     \brief whether the widget is enabled
 
-    An enabled widget handles keyboard and mouse events; a disabled
-    widget does not.
+    In general an enabled widget handles keyboard and mouse events; a disabled
+    widget does not. An exception is made with \l{QAbstractButton}.
 
     Some widgets display themselves differently when they are
     disabled. For example a button might draw its label grayed out. If

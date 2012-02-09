@@ -2597,6 +2597,9 @@ QPixmap QMessageBox::standardIcon(Icon icon)
   When using QMessageBox with custom buttons, this function returns an
   opaque value; use clickedButton() to determine which button was clicked.
 
+  \note The result() function returns also \l StandardButton value instead
+  of \l QDialog::DialogCode.
+
   Users cannot interact with any other window in the same
   application until they close the dialog, either by clicking a
   button or by using a mechanism provided by the window system.

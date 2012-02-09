@@ -430,7 +430,11 @@ bool QDialog::event(QEvent *e)
 #endif
 
 /*!
-  Returns the modal dialog's result code, \c Accepted or \c Rejected.
+  In general returns the modal dialog's result code, \c Accepted or
+  \c Rejected.
+
+  \note When called on a QMessageBox instance, the returned value is a
+  value of the \l QMessageBox::StandardButton enum.
 
   Do not call this function if the dialog was constructed with the
   Qt::WA_DeleteOnClose attribute.
