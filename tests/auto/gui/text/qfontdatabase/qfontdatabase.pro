@@ -11,3 +11,4 @@ wince* {
 }
 
 mac: CONFIG += insignificant_test # QTBUG-23062
+win32:CONFIG += insignificant_test # QTBUG-24193

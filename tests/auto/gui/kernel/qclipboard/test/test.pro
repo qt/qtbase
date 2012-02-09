@@ -16,6 +16,7 @@ wince* {
 }
 
 mac: CONFIG += insignificant_test # QTBUG-23057
+win32:CONFIG += insignificant_test # QTBUG-24184
 
 load(testcase) # for target.path and installTestHelperApp()
 installTestHelperApp("../copier/copier",copier,copier)
