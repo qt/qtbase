@@ -299,6 +299,40 @@ bool QLocalServer::listen(const QString &name)
 }
 
 /*!
+    \since 5.0
+
+    Instructs the server to listen for incoming connections on
+    \a socketDescriptor. The property returns \c false if the server is
+    currently listening. It returns \c true on success; otherwise,
+    it returns \c false. The socket must be ready to accept
+    new connections with no extra platform-specific functions
+    called. The socket is set into non-blocking mode.
+
+    serverName(), fullServerName() may return a string with
+    a name if this option is supported by the platform;
+    otherwise, they return an empty QString.
+
+    \sa isListening(), close()
+ */
+bool QLocalServer::listen(qintptr socketDescriptor)
+{
+    Q_D(QLocalServer);
+    if (isListening()) {
+        qWarning("QLocalServer::listen() called when already listening");
+        return false;
+    }
+
+    d->serverName.clear();
+    d->fullServerName.clear();
+
+    if (!d->listen(socketDescriptor)) {
+        return false;
+    }
+
+    return true;
+}
+
+/*!
     Returns the maximum number of pending accepted connections.
     The default is 30.
 

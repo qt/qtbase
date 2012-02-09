@@ -78,6 +78,13 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     return true;
 }
 
+bool QLocalServerPrivate::listen(qintptr socketDescriptor)
+{
+    Q_Q(QLocalServer);
+
+    return tcpServer.setSocketDescriptor(socketDescriptor);
+}
+
 void QLocalServerPrivate::closeServer()
 {
     QSettings settings(QLatin1String("Trolltech"), QLatin1String("Qt"));

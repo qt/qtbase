@@ -144,6 +144,12 @@ bool QLocalServerPrivate::listen(const QString &name)
     return true;
 }
 
+bool QLocalServerPrivate::listen(qintptr)
+{
+    qWarning("QLocalServer::listen(qintptr) is not supported on Windows QTBUG-24230");
+    return false;
+}
+
 void QLocalServerPrivate::_q_onNewConnection()
 {
     Q_Q(QLocalServer);

@@ -203,6 +203,48 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     return true;
 }
 
+bool QLocalServerPrivate::listen(qintptr socketDescriptor)
+{
+    Q_Q(QLocalServer);
+
+    // Attach to the localsocket
+    listenSocket = socketDescriptor;
+
+    ::fcntl(listenSocket, F_SETFD, FD_CLOEXEC);
+    ::fcntl(listenSocket, F_SETFL, ::fcntl(listenSocket, F_GETFL) | O_NONBLOCK);
+
+#ifdef Q_OS_LINUX
+    struct ::sockaddr_un addr;
+    socklen_t len;
+    memset(&addr, 0, sizeof(addr));
+    if (0 == ::getsockname(listenSocket, (sockaddr *)&addr, &len)) {
+        // check for absract sockets
+        if (addr.sun_family == PF_UNIX && addr.sun_path[0] == 0) {
+            addr.sun_path[0] = '@';
+        }
+        QString name = QString::fromLatin1(addr.sun_path);
+        if (!name.isEmpty()) {
+            fullServerName = name;
+            serverName = fullServerName.mid(fullServerName.lastIndexOf(QLatin1String("/"))+1);
+            if (serverName.isEmpty()) {
+                serverName = fullServerName;
+            }
+        }
+    }
+#else
+    serverName.clear();
+    fullServerName.clear();
+#endif
+
+    Q_ASSERT(!socketNotifier);
+    socketNotifier = new QSocketNotifier(listenSocket,
+                                         QSocketNotifier::Read, q);
+    q->connect(socketNotifier, SIGNAL(activated(int)),
+               q, SLOT(_q_onNewConnection()));
+    socketNotifier->setEnabled(maxPendingConnections > 0);
+    return true;
+}
+
 /*!
     \internal
 

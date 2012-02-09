@@ -87,6 +87,7 @@ public:
 
     void init();
     bool listen(const QString &name);
+    bool listen(qintptr socketDescriptor);
     static bool removeServer(const QString &name);
     void closeServer();
     void waitForNewConnection(int msec, bool *timedOut);
