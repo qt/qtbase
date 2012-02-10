@@ -121,6 +121,11 @@ void QSqlTableModelPrivate::revertCachedRow(int row)
 {
     Q_Q(QSqlTableModel);
     ModifiedRow r = cache.value(row);
+
+    // cannot revert a committed change
+    if (r.submitted())
+        return;
+
     switch (r.op()) {
     case QSqlTableModelPrivate::None:
         Q_ASSERT_X(false, "QSqlTableModelPrivate::revertCachedRow()", "Invalid entry in cache map");
@@ -372,6 +377,12 @@ bool QSqlTableModel::select()
     QString query = selectStatement();
     if (query.isEmpty())
         return false;
+
+    // clear the submitted flags so revertAll can do its job
+    for (QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.begin();
+         it != d->cache.constEnd();
+         ++it)
+        it.value().setSubmitted(false);
 
     revertAll();
     QSqlQuery qu(query, d->db);
@@ -657,8 +668,11 @@ bool QSqlTableModel::submitAll()
 {
     Q_D(QSqlTableModel);
 
-    for (QSqlTableModelPrivate::CacheMap::ConstIterator it = d->cache.constBegin();
+    for (QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.begin();
          it != d->cache.constEnd(); ++it) {
+        if (it.value().submitted())
+            continue;
+
         switch (it.value().op()) {
         case QSqlTableModelPrivate::Insert:
             if (!insertRowIntoTable(it.value().rec()))
@@ -676,6 +690,7 @@ bool QSqlTableModel::submitAll()
             Q_ASSERT_X(false, "QSqlTableModel::submitAll()", "Invalid cache operation");
             break;
         }
+        it.value().setSubmitted(true);
     }
 
     // all changes have been committed

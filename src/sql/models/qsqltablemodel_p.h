@@ -101,7 +101,7 @@ public:
     {
     public:
         inline ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord())
-            : m_op(o), m_rec(r)
+            : m_op(o), m_rec(r), m_submitted(false)
         {
             for (int i = m_rec.count() - 1; i >= 0; --i)
                 m_rec.setGenerated(i, false);
@@ -114,9 +114,12 @@ public:
             m_rec.setValue(c, v);
             m_rec.setGenerated(c, true);
         }
+        inline bool submitted() const { return m_submitted; }
+        inline void setSubmitted(bool b) { m_submitted = b; }
     private:
         Op m_op;
         QSqlRecord m_rec;
+        bool m_submitted;
     };
 
     typedef QMap<int, ModifiedRow> CacheMap;
