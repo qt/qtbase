@@ -58,13 +58,14 @@ public:
         DE_GNOME
     };
 
-    QGenericUnixServices();
+    QGenericUnixServices() {}
+
+    static DesktopEnvironment desktopEnvironment();
 
     virtual bool openUrl(const QUrl &url);
     virtual bool openDocument(const QUrl &url);
 
 private:
-    const DesktopEnvironment m_desktopEnvironment;
     QString m_webBrowser;
     QString m_documentLauncher;
 };

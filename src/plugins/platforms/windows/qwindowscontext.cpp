@@ -49,6 +49,7 @@
 #include "qwindowsinputcontext.h"
 #include "qwindowsaccessibility.h"
 #include "qwindowsscreen.h"
+#include "qwindowstheme.h"
 
 #include <QtGui/QWindow>
 #include <QtGui/QWindowSystemInterface>
@@ -78,6 +79,7 @@ int QWindowsContext::verboseGL = 0;
 int QWindowsContext::verboseOLE = 0;
 int QWindowsContext::verboseInputMethods = 0;
 int QWindowsContext::verboseDialogs = 0;
+int QWindowsContext::verboseTheming = 0;
 
 // Get verbosity of components from "foo:2,bar:3"
 static inline int componentVerbose(const char *v, const char *keyWord)
@@ -284,6 +286,7 @@ QWindowsContext::QWindowsContext() :
         QWindowsContext::verboseOLE = componentVerbose(v, "ole");
         QWindowsContext::verboseInputMethods = componentVerbose(v, "im");
         QWindowsContext::verboseDialogs = componentVerbose(v, "dialogs");
+        QWindowsContext::verboseTheming = componentVerbose(v, "theming");
     }
 }
 
@@ -783,6 +786,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return true;
     case QtWindows::CloseEvent:
         QWindowSystemInterface::handleCloseEvent(platformWindow->window());
+        return true;
+    case QtWindows::ThemeChanged: // ### fixme: Compress these events?
+        QWindowsTheme::instance()->windowsThemeChanged(platformWindow->window());
         return true;
     default:
         break;

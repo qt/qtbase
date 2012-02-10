@@ -87,14 +87,7 @@ class Q_WIDGETS_EXPORT QGuiPlatformPlugin : public QObject, public QGuiPlatformP
 
         virtual QStringList keys() const {  return QStringList(QStringLiteral("default"));  }
 
-        virtual QString styleName();
-        virtual QPalette palette();
-        virtual QString systemIconThemeName();
-        virtual QStringList iconThemeSearchPaths();
         virtual QIcon fileSystemIcon(const QFileInfo &);
-
-        enum PlatformHint { PH_ToolButtonStyle, PH_ToolBarIconSize, PH_ItemView_ActivateItemOnSingleClick };
-        virtual int platformHint(PlatformHint hint);
 };
 
 //internal

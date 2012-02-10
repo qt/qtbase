@@ -70,6 +70,7 @@
 #endif
 
 #include <private/qplatforminputcontextfactory_qpa_p.h>
+#include <private/qgenericunixthemes_p.h>
 #include <qplatforminputcontext_qpa.h>
 
 #if defined(XCB_USE_GLX)
@@ -87,7 +88,8 @@ QT_BEGIN_NAMESPACE
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     : m_eventDispatcher(createUnixEventDispatcher()),
-      m_services(new QGenericUnixServices)
+      m_services(new QGenericUnixServices),
+      m_theme(QGenericUnixTheme::createUnixTheme())
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
 
@@ -276,6 +278,11 @@ QPlatformSharedGraphicsCache *QXcbIntegration::createPlatformSharedGraphicsCache
 QPlatformServices *QXcbIntegration::services() const
 {
     return m_services.data();
+}
+
+QPlatformTheme *QXcbIntegration::platformTheme() const
+{
+    return m_theme.data();
 }
 
 QT_END_NAMESPACE

@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,64 +39,68 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMTHEME_H
-#define QPLATFORMTHEME_H
+#ifndef QGENERICUNIXTHEMES_H
+#define QGENERICUNIXTHEMES_H
 
-#include <QtCore/QtGlobal>
+#include <QtGui/QPlatformTheme>
+#include <QtCore/QString>
+#include <QtCore/QStringList>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QMenu;
-class QMenuBar;
-class QPlatformMenu;
-class QPlatformMenuBar;
-class QPlatformDialogHelper;
-class QVariant;
-class QPalette;
-
-class Q_GUI_EXPORT QPlatformTheme
+class QGenericUnixTheme : public QPlatformTheme
 {
 public:
-    enum ThemeHint {
-        TextCursorWidth,
-        DropShadow,
-        MaximumScrollBarDragDistance,
-        ToolButtonStyle,
-        ToolBarIconSize,
-        ItemViewActivateItemOnSingleClick,
-        SystemIconThemeName,
-        SystemIconFallbackThemeName,
-        IconThemeSearchPaths,
-        StyleNames
-    };
+    QGenericUnixTheme() {}
 
-    enum DialogType {
-        FileDialog,
-        ColorDialog,
-        FontDialog
-    };
-
-    enum Palette {
-        SystemPalette,
-        ToolTipPalette,
-        NPalettes
-    };
-
-    virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
-    virtual QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
-
-    virtual bool usePlatformNativeDialog(DialogType type) const;
-    virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
-
-    virtual const QPalette *palette(Palette type = SystemPalette) const;
+    static QPlatformTheme *createUnixTheme();
 
     virtual QVariant themeHint(ThemeHint hint) const;
+
+    static QStringList xdgIconThemePaths();
 };
+
+class QKdeTheme : public QPlatformTheme
+{
+    QKdeTheme(const QString &kdeHome, int kdeVersion);
+public:
+    ~QKdeTheme() { clearPalettes(); }
+
+    static QPlatformTheme *createKdeTheme();
+    virtual QVariant themeHint(ThemeHint hint) const;
+    virtual const QPalette *palette(Palette type = SystemPalette) const
+        { return m_palettes[type]; }
+
+private:
+    QString globalSettingsFile() const;
+    void clearPalettes();
+    void refresh();
+
+    const QString m_kdeHome;
+    const int m_kdeVersion;
+    QPalette *m_palettes[NPalettes];
+    QString m_iconThemeName;
+    QString m_iconFallbackThemeName;
+    QStringList m_styleNames;
+    int m_toolButtonStyle;
+    int m_toolBarIconSize;
+};
+
+class QGnomeTheme : public QPlatformTheme
+{
+public:
+    QGnomeTheme() {}
+    virtual QVariant themeHint(ThemeHint hint) const;
+
+private:
+};
+
+QPlatformTheme *qt_createUnixTheme();
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QPLATFORMTHEME_H
+#endif // QGENERICUNIXTHEMES_H

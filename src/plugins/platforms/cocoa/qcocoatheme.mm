@@ -102,4 +102,16 @@ QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(DialogType dialo
     }
 }
 
+QVariant QCocoaTheme::themeHint(ThemeHint hint) const
+{
+    switch (hint) {
+        case QPlatformTheme::StyleNames:
+            return QStringList() << QLatin1Literal("macintosh");
+        break;
+        default:
+            return QPlatformTheme::themeHint(hint);
+        break;
+    }
+}
+
 QT_END_NAMESPACE

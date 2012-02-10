@@ -43,6 +43,7 @@
 
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
+#include "qwindowstheme.h" // Color conversion helpers
 
 #include <QtWidgets/QColorDialog>
 #include <QtWidgets/QFontDialog>
@@ -1267,12 +1268,6 @@ QWindowsNativeColorDialog::QWindowsNativeColorDialog(const SharedPointerColor &c
 {
     qFill(m_customColors, m_customColors + 16, COLORREF(0));
 }
-
-static inline COLORREF qColorToCOLORREF(const QColor &color)
-{ return RGB(color.red(), color.green(), color.blue()); }
-
-static inline QColor COLORREFToQColor(COLORREF cr)
-{ return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr)); }
 
 void QWindowsNativeColorDialog::exec(HWND owner)
 {

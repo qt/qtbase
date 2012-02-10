@@ -122,9 +122,10 @@ static inline bool launch(const QString &launcher, const QUrl &url)
     return ok;
 }
 
-QGenericUnixServices::QGenericUnixServices() :
-    m_desktopEnvironment(detectDesktopEnvironment())
+QGenericUnixServices::DesktopEnvironment QGenericUnixServices::desktopEnvironment()
 {
+    static const DesktopEnvironment result = detectDesktopEnvironment();
+    return result;
 }
 
 bool QGenericUnixServices::openUrl(const QUrl &url)
@@ -132,7 +133,7 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
     if (url.scheme() == QStringLiteral("mailto"))
         return openDocument(url);
 
-    if (m_webBrowser.isEmpty() && !detectWebBrowser(m_desktopEnvironment, true, &m_webBrowser)) {
+    if (m_webBrowser.isEmpty() && !detectWebBrowser(desktopEnvironment(), true, &m_webBrowser)) {
         qWarning("%s: Unable to detect a web browser to launch '%s'", Q_FUNC_INFO, qPrintable(url.toString()));
         return false;
     }
@@ -141,7 +142,7 @@ bool QGenericUnixServices::openUrl(const QUrl &url)
 
 bool QGenericUnixServices::openDocument(const QUrl &url)
 {
-    if (m_documentLauncher.isEmpty() && !detectWebBrowser(m_desktopEnvironment, false, &m_documentLauncher)) {
+    if (m_documentLauncher.isEmpty() && !detectWebBrowser(desktopEnvironment(), false, &m_documentLauncher)) {
         qWarning("%s: Unable to detect a launcher for '%s'", Q_FUNC_INFO, qPrintable(url.toString()));
         return false;
     }

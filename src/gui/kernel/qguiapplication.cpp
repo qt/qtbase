@@ -48,6 +48,7 @@
 #include "qplatformfontdatabase_qpa.h"
 #include "qplatformwindow_qpa.h"
 #include "qplatformnativeinterface_qpa.h"
+#include "qplatformtheme_qpa.h"
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/private/qcoreapplication_p.h>
@@ -1382,6 +1383,9 @@ QClipboard * QGuiApplication::clipboard()
 */
 QPalette QGuiApplication::palette()
 {
+    if (!QGuiApplicationPrivate::app_pal)
+        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
+            QGuiApplicationPrivate::app_pal = new QPalette(*themePalette);
     if (!QGuiApplicationPrivate::app_pal)
         QGuiApplicationPrivate::app_pal = new QPalette(Qt::black);
     return *QGuiApplicationPrivate::app_pal;

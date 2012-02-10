@@ -45,6 +45,10 @@
 #include <QtCore/QtGlobal> // get compiler define
 #include <QtCore/qt_windows.h>
 
+#ifndef WM_THEMECHANGED
+#    define WM_THEMECHANGED 0x031A
+#endif
+
 /* Complement the definitions and declarations missing
  * when using MinGW or older Windows SDKs. */
 

@@ -62,6 +62,7 @@
 #include "qvariant.h"
 #include "qwidget.h"
 #include "private/qdnd_p.h"
+#include "private/qguiapplication_p.h"
 #include "qcolormap.h"
 #include "qdebug.h"
 #include "private/qstylesheetstyle_p.h"
@@ -71,6 +72,7 @@
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputmethod.h>
+#include <QtGui/qplatformtheme_qpa.h>
 
 #include "private/qkeymapper_p.h"
 
@@ -1298,6 +1300,9 @@ QStyle *QApplication::style()
     QApplicationPrivate::app_style->setParent(qApp);
 
     if (!QApplicationPrivate::sys_pal)
+        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
+            QApplicationPrivate::setSystemPalette(*themePalette);
+    if (!QApplicationPrivate::sys_pal)
         QApplicationPrivate::setSystemPalette(QApplicationPrivate::app_style->standardPalette());
     if (QApplicationPrivate::set_pal) // repolish set palette with the new style
         QApplication::setPalette(*QApplicationPrivate::set_pal);
@@ -1850,7 +1855,15 @@ void QApplicationPrivate::setSystemFont(const QFont &font)
 */
 QString QApplicationPrivate::desktopStyleKey()
 {
-    return qt_guiPlatformPlugin()->styleName();
+    // The platform theme might return a style that is not available, find
+    // first valid one.
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+        const QStringList availableKeys = QStyleFactory::keys();
+        foreach (const QString &style, theme->themeHint(QPlatformTheme::StyleNames).toStringList())
+            if (availableKeys.contains(style, Qt::CaseInsensitive))
+                return style;
+    }
+    return QString();
 }
 
 /*!
