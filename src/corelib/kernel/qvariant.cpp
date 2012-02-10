@@ -279,7 +279,7 @@ inline bool qt_convertToBool(const QVariant::Private *const d)
 
  Converts \a d to type \a t, which is placed in \a result.
  */
-static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, bool *ok)
+static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
 {
     Q_ASSERT(d->type != uint(t));
     Q_ASSERT(result);
@@ -763,7 +763,7 @@ static void dummyConstruct(QVariant::Private *, const void *) { Q_ASSERT_X(false
 static void dummyClear(QVariant::Private *) { Q_ASSERT_X(false, "QVariant", "Trying to clear an unknown type"); }
 static bool dummyIsNull(const QVariant::Private *d) { Q_ASSERT_X(false, "QVariant::isNull", "Trying to call isNull on an unknown type"); return d->is_null; }
 static bool dummyCompare(const QVariant::Private *, const QVariant::Private *) { Q_ASSERT_X(false, "QVariant", "Trying to compare an unknown types"); return false; }
-static bool dummyConvert(const QVariant::Private *, QVariant::Type , void *, bool *) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); return false; }
+static bool dummyConvert(const QVariant::Private *, int, void *, bool *) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); return false; }
 #if !defined(QT_NO_DEBUG_STREAM)
 static void dummyStreamDebug(QDebug, const QVariant &) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); }
 #endif
@@ -840,7 +840,7 @@ static bool customCompare(const QVariant::Private *a, const QVariant::Private *b
     return !memcmp(a_ptr, b_ptr, QMetaType::sizeOf(a->type));
 }
 
-static bool customConvert(const QVariant::Private *, QVariant::Type, void *, bool *ok)
+static bool customConvert(const QVariant::Private *, int, void *, bool *ok)
 {
     if (ok)
         *ok = false;
@@ -1062,9 +1062,9 @@ Q_CORE_EXPORT void QVariantPrivate::unregisterHandler(const int /* Modules::Name
 
 
 /*!
-    \fn QVariant::QVariant(int typeOrUserType, const void *copy)
+    \fn QVariant::QVariant(int typeId, const void *copy)
 
-    Constructs variant of type \a typeOrUserType, and initializes with
+    Constructs variant of type \a typeId, and initializes with
     \a copy if \a copy is not 0.
 
     Note that you have to pass the address of the variable you want stored.
@@ -1166,7 +1166,7 @@ QVariant::QVariant(QDataStream &s)
     UTF-8 encoding on the input \a val.
 
     Note that \a val is converted to a QString for storing in the
-    variant and QVariant::type() will return QMetaType::QString for
+    variant and QVariant::userType() will return QMetaType::QString for
     the variant.
 
     You can disable this operator by defining \c
@@ -1373,19 +1373,19 @@ QVariant::QVariant(const char *val)
 
 QVariant::QVariant(Type type)
 { create(type, 0); }
-QVariant::QVariant(int typeOrUserType, const void *copy)
-{ create(typeOrUserType, copy); d.is_null = false; }
+QVariant::QVariant(int typeId, const void *copy)
+{ create(typeId, copy); d.is_null = false; }
 
 /*! \internal
     flags is true if it is a pointer type
  */
-QVariant::QVariant(int typeOrUserType, const void *copy, uint flags)
+QVariant::QVariant(int typeId, const void *copy, uint flags)
 {
     if (flags) { //type is a pointer type
-        d.type = typeOrUserType;
+        d.type = typeId;
         d.data.ptr = *reinterpret_cast<void *const*>(copy);
     } else {
-        create(typeOrUserType, copy);
+        create(typeId, copy);
     }
     d.is_null = false;
 }
@@ -1563,7 +1563,7 @@ void QVariant::detach()
 */
 const char *QVariant::typeName() const
 {
-    return typeToName(Type(d.type));
+    return typeToName(d.type);
 }
 
 /*!
@@ -1580,17 +1580,17 @@ void QVariant::clear()
 }
 
 /*!
-    Converts the enum representation of the storage type, \a typ, to
+    Converts the int representation of the storage type, \a typeId, to
     its string representation.
 
     Returns a null pointer if the type is QVariant::Invalid or doesn't exist.
 */
-const char *QVariant::typeToName(Type typ)
+const char *QVariant::typeToName(int typeId)
 {
-    if (typ == Invalid)
+    if (typeId == Invalid)
         return 0;
 
-    return QMetaType::typeName(typ);
+    return QMetaType::typeName(typeId);
 }
 
 
@@ -1840,7 +1840,7 @@ QDataStream& operator<<(QDataStream &s, const QVariant::Type p)
 template <typename T>
 inline T qVariantToHelper(const QVariant::Private &d, const HandlersManager &handlerManager)
 {
-    const QVariant::Type targetType = static_cast<const QVariant::Type>(qMetaTypeId<T>());
+    const uint targetType = qMetaTypeId<T>();
     if (d.type == targetType)
         return *v_cast<T>(&d);
 
@@ -2161,7 +2161,7 @@ inline T qNumVariantToHelper(const QVariant::Private &d,
         return val;
 
     T ret = 0;
-    if (!handlerManager[d.type]->convert(&d, QVariant::Type(t), &ret, ok) && ok)
+    if (!handlerManager[d.type]->convert(&d, t, &ret, ok) && ok)
         *ok = false;
     return ret;
 }
@@ -2405,7 +2405,7 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 
 /*!
     Returns true if the variant's type can be cast to the requested
-    type, \a t. Such casting is done automatically when calling the
+    type, \a targetTypeId. Such casting is done automatically when calling the
     toInt(), toBool(), ... methods.
 
     The following casts are done automatically:
@@ -2437,18 +2437,18 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 
     \sa convert()
 */
-bool QVariant::canConvert(Type t) const
+bool QVariant::canConvert(int targetTypeId) const
 {
     // TODO Reimplement this function, currently it works but it is a historical mess.
     const uint currentType = ((d.type == QMetaType::Float) ? QVariant::Double : d.type);
-    if (uint(t) == uint(QMetaType::Float)) t = QVariant::Double;
+    if (uint(targetTypeId) == uint(QMetaType::Float)) targetTypeId = QVariant::Double;
 
-    if (currentType == uint(t))
+    if (currentType == uint(targetTypeId))
         return true;
 
     // FIXME It should be LastCoreType intead of Uuid
-    if (currentType > QVariant::Uuid || t > QVariant::Uuid) {
-        switch (uint(t)) {
+    if (currentType > int(QMetaType::QUuid) || targetTypeId > int(QMetaType::QUuid)) {
+        switch (uint(targetTypeId)) {
         case QVariant::Int:
             return currentType == QVariant::KeySequence
                    || currentType == QMetaType::ULong
@@ -2490,14 +2490,14 @@ bool QVariant::canConvert(Type t) const
         }
     }
 
-    if(t == String && currentType == StringList)
+    if (targetTypeId == String && currentType == StringList)
         return v_cast<QStringList>(&d)->count() == 1;
     else
-        return qCanConvertMatrix[t] & (1 << currentType);
+        return qCanConvertMatrix[targetTypeId] & (1 << currentType);
 }
 
 /*!
-    Casts the variant to the requested type, \a t. If the cast cannot be
+    Casts the variant to the requested type, \a targetTypeId. If the cast cannot be
     done, the variant is cleared. Returns true if the current type of
     the variant was successfully cast; otherwise returns false.
 
@@ -2508,23 +2508,23 @@ bool QVariant::canConvert(Type t) const
     \sa canConvert(), clear()
 */
 
-bool QVariant::convert(Type t)
+bool QVariant::convert(int targetTypeId)
 {
-    if (d.type == uint(t))
+    if (d.type == uint(targetTypeId))
         return true;
 
     QVariant oldValue = *this;
 
     clear();
-    if (!oldValue.canConvert(t))
+    if (!oldValue.canConvert(targetTypeId))
         return false;
 
-    create(t, 0);
+    create(targetTypeId, 0);
     if (oldValue.isNull())
         return false;
 
     bool isOk = true;
-    if (!handlerManager[d.type]->convert(&oldValue.d, t, data(), &isOk))
+    if (!handlerManager[d.type]->convert(&oldValue.d, targetTypeId, data(), &isOk))
         isOk = false;
     d.is_null = !isOk;
     return isOk;
@@ -2538,7 +2538,7 @@ bool QVariant::convert(Type t)
 bool QVariant::convert(const int type, void *ptr) const
 {
     Q_ASSERT(type < int(QMetaType::User));
-    return handlerManager[type]->convert(&d, QVariant::Type(type), ptr, 0);
+    return handlerManager[type]->convert(&d, type, ptr, 0);
 }
 
 
@@ -2605,7 +2605,7 @@ bool QVariant::cmp(const QVariant &v) const
             else
                 return toLongLong() == v.toLongLong();
         }
-        if (!v2.canConvert(Type(d.type)) || !v2.convert(Type(d.type)))
+        if (!v2.canConvert(d.type) || !v2.convert(d.type))
             return false;
     }
     return handlerManager[d.type]->compare(&d, &v2.d);

@@ -581,7 +581,7 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
 
     qWarning() << "Unexpected QVariant type" << v2.userType()
                << QByteArray(QDBusMetaType::typeToSignature(v2.userType()))
-               << QVariant::typeToName(QVariant::Type(v2.userType()));
+               << QMetaType::typeName(v2.userType());
     return false;
 }
 

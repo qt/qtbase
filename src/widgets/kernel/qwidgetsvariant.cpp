@@ -117,7 +117,7 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
     return false;
 }
 
-static bool convert(const QVariant::Private *d, QVariant::Type type, void *result, bool *ok)
+static bool convert(const QVariant::Private *d, int type, void *result, bool *ok)
 {
     Q_UNUSED(d);
     Q_UNUSED(type);
@@ -141,7 +141,7 @@ static void streamDebug(QDebug dbg, const QVariant &v)
         dbg.nospace() << *v_cast<QSizePolicy>(d);
         break;
     default:
-        dbg.nospace() << "QVariant::Type(" << d->type << ")";
+        dbg.nospace() << "QMetaType::Type(" << d->type << ")";
     }
 }
 #endif

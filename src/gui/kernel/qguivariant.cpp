@@ -221,7 +221,7 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
     return QMetaTypeSwitcher::switcher<bool>(comparator, a->type, 0);
 }
 
-static bool convert(const QVariant::Private *d, QVariant::Type t,
+static bool convert(const QVariant::Private *d, int t,
                  void *result, bool *ok)
 {
     switch (t) {
