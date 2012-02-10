@@ -413,8 +413,12 @@ QAbstractEventDispatcher::EventFilter QAbstractEventDispatcher::setEventFilter(E
 bool QAbstractEventDispatcher::filterEvent(void *message)
 {
     Q_D(QAbstractEventDispatcher);
-    if (d->event_filter)
+    if (d->event_filter) {
+        // Raise the loopLevel so that deleteLater() calls in or triggered
+        // by event_filter() will be processed from the main event loop.
+        QScopedLoopLevelCounter loopLevelCounter(d->threadData);
         return d->event_filter(message);
+    }
     return false;
 }
 
