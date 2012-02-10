@@ -1290,7 +1290,7 @@ namespace {
 class TypeDestroyer {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct DestroyerImpl {
-        static void Destroy(const int /* type */, T *where) { delete where; }
+        static void Destroy(const int /* type */, void *where) { qMetaTypeDeleteHelper<T>(where); }
     };
     template<typename T>
     struct DestroyerImpl<T, /* IsAcceptedType = */ false> {
@@ -1354,11 +1354,11 @@ namespace {
 class TypeConstructor {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct ConstructorImpl {
-        static void *Construct(const int /*type*/, void *where, const T *copy) { return qMetaTypeConstructHelper(where, copy); }
+        static void *Construct(const int /*type*/, void *where, const void *copy) { return qMetaTypeConstructHelper<T>(where, copy); }
     };
     template<typename T>
     struct ConstructorImpl<T, /* IsAcceptedType = */ false> {
-        static void *Construct(const int type, void *where, const T *copy)
+        static void *Construct(const int type, void *where, const void *copy)
         {
             if (QTypeModuleInfo<T>::IsGui)
                 return Q_LIKELY(qMetaTypeGuiHelper) ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].constructor(where, copy) : 0;
@@ -1440,7 +1440,7 @@ namespace {
 class TypeDestructor {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct DestructorImpl {
-        static void Destruct(const int /* type */, T *where) { qMetaTypeDestructHelper(where); }
+        static void Destruct(const int /* type */, void *where) { qMetaTypeDestructHelper<T>(where); }
     };
     template<typename T>
     struct DestructorImpl<T, /* IsAcceptedType = */ false> {

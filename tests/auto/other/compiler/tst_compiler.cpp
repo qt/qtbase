@@ -268,9 +268,7 @@ namespace QtTestInternal
         struct Getter {
             static QMetaType::SaveOperator saveOp()
             {
-                typedef void(*SavePtr)(QDataStream &, const T *);
-                SavePtr op = ::qMetaTypeSaveHelper<T>;
-                return reinterpret_cast<QMetaType::SaveOperator>(op);
+                return ::qMetaTypeSaveHelper<T>;
             }
         };
 
