@@ -67,7 +67,7 @@ struct Q_CORE_EXPORT QVectorData
     QtPrivate::RefCount ref;
     int alloc;
     int size;
-#if defined(QT_ARCH_SPARC) && defined(Q_CC_GNU) && defined(__LP64__) && defined(QT_BOOTSTRAPPED)
+#if defined(Q_PROCESSOR_SPARC) && defined(Q_CC_GNU) && defined(__LP64__) && defined(QT_BOOTSTRAPPED)
     // workaround for bug in gcc 3.4.2
     uint sharable;
     uint capacity;

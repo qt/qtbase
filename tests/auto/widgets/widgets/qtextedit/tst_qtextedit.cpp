@@ -288,7 +288,7 @@ void tst_QTextEdit::getSetCheck()
     QCOMPARE(0, obj1.tabStopWidth());
     obj1.setTabStopWidth(INT_MIN);
     QCOMPARE(0, obj1.tabStopWidth()); // Makes no sense to set a negative tabstop value
-#if defined(QT_ARCH_WINDOWSCE)
+#if defined(Q_OS_WINCE)
     // due to rounding error in qRound when qreal==float
     // we cannot use INT_MAX for this check
     obj1.setTabStopWidth(SHRT_MAX*2);

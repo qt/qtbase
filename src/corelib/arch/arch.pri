@@ -25,9 +25,3 @@ unix {
     HEADERS += arch/qatomic_unix.h
     SOURCES += arch/qatomic_unix.cpp
 }
-
-QT_ARCH_CPP = $$QT_SOURCE_TREE/src/corelib/arch/$$QT_ARCH
-exists($$QT_ARCH_CPP) {
-    DEPENDPATH += $$QT_ARCH_CPP
-    include($$QT_ARCH_CPP/arch.pri, "", true)
-}

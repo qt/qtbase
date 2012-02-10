@@ -1574,7 +1574,7 @@ void tst_QGraphicsProxyWidget::resize_simple_data()
     QTest::addColumn<QSizeF>("size");
 
     QTest::newRow("200, 200") << QSizeF(200, 200);
-#if !defined(QT_ARCH_ARM) && !defined(Q_OS_WINCE)
+#if !defined(Q_PROCESSOR_ARM) && !defined(Q_OS_WINCE)
     QTest::newRow("1000, 1000") << QSizeF(1000, 1000);
     // Since 4.5, 10000x10000 runs out of memory.
     // QTest::newRow("10000, 10000") << QSizeF(10000, 10000);

@@ -365,7 +365,7 @@ void tst_QGraphicsScene::itemIndexMethod()
     QGraphicsScene scene;
     QCOMPARE(scene.itemIndexMethod(), QGraphicsScene::BspTreeIndex);
 
-#ifdef QT_ARCH_ARM
+#ifdef Q_PROCESSOR_ARM
     const int minY = -500;
     const int maxY = 500;
     const int minX = -500;
@@ -426,7 +426,7 @@ void tst_QGraphicsScene::bspTreeDepth()
 
 void tst_QGraphicsScene::items()
 {
-#ifdef QT_ARCH_ARM
+#ifdef Q_PROCESSOR_ARM
     const int minY = -500;
     const int maxY = 500;
     const int minX = -500;

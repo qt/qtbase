@@ -14,7 +14,7 @@ HEADERS += uic.h
 SOURCES += main.cpp \
            uic.cpp
 
-linux-g++-maemo:contains(QT_ARCH, arm) {
+linux-g++-maemo {
     # UIC will crash when running inside QEMU if built with -O2
     QMAKE_CFLAGS_RELEASE -= -O2
     QMAKE_CXXFLAGS_RELEASE -= -O2
