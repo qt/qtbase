@@ -4,6 +4,6 @@ linux-g++-maemo: SUBDIRS += meego
 
 contains(QT_CONFIG, evdev) {
     contains(QT_CONFIG, libudev) {
-        SUBDIRS += evdevmouse evdevtouch
+        SUBDIRS += evdevmouse evdevtouch evdevkeyboard
     }
 }
