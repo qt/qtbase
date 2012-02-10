@@ -26,7 +26,6 @@ integrity:HEADERS += arch/qatomic_integrity.h
                        arch/qatomic_mips.h \
                        arch/qatomic_s390.h \
                        arch/qatomic_x86_64.h \
-                       arch/qatomic_sh.h \
                        arch/qatomic_sh4a.h \
                        arch/qatomic_gcc.h \
                        arch/qatomic_cxx11.h
