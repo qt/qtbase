@@ -264,7 +264,7 @@ QSurfaceFormat qglx_reduceSurfaceFormat(const QSurfaceFormat &format, bool *redu
     } else if (retFormat.blueBufferSize() > 1) {
         retFormat.setBlueBufferSize(1);
     } else if (retFormat.samples() > 1) {
-        retFormat.setSamples(0);
+        retFormat.setSamples(qMin(retFormat.samples() / 2, 16));
     } else if (retFormat.stereo()) {
         retFormat.setStereo(false);
     }else if (retFormat.stencilBufferSize() > 0) {
