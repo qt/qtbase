@@ -1,12 +1,10 @@
-win32:HEADERS += arch/qatomic_msvc.h \
-                 arch/qatomic_generic.h
+win32:HEADERS += arch/qatomic_msvc.h
 
 win32-g++*:HEADERS += arch/qatomic_i386.h \
                       arch/qatomic_x86_64.h
 
 mac:HEADERS += arch/qatomic_i386.h \
-               arch/qatomic_x86_64.h \
-               arch/qatomic_generic.h
+               arch/qatomic_x86_64.h
 
 vxworks:HEADERS += arch/qatomic_vxworks.h
 
@@ -16,7 +14,6 @@ integrity:HEADERS += arch/qatomic_integrity.h
                        arch/qatomic_ia64.h \
                        arch/qatomic_sparc.h \
                        arch/qatomic_arch.h \
-                       arch/qatomic_generic.h \
                        arch/qatomic_powerpc.h \
                        arch/qatomic_armv5.h \
                        arch/qatomic_armv6.h \

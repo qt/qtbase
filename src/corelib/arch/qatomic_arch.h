@@ -54,8 +54,6 @@ QT_BEGIN_HEADER
 #  include "QtCore/qatomic_alpha.h"
 #elif defined(QT_ARCH_BFIN)
 #  include "QtCore/qatomic_bfin.h"
-#elif defined(QT_ARCH_GENERIC)
-#  include "QtCore/qatomic_generic.h"
 #elif defined(QT_ARCH_POWERPC)
 #  include "QtCore/qatomic_powerpc.h"
 #elif defined(QT_ARCH_S390)
