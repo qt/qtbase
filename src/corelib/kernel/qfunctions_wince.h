@@ -182,6 +182,16 @@ void    qt_wince_rewind( FILE *stream );
 int     qt_wince___fileno(FILE *);
 FILE   *qt_wince_tmpfile( void );
 
+//For zlib we need these helper functions, but they break the build when
+//set globally, so just set them for zlib use
+#ifdef ZLIB_H
+#define open qt_wince_open
+#define close qt_wince__close
+#define lseek qt_wince__lseek
+#define read qt_wince__read
+#define write qt_wince__write
+#endif
+
 int qt_wince__mkdir(const char *dirname);
 int qt_wince__rmdir(const char *dirname);
 int qt_wince__access( const char *path, int pmode );
