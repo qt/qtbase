@@ -26,6 +26,7 @@ HEADERS +=  \
         tools/qmargins.h \
         tools/qcontiguouscache.h \
         tools/qpodlist_p.h \
+        tools/qpair.h \
         tools/qpoint.h \
         tools/qqueue.h \
         tools/qrect.h \
