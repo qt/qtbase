@@ -87,8 +87,6 @@
 #  elif defined(__ARM_ARCH_5TEJ__) \
         || (__TARGET_ARCH_ARM-0 >= 5)
 #    define Q_PROCESSOR_ARM_V5
-#  else
-#    error "Unknown ARM processor detected."
 #  endif
 
 /*
