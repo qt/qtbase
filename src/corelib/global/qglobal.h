@@ -992,10 +992,6 @@ inline void qUnused(T &x) { (void)x; }
 
 class QString;
 Q_CORE_EXPORT QString qt_error_string(int errorCode = -1);
-
-Q_CORE_EXPORT void qErrnoWarning(int code, const char *msg, ...);
-Q_CORE_EXPORT void qErrnoWarning(const char *msg, ...);
-
 Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line);
 
 #if !defined(Q_ASSERT)
