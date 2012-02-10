@@ -975,7 +975,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         if (!self->synthesizedMousePoints.isEmpty() && !e->synthetic) {
             for (QHash<QWindow *, SynthesizedMouseData>::const_iterator synthIt = self->synthesizedMousePoints.constBegin(),
                  synthItEnd = self->synthesizedMousePoints.constEnd(); synthIt != synthItEnd; ++synthIt) {
-                QWindowSystemInterfacePrivate::MouseEvent fake(synthIt.key(),
+                if (!synthIt->window)
+                    continue;
+                QWindowSystemInterfacePrivate::MouseEvent fake(synthIt->window.data(),
                                                                e->timestamp,
                                                                synthIt->pos,
                                                                synthIt->screenPos,
@@ -1159,7 +1161,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                     if (touchPoint.id() == m_fakeMouseSourcePointId) {
                         if (b != Qt::NoButton)
                             self->synthesizedMousePoints.insert(w, SynthesizedMouseData(
-                                                                    touchPoint.pos(), touchPoint.screenPos()));
+                                                                    touchPoint.pos(), touchPoint.screenPos(), w));
                         QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp,
                                                                        touchPoint.pos(),
                                                                        touchPoint.screenPos(),
