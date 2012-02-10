@@ -55,6 +55,7 @@
 #include "qtextdocument_p.h"
 #include "qrawfont.h"
 #include "qrawfont_p.h"
+#include <qbitarray.h>
 #include <qguiapplication.h>
 #include <qinputmethod.h>
 #include <algorithm>
@@ -87,7 +88,7 @@ public:
     /// The caps parameter is used to choose the algoritm of splitting text and assiging roles to the textitems
     void generate(int start, int length, QFont::Capitalization caps)
     {
-        if ((int)caps == (int)QFont::SmallCaps)
+        if (caps == QFont::SmallCaps)
             generateScriptItemsSmallCaps(reinterpret_cast<const ushort *>(m_string.unicode()), start, length);
         else if(caps == QFont::Capitalize)
             generateScriptItemsCapitalize(start, length);
@@ -1381,6 +1382,13 @@ void QTextEngine::itemize() const
 
     Itemizer itemizer(layoutData->string, scriptAnalysis.data(), layoutData->items);
 
+    QVarLengthArray<uchar, 128> capitalization;
+    if (formats()) {
+        capitalization.resize(length);
+        memset(capitalization.data(), formats()->defaultFont().capitalization(), length);
+    }
+    QBitArray edges(length+1); // First and last bit are not really used but this makes things simpler.
+
     const QTextDocumentPrivate *p = block.docHandle();
     if (p) {
         SpecialData *s = specialData;
@@ -1399,14 +1407,12 @@ void QTextEngine::itemize() const
                     s = 0;
                 }
                 Q_ASSERT(position <= length);
-                QFont::Capitalization capitalization =
-                        formats()->charFormat(format).hasProperty(QTextFormat::FontCapitalization)
-                        ? formats()->charFormat(format).fontCapitalization()
-                        : formats()->defaultFont().capitalization();
-                itemizer.generate(prevPosition, position - prevPosition, capitalization);
+                if (formats()->charFormat(format).hasProperty(QTextFormat::FontCapitalization))
+                    memset(capitalization.data() + prevPosition, formats()->charFormat(format).fontCapitalization(), position - prevPosition);
+                edges.setBit(position);
                 if (it == end) {
-                    if (position < length)
-                        itemizer.generate(position, length - position, capitalization);
+                    if (position < length && formats()->charFormat(format).hasProperty(QTextFormat::FontCapitalization))
+                        memset(capitalization.data() + position, formats()->charFormat(format).fontCapitalization(), length - position);
                     break;
                 }
                 format = frag->format;
@@ -1415,22 +1421,33 @@ void QTextEngine::itemize() const
             position += frag->size_array[0];
             ++it;
         }
-    } else {
-#ifndef QT_NO_RAWFONT
-        if (useRawFont && specialData) {
-            int lastIndex = 0;
-            for (int i = 0; i < specialData->addFormats.size(); ++i) {
+    }
+
+    if (specialData && !specialData->addFormats.isEmpty()) {
+        Q_ASSERT(formats());
+        for (int i = 0; i < specialData->addFormats.size(); ++i) {
                 const QTextLayout::FormatRange &range = specialData->addFormats.at(i);
-                if (range.format.fontCapitalization()) {
-                    itemizer.generate(lastIndex, range.start - lastIndex, QFont::MixedCase);
-                    itemizer.generate(range.start, range.length, range.format.fontCapitalization());
-                    lastIndex = range.start + range.length;
-                }
-            }
-            itemizer.generate(lastIndex, length - lastIndex, QFont::MixedCase);
-        } else
-#endif
-            itemizer.generate(0, length, static_cast<QFont::Capitalization> (fnt.d->capital));
+                Q_ASSERT(range.start + range.length <= length);
+                edges.setBit(range.start);
+                edges.setBit(range.start + range.length);
+                QTextCharFormat format = formats()->charFormat(specialData->addFormatIndices.at(i));
+                if (format.hasProperty(QTextFormat::FontCapitalization))
+                    memset(capitalization.data() + range.start, format.fontCapitalization(), range.length);
+        }
+    }
+
+    if (formats()) {
+        int previousBoundary = 0;
+        for (int i = 1; i < length; ++i) {
+            if (!edges.at(i))
+                continue;
+            itemizer.generate(previousBoundary, i - previousBoundary, static_cast<QFont::Capitalization>(capitalization[previousBoundary]));
+            previousBoundary = i;
+        }
+        itemizer.generate(previousBoundary, length - previousBoundary, static_cast<QFont::Capitalization>(capitalization[previousBoundary]));
+
+    } else {
+        itemizer.generate(0, length, static_cast<QFont::Capitalization> (fnt.d->capital));
     }
 
     addRequiredBoundaries();

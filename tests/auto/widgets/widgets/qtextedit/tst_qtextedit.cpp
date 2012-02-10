@@ -2473,10 +2473,11 @@ void tst_QTextEdit::highlightLongLine()
     edit.setAcceptRichText(false);
     edit.setWordWrapMode(QTextOption::NoWrap);
 
-    QString singeLongLine;
+    QString singleLongLine;
+    singleLongLine.reserve(100000);
     for (int i = 0; i < 10000; ++i)
-        singeLongLine += "0123456789";
-    edit.setPlainText(singeLongLine);
+        singleLongLine += "0123456789";
+    edit.setPlainText(singleLongLine);
 
     class NumHighlighter : public QSyntaxHighlighter {
     public:

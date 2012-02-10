@@ -139,6 +139,11 @@ private slots:
     void xToCursorForLigatures();
     void cursorInNonStopChars();
 
+#ifndef QT_NO_RAWFONT
+    void additionalFormatsCapitalizationWithRawFont_data();
+    void additionalFormatsCapitalizationWithRawFont();
+#endif
+
 private:
     QFont testFont;
 };
@@ -2011,6 +2016,109 @@ void tst_QTextLayout::cursorInNonStopChars()
     QVERIFY(line.cursorToX(1) == line.cursorToX(3));
     QVERIFY(line.cursorToX(2) == line.cursorToX(3));
 }
+
+#ifndef QT_NO_RAWFONT
+
+typedef QList<QTextLayout::FormatRange> FormatRangeList;
+Q_DECLARE_METATYPE(FormatRangeList)
+
+void tst_QTextLayout::additionalFormatsCapitalizationWithRawFont_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<FormatRangeList>("additionalFormats");
+
+    QString textSample = QLatin1String("Code Less, Create More.");
+
+    QTest::newRow("No Format") << textSample << FormatRangeList();
+    QTextLayout::FormatRange range;
+    range.start = 0;
+    range.length = textSample.size();
+    range.format.setFontCapitalization(QFont::SmallCaps);
+    QTest::newRow("SmallCaps") << textSample << (FormatRangeList() << range);
+    range.format.setFontCapitalization(QFont::Capitalize);
+    QTest::newRow("Capitalize") << textSample.toLower() << (FormatRangeList() << range);
+    range.format.setFontCapitalization(QFont::AllLowercase);
+    QTest::newRow("AllLowercase") << textSample << (FormatRangeList() << range);
+
+    FormatRangeList rangeList;
+    range.start = 0;
+    range.length = 5;
+    range.format.setFontCapitalization(QFont::SmallCaps);
+    rangeList << range;
+    range.start = 5;
+    range.format.setFontCapitalization(QFont::AllLowercase);
+    rangeList << range;
+    range.start = 18;
+    range.format.setFontCapitalization(QFont::Capitalize);
+    rangeList << range;
+    QTest::newRow("MixAndMatch") << textSample << rangeList;
+}
+
+void tst_QTextLayout::additionalFormatsCapitalizationWithRawFont()
+{
+    QFETCH(QString, text);
+    QFETCH(FormatRangeList, additionalFormats);
+
+    QRawFont rawFont = QRawFont::fromFont(testFont);
+
+    QTextLayout layout(text);
+    layout.setRawFont(rawFont);
+    layout.setAdditionalFormats(additionalFormats);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QString expectedChars;
+    QTextBoundaryFinder splitter(QTextBoundaryFinder::Word,text.constData(), text.length(), 0, 0);
+
+    for (int i = 0; i < text.size(); ++i) {
+        bool hasFormat = false;
+        Q_FOREACH (const QTextLayout::FormatRange& range, additionalFormats) {
+            if (i >= range.start && i < range.start + range.length) {
+                hasFormat = true;
+                const QChar ch(text.at(i));
+                switch (range.format.fontCapitalization()) {
+                case QFont::SmallCaps:
+                case QFont::AllUppercase:
+                    expectedChars += ch.toUpper();
+                    break;
+                case QFont::AllLowercase:
+                    expectedChars += ch.toLower();
+                    break;
+                case QFont::Capitalize:
+                    splitter.setPosition(i);
+                    if (splitter.boundaryReasons() & QTextBoundaryFinder::StartWord)
+                        expectedChars += ch.toUpper();
+                    else
+                        expectedChars += ch;
+                    break;
+                case QFont::MixedCase:
+                default:
+                    expectedChars += ch;
+                    break;
+                }
+            }
+        }
+        if (!hasFormat)
+            expectedChars += text.at(i);
+    }
+
+    QVERIFY(layout.glyphRuns().size() > 0);
+    rawFont = layout.glyphRuns().first().rawFont();
+    // Can't assume anything about the order of the glyphs we get once they're split into several glyphRuns.
+    // Let's just compare the sets:
+    QVector<quint32> expected = rawFont.glyphIndexesForString(expectedChars);
+    qSort(expected);
+    QVector<quint32> sortedOutput;
+    sortedOutput.reserve(expected.size());
+    Q_FOREACH (const QGlyphRun& run, layout.glyphRuns()) {
+        Q_FOREACH (quint32 glyphIndex, run.glyphIndexes())
+            sortedOutput.append(glyphIndex);
+    }
+    qSort(sortedOutput);
+    QCOMPARE(sortedOutput, expected);
+}
+#endif
 
 QTEST_MAIN(tst_QTextLayout)
 #include "tst_qtextlayout.moc"
