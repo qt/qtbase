@@ -11,3 +11,6 @@ list(APPEND Qt5Core_INCLUDE_DIRS \"${_qt5_corelib_install_prefix}/mkspecs/defaul
 if (NOT \"$${CMAKE_ADD_FPIE_FLAGS}\" STREQUAL \"\")
     set(Qt5Core_COMPILE_FLAGS "-fPIE")
 endif()
+
+list(APPEND Qt5Core_DEFINITIONS -DQT_NAMESPACE=$$QT_NAMESPACE)
+list(APPEND Qt5Core_COMPILE_DEFINITIONS QT_NAMESPACE=$$QT_NAMESPACE)
