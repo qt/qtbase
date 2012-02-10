@@ -25,6 +25,12 @@ integrity:HEADERS += arch/qatomic_integrity.h
                        arch/qatomic_gcc.h \
                        arch/qatomic_cxx11.h
 
+unix {
+    # fallback implementation when no other appropriate qatomic_*.h exists
+    HEADERS += arch/qatomic_unix.h
+    SOURCES += arch/qatomic_unix.cpp
+}
+
 QT_ARCH_CPP = $$QT_SOURCE_TREE/src/corelib/arch/$$QT_ARCH
 exists($$QT_ARCH_CPP) {
     DEPENDPATH += $$QT_ARCH_CPP

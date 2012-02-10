@@ -91,6 +91,10 @@
 #elif defined(Q_CC_GNU)
 #  include <QtCore/qatomic_gcc.h>
 
+// Fallback operating system dependent implementation
+#elif defined(Q_OS_UNIX)
+#  include <QtCore/qatomic_unix.h>
+
 // No fallback
 #else
 #  error "Qt has not been ported to this platform"

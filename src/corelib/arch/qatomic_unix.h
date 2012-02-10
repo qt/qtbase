@@ -1,0 +1,117 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/
+**
+** This file is part of the QtCore module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights. These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#ifndef QATOMIC_UNIX_H
+#define QATOMIC_UNIX_H
+
+#include <QtCore/qgenericatomic.h>
+
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
+
+#if 0
+// silence syncqt warnings
+QT_END_NAMESPACE
+QT_END_HEADER
+
+#pragma qt_sync_stop_processing
+#endif
+
+#define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_NOT_NATIVE
+#define Q_ATOMIC_INT_TEST_AND_SET_IS_NOT_NATIVE
+#define Q_ATOMIC_INT_FETCH_AND_STORE_IS_NOT_NATIVE
+#define Q_ATOMIC_INT_FETCH_AND_ADD_IS_NOT_NATIVE
+
+#define Q_ATOMIC_INT32_IS_SUPPORTED
+
+#define Q_ATOMIC_POINTER_TEST_AND_SET_IS_NOT_NATIVE
+#define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_NOT_NATIVE
+#define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_NOT_NATIVE
+
+template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
+
+// No definition, needs specialization
+template <typename T> struct QAtomicOps;
+
+template <>
+struct QAtomicOps<int> : QGenericAtomicOps<QAtomicOps<int> >
+{
+    typedef int Type;
+
+    static inline bool isTestAndSetNative() { return false; }
+    static inline bool isTestAndSetWaitFree() { return false; }
+    Q_CORE_EXPORT static bool testAndSetRelaxed(int &_q_value, int expectedValue, int newValue);
+};
+
+template <>
+struct QAtomicOps<void *> : QGenericAtomicOps<QAtomicOps<void *> >
+{
+    typedef void *Type;
+
+    static inline bool isTestAndSetNative() { return false; }
+    static inline bool isTestAndSetWaitFree() { return false; }
+    Q_CORE_EXPORT static bool testAndSetRelaxed(void *&_q_value, void *expectedValue, void *newValue);
+};
+
+template <typename T>
+struct QAtomicOps<T *> : QGenericAtomicOps<QAtomicOps<T *> >
+{
+    typedef T *Type;
+
+    // helper to strip cv qualifiers
+    static inline void *nocv(const T *p) { return const_cast<void *>(static_cast<const volatile void *>(p)); }
+
+    static inline bool isTestAndSetNative() { return false; }
+    static inline bool isTestAndSetWaitFree() { return false; }
+    static inline bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue)
+    {
+        // forward to the void* specialization
+        void *voidp = nocv(_q_value);
+        bool returnValue = QAtomicOps<void *>::testAndSetRelaxed(voidp, nocv(expectedValue), nocv(newValue));
+        _q_value = reinterpret_cast<T *>(voidp);
+        return returnValue;
+    }
+};
+
+QT_END_NAMESPACE
+QT_END_HEADER
+
+#endif // QATOMIC_UNIX_H
