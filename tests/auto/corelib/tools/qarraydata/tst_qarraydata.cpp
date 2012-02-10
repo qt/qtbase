@@ -84,6 +84,7 @@ private slots:
     void fromRawData();
     void literals();
     void variadicLiterals();
+    void rValueReferences();
 };
 
 template <class T> const T &const_(const T &t) { return t; }
@@ -1272,6 +1273,51 @@ void tst_QArrayData::variadicLiterals()
 #else
     QSKIP("Variadic Q_ARRAY_LITERAL not available in current configuration.");
 #endif // defined(Q_COMPILER_VARIADIC_MACROS)
+}
+
+#ifdef Q_COMPILER_RVALUE_REFS
+// std::remove_reference is in C++11, but requires library support
+template <class T> struct RemoveReference { typedef T Type; };
+template <class T> struct RemoveReference<T &> { typedef T Type; };
+
+// single-argument std::move is in C++11, but requires library support
+template <class T>
+typename RemoveReference<T>::Type &&cxx11Move(T &&t)
+{
+    return static_cast<typename RemoveReference<T>::Type &&>(t);
+}
+#endif
+
+void tst_QArrayData::rValueReferences()
+{
+#ifdef Q_COMPILER_RVALUE_REFS
+    SimpleVector<int> v1(1, 42);
+    SimpleVector<int> v2;
+
+    const SimpleVector<int>::const_iterator begin = v1.constBegin();
+
+    QVERIFY(!v1.isNull());
+    QVERIFY(v2.isNull());
+
+    // move-assign
+    v2 = cxx11Move(v1);
+
+    QVERIFY(v1.isNull());
+    QVERIFY(!v2.isNull());
+    QCOMPARE(v2.constBegin(), begin);
+
+    SimpleVector<int> v3(cxx11Move(v2));
+
+    QVERIFY(v1.isNull());
+    QVERIFY(v2.isNull());
+    QVERIFY(!v3.isNull());
+    QCOMPARE(v3.constBegin(), begin);
+
+    QCOMPARE(v3.size(), size_t(1));
+    QCOMPARE(v3.front(), 42);
+#else
+    QSKIP("RValue references are not supported in current configuration");
+#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QArrayData)

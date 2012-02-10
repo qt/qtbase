@@ -86,6 +86,20 @@ public:
         return *this;
     }
 
+#ifdef Q_COMPILER_RVALUE_REFS
+    QArrayDataPointer(QArrayDataPointer &&other)
+        : d(other.d)
+    {
+        other.d = Data::sharedNull();
+    }
+
+    QArrayDataPointer &operator=(QArrayDataPointer &&other)
+    {
+        this->swap(other);
+        return *this;
+    }
+#endif
+
     DataOps &operator*() const
     {
         Q_ASSERT(d);
