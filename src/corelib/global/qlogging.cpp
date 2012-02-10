@@ -204,6 +204,11 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
     }
     info = info.mid(pos + 1);
 
+    // remove trailing '*', '&' that are part of the return argument
+    while ((info.at(0) == '*')
+           || (info.at(0) == '&'))
+        info = info.mid(1);
+
     // we have the full function name now.
     // clean up the templates
     while ((pos = info.lastIndexOf('>')) != -1) {

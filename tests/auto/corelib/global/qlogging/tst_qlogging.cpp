@@ -154,6 +154,7 @@ class TestClass1
 {
 public:
     enum Something { foo };
+    char c;
 
     void func_void() { ADD("TestClass1::func_void"); }
     int func_int() { ADD("TestClass1::func_int"); return 0; }
@@ -164,6 +165,7 @@ public:
     char func_char() { ADD("TestClass1::func_char"); return 0; }
     signed char func_schar() { ADD("TestClass1::func_schar"); return 0; }
     unsigned char func_uchar() { ADD("TestClass1::func_uchar"); return 0; }
+    char &func_Rchar() { ADD("TestClass1::func_Rchar"); return c; }
     char *func_Pchar() { ADD("TestClass1::func_Pchar"); return 0; }
     const char *func_KPchar() { ADD("TestClass1::func_KPchar"); return 0; }
     const volatile char *func_VKPchar() { ADD("TestClass1::func_VKPchar"); return 0; }
@@ -221,6 +223,7 @@ public:
             func_char();
             func_schar();
             func_uchar();
+            func_Rchar();
             func_Pchar();
             func_KPchar();
             func_VKPchar();
@@ -383,11 +386,24 @@ void tst_qmessagehandler::cleanupFuncinfo_data()
         << "unsigned char TestClass1::func_uchar()"
         << "TestClass1::func_uchar";
 
+    QTest::newRow("msvc_09a")
+        << "char &__thiscall TestClass1::func_Rchar(void)"
+        << "TestClass1::func_Rchar";
+    QTest::newRow("gcc_09a")
+        << "char& TestClass1::func_Rchar()"
+        << "TestClass1::func_Rchar";
+    QTest::newRow("clang_09a")
+        << "char &TestClass1::func_Rchar()"
+        << "TestClass1::func_Rchar";
+
     QTest::newRow("msvc_10")
         << "char *__thiscall TestClass1::func_Pchar(void)"
         << "TestClass1::func_Pchar";
     QTest::newRow("gcc_10")
         << "char* TestClass1::func_Pchar()"
+        << "TestClass1::func_Pchar";
+    QTest::newRow("clang_10")
+        << "char *TestClass1::func_Pchar()"
         << "TestClass1::func_Pchar";
 
     QTest::newRow("msvc_11")
@@ -592,6 +608,7 @@ void tst_qmessagehandler::cleanupFuncinfo()
 #ifdef QT_BUILD_INTERNAL
     QFETCH(QString, funcinfo);
 
+//    qDebug() << funcinfo.toLatin1();
     QByteArray result = qCleanupFuncinfo(funcinfo.toLatin1());
     QTEST(QString::fromLatin1(result), "expected");
 #endif
