@@ -155,7 +155,7 @@ private:
     bool m_transparent;
     xcb_window_t m_netWmUserTimeWindow;
 
-    QSurfaceFormat m_requestedFormat;
+    QSurfaceFormat m_format;
 
     mutable bool m_dirtyFrameMargins;
     mutable QMargins m_frameMargins;

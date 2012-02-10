@@ -65,6 +65,7 @@ QGLXContext::QGLXContext(QXlibScreen *screen, const QSurfaceFormat &format, QPla
     : QPlatformOpenGLContext()
     , m_screen(screen)
     , m_context(0)
+    , m_windowFormat(format)
 {
     GLXContext shareGlxContext = 0;
     if (share)
@@ -77,7 +78,7 @@ QGLXContext::QGLXContext(QXlibScreen *screen, const QSurfaceFormat &format, QPla
         m_context = glXCreateNewContext(xDisplay,config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
         m_windowFormat = qglx_surfaceFormatFromGLXFBConfig(xDisplay,config,m_context);
     } else {
-        XVisualInfo *visualInfo = qglx_findVisualInfo(xDisplay, screen->xScreenNumber(), format);
+        XVisualInfo *visualInfo = qglx_findVisualInfo(xDisplay, screen->xScreenNumber(), &m_windowFormat);
         if (!visualInfo)
             qFatal("Could not initialize GLX");
         m_context = glXCreateContext(xDisplay, visualInfo, shareGlxContext, true);

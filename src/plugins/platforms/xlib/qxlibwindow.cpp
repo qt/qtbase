@@ -82,11 +82,12 @@ QXlibWindow::QXlibWindow(QWindow *window)
     int w = window->width();
     int h = window->height();
 
+    mSurfaceFormat = window->requestedFormat();
+
 #if !defined(QT_NO_OPENGL)
     if(window->surfaceType() == QWindow::OpenGLSurface) {
 #if !defined(QT_OPENGL_ES_2)
-        XVisualInfo *visualInfo = qglx_findVisualInfo(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber(),
-                                                      window->format());
+        XVisualInfo *visualInfo = qglx_findVisualInfo(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber(), &mSurfaceFormat);
         if (!visualInfo)
             qFatal("Could not initialize GLX");
 #else
@@ -694,7 +695,7 @@ void QXlibWindow::setCursor(const Cursor &cursor)
 
 QSurfaceFormat QXlibWindow::format() const
 {
-    return window()->format();
+    return mSurfaceFormat;
 }
 
 
