@@ -142,12 +142,6 @@
 #  endif
 
 /*
-    PA-RISC family, no revisions or variants
-*/
-// #elif defined(__parisc__)
-// #  define Q_PROCESSOR_PARISC
-
-/*
     POWER family, optional variant: 64-bit
 
     There are many more known variants/revisions that we do not handle/detect.

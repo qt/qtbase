@@ -61,9 +61,6 @@ QT_END_HEADER
 class Q_CORE_EXPORT QBasicAtomicInt
 {
 public:
-#ifdef QT_ARCH_PARISC
-    int _q_lock[4];
-#endif
 #if defined(QT_ARCH_WINDOWS) || defined(QT_ARCH_WINDOWSCE)
     union { // needed for Q_BASIC_ATOMIC_INITIALIZER
         volatile long _q_value;
@@ -114,9 +111,6 @@ template <typename T>
 class QBasicAtomicPointer
 {
 public:
-#ifdef QT_ARCH_PARISC
-    int _q_lock[4];
-#endif
 #if defined(QT_ARCH_WINDOWS) || defined(QT_ARCH_WINDOWSCE)
     union {
         T * volatile _q_value;
@@ -163,9 +157,7 @@ public:
     T *fetchAndAddOrdered(qptrdiff valueToAdd);
 };
 
-#ifdef QT_ARCH_PARISC
-#  define Q_BASIC_ATOMIC_INITIALIZER(a) {{-1,-1,-1,-1},(a)}
-#elif defined(QT_ARCH_WINDOWS) || defined(QT_ARCH_WINDOWSCE)
+#if defined(QT_ARCH_WINDOWS) || defined(QT_ARCH_WINDOWSCE)
 #  define Q_BASIC_ATOMIC_INITIALIZER(a) { {(a)} }
 #else
 #  define Q_BASIC_ATOMIC_INITIALIZER(a) { (a) }

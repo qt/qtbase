@@ -1093,10 +1093,6 @@ void tst_QSharedPointer::constCorrectness()
         ptr = cptr.constCast<Data>();
         ptr = vptr.constCast<Data>();
 
-#if !defined(Q_CC_HPACC) && !defined(QT_ARCH_PARISC)
-        // the aCC series 3 compiler we have on the PA-RISC
-        // machine crashes compiling this code
-
         QSharedPointer<const volatile Data> cvptr(ptr);
         QSharedPointer<const volatile Data> cvptr2(cptr);
         QSharedPointer<const volatile Data> cvptr3(vptr);
@@ -1105,7 +1101,6 @@ void tst_QSharedPointer::constCorrectness()
         cvptr3 = vptr;
         ptr = qSharedPointerConstCast<Data>(cvptr);
         ptr = cvptr.constCast<Data>();
-#endif
     }
     safetyCheck();
 
