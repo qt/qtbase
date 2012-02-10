@@ -100,8 +100,8 @@ public:
     class ModifiedRow
     {
     public:
-        inline ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord(), const QSqlRecord &pVals = QSqlRecord())
-            : m_op(o), m_rec(r), m_primaryValues(pVals)
+        inline ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord())
+            : m_op(o), m_rec(r)
         {
             for (int i = m_rec.count() - 1; i >= 0; --i)
                 m_rec.setGenerated(i, false);
@@ -109,7 +109,6 @@ public:
         inline Op op() const { return m_op; }
         inline QSqlRecord rec() const { return m_rec; }
         inline QSqlRecord& recRef() { return m_rec; }
-        inline QSqlRecord primaryValues() const { return m_primaryValues; }
         inline void setValue(int c, const QVariant &v)
         {
             m_rec.setValue(c, v);
@@ -118,7 +117,6 @@ public:
     private:
         Op m_op;
         QSqlRecord m_rec;
-        QSqlRecord m_primaryValues;
     };
 
     typedef QMap<int, ModifiedRow> CacheMap;
