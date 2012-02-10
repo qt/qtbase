@@ -152,13 +152,19 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
         }
     }
 
+    i = configAttributes->indexOf(EGL_SAMPLES);
+    if (i >= 0) {
+        EGLint value = configAttributes->value(i+1, 0);
+        if (value > 1)
+            configAttributes->replace(i+1, qMin(EGLint(16), value / 2));
+        else
+            configAttributes->remove(i, 2);
+        return true;
+    }
+
     i = configAttributes->indexOf(EGL_SAMPLE_BUFFERS);
     if (i >= 0) {
         configAttributes->remove(i,2);
-        i = configAttributes->indexOf(EGL_SAMPLES);
-        if (i >= 0) {
-            configAttributes->remove(i,2);
-        }
         return true;
     }
 
