@@ -2496,10 +2496,10 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             if(!in_directory.isEmpty()) {
                 t << mkdir_p_asstring(out_directory)
                   << out_directory_cdin
-                  << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out
+                  << "$(QMAKE) " << escapeFilePath(in) << buildArgs(in_directory) << " -o " << out
                   << in_directory_cdout << endl;
             } else {
-                t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out << endl;
+                t << "$(QMAKE) " << escapeFilePath(in) << buildArgs(in_directory) << " -o " << out << endl;
             }
             t << subtarget->target << "-qmake_all: ";
             if(project->isEmpty("QMAKE_NOFORCE"))
@@ -2508,10 +2508,10 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             if(!in_directory.isEmpty()) {
                 t << mkdir_p_asstring(out_directory)
                   << out_directory_cdin
-                  << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out
+                  << "$(QMAKE) " << escapeFilePath(in) << buildArgs(in_directory) << " -o " << out
                   << in_directory_cdout << endl;
             } else {
-                t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out << endl;
+                t << "$(QMAKE) " << escapeFilePath(in) << buildArgs(in_directory) << " -o " << out << endl;
             }
         }
 
