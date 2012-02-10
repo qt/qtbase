@@ -1,29 +1,24 @@
-win32:HEADERS += arch/qatomic_msvc.h
-
-win32-g++*:HEADERS += arch/qatomic_i386.h \
-                      arch/qatomic_x86_64.h
-
-mac:HEADERS += arch/qatomic_i386.h \
-               arch/qatomic_x86_64.h
-
+win32|wince:HEADERS += arch/qatomic_msvc.h
 vxworks:HEADERS += arch/qatomic_vxworks.h
-
 integrity:HEADERS += arch/qatomic_integrity.h
 
-!wince*:!win32:!mac:HEADERS += arch/qatomic_alpha.h \
-                       arch/qatomic_ia64.h \
-                       arch/qatomic_sparc.h \
-                       arch/qatomic_powerpc.h \
-                       arch/qatomic_armv5.h \
-                       arch/qatomic_armv6.h \
-                       arch/qatomic_armv7.h \
-                       arch/qatomic_i386.h \
-                       arch/qatomic_mips.h \
-                       arch/qatomic_s390.h \
-                       arch/qatomic_x86_64.h \
-                       arch/qatomic_sh4a.h \
-                       arch/qatomic_gcc.h \
-                       arch/qatomic_cxx11.h
+HEADERS += \
+    arch/qatomic_alpha.h \
+    arch/qatomic_armv5.h \
+    arch/qatomic_armv6.h \
+    arch/qatomic_armv7.h \
+    arch/qatomic_bfin.h \
+    arch/qatomic_bootstrap.h \
+    arch/qatomic_i386.h \
+    arch/qatomic_ia64.h \
+    arch/qatomic_mips.h \
+    arch/qatomic_powerpc.h \
+    arch/qatomic_s390.h \
+    arch/qatomic_sh4a.h \
+    arch/qatomic_sparc.h \
+    arch/qatomic_x86_64.h \
+    arch/qatomic_gcc.h \
+    arch/qatomic_cxx11.h
 
 unix {
     # fallback implementation when no other appropriate qatomic_*.h exists
