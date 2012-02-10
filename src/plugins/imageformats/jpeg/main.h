@@ -39,47 +39,27 @@
 **
 ****************************************************************************/
 
-#include "main.h"
+#include <qimageiohandler.h>
+#include <qstringlist.h>
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
 
 #ifdef QT_NO_IMAGEFORMAT_JPEG
 #undef QT_NO_IMAGEFORMAT_JPEG
 #endif
-#include <qjpeghandler_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QStringList QJpegPlugin::keys() const
+class QJpegPlugin : public QImageIOPlugin
 {
-    return QStringList() << QLatin1String("jpeg") << QLatin1String("jpg");
-}
-
-QImageIOPlugin::Capabilities QJpegPlugin::capabilities(QIODevice *device, const QByteArray &format) const
-{
-    if (format == "jpeg" || format == "jpg")
-        return Capabilities(CanRead | CanWrite);
-    if (!format.isEmpty())
-        return 0;
-    if (!device->isOpen())
-        return 0;
-
-    Capabilities cap;
-    if (device->isReadable() && QJpegHandler::canRead(device))
-        cap |= CanRead;
-    if (device->isWritable())
-        cap |= CanWrite;
-    return cap;
-}
-
-QImageIOHandler *QJpegPlugin::create(QIODevice *device, const QByteArray &format) const
-{
-    QImageIOHandler *handler = new QJpegHandler;
-    handler->setDevice(device);
-    handler->setFormat(format);
-    return handler;
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QImageIOHandlerFactoryInterface" FILE "jpeg.json")
+public:
+    QStringList keys() const;
+    Capabilities capabilities(QIODevice *device, const QByteArray &format) const;
+    QImageIOHandler *create(QIODevice *device, const QByteArray &format = QByteArray()) const;
+};
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_IMAGEFORMATPLUGIN
+#endif
