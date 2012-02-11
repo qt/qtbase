@@ -1477,6 +1477,17 @@ void QGuiApplicationPrivate::emitLastWindowClosed()
     }
 }
 
+bool QGuiApplicationPrivate::shouldQuit()
+{
+    /* if there is no visible top-level window left, we allow the quit */
+    QWindowList list = QGuiApplication::topLevelWindows();
+    for (int i = 0; i < list.size(); ++i) {
+        QWindow *w = list.at(i);
+        if (w->visible())
+            return false;
+    }
+    return true;
+}
 
 /*!
     \property QGuiApplication::layoutDirection

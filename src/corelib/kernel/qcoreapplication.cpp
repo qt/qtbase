@@ -1506,8 +1506,14 @@ void QCoreApplicationPrivate::ref()
 
 void QCoreApplicationPrivate::deref()
 {
-    if (!quitLockRef.deref() && in_exec && quitLockRefEnabled)
-        QCoreApplication::postEvent(qApp, new QEvent(QEvent::Quit));
+    if (!quitLockRef.deref())
+        maybeQuit();
+}
+
+void QCoreApplicationPrivate::maybeQuit()
+{
+    if (quitLockRef.load() == 0 && in_exec && quitLockRefEnabled && shouldQuit())
+        QCoreApplication::postEvent(QCoreApplication::instance(), new QEvent(QEvent::Quit));
 }
 
 /*!

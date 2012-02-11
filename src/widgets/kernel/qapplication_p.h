@@ -178,6 +178,8 @@ public:
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *);
 
+    virtual bool shouldQuit();
+
 #if defined(Q_WS_X11)
 #ifndef QT_NO_SETTINGS
     static bool x11_apply_settings();

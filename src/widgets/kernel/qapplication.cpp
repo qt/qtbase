@@ -67,6 +67,7 @@
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
+#include "qwidgetwindow_qpa_p.h"
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputmethod.h>
@@ -3287,6 +3288,20 @@ int QApplication::exec()
     QAccessible::setRootObject(qApp);
 #endif
     return QGuiApplication::exec();
+}
+
+bool QApplicationPrivate::shouldQuit()
+{
+    /* if there is no non-withdrawn primary window left (except
+        the ones without QuitOnClose), we emit the lastWindowClosed
+        signal */
+    QWidgetList list = QApplication::topLevelWidgets();
+    for (int i = 0; i < list.size(); ++i) {
+        QWidget *w = list.at(i);
+        if (w->isVisible() && !w->parentWidget() && w->testAttribute(Qt::WA_QuitOnClose))
+            return false;
+    }
+    return true;
 }
 
 /*! \reimp

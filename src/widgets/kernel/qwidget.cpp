@@ -7410,8 +7410,24 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
     // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
     quitOnClose = quitOnClose && (parentWidget.isNull() || !parentWidget->isVisible());
 
-    if (quitOnClose && q->windowHandle()) {
-        static_cast<QWindowPrivate*>(QObjectPrivate::get(q->windowHandle()))->maybeQuitOnLastWindowClosed();
+    if (quitOnClose) {
+        /* if there is no non-withdrawn primary window left (except
+           the ones without QuitOnClose), we emit the lastWindowClosed
+           signal */
+        QWidgetList list = QApplication::topLevelWidgets();
+        bool lastWindowClosed = true;
+        for (int i = 0; i < list.size(); ++i) {
+            QWidget *w = list.at(i);
+            if (!w->isVisible() || w->parentWidget() || !w->testAttribute(Qt::WA_QuitOnClose))
+                continue;
+            lastWindowClosed = false;
+            break;
+        }
+        if (lastWindowClosed) {
+            QGuiApplicationPrivate::emitLastWindowClosed();
+            QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
+            applicationPrivate->maybeQuit();
+        }
     }
 
 

@@ -92,6 +92,10 @@ public:
     QAtomicInt quitLockRef;
     void ref();
     void deref();
+    virtual bool shouldQuit() {
+      return true;
+    }
+    void maybeQuit();
 
     static QThread *theMainThread;
     static QThread *mainThread();

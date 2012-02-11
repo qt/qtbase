@@ -74,6 +74,8 @@ public:
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *previous);
 
+    virtual bool shouldQuit();
+
     static Qt::KeyboardModifiers modifier_buttons;
     static Qt::MouseButtons mouse_buttons;
 

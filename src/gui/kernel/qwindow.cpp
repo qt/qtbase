@@ -165,14 +165,6 @@ void QWindow::setVisible(bool visible)
         return;
     d->visible = visible;
     emit visibleChanged(visible);
-    if (QCoreApplication::instance() && !transientParent()) {
-        QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
-        if (visible) {
-            applicationPrivate->ref();
-        } else {
-            applicationPrivate->deref();
-        }
-    }
 
     if (!d->platformWindow)
         create();
@@ -514,15 +506,6 @@ void QWindow::setTransientParent(QWindow *parent)
     QWindow *previousParent = d->transientParent;
 
     d->transientParent = parent;
-
-    if (QCoreApplication::instance() && d->visible) {
-        QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
-        if (parent && !previousParent) {
-            applicationPrivate->deref();
-        } else if (!parent && previousParent) {
-            applicationPrivate->ref();
-        }
-    }
 }
 
 QWindow *QWindow::transientParent() const
@@ -1116,13 +1099,16 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
         bool lastWindowClosed = true;
         for (int i = 0; i < list.size(); ++i) {
             QWindow *w = list.at(i);
-            if (!w->visible() || w->parent())
+            if (!w->visible())
                 continue;
             lastWindowClosed = false;
             break;
         }
-        if (lastWindowClosed)
+        if (lastWindowClosed) {
             QGuiApplicationPrivate::emitLastWindowClosed();
+            QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
+            applicationPrivate->maybeQuit();
+        }
     }
 
 }
