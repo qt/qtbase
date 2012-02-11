@@ -178,6 +178,9 @@ void QWindow::setVisible(bool visible)
         create();
 
     if (visible) {
+        // remove posted quit events when showing a new window
+        QCoreApplication::removePostedEvents(qApp, QEvent::Quit);
+
         QShowEvent showEvent;
         QGuiApplication::sendEvent(this, &showEvent);
     }

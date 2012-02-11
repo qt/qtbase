@@ -149,6 +149,8 @@ private slots:
     void testQuitLock8();
 
     void globalStaticObjectDestruction(); // run this last
+
+    void abortQuitOnShow();
 };
 
 class EventSpy : public QObject
@@ -2560,6 +2562,44 @@ void tst_QApplication::testQuitLock8()
     // No hang = pass
 }
 
+class ShowCloseShowWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    ShowCloseShowWidget(bool showAgain, QWidget *parent = 0)
+      : QWidget(parent), showAgain(showAgain)
+    {
+        QTimer::singleShot(0, this, SLOT(doClose()));
+        QTimer::singleShot(500, this, SLOT(exitApp()));
+    }
+
+private slots:
+    void doClose() {
+        close();
+        if (showAgain)
+            show();
+    }
+
+    void exitApp() {
+      qApp->exit(1);
+    }
+
+private:
+    bool showAgain;
+};
+
+void tst_QApplication::abortQuitOnShow()
+{
+    int argc = 0;
+    QApplication app(argc, 0);
+    QWidget *window1 = new ShowCloseShowWidget(false);
+    window1->show();
+    QCOMPARE(app.exec(), 0);
+
+    QWidget *window2 = new ShowCloseShowWidget(true);
+    window2->show();
+    QCOMPARE(app.exec(), 1);
+}
 
 /*
     This test is meant to ensure that certain objects (public & commonly used)

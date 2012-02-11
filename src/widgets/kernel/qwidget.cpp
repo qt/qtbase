@@ -7245,9 +7245,6 @@ void QWidget::setVisible(bool visible)
         setAttribute(Qt::WA_KeyboardFocusChange, false);
 
         if (isWindow() || parentWidget()->isVisible()) {
-            // remove posted quit events when showing a new window
-            QCoreApplication::removePostedEvents(qApp, QEvent::Quit);
-
             d->show_helper();
 
             qApp->d_func()->sendSyntheticEnterLeave(this);
