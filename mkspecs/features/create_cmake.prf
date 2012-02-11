@@ -102,19 +102,16 @@ exists($$cmake_extras_file.input) {
         $$cmake_extras_file.output
 }
 
-cmake_macros_file = $$_PRO_FILE_PWD_/Qt5$${CMAKE_MODULE_NAME}Macros.cmake
-exists($$cmake_macros_file) {
+cmake_macros_file.input = $$_PRO_FILE_PWD_/Qt5$${CMAKE_MODULE_NAME}Macros.cmake
+exists($$cmake_macros_file.input) {
     CMAKE_MODULE_MACROS = "true"
-    cmake_qt5_module_files.files += $$cmake_macros_file
 
-    CMAKE_MACROS_FILE_SOURCE = $$_PRO_FILE_PWD_/Qt5$${CMAKE_MODULE_NAME}Macros.cmake
-    CMAKE_MACROS_FILE_DESTINATION = $$eval(QT.$${MODULE}.libs)/cmake/Qt5$${CMAKE_MODULE_NAME}
+    cmake_macros_file.output = $$eval(QT.$${MODULE}.libs)/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}Macros.cmake
+    cmake_macros_file.config = verbatim
 
-    CMAKE_MACROS_FILE_SOURCE ~= s,[/\\\\],$$QMAKE_DIR_SEP,
-    CMAKE_MACROS_FILE_DESTINATION ~= s,[/\\\\],$$QMAKE_DIR_SEP,
+    QMAKE_SUBSTITUTES += cmake_macros_file
 
-    system($$QMAKE_MKDIR \"$$CMAKE_MACROS_FILE_DESTINATION\")
-    system($$QMAKE_COPY \"$$CMAKE_MACROS_FILE_SOURCE\" \"$$CMAKE_MACROS_FILE_DESTINATION\")
+    cmake_qt5_module_files.files += $$cmake_macros_file.output
 }
 
 cmake_qt5_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5$${CMAKE_MODULE_NAME}
