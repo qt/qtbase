@@ -79,6 +79,10 @@ private slots:
     void normalizedTypes();
     void typeName_data();
     void typeName();
+    void type_data();
+    void type();
+    void type_fromSubString_data();
+    void type_fromSubString();
     void create_data();
     void create();
     void createCopy_data();
@@ -383,6 +387,61 @@ void tst_QMetaType::typeName()
 
     QCOMPARE(name, aTypeName);
     QCOMPARE(name.toLatin1(), QMetaObject::normalizedType(name.toLatin1().constData()));
+}
+
+void tst_QMetaType::type_data()
+{
+    QTest::addColumn<QMetaType::Type>("aType");
+    QTest::addColumn<QByteArray>("aTypeName");
+
+#define TST_QMETATYPE_TYPE_DATA(MetaTypeName, MetaTypeId, RealType)\
+    QTest::newRow(#RealType) << QMetaType::MetaTypeName << QByteArray( #RealType );
+#define TST_QMETATYPE_TYPE_DATA_ALIAS(MetaTypeName, MetaTypeId, AliasType, RealTypeString)\
+    QTest::newRow(RealTypeString) << QMetaType::MetaTypeName << QByteArray( #AliasType );
+
+    QTest::newRow("empty") << QMetaType::UnknownType << QByteArray();
+
+    QT_FOR_EACH_STATIC_TYPE(TST_QMETATYPE_TYPE_DATA)
+    QT_FOR_EACH_STATIC_ALIAS_TYPE(TST_QMETATYPE_TYPE_DATA_ALIAS)
+
+#undef TST_QMETATYPE_TYPE_DATA
+#undef TST_METATYPE_TYPE_DATA_ALIAS
+}
+
+void tst_QMetaType::type()
+{
+    QFETCH(QMetaType::Type, aType);
+    QFETCH(QByteArray, aTypeName);
+
+    // QMetaType::type(QByteArray)
+    QCOMPARE(QMetaType::type(aTypeName), int(aType));
+    // QMetaType::type(const char *)
+    QCOMPARE(QMetaType::type(aTypeName.constData()), int(aType));
+}
+
+void tst_QMetaType::type_fromSubString_data()
+{
+    QTest::addColumn<int>("offset");
+    QTest::addColumn<int>("size");
+    QTest::addColumn<int>("expectedType");
+
+    // The test string is defined in the test function below
+    QTest::newRow("int") << 0 << 3 << int(QMetaType::Int);
+    QTest::newRow("boo") << 3 << 3 << 0;
+    QTest::newRow("bool") << 3 << 4 << int(QMetaType::Bool);
+    QTest::newRow("intbool") << 0 << 7 << 0;
+    QTest::newRow("QMetaType::Type") << 7 << 15 << ::qMetaTypeId<QMetaType::Type>();
+    QTest::newRow("double") << 22 << 6 << int(QMetaType::Double);
+}
+
+void tst_QMetaType::type_fromSubString()
+{
+    static const char *types = "intboolQMetaType::Typedoublexxx";
+    QFETCH(int, offset);
+    QFETCH(int, size);
+    QFETCH(int, expectedType);
+    QByteArray ba = QByteArray::fromRawData(types + offset, size);
+    QCOMPARE(QMetaType::type(ba), expectedType);
 }
 
 #define FOR_EACH_PRIMITIVE_METATYPE(F) \

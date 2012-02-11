@@ -472,6 +472,11 @@ public:
     static int registerTypedef(const char *typeName, int aliasId);
     static int registerNormalizedTypedef(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName, int aliasId);
     static int type(const char *typeName);
+#ifndef Q_QDOC
+    static int type(const QT_PREPEND_NAMESPACE(QByteArray) &typeName);
+#else
+    static int type(const QByteArray &typeName);
+#endif
     static const char *typeName(int type);
     static int sizeOf(int type);
     static TypeFlags typeFlags(int type);

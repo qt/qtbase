@@ -45,6 +45,8 @@ public:
 private slots:
     void typeBuiltin_data();
     void typeBuiltin();
+    void typeBuiltin_QByteArray_data();
+    void typeBuiltin_QByteArray();
     void typeBuiltinNotNormalized_data();
     void typeBuiltinNotNormalized();
     void typeCustom();
@@ -94,6 +96,7 @@ void tst_QMetaType::typeBuiltin_data()
     }
 }
 
+// QMetaType::type(const char *)
 void tst_QMetaType::typeBuiltin()
 {
     QFETCH(QByteArray, typeName);
@@ -101,6 +104,21 @@ void tst_QMetaType::typeBuiltin()
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i)
             QMetaType::type(nm);
+    }
+}
+
+void tst_QMetaType::typeBuiltin_QByteArray_data()
+{
+    typeBuiltin_data();
+}
+
+// QMetaType::type(QByteArray)
+void tst_QMetaType::typeBuiltin_QByteArray()
+{
+    QFETCH(QByteArray, typeName);
+    QBENCHMARK {
+        for (int i = 0; i < 100000; ++i)
+            QMetaType::type(typeName);
     }
 }
 

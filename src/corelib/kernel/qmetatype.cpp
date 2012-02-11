@@ -801,7 +801,7 @@ static inline int qMetaTypeStaticType(const char *typeName, int length)
 {
     int i = 0;
     while (types[i].typeName && ((length != types[i].typeNameLength)
-                                 || strcmp(typeName, types[i].typeName))) {
+                                 || memcmp(typeName, types[i].typeName, length))) {
         ++i;
     }
     return types[i].type;
@@ -821,7 +821,7 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
     for (int v = 0; v < ct->count(); ++v) {
         const QCustomTypeInfo &customInfo = ct->at(v);
         if ((length == customInfo.typeName.size())
-            && !strcmp(typeName, customInfo.typeName.constData())) {
+            && !memcmp(typeName, customInfo.typeName.constData(), length)) {
             if (customInfo.alias >= 0)
                 return customInfo.alias;
             return v + QMetaType::User;
@@ -1048,9 +1048,8 @@ bool QMetaType::isRegistered(int type)
     Implementation of QMetaType::type().
 */
 template <bool tryNormalizedType>
-static inline int qMetaTypeTypeImpl(const char *typeName)
+static inline int qMetaTypeTypeImpl(const char *typeName, int length)
 {
-    int length = qstrlen(typeName);
     if (!length)
         return QMetaType::UnknownType;
     int type = qMetaTypeStaticType(typeName, length);
@@ -1080,7 +1079,7 @@ static inline int qMetaTypeTypeImpl(const char *typeName)
 */
 int QMetaType::type(const char *typeName)
 {
-    return qMetaTypeTypeImpl</*tryNormalizedType=*/true>(typeName);
+    return qMetaTypeTypeImpl</*tryNormalizedType=*/true>(typeName, qstrlen(typeName));
 }
 
 /*!
@@ -1092,7 +1091,21 @@ int QMetaType::type(const char *typeName)
 */
 int qMetaTypeTypeInternal(const char *typeName)
 {
-    return qMetaTypeTypeImpl</*tryNormalizedType=*/false>(typeName);
+    return qMetaTypeTypeImpl</*tryNormalizedType=*/false>(typeName, qstrlen(typeName));
+}
+
+/*!
+    \since 5.5
+    \overload
+
+    Returns a handle to the type called \a typeName, or 0 if there is
+    no such type.
+
+    \sa isRegistered(), typeName()
+*/
+int QMetaType::type(const QT_PREPEND_NAMESPACE(QByteArray) &typeName)
+{
+    return qMetaTypeTypeImpl</*tryNormalizedType=*/true>(typeName.constData(), typeName.size());
 }
 
 #ifndef QT_NO_DATASTREAM
