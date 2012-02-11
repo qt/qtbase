@@ -69,6 +69,9 @@
 #include <stdlib.h>
 
 #ifdef Q_OS_WIN
+#ifndef Q_OS_WINCE
+# include <crtdbg.h>
+#endif
 #include <windows.h> // for Sleep
 #endif
 #ifdef Q_OS_UNIX
