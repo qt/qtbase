@@ -510,6 +510,14 @@ void tst_qmake::substitutes()
     QVERIFY( test_compiler.exists( buildDir, "test", Plain, "" ));
     QVERIFY( test_compiler.exists( buildDir, "sub/test2", Plain, "" ));
     QVERIFY( test_compiler.exists( buildDir, "sub/indirect_test.txt", Plain, "" ));
+
+    QFile copySource(workDir + "/copy.txt");
+    QFile copyDestination(buildDir + "/copy_test.txt");
+
+    QVERIFY(copySource.open(QFile::ReadOnly));
+    QVERIFY(copyDestination.open(QFile::ReadOnly));
+    QCOMPARE(copySource.readAll(), copyDestination.readAll());
+
     QVERIFY( test_compiler.makeDistClean( buildDir ));
 }
 
