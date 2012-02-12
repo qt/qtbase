@@ -5693,7 +5693,6 @@ private:
 void tst_QWidget::childEvents()
 {
     EventRecorder::EventList expected;
-    bool accessibilityEnabled = false;
 
     // Move away the cursor; otherwise it might result in an enter event if it's
     // inside the widget when the widget is shown.
@@ -5735,8 +5734,6 @@ void tst_QWidget::childEvents()
             << qMakePair(&widget, QEvent::Resize)
             << qMakePair(&widget, QEvent::Show);
 
-        if (accessibilityEnabled)
-            expected << qMakePair(&widget, QEvent::AccessibilityPrepare);
         expected << qMakePair(&widget, QEvent::ShowToParent);
         QCOMPARE(spy.eventList(), expected);
         spy.clear();
@@ -5820,8 +5817,6 @@ void tst_QWidget::childEvents()
             << qMakePair(&widget, QEvent::Resize)
             << qMakePair(&widget, QEvent::Show);
 
-        if (accessibilityEnabled)
-            expected << qMakePair(&widget, QEvent::AccessibilityPrepare);
         expected << qMakePair(&widget, QEvent::ShowToParent);
         QCOMPARE(spy.eventList(), expected);
         spy.clear();
@@ -5908,8 +5903,6 @@ void tst_QWidget::childEvents()
             << qMakePair(&widget, QEvent::Resize)
             << qMakePair(&widget, QEvent::Show);
 
-        if (accessibilityEnabled)
-            expected << qMakePair(&widget, QEvent::AccessibilityPrepare);
         expected << qMakePair(&widget, QEvent::ShowToParent);
         QCOMPARE(spy.eventList(), expected);
         spy.clear();

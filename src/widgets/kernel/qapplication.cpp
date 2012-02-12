@@ -3124,7 +3124,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         case QEvent::ChildRemoved:
         case QEvent::UpdateRequest:
         case QEvent::UpdateLater:
-        case QEvent::AccessibilityPrepare:
         case QEvent::LocaleChange:
         case QEvent::Style:
         case QEvent::IconDrag:
