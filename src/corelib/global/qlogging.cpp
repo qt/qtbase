@@ -45,6 +45,10 @@
 #include "qstring.h"
 #include "qvarlengtharray.h"
 #include "qdebug.h"
+#ifndef QT_BOOTSTRAPPED
+#include "qcoreapplication.h"
+#include "qthread.h"
+#endif
 
 #include <stdio.h>
 
@@ -489,6 +493,9 @@ static const char messageTokenC[] = "%{message}";
 static const char fileTokenC[] = "%{file}";
 static const char lineTokenC[] = "%{line}";
 static const char functionTokenC[] = "%{function}";
+static const char pidTokenC[] = "%{pid}";
+static const char appnameTokenC[] = "%{appname}";
+static const char threadidTokenC[] = "%{threadid}";
 static const char emptyTokenC[] = "";
 
 struct QMessagePattern {
@@ -558,6 +565,12 @@ QMessagePattern::QMessagePattern()
                 tokens[i] = lineTokenC;
             else if (lexeme == QLatin1String(functionTokenC))
                 tokens[i] = functionTokenC;
+            else if (lexeme == QLatin1String(pidTokenC))
+                tokens[i] = pidTokenC;
+            else if (lexeme == QLatin1String(appnameTokenC))
+                tokens[i] = appnameTokenC;
+            else if (lexeme == QLatin1String(threadidTokenC))
+                tokens[i] = threadidTokenC;
             else {
                 fprintf(stderr, "%s\n",
                         QString::fromLatin1("QT_MESSAGE_PATTERN: Unknown placeholder %1\n"
@@ -624,12 +637,20 @@ Q_CORE_EXPORT QByteArray qMessageFormatString(QtMsgType type, const QMessageLogC
             else
                 message.append("unknown");
         } else if (token == lineTokenC) {
-            message.append(QString::number(context.line).toLatin1().constData());
+            message.append(QByteArray::number(context.line));
         } else if (token == functionTokenC) {
             if (context.function)
                 message.append(qCleanupFuncinfo(context.function));
             else
                 message.append("unknown");
+#ifndef QT_BOOTSTRAPPED
+        } else if (token == pidTokenC) {
+            message.append(QByteArray::number(QCoreApplication::applicationPid()));
+        } else if (token == appnameTokenC) {
+            message.append(QCoreApplication::applicationName().toUtf8().constData());
+        } else if (token == threadidTokenC) {
+            message.append("0x" + QByteArray::number(qlonglong(QThread::currentThread()->currentThread()), 16));
+#endif
         } else {
             message.append(token);
         }

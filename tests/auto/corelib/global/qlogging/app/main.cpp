@@ -39,15 +39,18 @@
 **
 ****************************************************************************/
 
-#include <qglobal.h>
+#include <QCoreApplication>
 
 struct T {
     T() { qDebug("static constructor"); }
     ~T() { qDebug("static destructor"); }
 } t;
 
-int main(int, char **)
+int main(int argc, char **argv)
 {
+    QCoreApplication app(argc, argv);
+    app.setApplicationName("tst_qlogging");
+
     qDebug("qDebug");
     qWarning("qWarning");
     qCritical("qCritical");

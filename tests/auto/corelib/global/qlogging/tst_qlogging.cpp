@@ -620,7 +620,7 @@ void tst_qmessagehandler::qMessagePattern()
 
     QStringList environment = QProcess::systemEnvironment();
     // %{file} is tricky because of shadow builds
-    environment.prepend("QT_MESSAGE_PATTERN=\"%{type} %{line} %{function} %{message}\"");
+    environment.prepend("QT_MESSAGE_PATTERN=\"%{type} %{appname} %{line} %{function} %{message}\"");
     process.setEnvironment(environment);
 #ifdef Q_OS_WIN
     process.start("app/app.exe");
@@ -633,12 +633,12 @@ void tst_qmessagehandler::qMessagePattern()
 //    qDebug() << output;
     QVERIFY(!output.isEmpty());
 
-    QVERIFY(output.contains("debug 45 T::T static constructor"));
+    QVERIFY(output.contains("debug  45 T::T static constructor"));
     //  we can't be sure whether the QT_MESSAGE_PATTERN is already destructed
     QVERIFY(output.contains("static destructor"));
-    QVERIFY(output.contains("debug 51 main qDebug"));
-    QVERIFY(output.contains("warning 52 main qWarning"));
-    QVERIFY(output.contains("critical 53 main qCritical"));
+    QVERIFY(output.contains("debug tst_qlogging 54 main qDebug"));
+    QVERIFY(output.contains("warning tst_qlogging 55 main qWarning"));
+    QVERIFY(output.contains("critical tst_qlogging 56 main qCritical"));
 
     environment = QProcess::systemEnvironment();
     environment.prepend("QT_MESSAGE_PATTERN=\"PREFIX: %{unknown} %{message}\"");
