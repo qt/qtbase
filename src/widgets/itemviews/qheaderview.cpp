@@ -3390,11 +3390,11 @@ int QHeaderViewPrivate::viewSectionSizeHint(int logical) const
 
 int QHeaderViewPrivate::adjustedVisualIndex(int visualIndex) const
 {
-    if (hiddenSectionSize.count() > 0) {
+    if (!sectionHidden.isEmpty()) {
         int adjustedVisualIndex = visualIndex;
         int currentVisualIndex = 0;
         for (int i = 0; i < sectionSpans.count(); ++i) {
-            if (sectionSpans.at(i).size == 0)
+            if (sectionHidden.testBit(i))
                 ++adjustedVisualIndex;
             else
                 ++currentVisualIndex;
