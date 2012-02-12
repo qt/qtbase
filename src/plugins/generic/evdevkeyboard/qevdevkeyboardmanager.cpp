@@ -248,3 +248,5 @@ void QEvdevKeyboardManager::checkDevice(udev_device *dev)
         return;
     }
 }
+
+QT_END_NAMESPACE

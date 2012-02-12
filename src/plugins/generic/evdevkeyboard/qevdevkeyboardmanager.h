@@ -82,4 +82,8 @@ private:
     QSocketNotifier *m_udevSocketNotifier;
 };
 
+QT_END_HEADER
+
+QT_END_NAMESPACE
+
 #endif // QEVDEVKEYBOARDMANAGER_H
