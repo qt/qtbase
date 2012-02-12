@@ -41,6 +41,7 @@
 
 #include "qstringlist.h"
 #include "qregexp.h"
+#include "qregularexpression.h"
 #include "qunicodetables_p.h"
 #ifndef QT_NO_TEXTCODEC
 #include <qtextcodec.h>
@@ -1741,6 +1742,18 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
 */
 
 /*!
+  \fn QString &QString::remove(const QRegularExpression &re)
+  \since 5.0
+
+  Removes every occurrence of the regular expression \a re in the
+  string, and returns a reference to the string. For example:
+
+  \snippet doc/src/snippets/qstring/main.cpp 96
+
+  \sa indexOf(), lastIndexOf(), replace()
+*/
+
+/*!
   \fn QString &QString::replace(int position, int n, const QString &after)
 
   Replaces \a n characters beginning at index \a position with
@@ -2923,6 +2936,138 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
 }
 #endif
 
+#ifndef QT_NO_REGEXP
+#ifndef QT_BOOTSTRAPPED
+/*!
+  \overload replace()
+  \since 5.0
+
+  Replaces every occurrence of the regular expression \a re in the
+  string with \a after. Returns a reference to the string. For
+  example:
+
+  \snippet doc/src/snippets/qstring/main.cpp 87
+
+  For regular expressions containing capturing groups,
+  occurrences of \bold{\\1}, \bold{\\2}, ..., in \a after are replaced
+  with the string captured by the corresponding capturing group.
+
+  \snippet doc/src/snippets/qstring/main.cpp 88
+
+  \sa indexOf(), lastIndexOf(), remove(), QRegularExpression, QRegularExpressionMatch
+*/
+QString &QString::replace(const QRegularExpression &re, const QString &after)
+{
+    if (!re.isValid()) {
+        qWarning("QString::replace: invalid QRegularExpresssion object");
+        return *this;
+    }
+
+    const QString copy(*this);
+    QRegularExpressionMatchIterator iterator = re.globalMatch(copy);
+    if (!iterator.hasNext()) // no matches at all
+        return *this;
+
+    realloc();
+
+    int numCaptures = re.captureCount();
+
+    // 1. build the backreferences vector, holding where the backreferences
+    // are in the replacement string
+    QVector<QStringCapture> backReferences;
+    const int al = after.length();
+    const QChar *ac = after.unicode();
+
+    for (int i = 0; i < al - 1; i++) {
+        if (ac[i] == QLatin1Char('\\')) {
+            int no = ac[i + 1].digitValue();
+            if (no > 0 && no <= numCaptures) {
+                QStringCapture backReference;
+                backReference.pos = i;
+                backReference.len = 2;
+
+                if (i < al - 2) {
+                    int secondDigit = ac[i + 2].digitValue();
+                    if (secondDigit != -1 && ((no * 10) + secondDigit) <= numCaptures) {
+                        no = (no * 10) + secondDigit;
+                        ++backReference.len;
+                    }
+                }
+
+                backReference.no = no;
+                backReferences.append(backReference);
+            }
+        }
+    }
+
+    // 2. iterate on the matches. For every match, copy in chunks
+    // - the part before the match
+    // - the after string, with the proper replacements for the backreferences
+
+    int newLength = 0; // length of the new string, with all the replacements
+    int lastEnd = 0;
+    QVector<QStringRef> chunks;
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        int len;
+        // add the part before the match
+        len = match.capturedStart() - lastEnd;
+        if (len > 0) {
+            chunks << copy.midRef(lastEnd, len);
+            newLength += len;
+        }
+
+        lastEnd = 0;
+        // add the after string, with replacements for the backreferences
+        foreach (const QStringCapture &backReference, backReferences) {
+            // part of "after" before the backreference
+            len = backReference.pos - lastEnd;
+            if (len > 0) {
+                chunks << after.midRef(lastEnd, len);
+                newLength += len;
+            }
+
+            // backreference itself
+            len = match.capturedLength(backReference.no);
+            if (len > 0) {
+                chunks << copy.midRef(match.capturedStart(backReference.no), len);
+                newLength += len;
+            }
+
+            lastEnd = backReference.pos + backReference.len;
+        }
+
+        // add the last part of the after string
+        len = after.length() - lastEnd;
+        if (len > 0) {
+            chunks << after.midRef(lastEnd, len);
+            newLength += len;
+        }
+
+        lastEnd = match.capturedEnd();
+    }
+
+    // 3. trailing string after the last match
+    if (copy.length() > lastEnd) {
+        chunks << copy.midRef(lastEnd);
+        newLength += copy.length() - lastEnd;
+    }
+
+    // 4. assemble the chunks together
+    resize(newLength);
+    int i = 0;
+    QChar *uc = data();
+    foreach (const QStringRef &chunk, chunks) {
+        int len = chunk.length();
+        memcpy(uc + i, chunk.unicode(), len * sizeof(QChar));
+        i += len;
+    }
+
+    return *this;
+}
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
+
 /*!
     Returns the number of (potentially overlapping) occurrences of
     the string \a str in this string.
@@ -3122,6 +3267,118 @@ int QString::count(const QRegExp& rx) const
 }
 #endif // QT_NO_REGEXP
 
+#ifndef QT_NO_REGEXP
+#ifndef QT_BOOTSTRAPPED
+/*!
+    \overload indexOf()
+    \since 5.0
+
+    Returns the index position of the first match of the regular
+    expression \a re in the string, searching forward from index
+    position \a from. Returns -1 if \a re didn't match anywhere.
+
+    Example:
+
+    \snippet doc/src/snippets/qstring/main.cpp 93
+*/
+int QString::indexOf(const QRegularExpression& re, int from) const
+{
+    if (!re.isValid()) {
+        qWarning("QString::indexOf: invalid QRegularExpresssion object");
+        return -1;
+    }
+
+    QRegularExpressionMatch match = re.match(*this, from);
+    if (match.hasMatch())
+        return match.capturedStart();
+
+    return -1;
+}
+
+/*!
+    \overload lastIndexOf()
+    \since 5.0
+
+    Returns the index position of the last match of the regular
+    expression \a re in the string, which starts before the index
+    position \a from. Returns -1 if \a re didn't match anywhere.
+
+    Example:
+
+    \snippet doc/src/snippets/qstring/main.cpp 94
+*/
+int QString::lastIndexOf(const QRegularExpression &re, int from) const
+{
+    if (!re.isValid()) {
+        qWarning("QString::lastIndexOf: invalid QRegularExpresssion object");
+        return -1;
+    }
+
+    int endpos = (from < 0) ? (size() + from + 1) : (from + 1);
+
+    QRegularExpressionMatchIterator iterator = re.globalMatch(*this);
+    int lastIndex = -1;
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        int start = match.capturedStart();
+        if (start < endpos)
+            lastIndex = start;
+        else
+            break;
+    }
+
+    return lastIndex;
+}
+
+/*! \overload contains()
+    \since 5.0
+
+    Returns true if the regular expression \a re matches somewhere in
+    this string; otherwise returns false.
+*/
+bool QString::contains(const QRegularExpression &re) const
+{
+    if (!re.isValid()) {
+        qWarning("QString::contains: invalid QRegularExpresssion object");
+        return false;
+    }
+    QRegularExpressionMatch match = re.match(*this);
+    return match.hasMatch();
+}
+
+/*!
+    \overload count()
+    \since 5.0
+
+    Returns the number of times the regular expression \a re matches
+    in the string.
+
+    This function counts overlapping matches, so in the example
+    below, there are four instances of "ana" or "ama":
+
+    \snippet doc/src/snippets/qstring/main.cpp 95
+*/
+int QString::count(const QRegularExpression &re) const
+{
+    if (!re.isValid()) {
+        qWarning("QString::count: invalid QRegularExpresssion object");
+        return 0;
+    }
+    int count = 0;
+    int index = -1;
+    int len = length();
+    while (index < len - 1) {
+        QRegularExpressionMatch match = re.match(*this, index + 1);
+        if (!match.hasMatch())
+            break;
+        index = match.capturedStart();
+        count++;
+    }
+    return count;
+}
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
+
 /*! \fn int QString::count() const
 
     \overload count()
@@ -3249,6 +3506,49 @@ public:
     QString string;
 };
 
+static QString extractSections(const QList<qt_section_chunk> &sections,
+                               int start,
+                               int end,
+                               QString::SectionFlags flags)
+{
+    if (start < 0)
+        start += sections.count();
+    if (end < 0)
+        end += sections.count();
+
+    QString ret;
+    int x = 0;
+    int first_i = start, last_i = end;
+    for (int i = 0; x <= end && i < sections.size(); ++i) {
+        const qt_section_chunk &section = sections.at(i);
+        const bool empty = (section.length == section.string.length());
+        if (x >= start) {
+            if (x == start)
+                first_i = i;
+            if (x == end)
+                last_i = i;
+            if (x != start)
+                ret += section.string;
+            else
+                ret += section.string.mid(section.length);
+        }
+        if (!empty || !(flags & QString::SectionSkipEmpty))
+            x++;
+    }
+
+    if ((flags & QString::SectionIncludeLeadingSep) && first_i < sections.size()) {
+        const qt_section_chunk &section = sections.at(first_i);
+        ret.prepend(section.string.left(section.length));
+    }
+
+    if ((flags & QString::SectionIncludeTrailingSep) && last_i+1 <= sections.size()-1) {
+        const qt_section_chunk &section = sections.at(last_i+1);
+        ret += section.string.left(section.length);
+    }
+
+    return ret;
+}
+
 /*!
     \overload section()
 
@@ -3282,41 +3582,57 @@ QString QString::section(const QRegExp &reg, int start, int end, SectionFlags fl
     }
     sections.append(qt_section_chunk(last_len, QString(uc + last_m, n - last_m)));
 
-    if(start < 0)
-        start += sections.count();
-    if(end < 0)
-        end += sections.count();
-
-    QString ret;
-    int x = 0;
-    int first_i = start, last_i = end;
-    for (int i = 0; x <= end && i < sections.size(); ++i) {
-        const qt_section_chunk &section = sections.at(i);
-        const bool empty = (section.length == section.string.length());
-        if (x >= start) {
-            if(x == start)
-                first_i = i;
-            if(x == end)
-                last_i = i;
-            if(x != start)
-                ret += section.string;
-            else
-                ret += section.string.mid(section.length);
-        }
-        if (!empty || !(flags & SectionSkipEmpty))
-            x++;
-    }
-    if((flags & SectionIncludeLeadingSep) && first_i < sections.size()) {
-        const qt_section_chunk &section = sections.at(first_i);
-        ret.prepend(section.string.left(section.length));
-    }
-    if((flags & SectionIncludeTrailingSep) && last_i+1 <= sections.size()-1) {
-        const qt_section_chunk &section = sections.at(last_i+1);
-        ret += section.string.left(section.length);
-    }
-    return ret;
+    return extractSections(sections, start, end, flags);
 }
 #endif
+
+#ifndef QT_NO_REGEXP
+#ifndef QT_BOOTSTRAPPED
+/*!
+    \overload section()
+    \since 5.0
+
+    This string is treated as a sequence of fields separated by the
+    regular expression, \a re.
+
+    \snippet doc/src/snippets/qstring/main.cpp 89
+
+    \warning Using this QRegularExpression version is much more expensive than
+    the overloaded string and character versions.
+
+    \sa split() simplified()
+*/
+QString QString::section(const QRegularExpression &re, int start, int end, SectionFlags flags) const
+{
+    if (!re.isValid()) {
+        qWarning("QString::section: invalid QRegularExpression object");
+        return QString();
+    }
+
+    const QChar *uc = unicode();
+    if (!uc)
+        return QString();
+
+    QRegularExpression sep(re);
+    if (flags & SectionCaseInsensitiveSeps)
+        sep.setPatternOptions(sep.patternOptions() | QRegularExpression::CaseInsensitiveOption);
+
+    QList<qt_section_chunk> sections;
+    int n = length(), m = 0, last_m = 0, last_len = 0;
+    QRegularExpressionMatchIterator iterator = sep.globalMatch(*this);
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        m = match.capturedStart();
+        sections.append(qt_section_chunk(last_len, QString(uc + last_m, m - last_m)));
+        last_m = m;
+        last_len = match.capturedLength();
+    }
+    sections.append(qt_section_chunk(last_len, QString(uc + last_m, n - last_m)));
+
+    return extractSections(sections, start, end, flags);
+}
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
 
 /*!
     Returns a substring that contains the \a n leftmost characters
@@ -6076,6 +6392,62 @@ QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
     return list;
 }
 #endif
+
+#ifndef QT_NO_REGEXP
+#ifndef QT_BOOTSTRAPPED
+/*!
+    \overload
+    \since 5.0
+
+    Splits the string into substrings wherever the regular expression
+    \a re matches, and returns the list of those strings. If \a re
+    does not match anywhere in the string, split() returns a
+    single-element list containing this string.
+
+    Here's an example where we extract the words in a sentence
+    using one or more whitespace characters as the separator:
+
+    \snippet doc/src/snippets/qstring/main.cpp 90
+
+    Here's a similar example, but this time we use any sequence of
+    non-word characters as the separator:
+
+    \snippet doc/src/snippets/qstring/main.cpp 91
+
+    Here's a third example where we use a zero-length assertion,
+    \bold{\\b} (word boundary), to split the string into an
+    alternating sequence of non-word and word tokens:
+
+    \snippet doc/src/snippets/qstring/main.cpp 92
+
+    \sa QStringList::join(), section()
+*/
+QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior) const
+{
+    QStringList list;
+    if (!re.isValid()) {
+        qWarning("QString::split: invalid QRegularExpression object");
+        return list;
+    }
+
+    int start = 0;
+    int end = 0;
+    QRegularExpressionMatchIterator iterator = re.globalMatch(*this);
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        end = match.capturedStart();
+        if (start != end || behavior == KeepEmptyParts)
+            list.append(mid(start, end - start));
+        start = match.capturedEnd();
+    }
+
+    if (start != size() || behavior == KeepEmptyParts)
+        list.append(mid(start));
+
+    return list;
+}
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
 
 /*!
     \enum QString::NormalizationForm

@@ -64,6 +64,7 @@ QT_BEGIN_NAMESPACE
 
 class QCharRef;
 class QRegExp;
+class QRegularExpression;
 class QStringList;
 class QTextCodec;
 class QLatin1String;
@@ -283,6 +284,13 @@ public:
     inline bool contains(QRegExp &rx) const { return indexOf(rx) != -1; }
 #endif
 
+#ifndef QT_NO_REGEXP
+    int indexOf(const QRegularExpression &re, int from = 0) const;
+    int lastIndexOf(const QRegularExpression &re, int from = -1) const;
+    bool contains(const QRegularExpression &re) const;
+    int count(const QRegularExpression &re) const;
+#endif
+
     enum SectionFlag {
         SectionDefault             = 0x00,
         SectionSkipEmpty           = 0x01,
@@ -297,7 +305,9 @@ public:
 #ifndef QT_NO_REGEXP
     QString section(const QRegExp &reg, int start, int end = -1, SectionFlags flags = SectionDefault) const;
 #endif
-
+#ifndef QT_NO_REGEXP
+    QString section(const QRegularExpression &re, int start, int end = -1, SectionFlags flags = SectionDefault) const;
+#endif
     QString left(int n) const Q_REQUIRED_RESULT;
     QString right(int n) const Q_REQUIRED_RESULT;
     QString mid(int position, int n = -1) const Q_REQUIRED_RESULT;
@@ -370,6 +380,11 @@ public:
     inline QString &remove(const QRegExp &rx)
     { return replace(rx, QString()); }
 #endif
+#ifndef QT_NO_REGEXP
+    QString &replace(const QRegularExpression &re, const QString  &after);
+    inline QString &remove(const QRegularExpression &re)
+    { return replace(re, QString()); }
+#endif
 
     enum SplitBehavior { KeepEmptyParts, SkipEmptyParts };
 
@@ -380,7 +395,9 @@ public:
 #ifndef QT_NO_REGEXP
     QStringList split(const QRegExp &sep, SplitBehavior behavior = KeepEmptyParts) const Q_REQUIRED_RESULT;
 #endif
-
+#ifndef QT_NO_REGEXP
+    QStringList split(const QRegularExpression &sep, SplitBehavior behavior = KeepEmptyParts) const Q_REQUIRED_RESULT;
+#endif
     enum NormalizationForm {
         NormalizationForm_D,
         NormalizationForm_C,

@@ -41,6 +41,7 @@
 
 #include <QtTest/QtTest>
 #include <qregexp.h>
+#include <qregularexpression.h>
 #include <qtextcodec.h>
 #include <qtextstream.h>
 #include <qstringlist.h>
@@ -194,6 +195,7 @@ private slots:
     void localeAwareCompare();
     void split_data();
     void split();
+    void split_regexp_data();
     void split_regexp();
     void fromUtf16_data();
     void fromUtf16();
@@ -1080,6 +1082,17 @@ void tst_QString::indexOf()
         QCOMPARE( rx2.matchedLength(), -1 );
     }
 
+    {
+        QRegularExpression::PatternOptions options = QRegularExpression::NoPatternOption;
+        if (!bcs)
+            options |= QRegularExpression::CaseInsensitiveOption;
+
+        QRegularExpression re(QRegularExpression::escape(needle), options);
+        QEXPECT_FAIL("data58", "QRegularExpression does not support case folding", Continue);
+        QEXPECT_FAIL("data59", "QRegularExpression does not support case folding", Continue);
+        QCOMPARE( haystack.indexOf(re, startpos), resultpos );
+    }
+
     if (cs == Qt::CaseSensitive) {
         QCOMPARE( haystack.indexOf(needle, startpos), resultpos );
         QCOMPARE( haystack.indexOf(ref, startpos), resultpos );
@@ -1267,6 +1280,15 @@ void tst_QString::lastIndexOf()
             QCOMPARE(rx1.matchedLength(), -1);
             QCOMPARE(rx2.matchedLength(), -1);
         }
+
+        {
+            QRegularExpression::PatternOptions options = QRegularExpression::NoPatternOption;
+            if (!caseSensitive)
+                options |= QRegularExpression::CaseInsensitiveOption;
+
+            QRegularExpression re(QRegularExpression::escape(needle), options);
+            QCOMPARE(haystack.lastIndexOf(re, from), expected);
+        }
     }
 
     if (cs == Qt::CaseSensitive) {
@@ -1302,6 +1324,9 @@ void tst_QString::count()
     QCOMPARE(a.count( "", Qt::CaseInsensitive), 16);
     QCOMPARE(a.count(QRegExp("[FG][HI]")),1);
     QCOMPARE(a.count(QRegExp("[G][HE]")),2);
+    QCOMPARE(a.count(QRegularExpression("[FG][HI]")), 1);
+    QCOMPARE(a.count(QRegularExpression("[G][HE]")), 2);
+
 
     CREATE_REF(QLatin1String("FG"));
     QCOMPARE(a.count(ref),2);
@@ -1327,6 +1352,8 @@ void tst_QString::contains()
     QVERIFY(a.contains( "", Qt::CaseInsensitive));
     QVERIFY(a.contains(QRegExp("[FG][HI]")));
     QVERIFY(a.contains(QRegExp("[G][HE]")));
+    QVERIFY(a.contains(QRegularExpression("[FG][HI]")));
+    QVERIFY(a.contains(QRegularExpression("[G][HE]")));
 
     CREATE_REF(QLatin1String("FG"));
     QVERIFY(a.contains(ref));
@@ -2172,6 +2199,9 @@ void tst_QString::replace_regexp()
     QString s2 = string;
     s2.replace( QRegExp(regexp), after );
     QTEST( s2, "result" );
+    s2 = string;
+    s2.replace( QRegularExpression(regexp), after );
+    QTEST( s2, "result" );
 }
 
 void tst_QString::remove_uint_uint()
@@ -2236,8 +2266,13 @@ void tst_QString::remove_regexp()
     QFETCH( QString, after );
 
     if ( after.length() == 0 ) {
-        string.remove( QRegExp(regexp) );
-        QTEST( string, "result" );
+        QString s2 = string;
+        s2.remove( QRegExp(regexp) );
+        QTEST( s2, "result" );
+
+        s2 = string;
+        s2.remove( QRegularExpression(regexp) );
+        QTEST( s2, "result" );
     } else {
         QCOMPARE( 0, 0 ); // shut QtTest
     }
@@ -3978,8 +4013,12 @@ void tst_QString::section()
     QFETCH( bool, regexp );
     if (regexp) {
         QCOMPARE( wholeString.section( QRegExp(sep), start, end, QString::SectionFlag(flags) ), sectionString );
+        QCOMPARE( wholeString.section( QRegularExpression(sep), start, end, QString::SectionFlag(flags) ), sectionString );
     } else {
         QCOMPARE( wholeString.section( sep, start, end, QString::SectionFlag(flags) ), sectionString );
+        QCOMPARE( wholeString.section( QRegExp(QRegExp::escape(sep)), start, end, QString::SectionFlag(flags) ), sectionString );
+        QCOMPARE( wholeString.section( QRegularExpression(QRegularExpression::escape(sep)), start, end, QString::SectionFlag(flags) ), sectionString );
+
     }
 }
 
@@ -4500,12 +4539,15 @@ void tst_QString::split()
     QFETCH(QStringList, result);
 
     QRegExp rx = QRegExp(QRegExp::escape(sep));
+    QRegularExpression re(QRegularExpression::escape(sep));
 
     QStringList list;
 
     list = str.split(sep);
     QVERIFY(list == result);
     list = str.split(rx);
+    QVERIFY(list == result);
+    list = str.split(re);
     QVERIFY(list == result);
     if (sep.size() == 1) {
         list = str.split(sep.at(0));
@@ -4515,6 +4557,8 @@ void tst_QString::split()
     list = str.split(sep, QString::KeepEmptyParts);
     QVERIFY(list == result);
     list = str.split(rx, QString::KeepEmptyParts);
+    QVERIFY(list == result);
+    list = str.split(re, QString::KeepEmptyParts);
     QVERIFY(list == result);
     if (sep.size() == 1) {
         list = str.split(sep.at(0), QString::KeepEmptyParts);
@@ -4526,39 +4570,51 @@ void tst_QString::split()
     QVERIFY(list == result);
     list = str.split(rx, QString::SkipEmptyParts);
     QVERIFY(list == result);
+    list = str.split(re, QString::SkipEmptyParts);
+    QVERIFY(list == result);
     if (sep.size() == 1) {
         list = str.split(sep.at(0), QString::SkipEmptyParts);
         QVERIFY(list == result);
     }
 }
 
+void tst_QString::split_regexp_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<QStringList>("result");
+
+    QTest::newRow("data01") << "Some  text\n\twith  strange whitespace."
+                            << "\\s+"
+                            << (QStringList() << "Some" << "text" << "with" << "strange" << "whitespace." );
+
+    QTest::newRow("data02") << "This time, a normal English sentence."
+                            << "\\W+"
+                            << (QStringList() << "This" << "time" << "a" << "normal" << "English" << "sentence" << "");
+
+    QTest::newRow("data03") << "Now: this sentence fragment."
+                            << "\\b"
+                            << (QStringList() << "" << "Now" << ": " << "this" << " " << "sentence" << " " << "fragment" << ".");
+}
+
 void tst_QString::split_regexp()
 {
-    QString str1 = "Some  text\n\twith  strange whitespace.";
-    QStringList list1 = str1.split(QRegExp("\\s+"));
-    QStringList result1;
-    result1 << "Some" << "text" << "with" << "strange" << "whitespace.";
-    QVERIFY(list1 == result1);
-    list1 = str1.split(QRegExp("\\s"), QString::SkipEmptyParts);
-    QVERIFY(list1 == result1);
+    QFETCH(QString, string);
+    QFETCH(QString, pattern);
+    QFETCH(QStringList, result);
 
-    QString str2 = "This time, a normal English sentence.";
-    QStringList list2 = str2.split(QRegExp("\\W+"));
-    QStringList result2;
-    result2 << "This" << "time" << "a" << "normal" << "English" << "sentence" << "";
-    QVERIFY(list2 == result2);
-    list2 = str2.split(QRegExp("\\W"), QString::SkipEmptyParts);
-    result2.removeAll(QString());
-    QVERIFY(list2 == result2);
+    QStringList list;
+    list = string.split(QRegExp(pattern));
+    QCOMPARE(list, result);
+    list = string.split(QRegularExpression(pattern));
+    QCOMPARE(list, result);
 
-    QString str3 = "Now: this sentence fragment.";
-    QStringList list3 = str3.split(QRegExp("\\b"));
-    QStringList result3;
-    result3 << "" << "Now" << ": " << "this" << " " << "sentence" << " " << "fragment" << ".";
-    QVERIFY(list3 == result3);
-    list3 = str3.split(QRegExp("\\b"), QString::SkipEmptyParts);
-    result3.removeAll(QString());
-    QVERIFY(list3 == result3);
+    result.removeAll(QString());
+
+    list = string.split(QRegExp(pattern), QString::SkipEmptyParts);
+    QCOMPARE(list, result);
+    list = string.split(QRegularExpression(pattern), QString::SkipEmptyParts);
+    QCOMPARE(list, result);
 }
 
 void tst_QString::fromUtf16_data()
