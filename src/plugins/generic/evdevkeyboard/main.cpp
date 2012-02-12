@@ -72,6 +72,6 @@ QObject* QEvdevKeyboardPlugin::create(const QString &key,
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(qevdevkeyboarplugin, QEvdevKeyboardPlugin)
+Q_EXPORT_PLUGIN2(qevdevkeyboardplugin, QEvdevKeyboardPlugin)
 
 QT_END_NAMESPACE
