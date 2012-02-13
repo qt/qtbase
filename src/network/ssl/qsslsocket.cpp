@@ -2345,6 +2345,4 @@ QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
 
 QT_END_NAMESPACE
 
-// For private slots
-#define d d_ptr
 #include "moc_qsslsocket.cpp"
