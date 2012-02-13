@@ -4749,7 +4749,7 @@ static void blend_transformed_rgb565(int count, const QSpan *spans, void *userDa
     }
 }
 
-void blend_transformed_tiled_argb(int count, const QSpan *spans, void *userData)
+static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     if (data->texture.format != QImage::Format_ARGB32_Premultiplied
@@ -4871,7 +4871,7 @@ void blend_transformed_tiled_argb(int count, const QSpan *spans, void *userData)
     }
 }
 
-void blend_transformed_tiled_rgb565(int count, const QSpan *spans, void *userData)
+static void blend_transformed_tiled_rgb565(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData*>(userData);
     QPainter::CompositionMode mode = data->rasterBuffer->compositionMode;
