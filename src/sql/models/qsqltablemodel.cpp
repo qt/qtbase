@@ -179,7 +179,7 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
     return true;
 }
 
-QSqlRecord QSqlTableModelPrivate::primaryValues(int row)
+QSqlRecord QSqlTableModelPrivate::primaryValues(int row) const
 {
     QSqlRecord record;
     if (!query.seek(row)) {

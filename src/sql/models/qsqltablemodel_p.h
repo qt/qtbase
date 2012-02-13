@@ -70,7 +70,7 @@ public:
           busyInsertingRows(false)
     {}
     void clear();
-    QSqlRecord primaryValues(int index);
+    QSqlRecord primaryValues(int index) const;
     virtual void clearCache();
     QSqlRecord record(const QVector<QVariant> &values) const;
 
