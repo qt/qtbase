@@ -42,6 +42,8 @@
 #ifndef QATOMIC_SH4A_H
 #define QATOMIC_SH4A_H
 
+#include <QtCore/qoldbasicatomic.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE

@@ -13,7 +13,6 @@ integrity:HEADERS += arch/qatomic_integrity.h
 !wince*:!win32:!mac:HEADERS += arch/qatomic_alpha.h \
                        arch/qatomic_ia64.h \
                        arch/qatomic_sparc.h \
-                       arch/qatomic_arch.h \
                        arch/qatomic_powerpc.h \
                        arch/qatomic_armv5.h \
                        arch/qatomic_armv6.h \

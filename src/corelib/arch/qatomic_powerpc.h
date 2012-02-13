@@ -42,6 +42,8 @@
 #ifndef QATOMIC_POWERPC_H
 #define QATOMIC_POWERPC_H
 
+#include <QtCore/qoldbasicatomic.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE

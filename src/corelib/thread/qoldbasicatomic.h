@@ -144,6 +144,4 @@ public:
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#  include <QtCore/qatomic_arch.h>
-
-#endif // QBASIC_ATOMIC
+#endif // QOLDBASICATOMIC_H

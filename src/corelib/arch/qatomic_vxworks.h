@@ -48,6 +48,8 @@ QT_BEGIN_HEADER
 #  include <QtCore/qatomic_powerpc.h>
 #else // generic implementation with taskLock()
 
+#include <QtCore/qoldbasicatomic.h>
+
 #if 0
 // we don't want to include the system header here for two function prototypes,
 // because it pulls in a _lot_ of stuff that pollutes the global namespace
