@@ -60,7 +60,7 @@ uint nameToBuiltinType(const QByteArray &name)
         return 0;
 
     uint tp = QMetaType::type(name.constData());
-    return tp < QMetaType::User ? tp : 0;
+    return tp < uint(QMetaType::User) ? tp : QMetaType::UnknownType;
 }
 
 /*
@@ -69,7 +69,7 @@ uint nameToBuiltinType(const QByteArray &name)
 bool isBuiltinType(const QByteArray &type)
  {
     int id = QMetaType::type(type.constData());
-    if (!id && !type.isEmpty() && type != "void")
+    if (id == QMetaType::UnknownType)
         return false;
     return (id < QMetaType::User);
 }
@@ -632,7 +632,7 @@ void Generator::generateFunctionParameters(const QList<FunctionDef>& list, const
                 else
                     fprintf(out, "%4d", type);
             } else {
-                Q_ASSERT(!typeName.isEmpty());
+                Q_ASSERT(!typeName.isEmpty() || f.isConstructor);
                 fprintf(out, "0x%.8x | %d", IsUnresolvedType, stridx(typeName));
             }
             fputc(',', out);
@@ -1097,8 +1097,9 @@ void Generator::generateStaticMetacall()
         fprintf(out, "        switch (_id) {\n");
         for (int methodindex = 0; methodindex < methodList.size(); ++methodindex) {
             const FunctionDef &f = methodList.at(methodindex);
+            Q_ASSERT(!f.normalizedType.isEmpty());
             fprintf(out, "        case %d: ", methodindex);
-            if (f.normalizedType.size())
+            if (f.normalizedType != "void")
                 fprintf(out, "{ %s _r = ", noRef(f.normalizedType).constData());
             fprintf(out, "_t->");
             if (f.inPrivateClass.size())
@@ -1113,7 +1114,7 @@ void Generator::generateStaticMetacall()
                 isUsed_a = true;
             }
             fprintf(out, ");");
-            if (f.normalizedType.size()) {
+            if (f.normalizedType != "void") {
                 fprintf(out, "\n            if (_a[0]) *reinterpret_cast< %s*>(_a[0]) = _r; } ",
                         noRef(f.normalizedType).constData());
                 isUsed_a = true;
@@ -1192,7 +1193,8 @@ void Generator::generateSignal(FunctionDef *def,int index)
         constQualifier = "const";
     }
 
-    if (def->arguments.isEmpty() && def->normalizedType.isEmpty()) {
+    Q_ASSERT(!def->normalizedType.isEmpty());
+    if (def->arguments.isEmpty() && def->normalizedType == "void") {
         fprintf(out, ")%s\n{\n"
                 "    QMetaObject::activate(%s, &staticMetaObject, %d, 0);\n"
                 "}\n", constQualifier, thisPtr.constData(), index);
@@ -1207,11 +1209,11 @@ void Generator::generateSignal(FunctionDef *def,int index)
         fprintf(out, "%s _t%d%s", a.type.name.constData(), offset++, a.rightType.constData());
     }
     fprintf(out, ")%s\n{\n", constQualifier);
-    if (def->type.name.size() && def->normalizedType.size())
+    if (def->type.name.size() && def->normalizedType != "void")
         fprintf(out, "    %s _t0 = %s();\n", noRef(def->normalizedType).constData(), noRef(def->normalizedType).constData());
 
     fprintf(out, "    void *_a[] = { ");
-    if (def->normalizedType.isEmpty()) {
+    if (def->normalizedType == "void") {
         fprintf(out, "0");
     } else {
         if (def->returnTypeIsVolatile)
@@ -1227,7 +1229,7 @@ void Generator::generateSignal(FunctionDef *def,int index)
             fprintf(out, ", const_cast<void*>(reinterpret_cast<const void*>(&_t%d))", i);
     fprintf(out, " };\n");
     fprintf(out, "    QMetaObject::activate(%s, &staticMetaObject, %d, _a);\n", thisPtr.constData(), index);
-    if (def->normalizedType.size())
+    if (def->normalizedType != "void")
         fprintf(out, "    return _t0;\n");
     fprintf(out, "}\n");
 }

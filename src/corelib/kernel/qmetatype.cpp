@@ -242,6 +242,7 @@ template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = fals
     \value QEasingCurve QEasingCurve
 
     \value User  Base value for user types
+    \value UnknownType This is an invalid type id. It is returned from QMetaType for types that are not registered
 
     \omitvalue FirstGuiType
     \omitvalue FirstWidgetsType
@@ -311,7 +312,7 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     QT_FOR_EACH_STATIC_TYPE(QT_ADD_STATIC_METATYPE)
     QT_FOR_EACH_STATIC_ALIAS_TYPE(QT_ADD_STATIC_METATYPE_ALIASES_ITER)
     QT_FOR_EACH_STATIC_HACKS_TYPE(QT_ADD_STATIC_METATYPE_HACKS_ITER)
-    {0, 0, QMetaType::Void}
+    {0, 0, QMetaType::UnknownType}
 };
 
 Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeGuiHelper = 0;
@@ -348,10 +349,7 @@ Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
 void QMetaType::registerStreamOperators(const char *typeName, SaveOperator saveOp,
                                         LoadOperator loadOp)
 {
-    int idx = type(typeName);
-    if (!idx)
-        return;
-    registerStreamOperators(idx, saveOp, loadOp);
+    registerStreamOperators(type(typeName), saveOp, loadOp);
 }
 
 /*! \internal
@@ -434,7 +432,7 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
 {
     const QVector<QCustomTypeInfo> * const ct = customTypes();
     if (!ct)
-        return 0;
+        return QMetaType::UnknownType;
 
     for (int v = 0; v < ct->count(); ++v) {
         const QCustomTypeInfo &customInfo = ct->at(v);
@@ -445,7 +443,7 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
             return v + QMetaType::User;
         }
     }
-    return 0;
+    return QMetaType::UnknownType;
 }
 
 /*! \internal
@@ -488,11 +486,11 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
 
     int previousSize = 0;
     int previousFlags = 0;
-    if (!idx) {
+    if (idx == UnknownType) {
         QWriteLocker locker(customTypesLock());
         idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
                                            normalizedTypeName.size());
-        if (!idx) {
+        if (idx == UnknownType) {
             QCustomTypeInfo inf;
             inf.typeName = normalizedTypeName;
             inf.creator = creator;
@@ -558,12 +556,12 @@ int QMetaType::registerTypedef(const char* typeName, int aliasId)
     int idx = qMetaTypeStaticType(normalizedTypeName.constData(),
                                   normalizedTypeName.size());
 
-    if (!idx) {
+    if (idx == UnknownType) {
         QWriteLocker locker(customTypesLock());
         idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
                                                normalizedTypeName.size());
 
-        if (!idx) {
+        if (idx == UnknownType) {
             QCustomTypeInfo inf;
             inf.typeName = normalizedTypeName;
             inf.alias = aliasId;
@@ -592,17 +590,20 @@ int QMetaType::registerTypedef(const char* typeName, int aliasId)
 */
 bool QMetaType::isRegistered(int type)
 {
-    if (type >= 0 && type < User) {
-        // predefined type
+    // predefined type
+    if ((type >= FirstCoreType && type <= LastCoreType)
+        || (type >= FirstGuiType && type <= LastGuiType)
+        || (type >= FirstWidgetsType && type <= LastWidgetsType)) {
         return true;
     }
+
     QReadLocker locker(customTypesLock());
     const QVector<QCustomTypeInfo> * const ct = customTypes();
     return ((type >= User) && (ct && ct->count() > type - User) && !ct->at(type - User).typeName.isEmpty());
 }
 
 /*!
-    Returns a handle to the type called \a typeName, or 0 if there is
+    Returns a handle to the type called \a typeName, or QMetaType::UnknownType if there is
     no such type.
 
     \sa isRegistered(), typeName(), Type
@@ -611,17 +612,17 @@ int QMetaType::type(const char *typeName)
 {
     int length = qstrlen(typeName);
     if (!length)
-        return 0;
+        return UnknownType;
     int type = qMetaTypeStaticType(typeName, length);
-    if (!type) {
+    if (type == UnknownType) {
         QReadLocker locker(customTypesLock());
         type = qMetaTypeCustomType_unlocked(typeName, length);
 #ifndef QT_NO_QOBJECT
-        if (!type) {
+        if (type == UnknownType) {
             const NS(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
             type = qMetaTypeStaticType(normalizedTypeName.constData(),
                                        normalizedTypeName.size());
-            if (!type) {
+            if (type == UnknownType) {
                 type = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
                                                     normalizedTypeName.size());
             }
@@ -652,6 +653,7 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
         return false;
 
     switch(type) {
+    case QMetaType::UnknownType:
     case QMetaType::Void:
     case QMetaType::VoidStar:
     case QMetaType::QObjectStar:
@@ -857,6 +859,7 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
         return false;
 
     switch(type) {
+    case QMetaType::UnknownType:
     case QMetaType::Void:
     case QMetaType::VoidStar:
     case QMetaType::QObjectStar:
@@ -1154,6 +1157,7 @@ void *QMetaType::create(int type, const void *copy)
         case QMetaType::QModelIndex:
             return new NS(QModelIndex)(*static_cast<const NS(QModelIndex)*>(copy));
 #endif
+        case QMetaType::UnknownType:
         case QMetaType::Void:
             return 0;
         default:
@@ -1257,6 +1261,7 @@ void *QMetaType::create(int type, const void *copy)
         case QMetaType::QModelIndex:
             return new NS(QModelIndex);
 #endif
+        case QMetaType::UnknownType:
         case QMetaType::Void:
             return 0;
         default:
@@ -1318,6 +1323,7 @@ public:
     template<typename T>
     void delegate(const T *where) { DestroyerImpl<T>::Destroy(m_type, const_cast<T*>(where)); }
     void delegate(const void *) {}
+    void delegate(const QMetaTypeSwitcher::UnknownType*) {}
     void delegate(const QMetaTypeSwitcher::NotBuiltinType *where) { customTypeDestroyer(m_type, (void*)where); }
 
 private:
@@ -1380,6 +1386,7 @@ public:
     template<typename T>
     void *delegate(const T *copy) { return ConstructorImpl<T>::Construct(m_type, m_where, copy); }
     void *delegate(const void *) { return m_where; }
+    void *delegate(const QMetaTypeSwitcher::UnknownType*) { return m_where; }
     void *delegate(const QMetaTypeSwitcher::NotBuiltinType *copy) { return customTypeConstructor(m_type, m_where, copy); }
 
 private:
@@ -1468,6 +1475,7 @@ public:
     template<typename T>
     void delegate(const T *where) { DestructorImpl<T>::Destruct(m_type, const_cast<T*>(where)); }
     void delegate(const void *) {}
+    void delegate(const QMetaTypeSwitcher::UnknownType*) {}
     void delegate(const QMetaTypeSwitcher::NotBuiltinType *where) { customTypeDestructor(m_type, (void*)where); }
 
 private:
@@ -1536,6 +1544,7 @@ public:
 
     template<typename T>
     int delegate(const T*) { return SizeOfImpl<T>::Size(m_type); }
+    int delegate(const QMetaTypeSwitcher::UnknownType*) { return 0; }
     int delegate(const QMetaTypeSwitcher::NotBuiltinType*) { return customTypeSizeOf(m_type); }
 private:
     static int customTypeSizeOf(const int type)
@@ -1606,13 +1615,14 @@ public:
     template<typename T>
     quint32 delegate(const T*) { return FlagsImpl<T>::Flags(m_type); }
     quint32 delegate(const void*) { return 0; }
+    quint32 delegate(const QMetaTypeSwitcher::UnknownType*) { return 0; }
     quint32 delegate(const QMetaTypeSwitcher::NotBuiltinType*) { return customTypeFlags(m_type); }
 private:
     const int m_type;
     static quint32 customTypeFlags(const int type)
     {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
-        if (Q_UNLIKELY(!ct))
+        if (Q_UNLIKELY(!ct || type < QMetaType::User))
             return 0;
         QReadLocker locker(customTypesLock());
         if (Q_UNLIKELY(ct->count() <= type - QMetaType::User))
@@ -1793,6 +1803,7 @@ public:
     template<typename T>
     void delegate(const T*) { TypeInfoImpl<T>(m_type, info); }
     void delegate(const void*) {}
+    void delegate(const QMetaTypeSwitcher::UnknownType*) {}
     void delegate(const QMetaTypeSwitcher::NotBuiltinType*) { customTypeInfo(m_type); }
 private:
     void customTypeInfo(const uint type)
@@ -1813,7 +1824,7 @@ QMetaType QMetaType::typeInfo(const int type)
 {
     TypeInfo typeInfo(type);
     QMetaTypeSwitcher::switcher<void>(typeInfo, type, 0);
-    return typeInfo.info.creator || !type ? QMetaType(QMetaType::NoExtensionFlags
+    return typeInfo.info.creator || type == Void ? QMetaType(QMetaType::NoExtensionFlags
                                  , static_cast<const QMetaTypeInterface *>(0) // typeInfo::info is a temporary variable, we can't return address of it.
                                  , typeInfo.info.creator
                                  , typeInfo.info.deleter
@@ -1824,26 +1835,23 @@ QMetaType QMetaType::typeInfo(const int type)
                                  , typeInfo.info.size
                                  , typeInfo.info.flags
                                  , type)
-                : QMetaType(-1);
+                : QMetaType(UnknownType);
 }
 
 QMetaType::QMetaType(const int typeId)
     : m_typeId(typeId)
 {
-    if (Q_UNLIKELY(typeId == -1)) {
+    if (Q_UNLIKELY(typeId == UnknownType)) {
         // Constructs invalid QMetaType instance.
         m_extensionFlags = 0xffffffff;
         Q_ASSERT(!isValid());
     } else {
         // TODO it can be better.
         *this = QMetaType::typeInfo(typeId);
-        if (m_typeId > 0 && !m_creator) {
+        if (m_typeId == UnknownType)
             m_extensionFlags = 0xffffffff;
-            m_typeId = -1;
-        }
-        if (m_typeId ==  QMetaType::Void) {
+        else if (m_typeId == QMetaType::Void)
             m_extensionFlags = CreateEx | DestroyEx | ConstructEx | DestructEx;
-        }
     }
 }
 

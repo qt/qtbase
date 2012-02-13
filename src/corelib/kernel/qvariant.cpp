@@ -1697,7 +1697,7 @@ void QVariant::load(QDataStream &s)
         QByteArray name;
         s >> name;
         typeId = QMetaType::type(name);
-        if (!typeId) {
+        if (typeId == QMetaType::UnknownType) {
             s.setStatus(QDataStream::ReadCorruptData);
             return;
         }

@@ -170,7 +170,7 @@ int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes)
         }
 
         int id = QMetaType::type(type);
-        if (id == 0) {
+        if (id == QMetaType::UnknownType) {
             //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
             // invalid type in method parameter list
             return -1;

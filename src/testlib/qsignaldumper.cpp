@@ -112,7 +112,8 @@ static void qSignalDumperCallback(QObject *caller, int method_index, void **argv
 
             quintptr addr = quintptr(*reinterpret_cast<void **>(argv[i + 1]));
             str.append(QByteArray::number(addr, 16));
-        } else if (typeId != QMetaType::Void) {
+        } else if (typeId != QMetaType::UnknownType) {
+            Q_ASSERT(typeId != QMetaType::Void); // void parameter => metaobject is corrupt
             str.append(arg)
                 .append('(')
                 .append(QVariant(typeId, argv[i + 1]).toString().toLocal8Bit())

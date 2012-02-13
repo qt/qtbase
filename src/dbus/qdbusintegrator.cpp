@@ -686,7 +686,7 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
             ++i;
 
         // make sure that the output parameters have signatures too
-        if (returnType != 0 && QDBusMetaType::typeToSignature(returnType) == 0)
+        if (returnType != QMetaType::UnknownType && returnType != QMetaType::Void && QDBusMetaType::typeToSignature(returnType) == 0)
             continue;
 
         bool ok = true;
@@ -919,7 +919,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     // output arguments
     QVariantList outputArgs;
     void *null = 0;
-    if (metaTypes[0] != QMetaType::Void) {
+    if (metaTypes[0] != QMetaType::Void && metaTypes[0] != QMetaType::UnknownType) {
         QVariant arg(metaTypes[0], null);
         outputArgs.append( arg );
         params[0] = const_cast<void*>(outputArgs.at( outputArgs.count() - 1 ).constData());

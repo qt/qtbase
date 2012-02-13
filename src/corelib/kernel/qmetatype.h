@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 // F is a tuple: (QMetaType::TypeName, QMetaType::TypeNameID, RealType)
 #define QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F)\
-    F(Void, 0, void) \
+    F(Void, 43, void) \
     F(Bool, 1, bool) \
     F(Int, 2, int) \
     F(UInt, 3, uint) \
@@ -192,8 +192,8 @@ public:
         // these are merged with QVariant
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
-        FirstCoreType = Void,
-        LastCoreType = QModelIndex,
+        FirstCoreType = Bool,
+        LastCoreType = Void,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,
         FirstWidgetsType = QIcon,
@@ -202,6 +202,7 @@ public:
 
         QReal = sizeof(qreal) == sizeof(double) ? Double : Float,
 
+        UnknownType = 0,
         User = 256
     };
 
@@ -627,7 +628,7 @@ inline QMetaType::~QMetaType()
 
 inline bool QMetaType::isValid() const
 {
-    return m_typeId >= 0;
+    return m_typeId != UnknownType;
 }
 
 inline bool QMetaType::isRegistered() const

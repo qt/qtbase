@@ -516,6 +516,20 @@ Qt for Windows CE
     QMetaType::User, which means that it points to the first registered custom
     type, instead of a nonexistent type.
 
+- QMetaType
+
+  * Interpretation of QMetaType::Void was changed. Before, in some cases
+    it was returned as an invalid type id, but sometimes it was used as a valid
+    type (C++ "void"). In Qt5, new QMetaType::UnknownType was introduced to
+    distinguish between these two. QMetaType::UnknownType is an invalid type id
+    signaling that a type is unknown to QMetaType, and QMetaType::Void
+    is a valid type id of C++ void type. The difference will be visible for
+    example in call to QMetaType::typeName(), this function will return null for
+    QMetaType::UnknownType and a pointer to "void" string for
+    QMetaType::Void.
+    Please, notice that QMetaType::UnknownType has value 0, which previously was
+    reserved for QMetaType::Void.
+
 
 - QMessageBox
 

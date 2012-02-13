@@ -1792,14 +1792,14 @@ QByteArray QMetaMethod::name() const
     Returns the return type of this method.
 
     The return value is one of the types that are registered
-    with QMetaType, or 0 if the type is not registered.
+    with QMetaType, or QMetaType::UnknownType if the type is not registered.
 
     \sa parameterType(), QMetaType, typeName()
 */
 int QMetaMethod::returnType() const
  {
      if (!mobj)
-         return 0;
+         return QMetaType::UnknownType;
     return QMetaMethodPrivate::get(this)->returnType();
 }
 
@@ -1823,16 +1823,16 @@ int QMetaMethod::parameterCount() const
     Returns the type of the parameter at the given \a index.
 
     The return value is one of the types that are registered
-    with QMetaType, or 0 if the type is not registered.
+    with QMetaType, or QMetaType::UnknownType if the type is not registered.
 
     \sa parameterCount(), returnType(), QMetaType
 */
 int QMetaMethod::parameterType(int index) const
 {
     if (!mobj || index < 0)
-        return 0;
+        return QMetaType::UnknownType;
     if (index >= QMetaMethodPrivate::get(this)->parameterCount())
-        return 0;
+        return QMetaType::UnknownType;
     return QMetaMethodPrivate::get(this)->parameterType(index);
 }
 
@@ -2241,7 +2241,7 @@ bool QMetaMethod::invoke(QObject *object,
 
         for (int i = 1; i < paramCount; ++i) {
             types[i] = QMetaType::type(typeNames[i]);
-            if (types[i]) {
+            if (types[i] != QMetaType::UnknownType) {
                 args[i] = QMetaType::create(types[i], param[i]);
                 ++nargs;
             } else if (param[i]) {
@@ -2715,11 +2715,11 @@ QVariant::Type QMetaProperty::type() const
         uint flags = mobj->d.data[handle + 2];
         type = flags >> 24;
     }
-    if (type)
+    if (type != QMetaType::UnknownType)
         return QVariant::Type(type);
     if (isEnumType()) {
         int enumMetaTypeId = QMetaType::type(qualifiedName(menum));
-        if (enumMetaTypeId == 0)
+        if (enumMetaTypeId == QMetaType::UnknownType)
             return QVariant::Int;
     }
 #ifdef QT_COORD_TYPE
@@ -2735,7 +2735,7 @@ QVariant::Type QMetaProperty::type() const
     \since 4.2
 
     Returns this property's user type. The return value is one
-    of the values that are registered with QMetaType, or 0 if
+    of the values that are registered with QMetaType, or QMetaType::UnknownType if
     the type is not registered.
 
     \sa type(), QMetaType, typeName()
@@ -2743,11 +2743,11 @@ QVariant::Type QMetaProperty::type() const
 int QMetaProperty::userType() const
 {
     if (!mobj)
-        return 0;
+        return QMetaType::UnknownType;
     if (priv(mobj->d.data)->revision >= 7) {
         int handle = priv(mobj->d.data)->propertyData + 3*idx;
         int type = typeFromTypeInfo(mobj, mobj->d.data[handle + 1]);
-        if (type)
+        if (type != QMetaType::UnknownType)
             return type;
     } else {
         QVariant::Type tp = type();
@@ -2756,7 +2756,7 @@ int QMetaProperty::userType() const
     }
     if (isEnumType()) {
         int enumMetaTypeId = QMetaType::type(qualifiedName(menum));
-        if (enumMetaTypeId == 0)
+        if (enumMetaTypeId == QMetaType::UnknownType)
             return QVariant::Int; // Match behavior of QMetaType::type()
         return enumMetaTypeId;
     }
@@ -2853,7 +2853,7 @@ QVariant QMetaProperty::read(const QObject *object) const
           with QMetaType)
         */
         int enumMetaTypeId = QMetaType::type(qualifiedName(menum));
-        if (enumMetaTypeId != 0)
+        if (enumMetaTypeId != QMetaType::UnknownType)
             t = enumMetaTypeId;
     } else {
         int handle = priv(mobj->d.data)->propertyData + 3*idx;
@@ -2869,14 +2869,14 @@ QVariant QMetaProperty::read(const QObject *object) const
         } else {
             uint flags = mobj->d.data[handle + 2];
             t = (flags >> 24);
-            if (t == QVariant::Invalid) {
+            if (t == QMetaType::UnknownType) {
                 typeName = legacyString(mobj, mobj->d.data[handle + 1]);
                 t = QMetaType::type(typeName);
-                if (t == QVariant::Invalid)
+                if (t == QMetaType::UnknownType)
                     t = QVariant::nameToType(typeName);
             }
         }
-        if (t == QVariant::Invalid) {
+        if (t == QMetaType::UnknownType) {
             qWarning("QMetaProperty::read: Unable to handle unregistered datatype '%s' for property '%s::%s'", typeName, mobj->className(), name());
             return QVariant();
         }
@@ -2931,7 +2931,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
                 return false;
         } else if (v.type() != QVariant::Int && v.type() != QVariant::UInt) {
             int enumMetaTypeId = QMetaType::type(qualifiedName(menum));
-            if ((enumMetaTypeId == 0) || (v.userType() != enumMetaTypeId) || !v.constData())
+            if ((enumMetaTypeId == QMetaType::UnknownType) || (v.userType() != enumMetaTypeId) || !v.constData())
                 return false;
             v = QVariant(*reinterpret_cast<const int *>(v.constData()));
         }
@@ -2952,7 +2952,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
             t = flags >> 24;
             typeName = legacyString(mobj, mobj->d.data[handle + 1]);
         }
-        if (t == QVariant::Invalid) {
+        if (t == QMetaType::UnknownType) {
             const char *typeName = rawStringData(mobj, mobj->d.data[handle + 1]);
             const char *vtypeName = value.typeName();
             if (vtypeName && strcmp(typeName, vtypeName) == 0)

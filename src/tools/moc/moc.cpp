@@ -75,9 +75,7 @@ static QByteArray normalizeType(const QByteArray &ba, bool fixScope = false)
         }
     }
     *d = '\0';
-    QByteArray result;
-    if (strncmp("void", buf, d - buf) != 0)
-        result = normalizeTypeInternal(buf, d, fixScope);
+    QByteArray result = normalizeTypeInternal(buf, d, fixScope);
     if (buf != stackbuf)
         delete [] buf;
     return result;

@@ -71,7 +71,6 @@ public:
 private:
     struct Method {
         QList<QByteArray> parameterNames;
-        QByteArray typeName;
         QByteArray tag;
         QByteArray name;
         QVarLengthArray<int, 4> inputTypes;
@@ -266,10 +265,7 @@ void QDBusMetaObjectGenerator::parseMethods()
 
             mm.outputTypes.append(type.id);
 
-            if (i == 0) {
-                // return value
-                mm.typeName = type.name;
-            } else {
+            if (i != 0) {
                 // non-const ref parameter
                 mm.parameterNames.append(arg.name.toLatin1());
 
@@ -477,7 +473,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
                     typeName = QMetaType::typeName(type);
                     typeName.append('&');
                 }
-                Q_ASSERT(type || (i < 0));
+                Q_ASSERT(type != QMetaType::UnknownType);
                 int typeInfo;
                 if (!typeName.isEmpty())
                     typeInfo = IsUnresolvedType | strings.enter(typeName);
@@ -516,7 +512,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
 
         // form is name, typeinfo, flags
         idata[offset++] = strings.enter(it.key()); // name
-        Q_ASSERT(mp.type != 0);
+        Q_ASSERT(mp.type != QMetaType::UnknownType);
         idata[offset++] = mp.type;
         idata[offset++] = mp.flags;
 

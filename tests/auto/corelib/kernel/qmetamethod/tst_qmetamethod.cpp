@@ -223,7 +223,7 @@ void tst_QMetaMethod::method_data()
 
     QTest::newRow("MethodTestObject()")
             << QByteArray("MethodTestObject()")
-            << int(QMetaType::Void) << QByteArray("")
+            << int(QMetaType::UnknownType) << QByteArray("")
             << (QList<int>())
             << (QList<QByteArray>())
             << (QList<QByteArray>())
@@ -259,7 +259,7 @@ void tst_QMetaMethod::method_data()
 
     QTest::newRow("MethodTestObject(int)")
             << QByteArray("MethodTestObject(int)")
-            << int(QMetaType::Void) << QByteArray("")
+            << int(QMetaType::UnknownType) << QByteArray("")
             << (QList<int>() << int(QMetaType::Int))
             << (QList<QByteArray>() << QByteArray("int"))
             << (QList<QByteArray>() << QByteArray("constructorIntArg"))
@@ -295,7 +295,7 @@ void tst_QMetaMethod::method_data()
 
     QTest::newRow("MethodTestObject(qreal)")
             << QByteArray("MethodTestObject(qreal)")
-            << int(QMetaType::Void) << QByteArray("")
+            << int(QMetaType::UnknownType) << QByteArray("")
             << (QList<int>() << qMetaTypeId<qreal>())
             << (QList<QByteArray>() << QByteArray("qreal"))
             << (QList<QByteArray>() << QByteArray("constructorQRealArg"))
@@ -331,7 +331,7 @@ void tst_QMetaMethod::method_data()
 
     QTest::newRow("MethodTestObject(QString)")
             << QByteArray("MethodTestObject(QString)")
-            << int(QMetaType::Void) << QByteArray("")
+            << int(QMetaType::UnknownType) << QByteArray("")
             << (QList<int>() << int(QMetaType::QString))
             << (QList<QByteArray>() << QByteArray("QString"))
             << (QList<QByteArray>() << QByteArray("constructorQStringArg"))
@@ -367,7 +367,7 @@ void tst_QMetaMethod::method_data()
 
     QTest::newRow("MethodTestObject(CustomType)")
             << QByteArray("MethodTestObject(CustomType)")
-            << int(QMetaType::Void) << QByteArray("")
+            << int(QMetaType::UnknownType) << QByteArray("")
             << (QList<int>() << qMetaTypeId<CustomType>())
             << (QList<QByteArray>() << QByteArray("CustomType"))
             << (QList<QByteArray>() << QByteArray("constructorCustomTypeArg"))
@@ -403,7 +403,7 @@ void tst_QMetaMethod::method_data()
 
     QTest::newRow("MethodTestObject(CustomUnregisteredType)")
             << QByteArray("MethodTestObject(CustomUnregisteredType)")
-            << int(QMetaType::Void) << QByteArray("")
+            << int(QMetaType::UnknownType) << QByteArray("")
             << (QList<int>() << 0)
             << (QList<QByteArray>() << QByteArray("CustomUnregisteredType"))
             << (QList<QByteArray>() << QByteArray("constructorCustomUnregisteredTypeArg"))
@@ -536,7 +536,7 @@ void tst_QMetaMethod::method_data()
 
         QTest::newRow("MethodTestObject(bool,int,uint,qlonglong,qulonglong,double,long,short,char,ulong,ushort,uchar,float)")
                 << QByteArray("MethodTestObject(bool,int,uint,qlonglong,qulonglong,double,long,short,char,ulong,ushort,uchar,float)")
-                << int(QMetaType::Void) << QByteArray("")
+                << int(QMetaType::UnknownType) << QByteArray("")
                 << parameterTypes << parameterTypeNames << parameterNames
                 << QMetaMethod::Public
                 << QMetaMethod::Constructor;
@@ -571,7 +571,7 @@ void tst_QMetaMethod::method_data()
 
     QTest::newRow("MethodTestObject(bool,int)")
             << QByteArray("MethodTestObject(bool,int)")
-            << int(QMetaType::Void) << QByteArray("")
+            << int(QMetaType::UnknownType) << QByteArray("")
             << (QList<int>() << int(QMetaType::Bool) << int(QMetaType::Int))
             << (QList<QByteArray>() << QByteArray("bool") << QByteArray("int"))
             << (QList<QByteArray>() << QByteArray("") << QByteArray(""))
@@ -616,7 +616,6 @@ void tst_QMetaMethod::method()
     QCOMPARE(method.name(), computedName);
 
     QCOMPARE(method.tag(), "");
-
     QCOMPARE(method.returnType(), returnType);
     if (QByteArray(method.typeName()) != returnTypeName) {
         // QMetaMethod should always produce a semantically equivalent typename
