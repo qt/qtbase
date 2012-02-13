@@ -196,21 +196,16 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
 
 QSqlRecord QSqlTableModelPrivate::primaryValues(int row) const
 {
-    QSqlRecord record;
-    if (!query.seek(row)) {
-        error = query.lastError();
-        return record;
-    }
-    if (primaryIndex.isEmpty()) {
-        record = rec;
-        for (int i = 0; i < record.count(); ++i)
-            record.setValue(i, query.value(i));
-    } else {
-        record = primaryIndex;
-        for (int i = 0; i < record.count(); ++i)
-            record.setValue(i, query.value(rec.indexOf(record.fieldName(i))));
-    }
-    return record;
+    Q_Q(const QSqlTableModel);
+    if (cache.value(row).op() == Insert)
+        return QSqlRecord();
+
+    QSqlRecord values(primaryIndex.isEmpty() ? rec : primaryIndex);
+
+    for (int i = 0; i < values.count(); ++i)
+        values.setValue(i, q->QSqlQueryModel::data(createIndex(row, rec.indexOf(values.fieldName(i))), Qt::EditRole));
+
+    return values;
 }
 
 /*!
@@ -510,7 +505,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     if (row.op() == QSqlTableModelPrivate::None) {
         row = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
                                                  d->rec,
-                                                 d->primaryValues(indexInQuery(index).row()));
+                                                 d->primaryValues(index.row()));
     }
 
     row.setValue(index.column(), value);
@@ -1016,7 +1011,7 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
         } else {
             d->cache[idx] = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Delete,
                                                                QSqlRecord(),
-                                                               d->primaryValues(indexInQuery(createIndex(idx, 0)).row()));
+                                                               d->primaryValues(idx));
             if (d->strategy == OnManualSubmit)
                 emit headerDataChanged(Qt::Vertical, idx, idx);
         }
@@ -1233,7 +1228,7 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
     if (mrow.op() == QSqlTableModelPrivate::None)
         mrow = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
                                                   d->rec,
-                                                  d->primaryValues(indexInQuery(createIndex(row, 0)).row()));
+                                                  d->primaryValues(row));
 
     Map::const_iterator i = map.constBegin();
     const Map::const_iterator e = map.constEnd();
