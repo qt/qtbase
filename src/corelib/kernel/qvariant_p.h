@@ -345,7 +345,7 @@ public:
         FilteredConstructor<T>(*this);
     }
 
-    void delegate(const QMetaTypeSwitcher::UnknownType*)
+    void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
     {
         qWarning("Trying to construct an instance of an invalid type, type id: %i", m_x->type);
         m_x->type = QVariant::Invalid;
@@ -395,7 +395,7 @@ public:
         FilteredDestructor<T> cleaner(m_d);
     }
 
-    void delegate(const QMetaTypeSwitcher::UnknownType*)
+    void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
     {
         qWarning("Trying to destruct an instance of an invalid type, type id: %i", m_d->type);
     }
@@ -441,7 +441,7 @@ public:
         Filtered<T> streamIt(m_debugStream, m_d);
     }
 
-    void delegate(const QMetaTypeSwitcher::UnknownType*)
+    void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
     {
         qWarning("Trying to stream an instance of an invalid type, type id: %i", m_d->type);
     }

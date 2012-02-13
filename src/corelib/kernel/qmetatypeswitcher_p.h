@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 class QMetaTypeSwitcher {
 public:
 
-    typedef void *UnknownType;
+    typedef void *NotBuiltinType;
     template<class ReturnType, class DelegateObject>
     static ReturnType switcher(DelegateObject &logic, int type, const void *data);
 };
@@ -91,7 +91,7 @@ ReturnType QMetaTypeSwitcher::switcher(DelegateObject &logic, int type, const vo
     QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_METATYPE_SWICHER_CASE_QCLASS)
 
     default:
-        return logic.delegate(static_cast<const UnknownType *>(data));
+        return logic.delegate(static_cast<const NotBuiltinType *>(data));
     }
 }
 
