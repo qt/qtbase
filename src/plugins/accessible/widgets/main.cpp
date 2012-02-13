@@ -236,8 +236,10 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
 #endif
     } else if (classname == QLatin1String("QLabel") || classname == QLatin1String("QLCDNumber")) {
         iface = new QAccessibleDisplay(widget);
+#ifndef QT_NO_GROUPBOX
     } else if (classname == QLatin1String("QGroupBox")) {
-        iface = new QAccessibleDisplay(widget, QAccessible::Grouping);
+        iface = new QAccessibleGroupBox(widget);
+#endif
     } else if (classname == QLatin1String("QStatusBar")) {
         iface = new QAccessibleWidget(widget, QAccessible::StatusBar);
 #ifndef QT_NO_PROGRESSBAR

@@ -399,10 +399,6 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
         if (str.isEmpty()) {
             if (qobject_cast<QLabel*>(object())) {
                 str = qobject_cast<QLabel*>(object())->text();
-#ifndef QT_NO_GROUPBOX
-            } else if (qobject_cast<QGroupBox*>(object())) {
-                str = qobject_cast<QGroupBox*>(object())->title();
-#endif
 #ifndef QT_NO_LCDNUMBER
             } else if (qobject_cast<QLCDNumber*>(object())) {
                 QLCDNumber *l = qobject_cast<QLCDNumber*>(object());
@@ -439,15 +435,6 @@ QAccessibleDisplay::relations(QAccessible::Relation match /*= QAccessible::AllRe
 #ifndef QT_NO_SHORTCUT
         if (QLabel *label = qobject_cast<QLabel*>(object())) {
             relatedObjects.append(label->buddy());
-#endif
-#ifndef QT_NO_GROUPBOX
-        } else if (QGroupBox *groupbox = qobject_cast<QGroupBox*>(object())) {
-            if (!groupbox->title().isEmpty()) {
-                const QList<QWidget*> kids = childWidgets(widget());
-                for (int i = 0; i < kids.count(); ++i) {
-                    relatedObjects.append(kids.at(i));
-                }
-            }
 #endif
         }
         for (int i = 0; i < relatedObjects.count(); ++i) {
@@ -501,6 +488,87 @@ QRect QAccessibleDisplay::imagePosition() const
 
     return QRect(label->mapToGlobal(label->pos()), label->size());
 }
+
+#ifndef QT_NO_GROUPBOX
+QAccessibleGroupBox::QAccessibleGroupBox(QWidget *w)
+: QAccessibleWidget(w)
+{
+}
+
+QGroupBox* QAccessibleGroupBox::groupBox() const
+{
+    return static_cast<QGroupBox *>(widget());
+}
+
+QString QAccessibleGroupBox::text(QAccessible::Text t) const
+{
+    QString txt = QAccessibleWidget::text(t);
+
+    if (txt.isEmpty()) {
+        switch (t) {
+        case QAccessible::Name:
+            txt = qt_accStripAmp(groupBox()->title());
+        case QAccessible::Description:
+            txt = qt_accStripAmp(groupBox()->title());
+        default:
+            break;
+        }
+    }
+
+    return txt;
+}
+
+QAccessible::State QAccessibleGroupBox::state() const
+{
+    QAccessible::State st = QAccessibleWidget::state();
+    st.checkable = groupBox()->isCheckable();
+    st.checked = groupBox()->isChecked();
+    return st;
+}
+
+QAccessible::Role QAccessibleGroupBox::role() const
+{
+    return groupBox()->isCheckable() ? QAccessible::CheckBox : QAccessible::Grouping;
+}
+
+QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
+QAccessibleGroupBox::relations(QAccessible::Relation match /*= QAccessible::AllRelations*/) const
+{
+    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > rels = QAccessibleWidget::relations(match);
+
+    if ((match & QAccessible::Labelled) && (!groupBox()->title().isEmpty())) {
+        const QList<QWidget*> kids = childWidgets(widget());
+        for (int i = 0; i < kids.count(); ++i) {
+            QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(kids.at(i));
+            if (iface)
+                rels.append(qMakePair(iface, QAccessible::Relation(QAccessible::Labelled)));
+        }
+    }
+    return rels;
+}
+
+QStringList QAccessibleGroupBox::actionNames() const
+{
+    QStringList actions = QAccessibleWidget::actionNames();
+
+    if (groupBox()->isCheckable()) {
+        actions.prepend(QAccessibleActionInterface::checkAction());
+    }
+    return actions;
+}
+
+void QAccessibleGroupBox::doAction(const QString &actionName)
+{
+    if (actionName == QAccessibleActionInterface::checkAction())
+        groupBox()->setChecked(!groupBox()->isChecked());
+}
+
+QStringList QAccessibleGroupBox::keyBindingsForAction(const QString &) const
+{
+    return QStringList();
+}
+
+#endif
 
 #ifndef QT_NO_LINEEDIT
 /*!

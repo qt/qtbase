@@ -252,6 +252,7 @@ private slots:
     void mdiAreaTest();
     void mdiSubWindowTest();
     void lineEditTest();
+    void groupBoxTest();
     void workspaceTest();
     void dialogButtonBoxTest();
     void dialTest();
@@ -1892,6 +1893,72 @@ void tst_QAccessibility::lineEditTest()
     }
     delete toplevel;
     QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::groupBoxTest()
+{
+    {
+    QGroupBox *groupBox = new QGroupBox();
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(groupBox);
+
+    groupBox->setTitle(QLatin1String("Test QGroupBox"));
+
+    QAccessibleEvent ev(groupBox, QAccessible::NameChanged);
+    QVERIFY_EVENT(&ev);
+
+    groupBox->setToolTip(QLatin1String("This group box will be used to test accessibility"));
+    QVBoxLayout *layout = new QVBoxLayout();
+    QRadioButton *rbutton = new QRadioButton();
+    layout->addWidget(rbutton);
+    groupBox->setLayout(layout);
+    QAccessibleInterface *rButtonIface = QAccessible::queryAccessibleInterface(rbutton);
+
+    QCOMPARE(iface->childCount(), 1);
+    QCOMPARE(iface->role(), QAccessible::Grouping);
+    QCOMPARE(iface->text(QAccessible::Name), QLatin1String("Test QGroupBox"));
+    QCOMPARE(iface->text(QAccessible::Description), QLatin1String("This group box will be used to test accessibility"));
+    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations = rButtonIface->relations();
+    QVERIFY(relations.size() == 1);
+    QPair<QAccessibleInterface*, QAccessible::Relation> relation = relations.first();
+    QCOMPARE(relation.first->object(), groupBox);
+    QCOMPARE(relation.second, QAccessible::Label);
+
+    delete relation.first;
+
+    delete rButtonIface;
+    delete iface;
+    delete groupBox;
+    }
+
+    {
+    QGroupBox *groupBox = new QGroupBox();
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(groupBox);
+    QVERIFY(!iface->state().checkable);
+    groupBox->setCheckable(true);
+
+    groupBox->setChecked(false);
+    QAccessible::State st;
+    st.checked = true;
+    QAccessibleStateChangeEvent ev(groupBox, st);
+    QVERIFY_EVENT(&ev);
+
+    QCOMPARE(iface->role(), QAccessible::CheckBox);
+    QAccessibleActionInterface *actionIface = iface->actionInterface();
+    QVERIFY(actionIface);
+    QAccessible::State state = iface->state();
+    QVERIFY(state.checkable);
+    QVERIFY(!state.checked);
+    QVERIFY(actionIface->actionNames().contains(QAccessibleActionInterface::checkAction()));
+    actionIface->doAction(QAccessibleActionInterface::checkAction());
+    QVERIFY(groupBox->isChecked());
+    state = iface->state();
+    QVERIFY(state.checked);
+    QAccessibleStateChangeEvent ev2(groupBox, st);
+    QVERIFY_EVENT(&ev2);
+
+    delete iface;
+    delete groupBox;
+    }
 }
 
 void tst_QAccessibility::workspaceTest()

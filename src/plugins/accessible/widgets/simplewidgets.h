@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 class QAbstractButton;
 class QLineEdit;
 class QToolButton;
+class QGroupBox;
 class QProgressBar;
 
 class QAccessibleButton : public QAccessibleWidget
@@ -112,6 +113,28 @@ public:
     QSize imageSize() const;
     QRect imagePosition() const;
 };
+
+#ifndef QT_NO_GROUPBOX
+class QAccessibleGroupBox : public QAccessibleWidget
+{
+public:
+    explicit QAccessibleGroupBox(QWidget *w);
+
+    QAccessible::State state() const;
+    QAccessible::Role role() const;
+    QString text(QAccessible::Text t) const;
+
+    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >relations(QAccessible::Relation match = QAccessible::AllRelations) const;
+
+    //QAccessibleActionInterface
+    QStringList actionNames() const;
+    void doAction(const QString &actionName);
+    QStringList keyBindingsForAction(const QString &) const;
+
+private:
+    QGroupBox *groupBox() const;
+};
+#endif
 
 #ifndef QT_NO_LINEEDIT
 class QAccessibleLineEdit : public QAccessibleWidget, public QAccessibleTextInterface,
