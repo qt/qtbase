@@ -1143,6 +1143,9 @@ int QSqlTableModel::rowCount(const QModelIndex &parent) const
 QModelIndex QSqlTableModel::indexInQuery(const QModelIndex &item) const
 {
     Q_D(const QSqlTableModel);
+    if (d->cache.value(item.row()).op() == QSqlTableModelPrivate::Insert)
+        return QModelIndex();
+
     const int rowOffset = d->insertCount(item.row());
     return QSqlQueryModel::indexInQuery(createIndex(item.row() - rowOffset, item.column(), item.internalPointer()));
 }
