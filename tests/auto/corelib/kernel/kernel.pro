@@ -6,6 +6,7 @@ SUBDIRS=\
     qmath \
     qmetaobject \
     qmetaobjectbuilder \
+    qmetamethod \
     qmetaproperty \
     qmetatype \
     qmimedata \
