@@ -699,7 +699,7 @@ void tst_QSqlTableModel::removeRows()
     QVERIFY(!model.removeRows(-1,1)); // negative start
     QVERIFY(!model.removeRows(-1, 0)); // negative start, and zero count
     QVERIFY(!model.removeRows(1, 0)); // zero count
-    QVERIFY(!model.removeRows(5, 1)); // past end (causes a beforeDelete to be emitted)
+    QVERIFY(!model.removeRows(5, 1)); // past end (DOESN'T causes a beforeDelete to be emitted)
     QVERIFY(!model.removeRows(1, 0, model.index(2, 0))); // can't pass a valid modelindex
 
     QVERIFY_SQL(model, removeRows(0, 2));
