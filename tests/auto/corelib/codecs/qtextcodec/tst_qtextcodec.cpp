@@ -1219,7 +1219,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8.clear();
     utf8 += char(0xff);
     str = fromInvalidUtf8Sequence(utf8);
-    QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 3.5.1") << utf8 << str << -1;
+    QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 3.5.2") << utf8 << str << -1;
 
     // 3.5.2
     utf8.clear();
@@ -1227,7 +1227,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xfe);
     utf8 += char(0xff);
     str = fromInvalidUtf8Sequence(utf8);
-    QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 3.5.1") << utf8 << str << -1;
+    QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 3.5.2-1") << utf8 << str << -1;
 
     // 4.1.1
     utf8.clear();
