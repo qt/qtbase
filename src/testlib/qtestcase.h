@@ -117,22 +117,11 @@ do { \
 
 #define QTRY_COMPARE(__expr, __expected) QTRY_COMPARE_WITH_TIMEOUT(__expr, __expected, 5000)
 
-#ifdef Q_CC_MSVC
 #define QSKIP(statement) \
 do {\
     QTest::qSkip(statement, __FILE__, __LINE__);\
     return;\
 } while (0)
-#else
-#define QSKIP(statement, ...) \
-do {\
-    if (strcmp(#__VA_ARGS__, "") != 0)\
-        QTest::qFail("The two argument version of QSKIP is no longer available. "\
-                     "Please update this test by removing the second argument in each QSKIP.", __FILE__, __LINE__);\
-    QTest::qSkip(statement, __FILE__, __LINE__);\
-    return;\
-} while (0)
-#endif
 
 #define QEXPECT_FAIL(dataIndex, comment, mode)\
 do {\
