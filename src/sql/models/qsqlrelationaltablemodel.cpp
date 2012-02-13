@@ -268,7 +268,7 @@ public:
     void clearCache();
     void revertCachedRow(int row);
 
-    void translateFieldNames(int row, QSqlRecord &values) const;
+    void translateFieldNames(QSqlRecord &values) const;
     QSqlRelationalTableModel::JoinMode joinMode;
 };
 
@@ -744,16 +744,13 @@ void QSqlRelationalTableModel::setTable(const QString &table)
 
 /*! \internal
  */
-void QSqlRelationalTableModelPrivate::translateFieldNames(int row, QSqlRecord &values) const
+void QSqlRelationalTableModelPrivate::translateFieldNames(QSqlRecord &values) const
 {
-    Q_Q(const QSqlRelationalTableModel);
-
     for (int i = 0; i < values.count(); ++i) {
-        int realCol = q->indexInQuery(q->createIndex(row, i)).column();
-        if (realCol != -1 && relations.value(realCol).isValid()) {
+        if (relations.value(i).isValid()) {
             QVariant v = values.value(i);
             bool gen = values.isGenerated(i);
-            values.replace(i, baseRec.field(realCol));
+            values.replace(i, baseRec.field(i));
             values.setValue(i, v);
             values.setGenerated(i, gen);
         }
@@ -768,7 +765,7 @@ bool QSqlRelationalTableModel::updateRowInTable(int row, const QSqlRecord &value
     Q_D(QSqlRelationalTableModel);
 
     QSqlRecord rec = values;
-    d->translateFieldNames(row, rec);
+    d->translateFieldNames(rec);
 
     return QSqlTableModel::updateRowInTable(row, rec);
 }
@@ -781,7 +778,7 @@ bool QSqlRelationalTableModel::insertRowIntoTable(const QSqlRecord &values)
     Q_D(QSqlRelationalTableModel);
 
     QSqlRecord rec = values;
-    d->translateFieldNames(0, rec);
+    d->translateFieldNames(rec);
 
     return QSqlTableModel::insertRowIntoTable(rec);
 }
