@@ -246,6 +246,7 @@ private:
     SocketPair *earlyConstructedSockets;
     int earlyBytesWrittenCount;
     int earlyReadyReadCount;
+    QString stressTestDir;
 };
 
 enum ProxyTests {
@@ -340,6 +341,10 @@ void tst_QTcpSocket::initTestCase_data()
     QTest::newRow("WithHttpProxyBasicAuth SSL") << true << int(HttpProxy | AuthBasic) << true;
 //    QTest::newRow("WithHttpProxyNtlmAuth SSL") << true << int(HttpProxy | AuthNtlm) << true;
 #endif
+
+    stressTestDir = QFINDTESTDATA("stressTest");
+    QVERIFY2(!stressTestDir.isEmpty(), qPrintable(
+        QString::fromLatin1("Couldn't find stressTest dir starting from %1.").arg(QDir::currentPath())));
 }
 
 void tst_QTcpSocket::initTestCase()
@@ -2225,11 +2230,14 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
     if (ssl)
         return;
 
+    QString processExe = stressTestDir + "/stressTest";
+
     // Start server
     QProcess serverProcess;
     serverProcess.setReadChannel(QProcess::StandardError);
-    serverProcess.start(QString::fromLatin1("stressTest/stressTest %1").arg(server),
-                        QIODevice::ReadWrite | QIODevice::Text);
+    serverProcess.start(processExe, QStringList(server), QIODevice::ReadWrite | QIODevice::Text);
+    QVERIFY2(serverProcess.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(processExe, serverProcess.errorString())));
     while (!serverProcess.canReadLine())
         QVERIFY(serverProcess.waitForReadyRead(10000));
     QCOMPARE(serverProcess.readLine().data(), (server.toLatin1() + "\n").data());
@@ -2237,8 +2245,9 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
     // Start client
     QProcess clientProcess;
     clientProcess.setReadChannel(QProcess::StandardError);
-    clientProcess.start(QString::fromLatin1("stressTest/stressTest %1").arg(client),
-                        QIODevice::ReadWrite | QIODevice::Text);
+    clientProcess.start(processExe, QStringList(client), QIODevice::ReadWrite | QIODevice::Text);
+    QVERIFY2(clientProcess.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(processExe, clientProcess.errorString())));
     while (!clientProcess.canReadLine())
         QVERIFY(clientProcess.waitForReadyRead(10000));
     QCOMPARE(clientProcess.readLine().data(), (client.toLatin1() + "\n").data());

@@ -135,6 +135,7 @@ class tst_QNetworkReply: public QObject
     enum RunSimpleRequestReturn { Timeout = 0, Success, Failure };
     int returnCode;
     QString testFileName;
+    QString echoProcessDir;
 #if !defined Q_OS_WIN
     QString wronlyFileName;
 #endif
@@ -1308,6 +1309,10 @@ void tst_QNetworkReply::initTestCase()
         QVERIFY(networkSession->waitForOpened(30000));
     }
 #endif
+
+    echoProcessDir = QFINDTESTDATA("echo");
+    QVERIFY2(!echoProcessDir.isEmpty(), qPrintable(
+        QString::fromLatin1("Couldn't find echo dir starting from %1.").arg(QDir::currentPath())));
 }
 
 void tst_QNetworkReply::cleanupTestCase()
@@ -3849,7 +3854,10 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
 
     QFETCH(QByteArray, data);
     QProcess process;
-    process.start("echo/echo all");
+    QString echoExe = echoProcessDir + "/echo";
+    process.start(echoExe, QStringList("all"));
+    QVERIFY2(process.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(echoExe, process.errorString())));
     process.write(data);
     process.closeWriteChannel();
 
