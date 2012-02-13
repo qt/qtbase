@@ -61,13 +61,7 @@ QT_END_HEADER
 class Q_CORE_EXPORT QBasicAtomicInt
 {
 public:
-#if defined(QT_ARCH_WINDOWS) || defined(QT_ARCH_WINDOWSCE)
-    union { // needed for Q_BASIC_ATOMIC_INITIALIZER
-        volatile long _q_value;
-    };
-#else
     volatile int _q_value;
-#endif
 
     // Atomic API, implemented in qatomic_XXX.h
 
@@ -111,19 +105,7 @@ template <typename T>
 class QBasicAtomicPointer
 {
 public:
-#if defined(QT_ARCH_WINDOWS) || defined(QT_ARCH_WINDOWSCE)
-    union {
-        T * volatile _q_value;
-#  if !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
-        qint64
-#  else
-        long
-#  endif
-        volatile _q_value_integral;
-    };
-#else
     T * volatile _q_value;
-#endif
 
     // Atomic API, implemented in qatomic_XXX.h
 
@@ -157,11 +139,7 @@ public:
     T *fetchAndAddOrdered(qptrdiff valueToAdd);
 };
 
-#if defined(QT_ARCH_WINDOWS) || defined(QT_ARCH_WINDOWSCE)
-#  define Q_BASIC_ATOMIC_INITIALIZER(a) { {(a)} }
-#else
-#  define Q_BASIC_ATOMIC_INITIALIZER(a) { (a) }
-#endif
+#define Q_BASIC_ATOMIC_INITIALIZER(a) { (a) }
 
 QT_END_NAMESPACE
 QT_END_HEADER
