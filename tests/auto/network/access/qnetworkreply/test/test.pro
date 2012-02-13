@@ -28,3 +28,5 @@ wince* {
     certFiles.path    = .
     DEPLOYMENT += certFiles
 }
+
+win32:CONFIG += insignificant_test # QTBUG-24226
