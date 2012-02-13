@@ -87,6 +87,22 @@ Q_GUI_EXPORT  void qt_registerFont(const QString &familyName, const QString &fou
     size->handle = handle;
 }
 
+Q_GUI_EXPORT void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias)
+{
+    if (alias.isEmpty())
+        return;
+
+    QFontDatabasePrivate *d = privateDb();
+    QtFontFamily *f = d->family(familyName, false);
+    if (!f)
+        return;
+
+    if (f->aliases.contains(alias, Qt::CaseInsensitive))
+        return;
+
+    f->aliases.push_back(alias);
+}
+
 static QStringList fallbackFamilies(const QString &family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script)
 {
     QStringList retList = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(family,style,styleHint,script);

@@ -349,6 +349,7 @@ struct  QtFontFamily
 #endif
 
     QString name;
+    QStringList aliases;
     int count;
     QtFontFoundry **foundries;
 
@@ -996,6 +997,25 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
     return score;
 }
 
+static bool matchFamilyName(const QString &familyName, QtFontFamily *f)
+{
+    if (familyName.isEmpty())
+        return true;
+
+    if (f->name.compare(familyName, Qt::CaseInsensitive) == 0)
+        return true;
+
+    QStringList::const_iterator it = f->aliases.constBegin();
+    while (it != f->aliases.constEnd()) {
+        if ((*it).compare(familyName, Qt::CaseInsensitive) == 0)
+            return true;
+
+        ++it;
+    }
+
+    return false;
+}
+
 /*!
     \internal
 
@@ -1045,9 +1065,7 @@ static void match(int script, const QFontDef &request,
         test.family = db->families[x];
         test.familyIndex = x;
 
-        if (!family_name.isEmpty()
-            && test.family->name.compare(family_name, Qt::CaseInsensitive) != 0
-            )
+        if (!matchFamilyName(family_name, test.family))
             continue;
 
         if (family_name.isEmpty())
