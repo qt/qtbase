@@ -116,17 +116,4 @@ void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out
     }
 }
 
-/*! \internal */
-void QAbstractConcatenable::convertToAscii(const QChar* a, int len, char*& out) 
-{
-    if (len == -1) {
-        while (a->unicode())
-            convertToLatin1(*a++, out);
-    } else {
-        for (int i = 0; i < len; ++i)
-            convertToLatin1(a[i], out);
-    }
-}
-
-
 QT_END_NAMESPACE

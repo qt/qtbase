@@ -62,20 +62,9 @@ struct Q_CORE_EXPORT QAbstractConcatenable
 {
 protected:
     static void convertFromAscii(const char *a, int len, QChar *&out);
-    static void convertToAscii(const QChar *a, int len, char *&out);
     static inline void convertFromAscii(char a, QChar *&out)
     {
         *out++ = QLatin1Char(a);
-    }
-
-    static inline void convertToAscii(QChar a, char *&out)
-    {
-        convertToLatin1(a, out);
-    }
-
-    static inline void convertToLatin1(QChar a, char *&out)
-    {
-        *out++ = a.unicode() > 0xff ? '?' : char(a.unicode());
     }
 };
 
@@ -182,10 +171,6 @@ template <> struct QConcatenable<QChar> : private QAbstractConcatenable
     static int size(const QChar) { return 1; }
     static inline void appendTo(const QChar c, QChar *&out)
     { *out++ = c; }
-#ifndef QT_NO_CAST_TO_ASCII
-    static inline QT_ASCII_CAST_WARN void appendTo(const QChar c, char *&out)
-    { convertToAscii(c, out); }
-#endif
 };
 
 template <> struct QConcatenable<QCharRef> : private QAbstractConcatenable
@@ -196,10 +181,6 @@ template <> struct QConcatenable<QCharRef> : private QAbstractConcatenable
     static int size(const QCharRef &) { return 1; }
     static inline void appendTo(const QCharRef &c, QChar *&out)
     { *out++ = QChar(c); }
-#ifndef QT_NO_CAST_TO_ASCII
-    static inline QT_ASCII_CAST_WARN void appendTo(const QCharRef &c, char *&out)
-    { convertToAscii(c, out); }
-#endif
 };
 
 template <> struct QConcatenable<QLatin1String>
@@ -232,10 +213,6 @@ template <> struct QConcatenable<QString> : private QAbstractConcatenable
         memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
         out += n;
     }
-#ifndef QT_NO_CAST_TO_ASCII
-    static inline QT_ASCII_CAST_WARN void appendTo(const QString &a, char *&out)
-    { convertToAscii(a.constData(), a.length(), out); }
-#endif
 };
 
 template <int N> struct QConcatenable<QConstStringDataPtr<N> > : private QAbstractConcatenable
@@ -249,10 +226,6 @@ template <int N> struct QConcatenable<QConstStringDataPtr<N> > : private QAbstra
         memcpy(out, reinterpret_cast<const char*>(a.ptr->data), sizeof(QChar) * N);
         out += N;
     }
-#ifndef QT_NO_CAST_TO_ASCII
-    static inline QT_ASCII_CAST_WARN void appendTo(const type &a, char *&out)
-    { convertToAscii(a.ptr->data, N, out); }
-#endif
 };
 
 template <> struct QConcatenable<QStringRef> : private QAbstractConcatenable
@@ -267,11 +240,6 @@ template <> struct QConcatenable<QStringRef> : private QAbstractConcatenable
         memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
         out += n;
     }
-#ifndef QT_NO_CAST_TO_ASCII
-    static inline QT_ASCII_CAST_WARN void appendTo(const QStringRef &a, char *&out)
-    { convertToAscii(a.constData(), a.length(), out); }
-#endif
-
 };
 
 template <int N> struct QConcatenable<char[N]> : private QAbstractConcatenable
