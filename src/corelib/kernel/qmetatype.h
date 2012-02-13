@@ -184,6 +184,7 @@ public:
         // these are merged with QVariant
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
+        FirstCoreType = Void,
         LastCoreType = QModelIndex,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,

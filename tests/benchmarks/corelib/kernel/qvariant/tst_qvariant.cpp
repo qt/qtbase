@@ -305,7 +305,7 @@ void tst_qvariant::stringVariantValue()
 void tst_qvariant::createCoreType_data()
 {
     QTest::addColumn<int>("typeId");
-    for (int i = 0; i <= QMetaType::LastCoreType; ++i)
+    for (int i = QMetaType::FirstCoreType; i <= QMetaType::LastCoreType; ++i)
         QTest::newRow(QMetaType::typeName(i)) << i;
 }
 

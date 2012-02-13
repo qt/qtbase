@@ -3542,6 +3542,7 @@ void tst_QVariant::loadQVariantFromDataStream(QDataStream::Version version)
     stream >> typeName >> loadedVariant;
 
     const int id = QMetaType::type(typeName.toLatin1());
+
     QVariant constructedVariant(static_cast<QVariant::Type>(id));
     QCOMPARE(constructedVariant.userType(), id);
     QCOMPARE(QMetaType::typeName(loadedVariant.userType()), typeName.toLatin1().constData());
@@ -3616,7 +3617,7 @@ void tst_QVariant::debugStream_data()
 {
     QTest::addColumn<QVariant>("variant");
     QTest::addColumn<int>("typeId");
-    for (int id = QMetaType::Void; id < QMetaType::User; ++id) {
+    for (int id = 0; id < QMetaType::User; ++id) {
         const char *tagName = QMetaType::typeName(id);
         if (!tagName)
             continue;

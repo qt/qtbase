@@ -240,7 +240,7 @@ void tst_QMetaType::isRegisteredNotRegistered()
 void tst_QMetaType::constructCoreType_data()
 {
     QTest::addColumn<int>("typeId");
-    for (int i = 0; i <= QMetaType::LastCoreType; ++i)
+    for (int i = QMetaType::FirstCoreType; i <= QMetaType::LastCoreType; ++i)
         QTest::newRow(QMetaType::typeName(i)) << i;
     // GUI types are tested in tst_QGuiMetaType.
 }
