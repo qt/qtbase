@@ -294,7 +294,6 @@ StorePixelsFunc qStorePixels[QPixelLayout::BPPCount] = {
 };
 
 typedef uint (QT_FASTCALL *FetchPixelFunc)(const uchar *src, int index);
-typedef void (QT_FASTCALL *StorePixelFunc)(uchar *dest, int index, uint pixel);
 
 FetchPixelFunc qFetchPixel[QPixelLayout::BPPCount] = {
     0, // BPPNone
@@ -305,17 +304,6 @@ FetchPixelFunc qFetchPixel[QPixelLayout::BPPCount] = {
     fetchPixel<QPixelLayout::BPP24>, // BPP24
     fetchPixel<QPixelLayout::BPP32> // BPP32
 };
-
-StorePixelFunc qStorePixel[QPixelLayout::BPPCount] = {
-    0, // BPPNone
-    storePixel<QPixelLayout::BPP1MSB>, // BPP1MSB
-    storePixel<QPixelLayout::BPP1LSB>, // BPP1LSB
-    storePixel<QPixelLayout::BPP8>, // BPP8
-    storePixel<QPixelLayout::BPP16>, // BPP16
-    storePixel<QPixelLayout::BPP24>, // BPP24
-    storePixel<QPixelLayout::BPP32> // BPP32
-};
-
 
 /*
   Destination fetch. This is simple as we don't have to do bounds checks or
