@@ -432,6 +432,11 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     testFile.write(QByteArray("hello again"));
     testFile.close();
 
+#ifdef Q_OS_MAC
+    // wait again for the file's atime to be updated
+    QTest::qWait(2000);
+#endif
+
     QTRY_VERIFY(fileChangedSpy.count() > 0);
 
     //according to Qt 4 documentation:
