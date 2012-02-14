@@ -201,16 +201,7 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
 
 QSqlRecord QSqlTableModelPrivate::primaryValues(int row) const
 {
-    Q_Q(const QSqlTableModel);
-    if (cache.value(row).op() == Insert)
-        return QSqlRecord();
-
-    QSqlRecord values(primaryIndex.isEmpty() ? rec : primaryIndex);
-
-    for (int i = 0; i < values.count(); ++i)
-        values.setValue(i, q->QSqlQueryModel::data(createIndex(row, rec.indexOf(values.fieldName(i))), Qt::EditRole));
-
-    return values;
+    return cache.value(row).primaryValues(primaryIndex.isEmpty() ? rec : primaryIndex);
 }
 
 /*!

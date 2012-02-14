@@ -113,6 +113,18 @@ public:
         }
         inline bool submitted() const { return m_submitted; }
         inline void setSubmitted() { m_submitted = true; }
+        inline QSqlRecord primaryValues(const QSqlRecord& pi) const
+        {
+            if (m_op == None || m_op == Insert)
+                return QSqlRecord();
+
+            QSqlRecord values(pi);
+
+            for (int i = values.count() - 1; i >= 0; --i)
+                values.setValue(i, m_db_values.value(values.fieldName(i)));
+
+            return values;
+        }
     private:
         void init_rec()
         {
