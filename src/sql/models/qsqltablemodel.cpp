@@ -510,7 +510,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
 
     if (row.op() == QSqlTableModelPrivate::None)
         row = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
-                                                 d->rec);
+                                                 record(index.row()));
 
     row.setValue(index.column(), value);
     emit dataChanged(index, index);
@@ -1004,7 +1004,7 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
             // so fake this by adjusting row
             --row;
         } else {
-            d->cache[idx] = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Delete);
+            d->cache[idx] = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Delete, record(idx));
             if (d->strategy == OnManualSubmit)
                 emit headerDataChanged(Qt::Vertical, idx, idx);
         }
@@ -1235,7 +1235,7 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
     QSqlTableModelPrivate::ModifiedRow &mrow = d->cache[row];
     if (mrow.op() == QSqlTableModelPrivate::None)
         mrow = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
-                                                  d->rec);
+                                                  record(row));
 
     Map::const_iterator i = map.constBegin();
     const Map::const_iterator e = map.constEnd();

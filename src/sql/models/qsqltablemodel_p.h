@@ -102,10 +102,7 @@ public:
     public:
         inline ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord())
             : m_op(o), m_rec(r), m_submitted(false)
-        {
-            for (int i = m_rec.count() - 1; i >= 0; --i)
-                m_rec.setGenerated(i, false);
-        }
+        { init_rec(); }
         inline Op op() const { return m_op; }
         inline QSqlRecord rec() const { return m_rec; }
         inline QSqlRecord& recRef() { return m_rec; }
@@ -117,8 +114,15 @@ public:
         inline bool submitted() const { return m_submitted; }
         inline void setSubmitted() { m_submitted = true; }
     private:
+        void init_rec()
+        {
+            for (int i = m_rec.count() - 1; i >= 0; --i)
+                m_rec.setGenerated(i, false);
+            m_db_values = m_rec;
+        }
         Op m_op;
         QSqlRecord m_rec;
+        QSqlRecord m_db_values;
         bool m_submitted;
     };
 
