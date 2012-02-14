@@ -70,7 +70,9 @@
 
 #ifdef Q_OS_WIN
 #ifndef Q_OS_WINCE
-# include <crtdbg.h>
+# if !defined(Q_CC_MINGW) || (defined(Q_CC_MINGW) && defined(__MINGW64_VERSION_MAJOR))
+#  include <crtdbg.h>
+# endif
 #endif
 #include <windows.h> // for Sleep
 #endif
@@ -1947,7 +1949,9 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+# if !defined(Q_CC_MINGW) || (defined(Q_CC_MINGW) && defined(__MINGW64_VERSION_MAJOR))
     _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+# endif
     SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
 #endif
 

@@ -68,6 +68,9 @@
 
 #if !defined(__MINGW64_VERSION_MAJOR)
 
+#define STATE_SYSTEM_HASPOPUP 0x40000000
+#define STATE_SYSTEM_PROTECTED 0x20000000
+
 typedef struct tagUPDATELAYEREDWINDOWINFO {
   DWORD               cbSize;
   HDC                 hdcDst;

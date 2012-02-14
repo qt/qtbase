@@ -84,6 +84,8 @@
 #include "qguifunctions_wince.h"
 #endif
 
+#include "qtwindows_additional.h"
+
 QT_BEGIN_NAMESPACE
 
 //#define DEBUG_SHOW_ATCLIENT_COMMANDS
