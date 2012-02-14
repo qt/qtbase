@@ -174,8 +174,8 @@
     \value NoButton        The button state does not refer to any
     button (see QMouseEvent::button()).
     \value LeftButton      The left button is pressed, or an event refers
-    to the left button. (The left button may be the right button on
-    left-handed mice.)
+           to the left button. (The left button may be the right button on
+           left-handed mice.)
     \value RightButton     The right button.
     \value MidButton       The middle button.
     \value MiddleButton    The middle button.
@@ -462,20 +462,20 @@
     delivery at a later time.
 
     \value AutoConnection
-            (default) If the signal is emitted from a different thread than the
-            receiving object, the signal is queued, behaving as
-            Qt::QueuedConnection. Otherwise, the slot is invoked directly,
-            behaving as Qt::DirectConnection. The type of connection is
-            determined when the signal is emitted.
+           (default) If the signal is emitted from a different thread than the
+           receiving object, the signal is queued, behaving as
+           Qt::QueuedConnection. Otherwise, the slot is invoked directly,
+           behaving as Qt::DirectConnection. The type of connection is
+           determined when the signal is emitted.
 
     \value DirectConnection
-	   The slot is invoked immediately, when the signal is
-       	   emitted.
+           The slot is invoked immediately, when the signal is
+           emitted.
 
     \value QueuedConnection
-    	   The slot is invoked when control returns to the event loop
-       	   of the receiver's thread. The slot is executed in the
-       	   receiver's thread.
+           The slot is invoked when control returns to the event loop
+           of the receiver's thread. The slot is executed in the
+           receiver's thread.
 
     \value BlockingQueuedConnection
            Same as QueuedConnection, except the current thread blocks
@@ -486,17 +486,17 @@
 
     \value UniqueConnection
            Same as AutoConnection, but the connection is made only if
-    	   it does not duplicate an existing connection. i.e., if the
-    	   same signal is already connected to the same slot for the
-    	   same pair of objects, then the connection will fail. This
-    	   connection type was introduced in Qt 4.6.
+           it does not duplicate an existing connection. i.e., if the
+           same signal is already connected to the same slot for the
+           same pair of objects, then the connection will fail. This
+           connection type was introduced in Qt 4.6.
 
     \value AutoCompatConnection
-    	   The default type when Qt 3 support is enabled. Same as
-	   AutoConnection but will also cause warnings to be output in
-	   certain situations. See \l{Porting to Qt 4#Compatibility
-	   Signals and Slots}{Compatibility Signals and Slots} for
-	   further information.
+           The default type when Qt 3 support is enabled. Same as
+           AutoConnection but will also cause warnings to be output in
+           certain situations. See \l{Porting to Qt 4#Compatibility
+           Signals and Slots}{Compatibility Signals and Slots} for
+           further information.
 
     With queued connections, the parameters must be of types that are
     known to Qt's meta-object system, because Qt needs to copy the
@@ -2137,9 +2137,9 @@
                             should be taken over by the target application,
                             i.e., the source application should not delete
                             the data.
-			    \br
-			    On X11 this value is used to do a move.
-			    \br
+                            \br
+                            On X11 this value is used to do a move.
+                            \br
                             TargetMoveAction is not used on the Mac.
 */
 
