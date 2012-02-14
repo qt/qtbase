@@ -172,17 +172,63 @@
     This enum type describes the different mouse buttons.
 
     \value NoButton        The button state does not refer to any
-    button (see QMouseEvent::button()).
+           button (see QMouseEvent::button()).
+
+    \value AllButtons      This value corresponds to a mask of all
+           possible mouse buttons. Use to set the 'acceptedButtons'
+           property of a mouseArea to accept ALL mouse buttons.
+
     \value LeftButton      The left button is pressed, or an event refers
            to the left button. (The left button may be the right button on
            left-handed mice.)
     \value RightButton     The right button.
     \value MidButton       The middle button.
     \value MiddleButton    The middle button.
-    \value XButton1        The first X button.
-    \value XButton2        The second X button.
 
+    \value BackButton      The 'Back' button. (Typically present on
+           the 'thumb' side of a mouse with extra buttons. This is NOT
+           the tilt wheel.)
+    \value XButton1        The 'Back' Button.
+    \value ExtraButton1    The 'Back' Button.
+
+    \value ForwardButton   The 'Forward' Button. (Typically present
+           beside the 'Back' button, and also pressed by the thumb.)
+    \value XButton2        The 'Forward Button.
+    \value ExtraButton2    The 'Forward' Button.
+
+    \value TaskButton      The 'Task' Button.
+    \value ExtraButton3    The 'Task' Button.
+
+    \value ExtraButton4    The 7th non-wheel Mouse Button.
+    \value ExtraButton5    The 8th non-wheel Mouse Button.
+    \value ExtraButton6    The 9th non-wheel Mouse Button.
+    \value ExtraButton7    The 10th non-wheel Mouse Button.
+    \value ExtraButton8    The 11th non-wheel Mouse Button.
+    \value ExtraButton9    The 12th non-wheel Mouse Button.
+    \value ExtraButton10   The 13th non-wheel Mouse Button.
+    \value ExtraButton11   The 14th non-wheel Mouse Button.
+    \value ExtraButton12   The 15th non-wheel Mouse Button.
+    \value ExtraButton13   The 16th non-wheel Mouse Button.
+    \value ExtraButton14   The 17th non-wheel Mouse Button.
+    \value ExtraButton15   The 18th non-wheel Mouse Button.
+    \value ExtraButton16   The 19th non-wheel Mouse Button.
+    \value ExtraButton17   The 20th non-wheel Mouse Button.
+    \value ExtraButton18   The 21st non-wheel Mouse Button.
+    \value ExtraButton19   The 22nd non-wheel Mouse Button.
+    \value ExtraButton20   The 23rd non-wheel Mouse Button.
+    \value ExtraButton21   The 24th non-wheel Mouse Button.
+    \value ExtraButton22   The 25th non-wheel Mouse Button.
+    \value ExtraButton23   The 26th non-wheel Mouse Button.
+    \value ExtraButton44   The 27th non-wheel Mouse Button.
+
+    \omitvalue MaxMouseButton
     \omitvalue MouseButtonMask
+
+    \note Some models of multi-button mice are pre-configured with
+    high-numbered Buttons emulating keyboard sequences, for use in
+    specific games. In order for these Buttons to be seen as
+    actual 'Mouse Buttons', the device must be re-configured (using
+    the vendor's configuration tool).
 
     \sa KeyboardModifier Modifier
 */
