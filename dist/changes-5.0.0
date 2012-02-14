@@ -322,6 +322,9 @@ QtCore
   QRegularExpressionMatchIterator. They aim to replace QRegExp with a more
   powerful and flexible regular expression engine.
 
+* QEvent::AccessibilityPrepare, AccessibilityHelp and AccessibilityDescription removed:
+  * The enum values simply didn't make sense in the first place and should simply be dropped.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via
