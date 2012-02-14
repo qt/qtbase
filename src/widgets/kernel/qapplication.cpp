@@ -419,7 +419,6 @@ QWidget *QApplicationPrivate::main_widget = 0;        // main application widget
 QWidget *QApplicationPrivate::focus_widget = 0;        // has keyboard input focus
 QWidget *QApplicationPrivate::hidden_focus_widget = 0; // will get keyboard input focus after show()
 QWidget *QApplicationPrivate::active_window = 0;        // toplevel with keyboard focus
-bool QApplicationPrivate::obey_desktop_settings = true;        // use winsys resources
 #ifndef QT_NO_WHEELEVENT
 int QApplicationPrivate::wheel_scroll_lines;   // number of lines to scroll
 #endif
@@ -2908,33 +2907,6 @@ QDesktopWidget *QApplication::desktop()
         qt_desktopWidget = new QDesktopWidget();
     }
     return qt_desktopWidget;
-}
-
-/*!
-    Sets whether Qt should use the system's standard colors, fonts, etc., to
-    \a on. By default, this is true.
-
-    This function must be called before creating the QApplication object, like
-    this:
-
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 6
-
-    \sa desktopSettingsAware()
-*/
-void QApplication::setDesktopSettingsAware(bool on)
-{
-    QApplicationPrivate::obey_desktop_settings = on;
-}
-
-/*!
-    Returns true if Qt is set to use the system's standard colors, fonts, etc.;
-    otherwise returns false. The default is true.
-
-    \sa setDesktopSettingsAware()
-*/
-bool QApplication::desktopSettingsAware()
-{
-    return QApplicationPrivate::obey_desktop_settings;
 }
 
 /*!

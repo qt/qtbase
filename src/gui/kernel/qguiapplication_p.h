@@ -181,6 +181,7 @@ public:
     static QFont *app_font;
 
     QStyleHints *styleHints;
+    static bool obey_desktop_settings;
     QInputMethod *inputMethod;
 
     static QList<QObject *> generic_plugin_list;

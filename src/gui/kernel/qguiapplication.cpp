@@ -126,6 +126,7 @@ QWindow *QGuiApplicationPrivate::focus_window = 0;
 
 static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;
+bool QGuiApplicationPrivate::obey_desktop_settings = true;
 
 extern void qRegisterGuiVariant();
 extern void qUnregisterGuiVariant();
@@ -1619,6 +1620,32 @@ QStyleHints *QGuiApplication::styleHints() const
     return d->styleHints;
 }
 
+/*!
+    Sets whether Qt should use the system's standard colors, fonts, etc., to
+    \a on. By default, this is true.
+
+    This function must be called before creating the QGuiApplication object, like
+    this:
+
+    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 6
+
+    \sa desktopSettingsAware()
+*/
+void QGuiApplication::setDesktopSettingsAware(bool on)
+{
+    QGuiApplicationPrivate::obey_desktop_settings = on;
+}
+
+/*!
+    Returns true if Qt is set to use the system's standard colors, fonts, etc.;
+    otherwise returns false. The default is true.
+
+    \sa setDesktopSettingsAware()
+*/
+bool QGuiApplication::desktopSettingsAware()
+{
+    return QGuiApplicationPrivate::obey_desktop_settings;
+}
 
 /*!
   \since 5.0

@@ -158,9 +158,6 @@ public:
     static Qt::KeyboardModifiers queryKeyboardModifiers();
     static Qt::MouseButtons mouseButtons();
 
-    static void setDesktopSettingsAware(bool);
-    static bool desktopSettingsAware();
-
     static void setCursorFlashTime(int);
     static int cursorFlashTime();
 

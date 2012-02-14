@@ -267,7 +267,6 @@ public:
     static QWidget *hidden_focus_widget;
     static QWidget *active_window;
     static QIcon *app_icon;
-    static bool obey_desktop_settings;
 #ifndef QT_NO_WHEELEVENT
     static int  wheel_scroll_lines;
 #endif

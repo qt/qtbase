@@ -121,6 +121,9 @@ public:
     static inline bool isLeftToRight() { return layoutDirection() == Qt::LeftToRight; }
 
     QStyleHints *styleHints() const;
+    static void setDesktopSettingsAware(bool on);
+    static bool desktopSettingsAware();
+
     QT_DEPRECATED QInputPanel *inputPanel() const;
     QInputMethod *inputMethod() const;
 
