@@ -55,7 +55,7 @@
 
 #include <QHash>
 #include <QObject>
-#include <QtGui/QtGui>
+#include <QCache>
 #include <private/qopenglcontext_p.h>
 #include <QtCore/qmutex.h>
 
