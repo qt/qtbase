@@ -39,22 +39,60 @@
 **
 ****************************************************************************/
 
-#ifndef QUDEVHELPER_P_H
-#define QUDEVHELPER_P_H
+#ifndef QUDEVICEHELPER_H
+#define QUDEVICEHELPER_H
 
-#include <QString>
 #include <QObject>
+#include <QSocketNotifier>
+
+#include <libudev.h>
 
 QT_BEGIN_NAMESPACE
 
-enum QUDeviceType {
-    UDev_Mouse = 0x01,
-    UDev_Touchpad = 0x02,
-    UDev_Touchscreen = 0x04
+class QUDeviceHelper : public QObject
+{
+    Q_OBJECT
+    Q_ENUMS(QUDeviceType)
+
+public:
+    enum QUDeviceType {
+        UDev_Unknown = 0x00,
+        UDev_Mouse = 0x01,
+        UDev_Touchpad = 0x02,
+        UDev_Touchscreen = 0x04,
+        UDev_Keyboard = 0x08
+    };
+    Q_DECLARE_FLAGS(QUDeviceTypes, QUDeviceType)
+
+    static QUDeviceHelper *createUDeviceHelper(QUDeviceTypes type, QObject *parent);
+    ~QUDeviceHelper();
+
+    QStringList scanConnectedDevices();
+
+signals:
+    void deviceDetected(const QString &deviceNode, QUDeviceTypes types);
+    void deviceRemoved(const QString &deviceNode, QUDeviceTypes types);
+
+private slots:
+    void handleUDevNotification();
+
+private:
+    QUDeviceHelper(QUDeviceTypes types, struct udev *udev, QObject *parent = 0);
+
+    void startWatching();
+    void stopWatching();
+
+    QUDeviceTypes checkDeviceType(struct udev_device *dev);
+
+    struct udev *m_udev;
+    QUDeviceTypes m_types;
+    struct udev_monitor *m_udevMonitor;
+    int m_udevMonitorFileDescriptor;
+    QSocketNotifier *m_udevSocketNotifier;
 };
 
-void q_udev_devicePath(int type, QString *path);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QUDeviceHelper::QUDeviceTypes)
 
 QT_END_NAMESPACE
 
-#endif // QUDEVHELPER_P_H
+#endif // QUDEVICEHELPER_H

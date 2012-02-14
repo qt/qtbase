@@ -10,7 +10,7 @@ HEADERS = \
     qevdevkeyboardhandler.h \
     qevdevkeyboardmanager.h
 
-QT += core-private
+QT += core-private platformsupport-private
 
 LIBS += -ludev
 
