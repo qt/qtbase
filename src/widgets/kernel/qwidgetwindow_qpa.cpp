@@ -150,6 +150,12 @@ bool QWidgetWindow::event(QEvent *event)
         handleWindowStateChangedEvent(static_cast<QWindowStateChangeEvent *>(event));
         return true;
 
+    case QEvent::ThemeChange: {
+        QEvent widgetEvent(QEvent::ThemeChange);
+        QGuiApplication::sendSpontaneousEvent(m_widget, &widgetEvent);
+    }
+        return true;
+
     default:
         break;
     }

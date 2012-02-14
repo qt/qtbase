@@ -661,6 +661,10 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::reportLogicalDotsPerInchChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::ThemeChange:
+        QGuiApplicationPrivate::processThemeChanged(
+                    static_cast<QWindowSystemInterfacePrivate::ThemeChangeEvent *>(e));
+        break;
     case QWindowSystemInterfacePrivate::Map:
         QGuiApplicationPrivate::processMapEvent(static_cast<QWindowSystemInterfacePrivate::MapEvent *>(e));
         break;
@@ -884,6 +888,14 @@ void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfa
     if (QWindow *window  = wse->window.data()) {
         QWindowStateChangeEvent e(window->windowState());
         window->d_func()->windowState = wse->newState;
+        QGuiApplication::sendSpontaneousEvent(window, &e);
+    }
+}
+
+void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce)
+{
+    if (QWindow *window  = tce->window.data()) {
+        QEvent e(QEvent::ThemeChange);
         QGuiApplication::sendSpontaneousEvent(window, &e);
     }
 }

@@ -130,6 +130,8 @@ public:
     static void handleScreenAvailableGeometryChange(QScreen *screen, const QRect &newAvailableGeometry);
     static void handleScreenLogicalDotsPerInchChange(QScreen *screen, qreal newDpiX, qreal newDpiY);
 
+    static void handleThemeChange(QWindow *tlw);
+
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags);
     static int windowSystemEventsQueued();

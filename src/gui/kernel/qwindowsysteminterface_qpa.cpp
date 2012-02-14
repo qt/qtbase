@@ -340,6 +340,12 @@ void QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QScreen *scree
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::handleThemeChange(QWindow *tlw)
+{
+    QWindowSystemInterfacePrivate::ThemeChangeEvent *e = new QWindowSystemInterfacePrivate::ThemeChangeEvent(tlw);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
 void QWindowSystemInterface::handleMapEvent(QWindow *tlw)
 {
     QWindowSystemInterfacePrivate::MapEvent *e = new QWindowSystemInterfacePrivate::MapEvent(tlw);

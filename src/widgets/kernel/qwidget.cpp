@@ -8046,6 +8046,7 @@ bool QWidget::event(QEvent *event)
     case QEvent::LocaleChange:
     case QEvent::MacSizeChange:
     case QEvent::ContentsRectChange:
+    case QEvent::ThemeChange:
         changeEvent(event);
         break;
 
@@ -8247,6 +8248,20 @@ void QWidget::changeEvent(QEvent * event)
 
     case QEvent::PaletteChange:
         update();
+        break;
+
+    case QEvent::ThemeChange:
+        if (QApplication::desktopSettingsAware() && windowType() != Qt::Desktop
+            && qApp && !QApplication::closingDown()) {
+            if (testAttribute(Qt::WA_WState_Polished))
+                QApplication::style()->unpolish(this);
+            if (testAttribute(Qt::WA_WState_Polished))
+                QApplication::style()->polish(this);
+            QEvent styleChangedEvent(QEvent::StyleChange);
+            QCoreApplication::sendEvent(this, &styleChangedEvent);
+            if (isVisible())
+                update();
+        }
         break;
 
 #ifdef Q_WS_MAC
