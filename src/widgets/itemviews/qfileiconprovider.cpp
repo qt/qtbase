@@ -47,7 +47,6 @@
 #include <qdir.h>
 #include <qpixmapcache.h>
 #include <private/qfunctions_p.h>
-#include <private/qguiplatformplugin_p.h>
 
 #if defined(Q_OS_WIN)
 #  define _WIN32_IE 0x0500
@@ -398,10 +397,6 @@ QIcon QFileIconProviderPrivate::getMacIcon(const QFileInfo &fi) const
 QIcon QFileIconProvider::icon(const QFileInfo &info) const
 {
     Q_D(const QFileIconProvider);
-
-    QIcon platformIcon = qt_guiPlatformPlugin()->fileSystemIcon(info);
-    if (!platformIcon.isNull())
-        return platformIcon;
 
 #if defined(Q_WS_X11) && !defined(QT_NO_STYLE_GTK)
     if (X11->desktopEnvironment == DE_GNOME) {

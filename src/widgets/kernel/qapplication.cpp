@@ -80,8 +80,6 @@
 #include <private/qt_x11_p.h>
 #endif
 
-#include "qguiplatformplugin_p.h"
-
 #include <qthread.h>
 #include <private/qthread_p.h>
 
@@ -758,10 +756,6 @@ void QApplicationPrivate::construct(
             qCritical("Library qttestability load failed!");
         }
     }
-
-    //make sure the plugin is loaded
-    if (qt_is_gui_used)
-        qt_guiPlatformPlugin();
 #endif
 }
 
