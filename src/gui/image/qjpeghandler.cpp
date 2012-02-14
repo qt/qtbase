@@ -106,6 +106,13 @@ static void my_error_exit (j_common_ptr cinfo)
     longjmp(myerr->setjmp_buffer, 1);
 }
 
+static void my_output_message(j_common_ptr cinfo)
+{
+    char buffer[JMSG_LENGTH_MAX];
+    (*cinfo->err->format_message)(cinfo, buffer);
+    qWarning("%s", buffer);
+}
+
 #if defined(Q_C_CALLBACKS)
 }
 #endif
@@ -530,6 +537,7 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, int sourceQ
 
     cinfo.err = jpeg_std_error(&jerr);
     jerr.error_exit = my_error_exit;
+    jerr.output_message = my_output_message;
 
     if (!setjmp(jerr.setjmp_buffer)) {
         // WARNING:
@@ -744,6 +752,7 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
         info.src = iod_src;
         info.err = jpeg_std_error(&err);
         err.error_exit = my_error_exit;
+        err.output_message = my_output_message;
 
         if (!setjmp(err.setjmp_buffer)) {
     #if defined(Q_OS_UNIXWARE)
