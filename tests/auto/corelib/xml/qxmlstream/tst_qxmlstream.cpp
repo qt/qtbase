@@ -674,7 +674,7 @@ void tst_QXmlStream::reportSuccess_data() const
     const int len = m_handler.successes.count();
 
     for(int i = 0; i < len; ++i)
-        QTest::newRow(m_handler.successes.at(i).toLatin1().constData()) << false;
+        QTest::newRow(qPrintable(QString("%1. %2").arg(i).arg(m_handler.successes.at(i)))) << false;
 
     if(len == 0)
         QTest::newRow("No test cases succeeded.") << true;

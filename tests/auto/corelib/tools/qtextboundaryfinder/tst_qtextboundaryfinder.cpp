@@ -302,22 +302,22 @@ void tst_QTextBoundaryFinder::toNextBoundary_data()
 
     QList<int> boundaries;
     boundaries << 0 << 3 << 4 << 7 << 8 << 11 << 12 << 13 << 16 << 17 << 20 << 21 << 24 << 25;
-    QTest::newRow("Line") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Word) \
+    QTest::newRow("data1") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Word) \
             << boundaries;
 
     boundaries.clear();
     boundaries << 0 << 13 << 25;
-    QTest::newRow("Line") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Sentence) \
+    QTest::newRow("data2") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Sentence) \
             << boundaries;
 
     boundaries.clear();
     boundaries << 0 << 4 << 8 << 13 << 17 << 21 << 25;
-    QTest::newRow("Line") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Line) \
+    QTest::newRow("data3") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Line) \
             << boundaries;
 
     boundaries.clear();
     boundaries << 0 << 5 << 9 << 15 << 17 << 21 << 28;
-    QTest::newRow("Line") << QString::fromUtf8("Diga-nos qualé a sua opinião") << int(QTextBoundaryFinder::Line)
+    QTest::newRow("data4") << QString::fromUtf8("Diga-nos qualé a sua opinião") << int(QTextBoundaryFinder::Line)
             << boundaries;
 
 }
@@ -344,22 +344,22 @@ void tst_QTextBoundaryFinder::toPreviousBoundary_data()
 
     QList<int> boundaries;
     boundaries << 25 << 24 << 21 << 20 << 17 << 16 << 13 << 12 << 11 << 8 << 7 << 4 << 3 << 0;
-    QTest::newRow("Line") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Word)
+    QTest::newRow("data1") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Word)
             << boundaries;
 
     boundaries.clear();
     boundaries << 25 << 13 << 0;
-    QTest::newRow("Line") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Sentence)
+    QTest::newRow("data2") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Sentence)
             << boundaries;
 
     boundaries.clear();
     boundaries << 25 << 21 << 17 << 13 << 8 << 4 << 0;
-    QTest::newRow("Line") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Line)
+    QTest::newRow("data3") << QString("Aaa bbb ccc. Ddd eee fff.") << int(QTextBoundaryFinder::Line)
             << boundaries;
 
     boundaries.clear();
     boundaries << 28 << 21 << 17 << 15 << 9 << 5 << 0;
-    QTest::newRow("Line") << QString::fromUtf8("Diga-nos qualé a sua opinião") << int(QTextBoundaryFinder::Line)
+    QTest::newRow("data4") << QString::fromUtf8("Diga-nos qualé a sua opinião") << int(QTextBoundaryFinder::Line)
             << boundaries;
 
 }

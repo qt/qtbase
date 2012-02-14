@@ -193,8 +193,8 @@ void tst_QStringList::removeDuplicates_data()
     QTest::addColumn<QString>("after");
     QTest::addColumn<int>("count");
 
-    QTest::newRow("empty") << "Hello,Hello" << "Hello" << 1;
-    QTest::newRow("empty") << "Hello,World" << "Hello,World" << 0;
+    QTest::newRow("empty-1") << "Hello,Hello" << "Hello" << 1;
+    QTest::newRow("empty-2") << "Hello,World" << "Hello,World" << 0;
 }
 
 void tst_QStringList::removeDuplicates()
@@ -245,35 +245,35 @@ void tst_QStringList::join_data() const
     QTest::addColumn<QString>("separator");
     QTest::addColumn<QString>("expectedResult");
 
-    QTest::newRow("")
+    QTest::newRow("data1")
                 << QStringList()
                 << QString()
                 << QString();
 
-    QTest::newRow("")
+    QTest::newRow("data2")
                 << QStringList()
                 << QString(QLatin1String("separator"))
                 << QString();
 
-    QTest::newRow("")
+    QTest::newRow("data3")
                 << QStringList("one")
                 << QString(QLatin1String("separator"))
                 << QString("one");
 
-    QTest::newRow("")
+    QTest::newRow("data4")
                 << QStringList("one")
                 << QString(QLatin1String("separator"))
                 << QString("one");
 
 
-    QTest::newRow("")
+    QTest::newRow("data5")
                 << (QStringList()
                         << QLatin1String("a")
                         << QLatin1String("b"))
                 << QString(QLatin1String(" "))
                 << QString("a b");
 
-    QTest::newRow("")
+    QTest::newRow("data6")
                 << (QStringList()
                         << QLatin1String("a")
                         << QLatin1String("b")

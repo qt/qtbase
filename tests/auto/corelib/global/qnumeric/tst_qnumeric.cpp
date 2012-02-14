@@ -72,7 +72,7 @@ void tst_QNumeric::fuzzyCompare_data()
     QTest::newRow("mis2") << 0.0 << 10000000.0 << false;
     QTest::newRow("mis3") << 0.0 << 0.000000001 << false;
     QTest::newRow("mis4") << 100000000.0 << 0.000000001 << false;
-    QTest::newRow("mis4") << 0.0000000001 << 0.000000001 << false;
+    QTest::newRow("mis5") << 0.0000000001 << 0.000000001 << false;
 }
 
 void tst_QNumeric::fuzzyCompare()

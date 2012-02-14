@@ -3120,8 +3120,8 @@ void tst_QUrl::fromUserInput_data()
     QTest::newRow("port-0") << "example.org:80" << portUrl;
     QTest::newRow("port-1") << "http://example.org:80" << portUrl;
     portUrl.setPath("path");
-    QTest::newRow("port-1") << "example.org:80/path" << portUrl;
-    QTest::newRow("port-1") << "http://example.org:80/path" << portUrl;
+    QTest::newRow("port-2") << "example.org:80/path" << portUrl;
+    QTest::newRow("port-3") << "http://example.org:80/path" << portUrl;
 
     // mailto doesn't have a ://, but is valid
     QUrl mailto("ben@example.net");

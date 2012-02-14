@@ -779,19 +779,19 @@ void tst_QItemModel::remove_data()
         makeTestRow(":none at the middle", MIDDLE, 0, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
         makeTestRow(":none at the end",    END,    0, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
 
-        makeTestRow(":invalid start, valid count", -99,  0,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":invalid start, valid count", 9999, 0,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":invalid start, valid count", -99,  1,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":invalid start, valid count", 9999, 1,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":invalid start, valid count", -99,  MANY, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":invalid start, valid count", 9999, MANY, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":invalid start, valid count 1", -99,  0,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":invalid start, valid count 2", 9999, 0,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":invalid start, valid count 3", -99,  1,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":invalid start, valid count 4", 9999, 1,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":invalid start, valid count 5", -99,  MANY, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":invalid start, valid count 6", 9999, MANY, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
 
-        makeTestRow(":valid start, invalid count",  START,  -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":valid start, invalid count",  MIDDLE, -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":valid start, invalid count",  END,    -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":valid start, invalid count",  START,  9999, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":valid start, invalid count",  MIDDLE, 9999, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":valid start, invalid count",  END,    9999, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":valid start, invalid count 1",  START,  -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":valid start, invalid count 2",  MIDDLE, -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":valid start, invalid count 3",  END,    -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":valid start, invalid count 4",  START,  9999, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":valid start, invalid count 5",  MIDDLE, 9999, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":valid start, invalid count 6",  END,    9999, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
 
         // Recursive remove's might assert, haven't decided yet...
         //makeTestRow(":one at the start recursivly",  START,  DEFAULTCOUNT, 2, DNS, 2, DNS, RECURSIVE, START, DEFAULTCOUNT, FAIL);
@@ -1126,16 +1126,16 @@ void tst_QItemModel::insert_data()
         makeTestRow(":none at the middle", MIDDLE, 0, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
         makeTestRow(":none at the end",    END,    0, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
 
-        makeTestRow(":invalid start, valid count", -99,  0,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":invalid start, valid count", 9999, 0,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":invalid start, valid count", -99,  1,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":invalid start, valid count", 9999, 1,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":invalid start, valid count", -99,  MANY, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":invalid start, valid count", 9999, MANY, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":invalid start, valid count 1", -99,  0,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":invalid start, valid count 2", 9999, 0,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":invalid start, valid count 3", -99,  1,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":invalid start, valid count 4", 9999, 1,    NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":invalid start, valid count 5", -99,  MANY, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":invalid start, valid count 6", 9999, MANY, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
 
-        makeTestRow(":valid start, invalid count",  START,  -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":valid start, invalid count",  MIDDLE, -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
-        makeTestRow(":valid start, invalid count",  END,    -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":valid start, invalid count 1",  START,  -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":valid start, invalid count 2",  MIDDLE, -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
+        makeTestRow(":valid start, invalid count 3",  END,    -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
 
         // Recursive insert's might assert, haven't decided yet...
         //makeTestRow(":one at the start recursivly",  START,  DEFAULTCOUNT, 2, DNS, 2, DNS, RECURSIVE, START, DEFAULTCOUNT, FAIL);

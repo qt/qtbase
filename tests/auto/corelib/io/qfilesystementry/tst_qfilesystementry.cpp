@@ -241,15 +241,15 @@ void tst_QFileSystemEntry::suffix_data()
     QTest::newRow("data1") << "file.tar.gz" << "gz";
     QTest::newRow("data2") << "/path/file/file.tar.gz" << "gz";
     QTest::newRow("data3") << "/path/file.tar" << "tar";
-    QTest::newRow("hidden1") << ".ext1" << "ext1";
-    QTest::newRow("hidden1") << ".ext" << "ext";
-    QTest::newRow("hidden1") << ".ex" << "ex";
-    QTest::newRow("hidden1") << ".e" << "e";
-    QTest::newRow("hidden2") << ".ext1.ext2" << "ext2";
-    QTest::newRow("hidden2") << ".ext.ext2" << "ext2";
-    QTest::newRow("hidden2") << ".ex.ext2" << "ext2";
-    QTest::newRow("hidden2") << ".e.ext2" << "ext2";
-    QTest::newRow("hidden2") << "..ext2" << "ext2";
+    QTest::newRow("hidden1-1") << ".ext1" << "ext1";
+    QTest::newRow("hidden1-2") << ".ext" << "ext";
+    QTest::newRow("hidden1-3") << ".ex" << "ex";
+    QTest::newRow("hidden1-4") << ".e" << "e";
+    QTest::newRow("hidden2-1") << ".ext1.ext2" << "ext2";
+    QTest::newRow("hidden2-2") << ".ext.ext2" << "ext2";
+    QTest::newRow("hidden2-3") << ".ex.ext2" << "ext2";
+    QTest::newRow("hidden2-4") << ".e.ext2" << "ext2";
+    QTest::newRow("hidden2-5") << "..ext2" << "ext2";
     QTest::newRow("dots") << "/path/file.with.dots/file..ext2" << "ext2";
     QTest::newRow("dots2") << "/path/file.with.dots/.file..ext2" << "ext2";
 }

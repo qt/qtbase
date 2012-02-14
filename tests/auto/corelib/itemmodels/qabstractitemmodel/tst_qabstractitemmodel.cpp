@@ -1257,13 +1257,13 @@ void tst_QAbstractItemModel::testMoveToGrandParent_data()
     QTest::newRow("move09") << 8 << 8 << 8;
 
     // Moving to the row of my parent and its neighbours doesn't confuse things
-    QTest::newRow("move09") << 8 << 8 << 4;
-    QTest::newRow("move10") << 8 << 8 << 5;
-    QTest::newRow("move11") << 8 << 8 << 6;
+    QTest::newRow("move10") << 8 << 8 << 4;
+    QTest::newRow("move11") << 8 << 8 << 5;
+    QTest::newRow("move12") << 8 << 8 << 6;
 
     // Moving everything from one parent to another
-    QTest::newRow("move12") << 0 << 9 << 10;
-    QTest::newRow("move13") << 0 << 9 << 0;
+    QTest::newRow("move13") << 0 << 9 << 10;
+    QTest::newRow("move14") << 0 << 9 << 0;
 }
 
 void tst_QAbstractItemModel::testMoveToGrandParent()
@@ -1397,14 +1397,14 @@ void tst_QAbstractItemModel::testMoveToSibling_data()
     QTest::newRow("move09") << 8 << 8 << 8;
 
     // Moving to the row of my target and its neighbours doesn't confuse things
-    QTest::newRow("move09") << 8 << 8 << 4;
-    QTest::newRow("move10") << 8 << 8 << 5;
-    QTest::newRow("move11") << 8 << 8 << 6;
+    QTest::newRow("move10") << 8 << 8 << 4;
+    QTest::newRow("move11") << 8 << 8 << 5;
+    QTest::newRow("move12") << 8 << 8 << 6;
 
     // Move such that the destination parent no longer valid after the move.
     // The destination parent is always QMI(5, 0), but after this move the
     // row count is 5, so (5, 0) (used internally in QAIM) no longer refers to a valid index.
-    QTest::newRow("move12") << 0 << 4 << 0;
+    QTest::newRow("move13") << 0 << 4 << 0;
 }
 
 void tst_QAbstractItemModel::testMoveToSibling()
@@ -1541,12 +1541,12 @@ void tst_QAbstractItemModel::testMoveToUncle_data()
     QTest::newRow("move09") << 8 << 8 << 8;
 
     // Moving to the row of my parent and its neighbours doesn't confuse things
-    QTest::newRow("move09") << 8 << 8 << 4;
-    QTest::newRow("move10") << 8 << 8 << 5;
-    QTest::newRow("move11") << 8 << 8 << 6;
+    QTest::newRow("move10") << 8 << 8 << 4;
+    QTest::newRow("move11") << 8 << 8 << 5;
+    QTest::newRow("move12") << 8 << 8 << 6;
 
     // Moving everything from one parent to another
-    QTest::newRow("move12") << 0 << 9 << 10;
+    QTest::newRow("move13") << 0 << 9 << 10;
 }
 
 void tst_QAbstractItemModel::testMoveToUncle()
@@ -1734,22 +1734,22 @@ void tst_QAbstractItemModel::testMoveWithinOwnRange_data()
     QTest::newRow("move07") << 0 << 5 << 4;
     QTest::newRow("move08") << 0 << 5 << 5;
     QTest::newRow("move09") << 0 << 5 << 6;
-    QTest::newRow("move08") << 3 << 5 << 5;
-    QTest::newRow("move08") << 3 << 5 << 6;
-    QTest::newRow("move09") << 4 << 5 << 5;
-    QTest::newRow("move10") << 4 << 5 << 6;
-    QTest::newRow("move11") << 5 << 5 << 5;
-    QTest::newRow("move12") << 5 << 5 << 6;
-    QTest::newRow("move13") << 5 << 9 << 9;
-    QTest::newRow("move14") << 5 << 9 << 10;
-    QTest::newRow("move15") << 6 << 9 << 9;
-    QTest::newRow("move16") << 6 << 9 << 10;
-    QTest::newRow("move17") << 7 << 9 << 9;
-    QTest::newRow("move18") << 7 << 9 << 10;
-    QTest::newRow("move19") << 8 << 9 << 9;
-    QTest::newRow("move20") << 8 << 9 << 10;
-    QTest::newRow("move21") << 9 << 9 << 9;
-    QTest::newRow("move22") << 0 << 9 << 10;
+    QTest::newRow("move10") << 3 << 5 << 5;
+    QTest::newRow("move11") << 3 << 5 << 6;
+    QTest::newRow("move12") << 4 << 5 << 5;
+    QTest::newRow("move13") << 4 << 5 << 6;
+    QTest::newRow("move14") << 5 << 5 << 5;
+    QTest::newRow("move15") << 5 << 5 << 6;
+    QTest::newRow("move16") << 5 << 9 << 9;
+    QTest::newRow("move17") << 5 << 9 << 10;
+    QTest::newRow("move18") << 6 << 9 << 9;
+    QTest::newRow("move19") << 6 << 9 << 10;
+    QTest::newRow("move20") << 7 << 9 << 9;
+    QTest::newRow("move21") << 7 << 9 << 10;
+    QTest::newRow("move22") << 8 << 9 << 9;
+    QTest::newRow("move23") << 8 << 9 << 10;
+    QTest::newRow("move24") << 9 << 9 << 9;
+    QTest::newRow("move25") << 0 << 9 << 10;
 }
 
 void tst_QAbstractItemModel::testMoveWithinOwnRange()
