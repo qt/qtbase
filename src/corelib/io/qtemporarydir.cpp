@@ -52,7 +52,7 @@
 #endif
 
 #include <stdlib.h> // mkdtemp
-#ifdef Q_OS_WIN
+#if defined(Q_OS_QNX) || defined(Q_OS_WIN)
 #include <private/qfilesystemengine_p.h>
 #endif
 
