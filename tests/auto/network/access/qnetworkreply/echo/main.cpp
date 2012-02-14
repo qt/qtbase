@@ -39,8 +39,7 @@
 **
 ****************************************************************************/
 
-
-#include <QtCore>
+#include <QtCore/QFile>
 
 int main(int argc, char **)
 {

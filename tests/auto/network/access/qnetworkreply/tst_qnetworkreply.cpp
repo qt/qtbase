@@ -163,6 +163,7 @@ public:
 
     QString runCustomRequest(const QNetworkRequest &request, QNetworkReplyPtr &reply,
                              const QByteArray &verb, QIODevice *data);
+    int waitForFinish(QNetworkReplyPtr &reply);
 
 public Q_SLOTS:
     void finished();
@@ -397,6 +398,8 @@ private Q_SLOTS:
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
+private:
+    QString testDataDir;
 };
 
 bool tst_QNetworkReply::seedCreated = false;
@@ -450,9 +453,13 @@ QT_END_NAMESPACE
 #ifndef QT_NO_OPENSSL
 static void setupSslServer(QSslSocket* serverSocket)
 {
+    QString testDataDir = QFileInfo(QFINDTESTDATA("rfc3252.txt")).absolutePath();
+    if (testDataDir.isEmpty())
+        testDataDir = QCoreApplication::applicationDirPath();
+
     serverSocket->setProtocol(QSsl::AnyProtocol);
-    serverSocket->setLocalCertificate(SRCDIR "/certs/server.pem");
-    serverSocket->setPrivateKey(SRCDIR "/certs/server.key");
+    serverSocket->setLocalCertificate(testDataDir + "/certs/server.pem");
+    serverSocket->setPrivateKey(testDataDir + "/certs/server.key");
 }
 #endif
 
@@ -1235,9 +1242,18 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
         connect(reply, SIGNAL(finished()), SLOT(finished()));
         connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), SLOT(gotError()));
 
+        int count = 0;
         loop = new QEventLoop;
-        QTimer::singleShot(20000, loop, SLOT(quit()));
-        code = returnCode == Timeout ? loop->exec() : returnCode;
+        QSignalSpy spy(reply, SIGNAL(downloadProgress(qint64,qint64)));
+        while (!reply->isFinished()) {
+            QTimer::singleShot(20000, loop, SLOT(quit()));
+            code = loop->exec();
+            if (count == spy.count() && !reply->isFinished()) {
+                code = Timeout;
+                break;
+            }
+            count = spy.count();
+        }
         delete loop;
         loop = 0;
     }
@@ -1277,6 +1293,31 @@ QString tst_QNetworkReply::runCustomRequest(const QNetworkRequest &request,
     return QString();
 }
 
+int tst_QNetworkReply::waitForFinish(QNetworkReplyPtr &reply)
+{
+    int code = Success;
+    int count = 0;
+
+    connect(reply, SIGNAL(finished()), SLOT(finished()));
+    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), SLOT(gotError()));
+
+    loop = new QEventLoop;
+    QSignalSpy spy(reply, SIGNAL(downloadProgress(qint64,qint64)));
+    while (!reply->isFinished()) {
+        QTimer::singleShot(10000, loop, SLOT(quit()));
+        code = loop->exec();
+        if (count == spy.count() && !reply->isFinished()) {
+            code = Timeout;
+            break;
+        }
+        count = spy.count();
+    }
+    delete loop;
+    loop = 0;
+
+    return code;
+}
+
 void tst_QNetworkReply::finished()
 {
     loop->exit(returnCode = Success);
@@ -1290,16 +1331,20 @@ void tst_QNetworkReply::gotError()
 
 void tst_QNetworkReply::initTestCase()
 {
+    testDataDir = QFileInfo(QFINDTESTDATA("rfc3252.txt")).absolutePath();
+    if (testDataDir.isEmpty())
+        testDataDir = QCoreApplication::applicationDirPath();
+
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 #if !defined Q_OS_WIN
-    wronlyFileName = QDir::currentPath() + "/write-only";
+    wronlyFileName = testDataDir + "/write-only";
     QFile wr(wronlyFileName);
     QVERIFY(wr.open(QIODevice::WriteOnly | QIODevice::Truncate));
     wr.setPermissions(QFile::WriteOwner | QFile::WriteUser);
     wr.close();
 #endif
 
-    QDir::setSearchPaths("srcdir", QStringList() << SRCDIR);
+    QDir::setSearchPaths("testdata", QStringList() << testDataDir);
 #ifndef QT_NO_OPENSSL
     QSslSocket::defaultCaCertificates(); //preload certificates
 #endif
@@ -1536,10 +1581,10 @@ void tst_QNetworkReply::getFromFileSpecial_data()
     QTest::addColumn<QString>("url");
 
     QTest::newRow("resource") << ":/resource" <<  "qrc:/resource";
-    QTest::newRow("search-path") << "srcdir:/rfc3252.txt" << "srcdir:/rfc3252.txt";
-    QTest::newRow("bigfile-path") << "srcdir:/bigfile" << "srcdir:/bigfile";
+    QTest::newRow("search-path") << "testdata:/rfc3252.txt" << "testdata:/rfc3252.txt";
+    QTest::newRow("bigfile-path") << "testdata:/bigfile" << "testdata:/bigfile";
 #ifdef Q_OS_WIN
-    QTest::newRow("smb-path") << "srcdir:/smb-file.txt" << "file://" + QtNetworkSettings::winServerName() + "/testshare/test.pri";
+    QTest::newRow("smb-path") << "testdata:/smb-file.txt" << "file://" + QtNetworkSettings::winServerName() + "/testshare/test.pri";
 #endif
 }
 
@@ -1569,8 +1614,8 @@ void tst_QNetworkReply::getFromFtp_data()
     QTest::addColumn<QString>("referenceName");
     QTest::addColumn<QString>("url");
 
-    QTest::newRow("rfc3252.txt") << SRCDIR "/rfc3252.txt" << "ftp://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt";
-    QTest::newRow("bigfile") << SRCDIR "/bigfile" << "ftp://" + QtNetworkSettings::serverName() + "/qtest/bigfile";
+    QTest::newRow("rfc3252.txt") << (testDataDir + "/rfc3252.txt") << "ftp://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt";
+    QTest::newRow("bigfile") << (testDataDir + "/bigfile") << "ftp://" + QtNetworkSettings::serverName() + "/qtest/bigfile";
 }
 
 void tst_QNetworkReply::getFromFtp()
@@ -1597,9 +1642,9 @@ void tst_QNetworkReply::getFromHttp_data()
     QTest::addColumn<QString>("referenceName");
     QTest::addColumn<QString>("url");
 
-    QTest::newRow("success-internal") << SRCDIR "/rfc3252.txt" << "http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt";
-    QTest::newRow("success-external") << SRCDIR "/rfc3252.txt" << "http://www.ietf.org/rfc/rfc3252.txt";
-    QTest::newRow("bigfile-internal") << SRCDIR "/bigfile" << "http://" + QtNetworkSettings::serverName() + "/qtest/bigfile";
+    QTest::newRow("success-internal") << (testDataDir + "/rfc3252.txt") << "http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt";
+    QTest::newRow("success-external") << (testDataDir + "/rfc3252.txt") << "http://www.ietf.org/rfc/rfc3252.txt";
+    QTest::newRow("bigfile-internal") << (testDataDir + "/bigfile") << "http://" + QtNetworkSettings::serverName() + "/qtest/bigfile";
 }
 
 void tst_QNetworkReply::getFromHttp()
@@ -1636,9 +1681,9 @@ void tst_QNetworkReply::headFromHttp_data()
     QTest::addColumn<QString>("contentType");
     QTest::addColumn<QNetworkProxy>("proxy");
 
-    qint64 rfcsize = QFileInfo(SRCDIR "/rfc3252.txt").size();
-    qint64 bigfilesize = QFileInfo(SRCDIR "/bigfile").size();
-    qint64 indexsize = QFileInfo(SRCDIR "/index.html").size();
+    qint64 rfcsize = QFileInfo(testDataDir + "/rfc3252.txt").size();
+    qint64 bigfilesize = QFileInfo(testDataDir + "/bigfile").size();
+    qint64 indexsize = QFileInfo(testDataDir + "/index.html").size();
 
     //testing proxies, mainly for the 407 response from http proxy
     for (int i = 0; i < proxies.count(); ++i) {
@@ -1697,7 +1742,7 @@ void tst_QNetworkReply::getErrors_data()
 
     // empties
     QTest::newRow("empty-url") << QString() << int(QNetworkReply::ProtocolUnknownError) << 0 << true;
-    QTest::newRow("empty-scheme-host") << SRCDIR "/rfc3252.txt" << int(QNetworkReply::ProtocolUnknownError) << 0 << true;
+    QTest::newRow("empty-scheme-host") << (testDataDir + "/rfc3252.txt") << int(QNetworkReply::ProtocolUnknownError) << 0 << true;
     QTest::newRow("empty-scheme") << "//" + QtNetworkSettings::winServerName() + "/testshare/test.pri"
             << int(QNetworkReply::ProtocolUnknownError) << 0 << true;
 
@@ -1750,6 +1795,14 @@ void tst_QNetworkReply::getErrors()
     QFETCH(QString, url);
     QNetworkRequest request(url);
 
+#ifdef Q_OS_UNIX
+    if ((qstrcmp(QTest::currentDataTag(), "file-is-wronly") == 0) ||
+        (qstrcmp(QTest::currentDataTag(), "file-permissions") == 0)) {
+        if (::getuid() == 0)
+            QSKIP("Running this test as root doesn't make sense");
+    }
+#endif
+
     QNetworkReplyPtr reply = manager.get(request);
     reply->setParent(this);     // we have expect-fails
 
@@ -1757,11 +1810,7 @@ void tst_QNetworkReply::getErrors()
         QCOMPARE(reply->error(), QNetworkReply::NoError);
 
     // now run the request:
-    connect(reply, SIGNAL(finished()),
-            &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-    //qDebug() << reply->errorString();
+    QVERIFY(waitForFinish(reply) != Timeout);
 
     QFETCH(int, error);
     QEXPECT_FAIL("ftp-is-dir", "QFtp cannot provide enough detail", Abort);
@@ -1867,7 +1916,14 @@ void tst_QNetworkReply::putToFtp()
     QNetworkReply *r = qnam.get(req);
 
     QObject::connect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
+    int count = 0;
+    QSignalSpy spy(r, SIGNAL(downloadProgress(qint64,qint64)));
+    while (!r->isFinished()) {
+        QTestEventLoop::instance().enterLoop(10);
+        if (count == spy.count() && !r->isFinished())
+            break;
+        count = spy.count();
+    }
     QObject::disconnect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
     QByteArray uploaded = r->readAll();
@@ -2111,7 +2167,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     imagePart11.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"testImage\""));
     imagePart11.setRawHeader("Content-Location", "http://my.test.location.tld");
     imagePart11.setRawHeader("Content-ID", "my@id.tld");
-    QFile *file11 = new QFile(SRCDIR "/image1.jpg");
+    QFile *file11 = new QFile(testDataDir + "/image1.jpg");
     file11->open(QIODevice::ReadOnly);
     imagePart11.setBodyDevice(file11);
     QHttpMultiPart *imageMultiPart1 = new QHttpMultiPart(QHttpMultiPart::FormDataType);
@@ -2125,7 +2181,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     imagePart21.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"testImage1\""));
     imagePart21.setRawHeader("Content-Location", "http://my.test.location.tld");
     imagePart21.setRawHeader("Content-ID", "my@id.tld");
-    QFile *file21 = new QFile(SRCDIR "/image1.jpg");
+    QFile *file21 = new QFile(testDataDir + "/image1.jpg");
     file21->open(QIODevice::ReadOnly);
     imagePart21.setBodyDevice(file21);
     QHttpMultiPart *imageMultiPart2 = new QHttpMultiPart();
@@ -2136,7 +2192,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     QHttpPart imagePart22;
     imagePart22.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/jpeg"));
     imagePart22.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"testImage2\""));
-    QFile *file22 = new QFile(SRCDIR "/image2.jpg");
+    QFile *file22 = new QFile(testDataDir + "/image2.jpg");
     file22->open(QIODevice::ReadOnly);
     imagePart22.setBodyDevice(file22);
     imageMultiPart2->append(imagePart22);
@@ -2152,7 +2208,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     imagePart31.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"testImage1\""));
     imagePart31.setRawHeader("Content-Location", "http://my.test.location.tld");
     imagePart31.setRawHeader("Content-ID", "my@id.tld");
-    QFile *file31 = new QFile(SRCDIR "/image1.jpg");
+    QFile *file31 = new QFile(testDataDir + "/image1.jpg");
     file31->open(QIODevice::ReadOnly);
     imagePart31.setBodyDevice(file31);
     QHttpMultiPart *imageMultiPart3 = new QHttpMultiPart(QHttpMultiPart::FormDataType);
@@ -2161,7 +2217,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     QHttpPart imagePart32;
     imagePart32.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/jpeg"));
     imagePart32.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"testImage2\""));
-    QFile *file32 = new QFile(SRCDIR "/image2.jpg");
+    QFile *file32 = new QFile(testDataDir + "/image2.jpg");
     file32->open(QIODevice::ReadOnly);
     imagePart32.setBodyDevice(file31); // check that resetting works
     imagePart32.setBodyDevice(file32);
@@ -2170,7 +2226,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     QHttpPart imagePart33;
     imagePart33.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/jpeg"));
     imagePart33.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"testImage3\""));
-    QFile *file33 = new QFile(SRCDIR "/image3.jpg");
+    QFile *file33 = new QFile(testDataDir + "/image3.jpg");
     file33->open(QIODevice::ReadOnly);
     imagePart33.setBodyDevice(file33);
     imageMultiPart3->append(imagePart33);
@@ -2185,7 +2241,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
 
 //    QHttpPart imagePart41;
 //    imagePart41.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/jpeg"));
-//    QFile *file41 = new QFile(SRCDIR "/image1.jpg");
+//    QFile *file41 = new QFile(testDataDir + "/image1.jpg");
 //    file41->open(QIODevice::ReadOnly);
 //    imagePart41.setBodyDevice(file41);
 //
@@ -2219,7 +2275,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     QHttpPart imagePart51;
     imagePart51.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/jpeg"));
     imagePart51.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"testImage\""));
-    QFile *file51 = new QFile(SRCDIR "/image1.jpg");
+    QFile *file51 = new QFile(testDataDir + "/image1.jpg");
     file51->open(QIODevice::ReadOnly);
     QByteArray imageData = file51->readAll();
     file51->close();
@@ -2426,6 +2482,10 @@ void tst_QNetworkReply::connectToIPv6Address()
     QFETCH(QByteArray, dataToSend);
     QFETCH(QByteArray, hostfield);
 
+#if !defined(HAVE_IPV6) && defined(Q_OS_UNIX)
+    QSKIP("system doesn't support ipv6!");
+#endif
+
     QByteArray httpResponse = QByteArray("HTTP/1.0 200 OK\r\nContent-Length: ");
     httpResponse += QByteArray::number(dataToSend.size());
     httpResponse += "\r\n\r\n";
@@ -2438,9 +2498,7 @@ void tst_QNetworkReply::connectToIPv6Address()
     QNetworkRequest request(url);
 
     QNetworkReplyPtr reply = manager.get(request);
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
     QByteArray content = reply->readAll();
     //qDebug() << server.receivedData;
     QByteArray hostinfo = "\r\nHost: " + hostfield + ":" + QByteArray::number(server.serverPort()) + "\r\n";
@@ -2607,7 +2665,7 @@ void tst_QNetworkReply::ioGetFromFtp_data()
 
     QTest::newRow("bigfile") << "bigfile" << Q_INT64_C(519240);
 
-    QFile file(SRCDIR "/rfc3252.txt");
+    QFile file(testDataDir + "/rfc3252.txt");
     QTest::newRow("rfc3252.txt") << "rfc3252.txt" << file.size();
 }
 
@@ -2621,9 +2679,7 @@ void tst_QNetworkReply::ioGetFromFtp()
     QNetworkReplyPtr reply = manager.get(request);
     DataReader reader(reply);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -2638,7 +2694,7 @@ void tst_QNetworkReply::ioGetFromFtp()
 
 void tst_QNetworkReply::ioGetFromFtpWithReuse()
 {
-    QString fileName = SRCDIR "/rfc3252.txt";
+    QString fileName = testDataDir + "/rfc3252.txt";
     QFile reference(fileName);
     reference.open(QIODevice::ReadOnly);
 
@@ -2651,14 +2707,8 @@ void tst_QNetworkReply::ioGetFromFtpWithReuse()
     DataReader reader2(reply2);
     QSignalSpy spy(reply1, SIGNAL(finished()));
 
-    connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-    if (spy.count() == 0) {
-        connect(reply1, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(10);
-        QVERIFY(!QTestEventLoop::instance().timeout());
-    }
+    QVERIFY(waitForFinish(reply1) == Success);
+    QVERIFY(waitForFinish(reply2) == Success);
 
     QCOMPARE(reply1->url(), request.url());
     QCOMPARE(reply2->url(), request.url());
@@ -2677,16 +2727,14 @@ void tst_QNetworkReply::ioGetFromFtpWithReuse()
 
 void tst_QNetworkReply::ioGetFromHttp()
 {
-    QFile reference(SRCDIR "/rfc3252.txt");
+    QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
     QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
     QNetworkReplyPtr reply = manager.get(request);
     DataReader reader(reply);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -2700,7 +2748,7 @@ void tst_QNetworkReply::ioGetFromHttp()
 
 void tst_QNetworkReply::ioGetFromHttpWithReuseParallel()
 {
-    QFile reference(SRCDIR "/rfc3252.txt");
+    QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
     QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
@@ -2710,14 +2758,8 @@ void tst_QNetworkReply::ioGetFromHttpWithReuseParallel()
     DataReader reader2(reply2);
     QSignalSpy spy(reply1, SIGNAL(finished()));
 
-    connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-    if (spy.count() == 0) {
-        connect(reply1, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(10);
-        QVERIFY(!QTestEventLoop::instance().timeout());
-    }
+    QVERIFY(waitForFinish(reply2) == Success);
+    QVERIFY(waitForFinish(reply1) == Success);
 
     QCOMPARE(reply1->url(), request.url());
     QCOMPARE(reply2->url(), request.url());
@@ -2738,7 +2780,7 @@ void tst_QNetworkReply::ioGetFromHttpWithReuseParallel()
 
 void tst_QNetworkReply::ioGetFromHttpWithReuseSequential()
 {
-    QFile reference(SRCDIR "/rfc3252.txt");
+    QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
     QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
@@ -2746,9 +2788,7 @@ void tst_QNetworkReply::ioGetFromHttpWithReuseSequential()
         QNetworkReplyPtr reply = manager.get(request);
         DataReader reader(reply);
 
-        connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(10);
-        QVERIFY(!QTestEventLoop::instance().timeout());
+        QVERIFY(waitForFinish(reply) == Success);
 
         QCOMPARE(reply->url(), request.url());
         QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -2766,9 +2806,7 @@ void tst_QNetworkReply::ioGetFromHttpWithReuseSequential()
         QNetworkReplyPtr reply = manager.get(request);
         DataReader reader(reply);
 
-        connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(10);
-        QVERIFY(!QTestEventLoop::instance().timeout());
+        QVERIFY(waitForFinish(reply) == Success);
 
         QCOMPARE(reply->url(), request.url());
         QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -2786,7 +2824,7 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth_data()
     QTest::addColumn<QUrl>("url");
     QTest::addColumn<QByteArray>("expectedData");
 
-    QFile reference(SRCDIR "/rfc3252.txt");
+    QFile reference(testDataDir + "/rfc3252.txt");
     reference.open(QIODevice::ReadOnly);
     QByteArray referenceData = reference.readAll();
     QTest::newRow("basic") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt") << referenceData;
@@ -2813,14 +2851,9 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
         connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                 SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
-        connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(10);
-        QVERIFY(!QTestEventLoop::instance().timeout());
-        if (finishedspy.count() == 0) {
-            connect(reply1, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-            QTestEventLoop::instance().enterLoop(10);
-            QVERIFY(!QTestEventLoop::instance().timeout());
-        }
+        QVERIFY(waitForFinish(reply2) == Success);
+        QVERIFY(waitForFinish(reply1) == Success);
+
         manager.disconnect(SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                            this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
@@ -2840,9 +2873,9 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
         QSignalSpy authspy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
         connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                 SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
-        connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(10);
-        QVERIFY(!QTestEventLoop::instance().timeout());
+
+        QVERIFY(waitForFinish(reply) == Success);
+
         manager.disconnect(SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                            this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
@@ -2898,7 +2931,7 @@ void tst_QNetworkReply::ioGetFromHttpWithProxyAuth()
     // This test sends three requests
     // The first two in parallel
     // The third after the first two finished
-    QFile reference(SRCDIR "/rfc3252.txt");
+    QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
     QNetworkProxy proxy(QNetworkProxy::HttpCachingProxy, QtNetworkSettings::serverName(), 3129);
@@ -2917,14 +2950,9 @@ void tst_QNetworkReply::ioGetFromHttpWithProxyAuth()
         connect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                 SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
-        connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(10);
-        QVERIFY(!QTestEventLoop::instance().timeout());
-        if (finishedspy.count() == 0) {
-            connect(reply1, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-            QTestEventLoop::instance().enterLoop(10);
-            QVERIFY(!QTestEventLoop::instance().timeout());
-        }
+        QVERIFY(waitForFinish(reply2) == Success);
+        QVERIFY(waitForFinish(reply1) == Success);
+
         manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                            this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
@@ -2948,9 +2976,9 @@ void tst_QNetworkReply::ioGetFromHttpWithProxyAuth()
         QSignalSpy authspy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
         connect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                 SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
-        connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(10);
-        QVERIFY(!QTestEventLoop::instance().timeout());
+
+        QVERIFY(waitForFinish(reply) == Success);
+
         manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                            this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
@@ -3010,7 +3038,7 @@ void tst_QNetworkReply::ioGetFromHttpWithSocksProxy()
     qRegisterMetaType<QNetworkProxy>(); // for QSignalSpy
     qRegisterMetaType<QAuthenticator *>();
 
-    QFile reference(SRCDIR "/rfc3252.txt");
+    QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
     QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080);
@@ -3024,9 +3052,9 @@ void tst_QNetworkReply::ioGetFromHttpWithSocksProxy()
         QSignalSpy authspy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
         connect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                 SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
-        connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(10);
-        QVERIFY(!QTestEventLoop::instance().timeout());
+
+        QVERIFY(waitForFinish(reply) == Success);
+
         manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                            this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
@@ -3047,9 +3075,9 @@ void tst_QNetworkReply::ioGetFromHttpWithSocksProxy()
         QSignalSpy authspy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
         connect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                 SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
-        connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(10);
-        QVERIFY(!QTestEventLoop::instance().timeout());
+
+        QVERIFY(waitForFinish(reply) == Failure);
+
         manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                            this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
@@ -3070,7 +3098,7 @@ void tst_QNetworkReply::ioGetFromHttpsWithSslErrors()
     qRegisterMetaType<QNetworkReply*>(); // for QSignalSpy
     qRegisterMetaType<QList<QSslError> >();
 
-    QFile reference(SRCDIR "/rfc3252.txt");
+    QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
     QNetworkRequest request(QUrl("https://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
@@ -3082,9 +3110,8 @@ void tst_QNetworkReply::ioGetFromHttpsWithSslErrors()
             SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
     connect(reply, SIGNAL(metaDataChanged()), SLOT(storeSslConfiguration()));
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
+
     manager.disconnect(SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
                        this, SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 
@@ -3105,7 +3132,7 @@ void tst_QNetworkReply::ioGetFromHttpsWithIgnoreSslErrors()
     qRegisterMetaType<QNetworkReply*>(); // for QSignalSpy
     qRegisterMetaType<QList<QSslError> >();
 
-    QFile reference(SRCDIR "/rfc3252.txt");
+    QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
     QNetworkRequest request(QUrl("https://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
@@ -3116,9 +3143,8 @@ void tst_QNetworkReply::ioGetFromHttpsWithIgnoreSslErrors()
 
     QSignalSpy sslspy(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)));
     connect(reply, SIGNAL(metaDataChanged()), SLOT(storeSslConfiguration()));
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
     QCOMPARE(reader.data, reference.readAll());
@@ -3134,7 +3160,7 @@ void tst_QNetworkReply::ioGetFromHttpsWithSslHandshakeError()
     qRegisterMetaType<QNetworkReply*>(); // for QSignalSpy
     qRegisterMetaType<QList<QSslError> >();
 
-    QFile reference(SRCDIR "/rfc3252.txt");
+    QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
     QNetworkRequest request(QUrl("https://" + QtNetworkSettings::serverName() + ":80"));
@@ -3145,9 +3171,8 @@ void tst_QNetworkReply::ioGetFromHttpsWithSslHandshakeError()
 
     QSignalSpy sslspy(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)));
     connect(reply, SIGNAL(metaDataChanged()), SLOT(storeSslConfiguration()));
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(waitForFinish(reply) == Failure);
 
     QCOMPARE(reply->error(), QNetworkReply::SslHandshakeFailedError);
     QCOMPARE(sslspy.count(), 0);
@@ -3205,10 +3230,7 @@ void tst_QNetworkReply::ioGetFromHttpBrokenServer()
     QNetworkReplyPtr reply = manager.get(request);
     QSignalSpy spy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
 
-
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Failure);
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(spy.count(), 1);
@@ -3238,9 +3260,7 @@ void tst_QNetworkReply::ioGetFromHttpStatus100()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3263,9 +3283,7 @@ void tst_QNetworkReply::ioGetFromHttpNoHeaders()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3434,9 +3452,7 @@ void tst_QNetworkReply::ioGetFromHttpWithCache()
 
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) != Timeout);
 
     QTEST(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), "loadedFromCache");
     QTEST(server.totalConnections > 0, "networkUsed");
@@ -3649,7 +3665,7 @@ void tst_QNetworkReply::ioGetWithManyProxies()
     qRegisterMetaType<QNetworkProxy>(); // for QSignalSpy
     qRegisterMetaType<QAuthenticator *>();
 
-    QFile reference(SRCDIR "/rfc3252.txt");
+    QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
     // set the proxy factory:
@@ -3667,13 +3683,12 @@ void tst_QNetworkReply::ioGetWithManyProxies()
     QSignalSpy authspy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     connect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
             SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 #ifndef QT_NO_OPENSSL
     connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
             SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
-    QTestEventLoop::instance().enterLoop(15);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(waitForFinish(reply) != Timeout);
 
     manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                        this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
@@ -3714,10 +3729,10 @@ void tst_QNetworkReply::ioPutToFileFromFile_data()
 {
     QTest::addColumn<QString>("fileName");
 
-    QTest::newRow("empty") << SRCDIR "/empty";
-    QTest::newRow("real-file") << SRCDIR "/rfc3252.txt";
+    QTest::newRow("empty") << (testDataDir + "/empty");
+    QTest::newRow("real-file") << (testDataDir + "/rfc3252.txt");
     QTest::newRow("resource") << ":/resource";
-    QTest::newRow("search-path") << "srcdir:/rfc3252.txt";
+    QTest::newRow("search-path") << "testdata:/rfc3252.txt";
 }
 
 void tst_QNetworkReply::ioPutToFileFromFile()
@@ -3732,9 +3747,7 @@ void tst_QNetworkReply::ioPutToFileFromFile()
     QNetworkRequest request(url);
     QNetworkReplyPtr reply = manager.put(request, &sourceFile);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3770,10 +3783,8 @@ void tst_QNetworkReply::ioPutToFileFromSocket()
     QNetworkReplyPtr reply = manager.put(QNetworkRequest(url), socketpair.endPoints[1]);
     socketpair.endPoints[0]->close();
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(waitForFinish(reply) == Success);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
-    QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3816,10 +3827,8 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
     QNetworkReplyPtr reply = manager.put(QNetworkRequest(url), passive);
     passive->setParent(reply);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(waitForFinish(reply) == Success);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
-    QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3866,9 +3875,7 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
 
     QNetworkReplyPtr reply = manager.put(QNetworkRequest(url), &process);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3902,9 +3909,7 @@ void tst_QNetworkReply::ioPutToFtpFromFile()
     QNetworkRequest request(url);
     QNetworkReplyPtr reply = manager.put(request, &sourceFile);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3953,9 +3958,7 @@ void tst_QNetworkReply::ioPutToHttpFromFile()
     QNetworkRequest request(url);
     QNetworkReplyPtr reply = manager.put(request, &sourceFile);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3969,9 +3972,8 @@ void tst_QNetworkReply::ioPutToHttpFromFile()
     // download the file again from HTTP to make sure it was uploaded
     // correctly
     reply = manager.get(request);
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3997,9 +3999,7 @@ void tst_QNetworkReply::ioPostToHttpFromFile()
 
     QNetworkReplyPtr reply = manager.post(request, &sourceFile);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -4077,7 +4077,6 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
     QNetworkReplyPtr reply = manager.post(request, socketpair.endPoints[1]);
     socketpair.endPoints[0]->close();
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     connect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
             SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
@@ -4086,13 +4085,13 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
     QSignalSpy authenticationRequiredSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     QSignalSpy proxyAuthenticationRequiredSpy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
-    QTestEventLoop::instance().enterLoop(12);
+    QVERIFY(waitForFinish(reply) == Success);
+
     disconnect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     QCOMPARE(reply->error(), QNetworkReply::NoError);
-    QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -4170,7 +4169,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocketSynchronous()
 // worked.
 void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileToEnd()
 {
-    QFile sourceFile(SRCDIR "/rfc3252.txt");
+    QFile sourceFile(testDataDir + "/rfc3252.txt");
     QVERIFY(sourceFile.open(QIODevice::ReadOnly));
     // seeking to the middle
     sourceFile.seek(sourceFile.size() / 2);
@@ -4180,14 +4179,13 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileToEnd()
     request.setRawHeader("Content-Type", "application/octet-stream");
     QNetworkReplyPtr reply = manager.post(request, &sourceFile);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
             SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
-    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(waitForFinish(reply) == Success);
+
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
-    QVERIFY(!QTestEventLoop::instance().timeout());
 
     // compare half data
     sourceFile.seek(sourceFile.size() / 2);
@@ -4197,7 +4195,7 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileToEnd()
 
 void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileFiveBytes()
 {
-    QFile sourceFile(SRCDIR "/rfc3252.txt");
+    QFile sourceFile(testDataDir + "/rfc3252.txt");
     QVERIFY(sourceFile.open(QIODevice::ReadOnly));
     // seeking to the middle
     sourceFile.seek(sourceFile.size() / 2);
@@ -4210,14 +4208,13 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileFiveBytes()
     QVERIFY(request.header(QNetworkRequest::ContentLengthHeader).isValid());
     QNetworkReplyPtr reply = manager.post(request, &sourceFile);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
             SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
-    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(waitForFinish(reply) == Success);
+
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
-    QVERIFY(!QTestEventLoop::instance().timeout());
 
     // compare half data
     sourceFile.seek(sourceFile.size() / 2);
@@ -4239,14 +4236,13 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfQBufferFiveBytes()
     request.setRawHeader("Content-Type", "application/octet-stream");
     QNetworkReplyPtr reply = manager.post(request, &uploadBuffer);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
             SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
-    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(waitForFinish(reply) == Success);
+
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
-    QVERIFY(!QTestEventLoop::instance().timeout());
 
     // compare half data
     uploadBuffer.seek(5);
@@ -4273,11 +4269,11 @@ void tst_QNetworkReply::ioPostToHttpNoBufferFlag()
     QNetworkReplyPtr reply = manager.post(request, socketpair.endPoints[1]);
     socketpair.endPoints[0]->close();
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
             SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
-    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(waitForFinish(reply) == Failure);
+
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
@@ -4295,12 +4291,16 @@ public:
         serverSocket->setParent(this);
 
         if (serverSocket->setSocketDescriptor(socketDescriptor)) {
+            QString testDataDir = QFileInfo(QFINDTESTDATA("rfc3252.txt")).absolutePath();
+            if (testDataDir.isEmpty())
+                testDataDir = QCoreApplication::applicationDirPath();
+
             connect(serverSocket, SIGNAL(encrypted()), this, SLOT(encryptedSlot()));
             connect(serverSocket, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
             serverSocket->setProtocol(QSsl::AnyProtocol);
             connect(serverSocket, SIGNAL(sslErrors(const QList<QSslError>&)), serverSocket, SLOT(ignoreSslErrors()));
-            serverSocket->setLocalCertificate(SRCDIR "/certs/server.pem");
-            serverSocket->setPrivateKey(SRCDIR  "/certs/server.key");
+            serverSocket->setLocalCertificate(testDataDir + "/certs/server.pem");
+            serverSocket->setPrivateKey(testDataDir + "/certs/server.key");
             serverSocket->startServerEncryption();
         } else {
             delete serverSocket;
@@ -4325,7 +4325,7 @@ public:
 // very similar to ioPostToHttpUploadProgress but for SSL
 void tst_QNetworkReply::ioPostToHttpsUploadProgress()
 {
-    //QFile sourceFile(SRCDIR "/bigfile");
+    //QFile sourceFile(testDataDir + "/bigfile");
     //QVERIFY(sourceFile.open(QIODevice::ReadOnly));
     qint64 wantedSize = 2*1024*1024; // 2 MB
     QByteArray sourceFile;
@@ -4377,13 +4377,11 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     QCOMPARE(args3.at(0).toLongLong(), qint64(sourceFile.size()));
 
     // after sending this, the QNAM should emit finished()
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     incomingSocket->write("HTTP/1.0 200 OK\r\n");
     incomingSocket->write("Content-Length: 0\r\n");
     incomingSocket->write("\r\n");
-    QTestEventLoop::instance().enterLoop(10);
-    // not timeouted -> finished() was emitted
-    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(waitForFinish(reply) == Success);
 
     incomingSocket->close();
     server.close();
@@ -4440,10 +4438,11 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     const int rate = 200; // in kB per sec
     RateControlledReader reader(server, reply, rate, bufferSize);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTime loopTime;
     loopTime.start();
-    QTestEventLoop::instance().enterLoop(30);
+
+    QVERIFY(waitForFinish(reply) == Success);
+
     const int elapsedTime = loopTime.elapsed();
     server.wait();
     reader.wrapUp();
@@ -4451,8 +4450,6 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     qDebug() << "send rate:" << server.transferRate << "B/s";
     qDebug() << "receive rate:" << reader.totalBytesRead * 1000 / elapsedTime
              << "(it received" << reader.totalBytesRead << "bytes in" << elapsedTime << "ms)";
-
-    QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -4483,7 +4480,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
 
 void tst_QNetworkReply::ioPostToHttpUploadProgress()
 {
-    QFile sourceFile(SRCDIR "/bigfile");
+    QFile sourceFile(testDataDir + "/bigfile");
     QVERIFY(sourceFile.open(QIODevice::ReadOnly));
 
     // emulate a minimal http server
@@ -4588,16 +4585,15 @@ void tst_QNetworkReply::ioPostToHttpEmptyUploadProgress()
 
 void tst_QNetworkReply::lastModifiedHeaderForFile()
 {
-    QFileInfo fileInfo(SRCDIR "/bigfile");
+    QFileInfo fileInfo(testDataDir + "/bigfile");
     QVERIFY(fileInfo.exists());
 
     QUrl url = QUrl::fromLocalFile(fileInfo.filePath());
 
     QNetworkRequest request(url);
     QNetworkReplyPtr reply = manager.head(request);
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(waitForFinish(reply) == Success);
 
     QDateTime header = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
     QCOMPARE(header, fileInfo.lastModified());
@@ -4610,9 +4606,8 @@ void tst_QNetworkReply::lastModifiedHeaderForHttp()
 
     QNetworkRequest request(url);
     QNetworkReplyPtr reply = manager.head(request);
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(waitForFinish(reply) == Success);
 
     QDateTime header = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
     QDateTime realDate = QDateTime::fromString("2007-05-22T12:04:57", Qt::ISODate);
@@ -4626,9 +4621,8 @@ void tst_QNetworkReply::httpCanReadLine()
     QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
+
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 
     QVERIFY(reply->canReadLine());
@@ -4656,13 +4650,16 @@ void tst_QNetworkReply::rateControl()
     // faster than the data is being consumed.
     QFETCH(int, rate);
 
+#if !defined(QT_BUILD_INTERNAL)
+    QSKIP("backend for testing not available!");
+#endif
+
     // ask for 20 seconds worth of data
     FastSender sender(20 * rate * 1024);
 
     QNetworkRequest request("debugpipe://localhost:" + QString::number(sender.serverPort()));
     QNetworkReplyPtr reply = manager.get(request);
     reply->setReadBufferSize(32768);
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
     QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
 
@@ -4671,7 +4668,9 @@ void tst_QNetworkReply::rateControl()
     // this test is designed to run for 25 seconds at most
     QTime loopTime;
     loopTime.start();
-    QTestEventLoop::instance().enterLoop(40);
+
+    QVERIFY(waitForFinish(reply) == Success);
+
     int elapsedTime = loopTime.elapsed();
 
     if (!errorSpy.isEmpty()) {
@@ -4683,7 +4682,6 @@ void tst_QNetworkReply::rateControl()
              << "(it received" << reader.totalBytesRead << "bytes in" << elapsedTime << "ms)";
 
     sender.wait();
-    QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -4706,6 +4704,9 @@ void tst_QNetworkReply::downloadProgress_data()
 
 void tst_QNetworkReply::downloadProgress()
 {
+#if !defined(QT_BUILD_INTERNAL)
+    QSKIP("backend for testing not available!");
+#endif
     QTcpServer server;
     QVERIFY(server.listen());
 
@@ -4769,6 +4770,9 @@ void tst_QNetworkReply::uploadProgress_data()
 void tst_QNetworkReply::uploadProgress()
 {
     QFETCH(QByteArray, data);
+#if !defined(QT_BUILD_INTERNAL)
+    QSKIP("backend for testing not available!");
+#endif
     QTcpServer server;
     QVERIFY(server.listen());
 
@@ -4787,9 +4791,7 @@ void tst_QNetworkReply::uploadProgress()
     QTcpSocket *receiver = server.nextPendingConnection();
     if (finished.count() == 0) {
         // it's not finished yet, so wait for it to be
-        connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(2);
-        QVERIFY(!QTestEventLoop::instance().timeout());
+        QVERIFY(waitForFinish(reply) == Success);
     }
     delete receiver;
 
@@ -4825,9 +4827,7 @@ void tst_QNetworkReply::chaining()
     request.setUrl(url);
     QNetworkReplyPtr putReply = manager.put(request, getReply);
 
-    connect(putReply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(putReply) == Success);
 
     QCOMPARE(getReply->url(), QUrl::fromLocalFile(sourceFile.fileName()));
     QCOMPARE(getReply->error(), QNetworkReply::NoError);
@@ -5108,11 +5108,7 @@ void tst_QNetworkReply::httpProxyCommands()
     //manager.setProxy(QNetworkProxy());
 
     // wait for the finished signal
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-
-    QTestEventLoop::instance().enterLoop(15);
-
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) != Timeout);
 
     //qDebug() << reply->error() << reply->errorString();
     //qDebug() << proxyServer.receivedData;
@@ -5245,9 +5241,8 @@ void tst_QNetworkReply::proxyChange()
 
     manager.setProxy(dummyProxy);
     QNetworkReplyPtr reply3 = manager.get(req);
-    connect(reply3, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(5);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(waitForFinish(reply3) == Failure);
 
     QVERIFY(int(reply3->error()) > 0);
 }
@@ -5283,10 +5278,7 @@ void tst_QNetworkReply::authorizationError()
     QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
     QSignalSpy finishedSpy(reply, SIGNAL(finished()));
     // now run the request:
-    connect(reply, SIGNAL(finished()),
-            &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Failure);
 
     QFETCH(int, errorSignalCount);
     QCOMPARE(errorSpy.count(), errorSignalCount);
@@ -5512,8 +5504,7 @@ void tst_QNetworkReply::ignoreSslErrorsList_data()
     QTest::addColumn<QNetworkReply::NetworkError>("expectedNetworkError");
 
     QList<QSslError> expectedSslErrors;
-    // apparently, because of some weird behaviour of SRCDIR, the file name below needs to start with a slash
-    QList<QSslCertificate> certs = QSslCertificate::fromPath(QLatin1String(SRCDIR "/certs/qt-test-server-cacert.pem"));
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "/certs/qt-test-server-cacert.pem");
     QSslError rightError(QSslError::SelfSignedCertificate, certs.at(0));
     QSslError wrongError(QSslError::SelfSignedCertificate);
 
@@ -5537,9 +5528,7 @@ void tst_QNetworkReply::ignoreSslErrorsList()
     QFETCH(QList<QSslError>, expectedSslErrors);
     reply->ignoreSslErrors(expectedSslErrors);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) != Timeout);
 
     QFETCH(QNetworkReply::NetworkError, expectedNetworkError);
     QCOMPARE(reply->error(), expectedNetworkError);
@@ -5570,9 +5559,7 @@ void tst_QNetworkReply::ignoreSslErrorsListWithSlot()
             this, SLOT(ignoreSslErrorListSlot(QNetworkReply *, const QList<QSslError> &)));
 
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) != Timeout);
 
     QFETCH(QNetworkReply::NetworkError, expectedNetworkError);
     QCOMPARE(reply->error(), expectedNetworkError);
@@ -5586,7 +5573,7 @@ void tst_QNetworkReply::sslConfiguration_data()
     QTest::newRow("empty") << QSslConfiguration() << false;
     QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
     QTest::newRow("default") << conf << false; // does not contain test server cert
-    QList<QSslCertificate> testServerCert = QSslCertificate::fromPath(SRCDIR "/certs/qt-test-server-cacert.pem");
+    QList<QSslCertificate> testServerCert = QSslCertificate::fromPath(testDataDir + "/certs/qt-test-server-cacert.pem");
     conf.setCaCertificates(testServerCert);
     QTest::newRow("set-root-cert") << conf << true;
     conf.setProtocol(QSsl::SecureProtocols);
@@ -5600,9 +5587,7 @@ void tst_QNetworkReply::sslConfiguration()
     request.setSslConfiguration(configuration);
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) != Timeout);
 
     QFETCH(bool, works);
     QNetworkReply::NetworkError expectedError = works ? QNetworkReply::NoError : QNetworkReply::SslHandshakeFailedError;
@@ -5686,12 +5671,11 @@ void tst_QNetworkReply::getFromHttpIntoBuffer()
     QNetworkAccessManager manager;
     QNetworkReply *reply = manager.get(request);
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(reply->isFinished());
 
-    QFile reference(SRCDIR "/rfc3252.txt");
+    QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
     QCOMPARE(reference.bytesAvailable(), reply->bytesAvailable());
@@ -5897,9 +5881,7 @@ void tst_QNetworkReply::getFromHttpIntoBufferCanReadLine()
     request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 1024*1024*128); // 128 MB is max allowed
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(reply->canReadLine());
@@ -5923,9 +5905,7 @@ void tst_QNetworkReply::ioGetFromHttpWithoutContentLength()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->url(), request.url());
     QVERIFY(reply->isFinished());
@@ -5973,9 +5953,7 @@ void tst_QNetworkReply::qtbug12908compressedHttpReply()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->size(), qint64(16384));
@@ -5998,9 +5976,7 @@ void tst_QNetworkReply::compressedHttpReplyBrokenGzip()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Failure);
 
     QCOMPARE(reply->error(), QNetworkReply::ProtocolFailure);
 }
@@ -6013,9 +5989,7 @@ void tst_QNetworkReply::getFromUnreachableIp()
     QNetworkRequest request(QUrl("http://255.255.255.255/42/23/narf/narf/narf"));
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Failure);
 
     QVERIFY(reply->error() != QNetworkReply::NoError);
 }
@@ -6348,9 +6322,8 @@ void tst_QNetworkReply::qtbug15311doubleContentLength()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
+
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->size(), qint64(3));
@@ -6368,9 +6341,8 @@ void tst_QNetworkReply::qtbug18232gzipContentLengthZero()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
+
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->size(), qint64(0));
@@ -6390,9 +6362,8 @@ void tst_QNetworkReply::qtbug22660gzipNoContentLengthEmptyContent()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
+
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->size(), qint64(0));
@@ -6411,13 +6382,13 @@ void tst_QNetworkReply::synchronousRequest_data()
 
     QTest::newRow("http")
         << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt")
-        << QString("file:" SRCDIR "/rfc3252.txt")
+        << QString("file:" + testDataDir + "/rfc3252.txt")
         << true
         << QString("text/plain");
 
     QTest::newRow("http-gzip")
         << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/deflate/rfc3252.txt")
-        << QString("file:" SRCDIR "/rfc3252.txt")
+        << QString("file:" + testDataDir + "/rfc3252.txt")
         << false // don't check content length, because it's gzip encoded
         //  ### we would need to enflate (un-deflate) the file content and compare the sizes
         << QString("text/plain");
@@ -6425,7 +6396,7 @@ void tst_QNetworkReply::synchronousRequest_data()
 #ifndef QT_NO_OPENSSL
     QTest::newRow("https")
         << QUrl("https://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt")
-        << QString("file:" SRCDIR "/rfc3252.txt")
+        << QString("file:" + testDataDir + "/rfc3252.txt")
         << true
         << QString("text/plain");
 #endif
@@ -6437,8 +6408,8 @@ void tst_QNetworkReply::synchronousRequest_data()
         << QString("text/plain");
 
     QTest::newRow("simple-file")
-        << QUrl::fromLocalFile(SRCDIR "/rfc3252.txt")
-        << QString("file:" SRCDIR "/rfc3252.txt")
+        << QUrl::fromLocalFile(testDataDir + "/rfc3252.txt")
+        << QString("file:" + testDataDir + "/rfc3252.txt")
         << true
         << QString();
 }
@@ -6460,7 +6431,7 @@ void tst_QNetworkReply::synchronousRequest()
     // QNetworkRequest, see http://bugreports.qt.nokia.com/browse/QTBUG-14774
     if (url.scheme() == "https") {
         QSslConfiguration sslConf;
-        QList<QSslCertificate> certs = QSslCertificate::fromPath(SRCDIR "/certs/qt-test-server-cacert.pem");
+        QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "/certs/qt-test-server-cacert.pem");
         sslConf.setCaCertificates(certs);
         request.setSslConfiguration(sslConf);
     }
@@ -6570,8 +6541,9 @@ void tst_QNetworkReply::httpAbort()
     // Abort after the finished()
     QNetworkRequest request3("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
     QNetworkReplyPtr reply3 = manager.get(request3);
-    connect(reply3, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
+
+    QVERIFY(waitForFinish(reply3) == Success);
+
     QVERIFY(reply3->isFinished());
     reply3->abort();
     QCOMPARE(reply3->error(), QNetworkReply::NoError);
@@ -6601,9 +6573,7 @@ void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()
 
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
 
     QVERIFY(server.totalConnections > 0);
     QCOMPARE(reply->readAll().constData(), "load");
@@ -6620,9 +6590,8 @@ void tst_QNetworkReply::httpUserAgent()
     request.setHeader(QNetworkRequest::UserAgentHeader, "abcDEFghi");
     QNetworkReplyPtr reply = manager.get(request);
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(waitForFinish(reply) == Success);
+
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(server.receivedData.contains("\r\nUser-Agent: abcDEFghi\r\n"));

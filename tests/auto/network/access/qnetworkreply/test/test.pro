@@ -5,28 +5,13 @@ TARGET = ../tst_qnetworkreply
 
 contains(QT_CONFIG,xcb): CONFIG+=insignificant_test  # unstable, QTBUG-21102
 
-win32 {
-  CONFIG(debug, debug|release) {
-    TARGET = ../../debug/tst_qnetworkreply
-} else {
-    TARGET = ../../release/tst_qnetworkreply
-  }
-}
-
-DEFINES += SRCDIR=\\\"$$PWD/..\\\"
-
 QT = core-private network-private testlib
 RESOURCES += ../qnetworkreply.qrc
 
-wince* {
-    # For cross compiled targets, reference data files need to be deployed
-    addFiles.files = ../empty ../rfc3252.txt ../resource ../bigfile ../*.jpg
-    addFiles.path = .
-    DEPLOYMENT += addFiles
-
-    certFiles.files = ../certs
-    certFiles.path    = .
-    DEPLOYMENT += certFiles
-}
+contains(QT_CONFIG,ipv6ifname): DEFINES += HAVE_IPV6
+TESTDATA += ../empty ../rfc3252.txt ../resource ../bigfile ../*.jpg ../certs \
+            ../index.html ../smb-file.txt
 
 win32:CONFIG += insignificant_test # QTBUG-24226
+load(testcase) # for target.path and installTestHelperApp()
+installTestHelperApp("../echo/echo",echo,echo)
