@@ -1623,7 +1623,7 @@ void tst_Moc::warnings_data()
         << QString("standard input:1: Warning: Property declaration x has no READ accessor function. The property will be invalid.");
 
     // Passing "-nn" should NOT suppress the warning
-    QTest::newRow("Invalid property warning")
+    QTest::newRow("Invalid property warning with -nn")
         << QByteArray("class X : public QObject { Q_OBJECT Q_PROPERTY(int x) };")
         << (QStringList() << "-nn")
         << 0
@@ -1631,7 +1631,7 @@ void tst_Moc::warnings_data()
         << QString("standard input:1: Warning: Property declaration x has no READ accessor function. The property will be invalid.");
 
     // Passing "-nw" should suppress the warning
-    QTest::newRow("Invalid property warning")
+    QTest::newRow("Invalid property warning with -nw")
         << QByteArray("class X : public QObject { Q_OBJECT Q_PROPERTY(int x) };")
         << (QStringList() << "-nw")
         << 0
@@ -1655,7 +1655,7 @@ void tst_Moc::warnings_data()
         << QString("standard input:1: Error: Class contains Q_OBJECT macro but does not inherit from QObject");
 
     // "-nw" should not suppress the error
-    QTest::newRow("Does not inherit QObject with -nn")
+    QTest::newRow("Does not inherit QObject with -nw")
         << QByteArray("class X { Q_OBJECT };")
         << (QStringList() << "-nw")
         << 1

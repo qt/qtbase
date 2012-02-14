@@ -470,12 +470,12 @@ void tst_QDBusXmlParser::properties_data()
     prop.type = "i";
     prop.access = QDBusIntrospection::Property::Read;
     map << prop;
-    QTest::newRow("two") <<
+    QTest::newRow("two-1") <<
         "<property name=\"foo\" type=\"s\" access=\"readwrite\"/>"
         "<property name=\"bar\" type=\"i\" access=\"read\"/>" << map;
 
     // invert the order of the declaration
-    QTest::newRow("two") <<
+    QTest::newRow("two-2") <<
         "<property name=\"bar\" type=\"i\" access=\"read\"/>"
         "<property name=\"foo\" type=\"s\" access=\"readwrite\"/>" << map;
 
