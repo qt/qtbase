@@ -623,7 +623,6 @@ void tst_QImageReader::supportsAnimation_data()
     QTest::newRow("XPM: marble") << QString("marble.xpm") << false;
     QTest::newRow("PNG: kollada") << QString("kollada.png") << false;
     QTest::newRow("PPM: teapot") << QString("teapot.ppm") << false;
-    QTest::newRow("PPM: teapot") << QString("teapot.ppm") << false;
     QTest::newRow("PPM: runners") << QString("runners.ppm") << false;
     QTest::newRow("XBM: gnus") << QString("gnus.xbm") << false;
 

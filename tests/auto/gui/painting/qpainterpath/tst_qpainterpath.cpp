@@ -282,13 +282,13 @@ void tst_QPainterPath::contains_QPointF_data()
     inside.addEllipse(base_rect.adjusted(5, 5, -5, -5));
     QPolygonF inside_poly = inside.toFillPolygon();
     for (int i=0; i<inside_poly.size(); ++i)
-        QTest::newRow("inside_ellipse") << path << inside_poly.at(i) << true;
+        QTest::newRow(qPrintable(QString("inside_ellipse %1").arg(i))) << path << inside_poly.at(i) << true;
 
     QPainterPath outside;
     outside.addEllipse(base_rect.adjusted(-5, -5, 5, 5));
     QPolygonF outside_poly = outside.toFillPolygon();
     for (int i=0; i<outside_poly.size(); ++i)
-        QTest::newRow("outside_ellipse") << path << outside_poly.at(i) << false;
+        QTest::newRow(qPrintable(QString("outside_ellipse %1").arg(i))) << path << outside_poly.at(i) << false;
 
     path = QPainterPath();
     base_rect = QRectF(50, 50, 200, 200);
@@ -865,12 +865,12 @@ void tst_QPainterPath::testArcMoveTo_data()
 
     for (int domain=0; domain<rects.size(); ++domain) {
         for (int i=-360; i<=360; ++i) {
-            QTest::newRow("test") << rects.at(domain) << (qreal) i;
+            QTest::newRow(qPrintable(QString("test %1 %2").arg(domain).arg(i))) << rects.at(domain) << (qreal) i;
         }
 
         // test low angles
-        QTest::newRow("test") << rects.at(domain) << (qreal) 1e-10;
-        QTest::newRow("test") << rects.at(domain) << (qreal)-1e-10;
+        QTest::newRow("low angles 1") << rects.at(domain) << (qreal) 1e-10;
+        QTest::newRow("low angles 2") << rects.at(domain) << (qreal)-1e-10;
     }
 }
 

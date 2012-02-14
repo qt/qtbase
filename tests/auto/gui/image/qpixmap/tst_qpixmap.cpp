@@ -1342,7 +1342,7 @@ void tst_QPixmap::fromImageReader_data()
     QTest::newRow("designer_indexed8_with_alpha.gif") << prefix + "/designer_indexed8_with_alpha.gif";
     QTest::newRow("designer_rgb32.jpg") << prefix + "/designer_rgb32.jpg";
     QTest::newRow("designer_indexed8_with_alpha_animated") << prefix + "/designer_indexed8_with_alpha_animated.gif";
-    QTest::newRow("designer_indexed8_with_alpha_animated") << prefix + "/designer_indexed8_no_alpha_animated.gif";
+    QTest::newRow("designer_indexed8_no_alpha_animated") << prefix + "/designer_indexed8_no_alpha_animated.gif";
 }
 
 void tst_QPixmap::fromImageReader()
