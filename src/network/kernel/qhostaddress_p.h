@@ -53,10 +53,10 @@
 // We mean it.
 //
 
-QT_BEGIN_NAMESPACE
-
 #include "qhostaddress.h"
 #include "qabstractsocket.h"
+
+QT_BEGIN_NAMESPACE
 
 class QNetmaskAddress: public QHostAddress
 {
