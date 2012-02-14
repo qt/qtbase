@@ -5635,18 +5635,22 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     fi
 
     if [ "$CFG_XCB" != "no" ]; then
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb "xcb" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xcb 2>/dev/null; then
+            QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
+            QMAKE_LIBS_XCB="`$PKG_CONFIG --libs xcb 2>/dev/null`"
+        fi
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb "xcb" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
             CFG_XCB=yes
-            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-render "xcb-render" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-render "xcb-render" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
                 QT_CONFIG="$QT_CONFIG xcb-render"
             fi
 
-            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-poll-for-queued-event "xcb-poll-for-queued-event" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-poll-for-queued-event "xcb-poll-for-queued-event" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
                 CFG_XCB_LIMITED=no
                 QT_CONFIG="$QT_CONFIG xcb-poll-for-queued-event"
             fi
 
-            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-xlib "xcb-xlib" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-xlib "xcb-xlib" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
                 QT_CONFIG="$QT_CONFIG xcb-xlib"
             fi
 
