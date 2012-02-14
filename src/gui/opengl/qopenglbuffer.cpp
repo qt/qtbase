@@ -529,7 +529,11 @@ void *QOpenGLBuffer::map(QOpenGLBuffer::Access access)
     return glMapBufferARB(d->type, access);
 #endif
     Q_UNUSED(access);
-    qWarning("QOpenGLBuffer::map(): pending implementation");
+    static bool warned = false;
+    if (!warned) {
+        qWarning("QOpenGLBuffer::map(): pending implementation");
+        warned = true;
+    }
     return 0;
 }
 
@@ -560,7 +564,11 @@ bool QOpenGLBuffer::unmap()
         return false;
     return glUnmapBufferARB(d->type) == GL_TRUE;
 #endif
-    qWarning("QOpenGLBuffer::map(): pending implementation");
+    static bool warned = false;
+    if (!warned) {
+        qWarning("QOpenGLBuffer::map(): pending implementation");
+        warned = true;
+    }
     return 0;
 }
 
