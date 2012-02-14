@@ -260,7 +260,6 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 
 - (void)onOkClicked
 {
-    Q_ASSERT(mHackedPanel);
     [mFontPanel close];
     [self finishOffWithCode:NSOKButton];
 }

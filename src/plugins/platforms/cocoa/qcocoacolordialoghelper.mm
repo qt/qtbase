@@ -226,7 +226,6 @@ static NSButton *macCreateButton(const char *text, NSView *superview)
 
 - (void)onOkClicked
 {
-    Q_ASSERT(mHackedPanel);
     [mColorPanel close];
     [self updateQtColor];
     [self finishOffWithCode:NSOKButton];
