@@ -194,6 +194,43 @@ HB_Error  HB_Done_GPOS_Table( HB_GPOSHeader* gpos )
 
 /* ValueRecord */
 
+static HB_Error  Get_FlexibleValueRecord( GPOS_Instance*   gpi,
+                                          HB_Short*        vr,
+                                          HB_UShort        format,
+                                          HB_Position      gd )
+{
+  HB_Error         error = HB_Err_Ok;
+
+  HB_16Dot16   x_scale, y_scale;
+
+  if ( !format )
+    return HB_Err_Ok;
+
+  x_scale = gpi->font->x_scale;
+  y_scale = gpi->font->y_scale;
+
+  /* design units -> fractional pixel */
+
+  if ( format & HB_GPOS_FORMAT_HAVE_X_PLACEMENT ) {
+    gd->x_pos += *vr * x_scale / 0x10000;
+    vr++;
+  }
+  if ( format & HB_GPOS_FORMAT_HAVE_Y_PLACEMENT ) {
+    gd->y_pos += *vr * y_scale / 0x10000;
+    vr++;
+  }
+  if ( format & HB_GPOS_FORMAT_HAVE_X_ADVANCE ) {
+    gd->x_advance += *vr * x_scale / 0x10000;
+    vr++;
+  }
+  if ( format & HB_GPOS_FORMAT_HAVE_Y_ADVANCE ) {
+    gd->y_advance += *vr * y_scale  / 0x10000;
+    vr++;
+  }
+
+  return error;
+}
+
 /* There is a subtle difference in the specs between a `table' and a
    `record' -- offsets for device tables in ValueRecords are taken from
    the parent table and not the parent record.                          */
@@ -1245,6 +1282,19 @@ static void  Free_PairPos1( HB_PairPosFormat1*  ppf1,
   }
 }
 
+static HB_UInt Calculate_Class2RecordSize(HB_UShort format1, HB_UShort format2)
+{
+    // Return number of 16 bit values in two value records with given formats
+    return  (format1 & 0x01)       +  (format2 & 0x01)
+         + ((format1 & 0x02) >> 1) + ((format2 & 0x02) >> 1)
+         + ((format1 & 0x04) >> 2) + ((format2 & 0x04) >> 2)
+         + ((format1 & 0x08) >> 3) + ((format2 & 0x08) >> 3)
+         + ((format1 & 0x10) >> 4) + ((format2 & 0x10) >> 4)
+         + ((format1 & 0x20) >> 5) + ((format2 & 0x20) >> 5)
+         + ((format1 & 0x40) >> 6) + ((format2 & 0x40) >> 6)
+         + ((format1 & 0x80) >> 7) + ((format2 & 0x80) >> 7);
+}
+
 
 /* PairPosFormat2 */
 
@@ -1256,11 +1306,14 @@ static HB_Error  Load_PairPos2( HB_PairPosFormat2*  ppf2,
   HB_Error  error;
 
   HB_UShort          m, n, k, count1, count2;
-  HB_UInt           cur_offset, new_offset1, new_offset2, base_offset;
+  HB_UInt           cur_offset, new_offset1, new_offset2, base_offset, cls2_record_size = 0;
 
   HB_Class1Record*  c1r;
   HB_Class2Record*  c2r;
 
+  HB_Short* vr;
+
+  hb_uint8 use_flexible_value_records;
 
   base_offset = FILE_Pos() - 8L;
 
@@ -1275,6 +1328,13 @@ static HB_Error  Load_PairPos2( HB_PairPosFormat2*  ppf2,
 
   count1 = ppf2->Class1Count = GET_UShort();
   count2 = ppf2->Class2Count = GET_UShort();
+
+#ifndef HB_USE_FLEXIBLE_VALUE_RECORD
+  use_flexible_value_records = 0;
+#else
+  use_flexible_value_records = !((format1 & HB_GPOS_FORMAT_HAVE_DEVICE_TABLES) ||
+                                 (format2 & HB_GPOS_FORMAT_HAVE_DEVICE_TABLES));
+#endif
 
   FORGET_Frame();
 
@@ -1296,35 +1356,55 @@ static HB_Error  Load_PairPos2( HB_PairPosFormat2*  ppf2,
 
   c1r = ppf2->Class1Record;
 
+  if ( use_flexible_value_records )
+    cls2_record_size = Calculate_Class2RecordSize(format1, format2);
+
   for ( m = 0; m < count1; m++ )
   {
-    c1r[m].Class2Record = NULL;
+    c1r[m].IsFlexible = use_flexible_value_records;
+    if ( use_flexible_value_records ) {
+        c1r[m].c2r.ValueRecords = NULL;
 
-    if ( ALLOC_ARRAY( c1r[m].Class2Record, count2, HB_Class2Record ) )
-      goto Fail1;
+        if ( ALLOC_ARRAY( c1r[m].c2r.ValueRecords, count2 * cls2_record_size, HB_UShort ) )
+          goto Fail1;
 
-    c2r = c1r[m].Class2Record;
+        vr = c1r[m].c2r.ValueRecords;
 
-    for ( n = 0; n < count2; n++ )
-    {
-      if ( format1 )
-      {
-	error = Load_ValueRecord( &c2r[n].Value1, format1,
-				  base_offset, stream );
-	if ( error )
-	  goto Fail0;
-      }
-      if ( format2 )
-      {
-	error = Load_ValueRecord( &c2r[n].Value2, format2,
-				  base_offset, stream );
-	if ( error )
-	{
-	  if ( format1 )
-	    Free_ValueRecord( &c2r[n].Value1, format1 );
-	  goto Fail0;
-	}
-      }
+        if ( ACCESS_Frame( count2 * cls2_record_size * 2L ))
+            goto Fail1;
+
+        for ( n = 0; n < count2 * cls2_record_size; n++ )
+            vr[n] = GET_Short();
+
+        FORGET_Frame();
+    } else {
+        c1r[m].c2r.Class2Record = NULL;
+
+        if ( ALLOC_ARRAY( c1r[m].c2r.Class2Record, count2, HB_Class2Record ) )
+          goto Fail1;
+
+        c2r = c1r[m].c2r.Class2Record;
+        for ( n = 0; n < count2; n++ )
+        {
+            if ( format1 )
+            {
+                error = Load_ValueRecord( &c2r[n].Value1, format1,
+                                          base_offset, stream );
+                if ( error )
+                    goto Fail0;
+            }
+            if ( format2 )
+            {
+                error = Load_ValueRecord( &c2r[n].Value2, format2,
+                                          base_offset, stream );
+                if ( error )
+                {
+                    if ( format1 )
+                        Free_ValueRecord( &c2r[n].Value1, format1 );
+                    goto Fail0;
+                }
+            }
+        }
     }
 
     continue;
@@ -1345,17 +1425,21 @@ static HB_Error  Load_PairPos2( HB_PairPosFormat2*  ppf2,
 Fail1:
   for ( k = 0; k < m; k++ )
   {
-    c2r = c1r[k].Class2Record;
+      if ( !use_flexible_value_records ) {
+        c2r = c1r[k].c2r.Class2Record;
 
-    for ( n = 0; n < count2; n++ )
-    {
-      if ( format1 )
-	Free_ValueRecord( &c2r[n].Value1, format1 );
-      if ( format2 )
-	Free_ValueRecord( &c2r[n].Value2, format2 );
-    }
+        for ( n = 0; n < count2; n++ )
+        {
+          if ( format1 )
+        Free_ValueRecord( &c2r[n].Value1, format1 );
+          if ( format2 )
+        Free_ValueRecord( &c2r[n].Value2, format2 );
+        }
 
-    FREE( c2r );
+        FREE( c2r );
+      } else {
+          FREE( c1r[k].c2r.ValueRecords );
+      }
   }
 
   FREE( c1r );
@@ -1387,17 +1471,21 @@ static void  Free_PairPos2( HB_PairPosFormat2*  ppf2,
 
     for ( m = 0; m < count1; m++ )
     {
-      c2r = c1r[m].Class2Record;
+        if ( !c1r[m].IsFlexible ) {
+            c2r = c1r[m].c2r.Class2Record;
 
-      for ( n = 0; n < count2; n++ )
-      {
-	if ( format1 )
-	  Free_ValueRecord( &c2r[n].Value1, format1 );
-	if ( format2 )
-	  Free_ValueRecord( &c2r[n].Value2, format2 );
-      }
+            for ( n = 0; n < count2; n++ )
+            {
+                if ( format1 )
+                    Free_ValueRecord( &c2r[n].Value1, format1 );
+                if ( format2 )
+                    Free_ValueRecord( &c2r[n].Value2, format2 );
+            }
 
-      FREE( c2r );
+            FREE( c2r );
+        } else {
+            FREE( c1r[m].c2r.ValueRecords );
+        }
     }
 
     FREE( c1r );
@@ -1544,6 +1632,10 @@ static HB_Error  Lookup_PairPos2( GPOS_Instance*       gpi,
 
   HB_Class1Record*  c1r;
   HB_Class2Record*  c2r;
+  HB_Short*         vr;
+
+  HB_UShort         vr1_size;
+  HB_UShort         vr2_size;
 
 
   error = _HB_OPEN_Get_Class( &ppf2->ClassDef1, IN_GLYPH( first_pos ),
@@ -1558,14 +1650,27 @@ static HB_Error  Lookup_PairPos2( GPOS_Instance*       gpi,
   c1r = &ppf2->Class1Record[cl1];
   if ( !c1r )
     return ERR(HB_Err_Invalid_SubTable);
-  c2r = &c1r->Class2Record[cl2];
 
-  error = Get_ValueRecord( gpi, &c2r->Value1, format1, POSITION( first_pos ) );
-  if ( error )
-    return error;
-  return Get_ValueRecord( gpi, &c2r->Value2, format2, POSITION( buffer->in_pos ) );
+  if ( !c1r->IsFlexible ) {
+      c2r = &c1r->c2r.Class2Record[cl2];
+
+      error = Get_ValueRecord( gpi, &c2r->Value1, format1, POSITION( first_pos ) );
+      if ( error )
+          return error;
+      return Get_ValueRecord( gpi, &c2r->Value2, format2, POSITION( buffer->in_pos ) );
+  } else {
+      vr1_size = Calculate_Class2RecordSize( format1, 0 );
+      vr2_size = Calculate_Class2RecordSize( format2, 0 );
+
+      vr = c1r->c2r.ValueRecords + (cl2 * ( vr1_size + vr2_size ));
+
+      error = Get_FlexibleValueRecord( gpi, vr, format1, POSITION( first_pos ) );
+      if ( error )
+          return error;
+      vr += vr1_size; // Skip to second record
+      return Get_FlexibleValueRecord( gpi, vr, format2, POSITION( buffer->in_pos ) );
+  }
 }
-
 
 static HB_Error  Lookup_PairPos( GPOS_Instance*    gpi,
 				 HB_GPOS_SubTable* st,
