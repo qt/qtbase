@@ -1014,13 +1014,13 @@ void tst_QTreeWidgetItemIterator::minus_eq_data()
     QTest::addColumn<int>("iteratorflags");
     QTest::addColumn<QString>("expecteditem");
 
-    QTest::newRow("-=0") << 0 << 0 << (int)QTreeWidgetItemIterator::All << QString("top0");
-    QTest::newRow("-=1") << 2 << 1 << (int)QTreeWidgetItemIterator::All << QString("top0,child0");
-    QTest::newRow("-=2") << 4 << 2 << (int)QTreeWidgetItemIterator::All << QString("top0,child1");
-    QTest::newRow("-=(-1)") << 0 << -1 << (int)QTreeWidgetItemIterator::All << QString("top0,child0");
-    QTest::newRow("-=(-2)") << 0 << -2 << (int)QTreeWidgetItemIterator::All << QString("top0,child1");
-    QTest::newRow("-=1)") << 18 << 1 << (int)QTreeWidgetItemIterator::All << QString("top0,child16");
-    QTest::newRow("-=1)") << 1 << 1 << (int)QTreeWidgetItemIterator::All << QString("top0");
+    QTest::newRow("0-=0") << 0 << 0 << (int)QTreeWidgetItemIterator::All << QString("top0");
+    QTest::newRow("2-=1") << 2 << 1 << (int)QTreeWidgetItemIterator::All << QString("top0,child0");
+    QTest::newRow("4-=2") << 4 << 2 << (int)QTreeWidgetItemIterator::All << QString("top0,child1");
+    QTest::newRow("0-=(-1)") << 0 << -1 << (int)QTreeWidgetItemIterator::All << QString("top0,child0");
+    QTest::newRow("0-=(-2)") << 0 << -2 << (int)QTreeWidgetItemIterator::All << QString("top0,child1");
+    QTest::newRow("18-=1") << 18 << 1 << (int)QTreeWidgetItemIterator::All << QString("top0,child16");
+    QTest::newRow("1-=1") << 1 << 1 << (int)QTreeWidgetItemIterator::All << QString("top0");
 }
 
 void tst_QTreeWidgetItemIterator::minus_eq()

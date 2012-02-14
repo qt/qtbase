@@ -507,7 +507,7 @@ void tst_QSplitter::setStretchFactor_data()
     QTest::newRow("ok06") << int(Qt::Vertical) << 1 << 1 << 1 << 1;
     QTest::newRow("ok07") << int(Qt::Vertical) << 2 << 2 << 2 << 2;
     QTest::newRow("ok08") << int(Qt::Vertical) << 3 << 5 << 5 << 5;
-    QTest::newRow("ok08") << int(Qt::Vertical) << -1 << 5 << 0 << 0;
+    QTest::newRow("ok09") << int(Qt::Vertical) << -1 << 5 << 0 << 0;
 }
 
 void tst_QSplitter::setStretchFactor()

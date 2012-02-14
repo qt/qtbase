@@ -647,22 +647,21 @@ void tst_QLineEdit::inputMask_data()
     QTest::addColumn<QString>("expectedMask");
 
     // if no mask is set a nul string should be returned
-    QTest::newRow("") << QString("") << QString();
-    QTest::newRow("") << QString() << QString();
+    QTest::newRow("nul 1") << QString("") << QString();
+    QTest::newRow("nul 2") << QString() << QString();
 
     // try different masks
-    QTest::newRow("") << QString("000.000.000.000") << QString("000.000.000.000; ");
-    QTest::newRow("") << QString("000.000.000.000;#") << QString("000.000.000.000;#");
-    QTest::newRow("") << QString("AAA.aa.999.###;") << QString("AAA.aa.999.###; ");
-    QTest::newRow("") << QString(">abcdef<GHIJK") << QString(">abcdef<GHIJK; ");
-//    QTest::newRow("") << QString() << QString();
+    QTest::newRow("mask 1") << QString("000.000.000.000") << QString("000.000.000.000; ");
+    QTest::newRow("mask 2") << QString("000.000.000.000;#") << QString("000.000.000.000;#");
+    QTest::newRow("mask 3") << QString("AAA.aa.999.###;") << QString("AAA.aa.999.###; ");
+    QTest::newRow("mask 4") << QString(">abcdef<GHIJK") << QString(">abcdef<GHIJK; ");
 
     // set an invalid input mask...
     // the current behaviour is that this exact (faulty) string is returned.
-    QTest::newRow("") << QString("ABCDEFGHIKLMNOP;") << QString("ABCDEFGHIKLMNOP; ");
+    QTest::newRow("invalid") << QString("ABCDEFGHIKLMNOP;") << QString("ABCDEFGHIKLMNOP; ");
 
     // verify that we can unset the mask again
-    QTest::newRow("") << QString("") << QString();
+    QTest::newRow("unset") << QString("") << QString();
 }
 
 void tst_QLineEdit::inputMask()
@@ -3441,32 +3440,32 @@ void tst_QLineEdit::task233101_cursorPosAfterInputMethod_data()
     QTest::addColumn<int>("replacementLength");
     QTest::addColumn<QString>("commitString");
 
-    QTest::newRow("") << 4 << 4 << 0 << 0 << QString("");
-    QTest::newRow("") << 4 << 4 << 0 << 0 << QString("x");
-    QTest::newRow("") << 4 << 4 << 0 << 0 << QString("xxxxxxxxxxxxxxxx");
-    QTest::newRow("") << 4 << 3 << 0 << 0 << QString("");
-    QTest::newRow("") << 4 << 3 << 0 << 0 << QString("x");
-    QTest::newRow("") << 4 << 3 << 0 << 0 << QString("xxxxxxxxxxxxxxxx");
-    QTest::newRow("") << 4 << 0 << 0 << 0 << QString("");
-    QTest::newRow("") << 4 << 0 << 0 << 0 << QString("x");
-    QTest::newRow("") << 4 << 0 << 0 << 0 << QString("xxxxxxxxxxxxxxxx");
+    QTest::newRow("data1")  << 4 << 4 << 0 << 0 << QString("");
+    QTest::newRow("data2")  << 4 << 4 << 0 << 0 << QString("x");
+    QTest::newRow("data3")  << 4 << 4 << 0 << 0 << QString("xxxxxxxxxxxxxxxx");
+    QTest::newRow("data4")  << 4 << 3 << 0 << 0 << QString("");
+    QTest::newRow("data5")  << 4 << 3 << 0 << 0 << QString("x");
+    QTest::newRow("data6")  << 4 << 3 << 0 << 0 << QString("xxxxxxxxxxxxxxxx");
+    QTest::newRow("data7")  << 4 << 0 << 0 << 0 << QString("");
+    QTest::newRow("data8")  << 4 << 0 << 0 << 0 << QString("x");
+    QTest::newRow("data9")  << 4 << 0 << 0 << 0 << QString("xxxxxxxxxxxxxxxx");
 
-    QTest::newRow("") << 4 << 4 << -4 << 4 << QString("");
-    QTest::newRow("") << 4 << 4 << -4 << 4 << QString("x");
-    QTest::newRow("") << 4 << 4 << -4 << 4 << QString("xxxxxxxxxxxxxxxx");
-    QTest::newRow("") << 4 << 3 << -3 << 4 << QString("");
-    QTest::newRow("") << 4 << 3 << -3 << 4 << QString("x");
-    QTest::newRow("") << 4 << 3 << -3 << 4 << QString("xxxxxxxxxxxxxxxx");
-    QTest::newRow("") << 4 << 0 << 0 << 4 << QString("");
-    QTest::newRow("") << 4 << 0 << 0 << 4 << QString("x");
-    QTest::newRow("") << 4 << 0 << 0 << 4 << QString("xxxxxxxxxxxxxxxx");
+    QTest::newRow("data10") << 4 << 4 << -4 << 4 << QString("");
+    QTest::newRow("data11") << 4 << 4 << -4 << 4 << QString("x");
+    QTest::newRow("data12") << 4 << 4 << -4 << 4 << QString("xxxxxxxxxxxxxxxx");
+    QTest::newRow("data13") << 4 << 3 << -3 << 4 << QString("");
+    QTest::newRow("data14") << 4 << 3 << -3 << 4 << QString("x");
+    QTest::newRow("data15") << 4 << 3 << -3 << 4 << QString("xxxxxxxxxxxxxxxx");
+    QTest::newRow("data16") << 4 << 0 << 0 << 4 << QString("");
+    QTest::newRow("data17") << 4 << 0 << 0 << 4 << QString("x");
+    QTest::newRow("data18") << 4 << 0 << 0 << 4 << QString("xxxxxxxxxxxxxxxx");
 
-    QTest::newRow("") << 4 << 4 << -4 << 0 << QString("");
-    QTest::newRow("") << 4 << 4 << -4 << 0 << QString("x");
-    QTest::newRow("") << 4 << 4 << -4 << 0 << QString("xxxxxxxxxxxxxxxx");
-    QTest::newRow("") << 4 << 3 << -3 << 0 << QString("");
-    QTest::newRow("") << 4 << 3 << -3 << 0 << QString("x");
-    QTest::newRow("") << 4 << 3 << -3 << 0 << QString("xxxxxxxxxxxxxxxx");
+    QTest::newRow("data19") << 4 << 4 << -4 << 0 << QString("");
+    QTest::newRow("data20") << 4 << 4 << -4 << 0 << QString("x");
+    QTest::newRow("data21") << 4 << 4 << -4 << 0 << QString("xxxxxxxxxxxxxxxx");
+    QTest::newRow("data22") << 4 << 3 << -3 << 0 << QString("");
+    QTest::newRow("data23") << 4 << 3 << -3 << 0 << QString("x");
+    QTest::newRow("data24") << 4 << 3 << -3 << 0 << QString("xxxxxxxxxxxxxxxx");
 }
 
 void tst_QLineEdit::task233101_cursorPosAfterInputMethod()

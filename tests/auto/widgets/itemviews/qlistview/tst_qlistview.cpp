@@ -970,7 +970,7 @@ void tst_QListView::selection_data()
         << QRect(300, 10, 1, 1)                 // selection rectangle
         << IntList();                           // expected items
 
-    QTest::newRow("select to the right, (on viewport)")
+    QTest::newRow("select to the right 2, (on viewport)")
         << 40                                   // itemCount
         << int(QListView::ListMode)
         << int(QListView::TopToBottom)

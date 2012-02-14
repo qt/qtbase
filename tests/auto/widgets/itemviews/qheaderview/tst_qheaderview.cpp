@@ -2365,16 +2365,16 @@ void tst_QHeaderView::setupTestData(bool also_use_reset_model)
     QTest::addColumn<bool>("reset_model");
 
     if (also_use_reset_model) {
-        QTest::newRow("no_updates+normal")  << false << false << true;
-        QTest::newRow("hasupdates+normal")  << true << false << true;
-        QTest::newRow("no_updates+special") << false << true << true;
-        QTest::newRow("no_updates+special") << true << true << true;
+        QTest::newRow("no_updates+normal+reset")  << false << false << true;
+        QTest::newRow("hasupdates+normal+reset")  << true << false << true;
+        QTest::newRow("no_updates+special+reset") << false << true << true;
+        QTest::newRow("hasupdates+special+reset") << true << true << true;
     }
 
     QTest::newRow("no_updates+normal")  << false << false << false;
     QTest::newRow("hasupdates+normal")  << true << false << false;
     QTest::newRow("no_updates+special") << false << true << false;
-    QTest::newRow("no_updates+special") << true << true << false;
+    QTest::newRow("hasupdates+special") << true << true << false;
 }
 
 void tst_QHeaderView::additionalInit()

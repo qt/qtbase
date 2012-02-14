@@ -657,22 +657,22 @@ void tst_QSpinBox::valueFromTextAndValidate_data()
     QTest::newRow("data3") << QString("2") << Acceptable << 0 << 100 << QString();
     QTest::newRow("data4") << QString() << Intermediate << 0 << 1 << QString();
     QTest::newRow("data5") << QString() << Invalid << 0 << 0 << QString();
-    QTest::newRow("data5") << QString("5") << Intermediate << 2004 << 2005 << QString();
-    QTest::newRow("data6") << QString("50") << Intermediate << 2004 << 2005 << QString();
-    QTest::newRow("data7") << QString("205") << Intermediate << 2004 << 2005 << QString();
-    QTest::newRow("data8") << QString("2005") << Acceptable << 2004 << 2005 << QString();
-    QTest::newRow("data9") << QString("3") << Intermediate << 2004 << 2005 << QString();
-    QTest::newRow("data10") << QString("-") << Intermediate << -20 << -10 << QString();
-    QTest::newRow("data11") << QString("-1") << Intermediate << -20 << -10 << QString();
-    QTest::newRow("data12") << QString("-5") << Intermediate << -20 << -10 << QString();
-    QTest::newRow("data13") << QString("-5") << Intermediate << -20 << -16 << QString();
-    QTest::newRow("data14") << QString("-2") << Intermediate << -20 << -16 << QString();
-    QTest::newRow("data15") << QString("2") << Invalid << -20 << -16 << QString();
-    QTest::newRow("data16") << QString() << Intermediate << -20 << -16 << QString();
-    QTest::newRow("data17") << QString("  22") << Acceptable << 0 << 1000 << QString("22");
-    QTest::newRow("data18") << QString("22  ") << Acceptable << 0 << 1000 << QString("22");
-    QTest::newRow("data19") << QString("  22  ") << Acceptable << 0 << 1000 << QString("22");
-    QTest::newRow("data20") << QString("2 2") << Invalid << 0 << 1000 << QString();
+    QTest::newRow("data6") << QString("5") << Intermediate << 2004 << 2005 << QString();
+    QTest::newRow("data7") << QString("50") << Intermediate << 2004 << 2005 << QString();
+    QTest::newRow("data8") << QString("205") << Intermediate << 2004 << 2005 << QString();
+    QTest::newRow("data9") << QString("2005") << Acceptable << 2004 << 2005 << QString();
+    QTest::newRow("data10") << QString("3") << Intermediate << 2004 << 2005 << QString();
+    QTest::newRow("data11") << QString("-") << Intermediate << -20 << -10 << QString();
+    QTest::newRow("data12") << QString("-1") << Intermediate << -20 << -10 << QString();
+    QTest::newRow("data13") << QString("-5") << Intermediate << -20 << -10 << QString();
+    QTest::newRow("data14") << QString("-5") << Intermediate << -20 << -16 << QString();
+    QTest::newRow("data15") << QString("-2") << Intermediate << -20 << -16 << QString();
+    QTest::newRow("data16") << QString("2") << Invalid << -20 << -16 << QString();
+    QTest::newRow("data17") << QString() << Intermediate << -20 << -16 << QString();
+    QTest::newRow("data18") << QString("  22") << Acceptable << 0 << 1000 << QString("22");
+    QTest::newRow("data19") << QString("22  ") << Acceptable << 0 << 1000 << QString("22");
+    QTest::newRow("data20") << QString("  22  ") << Acceptable << 0 << 1000 << QString("22");
+    QTest::newRow("data21") << QString("2 2") << Invalid << 0 << 1000 << QString();
 }
 
 static QString stateName(int state)

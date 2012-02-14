@@ -1204,7 +1204,7 @@ void tst_QTableView::moveCursorStrikesBack_data()
             << 0 << 5 << (IntList() << int(QtTestTableView::MoveNext))
             << 1 << 0;
 
-    QTest::newRow("Last column disabled. Task QTBUG-3878") << -1 << -1
+    QTest::newRow("Last column disabled 2. Task QTBUG-3878") << -1 << -1
             << IntList()
             << (IntList() << 6)
             << QRect()

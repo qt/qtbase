@@ -380,16 +380,16 @@ void tst_QApplication::setFont_data()
 	++cnt;
     }
 
-    QTest::newRow("nonexistingfont") << "nosuchfont_probably_quiteunlikely"
+    QTest::newRow("nonexistingfont after") << "nosuchfont_probably_quiteunlikely"
         << 0 << false;
-    QTest::newRow("nonexistingfont") << "nosuchfont_probably_quiteunlikely"
+    QTest::newRow("nonexistingfont before") << "nosuchfont_probably_quiteunlikely"
         << 0 << true;
 
-    QTest::newRow("largescaleable") << "smoothtimes" << 100 << false;
-    QTest::newRow("largescaleable") << "smoothtimes" << 100 << true;
+    QTest::newRow("largescaleable after") << "smoothtimes" << 100 << false;
+    QTest::newRow("largescaleable before") << "smoothtimes" << 100 << true;
 
-    QTest::newRow("largeunscaleale") << "helvetica" << 100 << false;
-    QTest::newRow("largeunscaleale") << "helvetica" << 100 << true;
+    QTest::newRow("largeunscaleale after") << "helvetica" << 100 << false;
+    QTest::newRow("largeunscaleale before") << "helvetica" << 100 << true;
 }
 
 void tst_QApplication::setFont()
