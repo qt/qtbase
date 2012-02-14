@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the FOO module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,43 +39,32 @@
 **
 ****************************************************************************/
 
-#include <qstring.h>
-#include <qt_windows.h>
-
-QT_BEGIN_NAMESPACE
-
-
-enum Compiler {
-    CC_UNKNOWN = 0,
-    CC_BORLAND = 0x01,
-    CC_MINGW   = 0x02,
-    CC_INTEL   = 0x03,
-    CC_NET2003 = 0x71,
-    CC_NET2005 = 0x80,
-    CC_NET2008 = 0x90,
-    CC_NET2010 = 0x91
-};
-
-struct CompilerInfo;
-class Environment
-{
-public:
-    static Compiler detectCompiler();
-    static QString detectQMakeSpec();
-    static bool detectExecutable(const QString &executable);
-
-    static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
-    static QString execute(const QString &command);
-    static bool cpdir(const QString &srcDir,
-                      const QString &destDir,
-                      const QString &includeSrcDir = QString());
-    static bool rmdir(const QString &name);
-
-private:
-    static Compiler detectedCompiler;
-
-    static CompilerInfo *compilerInfo(Compiler compiler);
-};
-
-
-QT_END_NAMESPACE
+// NOTE: This file is not meant to be compiled, only preprocessed.
+#include "../../src/corelib/global/qprocessordetection.h"
+#if defined(Q_PROCESSOR_ALPHA)
+alpha
+#elif defined(Q_PROCESSOR_ARM)
+arm
+#elif defined(Q_PROCESSOR_AVR32)
+avr32
+#elif defined(Q_PROCESSOR_BLACKFIN)
+bfin
+#elif defined(Q_PROCESSOR_X86_32)
+i386
+#elif defined(Q_PROCESSOR_X86_64)
+x86_64
+#elif defined(Q_PROCESSOR_IA64)
+ia64
+#elif defined(Q_PROCESSOR_MIPS)
+mips
+#elif defined(Q_PROCESSOR_POWER)
+power
+#elif defined(Q_PROCESSOR_S390)
+s390
+#elif defined(Q_PROCESSOR_SH)
+sh
+#elif defined(Q_PROCESSOR_SPARC)
+sparc
+#else
+unknown
+#endif

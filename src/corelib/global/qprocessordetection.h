@@ -58,6 +58,10 @@
     Q_BYTE_ORDER appropriately for the target processor. For bi-endian
     processors, we try to auto-detect the byte order using the __BIG_ENDIAN__,
     __LITTLE_ENDIAN__, or __BYTE_ORDER__ preprocessor macros.
+
+    Note: when adding support for new processors, be sure to update
+    config.tests/arch/arch.cpp to ensure that configure can detect the target
+    and host architectures.
 */
 
 /* Machine byte-order, reuse preprocessor provided macros when available */

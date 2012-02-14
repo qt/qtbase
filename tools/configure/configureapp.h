@@ -81,6 +81,8 @@ public:
 #if !defined(EVAL)
     bool copySpec(const char *name, const char *pfx, const QString &spec);
     void generateConfigfiles();
+    void detectArch();
+    void generateQConfigPri();
 #endif
     void showSummary();
     void findProjects( const QString& dirName );

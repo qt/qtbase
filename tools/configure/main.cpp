@@ -87,11 +87,17 @@ int runConfigure( int argc, char** argv )
     if( !app.isDone() )
 	app.generateConfigfiles();
     if( !app.isDone() )
-	app.displayConfig();
-    if( !app.isDone() )
 	app.generateHeaders();
     if( !app.isDone() )
 	app.buildQmake();
+    // must be done after buildQmake()
+    if (!app.isDone())
+        app.detectArch();
+    // must be done after detectArch()
+    if (!app.isDone())
+        app.generateQConfigPri();
+    if (!app.isDone())
+        app.displayConfig();
 #endif
     if( !app.isDone() )
 	app.generateMakefiles();
