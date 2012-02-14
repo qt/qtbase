@@ -120,7 +120,9 @@ public:
               QOpenGLFramebufferObject::Attachment attachment,
               GLenum internal_format, GLenum texture_target,
               GLint samples = 0, bool mipmap = false);
-    bool checkFramebufferStatus() const;
+    void initAttachments(QOpenGLContext *ctx, QOpenGLFramebufferObject::Attachment attachment);
+
+    bool checkFramebufferStatus(QOpenGLContext *ctx) const;
     QOpenGLSharedResourceGuard *fbo_guard;
     QOpenGLSharedResourceGuard *texture_guard;
     QOpenGLSharedResourceGuard *depth_buffer_guard;

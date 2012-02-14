@@ -313,9 +313,8 @@ bool QOpenGLFramebufferObjectFormat::operator!=(const QOpenGLFramebufferObjectFo
     return !(*this == other);
 }
 
-bool QOpenGLFramebufferObjectPrivate::checkFramebufferStatus() const
+bool QOpenGLFramebufferObjectPrivate::checkFramebufferStatus(QOpenGLContext *ctx) const
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
     if (!ctx)
         return false;   // Context no longer exists.
     GLenum status = ctx->functions()->glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -402,8 +401,6 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
 
     GLuint texture = 0;
     GLuint color_buffer = 0;
-    GLuint depth_buffer = 0;
-    GLuint stencil_buffer = 0;
 
     QT_CHECK_GLERROR();
     // init texture
@@ -432,7 +429,7 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
                 target, texture, 0);
 
         QT_CHECK_GLERROR();
-        valid = checkFramebufferStatus();
+        valid = checkFramebufferStatus(ctx);
         glBindTexture(target, 0);
 
         color_buffer = 0;
@@ -458,11 +455,56 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
                                              GL_RENDERBUFFER, color_buffer);
 
         QT_CHECK_GLERROR();
-        valid = checkFramebufferStatus();
+        valid = checkFramebufferStatus(ctx);
 
         if (valid)
             funcs.glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_SAMPLES, &samples);
     }
+
+    format.setTextureTarget(target);
+    format.setSamples(int(samples));
+    format.setInternalTextureFormat(internal_format);
+    format.setMipmap(mipmap);
+
+    initAttachments(ctx, attachment);
+
+    funcs.glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_func()->current_fbo);
+    if (valid) {
+        fbo_guard = new QOpenGLSharedResourceGuard(ctx, fbo, freeFramebufferFunc);
+        if (color_buffer)
+            color_buffer_guard = new QOpenGLSharedResourceGuard(ctx, color_buffer, freeRenderbufferFunc);
+        else
+            texture_guard = new QOpenGLSharedResourceGuard(ctx, texture, freeTextureFunc);
+    } else {
+        if (color_buffer)
+            funcs.glDeleteRenderbuffers(1, &color_buffer);
+        else
+            glDeleteTextures(1, &texture);
+        funcs.glDeleteFramebuffers(1, &fbo);
+    }
+    QT_CHECK_GLERROR();
+}
+
+void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpenGLFramebufferObject::Attachment attachment)
+{
+    int samples = format.samples();
+
+    // free existing attachments
+    if (depth_buffer_guard) {
+        funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
+        depth_buffer_guard->free();
+    }
+    if (stencil_buffer_guard) {
+        funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, 0);
+        if (stencil_buffer_guard != depth_buffer_guard)
+            stencil_buffer_guard->free();
+    }
+
+    depth_buffer_guard = 0;
+    stencil_buffer_guard = 0;
+
+    GLuint depth_buffer = 0;
+    GLuint stencil_buffer = 0;
 
     // In practice, a combined depth-stencil buffer is supported by all desktop platforms, while a
     // separate stencil buffer is not. On embedded devices however, a combined depth-stencil buffer
@@ -488,7 +530,7 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
                                      GL_RENDERBUFFER, stencil_buffer);
 
-        valid = checkFramebufferStatus();
+        valid = checkFramebufferStatus(ctx);
         if (!valid) {
             funcs.glDeleteRenderbuffers(1, &depth_buffer);
             stencil_buffer = depth_buffer = 0;
@@ -529,7 +571,7 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
         }
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                                      GL_RENDERBUFFER, depth_buffer);
-        valid = checkFramebufferStatus();
+        valid = checkFramebufferStatus(ctx);
         if (!valid) {
             funcs.glDeleteRenderbuffers(1, &depth_buffer);
             depth_buffer = 0;
@@ -559,7 +601,7 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
         }
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
                                   GL_RENDERBUFFER, stencil_buffer);
-        valid = checkFramebufferStatus();
+        valid = checkFramebufferStatus(ctx);
         if (!valid) {
             funcs.glDeleteRenderbuffers(1, &stencil_buffer);
             stencil_buffer = 0;
@@ -567,7 +609,7 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     }
 
     // The FBO might have become valid after removing the depth or stencil buffer.
-    valid = checkFramebufferStatus();
+    valid = checkFramebufferStatus(ctx);
 
     if (depth_buffer && stencil_buffer) {
         fbo_attachment = QOpenGLFramebufferObject::CombinedDepthStencil;
@@ -577,13 +619,7 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
         fbo_attachment = QOpenGLFramebufferObject::NoAttachment;
     }
 
-    funcs.glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_func()->current_fbo);
     if (valid) {
-        fbo_guard = new QOpenGLSharedResourceGuard(ctx, fbo, freeFramebufferFunc);
-        if (color_buffer)
-            color_buffer_guard = new QOpenGLSharedResourceGuard(ctx, color_buffer, freeRenderbufferFunc);
-        else
-            texture_guard = new QOpenGLSharedResourceGuard(ctx, texture, freeTextureFunc);
         if (depth_buffer)
             depth_buffer_guard = new QOpenGLSharedResourceGuard(ctx, depth_buffer, freeRenderbufferFunc);
         if (stencil_buffer) {
@@ -593,23 +629,14 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
                 stencil_buffer_guard = new QOpenGLSharedResourceGuard(ctx, stencil_buffer, freeRenderbufferFunc);
         }
     } else {
-        if (color_buffer)
-            funcs.glDeleteRenderbuffers(1, &color_buffer);
-        else
-            glDeleteTextures(1, &texture);
         if (depth_buffer)
             funcs.glDeleteRenderbuffers(1, &depth_buffer);
         if (stencil_buffer && depth_buffer != stencil_buffer)
             funcs.glDeleteRenderbuffers(1, &stencil_buffer);
-        funcs.glDeleteFramebuffers(1, &fbo);
     }
     QT_CHECK_GLERROR();
 
-    format.setTextureTarget(target);
-    format.setSamples(int(samples));
     format.setAttachment(fbo_attachment);
-    format.setInternalTextureFormat(internal_format);
-    format.setMipmap(mipmap);
 }
 
 /*!
@@ -861,7 +888,7 @@ bool QOpenGLFramebufferObject::bind()
         qWarning("QOpenGLFramebufferObject::bind() called from incompatible context");
 #endif
     d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, d->fbo());
-    d->valid = d->checkFramebufferStatus();
+    d->valid = d->checkFramebufferStatus(current);
     if (d->valid && current)
         current->d_func()->current_fbo = d->fbo();
     return d->valid;
@@ -1105,6 +1132,30 @@ QOpenGLFramebufferObject::Attachment QOpenGLFramebufferObject::attachment() cons
     if (d->valid)
         return d->fbo_attachment;
     return NoAttachment;
+}
+
+/*!
+    Sets the attachments of the framebuffer object.
+
+    This can be used to free or reattach the depth and stencil buffer
+    attachments as needed.
+ */
+void QOpenGLFramebufferObject::setAttachment(QOpenGLFramebufferObject::Attachment attachment)
+{
+    Q_D(QOpenGLFramebufferObject);
+    if (attachment == d->fbo_attachment || !isValid())
+        return;
+    QOpenGLContext *current = QOpenGLContext::currentContext();
+    if (!current)
+        return;
+#ifdef QT_DEBUG
+    if (current->shareGroup() != d->fbo_guard->group())
+        qWarning("QOpenGLFramebufferObject::setAttachment() called from incompatible context");
+#endif
+    d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, d->fbo());
+    d->initAttachments(current, attachment);
+    if (current->d_func()->current_fbo != d->fbo())
+        d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, current->d_func()->current_fbo);
 }
 
 /*!
