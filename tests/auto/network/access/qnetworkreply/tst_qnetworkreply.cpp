@@ -392,6 +392,9 @@ private Q_SLOTS:
     void synchronousAuthenticationCache();
     void pipelining();
 
+    void closeDuringDownload_data();
+    void closeDuringDownload();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -6734,6 +6737,27 @@ void tst_QNetworkReply::pipeliningHelperSlot() {
         QTestEventLoop::instance().exitLoop();
         QVERIFY2(pipeliningWasUsed, "pipelining was not used in any of the replies when trying to test pipelining");
     }
+}
+
+void tst_QNetworkReply::closeDuringDownload_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::newRow("http") << QUrl("http://" + QtNetworkSettings::serverName() + "/bigfile");
+    QTest::newRow("ftp") << QUrl("ftp://" + QtNetworkSettings::serverName() + "/qtest/bigfile");
+}
+
+void tst_QNetworkReply::closeDuringDownload()
+{
+    QFETCH(QUrl, url);
+    QNetworkRequest request(url);
+    QNetworkReply* reply = manager.get(request);
+    connect(reply, SIGNAL(readyRead()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    reply->close();
+    reply->deleteLater();
+    QTest::qWait(1000); //cancelling ftp takes some time, this avoids a warning caused by test's cleanup() destroying the connection cache before the abort is finished
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
