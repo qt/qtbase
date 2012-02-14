@@ -378,13 +378,19 @@ bool QSqlTableModel::select()
     if (query.isEmpty())
         return false;
 
-    // clear the submitted flags so revertAll can do its job
-    for (QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.begin();
-         it != d->cache.constEnd();
-         ++it)
-        it.value().setSubmitted(false);
+    QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.end();
+    while (it != d->cache.constBegin()) {
+        --it;
+        // rows must be accounted for
+        if (it.value().op() == QSqlTableModelPrivate::Insert) {
+            beginRemoveRows(QModelIndex(), it.key(), it.key());
+            it = d->cache.erase(it);
+            endRemoveRows();
+        } else {
+            it = d->cache.erase(it);
+        }
+    }
 
-    revertAll();
     QSqlQuery qu(query, d->db);
     setQuery(qu);
 
@@ -681,19 +687,6 @@ bool QSqlTableModel::submitAll()
         it.value().setSubmitted(true);
     }
 
-    // all changes have been committed
-
-    // clean up inserted rows
-    QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.end();
-    while (it != d->cache.constBegin()) {
-        --it;
-        if (it.value().op()  == QSqlTableModelPrivate::Insert) {
-            beginRemoveRows(QModelIndex(), it.key(), it.key());
-            it = d->cache.erase(it);
-            endRemoveRows();
-        }
-    }
-    d->clearCache();
     return select();
 }
 
