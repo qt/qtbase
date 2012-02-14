@@ -70,7 +70,6 @@ private slots:
     void serverReachability();
     void remotePortsOpen_data();
     void remotePortsOpen();
-    void fileLineEndingTest();
 
     // specific protocol tests
     void ftpServer();
@@ -456,31 +455,6 @@ void tst_NetworkSelfTest::remotePortsOpen()
             QFAIL(QString("Error connecting to server on port %1: %2").arg(portNumber).arg(socket.errorString()).toLocal8Bit());
     }
     QVERIFY(socket.state() == QAbstractSocket::ConnectedState);
-}
-
-
-void tst_NetworkSelfTest::fileLineEndingTest()
-{
-    QString referenceName = SRCDIR "/rfc3252.txt";
-    long long expectedReferenceSize = 25962;
-
-    QString lineEndingType("LF");
-
-    QFile reference(referenceName);
-    QVERIFY(reference.open(QIODevice::ReadOnly));
-    QByteArray byteLine = reference.readLine();
-    if(byteLine.endsWith("\r\n"))
-        lineEndingType = "CRLF";
-    else if(byteLine.endsWith("\r"))
-        lineEndingType = "CR";
-
-    QString referenceAsTextData;
-    QFile referenceAsText(referenceName);
-    QVERIFY(referenceAsText.open(QIODevice::ReadOnly));
-    referenceAsTextData = referenceAsText.readAll();
-
-    QVERIFY2(expectedReferenceSize == referenceAsTextData.length(), QString("Reference file %1 has %2 as line ending and file size not matching - Git checkout issue !?!").arg(referenceName, lineEndingType).toLocal8Bit());
-    QVERIFY2(!lineEndingType.compare("LF"), QString("Reference file %1 has %2 as line ending - Git checkout issue !?!").arg(referenceName, lineEndingType).toLocal8Bit());
 }
 
 static QList<Chat> ftpChat(const QByteArray &userSuffix = QByteArray())
