@@ -115,7 +115,7 @@ public:
             m_rec.setGenerated(c, true);
         }
         inline bool submitted() const { return m_submitted; }
-        inline void setSubmitted(bool b) { m_submitted = b; }
+        inline void setSubmitted() { m_submitted = true; }
     private:
         Op m_op;
         QSqlRecord m_rec;

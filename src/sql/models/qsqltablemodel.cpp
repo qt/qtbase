@@ -684,7 +684,7 @@ bool QSqlTableModel::submitAll()
             Q_ASSERT_X(false, "QSqlTableModel::submitAll()", "Invalid cache operation");
             break;
         }
-        it.value().setSubmitted(true);
+        it.value().setSubmitted();
     }
 
     return select();
