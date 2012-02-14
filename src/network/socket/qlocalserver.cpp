@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QLocalServer
     \since 4.4
+    \inmodule QtNetwork
 
     \brief The QLocalServer class provides a local socket based server.
 

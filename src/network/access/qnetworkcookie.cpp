@@ -58,6 +58,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QNetworkCookie
     \since 4.4
+    \inmodule QtNetwork
+
     \brief The QNetworkCookie class holds one network cookie.
 
     Cookies are small bits of information that stateless protocols

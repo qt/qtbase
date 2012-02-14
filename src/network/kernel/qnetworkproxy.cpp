@@ -853,7 +853,7 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
     \since 4.5
     \inmodule QtNetwork
     \brief The QNetworkProxyQuery class is used to query the proxy
-    settings for a socket
+    settings for a socket.
 
     QNetworkProxyQuery holds the details of a socket being created or
     request being made. It is used by QNetworkProxy and

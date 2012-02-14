@@ -57,11 +57,11 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QNetworkRequest
-    \brief The QNetworkRequest class holds a request to be sent with QNetworkAccessManager.
     \since 4.4
-
     \ingroup network
     \inmodule QtNetwork
+
+    \brief The QNetworkRequest class holds a request to be sent with QNetworkAccessManager.
 
     QNetworkRequest is part of the Network Access API and is the class
     holding the information necessary to send a request over the
@@ -115,7 +115,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QNetworkRequest::Attribute
     \since 4.7
-    
+
     Attribute codes for the QNetworkRequest and QNetworkReply.
 
     Attributes are extra meta-data that are used to control the
@@ -606,7 +606,7 @@ QNetworkRequest::Priority QNetworkRequest::priority() const
 /*! \enum QNetworkRequest::Priority
 
   \since 4.7
-  
+
   This enum lists the possible network request priorities.
 
   \value HighPriority   High priority
