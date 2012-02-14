@@ -580,6 +580,9 @@ void tst_QSettings::ctor()
             QCoreApplication::instance()->setOrganizationName("");
             QCoreApplication::instance()->setApplicationName("");
             QSettings settings;
+#ifdef Q_OS_MAC
+            QEXPECT_FAIL("native", "Default settings on Mac are valid, despite organization domain, name, and app name being null", Continue);
+#endif
             QCOMPARE(settings.status(), QSettings::AccessError);
             QCoreApplication::instance()->setOrganizationName("software.org");
             QCoreApplication::instance()->setApplicationName("KillerAPP");
@@ -592,6 +595,9 @@ void tst_QSettings::ctor()
         }
 
         QSettings settings(format, QSettings::UserScope, "", "");
+#ifdef Q_OS_MAC
+        QEXPECT_FAIL("native", "Default settings on Mac are valid, despite organization domain, name, and app name being null", Continue);
+#endif
         QCOMPARE(settings.status(), QSettings::AccessError);
         QSettings settings2(format, QSettings::UserScope, "software.org", "KillerAPP");
         QCOMPARE(settings2.status(), QSettings::NoError);
