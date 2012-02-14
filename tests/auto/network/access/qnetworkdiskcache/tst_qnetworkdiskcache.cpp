@@ -306,7 +306,7 @@ void tst_QNetworkDiskCache::data_data()
     QNetworkCacheMetaData::RawHeaderList headers;
     headers.append(QNetworkCacheMetaData::RawHeader("type", "bin"));
     metaData.setRawHeaders(headers);
-    QTest::newRow("null") << metaData;
+    QTest::newRow("non-null") << metaData;
 }
 
 // public QIODevice* data(QUrl const& url)

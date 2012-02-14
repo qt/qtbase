@@ -284,7 +284,7 @@ void tst_QNetworkCookieJar::cookiesForUrl_data()
     QTest::newRow("match-2") << allCookies << "http://nokia.com/web/" << result;
     QTest::newRow("match-3") << allCookies << "http://nokia.com/web/content" << result;
     QTest::newRow("match-4") << allCookies << "http://qt.nokia.com/web" << result;
-    QTest::newRow("match-4") << allCookies << "http://qt.nokia.com/web/" << result;
+    QTest::newRow("match-5") << allCookies << "http://qt.nokia.com/web/" << result;
     QTest::newRow("match-6") << allCookies << "http://qt.nokia.com/web/content" << result;
 
     cookie.setPath("/web/wiki");
@@ -295,7 +295,7 @@ void tst_QNetworkCookieJar::cookiesForUrl_data()
     QTest::newRow("one-match-2") << allCookies << "http://nokia.com/web/" << result;
     QTest::newRow("one-match-3") << allCookies << "http://nokia.com/web/content" << result;
     QTest::newRow("one-match-4") << allCookies << "http://qt.nokia.com/web" << result;
-    QTest::newRow("one-match-4") << allCookies << "http://qt.nokia.com/web/" << result;
+    QTest::newRow("one-match-5") << allCookies << "http://qt.nokia.com/web/" << result;
     QTest::newRow("one-match-6") << allCookies << "http://qt.nokia.com/web/content" << result;
 
     result.prepend(cookie);     // longer path, it must match first
@@ -317,7 +317,7 @@ void tst_QNetworkCookieJar::cookiesForUrl_data()
     QTest::newRow("exp-match-2") << allCookies << "http://nokia.com/web/" << result;
     QTest::newRow("exp-match-3") << allCookies << "http://nokia.com/web/content" << result;
     QTest::newRow("exp-match-4") << allCookies << "http://qt.nokia.com/web" << result;
-    QTest::newRow("exp-match-4") << allCookies << "http://qt.nokia.com/web/" << result;
+    QTest::newRow("exp-match-5") << allCookies << "http://qt.nokia.com/web/" << result;
     QTest::newRow("exp-match-6") << allCookies << "http://qt.nokia.com/web/content" << result;
 
     // path matching

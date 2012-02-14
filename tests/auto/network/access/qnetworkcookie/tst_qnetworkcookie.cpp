@@ -165,11 +165,11 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     QTest::newRow("with-value2") << " a=b" << cookie;
     QTest::newRow("with-value3") << "a=b " << cookie;
     QTest::newRow("with-value4") << " a=b " << cookie;
-    QTest::newRow("with-value4") << " a=b ;" << cookie;
-    QTest::newRow("with-value5") << "a =b" << cookie;
-    QTest::newRow("with-value6") << "a= b" << cookie;
-    QTest::newRow("with-value7") << "a = b" << cookie;
-    QTest::newRow("with-value8") << "a = b " << cookie;
+    QTest::newRow("with-value5") << " a=b ;" << cookie;
+    QTest::newRow("with-value6") << "a =b" << cookie;
+    QTest::newRow("with-value7") << "a= b" << cookie;
+    QTest::newRow("with-value8") << "a = b" << cookie;
+    QTest::newRow("with-value9") << "a = b " << cookie;
 
     cookie.setValue("\",\"");
     QTest::newRow("with-value-with-special1") << "a = \",\" " << cookie;
@@ -376,31 +376,31 @@ void tst_QNetworkCookie::parseSingleCookie_data()
 
     // extra offsets
     cookie.setExpirationDate(QDateTime(QDate(1989, 1, 2), QTime(0, 0), Qt::UTC));
-    QTest::newRow("zoneoffset-14") << "a=b;expires=Jan 1 89 15:0 JST+1" << cookie;
+    QTest::newRow("zoneoffset-15") << "a=b;expires=Jan 1 89 15:0 JST+1" << cookie;
     cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 0), Qt::UTC));
-    QTest::newRow("zoneoffset-15") << "a=b;expires=Jan 1 89 0:0 GMT+1" << cookie;
+    QTest::newRow("zoneoffset-16") << "a=b;expires=Jan 1 89 0:0 GMT+1" << cookie;
     cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
-    QTest::newRow("zoneoffset-15b") << "a=b;expires=Jan 1 89 1:0 GMT-1" << cookie;
+    QTest::newRow("zoneoffset-17") << "a=b;expires=Jan 1 89 1:0 GMT-1" << cookie;
     cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 0), Qt::UTC));
-    QTest::newRow("zoneoffset-16") << "a=b;expires=Jan 1 89 0:0 GMT+01" << cookie;
+    QTest::newRow("zoneoffset-18") << "a=b;expires=Jan 1 89 0:0 GMT+01" << cookie;
     cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 5), Qt::UTC));
-    QTest::newRow("zoneoffset-17") << "a=b;expires=Jan 1 89 0:0 GMT+0105" << cookie;
+    QTest::newRow("zoneoffset-19") << "a=b;expires=Jan 1 89 0:0 GMT+0105" << cookie;
     cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
-    QTest::newRow("zoneoffset-18") << "a=b;expires=Jan 1 89 0:0 GMT+015" << cookie;
+    QTest::newRow("zoneoffset-20") << "a=b;expires=Jan 1 89 0:0 GMT+015" << cookie;
     cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
-    QTest::newRow("zoneoffset-19") << "a=b;expires=Jan 1 89 0:0 GM" << cookie;
+    QTest::newRow("zoneoffset-21") << "a=b;expires=Jan 1 89 0:0 GM" << cookie;
     cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
-    QTest::newRow("zoneoffset-19b") << "a=b;expires=Jan 1 89 0:0 GMT" << cookie;
+    QTest::newRow("zoneoffset-22") << "a=b;expires=Jan 1 89 0:0 GMT" << cookie;
 
     // offsets from gmt
     cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 0), Qt::UTC));
-    QTest::newRow("zoneoffset-20") << "a=b;expires=Jan 1 89 0:0 +1" << cookie;
+    QTest::newRow("zoneoffset-23") << "a=b;expires=Jan 1 89 0:0 +1" << cookie;
     cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 0), Qt::UTC));
-    QTest::newRow("zoneoffset-21") << "a=b;expires=Jan 1 89 0:0 +01" << cookie;
+    QTest::newRow("zoneoffset-24") << "a=b;expires=Jan 1 89 0:0 +01" << cookie;
     cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(1, 1), Qt::UTC));
-    QTest::newRow("zoneoffset-22") << "a=b;expires=Jan 1 89 0:0 +0101" << cookie;
+    QTest::newRow("zoneoffset-25") << "a=b;expires=Jan 1 89 0:0 +0101" << cookie;
     cookie.setExpirationDate(QDateTime(QDate(1989, 1, 1), QTime(0, 0), Qt::UTC));
-    QTest::newRow("zoneoffset-23") << "a=b;expires=Jan 1 89 1:0 -1" << cookie;
+    QTest::newRow("zoneoffset-26") << "a=b;expires=Jan 1 89 1:0 -1" << cookie;
 
     // Y2k
     cookie.setExpirationDate(QDateTime(QDate(2000, 1, 1), QTime(0, 0), Qt::UTC));

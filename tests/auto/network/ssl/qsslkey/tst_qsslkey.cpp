@@ -295,10 +295,11 @@ void tst_QSslKey::toEncryptedPemOrDer_data()
               << "aAzZ`1234567890-=~!@#$%^&*()_+[]{}\\|;:'\",.<>/?"; // ### add more (?)
     foreach (KeyInfo keyInfo, keyInfoList) {
         foreach (QString password, passwords) {
-            QString testName = QString("%1-%2-%3-%4").arg(keyInfo.fileInfo.fileName())
+            QString testName = QString("%1-%2-%3-%4-%5").arg(keyInfo.fileInfo.fileName())
                 .arg(keyInfo.algorithm == QSsl::Rsa ? "RSA" : "DSA")
                 .arg(keyInfo.type == QSsl::PrivateKey ? "PrivateKey" : "PublicKey")
-                .arg(keyInfo.format == QSsl::Pem ? "PEM" : "DER");
+                .arg(keyInfo.format == QSsl::Pem ? "PEM" : "DER")
+                .arg(password);
             QTest::newRow(testName.toLatin1())
                 << keyInfo.fileInfo.absoluteFilePath() << keyInfo.algorithm << keyInfo.type
                 << keyInfo.format << password;
