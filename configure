@@ -6315,11 +6315,30 @@ if [ "$CFG_MAC_DWARF2" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG dwarf2"
 fi
 
-# Set the default arch if there are no "-arch" arguments on the configure line
-if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
-    source "$mactests/defaultarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests"
-    CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
-    [ "$OPT_VERBOSE" = "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."
+# Set the default Mac OS X arch if there are no "-arch" arguments on the configure line
+if [ "$BUILD_ON_MAC" = "yes" ]; then
+    DEFAULT_ARCH="$CFG_MAC_ARCHS"
+    if [ -z "$DEFAULT_ARCH" ]; then
+        case `file "${outpath}/bin/qmake"` in
+        *i?86)
+            DEFAULT_ARCH=x86
+            ;;
+        *x86_64)
+            DEFAULT_ARCH=x86_64
+            ;;
+        *ppc|*ppc64|*)
+            # unsupported/unknown
+            ;;
+        esac
+    fi
+    if [ -n "$DEFAULT_ARCH" ]; then
+        [ "$OPT_VERBOSE" = "yes" ] && echo "Setting default Mac OS X architechture to $DEFAULT_ARCH."
+        QT_CONFIG="$QT_CONFIG $DEFAULT_ARCH"
+        QMAKE_CONFIG="$QMAKE_CONFIG $DEFAULT_ARCH"
+        # Make the application arch follow the Qt arch for single arch builds.
+        # (for multiple-arch builds, set CONFIG manually in the application .pro file)
+        [ `echo "$DEFAULT_ARCH" | wc -w` -eq 1 ] && QTCONFIG_CONFIG="$QTCONFIG_CONFIG $DEFAULT_ARCH"
+    fi
 fi
 
 # ### Vestige
@@ -6463,7 +6482,6 @@ fi
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
-[ "$PLATFORM_MAC" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG $CFG_MAC_ARCHS"
 if [ "$CFG_CLOCK_GETTIME" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG clock-gettime"
 fi
@@ -7279,17 +7297,8 @@ else
     QT_CONFIG="$QT_CONFIG qt_framework"
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG qt_framework"
 fi
-if [ "$BUILD_ON_MAC" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG $CFG_MAC_ARCHS"
-fi
 if [ "$CFG_DEV" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG private_tests"
-fi
-
-# Make the application arch follow the Qt arch for single arch builds.
-# (for multiple-arch builds, set CONFIG manually in the application .pro file)
-if [ `echo "$CFG_MAC_ARCHS" | wc -w` -eq 1 ]; then
-    QTCONFIG_CONFIG="$QTCONFIG_CONFIG $CFG_MAC_ARCHS"
 fi
 
 cat >>"$QTCONFIG.tmp" <<EOF
