@@ -513,10 +513,9 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
 
     QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];
 
-    if (row.op() == QSqlTableModelPrivate::None) {
+    if (row.op() == QSqlTableModelPrivate::None)
         row = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
                                                  d->rec);
-    }
 
     row.setValue(index.column(), value);
     emit dataChanged(index, index);
