@@ -111,6 +111,8 @@ private Q_SLOTS:
     void testCompaction();
     void testDebugStream();
     void testCompactionError();
+private:
+    QString testDataDir;
 };
 
 TestQtJson::TestQtJson(QObject *parent) : QObject(parent)
@@ -119,6 +121,9 @@ TestQtJson::TestQtJson(QObject *parent) : QObject(parent)
 
 void TestQtJson::initTestCase()
 {
+    testDataDir = QFileInfo(QFINDTESTDATA("test.json")).absolutePath();
+    if (testDataDir.isEmpty())
+        testDataDir = QCoreApplication::applicationDirPath();
 }
 
 void TestQtJson::cleanupTestCase()
@@ -1077,7 +1082,7 @@ void TestQtJson::fromJson()
 
 void TestQtJson::fromBinary()
 {
-    QFile file(QLatin1String(SRCDIR "test.json"));
+    QFile file(testDataDir + "/test.json");
     file.open(QFile::ReadOnly);
     QByteArray testJson = file.readAll();
 
@@ -1086,7 +1091,7 @@ void TestQtJson::fromBinary()
     QVERIFY(!outdoc.isNull());
     QVERIFY(doc == outdoc);
 
-    QFile bfile(QLatin1String(SRCDIR "test.bjson"));
+    QFile bfile(testDataDir + "/test.bjson");
     bfile.open(QFile::ReadOnly);
     QByteArray binary = bfile.readAll();
 
@@ -1099,8 +1104,8 @@ void TestQtJson::fromBinary()
 void TestQtJson::toAndFromBinary_data()
 {
     QTest::addColumn<QString>("filename");
-    QTest::newRow("test.json") << QString::fromLatin1(SRCDIR "test.json");
-    QTest::newRow("test2.json") << QString::fromLatin1(SRCDIR "test2.json");
+    QTest::newRow("test.json") << (testDataDir + "/test.json");
+    QTest::newRow("test2.json") << (testDataDir + "/test2.json");
 }
 
 void TestQtJson::toAndFromBinary()
@@ -1279,7 +1284,7 @@ void TestQtJson::parseDuplicateKeys()
 
 void TestQtJson::testParser()
 {
-    QFile file(QLatin1String(SRCDIR "test.json"));
+    QFile file(testDataDir + "/test.json");
     file.open(QFile::ReadOnly);
     QByteArray testJson = file.readAll();
 
@@ -1364,7 +1369,7 @@ void TestQtJson::compactObject()
 void TestQtJson::validation()
 {
     // this basically tests that we don't crash on corrupt data
-    QFile file(QLatin1String(SRCDIR "test.json"));
+    QFile file(testDataDir + "/test.json");
     QVERIFY(file.open(QFile::ReadOnly));
     QByteArray testJson = file.readAll();
     QVERIFY(!testJson.isEmpty());
@@ -1385,7 +1390,7 @@ void TestQtJson::validation()
     }
 
 
-    QFile file2(QLatin1String(SRCDIR "test3.json"));
+    QFile file2(testDataDir + "/test3.json");
     file2.open(QFile::ReadOnly);
     testJson = file2.readAll();
     QVERIFY(!testJson.isEmpty());
