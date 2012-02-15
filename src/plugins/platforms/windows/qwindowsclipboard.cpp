@@ -283,14 +283,17 @@ bool QWindowsClipboard::clipboardViewerWndProc(HWND hwnd, UINT message, WPARAM w
         }
     }
         return true;
-    case WM_DRAWCLIPBOARD:
+    case WM_DRAWCLIPBOARD: {
+        const bool owned = ownsClipboard();
         if (QWindowsContext::verboseOLE)
-            qDebug("Clipboard changed");
-        emitChanged(QClipboard::Clipboard);
+            qDebug("Clipboard changed owned %d", owned);
+        if (!owned) // changed is emitted by QClipboard in that case.
+            emitChanged(QClipboard::Clipboard);
         // clean up the clipboard object if we no longer own the clipboard
-        if (!ownsClipboard() && m_data)
+        if (!owned && m_data)
             releaseIData();
         propagateClipboardMessage(message, wParam, lParam);
+    }
         return true;
     case WM_DESTROY:
         // Recommended shutdown
