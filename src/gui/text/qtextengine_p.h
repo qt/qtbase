@@ -619,7 +619,7 @@ public:
     bool atSpace(int position) const;
     void indexAdditionalFormats();
 
-    QString elidedText(Qt::TextElideMode mode, const QFixed &width, int flags = 0) const;
+    QString elidedText(Qt::TextElideMode mode, const QFixed &width, int flags = 0, int from = 0, int count = -1) const;
 
     void shapeLine(const QScriptLine &line);
     QFixed leadingSpaceWidth(const QScriptLine &line);

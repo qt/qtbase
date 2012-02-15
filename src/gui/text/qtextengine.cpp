@@ -2237,7 +2237,7 @@ static inline bool prevCharJoins(const QString &string, int pos)
     return (joining == QChar::Dual || joining == QChar::Center);
 }
 
-QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int flags) const
+QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int flags, int from, int count) const
 {
 //    qDebug() << "elidedText; available width" << width.toReal() << "text width:" << this->width(0, layoutData->string.length()).toReal();
 
@@ -2271,10 +2271,14 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
 
     validate();
 
+    const int to = count >= 0 && count <= layoutData->string.length() - from
+            ? from + count
+            : layoutData->string.length();
+
     if (mode == Qt::ElideNone
-        || this->width(0, layoutData->string.length()) <= width
-        || layoutData->string.length() <= 1)
-        return layoutData->string;
+        || this->width(from, layoutData->string.length()) <= width
+        || to - from <= 1)
+        return layoutData->string.mid(from, from - to);
 
     QFixed ellipsisWidth;
     QString ellipsisText;
@@ -2328,7 +2332,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
     if (mode == Qt::ElideRight) {
         QFixed currentWidth;
         int pos;
-        int nextBreak = 0;
+        int nextBreak = from;
 
         do {
             pos = nextBreak;
@@ -2338,17 +2342,17 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
                 ++nextBreak;
 
             currentWidth += this->width(pos, nextBreak - pos);
-        } while (nextBreak < layoutData->string.length()
+        } while (nextBreak < to
                  && currentWidth < availableWidth);
 
         if (nextCharJoins(layoutData->string, pos))
             ellipsisText.prepend(QChar(0x200d) /* ZWJ */);
 
-        return layoutData->string.left(pos) + ellipsisText;
+        return layoutData->string.mid(from, pos - from) + ellipsisText;
     } else if (mode == Qt::ElideLeft) {
         QFixed currentWidth;
         int pos;
-        int nextBreak = layoutData->string.length();
+        int nextBreak = to;
 
         do {
             pos = nextBreak;
@@ -2358,22 +2362,22 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
                 --nextBreak;
 
             currentWidth += this->width(nextBreak, pos - nextBreak);
-        } while (nextBreak > 0
+        } while (nextBreak > from
                  && currentWidth < availableWidth);
 
         if (prevCharJoins(layoutData->string, pos))
             ellipsisText.append(QChar(0x200d) /* ZWJ */);
 
-        return ellipsisText + layoutData->string.mid(pos);
+        return ellipsisText + layoutData->string.mid(pos, to - pos);
     } else if (mode == Qt::ElideMiddle) {
         QFixed leftWidth;
         QFixed rightWidth;
 
-        int leftPos = 0;
-        int nextLeftBreak = 0;
+        int leftPos = from;
+        int nextLeftBreak = from;
 
-        int rightPos = layoutData->string.length();
-        int nextRightBreak = layoutData->string.length();
+        int rightPos = to;
+        int nextRightBreak = to;
 
         do {
             leftPos = nextLeftBreak;
@@ -2384,13 +2388,13 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
                 ++nextLeftBreak;
 
             --nextRightBreak;
-            while (nextRightBreak > 0 && !attributes[nextRightBreak].charStop)
+            while (nextRightBreak > from && !attributes[nextRightBreak].charStop)
                 --nextRightBreak;
 
             leftWidth += this->width(leftPos, nextLeftBreak - leftPos);
             rightWidth += this->width(nextRightBreak, rightPos - nextRightBreak);
-        } while (nextLeftBreak < layoutData->string.length()
-                 && nextRightBreak > 0
+        } while (nextLeftBreak < to
+                 && nextRightBreak > from
                  && leftWidth + rightWidth < availableWidth);
 
         if (nextCharJoins(layoutData->string, leftPos))
@@ -2398,10 +2402,10 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         if (prevCharJoins(layoutData->string, rightPos))
             ellipsisText.append(QChar(0x200d) /* ZWJ */);
 
-        return layoutData->string.left(leftPos) + ellipsisText + layoutData->string.mid(rightPos);
+        return layoutData->string.mid(from, leftPos - from) + ellipsisText + layoutData->string.mid(rightPos, to - rightPos);
     }
 
-    return layoutData->string;
+    return layoutData->string.mid(from, to - from);
 }
 
 void QTextEngine::setBoundary(int strPos) const
