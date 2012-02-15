@@ -80,16 +80,6 @@ class QDragMoveEvent;
 /* Event masks */
 // internal Qt types
 
- // Event class for our own Carbon events.
-#if defined(QT_NAMESPACE) && defined(QT_NAMESPACE_MAC_CRC)
-// Take the CRC we generated at configure time. This *may* result in a
-// collision with another value If that is the case, please change the value
-// here to something other than 'Cute'.
-const UInt32 kEventClassQt = QT_NAMESPACE_MAC_CRC;
-#else
-const UInt32 kEventClassQt = 'Cute';
-#endif
-
 enum {
     //AE types
     typeAEClipboardChanged = 1,
