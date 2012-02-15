@@ -3,7 +3,7 @@ SUBDIRS=\
    qhttpsocketengine \
    qudpsocket \
    qtcpsocket \
-   #qlocalsocket \  # FIXME: uses qtscript (QTBUG-19242)
+   qlocalsocket \
    qtcpserver \
    qsocks5socketengine \
    qabstractsocket \
