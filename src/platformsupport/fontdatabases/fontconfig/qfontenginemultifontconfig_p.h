@@ -39,26 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QFONTCONFIGDATABASE_H
-#define QFONTCONFIGDATABASE_H
+#ifndef QFONTENGINEMULTIFONTCONFIG_H
+#define QFONTENGINEMULTIFONTCONFIG_H
 
-#include <QPlatformFontDatabase>
-#include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
+#include <QtGui/private/qfontengine_qpa_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QFontconfigDatabase : public QBasicFontDatabase
+class QFontEngineMultiFontConfig : public QFontEngineMultiQPA
 {
+    Q_OBJECT
 public:
-    void populateFontDatabase();
-    QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QUnicodeTables::Script script, const QStringList &fallbacks);
-    QFontEngine *fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle);
-    QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const;
-    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
-    QString resolveFontFamilyAlias(const QString &family) const;
-    QFont defaultFont() const;
+    explicit QFontEngineMultiFontConfig(QFontEngine *fe, int script, const QStringList &fallbacks);
+
+    bool shouldLoadFontEngineForCharacter(int at, uint ucs4) const;
 };
 
 QT_END_NAMESPACE
 
-#endif // QFONTCONFIGDATABASE_H
+#endif // QFONTENGINEMULTIFONTCONFIG_H

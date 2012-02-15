@@ -206,7 +206,8 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
         if (family && !family->fallbackFamilies.isEmpty())
             fallbacks = family->fallbackFamilies;
 
-        engine = new QFontEngineMultiQPA(engine, script, fallbacks);
+        QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+        engine = pfdb->fontEngineMulti(engine, QUnicodeTables::Script(script), fallbacks);
 
         // Cache Multi font engine as well in case we got the FT single
         // font engine when we are actually looking for a Multi one

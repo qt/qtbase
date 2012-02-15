@@ -39,26 +39,49 @@
 **
 ****************************************************************************/
 
-#ifndef QFONTCONFIGDATABASE_H
-#define QFONTCONFIGDATABASE_H
+#include "qfontenginemultifontconfig_p.h"
 
-#include <QPlatformFontDatabase>
-#include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
+#include <QtGui/private/qfontengine_ft_p.h>
+#include <fontconfig/fontconfig.h>
+#include <QtGui/private/qfontengine_ft_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QFontconfigDatabase : public QBasicFontDatabase
+QFontEngineMultiFontConfig::QFontEngineMultiFontConfig(QFontEngine *fe, int script,
+                                                       const QStringList &fallbacks)
+    : QFontEngineMultiQPA(fe, script, fallbacks)
 {
-public:
-    void populateFontDatabase();
-    QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QUnicodeTables::Script script, const QStringList &fallbacks);
-    QFontEngine *fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle);
-    QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const;
-    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
-    QString resolveFontFamilyAlias(const QString &family) const;
-    QFont defaultFont() const;
-};
+}
+
+bool QFontEngineMultiFontConfig::shouldLoadFontEngineForCharacter(int at, uint ucs4) const
+{
+    QFontEngineFT *fontEngine = static_cast<QFontEngineFT *>(engines.at(at));
+    bool charSetHasChar = true;
+    if (fontEngine != 0) {
+        FcCharSet *charSet = fontEngine->freetype->charset;
+        charSetHasChar = FcCharSetHasChar(charSet, ucs4);
+    } else {
+        FcPattern *requestPattern = FcPatternCreate();
+
+        FcValue value;
+        value.type = FcTypeString;
+        QByteArray cs = fallbackFamilyAt(at-1).toUtf8();
+        value.u.s = reinterpret_cast<const FcChar8 *>(cs.data());
+        FcPatternAdd(requestPattern, FC_FAMILY, value, true);
+
+        FcResult result;
+        FcPattern *matchPattern = FcFontMatch(0, requestPattern, &result);
+        if (matchPattern != 0) {
+            FcCharSet *charSet;
+            FcPatternGetCharSet(matchPattern, FC_CHARSET, 0, &charSet);
+            charSetHasChar = FcCharSetHasChar(charSet, ucs4);
+            FcPatternDestroy(matchPattern);
+        }
+
+        FcPatternDestroy(requestPattern);
+    }
+
+    return charSetHasChar;
+}
 
 QT_END_NAMESPACE
-
-#endif // QFONTCONFIGDATABASE_H
