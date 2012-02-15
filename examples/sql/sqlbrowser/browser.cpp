@@ -52,6 +52,12 @@ Browser::Browser(QWidget *parent)
 
     table->addAction(insertRowAction);
     table->addAction(deleteRowAction);
+    table->addAction(fieldStrategyAction);
+    table->addAction(rowStrategyAction);
+    table->addAction(manualStrategyAction);
+    table->addAction(submitAction);
+    table->addAction(revertAction);
+    table->addAction(selectAction);
 
     if (QSqlDatabase::drivers().isEmpty())
         QMessageBox::information(this, tr("No database drivers found"),
@@ -144,7 +150,7 @@ void Browser::addConnection()
 
 void Browser::showTable(const QString &t)
 {
-    QSqlTableModel *model = new QSqlTableModel(table, connectionWidget->currentDatabase());
+    QSqlTableModel *model = new CustomModel(table, connectionWidget->currentDatabase());
     model->setEditStrategy(QSqlTableModel::OnRowChange);
     model->setTable(connectionWidget->currentDatabase().driver()->escapeIdentifier(t, QSqlDriver::TableName));
     model->select();
@@ -215,8 +221,6 @@ void Browser::deleteRow()
     if (!model)
         return;
 
-    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
-
     QModelIndexList currentSelection = table->selectionModel()->selectedIndexes();
     for (int i = 0; i < currentSelection.count(); ++i) {
         if (currentSelection.at(i).column() != 0)
@@ -224,24 +228,79 @@ void Browser::deleteRow()
         model->removeRow(currentSelection.at(i).row());
     }
 
-    model->submitAll();
-    model->setEditStrategy(QSqlTableModel::OnRowChange);
-
     updateActions();
 }
 
 void Browser::updateActions()
 {
-    bool enableIns = qobject_cast<QSqlTableModel *>(table->model());
+    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
+    bool enableIns = tm;
     bool enableDel = enableIns && table->currentIndex().isValid();
 
     insertRowAction->setEnabled(enableIns);
     deleteRowAction->setEnabled(enableDel);
+
+    fieldStrategyAction->setEnabled(tm);
+    rowStrategyAction->setEnabled(tm);
+    manualStrategyAction->setEnabled(tm);
+    submitAction->setEnabled(tm);
+    revertAction->setEnabled(tm);
+    selectAction->setEnabled(tm);
+
+    if (tm) {
+        QSqlTableModel::EditStrategy es = tm->editStrategy();
+        fieldStrategyAction->setChecked(es == QSqlTableModel::OnFieldChange);
+        rowStrategyAction->setChecked(es == QSqlTableModel::OnRowChange);
+        manualStrategyAction->setChecked(es == QSqlTableModel::OnManualSubmit);
+    }
 }
 
 void Browser::about()
 {
     QMessageBox::about(this, tr("About"), tr("The SQL Browser demonstration "
         "shows how a data browser can be used to visualize the results of SQL"
-        "statements on a live database"));
+                                             "statements on a live database"));
 }
+
+void Browser::on_fieldStrategyAction_triggered()
+{
+    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
+    if (tm)
+        tm->setEditStrategy(QSqlTableModel::OnFieldChange);
+}
+
+void Browser::on_rowStrategyAction_triggered()
+{
+    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
+    if (tm)
+        tm->setEditStrategy(QSqlTableModel::OnRowChange);
+}
+
+void Browser::on_manualStrategyAction_triggered()
+{
+    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
+    if (tm)
+        tm->setEditStrategy(QSqlTableModel::OnManualSubmit);
+}
+
+void Browser::on_submitAction_triggered()
+{
+    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
+    if (tm)
+        tm->submitAll();
+}
+
+void Browser::on_revertAction_triggered()
+{
+    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
+    if (tm)
+        tm->revertAll();
+}
+
+void Browser::on_selectAction_triggered()
+{
+    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
+    if (tm)
+        tm->select();
+}
+
