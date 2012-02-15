@@ -402,29 +402,9 @@ QVariant QSqlTableModel::data(const QModelIndex &index, int role) const
     if (!index.isValid() || (role != Qt::DisplayRole && role != Qt::EditRole))
         return QVariant();
 
-    if (d->cache.contains(index.row())) {
-        const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
-
-        switch (d->strategy) {
-        case OnFieldChange:
-        case OnRowChange:
-            if (row.op() == QSqlTableModelPrivate::Insert) {
-                if (index.column() < 0 || index.column() >= row.rec().count())
-                    return QVariant();
-                return row.rec().value(index.column());
-            } else if (row.op() == QSqlTableModelPrivate::Update) {
-                if (row.rec().isGenerated(index.column()))
-                    return row.rec().value(index.column());
-            }
-            break;
-        case OnManualSubmit:
-            if (row.op() == QSqlTableModelPrivate::Insert
-                || (row.op() != QSqlTableModelPrivate::None
-                    && row.rec().isGenerated(index.column())))
-                return row.rec().value(index.column());
-            break;
-        }
-    }
+    const QSqlTableModelPrivate::ModifiedRow mrow = d->cache.value(index.row());
+    if (mrow.op() != QSqlTableModelPrivate::None)
+        return mrow.rec().value(index.column());
 
     return QSqlQueryModel::data(index, role);
 }
