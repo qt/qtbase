@@ -730,10 +730,10 @@ void tst_QSqlTableModel::removeRows()
     QSignalSpy headerDataChangedSpy(&model, SIGNAL(headerDataChanged(Qt::Orientation, int, int)));
     QVERIFY(model.removeRows(0, 2, QModelIndex()));
     QCOMPARE(headerDataChangedSpy.count(), 2);
-    QCOMPARE(headerDataChangedSpy.at(0).at(1).toInt(), 0);
-    QCOMPARE(headerDataChangedSpy.at(0).at(2).toInt(), 0);
-    QCOMPARE(headerDataChangedSpy.at(1).at(1).toInt(), 1);
-    QCOMPARE(headerDataChangedSpy.at(1).at(2).toInt(), 1);
+    QCOMPARE(headerDataChangedSpy.at(0).at(1).toInt(), 1);
+    QCOMPARE(headerDataChangedSpy.at(0).at(2).toInt(), 1);
+    QCOMPARE(headerDataChangedSpy.at(1).at(1).toInt(), 0);
+    QCOMPARE(headerDataChangedSpy.at(1).at(2).toInt(), 0);
     QCOMPARE(model.rowCount(), 3);
     QVERIFY(beforeDeleteSpy.count() == 0);
     QVERIFY(model.submitAll());

@@ -87,7 +87,7 @@ int QSqlTableModelPrivate::insertCount(int maxRow) const
     for (;
          i != e && (maxRow < 0 || i.key() <= maxRow);
          ++i) {
-        if (i.value().op() == Insert)
+        if (i.value().insert())
             ++cnt;
     }
 
@@ -122,19 +122,17 @@ void QSqlTableModelPrivate::revertCachedRow(int row)
     Q_Q(QSqlTableModel);
     ModifiedRow r = cache.value(row);
 
-    // cannot revert a committed change
-    if (r.submitted())
-        return;
-
     switch (r.op()) {
     case QSqlTableModelPrivate::None:
         Q_ASSERT_X(false, "QSqlTableModelPrivate::revertCachedRow()", "Invalid entry in cache map");
         return;
     case QSqlTableModelPrivate::Update:
     case QSqlTableModelPrivate::Delete:
-        cache.remove(row);
-        emit q->dataChanged(q->createIndex(row, 0),
-                            q->createIndex(row, q->columnCount() - 1));
+        if (!r.submitted()) {
+            cache[row].revert();
+            emit q->dataChanged(q->createIndex(row, 0),
+                                q->createIndex(row, q->columnCount() - 1));
+        }
         break;
     case QSqlTableModelPrivate::Insert: {
             QMap<int, QSqlTableModelPrivate::ModifiedRow>::Iterator it = cache.find(row);
@@ -373,7 +371,7 @@ bool QSqlTableModel::select()
     while (it != d->cache.constBegin()) {
         --it;
         // rows must be accounted for
-        if (it.value().op() == QSqlTableModelPrivate::Insert) {
+        if (it.value().insert()) {
             beginRemoveRows(QModelIndex(), it.key(), it.key());
             it = d->cache.erase(it);
             endRemoveRows();
@@ -470,11 +468,14 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     if (!index.isValid() || index.column() >= d->rec.count() || index.row() >= rowCount())
         return false;
 
+    if (d->cache.value(index.row()).op() == QSqlTableModelPrivate::Delete)
+        return false;
+
     if (d->strategy == OnFieldChange && d->cache.value(index.row()).op() != QSqlTableModelPrivate::Insert) {
-        d->cache.clear();
+        revertAll();
     } else if (d->strategy == OnRowChange && !d->cache.isEmpty() && !d->cache.contains(index.row())) {
         submit();
-        d->cache.clear();
+        revertAll();
     }
 
     QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];
@@ -759,8 +760,10 @@ void QSqlTableModel::revertAll()
 {
     Q_D(QSqlTableModel);
 
-    while (!d->cache.isEmpty())
-        revertRow(d->cache.constBegin().key());
+    const QList<int> rows(d->cache.keys());
+    for (int i = rows.size() - 1; i >= 0; --i) {
+        revertRow(rows.value(i));
+    }
 }
 
 /*!
@@ -967,15 +970,17 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
     else if (!count)
         return true;
 
-    for (int i = 0; i < count; ++i) {
-        int idx = row + i;
-        if (d->cache.value(idx).op() == QSqlTableModelPrivate::Insert) {
+    // Iterate backwards so we don't have to worry about removed rows causing
+    // higher cache entries to shift downwards.
+    for (int idx = row + count - 1; idx >= row; --idx) {
+        QSqlTableModelPrivate::ModifiedRow& mrow = d->cache[idx];
+        if (mrow.op() == QSqlTableModelPrivate::Insert) {
             revertRow(idx);
-            // Reverting a row means all the other cache entries have been adjusted downwards
-            // so fake this by adjusting row
-            --row;
         } else {
-            d->cache[idx] = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Delete, record(idx));
+            if (mrow.op() == QSqlTableModelPrivate::None)
+                mrow = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Delete, record(idx));
+            else
+                mrow.setOp(QSqlTableModelPrivate::Delete);
             if (d->strategy == OnManualSubmit)
                 emit headerDataChanged(Qt::Vertical, idx, idx);
         }
@@ -1158,6 +1163,8 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
         return 0;
     if (d->rec.field(index.column()).isReadOnly())
         return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    if (d->cache.value(index.row()).op() == QSqlTableModelPrivate::Delete)
+        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
 }
 
@@ -1186,8 +1193,11 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
     if (row >= rowCount())
         return false;
 
+    if (d->cache.value(row).op() == QSqlTableModelPrivate::Delete)
+        return false;
+
     if (d->strategy == OnFieldChange && d->cache.value(row).op() != QSqlTableModelPrivate::Insert)
-        d->cache.clear();
+        revertAll();
     else if (d->strategy == OnRowChange && !d->cache.isEmpty() && !d->cache.contains(row))
         submit();
 
