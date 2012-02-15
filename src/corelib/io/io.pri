@@ -106,6 +106,8 @@ win32 {
         }
         macx-*: {
             SOURCES += io/qstandardpaths_mac.cpp
+        } else:standardpathsjson {
+            SOURCES += io/qstandardpaths_json.cpp
         } else {
             SOURCES += io/qstandardpaths_unix.cpp
         }
