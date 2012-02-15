@@ -39,82 +39,49 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMSCREEN_H
-#define QPLATFORMSCREEN_H
+#ifndef QPLATFORMSCREENPAGEFLIPPER_QPA_H
+#define QPLATFORMSCREENPAGEFLIPPER_QPA_H
 
-#include <QtCore/qmetatype.h>
-#include <QtCore/qnamespace.h>
-#include <QtCore/qcoreevent.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qrect.h>
-#include <QtCore/qobject.h>
-
-#include <QtGui/qcursor.h>
-#include <QtGui/qimage.h>
-#include <QtGui/qwindowdefs.h>
-#include <QtGui/qplatformpixmap_qpa.h>
+#include <QtCore/QObject>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
-class QPlatformBackingStore;
-class QPlatformOpenGLContext;
-class QPlatformScreenPrivate;
-class QPlatformWindow;
-class QPlatformScreenPageFlipper;
-class QScreen;
-class QSurfaceFormat;
-
-typedef QPair<qreal, qreal> QDpi;
-
-
-class Q_GUI_EXPORT QPlatformScreen
-{
-    Q_DECLARE_PRIVATE(QPlatformScreen)
-
+class Q_GUI_EXPORT QPlatformScreenBuffer {
 public:
-    QPlatformScreen();
-    virtual ~QPlatformScreen();
+    QPlatformScreenBuffer();
+    virtual ~QPlatformScreenBuffer();
 
-    virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+    bool isDestroyed() const;
+    bool isReady() const;
 
-    virtual QRect geometry() const = 0;
-    virtual QRect availableGeometry() const {return geometry();}
+    virtual void aboutToBeDisplayed();
+    virtual void displayed();
+    virtual void release() = 0;
 
-    virtual int depth() const = 0;
-    virtual QImage::Format format() const = 0;
-
-    virtual QSizeF physicalSize() const;
-    virtual QDpi logicalDpi() const;
-
-    virtual Qt::ScreenOrientation orientation() const;
-
-    virtual QWindow *topLevelAt(const QPoint &point) const;
-    virtual QList<QPlatformScreen *> virtualSiblings() const;
-
-    QScreen *screen() const;
-
-    //jl: should this function be in QPlatformIntegration
-    //jl: maybe screenForWindow is a better name?
-    static QPlatformScreen *platformScreenForWindow(const QWindow *window);
-
-    virtual QString name() const { return QString(); }
-
-    virtual QPlatformScreenPageFlipper *pageFlipper() const;
+    virtual void *handle() const = 0;
 
 protected:
-    QScopedPointer<QPlatformScreenPrivate> d_ptr;
+    bool m_destroyed;
+    bool m_ready;
+};
 
-private:
-    Q_DISABLE_COPY(QPlatformScreen)
+class Q_GUI_EXPORT QPlatformScreenPageFlipper : public QObject
+{
+    Q_OBJECT
+public:
+    explicit QPlatformScreenPageFlipper(QObject *parent = 0);
 
-    friend class QPlatformIntegration;
+    virtual bool displayBuffer(QPlatformScreenBuffer *) = 0;
+
+signals:
+    void bufferDisplayed(QPlatformScreenBuffer *);
+    void bufferReleased(QPlatformScreenBuffer *);
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QPLATFORMSCREEN_H
+#endif // QPLATFORMSCREENPAGEFLIPPER_QPA_H
