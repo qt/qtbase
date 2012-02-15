@@ -439,13 +439,11 @@ QVariant QSqlTableModel::headerData(int section, Qt::Orientation orientation, in
 {
     Q_D(const QSqlTableModel);
     if (orientation == Qt::Vertical && role == Qt::DisplayRole) {
-        if (d->cache.contains(section)) {
-            const QSqlTableModelPrivate::Op op = d->cache.value(section).op();
-            if (op == QSqlTableModelPrivate::Insert)
-                return QLatin1String("*");
-            else if (op == QSqlTableModelPrivate::Delete)
-                return QLatin1String("!");
-        }
+        const QSqlTableModelPrivate::Op op = d->cache.value(section).op();
+        if (op == QSqlTableModelPrivate::Insert)
+            return QLatin1String("*");
+        else if (op == QSqlTableModelPrivate::Delete)
+            return QLatin1String("!");
     }
     return QSqlQueryModel::headerData(section, orientation, role);
 }
