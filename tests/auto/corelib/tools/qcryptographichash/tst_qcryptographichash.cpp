@@ -169,7 +169,9 @@ void tst_QCryptographicHash::files()
     QFETCH(QCryptographicHash::Algorithm, algorithm);
     QFETCH(QByteArray, md5sum);
     {
-        QFile f(QString::fromLocal8Bit(SRCDIR) + filename);
+        QString testData = QFINDTESTDATA(filename);
+        QVERIFY2(!testData.isEmpty(), qPrintable(QString("Cannot find test data: %1").arg(filename)));
+        QFile f(testData);
         QCryptographicHash hash(algorithm);
         QVERIFY(! hash.addData(&f)); // file is not open for reading;
         if (f.open(QIODevice::ReadOnly)) {
