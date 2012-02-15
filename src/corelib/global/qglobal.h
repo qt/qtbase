@@ -1751,8 +1751,6 @@ Q_CORE_EXPORT int qrand();
 #  define QT_NO_QWS_SHARE_FONTS
 #  define QT_NO_SYSTEMSEMAPHORE
 #  define QT_NO_SHAREDMEMORY
-// QNX currently doesn't support forking in a thread, so disable QProcess
-#  define QT_NO_PROCESS
 #endif
 
 #if defined (__ELF__)

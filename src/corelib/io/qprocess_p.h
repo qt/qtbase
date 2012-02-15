@@ -304,8 +304,10 @@ public:
 #endif
 
     void startProcess();
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_QNX)
     void execChild(const char *workingDirectory, char **path, char **argv, char **envp);
+#elif defined(Q_OS_QNX)
+    pid_t spawnChild(const char *workingDirectory, char **argv, char **envp);
 #endif
     bool processStarted();
     void terminateProcess();
