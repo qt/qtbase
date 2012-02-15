@@ -68,14 +68,8 @@ class tst_QSslKey : public QObject
 
     void createPlainTestRows();
 
-public:
-    tst_QSslKey();
-    virtual ~tst_QSslKey();
-
 public slots:
-    void initTestCase_data();
-    void init();
-    void cleanup();
+    void initTestCase();
 
 #ifndef QT_NO_OPENSSL
 
@@ -95,16 +89,17 @@ private slots:
 
     void passphraseChecks();
 #endif
+private:
+    QString testDataDir;
 };
 
-tst_QSslKey::tst_QSslKey()
+void tst_QSslKey::initTestCase()
 {
-#ifdef Q_OS_MAC
-    // applicationDirPath() points to a path inside the app bundle on Mac.
-    QDir dir(qApp->applicationDirPath() + QLatin1String("/../../../keys"));
-#else
-    QDir dir(SRCDIR + QLatin1String("/keys"));  // prefer this way to avoid ifdeffery and support shadow builds?
-#endif
+    testDataDir = QFileInfo(QFINDTESTDATA("rsa-without-passphrase.pem")).absolutePath();
+    if (testDataDir.isEmpty())
+        testDataDir = QCoreApplication::applicationDirPath();
+
+    QDir dir(testDataDir + "/keys");
     QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
     QRegExp rx(QLatin1String("^(rsa|dsa)-(pub|pri)-(\\d+)\\.(pem|der)$"));
     foreach (QFileInfo fileInfo, fileInfoList) {
@@ -116,22 +111,6 @@ tst_QSslKey::tst_QSslKey()
                 rx.cap(3).toInt(),
                 rx.cap(4) == QLatin1String("pem") ? QSsl::Pem : QSsl::Der);
     }
-}
-
-tst_QSslKey::~tst_QSslKey()
-{
-}
-
-void tst_QSslKey::initTestCase_data()
-{
-}
-
-void tst_QSslKey::init()
-{
-}
-
-void tst_QSslKey::cleanup()
-{
 }
 
 static QByteArray readFile(const QString &absFilePath)
@@ -368,7 +347,7 @@ void tst_QSslKey::toEncryptedPemOrDer()
 void tst_QSslKey::passphraseChecks()
 {
     {
-        QString fileName(SRCDIR "/rsa-with-passphrase.pem");
+        QString fileName(testDataDir + "/rsa-with-passphrase.pem");
         QFile keyFile(fileName);
         QVERIFY(keyFile.exists());
         {
@@ -407,7 +386,7 @@ void tst_QSslKey::passphraseChecks()
 
     {
         // be sure and check a key without passphrase too
-        QString fileName(SRCDIR "/rsa-without-passphrase.pem");
+        QString fileName(testDataDir + "/rsa-without-passphrase.pem");
         QFile keyFile(fileName);
         {
             if (!keyFile.isOpen())
