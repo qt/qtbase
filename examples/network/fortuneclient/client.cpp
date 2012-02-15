@@ -51,26 +51,35 @@ Client::Client(QWidget *parent)
     hostLabel = new QLabel(tr("&Server name:"));
     portLabel = new QLabel(tr("S&erver port:"));
 
-    // find out which IP to connect to
-    QString ipAddress;
-    QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
-    // use the first non-localhost IPv4 address
-    for (int i = 0; i < ipAddressesList.size(); ++i) {
-        if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
-            ipAddressesList.at(i).toIPv4Address()) {
-            ipAddress = ipAddressesList.at(i).toString();
-            break;
-        }
+    hostCombo = new QComboBox;
+    hostCombo->setEditable(true);
+    // find out name of this machine
+    QString name = QHostInfo::localHostName();
+    if (!name.isEmpty()) {
+        hostCombo->addItem(name);
+        QString domain = QHostInfo::localDomainName();
+        if (!domain.isEmpty())
+            hostCombo->addItem(name + QChar('.') + domain);
     }
-    // if we did not find one, use IPv4 localhost
-    if (ipAddress.isEmpty())
-        ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
+    if (name != QString("localhost"))
+        hostCombo->addItem(QString("localhost"));
+    // find out IP addresses of this machine
+    QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
+    // add non-localhost addresses
+    for (int i = 0; i < ipAddressesList.size(); ++i) {
+        if (!ipAddressesList.at(i).isLoopback())
+            hostCombo->addItem(ipAddressesList.at(i).toString());
+    }
+    // add localhost addresses
+    for (int i = 0; i < ipAddressesList.size(); ++i) {
+        if (ipAddressesList.at(i).isLoopback())
+            hostCombo->addItem(ipAddressesList.at(i).toString());
+    }
 
-    hostLineEdit = new QLineEdit(ipAddress);
     portLineEdit = new QLineEdit;
     portLineEdit->setValidator(new QIntValidator(1, 65535, this));
 
-    hostLabel->setBuddy(hostLineEdit);
+    hostLabel->setBuddy(hostCombo);
     portLabel->setBuddy(portLineEdit);
 
     statusLabel = new QLabel(tr("This examples requires that you run the "
@@ -90,7 +99,7 @@ Client::Client(QWidget *parent)
     tcpSocket = new QTcpSocket(this);
 //! [1]
 
-    connect(hostLineEdit, SIGNAL(textChanged(QString)),
+    connect(hostCombo, SIGNAL(editTextChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
     connect(portLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
@@ -107,7 +116,7 @@ Client::Client(QWidget *parent)
 
     QGridLayout *mainLayout = new QGridLayout;
     mainLayout->addWidget(hostLabel, 0, 0);
-    mainLayout->addWidget(hostLineEdit, 0, 1);
+    mainLayout->addWidget(hostCombo, 0, 1);
     mainLayout->addWidget(portLabel, 1, 0);
     mainLayout->addWidget(portLineEdit, 1, 1);
     mainLayout->addWidget(statusLabel, 2, 0, 1, 2);
@@ -150,7 +159,7 @@ void Client::requestNewFortune()
     blockSize = 0;
     tcpSocket->abort();
 //! [7]
-    tcpSocket->connectToHost(hostLineEdit->text(),
+    tcpSocket->connectToHost(hostCombo->currentText(),
                              portLineEdit->text().toInt());
 //! [7]
 }
@@ -224,7 +233,7 @@ void Client::displayError(QAbstractSocket::SocketError socketError)
 void Client::enableGetFortuneButton()
 {
     getFortuneButton->setEnabled((!networkSession || networkSession->isOpen()) &&
-                                 !hostLineEdit->text().isEmpty() &&
+                                 !hostCombo->currentText().isEmpty() &&
                                  !portLineEdit->text().isEmpty());
 
 }

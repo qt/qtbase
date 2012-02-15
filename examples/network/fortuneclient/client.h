@@ -45,6 +45,7 @@
 #include <QTcpSocket>
 
 QT_BEGIN_NAMESPACE
+class QComboBox;
 class QDialogButtonBox;
 class QLabel;
 class QLineEdit;
@@ -71,7 +72,7 @@ private slots:
 private:
     QLabel *hostLabel;
     QLabel *portLabel;
-    QLineEdit *hostLineEdit;
+    QComboBox *hostCombo;
     QLineEdit *portLineEdit;
     QLabel *statusLabel;
     QPushButton *getFortuneButton;
