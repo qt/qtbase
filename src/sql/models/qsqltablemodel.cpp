@@ -461,23 +461,14 @@ bool QSqlTableModel::isDirty(const QModelIndex &index) const
     if (!index.isValid())
         return false;
 
-    switch (d->strategy) {
-        case OnFieldChange:
-            return false;
-        case OnRowChange: {
-            const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
-            return row.op() == QSqlTableModelPrivate::Update
-                   && row.rec().isGenerated(index.column());
-        }
-        case OnManualSubmit: {
-            const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
-            return row.op() == QSqlTableModelPrivate::Insert
-                   || row.op() == QSqlTableModelPrivate::Delete
-                   || (row.op() == QSqlTableModelPrivate::Update
-                       && row.rec().isGenerated(index.column()));
-        }
-    }
-    return false;
+    const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
+    if (row.submitted())
+        return false;
+
+    return row.op() == QSqlTableModelPrivate::Insert
+           || row.op() == QSqlTableModelPrivate::Delete
+           || (row.op() == QSqlTableModelPrivate::Update
+               && row.rec().isGenerated(index.column()));
 }
 
 /*!
