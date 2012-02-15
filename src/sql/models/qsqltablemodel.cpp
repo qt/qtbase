@@ -1221,7 +1221,7 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
 
     \sa record(), editStrategy()
 */
-bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
+bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
 {
     Q_D(QSqlTableModel);
     Q_ASSERT_X(row >= 0, "QSqlTableModel::setRecord()", "Cannot set a record to a row less than 0");
@@ -1239,9 +1239,9 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
     // Check field names and remember mapping
     typedef QMap<int, int> Map;
     Map map;
-    for (int i = 0; i < record.count(); ++i) {
-        if (record.isGenerated(i)) {
-            int idx = d->nameToIndex(record.fieldName(i));
+    for (int i = 0; i < values.count(); ++i) {
+        if (values.isGenerated(i)) {
+            int idx = d->nameToIndex(values.fieldName(i));
             if (idx == -1)
                 return false;
             map[i] = idx;
@@ -1256,7 +1256,7 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
     Map::const_iterator i = map.constBegin();
     const Map::const_iterator e = map.constEnd();
     for ( ; i != e; ++i)
-         mrow.setValue(i.value(), record.value(i.key()));
+         mrow.setValue(i.value(), values.value(i.key()));
 
     if (columnCount())
         emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
