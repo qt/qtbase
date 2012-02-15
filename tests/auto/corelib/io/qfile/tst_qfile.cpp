@@ -3028,25 +3028,28 @@ void tst_QFile::openStandardStreamsBufferedStreams()
     {
         QFile in;
         in.open(stdin, QIODevice::ReadOnly);
+        if (!in.isSequential())
+            QSKIP("Standard input redirected.");
         QCOMPARE( in.pos(), (qint64)0 );
         QCOMPARE( in.size(), (qint64)0 );
-        QVERIFY( in.isSequential() );
     }
 
     {
         QFile out;
         out.open(stdout, QIODevice::WriteOnly);
+        if (!out.isSequential())
+            QSKIP("Standard output redirected.");
         QCOMPARE( out.pos(), (qint64)0 );
         QCOMPARE( out.size(), (qint64)0 );
-        QVERIFY( out.isSequential() );
     }
 
     {
         QFile err;
         err.open(stderr, QIODevice::WriteOnly);
+        if (!err.isSequential())
+            QSKIP("Standard error redirected.");
         QCOMPARE( err.pos(), (qint64)0 );
         QCOMPARE( err.size(), (qint64)0 );
-        QVERIFY( err.isSequential() );
     }
 }
 
