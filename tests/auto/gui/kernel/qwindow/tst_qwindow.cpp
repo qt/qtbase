@@ -45,6 +45,9 @@
 
 #include <QEvent>
 
+// For QSignalSpy slot connections.
+Q_DECLARE_METATYPE(Qt::ScreenOrientation)
+
 class tst_QWindow: public QObject
 {
     Q_OBJECT
