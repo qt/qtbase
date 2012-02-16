@@ -1500,7 +1500,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
         bool invokeOk;
         do {
             invokeMethod(QTest::currentTestObject, "init()");
-            if (QTestResult::skipCurrentTest())
+            if (QTestResult::skipCurrentTest() || QTestResult::currentTestFailed())
                 break;
 
             QBenchmarkTestMethodData::current->result = QBenchmarkResult();
