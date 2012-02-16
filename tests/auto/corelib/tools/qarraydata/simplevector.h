@@ -170,6 +170,36 @@ public:
         detached.swap(*this);
     }
 
+    void resize(size_t newSize)
+    {
+        if (size() == newSize)
+            return;
+
+        if (d->ref.isShared() || newSize > capacity()) {
+            SimpleVector detached(Data::allocate(
+                        d->detachCapacity(newSize), d->detachFlags()));
+            if (newSize) {
+                if (newSize < size()) {
+                    const T *const begin = constBegin();
+                    detached.d->copyAppend(begin, begin + newSize);
+                } else {
+                    if (size()) {
+                        const T *const begin = constBegin();
+                        detached.d->copyAppend(begin, begin + size());
+                    }
+                    detached.d->appendInitialize(newSize);
+                }
+            }
+            detached.swap(*this);
+            return;
+        }
+
+        if (newSize > size())
+            d->appendInitialize(newSize);
+        else
+            d->truncate(newSize);
+    }
+
     void prepend(const_iterator first, const_iterator last)
     {
         if (!d->size) {

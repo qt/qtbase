@@ -81,7 +81,7 @@ private slots:
     void typedData();
     void gccBug43247();
     void arrayOps();
-    void appendInitialize();
+    void arrayOps2();
     void setSharable_data();
     void setSharable();
     void fromRawData();
@@ -1115,7 +1115,7 @@ void tst_QArrayData::arrayOps()
     }
 }
 
-void tst_QArrayData::appendInitialize()
+void tst_QArrayData::arrayOps2()
 {
     CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker)
 
@@ -1135,6 +1135,69 @@ void tst_QArrayData::appendInitialize()
         QVERIFY(vs[i].isNull());
 
         QCOMPARE(vo[i].id, i);
+        QCOMPARE(int(vo[i].flags), int(CountedObject::DefaultConstructed));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // appendInitialize, again
+
+    // These will detach
+    vi.resize(10);
+    vs.resize(10);
+    vo.resize(10);
+
+    QCOMPARE(vi.size(), size_t(10));
+    QCOMPARE(vs.size(), size_t(10));
+    QCOMPARE(vo.size(), size_t(10));
+
+    QCOMPARE(CountedObject::liveCount, size_t(10));
+    for (size_t i = 0; i < 5; ++i) {
+        QCOMPARE(vi[i], 0);
+        QVERIFY(vs[i].isNull());
+
+        QCOMPARE(vo[i].id, i);
+        QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed
+                | CountedObject::CopyConstructed);
+    }
+
+    for (size_t i = 5; i < 10; ++i) {
+        QCOMPARE(vi[i], 0);
+        QVERIFY(vs[i].isNull());
+
+        QCOMPARE(vo[i].id, i + 5);
+        QCOMPARE(int(vo[i].flags), int(CountedObject::DefaultConstructed));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // truncate
+    QVERIFY(!vi.isShared());
+    QVERIFY(!vs.isShared());
+    QVERIFY(!vo.isShared());
+
+    // These shouldn't detach
+    vi.resize(7);
+    vs.resize(7);
+    vo.resize(7);
+
+    QCOMPARE(vi.size(), size_t(7));
+    QCOMPARE(vs.size(), size_t(7));
+    QCOMPARE(vo.size(), size_t(7));
+
+    QCOMPARE(CountedObject::liveCount, size_t(7));
+    for (size_t i = 0; i < 5; ++i) {
+        QCOMPARE(vi[i], 0);
+        QVERIFY(vs[i].isNull());
+
+        QCOMPARE(vo[i].id, i);
+        QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed
+                | CountedObject::CopyConstructed);
+    }
+
+    for (size_t i = 5; i < 7; ++i) {
+        QCOMPARE(vi[i], 0);
+        QVERIFY(vs[i].isNull());
+
+        QCOMPARE(vo[i].id, i + 5);
         QCOMPARE(int(vo[i].flags), int(CountedObject::DefaultConstructed));
     }
 }

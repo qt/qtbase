@@ -89,6 +89,14 @@ struct QPodArrayOps
         this->size += n;
     }
 
+    void truncate(size_t newSize)
+    {
+        Q_ASSERT(!this->ref.isShared());
+        Q_ASSERT(newSize < size_t(this->size));
+
+        this->size = newSize;
+    }
+
     void destroyAll() // Call from destructors, ONLY!
     {
         Q_ASSERT(this->ref.atomic.load() == 0);
@@ -151,6 +159,17 @@ struct QGenericArrayOps
             new (iter) T(t);
             ++this->size;
         }
+    }
+
+    void truncate(size_t newSize)
+    {
+        Q_ASSERT(!this->ref.isShared());
+        Q_ASSERT(newSize < size_t(this->size));
+
+        const T *const b = this->begin();
+        do {
+            (b + --this->size)->~T();
+        } while (uint(this->size) != newSize);
     }
 
     void destroyAll() // Call from destructors, ONLY
@@ -239,6 +258,7 @@ struct QMovableArrayOps
 {
     // using QGenericArrayOps<T>::appendInitialize;
     // using QGenericArrayOps<T>::copyAppend;
+    // using QGenericArrayOps<T>::truncate;
     // using QGenericArrayOps<T>::destroyAll;
 
     void insert(T *where, const T *b, const T *e)
