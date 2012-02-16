@@ -939,38 +939,35 @@ void QXcbKeyboard::setupModifiers()
         return;
     }
 
-    // Figure out the modifier mapping, ICCCM 6.6
-    typedef QPair<uint, xcb_keycode_t *> SymCodes;
-    QList<SymCodes> modKeyCodes;
-
     // for Alt and Meta L and R are the same
-    modKeyCodes << SymCodes(XK_Alt_L, xcb_key_symbols_get_keycode(m_key_symbols, XK_Alt_L));
-    modKeyCodes << SymCodes(XK_Meta_L, xcb_key_symbols_get_keycode(m_key_symbols, XK_Meta_L));
-    modKeyCodes << SymCodes(XK_Super_L, xcb_key_symbols_get_keycode(m_key_symbols, XK_Super_L));
-    modKeyCodes << SymCodes(XK_Super_R, xcb_key_symbols_get_keycode(m_key_symbols, XK_Super_R));
-    modKeyCodes << SymCodes(XK_Hyper_L, xcb_key_symbols_get_keycode(m_key_symbols, XK_Hyper_L));
-    modKeyCodes << SymCodes(XK_Hyper_R, xcb_key_symbols_get_keycode(m_key_symbols, XK_Hyper_R));
-    modKeyCodes << SymCodes(XK_Num_Lock, xcb_key_symbols_get_keycode(m_key_symbols, XK_Num_Lock));
-    modKeyCodes << SymCodes(XK_Mode_switch, xcb_key_symbols_get_keycode(m_key_symbols, XK_Mode_switch));
-    modKeyCodes << SymCodes(XK_Caps_Lock, xcb_key_symbols_get_keycode(m_key_symbols, XK_Caps_Lock));
+    static const xcb_keysym_t symbols[] = {
+        XK_Alt_L, XK_Meta_L, XK_Super_L, XK_Super_R,
+        XK_Hyper_L, XK_Hyper_R, XK_Num_Lock, XK_Mode_switch, XK_Caps_Lock,
+    };
+    static const size_t numSymbols = sizeof symbols / sizeof *symbols;
+
+    // Figure out the modifier mapping, ICCCM 6.6
+    xcb_keycode_t* modKeyCodes[numSymbols];
+    for (size_t i = 0; i < numSymbols; ++i)
+        modKeyCodes[i] = xcb_key_symbols_get_keycode(m_key_symbols, symbols[i]);
 
     xcb_keycode_t *modMap = xcb_get_modifier_mapping_keycodes(modMapReply);
     const int w = modMapReply->keycodes_per_modifier;
-    for (int i = 0; i < modKeyCodes.count(); ++i) {
+    for (size_t i = 0; i < numSymbols; ++i) {
         for (int bit = 0; bit < 8; ++bit) {
             uint mask = 1 << bit;
             for (int x = 0; x < w; ++x) {
                 xcb_keycode_t keyCode = modMap[x + bit * w];
-                xcb_keycode_t *itk = modKeyCodes.at(i).second;
+                xcb_keycode_t *itk = modKeyCodes[i];
                 while (itk && *itk != XCB_NO_SYMBOL)
                     if (*itk++ == keyCode)
-                        setMask(modKeyCodes.at(i).first, mask);
+                        setMask(symbols[i], mask);
             }
         }
     }
 
-    for (int i = 0; i < modKeyCodes.count(); ++i)
-        free(modKeyCodes.at(i).second);
+    for (size_t i = 0; i < numSymbols; ++i)
+        free(modKeyCodes[i]);
     free(modMapReply);
 }
 
