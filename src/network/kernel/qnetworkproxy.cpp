@@ -247,6 +247,12 @@ public:
         , socks5SocketEngineHandler(0)
         , httpSocketEngineHandler(0)
     {
+#ifndef QT_NO_SOCKS5
+        socks5SocketEngineHandler = new QSocks5SocketEngineHandler();
+#endif
+#ifndef QT_NO_HTTP
+        httpSocketEngineHandler = new QHttpSocketEngineHandler();
+#endif
     }
 
     ~QGlobalNetworkProxy()
@@ -255,19 +261,6 @@ public:
         delete applicationLevelProxyFactory;
         delete socks5SocketEngineHandler;
         delete httpSocketEngineHandler;
-    }
-
-    void init()
-    {
-        QMutexLocker lock(&mutex);
-#ifndef QT_NO_SOCKS5
-        if (!socks5SocketEngineHandler)
-            socks5SocketEngineHandler = new QSocks5SocketEngineHandler();
-#endif
-#ifndef QT_NO_HTTP
-        if (!httpSocketEngineHandler)
-            httpSocketEngineHandler = new QHttpSocketEngineHandler();
-#endif
     }
 
     void setApplicationProxy(const QNetworkProxy &proxy)
@@ -431,8 +424,6 @@ template<> void QSharedDataPointer<QNetworkProxyPrivate>::detach()
 QNetworkProxy::QNetworkProxy()
     : d(0)
 {
-    if (QGlobalNetworkProxy *globalProxy = globalNetworkProxy())
-        globalProxy->init();
 }
 
 /*!
@@ -447,8 +438,6 @@ QNetworkProxy::QNetworkProxy(ProxyType type, const QString &hostName, quint16 po
                   const QString &user, const QString &password)
     : d(new QNetworkProxyPrivate(type, hostName, port, user, password))
 {
-    if (QGlobalNetworkProxy *globalProxy = globalNetworkProxy())
-        globalProxy->init();
 }
 
 /*!
