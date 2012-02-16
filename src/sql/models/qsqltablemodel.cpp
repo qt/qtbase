@@ -1050,6 +1050,8 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
     Returns false if the parameters are out of bounds; otherwise
     returns true.
 
+    Does not submit rows, regardless of edit strategy, not even OnFieldChange.
+
     \sa primeInsert(), insertRecord()
 */
 bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
@@ -1097,7 +1099,11 @@ bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
 
     Returns true if the record could be inserted, otherwise false.
 
-    \sa insertRows(), removeRows()
+    Changes are submitted immediately for OnFieldChange and
+    OnRowChange. Note the contrast with setRecord() in respect to
+    OnRowChange.
+
+    \sa insertRows(), removeRows(), setRecord()
 */
 bool QSqlTableModel::insertRecord(int row, const QSqlRecord &record)
 {
@@ -1210,7 +1216,13 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
     Returns true if all the values could be set; otherwise returns
     false.
 
-    \sa record()
+    The edit strategy affects automatic submitting.
+    With OnFieldChange, setRecord() commits its changed row.
+    With OnRowChange, setRecord() does not commit its changed row,
+    but making a change to another row causes previous changes to
+    be submitted.
+
+    \sa record(), editStrategy()
 */
 bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
 {
