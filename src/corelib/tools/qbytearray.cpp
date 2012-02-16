@@ -69,24 +69,25 @@ int qFindByteArray(
 
 int qAllocMore(int alloc, int extra)
 {
-    if (alloc == 0 && extra == 0)
-        return 0;
-    const int page = 1 << 12;
-    int nalloc;
-    alloc += extra;
-    if (alloc < 1<<6) {
-        nalloc = (1<<3) + ((alloc >>3) << 3);
-    } else  {
-        // don't do anything if the loop will overflow signed int.
-        if (alloc >= INT_MAX/2)
-            return INT_MAX;
-        nalloc = (alloc < page) ? 1 << 3 : page;
-        while (nalloc < alloc) {
-            if (nalloc <= 0)
-                return INT_MAX;
-            nalloc *= 2;
-        }
-    }
+    Q_ASSERT(alloc >= 0 && extra >= 0);
+    Q_ASSERT(alloc < (1 << 30) - extra);
+
+    unsigned nalloc = alloc + extra;
+
+    // Round up to next power of 2
+
+    // Assuming container is growing, always overshoot
+    //--nalloc;
+
+    nalloc |= nalloc >> 1;
+    nalloc |= nalloc >> 2;
+    nalloc |= nalloc >> 4;
+    nalloc |= nalloc >> 8;
+    nalloc |= nalloc >> 16;
+    ++nalloc;
+
+    Q_ASSERT(nalloc > unsigned(alloc + extra));
+
     return nalloc - extra;
 }
 
