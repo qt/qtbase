@@ -773,7 +773,7 @@ struct QRegularExpressionPrivate : QSharedData
     void cleanCompiledPattern();
     void compilePattern();
     void getPatternInfo();
-    void optimizePattern();
+    pcre16_extra *optimizePattern();
 
     QRegularExpressionMatchPrivate *doMatch(const QString &subject,
                                             int offset,
@@ -1006,15 +1006,30 @@ static bool isJitEnabled()
 
 /*!
     \internal
+
+    The purpose of the function is to call pcre16_study (which allows some
+    optimizations to be performed, including JIT-compiling the pattern), and
+    setting the studyData member variable to the result of the study. It gets
+    called by doMatch() every time a match is performed. As of now, the
+    optimizations on the pattern are performed after a certain number of usages
+    (i.e. the OPTIMIZE_AFTER_USE_COUNT constant).
+
+    Notice that although the method is protected by a mutex, one thread may
+    invoke this function and return immediately (i.e. not study the pattern,
+    leaving studyData to NULL); but before calling pcre16_exec to perform the
+    match, another thread performs the studying and sets studyData to something
+    else. Although the assignment to studyData is itself atomic, the release of
+    the memory pointed by studyData isn't. Therefore, the current studyData
+    value is returned and used by doMatch.
 */
-void QRegularExpressionPrivate::optimizePattern()
+pcre16_extra *QRegularExpressionPrivate::optimizePattern()
 {
     Q_ASSERT(compiledPattern);
 
     QMutexLocker lock(&mutex);
 
     if (studyData || (++usedCount != OPTIMIZE_AFTER_USE_COUNT))
-        return;
+        return studyData;
 
     static const bool enableJit = isJitEnabled();
 
@@ -1027,6 +1042,8 @@ void QRegularExpressionPrivate::optimizePattern()
 
     if (!studyData && err)
         qWarning("QRegularExpressionPrivate::optimizePattern(): pcre_study failed: %s", err);
+
+    return studyData;
 }
 
 /*!
@@ -1089,7 +1106,7 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
                                                                               capturingCount);
 
     // this is mutex protected
-    const_cast<QRegularExpressionPrivate *>(this)->optimizePattern();
+    const pcre16_extra *currentStudyData = const_cast<QRegularExpressionPrivate *>(this)->optimizePattern();
 
     int pcreOptions = convertToPcreOptions(matchOptions);
 
@@ -1113,12 +1130,12 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     int result;
 
     if (!previousMatchWasEmpty) {
-        result = pcre16_exec(compiledPattern, studyData,
+        result = pcre16_exec(compiledPattern, currentStudyData,
                              subjectUtf16, subjectLength,
                              offset, pcreOptions,
                              captureOffsets, captureOffsetsCount);
     } else {
-        result = pcre16_exec(compiledPattern, studyData,
+        result = pcre16_exec(compiledPattern, currentStudyData,
                              subjectUtf16, subjectLength,
                              offset, pcreOptions | PCRE_NOTEMPTY_ATSTART | PCRE_ANCHORED,
                              captureOffsets, captureOffsetsCount);
@@ -1136,7 +1153,7 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
                 ++offset;
             }
 
-            result = pcre16_exec(compiledPattern, studyData,
+            result = pcre16_exec(compiledPattern, currentStudyData,
                                  subjectUtf16, subjectLength,
                                  offset, pcreOptions,
                                  captureOffsets, captureOffsetsCount);
