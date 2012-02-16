@@ -130,19 +130,22 @@ public:
         return d;
     }
 
+    bool needsDetach() const
+    {
+        return (!d->isMutable() || d->ref.isShared());
+    }
+
     void setSharable(bool sharable)
     {
-        // Can't call setSharable on static read-only data, like shared_null
-        // and the internal shared-empties.
-        if (d->alloc == 0 && d->size == 0) {
-            d = Data::allocate(0, sharable
-                    ? QArrayData::Default
-                    : QArrayData::Unsharable);
-            return;
+        if (needsDetach()) {
+            Data *detached = clone(sharable
+                    ? d->detachFlags() & ~QArrayData::Unsharable
+                    : d->detachFlags() | QArrayData::Unsharable);
+            QArrayDataPointer old(d);
+            d = detached;
+        } else {
+            d->ref.setSharable(sharable);
         }
-
-        detach();
-        d->ref.setSharable(sharable);
     }
 
     void swap(QArrayDataPointer &other)
@@ -158,7 +161,7 @@ public:
 
     bool detach()
     {
-        if (!d->isMutable() || d->ref.isShared()) {
+        if (needsDetach()) {
             Data *copy = clone(d->detachFlags());
             QArrayDataPointer old(d);
             d = copy;
