@@ -72,6 +72,8 @@ private slots:
     void sharedNullEmpty();
     void staticData();
     void simpleVector();
+    void simpleVectorReserve_data();
+    void simpleVectorReserve();
     void allocate_data();
     void allocate();
     void alignment_data();
@@ -527,6 +529,66 @@ void tst_QArrayData::simpleVector()
         QVERIFY(null.isEmpty());
         QVERIFY(empty.isEmpty());
     }
+}
+
+Q_DECLARE_METATYPE(SimpleVector<int>)
+
+void tst_QArrayData::simpleVectorReserve_data()
+{
+    QTest::addColumn<SimpleVector<int> >("vector");
+    QTest::addColumn<size_t>("capacity");
+    QTest::addColumn<size_t>("size");
+
+    QTest::newRow("null") << SimpleVector<int>() << size_t(0) << size_t(0);
+    QTest::newRow("empty") << SimpleVector<int>(0, 42) << size_t(0) << size_t(0);
+    QTest::newRow("non-empty") << SimpleVector<int>(5, 42) << size_t(5) << size_t(5);
+
+    static const QStaticArrayData<int, 15> array = {
+        Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(int, 15),
+        { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 } };
+    QArrayDataPointerRef<int> p = {
+         static_cast<QTypedArrayData<int> *>(
+            const_cast<QArrayData *>(&array.header)) };
+
+    QTest::newRow("static") << SimpleVector<int>(p) << size_t(0) << size_t(15);
+    QTest::newRow("raw-data") << SimpleVector<int>::fromRawData(array.data, 15) << size_t(0) << size_t(15);
+}
+
+void tst_QArrayData::simpleVectorReserve()
+{
+    QFETCH(SimpleVector<int>, vector);
+    QFETCH(size_t, capacity);
+    QFETCH(size_t, size);
+
+    QVERIFY(!capacity || capacity >= size);
+
+    QCOMPARE(vector.capacity(), capacity);
+    QCOMPARE(vector.size(), size);
+
+    const SimpleVector<int> copy(vector);
+
+    vector.reserve(0);
+    QCOMPARE(vector.capacity(), capacity);
+    QCOMPARE(vector.size(), size);
+
+    vector.reserve(10);
+
+    // zero-capacity (immutable) resets with detach
+    if (!capacity)
+        capacity = size;
+
+    QCOMPARE(vector.capacity(), qMax(size_t(10), capacity));
+    QCOMPARE(vector.size(), size);
+
+    vector.reserve(20);
+    QCOMPARE(vector.capacity(), size_t(20));
+    QCOMPARE(vector.size(), size);
+
+    vector.reserve(30);
+    QCOMPARE(vector.capacity(), size_t(30));
+    QCOMPARE(vector.size(), size);
+
+    QVERIFY(vector == copy);
 }
 
 struct Deallocator
