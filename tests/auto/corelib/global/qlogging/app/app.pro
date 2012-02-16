@@ -3,7 +3,9 @@ TEMPLATE = app
 TARGET = app
 QT = core
 
-CONFIG -= debug_and_release app_bundle
-CONFIG += debug console
+DESTDIR = ./
+
+CONFIG -= app_bundle
+CONFIG += console
 
 SOURCES += main.cpp

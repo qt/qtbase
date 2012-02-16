@@ -47,6 +47,9 @@
 class tst_qmessagehandler : public QObject
 {
     Q_OBJECT
+public slots:
+    void initTestCase();
+
 private slots:
     void cleanup();
 
@@ -59,6 +62,9 @@ private slots:
     void cleanupFuncinfo();
 
     void qMessagePattern();
+
+private:
+    QString m_appDir;
 };
 
 static QtMsgType s_type;
@@ -83,6 +89,13 @@ void customMsgHandler(QtMsgType type, const char *msg)
     s_line = 0;
     s_function = 0;
     s_message = QString::fromLocal8Bit(msg);
+}
+
+void tst_qmessagehandler::initTestCase()
+{
+    m_appDir = QFINDTESTDATA("app");
+    QVERIFY2(!m_appDir.isEmpty(), qPrintable(
+        QString::fromLatin1("Couldn't find helper app dir starting from %1.").arg(QDir::currentPath())));
 }
 
 void tst_qmessagehandler::cleanup()
@@ -622,11 +635,11 @@ void tst_qmessagehandler::qMessagePattern()
     // %{file} is tricky because of shadow builds
     environment.prepend("QT_MESSAGE_PATTERN=\"%{type} %{appname} %{line} %{function} %{message}\"");
     process.setEnvironment(environment);
-#ifdef Q_OS_WIN
-    process.start("app/app.exe");
-#else
-    process.start("app/app");
-#endif
+
+    QString appExe = m_appDir + "/app";
+    process.start(appExe);
+    QVERIFY2(process.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(appExe, process.errorString())));
     process.waitForFinished();
 
     QByteArray output = process.readAllStandardError();
@@ -643,11 +656,10 @@ void tst_qmessagehandler::qMessagePattern()
     environment = QProcess::systemEnvironment();
     environment.prepend("QT_MESSAGE_PATTERN=\"PREFIX: %{unknown} %{message}\"");
     process.setEnvironment(environment);
-#ifdef Q_OS_WIN
-    process.start("app/app.exe");
-#else
-    process.start("app/app");
-#endif
+
+    process.start(appExe);
+    QVERIFY2(process.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(appExe, process.errorString())));
     process.waitForFinished();
 
     output = process.readAllStandardError();
