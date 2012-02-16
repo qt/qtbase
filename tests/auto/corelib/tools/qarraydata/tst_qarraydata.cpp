@@ -87,6 +87,7 @@ private slots:
     void literals();
     void variadicLiterals();
     void rValueReferences();
+    void grow();
 };
 
 template <class T> const T &const_(const T &t) { return t; }
@@ -651,6 +652,7 @@ void tst_QArrayData::allocate_data()
             QArrayData::CapacityReserved | QArrayData::Unsharable, true, false,
             unsharable_empty },
         { "Unsharable", QArrayData::Unsharable, false, false, unsharable_empty },
+        { "Grow", QArrayData::Grow, false, true, shared_empty }
     };
 
     for (size_t i = 0; i < sizeof(types)/sizeof(types[0]); ++i)
@@ -690,7 +692,10 @@ void tst_QArrayData::allocate()
         keeper.headers.append(data);
 
         QCOMPARE(data->size, 0);
-        QVERIFY(data->alloc >= uint(capacity));
+        if (allocateOptions & QArrayData::Grow)
+            QVERIFY(data->alloc > uint(capacity));
+        else
+            QCOMPARE(data->alloc, uint(capacity));
         QCOMPARE(data->capacityReserved, uint(isCapacityReserved));
         QCOMPARE(data->ref.isSharable(), isSharable);
 
@@ -1383,6 +1388,33 @@ void tst_QArrayData::rValueReferences()
 #else
     QSKIP("RValue references are not supported in current configuration");
 #endif
+}
+
+void tst_QArrayData::grow()
+{
+    SimpleVector<int> vector;
+
+    QCOMPARE(vector.size(), size_t(0));
+
+    size_t previousCapacity = vector.capacity();
+    size_t allocations = 0;
+    for (size_t i = 1; i <=  (1 << 20); ++i) {
+        int source[1] = { i };
+        vector.append(source, source + 1);
+        QCOMPARE(vector.size(), i);
+        if (vector.capacity() != previousCapacity) {
+            previousCapacity = vector.capacity();
+            ++allocations;
+        }
+    }
+    QCOMPARE(vector.size(), size_t(1 << 20));
+
+    // QArrayData::Grow prevents excessive allocations on a growing container
+    QVERIFY(allocations > 20 / 2);
+    QVERIFY(allocations < 20 * 2);
+
+    for (size_t i = 0; i < (1 << 20); ++i)
+        QCOMPARE(const_(vector).at(i), int(i + 1));
 }
 
 QTEST_APPLESS_MAIN(tst_QArrayData)

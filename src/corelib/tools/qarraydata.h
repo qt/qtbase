@@ -81,9 +81,10 @@ struct Q_CORE_EXPORT QArrayData
     }
 
     enum AllocationOption {
-        CapacityReserved = 0x1,
-        Unsharable = 0x2,
-        RawData = 0x4,
+        CapacityReserved    = 0x1,
+        Unsharable          = 0x2,
+        RawData             = 0x4,
+        Grow                = 0x8,
 
         Default = 0
     };

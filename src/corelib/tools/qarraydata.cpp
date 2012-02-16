@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtCore/qarraydata.h>
+#include <QtCore/private/qtools_p.h>
 
 #include <stdlib.h>
 
@@ -63,14 +64,20 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
             ? const_cast<QArrayData *>(&qt_array_empty)
             : const_cast<QArrayData *>(&qt_array_unsharable_empty);
 
-    size_t allocSize = sizeof(QArrayData) + objectSize * capacity;
+    size_t headerSize = sizeof(QArrayData);
 
     // Allocate extra (alignment - Q_ALIGNOF(QArrayData)) padding bytes so we
     // can properly align the data array. This assumes malloc is able to
     // provide appropriate alignment for the header -- as it should!
     // Padding is skipped when allocating a header for RawData.
     if (!(options & RawData))
-        allocSize += (alignment - Q_ALIGNOF(QArrayData));
+        headerSize += (alignment - Q_ALIGNOF(QArrayData));
+
+    // Allocate additional space if array is growing
+    if (options & Grow)
+        capacity = qAllocMore(objectSize * capacity, headerSize) / objectSize;
+
+    size_t allocSize = headerSize + objectSize * capacity;
 
     QArrayData *header = static_cast<QArrayData *>(::malloc(allocSize));
     if (header) {

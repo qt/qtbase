@@ -178,7 +178,7 @@ public:
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
                         qMax(capacity(), size() + (last - first)),
-                        d->detachFlags()));
+                        d->detachFlags() | Data::Grow));
 
             detached.d->copyAppend(first, last);
             detached.d->copyAppend(begin, begin + d->size);
@@ -199,7 +199,7 @@ public:
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
                         qMax(capacity(), size() + (last - first)),
-                        d->detachFlags()));
+                        d->detachFlags() | Data::Grow));
 
             if (d->size) {
                 const T *const begin = constBegin();
@@ -239,7 +239,7 @@ public:
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
                         qMax(capacity(), size() + (last - first)),
-                        d->detachFlags()));
+                        d->detachFlags() | Data::Grow));
 
             if (position)
                 detached.d->copyAppend(begin, where);
