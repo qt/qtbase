@@ -80,7 +80,7 @@ struct Q_CORE_EXPORT QVectorData
     static QVectorData *allocate(int size, int alignment);
     static QVectorData *reallocate(QVectorData *old, int newsize, int oldsize, int alignment);
     static void free(QVectorData *data, int alignment);
-    static int grow(int sizeofTypedData, int size, int sizeofT, bool excessive);
+    static int grow(int sizeofTypedData, int size, int sizeofT);
 };
 
 template <typename T>
@@ -355,7 +355,7 @@ void QVector<T>::reserve(int asize)
 template <typename T>
 void QVector<T>::resize(int asize)
 { realloc(asize, (asize > d->alloc || (!d->capacity && asize < d->size && asize < (d->alloc >> 1))) ?
-          QVectorData::grow(sizeOfTypedData(), asize, sizeof(T), QTypeInfo<T>::isStatic)
+          QVectorData::grow(sizeOfTypedData(), asize, sizeof(T))
           : d->alloc); }
 template <typename T>
 inline void QVector<T>::clear()
@@ -582,7 +582,7 @@ void QVector<T>::append(const T &t)
     if (!isDetached() || d->size + 1 > d->alloc) {
         const T copy(t);
         realloc(d->size, (d->size + 1 > d->alloc) ?
-                    QVectorData::grow(sizeOfTypedData(), d->size + 1, sizeof(T), QTypeInfo<T>::isStatic)
+                    QVectorData::grow(sizeOfTypedData(), d->size + 1, sizeof(T))
                     : d->alloc);
         if (QTypeInfo<T>::isComplex)
             new (p->array + d->size) T(copy);
@@ -604,8 +604,7 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, c
     if (n != 0) {
         const T copy(t);
         if (!isDetached() || d->size + n > d->alloc)
-            realloc(d->size, QVectorData::grow(sizeOfTypedData(), d->size + n, sizeof(T),
-                                               QTypeInfo<T>::isStatic));
+            realloc(d->size, QVectorData::grow(sizeOfTypedData(), d->size + n, sizeof(T)));
         if (QTypeInfo<T>::isStatic) {
             T *b = p->array + d->size;
             T *i = p->array + d->size + n;

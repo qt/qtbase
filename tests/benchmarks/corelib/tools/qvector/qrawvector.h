@@ -308,7 +308,7 @@ void QRawVector<T>::reserve(int asize)
 template <typename T>
 void QRawVector<T>::resize(int asize)
 { realloc(asize, (asize > m_alloc || (asize < m_size && asize < (m_alloc >> 1)))
-    ? QVectorData::grow(sizeOfTypedData(), asize, sizeof(T), QTypeInfo<T>::isStatic)
+    ? QVectorData::grow(sizeOfTypedData(), asize, sizeof(T))
     : m_alloc, false); }
 template <typename T>
 inline void QRawVector<T>::clear()
@@ -510,8 +510,7 @@ void QRawVector<T>::append(const T &t)
 {
     if (m_size + 1 > m_alloc) {
         const T copy(t);
-        realloc(m_size, QVectorData::grow(sizeOfTypedData(), m_size + 1, sizeof(T),
-                                           QTypeInfo<T>::isStatic), false);
+        realloc(m_size, QVectorData::grow(sizeOfTypedData(), m_size + 1, sizeof(T)), false);
         if (QTypeInfo<T>::isComplex)
             new (m_begin + m_size) T(copy);
         else
@@ -532,8 +531,7 @@ typename QRawVector<T>::iterator QRawVector<T>::insert(iterator before, size_typ
     if (n != 0) {
         const T copy(t);
         if (m_size + n > m_alloc)
-            realloc(m_size, QVectorData::grow(sizeOfTypedData(), m_size + n, sizeof(T),
-                                               QTypeInfo<T>::isStatic), false);
+            realloc(m_size, QVectorData::grow(sizeOfTypedData(), m_size + n, sizeof(T)), false);
         if (QTypeInfo<T>::isStatic) {
             T *b = m_begin + m_size;
             T *i = m_begin + m_size + n;

@@ -76,10 +76,8 @@ void QVectorData::free(QVectorData *x, int alignment)
         ::free(x);
 }
 
-int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive)
+int QVectorData::grow(int sizeofTypedData, int size, int sizeofT)
 {
-    if (excessive)
-        return size + size / 2;
     return qAllocMore(size * sizeofT, sizeofTypedData - sizeofT) / sizeofT;
 }
 
