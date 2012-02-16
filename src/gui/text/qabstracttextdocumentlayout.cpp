@@ -239,7 +239,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn int QAbstractTextDocumentLayout::hitTest(const QPointF &point, Qt::HitTestAccuracy accuracy) const
 
-    Returns the cursor postion for the given \a point with the specified
+    Returns the cursor position for the given \a point with the specified
     \a accuracy. Returns -1 if no valid cursor position was found.
 */
 

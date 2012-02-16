@@ -314,7 +314,7 @@ void QScrollerProperties::setScrollMetric(ScrollMetric metric, const QVariant &v
     \value MousePressEventDelay This is the time a mouse press event is delayed when starting
     a flick gesture in \c{[s]}. If the gesture is triggered within that time, no mouse press or
     release is sent to the scrolled object. If it triggers after that delay the delayed
-    mouse press plus a faked release event at global postion \c{QPoint(-QWIDGETSIZE_MAX,
+    mouse press plus a faked release event at global position \c{QPoint(-QWIDGETSIZE_MAX,
     -QWIDGETSIZE_MAX)} is sent. If the gesture is canceled, then both the delayed mouse
     press plus the real release event are delivered.
 
