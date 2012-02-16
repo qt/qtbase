@@ -402,6 +402,8 @@ QDataStream &operator>>(QDataStream &s, QPoint &p)
 
 #endif // QT_NO_DATASTREAM
 /*!
+    \fn int QPoint::manhattanLength() const
+
     Returns the sum of the absolute values of x() and y(),
     traditionally known as the "Manhattan length" of the vector from
     the origin to the point. For example:
@@ -417,10 +419,6 @@ QDataStream &operator>>(QDataStream &s, QPoint &p)
     apply to travelers who can only travel on a rectangular grid, like
     the streets of Manhattan.
 */
-int QPoint::manhattanLength() const
-{
-    return qAbs(x())+qAbs(y());
-}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPoint &p) {
@@ -505,6 +503,7 @@ QDebug operator<<(QDebug d, const QPointF &p)
 
 
 /*!
+    \fn qreal QPointF::manhattanLength() const
     \since 4.6
 
     Returns the sum of the absolute values of x() and y(),
@@ -513,10 +512,6 @@ QDebug operator<<(QDebug d, const QPointF &p)
 
     \sa QPoint::manhattanLength()
 */
-qreal QPointF::manhattanLength() const
-{
-    return qAbs(x())+qAbs(y());
-}
 
 /*!
     \fn qreal QPointF::x() const

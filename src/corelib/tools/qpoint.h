@@ -130,6 +130,9 @@ inline void QPoint::setX(int xpos)
 inline void QPoint::setY(int ypos)
 { yp = ypos; }
 
+inline int QPoint::manhattanLength() const
+{ return qAbs(x())+qAbs(y()); }
+
 inline int &QPoint::rx()
 { return xp; }
 
@@ -266,6 +269,11 @@ inline QPointF::QPointF() : xp(0), yp(0) { }
 inline QPointF::QPointF(qreal xpos, qreal ypos) : xp(xpos), yp(ypos) { }
 
 inline QPointF::QPointF(const QPoint &p) : xp(p.x()), yp(p.y()) { }
+
+inline qreal QPointF::manhattanLength() const
+{
+    return qAbs(x())+qAbs(y());
+}
 
 inline bool QPointF::isNull() const
 {
