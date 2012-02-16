@@ -326,13 +326,16 @@ void QWindowsClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
     const bool newData = !m_data || m_data->mimeData() != mimeData;
     if (newData) {
         releaseIData();
-        m_data = new QWindowsOleDataObject(mimeData);
+        if (mimeData)
+            m_data = new QWindowsOleDataObject(mimeData);
     }
 
     const HRESULT src = OleSetClipboard(m_data);
     if (src != S_OK) {
+        QString mimeDataFormats = mimeData ?
+            mimeData->formats().join(QStringLiteral(", ")) : QString(QStringLiteral("NULL"));
         qErrnoWarning("OleSetClipboard: Failed to set mime data (%s) on clipboard: %s",
-                      qPrintable(mimeData->formats().join(QStringLiteral(", "))),
+                      qPrintable(mimeDataFormats),
                       QWindowsContext::comErrorString(src).constData());
         releaseIData();
         return;
