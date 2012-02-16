@@ -41,7 +41,8 @@
 
 /*!
     \class QSslCertificateExtension
-    \brief The QSslCertificateExtension provides an API for accessing the extensions of an X509 certificate.
+    \brief The QSslCertificateExtension class provides an API for accessing the
+    extensions of an X509 certificate.
     \since 5.0
 
     \rentrant
