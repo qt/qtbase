@@ -392,6 +392,49 @@ bool QSqlTableModel::select()
 }
 
 /*!
+    Refreshes \a row in the model with values from the database table row matching
+    on primary key values. Without a primary key, all column values must match. If
+    no matching row is found, the model will show an empty row.
+
+    Returns true if successful; otherwise returns false.
+
+    \sa select()
+*/
+bool QSqlTableModel::selectRow(int row)
+{
+    Q_D(QSqlTableModel);
+
+    if (row < 0 || row >= rowCount())
+        return false;
+
+    const int table_sort_col = d->sortColumn;
+    d->sortColumn = -1;
+    const QString table_filter = d->filter;
+    d->filter = d->db.driver()->sqlStatement(QSqlDriver::WhereStatement,
+                                              d->tableName,
+                                              d->primaryValues(row),
+                                              false);
+    if (d->filter.startsWith(QLatin1String("WHERE "), Qt::CaseInsensitive))
+        d->filter.remove(0, 6);
+    const QString stmt = selectStatement();
+    d->sortColumn = table_sort_col;
+    d->filter = table_filter;
+
+    QSqlQuery q(d->db);
+    q.setForwardOnly(true);
+    if (!q.exec(stmt))
+        return false;
+
+    bool exists = q.next();
+    d->cache[row].refresh(exists, q.record());
+
+    emit headerDataChanged(Qt::Vertical, row, row);
+    emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
+
+    return true;
+}
+
+/*!
     \reimp
 */
 QVariant QSqlTableModel::data(const QModelIndex &index, int role) const

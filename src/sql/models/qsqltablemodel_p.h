@@ -135,6 +135,20 @@ public:
                 setGenerated(m_db_values, true);
             }
         }
+        inline void refresh(bool exists, const QSqlRecord& newvals)
+        {
+            m_submitted = true;
+            if (exists) {
+                m_op = Update;
+                m_db_values = newvals;
+                m_rec = newvals;
+                setGenerated(m_rec, false);
+            } else {
+                m_op = Delete;
+                m_rec.clear();
+                m_db_values.clear();
+            }
+        }
         inline bool insert() const { return m_insert; }
         inline void revert()
         {
