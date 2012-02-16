@@ -47,6 +47,8 @@ QT_BEGIN_NAMESPACE
 
 class QMinimalIntegrationPlugin : public QPlatformIntegrationPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface" FILE "minimal.json")
 public:
     QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&);
@@ -68,6 +70,6 @@ QPlatformIntegration *QMinimalIntegrationPlugin::create(const QString& system, c
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(minimal, QMinimalIntegrationPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

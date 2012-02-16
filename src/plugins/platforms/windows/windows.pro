@@ -149,5 +149,7 @@ contains(QT_CONFIG, freetype) {
    }
 }
 
+OTHER_FILES += windows.json
+
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

@@ -59,6 +59,7 @@ LIBS += -framework Cocoa
 
 QT += core-private gui-private widgets-private platformsupport-private
 
+OTHER_FILES += cocoa.json
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
 

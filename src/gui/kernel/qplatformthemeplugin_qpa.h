@@ -68,7 +68,7 @@ struct QPlatformThemeFactoryInterface : public QFactoryInterface
     virtual QPlatformTheme *create(const QString &key, const QStringList &paramList) = 0;
 };
 
-#define QPlatformThemeFactoryInterface_iid "com.nokia.Qt.QPlatformThemeFactoryInterface"
+#define QPlatformThemeFactoryInterface_iid "org.qt-project.Qt.QPlatformThemeFactoryInterface"
 
 Q_DECLARE_INTERFACE(QPlatformThemeFactoryInterface, QPlatformThemeFactoryInterface_iid)
 

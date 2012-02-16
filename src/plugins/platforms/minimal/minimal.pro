@@ -10,5 +10,7 @@ SOURCES =   main.cpp \
 HEADERS =   qminimalintegration.h \
             qminimalbackingstore.h
 
+OTHER_FILES += minimal.json
+
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

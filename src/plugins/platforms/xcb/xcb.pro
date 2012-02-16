@@ -108,5 +108,7 @@ QT += dbus
 LIBS += -ldbus-1
 }
 
+OTHER_FILES += xcb.json
+
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

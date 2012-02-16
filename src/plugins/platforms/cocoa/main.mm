@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
 class QCocoaIntegrationPlugin : public QPlatformIntegrationPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface" FILE "cocoa.json")
 public:
     QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&);
@@ -71,6 +73,6 @@ QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, co
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(CocoaIntegration, QCocoaIntegrationPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"
