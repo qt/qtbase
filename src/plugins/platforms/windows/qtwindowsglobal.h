@@ -77,6 +77,8 @@ enum WindowsEventType // Simplify event types
     ResizeEvent = WindowEventFlag + 12,
     QuerySizeHints = WindowEventFlag + 15,
     CalculateSize = WindowEventFlag + 16,
+    FocusInEvent = WindowEventFlag + 17,
+    FocusOutEvent = WindowEventFlag + 18,
     MouseEvent = MouseEventFlag + 1,
     MouseWheelEvent = MouseEventFlag + 2,
     TouchEvent = TouchEventFlag + 1,
@@ -170,6 +172,10 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
          }
     case WM_GETOBJECT:
         return QtWindows::AccessibleObjectFromWindowRequest;
+    case WM_SETFOCUS:
+        return QtWindows::FocusInEvent;
+    case WM_KILLFOCUS:
+        return QtWindows::FocusOutEvent;
     case WM_DISPLAYCHANGE:
         return QtWindows::DisplayChangedEvent;
     default:

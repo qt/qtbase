@@ -1220,8 +1220,12 @@ void QWindowsWindow::requestActivateWindow()
 {
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window();
-    if (m_data.hwnd)
+    // 'Active' state handling is based in focus since it needs to work for
+    // child windows as well.
+    if (m_data.hwnd) {
         SetForegroundWindow(m_data.hwnd);
+        SetFocus(m_data.hwnd);
+    }
 }
 
 bool QWindowsWindow::setKeyboardGrabEnabled(bool grab)

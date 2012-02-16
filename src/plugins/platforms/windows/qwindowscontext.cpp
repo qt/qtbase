@@ -676,10 +676,6 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     }
     // Events without an associated QWindow or events we are not interested in.
     switch (et) {
-    case QtWindows::DeactivateApplicationEvent:
-    case QtWindows::DeactivateWindowEvent:
-        QWindowSystemInterface::handleWindowActivated(0);
-        return true;
     case QtWindows::InputMethodStartCompositionEvent:
         return QWindowsInputContext::instance()->startComposition(hwnd);
     case QtWindows::InputMethodCompositionEvent:
@@ -773,8 +769,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
     case QtWindows::TouchEvent:
         return d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
-    case QtWindows::ActivateWindowEvent:
+    case QtWindows::FocusInEvent: // see QWindowsWindow::requestActivateWindow().
         QWindowSystemInterface::handleWindowActivated(platformWindow->window());
+        return true;
+    case QtWindows::FocusOutEvent:
+        QWindowSystemInterface::handleWindowActivated(0);
         return true;
     case QtWindows::ShowEvent:
         platformWindow->handleShown();
