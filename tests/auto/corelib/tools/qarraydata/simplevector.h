@@ -63,6 +63,13 @@ public:
     {
     }
 
+    explicit SimpleVector(size_t n)
+        : d(Data::allocate(n))
+    {
+        if (n)
+            d->appendInitialize(n);
+    }
+
     SimpleVector(size_t n, const T &t)
         : d(Data::allocate(n))
     {

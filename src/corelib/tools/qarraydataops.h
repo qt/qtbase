@@ -57,6 +57,16 @@ template <class T>
 struct QPodArrayOps
     : QTypedArrayData<T>
 {
+    void appendInitialize(size_t newSize)
+    {
+        Q_ASSERT(!this->ref.isShared());
+        Q_ASSERT(newSize > uint(this->size));
+        Q_ASSERT(newSize <= this->alloc);
+
+        ::memset(this->end(), 0, (newSize - this->size) * sizeof(T));
+        this->size = newSize;
+    }
+
     void copyAppend(const T *b, const T *e)
     {
         Q_ASSERT(!this->ref.isShared());
@@ -105,6 +115,18 @@ template <class T>
 struct QGenericArrayOps
     : QTypedArrayData<T>
 {
+    void appendInitialize(size_t newSize)
+    {
+        Q_ASSERT(!this->ref.isShared());
+        Q_ASSERT(newSize > uint(this->size));
+        Q_ASSERT(newSize <= this->alloc);
+
+        T *const begin = this->begin();
+        do {
+            new (begin + this->size) T();
+        } while (uint(++this->size) != newSize);
+    }
+
     void copyAppend(const T *b, const T *e)
     {
         Q_ASSERT(!this->ref.isShared());
@@ -215,6 +237,7 @@ template <class T>
 struct QMovableArrayOps
     : QGenericArrayOps<T>
 {
+    // using QGenericArrayOps<T>::appendInitialize;
     // using QGenericArrayOps<T>::copyAppend;
     // using QGenericArrayOps<T>::destroyAll;
 

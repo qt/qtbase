@@ -81,6 +81,7 @@ private slots:
     void typedData();
     void gccBug43247();
     void arrayOps();
+    void appendInitialize();
     void setSharable_data();
     void setSharable();
     void fromRawData();
@@ -894,11 +895,15 @@ struct CountedObject
 {
     CountedObject()
         : id(liveCount++)
+        , flags(DefaultConstructed)
     {
     }
 
     CountedObject(const CountedObject &other)
         : id(other.id)
+        , flags(other.flags == DefaultConstructed
+                ? ObjectFlags(CopyConstructed | DefaultConstructed)
+                : CopyConstructed)
     {
         ++liveCount;
     }
@@ -910,6 +915,7 @@ struct CountedObject
 
     CountedObject &operator=(const CountedObject &other)
     {
+        flags = ObjectFlags(other.flags | CopyAssigned);
         id = other.id;
         return *this;
     }
@@ -930,7 +936,15 @@ struct CountedObject
         const size_t previousLiveCount;
     };
 
+    enum ObjectFlags {
+        DefaultConstructed  = 1,
+        CopyConstructed     = 2,
+        CopyAssigned        = 4
+    };
+
     size_t id; // not unique
+    ObjectFlags flags;
+
     static size_t liveCount;
 };
 
@@ -968,7 +982,10 @@ void tst_QArrayData::arrayOps()
     for (int i = 0; i < 5; ++i) {
         QCOMPARE(vi[i], intArray[i]);
         QVERIFY(vs[i].isSharedWith(stringArray[i]));
+
         QCOMPARE(vo[i].id, objArray[i].id);
+        QCOMPARE(int(vo[i].flags), CountedObject::CopyConstructed
+                | CountedObject::DefaultConstructed);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -997,7 +1014,10 @@ void tst_QArrayData::arrayOps()
     for (int i = 0; i < 5; ++i) {
         QCOMPARE(vi[i], referenceInt);
         QVERIFY(vs[i].isSharedWith(referenceString));
+
         QCOMPARE(vo[i].id, referenceObject.id);
+        QCOMPARE(int(vo[i].flags), CountedObject::CopyConstructed
+                | CountedObject::DefaultConstructed);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1042,28 +1062,80 @@ void tst_QArrayData::arrayOps()
     QCOMPARE(vo.size(), size_t(30));
 
     QCOMPARE(CountedObject::liveCount, size_t(36));
-    for (int i = 0; i < 15; ++i) {
+    for (int i = 0; i < 5; ++i) {
         QCOMPARE(vi[i], intArray[i % 5]);
         QVERIFY(vs[i].isSharedWith(stringArray[i % 5]));
+
         QCOMPARE(vo[i].id, objArray[i % 5].id);
+        QCOMPARE(int(vo[i].flags), CountedObject::DefaultConstructed
+                | CountedObject::CopyAssigned);
+    }
+
+    for (int i = 5; i < 15; ++i) {
+        QCOMPARE(vi[i], intArray[i % 5]);
+        QVERIFY(vs[i].isSharedWith(stringArray[i % 5]));
+
+        QCOMPARE(vo[i].id, objArray[i % 5].id);
+        QCOMPARE(int(vo[i].flags), CountedObject::CopyConstructed
+                | CountedObject::CopyAssigned);
     }
 
     for (int i = 15; i < 20; ++i) {
         QCOMPARE(vi[i], referenceInt);
         QVERIFY(vs[i].isSharedWith(referenceString));
+
         QCOMPARE(vo[i].id, referenceObject.id);
+        QCOMPARE(int(vo[i].flags), CountedObject::CopyConstructed
+                | CountedObject::CopyAssigned);
     }
 
     for (int i = 20; i < 25; ++i) {
         QCOMPARE(vi[i], intArray[i % 5]);
         QVERIFY(vs[i].isSharedWith(stringArray[i % 5]));
+
         QCOMPARE(vo[i].id, objArray[i % 5].id);
+
+        //  Originally inserted as (DefaultConstructed | CopyAssigned), later
+        //  get shuffled into place by std::rotate (SimpleVector::insert,
+        //  overlapping mode).
+        //  Depending on implementation of rotate, final assignment can be:
+        //     - straight from source: DefaultConstructed | CopyAssigned
+        //     - through a temporary: CopyConstructed | CopyAssigned
+        QCOMPARE(vo[i].flags & CountedObject::CopyAssigned,
+                int(CountedObject::CopyAssigned));
     }
 
     for (int i = 25; i < 30; ++i) {
         QCOMPARE(vi[i], referenceInt);
         QVERIFY(vs[i].isSharedWith(referenceString));
+
         QCOMPARE(vo[i].id, referenceObject.id);
+        QCOMPARE(int(vo[i].flags), CountedObject::CopyConstructed
+                | CountedObject::CopyAssigned);
+    }
+}
+
+void tst_QArrayData::appendInitialize()
+{
+    CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker)
+
+    ////////////////////////////////////////////////////////////////////////////
+    // appendInitialize
+    SimpleVector<int> vi(5);
+    SimpleVector<QString> vs(5);
+    SimpleVector<CountedObject> vo(5);
+
+    QCOMPARE(vi.size(), size_t(5));
+    QCOMPARE(vs.size(), size_t(5));
+    QCOMPARE(vo.size(), size_t(5));
+
+    QCOMPARE(CountedObject::liveCount, size_t(5));
+    for (size_t i = 0; i < 5; ++i) {
+        QCOMPARE(vi[i], 0);
+        QVERIFY(vs[i].isNull());
+
+        QCOMPARE(vo[i].id, i);
+        QCOMPARE(int(vo[i].flags), int(CountedObject::DefaultConstructed));
     }
 }
 
