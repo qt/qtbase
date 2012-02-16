@@ -1799,7 +1799,8 @@ void QHeaderViewPrivate::_q_sectionsRemoved(const QModelIndex &parent,
         //Q_ASSERT(headerSectionCount() == sectionCount);
         removeSectionsFromSpans(logicalFirst, logicalLast);
     } else {
-        for (int l = logicalLast; l >= logicalFirst; --l) {
+        if (logicalFirst == logicalLast) { // Remove just one index.
+            int l = logicalFirst;
             int visual = visualIndices.at(l);
             for (int v = 0; v < sectionCount; ++v) {
                 if (v >= logicalIndices.count())
@@ -1815,8 +1816,27 @@ void QHeaderViewPrivate::_q_sectionsRemoved(const QModelIndex &parent,
             visualIndices.remove(l);
             //Q_ASSERT(headerSectionCount() == sectionCount);
             removeSectionsFromSpans(visual, visual);
+        } else {
+            sectionStartposRecalc = true; // We will need to recalc positions after removing items
+            for (int u = 0; u < sectionSpans.count(); ++u)  // Store spans info
+                sectionSpans.at(u).tmpLogIdx = logicalIndices.at(u);
+            for (int v = sectionSpans.count() - 1; v >= 0; --v) {  // Remove the sections
+                if (logicalFirst <= sectionSpans.at(v).tmpLogIdx && sectionSpans.at(v).tmpLogIdx <= logicalLast)
+                    removeSectionsFromSpans(v, v); // Invalidates the spans variable
+            }
+            visualIndices.resize(sectionSpans.count());
+            logicalIndices.resize(sectionSpans.count());
+            int* visual_data = visualIndices.data();
+            int* logical_data = logicalIndices.data();
+            for (int w = 0; w < sectionSpans.count(); ++w) { // Restore visual and logical indexes
+                int logindex = sectionSpans.at(w).tmpLogIdx;
+                if (logindex > logicalFirst)
+                    logindex -= changeCount;
+                visual_data[logindex] = w;
+                logical_data[w] = logindex;
+            }
         }
-        // ### handle sectionSelection, sectionHidden
+        // ### handle sectionSelection (sectionHidden is handled by updateHiddenSections)
     }
     sectionCount -= changeCount;
 

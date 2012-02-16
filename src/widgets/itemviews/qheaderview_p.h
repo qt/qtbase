@@ -288,6 +288,7 @@ public:
     struct SectionSpan {
         int size;
         mutable int calculated_startpos;
+        mutable int tmpLogIdx;
         QHeaderView::ResizeMode resizeMode;
         inline SectionSpan() : size(0), resizeMode(QHeaderView::Interactive) {}
         inline SectionSpan(int length, QHeaderView::ResizeMode mode)
