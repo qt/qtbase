@@ -154,9 +154,9 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 #  endif
 #  define Q_PLUGIN_VERIFICATION_DATA \
     static const char qt_plugin_verification_data[] = \
-      "pattern=""QT_PLUGIN_VERIFICATION_DATA""\n" \
-      "version="QT_VERSION_STR"\n" \
-      "debug="QPLUGIN_DEBUG_STR;
+      "pattern=" "QT_PLUGIN_VERIFICATION_DATA" "\n" \
+      "version=" QT_VERSION_STR "\n" \
+      "debug=" QPLUGIN_DEBUG_STR;
 
 
 #  define Q_EXPORT_PLUGIN2(PLUGIN, PLUGINCLASS)      \
