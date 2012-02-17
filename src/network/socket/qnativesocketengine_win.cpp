@@ -615,6 +615,16 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
 
     setPortAndAddress(&sockAddrIPv4, &sockAddrIPv6, port, address, &sockAddrPtr, &sockAddrSize);
 
+#if defined (IPV6_V6ONLY)
+    if (socketProtocol == QAbstractSocket::IPv6Protocol && address.toIPv4Address()) {
+        //IPV6_V6ONLY option must be cleared to connect to a V4 mapped address
+        if (QSysInfo::windowsVersion() >= QSysInfo::WV_6_0) {
+            DWORD ipv6only = 0;
+            ipv6only = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
+        }
+    }
+#endif
+
     forever {
         int connectResult = ::WSAConnect(socketDescriptor, sockAddrPtr, sockAddrSize, 0,0,0,0);
         if (connectResult == SOCKET_ERROR) {
