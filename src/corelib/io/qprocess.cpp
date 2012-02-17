@@ -522,8 +522,8 @@ void QProcessPrivate::Channel::clear()
 
     \note On QNX, setting the working directory may cause all
     application threads, with the exception of the QProcess caller
-    thread, to momentaneusly freeze, owing to a limitation in
-    the operating system.
+    thread, to temporarily freeze during the spawning process,
+    owing to a limitation in the operating system.
 
     \section1 Synchronous Process API
 
@@ -1439,7 +1439,7 @@ QString QProcess::workingDirectory() const
     process in the working directory of the calling process.
 
     \note On QNX, this may cause all application threads to
-    momentaneusly freeze.
+    temporarily freeze.
 
     \sa workingDirectory(), start()
 */
@@ -2158,7 +2158,7 @@ int QProcess::execute(const QString &program)
     The process will be started in the directory \a workingDirectory.
 
     \note On QNX, this may cause all application threads to
-    momentaneusly freeze.
+    temporarily freeze.
 
     If the function is successful then *\a pid is set to the process
     identifier of the started process.
