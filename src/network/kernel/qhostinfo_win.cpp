@@ -95,6 +95,22 @@ static void resolveLibrary()
 #endif
 }
 
+static void translateWSAError(int error, QHostInfo *results)
+{
+    switch (error) {
+    case WSAHOST_NOT_FOUND: //authoritative not found
+    case WSATRY_AGAIN: //non authoritative not found
+    case WSANO_DATA: //valid name, no associated address
+        results->setError(QHostInfo::HostNotFound);
+        results->setErrorString(QHostInfoAgent::tr("Host not found"));
+        return;
+    default:
+        results->setError(QHostInfo::UnknownError);
+        results->setErrorString(QHostInfoAgent::tr("Unknown error (%1)").arg(error));
+        return;
+    }
+}
+
 QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 {
 #if defined(Q_OS_WINCE)
@@ -200,12 +216,8 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
             }
             results.setAddresses(addresses);
             local_freeaddrinfo(res);
-        } else if (WSAGetLastError() == WSAHOST_NOT_FOUND || WSAGetLastError() == WSANO_DATA) {
-            results.setError(QHostInfo::HostNotFound);
-            results.setErrorString(tr("Host not found"));
         } else {
-            results.setError(QHostInfo::UnknownError);
-            results.setErrorString(tr("Unknown error"));
+            translateWSAError(WSAGetLastError(), &results);
         }
     } else {
         // Fall back to gethostbyname, which only supports IPv4.
@@ -228,12 +240,8 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
                 break;
             }
             results.setAddresses(addresses);
-        } else if (WSAGetLastError() == 11001) {
-            results.setErrorString(tr("Host not found"));
-            results.setError(QHostInfo::HostNotFound);
         } else {
-            results.setErrorString(tr("Unknown error"));
-            results.setError(QHostInfo::UnknownError);
+            translateWSAError(WSAGetLastError(), &results);
         }
     }
 
