@@ -52,6 +52,8 @@ class tst_QMetaMethod : public QObject
 private slots:
     void method_data();
     void method();
+
+    void invalidMethod();
 };
 
 struct CustomType { };
@@ -597,6 +599,7 @@ void tst_QMetaMethod::method()
     QVERIFY(index != -1);
     QMetaMethod method = (methodType == QMetaMethod::Constructor)
                          ? mo->constructor(index) : mo->method(index);
+    QVERIFY(method.isValid());
     QCOMPARE(method.methodType(), methodType);
     QCOMPARE(method.access(), access);
 
@@ -609,6 +612,18 @@ void tst_QMetaMethod::method()
 
     QCOMPARE(method.parameterTypes(), parameterTypeNames);
     QCOMPARE(method.parameterNames(), parameterNames);
+}
+
+void tst_QMetaMethod::invalidMethod()
+{
+    QMetaMethod method;
+    QVERIFY(!method.isValid());
+
+    QMetaMethod method2 = staticMetaObject.method(staticMetaObject.methodCount());
+    QVERIFY(!method2.isValid());
+
+    QMetaMethod method3 = staticMetaObject.method(-1);
+    QVERIFY(!method3.isValid());
 }
 
 QTEST_MAIN(tst_QMetaMethod)

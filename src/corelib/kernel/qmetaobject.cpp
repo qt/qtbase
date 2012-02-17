@@ -1249,6 +1249,14 @@ bool QMetaObject::invokeMethod(QObject *obj,
 */
 
 /*!
+    \fn bool QMetaMethod::isValid() const
+    \since 5.0
+
+    Returns true if this method is valid (can be introspected and
+    invoked), otherwise returns false.
+*/
+
+/*!
     \fn const QMetaObject *QMetaMethod::enclosingMetaObject() const
     \internal
 */
