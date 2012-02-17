@@ -284,7 +284,7 @@ private:
                      Constructor constructor,
                      Destructor destructor,
                      uint sizeOf,
-                     uint typeFlags,
+                     uint theTypeFlags,
                      int typeId);
     QMetaType(const QMetaType &other);
     QMetaType &operator =(const QMetaType &);
@@ -621,7 +621,7 @@ inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeI
                             Constructor constructor,
                             Destructor destructor,
                             uint size,
-                            uint typeFlags,
+                            uint theTypeFlags,
                             int typeId)
     : m_creator(creator)
     , m_deleter(deleter)
@@ -630,7 +630,7 @@ inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeI
     , m_constructor(constructor)
     , m_destructor(destructor)
     , m_size(size)
-    , m_typeFlags(typeFlags)
+    , m_typeFlags(theTypeFlags)
     , m_extensionFlags(extensionFlags)
     , m_typeId(typeId)
 {

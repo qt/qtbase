@@ -432,10 +432,10 @@ private:
 class Q_GUI_EXPORT QAccessibleEvent
 {
 public:
-    inline QAccessibleEvent(QAccessible::Event type, QObject *object, int child = -1)
-        : m_type(type), m_object(object), m_child(child)
+    inline QAccessibleEvent(QAccessible::Event typ, QObject *obj, int chld = -1)
+        : m_type(typ), m_object(obj), m_child(chld)
     {
-        Q_ASSERT(object);
+        Q_ASSERT(obj);
     }
 
     QAccessible::Event type() const { return m_type; }

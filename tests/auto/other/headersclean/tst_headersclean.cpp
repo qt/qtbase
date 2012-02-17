@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#define QT_NO_KEYWORDS
 #define signals int
 #define slots int
 #define emit public:;
@@ -47,12 +46,16 @@
 #define forever public:;
 
 #include <QtCore/QtCore>
+#include <QtConcurrent/QtConcurrent>
 #include <QtTest/QtTest>
 
 #include <QtNetwork/QtNetwork>
 #include <QtXml/QtXml>
 #include <QtSql/QtSql>
 #include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
+#include <QtPrintSupport/QtPrintSupport>
+#include <QtPlatformSupport/QtPlatformSupport>
 
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL/QtOpenGL>
