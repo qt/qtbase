@@ -7355,7 +7355,7 @@ QTMODULE="$outpath/mkspecs/qmodule.pri"
 echo "CONFIG += create_prl link_prl" >> "$QTMODULE.tmp"
 
 # Ensure we can link to uninistalled libraries
-if [ "$XPLATFORM_MINGW" != "yes" ] && [ "$CFG_EMBEDDED" != "nacl" ] && linkerSupportsFlag -rpath-link "$outpath/lib"; then
+if [ "$BUILD_ON_MAC" != "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ] && linkerSupportsFlag -rpath-link "$outpath/lib"; then
     echo "QMAKE_LFLAGS    = -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib \$\$QMAKE_LFLAGS" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_CFLAGS_PSQL" ]; then
