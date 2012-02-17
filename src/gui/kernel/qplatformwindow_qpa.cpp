@@ -114,6 +114,10 @@ QSurfaceFormat QPlatformWindow::format() const
     can happen programatically(from ie. user application) or by the window manager. This means that
     there is no need to call this function specifically from the window manager callback, instead
     call QWindowSystemInterface::handleGeometryChange(QWindow *w, const QRect &newRect);
+
+    The position(x, y) part of the rect might be inclusive or exclusive of the window frame
+    as returned by frameMargins(). You can detect this in the plugin by checking
+    qt_window_private(window())->positionPolicy.
 */
 void QPlatformWindow::setGeometry(const QRect &rect)
 {
