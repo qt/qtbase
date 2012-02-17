@@ -5150,7 +5150,7 @@ void tst_QString::literals()
     QVERIFY(str.length() == 4);
     QVERIFY(str == QLatin1String("abcd"));
     QVERIFY(str.data_ptr()->ref.isStatic());
-    QVERIFY(str.data_ptr()->offset == 0);
+    QVERIFY(str.data_ptr()->offset == sizeof(QStringData));
 
     const QChar *s = str.constData();
     QString str2 = str;

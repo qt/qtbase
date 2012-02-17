@@ -75,12 +75,11 @@ struct QStringData {
     int size;
     uint alloc : 31;
     uint capacityReserved : 1;
-    union {
-        qptrdiff offset; // will always work as we add/subtract from a ushort ptr
-        ushort d[sizeof(qptrdiff)/sizeof(ushort)];
-    };
-    inline ushort *data() { return d + sizeof(qptrdiff)/sizeof(ushort) + offset; }
-    inline const ushort *data() const { return d + sizeof(qptrdiff)/sizeof(ushort) + offset; }
+
+    qptrdiff offset;
+
+    inline ushort *data() { return reinterpret_cast<ushort *>(reinterpret_cast<char *>(this) + offset); }
+    inline const ushort *data() const { return reinterpret_cast<const ushort *>(reinterpret_cast<const char *>(this) + offset); }
 };
 
 template<int N> struct QStaticStringData;
@@ -126,7 +125,7 @@ template<int N> struct QStaticStringData
 #  define QStringLiteral(str) ([]() -> QStaticStringDataPtr<sizeof(QT_UNICODE_LITERAL(str))/2 - 1> { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QStaticStringData<Size> qstring_literal = \
-        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, { 0 } }, QT_UNICODE_LITERAL(str) }; \
+        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, sizeof(QStringData) }, QT_UNICODE_LITERAL(str) }; \
         QStaticStringDataPtr<Size> holder = { &qstring_literal }; \
     return holder; }())
 
@@ -139,7 +138,7 @@ template<int N> struct QStaticStringData
     __extension__ ({ \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QStaticStringData<Size> qstring_literal = \
-        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, { 0 } }, QT_UNICODE_LITERAL(str) }; \
+        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, sizeof(QStringData) }, QT_UNICODE_LITERAL(str) }; \
         QStaticStringDataPtr<Size> holder = { &qstring_literal }; \
         holder; })
 # endif
@@ -705,7 +704,7 @@ inline QChar *QString::data()
 inline const QChar *QString::constData() const
 { return reinterpret_cast<const QChar*>(d->data()); }
 inline void QString::detach()
-{ if (d->ref.isShared() || d->offset) realloc(); }
+{ if (d->ref.isShared() || (d->offset != sizeof(QStringData))) realloc(); }
 inline bool QString::isDetached() const
 { return !d->ref.isShared(); }
 inline QString &QString::operator=(const QLatin1String &s)
