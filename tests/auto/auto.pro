@@ -18,8 +18,8 @@ cross_compile:                              SUBDIRS -= tools
 !contains(QT_CONFIG, opengl):               SUBDIRS -= opengl
 !unix|embedded|!contains(QT_CONFIG, dbus):  SUBDIRS -= dbus
 
-# disable 'make check' on Mac OS X for the following subdirs for the time being
-mac {
+# disable 'make check' on Mac OS X and Windows for the following subdirs for the time being
+mac|win32 {
     network.CONFIG += no_check_target
 }
 
