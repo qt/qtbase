@@ -837,7 +837,7 @@ quint64 QNetworkManagerEngine::bytesWritten(const QString &id)
             quint64 result = Q_UINT64_C(0);
 
             QFile tx(devFile);
-            if (tx.exists() && tx.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            if (tx.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 QTextStream in(&tx);
                 in >> result;
                 tx.close();
@@ -865,7 +865,7 @@ quint64 QNetworkManagerEngine::bytesReceived(const QString &id)
             quint64 result = Q_UINT64_C(0);
 
             QFile tx(devFile);
-            if (tx.exists() && tx.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            if (tx.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 QTextStream in(&tx);
                 in >> result;
                 tx.close();

@@ -255,7 +255,7 @@ quint64 QConnmanEngine::bytesWritten(const QString &id)
     quint64 result = 0;
     QString devFile = getInterfaceFromId(id);
     QFile tx("/sys/class/net/"+devFile+"/statistics/tx_bytes");
-    if(tx.exists() && tx.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if (tx.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&tx);
         in >> result;
         tx.close();
@@ -270,7 +270,7 @@ quint64 QConnmanEngine::bytesReceived(const QString &id)
     quint64 result = 0;
     QString devFile = getInterfaceFromId(id);
     QFile rx("/sys/class/net/"+devFile+"/statistics/rx_bytes");
-    if(rx.exists() && rx.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if (rx.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&rx);
         in >> result;
         rx.close();
