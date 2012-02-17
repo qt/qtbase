@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "QtCore/qabstractfileengine.h"
+#include "private/qabstractfileengine_p.h"
 #include "private/qiodevice_p.h"
 #include "private/qringbuffer_p.h"
 

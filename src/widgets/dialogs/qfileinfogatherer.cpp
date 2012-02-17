@@ -41,7 +41,6 @@
 
 #include "qfileinfogatherer_p.h"
 #include <qdebug.h>
-#include <qfsfileengine.h>
 #include <qdiriterator.h>
 #ifndef Q_OS_WIN
 #  include <unistd.h>

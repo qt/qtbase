@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QAbstractFileEngine>
-#include <QtCore/QFSFileEngine>
+#include <QtCore/private/qabstractfileengine_p.h>
+#include <QtCore/private/qfsfileengine_p.h>
 
 #include <QtCore/QMutex>
 #include <QtCore/QMutexLocker>

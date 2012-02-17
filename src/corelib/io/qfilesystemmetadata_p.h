@@ -56,7 +56,7 @@
 #include "qplatformdefs.h"
 #include <QtCore/qglobal.h>
 #include <QtCore/qdatetime.h>
-#include <QtCore/qabstractfileengine.h>
+#include <QtCore/private/qabstractfileengine_p.h>
 
 // Platform-specific includes
 #ifdef Q_OS_WIN

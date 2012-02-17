@@ -43,7 +43,7 @@
 
 #define _POSIX_
 #include "qplatformdefs.h"
-#include "qabstractfileengine.h"
+#include "private/qabstractfileengine_p.h"
 #include "private/qfsfileengine_p.h"
 #include <private/qsystemlibrary_p.h>
 #include <qdebug.h>

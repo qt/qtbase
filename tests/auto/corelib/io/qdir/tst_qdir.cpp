@@ -49,6 +49,7 @@
 #include <qstringlist.h>
 
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
+#include <QtCore/private/qfsfileengine_p.h>
 #include "../../../network-settings.h"
 #endif
 
@@ -471,6 +472,7 @@ void tst_QDir::exists_data()
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("This drive should exist") <<  "C:/" << true;
     // find a non-existing drive and check if it does not exist
+#ifdef QT_BUILD_INTERNAL
     QFileInfoList drives = QFSFileEngine::drives();
     QStringList driveLetters;
     for (int i = 0; i < drives.count(); ++i) {
@@ -486,6 +488,7 @@ void tst_QDir::exists_data()
     if (drive >= 'A') {
         QTest::newRow("This drive should not exist") <<  driv << false;
     }
+#endif
 #endif
 }
 

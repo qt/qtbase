@@ -166,7 +166,6 @@ void tst_ExceptionSafety_Objects::objects_data()
     NEWROW(QObject);
     NEWROW(QBuffer);
     NEWROW(QFile);
-    NEWROW(QFSFileEngine);
     NEWROW(QProcess);
     NEWROW(QSettings);
     NEWROW(QThread);

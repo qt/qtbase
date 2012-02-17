@@ -42,7 +42,7 @@
 #include "qplatformdefs.h"
 #include "qdebug.h"
 #include "qfile.h"
-#include "qfsfileengine.h"
+#include "qfsfileengine_p.h"
 #include "qtemporaryfile.h"
 #include "qlist.h"
 #include "qfileinfo.h"
@@ -1197,7 +1197,7 @@ QFile::handle() const
 
     \note On Windows CE 5.0 the file will be closed before mapping occurs.
 
-    \sa unmap(), QAbstractFileEngine::supportsExtension()
+    \sa unmap()
  */
 uchar *QFile::map(qint64 offset, qint64 size, MemoryMapFlags flags)
 {
@@ -1219,7 +1219,7 @@ uchar *QFile::map(qint64 offset, qint64 size, MemoryMapFlags flags)
 
     Returns true if the unmap succeeds; false otherwise.
 
-    \sa map(), QAbstractFileEngine::supportsExtension()
+    \sa map()
  */
 bool QFile::unmap(uchar *address)
 {

@@ -42,12 +42,12 @@
 #include "qplatformdefs.h"
 #include "qdir.h"
 #include "qdir_p.h"
-#include "qabstractfileengine.h"
+#include "qabstractfileengine_p.h"
+#include "qfsfileengine_p.h"
 #ifndef QT_NO_DEBUG_STREAM
 #include "qdebug.h"
 #endif
 #include "qdiriterator.h"
-#include "qfsfileengine.h"
 #include "qdatetime.h"
 #include "qstring.h"
 #include "qregexp.h"

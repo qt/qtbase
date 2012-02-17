@@ -207,6 +207,11 @@ information about a particular change.
 - QDir::NoDotAndDotDot is QDir::NoDot|QDir::NoDotDot therefore there is no need
   to use or check both.
 
+- QFSFileEngine, QAbstractFileEngine, QAbstractFileEngineIterator and
+  QAbstractFileEngineHandler were removed from public API and are no longer
+  exported. They may temporarily live as private implementation details, but
+  they may be altogether dropped or otherwise changed at will in the future.
+
 - QLocale
   * toShort(), toUShort(), toInt(), toUInt(), toLongLong() and toULongLong() no
     longer take a parameter for base, they will only perform localised base 10

@@ -92,7 +92,7 @@ bootstrap { #Qt code
         qdir_p.h \
         qdiriterator.h \
         qfile.h \
-        qabstractfileengine.h \
+        qabstractfileengine_p.h \
         qfileinfo.h \
         qglobal.h \
         qnumeric.h \
