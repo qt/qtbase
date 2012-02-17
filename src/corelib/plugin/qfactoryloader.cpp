@@ -142,7 +142,8 @@ void QFactoryLoader::update()
             }
             QStringList keys;
             if (library->compatPlugin) {
-                qWarning() << "Compat plugin, need to load for accessing meta data";
+                qWarning("Qt plugin loader: Compatibility plugin '%s', need to load for accessing meta data.",
+                         qPrintable(QDir::toNativeSeparators(fileName)));
                 if (!library->loadPlugin()) {
                     if (qt_debug_component()) {
                         qDebug() << library->errorString;
