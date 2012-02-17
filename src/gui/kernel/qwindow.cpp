@@ -374,6 +374,25 @@ void QWindow::requestActivateWindow()
         d->platformWindow->requestActivateWindow();
 }
 
+
+/*!
+    Returns if this window is exposed in the windowing system.
+
+    When the window is not exposed, it is shown by the application
+    but it is still not showing in the windowing system, so the application
+    should minimize rendering and other graphical activities.
+
+    An exposeEvent() is sent every time this value changes.
+ */
+
+bool QWindow::isExposed() const
+{
+    Q_D(const QWindow);
+    if (d->platformWindow)
+        return d->platformWindow->isExposed();
+    return false;
+}
+
 /*!
     Returns true if the window should appear active from a style perspective.
 
@@ -887,6 +906,19 @@ bool QWindow::close()
     d->maybeQuitOnLastWindowClosed();
     return true;
 }
+
+
+
+/*!
+    The expose event is sent by the window system whenever the window's
+    exposure on screen changes.
+
+    If the window is moved off screen, is made totally obscured by another
+    window, iconified or similar, this function might be called and the
+    value of isExposed() might change to false. When this happens,
+    an application should stop its rendering as it is no longer visible
+    to the user.
+ */
 
 void QWindow::exposeEvent(QExposeEvent *ev)
 {

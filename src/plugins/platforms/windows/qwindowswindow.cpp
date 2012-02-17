@@ -708,6 +708,7 @@ void QWindowsWindow::setVisible(bool visible)
             hide_sys();
         }
     }
+    QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
 }
 
 bool QWindowsWindow::isVisible() const

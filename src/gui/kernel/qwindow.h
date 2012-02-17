@@ -152,6 +152,8 @@ public:
 
     bool isAncestorOf(const QWindow *child, AncestorMode mode = IncludeTransients) const;
 
+    bool isExposed() const;
+
     QSize minimumSize() const;
     QSize maximumSize() const;
     QSize baseSize() const;

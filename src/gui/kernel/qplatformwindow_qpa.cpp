@@ -142,6 +142,7 @@ QMargins QPlatformWindow::frameMargins() const
 void QPlatformWindow::setVisible(bool visible)
 {
     Q_UNUSED(visible);
+    QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
 }
 /*!
     Requests setting the window flags of this surface
@@ -150,6 +151,20 @@ void QPlatformWindow::setVisible(bool visible)
 Qt::WindowFlags QPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     return flags;
+}
+
+
+
+/*!
+    Returns if this window is exposed in the windowing system.
+
+    An exposeEvent() is sent every time this value changes.
+ */
+
+bool QPlatformWindow::isExposed() const
+{
+    Q_D(const QPlatformWindow);
+    return d->window->visible();
 }
 
 /*!
