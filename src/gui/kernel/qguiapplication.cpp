@@ -1487,7 +1487,7 @@ bool QGuiApplicationPrivate::shouldQuit()
     QWindowList list = QGuiApplication::topLevelWindows();
     for (int i = 0; i < list.size(); ++i) {
         QWindow *w = list.at(i);
-        if (w->visible())
+        if (w->isVisible())
             return false;
     }
     return true;

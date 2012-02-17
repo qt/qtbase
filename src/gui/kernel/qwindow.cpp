@@ -185,7 +185,13 @@ void QWindow::setVisible(bool visible)
     }
 }
 
+
 bool QWindow::visible() const
+{
+    return isVisible();
+}
+
+bool QWindow::isVisible() const
 {
     Q_D(const QWindow);
 
@@ -965,7 +971,7 @@ bool QWindow::event(QEvent *ev)
 
     case QEvent::Close: {
         Q_D(QWindow);
-        bool wasVisible = visible();
+        bool wasVisible = isVisible();
         destroy();
         if (wasVisible)
             d->maybeQuitOnLastWindowClosed();
@@ -1099,7 +1105,7 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
         bool lastWindowClosed = true;
         for (int i = 0; i < list.size(); ++i) {
             QWindow *w = list.at(i);
-            if (!w->visible())
+            if (!w->isVisible())
                 continue;
             lastWindowClosed = false;
             break;
