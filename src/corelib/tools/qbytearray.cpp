@@ -57,7 +57,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define IS_RAW_DATA(d) ((d)->offset != 0)
+#define IS_RAW_DATA(d) ((d)->offset != sizeof(QByteArrayData))
 
 QT_BEGIN_NAMESPACE
 
@@ -555,7 +555,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         }
         d.take(); // realloc was successful
         d.reset(p);
-        d->offset = 0;
+        d->offset = sizeof(QByteArrayData);
 
         int res = ::uncompress((uchar*)d->data(), &len,
                                (uchar*)data+4, nbytes-4);
@@ -581,7 +581,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
             d->size = len;
             d->alloc = len;
             d->capacityReserved = false;
-            d->offset = 0;
+            d->offset = sizeof(QByteArrayData);
             d->data()[len] = 0;
 
             return QByteArray(d.take(), 0, 0);
@@ -616,9 +616,9 @@ static inline char qToLower(char c)
 }
 
 const QStaticByteArrayData<1> QByteArray::shared_null = { { Q_REFCOUNT_INITIALIZE_STATIC,
-                                                           0, 0, 0, { 0 } }, { 0 } };
+                                                           0, 0, 0, sizeof(QByteArrayData) }, { 0 } };
 const QStaticByteArrayData<1> QByteArray::shared_empty = { { Q_REFCOUNT_INITIALIZE_STATIC,
-                                                            0, 0, 0, { 0 } }, { 0 } };
+                                                            0, 0, 0, sizeof(QByteArrayData) }, { 0 } };
 
 /*!
     \class QByteArray
@@ -1319,7 +1319,7 @@ QByteArray::QByteArray(const char *data, int size)
             d->size = size;
             d->alloc = size;
             d->capacityReserved = false;
-            d->offset = 0;
+            d->offset = sizeof(QByteArrayData);
             memcpy(d->data(), data, size);
             d->data()[size] = '\0';
         }
@@ -1344,7 +1344,7 @@ QByteArray::QByteArray(int size, char ch)
         d->size = size;
         d->alloc = size;
         d->capacityReserved = false;
-        d->offset = 0;
+        d->offset = sizeof(QByteArrayData);
         memset(d->data(), ch, size);
         d->data()[size] = '\0';
     }
@@ -1364,7 +1364,7 @@ QByteArray::QByteArray(int size, Qt::Initialization)
     d->size = size;
     d->alloc = size;
     d->capacityReserved = false;
-    d->offset = 0;
+    d->offset = sizeof(QByteArrayData);
     d->data()[size] = '\0';
 }
 
@@ -1386,7 +1386,7 @@ void QByteArray::resize(int size)
     if (size < 0)
         size = 0;
 
-    if (d->offset && !d->ref.isShared() && size < d->size) {
+    if (IS_RAW_DATA(d) && !d->ref.isShared() && size < d->size) {
         d->size = size;
         return;
     }
@@ -1411,7 +1411,7 @@ void QByteArray::resize(int size)
         x->size = size;
         x->alloc = size;
         x->capacityReserved = false;
-        x->offset = 0;
+        x->offset = sizeof(QByteArrayData);
         x->data()[size] = '\0';
         d = x;
     } else {
@@ -1446,14 +1446,14 @@ QByteArray &QByteArray::fill(char ch, int size)
 
 void QByteArray::realloc(int alloc)
 {
-    if (d->ref.isShared() || d->offset) {
+    if (d->ref.isShared() || IS_RAW_DATA(d)) {
         Data *x = static_cast<Data *>(malloc(sizeof(Data) + alloc + 1));
         Q_CHECK_PTR(x);
         x->ref.initializeOwned();
         x->size = qMin(alloc, d->size);
         x->alloc = alloc;
         x->capacityReserved = d->capacityReserved;
-        x->offset = 0;
+        x->offset = sizeof(QByteArrayData);
         ::memcpy(x->data(), d->data(), x->size);
         x->data()[x->size] = '\0';
         if (!d->ref.deref())
@@ -1463,7 +1463,7 @@ void QByteArray::realloc(int alloc)
         Data *x = static_cast<Data *>(::realloc(d, sizeof(Data) + alloc + 1));
         Q_CHECK_PTR(x);
         x->alloc = alloc;
-        x->offset = 0;
+        x->offset = sizeof(QByteArrayData);
         d = x;
     }
 }
@@ -1485,7 +1485,7 @@ void QByteArray::expand(int i)
 QByteArray QByteArray::nulTerminated() const
 {
     // is this fromRawData?
-    if (!d->offset)
+    if (!IS_RAW_DATA(d))
         return *this;           // no, then we're sure we're zero terminated
 
     QByteArray copy(*this);
@@ -3874,7 +3874,7 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
         x->size = size;
         x->alloc = 0;
         x->capacityReserved = false;
-        x->offset = data - (x->d + sizeof(qptrdiff));
+        x->offset = data - reinterpret_cast<char *>(x);
     }
     return QByteArray(x, 0, 0);
 }
@@ -3900,9 +3900,9 @@ QByteArray &QByteArray::setRawData(const char *data, uint size)
     } else {
         if (data) {
             d->size = size;
-            d->offset = data - (d->d + sizeof(qptrdiff));
+            d->offset = data - reinterpret_cast<char *>(d);
         } else {
-            d->offset = 0;
+            d->offset = sizeof(QByteArrayData);
             d->size = 0;
             *d->data() = 0;
         }
