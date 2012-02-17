@@ -1104,6 +1104,8 @@ void tst_QArrayData::setSharable_data()
                 QArrayData::CapacityReserved));
     QArrayDataPointer<int> staticArray(
             static_cast<QTypedArrayData<int> *>(&staticArrayData.header));
+    QArrayDataPointer<int> rawData(
+            QTypedArrayData<int>::fromRawData(staticArrayData.data, 10));
 
     nonEmpty->copyAppend(5, 1);
     nonEmptyReserved->copyAppend(7, 2);
@@ -1115,6 +1117,7 @@ void tst_QArrayData::setSharable_data()
     QTest::newRow("non-empty") << nonEmpty << size_t(5) << size_t(10) << false << 1;
     QTest::newRow("non-empty-reserved") << nonEmptyReserved << size_t(7) << size_t(15) << true << 2;
     QTest::newRow("static-array") << staticArray << size_t(10) << size_t(0) << false << 3;
+    QTest::newRow("raw-data") << rawData << size_t(10) << size_t(0) << false << 3;
 }
 
 void tst_QArrayData::setSharable()
