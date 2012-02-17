@@ -1360,6 +1360,221 @@ bool qSharedBuild()
  */
 
 /*!
+    \macro Q_PROCESSOR_ALPHA
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for Alpha processors.
+*/
+
+/*!
+    \macro Q_PROCESSOR_ARM
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for ARM processors. Qt currently
+    supports three optional ARM revisions: \l Q_PROCESSOR_ARM_V5, \l
+    Q_PROCESSOR_ARM_V6, and \l Q_PROCESSOR_ARM_V7.
+*/
+/*!
+    \macro Q_PROCESSOR_ARM_V5
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for ARMv5 processors. The \l
+    Q_PROCESSOR_ARM macro is also defined when Q_PROCESSOR_ARM_V5 is defined.
+*/
+/*!
+    \macro Q_PROCESSOR_ARM_V6
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for ARMv6 processors. The \l
+    Q_PROCESSOR_ARM and \l Q_PROCESSOR_ARM_V5 macros are also defined when
+    Q_PROCESSOR_ARM_V6 is defined.
+*/
+/*!
+    \macro Q_PROCESSOR_ARM_V7
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for ARMv7 processors. The \l
+    Q_PROCESSOR_ARM, \l Q_PROCESSOR_ARM_V5, and \l Q_PROCESSOR_ARM_V6 macros
+    are also defined when Q_PROCESSOR_ARM_V7 is defined.
+*/
+
+/*!
+    \macro Q_PROCESSOR_AVR32
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for AVR32 processors.
+*/
+
+/*!
+    \macro Q_PROCESSOR_BLACKFIN
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for Blackfin processors.
+*/
+
+/*!
+    \macro Q_PROCESSOR_IA64
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for IA-64 processors. This includes
+    all Itanium and Itanium 2 processors.
+*/
+
+/*!
+    \macro Q_PROCESSOR_MIPS
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for MIPS processors. Qt currently
+    supports seven MIPS revisions: \l Q_PROCESSOR_MIPS_I, \l
+    Q_PROCESSOR_MIPS_II, \l Q_PROCESSOR_MIPS_III, \l Q_PROCESSOR_MIPS_IV, \l
+    Q_PROCESSOR_MIPS_V, \l Q_PROCESSOR_MIPS_32, and \l Q_PROCESSOR_MIPS_64.
+*/
+/*!
+    \macro Q_PROCESSOR_MIPS_I
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for MIPS-I processors. The \l
+    Q_PROCESSOR_MIPS macro is also defined when Q_PROCESSOR_MIPS_I is defined.
+*/
+/*!
+    \macro Q_PROCESSOR_MIPS_II
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for MIPS-II processors. The \l
+    Q_PROCESSOR_MIPS and \l Q_PROCESSOR_MIPS_I macros are also defined when
+    Q_PROCESSOR_MIPS_II is defined.
+*/
+/*!
+    \macro Q_PROCESSOR_MIPS_32
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for MIPS32 processors. The \l
+    Q_PROCESSOR_MIPS, \l Q_PROCESSOR_MIPS_I, and \l Q_PROCESSOR_MIPS_II macros
+    are also defined when Q_PROCESSOR_MIPS_32 is defined.
+*/
+/*!
+    \macro Q_PROCESSOR_MIPS_III
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for MIPS-III processors. The \l
+    Q_PROCESSOR_MIPS, \l Q_PROCESSOR_MIPS_I, and \l Q_PROCESSOR_MIPS_II macros
+    are also defined when Q_PROCESSOR_MIPS_III is defined.
+*/
+/*!
+    \macro Q_PROCESSOR_MIPS_IV
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for MIPS-IV processors. The \l
+    Q_PROCESSOR_MIPS, \l Q_PROCESSOR_MIPS_I, \l Q_PROCESSOR_MIPS_II, and \l
+    Q_PROCESSOR_MIPS_III macros are also defined when Q_PROCESSOR_MIPS_IV is
+    defined.
+*/
+/*!
+    \macro Q_PROCESSOR_MIPS_V
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for MIPS-V processors. The \l
+    Q_PROCESSOR_MIPS, \l Q_PROCESSOR_MIPS_I, \l Q_PROCESSOR_MIPS_II, \l
+    Q_PROCESSOR_MIPS_III, and \l Q_PROCESSOR_MIPS_IV macros are also defined
+    when Q_PROCESSOR_MIPS_V is defined.
+*/
+/*!
+    \macro Q_PROCESSOR_MIPS_64
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for MIPS64 processors. The \l
+    Q_PROCESSOR_MIPS, \l Q_PROCESSOR_MIPS_I, \l Q_PROCESSOR_MIPS_II, \l
+    Q_PROCESSOR_MIPS_III, \l Q_PROCESSOR_MIPS_IV, and \l Q_PROCESSOR_MIPS_V
+    macros are also defined when Q_PROCESSOR_MIPS_64 is defined.
+*/
+
+/*!
+    \macro Q_PROCESSOR_POWERPC
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for PowerPC processors. Qt currently
+    supports one optional PowerPC variant: \l Q_PROCESSOR_POWERPC_64.
+*/
+/*!
+    \macro Q_PROCESSOR_POWERPC_64
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for 64-bit PowerPC processors. The
+    \l Q_PROCESSOR_POWERPC macro is also defined when Q_PROCESSOR_POWERPC_64 is
+    defined.
+*/
+
+/*!
+    \macro Q_PROCESSOR_S390
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for S/390 processors. Qt supports
+    one optional variant of S/390: Q_PROCESSOR_S390_X.
+*/
+/*!
+    \macro Q_PROCESSOR_S390_X
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for S/390x processors. The \l
+    Q_PROCESSOR_S390 macro is also defined when Q_PROCESSOR_S390_X is defined.
+*/
+
+/*!
+    \macro Q_PROCESSOR_SH
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for SuperH processors. Qt currently
+    supports one SuperH revision: \l Q_PROCESSOR_SH_4A.
+*/
+/*!
+    \macro Q_PROCESSOR_SH_4A
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for SuperH 4A processors. The \l
+    Q_PROCESSOR_SH macro is also defined when Q_PROCESSOR_SH_4A is defined.
+*/
+
+/*!
+    \macro Q_PROCESSOR_SPARC
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for SPARC processors. Qt currently
+    supports one optional SPARC revision: \l Q_PROCESSOR_SPARC_V9.
+*/
+/*!
+    \macro Q_PROCESSOR_SPARC_V9
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for SPARC V9 processors. The \l
+    Q_PROCESSOR_SPARC macro is also defined when Q_PROCESSOR_SPARC_V9 is
+    defined.
+*/
+
+/*!
+    \macro Q_PROCESSOR_X86
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for x86 processors. Qt currently
+    supports two x86 variants: \l Q_PROCESSOR_X86_32 and \l Q_PROCESSOR_X86_64.
+*/
+/*!
+    \macro Q_PROCESSOR_X86_32
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for 32-bit x86 processors. This
+    includes all i386, i486, i586, and i686 processors. The \l Q_PROCESSOR_X86
+    macro is also defined when Q_PROCESSOR_X86_32 is defined.
+*/
+/*!
+    \macro Q_PROCESSOR_X86_64
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for 64-bit x86 processors. This
+    includes all AMD64, Intel 64, and other x86_64/x64 processors. The \l
+    Q_PROCESSOR_X86 macro is also defined when Q_PROCESSOR_X86_64 is defined.
+*/
+
+/*!
   \macro QT_DISABLE_DEPRECATED_BEFORE
   \relates <QtGlobal>
 

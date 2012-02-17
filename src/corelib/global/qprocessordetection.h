@@ -137,6 +137,9 @@
 #  if defined(_MIPS_ARCH_MIPS4) || (defined(__mips) && __mips - 0 >= 4)
 #    define Q_PROCESSOR_MIPS_IV
 #  endif
+#  if defined(_MIPS_ARCH_MIPS5) || (defined(__mips) && __mips - 0 >= 5)
+#    define Q_PROCESSOR_MIPS_V
+#  endif
 #  if defined(_MIPS_ARCH_MIPS64) || defined(__mips64)
 #    define Q_PROCESSOR_MIPS_64
 #  endif
