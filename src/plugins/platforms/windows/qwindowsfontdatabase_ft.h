@@ -46,6 +46,8 @@
 #include <QtCore/QSharedPointer>
 #include "qtwindows_additional.h"
 
+QT_BEGIN_NAMESPACE
+
 class QWindowsFontDatabaseFT : public QBasicFontDatabase
 {
 public:
@@ -67,5 +69,7 @@ private:
 
     QSet<QString> m_families;
 };
+
+QT_END_NAMESPACE
 
 #endif // QWINDOWSFONTDATABASEFT_H

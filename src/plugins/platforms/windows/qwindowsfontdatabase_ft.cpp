@@ -53,6 +53,8 @@
 
 #include <wchar.h>
 
+QT_BEGIN_NAMESPACE
+
 static inline QFontDatabase::WritingSystem writingSystemFromScript(const QString &scriptName)
 {
     if (scriptName == QStringLiteral("Western")
@@ -699,3 +701,5 @@ QFont QWindowsFontDatabaseFT::LOGFONT_to_QFont(const LOGFONT& logFont, int verti
     qFont.setStrikeOut(logFont.lfStrikeOut);
     return qFont;
 }
+
+QT_END_NAMESPACE
