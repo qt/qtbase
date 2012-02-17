@@ -42,6 +42,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
+#include <private/qmetaobjectbuilder_p.h>
 
 /*
     This test makes a testlog containing lots of characters which have a special meaning in
@@ -73,27 +74,26 @@ class EmptyClass : public tst_BadXml
 class tst_BadXmlSub : public tst_BadXml
 {
 public:
+    tst_BadXmlSub()
+        : className("tst_BadXml"), mo(0) {}
+    ~tst_BadXmlSub() { qFree(mo); }
+
     const QMetaObject* metaObject() const;
 
-    static char const* className;
+    QByteArray className;
+private:
+    QMetaObject *mo;
 };
-char const* tst_BadXmlSub::className = "tst_BadXml";
 
 const QMetaObject* tst_BadXmlSub::metaObject() const
 {
-    const QMetaObject& empty = EmptyClass::staticMetaObject;
-    static QMetaObject mo = {
-        { empty.d.superdata, empty.d.stringdata, empty.d.data, empty.d.extradata }
-    };
-    static char currentClassName[1024];
-    qstrcpy(currentClassName, className);
-    int len = qstrlen(className);
-    currentClassName[len] = 0;
-    currentClassName[len+1] = 0;
-
-    mo.d.stringdata = currentClassName;
-
-    return &mo;
+    if (!mo || (mo->className() != className)) {
+        qFree(mo);
+        QMetaObjectBuilder builder(&EmptyClass::staticMetaObject);
+        builder.setClassName(className);
+        const_cast<tst_BadXmlSub *>(this)->mo = builder.toMetaObject();
+    }
+    return mo;
 }
 
 /*
