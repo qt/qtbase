@@ -52,15 +52,15 @@ QT_BEGIN_NAMESPACE
 class QMargins
 {
 public:
-    QMargins();
-    QMargins(int left, int top, int right, int bottom);
+    Q_DECL_CONSTEXPR QMargins();
+    Q_DECL_CONSTEXPR QMargins(int left, int top, int right, int bottom);
 
-    bool isNull() const;
+    Q_DECL_CONSTEXPR bool isNull() const;
 
-    int left() const;
-    int top() const;
-    int right() const;
-    int bottom() const;
+    Q_DECL_CONSTEXPR int left() const;
+    Q_DECL_CONSTEXPR int top() const;
+    Q_DECL_CONSTEXPR int right() const;
+    Q_DECL_CONSTEXPR int bottom() const;
 
     void setLeft(int left);
     void setTop(int top);
@@ -73,8 +73,8 @@ private:
     int m_right;
     int m_bottom;
 
-    friend inline bool operator==(const QMargins &, const QMargins &);
-    friend inline bool operator!=(const QMargins &, const QMargins &);
+    friend Q_DECL_CONSTEXPR inline bool operator==(const QMargins &, const QMargins &);
+    friend Q_DECL_CONSTEXPR inline bool operator!=(const QMargins &, const QMargins &);
 };
 
 Q_DECLARE_TYPEINFO(QMargins, Q_MOVABLE_TYPE);
@@ -91,25 +91,24 @@ Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QMargins &);
   QMargins inline functions
  *****************************************************************************/
 
-inline QMargins::QMargins()
-{ m_top = m_bottom = m_left = m_right = 0; }
+Q_DECL_CONSTEXPR inline QMargins::QMargins() : m_left(0), m_top(0), m_right(0), m_bottom(0) {}
 
-inline QMargins::QMargins(int aleft, int atop, int aright, int abottom)
+Q_DECL_CONSTEXPR inline QMargins::QMargins(int aleft, int atop, int aright, int abottom)
     : m_left(aleft), m_top(atop), m_right(aright), m_bottom(abottom) {}
 
-inline bool QMargins::isNull() const
+Q_DECL_CONSTEXPR inline bool QMargins::isNull() const
 { return m_left==0 && m_top==0 && m_right==0 && m_bottom==0; }
 
-inline int QMargins::left() const
+Q_DECL_CONSTEXPR inline int QMargins::left() const
 { return m_left; }
 
-inline int QMargins::top() const
+Q_DECL_CONSTEXPR inline int QMargins::top() const
 { return m_top; }
 
-inline int QMargins::right() const
+Q_DECL_CONSTEXPR inline int QMargins::right() const
 { return m_right; }
 
-inline int QMargins::bottom() const
+Q_DECL_CONSTEXPR inline int QMargins::bottom() const
 { return m_bottom; }
 
 
@@ -125,7 +124,7 @@ inline void QMargins::setRight(int aright)
 inline void QMargins::setBottom(int abottom)
 { m_bottom = abottom; }
 
-inline bool operator==(const QMargins &m1, const QMargins &m2)
+Q_DECL_CONSTEXPR inline bool operator==(const QMargins &m1, const QMargins &m2)
 {
     return
             m1.m_left == m2.m_left &&
@@ -134,7 +133,7 @@ inline bool operator==(const QMargins &m1, const QMargins &m2)
             m1.m_bottom == m2.m_bottom;
 }
 
-inline bool operator!=(const QMargins &m1, const QMargins &m2)
+Q_DECL_CONSTEXPR inline bool operator!=(const QMargins &m1, const QMargins &m2)
 {
     return
             m1.m_left != m2.m_left ||
