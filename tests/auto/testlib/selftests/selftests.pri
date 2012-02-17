@@ -3,6 +3,7 @@ SUBPROGRAMS = \
      assert \
      badxml \
      benchlibcallgrind \
+     benchlibcounting \
      benchlibeventcounter \
      benchliboptions \
      benchlibtickcounter \

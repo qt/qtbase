@@ -1,0 +1,13 @@
+********* Start testing of tst_BenchlibCounting *********
+Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+PASS   : tst_BenchlibCounting::initTestCase()
+PASS   : tst_BenchlibCounting::passingBenchmark()
+RESULT : tst_BenchlibCounting::passingBenchmark():
+     0 events per iteration (total: 0, iterations: 1)
+SKIP   : tst_BenchlibCounting::skippingBenchmark() This is a skipping benchmark
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/benchlibcounting/tst_benchlibcounting.cpp(64)]
+FAIL!  : tst_BenchlibCounting::failingBenchmark() This is a failing benchmark
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/benchlibcounting/tst_benchlibcounting.cpp(71)]
+PASS   : tst_BenchlibCounting::cleanupTestCase()
+Totals: 3 passed, 1 failed, 1 skipped
+********* Finished testing of tst_BenchlibCounting *********

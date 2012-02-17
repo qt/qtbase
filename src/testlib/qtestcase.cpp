@@ -1490,6 +1490,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
 {
     /* Benchmarking: for each median iteration*/
 
+    bool isBenchmark = false;
     int i = (QBenchmarkGlobalData::current->measurer->needsWarmupIteration()) ? -1 : 0;
 
     QList<QBenchmarkResult> results;
@@ -1516,25 +1517,30 @@ static void qInvokeTestMethodDataEntry(char *slot)
             if (!invokeOk)
                 QTestResult::addFailure("Unable to execute slot", __FILE__, __LINE__);
 
+            isBenchmark = QBenchmarkTestMethodData::current->isBenchmark();
+
             QTestResult::finishedCurrentTestData();
 
             invokeMethod(QTest::currentTestObject, "cleanup()");
-            QTestResult::finishedCurrentTestDataCleanup();
+
+            // If the test isn't a benchmark, finalize the result after cleanup() has finished.
+            if (!isBenchmark)
+                QTestResult::finishedCurrentTestDataCleanup();
 
             // If this test method has a benchmark, repeat until all measurements are
             // acceptable.
             // The QBENCHMARK macro increases the number of iterations for each run until
             // this happens.
-        } while (invokeOk
-                 && QBenchmarkTestMethodData::current->isBenchmark()
-                 && QBenchmarkTestMethodData::current->resultsAccepted() == false);
+        } while (invokeOk && isBenchmark
+                 && QBenchmarkTestMethodData::current->resultsAccepted() == false
+                 && !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed());
 
         QBenchmarkTestMethodData::current->endDataRun();
-        if (i > -1)  // iteration -1 is the warmup iteration.
-            results.append(QBenchmarkTestMethodData::current->result);
+        if (!QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed()) {
+            if (i > -1)  // iteration -1 is the warmup iteration.
+                results.append(QBenchmarkTestMethodData::current->result);
 
-        if (QBenchmarkTestMethodData::current->isBenchmark() &&
-            QBenchmarkGlobalData::current->verboseOutput) {
+            if (isBenchmark && QBenchmarkGlobalData::current->verboseOutput) {
                 if (i == -1) {
                     QTestLog::info(qPrintable(
                         QString::fromLatin1("warmup stage result      : %1")
@@ -1545,12 +1551,19 @@ static void qInvokeTestMethodDataEntry(char *slot)
                             .arg(QBenchmarkTestMethodData::current->result.value)), 0, 0);
                 }
             }
-    } while (QBenchmarkTestMethodData::current->isBenchmark()
-             && (++i < QBenchmarkGlobalData::current->adjustMedianIterationCount()));
+        }
+    } while (isBenchmark
+             && (++i < QBenchmarkGlobalData::current->adjustMedianIterationCount())
+             && !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed());
 
-    if (QBenchmarkTestMethodData::current->isBenchmark()
-        && QBenchmarkTestMethodData::current->resultsAccepted())
-        QTestLog::addBenchmarkResult(qMedian(results));
+    // If the test is a benchmark, finalize the result after all iterations have finished.
+    if (isBenchmark) {
+        bool testPassed = !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed();
+        QTestResult::finishedCurrentTestDataCleanup();
+        // Only report benchmark figures if the test passed
+        if (testPassed && QBenchmarkTestMethodData::current->resultsAccepted())
+            QTestLog::addBenchmarkResult(qMedian(results));
+    }
 }
 
 /*!

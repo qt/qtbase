@@ -323,6 +323,7 @@ void tst_Selftests::runSubTest_data()
         // Only run on platforms where callgrind is available.
         << "benchlibcallgrind"
 #endif
+        << "benchlibcounting"
         << "benchlibeventcounter"
         << "benchliboptions"
         << "cmptest"
@@ -397,6 +398,9 @@ void tst_Selftests::runSubTest_data()
                 arguments << "-tickcounter";
             }
             else if (subtest == "badxml") {
+                arguments << "-eventcounter";
+            }
+            else if (subtest == "benchlibcounting") {
                 arguments << "-eventcounter";
             }
             else if (subtest == "printdatatags") {

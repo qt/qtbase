@@ -20,14 +20,8 @@ Totals: 3 passed, 0 failed, 0 skipped
 Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_BenchlibOneHundredMinimum::initTestCase()
 PASS   : tst_BenchlibOneHundredMinimum::threeEvents()
-PASS   : tst_BenchlibOneHundredMinimum::threeEvents()
-PASS   : tst_BenchlibOneHundredMinimum::threeEvents()
-PASS   : tst_BenchlibOneHundredMinimum::threeEvents()
-PASS   : tst_BenchlibOneHundredMinimum::threeEvents()
-PASS   : tst_BenchlibOneHundredMinimum::threeEvents()
-PASS   : tst_BenchlibOneHundredMinimum::threeEvents()
 RESULT : tst_BenchlibOneHundredMinimum::threeEvents():
      3.00 events per iteration (total: 192, iterations: 64)
 PASS   : tst_BenchlibOneHundredMinimum::cleanupTestCase()
-Totals: 9 passed, 0 failed, 0 skipped
+Totals: 3 passed, 0 failed, 0 skipped
 ********* Finished testing of tst_BenchlibOneHundredMinimum *********

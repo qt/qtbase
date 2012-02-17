@@ -10,6 +10,10 @@
         <file>expected_badxml.xml</file>
         <file>expected_badxml.xunitxml</file>
         <file>expected_benchlibcallgrind.txt</file>
+        <file>expected_benchlibcounting.lightxml</file>
+        <file>expected_benchlibcounting.txt</file>
+        <file>expected_benchlibcounting.xml</file>
+        <file>expected_benchlibcounting.xunitxml</file>
         <file>expected_benchlibeventcounter.lightxml</file>
         <file>expected_benchlibeventcounter.txt</file>
         <file>expected_benchlibeventcounter.xml</file>
