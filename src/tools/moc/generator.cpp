@@ -1096,6 +1096,10 @@ void Generator::generatePluginMetaData()
     }
     fprintf(out, " 0x%02x\n};\n", (uchar)binary.at(binary.size() - 1));
 #endif
+    // 'Use' all namespaces.
+    int pos = cdef->qualified.indexOf("::");
+    for ( ; pos != -1 ; pos = cdef->qualified.indexOf("::", pos + 2) )
+        fprintf(out, "using namespace %s;\n", cdef->qualified.left(pos).constData());
     fprintf(out, "QT_MOC_EXPORT_PLUGIN(%s)\n\n", cdef->classname.constData());
 }
 
