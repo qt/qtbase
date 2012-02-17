@@ -73,8 +73,6 @@ private:
         QByteArray typeName;
         QByteArray tag;
         QByteArray name;
-        QByteArray inputSignature;
-        QByteArray outputSignature;
         QVarLengthArray<int, 4> inputTypes;
         QVarLengthArray<int, 4> outputTypes;
         int flags;
@@ -108,7 +106,7 @@ private:
 };
 
 static const int intsPerProperty = 2;
-static const int intsPerMethod = 5;
+static const int intsPerMethod = 3;
 
 struct QDBusMetaObjectPrivate : public QMetaObjectPrivate
 {
@@ -215,7 +213,6 @@ void QDBusMetaObjectGenerator::parseMethods()
                 break;
             }
 
-            mm.inputSignature += arg.type.toLatin1();
             mm.inputTypes.append(type.id);
 
             mm.parameters.append(arg.name.toLatin1());
@@ -236,7 +233,6 @@ void QDBusMetaObjectGenerator::parseMethods()
                 break;
             }
 
-            mm.outputSignature += arg.type.toLatin1();
             mm.outputTypes.append(type.id);
 
             if (i == 0) {
@@ -297,7 +293,6 @@ void QDBusMetaObjectGenerator::parseSignals()
                 break;
             }
 
-            mm.inputSignature += arg.type.toLatin1();
             mm.inputTypes.append(type.id);
 
             mm.parameters.append(arg.name.toLatin1());
@@ -444,7 +439,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
         QMap<QByteArray, Method> &map = (x == 0) ? signals_ : methods;
         for (QMap<QByteArray, Method>::ConstIterator it = map.constBegin();
              it != map.constEnd(); ++it) {
-            // form "prototype\0parameters\0typeName\0tag\0methodname\0inputSignature\0outputSignature"
+            // form "prototype\0parameters\0typeName\0tag\0methodname\0"
             const Method &mm = it.value();
 
             idata[offset++] = strings.enter(it.key()); // prototype
@@ -454,8 +449,6 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
             idata[offset++] = mm.flags;
 
             idata[signatureOffset++] = strings.enter(mm.name);
-            idata[signatureOffset++] = strings.enter(mm.inputSignature);
-            idata[signatureOffset++] = strings.enter(mm.outputSignature);
 
             idata[signatureOffset++] = typeidOffset;
             idata[typeidOffset++] = mm.inputTypes.count();
@@ -630,32 +623,12 @@ const char *QDBusMetaObject::dbusNameForMethod(int id) const
     return 0;
 }
 
-const char *QDBusMetaObject::inputSignatureForMethod(int id) const
-{
-    //id -= methodOffset();
-    if (id >= 0 && id < priv(d.data)->methodCount) {
-        int handle = priv(d.data)->methodDBusData + id*intsPerMethod;
-        return d.stringdata + d.data[handle + 1];
-    }
-    return 0;
-}
-
-const char *QDBusMetaObject::outputSignatureForMethod(int id) const
-{
-    //id -= methodOffset();
-    if (id >= 0 && id < priv(d.data)->methodCount) {
-        int handle = priv(d.data)->methodDBusData + id*intsPerMethod;
-        return d.stringdata + d.data[handle + 2];
-    }
-    return 0;
-}
-
 const int *QDBusMetaObject::inputTypesForMethod(int id) const
 {
     //id -= methodOffset();
     if (id >= 0 && id < priv(d.data)->methodCount) {
         int handle = priv(d.data)->methodDBusData + id*intsPerMethod;
-        return reinterpret_cast<const int*>(d.data + d.data[handle + 3]);
+        return reinterpret_cast<const int*>(d.data + d.data[handle + 1]);
     }
     return 0;
 }
@@ -665,7 +638,7 @@ const int *QDBusMetaObject::outputTypesForMethod(int id) const
     //id -= methodOffset();
     if (id >= 0 && id < priv(d.data)->methodCount) {
         int handle = priv(d.data)->methodDBusData + id*intsPerMethod;
-        return reinterpret_cast<const int*>(d.data + d.data[handle + 4]);
+        return reinterpret_cast<const int*>(d.data + d.data[handle + 2]);
     }
     return 0;
 }
