@@ -54,6 +54,26 @@ namespace QJsonPrivate {
     class Parser;
 }
 
+struct Q_CORE_EXPORT QJsonParseError
+{
+    enum ParseError {
+        NoError = 0,
+        UnterminatedObject,
+        MissingNameSeparator,
+        UnterminatedArray,
+        MissingValueSeparator,
+        IllegalValue,
+        EndOfNumber,
+        IllegalNumber,
+        StringEscapeSequence,
+        StringUTF8Scan,
+        EndOfString
+    };
+
+    int        offset;
+    ParseError error;
+};
+
 class Q_CORE_EXPORT QJsonDocument
 {
 public:
@@ -85,7 +105,7 @@ public:
     static QJsonDocument fromVariant(const QVariant &variant);
     QVariant toVariant() const;
 
-    static QJsonDocument fromJson(const QByteArray &json);
+    static QJsonDocument fromJson(const QByteArray &json, QJsonParseError *error = 0);
     QByteArray toJson() const;
 
     bool isEmpty() const;

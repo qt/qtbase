@@ -65,7 +65,7 @@ class Parser
 public:
     Parser(const char *json, int length);
 
-    QJsonDocument parse();
+    QJsonDocument parse(QJsonParseError *error);
 
     class ParsedObject
     {
@@ -93,12 +93,14 @@ private:
     bool parseString(bool *latin1);
     bool parseValue(QJsonPrivate::Value *val, int baseOffset);
     bool parseNumber(QJsonPrivate::Value *val, int baseOffset);
+    const char *head;
     const char *json;
     const char *end;
 
     char *data;
     int dataLength;
     int current;
+    QJsonParseError::ParseError lastError;
 
     inline int reserveSpace(int space) {
         if (current + space >= dataLength) {

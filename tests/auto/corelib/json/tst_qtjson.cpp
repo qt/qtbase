@@ -92,6 +92,7 @@ private Q_SLOTS:
 
     void toJson();
     void fromJson();
+    void fromJsonErrors();
     void fromBinary();
     void toAndFromBinary_data();
     void toAndFromBinary();
@@ -1077,6 +1078,170 @@ void TestQtJson::fromJson()
         QCOMPARE(object.value("5").toArray().size(), 0);
         QCOMPARE(object.value("6").type(), QJsonValue::Object);
         QCOMPARE(object.value("6").toObject().size(), 0);
+    }
+}
+
+void TestQtJson::fromJsonErrors()
+{
+    {
+        QJsonParseError error;
+        QByteArray json = "{\n    \n\n";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::UnterminatedObject);
+        QCOMPARE(error.offset, 8);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "{\n    \"key\" 10\n";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::MissingNameSeparator);
+        QCOMPARE(error.offset, 13);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    \n\n";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::UnterminatedArray);
+        QCOMPARE(error.offset, 8);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n   1, true\n\n";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::UnterminatedArray);
+        QCOMPARE(error.offset, 14);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n  1 true\n\n";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::MissingValueSeparator);
+        QCOMPARE(error.offset, 7);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    nul";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::IllegalValue);
+        QCOMPARE(error.offset, 7);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    nulzz";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::IllegalValue);
+        QCOMPARE(error.offset, 10);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    tru";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::IllegalValue);
+        QCOMPARE(error.offset, 7);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    trud]";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::IllegalValue);
+        QCOMPARE(error.offset, 10);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    fal";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::IllegalValue);
+        QCOMPARE(error.offset, 7);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    falsd]";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::IllegalValue);
+        QCOMPARE(error.offset, 11);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    11111";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::EndOfNumber);
+        QCOMPARE(error.offset, 11);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    -1E10000]";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::IllegalNumber);
+        QCOMPARE(error.offset, 14);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    -1e-10000]";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::IllegalNumber);
+        QCOMPARE(error.offset, 15);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    \"\\u12\"]";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::StringEscapeSequence);
+        QCOMPARE(error.offset, 11);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    \"foo\uffffbar\"]";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::StringUTF8Scan);
+        QCOMPARE(error.offset, 13);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    \"";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::EndOfString);
+        QCOMPARE(error.offset, 8);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    \"cЂa\\u12\"]";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::StringEscapeSequence);
+        QCOMPARE(error.offset, 15);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    \"cЂa\uffffbar\"]";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::StringUTF8Scan);
+        QCOMPARE(error.offset, 14);
+    }
+    {
+        QJsonParseError error;
+        QByteArray json = "[\n    \"cЂa ]";
+        QJsonDocument doc = QJsonDocument::fromJson(json, &error);
+        QVERIFY(doc.isEmpty());
+        QCOMPARE(error.error, QJsonParseError::EndOfString);
+        QCOMPARE(error.offset, 14);
     }
 }
 

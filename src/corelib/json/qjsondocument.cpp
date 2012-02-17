@@ -317,10 +317,10 @@ QByteArray QJsonDocument::toJson() const
 
  \sa toJson
  */
-QJsonDocument QJsonDocument::fromJson(const QByteArray &json)
+QJsonDocument QJsonDocument::fromJson(const QByteArray &json, QJsonParseError *error)
 {
     QJsonPrivate::Parser parser(json.constData(), json.length());
-    return parser.parse();
+    return parser.parse(error);
 }
 
 /*!
