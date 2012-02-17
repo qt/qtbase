@@ -237,7 +237,10 @@ bool QTestResult::verify(bool statement, const char *statementStr,
         QTestLog::info(msg, file, line);
     }
 
-    qsnprintf(msg, 1024, "'%s' returned FALSE. (%s)", statementStr, description);
+    const char * format = QTest::expectFailMode
+        ? "'%s' returned TRUE unexpectedly. (%s)"
+        : "'%s' returned FALSE. (%s)";
+    qsnprintf(msg, 1024, format, statementStr, description);
 
     return checkStatement(statement, msg, file, line);
 }

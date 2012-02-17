@@ -45,7 +45,7 @@
 </TestFunction>
 <TestFunction name="testFunc7">
 <Incident type="xpass" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp" line="110">
-    <Description><![CDATA['true' returned FALSE. ()]]></Description>
+    <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
 </Incident>
 </TestFunction>
 <TestFunction name="cleanupTestCase">

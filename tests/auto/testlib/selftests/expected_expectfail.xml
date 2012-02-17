@@ -97,13 +97,13 @@
 </TestFunction>
 <TestFunction name="xpass">
 <Incident type="xpass" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="190">
-    <Description><![CDATA['true' returned FALSE. ()]]></Description>
+    <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
 </Incident>
 </TestFunction>
 <TestFunction name="xpassDataDriven">
 <Incident type="xpass" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="212">
     <DataTag><![CDATA[XPass]]></DataTag>
-    <Description><![CDATA['true' returned FALSE. ()]]></Description>
+    <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[Pass]]></DataTag>

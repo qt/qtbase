@@ -35,10 +35,10 @@
     <failure tag="second row" message="QEXPECT_FAIL was called without any subsequent verification statements" result="fail"/>
   </testcase>
   <testcase result="xpass" name="xpass">
-    <failure message="&apos;true&apos; returned FALSE. ()" result="xpass"/>
+    <failure message="&apos;true&apos; returned TRUE unexpectedly. ()" result="xpass"/>
   </testcase>
   <testcase result="xpass" name="xpassDataDriven">
-    <failure tag="XPass" message="&apos;true&apos; returned FALSE. ()" result="xpass"/>
+    <failure tag="XPass" message="&apos;true&apos; returned TRUE unexpectedly. ()" result="xpass"/>
   </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err>

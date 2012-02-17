@@ -34,9 +34,9 @@ XFAIL  : tst_ExpectFail::xfailOnAnyRow(second row) This test should xfail
 PASS   : tst_ExpectFail::xfailOnAnyRow(second row)
 FAIL!  : tst_ExpectFail::xfailWithoutVerify(first row) QEXPECT_FAIL was called without any subsequent verification statements
 FAIL!  : tst_ExpectFail::xfailWithoutVerify(second row) QEXPECT_FAIL was called without any subsequent verification statements
-XPASS  : tst_ExpectFail::xpass() 'true' returned FALSE. ()
+XPASS  : tst_ExpectFail::xpass() 'true' returned TRUE unexpectedly. ()
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(190)]
-XPASS  : tst_ExpectFail::xpassDataDriven(XPass) 'true' returned FALSE. ()
+XPASS  : tst_ExpectFail::xpassDataDriven(XPass) 'true' returned TRUE unexpectedly. ()
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(212)]
 PASS   : tst_ExpectFail::xpassDataDriven(Pass)
 PASS   : tst_ExpectFail::cleanupTestCase()

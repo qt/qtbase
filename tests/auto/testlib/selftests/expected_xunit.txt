@@ -19,7 +19,7 @@ PASS   : tst_Xunit::testFunc5()
 XFAIL  : tst_Xunit::testFunc6() this failure is also expected
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp(104)]
 PASS   : tst_Xunit::testFunc6()
-XPASS  : tst_Xunit::testFunc7() 'true' returned FALSE. ()
+XPASS  : tst_Xunit::testFunc7() 'true' returned TRUE unexpectedly. ()
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp(110)]
 PASS   : tst_Xunit::cleanupTestCase()
 Totals: 5 passed, 3 failed, 1 skipped
