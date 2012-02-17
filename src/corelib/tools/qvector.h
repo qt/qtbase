@@ -80,7 +80,7 @@ struct Q_CORE_EXPORT QVectorData
     static QVectorData *allocate(int size, int alignment);
     static QVectorData *reallocate(QVectorData *old, int newsize, int oldsize, int alignment);
     static void free(QVectorData *data, int alignment);
-    static int grow(int sizeofTypedData, int size, int sizeofT);
+    static int grow(int sizeOfHeader, int size, int sizeOfT);
 };
 
 template <typename T>
@@ -331,17 +331,18 @@ private:
     QVectorData *malloc(int alloc);
     void realloc(int size, int alloc);
     void free(Data *d);
-    int sizeOfTypedData() {
-        // this is more or less the same as sizeof(Data), except that it doesn't
-        // count the padding at the end
-        return reinterpret_cast<const char *>(&(reinterpret_cast<const Data *>(this))->array[1]) - reinterpret_cast<const char *>(this);
+
+    static Q_DECL_CONSTEXPR int offsetOfTypedData()
+    {
+        // (non-POD)-safe offsetof(Data, array)
+        return (sizeof(QVectorData) + (alignOfTypedData() - 1)) & ~(alignOfTypedData() - 1);
     }
-    inline int alignOfTypedData() const
+    static Q_DECL_CONSTEXPR int alignOfTypedData()
     {
 #ifdef Q_ALIGNOF
-        return qMax<int>(sizeof(void*), Q_ALIGNOF(Data));
+        return Q_ALIGNOF(Data);
 #else
-        return 0;
+        return sizeof(void *);
 #endif
     }
 };
@@ -355,7 +356,7 @@ void QVector<T>::reserve(int asize)
 template <typename T>
 void QVector<T>::resize(int asize)
 { realloc(asize, (asize > d->alloc || (!d->capacity && asize < d->size && asize < (d->alloc >> 1))) ?
-          QVectorData::grow(sizeOfTypedData(), asize, sizeof(T))
+          QVectorData::grow(offsetOfTypedData(), asize, sizeof(T))
           : d->alloc); }
 template <typename T>
 inline void QVector<T>::clear()
@@ -413,7 +414,7 @@ QVector<T> &QVector<T>::operator=(const QVector<T> &v)
 template <typename T>
 inline QVectorData *QVector<T>::malloc(int aalloc)
 {
-    QVectorData *vectordata = QVectorData::allocate(sizeOfTypedData() + (aalloc - 1) * sizeof(T), alignOfTypedData());
+    QVectorData *vectordata = QVectorData::allocate(offsetOfTypedData() + aalloc * sizeof(T), alignOfTypedData());
     Q_CHECK_PTR(vectordata);
     return vectordata;
 }
@@ -508,13 +509,13 @@ void QVector<T>::realloc(int asize, int aalloc)
             if (QTypeInfo<T>::isComplex) {
                 x.d->size = 0;
             } else {
-                ::memcpy(x.p, p, sizeOfTypedData() + (qMin(aalloc, d->alloc) - 1) * sizeof(T));
+                ::memcpy(x.p, p, offsetOfTypedData() + qMin(aalloc, d->alloc) * sizeof(T));
                 x.d->size = d->size;
             }
         } else {
             QT_TRY {
-                QVectorData *mem = QVectorData::reallocate(d, sizeOfTypedData() + (aalloc - 1) * sizeof(T),
-                                                           sizeOfTypedData() + (d->alloc - 1) * sizeof(T), alignOfTypedData());
+                QVectorData *mem = QVectorData::reallocate(d, offsetOfTypedData() + aalloc * sizeof(T),
+                                                           offsetOfTypedData() + d->alloc * sizeof(T), alignOfTypedData());
                 Q_CHECK_PTR(mem);
                 x.d = d = mem;
                 x.d->size = d->size;
@@ -582,7 +583,7 @@ void QVector<T>::append(const T &t)
     if (!isDetached() || d->size + 1 > d->alloc) {
         const T copy(t);
         realloc(d->size, (d->size + 1 > d->alloc) ?
-                    QVectorData::grow(sizeOfTypedData(), d->size + 1, sizeof(T))
+                    QVectorData::grow(offsetOfTypedData(), d->size + 1, sizeof(T))
                     : d->alloc);
         if (QTypeInfo<T>::isComplex)
             new (p->array + d->size) T(copy);
@@ -604,7 +605,7 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, c
     if (n != 0) {
         const T copy(t);
         if (!isDetached() || d->size + n > d->alloc)
-            realloc(d->size, QVectorData::grow(sizeOfTypedData(), d->size + n, sizeof(T)));
+            realloc(d->size, QVectorData::grow(offsetOfTypedData(), d->size + n, sizeof(T)));
         if (QTypeInfo<T>::isStatic) {
             T *b = p->array + d->size;
             T *i = p->array + d->size + n;

@@ -76,9 +76,9 @@ void QVectorData::free(QVectorData *x, int alignment)
         ::free(x);
 }
 
-int QVectorData::grow(int sizeofTypedData, int size, int sizeofT)
+int QVectorData::grow(int sizeOfHeader, int size, int sizeOfT)
 {
-    return qAllocMore(size * sizeofT, sizeofTypedData - sizeofT) / sizeofT;
+    return qAllocMore(size * sizeOfT, sizeOfHeader) / sizeOfT;
 }
 
 /*!

@@ -73,17 +73,11 @@ class QRawVector
     int m_alloc;
 
 public:
-    //static Data dummy;
-    //int headerOffset() { return (char*)&dummy.array - (char*)&dummy; }
-    inline int headerOffset() const {
-        // gcc complains about: return offsetof(Data, array); and also
-        // does not like '0' in the expression below.
-        return (char *)&(((Data *)(1))->array) - (char *)1;
-    }
-    inline Data *toBase(T *begin) const
-    { return (Data*)((char*)begin - headerOffset()); }
-    inline T *fromBase(void *d)  const
-    { return (T*)((char*)d + headerOffset()); }
+    static Data *toBase(T *begin)
+    { return (Data*)((char*)begin - offsetOfTypedData()); }
+    static T *fromBase(void *d)
+    { return (T*)((char*)d + offsetOfTypedData()); }
+
     inline QRawVector() 
     { m_begin = fromBase(0); m_alloc = m_size = 0; realloc(m_size, m_alloc, true); }
     explicit QRawVector(int size);
@@ -270,17 +264,18 @@ private:
     T *allocate(int alloc);
     void realloc(int size, int alloc, bool ref);
     void free(T *begin, int size);
-    int sizeOfTypedData() {
-        // this is more or less the same as sizeof(Data), except that it doesn't
-        // count the padding at the end
-        return reinterpret_cast<const char *>(&(reinterpret_cast<const Data *>(this))->array[1]) - reinterpret_cast<const char *>(this);
+
+    static Q_DECL_CONSTEXPR int offsetOfTypedData()
+    {
+        // (non-POD)-safe offsetof(Data, array)
+        return (sizeof(QVectorData) + (alignOfTypedData() - 1)) & ~(alignOfTypedData() - 1);
     }
-    static inline int alignOfTypedData()
+    static Q_DECL_CONSTEXPR int alignOfTypedData()
     {
 #ifdef Q_ALIGNOF
-        return qMax<int>(sizeof(void*), Q_ALIGNOF(Data));
+        return Q_ALIGNOF(Data);
 #else
-        return 0;
+        return sizeof(void *);
 #endif
     }
 
@@ -308,7 +303,7 @@ void QRawVector<T>::reserve(int asize)
 template <typename T>
 void QRawVector<T>::resize(int asize)
 { realloc(asize, (asize > m_alloc || (asize < m_size && asize < (m_alloc >> 1)))
-    ? QVectorData::grow(sizeOfTypedData(), asize, sizeof(T))
+    ? QVectorData::grow(offsetOfTypedData(), asize, sizeof(T))
     : m_alloc, false); }
 template <typename T>
 inline void QRawVector<T>::clear()
@@ -369,7 +364,7 @@ QRawVector<T> &QRawVector<T>::operator=(const QRawVector<T> &v)
 template <typename T>
 inline T *QRawVector<T>::allocate(int aalloc)
 {
-    QVectorData *d = QVectorData::allocate(sizeOfTypedData() + (aalloc - 1) * sizeof(T), alignOfTypedData());
+    QVectorData *d = QVectorData::allocate(offsetOfTypedData() + aalloc * sizeof(T), alignOfTypedData());
     Q_CHECK_PTR(d);
     return fromBase(d);
 }
@@ -445,10 +440,9 @@ void QRawVector<T>::realloc(int asize, int aalloc, bool ref)
             changed = true;
         } else {
             QT_TRY {
-                QVectorData *mem = QVectorData::reallocate(
-                    toBase(m_begin), sizeOfTypedData() + (aalloc - 1) * sizeof(T),
-                                                           sizeOfTypedData()
-+ (xalloc - 1) * sizeof(T), alignOfTypedData());
+                QVectorData *mem = QVectorData::reallocate(toBase(m_begin),
+                        offsetOfTypedData() + aalloc * sizeof(T),
+                        offsetOfTypedData() + xalloc * sizeof(T), alignOfTypedData());
                 Q_CHECK_PTR(mem);
                 xbegin = fromBase(mem);
                 xsize = m_size;
@@ -510,7 +504,7 @@ void QRawVector<T>::append(const T &t)
 {
     if (m_size + 1 > m_alloc) {
         const T copy(t);
-        realloc(m_size, QVectorData::grow(sizeOfTypedData(), m_size + 1, sizeof(T)), false);
+        realloc(m_size, QVectorData::grow(offsetOfTypedData(), m_size + 1, sizeof(T)), false);
         if (QTypeInfo<T>::isComplex)
             new (m_begin + m_size) T(copy);
         else
@@ -531,7 +525,7 @@ typename QRawVector<T>::iterator QRawVector<T>::insert(iterator before, size_typ
     if (n != 0) {
         const T copy(t);
         if (m_size + n > m_alloc)
-            realloc(m_size, QVectorData::grow(sizeOfTypedData(), m_size + n, sizeof(T)), false);
+            realloc(m_size, QVectorData::grow(offsetOfTypedData(), m_size + n, sizeof(T)), false);
         if (QTypeInfo<T>::isStatic) {
             T *b = m_begin + m_size;
             T *i = m_begin + m_size + n;
