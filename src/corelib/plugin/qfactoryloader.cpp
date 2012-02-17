@@ -244,7 +244,7 @@ QStringList QFactoryLoader::keys() const
             QObject *instance = staticPlugins.at(i).instance();
             QFactoryInterface *factory = qobject_cast<QFactoryInterface*>(instance);
             if (instance && factory && instance->qt_metacast(d->iid))
-                keys = factory->keys();
+                keys += factory->keys();
         }
     }
     return keys;
