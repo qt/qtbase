@@ -5948,8 +5948,6 @@ fi
 if [ "$CFG_ENDIAN" = "auto" ]; then
     if [ "$XPLATFORM_MINGW" = "yes" ]; then
         CFG_ENDIAN="Q_LITTLE_ENDIAN"
-    elif [ "$BUILD_ON_MAC" = "yes" ]; then
-        true #leave as auto
     else
         "$unixtests/endian.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "QMAKE_LFLAGS+=$SYSROOT_FLAG"
 	F="$?"
