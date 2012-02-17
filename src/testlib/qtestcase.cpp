@@ -1449,6 +1449,9 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
         }
     }
 
+    bool installedTestCoverage = installCoverageTool(QTestResult::currentAppname(), QTestResult::currentTestObjectName());
+    QTestLog::setInstalledTestCoverage(installedTestCoverage);
+
     // If no loggers were created by the long version of the -o command-line
     // option, create a logger using whatever filename and format were
     // set using the old-style command-line options.
@@ -1986,9 +1989,6 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     QTestResult::setCurrentAppname(argv[0]);
 
     qtest_qParseArgs(argc, argv, false);
-
-    bool installedTestCoverage = installCoverageTool(argv[0], metaObject->className());
-    QTestLog::setInstalledTestCoverage(installedTestCoverage);
 
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {
