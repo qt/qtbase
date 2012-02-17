@@ -12,7 +12,7 @@ HEADERS += \
     arch/qatomic_i386.h \
     arch/qatomic_ia64.h \
     arch/qatomic_mips.h \
-    arch/qatomic_powerpc.h \
+    arch/qatomic_power.h \
     arch/qatomic_s390.h \
     arch/qatomic_sh4a.h \
     arch/qatomic_sparc.h \

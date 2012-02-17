@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QATOMIC_POWERPC_H
-#define QATOMIC_POWERPC_H
+#ifndef QATOMIC_POWER_H
+#define QATOMIC_POWER_H
 
 #include <QtCore/qoldbasicatomic.h>
 
@@ -105,13 +105,11 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
 
 #if defined(Q_CC_GNU)
 
-#if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 2) \
-    || (!defined(__64BIT__) && !defined(__powerpc64__) && !defined(__ppc64__))
+#ifdef Q_PROCESSOR_POWER_32
 #  define _Q_VALUE "0, %[_q_value]"
 #  define _Q_VALUE_MEMORY_OPERAND "+m" (_q_value)
 #  define _Q_VALUE_REGISTER_OPERAND [_q_value] "r" (&_q_value),
-#else
-// On 64-bit with gcc >= 4.2
+#else // Q_PROCESSOR_POWER_64
 #  define _Q_VALUE "%y[_q_value]"
 #  define _Q_VALUE_MEMORY_OPERAND [_q_value] "+Z" (_q_value)
 #  define _Q_VALUE_REGISTER_OPERAND
@@ -301,7 +299,7 @@ inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
     return originalValue;
 }
 
-#if defined(__64BIT__) || defined(__powerpc64__) || defined(__ppc64__)
+#ifdef Q_PROCESSOR_POWER_64
 #  define LPARX "ldarx"
 #  define STPCX "stdcx."
 #else
@@ -475,7 +473,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 #undef _Q_VALUE_REGISTER_OPERAND
 
 #else
-#  error "This compiler for PowerPC is not supported"
+#  error "This compiler for Power/PowerPC is not supported"
 #endif
 
 inline bool QBasicAtomicInt::testAndSetOrdered(int expectedValue, int newValue)
@@ -515,4 +513,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QATOMIC_POWERPC_H
+#endif // QATOMIC_POWER_H

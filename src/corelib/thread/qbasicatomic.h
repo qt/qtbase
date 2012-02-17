@@ -72,8 +72,8 @@
 #  include "QtCore/qatomic_ia64.h"
 #elif defined(Q_PROCESSOR_MIPS)
 #  include "QtCore/qatomic_mips.h"
-#elif defined(Q_PROCESSOR_POWERPC)
-#  include "QtCore/qatomic_powerpc.h"
+#elif defined(Q_PROCESSOR_POWER)
+#  include "QtCore/qatomic_power.h"
 #elif defined(Q_PROCESSOR_S390)
 #  include "QtCore/qatomic_s390.h"
 #elif defined(Q_PROCESSOR_SH4A)

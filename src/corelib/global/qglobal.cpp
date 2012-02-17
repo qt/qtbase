@@ -1489,18 +1489,27 @@ bool qSharedBuild()
 */
 
 /*!
-    \macro Q_PROCESSOR_POWERPC
+    \macro Q_PROCESSOR_POWER
     \relates <QtGlobal>
 
-    Defined if the application is compiled for PowerPC processors. Qt currently
-    supports one optional PowerPC variant: \l Q_PROCESSOR_POWERPC_64.
+    Defined if the application is compiled for POWER processors. Qt currently
+    supports two Power variants: \l Q_PROCESSOR_POWER_32 and \l
+    Q_PROCESSOR_POWER_64.
 */
 /*!
-    \macro Q_PROCESSOR_POWERPC_64
+    \macro Q_PROCESSOR_POWER_32
     \relates <QtGlobal>
 
-    Defined if the application is compiled for 64-bit PowerPC processors. The
-    \l Q_PROCESSOR_POWERPC macro is also defined when Q_PROCESSOR_POWERPC_64 is
+    Defined if the application is compiled for 32-bit Power processors. The \l
+    Q_PROCESSOR_POWER macro is also defined when Q_PROCESSOR_POWER_32 is
+    defined.
+*/
+/*!
+    \macro Q_PROCESSOR_POWER_64
+    \relates <QtGlobal>
+
+    Defined if the application is compiled for 64-bit Power processors. The \l
+    Q_PROCESSOR_POWER macro is also defined when Q_PROCESSOR_POWER_64 is
     defined.
 */
 

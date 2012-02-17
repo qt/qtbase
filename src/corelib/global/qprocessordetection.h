@@ -145,17 +145,21 @@
 #  endif
 
 /*
-    POWER family, optional variant: 64-bit
+    Power family, known variants: 32- and 64-bit
 
     There are many more known variants/revisions that we do not handle/detect.
     See http://en.wikipedia.org/wiki/Power_Architecture
     and http://en.wikipedia.org/wiki/File:PowerISA-evolution.svg
 */
-// #elif defined(__powerpc__) || defined(__ppc__) || defined(_M_MPPC) || defined(_M_PPC)
-// #  define Q_PROCESSOR_POWERPC
-// #  if defined(__64BIT__) || defined(__powerpc64__) || defined(__ppc64__)
-// #    define Q_PROCESSOR_POWERPC_64
-// #  endif
+#elif defined(__ppc__) || defined(__ppc) || defined(__powerpc__) \
+      || defined(_ARCH_COM) || defined(_ARCH_PWR) || defined(_ARCH_PPC)  \
+      || defined(_M_MPPC) || defined(_M_PPC)
+#  define Q_PROCESSOR_POWER
+#  if defined(__ppc64__) || defined(__powerpc64__) || defined(__64BIT__)
+#    define Q_PROCESSOR_POWER_64
+#  else
+#    define Q_PROCESSOR_POWER_32
+#  endif
 
 /*
     S390 family, known variant: S390X (64-bit)
