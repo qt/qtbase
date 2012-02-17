@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 template <typename T>
 class QRawVector
 {
-    struct Data : QVectorData { T array[1]; };
+    typedef QVectorTypedData<T> Data;
 
     T *m_begin;
     int m_size;
@@ -265,15 +265,17 @@ private:
     void realloc(int size, int alloc, bool ref);
     void free(T *begin, int size);
 
+    class AlignmentDummy { QVectorData header; T array[1]; };
+
     static Q_DECL_CONSTEXPR int offsetOfTypedData()
     {
-        // (non-POD)-safe offsetof(Data, array)
+        // (non-POD)-safe offsetof(AlignmentDummy, array)
         return (sizeof(QVectorData) + (alignOfTypedData() - 1)) & ~(alignOfTypedData() - 1);
     }
     static Q_DECL_CONSTEXPR int alignOfTypedData()
     {
 #ifdef Q_ALIGNOF
-        return Q_ALIGNOF(Data);
+        return Q_ALIGNOF(AlignmentDummy);
 #else
         return sizeof(void *);
 #endif
@@ -286,7 +288,8 @@ public:
         d->ref.initializeOwned();
         d->alloc = m_alloc;
         d->size = m_size;
-        d->capacity = 0;
+        d->capacityReserved = 0;
+        d->offset = offsetOfTypedData();
 
         QVector<T> v;
         *reinterpret_cast<QVectorData **>(&v) = d;
