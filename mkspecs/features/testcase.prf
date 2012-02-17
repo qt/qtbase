@@ -49,11 +49,11 @@ QMAKE_EXTRA_TARGETS *= check
 } else {
     check.CONFIG = recursive
     # In debug and release mode, only run the test once.
-    # Run debug if available, release otherwise.
+    # Run debug if that is the preferred config, release otherwise.
     debug_and_release {
         check.target = dummy_check
         check.recurse_target = check
-        debug {
+        CONFIG(debug, debug|release) {
             real_check.depends = debug-check
             real_check.target = check
             QMAKE_EXTRA_TARGETS += real_check
