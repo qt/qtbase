@@ -54,9 +54,10 @@
 QT_BEGIN_NAMESPACE
 
 // only moc needs this function
-static QByteArray normalizeType(const char *s, bool fixScope = false)
+static QByteArray normalizeType(const QByteArray &ba, bool fixScope = false)
 {
-    int len = qstrlen(s);
+    const char *s = ba.constData();
+    int len = ba.size();
     char stackbuf[64];
     char *buf = (len >= 64 ? new char[len + 1] : stackbuf);
     char *d = buf;
@@ -794,7 +795,7 @@ void Moc::generate(FILE *out)
     if (i >= 0)
         fn = filename.mid(i);
     fprintf(out, "/****************************************************************************\n"
-            "** Meta object code from reading C++ file '%s'\n**\n" , (const char*)fn);
+            "** Meta object code from reading C++ file '%s'\n**\n" , fn.constData());
     fprintf(out, "** Created: %s\n"
             "**      by: The Qt Meta Object Compiler version %d (Qt %s)\n**\n" , dstr.data(), mocOutputRevision, QT_VERSION_STR);
     fprintf(out, "** WARNING! All changes made in this file will be lost!\n"
@@ -823,7 +824,7 @@ void Moc::generate(FILE *out)
         fprintf(out, "#include <QtCore/qplugin.h>\n");
 
     fprintf(out, "#if !defined(Q_MOC_OUTPUT_REVISION)\n"
-            "#error \"The header file '%s' doesn't include <QObject>.\"\n", (const char *)fn);
+            "#error \"The header file '%s' doesn't include <QObject>.\"\n", fn.constData());
     fprintf(out, "#elif Q_MOC_OUTPUT_REVISION != %d\n", mocOutputRevision);
     fprintf(out, "#error \"This file was generated using the moc from %s."
             " It\"\n#error \"cannot be used with the include files from"
@@ -1100,7 +1101,7 @@ void Moc::parsePluginData(ClassDef *def)
         } else if (l == "FILE") {
             next(STRING_LITERAL);
             QByteArray metaDataFile = unquotedLexem();
-            QFileInfo fi(QFileInfo(QString::fromLocal8Bit(currentFilenames.top())).dir(), QString::fromLocal8Bit(metaDataFile));
+            QFileInfo fi(QFileInfo(QString::fromLocal8Bit(currentFilenames.top().constData())).dir(), QString::fromLocal8Bit(metaDataFile.constData()));
             if (!fi.exists()) {
                 QByteArray msg;
                 msg += "Plugin Metadata file ";

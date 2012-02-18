@@ -54,19 +54,19 @@
 
 QT_BEGIN_NAMESPACE
 
-uint qvariant_nameToType(const char* name)
+uint qvariant_nameToType(const QByteArray &name)
 {
-    if (!name)
+    if (name.isEmpty())
         return 0;
 
-    uint tp = QMetaType::type(name);
+    uint tp = QMetaType::type(name.constData());
     return tp < QMetaType::User ? tp : 0;
 }
 
 /*
   Returns true if the type is a QVariant types.
 */
-bool isVariantType(const char* type)
+bool isVariantType(const QByteArray &type)
 {
     return qvariant_nameToType(type) != 0;
 }
@@ -74,9 +74,9 @@ bool isVariantType(const char* type)
 /*!
   Returns true if the type is qreal.
 */
-static bool isQRealType(const char *type)
+static bool isQRealType(const QByteArray &type)
 {
-    return strcmp(type, "qreal") == 0;
+    return (type == "qreal");
 }
 
 Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, FILE *outfile)
@@ -109,11 +109,9 @@ static inline int lengthOfEscapeSequence(const QByteArray &s, int i)
     return i - startPos;
 }
 
-int Generator::strreg(const char *s)
+int Generator::strreg(const QByteArray &s)
 {
     int idx = 0;
-    if (!s)
-        s = "";
     for (int i = 0; i < strings.size(); ++i) {
         const QByteArray &str = strings.at(i);
         if (str == s)
@@ -387,7 +385,7 @@ void Generator::generateCode()
     for (int i = 1; i < cdef->superclassList.size(); ++i) { // for all superclasses but the first one
         if (cdef->superclassList.at(i).second == FunctionDef::Private)
             continue;
-        const char *cname = cdef->superclassList.at(i).first;
+        const char *cname = cdef->superclassList.at(i).first.constData();
         fprintf(out, "    if (!strcmp(_clname, \"%s\"))\n        return static_cast< %s*>(const_cast< %s*>(this));\n",
                 cname, cname, cdef->classname.constData());
     }

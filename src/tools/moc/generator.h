@@ -65,7 +65,7 @@ private:
     void generateSignal(FunctionDef *def, int index);
     void generatePluginMetaData();
 
-    int strreg(const char *); // registers a string and returns its id
+    int strreg(const QByteArray &); // registers a string and returns its id
     QList<QByteArray> strings;
     QByteArray purestSuperClass;
     QList<QByteArray> metaTypes;

@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
         /tmp/abc, xyz/klm -> /tmp/abc
  */
 
-static QByteArray combinePath(const char *infile, const char *outfile)
+static QByteArray combinePath(const QByteArray &infile, const QByteArray &outfile)
 {
     QFileInfo inFileInfo(QDir::current(), QFile::decodeName(infile));
     QFileInfo outFileInfo(QDir::current(), QFile::decodeName(outfile));
@@ -379,7 +379,7 @@ int runMoc(int _argc, char **_argv)
         in = fopen(filename.data(), "rb");
 		if (!in) {
 #endif
-            fprintf(stderr, "moc: %s: No such file\n", (const char*)filename);
+            fprintf(stderr, "moc: %s: No such file\n", filename.constData());
             return 1;
         }
         moc.filename = filename;
@@ -406,7 +406,7 @@ int runMoc(int _argc, char **_argv)
         if (!out)
 #endif
         {
-            fprintf(stderr, "moc: Cannot create %s\n", (const char*)output);
+            fprintf(stderr, "moc: Cannot create %s\n", output.constData());
             return 1;
         }
     } else { // use stdout

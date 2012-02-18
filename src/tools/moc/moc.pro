@@ -1,7 +1,7 @@
 TEMPLATE	= app
 TARGET		= moc
 
-DEFINES	       += QT_MOC
+DEFINES         += QT_MOC QT_NO_CAST_FROM_BYTEARRAY
 DESTDIR         = ../../../bin
 INCLUDEPATH	+= . 
 DEPENDPATH	+= .
