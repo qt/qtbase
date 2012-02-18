@@ -4036,9 +4036,9 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
     locker.unlock();
 
     // reconstruct the signature to call connectNotify
-    const char *sig = senderMetaObject->d.stringdata + senderMetaObject->d.data[
+    const char *sig = QMetaObjectPrivate::rawStringData(senderMetaObject, senderMetaObject->d.data[
         reinterpret_cast<const QMetaObjectPrivate*>(senderMetaObject->d.data)->methodData
-            + 5 * (signal_index - signalOffset)];
+            + 5 * (signal_index - signalOffset)]);
     QVarLengthArray<char> signalSignature(qstrlen(sig) + 2);
     signalSignature.data()[0] = char(QSIGNAL_CODE + '0');
     strcpy(signalSignature.data() + 1 , sig);

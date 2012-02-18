@@ -109,7 +109,7 @@ class QMutex;
 
 struct QMetaObjectPrivate
 {
-    enum { OutputRevision = 6 }; // Used by moc and qmetaobjectbuilder
+    enum { OutputRevision = 7 }; // Used by moc, qmetaobjectbuilder and qdbus
 
     int revision;
     int className;
@@ -122,9 +122,12 @@ struct QMetaObjectPrivate
     int signalCount; //since revision 4
     // revision 5 introduces changes in normalized signatures, no new members
     // revision 6 added qt_static_metacall as a member of each Q_OBJECT and inside QMetaObject itself
+    // revision 7 is Qt 5
 
     static inline const QMetaObjectPrivate *get(const QMetaObject *metaobject)
     { return reinterpret_cast<const QMetaObjectPrivate*>(metaobject->d.data); }
+
+    static const char *rawStringData(const QMetaObject *mo, int index);
 
     static int indexOfSignalRelative(const QMetaObject **baseObject,
                                      const char* name,

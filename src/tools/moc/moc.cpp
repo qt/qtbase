@@ -818,6 +818,7 @@ void Moc::generate(FILE *out)
     if (classList.size() && classList.first().classname == "Qt")
         fprintf(out, "#include <QtCore/qobject.h>\n");
 
+    fprintf(out, "#include <QtCore/qbytearray.h>\n"); // For QByteArrayData
     if (mustIncludeQMetaTypeH)
         fprintf(out, "#include <QtCore/qmetatype.h>\n");
     if (mustIncludeQPluginH)

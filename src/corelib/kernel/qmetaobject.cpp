@@ -146,6 +146,43 @@ QT_BEGIN_NAMESPACE
 static inline const QMetaObjectPrivate *priv(const uint* data)
 { return reinterpret_cast<const QMetaObjectPrivate*>(data); }
 
+static inline const QByteArrayData &stringData(const QMetaObject *mo, int index)
+{
+    Q_ASSERT(priv(mo->d.data)->revision >= 7);
+    const QByteArrayData &data = mo->d.stringdata[index];
+    Q_ASSERT(data.ref.isStatic());
+    Q_ASSERT(data.alloc == 0);
+    Q_ASSERT(data.capacityReserved == 0);
+    Q_ASSERT(data.size >= 0);
+    return data;
+}
+
+static inline const char *legacyString(const QMetaObject *mo, int index)
+{
+    Q_ASSERT(priv(mo->d.data)->revision <= 6);
+    return reinterpret_cast<const char *>(mo->d.stringdata) + index;
+}
+
+static inline const char *rawStringData(const QMetaObject *mo, int index)
+{
+    if (priv(mo->d.data)->revision >= 7)
+        return stringData(mo, index).data();
+    else
+        return legacyString(mo, index);
+}
+
+const char *QMetaObjectPrivate::rawStringData(const QMetaObject *mo, int index)
+{
+    return QT_PREPEND_NAMESPACE(rawStringData)(mo, index);
+}
+
+static inline int stringSize(const QMetaObject *mo, int index)
+{
+    if (priv(mo->d.data)->revision >= 7)
+        return stringData(mo, index).size;
+    else
+        return qstrlen(legacyString(mo, index));
+}
 
 /*!
     \since 4.5
@@ -249,12 +286,14 @@ int QMetaObject::metacall(QObject *object, Call cl, int idx, void **argv)
 }
 
 /*!
-    \fn const char *QMetaObject::className() const
-
     Returns the class name.
 
     \sa superClass()
 */
+const char *QMetaObject::className() const
+{
+    return rawStringData(this, 0);
+}
 
 /*!
     \fn QMetaObject *QMetaObject::superClass() const
@@ -307,7 +346,7 @@ const QObject *QMetaObject::cast(const QObject *obj) const
 */
 QString QMetaObject::tr(const char *s, const char *c, int n) const
 {
-    return QCoreApplication::translate(d.stringdata, s, c, QCoreApplication::CodecForTr, n);
+    return QCoreApplication::translate(rawStringData(this, 0), s, c, QCoreApplication::CodecForTr, n);
 }
 
 /*!
@@ -315,7 +354,7 @@ QString QMetaObject::tr(const char *s, const char *c, int n) const
 */
 QString QMetaObject::trUtf8(const char *s, const char *c, int n) const
 {
-    return QCoreApplication::translate(d.stringdata, s, c, QCoreApplication::UnicodeUTF8, n);
+    return QCoreApplication::translate(rawStringData(this, 0), s, c, QCoreApplication::UnicodeUTF8, n);
 }
 #endif // QT_NO_TRANSLATION
 
@@ -513,7 +552,7 @@ static inline int indexOfMethodRelative(const QMetaObject **baseObject,
                         ? (priv(m->d.data)->signalCount) : 0;
         if (!normalizeStringData) {
             for (; i >= end; --i) {
-                const char *stringdata = m->d.stringdata + m->d.data[priv(m->d.data)->methodData + 5*i];
+                const char *stringdata = rawStringData(m, m->d.data[priv(m->d.data)->methodData + 5*i]);
                 if (method[0] == stringdata[0] && strcmp(method + 1, stringdata + 1) == 0) {
                     *baseObject = m;
                     return i;
@@ -521,7 +560,7 @@ static inline int indexOfMethodRelative(const QMetaObject **baseObject,
             }
         } else if (priv(m->d.data)->revision < 5) {
             for (; i >= end; --i) {
-                const char *stringdata = (m->d.stringdata + m->d.data[priv(m->d.data)->methodData + 5 * i]);
+                const char *stringdata = legacyString(m, m->d.data[priv(m->d.data)->methodData + 5 * i]);
                 const QByteArray normalizedSignature = QMetaObject::normalizedSignature(stringdata);
                 if (normalizedSignature == method) {
                     *baseObject = m;
@@ -549,7 +588,7 @@ int QMetaObject::indexOfConstructor(const char *constructor) const
     if (priv(d.data)->revision < 2)
         return -1;
     for (int i = priv(d.data)->constructorCount-1; i >= 0; --i) {
-        const char *data = d.stringdata + d.data[priv(d.data)->constructorData + 5*i];
+        const char *data = rawStringData(this, d.data[priv(d.data)->constructorData + 5*i]);
         if (data[0] == constructor[0] && strcmp(constructor + 1, data + 1) == 0) {
             return i;
         }
@@ -618,7 +657,7 @@ int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
         int conflict = m->d.superdata->indexOfMethod(signal);
         if (conflict >= 0)
             qWarning("QMetaObject::indexOfSignal: signal %s from %s redefined in %s",
-                     signal, m->d.superdata->d.stringdata, m->d.stringdata);
+                     signal, rawStringData(m->d.superdata, 0), rawStringData(m, 0));
     }
 #endif
     return i;
@@ -654,7 +693,7 @@ int QMetaObjectPrivate::indexOfSlotRelative(const QMetaObject **m,
 static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, const char *name)
 {
     while (self) {
-        if (strcmp(self->d.stringdata, name) == 0)
+        if (strcmp(rawStringData(self, 0), name) == 0)
             return self;
         if (self->d.extradata) {
             const QMetaObject **e;
@@ -690,7 +729,7 @@ int QMetaObject::indexOfEnumerator(const char *name) const
     while (m) {
         const QMetaObjectPrivate *d = priv(m->d.data);
         for (int i = d->enumeratorCount - 1; i >= 0; --i) {
-            const char *prop = m->d.stringdata + m->d.data[d->enumeratorData + 4*i];
+            const char *prop = rawStringData(m, m->d.data[d->enumeratorData + 4*i]);
             if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
                 i += m->enumeratorOffset();
                 return i;
@@ -713,7 +752,7 @@ int QMetaObject::indexOfProperty(const char *name) const
     while (m) {
         const QMetaObjectPrivate *d = priv(m->d.data);
         for (int i = d->propertyCount-1; i >= 0; --i) {
-            const char *prop = m->d.stringdata + m->d.data[d->propertyData + 3*i];
+            const char *prop = rawStringData(m, m->d.data[d->propertyData + 3*i]);
             if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
                 i += m->propertyOffset();
                 return i;
@@ -744,8 +783,7 @@ int QMetaObject::indexOfClassInfo(const char *name) const
     const QMetaObject *m = this;
     while (m && i < 0) {
         for (i = priv(m->d.data)->classInfoCount-1; i >= 0; --i)
-            if (strcmp(name, m->d.stringdata
-                       + m->d.data[priv(m->d.data)->classInfoData + 2*i]) == 0) {
+            if (strcmp(name, rawStringData(m, m->d.data[priv(m->d.data)->classInfoData + 2*i])) == 0) {
                 i += m->classInfoOffset();
                 break;
             }
@@ -829,7 +867,7 @@ QMetaProperty QMetaObject::property(int index) const
     if (i >= 0 && i < priv(d.data)->propertyCount) {
         int handle = priv(d.data)->propertyData + 3*i;
         int flags = d.data[handle + 2];
-        const char *type = d.stringdata + d.data[handle + 1];
+        const char *type = rawStringData(this, d.data[handle + 1]);
         result.mobj = this;
         result.handle = handle;
         result.idx = i;
@@ -838,7 +876,7 @@ QMetaProperty QMetaObject::property(int index) const
             result.menum = enumerator(indexOfEnumerator(type));
             if (!result.menum.isValid()) {
                 const char *enum_name = type;
-                const char *scope_name = d.stringdata;
+                const char *scope_name = rawStringData(this, 0);
                 char *scope_buffer = 0;
 
                 const char *colon = strrchr(enum_name, ':');
@@ -1285,7 +1323,7 @@ const char *QMetaMethod::signature() const
 {
     if (!mobj)
         return 0;
-    return mobj->d.stringdata + mobj->d.data[handle];
+    return rawStringData(mobj, mobj->d.data[handle]);
 }
 
 /*!
@@ -1298,7 +1336,7 @@ QList<QByteArray> QMetaMethod::parameterTypes() const
     if (!mobj)
         return QList<QByteArray>();
     return QMetaObjectPrivate::parameterTypeNamesFromSignature(
-            mobj->d.stringdata + mobj->d.data[handle]);
+            rawStringData(mobj, mobj->d.data[handle]));
 }
 
 /*!
@@ -1311,10 +1349,10 @@ QList<QByteArray> QMetaMethod::parameterNames() const
     QList<QByteArray> list;
     if (!mobj)
         return list;
-    const char *names =  mobj->d.stringdata + mobj->d.data[handle + 1];
+    const char *names =  rawStringData(mobj, mobj->d.data[handle + 1]);
     if (*names == 0) {
         // do we have one or zero arguments?
-        const char *signature = mobj->d.stringdata + mobj->d.data[handle];
+        const char *signature = rawStringData(mobj, mobj->d.data[handle]);
         while (*signature && *signature != '(')
             ++signature;
         if (*++signature != ')')
@@ -1340,7 +1378,7 @@ const char *QMetaMethod::typeName() const
 {
     if (!mobj)
         return 0;
-    return mobj->d.stringdata + mobj->d.data[handle + 2];
+    return rawStringData(mobj, mobj->d.data[handle + 2]);
 }
 
 /*!
@@ -1377,7 +1415,7 @@ const char *QMetaMethod::tag() const
 {
     if (!mobj)
         return 0;
-    return mobj->d.stringdata + mobj->d.data[handle + 3];
+    return rawStringData(mobj, mobj->d.data[handle + 3]);
 }
 
 
@@ -1580,10 +1618,10 @@ bool QMetaMethod::invoke(QObject *object,
     int metaMethodArgumentCount = 0;
     {
         // based on QMetaObject::parameterNames()
-        const char *names = mobj->d.stringdata + mobj->d.data[handle + 1];
+        const char *names = rawStringData(mobj, mobj->d.data[handle + 1]);
         if (*names == 0) {
             // do we have one or zero arguments?
-            const char *signature = mobj->d.stringdata + mobj->d.data[handle];
+            const char *signature = rawStringData(mobj, mobj->d.data[handle]);
             while (*signature && *signature != '(')
                 ++signature;
             if (*++signature != ')')
@@ -1803,7 +1841,7 @@ const char *QMetaEnum::name() const
 {
     if (!mobj)
         return 0;
-    return mobj->d.stringdata + mobj->d.data[handle];
+    return rawStringData(mobj, mobj->d.data[handle]);
 }
 
 /*!
@@ -1831,7 +1869,7 @@ const char *QMetaEnum::key(int index) const
     int count = mobj->d.data[handle + 2];
     int data = mobj->d.data[handle + 3];
     if (index >= 0  && index < count)
-        return mobj->d.stringdata + mobj->d.data[data + 2*index];
+        return rawStringData(mobj, mobj->d.data[data + 2*index]);
     return 0;
 }
 
@@ -1878,7 +1916,7 @@ bool QMetaEnum::isFlag() const
 */
 const char *QMetaEnum::scope() const
 {
-    return mobj?mobj->d.stringdata : 0;
+    return mobj?rawStringData(mobj, 0) : 0;
 }
 
 /*!
@@ -1910,8 +1948,8 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
     int count = mobj->d.data[handle + 2];
     int data = mobj->d.data[handle + 3];
     for (int i = 0; i < count; ++i) {
-        if ((!scope || (qstrlen(mobj->d.stringdata) == scope && strncmp(qualified_key, mobj->d.stringdata, scope) == 0))
-             && strcmp(key, mobj->d.stringdata + mobj->d.data[data + 2*i]) == 0) {
+        if ((!scope || (stringSize(mobj, 0) == int(scope) && strncmp(qualified_key, rawStringData(mobj, 0), scope) == 0))
+             && strcmp(key, rawStringData(mobj, mobj->d.data[data + 2*i])) == 0) {
             if (ok != 0)
                 *ok = true;
             return mobj->d.data[data + 2*i + 1];
@@ -1936,7 +1974,7 @@ const char* QMetaEnum::valueToKey(int value) const
     int data = mobj->d.data[handle + 3];
     for (int i = 0; i < count; ++i)
         if (value == (int)mobj->d.data[data + 2*i + 1])
-            return mobj->d.stringdata + mobj->d.data[data + 2*i];
+            return rawStringData(mobj, mobj->d.data[data + 2*i]);
     return 0;
 }
 
@@ -1979,8 +2017,8 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
         }
         int i;
         for (i = count-1; i >= 0; --i)
-            if ((!scope || (qstrlen(mobj->d.stringdata) == scope && strncmp(qualified_key.constData(), mobj->d.stringdata, scope) == 0))
-                 && strcmp(key, mobj->d.stringdata + mobj->d.data[data + 2*i]) == 0) {
+            if ((!scope || (stringSize(mobj, 0) == int(scope) && strncmp(qualified_key.constData(), rawStringData(mobj, 0), scope) == 0))
+                 && strcmp(key, rawStringData(mobj, mobj->d.data[data + 2*i])) == 0) {
                 value |= mobj->d.data[data + 2*i + 1];
                 break;
             }
@@ -2013,7 +2051,7 @@ QByteArray QMetaEnum::valueToKeys(int value) const
             v = v & ~k;
             if (!keys.isEmpty())
                 keys += '|';
-            keys += mobj->d.stringdata + mobj->d.data[data + 2*i];
+            keys += rawStringData(mobj, mobj->d.data[data + 2*i]);
         }
     }
     return keys;
@@ -2092,7 +2130,7 @@ const char *QMetaProperty::name() const
     if (!mobj)
         return 0;
     int handle = priv(mobj->d.data)->propertyData + 3*idx;
-    return mobj->d.stringdata + mobj->d.data[handle];
+    return rawStringData(mobj, mobj->d.data[handle]);
 }
 
 /*!
@@ -2105,7 +2143,7 @@ const char *QMetaProperty::typeName() const
     if (!mobj)
         return 0;
     int handle = priv(mobj->d.data)->propertyData + 3*idx;
-    return mobj->d.stringdata + mobj->d.data[handle + 1];
+    return rawStringData(mobj, mobj->d.data[handle + 1]);
 }
 
 /*!
@@ -2254,7 +2292,7 @@ QVariant QMetaProperty::read(const QObject *object) const
     } else {
         int handle = priv(mobj->d.data)->propertyData + 3*idx;
         uint flags = mobj->d.data[handle + 2];
-        const char *typeName = mobj->d.stringdata + mobj->d.data[handle + 1];
+        const char *typeName = rawStringData(mobj, mobj->d.data[handle + 1]);
         t = (flags >> 24);
         if (t == QVariant::Invalid)
             t = QMetaType::type(typeName);
@@ -2325,7 +2363,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
         uint flags = mobj->d.data[handle + 2];
         t = flags >> 24;
         if (t == QVariant::Invalid) {
-            const char *typeName = mobj->d.stringdata + mobj->d.data[handle + 1];
+            const char *typeName = rawStringData(mobj, mobj->d.data[handle + 1]);
             const char *vtypeName = value.typeName();
             if (vtypeName && strcmp(typeName, vtypeName) == 0)
                 t = value.userType();
@@ -2691,7 +2729,7 @@ const char *QMetaClassInfo::name() const
 {
     if (!mobj)
         return 0;
-    return mobj->d.stringdata + mobj->d.data[handle];
+    return rawStringData(mobj, mobj->d.data[handle]);
 }
 
 /*!
@@ -2703,7 +2741,7 @@ const char* QMetaClassInfo::value() const
 {
     if (!mobj)
         return 0;
-    return mobj->d.stringdata + mobj->d.data[handle + 1];
+    return rawStringData(mobj, mobj->d.data[handle + 1]);
 }
 
 /*!

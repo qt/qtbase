@@ -109,24 +109,17 @@ static inline int lengthOfEscapeSequence(const QByteArray &s, int i)
     return i - startPos;
 }
 
-int Generator::strreg(const QByteArray &s)
+void Generator::strreg(const QByteArray &s)
 {
-    int idx = 0;
-    for (int i = 0; i < strings.size(); ++i) {
-        const QByteArray &str = strings.at(i);
-        if (str == s)
-            return idx;
-        idx += str.length() + 1;
-        for (int i = 0; i < str.length(); ++i) {
-            if (str.at(i) == '\\') {
-                int cnt = lengthOfEscapeSequence(str, i) - 1;
-                idx -= cnt;
-                i += cnt;
-            }
-        }
-    }
-    strings.append(s);
-    return idx;
+    if (!strings.contains(s))
+        strings.append(s);
+}
+
+int Generator::stridx(const QByteArray &s)
+{
+    int i = strings.indexOf(s);
+    Q_ASSERT_X(i != -1, Q_FUNC_INFO, "We forgot to register some strings");
+    return i;
 }
 
 void Generator::generateCode()
@@ -134,10 +127,6 @@ void Generator::generateCode()
     bool isQt = (cdef->classname == "Qt");
     bool isQObject = (cdef->classname == "QObject");
     bool isConstructible = !cdef->constructorList.isEmpty();
-
-//
-// build the data array
-//
 
     // filter out undeclared enumerators and sets
     {
@@ -156,15 +145,119 @@ void Generator::generateCode()
         cdef->enumList = enumList;
     }
 
+//
+// Register all strings used in data section
+//
+    strreg(cdef->qualified);
+    registerClassInfoStrings();
+    registerFunctionStrings(cdef->signalList);
+    registerFunctionStrings(cdef->slotList);
+    registerFunctionStrings(cdef->methodList);
+    registerFunctionStrings(cdef->constructorList);
+    registerPropertyStrings();
+    registerEnumStrings();
 
     QByteArray qualifiedClassNameIdentifier = cdef->qualified;
     qualifiedClassNameIdentifier.replace(':', '_');
+
+//
+// Build stringdata struct
+//
+    fprintf(out, "struct qt_meta_stringdata_%s_t {\n", qualifiedClassNameIdentifier.constData());
+    fprintf(out, "    QByteArrayData data[%d];\n", strings.size());
+    {
+        int len = 0;
+        for (int i = 0; i < strings.size(); ++i)
+            len += strings.at(i).length() + 1;
+        fprintf(out, "    char stringdata[%d];\n", len + 1);
+    }
+    fprintf(out, "};\n");
+
+    // Macro that expands into a QByteArrayData. The offset member is
+    // calculated from 1) the offset of the actual characters in the
+    // stringdata.stringdata member, and 2) the stringdata.data index of the
+    // QByteArrayData being defined. This calculation relies on the
+    // QByteArrayData::data() implementation returning simply "this + offset".
+    fprintf(out, "#define QT_MOC_LITERAL(idx, ofs, len) { \\\n"
+            "    Q_REFCOUNT_INITIALIZE_STATIC, len, 0, 0, \\\n"
+            "    offsetof(qt_meta_stringdata_%s_t, stringdata) + ofs \\\n"
+            "        - idx * sizeof(QByteArrayData) \\\n"
+            "    }\n",
+            qualifiedClassNameIdentifier.constData());
+
+    fprintf(out, "static const qt_meta_stringdata_%s_t qt_meta_stringdata_%s = {\n",
+            qualifiedClassNameIdentifier.constData(), qualifiedClassNameIdentifier.constData());
+    fprintf(out, "    {\n");
+    {
+        int idx = 0;
+        for (int i = 0; i < strings.size(); ++i) {
+            if (i)
+                fprintf(out, ",\n");
+            const QByteArray &str = strings.at(i);
+            fprintf(out, "QT_MOC_LITERAL(%d, %d, %d)", i, idx, str.length());
+            idx += str.length() + 1;
+            for (int j = 0; j < str.length(); ++j) {
+                if (str.at(j) == '\\') {
+                    int cnt = lengthOfEscapeSequence(str, j) - 1;
+                    idx -= cnt;
+                    j += cnt;
+                }
+            }
+        }
+        fprintf(out, "\n    },\n");
+    }
+
+//
+// Build stringdata array
+//
+    fprintf(out, "    \"");
+    int col = 0;
+    int len = 0;
+    for (int i = 0; i < strings.size(); ++i) {
+        QByteArray s = strings.at(i);
+        len = s.length();
+        if (col && col + len >= 72) {
+            fprintf(out, "\"\n    \"");
+            col = 0;
+        } else if (len && s.at(0) >= '0' && s.at(0) <= '9') {
+            fprintf(out, "\"\"");
+            len += 2;
+        }
+        int idx = 0;
+        while (idx < s.length()) {
+            if (idx > 0) {
+                col = 0;
+                fprintf(out, "\"\n    \"");
+            }
+            int spanLen = qMin(70, s.length() - idx);
+            // don't cut escape sequences at the end of a line
+            int backSlashPos = s.lastIndexOf('\\', idx + spanLen - 1);
+            if (backSlashPos >= idx) {
+                int escapeLen = lengthOfEscapeSequence(s, backSlashPos);
+                spanLen = qBound(spanLen, backSlashPos + escapeLen - idx, s.length() - idx);
+            }
+            fwrite(s.constData() + idx, 1, spanLen, out);
+            idx += spanLen;
+            col += spanLen;
+        }
+
+        fputs("\\0", out);
+        col += len + 2;
+    }
+
+// Terminate stringdata struct
+    fprintf(out, "\"\n};\n");
+    fprintf(out, "#undef QT_MOC_LITERAL\n\n");
+
+//
+// build the data array
+//
 
     int index = MetaObjectPrivateFieldCount;
     fprintf(out, "static const uint qt_meta_data_%s[] = {\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "\n // content:\n");
     fprintf(out, "    %4d,       // revision\n", int(QMetaObjectPrivate::OutputRevision));
-    fprintf(out, "    %4d,       // classname\n", strreg(cdef->qualified));
+    fprintf(out, "    %4d,       // classname\n", stridx(cdef->qualified));
     fprintf(out, "    %4d, %4d, // classinfo\n", cdef->classInfoList.count(), cdef->classInfoList.count() ? index : 0);
     index += cdef->classInfoList.count() * 2;
 
@@ -242,46 +335,6 @@ void Generator::generateCode()
     fprintf(out, "\n       0        // eod\n};\n\n");
 
 //
-// Build stringdata array
-//
-    fprintf(out, "static const char qt_meta_stringdata_%s[] = {\n", qualifiedClassNameIdentifier.constData());
-    fprintf(out, "    \"");
-    int col = 0;
-    int len = 0;
-    for (int i = 0; i < strings.size(); ++i) {
-        QByteArray s = strings.at(i);
-        len = s.length();
-        if (col && col + len >= 72) {
-            fprintf(out, "\"\n    \"");
-            col = 0;
-        } else if (len && s.at(0) >= '0' && s.at(0) <= '9') {
-            fprintf(out, "\"\"");
-            len += 2;
-        }
-        int idx = 0;
-        while (idx < s.length()) {
-            if (idx > 0) {
-                col = 0;
-                fprintf(out, "\"\n    \"");
-            }
-            int spanLen = qMin(70, s.length() - idx);
-            // don't cut escape sequences at the end of a line
-            int backSlashPos = s.lastIndexOf('\\', idx + spanLen - 1);
-            if (backSlashPos >= idx) {
-                int escapeLen = lengthOfEscapeSequence(s, backSlashPos);
-                spanLen = qBound(spanLen, backSlashPos + escapeLen - idx, s.length() - idx);
-            }
-            fwrite(s.constData() + idx, 1, spanLen, out);
-            idx += spanLen;
-            col += spanLen;
-        }
-
-        fputs("\\0", out);
-        col += len + 2;
-    }
-    fprintf(out, "\"\n};\n\n");
-
-//
 // Generate internal qt_static_metacall() function
 //
     if (cdef->hasQObject && !isQt)
@@ -356,8 +409,9 @@ void Generator::generateCode()
         fprintf(out, "    { &%s::staticMetaObject, ", purestSuperClass.constData());
     else
         fprintf(out, "    { 0, ");
-    fprintf(out, "qt_meta_stringdata_%s,\n      qt_meta_data_%s, ",
-             qualifiedClassNameIdentifier.constData(), qualifiedClassNameIdentifier.constData());
+    fprintf(out, "qt_meta_stringdata_%s.data,\n"
+            "      qt_meta_data_%s, ", qualifiedClassNameIdentifier.constData(),
+            qualifiedClassNameIdentifier.constData());
     if (!hasExtraData)
         fprintf(out, "0 }\n");
     else
@@ -379,7 +433,7 @@ void Generator::generateCode()
 //
     fprintf(out, "\nvoid *%s::qt_metacast(const char *_clname)\n{\n", cdef->qualified.constData());
     fprintf(out, "    if (!_clname) return 0;\n");
-    fprintf(out, "    if (!strcmp(_clname, qt_meta_stringdata_%s))\n"
+    fprintf(out, "    if (!strcmp(_clname, qt_meta_stringdata_%s.stringdata))\n"
                   "        return static_cast<void*>(const_cast< %s*>(this));\n",
             qualifiedClassNameIdentifier.constData(), cdef->classname.constData());
     for (int i = 1; i < cdef->superclassList.size(); ++i) { // for all superclasses but the first one
@@ -430,6 +484,15 @@ void Generator::generateCode()
 }
 
 
+void Generator::registerClassInfoStrings()
+{
+    for (int i = 0; i < cdef->classInfoList.size(); ++i) {
+        const ClassInfoDef &c = cdef->classInfoList.at(i);
+        strreg(c.name);
+        strreg(c.value);
+    }
+}
+
 void Generator::generateClassInfos()
 {
     if (cdef->classInfoList.isEmpty())
@@ -439,7 +502,33 @@ void Generator::generateClassInfos()
 
     for (int i = 0; i < cdef->classInfoList.size(); ++i) {
         const ClassInfoDef &c = cdef->classInfoList.at(i);
-        fprintf(out, "    %4d, %4d,\n", strreg(c.name), strreg(c.value));
+        fprintf(out, "    %4d, %4d,\n", stridx(c.name), stridx(c.value));
+    }
+}
+
+void Generator::registerFunctionStrings(const QList<FunctionDef>& list)
+{
+    for (int i = 0; i < list.count(); ++i) {
+        const FunctionDef &f = list.at(i);
+
+        QByteArray sig = f.name + '(';
+        QByteArray arguments;
+
+        for (int j = 0; j < f.arguments.count(); ++j) {
+            const ArgumentDef &a = f.arguments.at(j);
+            if (j) {
+                sig += ",";
+                arguments += ",";
+            }
+            sig += a.normalizedType;
+            arguments += a.name;
+        }
+        sig += ')';
+
+        strreg(sig);
+        strreg(arguments);
+        strreg(f.normalizedType);
+        strreg(f.tag);
     }
 }
 
@@ -487,8 +576,8 @@ void Generator::generateFunctions(const QList<FunctionDef>& list, const char *fu
             flags |= MethodScriptable;
         if (f.revision > 0)
             flags |= MethodRevisioned;
-        fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x,\n", strreg(sig),
-                strreg(arguments), strreg(f.normalizedType), strreg(f.tag), flags);
+        fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x,\n", stridx(sig),
+                stridx(arguments), stridx(f.normalizedType), stridx(f.tag), flags);
     }
 }
 
@@ -499,6 +588,15 @@ void Generator::generateFunctionRevisions(const QList<FunctionDef>& list, const 
     for (int i = 0; i < list.count(); ++i) {
         const FunctionDef &f = list.at(i);
         fprintf(out, "    %4d,\n", f.revision);
+    }
+}
+
+void Generator::registerPropertyStrings()
+{
+    for (int i = 0; i < cdef->propertyList.count(); ++i) {
+        const PropertyDef &p = cdef->propertyList.at(i);
+        strreg(p.name);
+        strreg(p.type);
     }
 }
 
@@ -568,8 +666,8 @@ void Generator::generateProperties()
             flags |= Final;
 
         fprintf(out, "    %4d, %4d, ",
-                strreg(p.name),
-                strreg(p.type));
+                stridx(p.name),
+                stridx(p.type));
         if (!(flags >> 24) && isQRealType(p.type))
             fprintf(out, "(QMetaType::QReal << 24) | ");
         fprintf(out, "0x%.8x,\n", flags);
@@ -596,6 +694,16 @@ void Generator::generateProperties()
     }
 }
 
+void Generator::registerEnumStrings()
+{
+    for (int i = 0; i < cdef->enumList.count(); ++i) {
+        const EnumDef &e = cdef->enumList.at(i);
+        strreg(e.name);
+        for (int j = 0; j < e.values.count(); ++j)
+            strreg(e.values.at(j));
+    }
+}
+
 void Generator::generateEnums(int index)
 {
     if (cdef->enumDeclarations.isEmpty())
@@ -607,7 +715,7 @@ void Generator::generateEnums(int index)
     for (i = 0; i < cdef->enumList.count(); ++i) {
         const EnumDef &e = cdef->enumList.at(i);
         fprintf(out, "    %4d, 0x%.1x, %4d, %4d,\n",
-                 strreg(e.name),
+                 stridx(e.name),
                  cdef->enumDeclarations.value(e.name) ? 1 : 0,
                  e.values.count(),
                  index);
@@ -624,7 +732,7 @@ void Generator::generateEnums(int index)
                 code += "::" + e.name;
             code += "::" + val;
             fprintf(out, "    %4d, uint(%s),\n",
-                    strreg(val), code.constData());
+                    stridx(val), code.constData());
         }
     }
 }
