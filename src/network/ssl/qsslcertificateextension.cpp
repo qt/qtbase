@@ -45,7 +45,7 @@
     extensions of an X509 certificate.
     \since 5.0
 
-    \rentrant
+    \reentrant
     \ingroup network
     \ingroup ssl
     \inmodule QtNetwork
