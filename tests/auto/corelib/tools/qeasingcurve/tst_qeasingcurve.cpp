@@ -780,6 +780,12 @@ void tst_QEasingCurve::cpp11()
 #ifdef Q_COMPILER_RVALUE_REFS
     {
     QEasingCurve ec( QEasingCurve::InOutBack );
+    QEasingCurve copy = std::move(ec); // move ctor
+    QCOMPARE( copy.type(), QEasingCurve::InOutBack );
+    QVERIFY( *reinterpret_cast<void**>(&ec) == 0 );
+    }
+    {
+    QEasingCurve ec( QEasingCurve::InOutBack );
     QEasingCurve copy;
     const QEasingCurve::Type type = copy.type();
     copy = std::move(ec); // move assignment op

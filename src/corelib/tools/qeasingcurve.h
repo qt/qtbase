@@ -84,6 +84,7 @@ public:
 
     QEasingCurve &operator=(const QEasingCurve &other);
 #ifdef Q_COMPILER_RVALUE_REFS
+    QEasingCurve(QEasingCurve &&other) : d_ptr(other.d_ptr) { other.d_ptr = 0; }
     QEasingCurve &operator=(QEasingCurve &&other)
     { qSwap(d_ptr, other.d_ptr); return *this; }
 #endif
