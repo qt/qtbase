@@ -174,7 +174,7 @@ void tst_qmetaobject::indexOfMethod_data()
     const QMetaObject *mo = &QTreeView::staticMetaObject;
     for (int i = 0; i < mo->methodCount(); ++i) {
         QMetaMethod method = mo->method(i);
-        QByteArray sig = method.signature();
+        QByteArray sig = method.methodSignature();
         QTest::newRow(sig) << sig;
     }
 }
@@ -197,7 +197,7 @@ void tst_qmetaobject::indexOfSignal_data()
         QMetaMethod method = mo->method(i);
         if (method.methodType() != QMetaMethod::Signal)
             continue;
-        QByteArray sig = method.signature();
+        QByteArray sig = method.methodSignature();
         QTest::newRow(sig) << sig;
     }
 }
@@ -220,7 +220,7 @@ void tst_qmetaobject::indexOfSlot_data()
         QMetaMethod method = mo->method(i);
         if (method.methodType() != QMetaMethod::Slot)
             continue;
-        QByteArray sig = method.signature();
+        QByteArray sig = method.methodSignature();
         QTest::newRow(sig) << sig;
     }
 }

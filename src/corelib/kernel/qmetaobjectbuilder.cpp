@@ -458,13 +458,13 @@ QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QMetaMethod& prototype)
 {
     QMetaMethodBuilder method;
     if (prototype.methodType() == QMetaMethod::Method)
-        method = addMethod(prototype.signature());
+        method = addMethod(prototype.methodSignature());
     else if (prototype.methodType() == QMetaMethod::Signal)
-        method = addSignal(prototype.signature());
+        method = addSignal(prototype.methodSignature());
     else if (prototype.methodType() == QMetaMethod::Slot)
-        method = addSlot(prototype.signature());
+        method = addSlot(prototype.methodSignature());
     else if (prototype.methodType() == QMetaMethod::Constructor)
-        method = addConstructor(prototype.signature());
+        method = addConstructor(prototype.methodSignature());
     method.setReturnType(prototype.typeName());
     method.setParameterNames(prototype.parameterNames());
     method.setTag(prototype.tag());
@@ -535,7 +535,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QByteArray& signatur
 QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QMetaMethod& prototype)
 {
     Q_ASSERT(prototype.methodType() == QMetaMethod::Constructor);
-    QMetaMethodBuilder ctor = addConstructor(prototype.signature());
+    QMetaMethodBuilder ctor = addConstructor(prototype.methodSignature());
     ctor.setReturnType(prototype.typeName());
     ctor.setParameterNames(prototype.parameterNames());
     ctor.setTag(prototype.tag());
@@ -588,7 +588,7 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty& protot
     if (prototype.hasNotifySignal()) {
         // Find an existing method for the notify signal, or add a new one.
         QMetaMethod method = prototype.notifySignal();
-        int index = indexOfMethod(method.signature());
+        int index = indexOfMethod(method.methodSignature());
         if (index == -1)
             index = addMethod(method).index();
         d->properties[property._index].notifySignal = index;

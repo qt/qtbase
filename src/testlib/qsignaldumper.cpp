@@ -66,7 +66,7 @@ enum { IndentSpacesCount = 4 };
 
 static QByteArray memberName(const QMetaMethod &member)
 {
-    QByteArray ba = member.signature();
+    QByteArray ba = member.methodSignature();
     return ba.left(ba.indexOf('('));
 }
 
@@ -152,7 +152,7 @@ static void qSignalDumperCallbackSlot(QObject *caller, int method_index, void **
     str += QByteArray::number(quintptr(caller), 16);
 
     str += ") ";
-    str += member.signature();
+    str += member.methodSignature();
     qPrintMessage(str);
 }
 

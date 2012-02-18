@@ -1161,7 +1161,7 @@ bool tst_QMetaObjectBuilder::checkForSideEffects
 
 static bool sameMethod(const QMetaMethod& method1, const QMetaMethod& method2)
 {
-    if (QByteArray(method1.signature()) != QByteArray(method2.signature()))
+    if (method1.methodSignature() != method2.methodSignature())
         return false;
 
     if (QByteArray(method1.typeName()) != QByteArray(method2.typeName()))
@@ -1466,7 +1466,7 @@ void TestObject::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
             if (_a[0]) *reinterpret_cast<QObject**>(_a[0]) = _r; } break;
         default: {
             QMetaMethod ctor = _o->metaObject()->constructor(_id);
-            qFatal("You forgot to add a case for CreateInstance %s", ctor.signature());
+            qFatal("You forgot to add a case for CreateInstance %s", ctor.methodSignature().constData());
           }
         }
     } else if (_c == QMetaObject::InvokeMetaMethod) {
@@ -1478,7 +1478,7 @@ void TestObject::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 2: *reinterpret_cast<QVariantList(*)>(_a[0]) = _t->listInvokableQRealQString(*reinterpret_cast<qreal(*)>(_a[1]), *reinterpret_cast<QString(*)>(_a[2])); break;
         default: {
             QMetaMethod method = _o->metaObject()->method(_o->metaObject()->methodOffset() + _id);
-            qFatal("You forgot to add a case for InvokeMetaMethod %s", method.signature());
+            qFatal("You forgot to add a case for InvokeMetaMethod %s", method.methodSignature().constData());
           }
         }
     } else if (_c == QMetaObject::IndexOfMethod) {

@@ -397,7 +397,7 @@ void tst_QDBusMetaObject::types()
     for (int i = metaobject->methodOffset(); i < metaobject->methodCount(); ++i) {
         QMetaMethod expected = metaobject->method(i);
 
-        int methodIdx = result->indexOfMethod(expected.signature());
+        int methodIdx = result->indexOfMethod(expected.methodSignature().constData());
         QVERIFY(methodIdx != -1);
         QMetaMethod constructed = result->method(methodIdx);
 

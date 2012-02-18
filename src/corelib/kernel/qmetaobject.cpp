@@ -157,6 +157,11 @@ static inline const QByteArrayData &stringData(const QMetaObject *mo, int index)
     return data;
 }
 
+static inline QByteArray toByteArray(const QByteArrayData &d)
+{
+    return QByteArray(reinterpret_cast<const QStaticByteArrayData<0> &>(d));
+}
+
 static inline const char *legacyString(const QMetaObject *mo, int index)
 {
     Q_ASSERT(priv(mo->d.data)->revision <= 6);
@@ -1268,7 +1273,7 @@ bool QMetaObject::invokeMethod(QObject *obj,
 
     \ingroup objectmodel
 
-    A QMetaMethod has a methodType(), a signature(), a list of
+    A QMetaMethod has a methodType(), a methodSignature(), a list of
     parameterTypes() and parameterNames(), a return typeName(), a
     tag(), and an access() specifier. You can use invoke() to invoke
     the method on an arbitrary QObject.
@@ -1314,22 +1319,24 @@ bool QMetaObject::invokeMethod(QObject *obj,
 */
 
 /*!
+    \since 5.0
+
     Returns the signature of this method (e.g.,
     \c{setValue(double)}).
 
     \sa parameterTypes(), parameterNames()
 */
-const char *QMetaMethod::signature() const
+QByteArray QMetaMethod::methodSignature() const
 {
     if (!mobj)
-        return 0;
-    return rawStringData(mobj, mobj->d.data[handle]);
+        return QByteArray();
+    return toByteArray(stringData(mobj, mobj->d.data[handle]));
 }
 
 /*!
     Returns a list of parameter types.
 
-    \sa parameterNames(), signature()
+    \sa parameterNames(), methodSignature()
 */
 QList<QByteArray> QMetaMethod::parameterTypes() const
 {
@@ -1342,7 +1349,7 @@ QList<QByteArray> QMetaMethod::parameterTypes() const
 /*!
     Returns a list of parameter names.
 
-    \sa parameterTypes(), signature()
+    \sa parameterTypes(), methodSignature()
 */
 QList<QByteArray> QMetaMethod::parameterNames() const
 {

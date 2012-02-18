@@ -126,7 +126,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
     // now add methods:
     for (int i = methodOffset; i < mo->methodCount(); ++i) {
         QMetaMethod mm = mo->method(i);
-        QByteArray signature = mm.signature();
+        QByteArray signature = mm.methodSignature();
         int paren = signature.indexOf('(');
 
         bool isSignal;

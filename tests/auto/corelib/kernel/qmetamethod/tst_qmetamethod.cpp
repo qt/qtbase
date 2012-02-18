@@ -603,7 +603,7 @@ void tst_QMetaMethod::method()
     QCOMPARE(method.methodType(), methodType);
     QCOMPARE(method.access(), access);
 
-    QCOMPARE(method.signature(), signature.constData());
+    QCOMPARE(method.methodSignature(), signature);
 
     QCOMPARE(method.tag(), "");
 

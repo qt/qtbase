@@ -640,7 +640,7 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
             continue;
 
         // check name:
-        QByteArray slotname = mm.signature();
+        QByteArray slotname = mm.methodSignature();
         int paren = slotname.indexOf('(');
         if (paren != name.length() || !slotname.startsWith(name))
             continue;
@@ -1188,7 +1188,7 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
     QString interface = qDBusInterfaceFromMetaObject(mo);
 
     QMetaMethod mm = mo->method(signalId);
-    QByteArray memberName = mm.signature();
+    QByteArray memberName = mm.methodSignature();
     memberName.truncate(memberName.indexOf('('));
 
     // check if it's scriptable

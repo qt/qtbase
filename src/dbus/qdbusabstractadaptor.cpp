@@ -181,7 +181,7 @@ void QDBusAbstractAdaptor::setAutoRelaySignals(bool enable)
             continue;
 
         // try to connect/disconnect to a signal on the parent that has the same method signature
-        QByteArray sig = QMetaObject::normalizedSignature(mm.signature());
+        QByteArray sig = QMetaObject::normalizedSignature(mm.methodSignature().constData());
         if (them->indexOfSignal(sig) == -1)
             continue;
         sig.prepend(QSIGNAL_CODE + '0');
@@ -307,7 +307,7 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
         // invalid signal signature
         // qDBusParametersForMethod has not yet complained about this one
         qWarning("QDBusAbstractAdaptor: Cannot relay signal %s::%s",
-                 senderMetaObject->className(), mm.signature());
+                 senderMetaObject->className(), mm.methodSignature().constData());
         return;
     }
 

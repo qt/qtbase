@@ -446,7 +446,7 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
 
         for (int i = staticMetaObject.methodCount(); i < mo->methodCount(); ++i) {
             QMetaMethod mm = mo->method(i);
-            if (QByteArray(mm.signature()).startsWith(match)) {
+            if (mm.methodSignature().startsWith(match)) {
                 // found a method with the same name as what we're looking for
                 // hopefully, nobody is overloading asynchronous and synchronous methods with
                 // the same name

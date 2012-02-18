@@ -57,7 +57,7 @@ class Q_CORE_EXPORT QMetaMethod
 public:
     inline QMetaMethod() : mobj(0),handle(0) {}
 
-    const char *signature() const;
+    QByteArray methodSignature() const;
     const char *typeName() const;
     QList<QByteArray> parameterTypes() const;
     QList<QByteArray> parameterNames() const;
@@ -137,6 +137,13 @@ public:
     inline bool isValid() const { return mobj != 0; }
 
 private:
+#if QT_DEPRECATED_SINCE(5,0)
+    // signature() has been renamed to methodSignature() in Qt 5.
+    // Warning, that function returns a QByteArray; check the life time if
+    // you convert to char*.
+    char *signature(struct renamedInQt5_warning_checkTheLifeTime * = 0) Q_DECL_EQ_DELETE;
+#endif
+
     const QMetaObject *mobj;
     uint handle;
     friend struct QMetaObject;
