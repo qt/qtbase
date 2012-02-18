@@ -28,6 +28,7 @@ include(plugin/plugin.pri)
 include(kernel/kernel.pri)
 include(codecs/codecs.pri)
 include(statemachine/statemachine.pri)
+include(mimetypes/mimetypes.pri)
 include(xml/xml.pri)
 
 mac|darwin {

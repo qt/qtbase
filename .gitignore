@@ -112,6 +112,8 @@ tests/auto/qmake/testdata/quotedfilenames/*.exe
 tests/auto/compilerwarnings/*.exe
 tests/auto/qmake/testdata/quotedfilenames/test.cpp
 tests/auto/qprocess/fileWriterProcess.txt
+tests/auto/corelib/mimetypes/qmimedatabase/qmimedatabase-cache/mime/
+tests/auto/corelib/mimetypes/qmimedatabase/qmimedatabase-xml/mime/
 .com.apple.timemachine.supported
 tests/auto/qlibrary/libmylib.so*
 tests/auto/qresourceengine/runtime_resource.rcc

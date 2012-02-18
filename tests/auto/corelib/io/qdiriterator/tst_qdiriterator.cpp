@@ -403,8 +403,11 @@ void tst_QDirIterator::iterateResource()
 
     QDirIterator it(dirName, nameFilters, filters, flags);
     QStringList list;
-    while (it.hasNext())
-        list << it.next();
+    while (it.hasNext()) {
+        const QString dir = it.next();
+        if (!dir.startsWith(":/qt-project.org"))
+            list << dir;
+    }
 
     list.sort();
     QStringList sortedEntries = entries;
