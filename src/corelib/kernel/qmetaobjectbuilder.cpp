@@ -1073,32 +1073,77 @@ int QMetaObjectBuilder::indexOfClassInfo(const QByteArray& name)
 class MetaStringTable
 {
 public:
-    typedef QHash<QByteArray, int> Entries; // string --> offset mapping
-    typedef Entries::const_iterator const_iterator;
-    Entries::const_iterator constBegin() const
-    { return m_entries.constBegin(); }
-    Entries::const_iterator constEnd() const
-    { return m_entries.constEnd(); }
+    MetaStringTable() : m_index(0) {}
 
-    MetaStringTable() : m_offset(0) {}
+    int enter(const QByteArray &value);
 
-    int enter(const QByteArray &value)
-    {
-        Entries::iterator it = m_entries.find(value);
-        if (it != m_entries.end())
-            return it.value();
-        int pos = m_offset;
-        m_entries.insert(value, pos);
-        m_offset += value.size() + 1;
-        return pos;
-    }
-
-    int arraySize() const { return m_offset; }
+    static int preferredAlignment();
+    int blobSize() const;
+    void writeBlob(char *out);
 
 private:
+    typedef QHash<QByteArray, int> Entries; // string --> index mapping
     Entries m_entries;
-    int m_offset;
+    int m_index;
 };
+
+// Enters the given value into the string table (if it hasn't already been
+// entered). Returns the index of the string.
+int MetaStringTable::enter(const QByteArray &value)
+{
+    Entries::iterator it = m_entries.find(value);
+    if (it != m_entries.end())
+        return it.value();
+    int pos = m_index;
+    m_entries.insert(value, pos);
+    ++m_index;
+    return pos;
+}
+
+int MetaStringTable::preferredAlignment()
+{
+#ifdef Q_ALIGNOF
+    return Q_ALIGNOF(QByteArrayData);
+#else
+    return sizeof(void *);
+#endif
+}
+
+// Returns the size (in bytes) required for serializing this string table.
+int MetaStringTable::blobSize() const
+{
+    int size = m_entries.size() * sizeof(QByteArrayData);
+    Entries::const_iterator it;
+    for (it = m_entries.constBegin(); it != m_entries.constEnd(); ++it)
+        size += it.key().size() + 1;
+    return size;
+}
+
+// Writes strings to string data struct.
+// The struct consists of an array of QByteArrayData, followed by a char array
+// containing the actual strings. This format must match the one produced by
+// moc (see generator.cpp).
+void MetaStringTable::writeBlob(char *out)
+{
+    Q_ASSERT(!(reinterpret_cast<quintptr>(out) & (preferredAlignment()-1)));
+
+    int offsetOfStringdataMember = m_entries.size() * sizeof(QByteArrayData);
+    int stringdataOffset = 0;
+    for (int i = 0; i < m_entries.size(); ++i) {
+        const QByteArray &str = m_entries.key(i);
+        int size = str.size();
+        qptrdiff offset = offsetOfStringdataMember + stringdataOffset
+                - i * sizeof(QByteArrayData);
+        const QByteArrayData data = { Q_REFCOUNT_INITIALIZE_STATIC, size, 0, 0, offset };
+
+        memcpy(out + i * sizeof(QByteArrayData), &data, sizeof(QByteArrayData));
+
+        memcpy(out + offsetOfStringdataMember + stringdataOffset, str.constData(), size);
+        out[offsetOfStringdataMember + stringdataOffset + size] = '\0';
+
+        stringdataOffset += size + 1;
+    }
+}
 
 // Build the parameter array string for a method.
 static QByteArray buildParameterNames
@@ -1182,7 +1227,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         }
     }
     if (buf) {
-        Q_STATIC_ASSERT_X(QMetaObjectPrivate::OutputRevision == 6, "QMetaObjectBuilder should generate the same version as moc");
+        Q_STATIC_ASSERT_X(QMetaObjectPrivate::OutputRevision == 7, "QMetaObjectBuilder should generate the same version as moc");
         pmeta->revision = QMetaObjectPrivate::OutputRevision;
         pmeta->flags = d->flags;
         pmeta->className = 0;   // Class name is always the first string.
@@ -1240,13 +1285,14 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     // Find the start of the data and string tables.
     int *data = reinterpret_cast<int *>(pmeta);
     size += dataIndex * sizeof(int);
+    ALIGN(size, void *);
     char *str = reinterpret_cast<char *>(buf + size);
     if (buf) {
         if (relocatable) {
-            meta->d.stringdata = reinterpret_cast<const char *>((quintptr)size);
+            meta->d.stringdata = reinterpret_cast<const QByteArrayData *>((quintptr)size);
             meta->d.data = reinterpret_cast<uint *>((quintptr)pmetaSize);
         } else {
-            meta->d.stringdata = str;
+            meta->d.stringdata = reinterpret_cast<const QByteArrayData *>(str);
             meta->d.data = reinterpret_cast<uint *>(data);
         }
     }
@@ -1390,16 +1436,10 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         dataIndex += 5;
     }
 
-    size += strings.arraySize();
+    size += strings.blobSize();
 
-    if (buf) {
-        // Write strings to string data array.
-        MetaStringTable::const_iterator it;
-        for (it = strings.constBegin(); it != strings.constEnd(); ++it) {
-            memcpy(str + it.value(), it.key().constData(), it.key().size());
-            str[it.value() + it.key().size()] = '\0';
-        }
-    }
+    if (buf)
+        strings.writeBlob(str);
 
     // Output the zero terminator in the data array.
     if (buf)
@@ -1508,7 +1548,7 @@ void QMetaObjectBuilder::fromRelocatableData(QMetaObject *output,
     quintptr dataOffset = (quintptr)dataMo->d.data;
 
     output->d.superdata = superclass;
-    output->d.stringdata = buf + stringdataOffset;
+    output->d.stringdata = reinterpret_cast<const QByteArrayData *>(buf + stringdataOffset);
     output->d.data = reinterpret_cast<const uint *>(buf + dataOffset);
     output->d.extradata = 0;
 }
