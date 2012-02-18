@@ -83,6 +83,10 @@ public:
     ~QEasingCurve();
 
     QEasingCurve &operator=(const QEasingCurve &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QEasingCurve &operator=(QEasingCurve &&other)
+    { qSwap(d_ptr, other.d_ptr); return *this; }
+#endif
 
     inline void swap(QEasingCurve &other) { qSwap(d_ptr, other.d_ptr); }
 

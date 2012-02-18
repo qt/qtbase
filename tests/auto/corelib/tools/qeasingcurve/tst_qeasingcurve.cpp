@@ -43,6 +43,10 @@
 
 #include <qeasingcurve.h>
 
+#ifdef Q_COMPILER_RVALUE_REFS // cpp11() slot
+# include <utility> // for std::move()
+#endif
+
 class tst_QEasingCurve : public QObject
 {
     Q_OBJECT
@@ -61,6 +65,7 @@ private slots:
     void tcbSpline();
     void testCbrtDouble();
     void testCbrtFloat();
+    void cpp11();
 };
 
 void tst_QEasingCurve::type()
@@ -768,6 +773,20 @@ void tst_QEasingCurve::testCbrtFloat()
 
         QVERIFY(error < errorBound);
     }
+}
+
+void tst_QEasingCurve::cpp11()
+{
+#ifdef Q_COMPILER_RVALUE_REFS
+    {
+    QEasingCurve ec( QEasingCurve::InOutBack );
+    QEasingCurve copy;
+    const QEasingCurve::Type type = copy.type();
+    copy = std::move(ec); // move assignment op
+    QCOMPARE( copy.type(), QEasingCurve::InOutBack );
+    QCOMPARE( ec.type(), type );
+    }
+#endif
 }
 
 QTEST_MAIN(tst_QEasingCurve)
