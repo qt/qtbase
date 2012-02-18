@@ -57,6 +57,17 @@
 
 QT_BEGIN_NAMESPACE
 
+static int cachedRelaySlotMethodIndex = -1;
+
+int QDBusAdaptorConnector::relaySlotMethodIndex()
+{
+    if (cachedRelaySlotMethodIndex == -1) {
+        cachedRelaySlotMethodIndex = staticMetaObject.indexOfMethod("relaySlot()");
+        Q_ASSERT(cachedRelaySlotMethodIndex != -1);
+    }
+    return cachedRelaySlotMethodIndex;
+}
+
 QDBusAdaptorConnector *qDBusFindAdaptorConnector(QObject *obj)
 {
     if (!obj)
@@ -237,12 +248,12 @@ void QDBusAdaptorConnector::addAdaptor(QDBusAbstractAdaptor *adaptor)
 
 void QDBusAdaptorConnector::disconnectAllSignals(QObject *obj)
 {
-    QMetaObject::disconnect(obj, -1, this, metaObject()->methodOffset());
+    QMetaObject::disconnect(obj, -1, this, relaySlotMethodIndex());
 }
 
 void QDBusAdaptorConnector::connectAllSignals(QObject *obj)
 {
-    QMetaObject::connect(obj, -1, this, metaObject()->methodOffset(), Qt::DirectConnection);
+    QMetaObject::connect(obj, -1, this, relaySlotMethodIndex(), Qt::DirectConnection);
 }
 
 void QDBusAdaptorConnector::polish()
@@ -310,37 +321,58 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
 
 // our Meta Object
 // modify carefully: this has been hand-edited!
-// the relaySlot slot has local ID 0 (we use this when calling QMetaObject::connect)
-// it also gets called with the void** array
+// the relaySlot slot gets called with the void** array
 
 static const uint qt_meta_data_QDBusAdaptorConnector[] = {
+
  // content:
-       1,       // revision
+       6,       // revision
        0,       // classname
        0,    0, // classinfo
-       3,   10, // methods
+       3,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
-
- // slots: signature, parameters, type, tag, flags
-     106,   22,   22,   22, 0x0a,
-     118,   22,   22,   22, 0x0a,
+       0,    0, // constructors
+       0,       // flags
+       1,       // signalCount
 
  // signals: signature, parameters, type, tag, flags
       47,   23,   22,   22, 0x05,
+
+ // slots: signature, parameters, type, tag, flags
+     105,   22,   22,   22, 0x0a,
+     117,   22,   22,   22, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_QDBusAdaptorConnector[] = {
-    "QDBusAdaptorConnector\0\0obj,metaobject,sid,args\0"
-    "relaySignal(QObject*,const QMetaObject*,int,QVariantList)\0\0relaySlot()\0"
-    "polish()\0"
+    "QDBusAdaptorConnector\0\0obj,metaObject,sid,args\0"
+    "relaySignal(QObject*,const QMetaObject*,int,QVariantList)\0"
+    "relaySlot()\0polish()\0"
+};
+
+void QDBusAdaptorConnector::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        Q_ASSERT(staticMetaObject.cast(_o));
+        QDBusAdaptorConnector *_t = static_cast<QDBusAdaptorConnector *>(_o);
+        switch (_id) {
+        case 0: _t->relaySignal((*reinterpret_cast< QObject*(*)>(_a[1])),(*reinterpret_cast< const QMetaObject*(*)>(_a[2])),(*reinterpret_cast< int(*)>(_a[3])),(*reinterpret_cast< const QVariantList(*)>(_a[4]))); break;
+        case 1: _t->relaySlot(_a); break; // HAND EDIT: add the _a parameter
+        case 2: _t->polish(); break;
+        default: ;
+        }
+    }
+}
+
+const QMetaObjectExtraData QDBusAdaptorConnector::staticMetaObjectExtraData = {
+    0,  qt_static_metacall
 };
 
 const QMetaObject QDBusAdaptorConnector::staticMetaObject = {
     { &QObject::staticMetaObject, qt_meta_stringdata_QDBusAdaptorConnector,
-      qt_meta_data_QDBusAdaptorConnector, 0 }
+      qt_meta_data_QDBusAdaptorConnector, &staticMetaObjectExtraData }
 };
 
 const QMetaObject *QDBusAdaptorConnector::metaObject() const
@@ -352,7 +384,7 @@ void *QDBusAdaptorConnector::qt_metacast(const char *_clname)
 {
     if (!_clname) return 0;
     if (!strcmp(_clname, qt_meta_stringdata_QDBusAdaptorConnector))
-	return static_cast<void*>(const_cast<QDBusAdaptorConnector*>(this));
+        return static_cast<void*>(const_cast< QDBusAdaptorConnector*>(this));
     return QObject::qt_metacast(_clname);
 }
 
@@ -362,11 +394,8 @@ int QDBusAdaptorConnector::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        switch (_id) {
-        case 0: relaySlot(_a); break; // HAND EDIT: add the _a parameter
-        case 1: polish(); break;
-        case 2: relaySignal((*reinterpret_cast< QObject*(*)>(_a[1])),(*reinterpret_cast< const QMetaObject*(*)>(_a[2])),(*reinterpret_cast< int(*)>(_a[3])),(*reinterpret_cast< const QVariantList(*)>(_a[4]))); break;
-        }
+        if (_id < 3)
+            qt_static_metacall(this, _c, _id, _a);
         _id -= 3;
     }
     return _id;
@@ -376,7 +405,7 @@ int QDBusAdaptorConnector::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 void QDBusAdaptorConnector::relaySignal(QObject * _t1, const QMetaObject * _t2, int _t3, const QVariantList & _t4)
 {
     void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)), const_cast<void*>(reinterpret_cast<const void*>(&_t3)), const_cast<void*>(reinterpret_cast<const void*>(&_t4)) };
-    QMetaObject::activate(this, &staticMetaObject, 2, _a);
+    QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 
 QT_END_NAMESPACE
