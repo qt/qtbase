@@ -1116,6 +1116,13 @@ QEasingCurve &QEasingCurve::operator=(const QEasingCurve &other)
 }
 
 /*!
+    \fn void QEasingCurve::swap(QEasingCurve &other)
+    \since 5.0
+
+    Swaps curve \a other with this curve. This operation is very
+    fast and never fails.
+
+/*!
     Compare this easing curve with \a other and returns true if they are
     equal. It will also compare the properties of a curve.
  */

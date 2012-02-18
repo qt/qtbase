@@ -83,6 +83,9 @@ public:
     ~QEasingCurve();
 
     QEasingCurve &operator=(const QEasingCurve &other);
+
+    inline void swap(QEasingCurve &other) { qSwap(d_ptr, other.d_ptr); }
+
     bool operator==(const QEasingCurve &other) const;
     inline bool operator!=(const QEasingCurve &other) const
     { return !(this->operator==(other)); }

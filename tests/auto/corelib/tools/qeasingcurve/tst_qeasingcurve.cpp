@@ -445,6 +445,13 @@ void tst_QEasingCurve::setCustomType()
 
 void tst_QEasingCurve::operators()
 {
+    { // member-swap()
+        QEasingCurve ec1, ec2;
+        ec2.setCustomType(&discreteEase);
+        ec1.swap(ec2);
+        QCOMPARE(ec1.type(), QEasingCurve::Custom);
+    }
+
     // operator=
     QEasingCurve curve;
     QEasingCurve curve2;
