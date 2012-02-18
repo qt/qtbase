@@ -56,6 +56,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qdatastream.h>
+#include <QtCore/qhash.h>
 #include <QtCore/qmap.h>
 
 
@@ -317,6 +318,23 @@ private:
         : _mobj(mobj), _index(index) {}
 
     QMetaEnumBuilderPrivate *d_func() const;
+};
+
+class Q_CORE_EXPORT QMetaStringTable
+{
+public:
+    QMetaStringTable();
+
+    int enter(const QByteArray &value);
+
+    static int preferredAlignment();
+    int blobSize() const;
+    void writeBlob(char *out);
+
+private:
+    typedef QHash<QByteArray, int> Entries; // string --> index mapping
+    Entries m_entries;
+    int m_index;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMetaObjectBuilder::AddMembers)

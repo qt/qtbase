@@ -1075,26 +1075,18 @@ int QMetaObjectBuilder::indexOfClassInfo(const QByteArray& name)
 #define ALIGN(size,type)    \
     (size) = ((size) + sizeof(type) - 1) & ~(sizeof(type) - 1)
 
-class MetaStringTable
-{
-public:
-    MetaStringTable() : m_index(0) {}
+/*!
+    \class QMetaStringTable
+    \internal
+    \brief The QMetaStringTable class can generate a meta-object string table at runtime.
+*/
 
-    int enter(const QByteArray &value);
-
-    static int preferredAlignment();
-    int blobSize() const;
-    void writeBlob(char *out);
-
-private:
-    typedef QHash<QByteArray, int> Entries; // string --> index mapping
-    Entries m_entries;
-    int m_index;
-};
+QMetaStringTable::QMetaStringTable()
+    : m_index(0) {}
 
 // Enters the given value into the string table (if it hasn't already been
 // entered). Returns the index of the string.
-int MetaStringTable::enter(const QByteArray &value)
+int QMetaStringTable::enter(const QByteArray &value)
 {
     Entries::iterator it = m_entries.find(value);
     if (it != m_entries.end())
@@ -1105,7 +1097,7 @@ int MetaStringTable::enter(const QByteArray &value)
     return pos;
 }
 
-int MetaStringTable::preferredAlignment()
+int QMetaStringTable::preferredAlignment()
 {
 #ifdef Q_ALIGNOF
     return Q_ALIGNOF(QByteArrayData);
@@ -1115,7 +1107,7 @@ int MetaStringTable::preferredAlignment()
 }
 
 // Returns the size (in bytes) required for serializing this string table.
-int MetaStringTable::blobSize() const
+int QMetaStringTable::blobSize() const
 {
     int size = m_entries.size() * sizeof(QByteArrayData);
     Entries::const_iterator it;
@@ -1128,7 +1120,7 @@ int MetaStringTable::blobSize() const
 // The struct consists of an array of QByteArrayData, followed by a char array
 // containing the actual strings. This format must match the one produced by
 // moc (see generator.cpp).
-void MetaStringTable::writeBlob(char *out)
+void QMetaStringTable::writeBlob(char *out)
 {
     Q_ASSERT(!(reinterpret_cast<quintptr>(out) & (preferredAlignment()-1)));
 
@@ -1305,7 +1297,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     // Reset the current data position to just past the QMetaObjectPrivate.
     dataIndex = MetaObjectPrivateFieldCount;
 
-    MetaStringTable strings;
+    QMetaStringTable strings;
     strings.enter(d->className);
 
     // Output the class infos,
