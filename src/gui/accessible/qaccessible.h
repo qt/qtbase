@@ -389,7 +389,6 @@ public:
     virtual QAccessibleInterface *child(int index) const = 0;
     virtual int childCount() const = 0;
     virtual int indexOfChild(const QAccessibleInterface *) const = 0;
-    virtual int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
 
     // properties and state
     virtual QString text(QAccessible::Text t) const = 0;

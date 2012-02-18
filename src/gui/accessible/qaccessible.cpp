@@ -380,8 +380,6 @@ QT_BEGIN_NAMESPACE
 
     Implementations of relationTo() return a combination of these flags.
     Some values are mutually exclusive.
-
-    Implementations of navigate() can accept only one distinct value.
 */
 
 /*!
@@ -782,9 +780,8 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
     under the mouse).
 
     The relationTo() function provides information about how two
-    different objects relate to each other, and navigate() allows
-    traversing from one object to another object with a given
-    relationship.
+    different objects relate to each other, and parent() and child() allows
+    traversing from one object to another object.
 
     \section1 Properties
 
@@ -890,7 +887,7 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
 
     All objects provide this information.
 
-    \sa relations(), indexOfChild(), navigate()
+    \sa relations(), indexOfChild(), parent(), child()
 */
 QAccessible::Relation QAccessibleInterface::relationTo(const QAccessibleInterface *) const
 {
@@ -903,7 +900,7 @@ QAccessible::Relation QAccessibleInterface::relationTo(const QAccessibleInterfac
     It will typically return the labelled-by and label relations.
     It should never return itself.
 
-    \sa relationTo(), navigate()
+    \sa relationTo(), parent(), child()
 */
 QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
 QAccessibleInterface::relations(QAccessible::Relation /*match = QAccessible::AllRelations*/) const
@@ -960,57 +957,6 @@ QAccessibleInterface *QAccessibleInterface::focusChild() const
 
     \sa childCount(), parent()
 */
-
-/*!
-    \fn int QAccessibleInterface::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-
-    Navigates from this object to an object that has a relationship
-    \a relation to this object, and returns the respective object in
-    \a target. It is the caller's responsibility to delete *\a target
-    after use.
-
-    If an object is found, \a target is set to point to the object, and
-    the index of the child of \a target is returned. The return value
-    is 0 if \a target itself is the requested object. \a target is set
-    to null if this object is the target object (i.e. the requested
-    object is a handled by this object).
-
-    If no object is found \a target is set to null, and the return
-    value is -1.
-
-    The \a entry parameter has two different meanings:
-    \list
-    \i \e{Hierarchical and Logical relationships} -- if multiple objects with
-    the requested relationship exist \a entry specifies which one to
-    return. \a entry is 1-based, e.g. use 1 to get the first (and
-    possibly only) object with the requested relationship.
-
-    The following code demonstrates how to use this function to
-    navigate to the first child of an object:
-
-    \snippet doc/src/snippets/code/src_gui_accessible_qaccessible.cpp 0
-
-    \i \e{Geometric relationships} -- the index of the child from
-    which to start navigating in the specified direction. \a entry
-    can be 0 to navigate to a sibling of this object, or non-null to
-    navigate within contained children that don't provide their own
-    accessible information.
-    \endlist
-
-    Note that the \c Descendent value for \a relation is not supported.
-
-    All objects support navigation.
-
-    \sa relationTo(), childCount(), parent(), child()
-*/
-int QAccessibleInterface::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    Q_UNUSED(entry);
-    Q_UNUSED(relation);
-    *target = 0;
-    return -1;
-}
-
 
 /*!
     \fn QString QAccessibleInterface::text(QAccessible::Text t) const
