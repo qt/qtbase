@@ -54,6 +54,7 @@
 #include "qdbusabstractinterface_p.h"
 
 #include <private/qmetaobject_p.h>
+#include <private/qmetaobjectbuilder_p.h>
 
 #ifndef QT_NO_DBUS
 
@@ -355,36 +356,6 @@ void QDBusMetaObjectGenerator::parseProperties()
 
 void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
 {
-    class MetaStringTable
-    {
-    public:
-        typedef QHash<QByteArray, int> Entries; // string --> offset mapping
-        typedef Entries::const_iterator const_iterator;
-        Entries::const_iterator constBegin() const
-        { return m_entries.constBegin(); }
-        Entries::const_iterator constEnd() const
-        { return m_entries.constEnd(); }
-
-        MetaStringTable() : m_offset(0) {}
-
-        int enter(const QByteArray &value)
-        {
-            Entries::iterator it = m_entries.find(value);
-            if (it != m_entries.end())
-                return it.value();
-            int pos = m_offset;
-            m_entries.insert(value, pos);
-            m_offset += value.size() + 1;
-            return pos;
-        }
-
-        int arraySize() const { return m_offset; }
-
-    private:
-        Entries m_entries;
-        int m_offset;
-    };
-
     // this code here is mostly copied from qaxbase.cpp
     // with a few modifications to make it cleaner
 
@@ -397,7 +368,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     idata.resize(sizeof(QDBusMetaObjectPrivate) / sizeof(int));
 
     QDBusMetaObjectPrivate *header = reinterpret_cast<QDBusMetaObjectPrivate *>(idata.data());
-    Q_STATIC_ASSERT_X(QMetaObjectPrivate::OutputRevision == 6, "QtDBus meta-object generator should generate the same version as moc");
+    Q_STATIC_ASSERT_X(QMetaObjectPrivate::OutputRevision == 7, "QtDBus meta-object generator should generate the same version as moc");
     header->revision = QMetaObjectPrivate::OutputRevision;
     header->className = 0;
     header->classInfoCount = 0;
@@ -425,7 +396,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
         data_size += 2 + mm.inputTypes.count() + mm.outputTypes.count();
     idata.resize(data_size + 1);
 
-    MetaStringTable strings;
+    QMetaStringTable strings;
     strings.enter(className.toLatin1());
 
     int offset = header->methodData;
@@ -484,14 +455,8 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     Q_ASSERT(offset == header->propertyDBusData);
     Q_ASSERT(signatureOffset == header->methodDBusData);
 
-    char *string_data = new char[strings.arraySize()];
-    {
-        MetaStringTable::const_iterator it;
-        for (it = strings.constBegin(); it != strings.constEnd(); ++it) {
-            memcpy(string_data + it.value(), it.key().constData(), it.key().size());
-            string_data[it.value() + it.key().size()] = '\0';
-        }
-    }
+    char *string_data = new char[strings.blobSize()];
+    strings.writeBlob(string_data);
 
     uint *uint_data = new uint[idata.size()];
     memcpy(uint_data, idata.data(), idata.size() * sizeof(int));
@@ -499,7 +464,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     // put the metaobject together
     obj->d.data = uint_data;
     obj->d.extradata = 0;
-    obj->d.stringdata = string_data;
+    obj->d.stringdata = reinterpret_cast<const QByteArrayData *>(string_data);
     obj->d.superdata = &QDBusAbstractInterface::staticMetaObject;
 }
 
@@ -618,7 +583,7 @@ const char *QDBusMetaObject::dbusNameForMethod(int id) const
     //id -= methodOffset();
     if (id >= 0 && id < priv(d.data)->methodCount) {
         int handle = priv(d.data)->methodDBusData + id*intsPerMethod;
-        return d.stringdata + d.data[handle];
+        return QMetaObjectPrivate::rawStringData(this, d.data[handle]);
     }
     return 0;
 }

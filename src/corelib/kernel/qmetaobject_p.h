@@ -180,7 +180,7 @@ struct QMetaObjectPrivate
     static inline const QMetaObjectPrivate *get(const QMetaObject *metaobject)
     { return reinterpret_cast<const QMetaObjectPrivate*>(metaobject->d.data); }
 
-    static const char *rawStringData(const QMetaObject *mo, int index);
+    Q_CORE_EXPORT static const char *rawStringData(const QMetaObject *mo, int index);
 
     static int indexOfSignalRelative(const QMetaObject **baseObject,
                                      const char* name,
