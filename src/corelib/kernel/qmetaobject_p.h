@@ -105,6 +105,59 @@ enum MetaObjectFlags {
     RequiresVariantMetaObject = 0x02
 };
 
+enum MetaDataFlags {
+    IsUnresolvedType = 0x80000000,
+    TypeNameIndexMask = 0x7FFFFFFF
+};
+
+class QArgumentType
+{
+public:
+    QArgumentType(int type)
+        : _type(type)
+    {}
+    QArgumentType(const QByteArray &name)
+        : _type(QMetaType::type(name.constData())), _name(name)
+    {}
+    QArgumentType()
+        : _type(0)
+    {}
+    int type() const
+    { return _type; }
+    QByteArray name() const
+    {
+        if (_type && _name.isEmpty())
+            const_cast<QArgumentType *>(this)->_name = QMetaType::typeName(_type);
+        return _name;
+    }
+    bool operator==(const QArgumentType &other) const
+    {
+        if (_type)
+            return _type == other._type;
+        else if (other._type)
+            return false;
+        else
+            return _name == other._name;
+    }
+    bool operator!=(const QArgumentType &other) const
+    {
+        if (_type)
+            return _type != other._type;
+        else if (other._type)
+            return true;
+        else
+            return _name != other._name;
+    }
+
+private:
+    int _type;
+    QByteArray _name;
+};
+
+template <class T, int> class QVarLengthArray;
+typedef QVarLengthArray<QArgumentType, 10> QArgumentTypeArray;
+
+class QMetaMethodPrivate;
 class QMutex;
 
 struct QMetaObjectPrivate
@@ -136,6 +189,27 @@ struct QMetaObjectPrivate
                            const char *slot,
                            bool normalizeStringData);
     static int originalClone(const QMetaObject *obj, int local_method_index);
+
+    static QByteArray decodeMethodSignature(const char *signature,
+                                            QArgumentTypeArray &types);
+    static int indexOfSignalRelative(const QMetaObject **baseObject,
+                                     const QByteArray &name, int argc,
+                                     const QArgumentType *types);
+    static int indexOfSlotRelative(const QMetaObject **m,
+                                   const QByteArray &name, int argc,
+                                   const QArgumentType *types);
+    static int indexOfSignal(const QMetaObject *m, const QByteArray &name,
+                             int argc, const QArgumentType *types);
+    static int indexOfSlot(const QMetaObject *m, const QByteArray &name,
+                           int argc, const QArgumentType *types);
+    static int indexOfMethod(const QMetaObject *m, const QByteArray &name,
+                             int argc, const QArgumentType *types);
+    static int indexOfConstructor(const QMetaObject *m, const QByteArray &name,
+                                  int argc, const QArgumentType *types);
+    static bool checkConnectArgs(int signalArgc, const QArgumentType *signalTypes,
+                                 int methodArgc, const QArgumentType *methodTypes);
+    static bool checkConnectArgs(const QMetaMethodPrivate *signal,
+                                 const QMetaMethodPrivate *method);
 
     static QList<QByteArray> parameterTypeNamesFromSignature(const char *signature);
 

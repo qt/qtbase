@@ -58,7 +58,12 @@ public:
     inline QMetaMethod() : mobj(0),handle(0) {}
 
     QByteArray methodSignature() const;
+    QByteArray name() const;
     const char *typeName() const;
+    int returnType() const;
+    int parameterCount() const;
+    int parameterType(int index) const;
+    void getParameterTypes(int *types) const;
     QList<QByteArray> parameterTypes() const;
     QList<QByteArray> parameterNames() const;
     const char *tag() const;
@@ -146,6 +151,7 @@ private:
 
     const QMetaObject *mobj;
     uint handle;
+    friend class QMetaMethodPrivate;
     friend struct QMetaObject;
     friend struct QMetaObjectPrivate;
     friend class QObject;

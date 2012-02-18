@@ -819,8 +819,7 @@ void Moc::generate(FILE *out)
         fprintf(out, "#include <QtCore/qobject.h>\n");
 
     fprintf(out, "#include <QtCore/qbytearray.h>\n"); // For QByteArrayData
-    if (mustIncludeQMetaTypeH)
-        fprintf(out, "#include <QtCore/qmetatype.h>\n");
+    fprintf(out, "#include <QtCore/qmetatype.h>\n");  // For QMetaType::Type
     if (mustIncludeQPluginH)
         fprintf(out, "#include <QtCore/qplugin.h>\n");
 
@@ -977,8 +976,6 @@ void Moc::createPropertyDef(PropertyDef &propDef)
         type = "qlonglong";
     else if (type == "ULongLong")
         type = "qulonglong";
-    else if (type == "qreal")
-        mustIncludeQMetaTypeH = true;
 
     propDef.type = type;
 

@@ -54,7 +54,7 @@
 
 QT_BEGIN_NAMESPACE
 
-uint qvariant_nameToType(const QByteArray &name)
+uint nameToBuiltinType(const QByteArray &name)
 {
     if (name.isEmpty())
         return 0;
@@ -64,20 +64,27 @@ uint qvariant_nameToType(const QByteArray &name)
 }
 
 /*
-  Returns true if the type is a QVariant types.
+  Returns true if the type is a built-in type.
 */
-bool isVariantType(const QByteArray &type)
-{
-    return qvariant_nameToType(type) != 0;
+bool isBuiltinType(const QByteArray &type)
+ {
+    int id = QMetaType::type(type.constData());
+    if (!id && !type.isEmpty() && type != "void")
+        return false;
+    return (id < QMetaType::User);
 }
 
-/*!
-  Returns true if the type is qreal.
-*/
-static bool isQRealType(const QByteArray &type)
-{
-    return (type == "qreal");
-}
+static const char *metaTypeEnumValueString(int type)
+ {
+#define RETURN_METATYPENAME_STRING(MetaTypeName, MetaTypeId, RealType) \
+    case QMetaType::MetaTypeName: return #MetaTypeName;
+
+    switch (type) {
+QT_FOR_EACH_STATIC_TYPE(RETURN_METATYPENAME_STRING)
+    }
+#undef RETURN_METATYPENAME_STRING
+    return 0;
+ }
 
 Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, FILE *outfile)
     : out(outfile), cdef(classDef), metaTypes(metaTypes)
@@ -120,6 +127,17 @@ int Generator::stridx(const QByteArray &s)
     int i = strings.indexOf(s);
     Q_ASSERT_X(i != -1, Q_FUNC_INFO, "We forgot to register some strings");
     return i;
+}
+
+// Returns the sum of all parameters (including return type) for the given
+// \a list of methods. This is needed for calculating the size of the methods'
+// parameter type/name meta-data.
+static int aggregateParameterCount(const QList<FunctionDef> &list)
+{
+    int sum = 0;
+    for (int i = 0; i < list.count(); ++i)
+        sum += list.at(i).arguments.count() + 1; // +1 for return type
+    return sum;
 }
 
 void Generator::generateCode()
@@ -266,6 +284,15 @@ void Generator::generateCode()
     index += methodCount * 5;
     if (cdef->revisionedMethods)
         index += methodCount;
+    int paramsIndex = index;
+    int totalParameterCount = aggregateParameterCount(cdef->signalList)
+            + aggregateParameterCount(cdef->slotList)
+            + aggregateParameterCount(cdef->methodList)
+            + aggregateParameterCount(cdef->constructorList);
+    index += totalParameterCount * 2 // types and parameter names
+            - methodCount // return "parameters" don't have names
+            - cdef->constructorList.count(); // "this" parameters don't have names
+
     fprintf(out, "    %4d, %4d, // properties\n", cdef->propertyList.count(), cdef->propertyList.count() ? index : 0);
     index += cdef->propertyList.count() * 3;
     if(cdef->notifyableProperties)
@@ -292,17 +319,17 @@ void Generator::generateCode()
 //
 // Build signals array first, otherwise the signal indices would be wrong
 //
-    generateFunctions(cdef->signalList, "signal", MethodSignal);
+    generateFunctions(cdef->signalList, "signal", MethodSignal, paramsIndex);
 
 //
 // Build slots array
 //
-    generateFunctions(cdef->slotList, "slot", MethodSlot);
+    generateFunctions(cdef->slotList, "slot", MethodSlot, paramsIndex);
 
 //
 // Build method array
 //
-    generateFunctions(cdef->methodList, "method", MethodMethod);
+    generateFunctions(cdef->methodList, "method", MethodMethod, paramsIndex);
 
 //
 // Build method version arrays
@@ -312,6 +339,15 @@ void Generator::generateCode()
         generateFunctionRevisions(cdef->slotList, "slot");
         generateFunctionRevisions(cdef->methodList, "method");
     }
+
+//
+// Build method parameters array
+//
+    generateFunctionParameters(cdef->signalList, "signal");
+    generateFunctionParameters(cdef->slotList, "slot");
+    generateFunctionParameters(cdef->methodList, "method");
+    if (isConstructible)
+        generateFunctionParameters(cdef->constructorList, "constructor");
 
 //
 // Build property array
@@ -327,7 +363,7 @@ void Generator::generateCode()
 // Build constructors array
 //
     if (isConstructible)
-        generateFunctions(cdef->constructorList, "constructor", MethodConstructor);
+        generateFunctions(cdef->constructorList, "constructor", MethodConstructor, paramsIndex);
 
 //
 // Terminate data array
@@ -346,7 +382,7 @@ void Generator::generateCode()
     QList<QByteArray> extraList;
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         const PropertyDef &p = cdef->propertyList.at(i);
-        if (!isVariantType(p.type) && !metaTypes.contains(p.type) && !p.type.contains('*') &&
+        if (!isBuiltinType(p.type) && !metaTypes.contains(p.type) && !p.type.contains('*') &&
                 !p.type.contains('<') && !p.type.contains('>')) {
             int s = p.type.lastIndexOf("::");
             if (s > 0) {
@@ -511,49 +547,28 @@ void Generator::registerFunctionStrings(const QList<FunctionDef>& list)
     for (int i = 0; i < list.count(); ++i) {
         const FunctionDef &f = list.at(i);
 
-        QByteArray sig = f.name + '(';
-        QByteArray arguments;
+        strreg(f.name);
+        if (!isBuiltinType(f.normalizedType))
+            strreg(f.normalizedType);
+        strreg(f.tag);
 
         for (int j = 0; j < f.arguments.count(); ++j) {
             const ArgumentDef &a = f.arguments.at(j);
-            if (j) {
-                sig += ",";
-                arguments += ",";
-            }
-            sig += a.normalizedType;
-            arguments += a.name;
+            if (!isBuiltinType(a.normalizedType))
+                strreg(a.normalizedType);
+            strreg(a.name);
         }
-        sig += ')';
-
-        strreg(sig);
-        strreg(arguments);
-        strreg(f.normalizedType);
-        strreg(f.tag);
     }
 }
 
-void Generator::generateFunctions(const QList<FunctionDef>& list, const char *functype, int type)
+void Generator::generateFunctions(const QList<FunctionDef>& list, const char *functype, int type, int &paramsIndex)
 {
     if (list.isEmpty())
         return;
-    fprintf(out, "\n // %ss: signature, parameters, type, tag, flags\n", functype);
+    fprintf(out, "\n // %ss: name, argc, parameters, tag, flags\n", functype);
 
     for (int i = 0; i < list.count(); ++i) {
         const FunctionDef &f = list.at(i);
-
-        QByteArray sig = f.name + '(';
-        QByteArray arguments;
-
-        for (int j = 0; j < f.arguments.count(); ++j) {
-            const ArgumentDef &a = f.arguments.at(j);
-            if (j) {
-                sig += ",";
-                arguments += ",";
-            }
-            sig += a.normalizedType;
-            arguments += a.name;
-        }
-        sig += ')';
 
         unsigned char flags = type;
         if (f.access == FunctionDef::Private)
@@ -576,8 +591,12 @@ void Generator::generateFunctions(const QList<FunctionDef>& list, const char *fu
             flags |= MethodScriptable;
         if (f.revision > 0)
             flags |= MethodRevisioned;
-        fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x,\n", stridx(sig),
-                stridx(arguments), stridx(f.normalizedType), stridx(f.tag), flags);
+
+        int argc = f.arguments.count();
+        fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x,\n",
+            stridx(f.name), argc, paramsIndex, stridx(f.tag), flags);
+
+        paramsIndex += 1 + argc * 2;
     }
 }
 
@@ -591,12 +610,51 @@ void Generator::generateFunctionRevisions(const QList<FunctionDef>& list, const 
     }
 }
 
+void Generator::generateFunctionParameters(const QList<FunctionDef>& list, const char *functype)
+{
+    if (list.isEmpty())
+        return;
+    fprintf(out, "\n // %ss: parameters\n", functype);
+    for (int i = 0; i < list.count(); ++i) {
+        const FunctionDef &f = list.at(i);
+        fprintf(out, "    ");
+
+        // Types
+        for (int j = -1; j < f.arguments.count(); ++j) {
+            if (j > -1)
+                fputc(' ', out);
+            const QByteArray &typeName = (j < 0) ? f.normalizedType : f.arguments.at(j).normalizedType;
+            if (isBuiltinType(typeName)) {
+                int type = nameToBuiltinType(typeName);
+                const char *valueString = metaTypeEnumValueString(type);
+                if (valueString)
+                    fprintf(out, "QMetaType::%s", valueString);
+                else
+                    fprintf(out, "%4d", type);
+            } else {
+                Q_ASSERT(!typeName.isEmpty());
+                fprintf(out, "0x%.8x | %d", IsUnresolvedType, stridx(typeName));
+            }
+            fputc(',', out);
+        }
+
+        // Parameter names
+        for (int j = 0; j < f.arguments.count(); ++j) {
+            const ArgumentDef &arg = f.arguments.at(j);
+            fprintf(out, " %4d,", stridx(arg.name));
+        }
+
+        fprintf(out, "\n");
+    }
+}
+
 void Generator::registerPropertyStrings()
 {
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         const PropertyDef &p = cdef->propertyList.at(i);
         strreg(p.name);
-        strreg(p.type);
+        if (!isBuiltinType(p.type))
+            strreg(p.type);
     }
 }
 
@@ -611,11 +669,8 @@ void Generator::generateProperties()
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         const PropertyDef &p = cdef->propertyList.at(i);
         uint flags = Invalid;
-        if (!isVariantType(p.type)) {
+        if (!isBuiltinType(p.type))
             flags |= EnumOrFlag;
-        } else if (!isQRealType(p.type)) {
-            flags |= qvariant_nameToType(p.type) << 24;
-        }
         if (!p.read.isEmpty())
             flags |= Readable;
         if (!p.write.isEmpty()) {
@@ -665,12 +720,20 @@ void Generator::generateProperties()
         if (p.final)
             flags |= Final;
 
-        fprintf(out, "    %4d, %4d, ",
-                stridx(p.name),
-                stridx(p.type));
-        if (!(flags >> 24) && isQRealType(p.type))
-            fprintf(out, "(QMetaType::QReal << 24) | ");
-        fprintf(out, "0x%.8x,\n", flags);
+        fprintf(out, "    %4d, ", stridx(p.name));
+
+        if (isBuiltinType(p.type)) {
+            int type = nameToBuiltinType(p.type);
+            const char *valueString = metaTypeEnumValueString(type);
+            if (valueString)
+                fprintf(out, "QMetaType::%s", valueString);
+            else
+                fprintf(out, "%4d", type);
+        } else {
+            fprintf(out, "0x%.8x | %d", IsUnresolvedType, stridx(p.type));
+        }
+
+        fprintf(out, ", 0x%.8x,\n", flags);
     }
 
     if(cdef->notifyableProperties) {

@@ -325,6 +325,8 @@ struct Q_CORE_EXPORT QMetaObject
     QMetaProperty userProperty() const;
 
     static bool checkConnectArgs(const char *signal, const char *method);
+    static bool checkConnectArgs(const QMetaMethod &signal,
+                                 const QMetaMethod &method);
     static QByteArray normalizedSignature(const char *method);
     static QByteArray normalizedType(const char *type);
 

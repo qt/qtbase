@@ -58,8 +58,9 @@ private:
     void registerClassInfoStrings();
     void generateClassInfos();
     void registerFunctionStrings(const QList<FunctionDef> &list);
-    void generateFunctions(const QList<FunctionDef> &list, const char *functype, int type);
+    void generateFunctions(const QList<FunctionDef> &list, const char *functype, int type, int &paramsIndex);
     void generateFunctionRevisions(const QList<FunctionDef>& list, const char *functype);
+    void generateFunctionParameters(const QList<FunctionDef> &list, const char *functype);
     void registerEnumStrings();
     void generateEnums(int index);
     void registerPropertyStrings();

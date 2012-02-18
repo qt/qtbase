@@ -603,15 +603,51 @@ void tst_QMetaMethod::method()
     QCOMPARE(method.methodType(), methodType);
     QCOMPARE(method.access(), access);
 
-    QCOMPARE(method.methodSignature(), signature);
+    QVERIFY(!method.methodSignature().isEmpty());
+    if (method.methodSignature() != signature) {
+        // QMetaMethod should always produce a semantically equivalent signature
+        int signatureIndex = (methodType == QMetaMethod::Constructor)
+                ? mo->indexOfConstructor(method.methodSignature())
+                : mo->indexOfMethod(method.methodSignature());
+        QCOMPARE(signatureIndex, index);
+    }
+
+    QByteArray computedName = signature.left(signature.indexOf('('));
+    QCOMPARE(method.name(), computedName);
 
     QCOMPARE(method.tag(), "");
 
-    QCOMPARE(method.typeName(), returnTypeName.constData());
-    QCOMPARE(QMetaType::type(method.typeName()), returnType);
+    QCOMPARE(method.returnType(), returnType);
+    if (QByteArray(method.typeName()) != returnTypeName) {
+        // QMetaMethod should always produce a semantically equivalent typename
+        QCOMPARE(QMetaType::type(method.typeName()), QMetaType::type(returnTypeName));
+    }
 
-    QCOMPARE(method.parameterTypes(), parameterTypeNames);
+    if (method.parameterTypes() != parameterTypeNames) {
+        // QMetaMethod should always produce semantically equivalent typenames
+        QList<QByteArray> actualTypeNames = method.parameterTypes();
+        QCOMPARE(actualTypeNames.size(), parameterTypeNames.size());
+        for (int i = 0; i < parameterTypeNames.size(); ++i) {
+            QCOMPARE(QMetaType::type(actualTypeNames.at(i)),
+                     QMetaType::type(parameterTypeNames.at(i)));
+        }
+    }
     QCOMPARE(method.parameterNames(), parameterNames);
+
+    QCOMPARE(method.parameterCount(), parameterTypes.size());
+    for (int i = 0; i < parameterTypes.size(); ++i)
+        QCOMPARE(method.parameterType(i), parameterTypes.at(i));
+
+    {
+        QVector<int> actualParameterTypes(parameterTypes.size());
+        method.getParameterTypes(actualParameterTypes.data());
+        for (int i = 0; i < parameterTypes.size(); ++i)
+            QCOMPARE(actualParameterTypes.at(i), parameterTypes.at(i));
+    }
+
+    // Bogus indexes
+    QCOMPARE(method.parameterType(-1), 0);
+    QCOMPARE(method.parameterType(parameterTypes.size()), 0);
 }
 
 void tst_QMetaMethod::invalidMethod()
