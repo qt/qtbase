@@ -134,6 +134,8 @@ struct QMetaObjectPrivate
                            bool normalizeStringData);
     static int originalClone(const QMetaObject *obj, int local_method_index);
 
+    static QList<QByteArray> parameterTypeNamesFromSignature(const char *signature);
+
 #ifndef QT_NO_QOBJECT
     //defined in qobject.cpp
     enum DisconnectType { DisconnectAll, DisconnectOne };
