@@ -227,8 +227,7 @@ public:
     QDomCharacterData toCharacterData() const;
     QDomComment toComment() const;
 
-    void save(QTextStream&, int) const;
-    void save(QTextStream&, int, EncodingPolicy) const; // ### Qt 5: Merge overload(if we at all keep this)
+    void save(QTextStream&, int, EncodingPolicy=QDomNode::EncodingFromDocument) const;
 
     QDomElement firstChildElement(const QString &tagName = QString()) const;
     QDomElement lastChildElement(const QString &tagName = QString()) const;
