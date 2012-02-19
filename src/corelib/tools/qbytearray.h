@@ -378,7 +378,7 @@ public:
 
     template <int n>
     inline QByteArray(const QConstByteArrayData<n> &dd)
-        : d(const_cast<QByteArrayData *>(&dd.str)) {}
+        : d(const_cast<QByteArrayData *>(&dd.ba)) {}
     template <int N>
     Q_DECL_CONSTEXPR inline QByteArray(QConstByteArrayDataPtr<N> dd)
         : d(const_cast<QByteArrayData *>(&dd.ptr->ba)) {}
