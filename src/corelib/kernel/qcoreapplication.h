@@ -110,12 +110,9 @@ public:
     static void exit(int retcode=0);
 
     static bool sendEvent(QObject *receiver, QEvent *event);
-    static void postEvent(QObject *receiver, QEvent *event);
-    static void postEvent(QObject *receiver, QEvent *event, int priority);
-    static void sendPostedEvents(QObject *receiver, int event_type);
-    static void sendPostedEvents();
-    static void removePostedEvents(QObject *receiver);
-    static void removePostedEvents(QObject *receiver, int eventType);
+    static void postEvent(QObject *receiver, QEvent *event, int priority = Qt::NormalEventPriority);
+    static void sendPostedEvents(QObject *receiver = 0, int event_type = 0);
+    static void removePostedEvents(QObject *receiver, int eventType = 0);
     static bool hasPendingEvents();
     static QAbstractEventDispatcher *eventDispatcher();
     static void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
@@ -210,8 +207,6 @@ inline bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
 
 inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
 { if (event) event->spont = true; return self ? self->notifyInternal(receiver, event) : false; }
-
-inline void QCoreApplication::sendPostedEvents() { sendPostedEvents(0, 0); }
 
 #ifdef QT_NO_TRANSLATION
 // Simple versions
