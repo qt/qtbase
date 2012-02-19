@@ -443,7 +443,7 @@ void Generator::generateClassInfos()
     }
 }
 
-void Generator::generateFunctions(QList<FunctionDef>& list, const char *functype, int type)
+void Generator::generateFunctions(const QList<FunctionDef>& list, const char *functype, int type)
 {
     if (list.isEmpty())
         return;
@@ -492,7 +492,7 @@ void Generator::generateFunctions(QList<FunctionDef>& list, const char *functype
     }
 }
 
-void Generator::generateFunctionRevisions(QList<FunctionDef>& list, const char *functype)
+void Generator::generateFunctionRevisions(const QList<FunctionDef>& list, const char *functype)
 {
     if (list.count())
         fprintf(out, "\n // %ss: revision\n", functype);
