@@ -817,14 +817,14 @@ struct QRegularExpressionMatchPrivate : QSharedData
 
     QRegularExpressionMatch nextMatch() const;
 
-    QRegularExpression regularExpression;
-    QString subject;
+    const QRegularExpression regularExpression;
+    const QString subject;
     // the capturedOffsets vector contains pairs of (start, end) positions
     // for each captured substring
     QVector<int> capturedOffsets;
 
-    QRegularExpression::MatchType matchType;
-    QRegularExpression::MatchOptions matchOptions;
+    const QRegularExpression::MatchType matchType;
+    const QRegularExpression::MatchOptions matchOptions;
 
     int capturedCount;
 
@@ -835,16 +835,16 @@ struct QRegularExpressionMatchPrivate : QSharedData
 
 struct QRegularExpressionMatchIteratorPrivate : QSharedData
 {
-    QRegularExpressionMatchIteratorPrivate(const QRegularExpression re,
+    QRegularExpressionMatchIteratorPrivate(const QRegularExpression &re,
                                            QRegularExpression::MatchType matchType,
                                            QRegularExpression::MatchOptions matchOptions,
                                            const QRegularExpressionMatch &next);
 
     bool hasNext() const;
     QRegularExpressionMatch next;
-    QRegularExpression regularExpression;
-    QRegularExpression::MatchType matchType;
-    QRegularExpression::MatchOptions matchOptions;
+    const QRegularExpression regularExpression;
+    const QRegularExpression::MatchType matchType;
+    const QRegularExpression::MatchOptions matchOptions;
 };
 
 /*!
@@ -1216,7 +1216,7 @@ QRegularExpressionMatch QRegularExpressionMatchPrivate::nextMatch() const
 /*!
     \internal
 */
-QRegularExpressionMatchIteratorPrivate::QRegularExpressionMatchIteratorPrivate(const QRegularExpression re,
+QRegularExpressionMatchIteratorPrivate::QRegularExpressionMatchIteratorPrivate(const QRegularExpression &re,
                                                                                QRegularExpression::MatchType matchType,
                                                                                QRegularExpression::MatchOptions matchOptions,
                                                                                const QRegularExpressionMatch &next)
