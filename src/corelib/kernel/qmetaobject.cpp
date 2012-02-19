@@ -176,11 +176,6 @@ static inline const char *rawStringData(const QMetaObject *mo, int index)
         return legacyString(mo, index);
 }
 
-const char *QMetaObjectPrivate::rawStringData(const QMetaObject *mo, int index)
-{
-    return QT_PREPEND_NAMESPACE(rawStringData)(mo, index);
-}
-
 static inline int stringSize(const QMetaObject *mo, int index)
 {
     if (priv(mo->d.data)->revision >= 7)
