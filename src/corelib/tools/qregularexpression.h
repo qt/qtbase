@@ -94,6 +94,8 @@ public:
     int patternErrorOffset() const;
     QString errorString() const;
 
+    int captureCount() const;
+
     enum MatchType {
         NormalMatch = 0,
         PartialPreferCompleteMatch,

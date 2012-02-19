@@ -1341,6 +1341,19 @@ void QRegularExpression::setPatternOptions(PatternOptions options)
 }
 
 /*!
+    Returns the number of capturing groups inside the pattern string,
+    or -1 if the regular expression is not valid.
+
+    \sa isValid()
+*/
+int QRegularExpression::captureCount() const
+{
+    if (!isValid()) // will compile the pattern
+        return -1;
+    return d->capturingCount;
+}
+
+/*!
     Returns true if the regular expression is a valid regular expression (that
     is, it contains no syntax errors, etc.), or false otherwise. Use
     errorString() to obtain a textual description of the error.

@@ -73,6 +73,8 @@ private slots:
     void serialize();
     void operatoreq_data();
     void operatoreq();
+    void captureCount_data();
+    void captureCount();
 
 private:
     void provideRegularExpressions();
@@ -1196,6 +1198,35 @@ void tst_QRegularExpression::operatoreq()
         QRegularExpression re2(pattern, patternOptions);
         verifyEquality(re1, re2);
     }
+}
+
+void tst_QRegularExpression::captureCount_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<int>("captureCount");
+    QTest::newRow("captureCount01") << "a pattern" << 0;
+    QTest::newRow("captureCount02") << "a.*pattern" << 0;
+    QTest::newRow("captureCount03") << "(a) pattern" << 1;
+    QTest::newRow("captureCount04") << "(a).*(pattern)" << 2;
+    QTest::newRow("captureCount05") << "^(?<article>\\w+) (?<noun>\\w+)$" << 2;
+    QTest::newRow("captureCount06") << "^(\\w+) (?<word>\\w+) (.)$" << 3;
+    QTest::newRow("captureCount07") << "(?:non capturing) (capturing) (?<n>named) (?:non (capturing))" << 3;
+    QTest::newRow("captureCount08") << "(?|(a)(b)|(c)(d))" << 2;
+    QTest::newRow("captureCount09") << "(?|(a)(b)|(c)(d)(?:e))" << 2;
+    QTest::newRow("captureCount10") << "(?|(a)(b)|(c)(d)(e)) (f)(g)" << 5;
+    QTest::newRow("captureCount11") << "(?|(a)(b)|(c)(d)(e)) (f)(?:g)" << 4;
+    QTest::newRow("captureCount_invalid01") << "(.*" << -1;
+    QTest::newRow("captureCount_invalid02") << "\\" << -1;
+    QTest::newRow("captureCount_invalid03") << "(?<noun)" << -1;
+}
+
+void tst_QRegularExpression::captureCount()
+{
+    QFETCH(QString, pattern);
+    QRegularExpression re(pattern);
+    QTEST(re.captureCount(), "captureCount");
+    if (!re.isValid())
+        QCOMPARE(re.captureCount(), -1);
 }
 
 QTEST_APPLESS_MAIN(tst_QRegularExpression)
