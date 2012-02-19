@@ -1003,14 +1003,6 @@ bool QPixmap::isDetached() const
     return data && data->ref.load() == 1;
 }
 
-/*! \internal
-  ### Qt5 - remove me.
-*/
-void QPixmap::deref()
-{
-    Q_ASSERT_X(false, "QPixmap::deref()", "Do not call this function anymore!");
-}
-
 /*!
     Replaces this pixmap's data with the given \a image using the
     specified \a flags to control the conversion.  The \a flags
