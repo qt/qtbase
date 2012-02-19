@@ -116,9 +116,7 @@ public:
     QAction *exec();
     QAction *exec(const QPoint &pos, QAction *at=0);
 
-    // ### Qt 5: merge
-    static QAction *exec(QList<QAction*> actions, const QPoint &pos, QAction *at=0);
-    static QAction *exec(QList<QAction*> actions, const QPoint &pos, QAction *at, QWidget *parent);
+    static QAction *exec(QList<QAction*> actions, const QPoint &pos, QAction *at=0, QWidget *parent=0);
 
     QSize sizeHint() const;
 

@@ -2083,31 +2083,6 @@ QAction *QMenu::exec(QList<QAction*> actions, const QPoint &pos, QAction *at, QW
 }
 
 /*!
-    \overload
-
-    Executes a menu synchronously.
-
-    The menu's actions are specified by the list of \a actions. The menu
-    will pop up so that the specified action, \a at, appears at global
-    position \a pos. If \a at is not specified then the menu appears
-    at position \a pos.
-
-    The function returns the triggered QAction in either the popup
-    menu or one of its submenus, or 0 if no item was triggered
-    (normally because the user pressed Esc).
-
-    This is equivalent to:
-    \snippet doc/src/snippets/code/src_gui_widgets_qmenu.cpp 6
-
-    \sa popup(), QWidget::mapToGlobal()
-*/
-QAction *QMenu::exec(QList<QAction*> actions, const QPoint &pos, QAction *at)
-{
-    // ### Qt 5: merge
-    return exec(actions, pos, at, 0);
-}
-
-/*!
   \reimp
 */
 void QMenu::hideEvent(QHideEvent *)
