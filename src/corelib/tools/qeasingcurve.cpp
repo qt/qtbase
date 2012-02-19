@@ -419,6 +419,11 @@ public:
           config(0),
           func(&easeNone)
     { }
+    QEasingCurvePrivate(const QEasingCurvePrivate &other)
+        : type(other.type),
+          config(other.config ? other.config->copy() : 0),
+          func(other.func)
+    { }
     ~QEasingCurvePrivate() { delete config; }
     void setType_helper(QEasingCurve::Type);
 
@@ -1080,12 +1085,9 @@ QEasingCurve::QEasingCurve(Type type)
     Construct a copy of \a other.
  */
 QEasingCurve::QEasingCurve(const QEasingCurve &other)
-    : d_ptr(new QEasingCurvePrivate)
+    : d_ptr(new QEasingCurvePrivate(*other.d_ptr))
 {
     // ### non-atomic, requires malloc on shallow copy
-    *d_ptr = *other.d_ptr;
-    if (other.d_ptr->config)
-        d_ptr->config = other.d_ptr->config->copy();
 }
 
 /*!
