@@ -58,6 +58,7 @@
 #include <qpainter.h>
 #include <qscreen.h>
 
+#include <algorithm>
 QT_BEGIN_NAMESPACE
 
 class QXcbShmImage : public QXcbObject
