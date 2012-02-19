@@ -219,7 +219,7 @@ public:
 
     void createList();
     QDomNodePrivate* item(int index);
-    uint length() const;
+    int length() const;
 
     QAtomicInt ref;
     /*
@@ -244,7 +244,7 @@ public:
     QDomNodePrivate* setNamedItemNS(QDomNodePrivate* arg);
     QDomNodePrivate* removeNamedItem(const QString& name);
     QDomNodePrivate* item(int index) const;
-    uint length() const;
+    int length() const;
     bool contains(const QString& name) const;
     bool containsNS(const QString& nsURI, const QString & localName) const;
 
@@ -327,7 +327,7 @@ public:
     QDomCharacterDataPrivate(QDomDocumentPrivate*, QDomNodePrivate* parent, const QString& data);
     QDomCharacterDataPrivate(QDomCharacterDataPrivate* n, bool deep);
 
-    uint dataLength() const;
+    int dataLength() const;
     QString substringData(unsigned long offset, unsigned long count) const;
     void appendData(const QString& arg);
     void insertData(unsigned long offset, const QString& arg);
@@ -1262,7 +1262,7 @@ QDomNodePrivate* QDomNodeListPrivate::item(int index)
     return list.at(index);
 }
 
-uint QDomNodeListPrivate::length() const
+int QDomNodeListPrivate::length() const
 {
     if (!node_impl)
         return 0;
@@ -1394,7 +1394,7 @@ QDomNode QDomNodeList::item(int index) const
 /*!
     Returns the number of nodes in the list.
 */
-uint QDomNodeList::length() const
+int QDomNodeList::length() const
 {
     if (!impl)
         return 0;
@@ -3155,13 +3155,12 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::removeNamedItem(const QString& name)
 
 QDomNodePrivate* QDomNamedNodeMapPrivate::item(int index) const
 {
-    if ((uint)index >= length())
+    if (index >= length())
         return 0;
     return *(map.constBegin() + index);
 }
 
-// ### Qt 5: convert all length/size() functions in QDom to use int instead of uint.
-uint QDomNamedNodeMapPrivate::length() const
+int QDomNamedNodeMapPrivate::length() const
 {
     return map.count();
 }
@@ -3408,7 +3407,7 @@ QDomNode QDomNamedNodeMap::removeNamedItemNS(const QString& nsURI, const QString
 
     \sa item()
 */
-uint QDomNamedNodeMap::length() const
+int QDomNamedNodeMap::length() const
 {
     if (!impl)
         return 0;
@@ -3896,7 +3895,7 @@ QDomNodePrivate* QDomCharacterDataPrivate::cloneNode(bool deep)
     return p;
 }
 
-uint QDomCharacterDataPrivate::dataLength() const
+int QDomCharacterDataPrivate::dataLength() const
 {
     return value.length();
 }
@@ -4020,7 +4019,7 @@ void QDomCharacterData::setData(const QString& v)
 /*!
     Returns the length of the stored string.
 */
-uint QDomCharacterData::length() const
+int QDomCharacterData::length() const
 {
     if (impl)
         return IMPL->dataLength();
@@ -5693,8 +5692,8 @@ QDomNodePrivate* QDomEntityPrivate::cloneNode(bool deep)
 static QByteArray encodeEntity(const QByteArray& str)
 {
     QByteArray tmp(str);
-    uint len = tmp.size();
-    uint i = 0;
+    int len = tmp.size();
+    int i = 0;
     const char* d = tmp.data();
     while (i < len) {
         if (d[i] == '%'){
