@@ -1100,22 +1100,9 @@ QEasingCurve::~QEasingCurve()
 }
 
 /*!
+    \fn QEasingCurve &QEasingCurve::operator=(const QEasingCurve &other)
     Copy \a other.
  */
-QEasingCurve &QEasingCurve::operator=(const QEasingCurve &other)
-{
-    // ### non-atomic, requires malloc on shallow copy
-    if (d_ptr->config) {
-        delete d_ptr->config;
-        d_ptr->config = 0;
-    }
-
-    *d_ptr = *other.d_ptr;
-    if (other.d_ptr->config)
-        d_ptr->config = other.d_ptr->config->copy();
-
-    return *this;
-}
 
 /*!
     \fn void QEasingCurve::swap(QEasingCurve &other)
