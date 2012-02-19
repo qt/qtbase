@@ -224,7 +224,9 @@ void qt_adopted_thread_watcher_function(void *)
 //             printf("(qt) - qt_adopted_thread_watcher_function... called\n");
             const int qthreadIndex = handleIndex - 1;
 
+            qt_adopted_thread_watcher_mutex.lock();
             QThreadData *data = QThreadData::get2(qt_adopted_qthreads.at(qthreadIndex));
+            qt_adopted_thread_watcher_mutex.unlock();
             if (data->isAdopted) {
                 QThread *thread = data->thread;
                 Q_ASSERT(thread);
@@ -234,10 +236,10 @@ void qt_adopted_thread_watcher_function(void *)
             }
             data->deref();
 
+            QMutexLocker lock(&qt_adopted_thread_watcher_mutex);
 #if !defined(Q_OS_WINCE) || (defined(_WIN32_WCE) && (_WIN32_WCE>=0x600))
             CloseHandle(qt_adopted_thread_handles.at(handleIndex));
 #endif
-            QMutexLocker lock(&qt_adopted_thread_watcher_mutex);
             qt_adopted_thread_handles.remove(handleIndex);
             qt_adopted_qthreads.remove(qthreadIndex);
         }
