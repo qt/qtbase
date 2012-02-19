@@ -1028,52 +1028,6 @@ bool QFile::open(OpenMode mode)
     Example:
     \snippet doc/src/snippets/code/src_corelib_io_qfile.cpp 3
 
-    When a QFile is opened using this function, close() does not actually
-    close the file, but only flushes it.
-
-    \bold{Warning:}
-    \list 1
-        \o If \a fh does not refer to a regular file, e.g., it is \c stdin,
-           \c stdout, or \c stderr, you may not be able to seek(). size()
-           returns \c 0 in those cases. See QIODevice::isSequential() for
-           more information.
-        \o Since this function opens the file without specifying the file name,
-           you cannot use this QFile with a QFileInfo.
-    \endlist
-
-    \note For Windows CE you may not be able to call resize().
-
-    \sa close(), {qmake Variable Reference#CONFIG}{qmake Variable Reference}
-
-    \bold{Note for the Windows Platform}
-
-    \a fh must be opened in binary mode (i.e., the mode string must contain
-    'b', as in "rb" or "wb") when accessing files and other random-access
-    devices. Qt will translate the end-of-line characters if you pass
-    QIODevice::Text to \a mode. Sequential devices, such as stdin and stdout,
-    are unaffected by this limitation.
-
-    You need to enable support for console applications in order to use the
-    stdin, stdout and stderr streams at the console. To do this, add the
-    following declaration to your application's project file:
-
-    \snippet doc/src/snippets/code/src_corelib_io_qfile.cpp 4
-*/
-// ### Qt5: merge this into new overload with a default parameter
-bool QFile::open(FILE *fh, OpenMode mode)
-{
-    return open(fh, mode, DontCloseHandle);
-}
-
-/*!
-    \overload
-
-    Opens the existing file handle \a fh in the given \a mode.
-    Returns true if successful; otherwise returns false.
-
-    Example:
-    \snippet doc/src/snippets/code/src_corelib_io_qfile.cpp 3
-
     When a QFile is opened using this function, behaviour of close() is
     controlled by the AutoCloseHandle flag.
     If AutoCloseHandle is specified, and this function succeeds,
@@ -1134,39 +1088,6 @@ bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
         return true;
     }
     return false;
-}
-
-/*!
-    \overload
-
-    Opens the existing file descriptor \a fd in the given \a mode.
-    Returns true if successful; otherwise returns false.
-
-    When a QFile is opened using this function, close() does not
-    actually close the file.
-
-    The QFile that is opened using this function is automatically set
-    to be in raw mode; this means that the file input/output functions
-    are slow. If you run into performance issues, you should try to
-    use one of the other open functions.
-
-    \warning If \a fd is not a regular file, e.g, it is 0 (\c stdin),
-    1 (\c stdout), or 2 (\c stderr), you may not be able to seek(). In
-    those cases, size() returns \c 0.  See QIODevice::isSequential()
-    for more information.
-
-    \warning For Windows CE you may not be able to call seek(), setSize(),
-    fileTime(). size() returns \c 0.
-
-    \warning Since this function opens the file without specifying the file name,
-             you cannot use this QFile with a QFileInfo.
-
-    \sa close()
-*/
-// ### Qt5: merge this into new overload with a default parameter
-bool QFile::open(int fd, OpenMode mode)
-{
-    return open(fd, mode, DontCloseHandle);
 }
 
 /*!
