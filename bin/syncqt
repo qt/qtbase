@@ -1130,6 +1130,9 @@ foreach my $lib (@modules_to_sync) {
                 my $guard = "DEPRECATED_HEADER_" . $lib . "_" . $header;
                 $guard =~ s/([^a-zA-Z0-9_])/_/g;
 
+                my $header_dir = dirname($header_path);
+                make_path($header_dir, $lib, $verbose_level);
+
                 open HEADER, ">$header_path" || die "Could not open $header_path for writing!\n";
                 print HEADER "#ifndef $guard\n";
                 print HEADER "#define $guard\n";
