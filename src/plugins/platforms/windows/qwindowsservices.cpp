@@ -54,10 +54,10 @@ enum { debug = 0 };
 
 static inline bool shellExecute(const QString &file)
 {
-    const int result = (int)ShellExecute(0, 0, (wchar_t*)file.utf16(), 0, 0, SW_SHOWNORMAL);
+    const quintptr result = (quintptr)ShellExecute(0, 0, (wchar_t*)file.utf16(), 0, 0, SW_SHOWNORMAL);
     // ShellExecute returns a value greater than 32 if successful
     if (result <= 32) {
-        qWarning("ShellExecute '%s' failed (error %0x).", qPrintable(file), result);
+        qWarning("ShellExecute '%s' failed (error %s).", qPrintable(file), qPrintable(QString::number(result)));
         return false;
     }
     return true;
@@ -104,7 +104,7 @@ static inline bool launchMail(const QUrl &url)
 {
     QString command = mailCommand();
     if (command.isEmpty()) {
-        qWarning("Cannot launch '%s': There is no mail program installed.");
+        qWarning("Cannot launch '%s': There is no mail program installed.", qPrintable(url.toString()));
         return false;
     }
     //Make sure the path for the process is in quotes
