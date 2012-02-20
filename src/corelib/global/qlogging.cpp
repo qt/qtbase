@@ -49,6 +49,9 @@
 #include "qcoreapplication.h"
 #include "qthread.h"
 #endif
+#ifdef Q_OS_WINCE
+#include <qt_windows.h>
+#endif
 
 #include <stdio.h>
 
