@@ -1398,12 +1398,21 @@ void tst_QApplication::testDeleteLaterProcessEvents()
 void tst_QApplication::desktopSettingsAware()
 {
 #ifndef QT_NO_PROCESS
-    QProcess testProcess;
-    const QString path = QStringLiteral("desktopsettingsaware/desktopsettingsaware");
+    QString path;
+    {
+        // We need an application object for QFINDTESTDATA to work
+        // properly in all cases.
+        int argc = 0;
+        QCoreApplication app(argc, 0);
+        path = QFINDTESTDATA("desktopsettingsaware/");
+    }
+    QVERIFY2(!path.isEmpty(), "Cannot locate desktopsettingsaware helper application");
+    path += "desktopsettingsaware";
 #ifdef Q_OS_WINCE
     int argc = 0;
     QApplication tmpApp(argc, 0, QApplication::GuiServer);
 #endif
+    QProcess testProcess;
     testProcess.start(path);
     QVERIFY2(testProcess.waitForStarted(),
              qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
@@ -2061,9 +2070,19 @@ void tst_QApplication::touchEventPropagation()
 
 void tst_QApplication::qtbug_12673()
 {
+    QString path;
+    {
+        // We need an application object for QFINDTESTDATA to work
+        // properly in all cases.
+        int argc = 0;
+        QCoreApplication app(argc, 0);
+        path = QFINDTESTDATA("modal/");
+    }
+    QVERIFY2(!path.isEmpty(), "Cannot locate modal helper application");
+    path += "modal";
+
     QProcess testProcess;
     QStringList arguments;
-    const QString path = QStringLiteral("modal/modal");
     testProcess.start(path, arguments);
     QVERIFY2(testProcess.waitForStarted(),
              qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
