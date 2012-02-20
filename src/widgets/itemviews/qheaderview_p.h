@@ -287,8 +287,11 @@ public:
 
     struct SectionSpan {
         int size;
-        mutable int calculated_startpos;
-        mutable int tmpLogIdx;
+        union { // This union is made in order to save space and ensure good vector performance (on remove)
+            mutable int calculated_startpos; // <- this is the primary used member.
+            mutable int tmpLogIdx;         // When one of these 'tmp'-members has been used we call
+            int tmpDataStreamSectionCount; // recalcSectionStartPos() or set sectionStartposRecalc to true
+        };                                 // to ensure that calculated_startpos will be calculated afterwards.
         QHeaderView::ResizeMode resizeMode;
         inline SectionSpan() : size(0), resizeMode(QHeaderView::Interactive) {}
         inline SectionSpan(int length, QHeaderView::ResizeMode mode)
@@ -296,7 +299,6 @@ public:
         inline int sectionSize() const { return size; }
         inline int calculatedEndPos() const { return calculated_startpos + size; }
 #ifndef QT_NO_DATASTREAM
-        int tmpDataStreamSectionCount;
         inline void write(QDataStream &out) const
         { out << size; out << 1; out << (int)resizeMode; }
         inline void read(QDataStream &in)
