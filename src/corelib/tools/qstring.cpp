@@ -5661,9 +5661,22 @@ QString QString::toUpper_helper(QString &str)
     return QUnicodeTables::convertCase<QUnicodeTables::UppercaseTraits>(str);
 }
 
+/*!
+    \obsolete Use asprintf(), arg() or QTextStream instead.
+*/
+QString &QString::sprintf(const char *cformat, ...)
+{
+    va_list ap;
+    va_start(ap, cformat);
+    *this = vasprintf(cformat, ap);
+    va_end(ap);
+    return *this;
+}
 
 // ### Qt 6: Consider whether this function shouldn't be removed See task 202871.
 /*!
+    \since 5.5
+
     Safely builds a formatted string from the format string \a cformat
     and an arbitrary list of arguments.
 
@@ -5680,7 +5693,7 @@ QString QString::toUpper_helper(QString &str)
     a \c{wchar_t*}, and might also produce compiler warnings on platforms
     where the size of \c {wchar_t} is not 16 bits.
 
-    \warning We do not recommend using QString::sprintf() in new Qt
+    \warning We do not recommend using QString::asprintf() in new Qt
     code. Instead, consider using QTextStream or arg(), both of
     which support Unicode strings seamlessly and are type-safe.
     Here's an example that uses QTextStream:
@@ -5695,32 +5708,42 @@ QString QString::toUpper_helper(QString &str)
     \sa arg()
 */
 
-QString &QString::sprintf(const char *cformat, ...)
+QString QString::asprintf(const char *cformat, ...)
 {
     va_list ap;
     va_start(ap, cformat);
-    QString &s = vsprintf(cformat, ap);
+    const QString s = vasprintf(cformat, ap);
     va_end(ap);
     return s;
 }
 
 /*!
-    Equivalent method to sprintf(), but takes a va_list \a ap
-    instead a list of variable arguments. See the sprintf()
+    \obsolete Use vasprintf(), arg() or QTextStream instead.
+*/
+QString &QString::vsprintf(const char *cformat, va_list ap)
+{
+    return *this = vasprintf(cformat, ap);
+}
+
+/*!
+    \fn QString::vasprintf(const char *cformat, va_list ap)
+    \since 5.5
+
+    Equivalent method to asprintf(), but takes a va_list \a ap
+    instead a list of variable arguments. See the asprintf()
     documentation for an explanation of \a cformat.
 
     This method does not call the va_end macro, the caller
     is responsible to call va_end on \a ap.
 
-    \sa sprintf()
+    \sa asprintf()
 */
 
-QString &QString::vsprintf(const char* cformat, va_list ap)
+QString QString::vasprintf(const char *cformat, va_list ap)
 {
     if (!cformat || !*cformat) {
         // Qt 1.x compat
-        *this = fromLatin1("");
-        return *this;
+        return fromLatin1("");
     }
 
     // Parse cformat
@@ -6036,9 +6059,7 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
             result.append(subst.rightJustified(width));
     }
 
-    *this = result;
-
-    return *this;
+    return result;
 }
 
 /*!
@@ -7167,7 +7188,7 @@ static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int f
   First, \c arg(i) replaces \c %1. Then \c arg(total) replaces \c
   %2. Finally, \c arg(fileName) replaces \c %3.
 
-  One advantage of using arg() over sprintf() is that the order of the
+  One advantage of using arg() over asprintf() is that the order of the
   numbered place markers can change, if the application's strings are
   translated into other languages, but each arg() will still replace
   the lowest numbered unreplaced place marker, no matter where it

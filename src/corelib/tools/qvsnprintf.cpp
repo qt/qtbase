@@ -58,10 +58,10 @@ QT_BEGIN_NAMESPACE
     platforms, you should not rely on the return value or on the fact
     that you will always get a 0 terminated string back.
 
-    Ideally, you should never call this function but use QString::sprintf()
+    Ideally, you should never call this function but use QString::asprintf()
     instead.
 
-    \sa qsnprintf(), QString::sprintf()
+    \sa qsnprintf(), QString::asprintf()
 */
 
 int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
@@ -107,9 +107,9 @@ int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap)
 
     \warning Call this function only when you know what you are doing
     since it shows different behavior on certain platforms.
-    Use QString::sprintf() to format a string instead.
+    Use QString::asprintf() to format a string instead.
 
-    \sa qvsnprintf(), QString::sprintf()
+    \sa qvsnprintf(), QString::asprintf()
 */
 
 int qsnprintf(char *str, size_t n, const char *fmt, ...)
