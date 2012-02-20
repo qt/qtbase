@@ -278,12 +278,6 @@ earlyArgParse()
                 VAL=$1
             fi
             ;;
-        -nacl)
-            shift;
-            VAR=nacl
-            VAL=$1
-            ;;
-
         -h|help|--help|-help)
             if [ "$VAL" = "yes" ]; then
                 OPT_HELP="$VAL"
@@ -334,15 +328,6 @@ earlyArgParse()
                 CFG_EMBEDDED=no
             fi
             ;;
-        nacl)
-            echo "Using NaCl at $VAL."
-            PLATFORM_X11=no
-            PLATFORM_MAC=no
-            PLATFORM_QWS=no
-            CFG_NACL_PATH=$VAL
-            CFG_EMBEDDED=nacl
-            ;;
-
         developer-build)
             CFG_DEV="yes"
             ;;
@@ -914,36 +899,6 @@ if [ -d "$relpath/src/plugins/imageformats" ]; then
 fi
 
 #-------------------------------------------------------------------------------
-# Set Default NaCl options
-#-------------------------------------------------------------------------------
-if [ "$CFG_EMBEDDED" = "nacl" ]; then
-    echo "Setting NaCl options:"
-    echo "-static"
-    CFG_SHARED=no
-    echo "-qpa nacl"
-    PLATFORM_QPA=yes
-    echo "-fast"
-    OPT_FAST=yes
-    echo "-qconfig nacl"
-    CFG_QCONFIG=nacl
-
-    if [ `uname` = "Linux" ]; then
-        I_FLAGS="$I_FLAGS -I${CFG_NACL_PATH}/toolchain/linux_x86/sdk/nacl-sdk/include"
-        L_FLAGS="$L_FLAGS -I${CFG_NACL_PATH}/toolchain/linux_x86/sdk/nacl-sdk/lib"
-    else
-        I_FLAGS="$I_FLAGS -I${CFG_NACL_PATH}/toolchain/mac_x86/sdk/nacl-sdk/include"
-        L_FLAGS="$L_FLAGS -I${CFG_NACL_PATH}/toolchain/mac_x86/sdk/nacl-sdk/lib"
-    fi
-
-    echo "-no-mediaservices -no-sql-sqlite -nomake tests"
-    CFG_MEDIASERVICES=no
-    CFG_SQLITE=no
-    CFG_SQL_sqlite=no
-    CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS tests"
-    QT_CONFIG="$QT_CONFIG nacl"
-fi
-
-#-------------------------------------------------------------------------------
 # parse command line arguments
 #-------------------------------------------------------------------------------
 
@@ -1040,10 +995,6 @@ while [ "$#" -gt 0 ]; do
             VAL=$1
         fi
 	;;
-    -nacl)
-        VAR=nacl
-        shift;
-    ;;
     -opengl)
         VAR=opengl
         # this option may or may not be followed by an argument
@@ -1269,8 +1220,6 @@ while [ "$#" -gt 0 ]; do
         PLATFORM_MAC=no
         PLATFORM_QWS=no
         PLATFORM_QPA=yes
-        ;;
-    nacl)
         ;;
     sse)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -3063,10 +3012,6 @@ if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
         echo "ERROR: Cannot set the compiler for the configuration tests"
         exit 1
     fi
-fi
-
-if [ "$CFG_EMBEDDED" = "nacl" ]; then
-    TEST_COMPILER="nacl-gcc"
 fi
 
 SYSROOT_FLAG=
@@ -6426,12 +6371,6 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG qpa"
     QT_CONFIG="$QT_CONFIG qpa"
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG qpa"
-    rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
-fi
-
-if [ "$CFG_EMBEDDED" = "nacl" ]; then
-    QMAKE_CONFIG="$QMAKE_CONFIG nacl pepper"
-    QT_CONFIG="$QT_CONFIG nacl pepper"
     rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
 fi
 
