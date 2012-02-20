@@ -1,2 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS = lackey test
+SUBDIRS = lackey
+test.depends = $$SUBDIRS
+SUBDIRS += test
