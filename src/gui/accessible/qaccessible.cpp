@@ -364,6 +364,8 @@ QT_BEGIN_NAMESPACE
     \value Labelled         The first object is labelled by the second object.
     \value Controller       The first object controls the second object.
     \value Controlled       The first object is controlled by the second object.
+    \value AllRelations     Used as a mask to specify that we are interesting in information
+                            about all relations
 
     Implementations of relations() return a combination of these flags.
     Some values are mutually exclusive.
