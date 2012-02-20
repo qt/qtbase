@@ -3186,6 +3186,14 @@ void tst_QObject::dumpObjectInfo()
     QObject a, b;
     QObject::connect(&a, SIGNAL(destroyed(QObject *)), &b, SLOT(deleteLater()));
     a.disconnect(&b);
+#ifdef QT_DEBUG
+    QTest::ignoreMessage(QtDebugMsg, "OBJECT QObject::unnamed");
+    QTest::ignoreMessage(QtDebugMsg, "  SIGNALS OUT");
+    QTest::ignoreMessage(QtDebugMsg, "        signal: destroyed(QObject*)");
+    QTest::ignoreMessage(QtDebugMsg, "          <Disconnected receiver>");
+    QTest::ignoreMessage(QtDebugMsg, "  SIGNALS IN");
+    QTest::ignoreMessage(QtDebugMsg, "        <None>");
+#endif
     a.dumpObjectInfo(); // should not crash
 }
 
@@ -3813,12 +3821,18 @@ void tst_QObject::sameName()
     c2.emitSignal1();
     QCOMPARE(c1.s, 2);
 
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::indexOfSignal: signal aPublicSlot() from SenderObject redefined in ConfusingObject");
+#endif
     QVERIFY(connect(&c2, SIGNAL(aPublicSlot()), &c1, SLOT(signal1())));
     c2.aPublicSlot();
     QCOMPARE(c2.aPublicSlotCalled, 0);
     QCOMPARE(c1.aPublicSlotCalled, 0);
     QCOMPARE(c1.s, 3);
 
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::indexOfSignal: signal aPublicSlot() from SenderObject redefined in ConfusingObject");
+#endif
     QVERIFY(connect(&c2, SIGNAL(aPublicSlot()), &c1, SLOT(aPublicSlot())));
     c2.aPublicSlot();
     QCOMPARE(c2.aPublicSlotCalled, 0);
