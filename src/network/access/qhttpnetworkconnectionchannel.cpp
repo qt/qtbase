@@ -610,6 +610,9 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
             // here and there.
             socket->setReadBufferSize(64*1024);
 #else
+            // Need to dequeue the request so that we can emit the error.
+            if (!reply)
+                connection->d_func()->dequeueRequest(socket);
             connection->d_func()->emitReplyError(socket, reply, QNetworkReply::ProtocolUnknownError);
 #endif
         } else {

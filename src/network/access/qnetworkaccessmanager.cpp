@@ -974,7 +974,11 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 
 #ifndef QT_NO_HTTP
     // Since Qt 5 we use the new QNetworkReplyHttpImpl
-    if (scheme == QLatin1String("http") || scheme == QLatin1String("https") ) {
+    if (scheme == QLatin1String("http")
+#ifndef QT_NO_SSL
+        || scheme == QLatin1String("https")
+#endif
+        ) {
         QNetworkReplyHttpImpl *reply = new QNetworkReplyHttpImpl(this, request, op, outgoingData);
 #ifndef QT_NO_BEARERMANAGEMENT
         connect(this, SIGNAL(networkSessionConnected()),
