@@ -819,7 +819,7 @@ void QNetworkReplyImplPrivate::redirectionRequested(const QUrl &target)
 
 void QNetworkReplyImplPrivate::sslErrors(const QList<QSslError> &errors)
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     Q_Q(QNetworkReplyImpl);
     emit q->sslErrors(errors);
 #else
@@ -930,7 +930,7 @@ void QNetworkReplyImpl::setReadBufferSize(qint64 size)
         d->backend->setDownstreamLimited(d->readBufferMaxSize > 0);
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 void QNetworkReplyImpl::sslConfigurationImplementation(QSslConfiguration &configuration) const
 {
     Q_D(const QNetworkReplyImpl);
@@ -958,7 +958,7 @@ void QNetworkReplyImpl::ignoreSslErrorsImplementation(const QList<QSslError> &er
     if (d->backend)
         d->backend->ignoreSslErrors(errors);
 }
-#endif  // QT_NO_OPENSSL
+#endif  // QT_NO_SSL
 
 /*!
     \internal

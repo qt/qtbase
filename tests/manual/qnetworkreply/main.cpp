@@ -100,7 +100,7 @@ void tst_qnetworkreply::limiting_data()
     QTest::addColumn<QUrl>("url");
 
     QTest::newRow("HTTP") << QUrl("http://" + QtNetworkSettings::serverName() + "/mediumfile");
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     QTest::newRow("HTTP+SSL") << QUrl("https://" + QtNetworkSettings::serverName() + "/mediumfile");
 #endif
 

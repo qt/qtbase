@@ -573,7 +573,7 @@ QVariant QNetworkReply::attribute(QNetworkRequest::Attribute code) const
     return d_func()->attributes.value(code);
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 /*!
     Returns the SSL configuration and state associated with this
     reply, if SSL was used. It will contain the remote server's

@@ -58,7 +58,7 @@ public Q_SLOTS:
     void finishedReply();
     void finishedWithError(QNetworkReply::NetworkError errorCode, const QString &detail);
     void challenge401(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void sslErrors(const QList<QSslError> &errors);
 #endif
 private:
@@ -92,11 +92,11 @@ private Q_SLOTS:
     void compression_data();
     void compression();
 #endif
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void ignoresslerror_data();
     void ignoresslerror();
 #endif
-#ifdef QT_NO_OPENSSL
+#ifdef QT_NO_SSL
     void nossl_data();
     void nossl();
 #endif
@@ -665,7 +665,7 @@ void tst_QHttpNetworkConnection::compression()
 }
 #endif
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 void tst_QHttpNetworkConnection::sslErrors(const QList<QSslError> &errors)
 {
     Q_UNUSED(errors)
@@ -745,7 +745,7 @@ void tst_QHttpNetworkConnection::ignoresslerror()
 }
 #endif
 
-#ifdef QT_NO_OPENSSL
+#ifdef QT_NO_SSL
 Q_DECLARE_METATYPE(QNetworkReply::NetworkError)
 void tst_QHttpNetworkConnection::nossl_data()
 {

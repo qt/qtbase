@@ -289,13 +289,13 @@ class QNetworkRequestPrivate: public QSharedData, public QNetworkHeadersPrivate
 public:
     inline QNetworkRequestPrivate()
         : priority(QNetworkRequest::NormalPriority)
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         , sslConfiguration(0)
 #endif
     { qRegisterMetaType<QNetworkRequest>(); }
     ~QNetworkRequestPrivate()
     {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         delete sslConfiguration;
 #endif
     }
@@ -307,7 +307,7 @@ public:
         url = other.url;
         priority = other.priority;
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         sslConfiguration = 0;
         if (other.sslConfiguration)
             sslConfiguration = new QSslConfiguration(*other.sslConfiguration);
@@ -325,7 +325,7 @@ public:
 
     QUrl url;
     QNetworkRequest::Priority priority;
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     mutable QSslConfiguration *sslConfiguration;
 #endif
 };
@@ -526,7 +526,7 @@ void QNetworkRequest::setAttribute(Attribute code, const QVariant &value)
         d->attributes.remove(code);
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 /*!
     Returns this network request's SSL configuration. By default, no
     SSL settings are specified.

@@ -68,7 +68,7 @@
 #include <QStringList>
 #include <QTcpServer>
 #include <QTcpSocket>
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #include <QSslSocket>
 #endif
 #include <QTextStream>
@@ -332,7 +332,7 @@ void tst_QTcpSocket::initTestCase_data()
     QTest::newRow("WithHttpProxyBasicAuth") << true << int(HttpProxy | AuthBasic) << false;
 //    QTest::newRow("WithHttpProxyNtlmAuth") << true << int(HttpProxy | AuthNtlm) << false;
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     QTest::newRow("WithoutProxy SSL") << false << 0 << true;
     QTest::newRow("WithSocks5Proxy SSL") << true << int(Socks5Proxy) << true;
     QTest::newRow("WithSocks5AuthProxy SSL") << true << int(Socks5Proxy | AuthBasic) << true;
@@ -392,7 +392,7 @@ void tst_QTcpSocket::init()
 QTcpSocket *tst_QTcpSocket::newSocket() const
 {
     QTcpSocket *socket;
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     QFETCH_GLOBAL(bool, ssl);
     socket = ssl ? new QSslSocket : new QTcpSocket;
 #else
@@ -1640,7 +1640,7 @@ public:
 protected:
     inline void run()
     {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         QFETCH_GLOBAL(bool, ssl);
         if (ssl)
             socket = new QSslSocket;
@@ -1924,7 +1924,7 @@ public:
         attemptedToConnect = false;
         networkTimeout = false;
         count = 0;
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         QFETCH_GLOBAL(bool, ssl);
         if (ssl)
             sock = new QSslSocket;

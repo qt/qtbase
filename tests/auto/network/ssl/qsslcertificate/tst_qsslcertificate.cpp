@@ -66,7 +66,7 @@ class tst_QSslCertificate : public QObject
     QMap<QString, QString> sha1Map;
 
     void createTestRows();
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void compareCertificates(const QSslCertificate & cert1, const QSslCertificate & cert2);
 #endif
 
@@ -76,7 +76,7 @@ public slots:
     void initTestCase();
     void cleanupTestCase();
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 private slots:
     void emptyConstructor();
     void constructor_data();
@@ -173,7 +173,7 @@ static QByteArray readFile(const QString &absFilePath)
     return file.readAll();
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 void tst_QSslCertificate::emptyConstructor()
 {
@@ -1060,7 +1060,7 @@ void tst_QSslCertificate::extensions()
 }
 
 
-#endif // QT_NO_OPENSSL
+#endif // QT_NO_SSL
 
 QTEST_MAIN(tst_QSslCertificate)
 #include "tst_qsslcertificate.moc"

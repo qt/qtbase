@@ -47,7 +47,7 @@
 HttpWindow::HttpWindow(QWidget *parent)
     : QDialog(parent)
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     urlLineEdit = new QLineEdit("https://qt.nokia.com/");
 #else
     urlLineEdit = new QLineEdit("http://qt.nokia.com/");
@@ -75,7 +75,7 @@ HttpWindow::HttpWindow(QWidget *parent)
 
     connect(&qnam, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
             this, SLOT(slotAuthenticationRequired(QNetworkReply*,QAuthenticator*)));
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     connect(&qnam, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
             this, SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
@@ -247,7 +247,7 @@ void HttpWindow::slotAuthenticationRequired(QNetworkReply*,QAuthenticator *authe
     }
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 void HttpWindow::sslErrors(QNetworkReply*,const QList<QSslError> &errors)
 {
     QString errorString;

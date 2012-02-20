@@ -71,7 +71,7 @@ class tst_QSslKey : public QObject
 public slots:
     void initTestCase();
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 private slots:
     void emptyConstructor();
@@ -123,7 +123,7 @@ static QByteArray readFile(const QString &absFilePath)
     return file.readAll();
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 void tst_QSslKey::emptyConstructor()
 {

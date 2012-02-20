@@ -88,7 +88,7 @@ public:
 
     // incoming
     bool ssl;
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     QSslConfiguration incomingSslConfiguration;
 #endif
     QHttpNetworkRequest httpRequest;
@@ -132,7 +132,7 @@ signals:
 #ifndef QT_NO_NETWORKPROXY
     void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *);
 #endif
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void sslErrors(const QList<QSslError> &, bool *, QList<QSslError> *);
     void sslConfigurationChanged(const QSslConfiguration);
 #endif
@@ -158,7 +158,7 @@ protected slots:
     void synchronousHeaderChangedSlot();
     void dataReadProgressSlot(qint64 done, qint64 total);
     void cacheCredentialsSlot(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void sslErrorsSlot(const QList<QSslError> &errors);
 #endif
 

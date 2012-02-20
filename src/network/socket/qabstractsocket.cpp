@@ -457,7 +457,7 @@
 #include <qelapsedtimer.h>
 #include <qscopedvaluerollback.h>
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #include <QtNetwork/qsslsocket.h>
 #endif
 
@@ -2244,7 +2244,7 @@ void QAbstractSocket::abort()
 #endif
     if (d->state == UnconnectedState)
         return;
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     if (QSslSocket *socket = qobject_cast<QSslSocket *>(this)) {
         socket->abort();
         return;
@@ -2303,7 +2303,7 @@ bool QAbstractSocket::atEnd() const
 bool QAbstractSocket::flush()
 {
     Q_D(QAbstractSocket);
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     // Manual polymorphism; flush() isn't virtual, but QSslSocket overloads
     // it.
     if (QSslSocket *socket = qobject_cast<QSslSocket *>(this))

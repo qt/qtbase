@@ -80,7 +80,7 @@ private slots:
     void httpServerFiles();
     void httpServerCGI_data();
     void httpServerCGI();
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void httpsServer();
 #endif
     void httpProxy();
@@ -188,14 +188,14 @@ static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout 
 
 static bool doSocketFlush(QTcpSocket *socket, int timeout = 4000)
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     QSslSocket *sslSocket = qobject_cast<QSslSocket *>(socket);
 #endif
     QTime timer;
     timer.start();
     forever {
         if (socket->bytesToWrite() == 0
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
             && sslSocket->encryptedBytesToWrite() == 0
 #endif
             )
@@ -210,7 +210,7 @@ static bool doSocketFlush(QTcpSocket *socket, int timeout = 4000)
 
 static void netChat(int port, const QList<Chat> &chat)
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     QSslSocket socket;
 #else
     QTcpSocket socket;
@@ -322,7 +322,7 @@ static void netChat(int port, const QList<Chat> &chat)
                 break;
 
             case Chat::StartEncryption:
-#ifdef QT_NO_OPENSSL
+#ifdef QT_NO_SSL
                 QFAIL("Internal error: SSL required for this test");
 #else
                 qDebug() << i << "Starting client encryption";
@@ -745,7 +745,7 @@ void tst_NetworkSelfTest::httpServerCGI()
     netChat(80, chat);
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 void tst_NetworkSelfTest::httpsServer()
 {
     netChat(443, QList<Chat>()
@@ -937,7 +937,7 @@ void tst_NetworkSelfTest::socks5ProxyAuth()
 
 void tst_NetworkSelfTest::supportsSsl()
 {
-#ifdef QT_NO_OPENSSL
+#ifdef QT_NO_SSL
     QFAIL("SSL not compiled in");
 #else
     QVERIFY2(QSslSocket::supportsSsl(), "Could not load SSL libraries");

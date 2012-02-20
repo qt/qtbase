@@ -59,7 +59,7 @@ public slots:
     void init();
     void cleanup();
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 private slots:
     void constructing();
@@ -88,14 +88,14 @@ void tst_QSslCipher::cleanup()
 {
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 void tst_QSslCipher::constructing()
 {
     QSslCipher cipher;
 }
 
-#endif // QT_NO_OPENSSL
+#endif // QT_NO_SSL
 
 QTEST_MAIN(tst_QSslCipher)
 #include "tst_qsslcipher.moc"
