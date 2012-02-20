@@ -106,17 +106,14 @@ class QMakeProject
     bool doProjectCheckReqs(const QStringList &deps, QHash<QString, QStringList> &place);
     bool doVariableReplace(QString &str, QHash<QString, QStringList> &place);
     QStringList doVariableReplaceExpand(const QString &str, QHash<QString, QStringList> &place, bool *ok=0);
-    void init(QMakeProperty *, const QHash<QString, QStringList> *);
+    void init(QMakeProperty *);
     QStringList &values(const QString &v, QHash<QString, QStringList> &place);
     void validateModes();
     void resolveSpec(QString *spec, const QString &qmakespec);
 
 public:
-    QMakeProject() { init(0, 0); }
-    QMakeProject(QMakeProperty *p) { init(p, 0); }
+    QMakeProject(QMakeProperty *p = 0) { init(p); }
     QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *nvars=0);
-    QMakeProject(const QHash<QString, QStringList> &nvars) { init(0, &nvars); }
-    QMakeProject(QMakeProperty *p, const QHash<QString, QStringList> &nvars) { init(p, &nvars); }
     ~QMakeProject();
 
     void setExtraVars(const QHash<QString, QStringList> &_vars) { extra_vars = _vars; }

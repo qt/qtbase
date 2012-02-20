@@ -614,10 +614,8 @@ QMakeProject::~QMakeProject()
 
 
 void
-QMakeProject::init(QMakeProperty *p, const QHash<QString, QStringList> *vars)
+QMakeProject::init(QMakeProperty *p)
 {
-    if(vars)
-        base_vars = *vars;
     if(!p) {
         prop = new QMakeProperty;
         own_prop = true;
@@ -631,7 +629,8 @@ QMakeProject::init(QMakeProperty *p, const QHash<QString, QStringList> *vars)
 
 QMakeProject::QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *vars)
 {
-    init(p->properties(), vars ? vars : &p->variables());
+    init(p->properties());
+    base_vars = vars ? *vars : p->variables();
     for(QHash<QString, FunctionBlock*>::iterator it = p->replaceFunctions.begin(); it != p->replaceFunctions.end(); ++it) {
         it.value()->ref();
         replaceFunctions.insert(it.key(), it.value());
