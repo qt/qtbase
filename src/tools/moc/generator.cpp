@@ -140,13 +140,11 @@ void Generator::generateCode()
 //
 // build the data array
 //
-    int i = 0;
-
 
     // filter out undeclared enumerators and sets
     {
         QList<EnumDef> enumList;
-        for (i = 0; i < cdef->enumList.count(); ++i) {
+        for (int i = 0; i < cdef->enumList.count(); ++i) {
             EnumDef def = cdef->enumList.at(i);
             if (cdef->enumDeclarations.contains(def.name)) {
                 enumList += def;
@@ -186,7 +184,7 @@ void Generator::generateCode()
     fprintf(out, "    %4d, %4d, // enums/sets\n", cdef->enumList.count(), cdef->enumList.count() ? index : 0);
 
     int enumsIndex = index;
-    for (i = 0; i < cdef->enumList.count(); ++i)
+    for (int i = 0; i < cdef->enumList.count(); ++i)
         index += 4 + (cdef->enumList.at(i).values.count() * 2);
     fprintf(out, "    %4d, %4d, // constructors\n", isConstructible ? cdef->constructorList.count() : 0,
             isConstructible ? index : 0);
@@ -252,7 +250,7 @@ void Generator::generateCode()
     fprintf(out, "    \"");
     int col = 0;
     int len = 0;
-    for (i = 0; i < strings.size(); ++i) {
+    for (int i = 0; i < strings.size(); ++i) {
         QByteArray s = strings.at(i);
         len = s.length();
         if (col && col + len >= 72) {
