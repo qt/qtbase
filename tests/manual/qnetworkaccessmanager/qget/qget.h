@@ -87,7 +87,9 @@ private slots:
     void finished(QNetworkReply* reply);
     void authenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator);
     void proxyAuthenticationRequired(const QNetworkProxy& proxy, QAuthenticator* authenticator);
+#ifndef QT_NO_SSL
     void sslErrors(QNetworkReply* reply, const QList<QSslError>& errors);
+#endif
     void downloadFinished(DownloadItem *item);
 private:
     QNetworkAccessManager nam;

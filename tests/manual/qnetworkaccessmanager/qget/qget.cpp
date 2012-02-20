@@ -57,7 +57,9 @@ DownloadManager::DownloadManager()
     connect(&nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(finished(QNetworkReply*)));
     connect(&nam, SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)), this, SLOT(authenticationRequired(QNetworkReply*, QAuthenticator*)));
     connect(&nam, SIGNAL(proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*)), this, SLOT(proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*)));
+#ifndef QT_NO_SSL
     connect(&nam, SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)), this, SLOT(sslErrors(QNetworkReply*, const QList<QSslError>&)));
+#endif
 }
 
 DownloadManager::~DownloadManager()
@@ -117,6 +119,7 @@ void DownloadManager::proxyAuthenticationRequired(const QNetworkProxy& proxy, QA
     }
 }
 
+#ifndef QT_NO_SSL
 void DownloadManager::sslErrors(QNetworkReply* reply, const QList<QSslError>& errors)
 {
     qDebug() << "sslErrors";
@@ -125,6 +128,7 @@ void DownloadManager::sslErrors(QNetworkReply* reply, const QList<QSslError>& er
         qDebug() << error.certificate().toPem();
     }
 }
+#endif
 
 DownloadItem::DownloadItem(QNetworkReply* r, QNetworkAccessManager& manager) : reply(r), nam(manager)
 {
