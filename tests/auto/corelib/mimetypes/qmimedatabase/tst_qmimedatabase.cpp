@@ -51,6 +51,7 @@
 
 void initializeLang()
 {
+    qputenv("LC_ALL", "");
     qputenv("LANG", "en_US");
 }
 
