@@ -941,15 +941,12 @@ public:
         MV_LION = MV_10_7
     };
     static const MacVersion MacintoshVersion;
+    static MacVersion macVersion();
 #endif
 };
 
 Q_CORE_EXPORT const char *qVersion();
 Q_CORE_EXPORT bool qSharedBuild();
-
-#if defined(Q_OS_MAC)
-inline int qMacVersion() { return QSysInfo::MacintoshVersion; }
-#endif
 
 #ifndef Q_OUTOFLINE_TEMPLATE
 #  define Q_OUTOFLINE_TEMPLATE

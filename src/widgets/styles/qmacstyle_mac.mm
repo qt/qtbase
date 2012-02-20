@@ -5092,7 +5092,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 uint sc = SC_TitleBarMinButton;
                 ThemeTitleBarWidget tbw = kThemeWidgetCollapseBox;
                 bool active = titlebar->state & State_Active;
-                if (qMacVersion() < QSysInfo::MV_10_6) {
+                if (QSysInfo::macVersion() < QSysInfo::MV_10_6) {
                     int border = 2;
                     titleBarRect.origin.x += border;
                     titleBarRect.origin.y -= border;

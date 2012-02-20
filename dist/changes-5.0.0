@@ -216,6 +216,9 @@ information about a particular change.
 
 - QSqlQueryModel::indexInQuery() is now virtual. See note below under QSql.
 
+- qMacVersion() has been removed. Use QSysInfo::macVersion() or
+  QSysInfo::MacintoshVersion instead.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
