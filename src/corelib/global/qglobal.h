@@ -844,107 +844,6 @@ inline void qt_noop(void) {}
 #  define QT_RETHROW throw
 #endif
 
-/*
-   System information
-*/
-
-class QString;
-class Q_CORE_EXPORT QSysInfo {
-public:
-    enum Sizes {
-        WordSize = (sizeof(void *)<<3)
-    };
-
-#if defined(QT_BUILD_QMAKE)
-    enum Endian {
-        BigEndian,
-        LittleEndian
-    };
-    /* needed to bootstrap qmake */
-    static const int ByteOrder;
-#elif defined(Q_BYTE_ORDER)
-    enum Endian {
-        BigEndian,
-        LittleEndian
-
-#  ifdef qdoc
-        , ByteOrder = <platform-dependent>
-#  elif Q_BYTE_ORDER == Q_BIG_ENDIAN
-        , ByteOrder = BigEndian
-#  elif Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        , ByteOrder = LittleEndian
-#  else
-#    error "Undefined byte order"
-#  endif
-    };
-#else
-#  error "Qt not configured correctly, please run configure"
-#endif
-#if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
-    enum WinVersion {
-        WV_32s      = 0x0001,
-        WV_95       = 0x0002,
-        WV_98       = 0x0003,
-        WV_Me       = 0x0004,
-        WV_DOS_based= 0x000f,
-
-        /* codenames */
-        WV_NT       = 0x0010,
-        WV_2000     = 0x0020,
-        WV_XP       = 0x0030,
-        WV_2003     = 0x0040,
-        WV_VISTA    = 0x0080,
-        WV_WINDOWS7 = 0x0090,
-        WV_NT_based = 0x00f0,
-
-        /* version numbers */
-        WV_4_0      = WV_NT,
-        WV_5_0      = WV_2000,
-        WV_5_1      = WV_XP,
-        WV_5_2      = WV_2003,
-        WV_6_0      = WV_VISTA,
-        WV_6_1      = WV_WINDOWS7,
-
-        WV_CE       = 0x0100,
-        WV_CENET    = 0x0200,
-        WV_CE_5     = 0x0300,
-        WV_CE_6     = 0x0400,
-        WV_CE_based = 0x0f00
-    };
-    static const WinVersion WindowsVersion;
-    static WinVersion windowsVersion();
-
-#endif
-#ifdef Q_OS_MAC
-    enum MacVersion {
-        MV_Unknown = 0x0000,
-
-        /* version */
-        MV_9 = 0x0001,
-        MV_10_0 = 0x0002,
-        MV_10_1 = 0x0003,
-        MV_10_2 = 0x0004,
-        MV_10_3 = 0x0005,
-        MV_10_4 = 0x0006,
-        MV_10_5 = 0x0007,
-        MV_10_6 = 0x0008,
-        MV_10_7 = 0x0009,
-
-        /* codenames */
-        MV_CHEETAH = MV_10_0,
-        MV_PUMA = MV_10_1,
-        MV_JAGUAR = MV_10_2,
-        MV_PANTHER = MV_10_3,
-        MV_TIGER = MV_10_4,
-        MV_LEOPARD = MV_10_5,
-        MV_SNOWLEOPARD = MV_10_6,
-        MV_LION = MV_10_7
-    };
-    static const MacVersion MacintoshVersion;
-    static MacVersion macVersion();
-#endif
-};
-
 Q_CORE_EXPORT const char *qVersion();
 Q_CORE_EXPORT bool qSharedBuild();
 
@@ -1609,6 +1508,7 @@ QT_END_HEADER
 // qDebug and friends
 #include <QtCore/qlogging.h>
 
+#include <QtCore/qsysinfo.h>
 #include <QtCore/qtypeinfo.h>
 
 #endif /* __cplusplus */
