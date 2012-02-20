@@ -93,8 +93,9 @@ information about a particular change.
     text(Text t, int child) -> text(Text t), rect(int child) -> rect()
     setText(Text t, int child, const QString &text) -> setText(Text t, const QString &text)
     role(int child) -> role(), state(int child) -> state()
-    relationTo(int child, const QAccessibleInterface *other, int otherChild) ->
-      relationTo(const QAccessibleInterface *other)
+  * parent() and child() was added in order to do hierarchical navigation.
+  * relations() was added as a replacement to relationTo()
+  * As a consequence of the above two points, navigate() was removed.
   * Accessible-Action related functions have been removed. QAccessibleInterface
     subclasses are expected to implement the QAccessibleActionInterface instead.
     These functions have been removed:
