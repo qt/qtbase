@@ -47,6 +47,9 @@ QT_BEGIN_NAMESPACE
 
 class QIbusPlatformInputContextPlugin : public QPlatformInputContextPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformInputContextFactoryInterface" FILE "ibus.json")
+
 public:
     QStringList keys() const;
     QIBusPlatformInputContext *create(const QString&, const QStringList&);
@@ -66,6 +69,6 @@ QIBusPlatformInputContext *QIbusPlatformInputContextPlugin::create(const QString
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(ibusplatforminputcontextplugin, QIbusPlatformInputContextPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

@@ -68,7 +68,7 @@ class QPlatformInputContext;
     virtual QPlatformInputContext *create(const QString &key, const QStringList &paramList) = 0;
 };
 
-#define QPlatformInputContextFactoryInterface_iid "com.nokia.Qt.QPlatformInputContextFactoryInterface"
+#define QPlatformInputContextFactoryInterface_iid "org.qt-project.Qt.QPlatformInputContextFactoryInterface"
 
 Q_DECLARE_INTERFACE(QPlatformInputContextFactoryInterface, QPlatformInputContextFactoryInterface_iid)
 
