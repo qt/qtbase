@@ -50,6 +50,7 @@
 #include <stdio.h>
 
 #include <qplatforminputcontext_qpa.h>
+#include <qplatformintegration_qpa.h>
 
 #ifndef XK_ISO_Left_Tab
 #define XK_ISO_Left_Tab         0xFE20

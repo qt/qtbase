@@ -45,6 +45,7 @@
 
 #include <QtCore>
 #include <QtGui>
+#include <qplatformscreen_qpa.h>
 #include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE

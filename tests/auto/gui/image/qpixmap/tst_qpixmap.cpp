@@ -52,6 +52,7 @@
 #include <qsplashscreen.h>
 
 #include <qplatformpixmap_qpa.h>
+#include <qplatformintegration_qpa.h>
 #include <private/qguiapplication_p.h>
 #include <private/qdrawhelper_p.h>
 

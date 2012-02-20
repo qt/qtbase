@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qplatformpixmap_qpa.h"
+#include "qplatformintegration_qpa.h"
 #include <QtCore/qbuffer.h>
 #include <QtGui/qbitmap.h>
 #include <QtGui/qimagereader.h>

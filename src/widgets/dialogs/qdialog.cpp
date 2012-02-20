@@ -52,6 +52,7 @@
 #include "qwhatsthis.h"
 #include "qmenu.h"
 #include "qcursor.h"
+#include "qplatformtheme_qpa.h"
 #include "private/qdialog_p.h"
 #include "private/qguiapplication_p.h"
 #ifndef QT_NO_ACCESSIBILITY

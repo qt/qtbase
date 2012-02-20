@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformFontDatabase>
 
 QT_BEGIN_NAMESPACE

@@ -51,14 +51,14 @@
 
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
-#include <QtGui/qplatformintegration_qpa.h>
-#include <QtGui/qplatformtheme_qpa.h>
 #include "private/qshortcutmap_p.h"
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+class QPlatformIntegration;
+class QPlatformTheme;
 
 class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
 {

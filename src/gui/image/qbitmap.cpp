@@ -41,6 +41,7 @@
 
 #include "qbitmap.h"
 #include "qplatformpixmap_qpa.h"
+#include "qplatformintegration_qpa.h"
 #include "qimage.h"
 #include "qscreen.h"
 #include "qvariant.h"

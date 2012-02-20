@@ -49,6 +49,7 @@
 #include "qplatformwindow_qpa.h"
 #include "qplatformnativeinterface_qpa.h"
 #include "qplatformtheme_qpa.h"
+#include "qplatformintegration_qpa.h"
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/private/qcoreapplication_p.h>

@@ -53,6 +53,7 @@
 #include <qurl.h>
 #include <qmutex.h>
 #include <qplatformservices_qpa.h>
+#include <qplatformintegration_qpa.h>
 
 QT_BEGIN_NAMESPACE
 

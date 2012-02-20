@@ -50,6 +50,8 @@
 #include "qxcbkeyboard.h"
 #include "qxcbwmsupport.h"
 
+#include <qplatformintegration_qpa.h>
+
 #ifdef XCB_USE_DRI2
 #include "qdri2context.h"
 #endif

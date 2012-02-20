@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qplatformopenglcontext_qpa.h"
+#include "qplatformintegration_qpa.h"
 #include "qopenglcontext.h"
 #include "qopenglcontext_p.h"
 #include "qwindow.h"

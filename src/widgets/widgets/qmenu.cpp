@@ -49,6 +49,7 @@
 #include "qtimer.h"
 #include "qlayout.h"
 #include "qpainter.h"
+#include "qplatformtheme_qpa.h"
 #include "qapplication.h"
 #include "qdesktopwidget.h"
 #ifndef QT_NO_ACCESSIBILITY

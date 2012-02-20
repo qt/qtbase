@@ -50,6 +50,7 @@
 #include "qfileinfo.h"
 #include "private/qunicodetables_p.h"
 #include "qfontengine_p.h"
+#include "qplatformintegration_qpa.h"
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qplatformfontdatabase_qpa.h>

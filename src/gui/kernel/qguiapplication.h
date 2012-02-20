@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 
 class QGuiApplicationPrivate;
 class QPlatformNativeInterface;
+class QPlatformIntegration;
 class QPalette;
 class QScreen;
 class QStyleHints;
