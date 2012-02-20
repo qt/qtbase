@@ -2064,7 +2064,7 @@ class NoQuitOnHideWidget : public QWidget
 {
     Q_OBJECT
 public:
-    NoQuitOnHideWidget(QWidget *parent = 0)
+    explicit NoQuitOnHideWidget(QWidget *parent = 0)
       : QWidget(parent)
     {
         QTimer::singleShot(0, this, SLOT(hide()));
@@ -2081,7 +2081,7 @@ void tst_QApplication::noQuitOnHide()
 {
     int argc = 0;
     QApplication app(argc, 0);
-    QWidget *window1 = new NoQuitOnHideWidget(false);
+    QWidget *window1 = new NoQuitOnHideWidget;
     window1->show();
     QCOMPARE(app.exec(), 1);
 }
