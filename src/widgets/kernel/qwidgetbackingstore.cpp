@@ -220,8 +220,6 @@ void QWidgetBackingStore::showYellowThing(QWidget *widget, const QRegion &toBePa
     if (pe)
         pe->setSystemClip(QRegion());
 
-    QApplication::syncX();
-
 #if defined(Q_OS_UNIX)
     ::usleep(1000 * msec);
 #endif
