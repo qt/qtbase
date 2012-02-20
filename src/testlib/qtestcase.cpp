@@ -410,6 +410,12 @@ QT_BEGIN_NAMESPACE
    point to the working directory from which the compiler is invoked, or only
    absolute paths to the source files are passed to the compiler. Otherwise, the
    absolute path of the source directory cannot be determined.
+
+   \bold {Note:} For tests that use the \l QTEST_APPLESS_MAIN() macro to generate a
+   \c{main()} function, \c{QFINDTESTDATA} will not attempt to find test data
+   relative to QCoreApplication::applicationDirPath().  In practice, this means that
+   tests using \c{QTEST_APPLESS_MAIN()} will fail to find their test data
+   if run from a shadow build tree.
 */
 
 /*! \macro QTEST_MAIN(TestClass)
