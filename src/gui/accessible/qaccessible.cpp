@@ -359,26 +359,12 @@ QT_BEGIN_NAMESPACE
     This enum type defines bit flags that can be combined to indicate
     the relationship between two accessible objects.
 
-    \value Unrelated        The objects are unrelated.
-    \value Self             The objects are the same.
-
-    \value Up               The first object is above the second object.
-    \value Down             The first object is below the second object.
-    \value Left             The first object is left of the second object.
-    \value Right            The first object is right of the second object.
-    \value Covers           The first object covers the second object.
-    \value Covered          The first object is covered by the second object.
-
-    \value FocusChild       The first object is the second object's focus child.
     \value Label            The first object is the label of the second object.
     \value Labelled         The first object is labelled by the second object.
     \value Controller       The first object controls the second object.
     \value Controlled       The first object is controlled by the second object.
 
-    \omitvalue GeometryMask
-    \omitvalue LogicalMask
-
-    Implementations of relationTo() return a combination of these flags.
+    Implementations of relations() return a combination of these flags.
     Some values are mutually exclusive.
 */
 
@@ -779,8 +765,8 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
     top-most child. childAt() is used for hit testing (finding the object
     under the mouse).
 
-    The relationTo() function provides information about how two
-    different objects relate to each other, and parent() and child() allows
+    The relations() function provides information about the relations an
+    object has to other objects, and parent() and child() allows
     traversing from one object to another object.
 
     \section1 Properties
@@ -871,36 +857,12 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
 */
 
 /*!
-    \fn QAccessible::Relation QAccessibleInterface::relationTo(const QAccessibleInterface *other) const
-
-    Returns the relationship between this object and the \a
-    other object.
-
-    The returned value indicates the relation of the called object to
-    the \a other object, e.g. if this object is a label for \a other
-    the return value will be \c Label.
-
-    Usually parent-child relations are not returned.
-
-    The return value is a combination of the bit flags in the
-    QAccessible::Relation enumeration.
-
-    All objects provide this information.
-
-    \sa relations(), indexOfChild(), parent(), child()
-*/
-QAccessible::Relation QAccessibleInterface::relationTo(const QAccessibleInterface *) const
-{
-    return QAccessible::Relation();
-}
-
-/*!
     Returns the meaningful relations to other widgets. Usually this will not return parent/child
     relations, unless they are handled in a specific way such as in tree views.
     It will typically return the labelled-by and label relations.
     It should never return itself.
 
-    \sa relationTo(), parent(), child()
+    \sa parent(), child()
 */
 QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
 QAccessibleInterface::relations(QAccessible::Relation /*match = QAccessible::AllRelations*/) const
