@@ -49,7 +49,7 @@
 #include "qthread.h"
 #include "qmutex_p.h"
 
-#ifndef Q_OS_LINUX
+#ifndef Q_MUTEX_LINUX
 #include "private/qfreelist_p.h"
 #endif
 
@@ -154,7 +154,7 @@ QMutex::~QMutex()
     if (quintptr(d) > 0x3 && d->recursive) {
         delete static_cast<QRecursiveMutexPrivate *>(d);
     } else if (d) {
-#ifndef Q_OS_LINUX
+#ifndef Q_MUTEX_LINUX
         if (d != dummyLocked() && static_cast<QMutexPrivate *>(d)->possiblyUnlocked.load()
             && tryLock()) {
             unlock();
@@ -340,7 +340,7 @@ bool QBasicMutex::isRecursive() {
     \sa unlock()
 */
 
-#ifndef Q_OS_LINUX //linux implementation is in qmutex_linux.cpp
+#ifndef Q_MUTEX_LINUX //linux implementation is in qmutex_linux.cpp
 /*!
     \internal helper for lock()
  */

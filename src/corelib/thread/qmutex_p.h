@@ -63,6 +63,11 @@
 # include <mach/semaphore.h>
 #endif
 
+#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
+// use Linux mutexes everywhere except for LSB builds
+#  define Q_MUTEX_LINUX
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QMutexData
@@ -73,8 +78,9 @@ public:
         : recursive(mode == QMutex::Recursive) {}
 };
 
-#if !defined(Q_OS_LINUX)
-class QMutexPrivate : public QMutexData {
+#if !defined(Q_MUTEX_LINUX)
+class QMutexPrivate : public QMutexData
+{
 public:
     ~QMutexPrivate();
     QMutexPrivate();
@@ -122,7 +128,7 @@ public:
     Qt::HANDLE event;
 #endif
 };
-#endif //Q_OS_LINUX
+#endif //Q_MUTEX_LINUX
 
 class QRecursiveMutexPrivate : public QMutexData
 {

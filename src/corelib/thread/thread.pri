@@ -44,8 +44,12 @@ integrity:SOURCES += thread/qmutex_unix.cpp \
 		thread/qwaitcondition_unix.cpp
 
 unix: {
-    macx-*       { SOURCES += thread/qmutex_mac.cpp }
-    else:linux-* { SOURCES += thread/qmutex_linux.cpp }
-    else         { SOURCES += thread/qmutex_unix.cpp }
+    macx-* {
+        SOURCES += thread/qmutex_mac.cpp
+    } else:linux-*:!linux-lsb-* {
+        SOURCES += thread/qmutex_linux.cpp
+    } else {
+        SOURCES += thread/qmutex_unix.cpp
+    }
 }
 
