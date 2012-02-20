@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="11" failures="5" tests="12" name="tst_ExpectFail">
+<testsuite errors="13" failures="6" tests="14" name="tst_ExpectFail">
   <properties>
-    <property value="5.0.0" name="QTestVersion"/>
-    <property value="5.0.0" name="QtVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
   </properties>
   <testcase result="pass" name="initTestCase"/>
   <testcase result="xfail" name="xfailAndContinue">
@@ -21,7 +21,11 @@
     <!-- message="A string" type="info" -->
     <!-- message="Bug 5 (The message)" type="info" -->
   </testcase>
-  <testcase result="xfail" name="xfailDataDriven">
+  <testcase result="xfail" name="xfailDataDrivenWithQVerify">
+    <!-- tag="Abort" message="This test should xfail" type="info" -->
+    <!-- tag="Continue" message="This test should xfail" type="info" -->
+  </testcase>
+  <testcase result="xfail" name="xfailDataDrivenWithQCompare">
     <!-- tag="Abort" message="This test should xfail" type="info" -->
     <!-- tag="Continue" message="This test should xfail" type="info" -->
   </testcase>
@@ -37,8 +41,11 @@
   <testcase result="xpass" name="xpass">
     <failure message="&apos;true&apos; returned TRUE unexpectedly. ()" result="xpass"/>
   </testcase>
-  <testcase result="xpass" name="xpassDataDriven">
+  <testcase result="xpass" name="xpassDataDrivenWithQVerify">
     <failure tag="XPass" message="&apos;true&apos; returned TRUE unexpectedly. ()" result="xpass"/>
+  </testcase>
+  <testcase result="xpass" name="xpassDataDrivenWithQCompare">
+    <failure tag="XPass" message="COMPARE()" result="xpass"/>
   </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err>
@@ -49,6 +56,8 @@
 <![CDATA[This should xfail]]>
 <![CDATA[A string]]>
 <![CDATA[Bug 5 (The message)]]>
+<![CDATA[This test should xfail]]>
+<![CDATA[This test should xfail]]>
 <![CDATA[This test should xfail]]>
 <![CDATA[This test should xfail]]>
 <![CDATA[This test should xfail]]>

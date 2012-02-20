@@ -54,8 +54,10 @@ private slots:
     void xfailAndAbort() const;
     void xfailTwice() const;
     void xfailWithQString() const;
-    void xfailDataDriven_data() const;
-    void xfailDataDriven() const;
+    void xfailDataDrivenWithQVerify_data() const;
+    void xfailDataDrivenWithQVerify() const;
+    void xfailDataDrivenWithQCompare_data() const;
+    void xfailDataDrivenWithQCompare() const;
     void xfailOnWrongRow_data() const;
     void xfailOnWrongRow() const;
     void xfailOnAnyRow_data() const;
@@ -63,8 +65,10 @@ private slots:
     void xfailWithoutVerify_data() const;
     void xfailWithoutVerify() const;
     void xpass() const;
-    void xpassDataDriven_data() const;
-    void xpassDataDriven() const;
+    void xpassDataDrivenWithQVerify_data() const;
+    void xpassDataDrivenWithQVerify() const;
+    void xpassDataDrivenWithQCompare_data() const;
+    void xpassDataDrivenWithQCompare() const;
 };
 
 void tst_ExpectFail::xfailAndContinue() const
@@ -106,7 +110,7 @@ void tst_ExpectFail::xfailWithQString() const
     QVERIFY(false);
 }
 
-void tst_ExpectFail::xfailDataDriven_data() const
+void tst_ExpectFail::xfailDataDrivenWithQVerify_data() const
 {
     QTest::addColumn<bool>("shouldPass");
     QTest::addColumn<QTest::TestFailMode>("failMode");
@@ -117,7 +121,7 @@ void tst_ExpectFail::xfailDataDriven_data() const
     QTest::newRow("Continue") << false << QTest::Continue;
 }
 
-void tst_ExpectFail::xfailDataDriven() const
+void tst_ExpectFail::xfailDataDrivenWithQVerify() const
 {
     QFETCH(bool, shouldPass);
     QFETCH(QTest::TestFailMode, failMode);
@@ -133,6 +137,40 @@ void tst_ExpectFail::xfailDataDriven() const
     }
 
     QVERIFY(shouldPass);
+
+    // If we get here, we either expected to pass or we expected to
+    // fail and the failure mode was Continue.
+    if (!shouldPass)
+        QCOMPARE(failMode, QTest::Continue);
+}
+
+void tst_ExpectFail::xfailDataDrivenWithQCompare_data() const
+{
+    QTest::addColumn<bool>("shouldPass");
+    QTest::addColumn<QTest::TestFailMode>("failMode");
+
+    QTest::newRow("Pass 1")   << true  << QTest::Abort;
+    QTest::newRow("Pass 2")   << true  << QTest::Continue;
+    QTest::newRow("Abort")    << false << QTest::Abort;
+    QTest::newRow("Continue") << false << QTest::Continue;
+}
+
+void tst_ExpectFail::xfailDataDrivenWithQCompare() const
+{
+    QFETCH(bool, shouldPass);
+    QFETCH(QTest::TestFailMode, failMode);
+
+    // You can't pass a variable as the last parameter of QEXPECT_FAIL,
+    // because the macro adds "QTest::" in front of the last parameter.
+    // That is why the following code appears to be a little strange.
+    if (!shouldPass) {
+        if (failMode == QTest::Abort)
+            QEXPECT_FAIL(QTest::currentDataTag(), "This test should xfail", Abort);
+        else
+            QEXPECT_FAIL(QTest::currentDataTag(), "This test should xfail", Continue);
+    }
+
+    QCOMPARE(1, shouldPass ? 1 : 2);
 
     // If we get here, we either expected to pass or we expected to
     // fail and the failure mode was Continue.
@@ -194,7 +232,7 @@ void tst_ExpectFail::xpass() const
     QVERIFY2(false, "This should not be reached");
 }
 
-void tst_ExpectFail::xpassDataDriven_data() const
+void tst_ExpectFail::xpassDataDrivenWithQVerify_data() const
 {
     QTest::addColumn<bool>("shouldXPass");
 
@@ -202,7 +240,7 @@ void tst_ExpectFail::xpassDataDriven_data() const
     QTest::newRow("Pass")   << false;
 }
 
-void tst_ExpectFail::xpassDataDriven() const
+void tst_ExpectFail::xpassDataDrivenWithQVerify() const
 {
     QFETCH(bool, shouldXPass);
 
@@ -210,6 +248,27 @@ void tst_ExpectFail::xpassDataDriven() const
         QEXPECT_FAIL(QTest::currentDataTag(), "This test should xpass", Abort);
 
     QVERIFY(true);
+
+    // We should only get here if the test wasn't supposed to xpass.
+    QVERIFY2(!shouldXPass, "Test failed to terminate on XPASS");
+}
+
+void tst_ExpectFail::xpassDataDrivenWithQCompare_data() const
+{
+    QTest::addColumn<bool>("shouldXPass");
+
+    QTest::newRow("XPass")  << true;
+    QTest::newRow("Pass")   << false;
+}
+
+void tst_ExpectFail::xpassDataDrivenWithQCompare() const
+{
+    QFETCH(bool, shouldXPass);
+
+    if (shouldXPass)
+        QEXPECT_FAIL(QTest::currentDataTag(), "This test should xpass", Abort);
+
+    QCOMPARE(1, 1);
 
     // We should only get here if the test wasn't supposed to xpass.
     QVERIFY2(!shouldXPass, "Test failed to terminate on XPASS");
