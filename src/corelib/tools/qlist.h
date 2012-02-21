@@ -71,7 +71,6 @@ struct Q_CORE_EXPORT QListData {
     struct Data {
         QtPrivate::RefCount ref;
         int alloc, begin, end;
-        uint sharable : 1;
         void *array[1];
     };
     enum { DataHeaderSize = sizeof(Data) - sizeof(void *) };
@@ -114,7 +113,7 @@ class QList
 
 public:
     inline QList() : d(const_cast<QListData::Data *>(&QListData::shared_null)) { }
-    inline QList(const QList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
+    QList(const QList<T> &l);
     ~QList();
     QList<T> &operator=(const QList<T> &l);
 #ifdef Q_COMPILER_RVALUE_REFS
@@ -142,7 +141,15 @@ public:
     }
 
     inline bool isDetached() const { return !d->ref.isShared(); }
-    inline void setSharable(bool sharable) { if (!sharable) detach(); if (d != &QListData::shared_null) d->sharable = sharable; }
+    inline void setSharable(bool sharable)
+    {
+        if (sharable == d->ref.isSharable())
+            return;
+        if (!sharable)
+            detach();
+        if (d != &QListData::shared_null)
+            d->ref.setSharable(sharable);
+    }
     inline bool isSharedWith(const QList<T> &other) const { return d == other.d; }
 
     inline bool isEmpty() const { return p.isEmpty(); }
@@ -700,6 +707,28 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE void QList<T>::detach_helper()
 {
     detach_helper(d->alloc);
+}
+
+template <typename T>
+Q_OUTOFLINE_TEMPLATE QList<T>::QList(const QList<T> &l)
+    : d(l.d)
+{
+    if (!d->ref.ref()) {
+        p.detach(d->alloc);
+
+        struct Cleanup
+        {
+            Cleanup(QListData::Data *d) : d_(d) {}
+            ~Cleanup() { if (d_) qFree(d_); }
+
+            QListData::Data *d_;
+        } tryCatch(d);
+
+        node_copy(reinterpret_cast<Node *>(p.begin()),
+                reinterpret_cast<Node *>(p.end()),
+                reinterpret_cast<Node *>(l.p.begin()));
+        tryCatch.d_ = 0;
+    }
 }
 
 template <typename T>
