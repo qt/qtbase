@@ -215,7 +215,7 @@ bool QLocalServerPrivate::listen(qintptr socketDescriptor)
 
 #ifdef Q_OS_LINUX
     struct ::sockaddr_un addr;
-    socklen_t len;
+    QT_SOCKLEN_T len = sizeof(addr);
     memset(&addr, 0, sizeof(addr));
     if (0 == ::getsockname(listenSocket, (sockaddr *)&addr, &len)) {
         // check for absract sockets
