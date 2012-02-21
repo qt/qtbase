@@ -193,6 +193,7 @@ private:
     inline void show_sys() const;
     inline void hide_sys() const;
     inline void setGeometry_sys(const QRect &rect) const;
+    inline QRect frameGeometry_sys() const;
     inline QRect geometry_sys() const;
     inline WindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
     inline void setWindowState_sys(Qt::WindowState newState);
@@ -213,6 +214,8 @@ private:
     bool m_mouseGrab;
     QWindowsWindowCursor m_cursor;
     QWindowsOleDropTarget *m_dropTarget;
+    unsigned m_savedStyle;
+    QRect m_savedFrameGeometry;
 };
 
 // Conveniences for window frames.

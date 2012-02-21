@@ -1429,9 +1429,9 @@ qreal QTextLine::descent() const
 }
 
 /*!
-    Returns the line's height. This is equal to ascent() + descent() + 1
+    Returns the line's height. This is equal to ascent() + descent()
     if leading is not included. If leading is included, this equals to
-    ascent() + descent() + leading() + 1.
+    ascent() + descent() + leading().
 
     \sa ascent(), descent(), leading(), setLeadingIncluded()
 */
@@ -2124,8 +2124,8 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
     Q_ASSERT(glyphsArray.size() == positionsArray.size());
 
     qreal fontHeight = font.ascent() + font.descent();
-    qreal minY;
-    qreal maxY;
+    qreal minY = 0;
+    qreal maxY = 0;
     QVector<quint32> glyphs;
     QVector<QPointF> positions;
     for (int i=0; i<glyphsArray.size(); ++i) {

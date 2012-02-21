@@ -286,7 +286,7 @@ void tst_QItemView::populate()
 {
     treeModel = new CheckerModel;
     QModelIndex parent;
-#if defined(QT_ARCH_ARM)
+#if defined(Q_PROCESSOR_ARM)
     const int baseInsert = 4;
 #else
     const int baseInsert = 26;

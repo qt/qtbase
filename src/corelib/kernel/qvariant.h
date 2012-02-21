@@ -49,6 +49,7 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 
@@ -87,6 +88,39 @@ inline QVariant qVariantFromValue(const T &);
 
 template<typename T>
 inline T qvariant_cast(const QVariant &);
+
+namespace QtPrivate {
+
+    template <typename Derived, typename Argument, typename ReturnType>
+    struct ObjectInvoker
+    {
+        static ReturnType invoke(Argument a)
+        {
+            return Derived::object(a);
+        }
+    };
+
+    template <typename Derived, typename Argument, typename ReturnType>
+    struct MetaTypeInvoker
+    {
+        static ReturnType invoke(Argument a)
+        {
+            return Derived::metaType(a);
+        }
+    };
+
+    template <typename Derived, typename T, typename Argument, typename ReturnType, bool = IsPointerToTypeDerivedFromQObject<T>::Value>
+    struct TreatAsQObjectBeforeMetaType : ObjectInvoker<Derived, Argument, ReturnType>
+    {
+    };
+
+    template <typename Derived, typename T, typename Argument, typename ReturnType>
+    struct TreatAsQObjectBeforeMetaType<Derived, T, Argument, ReturnType, false> : MetaTypeInvoker<Derived, Argument, ReturnType>
+    {
+    };
+
+    template<typename T> struct QVariantValueHelper;
+}
 
 class Q_CORE_EXPORT QVariant
 {
@@ -153,7 +187,7 @@ class Q_CORE_EXPORT QVariant
         Icon = QMetaType::QIcon,
         SizePolicy = QMetaType::QSizePolicy,
 
-        UserType = 127,
+        UserType = QMetaType::User,
         LastType = 0xffffffff // need this so that gcc >= 3.4 allocates 32 bits for Type
     };
 
@@ -375,14 +409,15 @@ protected:
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant &);
 #endif
-    Private d;
 #ifndef Q_NO_TEMPLATE_FRIENDS
     template<typename T>
     friend inline T qvariant_cast(const QVariant &);
+    template<typename T> friend struct QtPrivate::QVariantValueHelper;
 protected:
 #else
 public:
 #endif
+    Private d;
     void create(int type, const void *copy);
     bool cmp(const QVariant &other) const;
     bool convert(const int t, void *ptr) const;
@@ -481,18 +516,35 @@ inline bool operator!=(const QVariant &v1, const QVariantComparisonHelper &v2)
 }
 #endif
 
+namespace QtPrivate {
+    template<typename T>
+    struct QVariantValueHelper : TreatAsQObjectBeforeMetaType<QVariantValueHelper<T>, T, const QVariant &, T>
+    {
+        static T metaType(const QVariant &v)
+        {
+            const int vid = qMetaTypeId<T>(static_cast<T *>(0));
+            if (vid == v.userType())
+                return *reinterpret_cast<const T *>(v.constData());
+            if (vid < int(QMetaType::User)) {
+                T t;
+                if (v.convert(QVariant::Type(vid), &t))
+                    return t;
+            }
+            return T();
+        }
+#ifndef QT_NO_QOBJECT
+        static T object(const QVariant &v)
+        {
+            return qobject_cast<T>(QMetaType::typeFlags(v.userType()) & QMetaType::PointerToQObject ? v.d.data.o : 0);
+        }
+#endif
+    };
+}
+
 #ifndef QT_MOC
 template<typename T> inline T qvariant_cast(const QVariant &v)
 {
-    const int vid = qMetaTypeId<T>(static_cast<T *>(0));
-    if (vid == v.userType())
-        return *reinterpret_cast<const T *>(v.constData());
-    if (vid < int(QMetaType::User)) {
-        T t;
-        if (v.convert(vid, &t))
-            return t;
-    }
-    return T();
+    return QtPrivate::QVariantValueHelper<T>::invoke(v);
 }
 
 template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)

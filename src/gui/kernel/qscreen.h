@@ -61,6 +61,7 @@ class QPlatformScreen;
 class QScreenPrivate;
 class QWindow;
 class QRect;
+class QPixmap;
 
 class Q_GUI_EXPORT QScreen : public QObject
 {
@@ -123,6 +124,8 @@ public:
 
     bool isPortrait(Qt::ScreenOrientation orientation);
     bool isLandscape(Qt::ScreenOrientation orientation);
+
+    QPixmap grabWindow(WId window, int x, int y, int w, int h) const;
 
 Q_SIGNALS:
     void sizeChanged(const QSize &size);

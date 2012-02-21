@@ -48,6 +48,8 @@
 #include "qplatformfontdatabase_qpa.h"
 #include "qplatformwindow_qpa.h"
 #include "qplatformnativeinterface_qpa.h"
+#include "qplatformtheme_qpa.h"
+#include "qplatformintegration_qpa.h"
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/private/qcoreapplication_p.h>
@@ -126,6 +128,7 @@ QWindow *QGuiApplicationPrivate::focus_window = 0;
 
 static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;
+bool QGuiApplicationPrivate::obey_desktop_settings = true;
 
 extern void qRegisterGuiVariant();
 extern void qUnregisterGuiVariant();
@@ -184,7 +187,8 @@ QGuiApplication::~QGuiApplication()
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
     : QCoreApplicationPrivate(argc, argv, flags),
       styleHints(0),
-      inputMethod(0)
+      inputMethod(0),
+      lastTouchType(QEvent::TouchEnd)
 {
     self = this;
     application_type = QCoreApplication::GuiClient;
@@ -502,6 +506,8 @@ void QGuiApplicationPrivate::init()
     QWindowSystemInterface::sendWindowSystemEvents(QCoreApplicationPrivate::eventDispatcher, QEventLoop::AllEvents);
 }
 
+extern void qt_cleanupFontDatabase();
+
 QGuiApplicationPrivate::~QGuiApplicationPrivate()
 {
     is_app_closing = true;
@@ -525,6 +531,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 
     delete styleHints;
     delete inputMethod;
+
+    qt_cleanupFontDatabase();
 
     delete platform_integration;
     platform_integration = 0;
@@ -654,6 +662,10 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
     case QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInch:
         QGuiApplicationPrivate::reportLogicalDotsPerInchChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *>(e));
+        break;
+    case QWindowSystemInterfacePrivate::ThemeChange:
+        QGuiApplicationPrivate::processThemeChanged(
+                    static_cast<QWindowSystemInterfacePrivate::ThemeChangeEvent *>(e));
         break;
     case QWindowSystemInterfacePrivate::Map:
         QGuiApplicationPrivate::processMapEvent(static_cast<QWindowSystemInterfacePrivate::MapEvent *>(e));
@@ -882,6 +894,14 @@ void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfa
     }
 }
 
+void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce)
+{
+    if (QWindow *window  = tce->window.data()) {
+        QEvent e(QEvent::ThemeChange);
+        QGuiApplication::sendSpontaneousEvent(window, &e);
+    }
+}
+
 void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e)
 {
     if (e->tlw.isNull())
@@ -946,8 +966,55 @@ Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey 
 
 void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *e)
 {
-    QWindow *window = e->window.data();
     QGuiApplicationPrivate *d = self;
+
+    if (e->touchType == QEvent::TouchCancel) {
+        // The touch sequence has been canceled (e.g. by the compositor).
+        // Send the TouchCancel to all windows with active touches and clean up.
+        QTouchEvent touchEvent(QEvent::TouchCancel, e->device, e->modifiers);
+        touchEvent.setTimestamp(e->timestamp);
+        QHash<ActiveTouchPointsKey, ActiveTouchPointsValue>::const_iterator it
+                = self->activeTouchPoints.constBegin(), ite = self->activeTouchPoints.constEnd();
+        QSet<QWindow *> windowsNeedingCancel;
+        while (it != ite) {
+            QWindow *w = it->window.data();
+            if (w)
+                windowsNeedingCancel.insert(w);
+            ++it;
+        }
+        for (QSet<QWindow *>::const_iterator winIt = windowsNeedingCancel.constBegin(),
+             winItEnd = windowsNeedingCancel.constEnd(); winIt != winItEnd; ++winIt) {
+            touchEvent.setWindow(*winIt);
+            QGuiApplication::sendSpontaneousEvent(*winIt, &touchEvent);
+        }
+        if (!self->synthesizedMousePoints.isEmpty() && !e->synthetic) {
+            for (QHash<QWindow *, SynthesizedMouseData>::const_iterator synthIt = self->synthesizedMousePoints.constBegin(),
+                 synthItEnd = self->synthesizedMousePoints.constEnd(); synthIt != synthItEnd; ++synthIt) {
+                if (!synthIt->window)
+                    continue;
+                QWindowSystemInterfacePrivate::MouseEvent fake(synthIt->window.data(),
+                                                               e->timestamp,
+                                                               synthIt->pos,
+                                                               synthIt->screenPos,
+                                                               Qt::NoButton,
+                                                               e->modifiers);
+                fake.synthetic = true;
+                processMouseEvent(&fake);
+            }
+            self->synthesizedMousePoints.clear();
+        }
+        self->activeTouchPoints.clear();
+        self->lastTouchType = e->touchType;
+        return;
+    }
+
+    // Prevent sending ill-formed event sequences: Cancel can only be followed by a Begin.
+    if (self->lastTouchType == QEvent::TouchCancel && e->touchType != QEvent::TouchBegin)
+        return;
+
+    self->lastTouchType = e->touchType;
+
+    QWindow *window = e->window.data();
     typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
     QHash<QWindow *, StatesAndTouchPoints> windowsNeedingEvents;
 
@@ -1097,6 +1164,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             // exclude touchpads as those generate their own mouse events
             if (touchEvent.device()->type() != QTouchDevice::TouchPad) {
                 Qt::MouseButtons b = eventType == QEvent::TouchEnd ? Qt::NoButton : Qt::LeftButton;
+                if (b == Qt::NoButton)
+                    self->synthesizedMousePoints.clear();
 
                 QList<QTouchEvent::TouchPoint> touchPoints = touchEvent.touchPoints();
                 if (eventType == QEvent::TouchBegin)
@@ -1105,6 +1174,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 for (int i = 0; i < touchPoints.count(); ++i) {
                     const QTouchEvent::TouchPoint &touchPoint = touchPoints.at(i);
                     if (touchPoint.id() == m_fakeMouseSourcePointId) {
+                        if (b != Qt::NoButton)
+                            self->synthesizedMousePoints.insert(w, SynthesizedMouseData(
+                                                                    touchPoint.pos(), touchPoint.screenPos(), w));
                         QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp,
                                                                        touchPoint.pos(),
                                                                        touchPoint.screenPos(),
@@ -1313,6 +1385,9 @@ QClipboard * QGuiApplication::clipboard()
 QPalette QGuiApplication::palette()
 {
     if (!QGuiApplicationPrivate::app_pal)
+        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
+            QGuiApplicationPrivate::app_pal = new QPalette(*themePalette);
+    if (!QGuiApplicationPrivate::app_pal)
         QGuiApplicationPrivate::app_pal = new QPalette(Qt::black);
     return *QGuiApplicationPrivate::app_pal;
 }
@@ -1407,6 +1482,17 @@ void QGuiApplicationPrivate::emitLastWindowClosed()
     }
 }
 
+bool QGuiApplicationPrivate::shouldQuit()
+{
+    /* if there is no visible top-level window left, we allow the quit */
+    QWindowList list = QGuiApplication::topLevelWindows();
+    for (int i = 0; i < list.size(); ++i) {
+        QWindow *w = list.at(i);
+        if (w->isVisible())
+            return false;
+    }
+    return true;
+}
 
 /*!
     \property QGuiApplication::layoutDirection
@@ -1562,6 +1648,32 @@ QStyleHints *QGuiApplication::styleHints() const
     return d->styleHints;
 }
 
+/*!
+    Sets whether Qt should use the system's standard colors, fonts, etc., to
+    \a on. By default, this is true.
+
+    This function must be called before creating the QGuiApplication object, like
+    this:
+
+    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 6
+
+    \sa desktopSettingsAware()
+*/
+void QGuiApplication::setDesktopSettingsAware(bool on)
+{
+    QGuiApplicationPrivate::obey_desktop_settings = on;
+}
+
+/*!
+    Returns true if Qt is set to use the system's standard colors, fonts, etc.;
+    otherwise returns false. The default is true.
+
+    \sa setDesktopSettingsAware()
+*/
+bool QGuiApplication::desktopSettingsAware()
+{
+    return QGuiApplicationPrivate::obey_desktop_settings;
+}
 
 /*!
   \since 5.0

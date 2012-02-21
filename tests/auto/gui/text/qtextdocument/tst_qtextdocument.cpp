@@ -1171,7 +1171,7 @@ void tst_QTextDocument::toHtml_data()
         fmt.setVerticalAlignment(QTextCharFormat::AlignMiddle);
         cursor.insertImage(fmt);
 
-        QTest::newRow("image-malign") << QTextDocumentFragment(&doc)
+        QTest::newRow("image-align-middle") << QTextDocumentFragment(&doc)
                             << QString("<p DEFAULTBLOCKSTYLE><img src=\"foo\" style=\"vertical-align: middle;\" /></p>");
     }
 
@@ -1183,7 +1183,7 @@ void tst_QTextDocument::toHtml_data()
         fmt.setVerticalAlignment(QTextCharFormat::AlignTop);
         cursor.insertImage(fmt);
 
-        QTest::newRow("image-malign") << QTextDocumentFragment(&doc)
+        QTest::newRow("image-align-top") << QTextDocumentFragment(&doc)
                             << QString("<p DEFAULTBLOCKSTYLE><img src=\"foo\" style=\"vertical-align: top;\" /></p>");
     }
 

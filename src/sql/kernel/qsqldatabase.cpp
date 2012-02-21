@@ -138,10 +138,7 @@ public:
         driver(dr),
         port(-1)
     {
-        if(driver)
-            precisionPolicy = driver->numericalPrecisionPolicy();
-        else
-            precisionPolicy= QSql::LowPrecisionDouble;
+        precisionPolicy = QSql::LowPrecisionDouble;
     }
     QSqlDatabasePrivate(const QSqlDatabasePrivate &other);
     ~QSqlDatabasePrivate();

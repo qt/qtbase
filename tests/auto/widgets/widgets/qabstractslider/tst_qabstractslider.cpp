@@ -482,7 +482,7 @@ void tst_QAbstractSlider::keyPressed_data()
     QList<Qt::Key> list;
 
     list << Qt::Key_Down;
-    QTest::newRow("Step down once") << 10   // initial position
+    QTest::newRow("Step down once 1") << 10   // initial position
                                  << 0    // minimum
                                  << 100  // maximum
                                  << 3    // single step size
@@ -495,7 +495,7 @@ void tst_QAbstractSlider::keyPressed_data()
 
     list = QList<Qt::Key>();
     list << Qt::Key_Up;
-    QTest::newRow("Step down once") << 10   // initial position
+    QTest::newRow("Step down once 2") << 10   // initial position
                                  << 0    // minimum
                                  << 100  // maximum
                                  << 3    // single step size

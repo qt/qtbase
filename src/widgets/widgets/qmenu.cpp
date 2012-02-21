@@ -49,6 +49,7 @@
 #include "qtimer.h"
 #include "qlayout.h"
 #include "qpainter.h"
+#include "qplatformtheme_qpa.h"
 #include "qapplication.h"
 #include "qdesktopwidget.h"
 #ifndef QT_NO_ACCESSIBILITY
@@ -2882,7 +2883,7 @@ void QMenu::actionEvent(QActionEvent *e)
             d->platformMenu->syncAction(e->action());
     }
 
-#if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
+#if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
     if (!d->wce_menu)
         d->wce_menu = new QMenuPrivate::QWceMenuPrivate;
     if (e->type() == QEvent::ActionAdded)

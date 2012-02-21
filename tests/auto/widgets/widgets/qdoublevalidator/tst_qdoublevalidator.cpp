@@ -360,11 +360,11 @@ void tst_QDoubleValidator::validateIntEquiv_data()
     QTest::newRow("4.6") << 0.0 << 10.0 << QString(".1") << INV;
     QTest::newRow("4.7") << 0.0 << 10.0 << QString("-1.0") << INV;
 
-    QTest::newRow("5.1") << 6.0 << 8.0 << QString("5") << ITM;
-    QTest::newRow("5.1") << 6.0 << 8.0 << QString("56") << INV;
+    QTest::newRow("5.1a") << 6.0 << 8.0 << QString("5") << ITM;
+    QTest::newRow("5.1b") << 6.0 << 8.0 << QString("56") << INV;
     QTest::newRow("5.2") << 6.0 << 8.0 << QString("7") << ACC;
-    QTest::newRow("5.3") << 6.0 << 8.0 << QString("9") << ITM;
-    QTest::newRow("5.3") << 6.0 << 8.0 << QString("-") << INV;
+    QTest::newRow("5.3a") << 6.0 << 8.0 << QString("9") << ITM;
+    QTest::newRow("5.3b") << 6.0 << 8.0 << QString("-") << INV;
     QTest::newRow("5.4a") << -8.0 << -6.0 << QString("+") << INV;
     QTest::newRow("5.4b") << -8.0 << -6.0 << QString("+5") << INV;
     QTest::newRow("5.4c") << -8.0 << -6.0 << QString("-5") << ITM;

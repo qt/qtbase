@@ -105,6 +105,28 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     Q_Q(const QMimeData);
 
     QVariant data = q->retrieveData(format, type);
+
+    // Text data requested: fallback to URL data if available
+    if (format == QLatin1String("text/plain") && !data.isValid()) {
+        data = retrieveTypedData(QLatin1String("text/uri-list"), QVariant::List);
+        if (data.type() == QVariant::Url) {
+            data = QVariant(data.toUrl().toDisplayString());
+        } else if (data.type() == QVariant::List) {
+            QString text;
+            int numUrls = 0;
+            const QList<QVariant> list = data.toList();
+            for (int i = 0; i < list.size(); ++i) {
+                if (list.at(i).type() == QVariant::Url) {
+                    text.append(list.at(i).toUrl().toDisplayString() + QLatin1Char('\n'));
+                    ++numUrls;
+                }
+            }
+            if (numUrls == 1)
+                text.chop(1); // no final '\n' if there's only one URL
+            data = QVariant(text);
+        }
+    }
+
     if (data.type() == type || !data.isValid())
         return data;
 
@@ -326,6 +348,10 @@ QList<QUrl> QMimeData::urls() const
 
     URLs correspond to the MIME type \c text/uri-list.
 
+    Since Qt 5.0, setUrls also exports the urls as plain text, if setText
+    was not called before, to make it possible to drop them into any lineedit
+    and text editor.
+
     \sa hasUrls(), setData()
 */
 void QMimeData::setUrls(const QList<QUrl> &urls)
@@ -385,7 +411,7 @@ void QMimeData::setText(const QString &text)
 */
 bool QMimeData::hasText() const
 {
-    return hasFormat(QLatin1String("text/plain"));
+    return hasFormat(QLatin1String("text/plain")) || hasUrls();
 }
 
 /*!

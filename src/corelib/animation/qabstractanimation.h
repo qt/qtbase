@@ -149,7 +149,7 @@ public:
 
     bool isRunning() const;
 
-    qint64 elapsed() const;
+    virtual qint64 elapsed() const;
 
 Q_SIGNALS:
     void started();

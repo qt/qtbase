@@ -101,8 +101,8 @@
     In this case, the file is accessible as \c
     :/myresources/cut-img.png.
 
-    Some resources, such as translation files and icons, many need to
-    change based on the user's locale. This is done by adding a \c lang
+    Some resources need to change based on the user's locale,
+    such as translation files or icons. This is done by adding a \c lang
     attribute to the \c qresource tag, specifying a suitable locale
     string. For example:
 

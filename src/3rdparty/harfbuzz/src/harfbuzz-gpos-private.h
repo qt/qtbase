@@ -39,6 +39,10 @@ HB_BEGIN_HEADER
 #define VR_X_ADVANCE_DEVICE   2
 #define VR_Y_ADVANCE_DEVICE   3
 
+#ifndef HB_SUPPORT_MULTIPLE_MASTER
+#  define HB_USE_FLEXIBLE_VALUE_RECORD
+#endif
+
 struct  HB_ValueRecord_
 {
   HB_Short    XPlacement;             /* horizontal adjustment for
@@ -242,7 +246,11 @@ typedef struct HB_Class2Record_  HB_Class2Record;
 
 struct  HB_Class1Record_
 {
-  HB_Class2Record*  Class2Record;    /* array of Class2Record tables */
+  hb_uint8 IsFlexible;
+  union {
+    HB_Class2Record*  Class2Record;    /* array of Class2Record tables */
+    HB_Short* ValueRecords;
+  } c2r;
 };
 
 typedef struct HB_Class1Record_  HB_Class1Record;

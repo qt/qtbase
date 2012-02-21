@@ -42,7 +42,7 @@
 #ifndef QTCONCURRENT_REDUCEKERNEL_H
 #define QTCONCURRENT_REDUCEKERNEL_H
 
-#include <QtCore/qglobal.h>
+#include <QtConcurrent/qtconcurrent_global.h>
 
 #ifndef QT_NO_CONCURRENT
 

@@ -101,6 +101,8 @@ public:
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
     static void handleTouchEvent(QWindow *w, ulong timestamp, QTouchDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    static void handleTouchCancelEvent(QWindow *w, QTouchDevice *device, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    static void handleTouchCancelEvent(QWindow *w, ulong timestamp, QTouchDevice *device, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     static void handleGeometryChange(QWindow *w, const QRect &newRect);
     static void handleSynchronousGeometryChange(QWindow *w, const QRect &newRect);
@@ -127,6 +129,8 @@ public:
     static void handleScreenGeometryChange(QScreen *screen, const QRect &newGeometry);
     static void handleScreenAvailableGeometryChange(QScreen *screen, const QRect &newAvailableGeometry);
     static void handleScreenLogicalDotsPerInchChange(QScreen *screen, qreal newDpiX, qreal newDpiY);
+
+    static void handleThemeChange(QWindow *tlw);
 
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags);

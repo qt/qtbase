@@ -95,7 +95,7 @@ public:
     void setupUi(QDialog *databaseTranslationDialog)
     {
         if (databaseTranslationDialog->objectName().isEmpty())
-            databaseTranslationDialog->setObjectName(QString::fromUtf8("databaseTranslationDialog"));
+            databaseTranslationDialog->setObjectName(QStringLiteral("databaseTranslationDialog"));
         databaseTranslationDialog->resize(425, 370);
         vboxLayout = new QVBoxLayout(databaseTranslationDialog);
 #ifndef Q_OS_MAC
@@ -104,9 +104,9 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
         groupBox = new QGroupBox(databaseTranslationDialog);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName(QStringLiteral("groupBox"));
         QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(4));
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -119,15 +119,15 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
+        vboxLayout1->setObjectName(QStringLiteral("vboxLayout1"));
         ckOnlyUntranslated = new QCheckBox(groupBox);
-        ckOnlyUntranslated->setObjectName(QString::fromUtf8("ckOnlyUntranslated"));
+        ckOnlyUntranslated->setObjectName(QStringLiteral("ckOnlyUntranslated"));
         ckOnlyUntranslated->setChecked(true);
 
         vboxLayout1->addWidget(ckOnlyUntranslated);
 
         ckMarkFinished = new QCheckBox(groupBox);
-        ckMarkFinished->setObjectName(QString::fromUtf8("ckMarkFinished"));
+        ckMarkFinished->setObjectName(QStringLiteral("ckMarkFinished"));
         ckMarkFinished->setChecked(true);
 
         vboxLayout1->addWidget(ckMarkFinished);
@@ -136,7 +136,7 @@ public:
         vboxLayout->addWidget(groupBox);
 
         groupBox_2 = new QGroupBox(databaseTranslationDialog);
-        groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
+        groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
         QSizePolicy sizePolicy1(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(1));
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -149,7 +149,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout2->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
+        vboxLayout2->setObjectName(QStringLiteral("vboxLayout2"));
         hboxLayout = new QHBoxLayout();
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
@@ -157,9 +157,9 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
         phrasebookList = new QListView(groupBox_2);
-        phrasebookList->setObjectName(QString::fromUtf8("phrasebookList"));
+        phrasebookList->setObjectName(QStringLiteral("phrasebookList"));
         phrasebookList->setUniformItemSizes(true);
 
         hboxLayout->addWidget(phrasebookList);
@@ -169,14 +169,14 @@ public:
         vboxLayout3->setSpacing(6);
 #endif
         vboxLayout3->setContentsMargins(0, 0, 0, 0);
-        vboxLayout3->setObjectName(QString::fromUtf8("vboxLayout3"));
+        vboxLayout3->setObjectName(QStringLiteral("vboxLayout3"));
         moveUpButton = new QPushButton(groupBox_2);
-        moveUpButton->setObjectName(QString::fromUtf8("moveUpButton"));
+        moveUpButton->setObjectName(QStringLiteral("moveUpButton"));
 
         vboxLayout3->addWidget(moveUpButton);
 
         moveDownButton = new QPushButton(groupBox_2);
-        moveDownButton->setObjectName(QString::fromUtf8("moveDownButton"));
+        moveDownButton->setObjectName(QStringLiteral("moveDownButton"));
 
         vboxLayout3->addWidget(moveDownButton);
 
@@ -191,7 +191,7 @@ public:
         vboxLayout2->addLayout(hboxLayout);
 
         label = new QLabel(groupBox_2);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName(QStringLiteral("label"));
         label->setWordWrap(true);
 
         vboxLayout2->addWidget(label);
@@ -204,18 +204,18 @@ public:
         hboxLayout1->setSpacing(6);
 #endif
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName(QStringLiteral("hboxLayout1"));
         spacerItem1 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         hboxLayout1->addItem(spacerItem1);
 
         runButton = new QPushButton(databaseTranslationDialog);
-        runButton->setObjectName(QString::fromUtf8("runButton"));
+        runButton->setObjectName(QStringLiteral("runButton"));
 
         hboxLayout1->addWidget(runButton);
 
         cancelButton = new QPushButton(databaseTranslationDialog);
-        cancelButton->setObjectName(QString::fromUtf8("cancelButton"));
+        cancelButton->setObjectName(QStringLiteral("cancelButton"));
 
         hboxLayout1->addWidget(cancelButton);
 

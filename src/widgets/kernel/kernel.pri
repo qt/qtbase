@@ -40,7 +40,6 @@ HEADERS += \
 	kernel/qgesturemanager_p.h \
 	kernel/qsoftkeymanager_p.h \
         kernel/qsoftkeymanager_common_p.h \
-        kernel/qguiplatformplugin_p.h \
         kernel/qdesktopwidget_qpa_p.h \
         kernel/qwidgetwindow_qpa_p.h \
         kernel/qplatformmenu_qpa.h
@@ -72,7 +71,6 @@ SOURCES += \
 	kernel/qgesturemanager.cpp \
 	kernel/qsoftkeymanager.cpp \
         kernel/qdesktopwidget.cpp \
-        kernel/qguiplatformplugin.cpp \
         kernel/qwidgetsvariant.cpp \
         kernel/qapplication_qpa.cpp \
         kernel/qdesktopwidget_qpa.cpp \
@@ -137,9 +135,8 @@ false:!x11:mac {
 wince*: {
         HEADERS += \
                 ../corelib/kernel/qfunctions_wince.h \
-                kernel/qguifunctions_wince.h
+                kernel/qwidgetsfunctions_wince.h
 
         SOURCES += \
-                ../corelib/kernel/qfunctions_wince.cpp \
-                kernel/qguifunctions_wince.cpp
+                kernel/qwidgetsfunctions_wince.cpp
 }

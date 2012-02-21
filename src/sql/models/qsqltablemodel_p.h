@@ -66,10 +66,11 @@ public:
     QSqlTableModelPrivate()
         : sortColumn(-1),
           sortOrder(Qt::AscendingOrder),
-          strategy(QSqlTableModel::OnRowChange)
+          strategy(QSqlTableModel::OnRowChange),
+          busyInsertingRows(false)
     {}
     void clear();
-    QSqlRecord primaryValues(int index);
+    QSqlRecord primaryValues(int index) const;
     virtual void clearCache();
     QSqlRecord record(const QVector<QVariant> &values) const;
 
@@ -77,6 +78,8 @@ public:
               const QSqlRecord &rec, const QSqlRecord &whereValues);
     virtual void revertCachedRow(int row);
     virtual int nameToIndex(const QString &name) const;
+    QString strippedFieldName(const QString &name) const;
+    int insertCount(int maxRow = -1) const;
     void initRecordAndPrimaryIndex();
 
     QSqlDatabase db;
@@ -85,6 +88,7 @@ public:
     Qt::SortOrder sortOrder;
 
     QSqlTableModel::EditStrategy strategy;
+    bool busyInsertingRows;
 
     QSqlQuery editQuery;
     QSqlIndex primaryIndex;
@@ -93,22 +97,29 @@ public:
 
     enum Op { None, Insert, Update, Delete };
 
-    struct ModifiedRow
+    class ModifiedRow
     {
-        inline ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord(), const QSqlRecord &pVals = QSqlRecord())
-            : op(o), rec(r), primaryValues(pVals)
+    public:
+        inline ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord())
+            : m_op(o), m_rec(r), m_submitted(false)
         {
-            for (int i = rec.count() - 1; i >= 0; --i)
-                rec.setGenerated(i, false);
+            for (int i = m_rec.count() - 1; i >= 0; --i)
+                m_rec.setGenerated(i, false);
         }
+        inline Op op() const { return m_op; }
+        inline QSqlRecord rec() const { return m_rec; }
+        inline QSqlRecord& recRef() { return m_rec; }
         inline void setValue(int c, const QVariant &v)
         {
-            rec.setValue(c, v);
-            rec.setGenerated(c, true);
+            m_rec.setValue(c, v);
+            m_rec.setGenerated(c, true);
         }
-        Op op;
-        QSqlRecord rec;
-        QSqlRecord primaryValues;
+        inline bool submitted() const { return m_submitted; }
+        inline void setSubmitted(bool b) { m_submitted = b; }
+    private:
+        Op m_op;
+        QSqlRecord m_rec;
+        bool m_submitted;
     };
 
     typedef QMap<int, ModifiedRow> CacheMap;

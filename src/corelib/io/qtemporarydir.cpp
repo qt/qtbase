@@ -52,9 +52,8 @@
 #endif
 
 #include <stdlib.h> // mkdtemp
-#ifdef Q_OS_WIN
-#include <private/qfsfileengine_p.h>
-#include <qt_windows.h>
+#if defined(Q_OS_QNX) || defined(Q_OS_WIN)
+#include <private/qfilesystemengine_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -95,7 +94,7 @@ static QString defaultTemplateName()
     return QDir::tempPath() + QLatin1Char('/') + baseName + QLatin1String("-XXXXXX");
 }
 
-#ifdef Q_OS_QNX
+#if defined(Q_OS_QNX ) || defined(Q_OS_WIN)
 static char *mkdtemp(char *templateName)
 {
     static const char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -123,33 +122,26 @@ static char *mkdtemp(char *templateName)
         v /= 62;
         XXXXXX[5] = letters[v % 62];
 
-        if (!mkdir(templateName, 0700))
-            return templateName;
-    }
+        QString templateNameStr = QFile::decodeName(templateName);
 
+        QFileSystemEntry fileSystemEntry(templateNameStr);
+        if (QFileSystemEngine::createDirectory(fileSystemEntry, false)) {
+            QSystemError error;
+            QFileSystemEngine::setPermissions(fileSystemEntry,
+                                              QFile::ReadOwner |
+                                              QFile::WriteOwner |
+                                              QFile::ExeOwner, error);
+            if (error.error() != 0)
+                continue;
+            return templateName;
+        }
+    }
     return 0;
 }
 #endif
 
 void QTemporaryDirPrivate::create(const QString &templateName)
 {
-#ifdef Q_OS_WIN
-    QString buffer = templateName;
-    // Windows' mktemp believes 26 temp files per process ought to be enough for everyone (!)
-    // Let's add a few random chars then, before the XXXXXX template.
-    for (int i = 0 ; i < 4 ; ++i)
-        buffer += QChar((qrand() & 0xffff) % (26) + 'A');
-    if (!buffer.endsWith(QLatin1String("XXXXXX")))
-        buffer += QLatin1String("XXXXXX");
-    QFileSystemEntry baseEntry(buffer);
-    QFileSystemEntry::NativePath basePath = baseEntry.nativeFilePath();
-    wchar_t* array = (wchar_t*)basePath.utf16();
-    if (_wmktemp(array) && ::CreateDirectory(array, 0)) {
-        success = true;
-        QFileSystemEntry entry(QString::fromWCharArray(array), QFileSystemEntry::FromNativePath());
-        path = entry.filePath();
-    }
-#else
     QByteArray buffer = QFile::encodeName(templateName);
     if (!buffer.endsWith("XXXXXX"))
         buffer += "XXXXXX";
@@ -157,7 +149,6 @@ void QTemporaryDirPrivate::create(const QString &templateName)
         success = true;
         path = QFile::decodeName(buffer.constData());
     }
-#endif
 }
 
 //************* QTemporaryDir

@@ -42,19 +42,12 @@
 #ifndef QTCONCURRENT_COMPILERTEST_H
 #define QTCONCURRENT_COMPILERTEST_H
 
-#include <QtCore/qglobal.h>
+#include <QtConcurrent/qtconcurrent_global.h>
 
 #ifndef QT_NO_CONCURRENT
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
-
-
-#if defined (Q_CC_MSVC) && (_MSC_VER < 1300)
-#  define QT_TYPENAME
-#else
-#  define QT_TYPENAME typename
-#endif
 
 namespace QtPrivate {
 

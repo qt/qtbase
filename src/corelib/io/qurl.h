@@ -102,6 +102,7 @@ public:
     void setUrl(const QString &url, ParsingMode mode = TolerantMode);
     QString url(FormattingOptions options = None) const;
     QString toString(FormattingOptions options = None) const;
+    QString toDisplayString(FormattingOptions options = None) const;
 
     bool isValid() const;
 
@@ -211,10 +212,10 @@ public:
     QString errorString() const;
 
 #if QT_DEPRECATED_SINCE(5,0)
-    QT_DEPRECATED void setEncodedUrl(const QByteArray &url, ParsingMode mode = TolerantMode)
-    { setUrl(QString::fromUtf8(url.constData(), url.size()), mode); }
-    QT_DEPRECATED static QUrl fromEncoded(const QByteArray &url, ParsingMode mode = TolerantMode)
-    { return QUrl(QString::fromUtf8(url.constData(), url.size()), mode); }
+    QT_DEPRECATED void setEncodedUrl(const QByteArray &u, ParsingMode mode = TolerantMode)
+    { setUrl(QString::fromUtf8(u.constData(), u.size()), mode); }
+    QT_DEPRECATED static QUrl fromEncoded(const QByteArray &u, ParsingMode mode = TolerantMode)
+    { return QUrl(QString::fromUtf8(u.constData(), u.size()), mode); }
 #endif
 
 private:

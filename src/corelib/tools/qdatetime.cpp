@@ -924,7 +924,7 @@ QDate QDate::addDays(qint64 ndays) const
     else
         diff = jd - minJd();
 
-    if (abs(ndays) <= diff)
+    if ((quint64)qAbs(ndays) <= diff)
         d.jd = jd + ndays;
 
     return d;

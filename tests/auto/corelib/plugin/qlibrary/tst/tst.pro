@@ -1,4 +1,5 @@
 CONFIG += testcase
+CONFIG -= app_bundle
 TARGET = ../tst_qlibrary
 QT = core testlib
 SOURCES = ../tst_qlibrary.cpp
@@ -12,3 +13,5 @@ win32 {
 }
 
 TESTDATA += ../library_path/invalid.so
+
+win32:CONFIG += insignificant_test # QTBUG-24151

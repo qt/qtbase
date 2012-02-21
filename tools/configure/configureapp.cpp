@@ -114,13 +114,18 @@ Configure::Configure(int& argc, char** argv)
     for (i = 1; i < argc; i++)
         configCmdLine += argv[ i ];
 
-
-    // Get the path to the executable
-    wchar_t module_name[MAX_PATH];
-    GetModuleFileName(0, module_name, sizeof(module_name) / sizeof(wchar_t));
-    QFileInfo sourcePathInfo = QString::fromWCharArray(module_name);
-    sourcePath = sourcePathInfo.absolutePath();
-    sourceDir = sourcePathInfo.dir();
+    if (configCmdLine.size() >= 2 && configCmdLine.at(0) == "-srcdir") {
+        sourcePath = QDir::cleanPath(configCmdLine.at(1));
+        sourceDir = QDir(sourcePath);
+        configCmdLine.erase(configCmdLine.begin(), configCmdLine.begin() + 2);
+    } else {
+        // Get the path to the executable
+        wchar_t module_name[MAX_PATH];
+        GetModuleFileName(0, module_name, sizeof(module_name) / sizeof(wchar_t));
+        QFileInfo sourcePathInfo = QString::fromWCharArray(module_name);
+        sourcePath = sourcePathInfo.absolutePath();
+        sourceDir = sourcePathInfo.dir();
+    }
     buildPath = QDir::currentPath();
 #if 0
     const QString installPath = QString("C:\\Qt\\%1").arg(QT_VERSION_STR);
@@ -888,6 +893,9 @@ void Configure::parseCmdLine()
 
         else if (configCmdLine.at(i) == "-internal")
             dictionary[ "QMAKE_INTERNAL" ] = "yes";
+
+        else if (configCmdLine.at(i) == "-no-syncqt")
+            dictionary[ "SYNCQT" ] = "no";
 
         else if (configCmdLine.at(i) == "-no-qmake")
             dictionary[ "BUILD_QMAKE" ] = "no";
@@ -3188,14 +3196,7 @@ void Configure::buildHostTools()
     QString pwd = QDir::currentPath();
     QStringList hostToolsDirs;
     hostToolsDirs
-        << "src/tools"
-        << "tools/linguist/lrelease";
-
-    if (dictionary["XQMAKESPEC"].startsWith("wince"))
-        hostToolsDirs << "tools/checksdk";
-
-    if (dictionary[ "CETEST" ] == "yes")
-        hostToolsDirs << "tools/qtestlib/wince/cetest";
+        << "src/tools";
 
     for (int i = 0; i < hostToolsDirs.count(); ++i) {
         cout << "Creating " << hostToolsDirs.at(i) << " ..." << endl;

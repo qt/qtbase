@@ -14,8 +14,6 @@ win32 {
   }
 }
 
-mac*:CONFIG+=insignificant_test
-
 TESTDATA = ../test/test.pro ../tmp/README
 
 SUBPROGRAMS = desktopsettingsaware modal

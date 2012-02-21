@@ -6,19 +6,4 @@ QT = core network testlib
 
 TARGET = tst_qsslcertificate
 
-win32 {
-  CONFIG(debug, debug|release) {
-    DESTDIR = debug
-} else {
-    DESTDIR = release
-  }
-}
-
-wince* {
-    certFiles.files = certificates more-certificates
-    certFiles.path    = .
-    DEPLOYMENT += certFiles
-    DEFINES += SRCDIR=\\\".\\\"
-} else {
-    DEFINES += SRCDIR=\\\"$$PWD/\\\"
-}
+TESTDATA += certificates/* more-certificates/* verify-certs/*

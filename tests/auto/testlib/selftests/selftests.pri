@@ -1,7 +1,42 @@
-SUBPROGRAMS = subtest warnings maxwarnings cmptest globaldata skip \
-          strcmp expectfail sleep fetchbogus crashes multiexec failinit failinitdata \
-          skipinit skipinitdata datetime singleskip assert differentexec \
-          exceptionthrow qexecstringlist datatable commandlinedata\
-          benchlibwalltime benchlibcallgrind benchlibeventcounter benchlibtickcounter \
-          benchliboptions xunit badxml longstring float printdatatags \
-          printdatatagswithglobaltags findtestdata counting
+SUBPROGRAMS = \
+     #alive \
+     assert \
+     badxml \
+     benchlibcallgrind \
+     benchlibcounting \
+     benchlibeventcounter \
+     benchliboptions \
+     benchlibtickcounter \
+     benchlibwalltime \
+     cmptest \
+     commandlinedata \
+     counting \
+     crashes \
+     datatable \
+     datetime \
+     differentexec \
+     exceptionthrow \
+     expectfail \
+     failcleanup \
+     failinit \
+     failinitdata \
+     fetchbogus \
+     findtestdata \
+     float \
+     globaldata \
+     longstring \
+     maxwarnings \
+     multiexec \
+     printdatatags \
+     printdatatagswithglobaltags \
+     qexecstringlist \
+     singleskip \
+     skip \
+     skipcleanup \
+     skipinit \
+     skipinitdata \
+     sleep \
+     strcmp \
+     subtest \
+     warnings \
+     xunit

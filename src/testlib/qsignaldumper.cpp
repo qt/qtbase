@@ -76,7 +76,7 @@ static void qSignalDumperCallback(QObject *caller, int method_index, void **argv
     const QMetaObject *mo = caller->metaObject();
     Q_ASSERT(mo);
     QMetaMethod member = mo->method(method_index);
-    Q_ASSERT(member.signature());
+    Q_ASSERT(member.isValid());
 
     if (QTest::ignoreClasses() && QTest::ignoreClasses()->contains(mo->className())) {
         ++QTest::ignoreLevel;
@@ -132,7 +132,7 @@ static void qSignalDumperCallbackSlot(QObject *caller, int method_index, void **
     const QMetaObject *mo = caller->metaObject();
     Q_ASSERT(mo);
     QMetaMethod member = mo->method(method_index);
-    if (!member.signature())
+    if (!member.isValid())
         return;
 
     if (QTest::ignoreLevel ||

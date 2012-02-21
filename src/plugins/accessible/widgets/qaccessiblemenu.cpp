@@ -204,14 +204,6 @@ QAccessibleInterface *QAccessibleMenuItem::child(int index) const
     return 0;
 }
 
-int QAccessibleMenuItem::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    Q_UNUSED(relation);
-    Q_UNUSED(entry);
-    *target = 0;
-    return -1;
-}
-
 void *QAccessibleMenuItem::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::ActionInterface)

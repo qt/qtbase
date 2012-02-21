@@ -45,8 +45,10 @@
 QT_BEGIN_HEADER
 
 #if defined(__ppc)
-#  include <QtCore/qatomic_powerpc.h>
+#  include <QtCore/qatomic_power.h>
 #else // generic implementation with taskLock()
+
+#include <QtCore/qoldbasicatomic.h>
 
 #if 0
 // we don't want to include the system header here for two function prototypes,

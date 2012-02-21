@@ -936,7 +936,7 @@ int QString::grow(int size)
     systems).
 
     This method is only available if Qt is configured with STL
-    compatibility enabled.
+    compatibility enabled and if QT_NO_STL is not defined.
 
     \sa fromUtf16(), fromLatin1(), fromLocal8Bit(), fromUtf8(), fromUcs4()
 */
@@ -964,7 +964,7 @@ int QString::grow(int size)
     that accepts a std::wstring object.
 
     This operator is only available if Qt is configured with STL
-    compatibility enabled.
+    compatibility enabled and if QT_NO_STL is not defined.
 
     \sa utf16(), toAscii(), toLatin1(), toUtf8(), toLocal8Bit()
 */
@@ -7006,7 +7006,7 @@ bool QString::isRightToLeft() const
     can lead to loss of information.
 
     This operator is only available if Qt is configured with STL
-    compatibility enabled.
+    compatibility enabled and if QT_NO_STL is not defined.
 
     \sa toAscii(), toLatin1(), toUtf8(), toLocal8Bit()
 */

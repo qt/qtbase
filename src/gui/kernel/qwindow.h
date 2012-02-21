@@ -89,7 +89,7 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(int y READ y WRITE setY NOTIFY yChanged)
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
     Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
-    Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
+    Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
     Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
 
 public:
@@ -101,7 +101,9 @@ public:
     void setSurfaceType(SurfaceType surfaceType);
     SurfaceType surfaceType() const;
 
-    bool visible() const;
+    QT_DEPRECATED bool visible() const;
+
+    bool isVisible() const;
 
     void create();
 
@@ -149,6 +151,8 @@ public:
     };
 
     bool isAncestorOf(const QWindow *child, AncestorMode mode = IncludeTransients) const;
+
+    bool isExposed() const;
 
     QSize minimumSize() const;
     QSize maximumSize() const;

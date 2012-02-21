@@ -86,6 +86,7 @@ public:
 
     \ingroup io
     \ingroup network
+    \inmodule QtNetwork
 
     The information about a URL that can be retrieved includes name(),
     permissions(), owner(), group(), size(), lastModified(),

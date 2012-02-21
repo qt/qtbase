@@ -1,0 +1,15 @@
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="aTestFunction">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/skipcleanup/tst_skipcleanup.cpp" line="59">
+    <Description><![CDATA[Skip inside cleanupTestCase.]]></Description>
+</Message>
+</TestFunction>

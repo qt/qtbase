@@ -329,6 +329,11 @@ static inline QFontDatabase::WritingSystem writingSystemFromScript(const QString
     return QFontDatabase::Any;
 }
 
+extern bool localizedName(const QString &name);
+extern QString getEnglishName(const QString &familyName);
+
+Q_GUI_EXPORT void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
+
 static bool addFontToDatabase(QString familyName, const QString &scriptName,
                               const TEXTMETRIC *textmetric,
                               const FONTSIGNATURE *signature,
@@ -365,10 +370,10 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
                 << " stretch=" << stretch;
     }
 
-/* Fixme: omitted for the moment
-    if(ttf && localizedName(familyName) && family->english_name.isEmpty())
-        family->english_name = getEnglishName(familyName);
-*/
+    QString englishName;
+    if (ttf && localizedName(familyName))
+        englishName = getEnglishName(familyName);
+
     QSupportedWritingSystems writingSystems;
     if (type & TRUETYPE_FONTTYPE) {
         quint32 unicodeRange[4] = {
@@ -405,6 +410,10 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
     if (weight <= QFont::DemiBold && style != QFont::StyleItalic)
         QPlatformFontDatabase::registerFont(familyName, foundryName, QFont::Bold,
                                             QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, 0);
+
+    if (!englishName.isEmpty())
+        qt_registerAliasToFontFamily(familyName, englishName);
+
     return true;
 }
 

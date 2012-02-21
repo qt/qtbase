@@ -32,7 +32,10 @@
 #  include <limits.h>
 #endif
 #if !defined(_WIN32_WCE)
-#include <fcntl.h>
+#  include <fcntl.h>
+#else
+# include <qglobal.h>
+# include <qfunctions_wince.h>
 #endif
 
 #ifdef NO_DEFLATE       /* for compatibility with old definition */
@@ -40,7 +43,9 @@
 #endif
 
 #ifdef _MSC_VER
-#  include <io.h>
+#  if !defined(_WIN32_WCE)
+#    include <io.h>
+#  endif
 #  define vsnprintf _vsnprintf
 #endif
 

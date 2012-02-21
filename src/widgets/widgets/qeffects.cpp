@@ -111,7 +111,7 @@ QAlphaWidget::QAlphaWidget(QWidget* w, Qt::WindowFlags f)
 
 QAlphaWidget::~QAlphaWidget()
 {
-#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
     // Restore user-defined opacity value
     if (widget)
         widget->setWindowOpacity(1);

@@ -147,14 +147,14 @@ void tst_QDate::isValid_data()
     QTest::newRow("month 13") << 2000 << 13 << 1 << nullJd << false;
 
     // test leap years
-    QTest::newRow("non-leap")         << 2006 <<  2 << 29 << nullJd  << false;
-    QTest::newRow("normal leap")      << 2004 <<  2 << 29 << qint64(2453065) << true;
-    QTest::newRow("century leap")     << 1900 <<  2 << 29 << nullJd  << false;
-    QTest::newRow("century leap")     << 2100 <<  2 << 29 << nullJd  << false;
-    QTest::newRow("400-years leap")   << 2000 <<  2 << 29 << qint64(2451604) << true;
-    QTest::newRow("400-years leap 2") << 2400 <<  2 << 29 << qint64(2597701) << true;
-    QTest::newRow("400-years leap 3") << 1600 <<  2 << 29 << qint64(2305507) << true;
-    QTest::newRow("year 0")           <<    0 <<  2 << 27 << nullJd  << false;
+    QTest::newRow("non-leap")            << 2006 <<  2 << 29 << nullJd  << false;
+    QTest::newRow("normal leap")         << 2004 <<  2 << 29 << qint64(2453065) << true;
+    QTest::newRow("century leap 1900")   << 1900 <<  2 << 29 << nullJd  << false;
+    QTest::newRow("century leap 2100")   << 2100 <<  2 << 29 << nullJd  << false;
+    QTest::newRow("400-years leap 2000") << 2000 <<  2 << 29 << qint64(2451604) << true;
+    QTest::newRow("400-years leap 2400") << 2400 <<  2 << 29 << qint64(2597701) << true;
+    QTest::newRow("400-years leap 1600") << 1600 <<  2 << 29 << qint64(2305507) << true;
+    QTest::newRow("year 0")              <<    0 <<  2 << 27 << nullJd  << false;
 
     // test the number of days in months:
     QTest::newRow("jan") << 2000 <<  1 << 31 << qint64(2451575) << true;
@@ -262,7 +262,7 @@ void tst_QDate::dayOfWeek_data()
     QTest::newRow("data8")  << -4800 <<  1 <<  1 << 1;
     QTest::newRow("data9")  << -4800 <<  1 <<  2 << 2;
     QTest::newRow("data10") << -4800 <<  1 <<  3 << 3;
-    QTest::newRow("data12") << -4800 <<  1 <<  4 << 4;
+    QTest::newRow("data11") << -4800 <<  1 <<  4 << 4;
     QTest::newRow("data12") << -4800 <<  1 <<  5 << 5;
     QTest::newRow("data13") << -4800 <<  1 <<  6 << 6;
     QTest::newRow("data14") << -4800 <<  1 <<  7 << 7;
@@ -580,10 +580,10 @@ void tst_QDate::addMonths_data()
     QTest::newRow( "data14" ) << 2000 << 2 << 29 << -12 << 1999 << 2 << 28;
 
     // year sign change:
-    QTest::newRow( "data14" ) << 1 << 1 << 1 << -1 << -1 << 12 << 1;
-    QTest::newRow( "data15" ) << 1 << 1 << 1 << -12 << -1 << 1 << 1;
-    QTest::newRow( "data16" ) << -1 << 12 << 1 << 1 << 1 << 1 << 1;
-    QTest::newRow( "data17" ) << -1 << 1 << 1 << 12 << 1 << 1 << 1;
+    QTest::newRow( "data15" ) << 1 << 1 << 1 << -1 << -1 << 12 << 1;
+    QTest::newRow( "data16" ) << 1 << 1 << 1 << -12 << -1 << 1 << 1;
+    QTest::newRow( "data17" ) << -1 << 12 << 1 << 1 << 1 << 1 << 1;
+    QTest::newRow( "data18" ) << -1 << 1 << 1 << 12 << 1 << 1 << 1;
 }
 
 void tst_QDate::addYears()

@@ -69,6 +69,11 @@
 #include <stdlib.h>
 
 #ifdef Q_OS_WIN
+#ifndef Q_OS_WINCE
+# if !defined(Q_CC_MINGW) || (defined(Q_CC_MINGW) && defined(__MINGW64_VERSION_MAJOR))
+#  include <crtdbg.h>
+# endif
+#endif
 #include <windows.h> // for Sleep
 #endif
 #ifdef Q_OS_UNIX
@@ -934,32 +939,24 @@ QT_BEGIN_NAMESPACE
     QTouchEventSequence is called (ie when the object returned runs out of scope).
 */
 
-static void installCoverageTool(const char * appname, const char * testname)
+static bool installCoverageTool(const char * appname, const char * testname)
 {
 #ifdef __COVERAGESCANNER__
+    if (!qgetenv("QT_TESTCOCOON_ACTIVE").isEmpty())
+        return false;
+    // Set environment variable QT_TESTCOCOON_ACTIVE to prevent an eventual subtest from
+    // being considered as a stand-alone test regarding the coverage analysis.
+    qputenv("QT_TESTCOCOON_ACTIVE", "1");
+
     // Install Coverage Tool
     __coveragescanner_install(appname);
     __coveragescanner_testname(testname);
     __coveragescanner_clear();
+    return true;
 #else
     Q_UNUSED(appname);
     Q_UNUSED(testname);
-#endif
-}
-
-static void saveCoverageTool(const char * appname, bool testfailed)
-{
-#ifdef __COVERAGESCANNER__
-    // install again to make sure the filename is correct.
-    // without this, a plugin or similar may have changed the filename.
-    __coveragescanner_install(appname);
-    __coveragescanner_teststate(testfailed ? "FAILED" : "PASSED");
-    __coveragescanner_save();
-    __coveragescanner_testname("");
-    __coveragescanner_clear();
-#else
-    Q_UNUSED(appname);
-    Q_UNUSED(testfailed);
+    return false;
 #endif
 }
 
@@ -1493,6 +1490,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
 {
     /* Benchmarking: for each median iteration*/
 
+    bool isBenchmark = false;
     int i = (QBenchmarkGlobalData::current->measurer->needsWarmupIteration()) ? -1 : 0;
 
     QList<QBenchmarkResult> results;
@@ -1502,12 +1500,9 @@ static void qInvokeTestMethodDataEntry(char *slot)
         /* Benchmarking: for each accumulation iteration*/
         bool invokeOk;
         do {
-            QTestResult::setCurrentTestLocation(QTestResult::InitFunc);
             invokeMethod(QTest::currentTestObject, "init()");
-            if (QTestResult::skipCurrentTest())
+            if (QTestResult::skipCurrentTest() || QTestResult::currentTestFailed())
                 break;
-
-            QTestResult::setCurrentTestLocation(QTestResult::Func);
 
             QBenchmarkTestMethodData::current->result = QBenchmarkResult();
             QBenchmarkTestMethodData::current->resultAccepted = false;
@@ -1522,24 +1517,30 @@ static void qInvokeTestMethodDataEntry(char *slot)
             if (!invokeOk)
                 QTestResult::addFailure("Unable to execute slot", __FILE__, __LINE__);
 
-            QTestResult::setCurrentTestLocation(QTestResult::CleanupFunc);
+            isBenchmark = QBenchmarkTestMethodData::current->isBenchmark();
+
+            QTestResult::finishedCurrentTestData();
+
             invokeMethod(QTest::currentTestObject, "cleanup()");
-            QTestResult::setCurrentTestLocation(QTestResult::NoWhere);
+
+            // If the test isn't a benchmark, finalize the result after cleanup() has finished.
+            if (!isBenchmark)
+                QTestResult::finishedCurrentTestDataCleanup();
 
             // If this test method has a benchmark, repeat until all measurements are
             // acceptable.
             // The QBENCHMARK macro increases the number of iterations for each run until
             // this happens.
-        } while (invokeOk
-                 && QBenchmarkTestMethodData::current->isBenchmark()
-                 && QBenchmarkTestMethodData::current->resultsAccepted() == false);
+        } while (invokeOk && isBenchmark
+                 && QBenchmarkTestMethodData::current->resultsAccepted() == false
+                 && !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed());
 
         QBenchmarkTestMethodData::current->endDataRun();
-        if (i > -1)  // iteration -1 is the warmup iteration.
-            results.append(QBenchmarkTestMethodData::current->result);
+        if (!QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed()) {
+            if (i > -1)  // iteration -1 is the warmup iteration.
+                results.append(QBenchmarkTestMethodData::current->result);
 
-        if (QBenchmarkTestMethodData::current->isBenchmark() &&
-            QBenchmarkGlobalData::current->verboseOutput) {
+            if (isBenchmark && QBenchmarkGlobalData::current->verboseOutput) {
                 if (i == -1) {
                     QTestLog::info(qPrintable(
                         QString::fromLatin1("warmup stage result      : %1")
@@ -1550,12 +1551,19 @@ static void qInvokeTestMethodDataEntry(char *slot)
                             .arg(QBenchmarkTestMethodData::current->result.value)), 0, 0);
                 }
             }
-    } while (QBenchmarkTestMethodData::current->isBenchmark()
-             && (++i < QBenchmarkGlobalData::current->adjustMedianIterationCount()));
+        }
+    } while (isBenchmark
+             && (++i < QBenchmarkGlobalData::current->adjustMedianIterationCount())
+             && !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed());
 
-    if (QBenchmarkTestMethodData::current->isBenchmark()
-        && QBenchmarkTestMethodData::current->resultsAccepted())
-        QTestLog::addBenchmarkResult(qMedian(results));
+    // If the test is a benchmark, finalize the result after all iterations have finished.
+    if (isBenchmark) {
+        bool testPassed = !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed();
+        QTestResult::finishedCurrentTestDataCleanup();
+        // Only report benchmark figures if the test passed
+        if (testPassed && QBenchmarkTestMethodData::current->resultsAccepted())
+            QTestLog::addBenchmarkResult(qMedian(results));
+    }
 }
 
 /*!
@@ -1593,7 +1601,6 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
             QTestResult::setCurrentGlobalTestData(gTable->testData(curGlobalDataIndex));
 
         if (curGlobalDataIndex == 0) {
-            QTestResult::setCurrentTestLocation(QTestResult::DataFunc);
             qsnprintf(member, 512, "%s_data()", slot);
             invokeMethod(QTest::currentTestObject, member);
         }
@@ -1747,16 +1754,16 @@ static void qInvokeTestMethods(QObject *testObject)
     QTEST_ASSERT(metaObject);
     QTestLog::startLogging();
     QTestResult::setCurrentTestFunction("initTestCase");
-    QTestResult::setCurrentTestLocation(QTestResult::DataFunc);
     QTestTable::globalTestTable();
     invokeMethod(testObject, "initTestCase_data()");
 
     if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
-        QTestResult::setCurrentTestLocation(QTestResult::InitFunc);
         invokeMethod(testObject, "initTestCase()");
 
-        // finishedCurrentTestFunction() resets QTestResult::testFailed(), so use a local copy.
-        const bool previousFailed = QTestResult::testFailed();
+        // finishedCurrentTestDataCleanup() resets QTestResult::currentTestFailed(), so use a local copy.
+        const bool previousFailed = QTestResult::currentTestFailed();
+        QTestResult::finishedCurrentTestData();
+        QTestResult::finishedCurrentTestDataCleanup();
         QTestResult::finishedCurrentTestFunction();
 
         if (!QTestResult::skipCurrentTest() && !previousFailed) {
@@ -1788,6 +1795,8 @@ static void qInvokeTestMethods(QObject *testObject)
         QTestResult::setSkipCurrentTest(false);
         QTestResult::setCurrentTestFunction("cleanupTestCase");
         invokeMethod(testObject, "cleanupTestCase()");
+        QTestResult::finishedCurrentTestData();
+        QTestResult::finishedCurrentTestDataCleanup();
     }
     QTestResult::finishedCurrentTestFunction();
     QTestResult::setCurrentTestFunction(0);
@@ -1945,6 +1954,9 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+# if !defined(Q_CC_MINGW) || (defined(Q_CC_MINGW) && defined(__MINGW64_VERSION_MAJOR))
+    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+# endif
     SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
 #endif
 
@@ -1970,10 +1982,14 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     const QMetaObject *metaObject = testObject->metaObject();
     QTEST_ASSERT(metaObject);
 
-    installCoverageTool(argv[0], metaObject->className());
-
     QTestResult::setCurrentTestObject(metaObject->className());
+    QTestResult::setCurrentAppname(argv[0]);
+
     qtest_qParseArgs(argc, argv, false);
+
+    bool installedTestCoverage = installCoverageTool(argv[0], metaObject->className());
+    QTestLog::setInstalledTestCoverage(installedTestCoverage);
+
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {
         const QStringList origAppArgs(QCoreApplication::arguments());
@@ -2024,8 +2040,6 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
          IOPMAssertionRelease(powerID);
      }
 #endif
-
-     saveCoverageTool(argv[0], QTestLog::failCount());
 
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess)

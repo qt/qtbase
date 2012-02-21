@@ -85,11 +85,11 @@ public:
     // relations
     int childCount() const;
     int indexOfChild(const QAccessibleInterface*) const;
+    QAccessibleInterface *focusChild() const;
 
     // navigation
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
-    int navigate(QAccessible::RelationFlag, int, QAccessibleInterface **) const;
 
     // properties and state
     QString text(QAccessible::Text t) const;

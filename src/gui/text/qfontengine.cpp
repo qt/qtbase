@@ -1379,18 +1379,24 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
     int glyph_pos = 0;
     for (int i = 0; i < len; ++i) {
         bool surrogate = (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate());
-
+        uint ucs4 = surrogate ? QChar::surrogateToUcs4(str[i], str[i+1]) : str[i].unicode();
         if (glyphs->glyphs[glyph_pos] == 0 && str[i].category() != QChar::Separator_Line) {
             QGlyphLayoutInstance tmp = glyphs->instance(glyph_pos);
-            for (int x = 1; x < engines.size(); ++x) {
+            for (int x=1; x < engines.size(); ++x) {
+                if (!shouldLoadFontEngineForCharacter(x, ucs4))
+                    continue;
+
                 QFontEngine *engine = engines.at(x);
+                bool deleteThisEngine = false;
                 if (!engine) {
                     const_cast<QFontEngineMulti *>(this)->loadEngine(x);
                     engine = engines.at(x);
+                    deleteThisEngine = true;
                 }
                 Q_ASSERT(engine != 0);
                 if (engine->type() == Box)
                     continue;
+
                 glyphs->advances_x[glyph_pos] = glyphs->advances_y[glyph_pos] = 0;
                 glyphs->offsets[glyph_pos] = QFixedPoint();
                 int num = 2;
@@ -1401,13 +1407,17 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                     // set the high byte to indicate which engine the glyph came from
                     glyphs->glyphs[glyph_pos] |= (x << 24);
                     break;
+                } else if (deleteThisEngine) {
+                    const_cast<QFontEngineMulti *>(this)->unloadEngine(x);
                 }
             }
+
             // ensure we use metrics from the 1st font when we use the fallback image.
             if (!glyphs->glyphs[glyph_pos]) {
                 glyphs->setInstance(glyph_pos, tmp);
             }
         }
+
         if (surrogate)
             ++i;
         ++glyph_pos;
@@ -1416,6 +1426,29 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
     *nglyphs = ng;
     glyphs->numGlyphs = ng;
     return true;
+}
+
+bool QFontEngineMulti::shouldLoadFontEngineForCharacter(int at, uint ucs4) const
+{
+    Q_UNUSED(at);
+    Q_UNUSED(ucs4);
+    return true;
+}
+
+void QFontEngineMulti::unloadEngine(int at)
+{
+    QFontEngine *fontEngine = engines.at(at);
+    if (fontEngine == 0)
+        return;
+
+    // If there are other references to the engine, keep it around and keep the reference
+    if (fontEngine->ref.load() == 1) {
+        QFontCache::instance()->removeEngine(fontEngine);
+        if (fontEngine->cache_count == 0) {
+            delete fontEngine;
+            engines[at] = 0;
+        }
+    }
 }
 
 glyph_metrics_t QFontEngineMulti::boundingBox(const QGlyphLayout &glyphs)

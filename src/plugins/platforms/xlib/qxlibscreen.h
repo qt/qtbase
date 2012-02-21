@@ -55,7 +55,7 @@ class QXlibScreen : public QObject, public QPlatformScreen
 {
     Q_OBJECT
 public:
-    QXlibScreen();
+    QXlibScreen(QXlibNativeInterface *nativeInterface);
 
     ~QXlibScreen();
 
@@ -93,6 +93,7 @@ public slots:
 private:
 
     void handleSelectionRequest(XEvent *event);
+    QXlibNativeInterface *mNativeInterface;
     QRect mGeometry;
     QSizeF mPhysicalSize;
     int mDepth;

@@ -559,9 +559,39 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
 {
     QNonNativeFileDialog fd;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    fd.setDirectory("C:");
+    fd.setDirectory("C:/");
     QDir current = fd.directory();
-    current.mkdir("completionOnLevelAfterRootTest");
+    QStringList entryList = current.entryList(QStringList(), QDir::Dirs);
+    // Find a suitable test dir under c:-root:
+    // - At least 6 characters long
+    // - Ascii, letters only
+    // - No another dir with same start
+    QString testDir;
+    foreach (const QString &entry, entryList) {
+        if (entry.size() > 5 && QString(entry.toAscii()).compare(entry) == 0) {
+            bool invalid = false;
+            for (int i = 0; i < 5; i++) {
+                if (!entry.at(i).isLetter()) {
+                    invalid = true;
+                    break;
+                }
+            }
+            if (!invalid) {
+                foreach (const QString &check, entryList) {
+                    if (check.startsWith(entry.left(5)) && check != entry) {
+                        invalid = true;
+                        break;
+                    }
+                }
+            }
+            if (!invalid) {
+                testDir = entry;
+                break;
+            }
+        }
+    }
+    if (testDir.isEmpty())
+        QSKIP("This test requires to have an unique directory of at least six ascii characters under c:/");
 #else
     fd.setFilter(QDir::Hidden | QDir::AllDirs | QDir::Files | QDir::System);
     fd.setDirectory("/");
@@ -574,11 +604,8 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
     QTest::qWait(2000);
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     //I love testlib :D
-    QTest::keyClick(edit, Qt::Key_C);
-    QTest::keyClick(edit, Qt::Key_O);
-    QTest::keyClick(edit, Qt::Key_M);
-    QTest::keyClick(edit, Qt::Key_P);
-    QTest::keyClick(edit, Qt::Key_L);
+    for (int i = 0; i < 5; i++)
+        QTest::keyClick(edit, testDir.at(i).toLower().toAscii() - 'a' + Qt::Key_A);
 #else
     QTest::keyClick(edit, Qt::Key_E);
     QTest::keyClick(edit, Qt::Key_T);
@@ -587,8 +614,7 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
     QTest::keyClick(edit->completer()->popup(), Qt::Key_Down);
     QTest::qWait(200);
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    QCOMPARE(edit->text(), QString("completionOnLevelAfterRootTest"));
-    current.rmdir("completionOnLevelAfterRootTest");
+    QCOMPARE(edit->text(), testDir);
 #else
     QTRY_COMPARE(edit->text(), QString("etc"));
 #endif

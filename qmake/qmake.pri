@@ -76,7 +76,8 @@ bootstrap { #Qt code
         qvector.cpp \
         qvsnprintf.cpp \
         qxmlstream.cpp \
-        qxmlutils.cpp
+        qxmlutils.cpp \
+        qlogging.cpp
 
    HEADERS+= \
         qbitarray.h \

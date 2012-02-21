@@ -53,36 +53,36 @@ static const int tileSize = 32;
 #endif
 #endif
 
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate90_cachedRead(const SRC *src, int w, int h,
-                                             int sstride,
-                                             DST *dest, int dstride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate90_cachedRead(const T *src, int w, int h, int sstride, T *dest,
+                                      int dstride)
 {
     const char *s = reinterpret_cast<const char*>(src);
     char *d = reinterpret_cast<char*>(dest);
     for (int y = 0; y < h; ++y) {
         for (int x = w - 1; x >= 0; --x) {
-            DST *destline = reinterpret_cast<DST*>(d + (w - x - 1) * dstride);
-            destline[y] = qt_colorConvert<DST,SRC>(src[x], 0);
+            T *destline = reinterpret_cast<T *>(d + (w - x - 1) * dstride);
+            destline[y] = src[x];
         }
         s += sstride;
-        src = reinterpret_cast<const SRC*>(s);
+        src = reinterpret_cast<const T*>(s);
     }
 }
 
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_cachedRead(const SRC *src, int w, int h,
-                                              int sstride,
-                                              DST *dest, int dstride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate270_cachedRead(const T *src, int w, int h, int sstride, T *dest,
+                                       int dstride)
 {
     const char *s = reinterpret_cast<const char*>(src);
     char *d = reinterpret_cast<char*>(dest);
     s += (h - 1) * sstride;
     for (int y = h - 1; y >= 0; --y) {
-        src = reinterpret_cast<const SRC*>(s);
+        src = reinterpret_cast<const T*>(s);
         for (int x = 0; x < w; ++x) {
-            DST *destline = reinterpret_cast<DST*>(d + x * dstride);
-            destline[h - y - 1] = qt_colorConvert<DST,SRC>(src[x], 0);
+            T *destline = reinterpret_cast<T *>(d + x * dstride);
+            destline[h - y - 1] = src[x];
         }
         s -= sstride;
     }
@@ -90,29 +90,29 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_cachedRead(const SRC *src
 
 #if QT_ROTATION_ALGORITHM == QT_ROTATION_CACHEDWRITE
 
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate90_cachedWrite(const SRC *src, int w, int h,
-                                              int sstride,
-                                              DST *dest, int dstride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate90_cachedWrite(const T *src, int w, int h, int sstride, T *dest,
+                                       int dstride)
 {
     for (int x = w - 1; x >= 0; --x) {
-        DST *d = dest + (w - x - 1) * dstride;
+        T *d = dest + (w - x - 1) * dstride;
         for (int y = 0; y < h; ++y) {
-            *d++ = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+            *d++ = src[y * sstride + x];
         }
     }
 
 }
 
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_cachedWrite(const SRC *src, int w, int h,
-                                               int sstride,
-                                               DST *dest, int dstride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate270_cachedWrite(const T *src, int w, int h, int sstride, T *dest,
+                                        int dstride)
 {
     for (int x = 0; x < w; ++x) {
-        DST *d = dest + x * dstride;
+        T *d = dest + x * dstride;
         for (int y = h - 1; y >= 0; --y) {
-            *d++ = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+            *d++ = src[y * sstride + x];
         }
     }
 }
@@ -123,23 +123,21 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_cachedWrite(const SRC *sr
 
 // TODO: packing algorithms should probably be modified on 64-bit architectures
 
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate90_packing(const SRC *src, int w, int h,
-                                          int sstride,
-                                          DST *dest, int dstride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate90_packing(const T *src, int w, int h, int sstride, T *dest, int dstride)
 {
-    sstride /= sizeof(SRC);
-    dstride /= sizeof(DST);
+    sstride /= sizeof(T);
+    dstride /= sizeof(T);
 
-    const int pack = sizeof(quint32) / sizeof(DST);
-    const int unaligned = int((long(dest) & (sizeof(quint32)-1))) / sizeof(DST);
+    const int pack = sizeof(quint32) / sizeof(T);
+    const int unaligned = int((long(dest) & (sizeof(quint32)-1))) / sizeof(T);
 
     for (int x = w - 1; x >= 0; --x) {
         int y = 0;
 
         for (int i = 0; i < unaligned; ++i) {
-            dest[(w - x - 1) * dstride + y]
-                = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+            dest[(w - x - 1) * dstride + y] = src[y * sstride + x];
             ++y;
         }
 
@@ -147,40 +145,36 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate90_packing(const SRC *src, in
                                                 + unaligned);
         const int rest = (h - unaligned) % pack;
         while (y < h - rest) {
-            quint32 c = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+            quint32 c = src[y * sstride + x];
             for (int i = 1; i < pack; ++i) {
-                c |= qt_colorConvert<DST,SRC>(src[(y + i) * sstride + x], 0)
-                     << (sizeof(int) * 8 / pack * i);
+                c |= src[(y + i) * sstride + x] << (sizeof(int) * 8 / pack * i);
             }
             *d++ = c;
             y += pack;
         }
 
         while (y < h) {
-            dest[(w - x - 1) * dstride + y]
-                = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+            dest[(w - x - 1) * dstride + y] = src[y * sstride + x];
             ++y;
         }
     }
 }
 
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_packing(const SRC *src, int w, int h,
-                                           int sstride,
-                                           DST *dest, int dstride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate270_packing(const T *src, int w, int h, int sstride, T *dest, int dstride)
 {
-    sstride /= sizeof(SRC);
-    dstride /= sizeof(DST);
+    sstride /= sizeof(T);
+    dstride /= sizeof(T);
 
-    const int pack = sizeof(quint32) / sizeof(DST);
-    const int unaligned = int((long(dest) & (sizeof(quint32)-1))) / sizeof(DST);
+    const int pack = sizeof(quint32) / sizeof(T);
+    const int unaligned = int((long(dest) & (sizeof(quint32)-1))) / sizeof(T);
 
     for (int x = 0; x < w; ++x) {
         int y = h - 1;
 
         for (int i = 0; i < unaligned; ++i) {
-            dest[x * dstride + h - y - 1]
-                = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+            dest[x * dstride + h - y - 1] = src[y * sstride + x];
             --y;
         }
 
@@ -188,17 +182,15 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_packing(const SRC *src, i
                                                 + unaligned);
         const int rest = (h - unaligned) % pack;
         while (y > rest) {
-            quint32 c = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+            quint32 c = src[y * sstride + x];
             for (int i = 1; i < pack; ++i) {
-                c |= qt_colorConvert<DST,SRC>(src[(y - i) * sstride + x], 0)
-                     << (sizeof(int) * 8 / pack * i);
+                c |= src[(y - i) * sstride + x] << (sizeof(int) * 8 / pack * i);
             }
             *d++ = c;
             y -= pack;
         }
         while (y >= 0) {
-            dest[x * dstride + h - y - 1]
-                = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+            dest[x * dstride + h - y - 1] = src[y * sstride + x];
             --y;
         }
     }
@@ -207,17 +199,16 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_packing(const SRC *src, i
 #endif // QT_ROTATION_PACKING
 
 #if QT_ROTATION_ALGORITHM == QT_ROTATION_TILED
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate90_tiled(const SRC *src, int w, int h,
-                                        int sstride,
-                                        DST *dest, int dstride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate90_tiled(const T *src, int w, int h, int sstride, T *dest, int dstride)
 {
-    sstride /= sizeof(SRC);
-    dstride /= sizeof(DST);
+    sstride /= sizeof(T);
+    dstride /= sizeof(T);
 
-    const int pack = sizeof(quint32) / sizeof(DST);
+    const int pack = sizeof(quint32) / sizeof(T);
     const int unaligned =
-        qMin(uint((quintptr(dest) & (sizeof(quint32)-1)) / sizeof(DST)), uint(h));
+        qMin(uint((quintptr(dest) & (sizeof(quint32)-1)) / sizeof(T)), uint(h));
     const int restX = w % tileSize;
     const int restY = (h - unaligned) % tileSize;
     const int unoptimizedY = restY % pack;
@@ -230,9 +221,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate90_tiled(const SRC *src, int 
 
         if (unaligned) {
             for (int x = startx; x >= stopx; --x) {
-                DST *d = dest + (w - x - 1) * dstride;
+                T *d = dest + (w - x - 1) * dstride;
                 for (int y = 0; y < unaligned; ++y) {
-                    *d++ = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+                    *d++ = src[y * sstride + x];
                 }
             }
         }
@@ -244,10 +235,10 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate90_tiled(const SRC *src, int 
             for (int x = startx; x >= stopx; --x) {
                 quint32 *d = reinterpret_cast<quint32*>(dest + (w - x - 1) * dstride + starty);
                 for (int y = starty; y < stopy; y += pack) {
-                    quint32 c = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+                    quint32 c = src[y * sstride + x];
                     for (int i = 1; i < pack; ++i) {
                         const int shift = (sizeof(int) * 8 / pack * i);
-                        const DST color = qt_colorConvert<DST,SRC>(src[(y + i) * sstride + x], 0);
+                        const T color = src[(y + i) * sstride + x];
                         c |= color << shift;
                     }
                     *d++ = c;
@@ -258,19 +249,19 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate90_tiled(const SRC *src, int 
         if (unoptimizedY) {
             const int starty = h - unoptimizedY;
             for (int x = startx; x >= stopx; --x) {
-                DST *d = dest + (w - x - 1) * dstride + starty;
+                T *d = dest + (w - x - 1) * dstride + starty;
                 for (int y = starty; y < h; ++y) {
-                    *d++ = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+                    *d++ = src[y * sstride + x];
                 }
             }
         }
     }
 }
 
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate90_tiled_unpacked(const SRC *src, int w, int h,
-                                                 int sstride,
-                                                 DST *dest, int dstride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate90_tiled_unpacked(const T *src, int w, int h, int sstride, T *dest,
+                                          int dstride)
 {
     const int numTilesX = (w + tileSize - 1) / tileSize;
     const int numTilesY = (h + tileSize - 1) / tileSize;
@@ -284,10 +275,10 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate90_tiled_unpacked(const SRC *
             const int stopy = qMin(starty + tileSize, h);
 
             for (int x = startx; x >= stopx; --x) {
-                DST *d = (DST*)((char*)dest + (w - x - 1) * dstride) + starty;
+                T *d = (T *)((char*)dest + (w - x - 1) * dstride) + starty;
                 const char *s = (const char*)(src + x) + starty * sstride;
                 for (int y = starty; y < stopy; ++y) {
-                    *d++ = qt_colorConvert<DST,SRC>(*(const SRC*)(s), 0);
+                    *d++ = *(const T *)(s);
                     s += sstride;
                 }
             }
@@ -295,17 +286,16 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate90_tiled_unpacked(const SRC *
     }
 }
 
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_tiled(const SRC *src, int w, int h,
-                                         int sstride,
-                                         DST *dest, int dstride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate270_tiled(const T *src, int w, int h, int sstride, T *dest, int dstride)
 {
-    sstride /= sizeof(SRC);
-    dstride /= sizeof(DST);
+    sstride /= sizeof(T);
+    dstride /= sizeof(T);
 
-    const int pack = sizeof(quint32) / sizeof(DST);
+    const int pack = sizeof(quint32) / sizeof(T);
     const int unaligned =
-        qMin(uint((long(dest) & (sizeof(quint32)-1)) / sizeof(DST)), uint(h));
+        qMin(uint((long(dest) & (sizeof(quint32)-1)) / sizeof(T)), uint(h));
     const int restX = w % tileSize;
     const int restY = (h - unaligned) % tileSize;
     const int unoptimizedY = restY % pack;
@@ -318,9 +308,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_tiled(const SRC *src, int
 
         if (unaligned) {
             for (int x = startx; x < stopx; ++x) {
-                DST *d = dest + x * dstride;
+                T *d = dest + x * dstride;
                 for (int y = h - 1; y >= h - unaligned; --y) {
-                    *d++ = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+                    *d++ = src[y * sstride + x];
                 }
             }
         }
@@ -333,10 +323,10 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_tiled(const SRC *src, int
                 quint32 *d = reinterpret_cast<quint32*>(dest + x * dstride
                                                         + h - 1 - starty);
                 for (int y = starty; y > stopy; y -= pack) {
-                    quint32 c = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+                    quint32 c = src[y * sstride + x];
                     for (int i = 1; i < pack; ++i) {
                         const int shift = (sizeof(int) * 8 / pack * i);
-                        const DST color = qt_colorConvert<DST,SRC>(src[(y - i) * sstride + x], 0);
+                        const T color = src[(y - i) * sstride + x];
                         c |= color << shift;
                     }
                     *d++ = c;
@@ -346,19 +336,19 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_tiled(const SRC *src, int
         if (unoptimizedY) {
             const int starty = unoptimizedY - 1;
             for (int x = startx; x < stopx; ++x) {
-                DST *d = dest + x * dstride + h - 1 - starty;
+                T *d = dest + x * dstride + h - 1 - starty;
                 for (int y = starty; y >= 0; --y) {
-                    *d++ = qt_colorConvert<DST,SRC>(src[y * sstride + x], 0);
+                    *d++ = src[y * sstride + x];
                 }
             }
         }
     }
 }
 
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_tiled_unpacked(const SRC *src, int w, int h,
-                                                  int sstride,
-                                                  DST *dest, int dstride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate270_tiled_unpacked(const T *src, int w, int h, int sstride, T *dest,
+                                           int dstride)
 {
     const int numTilesX = (w + tileSize - 1) / tileSize;
     const int numTilesY = (h + tileSize - 1) / tileSize;
@@ -372,10 +362,10 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_tiled_unpacked(const SRC 
             const int stopy = qMax(starty - tileSize, 0);
 
             for (int x = startx; x < stopx; ++x) {
-                DST *d = (DST*)((char*)dest + x * dstride) + h - 1 - starty;
+                T *d = (T*)((char*)dest + x * dstride) + h - 1 - starty;
                 const char *s = (const char*)(src + x) + starty * sstride;
                 for (int y = starty; y >= stopy; --y) {
-                    *d++ = qt_colorConvert<DST,SRC>(*(const SRC*)s, 0);
+                    *d++ = *(const T*)s;
                     s -= sstride;
                 }
             }
@@ -385,214 +375,112 @@ Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_tiled_unpacked(const SRC 
 
 #endif // QT_ROTATION_ALGORITHM
 
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate90_template(const SRC *src,
-                                           int srcWidth, int srcHeight, int srcStride,
-                                           DST *dest, int dstStride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate90_template(const T *src, int srcWidth, int srcHeight, int srcStride,
+                                    T *dest, int dstStride)
 {
 #if QT_ROTATION_ALGORITHM == QT_ROTATION_CACHEDREAD
-    qt_memrotate90_cachedRead<DST,SRC>(src, srcWidth, srcHeight, srcStride,
-                                       dest, dstStride);
+    qt_memrotate90_cachedRead<T>(src, srcWidth, srcHeight, srcStride, dest, dstStride);
 #elif QT_ROTATION_ALGORITHM == QT_ROTATION_CACHEDWRITE
-    qt_memrotate90_cachedWrite<DST,SRC>(src, srcWidth, srcHeight, srcStride,
-                                        dest, dstStride);
+    qt_memrotate90_cachedWrite<T>(src, srcWidth, srcHeight, srcStride, dest, dstStride);
 #elif QT_ROTATION_ALGORITHM == QT_ROTATION_PACKING
-    qt_memrotate90_packing<DST,SRC>(src, srcWidth, srcHeight, srcStride,
-                                    dest, dstStride);
+    qt_memrotate90_packing<T>(src, srcWidth, srcHeight, srcStride, dest, dstStride);
 #elif QT_ROTATION_ALGORITHM == QT_ROTATION_TILED
-    qt_memrotate90_tiled<DST,SRC>(src, srcWidth, srcHeight, srcStride,
-                                  dest, dstStride);
+    qt_memrotate90_tiled<T>(src, srcWidth, srcHeight, srcStride, dest, dstStride);
 #endif
 }
 
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate180_template(const SRC *src,
-                                            int w, int h, int sstride,
-                                            DST *dest, int dstride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate180_template(const T *src, int w, int h, int sstride, T *dest, int dstride)
 {
     const char *s = (const char*)(src) + (h - 1) * sstride;
     for (int y = h - 1; y >= 0; --y) {
-        DST *d = reinterpret_cast<DST*>((char *)(dest) + (h - y - 1) * dstride);
-        src = reinterpret_cast<const SRC*>(s);
+        T *d = reinterpret_cast<T*>((char *)(dest) + (h - y - 1) * dstride);
+        src = reinterpret_cast<const T*>(s);
         for (int x = w - 1; x >= 0; --x) {
-            d[w - x - 1] = qt_colorConvert<DST,SRC>(src[x], 0);
+            d[w - x - 1] = src[x];
         }
         s -= sstride;
     }
 }
 
-template <class DST, class SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline void qt_memrotate270_template(const SRC *src,
-                                            int srcWidth, int srcHeight, int srcStride,
-                                            DST *dest, int dstStride)
+template <class T>
+Q_STATIC_TEMPLATE_FUNCTION
+inline void qt_memrotate270_template(const T *src, int srcWidth, int srcHeight, int srcStride,
+                                     T *dest, int dstStride)
 {
 #if QT_ROTATION_ALGORITHM == QT_ROTATION_CACHEDREAD
-    qt_memrotate270_cachedRead<DST,SRC>(src, srcWidth, srcHeight, srcStride,
-                                        dest, dstStride);
+    qt_memrotate270_cachedRead<T>(src, srcWidth, srcHeight, srcStride, dest, dstStride);
 #elif QT_ROTATION_ALGORITHM == QT_ROTATION_CACHEDWRITE
-    qt_memrotate270_cachedWrite<DST,SRC>(src, srcWidth, srcHeight, srcStride,
-                                         dest, dstStride);
+    qt_memrotate270_cachedWrite<T>(src, srcWidth, srcHeight, srcStride, dest, dstStride);
 #elif QT_ROTATION_ALGORITHM == QT_ROTATION_PACKING
-    qt_memrotate270_packing<DST,SRC>(src, srcWidth, srcHeight, srcStride,
-                                     dest, dstStride);
+    qt_memrotate270_packing<T>(src, srcWidth, srcHeight, srcStride, dest, dstStride);
 #elif QT_ROTATION_ALGORITHM == QT_ROTATION_TILED
-    qt_memrotate270_tiled_unpacked<DST,SRC>(src, srcWidth, srcHeight,
-                                            srcStride,
-                                            dest, dstStride);
+    qt_memrotate270_tiled_unpacked<T>(src, srcWidth, srcHeight, srcStride, dest, dstStride);
 #endif
 }
 
 template <>
 Q_STATIC_TEMPLATE_SPECIALIZATION
-inline void qt_memrotate90_template<quint24, quint24>(const quint24 *src,
-                                                             int srcWidth, int srcHeight, int srcStride,
-                                                             quint24 *dest, int dstStride)
+inline void qt_memrotate90_template<quint24>(const quint24 *src, int srcWidth, int srcHeight,
+                                             int srcStride, quint24 *dest, int dstStride)
 {
 #if QT_ROTATION_ALGORITHM == QT_ROTATION_CACHEDREAD
-    qt_memrotate90_cachedRead<quint24,quint24>(src, srcWidth, srcHeight,
-                                               srcStride, dest, dstStride);
+    qt_memrotate90_cachedRead<quint24>(src, srcWidth, srcHeight, srcStride, dest, dstStride);
 #elif QT_ROTATION_ALGORITHM == QT_ROTATION_CACHEDWRITE
-    qt_memrotate90_cachedWrite<quint24,quint24>(src, srcWidth, srcHeight,
-                                                srcStride, dest, dstStride);
+    qt_memrotate90_cachedWrite<quint24>(src, srcWidth, srcHeight, srcStride, dest, dstStride);
 #elif QT_ROTATION_ALGORITHM == QT_ROTATION_PACKING
     // packed algorithm not implemented
-    qt_memrotate90_cachedRead<quint24,quint24>(src, srcWidth, srcHeight,
-                                               srcStride, dest, dstStride);
+    qt_memrotate90_cachedRead<quint24>(src, srcWidth, srcHeight, srcStride, dest, dstStride);
 #elif QT_ROTATION_ALGORITHM == QT_ROTATION_TILED
     // packed algorithm not implemented
-    qt_memrotate90_tiled_unpacked<quint24,quint24>(src, srcWidth, srcHeight,
-                                                   srcStride, dest, dstStride);
+    qt_memrotate90_tiled_unpacked<quint24>(src, srcWidth, srcHeight, srcStride, dest, dstStride);
 #endif
 }
 
-template <>
-Q_STATIC_TEMPLATE_SPECIALIZATION
-inline void qt_memrotate90_template<quint24, quint32>(const quint32 *src,
-                                                             int srcWidth, int srcHeight, int srcStride,
-                                                             quint24 *dest, int dstStride)
-{
-#if QT_ROTATION_ALGORITHM == QT_ROTATION_CACHEDREAD
-    qt_memrotate90_cachedRead<quint24,quint32>(src, srcWidth, srcHeight,
-                                               srcStride, dest, dstStride);
-#elif QT_ROTATION_ALGORITHM == QT_ROTATION_CACHEDWRITE
-    qt_memrotate90_cachedWrite<quint24,quint32>(src, srcWidth, srcHeight,
-                                                srcStride, dest, dstStride);
-#elif QT_ROTATION_ALGORITHM == QT_ROTATION_PACKING
-    // packed algorithm not implemented
-    qt_memrotate90_cachedRead<quint24,quint32>(src, srcWidth, srcHeight,
-                                               srcStride, dest, dstStride);
-#elif QT_ROTATION_ALGORITHM == QT_ROTATION_TILED
-    // packed algorithm not implemented
-    qt_memrotate90_tiled_unpacked<quint24,quint32>(src, srcWidth, srcHeight,
-                                                   srcStride, dest, dstStride);
-#endif
-}
-
-template <>
-Q_STATIC_TEMPLATE_SPECIALIZATION
-inline void qt_memrotate90_template<quint18, quint32>(const quint32 *src,
-                                                             int srcWidth, int srcHeight, int srcStride,
-                                                             quint18 *dest, int dstStride)
-{
-#if QT_ROTATION_ALGORITHM == QT_ROTATION_CACHEDREAD
-    qt_memrotate90_cachedRead<quint18,quint32>(src, srcWidth, srcHeight,
-                                               srcStride, dest, dstStride);
-#elif QT_ROTATION_ALGORITHM == QT_ROTATION_CACHEDWRITE
-    qt_memrotate90_cachedWrite<quint18,quint32>(src, srcWidth, srcHeight,
-                                                srcStride, dest, dstStride);
-#elif QT_ROTATION_ALGORITHM == QT_ROTATION_PACKING
-    // packed algorithm not implemented
-    qt_memrotate90_cachedRead<quint18,quint32>(src, srcWidth, srcHeight,
-                                               srcStride, dest, dstStride);
-#elif QT_ROTATION_ALGORITHM == QT_ROTATION_TILED
-    // packed algorithm not implemented
-    qt_memrotate90_tiled_unpacked<quint18,quint32>(src, srcWidth, srcHeight,
-                                                   srcStride, dest, dstStride);
-#endif
-}
-
-#define QT_IMPL_MEMROTATE(srctype, desttype)                        \
-Q_GUI_EXPORT void qt_memrotate90(const srctype *src, int w, int h, int sstride,  \
-                    desttype *dest, int dstride)                    \
+#define QT_IMPL_MEMROTATE(type)                                     \
+Q_GUI_EXPORT void qt_memrotate90(const type *src, int w, int h, int sstride, \
+                                 type *dest, int dstride)           \
 {                                                                   \
     qt_memrotate90_template(src, w, h, sstride, dest, dstride);     \
 }                                                                   \
-Q_GUI_EXPORT void qt_memrotate180(const srctype *src, int w, int h, int sstride, \
-                     desttype *dest, int dstride)                   \
+Q_GUI_EXPORT void qt_memrotate180(const type *src, int w, int h, int sstride, \
+                                  type *dest, int dstride)          \
 {                                                                   \
     qt_memrotate180_template(src, w, h, sstride, dest, dstride);    \
 }                                                                   \
-Q_GUI_EXPORT void qt_memrotate270(const srctype *src, int w, int h, int sstride, \
-                     desttype *dest, int dstride)                   \
+Q_GUI_EXPORT void qt_memrotate270(const type *src, int w, int h, int sstride, \
+                                  type *dest, int dstride)          \
 {                                                                   \
     qt_memrotate270_template(src, w, h, sstride, dest, dstride);    \
 }
 
-#define QT_IMPL_SIMPLE_MEMROTATE(srctype, desttype)                 \
-Q_GUI_EXPORT void qt_memrotate90(const srctype *src, int w, int h, int sstride,  \
-                    desttype *dest, int dstride)                    \
+#define QT_IMPL_SIMPLE_MEMROTATE(type)                              \
+Q_GUI_EXPORT void qt_memrotate90(const type *src, int w, int h, int sstride,  \
+                                 type *dest, int dstride)           \
 {                                                                   \
-    qt_memrotate90_tiled_unpacked<desttype,srctype>(src, w, h, sstride, dest, dstride); \
+    qt_memrotate90_tiled_unpacked<type>(src, w, h, sstride, dest, dstride); \
 }                                                                   \
-Q_GUI_EXPORT void qt_memrotate180(const srctype *src, int w, int h, int sstride, \
-                     desttype *dest, int dstride)                   \
+Q_GUI_EXPORT void qt_memrotate180(const type *src, int w, int h, int sstride, \
+                                  type *dest, int dstride)          \
 {                                                                   \
     qt_memrotate180_template(src, w, h, sstride, dest, dstride);    \
 }                                                                   \
-Q_GUI_EXPORT void qt_memrotate270(const srctype *src, int w, int h, int sstride, \
-                     desttype *dest, int dstride)                   \
+Q_GUI_EXPORT void qt_memrotate270(const type *src, int w, int h, int sstride, \
+                                  type *dest, int dstride)          \
 {                                                                   \
-    qt_memrotate270_tiled_unpacked<desttype,srctype>(src, w, h, sstride, dest, dstride); \
+    qt_memrotate270_tiled_unpacked<type>(src, w, h, sstride, dest, dstride); \
 }
 
 
 
 
-QT_IMPL_MEMROTATE(quint32, quint32)
-QT_IMPL_MEMROTATE(quint32, quint16)
-QT_IMPL_MEMROTATE(quint16, quint32)
-QT_IMPL_MEMROTATE(quint16, quint16)
-QT_IMPL_MEMROTATE(quint24, quint24)
-QT_IMPL_MEMROTATE(quint32, quint24)
-QT_IMPL_MEMROTATE(quint32, quint18)
-QT_IMPL_MEMROTATE(quint32, quint8)
-QT_IMPL_MEMROTATE(quint16, quint8)
-QT_IMPL_MEMROTATE(qrgb444, quint8)
-QT_IMPL_MEMROTATE(quint8, quint8)
-
-#if defined(QT_QWS_ROTATE_BGR)
-QT_IMPL_SIMPLE_MEMROTATE(quint16, qbgr565)
-QT_IMPL_SIMPLE_MEMROTATE(quint32, qbgr565)
-QT_IMPL_SIMPLE_MEMROTATE(qrgb555, qbgr555)
-QT_IMPL_SIMPLE_MEMROTATE(quint32, qbgr555)
-#endif
-
-#ifdef QT_QWS_DEPTH_GENERIC
-QT_IMPL_MEMROTATE(quint32, qrgb_generic16)
-QT_IMPL_MEMROTATE(quint16, qrgb_generic16)
-#endif
-
-struct qrgb_gl_rgba
-{
-public:
-    inline qrgb_gl_rgba(quint32 v) {
-        if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
-            data = ((v << 16) & 0xff0000) | ((v >> 16) & 0xff) | (v & 0xff00ff00);
-        else
-            data = (v << 8) | ((v >> 24) & 0xff);
-    }
-
-    inline operator quint32() const { return data; }
-
-private:
-    quint32 data;
-} Q_PACKED;
-
-void Q_GUI_EXPORT qt_memrotate90_gl(const quint32 *src, int srcWidth, int srcHeight, int srcStride,
-                                    quint32 *dest, int dstStride)
-{
-    qt_memrotate90_template(src, srcWidth, srcHeight, srcStride, reinterpret_cast<qrgb_gl_rgba *>(dest), dstStride);
-}
+QT_IMPL_MEMROTATE(quint32)
+QT_IMPL_MEMROTATE(quint16)
+QT_IMPL_MEMROTATE(quint24)
+QT_IMPL_MEMROTATE(quint8)
 
 void qt_memrotate90_16(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl)
 {

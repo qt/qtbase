@@ -229,13 +229,13 @@ void tst_QAbstractButton::onReleased()
 void tst_QAbstractButton::setAutoRepeat_data()
 {
     QTest::addColumn<int>("mode");
-    QTest::newRow( "" ) << 0;
-    QTest::newRow( "" ) << 1;
-    QTest::newRow( "" ) << 2;
-    QTest::newRow( "" ) << 3;
-    QTest::newRow( "" ) << 4;
-    QTest::newRow( "" ) << 5;
-    QTest::newRow( "" ) << 6;
+    QTest::newRow("mode 0") << 0;
+    QTest::newRow("mode 1") << 1;
+    QTest::newRow("mode 2") << 2;
+    QTest::newRow("mode 3") << 3;
+    QTest::newRow("mode 4") << 4;
+    QTest::newRow("mode 5") << 5;
+    QTest::newRow("mode 6") << 6;
 }
 
 #define REPEAT_DELAY 1000

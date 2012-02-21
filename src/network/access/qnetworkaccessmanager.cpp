@@ -1094,6 +1094,16 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authen
     // also called when last URL is empty, e.g. on first call
     if (urlForLastAuthentication->isEmpty()
             || url != *urlForLastAuthentication) {
+        // if credentials are included in the url, then use them
+        if (!url.userName().isEmpty()
+            && !url.password().isEmpty()) {
+            authenticator->setUser(url.userName());
+            authenticator->setPassword(url.password());
+            *urlForLastAuthentication = url;
+            authenticationManager->cacheCredentials(url, authenticator);
+            return;
+        }
+
         QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedCredentials(url, authenticator);
         if (!cred.isNull()) {
             authenticator->setUser(cred.user);

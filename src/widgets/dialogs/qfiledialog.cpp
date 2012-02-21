@@ -59,7 +59,7 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qstylepainter.h>
-#if !defined(Q_WS_WINCE)
+#if !defined(Q_OS_WINCE)
 #include "ui_qfiledialog.h"
 #else
 #define Q_EMBEDDED_SMALLSCREEN
@@ -482,8 +482,19 @@ bool QFileDialog::restoreState(const QByteArray &state)
         history.pop_front();
     setHistory(history);
     setDirectory(lastVisitedDir()->isEmpty() ? currentDirectory : *lastVisitedDir());
-    if (!d->qFileDialogUi->treeView->header()->restoreState(headerData))
+    QHeaderView *headerView = d->qFileDialogUi->treeView->header();
+    if (!headerView->restoreState(headerData))
         return false;
+
+    QList<QAction*> actions = headerView->actions();
+    QAbstractItemModel *abstractModel = d->model;
+#ifndef QT_NO_PROXYMODEL
+    if (d->proxyModel)
+        abstractModel = d->proxyModel;
+#endif
+    int total = qMin(abstractModel->columnCount(QModelIndex()), actions.count() + 1);
+    for (int i = 1; i < total; ++i)
+        actions.at(i - 1)->setChecked(!headerView->isSectionHidden(i));
 
     setViewMode(ViewMode(viewMode));
     return true;
@@ -2002,7 +2013,7 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
 
 #if defined(Q_WS_WIN)
     if (QGuiApplicationPrivate::platformIntegration()->usePlatformNativeDialog() && !(args.options & DontUseNativeDialog) && (options & ShowDirsOnly)
-#if defined(Q_WS_WINCE)
+#if defined(Q_OS_WINCE)
         && qt_priv_ptr_valid
 #endif
         ) {

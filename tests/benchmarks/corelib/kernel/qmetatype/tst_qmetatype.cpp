@@ -72,6 +72,8 @@ private slots:
 
     void constructCoreType_data();
     void constructCoreType();
+    void constructCoreTypeStaticLess_data();
+    void constructCoreTypeStaticLess();
     void constructCoreTypeCopy_data();
     void constructCoreTypeCopy();
 
@@ -79,6 +81,8 @@ private slots:
     void constructInPlace();
     void constructInPlaceCopy_data();
     void constructInPlaceCopy();
+    void constructInPlaceCopyStaticLess_data();
+    void constructInPlaceCopyStaticLess();
 };
 
 tst_QMetaType::tst_QMetaType()
@@ -88,6 +92,12 @@ tst_QMetaType::tst_QMetaType()
 tst_QMetaType::~tst_QMetaType()
 {
 }
+
+struct BigClass
+{
+    double n,i,e,r,o,b;
+};
+Q_DECLARE_METATYPE(BigClass);
 
 void tst_QMetaType::typeBuiltin_data()
 {
@@ -240,7 +250,7 @@ void tst_QMetaType::isRegisteredNotRegistered()
 void tst_QMetaType::constructCoreType_data()
 {
     QTest::addColumn<int>("typeId");
-    for (int i = 0; i <= QMetaType::LastCoreType; ++i)
+    for (int i = QMetaType::FirstCoreType; i <= QMetaType::LastCoreType; ++i)
         QTest::newRow(QMetaType::typeName(i)) << i;
     // GUI types are tested in tst_QGuiMetaType.
 }
@@ -256,6 +266,23 @@ void tst_QMetaType::constructCoreType()
         for (int i = 0; i < 100000; ++i) {
             void *data = QMetaType::create(typeId, (void *)0);
             QMetaType::destroy(typeId, data);
+        }
+    }
+}
+
+void tst_QMetaType::constructCoreTypeStaticLess_data()
+{
+    constructCoreType_data();
+}
+
+void tst_QMetaType::constructCoreTypeStaticLess()
+{
+    QFETCH(int, typeId);
+    QBENCHMARK {
+        QMetaType type(typeId);
+        for (int i = 0; i < 100000; ++i) {
+            void *data = type.create((void *)0);
+            type.destroy(data);
         }
     }
 }
@@ -285,6 +312,7 @@ void tst_QMetaType::constructCoreTypeCopy()
 void tst_QMetaType::constructInPlace_data()
 {
     constructCoreType_data();
+    QTest::newRow("custom") << qMetaTypeId<BigClass>();
 }
 
 void tst_QMetaType::constructInPlace()
@@ -305,7 +333,7 @@ void tst_QMetaType::constructInPlace()
 
 void tst_QMetaType::constructInPlaceCopy_data()
 {
-    constructCoreType_data();
+    constructInPlace_data();
 }
 
 void tst_QMetaType::constructInPlaceCopy()
@@ -320,6 +348,30 @@ void tst_QMetaType::constructInPlaceCopy()
         for (int i = 0; i < 100000; ++i) {
             QMetaType::construct(typeId, storage, other);
             QMetaType::destruct(typeId, storage);
+        }
+    }
+    QMetaType::destroy(typeId, other);
+    qFreeAligned(storage);
+}
+
+void tst_QMetaType::constructInPlaceCopyStaticLess_data()
+{
+    constructInPlaceCopy_data();
+}
+
+void tst_QMetaType::constructInPlaceCopyStaticLess()
+{
+    QFETCH(int, typeId);
+    int size = QMetaType::sizeOf(typeId);
+    void *storage = qMallocAligned(size, 2 * sizeof(qlonglong));
+    void *other = QMetaType::create(typeId);
+    QCOMPARE(QMetaType::construct(typeId, storage, other), storage);
+    QMetaType::destruct(typeId, storage);
+    QBENCHMARK {
+        QMetaType type(typeId);
+        for (int i = 0; i < 100000; ++i) {
+            type.construct(storage, other);
+            type.destruct(storage);
         }
     }
     QMetaType::destroy(typeId, other);

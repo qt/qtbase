@@ -2519,11 +2519,13 @@ bool QPlainTextEdit::canPaste() const
 
     \sa QTextDocument::print()
 */
+#ifndef QT_NO_PRINTER
 void QPlainTextEdit::print(QPagedPaintDevice *printer) const
 {
     Q_D(const QPlainTextEdit);
     d->control->print(printer);
 }
+#endif
 
 /*! \property QPlainTextEdit::tabChangesFocus
   \brief whether \gui Tab changes focus or is accepted as input

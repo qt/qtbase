@@ -53,6 +53,7 @@ private slots:
     void focusObject();
     void allWindows();
     void topLevelWindows();
+    void abortQuitOnShow();
 };
 
 class DummyWindow : public QWindow
@@ -77,6 +78,9 @@ public:
 
 void tst_QGuiApplication::focusObject()
 {
+#ifdef Q_OS_MAC
+    QSKIP("This test fails intermittently, and at different locations. See QTBUG-24322");
+#endif
     int argc = 0;
     QGuiApplication app(argc, 0);
 
@@ -150,6 +154,45 @@ void tst_QGuiApplication::topLevelWindows()
     QVERIFY(!app.topLevelWindows().contains(window2));
     QVERIFY(!app.topLevelWindows().contains(window1));
     QCOMPARE(app.topLevelWindows().count(), 0);
+}
+
+class ShowCloseShowWindow : public QWindow
+{
+    Q_OBJECT
+public:
+    ShowCloseShowWindow(bool showAgain, QWindow *parent = 0)
+      : QWindow(parent), showAgain(showAgain)
+    {
+        QTimer::singleShot(0, this, SLOT(doClose()));
+        QTimer::singleShot(500, this, SLOT(exitApp()));
+    }
+
+private slots:
+    void doClose() {
+        close();
+        if (showAgain)
+            show();
+    }
+
+    void exitApp() {
+      qApp->exit(1);
+    }
+
+private:
+    bool showAgain;
+};
+
+void tst_QGuiApplication::abortQuitOnShow()
+{
+    int argc = 0;
+    QGuiApplication app(argc, 0);
+    QWindow *window1 = new ShowCloseShowWindow(false);
+    window1->show();
+    QCOMPARE(app.exec(), 0);
+
+    QWindow *window2 = new ShowCloseShowWindow(true);
+    window2->show();
+    QCOMPARE(app.exec(), 1);
 }
 
 QTEST_APPLESS_MAIN(tst_QGuiApplication)

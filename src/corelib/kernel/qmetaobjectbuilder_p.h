@@ -215,6 +215,9 @@ public:
     int attributes() const;
     void setAttributes(int value);
 
+    int revision() const;
+    void setRevision(int revision);
+
 private:
     const QMetaObjectBuilder *_mobj;
     int _index;
@@ -268,6 +271,9 @@ public:
     void setEnumOrFlag(bool value);
     void setConstant(bool value);
     void setFinal(bool value);
+
+    int revision() const;
+    void setRevision(int revision);
 
 private:
     const QMetaObjectBuilder *_mobj;

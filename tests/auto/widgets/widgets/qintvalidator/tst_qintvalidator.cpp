@@ -70,8 +70,8 @@ void tst_QIntValidator::validate_data()
     QTest::newRow("data1") << 0 << 100 << QString("500") << INV;
     QTest::newRow("data1a") << 0 << 100 << QString("5000") << INV;
     QTest::newRow("data1b") << -100 << 0 << QString("50") << INT;
-    QTest::newRow("data1b") << -100 << 0 << QString("500") << INV;
-    QTest::newRow("data1c") << -100 << 0 << QString("5000") << INV;
+    QTest::newRow("data1c") << -100 << 0 << QString("500") << INV;
+    QTest::newRow("data1d") << -100 << 0 << QString("5000") << INV;
     QTest::newRow("data2") << 0 << 100 << QString("-35") << INV;
     QTest::newRow("data3") << 0 << 100 << QString("a") << INV;
     QTest::newRow("data4") << 0 << 100 << QString("-") << INV;

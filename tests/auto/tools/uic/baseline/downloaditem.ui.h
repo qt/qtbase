@@ -45,13 +45,13 @@ public:
     void setupUi(QWidget *DownloadItem)
     {
         if (DownloadItem->objectName().isEmpty())
-            DownloadItem->setObjectName(QString::fromUtf8("DownloadItem"));
+            DownloadItem->setObjectName(QStringLiteral("DownloadItem"));
         DownloadItem->resize(423, 110);
         horizontalLayout = new QHBoxLayout(DownloadItem);
         horizontalLayout->setContentsMargins(0, 0, 0, 0);
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
         fileIcon = new QLabel(DownloadItem);
-        fileIcon->setObjectName(QString::fromUtf8("fileIcon"));
+        fileIcon->setObjectName(QStringLiteral("fileIcon"));
         QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -61,9 +61,9 @@ public:
         horizontalLayout->addWidget(fileIcon);
 
         verticalLayout_2 = new QVBoxLayout();
-        verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
+        verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
         fileNameLabel = new SqueezeLabel(DownloadItem);
-        fileNameLabel->setObjectName(QString::fromUtf8("fileNameLabel"));
+        fileNameLabel->setObjectName(QStringLiteral("fileNameLabel"));
         QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Preferred);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -73,13 +73,13 @@ public:
         verticalLayout_2->addWidget(fileNameLabel);
 
         progressBar = new QProgressBar(DownloadItem);
-        progressBar->setObjectName(QString::fromUtf8("progressBar"));
+        progressBar->setObjectName(QStringLiteral("progressBar"));
         progressBar->setValue(0);
 
         verticalLayout_2->addWidget(progressBar);
 
         downloadInfoLabel = new SqueezeLabel(DownloadItem);
-        downloadInfoLabel->setObjectName(QString::fromUtf8("downloadInfoLabel"));
+        downloadInfoLabel->setObjectName(QStringLiteral("downloadInfoLabel"));
         QSizePolicy sizePolicy2(QSizePolicy::Minimum, QSizePolicy::Preferred);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
@@ -92,24 +92,24 @@ public:
         horizontalLayout->addLayout(verticalLayout_2);
 
         verticalLayout = new QVBoxLayout();
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         verticalSpacer = new QSpacerItem(17, 1, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         verticalLayout->addItem(verticalSpacer);
 
         tryAgainButton = new QPushButton(DownloadItem);
-        tryAgainButton->setObjectName(QString::fromUtf8("tryAgainButton"));
+        tryAgainButton->setObjectName(QStringLiteral("tryAgainButton"));
         tryAgainButton->setEnabled(false);
 
         verticalLayout->addWidget(tryAgainButton);
 
         stopButton = new QPushButton(DownloadItem);
-        stopButton->setObjectName(QString::fromUtf8("stopButton"));
+        stopButton->setObjectName(QStringLiteral("stopButton"));
 
         verticalLayout->addWidget(stopButton);
 
         openButton = new QPushButton(DownloadItem);
-        openButton->setObjectName(QString::fromUtf8("openButton"));
+        openButton->setObjectName(QStringLiteral("openButton"));
 
         verticalLayout->addWidget(openButton);
 

@@ -3,33 +3,49 @@ Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE
 PASS   : tst_DataTable::initTestCase()
 PASS   : tst_DataTable::singleTestFunction1()
 PASS   : tst_DataTable::singleTestFunction2()
-PASS   : tst_DataTable::fiveTablePasses()
+PASS   : tst_DataTable::fiveTablePasses(fiveTablePasses_data 1)
+PASS   : tst_DataTable::fiveTablePasses(fiveTablePasses_data 2)
+PASS   : tst_DataTable::fiveTablePasses(fiveTablePasses_data 3)
+PASS   : tst_DataTable::fiveTablePasses(fiveTablePasses_data 4)
+PASS   : tst_DataTable::fiveTablePasses(fiveTablePasses_data 5)
 FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 1) 'test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(58)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(91)]
 FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 2) 'test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(58)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(91)]
 FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 3) 'test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(58)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(91)]
 FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 4) 'test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(58)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(91)]
 FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 5) 'test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(58)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(91)]
 FAIL!  : tst_DataTable::startsWithFailure(startsWithFailure_data 1) 'test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(58)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(91)]
+PASS   : tst_DataTable::startsWithFailure(startsWithFailure_data 2)
+PASS   : tst_DataTable::startsWithFailure(startsWithFailure_data 3)
+PASS   : tst_DataTable::startsWithFailure(startsWithFailure_data 4)
+PASS   : tst_DataTable::startsWithFailure(startsWithFailure_data 5)
+PASS   : tst_DataTable::endsWithFailure(endsWithFailure 1)
+PASS   : tst_DataTable::endsWithFailure(endsWithFailure 2)
+PASS   : tst_DataTable::endsWithFailure(endsWithFailure 3)
+PASS   : tst_DataTable::endsWithFailure(endsWithFailure 4)
 FAIL!  : tst_DataTable::endsWithFailure(endsWithFailure 5) 'test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(58)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(91)]
+PASS   : tst_DataTable::failureInMiddle(failureInMiddle_data 1)
+PASS   : tst_DataTable::failureInMiddle(failureInMiddle_data 2)
 FAIL!  : tst_DataTable::failureInMiddle(failureInMiddle_data 3) 'test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(58)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(91)]
+PASS   : tst_DataTable::failureInMiddle(failureInMiddle_data 4)
+PASS   : tst_DataTable::failureInMiddle(failureInMiddle_data 5)
 FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 1) '!test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(140)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(173)]
 FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 2) '!test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(140)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(173)]
 FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 3) '!test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(140)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(173)]
 FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 4) '!test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(140)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(173)]
 FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 5) '!test' returned FALSE. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(140)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(173)]
 PASS   : tst_DataTable::cleanupTestCase()
-Totals: 5 passed, 13 failed, 0 skipped
+Totals: 21 passed, 13 failed, 0 skipped
 ********* Finished testing of tst_DataTable *********

@@ -42,6 +42,8 @@
 #ifndef QGUIGLCONTEXT_P_H
 #define QGUIGLCONTEXT_P_H
 
+#ifndef QT_NO_OPENGL
+
 #include "qopengl.h"
 #include "qopenglcontext.h"
 #include <private/qobject_p.h>
@@ -245,4 +247,5 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
+#endif // QT_NO_OPENGL
 #endif // QGUIGLCONTEXT_P_H

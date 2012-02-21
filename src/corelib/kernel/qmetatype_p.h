@@ -132,10 +132,8 @@ public:
         }
 
         static void deleter(T *t) { delete t; }
-    #ifndef QT_NO_DATASTREAM
         static void saver(QDataStream &stream, const T *t) { stream << *t; }
         static void loader(QDataStream &stream, T *t) { stream >> *t; }
-    #endif // QT_NO_DATASTREAM
         static void destructor(T *t)
         {
             Q_UNUSED(t) // Silence MSVC that warns for POD types.
@@ -151,35 +149,74 @@ public:
 
     QMetaType::Creator creator;
     QMetaType::Deleter deleter;
-#ifndef QT_NO_DATASTREAM
     QMetaType::SaveOperator saveOp;
     QMetaType::LoadOperator loadOp;
-#endif
     QMetaType::Constructor constructor;
     QMetaType::Destructor destructor;
     int size;
     quint32 flags; // same as QMetaType::TypeFlags
 };
 
+template<>
+struct QMetaTypeInterface::Impl<void> {
+    static void *creator(const void *) { return 0; }
+    static void deleter(void *) {}
+    static void saver(QDataStream &, const void *) {}
+    static void loader(QDataStream &, void *) {}
+    static void destructor(void *){}
+    static void *constructor(void *, const void *) { return 0; }
+};
+
 #ifndef QT_NO_DATASTREAM
 #  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
     /*saveOp*/(reinterpret_cast<QMetaType::SaveOperator>(QMetaTypeInterface::Impl<Type>::saver)), \
     /*loadOp*/(reinterpret_cast<QMetaType::LoadOperator>(QMetaTypeInterface::Impl<Type>::loader)),
+#  define QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(Type) \
+    /*saveOp*/ 0, \
+    /*loadOp*/ 0,
 #else
-#  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type)
+#  define QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(Type) \
+    /*saveOp*/ 0, \
+    /*loadOp*/ 0,
+#  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
+    QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(Type)
 #endif
 
-#define QT_METATYPE_INTERFACE_INIT(Type) \
+#define QT_METATYPE_INTERFACE_INIT_IMPL(Type, DATASTREAM_DELEGATE) \
 { \
     /*creator*/(reinterpret_cast<QMetaType::Creator>(QMetaTypeInterface::Impl<Type>::creator)), \
     /*deleter*/(reinterpret_cast<QMetaType::Deleter>(QMetaTypeInterface::Impl<Type>::deleter)), \
-    QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
+    DATASTREAM_DELEGATE(Type) \
     /*constructor*/(reinterpret_cast<QMetaType::Constructor>(QMetaTypeInterface::Impl<Type>::constructor)), \
     /*destructor*/(reinterpret_cast<QMetaType::Destructor>(QMetaTypeInterface::Impl<Type>::destructor)), \
-    /*size*/(sizeof(Type)), \
+    /*size*/(QTypeInfo<Type>::sizeOf), \
     /*flags*/(!QTypeInfo<Type>::isStatic * QMetaType::MovableType) \
             | (QTypeInfo<Type>::isComplex * QMetaType::NeedsConstruction) \
             | (QTypeInfo<Type>::isComplex * QMetaType::NeedsDestruction) \
+}
+
+
+/* These  QT_METATYPE_INTERFACE_INIT* macros are used to initialize QMetaTypeInterface instance.
+
+ - QT_METATYPE_INTERFACE_INIT(Type) -> It takes Type argument and creates all necessary wrapper functions for the Type,
+   it detects if QT_NO_DATASTREAM was defined. Probably it is the macro that you want to use.
+
+ - QT_METATYPE_INTERFACE_INIT_EMPTY() -> It initializes an empty QMetaTypeInterface instance.
+
+ - QT_METATYPE_INTERFACE_INIT_NO_DATASTREAM(Type) -> Temporary workaround for missing auto-detection of data stream
+   operators. It creates same instance as QT_METATYPE_INTERFACE_INIT(Type) but with null stream operators callbacks.
+ */
+#define QT_METATYPE_INTERFACE_INIT(Type) QT_METATYPE_INTERFACE_INIT_IMPL(Type, QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL)
+#define QT_METATYPE_INTERFACE_INIT_NO_DATASTREAM(Type) QT_METATYPE_INTERFACE_INIT_IMPL(Type, QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL)
+#define QT_METATYPE_INTERFACE_INIT_EMPTY() \
+{ \
+    /*creator*/ 0, \
+    /*deleter*/ 0, \
+    QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL() \
+    /*constructor*/ 0, \
+    /*destructor*/ 0, \
+    /*size*/ 0, \
+    /*flags*/ 0 \
 }
 
 QT_END_NAMESPACE

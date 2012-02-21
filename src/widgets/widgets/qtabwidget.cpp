@@ -186,7 +186,6 @@ public:
     void _q_removeTab(int);
     void _q_tabMoved(int from, int to);
     void init();
-    bool hasHeightForWidth() const;
 
     QTabBar *tabs;
     QStackedWidget *stack;
@@ -238,11 +237,16 @@ void QTabWidgetPrivate::init()
 
 }
 
-bool QTabWidgetPrivate::hasHeightForWidth() const
+/*!
+    \reimp
+*/
+
+bool QTabWidget::hasHeightForWidth() const
 {
-    bool has = size_policy.hasHeightForWidth();
-    if (!has && stack)
-        has = qt_widget_private(stack)->hasHeightForWidth();
+    Q_D(const QTabWidget);
+    bool has = d->size_policy.hasHeightForWidth();
+    if (!has && d->stack)
+        has = d->stack->hasHeightForWidth();
     return has;
 }
 

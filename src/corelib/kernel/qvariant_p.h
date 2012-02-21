@@ -53,9 +53,6 @@
 // We mean it.
 //
 
-// takes a type, returns the internal void* pointer cast
-// to a pointer of the input type
-
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/private/qmetatype_p.h>
@@ -79,6 +76,8 @@ Q_STATIC_ASSERT(QVariantIntegrator<qulonglong>::CanUseInternalSpace);
 
 #ifdef Q_CC_SUN // Sun CC picks the wrong overload, so introduce awful hack
 
+// takes a type, returns the internal void* pointer cast
+// to a pointer of the input type
 template <typename T>
 inline T *v_cast(const QVariant::Private *nd, T * = 0)
 {
@@ -348,14 +347,6 @@ public:
 
     void delegate(const QMetaTypeSwitcher::UnknownType*)
     {
-        if (m_x->type == QVariant::UserType) {
-            // TODO get rid of it
-            // And yes! we can support historical magic, unkonwn/unconstructed user type isn't that
-            // awesome? this QVariant::isValid will be true!
-            m_x->is_null = !m_copy;
-            m_x->is_shared = false;
-            return;
-        }
         qWarning("Trying to construct an instance of an invalid type, type id: %i", m_x->type);
         m_x->type = QVariant::Invalid;
     }
@@ -406,8 +397,6 @@ public:
 
     void delegate(const QMetaTypeSwitcher::UnknownType*)
     {
-        if (m_d->type == QVariant::UserType)
-            return;
         qWarning("Trying to destruct an instance of an invalid type, type id: %i", m_d->type);
     }
     // Ignore nonconstructible type
@@ -454,10 +443,7 @@ public:
 
     void delegate(const QMetaTypeSwitcher::UnknownType*)
     {
-        if (m_d->type == QVariant::UserType)
-            m_debugStream.nospace() << "QVariant::UserType";
-        else
-            qWarning("Trying to stream an instance of an invalid type, type id: %i", m_d->type);
+        qWarning("Trying to stream an instance of an invalid type, type id: %i", m_d->type);
     }
     void delegate(const void*)
     {

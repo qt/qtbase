@@ -83,11 +83,22 @@ Q_DECLARE_METATYPE(QFont)
 Q_DECLARE_METATYPE(QColor)
 Q_DECLARE_METATYPE(QKeySequence)
 
+class CustomNonQObject;
+
 class tst_QVariant : public QObject
 {
     Q_OBJECT
 
+public:
+    tst_QVariant(QObject *parent = 0)
+      : QObject(parent), customNonQObjectPointer(0)
+    {
+
+    }
+
 private slots:
+    void cleanupTestCase();
+
     void constructor();
     void copy_constructor();
     void isNull();
@@ -176,6 +187,7 @@ private slots:
 
     void qvariant_cast_QObject_data();
     void qvariant_cast_QObject();
+    void qvariant_cast_QObject_derived();
 
     void toLocale();
 
@@ -275,6 +287,9 @@ private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
     void saveQVariantFromDataStream(QDataStream::Version version);
+
+    CustomNonQObject *customNonQObjectPointer;
+    QVector<QObject*> objectPointerTestData;
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -1842,10 +1857,6 @@ void tst_QVariant::operator_eq_eq_data()
 
         QTest::newRow("HashSecondLarger") << QVariant(hash1) << QVariant(hash2) << false;
     }
-
-    QTest::newRow( "UserType" ) << QVariant(QVariant::UserType) << QVariant(QVariant::UserType) << true;
-    QVariant mUserType(QVariant::UserType);
-    QTest::newRow( "Shared UserType" ) << mUserType << mUserType << true;
 }
 
 void tst_QVariant::operator_eq_eq()
@@ -1919,7 +1930,6 @@ void tst_QVariant::typeName_data()
     QTest::newRow("39") << int(QVariant::RectF) << QByteArray("QRectF");
     QTest::newRow("40") << int(QVariant::PointF) << QByteArray("QPointF");
     QTest::newRow("41") << int(QVariant::RegExp) << QByteArray("QRegExp");
-    QTest::newRow("42") << int(QVariant::UserType) << QByteArray();
     QTest::newRow("43") << int(QVariant::Matrix) << QByteArray("QMatrix");
     QTest::newRow("44") << int(QVariant::Transform) << QByteArray("QTransform");
     QTest::newRow("45") << int(QVariant::Hash) << QByteArray("QVariantHash");
@@ -2031,10 +2041,10 @@ void tst_QVariant::userType()
             qVariantSetValue(userVar, data);
 
             QCOMPARE(userVar.type(), QVariant::UserType);
+            QCOMPARE(userVar.userType(), qMetaTypeId<MyType>());
             QCOMPARE(userVar.typeName(), "MyType");
             QVERIFY(!userVar.isNull());
             QVERIFY(!userVar.canConvert(QVariant::String));
-            QVERIFY(!userVar.canConvert(QVariant::UserType));
 
             QVariant userVar2(userVar);
             QVERIFY(userVar == userVar2);
@@ -2060,10 +2070,10 @@ void tst_QVariant::userType()
             qVariantSetValue(userVar, &data);
 
             QCOMPARE(userVar.type(), QVariant::UserType);
+            QCOMPARE(userVar.userType(), qMetaTypeId<MyType*>());
             QCOMPARE(userVar.typeName(), "MyType*");
             QVERIFY(!userVar.isNull());
             QVERIFY(!userVar.canConvert(QVariant::String));
-            QVERIFY(!userVar.canConvert(QVariant::UserType));
 
             QVariant userVar2(userVar);
             QVERIFY(userVar == userVar2);
@@ -2457,20 +2467,63 @@ void tst_QVariant::invalidQColor() const
     QVERIFY(!qvariant_cast<QColor>(va).isValid());
 }
 
-void tst_QVariant::qvariant_cast_QObject_data() {
+class CustomQObject : public QObject {
+    Q_OBJECT
+public:
+    CustomQObject(QObject *parent = 0) : QObject(parent) {}
+};
+class CustomQWidget : public QWidget {
+    Q_OBJECT
+public:
+    CustomQWidget(QWidget *parent = 0) : QWidget(parent) {}
+};
+Q_DECLARE_METATYPE(CustomQObject*)
+Q_DECLARE_METATYPE(CustomQWidget*)
 
+class CustomNonQObject { };
+Q_DECLARE_METATYPE(CustomNonQObject)
+Q_DECLARE_METATYPE(CustomNonQObject*)
+
+void tst_QVariant::cleanupTestCase()
+{
+    delete customNonQObjectPointer;
+    qDeleteAll(objectPointerTestData);
+}
+
+void tst_QVariant::qvariant_cast_QObject_data()
+{
     QTest::addColumn<QVariant>("data");
     QTest::addColumn<bool>("success");
-    QObject *obj = new QObject(this);
+    QObject *obj = new QObject;
     obj->setObjectName(QString::fromLatin1("Hello"));
     QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, &obj) << true;
     QTest::newRow("from QObject2") << QVariant::fromValue(obj) << true;
     QTest::newRow("from String") << QVariant(QLatin1String("1, 2, 3")) << false;
     QTest::newRow("from int") << QVariant((int) 123) << false;
+    QWidget *widget = new QWidget;
+    widget->setObjectName(QString::fromLatin1("Hello"));
+    QTest::newRow("from QWidget") << QVariant::fromValue(widget) << true;
+    CustomQObject *customObject = new CustomQObject(this);
+    customObject->setObjectName(QString::fromLatin1("Hello"));
+    QTest::newRow("from Derived QObject") << QVariant::fromValue(customObject) << true;
+    CustomQWidget *customWidget = new CustomQWidget;
+    customWidget->setObjectName(QString::fromLatin1("Hello"));
+    QTest::newRow("from Derived QWidget") << QVariant::fromValue(customWidget) << true;
+    QTest::newRow("from custom Object") << QVariant::fromValue(CustomNonQObject()) << false;
+
+    // Deleted in cleanupTestCase.
+    customNonQObjectPointer = new CustomNonQObject;
+    QTest::newRow("from custom ObjectStar") << QVariant::fromValue(customNonQObjectPointer) << false;
+
+    // Deleted in cleanupTestCase.
+    objectPointerTestData.push_back(obj);
+    objectPointerTestData.push_back(widget);
+    objectPointerTestData.push_back(customObject);
+    objectPointerTestData.push_back(customWidget);
 }
 
-
-void tst_QVariant::qvariant_cast_QObject() {
+void tst_QVariant::qvariant_cast_QObject()
+{
     QFETCH(QVariant, data);
     QFETCH(bool, success);
 
@@ -2478,6 +2531,38 @@ void tst_QVariant::qvariant_cast_QObject() {
     QCOMPARE(o != 0, success);
     if (success) {
         QCOMPARE(o->objectName(), QString::fromLatin1("Hello"));
+    }
+}
+
+class CustomQObjectDerived : public CustomQObject {
+    Q_OBJECT
+public:
+    CustomQObjectDerived(QObject *parent = 0) : CustomQObject(parent) {}
+};
+Q_DECLARE_METATYPE(CustomQObjectDerived*)
+
+void tst_QVariant::qvariant_cast_QObject_derived()
+{
+    {
+        CustomQObjectDerived *object = new CustomQObjectDerived(this);
+        QVariant data = QVariant::fromValue(object);
+
+        QVERIFY(data.userType() == qMetaTypeId<CustomQObjectDerived*>());
+
+        QCOMPARE(data.value<QObject *>(), object);
+        QCOMPARE(data.value<CustomQObjectDerived *>(), object);
+        QCOMPARE(data.value<CustomQObject *>(), object);
+        QVERIFY(data.value<CustomQWidget*>() == 0);
+    }
+    {
+        CustomQWidget customWidget;
+        QWidget *widget = &customWidget;
+        QVariant data = QVariant::fromValue(widget);
+        QVERIFY(data.userType() == QMetaType::QWidgetStar);
+
+        QCOMPARE(data.value<QObject*>(), widget);
+        QCOMPARE(data.value<QWidget*>(), widget);
+        QCOMPARE(data.value<CustomQWidget*>(), widget);
     }
 }
 
@@ -2696,7 +2781,7 @@ Q_DECLARE_METATYPE( MyClass )
 void tst_QVariant::loadUnknownUserType()
 {
     qRegisterMetaType<MyClass>("MyClass");
-    char data[] = {0, 0, 0, 127, 0, 0, 0, 0, 8, 77, 121, 67, 108, 97, 115, 115, 0};
+    char data[] = {0, 0, 1, 0, 0, 0, 0, 0, 8, 77, 121, 67, 108, 97, 115, 115, 0};
 
     QByteArray ba(data, sizeof(data));
     QDataStream ds(&ba, QIODevice::ReadOnly);
@@ -3306,6 +3391,7 @@ void tst_QVariant::movabilityTest()
 
         memcpy(buffer, &variant, sizeof(QVariant));
         QCOMPARE(buffer[0].type(), QVariant::UserType);
+        QCOMPARE(buffer[0].userType(), qMetaTypeId<MyNotMovable>());
         MyNotMovable tmp(buffer[0].value<MyNotMovable>());
 
         new (&variant) QVariant();
@@ -3365,12 +3451,8 @@ void tst_QVariant::colorInteger()
 }
 
 class Forward;
-QT_BEGIN_NAMESPACE namespace QtPrivate {
-template <> struct IsPointerToTypeDerivedFromQObject<Forward*> {
-    enum { Value = false };
-};
-} QT_END_NAMESPACE
-Q_DECLARE_METATYPE(Forward*);
+Q_DECLARE_OPAQUE_POINTER(Forward*)
+Q_DECLARE_METATYPE(Forward*)
 
 void tst_QVariant::forwardDeclare()
 {
@@ -3460,6 +3542,7 @@ void tst_QVariant::loadQVariantFromDataStream(QDataStream::Version version)
     stream >> typeName >> loadedVariant;
 
     const int id = QMetaType::type(typeName.toLatin1());
+
     QVariant constructedVariant(static_cast<QVariant::Type>(id));
     QCOMPARE(constructedVariant.userType(), id);
     QCOMPARE(QMetaType::typeName(loadedVariant.userType()), typeName.toLatin1().constData());
@@ -3534,7 +3617,7 @@ void tst_QVariant::debugStream_data()
 {
     QTest::addColumn<QVariant>("variant");
     QTest::addColumn<int>("typeId");
-    for (int id = QMetaType::Void; id < QMetaType::User; ++id) {
+    for (int id = 0; id < QMetaType::User; ++id) {
         const char *tagName = QMetaType::typeName(id);
         if (!tagName)
             continue;

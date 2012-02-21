@@ -58,7 +58,9 @@ public:
     ~QXcbIntegration();
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
+#ifndef QT_NO_OPENGL
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+#endif
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
     bool hasCapability(Capability cap) const;
@@ -81,6 +83,10 @@ public:
     QPlatformSharedGraphicsCache *createPlatformSharedGraphicsCache(const char *cacheId) const;
 #endif
 
+    QPlatformServices *services() const;
+
+    QPlatformTheme *platformTheme() const;
+
 private:
     QList<QXcbConnection *> m_connections;
 
@@ -95,6 +101,9 @@ private:
 #if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
     QScopedPointer<QPlatformSharedGraphicsCache> m_sharedGraphicsCache;
 #endif
+
+    QScopedPointer<QPlatformServices> m_services;
+    QScopedPointer<QPlatformTheme> m_theme;
 };
 
 QT_END_NAMESPACE

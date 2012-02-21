@@ -160,7 +160,7 @@ QT_BEGIN_NAMESPACE
 /*!
     Swaps the width and height values.
 
-    \sa setWidth(), setHeight()
+    \sa setWidth(), setHeight(), transposed()
 */
 
 void QSize::transpose()
@@ -169,6 +169,15 @@ void QSize::transpose()
     wd = ht;
     ht = tmp;
 }
+
+/*!
+  \fn QSize QSize::transposed() const
+  \since 5.0
+
+  Returns a QSize with width and height swapped.
+
+  \sa transpose()
+*/
 
 /*!
   \fn void QSize::scale(int width, int height, Qt::AspectRatioMode mode)
@@ -187,7 +196,7 @@ void QSize::transpose()
     Example:
     \snippet doc/src/snippets/code/src_corelib_tools_qsize.cpp 0
 
-    \sa setWidth(), setHeight()
+    \sa setWidth(), setHeight(), scaled()
 */
 
 /*!
@@ -197,11 +206,25 @@ void QSize::transpose()
     Scales the size to a rectangle with the given \a size, according to
     the specified \a mode.
 */
-void QSize::scale(const QSize &s, Qt::AspectRatioMode mode)
+
+/*!
+    \fn QSize QSize::scaled(int width, int height, Qt::AspectRatioMode mode) const
+    \since 5.0
+
+    Return a size scaled to a rectangle with the given \a width and \a
+    height, according to the specified \a mode.
+
+    \sa scale()
+*/
+
+/*!
+  \overload
+  \since 5.0
+*/
+QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const
 {
     if (mode == Qt::IgnoreAspectRatio || wd == 0 || ht == 0) {
-        wd = s.wd;
-        ht = s.ht;
+        return s;
     } else {
         bool useHeight;
         qint64 rw = qint64(s.ht) * qint64(wd) / qint64(ht);
@@ -213,11 +236,10 @@ void QSize::scale(const QSize &s, Qt::AspectRatioMode mode)
         }
 
         if (useHeight) {
-            wd = rw;
-            ht = s.ht;
+            return QSize(rw, s.ht);
         } else {
-            ht = qint32(qint64(s.wd) * qint64(ht) / qint64(wd));
-            wd = s.wd;
+            return QSize(s.wd,
+                         qint32(qint64(s.wd) * qint64(ht) / qint64(wd)));
         }
     }
 }
@@ -566,7 +588,7 @@ QDebug operator<<(QDebug dbg, const QSize &s) {
 /*!
     Swaps the width and height values.
 
-    \sa setWidth(), setHeight()
+    \sa setWidth(), setHeight(), transposed()
 */
 
 void QSizeF::transpose()
@@ -575,6 +597,15 @@ void QSizeF::transpose()
     wd = ht;
     ht = tmp;
 }
+
+/*!
+    \fn QSizeF QSizeF::transposed() const
+    \since 5.0
+
+    Returns the size with width and height values swapped.
+
+    \sa transpose()
+*/
 
 /*!
   \fn void QSizeF::scale(qreal width, qreal height, Qt::AspectRatioMode mode)
@@ -593,7 +624,7 @@ void QSizeF::transpose()
     Example:
     \snippet doc/src/snippets/code/src_corelib_tools_qsize.cpp 5
 
-    \sa setWidth(), setHeight()
+    \sa setWidth(), setHeight(), scaled()
 */
 
 /*!
@@ -603,11 +634,25 @@ void QSizeF::transpose()
     Scales the size to a rectangle with the given \a size, according to
     the specified \a mode.
 */
-void QSizeF::scale(const QSizeF &s, Qt::AspectRatioMode mode)
+
+/*!
+    \fn QSizeF QSizeF::scaled(int width, int height, Qt::AspectRatioMode mode) const
+    \since 5.0
+
+    Returns a size scaled to a rectangle with the given \a width and
+    \a height, according to the specified \mode.
+
+    \sa scale()
+*/
+
+/*!
+  \overload
+  \since 5.0
+*/
+QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const
 {
     if (mode == Qt::IgnoreAspectRatio || qIsNull(wd) || qIsNull(ht)) {
-        wd = s.wd;
-        ht = s.ht;
+        return s;
     } else {
         bool useHeight;
         qreal rw = s.ht * wd / ht;
@@ -619,11 +664,9 @@ void QSizeF::scale(const QSizeF &s, Qt::AspectRatioMode mode)
         }
 
         if (useHeight) {
-            wd = rw;
-            ht = s.ht;
+            return QSizeF(rw, s.ht);
         } else {
-            ht = s.wd * ht / wd;
-            wd = s.wd;
+            return QSizeF(s.wd, s.wd * ht / wd);
         }
     }
 }

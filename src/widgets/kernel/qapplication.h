@@ -89,7 +89,7 @@ class Q_WIDGETS_EXPORT QApplication : public QGuiApplication
 #ifndef QT_NO_STYLE_STYLESHEET
     Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
 #endif
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     Q_PROPERTY(int autoMaximizeThreshold READ autoMaximizeThreshold WRITE setAutoMaximizeThreshold)
 #endif
     Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
@@ -157,9 +157,6 @@ public:
     static Qt::KeyboardModifiers keyboardModifiers();
     static Qt::KeyboardModifiers queryKeyboardModifiers();
     static Qt::MouseButtons mouseButtons();
-
-    static void setDesktopSettingsAware(bool);
-    static bool desktopSettingsAware();
 
     static void setCursorFlashTime(int);
     static int cursorFlashTime();
@@ -245,7 +242,7 @@ public Q_SLOTS:
 #ifndef QT_NO_STYLE_STYLESHEET
     void setStyleSheet(const QString& sheet);
 #endif
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     void setAutoMaximizeThreshold(const int threshold);
     int autoMaximizeThreshold() const;
 #endif

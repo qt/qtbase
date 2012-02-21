@@ -3305,14 +3305,20 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
 
     \section1 Event Handling
 
-    All touch events are of type QEvent::TouchBegin, QEvent::TouchUpdate, or QEvent::TouchEnd.
-    Reimplement QWidget::event() or QAbstractScrollArea::viewportEvent() for widgets and
-    QGraphicsItem::sceneEvent() for items in a graphics view to receive touch events.
+    All touch events are of type QEvent::TouchBegin, QEvent::TouchUpdate, QEvent::TouchEnd or
+    QEvent::TouchCancel. Reimplement QWidget::event() or QAbstractScrollArea::viewportEvent() for
+    widgets and QGraphicsItem::sceneEvent() for items in a graphics view to receive touch events.
 
     The QEvent::TouchUpdate and QEvent::TouchEnd events are sent to the widget or item that
     accepted the QEvent::TouchBegin event. If the QEvent::TouchBegin event is not accepted and not
     filtered by an event filter, then no further touch events are sent until the next
     QEvent::TouchBegin.
+
+    Some systems may send an event of type QEvent::TouchCancel. Upon receiving this event
+    applications are requested to ignore the entire active touch sequence. For example in a
+    composited system the compositor may decide to treat certain gestures as system-wide
+    gestures. Whenever such a decision is made (the gesture is recognized), the clients will be
+    notified with a QEvent::TouchCancel event so they can update their state accordingly.
 
     The touchPoints() function returns a list of all touch points contained in the event.
     Information about each touch point can be retrieved using the QTouchEvent::TouchPoint class.

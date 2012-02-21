@@ -407,6 +407,8 @@ protected:
     QTemporaryFilePrivate();
     ~QTemporaryFilePrivate();
 
+    QAbstractFileEngine *engine() const;
+
     bool autoRemove;
     QString templateName;
 };
@@ -417,6 +419,17 @@ QTemporaryFilePrivate::QTemporaryFilePrivate() : autoRemove(true)
 
 QTemporaryFilePrivate::~QTemporaryFilePrivate()
 {
+}
+
+QAbstractFileEngine *QTemporaryFilePrivate::engine() const
+{
+    if (!fileEngine) {
+        if (fileName.isEmpty())
+            fileEngine = new QTemporaryFileEngine(templateName);
+        else
+            fileEngine = new QTemporaryFileEngine(fileName, false);
+    }
+    return fileEngine;
 }
 
 static QString defaultTemplateName()
@@ -640,7 +653,7 @@ QString QTemporaryFile::fileName() const
     Q_D(const QTemporaryFile);
     if(d->fileName.isEmpty())
         return QString();
-    return fileEngine()->fileName(QAbstractFileEngine::DefaultName);
+    return d->engine()->fileName(QAbstractFileEngine::DefaultName);
 }
 
 /*!
@@ -692,7 +705,7 @@ void QTemporaryFile::setFileTemplate(const QString &name)
 */
 QTemporaryFile *QTemporaryFile::createLocalFile(QFile &file)
 {
-    if (QAbstractFileEngine *engine = file.fileEngine()) {
+    if (QAbstractFileEngine *engine = file.d_func()->engine()) {
         if(engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)
             return 0; //local already
         //cache
@@ -726,22 +739,6 @@ QTemporaryFile *QTemporaryFile::createLocalFile(QFile &file)
 }
 
 /*!
-   \internal
-*/
-
-QAbstractFileEngine *QTemporaryFile::fileEngine() const
-{
-    Q_D(const QTemporaryFile);
-    if(!d->fileEngine) {
-        if (d->fileName.isEmpty())
-            d->fileEngine = new QTemporaryFileEngine(d->templateName);
-        else
-            d->fileEngine = new QTemporaryFileEngine(d->fileName, false);
-    }
-    return d->fileEngine;
-}
-
-/*!
    \reimp
 
     Creates a unique file name for the temporary file, and opens it.  You can
@@ -752,7 +749,7 @@ bool QTemporaryFile::open(OpenMode flags)
 {
     Q_D(QTemporaryFile);
     if (!d->fileName.isEmpty()) {
-        if (static_cast<QTemporaryFileEngine*>(fileEngine())->isReallyOpen()) {
+        if (static_cast<QTemporaryFileEngine*>(d->engine())->isReallyOpen()) {
             setOpenMode(flags);
             return true;
         }

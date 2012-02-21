@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QLocalServer
     \since 4.4
+    \inmodule QtNetwork
 
     \brief The QLocalServer class provides a local socket based server.
 
@@ -82,6 +83,27 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QLocalServer::SocketOption
+
+    This enum describes the possible options that can be used to create the
+    socket. This changes the access permissions on platforms (Linux, Windows)
+    that support access permissions on the socket. Both GroupAccess and OtherAccess
+    may vary slightly in meanings depending on the platform.
+
+    \value UserAccess
+    Access is restricted to the same user as the process that created the socket.
+    \value GroupAccess
+    Access is restricted to the same group but not the user that created the socket on Linux.
+    \value OtherAccess
+    Access is available to everyone but the user and group that created the socket on Linux.
+    \value WorldAccess
+    No access restrictions.
+
+    \sa SocketOptions
+*/
+
+
+/*!
     Create a new local socket server with the given \a parent.
 
     \sa listen()
@@ -106,6 +128,48 @@ QLocalServer::~QLocalServer()
 {
     if (isListening())
 	close();
+}
+
+/*!
+    \property QLocalServer::socketOptions
+    \since 5.0
+
+    The setSocketOptions method controls how the socket operates.
+    For example the socket may restrict access to what user ids can
+    connect to the socket.
+
+    These options must be set before listen() is called.
+
+    In some cases, such as with Unix domain sockets on Linux, the
+    access to the socket will be determined by file system permissions,
+    and are created based on the umask. Setting the access flags will
+    overide this and will restrict or permit access as specified.
+
+    Other Unix-based operating systems, such as Mac OS X, do not
+    honor file permissions for Unix domain sockets and by default
+    have WorldAccess and these permission flags will have no effect.
+
+    By default none of the flags are set, access permissions
+    are the platform default.
+
+    \sa listen()
+*/
+void QLocalServer::setSocketOptions(SocketOptions options)
+{
+    Q_D(QLocalServer);
+
+    d->socketOptions = options;
+}
+
+/*!
+    Returns the socket options set on the socket.
+
+    \sa setSocketOptions()
+ */
+QLocalServer::SocketOptions QLocalServer::socketOptions() const
+{
+    Q_D(const QLocalServer);
+    return d->socketOptions;
 }
 
 /*!
@@ -232,6 +296,40 @@ bool QLocalServer::listen(const QString &name)
     }
 
     d->serverName = name;
+    return true;
+}
+
+/*!
+    \since 5.0
+
+    Instructs the server to listen for incoming connections on
+    \a socketDescriptor. The property returns \c false if the server is
+    currently listening. It returns \c true on success; otherwise,
+    it returns \c false. The socket must be ready to accept
+    new connections with no extra platform-specific functions
+    called. The socket is set into non-blocking mode.
+
+    serverName(), fullServerName() may return a string with
+    a name if this option is supported by the platform;
+    otherwise, they return an empty QString.
+
+    \sa isListening(), close()
+ */
+bool QLocalServer::listen(qintptr socketDescriptor)
+{
+    Q_D(QLocalServer);
+    if (isListening()) {
+        qWarning("QLocalServer::listen() called when already listening");
+        return false;
+    }
+
+    d->serverName.clear();
+    d->fullServerName.clear();
+
+    if (!d->listen(socketDescriptor)) {
+        return false;
+    }
+
     return true;
 }
 

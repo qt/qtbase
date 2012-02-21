@@ -76,8 +76,6 @@ win32 {
 
         SOURCES += io/qfilesystemwatcher_win.cpp
         HEADERS += io/qfilesystemwatcher_win_p.h
-        HEADERS += io/qwindowspipereader_p.h
-        SOURCES += io/qwindowspipereader.cpp
         HEADERS += io/qwindowspipewriter_p.h
         SOURCES += io/qwindowspipewriter.cpp
         SOURCES += io/qfilesystemengine_win.cpp
@@ -88,10 +86,12 @@ win32 {
         SOURCES += io/qprocess_wince.cpp
     } else {
         HEADERS += \
-            io/qwinoverlappedionotifier_p.h
+            io/qwinoverlappedionotifier_p.h \
+            io/qwindowspipereader_p.h
         SOURCES += \
             io/qprocess_win.cpp \
-            io/qwinoverlappedionotifier.cpp
+            io/qwinoverlappedionotifier.cpp \
+            io/qwindowspipereader.cpp
     }
 } else:unix|integrity {
         SOURCES += \
@@ -106,6 +106,8 @@ win32 {
         }
         macx-*: {
             SOURCES += io/qstandardpaths_mac.cpp
+        } else:standardpathsjson {
+            SOURCES += io/qstandardpaths_json.cpp
         } else {
             SOURCES += io/qstandardpaths_unix.cpp
         }

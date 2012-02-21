@@ -72,13 +72,12 @@
 #include "qdebug.h"
 #include "qtabwidget.h"
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 #include "qt_windows.h"
-#include "qguifunctions_wince.h"
 extern bool qt_wince_is_high_dpi();          //defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_smartphone();        //defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_windows_mobile_65(); //defined in qguifunctions_wince.cpp
-#endif // Q_WS_WINCE
+#endif // Q_OS_WINCE
 
 #include "qstylehelper_p.h"
 
@@ -667,7 +666,7 @@ static const char * const min_small_xpm[] = {
 " ++++++++++++ ",
 "              "};
 
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
 
 static char * sbhandleup_xpm[] = {
 "26 41 45 1",
@@ -4033,12 +4032,12 @@ void tintImage(QImage *image, QColor color, qreal saturation)
         }
 }
 
-#endif //Q_WS_WINCE_WM
+#endif //Q_OS_WINCE_WM
 
 
 enum QSliderDirection { SliderUp, SliderDown, SliderLeft, SliderRight };
 
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
 
 void QWindowsMobileStylePrivate::tintImagesButton(QColor color)
 {
@@ -4096,11 +4095,11 @@ void QWindowsMobileStylePrivate::tintListViewHighlight(QColor color)
      }
 }
 
-#endif //Q_WS_WINCE_WM
+#endif //Q_OS_WINCE_WM
 
 void QWindowsMobileStylePrivate::setupWindowsMobileStyle65()
 {
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
     wm65 = qt_wince_is_windows_mobile_65();
     if (wm65) {
         imageScrollbarHandleUp =  QImage(sbhandleup_xpm);
@@ -4119,13 +4118,13 @@ void QWindowsMobileStylePrivate::setupWindowsMobileStyle65()
         }
         tintImagesHigh(Qt::blue);
     }
-#endif //Q_WS_WINCE_WM
+#endif //Q_OS_WINCE_WM
 }
 
 void QWindowsMobileStylePrivate::drawTabBarTab(QPainter *painter, const QStyleOptionTab *tab)
 {
 #ifndef QT_NO_TABBAR
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
     if (wm65) {
         tintImagesButton(tab->palette.button().color());
         QRect r;
@@ -4154,7 +4153,7 @@ void QWindowsMobileStylePrivate::drawTabBarTab(QPainter *painter, const QStyleOp
         //imageTabBarBig
         return;
     }
-#endif //Q_WS_WINCE_WM
+#endif //Q_OS_WINCE_WM
     painter->save();
     painter->setPen(tab->palette.shadow().color());
     if (doubleControls) {
@@ -4216,7 +4215,7 @@ void QWindowsMobileStylePrivate::drawTabBarTab(QPainter *painter, const QStyleOp
 
 void QWindowsMobileStylePrivate::drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItemV4 *option, QRect rect)
 {
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
     if (wm65) {
         QRect r;
         if (rect.isValid())
@@ -4257,7 +4256,7 @@ void QWindowsMobileStylePrivate::drawPanelItemViewSelected(QPainter *painter, co
         }
         return;
     }
-#endif //Q_WS_WINCE_WM
+#endif //Q_OS_WINCE_WM
     QPalette::ColorGroup cg = option->state & QStyle::State_Enabled
                                       ? QPalette::Normal : QPalette::Disabled;
 
@@ -4269,7 +4268,7 @@ void QWindowsMobileStylePrivate::drawPanelItemViewSelected(QPainter *painter, co
 
 void QWindowsMobileStylePrivate::drawScrollbarGrip(QPainter *p, QStyleOptionSlider *newScrollbar, const QStyleOptionComplex *option, bool drawCompleteFrame)
 {
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
     if (wm65) {
         if (newScrollbar->orientation == Qt::Horizontal) {
             QTransform transform;
@@ -4361,7 +4360,7 @@ void QWindowsMobileStylePrivate::drawScrollbarGrip(QPainter *p, QStyleOptionSlid
 
 void QWindowsMobileStylePrivate::drawScrollbarHandleUp(QPainter *p, QStyleOptionSlider *opt, bool completeFrame, bool )
 {
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
     if (wm65) {
         tintImagesHigh(opt->palette.highlight().color());
         QRect r = opt->rect;
@@ -4380,7 +4379,7 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleUp(QPainter *p, QStyleOption
          }
         return ;
     }
-#endif //Q_WS_WINCE_WM
+#endif //Q_OS_WINCE_WM
 
     QBrush fill = opt->palette.button();
     if (opt->state & QStyle::State_Sunken)
@@ -4418,7 +4417,7 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleUp(QPainter *p, QStyleOption
 void QWindowsMobileStylePrivate::drawScrollbarHandleDown(QPainter *p, QStyleOptionSlider *opt, bool completeFrame, bool secondScrollBar)
 {
 #ifndef QT_NO_SCROLLBAR
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
     if (wm65) {
         tintImagesHigh(opt->palette.highlight().color());
         QRect r = opt->rect;
@@ -4437,7 +4436,7 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleDown(QPainter *p, QStyleOpti
         }
         return ;
     }
-#endif //Q_WS_WINCE_WM
+#endif //Q_OS_WINCE_WM
 
     QBrush fill = opt->palette.button();
     if (opt->state & QStyle::State_Sunken)
@@ -4520,13 +4519,13 @@ QWindowsMobileStyle::QWindowsMobileStyle() : QWindowsStyle(*new QWindowsMobileSt
 
 QWindowsMobileStylePrivate::QWindowsMobileStylePrivate() :QWindowsStylePrivate() {
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
    doubleControls = qt_wince_is_high_dpi();
    smartphone = qt_wince_is_smartphone();
 #else
    doubleControls = false;
    smartphone = false;
-#endif //Q_WS_WINCE
+#endif //Q_OS_WINCE
 
 #ifndef QT_NO_IMAGEFORMAT_XPM
 
@@ -5215,7 +5214,7 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
           }
           switch (tab->shape) {
             case QTabBar::RoundedNorth:
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
                 if (!d->wm65)
 #endif
                 {
@@ -5226,7 +5225,7 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
                 }
                 break;
             case QTabBar::RoundedSouth:
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
                 if (!d->wm65)
 #endif
                 {
@@ -5237,13 +5236,13 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
                 }
                 break;
             case QTabBar::RoundedEast:
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
                 if (!d->wm65)
 #endif
                 painter->drawLine(rect.topRight(), rect.bottomRight());
                 break;
             case QTabBar::RoundedWest:
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
                 if (!d->wm65)
 #endif
                 painter->drawLine(rect.topLeft(), rect.bottomLeft());
@@ -6458,7 +6457,7 @@ QSize QWindowsMobileStyle::sizeFromContents(ContentsType type, const QStyleOptio
         newSize += QSize(4, 2);
         break;
 #ifndef QT_NO_ITEMVIEWS
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
     case CT_ItemViewItem:
         if (d_func()->wm65)
             if (d_func()->doubleControls)
@@ -6466,7 +6465,7 @@ QSize QWindowsMobileStyle::sizeFromContents(ContentsType type, const QStyleOptio
             else
                 newSize.setHeight(23);
         break;
-#endif //Q_WS_WINCE_WM
+#endif //Q_OS_WINCE_WM
 #endif //QT_NO_ITEMVIEWS
     default:
         break;
@@ -6508,7 +6507,7 @@ QRect QWindowsMobileStyle::subElementRect(SubElement element, const QStyleOption
 #endif // QT_NO_SLIDER
 #ifndef QT_NO_ITEMVIEWS
         case SE_ItemViewItemFocusRect:
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
             if (d->wm65)
                 rect = QRect();
 #endif
@@ -6533,13 +6532,13 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
             float stretchFactor = 1.4f;
             int sliderButtonExtentDir = int (sliderButtonExtent * stretchFactor);
 
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
             if (d->wm65)
             {
                 sliderButtonExtent = d->imageScrollbarHandleUp.width();
                 sliderButtonExtentDir = d->imageScrollbarHandleUp.height();
             }
-#endif //Q_WS_WINCE_WM
+#endif //Q_OS_WINCE_WM
 
             int sliderlen;
             int maxlen = ((scrollbar->orientation == Qt::Horizontal) ?
@@ -7067,7 +7066,7 @@ int QWindowsMobileStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, co
         d->doubleControls ? ret = 42 : ret = 21;
         break;
    case PM_ScrollBarSliderMin:
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
        if (d->wm65)
 #else
        if (false)
@@ -7085,7 +7084,7 @@ int QWindowsMobileStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, co
        else
          d->doubleControls ? ret = 25 : ret = 13;
 
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
        if (d->wm65)
 #else
        if (false)
@@ -7239,10 +7238,10 @@ QPixmap QWindowsMobileStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPi
 
     switch (iconMode) {
     case QIcon::Selected: {
-#ifdef Q_WS_WINCE_WM
+#ifdef Q_OS_WINCE_WM
         if (d_func()->wm65)
             return pixmap;
-#endif //Q_WS_WINCE_WM
+#endif //Q_OS_WINCE_WM
         QImage img = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
         int imgh = img.height();
         int imgw = img.width();

@@ -53,7 +53,9 @@
 #include <QHostInfo>
 #endif
 #include <QProcess>
-#ifndef Q_OS_WIN
+#ifdef Q_OS_WIN
+# include <qt_windows.h>
+#else
 # include <sys/types.h>
 # include <unistd.h>
 #endif
@@ -476,8 +478,16 @@ void tst_QFile::open_data()
     QTest::newRow("noreadfile") << QString("noreadfile") << int(QIODevice::ReadOnly)
                                 << false << QFile::OpenError;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    QTest::newRow("//./PhysicalDrive0") << QString("//./PhysicalDrive0") << int(QIODevice::ReadOnly)
-                                        << true << QFile::NoError;
+    //opening devices requires administrative privileges (and elevation).
+    HANDLE hTest = CreateFile(_T("\\\\.\\PhysicalDrive0"), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+    if (hTest != INVALID_HANDLE_VALUE) {
+        CloseHandle(hTest);
+        QTest::newRow("//./PhysicalDrive0") << QString("//./PhysicalDrive0") << int(QIODevice::ReadOnly)
+                                            << true << QFile::NoError;
+    } else {
+        QTest::newRow("//./PhysicalDrive0") << QString("//./PhysicalDrive0") << int(QIODevice::ReadOnly)
+                                            << false << QFile::OpenError;
+    }
     QTest::newRow("uncFile") << "//" + QtNetworkSettings::winServerName() + "/testshare/test.pri" << int(QIODevice::ReadOnly)
                              << true << QFile::NoError;
 #endif
@@ -2339,6 +2349,13 @@ void tst_QFile::rename()
     QFETCH(QString, destination);
     QFETCH(bool, result);
 
+#if defined(Q_OS_UNIX)
+    if (strcmp(QTest::currentDataTag(), "renamefile -> /etc/renamefile") == 0) {
+        if (::getuid() == 0)
+            QSKIP("Running this test as root doesn't make sense");
+    }
+#endif
+
     QFile::remove("renamedfile");
     QFile f("renamefile");
     f.open(QFile::WriteOnly);
@@ -3011,25 +3028,28 @@ void tst_QFile::openStandardStreamsBufferedStreams()
     {
         QFile in;
         in.open(stdin, QIODevice::ReadOnly);
+        if (!in.isSequential())
+            QSKIP("Standard input redirected.");
         QCOMPARE( in.pos(), (qint64)0 );
         QCOMPARE( in.size(), (qint64)0 );
-        QVERIFY( in.isSequential() );
     }
 
     {
         QFile out;
         out.open(stdout, QIODevice::WriteOnly);
+        if (!out.isSequential())
+            QSKIP("Standard output redirected.");
         QCOMPARE( out.pos(), (qint64)0 );
         QCOMPARE( out.size(), (qint64)0 );
-        QVERIFY( out.isSequential() );
     }
 
     {
         QFile err;
         err.open(stderr, QIODevice::WriteOnly);
+        if (!err.isSequential())
+            QSKIP("Standard error redirected.");
         QCOMPARE( err.pos(), (qint64)0 );
         QCOMPARE( err.size(), (qint64)0 );
-        QVERIFY( err.isSequential() );
     }
 }
 

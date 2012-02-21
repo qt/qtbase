@@ -140,7 +140,7 @@ void tst_QFontMetrics::metrics()
                 font = fdb.font(family, style, 12);
 
                 QFontMetrics fontmetrics(font);
-                QCOMPARE(fontmetrics.ascent() + fontmetrics.descent() + 1,
+                QCOMPARE(fontmetrics.ascent() + fontmetrics.descent(),
                         fontmetrics.height());
 
                 QCOMPARE(fontmetrics.height() + fontmetrics.leading(),
@@ -156,7 +156,7 @@ void tst_QFontMetrics::metrics()
                     font = fdb.font(family, style, size);
 
                     QFontMetrics fontmetrics(font);
-                    QCOMPARE(fontmetrics.ascent() + fontmetrics.descent() + 1,
+                    QCOMPARE(fontmetrics.ascent() + fontmetrics.descent(),
                             fontmetrics.height());
                     QCOMPARE(fontmetrics.height() + fontmetrics.leading(),
                             fontmetrics.lineSpacing());

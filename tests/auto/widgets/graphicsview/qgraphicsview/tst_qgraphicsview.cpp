@@ -1656,7 +1656,7 @@ void tst_QGraphicsView::mapToScene()
     QCOMPARE(view.size(), viewSize);
 
     // First once without setting the scene rect
-#ifdef QT_ARCH_ARM
+#ifdef Q_PROCESSOR_ARM
     const int step = 20;
 #else
     const int step = 1;

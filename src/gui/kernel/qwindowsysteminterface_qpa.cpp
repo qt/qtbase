@@ -296,6 +296,22 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTo
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::handleTouchCancelEvent(QWindow *w, QTouchDevice *device,
+                                                    Qt::KeyboardModifiers mods)
+{
+    unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleTouchCancelEvent(w, time, device, mods);
+}
+
+void QWindowSystemInterface::handleTouchCancelEvent(QWindow *w, ulong timestamp, QTouchDevice *device,
+                                                    Qt::KeyboardModifiers mods)
+{
+    QWindowSystemInterfacePrivate::TouchEvent *e =
+            new QWindowSystemInterfacePrivate::TouchEvent(w, timestamp, QEvent::TouchCancel, device,
+                                                         QList<QTouchEvent::TouchPoint>(), mods);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
 void QWindowSystemInterface::handleScreenOrientationChange(QScreen *screen, Qt::ScreenOrientation orientation)
 {
     QWindowSystemInterfacePrivate::ScreenOrientationEvent *e =
@@ -321,6 +337,12 @@ void QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QScreen *scree
 {
     QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e =
             new QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent(screen, dpiX, dpiY);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleThemeChange(QWindow *tlw)
+{
+    QWindowSystemInterfacePrivate::ThemeChangeEvent *e = new QWindowSystemInterfacePrivate::ThemeChangeEvent(tlw);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 

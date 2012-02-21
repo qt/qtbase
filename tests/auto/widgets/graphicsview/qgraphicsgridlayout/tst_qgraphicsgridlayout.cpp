@@ -454,7 +454,6 @@ void tst_QGraphicsGridLayout::addItem_data()
     for (int b = -1; b < 2; ++b) {
     for (int c = -1; c < 2; ++c) {
     for (int d = -1; d < 2; ++d) {
-    for (int e = 0; e < 9; ++e) {
         int row = a;
         int column = b;
         int rowSpan = c;
@@ -462,7 +461,7 @@ void tst_QGraphicsGridLayout::addItem_data()
         QString name = QString::fromAscii("(%1,%2,%3,%4").arg(a).arg(b).arg(c).arg(d);
         Qt::Alignment alignment = Qt::AlignLeft;
         QTest::newRow(name.toLatin1()) << row << column << rowSpan << columnSpan << alignment;
-    }}}}}
+    }}}}
 }
 
 // public void addItem(QGraphicsLayoutItem* item, int row, int column, int rowSpan, int columnSpan, Qt::Alignment alignment = 0)

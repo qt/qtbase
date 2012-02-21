@@ -178,6 +178,8 @@ public:
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *);
 
+    virtual bool shouldQuit();
+
 #if defined(Q_WS_X11)
 #ifndef QT_NO_SETTINGS
     static bool x11_apply_settings();
@@ -187,7 +189,7 @@ public:
     static bool qws_apply_settings();
     static QWidget *findWidget(const QObjectList&, const QPoint &, bool rec);
 #endif
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     static int autoMaximizeThreshold;
 #endif
     static bool autoSipEnabled;
@@ -267,7 +269,6 @@ public:
     static QWidget *hidden_focus_widget;
     static QWidget *active_window;
     static QIcon *app_icon;
-    static bool obey_desktop_settings;
 #ifndef QT_NO_WHEELEVENT
     static int  wheel_scroll_lines;
 #endif
@@ -386,6 +387,7 @@ public:
                                        QTouchDevice *device,
                                        const QList<QTouchEvent::TouchPoint> &touchPoints,
                                        ulong timestamp);
+    static void translateTouchCancel(QTouchDevice *device, ulong timestamp);
 
 private:
 #ifdef Q_WS_QWS

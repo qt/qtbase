@@ -17,3 +17,5 @@ wince* {
 }
 
 contains(QT_CONFIG,xcb):CONFIG+=insignificant_test  # QTBUG-20756 crashes on xcb
+
+win32:CONFIG += insignificant_test # QTBUG-24348

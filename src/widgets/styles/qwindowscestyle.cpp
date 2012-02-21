@@ -52,6 +52,7 @@
 #include "qstyleoption.h"
 #include "qwindowscestyle_p.h"
 #include "qdebug.h"
+#include "qdrawutil.h"
 
 QT_BEGIN_NAMESPACE
 

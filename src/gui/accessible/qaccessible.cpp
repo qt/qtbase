@@ -49,6 +49,7 @@
 #include <QtGui/QGuiApplication>
 #include <private/qguiapplication_p.h>
 #include "qplatformaccessibility_qpa.h"
+#include "qplatformintegration_qpa.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qmetaobject.h>
@@ -359,29 +360,13 @@ QT_BEGIN_NAMESPACE
     This enum type defines bit flags that can be combined to indicate
     the relationship between two accessible objects.
 
-    \value Unrelated        The objects are unrelated.
-    \value Self             The objects are the same.
-
-    \value Up               The first object is above the second object.
-    \value Down             The first object is below the second object.
-    \value Left             The first object is left of the second object.
-    \value Right            The first object is right of the second object.
-    \value Covers           The first object covers the second object.
-    \value Covered          The first object is covered by the second object.
-
-    \value FocusChild       The first object is the second object's focus child.
     \value Label            The first object is the label of the second object.
     \value Labelled         The first object is labelled by the second object.
     \value Controller       The first object controls the second object.
     \value Controlled       The first object is controlled by the second object.
 
-    \omitvalue GeometryMask
-    \omitvalue LogicalMask
-
-    Implementations of relationTo() return a combination of these flags.
+    Implementations of relations() return a combination of these flags.
     Some values are mutually exclusive.
-
-    Implementations of navigate() can accept only one distinct value.
 */
 
 /*!
@@ -781,10 +766,9 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
     top-most child. childAt() is used for hit testing (finding the object
     under the mouse).
 
-    The relationTo() function provides information about how two
-    different objects relate to each other, and navigate() allows
-    traversing from one object to another object with a given
-    relationship.
+    The relations() function provides information about the relations an
+    object has to other objects, and parent() and child() allows
+    traversing from one object to another object.
 
     \section1 Properties
 
@@ -874,39 +858,27 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
 */
 
 /*!
-    \fn QAccessible::Relation QAccessibleInterface::relationTo(const QAccessibleInterface *other) const
-
-    Returns the relationship between this object and the \a
-    other object.
-
-    The returned value indicates the relation of the called object to
-    the \a other object, e.g. if this object is a label for \a other
-    the return value will be \c Label.
-
-    Usually parent-child relations are not returned.
-
-    The return value is a combination of the bit flags in the
-    QAccessible::Relation enumeration.
-
-    All objects provide this information.
-
-    \sa relations(), indexOfChild(), navigate()
-*/
-QAccessible::Relation QAccessibleInterface::relationTo(const QAccessibleInterface *) const
-{
-    return QAccessible::Unrelated;
-}
-
-/*!
     Returns the meaningful relations to other widgets. Usually this will not return parent/child
     relations, unless they are handled in a specific way such as in tree views.
     It will typically return the labelled-by and label relations.
+    It should never return itself.
 
-    \sa relationTo(), navigate()
+    \sa parent(), child()
 */
-QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterface::relations() const
+QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
+QAccessibleInterface::relations(QAccessible::Relation /*match = QAccessible::AllRelations*/) const
 {
     return QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >();
+}
+
+/*!
+    Returns the object that has the keyboard focus.
+
+    The object returned can be any descendant, including itself.
+*/
+QAccessibleInterface *QAccessibleInterface::focusChild() const
+{
+    return 0;
 }
 
 /*!
@@ -947,49 +919,6 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
     Returns 0 when asking for an invalid child (e.g. when the child became invalid in the meantime).
 
     \sa childCount(), parent()
-*/
-
-/*!
-    \fn int QAccessibleInterface::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-
-    Navigates from this object to an object that has a relationship
-    \a relation to this object, and returns the respective object in
-    \a target. It is the caller's responsibility to delete *\a target
-    after use.
-
-    If an object is found, \a target is set to point to the object, and
-    the index of the child of \a target is returned. The return value
-    is 0 if \a target itself is the requested object. \a target is set
-    to null if this object is the target object (i.e. the requested
-    object is a handled by this object).
-
-    If no object is found \a target is set to null, and the return
-    value is -1.
-
-    The \a entry parameter has two different meanings:
-    \list
-    \i \e{Hierarchical and Logical relationships} -- if multiple objects with
-    the requested relationship exist \a entry specifies which one to
-    return. \a entry is 1-based, e.g. use 1 to get the first (and
-    possibly only) object with the requested relationship.
-
-    The following code demonstrates how to use this function to
-    navigate to the first child of an object:
-
-    \snippet doc/src/snippets/code/src_gui_accessible_qaccessible.cpp 0
-
-    \i \e{Geometric relationships} -- the index of the child from
-    which to start navigating in the specified direction. \a entry
-    can be 0 to navigate to a sibling of this object, or non-null to
-    navigate within contained children that don't provide their own
-    accessible information.
-    \endlist
-
-    Note that the \c Descendent value for \a relation is not supported.
-
-    All objects support navigation.
-
-    \sa relationTo(), childCount(), parent(), child()
 */
 
 /*!
@@ -1140,60 +1069,24 @@ QColor QAccessibleInterface::backgroundColor() const
 /*!
     \class QAccessibleEvent
 
-    \internal
+    \brief The QAccessibleEvent class is used to give detailed updates to the
+    accessibility framework. It is used together with \l QAccessible::updateAccessibility.
 
-    \brief The QAccessibleEvent class is used to query addition
-    accessibility information about complex widgets.
-
-    The event can be of type QEvent::AccessibilityDescription or
-    QEvent::AccessibilityHelp.
-
-    Some QAccessibleInterface implementations send QAccessibleEvents
-    to the widget they wrap to obtain the description or help text of
-    a widget or of its children. The widget can answer by calling
-    setValue() with the requested information.
-
-    The default QWidget::event() implementation simply sets the text
-    to be the widget's \l{QWidget::toolTip}{tooltip} (for \l
-    AccessibilityDescription event) or its
-    \l{QWidget::whatsThis}{"What's This?" text} (for \l
-    AccessibilityHelp event).
+    The event is one of the \l QAccessible::Event which depending on the type of event needs to use
+    one of the subclasses of QAccessibleEvent.
 
     \ingroup accessibility
-    \ingroup events
-    \inmodule QtWidgets
+    \inmodule QtGui
 */
 
 /*!
-    \fn QAccessibleEvent::QAccessibleEvent(Type type)
+    \fn QAccessibleEvent::QAccessibleEvent(QAccessible::Event type, QObject *object, int child = -1)
 
-    Constructs an accessibility event of the given \a type, which
-    must be QEvent::AccessibilityDescription or
-    QEvent::AccessibilityHelp.
-*/
+    Constructs an accessibility event of the given \a type.
+    It also requires an \a object as source of the event and optionally a \a child index,
+    if the event comes from a child of the object.
 
-/*!
-    \fn int QAccessibleEvent::child() const
-
-    Returns the (1-based) index of the child to which the request
-    applies. If the child is 0, the request is for the widget itself.
-*/
-
-/*!
-    \fn QString QAccessibleEvent::value() const
-
-    Returns the text set using setValue().
-
-    \sa setValue()
-*/
-
-/*!
-    \fn void QAccessibleEvent::setValue(const QString &text)
-
-    Set the description or help text for the given child() to \a
-    text, thereby answering the request.
-
-    \sa value()
+    Using a \a child index maybe more efficient than creating the accessible interface for the child.
 */
 
 /*!

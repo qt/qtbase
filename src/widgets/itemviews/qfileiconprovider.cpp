@@ -47,7 +47,6 @@
 #include <qdir.h>
 #include <qpixmapcache.h>
 #include <private/qfunctions_p.h>
-#include <private/qguiplatformplugin_p.h>
 
 #if defined(Q_OS_WIN)
 #  define _WIN32_IE 0x0500
@@ -288,11 +287,7 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
             }
         }
         if (pixmap.isNull()) {
-#ifndef Q_OS_WINCE
             pixmap = qt_pixmapFromWinHICON(info.hIcon);
-#else
-            pixmap = QPixmap::fromWinHICON(ImageList_GetIcon((HIMAGELIST) val, info.iIcon, ILD_NORMAL));
-#endif
             if (!pixmap.isNull()) {
                 retIcon.addPixmap(pixmap);
                 if (!key.isEmpty())
@@ -318,11 +313,7 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
             //using the unique icon index provided by windows save us from duplicate keys
             key = QString::fromLatin1("qt_dir_%1").arg(info.iIcon);
         }
-#ifndef Q_OS_WINCE
         pixmap = qt_pixmapFromWinHICON(info.hIcon);
-#else
-        pixmap = QPixmap::fromWinHICON(ImageList_GetIcon((HIMAGELIST) val, info.iIcon, ILD_NORMAL));
-#endif
         if (!pixmap.isNull()) {
             retIcon.addPixmap(pixmap);
             if (!key.isEmpty())
@@ -407,10 +398,6 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
 {
     Q_D(const QFileIconProvider);
 
-    QIcon platformIcon = qt_guiPlatformPlugin()->fileSystemIcon(info);
-    if (!platformIcon.isNull())
-        return platformIcon;
-
 #if defined(Q_WS_X11) && !defined(QT_NO_STYLE_GTK)
     if (X11->desktopEnvironment == DE_GNOME) {
         QIcon gtkIcon = QGtkStylePrivate::getFilesystemIcon(info);
@@ -429,7 +416,7 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
         return icon;
 #endif
     if (info.isRoot())
-#if defined (Q_OS_WIN) && !defined(Q_WS_WINCE)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
     {
         UINT type = GetDriveType((wchar_t *)info.absoluteFilePath().utf16());
 

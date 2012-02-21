@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+#include <QtConcurrent/qtconcurrent_global.h>
+
 #include "qfutureinterface_p.h"
 #include <qlist.h>
 

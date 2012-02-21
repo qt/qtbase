@@ -42,7 +42,7 @@
 #ifndef QTCONCURRENT_ITERATEKERNEL_H
 #define QTCONCURRENT_ITERATEKERNEL_H
 
-#include <QtCore/qglobal.h>
+#include <QtConcurrent/qtconcurrent_global.h>
 
 #ifndef QT_NO_CONCURRENT
 
@@ -80,7 +80,7 @@ namespace QtConcurrent {
     management is done on the basis of the median of several timing measuremens,
     and it is done induvidualy for each thread.
 */
-class Q_CORE_EXPORT BlockSizeManager
+class Q_CONCURRENT_EXPORT BlockSizeManager
 {
 public:
     BlockSizeManager(int iterationCount);

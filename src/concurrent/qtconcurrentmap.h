@@ -42,7 +42,7 @@
 #ifndef QTCONCURRENT_MAP_H
 #define QTCONCURRENT_MAP_H
 
-#include <QtCore/qglobal.h>
+#include <QtConcurrent/qtconcurrent_global.h>
 
 #ifndef QT_NO_CONCURRENT
 

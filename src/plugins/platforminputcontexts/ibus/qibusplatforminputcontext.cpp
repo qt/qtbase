@@ -103,7 +103,7 @@ bool QIBusPlatformInputContext::isValid() const
     return d->valid;
 }
 
-void QIBusPlatformInputContext::invokeAction(QInputMethod::Action a, int x)
+void QIBusPlatformInputContext::invokeAction(QInputMethod::Action a, int)
 {
     if (!d->valid)
         return;

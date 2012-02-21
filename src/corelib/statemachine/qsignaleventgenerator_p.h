@@ -61,13 +61,13 @@ class QStateMachine;
 
 class QSignalEventGenerator : public QObject
 {
+    Q_OBJECT_FAKE
 public:
     QSignalEventGenerator(QStateMachine *parent);
 
-    static const QMetaObject staticMetaObject;
-    virtual const QMetaObject *metaObject() const;
-    virtual void *qt_metacast(const char *);
-    virtual int qt_metacall(QMetaObject::Call, int, void **argv);
+private:
+// slots
+    void execute(void **_a);
 
 private:
     Q_DISABLE_COPY(QSignalEventGenerator)

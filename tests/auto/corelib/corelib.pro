@@ -7,6 +7,7 @@ SUBDIRS=\
    itemmodels \
    json \
    kernel \
+   mimetypes \
    plugin \
    statemachine \
    thread \

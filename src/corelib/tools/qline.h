@@ -310,6 +310,11 @@ inline qreal QLineF::y2() const
     return pt2.y();
 }
 
+inline bool QLineF::isNull() const
+{
+    return qFuzzyCompare(pt1.x(), pt2.x()) && qFuzzyCompare(pt1.y(), pt2.y());
+}
+
 inline QPointF QLineF::p1() const
 {
     return pt1;

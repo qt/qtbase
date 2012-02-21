@@ -317,19 +317,22 @@ void tst_QMimeData::setUrls() const
     longUrlList += QUrl("http://www.google.com");
 
     // verify initial state
-    QVERIFY(mimeData.hasUrls() == false);
+    QCOMPARE(mimeData.hasUrls(), false);
 
     // set a few, verify
     mimeData.setUrls(shortUrlList);
     QCOMPARE(mimeData.urls(), shortUrlList);
+    QCOMPARE(mimeData.text(), QString("http://qt.nokia.com"));
 
     // change them, verify
     mimeData.setUrls(longUrlList);
     QCOMPARE(mimeData.urls(), longUrlList);
+    QCOMPARE(mimeData.text(), QString("http://qt.nokia.com\nhttp://www.google.com\n"));
 
     // clear, verify
     mimeData.clear();
-    QVERIFY(mimeData.hasUrls() == false);
+    QCOMPARE(mimeData.hasUrls(), false);
+    QCOMPARE(mimeData.hasText(), false);
 }
 
 QTEST_MAIN(tst_QMimeData)

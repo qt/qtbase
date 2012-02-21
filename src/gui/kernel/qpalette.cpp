@@ -41,6 +41,7 @@
 
 #include "qpalette.h"
 #include "qguiapplication.h"
+#include "qguiapplication_p.h"
 #include "qdatastream.h"
 #include "qvariant.h"
 #include "qdebug.h"
@@ -62,6 +63,29 @@ static QColor qt_mix_colors(QColor a, QColor b)
 {
     return QColor((a.red() + b.red()) / 2, (a.green() + b.green()) / 2,
                   (a.blue() + b.blue()) / 2, (a.alpha() + b.alpha()) / 2);
+}
+
+static void qt_palette_from_color(QPalette &pal, const QColor &button)
+{
+    int h, s, v;
+    button.getHsv(&h, &s, &v);
+    // inactive and active are the same..
+    const QBrush baseBrush = QBrush(v > 128 ? Qt::white : Qt::black);
+    const QBrush foregroundBrush = QBrush(v > 128 ? Qt::black : Qt::white);
+    const QBrush buttonBrush = QBrush(button);
+    const QBrush buttonBrushDark = QBrush(button.darker());
+    const QBrush buttonBrushDark150 = QBrush(button.darker(150));
+    const QBrush buttonBrushLight150 = QBrush(button.lighter(150));
+    const QBrush whiteBrush = QBrush(Qt::white);
+    pal.setColorGroup(QPalette::Active, foregroundBrush, buttonBrush, buttonBrushLight150,
+                      buttonBrushDark, buttonBrushDark150, foregroundBrush, whiteBrush,
+                      baseBrush, buttonBrush);
+    pal.setColorGroup(QPalette::Inactive, foregroundBrush, buttonBrush, buttonBrushLight150,
+                      buttonBrushDark, buttonBrushDark150, foregroundBrush, whiteBrush,
+                      baseBrush, buttonBrush);
+    pal.setColorGroup(QPalette::Disabled, buttonBrushDark, buttonBrush, buttonBrushLight150,
+                      buttonBrushDark, buttonBrushDark150, buttonBrushDark,
+                      whiteBrush, buttonBrush, buttonBrush);
 }
 
 /*!
@@ -488,39 +512,19 @@ static QColor qt_mix_colors(QColor a, QColor b)
     \sa QApplication::setPalette(), QApplication::palette()
 */
 QPalette::QPalette()
-    : d(QGuiApplication::palette().d),
-      current_group(Active),
-      resolve_mask(0)
+    : d(0), current_group(Active), resolve_mask(0)
 {
-    d->ref.ref();
-}
-
-static void qt_palette_from_color(QPalette &pal, const QColor & button)
-{
-    QColor bg = button,
-           btn = button,
-           fg, base;
-    int h, s, v;
-    bg.getHsv(&h, &s, &v);
-    if(v > 128) {
-        fg   = Qt::black;
-        base = Qt::white;
+    // Initialize to application palette if present, else default to black.
+    // This makes it possible to instantiate QPalette outside QGuiApplication,
+    // for example in the platform plugins.
+    if (QGuiApplicationPrivate::app_pal) {
+        d = QGuiApplicationPrivate::app_pal->d;
+        d->ref.ref();
     } else {
-        fg   = Qt::white;
-        base = Qt::black;
+        init();
+        qt_palette_from_color(*this, Qt::black);
     }
-    //inactive and active are the same..
-    pal.setColorGroup(QPalette::Active, QBrush(fg), QBrush(btn), QBrush(btn.lighter(150)),
-                      QBrush(btn.darker()), QBrush(btn.darker(150)), QBrush(fg), QBrush(Qt::white),
-                      QBrush(base), QBrush(bg));
-    pal.setColorGroup(QPalette::Inactive, QBrush(fg), QBrush(btn), QBrush(btn.lighter(150)),
-                      QBrush(btn.darker()), QBrush(btn.darker(150)), QBrush(fg), QBrush(Qt::white),
-                      QBrush(base), QBrush(bg));
-    pal.setColorGroup(QPalette::Disabled, QBrush(btn.darker()), QBrush(btn), QBrush(btn.lighter(150)),
-                      QBrush(btn.darker()), QBrush(btn.darker(150)), QBrush(btn.darker()),
-                      QBrush(Qt::white), QBrush(bg), QBrush(bg));
 }
-
 
 /*!
   Constructs a palette from the \a button color. The other colors are

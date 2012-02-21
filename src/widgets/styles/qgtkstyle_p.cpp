@@ -661,7 +661,7 @@ QString QGtkStylePrivate::getThemeName()
         foreach (const QString &rcPath, paths) {
             if (!rcPath.isEmpty()) {
                 QFile rcFile(rcPath);
-                if (rcFile.exists() && rcFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                if (rcFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
                     QTextStream in(&rcFile);
                     while(!in.atEnd()) {
                         QString line = in.readLine();

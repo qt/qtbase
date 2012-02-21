@@ -54,6 +54,7 @@
 #include <qlineedit.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
+#include <QtCore/qvarlengtharray.h>
 
 #ifdef Q_OS_MAC
 #include <qfocusframe.h>
@@ -427,52 +428,36 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
     return qt_accStripAmp(str);
 }
 
-QAccessible::Relation QAccessibleDisplay::relationTo(const QAccessibleInterface *other) const
+/*! \reimp */
+QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
+QAccessibleDisplay::relations(QAccessible::Relation match /*= QAccessible::AllRelations*/) const
 {
-    QAccessible::Relation relation = QAccessibleWidget::relationTo(other);
+    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > rels = QAccessibleWidget::relations(match);
+    if (match & QAccessible::Labelled) {
+        QVarLengthArray<QObject *, 4> relatedObjects;
 
-    QObject *o = other->object();
-    QLabel *label = qobject_cast<QLabel*>(object());
-    if (label) {
 #ifndef QT_NO_SHORTCUT
-        if (o == label->buddy())
-            relation |= QAccessible::Label;
+        if (QLabel *label = qobject_cast<QLabel*>(object())) {
+            relatedObjects.append(label->buddy());
 #endif
 #ifndef QT_NO_GROUPBOX
-    } else {
-        QGroupBox *groupbox = qobject_cast<QGroupBox*>(object());
-        if (groupbox && !groupbox->title().isEmpty())
-            if (groupbox->children().contains(o))
-                relation |= QAccessible::Label;
-#endif
-    }
-    return relation;
-}
-
-int QAccessibleDisplay::navigate(QAccessible::RelationFlag rel, int entry, QAccessibleInterface **target) const
-{
-    *target = 0;
-    if (rel == QAccessible::Labelled) {
-        QObject *targetObject = 0;
-        QLabel *label = qobject_cast<QLabel*>(object());
-        if (label) {
-#ifndef QT_NO_SHORTCUT
-            if (entry == 1)
-                targetObject = label->buddy();
-#endif
-#ifndef QT_NO_GROUPBOX
-        } else {
-            QGroupBox *groupbox = qobject_cast<QGroupBox*>(object());
-            if (groupbox && !groupbox->title().isEmpty())
-                *target = child(entry - 1);
+        } else if (QGroupBox *groupbox = qobject_cast<QGroupBox*>(object())) {
+            if (!groupbox->title().isEmpty()) {
+                const QList<QWidget*> kids = childWidgets(widget());
+                for (int i = 0; i < kids.count(); ++i) {
+                    relatedObjects.append(kids.at(i));
+                }
+            }
 #endif
         }
-        if (targetObject)
-            *target = QAccessible::queryAccessibleInterface(targetObject);
-        if (*target)
-            return 0;
+        for (int i = 0; i < relatedObjects.count(); ++i) {
+            const QAccessible::Relation rel = QAccessible::Labelled;
+            QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(relatedObjects.at(i));
+            if (iface)
+                rels.append(qMakePair(iface, rel));
+        }
     }
-    return QAccessibleWidget::navigate(rel, entry, target);
+    return rels;
 }
 
 void *QAccessibleDisplay::interface_cast(QAccessible::InterfaceType t)

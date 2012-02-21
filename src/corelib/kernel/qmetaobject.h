@@ -134,6 +134,8 @@ public:
                       val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);
     }
 
+    inline bool isValid() const { return mobj != 0; }
+
 private:
     const QMetaObject *mobj;
     uint handle;

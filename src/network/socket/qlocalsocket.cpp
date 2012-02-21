@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QLocalSocket
     \since 4.4
+    \inmodule QtNetwork
 
     \brief The QLocalSocket class provides a local socket.
 

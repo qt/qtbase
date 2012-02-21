@@ -569,6 +569,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
             }
             retVal = true;
         } else {
+            int lastSerialCopy = d->lastSerial;
             bool hadModalSession = d->currentModalSessionCached != 0;
             // We cannot block the thread (and run in a tight loop).
             // Instead we will process all current pending events and return.
@@ -630,6 +631,14 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                     }
                 }
             } while (!d->interrupt && event != nil);
+
+            if ((flags & QEventLoop::WaitForMoreEvents) == 0) {
+                // when called "manually", always send posted events
+                d->processPostedEvents();
+            }
+
+            // be sure to return true if the posted event source fired
+            retVal = retVal || lastSerialCopy != d->lastSerial;
 
             // Since the window that holds modality might have changed while processing
             // events, we we need to interrupt when we return back the previous process

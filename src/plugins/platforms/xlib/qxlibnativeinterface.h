@@ -60,6 +60,9 @@ public:
 
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 
+    EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter);
+    EventFilter eventFilterForEventType(const QByteArray& eventType) const;
+
     void *displayForWindow(QWindow *window);
     void *eglDisplayForWindow(QWindow *window);
     void *connectionForWindow(QWindow *window);
@@ -68,6 +71,7 @@ public:
     void *eglContextForWindow(QWindow *window);
 
 private:
+    QHash<QByteArray, EventFilter> m_eventFilters;
     static QXlibScreen *qPlatformScreenForWindow(QWindow *window);
 };
 

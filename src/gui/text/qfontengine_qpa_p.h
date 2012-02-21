@@ -243,12 +243,15 @@ struct QPAGenerator
     QFontEngine *fe;
 };
 
-class QFontEngineMultiQPA : public QFontEngineMulti
+class Q_GUI_EXPORT QFontEngineMultiQPA : public QFontEngineMulti
 {
 public:
     QFontEngineMultiQPA(QFontEngine *fe, int script, const QStringList &fallbacks);
 
     void loadEngine(int at);
+
+    int fallbackFamilyCount() const { return fallbackFamilies.size(); }
+    QString fallbackFamilyAt(int at) const { return fallbackFamilies.at(at); }
 
 private:
     QStringList fallbackFamilies;

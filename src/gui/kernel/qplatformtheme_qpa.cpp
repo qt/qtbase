@@ -42,6 +42,8 @@
 #include "qplatformtheme_qpa.h"
 
 #include <QtCore/QVariant>
+#include <QtCore/QStringList>
+#include <qpalette.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,6 +69,21 @@ QT_BEGIN_NAMESPACE
 
     \value MaximumScrollBarDragDistance (int) Determines the value returned by
                             QStyle::pixelMetric(PM_MaximumDragDistance)
+
+    \value ToolButtonStyle (int) A value representing a Qt::ToolButtonStyle.
+
+    \value ToolBarIconSize Icon size for tool bars.
+
+    \value SystemIconThemeName (QString) Name of the icon theme.
+
+    \value SystemIconFallbackThemeName (QString) Name of the fallback icon theme.
+
+    \value IconThemeSearchPaths (QStringList) Search paths for icons.
+
+    \value ItemViewActivateItemOnSingleClick (bool) Activate items by single click.
+
+    \value StyleNames (QStringList) A list of preferred style names.
+
 
     \sa themeHint(), QStyle::pixelMetric()
 */
@@ -95,9 +112,28 @@ QPlatformDialogHelper *QPlatformTheme::createPlatformDialogHelper(DialogType typ
     return 0;
 }
 
+const QPalette *QPlatformTheme::palette(Palette type) const
+{
+    Q_UNUSED(type)
+    return 0;
+}
+
 QVariant QPlatformTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
+    case QPlatformTheme::ItemViewActivateItemOnSingleClick:
+        return QVariant(false);
+    case QPlatformTheme::ToolButtonStyle:
+        return QVariant(int(Qt::ToolButtonIconOnly));
+    case QPlatformTheme::ToolBarIconSize:
+        return QVariant(int(0));
+    case QPlatformTheme::SystemIconThemeName:
+    case QPlatformTheme::SystemIconFallbackThemeName:
+        return QVariant(QString());
+    case QPlatformTheme::IconThemeSearchPaths:
+        return QVariant(QStringList());
+    case QPlatformTheme::StyleNames:
+        return QVariant(QStringList());
     case TextCursorWidth:
         return QVariant(1);
     case DropShadow:

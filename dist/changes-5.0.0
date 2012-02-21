@@ -52,9 +52,16 @@ information about a particular change.
   in Qt4, so these methods return a bool now. If your code used the undocumented
   QBool, simply replace it with bool.
 
-- QMetaType::construct() has been renamed to QMetaType::create().
+- QMetaType:
+  * QMetaType::construct() has been renamed to QMetaType::create().
+  * QMetaType::unregisterType() has been removed.
 
 - QTestLib:
+  * The plain-text, xml and lightxml test output formats have been changed to
+    show a test result for every row of test data in data-driven tests.  In
+    Qt4, only fails and skips were shown for individual data rows and passes
+    were not shown for individual data rows, preventing accurate calculation
+    of test run rates and pass rates.
   * The QTRY_VERIFY and QTRY_COMPARE macros have been moved into QTestLib.
     These macros formerly lived in tests/shared/util.h but are now provided
     by including the <QtTest/QtTest> header. In addition,
@@ -93,8 +100,9 @@ information about a particular change.
     text(Text t, int child) -> text(Text t), rect(int child) -> rect()
     setText(Text t, int child, const QString &text) -> setText(Text t, const QString &text)
     role(int child) -> role(), state(int child) -> state()
-    relationTo(int child, const QAccessibleInterface *other, int otherChild) ->
-      relationTo(const QAccessibleInterface *other)
+  * parent() and child() was added in order to do hierarchical navigation.
+  * relations() was added as a replacement to relationTo()
+  * As a consequence of the above two points, navigate() was removed.
   * Accessible-Action related functions have been removed. QAccessibleInterface
     subclasses are expected to implement the QAccessibleActionInterface instead.
     These functions have been removed:
@@ -127,10 +135,16 @@ information about a particular change.
   * QWidget *widget() has been removed and is replaced by QObject
     *target() in order to avoid QWidget dependencies.
 
+  * QEvent::TouchCancel has been introduced. On systems where it makes
+    sense this event type can be used to differentiate between a
+    regular TouchEnd and abrupt touch sequence cancellations caused by
+    the compositor, for example when a system gesture gets recognized.
+
 - QMetaType
 
-  * It is no longer possible to use Q_DECLARE_METATYPE(Foo*) where Foo is only
-    forward declared - it must be fully defined.
+  * Q_DECLARE_METATYPE(Foo*) now requires that Foo is fully defined. In
+    cases where a forward declared type should be used as a metatype,
+    Q_DECLARE_OPAQUE_POINTER(Foo*) can be used to allow that.
 
 - QItemEditorFactory
 
@@ -206,6 +220,8 @@ information about a particular change.
     conversions. For converting other bases use the QString methods instead.
 
 - QSystemLocale has been removed from the public API.
+
+- QSqlQueryModel::indexInQuery() is now virtual. See note below under QSql.
 
 ****************************************************************************
 *                           General                                        *
@@ -333,6 +349,38 @@ QTestLib
 * [QTBUG-20615] Autotests can now log test output to multiple destinations
   and log formats simultaneously.
 
+QtSql
+-----
+QSqlTableModel/QSqlRelationalTableModel
+
+* The dataChanged() signal is now emitted for changes made to an inserted
+record that has not yet been committed. Previously, dataChanged() was
+suppressed in this case for OnRowChange and OnFieldChange. This was probably
+an attempt to avoid trouble if setData() was called while handling
+primeInsert(). By emitting dataChanged(), we ensure that all views are aware
+of the change.
+
+* While handling primeInsert() signal, the record must be manipulated using
+the provided reference. Do not attempt to manipulate the records using the
+model methods setData() or setRecord().
+
+* removeRows() no longer emits extra beforeDelete signal for out of range row.
+
+* removeRows() now requires the whole range of targetted rows to be valid
+before doing anything. Previously, it would remove what it could and
+ignore the rest of the range.
+
+* setRecord() and insertRecord()
+  -Only use fields where generated flag is set to true. This is
+  is consistent with the meaning of the flag.
+  -Require all fields to map correctly. Previously fields that didn't
+  map were simply ignored.
+  -For OnManualSubmit, insertRecord() no longer leaves behind an empty
+  row if setRecord() fails.
+
+* QSqlQueryModel::indexInQuery() is now virtual. See
+QSqlTableModel::indexInQuery() as example of how to implement in a
+subclass.
 
 ****************************************************************************
 *                          Database Drivers                                *
@@ -442,6 +490,13 @@ Qt for Windows CE
      construction would not be affected by the QPointer, but now that QPointer
      is implemented using QWeakPoiner, constructing the QSharedPointer will
      cause an abort().
+
+
+- QVariant
+
+  * Definition of QVariant::UserType changed. Currently it is the same as
+    QMetaType::User, which means that it points to the first registered custom
+    type, instead of a nonexistent type.
 
 
 - QMessageBox

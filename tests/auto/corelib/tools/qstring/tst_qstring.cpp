@@ -447,7 +447,7 @@ void tst_QString::replace_uint_uint_data()
     QTest::newRow( "rep08" ) << QString("ACABCAB") << 3 << 2 << QString("XX") << QString("ACAXXAB");
     QTest::newRow( "rep09" ) << QString("ACABCAB") << 4 << 2 << QString("XX") << QString("ACABXXB");
     QTest::newRow( "rep10" ) << QString("ACABCAB") << 5 << 2 << QString("XX") << QString("ACABCXX");
-    QTest::newRow( "rep10" ) << QString("ACABCAB") << 6 << 2 << QString("XX") << QString("ACABCAXX");
+    QTest::newRow( "rep11" ) << QString("ACABCAB") << 6 << 2 << QString("XX") << QString("ACABCAXX");
     QTest::newRow( "rep12" ) << QString() << 0 << 10 << QString("X") << QString("X");
     QTest::newRow( "rep13" ) << QString("short") << 0 << 10 << QString("X") << QString("X");
     QTest::newRow( "rep14" ) << QString() << 0 << 10 << QString("XX") << QString("XX");
@@ -1042,7 +1042,7 @@ void tst_QString::indexOf_data()
     QTest::newRow("BoyerMooreStressTest4") << veryBigHaystack << QString(veryBigHaystack + 'c') << 0 << true << -1;
     QTest::newRow("BoyerMooreStressTest5") << veryBigHaystack << QString('c' + veryBigHaystack) << 0 << true << -1;
     QTest::newRow("BoyerMooreStressTest6") << QString('d' + veryBigHaystack) << QString('c' + veryBigHaystack) << 0 << true << -1;
-    QTest::newRow("BoyerMooreStressTest6") << QString(veryBigHaystack + 'c') << QString('c' + veryBigHaystack) << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest7") << QString(veryBigHaystack + 'c') << QString('c' + veryBigHaystack) << 0 << true << -1;
 
     QTest::newRow("BoyerMooreInsensitiveStressTest") << veryBigHaystack << veryBigHaystack << 0 << false << 0;
 
@@ -1211,15 +1211,15 @@ void tst_QString::lastIndexOf_data()
     QTest::newRow("4") << a << "G" << 14 << 14 << true;
     QTest::newRow("5") << a << "G" << 13 << 11 << true;
     QTest::newRow("6") << a << "B" << a.size() - 1 << 1 << true;
-    QTest::newRow("6") << a << "B" << - 1 << 1 << true;
-    QTest::newRow("7") << a << "B" << 1 << 1 << true;
-    QTest::newRow("8") << a << "B" << 0 << -1 << true;
+    QTest::newRow("7") << a << "B" << - 1 << 1 << true;
+    QTest::newRow("8") << a << "B" << 1 << 1 << true;
+    QTest::newRow("9") << a << "B" << 0 << -1 << true;
 
-    QTest::newRow("9") << a << "G" <<  -1 <<  a.size()-1 << true;
-    QTest::newRow("10") << a << "G" <<  a.size()-1 <<  a.size()-1 << true;
-    QTest::newRow("11") << a << "G" <<  a.size() <<  -1 << true;
-    QTest::newRow("12") << a << "A" <<  0 <<  0 << true;
-    QTest::newRow("13") << a << "A" <<  -1*a.size() <<  0 << true;
+    QTest::newRow("10") << a << "G" <<  -1 <<  a.size()-1 << true;
+    QTest::newRow("11") << a << "G" <<  a.size()-1 <<  a.size()-1 << true;
+    QTest::newRow("12") << a << "G" <<  a.size() <<  -1 << true;
+    QTest::newRow("13") << a << "A" <<  0 <<  0 << true;
+    QTest::newRow("14") << a << "A" <<  -1*a.size() <<  0 << true;
 
     QTest::newRow("15") << a << "efg" << 0 << -1 << false;
     QTest::newRow("16") << a << "efg" << a.size() << -1 << false;
@@ -4742,8 +4742,8 @@ void tst_QString::compare_data()
 
     // different length
     QTest::newRow("data6") << QString("abcdef") << QString("abc") << 1 << 1;
-    QTest::newRow("data6") << QString("abCdef") << QString("abc") << -1 << 1;
-    QTest::newRow("data7") << QString("abc") << QString("abcdef") << -1 << -1;
+    QTest::newRow("data7") << QString("abCdef") << QString("abc") << -1 << 1;
+    QTest::newRow("data8") << QString("abc") << QString("abcdef") << -1 << -1;
 
     QString upper;
     upper += QChar(QChar::highSurrogate(0x10400));
@@ -4755,12 +4755,12 @@ void tst_QString::compare_data()
 
     // embedded nulls
     // These don't work as of now. It's OK that these don't work since \0 is not a valid unicode
-    /*QTest::newRow("data9") << QString(QByteArray("\0", 1)) << QString(QByteArray("\0", 1)) << 0 << 0;
-    QTest::newRow("data10") << QString(QByteArray("\0", 1)) << QString("") << 1 << 1;
-    QTest::newRow("data11") << QString("") << QString(QByteArray("\0", 1)) << -1 << -1;
-    QTest::newRow("data12") << QString("ab\0c") << QString(QByteArray("ab\0c", 4)) << 0 << 0;
-    QTest::newRow("data13") << QString(QByteArray("ab\0c", 4)) << QString("abc") << -1 << -1;
-    QTest::newRow("data14") << QString("abc") << QString(QByteArray("ab\0c", 4)) << 1 << 1;*/
+    /*QTest::newRow("data10") << QString(QByteArray("\0", 1)) << QString(QByteArray("\0", 1)) << 0 << 0;
+    QTest::newRow("data11") << QString(QByteArray("\0", 1)) << QString("") << 1 << 1;
+    QTest::newRow("data12") << QString("") << QString(QByteArray("\0", 1)) << -1 << -1;
+    QTest::newRow("data13") << QString("ab\0c") << QString(QByteArray("ab\0c", 4)) << 0 << 0;
+    QTest::newRow("data14") << QString(QByteArray("ab\0c", 4)) << QString("abc") << -1 << -1;
+    QTest::newRow("data15") << QString("abc") << QString(QByteArray("ab\0c", 4)) << 1 << 1;*/
 }
 
 static bool isLatin(const QString &s)
@@ -5004,58 +5004,58 @@ void tst_QString::repeated_data() const
     QTest::addColumn<int>("count" );
 
     /* Empty strings. */
-    QTest::newRow("")
+    QTest::newRow("data1")
         << QString()
         << QString()
         << 0;
 
-    QTest::newRow("")
+    QTest::newRow("data2")
         << QString()
         << QString()
         << -1004;
 
-    QTest::newRow("")
+    QTest::newRow("data3")
         << QString()
         << QString()
         << 1;
 
-    QTest::newRow("")
+    QTest::newRow("data4")
         << QString()
         << QString()
         << 5;
 
     /* On simple string. */
-    QTest::newRow("")
+    QTest::newRow("data5")
         << QString(QLatin1String("abc"))
         << QString()
         << -1004;
 
-    QTest::newRow("")
+    QTest::newRow("data6")
         << QString(QLatin1String("abc"))
         << QString()
         << -1;
 
-    QTest::newRow("")
+    QTest::newRow("data7")
         << QString(QLatin1String("abc"))
         << QString()
         << 0;
 
-    QTest::newRow("")
+    QTest::newRow("data8")
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abc"))
         << 1;
 
-    QTest::newRow("")
+    QTest::newRow("data9")
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abcabc"))
         << 2;
 
-    QTest::newRow("")
+    QTest::newRow("data10")
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abcabcabc"))
         << 3;
 
-    QTest::newRow("")
+    QTest::newRow("data11")
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abcabcabcabc"))
         << 4;

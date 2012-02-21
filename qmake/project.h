@@ -117,8 +117,7 @@ public:
     QMakeProject(QMakeProperty *p, const QHash<QString, QStringList> &nvars) { init(p, &nvars); }
     ~QMakeProject();
 
-    enum { ReadCache=0x01, ReadConf=0x02, ReadCmdLine=0x04, ReadProFile=0x08,
-           ReadFeatures=0x20, ReadConfigs=0x40, ReadAll=0xFF };
+    enum { ReadProFile=0x01, ReadSetup=0x02, ReadFeatures=0x04, ReadAll=0xFF };
     inline bool parse(const QString &text) { return parse(text, vars); }
     bool read(const QString &project, uchar cmd=ReadAll);
     bool read(uchar cmd=ReadAll);

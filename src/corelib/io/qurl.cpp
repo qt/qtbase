@@ -4176,6 +4176,7 @@ QString QUrlPrivate::createErrorString()
     Constructs a URL by parsing \a url. \a url is assumed to be in human
     readable representation, with no percent encoding. QUrl will automatically
     percent encode all characters that are not allowed in a URL.
+    The default parsing mode is TolerantMode.
 
     The parsing mode \a parsingMode is used for parsing \a url.
 
@@ -5678,9 +5679,8 @@ static QString toPrettyPercentEncoding(const QString &input, bool forFragment)
 }
 
 /*!
-    Returns the human-displayable string representation of the
-    URL. The output can be customized by passing flags with \a
-    options.
+    Returns a string representation of the URL.
+    The output can be customized by passing flags with \a options.
 
     The resulting QString can be passed back to a QUrl later on.
 
@@ -5733,9 +5733,8 @@ QString QUrl::toString(FormattingOptions options) const
 }
 
 /*!
-    Returns the human-displayable string representation of the
-    URL. The output can be customized by passing flags with \a
-    options.
+    Returns a string representation of the URL.
+    The output can be customized by passing flags with \a options.
 
     The resulting QString can be passed back to a QUrl later on.
 
@@ -5746,6 +5745,23 @@ QString QUrl::toString(FormattingOptions options) const
 QString QUrl::url(FormattingOptions options) const
 {
     return toString(options);
+}
+
+/*!
+    Returns a human-displayable string representation of the URL.
+    The output can be customized by passing flags with \a options.
+    The option RemovePassword is always enabled, since passwords
+    should never be shown back to users.
+
+    The resulting QString can be passed back to a QUrl later on,
+    but any password that was present initially will be lost.
+
+    \sa FormattingOptions, toEncoded(), toString()
+*/
+
+QString QUrl::toDisplayString(FormattingOptions options) const
+{
+    return toString(options | RemovePassword);
 }
 
 /*!
@@ -6237,7 +6253,7 @@ QDataStream &operator>>(QDataStream &in, QUrl &url)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QUrl &url)
 {
-    d.maybeSpace() << "QUrl(" << url.toString() << ')';
+    d.maybeSpace() << "QUrl(" << url.toDisplayString() << ')';
     return d.space();
 }
 #endif

@@ -367,17 +367,17 @@ void tst_QThreadPool::setMaxThreadCount_data()
 {
     QTest::addColumn<int>("limit");
 
-    QTest::newRow("") << 1;
-    QTest::newRow("") << -1;
-    QTest::newRow("") << 2;
-    QTest::newRow("") << -2;
-    QTest::newRow("") << 4;
-    QTest::newRow("") << -4;
-    QTest::newRow("") << 0;
-    QTest::newRow("") << 12345;
-    QTest::newRow("") << -6789;
-    QTest::newRow("") << 42;
-    QTest::newRow("") << -666;
+    QTest::newRow("1") << 1;
+    QTest::newRow("-1") << -1;
+    QTest::newRow("2") << 2;
+    QTest::newRow("-2") << -2;
+    QTest::newRow("4") << 4;
+    QTest::newRow("-4") << -4;
+    QTest::newRow("0") << 0;
+    QTest::newRow("12345") << 12345;
+    QTest::newRow("-6789") << -6789;
+    QTest::newRow("42") << 42;
+    QTest::newRow("-666") << -666;
 }
 
 void tst_QThreadPool::setMaxThreadCount()

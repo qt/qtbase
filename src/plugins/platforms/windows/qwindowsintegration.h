@@ -70,6 +70,7 @@ public:
     virtual QPlatformNativeInterface *nativeInterface() const;
     virtual QPlatformFontDatabase *fontDatabase() const;
     virtual QPlatformTheme *platformTheme() const;
+    QPlatformServices *services() const;
     virtual QVariant styleHint(StyleHint hint) const;
 
     static QWindowsIntegration *instance();

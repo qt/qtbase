@@ -291,6 +291,7 @@ public:
         Splitter       = 0x0000003E,
         // Additional Qt roles where enum value does not map directly to MSAA:
         LayeredPane    = 0x0000003F,
+        Terminal       = 0x00000040,
         UserRole       = 0x0000ffff
     };
 
@@ -305,13 +306,11 @@ public:
     };
 
     enum RelationFlag {
-        Unrelated     = 0x00000000,
-        FocusChild    = 0x00010000,
         Label         = 0x00020000,
         Labelled      = 0x00040000,
         Controller    = 0x00080000,
         Controlled    = 0x00100000,
-        LogicalMask   = 0x00ff0000
+        AllRelations  = 0xffffffff
     };
     Q_DECLARE_FLAGS(Relation, RelationFlag)
 
@@ -379,8 +378,8 @@ public:
     virtual QWindow *window() const;
 
     // relations
-    virtual QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
-    virtual QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations() const;
+    virtual QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations(QAccessible::Relation match = QAccessible::AllRelations) const;
+    virtual QAccessibleInterface *focusChild() const;
 
     virtual QAccessibleInterface *childAt(int x, int y) const = 0;
 
@@ -389,7 +388,6 @@ public:
     virtual QAccessibleInterface *child(int index) const = 0;
     virtual int childCount() const = 0;
     virtual int indexOfChild(const QAccessibleInterface *) const = 0;
-    virtual int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const = 0;
 
     // properties and state
     virtual QString text(QAccessible::Text t) const = 0;
@@ -432,10 +430,10 @@ private:
 class Q_GUI_EXPORT QAccessibleEvent
 {
 public:
-    inline QAccessibleEvent(QAccessible::Event type, QObject *object, int child = -1)
-        : m_type(type), m_object(object), m_child(child)
+    inline QAccessibleEvent(QAccessible::Event typ, QObject *obj, int chld = -1)
+        : m_type(typ), m_object(obj), m_child(chld)
     {
-        Q_ASSERT(object);
+        Q_ASSERT(obj);
     }
 
     QAccessible::Event type() const { return m_type; }

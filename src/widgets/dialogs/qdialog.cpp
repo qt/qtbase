@@ -52,6 +52,7 @@
 #include "qwhatsthis.h"
 #include "qmenu.h"
 #include "qcursor.h"
+#include "qplatformtheme_qpa.h"
 #include "private/qdialog_p.h"
 #include "private/qguiapplication_p.h"
 #ifndef QT_NO_ACCESSIBILITY
@@ -404,8 +405,8 @@ void QDialogPrivate::resetModalitySetByOpen()
     resetModalityTo = -1;
 }
 
-#if defined(Q_WS_WINCE)
-#ifdef Q_WS_WINCE_WM
+#if defined(Q_OS_WINCE)
+#ifdef Q_OS_WINCE_WM
 void QDialogPrivate::_q_doneAction()
 {
     //Done...
@@ -419,7 +420,7 @@ void QDialogPrivate::_q_doneAction()
 bool QDialog::event(QEvent *e)
 {
     bool result = QWidget::event(e);
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     if (e->type() == QEvent::OkRequest) {
         accept();
         result = true;
@@ -430,7 +431,11 @@ bool QDialog::event(QEvent *e)
 #endif
 
 /*!
-  Returns the modal dialog's result code, \c Accepted or \c Rejected.
+  In general returns the modal dialog's result code, \c Accepted or
+  \c Rejected.
+
+  \note When called on a QMessageBox instance, the returned value is a
+  value of the \l QMessageBox::StandardButton enum.
 
   Do not call this function if the dialog was constructed with the
   Qt::WA_DeleteOnClose attribute.

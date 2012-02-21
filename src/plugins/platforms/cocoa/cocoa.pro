@@ -23,7 +23,9 @@ OBJECTIVE_SOURCES += main.mm \
     qmultitouch_mac.mm \
     qcocoaaccessibilityelement.mm \
     qcocoaaccessibility.mm \
+    qcocoacolordialoghelper.mm \
     qcocoafiledialoghelper.mm \
+    qcocoafontdialoghelper.mm \
     qcocoacursor.mm \
 
 HEADERS += qcocoaintegration.h \
@@ -45,7 +47,9 @@ HEADERS += qcocoaintegration.h \
     qmultitouch_mac_p.h \
     qcocoaaccessibilityelement.h \
     qcocoaaccessibility.h \
+    qcocoacolordialoghelper.h \
     qcocoafiledialoghelper.h \
+    qcocoafontdialoghelper.h \
     qcocoacursor.h \
 
 FORMS += $$PWD/../../../widgets/dialogs/qfiledialog.ui
@@ -55,6 +59,7 @@ LIBS += -framework Cocoa
 
 QT += core-private gui-private widgets-private platformsupport-private
 
+OTHER_FILES += cocoa.json
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
 

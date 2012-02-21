@@ -46,16 +46,20 @@
 #include <QtNetwork/qlocalsocket.h>
 #include <QtNetwork/qlocalserver.h>
 
+#ifdef Q_OS_UNIX
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#endif
+
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketError)
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketState)
+Q_DECLARE_METATYPE(QLocalServer::SocketOption)
+Q_DECLARE_METATYPE(QFile::Permissions)
 
 class tst_QLocalSocket : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QLocalSocket();
-    virtual ~tst_QLocalSocket();
 
 public Q_SLOTS:
     void init();
@@ -108,26 +112,21 @@ private slots:
     void bytesWrittenSignal();
     void syncDisconnectNotify();
     void asyncDisconnectNotify();
+
+    void verifySocketOptions();
+    void verifySocketOptions_data();
+
+    void verifyListenWithDescriptor();
+    void verifyListenWithDescriptor_data();
+
 };
-
-tst_QLocalSocket::tst_QLocalSocket()
-{
-    if (!QFile::exists("lackey/lackey"
-#ifdef Q_OS_WIN
-    ".exe"
-#endif
-                ))
-        qWarning() << "lackey executable doesn't exists!";
-}
-
-tst_QLocalSocket::~tst_QLocalSocket()
-{
-}
 
 void tst_QLocalSocket::init()
 {
     qRegisterMetaType<QLocalSocket::LocalSocketState>("QLocalSocket::LocalSocketState");
     qRegisterMetaType<QLocalSocket::LocalSocketError>("QLocalSocket::LocalSocketError");
+    qRegisterMetaType<QLocalServer::SocketOption>("QLocalServer::SocketOption");
+    qRegisterMetaType<QFile::Permissions>("QFile::Permissions");
 }
 
 void tst_QLocalSocket::cleanup()
@@ -749,6 +748,16 @@ void tst_QLocalSocket::processConnection_data()
  */
 void tst_QLocalSocket::processConnection()
 {
+#ifdef Q_OS_WIN
+#  define EXE_SUFFIX ".exe"
+#else
+#  define EXE_SUFFIX
+#endif
+
+// ### lackey is currently not build
+    QEXPECT_FAIL("", "lackey is currently not built due to qscript dependency, QTBUG-24142", Abort);
+    QVERIFY(QFile::exists("lackey/lackey" EXE_SUFFIX));
+
     QFETCH(int, processes);
     QStringList serverArguments = QStringList() << SRCDIR "lackey/scripts/server.js" << QString::number(processes);
     QProcess producer;
@@ -758,7 +767,7 @@ void tst_QLocalSocket::processConnection()
 #endif
     QList<QProcess*> consumers;
     producer.start("lackey/lackey", serverArguments);
-    QVERIFY(producer.waitForStarted(-1));
+    QVERIFY2(producer.waitForStarted(-1), qPrintable(producer.errorString()));
     QTest::qWait(2000);
     for (int i = 0; i < processes; ++i) {
        QStringList arguments = QStringList() << SRCDIR "lackey/scripts/client.js";
@@ -1016,6 +1025,140 @@ void tst_QLocalSocket::asyncDisconnectNotify()
     QVERIFY(serverSocket);
     delete serverSocket;
     QTRY_VERIFY(!disconnectedSpy.isEmpty());
+}
+
+void tst_QLocalSocket::verifySocketOptions_data()
+{
+#ifdef Q_OS_LINUX
+    QTest::addColumn<QString>("service");
+    QTest::addColumn<QLocalServer::SocketOption>("opts");
+    QTest::addColumn<QFile::Permissions>("perms");
+
+    QFile::Permissions p = QFile::ExeOwner|QFile::WriteOwner|QFile::ReadOwner |
+                           QFile::ExeUser|QFile::WriteUser|QFile::ReadUser;
+    QTest::newRow("user")  << "userPerms"  << QLocalServer::UserAccessOption << p;
+
+    p = QFile::ExeGroup|QFile::WriteGroup|QFile::ReadGroup;
+    QTest::newRow("group") << "groupPerms" << QLocalServer::GroupAccessOption << p;
+
+    p = QFile::ExeOther|QFile::WriteOther|QFile::ReadOther;
+    QTest::newRow("other") << "otherPerms" << QLocalServer::OtherAccessOption << p;
+
+    p = QFile::ExeOwner|QFile::WriteOwner|QFile::ReadOwner|
+        QFile::ExeUser|QFile::WriteUser|QFile::ReadUser |
+        QFile::ExeGroup|QFile::WriteGroup|QFile::ReadGroup|
+        QFile::ExeOther|QFile::WriteOther|QFile::ReadOther;
+    QTest::newRow("all")   << "worldPerms" << QLocalServer::WorldAccessOption << p;
+#endif
+}
+
+void tst_QLocalSocket::verifySocketOptions()
+{
+    // These are only guaranteed to be useful on linux at this time
+#ifdef Q_OS_LINUX
+   QFETCH(QString, service);
+   QFETCH(QLocalServer::SocketOption, opts);
+   QFETCH(QFile::Permissions, perms);
+
+
+   QLocalServer::removeServer(service);
+   QLocalServer server;
+   server.setSocketOptions(opts);
+   QVERIFY2(server.listen(service), "service failed to start listening");
+
+   // find the socket
+   QString fullServerPath = QDir::cleanPath(QDir::tempPath());
+   fullServerPath += QLatin1Char('/') + service;
+
+   QFile socketFile(fullServerPath);
+   QVERIFY2(perms == socketFile.permissions(), "permissions on the socket don't match");
+#endif
+}
+
+void tst_QLocalSocket::verifyListenWithDescriptor()
+{
+#ifdef Q_OS_UNIX
+    QFETCH(QString, path);
+    QFETCH(bool, abstract);
+    QFETCH(bool, bound);
+
+    qDebug() << "socket" << path << abstract;
+
+    int listenSocket;
+
+    if (bound) {
+        // create the unix socket
+        listenSocket = ::socket(PF_UNIX, SOCK_STREAM, 0);
+        QVERIFY2(listenSocket != -1, "failed to create test socket");
+
+        // Construct the unix address
+        struct ::sockaddr_un addr;
+        addr.sun_family = PF_UNIX;
+
+        QVERIFY2(sizeof(addr.sun_path) > ((uint)path.size() + 1), "path to large to create socket");
+
+        ::memset(addr.sun_path, 0, sizeof(addr.sun_path));
+        if (abstract)
+            ::memcpy(addr.sun_path+1, path.toLatin1().data(), path.toLatin1().size());
+        else
+            ::memcpy(addr.sun_path, path.toLatin1().data(), path.toLatin1().size());
+
+        if (path.startsWith(QLatin1Char('/'))) {
+            ::unlink(path.toLatin1());
+        }
+
+        QVERIFY2(-1 != ::bind(listenSocket, (sockaddr *)&addr, sizeof(sockaddr_un)), "failed to bind test socket to address");
+
+        // listen for connections
+        QVERIFY2(-1 != ::listen(listenSocket, 50), "failed to call listen on test socket");
+    } else {
+        int fds[2];
+        QVERIFY2(-1 != ::socketpair(PF_UNIX, SOCK_STREAM, 0, fds), "failed to create socket pair");
+
+        listenSocket = fds[0];
+        close(fds[1]);
+    }
+
+    QLocalServer server;
+    QVERIFY2(server.listen(listenSocket), "failed to start create QLocalServer with local socket");
+
+#ifdef Q_OS_LINUX
+    if (!bound) {
+        QVERIFY(server.serverName().at(0) == QLatin1Char('@'));
+        QVERIFY(server.fullServerName().at(0) == QLatin1Char('@'));
+    } else if (abstract) {
+        QVERIFY2(server.fullServerName().at(0) == QLatin1Char('@'), "abstract sockets should start with a '@'");
+    } else {
+        QVERIFY2(server.fullServerName() == path, "full server path doesn't match patch provided");
+        if (path.contains(QLatin1String("/"))) {
+            QVERIFY2(server.serverName() == path.mid(path.lastIndexOf(QLatin1Char('/'))+1), "server name invalid short name");
+        } else {
+            QVERIFY2(server.serverName() == path, "servier name doesn't match the path provided");
+        }
+    }
+#else
+    QVERIFY(server.serverName().isEmpty());
+    QVERIFY(server.fullServerName().isEmpty());
+#endif
+
+
+#endif
+}
+
+void tst_QLocalSocket::verifyListenWithDescriptor_data()
+{
+#ifdef Q_OS_UNIX
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("abstract");
+    QTest::addColumn<bool>("bound");
+
+    QTest::newRow("normal") << QDir::tempPath() + QLatin1Literal("/testsocket") << false << true;
+    QTest::newRow("absrtact") << QString::fromLatin1("abstractsocketname") << true << true;
+    QTest::newRow("abstractwithslash") << QString::fromLatin1("abstractsocketwitha/inthename") << true << true;
+    QTest::newRow("no path") << QString::fromLatin1("/invalid/no path name speficied") << true << false;
+
+#endif
+
 }
 
 QTEST_MAIN(tst_QLocalSocket)

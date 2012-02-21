@@ -6,14 +6,34 @@
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="events">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[0]]></DataTag>
+</Incident>
 <BenchmarkResult metric="Events" tag="0" value="0" iterations="1" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[1]]></DataTag>
+</Incident>
 <BenchmarkResult metric="Events" tag="1" value="1" iterations="1" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[10]]></DataTag>
+</Incident>
 <BenchmarkResult metric="Events" tag="10" value="10" iterations="1" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[100]]></DataTag>
+</Incident>
 <BenchmarkResult metric="Events" tag="100" value="100" iterations="1" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[500]]></DataTag>
+</Incident>
 <BenchmarkResult metric="Events" tag="500" value="500" iterations="1" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[5000]]></DataTag>
+</Incident>
 <BenchmarkResult metric="Events" tag="5000" value="5000" iterations="1" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[100000]]></DataTag>
+</Incident>
 <BenchmarkResult metric="Events" tag="100000" value="100000" iterations="1" />
-<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />

@@ -521,7 +521,10 @@ void tst_QByteArray::qvsnprintf()
 
     QCOMPARE(::qsnprintf(buf, 10, "%s", "bubu"), 4);
     QCOMPARE(static_cast<const char *>(buf), "bubu");
+#ifndef Q_CC_MSVC
+    // MSVC implementation of vsnprintf overwrites bytes after null terminator so this would fail.
     QCOMPARE(buf[5], char(42));
+#endif
 
     qMemSet(buf, 42, sizeof(buf));
     QCOMPARE(::qsnprintf(buf, 5, "%s", "bubu"), 4);
@@ -862,7 +865,7 @@ void tst_QByteArray::indexOf_data()
     QTest::newRow("BoyerMooreStressTest4") << QByteArray(veryBigHaystack) <<  QByteArray(veryBigHaystack + 'c') << 0 << -1;
     QTest::newRow("BoyerMooreStressTest5") << QByteArray(veryBigHaystack) <<  QByteArray('c' + veryBigHaystack) << 0 << -1;
     QTest::newRow("BoyerMooreStressTest6") << QByteArray('d' + veryBigHaystack) <<  QByteArray('c' + veryBigHaystack) << 0 << -1;
-    QTest::newRow("BoyerMooreStressTest6") << QByteArray(veryBigHaystack + 'c') <<  QByteArray('c' + veryBigHaystack) << 0 << -1;
+    QTest::newRow("BoyerMooreStressTest7") << QByteArray(veryBigHaystack + 'c') <<  QByteArray('c' + veryBigHaystack) << 0 << -1;
 }
 
 void tst_QByteArray::indexOf()
@@ -985,13 +988,13 @@ void tst_QByteArray::toInt_data()
     QTest::addColumn<bool>("expectedok");
 
     QTest::newRow("base 10") << QByteArray("100") << 10 << int(100) << true;
-    QTest::newRow("base 16") << QByteArray("100") << 16 << int(256) << true;
-    QTest::newRow("base 16") << QByteArray("0400") << 16 << int(1024) << true;
+    QTest::newRow("base 16-1") << QByteArray("100") << 16 << int(256) << true;
+    QTest::newRow("base 16-2") << QByteArray("0400") << 16 << int(1024) << true;
     QTest::newRow("base 2") << QByteArray("1111") << 2 << int(15) << true;
     QTest::newRow("base 8") << QByteArray("100") << 8 << int(64) << true;
-    QTest::newRow("base 0") << QByteArray("0x10") << 0 << int(16) << true;
-    QTest::newRow("base 0") << QByteArray("10") << 0 << int(10) << true;
-    QTest::newRow("base 0") << QByteArray("010") << 0 << int(8) << true;
+    QTest::newRow("base 0-1") << QByteArray("0x10") << 0 << int(16) << true;
+    QTest::newRow("base 0-2") << QByteArray("10") << 0 << int(10) << true;
+    QTest::newRow("base 0-3") << QByteArray("010") << 0 << int(8) << true;
     QTest::newRow("empty") << QByteArray() << 0 << int(0) << false;
 
     // using fromRawData
@@ -999,7 +1002,7 @@ void tst_QByteArray::toInt_data()
     QTest::newRow("raw2") << QByteArray::fromRawData("1foo", 1) << 10 << 1 << true;
     QTest::newRow("raw3") << QByteArray::fromRawData("12", 1) << 10 << 1 << true;
     QTest::newRow("raw4") << QByteArray::fromRawData("123456789", 1) << 10 << 1 << true;
-    QTest::newRow("raw4") << QByteArray::fromRawData("123456789", 2) << 10 << 12 << true;
+    QTest::newRow("raw5") << QByteArray::fromRawData("123456789", 2) << 10 << 12 << true;
 
     QTest::newRow("raw-static") << QByteArray::fromRawData(&globalChar, 1) << 10 << 1 << true;
 }
@@ -1398,58 +1401,58 @@ void tst_QByteArray::repeated_data() const
     QTest::addColumn<int>("count" );
 
     /* Empty strings. */
-    QTest::newRow("")
+    QTest::newRow("data1")
         << QByteArray()
         << QByteArray()
         << 0;
 
-    QTest::newRow("")
+    QTest::newRow("data2")
         << QByteArray()
         << QByteArray()
         << -1004;
 
-    QTest::newRow("")
+    QTest::newRow("data3")
         << QByteArray()
         << QByteArray()
         << 1;
 
-    QTest::newRow("")
+    QTest::newRow("data4")
         << QByteArray()
         << QByteArray()
         << 5;
 
     /* On simple string. */
-    QTest::newRow("")
+    QTest::newRow("data5")
         << QByteArray("abc")
         << QByteArray()
         << -1004;
 
-    QTest::newRow("")
+    QTest::newRow("data6")
         << QByteArray("abc")
         << QByteArray()
         << -1;
 
-    QTest::newRow("")
+    QTest::newRow("data7")
         << QByteArray("abc")
         << QByteArray()
         << 0;
 
-    QTest::newRow("")
+    QTest::newRow("data8")
         << QByteArray("abc")
         << QByteArray("abc")
         << 1;
 
-    QTest::newRow("")
+    QTest::newRow("data9")
         << QByteArray(("abc"))
         << QByteArray(("abcabc"))
         << 2;
 
-    QTest::newRow("")
+    QTest::newRow("data10")
         << QByteArray(("abc"))
         << QByteArray(("abcabcabc"))
         << 3;
 
-    QTest::newRow("")
+    QTest::newRow("data11")
         << QByteArray(("abc"))
         << QByteArray(("abcabcabcabc"))
         << 4;

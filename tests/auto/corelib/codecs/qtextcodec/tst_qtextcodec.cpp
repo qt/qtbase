@@ -172,75 +172,72 @@ void tst_QTextCodec::fromUnicode_data()
     QTest::addColumn<QString>("codecName");
     QTest::addColumn<bool>("eightBit");
 
-    QTest::newRow("data1") << "ISO-8859-1" << true;
-    QTest::newRow("data2") << "ISO-8859-2" << true;
-    QTest::newRow("data3") << "ISO-8859-3" << true;
-    QTest::newRow("data4") << "ISO-8859-4" << true;
-    QTest::newRow("data5") << "ISO-8859-5" << true;
-    QTest::newRow("data6") << "ISO-8859-6" << true;
-    QTest::newRow("data7") << "ISO-8859-7" << true;
-    QTest::newRow("data8") << "ISO-8859-8" << true;
-    QTest::newRow("data9") << "ISO-8859-9" << true;
-    QTest::newRow("data10") << "ISO-8859-10" << true;
-    QTest::newRow("data13") << "ISO-8859-13" << true;
-    QTest::newRow("data14") << "ISO-8859-14" << true;
-    QTest::newRow("data15") << "ISO-8859-15" << true;
-    QTest::newRow("data16") << "ISO-8859-16" << true;
+    QTest::newRow("ISO-8859-1") << "ISO-8859-1" << true;
+    QTest::newRow("ISO-8859-2") << "ISO-8859-2" << true;
+    QTest::newRow("ISO-8859-3") << "ISO-8859-3" << true;
+    QTest::newRow("ISO-8859-4") << "ISO-8859-4" << true;
+    QTest::newRow("ISO-8859-5") << "ISO-8859-5" << true;
+    QTest::newRow("ISO-8859-6") << "ISO-8859-6" << true;
+    QTest::newRow("ISO-8859-7") << "ISO-8859-7" << true;
+    QTest::newRow("ISO-8859-8") << "ISO-8859-8" << true;
+    QTest::newRow("ISO-8859-9") << "ISO-8859-9" << true;
+    QTest::newRow("ISO-8859-10") << "ISO-8859-10" << true;
+    QTest::newRow("ISO-8859-13") << "ISO-8859-13" << true;
+    QTest::newRow("ISO-8859-14") << "ISO-8859-14" << true;
+    QTest::newRow("ISO-8859-15") << "ISO-8859-15" << true;
+    QTest::newRow("ISO-8859-16") << "ISO-8859-16" << true;
 
-    QTest::newRow("data18") << "IBM850" << true;
-    QTest::newRow("data19") << "IBM874" << true;
-    QTest::newRow("data20") << "IBM866" << true;
+    QTest::newRow("IBM850") << "IBM850" << true;
+    QTest::newRow("IBM874") << "IBM874" << true;
+    QTest::newRow("IBM866") << "IBM866" << true;
 
-    QTest::newRow("data21") << "windows-1250" << true;
-    QTest::newRow("data22") << "windows-1251" << true;
-    QTest::newRow("data23") << "windows-1252" << true;
-    QTest::newRow("data24") << "windows-1253" << true;
-    QTest::newRow("data25") << "windows-1254" << true;
-    QTest::newRow("data26") << "windows-1255" << true;
-    QTest::newRow("data27") << "windows-1256" << true;
-    QTest::newRow("data28") << "windows-1257" << true;
-    QTest::newRow("data28") << "windows-1258" << true;
+    QTest::newRow("windows-1250") << "windows-1250" << true;
+    QTest::newRow("windows-1251") << "windows-1251" << true;
+    QTest::newRow("windows-1252") << "windows-1252" << true;
+    QTest::newRow("windows-1253") << "windows-1253" << true;
+    QTest::newRow("windows-1254") << "windows-1254" << true;
+    QTest::newRow("windows-1255") << "windows-1255" << true;
+    QTest::newRow("windows-1256") << "windows-1256" << true;
+    QTest::newRow("windows-1257") << "windows-1257" << true;
+    QTest::newRow("windows-1258") << "windows-1258" << true;
 
-    QTest::newRow("data29") << "Apple Roman" << true;
-    QTest::newRow("data29") << "WINSAMI2" << true;
-    QTest::newRow("data30") << "TIS-620" << true;
-    QTest::newRow("data31") << "roman8" << true;
-
-    QTest::newRow("data32") << "SJIS" << false;
-    QTest::newRow("data33") << "EUC-KR" << false;
+    QTest::newRow("Apple Roman") << "Apple Roman" << true;
+    QTest::newRow("WINSAMI2") << "WINSAMI2" << true;
+    QTest::newRow("TIS-620") << "TIS-620" << true;
+    QTest::newRow("roman8") << "roman8" << true;
+    QTest::newRow("SJIS") << "SJIS" << false;
 
     // all codecs from documentation
-    QTest::newRow("doc2") << "Big5" << false;
-    QTest::newRow("doc3") << "Big5-HKSCS" << false;
-    QTest::newRow("doc4") << "CP949" << false;
-    QTest::newRow("doc5") << "EUC-JP" << false;
-    QTest::newRow("doc6") << "EUC-KR" << false;
-    //QTest::newRow("doc7") << "GB18030-0" << false; // only GB18030 works
-    QTest::newRow("doc7-bis") << "GB18030" << false;
-    QTest::newRow("doc8") << "IBM 850" << false;
-    QTest::newRow("doc9") << "IBM 866" << false;
-    QTest::newRow("doc10") << "IBM 874" << false;
-    QTest::newRow("doc11") << "ISO 2022-JP" << false;
+    QTest::newRow("Big5") << "Big5" << false;
+    QTest::newRow("Big5-HKSCS") << "Big5-HKSCS" << false;
+    QTest::newRow("CP949") << "CP949" << false;
+    QTest::newRow("EUC-JP") << "EUC-JP" << false;
+    QTest::newRow("EUC-KR") << "EUC-KR" << false;
+    //QTest::newRow("GB18030-0") << "GB18030-0" << false; // only GB18030 works
+    QTest::newRow("GB18030") << "GB18030" << false;
+    QTest::newRow("IBM 850") << "IBM 850" << false;
+    QTest::newRow("IBM 866") << "IBM 866" << false;
+    QTest::newRow("IBM 874") << "IBM 874" << false;
+    QTest::newRow("ISO 2022-JP") << "ISO 2022-JP" << false;
     //ISO 8859-1 to 10 and  ISO 8859-13 to 16 tested previously
     // Iscii-Bng, Dev, Gjr, Knd, Mlm, Ori, Pnj, Tlg, and Tml  tested in Iscii test
-    //QTest::newRow("doc12") << "JIS X 0201" << false; //actually not there
-    //QTest::newRow("doc13") << "JIS X 0208" << false; // actually not there
-    QTest::newRow("doc14") << "KOI8-R" << false;
-    QTest::newRow("doc15") << "KOI8-U" << false;
-    //QTest::newRow("doc16") << "MuleLao-1" << false; //only on x11
-    QTest::newRow("doc17") << "ROMAN8" << false;
-    QTest::newRow("doc18") << "Shift-JIS" << false;
-    QTest::newRow("doc19") << "TIS-620" << false;
-    QTest::newRow("doc20") << "TSCII" << false;
-    QTest::newRow("doc21") << "UTF-8" << false;
-    QTest::newRow("doc22") << "UTF-16" << false;
-    QTest::newRow("doc23") << "UTF-16BE" << false;
-    QTest::newRow("doc24") << "UTF-16LE" << false;
-    QTest::newRow("doc25") << "UTF-32" << false;
-    QTest::newRow("doc26") << "UTF-32BE" << false;
-    QTest::newRow("doc27") << "UTF-32LE" << false;
+    //QTest::newRow("JIS X 0201") << "JIS X 0201" << false; // actually not there
+    //QTest::newRow("JIS X 0208") << "JIS X 0208" << false; // actually not there
+    QTest::newRow("KOI8-R") << "KOI8-R" << false;
+    QTest::newRow("KOI8-U") << "KOI8-U" << false;
+    //QTest::newRow("MuleLao-1") << "MuleLao-1" << false; //only on x11
+    QTest::newRow("ROMAN8") << "ROMAN8" << false;
+    QTest::newRow("Shift-JIS") << "Shift-JIS" << false;
+    QTest::newRow("TIS-620") << "TIS-620" << false;
+    QTest::newRow("TSCII") << "TSCII" << false;
+    QTest::newRow("UTF-8") << "UTF-8" << false;
+    QTest::newRow("UTF-16") << "UTF-16" << false;
+    QTest::newRow("UTF-16BE") << "UTF-16BE" << false;
+    QTest::newRow("UTF-16LE") << "UTF-16LE" << false;
+    QTest::newRow("UTF-32") << "UTF-32" << false;
+    QTest::newRow("UTF-32BE") << "UTF-32BE" << false;
+    QTest::newRow("UTF-32LE") << "UTF-32LE" << false;
     //Windows-1250 to 1258 tested previously
-    QTest::newRow("doc3") << "WINSAMI2" << false;
 }
 
 void tst_QTextCodec::fromUnicode()
@@ -1222,7 +1219,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8.clear();
     utf8 += char(0xff);
     str = fromInvalidUtf8Sequence(utf8);
-    QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 3.5.1") << utf8 << str << -1;
+    QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 3.5.2") << utf8 << str << -1;
 
     // 3.5.2
     utf8.clear();
@@ -1230,7 +1227,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xfe);
     utf8 += char(0xff);
     str = fromInvalidUtf8Sequence(utf8);
-    QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 3.5.1") << utf8 << str << -1;
+    QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 3.5.2-1") << utf8 << str << -1;
 
     // 4.1.1
     utf8.clear();

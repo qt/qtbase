@@ -1,14 +1,5 @@
 DEFINES += PCRE_HAVE_CONFIG_H
 
-# man 3 pcrejit for a list of supported platforms;
-# as PCRE 8.30, stable JIT support is available for:
-# - ARM v5, v7, and Thumb2
-# - x86/x86-64
-# - MIPS 32bit
-equals(QT_ARCH, "i386")|equals(QT_ARCH, "x86_64")|equals(QT_ARCH, "arm")|if(equals(QT_ARCH, "mips"):!*-64) {
-    DEFINES += SUPPORT_JIT
-}
-
 win32:DEFINES += PCRE_STATIC
 
 INCLUDEPATH += $$PWD/pcre

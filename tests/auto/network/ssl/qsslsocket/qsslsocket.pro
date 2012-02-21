@@ -35,3 +35,5 @@ wince* {
 linux-*:system(". /etc/lsb-release && [ $DISTRIB_CODENAME = oneiric ]"):DEFINES+=UBUNTU_ONEIRIC
 
 requires(contains(QT_CONFIG,private_tests))
+
+win32:CONFIG += insignificant_test # QTBUG-24234

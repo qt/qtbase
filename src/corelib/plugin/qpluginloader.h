@@ -55,7 +55,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
 class QLibraryPrivate;
 
 class Q_CORE_EXPORT QPluginLoader : public QObject
@@ -70,7 +69,7 @@ public:
 
     QObject *instance();
 
-    static QObjectList staticInstances();
+    QT_DEPRECATED static QObjectList staticInstances();
 
     bool load();
     bool unload();

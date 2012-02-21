@@ -50,6 +50,10 @@
 #ifdef Q_OS_WIN
 # include <windows.h>
 #endif
+#ifdef Q_OS_UNIX // for geteuid()
+# include <sys/types.h>
+# include <unistd.h>
+#endif
 
 class tst_QTemporaryDir : public QObject
 {

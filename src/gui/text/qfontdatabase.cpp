@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include <qdir.h>
 #include "qfontdatabase.h"
 #include "qdebug.h"
 #include "qalgorithms.h"
@@ -47,12 +46,14 @@
 #include "qvarlengtharray.h" // here or earlier - workaround for VC++6
 #include "qthread.h"
 #include "qmutex.h"
+#include "qfile.h"
+#include "qfileinfo.h"
 #include "private/qunicodetables_p.h"
 #include "qfontengine_p.h"
+#include "qplatformintegration_qpa.h"
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qplatformfontdatabase_qpa.h>
-#include "qabstractfileengine.h"
 
 #include <stdlib.h>
 #include <limits.h>
@@ -196,7 +197,7 @@ struct QtFontStyle
             // bitfield count-- in while condition does not work correctly in mwccsym2
             count--;
             QPlatformIntegration *integration = QGuiApplicationPrivate::platformIntegration();
-            if (integration) { //on shut down there will be some that we don't release.
+            if (integration) {
                 integration->fontDatabase()->releaseHandle(pixelSizes[count].handle);
             }
         }
@@ -349,6 +350,7 @@ struct  QtFontFamily
 #endif
 
     QString name;
+    QStringList aliases;
     int count;
     QtFontFoundry **foundries;
 
@@ -724,7 +726,7 @@ static void match(int script, const QFontDef &request,
                   const QString &family_name, const QString &foundry_name, int force_encoding_id,
                   QtFontDesc *desc, const QList<int> &blacklistedFamilies = QList<int>(), bool forceXLFD=false);
 
-static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDef *fontDef)
+static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDef *fontDef, bool multi)
 {
     fontDef->family = desc.family->name;
     if (! desc.foundry->name.isEmpty() && desc.family->count > 1) {
@@ -743,8 +745,10 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
     fontDef->styleHint     = request.styleHint;
     fontDef->styleStrategy = request.styleStrategy;
 
-    fontDef->weight        = desc.style->key.weight;
-    fontDef->style         = desc.style->key.style;
+    if (!multi)
+        fontDef->weight    = desc.style->key.weight;
+    if (!multi)
+        fontDef->style     = desc.style->key.style;
     fontDef->fixedPitch    = desc.family->fixedPitch;
     fontDef->stretch       = desc.style->key.stretch;
     fontDef->ignorePitch   = false;
@@ -793,6 +797,14 @@ static QStringList familyList(const QFontDef &req)
 
 Q_GLOBAL_STATIC(QFontDatabasePrivate, privateDb)
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, fontDatabaseMutex, (QMutex::Recursive))
+
+// used in qguiapplication.cpp
+void qt_cleanupFontDatabase()
+{
+    QFontDatabasePrivate *db = privateDb();
+    if (db)
+        db->free();
+}
 
 // used in qfontengine_x11.cpp
 QMutex *qt_fontdatabase_mutex()
@@ -986,6 +998,25 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
     return score;
 }
 
+static bool matchFamilyName(const QString &familyName, QtFontFamily *f)
+{
+    if (familyName.isEmpty())
+        return true;
+
+    if (f->name.compare(familyName, Qt::CaseInsensitive) == 0)
+        return true;
+
+    QStringList::const_iterator it = f->aliases.constBegin();
+    while (it != f->aliases.constEnd()) {
+        if ((*it).compare(familyName, Qt::CaseInsensitive) == 0)
+            return true;
+
+        ++it;
+    }
+
+    return false;
+}
+
 /*!
     \internal
 
@@ -1035,9 +1066,7 @@ static void match(int script, const QFontDef &request,
         test.family = db->families[x];
         test.familyIndex = x;
 
-        if (!family_name.isEmpty()
-            && test.family->name.compare(family_name, Qt::CaseInsensitive) != 0
-            )
+        if (!matchFamilyName(family_name, test.family))
             continue;
 
         if (family_name.isEmpty())
@@ -2193,8 +2222,8 @@ bool QFontDatabasePrivate::isApplicationFont(const QString &fileName)
 int QFontDatabase::addApplicationFont(const QString &fileName)
 {
     QByteArray data;
-    QFile f(fileName);
-    if (!(f.fileEngine()->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)) {
+    if (!QFileInfo(fileName).isNativePath()) {
+        QFile f(fileName);
         if (!f.open(QIODevice::ReadOnly))
             return -1;
         data = f.readAll();

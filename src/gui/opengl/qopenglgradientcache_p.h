@@ -52,9 +52,9 @@
 
 #include <QMultiHash>
 #include <QObject>
-#include <QtGui/QtGui>
 #include <private/qopenglcontext_p.h>
 #include <QtCore/qmutex.h>
+#include <QGradient>
 
 QT_BEGIN_NAMESPACE
 

@@ -610,10 +610,6 @@ template<> bool compare(const QVariant &v1, const QVariant &v2)
     else if (id == QVariant::ByteArray)
         return compare(v1.toByteArray(), v2.toByteArray());
 
-    else if (id < int(QVariant::UserType)) // yes, v1.type()
-        // QVariant can compare
-        return v1 == v2;
-
     else if (id == QMetaType::UChar)
         return qvariant_cast<uchar>(v1) == qvariant_cast<uchar>(v2);
 
@@ -715,6 +711,10 @@ template<> bool compare(const QVariant &v1, const QVariant &v2)
 
     else if (id == qMetaTypeId<MyStruct>()) // (is)
             return qvariant_cast<MyStruct>(v1) == qvariant_cast<MyStruct>(v2);
+
+    else if (id < int(QVariant::UserType)) // yes, v1.type()
+        // QVariant can compare
+        return v1 == v2;
 
     else {
         qWarning() << "Please write a comparison case for type" << v1.typeName();

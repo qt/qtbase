@@ -62,22 +62,23 @@
 #include "qvariant.h"
 #include "qwidget.h"
 #include "private/qdnd_p.h"
+#include "private/qguiapplication_p.h"
 #include "qcolormap.h"
 #include "qdebug.h"
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
+#include "qwidgetwindow_qpa_p.h"
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputmethod.h>
+#include <QtGui/qplatformtheme_qpa.h>
 
 #include "private/qkeymapper_p.h"
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
-
-#include "qguiplatformplugin_p.h"
 
 #include <qthread.h>
 #include <private/qthread_p.h>
@@ -104,9 +105,8 @@
 #include "qlibrary.h"
 #endif
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 #include "qdatetime.h"
-#include "qguifunctions_wince.h"
 extern bool qt_wince_is_smartphone(); //qguifunctions_wince.cpp
 extern bool qt_wince_is_mobile();     //qguifunctions_wince.cpp
 extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
@@ -122,7 +122,7 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 
 static void initResources()
 {
-#if defined(Q_WS_WINCE)
+#if defined(Q_OS_WINCE)
     Q_INIT_RESOURCE_EXTERN(qstyle_wince)
     Q_INIT_RESOURCE(qstyle_wince);
 #else
@@ -140,7 +140,7 @@ Q_CORE_EXPORT void qt_call_post_routines();
 
 QApplicationPrivate *QApplicationPrivate::self = 0;
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
 #else
@@ -420,7 +420,6 @@ QWidget *QApplicationPrivate::main_widget = 0;        // main application widget
 QWidget *QApplicationPrivate::focus_widget = 0;        // has keyboard input focus
 QWidget *QApplicationPrivate::hidden_focus_widget = 0; // will get keyboard input focus after show()
 QWidget *QApplicationPrivate::active_window = 0;        // toplevel with keyboard focus
-bool QApplicationPrivate::obey_desktop_settings = true;        // use winsys resources
 #ifndef QT_NO_WHEELEVENT
 int QApplicationPrivate::wheel_scroll_lines;   // number of lines to scroll
 #endif
@@ -757,10 +756,6 @@ void QApplicationPrivate::construct(
             qCritical("Library qttestability load failed!");
         }
     }
-
-    //make sure the plugin is loaded
-    if (qt_is_gui_used)
-        qt_guiPlatformPlugin();
 #endif
 }
 
@@ -873,7 +868,7 @@ void QApplicationPrivate::initialize()
     if (qgetenv("QT_USE_NATIVE_WINDOWS").toInt() > 0)
         q->setAttribute(Qt::AA_NativeWindows);
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 #ifdef QT_AUTO_MAXIMIZE_THRESHOLD
     autoMaximizeThreshold = QT_AUTO_MAXIMIZE_THRESHOLD;
 #else
@@ -882,7 +877,7 @@ void QApplicationPrivate::initialize()
     else
         autoMaximizeThreshold = -1;
 #endif //QT_AUTO_MAXIMIZE_THRESHOLD
-#endif //Q_WS_WINCE
+#endif //Q_OS_WINCE
 
 #ifndef QT_NO_WHEELEVENT
     QApplicationPrivate::wheel_scroll_lines = 3;
@@ -1202,7 +1197,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     The default is platform dependent.
 */
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 void QApplication::setAutoMaximizeThreshold(const int threshold)
 {
     QApplicationPrivate::autoMaximizeThreshold = threshold;
@@ -1298,6 +1293,9 @@ QStyle *QApplication::style()
     // take ownership of the style
     QApplicationPrivate::app_style->setParent(qApp);
 
+    if (!QApplicationPrivate::sys_pal)
+        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
+            QApplicationPrivate::setSystemPalette(*themePalette);
     if (!QApplicationPrivate::sys_pal)
         QApplicationPrivate::setSystemPalette(QApplicationPrivate::app_style->standardPalette());
     if (QApplicationPrivate::set_pal) // repolish set palette with the new style
@@ -1851,7 +1849,15 @@ void QApplicationPrivate::setSystemFont(const QFont &font)
 */
 QString QApplicationPrivate::desktopStyleKey()
 {
-    return qt_guiPlatformPlugin()->styleName();
+    // The platform theme might return a style that is not available, find
+    // first valid one.
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+        const QStringList availableKeys = QStyleFactory::keys();
+        foreach (const QString &style, theme->themeHint(QPlatformTheme::StyleNames).toStringList())
+            if (availableKeys.contains(style, Qt::CaseInsensitive))
+                return style;
+    }
+    return QString();
 }
 
 /*!
@@ -2912,33 +2918,6 @@ QDesktopWidget *QApplication::desktop()
 }
 
 /*!
-    Sets whether Qt should use the system's standard colors, fonts, etc., to
-    \a on. By default, this is true.
-
-    This function must be called before creating the QApplication object, like
-    this:
-
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 6
-
-    \sa desktopSettingsAware()
-*/
-void QApplication::setDesktopSettingsAware(bool on)
-{
-    QApplicationPrivate::obey_desktop_settings = on;
-}
-
-/*!
-    Returns true if Qt is set to use the system's standard colors, fonts, etc.;
-    otherwise returns false. The default is true.
-
-    \sa setDesktopSettingsAware()
-*/
-bool QApplication::desktopSettingsAware()
-{
-    return QApplicationPrivate::obey_desktop_settings;
-}
-
-/*!
     Returns the current state of the modifier keys on the keyboard. The current
     state is updated sychronously as the event queue is emptied of events that
     will spontaneously change the keyboard state (QEvent::KeyPress and
@@ -3316,6 +3295,20 @@ int QApplication::exec()
     QAccessible::setRootObject(qApp);
 #endif
     return QGuiApplication::exec();
+}
+
+bool QApplicationPrivate::shouldQuit()
+{
+    /* if there is no non-withdrawn primary window left (except
+        the ones without QuitOnClose), we emit the lastWindowClosed
+        signal */
+    QWidgetList list = QApplication::topLevelWidgets();
+    for (int i = 0; i < list.size(); ++i) {
+        QWidget *w = list.at(i);
+        if (w->isVisible() && !w->parentWidget() && w->testAttribute(Qt::WA_QuitOnClose))
+            return false;
+    }
+    return true;
 }
 
 /*! \reimp
@@ -3993,7 +3986,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
     if (receiver->isWidgetType()) {
         QWidget *widget = static_cast<QWidget *>(receiver);
 
-#if !defined(Q_WS_WINCE) || (defined(GWES_ICONCURS) && !defined(QT_NO_CURSOR))
+#if !defined(Q_OS_WINCE) || (defined(GWES_ICONCURS) && !defined(QT_NO_CURSOR))
         // toggle HasMouse widget state on enter and leave
         if ((e->type() == QEvent::Enter || e->type() == QEvent::DragEnter) &&
             (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == widget->window()))
@@ -5198,6 +5191,28 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             }
             break;
         }
+    }
+}
+
+void QApplicationPrivate::translateTouchCancel(QTouchDevice *device, ulong timestamp)
+{
+    QTouchEvent touchEvent(QEvent::TouchCancel, device, QApplication::keyboardModifiers());
+    touchEvent.setTimestamp(timestamp);
+    QHash<ActiveTouchPointsKey, ActiveTouchPointsValue>::const_iterator it
+            = self->activeTouchPoints.constBegin(), ite = self->activeTouchPoints.constEnd();
+    QSet<QWidget *> widgetsNeedingCancel;
+    while (it != ite) {
+        QWidget *widget = static_cast<QWidget *>(it->target.data());
+        if (widget)
+            widgetsNeedingCancel.insert(widget);
+        ++it;
+    }
+    for (QSet<QWidget *>::const_iterator widIt = widgetsNeedingCancel.constBegin(),
+         widItEnd = widgetsNeedingCancel.constEnd(); widIt != widItEnd; ++widIt) {
+        QWidget *widget = *widIt;
+        touchEvent.setWindow(widget->windowHandle());
+        touchEvent.setTarget(widget);
+        QApplication::sendSpontaneousEvent(widget, &touchEvent);
     }
 }
 

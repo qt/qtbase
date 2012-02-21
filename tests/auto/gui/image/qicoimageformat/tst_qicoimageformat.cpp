@@ -127,8 +127,8 @@ void tst_QIcoImageFormat::canRead_data()
     QTest::newRow("16px,32px,48px - 16,256,16M colors") << "valid/Obj_N2_Internal_Mem.ico" << 1;
     QTest::newRow("16px - 16,256,16M colors") << "valid/Status_Play.ico" << 1;
     QTest::newRow("16px,32px - 16 colors") << "valid/TIMER01.ICO" << 1;
-    QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLD.ico" << 1;
-    QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLDH.ico" << 1;
+    QTest::newRow("16px16c, 32px32c, 32px256c 1") << "valid/WORLD.ico" << 1;
+    QTest::newRow("16px16c, 32px32c, 32px256c 2") << "valid/WORLDH.ico" << 1;
     QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << 0;
     QTest::newRow("103x16px, 24BPP") << "valid/trolltechlogo_tiny.ico" << 1;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 1;
@@ -198,8 +198,8 @@ void tst_QIcoImageFormat::imageCount_data()
     QTest::newRow("16px,32px,48px - 16,256,16M colors") << "valid/Obj_N2_Internal_Mem.ico" << 9;
     QTest::newRow("16px - 16,256,16M colors") << "valid/Status_Play.ico" << 3;
     QTest::newRow("16px,32px - 16 colors") << "valid/TIMER01.ICO" << 2;
-    QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLD.ico" << 3;
-    QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLDH.ico" << 3;
+    QTest::newRow("16px16c, 32px32c, 32px256c 1") << "valid/WORLD.ico" << 3;
+    QTest::newRow("16px16c, 32px32c, 32px256c 2") << "valid/WORLDH.ico" << 3;
     QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << 0;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 9;
     QTest::newRow("PNG compression") << "valid/Qt.ico" << 4;
@@ -227,8 +227,8 @@ void tst_QIcoImageFormat::jumpToNextImage_data()
     QTest::newRow("16px,32px,48px - 16,256,16M colors") << "valid/Obj_N2_Internal_Mem.ico" << 9;
     QTest::newRow("16px - 16,256,16M colors") << "valid/Status_Play.ico" << 3;
     QTest::newRow("16px,32px - 16 colors") << "valid/TIMER01.ICO" << 2;
-    QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLD.ico" << 3;
-    QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLDH.ico" << 3;
+    QTest::newRow("16px16c, 32px32c, 32px256c 1") << "valid/WORLD.ico" << 3;
+    QTest::newRow("16px16c, 32px32c, 32px256c 2") << "valid/WORLDH.ico" << 3;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 9;
     QTest::newRow("PNG compression") << "valid/Qt.ico" << 4;
 }
@@ -276,8 +276,8 @@ void tst_QIcoImageFormat::nextImageDelay_data()
     QTest::newRow("16px,32px,48px - 16,256,16M colors") << "valid/Obj_N2_Internal_Mem.ico" << 9;
     QTest::newRow("16px - 16,256,16M colors") << "valid/Status_Play.ico" << 3;
     QTest::newRow("16px,32px - 16 colors") << "valid/TIMER01.ICO" << 2;
-    QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLD.ico" << 3;
-    QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLDH.ico" << 3;
+    QTest::newRow("16px16c, 32px32c, 32px256c 1") << "valid/WORLD.ico" << 3;
+    QTest::newRow("16px16c, 32px32c, 32px256c 2") << "valid/WORLDH.ico" << 3;
     QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << -1;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 9;
     QTest::newRow("PNG compression") << "valid/Qt.ico" << 4;

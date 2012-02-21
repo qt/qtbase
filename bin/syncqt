@@ -607,22 +607,14 @@ sub loadSyncProfile {
 sub locateSyncProfile
 {
     my ($directory) = @_;
-    my $syncprofile;
     $directory = abs_path($directory);
-    while(!defined $syncprofile) {
-        local(*D);
-        if (opendir(D, $directory)) {
-            foreach my $file (sort readdir(D)) {
-                next if ($file =~ /^\.\.?$/);
-                $syncprofile = "$directory/$file" if ($file =~ /^sync\.profile$/);
-                last if (defined $syncprofile);
-            }
-            closedir(D);
-        }
-        last if (defined $syncprofile || $directory eq "/" || $directory =~ /^?:[\/\\]$/);
+    while (1) {
+        my $file = $directory."/sync.profile";
+        return $file if (-e $file);
+        my $odir = $directory;
         $directory = dirname($directory);
+        return undef if ($directory eq $odir);
     }
-    return $syncprofile;
 }
 
 # check if this is an in-source build, and if so use that as the basedir too
@@ -1137,6 +1129,9 @@ foreach my $lib (@modules_to_sync) {
             unless (-e $header_path) {
                 my $guard = "DEPRECATED_HEADER_" . $lib . "_" . $header;
                 $guard =~ s/([^a-zA-Z0-9_])/_/g;
+
+                my $header_dir = dirname($header_path);
+                make_path($header_dir, $lib, $verbose_level);
 
                 open HEADER, ">$header_path" || die "Could not open $header_path for writing!\n";
                 print HEADER "#ifndef $guard\n";

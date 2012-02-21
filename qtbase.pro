@@ -132,3 +132,11 @@ win32:!equals(QT_BUILD_TREE, $$QT_SOURCE_TREE) {
     mkspecs.files += $$QT_BUILD_TREE/mkspecs/default
 }
 INSTALLS += mkspecs
+
+OTHER_FILES += \
+    configure \
+    header.BSD \
+    header.FDL \
+    header.LGPL \
+    header.LGPL-ONLY \
+    sync.profile

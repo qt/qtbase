@@ -77,7 +77,6 @@ public:
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
-    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
 
     void *interface_cast(QAccessible::InterfaceType t);
 
@@ -190,7 +189,6 @@ public:
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int) const;
-    int navigate(QAccessible::RelationFlag relation, int m_index, QAccessibleInterface **iface) const;
 
     // cell interface
     virtual int columnExtent() const;
@@ -236,7 +234,6 @@ public:
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
-    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
 
 private:
     QAbstractItemView *view;
@@ -276,13 +273,6 @@ public:
     QAccessibleInterface *child(int) const {
         return 0;
     }
-    int navigate(QAccessible::RelationFlag relation, int, QAccessibleInterface **iface) const
-    {
-        Q_UNUSED(relation);
-        Q_UNUSED(iface);
-        return -1;
-    }
-
 private:
     QAbstractItemView *view;
 };

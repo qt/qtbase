@@ -49,7 +49,7 @@
 #ifndef QT_NO_FREETYPE
 
 #include "qfile.h"
-#include "qabstractfileengine.h"
+#include "qfileinfo.h"
 #include "qthreadstorage.h"
 #include <qmath.h>
 
@@ -231,7 +231,7 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         QScopedPointer<QFreetypeFace> newFreetype(new QFreetypeFace);
         FT_Face face;
         if (!face_id.filename.isEmpty()) {
-            QFile file(QString::fromUtf8(face_id.filename));
+            QString fileName = QString::fromUtf8(face_id.filename);
             if (face_id.filename.startsWith(":qmemoryfonts/")) {
                 // from qfontdatabase.cpp
                 QByteArray idx = face_id.filename;
@@ -240,7 +240,8 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
                 newFreetype->fontData = qt_fontdata_from_index(idx.toInt(&ok));
                 if (!ok)
                     newFreetype->fontData = QByteArray();
-            } else if (!(file.fileEngine()->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)) {
+            } else if (!QFileInfo(fileName).isNativePath()) {
+                QFile file(fileName);
                 if (!file.open(QIODevice::ReadOnly)) {
                     return 0;
                 }
@@ -876,7 +877,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     if (err != FT_Err_Ok)
         qWarning("load glyph failed err=%x face=%p, glyph=%d", err, face, glyph);
 
-    if ((!set || set->outline_drawing) && fetchMetricsOnly)
+    if (!set || set->outline_drawing || fetchMetricsOnly)
         return 0;
 
     FT_GlyphSlot slot = face->glyph;
@@ -1172,8 +1173,7 @@ QFixed QFontEngineFT::ascent() const
 
 QFixed QFontEngineFT::descent() const
 {
-    // subtract a pixel to work around QFontMetrics's built-in + 1
-    return QFixed::fromFixed(-metrics.descender - 64);
+    return QFixed::fromFixed(-metrics.descender);
 }
 
 QFixed QFontEngineFT::leading() const
@@ -1588,7 +1588,7 @@ glyph_metrics_t QFontEngineFT::boundingBox(const QGlyphLayout &glyphs)
     glyph_metrics_t overall;
     // initialize with line height, we get the same behaviour on all platforms
     overall.y = -ascent();
-    overall.height = ascent() + descent() + 1;
+    overall.height = ascent() + descent();
 
     QFixed ymax = 0;
     QFixed xmax = 0;

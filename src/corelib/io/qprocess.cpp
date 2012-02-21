@@ -520,6 +520,11 @@ void QProcessPrivate::Channel::clear()
     setWorkingDirectory(). By default, processes are run in the
     current working directory of the calling process.
 
+    \note On QNX, setting the working directory may cause all
+    application threads, with the exception of the QProcess caller
+    thread, to temporarily freeze during the spawning process,
+    owing to a limitation in the operating system.
+
     \section1 Synchronous Process API
 
     QProcess provides a set of functions which allow it to be used
@@ -1433,6 +1438,9 @@ QString QProcess::workingDirectory() const
     process in this directory. The default behavior is to start the
     process in the working directory of the calling process.
 
+    \note On QNX, this may cause all application threads to
+    temporarily freeze.
+
     \sa workingDirectory(), start()
 */
 void QProcess::setWorkingDirectory(const QString &dir)
@@ -1755,7 +1763,7 @@ void QProcess::setProcessState(ProcessState state)
     exit().
 
     \warning This function is called by QProcess on Unix and Mac OS X
-    only. On Windows, it is not called.
+    only. On Windows and QNX, it is not called.
 */
 void QProcess::setupChildProcess()
 {
@@ -2148,6 +2156,9 @@ int QProcess::execute(const QString &program)
     The started process will run as a regular standalone process.
 
     The process will be started in the directory \a workingDirectory.
+
+    \note On QNX, this may cause all application threads to
+    temporarily freeze.
 
     If the function is successful then *\a pid is set to the process
     identifier of the started process.

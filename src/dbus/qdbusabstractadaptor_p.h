@@ -127,6 +127,9 @@ protected:
 public: // member variables
     AdaptorMap adaptors;
     bool waitingForPolish : 1;
+
+private:
+    static int relaySlotMethodIndex();
 };
 
 extern QDBusAdaptorConnector *qDBusFindAdaptorConnector(QObject *object);

@@ -58,12 +58,12 @@ namespace QTest
     static const char *currentTestFunc = 0;
     static const char *currentTestObjectName = 0;
     static bool failed = false;
-    static bool dataFailed = false;
     static bool skipCurrentTest = false;
-    static QTestResult::TestLocation location = QTestResult::NoWhere;
 
     static const char *expectFailComment = 0;
     static int expectFailMode = 0;
+
+    static const char *currentAppname = 0;
 }
 
 void QTestResult::reset()
@@ -73,8 +73,6 @@ void QTestResult::reset()
     QTest::currentTestFunc = 0;
     QTest::currentTestObjectName = 0;
     QTest::failed = false;
-    QTest::dataFailed = false;
-    QTest::location = QTestResult::NoWhere;
 
     QTest::expectFailComment = 0;
     QTest::expectFailMode = 0;
@@ -84,7 +82,7 @@ void QTestResult::reset()
 
 bool QTestResult::currentTestFailed()
 {
-    return QTest::dataFailed;
+    return QTest::failed;
 }
 
 QTestData *QTestResult::currentGlobalTestData()
@@ -105,15 +103,13 @@ void QTestResult::setCurrentGlobalTestData(QTestData *data)
 void QTestResult::setCurrentTestData(QTestData *data)
 {
     QTest::currentTestData = data;
-    QTest::dataFailed = false;
+    QTest::failed = false;
 }
 
 void QTestResult::setCurrentTestFunction(const char *func)
 {
     QTest::currentTestFunc = func;
     QTest::failed = false;
-    if (!func)
-        QTest::location = NoWhere;
     if (func)
         QTestLog::enterTestFunction(func);
 }
@@ -125,24 +121,35 @@ static void clearExpectFail()
     QTest::expectFailComment = 0;
 }
 
-void QTestResult::finishedCurrentTestFunction()
+void QTestResult::finishedCurrentTestData()
 {
+    if (QTest::expectFailMode)
+        addFailure("QEXPECT_FAIL was called without any subsequent verification statements", 0, 0);
+    clearExpectFail();
+
     if (!QTest::failed && QTestLog::unhandledIgnoreMessages()) {
         QTestLog::printUnhandledIgnoreMessages();
         addFailure("Not all expected messages were received", 0, 0);
     }
+    QTestLog::clearIgnoreMessages();
+}
 
+void QTestResult::finishedCurrentTestDataCleanup()
+{
+    // If the current test hasn't failed or been skipped, then it passes.
     if (!QTest::failed && !QTest::skipCurrentTest) {
         QTestLog::addPass("");
     }
+
+    QTest::failed = false;
+}
+
+void QTestResult::finishedCurrentTestFunction()
+{
     QTest::currentTestFunc = 0;
     QTest::failed = false;
-    QTest::dataFailed = false;
-    QTest::location = NoWhere;
 
     QTestLog::leaveTestFunction();
-
-    clearExpectFail();
 }
 
 const char *QTestResult::currentTestFunction()
@@ -230,7 +237,10 @@ bool QTestResult::verify(bool statement, const char *statementStr,
         QTestLog::info(msg, file, line);
     }
 
-    qsnprintf(msg, 1024, "'%s' returned FALSE. (%s)", statementStr, description);
+    const char * format = QTest::expectFailMode
+        ? "'%s' returned TRUE unexpectedly. (%s)"
+        : "'%s' returned FALSE. (%s)";
+    qsnprintf(msg, 1024, format, statementStr, description);
 
     return checkStatement(statement, msg, file, line);
 }
@@ -268,7 +278,6 @@ void QTestResult::addFailure(const char *message, const char *file, int line)
 
     QTestLog::addFail(message, file, line);
     QTest::failed = true;
-    QTest::dataFailed = true;
 }
 
 void QTestResult::addSkip(const char *message, const char *file, int line)
@@ -276,16 +285,6 @@ void QTestResult::addSkip(const char *message, const char *file, int line)
     clearExpectFail();
 
     QTestLog::addSkip(message, file, line);
-}
-
-QTestResult::TestLocation QTestResult::currentTestLocation()
-{
-    return QTest::location;
-}
-
-void QTestResult::setCurrentTestLocation(TestLocation loc)
-{
-    QTest::location = loc;
 }
 
 void QTestResult::setCurrentTestObject(const char *name)
@@ -298,11 +297,6 @@ const char *QTestResult::currentTestObjectName()
     return QTest::currentTestObjectName ? QTest::currentTestObjectName : "";
 }
 
-bool QTestResult::testFailed()
-{
-    return QTest::failed;
-}
-
 void QTestResult::setSkipCurrentTest(bool value)
 {
     QTest::skipCurrentTest = value;
@@ -311,6 +305,16 @@ void QTestResult::setSkipCurrentTest(bool value)
 bool QTestResult::skipCurrentTest()
 {
     return QTest::skipCurrentTest;
+}
+
+void QTestResult::setCurrentAppname(const char *appname)
+{
+    QTest::currentAppname = appname;
+}
+
+const char *QTestResult::currentAppname()
+{
+    return QTest::currentAppname;
 }
 
 QT_END_NAMESPACE

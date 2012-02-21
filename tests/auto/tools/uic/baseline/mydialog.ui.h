@@ -32,7 +32,7 @@ public:
     void setupUi(QDialog *MyDialog)
     {
         if (MyDialog->objectName().isEmpty())
-            MyDialog->setObjectName(QString::fromUtf8("MyDialog"));
+            MyDialog->setObjectName(QStringLiteral("MyDialog"));
         MyDialog->resize(401, 70);
         vboxLayout = new QVBoxLayout(MyDialog);
 #ifndef Q_OS_MAC
@@ -41,14 +41,14 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
         aLabel = new QLabel(MyDialog);
-        aLabel->setObjectName(QString::fromUtf8("aLabel"));
+        aLabel->setObjectName(QStringLiteral("aLabel"));
 
         vboxLayout->addWidget(aLabel);
 
         aButton = new QPushButton(MyDialog);
-        aButton->setObjectName(QString::fromUtf8("aButton"));
+        aButton->setObjectName(QStringLiteral("aButton"));
 
         vboxLayout->addWidget(aButton);
 

@@ -2755,7 +2755,7 @@ void tst_QTextStream::double_write_with_flags_data()
     QTest::newRow("inf uppercase") << qInf() << QString("INF") << (int)QTextStream::UppercaseDigits << 0;
     QTest::newRow("-inf uppercase") << -qInf() << QString("-INF") << (int)QTextStream::UppercaseDigits << 0;
     QTest::newRow("nan") << qQNaN() << QString("nan") << 0 << 0;
-    QTest::newRow("nan") << qQNaN() << QString("NAN") << (int)QTextStream::UppercaseDigits << 0;
+    QTest::newRow("NAN") << qQNaN() << QString("NAN") << (int)QTextStream::UppercaseDigits << 0;
     QTest::newRow("scientific") << 1.234567e+02 << QString("1.234567e+02") << 0  << (int)QTextStream::ScientificNotation;
     QTest::newRow("scientific2") << 1.234567e+02 << QString("1.234567e+02") << (int)QTextStream::UppercaseBase << (int)QTextStream::ScientificNotation;
     QTest::newRow("scientific uppercase") << 1.234567e+02 << QString("1.234567E+02") << (int)QTextStream::UppercaseDigits << (int)QTextStream::ScientificNotation;

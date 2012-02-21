@@ -69,7 +69,7 @@
 
 #include <winuser.h>
 #if !defined(WINABLEAPI)
-#  if defined(Q_WS_WINCE)
+#  if defined(Q_OS_WINCE)
 #    include <bldver.h>
 #  endif
 #  include <winable.h>
@@ -80,9 +80,11 @@
 #include <comdef.h>
 #endif
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 #include "qguifunctions_wince.h"
 #endif
+
+#include "qtwindows_additional.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -988,6 +990,17 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accKeyboardShortcut(VARIANT va
     return *pszKeyboardShortcut ? S_OK : S_FALSE;
 }
 
+static QAccessibleInterface *relatedInterface(QAccessibleInterface *iface, QAccessible::RelationFlag flag)
+{
+    typedef QPair<QAccessibleInterface *, QAccessible::Relation> RelationPair;
+    QVector<RelationPair> rels = iface->relations(flag);
+
+    for (int i = 1; i < rels.count(); ++i)
+        delete rels.at(i).first;
+
+    return rels.value(0).first;
+}
+
 // moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accName(VARIANT varID, BSTR* pszName)
 {
@@ -1001,8 +1014,20 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accName(VARIANT varID, BSTR* p
         if (!child)
             return E_FAIL;
         name = child->text(QAccessible::Name);
+        if (name.isEmpty()) {
+            if (QAccessibleInterface *labelInterface = relatedInterface(child.data(), QAccessible::Label)) {
+                name = labelInterface->text(QAccessible::Name);
+                delete labelInterface;
+            }
+        }
     } else {
         name = accessible->text(QAccessible::Name);
+        if (name.isEmpty()) {
+            if (QAccessibleInterface *labelInterface = relatedInterface(accessible, QAccessible::Label)) {
+                name = labelInterface->text(QAccessible::Name);
+                delete labelInterface;
+            }
+        }
     }
     if (name.size()) {
         *pszName = QStringToBSTR(name);
@@ -1189,29 +1214,18 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accFocus(VARIANT *pvarID)
     if (!accessible->isValid())
         return E_FAIL;
 
-    QAccessibleInterface *acc = 0;
-    int control = accessible->navigate(QAccessible::FocusChild, 1, &acc);
-    if (control == -1) {
-        (*pvarID).vt = VT_EMPTY;
-        return S_FALSE;
+    if (QAccessibleInterface *acc = accessible->focusChild()) {
+        QWindowsAccessible* wacc = new QWindowsAccessible(acc);
+        IDispatch *iface = 0;
+        wacc->QueryInterface(IID_IDispatch, (void**)&iface);
+        if (iface) {
+            (*pvarID).vt = VT_DISPATCH;
+            (*pvarID).pdispVal = iface;
+            return S_OK;
+        } else {
+            delete wacc;
+        }
     }
-    if (!acc || control == 0) {
-        (*pvarID).vt = VT_I4;
-        (*pvarID).lVal = control ? control : CHILDID_SELF;
-        return S_OK;
-    }
-
-    QWindowsAccessible* wacc = new QWindowsAccessible(acc);
-    IDispatch *iface = 0;
-    wacc->QueryInterface(IID_IDispatch, (void**)&iface);
-    if (iface) {
-        (*pvarID).vt = VT_DISPATCH;
-        (*pvarID).pdispVal = iface;
-        return S_OK;
-    } else {
-        delete wacc;
-    }
-
     (*pvarID).vt = VT_EMPTY;
     return S_FALSE;
 }
@@ -1355,7 +1369,7 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(const QAccessibleEvent &ev
 
     typedef void (WINAPI *PtrNotifyWinEvent)(DWORD, HWND, LONG, LONG);
 
-#if defined(Q_WS_WINCE) // ### TODO: check for NotifyWinEvent in CE 6.0
+#if defined(Q_OS_WINCE) // ### TODO: check for NotifyWinEvent in CE 6.0
     // There is no user32.lib nor NotifyWinEvent for CE
     return;
 #else
@@ -1393,7 +1407,7 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(const QAccessibleEvent &ev
 
         ++eventNum;
     }
-#endif // Q_WS_WINCE
+#endif // Q_OS_WINCE
 }
 
 /*

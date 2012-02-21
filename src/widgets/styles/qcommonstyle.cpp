@@ -45,6 +45,7 @@
 #include <qfile.h>
 #include <qapplication.h>
 #include <private/qguiapplication_p.h>
+#include <qplatformtheme_qpa.h>
 #include <qbitmap.h>
 #include <qcache.h>
 #include <qdockwidget.h>
@@ -75,7 +76,6 @@
 #include <qsettings.h>
 #include <qvariant.h>
 #include <qpixmapcache.h>
-#include <private/qguiplatformplugin_p.h>
 
 #include <limits.h>
 
@@ -4509,9 +4509,11 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         break;
 
     case PM_ToolBarIconSize:
-        ret = qt_guiPlatformPlugin()->platformHint(QGuiPlatformPlugin::PH_ToolBarIconSize);
-        if (!ret)
-            ret = int(QStyleHelper::dpiScaled(24.));
+        ret = 0;
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+            ret = theme->themeHint(QPlatformTheme::ToolBarIconSize).toInt();
+        if (ret <= 0)
+            ret =  int(QStyleHelper::dpiScaled(24.));
         break;
 
     case PM_TabBarIconSize:
@@ -4903,9 +4905,10 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         break;
 
     case SH_ItemView_ActivateItemOnSingleClick:
-        ret = qt_guiPlatformPlugin()->platformHint(QGuiPlatformPlugin::PH_ItemView_ActivateItemOnSingleClick);
+        ret = 0;
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+            ret = theme->themeHint(QPlatformTheme::ToolButtonStyle).toBool() ? 1 : 0;
         break;
-
     case SH_TitleBar_ModifyNotification:
         ret = true;
         break;
@@ -4997,7 +5000,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = true;
         break;
     case SH_ToolButtonStyle:
-        ret = qt_guiPlatformPlugin()->platformHint(QGuiPlatformPlugin::PH_ToolButtonStyle);
+        ret = 0;
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+            ret = theme->themeHint(QPlatformTheme::ToolButtonStyle).toInt();
         break;
     case SH_RequestSoftwareInputPanel:
         ret = RSIP_OnMouseClickAndAlreadyFocused;

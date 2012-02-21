@@ -7,6 +7,8 @@ find_package(Qt5Core REQUIRED)
 
 include_directories(${Qt5Core_INCLUDE_DIRS})
 
+add_definitions(${Qt5Core_DEFINITIONS})
+
 qt5_wrap_cpp(moc_files myobject.h)
 
 # Test options. The -binary option generates a binary to dlopen instead of

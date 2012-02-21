@@ -268,7 +268,7 @@ public:
     void clearCache();
     void revertCachedRow(int row);
 
-    void translateFieldNames(int row, QSqlRecord &values) const;
+    void translateFieldNames(QSqlRecord &values) const;
     QSqlRelationalTableModel::JoinMode joinMode;
 };
 
@@ -299,9 +299,7 @@ void QSqlRelationalTableModelPrivate::revertCachedRow(int row)
 
 int QSqlRelationalTableModelPrivate::nameToIndex(const QString &name) const
 {
-    QString fieldname = name;
-    if (db.driver()->isIdentifierEscaped(fieldname, QSqlDriver::FieldName))
-        fieldname = db.driver()->stripDelimiters(fieldname, QSqlDriver::FieldName);
+    QString fieldname = strippedFieldName(name);
     int idx = baseRec.indexOf(fieldname);
     if (idx == -1) {
         // If the name is an alias we can find it here.
@@ -440,9 +438,9 @@ QVariant QSqlRelationalTableModel::data(const QModelIndex &index, int role) cons
         //already have the correct display value.
         if (d->strategy != OnFieldChange) {
             const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
-            if (row.op != QSqlTableModelPrivate::None && row.rec.isGenerated(index.column())) {
-                if (d->strategy == OnManualSubmit || row.op != QSqlTableModelPrivate::Delete) {
-                    QVariant v = row.rec.value(index.column());
+            if (row.op() != QSqlTableModelPrivate::None && row.rec().isGenerated(index.column())) {
+                if (d->strategy == OnManualSubmit || row.op() != QSqlTableModelPrivate::Delete) {
+                    QVariant v = row.rec().value(index.column());
                     if (v.isValid())
                         return relation.dictionary[v.toString()];
                 }
@@ -746,16 +744,13 @@ void QSqlRelationalTableModel::setTable(const QString &table)
 
 /*! \internal
  */
-void QSqlRelationalTableModelPrivate::translateFieldNames(int row, QSqlRecord &values) const
+void QSqlRelationalTableModelPrivate::translateFieldNames(QSqlRecord &values) const
 {
-    Q_Q(const QSqlRelationalTableModel);
-
     for (int i = 0; i < values.count(); ++i) {
-        int realCol = q->indexInQuery(q->createIndex(row, i)).column();
-        if (realCol != -1 && relations.value(realCol).isValid()) {
+        if (relations.value(i).isValid()) {
             QVariant v = values.value(i);
             bool gen = values.isGenerated(i);
-            values.replace(i, baseRec.field(realCol));
+            values.replace(i, baseRec.field(i));
             values.setValue(i, v);
             values.setGenerated(i, gen);
         }
@@ -770,7 +765,7 @@ bool QSqlRelationalTableModel::updateRowInTable(int row, const QSqlRecord &value
     Q_D(QSqlRelationalTableModel);
 
     QSqlRecord rec = values;
-    d->translateFieldNames(row, rec);
+    d->translateFieldNames(rec);
 
     return QSqlTableModel::updateRowInTable(row, rec);
 }
@@ -783,7 +778,7 @@ bool QSqlRelationalTableModel::insertRowIntoTable(const QSqlRecord &values)
     Q_D(QSqlRelationalTableModel);
 
     QSqlRecord rec = values;
-    d->translateFieldNames(0, rec);
+    d->translateFieldNames(rec);
 
     return QSqlTableModel::insertRowIntoTable(rec);
 }

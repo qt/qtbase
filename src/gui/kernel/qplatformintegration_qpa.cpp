@@ -107,6 +107,11 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
     return 0;
 }
 
+QPlatformServices *QPlatformIntegration::services() const
+{
+    return 0;
+}
+
 /*!
     \class QPlatformIntegration
     \since 4.8
@@ -215,12 +220,14 @@ QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::Pix
     return new QRasterPlatformPixmap(type);
 }
 
+#ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     Q_UNUSED(context);
     qWarning("This plugin does not support createPlatformOpenGLContext!");
     return 0;
 }
+#endif
 
 /*!
    Factory function for QPlatformSharedGraphicsCache. This function will return 0 if the platform

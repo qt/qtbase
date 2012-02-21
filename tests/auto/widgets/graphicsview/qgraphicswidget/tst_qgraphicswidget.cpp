@@ -1157,8 +1157,10 @@ void tst_QGraphicsWidget::initStyleOption()
     bool hasFocus = option.state & QStyle::State_HasFocus;
     QCOMPARE(hasFocus, focus);
     bool isUnderMouse = option.state & QStyle::State_MouseOver;
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_MAC)
+#ifndef Q_OS_WINCE
+# if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
     QEXPECT_FAIL("all", "QTBUG-22457", Abort);
+# endif
     QCOMPARE(isUnderMouse, underMouse);
 #endif
     // if (layoutDirection != Qt::LeftToRight)

@@ -121,6 +121,7 @@ public:
     static int verboseOLE;
     static int verboseInputMethods;
     static int verboseDialogs;
+    static int verboseTheming;
 
     explicit QWindowsContext();
     ~QWindowsContext();

@@ -765,7 +765,7 @@ void tst_QComboBox::virtualAutocompletion()
     // We need to set the keyboard input interval to a higher value
     // as the processEvent() call takes too much time, so it restarts
     // the keyboard search then
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_MIPS)
+#if defined(Q_PROCESSOR_ARM) || defined(Q_PROCESSOR_MIPS)
     int oldInterval = QApplication::keyboardInputInterval();
     QApplication::setKeyboardInputInterval(1500);
 #endif
@@ -797,7 +797,7 @@ void tst_QComboBox::virtualAutocompletion()
     QApplication::sendEvent(testWidget, &kr2);
     qApp->processEvents(); // Process events to trigger autocompletion
     QTRY_COMPARE(testWidget->currentIndex(), 3);
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_MIPS)
+#if defined(Q_PROCESSOR_ARM) || defined(Q_PROCESSOR_MIPS)
     QApplication::setKeyboardInputInterval(oldInterval);
 #endif
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="8" failures="1" tests="4" name="tst_Warnings">
+<testsuite errors="12" failures="3" tests="5" name="tst_Warnings">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -18,6 +18,14 @@
     <!-- message="Did not receive message: &quot;Warning1&quot;" type="info" -->
     <failure message="Not all expected messages were received" result="fail"/>
   </testcase>
+  <testcase result="fail" name="testMissingWarningsWithData">
+    <!-- tag="first row" message="Did not receive message: &quot;Warning0&quot;" type="info" -->
+    <!-- tag="first row" message="Did not receive message: &quot;Warning1&quot;" type="info" -->
+    <failure tag="first row" message="Not all expected messages were received" result="fail"/>
+    <!-- tag="second row" message="Did not receive message: &quot;Warning0&quot;" type="info" -->
+    <!-- tag="second row" message="Did not receive message: &quot;Warning1&quot;" type="info" -->
+    <failure tag="second row" message="Not all expected messages were received" result="fail"/>
+  </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err>
 <![CDATA[Warning]]>
@@ -26,6 +34,10 @@
 <![CDATA[Debug]]>
 <![CDATA[Baba]]>
 <![CDATA[Baba]]>
+<![CDATA[Did not receive message: "Warning0"]]>
+<![CDATA[Did not receive message: "Warning1"]]>
+<![CDATA[Did not receive message: "Warning0"]]>
+<![CDATA[Did not receive message: "Warning1"]]>
 <![CDATA[Did not receive message: "Warning0"]]>
 <![CDATA[Did not receive message: "Warning1"]]>
   </system-err>

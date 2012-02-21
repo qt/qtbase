@@ -288,7 +288,7 @@ void tst_QStringRef::indexOf_data()
     QTest::newRow("BoyerMooreStressTest4") << veryBigHaystack << veryBigHaystack + 'c' << 0 << true << -1;
     QTest::newRow("BoyerMooreStressTest5") << veryBigHaystack << 'c' + veryBigHaystack << 0 << true << -1;
     QTest::newRow("BoyerMooreStressTest6") << 'd' + veryBigHaystack << 'c' + veryBigHaystack << 0 << true << -1;
-    QTest::newRow("BoyerMooreStressTest6") << veryBigHaystack + 'c' << 'c' + veryBigHaystack << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest7") << veryBigHaystack + 'c' << 'c' + veryBigHaystack << 0 << true << -1;
 
     QTest::newRow("BoyerMooreInsensitiveStressTest") << veryBigHaystack << veryBigHaystack << 0 << false << 0;
 
@@ -441,15 +441,15 @@ void tst_QStringRef::lastIndexOf_data()
     QTest::newRow("4") << a << "G" << 14 << 14 << true;
     QTest::newRow("5") << a << "G" << 13 << 11 << true;
     QTest::newRow("6") << a << "B" << a.size() - 1 << 1 << true;
-    QTest::newRow("6") << a << "B" << - 1 << 1 << true;
-    QTest::newRow("7") << a << "B" << 1 << 1 << true;
-    QTest::newRow("8") << a << "B" << 0 << -1 << true;
+    QTest::newRow("7") << a << "B" << - 1 << 1 << true;
+    QTest::newRow("8") << a << "B" << 1 << 1 << true;
+    QTest::newRow("9") << a << "B" << 0 << -1 << true;
 
-    QTest::newRow("9") << a << "G" <<  -1 <<  a.size()-1 << true;
-    QTest::newRow("10") << a << "G" <<  a.size()-1 <<  a.size()-1 << true;
-    QTest::newRow("11") << a << "G" <<  a.size() <<  -1 << true;
-    QTest::newRow("12") << a << "A" <<  0 <<  0 << true;
-    QTest::newRow("13") << a << "A" <<  -1*a.size() <<  0 << true;
+    QTest::newRow("10") << a << "G" <<  -1 <<  a.size()-1 << true;
+    QTest::newRow("11") << a << "G" <<  a.size()-1 <<  a.size()-1 << true;
+    QTest::newRow("12") << a << "G" <<  a.size() <<  -1 << true;
+    QTest::newRow("13") << a << "A" <<  0 <<  0 << true;
+    QTest::newRow("14") << a << "A" <<  -1*a.size() <<  0 << true;
 
     QTest::newRow("15") << a << "efg" << 0 << -1 << false;
     QTest::newRow("16") << a << "efg" << a.size() << -1 << false;
@@ -777,8 +777,8 @@ void tst_QStringRef::compare_data()
 
     // different length
     QTest::newRow("data6") << QString("abcdef") << QString("abc") << 1 << 1;
-    QTest::newRow("data6") << QString("abCdef") << QString("abc") << -1 << 1;
-    QTest::newRow("data7") << QString("abc") << QString("abcdef") << -1 << -1;
+    QTest::newRow("data7") << QString("abCdef") << QString("abc") << -1 << 1;
+    QTest::newRow("data8") << QString("abc") << QString("abcdef") << -1 << -1;
 
     QString upper;
     upper += QChar(QChar::highSurrogate(0x10400));
@@ -786,7 +786,7 @@ void tst_QStringRef::compare_data()
     QString lower;
     lower += QChar(QChar::highSurrogate(0x10428));
     lower += QChar(QChar::lowSurrogate(0x10428));
-    QTest::newRow("data8") << upper << lower << -1 << 0;
+    QTest::newRow("data9") << upper << lower << -1 << 0;
 }
 
 static bool isLatin(const QString &s)

@@ -39,25 +39,11 @@
 **
 ****************************************************************************/
 
-#include <qimageiohandler.h>
-#include <qdebug.h>
+#include "main.h"
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
 
-#ifdef QT_NO_IMAGEFORMAT_ICO
-#undef QT_NO_IMAGEFORMAT_ICO
-#endif
-#include "qicohandler.h"
-
 QT_BEGIN_NAMESPACE
-
-class QICOPlugin : public QImageIOPlugin
-{
-public:
-    QStringList keys() const;
-    Capabilities capabilities(QIODevice *device, const QByteArray &format) const;
-    QImageIOHandler *create(QIODevice *device, const QByteArray &format = QByteArray()) const;
-};
 
 QStringList QICOPlugin::keys() const
 {
@@ -88,8 +74,6 @@ QImageIOHandler *QICOPlugin::create(QIODevice *device, const QByteArray &format)
     handler->setFormat(format);
     return handler;
 }
-
-Q_EXPORT_PLUGIN2(qico, QICOPlugin)
 
 QT_END_NAMESPACE
 

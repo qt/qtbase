@@ -1,0 +1,8 @@
+********* Start testing of tst_SkipCleanup *********
+Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+PASS   : tst_SkipCleanup::initTestCase()
+PASS   : tst_SkipCleanup::aTestFunction()
+SKIP   : tst_SkipCleanup::cleanupTestCase() Skip inside cleanupTestCase.
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/skipcleanup/tst_skipcleanup.cpp(59)]
+Totals: 2 passed, 0 failed, 1 skipped
+********* Finished testing of tst_SkipCleanup *********

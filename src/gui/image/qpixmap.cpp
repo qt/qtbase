@@ -1003,14 +1003,6 @@ bool QPixmap::isDetached() const
     return data && data->ref.load() == 1;
 }
 
-/*! \internal
-  ### Qt5 - remove me.
-*/
-void QPixmap::deref()
-{
-    Q_ASSERT_X(false, "QPixmap::deref()", "Do not call this function anymore!");
-}
-
 /*!
     Replaces this pixmap's data with the given \a image using the
     specified \a flags to control the conversion.  The \a flags
@@ -1613,8 +1605,21 @@ QPixmap QPixmap::fromImageReader(QImageReader *imageReader, Qt::ImageConversionF
     \warning In general, grabbing an area outside the screen is not
     safe. This depends on the underlying window system.
 
+    \warning The function is deprecated in Qt 5.0 since there might be
+    platform plugins in which window system identifiers (\c WId)
+    are local to a screen. Use QScreen::grabWindow() instead.
+
     \sa grabWidget(), {Screenshot Example}
+    \sa QScreen
+    \deprecated
 */
+
+QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
+{
+    qWarning("%s is deprecated, use QScreen::grabWindow() instead."
+             " Defaulting to primary screen.", Q_FUNC_INFO);
+    return QGuiApplication::primaryScreen()->grabWindow(window, x, y, w, h);
+}
 
 /*!
   \internal

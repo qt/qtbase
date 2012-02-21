@@ -99,7 +99,7 @@ public:
     void setupUi(QDialog *qdesigner_internal__Dialog)
     {
         if (qdesigner_internal__Dialog->objectName().isEmpty())
-            qdesigner_internal__Dialog->setObjectName(QString::fromUtf8("qdesigner_internal__Dialog"));
+            qdesigner_internal__Dialog->setObjectName(QStringLiteral("qdesigner_internal__Dialog"));
         qdesigner_internal__Dialog->resize(400, 300);
         vboxLayout = new QVBoxLayout(qdesigner_internal__Dialog);
 #ifndef Q_OS_MAC
@@ -108,9 +108,9 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
         groupBox = new QGroupBox(qdesigner_internal__Dialog);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName(QStringLiteral("groupBox"));
         gridLayout = new QGridLayout(groupBox);
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
@@ -118,7 +118,7 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName(QStringLiteral("gridLayout"));
         vboxLayout1 = new QVBoxLayout();
 #ifndef Q_OS_MAC
         vboxLayout1->setSpacing(6);
@@ -126,7 +126,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout1->setContentsMargins(0, 0, 0, 0);
 #endif
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
+        vboxLayout1->setObjectName(QStringLiteral("vboxLayout1"));
         hboxLayout = new QHBoxLayout();
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
@@ -134,15 +134,15 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
         newButton = new QToolButton(groupBox);
-        newButton->setObjectName(QString::fromUtf8("newButton"));
+        newButton->setObjectName(QStringLiteral("newButton"));
         newButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
         hboxLayout->addWidget(newButton);
 
         deleteButton = new QToolButton(groupBox);
-        deleteButton->setObjectName(QString::fromUtf8("deleteButton"));
+        deleteButton->setObjectName(QStringLiteral("deleteButton"));
         deleteButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
         hboxLayout->addWidget(deleteButton);
@@ -159,14 +159,14 @@ public:
         hboxLayout1->setSpacing(6);
 #endif
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName(QStringLiteral("hboxLayout1"));
         label = new QLabel(groupBox);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName(QStringLiteral("label"));
 
         hboxLayout1->addWidget(label);
 
         valueEdit = new QLineEdit(groupBox);
-        valueEdit->setObjectName(QString::fromUtf8("valueEdit"));
+        valueEdit->setObjectName(QStringLiteral("valueEdit"));
 
         hboxLayout1->addWidget(valueEdit);
 
@@ -181,18 +181,18 @@ public:
         vboxLayout2->setSpacing(6);
 #endif
         vboxLayout2->setContentsMargins(0, 0, 0, 0);
-        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
+        vboxLayout2->setObjectName(QStringLiteral("vboxLayout2"));
         spacerItem1 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         vboxLayout2->addItem(spacerItem1);
 
         upButton = new QToolButton(groupBox);
-        upButton->setObjectName(QString::fromUtf8("upButton"));
+        upButton->setObjectName(QStringLiteral("upButton"));
 
         vboxLayout2->addWidget(upButton);
 
         downButton = new QToolButton(groupBox);
-        downButton->setObjectName(QString::fromUtf8("downButton"));
+        downButton->setObjectName(QStringLiteral("downButton"));
 
         vboxLayout2->addWidget(downButton);
 
@@ -204,7 +204,7 @@ public:
         gridLayout->addLayout(vboxLayout2, 0, 1, 1, 1);
 
         listView = new QListView(groupBox);
-        listView->setObjectName(QString::fromUtf8("listView"));
+        listView->setObjectName(QStringLiteral("listView"));
 
         gridLayout->addWidget(listView, 0, 0, 1, 1);
 
@@ -212,7 +212,7 @@ public:
         vboxLayout->addWidget(groupBox);
 
         buttonBox = new QDialogButtonBox(qdesigner_internal__Dialog);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName(QStringLiteral("buttonBox"));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
 

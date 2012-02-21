@@ -498,62 +498,74 @@ MakefileGenerator::init()
                 }
                 outn = fileFixify(inn.left(inn.length()-3), qmake_getpwd(), Option::output_dir);
             }
+
+            QString confign = subs.at(i) + ".config";
+            bool verbatim  = false;
+            if (v.contains(confign))
+                verbatim = v[confign].contains(QLatin1String("verbatim"));
+
             QFile in(inn);
-            if(in.open(QFile::ReadOnly)) {
-                QString contents;
-                QStack<int> state;
-                enum { IN_CONDITION, MET_CONDITION, PENDING_CONDITION };
-                for(int count = 1; !in.atEnd(); ++count) {
-                    QString line = QString::fromUtf8(in.readLine());
-                    if(line.startsWith("!!IF ")) {
-                        if(state.isEmpty() || state.top() == IN_CONDITION) {
-                            QString test = line.mid(5, line.length()-(5+1));
-                            if(project->test(test))
-                                state.push(IN_CONDITION);
-                            else
-                                state.push(PENDING_CONDITION);
-                        } else {
-                            state.push(MET_CONDITION);
-                        }
-                    } else if(line.startsWith("!!ELIF ")) {
-                        if(state.isEmpty()) {
-                            warn_msg(WarnLogic, "(%s:%d): Unexpected else condition",
-                                     in.fileName().toLatin1().constData(), count);
-                        } else if(state.top() == PENDING_CONDITION) {
-                            QString test = line.mid(7, line.length()-(7+1));
-                            if(project->test(test))  {
+            if (in.open(QFile::ReadOnly)) {
+                QByteArray contentBytes;
+                if (verbatim) {
+                    contentBytes = in.readAll();
+                } else {
+                    QString contents;
+                    QStack<int> state;
+                    enum { IN_CONDITION, MET_CONDITION, PENDING_CONDITION };
+                    for (int count = 1; !in.atEnd(); ++count) {
+                        QString line = QString::fromUtf8(in.readLine());
+                        if (line.startsWith("!!IF ")) {
+                            if (state.isEmpty() || state.top() == IN_CONDITION) {
+                                QString test = line.mid(5, line.length()-(5+1));
+                                if (project->test(test))
+                                    state.push(IN_CONDITION);
+                                else
+                                    state.push(PENDING_CONDITION);
+                            } else {
+                                state.push(MET_CONDITION);
+                            }
+                        } else if (line.startsWith("!!ELIF ")) {
+                            if (state.isEmpty()) {
+                                warn_msg(WarnLogic, "(%s:%d): Unexpected else condition",
+                                        in.fileName().toLatin1().constData(), count);
+                            } else if (state.top() == PENDING_CONDITION) {
+                                QString test = line.mid(7, line.length()-(7+1));
+                                if (project->test(test))  {
+                                    state.pop();
+                                    state.push(IN_CONDITION);
+                                }
+                            } else if (state.top() == IN_CONDITION) {
+                                state.pop();
+                                state.push(MET_CONDITION);
+                            }
+                        } else if (line.startsWith("!!ELSE")) {
+                            if (state.isEmpty()) {
+                                warn_msg(WarnLogic, "(%s:%d): Unexpected else condition",
+                                        in.fileName().toLatin1().constData(), count);
+                            } else if (state.top() == PENDING_CONDITION) {
                                 state.pop();
                                 state.push(IN_CONDITION);
+                            } else if (state.top() == IN_CONDITION) {
+                                state.pop();
+                                state.push(MET_CONDITION);
                             }
-                        } else if(state.top() == IN_CONDITION) {
-                            state.pop();
-                            state.push(MET_CONDITION);
+                        } else if (line.startsWith("!!ENDIF")) {
+                            if (state.isEmpty())
+                                warn_msg(WarnLogic, "(%s:%d): Unexpected endif",
+                                        in.fileName().toLatin1().constData(), count);
+                            else
+                                state.pop();
+                        } else if (state.isEmpty() || state.top() == IN_CONDITION) {
+                            contents += project->expand(line, in.fileName(), count);
                         }
-                    } else if(line.startsWith("!!ELSE")) {
-                        if(state.isEmpty()) {
-                            warn_msg(WarnLogic, "(%s:%d): Unexpected else condition",
-                                     in.fileName().toLatin1().constData(), count);
-                        } else if(state.top() == PENDING_CONDITION) {
-                            state.pop();
-                            state.push(IN_CONDITION);
-                        } else if(state.top() == IN_CONDITION) {
-                            state.pop();
-                            state.push(MET_CONDITION);
-                        }
-                    } else if(line.startsWith("!!ENDIF")) {
-                        if(state.isEmpty())
-                            warn_msg(WarnLogic, "(%s:%d): Unexpected endif",
-                                     in.fileName().toLatin1().constData(), count);
-                        else
-                            state.pop();
-                    } else if(state.isEmpty() || state.top() == IN_CONDITION) {
-                        contents += project->expand(line, in.fileName(), count);
                     }
+                    contentBytes = contents.toUtf8();
                 }
                 QFile out(outn);
-                if(out.exists() && out.open(QFile::ReadOnly)) {
-                    QString old = QString::fromUtf8(out.readAll());
-                    if(contents == old) {
+                if (out.exists() && out.open(QFile::ReadOnly)) {
+                    QByteArray old = out.readAll();
+                    if (contentBytes == old) {
                         v["QMAKE_INTERNAL_INCLUDED_FILES"].append(in.fileName());
                         continue;
                     }
@@ -567,7 +579,7 @@ MakefileGenerator::init()
                 mkdir(QFileInfo(out).absolutePath());
                 if(out.open(QFile::WriteOnly)) {
                     v["QMAKE_INTERNAL_INCLUDED_FILES"].append(in.fileName());
-                    out.write(contents.toUtf8());
+                    out.write(contentBytes);
                 } else {
                     warn_msg(WarnLogic, "Cannot open substitute for output '%s'",
                              out.fileName().toLatin1().constData());
@@ -2496,10 +2508,10 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             if(!in_directory.isEmpty()) {
                 t << mkdir_p_asstring(out_directory)
                   << out_directory_cdin
-                  << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out
+                  << "$(QMAKE) " << escapeFilePath(in) << buildArgs(in_directory) << " -o " << out
                   << in_directory_cdout << endl;
             } else {
-                t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out << endl;
+                t << "$(QMAKE) " << escapeFilePath(in) << buildArgs(in_directory) << " -o " << out << endl;
             }
             t << subtarget->target << "-qmake_all: ";
             if(project->isEmpty("QMAKE_NOFORCE"))
@@ -2508,10 +2520,10 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             if(!in_directory.isEmpty()) {
                 t << mkdir_p_asstring(out_directory)
                   << out_directory_cdin
-                  << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out
+                  << "$(QMAKE) " << escapeFilePath(in) << buildArgs(in_directory) << " -o " << out
                   << in_directory_cdout << endl;
             } else {
-                t << "$(QMAKE) " << in << buildArgs(in_directory) << " -o " << out << endl;
+                t << "$(QMAKE) " << escapeFilePath(in) << buildArgs(in_directory) << " -o " << out << endl;
             }
         }
 

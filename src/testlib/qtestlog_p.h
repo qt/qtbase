@@ -77,6 +77,7 @@ public:
     static void ignoreMessage(QtMsgType type, const char *msg);
     static int unhandledIgnoreMessages();
     static void printUnhandledIgnoreMessages();
+    static void clearIgnoreMessages();
 
     static void warn(const char *msg, const char *file, int line);
     static void info(const char *msg, const char *file, int line);
@@ -101,6 +102,9 @@ public:
     static int skipCount();
 
     static void resetCounters();
+
+    static void setInstalledTestCoverage(bool installed);
+    static bool installedTestCoverage();
 
 private:
     QTestLog();

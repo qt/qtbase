@@ -84,6 +84,9 @@ QXcbNativeInterface::QXcbNativeInterface()
 void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
+    if (!qXcbResourceMap()->contains(lowerCaseResource))
+        return 0;
+
     ResourceType resource = qXcbResourceMap()->value(lowerCaseResource);
     void *result = 0;
     switch(resource) {
@@ -91,14 +94,18 @@ void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceSt
         result = eglContextForContext(context);
         break;
     default:
-        result = 0;
+        break;
     }
+
     return result;
 }
 
 void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
+    if (!qXcbResourceMap()->contains(lowerCaseResource))
+        return 0;
+
     ResourceType resource = qXcbResourceMap()->value(lowerCaseResource);
     void *result = 0;
     switch(resource) {
@@ -118,8 +125,9 @@ void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
         result = graphicsDeviceForWindow(window);
         break;
     default:
-        result = 0;
+        break;
     }
+
     return result;
 }
 

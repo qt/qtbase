@@ -101,6 +101,8 @@ public:
     QImage toImage() const;
     Attachment attachment() const;
 
+    void setAttachment(Attachment attachment);
+
     GLuint handle() const;
 
     static bool bindDefault();

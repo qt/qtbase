@@ -49,6 +49,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
+#include <private/qwindow_p.h>
 #include <QtGui/QWindowSystemInterface>
 
 #include <QtCore/QDebug>
@@ -618,7 +619,8 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     m_opacity(1.0),
     m_mouseGrab(false),
     m_cursor(QWindowsScreen::screenOf(aWindow)->cursor().standardWindowCursor()),
-    m_dropTarget(0)
+    m_dropTarget(0),
+    m_savedStyle(0)
 {
     if (aWindow->surfaceType() == QWindow::OpenGLSurface)
         setFlag(OpenGLSurface);
@@ -706,6 +708,7 @@ void QWindowsWindow::setVisible(bool visible)
             hide_sys();
         }
     }
+    QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
 }
 
 bool QWindowsWindow::isVisible() const
@@ -809,8 +812,15 @@ void QWindowsWindow::handleHidden()
     QWindowSystemInterface::handleUnmapEvent(window());
 }
 
-void QWindowsWindow::setGeometry(const QRect &rect)
+void QWindowsWindow::setGeometry(const QRect &rectIn)
 {
+    QRect rect = rectIn;
+    // This means it is a call from QWindow::setFramePos() and
+    // the coordinates include the frame (size is still the contents rectangle).
+    if (qt_window_private(window())->positionPolicy == QWindowPrivate::WindowFrameInclusive) {
+        const QMargins margins = frameMargins();
+        rect.moveTopLeft(rect.topLeft() + QPoint(margins.left(), margins.top()));
+    }
     const QSize oldSize = m_data.geometry.size();
     m_data.geometry = rect;
     const QSize newSize = rect.size();
@@ -904,11 +914,15 @@ void QWindowsWindow::setGeometry_sys(const QRect &rect) const
                  << "    \n resulting " << rc << geometry_sys();
 }
 
-QRect QWindowsWindow::geometry_sys() const
+QRect QWindowsWindow::frameGeometry_sys() const
 {
     // Warning: Returns bogus values when minimized.
-    QRect result = frameGeometry(m_data.hwnd, window()->isTopLevel()) - frameMargins();
-    return result;
+    return frameGeometry(m_data.hwnd, window()->isTopLevel());
+}
+
+QRect QWindowsWindow::geometry_sys() const
+{
+    return frameGeometry_sys() - frameMargins();
 }
 
 /*!
@@ -1098,7 +1112,12 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
 #else
             UINT newStyle = WS_POPUP;
 #endif
-            if (style() & WS_SYSMENU)
+            // Save geometry and style to be restored when fullscreen
+            // is turned off again, since on Windows, it is not a real
+            // Window state but emulated by changing geometry and style.
+            m_savedStyle = style();
+            m_savedFrameGeometry = frameGeometry_sys();
+            if (m_savedStyle & WS_SYSMENU)
                 newStyle |= WS_SYSMENU;
             if (visible)
                 newStyle |= WS_VISIBLE;
@@ -1108,19 +1127,26 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             UINT swpf = SWP_FRAMECHANGED;
             if (newStates & Qt::WindowActive)
                 swpf |= SWP_NOACTIVATE;
-
             SetWindowPos(m_data.hwnd, HWND_TOP, r.left(), r.top(), r.width(), r.height(), swpf);
         } else {
+            // Restore saved state.
+            unsigned newStyle = m_savedStyle ? m_savedStyle : style();
             if (visible)
-                setStyle(style() | WS_VISIBLE);
-            UINT swpf = SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE;
+                newStyle |= WS_VISIBLE;
+            setStyle(newStyle);
+
+            UINT swpf = SWP_FRAMECHANGED | SWP_NOZORDER;
             if (newStates & Qt::WindowActive)
                 swpf |= SWP_NOACTIVATE;
-            SetWindowPos(m_data.hwnd, 0, 0, 0, 0, 0, swpf);
-
+            if (!m_savedFrameGeometry.isValid())
+                swpf |= SWP_NOSIZE | SWP_NOMOVE;
+            SetWindowPos(m_data.hwnd, 0, m_savedFrameGeometry.x(), m_savedFrameGeometry.y(),
+                         m_savedFrameGeometry.width(), m_savedFrameGeometry.height(), swpf);
             // preserve maximized state
             if (visible)
                 ShowWindow(m_data.hwnd, (newStates & Qt::WindowMaximized) ? max : normal);
+            m_savedStyle = 0;
+            m_savedFrameGeometry = QRect();
         }
     }
 
@@ -1220,8 +1246,12 @@ void QWindowsWindow::requestActivateWindow()
 {
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window();
-    if (m_data.hwnd)
+    // 'Active' state handling is based in focus since it needs to work for
+    // child windows as well.
+    if (m_data.hwnd) {
         SetForegroundWindow(m_data.hwnd);
+        SetFocus(m_data.hwnd);
+    }
 }
 
 bool QWindowsWindow::setKeyboardGrabEnabled(bool grab)

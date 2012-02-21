@@ -367,40 +367,42 @@ void tst_QCompleter::csMatchingOnCsSortedModel_data()
     QTest::addColumn<QString>("completion");
     QTest::addColumn<QString>("completionText");
 
+#define ROWNAME(name) (qPrintable(QString("%1 %2").arg(name).arg(i)))
+
     for (int i = 0; i < 2; i++) {
          if (i == 1)
              QTest::newRow("FILTERING_OFF") << "FILTERING_OFF" << "" << "" << "";
 
          // Plain text filter
-         QTest::newRow("()") << "" << "" << "P0" << "P0";
-         QTest::newRow("()F") << "" << "F" << "P0" << "P0";
-         QTest::newRow("()L") << "" << "L" << "p4" << "p4";
-         QTest::newRow("()L") << "" << "L" << "p4" << "p4";
-         QTest::newRow("()N") << "" << "N" << "P1" << "P1";
-         QTest::newRow("(P)") << "P" << "" << "P0" << "P0";
-         QTest::newRow("(P)F") << "P" << "" << "P0" << "P0";
-         QTest::newRow("(P)L") << "P" << "L" << "P4" << "P4";
-         QTest::newRow("(p)") << "p" << "" << "p0" << "p0";
-         QTest::newRow("(p)N") << "p" << "N" << "p1" << "p1";
-         QTest::newRow("(p)NN") << "p" << "NN" << "p2" << "p2";
-         QTest::newRow("(p)NNN") << "p" << "NNN" << "p3" << "p3";
-         QTest::newRow("(p)NNNN") << "p" << "NNNN" << "p4" << "p4";
-         QTest::newRow("(p1)") << "p1" << "" << "p1" << "p1";
-         QTest::newRow("(p11)") << "p11" << "" << "" << "";
+         QTest::newRow(ROWNAME("()")) << "" << "" << "P0" << "P0";
+         QTest::newRow(ROWNAME("()F")) << "" << "F" << "P0" << "P0";
+         QTest::newRow(ROWNAME("()L")) << "" << "L" << "p4" << "p4";
+         QTest::newRow(ROWNAME("()N")) << "" << "N" << "P1" << "P1";
+         QTest::newRow(ROWNAME("(P)")) << "P" << "" << "P0" << "P0";
+         QTest::newRow(ROWNAME("(P)F")) << "P" << "" << "P0" << "P0";
+         QTest::newRow(ROWNAME("(P)L")) << "P" << "L" << "P4" << "P4";
+         QTest::newRow(ROWNAME("(p)")) << "p" << "" << "p0" << "p0";
+         QTest::newRow(ROWNAME("(p)N")) << "p" << "N" << "p1" << "p1";
+         QTest::newRow(ROWNAME("(p)NN")) << "p" << "NN" << "p2" << "p2";
+         QTest::newRow(ROWNAME("(p)NNN")) << "p" << "NNN" << "p3" << "p3";
+         QTest::newRow(ROWNAME("(p)NNNN")) << "p" << "NNNN" << "p4" << "p4";
+         QTest::newRow(ROWNAME("(p1)")) << "p1" << "" << "p1" << "p1";
+         QTest::newRow(ROWNAME("(p11)")) << "p11" << "" << "" << "";
 
          // Tree filter
-         QTest::newRow("(P0,)") << "P0," << "" << "c0P0" << "P0,c0P0";
-         QTest::newRow("(P0,c)") << "P0,c" << "" << "c0P0" << "P0,c0P0";
-         QTest::newRow("(P0,c1)") << "P0,c1" << "" << "c1P0" << "P0,c1P0";
-         QTest::newRow("(P0,c3P0)") << "P0,c3P0" << "" << "c3P0" << "P0,c3P0";
-         QTest::newRow("(P3,c)F") << "P3,c" << "F" << "c0P3" << "P3,c0P3";
-         QTest::newRow("(P3,c)L") << "P3,c" << "L" << "c4P3" << "P3,c4P3";
-         QTest::newRow("(P3,c)N") << "P3,c" << "N" << "c1P3" << "P3,c1P3";
-         QTest::newRow("(P3,c)NN") << "P3,c" << "NN" << "c2P3" << "P3,c2P3";
-         QTest::newRow("(P3,,c)") << "P3,,c" << "" << "" << "";
-         QTest::newRow("(P3,c0P3,)") << "P3,c0P3," << "" << "" << "";
-         QTest::newRow("(P,)") << "P," << "" << "" << "";
+         QTest::newRow(ROWNAME("(P0,)")) << "P0," << "" << "c0P0" << "P0,c0P0";
+         QTest::newRow(ROWNAME("(P0,c)")) << "P0,c" << "" << "c0P0" << "P0,c0P0";
+         QTest::newRow(ROWNAME("(P0,c1)")) << "P0,c1" << "" << "c1P0" << "P0,c1P0";
+         QTest::newRow(ROWNAME("(P0,c3P0)")) << "P0,c3P0" << "" << "c3P0" << "P0,c3P0";
+         QTest::newRow(ROWNAME("(P3,c)F")) << "P3,c" << "F" << "c0P3" << "P3,c0P3";
+         QTest::newRow(ROWNAME("(P3,c)L")) << "P3,c" << "L" << "c4P3" << "P3,c4P3";
+         QTest::newRow(ROWNAME("(P3,c)N")) << "P3,c" << "N" << "c1P3" << "P3,c1P3";
+         QTest::newRow(ROWNAME("(P3,c)NN")) << "P3,c" << "NN" << "c2P3" << "P3,c2P3";
+         QTest::newRow(ROWNAME("(P3,,c)")) << "P3,,c" << "" << "" << "";
+         QTest::newRow(ROWNAME("(P3,c0P3,)")) << "P3,c0P3," << "" << "" << "";
+         QTest::newRow(ROWNAME("(P,)")) << "P," << "" << "" << "";
      }
+#undef ROWNAME
 }
 
 void tst_QCompleter::csMatchingOnCsSortedModel()

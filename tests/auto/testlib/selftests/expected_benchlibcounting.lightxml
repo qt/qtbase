@@ -1,0 +1,24 @@
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="passingBenchmark">
+<Incident type="pass" file="" line="0" />
+<BenchmarkResult metric="Events" tag="" value="0" iterations="1" />
+</TestFunction>
+<TestFunction name="skippingBenchmark">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/benchlibcounting/tst_benchlibcounting.cpp" line="64">
+    <Description><![CDATA[This is a skipping benchmark]]></Description>
+</Message>
+</TestFunction>
+<TestFunction name="failingBenchmark">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/benchlibcounting/tst_benchlibcounting.cpp" line="71">
+    <Description><![CDATA[This is a failing benchmark]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>

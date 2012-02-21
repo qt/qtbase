@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 using namespace QJsonPrivate;
 
 Parser::Parser(const char *json, int length)
-    : json(json), data(0), dataLength(0), current(0)
+    : head(json), json(json), data(0), dataLength(0), current(0), lastError(QJsonParseError::NoError)
 {
     end = json + length;
 }
@@ -134,8 +134,6 @@ char Parser::nextToken()
     case BeginObject:
     case NameSeparator:
     case ValueSeparator:
-        if (!eatSpace())
-            return 0;
     case EndArray:
     case EndObject:
         eatSpace();
@@ -151,7 +149,7 @@ char Parser::nextToken()
 /*
     JSON-text = object / array
 */
-QJsonDocument Parser::parse()
+QJsonDocument Parser::parse(QJsonParseError *error)
 {
 #ifdef PARSER_DEBUG
     indent = 0;
@@ -182,6 +180,10 @@ QJsonDocument Parser::parse()
 
     END;
     {
+        if (error) {
+            error->offset = 0;
+            error->error = QJsonParseError::NoError;
+        }
         QJsonPrivate::Data *d = new QJsonPrivate::Data(data, current);
         return QJsonDocument(d);
     }
@@ -190,6 +192,10 @@ error:
 #ifdef PARSER_DEBUG
     qDebug() << ">>>>> parser error";
 #endif
+    if (error) {
+        error->offset = json - head;
+        error->error  = lastError;
+    }
     free(data);
     return QJsonDocument();
 }
@@ -241,8 +247,10 @@ bool Parser::parseObject()
     }
 
     DEBUG << "end token=" << token;
-    if (token != EndObject)
+    if (token != EndObject) {
+        lastError = QJsonParseError::UnterminatedObject;
         return false;
+    }
 
     DEBUG << "numEntries" << parsedObject.offsets.size();
     int table = objectOffset;
@@ -283,8 +291,10 @@ bool Parser::parseMember(int baseOffset)
     if (!parseString(&latin1))
         return false;
     char token = nextToken();
-    if (token != NameSeparator)
+    if (token != NameSeparator) {
+        lastError = QJsonParseError::MissingNameSeparator;
         return false;
+    }
     QJsonPrivate::Value val;
     if (!parseValue(&val, baseOffset))
         return false;
@@ -308,8 +318,10 @@ bool Parser::parseArray()
 
     QVarLengthArray<QJsonPrivate::Value> values;
 
-    if (!eatSpace())
+    if (!eatSpace()) {
+        lastError = QJsonParseError::UnterminatedArray;
         return false;
+    }
     if (*json == EndArray) {
         nextToken();
     } else {
@@ -321,8 +333,13 @@ bool Parser::parseArray()
             char token = nextToken();
             if (token == EndArray)
                 break;
-            else if (token != ValueSeparator)
+            else if (token != ValueSeparator) {
+                if (!eatSpace())
+                    lastError = QJsonParseError::UnterminatedArray;
+                else
+                    lastError = QJsonParseError::MissingValueSeparator;
                 return false;
+            }
         }
     }
 
@@ -358,8 +375,10 @@ bool Parser::parseValue(QJsonPrivate::Value *val, int baseOffset)
 
     switch (*json++) {
     case 'n':
-        if (end - json < 4)
+        if (end - json < 4) {
+            lastError = QJsonParseError::IllegalValue;
             return false;
+        }
         if (*json++ == 'u' &&
             *json++ == 'l' &&
             *json++ == 'l') {
@@ -368,10 +387,13 @@ bool Parser::parseValue(QJsonPrivate::Value *val, int baseOffset)
             END;
             return true;
         }
+        lastError = QJsonParseError::IllegalValue;
         return false;
     case 't':
-        if (end - json < 4)
+        if (end - json < 4) {
+            lastError = QJsonParseError::IllegalValue;
             return false;
+        }
         if (*json++ == 'r' &&
             *json++ == 'u' &&
             *json++ == 'e') {
@@ -381,10 +403,13 @@ bool Parser::parseValue(QJsonPrivate::Value *val, int baseOffset)
             END;
             return true;
         }
+        lastError = QJsonParseError::IllegalValue;
         return false;
     case 'f':
-        if (end - json < 5)
+        if (end - json < 5) {
+            lastError = QJsonParseError::IllegalValue;
             return false;
+        }
         if (*json++ == 'a' &&
             *json++ == 'l' &&
             *json++ == 's' &&
@@ -395,6 +420,7 @@ bool Parser::parseValue(QJsonPrivate::Value *val, int baseOffset)
             END;
             return true;
         }
+        lastError = QJsonParseError::IllegalValue;
         return false;
     case Quote: {
         val->type = QJsonValue::String;
@@ -490,8 +516,10 @@ bool Parser::parseNumber(QJsonPrivate::Value *val, int baseOffset)
             ++json;
     }
 
-    if (json >= end)
+    if (json >= end) {
+        lastError = QJsonParseError::EndOfNumber;
         return false;
+    }
 
     QByteArray number(start, json - start);
     DEBUG << "numberstring" << number;
@@ -514,8 +542,10 @@ bool Parser::parseNumber(QJsonPrivate::Value *val, int baseOffset)
     };
     d = number.toDouble(&ok);
 
-    if (!ok)
+    if (!ok) {
+        lastError = QJsonParseError::IllegalNumber;
         return false;
+    }
 
     int pos = reserveSpace(sizeof(double));
     *(quint64 *)(data + pos) = qToLittleEndian(ui);
@@ -679,11 +709,15 @@ bool Parser::parseString(bool *latin1)
         if (*json == '"')
             break;
         else if (*json == '\\') {
-            if (!scanEscapeSequence(json, end, &ch))
+            if (!scanEscapeSequence(json, end, &ch)) {
+                lastError = QJsonParseError::StringEscapeSequence;
                 return false;
+            }
         } else {
-            if (!scanUtf8Char(json, end, &ch))
+            if (!scanUtf8Char(json, end, &ch)) {
+                lastError = QJsonParseError::StringUTF8Scan;
                 return false;
+            }
         }
         if (ch > 0xff) {
             *latin1 = false;
@@ -695,8 +729,10 @@ bool Parser::parseString(bool *latin1)
     }
     ++json;
     DEBUG << "end of string";
-    if (json >= end)
+    if (json >= end) {
+        lastError = QJsonParseError::EndOfString;
         return false;
+    }
 
     // no unicode string, we are done
     if (*latin1) {
@@ -720,11 +756,15 @@ bool Parser::parseString(bool *latin1)
         if (*json == '"')
             break;
         else if (*json == '\\') {
-            if (!scanEscapeSequence(json, end, &ch))
+            if (!scanEscapeSequence(json, end, &ch)) {
+                lastError = QJsonParseError::StringEscapeSequence;
                 return false;
+            }
         } else {
-            if (!scanUtf8Char(json, end, &ch))
+            if (!scanUtf8Char(json, end, &ch)) {
+                lastError = QJsonParseError::StringUTF8Scan;
                 return false;
+            }
         }
         if (ch > 0xffff) {
             int pos = reserveSpace(4);
@@ -737,8 +777,10 @@ bool Parser::parseString(bool *latin1)
     }
     ++json;
 
-    if (json >= end)
+    if (json >= end) {
+        lastError = QJsonParseError::EndOfString;
         return false;
+    }
 
     // write string length
     *(QJsonPrivate::qle_int *)(data + stringPos) = (current - outStart - sizeof(int))/2;

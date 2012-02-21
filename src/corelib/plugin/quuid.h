@@ -43,7 +43,6 @@
 #define QUUID_H
 
 #include <QtCore/qstring.h>
-#include <QtCore/qcryptographichash.h>
 
 QT_BEGIN_HEADER
 
@@ -175,6 +174,7 @@ public:
     }
 #endif
     static QUuid createUuid();
+#ifndef QT_BOOTSTRAPPED
     static QUuid createUuidV3(const QUuid &ns, const QByteArray &baseData);
     static QUuid createUuidV5(const QUuid &ns, const QByteArray &baseData);
 #ifndef QT_NO_QUUID_STRING
@@ -188,6 +188,7 @@ public:
         return QUuid::createUuidV5(ns, baseData.toUtf8());
     }
 
+#endif
 #endif
 
     QUuid::Variant variant() const;

@@ -77,8 +77,6 @@ struct Q_DBUS_EXPORT QDBusMetaObject: public QMetaObject
 
     // methods (slots & signals):
     const char *dbusNameForMethod(int id) const;
-    const char *inputSignatureForMethod(int id) const;
-    const char *outputSignatureForMethod(int id) const;
     const int *inputTypesForMethod(int id) const;
     const int *outputTypesForMethod(int id) const;
 

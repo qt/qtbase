@@ -118,7 +118,7 @@ void debugBinaryString(const char *data, qint64 maxlen)
  */
 QIODevicePrivate::QIODevicePrivate()
     : openMode(QIODevice::NotOpen), buffer(QIODEVICE_BUFFERSIZE),
-      pos(0), devicePos(0)
+      pos(0), devicePos(0), seqDumpPos(0)
        , pPos(&pos), pDevicePos(&devicePos)
        , baseReadLineDataCalled(false)
        , firstRead(true)
@@ -562,6 +562,7 @@ void QIODevice::close()
     d->openMode = NotOpen;
     d->errorString.clear();
     d->pos = 0;
+    d->seqDumpPos = 0;
     d->buffer.clear();
     d->firstRead = true;
 }

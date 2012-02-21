@@ -47,7 +47,7 @@ public:
     void setupUi(QWidget *CalculatorForm)
     {
         if (CalculatorForm->objectName().isEmpty())
-            CalculatorForm->setObjectName(QString::fromUtf8("CalculatorForm"));
+            CalculatorForm->setObjectName(QStringLiteral("CalculatorForm"));
         CalculatorForm->resize(276, 98);
         QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(5));
         sizePolicy.setHorizontalStretch(0);
@@ -61,30 +61,30 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
-        gridLayout->setObjectName(QString::fromUtf8(""));
+        gridLayout->setObjectName(QStringLiteral("gridLayout"));
+        gridLayout->setObjectName(QStringLiteral(""));
         hboxLayout = new QHBoxLayout();
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(1, 1, 1, 1);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
-        hboxLayout->setObjectName(QString::fromUtf8(""));
+        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
+        hboxLayout->setObjectName(QStringLiteral(""));
         vboxLayout = new QVBoxLayout();
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
         vboxLayout->setContentsMargins(1, 1, 1, 1);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
-        vboxLayout->setObjectName(QString::fromUtf8(""));
+        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
+        vboxLayout->setObjectName(QStringLiteral(""));
         label = new QLabel(CalculatorForm);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName(QStringLiteral("label"));
         label->setGeometry(QRect(1, 1, 45, 19));
 
         vboxLayout->addWidget(label);
 
         inputSpinBox1 = new QSpinBox(CalculatorForm);
-        inputSpinBox1->setObjectName(QString::fromUtf8("inputSpinBox1"));
+        inputSpinBox1->setObjectName(QStringLiteral("inputSpinBox1"));
         inputSpinBox1->setGeometry(QRect(1, 26, 45, 25));
         inputSpinBox1->setMouseTracking(true);
 
@@ -94,7 +94,7 @@ public:
         hboxLayout->addLayout(vboxLayout);
 
         label_3 = new QLabel(CalculatorForm);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
+        label_3->setObjectName(QStringLiteral("label_3"));
         label_3->setGeometry(QRect(54, 1, 7, 52));
         label_3->setAlignment(Qt::AlignCenter);
 
@@ -105,16 +105,16 @@ public:
         vboxLayout1->setSpacing(6);
 #endif
         vboxLayout1->setContentsMargins(1, 1, 1, 1);
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
-        vboxLayout1->setObjectName(QString::fromUtf8(""));
+        vboxLayout1->setObjectName(QStringLiteral("vboxLayout1"));
+        vboxLayout1->setObjectName(QStringLiteral(""));
         label_2 = new QLabel(CalculatorForm);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName(QStringLiteral("label_2"));
         label_2->setGeometry(QRect(1, 1, 45, 19));
 
         vboxLayout1->addWidget(label_2);
 
         inputSpinBox2 = new QSpinBox(CalculatorForm);
-        inputSpinBox2->setObjectName(QString::fromUtf8("inputSpinBox2"));
+        inputSpinBox2->setObjectName(QStringLiteral("inputSpinBox2"));
         inputSpinBox2->setGeometry(QRect(1, 26, 45, 25));
         inputSpinBox2->setMouseTracking(true);
 
@@ -124,7 +124,7 @@ public:
         hboxLayout->addLayout(vboxLayout1);
 
         label_3_2 = new QLabel(CalculatorForm);
-        label_3_2->setObjectName(QString::fromUtf8("label_3_2"));
+        label_3_2->setObjectName(QStringLiteral("label_3_2"));
         label_3_2->setGeometry(QRect(120, 1, 7, 52));
         label_3_2->setAlignment(Qt::AlignCenter);
 
@@ -135,16 +135,16 @@ public:
         vboxLayout2->setSpacing(6);
 #endif
         vboxLayout2->setContentsMargins(1, 1, 1, 1);
-        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
-        vboxLayout2->setObjectName(QString::fromUtf8(""));
+        vboxLayout2->setObjectName(QStringLiteral("vboxLayout2"));
+        vboxLayout2->setObjectName(QStringLiteral(""));
         label_2_2_2 = new QLabel(CalculatorForm);
-        label_2_2_2->setObjectName(QString::fromUtf8("label_2_2_2"));
+        label_2_2_2->setObjectName(QStringLiteral("label_2_2_2"));
         label_2_2_2->setGeometry(QRect(1, 1, 37, 17));
 
         vboxLayout2->addWidget(label_2_2_2);
 
         outputWidget = new QLabel(CalculatorForm);
-        outputWidget->setObjectName(QString::fromUtf8("outputWidget"));
+        outputWidget->setObjectName(QStringLiteral("outputWidget"));
         outputWidget->setGeometry(QRect(1, 24, 37, 27));
         outputWidget->setFrameShape(QFrame::Box);
         outputWidget->setFrameShadow(QFrame::Sunken);

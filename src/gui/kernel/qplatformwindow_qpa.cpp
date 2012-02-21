@@ -114,6 +114,10 @@ QSurfaceFormat QPlatformWindow::format() const
     can happen programatically(from ie. user application) or by the window manager. This means that
     there is no need to call this function specifically from the window manager callback, instead
     call QWindowSystemInterface::handleGeometryChange(QWindow *w, const QRect &newRect);
+
+    The position(x, y) part of the rect might be inclusive or exclusive of the window frame
+    as returned by frameMargins(). You can detect this in the plugin by checking
+    qt_window_private(window())->positionPolicy.
 */
 void QPlatformWindow::setGeometry(const QRect &rect)
 {
@@ -142,6 +146,7 @@ QMargins QPlatformWindow::frameMargins() const
 void QPlatformWindow::setVisible(bool visible)
 {
     Q_UNUSED(visible);
+    QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
 }
 /*!
     Requests setting the window flags of this surface
@@ -150,6 +155,20 @@ void QPlatformWindow::setVisible(bool visible)
 Qt::WindowFlags QPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     return flags;
+}
+
+
+
+/*!
+    Returns if this window is exposed in the windowing system.
+
+    An exposeEvent() is sent every time this value changes.
+ */
+
+bool QPlatformWindow::isExposed() const
+{
+    Q_D(const QPlatformWindow);
+    return d->window->visible();
 }
 
 /*!

@@ -243,6 +243,7 @@ public:
 
     QFontEngine *findEngine(const Key &key);
     void insertEngine(const Key &key, QFontEngine *engine);
+    void removeEngine(QFontEngine *engine);
 
 
     private:

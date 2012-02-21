@@ -92,7 +92,7 @@ public:
 protected:
     virtual void queryChange();
 
-    QModelIndex indexInQuery(const QModelIndex &item) const;
+    virtual QModelIndex indexInQuery(const QModelIndex &item) const;
     void setLastError(const QSqlError &error);
     QSqlQueryModel(QSqlQueryModelPrivate &dd, QObject *parent = 0);
 };

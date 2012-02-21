@@ -459,7 +459,7 @@ void qt_bitmapblit16_sse2(QRasterBuffer *rasterBuffer, int x, int y,
                           quint32 color,
                           const uchar *src, int width, int height, int stride)
 {
-    const quint16 c = qt_colorConvert<quint16, quint32>(color, 0);
+    const quint16 c = qConvertRgb32To16(color);
     quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
 
@@ -629,8 +629,9 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
         int x = 0;
 
         ALIGNMENT_PROLOGUE_16BYTES(dst, x, w) {
-            uint s = src[(srcx + x*ix) >> 16];
+            uint s = src[srcx >> 16];
             dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
+            srcx += ix;
         }
 
         __m128i srcxVector = _mm_set_epi32(srcx, srcx + ix, srcx + ix + ix, srcx + ix + ix + ix);
@@ -646,7 +647,7 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
         }
 
         for (; x<w; x++) {
-            uint s = src[(srcx + x*ix) >> 16];
+            uint s = src[(basex + x*ix) >> 16];
             dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
         }
         dst = (quint32 *)(((uchar *) dst) + dbpl);

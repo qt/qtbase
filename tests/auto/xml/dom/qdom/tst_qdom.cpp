@@ -555,7 +555,6 @@ void tst_QDom::saveWithSerialization_data() const
     if (prefix.isEmpty())
         QFAIL("Cannot find testdata!");
     QTest::newRow("doc01.xml") << QString(prefix + "/doc01.xml");
-    QTest::newRow("doc01.xml") << QString(prefix + "/doc01.xml");
     QTest::newRow("doc02.xml") << QString(prefix + "/doc02.xml");
     QTest::newRow("doc03.xml") << QString(prefix + "/doc03.xml");
     QTest::newRow("doc04.xml") << QString(prefix + "/doc04.xml");
@@ -1868,34 +1867,34 @@ void tst_QDom::setContentWhitespace_data() const
     QTest::addColumn<QString>("doc");
     QTest::addColumn<bool>("expectedValidity");
 
-    QTest::newRow("") << QString::fromLatin1(" <e/>")           << true;
-    QTest::newRow("") << QString::fromLatin1("  <e/>")          << true;
-    QTest::newRow("") << QString::fromLatin1("   <e/>")         << true;
-    QTest::newRow("") << QString::fromLatin1("    <e/>")        << true;
-    QTest::newRow("") << QString::fromLatin1("\n<e/>")          << true;
-    QTest::newRow("") << QString::fromLatin1("\n\n<e/>")        << true;
-    QTest::newRow("") << QString::fromLatin1("\n\n\n<e/>")      << true;
-    QTest::newRow("") << QString::fromLatin1("\n\n\n\n<e/>")    << true;
-    QTest::newRow("") << QString::fromLatin1("\t<e/>")          << true;
-    QTest::newRow("") << QString::fromLatin1("\t\t<e/>")        << true;
-    QTest::newRow("") << QString::fromLatin1("\t\t\t<e/>")      << true;
-    QTest::newRow("") << QString::fromLatin1("\t\t\t\t<e/>")    << true;
+    QTest::newRow("data1") << QString::fromLatin1(" <e/>")           << true;
+    QTest::newRow("data2") << QString::fromLatin1("  <e/>")          << true;
+    QTest::newRow("data3") << QString::fromLatin1("   <e/>")         << true;
+    QTest::newRow("data4") << QString::fromLatin1("    <e/>")        << true;
+    QTest::newRow("data5") << QString::fromLatin1("\n<e/>")          << true;
+    QTest::newRow("data6") << QString::fromLatin1("\n\n<e/>")        << true;
+    QTest::newRow("data7") << QString::fromLatin1("\n\n\n<e/>")      << true;
+    QTest::newRow("data8") << QString::fromLatin1("\n\n\n\n<e/>")    << true;
+    QTest::newRow("data9") << QString::fromLatin1("\t<e/>")          << true;
+    QTest::newRow("data10") << QString::fromLatin1("\t\t<e/>")        << true;
+    QTest::newRow("data11") << QString::fromLatin1("\t\t\t<e/>")      << true;
+    QTest::newRow("data12") << QString::fromLatin1("\t\t\t\t<e/>")    << true;
 
     /* With XML prolog. */
-    QTest::newRow("") << QString::fromLatin1("<?xml version='1.0' ?><e/>")          << true;
+    QTest::newRow("data13") << QString::fromLatin1("<?xml version='1.0' ?><e/>")          << true;
 
-    QTest::newRow("") << QString::fromLatin1(" <?xml version='1.0' ?><e/>")         << false;
-    QTest::newRow("") << QString::fromLatin1("  <?xml version='1.0' ?><e/>")        << false;
-    QTest::newRow("") << QString::fromLatin1("   <?xml version='1.0' ?><e/>")       << false;
-    QTest::newRow("") << QString::fromLatin1("    <?xml version='1.0' ?><e/>")      << false;
-    QTest::newRow("") << QString::fromLatin1("\n<?xml version='1.0' ?><e/>")        << false;
-    QTest::newRow("") << QString::fromLatin1("\n\n<?xml version='1.0' ?><e/>")      << false;
-    QTest::newRow("") << QString::fromLatin1("\n\n\n<?xml version='1.0' ?><e/>")    << false;
-    QTest::newRow("") << QString::fromLatin1("\n\n\n\n<?xml version='1.0' ?><e/>")  << false;
-    QTest::newRow("") << QString::fromLatin1("\t<?xml version='1.0' ?><e/>")        << false;
-    QTest::newRow("") << QString::fromLatin1("\t\t<?xml version='1.0' ?><e/>")      << false;
-    QTest::newRow("") << QString::fromLatin1("\t\t\t<?xml version='1.0' ?><e/>")    << false;
-    QTest::newRow("") << QString::fromLatin1("\t\t\t\t<?xml version='1.0' ?><e/>")  << false;
+    QTest::newRow("data14") << QString::fromLatin1(" <?xml version='1.0' ?><e/>")         << false;
+    QTest::newRow("data15") << QString::fromLatin1("  <?xml version='1.0' ?><e/>")        << false;
+    QTest::newRow("data16") << QString::fromLatin1("   <?xml version='1.0' ?><e/>")       << false;
+    QTest::newRow("data17") << QString::fromLatin1("    <?xml version='1.0' ?><e/>")      << false;
+    QTest::newRow("data18") << QString::fromLatin1("\n<?xml version='1.0' ?><e/>")        << false;
+    QTest::newRow("data19") << QString::fromLatin1("\n\n<?xml version='1.0' ?><e/>")      << false;
+    QTest::newRow("data20") << QString::fromLatin1("\n\n\n<?xml version='1.0' ?><e/>")    << false;
+    QTest::newRow("data21") << QString::fromLatin1("\n\n\n\n<?xml version='1.0' ?><e/>")  << false;
+    QTest::newRow("data22") << QString::fromLatin1("\t<?xml version='1.0' ?><e/>")        << false;
+    QTest::newRow("data23") << QString::fromLatin1("\t\t<?xml version='1.0' ?><e/>")      << false;
+    QTest::newRow("data24") << QString::fromLatin1("\t\t\t<?xml version='1.0' ?><e/>")    << false;
+    QTest::newRow("data25") << QString::fromLatin1("\t\t\t\t<?xml version='1.0' ?><e/>")  << false;
 }
 
 void tst_QDom::taskQTBUG4595_dontAssertWhenDocumentSpecifiesUnknownEncoding() const

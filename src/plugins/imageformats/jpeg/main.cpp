@@ -39,8 +39,7 @@
 **
 ****************************************************************************/
 
-#include <qimageiohandler.h>
-#include <qstringlist.h>
+#include "main.h"
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
 
@@ -50,14 +49,6 @@
 #include <qjpeghandler_p.h>
 
 QT_BEGIN_NAMESPACE
-
-class QJpegPlugin : public QImageIOPlugin
-{
-public:
-    QStringList keys() const;
-    Capabilities capabilities(QIODevice *device, const QByteArray &format) const;
-    QImageIOHandler *create(QIODevice *device, const QByteArray &format = QByteArray()) const;
-};
 
 QStringList QJpegPlugin::keys() const
 {
@@ -88,9 +79,6 @@ QImageIOHandler *QJpegPlugin::create(QIODevice *device, const QByteArray &format
     handler->setFormat(format);
     return handler;
 }
-
-Q_EXPORT_STATIC_PLUGIN(QJpegPlugin)
-Q_EXPORT_PLUGIN2(qjpeg, QJpegPlugin)
 
 QT_END_NAMESPACE
 

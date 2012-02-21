@@ -140,30 +140,30 @@ public:
     { LeaveCriticalSection(&cs); }
 };
 
-Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char* str)
-{
-    Q_UNUSED(t);
-    // OutputDebugString is not threadsafe.
+// defined in qlogging.cpp
+extern Q_CORE_EXPORT QByteArray qMessageFormatString(QtMsgType type,
+                                                     const QMessageLogContext &context,
+                                                     const char *str);
 
+Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogContext &context, const char *str)
+{
     // cannot use QMutex here, because qWarning()s in the QMutex
     // implementation may cause this function to recurse
     static QWinMsgHandlerCriticalSection staticCriticalSection;
 
-    if (!str)
-        str = "(null)";
+    QByteArray message = qMessageFormatString(t, context, str);
+    QString s(QString::fromLocal8Bit(message));
 
+    // OutputDebugString is not threadsafe.
     staticCriticalSection.lock();
-
-    QString s(QString::fromLocal8Bit(str));
-    s += QLatin1Char('\n');
     OutputDebugString((wchar_t*)s.utf16());
-
     staticCriticalSection.unlock();
 }
 
-Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogContext &, const char* str)
+Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char *str)
 {
-    qWinMsgHandler(t, str);
+    QMessageLogContext emptyContext;
+    qWinMessageHandler(t, emptyContext, str);
 }
 
 /*****************************************************************************

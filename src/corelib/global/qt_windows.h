@@ -149,6 +149,6 @@
 #ifndef LR_SHARED
 #define LR_SHARED 0
 #endif
-#endif // Q_WS_WINCE
+#endif // Q_OS_WINCE
 
 #endif // QT_WINDOWS_H

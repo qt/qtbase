@@ -179,11 +179,7 @@ void QNetworkAccessFtpBackend::closeDownstreamChannel()
 {
     state = Disconnecting;
     if (operation() == QNetworkAccessManager::GetOperation)
-#ifndef Q_OS_WINCE
-        abort();
-#else
-        exit(3);
-#endif
+        ftp->abort();
 }
 
 void QNetworkAccessFtpBackend::downstreamReadyWrite()

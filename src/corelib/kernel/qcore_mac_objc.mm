@@ -41,6 +41,8 @@
 
 #include <private/qcore_mac_p.h>
 
+QT_BEGIN_NAMESPACE
+
 NSString *QCFString::toNSString(const QString &string)
 {
     // The const cast below is safe: CfStringRef is immutable and so is NSString.
@@ -51,4 +53,6 @@ QString QCFString::toQString(const NSString *nsstr)
 {
     return toQString(reinterpret_cast<CFStringRef>(nsstr));
 }
+
+QT_END_NAMESPACE
 

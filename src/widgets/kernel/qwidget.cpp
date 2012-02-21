@@ -1095,7 +1095,7 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
     if (customize)
         ; // don't modify window flags if the user explicitly set them.
     else if (type == Qt::Dialog || type == Qt::Sheet)
-#ifndef Q_WS_WINCE
+#ifndef Q_OS_WINCE
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint;
 #else
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
@@ -3018,8 +3018,8 @@ QList<QAction*> QWidget::actions() const
     \property QWidget::enabled
     \brief whether the widget is enabled
 
-    An enabled widget handles keyboard and mouse events; a disabled
-    widget does not.
+    In general an enabled widget handles keyboard and mouse events; a disabled
+    widget does not. An exception is made with \l{QAbstractButton}.
 
     Some widgets display themselves differently when they are
     disabled. For example a button might draw its label grayed out. If
@@ -4150,7 +4150,7 @@ const QPalette &QWidget::palette() const
     if (!isEnabled()) {
         data->pal.setCurrentColorGroup(QPalette::Disabled);
     } else if ((!isVisible() || isActiveWindow())
-#if defined(Q_OS_WIN) && !defined(Q_WS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
         && !QApplicationPrivate::isBlockedByModal(const_cast<QWidget *>(this))
 #endif
         ) {
@@ -7245,9 +7245,6 @@ void QWidget::setVisible(bool visible)
         setAttribute(Qt::WA_KeyboardFocusChange, false);
 
         if (isWindow() || parentWidget()->isVisible()) {
-            // remove posted quit events when showing a new window
-            QCoreApplication::removePostedEvents(qApp, QEvent::Quit);
-
             d->show_helper();
 
             qApp->d_func()->sendSyntheticEnterLeave(this);
@@ -7413,8 +7410,24 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
     // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
     quitOnClose = quitOnClose && (parentWidget.isNull() || !parentWidget->isVisible());
 
-    if (quitOnClose && q->windowHandle()) {
-        static_cast<QWindowPrivate*>(QObjectPrivate::get(q->windowHandle()))->maybeQuitOnLastWindowClosed();
+    if (quitOnClose) {
+        /* if there is no non-withdrawn primary window left (except
+           the ones without QuitOnClose), we emit the lastWindowClosed
+           signal */
+        QWidgetList list = QApplication::topLevelWidgets();
+        bool lastWindowClosed = true;
+        for (int i = 0; i < list.size(); ++i) {
+            QWidget *w = list.at(i);
+            if (!w->isVisible() || w->parentWidget() || !w->testAttribute(Qt::WA_QuitOnClose))
+                continue;
+            lastWindowClosed = false;
+            break;
+        }
+        if (lastWindowClosed) {
+            QGuiApplicationPrivate::emitLastWindowClosed();
+            QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
+            applicationPrivate->maybeQuit();
+        }
     }
 
 
@@ -7579,7 +7592,7 @@ QSize QWidgetPrivate::adjustedSize() const
 #else // all others
         QRect screen = QApplication::desktop()->screenGeometry(q->pos());
 #endif
-#if defined (Q_WS_WINCE)
+#if defined (Q_OS_WINCE)
         s.setWidth(qMin(s.width(), screen.width()));
         s.setHeight(qMin(s.height(), screen.height()));
 #else
@@ -7776,6 +7789,7 @@ bool QWidget::event(QEvent *event)
         case QEvent::TouchBegin:
         case QEvent::TouchUpdate:
         case QEvent::TouchEnd:
+        case QEvent::TouchCancel:
         case QEvent::ContextMenu:
 #ifndef QT_NO_WHEELEVENT
         case QEvent::Wheel:
@@ -8048,6 +8062,7 @@ bool QWidget::event(QEvent *event)
     case QEvent::LocaleChange:
     case QEvent::MacSizeChange:
     case QEvent::ContentsRectChange:
+    case QEvent::ThemeChange:
         changeEvent(event);
         break;
 
@@ -8178,6 +8193,7 @@ bool QWidget::event(QEvent *event)
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
+    case QEvent::TouchCancel:
     {
         event->ignore();
         break;
@@ -8248,6 +8264,20 @@ void QWidget::changeEvent(QEvent * event)
 
     case QEvent::PaletteChange:
         update();
+        break;
+
+    case QEvent::ThemeChange:
+        if (QApplication::desktopSettingsAware() && windowType() != Qt::Desktop
+            && qApp && !QApplication::closingDown()) {
+            if (testAttribute(Qt::WA_WState_Polished))
+                QApplication::style()->unpolish(this);
+            if (testAttribute(Qt::WA_WState_Polished))
+                QApplication::style()->polish(this);
+            QEvent styleChangedEvent(QEvent::StyleChange);
+            QCoreApplication::sendEvent(this, &styleChangedEvent);
+            if (isVisible())
+                update();
+        }
         break;
 
 #ifdef Q_WS_MAC
@@ -9196,19 +9226,12 @@ int QWidget::heightForWidth(int w) const
 
 
 /*!
-    \internal
-
-    *virtual private*
-
-    This is a bit hackish, but ideally we would have created a virtual function
-    in the public API (however, too late...) so that subclasses could reimplement 
-    their own function.
-    Instead we add a virtual function to QWidgetPrivate.
-    ### Qt5: move to public class and make virtual
+    Returns true if the widget's preferred height depends on its width; otherwise returns false.
 */ 
-bool QWidgetPrivate::hasHeightForWidth() const
+bool QWidget::hasHeightForWidth() const
 {
-    return layout ? layout->hasHeightForWidth() : size_policy.hasHeightForWidth();
+    Q_D(const QWidget);
+    return d->layout ? d->layout->hasHeightForWidth() : d->size_policy.hasHeightForWidth();
 }
 
 /*!

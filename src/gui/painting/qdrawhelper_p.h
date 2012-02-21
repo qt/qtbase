@@ -657,1059 +657,22 @@ Q_STATIC_INLINE_FUNCTION uint BYTE_MUL_RGB16_32(uint x, uint a) {
      | (((255*qGreen(p)) / qAlpha(p))  << 8)            \
      | ((255*qBlue(p)) / qAlpha(p))))
 
-template <class DST, class SRC>
-inline DST qt_colorConvert(SRC color, DST dummy)
-{
-    Q_UNUSED(dummy);
-    return DST(color);
-}
-
-
-template <>
-inline quint32 qt_colorConvert(quint16 color, quint32 dummy)
-{
-    Q_UNUSED(dummy);
-    const int r = (color & 0xf800);
-    const int g = (color & 0x07e0);
-    const int b = (color & 0x001f);
-    const int tr = (r >> 8) | (r >> 13);
-    const int tg = (g >> 3) | (g >> 9);
-    const int tb = (b << 3) | (b >> 2);
-
-    return qRgb(tr, tg, tb);
-}
-
-template <>
-inline quint16 qt_colorConvert(quint32 color, quint16 dummy)
-{
-    Q_UNUSED(dummy);
-    const int r = qRed(color) << 8;
-    const int g = qGreen(color) << 3;
-    const int b = qBlue(color) >> 3;
-
-    return (r & 0xf800) | (g & 0x07e0)| (b & 0x001f);
-}
-
-class quint32p
-{
-public:
-    inline quint32p(quint32 v) : data(PREMUL(v)) {}
-
-    inline operator quint32() const { return data; }
-
-    inline operator quint16() const
-    {
-        return qt_colorConvert<quint16, quint32>(data, 0);
-    }
-
-    Q_STATIC_INLINE_FUNCTION quint32p fromRawData(quint32 v)
-    {
-        quint32p p;
-        p.data = v;
-        return p;
-    }
-
-private:
-    quint32p() {}
-    quint32 data;
-} Q_PACKED;
-
-class qabgr8888
-{
-public:
-    inline qabgr8888(quint32 v)
-    {
-        data = qRgba(qBlue(v), qGreen(v), qRed(v), qAlpha(v));
-    }
-
-    inline bool operator==(const qabgr8888 &v) const { return data == v.data; }
-
-private:
-    quint32 data;
-} Q_PACKED;
-
-class qrgb565;
-
-class qargb8565
-{
-public:
-    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return true; }
-
-    inline qargb8565() {}
-    inline qargb8565(quint32 v);
-    inline explicit qargb8565(quint32p v);
-    inline qargb8565(const qargb8565 &v);
-    inline qargb8565(const qrgb565 &v);
-
-    inline operator quint32() const;
-    inline operator quint16() const;
-
-    inline quint8 alpha() const { return data[0]; }
-    inline qargb8565 truncedAlpha() {
-        data[0] &= 0xf8;
-        data[1] &= 0xdf;
-        return *this;
-    }
-    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 3; }
-    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 0x20 - alpha(a); }
-
-    inline qargb8565 byte_mul(quint8 a) const;
-    inline qargb8565 operator+(qargb8565 v) const;
-    inline bool operator==(const qargb8565 &v) const;
-
-    inline quint32 rawValue() const;
-    inline quint16 rawValue16() const;
-
-private:
-    friend class qrgb565;
-
-    quint8 data[3];
-} Q_PACKED;
-
-class qrgb565
-{
-public:
-    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return false; }
-
-    qrgb565(int v = 0) : data(v) {}
-
-    inline explicit qrgb565(quint32p v);
-    inline explicit qrgb565(quint32 v);
-    inline explicit qrgb565(const qargb8565 &v);
-
-    inline operator quint32() const;
-    inline operator quint16() const;
-
-    inline qrgb565 operator+(qrgb565 v) const;
-
-    inline quint8 alpha() const { return 0xff; }
-    inline qrgb565 truncedAlpha() { return *this; }
-    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 3; }
-    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 0x20 - alpha(a); }
-
-    inline qrgb565 byte_mul(quint8 a) const;
-
-    inline bool operator==(const qrgb565 &v) const;
-    inline quint16 rawValue() const { return data; }
-
-private:
-    friend class qargb8565;
-
-    quint16 data;
-} Q_PACKED;
-
-qargb8565::qargb8565(quint32 v)
-{
-    *this = qargb8565(quint32p(v));
-}
-
-qargb8565::qargb8565(quint32p v)
-{
-    data[0] = qAlpha(v);
-    const int r = qRed(v);
-    const int g = qGreen(v);
-    const int b = qBlue(v);
-    data[1] = ((g << 3) & 0xe0) | (b >> 3);
-    data[2] = (r & 0xf8) | (g >> 5);
-}
-
-qargb8565::qargb8565(const qargb8565 &v)
-{
-    data[0] = v.data[0];
-    data[1] = v.data[1];
-    data[2] = v.data[2];
-}
-
-qargb8565::qargb8565(const qrgb565 &v)
-{
-    data[0] = 0xff;
-    data[1] = v.data & 0xff;
-    data[2] = v.data >> 8;
-}
-
-qargb8565::operator quint32() const
-{
-    const quint16 rgb = (data[2] << 8) | data[1];
-    const int a = data[0];
-    const int r = (rgb & 0xf800);
-    const int g = (rgb & 0x07e0);
-    const int b = (rgb & 0x001f);
-    const int tr = qMin(a, (r >> 8) | (r >> 13));
-    const int tg = qMin(a, (g >> 3) | (g >> 9));
-    const int tb = qMin(a, (b << 3) | (b >> 2));
-    return qRgba(tr, tg, tb, data[0]);
-}
-
-qargb8565::operator quint16() const
-{
-    return (data[2] << 8) | data[1];
-}
-
-qargb8565 qargb8565::operator+(qargb8565 v) const
-{
-    qargb8565 t;
-    t.data[0] = data[0] + v.data[0];
-    const quint16 rgb =  ((data[2] + v.data[2]) << 8)
-                         + (data[1] + v.data[1]);
-    t.data[1] = rgb & 0xff;
-    t.data[2] = rgb >> 8;
-    return t;
-}
-
-qargb8565 qargb8565::byte_mul(quint8 a) const
-{
-    qargb8565 result;
-    result.data[0] = (data[0] * a) >> 5;
-
-    const quint16 x = (data[2] << 8) | data[1];
-    const quint16 t = ((((x & 0x07e0) >> 5) * a) & 0x07e0) |
-                      ((((x & 0xf81f) * a) >> 5) & 0xf81f);
-    result.data[1] = t & 0xff;
-    result.data[2] = t >> 8;
-    return result;
-}
-
-bool qargb8565::operator==(const qargb8565 &v) const
-{
-    return data[0] == v.data[0]
-        && data[1] == v.data[1]
-        && data[2] == v.data[2];
-}
-
-quint32 qargb8565::rawValue() const
-{
-    return (data[2] << 16) | (data[1] << 8) | data[0];
-}
-
-quint16 qargb8565::rawValue16() const
-{
-    return (data[2] << 8) | data[1];
-}
-
-qrgb565::qrgb565(quint32p v)
-{
-    *this = qrgb565(quint32(v));
-}
-
-qrgb565::qrgb565(quint32 v)
-{
-    const int r = qRed(v) << 8;
-    const int g = qGreen(v) << 3;
-    const int b = qBlue(v) >> 3;
-
-    data = (r & 0xf800) | (g & 0x07e0)| (b & 0x001f);
-}
-
-qrgb565::qrgb565(const qargb8565 &v)
-{
-    data = (v.data[2] << 8) | v.data[1];
-}
-
-qrgb565::operator quint32() const
-{
-    const int r = (data & 0xf800);
-    const int g = (data & 0x07e0);
-    const int b = (data & 0x001f);
-    const int tr = (r >> 8) | (r >> 13);
-    const int tg = (g >> 3) | (g >> 9);
-    const int tb = (b << 3) | (b >> 2);
-    return qRgb(tr, tg, tb);
-}
-
-qrgb565::operator quint16() const
-{
-    return data;
-}
-
-qrgb565 qrgb565::operator+(qrgb565 v) const
-{
-    qrgb565 t;
-    t.data = data + v.data;
-    return t;
-}
-
-qrgb565 qrgb565::byte_mul(quint8 a) const
-{
-    qrgb565 result;
-    result.data = ((((data & 0x07e0) >> 5) * a) & 0x07e0) |
-                  ((((data & 0xf81f) * a) >> 5) & 0xf81f);
-    return result;
-}
-
-bool qrgb565::operator==(const qrgb565 &v) const
-{
-    return data == v.data;
-}
-
-class qbgr565
-{
-public:
-    inline qbgr565(quint16 v)
-    {
-        data = ((v & 0x001f) << 11) |
-               (v & 0x07e0) |
-               ((v & 0xf800) >> 11);
-    }
-
-    inline bool operator==(const qbgr565 &v) const
-    {
-        return data == v.data;
-    }
-
-private:
-    quint16 data;
-} Q_PACKED;
-
-class qrgb555;
-
-class qargb8555
-{
-public:
-    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return true; }
-
-    qargb8555() {}
-    inline qargb8555(quint32 v);
-    inline explicit qargb8555(quint32p v);
-    inline qargb8555(const qargb8555 &v);
-    inline qargb8555(const qrgb555 &v);
-
-    inline operator quint32() const;
-
-    inline quint8 alpha() const { return data[0]; }
-    inline qargb8555 truncedAlpha() { data[0] &= 0xf8; return *this; }
-    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 3; }
-    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 0x20 - alpha(a); }
-
-    inline qargb8555 operator+(qargb8555 v) const;
-    inline qargb8555 byte_mul(quint8 a) const;
-
-    inline bool operator==(const qargb8555 &v) const;
-
-    inline quint32 rawValue() const;
-
-private:
-    friend class qrgb555;
-    quint8 data[3];
-} Q_PACKED;
-
-class qrgb555
-{
-public:
-    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return false; }
-
-    inline qrgb555(int v = 0) : data(v) {}
-
-    inline explicit qrgb555(quint32p v) { *this = qrgb555(quint32(v)); }
-
-    inline explicit qrgb555(quint32 v)
-    {
-        const int r = qRed(v) << 7;
-        const int g = qGreen(v) << 2;
-        const int b = qBlue(v) >> 3;
-
-        data = (r & 0x7c00) | (g & 0x03e0) | (b & 0x001f);
-    }
-
-    inline explicit qrgb555(quint16 v)
-    {
-        data = ((v >> 1) & (0x7c00 | 0x03e0)) |
-               (v & 0x001f);
-    }
-
-    inline explicit qrgb555(const qargb8555 &v);
-
-    inline operator quint32() const
-    {
-        const int r = (data & 0x7c00);
-        const int g = (data & 0x03e0);
-        const int b = (data & 0x001f);
-        const int tr = (r >> 7) | (r >> 12);
-        const int tg = (g >> 2) | (g >> 7);
-        const int tb = (b << 3) | (b >> 2);
-
-        return qRgb(tr, tg, tb);
-    }
-
-    inline operator quint16() const
-    {
-        const int r = ((data & 0x7c00) << 1) & 0xf800;
-        const int g = (((data & 0x03e0) << 1) | ((data >> 4) & 0x0020)) & 0x07e0;
-        const int b = (data & 0x001f);
-
-        return r | g | b;
-    }
-
-    inline qrgb555 operator+(qrgb555 v) const;
-    inline qrgb555 byte_mul(quint8 a) const;
-
-    inline quint8 alpha() const { return 0xff; }
-    inline qrgb555 truncedAlpha() { return *this; }
-    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 3; }
-    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 0x20 - alpha(a); }
-
-    inline bool operator==(const qrgb555 &v) const { return v.data == data; }
-    inline bool operator!=(const qrgb555 &v) const { return v.data != data; }
-
-    inline quint16 rawValue() const { return data; }
-
-private:
-    friend class qargb8555;
-    friend class qbgr555;
-    quint16 data;
-
-} Q_PACKED;
-
-qrgb555::qrgb555(const qargb8555 &v)
-{
-    data = (v.data[2] << 8) | v.data[1];
-}
-
-qrgb555 qrgb555::operator+(qrgb555 v) const
-{
-    qrgb555 t;
-    t.data = data + v.data;
-    return t;
-}
-
-qrgb555 qrgb555::byte_mul(quint8 a) const
-{
-    quint16 t = (((data & 0x3e0) * a) >> 5) & 0x03e0;
-    t |= (((data & 0x7c1f) * a) >> 5) & 0x7c1f;
-
-    qrgb555 result;
-    result.data = t;
-    return result;
-}
-
-class qbgr555
-{
-public:
-    inline qbgr555(quint32 v) { *this = qbgr555(qrgb555(v)); }
-
-    inline qbgr555(qrgb555 v)
-    {
-        data = ((v.data & 0x001f) << 10) |
-               (v.data & 0x03e0) |
-               ((v.data & 0x7c00) >> 10);
-    }
-
-    inline bool operator==(const qbgr555 &v) const
-    {
-        return data == v.data;
-    }
-
-private:
-    quint16 data;
-} Q_PACKED;
-
-qargb8555::qargb8555(quint32 v)
-{
-    v = quint32p(v);
-    data[0] = qAlpha(v);
-    const int r = qRed(v);
-    const int g = qGreen(v);
-    const int b = qBlue(v);
-    data[1] = ((g << 2) & 0xe0) | (b >> 3);
-    data[2] = ((r >> 1) & 0x7c) | (g >> 6);
-
-}
-
-qargb8555::qargb8555(quint32p v)
-{
-    data[0] = qAlpha(v);
-    const int r = qRed(v);
-    const int g = qGreen(v);
-    const int b = qBlue(v);
-    data[1] = ((g << 2) & 0xe0) | (b >> 3);
-    data[2] = ((r >> 1) & 0x7c) | (g >> 6);
-}
-
-qargb8555::qargb8555(const qargb8555 &v)
-{
-    data[0] = v.data[0];
-    data[1] = v.data[1];
-    data[2] = v.data[2];
-}
-
-qargb8555::qargb8555(const qrgb555 &v)
-{
-    data[0] = 0xff;
-    data[1] = v.data & 0xff;
-    data[2] = v.data >> 8;
-}
-
-qargb8555::operator quint32() const
-{
-    const quint16 rgb = (data[2] << 8) | data[1];
-    const int r = (rgb & 0x7c00);
-    const int g = (rgb & 0x03e0);
-    const int b = (rgb & 0x001f);
-    const int tr = (r >> 7) | (r >> 12);
-    const int tg = (g >> 2) | (g >> 7);
-    const int tb = (b << 3) | (b >> 2);
-
-    return qRgba(tr, tg, tb, data[0]);
-}
-
-bool qargb8555::operator==(const qargb8555 &v) const
-{
-    return data[0] == v.data[0]
-        && data[1] == v.data[1]
-        && data[2] == v.data[2];
-}
-
-quint32 qargb8555::rawValue() const
-{
-    return (data[2] << 16) | (data[1] << 8) | data[0];
-}
-
-qargb8555 qargb8555::operator+(qargb8555 v) const
-{
-    qargb8555 t;
-    t.data[0] = data[0] + v.data[0];
-    const quint16 rgb =  ((data[2] + v.data[2]) << 8)
-                         + (data[1] + v.data[1]);
-    t.data[1] = rgb & 0xff;
-    t.data[2] = rgb >> 8;
-    return t;
-}
-
-qargb8555 qargb8555::byte_mul(quint8 a) const
-{
-    qargb8555 result;
-    result.data[0] = (data[0] * a) >> 5;
-
-    const quint16 x = (data[2] << 8) | data[1];
-    quint16 t = (((x & 0x3e0) * a) >> 5) & 0x03e0;
-    t |= (((x & 0x7c1f) * a) >> 5) & 0x7c1f;
-    result.data[1] = t & 0xff;
-    result.data[2] = t >> 8;
-    return result;
-
-}
-
-class qrgb666;
-
-class qargb6666
-{
-public:
-    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return true; }
-
-    inline qargb6666() {}
-    inline qargb6666(quint32 v) { *this = qargb6666(quint32p(v)); }
-    inline explicit qargb6666(quint32p v);
-    inline qargb6666(const qargb6666 &v);
-    inline qargb6666(const qrgb666 &v);
-
-    inline operator quint32 () const;
-
-    inline quint8 alpha() const;
-    inline qargb6666 truncedAlpha() { return *this; }
-    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 2; }
-    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return (255 - a + 1) >> 2; }
-
-    inline qargb6666 byte_mul(quint8 a) const;
-    inline qargb6666 operator+(qargb6666 v) const;
-    inline bool operator==(const qargb6666 &v) const;
-
-    inline quint32 rawValue() const;
-
-private:
-    friend class qrgb666;
-    quint8 data[3];
-
-} Q_PACKED;
-
-class qrgb666
-{
-public:
-    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return false; }
-
-    inline qrgb666() {}
-    inline qrgb666(quint32 v);
-    inline qrgb666(const qargb6666 &v);
-
-    inline operator quint32 () const;
-
-    inline quint8 alpha() const { return 0xff; }
-    inline qrgb666 truncedAlpha() { return *this; }
-    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 2; }
-    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return (255 - a + 1) >> 2; }
-
-    inline qrgb666 operator+(qrgb666 v) const;
-    inline qrgb666 byte_mul(quint8 a) const;
-
-    inline bool operator==(const qrgb666 &v) const;
-    inline bool operator!=(const qrgb666 &v) const { return !(*this == v); }
-
-    inline quint32 rawValue() const
-    {
-        return (data[2] << 16) | (data[1] << 8) | data[0];
-    }
-
-private:
-    friend class qargb6666;
-
-    quint8 data[3];
-} Q_PACKED;
-
-qrgb666::qrgb666(quint32 v)
-{
-    const uchar b = qBlue(v);
-    const uchar g = qGreen(v);
-    const uchar r = qRed(v);
-    const uint p = (b >> 2) | ((g >> 2) << 6) | ((r >> 2) << 12);
-    data[0] = qBlue(p);
-    data[1] = qGreen(p);
-    data[2] = qRed(p);
-}
-
-qrgb666::qrgb666(const qargb6666 &v)
-{
-    data[0] = v.data[0];
-    data[1] = v.data[1];
-    data[2] = v.data[2] & 0x03;
-}
-
-qrgb666::operator quint32 () const
-{
-    const uchar r = (data[2] << 6) | ((data[1] & 0xf0) >> 2) | (data[2] & 0x3);
-    const uchar g = (data[1] << 4) | ((data[0] & 0xc0) >> 4) | ((data[1] & 0x0f) >> 2);
-    const uchar b = (data[0] << 2) | ((data[0] & 0x3f) >> 4);
-    return qRgb(r, g, b);
-}
-
-qrgb666 qrgb666::operator+(qrgb666 v) const
-{
-    const quint32 x1 = (data[2] << 16) | (data[1] << 8) | data[0];
-    const quint32 x2 = (v.data[2] << 16) | (v.data[1] << 8) | v.data[0];
-    const quint32 t = x1 + x2;
-    qrgb666 r;
-    r.data[0] = t & 0xff;
-    r.data[1] = (t >> 8) & 0xff;
-    r.data[2] = (t >> 16) & 0xff;
-    return r;
-}
-
-qrgb666 qrgb666::byte_mul(quint8 a) const
-{
-    const quint32 x = (data[2] << 16) | (data[1] << 8) | data[0];
-    const quint32 t = ((((x & 0x03f03f) * a) >> 6) & 0x03f03f) |
-                      ((((x & 0x000fc0) * a) >> 6) & 0x000fc0);
-
-    qrgb666 r;
-    r.data[0] = t & 0xff;
-    r.data[1] = (t >> 8) & 0xff;
-    r.data[2] = (t >> 16) & 0xff;
-    return r;
-}
-
-bool qrgb666::operator==(const qrgb666 &v) const
-{
-    return (data[0] == v.data[0] &&
-            data[1] == v.data[1] &&
-            data[2] == v.data[2]);
-}
-
-qargb6666::qargb6666(quint32p v)
-{
-    const quint8 b = qBlue(v) >> 2;
-    const quint8 g = qGreen(v) >> 2;
-    const quint8 r = qRed(v) >> 2;
-    const quint8 a = qAlpha(v) >> 2;
-    const uint p = (a << 18) | (r << 12) | (g << 6) | b;
-    data[0] = qBlue(p);
-    data[1] = qGreen(p);
-    data[2] = qRed(p);
-}
-
-qargb6666::qargb6666(const qargb6666 &v)
-{
-    data[0] = v.data[0];
-    data[1] = v.data[1];
-    data[2] = v.data[2];
-}
-
-qargb6666::qargb6666(const qrgb666 &v)
-{
-    data[0] = v.data[0];
-    data[1] = v.data[1];
-    data[2] = (v.data[2] | 0xfc);
-}
-
-qargb6666::operator quint32 () const
-{
-    const quint8 r = (data[2] << 6) | ((data[1] & 0xf0) >> 2) | (data[2] & 0x3);
-    const quint8 g = (data[1] << 4) | ((data[0] & 0xc0) >> 4) | ((data[1] & 0x0f) >> 2);
-    const quint8 b = (data[0] << 2) | ((data[0] & 0x3f) >> 4);
-    const quint8 a = (data[2] & 0xfc) | (data[2] >> 6);
-    return qRgba(r, g, b, a);
-}
-
-qargb6666 qargb6666::operator+(qargb6666 v) const
-{
-    const quint32 x1 = (data[2] << 16) | (data[1] << 8) | data[0];
-    const quint32 x2 = (v.data[2] << 16) | (v.data[1] << 8) | v.data[0];
-    const quint32 t = x1 + x2;
-    qargb6666 r;
-    r.data[0] = t & 0xff;
-    r.data[1] = (t >> 8) & 0xff;
-    r.data[2] = (t >> 16) & 0xff;
-    return r;
-}
-
-quint8 qargb6666::alpha() const
-{
-    return (data[2] & 0xfc) | (data[2] >> 6);
-}
-
-inline qargb6666 qargb6666::byte_mul(quint8 a) const
-{
-    const quint32 x = (data[2] << 16) | (data[1] << 8) | data[0];
-    const quint32 t = ((((x & 0x03f03f) * a) >> 6) & 0x03f03f) |
-                      ((((x & 0xfc0fc0) * a) >> 6) & 0xfc0fc0);
-
-    qargb6666 r;
-    r.data[0] = t & 0xff;
-    r.data[1] = (t >> 8) & 0xff;
-    r.data[2] = (t >> 16) & 0xff;
-    return r;
-}
-
-bool qargb6666::operator==(const qargb6666 &v) const
-{
-    return data[0] == v.data[0]
-        && data[1] == v.data[1]
-        && data[2] == v.data[2];
-}
-
-quint32 qargb6666::rawValue() const
-{
-    return (data[2] << 16) | (data[1] << 8) | data[0];
-}
-
-class qrgb888
-{
-public:
-    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return false; }
-
-    inline qrgb888() {}
-    inline qrgb888(quint32 v);
-
-    inline operator quint32() const;
-
-    inline quint8 alpha() const { return 0xff; }
-    inline qrgb888 truncedAlpha() { return *this; }
-    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return a; }
-    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 255 - a; }
-
-    inline qrgb888 byte_mul(quint8 a) const;
-    inline qrgb888 operator+(qrgb888 v) const;
-    inline bool operator==(qrgb888 v) const;
-
-    inline quint32 rawValue() const;
-
-private:
-    uchar data[3];
-
-} Q_PACKED;
-
-qrgb888::qrgb888(quint32 v)
-{
-    data[0] = qRed(v);
-    data[1] = qGreen(v);
-    data[2] = qBlue(v);
-}
-
-qrgb888::operator quint32() const
-{
-    return qRgb(data[0], data[1], data[2]);
-}
-
-qrgb888 qrgb888::operator+(qrgb888 v) const
-{
-    qrgb888 t = *this;
-    t.data[0] += v.data[0];
-    t.data[1] += v.data[1];
-    t.data[2] += v.data[2];
-    return t;
-}
-
-qrgb888 qrgb888::byte_mul(quint8 a) const
-{
-    quint32 x(*this);
-
-    quint32 t = (x & 0xff00ff) * a;
-    t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
-    t &= 0xff00ff;
-
-    x = ((x >> 8) & 0xff00ff) * a;
-    x = (x + ((x >> 8) & 0xff00ff) + 0x800080);
-    x &= 0xff00ff00;
-    x |= t;
-    return qrgb888(x);
-}
-
-bool qrgb888::operator==(qrgb888 v) const
-{
-    return (data[0] == v.data[0] &&
-            data[1] == v.data[1] &&
-            data[2] == v.data[2]);
-}
-
-quint32 qrgb888::rawValue() const
-{
-    return (data[2] << 16) | (data[1] << 8) | data[0];
-}
-
-template <>
-inline qrgb888 qt_colorConvert(quint32 color, qrgb888 dummy)
-{
-    Q_UNUSED(dummy);
-    return qrgb888(color);
-}
-
-template <>
-inline quint32 qt_colorConvert(qrgb888 color, quint32 dummy)
-{
-    Q_UNUSED(dummy);
-    return quint32(color);
-}
-
-// hw: endianess??
-class quint24
-{
-public:
-    inline quint24(quint32 v)
-    {
-        data[0] = qBlue(v);
-        data[1] = qGreen(v);
-        data[2] = qRed(v);
-    }
-
-    inline operator quint32 ()
-    {
-        return qRgb(data[2], data[1], data[0]);
-    }
-
-    inline bool operator==(const quint24 &v) const
-    {
-        return data[0] == v.data[0]
-            && data[1] == v.data[1]
-            && data[2] == v.data[2];
-    }
-
-private:
+struct quint24 {
+    quint24(uint value);
+    operator uint() const;
     uchar data[3];
 } Q_PACKED;
 
-template <>
-inline quint24 qt_colorConvert(quint32 color, quint24 dummy)
+inline quint24::quint24(uint value)
 {
-    Q_UNUSED(dummy);
-    return quint24(color);
+    data[0] = uchar(value);
+    data[1] = uchar(value >> 8);
+    data[2] = uchar(value >> 16);
 }
 
-// hw: endianess??
-class quint18
+inline quint24::operator uint() const
 {
-public:
-    inline quint18(quint32 v)
-    {
-        uchar b = qBlue(v);
-        uchar g = qGreen(v);
-        uchar r = qRed(v);
-        uint p = (b >> 2) | ((g >> 2) << 6) | ((r >> 2) << 12);
-        data[0] = qBlue(p);
-        data[1] = qGreen(p);
-        data[2] = qRed(p);
-    }
-
-    inline operator quint32 ()
-    {
-        const uchar r = (data[2] << 6) | ((data[1] & 0xf0) >> 2) | (data[2] & 0x3);
-        const uchar g = (data[1] << 4) | ((data[0] & 0xc0) >> 4) | ((data[1] & 0x0f) >> 2);
-        const uchar b = (data[0] << 2) | ((data[0] & 0x3f) >> 4);
-        return qRgb(r, g, b);
-    }
-
-private:
-    uchar data[3];
-} Q_PACKED;
-
-template <>
-inline quint18 qt_colorConvert(quint32 color, quint18 dummy)
-{
-    Q_UNUSED(dummy);
-    return quint18(color);
-}
-
-class qrgb444;
-
-class qargb4444
-{
-public:
-    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return true; }
-
-    inline qargb4444() {}
-    inline qargb4444(quint32 v) { *this = qargb4444(quint32p(v)); }
-    inline explicit qargb4444(quint32p v);
-    inline qargb4444(const qrgb444 &v);
-
-    inline operator quint32() const;
-    inline operator quint8() const;
-
-    inline qargb4444 operator+(qargb4444 v) const;
-
-    inline quint8 alpha() const { return ((data & 0xf000) >> 8) | ((data & 0xf000) >> 12); }
-    inline qargb4444 truncedAlpha() { return *this; }
-    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 4; }
-    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 0x10 - alpha(a); }
-    inline qargb4444 byte_mul(quint8 a) const;
-
-    inline bool operator==(const qargb4444 &v) const { return data == v.data; }
-
-    inline quint16 rawValue() const { return data; }
-
-private:
-    friend class qrgb444;
-    quint16 data;
-
-} Q_PACKED;
-
-class qrgb444
-{
-public:
-    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return false; }
-
-    inline qrgb444() {}
-    inline qrgb444(quint32 v);
-    inline explicit qrgb444(qargb4444 v);
-
-    inline operator quint32() const;
-    inline operator quint8() const;
-
-    inline qrgb444 operator+(qrgb444 v) const;
-    inline quint8 alpha() const { return 0xff; }
-    inline qrgb444 truncedAlpha() { return *this; }
-    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 4; }
-    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 0x10 - alpha(a); }
-    inline qrgb444 byte_mul(quint8 a) const;
-
-    inline bool operator==(const qrgb444 &v) const { return data == v.data; }
-    inline bool operator!=(const qrgb444 &v) const { return data != v.data; }
-
-    inline quint16 rawValue() const { return data; }
-
-private:
-    friend class qargb4444;
-    quint16 data;
-
-} Q_PACKED;
-
-
-qargb4444::qargb4444(quint32p color)
-{
-    quint32 v = color;
-    v &= 0xf0f0f0f0;
-    const int a = qAlpha(v) << 8;
-    const int r = qRed(v) << 4;
-    const int g = qGreen(v);
-    const int b = qBlue(v) >> 4;
-
-    data = a | r | g | b;
-}
-
-qargb4444::qargb4444(const qrgb444 &v)
-{
-    data = v.data | 0xf000;
-}
-
-qargb4444::operator quint32() const
-{
-    const int a = (data & 0xf000);
-    const int r = (data & 0x0f00);
-    const int g = (data & 0x00f0);
-    const int b = (data & 0x000f);
-    const int ta = (a >> 8) | (a >> 12);
-    const int tr = (r >> 4) | (r >> 8);
-    const int tg = g | (g >> 4);
-    const int tb = (b << 4) | b;
-
-    return qRgba(tr, tg, tb, ta);
-}
-
-qargb4444::operator quint8() const
-{
-    // hw: optimize!
-    return qt_colorConvert<quint8, quint32>(operator quint32(), 0);
-}
-
-qargb4444 qargb4444::operator+(qargb4444 v) const
-{
-    qargb4444 t;
-    t.data = data + v.data;
-    return t;
-}
-
-qargb4444 qargb4444::byte_mul(quint8 a) const
-{
-    quint16 t = (((data & 0xf0f0) * a) >> 4) & 0xf0f0;
-    t |= (((data & 0x0f0f) * a) >> 4) & 0x0f0f;
-
-    qargb4444 result;
-    result.data = t;
-    return result;
-}
-
-qrgb444::qrgb444(quint32 v)
-{
-    v &= 0xf0f0f0f0;
-    const int r = qRed(v) << 4;
-    const int g = qGreen(v);
-    const int b = qBlue(v) >> 4;
-
-    data = r | g | b;
-}
-
-qrgb444::qrgb444(qargb4444 v)
-{
-    data = v.data & 0x0fff;
-}
-
-qrgb444::operator quint32() const
-{
-    const int r = (data & 0x0f00);
-    const int g = (data & 0x00f0);
-    const int b = (data & 0x000f);
-    const int tr = (r >> 4) | (r >> 8);
-    const int tg = g | (g >> 4);
-    const int tb = (b << 4) | b;
-
-    return qRgb(tr, tg, tb);
-}
-
-qrgb444::operator quint8() const
-{
-    // hw: optimize!
-    return qt_colorConvert<quint8, quint32>(operator quint32(), 0);
-}
-
-qrgb444 qrgb444::operator+(qrgb444 v) const
-{
-    qrgb444 t;
-    t.data = data + v.data;
-    return t;
-}
-
-qrgb444 qrgb444::byte_mul(quint8 a) const
-{
-    quint16 t = (((data & 0xf0f0) * a) >> 4) & 0xf0f0;
-    t |= (((data & 0x0f0f) * a) >> 4) & 0x0f0f;
-
-    qrgb444 result;
-    result.data = t;
-    return result;
+    return data[0] | (data[1] << 8) | (data[2] << 16);
 }
 
 template <class T>
@@ -1768,156 +731,6 @@ inline void qt_rectfill(T *dest, T value,
         }
     }
 }
-
-template <class DST, class SRC>
-inline void qt_memconvert(DST *dest, const SRC *src, int count)
-{
-    if (sizeof(DST) == 1) {
-        while (count) {
-            int n = 1;
-            const SRC color = *src++;
-            const DST dstColor = qt_colorConvert<DST, SRC>(color, 0);
-            while (--count && (*src == color || dstColor == qt_colorConvert<DST, SRC>(*src, 0))) {
-                ++n;
-                ++src;
-            }
-            qt_memfill(dest, dstColor, n);
-            dest += n;
-        }
-    } else {
-        /* Duff's device */
-        int n = (count + 7) / 8;
-        switch (count & 0x07)
-        {
-        case 0: do { *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-            case 7:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-            case 6:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-            case 5:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-            case 4:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-            case 3:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-            case 2:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-            case 1:      *dest++ = qt_colorConvert<DST, SRC>(*src++, 0);
-            } while (--n > 0);
-        }
-    }
-}
-
-#define QT_TRIVIAL_MEMCONVERT_IMPL(T) \
-    template <> \
-    inline void qt_memconvert(T *dest, const T *src, int count) \
-    { \
-        memcpy(dest, src, count * sizeof(T)); \
-    }
-QT_TRIVIAL_MEMCONVERT_IMPL(quint32)
-QT_TRIVIAL_MEMCONVERT_IMPL(qrgb888)
-QT_TRIVIAL_MEMCONVERT_IMPL(qargb6666)
-QT_TRIVIAL_MEMCONVERT_IMPL(qrgb666)
-QT_TRIVIAL_MEMCONVERT_IMPL(quint16)
-QT_TRIVIAL_MEMCONVERT_IMPL(qrgb565)
-QT_TRIVIAL_MEMCONVERT_IMPL(qargb8565)
-QT_TRIVIAL_MEMCONVERT_IMPL(qargb8555)
-QT_TRIVIAL_MEMCONVERT_IMPL(qrgb555)
-QT_TRIVIAL_MEMCONVERT_IMPL(qargb4444)
-QT_TRIVIAL_MEMCONVERT_IMPL(qrgb444)
-#undef QT_TRIVIAL_MEMCONVERT_IMPL
-
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-template <>
-inline void qt_memconvert(qrgb666 *dest, const quint32 *src, int count)
-{
-    if (count < 3) {
-        switch (count) {
-        case 2: *dest++ = qrgb666(*src++);
-        case 1: *dest = qrgb666(*src);
-        }
-        return;
-    }
-
-    const int align = (quintptr(dest) & 3);
-    switch (align) {
-    case 1: *dest++ = qrgb666(*src++); --count;
-    case 2: *dest++ = qrgb666(*src++); --count;
-    case 3: *dest++ = qrgb666(*src++); --count;
-    }
-
-    quint32 *dest32 = reinterpret_cast<quint32*>(dest);
-    int sourceCount = count >> 2;
-    while (sourceCount--) {
-        dest32[0] = ((src[1] & 0x00000c00) << 20)
-                    | ((src[1] & 0x000000fc) << 22)
-                    | ((src[0] & 0x00fc0000) >> 6)
-                    | ((src[0] & 0x0000fc00) >> 4)
-                    |  ((src[0] & 0x000000fc) >> 2);
-        dest32[1] = ((src[2] & 0x003c0000) << 10)
-                    | ((src[2] & 0x0000fc00) << 12)
-                    | ((src[2] & 0x000000fc) << 14)
-                    | ((src[1] & 0x00fc0000) >> 14)
-                    | ((src[1] & 0x0000f000) >> 12);
-        dest32[2] = ((src[3] & 0x00fc0000) << 2)
-                    | ((src[3] & 0x0000fc00) << 4)
-                    | ((src[3] & 0x000000fc) << 6)
-                    | ((src[2] & 0x00c00000) >> 22);
-        dest32 += 3;
-        src += 4;
-    }
-
-    dest = reinterpret_cast<qrgb666*>(dest32);
-    switch (count & 3) {
-    case 3: *dest++ = qrgb666(*src++);
-    case 2: *dest++ = qrgb666(*src++);
-    case 1: *dest = qrgb666(*src);
-    }
-}
-#endif // Q_BYTE_ORDER
-
-template <class T>
-inline void qt_rectcopy(T *dest, const T *src,
-                        int x, int y, int width, int height,
-                        int dstStride, int srcStride)
-{
-    char *d = (char*)(dest + x) + y * dstStride;
-    const char *s = (char*)(src);
-    for (int i = 0; i < height; ++i) {
-        ::memcpy(d, s, width * sizeof(T));
-        d += dstStride;
-        s += srcStride;
-    }
-}
-
-template <class DST, class SRC>
-inline void qt_rectconvert(DST *dest, const SRC *src,
-                           int x, int y, int width, int height,
-                           int dstStride, int srcStride)
-{
-    char *d = (char*)(dest + x) + y * dstStride;
-    const char *s = (char*)(src);
-    for (int i = 0; i < height; ++i) {
-        qt_memconvert<DST,SRC>((DST*)d, (const SRC*)s, width);
-        d += dstStride;
-        s += srcStride;
-    }
-}
-
-#define QT_RECTCONVERT_TRIVIAL_IMPL(T)                                  \
-    template <>                                                         \
-    inline void qt_rectconvert(T *dest, const T *src,                   \
-                               int x, int y, int width, int height,     \
-                               int dstStride, int srcStride)            \
-    {                                                                   \
-        qt_rectcopy(dest, src, x, y, width, height, dstStride, srcStride); \
-    }
-QT_RECTCONVERT_TRIVIAL_IMPL(quint32)
-QT_RECTCONVERT_TRIVIAL_IMPL(qrgb888)
-QT_RECTCONVERT_TRIVIAL_IMPL(qargb6666)
-QT_RECTCONVERT_TRIVIAL_IMPL(qrgb666)
-QT_RECTCONVERT_TRIVIAL_IMPL(qrgb565)
-QT_RECTCONVERT_TRIVIAL_IMPL(qargb8565)
-QT_RECTCONVERT_TRIVIAL_IMPL(quint16)
-QT_RECTCONVERT_TRIVIAL_IMPL(qargb8555)
-QT_RECTCONVERT_TRIVIAL_IMPL(qrgb555)
-QT_RECTCONVERT_TRIVIAL_IMPL(qargb4444)
-QT_RECTCONVERT_TRIVIAL_IMPL(qrgb444)
-#undef QT_RECTCONVERT_TRIVIAL_IMPL
 
 #define QT_MEMFILL_UINT(dest, length, color)            \
     qt_memfill<quint32>(dest, color, length);
@@ -2136,6 +949,162 @@ void QT_FASTCALL rasterop_solid_NotSourceXorDestination(uint *dest, int length, 
 void QT_FASTCALL rasterop_solid_NotSource(uint *dest, int length, uint color, uint const_alpha);
 void QT_FASTCALL rasterop_solid_NotSourceAndDestination(uint *dest, int length, uint color, uint const_alpha);
 void QT_FASTCALL rasterop_solid_SourceAndNotDestination(uint *dest, int length, uint color, uint const_alpha);
+
+
+struct QPixelLayout;
+typedef const uint *(QT_FASTCALL *ConvertFunc)(uint *buffer, const uint *src, int count,
+                                               const QPixelLayout *layout, const QRgb *clut);
+
+struct QPixelLayout
+{
+    // Bits per pixel
+    enum BPP {
+        BPPNone,
+        BPP1MSB,
+        BPP1LSB,
+        BPP8,
+        BPP16,
+        BPP24,
+        BPP32,
+        BPPCount
+    };
+
+    // All numbers in bits.
+    uchar redWidth;
+    uchar redShift;
+    uchar greenWidth;
+    uchar greenShift;
+    uchar blueWidth;
+    uchar blueShift;
+    uchar alphaWidth;
+    uchar alphaShift;
+    bool premultiplied;
+    BPP bpp;
+    ConvertFunc convertToARGB32PM;
+    ConvertFunc convertFromARGB32PM;
+};
+
+template <QPixelLayout::BPP bpp>
+uint fetchPixel(const uchar *src, int index);
+
+template <>
+inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP1LSB>(const uchar *src, int index)
+{
+    return (src[index >> 3] >> (index & 7)) & 1;
+}
+
+template <>
+inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP1MSB>(const uchar *src, int index)
+{
+    return (src[index >> 3] >> (~index & 7)) & 1;
+}
+
+template <>
+inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP8>(const uchar *src, int index)
+{
+    return src[index];
+}
+
+template <>
+inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP16>(const uchar *src, int index)
+{
+    return reinterpret_cast<const quint16 *>(src)[index];
+}
+
+template <>
+inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP24>(const uchar *src, int index)
+{
+    return reinterpret_cast<const quint24 *>(src)[index];
+}
+
+template <>
+inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP32>(const uchar *src, int index)
+{
+    return reinterpret_cast<const uint *>(src)[index];
+}
+
+template <QPixelLayout::BPP bpp>
+inline const uint *QT_FASTCALL fetchPixels(uint *buffer, const uchar *src, int index, int count)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = fetchPixel<bpp>(src, index + i);
+    return buffer;
+}
+
+template <>
+inline const uint *QT_FASTCALL fetchPixels<QPixelLayout::BPP32>(uint *, const uchar *src, int index, int)
+{
+    return reinterpret_cast<const uint *>(src) + index;
+}
+
+typedef const uint *(QT_FASTCALL *FetchPixelsFunc)(uint *buffer, const uchar *src, int index, int count);
+
+
+template <QPixelLayout::BPP width>
+void storePixel(uchar *dest, int index, uint pixel);
+
+template <>
+inline void QT_FASTCALL storePixel<QPixelLayout::BPP1LSB>(uchar *dest, int index, uint pixel)
+{
+    if (pixel)
+        dest[index >> 3] |= 1 << (index & 7);
+    else
+        dest[index >> 3] &= ~(1 << (index & 7));
+}
+
+template <>
+inline void QT_FASTCALL storePixel<QPixelLayout::BPP1MSB>(uchar *dest, int index, uint pixel)
+{
+    if (pixel)
+        dest[index >> 3] |= 1 << (~index & 7);
+    else
+        dest[index >> 3] &= ~(1 << (~index & 7));
+}
+
+template <>
+inline void QT_FASTCALL storePixel<QPixelLayout::BPP8>(uchar *dest, int index, uint pixel)
+{
+    dest[index] = uchar(pixel);
+}
+
+template <>
+inline void QT_FASTCALL storePixel<QPixelLayout::BPP16>(uchar *dest, int index, uint pixel)
+{
+    reinterpret_cast<quint16 *>(dest)[index] = quint16(pixel);
+}
+
+template <>
+inline void QT_FASTCALL storePixel<QPixelLayout::BPP24>(uchar *dest, int index, uint pixel)
+{
+    reinterpret_cast<quint24 *>(dest)[index] = quint24(pixel);
+}
+
+template <>
+inline void QT_FASTCALL storePixel<QPixelLayout::BPP32>(uchar *dest, int index, uint pixel)
+{
+    reinterpret_cast<uint *>(dest)[index] = pixel;
+}
+
+template <QPixelLayout::BPP width>
+inline void QT_FASTCALL storePixels(uchar *dest, const uint *src, int index, int count)
+{
+    for (int i = 0; i < count; ++i)
+        storePixel<width>(dest, index + i, src[i]);
+}
+
+template <>
+inline void QT_FASTCALL storePixels<QPixelLayout::BPP32>(uchar *dest, const uint *src, int index, int count)
+{
+    memcpy(reinterpret_cast<uint *>(dest) + index, src, count * sizeof(uint));
+}
+
+typedef void (QT_FASTCALL *StorePixelsFunc)(uchar *dest, const uint *src, int index, int count);
+
+extern QPixelLayout qPixelLayouts[QImage::NImageFormats];
+extern FetchPixelsFunc qFetchPixels[QPixelLayout::BPPCount];
+extern StorePixelsFunc qStorePixels[QPixelLayout::BPPCount];
+
+
 
 QT_END_NAMESPACE
 

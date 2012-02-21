@@ -116,6 +116,16 @@ template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = fals
 #endif
 } // namespace
 
+/*!
+    \macro Q_DECLARE_OPAQUE_POINTER(Pointer)
+    \relates QMetaType
+
+    This macro enables pointers to forward-declared types to be registered with
+    QMetaType using either Q_DECLARE_METATYPE() or qRegisterMetaType().
+
+    \sa Q_DECLARE_METATYPE(), qRegisterMetaType()
+
+*/
 
 /*!
     \macro Q_DECLARE_METATYPE(Type)
@@ -125,6 +135,11 @@ template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = fals
     provides a public default constructor, a public copy constructor and
     a public destructor.
     It is needed to use the type \a Type as a custom type in QVariant.
+
+    This macro requires that \a Type is a fully defined type at the point where
+    it is used. For pointer types, it also requires that the pointed to type is
+    fully defined. Use in conjunction with Q_DECLARE_OPAQUE_POINTER() to
+    register pointers to forward declared types.
 
     Ideally, this macro should be placed below the declaration of
     the class or struct. If that is not possible, it can be put in
@@ -305,6 +320,12 @@ Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeWidgetsHelper = 0;
 class QCustomTypeInfo : public QMetaTypeInterface
 {
 public:
+    QCustomTypeInfo()
+        : alias(-1)
+    {
+        QMetaTypeInterface empty = QT_METATYPE_INTERFACE_INIT(void);
+        *static_cast<QMetaTypeInterface*>(this) = empty;
+    }
     QByteArray typeName;
     int alias;
 };
@@ -465,6 +486,8 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
     int idx = qMetaTypeStaticType(normalizedTypeName.constData(),
                                   normalizedTypeName.size());
 
+    int previousSize = 0;
+    int previousFlags = 0;
     if (!idx) {
         QWriteLocker locker(customTypesLock());
         idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
@@ -485,8 +508,33 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
             inf.flags = flags;
             idx = ct->size() + User;
             ct->append(inf);
+            return idx;
+        }
+
+        if (idx >= User) {
+            previousSize = ct->at(idx - User).size;
+            previousFlags = ct->at(idx - User).flags;
         }
     }
+
+    if (idx < User) {
+        previousSize = QMetaType::sizeOf(idx);
+        previousFlags = QMetaType::typeFlags(idx);
+    }
+
+    if (previousSize != size) {
+        qFatal("QMetaType::registerType: Binary compatibility break "
+            "-- Size mismatch for type '%s' [%i]. Previously registered "
+            "size %i, now registering size %i.",
+            normalizedTypeName.constData(), idx, previousSize, size);
+    }
+    if (previousFlags != flags) {
+        qFatal("QMetaType::registerType: Binary compatibility break "
+            "-- Type flags for type '%s' [%i] don't match. Previously "
+            "registered TypeFlags(0x%x), now registering TypeFlags(0x%x).",
+            normalizedTypeName.constData(), idx, previousFlags, int(flags));
+    }
+
     return idx;
 }
 
@@ -510,55 +558,30 @@ int QMetaType::registerTypedef(const char* typeName, int aliasId)
     int idx = qMetaTypeStaticType(normalizedTypeName.constData(),
                                   normalizedTypeName.size());
 
-    if (idx) {
-        Q_ASSERT(idx == aliasId);
-        return idx;
-    }
+    if (!idx) {
+        QWriteLocker locker(customTypesLock());
+        idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
+                                               normalizedTypeName.size());
 
-    QWriteLocker locker(customTypesLock());
-    idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
-                                           normalizedTypeName.size());
-
-    if (idx)
-        return idx;
-
-    QCustomTypeInfo inf;
-    inf.typeName = normalizedTypeName;
-    inf.alias = aliasId;
-    inf.creator = 0;
-    inf.deleter = 0;
-    ct->append(inf);
-    return aliasId;
-}
-
-/*!
-    \since 4.4
-
-    Unregisters a user type, with \a typeName.
-
-    \sa type(), typeName()
- */
-void QMetaType::unregisterType(const char *typeName)
-{
-    QVector<QCustomTypeInfo> *ct = customTypes();
-    if (!ct || !typeName)
-        return;
-
-#ifdef QT_NO_QOBJECT
-    NS(QByteArray) normalizedTypeName = typeName;
-#else
-    NS(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
-#endif
-    QWriteLocker locker(customTypesLock());
-    for (int v = 0; v < ct->count(); ++v) {
-        if (ct->at(v).typeName == typeName) {
-            QCustomTypeInfo &inf = (*ct)[v];
-            inf.typeName.clear();
+        if (!idx) {
+            QCustomTypeInfo inf;
+            inf.typeName = normalizedTypeName;
+            inf.alias = aliasId;
             inf.creator = 0;
             inf.deleter = 0;
-            inf.alias = -1;
+            ct->append(inf);
+            return aliasId;
         }
     }
+
+    if (idx != aliasId) {
+        qFatal("QMetaType::registerTypedef: Binary compatibility break "
+            "-- Type name '%s' previously registered as typedef of '%s' [%i], "
+            "now registering as typedef of '%s' [%i].",
+            normalizedTypeName.constData(), QMetaType::typeName(idx), idx,
+            QMetaType::typeName(aliasId), aliasId);
+    }
+    return idx;
 }
 
 /*!
@@ -1274,12 +1297,12 @@ class TypeDestroyer {
         static void Destroy(const int type, void *where)
         {
             if (QTypeModuleInfo<T>::IsGui) {
-                if (qMetaTypeGuiHelper)
+                if (Q_LIKELY(qMetaTypeGuiHelper))
                     qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].deleter(where);
                 return;
             }
             if (QTypeModuleInfo<T>::IsWidget) {
-                if (qMetaTypeWidgetsHelper)
+                if (Q_LIKELY(qMetaTypeWidgetsHelper))
                     qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].deleter(where);
                 return;
             }
@@ -1308,8 +1331,7 @@ private:
                 return;
             deleter = ct->at(type - QMetaType::User).deleter;
         }
-        if (Q_LIKELY(deleter))
-            deleter(where);
+        deleter(where);
     }
 
     const int m_type;
@@ -1338,19 +1360,15 @@ class TypeConstructor {
     struct ConstructorImpl<T, /* IsAcceptedType = */ false> {
         static void *Construct(const int type, void *where, const T *copy)
         {
-            QMetaType::Constructor ctor = 0;
-            if (QTypeModuleInfo<T>::IsGui) {
-                if (!qMetaTypeGuiHelper)
-                    return 0;
-                ctor = qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].constructor;
-            } else if (QTypeModuleInfo<T>::IsWidget) {
-                if (!qMetaTypeWidgetsHelper)
-                    return 0;
-                ctor = qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].constructor;
-            } else
-                return customTypeConstructor(type, where, copy);
+            if (QTypeModuleInfo<T>::IsGui)
+                return Q_LIKELY(qMetaTypeGuiHelper) ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].constructor(where, copy) : 0;
 
-            return ctor(where, copy);
+            if (QTypeModuleInfo<T>::IsWidget)
+                return Q_LIKELY(qMetaTypeWidgetsHelper) ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].constructor(where, copy) : 0;
+
+            // This point can be reached only for known types that definition is not available, for example
+            // in bootstrap mode. We have no other choice then ignore it.
+            return 0;
         }
     };
 public:
@@ -1367,15 +1385,15 @@ public:
 private:
     static void *customTypeConstructor(const int type, void *where, const void *copy)
     {
-        QMetaType::Constructor ctor = 0;
+        QMetaType::Constructor ctor;
         const QVector<QCustomTypeInfo> * const ct = customTypes();
         {
             QReadLocker locker(customTypesLock());
-            if (type < QMetaType::User || !ct || ct->count() <= type - QMetaType::User)
+            if (Q_UNLIKELY(type < QMetaType::User || !ct || ct->count() <= type - QMetaType::User))
                 return 0;
             ctor = ct->at(type - QMetaType::User).constructor;
         }
-        return ctor ? ctor(where, copy) : 0;
+        return ctor(where, copy);
     }
 
     const int m_type;
@@ -1428,20 +1446,18 @@ class TypeDestructor {
     struct DestructorImpl<T, /* IsAcceptedType = */ false> {
         static void Destruct(const int type, void *where)
         {
-            QMetaType::Destructor dtor = 0;
             if (QTypeModuleInfo<T>::IsGui) {
-                if (!qMetaTypeGuiHelper)
-                    return;
-                dtor = qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].destructor;
-            } else if (QTypeModuleInfo<T>::IsWidget) {
-                if (!qMetaTypeWidgetsHelper)
-                    return;
-                dtor = qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].destructor;
-            } else {
-                customTypeDestructor(type, where);
+                if (Q_LIKELY(qMetaTypeGuiHelper))
+                    qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].destructor(where);
                 return;
             }
-            dtor(where);
+            if (QTypeModuleInfo<T>::IsWidget) {
+                if (Q_LIKELY(qMetaTypeWidgetsHelper))
+                    qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].destructor(where);
+                return;
+            }
+            // This point can be reached only for known types that definition is not available, for example
+            // in bootstrap mode. We have no other choice then ignore it.
         }
     };
 public:
@@ -1457,16 +1473,14 @@ public:
 private:
     static void customTypeDestructor(const int type, void *where)
     {
-        QMetaType::Destructor dtor = 0;
+        QMetaType::Destructor dtor;
         const QVector<QCustomTypeInfo> * const ct = customTypes();
         {
             QReadLocker locker(customTypesLock());
-            if (type < QMetaType::User || !ct || ct->count() <= type - QMetaType::User)
+            if (Q_UNLIKELY(type < QMetaType::User || !ct || ct->count() <= type - QMetaType::User))
                 return;
             dtor = ct->at(type - QMetaType::User).destructor;
         }
-        if (!dtor)
-            return;
         dtor(where);
     }
 
@@ -1503,16 +1517,15 @@ class SizeOf {
     struct SizeOfImpl<T, /* IsAcceptedType = */ false> {
         static int Size(const int type)
         {
-            if (QTypeModuleInfo<T>::IsGui) {
-                if (!qMetaTypeGuiHelper)
-                    return 0;
-                return qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].size;
-            } else if (QTypeModuleInfo<T>::IsWidget) {
-                if (!qMetaTypeWidgetsHelper)
-                    return 0;
-                return qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].size;
-            }
-            return customTypeSizeOf(type);
+            if (QTypeModuleInfo<T>::IsGui)
+                return Q_LIKELY(qMetaTypeGuiHelper) ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].size : 0;
+
+            if (QTypeModuleInfo<T>::IsWidget)
+                return Q_LIKELY(qMetaTypeWidgetsHelper) ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].size : 0;
+
+            // This point can be reached only for known types that definition is not available, for example
+            // in bootstrap mode. We have no other choice then ignore it.
+            return 0;
         }
     };
 
@@ -1529,7 +1542,7 @@ private:
     {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
         QReadLocker locker(customTypesLock());
-        if (type < QMetaType::User || !ct || ct->count() <= type - QMetaType::User)
+        if (Q_UNLIKELY(type < QMetaType::User || !ct || ct->count() <= type - QMetaType::User))
             return 0;
         return ct->at(type - QMetaType::User).size;
     }
@@ -1575,7 +1588,15 @@ class Flags
     {
         static quint32 Flags(const int type)
         {
-            return Flags::undefinedTypeFlags(type);
+            if (QTypeModuleInfo<T>::IsGui)
+                return Q_LIKELY(qMetaTypeGuiHelper) ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].flags : 0;
+
+            if (QTypeModuleInfo<T>::IsWidget)
+                return Q_LIKELY(qMetaTypeWidgetsHelper) ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].flags : 0;
+
+            // This point can be reached only for known types that definition is not available, for example
+            // in bootstrap mode. We have no other choice then ignore it.
+            return 0;
         }
     };
 public:
@@ -1584,31 +1605,21 @@ public:
     {}
     template<typename T>
     quint32 delegate(const T*) { return FlagsImpl<T>::Flags(m_type); }
+    quint32 delegate(const void*) { return 0; }
     quint32 delegate(const QMetaTypeSwitcher::UnknownType*) { return customTypeFlags(m_type); }
 private:
     const int m_type;
     static quint32 customTypeFlags(const int type)
     {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
-        if (!ct)
+        if (Q_UNLIKELY(!ct))
             return 0;
         QReadLocker locker(customTypesLock());
-        if (ct->count() <= type - QMetaType::User)
+        if (Q_UNLIKELY(ct->count() <= type - QMetaType::User))
             return 0;
         return ct->at(type - QMetaType::User).flags;
     }
-    static quint32 undefinedTypeFlags(const int type);
 };
-
-quint32 Flags::undefinedTypeFlags(const int type)
-{
-    if (type >= QMetaType::FirstGuiType && type <= QMetaType::LastGuiType)
-        return qMetaTypeGuiHelper ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].flags : 0;
-    else if (type >= QMetaType::FirstWidgetsType && type <= QMetaType::LastWidgetsType)
-        return qMetaTypeWidgetsHelper ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].flags : 0;
-    return customTypeFlags(type);
-}
-
 }  // namespace
 
 /*!
@@ -1633,6 +1644,11 @@ QMetaType::TypeFlags QMetaType::typeFlags(int type)
     the internal ID used by QMetaType. Any class or struct that has a
     public default constructor, a public copy constructor and a public
     destructor can be registered.
+
+    This function requires that \c{T} is a fully defined type at the point
+    where the function is called. For pointer types, it also requires that the
+    pointed to type is fully defined. Use Q_DECLARE_OPAQUE_POINTER() to be able
+    to register pointers to forward declared types.
 
     After a type has been registered, you can create and destroy
     objects of that type dynamically at run-time.
@@ -1736,5 +1752,175 @@ QMetaType::TypeFlags QMetaType::typeFlags(int type)
 
     \sa Q_DECLARE_METATYPE(), QMetaType::type()
 */
+
+namespace {
+class TypeInfo {
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
+    struct TypeInfoImpl
+    {
+        TypeInfoImpl(const uint /* type */, QMetaTypeInterface &info)
+        {
+            QMetaTypeInterface tmp = QT_METATYPE_INTERFACE_INIT_NO_DATASTREAM(T);
+            info = tmp;
+        }
+    };
+
+    template<typename T>
+    struct TypeInfoImpl<T, /* IsAcceptedType = */ false>
+    {
+        TypeInfoImpl(const uint type, QMetaTypeInterface &info)
+        {
+            if (QTypeModuleInfo<T>::IsGui) {
+                if (Q_LIKELY(qMetaTypeGuiHelper))
+                    info = qMetaTypeGuiHelper[type - QMetaType::FirstGuiType];
+                return;
+            }
+            if (QTypeModuleInfo<T>::IsWidget) {
+                if (Q_LIKELY(qMetaTypeWidgetsHelper))
+                    info = qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType];
+                return;
+            }
+        }
+    };
+public:
+    QMetaTypeInterface info;
+    TypeInfo(const uint type)
+        : m_type(type)
+    {
+        QMetaTypeInterface tmp = QT_METATYPE_INTERFACE_INIT_EMPTY();
+        info = tmp;
+    }
+    template<typename T>
+    void delegate(const T*) { TypeInfoImpl<T>(m_type, info); }
+    void delegate(const void*) {}
+    void delegate(const QMetaTypeSwitcher::UnknownType*) { customTypeInfo(m_type); }
+private:
+    void customTypeInfo(const uint type)
+    {
+        const QVector<QCustomTypeInfo> * const ct = customTypes();
+        if (Q_UNLIKELY(!ct))
+            return;
+        QReadLocker locker(customTypesLock());
+        if (Q_LIKELY(uint(ct->count()) > type - QMetaType::User))
+            info = ct->at(type - QMetaType::User);
+    }
+
+    const uint m_type;
+};
+} // namespace
+
+QMetaType QMetaType::typeInfo(const int type)
+{
+    TypeInfo typeInfo(type);
+    QMetaTypeSwitcher::switcher<void>(typeInfo, type, 0);
+    return typeInfo.info.creator || !type ? QMetaType(QMetaType::NoExtensionFlags
+                                 , static_cast<const QMetaTypeInterface *>(0) // typeInfo::info is a temporary variable, we can't return address of it.
+                                 , typeInfo.info.creator
+                                 , typeInfo.info.deleter
+                                 , typeInfo.info.saveOp
+                                 , typeInfo.info.loadOp
+                                 , typeInfo.info.constructor
+                                 , typeInfo.info.destructor
+                                 , typeInfo.info.size
+                                 , typeInfo.info.flags
+                                 , type)
+                : QMetaType(-1);
+}
+
+QMetaType::QMetaType(const int typeId)
+    : m_typeId(typeId)
+{
+    if (Q_UNLIKELY(typeId == -1)) {
+        // Constructs invalid QMetaType instance.
+        m_extensionFlags = 0xffffffff;
+        Q_ASSERT(!isValid());
+    } else {
+        // TODO it can be better.
+        *this = QMetaType::typeInfo(typeId);
+        if (m_typeId > 0 && !m_creator) {
+            m_extensionFlags = 0xffffffff;
+            m_typeId = -1;
+        }
+        if (m_typeId ==  QMetaType::Void) {
+            m_extensionFlags = CreateEx | DestroyEx | ConstructEx | DestructEx;
+        }
+    }
+}
+
+QMetaType::QMetaType(const QMetaType &other)
+    : m_creator(other.m_creator)
+    , m_deleter(other.m_deleter)
+    , m_saveOp(other.m_saveOp)
+    , m_loadOp(other.m_loadOp)
+    , m_constructor(other.m_constructor)
+    , m_destructor(other.m_destructor)
+    , m_extension(other.m_extension) // space reserved for future use
+    , m_size(other.m_size)
+    , m_typeFlags(other.m_typeFlags)
+    , m_extensionFlags(other.m_extensionFlags)
+    , m_typeId(other.m_typeId)
+{}
+
+QMetaType &QMetaType::operator =(const QMetaType &other)
+{
+    m_creator = other.m_creator;
+    m_deleter = other.m_deleter;
+    m_saveOp = other.m_saveOp;
+    m_loadOp = other.m_loadOp;
+    m_constructor = other.m_constructor;
+    m_destructor = other.m_destructor;
+    m_size = other.m_size;
+    m_typeFlags = other.m_typeFlags;
+    m_extensionFlags = other.m_extensionFlags;
+    m_extension = other.m_extension; // space reserved for future use
+    m_typeId = other.m_typeId;
+    return *this;
+}
+
+void QMetaType::ctor(const QMetaTypeInterface *info)
+{
+    // Special case for Void type, the type is valid but not constructible.
+    // In future we may consider to remove this assert and extend this function to initialize
+    // differently m_extensionFlags for different types. Currently it is not needed.
+    Q_ASSERT(m_typeId == QMetaType::Void);
+    Q_UNUSED(info);
+    m_extensionFlags = CreateEx | DestroyEx | ConstructEx | DestructEx;
+}
+
+void QMetaType::dtor()
+{}
+
+void *QMetaType::createExtended(const void *copy) const
+{
+    Q_UNUSED(copy);
+    return 0;
+}
+
+void QMetaType::destroyExtended(void *data) const
+{
+    Q_UNUSED(data);
+}
+
+void *QMetaType::constructExtended(void *where, const void *copy) const
+{
+    Q_UNUSED(where);
+    Q_UNUSED(copy);
+    return 0;
+}
+
+void QMetaType::destructExtended(void *data) const
+{
+    Q_UNUSED(data);
+}
+
+uint QMetaType::sizeExtended() const
+{
+    return 0;
+}
+
+QMetaType::TypeFlags QMetaType::flagsExtended() const
+{
+    return 0;
+}
 
 QT_END_NAMESPACE

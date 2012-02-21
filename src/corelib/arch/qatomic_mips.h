@@ -50,6 +50,10 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 #if 0
+// silence syncqt warnings
+QT_END_NAMESPACE
+QT_END_HEADER
+
 #pragma qt_sync_stop_processing
 #endif
 
@@ -223,7 +227,7 @@ T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
     return originalValue;
 }
 
-#if defined(_MIPS_ARCH_MIPS64) || defined(__mips64)
+#if defined(Q_PROCESSOR_MIPS_64)
 
 #define Q_ATOMIC_INT64_IS_SUPPORTED
 #define Q_ATOMIC_INT64_REFERENCE_COUNTING_IS_ALWAYS_NATIVE

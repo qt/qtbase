@@ -43,11 +43,12 @@
 
 #include <private/qguiapplication_p.h>
 #include <private/qicon_p.h>
-#include <private/qguiplatformplugin_p.h>
+#include <private/qguiapplication_p.h>
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QIconEnginePlugin>
 #include <QtGui/QPixmapCache>
+#include <QtGui/QPlatformTheme>
 #include <QtWidgets/QIconEngine>
 #include <QtWidgets/QStyleOption>
 #include <QtCore/QList>
@@ -73,17 +74,11 @@ Q_GLOBAL_STATIC(QIconLoader, iconLoaderInstance)
 /* Theme to use in last resort, if the theme does not have the icon, neither the parents  */
 static QString fallbackTheme()
 {
-#ifdef Q_WS_X11
-    if (X11->desktopEnvironment == DE_GNOME) {
-        return QLatin1String("gnome");
-    } else if (X11->desktopEnvironment == DE_KDE) {
-        return X11->desktopVersion >= 4
-            ? QString::fromLatin1("oxygen")
-            : QString::fromLatin1("crystalsvg");
-    } else {
-        return QLatin1String("hicolor");
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+        const QVariant themeHint = theme->themeHint(QPlatformTheme::SystemIconThemeName);
+        if (themeHint.isValid())
+            return themeHint.toString();
     }
-#endif
     return QString();
 }
 
@@ -94,6 +89,27 @@ QIconLoader::QIconLoader() :
 
 // We lazily initialize the loader to make static icons
 // work. Though we do not officially support this.
+
+static inline QString systemThemeName()
+{
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+        const QVariant themeHint = theme->themeHint(QPlatformTheme::SystemIconThemeName);
+        if (themeHint.isValid())
+            return themeHint.toString();
+    }
+    return QString();
+}
+
+static inline QStringList systemIconSearchPaths()
+{
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+        const QVariant themeHint = theme->themeHint(QPlatformTheme::IconThemeSearchPaths);
+        if (themeHint.isValid())
+            return themeHint.toStringList();
+    }
+    return QStringList();
+}
+
 void QIconLoader::ensureInitialized()
 {
     if (!m_initialized) {
@@ -101,7 +117,8 @@ void QIconLoader::ensureInitialized()
 
         Q_ASSERT(qApp);
 
-        m_systemTheme = qt_guiPlatformPlugin()->systemIconThemeName();
+        m_systemTheme = systemThemeName();
+
         if (m_systemTheme.isEmpty())
             m_systemTheme = fallbackTheme();
 #ifndef QT_NO_LIBRARY
@@ -125,7 +142,7 @@ void QIconLoader::updateSystemTheme()
 {
     // Only change if this is not explicitly set by the user
     if (m_userTheme.isEmpty()) {
-        QString theme = qt_guiPlatformPlugin()->systemIconThemeName();
+        QString theme = systemThemeName();
         if (theme.isEmpty())
             theme = fallbackTheme();
         if (theme != m_systemTheme) {
@@ -151,7 +168,7 @@ void QIconLoader::setThemeSearchPath(const QStringList &searchPaths)
 QStringList QIconLoader::themeSearchPaths() const
 {
     if (m_iconDirs.isEmpty()) {
-        m_iconDirs = qt_guiPlatformPlugin()->iconThemeSearchPaths();
+        m_iconDirs = systemIconSearchPaths();
         // Always add resource directory as search path
         m_iconDirs.append(QLatin1String(":/icons"));
     }
@@ -221,8 +238,11 @@ QIconTheme::QIconTheme(const QString &themeName)
                 QLatin1String("Icon Theme/Inherits")).toStringList();
 
         // Ensure a default platform fallback for all themes
-        if (m_parents.isEmpty())
-            m_parents.append(fallbackTheme());
+        if (m_parents.isEmpty()) {
+            const QString fallback = fallbackTheme();
+            if (!fallback.isEmpty())
+                m_parents.append(fallback);
+        }
 
         // Ensure that all themes fall back to hicolor
         if (!m_parents.contains(QLatin1String("hicolor")))

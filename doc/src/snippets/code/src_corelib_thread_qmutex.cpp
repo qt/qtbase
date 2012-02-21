@@ -114,8 +114,8 @@ int complexFunction(int flag)
     switch (flag) {
     case 0:
     case 1:
-        mutex.unlock();
-        return moreComplexFunction(flag);
+        retVal = moreComplexFunction(flag);
+        break;
     case 2:
         {
             int status = anotherFunction();

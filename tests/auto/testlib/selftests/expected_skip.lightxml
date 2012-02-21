@@ -24,7 +24,9 @@
     <DataTag><![CDATA[local 2]]></DataTag>
     <Description><![CDATA[this line should only be reached once (true)]]></Description>
 </Message>
-<Incident type="pass" file="" line="0" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[local 2]]></DataTag>
+</Incident>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />

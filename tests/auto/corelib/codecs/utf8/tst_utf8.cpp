@@ -239,7 +239,7 @@ void tst_Utf8::invalidUtf8_data()
     QTest::newRow("non-unicode-3") << QByteArray("\xFC\x84\x80\x80\x80\x80");
     // 0x7fffffff:       1   11 1111   11 1111   11 1111   11 1111   11 1111
     // encoding: xxxx:xxz0 xz00:0100 xz00:0000 xz00:0000 xz00:0001 xz00:0001
-    QTest::newRow("non-unicode-3") << QByteArray("\xFD\xBF\xBF\xBF\xBF\xBF");
+    QTest::newRow("non-unicode-4") << QByteArray("\xFD\xBF\xBF\xBF\xBF\xBF");
 
     // As seen above, 0xFE and 0xFF never appear:
     QTest::newRow("fe") << QByteArray("\xFE");
@@ -269,9 +269,9 @@ void tst_Utf8::invalidUtf8_data()
     // overlong 4:                     xxxx:z000 xz00:0000 xz00:0010 xz00:0000
     QTest::newRow("overlong-2-4") << QByteArray("\xF0\x80\x82\x80");
     // overlong 5:           xxxx:xz00 xz00:0000 xz00:0000 xz00:0010 xz00:0000
-    QTest::newRow("overlong-2-4") << QByteArray("\xF8\x80\x80\x82\x80");
+    QTest::newRow("overlong-2-5") << QByteArray("\xF8\x80\x80\x82\x80");
     // overlong 6: xxxx:xxz0 xz00:0000 xz00:0000 xz00:0000 xz00:0010 xz00:0000
-    QTest::newRow("overlong-2-4") << QByteArray("\xFC\x80\x80\x80\x82\x80");
+    QTest::newRow("overlong-2-6") << QByteArray("\xFC\x80\x80\x80\x82\x80");
 
     // U+0800:                                               10 0000   00 0000
     // proper encoding:                          xxxz:0000 xz10:0000 xz00:0000

@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include "qhostaddress.h"
 #include "qhostaddress_p.h"
 #include "qdebug.h"

@@ -58,12 +58,13 @@
 #include <qwaitcondition.h>
 #include <qfilesystemwatcher.h>
 #include <qfileiconprovider.h>
-#include <qfsfileengine.h>
 #include <qpair.h>
 #include <qstack.h>
 #include <qdatetime.h>
 #include <qdir.h>
 #include <qelapsedtimer.h>
+
+#include <private/qfilesystemengine_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,8 +87,7 @@ public:
 
 #ifndef QT_NO_FSFILEENGINE
     bool isCaseSensitive() const {
-        QFSFileEngine fe(mFileInfo.absoluteFilePath());
-        return fe.caseSensitive();
+        return QFileSystemEngine::isCaseSensitive();
     }
 #endif
 

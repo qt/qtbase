@@ -110,6 +110,7 @@ bool QWidgetWindow::event(QEvent *event)
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
+    case QEvent::TouchCancel:
         handleTouchEvent(static_cast<QTouchEvent *>(event));
         return true;
 
@@ -147,6 +148,12 @@ bool QWidgetWindow::event(QEvent *event)
 
     case QEvent::WindowStateChange:
         handleWindowStateChangedEvent(static_cast<QWindowStateChangeEvent *>(event));
+        return true;
+
+    case QEvent::ThemeChange: {
+        QEvent widgetEvent(QEvent::ThemeChange);
+        QGuiApplication::sendSpontaneousEvent(m_widget, &widgetEvent);
+    }
         return true;
 
     default:
@@ -289,7 +296,10 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 
 void QWidgetWindow::handleTouchEvent(QTouchEvent *event)
 {
-    QApplicationPrivate::translateRawTouchEvent(m_widget, event->device(), event->touchPoints(), event->timestamp());
+    if (event->type() == QEvent::TouchCancel)
+        QApplicationPrivate::translateTouchCancel(event->device(), event->timestamp());
+    else
+        QApplicationPrivate::translateRawTouchEvent(m_widget, event->device(), event->touchPoints(), event->timestamp());
 }
 
 void QWidgetWindow::handleKeyEvent(QKeyEvent *event)

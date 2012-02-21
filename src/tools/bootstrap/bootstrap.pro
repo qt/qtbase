@@ -43,6 +43,7 @@ DEPENDPATH += $$INCLUDEPATH \
               ../../corelib/tools \
               ../../corelib/io \
               ../../corelib/codecs \
+              ../../corelib/json \
               ../../xml
 
 SOURCES += \
@@ -72,6 +73,7 @@ SOURCES += \
            ../../corelib/kernel/qmetatype.cpp \
            ../../corelib/kernel/qvariant.cpp \
            ../../corelib/kernel/qsystemerror.cpp \
+           ../../corelib/plugin/quuid.cpp \
            ../../corelib/tools/qbitarray.cpp \
            ../../corelib/tools/qbytearray.cpp \
            ../../corelib/tools/qbytearraymatcher.cpp \
@@ -88,6 +90,13 @@ SOURCES += \
            ../../corelib/tools/qvsnprintf.cpp \
            ../../corelib/xml/qxmlutils.cpp \
            ../../corelib/xml/qxmlstream.cpp \
+           ../../corelib/json/qjson.cpp \
+           ../../corelib/json/qjsondocument.cpp \
+           ../../corelib/json/qjsonobject.cpp \
+           ../../corelib/json/qjsonarray.cpp \
+           ../../corelib/json/qjsonvalue.cpp \
+           ../../corelib/json/qjsonparser.cpp \
+           ../../corelib/json/qjsonwriter.cpp \
            ../../xml/dom/qdom.cpp \
            ../../xml/sax/qxml.cpp
 

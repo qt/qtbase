@@ -158,7 +158,7 @@ void NmakeMakefileGenerator::writeNmakeParts(QTextStream &t)
     // precompiled header
     if(usePCH) {
         QString precompRule = QString("-c -Yc -Fp%1 -Fo%2").arg(precompPch).arg(precompObj);
-        t << precompObj << ": " << precompH << " " << findDependencies(precompH).join(" \\\n\t\t")
+        t << precompObj << ": " << precompH << " " << escapeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
           << "\n\t" << "$(CXX) " + precompRule +" $(CXXFLAGS) $(INCPATH) -TP " << precompH << endl << endl;
     }
 }

@@ -67,8 +67,9 @@ class QMessageLogContext
     Q_DISABLE_COPY(QMessageLogContext)
 public:
     QMessageLogContext() : version(1), line(0), file(0), function(0) {}
-    Q_DECL_CONSTEXPR QMessageLogContext(const char *file, int line, const char *function)
-        : version(1), line(line), file(file), function(function) {}
+    Q_DECL_CONSTEXPR QMessageLogContext(const char *fileName, int lineNumber,
+                                        const char *functionName)
+        : version(1), line(lineNumber), file(fileName), function(functionName) {}
 
     int version;
     int line;
@@ -126,8 +127,6 @@ private:
     QMessageLogContext context;
 };
 
-Q_CORE_EXPORT void qt_message_output(QtMsgType, const QMessageLogContext &context, const char *buf);
-
 /*
   qDebug, qWarning, qCritical, qFatal are redefined to automatically include context information
  */
@@ -139,14 +138,19 @@ Q_CORE_EXPORT void qt_message_output(QtMsgType, const QMessageLogContext &contex
 #define QT_NO_QDEBUG_MACRO while (false) QMessageLogger().noDebug
 #define QT_NO_QWARNING_MACRO while (false) QMessageLogger().noDebug
 
-#ifdef QT_NO_DEBUG_OUTPUT
+#if defined(QT_NO_DEBUG_OUTPUT)
 #  undef qDebug
 #  define qDebug QT_NO_QDEBUG_MACRO
 #endif
-#ifdef QT_NO_WARNING_OUTPUT
+#if defined(QT_NO_WARNING_OUTPUT)
 #  undef qWarning
 #  define qWarning QT_NO_QWARNING_MACRO
 #endif
+
+Q_CORE_EXPORT void qt_message_output(QtMsgType, const QMessageLogContext &context, const char *buf);
+
+Q_CORE_EXPORT void qErrnoWarning(int code, const char *msg, ...);
+Q_CORE_EXPORT void qErrnoWarning(const char *msg, ...);
 
 // deprecated. Use qInstallMessageHandler instead!
 typedef void (*QtMsgHandler)(QtMsgType, const char *);

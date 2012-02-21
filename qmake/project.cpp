@@ -1284,7 +1284,7 @@ QMakeProject::read(uchar cmd)
         if(!Option::user_template_prefix.isEmpty())
             base_vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
 
-        if(cmd & ReadCache && Option::mkfile::do_cache) {        // parse the cache
+        if ((cmd & ReadSetup) && Option::mkfile::do_cache) {        // parse the cache
             int cache_depth = -1;
             QString qmake_cache = Option::mkfile::cachefile;
             if(qmake_cache.isEmpty())  { //find it as it has not been specified
@@ -1315,7 +1315,7 @@ QMakeProject::read(uchar cmd)
                 }
             }
         }
-        if(cmd & ReadConf) {             // parse mkspec
+        if (cmd & ReadSetup) {             // parse mkspec
             QString qmakespec = fixEnvVariables(Option::mkfile::qmakespec);
             QStringList mkspec_roots = qmake_mkspec_paths();
             debug_msg(2, "Looking for mkspec %s in (%s)", qmakespec.toLatin1().constData(),
@@ -1389,7 +1389,7 @@ QMakeProject::read(uchar cmd)
         vars["TARGET"].append(QFileInfo(pfile).baseName());
 
     //before commandline
-    if(cmd & ReadCmdLine) {
+    if (cmd & ReadSetup) {
         cfile = pfile;
         parser.file = "(internal)";
         parser.from_file = false;
@@ -1406,7 +1406,7 @@ QMakeProject::read(uchar cmd)
     }
 
     //commandline configs
-    if(cmd & ReadConfigs && !Option::user_configs.isEmpty()) {
+    if ((cmd & ReadSetup) && !Option::user_configs.isEmpty()) {
         parser.file = "(configs)";
         parser.from_file = false;
         parser.line_no = 1; //really arg count now.. duh
@@ -1421,7 +1421,7 @@ QMakeProject::read(uchar cmd)
             return false;
     }
 
-    if(cmd & ReadCmdLine) {
+    if (cmd & ReadSetup) {
         parser.file = "(internal)";
         parser.from_file = false;
         parser.line_no = 1; //really arg count now.. duh
@@ -1437,7 +1437,7 @@ QMakeProject::read(uchar cmd)
     }
 
     //after configs (set in BUILDS)
-    if(cmd & ReadConfigs && !Option::after_user_configs.isEmpty()) {
+    if ((cmd & ReadSetup) && !Option::after_user_configs.isEmpty()) {
         parser.file = "(configs)";
         parser.from_file = false;
         parser.line_no = 1; //really arg count now.. duh
@@ -1447,7 +1447,7 @@ QMakeProject::read(uchar cmd)
     if(pfile != "-" && vars["TARGET"].isEmpty())
         vars["TARGET"].append(QFileInfo(pfile).baseName());
 
-    if(cmd & ReadConfigs && !Option::user_configs.isEmpty()) {
+    if ((cmd & ReadSetup) && !Option::user_configs.isEmpty()) {
         parser.file = "(configs)";
         parser.from_file = false;
         parser.line_no = 1; //really arg count now.. duh
@@ -3165,8 +3165,14 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
             QString ret, type = var.mid(13);
             if(type == "arch") {
                 QString paths = qgetenv("PATH");
-                QString vcBin64 = qgetenv("VCINSTALLDIR").append("\\bin\\amd64");
-                QString vcBinX86_64 = qgetenv("VCINSTALLDIR").append("\\bin\\x86_amd64");
+                QString vcBin64 = qgetenv("VCINSTALLDIR");
+                if (!vcBin64.endsWith('\\'))
+                    vcBin64.append('\\');
+                vcBin64.append("bin\\amd64");
+                QString vcBinX86_64 = qgetenv("VCINSTALLDIR");
+                if (!vcBinX86_64.endsWith('\\'))
+                    vcBinX86_64.append('\\');
+                vcBinX86_64.append("bin\\x86_amd64");
                 if(paths.contains(vcBin64,Qt::CaseInsensitive) || paths.contains(vcBinX86_64,Qt::CaseInsensitive))
                     ret = "x86_64";
                 else

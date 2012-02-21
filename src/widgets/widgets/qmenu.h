@@ -48,7 +48,7 @@
 #include <QtWidgets/qaction.h>
 #include <QtWidgets/qplatformmenu_qpa.h>
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 #include <windef.h> // for HMENU
 #endif
 
@@ -136,7 +136,7 @@ public:
     void setNoReplayFor(QWidget *widget);
     QPlatformMenu *platformMenu();
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     HMENU wceMenu();
 #endif
 
@@ -170,7 +170,7 @@ protected:
     bool focusNextPrevChild(bool next);
     void initStyleOption(QStyleOptionMenuItem *option, const QAction *action) const;
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     QAction* wceCommands(uint command);
 #endif
 

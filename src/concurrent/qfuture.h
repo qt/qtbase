@@ -42,7 +42,7 @@
 #ifndef QFUTURE_H
 #define QFUTURE_H
 
-#include <QtCore/qglobal.h>
+#include <QtConcurrent/qtconcurrent_global.h>
 
 #ifndef QT_NO_QFUTURE
 

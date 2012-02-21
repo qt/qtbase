@@ -68,7 +68,7 @@ struct QPlatformIntegrationFactoryInterface : public QFactoryInterface
     virtual QPlatformIntegration *create(const QString &key, const QStringList &paramList) = 0;
 };
 
-#define QPlatformIntegrationFactoryInterface_iid "com.nokia.Qt.QPlatformIntegrationFactoryInterface"
+#define QPlatformIntegrationFactoryInterface_iid "org.qt-project.Qt.QPlatformIntegrationFactoryInterface"
 
 Q_DECLARE_INTERFACE(QPlatformIntegrationFactoryInterface, QPlatformIntegrationFactoryInterface_iid)
 

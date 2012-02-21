@@ -80,8 +80,6 @@ QT_BEGIN_NAMESPACE
 
   Make a lot of the (mostly empty) methods in the public classes inline.
   Specially constructors assignment operators and comparison operators are candidates.
-
-  The virtual isXxx functions in *Private can probably be replaced by inline methods checking the nodeType().
 */
 
 /*
@@ -167,19 +165,22 @@ public:
     }
 
     // Dynamic cast
-    virtual bool isAttr() const                     { return false; }
-    virtual bool isCDATASection() const             { return false; }
-    virtual bool isDocumentFragment() const         { return false; }
-    virtual bool isDocument() const                 { return false; }
-    virtual bool isDocumentType() const             { return false; }
-    virtual bool isElement() const                  { return false; }
-    virtual bool isEntityReference() const          { return false; }
-    virtual bool isText() const                     { return false; }
-    virtual bool isEntity() const                   { return false; }
-    virtual bool isNotation() const                 { return false; }
-    virtual bool isProcessingInstruction() const    { return false; }
-    virtual bool isCharacterData() const            { return false; }
-    virtual bool isComment() const                  { return false; }
+    bool isAttr() const                     { return nodeType() == QDomNode::AttributeNode; }
+    bool isCDATASection() const             { return nodeType() == QDomNode::CDATASectionNode; }
+    bool isDocumentFragment() const         { return nodeType() == QDomNode::DocumentFragmentNode; }
+    bool isDocument() const                 { return nodeType() == QDomNode::DocumentNode; }
+    bool isDocumentType() const             { return nodeType() == QDomNode::DocumentTypeNode; }
+    bool isElement() const                  { return nodeType() == QDomNode::ElementNode; }
+    bool isEntityReference() const          { return nodeType() == QDomNode::EntityReferenceNode; }
+    bool isText() const                     { return (nodeType() == QDomNode::TextNode)
+                                                  || (nodeType() == QDomNode::CDATASectionNode); }
+    bool isEntity() const                   { return nodeType() == QDomNode::EntityNode; }
+    bool isNotation() const                 { return nodeType() == QDomNode::NotationNode; }
+    bool isProcessingInstruction() const    { return nodeType() == QDomNode::ProcessingInstructionNode; }
+    bool isCharacterData() const            { return (nodeType() == QDomNode::CharacterDataNode)
+                                                  || (nodeType() == QDomNode::TextNode)
+                                                  || (nodeType() == QDomNode::CommentNode); }
+    bool isComment() const                  { return nodeType() == QDomNode::CommentNode; }
 
     virtual QDomNode::NodeType nodeType() const { return QDomNode::BaseNode; }
 
@@ -219,7 +220,7 @@ public:
 
     void createList();
     QDomNodePrivate* item(int index);
-    uint length() const;
+    int length() const;
 
     QAtomicInt ref;
     /*
@@ -244,7 +245,7 @@ public:
     QDomNodePrivate* setNamedItemNS(QDomNodePrivate* arg);
     QDomNodePrivate* removeNamedItem(const QString& name);
     QDomNodePrivate* item(int index) const;
-    uint length() const;
+    int length() const;
     bool contains(const QString& name) const;
     bool containsNS(const QString& nsURI, const QString & localName) const;
 
@@ -296,7 +297,6 @@ public:
     QDomNodePrivate* removeChild(QDomNodePrivate* oldChild);
     QDomNodePrivate* appendChild(QDomNodePrivate* newChild);
 
-    virtual bool isDocumentType() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::DocumentTypeNode; }
 
     void save(QTextStream& s, int, int) const;
@@ -317,7 +317,6 @@ public:
 
     // Reimplemented from QDomNodePrivate
     virtual QDomNodePrivate* cloneNode(bool deep = true);
-    virtual bool isDocumentFragment() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::DocumentFragmentNode; }
 };
 
@@ -327,7 +326,7 @@ public:
     QDomCharacterDataPrivate(QDomDocumentPrivate*, QDomNodePrivate* parent, const QString& data);
     QDomCharacterDataPrivate(QDomCharacterDataPrivate* n, bool deep);
 
-    uint dataLength() const;
+    int dataLength() const;
     QString substringData(unsigned long offset, unsigned long count) const;
     void appendData(const QString& arg);
     void insertData(unsigned long offset, const QString& arg);
@@ -335,7 +334,6 @@ public:
     void replaceData(unsigned long offset, unsigned long count, const QString& arg);
 
     // Reimplemented from QDomNodePrivate
-    virtual bool isCharacterData() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::CharacterDataNode; }
     QDomNodePrivate* cloneNode(bool deep = true);
 };
@@ -350,7 +348,6 @@ public:
 
     // Reimplemented from QDomNodePrivate
     QDomNodePrivate* cloneNode(bool deep = true);
-    virtual bool isText() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::TextNode; }
     virtual void save(QTextStream& s, int, int) const;
 };
@@ -367,7 +364,6 @@ public:
     // Reimplemented from QDomNodePrivate
     void setNodeValue(const QString& v);
     QDomNodePrivate* cloneNode(bool deep = true);
-    virtual bool isAttr() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::AttributeNode; }
     virtual void save(QTextStream& s, int, int) const;
 
@@ -401,7 +397,6 @@ public:
     // Reimplemented from QDomNodePrivate
     QDomNamedNodeMapPrivate* attributes() { return m_attr; }
     bool hasAttributes() { return (m_attr->length() > 0); }
-    virtual bool isElement() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::ElementNode; }
     QDomNodePrivate* cloneNode(bool deep = true);
     virtual void save(QTextStream& s, int, int) const;
@@ -419,7 +414,6 @@ public:
 
     // Reimplemented from QDomNodePrivate
     QDomNodePrivate* cloneNode(bool deep = true);
-    virtual bool isComment() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::CommentNode; }
     virtual void save(QTextStream& s, int, int) const;
 };
@@ -432,7 +426,6 @@ public:
 
     // Reimplemented from QDomNodePrivate
     QDomNodePrivate* cloneNode(bool deep = true);
-    virtual bool isCDATASection() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::CDATASectionNode; }
     virtual void save(QTextStream& s, int, int) const;
 };
@@ -446,7 +439,6 @@ public:
 
     // Reimplemented from QDomNodePrivate
     QDomNodePrivate* cloneNode(bool deep = true);
-    virtual bool isNotation() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::NotationNode; }
     virtual void save(QTextStream& s, int, int) const;
 
@@ -464,7 +456,6 @@ public:
 
     // Reimplemented from QDomNodePrivate
     QDomNodePrivate* cloneNode(bool deep = true);
-    virtual bool isEntity() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::EntityNode; }
     virtual void save(QTextStream& s, int, int) const;
 
@@ -482,7 +473,6 @@ public:
 
     // Reimplemented from QDomNodePrivate
     QDomNodePrivate* cloneNode(bool deep = true);
-    bool isEntityReference() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::EntityReferenceNode; }
     virtual void save(QTextStream& s, int, int) const;
 };
@@ -496,7 +486,6 @@ public:
 
     // Reimplemented from QDomNodePrivate
     QDomNodePrivate* cloneNode(bool deep = true);
-    virtual bool isProcessingInstruction() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::ProcessingInstructionNode; }
     virtual void save(QTextStream& s, int, int) const;
 };
@@ -534,7 +523,6 @@ public:
 
     // Reimplemented from QDomNodePrivate
     QDomNodePrivate* cloneNode(bool deep = true);
-    bool isDocument() const { return true; }
     QDomNode::NodeType nodeType() const { return QDomNode::DocumentNode; }
     void clear();
 
@@ -1262,7 +1250,7 @@ QDomNodePrivate* QDomNodeListPrivate::item(int index)
     return list.at(index);
 }
 
-uint QDomNodeListPrivate::length() const
+int QDomNodeListPrivate::length() const
 {
     if (!node_impl)
         return 0;
@@ -1394,7 +1382,7 @@ QDomNode QDomNodeList::item(int index) const
 /*!
     Returns the number of nodes in the list.
 */
-uint QDomNodeList::length() const
+int QDomNodeList::length() const
 {
     if (!impl)
         return 0;
@@ -2668,23 +2656,16 @@ QDomNode QDomNode::namedItem(const QString& name) const
     the stream \a str. This function uses \a indent as the amount of
     space to indent the node.
 
-    If this node is a document node, the encoding of text stream \a str's encoding is
-    set by treating a processing instruction by name "xml" as an XML declaration, if such a one exists,
-    and otherwise defaults to UTF-8. XML declarations are not processing instructions, but this
-    behavior exists for historical reasons. If this node is not a document node,
-    the text stream's encoding is used.
-
     If the document contains invalid XML characters or characters that cannot be
     encoded in the given encoding, the result and behavior is undefined.
 
-*/
-void QDomNode::save(QTextStream& str, int indent) const
-{
-    save(str, indent, QDomNode::EncodingFromDocument);
-}
-
-/*!
-    If \a encodingPolicy is QDomNode::EncodingFromDocument, this function behaves as save(QTextStream &str, int indent).
+    If \a encodingPolicy is QDomNode::EncodingFromDocument and this node is a
+    document node, the encoding of text stream \a str's encoding is set by
+    treating a processing instruction by name "xml" as an XML declaration, if
+    one exists, and otherwise defaults to UTF-8. XML declarations are not
+    processing instructions, but this behavior exists for historical
+    reasons. If this node is not a document node, the text stream's encoding
+    is used.
 
     If \a encodingPolicy is EncodingFromTextStream and this node is a document node, this
     function behaves as save(QTextStream &str, int indent) with the exception that the encoding
@@ -2695,15 +2676,15 @@ void QDomNode::save(QTextStream& str, int indent) const
 
     \since 4.2
  */
-void QDomNode::save(QTextStream& str, int indent, EncodingPolicy encodingPolicy) const
+void QDomNode::save(QTextStream& stream, int indent, EncodingPolicy encodingPolicy) const
 {
     if (!impl)
         return;
 
     if(isDocument())
-        static_cast<const QDomDocumentPrivate *>(impl)->saveDocument(str, indent, encodingPolicy);
+        static_cast<const QDomDocumentPrivate *>(impl)->saveDocument(stream, indent, encodingPolicy);
     else
-        IMPL->save(str, 1, indent);
+        IMPL->save(stream, 1, indent);
 }
 
 /*!
@@ -2951,7 +2932,7 @@ QDomElement QDomNode::firstChildElement(const QString &tagName) const
 
 /*!
     Returns the last child element with tag name \a tagName if tagName is non-empty;
-    otherwise returns the first child element. Returns a null element if no
+    otherwise returns the last child element. Returns a null element if no
     such child exists.
 
     \sa firstChildElement() previousSiblingElement() nextSiblingElement()
@@ -3162,13 +3143,12 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::removeNamedItem(const QString& name)
 
 QDomNodePrivate* QDomNamedNodeMapPrivate::item(int index) const
 {
-    if ((uint)index >= length())
+    if (index >= length())
         return 0;
     return *(map.constBegin() + index);
 }
 
-// ### Qt 5: convert all length/size() functions in QDom to use int instead of uint.
-uint QDomNamedNodeMapPrivate::length() const
+int QDomNamedNodeMapPrivate::length() const
 {
     return map.count();
 }
@@ -3415,7 +3395,7 @@ QDomNode QDomNamedNodeMap::removeNamedItemNS(const QString& nsURI, const QString
 
     \sa item()
 */
-uint QDomNamedNodeMap::length() const
+int QDomNamedNodeMap::length() const
 {
     if (!impl)
         return 0;
@@ -3903,7 +3883,7 @@ QDomNodePrivate* QDomCharacterDataPrivate::cloneNode(bool deep)
     return p;
 }
 
-uint QDomCharacterDataPrivate::dataLength() const
+int QDomCharacterDataPrivate::dataLength() const
 {
     return value.length();
 }
@@ -4027,7 +4007,7 @@ void QDomCharacterData::setData(const QString& v)
 /*!
     Returns the length of the stored string.
 */
-uint QDomCharacterData::length() const
+int QDomCharacterData::length() const
 {
     if (impl)
         return IMPL->dataLength();
@@ -5700,8 +5680,8 @@ QDomNodePrivate* QDomEntityPrivate::cloneNode(bool deep)
 static QByteArray encodeEntity(const QByteArray& str)
 {
     QByteArray tmp(str);
-    uint len = tmp.size();
-    uint i = 0;
+    int len = tmp.size();
+    int i = 0;
     const char* d = tmp.data();
     while (i < len) {
         if (d[i] == '%'){
@@ -6560,6 +6540,10 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
     creates the DOM tree that represents the document. The root
     element is available using documentElement(). The textual
     representation of the document can be obtained using toString().
+
+    \note The DOM tree might end up reserving a lot of memory if the XML
+    document is big. For such documents, the QXmlStreamReader or the
+    QXmlQuery classes might be better solutions.
 
     It is possible to insert a node from another document into the
     document using importNode().

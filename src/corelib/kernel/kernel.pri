@@ -12,6 +12,7 @@ HEADERS += \
         kernel/qmetatype.h \
         kernel/qmimedata.h \
         kernel/qobject.h \
+        kernel/qobject_impl.h \
         kernel/qobjectdefs.h \
         kernel/qsignalmapper.h \
         kernel/qsocketnotifier.h \

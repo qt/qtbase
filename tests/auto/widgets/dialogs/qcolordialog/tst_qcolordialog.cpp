@@ -100,6 +100,9 @@ tst_QColorDialog::~tst_QColorDialog()
 
 void tst_QColorDialog::native_activeModalWidget()
 {
+#ifdef Q_OS_MAC
+    QSKIP("Test hangs on Mac OS X, see QTBUG-24320");
+#endif
     // Check that QApplication::activeModalWidget retruns the
     // color dialog when it is executing, even when using a native
     // dialog:
@@ -153,6 +156,9 @@ void tst_QColorDialog::task247349_alpha()
     dialog.setOption(QColorDialog::ShowAlphaChannel, true);
     int alpha = 0x17;
     dialog.setCurrentColor(QColor(0x01, 0x02, 0x03, alpha));
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Fails on Mac OS X, see QTBUG-24320", Abort);
+#endif
     QCOMPARE(alpha, dialog.currentColor().alpha());
     QCOMPARE(alpha, qAlpha(dialog.currentColor().rgba()));
 }

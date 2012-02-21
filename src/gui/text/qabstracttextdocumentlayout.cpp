@@ -469,7 +469,7 @@ void QAbstractTextDocumentLayout::resizeInlineObject(QTextInlineObject item, int
 
     QSizeF s = handler.iface->intrinsicSize(document(), posInDocument, format);
     item.setWidth(s.width());
-    item.setAscent(s.height() - 1);
+    item.setAscent(s.height());
     item.setDescent(0);
 }
 

@@ -153,23 +153,28 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , const QSurfaceFormat 
 
             XFree(configs);
         }
-        reducedFormat = qglx_reduceSurfaceFormat(reducedFormat,&reduced);
+        if (!chosenConfig)
+            reducedFormat = qglx_reduceSurfaceFormat(reducedFormat,&reduced);
     }
 
     return chosenConfig;
 }
 
-XVisualInfo *qglx_findVisualInfo(Display *display, int screen, const QSurfaceFormat &format)
+XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *format)
 {
+    Q_ASSERT(format);
+
     XVisualInfo *visualInfo = 0;
 
-    GLXFBConfig config = qglx_findConfig(display,screen,format);
-    if (config)
+    GLXFBConfig config = qglx_findConfig(display,screen,*format);
+    if (config) {
         visualInfo = glXGetVisualFromFBConfig(display, config);
+        *format = qglx_surfaceFormatFromGLXFBConfig(display, config);
+    }
 
     // attempt to fall back to glXChooseVisual
     bool reduced = true;
-    QSurfaceFormat reducedFormat = format;
+    QSurfaceFormat reducedFormat = *format;
     while (!visualInfo && reduced) {
         QVarLengthArray<int, 13> attribs;
         attribs.append(GLX_RGBA);
@@ -264,7 +269,7 @@ QSurfaceFormat qglx_reduceSurfaceFormat(const QSurfaceFormat &format, bool *redu
     } else if (retFormat.blueBufferSize() > 1) {
         retFormat.setBlueBufferSize(1);
     } else if (retFormat.samples() > 1) {
-        retFormat.setSamples(0);
+        retFormat.setSamples(qMin(retFormat.samples() / 2, 16));
     } else if (retFormat.stereo()) {
         retFormat.setStereo(false);
     }else if (retFormat.stencilBufferSize() > 0) {

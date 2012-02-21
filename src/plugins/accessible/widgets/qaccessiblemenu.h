@@ -103,7 +103,6 @@ public:
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface ** target) const;
     QObject * object() const;
     QRect rect() const;
     QAccessible::Role role() const;

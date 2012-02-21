@@ -9,6 +9,8 @@ find_package(Qt5Widgets REQUIRED)
 
 include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Gui_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
 
+add_definitions(${Qt5Core_DEFINITIONS})
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 qt5_wrap_cpp(moc_files mywidget.h)

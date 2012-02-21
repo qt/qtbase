@@ -103,6 +103,7 @@ public:
     bool isWritable() const;
     bool isExecutable() const;
     bool isHidden() const;
+    bool isNativePath() const;
 
     bool isRelative() const;
     inline bool isAbsolute() const { return !isRelative(); }

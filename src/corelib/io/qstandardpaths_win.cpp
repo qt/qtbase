@@ -51,7 +51,6 @@
 #if !defined(Q_OS_WINCE)
 #  include <intshcut.h>
 #else
-#  include <qguifunctions_wince.h>
 #  if !defined(STANDARDSHELL_UI_MODEL)
 #    include <winx.h>
 #  endif
@@ -177,7 +176,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
 
     // type-specific handling goes here
 
-#ifndef Q_WS_WINCE
+#ifndef Q_OS_WINCE
     static GetSpecialFolderPath SHGetSpecialFolderPath = resolveGetSpecialFolderPath();
     if (SHGetSpecialFolderPath) {
         wchar_t path[MAX_PATH];

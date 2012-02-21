@@ -59,6 +59,8 @@ public:
 
     bool usePlatformNativeDialog(DialogType dialogType) const;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const;
+
+    QVariant themeHint(ThemeHint hint) const;
 };
 
 QT_END_NAMESPACE

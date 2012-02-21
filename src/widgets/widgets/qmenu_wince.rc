@@ -4,9 +4,9 @@
 #include "winuser.h"
 
 #if defined (_DEBUG) && defined(QT_DLL)
-#include "QtGuid_resource.rc"
+#include "QtWidgetsd_resource.rc"
 #elif defined(QT_DLL)
-#include "QtGui_resource.rc"
+#include "QtWidgets_resource.rc"
 #endif
 
 #define DIALOGEX        DIALOG DISCARDABLE

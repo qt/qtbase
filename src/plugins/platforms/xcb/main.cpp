@@ -46,6 +46,8 @@ QT_BEGIN_NAMESPACE
 
 class QXcbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
+   Q_OBJECT
+   Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface" FILE "xcb.json")
 public:
     QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&);
@@ -66,6 +68,6 @@ QPlatformIntegration* QXcbIntegrationPlugin::create(const QString& system, const
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(xcb, QXcbIntegrationPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

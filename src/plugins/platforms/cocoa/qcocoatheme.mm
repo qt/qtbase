@@ -42,8 +42,9 @@
 #include "qcocoatheme.h"
 
 #include "qmenu_mac.h"
+#include "qcocoacolordialoghelper.h"
 #include "qcocoafiledialoghelper.h"
-#include <QtWidgets/QFileDialog>
+#include "qcocoafontdialoghelper.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -72,15 +73,45 @@ bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const
 {
     if (dialogType == QPlatformTheme::FileDialog)
         return true;
+#ifndef QT_NO_COLORDIALOG
+    if (dialogType == QPlatformTheme::ColorDialog)
+        return true;
+#endif
+#ifndef QT_NO_FONTDIALOG
+    if (dialogType == QPlatformTheme::FontDialog)
+        return true;
+#endif
     return false;
 }
 
 QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(DialogType dialogType) const
 {
-    if (dialogType == QPlatformTheme::FileDialog) {
+    switch (dialogType) {
+    case QPlatformTheme::FileDialog:
         return new QCocoaFileDialogHelper();
+#ifndef QT_NO_COLORDIALOG
+    case QPlatformTheme::ColorDialog:
+        return new QCocoaColorDialogHelper();
+#endif
+#ifndef QT_NO_FONTDIALOG
+    case QPlatformTheme::FontDialog:
+        return new QCocoaFontDialogHelper();
+#endif
+    default:
+        return 0;
     }
-    return 0;
+}
+
+QVariant QCocoaTheme::themeHint(ThemeHint hint) const
+{
+    switch (hint) {
+        case QPlatformTheme::StyleNames:
+            return QStringList() << QLatin1Literal("macintosh");
+        break;
+        default:
+            return QPlatformTheme::themeHint(hint);
+        break;
+    }
 }
 
 QT_END_NAMESPACE

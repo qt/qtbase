@@ -41,6 +41,7 @@
 
 #include "qapplication_p.h"
 #include "qcolormap.h"
+#include "qpalette.h"
 #include "qpixmapcache.h"
 #ifndef QT_NO_CURSOR
 #include "private/qcursor_p.h"
@@ -53,8 +54,9 @@
 #include "qgenericpluginfactory_qpa.h"
 #include "private/qplatformintegrationfactory_qpa_p.h"
 #include <qdesktopwidget.h>
-
 #include <QPlatformCursor>
+#include <QPlatformTheme>
+
 #include <qdebug.h>
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
@@ -62,6 +64,7 @@
 
 #include "qdesktopwidget_qpa_p.h"
 #include "qwidgetwindow_qpa_p.h"
+#include "qtooltip.h"
 
 #ifdef Q_OS_WIN
 #  include <QtCore/qt_windows.h> // for qt_win_display_dc()
@@ -393,6 +396,8 @@ void qt_init(QApplicationPrivate *priv, int type)
     qApp->setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
     QColormap::initialize();
 
+    if (const QPalette *toolTipPalette = QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::ToolTipPalette))
+        QToolTip::setPalette(*toolTipPalette);
     qApp->setObjectName(appName);
 }
 

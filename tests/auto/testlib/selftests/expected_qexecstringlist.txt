@@ -2,19 +2,23 @@
 Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_QExecStringList::initTestCase()
 PASS   : tst_QExecStringList::testA()
-PASS   : tst_QExecStringList::testB()
+PASS   : tst_QExecStringList::testB(Data1)
+PASS   : tst_QExecStringList::testB(Data2)
+PASS   : tst_QExecStringList::testB(Data3)
 PASS   : tst_QExecStringList::testC()
 PASS   : tst_QExecStringList::cleanupTestCase()
-Totals: 5 passed, 0 failed, 0 skipped
+Totals: 7 passed, 0 failed, 0 skipped
 ********* Finished testing of tst_QExecStringList *********
 ********* Start testing of tst_QExecStringList *********
 Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_QExecStringList::initTestCase()
 PASS   : tst_QExecStringList::testA()
-PASS   : tst_QExecStringList::testB()
+PASS   : tst_QExecStringList::testB(Data1)
+PASS   : tst_QExecStringList::testB(Data2)
+PASS   : tst_QExecStringList::testB(Data3)
 PASS   : tst_QExecStringList::testC()
 PASS   : tst_QExecStringList::cleanupTestCase()
-Totals: 5 passed, 0 failed, 0 skipped
+Totals: 7 passed, 0 failed, 0 skipped
 ********* Finished testing of tst_QExecStringList *********
 ********* Start testing of tst_QExecStringList *********
 Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
@@ -26,14 +30,16 @@ Totals: 3 passed, 0 failed, 0 skipped
 ********* Start testing of tst_QExecStringList *********
 Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_QExecStringList::initTestCase()
-PASS   : tst_QExecStringList::testB()
+PASS   : tst_QExecStringList::testB(Data1)
+PASS   : tst_QExecStringList::testB(Data2)
+PASS   : tst_QExecStringList::testB(Data3)
 PASS   : tst_QExecStringList::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 5 passed, 0 failed, 0 skipped
 ********* Finished testing of tst_QExecStringList *********
 ********* Start testing of tst_QExecStringList *********
 Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_QExecStringList::initTestCase()
-PASS   : tst_QExecStringList::testB()
+PASS   : tst_QExecStringList::testB(Data2)
 PASS   : tst_QExecStringList::cleanupTestCase()
 Totals: 3 passed, 0 failed, 0 skipped
 ********* Finished testing of tst_QExecStringList *********

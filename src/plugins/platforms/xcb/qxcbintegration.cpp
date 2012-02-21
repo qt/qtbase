@@ -53,6 +53,8 @@
 
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtPlatformSupport/private/qgenericunixservices_p.h>
 
 #include <stdio.h>
 
@@ -68,6 +70,7 @@
 #endif
 
 #include <private/qplatforminputcontextfactory_qpa_p.h>
+#include <private/qgenericunixthemes_p.h>
 #include <qplatforminputcontext_qpa.h>
 
 #if defined(XCB_USE_GLX)
@@ -84,7 +87,9 @@
 QT_BEGIN_NAMESPACE
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters)
-    : m_eventDispatcher(createUnixEventDispatcher())
+    : m_eventDispatcher(createUnixEventDispatcher()),
+      m_services(new QGenericUnixServices),
+      m_theme(QGenericUnixTheme::createUnixTheme())
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
 
@@ -168,6 +173,7 @@ private:
 };
 #endif
 
+#ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
@@ -182,6 +188,7 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
     qWarning("Cannot create platform GL context, none of GLX, EGL, DRI2 is enabled");
     return 0;
 }
+#endif
 
 QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *window) const
 {
@@ -267,5 +274,15 @@ QPlatformSharedGraphicsCache *QXcbIntegration::createPlatformSharedGraphicsCache
     return m_sharedGraphicsCache.data();
 }
 #endif
+
+QPlatformServices *QXcbIntegration::services() const
+{
+    return m_services.data();
+}
+
+QPlatformTheme *QXcbIntegration::platformTheme() const
+{
+    return m_theme.data();
+}
 
 QT_END_NAMESPACE

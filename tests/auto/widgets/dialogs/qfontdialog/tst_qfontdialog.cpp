@@ -114,6 +114,9 @@ void tst_QFontDialog::postKeyReturn() {
 
 void tst_QFontDialog::defaultOkButton()
 {
+#ifdef Q_OS_MAC
+    QSKIP("Test hangs on Mac OS X, see QTBUG-24321");
+#endif
     bool ok = false;
     QTimer::singleShot(2000, this, SLOT(postKeyReturn()));
     QFontDialog::getFont(&ok);
@@ -123,6 +126,9 @@ void tst_QFontDialog::defaultOkButton()
 
 void tst_QFontDialog::setFont()
 {
+#ifdef Q_OS_MAC
+    QSKIP("Test hangs on Mac OS X, see QTBUG-24321");
+#endif
     /* The font should be the same before as it is after if nothing changed
               while the font dialog was open.
 	      Task #27662
@@ -154,6 +160,10 @@ class FriendlyFontDialog : public QFontDialog
 
 void tst_QFontDialog::task256466_wrongStyle()
 {
+#ifdef Q_OS_MAC
+    QSKIP("Test crashes on Mac OS X, see QTBUG-24321");
+#endif
+
     QFontDatabase fdb;
     FriendlyFontDialog dialog;
     QListView *familyList = reinterpret_cast<QListView*>(dialog.d_func()->familyList);

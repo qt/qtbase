@@ -60,6 +60,9 @@
 #include <qdebug.h>
 #include <qvector.h>
 #include <qdir.h>
+#include <qendian.h>
+#include <qjsondocument.h>
+#include <qjsonvalue.h>
 #include "qelfparser_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -330,7 +333,7 @@ static long qt_find_pattern(const char *s, ulong s_len,
                 information could not be read.
   Returns  true if version information is present and successfully read.
 */
-static bool qt_unix_query(const QString &library, uint *version, bool *debug, QLibraryPrivate *lib = 0)
+static bool qt_unix_query(const QString &library, QLibraryPrivate *lib)
 {
     QFile file(library);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -357,35 +360,71 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QL
     /*
        ELF binaries on GNU, have .qplugin sections.
     */
+    bool hasMetaData = false;
     long pos = 0;
-    const char pattern[] = "pattern=QT_PLUGIN_VERIFICATION_DATA";
+    const char oldPattern[] = "pattern=QT_PLUGIN_VERIFICATION_DATA";
+    const ulong oldPlen = qstrlen(oldPattern);
+    const char pattern[] = "QTMETADATA  ";
     const ulong plen = qstrlen(pattern);
 #if defined (Q_OF_ELF) && defined(Q_CC_GNU)
     int r = QElfParser().parse(filedata, fdlen, library, lib, &pos, &fdlen);
-    if (r == QElfParser::NoQtSection) {
+    if (r == QElfParser::Corrupt || r == QElfParser::NotElf) {
+            if (lib && qt_debug_component()) {
+                qWarning("QElfParser: %s",qPrintable(lib->errorString));
+            }
+            return false;
+    } else if (r == QElfParser::NoQtSection || r == QElfParser::QtPluginSection) {
         if (pos > 0) {
             // find inside .rodata
-            long rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
+            long rel = qt_find_pattern(filedata + pos, fdlen, oldPattern, oldPlen);
             if (rel < 0) {
                 pos = -1;
             } else {
                 pos += rel;
             }
         } else {
-            pos = qt_find_pattern(filedata, fdlen, pattern, plen);
+            pos = qt_find_pattern(filedata, fdlen, oldPattern, oldPlen);
         }
-    } else if (r != QElfParser::Ok) {
-        if (lib && qt_debug_component()) {
-            qWarning("QElfParser: %s",qPrintable(lib->errorString));
-        }
-        return false;
+    } else if (r == QElfParser::QtMetaDataSection) {
+        long rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
+        if (rel < 0)
+            pos = -1;
+        else
+            pos += rel;
+        hasMetaData = true;
     }
 #else
     pos = qt_find_pattern(filedata, fdlen, pattern, plen);
+    if (pos > 0)
+        hasMetaData = true;
+    else
+        pos = qt_find_pattern(filedata, fdlen, oldPattern, oldPlen);
 #endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
+
     bool ret = false;
-    if (pos >= 0)
-        ret = qt_parse_pattern(filedata + pos, version, debug);
+
+    if (pos >= 0) {
+        if (hasMetaData) {
+            const char *data = filedata + pos;
+            QJsonDocument doc = QLibraryPrivate::fromRawMetaData(data);
+            lib->metaData = doc.object();
+            lib->compatPlugin = false;
+            if (qt_debug_component())
+                qWarning("Found metadata in lib %s, metadata=\n%s\n",
+                         library.toLocal8Bit().constData(), doc.toJson().constData());
+            ret = !doc.isNull();
+        } else {
+            qWarning("Old plugin format found in lib %s", library.toLocal8Bit().constData());
+            uint version;
+            bool isDebug;
+            ret = qt_parse_pattern(filedata + pos, &version, &isDebug);
+            if (ret) {
+                lib->metaData.insert(QLatin1String("version"), (int)version);
+                lib->metaData.insert(QLatin1String("debug"), isDebug);
+                lib->compatPlugin = true;
+            }
+        }
+    }
 
     if (!ret && lib)
         lib->errorString = QLibrary::tr("Plugin verification data mismatch in '%1'").arg(library);
@@ -446,8 +485,9 @@ static LibraryMap *libraryMap()
 }
 
 QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString &version)
-    :pHnd(0), fileName(canonicalFileName), fullVersion(version), instance(0), qt_version(0),
-     libraryRefCount(1), libraryUnloadCount(0), pluginState(MightBeAPlugin)
+    : pHnd(0), fileName(canonicalFileName), fullVersion(version), instance(0),
+      compatPlugin(false), loadHints(0),
+      libraryRefCount(1), libraryUnloadCount(0), pluginState(MightBeAPlugin)
 { libraryMap()->insert(canonicalFileName, this); }
 
 QLibraryPrivate *QLibraryPrivate::findOrCreate(const QString &fileName, const QString &version)
@@ -488,6 +528,8 @@ bool QLibraryPrivate::load()
         return false;
 
     bool ret = load_sys();
+    if (qt_debug_component())
+        qDebug() << "loaded library" << fileName;
     if (ret) {
         //when loading a library we add a reference to it so that the QLibraryPrivate won't get deleted
         //this allows to unload the library at a later time
@@ -643,13 +685,9 @@ const char* qt_try_versioninfo(void *pfn, bool *exceptionThrown)
 }
 #endif
 
-#ifdef Q_CC_BOR
-typedef const char * __stdcall (*QtPluginQueryVerificationDataFunction)();
-#else
 typedef const char * (*QtPluginQueryVerificationDataFunction)();
-#endif
 
-bool qt_get_verificationdata(QtPluginQueryVerificationDataFunction pfn, uint *qt_version, bool *debug, bool *exceptionThrown)
+bool qt_get_verificationdata(QtPluginQueryVerificationDataFunction pfn, QLibraryPrivate *priv, bool *exceptionThrown)
 {
     *exceptionThrown = false;
     const char *szData = 0;
@@ -662,8 +700,40 @@ bool qt_get_verificationdata(QtPluginQueryVerificationDataFunction pfn, uint *qt
 #else
     szData = pfn();
 #endif
-    return qt_parse_pattern(szData, qt_version, debug);
+    uint qt_version;
+    bool debug;
+    if (qt_parse_pattern(szData, &qt_version, &debug)) {
+        priv->metaData.insert(QLatin1String("version"), (int)qt_version);
+        priv->metaData.insert(QLatin1String("debug"), debug);
+        priv->compatPlugin = true;
+        return true;
+    }
+    return false;
 }
+
+bool qt_get_metadata(QtPluginQueryVerificationDataFunction pfn, QLibraryPrivate *priv, bool *exceptionThrown)
+{
+    *exceptionThrown = false;
+    const char *szData = 0;
+    if (!pfn)
+        return false;
+#ifdef QT_USE_MS_STD_EXCEPTION
+    szData = qt_try_versioninfo((void *)pfn, exceptionThrown);
+    if (*exceptionThrown)
+        return false;
+#else
+    szData = pfn();
+#endif
+    if (!szData)
+        return false;
+    QJsonDocument doc = QLibraryPrivate::fromRawMetaData(szData);
+    if (doc.isNull())
+        return false;
+    priv->metaData = doc.object();
+    priv->compatPlugin = false;
+    return true;
+}
+
 
 bool QLibraryPrivate::isPlugin()
 {
@@ -672,7 +742,6 @@ bool QLibraryPrivate::isPlugin()
         return pluginState == IsAPlugin;
 
 #ifndef QT_NO_PLUGIN_CHECK
-    bool debug = !QLIBRARY_AS_DEBUG;
     bool success = false;
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
@@ -692,7 +761,7 @@ bool QLibraryPrivate::isPlugin()
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     if (!pHnd) {
         // use unix shortcut to avoid loading the library
-        success = qt_unix_query(fileName, &qt_version, &debug, this);
+        success = qt_unix_query(fileName, this);
     } else
 #endif
     {
@@ -713,24 +782,50 @@ bool QLibraryPrivate::isPlugin()
                 temporary_load =  load_sys();
 #endif
             }
-#ifdef Q_OS_WIN
-            QtPluginQueryVerificationDataFunction qtPluginQueryVerificationDataFunction = hTempModule ? (QtPluginQueryVerificationDataFunction)
-#ifdef Q_OS_WINCE
-                    ::GetProcAddress(hTempModule, L"qt_plugin_query_verification_data")
-#else
-                    ::GetProcAddress(hTempModule, "qt_plugin_query_verification_data")
-#endif
-                    : (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
-#else
-            QtPluginQueryVerificationDataFunction qtPluginQueryVerificationDataFunction = NULL;
-            qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
-#endif
+            QtPluginQueryVerificationDataFunction getMetaData = NULL;
+
             bool exceptionThrown = false;
-            bool ret = qt_get_verificationdata(qtPluginQueryVerificationDataFunction,
-                                               &qt_version, &debug, &exceptionThrown);
+            bool ret = false;
+#ifdef Q_OS_WIN
+            if (hTempModule) {
+                getMetaData = (QtPluginQueryVerificationDataFunction)
+#ifdef Q_OS_WINCE
+                    ::GetProcAddress(hTempModule, L"qt_plugin_query_metadata")
+#else
+                    ::GetProcAddress(hTempModule, "qt_plugin_query_metadata")
+#endif
+                        ;
+            } else
+#endif
+            {
+                getMetaData = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_metadata");
+            }
+
+            if (getMetaData) {
+                ret = qt_get_metadata(getMetaData, this, &exceptionThrown);
+            } else {
+                // try the old plugin style
+                QtPluginQueryVerificationDataFunction qtPluginQueryVerificationDataFunction = NULL;
+#ifdef Q_OS_WIN
+                if (hTempModule) {
+                    qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction)
+#ifdef Q_OS_WINCE
+                        ::GetProcAddress(hTempModule, L"qt_plugin_query_verification_data")
+#else
+                        ::GetProcAddress(hTempModule, "qt_plugin_query_verification_data")
+#endif
+                            ;
+                } else
+#endif
+                {
+                    qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
+                }
+
+                ret = qt_get_verificationdata(qtPluginQueryVerificationDataFunction, this, &exceptionThrown);
+            }
+
             if (!exceptionThrown) {
                 if (!ret) {
-                    qt_version = 0;
                     if (temporary_load)
                         unload_sys();
                 } else {
@@ -772,6 +867,8 @@ bool QLibraryPrivate::isPlugin()
 
     pluginState = IsNotAPlugin; // be pessimistic
 
+    uint qt_version = (uint)metaData.value(QLatin1String("version")).toDouble();
+    bool debug = metaData.value(QLatin1String("debug")).toBool();
     if ((qt_version & 0x00ff00) > (QT_VERSION & 0x00ff00) || (qt_version & 0xff0000) != (QT_VERSION & 0xff0000)) {
         if (qt_debug_component()) {
             qWarning("In %s:\n"

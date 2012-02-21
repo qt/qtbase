@@ -69,6 +69,10 @@
 #include <windows.h>
 #endif
 
+QT_BEGIN_NAMESPACE
+extern bool Q_GUI_EXPORT qt_tab_all_widgets; // from qapplication.cpp
+QT_END_NAMESPACE
+
 class tst_QApplication : public QObject
 {
 Q_OBJECT
@@ -137,18 +141,11 @@ private slots:
     void touchEventPropagation();
 
     void qtbug_12673();
-
-    void testQuitLockRef();
-    void testQuitLock1();
-    void testQuitLock2();
-    void testQuitLock3();
-    void testQuitLock4();
-    void testQuitLock5();
-    void testQuitLock6();
-    void testQuitLock7();
-    void testQuitLock8();
+    void noQuitOnHide();
 
     void globalStaticObjectDestruction(); // run this last
+
+    void abortQuitOnShow();
 };
 
 class EventSpy : public QObject
@@ -380,16 +377,16 @@ void tst_QApplication::setFont_data()
 	++cnt;
     }
 
-    QTest::newRow("nonexistingfont") << "nosuchfont_probably_quiteunlikely"
+    QTest::newRow("nonexistingfont after") << "nosuchfont_probably_quiteunlikely"
         << 0 << false;
-    QTest::newRow("nonexistingfont") << "nosuchfont_probably_quiteunlikely"
+    QTest::newRow("nonexistingfont before") << "nosuchfont_probably_quiteunlikely"
         << 0 << true;
 
-    QTest::newRow("largescaleable") << "smoothtimes" << 100 << false;
-    QTest::newRow("largescaleable") << "smoothtimes" << 100 << true;
+    QTest::newRow("largescaleable after") << "smoothtimes" << 100 << false;
+    QTest::newRow("largescaleable before") << "smoothtimes" << 100 << true;
 
-    QTest::newRow("largeunscaleale") << "helvetica" << 100 << false;
-    QTest::newRow("largeunscaleale") << "helvetica" << 100 << true;
+    QTest::newRow("largeunscaleale after") << "helvetica" << 100 << false;
+    QTest::newRow("largeunscaleale before") << "helvetica" << 100 << true;
 }
 
 void tst_QApplication::setFont()
@@ -608,6 +605,11 @@ public slots:
 
 void tst_QApplication::quitOnLastWindowClosed()
 {
+#ifdef Q_OS_WIN32
+    QSKIP("This test crashes on Windows. Remove skip once the issue causing the crash is fixed (QTBUG-24300).");
+#endif
+#ifndef Q_OS_MAC
+    // Test hangs on Mac OS X, see QTBUG-24319
     {
         int argc = 0;
         QApplication app(argc, 0, QApplication::GuiServer);
@@ -622,6 +624,7 @@ void tst_QApplication::quitOnLastWindowClosed()
         // lastWindowClosed() signal should only be sent after the last dialog is closed
         QCOMPARE(appSpy.count(), 2);
     }
+#endif
     {
         int argc = 0;
         QApplication app(argc, 0, QApplication::GuiServer);
@@ -1211,6 +1214,9 @@ void DeleteLaterWidget::checkDeleteLater()
 
 void tst_QApplication::testDeleteLater()
 {
+#ifdef Q_OS_MAC
+    QSKIP("This test fails and then hangs on Mac OS X, see QTBUG-24318");
+#endif
     int argc = 0;
     QApplication app(argc, 0, QApplication::GuiServer);
     connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
@@ -1392,12 +1398,21 @@ void tst_QApplication::testDeleteLaterProcessEvents()
 void tst_QApplication::desktopSettingsAware()
 {
 #ifndef QT_NO_PROCESS
-    QProcess testProcess;
-    const QString path = QStringLiteral("desktopsettingsaware/desktopsettingsaware");
+    QString path;
+    {
+        // We need an application object for QFINDTESTDATA to work
+        // properly in all cases.
+        int argc = 0;
+        QCoreApplication app(argc, 0);
+        path = QFINDTESTDATA("desktopsettingsaware/");
+    }
+    QVERIFY2(!path.isEmpty(), "Cannot locate desktopsettingsaware helper application");
+    path += "desktopsettingsaware";
 #ifdef Q_OS_WINCE
     int argc = 0;
     QApplication tmpApp(argc, 0, QApplication::GuiServer);
 #endif
+    QProcess testProcess;
     testProcess.start(path);
     QVERIFY2(testProcess.waitForStarted(),
              qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
@@ -1523,7 +1538,14 @@ void tst_QApplication::focusChanged()
     QSettings appleSettings(QLatin1String("apple.com"));
     QVariant appleValue = appleSettings.value(QLatin1String("AppleKeyboardUIMode"), 0);
     tabAllControls = (appleValue.toInt() & 0x2);
+    if (!tabAllControls) {
+        QEXPECT_FAIL("", "QTBUG-24372 Mac tab key \"Text boxes and lists only\" vs "
+                         "\"All controls\" setting is not respected in Qt5", Abort);
+    }
 #endif
+
+    // make sure Qt's idea of tabbing between widgets matches what we think it should
+    QCOMPARE(qt_tab_all_widgets, tabAllControls);
 
     tab.simulate(now);
     if (!tabAllControls) {
@@ -2048,9 +2070,19 @@ void tst_QApplication::touchEventPropagation()
 
 void tst_QApplication::qtbug_12673()
 {
+    QString path;
+    {
+        // We need an application object for QFINDTESTDATA to work
+        // properly in all cases.
+        int argc = 0;
+        QCoreApplication app(argc, 0);
+        path = QFINDTESTDATA("modal/");
+    }
+    QVERIFY2(!path.isEmpty(), "Cannot locate modal helper application");
+    path += "modal";
+
     QProcess testProcess;
     QStringList arguments;
-    const QString path = QStringLiteral("modal/modal");
     testProcess.start(path, arguments);
     QVERIFY2(testProcess.waitForStarted(),
              qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
@@ -2058,508 +2090,70 @@ void tst_QApplication::qtbug_12673()
     QCOMPARE(testProcess.exitStatus(), QProcess::NormalExit);
 }
 
-class JobObject : public QObject
+class NoQuitOnHideWidget : public QWidget
 {
     Q_OBJECT
 public:
-    JobObject(int milliseconds, QObject *parent = 0)
-        : QObject(parent)
+    explicit NoQuitOnHideWidget(QWidget *parent = 0)
+      : QWidget(parent)
     {
-        QTimer::singleShot(milliseconds, this, SLOT(timeout()));
-    }
-
-    JobObject(QObject *parent = 0)
-        : QObject(parent)
-    {
-        QTimer::singleShot(1000, this, SLOT(timeout()));
+        QTimer::singleShot(0, this, SLOT(hide()));
+        QTimer::singleShot(500, this, SLOT(exitApp()));
     }
 
 private slots:
-    void timeout()
-    {
-        emit done();
-        deleteLater();
+    void exitApp() {
+      qApp->exit(1);
     }
-
-signals:
-    void done();
-
-private:
-    QEventLoopLocker locker;
 };
 
-class QuitLockRefTester : public QObject
+void tst_QApplication::noQuitOnHide()
+{
+    int argc = 0;
+    QApplication app(argc, 0);
+    QWidget *window1 = new NoQuitOnHideWidget;
+    window1->show();
+    QCOMPARE(app.exec(), 1);
+}
+
+class ShowCloseShowWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QuitLockRefTester(QObject *parent = 0)
-      : QObject(parent)
+    ShowCloseShowWidget(bool showAgain, QWidget *parent = 0)
+      : QWidget(parent), showAgain(showAgain)
     {
-        QTimer::singleShot(0, this, SLOT(doTest()));
+        QTimer::singleShot(0, this, SLOT(doClose()));
+        QTimer::singleShot(500, this, SLOT(exitApp()));
     }
 
 private slots:
-    void doTest()
-    {
-        QApplicationPrivate *privateClass = static_cast<QApplicationPrivate*>(QObjectPrivate::get(qApp));
-
-        {
-            QDialog *win1 = new QDialog;
-
-            // Test with a lock active so that the refcount doesn't drop to zero during these tests, causing a quit.
-            // (until we exit the scope)
-            QEventLoopLocker locker;
-
-            QCOMPARE(privateClass->quitLockRef.load(), 1);
-
-            win1->show();
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            QDialog *win2 = new QDialog;
-
-            win2->show();
-
-            QCOMPARE(privateClass->quitLockRef.load(), 3);
-
-            delete win1;
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            delete win2;
-
-            QCOMPARE(privateClass->quitLockRef.load(), 1);
-
-            win1 = new QDialog;
-
-            win1->show();
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            JobObject *job1 = new JobObject(this);
-
-            QCOMPARE(privateClass->quitLockRef.load(), 3);
-
-            delete win1;
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            delete job1;
-
-            QCOMPARE(privateClass->quitLockRef.load(), 1);
-
-            QWidget *w1 = new QWidget;
-
-            w1->show();
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            QWidget *w2 = new QMainWindow;
-
-            w2->show();
-
-            QCOMPARE(privateClass->quitLockRef.load(), 3);
-
-            QWidget *w3 = new QWidget(0, Qt::Dialog);
-
-            w3->show();
-
-            QCOMPARE(privateClass->quitLockRef.load(), 4);
-
-            delete w3;
-
-            QCOMPARE(privateClass->quitLockRef.load(), 3);
-
-            delete w2;
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            QWidget *subWidget1 = new QWidget(w1, Qt::Window);
-
-            // Even though We create a new widget and show it,
-            // the ref count does not go up because it is a child of
-            // w1, which is the top-level, and what we are actually
-            // refcounting.
-            subWidget1->show();
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            // When we use setParent(0) and re-show, the
-            // ref count does increase:
-            QCOMPARE(subWidget1->isVisible(), true);
-            subWidget1->setParent(0);
-            QCOMPARE(subWidget1->isVisible(), false);
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            subWidget1->show();
-            QCOMPARE(subWidget1->isVisible(), true);
-            QCOMPARE(privateClass->quitLockRef.load(), 3);
-
-            subWidget1->setParent(w1);
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            QWidget *subWidget2 = new QWidget(w1);
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            subWidget2->show();
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            delete subWidget2;
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            QWidget *subWidget3 = new QWidget(w1);
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            subWidget3->show();
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            subWidget3->hide();
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            delete subWidget3;
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            QWidget *subWidget4 = new QWidget(subWidget1);
-            QWidget *subWidget5 = new QWidget(subWidget1);
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            QWidget *subWidget6 = new QWidget(subWidget4, Qt::Window);
-
-            subWidget6->show();
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            delete w1;
-
-            QCOMPARE(privateClass->quitLockRef.load(), 1);
-
-            w1 = new QWidget;
-            w2 = new QWidget;
-            w3 = new QWidget;
-
-            QHBoxLayout *layout = new QHBoxLayout(w1);
-
-            layout->addWidget(w2);
-            layout->addWidget(w3);
-
-            QCOMPARE(privateClass->quitLockRef.load(), 1);
-
-            w1->show();
-
-            QCOMPARE(privateClass->quitLockRef.load(), 2);
-
-            w1->hide();
-            QCOMPARE(privateClass->quitLockRef.load(), 1);
-
-            delete w1;
-
-        }
-        QCOMPARE(privateClass->quitLockRef.load(), 0);
-    }
-};
-
-void tst_QApplication::testQuitLockRef()
-{
-    int argc = 1;
-    char *argv[] = { "tst_qapplication" };
-    QApplication app(argc, argv);
-
-    QuitLockRefTester tester;
-
-    app.exec();
-}
-
-void tst_QApplication::testQuitLock1()
-{
-    int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
-    QApplication app(argc, argv);
-
-    QWidget *w = new QWidget;
-
-    w->show();
-
-    QMetaObject::invokeMethod(w, "close", Qt::QueuedConnection);
-
-    app.exec();
-
-    // No hang = pass.
-}
-
-void tst_QApplication::testQuitLock2()
-{
-    int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
-    QApplication app(argc, argv);
-
-    QWidget *w1 = new QWidget;
-
-    w1->show();
-
-    QWidget *w2 = new QWidget;
-
-    w2->show();
-
-    QMetaObject::invokeMethod(w1, "deleteLater", Qt::QueuedConnection);
-    QMetaObject::invokeMethod(w2, "hide", Qt::QueuedConnection);
-
-    app.exec();
-
-    // No hang = pass.
-}
-
-class Result : public QObject
-{
-    Q_OBJECT
-public:
-    Result(QObject *parent = 0)
-        : QObject(parent), m_passes(false)
-    {
-
+    void doClose() {
+        close();
+        if (showAgain)
+            show();
     }
 
-    bool result() const
-    {
-        return m_passes;
-    }
-
-public slots:
-
-    void setPasses()
-    {
-        setResult(true);
-    }
-
-    void setFails()
-    {
-        setResult(false);
-    }
-
-    void setResult(bool result)
-    {
-        m_passes = result;
+    void exitApp() {
+      qApp->exit(1);
     }
 
 private:
-    bool m_passes;
+    bool showAgain;
 };
 
-void tst_QApplication::testQuitLock3()
+void tst_QApplication::abortQuitOnShow()
 {
-    int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
-    QApplication app(argc, argv);
+    int argc = 0;
+    QApplication app(argc, 0);
+    QWidget *window1 = new ShowCloseShowWidget(false);
+    window1->show();
+    QCOMPARE(app.exec(), 0);
 
-    Result *result = new Result(&app);
-
-    JobObject *job = new JobObject(&app);
-
-    QObject::connect(job, SIGNAL(done()), result, SLOT(setPasses()));
-
-    app.exec();
-
-    QVERIFY(result->result());
+    QWidget *window2 = new ShowCloseShowWidget(true);
+    window2->show();
+    QCOMPARE(app.exec(), 1);
 }
-
-void tst_QApplication::testQuitLock4()
-{
-    int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
-    QApplication app(argc, argv);
-
-    QWidget *w = new QWidget;
-
-    w->show();
-
-    Result *result = new Result(&app);
-    JobObject *job = new JobObject(1000, &app);
-
-    QTimer::singleShot(500, w, SLOT(deleteLater()));
-
-    QObject::connect(w, SIGNAL(destroyed()), result, SLOT(setFails()));
-    QObject::connect(job, SIGNAL(done()), result, SLOT(setPasses()));
-
-    app.exec();
-
-    QVERIFY(result->result());
-}
-
-class JobBeforeWindowRunner : public QObject
-{
-    Q_OBJECT
-public:
-    JobBeforeWindowRunner(QObject *parent = 0)
-    : QObject(parent), m_result(new Result(this))
-    {
-
-    }
-
-    void start()
-    {
-        JobObject *job = new JobObject(this);
-        connect(job, SIGNAL(done()), m_result, SLOT(setFails()));
-        connect(job, SIGNAL(destroyed()), SLOT(showWindowDelayed()), Qt::QueuedConnection);
-    }
-
-    bool result() const { return m_result->result(); }
-
-private slots:
-    void showWindowDelayed()
-    {
-        qApp->setQuitLockEnabled(true);
-        QTimer::singleShot(500, this, SLOT(showWindow()));
-    }
-
-    void showWindow()
-    {
-        QWidget *w = new QWidget;
-        w->show();
-        w->deleteLater();
-        connect(w, SIGNAL(destroyed()), m_result, SLOT(setPasses()));
-    }
-
-private:
-    Result * const m_result;
-};
-
-void tst_QApplication::testQuitLock5()
-{
-    int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
-    QApplication app(argc, argv);
-    app.setQuitLockEnabled(false);
-    // Run a job before showing a window, and only enable the refcounting
-    // after doing so.
-    // Although the job brings the refcount to zero, the app does not exit
-    // until setQuitLockEnabled is called and the feature re-enabled.
-
-    JobBeforeWindowRunner *eventRunner = new JobBeforeWindowRunner(&app);
-
-    eventRunner->start();
-
-    app.exec();
-
-    QVERIFY(eventRunner->result());
-}
-
-class JobDuringWindowRunner : public QObject
-{
-    Q_OBJECT
-public:
-    JobDuringWindowRunner(QObject *parent = 0)
-        : QObject(parent), m_result(new Result(this))
-    {
-
-    }
-
-    void start()
-    {
-        JobObject *job = new JobObject(this);
-
-        QWidget *w = new QWidget;
-        w->show();
-        w->deleteLater();
-
-        QObject::connect(w, SIGNAL(destroyed()), m_result, SLOT(setFails()));
-        QObject::connect(job, SIGNAL(done()), m_result, SLOT(setPasses()));
-    }
-
-    bool result() const { return m_result->result(); }
-
-private:
-    Result * const m_result;
-};
-
-void tst_QApplication::testQuitLock6()
-{
-    int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
-    QApplication app(argc, argv);
-
-    // A job runs, and while it is running, a window is shown and closed,
-    // then the job ends, which causes the quit.
-
-    JobDuringWindowRunner *eventRunner = new JobDuringWindowRunner(&app);
-
-    eventRunner->start();
-
-    app.exec();
-
-    QVERIFY(eventRunner->result());
-}
-class JobWindowJobWindowRunner : public QObject
-{
-    Q_OBJECT
-public:
-    JobWindowJobWindowRunner(QObject *parent = 0)
-        : QObject(parent), m_result(new Result(this))
-    {
-
-    }
-
-    void start()
-    {
-        JobObject *job = new JobObject(500, this);
-
-        QWidget *w = new QWidget;
-        w->show();
-        QTimer::singleShot(1000, w, SLOT(deleteLater()));
-
-        QObject::connect(w, SIGNAL(destroyed()), m_result, SLOT(setPasses()));
-        QObject::connect(job, SIGNAL(done()), m_result, SLOT(setFails()));
-    }
-
-    bool result() const { return m_result->result(); }
-private:
-    Result * const m_result;
-};
-
-void tst_QApplication::testQuitLock7()
-{
-    int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
-    QApplication app(argc, argv);
-
-    // A job runs, and while it is running, a window is shown
-    // then the job ends, then the window is closed, which causes the quit.
-
-    JobWindowJobWindowRunner *eventRunner = new JobWindowJobWindowRunner(&app);
-
-    eventRunner->start();
-
-    app.exec();
-
-    QVERIFY(eventRunner->result());
-}
-
-void tst_QApplication::testQuitLock8()
-{
-    int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
-    QApplication app(argc, argv);
-
-    QMainWindow *mw1 = new QMainWindow;
-    mw1->show();
-    QMainWindow *mw2 = new QMainWindow;
-    mw2->show();
-
-    QMetaObject::invokeMethod(mw1, "close", Qt::QueuedConnection);
-    QMetaObject::invokeMethod(mw2, "close", Qt::QueuedConnection);
-
-    app.exec();
-
-    // No hang = pass
-}
-
 
 /*
     This test is meant to ensure that certain objects (public & commonly used)

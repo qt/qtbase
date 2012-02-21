@@ -522,7 +522,7 @@ bool QWidgetItem::hasHeightForWidth() const
 {
     if (isEmpty())
         return false;
-    return wid->d_func()->hasHeightForWidth();
+    return wid->hasHeightForWidth();
 }
 
 /*!

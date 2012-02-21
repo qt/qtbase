@@ -126,6 +126,9 @@ void tst_QCoreApplication::qAppName()
 
 void tst_QCoreApplication::argc()
 {
+#ifdef Q_OS_WIN
+    QSKIP("QCoreApplication::arguments() always parses arguments from actual command line in Windows, making this test invalid.");
+#endif
     {
         int argc = 1;
         char *argv[] = { "tst_qcoreapplication" };

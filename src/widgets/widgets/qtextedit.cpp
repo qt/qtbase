@@ -404,7 +404,7 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     within the text.
 
     If you want to limit the total number of paragraphs in a QTextEdit,
-    as it is for example open useful in a log viewer, then you can use
+    as for example it is often useful in a log viewer, then you can use
     QTextDocument's maximumBlockCount property for that.
 
     \section2 Read-only Key Bindings
@@ -2264,11 +2264,13 @@ bool QTextEdit::canPaste() const
 
     \sa QTextDocument::print()
 */
+#ifndef QT_NO_PRINTER
 void QTextEdit::print(QPagedPaintDevice *printer) const
 {
     Q_D(const QTextEdit);
     d->control->print(printer);
 }
+#endif
 
 /*! \property QTextEdit::tabChangesFocus
   \brief whether \gui Tab changes focus or is accepted as input

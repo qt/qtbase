@@ -32,39 +32,39 @@ public:
     void setupUi(QWidget *Form)
     {
         if (Form->objectName().isEmpty())
-            Form->setObjectName(QString::fromUtf8("Form"));
+            Form->setObjectName(QStringLiteral("Form"));
         Form->resize(122, 117);
         verticalLayout = new QVBoxLayout(Form);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         fileicon = new QPushButton(Form);
-        fileicon->setObjectName(QString::fromUtf8("fileicon"));
+        fileicon->setObjectName(QStringLiteral("fileicon"));
         QIcon icon;
-        icon.addFile(QString::fromUtf8("image1.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon.addFile(QStringLiteral("image1.png"), QSize(), QIcon::Normal, QIcon::Off);
         fileicon->setIcon(icon);
 
         verticalLayout->addWidget(fileicon);
 
         fileandthemeicon = new QPushButton(Form);
-        fileandthemeicon->setObjectName(QString::fromUtf8("fileandthemeicon"));
+        fileandthemeicon->setObjectName(QStringLiteral("fileandthemeicon"));
         QIcon icon1;
-        QString iconThemeName = QString::fromUtf8("edit-copy");
+        QString iconThemeName = QStringLiteral("edit-copy");
         if (QIcon::hasThemeIcon(iconThemeName)) {
             icon1 = QIcon::fromTheme(iconThemeName);
         } else {
-            icon1.addFile(QString::fromUtf8("image7.png"), QSize(), QIcon::Normal, QIcon::Off);
+            icon1.addFile(QStringLiteral("image7.png"), QSize(), QIcon::Normal, QIcon::Off);
         }
         fileandthemeicon->setIcon(icon1);
 
         verticalLayout->addWidget(fileandthemeicon);
 
         themeicon = new QPushButton(Form);
-        themeicon->setObjectName(QString::fromUtf8("themeicon"));
+        themeicon->setObjectName(QStringLiteral("themeicon"));
         QIcon icon2;
-        iconThemeName = QString::fromUtf8("edit-copy");
+        iconThemeName = QStringLiteral("edit-copy");
         if (QIcon::hasThemeIcon(iconThemeName)) {
             icon2 = QIcon::fromTheme(iconThemeName);
         } else {
-            icon2.addFile(QString::fromUtf8(""), QSize(), QIcon::Normal, QIcon::Off);
+            icon2.addFile(QStringLiteral(""), QSize(), QIcon::Normal, QIcon::Off);
         }
         themeicon->setIcon(icon2);
 

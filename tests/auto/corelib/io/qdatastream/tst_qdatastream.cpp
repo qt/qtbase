@@ -2680,8 +2680,8 @@ void tst_QDataStream::status_QBitArray_data()
     // past end
     QTest::newRow("empty") << QByteArray() << (int) QDataStream::ReadPastEnd << QBitArray();
     QTest::newRow("badsize 0a") << QByteArray("\x00", 1) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("badsize 0a") << QByteArray("\x00\x00", 2) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("badsize 0a") << QByteArray("\x00\x00\x00", 3) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 0b") << QByteArray("\x00\x00", 2) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 0c") << QByteArray("\x00\x00\x00", 3) << (int) QDataStream::ReadPastEnd << QBitArray();
     QTest::newRow("badsize 1") << QByteArray("\x00\x00\x00\x01", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
     QTest::newRow("badsize 2") << QByteArray("\x00\x00\x00\x02", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
     QTest::newRow("badsize 3") << QByteArray("\x00\x00\x00\x03", 4) << (int) QDataStream::ReadPastEnd << QBitArray();

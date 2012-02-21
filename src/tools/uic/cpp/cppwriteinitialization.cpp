@@ -537,7 +537,7 @@ void WriteInitialization::acceptUI(DomUI *node)
             continue;
 
         const QString varConn = connection + QLatin1String("Connection");
-        m_output << m_indent << varConn << " = QSqlDatabase::database(" << fixString(connection, m_dindent) << ");\n";
+        m_output << m_indent << varConn << " = QSqlDatabase::database(" << writeString(connection, m_dindent) << ");\n";
     }
 
     acceptWidget(node->elementWidget());
@@ -1143,7 +1143,7 @@ QString WriteInitialization::writeStringListProperty(const DomStringList *list) 
             str << '\n' << m_indent << "    << " << trCall(values.at(i), comment);
     } else {
         for (int i = 0; i < values.size(); ++i)
-            str << " << QString::fromUtf8(" << fixString(values.at(i), m_dindent) << ')';
+            str << " << " << writeString(values.at(i), m_dindent);
     }
     return propertyValue;
 }
@@ -1159,8 +1159,8 @@ void WriteInitialization::writeProperties(const QString &varName,
         DomPropertyMap properties = propertyMap(lst);
         if (properties.contains(QLatin1String("control"))) {
             DomProperty *p = properties.value(QLatin1String("control"));
-            m_output << m_indent << varName << "->setControl(QString::fromUtf8("
-                   << fixString(toString(p->elementString()), m_dindent) << "));\n";
+            m_output << m_indent << varName << "->setControl("
+                   << writeString(toString(p->elementString()), m_dindent) << ");\n";
         }
     }
 
@@ -1171,7 +1171,7 @@ void WriteInitialization::writeProperties(const QString &varName,
     }
     if (!(flags & WritePropertyIgnoreObjectName))
         m_output << m_indent << indent << varName
-                << "->setObjectName(QString::fromUtf8(" << fixString(varName, m_dindent) << "));\n";
+                << "->setObjectName(" << writeString(varName, m_dindent) << ");\n";
 
     int leftMargin, topMargin, rightMargin, bottomMargin;
     leftMargin = topMargin = rightMargin = bottomMargin = -1;
@@ -1459,8 +1459,8 @@ void WriteInitialization::writeProperties(const QString &varName,
 
         case DomProperty::Url: {
             const DomUrl* u = p->elementUrl();
-            propertyValue = QString::fromLatin1("QUrl(QString::fromUtf8(%1))")
-                            .arg(fixString(u->elementString()->text(), m_dindent));
+            propertyValue = QString::fromLatin1("QUrl(%1)")
+                            .arg(writeString(u->elementString()->text(), m_dindent));
             break;
         }
         case DomProperty::Brush:
@@ -1562,8 +1562,8 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
 
     m_output << m_indent << "QFont " << fontName << ";\n";
     if (f->hasElementFamily() && !f->elementFamily().isEmpty()) {
-        m_output << m_indent << fontName << ".setFamily(QString::fromUtf8(" << fixString(f->elementFamily(), m_dindent)
-            << "));\n";
+        m_output << m_indent << fontName << ".setFamily(" << writeString(f->elementFamily(), m_dindent)
+            << ");\n";
     }
     if (f->hasElementPointSize() && f->elementPointSize() > 0) {
          m_output << m_indent << fontName << ".setPointSize(" << f->elementPointSize()
@@ -1612,21 +1612,21 @@ static void writeResourceIcon(QTextStream &output,
                               const DomResourceIcon *i)
 {
     if (i->hasElementNormalOff())
-        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOff()->text(), indent) << "), QSize(), QIcon::Normal, QIcon::Off);\n";
+        output << indent << iconName << ".addFile(" << writeString(i->elementNormalOff()->text(), indent) << ", QSize(), QIcon::Normal, QIcon::Off);\n";
     if (i->hasElementNormalOn())
-        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementNormalOn()->text(), indent) << "), QSize(), QIcon::Normal, QIcon::On);\n";
+        output << indent << iconName << ".addFile(" << writeString(i->elementNormalOn()->text(), indent) << ", QSize(), QIcon::Normal, QIcon::On);\n";
     if (i->hasElementDisabledOff())
-        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementDisabledOff()->text(), indent) << "), QSize(), QIcon::Disabled, QIcon::Off);\n";
+        output << indent << iconName << ".addFile(" << writeString(i->elementDisabledOff()->text(), indent) << ", QSize(), QIcon::Disabled, QIcon::Off);\n";
     if (i->hasElementDisabledOn())
-        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementDisabledOn()->text(), indent) << "), QSize(), QIcon::Disabled, QIcon::On);\n";
+        output << indent << iconName << ".addFile(" << writeString(i->elementDisabledOn()->text(), indent) << ", QSize(), QIcon::Disabled, QIcon::On);\n";
     if (i->hasElementActiveOff())
-        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementActiveOff()->text(), indent) << "), QSize(), QIcon::Active, QIcon::Off);\n";
+        output << indent << iconName << ".addFile(" << writeString(i->elementActiveOff()->text(), indent) << ", QSize(), QIcon::Active, QIcon::Off);\n";
     if (i->hasElementActiveOn())
-        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementActiveOn()->text(), indent) << "), QSize(), QIcon::Active, QIcon::On);\n";
+        output << indent << iconName << ".addFile(" << writeString(i->elementActiveOn()->text(), indent) << ", QSize(), QIcon::Active, QIcon::On);\n";
     if (i->hasElementSelectedOff())
-        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementSelectedOff()->text(), indent) << "), QSize(), QIcon::Selected, QIcon::Off);\n";
+        output << indent << iconName << ".addFile(" << writeString(i->elementSelectedOff()->text(), indent) << ", QSize(), QIcon::Selected, QIcon::Off);\n";
     if (i->hasElementSelectedOn())
-        output << indent << iconName << ".addFile(QString::fromUtf8(" << fixString(i->elementSelectedOn()->text(), indent) << "), QSize(), QIcon::Selected, QIcon::On);\n";
+        output << indent << iconName << ".addFile(" << writeString(i->elementSelectedOn()->text(), indent) << ", QSize(), QIcon::Selected, QIcon::On);\n";
 }
 
 QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
@@ -1648,7 +1648,7 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
             writeResourceIcon(m_output, iconName, m_indent, i);
         } else {
             // Theme: Generate code to check the theme and default to resource
-            const QString themeIconName = fixString(i->attributeTheme(), QString());
+            const QString themeIconName = writeString(i->attributeTheme(), QString());
             if (iconHasStatePixmaps(i)) {
                 // Theme + default state pixmaps:
                 // Generate code to check the theme and default to state pixmaps
@@ -1660,8 +1660,8 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
                     m_output << "QString ";
                     m_firstThemeIcon = false;
                 }
-                m_output << themeNameStringVariableC << " = QString::fromUtf8("
-                         << themeIconName << ");\n";
+                m_output << themeNameStringVariableC << " = "
+                         << themeIconName << ";\n";
                 m_output << m_indent << "if (QIcon::hasThemeIcon("
                          << themeNameStringVariableC
                          << ")) {\n"
@@ -1672,8 +1672,8 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
             } else {
                 // Theme, but no state pixmaps: Construct from theme directly.
                 m_output << m_indent << "QIcon " << iconName
-                         << "(QIcon::fromTheme(QString::fromUtf8("
-                         << themeIconName << ")));\n";
+                         << "(QIcon::fromTheme("
+                         << themeIconName << "));\n";
             } // Theme, but not state
         }     // >= 4.4
     } else {  // pre-4.4 legacy
@@ -2356,10 +2356,7 @@ QString WriteInitialization::noTrCall(DomString *str, const QString &defaultStri
         return QString();
     if (str)
         value = str->text();
-    QString ret = QLatin1String("QString::fromUtf8(");
-    ret += fixString(value, m_dindent);
-    ret += QLatin1Char(')');
-    return ret;
+    return writeString(value, m_dindent);
 }
 
 QString WriteInitialization::autoTrCall(DomString *str, const QString &defaultString) const
@@ -2481,8 +2478,8 @@ void WriteInitialization::acceptWidgetScripts(const DomScripts &widgetScripts, D
         }
         m_output << ";\n";
     }
-    m_output << m_indent << "scriptContext.run(QString::fromUtf8("
-             << fixString(script, m_dindent) << "), "
+    m_output << m_indent << "scriptContext.run("
+             << writeString(script, m_dindent) << ", "
              << m_driver->findOrInsertWidget(node) << ", childWidgets);\n";
 }
 

@@ -42,6 +42,7 @@
 #ifndef QATOMIC_INTEGRITY_H
 #define QATOMIC_INTEGRITY_H
 
+#include <QtCore/qoldbasicatomic.h>
 #include <INTEGRITY.h>
 
 QT_BEGIN_HEADER

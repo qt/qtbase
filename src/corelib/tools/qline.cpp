@@ -412,15 +412,11 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 */
 
 /*!
+    \fn bool QLineF::isNull() const
+
     Returns true if the line is not set up with valid start and end point;
     otherwise returns false.
 */
-
-bool QLineF::isNull() const
-{
-    return (qFuzzyCompare(pt1.x(), pt2.x()) && qFuzzyCompare(pt1.y(), pt2.y())) ? true : false;
-}
-
 
 /*!
     \fn QPointF QLineF::p1() const

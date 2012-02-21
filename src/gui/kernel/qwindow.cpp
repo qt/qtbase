@@ -42,6 +42,7 @@
 #include "qwindow.h"
 
 #include "qplatformwindow_qpa.h"
+#include "qplatformintegration_qpa.h"
 #include "qsurfaceformat.h"
 #ifndef QT_NO_OPENGL
 #include "qplatformopenglcontext_qpa.h"
@@ -165,19 +166,14 @@ void QWindow::setVisible(bool visible)
         return;
     d->visible = visible;
     emit visibleChanged(visible);
-    if (QCoreApplication::instance() && !transientParent()) {
-        QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
-        if (visible) {
-            applicationPrivate->ref();
-        } else {
-            applicationPrivate->deref();
-        }
-    }
 
     if (!d->platformWindow)
         create();
 
     if (visible) {
+        // remove posted quit events when showing a new window
+        QCoreApplication::removePostedEvents(qApp, QEvent::Quit);
+
         QShowEvent showEvent;
         QGuiApplication::sendEvent(this, &showEvent);
     }
@@ -190,7 +186,13 @@ void QWindow::setVisible(bool visible)
     }
 }
 
+
 bool QWindow::visible() const
+{
+    return isVisible();
+}
+
+bool QWindow::isVisible() const
 {
     Q_D(const QWindow);
 
@@ -219,7 +221,11 @@ WId QWindow::winId() const
     Q_D(const QWindow);
     if(!d->platformWindow)
         const_cast<QWindow *>(this)->create();
-    return d->platformWindow->winId();
+
+    WId id = d->platformWindow->winId();
+    // See the QPlatformWindow::winId() documentation
+    Q_ASSERT(id != WId(0));
+    return id;
 }
 
 QWindow *QWindow::parent() const
@@ -373,6 +379,25 @@ void QWindow::requestActivateWindow()
         d->platformWindow->requestActivateWindow();
 }
 
+
+/*!
+    Returns if this window is exposed in the windowing system.
+
+    When the window is not exposed, it is shown by the application
+    but it is still not showing in the windowing system, so the application
+    should minimize rendering and other graphical activities.
+
+    An exposeEvent() is sent every time this value changes.
+ */
+
+bool QWindow::isExposed() const
+{
+    Q_D(const QWindow);
+    if (d->platformWindow)
+        return d->platformWindow->isExposed();
+    return false;
+}
+
 /*!
     Returns true if the window should appear active from a style perspective.
 
@@ -511,15 +536,6 @@ void QWindow::setTransientParent(QWindow *parent)
     QWindow *previousParent = d->transientParent;
 
     d->transientParent = parent;
-
-    if (QCoreApplication::instance() && d->visible) {
-        QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
-        if (parent && !previousParent) {
-            applicationPrivate->deref();
-        } else if (!parent && previousParent) {
-            applicationPrivate->ref();
-        }
-    }
 }
 
 QWindow *QWindow::transientParent() const
@@ -731,6 +747,15 @@ void QWindow::setWindowIcon(const QImage &icon) const
 void QWindow::destroy()
 {
     Q_D(QWindow);
+    QObjectList childrenWindows = children();
+    for (int i = 0; i < childrenWindows.size(); i++) {
+        QObject *object = childrenWindows.at(i);
+        if (object->isWindowType()) {
+            QWindow *w = static_cast<QWindow*>(object);
+            QGuiApplicationPrivate::window_list.removeAll(w);
+            w->destroy();
+        }
+    }
     setVisible(false);
     delete d->platformWindow;
     d->platformWindow = 0;
@@ -881,21 +906,24 @@ bool QWindow::close()
     if (QGuiApplicationPrivate::focus_window == this)
         QGuiApplicationPrivate::focus_window = 0;
 
-    QObjectList childrenWindows = children();
-    for (int i = 0; i < childrenWindows.size(); i++) {
-        QObject *object = childrenWindows.at(i);
-        if (object->isWindowType()) {
-            QWindow *w = static_cast<QWindow*>(object);
-            QGuiApplicationPrivate::window_list.removeAll(w);
-            w->destroy();
-        }
-    }
-
     QGuiApplicationPrivate::window_list.removeAll(this);
     destroy();
     d->maybeQuitOnLastWindowClosed();
     return true;
 }
+
+
+
+/*!
+    The expose event is sent by the window system whenever the window's
+    exposure on screen changes.
+
+    If the window is moved off screen, is made totally obscured by another
+    window, iconified or similar, this function might be called and the
+    value of isExposed() might change to false. When this happens,
+    an application should stop its rendering as it is no longer visible
+    to the user.
+ */
 
 void QWindow::exposeEvent(QExposeEvent *ev)
 {
@@ -944,6 +972,7 @@ bool QWindow::event(QEvent *ev)
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
+    case QEvent::TouchCancel:
         touchEvent(static_cast<QTouchEvent *>(ev));
         break;
 
@@ -979,7 +1008,7 @@ bool QWindow::event(QEvent *ev)
 
     case QEvent::Close: {
         Q_D(QWindow);
-        bool wasVisible = visible();
+        bool wasVisible = isVisible();
         destroy();
         if (wasVisible)
             d->maybeQuitOnLastWindowClosed();
@@ -1113,13 +1142,16 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
         bool lastWindowClosed = true;
         for (int i = 0; i < list.size(); ++i) {
             QWindow *w = list.at(i);
-            if (!w->visible() || w->parent())
+            if (!w->isVisible())
                 continue;
             lastWindowClosed = false;
             break;
         }
-        if (lastWindowClosed)
+        if (lastWindowClosed) {
             QGuiApplicationPrivate::emitLastWindowClosed();
+            QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
+            applicationPrivate->maybeQuit();
+        }
     }
 
 }

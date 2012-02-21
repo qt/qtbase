@@ -283,14 +283,17 @@ bool QWindowsClipboard::clipboardViewerWndProc(HWND hwnd, UINT message, WPARAM w
         }
     }
         return true;
-    case WM_DRAWCLIPBOARD:
+    case WM_DRAWCLIPBOARD: {
+        const bool owned = ownsClipboard();
         if (QWindowsContext::verboseOLE)
-            qDebug("Clipboard changed");
-        emitChanged(QClipboard::Clipboard);
+            qDebug("Clipboard changed owned %d", owned);
+        if (!owned) // changed is emitted by QClipboard in that case.
+            emitChanged(QClipboard::Clipboard);
         // clean up the clipboard object if we no longer own the clipboard
-        if (!ownsClipboard() && m_data)
+        if (!owned && m_data)
             releaseIData();
         propagateClipboardMessage(message, wParam, lParam);
+    }
         return true;
     case WM_DESTROY:
         // Recommended shutdown
@@ -326,13 +329,16 @@ void QWindowsClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
     const bool newData = !m_data || m_data->mimeData() != mimeData;
     if (newData) {
         releaseIData();
-        m_data = new QWindowsOleDataObject(mimeData);
+        if (mimeData)
+            m_data = new QWindowsOleDataObject(mimeData);
     }
 
     const HRESULT src = OleSetClipboard(m_data);
     if (src != S_OK) {
+        QString mimeDataFormats = mimeData ?
+            mimeData->formats().join(QStringLiteral(", ")) : QString(QStringLiteral("NULL"));
         qErrnoWarning("OleSetClipboard: Failed to set mime data (%s) on clipboard: %s",
-                      qPrintable(mimeData->formats().join(QStringLiteral(", "))),
+                      qPrintable(mimeDataFormats),
                       QWindowsContext::comErrorString(src).constData());
         releaseIData();
         return;

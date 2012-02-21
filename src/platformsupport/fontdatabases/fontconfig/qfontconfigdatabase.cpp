@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qfontconfigdatabase_p.h"
+#include "qfontenginemultifontconfig_p.h"
 
 #include <QtCore/QList>
 #include <QtGui/private/qfont_p.h>
@@ -50,8 +51,7 @@
 
 #include <QtGui/private/qfontengine_ft_p.h>
 #include <QtGui/private/qfontengine_p.h>
-
-
+#include <QtGui/private/qfontengine_qpa_p.h>
 
 #include <ft2build.h>
 #include FT_TRUETYPE_TABLES_H
@@ -469,6 +469,13 @@ void QFontconfigDatabase::populateFontDatabase()
 //    QFont font("Sans Serif");
 //    font.setPointSize(9);
 //    QApplication::setFont(font);
+}
+
+QFontEngineMulti *QFontconfigDatabase::fontEngineMulti(QFontEngine *fontEngine,
+                                                       QUnicodeTables::Script script,
+                                                       const QStringList &fallbacks)
+{
+    return new QFontEngineMultiFontConfig(fontEngine, script, fallbacks);
 }
 
 QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::Script script, void *usrPtr)

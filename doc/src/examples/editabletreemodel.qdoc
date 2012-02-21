@@ -48,14 +48,15 @@
     As described in the \l{Model Subclassing Reference}, models must
     provide implementations for the standard set of model functions:
     \l{QAbstractItemModel::}{flags()}, \l{QAbstractItemModel::}{data()},
-    \l{QAbstractItemModel::}{headerData()}, and
+    \l{QAbstractItemModel::}{headerData()},
+    \l{QAbstractItemModel::}{columnCount()}, and
     \l{QAbstractItemModel::}{rowCount()}. In addition, hierarchical models,
     such as this one, need to provide implementations of
     \l{QAbstractItemModel::}{index()} and \l{QAbstractItemModel::}{parent()}.
 
     An editable model needs to provide implementations of
     \l{QAbstractItemModel::}{setData()} and
-    \l{QAbstractItemModel::}{headerData()}, and must return a suitable
+    \l{QAbstractItemModel::}{setHeaderData()}, and must return a suitable
     combination of flags from its \l{QAbstractItemModel::}{flags()} function.
 
     Since this example allows the dimensions of the model to be changed,

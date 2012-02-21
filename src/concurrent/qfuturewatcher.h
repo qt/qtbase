@@ -42,6 +42,8 @@
 #ifndef QFUTUREWATCHER_H
 #define QFUTUREWATCHER_H
 
+#include <QtConcurrent/qtconcurrent_global.h>
+
 #include <QtConcurrent/qfuture.h>
 
 #ifndef QT_NO_QFUTURE
@@ -55,7 +57,7 @@ QT_BEGIN_NAMESPACE
 class QEvent;
 
 class QFutureWatcherBasePrivate;
-class Q_CORE_EXPORT QFutureWatcherBase : public QObject
+class Q_CONCURRENT_EXPORT QFutureWatcherBase : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFutureWatcherBase)

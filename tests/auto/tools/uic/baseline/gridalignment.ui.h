@@ -33,27 +33,27 @@ public:
     void setupUi(QWidget *Form)
     {
         if (Form->objectName().isEmpty())
-            Form->setObjectName(QString::fromUtf8("Form"));
+            Form->setObjectName(QStringLiteral("Form"));
         Form->resize(279, 163);
         gridLayout = new QGridLayout(Form);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName(QStringLiteral("gridLayout"));
         pushButton = new QPushButton(Form);
-        pushButton->setObjectName(QString::fromUtf8("pushButton"));
+        pushButton->setObjectName(QStringLiteral("pushButton"));
 
         gridLayout->addWidget(pushButton, 0, 0, 1, 1, Qt::AlignLeft);
 
         pushButton_3 = new QPushButton(Form);
-        pushButton_3->setObjectName(QString::fromUtf8("pushButton_3"));
+        pushButton_3->setObjectName(QStringLiteral("pushButton_3"));
 
         gridLayout->addWidget(pushButton_3, 0, 1, 1, 1, Qt::AlignTop);
 
         pushButton_2 = new QPushButton(Form);
-        pushButton_2->setObjectName(QString::fromUtf8("pushButton_2"));
+        pushButton_2->setObjectName(QStringLiteral("pushButton_2"));
 
         gridLayout->addWidget(pushButton_2, 1, 0, 1, 1, Qt::AlignRight);
 
         pushButton_4 = new QPushButton(Form);
-        pushButton_4->setObjectName(QString::fromUtf8("pushButton_4"));
+        pushButton_4->setObjectName(QStringLiteral("pushButton_4"));
 
         gridLayout->addWidget(pushButton_4, 1, 1, 1, 1, Qt::AlignBottom);
 

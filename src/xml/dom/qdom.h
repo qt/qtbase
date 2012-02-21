@@ -227,8 +227,7 @@ public:
     QDomCharacterData toCharacterData() const;
     QDomComment toComment() const;
 
-    void save(QTextStream&, int) const;
-    void save(QTextStream&, int, EncodingPolicy) const; // ### Qt 5: Merge overload(if we at all keep this)
+    void save(QTextStream&, int, EncodingPolicy=QDomNode::EncodingFromDocument) const;
 
     QDomElement firstChildElement(const QString &tagName = QString()) const;
     QDomElement lastChildElement(const QString &tagName = QString()) const;
@@ -264,7 +263,7 @@ public:
     inline QDomNode at(int index) const { return item(index); } // Qt API consistency
 
     // DOM read only attributes
-    uint length() const;
+    int length() const;
     inline int count() const { return length(); } // Qt API consitancy
     inline int size() const { return length(); } // Qt API consistency
     inline bool isEmpty() const { return length() == 0; } // Qt API consistency
@@ -378,7 +377,7 @@ public:
     QDomNode removeNamedItemNS(const QString& nsURI, const QString& localName);
 
     // DOM read only attributes
-    uint length() const;
+    int length() const;
     int count() const { return length(); } // Qt API consitancy
     inline int size() const { return length(); } // Qt API consistency
     inline bool isEmpty() const { return length() == 0; } // Qt API consistency
@@ -427,7 +426,7 @@ public:
     void replaceData(unsigned long offset, unsigned long count, const QString& arg);
 
     // DOM read only attributes
-    uint length() const;
+    int length() const;
 
     // DOM attributes
     QString data() const;

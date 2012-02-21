@@ -2729,6 +2729,20 @@ QFontEngine *QFontCache::findEngine(const Key &key)
     return it.value().data;
 }
 
+void QFontCache::removeEngine(QFontEngine *engine)
+{
+    EngineCache::iterator it = engineCache.begin();
+    while (it != engineCache.end()) {
+        if (it.value().data == engine) {
+            it = engineCache.erase(it);
+            if (--engine->cache_count == 0)
+                decreaseCost(engine->cache_cost);
+        } else {
+            ++it;
+        }
+    }
+}
+
 void QFontCache::insertEngine(const Key &key, QFontEngine *engine)
 {
     FC_DEBUG("QFontCache: inserting new engine %p", engine);

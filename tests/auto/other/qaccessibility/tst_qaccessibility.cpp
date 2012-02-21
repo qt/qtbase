@@ -846,6 +846,17 @@ public Q_SLOTS:
     }
 };
 
+static QAccessibleInterface *relatedInterface(QAccessibleInterface *iface, QAccessible::RelationFlag flag)
+{
+    typedef QPair<QAccessibleInterface *, QAccessible::Relation> RelationPair;
+    QVector<RelationPair> rels = iface->relations(flag);
+
+    for (int i = 1; i < rels.count(); ++i)
+        delete rels.at(i).first;
+
+    return rels.value(0).first;
+}
+
 void tst_QAccessibility::buttonTest()
 {
     QWidget window;
@@ -878,6 +889,30 @@ void tst_QAccessibility::buttonTest()
     toggletool.setCheckable(true);
     toggletool.setText("Toggle");
     toggletool.setMinimumSize(20,20);
+
+    // test Controller/Controlled relations
+    {
+    QCheckBox toggler("Toggle me!", &window);
+    bool ok = connect(&pushButton, SIGNAL(clicked()), &toggler, SLOT(toggle()));
+    QCOMPARE(ok, true);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&toggler);
+    QVERIFY(iface);
+    QCOMPARE(iface->role(), QAccessible::CheckBox);
+    QAccessibleInterface *buttonIFace = relatedInterface(iface, QAccessible::Controller);
+    QVERIFY(buttonIFace);
+    QCOMPARE(buttonIFace->role(), QAccessible::Button);
+    QCOMPARE(buttonIFace->object(), &pushButton);
+    delete buttonIFace;
+    delete iface;
+
+    buttonIFace = QAccessible::queryAccessibleInterface(&pushButton);
+    QVERIFY(buttonIFace);
+    QCOMPARE(buttonIFace->role(), QAccessible::Button);
+    iface = relatedInterface(buttonIFace, QAccessible::Controlled);
+    QVERIFY(iface);
+    QCOMPARE(iface->object(), &toggler);
+
+    }
 
     // test push button
     QAccessibleInterface* interface = QAccessible::queryAccessibleInterface(&pushButton);
@@ -1516,6 +1551,12 @@ void tst_QAccessibility::textEditTest()
     QCOMPARE(iface->textInterface()->characterRect(0, QAccessible2::RelativeToParent).size(), QSize(fm.width("h"), fm.height()));
     QCOMPARE(iface->textInterface()->characterRect(5, QAccessible2::RelativeToParent).size(), QSize(fm.width(" "), fm.height()));
     QCOMPARE(iface->textInterface()->characterRect(6, QAccessible2::RelativeToParent).size(), QSize(fm.width("w"), fm.height()));
+
+    iface->editableTextInterface()->copyText(6, 11);
+    QCOMPARE(QApplication::clipboard()->text(), QLatin1String("world"));
+    iface->editableTextInterface()->cutText(12, 16);
+    QCOMPARE(QApplication::clipboard()->text(), QLatin1String("how "));
+    QCOMPARE(iface->textInterface()->text(12, 15), QLatin1String("are"));
     }
     QTestAccessibility::clearEvents();
 }
@@ -1685,7 +1726,7 @@ void tst_QAccessibility::lineEditTest()
     QCOMPARE(iface->childCount(), 0);
     QVERIFY(iface->state().sizeable);
     QVERIFY(iface->state().movable);
-    QCOMPARE(bool(iface->state().focusable), le->isActiveWindow());
+    QVERIFY(iface->state().focusable);
     QVERIFY(iface->state().selectable);
     QVERIFY(iface->state().hasPopup);
     QCOMPARE(bool(iface->state().focused), le->hasFocus());
@@ -1714,7 +1755,7 @@ void tst_QAccessibility::lineEditTest()
     QApplication::processEvents();
     QVERIFY(!(iface->state().sizeable));
     QVERIFY(!(iface->state().movable));
-    QCOMPARE(bool(iface->state().focusable), le->isActiveWindow());
+    QVERIFY(iface->state().focusable);
     QVERIFY(iface->state().selectable);
     QVERIFY(iface->state().hasPopup);
     QCOMPARE(bool(iface->state().focused), le->hasFocus());

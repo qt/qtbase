@@ -58,7 +58,7 @@ static QByteArray cleaned(const QByteArray &input)
 {
     QByteArray result;
     result.reserve(input.size());
-    const char *data = input;
+    const char *data = input.constData();
     char *output = result.data();
 
     int newlines = 0;
@@ -161,7 +161,7 @@ enum TokenizeMode { TokenizeCpp, TokenizePreprocessor, PreparePreprocessorStatem
 static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode mode = TokenizeCpp)
 {
     Symbols symbols;
-    const char *begin = input;
+    const char *begin = input.constData();
     const char *data = begin;
     while (*data) {
         if (mode == TokenizeCpp) {
@@ -799,7 +799,7 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
             // #### stringery
             QFileInfo fi;
             if (local)
-                fi.setFile(QFileInfo(QString::fromLocal8Bit(filename)).dir(), QString::fromLocal8Bit(include));
+                fi.setFile(QFileInfo(QString::fromLocal8Bit(filename.constData())).dir(), QString::fromLocal8Bit(include.constData()));
             for (int j = 0; j < Preprocessor::includes.size() && !fi.exists(); ++j) {
                 const IncludePath &p = Preprocessor::includes.at(j);
                 if (p.isFrameworkPath) {
@@ -808,9 +808,9 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
                         continue;
                     QByteArray frameworkCandidate = include.left(slashPos);
                     frameworkCandidate.append(".framework/Headers/");
-                    fi.setFile(QString::fromLocal8Bit(QByteArray(p.path + '/' + frameworkCandidate)), QString::fromLocal8Bit(include.mid(slashPos + 1)));
+                    fi.setFile(QString::fromLocal8Bit(QByteArray(p.path + '/' + frameworkCandidate).constData()), QString::fromLocal8Bit(include.mid(slashPos + 1).constData()));
                 } else {
-                    fi.setFile(QString::fromLocal8Bit(p.path), QString::fromLocal8Bit(include));
+                    fi.setFile(QString::fromLocal8Bit(p.path.constData()), QString::fromLocal8Bit(include.constData()));
                 }
                 // try again, maybe there's a file later in the include paths with the same name
                 // (186067)
@@ -828,7 +828,7 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
                 continue;
             Preprocessor::preprocessedIncludes.insert(include);
 
-            QFile file(QString::fromLocal8Bit(include));
+            QFile file(QString::fromLocal8Bit(include.constData()));
             if (!file.open(QFile::ReadOnly))
                 continue;
 

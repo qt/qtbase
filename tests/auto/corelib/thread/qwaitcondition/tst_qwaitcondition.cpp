@@ -59,14 +59,8 @@ private slots:
     void wait_RaceCondition();
 };
 
-static const int iterations = 10;
-
-// Note: some tests rely on ThreadCount being multiple of 2
-#if defined(Q_OS_SOLARIS) || ( defined(Q_OS_LINUX) && defined(QT_ARCH_ARMV6) )
+static const int iterations = 4;
 static const int ThreadCount = 4;
-#else
-static const int ThreadCount = 10;
-#endif
 
 class wait_QMutex_Thread_1 : public QThread
 {

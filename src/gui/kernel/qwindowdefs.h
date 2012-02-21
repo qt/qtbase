@@ -42,6 +42,7 @@
 #ifndef QWINDOWDEFS_H
 #define QWINDOWDEFS_H
 
+#include <QtCore/qglobal.h>
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qnamespace.h>
 
@@ -99,7 +100,7 @@ QT_END_HEADER
 
 
 
-typedef unsigned long  WId;
+typedef QT_PREPEND_NAMESPACE(quintptr) WId;
 
 
 

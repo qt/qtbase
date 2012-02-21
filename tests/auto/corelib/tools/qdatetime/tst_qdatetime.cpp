@@ -1363,19 +1363,19 @@ void tst_QDateTime::dateFromStringFormat_data()
     QTest::newRow("data24") << tuesday << QString("dddd") << QDate(1900, 1, 2);
     QTest::newRow("data25") << wednesday << QString("dddd") << QDate(1900, 1, 3);
     QTest::newRow("data26") << thursday << QString("dddd") << QDate(1900, 1, 4);
-    QTest::newRow("data26") << friday << QString("dddd") << QDate(1900, 1, 5);
-    QTest::newRow("data27") << saturday << QString("dddd") << QDate(1900, 1, 6);
-    QTest::newRow("data28") << sunday << QString("dddd") << QDate(1900, 1, 7);
+    QTest::newRow("data27") << friday << QString("dddd") << QDate(1900, 1, 5);
+    QTest::newRow("data28") << saturday << QString("dddd") << QDate(1900, 1, 6);
+    QTest::newRow("data29") << sunday << QString("dddd") << QDate(1900, 1, 7);
 
-    QTest::newRow("data29") << monday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 2);
-    QTest::newRow("data30") << tuesday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 3);
-    QTest::newRow("data31") << wednesday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 4);
-    QTest::newRow("data32") << thursday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 5);
-    QTest::newRow("data33") << friday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 6);
-    QTest::newRow("data34") << saturday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 7);
-    QTest::newRow("data35") << sunday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 1);
+    QTest::newRow("data30") << monday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 2);
+    QTest::newRow("data31") << tuesday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 3);
+    QTest::newRow("data32") << wednesday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 4);
+    QTest::newRow("data33") << thursday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 5);
+    QTest::newRow("data34") << friday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 6);
+    QTest::newRow("data35") << saturday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 7);
+    QTest::newRow("data36") << sunday + " 2006" << QString("dddd yyyy") << QDate(2006, 1, 1);
 
-    QTest::newRow("data36 ") << tuesday + " 2007 " + march << QString("dddd yyyy MMMM") << QDate(2007, 3, 6);
+    QTest::newRow("data37") << tuesday + " 2007 " + march << QString("dddd yyyy MMMM") << QDate(2007, 3, 6);
 
 }
 

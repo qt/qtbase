@@ -459,8 +459,8 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
             int height = size.height();
             int level = 0;
             while (width > 1 || height > 1) {
-                width = (width + 1) >> 1;
-                height = (height + 1) >> 1;
+                width = qMax(1, width >> 1);
+                height = qMax(1, height >> 1);
                 ++level;
                 glTexImage2D(target, level, internal_format, width, height, 0,
                         GL_RGBA, GL_UNSIGNED_BYTE, NULL);

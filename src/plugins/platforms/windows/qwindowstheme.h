@@ -43,18 +43,42 @@
 #define QWINDOWSTHEME_H
 
 #include <QtGui/QPlatformTheme>
+#include <QtGui/QColor>
+
+#include "qtwindows_additional.h"
 
 QT_BEGIN_NAMESPACE
+
+class QWindow;
 
 class QWindowsTheme : public QPlatformTheme
 {
 public:
     QWindowsTheme();
+    ~QWindowsTheme();
+
+    static QWindowsTheme *instance();
 
     virtual bool usePlatformNativeDialog(DialogType type) const;
     virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
     virtual QVariant themeHint(ThemeHint) const;
+    virtual const QPalette *palette(Palette type = SystemPalette) const
+        { return m_palettes[type]; }
+
+    void windowsThemeChanged(QWindow *window);
+
+private:
+    void refresh();
+    void clearPalettes();
+
+    QPalette *m_palettes[NPalettes];
 };
+
+static inline COLORREF qColorToCOLORREF(const QColor &color)
+{ return RGB(color.red(), color.green(), color.blue()); }
+
+static inline QColor COLORREFToQColor(COLORREF cr)
+{ return QColor(GetRValue(cr), GetGValue(cr), GetBValue(cr)); }
 
 QT_END_NAMESPACE
 

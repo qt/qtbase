@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 //Native menubars are only supported for Windows Mobile not the standard SDK/generic WinCE
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 #include "qmenu.h"
 #include "qt_windows.h"
 #include "qapplication.h"
@@ -61,8 +61,6 @@
 #if Q_OS_WINCE_WM
 #   include <windowsm.h>
 #endif
-
-#include "qguifunctions_wince.h"
 
 #ifndef QT_NO_MENUBAR
 
@@ -377,7 +375,8 @@ void QMenuBarPrivate::wceCreateMenuBar(QWidget *parent)
     Q_Q(QMenuBar);
     wce_menubar = new QWceMenuBarPrivate(this);
 
-    wce_menubar->parentWindowHandle = parent ? parent->winId() : q->winId();
+    wce_menubar->parentWindowHandle = parent ? QApplicationPrivate::getHWNDForWidget(parent) :
+                                               QApplicationPrivate::getHWNDForWidget(q);
     wce_menubar->leftButtonAction = defaultAction;
 
     wce_menubar->menubarHandle = qt_wce_create_menubar(wce_menubar->parentWindowHandle, (HINSTANCE)qWinAppInst(), 0, SHCMBF_EMPTYBAR);
@@ -547,7 +546,8 @@ void QMenuBarPrivate::_q_updateDefaultAction()
 void QMenuBarPrivate::QWceMenuBarPrivate::rebuild()
 {
     d->q_func()->resize(0,0);
-    parentWindowHandle = d->q_func()->parentWidget() ? d->q_func()->parentWidget()->winId() : d->q_func()->winId();
+    parentWindowHandle = d->q_func()->parentWidget() ? QApplicationPrivate::getHWNDForWidget(d->q_func()->parentWidget()) :
+                                                       QApplicationPrivate::getHWNDForWidget(d->q_func());
     if (d->wceClassicMenu) {
         QList<QAction*> actions = d->actions;
         int maxEntries;
@@ -665,4 +665,4 @@ void QMenuBarPrivate::QWceMenuBarPrivate::rebuild()
 QT_END_NAMESPACE
 
 #endif //QT_NO_MENUBAR
-#endif //Q_WS_WINCE
+#endif //Q_OS_WINCE

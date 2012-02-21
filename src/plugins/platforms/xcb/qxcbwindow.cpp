@@ -50,6 +50,8 @@
 #include "qxcbkeyboard.h"
 #include "qxcbwmsupport.h"
 
+#include <qplatformintegration_qpa.h>
+
 #ifdef XCB_USE_DRI2
 #include "qdri2context.h"
 #endif
@@ -201,19 +203,21 @@ void QXcbWindow::create()
     if (parent())
         xcb_parent_id = static_cast<QXcbWindow *>(parent())->xcb_window();
 
-    m_requestedFormat = window()->format();
+    m_format = window()->requestedFormat();
 
 #if (defined(XCB_USE_GLX) || defined(XCB_USE_EGL)) && defined(XCB_USE_XLIB)
     if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)
-        || window()->format().hasAlpha())
+        || m_format.hasAlpha())
     {
 #if defined(XCB_USE_GLX)
-        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window()->format());
+        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen), m_screen->screenNumber(), &m_format);
         if (!visualInfo)
             qFatal("Could not initialize GLX");
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
-        EGLConfig eglConfig = q_configFromGLFormat(eglDisplay, window()->format(), true);
+        EGLConfig eglConfig = q_configFromGLFormat(eglDisplay, m_format, true);
+        m_format = q_glFormatFromConfig(eglDisplay, eglConfig);
+
         VisualID id = QXlibEglIntegration::getCompatibleVisualId(DISPLAY_FROM_XCB(this), eglDisplay, eglConfig);
 
         XVisualInfo visualInfoTemplate;
@@ -1167,7 +1171,7 @@ void QXcbWindow::setOrientation(Qt::ScreenOrientation orientation)
 QSurfaceFormat QXcbWindow::format() const
 {
     // ### return actual format
-    return m_requestedFormat;
+    return m_format;
 }
 
 #if defined(XCB_USE_EGL)

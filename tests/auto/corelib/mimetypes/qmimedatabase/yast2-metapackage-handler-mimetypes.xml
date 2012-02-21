@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!-- http://www.freedesktop.org/wiki/Specifications/shared-mime-info-spec -->
+<!-- to to ${PREFIX-~/.local}/share/mime/packages -->
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+  <mime-type type="text/x-suse-ymp">
+    <comment>YaST Meta Package</comment>
+    <glob pattern="*.ymp"/>
+  </mime-type>
+
+  <mime-type type="text/x-suse-ymu">
+    <comment>URL of a YaST Meta Package</comment>
+    <glob pattern="*.ymu"/>
+  </mime-type>
+</mime-info>
+

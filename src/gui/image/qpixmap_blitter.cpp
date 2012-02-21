@@ -144,27 +144,11 @@ void QBlittablePlatformPixmap::fill(const QColor &color)
             m_alpha = true;
         }
 
-        uint pixel;
-        switch (blittable()->lock()->format()) {
-        case QImage::Format_ARGB32_Premultiplied:
-            pixel = PREMUL(color.rgba());
-            break;
-        case QImage::Format_ARGB8565_Premultiplied:
-            pixel = qargb8565(color.rgba()).rawValue();
-            break;
-        case QImage::Format_ARGB8555_Premultiplied:
-            pixel = qargb8555(color.rgba()).rawValue();
-            break;
-        case QImage::Format_ARGB6666_Premultiplied:
-            pixel = qargb6666(color.rgba()).rawValue();
-            break;
-        case QImage::Format_ARGB4444_Premultiplied:
-            pixel = qargb4444(color.rgba()).rawValue();
-            break;
-        default:
-            pixel = color.rgba();
-            break;
-        }
+        uint pixel = PREMUL(color.rgba());
+        const QPixelLayout *layout = &qPixelLayouts[blittable()->lock()->format()];
+        Q_ASSERT(layout->convertFromARGB32PM);
+        layout->convertFromARGB32PM(&pixel, &pixel, 1, layout, 0);
+
         //so premultiplied formats are supported and ARGB32 and RGB32
         blittable()->lock()->fill(pixel);
     }

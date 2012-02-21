@@ -51,14 +51,14 @@
 
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
-#include <QtGui/qplatformintegration_qpa.h>
-#include <QtGui/qplatformtheme_qpa.h>
 #include "private/qshortcutmap_p.h"
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+class QPlatformIntegration;
+class QPlatformTheme;
 
 class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
 {
@@ -73,6 +73,8 @@ public:
 
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *previous);
+
+    virtual bool shouldQuit();
 
     static Qt::KeyboardModifiers modifier_buttons;
     static Qt::MouseButtons mouse_buttons;
@@ -125,6 +127,7 @@ public:
     static void reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e);
     static void reportAvailableGeometryChange(QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e);
     static void reportLogicalDotsPerInchChange(QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e);
+    static void processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce);
 
     static void processMapEvent(QWindowSystemInterfacePrivate::MapEvent *e);
     static void processUnmapEvent(QWindowSystemInterfacePrivate::UnmapEvent *e);
@@ -181,6 +184,7 @@ public:
     static QFont *app_font;
 
     QStyleHints *styleHints;
+    static bool obey_desktop_settings;
     QInputMethod *inputMethod;
 
     static QList<QObject *> generic_plugin_list;
@@ -199,6 +203,15 @@ public:
         QTouchEvent::TouchPoint touchPoint;
     };
     QHash<ActiveTouchPointsKey, ActiveTouchPointsValue> activeTouchPoints;
+    QEvent::Type lastTouchType;
+    struct SynthesizedMouseData {
+        SynthesizedMouseData(const QPointF &p, const QPointF &sp, QWindow *w)
+            : pos(p), screenPos(sp), window(w) { }
+        QPointF pos;
+        QPointF screenPos;
+        QWeakPointer<QWindow> window;
+    };
+    QHash<QWindow *, SynthesizedMouseData> synthesizedMousePoints;
 
 private:
     void init();

@@ -55,6 +55,7 @@
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <qwhatsthis.h>
+#include <qplatformtheme_qpa.h>
 #include "private/qguiapplication_p.h"
 
 #ifndef QT_NO_MENUBAR
@@ -64,7 +65,7 @@
 #include "qmenubar_p.h"
 #include "qdebug.h"
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 extern bool qt_wince_is_mobile(); //defined in qguifunctions_wce.cpp
 #endif
 
@@ -719,7 +720,7 @@ void QMenuBarPrivate::init()
 
     if (platformMenuBar)
         q->hide();
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     if (qt_wince_is_mobile()) {
         wceCreateMenuBar(q->parentWidget());
         if(wce_menubar)
@@ -783,8 +784,7 @@ QMenuBar::~QMenuBar()
     delete d->platformMenuBar;
     d->platformMenuBar = 0;
 
-#ifdef Q_WS_WINCE
-    Q_D(QMenuBar);
+#ifdef Q_OS_WINCE
     if (qt_wince_is_mobile())
         d->wceDestroyMenuBar();
 #endif
@@ -1244,8 +1244,9 @@ void QMenuBar::actionEvent(QActionEvent *e)
     d->itemsDirty = true;
 
     if (d->platformMenuBar) {
+#if !defined(Q_OS_WINCE)
         QPlatformMenuBar *nativeMenuBar = d->platformMenuBar;
-#if defined(Q_WS_WINCE)
+#else
         QMenuBarPrivate::QWceMenuBarPrivate *nativeMenuBar = d->wce_menubar;
 #endif
         if (!nativeMenuBar)
@@ -1338,7 +1339,7 @@ void QMenuBarPrivate::handleReparent()
     if (platformMenuBar)
         platformMenuBar->handleReparent(newParent);
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     if (qt_wince_is_mobile() && wce_menubar)
         wce_menubar->rebuild();
 #endif
@@ -1526,7 +1527,7 @@ QRect QMenuBar::actionGeometry(QAction *act) const
 QSize QMenuBar::minimumSizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_OS_MAC) || defined(Q_WS_WINCE)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1582,7 +1583,7 @@ QSize QMenuBar::minimumSizeHint() const
 QSize QMenuBar::sizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_OS_MAC) || defined(Q_WS_WINCE)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1641,7 +1642,7 @@ QSize QMenuBar::sizeHint() const
 int QMenuBar::heightForWidth(int) const
 {
     Q_D(const QMenuBar);
-#if defined(Q_OS_MAC) || defined(Q_WS_WINCE)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1838,13 +1839,13 @@ QPlatformMenuBar *QMenuBar::platformMenuBar()
   \sa defaultAction()
 */
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 void QMenuBar::setDefaultAction(QAction *act)
 {
     Q_D(QMenuBar);
     if (d->defaultAction == act)
         return;
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     if (qt_wince_is_mobile())
         if (d->defaultAction) {
             disconnect(d->defaultAction, SIGNAL(changed()), this, SLOT(_q_updateDefaultAction()));
@@ -1852,7 +1853,7 @@ void QMenuBar::setDefaultAction(QAction *act)
         }
 #endif
     d->defaultAction = act;
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     if (qt_wince_is_mobile())
         if (d->defaultAction) {
             connect(d->defaultAction, SIGNAL(changed()), this, SLOT(_q_updateDefaultAction()));

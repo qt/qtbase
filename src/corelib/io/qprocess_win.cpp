@@ -85,10 +85,13 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
         // ### Replace the call to qrand() with a secure version, once we have it in Qt.
         swprintf(pipeName, L"\\\\.\\pipe\\qt-%X", qrand());
 
+        DWORD dwPipeFlags = PIPE_TYPE_BYTE | PIPE_WAIT;
+        if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA)
+            dwPipeFlags |= PIPE_REJECT_REMOTE_CLIENTS;
         const DWORD dwPipeBufferSize = 1024 * 1024;
         hRead = CreateNamedPipe(pipeName,
                                 PIPE_ACCESS_INBOUND | FILE_FLAG_OVERLAPPED,
-                                PIPE_TYPE_BYTE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS,
+                                dwPipeFlags,
                                 1,                      // only one pipe instance
                                 0,                      // output buffer size
                                 dwPipeBufferSize,       // input buffer size

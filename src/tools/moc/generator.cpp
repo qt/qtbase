@@ -43,25 +43,30 @@
 #include "outputrevision.h"
 #include "utils.h"
 #include <QtCore/qmetatype.h>
+#include <QtCore/qjsondocument.h>
+#include <QtCore/qjsonobject.h>
+#include <QtCore/qjsonvalue.h>
+#include <QtCore/qjsonarray.h>
+#include <QtCore/qplugin.h>
 #include <stdio.h>
 
 #include <private/qmetaobject_p.h> //for the flags.
 
 QT_BEGIN_NAMESPACE
 
-uint qvariant_nameToType(const char* name)
+uint qvariant_nameToType(const QByteArray &name)
 {
-    if (!name)
+    if (name.isEmpty())
         return 0;
 
-    uint tp = QMetaType::type(name);
+    uint tp = QMetaType::type(name.constData());
     return tp < QMetaType::User ? tp : 0;
 }
 
 /*
   Returns true if the type is a QVariant types.
 */
-bool isVariantType(const char* type)
+bool isVariantType(const QByteArray &type)
 {
     return qvariant_nameToType(type) != 0;
 }
@@ -69,9 +74,9 @@ bool isVariantType(const char* type)
 /*!
   Returns true if the type is qreal.
 */
-static bool isQRealType(const char *type)
+static bool isQRealType(const QByteArray &type)
 {
-    return strcmp(type, "qreal") == 0;
+    return (type == "qreal");
 }
 
 Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, FILE *outfile)
@@ -104,11 +109,9 @@ static inline int lengthOfEscapeSequence(const QByteArray &s, int i)
     return i - startPos;
 }
 
-int Generator::strreg(const char *s)
+int Generator::strreg(const QByteArray &s)
 {
     int idx = 0;
-    if (!s)
-        s = "";
     for (int i = 0; i < strings.size(); ++i) {
         const QByteArray &str = strings.at(i);
         if (str == s)
@@ -135,13 +138,11 @@ void Generator::generateCode()
 //
 // build the data array
 //
-    int i = 0;
-
 
     // filter out undeclared enumerators and sets
     {
         QList<EnumDef> enumList;
-        for (i = 0; i < cdef->enumList.count(); ++i) {
+        for (int i = 0; i < cdef->enumList.count(); ++i) {
             EnumDef def = cdef->enumList.at(i);
             if (cdef->enumDeclarations.contains(def.name)) {
                 enumList += def;
@@ -159,7 +160,7 @@ void Generator::generateCode()
     QByteArray qualifiedClassNameIdentifier = cdef->qualified;
     qualifiedClassNameIdentifier.replace(':', '_');
 
-    int index = 14;
+    int index = MetaObjectPrivateFieldCount;
     fprintf(out, "static const uint qt_meta_data_%s[] = {\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "\n // content:\n");
     fprintf(out, "    %4d,       // revision\n", int(QMetaObjectPrivate::OutputRevision));
@@ -181,7 +182,7 @@ void Generator::generateCode()
     fprintf(out, "    %4d, %4d, // enums/sets\n", cdef->enumList.count(), cdef->enumList.count() ? index : 0);
 
     int enumsIndex = index;
-    for (i = 0; i < cdef->enumList.count(); ++i)
+    for (int i = 0; i < cdef->enumList.count(); ++i)
         index += 4 + (cdef->enumList.at(i).values.count() * 2);
     fprintf(out, "    %4d, %4d, // constructors\n", isConstructible ? cdef->constructorList.count() : 0,
             isConstructible ? index : 0);
@@ -247,7 +248,7 @@ void Generator::generateCode()
     fprintf(out, "    \"");
     int col = 0;
     int len = 0;
-    for (i = 0; i < strings.size(); ++i) {
+    for (int i = 0; i < strings.size(); ++i) {
         QByteArray s = strings.at(i);
         len = s.length();
         if (col && col + len >= 72) {
@@ -384,7 +385,7 @@ void Generator::generateCode()
     for (int i = 1; i < cdef->superclassList.size(); ++i) { // for all superclasses but the first one
         if (cdef->superclassList.at(i).second == FunctionDef::Private)
             continue;
-        const char *cname = cdef->superclassList.at(i).first;
+        const char *cname = cdef->superclassList.at(i).first.constData();
         fprintf(out, "    if (!strcmp(_clname, \"%s\"))\n        return static_cast< %s*>(const_cast< %s*>(this));\n",
                 cname, cname, cdef->classname.constData());
     }
@@ -421,6 +422,11 @@ void Generator::generateCode()
 //
     for (int signalindex = 0; signalindex < cdef->signalList.size(); ++signalindex)
         generateSignal(&cdef->signalList[signalindex], signalindex);
+
+//
+// Generate plugin meta data
+//
+    generatePluginMetaData();
 }
 
 
@@ -437,7 +443,7 @@ void Generator::generateClassInfos()
     }
 }
 
-void Generator::generateFunctions(QList<FunctionDef>& list, const char *functype, int type)
+void Generator::generateFunctions(const QList<FunctionDef>& list, const char *functype, int type)
 {
     if (list.isEmpty())
         return;
@@ -486,7 +492,7 @@ void Generator::generateFunctions(QList<FunctionDef>& list, const char *functype
     }
 }
 
-void Generator::generateFunctionRevisions(QList<FunctionDef>& list, const char *functype)
+void Generator::generateFunctionRevisions(const QList<FunctionDef>& list, const char *functype)
 {
     if (list.count())
         fprintf(out, "\n // %ss: revision\n", functype);
@@ -1049,6 +1055,48 @@ void Generator::generateSignal(FunctionDef *def,int index)
     if (def->normalizedType.size())
         fprintf(out, "    return _t0;\n");
     fprintf(out, "}\n");
+}
+
+void Generator::generatePluginMetaData()
+{
+    if (cdef->pluginData.iid.isEmpty())
+        return;
+
+    QJsonObject data;
+    data.insert(QLatin1String("IID"), QLatin1String(cdef->pluginData.iid.constData()));
+    data.insert(QLatin1String("className"), QLatin1String(cdef->classname.constData()));
+    data.insert(QLatin1String("version"), (int)QT_VERSION);
+    data.insert(QLatin1String("debug"),
+#ifdef QT_NO_DEBUG
+                false
+#else
+                true
+#endif
+                );
+    data.insert(QLatin1String("MetaData"), cdef->pluginData.metaData.object());
+    QJsonDocument doc(data);
+
+    fprintf(out, "\nQT_PLUGIN_METADATA_SECTION const uint qt_section_alignment_dummy = 42;\n");
+    fprintf(out,
+            "\nQT_PLUGIN_METADATA_SECTION\n"
+            "static const unsigned char qt_pluginMetaData[] = {\n"
+            "    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', ' ',\n   ");
+#if 0
+    fprintf(out, "\"%s\";\n", doc.toJson().constData());
+#else
+    QByteArray binary = doc.toBinaryData();
+    for (int i = 0; i < binary.size() - 1; ++i) {
+        fprintf(out, " 0x%02x,", (uchar)binary.at(i));
+        if (!((i + 1) % 8))
+            fprintf(out, "\n   ");
+    }
+    fprintf(out, " 0x%02x\n};\n", (uchar)binary.at(binary.size() - 1));
+#endif
+    // 'Use' all namespaces.
+    int pos = cdef->qualified.indexOf("::");
+    for ( ; pos != -1 ; pos = cdef->qualified.indexOf("::", pos + 2) )
+        fprintf(out, "using namespace %s;\n", cdef->qualified.left(pos).constData());
+    fprintf(out, "QT_MOC_EXPORT_PLUGIN(%s)\n\n", cdef->classname.constData());
 }
 
 QT_END_NAMESPACE

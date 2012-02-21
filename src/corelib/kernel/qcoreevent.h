@@ -277,6 +277,10 @@ public:
         InputMethodQuery = 209,
         OrientationChange = 210,                // Screen orientation has changed
 
+        TouchCancel = 211,
+
+        ThemeChange = 212,
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 

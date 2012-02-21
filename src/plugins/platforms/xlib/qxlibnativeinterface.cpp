@@ -92,6 +92,17 @@ void * QXlibNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
     }
     return result;
 }
+QPlatformNativeInterface::EventFilter QXlibNativeInterface::setEventFilter(const QByteArray &eventType, QPlatformNativeInterface::EventFilter filter)
+{
+    EventFilter oldFilter = m_eventFilters.value(eventType);
+    m_eventFilters.insert(eventType, filter);
+    return oldFilter;
+}
+
+QPlatformNativeInterface::EventFilter QXlibNativeInterface::eventFilterForEventType(const QByteArray& eventType) const
+{
+    return m_eventFilters.value(eventType);
+}
 
 void * QXlibNativeInterface::displayForWindow(QWindow *window)
 {

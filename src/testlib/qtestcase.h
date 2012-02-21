@@ -117,22 +117,11 @@ do { \
 
 #define QTRY_COMPARE(__expr, __expected) QTRY_COMPARE_WITH_TIMEOUT(__expr, __expected, 5000)
 
-#ifdef Q_CC_MSVC
 #define QSKIP(statement) \
 do {\
     QTest::qSkip(statement, __FILE__, __LINE__);\
     return;\
 } while (0)
-#else
-#define QSKIP(statement, ...) \
-do {\
-    if (strcmp(#__VA_ARGS__, "") != 0)\
-        QTest::qFail("The two argument version of QSKIP is no longer available. "\
-                     "Please update this test by removing the second argument in each QSKIP.", __FILE__, __LINE__);\
-    QTest::qSkip(statement, __FILE__, __LINE__);\
-    return;\
-} while (0)
-#endif
 
 #define QEXPECT_FAIL(dataIndex, comment, mode)\
 do {\
@@ -275,7 +264,7 @@ namespace QTest
     template <typename T1, typename T2>
     bool qCompare(T1 const &, T2 const &, const char *, const char *, const char *, int);
 
-#if defined(QT_COORD_TYPE) && (defined(QT_ARCH_ARM) || defined(QT_NO_FPU) || defined(QT_ARCH_WINDOWSCE))
+#if defined(QT_COORD_TYPE) && (defined(Q_PROCESSOR_ARM) || defined(QT_NO_FPU) || defined(Q_OS_WINCE))
     template <>
     inline bool qCompare<qreal, float>(qreal const &t1, float const &t2, const char *actual,
                                  const char *expected, const char *file, int line)
@@ -290,7 +279,7 @@ namespace QTest
         return qCompare<qreal>(qreal(t1), t2, actual, expected, file, line);
     }
 
-#elif defined(QT_COORD_TYPE) || defined(QT_ARCH_ARM) || defined(QT_NO_FPU) || defined(QT_ARCH_WINDOWSCE)
+#elif defined(QT_COORD_TYPE) || defined(Q_PROCESSOR_ARM) || defined(QT_NO_FPU) || defined(Q_OS_WINCE)
     template <>
     inline bool qCompare<qreal, double>(qreal const &t1, double const &t2, const char *actual,
                                  const char *expected, const char *file, int line)

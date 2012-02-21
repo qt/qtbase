@@ -287,7 +287,7 @@ void QMaliitPlatformInputContext::activationLostEvent()
     d->visibility = InputPanelHidden;
 }
 
-void QMaliitPlatformInputContext::commitString(const QString &string, int replacementStart, int replacementLength, int cursorPos)
+void QMaliitPlatformInputContext::commitString(const QString &string, int replacementStart, int replacementLength, int /* cursorPos */)
 {
     QObject *input = qApp->inputMethod()->inputItem();
     if (!input)

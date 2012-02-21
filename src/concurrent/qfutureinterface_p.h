@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+#include <QtConcurrent/qtconcurrent_global.h>
+
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qlist.h>

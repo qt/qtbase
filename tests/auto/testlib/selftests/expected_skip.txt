@@ -8,7 +8,7 @@ SKIP   : tst_Skip::emptytest() skipping all
 SKIP   : tst_Skip::singleSkip(local 1) skipping one
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp(97)]
 QDEBUG : tst_Skip::singleSkip(local 2) this line should only be reached once (true)
-PASS   : tst_Skip::singleSkip()
+PASS   : tst_Skip::singleSkip(local 2)
 PASS   : tst_Skip::cleanupTestCase()
 Totals: 3 passed, 0 failed, 3 skipped
 ********* Finished testing of tst_Skip *********

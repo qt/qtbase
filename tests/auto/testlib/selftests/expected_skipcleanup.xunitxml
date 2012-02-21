@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="1" failures="0" tests="3" name="tst_SkipCleanup">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="aTestFunction"/>
+  <testcase name="cleanupTestCase">
+    <!-- message="Skip inside cleanupTestCase." type="skip" -->
+  </testcase>
+  <system-err>
+<![CDATA[Skip inside cleanupTestCase.]]>
+  </system-err>
+</testsuite>

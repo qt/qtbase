@@ -52,6 +52,11 @@
 #include <QPainter>
 #include <QSet>
 
+#ifdef Q_OS_UNIX // for geteuid()
+# include <sys/types.h>
+# include <unistd.h>
+#endif
+
 typedef QMap<QString, QString> QStringMap;
 typedef QList<int> QIntList;
 Q_DECLARE_METATYPE(QImage)

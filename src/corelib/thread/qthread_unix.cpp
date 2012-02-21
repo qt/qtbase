@@ -90,6 +90,10 @@
 # endif
 #endif
 
+#if defined(Q_OS_LINUX)
+#include <sys/prctl.h>
+#endif
+
 #if defined(Q_OS_LINUX) && !defined(SCHED_IDLE)
 // from linux/sched.h
 # define SCHED_IDLE    5
@@ -282,6 +286,20 @@ void *QThreadPrivate::start(void *arg)
         data->eventDispatcher->startingUp();
     else
         createEventDispatcher(data);
+
+#if !defined(QT_NO_DEBUG)  && (defined(Q_OS_LINUX) || defined(Q_OS_MAC))
+    // sets the name of the current thread.
+    QByteArray objectName = thr->objectName().toLocal8Bit();
+
+    if (objectName.isEmpty())
+        objectName = thr->metaObject()->className();
+
+#if defined(Q_OS_LINUX)
+    prctl(PR_SET_NAME, (unsigned long)objectName.constData(), 0, 0, 0);
+#elif defined(Q_OS_MAC)
+    pthread_setname_np(objectName.constData());
+#endif
+#endif
 
     emit thr->started();
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);

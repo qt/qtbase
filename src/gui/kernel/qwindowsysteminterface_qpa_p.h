@@ -64,6 +64,7 @@ public:
         ScreenGeometry,
         ScreenAvailableGeometry,
         ScreenLogicalDotsPerInch,
+        ThemeChange,
         Map,
         Unmap,
         Expose
@@ -228,6 +229,13 @@ public:
         QWeakPointer<QScreen> screen;
         qreal dpiX;
         qreal dpiY;
+    };
+
+    class ThemeChangeEvent : public WindowSystemEvent {
+    public:
+        explicit ThemeChangeEvent(QWindow * w)
+            : WindowSystemEvent(ThemeChange), window(w) { }
+        QWeakPointer<QWindow> window;
     };
 
     class MapEvent : public WindowSystemEvent {

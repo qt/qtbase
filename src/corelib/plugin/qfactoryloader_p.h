@@ -55,8 +55,8 @@
 
 #include "QtCore/qobject.h"
 #include "QtCore/qstringlist.h"
+#include "QtCore/qjsonobject.h"
 #include "private/qlibrary_p.h"
-
 #ifndef QT_NO_LIBRARY
 
 QT_BEGIN_NAMESPACE
@@ -74,8 +74,11 @@ public:
                    Qt::CaseSensitivity = Qt::CaseSensitive);
     ~QFactoryLoader();
 
-    QStringList keys() const;
-    QObject *instance(const QString &key) const;
+    QT_DEPRECATED QStringList keys() const;
+    QList<QJsonObject> metaData() const;
+
+    QT_DEPRECATED QObject *instance(const QString &key) const;
+    QObject *instance(int index) const;
 
 #if defined(Q_OS_UNIX) && !defined (Q_OS_MAC)
     QLibraryPrivate *library(const QString &key) const;

@@ -158,8 +158,8 @@ void tst_QCryptographicHash::files_data() {
     QTest::addColumn<QString>("filename");
     QTest::addColumn<QCryptographicHash::Algorithm>("algorithm");
     QTest::addColumn<QByteArray>("md5sum");
-    QTest::newRow("Line") << QString::fromAscii("data/2c1517dad3678f03917f15849b052fd5.md5") << QCryptographicHash::Md5 << QByteArray("2c1517dad3678f03917f15849b052fd5");
-    QTest::newRow("Line") << QString::fromAscii("data/d41d8cd98f00b204e9800998ecf8427e.md5") << QCryptographicHash::Md5 << QByteArray("d41d8cd98f00b204e9800998ecf8427e");
+    QTest::newRow("data1") << QString::fromAscii("data/2c1517dad3678f03917f15849b052fd5.md5") << QCryptographicHash::Md5 << QByteArray("2c1517dad3678f03917f15849b052fd5");
+    QTest::newRow("data2") << QString::fromAscii("data/d41d8cd98f00b204e9800998ecf8427e.md5") << QCryptographicHash::Md5 << QByteArray("d41d8cd98f00b204e9800998ecf8427e");
 }
 
 
@@ -169,7 +169,9 @@ void tst_QCryptographicHash::files()
     QFETCH(QCryptographicHash::Algorithm, algorithm);
     QFETCH(QByteArray, md5sum);
     {
-        QFile f(QString::fromLocal8Bit(SRCDIR) + filename);
+        QString testData = QFINDTESTDATA(filename);
+        QVERIFY2(!testData.isEmpty(), qPrintable(QString("Cannot find test data: %1").arg(filename)));
+        QFile f(testData);
         QCryptographicHash hash(algorithm);
         QVERIFY(! hash.addData(&f)); // file is not open for reading;
         if (f.open(QIODevice::ReadOnly)) {

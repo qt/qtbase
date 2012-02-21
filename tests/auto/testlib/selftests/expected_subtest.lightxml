@@ -43,6 +43,9 @@
     <DataTag><![CDATA[data0]]></DataTag>
     <Description><![CDATA[cleanup test2 data0 ]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[data0]]></DataTag>
+</Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[init test2 data1 ]]></Description>
@@ -59,6 +62,9 @@
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[cleanup test2 data1 ]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[data1]]></DataTag>
+</Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[init test2 data2 ]]></Description>
@@ -75,7 +81,9 @@
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[cleanup test2 data2 ]]></Description>
 </Message>
-<Incident type="pass" file="" line="0" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[data2]]></DataTag>
+</Incident>
 </TestFunction>
 <TestFunction name="test3">
 <Message type="qdebug" file="" line="0">
@@ -100,6 +108,9 @@
     <DataTag><![CDATA[data0]]></DataTag>
     <Description><![CDATA[cleanup test3 data0 ]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[data0]]></DataTag>
+</Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[init test3 data1 ]]></Description>

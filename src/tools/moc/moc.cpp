@@ -44,6 +44,9 @@
 #include "qdatetime.h"
 #include "utils.h"
 #include "outputrevision.h"
+#include <QtCore/qfile.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qdir.h>
 
 // for normalizeTypeInternal
 #include <private/qmetaobject_moc_p.h>
@@ -51,9 +54,10 @@
 QT_BEGIN_NAMESPACE
 
 // only moc needs this function
-static QByteArray normalizeType(const char *s, bool fixScope = false)
+static QByteArray normalizeType(const QByteArray &ba, bool fixScope = false)
 {
-    int len = qstrlen(s);
+    const char *s = ba.constData();
+    int len = ba.size();
     char stackbuf[64];
     char *buf = (len >= 64 ? new char[len + 1] : stackbuf);
     char *d = buf;
@@ -673,6 +677,9 @@ void Moc::parse()
                 case Q_PROPERTY_TOKEN:
                     parseProperty(&def);
                     break;
+                case Q_PLUGIN_METADATA_TOKEN:
+                    parsePluginData(&def);
+                    break;
                 case Q_ENUMS_TOKEN:
                     parseEnumOrFlag(&def, false);
                     break;
@@ -788,7 +795,7 @@ void Moc::generate(FILE *out)
     if (i >= 0)
         fn = filename.mid(i);
     fprintf(out, "/****************************************************************************\n"
-            "** Meta object code from reading C++ file '%s'\n**\n" , (const char*)fn);
+            "** Meta object code from reading C++ file '%s'\n**\n" , fn.constData());
     fprintf(out, "** Created: %s\n"
             "**      by: The Qt Meta Object Compiler version %d (Qt %s)\n**\n" , dstr.data(), mocOutputRevision, QT_VERSION_STR);
     fprintf(out, "** WARNING! All changes made in this file will be lost!\n"
@@ -813,9 +820,11 @@ void Moc::generate(FILE *out)
 
     if (mustIncludeQMetaTypeH)
         fprintf(out, "#include <QtCore/qmetatype.h>\n");
+    if (mustIncludeQPluginH)
+        fprintf(out, "#include <QtCore/qplugin.h>\n");
 
     fprintf(out, "#if !defined(Q_MOC_OUTPUT_REVISION)\n"
-            "#error \"The header file '%s' doesn't include <QObject>.\"\n", (const char *)fn);
+            "#error \"The header file '%s' doesn't include <QObject>.\"\n", fn.constData());
     fprintf(out, "#elif Q_MOC_OUTPUT_REVISION != %d\n", mocOutputRevision);
     fprintf(out, "#error \"This file was generated using the moc from %s."
             " It\"\n#error \"cannot be used with the include files from"
@@ -1078,6 +1087,50 @@ void Moc::parseProperty(ClassDef *def)
     if (propDef.revision > 0)
         ++def->revisionedProperties;
     def->propertyList += propDef;
+}
+
+void Moc::parsePluginData(ClassDef *def)
+{
+    next(LPAREN);
+    QByteArray metaData;
+    while (test(IDENTIFIER)) {
+        QByteArray l = lexem();
+        if (l == "IID") {
+            next(STRING_LITERAL);
+            def->pluginData.iid = unquotedLexem();
+        } else if (l == "FILE") {
+            next(STRING_LITERAL);
+            QByteArray metaDataFile = unquotedLexem();
+            QFileInfo fi(QFileInfo(QString::fromLocal8Bit(currentFilenames.top().constData())).dir(), QString::fromLocal8Bit(metaDataFile.constData()));
+            if (!fi.exists()) {
+                QByteArray msg;
+                msg += "Plugin Metadata file ";
+                msg += lexem();
+                msg += " does not exist. Declaration will be ignored";
+                warning(msg.constData());
+                return;
+            }
+            QFile file(fi.canonicalFilePath());
+            file.open(QFile::ReadOnly);
+            metaData = file.readAll();
+        }
+    }
+
+    if (!metaData.isEmpty()) {
+        def->pluginData.metaData = QJsonDocument::fromJson(metaData);
+        if (!def->pluginData.metaData.isObject()) {
+            QByteArray msg;
+            msg += "Plugin Metadata file ";
+            msg += lexem();
+            msg += " does not contain a valid JSON object. Declaration will be ignored";
+            warning(msg.constData());
+            def->pluginData.iid = QByteArray();
+            return;
+        }
+    }
+
+    mustIncludeQPluginH = true;
+    next(RPAREN);
 }
 
 void Moc::parsePrivateProperty(ClassDef *def)

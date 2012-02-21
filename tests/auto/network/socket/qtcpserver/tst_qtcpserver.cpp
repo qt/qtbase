@@ -119,6 +119,7 @@ private:
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkSession *networkSession;
 #endif
+    QString crashingServerDir;
 };
 
 // Testing get/set functions
@@ -150,6 +151,10 @@ void tst_QTcpServer::initTestCase_data()
 
     QTest::newRow("WithoutProxy") << false << 0;
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
+
+    crashingServerDir = QFINDTESTDATA("crashingServer");
+    QVERIFY2(!crashingServerDir.isEmpty(), qPrintable(
+        QString::fromLatin1("Couldn't find crashingServer dir starting from %1.").arg(QDir::currentPath())));
 }
 
 void tst_QTcpServer::initTestCase()
@@ -538,7 +543,10 @@ void tst_QTcpServer::addressReusable()
     QFile::remove(signalName);
     // The crashingServer process will crash once it gets a connection.
     QProcess process;
-    process.start("crashingServer/crashingServer");
+    QString processExe = crashingServerDir + "/crashingServer";
+    process.start(processExe);
+    QVERIFY2(process.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(processExe, process.errorString())));
     int waitCount = 5;
     while (waitCount-- && !QFile::exists(signalName))
         QTest::qWait(1000);
@@ -547,7 +555,10 @@ void tst_QTcpServer::addressReusable()
 #else
     // The crashingServer process will crash once it gets a connection.
     QProcess process;
-    process.start("crashingServer/crashingServer");
+    QString processExe = crashingServerDir + "/crashingServer";
+    process.start(processExe);
+    QVERIFY2(process.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(processExe, process.errorString())));
     QVERIFY(process.waitForReadyRead(5000));
 #endif
 

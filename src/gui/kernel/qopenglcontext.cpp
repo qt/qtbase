@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qplatformopenglcontext_qpa.h"
+#include "qplatformintegration_qpa.h"
 #include "qopenglcontext.h"
 #include "qopenglcontext_p.h"
 #include "qwindow.h"
@@ -289,7 +290,7 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
         return false;
 
     if (surface->surfaceType() != QSurface::OpenGLSurface) {
-        qWarning() << "QOpenGLContext::makeBuffers() called with non-opengl surface";
+        qWarning() << "QOpenGLContext::makeCurrent() called with non-opengl surface";
         return false;
     }
 

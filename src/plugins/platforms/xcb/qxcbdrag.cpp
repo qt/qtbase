@@ -234,6 +234,7 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
         xcb_get_geometry_cookie_t gcookie = xcb_get_geometry(xcb_connection(), w);
         xcb_get_geometry_reply_t *greply = xcb_get_geometry_reply(xcb_connection(), gcookie, 0);
         if (reply && QRect(greply->x, greply->y, greply->width, greply->height).contains(pos)) {
+            bool windowContainsMouse = true;
             {
                 xcb_get_property_cookie_t cookie =
                         Q_XCB_CALL(xcb_get_property(xcb_connection(), false, w, connection()->atom(QXcbAtom::XdndAware),
@@ -242,8 +243,26 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
 
                 bool isAware = reply && reply->type != XCB_NONE;
                 free(reply);
-                if (isAware)
-                    return w;
+                if (isAware) {
+                    xcb_xfixes_region_t region = xcb_generate_id(xcb_connection());
+                    xcb_xfixes_create_region_from_window(xcb_connection(), region, w, XCB_SHAPE_SK_BOUNDING);
+                    xcb_xfixes_fetch_region_reply_t *reply = xcb_xfixes_fetch_region_reply(xcb_connection(), xcb_xfixes_fetch_region(xcb_connection(), region), NULL);
+                    if (reply) {
+                        xcb_rectangle_t *rectangles = xcb_xfixes_fetch_region_rectangles(reply);
+                        if (rectangles) {
+                            windowContainsMouse = false;
+                            const int nRectangles = xcb_xfixes_fetch_region_rectangles_length(reply);
+                            for (int i = 0; !windowContainsMouse && i < nRectangles; ++i) {
+                                windowContainsMouse = QRect(rectangles[i].x, rectangles[i].y, rectangles[i].width, rectangles[i].height).contains(pos);
+                            }
+                        }
+                        free(reply);
+                    }
+                    xcb_xfixes_destroy_region(xcb_connection(), region);
+
+                    if (windowContainsMouse)
+                        return w;
+                }
             }
 
             xcb_query_tree_cookie_t cookie = xcb_query_tree (xcb_connection(), w);
@@ -266,7 +285,10 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
             // innermost window.
 
             // No children!
-            return w;
+            if (!windowContainsMouse)
+                return 0;
+            else
+                return w;
         }
     }
     return 0;

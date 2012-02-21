@@ -89,6 +89,8 @@ public:
     virtual void raise();
     virtual void lower();
 
+    virtual bool isExposed() const;
+
     virtual void propagateSizeHints();
 
     virtual void setOpacity(qreal level);

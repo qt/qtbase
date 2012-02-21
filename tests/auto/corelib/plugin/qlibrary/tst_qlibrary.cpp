@@ -258,7 +258,7 @@ void tst_QLibrary::unload()
 
 void tst_QLibrary::unload_after_implicit_load()
 {
-    QLibrary library( "./mylib" );
+    QLibrary library( QCoreApplication::applicationDirPath() + "/mylib" );
     QFunctionPointer p = library.resolve("mylibversion");
     QVERIFY(p); // Check if it was loaded
     QVERIFY(library.isLoaded());

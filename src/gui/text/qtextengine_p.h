@@ -366,7 +366,7 @@ struct Q_AUTOTEST_EXPORT QScriptItem
     QFixed leading;
     QFixed width;
     int glyph_data_offset;
-    QFixed height() const { return ascent + descent + 1; }
+    QFixed height() const { return ascent + descent; }
 };
 
 
@@ -396,7 +396,7 @@ struct Q_AUTOTEST_EXPORT QScriptLine
     mutable uint gridfitted : 1;
     uint hasTrailingSpaces : 1;
     uint leadingIncluded : 1;
-    QFixed height() const { return (ascent + descent).ceil() + 1
+    QFixed height() const { return (ascent + descent).ceil()
                             + (leadingIncluded?  qMax(QFixed(),leading) : QFixed()); }
     QFixed base() const { return ascent
                           + (leadingIncluded ? qMax(QFixed(),leading) : QFixed()); }
@@ -619,7 +619,7 @@ public:
     bool atSpace(int position) const;
     void indexAdditionalFormats();
 
-    QString elidedText(Qt::TextElideMode mode, const QFixed &width, int flags = 0) const;
+    QString elidedText(Qt::TextElideMode mode, const QFixed &width, int flags = 0, int from = 0, int count = -1) const;
 
     void shapeLine(const QScriptLine &line);
     QFixed leadingSpaceWidth(const QScriptLine &line);

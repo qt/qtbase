@@ -80,12 +80,14 @@ public:
 #if !defined(QT_LOCALSOCKET_TCP) && !defined(Q_OS_WIN)
             listenSocket(-1), socketNotifier(0),
 #endif
-            maxPendingConnections(30), error(QAbstractSocket::UnknownSocketError)
+            maxPendingConnections(30), error(QAbstractSocket::UnknownSocketError),
+            socketOptions(QLocalServer::NoOptions)
     {
     }
 
     void init();
     bool listen(const QString &name);
+    bool listen(qintptr socketDescriptor);
     static bool removeServer(const QString &name);
     void closeServer();
     void waitForNewConnection(int msec, bool *timedOut);
@@ -121,6 +123,7 @@ public:
     QQueue<QLocalSocket*> pendingConnections;
     QString errorString;
     QAbstractSocket::SocketError error;
+    QLocalServer::SocketOptions socketOptions;
 };
 
 QT_END_NAMESPACE

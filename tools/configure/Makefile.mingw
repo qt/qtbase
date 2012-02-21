@@ -1,0 +1,92 @@
+CORESRC = $(QTSRC)src/corelib
+TOOLSRC = $(QTSRC)tools
+CONFSRC = $(TOOLSRC)/configure
+
+RAW_PCH       = configure_pch.h
+PCH           = $(RAW_PCH).gch/c++
+CXX           = g++
+DEFINES       = -DUNICODE -DQT_NODLL -DQT_NO_DATASTREAM -DQT_NO_CODECS -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NO_STL -DQT_NO_COMPRESS -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -D_CRT_SECURE_NO_DEPRECATE -DQT_BOOTSTRAPPED -DCOMMERCIAL_VERSION
+INCPATH       = -I"../../include" -I"../../include/QtCore" -I"../../include/QtCore/$(QTVERSION)" -I"../../include/QtCore/$(QTVERSION)/QtCore" -I"$(TOOLSRC)/shared" -I"$(QTSRC)mkspecs/win32-g++"
+CXXFLAGS_BARE = -fno-rtti -fno-exceptions -mthreads -Wall -Wextra $(DEFINES) $(INCPATH)
+CXXFLAGS      = -include $(RAW_PCH) $(CXXFLAGS_BARE)
+LINK          = g++
+LFLAGS        = -Wl,-subsystem,console -mthreads
+LIBS          = -lole32 -ladvapi32 -luuid
+
+TARGET        = ../../configure.exe
+
+OBJECTS = \
+    main.o \
+    configureapp.o \
+    environment.o \
+    tools.o \
+    qbytearray.o \
+    qbytearraymatcher.o \
+    qhash.o \
+    qlist.o \
+    qlocale.o \
+    qlocale_win.o \
+    qlocale_tools.o \
+    qvector.o \
+    qutfcodec.o \
+    qtextcodec.o \
+    qglobal.o \
+    qnumeric.o \
+    qbuffer.o \
+    qdatastream.o \
+    qdir.o \
+    qdiriterator.o \
+    qfile.o \
+    qfileinfo.o \
+    qabstractfileengine.o \
+    qfilesystementry.o \
+    qfilesystemengine.o \
+    qfilesystemengine_win.o \
+    qfilesystemiterator_win.o \
+    qfsfileengine.o \
+    qfsfileengine_win.o \
+    qfsfileengine_iterator.o \
+    qiodevice.o \
+    qtextstream.o \
+    qlogging.o \
+    qtemporaryfile.o \
+    qsystemlibrary.o \
+    qbitarray.o \
+    qdatetime.o \
+    qmap.o \
+    qregexp.o \
+    qstring.o \
+    qstringlist.o \
+    qvsnprintf.o \
+    qvariant.o \
+    qsystemerror.o \
+    qurl.o \
+    qmetatype.o \
+    qmalloc.o \
+    qxmlstream.o \
+    qxmlutils.o \
+    quuid.o \
+    qcryptographichash.o \
+    registry.o
+
+$(TARGET): $(OBJECTS)
+	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS)
+
+$(OBJECTS): $(PCH)
+
+CHK_DIR_EXISTS = test -d
+MKDIR=mkdir -p
+$(PCH): $(CONFSRC)/configure_pch.h
+	@$(CHK_DIR_EXISTS) $(RAW_PCH).gch || $(MKDIR) $(RAW_PCH).gch
+	$(CXX) -x c++-header -c $(CXXFLAGS_BARE) -o $@ $<
+
+VPATH = $(CONFSRC):$(TOOLSRC)/shared/windows:$(CORESRC)/global:$(CORESRC)/kernel:$(CORESRC)/tools:$(CORESRC)/codecs:$(CORESRC)/io:$(CORESRC)/xml:$(CORESRC)/plugin
+
+main.o: $(CONFSRC)/configureapp.h
+configureapp.o: $(CONFSRC)/configureapp.h $(CONFSRC)/environment.h $(CONFSRC)/tools.h
+environment.o: $(CONFSRC)/environment.h
+tools.o: $(CONFSRC)/tools.h
+
+clean:
+	-rm -f *.o
+	-rm -rf *.gch

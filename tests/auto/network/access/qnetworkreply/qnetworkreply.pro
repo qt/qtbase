@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS = test
 
 !wince*:SUBDIRS += echo
+test.depends += $$SUBDIRS
+SUBDIRS += test

@@ -81,16 +81,16 @@ void tst_QStringMatcher::indexIn_data()
     QTest::addColumn<QString>("haystack");
     QTest::addColumn<int>("from");
     QTest::addColumn<int>("indexIn");
-    QTest::newRow("empty") << QString() << QString("foo") << 0 << 0;
-    QTest::newRow("empty") << QString() << QString("foo") << 10 << -1;
-    QTest::newRow("empty") << QString() << QString("foo") << -10 << 0;
+    QTest::newRow("empty-1") << QString() << QString("foo") << 0 << 0;
+    QTest::newRow("empty-2") << QString() << QString("foo") << 10 << -1;
+    QTest::newRow("empty-3") << QString() << QString("foo") << -10 << 0;
 
-    QTest::newRow("simple") << QString("a") << QString("foo") << 0 << -1;
-    QTest::newRow("simple") << QString("a") << QString("bar") << 0 << 1;
-    QTest::newRow("harder") << QString("foo") << QString("slkdf sldkjf slakjf lskd ffools ldjf") << 0 << 26;
-    QTest::newRow("harder") << QString("foo") << QString("slkdf sldkjf slakjf lskd ffools ldjf") << 20 << 26;
-    QTest::newRow("harder") << QString("foo") << QString("slkdf sldkjf slakjf lskd ffools ldjf") << 26 << 26;
-    QTest::newRow("harder") << QString("foo") << QString("slkdf sldkjf slakjf lskd ffools ldjf") << 27 << -1;
+    QTest::newRow("simple-1") << QString("a") << QString("foo") << 0 << -1;
+    QTest::newRow("simple-2") << QString("a") << QString("bar") << 0 << 1;
+    QTest::newRow("harder-1") << QString("foo") << QString("slkdf sldkjf slakjf lskd ffools ldjf") << 0 << 26;
+    QTest::newRow("harder-2") << QString("foo") << QString("slkdf sldkjf slakjf lskd ffools ldjf") << 20 << 26;
+    QTest::newRow("harder-3") << QString("foo") << QString("slkdf sldkjf slakjf lskd ffools ldjf") << 26 << 26;
+    QTest::newRow("harder-4") << QString("foo") << QString("slkdf sldkjf slakjf lskd ffools ldjf") << 27 << -1;
 }
 
 void tst_QStringMatcher::indexIn()

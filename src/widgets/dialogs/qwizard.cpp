@@ -69,7 +69,7 @@
 #include "private/qdialog_p.h"
 #include <qdebug.h>
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 extern bool qt_wince_is_mobile();     //defined in qguifunctions_wce.cpp
 #endif
 
@@ -2178,7 +2178,7 @@ QWizard::QWizard(QWidget *parent, Qt::WindowFlags flags)
 {
     Q_D(QWizard);
     d->init();
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     if (!qt_wince_is_mobile())
         setWindowFlags(windowFlags() & ~Qt::WindowOkButtonHint);
 #endif

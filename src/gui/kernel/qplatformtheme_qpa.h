@@ -48,13 +48,13 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
 class QMenu;
 class QMenuBar;
 class QPlatformMenu;
 class QPlatformMenuBar;
 class QPlatformDialogHelper;
 class QVariant;
+class QPalette;
 
 class Q_GUI_EXPORT QPlatformTheme
 {
@@ -62,7 +62,14 @@ public:
     enum ThemeHint {
         TextCursorWidth,
         DropShadow,
-        MaximumScrollBarDragDistance
+        MaximumScrollBarDragDistance,
+        ToolButtonStyle,
+        ToolBarIconSize,
+        ItemViewActivateItemOnSingleClick,
+        SystemIconThemeName,
+        SystemIconFallbackThemeName,
+        IconThemeSearchPaths,
+        StyleNames
     };
 
     enum DialogType {
@@ -71,11 +78,19 @@ public:
         FontDialog
     };
 
+    enum Palette {
+        SystemPalette,
+        ToolTipPalette,
+        NPalettes
+    };
+
     virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
     virtual QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
 
     virtual bool usePlatformNativeDialog(DialogType type) const;
     virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
+
+    virtual const QPalette *palette(Palette type = SystemPalette) const;
 
     virtual QVariant themeHint(ThemeHint hint) const;
 };

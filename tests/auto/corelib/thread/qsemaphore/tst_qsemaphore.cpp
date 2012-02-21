@@ -223,11 +223,21 @@ void tst_QSemaphore::tryAcquireWithTimeout()
 {
     QFETCH(int, timeout);
 
+    // timers are not guaranteed to be accurate down to the last millisecond,
+    // so we permit the elapsed times to be up to this far from the expected value.
+    int fuzz = 10;
+
     QSemaphore semaphore;
     QTime time;
 
-#define QVERIFYGE(a,b) QVERIFY2(a >= b, qPrintable(QString("%1 = %2 !>= %3 = %4").arg(#a).arg(a).arg(#b).arg(b)));
-#define QVERIFYLE(a,b) QVERIFY2(a <= b, qPrintable(QString("%1 = %2 !<= %3 = %4").arg(#a).arg(a).arg(#b).arg(b)));
+#define FUZZYCOMPARE(a,e) \
+    do { \
+        int a1 = a; \
+        int e1 = e; \
+        QVERIFY2(qAbs(a1-e1) < fuzz, \
+            qPrintable(QString("(%1=%2) is more than %3 milliseconds different from (%4=%5)") \
+                        .arg(#a).arg(a1).arg(fuzz).arg(#e).arg(e1))); \
+    } while (0)
 
     QCOMPARE(semaphore.available(), 0);
 
@@ -235,73 +245,72 @@ void tst_QSemaphore::tryAcquireWithTimeout()
     QCOMPARE(semaphore.available(), 1);
     time.start();
     QVERIFY(!semaphore.tryAcquire(2, timeout));
-    QVERIFYGE(time.elapsed(), timeout);
+    FUZZYCOMPARE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 1);
 
     semaphore.release();
     QCOMPARE(semaphore.available(), 2);
     time.start();
     QVERIFY(!semaphore.tryAcquire(3, timeout));
-    QVERIFYGE(time.elapsed(), timeout);
+    FUZZYCOMPARE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 2);
 
     semaphore.release(10);
     QCOMPARE(semaphore.available(), 12);
     time.start();
     QVERIFY(!semaphore.tryAcquire(100, timeout));
-    QVERIFYGE(time.elapsed(), timeout);
+    FUZZYCOMPARE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 12);
 
     semaphore.release(10);
     QCOMPARE(semaphore.available(), 22);
     time.start();
     QVERIFY(!semaphore.tryAcquire(100, timeout));
-    QVERIFYGE(time.elapsed(), timeout);
+    FUZZYCOMPARE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 22);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(1, timeout));
-    QVERIFYLE(time.elapsed(), timeout);
+    FUZZYCOMPARE(time.elapsed(), 0);
     QCOMPARE(semaphore.available(), 21);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(1, timeout));
-    QVERIFYLE(time.elapsed(), timeout);
+    FUZZYCOMPARE(time.elapsed(), 0);
     QCOMPARE(semaphore.available(), 20);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(10, timeout));
-    QVERIFYLE(time.elapsed(), timeout);
+    FUZZYCOMPARE(time.elapsed(), 0);
     QCOMPARE(semaphore.available(), 10);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(10, timeout));
-    QVERIFYLE(time.elapsed(), timeout);
+    FUZZYCOMPARE(time.elapsed(), 0);
     QCOMPARE(semaphore.available(), 0);
 
     // should not be able to acquire more
     time.start();
     QVERIFY(!semaphore.tryAcquire(1, timeout));
-    QVERIFYGE(time.elapsed(), timeout);
+    FUZZYCOMPARE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     time.start();
     QVERIFY(!semaphore.tryAcquire(1, timeout));
-    QVERIFYGE(time.elapsed(), timeout);
+    FUZZYCOMPARE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     time.start();
     QVERIFY(!semaphore.tryAcquire(10, timeout));
-    QVERIFYGE(time.elapsed(), timeout);
+    FUZZYCOMPARE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     time.start();
     QVERIFY(!semaphore.tryAcquire(10, timeout));
-    QVERIFYGE(time.elapsed(), timeout);
+    FUZZYCOMPARE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
 
-#undef QVERIFYGE
-#undef QVERIFYLE
+#undef FUZZYCOMPARE
 }
 
 void tst_QSemaphore::tryAcquireWithTimeoutStarvation()

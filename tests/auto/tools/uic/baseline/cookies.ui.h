@@ -42,33 +42,33 @@ public:
     void setupUi(QDialog *CookiesDialog)
     {
         if (CookiesDialog->objectName().isEmpty())
-            CookiesDialog->setObjectName(QString::fromUtf8("CookiesDialog"));
+            CookiesDialog->setObjectName(QStringLiteral("CookiesDialog"));
         CookiesDialog->resize(550, 370);
         gridLayout = new QGridLayout(CookiesDialog);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName(QStringLiteral("gridLayout"));
         spacerItem = new QSpacerItem(252, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         gridLayout->addItem(spacerItem, 0, 0, 1, 1);
 
         search = new SearchLineEdit(CookiesDialog);
-        search->setObjectName(QString::fromUtf8("search"));
+        search->setObjectName(QStringLiteral("search"));
 
         gridLayout->addWidget(search, 0, 1, 1, 1);
 
         cookiesTable = new EditTableView(CookiesDialog);
-        cookiesTable->setObjectName(QString::fromUtf8("cookiesTable"));
+        cookiesTable->setObjectName(QStringLiteral("cookiesTable"));
 
         gridLayout->addWidget(cookiesTable, 1, 0, 1, 2);
 
         hboxLayout = new QHBoxLayout();
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
         removeButton = new QPushButton(CookiesDialog);
-        removeButton->setObjectName(QString::fromUtf8("removeButton"));
+        removeButton->setObjectName(QStringLiteral("removeButton"));
 
         hboxLayout->addWidget(removeButton);
 
         removeAllButton = new QPushButton(CookiesDialog);
-        removeAllButton->setObjectName(QString::fromUtf8("removeAllButton"));
+        removeAllButton->setObjectName(QStringLiteral("removeAllButton"));
 
         hboxLayout->addWidget(removeAllButton);
 
@@ -77,7 +77,7 @@ public:
         hboxLayout->addItem(spacerItem1);
 
         buttonBox = new QDialogButtonBox(CookiesDialog);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName(QStringLiteral("buttonBox"));
         buttonBox->setStandardButtons(QDialogButtonBox::Ok);
 
         hboxLayout->addWidget(buttonBox);

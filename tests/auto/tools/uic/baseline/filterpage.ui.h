@@ -45,37 +45,37 @@ public:
     void setupUi(QWidget *FilterPage)
     {
         if (FilterPage->objectName().isEmpty())
-            FilterPage->setObjectName(QString::fromUtf8("FilterPage"));
+            FilterPage->setObjectName(QStringLiteral("FilterPage"));
         FilterPage->resize(419, 243);
         gridLayout = new QGridLayout(FilterPage);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName(QStringLiteral("gridLayout"));
         label = new QLabel(FilterPage);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName(QStringLiteral("label"));
 
         gridLayout->addWidget(label, 1, 0, 1, 1);
 
         filterLineEdit = new QLineEdit(FilterPage);
-        filterLineEdit->setObjectName(QString::fromUtf8("filterLineEdit"));
+        filterLineEdit->setObjectName(QStringLiteral("filterLineEdit"));
 
         gridLayout->addWidget(filterLineEdit, 2, 0, 1, 1);
 
         groupBox = new QGroupBox(FilterPage);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName(QStringLiteral("groupBox"));
         gridLayout1 = new QGridLayout(groupBox);
-        gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
+        gridLayout1->setObjectName(QStringLiteral("gridLayout1"));
         customFilterWidget = new QTreeWidget(groupBox);
-        customFilterWidget->setObjectName(QString::fromUtf8("customFilterWidget"));
+        customFilterWidget->setObjectName(QStringLiteral("customFilterWidget"));
         customFilterWidget->setColumnCount(2);
 
         gridLayout1->addWidget(customFilterWidget, 0, 0, 3, 1);
 
         addButton = new QPushButton(groupBox);
-        addButton->setObjectName(QString::fromUtf8("addButton"));
+        addButton->setObjectName(QStringLiteral("addButton"));
 
         gridLayout1->addWidget(addButton, 0, 1, 1, 1);
 
         removeButton = new QPushButton(groupBox);
-        removeButton->setObjectName(QString::fromUtf8("removeButton"));
+        removeButton->setObjectName(QStringLiteral("removeButton"));
 
         gridLayout1->addWidget(removeButton, 1, 1, 1, 1);
 

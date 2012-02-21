@@ -87,7 +87,7 @@ QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel)
         if (!w)
             continue;
         QString objectName = w->objectName();
-        if ((includeTopLevel || !w->isWindow()) 
+        if ((includeTopLevel || !w->isWindow())
               && !qobject_cast<QFocusFrame*>(w)
               && !qobject_cast<QMenu*>(w)
               && objectName != QLatin1String("qt_rubberband")
@@ -105,30 +105,6 @@ QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel)
   \brief The QAccessibleTextEdit class implements the QAccessibleInterface for richtext editors.
   \internal
 */
-
-static QTextBlock qTextBlockAt(const QTextDocument *doc, int pos)
-{
-    Q_ASSERT(pos >= 0);
-
-    QTextBlock block = doc->begin();
-    int i = 0;
-    while (block.isValid() && i < pos) {
-        block = block.next();
-        ++i;
-    }
-    return block;
-}
-
-static int qTextBlockPosition(QTextBlock block)
-{
-    int child = 0;
-    while (block.isValid()) {
-        block = block.previous();
-        ++child;
-    }
-
-    return child;
-}
 
 /*!
   \fn QAccessibleTextEdit::QAccessibleTextEdit(QWidget* widget)
@@ -507,12 +483,17 @@ static QTextCursor cursorForRange(QTextEdit *textEdit, int startOffset, int endO
 
 void QAccessibleTextEdit::copyText(int startOffset, int endOffset) const
 {
+#ifndef QT_NO_CLIPBOARD
+    QTextCursor previousCursor = textEdit()->textCursor();
     QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
 
     if (!cursor.hasSelection())
         return;
 
-//     QApplication::clipboard()->setMimeData(new QTextEditMimeData(cursor.selection()));
+    textEdit()->setTextCursor(cursor);
+    textEdit()->copy();
+    textEdit()->setTextCursor(previousCursor);
+#endif
 }
 
 void QAccessibleTextEdit::deleteText(int startOffset, int endOffset)
@@ -532,13 +513,15 @@ void QAccessibleTextEdit::insertText(int offset, const QString &text)
 
 void QAccessibleTextEdit::cutText(int startOffset, int endOffset)
 {
+#ifndef QT_NO_CLIPBOARD
     QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
 
     if (!cursor.hasSelection())
         return;
 
-//     QApplication::clipboard()->setMimeData(new QTextEditMimeData(cursor.selection()));
-    cursor.removeSelectedText();
+    textEdit()->setTextCursor(cursor);
+    textEdit()->cut();
+#endif
 }
 
 void QAccessibleTextEdit::pasteText(int offset)
@@ -963,34 +946,6 @@ QAccessibleInterface *QAccessibleTitleBar::child(int index) const
         }
     }
     return 0;
-}
-
-int QAccessibleTitleBar::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **iface) const
-{
-    switch (relation) {
-    case QAccessible::FocusChild:
-        // ###
-        if (entry >= 1) {
-            QDockWidgetLayout *layout = dockWidgetLayout();
-            int index = 1;
-            int role;
-            for (role = QDockWidgetLayout::CloseButton; role <= QDockWidgetLayout::FloatButton; ++role) {
-                QWidget *w = layout->widgetForRole((QDockWidgetLayout::Role)role);
-                if (!w->isVisible())
-                    continue;
-                if (index == entry)
-                    break;
-                ++index;
-            }
-            *iface = 0;
-            return role > QDockWidgetLayout::FloatButton ? -1 : index;
-        }
-        break;
-    default:
-        break;
-    }
-    *iface = 0;
-    return -1;
 }
 
 int QAccessibleTitleBar::indexOfChild(const QAccessibleInterface * /*child*/) const

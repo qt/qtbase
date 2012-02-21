@@ -143,6 +143,8 @@ private:
     QImage::Format mFormat;
     Visual* mVisual;
 
+    QSurfaceFormat mSurfaceFormat;
+
     GC createGC();
 
     QPlatformOpenGLContext *mGLContext;

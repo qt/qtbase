@@ -179,8 +179,8 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
  */
 QJsonDocument QJsonDocument::fromRawData(const char *data, int size, DataValidation validation)
 {
-    if (!(((quintptr)validation) & ~3)) {
-        qWarning() <<"QJsonDocumnt::fromRawData: data has to have 4 byte alignment";
+    if (quintptr(data) & 3) {
+        qWarning() <<"QJsonDocument::fromRawData: data has to have 4 byte alignment";
         return QJsonDocument();
     }
 
@@ -317,10 +317,10 @@ QByteArray QJsonDocument::toJson() const
 
  \sa toJson
  */
-QJsonDocument QJsonDocument::fromJson(const QByteArray &json)
+QJsonDocument QJsonDocument::fromJson(const QByteArray &json, QJsonParseError *error)
 {
     QJsonPrivate::Parser parser(json.constData(), json.length());
-    return parser.parse();
+    return parser.parse(error);
 }
 
 /*!

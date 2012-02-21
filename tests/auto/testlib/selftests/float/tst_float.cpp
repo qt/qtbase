@@ -66,19 +66,28 @@ void tst_float::floatComparisons_data() const
     QTest::addColumn<float>("operandLeft");
     QTest::addColumn<float>("operandRight");
 
-    QTest::newRow("should SUCCEED")
+    QTest::newRow("should SUCCEED 1")
         << float(0)
         << float(0);
 
-    QTest::newRow("should FAIL")
+    QTest::newRow("should FAIL 1")
         << float(1.00000)
         << float(3.00000);
 
-    QTest::newRow("should FAIL")
+    QTest::newRow("should FAIL 2")
         << float(1.00000e-7f)
         << float(3.00000e-7f);
 
-    QTest::newRow("should FAIL")
+    // QCOMPARE for floats uses qFuzzyCompare(), which succeeds if the numbers
+    // differ by no more than 1/100,000th of the smaller value.  Thus
+    // QCOMPARE(99998, 99999) should fail, while QCOMPARE(100001, 100002)
+    // should pass.
+
+    QTest::newRow("should FAIL 3")
+        << float(99998)
+        << float(99999);
+
+    QTest::newRow("should SUCCEED 2")
         << float(100001)
         << float(100002);
 }

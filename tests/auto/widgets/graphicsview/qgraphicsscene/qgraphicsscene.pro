@@ -17,3 +17,5 @@ wince* {
    DEPLOYMENT += rootFiles renderFiles
    DEFINES += SRCDIR=\\\".\\\"
 }
+
+win32:CONFIG += insignificant_test # QTBUG-24295

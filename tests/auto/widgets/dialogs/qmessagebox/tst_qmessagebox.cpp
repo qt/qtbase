@@ -411,8 +411,10 @@ void tst_QMessageBox::staticSourceCompat()
     if (qobject_cast<QMacStyle *>(qApp->style()))
         expectedButton = int(QMessageBox::No);
 #elif !defined(QT_NO_STYLE_CLEANLOOKS)
-    if (qobject_cast<QCleanlooksStyle *>(qApp->style()))
+    if (qobject_cast<QCleanlooksStyle *>(qApp->style())) {
+        QEXPECT_FAIL("", "Special handling of QMessageBox::information buttons for Cleanlooks not implemented yet, QTBUG-24315", Continue);
         expectedButton = int(QMessageBox::No);
+    }
 #endif
     QCOMPARE(ret, expectedButton);
     QCOMPARE(keyToSend, -1);

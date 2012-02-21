@@ -104,8 +104,7 @@ public:
     QString text(QAccessible::Text t) const;
     QAccessible::Role role() const;
 
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
-    int navigate(QAccessible::RelationFlag, int entry, QAccessibleInterface **target) const;
+    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >relations(QAccessible::Relation match = QAccessible::AllRelations) const;
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleImageInterface

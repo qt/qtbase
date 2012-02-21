@@ -96,6 +96,7 @@ private slots:
 private:
     QNetworkConfigurationManager manager;
     int inProcessSessionManagementCount;
+    QString lackeyDir;
 #endif
 };
 
@@ -117,6 +118,10 @@ void tst_QNetworkSession::initTestCase()
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations();
     QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut);
+
+    lackeyDir = QFINDTESTDATA("lackey");
+    QVERIFY2(!lackeyDir.isEmpty(), qPrintable(
+        QString::fromLatin1("Couldn't find lackey dir starting from %1.").arg(QDir::currentPath())));
 }
 
 void tst_QNetworkSession::cleanupTestCase()
@@ -916,10 +921,10 @@ void tst_QNetworkSession::outOfProcessSession()
     oopServer.listen("tst_qnetworksession");
 
     QProcess lackey;
-    lackey.start("lackey/lackey");
-    qDebug() << lackey.error() << lackey.errorString();
-    QVERIFY(lackey.waitForStarted());
-
+    QString lackeyExe = lackeyDir + "/lackey";
+    lackey.start(lackeyExe);
+    QVERIFY2(lackey.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(lackeyExe, lackey.errorString())));
 
     QVERIFY(oopServer.waitForNewConnection(-1));
     QLocalSocket *oopSocket = oopServer.nextPendingConnection();

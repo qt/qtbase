@@ -60,7 +60,8 @@ enum
     KeyDownEventFlag = 0x200000,
     TouchEventFlag = 0x400000,
     ClipboardEventFlag = 0x800000,
-    ApplicationEventFlag = 0x1000000
+    ApplicationEventFlag = 0x1000000,
+    ThemingEventFlag = 0x2000000
 };
 
 enum WindowsEventType // Simplify event types
@@ -77,6 +78,8 @@ enum WindowsEventType // Simplify event types
     ResizeEvent = WindowEventFlag + 12,
     QuerySizeHints = WindowEventFlag + 15,
     CalculateSize = WindowEventFlag + 16,
+    FocusInEvent = WindowEventFlag + 17,
+    FocusOutEvent = WindowEventFlag + 18,
     MouseEvent = MouseEventFlag + 1,
     MouseWheelEvent = MouseEventFlag + 2,
     TouchEvent = TouchEventFlag + 1,
@@ -95,6 +98,7 @@ enum WindowsEventType // Simplify event types
     InputMethodOpenCandidateWindowEvent = InputMethodEventFlag + 4,
     InputMethodCloseCandidateWindowEvent = InputMethodEventFlag + 5,
     InputMethodRequest = InputMethodEventFlag + 6,
+    ThemeChanged = ThemingEventFlag + 1,
     DisplayChangedEvent = 437,
     UnknownEvent = 542
 };
@@ -170,8 +174,14 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
          }
     case WM_GETOBJECT:
         return QtWindows::AccessibleObjectFromWindowRequest;
+    case WM_SETFOCUS:
+        return QtWindows::FocusInEvent;
+    case WM_KILLFOCUS:
+        return QtWindows::FocusOutEvent;
     case WM_DISPLAYCHANGE:
         return QtWindows::DisplayChangedEvent;
+    case WM_THEMECHANGED:
+        return QtWindows::ThemeChanged;
     default:
         break;
     }

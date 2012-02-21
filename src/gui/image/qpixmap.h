@@ -174,7 +174,6 @@ private:
 
     QPixmap(const QSize &s, int type);
     void doInit(int, int, int);
-    void deref();
     Q_DUMMY_COMPARISON_OPERATOR(QPixmap)
     friend class QPlatformPixmap;
     friend class QBitmap;

@@ -1151,18 +1151,19 @@ bool QMetaObject::invokeMethod(QObject *obj,
         sig[sig.size() - 1] = ')';
     sig.append('\0');
 
-    int idx = obj->metaObject()->indexOfMethod(sig.constData());
+    const QMetaObject *meta = obj->metaObject();
+    int idx = meta->indexOfMethod(sig.constData());
     if (idx < 0) {
         QByteArray norm = QMetaObject::normalizedSignature(sig.constData());
-        idx = obj->metaObject()->indexOfMethod(norm.constData());
+        idx = meta->indexOfMethod(norm.constData());
     }
 
-    if (idx < 0 || idx >= obj->metaObject()->methodCount()) {
+    if (idx < 0 || idx >= meta->methodCount()) {
         qWarning("QMetaObject::invokeMethod: No such method %s::%s",
-                 obj->metaObject()->className(), sig.constData());
+                 meta->className(), sig.constData());
         return false;
     }
-    QMetaMethod method = obj->metaObject()->method(idx);
+    QMetaMethod method = meta->method(idx);
     return method.invoke(obj, type, ret,
                          val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);
 }
@@ -1248,6 +1249,14 @@ bool QMetaObject::invokeMethod(QObject *obj,
 */
 
 /*!
+    \fn bool QMetaMethod::isValid() const
+    \since 5.0
+
+    Returns true if this method is valid (can be introspected and
+    invoked), otherwise returns false.
+*/
+
+/*!
     \fn const QMetaObject *QMetaMethod::enclosingMetaObject() const
     \internal
 */
@@ -1286,25 +1295,10 @@ const char *QMetaMethod::signature() const
 */
 QList<QByteArray> QMetaMethod::parameterTypes() const
 {
-    QList<QByteArray> list;
     if (!mobj)
-        return list;
-    const char *signature = mobj->d.stringdata + mobj->d.data[handle];
-    while (*signature && *signature != '(')
-        ++signature;
-    while (*signature && *signature != ')' && *++signature != ')') {
-        const char *begin = signature;
-        int level = 0;
-        while (*signature && (level > 0 || *signature != ',') && *signature != ')') {
-            if (*signature == '<')
-                ++level;
-            else if (*signature == '>')
-                --level;
-            ++signature;
-        }
-        list += QByteArray(begin, signature - begin);
-    }
-    return list;
+        return QList<QByteArray>();
+    return QMetaObjectPrivate::parameterTypeNamesFromSignature(
+            mobj->d.stringdata + mobj->d.data[handle]);
 }
 
 /*!
@@ -1353,7 +1347,30 @@ const char *QMetaMethod::typeName() const
     Returns the tag associated with this method.
 
     Tags are special macros recognized by \c moc that make it
-    possible to add extra information about a method. For the moment,
+    possible to add extra information about a method.
+
+    Tag information can be added in the following
+    way in the function declaration:
+
+    \code
+        #define THISISTESTTAG // tag text
+        ...
+        private slots:
+            THISISTESTTAG void testFunc();
+    \endcode
+
+    and the information can be accessed by using:
+
+    \code
+        MainWindow win;
+        win.show();
+
+        int functionIndex = win.metaObject()->indexOfSlot("testFunc()");
+        QMetaMethod mm = metaObject()->method(functionIndex);
+        qDebug() << mm.tag(); // prints THISISTESTTAG
+    \endcode
+
+    For the moment,
     \c moc doesn't support any special tags.
 */
 const char *QMetaMethod::tag() const
@@ -2243,9 +2260,8 @@ QVariant QMetaProperty::read(const QObject *object) const
             t = QMetaType::type(typeName);
         if (t == QVariant::Invalid)
             t = QVariant::nameToType(typeName);
-        if (t == QVariant::Invalid || t == QVariant::UserType) {
-            if (t == QVariant::Invalid)
-                qWarning("QMetaProperty::read: Unable to handle unregistered datatype '%s' for property '%s::%s'", typeName, mobj->className(), name());
+        if (t == QVariant::Invalid) {
+            qWarning("QMetaProperty::read: Unable to handle unregistered datatype '%s' for property '%s::%s'", typeName, mobj->className(), name());
             return QVariant();
         }
     }
@@ -2776,6 +2792,31 @@ int QMetaObjectPrivate::originalClone(const QMetaObject *mobj, int local_method_
         local_method_index--;
     }
     return local_method_index;
+}
+
+/*!
+    \internal
+
+    Returns the parameter type names extracted from the given \a signature.
+*/
+QList<QByteArray> QMetaObjectPrivate::parameterTypeNamesFromSignature(const char *signature)
+{
+    QList<QByteArray> list;
+    while (*signature && *signature != '(')
+        ++signature;
+    while (*signature && *signature != ')' && *++signature != ')') {
+        const char *begin = signature;
+        int level = 0;
+        while (*signature && (level > 0 || *signature != ',') && *signature != ')') {
+            if (*signature == '<')
+                ++level;
+            else if (*signature == '>')
+                --level;
+            ++signature;
+        }
+        list += QByteArray(begin, signature - begin);
+    }
+    return list;
 }
 
 QT_END_NAMESPACE

@@ -787,7 +787,8 @@ const QVariant::Handler qt_dummy_variant_handler = {
 
 static void customConstruct(QVariant::Private *d, const void *copy)
 {
-    const uint size = QMetaType::sizeOf(d->type);
+    const QMetaType type(d->type);
+    const uint size = type.sizeOf();
     if (!size) {
         d->type = QVariant::Invalid;
         return;
@@ -795,11 +796,11 @@ static void customConstruct(QVariant::Private *d, const void *copy)
 
     // this logic should match with QVariantIntegrator::CanUseInternalSpace
     if (size <= sizeof(QVariant::Private::Data)
-            && (QMetaType::typeFlags(d->type) & QMetaType::MovableType)) {
-        QMetaType::construct(d->type, &d->data.ptr, copy);
+            && (type.flags() & QMetaType::MovableType)) {
+        type.construct(&d->data.ptr, copy);
         d->is_shared = false;
     } else {
-        void *ptr = QMetaType::create(d->type, copy);
+        void *ptr = type.create(copy);
         d->is_shared = true;
         d->data.shared = new QVariant::PrivateShared(ptr);
     }
@@ -1608,7 +1609,7 @@ QVariant::Type QVariant::nameToType(const char *name)
         return Invalid;
 
     int metaType = QMetaType::type(name);
-    return metaType <= int(LastGuiType) ? QVariant::Type(metaType) : UserType;
+    return metaType <= int(UserType) ? QVariant::Type(metaType) : UserType;
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -1670,7 +1671,9 @@ void QVariant::load(QDataStream &s)
             return;
         typeId = mapIdFromQt3ToCurrent[typeId];
     } else if (s.version() < QDataStream::Qt_5_0) {
-        if (typeId >= 128 && typeId != QVariant::UserType) {
+        if (typeId == 127 /* QVariant::UserType */) {
+            typeId = QMetaType::User;
+        } else if (typeId >= 128 && typeId != QVariant::UserType) {
             // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
             // by moving all ids down by 97.
             typeId -= 97;
@@ -1741,7 +1744,9 @@ void QVariant::save(QDataStream &s) const
             return;
         }
     } else if (s.version() < QDataStream::Qt_5_0) {
-        if (typeId >= 128 - 97 && typeId <= LastCoreType) {
+        if (typeId == QMetaType::User) {
+            typeId = 127; // QVariant::UserType had this value in Qt4
+        } else if (typeId >= 128 - 97 && typeId <= LastCoreType) {
             // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
             // by moving all ids down by 97.
             typeId += 97;
@@ -1762,7 +1767,7 @@ void QVariant::save(QDataStream &s) const
     s << typeId;
     if (s.version() >= QDataStream::Qt_4_2)
         s << qint8(d.is_null);
-    if (typeId == QVariant::UserType) {
+    if (d.type >= QVariant::UserType) {
         s << QMetaType::typeName(userType());
     }
 

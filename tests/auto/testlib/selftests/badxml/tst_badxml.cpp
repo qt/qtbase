@@ -106,15 +106,18 @@ void tst_BadXml::badDataTag() const
     QBENCHMARK {
     }
 
-    QFAIL("a failure");
+    QFETCH(bool, shouldFail);
+    if (shouldFail)
+        QFAIL("a failure");
 }
 
 void tst_BadXml::badDataTag_data() const
 {
-    QTest::addColumn<int>("dummy");
+    QTest::addColumn<bool>("shouldFail");
 
     foreach (char const* str, badStrings()) {
-        QTest::newRow(str) << 0;
+        QTest::newRow(qPrintable(QString("fail %1").arg(str))) << true;
+        QTest::newRow(qPrintable(QString("pass %1").arg(str))) << false;
     }
 }
 

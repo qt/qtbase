@@ -1,10 +1,12 @@
 TEMPLATE=subdirs
 SUBDIRS=\
     qcoreapplication \
+    qeventdispatcher \
     qeventloop \
     qmath \
     qmetaobject \
     qmetaobjectbuilder \
+    qmetamethod \
     qmetaproperty \
     qmetatype \
     qmimedata \

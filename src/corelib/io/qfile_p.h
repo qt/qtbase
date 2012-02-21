@@ -59,9 +59,12 @@
 
 QT_BEGIN_NAMESPACE
 
+class QTemporaryFile;
+
 class QFilePrivate : public QIODevicePrivate
 {
     Q_DECLARE_PUBLIC(QFile)
+    friend class QTemporaryFile;
 
 protected:
     QFilePrivate();
@@ -69,6 +72,8 @@ protected:
 
     bool openExternalFile(int flags, int fd, QFile::FileHandleFlags handleFlags);
     bool openExternalFile(int flags, FILE *fh, QFile::FileHandleFlags handleFlags);
+
+    virtual QAbstractFileEngine *engine() const;
 
     QString fileName;
     mutable QAbstractFileEngine *fileEngine;

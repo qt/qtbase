@@ -122,13 +122,6 @@ public:
         return QAccessible::queryAccessibleInterface(m_parent);
     }
     QAccessibleInterface *child(int) const { return 0; }
-    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
-    {
-        Q_UNUSED(relation);
-        Q_UNUSED(index);
-        Q_UNUSED(iface);
-        return -1;
-    }
     // action interface
     QStringList actionNames() const
     {

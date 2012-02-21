@@ -59,7 +59,6 @@
 #endif
 
 #ifdef Q_OS_WINCE
-#include <qcoreapplication.h>
 #include <windows.h> // needed for GetUserDefaultLCID
 #define _control87 _controlfp
 extern "C" DWORD GetThreadLocale(void) {
@@ -141,11 +140,6 @@ tst_QLocale::tst_QLocale()
 
 void tst_QLocale::ctor()
 {
-#ifdef Q_OS_WINCE
-    int argc = 1;
-    char argv[20] = "tst_qlocale.exe";
-    QCoreApplication app(argc, (char**)&argv);
-#endif
     QLocale default_locale = QLocale::system();
     QLocale::Language default_lang = default_locale.language();
     QLocale::Country default_country = default_locale.country();
@@ -934,7 +928,7 @@ void tst_QLocale::formatDateTime_data()
                          << "\"yymm\"" << "\"7414\"";
     QTest::newRow("27C") << "C" << QDateTime(QDate(1974, 12, 1), QTime(15, 14, 13))
                          << "'\"yymm\"'" << "\"yymm\"";
-    QTest::newRow("27C") << "C" << QDateTime()
+    QTest::newRow("28C") << "C" << QDateTime()
                          << "'\"yymm\"'" << "";
 
     QTest::newRow("1no_NO") << "no_NO" << QDateTime(QDate(1974, 12, 1), QTime(5, 14, 13))
@@ -976,7 +970,7 @@ void tst_QLocale::formatDateTime_data()
                              << "\"yymm\"" << "\"7414\"";
     QTest::newRow("27no_NO") << "no_NO" << QDateTime(QDate(1974, 12, 1), QTime(15, 14, 13))
                              << "'\"yymm\"'" << "\"yymm\"";
-    QTest::newRow("27no_NO") << "no_NO" << QDateTime()
+    QTest::newRow("28no_NO") << "no_NO" << QDateTime()
                              << "'\"yymm\"'" << "";
 
 }
@@ -1988,5 +1982,5 @@ void tst_QLocale::listPatterns()
     QCOMPARE(zh_CN.createSeparatedList(sl5), QString::fromUtf8("aaa" "\xe3\x80\x81" "bbb" "\xe3\x80\x81" "ccc" "\xe5\x92\x8c" "ddd"));
 }
 
-QTEST_APPLESS_MAIN(tst_QLocale)
+QTEST_MAIN(tst_QLocale)
 #include "tst_qlocale.moc"

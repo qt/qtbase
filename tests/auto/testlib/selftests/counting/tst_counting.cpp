@@ -47,6 +47,8 @@ class tst_Counting : public QObject
     Q_OBJECT
 
 private slots:
+    // The following test functions exercise each possible combination of test
+    // results for two data rows.
     void testPassPass_data();
     void testPassPass();
 
@@ -73,6 +75,19 @@ private slots:
 
     void testFailFail_data();
     void testFailFail();
+
+    // The following test functions test skips and fails in the special
+    // init() and cleanup() slots.
+    void init();
+    void cleanup();
+    void testFailInInit_data();
+    void testFailInInit();
+    void testFailInCleanup_data();
+    void testFailInCleanup();
+    void testSkipInInit_data();
+    void testSkipInInit();
+    void testSkipInCleanup_data();
+    void testSkipInCleanup();
 
 private:
     void helper();
@@ -210,6 +225,78 @@ void tst_Counting::testFailFail_data()
 void tst_Counting::testFailFail()
 {
     helper();
+}
+
+void tst_Counting::init()
+{
+    if (strcmp(QTest::currentTestFunction(), "testFailInInit") == 0 && strcmp(QTest::currentDataTag(), "fail") == 0)
+        QFAIL("Fail in init()");
+    else if (strcmp(QTest::currentTestFunction(), "testSkipInInit") == 0 && strcmp(QTest::currentDataTag(), "skip") == 0)
+        QSKIP("Skip in init()");
+}
+
+void tst_Counting::cleanup()
+{
+    if (strcmp(QTest::currentTestFunction(), "testFailInCleanup") == 0 && strcmp(QTest::currentDataTag(), "fail") == 0)
+        QFAIL("Fail in cleanup()");
+    else if (strcmp(QTest::currentTestFunction(), "testSkipInCleanup") == 0 && strcmp(QTest::currentDataTag(), "skip") == 0)
+        QSKIP("Skip in cleanup()");
+}
+
+void tst_Counting::testFailInInit_data()
+{
+    QTest::addColumn<bool>("dummy");
+    QTest::newRow("before") << true;
+    QTest::newRow("fail") << true;
+    QTest::newRow("after") << true;
+}
+
+void tst_Counting::testFailInInit()
+{
+    if (strcmp(QTest::currentDataTag(), "fail") == 0)
+        QFAIL("This test function should have been skipped due to QFAIL in init()");
+}
+
+void tst_Counting::testFailInCleanup_data()
+{
+    QTest::addColumn<bool>("dummy");
+    QTest::newRow("before") << true;
+    QTest::newRow("fail") << true;
+    QTest::newRow("after") << true;
+}
+
+void tst_Counting::testFailInCleanup()
+{
+    if (strcmp(QTest::currentDataTag(), "fail") == 0)
+        qDebug() << "This test function should execute and then QFAIL in cleanup()";
+}
+
+void tst_Counting::testSkipInInit_data()
+{
+    QTest::addColumn<bool>("dummy");
+    QTest::newRow("before") << true;
+    QTest::newRow("skip") << true;
+    QTest::newRow("after") << true;
+}
+
+void tst_Counting::testSkipInInit()
+{
+    if (strcmp(QTest::currentDataTag(), "skip") == 0)
+        QFAIL("This test function should have been skipped due to QSKIP in init()");
+}
+
+void tst_Counting::testSkipInCleanup_data()
+{
+    QTest::addColumn<bool>("dummy");
+    QTest::newRow("before") << true;
+    QTest::newRow("skip") << true;
+    QTest::newRow("after") << true;
+}
+
+void tst_Counting::testSkipInCleanup()
+{
+    if (strcmp(QTest::currentDataTag(), "skip") == 0)
+        qDebug() << "This test function should execute and then QSKIP in cleanup()";
 }
 
 QTEST_MAIN(tst_Counting)

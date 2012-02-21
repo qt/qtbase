@@ -81,11 +81,9 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
   QAuthenticator supports the following authentication methods:
   \list
     \o Basic
-    \o NTLM version 1
+    \o NTLM version 2
     \o Digest-MD5
   \endlist
-
-  Note that, in particular, NTLM version 2 is not supported.
 
   \section1 Options
 
@@ -112,7 +110,7 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
 
   The Basic authentication mechanism supports no outgoing options.
 
-  \section2 NTLM version 1
+  \section2 NTLM version 2
 
   The NTLM authentication mechanism currently supports no incoming or outgoing options.
 
