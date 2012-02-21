@@ -1,9 +1,3 @@
-TEMPLATE = app
-TARGET = 
-DEPENDPATH += .
-INCLUDEPATH += .
-
-# Input
 SOURCES += main.cpp
 
 QWERTY_BUNDLE.version = Bogus.78

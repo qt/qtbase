@@ -1,10 +1,5 @@
-TEMPLATE = app
-TARGET = findDeps
-DEPENDPATH += .
-INCLUDEPATH += .
 DESTDIR	= ./
 
-# Input
 HEADERS += object1.h \
            object2.h \
            object3.h \

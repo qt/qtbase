@@ -1,7 +1,5 @@
 TEMPLATE = app
 TARGET = jpeg
-DEPENDPATH += .
-INCLUDEPATH += .
 QT += testlib
 CONFIG += release
 
@@ -11,5 +9,4 @@ wince*: {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
-# Input
 SOURCES += jpeg.cpp

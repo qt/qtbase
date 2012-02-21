@@ -1,10 +1,6 @@
 CONFIG += testcase
 TARGET = tst_macgui
-TEMPLATE = app
-DEPENDPATH += .
-INCLUDEPATH += .
 
-# Input
 SOURCES += tst_macgui.cpp guitest.cpp
 HEADERS += guitest.h
 
