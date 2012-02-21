@@ -110,7 +110,7 @@ QString tst_QPrinterInfo::getDefaultPrinterFromSystem()
         return QString();
     }
 
-    QRegExp defaultReg("default.*: *([a-zA-Z0-9_]+)");
+    QRegExp defaultReg("default.*: *([a-zA-Z0-9_-]+)");
     defaultReg.indexIn(output);
     QString printer = defaultReg.cap(1);
     macFixNameFormat(&printer);
