@@ -57,20 +57,10 @@ win32:!contains(QT_CONFIG, directwrite) {
     DEFINES += QT_NO_DIRECTWRITE
 }
 
-contains(QMAKE_MAC_XARCH, no) {
-    DEFINES += QT_NO_MAC_XARCH
-} else {
     win32-g++*|!win32:!win32-icc*:!macx-icc* {
         mmx {
             mmx_compiler.commands = $$QMAKE_CXX -c -Winline
-
-            mac {
-                x86: mmx_compiler.commands += -Xarch_i386 -mmmx
-                x86_64: mmx_compiler.commands += -Xarch_x86_64 -mmmx
-            } else {
-                mmx_compiler.commands += -mmmx
-            }
-
+            mmx_compiler.commands += -mmmx
             mmx_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             mmx_compiler.dependency_type = TYPE_C
             mmx_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -82,14 +72,7 @@ contains(QMAKE_MAC_XARCH, no) {
         }
         3dnow {
             mmx3dnow_compiler.commands = $$QMAKE_CXX -c -Winline
-
-            mac {
-                x86: mmx3dnow_compiler.commands += -Xarch_i386 -m3dnow -Xarch_i386 -mmmx
-                x86_64: mmx3dnow_compiler.commands += -Xarch_x86_64 -m3dnow -Xarch_x86_64 -mmmx
-            } else {
-                mmx3dnow_compiler.commands += -m3dnow -mmmx
-            }
-
+            mmx3dnow_compiler.commands += -m3dnow -mmmx
             mmx3dnow_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             mmx3dnow_compiler.dependency_type = TYPE_C
             mmx3dnow_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -100,14 +83,7 @@ contains(QMAKE_MAC_XARCH, no) {
             QMAKE_EXTRA_COMPILERS += mmx3dnow_compiler
             sse {
                 sse3dnow_compiler.commands = $$QMAKE_CXX -c -Winline
-
-                mac {
-                    x86: sse3dnow_compiler.commands += -Xarch_i386 -m3dnow -Xarch_i386 -msse
-                    x86_64: sse3dnow_compiler.commands += -Xarch_x86_64 -m3dnow -Xarch_x86_64 -msse
-                } else {
-                    sse3dnow_compiler.commands += -m3dnow -msse
-                }
-
+                sse3dnow_compiler.commands += -m3dnow -msse
                 sse3dnow_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
                 sse3dnow_compiler.dependency_type = TYPE_C
                 sse3dnow_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -120,14 +96,7 @@ contains(QMAKE_MAC_XARCH, no) {
         }
         sse {
             sse_compiler.commands = $$QMAKE_CXX -c -Winline
-
-            mac {
-                x86: sse_compiler.commands += -Xarch_i386 -msse
-                x86_64: sse_compiler.commands += -Xarch_x86_64 -msse
-            } else {
-                sse_compiler.commands += -msse
-            }
-
+            sse_compiler.commands += -msse
             sse_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             sse_compiler.dependency_type = TYPE_C
             sse_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -139,14 +108,7 @@ contains(QMAKE_MAC_XARCH, no) {
         }
         sse2 {
             sse2_compiler.commands = $$QMAKE_CXX -c -Winline
-
-            mac {
-                x86: sse2_compiler.commands += -Xarch_i386 -msse2
-                x86_64: sse2_compiler.commands += -Xarch_x86_64 -msse2
-            } else {
-                sse2_compiler.commands += -msse2
-            }
-
+            sse2_compiler.commands += -msse2
             sse2_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             sse2_compiler.dependency_type = TYPE_C
             sse2_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -158,14 +120,7 @@ contains(QMAKE_MAC_XARCH, no) {
         }
         ssse3 {
             ssse3_compiler.commands = $$QMAKE_CXX -c -Winline
-
-            mac {
-                x86: ssse3_compiler.commands += -Xarch_i386 -mssse3
-                x86_64: ssse3_compiler.commands += -Xarch_x86_64 -mssse3
-            } else {
-                ssse3_compiler.commands += -mssse3
-            }
-
+            ssse3_compiler.commands += -mssse3
             ssse3_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             ssse3_compiler.dependency_type = TYPE_C
             ssse3_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
@@ -196,4 +151,3 @@ contains(QMAKE_MAC_XARCH, no) {
         ssse3: SOURCES += $$SSSE3_SOURCES
         iwmmxt: SOURCES += $$IWMMXT_SOURCES
     }
-}
