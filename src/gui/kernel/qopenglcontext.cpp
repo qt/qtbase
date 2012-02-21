@@ -74,6 +74,76 @@ QHash<QOpenGLContext *, bool> QOpenGLContextPrivate::makeCurrentTracker;
 QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
 #endif
 
+/*!
+    \class QOpenGLContext
+    \brief The QOpenGLContext represents a native OpenGL context, enabling
+           OpenGL rendering on a QSurface.
+
+    QOpenGLContext represents the OpenGL state of an underlying OpenGL context.
+    To set up a context, set its screen and format such that they match those
+    of the surface or surfaces with which the context is meant to be used, if
+    necessary make it share resources with other contexts with
+    setShareContext(), and finally call create(). Use isValid() to check if the
+    context was successfully initialized.
+
+    A context can be made current against a given surface by calling
+    makeCurrent(). When OpenGL rendering is done, call swapBuffers() to swap
+    the front and back buffers of the surface, so that the newly rendered
+    content becomes visible. To be able to support certain platforms,
+    QOpenGLContext requires that you call makeCurrent() again before starting
+    rendering a new frame, after calling swapBuffers().
+
+    If the context is temporarily not needed, such as when the application is
+    not rendering, it can be useful to call destroy() to free resources.
+    However, if you do so you will need to call create() again before the
+    context can be used, and you might need to recreate any OpenGL resources
+    and reinitialize the OpenGL state. You can connect to the
+    aboutToBeDestroyed() signal to clean up any resources that have been
+    allocated with different ownership from the QOpenGLContext itself.
+
+    Once a QOpenGLContext has been made current, you can render to it in a
+    platform independent way by using Qt's OpenGL enablers such as
+    QOpenGLFunctions, QOpenGLBuffer, QOpenGLShaderProgram, and
+    QOpenGLFramebufferObject. It is also possible to use the platform's OpenGL
+    API directly, without using the Qt enablers, although potentially at the
+    cost of portability. The latter is necessary when wanting to use OpenGL 1.x
+    or OpenGL ES 1.x.
+
+    For more information about the OpenGL API, refer to the official
+    \l{OpenGL documentation}.
+
+    \section1 Thread affinity
+
+    QOpenGLContext can be moved to a different thread with moveToThread(). Do
+    not call makeCurrent() from a different thread than the one to which the
+    QOpenGLContext object belongs. A context can only be current in one thread
+    and against one surface at a time, and a thread only has one context
+    current at a time.
+
+    \section1 Context resource sharing
+
+    Resources, such as framebuffer objects, textures, and vertex buffer objects
+    can be shared between contexts.  Use setShareContext() before calling
+    create() to specify that the contexts should share these resources.
+    QOpenGLContext internally keeps track of a QOpenGLContextGroup object which
+    can be accessed with shareGroup(), and which can be used to find all the
+    contexts in a given share group. A share group consists of all contexts that
+    have been succesfully initialized and are sharing with an existing context in
+    the share group. A non-sharing context has a share group consisting of a
+    single context.
+
+    \section1 Default framebuffer
+
+    On certain platforms, a framebuffer other than 0 might be the default frame
+    buffer depending on the current surface. Instead of calling
+    glBindFramebuffer(0), it is recommended that you use
+    glBindFramebuffer(ctx->defaultFramebufferObject()), to ensure that your
+    application is portable between different platforms. However, if you use
+    QOpenGLFunctions::glBindFramebuffer(), this is done automatically for you.
+
+    \sa QOpenGLFunctions, QOpenGLBuffer, QOpenGLShaderProgram, QOpenGLFramebufferObject
+*/
+
 void QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context)
 {
     QGuiGLThreadContext *threadContext = qwindow_context_storage.localData();
@@ -89,7 +159,8 @@ void QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context)
 }
 
 /*!
-  Returns the last context which called makeCurrent. This function is thread aware.
+    Returns the last context which called makeCurrent in the current thread,
+    or 0, if no context is current.
 */
 QOpenGLContext* QOpenGLContext::currentContext()
 {
@@ -100,16 +171,30 @@ QOpenGLContext* QOpenGLContext::currentContext()
     return 0;
 }
 
+/*!
+    Returns true if the two contexts are sharing OpenGL resources.
+*/
 bool QOpenGLContext::areSharing(QOpenGLContext *first, QOpenGLContext *second)
 {
     return first->shareGroup() == second->shareGroup();
 }
 
+/*!
+    Returns the underlying platform context.
+
+    \internal
+*/
 QPlatformOpenGLContext *QOpenGLContext::handle() const
 {
     Q_D(const QOpenGLContext);
     return d->platformGLContext;
 }
+
+/*!
+    Returns the underlying platform context with which this context is sharing.
+
+    \internal
+*/
 
 QPlatformOpenGLContext *QOpenGLContext::shareHandle() const
 {
@@ -120,7 +205,11 @@ QPlatformOpenGLContext *QOpenGLContext::shareHandle() const
 }
 
 /*!
-  Creates a new GL context instance, you need to call create() before it can be used.
+    Creates a new OpenGL context instance.
+
+    Before it can be used you need to set the proper format and call create().
+
+    \sa create(), makeCurrent()
 */
 QOpenGLContext::QOpenGLContext(QObject *parent)
     : QObject(*new QOpenGLContextPrivate(), parent)
@@ -130,7 +219,8 @@ QOpenGLContext::QOpenGLContext(QObject *parent)
 }
 
 /*!
-  Sets the format the GL context should be compatible with. You need to call create() before it takes effect.
+    Sets the \a format the OpenGL context should be compatible with. You need
+    to call create() before it takes effect.
 */
 void QOpenGLContext::setFormat(const QSurfaceFormat &format)
 {
@@ -139,7 +229,8 @@ void QOpenGLContext::setFormat(const QSurfaceFormat &format)
 }
 
 /*!
-  Sets the context to share textures, shaders, and other GL resources with. You need to call create() before it takes effect.
+    Sets the context to share textures, shaders, and other OpenGL resources
+    with. You need to call create() before it takes effect.
 */
 void QOpenGLContext::setShareContext(QOpenGLContext *shareContext)
 {
@@ -148,7 +239,8 @@ void QOpenGLContext::setShareContext(QOpenGLContext *shareContext)
 }
 
 /*!
-  Sets the screen the GL context should be valid for. You need to call create() before it takes effect.
+    Sets the \a screen the GL context should be valid for. You need to call
+    create() before it takes effect.
 */
 void QOpenGLContext::setScreen(QScreen *screen)
 {
@@ -159,9 +251,15 @@ void QOpenGLContext::setScreen(QScreen *screen)
 }
 
 /*!
-  Attempts to create the GL context with the desired parameters.
+    Attempts to create the OpenGL context with the current configuration.
 
-  Returns true if the native context was successfully created and is ready to be used.
+    The current configuration includes the format, the share context, and the
+    screen.
+
+    Returns true if the native context was successfully created and is ready to
+    be used with makeCurrent(), swapBuffers(), etc.
+
+    \sa makeCurrent(), destroy()
 */
 bool QOpenGLContext::create()
 {
@@ -179,6 +277,22 @@ bool QOpenGLContext::create()
     return d->platformGLContext;
 }
 
+/*!
+    Destroy the underlying platform context associated with this context.
+
+    If any other context is directly or indirectly sharing resources with this
+    context, the shared resources, which includes vertex buffer objects, shader
+    objects, textures, and framebuffer objects, are not freed. However,
+    destroying the underlying platform context frees any state associated with
+    the context.
+
+    After destroy() has been called, you must call create() if you wish to
+    use the context again.
+
+    \note This implicitly calls doneCurrent() if the context is current.
+
+    \sa create()
+*/
 void QOpenGLContext::destroy()
 {
     Q_D(QOpenGLContext);
@@ -199,15 +313,20 @@ void QOpenGLContext::destroy()
     \fn void QOpenGLContext::aboutToBeDestroyed()
 
     This signal is emitted before the underlying native OpenGL context is
-    destroyed, such that users may clean up OpenGL resources that might otherwise
-    be left dangling in the case of shared OpenGL contexts.
+    destroyed, such that users may clean up OpenGL resources that might
+    otherwise be left dangling in the case of shared OpenGL contexts.
 
-    If you wish to make the context current in order to do clean-up, make sure to
-    only connect to the signal using a direct connection.
+    If you wish to make the context current in order to do clean-up, make sure
+    to only connect to the signal using a direct connection.
 */
 
 /*!
-  If this is the current context for the thread, doneCurrent is called
+    Destroys the QOpenGLContext object.
+
+    This implicitly calls destroy(), so if this is the current context for the
+    thread, doneCurrent() is also called.
+
+    \sa destroy()
 */
 QOpenGLContext::~QOpenGLContext()
 {
@@ -219,7 +338,9 @@ QOpenGLContext::~QOpenGLContext()
 }
 
 /*!
-  Returns if this context is valid, i.e. has been successfully created.
+    Returns if this context is valid, i.e. has been successfully created.
+
+    \sa create()
 */
 bool QOpenGLContext::isValid() const
 {
@@ -228,11 +349,13 @@ bool QOpenGLContext::isValid() const
 }
 
 /*!
-  Get the QOpenGLFunctions instance for this context.
+    Get the QOpenGLFunctions instance for this context.
 
-  The context or a sharing context must be current.
+    QOpenGLContext offers this as a convenient way to access QOpenGLFunctions
+    without having to manage it manually.
+
+    The context or a sharing context must be current.
 */
-
 QOpenGLFunctions *QOpenGLContext::functions() const
 {
     Q_D(const QOpenGLContext);
@@ -242,15 +365,17 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 }
 
 /*!
-  Call this to get the default framebuffer object for the current surface.
+    Call this to get the default framebuffer object for the current surface.
 
-  On some platforms the default framebuffer object depends on the surface being rendered to,
-  and might be different from 0. Thus, instead of calling glBindFramebuffer(0), you should
-  call glBindFramebuffer(ctx->defaultFramebufferObject()) if you want your application to
-  work across different Qt platforms.
+    On some platforms the default framebuffer object depends on the surface
+    being rendered to, and might be different from 0. Thus, instead of calling
+    glBindFramebuffer(0), you should call
+    glBindFramebuffer(ctx->defaultFramebufferObject()) if you want your
+    application to work across different Qt platforms.
 
-  If you use the glBindFramebuffer() in QOpenGLFunctions you do not have to worry about this,
-  as it automatically binds the current context's defaultFramebufferObject() when 0 is passed.
+    If you use the glBindFramebuffer() in QOpenGLFunctions you do not have to
+    worry about this, as it automatically binds the current context's
+    defaultFramebufferObject() when 0 is passed.
 */
 GLuint QOpenGLContext::defaultFramebufferObject() const
 {
@@ -265,12 +390,18 @@ GLuint QOpenGLContext::defaultFramebufferObject() const
 }
 
 /*!
-  If surface is 0 this is equivalent to calling doneCurrent().
+    Makes the context current in the current thread, against the given
+    \a surface.
 
-  Do not call this function from a different thread than the one the QOpenGLContext instance lives in. If
-  you wish to use QOpenGLContext from a different thread you should first call make sure it's not current
-  in the current thread, by calling doneCurrent() if necessary. Then call moveToThread(otherThread)
-  before using it in the other thread.
+    If \a surface is 0 this is equivalent to calling doneCurrent().
+
+    Do not call this function from a different thread than the one the
+    QOpenGLContext instance lives in. If you wish to use QOpenGLContext from a
+    different thread you should first call make sure it's not current in the
+    current thread, by calling doneCurrent() if necessary. Then call
+    moveToThread(otherThread) before using it in the other thread.
+
+    \sa functions(), doneCurrent()
 */
 bool QOpenGLContext::makeCurrent(QSurface *surface)
 {
@@ -313,6 +444,10 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
 
 /*!
     Convenience function for calling makeCurrent with a 0 surface.
+
+    This results in no context being current in the current thread.
+
+    \sa makeCurrent(), currentContext()
 */
 void QOpenGLContext::doneCurrent()
 {
@@ -330,7 +465,9 @@ void QOpenGLContext::doneCurrent()
 }
 
 /*!
-    Returns the surface the context is current for.
+    Returns the surface the context has been made current with.
+
+    This is the surface passed as an argument to makeCurrent().
 */
 QSurface *QOpenGLContext::surface() const
 {
@@ -391,6 +528,11 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
     d->platformGLContext->swapBuffers(surfaceHandle);
 }
 
+/*!
+    Resolves the function pointer to an OpenGL extension function, identified by \a procName
+
+    Returns 0 if no such function can be found.
+*/
 QFunctionPointer QOpenGLContext::getProcAddress(const QByteArray &procName)
 {
     Q_D(QOpenGLContext);
@@ -399,6 +541,11 @@ QFunctionPointer QOpenGLContext::getProcAddress(const QByteArray &procName)
     return d->platformGLContext->getProcAddress(procName);
 }
 
+/*!
+    Returns the format of the underlying platform context, if create() has been called.
+
+    Otherwise, returns the requested format.
+*/
 QSurfaceFormat QOpenGLContext::format() const
 {
     Q_D(const QOpenGLContext);
@@ -407,27 +554,41 @@ QSurfaceFormat QOpenGLContext::format() const
     return d->platformGLContext->format();
 }
 
+/*!
+    Returns the share group this context belongs to.
+*/
 QOpenGLContextGroup *QOpenGLContext::shareGroup() const
 {
     Q_D(const QOpenGLContext);
     return d->shareGroup;
 }
 
+/*!
+    Returns the share context this context was created with.
+
+    If the underlying platform was not able to support the requested
+    sharing, this will return 0.
+*/
 QOpenGLContext *QOpenGLContext::shareContext() const
 {
     Q_D(const QOpenGLContext);
     return d->shareContext;
 }
 
+/*!
+    Returns the screen the context was created for.
+*/
 QScreen *QOpenGLContext::screen() const
 {
     Q_D(const QOpenGLContext);
     return d->screen;
 }
 
-/*
-  internal: Needs to have a pointer to qGLContext. But since this is in QtGui we cant
-  have any type information.
+/*!
+    internal: Needs to have a pointer to qGLContext. But since this is in QtGui we cant
+    have any type information.
+
+    \internal
 */
 void *QOpenGLContext::qGLContextHandle() const
 {
@@ -435,6 +596,9 @@ void *QOpenGLContext::qGLContextHandle() const
     return d->qGLContextHandle;
 }
 
+/*!
+    \internal
+*/
 void QOpenGLContext::setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *))
 {
     Q_D(QOpenGLContext);
@@ -442,6 +606,9 @@ void QOpenGLContext::setQGLContextHandle(void *handle,void (*qGLContextDeleteFun
     d->qGLContextDeleteFunction = qGLContextDeleteFunction;
 }
 
+/*!
+    \internal
+*/
 void QOpenGLContext::deleteQGLContext()
 {
     Q_D(QOpenGLContext);
@@ -452,23 +619,45 @@ void QOpenGLContext::deleteQGLContext()
     }
 }
 
+/*!
+    \class QOpenGLContextGroup
+    \brief The QOpenGLContextGroup represents a group of contexts sharing
+    OpenGL resources.
+
+    QOpenGLContextGroup is automatically created and managed by QOpenGLContext
+    instances.  Its purpose is to identify all the contexts that are sharing
+    resources.
+
+    \sa QOpenGLContext::shareGroup()
+*/
 QOpenGLContextGroup::QOpenGLContextGroup()
     : QObject(*new QOpenGLContextGroupPrivate())
 {
 }
 
+/*!
+    \internal
+*/
 QOpenGLContextGroup::~QOpenGLContextGroup()
 {
     Q_D(QOpenGLContextGroup);
     d->cleanup();
 }
 
+/*!
+    Returns all the QOpenGLContext objects in this share group.
+*/
 QList<QOpenGLContext *> QOpenGLContextGroup::shares() const
 {
     Q_D(const QOpenGLContextGroup);
     return d->m_shares;
 }
 
+/*!
+    Returns the QOpenGLContextGroup corresponding to the current context.
+
+    \sa QOpenGLContext::currentContext()
+*/
 QOpenGLContextGroup *QOpenGLContextGroup::currentContextGroup()
 {
     QOpenGLContext *current = QOpenGLContext::currentContext();
@@ -544,9 +733,10 @@ void QOpenGLContextGroupPrivate::deletePendingResources(QOpenGLContext *ctx)
     \class QOpenGLSharedResource
     \internal
     \since 5.0
-    \brief The QOpenGLSharedResource class is used to keep track of resources that
-    are shared between OpenGL contexts (like textures, framebuffer objects, shader
-    programs, etc), and clean them up in a safe way when they're no longer needed.
+    \brief The QOpenGLSharedResource class is used to keep track of resources
+    that are shared between OpenGL contexts (like textures, framebuffer
+    objects, shader programs, etc), and clean them up in a safe way when
+    they're no longer needed.
 
     The QOpenGLSharedResource instance should never be deleted, instead free()
     should be called when it's no longer needed. Thus it will be put on a queue
@@ -556,11 +746,11 @@ void QOpenGLContextGroupPrivate::deletePendingResources(QOpenGLContext *ctx)
     The sub-class needs to implement two pure virtual functions. The first,
     freeResource() must be implemented to actually do the freeing, for example
     call glDeleteTextures() on a texture id. Qt makes sure a valid context in
-    the resource's share group is current at the time. The other, invalidateResource(),
-    is called by Qt in the circumstance when the last context in the share group is
-    destroyed before free() has been called. The implementation of invalidateResource()
-    should set any identifiers to 0 or set a flag to prevent them from being used
-    later on.
+    the resource's share group is current at the time. The other,
+    invalidateResource(), is called by Qt in the circumstance when the last
+    context in the share group is destroyed before free() has been called. The
+    implementation of invalidateResource() should set any identifiers to 0 or
+    set a flag to prevent them from being used later on.
 */
 QOpenGLSharedResource::QOpenGLSharedResource(QOpenGLContextGroup *group)
     : m_group(group)
@@ -616,9 +806,9 @@ void QOpenGLSharedResourceGuard::freeResource(QOpenGLContext *context)
     \since 5.0
     \brief The QOpenGLMultiGroupSharedResource keeps track of a shared resource
     that might be needed from multiple contexts, like a glyph cache or gradient
-    cache. One instance of the object is created for each group when
-    necessary. The shared resource instance should have a constructor that
-    takes a QOpenGLContext *. To get an instance for a given context one calls
+    cache. One instance of the object is created for each group when necessary.
+    The shared resource instance should have a constructor that takes a
+    QOpenGLContext *. To get an instance for a given context one calls
     T *QOpenGLMultiGroupSharedResource::value<T>(context), where T is a sub-class
     of QOpenGLSharedResource.
 
