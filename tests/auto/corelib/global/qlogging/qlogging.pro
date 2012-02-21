@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
+CONFIG += ordered
 
 SUBDIRS += \
-    tst_qlogging.pro \
-    app
+    app \
+    tst_qlogging.pro
