@@ -88,6 +88,7 @@ public:
     static const QKeyBinding keyBindings[];
     static const uint numberOfKeyBindings;
 
+    static unsigned currentKeyPlatforms();
 };
 #endif // QT_NO_SHORTCUT
 

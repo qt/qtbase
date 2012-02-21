@@ -833,7 +833,7 @@ Qt::KeyboardModifiers QKeyEvent::modifiers() const
 bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
 {
     uint searchkey = (modifiers() | key()) & ~(Qt::KeypadModifier); //The keypad modifier should not make a difference
-    uint platform = QGuiApplicationPrivate::currentKeyPlatform();
+    const uint platform = QKeySequencePrivate::currentKeyPlatforms();
 
 
     uint N = QKeySequencePrivate::numberOfKeyBindings;

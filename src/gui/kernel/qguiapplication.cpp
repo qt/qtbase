@@ -1911,27 +1911,6 @@ QInputPanel *QGuiApplication::inputPanel() const
     return inputMethod();
 }
 
-
-// Returns the current platform used by keyBindings
-uint QGuiApplicationPrivate::currentKeyPlatform()
-{
-    uint platform = KB_Win;
-#ifdef Q_OS_MAC
-    platform = KB_Mac;
-#elif defined Q_WS_X11 // ## TODO: detect these
-    platform = KB_X11;
-#if 0
-    if (X11->desktopEnvironment == DE_KDE)
-        platform |= KB_KDE;
-    if (X11->desktopEnvironment == DE_GNOME)
-        platform |= KB_Gnome;
-    if (X11->desktopEnvironment == DE_CDE)
-        platform |= KB_CDE;
-#endif
-#endif
-    return platform;
-}
-
 /*!
     \since 4.5
     \fn void QGuiApplication::fontDatabaseChanged()

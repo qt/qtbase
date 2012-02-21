@@ -220,11 +220,12 @@ static inline QStringList styleNames()
 QVariant QWindowsTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
-    case SystemIconThemeName:
-        break;
+    case UseFullScreenForPopupMenu:
+        return QVariant(true);
+    case DialogButtonBoxLayout:
+        return QVariant(int(0)); // QDialogButtonBox::WinLayout
     case IconThemeSearchPaths:
         return QVariant(iconThemeSearchPaths());
-        break;
     case StyleNames:
         return QVariant(styleNames());
     case TextCursorWidth:
@@ -233,8 +234,12 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
         return QVariant(booleanSystemParametersInfo(SPI_GETDROPSHADOW, false));
     case MaximumScrollBarDragDistance:
         return QVariant(qRound(qreal(QWindowsContext::instance()->defaultDPI()) * 1.375));
+    case KeyboardScheme:
+        return QVariant(int(WindowsKeyboardScheme));
+    default:
+        break;
     }
-    return QVariant();
+    return QPlatformTheme::themeHint(hint);
 }
 
 void QWindowsTheme::refresh()

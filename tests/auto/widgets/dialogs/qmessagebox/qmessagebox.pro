@@ -1,7 +1,7 @@
 CONFIG += testcase
 TEMPLATE = app
 TARGET = tst_qmessagebox
-QT += widgets testlib
+QT += gui-private core-private widgets testlib
 DEPENDPATH += .
 INCLUDEPATH += . 
 

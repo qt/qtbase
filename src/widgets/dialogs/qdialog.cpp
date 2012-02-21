@@ -55,6 +55,7 @@
 #include "qplatformtheme_qpa.h"
 #include "private/qdialog_p.h"
 #include "private/qguiapplication_p.h"
+#include "qplatformtheme_qpa.h"
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
@@ -790,11 +791,10 @@ void QDialog::showEvent(QShowEvent *event)
 /*! \internal */
 void QDialog::adjustPosition(QWidget* w)
 {
-#ifdef Q_WS_X11
-    // if the WM advertises that it will place the windows properly for us, let it do it :)
-    if (X11->isSupportedByWM(ATOM(_NET_WM_FULL_PLACEMENT)))
-        return;
-#endif
+
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+        if (theme->themeHint(QPlatformTheme::WindowAutoPlacement).toBool())
+            return;
     QPoint p(0, 0);
     int extraw = 0, extrah = 0, scrn = 0;
     if (w)

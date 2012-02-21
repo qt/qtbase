@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qaction
-QT += widgets testlib
+QT += gui-private core-private widgets testlib
 SOURCES += tst_qaction.cpp 
 
 
