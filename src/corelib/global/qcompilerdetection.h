@@ -83,7 +83,6 @@
 #elif defined(_MSC_VER)
 #  define Q_CC_MSVC
 #  define Q_CC_MSVC_NET
-#  define Q_CANNOT_DELETE_CONSTANT
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  define Q_NO_TEMPLATE_FRIENDS
 #  define Q_ALIGNOF(type) __alignof(type)
@@ -259,7 +258,6 @@
    DEC C++ V5.5-004. */
 #  if __DECCXX_VER < 60060000
 #    define Q_BROKEN_TEMPLATE_SPECIALIZATION
-#    define Q_CANNOT_DELETE_CONSTANT
 #  endif
 /* avoid undefined symbol problems with out-of-line template members */
 #  define Q_OUTOFLINE_TEMPLATE inline
