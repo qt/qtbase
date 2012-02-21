@@ -243,13 +243,13 @@ MakefileGenerator
             basecfgs = project->values(build + ".CONFIG");
         basecfgs += build;
         basecfgs += "build_pass";
-        basevars["CONFIG"] = basecfgs;
         basevars["BUILD_PASS"] = QStringList(build);
         QStringList buildname = project->values(build + ".name");
         basevars["BUILD_NAME"] = (buildname.isEmpty() ? QStringList(build) : buildname);
 
         //create project
-        QMakeProject *build_proj = new QMakeProject(project->properties(), basevars);
+        QMakeProject *build_proj = new QMakeProject(project->properties());
+        build_proj->setExtraVars(basevars);
         build_proj->setExtraConfigs(basecfgs);
 
         build_proj->read(project->projectFile());

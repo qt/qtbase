@@ -1292,6 +1292,10 @@ QMakeProject::read(uchar cmd)
 
     vars = base_vars; // start with the base
 
+    for (QHash<QString, QStringList>::ConstIterator it = extra_vars.constBegin();
+         it != extra_vars.constEnd(); ++it)
+        vars.insert(it.key(), it.value());
+
     if(cmd & ReadFeatures) {
         debug_msg(1, "Processing default_pre: %s", vars["CONFIG"].join("::").toLatin1().constData());
         doProjectInclude("default_pre", IncludeFlagFeature, vars);

@@ -85,7 +85,7 @@ class QMakeProject
     QMakeProperty *prop;
     void reset();
     QStringList extra_configs;
-    QHash<QString, QStringList> vars, base_vars;
+    QHash<QString, QStringList> vars, base_vars, extra_vars;
     bool parse(const QString &text, QHash<QString, QStringList> &place, int line_count=1);
 
     enum IncludeStatus {
@@ -119,6 +119,7 @@ public:
     QMakeProject(QMakeProperty *p, const QHash<QString, QStringList> &nvars) { init(p, &nvars); }
     ~QMakeProject();
 
+    void setExtraVars(const QHash<QString, QStringList> &_vars) { extra_vars = _vars; }
     void setExtraConfigs(const QStringList &_cfgs) { extra_configs = _cfgs; }
 
     enum { ReadProFile=0x01, ReadSetup=0x02, ReadFeatures=0x04, ReadAll=0xFF };
