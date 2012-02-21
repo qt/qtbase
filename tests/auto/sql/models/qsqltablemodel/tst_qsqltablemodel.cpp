@@ -411,8 +411,11 @@ void tst_QSqlTableModel::setRecord()
             } else if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnRowChange && i == model.rowCount() -1)
                 model.submit();
             else {
-                // dataChanged() is not emitted when submitAll() is called
-                QCOMPARE(spy.count(), 1);
+                // dataChanged() emitted by selectRow() as well as setRecord()
+                if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnFieldChange)
+                    QCOMPARE(spy.count(), 2);
+                else
+                    QCOMPARE(spy.count(), 1);
                 QCOMPARE(spy.at(0).count(), 2);
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 0));
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, rec.count() - 1));
@@ -471,8 +474,7 @@ void tst_QSqlTableModel::insertRow()
     rec.setValue(0, 42);
     rec.setValue(1, QString("francis"));
 
-    // FieldChange updates immediately and resorts
-    // Row/Manual submit does not resort
+    // Setting record does not cause resort
     QVERIFY(model.setRecord(2, rec));
 
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
@@ -482,8 +484,23 @@ void tst_QSqlTableModel::insertRow()
     QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
     QCOMPARE(model.data(model.index(1, 2)).toInt(), 2);
 
-    // See comment above setRecord
-    if (submitpolicy == QSqlTableModel::OnFieldChange) {
+    QCOMPARE(model.data(model.index(2, 0)).toInt(), 42);
+    QCOMPARE(model.data(model.index(2, 1)).toString(), QString("francis"));
+    QCOMPARE(model.data(model.index(2, 2)).toInt(), 2);
+    QCOMPARE(model.data(model.index(3, 0)).toInt(), 3);
+    QCOMPARE(model.data(model.index(3, 1)).toString(), QString("vohi"));
+    QCOMPARE(model.data(model.index(3, 2)).toInt(), 3);
+
+    QVERIFY(model.submitAll());
+
+    if (submitpolicy == QSqlTableModel::OnManualSubmit) {
+        // After the submit we should have the resorted view
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QCOMPARE(model.data(model.index(0, 2)).toInt(), 1);
+        QCOMPARE(model.data(model.index(1, 0)).toInt(), 2);
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
+        QCOMPARE(model.data(model.index(1, 2)).toInt(), 2);
         QCOMPARE(model.data(model.index(2, 0)).toInt(), 3);
         QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
         QCOMPARE(model.data(model.index(2, 2)).toInt(), 3);
@@ -491,6 +508,13 @@ void tst_QSqlTableModel::insertRow()
         QCOMPARE(model.data(model.index(3, 1)).toString(), QString("francis"));
         QCOMPARE(model.data(model.index(3, 2)).toInt(), 2);
     } else {
+        // Submit does not select, therefore not resorted
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QCOMPARE(model.data(model.index(0, 2)).toInt(), 1);
+        QCOMPARE(model.data(model.index(1, 0)).toInt(), 2);
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
+        QCOMPARE(model.data(model.index(1, 2)).toInt(), 2);
         QCOMPARE(model.data(model.index(2, 0)).toInt(), 42);
         QCOMPARE(model.data(model.index(2, 1)).toString(), QString("francis"));
         QCOMPARE(model.data(model.index(2, 2)).toInt(), 2);
@@ -499,9 +523,8 @@ void tst_QSqlTableModel::insertRow()
         QCOMPARE(model.data(model.index(3, 2)).toInt(), 3);
     }
 
-    QVERIFY(model.submitAll());
-
-    // After the submit we should have the resorted view
+    QVERIFY(model.select());
+    // After the select we should have the resorted view in all strategies
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(0, 2)).toInt(), 1);
@@ -514,7 +537,6 @@ void tst_QSqlTableModel::insertRow()
     QCOMPARE(model.data(model.index(3, 0)).toInt(), 42);
     QCOMPARE(model.data(model.index(3, 1)).toString(), QString("francis"));
     QCOMPARE(model.data(model.index(3, 2)).toInt(), 2);
-
 }
 
 void tst_QSqlTableModel::insertRecord()
@@ -647,8 +669,7 @@ void tst_QSqlTableModel::removeRow()
     QVERIFY_SQL(model, select());
     QCOMPARE(model.rowCount(), 3);
 
-    // headerDataChanged must be emitted by the model when the edit strategy is OnManualSubmit,
-    // when OnFieldChange or OnRowChange it's not needed because the model will re-select.
+    // headerDataChanged must be emitted by the model since the row won't vanish until select
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
     QSignalSpy headerDataChangedSpy(&model, SIGNAL(headerDataChanged(Qt::Orientation, int, int)));
 
@@ -673,7 +694,10 @@ void tst_QSqlTableModel::removeRow()
 
     headerDataChangedSpy.clear();
     QVERIFY(model.removeRow(1));
-    QCOMPARE(headerDataChangedSpy.count(), 0);
+    QCOMPARE(headerDataChangedSpy.count(), 1);
+    QCOMPARE(model.rowCount(), 3);
+
+    QVERIFY_SQL(model, select());
     QCOMPARE(model.rowCount(), 2);
 
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
@@ -706,6 +730,11 @@ void tst_QSqlTableModel::removeRows()
     QCOMPARE(beforeDeleteSpy.count(), 2);
     QVERIFY(beforeDeleteSpy.at(0).at(0).toInt() == 0);
     QVERIFY(beforeDeleteSpy.at(1).at(0).toInt() == 1);
+    // deleted rows shown as empty until select
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString(""));
+    QVERIFY(model.select());
+    // deleted rows are gone
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("vohi"));
     model.clear();
@@ -778,6 +807,14 @@ void tst_QSqlTableModel::removeInsertedRow()
 
     model.submitAll();
 
+    if (model.editStrategy() != QSqlTableModel::OnManualSubmit) {
+        QCOMPARE(model.rowCount(), 4);
+        QCOMPARE(model.data(model.index(1, 0)).toInt(), 55);
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("null columns"));
+        QCOMPARE(model.data(model.index(1, 2)).isNull(), true);
+        QVERIFY(model.select());
+    }
+
     QCOMPARE(model.rowCount(), 4);
     QCOMPARE(model.data(model.index(3, 0)).toInt(), 55);
     QCOMPARE(model.data(model.index(3, 1)).toString(), QString("null columns"));
@@ -785,8 +822,17 @@ void tst_QSqlTableModel::removeInsertedRow()
 
     QVERIFY(model.removeRow(3));
     model.submitAll();
-    QCOMPARE(model.rowCount(), 3);
 
+    if (model.editStrategy() != QSqlTableModel::OnManualSubmit) {
+        QCOMPARE(model.rowCount(), 4);
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
+        QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
+        QCOMPARE(model.data(model.index(3, 1)).toString(), QString(""));
+        QVERIFY(model.select());
+    }
+
+    QCOMPARE(model.rowCount(), 3);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
     QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
@@ -1128,6 +1174,11 @@ void tst_QSqlTableModel::insertRecordBeforeSelect()
     buffer.setValue("name", QString("T. Leary"));
     buffer.setValue("title", 0);
     QVERIFY_SQL(model, insertRecord(1, buffer));
+
+    if (model.editStrategy() != QSqlTableModel::OnManualSubmit) {
+        QCOMPARE(model.rowCount(), 2);
+        QVERIFY_SQL(model, select());
+    }
 
     int rowCount = model.rowCount();
     model.clear();

@@ -663,8 +663,8 @@ bool QSqlTableModel::deleteRowFromTable(int row)
     Returns false on error, detailed error information can be
     obtained with lastError().
 
-    On success the model will be repopulated. Any views 
-    presenting it will lose their selections.
+    In OnManualSubmit, on success the model will be repopulated.
+    Any views presenting it will lose their selections.
 
     Note: In OnManualSubmit mode, already submitted changes won't
     be cleared from the cache when submitAll() fails. This allows
@@ -677,6 +677,8 @@ bool QSqlTableModel::submitAll()
 {
     Q_D(QSqlTableModel);
 
+    bool success = true;
+
     for (QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.begin();
          it != d->cache.constEnd(); ++it) {
         if (it.value().submitted())
@@ -684,25 +686,35 @@ bool QSqlTableModel::submitAll()
 
         switch (it.value().op()) {
         case QSqlTableModelPrivate::Insert:
-            if (!insertRowIntoTable(it.value().rec()))
-                return false;
+            success = insertRowIntoTable(it.value().rec());
             break;
         case QSqlTableModelPrivate::Update:
-            if (!updateRowInTable(it.key(), it.value().rec()))
-                return false;
+            success = updateRowInTable(it.key(), it.value().rec());
             break;
         case QSqlTableModelPrivate::Delete:
-            if (!deleteRowFromTable(it.key()))
-                return false;
+            success = deleteRowFromTable(it.key());
             break;
         case QSqlTableModelPrivate::None:
             Q_ASSERT_X(false, "QSqlTableModel::submitAll()", "Invalid cache operation");
             break;
         }
-        it.value().setSubmitted();
+
+        if (success) {
+            it.value().setSubmitted();
+            if (d->strategy != OnManualSubmit)
+                success = selectRow(it.key());
+        }
+
+        if (!success)
+            break;
     }
 
-    return select();
+    if (success) {
+        if (d->strategy == OnManualSubmit)
+            success = select();
+    }
+
+    return success;
 }
 
 /*!
@@ -719,8 +731,8 @@ bool QSqlTableModel::submitAll()
     Returns true on success; otherwise returns false. Use lastError()
     to query detailed error information.
 
-    On success the model will be repopulated. Any views 
-    presenting it will lose their selections.
+    Does not automatically repopulate the model. Submitted rows are
+    refreshed from the database on success.
 
     \sa revert(), revertRow(), submitAll(), revertAll(), lastError()
 */

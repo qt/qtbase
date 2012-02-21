@@ -406,6 +406,14 @@ ignore the rest of the range.
 QSqlTableModel::indexInQuery() as example of how to implement in a
 subclass.
 
+* QSqlTableModel edit strategies OnFieldChange/OnRowChange QTBUG-2875
+Previously, after changes were submitted in these edit strategies, select()
+was called which removed and inserted all rows. This ruined navigation
+in QTableView. Now, with these edit strategies, there is no implicit select()
+done after committing. This includes deleted rows which remain in
+the model as blank rows until the application calls select(). Instead,
+selectRow() is called to refresh only the affected row.
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
