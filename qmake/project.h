@@ -84,6 +84,7 @@ class QMakeProject
     QString pfile, cfile;
     QMakeProperty *prop;
     void reset();
+    QStringList extra_configs;
     QHash<QString, QStringList> vars, base_vars;
     bool parse(const QString &text, QHash<QString, QStringList> &place, int line_count=1);
 
@@ -117,6 +118,8 @@ public:
     QMakeProject(const QHash<QString, QStringList> &nvars) { init(0, &nvars); }
     QMakeProject(QMakeProperty *p, const QHash<QString, QStringList> &nvars) { init(p, &nvars); }
     ~QMakeProject();
+
+    void setExtraConfigs(const QStringList &_cfgs) { extra_configs = _cfgs; }
 
     enum { ReadProFile=0x01, ReadSetup=0x02, ReadFeatures=0x04, ReadAll=0xFF };
     inline bool parse(const QString &text) { return parse(text, vars); }

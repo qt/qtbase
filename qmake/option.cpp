@@ -92,7 +92,6 @@ Option::QMAKE_RECURSIVE Option::recursive = Option::QMAKE_RECURSIVE_DEFAULT;
 QStringList Option::before_user_vars;
 QStringList Option::after_user_vars;
 QStringList Option::user_configs;
-QStringList Option::after_user_configs;
 QString Option::user_template;
 QString Option::user_template_prefix;
 QStringList Option::shellPath;

@@ -1326,6 +1326,14 @@ QMakeProject::read(uchar cmd)
         parse("CONFIG += " + Option::user_configs.join(" "), vars);
     }
 
+    // After user configs, to override them
+    if (!extra_configs.isEmpty()) {
+        parser.file = "(extra configs)";
+        parser.from_file = false;
+        parser.line_no = 1; //really arg count now.. duh
+        parse("CONFIG += " + extra_configs.join(" "), vars);
+    }
+
     if(cmd & ReadProFile) { // parse project file
         debug_msg(1, "Project file: reading %s", pfile.toLatin1().constData());
         if(pfile != "-" && !QFile::exists(pfile) && !pfile.endsWith(Option::pro_ext))
@@ -1349,12 +1357,14 @@ QMakeProject::read(uchar cmd)
         }
     }
 
-    //after configs (set in BUILDS)
-    if ((cmd & ReadSetup) && !Option::after_user_configs.isEmpty()) {
-        parser.file = "(configs)";
+    // Again, to ensure the project does not mess with us.
+    // Specifically, do not allow a project to override debug/release within a
+    // debug_and_release build pass - it's too late for that at this point anyway.
+    if (!extra_configs.isEmpty()) {
+        parser.file = "(extra configs)";
         parser.from_file = false;
         parser.line_no = 1; //really arg count now.. duh
-        parse("CONFIG += " + Option::after_user_configs.join(" "), vars);
+        parse("CONFIG += " + extra_configs.join(" "), vars);
     }
 
     if(cmd & ReadFeatures) {
