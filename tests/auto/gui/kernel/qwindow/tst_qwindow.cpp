@@ -596,6 +596,8 @@ void tst_QWindow::touchCancelWithTouchToMouse()
 
 void tst_QWindow::orientation()
 {
+    qRegisterMetaType<Qt::ScreenOrientation>("Qt::ScreenOrientation");
+
     QWindow window;
     window.setGeometry(80, 80, 40, 40);
     window.create();
