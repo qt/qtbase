@@ -2073,6 +2073,9 @@ inline void QOpenGLFunctions::glVertexAttribPointer(GLuint indx, GLint size, GLe
 #ifndef GL_RGBA4
 #define GL_RGBA4 0x8056
 #endif
+#ifndef GL_BGR
+#define GL_BGR 0x80E0
+#endif
 #ifndef GL_BGRA
 #define GL_BGRA 0x80E1
 #endif
