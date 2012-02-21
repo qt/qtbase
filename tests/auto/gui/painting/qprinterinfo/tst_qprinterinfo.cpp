@@ -221,7 +221,8 @@ void tst_QPrinterInfo::testForDefaultPrinter()
 # else
     QString defSysPrinter = getDefaultPrinterFromSystem();
 # endif
-    if (defSysPrinter == "") return;
+    if (defSysPrinter == "")
+        QSKIP("No default printer available");
 
     QList<QPrinterInfo> list = QPrinterInfo::availablePrinters();
     bool found = false;
