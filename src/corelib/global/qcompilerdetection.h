@@ -139,45 +139,22 @@
 #    define Q_CC_MINGW
 #  endif
 #  if defined(__INTEL_COMPILER)
-/* Intel C++ also masquerades as GCC 3.2.0 */
+/* Intel C++ also masquerades as GCC */
 #    define Q_CC_INTEL
 #  endif
 #  if defined(__clang__)
-/* Clang also masquerades as GCC 4.2.1 */
+/* Clang also masquerades as GCC */
 #    define Q_CC_CLANG
 #  endif
 #  ifdef __APPLE__
 #    define Q_NO_DEPRECATED_CONSTRUCTORS
 #  endif
-#  if __GNUC__ == 2 && __GNUC_MINOR__ <= 7
-#    define Q_FULL_TEMPLATE_INSTANTIATION
-#  endif
-/* GCC 2.95 knows "using" but does not support it correctly */
-#  if __GNUC__ == 2 && __GNUC_MINOR__ <= 95
-#    define Q_NO_USING_KEYWORD
-#  endif
-#  if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
-#    define Q_ALIGNOF(type)   __alignof__(type)
-#    define Q_TYPEOF(expr)    __typeof__(expr)
-#    define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
-#  endif
-#  if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
-#    define Q_LIKELY(expr)    __builtin_expect(!!(expr), true)
-#    define Q_UNLIKELY(expr)  __builtin_expect(!!(expr), false)
-#  endif
-/* GCC 3.1 and GCC 3.2 wrongly define _SB_CTYPE_MACROS on HP-UX */
-#  if defined(Q_OS_HPUX) && __GNUC__ == 3 && __GNUC_MINOR__ >= 1
-#    define Q_WRONG_SB_CTYPE_MACROS
-#  endif
-/* GCC <= 3.3 cannot handle template friends */
-#  if __GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ <= 3)
-#    define Q_NO_TEMPLATE_FRIENDS
-#  endif
-/* Apple's GCC 3.1 chokes on our streaming qDebug() */
-#  if defined(Q_OS_DARWIN) && __GNUC__ == 3 && (__GNUC_MINOR__ >= 1 && __GNUC_MINOR__ < 3)
-#    define Q_BROKEN_DEBUG_STREAM
-#  endif
-#  if (defined(Q_CC_GNU) || defined(Q_CC_INTEL)) && !defined(QT_MOC_CPP)
+#  define Q_ALIGNOF(type)   __alignof__(type)
+#  define Q_TYPEOF(expr)    __typeof__(expr)
+#  define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
+#  define Q_LIKELY(expr)    __builtin_expect(!!(expr), true)
+#  define Q_UNLIKELY(expr)  __builtin_expect(!!(expr), false)
+#  if !defined(QT_MOC_CPP)
 #    define Q_PACKED __attribute__ ((__packed__))
 #    define Q_NO_PACKED_REFERENCE
 #    ifndef __ARM_EABI__
