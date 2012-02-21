@@ -2399,7 +2399,6 @@ void QColor::invalidate()
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QColor &c)
 {
-#ifndef Q_BROKEN_DEBUG_STREAM
     if (!c.isValid())
         dbg.nospace() << "QColor(Invalid)";
     else if (c.spec() == QColor::Rgb)
@@ -2413,11 +2412,6 @@ QDebug operator<<(QDebug dbg, const QColor &c)
         dbg.nospace() << "QColor(AHSL " << c.alphaF() << ", " << c.hslHueF() << ", " << c.hslSaturationF() << ", " << c.lightnessF() << ')';
 
     return dbg.space();
-#else
-    qWarning("This compiler doesn't support streaming QColor to QDebug");
-    return dbg;
-    Q_UNUSED(c);
-#endif
 }
 #endif
 

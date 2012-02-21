@@ -1622,15 +1622,9 @@ void QItemSelectionModel::emitSelectionChanged(const QItemSelection &newSelectio
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QItemSelectionRange &range)
 {
-#ifndef Q_BROKEN_DEBUG_STREAM
     dbg.nospace() << "QItemSelectionRange(" << range.topLeft()
                   << ',' << range.bottomRight() << ')';
     return dbg.space();
-#else
-    qWarning("This compiler doesn't support streaming QItemSelectionRange to QDebug");
-    return dbg;
-    Q_UNUSED(range);
-#endif
 }
 #endif
 

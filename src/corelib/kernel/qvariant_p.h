@@ -410,7 +410,7 @@ Q_CORE_EXPORT void registerHandler(const int /* Modules::Names */ name, const QV
 Q_CORE_EXPORT void unregisterHandler(const int /* Modules::Names */ name);
 }
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
 template<class Filter>
 class QVariantDebugStream
 {

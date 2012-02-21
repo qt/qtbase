@@ -732,7 +732,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
     return true;
 }
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
 static void streamDebug(QDebug dbg, const QVariant &v)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
@@ -752,7 +752,7 @@ const QVariant::Handler qt_kernel_variant_handler = {
     compare,
     convert,
     0,
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
     streamDebug
 #else
     0
@@ -764,7 +764,7 @@ static void dummyClear(QVariant::Private *) { Q_ASSERT_X(false, "QVariant", "Try
 static bool dummyIsNull(const QVariant::Private *d) { Q_ASSERT_X(false, "QVariant::isNull", "Trying to call isNull on an unknown type"); return d->is_null; }
 static bool dummyCompare(const QVariant::Private *, const QVariant::Private *) { Q_ASSERT_X(false, "QVariant", "Trying to compare an unknown types"); return false; }
 static bool dummyConvert(const QVariant::Private *, QVariant::Type , void *, bool *) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); return false; }
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
 static void dummyStreamDebug(QDebug, const QVariant &) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); }
 #endif
 const QVariant::Handler qt_dummy_variant_handler = {
@@ -778,7 +778,7 @@ const QVariant::Handler qt_dummy_variant_handler = {
     dummyCompare,
     dummyConvert,
     0,
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
     dummyStreamDebug
 #else
     0
@@ -847,7 +847,7 @@ static bool customConvert(const QVariant::Private *, QVariant::Type, void *, boo
     return false;
 }
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
 static void customStreamDebug(QDebug, const QVariant &) {}
 #endif
 
@@ -862,7 +862,7 @@ const QVariant::Handler qt_custom_variant_handler = {
     customCompare,
     customConvert,
     0,
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
     customStreamDebug
 #else
     0
@@ -2644,28 +2644,16 @@ bool QVariant::isNull() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QVariant &v)
 {
-#ifndef Q_BROKEN_DEBUG_STREAM
     dbg.nospace() << "QVariant(" << QMetaType::typeName(v.userType()) << ", ";
     handlerManager[v.d.type]->debugStream(dbg, v);
     dbg.nospace() << ')';
     return dbg.space();
-#else
-    qWarning("This compiler doesn't support streaming QVariant to QDebug");
-    return dbg;
-    Q_UNUSED(v);
-#endif
 }
 
 QDebug operator<<(QDebug dbg, const QVariant::Type p)
 {
-#ifndef Q_BROKEN_DEBUG_STREAM
     dbg.nospace() << "QVariant::" << QMetaType::typeName(p);
     return dbg.space();
-#else
-    qWarning("This compiler doesn't support streaming QVariant::Type to QDebug");
-    return dbg;
-    Q_UNUSED(p);
-#endif
 }
 #endif
 

@@ -468,17 +468,11 @@ QRect QPolygon::boundingRect() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPolygon &a)
 {
-#ifndef Q_BROKEN_DEBUG_STREAM
     dbg.nospace() << "QPolygon(";
     for (int i = 0; i < a.count(); ++i)
         dbg.nospace() << a.at(i);
     dbg.nospace() << ')';
     return dbg.space();
-#else
-    qWarning("This compiler doesn't support streaming QPolygon to QDebug");
-    return dbg;
-    Q_UNUSED(a);
-#endif
 }
 #endif
 
@@ -814,17 +808,11 @@ QDataStream &operator>>(QDataStream &s, QPolygonF &a)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPolygonF &a)
 {
-#ifndef Q_BROKEN_DEBUG_STREAM
     dbg.nospace() << "QPolygonF(";
     for (int i = 0; i < a.count(); ++i)
         dbg.nospace() << a.at(i);
     dbg.nospace() << ')';
     return dbg.space();
-#else
-    qWarning("This compiler doesn't support streaming QPolygonF to QDebug");
-    return dbg;
-    Q_UNUSED(a);
-#endif
 }
 #endif
 
