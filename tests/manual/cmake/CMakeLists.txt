@@ -59,7 +59,9 @@ macro(expect_fail _dir)
       try_compile(Result \${CMAKE_CURRENT_BINARY_DIR}/${_dir}
           \${CMAKE_CURRENT_SOURCE_DIR}/${_dir}
           ${_dir}
+          OUTPUT_VARIABLE Out
       )
+      message(\"\${Out}\")
       if (Result)
         message(SEND_ERROR \"Succeeded build which should fail\")
       endif()
