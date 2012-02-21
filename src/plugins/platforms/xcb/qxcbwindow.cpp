@@ -1179,7 +1179,7 @@ QXcbEGLSurface *QXcbWindow::eglSurface() const
 {
     if (!m_eglSurface) {
         EGLDisplay display = connection()->egl_display();
-        EGLConfig config = q_configFromGLFormat(display, window()->format(), true);
+        EGLConfig config = q_configFromGLFormat(display, window()->requestedFormat(), true);
         EGLSurface surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)m_window, 0);
 
         m_eglSurface = new QXcbEGLSurface(display, surface);
