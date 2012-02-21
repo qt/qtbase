@@ -275,11 +275,6 @@ typedef unsigned int uint;
 typedef unsigned long ulong;
 QT_END_INCLUDE_NAMESPACE
 
-#if defined(Q_NO_BOOL_TYPE)
-#error "Compiler doesn't support the bool type"
-#endif
-
-
 /*
    Constant bool values
 */

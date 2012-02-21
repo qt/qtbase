@@ -76,7 +76,7 @@
 #  define Q_CC_SYM
 /* "explicit" semantics implemented in 8.1e but keyword recognized since 7.5 */
 #  if defined(__SC__) && __SC__ < 0x750
-#    define Q_NO_EXPLICIT_KEYWORD
+#    error "Compiler not supported"
 #  endif
 #  define Q_NO_USING_KEYWORD
 
@@ -114,8 +114,7 @@
 #  define Q_CC_BOR
 #  define Q_INLINE_TEMPLATE
 #  if __BORLANDC__ < 0x502
-#    define Q_NO_BOOL_TYPE
-#    define Q_NO_EXPLICIT_KEYWORD
+#    error "Compiler not supported"
 #  endif
 #  define Q_NO_USING_KEYWORD
 
@@ -251,12 +250,7 @@
 #  define Q_CC_XLC
 #  define Q_FULL_TEMPLATE_INSTANTIATION
 #  if __xlC__ < 0x400
-#    define Q_NO_BOOL_TYPE
-#    define Q_NO_EXPLICIT_KEYWORD
-#    define Q_NO_USING_KEYWORD
-#    define Q_OUTOFLINE_TEMPLATE inline
-#    define Q_BROKEN_TEMPLATE_SPECIALIZATION
-#    define Q_CANNOT_DELETE_CONSTANT
+#    error "Compiler not supported"
 #  elif __xlC__ >= 0x0600
 #    define Q_ALIGNOF(type)     __alignof__(type)
 #    define Q_TYPEOF(expr)      __typeof__(expr)
@@ -280,7 +274,7 @@
    - observed on Compaq C++ V6.3-002.
    In any case versions prior to Compaq C++ V6.0-005 do not have bool. */
 #  if !defined(_BOOL_EXISTS)
-#    define Q_NO_BOOL_TYPE
+#    error "Compiler not supported"
 #  endif
 /* Spurious (?) error messages observed on Compaq C++ V6.5-014. */
 #  define Q_NO_USING_KEYWORD
@@ -315,7 +309,7 @@
    __BOOL_DEFINED
         Defined in Microsoft C++ mode when bool is a keyword. */
 #  if !defined(_BOOL) && !defined(__BOOL_DEFINED)
-#    define Q_NO_BOOL_TYPE
+#    error "Compiler not supported"
 #  endif
 
 /* The Comeau compiler is based on EDG and does define __EDG__ */
@@ -341,9 +335,8 @@
 
 #  elif defined(__DCC__)
 #    define Q_CC_DIAB
-#    undef Q_NO_BOOL_TYPE
 #    if !defined(__bool)
-#      define Q_NO_BOOL_TYPE
+#      error "Compiler not supported"
 #    endif
 
 /* The UnixWare 7 UDK compiler is based on EDG and does define __EDG__ */
@@ -407,7 +400,7 @@
 #      define Q_NO_TEMPLATE_FRIENDS
 #    endif
 #    if !defined(_BOOL)
-#      define Q_NO_BOOL_TYPE
+#      error "Compiler not supported"
 #    endif
 #    if defined(__SUNPRO_CC_COMPAT) && (__SUNPRO_CC_COMPAT <= 4)
 #      define Q_NO_USING_KEYWORD
@@ -415,9 +408,7 @@
 #    define Q_C_CALLBACKS
 /* 4.2 compiler or older */
 #  else
-#    define Q_NO_BOOL_TYPE
-#    define Q_NO_EXPLICIT_KEYWORD
-#    define Q_NO_USING_KEYWORD
+#    error "Compiler not supported"
 #  endif
 
 /* CDS++ does not seem to define __EDG__ or __EDG according to Reliant
@@ -426,7 +417,7 @@
 #  define Q_CC_EDG
 #  define Q_CC_CDS
 #  if !defined(_BOOL)
-#    define Q_NO_BOOL_TYPE
+#    error "Compiler not supported"
 #  endif
 #  define Q_BROKEN_TEMPLATE_SPECIALIZATION
 
@@ -449,11 +440,7 @@
 #      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else
-#    define Q_CC_HP
-#    define Q_NO_BOOL_TYPE
-#    define Q_FULL_TEMPLATE_INSTANTIATION
-#    define Q_BROKEN_TEMPLATE_SPECIALIZATION
-#    define Q_NO_EXPLICIT_KEYWORD
+#    error "Compiler not supported"
 #  endif
 #  define Q_NO_USING_KEYWORD /* ### check "using" status */
 
