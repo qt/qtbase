@@ -576,6 +576,11 @@ void tst_QKeySequence::parseString()
     QFETCH( QString, strSequence );
     QFETCH( QKeySequence, keycode );
 
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("Win+A", "QTBUG-24406 - This test fails on OSX", Abort);
+    QEXPECT_FAIL("Simon+G", "QTBUG-24406 - This test fails on OSX", Abort);
+#endif
+
     QCOMPARE( QKeySequence(strSequence).toString(), keycode.toString() );
     QVERIFY( QKeySequence(strSequence) == keycode );
 }
