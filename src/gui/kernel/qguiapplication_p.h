@@ -200,6 +200,9 @@ public:
     };
     QHash<QWindow *, SynthesizedMouseData> synthesizedMousePoints;
 
+protected:
+    virtual void notifyThemeChanged();
+
 private:
     void init();
 

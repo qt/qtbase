@@ -52,6 +52,7 @@
 #include <QtCore/QSysInfo>
 #include <QtGui/QPalette>
 #include <QtGui/QGuiApplication>
+#include <QtGui/QWindowSystemInterface>
 
 QT_BEGIN_NAMESPACE
 
@@ -265,10 +266,10 @@ QPlatformDialogHelper *QWindowsTheme::createPlatformDialogHelper(DialogType type
     return QWindowsDialogs::createHelper(type);
 }
 
-void QWindowsTheme::windowsThemeChanged(QWindow * /* window */)
+void QWindowsTheme::windowsThemeChanged(QWindow * window)
 {
     refresh();
-    // QWindowSystemInterface::handleThemeChange(window);
+    QWindowSystemInterface::handleThemeChange(window);
 }
 
 QT_END_NAMESPACE

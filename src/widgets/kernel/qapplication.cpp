@@ -128,6 +128,21 @@ Q_CORE_EXPORT void qt_call_post_routines();
 
 QApplicationPrivate *QApplicationPrivate::self = 0;
 
+static void initSystemPalette()
+{
+    if (!QApplicationPrivate::sys_pal)
+        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
+            QApplicationPrivate::setSystemPalette(*themePalette);
+    if (!QApplicationPrivate::sys_pal && QApplicationPrivate::app_style)
+        QApplicationPrivate::setSystemPalette(QApplicationPrivate::app_style->standardPalette());
+}
+
+static void clearSystemPalette()
+{
+    delete QApplicationPrivate::sys_pal;
+    QApplicationPrivate::sys_pal = 0;
+}
+
 #ifdef Q_OS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
@@ -365,6 +380,7 @@ QString QApplicationPrivate::styleSheet;           // default application styles
 QPointer<QWidget> QApplicationPrivate::leaveAfterRelease = 0;
 
 int QApplicationPrivate::app_cspec = QApplication::NormalColor;
+
 QPalette *QApplicationPrivate::sys_pal = 0;        // default system palette
 QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by programmer
 
@@ -783,8 +799,7 @@ QApplication::~QApplication()
 
     delete QApplicationPrivate::app_pal;
     QApplicationPrivate::app_pal = 0;
-    delete QApplicationPrivate::sys_pal;
-    QApplicationPrivate::sys_pal = 0;
+    clearSystemPalette();
     delete QApplicationPrivate::set_pal;
     QApplicationPrivate::set_pal = 0;
     app_palettes()->clear();
@@ -1084,11 +1099,8 @@ QStyle *QApplication::style()
     // take ownership of the style
     QApplicationPrivate::app_style->setParent(qApp);
 
-    if (!QApplicationPrivate::sys_pal)
-        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
-            QApplicationPrivate::setSystemPalette(*themePalette);
-    if (!QApplicationPrivate::sys_pal)
-        QApplicationPrivate::setSystemPalette(QApplicationPrivate::app_style->standardPalette());
+    initSystemPalette();
+
     if (QApplicationPrivate::set_pal) // repolish set palette with the new style
         QApplication::setPalette(*QApplicationPrivate::set_pal);
 
@@ -4629,6 +4641,13 @@ void QApplicationPrivate::translateTouchCancel(QTouchDevice *device, ulong times
         touchEvent.setTarget(widget);
         QApplication::sendSpontaneousEvent(widget, &touchEvent);
     }
+}
+
+void QApplicationPrivate::notifyThemeChanged()
+{
+    QGuiApplicationPrivate::notifyThemeChanged();
+    clearSystemPalette();
+    initSystemPalette();
 }
 
 #ifndef QT_NO_GESTURES

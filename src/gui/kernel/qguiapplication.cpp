@@ -99,6 +99,14 @@ QPlatformTheme *QGuiApplicationPrivate::platform_theme = 0;
 
 QList<QObject *> QGuiApplicationPrivate::generic_plugin_list;
 
+enum ApplicationResourceFlags
+{
+    ApplicationPaletteExplicitlySet = 0x1,
+    ApplicationFontExplicitlySet = 0x2
+};
+
+static unsigned applicationResourceFlags = 0;
+
 bool QGuiApplicationPrivate::app_do_modal = false;
 
 QPalette *QGuiApplicationPrivate::app_pal = 0;        // default application palette
@@ -144,6 +152,33 @@ static bool qt_detectRTLLanguage()
                          " and Arabic) to get proper widget layout.") == QLatin1String("RTL"));
 }
 
+static void initPalette()
+{
+    if (!QGuiApplicationPrivate::app_pal)
+        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
+            QGuiApplicationPrivate::app_pal = new QPalette(*themePalette);
+    if (!QGuiApplicationPrivate::app_pal)
+        QGuiApplicationPrivate::app_pal = new QPalette(Qt::black);
+}
+
+static inline void clearPalette()
+{
+    delete QGuiApplicationPrivate::app_pal;
+    QGuiApplicationPrivate::app_pal = 0;
+}
+
+static void initFontUnlocked()
+{
+    if (!QGuiApplicationPrivate::app_font)
+        QGuiApplicationPrivate::app_font =
+            new QFont(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont());
+}
+
+static inline void clearFontUnlocked()
+{
+    delete QGuiApplicationPrivate::app_font;
+    QGuiApplicationPrivate::app_font = 0;
+}
 
 /*!
     \class QGuiApplication
@@ -312,8 +347,7 @@ QGuiApplication::~QGuiApplication()
     delete QGuiApplicationPrivate::qt_clipboard;
     QGuiApplicationPrivate::qt_clipboard = 0;
 
-    delete QGuiApplicationPrivate::app_pal;
-    QGuiApplicationPrivate::app_pal = 0;
+    clearPalette();
 
     qUnregisterGuiVariant();
 
@@ -671,8 +705,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
         delete generic_plugin_list.at(i);
     generic_plugin_list.clear();
 
-    delete app_font;
-    app_font = 0;
+    clearFontUnlocked();
+
     QFont::cleanup();
 
 #ifndef QT_NO_CURSOR
@@ -1090,6 +1124,8 @@ void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfa
 
 void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce)
 {
+    if (self)
+        self->notifyThemeChanged();
     if (QWindow *window  = tce->window.data()) {
         QEvent e(QEvent::ThemeChange);
         QGuiApplication::sendSpontaneousEvent(window, &e);
@@ -1579,13 +1615,10 @@ QClipboard * QGuiApplication::clipboard()
 
     \sa setPalette()
 */
+
 QPalette QGuiApplication::palette()
 {
-    if (!QGuiApplicationPrivate::app_pal)
-        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
-            QGuiApplicationPrivate::app_pal = new QPalette(*themePalette);
-    if (!QGuiApplicationPrivate::app_pal)
-        QGuiApplicationPrivate::app_pal = new QPalette(Qt::black);
+    initPalette();
     return *QGuiApplicationPrivate::app_pal;
 }
 
@@ -1602,6 +1635,7 @@ void QGuiApplication::setPalette(const QPalette &pal)
         QGuiApplicationPrivate::app_pal = new QPalette(pal);
     else
         *QGuiApplicationPrivate::app_pal = pal;
+    applicationResourceFlags |= ApplicationPaletteExplicitlySet;
 }
 
 /*!
@@ -1612,9 +1646,7 @@ void QGuiApplication::setPalette(const QPalette &pal)
 QFont QGuiApplication::font()
 {
     QMutexLocker locker(&applicationFontMutex);
-    if (!QGuiApplicationPrivate::app_font)
-        QGuiApplicationPrivate::app_font =
-            new QFont(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont());
+    initFontUnlocked();
     return *QGuiApplicationPrivate::app_font;
 }
 
@@ -1630,6 +1662,7 @@ void QGuiApplication::setFont(const QFont &font)
         QGuiApplicationPrivate::app_font = new QFont(font);
     else
         *QGuiApplicationPrivate::app_font = font;
+    applicationResourceFlags |= ApplicationFontExplicitlySet;
 }
 
 /*!
@@ -2032,6 +2065,19 @@ QPixmap QGuiApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
 {
     Q_UNUSED(cshape);
     return QPixmap();
+}
+
+void QGuiApplicationPrivate::notifyThemeChanged()
+{
+    if (!(applicationResourceFlags & ApplicationPaletteExplicitlySet)) {
+        clearPalette();
+        initPalette();
+    }
+    if (!(applicationResourceFlags & ApplicationFontExplicitlySet)) {
+        QMutexLocker locker(&applicationFontMutex);
+        clearFontUnlocked();
+        initFontUnlocked();
+    }
 }
 
 QT_END_NAMESPACE
