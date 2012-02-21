@@ -419,13 +419,8 @@ template <typename T>
 Q_INLINE_TEMPLATE QList<T> &QList<T>::operator=(const QList<T> &l)
 {
     if (d != l.d) {
-        QListData::Data *o = l.d;
-        o->ref.ref();
-        if (!d->ref.deref())
-            dealloc(d);
-        d = o;
-        if (!d->sharable)
-            detach_helper();
+        QList<T> tmp(l);
+        tmp.swap(*this);
     }
     return *this;
 }
