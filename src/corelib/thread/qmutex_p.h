@@ -65,7 +65,7 @@
 
 #if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
 // use Linux mutexes everywhere except for LSB builds
-#  define Q_MUTEX_LINUX
+#  define QT_LINUX_FUTEX
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -78,7 +78,7 @@ public:
         : recursive(mode == QMutex::Recursive) {}
 };
 
-#if !defined(Q_MUTEX_LINUX)
+#if !defined(QT_LINUX_FUTEX)
 class QMutexPrivate : public QMutexData
 {
 public:
@@ -128,7 +128,7 @@ public:
     Qt::HANDLE event;
 #endif
 };
-#endif //Q_MUTEX_LINUX
+#endif //QT_LINUX_FUTEX
 
 class QRecursiveMutexPrivate : public QMutexData
 {
