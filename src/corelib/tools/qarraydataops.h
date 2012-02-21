@@ -163,9 +163,9 @@ struct QGenericArrayOps
 
         struct Destructor
         {
-            Destructor(T *&iter)
-                : iter(&iter)
-                , end(iter)
+            Destructor(T *&it)
+                : iter(&it)
+                , end(it)
             {
             }
 
@@ -231,10 +231,10 @@ struct QMovableArrayOps
 
         struct ReversibleDisplace
         {
-            ReversibleDisplace(T *begin, T *end, size_t displace)
-                : begin(begin)
-                , end(end)
-                , displace(displace)
+            ReversibleDisplace(T *start, T *finish, size_t diff)
+                : begin(start)
+                , end(finish)
+                , displace(diff)
             {
                 ::memmove(begin + displace, begin, (end - begin) * sizeof(T));
             }
@@ -255,7 +255,7 @@ struct QMovableArrayOps
 
         struct CopyConstructor
         {
-            CopyConstructor(T *where) : where(where) {}
+            CopyConstructor(T *w) : where(w) {}
 
             void copy(const T *src, const T *const srcEnd)
             {
