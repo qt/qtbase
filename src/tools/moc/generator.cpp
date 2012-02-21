@@ -1057,41 +1057,55 @@ void Generator::generateSignal(FunctionDef *def,int index)
     fprintf(out, "}\n");
 }
 
+static void writePluginMetaData(FILE *out, const QJsonObject &data)
+{
+    const QJsonDocument doc(data);
+
+    fputs("\nQT_PLUGIN_METADATA_SECTION\n"
+          "static const unsigned char qt_pluginMetaData[] = {\n"
+          "    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', ' ',\n   ", out);
+#if 0
+    fprintf(out, "\"%s\";\n", doc.toJson().constData());
+#else
+    const QByteArray binary = doc.toBinaryData();
+    const int last = binary.size() - 1;
+    for (int i = 0; i < last; ++i) {
+        fprintf(out, " 0x%02x,", (uchar)binary.at(i));
+        if (!((i + 1) % 8))
+            fputs("\n   ", out);
+    }
+    fprintf(out, " 0x%02x\n};\n", (uchar)binary.at(last));
+#endif
+}
+
 void Generator::generatePluginMetaData()
 {
     if (cdef->pluginData.iid.isEmpty())
         return;
 
-    QJsonObject data;
-    data.insert(QLatin1String("IID"), QLatin1String(cdef->pluginData.iid.constData()));
-    data.insert(QLatin1String("className"), QLatin1String(cdef->classname.constData()));
-    data.insert(QLatin1String("version"), (int)QT_VERSION);
-    data.insert(QLatin1String("debug"),
-#ifdef QT_NO_DEBUG
-                false
-#else
-                true
-#endif
-                );
-    data.insert(QLatin1String("MetaData"), cdef->pluginData.metaData.object());
-    QJsonDocument doc(data);
+    // Write plugin meta data #ifdefed QT_NO_DEBUG with debug=false,
+    // true, respectively.
 
-    fprintf(out, "\nQT_PLUGIN_METADATA_SECTION const uint qt_section_alignment_dummy = 42;\n");
-    fprintf(out,
-            "\nQT_PLUGIN_METADATA_SECTION\n"
-            "static const unsigned char qt_pluginMetaData[] = {\n"
-            "    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', ' ',\n   ");
-#if 0
-    fprintf(out, "\"%s\";\n", doc.toJson().constData());
-#else
-    QByteArray binary = doc.toBinaryData();
-    for (int i = 0; i < binary.size() - 1; ++i) {
-        fprintf(out, " 0x%02x,", (uchar)binary.at(i));
-        if (!((i + 1) % 8))
-            fprintf(out, "\n   ");
-    }
-    fprintf(out, " 0x%02x\n};\n", (uchar)binary.at(binary.size() - 1));
-#endif
+    QJsonObject data;
+    const QString debugKey = QStringLiteral("debug");
+    data.insert(QStringLiteral("IID"), QLatin1String(cdef->pluginData.iid.constData()));
+    data.insert(QStringLiteral("className"), QLatin1String(cdef->classname.constData()));
+    data.insert(QStringLiteral("version"), (int)QT_VERSION);
+    data.insert(debugKey, QJsonValue(false));
+    data.insert(QStringLiteral("MetaData"), cdef->pluginData.metaData.object());
+
+    fputs("\nQT_PLUGIN_METADATA_SECTION const uint qt_section_alignment_dummy = 42;\n\n"
+          "#ifdef QT_NO_DEBUG\n", out);
+    writePluginMetaData(out, data);
+
+    fputs("\n#else // QT_NO_DEBUG\n", out);
+
+    data.remove(debugKey);
+    data.insert(debugKey, QJsonValue(true));
+    writePluginMetaData(out, data);
+
+    fputs("#endif // QT_NO_DEBUG\n\n", out);
+
     // 'Use' all namespaces.
     int pos = cdef->qualified.indexOf("::");
     for ( ; pos != -1 ; pos = cdef->qualified.indexOf("::", pos + 2) )
