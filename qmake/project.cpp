@@ -1633,7 +1633,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
         if(flags & (IncludeFlagNewProject|IncludeFlagNewParser)) {
             // The "project's variables" are used in other places (eg. export()) so it's not
             // possible to use "place" everywhere. Instead just set variables and grab them later
-            QMakeProject proj(this, &place);
+            QMakeProject proj(prop);
             if(flags & IncludeFlagNewParser) {
                 parsed = proj.read(file, proj.variables()); // parse just that file (fromfile, infile)
             } else {

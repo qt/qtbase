@@ -203,6 +203,8 @@ information about a particular change.
 - qmake
   * Projects which explicitly set an empty TARGET are considered broken now.
   * The makespec and .qmake.cache do not see build pass specific variables any more.
+  * load()/include() with a target namespace and infile()/$$fromfile() now start with
+    an entirely pristine context.
   * Configure's -sysroot and -hostprefix are now handled slightly differently.
     The QT_INSTALL_... properties are now automatically prefixed with the sysroot;
     the raw values are available as QT_RAW_INSTALL_... and the sysroot as QT_SYSROOT.
