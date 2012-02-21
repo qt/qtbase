@@ -13,5 +13,7 @@ add_definitions(${Qt5Core_DEFINITIONS})
 # causing a compile failure. -> Options work
 qt5_wrap_cpp(moc_files myobject.h OPTIONS -i)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+
 add_executable(myobject myobject.cpp ${moc_files})
 target_link_libraries(myobject ${Qt5Core_LIBRARIES})
