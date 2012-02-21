@@ -290,9 +290,6 @@ public:
     QWorkspaceTitleBarPrivate()
         :
         lastControl(QStyle::SC_None),
-#ifndef QT_NO_TOOLTIP
-        toolTip(0),
-#endif
         act(0), window(0), movable(1), pressed(0), autoraise(0), moving(0)
     {
     }
@@ -301,9 +298,6 @@ public:
     QStyle::SubControl buttonDown;
     QStyle::SubControl lastControl;
     QPoint moveOffset;
-#ifndef QT_NO_TOOLTIP
-    QToolTip *toolTip;
-#endif
     bool act                    :1;
     QPointer<QWidget> window;
     bool movable            :1;
