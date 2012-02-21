@@ -239,7 +239,7 @@ void QOpenGLContext::setShareContext(QOpenGLContext *shareContext)
 }
 
 /*!
-    Sets the \a screen the GL context should be valid for. You need to call
+    Sets the \a screen the OpenGL context should be valid for. You need to call
     create() before it takes effect.
 */
 void QOpenGLContext::setScreen(QScreen *screen)

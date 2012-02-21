@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 {                                                         \
     GLenum err = glGetError();                            \
     if (err != GL_NO_ERROR) {                             \
-        qDebug("[%s line %d] GL Error: %d",               \
+        qDebug("[%s line %d] OpenGL Error: %d",           \
                __FILE__, __LINE__, (int)err);             \
     }                                                     \
 }
@@ -649,13 +649,13 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
     The QOpenGLFramebufferObject class encapsulates an OpenGL framebuffer
     object, defined by the \c{GL_EXT_framebuffer_object} extension. In
     addition it provides a rendering surface that can be painted on
-    with a QPainter, rendered to using native GL calls, or both. This
-    surface can be bound and used as a regular texture in your own GL
+    with a QPainter, rendered to using native OpenGL calls, or both. This
+    surface can be bound and used as a regular texture in your own OpenGL
     drawing code.  By default, the QOpenGLFramebufferObject class
-    generates a 2D GL texture (using the \c{GL_TEXTURE_2D} target),
+    generates a 2D OpenGL texture (using the \c{GL_TEXTURE_2D} target),
     which is used as the internal rendering target.
 
-    \bold{It is important to have a current GL context when creating a
+    \bold{It is important to have a current OpenGL context when creating a
     QOpenGLFramebufferObject, otherwise initialization will fail.}
 
     When using a QPainter to paint to a QOpenGLFramebufferObject you should take
@@ -708,11 +708,11 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
 
 /*! \fn QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, GLenum target)
 
-    Constructs an OpenGL framebuffer object and binds a 2D GL texture
+    Constructs an OpenGL framebuffer object and binds a 2D OpenGL texture
     to the buffer of the size \a size. The texture is bound to the
     \c GL_COLOR_ATTACHMENT0 target in the framebuffer object.
 
-    The \a target parameter is used to specify the GL texture
+    The \a target parameter is used to specify the OpenGL texture
     target. The default target is \c GL_TEXTURE_2D. Keep in mind that
     \c GL_TEXTURE_2D textures must have a power of 2 width and height
     (e.g. 256x512), unless you are using OpenGL 2.0 or higher.
@@ -723,7 +723,7 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
     The default internal texture format is \c GL_RGBA8 for desktop
     OpenGL, and \c GL_RGBA for OpenGL/ES.
 
-    It is important that you have a current GL context set when
+    It is important that you have a current OpenGL context set when
     creating the QOpenGLFramebufferObject, otherwise the initialization
     will fail.
 
@@ -739,7 +739,7 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, GLenum tar
 
 /*! \overload
 
-    Constructs an OpenGL framebuffer object and binds a 2D GL texture
+    Constructs an OpenGL framebuffer object and binds a 2D OpenGL texture
     to the buffer of the given \a width and \a height.
 
     \sa size(), texture()
@@ -931,7 +931,7 @@ bool QOpenGLFramebufferObject::release()
 
     Returns the texture id for the texture attached as the default
     rendering target in this framebuffer object. This texture id can
-    be bound as a normal texture in your own GL code.
+    be bound as a normal texture in your own OpenGL code.
 
     If a multisample framebuffer object is used then the value returned
     from this function will be invalid.
@@ -1109,7 +1109,7 @@ bool QOpenGLFramebufferObject::hasOpenGLFramebufferObjects()
 /*!
     \fn GLuint QOpenGLFramebufferObject::handle() const
 
-    Returns the GL framebuffer object handle for this framebuffer
+    Returns the OpenGL framebuffer object handle for this framebuffer
     object (returned by the \c{glGenFrameBuffersEXT()} function). This
     handle can be used to attach new images or buffers to the
     framebuffer. The user is responsible for cleaning up and
