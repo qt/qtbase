@@ -1216,7 +1216,7 @@ void tst_QArrayData::literals()
 #endif
 
         QVERIFY(v.isSharable());
-        QVERIFY(v.constBegin() + v.size() == v.constEnd());
+        QCOMPARE(v.constBegin() + v.size(), v.constEnd());
 
         for (int i = 0; i < 10; ++i)
             QCOMPARE(const_(v)[i], char('A' + i));
