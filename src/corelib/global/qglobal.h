@@ -495,7 +495,6 @@ class QDataStream;
 #  define QT_NO_LPR
 #  define QT_NO_SHAREDMEMORY     // only POSIX, no SysV and in the end...
 #  define QT_NO_SYSTEMSEMAPHORE  // not needed at all in a flat address space
-#  define QT_NO_QWS_MULTIPROCESS // no processes
 #endif
 
 # include <QtCore/qfeatures.h>
@@ -1452,7 +1451,6 @@ Q_CORE_EXPORT int qrand();
 #ifdef Q_OS_QNX
 // QNX doesn't have SYSV style shared memory. Multiprocess QWS apps,
 // shared fonts and QSystemSemaphore + QSharedMemory are not available
-#  define QT_NO_QWS_MULTIPROCESS
 #  define QT_NO_QWS_SHARE_FONTS
 #  define QT_NO_SYSTEMSEMAPHORE
 #  define QT_NO_SHAREDMEMORY
