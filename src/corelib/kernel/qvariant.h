@@ -210,7 +210,7 @@ class Q_CORE_EXPORT QVariant
     QVariant(double d);
     QVariant(float f) { d.is_null = false; d.type = QMetaType::Float; d.data.f = f; }
 #ifndef QT_NO_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN_CONSTRUCTOR QVariant(const char *str);
+    QT_ASCII_CAST_WARN QVariant(const char *str);
 #endif
 
     QVariant(const QByteArray &bytearray);

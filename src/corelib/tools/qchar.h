@@ -86,8 +86,8 @@ public:
     Q_DECL_CONSTEXPR QChar(QLatin1Char ch) : ucs(ch.unicode()) {} // implicit
 
 #ifndef QT_NO_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN_CONSTRUCTOR Q_DECL_CONSTEXPR explicit QChar(char c) : ucs(uchar(c)) { }
-    QT_ASCII_CAST_WARN_CONSTRUCTOR Q_DECL_CONSTEXPR explicit QChar(uchar c) : ucs(c) { }
+    QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(char c) : ucs(uchar(c)) { }
+    QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(uchar c) : ucs(c) { }
 #endif
     // Unicode information
 

@@ -385,15 +385,8 @@ QT_END_INCLUDE_NAMESPACE
 
 #ifdef QT_ASCII_CAST_WARNINGS
 #  define QT_ASCII_CAST_WARN Q_DECL_DEPRECATED
-#  if defined(Q_CC_GNU) && __GNUC__ < 4
-     /* gcc < 4 doesn't like Q_DECL_DEPRECATED in front of constructors */
-#    define QT_ASCII_CAST_WARN_CONSTRUCTOR
-#  else
-#    define QT_ASCII_CAST_WARN_CONSTRUCTOR Q_DECL_CONSTRUCTOR_DEPRECATED
-#  endif
 #else
 #  define QT_ASCII_CAST_WARN
-#  define QT_ASCII_CAST_WARN_CONSTRUCTOR
 #endif
 
 #if defined(__i386__) || defined(_WIN32) || defined(_WIN32_WCE)
