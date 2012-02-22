@@ -50,8 +50,10 @@ public:
         m_updateCallCount(0),
         m_resetCallCount(0),
         m_commitCallCount(0),
+        m_localeCallCount(0),
+        m_inputDirectionCallCount(0),
         m_lastQueries(Qt::ImhNone),
-        m_action(QInputPanel::Click),
+        m_action(QInputMethod::Click),
         m_cursorPosition(0),
         m_lastEventType(QEvent::None)
     {}
@@ -66,7 +68,7 @@ public:
         m_updateCallCount++;
         m_lastQueries = queries;
     }
-    virtual void invokeAction(QInputPanel::Action action, int cursorPosition)
+    virtual void invokeAction(QInputMethod::Action action, int cursorPosition)
     {
         m_action = action;
         m_cursorPosition = cursorPosition;
@@ -87,14 +89,26 @@ public:
     {
         return m_visible;
     }
+    virtual QLocale locale() const
+    {
+        m_localeCallCount++;
+        return QLocale::c();
+    }
+    virtual Qt::LayoutDirection inputDirection() const
+    {
+        m_inputDirectionCallCount++;
+        return Qt::LeftToRight;
+    }
 
     bool m_animating;
     bool m_visible;
     int m_updateCallCount;
     int m_resetCallCount;
     int m_commitCallCount;
+    mutable int m_localeCallCount;
+    mutable int m_inputDirectionCallCount;
     Qt::InputMethodQueries m_lastQueries;
-    QInputPanel::Action m_action;
+    QInputMethod::Action m_action;
     int m_cursorPosition;
     int m_lastEventType;
     QRectF m_keyboardRect;

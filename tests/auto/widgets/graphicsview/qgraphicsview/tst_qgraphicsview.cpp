@@ -71,7 +71,7 @@
 #include <QtWidgets/QDesktopWidget>
 #include <private/qgraphicsview_p.h>
 #include "../../../platformquirks.h"
-#include "../../shared/platforminputcontext.h"
+#include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
 Q_DECLARE_METATYPE(QList<int>)

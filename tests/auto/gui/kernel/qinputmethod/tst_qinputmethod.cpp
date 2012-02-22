@@ -44,88 +44,20 @@
 #include <private/qguiapplication_p.h>
 #include <private/qinputmethod_p.h>
 #include <qplatforminputcontext_qpa.h>
-
-class PlatformInputContext : public QPlatformInputContext
-{
-public:
-    PlatformInputContext() :
-        m_animating(false),
-        m_visible(false),
-        m_updateCallCount(0),
-        m_resetCallCount(0),
-        m_commitCallCount(0),
-        m_localeCallCount(0),
-        m_inputDirectionCallCount(0),
-        m_lastQueries(Qt::ImhNone),
-        m_action(QInputMethod::Click),
-        m_cursorPosition(0),
-        m_lastEventType(QEvent::None)
-    {}
-
-    virtual QRectF keyboardRect() const { return m_keyboardRect; }
-    virtual bool isAnimating() const { return m_animating; }
-    virtual void reset() { m_resetCallCount++; }
-    virtual void commit() { m_commitCallCount++; }
-
-    virtual void update(Qt::InputMethodQueries queries)
-    {
-        m_updateCallCount++;
-        m_lastQueries = queries;
-    }
-    virtual void invokeAction(QInputMethod::Action action, int cursorPosition)
-    {
-        m_action = action;
-        m_cursorPosition = cursorPosition;
-    }
-    virtual bool filterEvent(const QEvent *event)
-    {
-        m_lastEventType = event->type(); return false;
-    }
-    virtual void showInputPanel()
-    {
-        m_visible = true;
-    }
-    virtual void hideInputPanel()
-    {
-        m_visible = false;
-    }
-    virtual bool isInputPanelVisible() const
-    {
-        return m_visible;
-    }
-    virtual QLocale locale() const
-    {
-        m_localeCallCount++;
-        return QLocale::c();
-    }
-    virtual Qt::LayoutDirection inputDirection() const
-    {
-        m_inputDirectionCallCount++;
-        return Qt::LeftToRight;
-    }
-
-    bool m_animating;
-    bool m_visible;
-    int m_updateCallCount;
-    int m_resetCallCount;
-    int m_commitCallCount;
-    mutable int m_localeCallCount;
-    mutable int m_inputDirectionCallCount;
-    Qt::InputMethodQueries m_lastQueries;
-    QInputMethod::Action m_action;
-    int m_cursorPosition;
-    int m_lastEventType;
-    QRectF m_keyboardRect;
-};
+#include "../../../shared/platforminputcontext.h"
 
 class InputItem : public QObject
 {
     Q_OBJECT
 public:
+    InputItem() : m_enabled(true) {}
+
     bool event(QEvent *event)
     {
         if (event->type() == QEvent::InputMethodQuery) {
             QInputMethodQueryEvent *query = static_cast<QInputMethodQueryEvent *>(event);
+            if (query->queries() & Qt::ImEnabled)
+                query->setValue(Qt::ImEnabled, m_enabled);
             if (query->queries() & Qt::ImCursorRectangle)
                 query->setValue(Qt::ImCursorRectangle, QRectF(1, 2, 3, 4));
             if (query->queries() & Qt::ImPreferredLanguage)
@@ -136,8 +68,38 @@ public:
         }
         return false;
     }
+
+    void setEnabled(bool enabled) {
+        if (enabled != m_enabled) {
+            m_enabled = enabled;
+            qApp->inputMethod()->update(Qt::ImEnabled);
+        }
+    }
+
     Qt::InputMethodQueries m_lastQueries;
+    bool m_enabled;
 };
+
+
+class DummyWindow : public QWindow
+{
+public:
+    DummyWindow() : m_focusObject(0) {}
+
+    virtual QObject *focusObject() const
+    {
+        return m_focusObject;
+    }
+
+    void setFocusObject(QObject *object)
+    {
+        m_focusObject = object;
+        emit focusObjectChanged(object);
+    }
+
+    QObject *m_focusObject;
+};
+
 
 class tst_qinputmethod : public QObject
 {
@@ -249,17 +211,22 @@ void tst_qinputmethod::cursorRectangle()
 {
     QCOMPARE(qApp->inputMethod()->cursorRectangle(), QRectF());
 
+    DummyWindow window;
+    window.show();
+    QTest::qWaitForWindowShown(&window);
+    window.requestActivateWindow();
+    QTRY_COMPARE(qApp->focusWindow(), &window);
+    window.setFocusObject(&m_inputItem);
+
     QTransform transform;
     transform.translate(10, 10);
     transform.scale(2, 2);
     transform.shear(2, 2);
     qApp->inputMethod()->setInputItemTransform(transform);
-    qApp->inputMethod()->setInputItem(&m_inputItem);
 
     QCOMPARE(qApp->inputMethod()->cursorRectangle(), transform.mapRect(QRectF(1, 2, 3, 4)));
 
     // reset
-    qApp->inputMethod()->setInputItem(0);
     qApp->inputMethod()->setInputItemTransform(QTransform());
 }
 
@@ -297,7 +264,13 @@ void tst_qinputmethod::commit()
 
 void tst_qinputmethod::update()
 {
-    qApp->inputMethod()->setInputItem(&m_inputItem);
+    DummyWindow window;
+    window.show();
+    QTest::qWaitForWindowShown(&window);
+    window.requestActivateWindow();
+    QTRY_COMPARE(qApp->focusWindow(), &window);
+    window.setFocusObject(&m_inputItem);
+
     QCOMPARE(m_platformInputContext.m_updateCallCount, 0);
     QCOMPARE(int(m_platformInputContext.m_lastQueries), int(Qt::ImhNone));
 
@@ -310,9 +283,6 @@ void tst_qinputmethod::update()
     QCOMPARE(int(m_platformInputContext.m_lastQueries), int(Qt::ImQueryAll));
 
     QCOMPARE(qApp->inputMethod()->keyboardRectangle(), QRectF(10, 20, 30, 40));
-
-    // reset
-    qApp->inputMethod()->setInputItem(0);
 }
 
 void tst_qinputmethod::query()
