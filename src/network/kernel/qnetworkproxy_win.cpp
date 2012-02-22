@@ -417,6 +417,8 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
             if (proxyInfo.lpszProxyBypass)
                 GlobalFree(proxyInfo.lpszProxyBypass);
 
+            if (proxyInfo.dwAccessType == WINHTTP_ACCESS_TYPE_NO_PROXY)
+                return sp->defaultResult; //i.e. the PAC file result was "DIRECT"
             if (isBypassed(query.peerHostName(), splitSpaceSemicolon(proxyBypass)))
                 return sp->defaultResult;
             return parseServerList(query, proxyServerList);
