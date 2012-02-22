@@ -56,6 +56,7 @@ class QPixmap;
 class QPoint;
 class QDragManager;
 
+
 class Q_GUI_EXPORT QDrag : public QObject
 {
     Q_OBJECT
@@ -81,6 +82,10 @@ public:
     Qt::DropAction exec(Qt::DropActions supportedActions, Qt::DropAction defaultAction);
 
     void setDragCursor(const QPixmap &cursor, Qt::DropAction action);
+    QPixmap dragCursor(Qt::DropAction action) const;
+
+    Qt::DropActions supportedActions() const;
+    Qt::DropAction defaultAction() const;
 
 Q_SIGNALS:
     void actionChanged(Qt::DropAction action);

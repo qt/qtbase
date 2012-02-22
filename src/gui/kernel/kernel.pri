@@ -66,6 +66,7 @@ SOURCES += \
         kernel/qwindowsysteminterface_qpa.cpp \
         kernel/qplatforminputcontext_qpa.cpp \
         kernel/qplatformintegration_qpa.cpp \
+        kernel/qplatformdrag_qpa.cpp \
         kernel/qplatformscreen_qpa.cpp \
         kernel/qplatformintegrationfactory_qpa.cpp \
         kernel/qplatformintegrationplugin_qpa.cpp \

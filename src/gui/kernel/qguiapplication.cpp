@@ -73,8 +73,11 @@
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "private/qwindow_p.h"
 #include "private/qcursor_p.h"
+
 #include "private/qdnd_p.h"
 #include <private/qplatformthemefactory_qpa_p.h>
+#include "qplatformdrag_qpa.h"
+
 #ifndef QT_NO_CURSOR
 #include "qplatformcursor_qpa.h"
 #endif
@@ -326,8 +329,7 @@ QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
 QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
     : QCoreApplication(p)
 {
-    d_func()->init();
-}
+    d_func()->init(); }
 
 /*!
     Destructs the application.
@@ -1547,49 +1549,62 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
     QCoreApplication::sendSpontaneousEvent(window, &exposeEvent);
 }
 
-Qt::DropAction QGuiApplicationPrivate::processDrag(QWindow *w, QMimeData *dropData, const QPoint &p)
+QPlatformDragQtResponse QGuiApplicationPrivate::processDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
     static QPointer<QWindow> currentDragWindow;
-    QDragManager *manager = QDragManager::self();
+    static Qt::DropAction lastAcceptedDropAction = Qt::IgnoreAction;
+    QPlatformDrag *platformDrag = platformIntegration()->drag();
+    if (!platformDrag) {
+        lastAcceptedDropAction = Qt::IgnoreAction;
+        return QPlatformDragQtResponse(false, lastAcceptedDropAction, QRect());
+    }
+
     if (!dropData) {
         if (currentDragWindow.data() == w)
             currentDragWindow = 0;
         QDragLeaveEvent e;
         QGuiApplication::sendEvent(w, &e);
-        manager->global_accepted_action = Qt::IgnoreAction;
-        return Qt::IgnoreAction;
+        lastAcceptedDropAction = Qt::IgnoreAction;
+        return QPlatformDragQtResponse(false, lastAcceptedDropAction, QRect());
     }
-    QDragMoveEvent me(p, manager->possible_actions, dropData,
+    QDragMoveEvent me(p, supportedActions, dropData,
                       QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
+
     if (w != currentDragWindow) {
+        lastAcceptedDropAction = Qt::IgnoreAction;
         if (currentDragWindow) {
             QDragLeaveEvent e;
             QGuiApplication::sendEvent(currentDragWindow, &e);
-            manager->global_accepted_action = Qt::IgnoreAction;
         }
         currentDragWindow = w;
-        QDragEnterEvent e(p, manager->possible_actions, dropData,
+        QDragEnterEvent e(p, supportedActions, dropData,
                           QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
         QGuiApplication::sendEvent(w, &e);
-        manager->global_accepted_action = e.isAccepted() ? e.dropAction() : Qt::IgnoreAction;
-        if (manager->global_accepted_action != Qt::IgnoreAction) {
-            me.setDropAction(manager->global_accepted_action);
-            me.accept();
-        }
+        if (e.isAccepted() && e.dropAction() != Qt::IgnoreAction)
+            lastAcceptedDropAction = e.dropAction();
+    }
+
+    // Handling 'DragEnter' should suffice for the application.
+    if (lastAcceptedDropAction != Qt::IgnoreAction
+        && (supportedActions & lastAcceptedDropAction)) {
+        me.setDropAction(lastAcceptedDropAction);
+        me.accept();
     }
     QGuiApplication::sendEvent(w, &me);
-    manager->global_accepted_action = me.isAccepted() ? me.dropAction() : Qt::IgnoreAction;
-    return manager->global_accepted_action;
+    lastAcceptedDropAction = me.isAccepted() ?
+                             me.dropAction() :  Qt::IgnoreAction;
+    return QPlatformDragQtResponse(me.isAccepted(), lastAcceptedDropAction, me.answerRect());
 }
 
-Qt::DropAction QGuiApplicationPrivate::processDrop(QWindow *w, QMimeData *dropData, const QPoint &p)
+QPlatformDropQtResponse QGuiApplicationPrivate::processDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
-    QDragManager *manager = QDragManager::self();
-    QDropEvent de(p, manager->possible_actions, dropData,
+    QDropEvent de(p, supportedActions, dropData,
                   QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
     QGuiApplication::sendEvent(w, &de);
-    manager->global_accepted_action = de.isAccepted() ? de.dropAction() : Qt::IgnoreAction;
-    return manager->global_accepted_action;
+
+    Qt::DropAction acceptedAction = de.isAccepted() ? de.dropAction() : Qt::IgnoreAction;
+    QPlatformDropQtResponse response(de.isAccepted(),acceptedAction);
+    return response;
 }
 
 #ifndef QT_NO_CLIPBOARD

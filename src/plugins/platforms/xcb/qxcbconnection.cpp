@@ -714,9 +714,9 @@ void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *
         return;
 
     if (event->type == atom(QXcbAtom::XdndStatus)) {
-        drag()->handleStatus(event, false);
+        drag()->handleStatus(event);
     } else if (event->type == atom(QXcbAtom::XdndFinished)) {
-        drag()->handleFinished(event, false);
+        drag()->handleFinished(event);
     }
 
     QXcbWindow *window = platformWindowFromId(event->window);

@@ -53,6 +53,8 @@
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "private/qshortcutmap_p.h"
 
+#include "qplatformdrag_qpa.h"
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -121,8 +123,8 @@ public:
 
     static void processExposeEvent(QWindowSystemInterfacePrivate::ExposeEvent *e);
 
-    static Qt::DropAction processDrag(QWindow *w, QMimeData *dropData, const QPoint &p);
-    static Qt::DropAction processDrop(QWindow *w, QMimeData *dropData, const QPoint &p);
+    static QPlatformDragQtResponse processDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
+    static QPlatformDropQtResponse processDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
 
     static bool processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
 

@@ -98,100 +98,45 @@ protected:
 class QDragPrivate : public QObjectPrivate
 {
 public:
+    QDragPrivate()
+        : source(0)
+        , target(0)
+        , data(0)
+    { }
     QObject *source;
     QObject *target;
     QMimeData *data;
     QPixmap pixmap;
     QPoint hotspot;
-    Qt::DropActions possible_actions;
     Qt::DropAction executed_action;
+    Qt::DropActions supported_actions;
+    Qt::DropAction default_action;
     QMap<Qt::DropAction, QPixmap> customCursors;
-    Qt::DropAction defaultDropAction;
 };
-
-class QShapedPixmapWindow : public QWindow
-{
-public:
-    QShapedPixmapWindow();
-
-    void exposeEvent(QExposeEvent *)
-    {
-        render();
-    }
-
-    void render();
-
-    QBackingStore *backingStore;
-    QPixmap pixmap;
-    QPoint hotSpot;
-};
-
 
 class Q_GUI_EXPORT QDragManager : public QObject {
     Q_OBJECT
-
-    // only friend classes can use QDragManager.
-    friend class QDrag;
-    friend class QDragMoveEvent;
-    friend class QDropEvent;
-    friend class QApplication;
-
-    bool eventFilter(QObject *, QEvent *);
 
 public:
     QDragManager();
     ~QDragManager();
     static QDragManager *self();
 
-    virtual Qt::DropAction drag(QDrag *);
-
-    virtual void cancel(bool deleteSource = true);
-    virtual void move(const QMouseEvent *me);
-    virtual void drop(const QMouseEvent *me);
-
-    void updatePixmap();
-    void updateCursor();
-
-    Qt::DropAction defaultAction(Qt::DropActions possibleActions,
-                                 Qt::KeyboardModifiers modifiers) const;
-
-    QPixmap dragCursor(Qt::DropAction action) const;
-
-    QDragPrivate *dragPrivate() const { return object ? object->d_func() : 0; }
-
-    inline QMimeData *dropData()
-    { return object ? dragPrivate()->data : platformDropData; }
-
-    void emitActionChanged(Qt::DropAction newAction) { if (object) emit object->actionChanged(newAction); }
+    Qt::DropAction drag(QDrag *);
 
     void setCurrentTarget(QObject *target, bool dropped = false);
-    QObject *currentTarget();
+    QObject *currentTarget() const;
 
-    QDrag *object;
-
-    bool beingCancelled;
-    bool restoreCursor;
-    bool willDrop;
-    QEventLoop *eventLoop;
-
-    Qt::DropActions possible_actions;
-    // Shift/Ctrl handling, and final drop status
-    Qt::DropAction global_accepted_action;
-
-    QShapedPixmapWindow *shapedPixmapWindow;
-
-    void unmanageEvents();
-    void stopDrag();
+    QDrag *object() const { return m_object; }
+    QObject *source() const;
 
 private:
-    QMimeData *platformDropData;
+    QMimeData *m_platformDropData;
+    QObject *m_currentDropTarget;
+    QPlatformDrag *m_platformDrag;
+    QDrag *m_object;
 
-    Qt::DropAction currentActionForOverrideCursor;
-    QObject *currentDropTarget;
-
-    QPlatformDrag *platformDrag;
-
-    static QDragManager *instance;
+    static QDragManager *m_instance;
     Q_DISABLE_COPY(QDragManager)
 };
 

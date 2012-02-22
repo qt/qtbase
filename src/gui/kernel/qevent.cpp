@@ -2295,8 +2295,9 @@ QDropEvent::~QDropEvent()
 */
 QObject* QDropEvent::source() const
 {
-    QDragManager *manager = QDragManager::self();
-    return (manager && manager->object) ? manager->object->source() : 0;
+    if (const QDragManager *manager = QDragManager::self())
+        return manager->source();
+    return 0;
 }
 
 

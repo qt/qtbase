@@ -44,6 +44,8 @@
 #ifndef QT_NO_ITEMVIEWS
 #include <qabstractitemmodel.h>
 #include <qapplication.h>
+#include <qplatformintegration_qpa.h>
+#include <private/qguiapplication_p.h>
 #include <qbrush.h>
 #include <qlineedit.h>
 #include <qtextedit.h>
@@ -1224,8 +1226,10 @@ bool QItemDelegate::eventFilter(QObject *object, QEvent *event)
 #ifndef QT_NO_DRAGANDDROP
             // The window may lose focus during an drag operation.
             // i.e when dragging involves the taskbar on Windows.
-            if (QDragManager::self() && QDragManager::self()->object != 0)
+            QPlatformDrag *platformDrag = QGuiApplicationPrivate::instance()->platformIntegration()->drag();
+            if (platformDrag && platformDrag->currentDrag()) {
                 return false;
+            }
 #endif
 
             emit commitData(editor);

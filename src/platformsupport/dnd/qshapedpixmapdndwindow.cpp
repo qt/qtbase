@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,71 +39,62 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMDRAG_H
-#define QPLATFORMDRAG_H
+#include "qshapedpixmapdndwindow_p.h"
 
-#include <QtCore/qglobal.h>
-#include <QtGui/QPixmap>
-
-QT_BEGIN_HEADER
+#include <QtGui/QPainter>
+#include <QtGui/QCursor>
 
 QT_BEGIN_NAMESPACE
 
-
-class QMimeData;
-class QMouseEvent;
-class QDrag;
-class QObject;
-class QEvent;
-class QPlatformDragPrivate;
-
-class Q_GUI_EXPORT QPlatformDropQtResponse
+QShapedPixmapWindow::QShapedPixmapWindow()
+    : QWindow(),
+      m_backingStore(0)
 {
-public:
-    QPlatformDropQtResponse(bool accepted, Qt::DropAction acceptedAction);
-    bool isAccepted() const;
-    Qt::DropAction acceptedAction() const;
+    setSurfaceType(RasterSurface);
+    setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint |
+                   Qt::X11BypassWindowManagerHint | Qt::WindowTransparentForInput);
+    create();
+    m_backingStore = new QBackingStore(this);
+}
 
-private:
-    bool m_accepted;
-    Qt::DropAction m_accepted_action;
-
-};
-
-class Q_GUI_EXPORT QPlatformDragQtResponse : public QPlatformDropQtResponse
+void QShapedPixmapWindow::render()
 {
-public:
-    QPlatformDragQtResponse(bool accepted, Qt::DropAction acceptedAction, QRect answerRect);
+    QRect rect(QPoint(), geometry().size());
 
-    QRect answerRect() const;
+    m_backingStore->beginPaint(rect);
 
-private:
-    QRect m_answer_rect;
-};
+    QPaintDevice *device = m_backingStore->paintDevice();
 
-class Q_GUI_EXPORT QPlatformDrag
+    {
+        QPainter p(device);
+        p.drawPixmap(0, 0, m_pixmap);
+    }
+
+    m_backingStore->endPaint();
+    m_backingStore->flush(rect);
+}
+
+void QShapedPixmapWindow::setPixmap(const QPixmap &pixmap)
 {
-    Q_DECLARE_PRIVATE(QPlatformDrag)
-public:
-    QPlatformDrag();
-    virtual ~QPlatformDrag();
+    m_pixmap = pixmap;
+}
 
-    QDrag *currentDrag() const;
-    virtual QMimeData *platformDropData() = 0;
+void QShapedPixmapWindow::setHotspot(const QPoint &hotspot)
+{
+    m_hotSpot = hotspot;
+}
 
-    virtual Qt::DropAction drag(QDrag *m_drag) = 0;
-    void updateAction(Qt::DropAction action);
+void QShapedPixmapWindow::updateGeometry()
+{
+    QRect rect(QCursor::pos() - m_hotSpot, m_pixmap.size());
+    if (m_backingStore->size() != m_pixmap.size())
+        m_backingStore->resize(m_pixmap.size());
+    setGeometry(rect);
+}
 
-    Qt::DropAction defaultAction(Qt::DropActions possibleActions, Qt::KeyboardModifiers modifiers) const;
-
-    static QPixmap defaultPixmap();
-
-private:
-    QPlatformDragPrivate *d_ptr;
-};
+void QShapedPixmapWindow::exposeEvent(QExposeEvent *)
+{
+    render();
+}
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif

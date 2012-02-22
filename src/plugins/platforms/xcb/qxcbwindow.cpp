@@ -1257,11 +1257,11 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
     } else if (event->type == atom(QXcbAtom::XdndEnter)) {
         connection()->drag()->handleEnter(window(), event);
     } else if (event->type == atom(QXcbAtom::XdndPosition)) {
-        connection()->drag()->handlePosition(window(), event, false);
+        connection()->drag()->handlePosition(window(), event);
     } else if (event->type == atom(QXcbAtom::XdndLeave)) {
-        connection()->drag()->handleLeave(window(), event, false);
+        connection()->drag()->handleLeave(window(), event);
     } else if (event->type == atom(QXcbAtom::XdndDrop)) {
-        connection()->drag()->handleDrop(window(), event, false);
+        connection()->drag()->handleDrop(window(), event);
     } else {
         qWarning() << "unhandled client message:" << connection()->atomName(event->type);
     }

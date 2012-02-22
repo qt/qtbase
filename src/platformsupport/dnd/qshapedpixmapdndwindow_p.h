@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,71 +39,40 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMDRAG_H
-#define QPLATFORMDRAG_H
+#ifndef QSHAPEDPIXMAPDNDWINDOW_H
+#define QSHAPEDPIXMAPDNDWINDOW_H
 
-#include <QtCore/qglobal.h>
+#include <QtGui/QWindow>
 #include <QtGui/QPixmap>
-
-QT_BEGIN_HEADER
+#include <QtGui/QBackingStore>
 
 QT_BEGIN_NAMESPACE
 
+QT_BEGIN_HEADER
 
-class QMimeData;
-class QMouseEvent;
-class QDrag;
-class QObject;
-class QEvent;
-class QPlatformDragPrivate;
-
-class Q_GUI_EXPORT QPlatformDropQtResponse
+class QShapedPixmapWindow : public QWindow
 {
 public:
-    QPlatformDropQtResponse(bool accepted, Qt::DropAction acceptedAction);
-    bool isAccepted() const;
-    Qt::DropAction acceptedAction() const;
+    QShapedPixmapWindow();
+
+    void render();
+
+    void setPixmap(const QPixmap &pixmap);
+    void setHotspot(const QPoint &hotspot);
+
+    void updateGeometry();
+
+protected:
+    void exposeEvent(QExposeEvent *);
 
 private:
-    bool m_accepted;
-    Qt::DropAction m_accepted_action;
-
+    QBackingStore *m_backingStore;
+    QPixmap m_pixmap;
+    QPoint m_hotSpot;
 };
-
-class Q_GUI_EXPORT QPlatformDragQtResponse : public QPlatformDropQtResponse
-{
-public:
-    QPlatformDragQtResponse(bool accepted, Qt::DropAction acceptedAction, QRect answerRect);
-
-    QRect answerRect() const;
-
-private:
-    QRect m_answer_rect;
-};
-
-class Q_GUI_EXPORT QPlatformDrag
-{
-    Q_DECLARE_PRIVATE(QPlatformDrag)
-public:
-    QPlatformDrag();
-    virtual ~QPlatformDrag();
-
-    QDrag *currentDrag() const;
-    virtual QMimeData *platformDropData() = 0;
-
-    virtual Qt::DropAction drag(QDrag *m_drag) = 0;
-    void updateAction(Qt::DropAction action);
-
-    Qt::DropAction defaultAction(Qt::DropActions possibleActions, Qt::KeyboardModifiers modifiers) const;
-
-    static QPixmap defaultPixmap();
-
-private:
-    QPlatformDragPrivate *d_ptr;
-};
-
-QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif
+QT_END_NAMESPACE
+
+#endif // QSHAPEDPIXMAPDNDWINDOW_H

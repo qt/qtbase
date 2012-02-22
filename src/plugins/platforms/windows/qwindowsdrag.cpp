@@ -53,8 +53,11 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QPainter>
 #include <QtGui/QGuiApplication>
+#include <QtGui/private/qwindowsysteminterface_qpa_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 
 #include <QtCore/QDebug>
+#include <QtCore/QBuffer>
 #include <QtCore/QPoint>
 
 #include <shlobj.h>
@@ -300,14 +303,13 @@ private:
 
     QWindowsDrag *m_drag;
     Qt::MouseButtons m_currentButtons;
-    Qt::DropAction m_currentAction;
     ActionCursorMap m_cursors;
 
     ULONG m_refs;
 };
 
 QWindowsOleDropSource::QWindowsOleDropSource(QWindowsDrag *drag) :
-    m_drag(drag), m_currentButtons(Qt::NoButton), m_currentAction(Qt::IgnoreAction),
+    m_drag(drag), m_currentButtons(Qt::NoButton),
     m_refs(1)
 {
     if (QWindowsContext::verboseOLE)
@@ -321,24 +323,26 @@ QWindowsOleDropSource::~QWindowsOleDropSource()
         qDebug("%s", __FUNCTION__);
 }
 
+/*!
+    \brief Blend custom pixmap with cursors.
+*/
+
 void QWindowsOleDropSource::createCursors()
 {
-    QDragManager *manager = QDragManager::self();
-    if (!manager || !manager->object)
-        return;
-    const QPixmap pixmap = manager->object->pixmap();
+    const QDrag *drag = m_drag->currentDrag();
+    const QPixmap pixmap = drag->pixmap();
     const bool hasPixmap = !pixmap.isNull();
-    if (!hasPixmap && manager->dragPrivate()->customCursors.isEmpty())
+    if (!hasPixmap)
         return;
 
     QList<Qt::DropAction> actions;
     actions << Qt::MoveAction << Qt::CopyAction << Qt::LinkAction;
     if (hasPixmap)
         actions << Qt::IgnoreAction;
-    const QPoint hotSpot = manager->object->hotSpot();
+    const QPoint hotSpot = drag->hotSpot();
     for (int cnum = 0; cnum < actions.size(); ++cnum) {
         const Qt::DropAction action = actions.at(cnum);
-        QPixmap cpm = manager->dragCursor(action);
+        QPixmap cpm = drag->dragCursor(action);
         if (cpm.isNull())
             cpm = m_drag->defaultCursor(action);
         if (cpm.isNull()) {
@@ -361,7 +365,7 @@ void QWindowsOleDropSource::createCursors()
         const QPoint newHotSpot = hotSpot;
         QPixmap newCursor(w, h);
         if (hasPixmap) {
-            newCursor.fill(QColor(0, 0, 0, 0));
+            newCursor.fill(Qt::transparent);
             QPainter p(&newCursor);
             const QRect srcRect = pixmap.rect();
             const QPoint pmDest = QPoint(qMax(0, -hotSpot.x()), qMax(0, -hotSpot.y()));
@@ -375,7 +379,7 @@ void QWindowsOleDropSource::createCursors()
         const int hotY = hasPixmap ? qMax(0,newHotSpot.y()) : 0;
 
         if (const HCURSOR sysCursor = QWindowsCursor::createPixmapCursor(newCursor, hotX, hotY))
-            m_cursors.insert(action, sysCursor);
+            m_cursors.insert(actions.at(cnum), sysCursor);
     }
     if (QWindowsContext::verboseOLE)
         qDebug("%s %d cursors", __FUNCTION__, m_cursors.size());
@@ -432,7 +436,7 @@ QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
 {
     HRESULT hr = S_OK;
     do {
-        if (fEscapePressed || QWindowsDrag::instance()->dragBeingCancelled()) {
+        if (fEscapePressed) {
             hr = ResultFromScode(DRAGDROP_S_CANCEL);
             break;
         }
@@ -461,13 +465,11 @@ QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
 
     } while (false);
 
-    QDragManager::self()->willDrop = hr == DRAGDROP_S_DROP;
-
     if (QWindowsContext::verboseOLE
         && (QWindowsContext::verboseOLE > 1 || hr != S_OK))
-        qDebug("%s fEscapePressed=%d, grfKeyState=%lu buttons=%d willDrop = %d returns 0x%x",
+        qDebug("%s fEscapePressed=%d, grfKeyState=%lu buttons=%d returns 0x%x",
                __FUNCTION__, fEscapePressed,grfKeyState, int(m_currentButtons),
-               QDragManager::self()->willDrop, int(hr));
+               int(hr));
     return hr;
 }
 
@@ -479,16 +481,12 @@ QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
 {
     const Qt::DropAction action = translateToQDragDropAction(dwEffect);
+    m_drag->updateAction(action);
 
     if (QWindowsContext::verboseOLE > 2)
         qDebug("%s dwEffect=%lu, action=%d", __FUNCTION__, dwEffect, action);
 
-    if (m_currentAction != action) {
-        m_currentAction = action;
-        QDragManager::self()->emitActionChanged(m_currentAction);
-    }
-
-    const ActionCursorMap::const_iterator it = m_cursors.constFind(m_currentAction);
+    const ActionCursorMap::const_iterator it = m_cursors.constFind(action);
     if (it != m_cursors.constEnd()) {
         SetCursor(it.value());
         return ResultFromScode(S_OK);
@@ -510,7 +508,7 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
 */
 
 QWindowsOleDropTarget::QWindowsOleDropTarget(QWindow *w) :
-    m_refs(1), m_window(w), m_currentWindow(0), m_chosenEffect(0), m_lastKeyState(0)
+    m_refs(1), m_window(w), m_chosenEffect(0), m_lastKeyState(0)
 {
     if (QWindowsContext::verboseOLE)
         qDebug() << __FUNCTION__ <<  this << w;
@@ -558,6 +556,38 @@ QWindow *QWindowsOleDropTarget::findDragOverWindow(const POINTL &pt) const
     return m_window;
 }
 
+void QWindowsOleDropTarget::handleDrag(QWindow *window, DWORD grfKeyState,
+                                       const QPoint &point, LPDWORD pdwEffect)
+{
+    Q_ASSERT(window);
+    m_lastPoint = point;
+    m_lastKeyState = grfKeyState;
+
+    QWindowsDrag *windowsDrag = QWindowsDrag::instance();
+    const Qt::DropActions actions = translateToQDragDropActions(*pdwEffect);
+    QGuiApplicationPrivate::modifier_buttons = toQtKeyboardModifiers(grfKeyState);
+    QGuiApplicationPrivate::mouse_buttons = QWindowsMouseHandler::keyStateToMouseButtons(grfKeyState);
+
+    const QPlatformDragQtResponse response =
+          QWindowSystemInterface::handleDrag(window, windowsDrag->dropData(), m_lastPoint, actions);
+
+    m_answerRect = response.answerRect();
+    const Qt::DropAction action = response.acceptedAction();
+    if (response.isAccepted()) {
+        m_chosenEffect = translateToWinDragEffects(action);
+    } else {
+        m_chosenEffect = DROPEFFECT_NONE;
+    }
+    *pdwEffect = m_chosenEffect;
+    if (QWindowsContext::verboseOLE)
+        qDebug() << __FUNCTION__ << m_window
+                 << windowsDrag->dropData() << " supported actions=" << actions
+                 << " mods=" << QGuiApplicationPrivate::modifier_buttons
+                 << " mouse=" << QGuiApplicationPrivate::mouse_buttons
+                 << " accepted: " << response.isAccepted() << action
+                 << m_answerRect << " effect" << *pdwEffect;
+}
+
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QWindowsOleDropTarget::DragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState,
                                  POINTL pt, LPDWORD pdwEffect)
@@ -567,124 +597,28 @@ QWindowsOleDropTarget::DragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState,
 
     QWindowsDrag::instance()->setDropDataObject(pDataObj);
     pDataObj->AddRef();
-    m_currentWindow = m_window;
-    sendDragEnterEvent(m_window, grfKeyState, pt, pdwEffect);
-    *pdwEffect = m_chosenEffect;
+    const QPoint point = QWindowsGeometryHint::mapFromGlobal(m_window, QPoint(pt.x,pt.y));
+    handleDrag(m_window, grfKeyState, point, pdwEffect);
     return NOERROR;
-}
-
-void QWindowsOleDropTarget::sendDragEnterEvent(QWindow *dragEnterWidget,
-                                               DWORD grfKeyState,
-                                               POINTL pt, LPDWORD pdwEffect)
-{
-    Q_ASSERT(dragEnterWidget);
-
-    m_lastPoint = QWindowsGeometryHint::mapFromGlobal(dragEnterWidget, QPoint(pt.x,pt.y));
-    m_lastKeyState = grfKeyState;
-
-    m_chosenEffect = DROPEFFECT_NONE;
-
-    QDragManager *manager = QDragManager::self();
-    QMimeData *md = manager->dropData();
-    const Qt::MouseButtons mouseButtons
-        = QWindowsMouseHandler::keyStateToMouseButtons(grfKeyState);
-    const Qt::DropActions actions = translateToQDragDropActions(*pdwEffect);
-    const Qt::KeyboardModifiers keyMods = toQtKeyboardModifiers(grfKeyState);
-    QDragEnterEvent enterEvent(m_lastPoint, actions, md, mouseButtons, keyMods);
-    QGuiApplication::sendEvent(m_currentWindow, &enterEvent);
-    m_answerRect = enterEvent.answerRect();
-    if (QWindowsContext::verboseOLE)
-        qDebug() << __FUNCTION__ << " sent drag enter to " << m_window
-                 << *md << " actions=" << actions
-                 << " mods=" << keyMods << " accepted: "
-                 << enterEvent.isAccepted();
-
-    if (enterEvent.isAccepted())
-        m_chosenEffect = translateToWinDragEffects(enterEvent.dropAction());
-    // Documentation states that a drag move event is sent immediately after
-    // a drag enter event. This will honor widgets overriding dragMoveEvent only:
-    if (enterEvent.isAccepted()) {
-        QDragMoveEvent moveEvent(m_lastPoint, actions, md, mouseButtons, keyMods);
-        m_answerRect = enterEvent.answerRect();
-        moveEvent.setDropAction(enterEvent.dropAction());
-        moveEvent.accept(); // accept by default, since enter event was accepted.
-
-        QGuiApplication::sendEvent(dragEnterWidget, &moveEvent);
-        if (moveEvent.isAccepted()) {
-            m_answerRect = moveEvent.answerRect();
-            m_chosenEffect = translateToWinDragEffects(moveEvent.dropAction());
-        } else {
-            m_chosenEffect = DROPEFFECT_NONE;
-        }
-    }
 }
 
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QWindowsOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
 {
     QWindow *dragOverWindow = findDragOverWindow(pt);
-
+    if (QWindowsContext::verboseOLE)
+        qDebug("%s widget=%p key=%lu, pt=%ld,%ld", __FUNCTION__, dragOverWindow, grfKeyState, pt.x, pt.y);
     const QPoint tmpPoint = QWindowsGeometryHint::mapFromGlobal(dragOverWindow, QPoint(pt.x,pt.y));
     // see if we should compress this event
     if ((tmpPoint == m_lastPoint || m_answerRect.contains(tmpPoint))
         && m_lastKeyState == grfKeyState) {
         *pdwEffect = m_chosenEffect;
+        if (QWindowsContext::verboseOLE)
+            qDebug("%s: compressed event", __FUNCTION__);
         return NOERROR;
     }
 
-    if (QWindowsContext::verboseOLE > 1)
-        qDebug().nospace() << '>' << __FUNCTION__ << ' ' << m_window << " current "
-                           << dragOverWindow << " key=" << grfKeyState
-                           << " pt=" <<pt.x << ',' << pt.y;
-
-    if (dragOverWindow != m_currentWindow) {
-        QPointer<QWindow> dragOverWindowGuard(dragOverWindow);
-        // Send drag leave event to the previous drag widget.
-        // Drag-Over widget might be deleted in DragLeave,
-        // (tasktracker 218353).
-        QDragLeaveEvent dragLeave;
-        if (m_currentWindow)
-            QGuiApplication::sendEvent(m_currentWindow, &dragLeave);
-        if (!dragOverWindowGuard) {
-            dragOverWindow = findDragOverWindow(pt);
-        }
-        // Send drag enter event to the current drag widget.
-        m_currentWindow = dragOverWindow;
-        sendDragEnterEvent(dragOverWindow, grfKeyState, pt, pdwEffect);
-    }
-
-    QDragManager *manager = QDragManager::self();
-    QMimeData *md = manager->dropData();
-
-    const Qt::DropActions actions = translateToQDragDropActions(*pdwEffect);
-
-    QDragMoveEvent oldEvent(m_lastPoint, actions, md,
-                            QWindowsMouseHandler::keyStateToMouseButtons(m_lastKeyState),
-                            toQtKeyboardModifiers(m_lastKeyState));
-
-    m_lastPoint = tmpPoint;
-    m_lastKeyState = grfKeyState;
-
-    QDragMoveEvent e(tmpPoint, actions, md,
-                     QWindowsMouseHandler::keyStateToMouseButtons(grfKeyState),
-                     toQtKeyboardModifiers(grfKeyState));
-    if (m_chosenEffect != DROPEFFECT_NONE) {
-        if (oldEvent.dropAction() == e.dropAction() &&
-            oldEvent.keyboardModifiers() == e.keyboardModifiers())
-            e.setDropAction(translateToQDragDropAction(m_chosenEffect));
-        e.accept();
-    }
-    QGuiApplication::sendEvent(dragOverWindow, &e);
-
-    m_answerRect = e.answerRect();
-    if (e.isAccepted())
-        m_chosenEffect = translateToWinDragEffects(e.dropAction());
-    else
-        m_chosenEffect = DROPEFFECT_NONE;
-    *pdwEffect = m_chosenEffect;
-
-    if (QWindowsContext::verboseOLE > 1)
-        qDebug("<%s effect=0x%lx", __FUNCTION__, m_chosenEffect);
+    handleDrag(dragOverWindow, grfKeyState, tmpPoint, pdwEffect);
     return NOERROR;
 }
 
@@ -694,9 +628,7 @@ QWindowsOleDropTarget::DragLeave()
     if (QWindowsContext::verboseOLE)
         qDebug().nospace() <<__FUNCTION__ << ' ' << m_window;
 
-    m_currentWindow = 0;
-    QDragLeaveEvent e;
-    QGuiApplication::sendEvent(m_window, &e);
+    QWindowSystemInterface::handleDrag(m_window, 0, QPoint(), Qt::IgnoreAction);
     QWindowsDrag::instance()->releaseDropDataObject();
 
     return NOERROR;
@@ -724,21 +656,15 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT /*pDataObj*/, DWORD grfKeyState,
     m_lastKeyState = grfKeyState;
 
     QWindowsDrag *windowsDrag = QWindowsDrag::instance();
-    QDragManager *manager = QDragManager::self();
-    QMimeData *md = manager->dropData();
-    QDropEvent e(m_lastPoint, translateToQDragDropActions(*pdwEffect), md,
-                 QWindowsMouseHandler::keyStateToMouseButtons(grfKeyState),
-                 toQtKeyboardModifiers(grfKeyState));
-    if (m_chosenEffect != DROPEFFECT_NONE)
-        e.setDropAction(translateToQDragDropAction(m_chosenEffect));
 
-    QGuiApplication::sendEvent(dropWindow, &e);
-    if (m_chosenEffect != DROPEFFECT_NONE)
-        e.accept();
+    const QPlatformDropQtResponse response =
+        QWindowSystemInterface::handleDrop(dropWindow, windowsDrag->platformDropData(), m_lastPoint,
+                                           translateToQDragDropActions(*pdwEffect));
 
-    if (e.isAccepted()) {
-        if (e.dropAction() == Qt::MoveAction || e.dropAction() == Qt::TargetMoveAction) {
-            if (e.dropAction() == Qt::MoveAction)
+    if (response.isAccepted()) {
+        const Qt::DropAction action = response.acceptedAction();
+        if (action == Qt::MoveAction || action == Qt::TargetMoveAction) {
+            if (action == Qt::MoveAction)
                 m_chosenEffect = DROPEFFECT_MOVE;
             else
                 m_chosenEffect = DROPEFFECT_COPY;
@@ -760,7 +686,7 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT /*pDataObj*/, DWORD grfKeyState,
                 windowsDrag->dropDataObject()->SetData(&format, &medium, true);
             }
         } else {
-            m_chosenEffect = translateToWinDragEffects(e.dropAction());
+            m_chosenEffect = translateToWinDragEffects(action);
         }
     } else {
         m_chosenEffect = DROPEFFECT_NONE;
@@ -778,12 +704,23 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT /*pDataObj*/, DWORD grfKeyState,
     \ingroup qt-lighthouse-win
 */
 
-QWindowsDrag::QWindowsDrag() : m_dropDataObject(0), m_dragBeingCancelled(false)
+QWindowsDrag::QWindowsDrag() : m_dropDataObject(0)
 {
 }
 
 QWindowsDrag::~QWindowsDrag()
 {
+}
+
+/*!
+    \brief Return data for a drop in process. If it stems from a current drag, use a shortcut.
+*/
+
+QMimeData *QWindowsDrag::dropData()
+{
+    if (const QDrag *drag = currentDrag())
+        return drag->mimeData();
+    return &m_dropData;
 }
 
 QPixmap QWindowsDrag::defaultCursor(Qt::DropAction action) const
@@ -810,69 +747,46 @@ QPixmap QWindowsDrag::defaultCursor(Qt::DropAction action) const
     return m_ignoreDragCursor;
 }
 
-void QWindowsDrag::startDrag()
+Qt::DropAction QWindowsDrag::drag(QDrag *drag)
 {
     // TODO: Accessibility handling?
-    QDragManager *dragManager = QDragManager::self();
-    QMimeData *dropData = dragManager->dropData();
-    m_dragBeingCancelled = false;
+    QMimeData *dropData = drag->mimeData();
+    Qt::DropAction dragResult = Qt::IgnoreAction;
 
     DWORD resultEffect;
     QWindowsOleDropSource *windowDropSource = new QWindowsOleDropSource(this);
     windowDropSource->createCursors();
     QWindowsOleDataObject *dropDataObject = new QWindowsOleDataObject(dropData);
-    const  Qt::DropActions possibleActions = dragManager->possible_actions;
+    const Qt::DropActions possibleActions = drag->supportedActions();
     const DWORD allowedEffects = translateToWinDragEffects(possibleActions);
     if (QWindowsContext::verboseOLE)
           qDebug(">%s possible Actions=%x, effects=0x%lx", __FUNCTION__,
                  int(possibleActions), allowedEffects);
     const HRESULT r = DoDragDrop(dropDataObject, windowDropSource, allowedEffects, &resultEffect);
     const DWORD  reportedPerformedEffect = dropDataObject->reportedPerformedEffect();
-    Qt::DropAction ret = Qt::IgnoreAction;
     if (r == DRAGDROP_S_DROP) {
         if (reportedPerformedEffect == DROPEFFECT_MOVE && resultEffect != DROPEFFECT_MOVE) {
-            ret = Qt::TargetMoveAction;
+            dragResult = Qt::TargetMoveAction;
             resultEffect = DROPEFFECT_MOVE;
         } else {
-            ret = translateToQDragDropAction(resultEffect);
+            dragResult = translateToQDragDropAction(resultEffect);
         }
         // Force it to be a copy if an unsupported operation occurred.
         // This indicates a bug in the drop target.
-        if (resultEffect != DROPEFFECT_NONE && !(resultEffect & allowedEffects))
-            ret = Qt::CopyAction;
-    } else {
-        dragManager->setCurrentTarget(0);
+        if (resultEffect != DROPEFFECT_NONE && !(resultEffect & allowedEffects)) {
+            qWarning("%s: Forcing Qt::CopyAction", __FUNCTION__);
+            dragResult = Qt::CopyAction;
+        }
     }
-
     // clean up
     dropDataObject->releaseQt();
     dropDataObject->Release();        // Will delete obj if refcount becomes 0
     windowDropSource->Release();        // Will delete src if refcount becomes 0
     if (QWindowsContext::verboseOLE)
         qDebug("<%s allowedEffects=0x%lx, reportedPerformedEffect=0x%lx, resultEffect=0x%lx, hr=0x%x, dropAction=%d",
-               __FUNCTION__, allowedEffects, reportedPerformedEffect, resultEffect, int(r), ret);
-}
-
-void QWindowsDrag::move(const QMouseEvent *me)
-{
-    const QPoint pos = me->pos();
-    if (QWindowsContext::verboseOLE)
-        qDebug("%s %d %d", __FUNCTION__, pos.x(), pos.y());
-}
-
-void QWindowsDrag::drop(const QMouseEvent *me)
-{
-    const QPoint pos = me->pos();
-    if (QWindowsContext::verboseOLE)
-        qDebug("%s %d %d", __FUNCTION__, pos.x(), pos.y());
-}
-
-void QWindowsDrag::cancel()
-{
-    // TODO: Accessibility handling?
-    if (QWindowsContext::verboseOLE)
-        qDebug("%s", __FUNCTION__);
-    m_dragBeingCancelled = true;
+               __FUNCTION__, allowedEffects, reportedPerformedEffect,
+               resultEffect, int(r), dragResult);
+    return dragResult;
 }
 
 QWindowsDrag *QWindowsDrag::instance()

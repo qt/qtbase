@@ -44,31 +44,79 @@
 
 #include <qplatformdrag_qpa.h>
 
+#include <QtCore/QObject>
+
 QT_BEGIN_NAMESPACE
+
+QT_BEGIN_HEADER
 
 class QMouseEvent;
 class QWindow;
-
+class QEventLoop;
 class QDropData;
+class QShapedPixmapWindow;
 
-class QSimpleDrag : public QPlatformDrag
+class QBasicDrag : public QPlatformDrag, public QObject
 {
 public:
-    QSimpleDrag();
-    ~QSimpleDrag();
+    virtual ~QBasicDrag();
 
-    virtual QMimeData *platformDropData();
+    virtual Qt::DropAction drag(QDrag *drag);
 
-//    virtual Qt::DropAction drag(QDrag *);
+    virtual bool eventFilter(QObject *o, QEvent *e);
 
+protected:
+    QBasicDrag();
+
+    virtual void startDrag();
     virtual void cancel();
     virtual void move(const QMouseEvent *me);
     virtual void drop(const QMouseEvent *me);
-private:
-    QDropData *m_dropData;
+    virtual void endDrag();
 
-    QWindow *currentWindow;
+    QShapedPixmapWindow *shapedPixmapWindow() const { return m_drag_icon_window; }
+    void updateCursor(Qt::DropAction action);
+
+    bool canDrop() const { return m_can_drop; }
+    void setCanDrop(bool c) { m_can_drop = c; }
+
+    Qt::DropAction executedDropAction() const { return m_executed_drop_action; }
+    void  setExecutedDropAction(Qt::DropAction da) { m_executed_drop_action = da; }
+
+    QDrag *drag() const { return m_drag; }
+
+private:
+    void enableEventFilter();
+    void disableEventFilter();
+    void resetDndState(bool deleteSource);
+    void exitDndEventLoop();
+
+    bool m_restoreCursor;
+    QEventLoop *m_eventLoop;
+    Qt::DropAction m_executed_drop_action;
+    bool m_can_drop;
+    QDrag *m_drag;
+    QShapedPixmapWindow *m_drag_icon_window;
+    Qt::DropAction m_cursor_drop_action;
 };
+
+class QSimpleDrag : public QBasicDrag
+{
+public:
+    QSimpleDrag();
+    virtual QMimeData *platformDropData();
+
+protected:
+    virtual void startDrag();
+    virtual void cancel();
+    virtual void move(const QMouseEvent *me);
+    virtual void drop(const QMouseEvent *me);
+
+private:
+    QWindow *m_current_window;
+};
+
+QT_END_HEADER
 
 QT_END_NAMESPACE
 
