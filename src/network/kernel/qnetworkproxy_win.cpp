@@ -313,14 +313,27 @@ void QWindowsSystemProxy::init()
             proxyBypass = splitSpaceSemicolon(QString::fromWCharArray(ieProxyConfig.lpszProxyBypass));
             GlobalFree(ieProxyConfig.lpszProxyBypass);
         }
+    } else {
+        // no user configuration
+        // attempt to get the default configuration instead
+        WINHTTP_PROXY_INFO proxyInfo;
+        if (ptrWinHttpGetDefaultProxyConfiguration(&proxyInfo) &&
+            proxyInfo.dwAccessType == WINHTTP_ACCESS_TYPE_NAMED_PROXY) {
+            // we got information from the registry
+            // overwrite the IE configuration, if any
+
+            proxyBypass = splitSpaceSemicolon(QString::fromWCharArray(proxyInfo.lpszProxyBypass));
+            proxyServerList = splitSpaceSemicolon(QString::fromWCharArray(proxyInfo.lpszProxy));
+        }
+
+        if (proxyInfo.lpszProxy)
+            GlobalFree(proxyInfo.lpszProxy);
+        if (proxyInfo.lpszProxyBypass)
+            GlobalFree(proxyInfo.lpszProxyBypass);
     }
 
     hHttpSession = NULL;
     if (ieProxyConfig.fAutoDetect || !autoConfigUrl.isEmpty()) {
-        // using proxy autoconfiguration
-        proxyServerList.clear();
-        proxyBypass.clear();
-
         // open the handle and obtain the options
         hHttpSession = ptrWinHttpOpen(L"Qt System Proxy access/1.0",
                                       WINHTTP_ACCESS_TYPE_NO_PROXY,
@@ -341,23 +354,6 @@ void QWindowsSystemProxy::init()
             autoProxyOptions.dwFlags = WINHTTP_AUTOPROXY_CONFIG_URL;
             autoProxyOptions.lpszAutoConfigUrl = (LPCWSTR)autoConfigUrl.utf16();
         }
-    } else {
-        // not auto-detected
-        // attempt to get the static configuration instead
-        WINHTTP_PROXY_INFO proxyInfo;
-        if (ptrWinHttpGetDefaultProxyConfiguration(&proxyInfo) &&
-            proxyInfo.dwAccessType == WINHTTP_ACCESS_TYPE_NAMED_PROXY) {
-            // we got information from the registry
-            // overwrite the IE configuration, if any
-
-            proxyBypass = splitSpaceSemicolon(QString::fromWCharArray(proxyInfo.lpszProxyBypass));
-            proxyServerList = splitSpaceSemicolon(QString::fromWCharArray(proxyInfo.lpszProxy));
-        }
-
-        if (proxyInfo.lpszProxy)
-            GlobalFree(proxyInfo.lpszProxy);
-        if (proxyInfo.lpszProxyBypass)
-            GlobalFree(proxyInfo.lpszProxyBypass);
     }
 
     functional = isAutoConfig || !proxyServerList.isEmpty();
@@ -431,8 +427,6 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
             //Don't search for it next time again.
             sp->isAutoConfig = false;
         }
-
-        return sp->defaultResult;
     }
 
     // static configuration
