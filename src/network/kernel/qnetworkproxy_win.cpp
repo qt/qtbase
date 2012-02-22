@@ -179,38 +179,45 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
     // According to the website, the proxy server list is
     // one or more of the space- or semicolon-separated strings in the format:
     //   ([<scheme>=][<scheme>"://"]<server>[":"<port>])
+    // The first scheme relates to the protocol tag
+    // The second scheme, if present, overrides the proxy type
 
     QList<QNetworkProxy> result;
     foreach (const QString &entry, proxyList) {
         int server = 0;
 
+        QNetworkProxy::ProxyType proxyType = QNetworkProxy::HttpProxy;
+        quint16 port = 8080;
+
         int pos = entry.indexOf(QLatin1Char('='));
+        QStringRef scheme;
         if (pos != -1) {
-            QStringRef scheme = entry.leftRef(pos);
+            scheme = entry.leftRef(pos);
             if (scheme != query.protocolTag())
                 continue;
 
             server = pos + 1;
         }
-
-        QNetworkProxy::ProxyType proxyType = QNetworkProxy::HttpProxy;
-        quint16 port = 8080;
-
         pos = entry.indexOf(QLatin1String("://"), server);
         if (pos != -1) {
-            QStringRef scheme = entry.midRef(server, pos - server);
+            scheme = entry.midRef(server, pos - server);
+            server = pos + 3;
+        }
+
+        if (!scheme.isEmpty()) {
             if (scheme == QLatin1String("http") || scheme == QLatin1String("https")) {
                 // no-op
                 // defaults are above
             } else if (scheme == QLatin1String("socks") || scheme == QLatin1String("socks5")) {
                 proxyType = QNetworkProxy::Socks5Proxy;
                 port = 1080;
+            } else if (scheme == QLatin1String("ftp")) {
+                proxyType = QNetworkProxy::FtpCachingProxy;
+                port = 2121;
             } else {
                 // unknown proxy type
                 continue;
             }
-
-            server = pos + 3;
         }
 
         pos = entry.indexOf(QLatin1Char(':'), server);
