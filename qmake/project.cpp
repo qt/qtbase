@@ -592,10 +592,6 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
     }
     for(QStringList::Iterator concat_it = concat.begin();
         concat_it != concat.end(); ++concat_it)
-        feature_roots << (QLibraryInfo::location(QLibraryInfo::PrefixPath) +
-                          mkspecs_concat + (*concat_it));
-    for(QStringList::Iterator concat_it = concat.begin();
-        concat_it != concat.end(); ++concat_it)
         feature_roots << (QLibraryInfo::location(QLibraryInfo::DataPath) +
                           mkspecs_concat + (*concat_it));
     return feature_roots;
