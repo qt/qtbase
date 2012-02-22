@@ -103,6 +103,7 @@ typedef struct {
 
 #define WINHTTP_ERROR_BASE                      12000
 #define ERROR_WINHTTP_LOGIN_FAILURE             (WINHTTP_ERROR_BASE + 15)
+#define ERROR_WINHTTP_UNABLE_TO_DOWNLOAD_SCRIPT (WINHTTP_ERROR_BASE + 167)
 #define ERROR_WINHTTP_AUTODETECTION_FAILED      (WINHTTP_ERROR_BASE + 180)
 
 QT_BEGIN_NAMESPACE
@@ -415,6 +416,9 @@ void QWindowsSystemProxy::init()
         isAutoConfig = true;
         memset(&autoProxyOptions, 0, sizeof autoProxyOptions);
         autoProxyOptions.fAutoLogonIfChallenged = false;
+        //Although it is possible to specify dwFlags = WINHTTP_AUTOPROXY_AUTO_DETECT | WINHTTP_AUTOPROXY_CONFIG_URL
+        //this has poor performance (WPAD is attempted for every url, taking 2.5 seconds per interface,
+        //before the configured pac file is used)
         if (ieProxyConfig.fAutoDetect) {
             autoProxyOptions.dwFlags = WINHTTP_AUTOPROXY_AUTO_DETECT;
             autoProxyOptions.dwAutoDetectFlags = WINHTTP_AUTO_DETECT_TYPE_DHCP |
@@ -462,6 +466,25 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
         DWORD getProxyError = GetLastError();
 
         if (!getProxySucceeded
+            && (ERROR_WINHTTP_AUTODETECTION_FAILED == getProxyError)) {
+            // WPAD failed
+            if (sp->autoConfigUrl.isEmpty()) {
+                //No config file could be retrieved on the network.
+                //Don't search for it next time again.
+                sp->isAutoConfig = false;
+            } else {
+                //pac file URL is specified as well, try using that
+                sp->autoProxyOptions.dwFlags = WINHTTP_AUTOPROXY_CONFIG_URL;
+                sp->autoProxyOptions.lpszAutoConfigUrl = (LPCWSTR)sp->autoConfigUrl.utf16();
+                getProxySucceeded = ptrWinHttpGetProxyForUrl(sp->hHttpSession,
+                                                (LPCWSTR)url.toString().utf16(),
+                                                &sp->autoProxyOptions,
+                                                &proxyInfo);
+                getProxyError = GetLastError();
+            }
+        }
+
+        if (!getProxySucceeded
             && (ERROR_WINHTTP_LOGIN_FAILURE == getProxyError)) {
             // We first tried without AutoLogon, because this might prevent caching the result.
             // But now we've to enable it (http://msdn.microsoft.com/en-us/library/aa383153%28v=VS.85%29.aspx)
@@ -471,6 +494,13 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
                                                 &sp->autoProxyOptions,
                                                 &proxyInfo);
             getProxyError = GetLastError();
+        }
+
+        if (!getProxySucceeded
+            && (ERROR_WINHTTP_UNABLE_TO_DOWNLOAD_SCRIPT == getProxyError)) {
+            // PAC file url is not connectable, or server returned error (e.g. http 404)
+            //Don't search for it next time again.
+            sp->isAutoConfig = false;
         }
 
         if (getProxySucceeded) {
@@ -489,13 +519,7 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
             return parseServerList(query, proxyServerList);
         }
 
-        // GetProxyForUrl failed
-
-        if (ERROR_WINHTTP_AUTODETECTION_FAILED == getProxyError) {
-            //No config file could be retrieved on the network.
-            //Don't search for it next time again.
-            sp->isAutoConfig = false;
-        }
+        // GetProxyForUrl failed, fall back to static configuration
     }
 
     // static configuration
