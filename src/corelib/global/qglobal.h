@@ -489,10 +489,6 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 
 class QDataStream;
 
-#if !defined(QT_NO_COP)
-#  define QT_NO_COP
-#endif
-
 #if defined(Q_OS_VXWORKS)
 #  define QT_NO_CRASHHANDLER     // no popen
 #  define QT_NO_PROCESS          // no exec*, no fork
