@@ -46,6 +46,9 @@ QT_BEGIN_NAMESPACE
 
 class QEvdevMousePlugin : public QGenericPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "evdevmouse.json")
+
 public:
     QEvdevMousePlugin();
 
@@ -72,6 +75,6 @@ QObject* QEvdevMousePlugin::create(const QString &key,
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(qevdevmouseplugin, QEvdevMousePlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

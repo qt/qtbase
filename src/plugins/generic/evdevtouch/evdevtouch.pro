@@ -12,3 +12,6 @@ SOURCES = main.cpp \
     qevdevtouch.cpp
 
 QT += core-private platformsupport-private
+
+OTHER_FILES += \
+    evdevtouch.json

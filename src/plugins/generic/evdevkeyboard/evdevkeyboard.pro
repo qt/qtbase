@@ -17,3 +17,6 @@ LIBS += -ludev
 SOURCES = main.cpp \
     qevdevkeyboardhandler.cpp \
     qevdevkeyboardmanager.cpp
+
+OTHER_FILES += \
+    evdevkeyboard.json
