@@ -343,7 +343,7 @@ int qstrcmp(const QByteArray &str1, const QByteArray &str2)
 {
     int l1 = str1.length();
     int l2 = str2.length();
-    int ret = memcmp(str1, str2, qMin(l1, l2));
+    int ret = memcmp(str1.constData(), str2.constData(), qMin(l1, l2));
     if (ret != 0)
         return ret;
 
@@ -994,6 +994,8 @@ QByteArray &QByteArray::operator=(const char *str)
 
 /*! \fn QByteArray::operator const char *() const
     \fn QByteArray::operator const void *() const
+
+    \obsolete Use constData() instead.
 
     Returns a pointer to the data stored in the byte array. The
     pointer can be used to access the bytes that compose the array.
@@ -2751,7 +2753,7 @@ QDataStream &operator<<(QDataStream &out, const QByteArray &ba)
         out << (quint32)0xffffffff;
         return out;
     }
-    return out.writeBytes(ba, ba.size());
+    return out.writeBytes(ba.constData(), ba.size());
 }
 
 /*! \relates QByteArray

@@ -1612,7 +1612,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
         d->encMapper = codec->makeDecoder();
     }
 
-    QString input = d->encMapper->toUnicode(data, data.size());
+    QString input = d->encMapper->toUnicode(data.constData(), data.size());
 
     if (d->lookingForEncodingDecl) {
         d->encodingDeclChars += input;
@@ -1633,9 +1633,9 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
                     input.clear();
 
                     // prime the decoder with the data so far
-                    d->encMapper->toUnicode(d->encodingDeclBytes, d->encodingDeclBytes.size());
+                    d->encMapper->toUnicode(d->encodingDeclBytes.constData(), d->encodingDeclBytes.size());
                     // now feed it the new data
-                    input = d->encMapper->toUnicode(data, data.size());
+                    input = d->encMapper->toUnicode(data.constData(), data.size());
                 }
             }
         }

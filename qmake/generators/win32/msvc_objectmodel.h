@@ -477,7 +477,7 @@ protected:
 public:
     void parseOptions(QStringList& options) {
         for (QStringList::ConstIterator it=options.begin(); (it!=options.end()); it++)
-            parseOption((*it).toLatin1());
+            parseOption((*it).toLatin1().constData());
     }
     static QStringList fixCommandLine(const QString &input);
 };

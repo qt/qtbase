@@ -98,7 +98,7 @@ QLocale QSystemLocale::fallbackLocale() const
         lang = qgetenv("LC_NUMERIC");
     if (lang.isEmpty())
         lang = qgetenv("LANG");
-    return QLocale(QLatin1String(lang));
+    return QLocale(QString::fromLatin1(lang));
 }
 
 QVariant QSystemLocale::query(QueryType type, QVariant in) const

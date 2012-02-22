@@ -1520,7 +1520,7 @@ QMakeProject::resolveSpec(QString *spec, const QString &qmakespec)
         if (*spec == "default") {
 #ifdef Q_OS_UNIX
             char buffer[1024];
-            int l = readlink(qmakespec.toLatin1(), buffer, 1023);
+            int l = readlink(qmakespec.toLatin1().constData(), buffer, 1023);
             if (l != -1) {
                 buffer[l] = '\0';
                 *spec = QString::fromLatin1(buffer);
@@ -2070,7 +2070,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             if(args.count() > 1)
                 singleLine = (args[1].toLower() == "true");
             QString output;
-            FILE *proc = QT_POPEN(args[0].toLatin1(), "r");
+            FILE *proc = QT_POPEN(args[0].toLatin1().constData(), "r");
             while(proc && !feof(proc)) {
                 int read_in = int(fread(buff, 1, 255, proc));
                 if(!read_in)
@@ -3150,12 +3150,12 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
       else if(var.startsWith(QLatin1String("QMAKE_TARGET."))) {
             QString ret, type = var.mid(13);
             if(type == "arch") {
-                QString paths = qgetenv("PATH");
-                QString vcBin64 = qgetenv("VCINSTALLDIR");
+                QString paths = QString::fromLocal8Bit(qgetenv("PATH"));
+                QString vcBin64 = QString::fromLocal8Bit(qgetenv("VCINSTALLDIR"));
                 if (!vcBin64.endsWith('\\'))
                     vcBin64.append('\\');
                 vcBin64.append("bin\\amd64");
-                QString vcBinX86_64 = qgetenv("VCINSTALLDIR");
+                QString vcBinX86_64 = QString::fromLocal8Bit(qgetenv("VCINSTALLDIR"));
                 if (!vcBinX86_64.endsWith('\\'))
                     vcBinX86_64.append('\\');
                 vcBinX86_64.append("bin\\x86_amd64");

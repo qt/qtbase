@@ -681,7 +681,7 @@ bool RCCResourceLibrary::output(QIODevice &outDevice, QIODevice &errorDevice)
         m_errorDevice->write("Could not write footer\n");
         return false;
     }
-    outDevice.write(m_out, m_out.size());
+    outDevice.write(m_out.constData(), m_out.size());
     return true;
 }
 
