@@ -60,6 +60,8 @@
 QT_BEGIN_NAMESPACE
 
 struct QFixed {
+private:
+    QFixed(int val, int) : val(val) {} // 2nd int is just a dummy for disambiguation
 public:
     QFixed() : val(0) {}
     QFixed(int i) : val(i<<6) {}
@@ -67,8 +69,8 @@ public:
     QFixed &operator=(int i) { val = (i<<6); return *this; }
     QFixed &operator=(long i) { val = (i<<6); return *this; }
 
-    static QFixed fromReal(qreal r) { QFixed f; f.val = (int)(r*qreal(64)); return f; }
-    static QFixed fromFixed(int fixed) { QFixed f; f.val = fixed; return f; }
+    static QFixed fromReal(qreal r) { return fromFixed((int)(r*qreal(64))); }
+    static QFixed fromFixed(int fixed) { return QFixed(fixed,0); } // uses private ctor
 
     inline int value() const { return val; }
     inline void setValue(int value) { val = value; }
@@ -77,23 +79,23 @@ public:
     inline qreal toReal() const { return ((qreal)val)/(qreal)64; }
 
     inline int truncate() const { return val>>6; }
-    inline QFixed round() const { QFixed f; f.val = ((val)+32) & -64; return f; }
-    inline QFixed floor() const { QFixed f; f.val = (val) & -64; return f; }
-    inline QFixed ceil() const { QFixed f; f.val = (val+63) & -64; return f; }
+    inline QFixed round() const { return fromFixed(((val)+32) & -64); }
+    inline QFixed floor() const { return fromFixed((val) & -64); }
+    inline QFixed ceil() const { return fromFixed((val+63) & -64); }
 
-    inline QFixed operator+(int i) const { QFixed f; f.val = (val + (i<<6)); return f; }
-    inline QFixed operator+(uint i) const { QFixed f; f.val = (val + (i<<6)); return f; }
-    inline QFixed operator+(const QFixed &other) const { QFixed f; f.val = (val + other.val); return f; }
+    inline QFixed operator+(int i) const { return fromFixed((val + (i<<6))); }
+    inline QFixed operator+(uint i) const { return fromFixed((val + (i<<6))); }
+    inline QFixed operator+(const QFixed &other) const { return fromFixed((val + other.val)); }
     inline QFixed &operator+=(int i) { val += (i<<6); return *this; }
     inline QFixed &operator+=(uint i) { val += (i<<6); return *this; }
     inline QFixed &operator+=(const QFixed &other) { val += other.val; return *this; }
-    inline QFixed operator-(int i) const { QFixed f; f.val = (val - (i<<6)); return f; }
-    inline QFixed operator-(uint i) const { QFixed f; f.val = (val - (i<<6)); return f; }
-    inline QFixed operator-(const QFixed &other) const { QFixed f; f.val = (val - other.val); return f; }
+    inline QFixed operator-(int i) const { return fromFixed((val - (i<<6))); }
+    inline QFixed operator-(uint i) const { return fromFixed((val - (i<<6))); }
+    inline QFixed operator-(const QFixed &other) const { return fromFixed((val - other.val)); }
     inline QFixed &operator-=(int i) { val -= (i<<6); return *this; }
     inline QFixed &operator-=(uint i) { val -= (i<<6); return *this; }
     inline QFixed &operator-=(const QFixed &other) { val -= other.val; return *this; }
-    inline QFixed operator-() const { QFixed f; f.val = -val; return f; }
+    inline QFixed operator-() const { return fromFixed(-val); }
 
     inline bool operator==(const QFixed &other) const { return val == other.val; }
     inline bool operator!=(const QFixed &other) const { return val != other.val; }
@@ -120,7 +122,7 @@ public:
         }
         return *this;
     }
-    inline QFixed operator/(int d) const { QFixed f; f.val = val/d; return f; }
+    inline QFixed operator/(int d) const { return fromFixed(val/d); }
     inline QFixed operator/(QFixed b) const { QFixed f = *this; return (f /= b); }
     inline QFixed operator>>(int d) const { QFixed f = *this; f.val >>= d; return f; }
     inline QFixed &operator*=(int i) { val *= i; return *this; }
@@ -136,21 +138,21 @@ public:
         val = neg ? -res : res;
         return *this;
     }
-    inline QFixed operator*(int i) const { QFixed f = *this; return (f *= i); }
-    inline QFixed operator*(uint i) const { QFixed f = *this; return (f *= i); }
+    inline QFixed operator*(int i) const { return fromFixed(val * i); }
+    inline QFixed operator*(uint i) const { return fromFixed(val * i); }
     inline QFixed operator*(const QFixed &o) const { QFixed f = *this; return (f *= o); }
 
 private:
     QFixed(qreal i) : val((int)(i*qreal(64))) {}
     QFixed &operator=(qreal i) { val = (int)(i*qreal(64)); return *this; }
-    inline QFixed operator+(qreal i) const { QFixed f; f.val = (val + (int)(i*qreal(64))); return f; }
+    inline QFixed operator+(qreal i) const { return fromFixed((val + (int)(i*qreal(64)))); }
     inline QFixed &operator+=(qreal i) { val += (int)(i*64); return *this; }
-    inline QFixed operator-(qreal i) const { QFixed f; f.val = (val - (int)(i*qreal(64))); return f; }
+    inline QFixed operator-(qreal i) const { return fromFixed((val - (int)(i*qreal(64)))); }
     inline QFixed &operator-=(qreal i) { val -= (int)(i*64); return *this; }
     inline QFixed &operator/=(qreal r) { val = (int)(val/r); return *this; }
-    inline QFixed operator/(qreal d) const { QFixed f; f.val = (int)(val/d); return f; }
+    inline QFixed operator/(qreal d) const { return fromFixed((int)(val/d)); }
     inline QFixed &operator*=(qreal d) { val = (int) (val*d); return *this; }
-    inline QFixed operator*(qreal d) const { QFixed f = *this; return (f *= d); }
+    inline QFixed operator*(qreal d) const { return fromFixed((int) (val*d)); }
     int val;
 };
 Q_DECLARE_TYPEINFO(QFixed, Q_PRIMITIVE_TYPE);
@@ -206,12 +208,11 @@ inline QFixedPoint operator+(const QFixedPoint &p1, const QFixedPoint &p2)
 struct QFixedSize {
     QFixed width;
     QFixed height;
+    QFixedSize() {}
+    QFixedSize(QFixed _width, QFixed _height) : width(_width), height(_height) {}
     QSizeF toSizeF() const { return QSizeF(width.toReal(), height.toReal()); }
     static QFixedSize fromSizeF(const QSizeF &s) {
-        QFixedSize size;
-        size.width = QFixed::fromReal(s.width());
-        size.height = QFixed::fromReal(s.height());
-        return size;
+        return QFixedSize(QFixed::fromReal(s.width()), QFixed::fromReal(s.height()));
     }
 };
 Q_DECLARE_TYPEINFO(QFixedSize, Q_PRIMITIVE_TYPE);
