@@ -1110,6 +1110,7 @@ QEasingCurve::~QEasingCurve()
 
     Swaps curve \a other with this curve. This operation is very
     fast and never fails.
+*/
 
 /*!
     Compare this easing curve with \a other and returns true if they are
