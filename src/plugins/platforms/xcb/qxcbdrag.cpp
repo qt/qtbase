@@ -215,6 +215,26 @@ translateCoordinates(QXcbConnection *c, xcb_window_t from, xcb_window_t to, int 
     return xcb_translate_coordinates_reply(c->xcb_connection(), cookie, 0);
 }
 
+static
+bool windowInteractsWithPosition(xcb_connection_t *connection, const QPoint & pos, xcb_window_t w, int shapeType)
+{
+    bool interacts = true;
+    xcb_shape_get_rectangles_reply_t *reply = xcb_shape_get_rectangles_reply(connection, xcb_shape_get_rectangles(connection, w, shapeType), NULL);
+    if (reply) {
+        xcb_rectangle_t *rectangles = xcb_shape_get_rectangles_rectangles(reply);
+        if (rectangles) {
+            interacts = false;
+            const int nRectangles = xcb_shape_get_rectangles_rectangles_length(reply);
+            for (int i = 0; !interacts && i < nRectangles; ++i) {
+                interacts = QRect(rectangles[i].x, rectangles[i].y, rectangles[i].width, rectangles[i].height).contains(pos);
+            }
+        }
+        free(reply);
+    }
+
+    return interacts;
+}
+
 xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md)
 {
     if (w == shapedPixmapWindow()->handle()->winId())
@@ -242,22 +262,10 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
                 bool isAware = reply && reply->type != XCB_NONE;
                 free(reply);
                 if (isAware) {
-                    xcb_xfixes_region_t region = xcb_generate_id(xcb_connection());
-                    xcb_xfixes_create_region_from_window(xcb_connection(), region, w, XCB_SHAPE_SK_BOUNDING);
-                    xcb_xfixes_fetch_region_reply_t *reply = xcb_xfixes_fetch_region_reply(xcb_connection(), xcb_xfixes_fetch_region(xcb_connection(), region), NULL);
-                    if (reply) {
-                        xcb_rectangle_t *rectangles = xcb_xfixes_fetch_region_rectangles(reply);
-                        if (rectangles) {
-                            windowContainsMouse = false;
-                            const int nRectangles = xcb_xfixes_fetch_region_rectangles_length(reply);
-                            for (int i = 0; !windowContainsMouse && i < nRectangles; ++i) {
-                                windowContainsMouse = QRect(rectangles[i].x, rectangles[i].y, rectangles[i].width, rectangles[i].height).contains(pos);
-                            }
-                        }
-                        free(reply);
-                    }
-                    xcb_xfixes_destroy_region(xcb_connection(), region);
-
+                    // When ShapeInput and ShapeBounding are not set they return a single rectangle with the geometry of the window, this is why we
+                    // need an && here so that in the case one is set and the other is not we still get the correct result.
+                    windowContainsMouse = windowInteractsWithPosition(xcb_connection(), pos, w, XCB_SHAPE_SK_INPUT) &&
+                                          windowInteractsWithPosition(xcb_connection(), pos, w, XCB_SHAPE_SK_BOUNDING);
                     if (windowContainsMouse)
                         return w;
                 }
