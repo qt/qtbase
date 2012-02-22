@@ -50,9 +50,6 @@
 
 #include <pcre.h>
 
-// after how many usages we optimize the regexp
-static const unsigned int OPTIMIZE_AFTER_USE_COUNT = 10;
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -726,6 +723,13 @@ QT_BEGIN_NAMESPACE
         contain any metacharacter that anchors the match at that point.
 */
 
+// after how many usages we optimize the regexp
+#ifdef QT_BUILD_INTERNAL
+Q_AUTOTEST_EXPORT unsigned int qt_qregularexpression_optimize_after_use_count = 10;
+#else
+static const unsigned int qt_qregularexpression_optimize_after_use_count = 10;
+#endif // QT_BUILD_INTERNAL
+
 /*!
     \internal
 */
@@ -1012,7 +1016,7 @@ static bool isJitEnabled()
     setting the studyData member variable to the result of the study. It gets
     called by doMatch() every time a match is performed. As of now, the
     optimizations on the pattern are performed after a certain number of usages
-    (i.e. the OPTIMIZE_AFTER_USE_COUNT constant).
+    (i.e. the qt_qregularexpression_optimize_after_use_count constant).
 
     Notice that although the method is protected by a mutex, one thread may
     invoke this function and return immediately (i.e. not study the pattern,
@@ -1028,7 +1032,7 @@ pcre16_extra *QRegularExpressionPrivate::optimizePattern()
 
     QMutexLocker lock(&mutex);
 
-    if (studyData || (++usedCount != OPTIMIZE_AFTER_USE_COUNT))
+    if (studyData || (++usedCount != qt_qregularexpression_optimize_after_use_count))
         return studyData;
 
     static const bool enableJit = isJitEnabled();

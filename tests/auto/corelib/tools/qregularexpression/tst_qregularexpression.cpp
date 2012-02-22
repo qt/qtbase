@@ -40,45 +40,12 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <qregularexpression.h>
 #include <qstring.h>
 #include <qlist.h>
 #include <qstringlist.h>
 #include <qhash.h>
 
-Q_DECLARE_METATYPE(QRegularExpression::PatternOptions)
-Q_DECLARE_METATYPE(QRegularExpression::MatchType)
-Q_DECLARE_METATYPE(QRegularExpression::MatchOptions)
-
-class tst_QRegularExpression : public QObject
-{
-    Q_OBJECT
-
-private slots:
-    void gettersSetters_data();
-    void gettersSetters();
-    void escape_data();
-    void escape();
-    void validity_data();
-    void validity();
-    void patternOptions_data();
-    void patternOptions();
-    void normalMatch_data();
-    void normalMatch();
-    void partialMatch_data();
-    void partialMatch();
-    void globalMatch_data();
-    void globalMatch();
-    void serialize_data();
-    void serialize();
-    void operatoreq_data();
-    void operatoreq();
-    void captureCount_data();
-    void captureCount();
-
-private:
-    void provideRegularExpressions();
-};
+#include "tst_qregularexpression.h"
 
 struct Match
 {
@@ -1229,8 +1196,3 @@ void tst_QRegularExpression::captureCount()
     if (!re.isValid())
         QCOMPARE(re.captureCount(), -1);
 }
-
-QTEST_APPLESS_MAIN(tst_QRegularExpression)
-
-#include "tst_qregularexpression.moc"
-

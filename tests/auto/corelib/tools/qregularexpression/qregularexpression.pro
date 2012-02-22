@@ -1,4 +1,3 @@
-CONFIG += testcase parallel_test
-TARGET = tst_qregularexpression
-QT = core testlib
-SOURCES = tst_qregularexpression.cpp
+TEMPLATE = subdirs
+SUBDIRS = defaultoptimize
+contains(QT_CONFIG,private_tests):SUBDIRS += alwaysoptimize

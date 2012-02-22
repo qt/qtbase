@@ -1,1 +1,2 @@
-tst_qregularexpression
+tst_qregularexpression_alwaysoptimize
+tst_qregularexpression_defaultoptimize
