@@ -145,9 +145,6 @@
 /* Clang also masquerades as GCC */
 #    define Q_CC_CLANG
 #  endif
-#  ifdef __APPLE__
-#    define Q_NO_DEPRECATED_CONSTRUCTORS
-#  endif
 #  define Q_ALIGNOF(type)   __alignof__(type)
 #  define Q_TYPEOF(expr)    __typeof__(expr)
 #  define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
