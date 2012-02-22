@@ -1451,7 +1451,6 @@ Q_CORE_EXPORT int qrand();
 #ifdef Q_OS_QNX
 // QNX doesn't have SYSV style shared memory. Multiprocess QWS apps,
 // shared fonts and QSystemSemaphore + QSharedMemory are not available
-#  define QT_NO_QWS_SHARE_FONTS
 #  define QT_NO_SYSTEMSEMAPHORE
 #  define QT_NO_SHAREDMEMORY
 #endif
