@@ -310,9 +310,7 @@ QT_END_INCLUDE_NAMESPACE
 /*
    Warnings and errors when using deprecated methods
 */
-#if defined(Q_MOC_RUN)
-#  define Q_DECL_DEPRECATED Q_DECL_DEPRECATED
-#elif (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && (__GNUC__ - 0 > 3 || (__GNUC__ - 0 == 3 && __GNUC_MINOR__ - 0 >= 2))) || defined(Q_CC_RVCT)
+#if (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && (__GNUC__ - 0 > 3 || (__GNUC__ - 0 == 3 && __GNUC_MINOR__ - 0 >= 2))) || defined(Q_CC_RVCT)
 #  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
 #elif defined(Q_CC_MSVC)
 #  define Q_DECL_DEPRECATED __declspec(deprecated)
@@ -327,9 +325,7 @@ QT_END_INCLUDE_NAMESPACE
 #  define Q_DECL_VARIABLE_DEPRECATED Q_DECL_DEPRECATED
 #endif
 #ifndef Q_DECL_CONSTRUCTOR_DEPRECATED
-#  if defined(Q_MOC_RUN)
-#    define Q_DECL_CONSTRUCTOR_DEPRECATED Q_DECL_CONSTRUCTOR_DEPRECATED
-#  elif defined(Q_NO_DEPRECATED_CONSTRUCTORS)
+#  if defined(Q_NO_DEPRECATED_CONSTRUCTORS)
 #    define Q_DECL_CONSTRUCTOR_DEPRECATED
 #  else
 #    define Q_DECL_CONSTRUCTOR_DEPRECATED Q_DECL_DEPRECATED
