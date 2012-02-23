@@ -99,7 +99,7 @@ void MainWindow::save()
         QByteArray codecName = action->data().toByteArray();
 
         QTextStream out(&file);
-        out.setCodec(codecName);
+        out.setCodec(codecName.constData());
         out << textEdit->toPlainText();
     }
 }

@@ -102,7 +102,7 @@ void Screenshot::saveScreenshot()
                                .arg(format.toUpper())
                                .arg(format));
     if (!fileName.isEmpty())
-        originalPixmap.save(fileName, format.toAscii());
+        originalPixmap.save(fileName, format.toAscii().constData());
 }
 //! [3]
 
