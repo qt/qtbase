@@ -1,4 +1,5 @@
-contains(QT_CONFIG, opengl):QT += opengl widgets
+QT += widgets
+contains(QT_CONFIG, opengl):QT += opengl
 HEADERS += boat.h \
     bomb.h \
     mainwindow.h \
