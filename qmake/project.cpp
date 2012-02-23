@@ -1528,12 +1528,15 @@ QMakeProject::resolveSpec(QString *spec, const QString &qmakespec)
             // We can't resolve symlinks as they do on Unix, so configure.exe puts the source of the
             // qmake.conf at the end of the default/qmake.conf in the QMAKESPEC_ORG variable.
             const QStringList &spec_org = base_vars["QMAKESPEC_ORIGINAL"];
-            if (!spec_org.isEmpty()) {
+            if (spec_org.isEmpty()) {
+                // try again the next time around
+                *spec = QString();
+            } else {
                 *spec = spec_org.at(0);
 #endif
                 int lastSlash = spec->lastIndexOf(QLatin1Char('/'));
                 if (lastSlash != -1)
-                    spec->remove(lastSlash + 1);
+                    spec->remove(0, lastSlash + 1);
             }
         }
     }
