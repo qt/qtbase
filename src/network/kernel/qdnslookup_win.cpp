@@ -44,46 +44,17 @@
 
 #include <qurl.h>
 #include <private/qmutexpool_p.h>
-#include <private/qsystemlibrary_p.h>
 
 #include <qt_windows.h>
 #include <windns.h>
 
 QT_BEGIN_NAMESPACE
 
-typedef DNS_STATUS (*dns_query_utf8_proto)(PCSTR,WORD,DWORD,PIP4_ARRAY,PDNS_RECORD*,PVOID*);
-static dns_query_utf8_proto local_dns_query_utf8 = 0;
-typedef void (*dns_record_list_free_proto)(PDNS_RECORD,DNS_FREE_TYPE);
-static dns_record_list_free_proto local_dns_record_list_free = 0;
-
-static void resolveLibrary()
-{
-    local_dns_query_utf8 = (dns_query_utf8_proto) QSystemLibrary::resolve(QLatin1String("dnsapi"), "DnsQuery_UTF8");
-    local_dns_record_list_free = (dns_record_list_free_proto) QSystemLibrary::resolve(QLatin1String("dnsapi"), "DnsRecordListFree");
-}
-
 void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, QDnsLookupReply *reply)
 {
-    // Load DnsQuery_UTF8 and DnsRecordListFree on demand.
-    static volatile bool triedResolve = false;
-    if (!triedResolve) {
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&local_dns_query_utf8));
-        if (!triedResolve) {
-            resolveLibrary();
-            triedResolve = true;
-        }
-    }
-
-    // If DnsQuery_UTF8 or DnsRecordListFree is missing, fail.
-    if (!local_dns_query_utf8 || !local_dns_record_list_free) {
-        reply->error = QDnsLookup::ResolverError,
-        reply->errorString = tr("Resolver functions not found");
-        return;
-    }
-
     // Perform DNS query.
-    PDNS_RECORD dns_records;
-    const DNS_STATUS status = local_dns_query_utf8(requestName, requestType, DNS_QUERY_STANDARD, NULL, &dns_records, NULL);
+    PDNS_RECORD dns_records = 0;
+    const DNS_STATUS status = DnsQuery_UTF8(requestName, requestType, DNS_QUERY_STANDARD, NULL, &dns_records, NULL);
     switch (status) {
     case ERROR_SUCCESS:
         break;
@@ -172,7 +143,7 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
         }
     }
 
-    local_dns_record_list_free(dns_records, DnsFreeRecordList);
+    DnsRecordListFree(dns_records, DnsFreeRecordList);
 }
 
 QT_END_NAMESPACE
