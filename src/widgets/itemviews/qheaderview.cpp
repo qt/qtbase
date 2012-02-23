@@ -1802,9 +1802,8 @@ void QHeaderViewPrivate::_q_sectionsRemoved(const QModelIndex &parent,
         if (logicalFirst == logicalLast) { // Remove just one index.
             int l = logicalFirst;
             int visual = visualIndices.at(l);
+            Q_ASSERT(sectionCount == logicalIndices.count());
             for (int v = 0; v < sectionCount; ++v) {
-                if (v >= logicalIndices.count())
-                    continue; // the section doesn't exist
                 if (v > visual) {
                     int logical = logicalIndices.at(v);
                     --(visualIndices[logical]);
