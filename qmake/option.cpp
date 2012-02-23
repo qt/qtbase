@@ -116,6 +116,7 @@ bool Option::mkfile::do_dep_heuristics = true;
 bool Option::mkfile::do_preprocess = false;
 bool Option::mkfile::do_stub_makefile = false;
 bool Option::mkfile::do_cache = true;
+QString Option::mkfile::project_build_root;
 QString Option::mkfile::cachefile;
 QStringList Option::mkfile::project_files;
 QString Option::mkfile::qmakespec_commandline;
@@ -565,6 +566,34 @@ void Option::applyHostMode()
        Option::dir_sep = "/";
        Option::obj_ext = ".o";
    }
+}
+
+bool Option::prepareProject()
+{
+    mkfile::project_build_root.clear();
+    if (mkfile::do_cache) {
+        if (mkfile::cachefile.isEmpty())  { //find it as it has not been specified
+            QDir dir(output_dir);
+            while (!dir.exists(QLatin1String(".qmake.cache")))
+                if (dir.isRoot() || !dir.cdUp())
+                    goto no_cache;
+            mkfile::cachefile = dir.filePath(QLatin1String(".qmake.cache"));
+            mkfile::project_build_root = dir.path();
+        } else {
+            QFileInfo fi(mkfile::cachefile);
+            mkfile::cachefile = QDir::cleanPath(fi.absoluteFilePath());
+            mkfile::project_build_root = QDir::cleanPath(fi.absolutePath());
+        }
+
+        if (mkfile::qmakespec.isEmpty()) {
+            QMakeProject cproj;
+            if (!cproj.read(mkfile::cachefile, QMakeProject::ReadProFile))
+                return false;
+            mkfile::qmakespec = cproj.first(QLatin1String("QMAKESPEC"));
+        }
+    }
+  no_cache:
+    return true;
 }
 
 bool Option::postProcessProject(QMakeProject *project)

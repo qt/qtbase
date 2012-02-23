@@ -1281,35 +1281,9 @@ QMakeProject::read(uchar cmd)
             base_vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
 
         if ((cmd & ReadSetup) && Option::mkfile::do_cache) {        // parse the cache
-            int cache_depth = -1;
-            QString qmake_cache = Option::mkfile::cachefile;
-            if(qmake_cache.isEmpty())  { //find it as it has not been specified
-                QString dir = Option::output_dir;
-                while(!QFile::exists((qmake_cache = dir + QLatin1String("/.qmake.cache")))) {
-                    dir = dir.left(dir.lastIndexOf(QLatin1Char('/')));
-                    if(dir.isEmpty() || dir.indexOf(QLatin1Char('/')) == -1) {
-                        qmake_cache = "";
-                        break;
-                    }
-                    if(cache_depth == -1)
-                        cache_depth = 1;
-                    else
-                        cache_depth++;
-                }
-            } else {
-                QString abs_cache = QFileInfo(Option::mkfile::cachefile).absoluteDir().path();
-                if(Option::output_dir.startsWith(abs_cache))
-                    cache_depth = Option::output_dir.mid(abs_cache.length()).count('/');
-            }
-            if(!qmake_cache.isEmpty()) {
-                QHash<QString, QStringList> cache;
-                if(read(qmake_cache, cache)) {
-                    Option::mkfile::cachefile_depth = cache_depth;
-                    Option::mkfile::cachefile = qmake_cache;
-                    if(Option::mkfile::qmakespec.isEmpty() && !cache["QMAKESPEC"].isEmpty())
-                        Option::mkfile::qmakespec = cache["QMAKESPEC"].first();
-                }
-            }
+            if (Option::output_dir.startsWith(Option::mkfile::project_build_root))
+                Option::mkfile::cachefile_depth =
+                        Option::output_dir.mid(Option::mkfile::project_build_root.length()).count('/');
         }
         if (cmd & ReadSetup) {             // parse mkspec
             QString qmakespec = fixEnvVariables(Option::mkfile::qmakespec);
