@@ -96,14 +96,18 @@ public:
 
 QT_BEGIN_NAMESPACE
 //! [3] //! [4]
-Q_DECLARE_INTERFACE(BrushInterface,
-                    "com.trolltech.PlugAndPaint.BrushInterface/1.0")
+#define BrushInterface_iid "org.qt-project.Qt.Examples.PlugAndPaint.BrushInterface"
+
+Q_DECLARE_INTERFACE(BrushInterface, BrushInterface_iid)
 //! [3]
-Q_DECLARE_INTERFACE(ShapeInterface,
-                    "com.trolltech.PlugAndPaint.ShapeInterface/1.0")
+
+#define ShapeInterface_iid  "org.qt-project.Qt.Examples.PlugAndPaint.ShapeInterface"
+
+Q_DECLARE_INTERFACE(ShapeInterface, ShapeInterface_iid)
 //! [5]
-Q_DECLARE_INTERFACE(FilterInterface,
-                    "com.trolltech.PlugAndPaint.FilterInterface/1.0")
+#define FilterInterface_iid "org.qt-project.Qt.Examples.PlugAndPaint.FilterInterface"
+
+Q_DECLARE_INTERFACE(FilterInterface, FilterInterface_iid)
 //! [4] //! [5]
 QT_END_NAMESPACE
 

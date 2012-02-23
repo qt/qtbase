@@ -61,6 +61,9 @@ QT_BEGIN_NAMESPACE
 
 class AccessibleFactory : public QAccessiblePlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QAccessibleFactoryInterface" FILE "widgets.json")
+
 public:
     AccessibleFactory();
 
@@ -109,7 +112,6 @@ QStringList AccessibleFactory::keys() const
     list << QLatin1String("QStatusBar");
     list << QLatin1String("QProgressBar");
     list << QLatin1String("QMenuBar");
-    list << QLatin1String("Q3PopupMenu");
     list << QLatin1String("QMenu");
     list << QLatin1String("QHeaderView");
     list << QLatin1String("QTabBar");
@@ -251,8 +253,6 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
 #ifndef QT_NO_MENU
     } else if (classname == QLatin1String("QMenu")) {
         iface = new QAccessibleMenu(widget);
-    } else if (classname == QLatin1String("Q3PopupMenu")) {
-        iface = new QAccessibleMenu(widget);
 #endif
 #ifndef QT_NO_ITEMVIEWS
     } else if (classname == QLatin1String("QAbstractItemView")) {
@@ -345,9 +345,9 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
     return iface;
 }
 
-Q_EXPORT_STATIC_PLUGIN(AccessibleFactory)
-Q_EXPORT_PLUGIN2(qtaccessiblewidgets, AccessibleFactory)
 
 QT_END_NAMESPACE
+
+#include "main.moc"
 
 #endif // QT_NO_ACCESSIBILITY

@@ -43,6 +43,7 @@
 
 #include <QRect>
 #include <QObject>
+#include <QtPlugin>
 #include <QStringList>
 #include <QPainterPath>
 #include <QImage>
@@ -57,6 +58,7 @@ class BasicToolsPlugin : public QObject,
                          public FilterInterface
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.Examples.PlugAndPaint.BrushInterface" FILE "basictools.json")
     Q_INTERFACES(BrushInterface ShapeInterface FilterInterface)
 //! [0]
 

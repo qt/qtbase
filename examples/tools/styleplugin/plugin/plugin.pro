@@ -5,6 +5,7 @@ HEADERS     = simplestyle.h \
               simplestyleplugin.h
 SOURCES     = simplestyle.cpp \
               simplestyleplugin.cpp
+OTHER_FILES += simplestyle.json
 TARGET      = simplestyleplugin
 #! [0]
 win32 {
