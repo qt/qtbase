@@ -20,3 +20,26 @@ list(APPEND Qt5Core_COMPILE_DEFINITIONS QT_NAMESPACE=$$QT_NAMESPACE)
 !!IF !isEmpty(QT_LIBINFIX)
 set(QT_LIBINFIX \"$${QT_LIBINFIX}\")
 !!ENDIF
+
+!!IF !isEmpty(CMAKE_WINDOWS_BUILD)
+set(Qt5Core_QTMAIN_LIBRARIES Qt5::WinMain)
+
+if (NOT _Qt5WinMain_target)
+    set(_Qt5WinMain_target 1)
+    add_library(Qt5::WinMain STATIC IMPORTED)
+endif()
+
+!!IF !isEmpty(debug_type)
+set_property(TARGET Qt5::WinMain APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
+set_target_properties(Qt5::WinMain PROPERTIES
+    IMPORTED_LOCATION_DEBUG "${_qt5_install_prefix}/$$CMAKE_LIB_DIR/$${CMAKE_WINMAIN_FILE_LOCATION_DEBUG}"
+)
+!!ENDIF
+
+!!IF !isEmpty(release_type)
+set_property(TARGET Qt5::WinMain APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(Qt5::WinMain PROPERTIES
+    IMPORTED_LOCATION_RELEASE \"${_qt5_install_prefix}/$$CMAKE_LIB_DIR/$${CMAKE_WINMAIN_FILE_LOCATION_RELEASE}\"
+)
+!!ENDIF
+!!ENDIF
