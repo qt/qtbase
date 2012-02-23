@@ -93,6 +93,7 @@ private slots:
     void setValue_data();
     void setValue();
     void setRepeatAction();
+    void connectedSliders();
 
 private:
     void waitUntilTimeElapsed(const QTime& t, int ms);
@@ -1257,6 +1258,18 @@ void tst_QAbstractSlider::setRepeatAction()
     QTest::qWait(300);
     QCOMPARE(spy.count(), 6);
     QCOMPARE(slider->value(), 115);
+}
+
+void tst_QAbstractSlider::connectedSliders()
+{
+    Slider *slider2 = new Slider(topLevel);
+    connect(slider, SIGNAL(rangeChanged(int, int)), slider2, SLOT(setRange(int, int)));
+    const int sliderlow = 13;
+    const int sliderhigh = 1017;
+    slider->setRange(sliderlow, sliderhigh);
+    QCOMPARE(slider2->minimum(), sliderlow);
+    QCOMPARE(slider2->maximum(), sliderhigh);
+    delete slider2;
 }
 
 QTEST_MAIN(tst_QAbstractSlider)

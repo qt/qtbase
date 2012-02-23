@@ -79,8 +79,6 @@ public:
     void setMaximum(int);
     int maximum() const;
 
-    void setRange(int min, int max);
-
     void setSingleStep(int);
     int singleStep() const;
 
@@ -120,6 +118,7 @@ public:
 public Q_SLOTS:
     void setValue(int);
     void setOrientation(Qt::Orientation);
+    void setRange(int min, int max);
 
 Q_SIGNALS:
     void valueChanged(int value);
