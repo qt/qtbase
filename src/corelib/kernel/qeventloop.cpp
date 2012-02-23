@@ -322,37 +322,51 @@ class QEventLoopLockerPrivate
 {
 public:
     explicit QEventLoopLockerPrivate(QEventLoopPrivate *loop)
-      : loop(loop), thread(0), app(0)
+      : loop(loop), type(EventLoop)
     {
         loop->ref();
     }
 
     explicit QEventLoopLockerPrivate(QThreadPrivate *thread)
-      : loop(0), thread(thread), app(0)
+      : thread(thread), type(Thread)
     {
         thread->ref();
     }
 
     explicit QEventLoopLockerPrivate(QCoreApplicationPrivate *app)
-      : loop(0), thread(0), app(app)
+      : app(app), type(Application)
     {
         app->ref();
     }
 
     ~QEventLoopLockerPrivate()
     {
-        if (loop)
+        switch (type)
+        {
+        case EventLoop:
             loop->deref();
-        else if (thread)
+            break;
+        case Thread:
             thread->deref();
-        else
+            break;
+        default:
             app->deref();
+            break;
+        }
     }
 
 private:
-    QEventLoopPrivate *loop;
-    QThreadPrivate *thread;
-    QCoreApplicationPrivate *app;
+    union {
+        QEventLoopPrivate * loop;
+        QThreadPrivate * thread;
+        QCoreApplicationPrivate * app;
+    };
+    enum Type {
+        EventLoop,
+        Thread,
+        Application
+    };
+    const Type type;
 };
 
 /*!
