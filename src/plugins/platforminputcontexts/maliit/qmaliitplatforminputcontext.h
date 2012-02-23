@@ -59,7 +59,7 @@ public:
 
     bool isValid() const;
 
-    void invokeAction(QInputPanel::Action action, int x);
+    void invokeAction(QInputMethod::Action action, int x);
     void reset(void);
     void update(Qt::InputMethodQueries);
     virtual QRectF keyboardRect() const;

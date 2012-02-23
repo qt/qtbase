@@ -57,7 +57,7 @@ public:
 
     bool isValid() const;
 
-    void invokeAction(QInputPanel::Action a, int x);
+    void invokeAction(QInputMethod::Action a, int x);
     void reset();
     void commit();
     void update(Qt::InputMethodQueries);
