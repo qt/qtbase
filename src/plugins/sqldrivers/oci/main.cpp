@@ -47,6 +47,9 @@ QT_BEGIN_NAMESPACE
 
 class QOCIDriverPlugin : public QSqlDriverPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "oci.json")
+
 public:
     QOCIDriverPlugin();
 
@@ -76,7 +79,6 @@ QStringList QOCIDriverPlugin::keys() const
     return l;
 }
 
-Q_EXPORT_STATIC_PLUGIN(QOCIDriverPlugin)
-Q_EXPORT_PLUGIN2(qsqloci, QOCIDriverPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

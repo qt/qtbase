@@ -47,6 +47,9 @@ QT_BEGIN_NAMESPACE
 
 class QPSQLDriverPlugin : public QSqlDriverPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "psql.json")
+
 public:
     QPSQLDriverPlugin();
 
@@ -76,7 +79,6 @@ QStringList QPSQLDriverPlugin::keys() const
     return l;
 }
 
-Q_EXPORT_STATIC_PLUGIN(QPSQLDriverPlugin)
-Q_EXPORT_PLUGIN2(qsqlpsql, QPSQLDriverPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"
