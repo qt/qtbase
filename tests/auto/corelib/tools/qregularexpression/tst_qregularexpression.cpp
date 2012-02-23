@@ -191,9 +191,8 @@ bool operator!=(const QList<Match> &expectedMatchList, const QRegularExpressionM
 
 void consistencyCheck(const QRegularExpressionMatch &match)
 {
-    QVERIFY(match.isValid() == match.regularExpression().isValid());
-
     if (match.isValid()) {
+        QVERIFY(match.regularExpression().isValid());
         QVERIFY(!(match.hasMatch() && match.hasPartialMatch()));
 
         if (match.hasMatch() || match.hasPartialMatch()) {
@@ -260,7 +259,9 @@ void consistencyCheck(const QRegularExpressionMatchIterator &iterator)
         }
     } else {
         QVERIFY(!i.hasNext());
+        QTest::ignoreMessage(QtWarningMsg, "QRegularExpressionMatchIterator::peekNext() called on an iterator already at end");
         QRegularExpressionMatch peeked = i.peekNext();
+        QTest::ignoreMessage(QtWarningMsg, "QRegularExpressionMatchIterator::next() called on an iterator already at end");
         QRegularExpressionMatch match = i.next();
         consistencyCheck(peeked);
         consistencyCheck(match);
