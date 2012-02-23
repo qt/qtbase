@@ -530,9 +530,10 @@ static void qmake_error_msg(const QString &msg)
 */
 QStringList qmake_feature_paths(QMakeProperty *prop=0)
 {
+    const QString mkspecs_concat = QLatin1String("/mkspecs");
+    const QString base_concat = QLatin1String("/features");
     QStringList concat;
     {
-        const QString base_concat = QLatin1String("/features");
         switch(Option::target_mode) {
         case Option::TARG_MACX_MODE:                     //also a unix
             concat << base_concat + QLatin1String("/mac");
@@ -549,7 +550,7 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         }
         concat << base_concat;
     }
-    const QString mkspecs_concat = QLatin1String("/mkspecs");
+
     QStringList feature_roots;
     QByteArray mkspec_path = qgetenv("QMAKEFEATURES");
     if(!mkspec_path.isNull())
@@ -574,9 +575,10 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
                     feature_roots << ((*it) + mkspecs_concat + (*concat_it));
         }
     }
-    if(!Option::mkfile::qmakespec.isEmpty())
-        feature_roots << Option::mkfile::qmakespec + QLatin1String("/features");
     if(!Option::mkfile::qmakespec.isEmpty()) {
+        // The spec is already platform-dependent, so no subdirs here.
+        feature_roots << Option::mkfile::qmakespec + base_concat;
+
         QFileInfo specfi(Option::mkfile::qmakespec);
         if (!specfi.isRoot()) {
             QDir specdir(specfi.absolutePath());
