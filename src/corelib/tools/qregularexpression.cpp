@@ -47,6 +47,8 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qthreadstorage.h>
+#include <QtCore/qglobal.h>
 
 #include <pcre.h>
 
@@ -989,6 +991,47 @@ void QRegularExpressionPrivate::getPatternInfo()
             (patternNewlineSetting == PCRE_NEWLINE_ANYCRLF);
 }
 
+
+/*!
+    \class QPcreJitStackPointer
+    \internal
+
+    Simple "smartpointer" wrapper around a pcre_jit_stack, to be used with
+    QThreadStorage.
+*/
+class QPcreJitStackPointer
+{
+    Q_DISABLE_COPY(QPcreJitStackPointer);
+
+public:
+    QPcreJitStackPointer()
+    {
+        // The default JIT stack size in PCRE is 32K,
+        // we allocate from 32K up to 512K.
+        stack = pcre16_jit_stack_alloc(32*1024, 512*1024);
+    }
+    ~QPcreJitStackPointer()
+    {
+        if (stack)
+            pcre16_jit_stack_free(stack);
+    }
+
+    pcre16_jit_stack *stack;
+};
+
+Q_GLOBAL_STATIC(QThreadStorage<QPcreJitStackPointer *>, jitStacks)
+
+/*!
+    \internal
+*/
+static pcre16_jit_stack *qtPcreCallback(void *)
+{
+    if (jitStacks()->hasLocalData())
+        return jitStacks()->localData()->stack;
+
+    return 0;
+}
+
 /*!
     \internal
 */
@@ -1044,6 +1087,9 @@ pcre16_extra *QRegularExpressionPrivate::optimizePattern()
     const char *err;
     studyData = pcre16_study(compiledPattern, studyOptions, &err);
 
+    if (studyData && studyData->flags & PCRE_EXTRA_EXECUTABLE_JIT)
+        pcre16_assign_jit_stack(studyData, qtPcreCallback, 0);
+
     if (!studyData && err)
         qWarning("QRegularExpressionPrivate::optimizePattern(): pcre_study failed: %s", err);
 
@@ -1065,6 +1111,32 @@ int QRegularExpressionPrivate::captureIndexForName(const QString &name) const
         return index;
 
     return -1;
+}
+
+/*!
+    \internal
+
+    This is a simple wrapper for pcre16_exec for handling the case in which the
+    JIT runs out of memory. In that case, we allocate a thread-local JIT stack
+    and re-run pcre16_exec.
+*/
+static int pcre16SafeExec(const pcre16 *code, const pcre16_extra *extra,
+                          const unsigned short *subject, int length,
+                          int startOffset, int options,
+                          int *ovector, int ovecsize)
+{
+    int result = pcre16_exec(code, extra, subject, length,
+                             startOffset, options, ovector, ovecsize);
+
+    if (result == PCRE_ERROR_JIT_STACKLIMIT && !jitStacks()->hasLocalData()) {
+        QPcreJitStackPointer *p = new QPcreJitStackPointer;
+        jitStacks()->setLocalData(p);
+
+        result = pcre16_exec(code, extra, subject, length,
+                             startOffset, options, ovector, ovecsize);
+    }
+
+    return result;
 }
 
 /*!
@@ -1134,15 +1206,15 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     int result;
 
     if (!previousMatchWasEmpty) {
-        result = pcre16_exec(compiledPattern, currentStudyData,
-                             subjectUtf16, subjectLength,
-                             offset, pcreOptions,
-                             captureOffsets, captureOffsetsCount);
+        result = pcre16SafeExec(compiledPattern, currentStudyData,
+                                subjectUtf16, subjectLength,
+                                offset, pcreOptions,
+                                captureOffsets, captureOffsetsCount);
     } else {
-        result = pcre16_exec(compiledPattern, currentStudyData,
-                             subjectUtf16, subjectLength,
-                             offset, pcreOptions | PCRE_NOTEMPTY_ATSTART | PCRE_ANCHORED,
-                             captureOffsets, captureOffsetsCount);
+        result = pcre16SafeExec(compiledPattern, currentStudyData,
+                                subjectUtf16, subjectLength,
+                                offset, pcreOptions | PCRE_NOTEMPTY_ATSTART | PCRE_ANCHORED,
+                                captureOffsets, captureOffsetsCount);
 
         if (result == PCRE_ERROR_NOMATCH) {
             ++offset;
@@ -1157,10 +1229,10 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
                 ++offset;
             }
 
-            result = pcre16_exec(compiledPattern, currentStudyData,
-                                 subjectUtf16, subjectLength,
-                                 offset, pcreOptions,
-                                 captureOffsets, captureOffsetsCount);
+            result = pcre16SafeExec(compiledPattern, currentStudyData,
+                                    subjectUtf16, subjectLength,
+                                    offset, pcreOptions,
+                                    captureOffsets, captureOffsetsCount);
         }
     }
 

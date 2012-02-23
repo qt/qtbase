@@ -1196,3 +1196,30 @@ void tst_QRegularExpression::captureCount()
     if (!re.isValid())
         QCOMPARE(re.captureCount(), -1);
 }
+
+void tst_QRegularExpression::pcreJitStackUsage_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<QString>("subject");
+    // these patterns cause enough backtrack (or even infinite recursion)
+    // in the regexp engine, so that JIT requests more memory.
+    QTest::newRow("jitstack01") << "(?(R)a*(?1)|((?R))b)" << "aaaabcde";
+    QTest::newRow("jitstack02") << "(?(R)a*(?1)|((?R))b)" << "aaaaaaabcde";
+}
+
+void tst_QRegularExpression::pcreJitStackUsage()
+{
+    QFETCH(QString, pattern);
+    QFETCH(QString, subject);
+
+    QRegularExpression re(pattern);
+    QVERIFY(re.isValid());
+    QRegularExpressionMatch match = re.match(subject);
+    consistencyCheck(match);
+    QRegularExpressionMatchIterator iterator = re.globalMatch(subject);
+    consistencyCheck(iterator);
+    while (iterator.hasNext()) {
+        match = iterator.next();
+        consistencyCheck(match);
+    }
+}

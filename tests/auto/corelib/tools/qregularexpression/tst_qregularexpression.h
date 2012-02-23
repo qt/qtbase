@@ -71,6 +71,8 @@ private slots:
     void operatoreq();
     void captureCount_data();
     void captureCount();
+    void pcreJitStackUsage_data();
+    void pcreJitStackUsage();
 
 private:
     void provideRegularExpressions();
