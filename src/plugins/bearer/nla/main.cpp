@@ -49,6 +49,9 @@ QT_BEGIN_NAMESPACE
 
 class QNlaEnginePlugin : public QBearerEnginePlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QBearerEngineFactoryInterface" FILE "nla.json")
+
 public:
     QNlaEnginePlugin();
     ~QNlaEnginePlugin();
@@ -78,7 +81,6 @@ QBearerEngine *QNlaEnginePlugin::create(const QString &key) const
         return 0;
 }
 
-Q_EXPORT_STATIC_PLUGIN(QNlaEnginePlugin)
-Q_EXPORT_PLUGIN2(qnlabearer, QNlaEnginePlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

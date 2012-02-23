@@ -1,7 +1,7 @@
 TARGET = qnlabearer
 load(qt_plugin)
 
-QT = core network
+QT = core core-private network network-private
 
 !wince* {
     LIBS += -lWs2_32
@@ -17,6 +17,8 @@ HEADERS += qnlaengine.h \
 SOURCES += main.cpp \
            qnlaengine.cpp \
            ../qnetworksession_impl.cpp
+
+OTHER_FILES += nla.json
 
 DESTDIR = $$QT.network.plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer

@@ -12,6 +12,8 @@ SOURCES += main.cpp \
            qnativewifiengine.cpp \
            ../qnetworksession_impl.cpp
 
+OTHER_FILES += nativewifi.json
+
 DESTDIR = $$QT.network.plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer
 INSTALLS += target

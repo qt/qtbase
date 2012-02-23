@@ -51,6 +51,9 @@ QT_BEGIN_NAMESPACE
 
 class QConnmanEnginePlugin : public QBearerEnginePlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QBearerEngineFactoryInterface" FILE "connman.json")
+
 public:
     QConnmanEnginePlugin();
     ~QConnmanEnginePlugin();
@@ -84,10 +87,9 @@ QBearerEngine *QConnmanEnginePlugin::create(const QString &key) const
     return 0;
 }
 
-Q_EXPORT_STATIC_PLUGIN(QConnmanEnginePlugin)
-Q_EXPORT_PLUGIN2(qconnmanbearer, QConnmanEnginePlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"
 
 #endif
 #endif // QT_NO_BEARERMANAGEMENT
