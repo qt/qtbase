@@ -1,5 +1,32 @@
 CONFIG *= moc thread
 
+# Temporary fixes to avoid QDeclarative -> QQml breakage:
+
+# Projects depending on declarative will now get the full set of
+# -DOldSymbol=NewSymbol definitions added to their configuration
+# so that the old symbol names still compile.  All code previously
+# in the declarative library is now in the qml library.
+contains(QT, qmldevtools):!contains(QT, declarative) {
+    QT += declarative
+}
+contains(QT, qmldevtools-private):!contains(QT, declarative-private) {
+    QT += declarative-private
+}
+
+contains(QT, quick):!contains(QT, declarative) {
+    QT += declarative
+}
+contains(QT, quick-private):!contains(QT, declarative-private) {
+    QT += declarative-private
+}
+
+contains(QT, declarative):!contains(QT, qml) {
+    QT += qml
+}
+contains(QT, declarative-private):!contains(QT, qml-private) {
+    QT += qml-private
+}
+
 #handle defines
 win32 {
    qt_static:DEFINES += QT_NODLL
