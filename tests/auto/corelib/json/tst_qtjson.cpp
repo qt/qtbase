@@ -1208,7 +1208,7 @@ void TestQtJson::fromJsonErrors()
     }
     {
         QJsonParseError error;
-        QByteArray json = "[\n    \"foo"INVALID_UNICODE"bar\"]";
+        QByteArray json = "[\n    \"foo" INVALID_UNICODE "bar\"]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::StringUTF8Scan);
@@ -1224,7 +1224,7 @@ void TestQtJson::fromJsonErrors()
     }
     {
         QJsonParseError error;
-        QByteArray json = "[\n    \"c"UNICODE_DJE"a\\u12\"]";
+        QByteArray json = "[\n    \"c" UNICODE_DJE "a\\u12\"]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::StringEscapeSequence);
@@ -1232,7 +1232,7 @@ void TestQtJson::fromJsonErrors()
     }
     {
         QJsonParseError error;
-        QByteArray json = "[\n    \"c"UNICODE_DJE"a"INVALID_UNICODE"bar\"]";
+        QByteArray json = "[\n    \"c" UNICODE_DJE "a" INVALID_UNICODE "bar\"]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::StringUTF8Scan);
@@ -1240,7 +1240,7 @@ void TestQtJson::fromJsonErrors()
     }
     {
         QJsonParseError error;
-        QByteArray json = "[\n    \"c"UNICODE_DJE"a ]";
+        QByteArray json = "[\n    \"c" UNICODE_DJE "a ]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::EndOfString);
@@ -1381,7 +1381,7 @@ void TestQtJson::parseStrings()
         "abc\\rabc",
         "abc\\tabc",
         "abc\\u0019abc",
-        "abc"UNICODE_DJE"abc",
+        "abc" UNICODE_DJE "abc",
     };
     int size = sizeof(strings)/sizeof(const char *);
 
@@ -1407,7 +1407,7 @@ void TestQtJson::parseStrings()
     };
     Pairs pairs [] = {
         { "abc\\/abc", "abc/abc" },
-        { "abc\\u0402abc", "abc"UNICODE_DJE"abc" },
+        { "abc\\u0402abc", "abc" UNICODE_DJE "abc" },
         { "abc\\u0065abc", "abceabc" }
     };
     size = sizeof(pairs)/sizeof(Pairs);
