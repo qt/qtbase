@@ -50,7 +50,7 @@ class InputItem : public QObject
 {
     Q_OBJECT
 public:
-    InputItem() : m_enabled(true) {}
+    InputItem() : cursorRectangle(1, 2, 3, 4), m_enabled(true) {}
 
     bool event(QEvent *event)
     {
@@ -59,7 +59,7 @@ public:
             if (query->queries() & Qt::ImEnabled)
                 query->setValue(Qt::ImEnabled, m_enabled);
             if (query->queries() & Qt::ImCursorRectangle)
-                query->setValue(Qt::ImCursorRectangle, QRectF(1, 2, 3, 4));
+                query->setValue(Qt::ImCursorRectangle, cursorRectangle);
             if (query->queries() & Qt::ImPreferredLanguage)
                 query->setValue(Qt::ImPreferredLanguage, QString("English"));
             m_lastQueries = query->queries();
@@ -76,6 +76,7 @@ public:
         }
     }
 
+    QRectF cursorRectangle;
     Qt::InputMethodQueries m_lastQueries;
     bool m_enabled;
 };
@@ -226,7 +227,11 @@ void tst_qinputmethod::cursorRectangle()
 
     QCOMPARE(qApp->inputMethod()->cursorRectangle(), transform.mapRect(QRectF(1, 2, 3, 4)));
 
+    m_inputItem.cursorRectangle = QRectF(1.5, 2, 1, 8);
+    QCOMPARE(qApp->inputMethod()->cursorRectangle(), transform.mapRect(QRectF(1.5, 2, 1, 8)));
+
     // reset
+    m_inputItem.cursorRectangle = QRectF(1, 2, 3, 4);
     qApp->inputMethod()->setInputItemTransform(QTransform());
 }
 
