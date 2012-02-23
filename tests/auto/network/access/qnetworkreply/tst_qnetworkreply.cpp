@@ -79,6 +79,11 @@
 #ifdef QT_BUILD_INTERNAL
 #include <QtNetwork/private/qnetworkaccessmanager_p.h>
 #endif
+
+#ifdef Q_OS_UNIX
+# include <sys/types.h>
+# include <unistd.h> // for getuid()
+#endif
 #include <time.h>
 
 #include "../../../network-settings.h"
