@@ -359,7 +359,6 @@ earlyArgParse()
             if [ "$PLATFORM_QPA" != "no" ]; then
                 if [ "$PLATFORM_QPA" = "maybe" ]; then
                     PLATFORM_X11=no
-                    PLATFORM_MAC=no
                     PLATFORM_QPA=yes
                 fi
             else
@@ -1222,7 +1221,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     embedded-lite|qpa)
         PLATFORM_X11=no
-        PLATFORM_MAC=no
         PLATFORM_QPA=yes
         ;;
     sse)
