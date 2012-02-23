@@ -245,7 +245,6 @@ fi
 #-------------------------------------------------------------------------------
 
 PLATFORM_X11=no
-PLATFORM_QWS=no
 PLATFORM_QPA=yes
 BUILD_ON_MAC=no
 PLATFORM_MAC=no
@@ -290,7 +289,6 @@ fi
 #-------------------------------------------------------------------------------
 COMMERCIAL_USER=ask
 CFG_DEV=no
-CFG_EMBEDDED=no
 CFG_RTOS_ENABLED=yes
 EditionString=Commercial
 
@@ -317,16 +315,6 @@ earlyArgParse()
         --no-*)
             VAR=`echo $1 | sed "s,^--no-\(.*\),\1,"`
             VAL=no
-            ;;
-        -embedded)
-            VAR=embedded
-            # this option may or may not be followed by an argument
-            if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
-                VAL=auto
-            else
-                shift;
-                VAL=$1
-            fi
             ;;
         -embedded-lite|-qpa)
             VAR=qpa
@@ -367,25 +355,15 @@ earlyArgParse()
 
         UNKNOWN_OPT=no
         case "$VAR" in
-        embedded)
-            CFG_EMBEDDED="$VAL"
-            PLATFORM_X11=no
-            PLATFORM_MAC=no
-            PLATFORM_QWS=yes
-            PLATFORM_QPA=no
-            ;;
         qpa)
-            CFG_EMBEDDED="no"
             if [ "$PLATFORM_QPA" != "no" ]; then
                 if [ "$PLATFORM_QPA" = "maybe" ]; then
                     PLATFORM_X11=no
                     PLATFORM_MAC=no
-                    PLATFORM_QWS=no
                     PLATFORM_QPA=yes
                 fi
             else
                 echo "No license exists to enable Qt QPA. Disabling."
-                CFG_EMBEDDED=no
             fi
             ;;
         developer-build)
@@ -436,7 +414,6 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
     # one of commercial editions
     [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
     [ "$PLATFORM_QPA" = "maybe" ] && PLATFORM_QPA=no
-    [ "$PLATFORM_QWS" = "maybe" ] && PLATFORM_QWS=no
 
     # read in the license file
     if [ -f "$LICENSE_FILE" ]; then
@@ -549,7 +526,6 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         *)
             Platform=Linux/X11
             [ "$PLATFORM_MAC" = "yes" ] && Platform='Mac OS X'
-            [ "$PLATFORM_QWS" = "yes" ] && Platform='Embedded Linux'
             echo
             echo "You are not licensed for the $Platform platform."
             echo
@@ -719,7 +695,6 @@ CFG_EGL=no
 CFG_EGL_GLES_INCLUDES=no
 CFG_SSE=auto
 CFG_FONTCONFIG=auto
-CFG_QWS_FREETYPE=auto
 CFG_LIBFREETYPE=auto
 CFG_SQL_AVAILABLE=
 QT_DEFAULT_BUILD_PARTS="libs examples tests"
@@ -740,17 +715,6 @@ CFG_KBD_AVAILABLE="tty linuxinput qvfb"
 CFG_KBD_ON="tty"    #default, see QMakeVar above
 CFG_MOUSE_AVAILABLE="pc linuxtp linuxinput tslib qvfb"
 CFG_MOUSE_ON="pc linuxtp"   #default, see QMakeVar above
-
-if [ -f "$relpath/src/gui/embedded/qscreenqnx_qws.cpp" ]; then
-    CFG_KBD_AVAILABLE="${CFG_KBD_AVAILABLE} qnx"
-    CFG_MOUSE_AVAILABLE="${CFG_MOUSE_AVAILABLE} qnx"
-    CFG_GFX_AVAILABLE="${CFG_GFX_AVAILABLE} qnx"
-fi
-if [ -f "$relpath/src/gui/embedded/qscreenintegrityfb_qws.cpp" ]; then
-    CFG_KBD_AVAILABLE="${CFG_KBD_AVAILABLE} integrity"
-    CFG_MOUSE_AVAILABLE="${CFG_MOUSE_AVAILABLE} integrity"
-    CFG_GFX_AVAILABLE="${CFG_GFX_AVAILABLE} integrityfb"
-fi
 
 CFG_ARCH=
 CFG_HOST_ARCH=
@@ -799,7 +763,6 @@ CFG_SSE4_2=auto
 CFG_AVX=auto
 CFG_REDUCE_RELOCATIONS=auto
 CFG_NAS=no
-CFG_QWS_DEPTHS=all
 CFG_ACCESSIBILITY=auto
 CFG_ENDIAN=auto
 CFG_HOST_ENDIAN=auto
@@ -1005,7 +968,7 @@ while [ "$#" -gt 0 ]; do
         ;;
     #Qt style options that pass an argument
     -qconfig)
-        if [ "$PLATFORM_QWS" != "yes" -a "$PLATFORM_QPA" != "yes" ]; then
+        if [ "$PLATFORM_QPA" != "yes" ]; then
             echo
             echo "WARNING: -qconfig is only tested and supported on Qt for Embedded Linux."
             echo
@@ -1035,16 +998,6 @@ while [ "$#" -gt 0 ]; do
         VAR=fatal_error
         VAL=no
         ;;
-    -embedded)
-        VAR=embedded
-        # this option may or may not be followed by an argument
-        if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
-            VAL=auto
-        else
-            shift;
-            VAL=$1
-        fi
-	;;
     -embedded-lite|-qpa)
         VAR=qpa
         # this option may or may not be followed by an argument
@@ -1267,18 +1220,9 @@ while [ "$#" -gt 0 ]; do
     sxe)
 	CFG_SXE="$VAL"
         ;;
-    embedded)
-        CFG_EMBEDDED="$VAL"
-        PLATFORM_X11=no
-        PLATFORM_MAC=no
-        PLATFORM_QWS=yes
-        PLATFORM_QPA=no
-        ;;
     embedded-lite|qpa)
-        CFG_EMBEDDED="no"
         PLATFORM_X11=no
         PLATFORM_MAC=no
-        PLATFORM_QWS=no
         PLATFORM_QPA=yes
         ;;
     sse)
@@ -1312,9 +1256,6 @@ while [ "$#" -gt 0 ]; do
         else
             UNKNOWN_OPT=yes
         fi
-        ;;
-    depths)
-        CFG_QWS_DEPTHS="$VAL"
         ;;
     opengl)
         if  [ "$VAL" = "auto" ] || [ "$VAL" = "desktop" ] ||
@@ -1361,7 +1302,6 @@ while [ "$#" -gt 0 ]; do
     x11)
         PLATFORM_QPA=no
         PLATFORM_MAC=no
-        PLATFORM_QWS=no
         PLATFORM_X11=yes
         ;;
     sdk)
@@ -1738,14 +1678,6 @@ while [ "$#" -gt 0 ]; do
     reduce-relocations)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_REDUCE_RELOCATIONS="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    freetype)
-        [ "$VAL" = "qt" ] && VAL=yes
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
-            CFG_QWS_FREETYPE="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2293,7 +2225,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     [ "$OPT_VERBOSE" = "yes" ] && echo "Performing shadow build..."
 fi
 
-if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
+if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QPA" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
     echo
     echo "WARNING: -debug-and-release is not supported anymore on Qt/X11 and Qt for Embedded Linux"
     echo "Qt can be built in release mode with separate debug information, so"
@@ -2389,7 +2321,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
 fi
 
 # symlink fonts to be able to run application from build directory
-if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ] && [ ! -d "${outpath}/lib/fonts" ]; then
+if [ "$PLATFORM_QPA" = "yes" ] && [ ! -d "${outpath}/lib/fonts" ]; then
     if [ "$PLATFORM" = "$XPLATFORM" ]; then
         mkdir -p "${outpath}/lib"
         ln -s "${relpath}/lib/fonts" "${outpath}/lib/fonts"
@@ -2428,85 +2360,6 @@ fi ### help
 # auto-detect all that hasn't been specified in the arguments
 #-------------------------------------------------------------------------------
 
-[ "$PLATFORM_QWS" = "yes" -a "$CFG_EMBEDDED" = "no" ] && CFG_EMBEDDED=auto
-if [ "$CFG_EMBEDDED" != "no" ]; then
-    case "$UNAME_SYSTEM:$UNAME_RELEASE" in
-    Darwin:*)
-        [ -z "$PLATFORM" ] && PLATFORM=qws/macx-generic-g++
-        if [ -z "$XPLATFORM" ]; then
-            [ "$CFG_EMBEDDED" = "auto" ] && CFG_EMBEDDED=generic
-            XPLATFORM="qws/macx-$CFG_EMBEDDED-g++"
-        fi
-        ;;
-    FreeBSD:*)
-        [ -z "$PLATFORM" ] && PLATFORM=qws/freebsd-generic-g++
-        if [ -z "$XPLATFORM" ]; then
-            [ "$CFG_EMBEDDED" = "auto" ] && CFG_EMBEDDED=generic
-            XPLATFORM="qws/freebsd-$CFG_EMBEDDED-g++"
-        fi
-        ;;
-    SunOS:5*)
-        [ -z "$PLATFORM" ] && PLATFORM=qws/solaris-generic-g++
-        if [ -z "$XPLATFORM" ]; then
-            [ "$CFG_EMBEDDED" = "auto" ] && CFG_EMBEDDED=generic
-            XPLATFORM="qws/solaris-$CFG_EMBEDDED-g++"
-        fi
-        ;;
-    Linux:*)
-        if [ -z "$PLATFORM" ]; then
-            case "$UNAME_MACHINE" in
-            *86)
-                PLATFORM=qws/linux-x86-g++
-                ;;
-            *86_64)
-                PLATFORM=qws/linux-x86_64-g++
-                ;;
-            *)
-                PLATFORM=qws/linux-generic-g++
-                ;;
-            esac
-        fi
-        if [ -z "$XPLATFORM" ]; then
-            if [ "$CFG_EMBEDDED" = "auto" ]; then
-                if [ -n "$CFG_ARCH" ]; then
-                    CFG_EMBEDDED=$CFG_ARCH
-                else
-                    case "$UNAME_MACHINE" in
-                    *86)
-                        CFG_EMBEDDED=x86
-                        ;;
-                    *86_64)
-                        CFG_EMBEDDED=x86_64
-                        ;;
-                    *)
-                        CFG_EMBEDDED=generic
-                        ;;
-                    esac
-                fi
-            fi
-            XPLATFORM="qws/linux-$CFG_EMBEDDED-g++"
-        fi
-        ;;
-    QNX:*)
-        [ -z "$PLATFORM" ] && PLATFORM=unsupported/qws/qnx-generic-g++
-        if [ -z "$XPLATFORM" ]; then
-            [ "$CFG_EMBEDDED" = "auto" ] && CFG_EMBEDDED=generic
-            XPLATFORM="unsupported/qws/qnx-$CFG_EMBEDDED-g++"
-        fi
-        ;;
-    CYGWIN*:*)
-	if [ -z "$XPLATFORM" ]; then
-		CFG_EMBEDDED=x86
-	fi
-	;;
-    *)
-        echo "Qt for Embedded Linux is not supported on this platform. Disabling."
-        CFG_EMBEDDED=no
-        PLATFORM_QWS=no
-        PLATFORM_QPA=no
-        ;;
-    esac
-fi
 if [ -z "$PLATFORM" ]; then
     PLATFORM_NOTES=
     case "$UNAME_SYSTEM:$UNAME_RELEASE" in
@@ -2685,12 +2538,7 @@ if [ -z "$PLATFORM" ]; then
     esac
 fi
 
-if [ "$PLATFORM_QWS" = "yes" ]; then
-    CFG_SM=no
-    PLATFORMS=`find "$relpath/mkspecs/qws" | sed "s,$relpath/mkspecs/qws/,,"`
-else
-    PLATFORMS=`find "$relpath/mkspecs/" -type f | grep -v qws | sed "s,$relpath/mkspecs/qws/,,"`
-fi
+PLATFORMS=`find "$relpath/mkspecs/" -type f | grep -v qws | sed "s,$relpath/mkspecs/qws/,,"`
 
 [ -z "$XPLATFORM" ] && XPLATFORM="$PLATFORM"
 
@@ -2757,7 +2605,7 @@ if [ '!' -f "${XQMAKESPEC}/qplatformdefs.h" ]; then
 fi
 
 # now look at the configs and figure out what platform we are config'd for
-[ "$CFG_EMBEDDED" = "no" ] && [ "$PLATFORM_QPA" != "yes" ] \
+[ "$PLATFORM_QPA" != "yes" ] \
   && [ -n "`getXQMakeConf QMAKE_LIBS_X11`" ] \
   && PLATFORM_X11=yes
 ### echo "$XQMAKESPEC" | grep mkspecs/qws >/dev/null 2>&1 && PLATFORM_QWS=yes
@@ -2775,17 +2623,6 @@ fi
 #-------------------------------------------------------------------------------
 if [ "$OPT_VERBOSE" = "yes" ]; then
     echo "Determining system architecture... ($UNAME_SYSTEM:$UNAME_RELEASE:$UNAME_MACHINE)"
-fi
-
-if [ "$CFG_EMBEDDED" != "no" -a "$CFG_EMBEDDED" != "auto" ] && [ -n "$CFG_ARCH" ]; then
-    if [ "$CFG_ARCH" != "$CFG_EMBEDDED" ]; then
-        echo ""
-        echo "You have specified a target architecture with -embedded and -arch."
-        echo "The two architectures you have specified are different, so we can"
-        echo "not proceed. Either set both to be the same, or only use -embedded."
-        echo ""
-        exit 1
-    fi
 fi
 
 if [ "$CFG_RTOS_ENABLED" = "no" ]; then
@@ -2926,38 +2763,7 @@ if [ -z "${CFG_HOST_ARCH}" ]; then
     esac
 fi
 
-if [ "$PLATFORM" != "$XPLATFORM" -a "$CFG_EMBEDDED" != "no" ]; then
-    if [ -n "$CFG_ARCH" ]; then
-        CFG_EMBEDDED=$CFG_ARCH
-    fi
-
-    case "$CFG_EMBEDDED" in
-    x86)
-        CFG_ARCH=i386
-        ;;
-    x86_64)
-        CFG_ARCH=x86_64
-        ;;
-    ipaq|sharp)
-        CFG_ARCH=arm
-        ;;
-    dm7000)
-        CFG_ARCH=powerpc
-        ;;
-    dm800)
-        CFG_ARCH=mips
-        ;;
-    sh4al)
-        CFG_ARCH=sh4a
-        ;;
-    arm*)
-        CFG_ARCH=arm
-        ;;
-    *)
-        CFG_ARCH="$CFG_EMBEDDED"
-        ;;
-    esac
-elif [ "$XPLATFORM_MINGW" = "yes" ]; then
+if [ "$XPLATFORM_MINGW" = "yes" ]; then
     [ -z "$CFG_ARCH" ] && CFG_ARCH="windows"
 elif [ "$PLATFORM_MAC" = "yes" ] || [ -z "$CFG_ARCH" ]; then
     CFG_ARCH=$CFG_HOST_ARCH
@@ -2975,7 +2781,7 @@ esac
 
 if [ "$OPT_VERBOSE" = "yes" ]; then
     echo "System architecture: '$CFG_ARCH'"
-    if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+    if [ "$PLATFORM_QPA" = "yes" ]; then
 	echo "Host architecture: '$CFG_HOST_ARCH'"
     fi
 fi
@@ -3153,11 +2959,6 @@ fi
 # auto-detect GNU make support
 if [ "$CFG_USE_GNUMAKE" = "auto" ] && "$MAKE" -v | grep "GNU Make" >/dev/null 2>&1; then
    CFG_USE_GNUMAKE=yes
-fi
-
-# If -opengl wasn't specified, don't try to auto-detect
-if [ "$PLATFORM_QWS" = "yes" ] && [ "$CFG_OPENGL" = "auto" ]; then
-        CFG_OPENGL=no
 fi
 
 # find the default framework value
@@ -3426,7 +3227,7 @@ Installation options:
     -prefix <dir> ...... This will install everything relative to <dir>
                          (default $QT_INSTALL_PREFIX)
 EOF
-if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+if [ "$PLATFORM_QPA" = "yes" ]; then
 cat <<EOF
 
     -hostprefix [dir] .. Tools and libraries needed when developing
@@ -3499,7 +3300,7 @@ Configure options:
  +  -largefile ......... Enables Qt to access files larger than 4 GB.
 
 EOF
-if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+if [ "$PLATFORM_QPA" = "yes" ]; then
     EXCN="*"
     EXCY=" "
 else
@@ -3551,7 +3352,7 @@ fi
                          operating systems and compilers.
 EOF
 
-if [ "${PLATFORM_QWS}" != "yes" -a "${PLATFORM_QPA}" != "yes" ]; then
+if [ "${PLATFORM_QPA}" != "yes" ]; then
 cat << EOF
     -graphicssystem <sys> Sets an alternate graphics system. Available options are:
                            raster - Software rasterizer
@@ -3680,7 +3481,7 @@ else
     SBN="*"
 fi
 
-if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 
     cat << EOF
 
@@ -3695,7 +3496,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
 
 EOF
 
-fi # X11/QWS
+fi # X11
 
 if [ "$XPLATFORM_MAEMO" = "yes" ]; then
 
@@ -3922,23 +3723,13 @@ Qt/Mac only:
 EOF
 fi
 
-if [ "$PLATFORM_QWS" = "yes" ]; then
-    cat << EOF
-Qt for Embedded Linux:
-
-    -embedded <arch> .... This will enable the embedded build, you must have a
-                          proper license for this switch to work.
-                          Example values for <arch>: arm mips x86 generic
-EOF
-fi
-
 if [ "$PLATFORM_QPA" = "yes" ]; then
     cat << EOF
 Qt for QPA only:
 EOF
 fi
 
-if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+if [ "$PLATFORM_QPA" = "yes" ]; then
     cat << EOF
 
     -xplatform target ... The target platform when cross-compiling.
@@ -3979,53 +3770,7 @@ if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 EOF
 fi
 
-if [ "$PLATFORM_QWS" = "yes" ]; then
-    cat << EOF
-
-    -depths <list> ...... Comma-separated list of supported bit-per-pixel
-                          depths, from: 1, 4, 8, 12, 15, 16, 18, 24, 32 and 'all'.
-
-    -qt-decoration-<style> ....Enable a decoration <style> in the QtGui library,
-                               by default all available decorations are on.
-			       Possible values for <style>: [ $CFG_DECORATION_AVAILABLE ]
-    -plugin-decoration-<style> Enable decoration <style> as a plugin to be
-                               linked to at run time.
-			       Possible values for <style>: [ $CFG_DECORATION_PLUGIN_AVAILABLE ]
-    -no-decoration-<style> ....Disable decoration <style> entirely.
-                               Possible values for <style>: [ $CFG_DECORATION_AVAILABLE ]
-
-    -qt-gfx-<driver> ... Enable a graphics <driver> in the QtGui library.
-                         Possible values for <driver>: [ $CFG_GFX_AVAILABLE ]
-    -plugin-gfx-<driver> Enable graphics <driver> as a plugin to be
-                         linked to at run time.
-                         Possible values for <driver>: [ $CFG_GFX_PLUGIN_AVAILABLE ]
-    -no-gfx-<driver> ... Disable graphics <driver> entirely.
-                         Possible values for <driver>: [ $CFG_GFX_AVAILABLE ]
-
-    -qt-kbd-<driver> ... Enable a keyboard <driver> in the QtGui library.
-                         Possible values for <driver>: [ $CFG_KBD_AVAILABLE ]
-
-    -plugin-kbd-<driver> Enable keyboard <driver> as a plugin to be linked to
-                         at runtime.
-                         Possible values for <driver>: [ $CFG_KBD_PLUGIN_AVAILABLE ]
-
-    -no-kbd-<driver> ... Disable keyboard <driver> entirely.
-                         Possible values for <driver>: [ $CFG_KBD_AVAILABLE ]
-
-    -qt-mouse-<driver> ... Enable a mouse <driver> in the QtGui library.
-                           Possible values for <driver>: [ $CFG_MOUSE_AVAILABLE ]
-    -plugin-mouse-<driver> Enable mouse <driver> as a plugin to be linked to
-                           at runtime.
-                           Possible values for <driver>: [ $CFG_MOUSE_PLUGIN_AVAILABLE ]
-    -no-mouse-<driver> ... Disable mouse <driver> entirely.
-                           Possible values for <driver>: [ $CFG_MOUSE_AVAILABLE ]
-
-    -iwmmxt ............ Compile using the iWMMXt instruction set
-                         (available on some XScale CPUs).
-EOF
-fi
-
-if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" -o "$PLATFORM_X11" = "yes" ]; then
+if [ "$PLATFORM_QPA" = "yes" -o "$PLATFORM_X11" = "yes" ]; then
     if [ "$CFG_GLIB" = "no" ]; then
         GBY=" "
         GBN="+"
@@ -4049,9 +3794,7 @@ fi # Help
 # LICENSING, INTERACTIVE PART
 # -----------------------------------------------------------------------------
 
-if [ "$PLATFORM_QWS" = "yes" ]; then
-    Platform="Qt for Embedded Linux"
-elif [ "$PLATFORM_QPA" = "yes" ]; then
+if [ "$PLATFORM_QPA" = "yes" ]; then
     Platform="Qt Lighthouse"
 elif [ "$XPLATFORM_MINGW" = "yes" ]; then
     Platform="Qt for Windows"
@@ -4493,7 +4236,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 		EXTRA_LFLAGS="$EXTRA_LFLAGS \$(SDK_LFLAGS)"
             fi
         fi
-        [ "$CFG_EMBEDDED" != "no" ] && EXTRA_CFLAGS="$EXTRA_CFLAGS -DQWS"
         if [ '!' -z "$D_FLAGS" ]; then
             for DEF in $D_FLAGS; do
                 EXTRA_CFLAGS="$EXTRA_CFLAGS \"-D${DEF}\""
@@ -4996,7 +4738,7 @@ fi
 
 # auto-detect iconv(3) support
 if [ "$CFG_ICONV" != "no" ]; then
-    if [ "$PLATFORM_QWS" = "yes" -o "$XPLATFORM_MINGW" = "yes" ] || [ "$PLATFORM_QPA" = "yes" -a "$CFG_ICONV" = "auto" ]; then
+    if [ "$XPLATFORM_MINGW" = "yes" ] || [ "$PLATFORM_QPA" = "yes" -a "$CFG_ICONV" = "auto" ]; then
         CFG_ICONV=no
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/iconv" "POSIX iconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_ICONV=yes
@@ -5042,8 +4784,8 @@ if [ "$CFG_DBUS" != "no" ]; then
     fi
 fi
 
-# X11/QWS/Lighthouse
-if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+# X11/Lighthouse
+if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 
     # auto-detect Glib support
     if [ "$CFG_GLIB" != "no" ]; then
@@ -5134,7 +4876,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
             fi
         fi
     fi
-fi # X11/QWS/Lighthouse
+fi # X11/Lighthouse
 
 # X11
 if [ "$PLATFORM_X11" = "yes" -a "$CFG_GUI" != "no" ]; then
@@ -5764,124 +5506,9 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
 
 fi
 
-
-# QWS
-if [ "$PLATFORM_QWS" = "yes" ]; then
-
-    # auto-detect OpenGL support (es2 = OpenGL ES 2.x)
-    if [ "$CFG_GUI" = "no" ]; then
-        if [ "$CFG_OPENGL" = "auto" ]; then
-            CFG_OPENGL=no
-        fi
-        if [ "$CFG_OPENGL" != "no" ]; then
-            echo "OpenGL enabled, but GUI disabled."
-            echo " You might need to either enable the GUI or disable OpenGL"
-            exit 1
-        fi
-    fi
-    if [ "$CFG_OPENGL" = "yes" ]; then
-        CFG_EGL=auto
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            CFG_OPENGL=es2
-        fi
-    elif [ "$CFG_OPENGL" = "es2" ]; then
-        #OpenGL ES 2.x
-        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
-        if [ $? != "0" ]; then
-            echo "The OpenGL ES 2.0 functionality test failed!"
-            echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
-            echo " ${XQMAKESPEC}."
-            exit 1
-        fi
-        CFG_EGL=yes
-    elif [ "$CFG_OPENGL" = "desktop" ]; then
-        # Desktop OpenGL support
-        echo "Desktop OpenGL support is not avaliable on Qt for Embedded Linux"
-        exit 1
-    fi
-fi
-
-if [ "$PLATFORM_QWS" = "yes" ]; then
-
-    # screen drivers
-    for screen in ${CFG_GFX_ON} ${CFG_GFX_PLUGIN}; do
-       if [ "${screen}" = "ahi" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-           "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/ahi "Ahi" $L_FLAGS $I_FLAGS $l_FLAGS
-           if [ $? != "0" ]; then
-               echo "The Ahi screen driver functionality test failed!"
-               echo " You might need to modify the include and library search paths by editing"
-               echo " QMAKE_INCDIR and QMAKE_LIBDIR in"
-               echo " ${XQMAKESPEC}."
-               exit 1
-           fi
-       fi
-
-       if [ "${screen}" = "svgalib" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-           "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/svgalib "SVGAlib" $L_FLAGS $I_FLAGS $l_FLAGS
-           if [ $? != "0" ]; then
-               echo "The SVGAlib screen driver functionality test failed!"
-               echo " You might need to modify the include and library search paths by editing"
-               echo " QMAKE_INCDIR and QMAKE_LIBDIR in"
-               echo " ${XQMAKESPEC}."
-               exit 1
-           fi
-       fi
-
-       if [ "${screen}" = "directfb" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-           if test -n "$PKG_CONFIG" && "$PKG_CONFIG" --exists directfb 2>/dev/null; then
-               QT_CFLAGS_DIRECTFB=`$PKG_CONFIG --cflags directfb 2>/dev/null`
-               QT_LIBS_DIRECTFB=`$PKG_CONFIG --libs directfb 2>/dev/null`
-           elif directfb-config --version >/dev/null 2>&1; then
-               QT_CFLAGS_DIRECTFB=`directfb-config --cflags 2>/dev/null`
-               QT_LIBS_DIRECTFB=`directfb-config --libs 2>/dev/null`
-           fi
-
-           # QMake variables set here override those in the mkspec. Therefore we only set the variables here if they are not zero.
-           if [ -n "$QT_CFLAGS_DIRECTFB" ] || [ -n "$QT_LIBS_DIRECTFB" ]; then
-               QMakeVar set QT_CFLAGS_DIRECTFB "$QT_CFLAGS_DIRECTFB"
-               QMakeVar set QT_LIBS_DIRECTFB "$QT_LIBS_DIRECTFB"
-           fi
-
-           "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/directfb "DirectFB" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_DIRECTFB $QT_LIBS_DIRECTFB
-           if [ $? != "0" ]; then
-               echo "The DirectFB screen driver functionality test failed!"
-               echo " You might need to modify the include and library search paths by editing"
-               echo " QT_CFLAGS_DIRECTFB and QT_LIBS_DIRECTFB in"
-               echo " ${XQMAKESPEC}."
-               exit 1
-           fi
-       fi
-
-    done
-
-    # mouse drivers
-    for mouse in ${CFG_MOUSE_ON} ${CFG_MOUSE_PLUGIN}; do
-	if [ "${mouse}" = "tslib" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-	    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/tslib "tslib" $L_FLAGS $I_FLAGS $l_FLAGS
-            if [ $? != "0" ]; then
-               echo "The tslib functionality test failed!"
-               echo " You might need to modify the include and library search paths by editing"
-               echo " QMAKE_INCDIR and QMAKE_LIBDIR in"
-               echo " ${XQMAKESPEC}."
-		exit 1
-	    fi
-	fi
-    done
-
-    CFG_QGTKSTYLE=no
-
-    # sound
-    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/sound "sound" $L_FLAGS $I_FLAGS $l_FLAGS
-    if [ $? != "0" ]; then
-        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SOUND"
-    fi
-
-fi # QWS
-
 EGL_VARIANT=none
 # EGL Support
-if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
+if [ "$PLATFORM_X11" = "yes" ]; then
     if [ "$CFG_EGL" != "no" ]; then
         # detect EGL support
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl" "EGL (EGL/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
@@ -5911,7 +5538,6 @@ fi
 [ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_PHONON" != "no" ] && CFG_PHONON="yes"
 
 # freetype support
-[ "x$CFG_EMBEDDED" != "xno" ] && CFG_LIBFREETYPE="$CFG_QWS_FREETYPE"
 [ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_LIBFREETYPE" = "auto" ] && CFG_LIBFREETYPE=no
 if [ "$CFG_LIBFREETYPE" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/freetype "FreeType" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
@@ -5977,7 +5603,7 @@ fi
 
 
 if [ "$CFG_DOUBLEFORMAT" = "auto" ]; then
-    if [ "$PLATFORM_QWS" != "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+    if [ "$PLATFORM_QPA" = "yes" ]; then
         CFG_DOUBLEFORMAT=normal
     else
         "$unixtests/doubleformat.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
@@ -6242,45 +5868,6 @@ fi
 # ask for all that hasn't been auto-detected or specified in the arguments
 #-------------------------------------------------------------------------------
 
-### fix this: user input should be validated in a loop
-if [ "$PLATFORM_QWS" = "yes" ]; then
-    PROMPT_FOR_DEPTHS="yes"
-else
-    PROMPT_FOR_DEPTHS="no"
-fi
-if [ "$CFG_QWS_DEPTHS" = "prompted" -a "$PROMPT_FOR_DEPTHS" = "yes" ]; then
-    echo
-    echo "Choose pixel-depths to support:"
-    echo
-    echo "   1. 1bpp, black/white"
-    echo "   4. 4bpp, grayscale"
-    echo "   8. 8bpp, paletted"
-    echo "  12. 12bpp, rgb 4-4-4"
-    echo "  15. 15bpp, rgb 5-5-5"
-    echo "  16. 16bpp, rgb 5-6-5"
-    echo "  18. 18bpp, rgb 6-6-6"
-    echo "  24. 24bpp, rgb 8-8-8"
-    echo "  32. 32bpp, argb 8-8-8-8 and rgb 8-8-8"
-    echo " all. All supported depths"
-    echo
-    echo "Your choices (default 8,16,32):"
-    read CFG_QWS_DEPTHS
-    if [ -z "$CFG_QWS_DEPTHS" ] || [ "$CFG_QWS_DEPTHS" = "yes" ]; then
-        CFG_QWS_DEPTHS=8,16,32
-    fi
-fi
-if [ -n "$CFG_QWS_DEPTHS" -a "$PLATFORM_QWS" = "yes" ]; then
-    if [ "$CFG_QWS_DEPTHS" = "all" ]; then
-        CFG_QWS_DEPTHS="1 4 8 12 15 16 18 24 32 generic"
-    fi
-    for D in `echo "$CFG_QWS_DEPTHS" | sed -e 's/,/ /g'`; do
-	case $D in
-	    1|4|8|12|15|16|18|24|32) QCONFIG_FLAGS="$QCONFIG_FLAGS QT_QWS_DEPTH_$D";;
-	    generic) QCONFIG_FLAGS="$QCONFIG_FLAGS QT_QWS_DEPTH_GENERIC";;
-	esac
-    done
-fi
-
 # enable dwarf2 support on Mac
 if [ "$CFG_MAC_DWARF2" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG dwarf2"
@@ -6391,12 +5978,6 @@ if [ "$CFG_SHARED" = "yes" ]; then
 elif [ "$CFG_SHARED" = "no" ]; then
     QMAKE_OUTDIR="${QMAKE_OUTDIR}-static"
     QMAKE_CONFIG="$QMAKE_CONFIG static"
-fi
-if [ "$PLATFORM_QWS" = "yes" ]; then
-    QMAKE_OUTDIR="${QMAKE_OUTDIR}-emb-$CFG_EMBEDDED"
-    QMAKE_CONFIG="$QMAKE_CONFIG embedded"
-    QT_CONFIG="$QT_CONFIG embedded"
-    rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
 fi
 if [ "$PLATFORM_QPA" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG qpa"
@@ -6639,15 +6220,10 @@ if [ '!' -z "$W_FLAGS" ]; then
 fi
 
 # turn off exceptions for the compilers that support it
-if [ "$PLATFORM_QWS" = "yes" ]; then
-    COMPILER=`echo $XPLATFORM | cut -f 3- -d-`
-elif [ "$XPLATFORM" != "$PLATFORM" ]; then
+if [ "$XPLATFORM" != "$PLATFORM" ]; then
     COMPILER=`echo $XPLATFORM | cut -f 2- -d-`
 else
     COMPILER=`echo $PLATFORM | cut -f 2- -d-`
-fi
-if [ "$CFG_EXCEPTIONS" = "unspecified" -a "$PLATFORM_QWS" = "yes" ]; then
-    CFG_EXCEPTIONS=no
 fi
 
 if [ "$CFG_EXCEPTIONS" != "no" ]; then
@@ -7035,54 +6611,6 @@ echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
 if [ "$CFG_DEV" = "yes" ]; then
     echo "#define QT_BUILD_INTERNAL" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
-
-# Embedded compile time options
-if [ "$PLATFORM_QWS" = "yes" ]; then
-    # Add QWS to config.h
-    QCONFIG_FLAGS="$QCONFIG_FLAGS Q_WS_QWS"
-
-    # Add excluded decorations to $QCONFIG_FLAGS
-    decors=`grep '^decorations -= ' "$QMAKE_VARS_FILE" | ${AWK} '{print $3}'`
-    for decor in $decors; do
-        NODECORATION=`echo $decor | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-        QCONFIG_FLAGS="${QCONFIG_FLAGS} QT_NO_QWS_DECORATION_${NODECORATION}"
-    done
-
-    # Figure which embedded drivers which are turned off
-    CFG_GFX_OFF="$CFG_GFX_AVAILABLE"
-    for ADRIVER in $CFG_GFX_ON; do
-        CFG_GFX_OFF=`echo "${CFG_GFX_OFF} " | sed "s,${ADRIVER} ,,g"`
-    done
-
-    CFG_KBD_OFF="$CFG_KBD_AVAILABLE"
-    # the um driver is currently not in the available list for external builds
-    if [ "$CFG_DEV" = "no" ]; then
-	CFG_KBD_OFF="$CFG_KBD_OFF um"
-    fi
-    for ADRIVER in $CFG_KBD_ON; do
-        CFG_KBD_OFF=`echo "${CFG_KBD_OFF} " | sed "s,${ADRIVER} ,,g"`
-    done
-
-    CFG_MOUSE_OFF="$CFG_MOUSE_AVAILABLE"
-    for ADRIVER in $CFG_MOUSE_ON; do
-        CFG_MOUSE_OFF=`echo "${CFG_MOUSE_OFF} " | sed "s,${ADRIVER} ,,g"`
-    done
-
-    for DRIVER in $CFG_GFX_OFF; do
-        NODRIVER=`echo $DRIVER | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_QWS_$NODRIVER"
-    done
-
-    for DRIVER in $CFG_KBD_OFF; do
-        NODRIVER=`echo $DRIVER | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_QWS_KBD_$NODRIVER"
-    done
-
-    for DRIVER in $CFG_MOUSE_OFF; do
-        NODRIVER=`echo $DRIVER | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_QWS_MOUSE_$NODRIVER"
-    done
-fi # QWS
 
 if [ "$PLATFORM_QPA" = "yes" ]; then
     # Add QPA to config.h
@@ -7491,7 +7019,7 @@ else
     echo "Architecture:  $CFG_ARCH"
 fi
 
-if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+if [ "$PLATFORM_QPA" = "yes" ]; then
     echo "Host architecture: $CFG_HOST_ARCH"
 fi
 
@@ -7565,31 +7093,7 @@ else
 fi
 echo "zlib support ........... $CFG_ZLIB"
 echo "Session management ..... $CFG_SM"
-if [ "$PLATFORM_QWS" = "yes" ]; then
-    echo "Embedded support ....... $CFG_EMBEDDED"
-    if [ "$CFG_QWS_FREETYPE" = "auto" ]; then
-	echo "Freetype2 support ...... $CFG_QWS_FREETYPE ($CFG_LIBFREETYPE)"
-    else
-	echo "Freetype2 support ...... $CFG_QWS_FREETYPE"
-    fi
-    # Normalize the decoration output first
-    CFG_GFX_ON=`echo ${CFG_GFX_ON}`
-    CFG_GFX_PLUGIN=`echo ${CFG_GFX_PLUGIN}`
-    echo "Graphics (qt) .......... ${CFG_GFX_ON}"
-    echo "Graphics (plugin) ...... ${CFG_GFX_PLUGIN}"
-    CFG_DECORATION_ON=`echo ${CFG_DECORATION_ON}`
-    CFG_DECORATION_PLUGIN=`echo ${CFG_DECORATION_PLUGIN}`
-    echo "Decorations (qt) ....... $CFG_DECORATION_ON"
-    echo "Decorations (plugin) ... $CFG_DECORATION_PLUGIN"
-    CFG_KBD_ON=`echo ${CFG_KBD_ON}`
-    CFG_KBD_PLUGIN=`echo ${CFG_KBD_PLUGIN}`
-    echo "Keyboard driver (qt) ... ${CFG_KBD_ON}"
-    echo "Keyboard driver (plugin) .. ${CFG_KBD_PLUGIN}"
-    CFG_MOUSE_ON=`echo ${CFG_MOUSE_ON}`
-    CFG_MOUSE_PLUGIN=`echo ${CFG_MOUSE_PLUGIN}`
-    echo "Mouse driver (qt) ...... $CFG_MOUSE_ON"
-    echo "Mouse driver (plugin) .. $CFG_MOUSE_PLUGIN"
-fi
+
 if [ "$CFG_OPENGL" = "desktop" ]; then
     echo "OpenGL support ......... yes (Desktop OpenGL)"
 elif [ "$CFG_OPENGL" = "es2" ]; then
