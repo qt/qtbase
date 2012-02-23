@@ -578,15 +578,12 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         feature_roots << Option::mkfile::qmakespec + QLatin1String("/features");
     if(!Option::mkfile::qmakespec.isEmpty()) {
         QFileInfo specfi(Option::mkfile::qmakespec);
-        QDir specdir(specfi.absoluteFilePath());
-        while(!specdir.isRoot()) {
-            if(!specdir.cdUp() || specdir.isRoot())
-                break;
-            if(QFile::exists(specdir.path() + QLatin1String("/features"))) {
+        if (!specfi.isRoot()) {
+            QDir specdir(specfi.absolutePath());
+            if (specdir.exists(QLatin1String("features"))) {
                 for(QStringList::Iterator concat_it = concat.begin();
                     concat_it != concat.end(); ++concat_it)
                     feature_roots << (specdir.path() + (*concat_it));
-                break;
             }
         }
     }
