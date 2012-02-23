@@ -139,6 +139,7 @@ void tst_qmake::init()
 void tst_qmake::cleanup()
 {
     test_compiler.resetArguments();
+    test_compiler.resetEnvironment();
     test_compiler.clearCommandOutput();
 }
 
@@ -306,7 +307,6 @@ void tst_qmake::export_across_file_boundaries()
     test_compiler.addToEnvironment("QMAKEFEATURES=.");
     QString workDir = base_path + "/testdata/export_across_file_boundaries";
     QVERIFY( test_compiler.qmake( workDir, "foo" ));
-    test_compiler.resetEnvironment();
 }
 
 void tst_qmake::include_dir()
