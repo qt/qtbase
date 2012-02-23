@@ -48,6 +48,8 @@
 #include "qvalidator.h"
 #include "qcompleter.h"
 #include "qstandarditemmodel.h"
+#include "qplatformtheme_qpa.h"
+#include <private/qguiapplication_p.h>
 
 #ifndef QT_NO_CLIPBOARD
 #include "qclipboard.h"
@@ -300,6 +302,7 @@ private:
     int lastCursorPos;
     int newCursorPos;
     QLineEdit *testWidget;
+    int m_keyboardScheme;
 };
 
 typedef QList<int> IntList;
@@ -327,9 +330,16 @@ void tst_QLineEdit::getSetCheck()
     QCOMPARE(true, obj1.dragEnabled());
 }
 
-tst_QLineEdit::tst_QLineEdit()
+tst_QLineEdit::tst_QLineEdit() : validInput(false), m_keyboardScheme(0)
 {
-    validInput = false;
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+        m_keyboardScheme = theme->themeHint(QPlatformTheme::KeyboardScheme).toInt();
+    // Generalize for X11
+    if (m_keyboardScheme == QPlatformTheme::KdeKeyboardScheme
+            || m_keyboardScheme == QPlatformTheme::GnomeKeyboardScheme
+            || m_keyboardScheme == QPlatformTheme::CdeKeyboardScheme) {
+        m_keyboardScheme = QPlatformTheme::X11KeyboardScheme;
+    }
 }
 
 tst_QLineEdit::~tst_QLineEdit()
@@ -1071,25 +1081,26 @@ void tst_QLineEdit::undo()
     QVERIFY(!testWidget->isUndoAvailable());
     QVERIFY(testWidget->text().isEmpty());
 
-#ifdef Q_WS_WIN
-    // Repeat the test using shortcut instead of undo()
-    for (i=0; i<insertString.size(); ++i) {
-        if (insertIndex[i] > -1)
-            testWidget->setCursorPosition(insertIndex[i]);
-        if (insertMode[i] == REPLACE_UNTIL_END) {
-            testWidget->setSelection(insertIndex[i], 8);
+
+    if (m_keyboardScheme == QPlatformTheme::WindowsKeyboardScheme) {
+        // Repeat the test using shortcut instead of undo()
+        for (i=0; i<insertString.size(); ++i) {
+            if (insertIndex[i] > -1)
+                testWidget->setCursorPosition(insertIndex[i]);
+            if (insertMode[i] == REPLACE_UNTIL_END)
+                testWidget->setSelection(insertIndex[i], 8);
+            if (use_keys)
+                QTest::keyClicks(testWidget, insertString[i]);
+            else
+                testWidget->insert(insertString[i]);
         }
-        if (use_keys)
-            QTest::keyClicks(testWidget, insertString[i]);
-        else
-            testWidget->insert(insertString[i]);
+        for (i=0; i<expectedString.size()-1; ++i) {
+            QCOMPARE(testWidget->text(), expectedString[i]);
+            QVERIFY(testWidget->isUndoAvailable());
+            QTest::keyClick(testWidget, Qt::Key_Backspace, Qt::AltModifier);
+        }
     }
-    for (i=0; i<expectedString.size()-1; ++i) {
-        QCOMPARE(testWidget->text(), expectedString[i]);
-        QVERIFY(testWidget->isUndoAvailable());
-        QTest::keyClick(testWidget, Qt::Key_Backspace, Qt::AltModifier);
-    }
-#endif
+
 }
 
 void tst_QLineEdit::redo_data()
@@ -1152,21 +1163,22 @@ void tst_QLineEdit::redo()
 
     QVERIFY(!testWidget->isRedoAvailable());
 
-#ifdef Q_WS_WIN
-    // repeat test, this time using shortcuts instead of undo()/redo()
 
-    while (!testWidget->text().isEmpty())
-        QTest::keyClick(testWidget, Qt::Key_Backspace, Qt::AltModifier);
+    if (m_keyboardScheme == QPlatformTheme::WindowsKeyboardScheme) {
+        // repeat test, this time using shortcuts instead of undo()/redo()
 
-    for (i = 0; i < expectedString.size(); ++i) {
-        QVERIFY(testWidget->isRedoAvailable());
-        QTest::keyClick(testWidget, Qt::Key_Backspace,
-                        Qt::ShiftModifier | Qt::AltModifier);
-        QCOMPARE(testWidget->text() , expectedString[i]);
+        while (!testWidget->text().isEmpty())
+            QTest::keyClick(testWidget, Qt::Key_Backspace, Qt::AltModifier);
+
+        for (i = 0; i < expectedString.size(); ++i) {
+            QVERIFY(testWidget->isRedoAvailable());
+            QTest::keyClick(testWidget, Qt::Key_Backspace,
+                            Qt::ShiftModifier | Qt::AltModifier);
+            QCOMPARE(testWidget->text() , expectedString[i]);
+        }
+
+        QVERIFY(!testWidget->isRedoAvailable());
     }
-
-    QVERIFY(!testWidget->isRedoAvailable());
-#endif
 }
 
 void tst_QLineEdit::undo_keypressevents_data()
@@ -1263,7 +1275,7 @@ void tst_QLineEdit::undo_keypressevents_data()
 
         // unselect any current selection
         keys.addKeyClick(Qt::Key_Right);
-#ifdef Q_WS_WIN //Mac has a specialcase to handle jumping to the end of a selection
+#ifdef Q_OS_WIN //Mac has a specialcase to handle jumping to the end of a selection
         keys.addKeyClick(Qt::Key_Left);
 #endif
 
@@ -3080,6 +3092,7 @@ void tst_QLineEdit::leftKeyOnSelectedText()
 #ifdef Q_OS_WIN
     QCOMPARE(testWidget->cursorPosition(), 1);
 #else
+    // Selection is cleared ands cursor remains at position 2.
     // X11 used to behave like window prior to 4.2. Changes caused by QKeySequence
     // resulted in an inadvertant change in behavior
     QCOMPARE(testWidget->cursorPosition(), 2);
@@ -3624,9 +3637,8 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
 
 void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
 {
-#ifndef Q_WS_X11
-    QSKIP("Only tested on X11");
-#endif
+    if (m_keyboardScheme != QPlatformTheme::X11KeyboardScheme)
+        QSKIP("Only tested on X11");
     QLineEdit le;
     le.setText("               ");
     QPalette p = le.palette();

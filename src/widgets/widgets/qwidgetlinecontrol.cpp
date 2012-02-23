@@ -45,6 +45,8 @@
 
 #include "qabstractitemview.h"
 #include "qclipboard.h"
+#include <private/qguiapplication_p.h>
+#include <qplatformtheme_qpa.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
@@ -374,6 +376,14 @@ void QWidgetLineControl::init(const QString &txt)
     m_text = txt;
     updateDisplayText();
     m_cursor = m_text.length();
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+        m_keyboardScheme = theme->themeHint(QPlatformTheme::KeyboardScheme).toInt();
+    // Generalize for X11
+    if (m_keyboardScheme == QPlatformTheme::KdeKeyboardScheme
+        || m_keyboardScheme == QPlatformTheme::GnomeKeyboardScheme
+        || m_keyboardScheme == QPlatformTheme::CdeKeyboardScheme) {
+        m_keyboardScheme = QPlatformTheme::X11KeyboardScheme;
+    }
 }
 
 /*!
@@ -1630,10 +1640,11 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
     else if (event == QKeySequence::Paste) {
         if (!isReadOnly()) {
             QClipboard::Mode mode = QClipboard::Clipboard;
-#ifdef Q_WS_X11
-            if (event->modifiers() == (Qt::CTRL | Qt::SHIFT) && event->key() == Qt::Key_Insert)
+            if (m_keyboardScheme == QPlatformTheme::X11KeyboardScheme
+                && event->modifiers() == (Qt::CTRL | Qt::SHIFT)
+                && event->key() == Qt::Key_Insert) {
                 mode = QClipboard::Selection;
-#endif
+            }
             paste(mode);
         }
     }
@@ -1664,12 +1675,14 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
         end(1);
     }
     else if (event == QKeySequence::MoveToNextChar) {
-#if !defined(Q_WS_WIN) || defined(QT_NO_COMPLETER)
-        if (hasSelectedText()) {
+#if defined(QT_NO_COMPLETER)
+        const bool inlineCompletion = false;
 #else
-        if (hasSelectedText() && m_completer
-            && m_completer->completionMode() == QCompleter::InlineCompletion) {
+        const bool inlineCompletion = m_completer && m_completer->completionMode() == QCompleter::InlineCompletion;
 #endif
+        if (hasSelectedText()
+           && (m_keyboardScheme != QPlatformTheme::WindowsKeyboardScheme
+               || inlineCompletion)) {
             moveCursor(selectionEnd(), false);
         } else {
             cursorForward(0, visual ? 1 : (layoutDirection() == Qt::LeftToRight ? 1 : -1));
@@ -1679,12 +1692,14 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
         cursorForward(1, visual ? 1 : (layoutDirection() == Qt::LeftToRight ? 1 : -1));
     }
     else if (event == QKeySequence::MoveToPreviousChar) {
-#if !defined(Q_WS_WIN) || defined(QT_NO_COMPLETER)
-        if (hasSelectedText()) {
+#if defined(QT_NO_COMPLETER)
+        const bool inlineCompletion = false;
 #else
-        if (hasSelectedText() && m_completer
-            && m_completer->completionMode() == QCompleter::InlineCompletion) {
+        const bool inlineCompletion = m_completer && m_completer->completionMode() == QCompleter::InlineCompletion;
 #endif
+        if (hasSelectedText()
+            && (m_keyboardScheme != QPlatformTheme::WindowsKeyboardScheme
+                || inlineCompletion)) {
             moveCursor(selectionStart(), false);
         } else {
             cursorForward(0, visual ? -1 : (layoutDirection() == Qt::LeftToRight ? -1 : 1));
@@ -1737,8 +1752,8 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
 #endif // QT_NO_SHORTCUT
     else {
         bool handled = false;
-#ifdef Q_WS_MAC
-        if (event->key() == Qt::Key_Up || event->key() == Qt::Key_Down) {
+        if (m_keyboardScheme == QPlatformTheme::MacKeyboardScheme
+            && (event->key() == Qt::Key_Up || event->key() == Qt::Key_Down)) {
             Qt::KeyboardModifiers myModifiers = (event->modifiers() & ~Qt::KeypadModifier);
             if (myModifiers & Qt::ShiftModifier) {
                 if (myModifiers == (Qt::ControlModifier|Qt::ShiftModifier)
@@ -1756,7 +1771,6 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
             }
             handled = true;
         }
-#endif
         if (event->modifiers() & Qt::ControlModifier) {
             switch (event->key()) {
             case Qt::Key_Backspace:
@@ -1771,13 +1785,13 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
                 complete(event->key());
                 break;
 #endif
-#if defined(Q_WS_X11)
             case Qt::Key_E:
-                end(0);
+                if (m_keyboardScheme == QPlatformTheme::X11KeyboardScheme)
+                    end(0);
                 break;
 
             case Qt::Key_U:
-                if (!isReadOnly()) {
+                if (m_keyboardScheme == QPlatformTheme::X11KeyboardScheme && !isReadOnly()) {
                     setSelection(0, text().size());
 #ifndef QT_NO_CLIPBOARD
                     copy();
@@ -1785,7 +1799,6 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
                     del();
                 }
             break;
-#endif
             default:
                 if (!handled)
                     unknown = true;

@@ -1,6 +1,4 @@
 CONFIG += testcase
 TARGET = tst_qlineedit
-QT += widgets testlib
+QT += gui-private core-private widgets testlib
 SOURCES  += tst_qlineedit.cpp
-
-CONFIG += insignificant_test # QTBUG-21402
