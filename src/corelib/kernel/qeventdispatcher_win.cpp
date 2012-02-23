@@ -50,6 +50,7 @@
 #include "qvarlengtharray.h"
 #include "qwineventnotifier.h"
 
+#include "qelapsedtimer.h"
 #include "qcoreapplication_p.h"
 #include <private/qthread_p.h>
 #include <private/qmutexpool_p.h>
@@ -532,6 +533,8 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
         ok = SetTimer(internalHwnd, t->timerId, interval, 0);
     }
 
+    t->timeout = qt_msectime() + interval;
+
     if (ok == 0)
         qErrnoWarning("QEventDispatcherWin32::registerTimer: Failed to create a timer");
 }
@@ -996,6 +999,42 @@ void QEventDispatcherWin32::activateEventNotifiers()
             d->activateEventNotifier(d->winEventNotifierList.at(i));
 #endif
     }
+}
+
+int QEventDispatcherWin32::remainingTime(int timerId)
+{
+#ifndef QT_NO_DEBUG
+    if (timerId < 1) {
+        qWarning("QEventDispatcherWin32::remainingTime: invalid argument");
+        return -1;
+    }
+#endif
+
+    Q_D(QEventDispatcherWin32);
+
+    if (d->timerVec.isEmpty())
+        return -1;
+
+    quint64 currentTime = qt_msectime();
+
+    register WinTimerInfo *t;
+    for (int i=0; i<d->timerVec.size(); i++) {
+        t = d->timerVec.at(i);
+        if (t && t->timerId == timerId) {                // timer found
+            if (currentTime < t->timeout) {
+                // time to wait
+                return t->timeout - currentTime;
+            } else {
+                return 0;
+            }
+        }
+    }
+
+#ifndef QT_NO_DEBUG
+    qWarning("QEventDispatcherWin32::remainingTime: timer id %s not found", timerId);
+#endif
+
+    return -1;
 }
 
 void QEventDispatcherWin32::wakeUp()

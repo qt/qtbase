@@ -567,6 +567,19 @@ QList<QEventDispatcherGlib::TimerInfo> QEventDispatcherGlib::registeredTimers(QO
     return d->timerSource->timerList.registeredTimers(object);
 }
 
+int QEventDispatcherGlib::remainingTime(int timerId)
+{
+#ifndef QT_NO_DEBUG
+    if (timerId < 1) {
+        qWarning("QEventDispatcherGlib::remainingTimeTime: invalid argument");
+        return -1;
+    }
+#endif
+
+    Q_D(QEventDispatcherGlib);
+    return d->timerSource->timerList.timerRemainingTime(timerId);
+}
+
 void QEventDispatcherGlib::interrupt()
 {
     wakeUp();

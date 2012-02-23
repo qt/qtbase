@@ -55,6 +55,7 @@ private slots:
     void zeroTimer();
     void singleShotTimeout();
     void timeout();
+    void remainingTime();
     void livelock_data();
     void livelock();
     void timerInfiniteRecursion_data();
@@ -143,6 +144,22 @@ void tst_QTimer::timeout()
     QVERIFY(helper.count > oldCount);
 }
 
+void tst_QTimer::remainingTime()
+{
+    TimerHelper helper;
+    QTimer timer;
+
+    connect(&timer, SIGNAL(timeout()), &helper, SLOT(timeout()));
+    timer.start(200);
+
+    QCOMPARE(helper.count, 0);
+
+    QTest::qWait(50);
+    QCOMPARE(helper.count, 0);
+
+    int remainingTime = timer.remainingTime();
+    QVERIFY2(qAbs(remainingTime - 150) < 50, qPrintable(QString::number(remainingTime)));
+}
 
 void tst_QTimer::livelock_data()
 {

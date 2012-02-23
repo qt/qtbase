@@ -104,6 +104,8 @@ public:
     bool timerWait(timeval &);
     void timerInsert(QTimerInfo *);
 
+    int timerRemainingTime(int timerId);
+
     void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object);
     bool unregisterTimer(int timerId);
     bool unregisterTimers(QObject *object);
