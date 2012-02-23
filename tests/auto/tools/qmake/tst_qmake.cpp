@@ -57,7 +57,6 @@ public:
 public slots:
     void initTestCase();
     void cleanupTestCase();
-    void init();
     void cleanup();
 
 private slots:
@@ -129,11 +128,6 @@ void tst_qmake::initTestCase()
 
 void tst_qmake::cleanupTestCase()
 {
-}
-
-void tst_qmake::init()
-{
-    test_compiler.clearCommandOutput();
 }
 
 void tst_qmake::cleanup()
