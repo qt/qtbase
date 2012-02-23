@@ -535,6 +535,7 @@ private slots:
     void cxx11Enums_data();
     void cxx11Enums();
     void returnRefs();
+    void redefinedNames();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -1761,6 +1762,157 @@ void tst_Moc::returnRefs()
     // Those two functions are copied from the qscriptextqobject test in qtscript
     // they used to cause miscompilation of the moc generated file.
 }
+
+struct ActualInterfaceName
+{
+    virtual ~ActualInterfaceName() {}
+    virtual void foo() = 0;
+};
+
+QT_BEGIN_NAMESPACE
+Q_DECLARE_INTERFACE(ActualInterfaceName, "foo.bar.ActualInterfaceName")
+QT_END_NAMESPACE
+
+#define DefinedInterfaceName ActualInterfaceName
+#define RedefinedInterfaceName DefinedInterfaceName
+
+struct ActualName {};
+#define DefinedName ActualName
+#define RedefinedName DefinedName
+
+template<typename T>
+struct ActualTemplateName {};
+
+#define DefinedTemplateName ActualTemplateName
+#define RedefinedTemplateName DefinedTemplateName
+
+#define ActualName ActualName
+
+class RedefinitionTest : public QObject, public RedefinedInterfaceName
+{
+    Q_OBJECT
+    Q_INTERFACES(RedefinedInterfaceName)
+
+    Q_PROPERTY(ActualName p1 READ getP1)
+
+    Q_PROPERTY(DefinedName p2 READ getP2)
+    Q_PROPERTY(RedefinedName p3 READ getP3)
+
+    Q_PROPERTY(DefinedName * p4 READ getP4)
+    Q_PROPERTY(RedefinedName * p5 READ getP5)
+
+    Q_PROPERTY(DefinedName ** p6 READ getP6)
+    Q_PROPERTY(RedefinedName ** p7 READ getP7)
+
+    Q_PROPERTY(DefinedName const ** p8 READ getP8)
+    Q_PROPERTY(RedefinedName const ** p9 READ getP9)
+
+    Q_PROPERTY(DefinedName const * const * p10 READ getP10)
+    Q_PROPERTY(RedefinedName const * const * p11 READ getP11)
+
+    Q_PROPERTY(DefinedTemplateName<DefinedName> p16 READ getP16)
+    Q_PROPERTY(RedefinedTemplateName<RedefinedName> p17 READ getP17)
+
+    Q_PROPERTY(DefinedTemplateName<DefinedName **> p18 READ getP18)
+    Q_PROPERTY(RedefinedTemplateName<RedefinedName **> p19 READ getP19)
+
+    Q_PROPERTY(DefinedTemplateName<DefinedName const * const> p20 READ getP20)
+    Q_PROPERTY(RedefinedTemplateName<RedefinedName const * const> p21 READ getP21)
+
+signals:
+    void signal1(ActualName);
+    void signal2(DefinedName);
+    void signal3(RedefinedName);
+
+public slots:
+    void slot1(ActualName x) { v = x; }
+    void slot2(DefinedName x) { v = x; }
+    void slot3(RedefinedName x) { v = x; }
+
+public:
+    void foo() {}
+
+    ActualName v;
+
+    ActualName *vp;
+    ActualName const *vcp;
+
+    ActualTemplateName<ActualName> tv;
+    ActualTemplateName<ActualName **> tvpp;
+    ActualTemplateName<ActualName const * const> tvcpc;
+
+    ActualName getP0() { return v; }
+    ActualName getP1() { return v; }
+
+    DefinedName getP2() { return v; }
+    RedefinedName getP3() { return v; }
+
+    DefinedName * getP4() { return &v; }
+    RedefinedName * getP5() { return &v; }
+
+    DefinedName ** getP6() { return &vp; }
+    RedefinedName ** getP7() { return &vp; }
+
+    DefinedName const ** getP8() { return &vcp; }
+    RedefinedName const ** getP9() { return &vcp; }
+
+    DefinedName const * const * getP10() const { return &vcp; }
+    RedefinedName const * const * getP11() const { return &vcp; }
+
+    DefinedTemplateName<DefinedName> getP16() { return tv; }
+    RedefinedTemplateName<RedefinedName> getP17() { return tv; }
+
+    DefinedTemplateName<DefinedName **> getP18() { return tvpp; }
+    RedefinedTemplateName<RedefinedName **> getP19() { return tvpp; }
+
+    DefinedTemplateName<DefinedName const * const> getP20() { return tvcpc; }
+    RedefinedTemplateName<RedefinedName const * const> getP21() { return tvcpc; }
+};
+
+void tst_Moc::redefinedNames()
+{
+    RedefinitionTest tst;
+    const QMetaObject *mobj = tst.metaObject();
+    QVERIFY(mobj->indexOfProperty("p1") != -1);
+
+    // Use the true slot name rather than the declared name
+    QVERIFY(QObject::connect(&tst, SIGNAL(signal1(ActualName)),
+                             &tst, SLOT(slot1(ActualName))));
+
+    QVERIFY(QObject::connect(&tst, SIGNAL(signal2(ActualName)),
+                             &tst, SLOT(slot2(ActualName))));
+
+    QVERIFY(QObject::connect(&tst, SIGNAL(signal3(ActualName)),
+                             &tst, SLOT(slot3(ActualName))));
+
+    // Use the declared slot name rather than the true name
+    QVERIFY(QObject::connect(&tst, SIGNAL(signal1(ActualName)),
+                             &tst, SLOT(slot2(DefinedName))));
+
+    QVERIFY(QObject::connect(&tst, SIGNAL(signal1(ActualName)),
+                             &tst, SLOT(slot3(RedefinedName))));
+
+    // Use the declared signal name rather than the true name
+    QVERIFY(QObject::connect(&tst, SIGNAL(signal2(DefinedName)),
+                             &tst, SLOT(slot1(ActualName))));
+
+    QVERIFY(QObject::connect(&tst, SIGNAL(signal3(RedefinedName)),
+                             &tst, SLOT(slot1(ActualName))));
+
+    // Use both declared names
+    QVERIFY(QObject::connect(&tst, SIGNAL(signal2(DefinedName)),
+                             &tst, SLOT(slot2(DefinedName))));
+
+    QVERIFY(QObject::connect(&tst, SIGNAL(signal2(DefinedName)),
+                             &tst, SLOT(slot3(RedefinedName))));
+
+    QVERIFY(QObject::connect(&tst, SIGNAL(signal3(RedefinedName)),
+                             &tst, SLOT(slot2(DefinedName))));
+
+    QVERIFY(QObject::connect(&tst, SIGNAL(signal3(RedefinedName)),
+                             &tst, SLOT(slot3(RedefinedName))));
+}
+
 
 QTEST_APPLESS_MAIN(tst_Moc)
 #include "tst_moc.moc"

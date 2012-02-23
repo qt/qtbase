@@ -43,6 +43,7 @@
 #define MOC_H
 
 #include "parser.h"
+#include "preprocessor.h"
 #include <QStringList>
 #include <QMap>
 #include <QPair>
@@ -197,12 +198,14 @@ struct NamespaceDef {
 class Moc : public Parser
 {
 public:
-    Moc()
-        : noInclude(false), generatedCode(false), mustIncludeQMetaTypeH(false), mustIncludeQPluginH(false)
+    Moc(Preprocessor &p)
+        : preprocessor(p), noInclude(false), generatedCode(false),
+          mustIncludeQMetaTypeH(false), mustIncludeQPluginH(false)
         {}
 
     QByteArray filename;
 
+    Preprocessor &preprocessor;
     bool noInclude;
     bool generatedCode;
     bool mustIncludeQMetaTypeH;
@@ -260,6 +263,12 @@ public:
 
     void checkSuperClasses(ClassDef *def);
     void checkProperties(ClassDef* cdef);
+
+    QByteArray getSubstitution(const QByteArray &token) const;
+    QByteArray getTokenSubstitution(const QByteArray &token) const;
+    QByteArray getWordSubstitution(const QByteArray &word) const;
+    QByteArray getNameSubstitution(const QByteArray &name) const;
+    QByteArray getTypeSubstitution(const QByteArray &typeName) const;
 };
 
 inline QByteArray noRef(const QByteArray &type)
