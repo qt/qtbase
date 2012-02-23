@@ -2433,20 +2433,15 @@ bool QHeaderView::viewportEvent(QEvent *e)
         }
         return true; }
 #endif // QT_NO_STATUSTIP
-    case QEvent::Hide: {
-        d->invalidateCachedSizeHint();
+    case QEvent::Hide:
+    case QEvent::Show:
+    case QEvent::FontChange:
+    case QEvent::StyleChange:{
         QAbstractScrollArea *parent = qobject_cast<QAbstractScrollArea *>(parentWidget());
         if (parent && parent->isVisible()) // Only resize if we have a visible parent
             resizeSections();
         emit geometriesChanged();
         break;}
-    case QEvent::Show:
-    case QEvent::FontChange:
-    case QEvent::StyleChange:
-        d->invalidateCachedSizeHint();
-        resizeSections();
-        emit geometriesChanged();
-        break;
     case QEvent::ContextMenu: {
         d->state = QHeaderViewPrivate::NoState;
         d->pressed = d->section = d->target = -1;
