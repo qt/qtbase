@@ -212,18 +212,12 @@ void tst_qinputmethod::cursorRectangle()
 {
     QCOMPARE(qApp->inputMethod()->cursorRectangle(), QRectF());
 
-    DummyWindow window;
-    window.show();
-    QTest::qWaitForWindowShown(&window);
-    window.requestActivateWindow();
-    QTRY_COMPARE(qApp->focusWindow(), &window);
-    window.setFocusObject(&m_inputItem);
-
     QTransform transform;
     transform.translate(10, 10);
     transform.scale(2, 2);
     transform.shear(2, 2);
     qApp->inputMethod()->setInputItemTransform(transform);
+    qApp->inputMethod()->setInputItem(&m_inputItem);
 
     QCOMPARE(qApp->inputMethod()->cursorRectangle(), transform.mapRect(QRectF(1, 2, 3, 4)));
 
@@ -232,6 +226,7 @@ void tst_qinputmethod::cursorRectangle()
 
     // reset
     m_inputItem.cursorRectangle = QRectF(1, 2, 3, 4);
+    qApp->inputMethod()->setInputItem(0);
     qApp->inputMethod()->setInputItemTransform(QTransform());
 }
 
@@ -269,13 +264,6 @@ void tst_qinputmethod::commit()
 
 void tst_qinputmethod::update()
 {
-    DummyWindow window;
-    window.show();
-    QTest::qWaitForWindowShown(&window);
-    window.requestActivateWindow();
-    QTRY_COMPARE(qApp->focusWindow(), &window);
-    window.setFocusObject(&m_inputItem);
-
     QCOMPARE(m_platformInputContext.m_updateCallCount, 0);
     QCOMPARE(int(m_platformInputContext.m_lastQueries), int(Qt::ImhNone));
 
@@ -288,6 +276,9 @@ void tst_qinputmethod::update()
     QCOMPARE(int(m_platformInputContext.m_lastQueries), int(Qt::ImQueryAll));
 
     QCOMPARE(qApp->inputMethod()->keyboardRectangle(), QRectF(10, 20, 30, 40));
+
+    // reset
+    qApp->inputMethod()->setInputItem(0);
 }
 
 void tst_qinputmethod::query()
