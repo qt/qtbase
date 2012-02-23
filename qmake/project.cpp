@@ -1291,26 +1291,12 @@ QMakeProject::read(uchar cmd)
         }
         if (cmd & ReadSetup) {             // parse mkspec
             QString qmakespec = fixEnvVariables(Option::mkfile::qmakespec);
-            QStringList mkspec_roots = qmake_mkspec_paths();
-            debug_msg(2, "Looking for mkspec %s in (%s)", qmakespec.toLatin1().constData(),
-                      mkspec_roots.join("::").toLatin1().constData());
-            if(qmakespec.isEmpty()) {
-                for(QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
-                    QString mkspec = (*it) + QLatin1String("/default");
-                    QFileInfo default_info(mkspec);
-                    if(default_info.exists() && default_info.isDir()) {
-                        qmakespec = mkspec;
-                        break;
-                    }
-                }
-                if(qmakespec.isEmpty()) {
-                    fprintf(stderr, "QMAKESPEC has not been set, so configuration cannot be deduced.\n");
-                    return false;
-                }
-                Option::mkfile::qmakespec = qmakespec;
-            }
-
+            if (qmakespec.isEmpty())
+                qmakespec = "default";
             if(QDir::isRelativePath(qmakespec)) {
+                    QStringList mkspec_roots = qmake_mkspec_paths();
+                    debug_msg(2, "Looking for mkspec %s in (%s)", qmakespec.toLatin1().constData(),
+                              mkspec_roots.join("::").toLatin1().constData());
                     bool found_mkspec = false;
                     for(QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
                         QString mkspec = (*it) + QLatin1Char('/') + qmakespec;
