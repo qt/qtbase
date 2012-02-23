@@ -108,6 +108,7 @@ struct Option
     //both of these must be called..
     static int init(int argc=0, char **argv=0); //parse cmdline
     static void applyHostMode();
+    static QStringList mkspecPaths();
     static bool prepareProject(const QString &pfile);
     static bool postProcessProject(QMakeProject *);
 
@@ -212,6 +213,7 @@ struct Option
 
 private:
     static int parseCommandLine(int, char **, int=0);
+    static bool resolveSpec(QString *spec);
 };
 
 inline QString fixEnvVariables(const QString &x) { return Option::fixString(x, Option::FixEnvVars); }

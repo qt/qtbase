@@ -577,6 +577,47 @@ void Option::applyHostMode()
    }
 }
 
+QStringList Option::mkspecPaths()
+{
+    QStringList ret;
+    const QString concat = QLatin1String("/mkspecs");
+
+    QByteArray qmakepath = qgetenv("QMAKEPATH");
+    if (!qmakepath.isEmpty()) {
+        const QStringList lst = splitPathList(QString::fromLocal8Bit(qmakepath));
+        for (QStringList::ConstIterator it = lst.begin(); it != lst.end(); ++it)
+            ret << ((*it) + concat);
+    }
+    ret << Option::mkfile::project_build_root + concat;
+    if (!Option::mkfile::project_root.isEmpty())
+        ret << Option::mkfile::project_root + concat;
+    ret << QLibraryInfo::location(QLibraryInfo::DataPath) + concat;
+    return ret;
+}
+
+bool Option::resolveSpec(QString *spec)
+{
+    QString qmakespec = fixEnvVariables(*spec);
+    if (qmakespec.isEmpty())
+        qmakespec = "default";
+    if (QDir::isRelativePath(qmakespec)) {
+        QStringList mkspec_roots = mkspecPaths();
+        debug_msg(2, "Looking for mkspec %s in (%s)", qmakespec.toLatin1().constData(),
+                  mkspec_roots.join("::").toLatin1().constData());
+        for (QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
+            QString mkspec = (*it) + QLatin1Char('/') + qmakespec;
+            if (QFile::exists(mkspec)) {
+                *spec = mkspec;
+                return true;
+            }
+        }
+        fprintf(stderr, "Could not find mkspecs for your QMAKESPEC(%s) after trying:\n\t%s\n",
+                qmakespec.toLatin1().constData(), mkspec_roots.join("\n\t").toLatin1().constData());
+            return false;
+    }
+    return true;
+}
+
 bool Option::prepareProject(const QString &pfile)
 {
     mkfile::project_build_root.clear();
@@ -629,6 +670,9 @@ bool Option::prepareProject(const QString &pfile)
     } else {
         mkfile::project_root.clear();
     }
+
+    if (!resolveSpec(&Option::mkfile::qmakespec))
+        return false;
 
     return true;
 }
