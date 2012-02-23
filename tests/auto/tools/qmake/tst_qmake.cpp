@@ -461,7 +461,7 @@ void tst_qmake::bundle_spaces()
     QVERIFY( !non_existing_file.exists() );
 
     // Make fails: no rule to make "non-existing file"
-    QVERIFY( !test_compiler.make(workDir, QString()) );
+    QVERIFY( test_compiler.make(workDir, QString(), true) );
 
     QVERIFY( non_existing_file.open(QIODevice::WriteOnly) );
     QVERIFY( non_existing_file.exists() );
