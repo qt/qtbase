@@ -39,34 +39,15 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMTHEME_COCOA_H
-#define QPLATFORMTHEME_COCOA_H
+#ifndef QCOCOASYSTEMSETTINGS_H
+#define QCOCOASYSTEMSETTINGS_H
 
-#include <Cocoa/Cocoa.h>
-
-#include <QtGui/QPlatformTheme>
+#include <QtCore/qglobal.h>
+#include <QtGui/qpalette.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPalette;
-class QCocoaTheme : public QPlatformTheme
-{
-public:
-    QCocoaTheme();
-    ~QCocoaTheme();
-
-    QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
-    QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
-
-    bool usePlatformNativeDialog(DialogType dialogType) const;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const;
-
-    const QPalette *palette(Palette type = SystemPalette) const;
-
-    QVariant themeHint(ThemeHint hint) const;
-private:
-    mutable QPalette *m_systemPalette;
-};
+QPalette * qt_mac_createSystemPalette();
 
 QT_END_NAMESPACE
 
