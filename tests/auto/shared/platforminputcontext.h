@@ -55,7 +55,8 @@ public:
         m_lastQueries(Qt::ImhNone),
         m_action(QInputMethod::Click),
         m_cursorPosition(0),
-        m_lastEventType(QEvent::None)
+        m_lastEventType(QEvent::None),
+        m_setFocusObjectCallCount(0)
     {}
 
     virtual QRectF keyboardRect() const { return m_keyboardRect; }
@@ -111,6 +112,11 @@ public:
         m_inputDirectionCallCount++;
         return Qt::LeftToRight;
     }
+    virtual void setFocusObject(QObject *object)
+    {
+        Q_UNUSED(object);
+        m_setFocusObjectCallCount++;
+    }
 
     bool m_animating;
     bool m_visible;
@@ -125,4 +131,5 @@ public:
     int m_cursorPosition;
     int m_lastEventType;
     QRectF m_keyboardRect;
+    int m_setFocusObjectCallCount;
 };

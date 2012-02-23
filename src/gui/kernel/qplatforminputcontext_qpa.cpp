@@ -43,6 +43,7 @@
 #include <qguiapplication.h>
 #include <QRect>
 #include "private/qkeymapper_p.h"
+#include "private/qplatforminputcontext_qpa_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -75,6 +76,7 @@ QT_BEGIN_NAMESPACE
     \internal
  */
 QPlatformInputContext::QPlatformInputContext()
+    : QObject(*(new QPlatformInputContextPrivate))
 {
 }
 
@@ -226,6 +228,31 @@ Qt::LayoutDirection QPlatformInputContext::inputDirection() const
 void QPlatformInputContext::emitInputDirectionChanged(Qt::LayoutDirection newDirection)
 {
     emit qApp->inputMethod()->inputDirectionChanged(newDirection);
+}
+
+/*!
+    This virtual method gets called to notify updated focus to \a object.
+    \warning Input methods must not call this function directly.
+ */
+void QPlatformInputContext::setFocusObject(QObject *object)
+{
+    Q_UNUSED(object)
+}
+
+/*!
+    Returns true if current focus object supports input method events.
+ */
+bool QPlatformInputContext::inputMethodAccepted() const
+{
+    Q_D(const QPlatformInputContext);
+    return d->s_inputMethodAccepted;
+}
+
+bool QPlatformInputContextPrivate::s_inputMethodAccepted = false;
+
+void QPlatformInputContextPrivate::setInputMethodAccepted(bool accepted)
+{
+    s_inputMethodAccepted = accepted;
 }
 
 

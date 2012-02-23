@@ -69,7 +69,8 @@
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputpanel.h>
 #include <QtGui/qplatformtheme_qpa.h>
-
+#include <QtGui/qplatforminputcontext_qpa.h>
+#include <private/qplatforminputcontext_qpa_p.h>
 
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
@@ -1180,7 +1181,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         QFocusEvent focusOut(QEvent::FocusOut);
         QCoreApplication::sendSpontaneousEvent(previous, &focusOut);
         QObject::disconnect(previous, SIGNAL(focusObjectChanged(QObject*)),
-                            qApp, SIGNAL(focusObjectChanged(QObject*)));
+                            qApp, SLOT(q_updateFocusObject(QObject*)));
     } else {
         QEvent appActivate(QEvent::ApplicationActivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
@@ -1190,17 +1191,18 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         QFocusEvent focusIn(QEvent::FocusIn);
         QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
         QObject::connect(QGuiApplicationPrivate::focus_window, SIGNAL(focusObjectChanged(QObject*)),
-                         qApp, SIGNAL(focusObjectChanged(QObject*)));
+                         qApp, SLOT(q_updateFocusObject(QObject*)));
     } else {
         QEvent appActivate(QEvent::ApplicationDeactivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
     }
 
-    if (self)
+    if (self) {
         self->notifyActiveWindowChange(previous);
 
-    if (previousFocusObject != qApp->focusObject())
-        emit qApp->focusObjectChanged(qApp->focusObject());
+        if (previousFocusObject != qApp->focusObject())
+            self->q_updateFocusObject(qApp->focusObject());
+    }
 }
 
 void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *wse)
@@ -2185,5 +2187,25 @@ const QDrawHelperGammaTables *QGuiApplicationPrivate::gammaTables()
     }
     return result;
 }
+
+void QGuiApplicationPrivate::q_updateFocusObject(QObject *object)
+{
+    Q_Q(QGuiApplication);
+
+    bool enabled = false;
+    if (object) {
+        QInputMethodQueryEvent query(Qt::ImEnabled);
+        QGuiApplication::sendEvent(object, &query);
+        enabled = query.value(Qt::ImEnabled).toBool();
+    }
+
+    QPlatformInputContextPrivate::setInputMethodAccepted(enabled);
+    QPlatformInputContext *inputContext = platformIntegration()->inputContext();
+    if (inputContext)
+        inputContext->setFocusObject(object);
+    emit q->focusObjectChanged(object);
+}
+
+#include "moc_qguiapplication.cpp"
 
 QT_END_NAMESPACE

@@ -145,6 +145,8 @@ public:
 
     QPixmap getPixmapCursor(Qt::CursorShape cshape);
 
+    void q_updateFocusObject(QObject *object);
+
     static QGuiApplicationPrivate *instance() { return self; }
 
     static QString *platform_name;

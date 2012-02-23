@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -38,42 +38,30 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QIBUSPLATFORMINPUTCONTEXT_H
-#define QIBUSPLATFORMINPUTCONTEXT_H
 
-#include <QPlatformInputContext>
+#ifndef QPLATFORMINPUTCONTEXT_P_H
+#define QPLATFORMINPUTCONTEXT_P_H
+
+#include <private/qobject_p.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QIBusPlatformInputContextPrivate;
-class QDBusVariant;
-
-class QIBusPlatformInputContext : public QPlatformInputContext
+class QPlatformInputContextPrivate: public QObjectPrivate
 {
-    Q_OBJECT
 public:
-    QIBusPlatformInputContext();
-    ~QIBusPlatformInputContext();
+    QPlatformInputContextPrivate() {}
+    ~QPlatformInputContextPrivate() {}
 
-    bool isValid() const;
-    void setFocusObject(QObject *object);
+    static void setInputMethodAccepted(bool accepted);
+    static bool inputMethodAccepted();
 
-    void invokeAction(QInputMethod::Action a, int x);
-    void reset();
-    void commit();
-    void update(Qt::InputMethodQueries);
-
-    Q_INVOKABLE bool x11FilterEvent(uint keyval, uint keycode, uint state, bool press);
-
-public Q_SLOTS:
-    void commitText(const QDBusVariant &text);
-    void updatePreeditText(const QDBusVariant &text, uint cursor_pos, bool visible);
-    void cursorRectChanged();
-
-private:
-    QIBusPlatformInputContextPrivate *d;
+    static bool s_inputMethodAccepted;
 };
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif

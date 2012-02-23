@@ -48,13 +48,13 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
-class QWindow;
-class QMouseEvent;
+class QPlatformInputContextPrivate;
 
 class Q_GUI_EXPORT QPlatformInputContext : public QObject
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QPlatformInputContext)
+
 public:
     QPlatformInputContext();
     virtual ~QPlatformInputContext();
@@ -81,6 +81,14 @@ public:
     void emitLocaleChanged();
     virtual Qt::LayoutDirection inputDirection() const;
     void emitInputDirectionChanged(Qt::LayoutDirection newDirection);
+
+    virtual void setFocusObject(QObject *object);
+    bool inputMethodAccepted() const;
+
+private:
+    friend class QGuiApplication;
+    friend class QGuiApplicationPrivate;
+    friend class QInputMethod;
 };
 
 QT_END_NAMESPACE

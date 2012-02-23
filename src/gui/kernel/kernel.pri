@@ -15,6 +15,7 @@ HEADERS += \
         kernel/qplatformscreen_qpa.h \
         kernel/qplatformscreen_qpa_p.h \
         kernel/qplatforminputcontext_qpa.h \
+        kernel/qplatforminputcontext_qpa_p.h \
         kernel/qplatformintegrationfactory_qpa_p.h \
         kernel/qplatformintegrationplugin_qpa.h \
         kernel/qplatformtheme_qpa.h\

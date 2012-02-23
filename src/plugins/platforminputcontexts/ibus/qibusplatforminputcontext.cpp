@@ -89,7 +89,6 @@ QIBusPlatformInputContext::QIBusPlatformInputContext ()
         connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
     }
     QInputMethod *p = qApp->inputMethod();
-    connect(p, SIGNAL(inputItemChanged()), this, SLOT(inputItemChanged()));
     connect(p, SIGNAL(cursorRectangleChanged()), this, SLOT(cursorRectChanged()));
 }
 
@@ -130,7 +129,7 @@ void QIBusPlatformInputContext::commit()
     if (!d->valid)
         return;
 
-    QObject *input = qApp->inputMethod()->inputItem();
+    QObject *input = qApp->focusObject();
     if (!input) {
         d->predit = QString();
         return;
@@ -159,7 +158,7 @@ void QIBusPlatformInputContext::cursorRectChanged()
     if(!r.isValid())
         return;
 
-    QWindow *inputWindow = qApp->inputMethod()->inputWindow();
+    QWindow *inputWindow = qApp->focusWindow();
     if (!inputWindow)
         return;
     r.moveTopLeft(inputWindow->mapToGlobal(r.topLeft()));
@@ -168,15 +167,14 @@ void QIBusPlatformInputContext::cursorRectChanged()
     d->context->SetCursorLocation(r.x(), r.y(), r.width(), r.height());
 }
 
-void QIBusPlatformInputContext::inputItemChanged()
+void QIBusPlatformInputContext::setFocusObject(QObject *object)
 {
     if (!d->valid)
         return;
 
-    QObject *input = qApp->inputMethod()->inputItem();
     if (debug)
-        qDebug() << "setFocusObject" << input;
-    if (input)
+        qDebug() << "setFocusObject" << object;
+    if (object)
         d->context->FocusIn();
     else
         d->context->FocusOut();
@@ -184,7 +182,7 @@ void QIBusPlatformInputContext::inputItemChanged()
 
 void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
 {
-    QObject *input = qApp->inputMethod()->inputItem();
+    QObject *input = qApp->focusObject();
     if (!input)
         return;
 
@@ -206,7 +204,7 @@ void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
 
 void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint cursorPos, bool visible)
 {
-    QObject *input = qApp->inputMethod()->inputItem();
+    QObject *input = qApp->focusObject();
     if (!input)
         return;
 
@@ -252,6 +250,9 @@ bool
 QIBusPlatformInputContext::x11FilterEvent(uint keyval, uint keycode, uint state, bool press)
 {
     if (!d->valid)
+        return false;
+
+    if (!inputMethodAccepted())
         return false;
 
     if (!press)
