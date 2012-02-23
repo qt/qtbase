@@ -61,7 +61,7 @@ class QRect;
 class Q_GUI_EXPORT QFontMetrics
 {
 public:
-    QFontMetrics(const QFont &);
+    explicit QFontMetrics(const QFont &);
     QFontMetrics(const QFont &, QPaintDevice *pd);
     QFontMetrics(const QFontMetrics &);
     ~QFontMetrics();
@@ -127,7 +127,7 @@ private:
 class Q_GUI_EXPORT QFontMetricsF
 {
 public:
-    QFontMetricsF(const QFont &);
+    explicit QFontMetricsF(const QFont &);
     QFontMetricsF(const QFont &, QPaintDevice *pd);
     QFontMetricsF(const QFontMetrics &);
     QFontMetricsF(const QFontMetricsF &);
