@@ -160,6 +160,18 @@ void TestCompiler::setBaseCommands( QString makeCmd, QString qmakeCmd )
     qmakeCmd_ = qmakeCmd;
 }
 
+void TestCompiler::resetArguments()
+{
+    makeArgs_.clear();
+    qmakeArgs_.clear();
+}
+
+void TestCompiler::setArguments( QString makeArgs, QString qmakeArgs )
+{
+    makeArgs_ = makeArgs;
+    qmakeArgs_ = qmakeArgs;
+}
+
 void TestCompiler::resetEnvironment()
 {
     environment_.clear();
@@ -222,7 +234,7 @@ bool TestCompiler::qmake( const QString &workDir, const QString &proName, const 
     makeFile += "Makefile";
 
     // Now start qmake and generate the makefile
-    return runCommand( qmakeCmd_ + " " + projectFile + " -o " + makeFile );
+    return runCommand( qmakeCmd_ + " " + qmakeArgs_ + " " + projectFile + " -o " + makeFile );
 }
 
 bool TestCompiler::make( const QString &workPath, const QString &target )
@@ -230,7 +242,7 @@ bool TestCompiler::make( const QString &workPath, const QString &target )
     QDir D;
     D.setCurrent( workPath );
 
-    QString cmdline = makeCmd_;
+    QString cmdline = makeCmd_ + " " + makeArgs_;
     if ( cmdline.contains("nmake", Qt::CaseInsensitive) )
         cmdline.append(" /NOLOGO");
     if ( !target.isEmpty() )

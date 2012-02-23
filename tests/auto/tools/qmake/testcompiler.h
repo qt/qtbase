@@ -55,6 +55,10 @@ public:
     virtual ~TestCompiler();
 
     void setBaseCommands( QString makeCmd, QString qmakeCmd );
+
+    void resetArguments();
+    void setArguments( QString makeArgs, QString qmakeArgs );
+
     void resetEnvironment();
     void addToEnvironment( QString varAssignment );
 
@@ -78,8 +82,8 @@ public:
 private:
     bool runCommand( QString cmdLine );
 
-    QString makeCmd_;
-    QString qmakeCmd_;
+    QString makeCmd_, makeArgs_;
+    QString qmakeCmd_, qmakeArgs_;
     QStringList environment_;
 
     // need to make this available somewhere
