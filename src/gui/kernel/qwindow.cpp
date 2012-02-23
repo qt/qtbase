@@ -1192,7 +1192,7 @@ void QWindow::screenDestroyed(QObject *object)
 
 /*!
   Returns the accessibility interface for the object that the window represents
-  \preliminary
+  \internal
   \sa QAccessible
   */
 QAccessibleInterface *QWindow::accessibleRoot() const
