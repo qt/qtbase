@@ -607,6 +607,9 @@ QStringList qmake_mkspec_paths()
         for(QStringList::ConstIterator it = lst.begin(); it != lst.end(); ++it)
             ret << ((*it) + concat);
     }
+    ret << Option::mkfile::project_build_root + concat;
+    if (!Option::mkfile::project_root.isEmpty())
+        ret << Option::mkfile::project_root + concat;
     ret << QLibraryInfo::location(QLibraryInfo::DataPath) + concat;
 
     return ret;
@@ -1307,11 +1310,6 @@ QMakeProject::read(uchar cmd)
             }
 
             if(QDir::isRelativePath(qmakespec)) {
-                if (QFile::exists(Option::output_dir+"/"+qmakespec+"/qmake.conf")) {
-                    qmakespec = Option::mkfile::qmakespec = QFileInfo(Option::output_dir+"/"+qmakespec).absoluteFilePath();
-                } else if (QFile::exists(qmakespec+"/qmake.conf")) {
-                    Option::mkfile::qmakespec = QFileInfo(Option::mkfile::qmakespec).absoluteFilePath();
-                } else {
                     bool found_mkspec = false;
                     for(QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
                         QString mkspec = (*it) + QLatin1Char('/') + qmakespec;
@@ -1326,7 +1324,6 @@ QMakeProject::read(uchar cmd)
                                 qmakespec.toLatin1().constData(), mkspec_roots.join("\n\t").toLatin1().constData());
                         return false;
                     }
-                }
             }
 
             // parse qmake configuration

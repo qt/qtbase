@@ -116,6 +116,7 @@ bool Option::mkfile::do_dep_heuristics = true;
 bool Option::mkfile::do_preprocess = false;
 bool Option::mkfile::do_stub_makefile = false;
 bool Option::mkfile::do_cache = true;
+QString Option::mkfile::project_root;
 QString Option::mkfile::project_build_root;
 QString Option::mkfile::cachefile;
 QStringList Option::mkfile::project_files;
@@ -576,7 +577,7 @@ void Option::applyHostMode()
    }
 }
 
-bool Option::prepareProject()
+bool Option::prepareProject(const QString &pfile)
 {
     mkfile::project_build_root.clear();
     if (mkfile::do_cache) {
@@ -601,6 +602,34 @@ bool Option::prepareProject()
         }
     }
   no_cache:
+
+    QString srcpath = (pfile != "-")
+            ? QDir::cleanPath(QFileInfo(pfile).absolutePath()) : qmake_getpwd();
+    if (srcpath != output_dir || mkfile::project_build_root.isEmpty()) {
+        QDir srcdir(srcpath);
+        QDir dstdir(output_dir);
+        do {
+            if (!mkfile::project_build_root.isEmpty()) {
+                // If we already know the build root, just match up the source root with it.
+                if (dstdir.path() == mkfile::project_build_root) {
+                    mkfile::project_root = srcdir.path();
+                    break;
+                }
+            } else {
+                // Look for mkspecs/ in source and build. First to win determines the root.
+                if (dstdir.exists("mkspecs") || srcdir.exists("mkspecs")) {
+                    mkfile::project_build_root = dstdir.path();
+                    mkfile::project_root = srcdir.path();
+                    if (mkfile::project_root == mkfile::project_build_root)
+                        mkfile::project_root.clear();
+                    break;
+                }
+            }
+        } while (!srcdir.isRoot() && srcdir.cdUp() && !dstdir.isRoot() && dstdir.cdUp());
+    } else {
+        mkfile::project_root.clear();
+    }
+
     return true;
 }
 

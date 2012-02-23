@@ -163,7 +163,7 @@ int runQMake(int argc, char **argv)
                 fn = fn.right(fn.length() - di - 1);
             }
 
-            if (!Option::prepareProject()) {
+            if (!Option::prepareProject(fn)) {
                 exit_val = 3;
                 break;
             }
