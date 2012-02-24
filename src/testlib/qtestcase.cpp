@@ -166,6 +166,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \macro QTRY_VERIFY_WITH_TIMEOUT(condition, timeout)
+   \since 5.0
 
    \relates QTest
 
@@ -183,6 +184,7 @@ QT_BEGIN_NAMESPACE
 
 
 /*! \macro QTRY_VERIFY(condition)
+   \since 5.0
 
    \relates QTest
 
@@ -195,6 +197,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \macro QTRY_COMPARE_WITH_TIMEOUT(actual, expected, timeout)
+   \since 5.0
 
    \relates QTest
 
@@ -211,6 +214,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \macro QTRY_COMPARE(actual, expected)
+   \since 5.0
 
    \relates QTest
 
@@ -360,6 +364,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \macro QFINDTESTDATA(filename)
+   \since 5.0
 
    \relates QTest
 
@@ -449,6 +454,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \macro QTEST_GUILESS_MAIN(TestClass)
+    \since 5.0
 
     \relates QTest
 
