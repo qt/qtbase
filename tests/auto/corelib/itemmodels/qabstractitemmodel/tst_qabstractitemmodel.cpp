@@ -179,7 +179,7 @@ QtTestModel::QtTestModel(const QVector<QVector<QString> > tbl, QObject *parent)
 
 QModelIndex QtTestModel::index(int row, int column, const QModelIndex &parent) const
 {
-    return hasIndex(row, column, parent) ? createIndex(row, column, 0) : QModelIndex();
+    return hasIndex(row, column, parent) ? createIndex(row, column) : QModelIndex();
 }
 
 QModelIndex QtTestModel::parent(const QModelIndex &) const { return QModelIndex(); }

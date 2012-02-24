@@ -186,6 +186,15 @@ information about a particular change.
   * The signature of the createEditor and valuePropertyName methods
     have been changed to take arguments of type int instead of QVariant::Type.
 
+- QModelIndex/QAbstractItemModel
+
+  * The integer value that can be stored in a QModelIndex is now of type
+    quintptr to match the size of the internal storage location.
+  * The createIndex() method now only provides the void* and quintptr
+    overloads, making calls with a literal 0 (createIndex(row, col, 0))
+    ambiguous. Either cast (quintptr(0)) or omit the third argument
+    (to get the void* overload).
+
 - QWindowSystemInterface:
 
   * The signature of all handleTouchEvent() variants have changed,

@@ -521,8 +521,8 @@ void QTableModel::sort(int column, Qt::SortOrder order)
                  : unsortable.at(i - sortable.count()));
         for (int c = 0; c < columnCount(); ++c) {
             sorted_table[tableIndex(i, c)] = item(r, c);
-            from.append(createIndex(r, c, 0));
-            to.append(createIndex(i, c, 0));
+            from.append(createIndex(r, c));
+            to.append(createIndex(i, c));
         }
     }
 

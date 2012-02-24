@@ -3972,7 +3972,7 @@ public:
             qint64 parentRowPlusOne = index.internalId();
             if (parentRowPlusOne > 0) {
                 int row = static_cast<int>(parentRowPlusOne - 1);
-                return createIndex(row, 0, (quint32)0);
+                return createIndex(row, 0);
             }
         }
         return QModelIndex();
@@ -3992,7 +3992,7 @@ public:
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const
     {
-        return createIndex(row, column, parent.isValid() ? (quint32)(parent.row() + 1) : (quint32)0);
+        return createIndex(row, column, parent.isValid() ? (quintptr)(parent.row() + 1) : (quintptr)0);
     }
 
 public slots:
@@ -4003,16 +4003,16 @@ public slots:
 
         if (current.isValid()) {
             int selectedRow = current.row();
-            quint32 parentRowPlusOne = static_cast<quint32>(current.internalId());
+            const quintptr parentRowPlusOne = current.internalId();
 
             for (int i = 0; i < 2; ++i) {
                 // announce the removal of all non top level items
-                beginRemoveRows(createIndex(i, 0, 0), 0, 3);
+                beginRemoveRows(createIndex(i, 0), 0, 3);
                 // nothing to actually do for the removal
                 endRemoveRows();
 
                 // put them back in again
-                beginInsertRows(createIndex(i, 0, 0), 0, 3);
+                beginInsertRows(createIndex(i, 0), 0, 3);
                 // nothing to actually do for the insertion
                 endInsertRows();
             }

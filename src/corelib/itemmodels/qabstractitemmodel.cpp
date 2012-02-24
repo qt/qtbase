@@ -328,15 +328,15 @@ void *QPersistentModelIndex::internalPointer() const
 }
 
 /*!
-    \fn void *QPersistentModelIndex::internalId() const
+    \fn quintptr QPersistentModelIndex::internalId() const
 
     \internal
 
-    Returns a \c{qint64} used by the model to associate the index with
+    Returns a \c{quintptr} used by the model to associate the index with
     the internal data structure.
 */
 
-qint64 QPersistentModelIndex::internalId() const
+quintptr QPersistentModelIndex::internalId() const
 {
     if (d)
         return d->index.internalId();
@@ -2345,15 +2345,7 @@ bool QAbstractItemModel::setHeaderData(int section, Qt::Orientation orientation,
 */
 
 /*!
-    \fn QModelIndex QAbstractItemModel::createIndex(int row, int column, int id) const
-    \obsolete
-
-    Use QModelIndex
-    QAbstractItemModel::createIndex(int row, int column, quint32 id) instead.
-*/
-
-/*!
-    \fn QModelIndex QAbstractItemModel::createIndex(int row, int column, quint32 id) const
+    \fn QModelIndex QAbstractItemModel::createIndex(int row, int column, quintptr id) const
 
     Creates a model index for the given \a row and \a column with the internal
     identifier, \a id.
@@ -3237,7 +3229,7 @@ QAbstractTableModel::~QAbstractTableModel()
 
 QModelIndex QAbstractTableModel::index(int row, int column, const QModelIndex &parent) const
 {
-    return hasIndex(row, column, parent) ? createIndex(row, column, 0) : QModelIndex();
+    return hasIndex(row, column, parent) ? createIndex(row, column) : QModelIndex();
 }
 
 /*!
@@ -3366,7 +3358,7 @@ QAbstractListModel::~QAbstractListModel()
 
 QModelIndex QAbstractListModel::index(int row, int column, const QModelIndex &parent) const
 {
-    return hasIndex(row, column, parent) ? createIndex(row, column, 0) : QModelIndex();
+    return hasIndex(row, column, parent) ? createIndex(row, column) : QModelIndex();
 }
 
 /*!
