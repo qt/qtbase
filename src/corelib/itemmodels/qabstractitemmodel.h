@@ -59,24 +59,24 @@ class Q_CORE_EXPORT QModelIndex
 {
     friend class QAbstractItemModel;
 public:
-    inline QModelIndex() : r(-1), c(-1), i(0), m(0) {}
+    Q_DECL_CONSTEXPR inline QModelIndex() : r(-1), c(-1), i(0), m(0) {}
     // compiler-generated copy/move ctors/assignment operators are fine!
-    inline int row() const { return r; }
-    inline int column() const { return c; }
-    inline quintptr internalId() const { return i; }
+    Q_DECL_CONSTEXPR inline int row() const { return r; }
+    Q_DECL_CONSTEXPR inline int column() const { return c; }
+    Q_DECL_CONSTEXPR inline quintptr internalId() const { return i; }
     inline void *internalPointer() const { return reinterpret_cast<void*>(i); }
     inline QModelIndex parent() const;
     inline QModelIndex sibling(int row, int column) const;
     inline QModelIndex child(int row, int column) const;
     inline QVariant data(int role = Qt::DisplayRole) const;
     inline Qt::ItemFlags flags() const;
-    inline const QAbstractItemModel *model() const { return m; }
-    inline bool isValid() const { return (r >= 0) && (c >= 0) && (m != 0); }
-    inline bool operator==(const QModelIndex &other) const
+    Q_DECL_CONSTEXPR inline const QAbstractItemModel *model() const { return m; }
+    Q_DECL_CONSTEXPR inline bool isValid() const { return (r >= 0) && (c >= 0) && (m != 0); }
+    Q_DECL_CONSTEXPR inline bool operator==(const QModelIndex &other) const
         { return (other.r == r) && (other.i == i) && (other.c == c) && (other.m == m); }
-    inline bool operator!=(const QModelIndex &other) const
+    Q_DECL_CONSTEXPR inline bool operator!=(const QModelIndex &other) const
         { return !(*this == other); }
-    inline bool operator<(const QModelIndex &other) const
+    Q_DECL_CONSTEXPR inline bool operator<(const QModelIndex &other) const
         {
             return  r <  other.r
                 || (r == other.r && (c <  other.c
@@ -86,7 +86,7 @@ public:
 private:
     inline QModelIndex(int arow, int acolumn, void *ptr, const QAbstractItemModel *amodel)
         : r(arow), c(acolumn), i(reinterpret_cast<quintptr>(ptr)), m(amodel) {}
-    inline QModelIndex(int arow, int acolumn, quintptr id, const QAbstractItemModel *amodel)
+    Q_DECL_CONSTEXPR inline QModelIndex(int arow, int acolumn, quintptr id, const QAbstractItemModel *amodel)
         : r(arow), c(acolumn), i(id), m(amodel) {}
     int r, c;
     quintptr i;
