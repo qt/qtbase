@@ -525,7 +525,7 @@ QVariant QSystemLocalePrivate::toCurrencyString(const QSystemLocale::CurrencyToS
 QVariant QSystemLocalePrivate::uiLanguages()
 {
     if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA) {
-        typedef BOOL (*GetUserPreferredUILanguagesFunc) (
+        typedef BOOL (WINAPI *GetUserPreferredUILanguagesFunc) (
                     DWORD dwFlags,
                     PULONG pulNumLanguages,
                     PWSTR pwszLanguagesBuffer,
