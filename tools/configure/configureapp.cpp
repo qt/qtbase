@@ -2704,10 +2704,6 @@ void Configure::generateConfigfiles()
             tmpStream << "#define QT_BUILD_INTERNAL" << endl;
             tmpStream << endl;
         }
-        tmpStream << "/* Machine byte-order */" << endl;
-        tmpStream << "#define Q_BIG_ENDIAN 4321" << endl;
-        tmpStream << "#define Q_LITTLE_ENDIAN 1234" << endl;
-        tmpStream << "#define Q_BYTE_ORDER Q_LITTLE_ENDIAN" << endl;
 
         if (dictionary[ "QPA" ] == "yes")
             tmpStream << endl << "#define Q_WS_QPA" << endl;

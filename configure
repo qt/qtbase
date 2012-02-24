@@ -763,8 +763,6 @@ CFG_AVX=auto
 CFG_REDUCE_RELOCATIONS=auto
 CFG_NAS=no
 CFG_ACCESSIBILITY=auto
-CFG_ENDIAN=auto
-CFG_HOST_ENDIAN=auto
 CFG_IWMMXT=no
 CFG_NEON=auto
 CFG_CLOCK_GETTIME=auto
@@ -1035,14 +1033,6 @@ while [ "$#" -gt 0 ]; do
             VAL=$1
         fi
         ;;
-    -host-*-endian)
-        VAR=host_endian
-        VAL=`echo $1 | sed "s,^-.*-\(.*\)-.*,\1,"`
-        ;;
-    -*-endian)
-        VAR=endian
-        VAL=`echo $1 | sed "s,^-\(.*\)-.*,\1,"`
-        ;;
     -qtnamespace)
         VAR="qtnamespace"
         shift
@@ -1228,24 +1218,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
 	;;
-    endian)
-        if [ "$VAL" = "little" ]; then
-            CFG_ENDIAN="Q_LITTLE_ENDIAN"
-        elif [ "$VAL" = "big" ]; then
-            CFG_ENDIAN="Q_BIG_ENDIAN"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    host_endian)
-        if [ "$VAL" = "little" ]; then
-            CFG_HOST_ENDIAN="Q_LITTLE_ENDIAN"
-        elif [ "$VAL" = "big" ]; then
-            CFG_HOST_ENDIAN="Q_BIG_ENDIAN"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     opengl)
         if  [ "$VAL" = "auto" ] || [ "$VAL" = "desktop" ] ||
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
@@ -3727,16 +3699,6 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     -feature-<feature> .. Compile in <feature>. The available features
                           are described in src/corelib/global/qfeatures.txt
 
-    -little-endian ...... Target platform is little endian (LSB first).
-    -big-endian ......... Target platform is big endian (MSB first).
-
-    -host-little-endian . Host platform is little endian (LSB first).
-    -host-big-endian .... Host platform is big endian (MSB first).
-
-                          You only need to specify the endianness when
-                          cross-compiling, otherwise the host
-                          endianness will be used.
-
     -no-freetype ........ Do not compile in Freetype2 support.
     -qt-freetype ........ Use the libfreetype bundled with Qt.
  *  -system-freetype .... Use libfreetype from the operating system.
@@ -5532,48 +5494,6 @@ if [ "$CFG_LIBFREETYPE" = "auto" ]; then
     fi
 fi
 
-if [ "$CFG_ENDIAN" = "auto" ]; then
-    if [ "$XPLATFORM_MINGW" = "yes" ]; then
-        CFG_ENDIAN="Q_LITTLE_ENDIAN"
-    else
-        "$unixtests/endian.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "QMAKE_LFLAGS+=$SYSROOT_FLAG"
-	F="$?"
-        if [ "$F" -eq 0 ]; then
-            CFG_ENDIAN="Q_LITTLE_ENDIAN"
-        elif [ "$F" -eq 1 ]; then
-            CFG_ENDIAN="Q_BIG_ENDIAN"
-        else
-            echo
-	    echo "The target system byte order could not be detected!"
-	    echo "Turn on verbose messaging (-v) to see the final report."
-	    echo "You can use the -little-endian or -big-endian switch to"
-	    echo "$0 to continue."
-            exit 101
-        fi
-    fi
-fi
-
-if [ "$CFG_HOST_ENDIAN" = "auto" ]; then
-    if [ "$BUILD_ON_MAC" = "yes" ]; then
-	true #leave as auto
-    else
-        "$unixtests/endian.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
-	F="$?"
-        if [ "$F" -eq 0 ]; then
-            CFG_HOST_ENDIAN="Q_LITTLE_ENDIAN"
-        elif [ "$F" -eq 1 ]; then
-            CFG_HOST_ENDIAN="Q_BIG_ENDIAN"
-        else
-            echo
-	    echo "The host system byte order could not be detected!"
-	    echo "Turn on verbose messaging (-v) to see the final report."
-	    echo "You can use the -host-little-endian or -host-big-endian switch to"
-	    echo "$0 to continue."
-            exit 101
-        fi
-    fi
-fi
-
 HAVE_STL=no
 if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS; then
     HAVE_STL=yes
@@ -6447,41 +6367,7 @@ cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
 #ifndef QT_EDITION
 #  define QT_EDITION $QT_EDITION
 #endif
-
-/* Machine byte-order */
-#define Q_BIG_ENDIAN 4321
-#define Q_LITTLE_ENDIAN 1234
 EOF
-
-echo "#ifdef QT_BOOTSTRAPPED" >>"$outpath/src/corelib/global/qconfig.h.new"
-if [ "$CFG_HOST_ENDIAN" = "auto" ]; then
-    cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
-#if defined(__BIG_ENDIAN__)
-# define Q_BYTE_ORDER Q_BIG_ENDIAN
-#elif defined(__LITTLE_ENDIAN__)
-# define Q_BYTE_ORDER Q_LITTLE_ENDIAN
-#else
-# error "Unable to determine byte order!"
-#endif
-EOF
-else
-    echo "#define Q_BYTE_ORDER $CFG_HOST_ENDIAN" >>"$outpath/src/corelib/global/qconfig.h.new"
-fi
-echo "#else" >>"$outpath/src/corelib/global/qconfig.h.new"
-if [ "$CFG_ENDIAN" = "auto" ]; then
-    cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
-#if defined(__BIG_ENDIAN__)
-# define Q_BYTE_ORDER Q_BIG_ENDIAN
-#elif defined(__LITTLE_ENDIAN__)
-# define Q_BYTE_ORDER Q_LITTLE_ENDIAN
-#else
-# error "Unable to determine byte order!"
-#endif
-EOF
-else
-    echo "#define Q_BYTE_ORDER $CFG_ENDIAN" >>"$outpath/src/corelib/global/qconfig.h.new"
-fi
-echo "#endif" >>"$outpath/src/corelib/global/qconfig.h.new"
 
 CFG_ARCH_STR=`echo $CFG_ARCH | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 CFG_HOST_ARCH_STR=`echo $CFG_HOST_ARCH | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
