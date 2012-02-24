@@ -49,14 +49,11 @@ QT_BEGIN_NAMESPACE
 
 /*
    QTypeInfo     - type trait functionality
-   qIsDetached   - data sharing functionality
 */
 
 /*
   The catch-all template.
 */
-
-template <typename T> inline bool qIsDetached(T &) { return true; }
 
 template <typename T>
 class QTypeInfo
@@ -188,7 +185,6 @@ QT_BEGIN_NAMESPACE
 #endif
 
 #define Q_DECLARE_SHARED(TYPE)                                          \
-template <> inline bool qIsDetached<TYPE>(TYPE &t) { return t.isDetached(); } \
 template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \
 { qSwap(value1.data_ptr(), value2.data_ptr()); } \
 Q_DECLARE_SHARED_STL(TYPE)
