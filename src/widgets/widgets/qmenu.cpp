@@ -70,10 +70,8 @@
 #include <private/qpushbutton_p.h>
 #include <private/qaction_p.h>
 #include <private/qsoftkeymanager_p.h>
-
-#ifdef Q_WS_X11
-#   include <private/qt_x11_p.h>
-#endif
+#include <private/qguiapplication_p.h>
+#include <qplatformtheme_qpa.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -177,31 +175,23 @@ int QMenuPrivate::scrollerHeight() const
 //Windows and KDE allows menus to cover the taskbar, while GNOME and Mac don't
 QRect QMenuPrivate::popupGeometry(const QWidget *widget) const
 {
-#ifdef Q_WS_WIN
-    return QApplication::desktop()->screenGeometry(widget);
-#elif defined Q_WS_X11
-    if (X11->desktopEnvironment == DE_KDE)
+    if (QGuiApplicationPrivate::platformTheme() &&
+            QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool()) {
         return QApplication::desktop()->screenGeometry(widget);
-    else
+    } else {
         return QApplication::desktop()->availableGeometry(widget);
-#else
-        return QApplication::desktop()->availableGeometry(widget);
-#endif
+    }
 }
 
 //Windows and KDE allows menus to cover the taskbar, while GNOME and Mac don't
 QRect QMenuPrivate::popupGeometry(int screen) const
 {
-#ifdef Q_WS_WIN
-    return QApplication::desktop()->screenGeometry(screen);
-#elif defined Q_WS_X11
-    if (X11->desktopEnvironment == DE_KDE)
+    if (QGuiApplicationPrivate::platformTheme() &&
+            QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool()) {
         return QApplication::desktop()->screenGeometry(screen);
-    else
+    } else {
         return QApplication::desktop()->availableGeometry(screen);
-#else
-        return QApplication::desktop()->availableGeometry(screen);
-#endif
+    }
 }
 
 QList<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
@@ -2261,7 +2251,7 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
 
     if (action && action == d->currentAction) {
         if (!action->menu()){
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
             //On Windows only context menus can be activated with the right button
             if (e->button() == Qt::LeftButton || d->topCausedWidget() == 0)
 #endif
@@ -3000,7 +2990,7 @@ void QMenu::internalDelayedPopup()
 */
 void QMenu::setNoReplayFor(QWidget *noReplayFor)
 {
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     d_func()->noReplayFor = noReplayFor;
 #else
     Q_UNUSED(noReplayFor);
