@@ -40,10 +40,8 @@
 ****************************************************************************/
 
 #include "../tst_qmimedatabase.h"
-#include <QDebug>
-#include <QDir>
 
-tst_QMimeDatabase::tst_QMimeDatabase()
+void tst_QMimeDatabase::init()
 {
     qputenv("QT_NO_MIME_CACHE", "1");
 }
