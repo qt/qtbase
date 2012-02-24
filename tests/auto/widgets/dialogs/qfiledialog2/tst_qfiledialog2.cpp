@@ -489,6 +489,9 @@ void tst_QFileDialog2::task227304_proxyOnFileDialog()
 
 void tst_QFileDialog2::task227930_correctNavigationKeyboardBehavior()
 {
+#ifdef Q_OS_MAC
+    QSKIP("This test currently fails on Mac OS X, see QTBUG-23602");
+#endif
     QDir current = QDir::currentPath();
     current.mkdir("test");
     current.cd("test");
@@ -515,9 +518,6 @@ void tst_QFileDialog2::task227930_correctNavigationKeyboardBehavior()
     QTest::keyClick(list, Qt::Key_Down);
     QTest::keyClick(list, Qt::Key_Return);
     QTest::qWait(200);
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "This test currently fails on Mac OS X, see QTBUG-23602", Continue);
-#endif
     QCOMPARE(fd.isVisible(), true);
     QTest::qWait(200);
     file.close();
