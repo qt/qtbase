@@ -147,6 +147,14 @@ static QString detectProjectFile(const QString &path)
     return ret;
 }
 
+static QString cleanSpec(const QString &spec)
+{
+    QString ret = QDir::cleanPath(spec);
+    if (ret.contains('/'))
+        ret = QDir::cleanPath(QFileInfo(ret).absoluteFilePath());
+    return ret;
+}
+
 QString project_builtin_regx();
 bool usage(const char *a0)
 {
@@ -315,7 +323,7 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                     } else if(opt == "cache") {
                         Option::mkfile::cachefile = argv[++x];
                     } else if(opt == "platform" || opt == "spec") {
-                        Option::mkfile::qmakespec = argv[++x];
+                        Option::mkfile::qmakespec = cleanSpec(argv[++x]);
                         Option::mkfile::qmakespec_commandline = argv[x];
                     } else {
                         fprintf(stderr, "***Unknown option -%s\n", opt.toLatin1().constData());
