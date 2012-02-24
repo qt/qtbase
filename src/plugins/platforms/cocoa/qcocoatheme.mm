@@ -109,8 +109,11 @@ const QPalette *QCocoaTheme::palette(Palette type) const
     if (type == SystemPalette) {
         if (!m_systemPalette)
             m_systemPalette = qt_mac_createSystemPalette();
-
         return m_systemPalette;
+    } else {
+        if (m_palettes.isEmpty())
+            m_palettes = qt_mac_createRolePalettes();
+        return m_palettes.value(type, 0);
     }
     return 0;
 }

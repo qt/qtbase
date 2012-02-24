@@ -42,8 +42,7 @@
 #ifndef QPLATFORMTHEME_COCOA_H
 #define QPLATFORMTHEME_COCOA_H
 
-#include <Cocoa/Cocoa.h>
-
+#include <QtCore/QHash>
 #include <QtGui/QPlatformTheme>
 
 QT_BEGIN_NAMESPACE
@@ -66,6 +65,7 @@ public:
     QVariant themeHint(ThemeHint hint) const;
 private:
     mutable QPalette *m_systemPalette;
+    mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;
 };
 
 QT_END_NAMESPACE

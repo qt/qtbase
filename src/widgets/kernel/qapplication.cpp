@@ -131,8 +131,11 @@ QApplicationPrivate *QApplicationPrivate::self = 0;
 static void initSystemPalette()
 {
     if (!QApplicationPrivate::sys_pal)
-        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
+        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette()) {
             QApplicationPrivate::setSystemPalette(*themePalette);
+            QApplicationPrivate::initializeWidgetPaletteHash();
+        }
+
     if (!QApplicationPrivate::sys_pal && QApplicationPrivate::app_style)
         QApplicationPrivate::setSystemPalette(QApplicationPrivate::app_style->standardPalette());
 }

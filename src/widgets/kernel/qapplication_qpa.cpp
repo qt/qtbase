@@ -289,8 +289,33 @@ void QApplicationPrivate::cleanupMultitouch_sys()
 {
 }
 
+static void setPossiblePalette(const QPalette *palette, const char *className)
+{
+    if (palette == 0)
+        return;
+    QApplicationPrivate::setPalette_helper(*palette, className, false);
+}
+
+
 void QApplicationPrivate::initializeWidgetPaletteHash()
 {
+    QPlatformTheme *platformTheme = QGuiApplicationPrivate::platformTheme();
+    if (!platformTheme)
+        return;
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::ToolButtonPalette), "QToolButton");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::ButtonPalette), "QAbstractButton");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::HeaderPalette), "QHeaderView");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::HeaderPalette), "Q3Header");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::ItemViewPalette), "QAbstractItemView");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::MessageBoxLabelPelette), "QMessageBoxLabel");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::TabBarPalette), "QTabBar");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::LabelPalette), "QLabel");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::GroupBoxPalette), "QGroupBox");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::MenuPalette), "QMenu");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::MenuBarPalette), "QMenuBar");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::TextEditPalette), "QTextEdit");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::TextEditPalette), "QTextControl");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::TextLineEditPalette), "QLineEdit");
 }
 
 #ifndef QT_NO_WHEELEVENT

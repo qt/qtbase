@@ -41,8 +41,9 @@
 
 #include "qcocoasystemsettings.h"
 
-#include <Carbon/Carbon.h>
 #include <QtCore/private/qcore_mac_p.h>
+
+#include <Carbon/Carbon.h>
 
 QColor qt_mac_colorFromCGColor(CGColorRef cgcolor)
 {
@@ -143,3 +144,86 @@ QPalette * qt_mac_createSystemPalette()
     return palette;
 }
 
+
+struct QMacPaletteMap {
+    inline QMacPaletteMap(QPlatformTheme::Palette p, ThemeBrush a, ThemeBrush i) :
+        paletteRole(p), active(a), inactive(i) { }
+
+    QPlatformTheme::Palette paletteRole;
+    ThemeBrush active, inactive;
+};
+
+static QMacPaletteMap mac_widget_colors[] = {
+//    TODO (msorvig): Fix/match palette behavior with Qt 4 and enable.
+//
+//    QMacPaletteMap(QPlatformTheme::ToolButtonPalette, kThemeTextColorBevelButtonActive, kThemeTextColorBevelButtonInactive),
+//    QMacPaletteMap(QPlatformTheme::ButtonPalette, kThemeTextColorPushButtonActive, kThemeTextColorPushButtonInactive),
+//    QMacPaletteMap(QPlatformTheme::HeaderPalette, kThemeTextColorPushButtonActive, kThemeTextColorPushButtonInactive),
+//    QMacPaletteMap(QPlatformTheme::ComboBoxPalette, kThemeTextColorPopupButtonActive, kThemeTextColorPopupButtonInactive),
+//    QMacPaletteMap(QPlatformTheme::ItemViewPalette, kThemeTextColorListView, kThemeTextColorDialogInactive),
+//    QMacPaletteMap(QPlatformTheme::MessageBoxLabelPelette, kThemeTextColorAlertActive, kThemeTextColorAlertInactive),
+//    QMacPaletteMap(QPlatformTheme::TabBarPalette, kThemeTextColorTabFrontActive, kThemeTextColorTabFrontInactive),
+//    QMacPaletteMap(QPlatformTheme::LabelPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
+//    QMacPaletteMap(QPlatformTheme::GroupBoxPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
+//    QMacPaletteMap(QPlatformTheme::MenuPalette, kThemeTextColorPopupLabelActive, kThemeTextColorPopupLabelInactive),
+//    ### TODO: The zeros below gives white-on-black text.
+//    QMacPaletteMap(QPlatformTheme::TextEditPalette, 0, 0),
+//    QMacPaletteMap(QPlatformTheme::TextLineEditPalette, 0, 0),
+    QMacPaletteMap(QPlatformTheme::NPalettes, 0, 0) };
+
+QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
+{
+    QHash<QPlatformTheme::Palette, QPalette*> palettes;
+    QColor qc;
+    for (int i = 0; mac_widget_colors[i].paletteRole != QPlatformTheme::NPalettes; i++) {
+        QPalette pal;
+        if (mac_widget_colors[i].active != 0) {
+            qc = qt_mac_colorForThemeTextColor(mac_widget_colors[i].active);
+            pal.setColor(QPalette::Active, QPalette::Text, qc);
+            pal.setColor(QPalette::Active, QPalette::WindowText, qc);
+            pal.setColor(QPalette::Active, QPalette::HighlightedText, qc);
+            qc = qt_mac_colorForThemeTextColor(mac_widget_colors[i].inactive);
+            pal.setColor(QPalette::Inactive, QPalette::Text, qc);
+            pal.setColor(QPalette::Disabled, QPalette::Text, qc);
+            pal.setColor(QPalette::Inactive, QPalette::WindowText, qc);
+            pal.setColor(QPalette::Disabled, QPalette::WindowText, qc);
+            pal.setColor(QPalette::Inactive, QPalette::HighlightedText, qc);
+            pal.setColor(QPalette::Disabled, QPalette::HighlightedText, qc);
+        }
+        if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette) {
+            qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemActive);
+            pal.setBrush(QPalette::ButtonText, qc);
+            qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemSelected);
+            pal.setBrush(QPalette::HighlightedText, qc);
+            qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemDisabled);
+            pal.setBrush(QPalette::Disabled, QPalette::Text, qc);
+        } else if ((mac_widget_colors[i].paletteRole == QPlatformTheme::ButtonPalette)
+                || (mac_widget_colors[i].paletteRole == QPlatformTheme::HeaderPalette)) {
+            pal.setColor(QPalette::Disabled, QPalette::ButtonText,
+                         pal.color(QPalette::Disabled, QPalette::Text));
+            pal.setColor(QPalette::Inactive, QPalette::ButtonText,
+                         pal.color(QPalette::Inactive, QPalette::Text));
+            pal.setColor(QPalette::Active, QPalette::ButtonText,
+                         pal.color(QPalette::Active, QPalette::Text));
+        } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::ItemViewPalette) {
+            pal.setBrush(QPalette::Active, QPalette::Highlight,
+                         qt_mac_colorForTheme(kThemeBrushAlternatePrimaryHighlightColor));
+            qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemSelected);
+            pal.setBrush(QPalette::Active, QPalette::HighlightedText, qc);
+            pal.setBrush(QPalette::Inactive, QPalette::Text,
+                          pal.brush(QPalette::Active, QPalette::Text));
+            pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
+                          pal.brush(QPalette::Active, QPalette::Text));
+        } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::TextEditPalette) {
+            pal.setBrush(QPalette::Inactive, QPalette::Text,
+                          pal.brush(QPalette::Active, QPalette::Text));
+            pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
+                          pal.brush(QPalette::Active, QPalette::Text));
+        } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::TextLineEditPalette) {
+            pal.setBrush(QPalette::Disabled, QPalette::Base,
+                         pal.brush(QPalette::Active, QPalette::Base));
+        }
+        palettes.insert(mac_widget_colors[i].paletteRole, new QPalette(pal));
+    }
+    return palettes;
+}

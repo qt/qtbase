@@ -86,6 +86,19 @@ public:
     enum Palette {
         SystemPalette,
         ToolTipPalette,
+        ToolButtonPalette,
+        ButtonPalette,
+        HeaderPalette,
+        ComboBoxPalette,
+        ItemViewPalette,
+        MessageBoxLabelPelette,
+        TabBarPalette,
+        LabelPalette,
+        GroupBoxPalette,
+        MenuPalette,
+        MenuBarPalette,
+        TextEditPalette,
+        TextLineEditPalette,
         NPalettes
     };
 
