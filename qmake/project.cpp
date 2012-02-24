@@ -593,6 +593,7 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         concat_it != concat.end(); ++concat_it)
         feature_roots << (QLibraryInfo::location(QLibraryInfo::HostDataPath) +
                           mkspecs_concat + (*concat_it));
+    feature_roots.removeDuplicates();
     return feature_roots;
 }
 
