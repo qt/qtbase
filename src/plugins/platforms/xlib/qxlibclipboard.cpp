@@ -223,6 +223,7 @@ void QXlibClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
         qWarning("QClipboard::setData: Cannot set X11 selection owner");
     }
 
+    emitChanged(mode);
 }
 
 bool QXlibClipboard::supportsMode(QClipboard::Mode mode) const

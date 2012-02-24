@@ -96,6 +96,8 @@ void QPlatformClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
     //we know its clipboard
     Q_UNUSED(mode);
     q_clipboardData()->setSource(data);
+
+    emitChanged(mode);
 }
 
 bool QPlatformClipboard::supportsMode(QClipboard::Mode mode) const

@@ -291,19 +291,17 @@ void tst_QClipboard::setMimeData()
     QGuiApplication::clipboard()->clear(QClipboard::Selection); // used to crash on X11
     QGuiApplication::clipboard()->clear(QClipboard::FindBuffer);
 
-#if defined(Q_WS_X11)
-    QCOMPARE(spySelection.count(), 1);
+    if (QGuiApplication::clipboard()->supportsSelection())
+        QCOMPARE(spySelection.count(), 1);
+    else
+        QCOMPARE(spySelection.count(), 0);
+
+    if (QGuiApplication::clipboard()->supportsFindBuffer())
+        QCOMPARE(spyFindBuffer.count(), 1);
+    else
+        QCOMPARE(spyFindBuffer.count(), 0);
+
     QCOMPARE(spyData.count(), 1);
-    QCOMPARE(spyFindBuffer.count(), 0);
-#elif defined(Q_OS_MAC)
-    QCOMPARE(spySelection.count(), 0);
-    QCOMPARE(spyData.count(), 1);
-    QCOMPARE(spyFindBuffer.count(), 1);
-#elif defined(Q_WS_WIN)
-    QCOMPARE(spySelection.count(), 0);
-    QCOMPARE(spyData.count(), 1);
-    QCOMPARE(spyFindBuffer.count(), 0);
-#endif
 
     // an other crash test
     data = new QMimeData;
@@ -324,19 +322,17 @@ void tst_QClipboard::setMimeData()
     QGuiApplication::clipboard()->setMimeData(newData, QClipboard::Selection); // used to crash on X11
     QGuiApplication::clipboard()->setMimeData(newData, QClipboard::FindBuffer);
 
-#if defined(Q_WS_X11)
-    QCOMPARE(spySelection.count(), 1);
+    if (QGuiApplication::clipboard()->supportsSelection())
+        QCOMPARE(spySelection.count(), 1);
+    else
+        QCOMPARE(spySelection.count(), 0);
+
+    if (QGuiApplication::clipboard()->supportsFindBuffer())
+        QCOMPARE(spyFindBuffer.count(), 1);
+    else
+        QCOMPARE(spyFindBuffer.count(), 0);
+
     QCOMPARE(spyData.count(), 1);
-    QCOMPARE(spyFindBuffer.count(), 0);
-#elif defined(Q_OS_MAC)
-    QCOMPARE(spySelection.count(), 0);
-    QCOMPARE(spyData.count(), 1);
-    QCOMPARE(spyFindBuffer.count(), 1);
-#elif defined(Q_WS_WIN)
-    QCOMPARE(spySelection.count(), 0);
-    QCOMPARE(spyData.count(), 1);
-    QCOMPARE(spyFindBuffer.count(), 0);
-#endif
 }
 
 void tst_QClipboard::clearBeforeSetText()
