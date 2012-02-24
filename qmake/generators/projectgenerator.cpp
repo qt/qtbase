@@ -85,12 +85,6 @@ ProjectGenerator::init()
         templ.prepend(Option::user_template_prefix);
     v["TEMPLATE_ASSIGN"] += templ;
 
-    //figure out target
-    if(Option::output.fileName() == "-")
-        v["TARGET_ASSIGN"] = QStringList("unknown");
-    else
-        v["TARGET_ASSIGN"] = QStringList(QFileInfo(Option::output).baseName());
-
     //the scary stuff
     if(project->first("TEMPLATE_ASSIGN") != "subdirs") {
         QString builtin_regex = project_builtin_regx();
@@ -360,6 +354,12 @@ ProjectGenerator::writeMakefile(QTextStream &t)
         t << endl << "# Directories" << "\n"
           << getWritableVar("SUBDIRS");
     } else {
+        //figure out target
+        QString ofn = QFileInfo(static_cast<QFile *>(t.device())->fileName()).completeBaseName();
+        if (ofn.isEmpty() || ofn == "-")
+            ofn = "unknown";
+        project->variables()["TARGET_ASSIGN"] = QStringList(ofn);
+
         t << getWritableVar("TARGET_ASSIGN")
           << getWritableVar("CONFIG", false)
           << getWritableVar("CONFIG_REMOVE", false)
