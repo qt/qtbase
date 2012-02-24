@@ -61,9 +61,7 @@ class Q_CORE_EXPORT QModelIndex
     friend class QProxyModel;
 public:
     inline QModelIndex() : r(-1), c(-1), p(0), m(0) {}
-    inline QModelIndex(const QModelIndex &other)
-        : r(other.r), c(other.c), p(other.p), m(other.m) {}
-    inline ~QModelIndex() { p = 0; m = 0; }
+    // compiler-generated copy/move ctors/assignment operators are fine!
     inline int row() const { return r; }
     inline int column() const { return c; }
     inline void *internalPointer() const { return p; }
