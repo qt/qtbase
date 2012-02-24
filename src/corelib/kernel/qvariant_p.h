@@ -188,7 +188,7 @@ public:
     }
 
     bool delegate(const void*) { return true; }
-
+    bool delegate(const QMetaTypeSwitcher::NotBuiltinType*) { return false; }
 protected:
     const QVariant::Private *m_a;
     const QVariant::Private *m_b;
@@ -282,6 +282,7 @@ public:
     }
     // we need that as sizof(void) is undefined and it is needed in HasIsNullMethod
     bool delegate(const void *) { return m_d->is_null; }
+    bool delegate(const QMetaTypeSwitcher::NotBuiltinType *) { return m_d->is_null; }
 protected:
     const QVariant::Private *m_d;
 };
