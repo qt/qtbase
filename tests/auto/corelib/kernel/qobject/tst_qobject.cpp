@@ -144,6 +144,16 @@ private slots:
     void disconnectDoesNotLeakFunctor();
 };
 
+struct QObjectCreatedOnShutdown
+{
+    QObjectCreatedOnShutdown() {}
+    ~QObjectCreatedOnShutdown()
+    {
+        QObject();
+    }
+};
+static QObjectCreatedOnShutdown s_qobjectCreatedOnShutdown;
+
 class SenderObject : public QObject
 {
     Q_OBJECT
