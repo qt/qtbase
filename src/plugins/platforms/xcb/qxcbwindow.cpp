@@ -369,6 +369,14 @@ void QXcbWindow::destroy()
     if (m_syncCounter && m_screen->syncRequestSupported())
         Q_XCB_CALL(xcb_sync_destroy_counter(xcb_connection(), m_syncCounter));
     if (m_window) {
+        if (m_netWmUserTimeWindow) {
+            xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW));
+            // Some window managers, like metacity, do XSelectInput on the _NET_WM_USER_TIME_WINDOW window,
+            // without trapping BadWindow (which crashes when the user time window is destroyed).
+            connection()->sync();
+            xcb_destroy_window(xcb_connection(), m_netWmUserTimeWindow);
+            m_netWmUserTimeWindow = XCB_NONE;
+        }
         connection()->removeWindow(m_window);
         Q_XCB_CALL(xcb_destroy_window(xcb_connection(), m_window));
     }
