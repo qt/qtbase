@@ -13,3 +13,4 @@ QT.core.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.core.imports = $$QT_MODULE_IMPORT_BASE
 QT.core.depends =
 QT.core.DEFINES = QT_CORE_LIB
+QT.core.CONFIG = moc resources

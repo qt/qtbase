@@ -13,3 +13,4 @@ QT.widgets.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.widgets.imports = $$QT_MODULE_IMPORT_BASE
 QT.widgets.depends = core gui
 QT.widgets.DEFINES = QT_WIDGETS_LIB
+QT.widgets.CONFIG = uic

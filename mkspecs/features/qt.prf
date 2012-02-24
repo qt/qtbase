@@ -1,4 +1,4 @@
-CONFIG *= moc thread
+CONFIG *= thread
 
 #handle defines
 win32 {

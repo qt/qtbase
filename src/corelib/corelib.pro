@@ -4,7 +4,7 @@ TARGET	   = QtCore
 QPRO_PWD   = $$PWD
 QT         =
 
-CONFIG += module exceptions
+CONFIG += module moc resources exceptions
 MODULE = core     # not corelib, as per project file
 MODULE_PRI = ../modules/qt_core.pri
 
