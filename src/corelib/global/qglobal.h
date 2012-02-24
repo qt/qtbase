@@ -1225,12 +1225,15 @@ class QFlags
     int i;
 public:
     typedef Enum enum_type;
-    Q_DECL_CONSTEXPR inline QFlags(const QFlags &f) : i(f.i) {}
+    // compiler-generated copy/move ctor/assignment operators are fine!
+#ifdef qdoc
+    inline QFlags(const QFlags &other);
+    inline QFlags &operator=(const QFlags &other);
+#endif
     Q_DECL_CONSTEXPR inline QFlags(Enum f) : i(f) {}
     Q_DECL_CONSTEXPR inline QFlags(Zero = 0) : i(0) {}
     inline QFlags(QFlag f) : i(f) {}
 
-    inline QFlags &operator=(const QFlags &f) { i = f.i; return *this; }
     inline QFlags &operator&=(int mask) { i &= mask; return *this; }
     inline QFlags &operator&=(uint mask) { i &= mask; return *this; }
     inline QFlags &operator|=(QFlags f) { i |= f.i; return *this; }
