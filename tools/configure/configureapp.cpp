@@ -2638,6 +2638,29 @@ QString Configure::addDefine(QString def)
 }
 
 #if !defined(EVAL)
+bool Configure::copySpec(const char *name, const char *pfx, const QString &spec)
+{
+    // Copy configured mkspec to default directory, but remove the old one first, if there is any
+    QString defSpec = buildPath + "/mkspecs/" + name;
+    QFileInfo defSpecInfo(defSpec);
+    if (defSpecInfo.exists()) {
+        if (!Environment::rmdir(defSpec)) {
+            cout << "Couldn't update default " << pfx << "mkspec! Are files in " << qPrintable(defSpec) << " read-only?" << endl;
+            dictionary["DONE"] = "error";
+            return false;
+        }
+    }
+
+    QString pltSpec = sourcePath + "/mkspecs/" + spec;
+    QString includeSpec = buildPath + "/mkspecs/" + spec;
+    if (!Environment::cpdir(pltSpec, defSpec, includeSpec)) {
+        cout << "Couldn't update default " << pfx << "mkspec! Does " << qPrintable(pltSpec) << " exist?" << endl;
+        dictionary["DONE"] = "error";
+        return false;
+    }
+    return true;
+}
+
 void Configure::generateConfigfiles()
 {
     QDir(buildPath).mkpath("src/corelib/global");
@@ -2821,25 +2844,9 @@ void Configure::generateConfigfiles()
         tmpFile.close();
     }
 
-    // Copy configured mkspec to default directory, but remove the old one first, if there is any
-    QString defSpec = buildPath + "/mkspecs/default";
-    QFileInfo defSpecInfo(defSpec);
-    if (defSpecInfo.exists()) {
-        if (!Environment::rmdir(defSpec)) {
-            cout << "Couldn't update default mkspec! Are files in " << qPrintable(defSpec) << " read-only?" << endl;
-            dictionary["DONE"] = "error";
-            return;
-        }
-    }
-
     QString spec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : dictionary["QMAKESPEC"];
-    QString pltSpec = sourcePath + "/mkspecs/" + spec;
-    QString includeSpec = buildPath + "/mkspecs/" + spec;
-    if (!Environment::cpdir(pltSpec, defSpec, includeSpec)) {
-        cout << "Couldn't update default mkspec! Does " << qPrintable(pltSpec) << " exist?" << endl;
-        dictionary["DONE"] = "error";
+    if (!copySpec("default", "", spec))
         return;
-    }
 
     // Generate the new qconfig.cpp file
     QDir(buildPath).mkpath("src/corelib/global");
