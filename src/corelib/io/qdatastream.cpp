@@ -771,10 +771,6 @@ QDataStream &QDataStream::operator>>(float &f)
     return *this;
 }
 
-#if defined(Q_DOUBLE_FORMAT)
-#define Q_DF(x) Q_DOUBLE_FORMAT[(x)] - '0'
-#endif
-
 /*!
     \overload
 
@@ -797,7 +793,6 @@ QDataStream &QDataStream::operator>>(double &f)
 
     f = 0.0;
     CHECK_STREAM_PRECOND(*this)
-#ifndef Q_DOUBLE_FORMAT
     if (dev->read((char *)&f, 8) != 8) {
         f = 0.0;
         setStatus(ReadPastEnd);
@@ -811,39 +806,6 @@ QDataStream &QDataStream::operator>>(double &f)
             f = x.val1;
         }
     }
-#else
-    //non-standard floating point format
-    union {
-        double val1;
-        char val2[8];
-    } x;
-    char *p = x.val2;
-    char b[8];
-    if (dev->read(b, 8) == 8) {
-        if (noswap) {
-            *p++ = b[Q_DF(0)];
-            *p++ = b[Q_DF(1)];
-            *p++ = b[Q_DF(2)];
-            *p++ = b[Q_DF(3)];
-            *p++ = b[Q_DF(4)];
-            *p++ = b[Q_DF(5)];
-            *p++ = b[Q_DF(6)];
-            *p = b[Q_DF(7)];
-        } else {
-            *p++ = b[Q_DF(7)];
-            *p++ = b[Q_DF(6)];
-            *p++ = b[Q_DF(5)];
-            *p++ = b[Q_DF(4)];
-            *p++ = b[Q_DF(3)];
-            *p++ = b[Q_DF(2)];
-            *p++ = b[Q_DF(1)];
-            *p = b[Q_DF(0)];
-        }
-        f = x.val1;
-    } else {
-        setStatus(ReadPastEnd);
-    }
-#endif
     return *this;
 }
 
@@ -1112,7 +1074,6 @@ QDataStream &QDataStream::operator<<(double f)
     }
 
     CHECK_STREAM_WRITE_PRECOND(*this)
-#ifndef Q_DOUBLE_FORMAT
     if (noswap) {
         if (dev->write((char *)&f, sizeof(double)) != sizeof(double))
             q_status = WriteFailed;
@@ -1126,36 +1087,6 @@ QDataStream &QDataStream::operator<<(double f)
         if (dev->write((char *)&x.val2, sizeof(double)) != sizeof(double))
             q_status = WriteFailed;
     }
-#else
-    union {
-        double val1;
-        char val2[8];
-    } x;
-    x.val1 = f;
-    char *p = x.val2;
-    char b[8];
-    if (noswap) {
-        b[Q_DF(0)] = *p++;
-        b[Q_DF(1)] = *p++;
-        b[Q_DF(2)] = *p++;
-        b[Q_DF(3)] = *p++;
-        b[Q_DF(4)] = *p++;
-        b[Q_DF(5)] = *p++;
-        b[Q_DF(6)] = *p++;
-        b[Q_DF(7)] = *p;
-    } else {
-        b[Q_DF(7)] = *p++;
-        b[Q_DF(6)] = *p++;
-        b[Q_DF(5)] = *p++;
-        b[Q_DF(4)] = *p++;
-        b[Q_DF(3)] = *p++;
-        b[Q_DF(2)] = *p++;
-        b[Q_DF(1)] = *p++;
-        b[Q_DF(0)] = *p;
-    }
-    if (dev->write(b, 8) != 8)
-        q_status = WriteFailed;
-#endif
     return *this;
 }
 

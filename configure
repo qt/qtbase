@@ -765,8 +765,6 @@ CFG_NAS=no
 CFG_ACCESSIBILITY=auto
 CFG_ENDIAN=auto
 CFG_HOST_ENDIAN=auto
-CFG_DOUBLEFORMAT=auto
-CFG_ARMFPA=auto
 CFG_IWMMXT=no
 CFG_NEON=auto
 CFG_CLOCK_GETTIME=auto
@@ -961,7 +959,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1244,13 +1242,6 @@ while [ "$#" -gt 0 ]; do
             CFG_HOST_ENDIAN="Q_LITTLE_ENDIAN"
         elif [ "$VAL" = "big" ]; then
             CFG_HOST_ENDIAN="Q_BIG_ENDIAN"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    armfpa)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_ARMFPA="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3204,7 +3195,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked] [-no-gui]
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
         [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx] [-no-neon]
-        [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
+        [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info]
         [-no-phonon-backend] [-phonon-backend] [-no-media-backend] [-media-backend]
         [-no-audio-backend] [-audio-backend]
         [-no-javascript-jit] [-javascript-jit] [-no-declarative-debug] [-declarative-debug]
@@ -3735,12 +3726,6 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     -no-feature-<feature> Do not compile in <feature>.
     -feature-<feature> .. Compile in <feature>. The available features
                           are described in src/corelib/global/qfeatures.txt
-
-    -armfpa ............. Target platform uses the ARM-FPA floating point format.
-    -no-armfpa .......... Target platform does not use the ARM-FPA floating point format.
-
-                          The floating point format is usually autodetected by configure. Use this
-                          to override the detected value.
 
     -little-endian ...... Target platform is little endian (LSB first).
     -big-endian ......... Target platform is big endian (MSB first).
@@ -5589,51 +5574,6 @@ if [ "$CFG_HOST_ENDIAN" = "auto" ]; then
     fi
 fi
 
-if [ "$CFG_ARMFPA" != "auto" ]; then
-    if [ "$CFG_ARMFPA" = "yes" ]; then
-        if [ "$CFG_ENDIAN" = "Q_LITTLE_ENDIAN" ]; then
-            CFG_DOUBLEFORMAT="Q_DOUBLE_LITTLE_SWAPPED"
-        else
-            CFG_DOUBLEFORMAT="Q_DOUBLE_BIG_SWAPPED"
-        fi
-    else
-        CFG_DOUBLEFORMAT="normal"
-    fi
-fi
-
-
-if [ "$CFG_DOUBLEFORMAT" = "auto" ]; then
-    if [ "$PLATFORM_QPA" = "yes" ]; then
-        CFG_DOUBLEFORMAT=normal
-    else
-        "$unixtests/doubleformat.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
-	F="$?"
-        if [ "$F" -eq 10 ] && [ "$CFG_ENDIAN" = "Q_LITTLE_ENDIAN" ]; then
-            CFG_DOUBLEFORMAT=normal
-        elif [ "$F" -eq 11 ] && [ "$CFG_ENDIAN" = "Q_BIG_ENDIAN" ]; then
-            CFG_DOUBLEFORMAT=normal
-        elif [ "$F" -eq 10 ]; then
-            CFG_DOUBLEFORMAT="Q_DOUBLE_LITTLE"
-        elif [ "$F" -eq 11 ]; then
-            CFG_DOUBLEFORMAT="Q_DOUBLE_BIG"
-        elif [ "$F" -eq 12 ]; then
-            CFG_DOUBLEFORMAT="Q_DOUBLE_LITTLE_SWAPPED"
-            CFG_ARMFPA="yes"
-        elif [ "$F" -eq 13 ]; then
-            CFG_DOUBLEFORMAT="Q_DOUBLE_BIG_SWAPPED"
-            CFG_ARMFPA="yes"
-        else
-            echo
-	    echo "The system floating point format could not be detected."
-	    echo "This may cause data to be generated in a wrong format"
-	    echo "Turn on verbose messaging (-v) to see the final report."
-	    # we do not fail on this since this is a new test, and if it fails,
-	    # the old behavior should be correct in most cases
-            CFG_DOUBLEFORMAT=normal
-        fi
-    fi
-fi
-
 HAVE_STL=no
 if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS; then
     HAVE_STL=yes
@@ -6542,28 +6482,6 @@ else
     echo "#define Q_BYTE_ORDER $CFG_ENDIAN" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 echo "#endif" >>"$outpath/src/corelib/global/qconfig.h.new"
-
-if [ "$CFG_DOUBLEFORMAT" != "normal" ]; then
-    cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
-/* Non-IEEE double format */
-#define Q_DOUBLE_LITTLE "01234567"
-#define Q_DOUBLE_BIG "76543210"
-#define Q_DOUBLE_LITTLE_SWAPPED "45670123"
-#define Q_DOUBLE_BIG_SWAPPED "32107654"
-#define Q_DOUBLE_FORMAT $CFG_DOUBLEFORMAT
-EOF
-fi
-if [ "$CFG_ARMFPA" = "yes" ]; then
-    if [ "$CFG_ARCH" != "$CFG_HOST_ARCH" ]; then
-	cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
-#ifndef QT_BOOTSTRAPPED
-# define QT_ARMFPA
-#endif
-EOF
-    else
-	echo "#define QT_ARMFPA" >>"$outpath/src/corelib/global/qconfig.h.new"
-    fi
-fi
 
 CFG_ARCH_STR=`echo $CFG_ARCH | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 CFG_HOST_ARCH_STR=`echo $CFG_HOST_ARCH | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`

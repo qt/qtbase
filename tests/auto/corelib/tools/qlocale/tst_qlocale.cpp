@@ -809,11 +809,7 @@ void tst_QLocale::negativeZero()
 {
     double negativeZero( 0.0 ); // Initialise to zero.
     uchar *ptr = (uchar *)&negativeZero;
-#ifdef QT_ARMFPA
-    ptr[3] = 0x80;
-#else
     ptr[QSysInfo::ByteOrder == QSysInfo::BigEndian ? 0 : 7] = 0x80;
-#endif
     QString s = QString::number(negativeZero);
     QCOMPARE(s, QString("0"));
 }
