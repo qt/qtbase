@@ -134,7 +134,7 @@ BEGIN {
     values["LITERAL_WHITESPACE"] = " "
     values["LITERAL_DOLLAR"] = "$"
 }
-/^[_A-Z0-9.]+ *\+?=/ {
+/^[_A-Z0-9.]+[ \t]*\+?=/ {
     valStart = index($0, "=") + 1
 
     append = 0
