@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
     template <typename T> struct RemoveRef { typedef T Type; };
-    template <typename T> struct RemoveRef<const T&> { typedef T Type; };
     template <typename T> struct RemoveRef<T&> { typedef T Type; };
     template <typename T> struct RemoveConstRef { typedef T Type; };
     template <typename T> struct RemoveConstRef<const T&> { typedef T Type; };
