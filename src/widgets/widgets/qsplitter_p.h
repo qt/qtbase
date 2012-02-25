@@ -83,7 +83,7 @@ class QSplitterPrivate : public QFramePrivate
     Q_DECLARE_PUBLIC(QSplitter)
 public:
     QSplitterPrivate() : rubberBand(0), opaque(true), firstShow(true),
-                         childrenCollapsible(true), compatMode(false), handleWidth(0), blockChildAdd(false) {}
+                         childrenCollapsible(true), compatMode(false), handleWidth(-1), blockChildAdd(false) {}
 
     QPointer<QRubberBand> rubberBand;
     mutable QList<QSplitterLayoutStruct *> list;
