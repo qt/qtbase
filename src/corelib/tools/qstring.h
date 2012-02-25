@@ -486,12 +486,12 @@ public:
     static QString number(qulonglong, int base=10);
     static QString number(double, char f='g', int prec=6);
 
-    bool operator==(const QString &s) const;
-    bool operator<(const QString &s) const;
-    inline bool operator>(const QString &s) const { return s < *this; }
-    inline bool operator!=(const QString &s) const { return !operator==(s); }
-    inline bool operator<=(const QString &s) const { return !operator>(s); }
-    inline bool operator>=(const QString &s) const { return !operator<(s); }
+    friend Q_CORE_EXPORT bool operator==(const QString &s1, const QString &s2);
+    friend Q_CORE_EXPORT bool operator<(const QString &s1, const QString &s2);
+    friend inline bool operator>(const QString &s1, const QString &s2) { return s2 < s1; }
+    friend inline bool operator!=(const QString &s1, const QString &s2) { return !(s1 == s2); }
+    friend inline bool operator<=(const QString &s1, const QString &s2) { return !(s1 > s2); }
+    friend inline bool operator>=(const QString &s1, const QString &s2) { return !(s1 < s2); }
 
     bool operator==(const QLatin1String &s) const;
     bool operator<(const QLatin1String &s) const;
