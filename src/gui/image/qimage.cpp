@@ -5132,7 +5132,8 @@ bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth
 #undef IWX_LSB
 #undef IWX_PIX
 
-/*! \obsolete
+/*! \fn int QImage::serialNumber() const
+    \obsolete
     Returns a number that identifies the contents of this
     QImage object. Distinct QImage objects can only have the same
     serial number if they refer to the same contents (but they don't
@@ -5146,14 +5147,6 @@ bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth
 
     \sa operator==()
 */
-
-int QImage::serialNumber() const
-{
-    if (!d)
-        return 0;
-    else
-        return d->ser_no;
-}
 
 /*!
     Returns a number that identifies the contents of this QImage

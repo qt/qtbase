@@ -94,7 +94,9 @@ public:
     bool isDetached() const;
     void detach();
 
-    int serialNumber() const;
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline int serialNumber() const { return cacheKey() >> 32; }
+#endif
     qint64 cacheKey() const;
 
     void addPixmap(const QPixmap &pixmap, Mode mode = Normal, State state = Off);

@@ -844,7 +844,8 @@ bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2)
     return true;
 }
 
-/*! \obsolete
+/*! \fn int QPalette::serialNumber() const
+    \obsolete
 
     Returns a number that identifies the contents of this QPalette
     object. Distinct QPalette objects can only have the same serial
@@ -860,10 +861,6 @@ bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2)
 
     \sa operator==()
 */
-int QPalette::serialNumber() const
-{
-    return d->ser_no;
-}
 
 /*!
     Returns a number that identifies the contents of this QPalette

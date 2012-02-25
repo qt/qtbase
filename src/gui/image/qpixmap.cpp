@@ -885,7 +885,8 @@ void QPixmap::fill(const QColor &color)
     data->fill(color);
 }
 
-/*! \obsolete
+/*! \fn int QPixmap::serialNumber() const
+    \obsolete
     Returns a number that identifies the contents of this QPixmap
     object. Distinct QPixmap objects can only have the same serial
     number if they refer to the same contents (but they don't have
@@ -898,12 +899,6 @@ void QPixmap::fill(const QColor &color)
     it as a cache key. For caching pixmaps, we recommend using the
     QPixmapCache class whenever possible.
 */
-int QPixmap::serialNumber() const
-{
-    if (isNull())
-        return 0;
-    return data->serialNumber();
-}
 
 /*!
     Returns a number that identifies this QPixmap. Distinct QPixmap
