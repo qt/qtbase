@@ -236,7 +236,7 @@ static bool convert(const QVariant::Private *d, int t,
         switch (d->type) {
 #ifndef QT_NO_SHORTCUT
         case QVariant::KeySequence:
-            *str = QString(*v_cast<QKeySequence>(d));
+            *str = (*v_cast<QKeySequence>(d)).toString(QKeySequence::NativeText);
             return true;
 #endif
         case QVariant::Font:
@@ -285,7 +285,8 @@ static bool convert(const QVariant::Private *d, int t,
 #ifndef QT_NO_SHORTCUT
     case QVariant::Int:
         if (d->type == QVariant::KeySequence) {
-            *static_cast<int *>(result) = (int)(*(v_cast<QKeySequence>(d)));
+            const QKeySequence &seq = *v_cast<QKeySequence>(d);
+            *static_cast<int *>(result) = seq.isEmpty() ? 0 : seq[0];
             return true;
         }
         break;
