@@ -155,7 +155,7 @@ static inline QString logFormat(const QString &logger)
 // Return the log file name, or an empty string if the log goes to stdout.
 static inline QString logName(const QString &logger)
 {
-    return (logger.startsWith("stdout") ? "" : "test_output." + logger);
+    return (logger.startsWith("stdout") ? "" : QString("test_output." + logger));
 }
 
 // Load the expected test output for the nominated test (subdir) and logger
