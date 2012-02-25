@@ -883,9 +883,10 @@ void QSortFilterProxyModelPrivate::source_items_removed(
     if (proxy_count > source_to_proxy.size()) {
         // mapping is in an inconsistent state -- redo the whole mapping
         qWarning("QSortFilterProxyModel: inconsistent changes reported by source model");
-        remove_from_mapping(source_parent);
         Q_Q(QSortFilterProxyModel);
-        q->reset();
+        q->beginResetModel();
+        remove_from_mapping(source_parent);
+        q->endResetModel();
         return;
     }
 
