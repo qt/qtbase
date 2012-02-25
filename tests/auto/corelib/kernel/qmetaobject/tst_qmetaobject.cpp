@@ -326,6 +326,8 @@ public slots:
 signals:
     void sig0();
     QString sig1(QString s1);
+    void sig10(QString s1, QString s2, QString s3, QString s4, QString s5, QString s6, QString s7,
+               QString s8, QString s9, QString s10);
 
 protected:
     QtTestObject(QVariant) {}
@@ -725,6 +727,7 @@ typedef QString CustomString;
 class QtTestCustomObject: public QObject
 {
     Q_OBJECT
+    friend class tst_QMetaObject;
 public:
     QtTestCustomObject(): QObject(), sum(0) {}
 
@@ -1129,11 +1132,9 @@ void tst_QMetaObject::indexOfMethodPMF()
     }
 
     INDEXOFMETHODPMF_HELPER(tst_QMetaObject, value7Changed, (const QString&))
-    INDEXOFMETHODPMF_HELPER(tst_QMetaObject, stdSet, ())
-    INDEXOFMETHODPMF_HELPER(QtTestObject, sl10, (QString,QString,QString,QString,QString,QString,QString,QString,QString,QString))
     INDEXOFMETHODPMF_HELPER(QtTestObject, sig0, ())
-    INDEXOFMETHODPMF_HELPER(QtTestObject, testLongLong, (qint64, quint64))
-    INDEXOFMETHODPMF_HELPER(QtTestObject, testReference, (QString&))
+    INDEXOFMETHODPMF_HELPER(QtTestObject, sig10, (QString,QString,QString,QString,QString,QString,QString,QString,QString,QString))
+    INDEXOFMETHODPMF_HELPER(QtTestCustomObject, sig_custom, (const CustomString &))
 }
 
 QTEST_MAIN(tst_QMetaObject)
