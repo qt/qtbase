@@ -273,11 +273,12 @@ sub classNames {
         if($definition) {
             $definition =~ s=[\n\r]==g;
             my @symbols;
+            my $post_kw = qr/Q_DECL_FINAL|final|sealed/; # add here macros and keywords that go after the class-name of a class definition
             if($definition =~ m/^ *typedef *.*\(\*([^\)]*)\)\(.*\);$/) {
                 push @symbols, $1;
             } elsif($definition =~ m/^ *typedef +(.*) +([^ ]*);$/) {
                 push @symbols, $2;
-            } elsif($definition =~ m/^ *(template *<.*> *)?(class|struct) +([^ ]* +)?([^<\s]+) ?(<[^>]*> ?)?\s*((,|:)\s*(public|protected|private) *.*)? *\{\}$/) {
+            } elsif($definition =~ m/^ *(template *<.*> *)?(class|struct) +([^ ]* +)?((?!$post_kw)[^<\s]+) ?(<[^>]*> ?)?\s*(?:$post_kw)?\s*((,|:)\s*(public|protected|private) *.*)? *\{\}$/o) {
                 push @symbols, $4;
             } elsif($definition =~ m/^ *Q_DECLARE_.*ITERATOR\((.*)\);$/) {
                 push @symbols, "Q" . $1 . "Iterator";
