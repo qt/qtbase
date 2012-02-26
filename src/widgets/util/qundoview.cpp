@@ -142,7 +142,8 @@ void QUndoModel::stackDestroyed(QObject *obj)
 
 void QUndoModel::stackChanged()
 {
-    reset();
+    beginResetModel();
+    endResetModel();
     m_sel_model->setCurrentIndex(selectedIndex(), QItemSelectionModel::ClearAndSelect);
 }
 
