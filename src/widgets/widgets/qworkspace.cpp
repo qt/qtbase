@@ -3204,7 +3204,7 @@ QRect QWorkspacePrivate::updateWorkspace()
             QWorkspaceChild *child = *it;
             ++it;
             if (!child->isHidden())
-                r = r.unite(child->geometry());
+                r = r.united(child->geometry());
         }
         vbar->blockSignals(true);
         hbar->blockSignals(true);
