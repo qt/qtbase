@@ -452,9 +452,17 @@ QVector<T>::QVector(std::initializer_list<T> args)
     d->alloc = uint(d->size);
     d->capacityReserved = false;
     d->offset = offsetOfTypedData();
-    T* i = d->end();
-    auto it = args.end();
-    while (i != d->begin())
+    if (QTypeInfo<T>::isComplex) {
+        T* b = d->begin();
+        T* i = d->end();
+        const T* s = args.end();
+        while (i != b)
+            new(--i) T(*--s);
+    } else {
+        // std::initializer_list<T>::iterator is guaranteed to be
+        // const T* ([support.initlist]/1), so can be memcpy'ed away from:
+        ::memcpy(d->begin(), args.begin(), args.size() * sizeof(T));
+    }
 }
 #endif
 
