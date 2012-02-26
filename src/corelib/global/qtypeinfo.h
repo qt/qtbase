@@ -161,6 +161,10 @@ public: \
 template<> \
 Q_DECLARE_TYPEINFO_BODY(TYPE, FLAGS)
 
+/* Specialize QTypeInfo for QFlags<T> */
+template<typename T> class QFlags;
+template<typename T>
+Q_DECLARE_TYPEINFO_BODY(QFlags<T>, Q_PRIMITIVE_TYPE);
 
 /*
    Specialize a shared type with:
