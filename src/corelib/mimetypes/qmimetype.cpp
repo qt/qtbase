@@ -64,12 +64,6 @@ bool qt_isQMimeTypeDebuggingActivated (false);
 #endif
 
 QMimeTypePrivate::QMimeTypePrivate()
-        : name()
-        //, comment()
-        , localeComments()
-        , genericIconName()
-        , iconName()
-        , globPatterns()
 {}
 
 QMimeTypePrivate::QMimeTypePrivate(const QMimeType &other)
