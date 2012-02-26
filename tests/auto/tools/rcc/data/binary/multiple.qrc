@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource>
+    <file>blahblah.txt</file>
+    <file>currentdir.txt</file>
+    <file>currentdir2.txt</file>
+    </qresource>
+    <qresource><file>subdir/subdir.txt</file></qresource>
+    <qresource><file>otherdir/</file>
+    </qresource>
+</RCC>
