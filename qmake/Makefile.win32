@@ -82,6 +82,7 @@ QTOBJS= \
 	qdatetime.obj \
 	qdir.obj \
 	qdiriterator.obj \
+	qfiledevice.obj \
 	qfile.obj \
 	qtemporaryfile.obj \
 	qabstractfileengine.obj \

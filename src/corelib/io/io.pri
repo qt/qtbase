@@ -11,6 +11,8 @@ HEADERS +=  \
         io/qdir_p.h \
         io/qdiriterator.h \
         io/qfile.h \
+        io/qfiledevice.h \
+        io/qfiledevice_p.h \
         io/qfileinfo.h \
         io/qfileinfo_p.h \
         io/qiodevice.h \
@@ -49,6 +51,7 @@ SOURCES += \
         io/qdir.cpp \
         io/qdiriterator.cpp \
         io/qfile.cpp \
+        io/qfiledevice.cpp \
         io/qfileinfo.cpp \
         io/qiodevice.cpp \
         io/qnoncontiguousbytedevice.cpp \

@@ -84,6 +84,7 @@ QTOBJS= \
 	qdatetime.o \
 	qdir.o \
 	qdiriterator.o \
+	qfiledevice.o \
 	qfile.o \
 	qtemporaryfile.o \
 	qfileinfo.o \

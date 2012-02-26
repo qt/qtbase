@@ -48,6 +48,7 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/io/qdatastream.h \
            $$QT_SOURCE_TREE/src/corelib/io/qdir.h \
            $$QT_SOURCE_TREE/src/corelib/io/qdiriterator.h \
+           $$QT_SOURCE_TREE/src/corelib/io/qfiledevice.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfile.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfileinfo.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfilesystementry_p.h \
@@ -92,6 +93,7 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qdatastream.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qdir.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qdiriterator.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfiledevice.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfile.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfileinfo.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qabstractfileengine.cpp \
