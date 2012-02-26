@@ -1106,6 +1106,9 @@ int QRegularExpressionPrivate::captureIndexForName(const QString &name) const
 {
     Q_ASSERT(!name.isEmpty());
 
+    if (!compiledPattern)
+        return -1;
+
     int index = pcre16_get_stringnumber(compiledPattern, name.utf16());
     if (index >= 0)
         return index;

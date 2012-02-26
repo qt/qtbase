@@ -73,6 +73,8 @@ private slots:
     void captureCount();
     void pcreJitStackUsage_data();
     void pcreJitStackUsage();
+    void regularExpressionMatch_data();
+    void regularExpressionMatch();
 
 private:
     void provideRegularExpressions();
