@@ -61,14 +61,6 @@
 
 QT_BEGIN_NAMESPACE
 
-bool qt_isQMimeDatabaseDebuggingActivated (false);
-
-#ifndef QT_NO_DEBUG_OUTPUT
-#define DBG() if (qt_isQMimeDatabaseDebuggingActivated) qDebug() << static_cast<const void *>(this) << Q_FUNC_INFO
-#else
-#define DBG() if (0) qDebug() << static_cast<const void *>(this) << Q_FUNC_INFO
-#endif
-
 Q_GLOBAL_STATIC(QMimeDatabasePrivate, staticQMimeDatabase)
 
 QMimeDatabasePrivate *QMimeDatabasePrivate::instance()
@@ -301,7 +293,6 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
 QMimeDatabase::QMimeDatabase() :
         d(staticQMimeDatabase())
 {
-    DBG();
 }
 
 /*!
@@ -310,8 +301,6 @@ QMimeDatabase::QMimeDatabase() :
  */
 QMimeDatabase::~QMimeDatabase()
 {
-    DBG();
-
     d = 0;
 }
 
@@ -356,8 +345,6 @@ QMimeType QMimeDatabase::mimeTypeForName(const QString &nameOrAlias) const
 */
 QMimeType QMimeDatabase::mimeTypeForFile(const QFileInfo &fileInfo, MatchMode mode) const
 {
-    DBG() << "fileInfo" << fileInfo.absoluteFilePath();
-
     QMutexLocker locker(&d->mutex);
 
     if (fileInfo.isDir())
@@ -553,8 +540,6 @@ QMimeType QMimeDatabase::mimeTypeForUrl(const QUrl &url) const
 */
 QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device) const
 {
-    DBG() << "fileName" << fileName;
-
     int accuracy = 0;
     const bool openedByUs = !device->isOpen() && device->open(QIODevice::ReadOnly);
     const QMimeType result = d->mimeTypeForFileNameAndData(fileName, device, &accuracy);
@@ -581,8 +566,6 @@ QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, QIO
 */
 QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, const QByteArray &data) const
 {
-    DBG() << "fileName" << fileName;
-
     QBuffer buffer(const_cast<QByteArray *>(&data));
     buffer.open(QIODevice::ReadOnly);
     int accuracy = 0;
@@ -602,7 +585,5 @@ QList<QMimeType> QMimeDatabase::allMimeTypes() const
 
     return d->allMimeTypes();
 }
-
-#undef DBG
 
 QT_END_NAMESPACE
