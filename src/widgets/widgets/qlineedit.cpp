@@ -75,7 +75,8 @@
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"
 #include "qkeysequence.h"
-#define ACCEL_KEY(k) (!qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? QLatin1Char('\t') + QString(QKeySequence(k)) : QString())
+#define ACCEL_KEY(k) (!qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? \
+                      QLatin1Char('\t') + QKeySequence(k).toString(QKeySequence::NativeText) : QString())
 #else
 #define ACCEL_KEY(k) QString()
 #endif

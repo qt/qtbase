@@ -1365,13 +1365,13 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
 
 #ifndef QT_NO_SHORTCUT
     if (!(e->modifiers() & Qt::AltModifier)) {
-        int key = e->key() & ~((int)Qt::MODIFIER_MASK|(int)Qt::UNICODE_ACCEL);
+        int key = e->key() & ~Qt::MODIFIER_MASK;
         if (key) {
             const QList<QAbstractButton *> buttons = d->buttonBox->buttons();
             for (int i = 0; i < buttons.count(); ++i) {
                 QAbstractButton *pb = buttons.at(i);
-                int acc = pb->shortcut() & ~((int)Qt::MODIFIER_MASK|(int)Qt::UNICODE_ACCEL);
-                if (acc == key) {
+                QKeySequence shortcut = pb->shortcut();
+                if (!shortcut.isEmpty() && key == (shortcut[0] & ~Qt::MODIFIER_MASK)) {
                     pb->animateClick();
                     return;
                 }
