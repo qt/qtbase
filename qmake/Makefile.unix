@@ -16,7 +16,7 @@ OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
      gbuild.o
 
 #qt code
-QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
+QOBJS=qtextcodec.o qutfcodec.o qstring.o qstringbuilder.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
       qbytearray.o qbytearraymatcher.o qdatastream.o qbuffer.o qlist.o qfiledevice.o qfile.o \
       qfilesystementry.o qfilesystemengine_unix.o qfilesystemengine.o qfilesystemiterator_unix.o \
       qfsfileengine_unix.o qfsfileengine.o \
@@ -57,6 +57,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/io/qfileinfo.cpp $(SOURCE_PATH)/src/corelib/tools/qdatetime.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstringlist.cpp $(SOURCE_PATH)/src/corelib/tools/qmap.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qconfig.cpp $(SOURCE_PATH)/src/corelib/io/qurl.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qstringbuilder.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp \
@@ -224,6 +225,9 @@ qtextcodec.o: $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp
 
 qstring.o: $(SOURCE_PATH)/src/corelib/tools/qstring.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qstring.cpp
+
+qstringbuilder.o: $(SOURCE_PATH)/src/corelib/tools/qstringbuilder.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qstringbuilder.cpp
 
 qlocale.o: $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp

@@ -110,6 +110,7 @@ QTOBJS= \
 	qutfcodec.o \
 	qstring.o \
 	qstringlist.o \
+	qstringbuilder.o \
 	qsystemerror.o \
 	qsystemlibrary.o \
 	qtextstream.o \

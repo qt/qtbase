@@ -106,6 +106,7 @@ QTOBJS= \
 	qutfcodec.obj \
 	qstring.obj \
 	qstringlist.obj \
+	qstringbuilder.obj \
 	qsystemerror.obj \
 	qtextstream.obj \
 	qdatastream.obj \
