@@ -16,7 +16,7 @@ HEADERS += \
     arch/qatomic_s390.h \
     arch/qatomic_sh4a.h \
     arch/qatomic_sparc.h \
-    arch/qatomic_x86_64.h \
+    arch/qatomic_x86.h \
     arch/qatomic_gcc.h \
     arch/qatomic_cxx11.h
 
