@@ -2702,6 +2702,8 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
         QFixed glyphWidth = glyphs.effectiveAdvance(glyph_pos);
         // the approximate width of each individual element of the ligature
         QFixed perItemWidth = glyphWidth / clusterLength;
+        if (perItemWidth <= 0)
+            return si->position + clusterStart;
         QFixed left = x > edge ? edge : edge - glyphWidth;
         int n = ((x - left) / perItemWidth).floor().toInt();
         QFixed dist = x - left - n * perItemWidth;
