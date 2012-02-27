@@ -154,7 +154,11 @@ void QMenuPrivate::init()
         scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
     }
 
-    platformMenu = QGuiApplicationPrivate::platformTheme()->createPlatformMenu(q);
+    platformMenu = QGuiApplicationPrivate::platformTheme()->createPlatformMenu();
+    if (platformMenu) {
+        QObject::connect(platformMenu, SIGNAL(aboutToShow()), q, SIGNAL(aboutToShow()));
+        QObject::connect(platformMenu, SIGNAL(aboutToHide()), q, SIGNAL(aboutToHide()));
+    }
 
 #ifdef QT_SOFTKEYS_ENABLED
     selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, q);
@@ -2300,7 +2304,7 @@ void QMenu::changeEvent(QEvent *e)
             d->tornPopup->setEnabled(isEnabled());
         d->menuAction->setEnabled(isEnabled());
         if (d->platformMenu)
-            d->platformMenu->setMenuEnabled(isEnabled());
+            d->platformMenu->setEnabled(isEnabled());
     }
     QWidget::changeEvent(e);
 }
@@ -2822,6 +2826,25 @@ QMenu::timerEvent(QTimerEvent *e)
     }
 }
 
+void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* item)
+{
+    item->setText(action->text());
+    item->setIsSeparator(action->isSeparator());
+//  item->setIcon(action->icon());
+    item->setVisible(action->isVisible());
+    item->setShortcut(action->shortcut());
+    item->setChecked(action->isChecked());
+    item->setFont(action->font());
+    item->setRole((QPlatformMenuItem::MenuRole) action->menuRole());
+    item->setEnabled(action->isEnabled());
+
+    if (action->menu()) {
+        item->setMenu(action->menu()->platformMenu());
+    } else {
+        item->setMenu(0);
+    }
+}
+
 /*!
   \reimp
 */
@@ -2854,12 +2877,24 @@ void QMenu::actionEvent(QActionEvent *e)
     }
 
     if (d->platformMenu) {
-        if (e->type() == QEvent::ActionAdded)
-            d->platformMenu->addAction(e->action(), e->before());
-        else if (e->type() == QEvent::ActionRemoved)
-            d->platformMenu->removeAction(e->action());
-        else if (e->type() == QEvent::ActionChanged)
-            d->platformMenu->syncAction(e->action());
+        if (e->type() == QEvent::ActionAdded) {
+            QPlatformMenuItem *menuItem =
+                QGuiApplicationPrivate::platformTheme()->createPlatformMenuItem();
+            menuItem->setTag(reinterpret_cast<quintptr>(e->action()));
+            QObject::connect(menuItem, SIGNAL(activated()), e->action(), SLOT(trigger()));
+            copyActionToPlatformItem(e->action(), menuItem);
+            QPlatformMenuItem* beforeItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->before()));
+            d->platformMenu->insertMenuItem(menuItem, beforeItem);
+        } else if (e->type() == QEvent::ActionRemoved) {
+            QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
+            d->platformMenu->removeMenuItem(menuItem);
+        } else if (e->type() == QEvent::ActionChanged) {
+            QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
+            copyActionToPlatformItem(e->action(), menuItem);
+            d->platformMenu->syncMenuItem(menuItem);
+        }
+
+        d->platformMenu->syncSeparatorsCollapsible(d->collapsibleSeparators);
     }
 
 #if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)

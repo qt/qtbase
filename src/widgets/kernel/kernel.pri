@@ -36,8 +36,7 @@ HEADERS += \
 	kernel/qsoftkeymanager_p.h \
         kernel/qsoftkeymanager_common_p.h \
         kernel/qdesktopwidget_qpa_p.h \
-        kernel/qwidgetwindow_qpa_p.h \
-        kernel/qplatformmenu.h
+        kernel/qwidgetwindow_qpa_p.h
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -66,8 +65,8 @@ SOURCES += \
         kernel/qapplication_qpa.cpp \
         kernel/qdesktopwidget_qpa.cpp \
         kernel/qwidget_qpa.cpp \
-        kernel/qwidgetwindow_qpa.cpp \
-        kernel/qplatformmenu_qpa.cpp
+        kernel/qwidgetwindow_qpa.cpp
+
 
 # TODO
 false:!x11:mac {
@@ -75,7 +74,7 @@ false:!x11:mac {
 		kernel/qclipboard_mac.cpp \
 		kernel/qmime_mac.cpp \
 		kernel/qt_mac.cpp \
-		kernel/qkeymapper_mac.cpp
+                kernel/qkeymapper_mac.cpp
 
         OBJECTIVE_HEADERS += \
                 qcocoawindow_mac_p.h \

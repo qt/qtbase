@@ -57,6 +57,7 @@
 #include <qwhatsthis.h>
 #include <qpa/qplatformtheme.h>
 #include "private/qguiapplication_p.h"
+#include "qplatformintegration_qpa.h"
 
 #ifndef QT_NO_MENUBAR
 
@@ -719,7 +720,7 @@ void QMenuBarPrivate::init()
     q->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     q->setAttribute(Qt::WA_CustomWhatsThis);
 
-    platformMenuBar = QGuiApplicationPrivate::platformTheme()->createPlatformMenuBar(q);
+    platformMenuBar = QGuiApplicationPrivate::platformTheme()->createPlatformMenuBar();
 
     if (platformMenuBar)
         q->hide();
@@ -1238,6 +1239,14 @@ void QMenuBar::leaveEvent(QEvent *)
         d->setCurrentAction(0);
 }
 
+QPlatformMenu *getPlatformMenu(QAction *action)
+{
+    if (!action || !action->menu())
+        return 0;
+
+    return action->menu()->platformMenu();
+}
+
 /*!
   \reimp
 */
@@ -1254,12 +1263,52 @@ void QMenuBar::actionEvent(QActionEvent *e)
 #endif
         if (!nativeMenuBar)
             return;
-        if(e->type() == QEvent::ActionAdded)
-            nativeMenuBar->addAction(e->action(), e->before());
-        else if(e->type() == QEvent::ActionRemoved)
-            nativeMenuBar->removeAction(e->action());
-        else if(e->type() == QEvent::ActionChanged)
-            nativeMenuBar->syncAction(e->action());
+
+        if (e->type() == QEvent::ActionAdded) {
+            QPlatformMenu *menu = getPlatformMenu(e->action());
+            if (menu) {
+                QPlatformMenu* beforeMenu = NULL;
+                for (int beforeIndex = d->indexOf(e->action()) + 1;
+                     !beforeMenu && (beforeIndex < actions().size());
+                     ++beforeIndex)
+                {
+                    beforeMenu = getPlatformMenu(actions().at(beforeIndex));
+                }
+
+                menu->setTag(reinterpret_cast<quintptr>(e->action()));
+                menu->setText(e->action()->text());
+                d->platformMenuBar->insertMenu(menu, beforeMenu);
+            }
+        } else if (e->type() == QEvent::ActionRemoved) {
+            QPlatformMenu *menu = getPlatformMenu(e->action());
+            if (menu)
+                d->platformMenuBar->removeMenu(menu);
+        } else if (e->type() == QEvent::ActionChanged) {
+            QPlatformMenu* cur = d->platformMenuBar->menuForTag(reinterpret_cast<quintptr>(e->action()));
+            QPlatformMenu *menu = getPlatformMenu(e->action());
+
+            // the menu associated with the action can change, need to
+            // remove and/or insert the new platform menu
+            if (menu != cur) {
+                if (cur)
+                    d->platformMenuBar->removeMenu(cur);
+                if (menu) {
+                    menu->setTag(reinterpret_cast<quintptr>(e->action()));
+
+                    QPlatformMenu* beforeMenu = NULL;
+                    for (int beforeIndex = d->indexOf(e->action()) + 1;
+                         !beforeMenu && (beforeIndex < actions().size());
+                         ++beforeIndex)
+                    {
+                        beforeMenu = getPlatformMenu(actions().at(beforeIndex));
+                    }
+                    d->platformMenuBar->insertMenu(menu, beforeMenu);
+                }
+            } else if (menu) {
+                menu->setText(e->action()->text());
+                d->platformMenuBar->syncMenu(menu);
+            }
+        }
     }
 
     if(e->type() == QEvent::ActionAdded) {
@@ -1339,8 +1388,17 @@ void QMenuBarPrivate::handleReparent()
     oldParent = newParent;
     oldWindow = newWindow;
 
-    if (platformMenuBar)
-        platformMenuBar->handleReparent(newParent);
+    if (platformMenuBar) {
+        if (newWindow) {
+            // force the underlying platform window to be created, since
+            // the platform menubar needs it (and we have no other way to
+            // discover when the platform window is created)
+            newWindow->createWinId();
+            platformMenuBar->handleReparent(newWindow->windowHandle());
+        } else {
+            platformMenuBar->handleReparent(0);
+        }
+    }
 
 #ifdef Q_OS_WINCE
     if (qt_wince_is_mobile() && wce_menubar)
@@ -1804,7 +1862,7 @@ void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
             d->platformMenuBar = 0;
         } else {
             if (!d->platformMenuBar)
-                d->platformMenuBar = QGuiApplicationPrivate::platformTheme()->createPlatformMenuBar(this);
+                d->platformMenuBar = QGuiApplicationPrivate::platformTheme()->createPlatformMenuBar();
         }
 
 	updateGeometry();

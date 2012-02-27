@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 
 class QMenu;
 class QMenuBar;
+class QPlatformMenuItem;
 class QPlatformMenu;
 class QPlatformMenuBar;
 class QPlatformDialogHelper;
@@ -163,8 +164,9 @@ public:
 
     virtual ~QPlatformTheme();
 
-    virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
-    virtual QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
+    virtual QPlatformMenuItem* createPlatformMenuItem() const;
+    virtual QPlatformMenu* createPlatformMenu() const;
+    virtual QPlatformMenuBar* createPlatformMenuBar() const;
 
     virtual bool usePlatformNativeDialog(DialogType type) const;
     virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;

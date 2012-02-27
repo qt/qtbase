@@ -25,6 +25,7 @@ HEADERS += \
         kernel/qplatformcursor.h \
         kernel/qplatformclipboard.h \
         kernel/qplatformnativeinterface.h \
+        kernel/qplatformmenu.h \
         kernel/qsurfaceformat.h \
         kernel/qguiapplication.h \
         kernel/qguiapplication_p.h \
@@ -79,6 +80,7 @@ SOURCES += \
         kernel/qplatformcursor_qpa.cpp \
         kernel/qplatformclipboard_qpa.cpp \
         kernel/qplatformnativeinterface_qpa.cpp \
+        kernel/qplatformmenu_qpa.cpp \
         kernel/qsessionmanager_qpa.cpp \
         kernel/qsurfaceformat.cpp \
         kernel/qguiapplication.cpp \

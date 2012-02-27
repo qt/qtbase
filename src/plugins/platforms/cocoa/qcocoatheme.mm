@@ -41,7 +41,8 @@
 
 #include "qcocoatheme.h"
 
-#include "qmenu_mac.h"
+#include <QVariant>
+
 #include "qcocoacolordialoghelper.h"
 #include "qcocoafiledialoghelper.h"
 #include "qcocoafontdialoghelper.h"
@@ -61,17 +62,6 @@ QCocoaTheme::~QCocoaTheme()
 {
     delete m_systemPalette;
 }
-
-QPlatformMenu *QCocoaTheme::createPlatformMenu(QMenu *menu) const
-{
-    return new QCocoaMenu(menu);
-}
-
-QPlatformMenuBar *QCocoaTheme::createPlatformMenuBar(QMenuBar *menuBar) const
-{
-    return new QCocoaMenuBar(menuBar);
-}
-
 
 bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const
 {

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author James Turner <james.turner@kdab.com>
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -43,71 +43,119 @@
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QPlatformMenuAction
-    \since 5.0
-    \internal
-    \preliminary
-    \ingroup qpa
-
-    \brief The QPlatformMenuAction class provides an abstraction for menu actions.
- */
-
-QPlatformMenuAction::~QPlatformMenuAction()
+void QPlatformMenuItem::setText(const QString &text)
 {
 
 }
 
-/*!
-    \class QPlatformMenu
-    \since 5.0
-    \internal
-    \preliminary
-    \ingroup qpa
-
-    \brief The QPlatformMenu class provides an abstraction for menus.
- */
-QPlatformMenu::QPlatformMenu()
-{
-}
-
-QPlatformMenu::~QPlatformMenu()
+void QPlatformMenuItem::setIcon(const QImage &icon)
 {
 
 }
 
-void QPlatformMenu::setMenuEnabled(bool enable)
+void QPlatformMenuItem::setMenu(QPlatformMenu *menu)
 {
-    Q_UNUSED(enable);
+
+}
+
+void QPlatformMenuItem::setVisible(bool isVisible)
+{
+
+}
+
+void QPlatformMenuItem::setIsSeparator(bool isSeparator)
+{
+
+}
+
+void QPlatformMenuItem::setFont(const QFont &font)
+{
+
+}
+
+void QPlatformMenuItem::setRole(QPlatformMenuItem::MenuRole role)
+{
+
+}
+
+void QPlatformMenuItem::setChecked(bool isChecked)
+{
+
+}
+
+void QPlatformMenuItem::setShortcut(const QKeySequence& shortcut)
+{
+
+}
+
+void QPlatformMenuItem::setEnabled(bool enabled)
+{
+
+}
+
+void QPlatformMenuItem::setTag(quintptr tag)
+{
+}
+
+quintptr QPlatformMenuItem::tag() const
+{
+    return 0;
+}
+
+void QPlatformMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem* before)
+{
+
+}
+
+void QPlatformMenu::removeMenuItem(QPlatformMenuItem *menuItem)
+{
+
+}
+
+void QPlatformMenu::syncMenuItem(QPlatformMenuItem *menuItem)
+{
+
 }
 
 void QPlatformMenu::syncSeparatorsCollapsible(bool enable)
 {
-    Q_UNUSED(enable);
+
 }
 
-/*!
-    \class QPlatformMenuBar
-    \since 5.0
-    \internal
-    \preliminary
-    \ingroup qpa
+QPlatformMenuItem* QPlatformMenu::menuItemAt(int position) const
+{
+    return 0;
+}
 
-    \brief The QPlatformMenuBar class provides an abstraction for menu bars.
- */
-QPlatformMenuBar::QPlatformMenuBar()
+QPlatformMenuItem* QPlatformMenu::menuItemForTag(quintptr tag) const
+{
+    return 0;
+}
+
+void QPlatformMenuBar::insertMenu(QPlatformMenu *menuItem, QPlatformMenu* before)
 {
 
 }
 
-QPlatformMenuBar::~QPlatformMenuBar()
+void QPlatformMenuBar::removeMenu(QPlatformMenu *menuItem)
 {
 
 }
 
-void QPlatformMenuBar::handleReparent(QWidget *newParent)
+void QPlatformMenuBar::syncMenu(QPlatformMenuItem *menuItem)
 {
-    Q_UNUSED(newParent);
+
+}
+
+void QPlatformMenuBar::handleReparent(QWindow *newParentWindow)
+{
+
+}
+
+QPlatformMenu *QPlatformMenuBar::menuForTag(quintptr tag) const
+{
+    Q_UNUSED(tag);
+    return 0;
 }
 
 QT_END_NAMESPACE

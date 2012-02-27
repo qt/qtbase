@@ -41,7 +41,6 @@
 
 #include "qcocoamenuloader.h"
 
-#include "qmenu_mac.h"
 #include "qcocoahelpers.h"
 
 #include <QtCore/private/qcore_mac_p.h>
@@ -272,15 +271,17 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
 
 - (void)qtUpdateMenubar
 {
+#if 0
     QCocoaMenuBar::macUpdateMenuBarImmediatly();
+#endif
 }
 
 - (void)qtTranslateApplicationMenu
 {
 
     qDebug() << "qtTranslateApplicationMenu";
-
-#ifndef QT_NO_TRANSLATION
+#if 0
+    //#ifndef QT_NO_TRANSLATION
     [servicesItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(0))];
     [hideItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(1).arg(qt_mac_applicationName()))];
     [hideAllOthersItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(2))];
@@ -293,6 +294,7 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
 
 - (IBAction)qtDispatcherToQAction:(id)sender
 {
+#if 0
     //
     //QScopedLoopLevelCounter loopLevelCounter(QApplicationPrivate::instance()->threadData);
     NSMenuItem *item = static_cast<NSMenuItem *>(sender);
@@ -304,6 +306,7 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
         // normal QApplication::quit().
         qApp->quit();
     }
+#endif
 }
 
  - (void)orderFrontCharacterPalette:(id)sender

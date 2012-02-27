@@ -90,7 +90,8 @@ class Q_WIDGETS_EXPORT QAction : public QObject
     Q_PROPERTY(Priority priority READ priority WRITE setPriority)
 
 public:
-    enum MenuRole { NoRole, TextHeuristicRole, ApplicationSpecificRole, AboutQtRole,
+    // note this is copied into qplatformmenu.h, which must stay in sync
+    enum MenuRole { NoRole = 0, TextHeuristicRole, ApplicationSpecificRole, AboutQtRole,
                     AboutRole, PreferencesRole, QuitRole };
     enum SoftKeyRole {
                     NoSoftKey, PositiveSoftKey, NegativeSoftKey, SelectSoftKey };

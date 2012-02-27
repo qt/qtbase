@@ -49,7 +49,6 @@
 #include "qcocoahelpers.h"
 #include "qcocoaapplication.h"
 #include "qcocoaapplicationdelegate.h"
-#include "qmenu_mac.h"
 #include "qcocoafiledialoghelper.h"
 #include "qcocoatheme.h"
 #include "qcocoainputcontext.h"

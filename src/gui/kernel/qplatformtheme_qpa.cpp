@@ -109,18 +109,6 @@ QPlatformTheme::~QPlatformTheme()
 
 }
 
-QPlatformMenu *QPlatformTheme::createPlatformMenu(QMenu *menu) const
-{
-    Q_UNUSED(menu);
-    return 0;
-}
-
-QPlatformMenuBar *QPlatformTheme::createPlatformMenuBar(QMenuBar *menuBar) const
-{
-    Q_UNUSED(menuBar);
-    return 0;
-}
-
 bool QPlatformTheme::usePlatformNativeDialog(DialogType type) const
 {
     Q_UNUSED(type);
@@ -181,6 +169,21 @@ QVariant QPlatformTheme::themeHint(ThemeHint hint) const
         return QVariant(int(0));
     }
     return QVariant();
+}
+
+QPlatformMenuItem *QPlatformTheme::createPlatformMenuItem() const
+{
+    return 0;
+}
+
+QPlatformMenu *QPlatformTheme::createPlatformMenu() const
+{
+    return 0;
+}
+
+QPlatformMenuBar *QPlatformTheme::createPlatformMenuBar() const
+{
+    return 0;
 }
 
 QT_END_NAMESPACE

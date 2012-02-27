@@ -55,6 +55,7 @@
 
 #include "QtWidgets/qstyleoption.h"
 #include <private/qmenu_p.h> // Mac needs what in this file!
+#include <qpa/qplatformmenu.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -144,6 +145,8 @@ public:
 
     QBasicTimer autoReleaseTimer;
     QPlatformMenuBar *platformMenuBar;
+
+    inline int indexOf(QAction *act) const { return q_func()->actions().indexOf(act); }
 
 #ifdef Q_OS_WINCE
     void wceCreateMenuBar(QWidget *);
