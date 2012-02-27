@@ -146,7 +146,7 @@ static QStringList splitSpaceSemicolon(const QString &source)
 static bool isBypassed(const QString &host, const QStringList &bypassList)
 {
     if (host.isEmpty())
-        return true;
+        return false;
 
     bool isSimple = !host.contains(QLatin1Char('.')) && !host.contains(QLatin1Char(':'));
 
@@ -171,6 +171,51 @@ static bool isBypassed(const QString &host, const QStringList &bypassList)
     return false;
 }
 
+static QList<QNetworkProxy> filterProxyListByCapabilities(const QList<QNetworkProxy> &proxyList, const QNetworkProxyQuery &query)
+{
+    QNetworkProxy::Capabilities requiredCaps;
+    switch (query.queryType()) {
+    case QNetworkProxyQuery::TcpSocket:
+        requiredCaps = QNetworkProxy::TunnelingCapability;
+        break;
+    case QNetworkProxyQuery::UdpSocket:
+        requiredCaps = QNetworkProxy::UdpTunnelingCapability;
+        break;
+    case QNetworkProxyQuery::TcpServer:
+        requiredCaps = QNetworkProxy::ListeningCapability;
+        break;
+    default:
+        return proxyList;
+        break;
+    }
+    QList<QNetworkProxy> result;
+    foreach (const QNetworkProxy& proxy, proxyList) {
+        if (proxy.capabilities() & requiredCaps)
+            result.append(proxy);
+    }
+    return result;
+}
+
+static QList<QNetworkProxy> removeDuplicateProxies(const QList<QNetworkProxy> &proxyList)
+{
+    QList<QNetworkProxy> result;
+     foreach (QNetworkProxy proxy, proxyList) {
+         bool append = true;
+         for (int i=0; i < result.count(); i++) {
+             if (proxy.hostName() == result.at(i).hostName()
+                 && proxy.port() == result.at(i).port()) {
+                     append = false;
+                     // HttpProxy trumps FtpCachingProxy or HttpCachingProxy on the same host/port
+                     if (proxy.type() == QNetworkProxy::HttpProxy)
+                         result[i] = proxy;
+             }
+         }
+         if (append)
+             result.append(proxy);
+     }
+     return result;
+}
+
 static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, const QStringList &proxyList)
 {
     // Reference documentation from Microsoft:
@@ -183,6 +228,9 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
     // The second scheme, if present, overrides the proxy type
 
     QList<QNetworkProxy> result;
+    QHash<QString, QNetworkProxy> taggedProxies;
+    const QString requiredTag = query.protocolTag();
+    bool checkTags = !requiredTag.isEmpty() && query.queryType() != QNetworkProxyQuery::TcpServer; //windows tags are only for clients
     foreach (const QString &entry, proxyList) {
         int server = 0;
 
@@ -191,11 +239,9 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
 
         int pos = entry.indexOf(QLatin1Char('='));
         QStringRef scheme;
+        QStringRef protocolTag;
         if (pos != -1) {
-            scheme = entry.leftRef(pos);
-            if (scheme != query.protocolTag())
-                continue;
-
+            scheme = protocolTag = entry.leftRef(pos);
             server = pos + 1;
         }
         pos = entry.indexOf(QLatin1String("://"), server);
@@ -233,9 +279,32 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
         }
 
         result << QNetworkProxy(proxyType, entry.mid(server, pos - server), port);
+        if (!protocolTag.isEmpty())
+            taggedProxies.insert(protocolTag.toString(), result.last());
     }
 
-    return result;
+    if (checkTags && taggedProxies.contains(requiredTag)) {
+        if (query.queryType() == QNetworkProxyQuery::UrlRequest) {
+            result.clear();
+            result.append(taggedProxies.value(requiredTag));
+            return result;
+        } else {
+            result.prepend(taggedProxies.value(requiredTag));
+        }
+    }
+    if (!checkTags || requiredTag != QLatin1String("http")) {
+        // if there are different http proxies for http and https, prefer the https one (more likely to be capable of CONNECT)
+        QNetworkProxy httpProxy = taggedProxies.value(QLatin1String("http"));
+        QNetworkProxy httpsProxy = taggedProxies.value(QLatin1String("http"));
+        if (httpProxy != httpsProxy && httpProxy.type() == QNetworkProxy::HttpProxy && httpsProxy.type() == QNetworkProxy::HttpProxy) {
+            for (int i = 0; i < result.count(); i++) {
+                if (httpProxy == result.at(i))
+                    result[i].setType(QNetworkProxy::HttpCachingProxy);
+            }
+        }
+    }
+    result = filterProxyListByCapabilities(result, query);
+    return removeDuplicateProxies(result);
 }
 
 class QWindowsSystemProxy
