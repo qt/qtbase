@@ -2999,7 +2999,9 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
         break;
 #ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel:
-        dbg.nospace() << "QWheelEvent("  << static_cast<const QWheelEvent *>(e)->delta()
+        dbg.nospace() << "QWheelEvent("
+                      << static_cast<const QWheelEvent *>(e)->pixelDelta()
+                      << static_cast<const QWheelEvent *>(e)->angleDelta()
                       << ')';
         return dbg.space();
 #endif
