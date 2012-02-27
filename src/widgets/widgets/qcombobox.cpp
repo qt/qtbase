@@ -43,6 +43,7 @@
 
 #ifndef QT_NO_COMBOBOX
 #include <qstylepainter.h>
+#include <qplatformtheme_qpa.h>
 #include <qlineedit.h>
 #include <qapplication.h>
 #include <qdesktopwidget.h>
@@ -57,15 +58,13 @@
 #include <qtreeview.h>
 #include <qheaderview.h>
 #include <qmath.h>
+#include <private/qguiapplication_p.h>
 #include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
 #include <private/qsoftkeymanager_p.h>
 #include <qdebug.h>
-#ifdef Q_WS_X11
-#include <private/qt_x11_p.h>
-#endif
 #if defined(Q_WS_MAC) && !defined(QT_NO_EFFECTS) && !defined(QT_NO_STYLE_MAC)
 #include <private/qcore_mac_p.h>
 #include <QMacStyle>
@@ -219,16 +218,12 @@ void QComboBoxPrivate::_q_modelDestroyed()
 //Windows and KDE allows menus to cover the taskbar, while GNOME and Mac don't
 QRect QComboBoxPrivate::popupGeometry(int screen) const
 {
-#ifdef Q_WS_WIN
-    return QApplication::desktop()->screenGeometry(screen);
-#elif defined Q_WS_X11
-    if (X11->desktopEnvironment == DE_KDE)
-        return QApplication::desktop()->screenGeometry(screen);
-    else
-        return QApplication::desktop()->availableGeometry(screen);
-#else
-        return QApplication::desktop()->availableGeometry(screen);
-#endif
+    bool useFullScreenForPopupMenu = false;
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+        useFullScreenForPopupMenu = theme->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool();
+    return useFullScreenForPopupMenu ?
+           QApplication::desktop()->screenGeometry(screen) :
+           QApplication::desktop()->availableGeometry(screen);
 }
 
 bool QComboBoxPrivate::updateHoverControl(const QPoint &pos)
