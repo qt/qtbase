@@ -44,6 +44,7 @@
 #include <qjsonarray.h>
 #include <qstringlist.h>
 #include <qdebug.h>
+#include <qvariant.h>
 #include "qjson_p.h"
 #include "qjsonwriter_p.h"
 

@@ -42,6 +42,7 @@
 #include "qstandardpaths.h"
 #include <qdir.h>
 #include <qfile.h>
+#include <qhash.h>
 #include <qtextstream.h>
 #include <qcoreapplication.h>
 #include <private/qfilesystemengine_p.h>
