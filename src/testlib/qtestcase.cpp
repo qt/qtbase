@@ -1192,7 +1192,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          "     *** If no output format is specified, -txt is assumed.\n"
          "\n"
          " Detail options:\n"
-         " -silent             : Only outputs warnings and failures\n"
+         " -silent             : Only output failures and fatal errors in plain text output\n"
          " -v1                 : Print enter messages for each testfunction\n"
          " -v2                 : Also print out each QVERIFY/QCOMPARE/QTEST\n"
          " -vs                 : Print every signal emitted\n"

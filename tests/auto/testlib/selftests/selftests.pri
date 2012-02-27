@@ -30,6 +30,7 @@ SUBPROGRAMS = \
      printdatatags \
      printdatatagswithglobaltags \
      qexecstringlist \
+     silent \
      singleskip \
      skip \
      skipcleanup \
