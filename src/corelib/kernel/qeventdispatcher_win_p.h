@@ -55,6 +55,7 @@
 
 #include "QtCore/qabstracteventdispatcher.h"
 #include "QtCore/qt_windows.h"
+#include "QtCore/qhash.h"
 
 #include "qabstracteventdispatcher_p.h"
 

@@ -49,9 +49,7 @@
 #include <private/qobject_p.h>
 #include <qmutex.h>
 
-#ifndef QT_NO_DEBUG
 #include <QtCore/QHash>
-#endif
 
 QT_BEGIN_HEADER
 
