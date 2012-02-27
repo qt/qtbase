@@ -80,8 +80,6 @@
 #  include "QtCore/qatomic_sh4a.h"
 #elif defined(Q_PROCESSOR_SPARC)
 #  include "QtCore/qatomic_sparc.h"
-#elif defined(Q_PROCESSOR_X86_32)
-#  include <QtCore/qatomic_i386.h>
 #elif defined(Q_PROCESSOR_X86)
 #  include <QtCore/qatomic_x86.h>
 

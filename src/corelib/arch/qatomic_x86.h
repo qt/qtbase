@@ -40,8 +40,8 @@
 **
 ****************************************************************************/
 
-#ifndef QATOMIC_X86_64_H
-#define QATOMIC_X86_64_H
+#ifndef QATOMIC_X86_H
+#define QATOMIC_X86_H
 
 #include <QtCore/qgenericatomic.h>
 
@@ -121,7 +121,7 @@ template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
     typedef T Type;
 };
 
-#if defined(Q_CC_GNU) || defined(Q_CC_INTEL)
+#if defined(Q_CC_GNU)
 
 template<> struct QAtomicIntegerTraits<char> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<signed char> { enum { IsInteger = 1 }; };
@@ -132,6 +132,34 @@ template<> struct QAtomicIntegerTraits<long> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
+
+/*
+ * Guide for the inline assembly below:
+ *
+ * x86 instructions are in the form "{opcode}{length} {source}, {destination}",
+ * where the length is one of the letters "b" (byte), "w" (word, 16-bit), "l"
+ * (dword, 32-bit), "q" (qword, 64-bit).
+ *
+ * In most cases, we can omit the length because it's inferred from one of the
+ * registers. For example, "xchg %0,%1" doesn't need the length suffix because
+ * we can only exchange data of the same size and one of the operands must be a
+ * register.
+ *
+ * The exception is the increment and decrement functions, where we add and
+ * subtract an immediate value (1). For those, we need to specify the length.
+ * GCC and ICC support the syntax "add%z0 $1, %0", where "%z0" expands to the
+ * length of the operand. Unfortunately, clang as of 3.0 doesn't support that.
+ * For that reason, the ref() and deref() functions are rolled out for all
+ * sizes.
+ *
+ * The functions are also rolled out for the 1-byte operations since those
+ * require a special register constraint "q" to force the compiler to schedule
+ * one of the 8-bit registers. It's probably a compiler bug that it tries to
+ * use a register that doesn't exist.
+ *
+ * Finally, 64-bit operations are supported via the cmpxchg8b instruction on
+ * 32-bit processors, via specialisation below.
+ */
 
 template<> template<typename T> inline
 bool QBasicAtomicOps<1>::ref(T &_q_value)
@@ -172,19 +200,6 @@ bool QBasicAtomicOps<4>::ref(T &_q_value)
     return ret != 0;
 }
 
-template<> template<typename T> inline
-bool QBasicAtomicOps<8>::ref(T &_q_value)
-{
-    unsigned char ret;
-    asm volatile("lock\n"
-                 "addq $1, %0\n"
-                 "setne %1"
-                 : "=m" (_q_value), "=qm" (ret)
-                 : "m" (_q_value)
-                 : "memory");
-    return ret != 0;
-}
-
 template<> template <typename T> inline
 bool QBasicAtomicOps<1>::deref(T &_q_value)
 {
@@ -216,19 +231,6 @@ bool QBasicAtomicOps<4>::deref(T &_q_value)
     unsigned char ret;
     asm volatile("lock\n"
                  "subl $1, %0\n"
-                 "setne %1"
-                 : "=m" (_q_value), "=qm" (ret)
-                 : "m" (_q_value)
-                 : "memory");
-    return ret != 0;
-}
-
-template<> template <typename T> inline
-bool QBasicAtomicOps<8>::deref(T &_q_value)
-{
-    unsigned char ret;
-    asm volatile("lock\n"
-                 "subq $1, %0\n"
                  "setne %1"
                  : "=m" (_q_value), "=qm" (ret)
                  : "m" (_q_value)
@@ -348,12 +350,73 @@ T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 #define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_WAIT_FREE
 
-#else // !Q_CC_INTEL && !Q_CC_GNU
-#  error "This compiler for x86_64 is not supported"
-#endif // Q_CC_GNU || Q_CC_INTEL
+#ifdef Q_PROCESSOR_X86_64
+// native support for 64-bit types
+template<> template<typename T> inline
+bool QBasicAtomicOps<8>::ref(T &_q_value)
+{
+    unsigned char ret;
+    asm volatile("lock\n"
+                 "addq $1, %0\n"
+                 "setne %1"
+                 : "=m" (_q_value), "=qm" (ret)
+                 : "m" (_q_value)
+                 : "memory");
+    return ret != 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<8>::deref(T &_q_value)
+{
+    unsigned char ret;
+    asm volatile("lock\n"
+                 "subq $1, %0\n"
+                 "setne %1"
+                 : "=m" (_q_value), "=qm" (ret)
+                 : "m" (_q_value)
+                 : "memory");
+    return ret != 0;
+}
+#else
+// i386 architecture, emulate 64-bit support via cmpxchg8b
+template <> struct QBasicAtomicOps<8>: QGenericAtomicOps<QBasicAtomicOps<8> >
+{
+    static inline bool isTestAndSetNative() { return true; }
+    static inline bool isTestAndSetWaitFree() { return true; }
+    template <typename T> static inline
+    bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+    {
+#ifdef __PIC__
+# define EBX_reg "r"
+# define EBX_load(reg) "xchg " reg ", %%ebx\n"
+#else
+# define EBX_reg "b"
+# define EBX_load(reg)
+#endif
+        quint32 highExpectedValue = quint32(newValue >> 32); // ECX
+        asm volatile(EBX_load("%3")
+                     "lock\n"
+                     "cmpxchg8b %0\n"
+                     EBX_load("%3")
+                     "sete %%cl\n"
+                     : "+m" (_q_value), "+c" (highExpectedValue), "+&A" (expectedValue)
+                     : EBX_reg (quint32(newValue & 0xffffffff))
+                     : "memory");
+        // if the comparison failed, expectedValue here contains the current value
+        return quint8(highExpectedValue) != 0;
+#undef EBX_reg
+#undef EBX_load
+    }
+};
+#endif
+
+#else
+#  error "This compiler for x86 is not supported"
+#endif
+
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QATOMIC_X86_64_H
+#endif // QATOMIC_X86_H
