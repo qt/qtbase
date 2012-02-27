@@ -3616,6 +3616,9 @@ void tst_QLineEdit::taskQTBUG_7902_contextMenuCrash()
 
 void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
 {
+#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
+    QSKIP("QTBUG-24518 - Unstable test for Ubuntu 11.10");
+#endif
     //ReadOnly QLineEdit should not intercept shortcut.
     QLineEdit le;
     le.setReadOnly(true);
