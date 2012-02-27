@@ -107,7 +107,7 @@ public:
             d = v.d;
         } else {
             d = Data::sharedNull();
-            realloc(0, v.d->alloc);
+            realloc(0, int(v.d->alloc));
             qCopy(v.d->begin(), v.d->end(), d->begin());
             d->size = v.d->size;
             d->capacityReserved = v.d->capacityReserved;
@@ -133,7 +133,7 @@ public:
 
     void resize(int size);
 
-    inline int capacity() const { return d->alloc; }
+    inline int capacity() const { return int(d->alloc); }
     void reserve(int size);
     inline void squeeze() { realloc(d->size, d->size); d->capacityReserved = 0; }
 
@@ -339,15 +339,15 @@ private:
 
 template <typename T>
 void QVector<T>::detach_helper()
-{ realloc(d->size, d->alloc); }
+{ realloc(d->size, int(d->alloc)); }
 template <typename T>
 void QVector<T>::reserve(int asize)
-{ if (asize > d->alloc) realloc(d->size, asize); if (isDetached()) d->capacityReserved = 1; }
+{ if (asize > int(d->alloc)) realloc(d->size, asize); if (isDetached()) d->capacityReserved = 1; }
 template <typename T>
 void QVector<T>::resize(int asize)
-{ realloc(asize, (asize > d->alloc || (!d->capacityReserved && asize < d->size && asize < (d->alloc >> 1))) ?
+{ realloc(asize, (asize > int(d->alloc) || (!d->capacityReserved && asize < d->size && asize < int(d->alloc >> 1))) ?
           QVectorData::grow(offsetOfTypedData(), asize, sizeof(T))
-          : d->alloc); }
+          : int(d->alloc)); }
 template <typename T>
 inline void QVector<T>::clear()
 { *this = QVector<T>(); }
@@ -414,7 +414,8 @@ QVector<T>::QVector(int asize)
 {
     d = malloc(asize);
     d->ref.initializeOwned();
-    d->alloc = d->size = asize;
+    d->size = asize;
+    d->alloc = uint(d->size);
     d->capacityReserved = false;
     d->offset = offsetOfTypedData();
     if (QTypeInfo<T>::isComplex) {
@@ -432,7 +433,8 @@ QVector<T>::QVector(int asize, const T &t)
 {
     d = malloc(asize);
     d->ref.initializeOwned();
-    d->alloc = d->size = asize;
+    d->size = asize;
+    d->alloc = uint(d->size);
     d->capacityReserved = false;
     d->offset = offsetOfTypedData();
     T* i = d->end();
@@ -446,7 +448,8 @@ QVector<T>::QVector(std::initializer_list<T> args)
 {
     d = malloc(int(args.size()));
     d->ref.initializeOwned();
-    d->alloc = d->size = int(args.size());
+    d->size = int(args.size());
+    d->alloc = uint(d->size);
     d->capacityReserved = false;
     d->offset = offsetOfTypedData();
     T* i = d->end();
@@ -486,7 +489,7 @@ void QVector<T>::realloc(int asize, int aalloc)
         }
     }
 
-    if (aalloc != d->alloc || !isDetached()) {
+    if (aalloc != int(d->alloc) || !isDetached()) {
         // (re)allocate memory
         if (QTypeInfo<T>::isStatic) {
             x = malloc(aalloc);
@@ -509,12 +512,12 @@ void QVector<T>::realloc(int asize, int aalloc)
                 x = d = static_cast<Data *>(mem);
                 x->size = d->size;
             } QT_CATCH (const std::bad_alloc &) {
-                if (aalloc > d->alloc) // ignore the error in case we are just shrinking.
+                if (aalloc > int(d->alloc)) // ignore the error in case we are just shrinking.
                     QT_RETHROW;
             }
         }
         x->ref.initializeOwned();
-        x->alloc = aalloc;
+        x->alloc = uint(aalloc);
         x->capacityReserved = d->capacityReserved;
         x->offset = offsetOfTypedData();
     }
@@ -569,11 +572,11 @@ Q_OUTOFLINE_TEMPLATE T QVector<T>::value(int i, const T &defaultValue) const
 template <typename T>
 void QVector<T>::append(const T &t)
 {
-    if (!isDetached() || d->size + 1 > d->alloc) {
+    if (!isDetached() || d->size + 1 > int(d->alloc)) {
         const T copy(t);
-        realloc(d->size, (d->size + 1 > d->alloc) ?
+        realloc(d->size, (d->size + 1 > int(d->alloc)) ?
                     QVectorData::grow(offsetOfTypedData(), d->size + 1, sizeof(T))
-                    : d->alloc);
+                    : int(d->alloc));
         if (QTypeInfo<T>::isComplex)
             new (d->end()) T(copy);
         else
@@ -593,7 +596,7 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, c
     int offset = int(before - d->begin());
     if (n != 0) {
         const T copy(t);
-        if (!isDetached() || d->size + n > d->alloc)
+        if (!isDetached() || d->size + n > int(d->alloc))
             realloc(d->size, QVectorData::grow(offsetOfTypedData(), d->size + n, sizeof(T)));
         if (QTypeInfo<T>::isStatic) {
             T *b = d->end();
