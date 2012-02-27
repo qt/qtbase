@@ -1898,13 +1898,21 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
             if ((pos.x() + menuSize.width() > parentActionRect.left() - subMenuOffset)
                 && (pos.x() < parentActionRect.right()))
             {
+                pos.rx() = parentActionRect.left() - menuSize.width();
+                if (pos.x() < screen.x())
                     pos.rx() = parentActionRect.right();
+                if (pos.x() + menuSize.width() > screen.x() + screen.width())
+                    pos.rx() = screen.x();
             }
         } else {
             if ((pos.x() < parentActionRect.right() + subMenuOffset)
                 && (pos.x() + menuSize.width() > parentActionRect.left()))
             {
+                pos.rx() = parentActionRect.right();
+                if (pos.x() + menuSize.width() > screen.x() + screen.width())
                     pos.rx() = parentActionRect.left() - menuSize.width();
+                if (pos.x() < screen.x())
+                    pos.rx() = screen.x() + screen.width() - menuSize.width();
             }
         }
     }
