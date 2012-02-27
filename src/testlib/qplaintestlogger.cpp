@@ -251,7 +251,6 @@ void QPlainTestLogger::printMessage(const char *type, const char *msg, const cha
     outputMessage(buf.data());
 }
 
-//void QPlainTestLogger::printBenchmarkResult(const char *bmtag, int value, int iterations)
 void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
 {
     const char *bmtag = QTest::benchmarkResult2String();
@@ -381,7 +380,6 @@ void QPlainTestLogger::addIncident(IncidentTypes type, const char *description,
 
 void QPlainTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 {
-//    printBenchmarkResult(QTest::benchmarkResult2String(), value, iterations);
     printBenchmarkResult(result);
 }
 
