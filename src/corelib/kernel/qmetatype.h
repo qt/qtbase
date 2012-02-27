@@ -200,14 +200,7 @@ public:
         LastWidgetsType = QSizePolicy,
         HighestInternalId = LastWidgetsType,
 
-// This logic must match the one in qglobal.h
-#if defined(QT_COORD_TYPE)
-        QReal = 0,
-#elif defined(QT_NO_FPU) || defined(Q_PROCESSOR_ARM) || defined(Q_OS_WINCE)
-        QReal = Float,
-#else
-        QReal = Double,
-#endif
+        QReal = sizeof(qreal) == sizeof(double) ? Double : Float,
 
         User = 256
     };
