@@ -93,7 +93,6 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
 
     // Load and instantiate nib file from temp
     NSURL *nibUrl = [NSURL fileURLWithPath : QCFString::toNSString(nibDir)];
-    [nibUrl autorelease];
     NSNib *nib = [[NSNib alloc] initWithContentsOfURL : nibUrl];
     [nib autorelease];
     if(!nib) {
