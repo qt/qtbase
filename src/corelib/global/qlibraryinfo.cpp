@@ -226,66 +226,44 @@ QLibraryInfo::location(LibraryLocation loc)
     if(!QLibraryInfoPrivate::configuration()) {
         const char *path = 0;
         switch (loc) {
-#ifdef QT_CONFIGURE_PREFIX_PATH
         case PrefixPath:
             path = QT_CONFIGURE_PREFIX_PATH;
             break;
-#endif
-#ifdef QT_CONFIGURE_DOCUMENTATION_PATH
         case DocumentationPath:
             path = QT_CONFIGURE_DOCUMENTATION_PATH;
             break;
-#endif
-#ifdef QT_CONFIGURE_HEADERS_PATH
         case HeadersPath:
             path = QT_CONFIGURE_HEADERS_PATH;
             break;
-#endif
-#ifdef QT_CONFIGURE_LIBRARIES_PATH
         case LibrariesPath:
             path = QT_CONFIGURE_LIBRARIES_PATH;
             break;
-#endif
-#ifdef QT_CONFIGURE_BINARIES_PATH
         case BinariesPath:
             path = QT_CONFIGURE_BINARIES_PATH;
             break;
-#endif
-#ifdef QT_CONFIGURE_PLUGINS_PATH
         case PluginsPath:
             path = QT_CONFIGURE_PLUGINS_PATH;
             break;
-#endif
-#ifdef QT_CONFIGURE_IMPORTS_PATH
         case ImportsPath:
             path = QT_CONFIGURE_IMPORTS_PATH;
             break;
-#endif
-#ifdef QT_CONFIGURE_DATA_PATH
         case DataPath:
             path = QT_CONFIGURE_DATA_PATH;
             break;
-#endif
-#ifdef QT_CONFIGURE_TRANSLATIONS_PATH
         case TranslationsPath:
             path = QT_CONFIGURE_TRANSLATIONS_PATH;
             break;
-#endif
-#ifdef QT_CONFIGURE_SETTINGS_PATH
+#ifndef Q_OS_WIN // On Windows we use the registry
         case SettingsPath:
             path = QT_CONFIGURE_SETTINGS_PATH;
             break;
 #endif
-#ifdef QT_CONFIGURE_EXAMPLES_PATH
         case ExamplesPath:
             path = QT_CONFIGURE_EXAMPLES_PATH;
             break;
-#endif
-#ifdef QT_CONFIGURE_TESTS_PATH
         case TestsPath:
             path = QT_CONFIGURE_TESTS_PATH;
             break;
-#endif
         default:
             break;
         }
