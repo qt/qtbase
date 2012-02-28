@@ -3784,6 +3784,7 @@ void tst_QGraphicsScene::inputMethod()
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     inputContext.m_resetCallCount = 0;
+    inputContext.m_commitCallCount = 0;
     scene.addItem(item);
     QInputMethodEvent event;
 
@@ -3802,7 +3803,7 @@ void tst_QGraphicsScene::inputMethod()
     scene.setFocusItem(0);
     // the input context is reset twice, once because an item has lost focus and again because
     // the Qt::WA_InputMethodEnabled flag is cleared because no item has focus.
-    QCOMPARE(inputContext.m_resetCallCount, callFocusItem ? 2 : 0);
+    QCOMPARE(inputContext.m_resetCallCount + inputContext.m_commitCallCount, callFocusItem ? 2 : 0);
     QCOMPARE(item->queryCalls, callFocusItem ? 1 : 0); // verify that value is unaffected
 
     item->eventCalls = 0;

@@ -3090,7 +3090,7 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
             if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
                 qApp->inputMethod()->update(Qt::ImEnabled);
         } else {
-            qApp->inputMethod()->reset();
+            qApp->inputMethod()->commit();
             qApp->inputMethod()->update(Qt::ImEnabled);
         }
     }
@@ -5948,7 +5948,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
         if (prev) {
             if (reason != Qt::PopupFocusReason && reason != Qt::MenuBarFocusReason
                 && prev->testAttribute(Qt::WA_InputMethodEnabled)) {
-                qApp->inputMethod()->reset();
+                qApp->inputMethod()->commit();
             }
 
             if (reason != Qt::NoFocusReason) {
@@ -6057,7 +6057,7 @@ void QWidget::clearFocus()
 {
     if (hasFocus()) {
         if (testAttribute(Qt::WA_InputMethodEnabled))
-            qApp->inputMethod()->reset();
+            qApp->inputMethod()->commit();
 
         QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange);
         QApplication::sendEvent(this, &focusAboutToChange);
@@ -10087,7 +10087,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         QWidget *focusWidget = d->effectiveFocusWidget();
         if (on && !internalWinId() && hasFocus()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            qApp->inputMethod()->reset();
+            qApp->inputMethod()->commit();
             qApp->inputMethod()->update(Qt::ImEnabled);
         }
         if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget()
@@ -10137,7 +10137,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 #ifndef QT_NO_IM
         if (qApp->focusObject() == this) {
             if (!on)
-                qApp->inputMethod()->reset();
+                qApp->inputMethod()->commit();
             qApp->inputMethod()->update(Qt::ImEnabled);
         }
 #endif //QT_NO_IM

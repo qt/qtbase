@@ -61,7 +61,19 @@ public:
     virtual QRectF keyboardRect() const { return m_keyboardRect; }
     virtual bool isAnimating() const { return m_animating; }
     virtual void reset() { m_resetCallCount++; }
-    virtual void commit() { m_commitCallCount++; }
+    virtual void commit() {
+        m_commitCallCount++;
+        QInputMethodEvent commitEvent;
+        commitEvent.setCommitString(m_commitString);
+        if (qGuiApp->focusObject())
+            qGuiApp->sendEvent(qGuiApp->focusObject(), &commitEvent);
+        else
+            qWarning("Test input context to commit without focused object");
+    }
+    void setCommitString(const QString &commitString)
+    {
+        m_commitString = commitString;
+    }
 
     virtual void update(Qt::InputMethodQueries queries)
     {
@@ -105,6 +117,7 @@ public:
     int m_updateCallCount;
     int m_resetCallCount;
     int m_commitCallCount;
+    QString m_commitString;
     mutable int m_localeCallCount;
     mutable int m_inputDirectionCallCount;
     Qt::InputMethodQueries m_lastQueries;

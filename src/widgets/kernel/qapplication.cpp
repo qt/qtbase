@@ -2042,7 +2042,7 @@ void QApplication::setActiveWindow(QWidget* act)
 
     if (QApplicationPrivate::focus_widget) {
         if (QApplicationPrivate::focus_widget->testAttribute(Qt::WA_InputMethodEnabled))
-            qApp->inputMethod()->reset();
+            qApp->inputMethod()->commit();
 
         QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange, Qt::ActiveWindowFocusReason);
         QApplication::sendEvent(QApplicationPrivate::focus_widget, &focusAboutToChange);

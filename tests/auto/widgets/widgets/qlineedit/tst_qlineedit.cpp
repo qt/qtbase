@@ -72,6 +72,10 @@
 
 #include "qplatformdefs.h"
 
+#include "../../../shared/platforminputcontext.h"
+#include <private/qinputmethod_p.h>
+
+
 QT_BEGIN_NAMESPACE
 class QPainter;
 QT_END_NAMESPACE
@@ -275,7 +279,6 @@ private slots:
     void selectAndCursorPosition();
     void inputMethod();
     void inputMethodSelection();
-    void inputMethodTentativeCommit();
 
 protected slots:
     void editingFinished();
@@ -301,6 +304,7 @@ private:
     int newCursorPos;
     QLineEdit *testWidget;
     int m_keyboardScheme;
+    PlatformInputContext m_platformInputContext;
 };
 
 typedef QList<int> IntList;
@@ -357,21 +361,23 @@ void tst_QLineEdit::initTestCase()
 
     testWidget->resize(200,50);
     testWidget->show();
+    QTest::qWaitForWindowShown(testWidget);
     QApplication::setActiveWindow(testWidget);
-#ifdef Q_WS_X11
-    // to be safe and avoid failing setFocus with window managers
-    qt_x11_wait_for_window_manager(testWidget);
-#endif
     QTRY_VERIFY(testWidget->hasFocus());
 
     changed_count = 0;
     edited_count = 0;
     selection_count = 0;
+
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = &m_platformInputContext;
 }
 
 void tst_QLineEdit::cleanupTestCase()
 {
     delete testWidget;
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = 0;
 }
 
 void tst_QLineEdit::init()
@@ -3828,6 +3834,23 @@ void tst_QLineEdit::inputMethod()
     testWidget->setEnabled(false);
     QApplication::sendEvent(testWidget, &queryEvent);
     QCOMPARE(queryEvent.value(Qt::ImEnabled).toBool(), false);
+    testWidget->setEnabled(true);
+
+    // removing focus allows input method to commit preedit
+    testWidget->setText("");
+    testWidget->activateWindow();
+    QTRY_VERIFY(testWidget->hasFocus());
+    QTRY_COMPARE(qApp->focusObject(), testWidget);
+
+    m_platformInputContext.setCommitString("text");
+    m_platformInputContext.m_commitCallCount = 0;
+    QList<QInputMethodEvent::Attribute> attributes;
+    QInputMethodEvent preeditEvent("preedit text", attributes);
+    QApplication::sendEvent(testWidget, &preeditEvent);
+
+    testWidget->clearFocus();
+    QCOMPARE(m_platformInputContext.m_commitCallCount, 1);
+    QCOMPARE(testWidget->text(), QString("text"));
 }
 
 void tst_QLineEdit::inputMethodSelection()
@@ -3864,37 +3887,6 @@ void tst_QLineEdit::inputMethodSelection()
     }
 
     QCOMPARE(selectionSpy.count(), 3);
-}
-
-void tst_QLineEdit::inputMethodTentativeCommit()
-{
-    // test that basic tentative commit gets to text property on preedit state
-    QList<QInputMethodEvent::Attribute> attributes;
-    QInputMethodEvent event("test", attributes);
-    event.setTentativeCommitString("test");
-    QApplication::sendEvent(testWidget, &event);
-    QCOMPARE(testWidget->text(), QString("test"));
-
-    // tentative commit not allowed present in surrounding text
-    QInputMethodQueryEvent queryEvent(Qt::ImSurroundingText);
-    QApplication::sendEvent(testWidget, &queryEvent);
-    QCOMPARE(queryEvent.value(Qt::ImSurroundingText).toString(), QString(""));
-
-    // if text with tentative commit does not validate, not allowed to be part of text property
-    testWidget->setText(""); // ensure input state is reset
-    QValidator *validator = new QIntValidator(0, 100);
-    testWidget->setValidator(validator);
-    QApplication::sendEvent(testWidget, &event);
-    QCOMPARE(testWidget->text(), QString(""));
-    testWidget->setValidator(0);
-    delete validator;
-
-    // text remains when focus is removed
-    testWidget->setText(""); // ensure input state is reset
-    QApplication::sendEvent(testWidget, &event);
-    QFocusEvent lostFocus(QEvent::FocusOut);
-    QApplication::sendEvent(testWidget, &lostFocus);
-    QCOMPARE(testWidget->text(), QString("test"));
 }
 
 
