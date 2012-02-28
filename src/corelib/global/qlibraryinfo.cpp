@@ -214,6 +214,22 @@ QLibraryInfo::isDebugBuild()
     return false;
 }
 
+static const struct {
+    char key[14], value[13];
+} qtConfEntries[] = {
+    { "Prefix", "" },
+    { "Documentation", "doc" },
+    { "Headers", "include" },
+    { "Libraries", "lib" },
+    { "Binaries", "bin" },
+    { "Plugins", "plugins" },
+    { "Imports", "imports" },
+    { "Data", "" },
+    { "Translations", "translations" },
+    { "Examples", "" },
+    { "Tests", "tests" },
+};
+
 /*!
   Returns the location specified by \a loc.
 
@@ -225,102 +241,26 @@ QLibraryInfo::location(LibraryLocation loc)
     QString ret;
     if(!QLibraryInfoPrivate::configuration()) {
         const char *path = 0;
-        switch (loc) {
-        case PrefixPath:
-            path = QT_CONFIGURE_PREFIX_PATH;
-            break;
-        case DocumentationPath:
-            path = QT_CONFIGURE_DOCUMENTATION_PATH;
-            break;
-        case HeadersPath:
-            path = QT_CONFIGURE_HEADERS_PATH;
-            break;
-        case LibrariesPath:
-            path = QT_CONFIGURE_LIBRARIES_PATH;
-            break;
-        case BinariesPath:
-            path = QT_CONFIGURE_BINARIES_PATH;
-            break;
-        case PluginsPath:
-            path = QT_CONFIGURE_PLUGINS_PATH;
-            break;
-        case ImportsPath:
-            path = QT_CONFIGURE_IMPORTS_PATH;
-            break;
-        case DataPath:
-            path = QT_CONFIGURE_DATA_PATH;
-            break;
-        case TranslationsPath:
-            path = QT_CONFIGURE_TRANSLATIONS_PATH;
-            break;
+        if (loc >= 0 && loc < sizeof(qt_configure_prefix_path_strs)/sizeof(qt_configure_prefix_path_strs[0]))
+            path = qt_configure_prefix_path_strs[loc] + 12;
 #ifndef Q_OS_WIN // On Windows we use the registry
-        case SettingsPath:
+        else if (loc == SettingsPath)
             path = QT_CONFIGURE_SETTINGS_PATH;
-            break;
 #endif
-        case ExamplesPath:
-            path = QT_CONFIGURE_EXAMPLES_PATH;
-            break;
-        case TestsPath:
-            path = QT_CONFIGURE_TESTS_PATH;
-            break;
-        default:
-            break;
-        }
 
         if (path)
             ret = QString::fromLocal8Bit(path);
     } else {
         QString key;
         QString defaultValue;
-        switch(loc) {
-        case PrefixPath:
-            key = QLatin1String("Prefix");
-            break;
-        case DocumentationPath:
-            key = QLatin1String("Documentation");
-            defaultValue = QLatin1String("doc");
-            break;
-        case HeadersPath:
-            key = QLatin1String("Headers");
-            defaultValue = QLatin1String("include");
-            break;
-        case LibrariesPath:
-            key = QLatin1String("Libraries");
-            defaultValue = QLatin1String("lib");
-            break;
-        case BinariesPath:
-            key = QLatin1String("Binaries");
-            defaultValue = QLatin1String("bin");
-            break;
-        case PluginsPath:
-            key = QLatin1String("Plugins");
-            defaultValue = QLatin1String("plugins");
-            break;
-        case ImportsPath:
-            key = QLatin1String("Imports");
-            defaultValue = QLatin1String("imports");
-            break;
-        case DataPath:
-            key = QLatin1String("Data");
-            break;
-        case TranslationsPath:
-            key = QLatin1String("Translations");
-            defaultValue = QLatin1String("translations");
-            break;
-        case SettingsPath:
-            key = QLatin1String("Settings");
-            break;
-        case ExamplesPath:
-            key = QLatin1String("Examples");
-            break;
-        case TestsPath:
-            key = QLatin1String("Tests");
-            defaultValue = QLatin1String("tests");
-            break;
-        default:
-            break;
+        if (loc >= 0 && loc < sizeof(qtConfEntries)/sizeof(qtConfEntries[0])) {
+            key = QLatin1String(qtConfEntries[loc].key);
+            defaultValue = QLatin1String(qtConfEntries[loc].value);
         }
+#ifndef Q_OS_WIN // On Windows we use the registry
+        else if (loc == SettingsPath)
+            key = QLatin1String("Settings");
+#endif
 
         if(!key.isNull()) {
             QSettings *config = QLibraryInfoPrivate::configuration();
@@ -391,9 +331,9 @@ QLibraryInfo::location(LibraryLocation loc)
     \value ImportsPath The location of installed QML extensions to import.
     \value DataPath The location of general Qt data.
     \value TranslationsPath The location of translation information for Qt strings.
-    \value SettingsPath The location for Qt settings.
     \value ExamplesPath The location for examples upon install.
     \value TestsPath The location of installed Qt testcases.
+    \value SettingsPath The location for Qt settings. Not applicable on Windows.
 
     \sa location()
 */
@@ -421,9 +361,9 @@ void qt_core_boilerplate()
            "Library path:        %s\n"
            "Include path:        %s\n",
            qt_configure_installation + 12,
-           qt_configure_prefix_path_str + 12,
-           qt_configure_libraries_path_str + 12,
-           qt_configure_headers_path_str + 12);
+           qt_configure_prefix_path_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::PrefixPath] + 12,
+           qt_configure_prefix_path_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::LibrariesPath] + 12,
+           qt_configure_prefix_path_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::HeadersPath] + 12);
 
     QT_PREPEND_NAMESPACE(qDumpCPUFeatures)();
 

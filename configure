@@ -3995,36 +3995,40 @@ if [ ! -z "$QT_HOST_PREFIX" ]; then
 
 #if defined(QT_BOOTSTRAPPED) || defined(QT_BUILD_QMAKE)
 /* Installation Info */
-static const char qt_configure_prefix_path_str       [256 + 12] = "qt_prfxpath=$QT_HOST_PREFIX";
-static const char qt_configure_documentation_path_str[256 + 12] = "qt_docspath=$QT_HOST_PREFIX/doc";
-static const char qt_configure_headers_path_str      [256 + 12] = "qt_hdrspath=$QT_HOST_PREFIX/include";
-static const char qt_configure_libraries_path_str    [256 + 12] = "qt_libspath=$QT_HOST_PREFIX/lib";
-static const char qt_configure_binaries_path_str     [256 + 12] = "qt_binspath=$QT_HOST_PREFIX/bin";
-static const char qt_configure_plugins_path_str      [256 + 12] = "qt_plugpath=$QT_HOST_PREFIX/plugins";
-static const char qt_configure_imports_path_str      [256 + 12] = "qt_impspath=$QT_HOST_PREFIX/IMPORTS";
-static const char qt_configure_data_path_str         [256 + 12] = "qt_datapath=$QT_HOST_PREFIX";
-static const char qt_configure_translations_path_str [256 + 12] = "qt_trnspath=$QT_HOST_PREFIX/translations";
-static const char qt_configure_settings_path_str     [256 + 12] = "qt_stngpath=$QT_INSTALL_SETTINGS";
-static const char qt_configure_examples_path_str     [256 + 12] = "qt_xmplpath=$QT_INSTALL_EXAMPLES";
-static const char qt_configure_tests_path_str        [256 + 12] = "qt_tstspath=$QT_INSTALL_TESTS";
+static const char qt_configure_prefix_path_strs[][256 + 12] = {
+    "qt_prfxpath=$QT_HOST_PREFIX",
+    "qt_docspath=$QT_HOST_PREFIX/doc",
+    "qt_hdrspath=$QT_HOST_PREFIX/include",
+    "qt_libspath=$QT_HOST_PREFIX/lib",
+    "qt_binspath=$QT_HOST_PREFIX/bin",
+    "qt_plugpath=$QT_HOST_PREFIX/plugins",
+    "qt_impspath=$QT_HOST_PREFIX/IMPORTS",
+    "qt_datapath=$QT_HOST_PREFIX",
+    "qt_trnspath=$QT_HOST_PREFIX/translations",
+    "qt_xmplpath=$QT_INSTALL_EXAMPLES",
+    "qt_tstspath=$QT_INSTALL_TESTS",
+};
+static const char qt_configure_settings_path_str[256 + 12] = "qt_stngpath=$QT_INSTALL_SETTINGS";
 #else // QT_BOOTSTRAPPED
 EOF
 fi
 
 cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 /* Installation Info */
-static const char qt_configure_prefix_path_str       [256 + 12] = "qt_prfxpath=$QT_INSTALL_PREFIX";
-static const char qt_configure_documentation_path_str[256 + 12] = "qt_docspath=$QT_INSTALL_DOCS";
-static const char qt_configure_headers_path_str      [256 + 12] = "qt_hdrspath=$QT_INSTALL_HEADERS";
-static const char qt_configure_libraries_path_str    [256 + 12] = "qt_libspath=$QT_INSTALL_LIBS";
-static const char qt_configure_binaries_path_str     [256 + 12] = "qt_binspath=$QT_INSTALL_BINS";
-static const char qt_configure_plugins_path_str      [256 + 12] = "qt_plugpath=$QT_INSTALL_PLUGINS";
-static const char qt_configure_imports_path_str      [256 + 12] = "qt_impspath=$QT_INSTALL_IMPORTS";
-static const char qt_configure_data_path_str         [256 + 12] = "qt_datapath=$QT_INSTALL_DATA";
-static const char qt_configure_translations_path_str [256 + 12] = "qt_trnspath=$QT_INSTALL_TRANSLATIONS";
-static const char qt_configure_settings_path_str     [256 + 12] = "qt_stngpath=$QT_INSTALL_SETTINGS";
-static const char qt_configure_examples_path_str     [256 + 12] = "qt_xmplpath=$QT_INSTALL_EXAMPLES";
-static const char qt_configure_tests_path_str        [256 + 12] = "qt_tstspath=$QT_INSTALL_TESTS";
+static const char qt_configure_prefix_path_strs[][256 + 12] = {
+    "qt_prfxpath=$QT_INSTALL_PREFIX",
+    "qt_docspath=$QT_INSTALL_DOCS",
+    "qt_hdrspath=$QT_INSTALL_HEADERS",
+    "qt_libspath=$QT_INSTALL_LIBS",
+    "qt_binspath=$QT_INSTALL_BINS",
+    "qt_plugpath=$QT_INSTALL_PLUGINS",
+    "qt_impspath=$QT_INSTALL_IMPORTS",
+    "qt_datapath=$QT_INSTALL_DATA",
+    "qt_trnspath=$QT_INSTALL_TRANSLATIONS",
+    "qt_xmplpath=$QT_INSTALL_EXAMPLES",
+    "qt_tstspath=$QT_INSTALL_TESTS",
+};
+static const char qt_configure_settings_path_str[256 + 12] = "qt_stngpath=$QT_INSTALL_SETTINGS";
 EOF
 
 if [ ! -z "$QT_HOST_PREFIX" ]; then
@@ -4035,21 +4039,12 @@ EOF
 fi
 
 cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
+
 /* strlen( "qt_lcnsxxxx" ) == 12 */
 #define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12;
 #define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12;
-#define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12;
-#define QT_CONFIGURE_DOCUMENTATION_PATH qt_configure_documentation_path_str + 12;
-#define QT_CONFIGURE_HEADERS_PATH qt_configure_headers_path_str + 12;
-#define QT_CONFIGURE_LIBRARIES_PATH qt_configure_libraries_path_str + 12;
-#define QT_CONFIGURE_BINARIES_PATH qt_configure_binaries_path_str + 12;
-#define QT_CONFIGURE_PLUGINS_PATH qt_configure_plugins_path_str + 12;
-#define QT_CONFIGURE_IMPORTS_PATH qt_configure_imports_path_str + 12;
-#define QT_CONFIGURE_DATA_PATH qt_configure_data_path_str + 12;
-#define QT_CONFIGURE_TRANSLATIONS_PATH qt_configure_translations_path_str + 12;
+
 #define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;
-#define QT_CONFIGURE_EXAMPLES_PATH qt_configure_examples_path_str + 12;
-#define QT_CONFIGURE_TESTS_PATH qt_configure_tests_path_str + 12;
 EOF
 
 # avoid unecessary rebuilds by copying only if qconfig.cpp has changed
