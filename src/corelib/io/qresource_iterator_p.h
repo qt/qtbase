@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qabstractfileengine.h"
+#include "qabstractfileengine_p.h"
 #include "qdir.h"
 
 QT_BEGIN_NAMESPACE

@@ -26,6 +26,8 @@ SUBDIRS=\
    qtokenautomaton \
    windowsmobile \
 
+testcocoon: SUBDIRS -= headersclean
+
 cross_compile: SUBDIRS -= \
    atwrapper \
    compiler \

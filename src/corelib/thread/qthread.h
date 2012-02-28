@@ -95,6 +95,8 @@ public:
     QAbstractEventDispatcher *eventDispatcher() const;
     void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 
+    bool event(QEvent *event);
+
 public Q_SLOTS:
     void start(Priority = InheritPriority);
     void terminate();

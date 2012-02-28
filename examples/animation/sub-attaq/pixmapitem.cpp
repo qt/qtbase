@@ -48,9 +48,9 @@
 PixmapItem::PixmapItem(const QString &fileName,GraphicsScene::Mode mode, QGraphicsItem * parent) : QGraphicsObject(parent)
 {
     if (mode == GraphicsScene::Big)
-        pix  = ":/big/" + fileName;
+        pix  = QPixmap(QStringLiteral(":/big/") + fileName);
     else
-        pix = ":/small/" + fileName;
+        pix = QPixmap(QStringLiteral(":/small/") + fileName);
 }
 
 PixmapItem::PixmapItem(const QString &fileName, QGraphicsScene *scene) : QGraphicsObject(), pix(fileName)

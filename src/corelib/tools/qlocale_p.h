@@ -228,7 +228,7 @@ public:
     bool numberToCLocale(const QString &num,
     	    	    	  GroupSeparatorMode group_sep_mode,
                           CharBuff *result) const;
-    inline char digitToCLocale(const QChar &c) const;
+    inline char digitToCLocale(QChar c) const;
 
     static void updateSystemPrivate();
 
@@ -282,7 +282,7 @@ public:
 
 };
 
-inline char QLocalePrivate::digitToCLocale(const QChar &in) const
+inline char QLocalePrivate::digitToCLocale(QChar in) const
 {
     const QChar _zero = zero();
     const QChar _group = group();

@@ -4,7 +4,6 @@ TEMPLATE = app
 DEPENDPATH += parser
 INCLUDEPATH += . parser 
 
-# Input
 HEADERS +=  parser/parser.h
 SOURCES += tst_qxmlsimplereader.cpp parser/parser.cpp 
 

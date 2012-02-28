@@ -98,7 +98,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionFailed())
 #endif
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 protected:
     void sslConfigurationImplementation(QSslConfiguration &configuration) const;
     void setSslConfigurationImplementation(const QSslConfiguration &configuration);

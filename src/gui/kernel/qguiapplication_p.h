@@ -89,19 +89,6 @@ public:
     static QPlatformTheme *platformTheme()
     { return platform_theme; }
 
-
-    enum KeyPlatform {
-        KB_Win = 1,
-        KB_Mac = 2,
-        KB_X11 = 4,
-        KB_KDE = 8,
-        KB_Gnome = 16,
-        KB_CDE = 32,
-        KB_All = 0xffff
-    };
-
-    static uint currentKeyPlatform();
-
     static QAbstractEventDispatcher *qt_qpa_core_dispatcher()
     { return QCoreApplication::instance()->d_func()->threadData->eventDispatcher; }
 
@@ -212,6 +199,9 @@ public:
         QWeakPointer<QWindow> window;
     };
     QHash<QWindow *, SynthesizedMouseData> synthesizedMousePoints;
+
+protected:
+    virtual void notifyThemeChanged();
 
 private:
     void init();

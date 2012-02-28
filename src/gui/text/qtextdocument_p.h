@@ -179,7 +179,7 @@ public:
     void insert(int pos, const QString &text, int format);
     void insert(int pos, int strPos, int strLength, int format);
     int insertBlock(int pos, int blockFormat, int charFormat, QTextUndoCommand::Operation = QTextUndoCommand::MoveCursor);
-    int insertBlock(const QChar &blockSeparator, int pos, int blockFormat, int charFormat,
+    int insertBlock(QChar blockSeparator, int pos, int blockFormat, int charFormat,
                      QTextUndoCommand::Operation op = QTextUndoCommand::MoveCursor);
 
     void move(int from, int to, int length, QTextUndoCommand::Operation = QTextUndoCommand::MoveCursor);

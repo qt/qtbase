@@ -496,10 +496,10 @@ public:
 
     // ASCII compatibility
 #ifndef QT_NO_CAST_FROM_ASCII
-    inline QT_ASCII_CAST_WARN_CONSTRUCTOR QString(const char *ch)
+    inline QT_ASCII_CAST_WARN QString(const char *ch)
         : d(fromAscii_helper(ch, ch ? int(strlen(ch)) : -1))
     {}
-    inline QT_ASCII_CAST_WARN_CONSTRUCTOR QString(const QByteArray &a)
+    inline QT_ASCII_CAST_WARN QString(const QByteArray &a)
         : d(fromAscii_helper(a.constData(), qstrnlen(a.constData(), a.size())))
     {}
     inline QT_ASCII_CAST_WARN QString &operator=(const char *ch)
@@ -603,9 +603,6 @@ private:
     Data *d;
     inline QString(Data *dd, int /*dummy*/) : d(dd) {}
 
-#ifndef QT_NO_TEXTCODEC
-    static QTextCodec *codecForCStrings;
-#endif
     static int grow(int);
     static void free(Data *);
     void realloc();
@@ -926,9 +923,6 @@ inline bool operator!=(const QString &s, QString::Null) { return !s.isNull(); }
 #ifndef QT_NO_CAST_FROM_ASCII
 inline bool qStringComparisonHelper(const QString &s1, const char *s2)
 {
-#  ifndef QT_NO_TEXTCODEC
-    if (QString::codecForCStrings) return (s1 == QString::fromAscii(s2, s2 ? int(strlen(s2)) : -1));
-#  endif
     return (s1 == QLatin1String(s2));
 }
 inline bool QString::operator==(const char *s) const
@@ -1215,9 +1209,6 @@ inline bool operator>=(const QStringRef &s1, const QStringRef &s2)
 
 inline bool qStringComparisonHelper(const QStringRef &s1, const char *s2)
 {
-#  ifndef QT_NO_TEXTCODEC
-    if (QString::codecForCStrings) return (s1 == QString::fromAscii(s2, s2 ? int(strlen(s2)) : -1));
-#  endif
     return (s1 == QLatin1String(s2));
 }
 

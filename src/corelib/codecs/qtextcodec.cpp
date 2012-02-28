@@ -1495,35 +1495,7 @@ QString QTextDecoder::toUnicode(const QByteArray &ba)
     files to be loaded. For details of internationalization, see
     \l{Internationalization with Qt}.
 
-    \sa codecForTr(), setCodecForCStrings()
-*/
-
-
-/*!
-    \fn QTextCodec* QTextCodec::codecForCStrings()
-
-    Returns the codec used by QString to convert to and from \c{const
-    char *} and QByteArrays. If this function returns 0 (the default),
-    QString assumes Latin-1.
-
-    \sa setCodecForCStrings()
-*/
-
-/*!
-    \fn void QTextCodec::setCodecForCStrings(QTextCodec *codec)
-    \nonreentrant
-
-    Sets the codec used by QString to convert to and from \c{const
-    char *} and QByteArrays. If the \a codec is 0 (the default),
-    QString assumes Latin-1.
-
-    \warning Some codecs do not preserve the characters in the ASCII
-    range (0x00 to 0x7F). For example, the Japanese Shift-JIS
-    encoding maps the backslash character (0x5A) to the Yen
-    character. To avoid undesirable side-effects, we recommend
-    avoiding such codecs with setCodecsForCString().
-
-    \sa codecForCStrings(), setCodecForTr()
+    \sa codecForTr()
 */
 
 /*!

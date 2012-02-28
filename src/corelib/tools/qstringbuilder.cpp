@@ -105,14 +105,6 @@ QT_BEGIN_NAMESPACE
  */
 void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out)
 {
-#ifndef QT_NO_TEXTCODEC
-    if (QString::codecForCStrings && len) {
-        QString tmp = QString::fromAscii(a, len > 0 ? len : -1);
-        memcpy(out, reinterpret_cast<const char *>(tmp.constData()), sizeof(QChar) * tmp.size());
-        out += tmp.length();
-        return;
-    }
-#endif
     if (len == -1) {
         if (!a)
             return;
@@ -123,26 +115,5 @@ void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out
             *out++ = QLatin1Char(a[i]);
     }
 }
-
-/*! \internal */
-void QAbstractConcatenable::convertToAscii(const QChar* a, int len, char*& out) 
-{
-#ifndef QT_NO_TEXTCODEC
-    if (QString::codecForCStrings) {
-        QByteArray tmp = QString::codecForCStrings->fromUnicode(a, len);
-        memcpy(out, tmp.constData(), tmp.size());
-        out += tmp.length();
-        return;
-    }
-#endif
-    if (len == -1) {
-        while (a->unicode())
-            convertToLatin1(*a++, out);
-    } else {
-        for (int i = 0; i < len; ++i)
-            convertToLatin1(a[i], out);
-    }
-}
-
 
 QT_END_NAMESPACE

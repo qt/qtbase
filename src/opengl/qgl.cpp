@@ -4680,7 +4680,7 @@ QPaintEngine *QGLWidget::paintEngine() const
     return qt_qgl_paint_engine();
 }
 
-typedef GLubyte * (*qt_glGetStringi)(GLenum, GLuint);
+typedef const GLubyte * (QGLF_APIENTRYP qt_glGetStringi)(GLenum, GLuint);
 
 #ifndef GL_NUM_EXTENSIONS
 #define GL_NUM_EXTENSIONS 0x821D

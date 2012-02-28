@@ -8,8 +8,9 @@ include($$SHARED_FOLDER/shared.pri)
 RESOURCES += composition.qrc
 contains(QT_CONFIG, opengl) {
 	DEFINES += QT_OPENGL_SUPPORT
-	QT += opengl widgets
+	QT += opengl
 }
+QT += widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/composition

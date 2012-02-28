@@ -76,20 +76,12 @@
 
 #include "private/qkeymapper_p.h"
 
-#ifdef Q_WS_X11
-#include <private/qt_x11_p.h>
-#endif
-
 #include <qthread.h>
 #include <private/qthread_p.h>
 
 #include <private/qfont_p.h>
 
 #include <stdlib.h>
-
-#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
-#include <link.h>
-#endif
 
 #include "qapplication_p.h"
 #include "private/qevent_p.h"
@@ -114,10 +106,6 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 
 #include "qdatetime.h"
 
-#ifdef Q_WS_MAC
-#include <private/qt_cocoa_helpers_mac_p.h>
-#endif
-
 //#define ALIEN_DEBUG
 
 static void initResources()
@@ -140,6 +128,21 @@ Q_CORE_EXPORT void qt_call_post_routines();
 
 QApplicationPrivate *QApplicationPrivate::self = 0;
 
+static void initSystemPalette()
+{
+    if (!QApplicationPrivate::sys_pal)
+        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
+            QApplicationPrivate::setSystemPalette(*themePalette);
+    if (!QApplicationPrivate::sys_pal && QApplicationPrivate::app_style)
+        QApplicationPrivate::setSystemPalette(QApplicationPrivate::app_style->standardPalette());
+}
+
+static void clearSystemPalette()
+{
+    delete QApplicationPrivate::sys_pal;
+    QApplicationPrivate::sys_pal = 0;
+}
+
 #ifdef Q_OS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
@@ -156,23 +159,10 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
     is_session_restored = false;
 #endif
 
-#if defined(Q_WS_QWS) && !defined(QT_NO_DIRECTPAINTER)
-    directPainters = 0;
-#endif
-
 #ifndef QT_NO_GESTURES
     gestureManager = 0;
     gestureWidget = 0;
 #endif // QT_NO_GESTURES
-
-#if defined(Q_WS_X11) || defined(Q_WS_WIN)
-    move_cursor = 0;
-    copy_cursor = 0;
-    link_cursor = 0;
-#endif
-#if defined(Q_WS_WIN)
-    ignore_cursor = 0;
-#endif
 
     if (!self)
         self = this;
@@ -191,16 +181,14 @@ QApplicationPrivate::~QApplicationPrivate()
 
     \inmodule QtWidgets
 
-    QApplication contains the main event loop, where all events from the window
-    system and other sources are processed and dispatched. It also handles the
-    application's initialization, finalization, and provides session
-    management. In addition, QApplication handles most of the system-wide and
-    application-wide settings.
+    QApplication specializes QGuiApplication with some functionality needed
+    for QWidget-based applications. It handles widget specific initialization,
+    finalization, and provides session management.
 
     For any GUI application using Qt, there is precisely \bold one QApplication
     object, no matter whether the application has 0, 1, 2 or more windows at
-    any given time. For non-GUI Qt applications, use QCoreApplication instead,
-    as it does not depend on the \l QtGui library.
+    any given time. For non-QWidget based Qt applications, use QGuiApplication instead,
+    as it does not depend on the \l QtWidgets library.
 
     The QApplication object is accessible through the instance() function that
     returns a pointer equivalent to the global qApp pointer.
@@ -240,9 +228,6 @@ QApplicationPrivate::~QApplicationPrivate()
 
             \o  It manages the application's mouse cursor handling, see
                 setOverrideCursor()
-
-            \o  On the X window system, it provides functions to flush and sync
-                the communication stream, see flushX() and syncX().
 
             \o  It provides support for sophisticated \l{Session Management}
                 {session management}. This makes it possible for applications
@@ -291,12 +276,7 @@ QApplicationPrivate::~QApplicationPrivate()
             sendPostedEvents(),
             removePostedEvents(),
             hasPendingEvents(),
-            notify(),
-            macEventFilter(),
-            qwsEventFilter(),
-            x11EventFilter(),
-            x11ProcessEvent(),
-            winEventFilter().
+            notify().
 
         \row
         \o  GUI Styles
@@ -306,8 +286,7 @@ QApplicationPrivate::~QApplicationPrivate()
         \row
         \o  Color usage
         \o  colorSpec(),
-            setColorSpec(),
-            qwsSetCustomColors().
+            setColorSpec().
 
         \row
         \o  Text handling
@@ -332,11 +311,6 @@ QApplicationPrivate::~QApplicationPrivate()
         \o  overrideCursor(),
             setOverrideCursor(),
             restoreOverrideCursor().
-
-        \row
-        \o  X Window System synchronization
-        \o  flushX(),
-            syncX().
 
         \row
         \o  Session management
@@ -391,9 +365,6 @@ QApplicationPrivate::~QApplicationPrivate()
 */
 
 void qt_init(QApplicationPrivate *priv, int type
-#ifdef Q_WS_X11
-              , Display *display = 0, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0
-#endif
    );
 void qt_cleanup();
 
@@ -409,6 +380,7 @@ QString QApplicationPrivate::styleSheet;           // default application styles
 QPointer<QWidget> QApplicationPrivate::leaveAfterRelease = 0;
 
 int QApplicationPrivate::app_cspec = QApplication::NormalColor;
+
 QPalette *QApplicationPrivate::sys_pal = 0;        // default system palette
 QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by programmer
 
@@ -560,19 +532,6 @@ void QApplicationPrivate::process_cmdline()
     \note \a argc and \a argv might be changed as Qt removes command line
     arguments that it recognizes.
 
-    Qt debugging options (not available if Qt was compiled without the QT_DEBUG
-    flag defined):
-    \list
-        \o  -nograb, tells Qt that it must never grab the mouse or the
-            keyboard.
-        \o  -dograb (only under X11), running under a debugger can cause an
-            implicit -nograb, use -dograb to override.
-        \o  -sync (only under X11), switches to synchronous mode for
-            debugging.
-    \endlist
-
-    See \l{Debugging Techniques} for a more detailed explanation.
-
     All Qt programs automatically support the following command line options:
     \list
         \o  -style= \e style, sets the application GUI style. Possible values
@@ -598,45 +557,6 @@ void QApplicationPrivate::process_cmdline()
             and will make the application wait until a debugger connects to it.
     \endlist
 
-    The X11 version of Qt supports some traditional X11 command line options:
-    \list
-        \o  -display \e display, sets the X display (default is $DISPLAY).
-        \o  -geometry \e geometry, sets the client geometry of the first window
-            that is shown.
-        \o  -fn or \c -font \e font, defines the application font. The font
-            should be specified using an X logical font description. Note that
-            this option is ignored when Qt is built with fontconfig support enabled.
-        \o  -bg or \c -background \e color, sets the default background color
-            and an application palette (light and dark shades are calculated).
-        \o  -fg or \c -foreground \e color, sets the default foreground color.
-        \o  -btn or \c -button \e color, sets the default button color.
-        \o  -name \e name, sets the application name.
-        \o  -title \e title, sets the application title.
-        \o  -visual \c TrueColor, forces the application to use a TrueColor
-            visual on an 8-bit display.
-        \o  -ncols \e count, limits the number of colors allocated in the color
-            cube on an 8-bit display, if the application is using the
-            QApplication::ManyColor color specification. If \e count is 216
-            then a 6x6x6 color cube is used (i.e. 6 levels of red, 6 of green,
-            and 6 of blue); for other values, a cube approximately proportional
-            to a 2x3x1 cube is used.
-        \o  -cmap, causes the application to install a private color map on an
-            8-bit display.
-        \o  -im, sets the input method server (equivalent to setting the
-            XMODIFIERS environment variable)
-        \o  -inputstyle, defines how the input is inserted into the given
-            widget, e.g., \c onTheSpot makes the input appear directly in the
-            widget, while \c overTheSpot makes the input appear in a box
-            floating over the widget and is not inserted until the editing is
-            done.
-    \endlist
-
-    \section1 X11 Notes
-
-    If QApplication fails to open the X11 display, it will terminate
-    the process. This behavior is consistent with most X11
-    applications.
-
     \sa arguments()
 */
 
@@ -651,25 +571,17 @@ QApplication::QApplication(int &argc, char **argv, int _internal)
 
 /*!
     Constructs an application object with \a argc command line arguments in
-    \a argv. If \a GUIenabled is true, a GUI application is constructed,
-    otherwise a non-GUI (console) application is created.
+    \a argv.
 
     \warning The data referred to by \a argc and \a argv must stay valid for
     the entire lifetime of the QApplication object. In addition, \a argc must
     be greater than zero and \a argv must contain at least one valid character
     string.
 
-    Set \a GUIenabled to false for programs without a graphical user interface
-    that should be able to run without a window system.
-
-    On X11, the window system is initialized if \a GUIenabled is true. If
-    \a GUIenabled is false, the application does not connect to the X server.
-    On Windows and Mac OS, currently the window system is always initialized,
-    regardless of the value of GUIenabled. This may change in future versions
-    of Qt.
-
     The following example shows how to create an application that uses a
     graphical interface when available.
+
+    \obsolete
 
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 0
 */
@@ -692,10 +604,6 @@ QApplication::QApplication(int &argc, char **argv, bool GUIenabled , int _intern
     the entire lifetime of the QApplication object. In addition, \a argc must
     be greater than zero and \a argv must contain at least one valid character
     string.
-
-    With Qt for Embedded Linux, passing QApplication::GuiServer for \a type
-    makes this application the server (equivalent to running with the
-    \c -qws option).
 */
 QApplication::QApplication(int &argc, char **argv, Type type)
     : QGuiApplication(*new QApplicationPrivate(argc, argv, type, 0x040000))
@@ -705,22 +613,10 @@ QApplication::QApplication(int &argc, char **argv, Type type , int _internal)
     : QGuiApplication(*new QApplicationPrivate(argc, argv, type, _internal))
 { Q_D(QApplication); d->construct(); }
 
-#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
-static int qt_matchLibraryName(dl_phdr_info *info, size_t, void *data)
-{
-    const char *name = static_cast<const char *>(data);
-    return strstr(info->dlpi_name, name) != 0;
-}
-#endif
-
 /*!
     \internal
 */
-void QApplicationPrivate::construct(
-#ifdef Q_WS_X11
-                                    Display *dpy, Qt::HANDLE visual, Qt::HANDLE cmap
-#endif
-                                    )
+void QApplicationPrivate::construct()
 {
     initResources();
 
@@ -728,11 +624,7 @@ void QApplicationPrivate::construct(
     process_cmdline();
 
     // Must be called before initialize()
-    qt_init(this, application_type
-#ifdef Q_WS_X11
-            , dpy, visual, cmap
-#endif
-            );
+    qt_init(this, application_type);
     initialize();
     eventDispatcher->startingUp();
 
@@ -758,82 +650,6 @@ void QApplicationPrivate::construct(
     }
 #endif
 }
-
-#if defined(Q_WS_X11)
-// ### a string literal is a cont char*
-// ### using it as a char* is wrong and could lead to segfaults
-// ### if aargv is modified someday
-// ########## make it work with argc == argv == 0
-static int aargc = 1;
-static char *aargv[] = { (char*)"unknown", 0 };
-
-/*!
-    \fn QApplication::QApplication(Display* display, Qt::HANDLE visual, Qt::HANDLE colormap)
-
-    Creates an application, given an already open display \a display. If
-    \a visual and \a colormap are non-zero, the application will use those
-    values as the default Visual and Colormap contexts.
-
-    \warning Qt only supports TrueColor visuals at depths higher than 8
-    bits-per-pixel.
-
-    This function is only available on X11.
-*/
-QApplication::QApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE colormap)
-    : QGuiApplication(*new QApplicationPrivate(aargc, aargv, GuiClient, 0x040000))
-{
-    if (! dpy)
-        qWarning("QApplication: Invalid Display* argument");
-    Q_D(QApplication);
-    d->construct(dpy, visual, colormap);
-}
-
-QApplication::QApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE colormap, int _internal)
-    : QGuiApplication(*new QApplicationPrivate(aargc, aargv, GuiClient, _internal))
-{
-    if (! dpy)
-        qWarning("QApplication: Invalid Display* argument");
-    Q_D(QApplication);
-    d->construct(dpy, visual, colormap);
-    QApplicationPrivate::app_compile_version = _internal;
-}
-
-/*!
-    \fn QApplication::QApplication(Display *display, int &argc, char **argv,
-        Qt::HANDLE visual, Qt::HANDLE colormap)
-
-    Creates an application, given an already open \a display and using \a argc
-    command line arguments in \a argv. If \a visual and \a colormap are
-    non-zero, the application will use those values as the default Visual
-    and Colormap contexts.
-
-    \warning Qt only supports TrueColor visuals at depths higher than 8
-    bits-per-pixel.
-
-    This function is only available on X11.
-*/
-QApplication::QApplication(Display *dpy, int &argc, char **argv,
-                           Qt::HANDLE visual, Qt::HANDLE colormap)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, 0x040000))
-{
-    if (! dpy)
-        qWarning("QApplication: Invalid Display* argument");
-    Q_D(QApplication);
-    d->construct(dpy, visual, colormap);
-}
-
-QApplication::QApplication(Display *dpy, int &argc, char **argv,
-                           Qt::HANDLE visual, Qt::HANDLE colormap, int _internal)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
-{
-    if (! dpy)
-        qWarning("QApplication: Invalid Display* argument");
-    Q_D(QApplication);
-    d->construct(dpy, visual, colormap);
-    QApplicationPrivate::app_compile_version = _internal;
-}
-
-#endif // Q_WS_X11
 
 #ifndef QT_NO_STATEMACHINE
 void qRegisterGuiStateMachine();
@@ -981,19 +797,9 @@ QApplication::~QApplication()
     delete qt_desktopWidget;
     qt_desktopWidget = 0;
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN)
-    delete d->move_cursor; d->move_cursor = 0;
-    delete d->copy_cursor; d->copy_cursor = 0;
-    delete d->link_cursor; d->link_cursor = 0;
-#endif
-#if defined(Q_WS_WIN)
-    delete d->ignore_cursor; d->ignore_cursor = 0;
-#endif
-
     delete QApplicationPrivate::app_pal;
     QApplicationPrivate::app_pal = 0;
-    delete QApplicationPrivate::sys_pal;
-    QApplicationPrivate::sys_pal = 0;
+    clearSystemPalette();
     delete QApplicationPrivate::set_pal;
     QApplicationPrivate::set_pal = 0;
     app_palettes()->clear();
@@ -1293,11 +1099,8 @@ QStyle *QApplication::style()
     // take ownership of the style
     QApplicationPrivate::app_style->setParent(qApp);
 
-    if (!QApplicationPrivate::sys_pal)
-        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
-            QApplicationPrivate::setSystemPalette(*themePalette);
-    if (!QApplicationPrivate::sys_pal)
-        QApplicationPrivate::setSystemPalette(QApplicationPrivate::app_style->standardPalette());
+    initSystemPalette();
+
     if (QApplicationPrivate::set_pal) // repolish set palette with the new style
         QApplication::setPalette(*QApplicationPrivate::set_pal);
 
@@ -1731,14 +1534,6 @@ QFont QApplication::font(const QWidget *widget)
 {
     FontHash *hash = app_fonts();
 
-#ifdef Q_WS_MAC
-    // short circuit for small and mini controls
-    if (widget->testAttribute(Qt::WA_MacSmallSize)) {
-        return hash->value("QSmallFont");
-    } else if (widget->testAttribute(Qt::WA_MacMiniSize)) {
-        return hash->value("QMiniFont");
-    }
-#endif
     if (widget && hash  && hash->size()) {
         QHash<QByteArray, QFont>::ConstIterator it =
                 hash->constFind(widget->metaObject()->className());
@@ -1877,11 +1672,6 @@ void QApplication::setWindowIcon(const QIcon &icon)
         QApplicationPrivate::app_icon = new QIcon();
     *QApplicationPrivate::app_icon = icon;
     if (QApplicationPrivate::is_app_running && !QApplicationPrivate::is_app_closing) {
-#ifdef Q_WS_MAC
-        void qt_mac_set_app_icon(const QPixmap &); //qapplication_mac.cpp
-        QSize size = QApplicationPrivate::app_icon->actualSize(QSize(128, 128));
-        qt_mac_set_app_icon(QApplicationPrivate::app_icon->pixmap(size));
-#endif
         QEvent e(QEvent::ApplicationWindowIconChange);
         QWidgetList all = QApplication::allWidgets();
         for (QWidgetList::ConstIterator it = all.constBegin(); it != all.constEnd(); ++it) {
@@ -2094,13 +1884,7 @@ void QApplication::closeAllWindows()
 void QApplication::aboutQt()
 {
 #ifndef QT_NO_MESSAGEBOX
-    QMessageBox::aboutQt(
-#ifdef Q_WS_MAC
-            0
-#else
-            activeWindow()
-#endif // Q_WS_MAC
-            );
+    QMessageBox::aboutQt(activeWindow());
 #endif // QT_NO_MESSAGEBOX
 }
 
@@ -2184,9 +1968,6 @@ bool QApplication::event(QEvent *e)
     }
 
     if(e->type() == QEvent::LanguageChange) {
-#ifdef Q_WS_MAC
-        qt_mac_post_retranslateAppMenu();
-#endif
         QWidgetList list = topLevelWidgets();
         for (int i = 0; i < list.size(); ++i) {
             QWidget *w = list.at(i);
@@ -2198,13 +1979,14 @@ bool QApplication::event(QEvent *e)
     return QGuiApplication::event(e);
 }
 
-#if !defined(Q_WS_X11)
-
-// The doc and X implementation of this function is in qapplication_x11.cpp
-
-void QApplication::syncX()        {}                // do nothing
-
-#endif
+/*!
+    Was used to synchronize with the X server in 4.x, here for source compatibility.
+    \internal
+    \obsolete
+*/
+void QApplication::syncX()
+{
+}
 
 void QApplicationPrivate::notifyLayoutDirectionChange()
 {
@@ -2297,13 +2079,6 @@ void QApplication::setActiveWindow(QWidget* act)
         sendSpontaneousEvent(w, &windowActivate);
         sendSpontaneousEvent(w, &activationChange);
     }
-
-#ifdef Q_WS_MAC
-    // In case the user clicked on a child window, we need to
-    // reestablish the stacking order of the window so
-    // it pops in front of other child windows in cocoa:
-    qt_cocoaStackChildWindowOnTopOfOtherChildren(window);
-#endif
 
     for(int i = 0; i < toBeDeactivated.size(); ++i) {
         QWidget *w = toBeDeactivated.at(i);
@@ -2455,10 +2230,6 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
     for (int i = 0; i < leaveList.size(); ++i) {
         w = leaveList.at(i);
         if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC)
-            if (leaveAfterRelease == w)
-                leaveAfterRelease = 0;
-#endif
             QApplication::sendEvent(w, &leaveEvent);
             if (w->testAttribute(Qt::WA_Hover) &&
                 (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
@@ -2511,9 +2282,6 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
         if (!parentOfLeavingCursor->window()->graphicsProxyWidget())
 #endif
         {
-#if defined(Q_WS_X11)
-            qt_x11_enforce_cursor(parentOfLeavingCursor,true);
-#endif
             if (enter == QApplication::desktop()) {
                 qt_qpa_set_cursor(enter, true);
             } else {
@@ -2535,13 +2303,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
         } else
 #endif
         {
-#if defined(Q_WS_WIN)
-            qt_win_set_cursor(cursorWidget, true);
-#elif defined(Q_WS_X11)
-            qt_x11_enforce_cursor(cursorWidget, true);
-#else
             qt_qpa_set_cursor(cursorWidget, true);
-#endif
         }
     }
 #endif
@@ -2575,12 +2337,6 @@ bool QApplicationPrivate::isBlockedByModal(QWidget *widget)
                     return false;
                 w = w->parentWidget();
             }
-#ifdef Q_WS_WIN
-            if ((widget->testAttribute(Qt::WA_WState_Created) || widget->data->winid)
-                && (modalWidget->testAttribute(Qt::WA_WState_Created) || modalWidget->data->winid)
-                && IsChild(modalWidget->data->winid, widget->data->winid))
-                return false;
-#endif
         }
 
         Qt::WindowModality windowModality = modalWidget->windowModality();
@@ -2707,12 +2463,6 @@ bool QApplicationPrivate::tryModalHelper(QWidget *widget, QWidget **rettop)
     // the active popup widget always gets the input event
     if (QApplication::activePopupWidget())
         return true;
-
-#if defined(Q_WS_MAC)
-    top = QApplicationPrivate::tryModalHelper_sys(top);
-    if (rettop)
-        *rettop = top;
-#endif
 
     return !isBlockedByModal(widget->window());
 }
@@ -3607,8 +3357,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             }
 
             while (w) {
-                QWheelEvent we(relpos, wheel->globalPos(), wheel->delta(), wheel->buttons(),
-                               wheel->modifiers(), wheel->orientation());
+                QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
+                               wheel->modifiers());
                 we.spont = wheel->spontaneous();
                 res = d->notify_helper(w, w == receiver ? wheel : &we);
                 eventAccepted = ((w == receiver) ? wheel : &we)->isAccepted();
@@ -3726,16 +3476,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     case QEvent::DragEnter: {
             QWidget* w = static_cast<QWidget *>(receiver);
             QDragEnterEvent *dragEvent = static_cast<QDragEnterEvent *>(e);
-#ifdef Q_WS_MAC
-            // HIView has a slight difference in how it delivers events to children and parents
-            // It will not give a leave to a child's parent when it enters a child.
-            QWidget *currentTarget = QDragManager::self()->currentTarget();
-            if (currentTarget) {
-                // Assume currentTarget did not get a leave
-                QDragLeaveEvent event;
-                QApplication::sendEvent(currentTarget, &event);
-            }
-#endif
 #ifndef QT_NO_GRAPHICSVIEW
             // QGraphicsProxyWidget handles its own propagation,
             // and we must not change QDragManagers currentTarget.
@@ -3774,20 +3514,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 w = qobject_cast<QWidget *>(QDragManager::self()->currentTarget());
 
             if (!w) {
-#ifdef Q_WS_MAC
-                // HIView has a slight difference in how it delivers events to children and parents
-                // It will not give an enter to a child's parent when it leaves the child.
-                if (e->type() == QEvent::DragLeave)
-                    break;
-                // Assume that w did not get an enter.
-                QDropEvent *dropEvent = static_cast<QDropEvent *>(e);
-                QDragEnterEvent dragEnterEvent(dropEvent->pos(), dropEvent->possibleActions(),
-                                               dropEvent->mimeData(), dropEvent->mouseButtons(),
-                                               dropEvent->keyboardModifiers());
-                QApplication::sendEvent(receiver, &dragEnterEvent);
-                w = QDragManager::self()->currentTarget();
-                if (!w)
-#endif
                     break;
             }
             if (e->type() == QEvent::DragMove || e->type() == QEvent::Drop) {
@@ -3951,24 +3677,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
     }
 #endif // QT_NO_GESTURES
-#ifdef Q_WS_MAC
-    case QEvent::Enter:
-        if (receiver->isWidgetType()) {
-            QWidget *w = static_cast<QWidget *>(receiver);
-            if (w->testAttribute(Qt::WA_AcceptTouchEvents))
-                qt_widget_private(w)->registerTouchWindow(true);
-        }
-        res = d->notify_helper(receiver, e);
-    break;
-    case QEvent::Leave:
-        if (receiver->isWidgetType()) {
-            QWidget *w = static_cast<QWidget *>(receiver);
-            if (w->testAttribute(Qt::WA_AcceptTouchEvents))
-                qt_widget_private(w)->registerTouchWindow(false);
-        }
-        res = d->notify_helper(receiver, e);
-    break;
-#endif
     default:
         res = d->notify_helper(receiver, e);
         break;
@@ -4303,168 +4011,6 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 
     \sa isPhase2()
 */
-
-/*****************************************************************************
-  Stubbed session management support
- *****************************************************************************/
-#ifndef QT_NO_SESSIONMANAGER
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
-
-#if defined(Q_OS_WINCE)
-HRESULT qt_CoCreateGuid(GUID* guid)
-{
-    // We will use the following information to create the GUID
-    // 1. absolute path to application
-    wchar_t tempFilename[MAX_PATH];
-    if (!GetModuleFileName(0, tempFilename, MAX_PATH))
-        return S_FALSE;
-    unsigned int hash = qHash(QString::fromWCharArray(tempFilename));
-    guid->Data1 = hash;
-    // 2. creation time of file
-    QFileInfo info(QString::fromWCharArray(tempFilename));
-    guid->Data2 = qHash(info.created().toTime_t());
-    // 3. current system time
-    guid->Data3 = qHash(QDateTime::currentDateTime().toTime_t());
-    return S_OK;
-}
-#if !defined(OLE32_MCOMGUID) || defined(QT_WINCE_FORCE_CREATE_GUID)
-#define CoCreateGuid qt_CoCreateGuid
-#endif
-
-#endif
-
-class QSessionManagerPrivate : public QObjectPrivate
-{
-public:
-    QStringList restartCommand;
-    QStringList discardCommand;
-    QString sessionId;
-    QString sessionKey;
-    QSessionManager::RestartHint restartHint;
-};
-
-QSessionManager* qt_session_manager_self = 0;
-QSessionManager::QSessionManager(QApplication * app, QString &id, QString &key)
-    : QObject(*new QSessionManagerPrivate, app)
-{
-    Q_D(QSessionManager);
-    setObjectName(QLatin1String("qt_sessionmanager"));
-    qt_session_manager_self = this;
-#if defined(Q_WS_WIN)
-    wchar_t guidstr[40];
-    GUID guid;
-    CoCreateGuid(&guid);
-    StringFromGUID2(guid, guidstr, 40);
-    id = QString::fromWCharArray(guidstr);
-    CoCreateGuid(&guid);
-    StringFromGUID2(guid, guidstr, 40);
-    key = QString::fromWCharArray(guidstr);
-#endif
-    d->sessionId = id;
-    d->sessionKey = key;
-    d->restartHint = RestartIfRunning;
-}
-
-QSessionManager::~QSessionManager()
-{
-    qt_session_manager_self = 0;
-}
-
-QString QSessionManager::sessionId() const
-{
-    Q_D(const QSessionManager);
-    return d->sessionId;
-}
-
-QString QSessionManager::sessionKey() const
-{
-    Q_D(const QSessionManager);
-    return d->sessionKey;
-}
-
-
-#if defined(Q_WS_X11) || defined(Q_WS_MAC)
-void* QSessionManager::handle() const
-{
-    return 0;
-}
-#endif
-
-#if !defined(Q_WS_WIN)
-bool QSessionManager::allowsInteraction()
-{
-    return true;
-}
-
-bool QSessionManager::allowsErrorInteraction()
-{
-    return true;
-}
-void QSessionManager::release()
-{
-}
-
-void QSessionManager::cancel()
-{
-}
-#endif
-
-
-void QSessionManager::setRestartHint(QSessionManager::RestartHint hint)
-{
-    Q_D(QSessionManager);
-    d->restartHint = hint;
-}
-
-QSessionManager::RestartHint QSessionManager::restartHint() const
-{
-    Q_D(const QSessionManager);
-    return d->restartHint;
-}
-
-void QSessionManager::setRestartCommand(const QStringList& command)
-{
-    Q_D(QSessionManager);
-    d->restartCommand = command;
-}
-
-QStringList QSessionManager::restartCommand() const
-{
-    Q_D(const QSessionManager);
-    return d->restartCommand;
-}
-
-void QSessionManager::setDiscardCommand(const QStringList& command)
-{
-    Q_D(QSessionManager);
-    d->discardCommand = command;
-}
-
-QStringList QSessionManager::discardCommand() const
-{
-    Q_D(const QSessionManager);
-    return d->discardCommand;
-}
-
-void QSessionManager::setManagerProperty(const QString&, const QString&)
-{
-}
-
-void QSessionManager::setManagerProperty(const QString&, const QStringList&)
-{
-}
-
-bool QSessionManager::isPhase2() const
-{
-    return false;
-}
-
-void QSessionManager::requestPhase2()
-{
-}
-
-#endif
-#endif // QT_NO_SESSIONMANAGER
 
 /*!
     \typedef QApplication::ColorMode
@@ -4895,120 +4441,6 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
     return true;
 }
 
-/*! \fn QDecoration &QApplication::qwsDecoration()
-    Return the QWSDecoration used for decorating windows.
-
-    \warning This method is non-portable. It is only available in
-    Qt for Embedded Linux.
-
-    \sa QDecoration
-*/
-
-/*!
-    \fn void QApplication::qwsSetDecoration(QDecoration *decoration)
-
-    Sets the QDecoration derived class to use for decorating the
-    windows used by Qt for Embedded Linux to the \a decoration
-    specified.
-
-    This method is non-portable. It is only available in Qt for Embedded Linux.
-
-    \sa QDecoration
-*/
-
-/*! \fn QDecoration* QApplication::qwsSetDecoration(const QString &decoration)
-    \overload
-
-    Requests a QDecoration object for \a decoration from the
-    QDecorationFactory.
-
-    The string must be one of the QDecorationFactory::keys(). Keys are case
-    insensitive.
-
-    A later call to the QApplication constructor will override the requested
-    style when a "-style" option is passed in as a commandline parameter.
-
-    Returns 0 if an unknown \a decoration is passed, otherwise the QStyle object
-    returned is set as the application's GUI style.
-*/
-
-/*!
-    \fn bool QApplication::qwsEventFilter(QWSEvent *event)
-
-    This virtual function is only implemented under Qt for Embedded Linux.
-
-    If you create an application that inherits QApplication and
-    reimplement this function, you get direct access to all QWS (Q
-    Window System) events that the are received from the QWS master
-    process. The events are passed in the \a event parameter.
-
-    Return true if you want to stop the event from being processed.
-    Return false for normal event dispatching. The default
-    implementation returns false.
-*/
-
-/*! \fn void QApplication::qwsSetCustomColors(QRgb *colorTable, int start, int numColors)
-    Set Qt for Embedded Linux custom color table.
-
-    Qt for Embedded Linux on 8-bpp displays allocates a standard 216 color cube.
-    The remaining 40 colors may be used by setting a custom color
-    table in the QWS master process before any clients connect.
-
-    \a colorTable is an array of up to 40 custom colors. \a start is
-    the starting index (0-39) and \a numColors is the number of colors
-    to be set (1-40).
-
-    This method is non-portable. It is available \e only in
-    Qt for Embedded Linux.
-
-    \note The custom colors will not be used by the default screen
-    driver. To make use of the new colors, implement a custom screen
-    driver, or use QDirectPainter.
-*/
-
-/*! \fn int QApplication::qwsProcessEvent(QWSEvent* event)
-    \internal
-*/
-
-/*! \fn int QApplication::x11ClientMessage(QWidget* w, XEvent* event, bool passive_only)
-    \internal
-*/
-
-/*! \fn int QApplication::x11ProcessEvent(XEvent* event)
-    This function does the core processing of individual X
-    \a{event}s, normally by dispatching Qt events to the right
-    destination.
-
-    It returns 1 if the event was consumed by special handling, 0 if
-    the \a event was consumed by normal handling, and -1 if the \a
-    event was for an unrecognized widget.
-
-    \sa x11EventFilter()
-*/
-
-/*!
-    \fn bool QApplication::x11EventFilter(XEvent *event)
-
-    \warning This virtual function is only implemented under X11.
-
-    If you create an application that inherits QApplication and
-    reimplement this function, you get direct access to all X events
-    that the are received from the X server. The events are passed in
-    the \a event parameter.
-
-    Return true if you want to stop the event from being processed.
-    Return false for normal event dispatching. The default
-    implementation returns false.
-
-    It is only the directly addressed messages that are filtered.
-    You must install an event filter directly on the event
-    dispatcher, which is returned by
-    QAbstractEventDispatcher::instance(), to handle system wide
-    messages.
-
-    \sa x11ProcessEvent()
-*/
-
 /*! \fn void QApplication::winFocus(QWidget *widget, bool gotFocus)
     \internal
     \since 4.1
@@ -5020,11 +4452,6 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
 /*! \fn void QApplication::winMouseButtonUp()
   \internal
  */
-
-/*! \fn void QApplication::syncX()
-  Synchronizes with the X server in the X11 implementation.
-  This normally takes some time. Does nothing on other platforms.
-*/
 
 void QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent)
 {
@@ -5214,6 +4641,13 @@ void QApplicationPrivate::translateTouchCancel(QTouchDevice *device, ulong times
         touchEvent.setTarget(widget);
         QApplication::sendSpontaneousEvent(widget, &touchEvent);
     }
+}
+
+void QApplicationPrivate::notifyThemeChanged()
+{
+    QGuiApplicationPrivate::notifyThemeChanged();
+    clearSystemPalette();
+    initSystemPalette();
 }
 
 #ifndef QT_NO_GESTURES

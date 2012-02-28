@@ -50,6 +50,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <unistd.h> // for unlink()
 #endif
 
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketError)
@@ -1129,7 +1130,7 @@ void tst_QLocalSocket::verifyListenWithDescriptor()
     } else if (abstract) {
         QVERIFY2(server.fullServerName().at(0) == QLatin1Char('@'), "abstract sockets should start with a '@'");
     } else {
-        QVERIFY2(server.fullServerName() == path, "full server path doesn't match patch provided");
+        QCOMPARE(server.fullServerName(), path);
         if (path.contains(QLatin1String("/"))) {
             QVERIFY2(server.serverName() == path.mid(path.lastIndexOf(QLatin1Char('/'))+1), "server name invalid short name");
         } else {
@@ -1153,8 +1154,10 @@ void tst_QLocalSocket::verifyListenWithDescriptor_data()
     QTest::addColumn<bool>("bound");
 
     QTest::newRow("normal") << QDir::tempPath() + QLatin1Literal("/testsocket") << false << true;
+#ifdef Q_OS_LINUX
     QTest::newRow("absrtact") << QString::fromLatin1("abstractsocketname") << true << true;
     QTest::newRow("abstractwithslash") << QString::fromLatin1("abstractsocketwitha/inthename") << true << true;
+#endif
     QTest::newRow("no path") << QString::fromLatin1("/invalid/no path name speficied") << true << false;
 
 #endif

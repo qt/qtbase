@@ -54,6 +54,9 @@ QT_BEGIN_NAMESPACE
 
 class QTDSDriverPlugin : public QSqlDriverPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "tds.json")
+
 public:
     QTDSDriverPlugin();
 
@@ -83,7 +86,6 @@ QStringList QTDSDriverPlugin::keys() const
     return l;
 }
 
-Q_EXPORT_STATIC_PLUGIN(QTDSDriverPlugin)
-Q_EXPORT_PLUGIN2(qsqltds, QTDSDriverPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

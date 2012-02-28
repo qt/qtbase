@@ -58,7 +58,6 @@
 
 #include <QtCore/QXmlStreamReader>
 #include <QtCore/QFileInfo>
-#include <QtCore/QRegExp>
 #include <QtCore/QTextStream>
 #include <QtCore/QDateTime>
 

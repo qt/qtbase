@@ -1406,8 +1406,7 @@ void tst_QSqlRelationalTableModel::whiteSpaceInIdentifiers()
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("Washington"));
     QCOMPARE(model.data(model.index(0, 2)).toInt(), 7);
 
-    //TODO: For some reson setting a record using manual submit fails
-    //model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit);
 
     QSqlRecord recNew;
     QSqlField f1New("id", QVariant::Int);

@@ -42,13 +42,15 @@
 #include <QtTest/QtTest>
 #include <qplatformdefs.h>
 
-#include <QAbstractFileEngine>
-#include <QFSFileEngine>
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+
+#include <private/qabstractfileengine_p.h>
+#include <private/qfsfileengine_p.h>
+
 #if !defined(Q_OS_WINCE)
 #include <QHostInfo>
 #endif
@@ -70,7 +72,6 @@
 # include <sys/statfs.h>
 #elif defined(Q_OS_WINCE)
 # include <qplatformdefs.h>
-# include <private/qfsfileengine_p.h>
 #endif
 
 #include <stdio.h>
@@ -1943,6 +1944,7 @@ void tst_QFile::longFileName()
     QVERIFY(QFile::remove(newName));
 }
 
+#ifdef QT_BUILD_INTERNAL
 class MyEngine : public QAbstractFileEngine
 {
 public:
@@ -1998,6 +2000,7 @@ public:
         return new MyEngine(2);
     }
 };
+#endif
 
 void tst_QFile::fileEngineHandler()
 {
@@ -2006,6 +2009,7 @@ void tst_QFile::fileEngineHandler()
     QFile file("ole.bull");
     QCOMPARE(file.size(), qint64(0));
 
+#ifdef QT_BUILD_INTERNAL
     // Instantiating our handler will enable the new engine.
     MyHandler handler;
     file.setFileName("ole.bull");
@@ -2015,9 +2019,10 @@ void tst_QFile::fileEngineHandler()
     MyHandler2 handler2;
     file.setFileName("ole.bull");
     QCOMPARE(file.size(), qint64(125));
-
+#endif
 }
 
+#ifdef QT_BUILD_INTERNAL
 class MyRecursiveHandler : public QAbstractFileEngineHandler
 {
 public:
@@ -2032,13 +2037,18 @@ public:
         return 0;
     }
 };
+#endif
 
 void tst_QFile::useQFileInAFileHandler()
 {
+#ifdef QT_BUILD_INTERNAL
     // This test should not dead-lock
     MyRecursiveHandler handler;
     QFile file(":!tst_qfile.cpp");
     QVERIFY(file.exists());
+#else
+    QSKIP("This test requires -developer-build.");
+#endif
 }
 
 void tst_QFile::getCharFF()

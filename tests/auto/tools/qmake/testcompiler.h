@@ -55,6 +55,10 @@ public:
     virtual ~TestCompiler();
 
     void setBaseCommands( QString makeCmd, QString qmakeCmd );
+
+    void resetArguments();
+    void setArguments( QString makeArgs, QString qmakeArgs );
+
     void resetEnvironment();
     void addToEnvironment( QString varAssignment );
 
@@ -65,7 +69,7 @@ public:
     // executes a qmake on proName in the specified workDir, output goes to buildDir or workDir if it's null
     bool qmake( const QString &workDir, const QString &proName, const QString &buildDir = QString() );
     // executes a make in the specified workPath, with an optional target (eg. install)
-    bool make( const QString &workPath, const QString &target = QString() );
+    bool make( const QString &workPath, const QString &target = QString(), bool expectFail = false );
     // checks if the executable exists in destDir
     bool exists( const QString &destDir, const QString &exeName, BuildType buildType, const QString &version );
     // removes the makefile
@@ -76,13 +80,13 @@ public:
     void clearCommandOutput();
 
 private:
-    bool runCommand( QString cmdLine );
+    bool runCommand( QString cmdLine, bool expectFail = false );
+    bool errorOut();
 
-    QString makeCmd_;
-    QString qmakeCmd_;
+    QString makeCmd_, makeArgs_;
+    QString qmakeCmd_, qmakeArgs_;
     QStringList environment_;
 
-    // need to make this available somewhere
     QStringList testOutput_;
 };
 

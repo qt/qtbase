@@ -67,7 +67,7 @@
 #include <private/qnetworkreply_p.h>
 #include <QtNetwork/QNetworkProxy>
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #include <QtNetwork/QSslConfiguration>
 #endif
 
@@ -113,7 +113,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void replyDownloadProgressSlot(qint64,qint64))
     Q_PRIVATE_SLOT(d_func(), void httpAuthenticationRequired(const QHttpNetworkRequest &, QAuthenticator *))
     Q_PRIVATE_SLOT(d_func(), void httpError(QNetworkReply::NetworkError, const QString &))
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     Q_PRIVATE_SLOT(d_func(), void replySslErrors(const QList<QSslError> &, bool *, QList<QSslError> *))
     Q_PRIVATE_SLOT(d_func(), void replySslConfigurationChanged(const QSslConfiguration&))
 #endif
@@ -125,7 +125,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void emitReplyUploadProgress(qint64, qint64))
 
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 protected:
     void ignoreSslErrors();
     void ignoreSslErrorsImplementation(const QList<QSslError> &errors);
@@ -256,7 +256,7 @@ public:
     QSharedPointer<QAtomicInt> pendingDownloadProgressEmissions;
 
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     QSslConfiguration sslConfiguration;
     bool pendingIgnoreAllSslErrors;
     QList<QSslError> pendingIgnoreSslErrorsList;
@@ -281,7 +281,7 @@ public:
     void replyDownloadProgressSlot(qint64,qint64);
     void httpAuthenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *auth);
     void httpError(QNetworkReply::NetworkError error, const QString &errorString);
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void replySslErrors(const QList<QSslError> &, bool *, QList<QSslError> *);
     void replySslConfigurationChanged(const QSslConfiguration&);
 #endif

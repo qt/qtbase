@@ -100,6 +100,7 @@ public:
         , m_threadChecks(false)
         , m_textLayoutThread(0)
  #endif
+        , m_keyboardScheme(0)
     {
         init(txt);
     }
@@ -313,7 +314,7 @@ public:
     }
 
     QChar passwordCharacter() const { return m_passwordCharacter; }
-    void setPasswordCharacter(const QChar &character) { m_passwordCharacter = character; updateDisplayText(); }
+    void setPasswordCharacter(QChar character) { m_passwordCharacter = character; updateDisplayText(); }
 
     Qt::LayoutDirection layoutDirection() const {
         if (m_layoutDirection == Qt::LayoutDirectionAuto) {
@@ -527,6 +528,8 @@ private Q_SLOTS:
     void _q_clipboardChanged();
     void _q_deleteSelected();
 
+private:
+    int m_keyboardScheme;
 };
 
 QT_END_NAMESPACE

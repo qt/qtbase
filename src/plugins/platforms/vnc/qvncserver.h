@@ -262,7 +262,7 @@ public:
     int refreshRate;
     QVNCServer *vncServer;
 
-#if !defined(QT_NO_QWS_MULTIPROCESS) && !defined(QT_NO_SHAREDMEMORY)
+#if !defined(QT_NO_SHAREDMEMORY)
     QSharedMemory shm;
 #endif
 

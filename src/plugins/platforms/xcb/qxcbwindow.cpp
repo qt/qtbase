@@ -77,6 +77,7 @@
 #define xcb_size_hints_set_win_gravity xcb_icccm_size_hints_set_win_gravity
 #define xcb_wm_hints_set_iconic xcb_icccm_wm_hints_set_iconic
 #define xcb_wm_hints_set_normal xcb_icccm_wm_hints_set_normal
+#define xcb_wm_hints_set_input xcb_icccm_wm_hints_set_input
 #define xcb_wm_hints_t xcb_icccm_wm_hints_t
 #define XCB_WM_STATE_ICONIC XCB_ICCCM_WM_STATE_ICONIC
 #define XCB_WM_STATE_WITHDRAWN XCB_ICCCM_WM_STATE_WITHDRAWN
@@ -322,6 +323,8 @@ void QXcbWindow::create()
     memset(&hints, 0, sizeof(hints));
     xcb_wm_hints_set_normal(&hints);
 
+    xcb_wm_hints_set_input(&hints, !(window()->windowFlags() & Qt::WindowDoesNotAcceptFocus));
+
     xcb_set_wm_hints(xcb_connection(), m_window, &hints);
 
     xcb_window_t leader = m_screen->clientLeader();
@@ -508,6 +511,8 @@ void QXcbWindow::show()
             xcb_wm_hints_set_iconic(&hints);
         else
             xcb_wm_hints_set_normal(&hints);
+
+        xcb_wm_hints_set_input(&hints, !(window()->windowFlags() & Qt::WindowDoesNotAcceptFocus));
 
         xcb_set_wm_hints(xcb_connection(), m_window, &hints);
 
@@ -730,6 +735,7 @@ Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
     setMotifWindowFlags(flags);
 
     setTransparentForMouseEvents(flags & Qt::WindowTransparentForInput);
+    updateDoesNotAcceptFocus(flags & Qt::WindowDoesNotAcceptFocus);
 
     return flags;
 }
@@ -1062,6 +1068,24 @@ void QXcbWindow::setTransparentForMouseEvents(bool transparent)
     m_transparent = transparent;
 }
 
+void QXcbWindow::updateDoesNotAcceptFocus(bool doesNotAcceptFocus)
+{
+    xcb_get_property_cookie_t cookie = xcb_get_wm_hints(xcb_connection(), m_window);
+
+    xcb_generic_error_t *error;
+
+    xcb_wm_hints_t hints;
+    xcb_get_wm_hints_reply(xcb_connection(), cookie, &hints, &error);
+
+    if (error) {
+        connection()->handleXcbError(error);
+        free(error);
+        return;
+    }
+
+    xcb_wm_hints_set_input(&hints, !doesNotAcceptFocus);
+    xcb_set_wm_hints(xcb_connection(), m_window, &hints);
+}
 
 WId QXcbWindow::winId() const
 {
@@ -1179,7 +1203,7 @@ QXcbEGLSurface *QXcbWindow::eglSurface() const
 {
     if (!m_eglSurface) {
         EGLDisplay display = connection()->egl_display();
-        EGLConfig config = q_configFromGLFormat(display, window()->format(), true);
+        EGLConfig config = q_configFromGLFormat(display, window()->requestedFormat(), true);
         EGLSurface surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)m_window, 0);
 
         m_eglSurface = new QXcbEGLSurface(display, surface);

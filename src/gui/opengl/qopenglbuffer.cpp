@@ -49,16 +49,16 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QOpenGLBuffer
-    \brief The QOpenGLBuffer class provides functions for creating and managing GL buffer objects.
+    \brief The QOpenGLBuffer class provides functions for creating and managing OpenGL buffer objects.
     \since 5.0
     \ingroup painting-3D
 
-    Buffer objects are created in the GL server so that the
+    Buffer objects are created in the OpenGL server so that the
     client application can avoid uploading vertices, indices,
     texture image data, etc every time they are needed.
 
     QOpenGLBuffer objects can be copied around as a reference to the
-    underlying GL buffer object:
+    underlying OpenGL buffer object:
 
     \code
     QOpenGLBuffer buffer1(QOpenGLBuffer::IndexBuffer);
@@ -74,16 +74,16 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \enum QOpenGLBuffer::Type
-    This enum defines the type of GL buffer object to create with QOpenGLBuffer.
+    This enum defines the type of OpenGL buffer object to create with QOpenGLBuffer.
 
     \value VertexBuffer Vertex buffer object for use when specifying
            vertex arrays.
     \value IndexBuffer Index buffer object for use with \c{glDrawElements()}.
     \value PixelPackBuffer Pixel pack buffer object for reading pixel
-           data from the GL server (for example, with \c{glReadPixels()}).
+           data from the OpenGL server (for example, with \c{glReadPixels()}).
            Not supported under OpenGL/ES.
     \value PixelUnpackBuffer Pixel unpack buffer object for writing pixel
-           data to the GL server (for example, with \c{glTexImage2D()}).
+           data to the OpenGL server (for example, with \c{glTexImage2D()}).
            Not supported under OpenGL/ES.
 */
 
@@ -95,26 +95,26 @@ QT_BEGIN_NAMESPACE
            for drawing operations.  Under OpenGL/ES 1.1 this is identical
            to StaticDraw.
     \value StreamRead The data will be set once and used a few times
-           for reading data back from the GL server.  Not supported
+           for reading data back from the OpenGL server.  Not supported
            under OpenGL/ES.
     \value StreamCopy The data will be set once and used a few times
-           for reading data back from the GL server for use in further
+           for reading data back from the OpenGL server for use in further
            drawing operations.  Not supported under OpenGL/ES.
     \value StaticDraw The data will be set once and used many times
            for drawing operations.
     \value StaticRead The data will be set once and used many times
-           for reading data back from the GL server.  Not supported
+           for reading data back from the OpenGL server.  Not supported
            under OpenGL/ES.
     \value StaticCopy The data will be set once and used many times
-           for reading data back from the GL server for use in further
+           for reading data back from the OpenGL server for use in further
            drawing operations.  Not supported under OpenGL/ES.
     \value DynamicDraw The data will be modified repeatedly and used
            many times for drawing operations.
     \value DynamicRead The data will be modified repeatedly and used
-           many times for reading data back from the GL server.
+           many times for reading data back from the OpenGL server.
            Not supported under OpenGL/ES.
     \value DynamicCopy The data will be modified repeatedly and used
-           many times for reading data back from the GL server for
+           many times for reading data back from the OpenGL server for
            use in further drawing operations.  Not supported under OpenGL/ES.
 */
 
@@ -152,7 +152,7 @@ public:
     Constructs a new buffer object of type QOpenGLBuffer::VertexBuffer.
 
     Note: this constructor just creates the QOpenGLBuffer instance.  The actual
-    buffer object in the GL server is not created until create() is called.
+    buffer object in the OpenGL server is not created until create() is called.
 
     \sa create()
 */
@@ -165,7 +165,7 @@ QOpenGLBuffer::QOpenGLBuffer()
     Constructs a new buffer object of \a type.
 
     Note: this constructor just creates the QOpenGLBuffer instance.  The actual
-    buffer object in the GL server is not created until create() is called.
+    buffer object in the OpenGL server is not created until create() is called.
 
     \sa create()
 */
@@ -188,7 +188,7 @@ QOpenGLBuffer::QOpenGLBuffer(const QOpenGLBuffer &other)
 
 /*!
     Destroys this buffer object, including the storage being
-    used in the GL server.
+    used in the OpenGL server.
 */
 QOpenGLBuffer::~QOpenGLBuffer()
 {
@@ -256,14 +256,14 @@ namespace {
 }
 
 /*!
-    Creates the buffer object in the GL server.  Returns true if
+    Creates the buffer object in the OpenGL server.  Returns true if
     the object was created; false otherwise.
 
     This function must be called with a current QOpenGLContext.
     The buffer will be bound to and can only be used in
     that context (or any other context that is shared with it).
 
-    This function will return false if the GL implementation
+    This function will return false if the OpenGL implementation
     does not support buffers, or there is no current QOpenGLContext.
 
     \sa isCreated(), allocate(), write(), destroy()
@@ -303,7 +303,7 @@ bool QOpenGLBuffer::isCreated() const
 
 /*!
     Destroys this buffer object, including the storage being
-    used in the GL server.  All references to the buffer will
+    used in the OpenGL server.  All references to the buffer will
     become invalid.
 */
 void QOpenGLBuffer::destroy()
@@ -398,8 +398,8 @@ void QOpenGLBuffer::allocate(const void *data, int count)
 
 /*!
     Binds the buffer associated with this object to the current
-    GL context.  Returns false if binding was not possible, usually because
-    type() is not supported on this GL implementation.
+    OpenGL context.  Returns false if binding was not possible, usually because
+    type() is not supported on this OpenGL implementation.
 
     The buffer must be bound to the same QOpenGLContext current when create()
     was called, or to another QOpenGLContext that is sharing with it.
@@ -431,7 +431,7 @@ bool QOpenGLBuffer::bind()
 
 /*!
     Releases the buffer associated with this object from the
-    current GL context.
+    current OpenGL context.
 
     This function must be called with the same QOpenGLContext current
     as when bind() was called on the buffer.
@@ -470,7 +470,7 @@ void QOpenGLBuffer::release(QOpenGLBuffer::Type type)
 }
 
 /*!
-    Returns the GL identifier associated with this buffer; zero if
+    Returns the OpenGL identifier associated with this buffer; zero if
     the buffer has not been created.
 
     \sa isCreated()

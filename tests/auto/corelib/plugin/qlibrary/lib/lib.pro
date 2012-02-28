@@ -13,3 +13,11 @@ win32-borland: DEFINES += WIN32_BORLAND
 # This project is testdata for tst_qlibrary
 target.path = $$[QT_INSTALL_TESTS]/tst_qlibrary
 INSTALLS += target
+
+win32 {
+    CONFIG(debug, debug|release) {
+        DESTDIR = ../debug/
+    } else {
+        DESTDIR = ../release/
+    }
+}

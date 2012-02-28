@@ -48,7 +48,7 @@
 
 #ifndef QT_NO_HTTP
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #    include <QtNetwork/qsslkey.h>
 #    include <QtNetwork/qsslcipher.h>
 #    include <QtNetwork/qsslconfiguration.h>
@@ -77,7 +77,7 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     , proxyAuthMethod(QAuthenticatorPrivate::None)
     , authenticationCredentialsSent(false)
     , proxyCredentialsSent(false)
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     , ignoreAllSslErrors(false)
 #endif
     , pipeliningSupported(PipeliningSupportUnknown)
@@ -90,7 +90,7 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
 
 void QHttpNetworkConnectionChannel::init()
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     if (connection->d_func()->encrypt)
         socket = new QSslSocket;
     else
@@ -139,7 +139,7 @@ void QHttpNetworkConnectionChannel::init()
                      Qt::DirectConnection);
 #endif
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
     if (sslSocket) {
         // won't be a sslSocket if encrypt is false
@@ -257,7 +257,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         const qint64 socketWriteMaxSize = 16*1024;
 
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
         // if it is really an ssl socket, check more than just bytesToWrite()
         while ((socket->bytesToWrite() + (sslSocket ? sslSocket->encryptedBytesToWrite() : 0))
@@ -598,7 +598,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
         }
 #endif
         if (ssl) {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
             QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
             sslSocket->connectToHostEncrypted(connectHost, connectPort, QIODevice::ReadWrite, networkLayerPreference);
             if (ignoreAllSslErrors)
@@ -610,6 +610,9 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
             // here and there.
             socket->setReadBufferSize(64*1024);
 #else
+            // Need to dequeue the request so that we can emit the error.
+            if (!reply)
+                connection->d_func()->dequeueRequest(socket);
             connection->d_func()->emitReplyError(socket, reply, QNetworkReply::ProtocolUnknownError);
 #endif
         } else {
@@ -1114,7 +1117,7 @@ void QHttpNetworkConnectionChannel::_q_uploadDataReadyRead()
     sendRequest();
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 void QHttpNetworkConnectionChannel::_q_encrypted()
 {
     if (!socket)

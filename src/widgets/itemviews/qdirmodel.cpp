@@ -1169,11 +1169,9 @@ void QDirModelPrivate::init()
     root.parent = 0;
     root.info = QFileInfo();
     clear(&root);
-    QHash<int, QByteArray> roles = q->roleNames();
-    roles.insertMulti(QDirModel::FileIconRole, "fileIcon"); // == Qt::decoration
-    roles.insert(QDirModel::FilePathRole, "filePath");
-    roles.insert(QDirModel::FileNameRole, "fileName");
-    q->setRoleNames(roles);
+    roleNames.insertMulti(QDirModel::FileIconRole, QByteArrayLiteral("fileIcon")); // == Qt::decoration
+    roleNames.insert(QDirModel::FilePathRole, QByteArrayLiteral("filePath"));
+    roleNames.insert(QDirModel::FileNameRole, QByteArrayLiteral("fileName"));
 }
 
 QDirModelPrivate::QDirNode *QDirModelPrivate::node(int row, QDirNode *parent) const

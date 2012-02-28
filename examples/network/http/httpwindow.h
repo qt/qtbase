@@ -76,7 +76,7 @@ private slots:
     void updateDataReadProgress(qint64 bytesRead, qint64 totalBytes);
     void enableDownloadButton();
     void slotAuthenticationRequired(QNetworkReply*,QAuthenticator *);
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void sslErrors(QNetworkReply*,const QList<QSslError> &errors);
 #endif
 

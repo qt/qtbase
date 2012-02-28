@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "QtCore/qabstractfileengine.h"
+#include "qabstractfileengine_p.h"
 
 QT_BEGIN_NAMESPACE
 

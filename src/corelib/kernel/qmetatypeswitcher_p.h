@@ -59,46 +59,27 @@ QT_BEGIN_NAMESPACE
 
 class QMetaTypeSwitcher {
 public:
-
-    typedef void *UnknownType;
+    class NotBuiltinType;
     template<class ReturnType, class DelegateObject>
     static ReturnType switcher(DelegateObject &logic, int type, const void *data);
 };
 
 
-#define QT_METATYPE_SWICHER_CASE_PRIMITIVE(TypeName, TypeId, Name)\
-    case QMetaType::TypeName: return logic.delegate(static_cast<const Name *>(data));
-
-#define QT_METATYPE_SWICHER_CASE_PRIMITIVE_POINTER(TypeName, TypeId, Name)\
-    case QMetaType::TypeName: return logic.delegate(static_cast< Name * const *>(data));
-
-#define QT_METATYPE_SWICHER_CASE_POINTER(TypeName, TypeId, Name)\
-    case QMetaType::TypeName: return logic.delegate(static_cast< QT_PREPEND_NAMESPACE(Name) * const *>(data));
-
-#define QT_METATYPE_SWICHER_CASE_QCLASS(TypeName, TypeId, Name)\
-    case QMetaType::TypeName: return logic.delegate(static_cast<const QT_PREPEND_NAMESPACE(Name) *>(data));
+#define QT_METATYPE_SWICHER_CASE(TypeName, TypeId, Name)\
+    case QMetaType::TypeName: return logic.delegate(static_cast<Name const *>(data));
 
 template<class ReturnType, class DelegateObject>
 ReturnType QMetaTypeSwitcher::switcher(DelegateObject &logic, int type, const void *data)
 {
     switch (QMetaType::Type(type)) {
-    QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(QT_METATYPE_SWICHER_CASE_PRIMITIVE)
-    QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(QT_METATYPE_SWICHER_CASE_PRIMITIVE_POINTER)
-    QT_FOR_EACH_STATIC_CORE_POINTER(QT_METATYPE_SWICHER_CASE_POINTER)
-    QT_FOR_EACH_STATIC_CORE_CLASS(QT_METATYPE_SWICHER_CASE_QCLASS)
-    QT_FOR_EACH_STATIC_CORE_TEMPLATE(QT_METATYPE_SWICHER_CASE_QCLASS)
-    QT_FOR_EACH_STATIC_GUI_CLASS(QT_METATYPE_SWICHER_CASE_QCLASS)
-    QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_METATYPE_SWICHER_CASE_QCLASS)
+    QT_FOR_EACH_STATIC_TYPE(QT_METATYPE_SWICHER_CASE)
 
     default:
-        return logic.delegate(static_cast<const UnknownType *>(data));
+        return logic.delegate(static_cast<NotBuiltinType const *>(data));
     }
 }
 
-#undef QT_METATYPE_SWICHER_CASE_PRIMITIVE
-#undef QT_METATYPE_SWICHER_CASE_PRIMITIVE_POINTER
-#undef QT_METATYPE_SWICHER_CASE_QCLASS
-#undef QT_METATYPE_SWICHER_CASE_POINTER
+#undef QT_METATYPE_SWICHER_CASE
 
 QT_END_NAMESPACE
 

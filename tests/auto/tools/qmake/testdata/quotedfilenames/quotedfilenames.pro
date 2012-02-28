@@ -6,7 +6,9 @@ SOURCES		= main.cpp
 RCCINPUT = "rc folder/test.qrc"
 RCCOUTPUT = test.cpp
 
-rcc_test.commands = rcc -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
+qtPrepareTool(QMAKE_RCC, rcc)
+
+rcc_test.commands = $$QMAKE_RCC -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
 rcc_test.output = $$RCCOUTPUT
 rcc_test.input = RCCINPUT
 rcc_test.variable_out = SOURCES

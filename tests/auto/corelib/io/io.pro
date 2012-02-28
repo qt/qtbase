@@ -30,6 +30,7 @@ SUBDIRS=\
 }
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
+    qabstractfileengine \
     qfileinfo
 
 win32:!contains(QT_CONFIG, private_tests): SUBDIRS -= \

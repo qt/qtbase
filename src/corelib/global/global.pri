@@ -10,7 +10,8 @@ HEADERS +=  \
         global/qnumeric_p.h \
         global/qnumeric.h \
         global/qlogging.h \
-        global/qtypeinfo.h
+        global/qtypeinfo.h \
+        global/qsysinfo.h
 
 SOURCES += \
 	global/qglobal.cpp \

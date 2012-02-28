@@ -3321,7 +3321,8 @@ void QDockAreaLayout::keepSize(QDockWidget *w)
 void QDockAreaLayout::styleChangedEvent()
 {
     sep = mainWindow->style()->pixelMetric(QStyle::PM_DockWidgetSeparatorExtent, 0, mainWindow);
-    fitLayout();
+    if (isValid())
+        fitLayout();
 }
 
 QT_END_NAMESPACE

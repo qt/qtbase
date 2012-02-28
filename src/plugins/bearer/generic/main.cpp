@@ -51,6 +51,9 @@ QT_BEGIN_NAMESPACE
 
 class QGenericEnginePlugin : public QBearerEnginePlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QBearerEngineFactoryInterface" FILE "generic.json")
+
 public:
     QGenericEnginePlugin();
     ~QGenericEnginePlugin();
@@ -80,9 +83,8 @@ QBearerEngine *QGenericEnginePlugin::create(const QString &key) const
         return 0;
 }
 
-Q_EXPORT_STATIC_PLUGIN(QGenericEnginePlugin)
-Q_EXPORT_PLUGIN2(qgenericbearer, QGenericEnginePlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"
 
 #endif // QT_NO_BEARERMANAGEMENT

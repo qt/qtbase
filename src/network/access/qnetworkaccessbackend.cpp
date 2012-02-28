@@ -342,7 +342,7 @@ void QNetworkAccessBackend::redirectionRequested(const QUrl &target)
 
 void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     reply->sslErrors(errors);
 #else
     Q_UNUSED(errors);

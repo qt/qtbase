@@ -15,5 +15,7 @@ HEADERS += $$PWD/qibusplatforminputcontext.h \
            $$PWD/qibusinputcontextproxy.h \
            $$PWD/qibustypes.h
 
+OTHER_FILES += $$PWD/ibus.json
+
 target.path += $$[QT_INSTALL_PLUGINS]/platforminputcontexts
 INSTALLS += target

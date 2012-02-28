@@ -48,6 +48,8 @@
 #include <qfileinfo.h>
 #include <qstringlist.h>
 
+#include <QtCore/private/qfsfileengine_p.h>
+
 #if defined(Q_OS_VXWORKS)
 #define Q_NO_SYMLINKS
 #endif
@@ -454,6 +456,7 @@ void tst_QDirIterator::stopLinkLoop()
     // The goal of this test is only to ensure that the test above don't malfunction
 }
 
+#ifdef QT_BUILD_INTERNAL
 class EngineWithNoIterator : public QFSFileEngine
 {
 public:
@@ -473,13 +476,18 @@ public:
         return new EngineWithNoIterator(fileName);
     }
 };
+#endif
 
 void tst_QDirIterator::engineWithNoIterator()
 {
+#ifdef QT_BUILD_INTERNAL
     EngineWithNoIteratorHandler handler;
 
     QDir("entrylist").entryList();
     QVERIFY(true); // test that the above line doesn't crash
+#else
+    QSKIP("This test requires -developer-build.");
+#endif
 }
 
 void tst_QDirIterator::absoluteFilePathsFromRelativeIteratorPath()

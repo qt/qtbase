@@ -1,5 +1,5 @@
 CONFIG += testcase
-QT = core network testlib
+QT = core-private core network testlib
 TARGET = ../tst_qfile
 SOURCES = ../tst_qfile.cpp
 RESOURCES += ../qfile.qrc ../rename-fallback.qrc ../copy-fallback.qrc

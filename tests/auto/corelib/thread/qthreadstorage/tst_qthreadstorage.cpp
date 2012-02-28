@@ -46,6 +46,8 @@
 #include <qthread.h>
 #include <qwaitcondition.h>
 #include <qthreadstorage.h>
+#include <qdir.h>
+#include <qfileinfo.h>
 
 #ifdef Q_OS_UNIX
 #include <pthread.h>
@@ -61,6 +63,7 @@ class tst_QThreadStorage : public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
     void hasLocalData();
     void localData();
     void localData_const();
@@ -72,6 +75,9 @@ private slots:
     void leakInDestructor();
     void resetInDestructor();
     void valueBased();
+
+private:
+    QString m_crashOnExit;
 };
 
 class Pointer
@@ -82,6 +88,20 @@ public:
     inline ~Pointer() { --count; }
 };
 int Pointer::count = 0;
+
+void tst_QThreadStorage::initTestCase()
+{
+    const QString crashOnExitDir = QFINDTESTDATA("crashonexit");
+    QVERIFY2(!crashOnExitDir.isEmpty(),
+             qPrintable(QString::fromLatin1("Could not find 'crashonexit' starting from '%1'")
+                        .arg(QDir::toNativeSeparators(QDir::currentPath()))));
+    m_crashOnExit = crashOnExitDir + QStringLiteral("/crashonexit");
+#ifdef Q_OS_WIN
+    m_crashOnExit += QStringLiteral(".exe");
+#endif
+    QVERIFY2(QFileInfo(m_crashOnExit).isExecutable(),
+             qPrintable(QDir::toNativeSeparators(m_crashOnExit) + QStringLiteral(" does not exist or is not executable.")));
+}
 
 void tst_QThreadStorage::hasLocalData()
 {
@@ -285,18 +305,32 @@ void tst_QThreadStorage::ensureCleanupOrder()
     QVERIFY(First::order < Second::order);
 }
 
+static inline bool runCrashOnExit(const QString &binary, QString *errorMessage)
+{
+    const int timeout = 60000;
+    QProcess process;
+    process.start(binary);
+    if (!process.waitForStarted()) {
+        *errorMessage = QString::fromLatin1("Could not start '%1': %2").arg(binary, process.errorString());
+        return false;
+    }
+    if (!process.waitForFinished(timeout)) {
+        process.kill();
+        *errorMessage = QString::fromLatin1("Timeout (%1ms) waiting for %2.").arg(timeout).arg(binary);
+        return false;
+    }
+    if (process.exitStatus() != QProcess::NormalExit) {
+        *errorMessage = binary + QStringLiteral(" crashed.");
+        return false;
+    }
+    return true;
+}
+
 void tst_QThreadStorage::crashOnExit()
 {
-    QProcess process;
-    // crashOnExit is always expected to be in the same directory
-    // as this test binary
-#ifdef Q_OS_MAC
-    process.start(QCoreApplication::applicationDirPath() + "/../../../crashOnExit");
-#else
-    process.start(QCoreApplication::applicationDirPath() + "/crashOnExit");
-#endif
-    QVERIFY(process.waitForFinished());
-    QVERIFY(process.exitStatus() != QProcess::CrashExit);
+    QString errorMessage;
+    QVERIFY2(runCrashOnExit(m_crashOnExit, &errorMessage),
+             qPrintable(errorMessage));
 }
 
 // S stands for thread Safe.

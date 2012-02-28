@@ -127,7 +127,7 @@ public:
                       QFont::HintingPreference hintingPreference);
 
     bool supportsCharacter(quint32 ucs4) const;
-    bool supportsCharacter(const QChar &character) const;
+    bool supportsCharacter(QChar character) const;
     QList<QFontDatabase::WritingSystem> supportedWritingSystems() const;
 
     QByteArray fontTable(const char *tagName) const;

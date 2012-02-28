@@ -41,9 +41,10 @@
 
 #include <QDebug>
 #include <QTemporaryFile>
-#include <QFSFileEngine>
 #include <QString>
 #include <QDirIterator>
+
+#include <private/qfsfileengine_p.h>
 
 #include <qtest.h>
 
@@ -79,7 +80,9 @@ Q_OBJECT
 public:
     enum BenchmarkType {
         QFileBenchmark = 1,
+#ifdef QT_BUILD_INTERNAL
         QFSFileEngineBenchmark,
+#endif
         Win32Benchmark,
         PosixBenchmark,
         QFileFromPosixBenchmark
@@ -173,7 +176,14 @@ void tst_qfile::cleanupTestCase()
 }
 
 void tst_qfile::readBigFile_QFile() { readBigFile(); }
-void tst_qfile::readBigFile_QFSFileEngine() { readBigFile(); }
+void tst_qfile::readBigFile_QFSFileEngine()
+{
+#ifdef QT_BUILD_INTERNAL
+    readBigFile();
+#else
+    QSKIP("This test requires -developer-build.");
+#endif
+}
 void tst_qfile::readBigFile_posix() 
 { 
     readBigFile(); 
@@ -191,10 +201,15 @@ void tst_qfile::readBigFile_QFile_data()
 
 void tst_qfile::readBigFile_QFSFileEngine_data()
 {
+#ifdef QT_BUILD_INTERNAL
     readBigFile_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::NotOpen);
     readBigFile_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
     readBigFile_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::NotOpen);
     readBigFile_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::Unbuffered);
+#else
+    QTest::addColumn<int>("dummy");
+    QTest::newRow("Test will be skipped") << -1;
+#endif
 }
 
 void tst_qfile::readBigFile_posix_data()
@@ -255,6 +270,7 @@ void tst_qfile::readBigFile()
             file.close();
         }
         break;
+#ifdef QT_BUILD_INTERNAL
         case(QFSFileEngineBenchmark): {
             QFSFileEngine fse(filename);
             fse.open(QIODevice::ReadOnly|textMode|bufferedMode);
@@ -266,6 +282,7 @@ void tst_qfile::readBigFile()
             fse.close();
         }
         break;
+#endif
         case(PosixBenchmark): {
             QByteArray data = filename.toLocal8Bit();
             const char* cfilename = data.constData();
@@ -317,7 +334,9 @@ void tst_qfile::seek_data()
 {
     QTest::addColumn<tst_qfile::BenchmarkType>("testType");
     QTest::newRow("QFile") << QFileBenchmark;
+#ifdef QT_BUILD_INTERNAL
     QTest::newRow("QFSFileEngine") << QFSFileEngineBenchmark;
+#endif
     QTest::newRow("Posix FILE*") << PosixBenchmark;
 #ifdef Q_OS_WIN
     QTest::newRow("Win32 API") << Win32Benchmark;
@@ -343,6 +362,7 @@ void tst_qfile::seek()
             file.close();
         }
         break;
+#ifdef QT_BUILD_INTERNAL
         case(QFSFileEngineBenchmark): {
             QFSFileEngine fse(filename);
             fse.open(QIODevice::ReadOnly);
@@ -353,6 +373,7 @@ void tst_qfile::seek()
             fse.close();
         }
         break;
+#endif
         case(PosixBenchmark): {
             QByteArray data = filename.toLocal8Bit();
             const char* cfilename = data.constData();
@@ -396,7 +417,9 @@ void tst_qfile::open_data()
 {
     QTest::addColumn<tst_qfile::BenchmarkType>("testType");
     QTest::newRow("QFile") << QFileBenchmark;
+#ifdef QT_BUILD_INTERNAL
     QTest::newRow("QFSFileEngine") << QFSFileEngineBenchmark;
+#endif
     QTest::newRow("Posix FILE*") << PosixBenchmark;
     QTest::newRow("QFile from FILE*") << QFileFromPosixBenchmark;
 #ifdef Q_OS_WIN
@@ -419,6 +442,7 @@ void tst_qfile::open()
             }
         }
         break;
+#ifdef QT_BUILD_INTERNAL
         case(QFSFileEngineBenchmark): {
             QBENCHMARK {
                 QFSFileEngine fse(filename);
@@ -427,7 +451,7 @@ void tst_qfile::open()
             }
         }
         break;
-
+#endif
         case(PosixBenchmark): {
             // ensure we don't account toLocal8Bit()
             QByteArray data = filename.toLocal8Bit();
@@ -477,7 +501,14 @@ void tst_qfile::open()
 
 
 void tst_qfile::readSmallFiles_QFile() { readSmallFiles(); }
-void tst_qfile::readSmallFiles_QFSFileEngine() { readSmallFiles(); }
+void tst_qfile::readSmallFiles_QFSFileEngine()
+{
+#ifdef QT_BUILD_INTERNAL
+    readSmallFiles();
+#else
+    QSKIP("This test requires -developer-build.");
+#endif
+}
 void tst_qfile::readSmallFiles_posix() 
 {
     readSmallFiles(); 
@@ -498,10 +529,15 @@ void tst_qfile::readSmallFiles_QFile_data()
 
 void tst_qfile::readSmallFiles_QFSFileEngine_data()
 {
+#ifdef QT_BUILD_INTERNAL
     readSmallFiles_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::NotOpen);
     readSmallFiles_data(QFSFileEngineBenchmark, QIODevice::NotOpen, QIODevice::Unbuffered);
     readSmallFiles_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::NotOpen);
     readSmallFiles_data(QFSFileEngineBenchmark, QIODevice::Text, QIODevice::Unbuffered);
+#else
+    QTest::addColumn<int>("dummy");
+    QTest::newRow("Test will be skipped") << -1;
+#endif
 }
 
 void tst_qfile::readSmallFiles_posix_data()
@@ -606,6 +642,7 @@ void tst_qfile::readSmallFiles()
             }
         }
         break;
+#ifdef QT_BUILD_INTERNAL
         case(QFSFileEngineBenchmark): {
             QList<QFSFileEngine*> fileList;
             Q_FOREACH(QString file, files) {
@@ -626,6 +663,7 @@ void tst_qfile::readSmallFiles()
             }
         }
         break;
+#endif
         case(PosixBenchmark): {
             QList<FILE*> fileList;
             Q_FOREACH(QString file, files) {

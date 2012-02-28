@@ -84,6 +84,7 @@ QT_BEGIN_NAMESPACE
 /*! \class QFSFileEngine
     \brief The QFSFileEngine class implements Qt's default file engine.
     \since 4.1
+    \internal
 
     This class is part of the file engine framework in Qt. If you only want to
     access files or directories, use QFile, QFileInfo or QDir instead.

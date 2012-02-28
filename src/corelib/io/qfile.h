@@ -144,10 +144,8 @@ public:
     bool isSequential() const;
 
     bool open(OpenMode flags);
-    bool open(FILE *f, OpenMode flags);
-    bool open(int fd, OpenMode flags);
-    bool open(FILE *f, OpenMode ioFlags, FileHandleFlags handleFlags);
-    bool open(int fd, OpenMode ioFlags, FileHandleFlags handleFlags);
+    bool open(FILE *f, OpenMode ioFlags, FileHandleFlags handleFlags=DontCloseHandle);
+    bool open(int fd, OpenMode ioFlags, FileHandleFlags handleFlags=DontCloseHandle);
     virtual void close();
 
     qint64 size() const;

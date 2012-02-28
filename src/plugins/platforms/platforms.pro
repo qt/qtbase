@@ -11,3 +11,7 @@ mac {
 }
 
 win32: SUBDIRS += windows
+
+blackberry-armv7le-qcc {
+    SUBDIRS += blackberry
+}

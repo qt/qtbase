@@ -69,7 +69,7 @@
 
 #ifndef QT_NO_HTTP
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #    include <QtNetwork/qsslsocket.h>
 #    include <QtNetwork/qsslerror.h>
 #else
@@ -115,7 +115,7 @@ public:
     QAuthenticator proxyAuthenticator;
     bool authenticationCredentialsSent;
     bool proxyCredentialsSent;
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     bool ignoreAllSslErrors;
     QList<QSslError> ignoreSslErrorsList;
 #endif
@@ -177,7 +177,7 @@ public:
 
     void _q_uploadDataReadyRead();
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void _q_encrypted(); // start sending request (https)
     void _q_sslErrors(const QList<QSslError> &errors); // ssl errors from the socket
     void _q_encryptedBytesWritten(qint64 bytes); // proceed sending

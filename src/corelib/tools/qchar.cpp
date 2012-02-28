@@ -413,33 +413,16 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QChar::QChar(char ch)
+
     Constructs a QChar corresponding to ASCII/Latin-1 character \a ch.
 */
-QChar::QChar(char ch)
-{
-#ifndef QT_NO_CODEC_FOR_C_STRINGS
-    if (QTextCodec::codecForCStrings())
-        // #####
-        ucs =  QTextCodec::codecForCStrings()->toUnicode(&ch, 1).at(0).unicode();
-    else
-#endif
-        ucs = uchar(ch);
-}
 
 /*!
+    \fn QChar::QChar(uchar ch)
+
     Constructs a QChar corresponding to ASCII/Latin-1 character \a ch.
 */
-QChar::QChar(uchar ch)
-{
-#ifndef QT_NO_CODEC_FOR_C_STRINGS
-    if (QTextCodec::codecForCStrings()) {
-        // #####
-        char c = char(ch);
-        ucs =  QTextCodec::codecForCStrings()->toUnicode(&c, 1).at(0).unicode();
-    } else
-#endif
-        ucs = ch;
-}
 
 /*!
     \fn QChar::QChar(uchar cell, uchar row)
@@ -1256,49 +1239,35 @@ ushort QChar::toCaseFolded(ushort ucs2)
     Returns the Latin-1 character equivalent to the QChar, or 0. This
     is mainly useful for non-internationalized software.
 
-    \sa toAscii(), unicode(), QTextCodec::codecForCStrings()
+    \sa toAscii(), unicode()
 */
 
 /*!
-    Returns the character value of the QChar obtained using the current
-    codec used to read C strings, or 0 if the character is not representable
-    using this codec. The default codec handles Latin-1 encoded text,
-    but this can be changed to assist developers writing source code using
-    other encodings.
+    \fn char QChar::toAscii() const
+
+    Returns the Latin-1 character value of the QChar, or 0 if the character is not
+    representable.
 
     The main purpose of this function is to preserve ASCII characters used
     in C strings. This is mainly useful for developers of non-internationalized
     software.
 
-    \sa toLatin1(), unicode(), QTextCodec::codecForCStrings()
+    \note It is not possible to distinguish a non-Latin 1 character from an ASCII 0
+    (NUL) character. Prefer to use unicode(), which does not have this ambiguity.
+
+    \sa toLatin1(), unicode()
 */
-char QChar::toAscii() const
-{
-#ifndef QT_NO_CODEC_FOR_C_STRINGS
-    if (QTextCodec::codecForCStrings())
-        // #####
-        return QTextCodec::codecForCStrings()->fromUnicode(QString(*this)).at(0);
-#endif
-    return ucs > 0xff ? 0 : char(ucs);
-}
 
 /*!
+    \fn QChar QChar::fromAscii(char)
+
     Converts the ASCII character \a c to it's equivalent QChar. This
     is mainly useful for non-internationalized software.
 
     An alternative is to use QLatin1Char.
 
-    \sa fromLatin1(), unicode(), QTextCodec::codecForCStrings()
+    \sa fromLatin1(), unicode()
 */
-QChar QChar::fromAscii(char c)
-{
-#ifndef QT_NO_CODEC_FOR_C_STRINGS
-    if (QTextCodec::codecForCStrings())
-        // #####
-        return QTextCodec::codecForCStrings()->toUnicode(&c, 1).at(0).unicode();
-#endif
-    return QChar(ushort((uchar)c));
-}
 
 #ifndef QT_NO_DATASTREAM
 /*!

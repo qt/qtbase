@@ -44,11 +44,11 @@
 
 #include "qevdevkeyboardhandler.h"
 
+#include <QtPlatformSupport/private/qudevicehelper_p.h>
+
 #include <QObject>
 #include <QHash>
 #include <QSocketNotifier>
-
-#include <libudev.h>
 
 QT_BEGIN_HEADER
 
@@ -62,24 +62,13 @@ public:
     ~QEvdevKeyboardManager();
 
 private slots:
-    void deviceDetected();
+    void addKeyboard(const QString &deviceNode = QString());
+    void removeKeyboard(const QString &deviceNode);
 
 private:
-    void startWatching();
-    void stopWatching();
-    void parseConnectedDevices();
-    void checkDevice(struct udev_device *dev);
-
-    void addKeyboard(const QString &devnode = QString());
-    void removeKeyboard(const QString &devnode);
-
     QString m_spec;
     QHash<QString,QEvdevKeyboardHandler*> m_keyboards;
-
-    struct udev *m_udev;
-    struct udev_monitor *m_udevMonitor;
-    int m_udevMonitorFileDescriptor;
-    QSocketNotifier *m_udevSocketNotifier;
+    QUDeviceHelper *m_udeviceHelper;
 };
 
 QT_END_HEADER

@@ -205,6 +205,7 @@ private slots:
     void QTBUG12268_hiddenMovedSectionSorting();
     void QTBUG14242_hideSectionAutoSize();
     void ensureNoIndexAtLength();
+    void offsetConsistent();
 
     void initialSortOrderRole();
 
@@ -2166,6 +2167,33 @@ void tst_QHeaderView::ensureNoIndexAtLength()
     QVERIFY(hv->visualIndexAt(hv->length()) == -1);
     hv->resizeSection(hv->count() - 1, 0);
     QVERIFY(hv->visualIndexAt(hv->length()) == -1);
+}
+
+void tst_QHeaderView::offsetConsistent()
+{
+    // Ensure that a hidden section 'far away'
+    // does not affect setOffsetToSectionPosition ..
+    const int sectionToHide = 513;
+    QTableView qtv;
+    QStandardItemModel amodel(1000, 4);
+    qtv.setModel(&amodel);
+    QHeaderView *hv = qtv.verticalHeader();
+    for (int u = 0; u < 100; u += 2)
+        hv->resizeSection(u, 0);
+    hv->setOffsetToSectionPosition(150);
+    int offset1 = hv->offset();
+    hv->hideSection(sectionToHide);
+    hv->setOffsetToSectionPosition(150);
+    int offset2 = hv->offset();
+    QVERIFY(offset1 == offset2);
+    // Ensure that hidden indexes (still) is considered.
+    hv->resizeSection(sectionToHide, hv->sectionSize(200) * 2);
+    hv->setOffsetToSectionPosition(800);
+    offset1 = hv->offset();
+    hv->showSection(sectionToHide);
+    hv->setOffsetToSectionPosition(800);
+    offset2 = hv->offset();
+    QVERIFY(offset2 > offset1);
 }
 
 void tst_QHeaderView::initialSortOrderRole()

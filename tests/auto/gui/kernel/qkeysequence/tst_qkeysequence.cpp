@@ -41,9 +41,10 @@
 
 
 #include <QtTest/QtTest>
-#include <private/qapplication_p.h>
 #include <qkeysequence.h>
+#include <qplatformtheme_qpa.h>
 #include <private/qkeysequence_p.h>
+#include <private/qguiapplication_p.h>
 #include <QTranslator>
 #include <QLibraryInfo>
 
@@ -142,6 +143,7 @@ private slots:
 
     void initTestCase();
 private:
+    int m_keyboardScheme;
     QTranslator *ourTranslator;
     QTranslator *qtTranslator;
 #ifdef Q_OS_MAC
@@ -161,8 +163,10 @@ const QString tst_QKeySequence::MacAlt = QString(QChar(0x2325));
 const QString tst_QKeySequence::MacShift = QString(QChar(0x21E7));
 #endif
 
-tst_QKeySequence::tst_QKeySequence()
+tst_QKeySequence::tst_QKeySequence() : m_keyboardScheme(QPlatformTheme::WindowsKeyboardScheme)
 {
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+        m_keyboardScheme = theme->themeHint(QPlatformTheme::KeyboardScheme).toInt();
 }
 
 tst_QKeySequence::~tst_QKeySequence()
@@ -297,8 +301,7 @@ void tst_QKeySequence::checkMultipleCodes()
 */
 void tst_QKeySequence::ensureSorted()
 {
-//### accessing static members from private classes does not work on msvc at the moment
-#if defined(QT_BUILD_INTERNAL) && !defined(Q_WS_WIN)
+#if defined(QT_BUILD_INTERNAL)
     uint N = QKeySequencePrivate::numberOfKeyBindings;
     uint val = QKeySequencePrivate::keyBindings[0].shortcut;
     for ( uint i = 1 ; i < N ; ++i) {
@@ -322,13 +325,13 @@ void tst_QKeySequence::standardKeys_data()
     QTest::newRow("delete") << (int)QKeySequence::Delete<< QString("DEL");
     QTest::newRow("open") << (int)QKeySequence::Open << QString("CTRL+O");
     QTest::newRow("find") << (int)QKeySequence::Find<< QString("CTRL+F");
-#ifdef Q_WS_WIN
-    QTest::newRow("addTab") << (int)QKeySequence::AddTab<< QString("CTRL+T");
-    QTest::newRow("findNext") << (int)QKeySequence::FindNext<< QString("F3");
-    QTest::newRow("findPrevious") << (int)QKeySequence::FindPrevious << QString("SHIFT+F3");
-    QTest::newRow("close") << (int)QKeySequence::Close<< QString("CTRL+F4");
-    QTest::newRow("replace") << (int)QKeySequence::Replace<< QString("CTRL+H");
-#endif
+    if (m_keyboardScheme == QPlatformTheme::WindowsKeyboardScheme) {
+        QTest::newRow("addTab") << (int)QKeySequence::AddTab<< QString("CTRL+T");
+        QTest::newRow("findNext") << (int)QKeySequence::FindNext<< QString("F3");
+        QTest::newRow("findPrevious") << (int)QKeySequence::FindPrevious << QString("SHIFT+F3");
+        QTest::newRow("close") << (int)QKeySequence::Close<< QString("CTRL+F4");
+        QTest::newRow("replace") << (int)QKeySequence::Replace<< QString("CTRL+H");
+    }
     QTest::newRow("bold") << (int)QKeySequence::Bold << QString("CTRL+B");
     QTest::newRow("italic") << (int)QKeySequence::Italic << QString("CTRL+I");
     QTest::newRow("underline") << (int)QKeySequence::Underline << QString("CTRL+U");
@@ -362,23 +365,33 @@ void tst_QKeySequence::standardKeys()
 {
     QFETCH(int, standardKey);
     QFETCH(QString, expected);
-    QKeySequence ks((QKeySequence::StandardKey)standardKey);
-    QKeySequence ks2(expected);
-    QVERIFY(ks == ks2);
+    QKeySequence actualKeySequence((QKeySequence::StandardKey)standardKey);
+    QKeySequence expectedKeySequence(expected);
+    QVERIFY2(actualKeySequence == expectedKeySequence,
+             qPrintable(QString::fromLatin1("Key mismatch, expected '%1', got '%2' for standard key %3").
+                        arg(expected, actualKeySequence.toString()).arg(standardKey)));
 }
 
 void tst_QKeySequence::keyBindings()
 {
-    QList<QKeySequence> bindings = QKeySequence::keyBindings(QKeySequence::Copy);
+    const QList<QKeySequence> bindings =
+          QKeySequence::keyBindings(QKeySequence::Copy);
+
     QList<QKeySequence> expected;
-#if defined(Q_OS_MAC)
-    expected  << QKeySequence("CTRL+C");
-#elif defined Q_WS_X11
-    expected  << QKeySequence("CTRL+C") << QKeySequence("F16") << QKeySequence("CTRL+INSERT");
-#else
-    expected  << QKeySequence("CTRL+C") << QKeySequence("CTRL+INSERT");
-#endif
-	QVERIFY(bindings == expected);
+    const QKeySequence ctrlC = QKeySequence(QStringLiteral("CTRL+C"));
+    const QKeySequence ctrlInsert = QKeySequence(QStringLiteral("CTRL+INSERT"));
+    switch (m_keyboardScheme) {
+    case QPlatformTheme::MacKeyboardScheme:
+        expected  << ctrlC;
+        break;
+    case QPlatformTheme::WindowsKeyboardScheme:
+        expected  << ctrlC << ctrlInsert;
+        break;
+    default: // X11
+        expected  << ctrlC << QKeySequence(QStringLiteral("F16")) << ctrlInsert;
+        break;
+    }
+    QCOMPARE(bindings, expected);
 }
 
 void tst_QKeySequence::mnemonic_data()

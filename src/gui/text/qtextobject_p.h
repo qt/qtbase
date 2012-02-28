@@ -97,8 +97,8 @@ public:
         : QTextObjectPrivate(doc), fragment_start(0), fragment_end(0), parentFrame(0), layoutData(0)
     {
     }
-    virtual void fragmentAdded(const QChar &type, uint fragment);
-    virtual void fragmentRemoved(const QChar &type, uint fragment);
+    virtual void fragmentAdded(QChar type, uint fragment);
+    virtual void fragmentRemoved(QChar type, uint fragment);
     void remove_me();
 
     uint fragment_start;

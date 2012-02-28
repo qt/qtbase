@@ -47,6 +47,9 @@ QT_BEGIN_NAMESPACE
 
 class QMaliitPlatformInputContextPlugin : public QPlatformInputContextPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformInputContextFactoryInterface" FILE "maliit.json")
+
 public:
     QStringList keys() const;
     QPlatformInputContext *create(const QString&, const QStringList&);
@@ -66,6 +69,6 @@ QPlatformInputContext *QMaliitPlatformInputContextPlugin::create(const QString& 
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(maliitplatforminputcontextplugin, QMaliitPlatformInputContextPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

@@ -1,0 +1,99 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights. These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include <QtCore/QCoreApplication>
+#include <QtTest/QtTest>
+#include <private/qtestlog_p.h>
+
+class tst_Silent : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void pass();
+    void skip();
+    void fail();
+    void xfail();
+    void xpass();
+
+    // This test function must be last, as it calls qFatal().
+    void messages();
+};
+
+void tst_Silent::pass()
+{
+    QVERIFY(true);
+}
+
+void tst_Silent::skip()
+{
+    QSKIP("This test should skip");
+}
+
+void tst_Silent::fail()
+{
+    QVERIFY2(false, "This test should fail");
+}
+
+void tst_Silent::xfail()
+{
+    QEXPECT_FAIL("", "This test should XFAIL", Abort);
+    QVERIFY(false);
+}
+
+void tst_Silent::xpass()
+{
+    QEXPECT_FAIL("", "This test should XPASS", Abort);
+    QVERIFY2(true, "This test should XPASS");
+}
+
+void tst_Silent::messages()
+{
+    qWarning("This is a warning that should not appear in silent test output");
+    QWARN("This is an internal testlib warning that should not appear in silent test output");
+    qDebug("This is a debug message that should not appear in silent test output");
+    qCritical("This is a critical message that should not appear in silent test output");
+    QTestLog::info("This is an internal testlib info message that should not appear in silent test output", __FILE__, __LINE__);
+    qFatal("This is a fatal error message that should still appear in silent test output");
+}
+
+QTEST_MAIN(tst_Silent)
+#include "tst_silent.moc"

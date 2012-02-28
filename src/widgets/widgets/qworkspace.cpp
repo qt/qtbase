@@ -290,9 +290,6 @@ public:
     QWorkspaceTitleBarPrivate()
         :
         lastControl(QStyle::SC_None),
-#ifndef QT_NO_TOOLTIP
-        toolTip(0),
-#endif
         act(0), window(0), movable(1), pressed(0), autoraise(0), moving(0)
     {
     }
@@ -301,9 +298,6 @@ public:
     QStyle::SubControl buttonDown;
     QStyle::SubControl lastControl;
     QPoint moveOffset;
-#ifndef QT_NO_TOOLTIP
-    QToolTip *toolTip;
-#endif
     bool act                    :1;
     QPointer<QWidget> window;
     bool movable            :1;
@@ -1085,7 +1079,8 @@ QWorkspacePrivate::init()
     actions[QWorkspacePrivate::CloseAct] = new QAction(QIcon(q->style()->standardPixmap(QStyle::SP_TitleBarCloseButton, 0, q)),
                                                           QWorkspace::tr("&Close")
 #ifndef QT_NO_SHORTCUT
-                                                          +QLatin1Char('\t')+(QString)QKeySequence(Qt::CTRL+Qt::Key_F4)
+                                                          + QLatin1Char('\t')
+                                                          + QKeySequence(Qt::CTRL+Qt::Key_F4).toString(QKeySequence::NativeText)
 #endif
                                                           ,q);
     QObject::connect(actions[QWorkspacePrivate::CloseAct], SIGNAL(triggered()), q, SLOT(closeActiveWindow()));
@@ -3210,7 +3205,7 @@ QRect QWorkspacePrivate::updateWorkspace()
             QWorkspaceChild *child = *it;
             ++it;
             if (!child->isHidden())
-                r = r.unite(child->geometry());
+                r = r.united(child->geometry());
         }
         vbar->blockSignals(true);
         hbar->blockSignals(true);

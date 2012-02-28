@@ -45,6 +45,9 @@
 #include "qjsonvalue.h"
 #include "qjsondocument.h"
 
+#define INVALID_UNICODE "\357\277\277" // "\uffff"
+#define UNICODE_DJE "\320\202" // Character from the Serbian Cyrillic alphabet
+
 class TestQtJson: public QObject
 {
     Q_OBJECT
@@ -1205,7 +1208,7 @@ void TestQtJson::fromJsonErrors()
     }
     {
         QJsonParseError error;
-        QByteArray json = "[\n    \"foo\uffffbar\"]";
+        QByteArray json = "[\n    \"foo" INVALID_UNICODE "bar\"]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::StringUTF8Scan);
@@ -1221,7 +1224,7 @@ void TestQtJson::fromJsonErrors()
     }
     {
         QJsonParseError error;
-        QByteArray json = "[\n    \"cЂa\\u12\"]";
+        QByteArray json = "[\n    \"c" UNICODE_DJE "a\\u12\"]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::StringEscapeSequence);
@@ -1229,7 +1232,7 @@ void TestQtJson::fromJsonErrors()
     }
     {
         QJsonParseError error;
-        QByteArray json = "[\n    \"cЂa\uffffbar\"]";
+        QByteArray json = "[\n    \"c" UNICODE_DJE "a" INVALID_UNICODE "bar\"]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::StringUTF8Scan);
@@ -1237,7 +1240,7 @@ void TestQtJson::fromJsonErrors()
     }
     {
         QJsonParseError error;
-        QByteArray json = "[\n    \"cЂa ]";
+        QByteArray json = "[\n    \"c" UNICODE_DJE "a ]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::EndOfString);
@@ -1378,7 +1381,7 @@ void TestQtJson::parseStrings()
         "abc\\rabc",
         "abc\\tabc",
         "abc\\u0019abc",
-        "abcЂabc",
+        "abc" UNICODE_DJE "abc",
     };
     int size = sizeof(strings)/sizeof(const char *);
 
@@ -1404,7 +1407,7 @@ void TestQtJson::parseStrings()
     };
     Pairs pairs [] = {
         { "abc\\/abc", "abc/abc" },
-        { "abc\\u0402abc", "abcЂabc" },
+        { "abc\\u0402abc", "abc" UNICODE_DJE "abc" },
         { "abc\\u0065abc", "abceabc" }
     };
     size = sizeof(pairs)/sizeof(Pairs);
@@ -1547,7 +1550,7 @@ void TestQtJson::validation()
     // only test the first 1000 bytes. Testing the full file takes too long
     for (int i = 0; i < 1000; ++i) {
         QByteArray corrupted = binary;
-        corrupted[i] = 0xff;
+        corrupted[i] = char(0xff);
         QJsonDocument doc = QJsonDocument::fromBinaryData(corrupted);
         if (doc.isNull())
             continue;
@@ -1567,7 +1570,7 @@ void TestQtJson::validation()
 
     for (int i = 0; i < binary.size(); ++i) {
         QByteArray corrupted = binary;
-        corrupted[i] = 0xff;
+        corrupted[i] = char(0xff);
         QJsonDocument doc = QJsonDocument::fromBinaryData(corrupted);
         if (doc.isNull())
             continue;

@@ -134,7 +134,7 @@ public:
     // attributes
     QVariant attribute(QNetworkRequest::Attribute code) const;
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     QSslConfiguration sslConfiguration() const;
     void setSslConfiguration(const QSslConfiguration &configuration);
     void ignoreSslErrors(const QList<QSslError> &errors);
@@ -147,7 +147,7 @@ Q_SIGNALS:
     void metaDataChanged();
     void finished();
     void error(QNetworkReply::NetworkError);
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void sslErrors(const QList<QSslError> &errors);
 #endif
 

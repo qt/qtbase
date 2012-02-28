@@ -42,7 +42,6 @@
 #include "qplatformdefs.h"
 #include "qfilesystemengine_p.h"
 #include "qplatformdefs.h"
-#include "qfsfileengine.h"
 #include "qfile.h"
 
 #include <QtCore/qvarlengtharray.h>
@@ -645,12 +644,12 @@ QFileSystemEntry QFileSystemEngine::currentPath()
             result = QFileSystemEntry(QByteArray(currentName), QFileSystemEntry::FromNativePath());
 # if defined(QT_DEBUG)
         if (result.isEmpty())
-            qWarning("QFSFileEngine::currentPath: getcwd() failed");
+            qWarning("QFileSystemEngine::currentPath: getcwd() failed");
 # endif
 #endif
     } else {
 # if defined(QT_DEBUG)
-        qWarning("QFSFileEngine::currentPath: stat(\".\") failed");
+        qWarning("QFileSystemEngine::currentPath: stat(\".\") failed");
 # endif
     }
     return result;

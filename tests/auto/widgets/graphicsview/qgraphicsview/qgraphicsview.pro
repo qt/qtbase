@@ -9,4 +9,4 @@ DEFINES += QT_NO_CAST_TO_ASCII
 
 linux-*:system(". /etc/lsb-release && [ $DISTRIB_CODENAME = oneiric ]"):CONFIG+=insignificant_test
 
-win32:CONFIG += insignificant_test # QTBUG-24296
+win32|mac:CONFIG += insignificant_test # QTBUG-24296

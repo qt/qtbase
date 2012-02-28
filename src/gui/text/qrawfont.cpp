@@ -614,7 +614,7 @@ QList<QFontDatabase::WritingSystem> QRawFont::supportedWritingSystems() const
 
     \sa supportedWritingSystems()
 */
-bool QRawFont::supportsCharacter(const QChar &character) const
+bool QRawFont::supportsCharacter(QChar character) const
 {
     return d->isValid() && d->fontEngine->canRender(&character, 1);
 }

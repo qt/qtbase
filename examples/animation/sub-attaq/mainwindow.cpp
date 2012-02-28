@@ -45,13 +45,13 @@
 
 //Qt
 #include <QGraphicsView>
+#include <QApplication>
+#include <QMenu>
+#include <QMenuBar>
+#include <QLayout>
 
-#ifdef QT_NO_OPENGL
-    #include <QtGui/QMenuBar>
-    #include <QtGui/QLayout>
-    #include <QtGui/QApplication>
-#else
-    #include <QtOpenGL/QtOpenGL>
+#ifndef QT_NO_OPENGL
+# include <QtOpenGL/QtOpenGL>
 #endif
 
 MainWindow::MainWindow() : QMainWindow(0)

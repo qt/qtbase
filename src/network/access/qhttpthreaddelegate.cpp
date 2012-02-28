@@ -270,7 +270,7 @@ void QHttpThreadDelegate::startRequest()
 #else
         httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl, networkSession);
 #endif
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         // Set the QSslConfiguration from this QNetworkRequest.
         if (ssl && incomingSslConfiguration != QSslConfiguration::defaultConfiguration()) {
             httpConnection->setSslConfiguration(incomingSslConfiguration);
@@ -312,7 +312,7 @@ void QHttpThreadDelegate::startRequest()
         // some signals are only interesting when normal asynchronous style is used
         connect(httpReply,SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
         connect(httpReply,SIGNAL(dataReadProgress(qint64, qint64)), this, SLOT(dataReadProgressSlot(qint64,qint64)));
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         connect(httpReply,SIGNAL(sslErrors(const QList<QSslError>)), this, SLOT(sslErrorsSlot(QList<QSslError>)));
 #endif
 
@@ -377,7 +377,7 @@ void QHttpThreadDelegate::finishedSlot()
         emit downloadData(httpReply->readAny());
     }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     if (ssl)
         emit sslConfigurationChanged(httpReply->sslConfiguration());
 #endif
@@ -427,7 +427,7 @@ void QHttpThreadDelegate::finishedWithErrorSlot(QNetworkReply::NetworkError erro
     qDebug() << "QHttpThreadDelegate::finishedWithErrorSlot() thread=" << QThread::currentThreadId() << "error=" << errorCode << detail;
 #endif
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     if (ssl)
         emit sslConfigurationChanged(httpReply->sslConfiguration());
 #endif
@@ -465,7 +465,7 @@ void QHttpThreadDelegate::headerChangedSlot()
     qDebug() << "QHttpThreadDelegate::headerChangedSlot() thread=" << QThread::currentThreadId();
 #endif
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     if (ssl)
         emit sslConfigurationChanged(httpReply->sslConfiguration());
 #endif
@@ -530,7 +530,7 @@ void QHttpThreadDelegate::cacheCredentialsSlot(const QHttpNetworkRequest &reques
 }
 
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 void QHttpThreadDelegate::sslErrorsSlot(const QList<QSslError> &errors)
 {
     emit sslConfigurationChanged(httpReply->sslConfiguration());

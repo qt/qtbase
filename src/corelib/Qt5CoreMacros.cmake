@@ -83,7 +83,7 @@ macro(QT5_GET_MOC_FLAGS _moc_flags)
         set(${_moc_flags} ${${_moc_flags}} "-D${_current}")
     endforeach()
 
-    if(Q_WS_WIN)
+    if(WIN32)
         set(${_moc_flags} ${${_moc_flags}} -DWIN32)
     endif()
 endmacro()

@@ -421,7 +421,7 @@ bool QOpenGLExtensions::hasOpenGLExtension(QOpenGLExtensions::OpenGLExtension ex
 }
 
 /*!
-    Initializes GL function resolution for the current context.
+    Initializes OpenGL function resolution for the current context.
 
     After calling this function, the QOpenGLFunctions object can only be
     used with the current context and other contexts that share with it.

@@ -47,6 +47,9 @@ QT_BEGIN_NAMESPACE
 
 class QSQLiteDriverPlugin : public QSqlDriverPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "sqlite.json")
+
 public:
     QSQLiteDriverPlugin();
 
@@ -70,12 +73,9 @@ QSqlDriver* QSQLiteDriverPlugin::create(const QString &name)
 
 QStringList QSQLiteDriverPlugin::keys() const
 {
-    QStringList l;
-    l  << QLatin1String("QSQLITE");
-    return l;
+    return QStringList(QStringLiteral("QSQLITE"));
 }
 
-Q_EXPORT_STATIC_PLUGIN(QSQLiteDriverPlugin)
-Q_EXPORT_PLUGIN2(qsqlite, QSQLiteDriverPlugin)
-
 QT_END_NAMESPACE
+
+#include "smain.moc"

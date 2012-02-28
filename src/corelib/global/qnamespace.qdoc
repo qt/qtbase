@@ -2112,6 +2112,9 @@
            implements its own set of gestures and that system level gestures, like for
            instance three-finger desktop switching, should be disabled.
 
+    \value WindowDoesNotAcceptFocus Informs the window system that this window should
+           not receive the input focus.
+
     \value WindowType_Mask  A mask for extracting the window type
                             part of the window flags.
 

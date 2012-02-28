@@ -393,7 +393,7 @@ public:
     };
 
     inline bool getChar(QChar *ch);
-    inline void ungetChar(const QChar &ch);
+    inline void ungetChar(QChar ch);
     NumberParsingStatus getNumber(qulonglong *l);
     bool getReal(double *f);
 
@@ -943,7 +943,7 @@ inline bool QTextStreamPrivate::getChar(QChar *ch)
 
 /*! \internal
 */
-inline void QTextStreamPrivate::ungetChar(const QChar &ch)
+inline void QTextStreamPrivate::ungetChar(QChar ch)
 {
     if (string) {
         if (stringOffset == 0)

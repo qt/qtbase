@@ -91,8 +91,7 @@
 
 #include "qdiriterator.h"
 #include "qdir_p.h"
-
-#include "qabstractfileengine.h"
+#include "qabstractfileengine_p.h"
 
 #include <QtCore/qset.h>
 #include <QtCore/qstack.h>
@@ -102,7 +101,6 @@
 #include <QtCore/private/qfilesystementry_p.h>
 #include <QtCore/private/qfilesystemmetadata_p.h>
 #include <QtCore/private/qfilesystemengine_p.h>
-#include <QtCore/qfsfileengine.h>
 #include <QtCore/private/qfileinfo_p.h>
 
 QT_BEGIN_NAMESPACE

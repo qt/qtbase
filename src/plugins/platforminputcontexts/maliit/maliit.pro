@@ -15,5 +15,7 @@ HEADERS += $$PWD/qmaliitplatforminputcontext.h \
            $$PWD/serveraddressproxy.h \
            $$PWD/contextadaptor.h
 
+OTHER_FILES += $$PWD/maliit.json
+
 target.path += $$[QT_INSTALL_PLUGINS]/platforminputcontexts
 INSTALLS += target

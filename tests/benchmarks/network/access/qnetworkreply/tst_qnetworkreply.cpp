@@ -457,7 +457,7 @@ private slots:
     void initTestCase();
     void httpLatency();
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void echoPerformance_data();
     void echoPerformance();
 #endif
@@ -491,7 +491,7 @@ void tst_qnetworkreply::httpLatency()
     }
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 void tst_qnetworkreply::echoPerformance_data()
 {
      QTest::addColumn<bool>("ssl");

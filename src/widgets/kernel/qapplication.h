@@ -98,12 +98,8 @@ public:
 
 #ifndef qdoc
     QApplication(int &argc, char **argv, int = ApplicationFlags);
-    QApplication(int &argc, char **argv, bool GUIenabled, int = ApplicationFlags);
+    QT_DEPRECATED QApplication(int &argc, char **argv, bool GUIenabled, int = ApplicationFlags);
     QApplication(int &argc, char **argv, Type, int = ApplicationFlags);
-#if defined(Q_WS_X11)
-    QApplication(Display* dpy, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0, int = ApplicationFlags);
-    QApplication(Display *dpy, int &argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap= 0, int = ApplicationFlags);
-#endif
 #endif
     virtual ~QApplication();
 
@@ -150,7 +146,7 @@ public:
     static QWidget *topLevelAt(const QPoint &p);
     static inline QWidget *topLevelAt(int x, int y)  { return topLevelAt(QPoint(x, y)); }
 
-    static void syncX();
+    QT_DEPRECATED static void syncX();
     static void beep();
     static void alert(QWidget *widget, int duration = 0);
 
@@ -182,31 +178,8 @@ public:
     static bool isEffectEnabled(Qt::UIEffect);
     static void setEffectEnabled(Qt::UIEffect, bool enable = true);
 
-#if defined(Q_WS_MAC)
-    virtual bool macEventFilter(EventHandlerCallRef, EventRef);
-#endif
-#if defined(Q_WS_X11)
-    virtual bool x11EventFilter(XEvent *);
-    virtual int x11ClientMessage(QWidget*, XEvent*, bool passive_only);
-    int x11ProcessEvent(XEvent*);
-#endif
-#if defined(Q_WS_QWS)
-    virtual bool qwsEventFilter(QWSEvent *);
-    int qwsProcessEvent(QWSEvent*);
-    void qwsSetCustomColors(QRgb *colortable, int start, int numColors);
-#ifndef QT_NO_QWS_MANAGER
-    static QDecoration &qwsDecoration();
-    static void qwsSetDecoration(QDecoration *);
-    static QDecoration *qwsSetDecoration(const QString &decoration);
-#endif
-#endif
-
     static QPlatformNativeInterface *platformNativeInterface();
 
-#if defined(Q_WS_WIN)
-    void winFocus(QWidget *, bool);
-    static void winMouseButtonUp();
-#endif
 #ifndef QT_NO_SESSIONMANAGER
     // session management
     bool isSessionRestored() const;
@@ -252,21 +225,14 @@ public Q_SLOTS:
     static void aboutQt();
 
 protected:
-#if defined(Q_WS_QWS)
-    void setArgs(int, char **);
-#endif
     bool event(QEvent *);
     bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
 
 
 #if defined(Q_INTERNAL_QAPP_SRC) || defined(qdoc)
     QApplication(int &argc, char **argv);
-    QApplication(int &argc, char **argv, bool GUIenabled);
+    QT_DEPRECATED QApplication(int &argc, char **argv, bool GUIenabled);
     QApplication(int &argc, char **argv, Type);
-#if defined(Q_WS_X11)
-    QApplication(Display* dpy, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0);
-    QApplication(Display *dpy, int &argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap= 0);
-#endif
 #endif
 
 private:
@@ -291,20 +257,8 @@ private:
 #endif
     friend class QAction;
 
-#if defined(Q_WS_QWS)
-    friend class QWSDirectPainterSurface;
-    friend class QDirectPainter;
-    friend class QDirectPainterPrivate;
-#endif
 #ifndef QT_NO_GESTURES
     friend class QGestureManager;
-#endif
-
-#if defined(Q_WS_MAC) || defined(Q_WS_X11)
-    Q_PRIVATE_SLOT(d_func(), void _q_alertTimeOut())
-#endif
-#if defined(QT_RX71_MULTITOUCH)
-    Q_PRIVATE_SLOT(d_func(), void _q_readRX71MultiTouchEvents())
 #endif
 };
 

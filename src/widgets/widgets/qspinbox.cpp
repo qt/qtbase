@@ -1157,8 +1157,8 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                 }
             }
         } else {
-            const QChar &last = copy.at(len - 1);
-            const QChar &secondLast = copy.at(len - 2);
+            const QChar last = copy.at(len - 1);
+            const QChar secondLast = copy.at(len - 2);
             if ((last == locale.groupSeparator() || last.isSpace())
                 && (secondLast == locale.groupSeparator() || secondLast.isSpace())) {
                 state = QValidator::Invalid;

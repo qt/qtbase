@@ -3,4 +3,4 @@ CONFIG += ordered
 
 SUBDIRS += \
     app \
-    tst_qlogging.pro
+    test

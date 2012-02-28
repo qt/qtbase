@@ -52,6 +52,7 @@
 #include <QtCore/QSysInfo>
 #include <QtGui/QPalette>
 #include <QtGui/QGuiApplication>
+#include <QtGui/QWindowSystemInterface>
 
 QT_BEGIN_NAMESPACE
 
@@ -220,11 +221,12 @@ static inline QStringList styleNames()
 QVariant QWindowsTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
-    case SystemIconThemeName:
-        break;
+    case UseFullScreenForPopupMenu:
+        return QVariant(true);
+    case DialogButtonBoxLayout:
+        return QVariant(int(0)); // QDialogButtonBox::WinLayout
     case IconThemeSearchPaths:
         return QVariant(iconThemeSearchPaths());
-        break;
     case StyleNames:
         return QVariant(styleNames());
     case TextCursorWidth:
@@ -233,8 +235,12 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
         return QVariant(booleanSystemParametersInfo(SPI_GETDROPSHADOW, false));
     case MaximumScrollBarDragDistance:
         return QVariant(qRound(qreal(QWindowsContext::instance()->defaultDPI()) * 1.375));
+    case KeyboardScheme:
+        return QVariant(int(WindowsKeyboardScheme));
+    default:
+        break;
     }
-    return QVariant();
+    return QPlatformTheme::themeHint(hint);
 }
 
 void QWindowsTheme::refresh()
@@ -260,10 +266,10 @@ QPlatformDialogHelper *QWindowsTheme::createPlatformDialogHelper(DialogType type
     return QWindowsDialogs::createHelper(type);
 }
 
-void QWindowsTheme::windowsThemeChanged(QWindow * /* window */)
+void QWindowsTheme::windowsThemeChanged(QWindow * window)
 {
     refresh();
-    // QWindowSystemInterface::handleThemeChange(window);
+    QWindowSystemInterface::handleThemeChange(window);
 }
 
 QT_END_NAMESPACE

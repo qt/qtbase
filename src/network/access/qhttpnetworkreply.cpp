@@ -46,7 +46,7 @@
 
 #ifndef QT_NO_HTTP
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #    include <QtNetwork/qsslkey.h>
 #    include <QtNetwork/qsslcipher.h>
 #    include <QtNetwork/qsslconfiguration.h>
@@ -834,7 +834,7 @@ void QHttpNetworkReplyPrivate::eraseData()
 
 
 // SSL support below
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 QSslConfiguration QHttpNetworkReply::sslConfiguration() const
 {
@@ -872,7 +872,7 @@ void QHttpNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
 }
 
 
-#endif //QT_NO_OPENSSL
+#endif //QT_NO_SSL
 
 
 QT_END_NAMESPACE

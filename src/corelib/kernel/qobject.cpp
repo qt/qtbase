@@ -3617,7 +3617,6 @@ QObjectUserData* QObject::userData(uint id) const
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QObject *o) {
-#ifndef Q_BROKEN_DEBUG_STREAM
     if (!o)
         return dbg << "QObject(0x0) ";
     dbg.nospace() << o->metaObject()->className() << '(' << (void *)o;
@@ -3625,11 +3624,6 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
         dbg << ", name = " << o->objectName();
     dbg << ')';
     return dbg.space();
-#else
-    qWarning("This compiler doesn't support streaming QObject to QDebug");
-    return dbg;
-    Q_UNUSED(o);
-#endif
 }
 #endif
 

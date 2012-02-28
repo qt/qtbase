@@ -819,15 +819,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn int qMacVersion()
-    \relates <QtGlobal>
-
-    Use QSysInfo::MacintoshVersion instead.
-
-    \sa QSysInfo
-*/
-
-/*!
     \macro QT_VERSION_CHECK
     \relates <QtGlobal>
 
@@ -946,6 +937,13 @@ bool qSharedBuild()
     \variable QSysInfo::MacintoshVersion
     \brief the version of the Macintosh operating system on which
            the application is run (Mac only).
+*/
+
+/*!
+    \fn QSysInfo::MacVersion QSysInfo::macVersion()
+
+    Returns the version of Mac OS X on which the application is run (Mac OS X
+    Only).
 */
 
 /*!
@@ -1630,7 +1628,7 @@ Q_CORE_EXPORT QString qt_mac_from_pascal_string(const Str255 pstr) {
 
 #if defined(Q_OS_MAC)
 
-static QSysInfo::MacVersion macVersion()
+QSysInfo::MacVersion QSysInfo::macVersion()
 {
 #ifndef QT_NO_CORESERVICES
     SInt32 gestalt_version;
@@ -1640,7 +1638,7 @@ static QSysInfo::MacVersion macVersion()
 #endif
     return QSysInfo::MV_Unknown;
 }
-const QSysInfo::MacVersion QSysInfo::MacintoshVersion = macVersion();
+const QSysInfo::MacVersion QSysInfo::MacintoshVersion = QSysInfo::macVersion();
 
 #elif defined(Q_OS_WIN) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINCE)
 

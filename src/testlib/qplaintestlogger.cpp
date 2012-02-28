@@ -251,7 +251,6 @@ void QPlainTestLogger::printMessage(const char *type, const char *msg, const cha
     outputMessage(buf.data());
 }
 
-//void QPlainTestLogger::printBenchmarkResult(const char *bmtag, int value, int iterations)
 void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
 {
     const char *bmtag = QTest::benchmarkResult2String();
@@ -372,8 +371,9 @@ void QPlainTestLogger::leaveTestFunction()
 void QPlainTestLogger::addIncident(IncidentTypes type, const char *description,
                                    const char *file, int line)
 {
-    // suppress PASS in silent mode
-    if (type == QAbstractTestLogger::Pass && QTestLog::verboseLevel() < 0)
+    // suppress PASS and XFAIL in silent mode
+    if ((type == QAbstractTestLogger::Pass || type == QAbstractTestLogger::XFail)
+        && QTestLog::verboseLevel() < 0)
         return;
 
     printMessage(QTest::incidentType2String(type), description, file, line);
@@ -381,16 +381,18 @@ void QPlainTestLogger::addIncident(IncidentTypes type, const char *description,
 
 void QPlainTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 {
-//    printBenchmarkResult(QTest::benchmarkResult2String(), value, iterations);
+    // suppress benchmark results in silent mode
+    if (QTestLog::verboseLevel() < 0)
+        return;
+
     printBenchmarkResult(result);
 }
 
 void QPlainTestLogger::addMessage(MessageTypes type, const char *message,
                                   const char *file, int line)
 {
-    // suppress PASS in silent mode
-    if ((type == QAbstractTestLogger::Skip || type == QAbstractTestLogger::Info)
-       && QTestLog::verboseLevel() < 0)
+    // suppress non-fatal messages in silent mode
+    if (type != QAbstractTestLogger::QFatal && QTestLog::verboseLevel() < 0)
         return;
 
     printMessage(QTest::messageType2String(type), message, file, line);

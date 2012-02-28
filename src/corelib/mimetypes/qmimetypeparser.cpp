@@ -58,29 +58,29 @@
 QT_BEGIN_NAMESPACE
 
 // XML tags in MIME files
-const char *const mimeInfoTagC = "mime-info";
-const char *const mimeTypeTagC = "mime-type";
-const char *const mimeTypeAttributeC = "type";
-const char *const subClassTagC = "sub-class-of";
-const char *const commentTagC = "comment";
-const char *const genericIconTagC = "generic-icon";
-const char *const iconTagC = "icon";
-const char *const nameAttributeC = "name";
-const char *const globTagC = "glob";
-const char *const aliasTagC = "alias";
-const char *const patternAttributeC = "pattern";
-const char *const weightAttributeC = "weight";
-const char *const caseSensitiveAttributeC = "case-sensitive";
-const char *const localeAttributeC = "xml:lang";
+static const char mimeInfoTagC[] = "mime-info";
+static const char mimeTypeTagC[] = "mime-type";
+static const char mimeTypeAttributeC[] = "type";
+static const char subClassTagC[] = "sub-class-of";
+static const char commentTagC[] = "comment";
+static const char genericIconTagC[] = "generic-icon";
+static const char iconTagC[] = "icon";
+static const char nameAttributeC[] = "name";
+static const char globTagC[] = "glob";
+static const char aliasTagC[] = "alias";
+static const char patternAttributeC[] = "pattern";
+static const char weightAttributeC[] = "weight";
+static const char caseSensitiveAttributeC[] = "case-sensitive";
+static const char localeAttributeC[] = "xml:lang";
 
-const char *const magicTagC = "magic";
-const char *const priorityAttributeC = "priority";
+static const char magicTagC[] = "magic";
+static const char priorityAttributeC[] = "priority";
 
-const char *const matchTagC = "match";
-const char *const matchValueAttributeC = "value";
-const char *const matchTypeAttributeC = "type";
-const char *const matchOffsetAttributeC = "offset";
-const char *const matchMaskAttributeC = "mask";
+static const char matchTagC[] = "match";
+static const char matchValueAttributeC[] = "value";
+static const char matchTypeAttributeC[] = "type";
+static const char matchOffsetAttributeC[] = "offset";
+static const char matchMaskAttributeC[] = "mask";
 
 /*!
     \class QMimeTypeParser

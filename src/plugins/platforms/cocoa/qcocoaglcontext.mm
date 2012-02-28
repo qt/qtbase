@@ -51,13 +51,19 @@
 QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
     : m_format(format)
 {
-    QCocoaAutoReleasePool pool; // For the SG Canvas render thread.
+    QCocoaAutoReleasePool pool; // For the SG Canvas render thread
 
     NSOpenGLPixelFormat *pixelFormat = static_cast <NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat(format));
-    NSOpenGLContext *actualShare = share ? static_cast<QCocoaGLContext *>(share)->m_context : 0;
+    m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
 
     m_context = [NSOpenGLContext alloc];
-    [m_context initWithFormat:pixelFormat shareContext:actualShare];
+    [m_context initWithFormat:pixelFormat shareContext:m_shareContext];
+
+    if (!m_context && m_shareContext) {
+        // try without shared context
+        m_shareContext = nil;
+        [m_context initWithFormat:pixelFormat shareContext:nil];
+    }
 
     const GLint interval = 1;
     [m_context setValues:&interval forParameter:NSOpenGLCPSwapInterval];
@@ -139,3 +145,12 @@ NSOpenGLContext *QCocoaGLContext::nsOpenGLContext() const
     return m_context;
 }
 
+bool QCocoaGLContext::isValid() const
+{
+    return m_context != nil;
+}
+
+bool QCocoaGLContext::isSharing() const
+{
+    return m_shareContext != nil;
+}

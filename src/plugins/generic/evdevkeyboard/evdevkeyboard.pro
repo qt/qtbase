@@ -10,10 +10,13 @@ HEADERS = \
     qevdevkeyboardhandler.h \
     qevdevkeyboardmanager.h
 
-QT += core-private
+QT += core-private platformsupport-private
 
 LIBS += -ludev
 
 SOURCES = main.cpp \
     qevdevkeyboardhandler.cpp \
     qevdevkeyboardmanager.cpp
+
+OTHER_FILES += \
+    evdevkeyboard.json

@@ -89,12 +89,15 @@ QVariant QGenericUnixTheme::themeHint(ThemeHint hint) const
         return QVariant(QString(QStringLiteral("hicolor")));
     case QPlatformTheme::IconThemeSearchPaths:
         return xdgIconThemePaths();
+    case QPlatformTheme::DialogButtonBoxButtonsHaveIcons:
+        return QVariant(true);
     case QPlatformTheme::StyleNames: {
         QStringList styleNames;
         styleNames << QStringLiteral("Plastique") << QStringLiteral("Windows");
         return QVariant(styleNames);
     }
-        break;
+    case QPlatformTheme::KeyboardScheme:
+        return QVariant(int(X11KeyboardScheme));
     default:
         break;
     }
@@ -229,6 +232,12 @@ static QStringList kdeIconThemeSearchPaths(const QString &kdeHome)
 QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
+    case QPlatformTheme::UseFullScreenForPopupMenu:
+        return QVariant(true);
+    case QPlatformTheme::DialogButtonBoxButtonsHaveIcons:
+        return QVariant(true);
+    case QPlatformTheme::DialogButtonBoxLayout:
+        return QVariant(2); // QDialogButtonBox::KdeLayout
     case QPlatformTheme::ToolButtonStyle:
         return QVariant(m_toolButtonStyle);
     case QPlatformTheme::ToolBarIconSize:
@@ -241,6 +250,8 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(kdeIconThemeSearchPaths(m_kdeHome));
     case QPlatformTheme::StyleNames:
         return QVariant(m_styleNames);
+    case QPlatformTheme::KeyboardScheme:
+        return QVariant(int(KdeKeyboardScheme));
     default:
         break;
     }
@@ -282,6 +293,10 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
 QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
+    case QPlatformTheme::DialogButtonBoxButtonsHaveIcons:
+        return QVariant(true);
+    case QPlatformTheme::DialogButtonBoxLayout:
+        return QVariant(3); // QDialogButtonBox::GnomeLayout
     case QPlatformTheme::SystemIconThemeName:
     case QPlatformTheme::SystemIconFallbackThemeName:
         return QVariant(QString(QStringLiteral("gnome")));
@@ -292,6 +307,8 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         styleNames << QStringLiteral("GTK+") << QStringLiteral("cleanlooks") << QStringLiteral("windows");
         return QVariant(styleNames);
     }
+    case QPlatformTheme::KeyboardScheme:
+        return QVariant(int(GnomeKeyboardScheme));
     default:
         break;
     }

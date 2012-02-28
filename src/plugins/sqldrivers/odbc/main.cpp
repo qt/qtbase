@@ -47,6 +47,9 @@ QT_BEGIN_NAMESPACE
 
 class QODBCDriverPlugin : public QSqlDriverPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "odbc.json")
+
 public:
     QODBCDriverPlugin();
 
@@ -76,7 +79,6 @@ QStringList QODBCDriverPlugin::keys() const
     return l;
 }
 
-Q_EXPORT_STATIC_PLUGIN(QODBCDriverPlugin)
-Q_EXPORT_PLUGIN2(qsqlodbc, QODBCDriverPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

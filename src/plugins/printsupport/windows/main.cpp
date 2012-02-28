@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 class QWindowsPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.QPlatformPrinterSupportFactoryInterface" FILE "windows.json")
+
 public:
     QStringList keys() const;
     QPlatformPrinterSupport *create(const QString &);
@@ -66,8 +68,6 @@ QPlatformPrinterSupport *QWindowsPrinterSupportPlugin::create(const QString &key
         return new QWindowsPrinterSupport;
     return 0;
 }
-
-Q_EXPORT_PLUGIN2(windowsprint, QWindowsPrinterSupportPlugin)
 
 QT_END_NAMESPACE
 

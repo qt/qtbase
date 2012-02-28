@@ -77,7 +77,7 @@ public slots:
     void init();
     void cleanup();
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 private slots:
     void constructing();
 #endif
@@ -109,14 +109,14 @@ void tst_QSslError::cleanup()
 {
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 void tst_QSslError::constructing()
 {
     QSslError error;
 }
 
-#endif // QT_NO_OPENSSL
+#endif // QT_NO_SSL
 
 QTEST_MAIN(tst_QSslError)
 #include "tst_qsslerror.moc"

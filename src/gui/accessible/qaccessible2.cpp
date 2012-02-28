@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \namespace QAccessible2
     \ingroup accessibility
+    \internal
 
     \brief The QAccessible2 namespace defines constants relating to
     IAccessible2-based interfaces
@@ -60,6 +61,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QAccessibleTextInterface
+    \internal
 
     \ingroup accessibility
 
@@ -180,6 +182,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessibleEditableTextInterface
     \ingroup accessibility
+    \internal
 
     \brief The QAccessibleEditableTextInterface class implements support for objects with editable text.
 
@@ -247,6 +250,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessibleSimpleEditableTextInterface
     \ingroup accessibility
+    \internal
 
     \brief The QAccessibleSimpleEditableTextInterface class is a convenience class for
     text-based widgets. It can be inherited instead of \l QAccessibleEditableTextInterface.
@@ -259,6 +263,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessibleValueInterface
     \ingroup accessibility
+    \internal
 
     \brief The QAccessibleValueInterface class implements support for objects that manipulate a value.
 
@@ -323,6 +328,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessibleTableCellInterface
     \ingroup accessibility
+    \internal
 
     \brief The QAccessibleTableCellInterface class implements support for
     the IAccessibleTable2 Cell interface.
@@ -333,6 +339,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessibleTableInterface
     \ingroup accessibility
+    \internal
 
     \brief The QAccessibleTableInterface class implements support for
     the IAccessibleTable2 interface.
@@ -344,6 +351,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessibleActionInterface
     \ingroup accessibility
+    \internal
 
     \brief The QAccessibleActionInterface class implements support for
     invocable actions in the interface.

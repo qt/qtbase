@@ -126,7 +126,7 @@ void QTextBlockData::invalidate() const
         layout->engine()->invalidate();
 }
 
-static bool isValidBlockSeparator(const QChar &ch)
+static bool isValidBlockSeparator(QChar ch)
 {
     return ch == QChar::ParagraphSeparator
         || ch == QTextBeginningOfFrame
@@ -393,7 +393,7 @@ int QTextDocumentPrivate::insert_block(int pos, uint strPos, int format, int blo
     return x;
 }
 
-int QTextDocumentPrivate::insertBlock(const QChar &blockSeparator,
+int QTextDocumentPrivate::insertBlock(QChar blockSeparator,
                                   int pos, int blockFormat, int charFormat, QTextUndoCommand::Operation op)
 {
     Q_ASSERT(formats.format(blockFormat).isBlockFormat());

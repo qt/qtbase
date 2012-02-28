@@ -1,14 +1,10 @@
 TEMPLATE = app
 TARGET = tst_bench_qregexp
-DEPENDPATH += .
-INCLUDEPATH += .
-RESOURCES+=qregexp.qrc
 QT = core testlib
-
 CONFIG += release
 
-# Input
 SOURCES += main.cpp
+RESOURCES += qregexp.qrc
 
 !isEmpty(QT.webkit.sources):exists($${QT.webkit.sources}/../JavaScriptCore/JavaScriptCore.pri) {
     include( $${QT.webkit.sources}/../JavaScriptCore/JavaScriptCore.pri )

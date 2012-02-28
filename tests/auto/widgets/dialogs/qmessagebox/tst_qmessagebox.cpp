@@ -48,6 +48,8 @@
 #include <QApplication>
 #include <QPushButton>
 #include <QDialogButtonBox>
+#include <QPlatformTheme>
+#include <private/qguiapplication_p.h>
 #if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
 #endif
@@ -407,15 +409,12 @@ void tst_QMessageBox::staticSourceCompat()
     sendKeySoon();
     ret = QMessageBox::information(0, "title", "text", QMessageBox::Yes, QMessageBox::No);
     int expectedButton = int(QMessageBox::Yes);
-#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
-    if (qobject_cast<QMacStyle *>(qApp->style()))
-        expectedButton = int(QMessageBox::No);
-#elif !defined(QT_NO_STYLE_CLEANLOOKS)
-    if (qobject_cast<QCleanlooksStyle *>(qApp->style())) {
-        QEXPECT_FAIL("", "Special handling of QMessageBox::information buttons for Cleanlooks not implemented yet, QTBUG-24315", Continue);
-        expectedButton = int(QMessageBox::No);
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+        const int dialogButtonBoxLayout = theme->themeHint(QPlatformTheme::DialogButtonBoxLayout).toInt();
+        if (dialogButtonBoxLayout == QDialogButtonBox::MacLayout
+            || dialogButtonBoxLayout == QDialogButtonBox::GnomeLayout)
+            expectedButton = int(QMessageBox::No);
     }
-#endif
     QCOMPARE(ret, expectedButton);
     QCOMPARE(keyToSend, -1);
 

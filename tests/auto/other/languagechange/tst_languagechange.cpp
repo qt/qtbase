@@ -43,13 +43,16 @@
 #include <QtTest/QtTest>
 
 #include <qapplication.h>
+#include <private/qguiapplication_p.h>
 #include <QtCore/QSet>
 #include <QtCore/QFile>
 #include <QtCore/QTranslator>
 #include <QtCore/QTemporaryDir>
 #include <private/qthread_p.h>
+#include <QtGui/QPlatformTheme>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QColorDialog>
+#include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QDesktopWidget>
 
@@ -66,12 +69,16 @@ private slots:
     void retranslatability_data();
     void retranslatability();
 
+private:
+    QDialogButtonBox::ButtonLayout m_layout;
 };
 
 
-tst_languageChange::tst_languageChange()
-
+tst_languageChange::tst_languageChange() :
+    m_layout(QDialogButtonBox::WinLayout)
 {
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+        m_layout = static_cast<QDialogButtonBox::ButtonLayout>(theme->themeHint(QPlatformTheme::DialogButtonBoxLayout).toInt());
 }
 
 void tst_languageChange::initTestCase()
@@ -239,6 +246,9 @@ void tst_languageChange::retranslatability()
 {
     QFETCH( int, dialogType);
     QFETCH( TranslationSet, expected);
+
+    if (m_layout == QDialogButtonBox::GnomeLayout)
+        QSKIP("The input data are not suitable for this layout (QDialogButtonBox::GnomeLayout)");
 
     // This will always be queried for when a language changes
     expected.insert("QCoreApplication::QT_LAYOUT_DIRECTION::Translate this string to the string 'LTR' in left-to-right "

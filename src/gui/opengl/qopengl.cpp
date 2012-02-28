@@ -42,6 +42,7 @@
 #include "qopengl_p.h"
 
 #include "qopenglcontext.h"
+#include "qopenglfunctions.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -50,7 +51,7 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher(const char *str)
     init(str);
 }
 
-typedef GLubyte * (*qt_glGetStringi)(GLenum, GLuint);
+typedef const GLubyte * (QOPENGLF_APIENTRYP qt_glGetStringi)(GLenum, GLuint);
 
 #ifndef GL_NUM_EXTENSIONS
 #define GL_NUM_EXTENSIONS 0x821D

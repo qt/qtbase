@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qabstractfileengine.h"
 #include "private/qabstractfileengine_p.h"
+#include "private/qfsfileengine_p.h"
 #ifdef QT_BUILD_CORE_LIB
 #include "private/qresource_p.h"
 #endif
@@ -48,7 +48,6 @@
 #include "qreadwritelock.h"
 #include "qvariant.h"
 // built-in handlers
-#include "qfsfileengine.h"
 #include "qdiriterator.h"
 #include "qstringbuilder.h"
 
@@ -61,6 +60,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAbstractFileEngineHandler
     \reentrant
+    \internal
 
     \brief The QAbstractFileEngineHandler class provides a way to register
     custom file engines with your application.
@@ -220,6 +220,7 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
 /*!
     \class QAbstractFileEngine
     \reentrant
+    \internal
 
     \brief The QAbstractFileEngine class provides an abstraction for accessing
     the filesystem.
@@ -804,6 +805,7 @@ bool QAbstractFileEngine::unmap(uchar *address)
     \class QAbstractFileEngineIterator
     \brief The QAbstractFileEngineIterator class provides an iterator
     interface for custom file engines.
+    \internal
 
     If all you want is to iterate over entries in a directory, see
     QDirIterator instead. This class is only for custom file engine authors.

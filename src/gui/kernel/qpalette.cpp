@@ -70,13 +70,14 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     int h, s, v;
     button.getHsv(&h, &s, &v);
     // inactive and active are the same..
-    const QBrush baseBrush = QBrush(v > 128 ? Qt::white : Qt::black);
-    const QBrush foregroundBrush = QBrush(v > 128 ? Qt::black : Qt::white);
+    const QBrush whiteBrush = QBrush(Qt::white);
+    const QBrush blackBrush = QBrush(Qt::black);
+    const QBrush baseBrush = v > 128 ? whiteBrush : blackBrush;
+    const QBrush foregroundBrush = v > 128 ? blackBrush : whiteBrush;
     const QBrush buttonBrush = QBrush(button);
     const QBrush buttonBrushDark = QBrush(button.darker());
     const QBrush buttonBrushDark150 = QBrush(button.darker(150));
     const QBrush buttonBrushLight150 = QBrush(button.lighter(150));
-    const QBrush whiteBrush = QBrush(Qt::white);
     pal.setColorGroup(QPalette::Active, foregroundBrush, buttonBrush, buttonBrushLight150,
                       buttonBrushDark, buttonBrushDark150, foregroundBrush, whiteBrush,
                       baseBrush, buttonBrush);
@@ -578,9 +579,11 @@ QPalette::QPalette(const QColor &windowText, const QColor &window,
                    const QColor &text, const QColor &base)
 {
     init();
-    setColorGroup(All, QBrush(windowText), QBrush(window), QBrush(light),
-                  QBrush(dark), QBrush(mid), QBrush(text), QBrush(light),
-                  QBrush(base), QBrush(window));
+    const QBrush windowBrush(window);
+    const QBrush lightBrush(light);
+    setColorGroup(All, QBrush(windowText), windowBrush, lightBrush,
+                  QBrush(dark), QBrush(mid), QBrush(text), lightBrush,
+                  QBrush(base), windowBrush);
 }
 
 /*!
@@ -591,28 +594,31 @@ QPalette::QPalette(const QColor &windowText, const QColor &window,
 QPalette::QPalette(const QColor &button, const QColor &window)
 {
     init();
-    QColor bg = window, btn = button, fg, base, disfg;
     int h, s, v;
-    bg.getHsv(&h, &s, &v);
-    if(v > 128) {
-        fg   = Qt::black;
-        base = Qt::white;
-        disfg = Qt::darkGray;
-    } else {
-        fg   = Qt::white;
-        base = Qt::black;
-        disfg = Qt::darkGray;
-    }
+    window.getHsv(&h, &s, &v);
+
+    const QBrush windowBrush = QBrush(window);
+    const QBrush whiteBrush = QBrush(Qt::white);
+    const QBrush blackBrush = QBrush(Qt::black);
+    const QBrush baseBrush = v > 128 ? whiteBrush : blackBrush;
+    const QBrush foregroundBrush = v > 128 ? blackBrush : whiteBrush;
+    const QBrush disabledForeground = QBrush(Qt::darkGray);
+
+    const QBrush buttonBrush = QBrush(button);
+    const QBrush buttonBrushDark = QBrush(button.darker());
+    const QBrush buttonBrushDark150 = QBrush(button.darker(150));
+    const QBrush buttonBrushLight150 = QBrush(button.lighter(150));
+
     //inactive and active are identical
-    setColorGroup(Inactive, QBrush(fg), QBrush(btn), QBrush(btn.lighter(150)), QBrush(btn.darker()),
-                  QBrush(btn.darker(150)), QBrush(fg), QBrush(Qt::white), QBrush(base),
-                  QBrush(bg));
-    setColorGroup(Active, QBrush(fg), QBrush(btn), QBrush(btn.lighter(150)), QBrush(btn.darker()),
-                  QBrush(btn.darker(150)), QBrush(fg), QBrush(Qt::white), QBrush(base),
-                  QBrush(bg));
-    setColorGroup(Disabled, QBrush(disfg), QBrush(btn), QBrush(btn.lighter(150)),
-                  QBrush(btn.darker()), QBrush(btn.darker(150)), QBrush(disfg),
-                  QBrush(Qt::white), QBrush(base), QBrush(bg));
+    setColorGroup(Inactive, foregroundBrush, buttonBrush, buttonBrushLight150, buttonBrushDark,
+                  buttonBrushDark150, foregroundBrush, whiteBrush, baseBrush,
+                  windowBrush);
+    setColorGroup(Active, foregroundBrush, buttonBrush, buttonBrushLight150, buttonBrushDark,
+                  buttonBrushDark150, foregroundBrush, whiteBrush, baseBrush,
+                  windowBrush);
+    setColorGroup(Disabled, disabledForeground, buttonBrush, buttonBrushLight150,
+                  buttonBrushDark, buttonBrushDark150, disabledForeground,
+                  whiteBrush, baseBrush, windowBrush);
 }
 
 /*!

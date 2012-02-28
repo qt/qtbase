@@ -43,7 +43,6 @@
 #include "uic.h"
 #include "ui4.h"
 
-#include <QtCore/QRegExp>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDebug>
 
@@ -208,7 +207,7 @@ QString Driver::qtify(const QString &name)
     return qname;
 }
 
-static bool isAnsiCCharacter(const QChar& c)
+static bool isAnsiCCharacter(QChar c)
 {
     return (c.toUpper() >= QLatin1Char('A') && c.toUpper() <= QLatin1Char('Z'))
            || c.isDigit() || c == QLatin1Char('_');

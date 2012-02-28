@@ -1384,6 +1384,10 @@ QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certifi
         return errors;
     }
 
+    if (s_loadRootCertsOnDemand) {
+        setDefaultCaCertificates(defaultCaCertificates() + systemCaCertificates());
+    }
+
     QList<QSslCertificate> expiredCerts;
 
     foreach (const QSslCertificate &caCertificate, QSslSocket::defaultCaCertificates()) {

@@ -402,7 +402,7 @@ Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
         }
     } else {
         if (src != from && to - from > 0)
-            memcpy(from, src, (to - from) * sizeof(Node *));
+            memcpy(from, src, (to - from) * sizeof(Node));
     }
 }
 

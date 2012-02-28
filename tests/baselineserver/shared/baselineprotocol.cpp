@@ -110,7 +110,7 @@ PlatformInfo PlatformInfo::localHostInfo()
     pi.insert(PI_OSVersion, QString::number(QSysInfo::windowsVersion()));
 #elif defined(Q_OS_MAC)
     pi.insert(PI_OSName, QLS("MacOS"));
-    pi.insert(PI_OSVersion, QString::number(qMacVersion()));
+    pi.insert(PI_OSVersion, QString::number(QSysInfo::macVersion()));
 #else
     pi.insert(PI_OSName, QLS("Other"));
 #endif

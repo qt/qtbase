@@ -200,14 +200,7 @@ public:
         LastWidgetsType = QSizePolicy,
         HighestInternalId = LastWidgetsType,
 
-// This logic must match the one in qglobal.h
-#if defined(QT_COORD_TYPE)
-        QReal = 0,
-#elif defined(QT_NO_FPU) || defined(Q_PROCESSOR_ARM) || defined(Q_OS_WINCE)
-        QReal = Float,
-#else
-        QReal = Double,
-#endif
+        QReal = sizeof(qreal) == sizeof(double) ? Double : Float,
 
         User = 256
     };
@@ -318,46 +311,57 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMetaType::TypeFlags)
 
 template <typename T>
-void qMetaTypeDeleteHelper(T *t)
+void qMetaTypeDeleteHelper(void *t)
 {
-    delete t;
+    delete static_cast<T*>(t);
 }
+template <> inline void qMetaTypeDeleteHelper<void>(void *) {}
 
 template <typename T>
-void *qMetaTypeCreateHelper(const T *t)
+void *qMetaTypeCreateHelper(const void *t)
 {
     if (t)
         return new T(*static_cast<const T*>(t));
     return new T();
 }
 
-template <typename T>
-void qMetaTypeDestructHelper(T *t)
-{
-    Q_UNUSED(t) // Silence MSVC that warns for POD types.
-    t->~T();
-}
+template <> inline void *qMetaTypeCreateHelper<void>(const void *) { return 0; }
 
 template <typename T>
-void *qMetaTypeConstructHelper(void *where, const T *t)
+void qMetaTypeDestructHelper(void *t)
+{
+    Q_UNUSED(t) // Silence MSVC that warns for POD types.
+    static_cast<T*>(t)->~T();
+}
+
+template <> inline void qMetaTypeDestructHelper<void>(void *) {}
+
+template <typename T>
+void *qMetaTypeConstructHelper(void *where, const void *t)
 {
     if (t)
         return new (where) T(*static_cast<const T*>(t));
     return new (where) T;
 }
 
+template <> inline void *qMetaTypeConstructHelper<void>(void *, const void *) { return 0; }
+
 #ifndef QT_NO_DATASTREAM
 template <typename T>
-void qMetaTypeSaveHelper(QDataStream &stream, const T *t)
+void qMetaTypeSaveHelper(QDataStream &stream, const void *t)
 {
-    stream << *t;
+    stream << *static_cast<const T*>(t);
 }
 
+template <> inline void qMetaTypeSaveHelper<void>(QDataStream &, const void *) {}
+
 template <typename T>
-void qMetaTypeLoadHelper(QDataStream &stream, T *t)
+void qMetaTypeLoadHelper(QDataStream &stream, void *t)
 {
-    stream >> *t;
+    stream >> *static_cast<T*>(t);
 }
+
+template <> inline void qMetaTypeLoadHelper<void>(QDataStream &, void *) {}
 #endif // QT_NO_DATASTREAM
 
 template <typename T>
@@ -442,15 +446,6 @@ int qRegisterMetaType(const char *typeName
     if (typedefOf != -1)
         return QMetaType::registerTypedef(typeName, typedefOf);
 
-    typedef void*(*CreatePtr)(const T*);
-    CreatePtr cptr = qMetaTypeCreateHelper<T>;
-    typedef void(*DeletePtr)(T*);
-    DeletePtr dptr = qMetaTypeDeleteHelper<T>;
-    typedef void*(*ConstructPtr)(void *, const T*);
-    ConstructPtr ipcptr = qMetaTypeConstructHelper<T>;
-    typedef void(*DestructPtr)(T*);
-    DestructPtr ipdptr = qMetaTypeDestructHelper<T>;
-
     QMetaType::TypeFlags flags;
     if (!QTypeInfo<T>::isStatic)
         flags |= QMetaType::MovableType;
@@ -461,10 +456,10 @@ int qRegisterMetaType(const char *typeName
     if (QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value)
         flags |= QMetaType::PointerToQObject;
 
-    return QMetaType::registerType(typeName, reinterpret_cast<QMetaType::Deleter>(dptr),
-                                   reinterpret_cast<QMetaType::Creator>(cptr),
-                                   reinterpret_cast<QMetaType::Destructor>(ipdptr),
-                                   reinterpret_cast<QMetaType::Constructor>(ipcptr),
+    return QMetaType::registerType(typeName, qMetaTypeDeleteHelper<T>,
+                                   qMetaTypeCreateHelper<T>,
+                                   qMetaTypeDestructHelper<T>,
+                                   qMetaTypeConstructHelper<T>,
                                    sizeof(T),
                                    flags);
 }
@@ -477,14 +472,8 @@ void qRegisterMetaTypeStreamOperators(const char *typeName
 #endif
 )
 {
-    typedef void(*SavePtr)(QDataStream &, const T *);
-    typedef void(*LoadPtr)(QDataStream &, T *);
-    SavePtr sptr = qMetaTypeSaveHelper<T>;
-    LoadPtr lptr = qMetaTypeLoadHelper<T>;
-
     qRegisterMetaType<T>(typeName);
-    QMetaType::registerStreamOperators(typeName, reinterpret_cast<QMetaType::SaveOperator>(sptr),
-                                       reinterpret_cast<QMetaType::LoadOperator>(lptr));
+    QMetaType::registerStreamOperators(typeName, qMetaTypeSaveHelper<T>, qMetaTypeLoadHelper<T>);
 }
 #endif // QT_NO_DATASTREAM
 
@@ -516,16 +505,8 @@ inline int qRegisterMetaType(
 template <typename T>
 inline int qRegisterMetaTypeStreamOperators()
 {
-    typedef void(*SavePtr)(QDataStream &, const T *);
-    typedef void(*LoadPtr)(QDataStream &, T *);
-    SavePtr sptr = qMetaTypeSaveHelper<T>;
-    LoadPtr lptr = qMetaTypeLoadHelper<T>;
-
     register int id = qMetaTypeId<T>();
-    QMetaType::registerStreamOperators(id,
-                                       reinterpret_cast<QMetaType::SaveOperator>(sptr),
-                                       reinterpret_cast<QMetaType::LoadOperator>(lptr));
-
+    QMetaType::registerStreamOperators(id, qMetaTypeSaveHelper<T>, qMetaTypeLoadHelper<T>);
     return id;
 }
 #endif

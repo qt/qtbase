@@ -122,6 +122,7 @@ translations/*.qm
 translations/*_untranslated.ts
 qrc_*.cpp
 
+src/concurrent/qtconcurrentversion.h
 src/corelib/qtcoreversion.h
 src/dbus/qtdbusversion.h
 src/gui/qtguiversion.h

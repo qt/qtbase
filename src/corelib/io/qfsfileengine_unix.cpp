@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qplatformdefs.h"
-#include "qabstractfileengine.h"
+#include "private/qabstractfileengine_p.h"
 #include "private/qfsfileengine_p.h"
 #include "private/qcore_unix_p.h"
 #include "qfilesystementry_p.h"

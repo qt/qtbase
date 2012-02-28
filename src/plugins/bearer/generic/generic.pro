@@ -11,6 +11,8 @@ SOURCES += qgenericengine.cpp \
            ../qnetworksession_impl.cpp \
            main.cpp
 
+OTHER_FILES += generic.json
+
 DESTDIR = $$QT.network.plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer
 INSTALLS += target

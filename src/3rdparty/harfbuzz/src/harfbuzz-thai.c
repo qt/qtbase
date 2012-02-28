@@ -74,10 +74,10 @@ static void to_tis620(const HB_UChar16 *string, hb_uint32 len, const char *cstr)
     for (i = 0; i < len; ++i) {
         if (string[i] <= 0xa0)
             result[i] = (unsigned char)string[i];
-        if (string[i] >= 0xe01 && string[i] <= 0xe5b)
+        else if (string[i] >= 0xe01 && string[i] <= 0xe5b)
             result[i] = (unsigned char)(string[i] - 0xe00 + 0xa0);
         else
-            result[i] = '?';
+            result[i] = (unsigned char)~0; // Same encoding as libthai uses for invalid chars
     }
 
     result[len] = 0;
@@ -259,8 +259,13 @@ static HB_Bool HB_ThaiConvertStringToGlyphIndices (HB_ShaperItem *item)
         for (int lgi = 0; lgi < lgn; lgi++) {
             if ( rglyphs[lgi] == 0xdd/*TH_BLANK_BASE_GLYPH*/ ) {
                 glyphString[slen++] = C_DOTTED_CIRCLE;
-            }
-            else {
+            } else if (cstr[i] == (signed char)~0) {
+                // The only glyphs that should be passed to this function that cannot be mapped to
+                // tis620 are the ones of type Inherited class.  Pass these glyphs untouched.
+                glyphString[slen++] = string[i];
+                if (string[i] == 0x200D || string[i] == 0x200C)
+                    item->attributes[slen-1].dontPrint = true; // Hide ZWJ and ZWNJ characters
+            } else {
                 glyphString[slen++] = (HB_UChar16) thai_get_glyph_index (font_type, rglyphs[lgi]);
             }
         }
@@ -353,7 +358,7 @@ HB_Bool HB_ThaiShape (HB_ShaperItem *shaper_item)
     const int availableGlyphs = shaper_item->num_glyphs;
     if ( HB_SelectScript (shaper_item, thai_features) ) {
         HB_OpenTypeShape (shaper_item, /*properties*/0);
-        return HB_OpenTypePosition (shaper_item, availableGlyphs, /*doLogClusters*/false);
+        return HB_OpenTypePosition (shaper_item, availableGlyphs, /*doLogClusters*/true);
     }
 #endif
 

@@ -353,7 +353,7 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
 #ifndef QT_NO_NETWORKPROXY
     qRegisterMetaType<QNetworkProxy>("QNetworkProxy");
 #endif
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     qRegisterMetaType<QList<QSslError> >("QList<QSslError>");
     qRegisterMetaType<QSslConfiguration>("QSslConfiguration");
 #endif
@@ -974,7 +974,11 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 
 #ifndef QT_NO_HTTP
     // Since Qt 5 we use the new QNetworkReplyHttpImpl
-    if (scheme == QLatin1String("http") || scheme == QLatin1String("https") ) {
+    if (scheme == QLatin1String("http")
+#ifndef QT_NO_SSL
+        || scheme == QLatin1String("https")
+#endif
+        ) {
         QNetworkReplyHttpImpl *reply = new QNetworkReplyHttpImpl(this, request, op, outgoingData);
 #ifndef QT_NO_BEARERMANAGEMENT
         connect(this, SIGNAL(networkSessionConnected()),
@@ -1007,7 +1011,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         priv->backend->reply = priv;
     }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     reply->setSslConfiguration(request.sslConfiguration());
 #endif
 
@@ -1047,7 +1051,7 @@ void QNetworkAccessManagerPrivate::_q_replyFinished()
 
 void QNetworkAccessManagerPrivate::_q_replySslErrors(const QList<QSslError> &errors)
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     Q_Q(QNetworkAccessManager);
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
     if (reply)
@@ -1062,7 +1066,7 @@ QNetworkReply *QNetworkAccessManagerPrivate::postProcess(QNetworkReply *reply)
     Q_Q(QNetworkAccessManager);
     QNetworkReplyPrivate::setManager(reply, q);
     q->connect(reply, SIGNAL(finished()), SLOT(_q_replyFinished()));
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     /* In case we're compiled without SSL support, we don't have this signal and we need to
      * avoid getting a connection error. */
     q->connect(reply, SIGNAL(sslErrors(QList<QSslError>)), SLOT(_q_replySslErrors(QList<QSslError>)));

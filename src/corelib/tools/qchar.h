@@ -86,9 +86,8 @@ public:
     Q_DECL_CONSTEXPR QChar(QLatin1Char ch) : ucs(ch.unicode()) {} // implicit
 
 #ifndef QT_NO_CAST_FROM_ASCII
-    // these two constructors are NOT inline const_expr!
-    QT_ASCII_CAST_WARN_CONSTRUCTOR explicit QChar(char c);
-    QT_ASCII_CAST_WARN_CONSTRUCTOR explicit QChar(uchar c);
+    QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(char c) : ucs(uchar(c)) { }
+    QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(uchar c) : ucs(c) { }
 #endif
     // Unicode information
 
@@ -222,13 +221,13 @@ public:
 
     UnicodeVersion unicodeVersion() const;
 
-    char toAscii() const;
+    inline char toAscii() const;
     inline char toLatin1() const;
     inline ushort unicode() const { return ucs; }
     inline ushort &unicode() { return ucs; }
 
-    static QChar fromAscii(char c);
-    static QChar fromLatin1(char c);
+    static inline QChar fromAscii(char c);
+    static inline QChar fromLatin1(char c);
 
     inline bool isNull() const { return ucs == 0; }
     bool isPrint() const;
@@ -344,8 +343,10 @@ private:
 
 Q_DECLARE_TYPEINFO(QChar, Q_MOVABLE_TYPE);
 
+inline char QChar::toAscii() const { return ucs > 0xff ? 0 : char(ucs); }
 inline char QChar::toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
 inline QChar QChar::fromLatin1(char c) { return QChar(ushort(uchar(c))); }
+inline QChar QChar::fromAscii(char c) { return QChar(ushort(uchar(c))); }
 
 inline void QChar::setCell(uchar acell)
 { ucs = ushort((ucs & 0xff00) + acell); }

@@ -71,7 +71,7 @@
 
 #ifndef QT_NO_HTTP
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #    include <QtNetwork/qsslsocket.h>
 #    include <QtNetwork/qsslerror.h>
 #else
@@ -120,7 +120,7 @@ public:
 
     QHttpNetworkConnectionChannel *channels() const;
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void setSslConfiguration(const QSslConfiguration &config);
     void ignoreSslErrors(int channel = -1);
     void ignoreSslErrors(const QList<QSslError> &errors, int channel = -1);

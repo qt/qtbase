@@ -132,7 +132,7 @@ public:
 
     QHttpNetworkConnection* connection();
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     QSslConfiguration sslConfiguration() const;
     void setSslConfiguration(const QSslConfiguration &config);
     void ignoreSslErrors();

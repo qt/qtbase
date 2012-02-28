@@ -46,6 +46,8 @@
 #include <qevent.h>
 #include <qaction.h>
 #include <qmenu.h>
+#include <qplatformtheme_qpa.h>
+#include <private/qguiapplication_p.h>
 
 class tst_QAction : public QObject
 {
@@ -77,6 +79,7 @@ private slots:
 
 private:
     int m_lastEventType;
+    int m_keyboardScheme;
     QAction *m_lastAction;
     QWidget *m_tstWidget;
 };
@@ -121,8 +124,10 @@ private:
     tst_QAction *tst;
 };
 
-tst_QAction::tst_QAction()
+tst_QAction::tst_QAction() : m_keyboardScheme(QPlatformTheme::WindowsKeyboardScheme)
 {
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+        m_keyboardScheme = theme->themeHint(QPlatformTheme::KeyboardScheme).toInt();
 }
 
 tst_QAction::~tst_QAction()
@@ -237,13 +242,21 @@ void tst_QAction::setStandardKeys()
     QVERIFY(act.shortcut() == act.shortcuts().first());
 
     QList<QKeySequence> expected;
-#if defined(Q_OS_MAC)
-    expected  << QKeySequence("CTRL+C");
-#else
-    expected  << QKeySequence("CTRL+C") << QKeySequence("CTRL+INSERT");
-#endif
-//  Qt/Embedded on Windows: expected  << QKeySequence("CTRL+C") << QKeySequence("F16") << QKeySequence("CTRL+INSERT");
-    QVERIFY(act.shortcuts() == expected);
+    const QKeySequence ctrlC = QKeySequence(QStringLiteral("CTRL+C"));
+    const QKeySequence ctrlInsert = QKeySequence(QStringLiteral("CTRL+INSERT"));
+    switch (m_keyboardScheme) {
+    case QPlatformTheme::MacKeyboardScheme:
+        expected  << ctrlC;
+        break;
+    case QPlatformTheme::WindowsKeyboardScheme:
+        expected  << ctrlC << ctrlInsert;
+        break;
+    default: // X11
+        expected  << ctrlC << QKeySequence(QStringLiteral("F16")) << ctrlInsert;
+        break;
+    }
+
+    QCOMPARE(act.shortcuts(), expected);
 }
 
 

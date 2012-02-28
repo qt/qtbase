@@ -11,3 +11,6 @@ QT += core-private platformsupport-private
 
 SOURCES = main.cpp \
           qevdevmouse.cpp
+
+OTHER_FILES += \
+    evdevmouse.json

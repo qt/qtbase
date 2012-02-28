@@ -1075,7 +1075,7 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
             d->activeMenu = 0;
             menu->hide();
         }
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
         if((d->closePopupMode = style()->styleHint(QStyle::SH_MenuBar_DismissOnSecondClick)))
             update(d->actionRect(action));
 #endif
@@ -1845,15 +1845,12 @@ void QMenuBar::setDefaultAction(QAction *act)
     Q_D(QMenuBar);
     if (d->defaultAction == act)
         return;
-#ifdef Q_OS_WINCE
     if (qt_wince_is_mobile())
         if (d->defaultAction) {
             disconnect(d->defaultAction, SIGNAL(changed()), this, SLOT(_q_updateDefaultAction()));
             disconnect(d->defaultAction, SIGNAL(destroyed()), this, SLOT(_q_updateDefaultAction()));
         }
-#endif
     d->defaultAction = act;
-#ifdef Q_OS_WINCE
     if (qt_wince_is_mobile())
         if (d->defaultAction) {
             connect(d->defaultAction, SIGNAL(changed()), this, SLOT(_q_updateDefaultAction()));
@@ -1862,7 +1859,6 @@ void QMenuBar::setDefaultAction(QAction *act)
     if (d->wce_menubar) {
         d->wce_menubar->rebuild();
     }
-#endif
 }
 
 /*!

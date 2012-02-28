@@ -55,13 +55,21 @@ public:
     tst_QPlugin();
 
 private slots:
+    void initTestCase();
     void loadDebugPlugin();
     void loadReleasePlugin();
 };
 
 tst_QPlugin::tst_QPlugin()
-    : dir("plugins")
+    : dir(QFINDTESTDATA("plugins"))
 {
+}
+
+void tst_QPlugin::initTestCase()
+{
+    QVERIFY2(dir.exists(),
+             qPrintable(QString::fromLatin1("Cannot find the 'plugins' directory starting from '%1'").
+                        arg(QDir::toNativeSeparators(QDir::currentPath()))));
 }
 
 void tst_QPlugin::loadDebugPlugin()

@@ -206,6 +206,7 @@ information about a particular change.
   You might need to adjust your code if it used a QIconEngine.
 
 - qmake
+  * Projects which explicitly set an empty TARGET are considered broken now.
   * several functions and built-in variables were modified to return normalized paths.
 
 - QTextCodecPlugin has been removed since it is no longer used. All text codecs
@@ -213,6 +214,11 @@ information about a particular change.
 
 - QDir::NoDotAndDotDot is QDir::NoDot|QDir::NoDotDot therefore there is no need
   to use or check both.
+
+- QFSFileEngine, QAbstractFileEngine, QAbstractFileEngineIterator and
+  QAbstractFileEngineHandler were removed from public API and are no longer
+  exported. They may temporarily live as private implementation details, but
+  they may be altogether dropped or otherwise changed at will in the future.
 
 - QLocale
   * toShort(), toUShort(), toInt(), toUInt(), toLongLong() and toULongLong() no
@@ -222,6 +228,9 @@ information about a particular change.
 - QSystemLocale has been removed from the public API.
 
 - QSqlQueryModel::indexInQuery() is now virtual. See note below under QSql.
+
+- qMacVersion() has been removed. Use QSysInfo::macVersion() or
+  QSysInfo::MacintoshVersion instead.
 
 ****************************************************************************
 *                           General                                        *
@@ -294,6 +303,10 @@ QtCore
     * The QDate::addDays() and QDateTime::addDays() methods now take a qint64
     * The QDate::daysTo() and QDateTime::daysTo() methods now return a qint64
 
+* QTextCodec::codecForCStrings() and QTextCodec::setCodecForCStrings() have both
+  been removed. This was removed due to issues with breaking other code from
+  libraries, creating uncertainty/bugs in using QString easily, and (to a lesser
+  extent) performance issues.
 
 * QIntValidator and QDoubleValidator no longer fall back to using the C locale if
   the requested locale fails to validate the input.

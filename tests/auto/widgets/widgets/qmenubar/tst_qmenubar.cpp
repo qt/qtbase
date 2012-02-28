@@ -50,10 +50,6 @@
 #include <qaction.h>
 #include <qstyleoption.h>
 
-#ifdef Q_WS_WIN
-#include <windows.h>
-#endif
-
 #include <qobject.h>
 
 QT_FORWARD_DECLARE_CLASS(QMainWindow)

@@ -1,9 +1,6 @@
-CONFIG += testcase
 TEMPLATE = app
 TARGET = tst_qmessagebox
-QT += widgets testlib
-DEPENDPATH += .
-INCLUDEPATH += . 
+QT += gui-private core-private widgets testlib
+CONFIG += testcase
 
-# Input
 SOURCES += tst_qmessagebox.cpp 

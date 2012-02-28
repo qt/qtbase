@@ -76,8 +76,6 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
     if (!clipboard->supportsMode(mode)) return;
 
     clipboard->setMimeData(src,mode);
-
-    emitChanged(mode);
 }
 
 bool QClipboard::supportsMode(Mode mode) const

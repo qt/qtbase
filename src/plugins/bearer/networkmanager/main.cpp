@@ -52,6 +52,9 @@ QT_BEGIN_NAMESPACE
 
 class QNetworkManagerEnginePlugin : public QBearerEnginePlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QBearerEngineFactoryInterface" FILE "networkmanager.json")
+
 public:
     QNetworkManagerEnginePlugin();
     ~QNetworkManagerEnginePlugin();
@@ -86,10 +89,9 @@ QBearerEngine *QNetworkManagerEnginePlugin::create(const QString &key) const
     return 0;
 }
 
-Q_EXPORT_STATIC_PLUGIN(QNetworkManagerEnginePlugin)
-Q_EXPORT_PLUGIN2(qnmbearer, QNetworkManagerEnginePlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"
 
 #endif // QT_NO_DBUS
 #endif // QT_NO_BEARERMANAGEMENT

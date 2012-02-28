@@ -379,7 +379,7 @@ bool QXmlUtils::isNCName(const QStringRef &ncName)
     const int len = ncName.size();
     for(int i = 0; i < len; ++i)
     {
-        const QChar &at = ncName.at(i);
+        const QChar at = ncName.at(i);
         if(!QXmlUtils::isNameChar(at) || at == QLatin1Char(':'))
             return false;
     }

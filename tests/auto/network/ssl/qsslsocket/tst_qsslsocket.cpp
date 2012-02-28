@@ -55,7 +55,7 @@
 #include <QAuthenticator>
 
 #include "private/qhostinfo_p.h"
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #include "private/qsslsocket_openssl_p.h"
 #include "private/qsslsocket_openssl_symbols_p.h"
 #include "private/qsslconfiguration_p.h"
@@ -65,7 +65,7 @@
 
 Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
 Q_DECLARE_METATYPE(QAbstractSocket::SocketError)
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 Q_DECLARE_METATYPE(QSslSocket::SslMode)
 typedef QList<QSslError::SslError> SslErrorList;
 Q_DECLARE_METATYPE(SslErrorList)
@@ -80,7 +80,7 @@ Q_DECLARE_METATYPE(QSslConfiguration)
 #define QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
 #endif
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 class QSslSocketPtr: public QSharedPointer<QSslSocket>
 {
 public:
@@ -113,7 +113,7 @@ public:
         return QTestEventLoop::instance().timeout();
     }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     QSslSocketPtr newSocket();
 #endif
 
@@ -124,7 +124,7 @@ public slots:
     void cleanup();
     void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth);
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 private slots:
     void constructing();
     void simpleConnect();
@@ -226,7 +226,7 @@ protected slots:
 private:
     QSslSocket *socket;
     QList<QSslError> storedExpectedSslErrors;
-#endif // QT_NO_OPENSSL
+#endif // QT_NO_SSL
 private:
     static int loopLevel;
 };
@@ -235,7 +235,7 @@ int tst_QSslSocket::loopLevel = 0;
 
 tst_QSslSocket::tst_QSslSocket()
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     qRegisterMetaType<QList<QSslError> >("QList<QSslError>");
     qRegisterMetaType<QSslError>("QSslError");
     qRegisterMetaType<QAbstractSocket::SocketState>("QAbstractSocket::SocketState");
@@ -320,7 +320,7 @@ void tst_QSslSocket::cleanup()
     QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 QSslSocketPtr tst_QSslSocket::newSocket()
 {
     QSslSocket *socket = new QSslSocket;
@@ -341,7 +341,7 @@ void tst_QSslSocket::proxyAuthenticationRequired(const QNetworkProxy &, QAuthent
     auth->setPassword("password");
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 void tst_QSslSocket::constructing()
 {
@@ -2216,7 +2216,7 @@ void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last,
     QVERIFY2(!socket->waitForEncrypted(4000), qPrintable(socket->errorString()));
 }
 
-#endif // QT_NO_OPENSSL
+#endif // QT_NO_SSL
 
 QTEST_MAIN(tst_QSslSocket)
 

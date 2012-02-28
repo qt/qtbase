@@ -82,7 +82,16 @@ public:
     QEasingCurve(const QEasingCurve &other);
     ~QEasingCurve();
 
-    QEasingCurve &operator=(const QEasingCurve &other);
+    QEasingCurve &operator=(const QEasingCurve &other)
+    { if ( this != &other ) { QEasingCurve copy(other); swap(copy); } return *this; }
+#ifdef Q_COMPILER_RVALUE_REFS
+    QEasingCurve(QEasingCurve &&other) : d_ptr(other.d_ptr) { other.d_ptr = 0; }
+    QEasingCurve &operator=(QEasingCurve &&other)
+    { qSwap(d_ptr, other.d_ptr); return *this; }
+#endif
+
+    inline void swap(QEasingCurve &other) { qSwap(d_ptr, other.d_ptr); }
+
     bool operator==(const QEasingCurve &other) const;
     inline bool operator!=(const QEasingCurve &other) const
     { return !(this->operator==(other)); }
@@ -120,6 +129,7 @@ private:
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QEasingCurve &);
 #endif
 };
+Q_DECLARE_TYPEINFO(QEasingCurve, Q_MOVABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QEasingCurve &item);

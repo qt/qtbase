@@ -57,7 +57,6 @@ public:
 public slots:
     void initTestCase();
     void cleanupTestCase();
-    void init();
     void cleanup();
 
 private slots:
@@ -131,13 +130,10 @@ void tst_qmake::cleanupTestCase()
 {
 }
 
-void tst_qmake::init()
-{
-    test_compiler.clearCommandOutput();
-}
-
 void tst_qmake::cleanup()
 {
+    test_compiler.resetArguments();
+    test_compiler.resetEnvironment();
     test_compiler.clearCommandOutput();
 }
 
@@ -305,7 +301,6 @@ void tst_qmake::export_across_file_boundaries()
     test_compiler.addToEnvironment("QMAKEFEATURES=.");
     QString workDir = base_path + "/testdata/export_across_file_boundaries";
     QVERIFY( test_compiler.qmake( workDir, "foo" ));
-    test_compiler.resetEnvironment();
 }
 
 void tst_qmake::include_dir()
@@ -448,31 +443,30 @@ void tst_qmake::bundle_spaces()
 {
     QString workDir = base_path + "/testdata/bundle-spaces";
 
-    // We set up alternate commands here, to make sure we're testing Mac
+    // We set up alternate arguments here, to make sure we're testing Mac
     // Bundles and since this might be the wrong output we rely on dry-running
     // make (-n).
 
-    TestCompiler local_tc;
-    local_tc.setBaseCommands("make -n", "qmake -macx -spec macx-g++");
+    test_compiler.setArguments("-n", "-spec macx-g++");
 
-    QVERIFY( local_tc.qmake(workDir, "bundle-spaces") );
+    QVERIFY( test_compiler.qmake(workDir, "bundle-spaces") );
 
     TempFile non_existing_file(workDir + "/non-existing file");
     QVERIFY( !non_existing_file.exists() );
 
     // Make fails: no rule to make "non-existing file"
-    QVERIFY( !local_tc.make(workDir) );
+    QVERIFY( test_compiler.make(workDir, QString(), true) );
 
     QVERIFY( non_existing_file.open(QIODevice::WriteOnly) );
     QVERIFY( non_existing_file.exists() );
 
     // Aha!
-    QVERIFY( local_tc.make(workDir) );
+    QVERIFY( test_compiler.make(workDir) );
 
     // Cleanup
     QVERIFY( non_existing_file.remove() );
     QVERIFY( !non_existing_file.exists() );
-    QVERIFY( local_tc.removeMakefile(workDir) );
+    QVERIFY( test_compiler.removeMakefile(workDir) );
 }
 #endif // Q_OS_WIN
 

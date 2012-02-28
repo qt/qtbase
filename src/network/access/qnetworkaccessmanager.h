@@ -140,7 +140,7 @@ Q_SIGNALS:
 #endif
     void authenticationRequired(QNetworkReply *reply, QAuthenticator *authenticator);
     void finished(QNetworkReply *reply);
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 #endif
 

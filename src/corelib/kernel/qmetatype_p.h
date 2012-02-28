@@ -122,31 +122,6 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_DECLARE_WIDGETS_MODULE_TYPES_ITER)
 class QMetaTypeInterface
 {
 public:
-    template<typename T>
-    struct Impl {
-        static void *creator(const T *t)
-        {
-            if (t)
-                return new T(*t);
-            return new T();
-        }
-
-        static void deleter(T *t) { delete t; }
-        static void saver(QDataStream &stream, const T *t) { stream << *t; }
-        static void loader(QDataStream &stream, T *t) { stream >> *t; }
-        static void destructor(T *t)
-        {
-            Q_UNUSED(t) // Silence MSVC that warns for POD types.
-            t->~T();
-        }
-        static void *constructor(void *where, const T *t)
-        {
-            if (t)
-                return new (where) T(*static_cast<const T*>(t));
-            return new (where) T;
-        }
-    };
-
     QMetaType::Creator creator;
     QMetaType::Deleter deleter;
     QMetaType::SaveOperator saveOp;
@@ -157,20 +132,10 @@ public:
     quint32 flags; // same as QMetaType::TypeFlags
 };
 
-template<>
-struct QMetaTypeInterface::Impl<void> {
-    static void *creator(const void *) { return 0; }
-    static void deleter(void *) {}
-    static void saver(QDataStream &, const void *) {}
-    static void loader(QDataStream &, void *) {}
-    static void destructor(void *){}
-    static void *constructor(void *, const void *) { return 0; }
-};
-
 #ifndef QT_NO_DATASTREAM
 #  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
-    /*saveOp*/(reinterpret_cast<QMetaType::SaveOperator>(QMetaTypeInterface::Impl<Type>::saver)), \
-    /*loadOp*/(reinterpret_cast<QMetaType::LoadOperator>(QMetaTypeInterface::Impl<Type>::loader)),
+    /*saveOp*/(qMetaTypeSaveHelper<Type>), \
+    /*loadOp*/(qMetaTypeLoadHelper<Type>),
 #  define QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(Type) \
     /*saveOp*/ 0, \
     /*loadOp*/ 0,
@@ -184,11 +149,11 @@ struct QMetaTypeInterface::Impl<void> {
 
 #define QT_METATYPE_INTERFACE_INIT_IMPL(Type, DATASTREAM_DELEGATE) \
 { \
-    /*creator*/(reinterpret_cast<QMetaType::Creator>(QMetaTypeInterface::Impl<Type>::creator)), \
-    /*deleter*/(reinterpret_cast<QMetaType::Deleter>(QMetaTypeInterface::Impl<Type>::deleter)), \
+    /*creator*/(qMetaTypeCreateHelper<Type>), \
+    /*deleter*/(qMetaTypeDeleteHelper<Type>), \
     DATASTREAM_DELEGATE(Type) \
-    /*constructor*/(reinterpret_cast<QMetaType::Constructor>(QMetaTypeInterface::Impl<Type>::constructor)), \
-    /*destructor*/(reinterpret_cast<QMetaType::Destructor>(QMetaTypeInterface::Impl<Type>::destructor)), \
+    /*constructor*/(qMetaTypeConstructHelper<Type>), \
+    /*destructor*/(qMetaTypeDestructHelper<Type>), \
     /*size*/(QTypeInfo<Type>::sizeOf), \
     /*flags*/(!QTypeInfo<Type>::isStatic * QMetaType::MovableType) \
             | (QTypeInfo<Type>::isComplex * QMetaType::NeedsConstruction) \

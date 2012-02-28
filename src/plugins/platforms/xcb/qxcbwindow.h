@@ -132,6 +132,7 @@ private:
     void updateNetWmStateBeforeMap();
 
     void setTransparentForMouseEvents(bool transparent);
+    void updateDoesNotAcceptFocus(bool doesNotAcceptFocus);
 
     void create();
     void destroy();

@@ -47,6 +47,9 @@ QT_BEGIN_NAMESPACE
 
 class QIBaseDriverPlugin : public QSqlDriverPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "ibase.json")
+
 public:
     QIBaseDriverPlugin();
 
@@ -70,12 +73,9 @@ QSqlDriver* QIBaseDriverPlugin::create(const QString &name)
 
 QStringList QIBaseDriverPlugin::keys() const
 {
-    QStringList l;
-    l  << QLatin1String("QIBASE");
-    return l;
+    return QStringList(QStringLiteral("QIBASE"));
 }
 
-Q_EXPORT_STATIC_PLUGIN(QIBaseDriverPlugin)
-Q_EXPORT_PLUGIN2(qsqlibase, QIBaseDriverPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

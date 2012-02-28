@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qabstractfileengine.h"
+#include "private/qabstractfileengine_p.h"
 #include "qfilesystemiterator_p.h"
 #include "qdir.h"
 

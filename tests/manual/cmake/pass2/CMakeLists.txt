@@ -13,5 +13,7 @@ qt5_wrap_cpp(moc_files myobject.h)
 
 qt5_add_resources(rcc_files "pass2.qrc")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+
 add_executable(myobject myobject.cpp ${moc_files} ${rcc_files})
 target_link_libraries(myobject ${Qt5Core_LIBRARIES})

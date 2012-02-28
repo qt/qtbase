@@ -13,7 +13,6 @@ unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
     Testing \
     Library
 
-# Input
 HEADERS = qbenchmark.h \
     qsignalspy.h \
     qtestaccessible.h \

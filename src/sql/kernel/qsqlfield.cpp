@@ -504,7 +504,6 @@ bool QSqlField::isValid() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QSqlField &f)
 {
-#ifndef Q_BROKEN_DEBUG_STREAM
     dbg.nospace() << "QSqlField(" << f.name() << ", " << QVariant::typeToName(f.type());
     if (f.length() >= 0)
         dbg.nospace() << ", length: " << f.length();
@@ -520,11 +519,6 @@ QDebug operator<<(QDebug dbg, const QSqlField &f)
         dbg.nospace() << ", auto-value: \"" << f.defaultValue() << '\"';
     dbg.nospace() << ')';
     return dbg.space();
-#else
-    qWarning("This compiler doesn't support streaming QSqlField to QDebug");
-    return dbg;
-    Q_UNUSED(f);
-#endif
 }
 #endif
 

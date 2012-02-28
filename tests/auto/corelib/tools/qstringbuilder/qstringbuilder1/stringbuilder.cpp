@@ -66,10 +66,8 @@
 
 void runScenario()
 {
-    // set codec for C strings to 0, enforcing Latin1
-    QTextCodec::setCodecForCStrings(0);
-    QVERIFY(!QTextCodec::codecForCStrings());
-
+    // this code is latin1. TODO: replace it with the utf8 block below, once
+    // strings default to utf8.
     QLatin1Literal l1literal(LITERAL);
     QLatin1String l1string(LITERAL);
     QString string(l1string);
@@ -130,7 +128,10 @@ void runScenario()
     r = string P ba;
     QCOMPARE(r, r2);
 
+#if 0
     // now test with codec for C strings set
+    // TODO: to be re-enabled once strings default to utf8, in place of the
+    // latin1 code above.
     QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
     QVERIFY(QTextCodec::codecForCStrings());
     QCOMPARE(QTextCodec::codecForCStrings()->name(), QByteArray("UTF-8"));
@@ -153,6 +154,7 @@ void runScenario()
     QCOMPARE(r, r3);
     r = string P ba;
     QCOMPARE(r, r3);
+#endif
 
     ba = QByteArray(); // empty
     r = ba P string;
@@ -212,8 +214,11 @@ void runScenario()
         str +=  QLatin1String(LITERAL) P str;
         QCOMPARE(str, QString::fromUtf8(UTF8_LITERAL LITERAL UTF8_LITERAL));
 #ifndef QT_NO_CAST_FROM_ASCII
+#if 0
+        // TODO: this relies on strings defaulting to utf8, so disable this for now.
         str = (QString::fromUtf8(UTF8_LITERAL) += QLatin1String(LITERAL) P UTF8_LITERAL);
         QCOMPARE(str, QString::fromUtf8(UTF8_LITERAL LITERAL UTF8_LITERAL));
+#endif
 #endif
     }
 
@@ -229,10 +234,13 @@ void runScenario()
         ba2 += ba2 P withZero;
         QCOMPARE(ba2, QByteArray(withZero + withZero + withZero));
 #ifndef QT_NO_CAST_TO_ASCII
+#if 0
+        // TODO: this relies on strings defaulting to utf8, so disable this for now.
         ba = UTF8_LITERAL;
         ba2 = (ba += QLatin1String(LITERAL) + QString::fromUtf8(UTF8_LITERAL));
         QCOMPARE(ba2, ba);
         QCOMPARE(ba, QByteArray(UTF8_LITERAL LITERAL UTF8_LITERAL));
+#endif
 #endif
     }
 

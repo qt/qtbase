@@ -1845,7 +1845,7 @@ void tst_QDom::checkIntOverflow() const
         QVERIFY(doc.setContent(xmlMessage));
 
         const QDomNodeList nl(doc.elementsByTagName(QLatin1String("test")));
-        QCOMPARE(nl.length(), uint(1));
+        QCOMPARE(nl.length(), 1);
     }
 }
 

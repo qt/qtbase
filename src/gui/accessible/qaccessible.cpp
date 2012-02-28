@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
     \class QAccessible
     \brief The QAccessible class provides enums and static functions
     related to accessibility.
+    \internal
 
     \ingroup accessibility
     \inmodule QtWidgets
@@ -364,6 +365,8 @@ QT_BEGIN_NAMESPACE
     \value Labelled         The first object is labelled by the second object.
     \value Controller       The first object controls the second object.
     \value Controlled       The first object is controlled by the second object.
+    \value AllRelations     Used as a mask to specify that we are interesting in information
+                            about all relations
 
     Implementations of relations() return a combination of these flags.
     Some values are mutually exclusive.
@@ -690,6 +693,7 @@ void QAccessible::updateAccessibility(const QAccessibleEvent &event)
     \class QAccessibleEvent
     \brief The QAccessibleEvent is use to notify about changes that are
     relevant for accessibility in the application.
+    \internal
 
     \ingroup accessibility
     \inmodule QtGui
@@ -725,6 +729,7 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
     \class QAccessibleInterface
     \brief The QAccessibleInterface class defines an interface that exposes information
     about accessible objects.
+    \internal
 
     \ingroup accessibility
     \inmodule QtGui
@@ -1170,6 +1175,7 @@ const char *qAccessibleEventString(QAccessible::Event event)
     return QAccessible::staticMetaObject.enumerator(eventEnum).valueToKey(event);
 }
 
+/*! \internal */
 bool operator==(const QAccessible::State &first, const QAccessible::State &second)
 {
     return memcmp(&first, &second, sizeof(QAccessible::State)) == 0;

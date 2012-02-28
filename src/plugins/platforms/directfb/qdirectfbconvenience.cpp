@@ -128,13 +128,65 @@ IDirectFBSurface *QDirectFbConvenience::dfbSurfaceForPlatformPixmap(QPlatformPix
 
 Qt::MouseButton QDirectFbConvenience::mouseButton(DFBInputDeviceButtonIdentifier identifier)
 {
-    switch (identifier){
-    case DIBI_LEFT:
+    // The Enum contains values for DIBI_FIRST (= DIBI_LEFT), DIBI_LAST (= 0x1f,) and
+    // just 3 enumerated Mouse Buttons. To convert into *ALL* possible Qt::MoueButton values,
+    // the parameter is cast as integer.
+
+    switch (int(identifier)) {
+    case DIBI_LEFT:                 // value is 0x00
         return Qt::LeftButton;
-    case DIBI_MIDDLE:
-        return Qt::MidButton;
-    case DIBI_RIGHT:
+    case DIBI_RIGHT:                // value is 0x01
         return Qt::RightButton;
+    case DIBI_MIDDLE:               // value is 0x02
+        return Qt::MidButton;
+    case 0x03:
+        return Qt::BackButton;
+    case 0x04:
+        return Qt::ForwardButton;
+    case 0x05:
+        return Qt::ExtraButton3;
+    case 0x06:
+        return Qt::ExtraButton4;
+    case 0x07:
+        return Qt::ExtraButton5;
+    case 0x08:
+        return Qt::ExtraButton6;
+    case 0x09:
+        return Qt::ExtraButton7;
+    case 0x0a:
+        return Qt::ExtraButton8;
+    case 0x0b:
+        return Qt::ExtraButton9;
+    case 0x0c:
+        return Qt::ExtraButton10;
+    case 0x0d:
+        return Qt::ExtraButton11;
+    case 0x0e:
+        return Qt::ExtraButton12;
+    case 0x0f:
+        return Qt::ExtraButton13;
+    case 0x10:
+        return Qt::ExtraButton14;
+    case 0x11:
+        return Qt::ExtraButton15;
+    case 0x12:
+        return Qt::ExtraButton16;
+    case 0x13:
+        return Qt::ExtraButton17;
+    case 0x14:
+        return Qt::ExtraButton18;
+    case 0x15:
+        return Qt::ExtraButton19;
+    case 0x16:
+        return Qt::ExtraButton20;
+    case 0x17:
+        return Qt::ExtraButton21;
+    case 0x18:
+        return Qt::ExtraButton22;
+    case 0x19:
+        return Qt::ExtraButton23;
+    case 0x1a:
+        return Qt::ExtraButton24;
     default:
         return Qt::NoButton;
     }

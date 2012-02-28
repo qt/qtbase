@@ -66,7 +66,9 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef Q_OS_WIN
 #define QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER
+#endif
 
 // used in testing framework
 #define QSETTINGS_P_H_VERSION 3

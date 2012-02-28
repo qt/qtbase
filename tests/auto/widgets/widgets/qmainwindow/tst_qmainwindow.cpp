@@ -101,6 +101,7 @@ private slots:
     void centralWidgetSize();
     void dockWidgetSize();
     void QTBUG2774_stylechange();
+    void QTBUG15080_restoreState();
     void toggleUnifiedTitleAndToolBarOnMac();
 };
 
@@ -1703,6 +1704,41 @@ void tst_QMainWindow::QTBUG2774_stylechange()
         QVERIFY(!mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height())));
         QVERIFY(!mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height() + 1)));
     }
+}
+
+void tst_QMainWindow::QTBUG15080_restoreState()
+{
+    QByteArray state;
+
+    //save state
+    {
+        QMainWindow mw1;
+        QDockWidget * dw1 = new  QDockWidget();
+        dw1->setObjectName("Left DockWidget");
+        mw1.addDockWidget(Qt::LeftDockWidgetArea, dw1);
+        mw1.setCentralWidget(new QTextEdit());
+        mw1.show();
+        QApplication::processEvents();
+        dw1->setFixedWidth(101);
+        QApplication::processEvents();
+
+        state = mw1.saveState();
+    }
+
+    //restore state
+
+    QMainWindow mw2;
+    QDockWidget * dw2 = new  QDockWidget();
+    dw2->setObjectName("Left DockWidget");
+    mw2.addDockWidget(Qt::LeftDockWidgetArea, dw2);
+    mw2.setCentralWidget(new QTextEdit());
+    mw2.restoreState(state);
+    //QTBUG15080 caused by setStyleSheet
+    mw2.setStyleSheet("color:red");
+    mw2.show();
+    QApplication::processEvents();
+
+    QCOMPARE(dw2->width(), 101);
 }
 
 void tst_QMainWindow::toggleUnifiedTitleAndToolBarOnMac()

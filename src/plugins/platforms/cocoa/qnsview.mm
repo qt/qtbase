@@ -371,14 +371,11 @@ static QTouchDevice *touchDevice = 0;
 #ifndef QT_NO_WHEELEVENT
 - (void)scrollWheel:(NSEvent *)theEvent
 {
-    int deltaX = 0;
-    int deltaY = 0;
-    int deltaZ = 0;
-
     const EventRef carbonEvent = (EventRef)[theEvent eventRef];
     const UInt32 carbonEventKind = carbonEvent ? ::GetEventKind(carbonEvent) : 0;
     const bool scrollEvent = carbonEventKind == kEventMouseScroll;
 
+    QPoint angleDelta;
     if (scrollEvent) {
         // The mouse device contains pixel scroll wheel support (Mighty Mouse, Trackpad).
         // Since deviceDelta is delivered as pixels rather than degrees, we need to
@@ -389,40 +386,45 @@ static QTouchDevice *touchDevice = 0;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
         if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
-            deltaX = [theEvent scrollingDeltaX] * pixelsToDegrees;
-            deltaY = [theEvent scrollingDeltaY] * pixelsToDegrees;
-            //  scrollingDeltaZ API is missing.
+            angleDelta.setX([theEvent scrollingDeltaX] * pixelsToDegrees);
+            angleDelta.setY([theEvent scrollingDeltaY] * pixelsToDegrees);
         } else
 #endif
         {
-            deltaX = [theEvent deviceDeltaX] * pixelsToDegrees;
-            deltaY = [theEvent deviceDeltaY] * pixelsToDegrees;
-            deltaZ = [theEvent deviceDeltaZ] * pixelsToDegrees;
+            angleDelta.setX([theEvent deviceDeltaX] * pixelsToDegrees);
+            angleDelta.setY([theEvent deviceDeltaY] * pixelsToDegrees);
         }
 
     } else {
         // carbonEventKind == kEventMouseWheelMoved
         // Remove acceleration, and use either -120 or 120 as delta:
-        deltaX = qBound(-120, int([theEvent deltaX] * 10000), 120);
-        deltaY = qBound(-120, int([theEvent deltaY] * 10000), 120);
-        deltaZ = qBound(-120, int([theEvent deltaZ] * 10000), 120);
+        angleDelta.setX(qBound(-120, int([theEvent deltaX] * 10000), 120));
+        angleDelta.setY(qBound(-120, int([theEvent deltaY] * 10000), 120));
     }
+
+    QPoint pixelDelta;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
+        if ([theEvent hasPreciseScrollingDeltas]) {
+            pixelDelta.setX([theEvent scrollingDeltaX]);
+            pixelDelta.setY([theEvent scrollingDeltaY]);
+        } else {
+            // docs: "In the case of !hasPreciseScrollingDeltas, multiply the delta with the line width."
+            // scrollingDeltaX seems to return a minimum value of 0.1 in this case, map that to two pixels.
+            const CGFloat lineWithEstimate = 20.0;
+            pixelDelta.setX([theEvent scrollingDeltaX] * lineWithEstimate);
+            pixelDelta.setY([theEvent scrollingDeltaY] * lineWithEstimate);
+        }
+    }
+#endif
+
 
     NSPoint windowPoint = [self convertPoint: [theEvent locationInWindow] fromView: nil];
     QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
     NSTimeInterval timestamp = [theEvent timestamp];
     ulong qt_timestamp = timestamp * 1000;
 
-    if (deltaX != 0)
-        QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, deltaX, Qt::Horizontal);
-
-    if (deltaY != 0)
-        QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, deltaY, Qt::Vertical);
-
-    if (deltaZ != 0)
-        // Qt doesn't explicitly support wheels with a Z component. In a misguided attempt to
-        // try to be ahead of the pack, I'm adding this extra value.
-        QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, deltaY, (Qt::Orientation)3);
+    QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, pixelDelta, angleDelta);
 }
 #endif //QT_NO_WHEELEVENT
 

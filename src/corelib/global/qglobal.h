@@ -191,7 +191,7 @@ namespace QT_NAMESPACE {}
 #endif
 
 #ifndef Q_REQUIRED_RESULT
-#  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1))
+#  if defined(Q_CC_GNU)
 #    define Q_REQUIRED_RESULT __attribute__ ((warn_unused_result))
 #  else
 #    define Q_REQUIRED_RESULT
@@ -275,11 +275,6 @@ typedef unsigned int uint;
 typedef unsigned long ulong;
 QT_END_INCLUDE_NAMESPACE
 
-#if defined(Q_NO_BOOL_TYPE)
-#error "Compiler doesn't support the bool type"
-#endif
-
-
 /*
    Constant bool values
 */
@@ -315,9 +310,7 @@ QT_END_INCLUDE_NAMESPACE
 /*
    Warnings and errors when using deprecated methods
 */
-#if defined(Q_MOC_RUN)
-#  define Q_DECL_DEPRECATED Q_DECL_DEPRECATED
-#elif (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && (__GNUC__ - 0 > 3 || (__GNUC__ - 0 == 3 && __GNUC_MINOR__ - 0 >= 2))) || defined(Q_CC_RVCT)
+#if defined(Q_CC_GNU) || defined(Q_CC_RVCT)
 #  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
 #elif defined(Q_CC_MSVC)
 #  define Q_DECL_DEPRECATED __declspec(deprecated)
@@ -330,15 +323,6 @@ QT_END_INCLUDE_NAMESPACE
 #endif
 #ifndef Q_DECL_VARIABLE_DEPRECATED
 #  define Q_DECL_VARIABLE_DEPRECATED Q_DECL_DEPRECATED
-#endif
-#ifndef Q_DECL_CONSTRUCTOR_DEPRECATED
-#  if defined(Q_MOC_RUN)
-#    define Q_DECL_CONSTRUCTOR_DEPRECATED Q_DECL_CONSTRUCTOR_DEPRECATED
-#  elif defined(Q_NO_DEPRECATED_CONSTRUCTORS)
-#    define Q_DECL_CONSTRUCTOR_DEPRECATED
-#  else
-#    define Q_DECL_CONSTRUCTOR_DEPRECATED Q_DECL_DEPRECATED
-#  endif
 #endif
 
 #if defined(QT_NO_DEPRECATED)
@@ -394,24 +378,13 @@ QT_END_INCLUDE_NAMESPACE
 
 #ifdef QT_ASCII_CAST_WARNINGS
 #  define QT_ASCII_CAST_WARN Q_DECL_DEPRECATED
-#  if defined(Q_CC_GNU) && __GNUC__ < 4
-     /* gcc < 4 doesn't like Q_DECL_DEPRECATED in front of constructors */
-#    define QT_ASCII_CAST_WARN_CONSTRUCTOR
-#  else
-#    define QT_ASCII_CAST_WARN_CONSTRUCTOR Q_DECL_CONSTRUCTOR_DEPRECATED
-#  endif
 #else
 #  define QT_ASCII_CAST_WARN
-#  define QT_ASCII_CAST_WARN_CONSTRUCTOR
 #endif
 
 #if defined(__i386__) || defined(_WIN32) || defined(_WIN32_WCE)
 #  if defined(Q_CC_GNU)
-#if !defined(Q_CC_INTEL) && ((100*(__GNUC__ - 0) + 10*(__GNUC_MINOR__ - 0) + __GNUC_PATCHLEVEL__) >= 332)
 #    define QT_FASTCALL __attribute__((regparm(3)))
-#else
-#    define QT_FASTCALL
-#endif
 #  elif defined(Q_CC_MSVC)
 #    define QT_FASTCALL __fastcall
 #  else
@@ -512,17 +485,12 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 
 class QDataStream;
 
-#if !defined(QT_NO_COP)
-#  define QT_NO_COP
-#endif
-
 #if defined(Q_OS_VXWORKS)
 #  define QT_NO_CRASHHANDLER     // no popen
 #  define QT_NO_PROCESS          // no exec*, no fork
 #  define QT_NO_LPR
 #  define QT_NO_SHAREDMEMORY     // only POSIX, no SysV and in the end...
 #  define QT_NO_SYSTEMSEMAPHORE  // not needed at all in a flat address space
-#  define QT_NO_QWS_MULTIPROCESS // no processes
 #endif
 
 # include <QtCore/qfeatures.h>
@@ -844,112 +812,8 @@ inline void qt_noop(void) {}
 #  define QT_RETHROW throw
 #endif
 
-/*
-   System information
-*/
-
-class QString;
-class Q_CORE_EXPORT QSysInfo {
-public:
-    enum Sizes {
-        WordSize = (sizeof(void *)<<3)
-    };
-
-#if defined(QT_BUILD_QMAKE)
-    enum Endian {
-        BigEndian,
-        LittleEndian
-    };
-    /* needed to bootstrap qmake */
-    static const int ByteOrder;
-#elif defined(Q_BYTE_ORDER)
-    enum Endian {
-        BigEndian,
-        LittleEndian
-
-#  ifdef qdoc
-        , ByteOrder = <platform-dependent>
-#  elif Q_BYTE_ORDER == Q_BIG_ENDIAN
-        , ByteOrder = BigEndian
-#  elif Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        , ByteOrder = LittleEndian
-#  else
-#    error "Undefined byte order"
-#  endif
-    };
-#else
-#  error "Qt not configured correctly, please run configure"
-#endif
-#if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
-    enum WinVersion {
-        WV_32s      = 0x0001,
-        WV_95       = 0x0002,
-        WV_98       = 0x0003,
-        WV_Me       = 0x0004,
-        WV_DOS_based= 0x000f,
-
-        /* codenames */
-        WV_NT       = 0x0010,
-        WV_2000     = 0x0020,
-        WV_XP       = 0x0030,
-        WV_2003     = 0x0040,
-        WV_VISTA    = 0x0080,
-        WV_WINDOWS7 = 0x0090,
-        WV_NT_based = 0x00f0,
-
-        /* version numbers */
-        WV_4_0      = WV_NT,
-        WV_5_0      = WV_2000,
-        WV_5_1      = WV_XP,
-        WV_5_2      = WV_2003,
-        WV_6_0      = WV_VISTA,
-        WV_6_1      = WV_WINDOWS7,
-
-        WV_CE       = 0x0100,
-        WV_CENET    = 0x0200,
-        WV_CE_5     = 0x0300,
-        WV_CE_6     = 0x0400,
-        WV_CE_based = 0x0f00
-    };
-    static const WinVersion WindowsVersion;
-    static WinVersion windowsVersion();
-
-#endif
-#ifdef Q_OS_MAC
-    enum MacVersion {
-        MV_Unknown = 0x0000,
-
-        /* version */
-        MV_9 = 0x0001,
-        MV_10_0 = 0x0002,
-        MV_10_1 = 0x0003,
-        MV_10_2 = 0x0004,
-        MV_10_3 = 0x0005,
-        MV_10_4 = 0x0006,
-        MV_10_5 = 0x0007,
-        MV_10_6 = 0x0008,
-        MV_10_7 = 0x0009,
-
-        /* codenames */
-        MV_CHEETAH = MV_10_0,
-        MV_PUMA = MV_10_1,
-        MV_JAGUAR = MV_10_2,
-        MV_PANTHER = MV_10_3,
-        MV_TIGER = MV_10_4,
-        MV_LEOPARD = MV_10_5,
-        MV_SNOWLEOPARD = MV_10_6,
-        MV_LION = MV_10_7
-    };
-    static const MacVersion MacintoshVersion;
-#endif
-};
-
 Q_CORE_EXPORT const char *qVersion();
 Q_CORE_EXPORT bool qSharedBuild();
-
-#if defined(Q_OS_MAC)
-inline int qMacVersion() { return QSysInfo::MacintoshVersion; }
-#endif
 
 #ifndef Q_OUTOFLINE_TEMPLATE
 #  define Q_OUTOFLINE_TEMPLATE
@@ -1357,12 +1221,15 @@ class QFlags
     int i;
 public:
     typedef Enum enum_type;
-    Q_DECL_CONSTEXPR inline QFlags(const QFlags &f) : i(f.i) {}
+    // compiler-generated copy/move ctor/assignment operators are fine!
+#ifdef qdoc
+    inline QFlags(const QFlags &other);
+    inline QFlags &operator=(const QFlags &other);
+#endif
     Q_DECL_CONSTEXPR inline QFlags(Enum f) : i(f) {}
     Q_DECL_CONSTEXPR inline QFlags(Zero = 0) : i(0) {}
     inline QFlags(QFlag f) : i(f) {}
 
-    inline QFlags &operator=(const QFlags &f) { i = f.i; return *this; }
     inline QFlags &operator&=(int mask) { i &= mask; return *this; }
     inline QFlags &operator&=(uint mask) { i &= mask; return *this; }
     inline QFlags &operator|=(QFlags f) { i |= f.i; return *this; }
@@ -1583,8 +1450,6 @@ Q_CORE_EXPORT int qrand();
 #ifdef Q_OS_QNX
 // QNX doesn't have SYSV style shared memory. Multiprocess QWS apps,
 // shared fonts and QSystemSemaphore + QSharedMemory are not available
-#  define QT_NO_QWS_MULTIPROCESS
-#  define QT_NO_QWS_SHARE_FONTS
 #  define QT_NO_SYSTEMSEMAPHORE
 #  define QT_NO_SHAREDMEMORY
 #endif
@@ -1612,6 +1477,7 @@ QT_END_HEADER
 // qDebug and friends
 #include <QtCore/qlogging.h>
 
+#include <QtCore/qsysinfo.h>
 #include <QtCore/qtypeinfo.h>
 
 #endif /* __cplusplus */

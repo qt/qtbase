@@ -1,7 +1,6 @@
 # Qt core io module
 
 HEADERS +=  \
-        io/qabstractfileengine.h \
         io/qabstractfileengine_p.h \
         io/qbuffer.h \
         io/qdatastream.h \
@@ -30,7 +29,6 @@ HEADERS +=  \
         io/qtldurl_p.h \
         io/qsettings.h \
         io/qsettings_p.h \
-        io/qfsfileengine.h \
         io/qfsfileengine_p.h \
         io/qfsfileengine_iterator_p.h \
         io/qfilesystemwatcher.h \

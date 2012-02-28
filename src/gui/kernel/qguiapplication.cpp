@@ -99,6 +99,14 @@ QPlatformTheme *QGuiApplicationPrivate::platform_theme = 0;
 
 QList<QObject *> QGuiApplicationPrivate::generic_plugin_list;
 
+enum ApplicationResourceFlags
+{
+    ApplicationPaletteExplicitlySet = 0x1,
+    ApplicationFontExplicitlySet = 0x2
+};
+
+static unsigned applicationResourceFlags = 0;
+
 bool QGuiApplicationPrivate::app_do_modal = false;
 
 QPalette *QGuiApplicationPrivate::app_pal = 0;        // default application palette
@@ -144,7 +152,169 @@ static bool qt_detectRTLLanguage()
                          " and Arabic) to get proper widget layout.") == QLatin1String("RTL"));
 }
 
+static void initPalette()
+{
+    if (!QGuiApplicationPrivate::app_pal)
+        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
+            QGuiApplicationPrivate::app_pal = new QPalette(*themePalette);
+    if (!QGuiApplicationPrivate::app_pal)
+        QGuiApplicationPrivate::app_pal = new QPalette(Qt::black);
+}
 
+static inline void clearPalette()
+{
+    delete QGuiApplicationPrivate::app_pal;
+    QGuiApplicationPrivate::app_pal = 0;
+}
+
+static void initFontUnlocked()
+{
+    if (!QGuiApplicationPrivate::app_font)
+        QGuiApplicationPrivate::app_font =
+            new QFont(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont());
+}
+
+static inline void clearFontUnlocked()
+{
+    delete QGuiApplicationPrivate::app_font;
+    QGuiApplicationPrivate::app_font = 0;
+}
+
+/*!
+    \class QGuiApplication
+    \brief The QGuiApplication class manages the GUI application's control
+    flow and main settings.
+
+    \inmodule QtGui
+
+    QGuiApplication contains the main event loop, where all events from the window
+    system and other sources are processed and dispatched. It also handles the
+    application's initialization and finalization. In addition, QGuiApplication handles
+    most of the system-wide and application-wide settings.
+
+    For any GUI application using Qt, there is precisely \bold one QGuiApplication
+    object no matter whether the application has 0, 1, 2 or more windows at
+    any given time. For non-GUI Qt applications, use QCoreApplication instead,
+    as it does not depend on the \l QtGui library.
+
+    The QGuiApplication object is accessible through the instance() function, which
+    returns a pointer equivalent to the global \l qApp pointer.
+
+    QGuiApplication's main areas of responsibility are:
+        \list
+            \o  It initializes the application with the user's desktop settings,
+                such as palette(), font() and styleHints(). It keeps
+                track of these properties in case the user changes the desktop
+                globally, for example, through some kind of control panel.
+
+            \o  It performs event handling, meaning that it receives events
+                from the underlying window system and dispatches them to the
+                relevant widgets. You can send your own events to windows by
+                using sendEvent() and postEvent().
+
+            \o  It parses common command line arguments and sets its internal
+                state accordingly. See the \l{QGuiApplication::QGuiApplication()}
+                {constructor documentation} below for more details.
+
+            \o  It provides localization of strings that are visible to the
+                user via translate().
+
+            \o  It provides some magical objects like the clipboard().
+
+            \o  It knows about the application's windows. You can ask which
+                window is at a certain position using topLevelAt(), get a list of
+                topLevelWindows(), etc.
+
+            \o  It manages the application's mouse cursor handling, see
+                setOverrideCursor()
+        \endlist
+
+    Since the QGuiApplication object does so much initialization, it \e{must} be
+    created before any other objects related to the user interface are created.
+    QGuiApplication also deals with common command line arguments. Hence, it is
+    usually a good idea to create it \e before any interpretation or
+    modification of \c argv is done in the application itself.
+
+    \table
+    \header
+        \o{2,1} Groups of functions
+
+        \row
+        \o  System settings
+        \o  desktopSettingsAware(),
+            setDesktopSettingsAware(),
+            styleHints(),
+            palette(),
+            setPalette(),
+            font(),
+            setFont().
+
+        \row
+        \o  Event handling
+        \o  exec(),
+            processEvents(),
+            exit(),
+            quit().
+            sendEvent(),
+            postEvent(),
+            sendPostedEvents(),
+            removePostedEvents(),
+            hasPendingEvents(),
+            notify().
+
+        \row
+        \o  Windows
+        \o  allWindows(),
+            topLevelWindows(),
+            focusWindow(),
+            clipboard(),
+            topLevelAt().
+
+        \row
+        \o  Advanced cursor handling
+        \o  overrideCursor(),
+            setOverrideCursor(),
+            restoreOverrideCursor().
+
+        \row
+        \o  Miscellaneous
+        \o  startingUp(),
+            closingDown(),
+            type().
+    \endtable
+
+    \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop
+*/
+
+/*!
+    Initializes the window system and constructs an application object with
+    \a argc command line arguments in \a argv.
+
+    \warning The data referred to by \a argc and \a argv must stay valid for
+    the entire lifetime of the QGuiApplication object. In addition, \a argc must
+    be greater than zero and \a argv must contain at least one valid character
+    string.
+
+    The global \c qApp pointer refers to this application object. Only one
+    application object should be created.
+
+    This application object must be constructed before any \l{QPaintDevice}
+    {paint devices} (including pixmaps, bitmaps etc.).
+
+    \note \a argc and \a argv might be changed as Qt removes command line
+    arguments that it recognizes.
+
+    All Qt programs automatically support the following command line options:
+    \list
+        \o  -reverse, sets the application's layout direction to
+            Qt::RightToLeft
+        \o  -qmljsdebugger=, activates the QML/JS debugger with a specified port.
+            The value must be of format port:1234[,block], where block is optional
+            and will make the application wait until a debugger connects to it.
+    \endlist
+
+    \sa arguments()
+*/
 QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
     : QCoreApplication(*new QGuiApplicationPrivate(argc, argv, flags))
 {
@@ -159,6 +329,9 @@ QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
     d_func()->init();
 }
 
+/*!
+    Destructs the application.
+*/
 QGuiApplication::~QGuiApplication()
 {
     Q_D(QGuiApplication);
@@ -174,8 +347,7 @@ QGuiApplication::~QGuiApplication()
     delete QGuiApplicationPrivate::qt_clipboard;
     QGuiApplicationPrivate::qt_clipboard = 0;
 
-    delete QGuiApplicationPrivate::app_pal;
-    QGuiApplicationPrivate::app_pal = 0;
+    clearPalette();
 
     qUnregisterGuiVariant();
 
@@ -194,6 +366,10 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
     application_type = QCoreApplication::GuiClient;
 }
 
+/*!
+    Returns the QWindow that receives events tied to focus,
+    such as key events.
+*/
 QWindow *QGuiApplication::focusWindow()
 {
     return QGuiApplicationPrivate::focus_window;
@@ -208,7 +384,7 @@ QWindow *QGuiApplication::focusWindow()
 
 /*!
     Returns the QObject in currently active window that will be final receiver of events
-    tied focus, such as key events.
+    tied to focus, such as key events.
  */
 QObject *QGuiApplication::focusObject()
 {
@@ -249,6 +425,11 @@ QWindowList QGuiApplication::topLevelWindows()
     return topLevelWindows;
 }
 
+/*!
+    Returns the primary (or default) screen of the application.
+
+    This will be the screen where QWindows are shown, unless otherwise specified.
+*/
 QScreen *QGuiApplication::primaryScreen()
 {
     if (QGuiApplicationPrivate::screen_list.isEmpty())
@@ -256,11 +437,18 @@ QScreen *QGuiApplication::primaryScreen()
     return QGuiApplicationPrivate::screen_list.at(0);
 }
 
+/*!
+    Returns a list of all the screens associated with the
+    windowing system the application is connected to.
+*/
 QList<QScreen *> QGuiApplication::screens()
 {
     return QGuiApplicationPrivate::screen_list;
 }
 
+/*!
+    Returns the top level window at the given position, if any.
+*/
 QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 {
     QList<QScreen *> screens = QGuiApplication::screens();
@@ -517,8 +705,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
         delete generic_plugin_list.at(i);
     generic_plugin_list.clear();
 
-    delete app_font;
-    app_font = 0;
+    clearFontUnlocked();
+
     QFont::cleanup();
 
 #ifndef QT_NO_CURSOR
@@ -557,27 +745,62 @@ static QClipboard *clipboard();
 #endif
 #endif
 
+/*!
+    Returns the currently held keyboard modifiers.
+*/
 Qt::KeyboardModifiers QGuiApplication::keyboardModifiers()
 {
     return QGuiApplicationPrivate::modifier_buttons;
 }
 
+/*!
+    Returns the currently held mouse buttons.
+*/
 Qt::MouseButtons QGuiApplication::mouseButtons()
 {
     return QGuiApplicationPrivate::mouse_buttons;
 }
 
+/*!
+    Returns the platform's native interface, for platform specific
+    functionality.
+*/
 QPlatformNativeInterface *QGuiApplication::platformNativeInterface()
 {
     QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
     return pi->nativeInterface();
 }
 
+/*!
+    Enters the main event loop and waits until exit() is called, and then
+    returns the value that was set to exit() (which is 0 if exit() is called
+    via quit()).
+
+    It is necessary to call this function to start event handling. The main
+    event loop receives events from the window system and dispatches these to
+    the application widgets.
+
+    Generally, no user interaction can take place before calling exec().
+
+    To make your application perform idle processing, e.g., executing a special
+    function whenever there are no pending events, use a QTimer with 0 timeout.
+    More advanced idle processing schemes can be achieved using processEvents().
+
+    We recommend that you connect clean-up code to the
+    \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in your
+    application's \c{main()} function. This is because, on some platforms, the
+    QApplication::exec() call may not return.
+
+    \sa quitOnLastWindowClosed, quit(), exit(), processEvents(),
+        QCoreApplication::exec()
+*/
 int QGuiApplication::exec()
 {
     return QCoreApplication::exec();
 }
 
+/*! \reimp
+*/
 bool QGuiApplication::notify(QObject *object, QEvent *event)
 {
 #ifndef QT_NO_SHORTCUT
@@ -595,6 +818,8 @@ bool QGuiApplication::notify(QObject *object, QEvent *event)
     return QCoreApplication::notify(object, event);
 }
 
+/*! \reimp
+*/
 bool QGuiApplication::event(QEvent *e)
 {
     if(e->type() == QEvent::LanguageChange) {
@@ -603,6 +828,9 @@ bool QGuiApplication::event(QEvent *e)
     return QCoreApplication::event(e);
 }
 
+/*!
+    \internal
+*/
 bool QGuiApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents)
 {
     return QCoreApplication::compressEvent(event, receiver, postedEvents);
@@ -804,8 +1032,7 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
     QWindow *window = e->window.data();
 
     if (window) {
-         QWheelEvent ev(e->localPos, e->globalPos, e->delta, buttons, e->modifiers,
-                        e->orient);
+         QWheelEvent ev(e->localPos, e->globalPos, e->pixelDelta, e->angleDelta, e->qt4Delta, e->qt4Orientation, buttons, e->modifiers);
          ev.setTimestamp(e->timestamp);
          QGuiApplication::sendSpontaneousEvent(window, &ev);
          return;
@@ -896,6 +1123,8 @@ void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfa
 
 void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce)
 {
+    if (self)
+        self->notifyThemeChanged();
     if (QWindow *window  = tce->window.data()) {
         QEvent e(QEvent::ThemeChange);
         QGuiApplication::sendSpontaneousEvent(window, &e);
@@ -1364,6 +1593,9 @@ Qt::DropAction QGuiApplicationPrivate::processDrop(QWindow *w, QMimeData *dropDa
 }
 
 #ifndef QT_NO_CLIPBOARD
+/*!
+    Returns the object for interacting with the clipboard.
+*/
 QClipboard * QGuiApplication::clipboard()
 {
     if (QGuiApplicationPrivate::qt_clipboard == 0) {
@@ -1378,20 +1610,22 @@ QClipboard * QGuiApplication::clipboard()
 #endif
 
 /*!
-    Returns the application palette.
+    Returns the default application palette.
 
-    \sa setPalette(), QWidget::palette()
+    \sa setPalette()
 */
+
 QPalette QGuiApplication::palette()
 {
-    if (!QGuiApplicationPrivate::app_pal)
-        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
-            QGuiApplicationPrivate::app_pal = new QPalette(*themePalette);
-    if (!QGuiApplicationPrivate::app_pal)
-        QGuiApplicationPrivate::app_pal = new QPalette(Qt::black);
+    initPalette();
     return *QGuiApplicationPrivate::app_pal;
 }
 
+/*!
+    Changes the default application palette to \a palette.
+
+    \sa palette()
+*/
 void QGuiApplication::setPalette(const QPalette &pal)
 {
     if (QGuiApplicationPrivate::app_pal && pal.isCopyOf(*QGuiApplicationPrivate::app_pal))
@@ -1400,17 +1634,26 @@ void QGuiApplication::setPalette(const QPalette &pal)
         QGuiApplicationPrivate::app_pal = new QPalette(pal);
     else
         *QGuiApplicationPrivate::app_pal = pal;
+    applicationResourceFlags |= ApplicationPaletteExplicitlySet;
 }
 
+/*!
+    Returns the default application font.
+
+    \sa setFont()
+*/
 QFont QGuiApplication::font()
 {
     QMutexLocker locker(&applicationFontMutex);
-    if (!QGuiApplicationPrivate::app_font)
-        QGuiApplicationPrivate::app_font =
-            new QFont(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont());
+    initFontUnlocked();
     return *QGuiApplicationPrivate::app_font;
 }
 
+/*!
+    Changes the default application font to \a font.
+
+    \sa font()
+*/
 void QGuiApplication::setFont(const QFont &font)
 {
     QMutexLocker locker(&applicationFontMutex);
@@ -1418,6 +1661,7 @@ void QGuiApplication::setFont(const QFont &font)
         QGuiApplicationPrivate::app_font = new QFont(font);
     else
         *QGuiApplicationPrivate::app_font = font;
+    applicationResourceFlags |= ApplicationFontExplicitlySet;
 }
 
 /*!
@@ -1631,7 +1875,7 @@ void QGuiApplication::restoreOverrideCursor()
 /*!
   \since 5.0
 
-  returns the style hints.
+  Returns the application's style hints.
 
   The style hints encapsulate a set of platform dependent properties
   such as double click intervals, full width selection and others.
@@ -1675,6 +1919,14 @@ bool QGuiApplication::desktopSettingsAware()
     return QGuiApplicationPrivate::obey_desktop_settings;
 }
 
+QInputMethod *QGuiApplication::inputMethod() const
+{
+    Q_D(const QGuiApplication);
+    if (!d->inputMethod)
+        const_cast<QGuiApplicationPrivate *>(d)->inputMethod = new QInputMethod();
+    return d->inputMethod;
+}
+
 /*!
   \since 5.0
 
@@ -1686,38 +1938,9 @@ bool QGuiApplication::desktopSettingsAware()
 
   \sa QInputPanel
   */
-QInputMethod *QGuiApplication::inputMethod() const
-{
-    Q_D(const QGuiApplication);
-    if (!d->inputMethod)
-        const_cast<QGuiApplicationPrivate *>(d)->inputMethod = new QInputMethod();
-    return d->inputMethod;
-}
-
 QInputPanel *QGuiApplication::inputPanel() const
 {
     return inputMethod();
-}
-
-
-// Returns the current platform used by keyBindings
-uint QGuiApplicationPrivate::currentKeyPlatform()
-{
-    uint platform = KB_Win;
-#ifdef Q_OS_MAC
-    platform = KB_Mac;
-#elif defined Q_WS_X11 // ## TODO: detect these
-    platform = KB_X11;
-#if 0
-    if (X11->desktopEnvironment == DE_KDE)
-        platform |= KB_KDE;
-    if (X11->desktopEnvironment == DE_GNOME)
-        platform |= KB_Gnome;
-    if (X11->desktopEnvironment == DE_CDE)
-        platform |= KB_CDE;
-#endif
-#endif
-    return platform;
 }
 
 /*!
@@ -1841,6 +2064,19 @@ QPixmap QGuiApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
 {
     Q_UNUSED(cshape);
     return QPixmap();
+}
+
+void QGuiApplicationPrivate::notifyThemeChanged()
+{
+    if (!(applicationResourceFlags & ApplicationPaletteExplicitlySet)) {
+        clearPalette();
+        initPalette();
+    }
+    if (!(applicationResourceFlags & ApplicationFontExplicitlySet)) {
+        QMutexLocker locker(&applicationFontMutex);
+        clearFontUnlocked();
+        initFontUnlocked();
+    }
 }
 
 QT_END_NAMESPACE

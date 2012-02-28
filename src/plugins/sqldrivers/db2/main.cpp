@@ -47,6 +47,9 @@ QT_BEGIN_NAMESPACE
 
 class QDB2DriverPlugin : public QSqlDriverPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "db2.json")
+
 public:
     QDB2DriverPlugin();
 
@@ -70,12 +73,9 @@ QSqlDriver* QDB2DriverPlugin::create(const QString &name)
 
 QStringList QDB2DriverPlugin::keys() const
 {
-    QStringList l;
-    l.append(QLatin1String("QDB2"));
-    return l;
+    return QStringList(QStringLiteral("QDB2"));
 }
 
-Q_EXPORT_STATIC_PLUGIN(QDB2DriverPlugin)
-Q_EXPORT_PLUGIN2(qsqldb2, QDB2DriverPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

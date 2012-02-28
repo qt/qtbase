@@ -179,7 +179,7 @@ QNetworkReplyHttpImpl::QNetworkReplyHttpImpl(QNetworkAccessManager* const manage
     d->operation = operation;
     d->outgoingData = outgoingData;
     d->url = request.url();
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     d->sslConfiguration = request.sslConfiguration();
 #endif
 
@@ -387,7 +387,7 @@ bool QNetworkReplyHttpImpl::canReadLine () const
     return d->downloadMultiBuffer.canReadLine();
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 void QNetworkReplyHttpImpl::ignoreSslErrors()
 {
     Q_D(QNetworkReplyHttpImpl);
@@ -441,7 +441,7 @@ QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
     , downloadZerocopyBuffer(0)
     , pendingDownloadDataEmissions(new QAtomicInt())
     , pendingDownloadProgressEmissions(new QAtomicInt())
-    #ifndef QT_NO_OPENSSL
+    #ifndef QT_NO_SSL
     , pendingIgnoreAllSslErrors(false)
     #endif
 
@@ -764,7 +764,7 @@ void QNetworkReplyHttpImplPrivate::postRequest()
     delegate->transparentProxy = transparentProxy;
 #endif
     delegate->ssl = ssl;
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     if (ssl)
         delegate->incomingSslConfiguration = request.sslConfiguration();
 #endif
@@ -809,7 +809,7 @@ void QNetworkReplyHttpImplPrivate::postRequest()
         QObject::connect(delegate, SIGNAL(error(QNetworkReply::NetworkError,QString)),
                 q, SLOT(httpError(QNetworkReply::NetworkError, const QString)),
                 Qt::QueuedConnection);
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         QObject::connect(delegate, SIGNAL(sslConfigurationChanged(QSslConfiguration)),
                 q, SLOT(replySslConfigurationChanged(QSslConfiguration)),
                 Qt::QueuedConnection);
@@ -823,7 +823,7 @@ void QNetworkReplyHttpImplPrivate::postRequest()
                  q, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                  Qt::BlockingQueuedConnection);
 #endif
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         QObject::connect(delegate, SIGNAL(sslErrors(QList<QSslError>,bool*,QList<QSslError>*)),
                 q, SLOT(replySslErrors(const QList<QSslError> &, bool *, QList<QSslError> *)),
                 Qt::BlockingQueuedConnection);
@@ -1202,7 +1202,7 @@ void QNetworkReplyHttpImplPrivate::httpError(QNetworkReply::NetworkError errorCo
     error(errorCode, errorString);
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 void QNetworkReplyHttpImplPrivate::replySslErrors(
         const QList<QSslError> &list, bool *ignoreAll, QList<QSslError> *toBeIgnored)
 {

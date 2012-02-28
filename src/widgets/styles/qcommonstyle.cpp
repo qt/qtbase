@@ -83,12 +83,6 @@
 #   include "private/qtextengine_p.h"
 #endif
 
-#ifdef Q_WS_X11
-#   include <private/qt_x11_p.h>
-#elif defined(Q_WS_MAC)
-#   include <private/qt_cocoa_helpers_mac_p.h>
-#endif
-
 #include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -4920,12 +4914,8 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         break;
     case SH_DialogButtonLayout:
         ret = QDialogButtonBox::WinLayout;
-#ifdef Q_WS_X11
-        if (X11->desktopEnvironment == DE_KDE)
-            ret = QDialogButtonBox::KdeLayout;
-        else if (X11->desktopEnvironment == DE_GNOME)
-            ret = QDialogButtonBox::GnomeLayout;
-#endif
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+            ret = theme->themeHint(QPlatformTheme::DialogButtonBoxLayout).toInt();
         break;
     case SH_ComboBox_PopupFrameStyle:
         ret = QFrame::StyledPanel | QFrame::Plain;
@@ -4934,10 +4924,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = Qt::LinksAccessibleByMouse;
         break;
     case SH_DialogButtonBox_ButtonsHaveIcons:
-#ifdef Q_WS_X11
-        return true;
-#endif
         ret = 0;
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+            ret = theme->themeHint(QPlatformTheme::DialogButtonBoxButtonsHaveIcons).toBool() ? 1 : 0;
         break;
     case SH_SpellCheckUnderlineStyle:
         ret = QTextCharFormat::WaveUnderline;

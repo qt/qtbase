@@ -592,10 +592,6 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
     }
     for(QStringList::Iterator concat_it = concat.begin();
         concat_it != concat.end(); ++concat_it)
-        feature_roots << (QLibraryInfo::location(QLibraryInfo::PrefixPath) +
-                          mkspecs_concat + (*concat_it));
-    for(QStringList::Iterator concat_it = concat.begin();
-        concat_it != concat.end(); ++concat_it)
         feature_roots << (QLibraryInfo::location(QLibraryInfo::DataPath) +
                           mkspecs_concat + (*concat_it));
     return feature_roots;
@@ -1285,35 +1281,9 @@ QMakeProject::read(uchar cmd)
             base_vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
 
         if ((cmd & ReadSetup) && Option::mkfile::do_cache) {        // parse the cache
-            int cache_depth = -1;
-            QString qmake_cache = Option::mkfile::cachefile;
-            if(qmake_cache.isEmpty())  { //find it as it has not been specified
-                QString dir = Option::output_dir;
-                while(!QFile::exists((qmake_cache = dir + QLatin1String("/.qmake.cache")))) {
-                    dir = dir.left(dir.lastIndexOf(QLatin1Char('/')));
-                    if(dir.isEmpty() || dir.indexOf(QLatin1Char('/')) == -1) {
-                        qmake_cache = "";
-                        break;
-                    }
-                    if(cache_depth == -1)
-                        cache_depth = 1;
-                    else
-                        cache_depth++;
-                }
-            } else {
-                QString abs_cache = QFileInfo(Option::mkfile::cachefile).absoluteDir().path();
-                if(Option::output_dir.startsWith(abs_cache))
-                    cache_depth = Option::output_dir.mid(abs_cache.length()).count('/');
-            }
-            if(!qmake_cache.isEmpty()) {
-                QHash<QString, QStringList> cache;
-                if(read(qmake_cache, cache)) {
-                    Option::mkfile::cachefile_depth = cache_depth;
-                    Option::mkfile::cachefile = qmake_cache;
-                    if(Option::mkfile::qmakespec.isEmpty() && !cache["QMAKESPEC"].isEmpty())
-                        Option::mkfile::qmakespec = cache["QMAKESPEC"].first();
-                }
-            }
+            if (Option::output_dir.startsWith(Option::mkfile::project_build_root))
+                Option::mkfile::cachefile_depth =
+                        Option::output_dir.mid(Option::mkfile::project_build_root.length()).count('/');
         }
         if (cmd & ReadSetup) {             // parse mkspec
             QString qmakespec = fixEnvVariables(Option::mkfile::qmakespec);
@@ -1444,16 +1414,6 @@ QMakeProject::read(uchar cmd)
         parse("CONFIG += " + Option::after_user_configs.join(" "), vars);
     }
 
-    if(pfile != "-" && vars["TARGET"].isEmpty())
-        vars["TARGET"].append(QFileInfo(pfile).baseName());
-
-    if ((cmd & ReadSetup) && !Option::user_configs.isEmpty()) {
-        parser.file = "(configs)";
-        parser.from_file = false;
-        parser.line_no = 1; //really arg count now.. duh
-        parse("CONFIG += " + Option::user_configs.join(" "), base_vars);
-    }
-
     if(cmd & ReadFeatures) {
         debug_msg(1, "Processing default_post: %s", vars["CONFIG"].join("::").toLatin1().constData());
         doProjectInclude("default_post", IncludeFlagFeature, vars);
@@ -1519,6 +1479,36 @@ void QMakeProject::validateModes()
     }
 }
 
+void
+QMakeProject::resolveSpec(QString *spec, const QString &qmakespec)
+{
+    if (spec->isEmpty()) {
+        *spec = QFileInfo(qmakespec).fileName();
+        if (*spec == "default") {
+#ifdef Q_OS_UNIX
+            char buffer[1024];
+            int l = readlink(qmakespec.toLatin1(), buffer, 1023);
+            if (l != -1) {
+                buffer[l] = '\0';
+                *spec = QString::fromLatin1(buffer);
+#else
+            // We can't resolve symlinks as they do on Unix, so configure.exe puts the source of the
+            // qmake.conf at the end of the default/qmake.conf in the QMAKESPEC_ORG variable.
+            const QStringList &spec_org = base_vars["QMAKESPEC_ORIGINAL"];
+            if (spec_org.isEmpty()) {
+                // try again the next time around
+                *spec = QString();
+            } else {
+                *spec = spec_org.at(0);
+#endif
+                int lastSlash = spec->lastIndexOf(QLatin1Char('/'));
+                if (lastSlash != -1)
+                    spec->remove(0, lastSlash + 1);
+            }
+        }
+    }
+}
+
 bool
 QMakeProject::isActiveConfig(const QString &x, bool regex, QHash<QString, QStringList> *place)
 {
@@ -1545,44 +1535,10 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QHash<QString, QStrin
 
     //mkspecs
     static QString spec;
-    if(spec.isEmpty())
-        spec = QFileInfo(Option::mkfile::qmakespec).fileName();
+    resolveSpec(&spec, Option::mkfile::qmakespec);
     QRegExp re(x, Qt::CaseSensitive, QRegExp::Wildcard);
     if((regex && re.exactMatch(spec)) || (!regex && spec == x))
         return true;
-#ifdef Q_OS_UNIX
-    else if(spec == "default") {
-        static char *buffer = NULL;
-        if(!buffer) {
-            buffer = (char *)malloc(1024);
-            qmakeAddCacheClear(qmakeFreeCacheClear, (void**)&buffer);
-        }
-        int l = readlink(Option::mkfile::qmakespec.toLatin1(), buffer, 1024);
-        if(l != -1) {
-            buffer[l] = '\0';
-            QString r = buffer;
-            if(r.lastIndexOf('/') != -1)
-                r = r.mid(r.lastIndexOf('/') + 1);
-            if((regex && re.exactMatch(r)) || (!regex && r == x))
-                return true;
-        }
-    }
-#elif defined(Q_OS_WIN)
-    else if(spec == "default") {
-        // We can't resolve symlinks as they do on Unix, so configure.exe puts the source of the
-        // qmake.conf at the end of the default/qmake.conf in the QMAKESPEC_ORG variable.
-        const QStringList &spec_org = (place ? (*place)["QMAKESPEC_ORIGINAL"]
-                                             : vars["QMAKESPEC_ORIGINAL"]);
-        if (!spec_org.isEmpty()) {
-            spec = spec_org.at(0);
-            int lastSlash = spec.lastIndexOf('/');
-            if(lastSlash != -1)
-                spec = spec.mid(lastSlash + 1);
-            if((regex && re.exactMatch(spec)) || (!regex && spec == x))
-                return true;
-        }
-    }
-#endif
 
     //simple matching
     const QStringList &configs = (place ? (*place)["CONFIG"] : vars["CONFIG"]);
@@ -1726,9 +1682,6 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
         warn_msg(WarnParser, "%s:%d: QtScript support disabled for %s.",
                  pi.file.toLatin1().constData(), pi.line_no, orig_file.toLatin1().constData());
     } else {
-        QStack<ScopeBlock> sc = scope_blocks;
-        IteratorBlock *it = iterator;
-        FunctionBlock *fu = function;
         if(flags & (IncludeFlagNewProject|IncludeFlagNewParser)) {
             // The "project's variables" are used in other places (eg. export()) so it's not
             // possible to use "place" everywhere. Instead just set variables and grab them later
@@ -1744,11 +1697,14 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
             }
             place = proj.variables();
         } else {
+            QStack<ScopeBlock> sc = scope_blocks;
+            IteratorBlock *it = iterator;
+            FunctionBlock *fu = function;
             parsed = read(file, place);
+            iterator = it;
+            function = fu;
+            scope_blocks = sc;
         }
-        iterator = it;
-        function = fu;
-        scope_blocks = sc;
     }
     if(parsed) {
         if(place["QMAKE_INTERNAL_INCLUDED_FILES"].indexOf(orig_file) == -1)

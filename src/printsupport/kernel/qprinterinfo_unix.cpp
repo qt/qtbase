@@ -587,7 +587,6 @@ void qt_parseEtcLpMember(QList<QPrinterDescription> *printers)
     if (dirs.isEmpty())
         return;
 
-    QString tmp;
     for (int i = 0; i < dirs.size(); ++i) {
         QFileInfo printer = dirs.at(i);
         // I haven't found any real documentation, so I'm guessing that

@@ -403,7 +403,7 @@ void QHashData::dump()
                 }
                 n = n->next;
             }
-            qDebug(qPrintable(line));
+            qDebug("%s", qPrintable(line));
         }
     }
 }

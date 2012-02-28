@@ -67,7 +67,7 @@ QWindowsPipeWriter::~QWindowsPipeWriter()
     quitNow = true;
     waitCondition.wakeOne();
     lock.unlock();
-    if (!wait(100))
+    if (!wait(30000))
         terminate();
 #if !defined(Q_OS_WINCE) || (_WIN32_WCE >= 0x600)
     CloseHandle(writePipe);
