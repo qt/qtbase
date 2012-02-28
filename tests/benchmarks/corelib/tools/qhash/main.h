@@ -41,6 +41,17 @@
 
 #include <QString>
 
+struct Qt4String : QString
+{
+    Qt4String() {}
+    Qt4String(const QString &s) : QString(s) {}
+};
+
+QT_BEGIN_NAMESPACE
+uint qHash(const Qt4String &);
+QT_END_NAMESPACE
+
+
 struct String : QString
 {
     String() {}

@@ -138,8 +138,11 @@ void tst_QHash::data()
 void tst_QHash::qhash_qt4()
 {
     QFETCH(QStringList, items);
-    QStringList realitems = items; // for copy/paste ease between benchmarks
-    QHash<QString, int> hash;
+    QHash<Qt4String, int> hash;
+
+    QList<Qt4String> realitems;
+    foreach (const QString &s, items)
+        realitems.append(s);
 
     QBENCHMARK {
         for (int i = 0, n = realitems.size(); i != n; ++i) {

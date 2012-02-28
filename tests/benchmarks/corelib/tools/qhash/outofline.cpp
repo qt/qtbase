@@ -41,6 +41,22 @@
 
 #include "main.h"
 
+QT_BEGIN_NAMESPACE
+
+uint qHash(const Qt4String &str)
+{
+    int n = str.length();
+    const QChar *p = str.unicode();
+    uint h = 0;
+
+    while (n--) {
+        h = (h << 4) + (*p++).unicode();
+        h ^= (h & 0xf0000000) >> 23;
+        h &= 0x0fffffff;
+    }
+    return h;
+}
+
 static void doHash(const unsigned short *p, uint &h)
 {
 #if 1
@@ -66,8 +82,6 @@ static void doHash(const unsigned short *p, uint &h)
     h ^= *(unsigned int *)p;
 #endif
 }
-
-QT_BEGIN_NAMESPACE
 
 uint qHash(const String &str)
 {
