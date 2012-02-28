@@ -57,9 +57,7 @@ struct QPair
 
     QPair() : first(T1()), second(T2()) {}
     QPair(const T1 &t1, const T2 &t2) : first(t1), second(t2) {}
-
-    QPair<T1, T2> &operator=(const QPair<T1, T2> &other)
-    { first = other.first; second = other.second; return *this; }
+    // compiler-generated copy/move ctor/assignment operators are fine!
 
     T1 first;
     T2 second;
