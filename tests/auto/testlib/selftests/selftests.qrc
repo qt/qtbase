@@ -71,7 +71,6 @@
         <file>expected_failinitdata.txt</file>
         <file>expected_failinitdata.xml</file>
         <file>expected_failinitdata.xunitxml</file>
-        <file>expected_fatal.txt</file>
         <file>expected_fetchbogus.lightxml</file>
         <file>expected_fetchbogus.txt</file>
         <file>expected_fetchbogus.xml</file>
