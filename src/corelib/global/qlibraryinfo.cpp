@@ -148,6 +148,8 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
     \sa QSysInfo, {Using qt.conf}
 */
 
+#ifndef QT_BUILD_QMAKE
+
 /*! \internal
 
    You cannot create a QLibraryInfo, instead only the static functions are available to query
@@ -209,6 +211,8 @@ QLibraryInfo::isDebugBuild()
 #endif
     return false;
 }
+
+#endif // QT_BUILD_QMAKE
 
 static const struct {
     char key[14], value[13];
