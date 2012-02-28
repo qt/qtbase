@@ -135,6 +135,18 @@ void tst_QHash::data()
         QTest::newRow("dictionary") << dict;
     }
 
+    {
+        // string versions of numbers.
+        static QStringList numbers;
+
+        if (numbers.isEmpty()) {
+            for (int i = 5000000; i < 5005001; ++i)
+                numbers.append(QString::number(i));
+        }
+
+        QTest::newRow("numbers") << numbers;
+    }
+
 }
 
 void tst_QHash::qhash_qt4()
