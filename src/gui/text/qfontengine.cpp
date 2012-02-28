@@ -775,7 +775,7 @@ QByteArray QFontEngine::getSfntTable(uint tag) const
     return table;
 }
 
-void QFontEngine::setGlyphCache(void *key, QFontEngineGlyphCache *data)
+void QFontEngine::setGlyphCache(const void *key, QFontEngineGlyphCache *data)
 {
     Q_ASSERT(data);
 
@@ -794,7 +794,7 @@ void QFontEngine::setGlyphCache(void *key, QFontEngineGlyphCache *data)
 
 }
 
-QFontEngineGlyphCache *QFontEngine::glyphCache(void *key, QFontEngineGlyphCache::Type type, const QTransform &transform) const
+QFontEngineGlyphCache *QFontEngine::glyphCache(const void *key, QFontEngineGlyphCache::Type type, const QTransform &transform) const
 {
     for (QLinkedList<GlyphCacheEntry>::const_iterator it = m_glyphCaches.constBegin(), end = m_glyphCaches.constEnd(); it != end; ++it) {
         QFontEngineGlyphCache *c = it->cache.data();

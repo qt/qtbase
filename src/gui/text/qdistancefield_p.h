@@ -79,6 +79,8 @@ QT_BEGIN_NAMESPACE
 
 bool Q_GUI_EXPORT qt_fontHasNarrowOutlines(const QRawFont &f);
 QImage Q_GUI_EXPORT qt_renderDistanceFieldGlyph(const QRawFont &font, glyph_t glyph, bool doubleResolution);
+bool Q_GUI_EXPORT qt_fontHasNarrowOutlines(QFontEngine *fontEngine);
+QImage Q_GUI_EXPORT qt_renderDistanceFieldGlyph(QFontEngine *fontEngine, glyph_t glyph, bool doubleResolution);
 
 QT_END_NAMESPACE
 

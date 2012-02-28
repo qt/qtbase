@@ -5551,14 +5551,9 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
 
     QRawFontPrivate *fontD = QRawFontPrivate::get(font);
-    bool supportsTransformations;
-    if (d->extended != 0) {
-        supportsTransformations = d->extended->supportsTransformations(fontD->fontEngine->fontDef.pixelSize,
-                                                                       d->state->matrix);
-    } else {
-        supportsTransformations = d->engine->type() == QPaintEngine::CoreGraphics
-                                  || d->state->matrix.isAffine();
-    }
+    bool supportsTransformations = d->extended
+        ? d->extended->supportsTransformations(fontD->fontEngine, d->state->matrix)
+        : d->engine->type() == QPaintEngine::CoreGraphics || d->state->matrix.isAffine();
 
     for (int i=0; i<count; ++i) {
         QPointF processedPosition = position + glyphPositions[i];
@@ -5739,7 +5734,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    bool supportsTransformations = d->extended->supportsTransformations(staticText_d->font.pixelSize(),
+    bool supportsTransformations = d->extended->supportsTransformations(staticText_d->font.d->engineForScript(QUnicodeTables::Common),
                                                                         d->state->matrix);
     if (supportsTransformations && !staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = true;

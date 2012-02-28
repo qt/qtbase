@@ -91,6 +91,7 @@ public:
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 #endif
     virtual QPlatformSharedGraphicsCache *createPlatformSharedGraphicsCache(const char *cacheId) const;
+    virtual QPaintEngine *createImagePaintEngine(QPaintDevice *paintDevice) const;
 
 // Event dispatcher:
     virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const = 0;
