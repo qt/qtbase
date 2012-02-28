@@ -1575,11 +1575,11 @@ QString VcprojGenerator::findTemplate(QString file)
     QString ret;
     if(!exists((ret = file)) &&
        !exists((ret = QString(Option::mkfile::qmakespec + "/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::DataPath) + "/win32-msvc.net/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::DataPath) + "/win32-msvc2002/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::DataPath) + "/win32-msvc2003/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::DataPath) + "/win32-msvc2005/" + file))) &&
-       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::DataPath) + "/win32-msvc2008/" + file))))
+       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc.net/" + file))) &&
+       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc2002/" + file))) &&
+       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc2003/" + file))) &&
+       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc2005/" + file))) &&
+       !exists((ret = QString(QLibraryInfo::location(QLibraryInfo::HostDataPath) + "/win32-msvc2008/" + file))))
         return "";
     debug_msg(1, "Generator: MSVC.NET: Found template \'%s\'", ret.toLatin1().constData());
     return ret;

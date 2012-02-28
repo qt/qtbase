@@ -77,9 +77,21 @@ public:
         TranslationsPath,
         ExamplesPath,
         TestsPath,
+        // Insert new values above this line
+#ifdef QT_BUILD_QMAKE
+        // These are not subject to binary compatibility constraints
+        SysrootPath,
+        HostPrefixPath,
+        HostBinariesPath,
+        HostDataPath,
+        LastHostPath = HostDataPath,
+#endif
         SettingsPath = 100
     };
     static QString location(LibraryLocation); // ### Qt 5: consider renaming it to path()
+#ifdef QT_BUILD_QMAKE
+    static QString rawLocation(LibraryLocation);
+#endif
 
 private:
     QLibraryInfo();

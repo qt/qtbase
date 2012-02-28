@@ -98,7 +98,7 @@ CONFIG -= qt
 ### installations ####
 
 #qmake
-qmake.path=$$[QT_INSTALL_BINS]
+qmake.path = $$[QT_HOST_BINS]
 win32 {
    qmake.files=$$QT_BUILD_TREE/bin/qmake.exe
 } else {
@@ -107,18 +107,18 @@ win32 {
 INSTALLS += qmake
 
 #syncqt
-syncqt.path=$$[QT_INSTALL_BINS]
+syncqt.path = $$[QT_HOST_BINS]
 syncqt.files=$$QT_BUILD_TREE/bin/syncqt
 win32:syncqt.files=$$QT_BUILD_TREE/bin/syncqt.bat
 INSTALLS += syncqt
 
 #qtmodule-configtests
-configtests.path=$$[QT_INSTALL_BINS]
+configtests.path = $$[QT_HOST_BINS]
 configtests.files=$$QT_BUILD_TREE/bin/qtmodule-configtests
 INSTALLS += configtests
 
 #mkspecs
-mkspecs.path=$$[QT_INSTALL_DATA]/mkspecs
+mkspecs.path = $$[QT_HOST_DATA]/mkspecs
 mkspecs.files=$$QT_BUILD_TREE/mkspecs/qconfig.pri $$QT_BUILD_TREE/mkspecs/qmodule.pri $$files($$QT_SOURCE_TREE/mkspecs/*)
 mkspecs.files -= $$QT_SOURCE_TREE/mkspecs/modules
 unix { 

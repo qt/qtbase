@@ -228,16 +228,43 @@ static const struct {
     { "Translations", "translations" },
     { "Examples", "" },
     { "Tests", "tests" },
+#ifdef QT_BUILD_QMAKE
+    { "Sysroot", "" },
+    { "HostPrefix", "" },
+    { "HostBinaries", "bin" },
+    { "HostData", "" },
+#endif
 };
 
 /*!
   Returns the location specified by \a loc.
 
 */
-
 QString
 QLibraryInfo::location(LibraryLocation loc)
 {
+#ifdef QT_BUILD_QMAKE
+    QString ret = rawLocation(loc);
+
+    // Automatically prepend the sysroot to target paths
+    if (loc < SysrootPath || loc > LastHostPath) {
+        QString sysroot = rawLocation(SysrootPath);
+        if (!sysroot.isEmpty() && ret.length() > 2 && ret.at(1) == QLatin1Char(':')
+            && (ret.at(2) == QLatin1Char('/') || ret.at(2) == QLatin1Char('\\')))
+            ret.replace(0, 2, sysroot); // Strip out the drive on Windows targets
+        else
+            ret.prepend(sysroot);
+    }
+
+    return ret;
+}
+
+QString
+QLibraryInfo::rawLocation(LibraryLocation loc)
+{
+#else
+# define rawLocation location
+#endif
     QString ret;
     if(!QLibraryInfoPrivate::configuration()) {
         const char *path = 0;
@@ -284,11 +311,19 @@ QLibraryInfo::location(LibraryLocation loc)
 
     if (QDir::isRelativePath(ret)) {
         QString baseDir;
-        if (loc == PrefixPath) {
-            // we make the prefix path absolute to the executable's directory
 #ifdef QT_BUILD_QMAKE
+        if (loc == HostPrefixPath || loc == PrefixPath) {
+            // We make the prefix path absolute to the executable's directory.
+            // loc == PrefixPath while a sysroot is set would make no sense here.
             baseDir = QFileInfo(qmake_libraryInfoFile()).absolutePath();
+        } else if (loc == SysrootPath) {
+            // The sysroot is bare
+            return ret;
+        } else if (loc > SysrootPath && loc <= LastHostPath) {
+            // We make any other host path absolute to the host prefix directory.
+            baseDir = rawLocation(HostPrefixPath);
 #else
+        if (loc == PrefixPath) {
             if (QCoreApplication::instance()) {
 #ifdef Q_OS_MAC
                 CFBundleRef bundleRef = CFBundleGetMainBundle();
@@ -300,6 +335,7 @@ QLibraryInfo::location(LibraryLocation loc)
                     }
                 }
 #endif
+                // We make the prefix path absolute to the executable's directory.
                 baseDir = QCoreApplication::applicationDirPath();
             } else {
                 baseDir = QDir::currentPath();
@@ -307,7 +343,7 @@ QLibraryInfo::location(LibraryLocation loc)
 #endif
         } else {
             // we make any other path absolute to the prefix directory
-            baseDir = location(PrefixPath);
+            baseDir = rawLocation(PrefixPath);
         }
         ret = QDir::cleanPath(baseDir + QLatin1Char('/') + ret);
     }

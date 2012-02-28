@@ -22,6 +22,6 @@ linux-g++-maemo {
 
 include(../bootstrap/bootstrap.pri)
 
-target.path=$$[QT_INSTALL_BINS]
+target.path = $$[QT_HOST_BINS]
 INSTALLS += target
 load(qt_targets)

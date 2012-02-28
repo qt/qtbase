@@ -825,7 +825,10 @@ QT_INSTALL_TRANSLATIONS=
 QT_INSTALL_SETTINGS=
 QT_INSTALL_EXAMPLES=
 QT_INSTALL_TESTS=
+CFG_SYSROOT=
 QT_HOST_PREFIX=
+QT_HOST_BINS=
+QT_HOST_DATA=
 
 #flags for SQL drivers
 QT_CFLAGS_PSQL=
@@ -978,7 +981,7 @@ while [ "$#" -gt 0 ]; do
         shift
         VAL=$1
         ;;
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-sdk|-arch|-host-arch|-mysql_config|-sysroot)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1169,6 +1172,12 @@ while [ "$#" -gt 0 ]; do
     hostprefix)
 	QT_HOST_PREFIX="$VAL"
 	;;
+    hostdatadir)
+        QT_HOST_DATA="$VAL"
+        ;;
+    hostbindir)
+        QT_HOST_BINS="$VAL"
+        ;;
     force-pkg-config)
         QT_FORCE_PKGCONFIG=yes
         ;;
@@ -3116,6 +3125,40 @@ if [ -z "$QT_INSTALL_TESTS" ]; then #default
 fi
 QT_INSTALL_TESTS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_TESTS"`
 
+#------- host paths --------
+
+if [ -z "$QT_HOST_PREFIX" ]; then
+    QT_HOST_PREFIX=$QT_INSTALL_PREFIX
+    haveHpx=false
+else
+    QT_HOST_PREFIX=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_PREFIX"`
+    haveHpx=true
+fi
+
+if [ -z "$QT_HOST_BINS" ]; then #default
+    if $haveHpx; then
+        if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
+            if [ "$BUILD_ON_MAC" = "yes" ]; then
+                QT_HOST_BINS="/Developer/Applications/Qt"
+            fi
+        fi
+        [ -z "$QT_HOST_BINS" ] && QT_HOST_BINS="$QT_HOST_PREFIX/bin" #fallback
+    else
+        QT_HOST_BINS="$QT_INSTALL_BINS"
+    fi
+fi
+QT_HOST_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_BINS"`
+
+if [ -z "$QT_HOST_DATA" ]; then #default
+    if $haveHpx; then
+        QT_HOST_DATA="$QT_HOST_PREFIX"
+    else
+        QT_HOST_DATA="$QT_INSTALL_DATA"
+    fi
+else
+    QT_HOST_DATA=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_DATA"`
+fi
+
 #-------------------------------------------------------------------------------
 # help - interactive parts of the script _after_ this section please
 #-------------------------------------------------------------------------------
@@ -3233,6 +3276,7 @@ cat <<EOF
     -hostprefix [dir] .. Tools and libraries needed when developing
                          applications are installed in [dir]. If [dir] is
                          not given, the current build directory will be used.
+                         (default PREFIX)
 EOF
 fi
 cat <<EOF
@@ -3269,6 +3313,17 @@ cat <<EOF
                             (default PREFIX/examples)
     -testsdir <dir> ....... Tests will be installed to <dir>
                             (default PREFIX/tests)
+EOF
+if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+cat <<EOF
+
+    -hostbindir <dir> .. Host executables will be installed to <dir>
+                         (default HOSTPREFIX/bin)
+    -hostdatadir <dir> . Data used by qmake will be installed to <dir>
+                         (default HOSTPREFIX)
+EOF
+fi
+cat <<EOF
 
 Configure options:
 
@@ -3987,33 +4042,7 @@ static const char qt_configure_licensed_products_str [256 + 12] = "qt_lcnsprod=$
 
 /* Installation date */
 static const char qt_configure_installation          [12+11]    = "qt_instdate=`date +%Y-%m-%d`";
-EOF
 
-
-if [ ! -z "$QT_HOST_PREFIX" ]; then
-    cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
-
-#if defined(QT_BOOTSTRAPPED) || defined(QT_BUILD_QMAKE)
-/* Installation Info */
-static const char qt_configure_prefix_path_strs[][256 + 12] = {
-    "qt_prfxpath=$QT_HOST_PREFIX",
-    "qt_docspath=$QT_HOST_PREFIX/doc",
-    "qt_hdrspath=$QT_HOST_PREFIX/include",
-    "qt_libspath=$QT_HOST_PREFIX/lib",
-    "qt_binspath=$QT_HOST_PREFIX/bin",
-    "qt_plugpath=$QT_HOST_PREFIX/plugins",
-    "qt_impspath=$QT_HOST_PREFIX/IMPORTS",
-    "qt_datapath=$QT_HOST_PREFIX",
-    "qt_trnspath=$QT_HOST_PREFIX/translations",
-    "qt_xmplpath=$QT_INSTALL_EXAMPLES",
-    "qt_tstspath=$QT_INSTALL_TESTS",
-};
-static const char qt_configure_settings_path_str[256 + 12] = "qt_stngpath=$QT_INSTALL_SETTINGS";
-#else // QT_BOOTSTRAPPED
-EOF
-fi
-
-cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 /* Installation Info */
 static const char qt_configure_prefix_path_strs[][256 + 12] = {
     "qt_prfxpath=$QT_INSTALL_PREFIX",
@@ -4027,16 +4056,15 @@ static const char qt_configure_prefix_path_strs[][256 + 12] = {
     "qt_trnspath=$QT_INSTALL_TRANSLATIONS",
     "qt_xmplpath=$QT_INSTALL_EXAMPLES",
     "qt_tstspath=$QT_INSTALL_TESTS",
+#ifdef QT_BUILD_QMAKE
+    "qt_ssrtpath=$CFG_SYSROOT",
+    "qt_hpfxpath=$QT_HOST_PREFIX",
+    "qt_hbinpath=$QT_HOST_BINS",
+    "qt_hdatpath=$QT_HOST_DATA",
+#endif
 };
 static const char qt_configure_settings_path_str[256 + 12] = "qt_stngpath=$QT_INSTALL_SETTINGS";
 EOF
-
-if [ ! -z "$QT_HOST_PREFIX" ]; then
-    cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
-#endif // QT_BOOTSTRAPPED
-
-EOF
-fi
 
 cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 
@@ -6781,10 +6809,9 @@ EOF
 if [ -n "$CFG_SYSROOT" ]; then
     echo "# sysroot" >>"$QTCONFIG.tmp"
     echo `basename "$XQMAKESPEC"` \{ >>"$QTCONFIG.tmp"
-    echo "  QT_SYSROOT      += \$\$quote($CFG_SYSROOT)" >>"$QTCONFIG.tmp"
-    echo "  QMAKE_CFLAGS    += --sysroot=\$\$QT_SYSROOT" >>"$QTCONFIG.tmp"
-    echo "  QMAKE_CXXFLAGS  += --sysroot=\$\$QT_SYSROOT" >>"$QTCONFIG.tmp"
-    echo "  QMAKE_LFLAGS    += --sysroot=\$\$QT_SYSROOT" >>"$QTCONFIG.tmp"
+    echo "    QMAKE_CFLAGS    += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
+    echo "    QMAKE_CXXFLAGS  += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
+    echo "    QMAKE_LFLAGS    += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
     echo "}" >> "$QTCONFIG.tmp"
     echo >> "$QTCONFIG.tmp"
 fi

@@ -54,27 +54,45 @@ QStringList qmake_mkspec_paths(); //project.cpp
 static const struct {
     const char *name;
     QLibraryInfo::LibraryLocation loc;
+    bool raw;
 } propList[] = {
-    { "QT_INSTALL_PREFIX", QLibraryInfo::PrefixPath },
-    { "QT_INSTALL_DATA", QLibraryInfo::DataPath },
-    { "QT_INSTALL_DOCS", QLibraryInfo::DocumentationPath },
-    { "QT_INSTALL_HEADERS", QLibraryInfo::HeadersPath },
-    { "QT_INSTALL_LIBS", QLibraryInfo::LibrariesPath },
-    { "QT_INSTALL_BINS", QLibraryInfo::BinariesPath },
-    { "QT_INSTALL_TESTS", QLibraryInfo::TestsPath },
-    { "QT_INSTALL_PLUGINS", QLibraryInfo::PluginsPath },
-    { "QT_INSTALL_IMPORTS", QLibraryInfo::ImportsPath },
-    { "QT_INSTALL_TRANSLATIONS", QLibraryInfo::TranslationsPath },
-    { "QT_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath },
-    { "QT_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath },
-    { "QT_INSTALL_DEMOS", QLibraryInfo::ExamplesPath }, // Just backwards compat
+    { "QT_SYSROOT", QLibraryInfo::SysrootPath, true },
+    { "QT_INSTALL_PREFIX", QLibraryInfo::PrefixPath, false },
+    { "QT_INSTALL_DATA", QLibraryInfo::DataPath, false },
+    { "QT_INSTALL_DOCS", QLibraryInfo::DocumentationPath, false },
+    { "QT_INSTALL_HEADERS", QLibraryInfo::HeadersPath, false },
+    { "QT_INSTALL_LIBS", QLibraryInfo::LibrariesPath, false },
+    { "QT_INSTALL_BINS", QLibraryInfo::BinariesPath, false },
+    { "QT_INSTALL_TESTS", QLibraryInfo::TestsPath, false },
+    { "QT_INSTALL_PLUGINS", QLibraryInfo::PluginsPath, false },
+    { "QT_INSTALL_IMPORTS", QLibraryInfo::ImportsPath, false },
+    { "QT_INSTALL_TRANSLATIONS", QLibraryInfo::TranslationsPath, false },
+    { "QT_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath, false },
+    { "QT_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath, false },
+    { "QT_INSTALL_DEMOS", QLibraryInfo::ExamplesPath, false }, // Just backwards compat
+    { "QT_RAW_INSTALL_PREFIX", QLibraryInfo::PrefixPath, true },
+    { "QT_RAW_INSTALL_DATA", QLibraryInfo::DataPath, true },
+    { "QT_RAW_INSTALL_DOCS", QLibraryInfo::DocumentationPath, true },
+    { "QT_RAW_INSTALL_HEADERS", QLibraryInfo::HeadersPath, true },
+    { "QT_RAW_INSTALL_LIBS", QLibraryInfo::LibrariesPath, true },
+    { "QT_RAW_INSTALL_BINS", QLibraryInfo::BinariesPath, true },
+    { "QT_RAW_INSTALL_TESTS", QLibraryInfo::TestsPath, true },
+    { "QT_RAW_INSTALL_PLUGINS", QLibraryInfo::PluginsPath, true },
+    { "QT_RAW_INSTALL_IMPORTS", QLibraryInfo::ImportsPath, true },
+    { "QT_RAW_INSTALL_TRANSLATIONS", QLibraryInfo::TranslationsPath, true },
+    { "QT_RAW_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath, true },
+    { "QT_RAW_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath, true },
+    { "QT_HOST_PREFIX", QLibraryInfo::HostPrefixPath, true },
+    { "QT_HOST_DATA", QLibraryInfo::HostDataPath, true },
+    { "QT_HOST_BINS", QLibraryInfo::HostBinariesPath, true },
 };
 
 QMakeProperty::QMakeProperty() : settings(0)
 {
     for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++)
-        m_values[QString::fromLatin1(propList[i].name)] =
-                QLibraryInfo::location(propList[i].loc);
+        m_values[QString::fromLatin1(propList[i].name)] = propList[i].raw
+                ? QLibraryInfo::rawLocation(propList[i].loc)
+                : QLibraryInfo::location(propList[i].loc);
 }
 
 QMakeProperty::~QMakeProperty()

@@ -3178,7 +3178,7 @@ MakefileGenerator::pkgConfigPrefix() const
 {
     if(!project->isEmpty("QMAKE_PKGCONFIG_PREFIX"))
         return project->first("QMAKE_PKGCONFIG_PREFIX");
-    return QLibraryInfo::location(QLibraryInfo::PrefixPath);
+    return QLibraryInfo::rawLocation(QLibraryInfo::PrefixPath);
 }
 
 QString
