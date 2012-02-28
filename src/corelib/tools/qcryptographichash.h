@@ -65,7 +65,7 @@ public:
         Sha512
     };
 
-    QCryptographicHash(Algorithm method);
+    explicit QCryptographicHash(Algorithm method);
     ~QCryptographicHash();
 
     void reset();
