@@ -57,8 +57,6 @@ private slots:
     void initTestCase();
     void qhash_qt4_data() { data(); }
     void qhash_qt4();
-    void qhash_faster_data() { data(); }
-    void qhash_faster();
     void javaString_data() { data(); }
     void javaString();
 
@@ -141,22 +139,6 @@ void tst_QHash::qhash_qt4()
     QHash<Qt4String, int> hash;
 
     QList<Qt4String> realitems;
-    foreach (const QString &s, items)
-        realitems.append(s);
-
-    QBENCHMARK {
-        for (int i = 0, n = realitems.size(); i != n; ++i) {
-            hash[realitems.at(i)] = i;
-        }
-    }
-}
-
-void tst_QHash::qhash_faster()
-{
-    QFETCH(QStringList, items);
-    QHash<String, int> hash;
-
-    QList<String> realitems;
     foreach (const QString &s, items)
         realitems.append(s);
 
