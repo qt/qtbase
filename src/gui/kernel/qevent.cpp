@@ -1698,6 +1698,7 @@ void QInputMethodEvent::setCommitString(const QString &commitString, int replace
 
     The tentative commit string is what the preedit string is expected to be committed as.
     The string can be used within the editor to trigger code that reacts on text changes such as validators.
+    \deprecated
 */
 void QInputMethodEvent::setTentativeCommitString(const QString &tentativeCommitString)
 {
@@ -1758,6 +1759,7 @@ void QInputMethodEvent::setTentativeCommitString(const QString &tentativeCommitS
 
     Returns the text as which preedit string is expected to be committed as.
     The string can be used within the editor to trigger code that reacts on text changes such as validators.
+    \deprecated
 
     \sa setTentativeCommitString()
 */
