@@ -51,7 +51,7 @@ template <typename T>
 class QScopedValueRollback
 {
 public:
-    QScopedValueRollback(T &var) :
+    explicit QScopedValueRollback(T &var) :
         varRef(var)
     {
         oldValue = varRef;
