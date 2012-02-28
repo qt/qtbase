@@ -48,6 +48,19 @@
 #include "../../3rdparty/sha1/sha1.cpp"
 
 /*
+    These typedefs are needed by the RFC6234 code. Normally they would come
+    from from stdint.h, but since this header is not available on all platforms
+    (MSVC 2008, for example), we need to define them ourselves.
+*/
+typedef QT_PREPEND_NAMESPACE(quint64) uint64_t;
+typedef QT_PREPEND_NAMESPACE(quint32) uint32_t;
+typedef QT_PREPEND_NAMESPACE(quint8) uint8_t;
+typedef QT_PREPEND_NAMESPACE(qint16) int_least16_t;
+// Header from rfc6234 with 1 modification:
+// sha1.h - commented out '#include <stdint.h>' on line 74
+#include "../../3rdparty/rfc6234/sha.h"
+
+/*
     These 2 functions replace macros of the same name in sha224-256.c and
     sha384-512.c. Originally, these macros relied on a global static 'addTemp'
     variable. We do not want this for 2 reasons:
@@ -57,8 +70,6 @@
     2. static variables are not thread-safe, we do not want multiple threads
     computing a hash to corrupt one another
 */
-// Header from rfc6234 without modifications
-#include "../../3rdparty/rfc6234/sha.h"
 static int SHA224_256AddLength(SHA256Context *context, unsigned int length);
 static int SHA384_512AddLength(SHA512Context *context, unsigned int length);
 
