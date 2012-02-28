@@ -15,13 +15,20 @@ win32-borland: DEFINES += WIN32_BORLAND
 # We want to test if we can load a shared library with *any* filename...
 
 win32 {
+    CONFIG(debug, debug|release) {
+        BUILD_FOLDER = debug
+    } else {
+        BUILD_FOLDER = release
+    }
+    DESTDIR = ../$$BUILD_FOLDER/
+
     # vcproj and Makefile generators refer to target differently
     contains(TEMPLATE,vc.*) {
         src = $(TargetPath)
     } else {
         src = $(DESTDIR_TARGET)
     }
-    files = mylib.dl2 system.qt.test.mylib.dll
+    files = $$BUILD_FOLDER$${QMAKE_DIR_SEP}mylib.dl2 $$BUILD_FOLDER$${QMAKE_DIR_SEP}system.qt.test.mylib.dll
 } else {
     src = $(DESTDIR)$(TARGET)
     files = libmylib.so2 system.qt.test.mylib.so
@@ -34,7 +41,7 @@ renamed_target.path = $$target.path
 for(file, files) {
     QMAKE_POST_LINK += $$QMAKE_COPY $$src ..$$QMAKE_DIR_SEP$$file &&
     renamed_target.extra += $$QMAKE_COPY $$src $(INSTALL_ROOT)$${target.path}$$QMAKE_DIR_SEP$$file &&
-    CLEAN_FILES += ../$$file
+    CLEAN_FILES += ..$$QMAKE_DIR_SEP$$file
 }
 renamed_target.extra = $$member(renamed_target.extra, 0, -2)
 QMAKE_POST_LINK = $$member(QMAKE_POST_LINK, 0, -2)
