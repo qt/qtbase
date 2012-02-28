@@ -41,7 +41,11 @@ elif strings - $binary | grep MostSignificantByteFirst >/dev/null 2>&1; then
 fi
 
 # make clean as this tests is compiled for both the host and the target
-$MAKE distclean
+if [ "$VERBOSE" = "yes" ]; then
+    $MAKE distclean
+else
+    $MAKE distclean >/dev/null 2>&1
+fi
 
 # done
 if [ "$ENDIAN" = "LITTLE" ]; then
