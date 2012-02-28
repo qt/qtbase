@@ -50,30 +50,6 @@ QT_BEGIN_NAMESPACE
 
 class QIODevice;
 
-// XML tags in MIME files
-extern const char *const mimeInfoTagC;
-extern const char *const mimeTypeTagC;
-extern const char *const mimeTypeAttributeC;
-extern const char *const subClassTagC;
-extern const char *const commentTagC;
-extern const char *const genericIconTagC;
-extern const char *const nameAttributeC;
-extern const char *const globTagC;
-extern const char *const aliasTagC;
-extern const char *const patternAttributeC;
-extern const char *const weightAttributeC;
-extern const char *const caseSensitiveAttributeC;
-extern const char *const localeAttributeC;
-
-extern const char *const magicTagC;
-extern const char *const priorityAttributeC;
-
-extern const char *const matchTagC;
-extern const char *const matchValueAttributeC;
-extern const char *const matchTypeAttributeC;
-extern const char *const matchOffsetAttributeC;
-extern const char *const matchMaskAttributeC;
-
 class QMimeTypeParserBase
 {
     Q_DISABLE_COPY(QMimeTypeParserBase)

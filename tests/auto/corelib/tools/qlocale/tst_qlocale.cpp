@@ -43,6 +43,9 @@
 #include <QtTest/QtTest>
 #include <math.h>
 #include <qglobal.h>
+#include <qdir.h>
+#include <qfileinfo.h>
+#include <QScopedArrayPointer>
 #include <qtextcodec.h>
 #include <qdatetime.h>
 #include <float.h>
@@ -83,6 +86,7 @@ public:
     tst_QLocale();
 
 private slots:
+    void initTestCase();
     void windowsDefaultLocale();
     void macDefaultLocale();
 
@@ -131,11 +135,28 @@ private slots:
 
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
+    QString m_sysapp;
 };
 
 tst_QLocale::tst_QLocale()
 {
     qRegisterMetaType<QLocale::FormatType>("QLocale::FormatType");
+}
+
+void tst_QLocale::initTestCase()
+{
+    const QString syslocaleapp_dir = QFINDTESTDATA("syslocaleapp");
+    QVERIFY2(!syslocaleapp_dir.isEmpty(),
+            qPrintable(QStringLiteral("Cannot find 'syslocaleapp' starting from ")
+                       + QDir::toNativeSeparators(QDir::currentPath())));
+    m_sysapp = syslocaleapp_dir + QStringLiteral("/syslocaleapp");
+#ifdef Q_OS_WIN
+    m_sysapp += QStringLiteral(".exe");
+#endif
+    const QFileInfo fi(m_sysapp);
+    QVERIFY2(fi.exists() && fi.isExecutable(),
+             qPrintable(QDir::toNativeSeparators(m_sysapp)
+                        + QStringLiteral(" does not exist or is not executable.")));
 }
 
 void tst_QLocale::ctor()
@@ -346,6 +367,54 @@ void tst_QLocale::ctor()
 #undef TEST_CTOR
 }
 
+static inline bool runSysApp(const QString &binary,
+                             const QStringList &env,
+                             QString *output,
+                             QString *errorMessage)
+{
+    output->clear();
+    errorMessage->clear();
+    QProcess process;
+    process.setEnvironment(env);
+    process.start(binary);
+    process.closeWriteChannel();
+    if (!process.waitForStarted()) {
+        *errorMessage = QString::fromLatin1("Cannot start '%1': %2").arg(binary, process.errorString());
+        return false;
+    }
+    if (!process.waitForFinished()) {
+        process.kill();
+        *errorMessage = QStringLiteral("Timeout waiting for ") + binary;
+        return false;
+    }
+    *output = QString::fromLocal8Bit(process.readAllStandardOutput());
+    return true;
+}
+
+static inline bool runSysAppTest(const QString &binary,
+                                 QStringList baseEnv,
+                                 const QString &requestedLocale,
+                                 const QString &expectedOutput,
+                                 QString *errorMessage)
+{
+    QString output;
+    baseEnv.append(QStringLiteral("LANG=") + requestedLocale);
+    if (!runSysApp(binary, baseEnv, &output, errorMessage))
+        return false;
+
+    if (output.isEmpty()) {
+        *errorMessage = QString::fromLatin1("Empty output received for requested '%1' (expected '%2')").
+                        arg(requestedLocale, expectedOutput);
+        return false;
+    }
+    if (output != expectedOutput) {
+        *errorMessage = QString::fromLatin1("Output mismatch for requested '%1': Expected '%2', got '%3'").
+                        arg(requestedLocale, expectedOutput, output);
+        return false;
+    }
+    return true;
+}
+
 void tst_QLocale::emptyCtor()
 {
 #if defined(Q_OS_WINCE)
@@ -358,15 +427,9 @@ void tst_QLocale::emptyCtor()
     { \
     /* Test constructor without arguments. Needs separate process */ \
     /* because of caching of the system locale. */ \
-    QProcess process; \
-    process.setEnvironment(QStringList(env) << QString("LANG=%1").arg(req_lc)); \
-    process.start(syslocaleapp_dir + "syslocaleapp"); \
-    process.waitForReadyRead(); \
-    QString ret = QString(process.readAll()); \
-    process.waitForFinished(); \
-    QVERIFY2(!ret.isEmpty(), "Cannot launch external process"); \
-    QVERIFY2(QString(exp_str) == ret, QString("Expected: " + QString(exp_str) + ", got: " \
-            + ret + ". Requested: " + QString(req_lc)).toLatin1().constData()); \
+    QString errorMessage; \
+    QVERIFY2(runSysAppTest(m_sysapp, env, QLatin1String(req_lc), QLatin1String(exp_str), &errorMessage), \
+             qPrintable(errorMessage)); \
     }
 
     // Get an environment free of any locale-related variables
@@ -377,15 +440,11 @@ void tst_QLocale::emptyCtor()
         env << entry;
     }
 
-    QString syslocaleapp_dir = QFINDTESTDATA("syslocaleapp/");
-
     // Get default locale.
-    QProcess p;
-    p.setEnvironment(env);
-    p.start(syslocaleapp_dir + "syslocaleapp");
-    p.waitForReadyRead();
-    QString defaultLoc = QString(p.readAll());
-    p.waitForFinished();
+    QString defaultLoc;
+    QString errorMessage;
+    QVERIFY2(runSysApp(m_sysapp, env, &defaultLoc, &errorMessage),
+             qPrintable(errorMessage));
 
     TEST_CTOR("C", "C")
     TEST_CTOR("bla", "C")
@@ -421,9 +480,9 @@ void tst_QLocale::emptyCtor()
     TEST_CTOR("DE", "de_DE");
     TEST_CTOR("EN", "en_US");
 
-    TEST_CTOR("en/", defaultLoc)
-    TEST_CTOR("asdfghj", defaultLoc);
-    TEST_CTOR("123456", defaultLoc);
+    TEST_CTOR("en/", defaultLoc.toLatin1())
+    TEST_CTOR("asdfghj", defaultLoc.toLatin1());
+    TEST_CTOR("123456", defaultLoc.toLatin1());
 
 #undef TEST_CTOR
 #endif
@@ -1147,17 +1206,15 @@ static QString getWinLocaleInfo(LCTYPE type)
         qWarning("QLocale: empty windows locale info (%d)", type);
         return QString();
     }
-
-    QByteArray buff(cnt, 0);
-
-    cnt = GetLocaleInfo(id, type, reinterpret_cast<wchar_t*>(buff.data()), buff.size() / 2);
+    cnt /= sizeof(wchar_t);
+    QScopedArrayPointer<wchar_t> buf(new wchar_t[cnt]);
+    cnt = GetLocaleInfo(id, type, buf.data(), cnt);
 
     if (cnt == 0) {
         qWarning("QLocale: empty windows locale info (%d)", type);
         return QString();
     }
-
-    return QString::fromWCharArray(reinterpret_cast<wchar_t*>(buff.data()));
+    return QString::fromWCharArray(buf.data());
 }
 
 static void setWinLocaleInfo(LCTYPE type, const QString &value)
@@ -1189,13 +1246,13 @@ public:
 
 };
 
-#endif
+#endif // Q_OS_WIN
 
 void tst_QLocale::windowsDefaultLocale()
 {
-#ifndef Q_OS_WIN
-    QSKIP("This is a Windows test");
-#else
+#ifdef Q_OS_WIN
+    QSKIP("This test currently fails - QTBUG-24543");
+
     RestoreLocaleHelper systemLocale;
     // set weird system defaults and make sure we're using them
     setWinLocaleInfo(LOCALE_SDECIMAL, QLatin1String("@"));
@@ -1204,7 +1261,6 @@ void tst_QLocale::windowsDefaultLocale()
     setWinLocaleInfo(LOCALE_SLONGDATE, QLatin1String("d@M@yyyy"));
     setWinLocaleInfo(LOCALE_STIMEFORMAT, QLatin1String("h^m^s"));
     QLocale locale = QLocale::system();
-
     // make sure we are seeing the system's format strings
     QCOMPARE(locale.decimalPoint(), QChar('@'));
     QCOMPARE(locale.groupSeparator(), QChar('?'));
@@ -1230,7 +1286,7 @@ void tst_QLocale::windowsDefaultLocale()
     QCOMPARE(locale.toString(QDateTime(QDate(1974, 12, 1), QTime(1,2,3)), QLocale::LongFormat),
              QString("1@12@1974 1^2^3"));
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::LongFormat), QString("1^2^3"));
-#endif
+#endif // #ifdef Q_OS_WIN
 }
 
 void tst_QLocale::numberOptions()

@@ -95,9 +95,9 @@
 #include "qsslsocket.h"
 #ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
+#endif
 
 QT_BEGIN_NAMESPACE
-#endif
 
 class QSslErrorPrivate
 {

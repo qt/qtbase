@@ -63,10 +63,10 @@ QT_BEGIN_NAMESPACE
     \ingroup painting-3D
 
     When painting to a QOpenGLPaintDevice using QPainter, the state of
-    the current GL context will be altered by the paint engine to reflect
-    its needs.  Applications should not rely upon the GL state being reset
+    the current OpenGL context will be altered by the paint engine to reflect
+    its needs.  Applications should not rely upon the OpenGL state being reset
     to its original conditions, particularly the current shader program,
-    GL viewport, texture units, and drawing modes.
+    OpenGL viewport, texture units, and drawing modes.
 */
 
 class QOpenGLPaintDevicePrivate

@@ -70,7 +70,7 @@ public:
 
     virtual void reset();
     virtual void update(Qt::InputMethodQueries);
-    virtual void invokeAction(QInputPanel::Action, int cursorPosition);
+    virtual void invokeAction(QInputMethod::Action, int cursorPosition);
 
     static QWindowsInputContext *instance();
 

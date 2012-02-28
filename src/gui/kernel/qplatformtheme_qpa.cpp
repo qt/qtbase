@@ -84,6 +84,20 @@ QT_BEGIN_NAMESPACE
 
     \value StyleNames (QStringList) A list of preferred style names.
 
+    \value WindowAutoPlacement (bool) A boolean value indicating whether Windows
+                               (particularly dialogs) are placed by the system
+                               (see _NET_WM_FULL_PLACEMENT in X11).
+
+    \value DialogButtonBoxLayout (int) An integer representing a
+                                 QDialogButtonBox::ButtonLayout value.
+
+    \value DialogButtonBoxButtonsHaveIcons (bool) A boolean value indicating whether
+                                            the buttons of a QDialogButtonBox should have icons.
+
+    \value UseFullScreenForPopupMenu (bool) Pop menus can cover the full screen including task bar.
+
+    \value KeyboardScheme (int) An integer value (enum KeyboardSchemes) specifying the
+                           keyboard scheme.
 
     \sa themeHint(), QStyle::pixelMetric()
 */
@@ -121,6 +135,14 @@ const QPalette *QPlatformTheme::palette(Palette type) const
 QVariant QPlatformTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
+    case QPlatformTheme::UseFullScreenForPopupMenu:
+        return QVariant(false);
+    case QPlatformTheme::WindowAutoPlacement:
+        return QVariant(false);
+    case QPlatformTheme::DialogButtonBoxLayout:
+        return QVariant(int(0));
+    case QPlatformTheme::DialogButtonBoxButtonsHaveIcons:
+        return QVariant(false);
     case QPlatformTheme::ItemViewActivateItemOnSingleClick:
         return QVariant(false);
     case QPlatformTheme::ToolButtonStyle:
@@ -140,6 +162,8 @@ QVariant QPlatformTheme::themeHint(ThemeHint hint) const
         return QVariant(false);
     case MaximumScrollBarDragDistance:
         return QVariant(-1);
+    case KeyboardScheme:
+        return QVariant(int(WindowsKeyboardScheme));
     }
     return QVariant();
 }

@@ -1802,9 +1802,8 @@ void QHeaderViewPrivate::_q_sectionsRemoved(const QModelIndex &parent,
         if (logicalFirst == logicalLast) { // Remove just one index.
             int l = logicalFirst;
             int visual = visualIndices.at(l);
+            Q_ASSERT(sectionCount == logicalIndices.count());
             for (int v = 0; v < sectionCount; ++v) {
-                if (v >= logicalIndices.count())
-                    continue; // the section doesn't exist
                 if (v > visual) {
                     int logical = logicalIndices.at(v);
                     --(visualIndices[logical]);
@@ -2434,20 +2433,15 @@ bool QHeaderView::viewportEvent(QEvent *e)
         }
         return true; }
 #endif // QT_NO_STATUSTIP
-    case QEvent::Hide: {
-        d->invalidateCachedSizeHint();
+    case QEvent::Hide:
+    case QEvent::Show:
+    case QEvent::FontChange:
+    case QEvent::StyleChange:{
         QAbstractScrollArea *parent = qobject_cast<QAbstractScrollArea *>(parentWidget());
         if (parent && parent->isVisible()) // Only resize if we have a visible parent
             resizeSections();
         emit geometriesChanged();
         break;}
-    case QEvent::Show:
-    case QEvent::FontChange:
-    case QEvent::StyleChange:
-        d->invalidateCachedSizeHint();
-        resizeSections();
-        emit geometriesChanged();
-        break;
     case QEvent::ContextMenu: {
         d->state = QHeaderViewPrivate::NoState;
         d->pressed = d->section = d->target = -1;
@@ -3391,11 +3385,11 @@ int QHeaderViewPrivate::viewSectionSizeHint(int logical) const
 
 int QHeaderViewPrivate::adjustedVisualIndex(int visualIndex) const
 {
-    if (hiddenSectionSize.count() > 0) {
+    if (!sectionHidden.isEmpty()) {
         int adjustedVisualIndex = visualIndex;
         int currentVisualIndex = 0;
         for (int i = 0; i < sectionSpans.count(); ++i) {
-            if (sectionSpans.at(i).size == 0)
+            if (sectionHidden.testBit(i))
                 ++adjustedVisualIndex;
             else
                 ++currentVisualIndex;

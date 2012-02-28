@@ -15,6 +15,8 @@ SOURCES += main.cpp \
            qconnmanengine.cpp \
            ../qnetworksession_impl.cpp
 
+OTHER_FILES += connman.json
+
 DESTDIR = $$QT.network.plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer
 INSTALLS += target

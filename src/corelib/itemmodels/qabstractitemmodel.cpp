@@ -431,15 +431,9 @@ bool QPersistentModelIndex::isValid() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QModelIndex &idx)
 {
-#ifndef Q_BROKEN_DEBUG_STREAM
     dbg.nospace() << "QModelIndex(" << idx.row() << ',' << idx.column()
                   << ',' << idx.internalPointer() << ',' << idx.model() << ')';
     return dbg.space();
-#else
-    qWarning("This compiler doesn't support streaming QModelIndex to QDebug");
-    return dbg;
-    Q_UNUSED(idx);
-#endif
 }
 
 QDebug operator<<(QDebug dbg, const QPersistentModelIndex &idx)

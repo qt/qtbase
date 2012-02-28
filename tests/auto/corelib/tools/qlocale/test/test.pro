@@ -1,5 +1,6 @@
-CONFIG += testcase
-QT = core testlib network
+CONFIG += console testcase
+CONFIG -= app_bundle
+QT = core testlib
 embedded: QT += gui
 SOURCES = ../tst_qlocale.cpp
 

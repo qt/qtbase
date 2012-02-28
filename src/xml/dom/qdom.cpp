@@ -172,14 +172,16 @@ public:
     bool isDocumentType() const             { return nodeType() == QDomNode::DocumentTypeNode; }
     bool isElement() const                  { return nodeType() == QDomNode::ElementNode; }
     bool isEntityReference() const          { return nodeType() == QDomNode::EntityReferenceNode; }
-    bool isText() const                     { return (nodeType() == QDomNode::TextNode)
-                                                  || (nodeType() == QDomNode::CDATASectionNode); }
+    bool isText() const                     { const QDomNode::NodeType nt = nodeType();
+                                              return (nt == QDomNode::TextNode)
+                                                  || (nt == QDomNode::CDATASectionNode); }
     bool isEntity() const                   { return nodeType() == QDomNode::EntityNode; }
     bool isNotation() const                 { return nodeType() == QDomNode::NotationNode; }
     bool isProcessingInstruction() const    { return nodeType() == QDomNode::ProcessingInstructionNode; }
-    bool isCharacterData() const            { return (nodeType() == QDomNode::CharacterDataNode)
-                                                  || (nodeType() == QDomNode::TextNode)
-                                                  || (nodeType() == QDomNode::CommentNode); }
+    bool isCharacterData() const            { const QDomNode::NodeType nt = nodeType();
+                                              return (nt == QDomNode::CharacterDataNode)
+                                                  || (nt == QDomNode::TextNode)
+                                                  || (nt == QDomNode::CommentNode); }
     bool isComment() const                  { return nodeType() == QDomNode::CommentNode; }
 
     virtual QDomNode::NodeType nodeType() const { return QDomNode::BaseNode; }

@@ -15,6 +15,8 @@ SOURCES += \
 HEADERS += \
     qwindowsprintersupport.h
 
+OTHER_FILES += windows.json
+
 target.path += $$[QT_INSTALL_PLUGINS]/printsupport
 INSTALLS += target
 LIBS += -lWinspool -lComdlg32

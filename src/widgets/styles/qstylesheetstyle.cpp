@@ -860,6 +860,19 @@ static QStyle::StandardPixmap subControlIcon(int pe)
     return QStyle::SP_CustomBase;
 }
 
+static inline QIcon cssIconValueToIcon(const QCss::IconValue &iconValue)
+{
+    if (iconValue.entries.isEmpty())
+        return QIcon();
+    QIcon icon = QIcon(iconValue.entries.first().uri);
+    for (int i = 1; i < iconValue.entries.size(); ++i) {
+        const QCss::IconValue::IconEntry &entry = iconValue.entries.at(i);
+        icon.addPixmap(entry.uri, static_cast<QIcon::Mode>(entry.mode),
+                       static_cast<QIcon::State>(entry.state));
+    }
+    return icon;
+}
+
 QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QWidget *widget)
 : features(0), hasFont(false), pal(0), b(0), bg(0), bd(0), ou(0), geo(0), p(0), img(0), clipset(0)
 {
@@ -919,11 +932,11 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QWidget
     if (v.extractPalette(&fg, &sfg, &sbg, &abg))
         pal = new QStyleSheetPaletteData(fg, sfg, sbg, abg);
 
-    QIcon icon;
     alignment = Qt::AlignCenter;
     QSize size;
-    if (v.extractImage(&icon, &alignment, &size))
-        img = new QStyleSheetImageData(icon, alignment, size);
+    QCss::IconValue iconValue;
+    if (v.extractImage(&iconValue, &alignment, &size))
+        img = new QStyleSheetImageData(cssIconValueToIcon(iconValue), alignment, size);
 
     int adj = -255;
     hasFont = v.extractFont(&font, &adj);

@@ -46,6 +46,9 @@ QT_BEGIN_NAMESPACE
 
 class QTouchScreenPlugin : public QGenericPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "evdevtouch.json")
+
 public:
     QTouchScreenPlugin();
 
@@ -71,6 +74,6 @@ QObject* QTouchScreenPlugin::create(const QString &key,
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(qevdevtouchplugin, QTouchScreenPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

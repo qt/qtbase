@@ -2124,11 +2124,10 @@ void tst_Collections::qstring()
     QVERIFY(s.toAscii().isNull());
 
     s = "ascii";
-    s += (uchar) 0xb0;
+    s += QChar((uchar) 0xb0);
     QVERIFY(s.toUtf8() != s.toLatin1());
-    QString sa = s.toLatin1().constData();
-    QVERIFY(sa[sa.length()-1] == (ushort) 0xb0);
-    QVERIFY(sa.left(sa.length()-1) == "ascii");
+    QCOMPARE(s[s.length()-1].unicode(), (ushort)0xb0);
+    QVERIFY(s.left(s.length()-1) == "ascii");
 
     QVERIFY(s == QString::fromUtf8(s.toUtf8().constData()));
 

@@ -19,6 +19,8 @@ SOURCES += main.cpp \
 
 OBJECTIVE_SOURCES += qcorewlanengine.mm
 
+OTHER_FILES += corewlan.json
+
 DESTDIR = $$QT.network.plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer
 INSTALLS += target

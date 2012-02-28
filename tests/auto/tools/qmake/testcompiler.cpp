@@ -126,7 +126,13 @@ TestCompiler::~TestCompiler()
 {
 }
 
-bool TestCompiler::runCommand( QString cmdline )
+bool TestCompiler::errorOut()
+{
+    qDebug(qPrintable(testOutput_.join("\n")));
+    return false;
+}
+
+bool TestCompiler::runCommand( QString cmdline, bool expectFail )
 {
     testOutput_.append("Running command: " + cmdline);
 
@@ -137,27 +143,39 @@ bool TestCompiler::runCommand( QString cmdline )
     child.start(cmdline);
     if (!child.waitForStarted(-1)) {
         testOutput_.append( "Unable to start child process." );
-        return false;
+        return errorOut();
     }
 
-    bool failed = false;
     child.setReadChannel(QProcess::StandardError);
     child.waitForFinished(-1);
+    bool ok = child.exitStatus() == QProcess::NormalExit && (expectFail ^ (child.exitCode() == 0));
 
     foreach (const QByteArray &output, child.readAllStandardError().split('\n')) {
         testOutput_.append(QString::fromLocal8Bit(output));
 
         if (output.startsWith("Project MESSAGE: FAILED"))
-            failed = true;
+            ok = false;
     }
 
-    return !failed && child.exitStatus() == QProcess::NormalExit && child.exitCode() == 0;
+    return ok ? true : errorOut();
 }
 
 void TestCompiler::setBaseCommands( QString makeCmd, QString qmakeCmd )
 {
     makeCmd_ = makeCmd;
     qmakeCmd_ = qmakeCmd;
+}
+
+void TestCompiler::resetArguments()
+{
+    makeArgs_.clear();
+    qmakeArgs_.clear();
+}
+
+void TestCompiler::setArguments( QString makeArgs, QString qmakeArgs )
+{
+    makeArgs_ = makeArgs;
+    qmakeArgs_ = qmakeArgs;
 }
 
 void TestCompiler::resetEnvironment()
@@ -175,7 +193,7 @@ bool TestCompiler::makeClean( const QString &workPath )
     QDir D;
     if (!D.exists(workPath)) {
         testOutput_.append( "Directory '" + workPath + "' doesn't exist" );
-        return false;
+        return errorOut();
     }
 
     D.setCurrent(workPath);
@@ -192,7 +210,7 @@ bool TestCompiler::makeDistClean( const QString &workPath )
     QDir D;
     if (!D.exists(workPath)) {
         testOutput_.append( "Directory '" + workPath + "' doesn't exist" );
-        return false;
+        return errorOut();
     }
 
     D.setCurrent(workPath);
@@ -222,21 +240,21 @@ bool TestCompiler::qmake( const QString &workDir, const QString &proName, const 
     makeFile += "Makefile";
 
     // Now start qmake and generate the makefile
-    return runCommand( qmakeCmd_ + " " + projectFile + " -o " + makeFile );
+    return runCommand( qmakeCmd_ + " " + qmakeArgs_ + " " + projectFile + " -o " + makeFile );
 }
 
-bool TestCompiler::make( const QString &workPath, const QString &target )
+bool TestCompiler::make( const QString &workPath, const QString &target, bool expectFail )
 {
     QDir D;
     D.setCurrent( workPath );
 
-    QString cmdline = makeCmd_;
+    QString cmdline = makeCmd_ + " " + makeArgs_;
     if ( cmdline.contains("nmake", Qt::CaseInsensitive) )
         cmdline.append(" /NOLOGO");
     if ( !target.isEmpty() )
         cmdline += " " + target;
 
-    return runCommand( cmdline );
+    return runCommand( cmdline, expectFail );
 }
 
 bool TestCompiler::exists( const QString &destDir, const QString &exeName, BuildType buildType, const QString &version )

@@ -128,7 +128,7 @@ QString Q_WIDGETS_EXPORT qt_accHotKey(const QString &text)
     }
     if (ac.isNull())
         return QString();
-    return (QString)QKeySequence(Qt::ALT) + ac.toUpper();
+    return QKeySequence(Qt::ALT).toString(QKeySequence::NativeText) + ac.toUpper();
 #else
     Q_UNUSED(text);
     return QString();

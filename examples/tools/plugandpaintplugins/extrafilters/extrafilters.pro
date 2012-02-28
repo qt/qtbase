@@ -4,6 +4,7 @@ CONFIG       += plugin
 INCLUDEPATH  += ../..
 HEADERS       = extrafiltersplugin.h
 SOURCES       = extrafiltersplugin.cpp
+OTHER_FILES  += extrafilters.json
 TARGET        = $$qtLibraryTarget(pnp_extrafilters)
 DESTDIR       = ../../plugandpaint/plugins
 

@@ -83,6 +83,7 @@ public:
 private:
     const QScopedPointer<QMimeMagicRulePrivate> d;
 };
+Q_DECLARE_TYPEINFO(QMimeMagicRule, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 

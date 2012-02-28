@@ -221,7 +221,7 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
     return QMetaTypeSwitcher::switcher<bool>(comparator, a->type, 0);
 }
 
-static bool convert(const QVariant::Private *d, QVariant::Type t,
+static bool convert(const QVariant::Private *d, int t,
                  void *result, bool *ok)
 {
     switch (t) {
@@ -236,7 +236,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t,
         switch (d->type) {
 #ifndef QT_NO_SHORTCUT
         case QVariant::KeySequence:
-            *str = QString(*v_cast<QKeySequence>(d));
+            *str = (*v_cast<QKeySequence>(d)).toString(QKeySequence::NativeText);
             return true;
 #endif
         case QVariant::Font:
@@ -285,7 +285,8 @@ static bool convert(const QVariant::Private *d, QVariant::Type t,
 #ifndef QT_NO_SHORTCUT
     case QVariant::Int:
         if (d->type == QVariant::KeySequence) {
-            *static_cast<int *>(result) = (int)(*(v_cast<QKeySequence>(d)));
+            const QKeySequence &seq = *v_cast<QKeySequence>(d);
+            *static_cast<int *>(result) = seq.isEmpty() ? 0 : seq[0];
             return true;
         }
         break;
@@ -342,7 +343,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t,
     return qcoreVariantHandler()->convert(d, t, result, ok);
 }
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
 static void streamDebug(QDebug dbg, const QVariant &v)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
@@ -362,7 +363,7 @@ const QVariant::Handler qt_gui_variant_handler = {
     compare,
     convert,
     0,
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
     streamDebug
 #else
     0

@@ -100,6 +100,7 @@ public:
         , m_threadChecks(false)
         , m_textLayoutThread(0)
  #endif
+        , m_keyboardScheme(0)
     {
         init(txt);
     }
@@ -527,6 +528,8 @@ private Q_SLOTS:
     void _q_clipboardChanged();
     void _q_deleteSelected();
 
+private:
+    int m_keyboardScheme;
 };
 
 QT_END_NAMESPACE

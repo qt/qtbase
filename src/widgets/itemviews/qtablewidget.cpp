@@ -755,6 +755,7 @@ void QTableModel::clear()
 
 void QTableModel::clearContents()
 {
+    beginResetModel();
     for (int i = 0; i < tableItems.count(); ++i) {
         if (tableItems.at(i)) {
             tableItems.at(i)->view = 0;
@@ -762,7 +763,7 @@ void QTableModel::clearContents()
             tableItems[i] = 0;
         }
     }
-    reset();
+    endResetModel();
 }
 
 void QTableModel::itemChanged(QTableWidgetItem *item)

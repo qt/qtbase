@@ -306,10 +306,10 @@ public:
     };
 
     enum RelationFlag {
-        Label         = 0x00020000,
-        Labelled      = 0x00040000,
-        Controller    = 0x00080000,
-        Controlled    = 0x00100000,
+        Label         = 0x00000001,
+        Labelled      = 0x00000002,
+        Controller    = 0x00000004,
+        Controlled    = 0x00000008,
         AllRelations  = 0xffffffff
     };
     Q_DECLARE_FLAGS(Relation, RelationFlag)

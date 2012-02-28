@@ -951,13 +951,17 @@ void Generator::generateStaticMetacall()
         }
         fprintf(out, "        default: ;\n");
         fprintf(out, "        }\n");
-
-        fprintf(out, "    } else if (_c == QMetaObject::IndexOfMethod) {\n");
+        fprintf(out, "    }");
+        needElse = true;
+    }
+    if (!cdef->signalList.isEmpty()) {
+        Q_ASSERT(needElse); // if there is signal, there was method.
+        fprintf(out, " else if (_c == QMetaObject::IndexOfMethod) {\n");
         fprintf(out, "        int *result = reinterpret_cast<int *>(_a[0]);\n");
         fprintf(out, "        void **func = reinterpret_cast<void **>(_a[1]);\n");
         bool anythingUsed = false;
-        for (int methodindex = 0; methodindex < methodList.size(); ++methodindex) {
-            const FunctionDef &f = methodList.at(methodindex);
+        for (int methodindex = 0; methodindex < cdef->signalList.size(); ++methodindex) {
+            const FunctionDef &f = cdef->signalList.at(methodindex);
             if (f.wasCloned || !f.inPrivateClass.isEmpty() || f.isStatic)
                 continue;
             anythingUsed = true;

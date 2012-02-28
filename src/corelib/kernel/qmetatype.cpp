@@ -1290,7 +1290,7 @@ namespace {
 class TypeDestroyer {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct DestroyerImpl {
-        static void Destroy(const int /* type */, T *where) { delete where; }
+        static void Destroy(const int /* type */, void *where) { qMetaTypeDeleteHelper<T>(where); }
     };
     template<typename T>
     struct DestroyerImpl<T, /* IsAcceptedType = */ false> {
@@ -1318,7 +1318,7 @@ public:
     template<typename T>
     void delegate(const T *where) { DestroyerImpl<T>::Destroy(m_type, const_cast<T*>(where)); }
     void delegate(const void *) {}
-    void delegate(const QMetaTypeSwitcher::UnknownType *where) { customTypeDestroyer(m_type, (void*)where); }
+    void delegate(const QMetaTypeSwitcher::NotBuiltinType *where) { customTypeDestroyer(m_type, (void*)where); }
 
 private:
     static void customTypeDestroyer(const int type, void *where)
@@ -1354,11 +1354,11 @@ namespace {
 class TypeConstructor {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct ConstructorImpl {
-        static void *Construct(const int /*type*/, void *where, const T *copy) { return qMetaTypeConstructHelper(where, copy); }
+        static void *Construct(const int /*type*/, void *where, const void *copy) { return qMetaTypeConstructHelper<T>(where, copy); }
     };
     template<typename T>
     struct ConstructorImpl<T, /* IsAcceptedType = */ false> {
-        static void *Construct(const int type, void *where, const T *copy)
+        static void *Construct(const int type, void *where, const void *copy)
         {
             if (QTypeModuleInfo<T>::IsGui)
                 return Q_LIKELY(qMetaTypeGuiHelper) ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].constructor(where, copy) : 0;
@@ -1380,7 +1380,7 @@ public:
     template<typename T>
     void *delegate(const T *copy) { return ConstructorImpl<T>::Construct(m_type, m_where, copy); }
     void *delegate(const void *) { return m_where; }
-    void *delegate(const QMetaTypeSwitcher::UnknownType *copy) { return customTypeConstructor(m_type, m_where, copy); }
+    void *delegate(const QMetaTypeSwitcher::NotBuiltinType *copy) { return customTypeConstructor(m_type, m_where, copy); }
 
 private:
     static void *customTypeConstructor(const int type, void *where, const void *copy)
@@ -1440,7 +1440,7 @@ namespace {
 class TypeDestructor {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct DestructorImpl {
-        static void Destruct(const int /* type */, T *where) { qMetaTypeDestructHelper(where); }
+        static void Destruct(const int /* type */, void *where) { qMetaTypeDestructHelper<T>(where); }
     };
     template<typename T>
     struct DestructorImpl<T, /* IsAcceptedType = */ false> {
@@ -1468,7 +1468,7 @@ public:
     template<typename T>
     void delegate(const T *where) { DestructorImpl<T>::Destruct(m_type, const_cast<T*>(where)); }
     void delegate(const void *) {}
-    void delegate(const QMetaTypeSwitcher::UnknownType *where) { customTypeDestructor(m_type, (void*)where); }
+    void delegate(const QMetaTypeSwitcher::NotBuiltinType *where) { customTypeDestructor(m_type, (void*)where); }
 
 private:
     static void customTypeDestructor(const int type, void *where)
@@ -1536,7 +1536,7 @@ public:
 
     template<typename T>
     int delegate(const T*) { return SizeOfImpl<T>::Size(m_type); }
-    int delegate(const QMetaTypeSwitcher::UnknownType*) { return customTypeSizeOf(m_type); }
+    int delegate(const QMetaTypeSwitcher::NotBuiltinType*) { return customTypeSizeOf(m_type); }
 private:
     static int customTypeSizeOf(const int type)
     {
@@ -1606,7 +1606,7 @@ public:
     template<typename T>
     quint32 delegate(const T*) { return FlagsImpl<T>::Flags(m_type); }
     quint32 delegate(const void*) { return 0; }
-    quint32 delegate(const QMetaTypeSwitcher::UnknownType*) { return customTypeFlags(m_type); }
+    quint32 delegate(const QMetaTypeSwitcher::NotBuiltinType*) { return customTypeFlags(m_type); }
 private:
     const int m_type;
     static quint32 customTypeFlags(const int type)
@@ -1793,7 +1793,7 @@ public:
     template<typename T>
     void delegate(const T*) { TypeInfoImpl<T>(m_type, info); }
     void delegate(const void*) {}
-    void delegate(const QMetaTypeSwitcher::UnknownType*) { customTypeInfo(m_type); }
+    void delegate(const QMetaTypeSwitcher::NotBuiltinType*) { customTypeInfo(m_type); }
 private:
     void customTypeInfo(const uint type)
     {

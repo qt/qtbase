@@ -300,7 +300,6 @@ QString QMimeType::name() const
     Returns the description of the MIME type to be displayed on user interfaces.
 
     The system language (QLocale::system().name()) is used to select the appropriate translation.
-    Another language can be specified by setting the \a localeName argument.
  */
 QString QMimeType::comment() const
 {

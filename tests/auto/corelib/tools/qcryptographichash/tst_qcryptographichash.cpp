@@ -102,6 +102,22 @@ void tst_QCryptographicHash::intermediary_result_data()
                           << QByteArray("abc") << QByteArray("abc")
                           << QByteArray::fromHex("A9993E364706816ABA3E25717850C26C9CD0D89D")
                           << QByteArray::fromHex("F8C1D87006FBF7E5CC4B026C3138BC046883DC71");
+    QTest::newRow("sha224") << int(QCryptographicHash::Sha224)
+                            << QByteArray("abc") << QByteArray("abc")
+                            << QByteArray::fromHex("23097D223405D8228642A477BDA255B32AADBCE4BDA0B3F7E36C9DA7")
+                            << QByteArray::fromHex("7C9C91FC479626AA1A525301084DEB96716131D146A2DB61B533F4C9");
+    QTest::newRow("sha256") << int(QCryptographicHash::Sha256)
+                            << QByteArray("abc") << QByteArray("abc")
+                            << QByteArray::fromHex("BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD")
+                            << QByteArray::fromHex("BBB59DA3AF939F7AF5F360F2CEB80A496E3BAE1CD87DDE426DB0AE40677E1C2C");
+    QTest::newRow("sha384") << int(QCryptographicHash::Sha384)
+                            << QByteArray("abc") << QByteArray("abc")
+                            << QByteArray::fromHex("CB00753F45A35E8BB5A03D699AC65007272C32AB0EDED1631A8B605A43FF5BED8086072BA1E7CC2358BAECA134C825A7")
+                            << QByteArray::fromHex("CAF33A735C9535CE7F5D24FB5B3A4834F0E9316664AD15A9E8221679D4A3B4FB7E962404BA0C10C1D43AB49D03A08B8D");
+    QTest::newRow("sha512") << int(QCryptographicHash::Sha512)
+                            << QByteArray("abc") << QByteArray("abc")
+                            << QByteArray::fromHex("DDAF35A193617ABACC417349AE20413112E6FA4E89A97EA20A9EEEE64B55D39A2192992A274FC1A836BA3C23A3FEEBBD454D4423643CE80E2A9AC94FA54CA49F")
+                            << QByteArray::fromHex("F3C41E7B63EE869596FC28BAD64120612C520F65928AB4D126C72C6998B551B8FF1CEDDFED4373E6717554DC89D1EEE6F0AB22FD3675E561ABA9AE26A3EEC53B");
 }
 
 void tst_QCryptographicHash::intermediary_result()

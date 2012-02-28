@@ -43,7 +43,6 @@
 #include "uic.h"
 #include "ui4.h"
 
-#include <QtCore/QRegExp>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDebug>
 

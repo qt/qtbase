@@ -4,6 +4,7 @@ CONFIG       += plugin static
 INCLUDEPATH  += ../..
 HEADERS       = basictoolsplugin.h
 SOURCES       = basictoolsplugin.cpp
+OTHER_FILES  += basictools.json
 TARGET        = $$qtLibraryTarget(pnp_basictools)
 DESTDIR       = ../../plugandpaint/plugins
 #! [0]

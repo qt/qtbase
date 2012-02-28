@@ -69,7 +69,12 @@ public:
         SystemIconThemeName,
         SystemIconFallbackThemeName,
         IconThemeSearchPaths,
-        StyleNames
+        StyleNames,
+        WindowAutoPlacement,
+        DialogButtonBoxLayout,
+        DialogButtonBoxButtonsHaveIcons,
+        UseFullScreenForPopupMenu,
+        KeyboardScheme
     };
 
     enum DialogType {
@@ -82,6 +87,16 @@ public:
         SystemPalette,
         ToolTipPalette,
         NPalettes
+    };
+
+    enum KeyboardSchemes
+    {
+        WindowsKeyboardScheme,
+        MacKeyboardScheme,
+        X11KeyboardScheme,
+        KdeKeyboardScheme,
+        GnomeKeyboardScheme,
+        CdeKeyboardScheme
     };
 
     virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;

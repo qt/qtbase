@@ -75,6 +75,7 @@ QListModel::~QListModel()
 
 void QListModel::clear()
 {
+    beginResetModel();
     for (int i = 0; i < items.count(); ++i) {
         if (items.at(i)) {
             items.at(i)->d->theid = -1;
@@ -83,7 +84,7 @@ void QListModel::clear()
         }
     }
     items.clear();
-    reset();
+    endResetModel();
 }
 
 QListWidgetItem *QListModel::at(int row) const

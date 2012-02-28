@@ -51,7 +51,7 @@
 #include <private/qgraphicssceneindex_p.h>
 #include <math.h>
 #include "../../../gui/painting/qpathclipper/pathcompare.h"
-#include "../../shared/platforminputcontext.h"
+#include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)

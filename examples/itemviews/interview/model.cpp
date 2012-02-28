@@ -95,7 +95,7 @@ QVariant Model::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
     if (role == Qt::DisplayRole)
-	return "Item " + QString::number(index.row()) + ":" + QString::number(index.column());
+        return QVariant("Item " + QString::number(index.row()) + ":" + QString::number(index.column()));
     if (role == Qt::DecorationRole) {
         if (index.column() == 0)
             return iconProvider.icon(QFileIconProvider::Folder);

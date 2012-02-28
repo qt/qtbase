@@ -4,7 +4,6 @@ TEMPLATE = app
 INCLUDEPATH += . $$LANCELOT_DIR
 QT += core-private gui-private
 
-# Input
 HEADERS += widgets.h \
            interactivewidget.h \
            $$LANCELOT_DIR/paintcommands.h

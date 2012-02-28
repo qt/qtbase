@@ -260,7 +260,9 @@ public:
     static QPalette *sys_pal;
     static QPalette *set_pal;
 
-private:
+protected:
+    void notifyThemeChanged();
+
 public:
     static QFont *sys_font;
     static QFont *set_font;

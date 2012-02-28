@@ -53,8 +53,10 @@ public:
 
 
 QT_BEGIN_NAMESPACE
-Q_DECLARE_INTERFACE(EchoInterface,
-                    "com.trolltech.Plugin.EchoInterface/1.0");
+
+#define EchoInterface_iid "org.qt-project.Qt.Examples.EchoInterface"
+
+Q_DECLARE_INTERFACE(EchoInterface, EchoInterface_iid)
 QT_END_NAMESPACE
 
 //! [0]

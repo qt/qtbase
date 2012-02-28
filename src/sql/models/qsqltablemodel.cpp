@@ -378,13 +378,19 @@ bool QSqlTableModel::select()
     if (query.isEmpty())
         return false;
 
-    // clear the submitted flags so revertAll can do its job
-    for (QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.begin();
-         it != d->cache.constEnd();
-         ++it)
-        it.value().setSubmitted(false);
+    QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.end();
+    while (it != d->cache.constBegin()) {
+        --it;
+        // rows must be accounted for
+        if (it.value().op() == QSqlTableModelPrivate::Insert) {
+            beginRemoveRows(QModelIndex(), it.key(), it.key());
+            it = d->cache.erase(it);
+            endRemoveRows();
+        } else {
+            it = d->cache.erase(it);
+        }
+    }
 
-    revertAll();
     QSqlQuery qu(query, d->db);
     setQuery(qu);
 
@@ -439,13 +445,11 @@ QVariant QSqlTableModel::headerData(int section, Qt::Orientation orientation, in
 {
     Q_D(const QSqlTableModel);
     if (orientation == Qt::Vertical && role == Qt::DisplayRole) {
-        if (d->cache.contains(section)) {
-            const QSqlTableModelPrivate::Op op = d->cache.value(section).op();
-            if (op == QSqlTableModelPrivate::Insert)
-                return QLatin1String("*");
-            else if (op == QSqlTableModelPrivate::Delete)
-                return QLatin1String("!");
-        }
+        const QSqlTableModelPrivate::Op op = d->cache.value(section).op();
+        if (op == QSqlTableModelPrivate::Insert)
+            return QLatin1String("*");
+        else if (op == QSqlTableModelPrivate::Delete)
+            return QLatin1String("!");
     }
     return QSqlQueryModel::headerData(section, orientation, role);
 }
@@ -463,23 +467,14 @@ bool QSqlTableModel::isDirty(const QModelIndex &index) const
     if (!index.isValid())
         return false;
 
-    switch (d->strategy) {
-        case OnFieldChange:
-            return false;
-        case OnRowChange: {
-            const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
-            return row.op() == QSqlTableModelPrivate::Update
-                   && row.rec().isGenerated(index.column());
-        }
-        case OnManualSubmit: {
-            const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
-            return row.op() == QSqlTableModelPrivate::Insert
-                   || row.op() == QSqlTableModelPrivate::Delete
-                   || (row.op() == QSqlTableModelPrivate::Update
-                       && row.rec().isGenerated(index.column()));
-        }
-    }
-    return false;
+    const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
+    if (row.submitted())
+        return false;
+
+    return row.op() == QSqlTableModelPrivate::Insert
+           || row.op() == QSqlTableModelPrivate::Delete
+           || (row.op() == QSqlTableModelPrivate::Update
+               && row.rec().isGenerated(index.column()));
 }
 
 /*!
@@ -513,10 +508,9 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
 
     QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];
 
-    if (row.op() == QSqlTableModelPrivate::None) {
+    if (row.op() == QSqlTableModelPrivate::None)
         row = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
                                                  d->rec);
-    }
 
     row.setValue(index.column(), value);
     emit dataChanged(index, index);
@@ -659,7 +653,7 @@ bool QSqlTableModel::deleteRowFromTable(int row)
 
     Note: In OnManualSubmit mode, already submitted changes won't
     be cleared from the cache when submitAll() fails. This allows
-    transactions to be rolled back and resubmitted again without
+    transactions to be rolled back and resubmitted without
     losing data.
 
     \sa revertAll(), lastError()
@@ -693,19 +687,6 @@ bool QSqlTableModel::submitAll()
         it.value().setSubmitted(true);
     }
 
-    // all changes have been committed
-
-    // clean up inserted rows
-    QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.end();
-    while (it != d->cache.constBegin()) {
-        --it;
-        if (it.value().op()  == QSqlTableModelPrivate::Insert) {
-            beginRemoveRows(QModelIndex(), it.key(), it.key());
-            it = d->cache.erase(it);
-            endRemoveRows();
-        }
-    }
-    d->clearCache();
     return select();
 }
 
@@ -1050,6 +1031,8 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
     Returns false if the parameters are out of bounds; otherwise
     returns true.
 
+    Does not submit rows, regardless of edit strategy, not even OnFieldChange.
+
     \sa primeInsert(), insertRecord()
 */
 bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
@@ -1097,7 +1080,11 @@ bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
 
     Returns true if the record could be inserted, otherwise false.
 
-    \sa insertRows(), removeRows()
+    Changes are submitted immediately for OnFieldChange and
+    OnRowChange. Note the contrast with setRecord() in respect to
+    OnRowChange.
+
+    \sa insertRows(), removeRows(), setRecord()
 */
 bool QSqlTableModel::insertRecord(int row, const QSqlRecord &record)
 {
@@ -1210,9 +1197,15 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
     Returns true if all the values could be set; otherwise returns
     false.
 
-    \sa record()
+    The edit strategy affects automatic submitting.
+    With OnFieldChange, setRecord() commits its changed row.
+    With OnRowChange, setRecord() does not commit its changed row,
+    but making a change to another row causes previous changes to
+    be submitted.
+
+    \sa record(), editStrategy()
 */
-bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
+bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
 {
     Q_D(QSqlTableModel);
     Q_ASSERT_X(row >= 0, "QSqlTableModel::setRecord()", "Cannot set a record to a row less than 0");
@@ -1230,9 +1223,9 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
     // Check field names and remember mapping
     typedef QMap<int, int> Map;
     Map map;
-    for (int i = 0; i < record.count(); ++i) {
-        if (record.isGenerated(i)) {
-            int idx = d->nameToIndex(record.fieldName(i));
+    for (int i = 0; i < values.count(); ++i) {
+        if (values.isGenerated(i)) {
+            int idx = d->nameToIndex(values.fieldName(i));
             if (idx == -1)
                 return false;
             map[i] = idx;
@@ -1247,7 +1240,7 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
     Map::const_iterator i = map.constBegin();
     const Map::const_iterator e = map.constEnd();
     for ( ; i != e; ++i)
-         mrow.setValue(i.value(), record.value(i.key()));
+         mrow.setValue(i.value(), values.value(i.key()));
 
     if (columnCount())
         emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));

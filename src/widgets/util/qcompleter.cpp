@@ -421,7 +421,8 @@ void QCompletionModel::filter(const QStringList& parts)
 void QCompletionModel::resetModel()
 {
     if (rowCount() == 0) {
-        reset();
+        beginResetModel();
+        endResetModel();
         return;
     }
 

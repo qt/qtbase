@@ -106,10 +106,86 @@ public:
     int minor;
 };
 
+/*!
+    \class QSurfaceFormat
+    \brief The QSurfaceFormat class represents the format of a QSurface.
+
+    The format includes the size of the color buffers, red, green, and blue;
+    the size of the alpha buffer; the size of the depth and stencil buffers;
+    and number of samples per pixel for multisampling. In addition, the format
+    contains surface configuration parameters such as OpenGL profile and
+    version for rendering, whether or not enable stereo buffers, and swap
+    behaviour.
+*/
+
+/*!
+    \enum QSurfaceFormat::FormatOption
+
+    This enum contains format options for use with QSurfaceFormat.
+
+    \value StereoBuffers Used to request stereo buffers in the surface format.
+    \value DebugContext Used to request a debug context with extra debugging information.
+        This requires OpenGL version 3.0 or higher.
+    \value DeprecatedFunctions Used to request that deprecated functions be included
+        in the OpenGL context profile. If not specified, you should get a forward compatible context
+        without support functionality marked as deprecated. This requires OpenGL version 3.0 or higher.
+*/
+
+/*!
+    \enum QSurfaceFormat::SwapBehavior
+
+    This enum is used by QSurfaceFormat to specify the swap behaviour of a surface. The swap behaviour
+    is mostly transparent to the application, but it affects factors such as rendering latency and
+    throughput.
+
+    \value DefaultSwapBehavior The default, unspecified swap behaviour of the platform.
+    \value SingleBuffer Used to request single buffering, which might result in flickering
+        when OpenGL rendering is done directly to screen without an intermediate offscreen
+        buffer.
+    \value DoubleBuffer This is typically the default swap behaviour on desktop platforms,
+        consisting of one back buffer and one front buffer. Rendering is done to the back
+        buffer, and then the back buffer and front buffer are swapped, or the contents of
+        the back buffer are copied to the front buffer, depending on the implementation.
+    \value TripleBuffer This swap behaviour is sometimes used in order to decrease the
+        risk of skipping a frame when the rendering rate is just barely keeping up with
+        the screen refresh rate. Depending on the platform it might also lead to slightly
+        more efficient use of the GPU due to improved pipelining behaviour. Triple buffering
+        comes at the cost of an extra frame of memory usage and latency, and might not be
+        supported depending on the underlying platform.
+*/
+
+/*!
+    \enum QSurfaceFormat::OpenGLContextProfile
+
+    This enum is used to specify the OpenGL context profile, in
+    conjunction with QSurfaceFormat::setMajorVersion() and
+    QSurfaceFormat::setMinorVersion().
+
+    Profiles are exposed in OpenGL 3.2 and above, and are used
+    to choose between a restricted core profile, and a compatibility
+    profile which might contain deprecated support functionality.
+
+    Note that the core profile might still contain functionality that
+    is deprecated and scheduled for removal in a higher version. To
+    get access to the deprecated functionality for the core profile
+    in the set OpenGL version you can use the QSurfaceFormat format option
+    QSurfaceFormat::DeprecatedFunctions.
+
+    \value NoProfile            OpenGL version is lower than 3.2.
+    \value CoreProfile          Functionality deprecated in OpenGL version 3.0 is not available.
+    \value CompatibilityProfile Functionality from earlier OpenGL versions is available.
+*/
+
+/*!
+    Constructs a default initialized QSurfaceFormat.
+*/
 QSurfaceFormat::QSurfaceFormat() : d(new QSurfaceFormatPrivate)
 {
 }
 
+/*!
+    Constructs a QSurfaceFormat with the given format \a options.
+*/
 QSurfaceFormat::QSurfaceFormat(QSurfaceFormat::FormatOptions options) :
     d(new QSurfaceFormatPrivate(options))
 {
@@ -131,7 +207,6 @@ void QSurfaceFormat::detach()
 /*!
     Constructs a copy of \a other.
 */
-
 QSurfaceFormat::QSurfaceFormat(const QSurfaceFormat &other)
 {
     d = other.d;
@@ -141,7 +216,6 @@ QSurfaceFormat::QSurfaceFormat(const QSurfaceFormat &other)
 /*!
     Assigns \a other to this object.
 */
-
 QSurfaceFormat &QSurfaceFormat::operator=(const QSurfaceFormat &other)
 {
     if (d != other.d) {
@@ -182,7 +256,6 @@ QSurfaceFormat::~QSurfaceFormat()
 
     \sa stereo()
 */
-
 void QSurfaceFormat::setStereo(bool enable)
 {
     QSurfaceFormat::FormatOptions newOptions = d->opts;
@@ -199,8 +272,7 @@ void QSurfaceFormat::setStereo(bool enable)
 
 /*!
     Returns the number of samples per pixel when multisampling is
-    enabled. By default, the highest number of samples that is
-    available is used.
+    enabled. By default, multisampling is disabled.
 
     \sa setSampleBuffers(), sampleBuffers(), setSamples()
 */
@@ -211,8 +283,7 @@ int QSurfaceFormat::samples() const
 
 /*!
     Set the preferred number of samples per pixel when multisampling
-    is enabled to \a numSamples. By default, the highest number of
-    samples available is used.
+    is enabled to \a numSamples. By default, multisampling is disabled.
 
     \sa setSampleBuffers(), sampleBuffers(), samples()
 */
@@ -229,7 +300,6 @@ void QSurfaceFormat::setSamples(int numSamples)
 
     \sa testOption()
 */
-
 void QSurfaceFormat::setOption(QSurfaceFormat::FormatOptions opt)
 {
     const QSurfaceFormat::FormatOptions newOptions = d->opts | opt;
@@ -244,7 +314,6 @@ void QSurfaceFormat::setOption(QSurfaceFormat::FormatOptions opt)
 
     \sa setOption()
 */
-
 bool QSurfaceFormat::testOption(QSurfaceFormat::FormatOptions opt) const
 {
     return d->opts & opt;
@@ -273,6 +342,13 @@ int QSurfaceFormat::depthBufferSize() const
    return d->depthSize;
 }
 
+/*!
+    Set the swap behaviour of the surface.
+
+    The swap behaviour specifies whether single, double, or triple
+    buffering is desired. The default, SwapBehavior::DefaultSwapBehavior,
+    gives the default swap behavior of the platform.
+*/
 void QSurfaceFormat::setSwapBehavior(SwapBehavior behavior)
 {
     if (d->swapBehavior != behavior) {
@@ -281,19 +357,29 @@ void QSurfaceFormat::setSwapBehavior(SwapBehavior behavior)
     }
 }
 
+/*!
+    Returns the configured swap behaviour.
 
+    \sa setSwapBehavior()
+*/
 QSurfaceFormat::SwapBehavior QSurfaceFormat::swapBehavior() const
 {
     return d->swapBehavior;
 }
 
+/*!
+    Returns true if the alpha buffer size is greater than zero.
+
+    This means that the surface might be used with per pixel
+    translucency effects.
+*/
 bool QSurfaceFormat::hasAlpha() const
 {
     return d->alphaBufferSize > 0;
 }
 
 /*!
-    Set the preferred stencil buffer size to \a size.
+    Set the preferred stencil buffer size to \a size bits.
 
     \sa stencilBufferSize(), setStencil(), stencil()
 */
@@ -306,7 +392,7 @@ void QSurfaceFormat::setStencilBufferSize(int size)
 }
 
 /*!
-    Returns the stencil buffer size.
+    Returns the stencil buffer size in bits.
 
     \sa stencil(), setStencil(), setStencilBufferSize()
 */
@@ -315,26 +401,41 @@ int QSurfaceFormat::stencilBufferSize() const
    return d->stencilSize;
 }
 
+/*!
+    Get the size in bits of the red channel of the color buffer.
+*/
 int QSurfaceFormat::redBufferSize() const
 {
     return d->redBufferSize;
 }
 
+/*!
+    Get the size in bits of the green channel of the color buffer.
+*/
 int QSurfaceFormat::greenBufferSize() const
 {
     return d->greenBufferSize;
 }
 
+/*!
+    Get the size in bits of the blue channel of the color buffer.
+*/
 int QSurfaceFormat::blueBufferSize() const
 {
     return d->blueBufferSize;
 }
 
+/*!
+    Get the size in bits of the alpha channel of the color buffer.
+*/
 int QSurfaceFormat::alphaBufferSize() const
 {
     return d->alphaBufferSize;
 }
 
+/*!
+    Set the desired size in bits of the red channel of the color buffer.
+*/
 void QSurfaceFormat::setRedBufferSize(int size)
 {
     if (d->redBufferSize != size) {
@@ -343,6 +444,9 @@ void QSurfaceFormat::setRedBufferSize(int size)
     }
 }
 
+/*!
+    Set the desired size in bits of the green channel of the color buffer.
+*/
 void QSurfaceFormat::setGreenBufferSize(int size)
 {
     if (d->greenBufferSize != size) {
@@ -351,6 +455,9 @@ void QSurfaceFormat::setGreenBufferSize(int size)
     }
 }
 
+/*!
+    Set the desired size in bits of the blue channel of the color buffer.
+*/
 void QSurfaceFormat::setBlueBufferSize(int size)
 {
     if (d->blueBufferSize != size) {
@@ -359,6 +466,9 @@ void QSurfaceFormat::setBlueBufferSize(int size)
     }
 }
 
+/*!
+    Set the desired size in bits of the alpha channel of the color buffer.
+*/
 void QSurfaceFormat::setAlphaBufferSize(int size)
 {
     if (d->alphaBufferSize != size) {
@@ -368,10 +478,10 @@ void QSurfaceFormat::setAlphaBufferSize(int size)
 }
 
 /*!
-   Sets the desired OpenGL context profile.
+    Sets the desired OpenGL context profile.
 
-   This setting is ignored if the requested OpenGL version is
-   less than 3.2.
+    This setting is ignored if the requested OpenGL version is
+    less than 3.2.
 */
 void QSurfaceFormat::setProfile(OpenGLContextProfile profile)
 {
@@ -381,6 +491,12 @@ void QSurfaceFormat::setProfile(OpenGLContextProfile profile)
     }
 }
 
+/*!
+    Get the configured OpenGL context profile.
+
+    This setting is ignored if the requested OpenGL version is
+    less than 3.2.
+*/
 QSurfaceFormat::OpenGLContextProfile QSurfaceFormat::profile() const
 {
     return d->profile;
@@ -428,6 +544,12 @@ int QSurfaceFormat::minorVersion() const
     return d->minor;
 }
 
+/*!
+    Returns true if all the options of the two QSurfaceFormat objects
+    are equal.
+
+    \relates QSurfaceFormat
+*/
 bool operator==(const QSurfaceFormat& a, const QSurfaceFormat& b)
 {
     return (a.d == b.d) || ((int) a.d->opts == (int) b.d->opts
@@ -450,7 +572,6 @@ bool operator==(const QSurfaceFormat& a, const QSurfaceFormat& b)
 
     \relates QSurfaceFormat
 */
-
 bool operator!=(const QSurfaceFormat& a, const QSurfaceFormat& b)
 {
     return !(a == b);

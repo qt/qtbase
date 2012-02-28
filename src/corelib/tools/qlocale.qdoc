@@ -89,7 +89,7 @@
     pair; it does not use the system locale database.
 
     \note For the current keyboard input locale take a look at
-    QInputPanel::locale().
+    QInputMethod::locale().
 
     QLocale's data is based on Common Locale Data Repository v1.8.1.
 
@@ -114,7 +114,7 @@
     California, Berkeley and its contributors.
 
     \sa QString::arg(), QString::toInt(), QString::toDouble(),
-    QInputPanel::locale()
+    QInputMethod::locale()
 */
 
 /*!

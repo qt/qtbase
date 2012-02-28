@@ -1,4 +1,5 @@
 CONFIG += testcase parallel_test
+TARGET = tst_qresourceengine
 load(resources)
 QT = core testlib
 SOURCES = tst_qresourceengine.cpp

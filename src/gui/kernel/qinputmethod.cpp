@@ -154,9 +154,9 @@ QRectF QInputMethod::cursorRectangle() const
 
     QInputMethodQueryEvent query(Qt::ImCursorRectangle);
     QGuiApplication::sendEvent(d->inputItem.data(), &query);
-    QRect r = query.value(Qt::ImCursorRectangle).toRect();
+    QRectF r = query.value(Qt::ImCursorRectangle).toRectF();
     if (!r.isValid())
-        return QRect();
+        return QRectF();
 
     return d->inputItemTransform.mapRect(r);
 }

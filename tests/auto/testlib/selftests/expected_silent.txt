@@ -1,0 +1,9 @@
+Testing tst_Silent
+FAIL!  : tst_Silent::fail() 'false' returned FALSE. (This test should fail)
+   Loc: [/home/jasmcdon/depot/qt5-test/qtbase/tests/auto/testlib/selftests/silent/tst_silent.cpp(73)]
+XPASS  : tst_Silent::xpass() 'true' returned TRUE unexpectedly. (This test should XPASS)
+   Loc: [/home/jasmcdon/depot/qt5-test/qtbase/tests/auto/testlib/selftests/silent/tst_silent.cpp(85)]
+QFATAL : tst_Silent::messages() This is a fatal error message that should still appear in silent test output
+FAIL!  : tst_Silent::messages() Received a fatal error.
+   Loc: [Unknown file(0)]
+Totals: 3 passed, 3 failed, 1 skipped

@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
     \class QAccessibleBridge
     \brief The QAccessibleBridge class is the base class for
     accessibility back-ends.
+    \internal
 
     \ingroup accessibility
     \inmodule QtWidgets
@@ -100,6 +101,7 @@ QT_BEGIN_NAMESPACE
     \class QAccessibleBridgePlugin
     \brief The QAccessibleBridgePlugin class provides an abstract
     base for accessibility bridge plugins.
+    \internal
 
     \ingroup plugins
     \ingroup accessibility

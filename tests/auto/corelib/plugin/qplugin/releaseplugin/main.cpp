@@ -39,5 +39,14 @@
 **
 ****************************************************************************/
 #include <QtPlugin>
+#include <QObject>
 
-Q_EXPORT_PLUGIN2(ReleasePlugin, QObject)
+class ReleasePlugin : public QObject
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "SomeIID")
+public:
+    ReleasePlugin() {}
+};
+
+#include "main.moc"

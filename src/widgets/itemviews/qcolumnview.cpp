@@ -481,7 +481,7 @@ QRegion QColumnView::visualRegionForSelection(const QItemSelection &selection) c
 
     QRegion firstRegion = visualRect(firstIdx);
     QRegion lastRegion = visualRect(lastIdx);
-    return firstRegion.unite(lastRegion);
+    return firstRegion.united(lastRegion);
 }
 
 /*!

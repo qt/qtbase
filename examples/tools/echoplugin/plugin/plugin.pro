@@ -4,6 +4,7 @@ CONFIG         += plugin
 INCLUDEPATH    += ../echowindow
 HEADERS         = echoplugin.h
 SOURCES         = echoplugin.cpp
+OTHER_FILES    += echoplugin.json
 TARGET          = $$qtLibraryTarget(echoplugin)
 DESTDIR         = ../plugins
 #! [0]

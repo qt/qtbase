@@ -155,7 +155,7 @@ static inline QString logFormat(const QString &logger)
 // Return the log file name, or an empty string if the log goes to stdout.
 static inline QString logName(const QString &logger)
 {
-    return (logger.startsWith("stdout") ? "" : "test_output." + logger);
+    return (logger.startsWith("stdout") ? "" : QString("test_output." + logger));
 }
 
 // Load the expected test output for the nominated test (subdir) and logger
@@ -354,6 +354,7 @@ void tst_Selftests::runSubTest_data()
         << "printdatatags"
         << "printdatatagswithglobaltags"
         << "qexecstringlist"
+        << "silent"
         << "singleskip"
         << "skip"
         << "skipcleanup"
@@ -409,6 +410,9 @@ void tst_Selftests::runSubTest_data()
             else if (subtest == "printdatatagswithglobaltags") {
                 arguments << "-datatags";
             }
+            else if (subtest == "silent") {
+                arguments << "-silent";
+            }
 
 
             // These tests don't work right unless logging plain text to
@@ -432,6 +436,9 @@ void tst_Selftests::runSubTest_data()
                     continue;
                 }
                 if (subtest == "printdatatagswithglobaltags") {
+                    continue;
+                }
+                if (subtest == "silent") {
                     continue;
                 }
                 // `crashes' will not output valid XML on platforms without a crash handler

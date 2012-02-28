@@ -46,6 +46,3 @@ QString ThePlugin::pluginName() const
 {
     return QLatin1String("Plugin ok");
 }
-
-Q_EXPORT_PLUGIN2(theplugin, ThePlugin)
-

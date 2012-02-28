@@ -191,7 +191,7 @@ namespace QT_NAMESPACE {}
 #endif
 
 #ifndef Q_REQUIRED_RESULT
-#  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1))
+#  if defined(Q_CC_GNU)
 #    define Q_REQUIRED_RESULT __attribute__ ((warn_unused_result))
 #  else
 #    define Q_REQUIRED_RESULT
@@ -275,11 +275,6 @@ typedef unsigned int uint;
 typedef unsigned long ulong;
 QT_END_INCLUDE_NAMESPACE
 
-#if defined(Q_NO_BOOL_TYPE)
-#error "Compiler doesn't support the bool type"
-#endif
-
-
 /*
    Constant bool values
 */
@@ -315,9 +310,7 @@ QT_END_INCLUDE_NAMESPACE
 /*
    Warnings and errors when using deprecated methods
 */
-#if defined(Q_MOC_RUN)
-#  define Q_DECL_DEPRECATED Q_DECL_DEPRECATED
-#elif (defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && (__GNUC__ - 0 > 3 || (__GNUC__ - 0 == 3 && __GNUC_MINOR__ - 0 >= 2))) || defined(Q_CC_RVCT)
+#if defined(Q_CC_GNU) || defined(Q_CC_RVCT)
 #  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
 #elif defined(Q_CC_MSVC)
 #  define Q_DECL_DEPRECATED __declspec(deprecated)
@@ -330,15 +323,6 @@ QT_END_INCLUDE_NAMESPACE
 #endif
 #ifndef Q_DECL_VARIABLE_DEPRECATED
 #  define Q_DECL_VARIABLE_DEPRECATED Q_DECL_DEPRECATED
-#endif
-#ifndef Q_DECL_CONSTRUCTOR_DEPRECATED
-#  if defined(Q_MOC_RUN)
-#    define Q_DECL_CONSTRUCTOR_DEPRECATED Q_DECL_CONSTRUCTOR_DEPRECATED
-#  elif defined(Q_NO_DEPRECATED_CONSTRUCTORS)
-#    define Q_DECL_CONSTRUCTOR_DEPRECATED
-#  else
-#    define Q_DECL_CONSTRUCTOR_DEPRECATED Q_DECL_DEPRECATED
-#  endif
 #endif
 
 #if defined(QT_NO_DEPRECATED)
@@ -394,24 +378,13 @@ QT_END_INCLUDE_NAMESPACE
 
 #ifdef QT_ASCII_CAST_WARNINGS
 #  define QT_ASCII_CAST_WARN Q_DECL_DEPRECATED
-#  if defined(Q_CC_GNU) && __GNUC__ < 4
-     /* gcc < 4 doesn't like Q_DECL_DEPRECATED in front of constructors */
-#    define QT_ASCII_CAST_WARN_CONSTRUCTOR
-#  else
-#    define QT_ASCII_CAST_WARN_CONSTRUCTOR Q_DECL_CONSTRUCTOR_DEPRECATED
-#  endif
 #else
 #  define QT_ASCII_CAST_WARN
-#  define QT_ASCII_CAST_WARN_CONSTRUCTOR
 #endif
 
 #if defined(__i386__) || defined(_WIN32) || defined(_WIN32_WCE)
 #  if defined(Q_CC_GNU)
-#if !defined(Q_CC_INTEL) && ((100*(__GNUC__ - 0) + 10*(__GNUC_MINOR__ - 0) + __GNUC_PATCHLEVEL__) >= 332)
 #    define QT_FASTCALL __attribute__((regparm(3)))
-#else
-#    define QT_FASTCALL
-#endif
 #  elif defined(Q_CC_MSVC)
 #    define QT_FASTCALL __fastcall
 #  else
@@ -512,17 +485,12 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 
 class QDataStream;
 
-#if !defined(QT_NO_COP)
-#  define QT_NO_COP
-#endif
-
 #if defined(Q_OS_VXWORKS)
 #  define QT_NO_CRASHHANDLER     // no popen
 #  define QT_NO_PROCESS          // no exec*, no fork
 #  define QT_NO_LPR
 #  define QT_NO_SHAREDMEMORY     // only POSIX, no SysV and in the end...
 #  define QT_NO_SYSTEMSEMAPHORE  // not needed at all in a flat address space
-#  define QT_NO_QWS_MULTIPROCESS // no processes
 #endif
 
 # include <QtCore/qfeatures.h>
@@ -1237,12 +1205,15 @@ class QFlags
     int i;
 public:
     typedef Enum enum_type;
-    Q_DECL_CONSTEXPR inline QFlags(const QFlags &f) : i(f.i) {}
+    // compiler-generated copy/move ctor/assignment operators are fine!
+#ifdef qdoc
+    inline QFlags(const QFlags &other);
+    inline QFlags &operator=(const QFlags &other);
+#endif
     Q_DECL_CONSTEXPR inline QFlags(Enum f) : i(f) {}
     Q_DECL_CONSTEXPR inline QFlags(Zero = 0) : i(0) {}
     inline QFlags(QFlag f) : i(f) {}
 
-    inline QFlags &operator=(const QFlags &f) { i = f.i; return *this; }
     inline QFlags &operator&=(int mask) { i &= mask; return *this; }
     inline QFlags &operator&=(uint mask) { i &= mask; return *this; }
     inline QFlags &operator|=(QFlags f) { i |= f.i; return *this; }
@@ -1463,8 +1434,6 @@ Q_CORE_EXPORT int qrand();
 #ifdef Q_OS_QNX
 // QNX doesn't have SYSV style shared memory. Multiprocess QWS apps,
 // shared fonts and QSystemSemaphore + QSharedMemory are not available
-#  define QT_NO_QWS_MULTIPROCESS
-#  define QT_NO_QWS_SHARE_FONTS
 #  define QT_NO_SYSTEMSEMAPHORE
 #  define QT_NO_SHAREDMEMORY
 #endif

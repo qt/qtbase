@@ -43,9 +43,7 @@
 #include <QtPlugin>
 #include <QApplication>
 
-QT_BEGIN_NAMESPACE
-Q_IMPORT_PLUGIN(pnp_basictools)
-QT_END_NAMESPACE
+Q_IMPORT_PLUGIN(BasicToolsPlugin)
 
 int main(int argc, char *argv[])
 {

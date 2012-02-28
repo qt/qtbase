@@ -348,71 +348,8 @@ QLibraryInfo::location(LibraryLocation loc)
             QSettings *config = QLibraryInfoPrivate::configuration();
             config->beginGroup(QLatin1String("Paths"));
 
-            QString subKey;
-            {
-                /*
-                  find the child group whose version number is closest
-                  to the library version.  for example and we have the
-                  following groups:
+            ret = config->value(key, defaultValue).toString();
 
-                  Paths
-                  Paths/4.0
-                  Paths/4.1.2
-                  Paths/4.2.5
-                  Paths/5
-
-                  if QT_VERSION is 4.0.1, then we use 'Paths/4.0'
-                  if QT_VERSION is 4.1.5, then we use 'Paths/4.1.2'
-                  if QT_VERSION is 4.6.3, then we use 'Paths/4.2.5'
-                  if QT_VERSION is 6.0.2, then we use 'Paths/5'
-
-                  note: any of the trailing version numbers may be
-                  omitted (in which case, they default to zero),
-                  i.e. 4 == 4.0.0, 4.1 == 4.1.0, and so on
-                */
-                enum {
-                    QT_MAJOR = ((QT_VERSION >> 16) & 0xFF),
-                    QT_MINOR = ((QT_VERSION >> 8) & 0xFF),
-                    QT_PATCH = (QT_VERSION & 0xFF)
-                };
-                int maj = 0, min = 0, pat = 0;
-                QStringList children = config->childGroups();
-                for(int child = 0; child < children.size(); ++child) {
-                    QString cver = children.at(child);
-                    QStringList cver_list = cver.split(QLatin1Char('.'));
-                    if(cver_list.size() > 0 && cver_list.size() < 4) {
-                        bool ok;
-                        int cmaj = -1, cmin = -1, cpat = -1;
-                        cmaj = cver_list[0].toInt(&ok);
-                        if(!ok || cmaj < 0)
-                            continue;
-                        if(cver_list.size() >= 2) {
-                            cmin = cver_list[1].toInt(&ok);
-                            if(!ok)
-                                continue;
-                            if(cmin < 0)
-                                cmin = -1;
-                        }
-                        if(cver_list.size() >= 3) {
-                            cpat = cver_list[2].toInt(&ok);
-                            if(!ok)
-                                continue;
-                            if(cpat < 0)
-                                cpat = -1;
-                        }
-                        if((cmaj >= maj && cmaj <= QT_MAJOR) &&
-                           (cmin == -1 || (cmin >= min && cmin <= QT_MINOR)) &&
-                           (cpat == -1 || (cpat >= pat && cpat <= QT_PATCH)) &&
-                           config->contains(cver + QLatin1Char('/') + key)) {
-                            subKey = cver + QLatin1Char('/');
-                            maj = cmaj;
-                            min = cmin;
-                            pat = cpat;
-                        }
-                    }
-                }
-            }
-            ret = config->value(subKey + key, defaultValue).toString();
             // expand environment variables in the form $(ENVVAR)
             int rep;
             QRegExp reg_var(QLatin1String("\\$\\(.*\\)"));

@@ -43,6 +43,7 @@
 #define QUDEVHELPER_P_H
 
 #include <QString>
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 

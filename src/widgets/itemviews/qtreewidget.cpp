@@ -160,6 +160,7 @@ QTreeModel::~QTreeModel()
 void QTreeModel::clear()
 {
     SkipSorting skipSorting(this);
+    beginResetModel();
     for (int i = 0; i < rootItem->childCount(); ++i) {
         QTreeWidgetItem *item = rootItem->children.at(i);
         item->par = 0;
@@ -168,7 +169,7 @@ void QTreeModel::clear()
     }
     rootItem->children.clear();
     sortPendingTimer.stop();
-    reset();
+    endResetModel();
 }
 
 /*!

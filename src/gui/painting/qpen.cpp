@@ -985,7 +985,6 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPen &p)
 {
-#ifndef Q_BROKEN_DEBUG_STREAM
     const char *PEN_STYLES[] = {
         "NoPen",
         "SolidLine",
@@ -1002,11 +1001,6 @@ QDebug operator<<(QDebug dbg, const QPen &p)
                   << ',' << p.dashOffset()
                   << ',' << p.miterLimit() << ')';
     return dbg.space();
-#else
-    qWarning("This compiler doesn't support streaming QPen to QDebug");
-    return dbg;
-    Q_UNUSED(p);
-#endif
 }
 #endif
 

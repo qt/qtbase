@@ -43,6 +43,7 @@
 
 //! [0]
 #include <QObject>
+#include <QtPlugin>
 #include <QStringList>
 #include <QImage>
 
@@ -51,6 +52,7 @@
 class ExtraFiltersPlugin : public QObject, public FilterInterface
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.Examples.PlugAndPaint.FilterInterface" FILE "extrafilters.json")
     Q_INTERFACES(FilterInterface)
 
 public:

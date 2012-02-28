@@ -71,10 +71,14 @@ public:
     static NSOpenGLPixelFormat *createNSOpenGLPixelFormat(const QSurfaceFormat &format);
     NSOpenGLContext *nsOpenGLContext() const;
 
+    bool isSharing() const;
+    bool isValid() const;
+
 private:
     void setActiveWindow(QWindow *window);
 
     NSOpenGLContext *m_context;
+    NSOpenGLContext *m_shareContext;
     QSurfaceFormat m_format;
     QWeakPointer<QWindow> m_currentWindow;
 };

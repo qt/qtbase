@@ -188,7 +188,7 @@ public:
     }
 
     bool delegate(const void*) { return true; }
-
+    bool delegate(const QMetaTypeSwitcher::NotBuiltinType*) { return false; }
 protected:
     const QVariant::Private *m_a;
     const QVariant::Private *m_b;
@@ -282,6 +282,7 @@ public:
     }
     // we need that as sizof(void) is undefined and it is needed in HasIsNullMethod
     bool delegate(const void *) { return m_d->is_null; }
+    bool delegate(const QMetaTypeSwitcher::NotBuiltinType *) { return m_d->is_null; }
 protected:
     const QVariant::Private *m_d;
 };
@@ -345,7 +346,7 @@ public:
         FilteredConstructor<T>(*this);
     }
 
-    void delegate(const QMetaTypeSwitcher::UnknownType*)
+    void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
     {
         qWarning("Trying to construct an instance of an invalid type, type id: %i", m_x->type);
         m_x->type = QVariant::Invalid;
@@ -395,7 +396,7 @@ public:
         FilteredDestructor<T> cleaner(m_d);
     }
 
-    void delegate(const QMetaTypeSwitcher::UnknownType*)
+    void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
     {
         qWarning("Trying to destruct an instance of an invalid type, type id: %i", m_d->type);
     }
@@ -410,7 +411,7 @@ Q_CORE_EXPORT void registerHandler(const int /* Modules::Names */ name, const QV
 Q_CORE_EXPORT void unregisterHandler(const int /* Modules::Names */ name);
 }
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
 template<class Filter>
 class QVariantDebugStream
 {
@@ -441,7 +442,7 @@ public:
         Filtered<T> streamIt(m_debugStream, m_d);
     }
 
-    void delegate(const QMetaTypeSwitcher::UnknownType*)
+    void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
     {
         qWarning("Trying to stream an instance of an invalid type, type id: %i", m_d->type);
     }

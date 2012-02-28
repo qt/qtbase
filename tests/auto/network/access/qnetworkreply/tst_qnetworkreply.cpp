@@ -79,6 +79,11 @@
 #ifdef QT_BUILD_INTERNAL
 #include <QtNetwork/private/qnetworkaccessmanager_p.h>
 #endif
+
+#ifdef Q_OS_UNIX
+# include <sys/types.h>
+# include <unistd.h> // for getuid()
+#endif
 #include <time.h>
 
 #include "../../../network-settings.h"
@@ -1295,19 +1300,17 @@ QString tst_QNetworkReply::runCustomRequest(const QNetworkRequest &request,
 
 int tst_QNetworkReply::waitForFinish(QNetworkReplyPtr &reply)
 {
-    int code = Success;
     int count = 0;
 
     connect(reply, SIGNAL(finished()), SLOT(finished()));
     connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), SLOT(gotError()));
-
+    returnCode = Success;
     loop = new QEventLoop;
     QSignalSpy spy(reply, SIGNAL(downloadProgress(qint64,qint64)));
     while (!reply->isFinished()) {
-        QTimer::singleShot(10000, loop, SLOT(quit()));
-        code = loop->exec();
-        if (count == spy.count() && !reply->isFinished()) {
-            code = Timeout;
+        QTimer::singleShot(5000, loop, SLOT(quit()));
+        if ( loop->exec() == Timeout && count == spy.count() && !reply->isFinished()) {
+            returnCode = Timeout;
             break;
         }
         count = spy.count();
@@ -1315,7 +1318,7 @@ int tst_QNetworkReply::waitForFinish(QNetworkReplyPtr &reply)
     delete loop;
     loop = 0;
 
-    return code;
+    return returnCode;
 }
 
 void tst_QNetworkReply::finished()

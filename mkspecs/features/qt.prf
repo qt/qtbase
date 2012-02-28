@@ -158,7 +158,7 @@ QT = $$sort_depends(QT, "QT.")
 QT_DEPENDS=
 
 unset(using_privates)
-for(QTLIB, $$list($$lower($$unique(QT)))) {
+for(QTLIB, QT) {
     # Figure out if we're wanting to use the private headers of a module
     contains(QTLIB, .*-private) {
         QTLIB ~= s/-private//

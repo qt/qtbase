@@ -51,6 +51,9 @@ QT_BEGIN_NAMESPACE
 
 class QCoreWlanEnginePlugin : public QBearerEnginePlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QBearerEngineFactoryInterface" FILE "corewlan.json")
+
 public:
     QCoreWlanEnginePlugin();
     ~QCoreWlanEnginePlugin();
@@ -80,9 +83,8 @@ QBearerEngine *QCoreWlanEnginePlugin::create(const QString &key) const
         return 0;
 }
 
-Q_EXPORT_STATIC_PLUGIN(QCoreWlanEnginePlugin)
-Q_EXPORT_PLUGIN2(qcorewlanbearer, QCoreWlanEnginePlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"
 
 #endif // QT_NO_BEARERMANAGEMENT

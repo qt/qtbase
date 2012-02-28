@@ -90,8 +90,8 @@ for(subname, SRC_SUBDIRS) {
    subdir = $$replace(subdir, $$reg_src, $$QT_BUILD_TREE)
    subdir = $$replace(subdir, /, $$QMAKE_DIR_SEP)
    subdir = $$replace(subdir, \\\\, $$QMAKE_DIR_SEP)
-   SUB_TEMPLATE = $$list($$fromfile($$subpro, TEMPLATE))
-   !isEqual(subname, src_tools_bootstrap):if(isEqual($$SUB_TEMPLATE, lib) | isEqual($$SUB_TEMPLATE, subdirs)):!separate_debug_info {
+   SUB_TEMPLATE = $$fromfile($$subpro, TEMPLATE)
+   !isEqual(subname, src_tools_bootstrap):if(isEqual(SUB_TEMPLATE, lib) | isEqual(SUB_TEMPLATE, subdirs)):!separate_debug_info {
        #debug
        debug-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS
        debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) debug)

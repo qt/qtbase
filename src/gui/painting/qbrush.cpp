@@ -957,7 +957,6 @@ bool QBrush::operator==(const QBrush &b) const
 */
 QDebug operator<<(QDebug dbg, const QBrush &b)
 {
-#ifndef Q_BROKEN_DEBUG_STREAM
     static const char *BRUSH_STYLES[] = {
      "NoBrush",
      "SolidPattern",
@@ -983,11 +982,6 @@ QDebug operator<<(QDebug dbg, const QBrush &b)
 
     dbg.nospace() << "QBrush(" << b.color() << ',' << BRUSH_STYLES[b.style()] << ')';
     return dbg.space();
-#else
-    qWarning("This compiler doesn't support streaming QBrush to QDebug");
-    return dbg;
-    Q_UNUSED(b);
-#endif
 }
 #endif
 

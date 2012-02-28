@@ -157,13 +157,15 @@ public:
 
     class WheelEvent : public InputEvent {
     public:
-        WheelEvent(QWindow *w, ulong time, const QPointF & local, const QPointF & global, int d,
-                   Qt::Orientation o, Qt::KeyboardModifiers mods)
-            : InputEvent(w, time, Wheel, mods), delta(d), localPos(local), globalPos(global), orient(o) { }
-        int delta;
+        WheelEvent(QWindow *w, ulong time, const QPointF & local, const QPointF & global, QPoint pixelD, QPoint angleD, int qt4D, Qt::Orientation qt4O,
+                   Qt::KeyboardModifiers mods)
+            : InputEvent(w, time, Wheel, mods), pixelDelta(pixelD), angleDelta(angleD), qt4Delta(qt4D), qt4Orientation(qt4O), localPos(local), globalPos(global) { }
+        QPoint pixelDelta;
+        QPoint angleDelta;
+        int qt4Delta;
+        Qt::Orientation qt4Orientation;
         QPointF localPos;
         QPointF globalPos;
-        Qt::Orientation orient;
     };
 
     class KeyEvent : public InputEvent {

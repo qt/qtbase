@@ -75,9 +75,6 @@ public:
     static QTextCodec* codecForTr();
     static void setCodecForTr(QTextCodec *c);
 
-    static QTextCodec* codecForCStrings();
-    static void setCodecForCStrings(QTextCodec *c);
-
     static QTextCodec *codecForHtml(const QByteArray &ba);
     static QTextCodec *codecForHtml(const QByteArray &ba, QTextCodec *defaultCodec);
 
@@ -139,8 +136,6 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QTextCodec::ConversionFlags)
 
         inline QTextCodec* QTextCodec::codecForTr() { return validCodecs() ? cftr : 0; }
 inline void QTextCodec::setCodecForTr(QTextCodec *c) { cftr = c; }
-inline QTextCodec* QTextCodec::codecForCStrings() { return validCodecs() ? QString::codecForCStrings : 0; }
-inline void QTextCodec::setCodecForCStrings(QTextCodec *c) { QString::codecForCStrings = c; }
 
 class Q_CORE_EXPORT QTextEncoder {
     Q_DISABLE_COPY(QTextEncoder)

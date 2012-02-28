@@ -46,6 +46,9 @@ QT_BEGIN_NAMESPACE
 
 class QEvdevKeyboardPlugin : public QGenericPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "evdevkeyboard.json")
+
 public:
     QEvdevKeyboardPlugin();
 
@@ -72,6 +75,6 @@ QObject* QEvdevKeyboardPlugin::create(const QString &key,
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(qevdevkeyboardplugin, QEvdevKeyboardPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

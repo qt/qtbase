@@ -76,14 +76,13 @@
 #  define Q_CC_SYM
 /* "explicit" semantics implemented in 8.1e but keyword recognized since 7.5 */
 #  if defined(__SC__) && __SC__ < 0x750
-#    define Q_NO_EXPLICIT_KEYWORD
+#    error "Compiler not supported"
 #  endif
 #  define Q_NO_USING_KEYWORD
 
 #elif defined(_MSC_VER)
 #  define Q_CC_MSVC
 #  define Q_CC_MSVC_NET
-#  define Q_CANNOT_DELETE_CONSTANT
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  define Q_NO_TEMPLATE_FRIENDS
 #  define Q_ALIGNOF(type) __alignof(type)
@@ -114,8 +113,7 @@
 #  define Q_CC_BOR
 #  define Q_INLINE_TEMPLATE
 #  if __BORLANDC__ < 0x502
-#    define Q_NO_BOOL_TYPE
-#    define Q_NO_EXPLICIT_KEYWORD
+#    error "Compiler not supported"
 #  endif
 #  define Q_NO_USING_KEYWORD
 
@@ -140,45 +138,19 @@
 #    define Q_CC_MINGW
 #  endif
 #  if defined(__INTEL_COMPILER)
-/* Intel C++ also masquerades as GCC 3.2.0 */
+/* Intel C++ also masquerades as GCC */
 #    define Q_CC_INTEL
 #  endif
 #  if defined(__clang__)
-/* Clang also masquerades as GCC 4.2.1 */
+/* Clang also masquerades as GCC */
 #    define Q_CC_CLANG
 #  endif
-#  ifdef __APPLE__
-#    define Q_NO_DEPRECATED_CONSTRUCTORS
-#  endif
-#  if __GNUC__ == 2 && __GNUC_MINOR__ <= 7
-#    define Q_FULL_TEMPLATE_INSTANTIATION
-#  endif
-/* GCC 2.95 knows "using" but does not support it correctly */
-#  if __GNUC__ == 2 && __GNUC_MINOR__ <= 95
-#    define Q_NO_USING_KEYWORD
-#  endif
-#  if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
-#    define Q_ALIGNOF(type)   __alignof__(type)
-#    define Q_TYPEOF(expr)    __typeof__(expr)
-#    define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
-#  endif
-#  if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
-#    define Q_LIKELY(expr)    __builtin_expect(!!(expr), true)
-#    define Q_UNLIKELY(expr)  __builtin_expect(!!(expr), false)
-#  endif
-/* GCC 3.1 and GCC 3.2 wrongly define _SB_CTYPE_MACROS on HP-UX */
-#  if defined(Q_OS_HPUX) && __GNUC__ == 3 && __GNUC_MINOR__ >= 1
-#    define Q_WRONG_SB_CTYPE_MACROS
-#  endif
-/* GCC <= 3.3 cannot handle template friends */
-#  if __GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ <= 3)
-#    define Q_NO_TEMPLATE_FRIENDS
-#  endif
-/* Apple's GCC 3.1 chokes on our streaming qDebug() */
-#  if defined(Q_OS_DARWIN) && __GNUC__ == 3 && (__GNUC_MINOR__ >= 1 && __GNUC_MINOR__ < 3)
-#    define Q_BROKEN_DEBUG_STREAM
-#  endif
-#  if (defined(Q_CC_GNU) || defined(Q_CC_INTEL)) && !defined(QT_MOC_CPP)
+#  define Q_ALIGNOF(type)   __alignof__(type)
+#  define Q_TYPEOF(expr)    __typeof__(expr)
+#  define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
+#  define Q_LIKELY(expr)    __builtin_expect(!!(expr), true)
+#  define Q_UNLIKELY(expr)  __builtin_expect(!!(expr), false)
+#  if !defined(QT_MOC_CPP)
 #    define Q_PACKED __attribute__ ((__packed__))
 #    define Q_NO_PACKED_REFERENCE
 #    ifndef __ARM_EABI__
@@ -251,12 +223,7 @@
 #  define Q_CC_XLC
 #  define Q_FULL_TEMPLATE_INSTANTIATION
 #  if __xlC__ < 0x400
-#    define Q_NO_BOOL_TYPE
-#    define Q_NO_EXPLICIT_KEYWORD
-#    define Q_NO_USING_KEYWORD
-#    define Q_OUTOFLINE_TEMPLATE inline
-#    define Q_BROKEN_TEMPLATE_SPECIALIZATION
-#    define Q_CANNOT_DELETE_CONSTANT
+#    error "Compiler not supported"
 #  elif __xlC__ >= 0x0600
 #    define Q_ALIGNOF(type)     __alignof__(type)
 #    define Q_TYPEOF(expr)      __typeof__(expr)
@@ -280,7 +247,7 @@
    - observed on Compaq C++ V6.3-002.
    In any case versions prior to Compaq C++ V6.0-005 do not have bool. */
 #  if !defined(_BOOL_EXISTS)
-#    define Q_NO_BOOL_TYPE
+#    error "Compiler not supported"
 #  endif
 /* Spurious (?) error messages observed on Compaq C++ V6.5-014. */
 #  define Q_NO_USING_KEYWORD
@@ -288,7 +255,6 @@
    DEC C++ V5.5-004. */
 #  if __DECCXX_VER < 60060000
 #    define Q_BROKEN_TEMPLATE_SPECIALIZATION
-#    define Q_CANNOT_DELETE_CONSTANT
 #  endif
 /* avoid undefined symbol problems with out-of-line template members */
 #  define Q_OUTOFLINE_TEMPLATE inline
@@ -315,7 +281,7 @@
    __BOOL_DEFINED
         Defined in Microsoft C++ mode when bool is a keyword. */
 #  if !defined(_BOOL) && !defined(__BOOL_DEFINED)
-#    define Q_NO_BOOL_TYPE
+#    error "Compiler not supported"
 #  endif
 
 /* The Comeau compiler is based on EDG and does define __EDG__ */
@@ -341,9 +307,8 @@
 
 #  elif defined(__DCC__)
 #    define Q_CC_DIAB
-#    undef Q_NO_BOOL_TYPE
 #    if !defined(__bool)
-#      define Q_NO_BOOL_TYPE
+#      error "Compiler not supported"
 #    endif
 
 /* The UnixWare 7 UDK compiler is based on EDG and does define __EDG__ */
@@ -407,7 +372,7 @@
 #      define Q_NO_TEMPLATE_FRIENDS
 #    endif
 #    if !defined(_BOOL)
-#      define Q_NO_BOOL_TYPE
+#      error "Compiler not supported"
 #    endif
 #    if defined(__SUNPRO_CC_COMPAT) && (__SUNPRO_CC_COMPAT <= 4)
 #      define Q_NO_USING_KEYWORD
@@ -415,9 +380,7 @@
 #    define Q_C_CALLBACKS
 /* 4.2 compiler or older */
 #  else
-#    define Q_NO_BOOL_TYPE
-#    define Q_NO_EXPLICIT_KEYWORD
-#    define Q_NO_USING_KEYWORD
+#    error "Compiler not supported"
 #  endif
 
 /* CDS++ does not seem to define __EDG__ or __EDG according to Reliant
@@ -426,7 +389,7 @@
 #  define Q_CC_EDG
 #  define Q_CC_CDS
 #  if !defined(_BOOL)
-#    define Q_NO_BOOL_TYPE
+#    error "Compiler not supported"
 #  endif
 #  define Q_BROKEN_TEMPLATE_SPECIALIZATION
 
@@ -449,11 +412,7 @@
 #      define Q_DECL_IMPORT     Q_DECL_EXPORT
 #    endif
 #  else
-#    define Q_CC_HP
-#    define Q_NO_BOOL_TYPE
-#    define Q_FULL_TEMPLATE_INSTANTIATION
-#    define Q_BROKEN_TEMPLATE_SPECIALIZATION
-#    define Q_NO_EXPLICIT_KEYWORD
+#    error "Compiler not supported"
 #  endif
 #  define Q_NO_USING_KEYWORD /* ### check "using" status */
 

@@ -1,4 +1,6 @@
 TEMPLATE = subdirs
-SUBDIRS = signalbug
-tst_qobject.pro.depends = $$SUBDIRS
-SUBDIRS += tst_qobject.pro
+CONFIG += ordered
+
+SUBDIRS += \
+    signalbug \
+    test

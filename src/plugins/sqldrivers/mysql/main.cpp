@@ -47,6 +47,9 @@ QT_BEGIN_NAMESPACE
 
 class QMYSQLDriverPlugin : public QSqlDriverPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QSqlDriverFactoryInterface" FILE "mysql.json")
+
 public:
     QMYSQLDriverPlugin();
 
@@ -76,7 +79,6 @@ QStringList QMYSQLDriverPlugin::keys() const
     return l;
 }
 
-Q_EXPORT_STATIC_PLUGIN(QMYSQLDriverPlugin)
-Q_EXPORT_PLUGIN2(qsqlmysql, QMYSQLDriverPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

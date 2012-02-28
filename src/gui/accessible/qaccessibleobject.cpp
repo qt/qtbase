@@ -92,6 +92,7 @@ QList<QByteArray> QAccessibleObjectPrivate::actionList() const
     \class QAccessibleObject
     \brief The QAccessibleObject class implements parts of the
     QAccessibleInterface for QObjects.
+    \internal
 
     \ingroup accessibility
     \inmodule QtWidgets

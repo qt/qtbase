@@ -326,8 +326,6 @@ void QWidgetResizeHandler::mouseMoveEvent(QMouseEvent *e)
         else
             widget->setGeometry(geom);
     }
-
-    QApplication::syncX();
 }
 
 void QWidgetResizeHandler::setMouseCursor(MousePosition m)

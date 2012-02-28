@@ -351,7 +351,7 @@ sub syncHeader {
 
         #write it
         my $iheader_out = fixPaths($iheader, $header_dir);
-        open HEADER, ">$header" || die "Could not open $header for writing!\n";
+        open(HEADER, ">$header") || die "Could not open $header for writing: $!\n";
         print HEADER "#include \"$iheader_out\"\n";
         close HEADER;
         if(defined($ts)) {
@@ -1133,7 +1133,7 @@ foreach my $lib (@modules_to_sync) {
                 my $header_dir = dirname($header_path);
                 make_path($header_dir, $lib, $verbose_level);
 
-                open HEADER, ">$header_path" || die "Could not open $header_path for writing!\n";
+                open(HEADER, ">$header_path") || die "Could not open $header_path for writing: $!\n";
                 print HEADER "#ifndef $guard\n";
                 print HEADER "#define $guard\n";
                 my $warning = "Header <$lib/";

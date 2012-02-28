@@ -117,7 +117,7 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
     return false;
 }
 
-static bool convert(const QVariant::Private *d, QVariant::Type type, void *result, bool *ok)
+static bool convert(const QVariant::Private *d, int type, void *result, bool *ok)
 {
     Q_UNUSED(d);
     Q_UNUSED(type);
@@ -127,7 +127,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type type, void *resul
     return false;
 }
 
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
 static void streamDebug(QDebug dbg, const QVariant &v)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
@@ -141,7 +141,7 @@ static void streamDebug(QDebug dbg, const QVariant &v)
         dbg.nospace() << *v_cast<QSizePolicy>(d);
         break;
     default:
-        dbg.nospace() << "QVariant::Type(" << d->type << ")";
+        dbg.nospace() << "QMetaType::Type(" << d->type << ")";
     }
 }
 #endif
@@ -157,7 +157,7 @@ static const QVariant::Handler widgets_handler = {
     compare,
     convert,
     0,
-#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
     streamDebug
 #else
     0

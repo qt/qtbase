@@ -43,6 +43,8 @@
 
 #include "qcombobox.h"
 #include <private/qcombobox_p.h>
+#include <private/qguiapplication_p.h>
+#include <qplatformtheme_qpa.h>
 
 #include <qfontcombobox.h>
 #include <qdesktopwidget.h>
@@ -1915,19 +1917,15 @@ void tst_QComboBox::itemListPosition()
     QWidget topLevel;
     QFontComboBox combo(&topLevel);
 
-    //the code to get the avaialbe screen space is copied from QComboBox code
+    //the code to get the available screen space is copied from QComboBox code
     const int scrNumber = QApplication::desktop()->screenNumber(&combo);
-    QRect screen;
-#ifdef Q_WS_WIN
-    screen = QApplication::desktop()->screenGeometry(scrNumber);
-#elif defined Q_WS_X11
-    if (X11->desktopEnvironment == DE_KDE)
-        screen = QApplication::desktop()->screenGeometry(scrNumber);
-    else
-        screen = QApplication::desktop()->availableGeometry(scrNumber);
-#else
-    screen = QApplication::desktop()->availableGeometry(scrNumber);
-#endif
+
+    bool useFullScreenForPopupMenu = false;
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+        useFullScreenForPopupMenu = theme->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool();
+    const QRect screen = useFullScreenForPopupMenu ?
+                         QApplication::desktop()->screenGeometry(scrNumber) :
+                         QApplication::desktop()->availableGeometry(scrNumber);
 
     combo.move(screen.width()-combo.sizeHint().width(), 0); //puts the combo to the top-right corner
 

@@ -194,8 +194,8 @@ class Q_CORE_EXPORT QVariant
     inline QVariant();
     ~QVariant();
     QVariant(Type type);
-    QVariant(int typeOrUserType, const void *copy);
-    QVariant(int typeOrUserType, const void *copy, uint flags);
+    QVariant(int typeId, const void *copy);
+    QVariant(int typeId, const void *copy, uint flags);
     QVariant(const QVariant &other);
 
 #ifndef QT_NO_DATASTREAM
@@ -210,7 +210,7 @@ class Q_CORE_EXPORT QVariant
     QVariant(double d);
     QVariant(float f) { d.is_null = false; d.type = QMetaType::Float; d.data.f = f; }
 #ifndef QT_NO_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN_CONSTRUCTOR QVariant(const char *str);
+    QT_ASCII_CAST_WARN QVariant(const char *str);
 #endif
 
     QVariant(const QByteArray &bytearray);
@@ -257,8 +257,8 @@ class Q_CORE_EXPORT QVariant
     int userType() const;
     const char *typeName() const;
 
-    bool canConvert(Type t) const;
-    bool convert(Type t);
+    bool canConvert(int targetTypeId) const;
+    bool convert(int targetTypeId);
 
     inline bool isValid() const;
     bool isNull() const;
@@ -311,7 +311,7 @@ class Q_CORE_EXPORT QVariant
     void load(QDataStream &ds);
     void save(QDataStream &ds) const;
 #endif
-    static const char *typeToName(Type type);
+    static const char *typeToName(int typeId);
     static Type nameToType(const char *name);
 
     void *data();
@@ -331,7 +331,7 @@ class Q_CORE_EXPORT QVariant
 
     template<typename T>
     bool canConvert() const
-    { return canConvert(Type(qMetaTypeId<T>())); }
+    { return canConvert(qMetaTypeId<T>()); }
 
  public:
 #ifndef qdoc
@@ -381,8 +381,8 @@ class Q_CORE_EXPORT QVariant
     typedef void (*f_save)(const Private *, QDataStream &);
 #endif
     typedef bool (*f_compare)(const Private *, const Private *);
-    typedef bool (*f_convert)(const QVariant::Private *d, Type t, void *, bool *);
-    typedef bool (*f_canConvert)(const QVariant::Private *d, Type t);
+    typedef bool (*f_convert)(const QVariant::Private *d, int t, void *, bool *);
+    typedef bool (*f_canConvert)(const QVariant::Private *d, int t);
     typedef void (*f_debugStream)(QDebug, const QVariant &);
     struct Handler {
         f_construct construct;
@@ -527,7 +527,7 @@ namespace QtPrivate {
                 return *reinterpret_cast<const T *>(v.constData());
             if (vid < int(QMetaType::User)) {
                 T t;
-                if (v.convert(QVariant::Type(vid), &t))
+                if (v.convert(vid, &t))
                     return t;
             }
             return T();
