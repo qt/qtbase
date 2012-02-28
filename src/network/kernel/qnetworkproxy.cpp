@@ -224,8 +224,10 @@
 #include "private/qsocks5socketengine_p.h"
 #include "private/qhttpsocketengine_p.h"
 #include "qauthenticator.h"
+#include "qdebug.h"
 #include "qhash.h"
 #include "qmutex.h"
+#include "qstringlist.h"
 #include "qurl.h"
 
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -1507,6 +1509,51 @@ QList<QNetworkProxy> QNetworkProxyFactory::proxyForQuery(const QNetworkProxyQuer
         return QList<QNetworkProxy>() << QNetworkProxy(QNetworkProxy::NoProxy);
     return globalNetworkProxy()->proxyForQuery(query);
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QNetworkProxy &proxy)
+{
+    QNetworkProxy::ProxyType type = proxy.type();
+    switch (type) {
+    case QNetworkProxy::NoProxy:
+        debug << "NoProxy ";
+        break;
+    case QNetworkProxy::DefaultProxy:
+        debug << "DefaultProxy ";
+        break;
+    case QNetworkProxy::Socks5Proxy:
+        debug << "Socks5Proxy ";
+        break;
+    case QNetworkProxy::HttpProxy:
+        debug << "HttpProxy ";
+        break;
+    case QNetworkProxy::HttpCachingProxy:
+        debug << "HttpCachingProxy ";
+        break;
+    case QNetworkProxy::FtpCachingProxy:
+        debug << "FtpCachingProxy ";
+        break;
+    default:
+        debug << "Unknown proxy " << int(type);
+        break;
+    }
+    debug << "\"" << proxy.hostName() << ":" << proxy.port() << "\" ";
+    QNetworkProxy::Capabilities caps = proxy.capabilities();
+    QStringList scaps;
+    if (caps & QNetworkProxy::TunnelingCapability)
+        scaps << QStringLiteral("Tunnel");
+    if (caps & QNetworkProxy::ListeningCapability)
+        scaps << QStringLiteral("Listen");
+    if (caps & QNetworkProxy::UdpTunnelingCapability)
+        scaps << QStringLiteral("UDP");
+    if (caps & QNetworkProxy::CachingCapability)
+        scaps << QStringLiteral("Caching");
+    if (caps & QNetworkProxy::HostNameLookupCapability)
+        scaps << QStringLiteral("NameLookup");
+    debug << "[" << scaps.join(QStringLiteral(" ")) << "]";
+    return debug;
+}
+#endif
 
 QT_END_NAMESPACE
 
