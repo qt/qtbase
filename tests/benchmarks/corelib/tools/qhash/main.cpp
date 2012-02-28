@@ -67,6 +67,8 @@ private:
 
 ///////////////////// QHash /////////////////////
 
+#include <QDebug>
+
 void tst_QHash::data()
 {
     QTest::addColumn<QStringList>("items");
@@ -97,6 +99,40 @@ void tst_QHash::data()
         }
 
         QTest::newRow("uuids-list") << uuids;
+    }
+
+    {
+        // lots of strings with alphabetical characters, vaguely reminiscent of
+        // a dictionary.
+        //
+        // this programatically generates a series like:
+        //  AAAAAA
+        //  AAAAAB
+        //  AAAAAC
+        //  ...
+        //  AAAAAZ
+        //  AAAABZ
+        //  ...
+        //  AAAAZZ
+        //  AAABZZ
+        QByteArray id("AAAAAAA");
+        static QStringList dict;
+
+        if (dict.isEmpty()) {
+            for (int i = id.length() - 1; i > 0;) {
+                dict.append(id);
+                char c = id.at(i);
+                id[i] = ++c;
+
+                if (c == 'Z') {
+                    // wrap to next digit
+                    i--;
+                    id[i] = 'A';
+                }
+            }
+        }
+
+        QTest::newRow("dictionary") << dict;
     }
 
 }
