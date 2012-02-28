@@ -17,3 +17,7 @@ qnx {
 contains(QT_CONFIG, eglfs) {
     SUBDIRS += eglfs
 }
+
+contains(QT_CONFIG, directfb) {
+    SUBDIRS += directfb
+}
