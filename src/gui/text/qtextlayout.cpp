@@ -506,6 +506,7 @@ QString QTextLayout::preeditAreaText() const
 
 /*!
     Sets the additional formats supported by the text layout to \a formatList.
+    The formats are applied with preedit area text in place.
 
     \sa additionalFormats(), clearAdditionalFormats()
 */
@@ -2703,6 +2704,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
 
     Converts the x-coordinate \a x, to the nearest matching cursor
     position, depending on the cursor position type, \a cpos.
+    Note that result cursor position includes possible preedit area text.
 
     \sa cursorToX()
 */
