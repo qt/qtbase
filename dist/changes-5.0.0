@@ -420,6 +420,9 @@ done after committing. This includes deleted rows which remain in
 the model as blank rows until the application calls select(). Instead,
 selectRow() is called to refresh only the affected row.
 
+* QSqlTableModel::isDirty(): New overloaded method to check whether model
+has any changes to submit. QTBUG-3108
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************

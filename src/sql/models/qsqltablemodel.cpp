@@ -469,6 +469,24 @@ QVariant QSqlTableModel::headerData(int section, Qt::Orientation orientation, in
 }
 
 /*!
+    \overload
+    \since 5.0
+
+    Returns true if the model contains modified values that have not been
+    committed to the datase, otherwise false.
+*/
+bool QSqlTableModel::isDirty() const
+{
+    Q_D(const QSqlTableModel);
+    QSqlTableModelPrivate::CacheMap::ConstIterator i = d->cache.constBegin();
+    const QSqlTableModelPrivate::CacheMap::ConstIterator e = d->cache.constEnd();
+    for (; i != e; i++)
+        if (!i.value().submitted())
+            return true;
+    return false;
+}
+
+/*!
     Returns true if the value at the index \a index is dirty, otherwise false.
     Dirty values are values that were modified in the model
     but not yet written into the database.
