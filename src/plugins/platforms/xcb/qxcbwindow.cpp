@@ -1168,10 +1168,31 @@ void QXcbWindow::propagateSizeHints()
 
 void QXcbWindow::requestActivateWindow()
 {
-    if (m_mapped){
-        updateNetWmUserTime(connection()->time());
+    if (!m_mapped)
+        return;
+
+    updateNetWmUserTime(connection()->time());
+
+    if (window()->isTopLevel()
+        && connection()->wmSupport()->isSupportedByWM(atom(QXcbAtom::_NET_ACTIVE_WINDOW))) {
+        xcb_client_message_event_t event;
+
+        event.response_type = XCB_CLIENT_MESSAGE;
+        event.format = 32;
+        event.window = m_window;
+        event.type = atom(QXcbAtom::_NET_ACTIVE_WINDOW);
+        event.data.data32[0] = 1;
+        event.data.data32[1] = connection()->time();
+        QWindow *focusWindow = QGuiApplication::focusWindow();
+        event.data.data32[2] = focusWindow ? focusWindow->winId() : XCB_NONE;
+        event.data.data32[3] = 0;
+        event.data.data32[4] = 0;
+
+        Q_XCB_CALL(xcb_send_event(xcb_connection(), 0, m_screen->root(), XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
+    } else {
         Q_XCB_CALL(xcb_set_input_focus(xcb_connection(), XCB_INPUT_FOCUS_PARENT, m_window, connection()->time()));
     }
+
     connection()->sync();
 }
 
