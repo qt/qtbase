@@ -131,7 +131,7 @@ struct WinTimerInfo {                           // internal timer info
 class QZeroTimerEvent : public QTimerEvent
 {
 public:
-    inline QZeroTimerEvent(int timerId)
+    explicit inline QZeroTimerEvent(int timerId)
         : QTimerEvent(timerId)
     { t = QEvent::ZeroTimerEvent; }
 };

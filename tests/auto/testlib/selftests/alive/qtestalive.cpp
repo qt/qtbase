@@ -50,7 +50,7 @@ public:
 
     enum { AliveEventType = QEvent::User + 422 };
 
-    inline QTestAliveEvent(int aSequenceId)
+    explicit inline QTestAliveEvent(int aSequenceId)
         : QEvent(QEvent::Type(AliveEventType)), seqId(aSequenceId)
     {}
     inline int sequenceId() const { return seqId; }

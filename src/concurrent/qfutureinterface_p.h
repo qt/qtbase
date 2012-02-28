@@ -80,7 +80,7 @@ public:
     QFutureCallOutEvent()
         : QEvent(QEvent::FutureCallOut), callOutType(CallOutType(0)), index1(-1), index2(-1)
     { }
-    QFutureCallOutEvent(CallOutType callOutType, int index1 = -1)
+    explicit QFutureCallOutEvent(CallOutType callOutType, int index1 = -1)
         : QEvent(QEvent::FutureCallOut), callOutType(callOutType), index1(index1), index2(-1)
     { }
     QFutureCallOutEvent(CallOutType callOutType, int index1, int index2)
