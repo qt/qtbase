@@ -682,6 +682,36 @@ public:
 };
 Q_DECLARE_METATYPE(CustomMultiInheritanceObject*);
 
+class C { char _[4]; };
+class M { char _[4]; };
+class P { char _[4]; };
+
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(M, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(P, Q_PRIMITIVE_TYPE);
+QT_END_NAMESPACE
+
+// avoid the comma:
+typedef QPair<C,C> QPairCC;
+typedef QPair<C,M> QPairCM;
+typedef QPair<C,P> QPairCP;
+typedef QPair<M,C> QPairMC;
+typedef QPair<M,M> QPairMM;
+typedef QPair<M,P> QPairMP;
+typedef QPair<P,C> QPairPC;
+typedef QPair<P,M> QPairPM;
+typedef QPair<P,P> QPairPP;
+
+Q_DECLARE_METATYPE(QPairCC)
+Q_DECLARE_METATYPE(QPairCM)
+Q_DECLARE_METATYPE(QPairCP)
+Q_DECLARE_METATYPE(QPairMC)
+Q_DECLARE_METATYPE(QPairMM)
+Q_DECLARE_METATYPE(QPairMP)
+Q_DECLARE_METATYPE(QPairPC)
+Q_DECLARE_METATYPE(QPairPM)
+Q_DECLARE_METATYPE(QPairPP)
+
 void tst_QMetaType::flags_data()
 {
     QTest::addColumn<int>("type");
@@ -700,6 +730,15 @@ QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
     QTest::newRow("CustomMovable") << ::qMetaTypeId<CustomMovable>() << true << true << false;
     QTest::newRow("CustomObject*") << ::qMetaTypeId<CustomObject*>() << true << false << true;
     QTest::newRow("CustomMultiInheritanceObject*") << ::qMetaTypeId<CustomMultiInheritanceObject*>() << true << false << true;
+    QTest::newRow("QPair<C,C>") << ::qMetaTypeId<QPair<C,C> >() << false << true  << false;
+    QTest::newRow("QPair<C,M>") << ::qMetaTypeId<QPair<C,M> >() << false << true  << false;
+    QTest::newRow("QPair<C,P>") << ::qMetaTypeId<QPair<C,P> >() << false << true  << false;
+    QTest::newRow("QPair<M,C>") << ::qMetaTypeId<QPair<M,C> >() << false << true  << false;
+    QTest::newRow("QPair<M,M>") << ::qMetaTypeId<QPair<M,M> >() << true  << true  << false;
+    QTest::newRow("QPair<M,P>") << ::qMetaTypeId<QPair<M,P> >() << true  << true  << false;
+    QTest::newRow("QPair<P,C>") << ::qMetaTypeId<QPair<P,C> >() << false << true  << false;
+    QTest::newRow("QPair<P,M>") << ::qMetaTypeId<QPair<P,M> >() << true  << true  << false;
+    QTest::newRow("QPair<P,P>") << ::qMetaTypeId<QPair<P,P> >() << true  << false << false;
 }
 
 void tst_QMetaType::flags()

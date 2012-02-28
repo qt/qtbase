@@ -20,6 +20,7 @@ SUBDIRS=\
     qlocale \
     qmap \
     qmargins \
+    qpair \
     qpoint \
     qqueue \
     qrect \
