@@ -420,6 +420,7 @@ ignore the rest of the range.
   map were simply ignored.
   -For OnManualSubmit, insertRecord() no longer leaves behind an empty
   row if setRecord() fails.
+  -setRecord() now automatically submits for OnRowChange.
 
 * QSqlQueryModel::indexInQuery() is now virtual. See
 QSqlTableModel::indexInQuery() as example of how to implement in a
@@ -438,6 +439,12 @@ selectRow() is called to refresh only the affected row.
 
 * QSqlTableModel::isDirty(): New overloaded method to check whether model
 has any changes to submit. QTBUG-3108
+
+* QSqlTableModel::setData() and setRecord() no longer revert pending changes
+that fail upon resubmitting for edit strategies OnFieldChange and OnRowChange.
+Instead, pending (failed) changes cause new changes inappropriate to the
+edit strategy to be refused. The application should resolve or revert pending
+changes.
 
 ****************************************************************************
 *                          Database Drivers                                *

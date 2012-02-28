@@ -511,8 +511,19 @@ bool QSqlTableModel::isDirty(const QModelIndex &index) const
 
 /*!
     Sets the data for the item \a index for the role \a role to \a
-    value. Depending on the edit strategy, the value might be applied
-    to the database at once or cached in the model.
+    value.
+
+    For edit strategy OnFieldChange, an index may receive a change
+    only if no other index has a cached change. Changes are
+    submitted immediately. However, rows that have not yet been
+    inserted in the database may be freely changed and and are not
+    submitted automatically.
+
+    For OnRowChange, the first change to a row will cause cached
+    operations on other rows to be submitted. If submitting fails,
+    the new change is rejected.
+
+    Submitted changes are not reverted upon failure.
 
     Returns true if the value could be set or false on error, for
     example if \a index is out of bounds.
@@ -534,11 +545,16 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     if (d->cache.value(index.row()).op() == QSqlTableModelPrivate::Delete)
         return false;
 
-    if (d->strategy == OnFieldChange && d->cache.value(index.row()).op() != QSqlTableModelPrivate::Insert) {
-        revertAll();
-    } else if (d->strategy == OnRowChange && !d->cache.isEmpty() && !d->cache.contains(index.row())) {
-        submit();
-        revertAll();
+    if (d->strategy == OnFieldChange) {
+        if (d->cache.value(index.row()).op() != QSqlTableModelPrivate::Insert
+            && !isDirty(index) && isDirty())
+            return false;
+    }
+    else if (d->strategy == OnRowChange) {
+        if (d->cache.value(index.row()).submitted()) {
+            if (!submit())
+                return false;
+        }
     }
 
     QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];
@@ -1132,25 +1148,20 @@ bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
     Returns true if the record could be inserted, otherwise false.
 
     Changes are submitted immediately for OnFieldChange and
-    OnRowChange. Note the contrast with setRecord() in respect to
-    OnRowChange.
+    OnRowChange. Failure does not leave a new row in the model.
 
     \sa insertRows(), removeRows(), setRecord()
 */
 bool QSqlTableModel::insertRecord(int row, const QSqlRecord &record)
 {
-    Q_D(QSqlTableModel);
     if (row < 0)
         row = rowCount();
     if (!insertRow(row, QModelIndex()))
         return false;
     if (!setRecord(row, record)) {
-        if (d->strategy == OnManualSubmit)
-            revertRow(row);
+        revertRow(row);
         return false;
     }
-    if (d->strategy == OnFieldChange || d->strategy == OnRowChange)
-        return submit();
     return true;
 }
 
@@ -1240,6 +1251,11 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
         return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     if (d->cache.value(index.row()).op() == QSqlTableModelPrivate::Delete)
         return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    if (d->strategy == OnFieldChange
+        && d->cache.value(index.row()).op() != QSqlTableModelPrivate::Insert
+        && !isDirty(index) && isDirty())
+        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+
     return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
 }
 
@@ -1247,14 +1263,13 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
     Sets the values at the specified \a row to the values of \a
     record for fields where generated flag is true.
 
+    For edit strategies OnFieldChange and OnRowChange, a row may
+    receive a change only if no other row has a cached change.
+    Changes are submitted immediately. Submitted changes are not
+    reverted upon failure.
+
     Returns true if all the values could be set; otherwise returns
     false.
-
-    The edit strategy affects automatic submitting.
-    With OnFieldChange, setRecord() commits its changed row.
-    With OnRowChange, setRecord() does not commit its changed row,
-    but making a change to another row causes previous changes to
-    be submitted.
 
     \sa record(), editStrategy()
 */
@@ -1271,10 +1286,8 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
     if (d->cache.value(row).op() == QSqlTableModelPrivate::Delete)
         return false;
 
-    if (d->strategy == OnFieldChange && d->cache.value(row).op() != QSqlTableModelPrivate::Insert)
-        revertAll();
-    else if (d->strategy == OnRowChange && !d->cache.isEmpty() && !d->cache.contains(row))
-        submit();
+    if (d->strategy != OnManualSubmit && d->cache.value(row).submitted() && isDirty())
+        return false;
 
     // Check field names and remember mapping
     typedef QMap<int, int> Map;
@@ -1301,7 +1314,7 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
     if (columnCount())
         emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
 
-    if (d->strategy == OnFieldChange)
+    if (d->strategy != OnManualSubmit)
         return submit();
 
     return true;
