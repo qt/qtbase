@@ -136,7 +136,7 @@ public:
 
     // Atomic API, implemented in qatomic_XXX.h
 
-    T loadAcquire() { return Ops::loadAcquire(_q_value); }
+    T loadAcquire() const { return Ops::loadAcquire(_q_value); }
     void storeRelease(T newValue) { Ops::storeRelease(_q_value, newValue); }
 
     static bool isReferenceCountingNative() { return Ops::isReferenceCountingNative(); }
@@ -206,7 +206,7 @@ public:
     void store(Type newValue) { _q_value = newValue; }
 
     // Atomic API, implemented in qatomic_XXX.h
-    Type loadAcquire() { return Ops::loadAcquire(_q_value); }
+    Type loadAcquire() const { return Ops::loadAcquire(_q_value); }
     void storeRelease(Type newValue) { Ops::storeRelease(_q_value, newValue); }
 
     static bool isTestAndSetNative() { return Ops::isTestAndSetNative(); }
