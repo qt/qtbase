@@ -104,7 +104,7 @@ inline bool qCompare
     }
 
     if (qAbs(qreal(r1.total) - qreal(r2.total)) <= qreal(r1.total)*variance) {
-        return compare_helper(true, "COMPARE()", file, line);
+        return compare_helper(true, 0, 0, 0, actual, expected, file, line);
     }
 
     // Whoops, didn't match.  Compare the whole string for the most useful failure message.

@@ -132,7 +132,7 @@
 <TestFunction name="xpassDataDrivenWithQCompare">
 <Incident type="xpass" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="271">
     <DataTag><![CDATA[XPass]]></DataTag>
-    <Description><![CDATA[COMPARE()]]></Description>
+    <Description><![CDATA[QCOMPARE(1, 1) returned TRUE unexpectedly.]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[Pass]]></DataTag>

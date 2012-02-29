@@ -210,7 +210,7 @@ inline bool qCompare(QStringList const &t1, QStringList const &t2,
             isOk = false;
         }
     }
-    return compare_helper(isOk, msg, file, line);
+    return compare_helper(isOk, msg, 0, 0, actual, expected, file, line);
 }
 
 template <typename T>

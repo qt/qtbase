@@ -14,7 +14,7 @@
 </Message>
 <Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="112">
     <DataTag><![CDATA[row 1]]></DataTag>
-    <Description><![CDATA[COMPARE()]]></Description>
+    <Description><![CDATA[QCOMPARE(2 + 1, 3)]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
@@ -25,7 +25,7 @@
 </Message>
 <Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="112">
     <DataTag><![CDATA[row 2]]></DataTag>
-    <Description><![CDATA[COMPARE()]]></Description>
+    <Description><![CDATA[QCOMPARE(2 + 1, 3)]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
@@ -38,7 +38,7 @@
 </Message>
 <Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="112">
     <DataTag><![CDATA[row 1]]></DataTag>
-    <Description><![CDATA[COMPARE()]]></Description>
+    <Description><![CDATA[QCOMPARE(2 + 1, 3)]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
@@ -55,7 +55,7 @@
 </Message>
 <Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="112">
     <DataTag><![CDATA[row 1]]></DataTag>
-    <Description><![CDATA[COMPARE()]]></Description>
+    <Description><![CDATA[QCOMPARE(2 + 1, 3)]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
@@ -80,7 +80,7 @@
 </Message>
 <Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="112">
     <DataTag><![CDATA[row 2]]></DataTag>
-    <Description><![CDATA[COMPARE()]]></Description>
+    <Description><![CDATA[QCOMPARE(2 + 1, 3)]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
@@ -125,7 +125,7 @@
 </Message>
 <Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="112">
     <DataTag><![CDATA[row 2]]></DataTag>
-    <Description><![CDATA[COMPARE()]]></Description>
+    <Description><![CDATA[QCOMPARE(2 + 1, 3)]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>

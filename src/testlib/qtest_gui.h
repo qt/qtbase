@@ -102,29 +102,27 @@ inline bool qCompare(QImage const &t1, QImage const &t2,
         qsnprintf(msg, 1024, "Compared QImages differ.\n"
                   "   Actual (%s).isNull()  : %d\n"
                   "   Expected (%s).isNull(): %d", actual, t1Null, expected, t2Null);
-        return compare_helper(false, msg, file, line);
+        return compare_helper(false, msg, 0, 0, actual, expected, file, line);
     }
     if (t1Null && t2Null)
-        return compare_helper(true, "COMPARE()", file, line);
+        return compare_helper(true, 0, 0, 0, actual, expected, file, line);
     if (t1.width() != t2.width() || t2.height() != t2.height()) {
         qsnprintf(msg, 1024, "Compared QImages differ in size.\n"
                   "   Actual (%s)  : %dx%d\n"
                   "   Expected (%s): %dx%d",
                   actual, t1.width(), t1.height(),
                   expected, t2.width(), t2.height());
-        return compare_helper(false, msg, file, line);
+        return compare_helper(false, msg, 0, 0, actual, expected, file, line);
     }
     if (t1.format() != t2.format()) {
         qsnprintf(msg, 1024, "Compared QImages differ in format.\n"
                   "   Actual (%s)  : %d\n"
                   "   Expected (%s): %d",
                   actual, t1.format(), expected, t2.format());
-        return compare_helper(false, msg, file, line);
+        return compare_helper(false, msg, 0, 0, actual, expected, file, line);
     }
-    return (t1 == t2)
-            ? compare_helper(true, "COMPARE()", file, line)
-            : compare_helper(false, "Compared values are not the same",
-                             toString(t1), toString(t2), actual, expected, file, line);
+    return compare_helper(t1 == t2, "Compared values are not the same",
+                          toString(t1), toString(t2), actual, expected, file, line);
 }
 
 #ifndef QTEST_NO_SPECIALIZATIONS
@@ -141,17 +139,17 @@ inline bool qCompare(QPixmap const &t1, QPixmap const &t2, const char *actual, c
         qsnprintf(msg, 1024, "Compared QPixmaps differ.\n"
                   "   Actual (%s).isNull()  : %d\n"
                   "   Expected (%s).isNull(): %d", actual, t1Null, expected, t2Null);
-        return compare_helper(false, msg, file, line);
+        return compare_helper(false, msg, 0, 0, actual, expected, file, line);
     }
     if (t1Null && t2Null)
-        return compare_helper(true, "COMPARE()", file, line);
+        return compare_helper(true, 0, 0, 0, actual, expected, file, line);
     if (t1.width() != t2.width() || t2.height() != t2.height()) {
         qsnprintf(msg, 1024, "Compared QPixmaps differ in size.\n"
                   "   Actual (%s)  : %dx%d\n"
                   "   Expected (%s): %dx%d",
                   actual, t1.width(), t1.height(),
                   expected, t2.width(), t2.height());
-        return compare_helper(false, msg, file, line);
+        return compare_helper(false, msg, 0, 0, actual, expected, file, line);
     }
     return qCompare(t1.toImage(), t2.toImage(), actual, expected, file, line);
 }
