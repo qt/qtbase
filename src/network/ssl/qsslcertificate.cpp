@@ -123,6 +123,7 @@
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/private/qmutexpool_p.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qvarlengtharray.h>
@@ -263,6 +264,7 @@ void QSslCertificate::clear()
 */
 QByteArray QSslCertificate::version() const
 {
+    QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
     if (d->versionString.isEmpty() && d->x509)
         d->versionString =
             QByteArray::number(qlonglong(q_ASN1_INTEGER_get(d->x509->cert_info->version)) + 1);
@@ -275,6 +277,7 @@ QByteArray QSslCertificate::version() const
 */
 QByteArray QSslCertificate::serialNumber() const
 {
+    QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
     if (d->serialNumberString.isEmpty() && d->x509) {
         ASN1_INTEGER *serialNumber = d->x509->cert_info->serialNumber;
         QByteArray hexString;
@@ -327,6 +330,7 @@ static QByteArray _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
 */
 QStringList QSslCertificate::issuerInfo(SubjectInfo info) const
 {
+    QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
@@ -344,6 +348,7 @@ QStringList QSslCertificate::issuerInfo(SubjectInfo info) const
 */
 QStringList QSslCertificate::issuerInfo(const QByteArray &attribute) const
 {
+    QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
@@ -363,6 +368,7 @@ QStringList QSslCertificate::issuerInfo(const QByteArray &attribute) const
 */
 QStringList QSslCertificate::subjectInfo(SubjectInfo info) const
 {
+    QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
@@ -379,6 +385,7 @@ QStringList QSslCertificate::subjectInfo(SubjectInfo info) const
 */
 QStringList QSslCertificate::subjectInfo(const QByteArray &attribute) const
 {
+    QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
@@ -398,6 +405,7 @@ QStringList QSslCertificate::subjectInfo(const QByteArray &attribute) const
 */
 QList<QByteArray> QSslCertificate::subjectInfoAttributes() const
 {
+    QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
@@ -417,6 +425,7 @@ QList<QByteArray> QSslCertificate::subjectInfoAttributes() const
 */
 QList<QByteArray> QSslCertificate::issuerInfoAttributes() const
 {
+    QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
