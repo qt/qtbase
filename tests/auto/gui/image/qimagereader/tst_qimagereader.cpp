@@ -1368,7 +1368,7 @@ void tst_QImageReader::readFromResources()
     SKIP_IF_UNSUPPORTED(format);
 
     for (int i = 0; i < 2; ++i) {
-        QString file = i ? (":/images/" + fileName) : (prefix + fileName);
+        QString file = i ? QString(QStringLiteral(":/images/") + fileName) : QString(prefix + fileName);
         {
             // suppress warnings if we expect them
             if (!message.isEmpty()) {
