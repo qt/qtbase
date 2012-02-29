@@ -2240,7 +2240,7 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
         QString::fromLatin1("Could not start %1: %2").arg(processExe, serverProcess.errorString())));
     while (!serverProcess.canReadLine())
         QVERIFY(serverProcess.waitForReadyRead(10000));
-    QCOMPARE(serverProcess.readLine().data(), (server.toLatin1() + "\n").data());
+    QCOMPARE(serverProcess.readLine().data(), QByteArray(server.toLatin1() + "\n").data());
 
     // Start client
     QProcess clientProcess;
@@ -2250,7 +2250,7 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
         QString::fromLatin1("Could not start %1: %2").arg(processExe, clientProcess.errorString())));
     while (!clientProcess.canReadLine())
         QVERIFY(clientProcess.waitForReadyRead(10000));
-    QCOMPARE(clientProcess.readLine().data(), (client.toLatin1() + "\n").data());
+    QCOMPARE(clientProcess.readLine().data(), QByteArray(client.toLatin1() + "\n").data());
 
     // Let them play for a while
     qDebug("Running stress test for 5 seconds");

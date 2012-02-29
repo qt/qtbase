@@ -153,9 +153,9 @@ void tst_qstylesheetstyle::grid_data()
         QTest::addColumn<int>("N");
         for (int n = 5; n <= 25; n += 5) {
            const QByteArray nString = QByteArray::number(n*n);
-            QTest::newRow(("simple--" + nString).constData()) << false << false << n;
-            QTest::newRow(("events--" + nString).constData()) << true << false << n;
-            QTest::newRow(("show--" + nString).constData()) << true << true << n;
+            QTest::newRow(QByteArray("simple--" + nString).constData()) << false << false << n;
+            QTest::newRow(QByteArray("events--" + nString).constData()) << true << false << n;
+            QTest::newRow(QByteArray("show--" + nString).constData()) << true << true << n;
         }
 }
 
