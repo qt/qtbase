@@ -1397,6 +1397,7 @@ void tst_QGraphicsView::itemsAtPosition()
         item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
     QGraphicsView view;
+    view.setFrameStyle(QFrame::NoFrame);
     view.resize(200, 200);
     view.scale(scale, scale);
     view.rotate(rotation);
