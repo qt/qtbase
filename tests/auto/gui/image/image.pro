@@ -9,7 +9,6 @@ SUBDIRS=\
    qimageiohandler \
    qimagewriter \
    qmovie \
-   qvolatileimage \
    qicon \
    qpicture \
 
