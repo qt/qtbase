@@ -167,6 +167,16 @@ template <> struct QConcatenable<QChar> : private QAbstractConcatenable
     { *out++ = c; }
 };
 
+template <> struct QConcatenable<QChar::SpecialCharacter> : private QAbstractConcatenable
+{
+    typedef QChar::SpecialCharacter type;
+    typedef QString ConvertTo;
+    enum { ExactSize = true };
+    static int size(const QChar::SpecialCharacter) { return 1; }
+    static inline void appendTo(const QChar::SpecialCharacter c, QChar *&out)
+    { *out++ = c; }
+};
+
 template <> struct QConcatenable<QCharRef> : private QAbstractConcatenable
 {
     typedef QCharRef type;
