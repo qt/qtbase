@@ -1283,6 +1283,9 @@ void tst_QTextScriptEngine::thaiIsolatedSaraAm()
 
 void tst_QTextScriptEngine::thaiWithZWJ()
 {
+#ifdef Q_OS_WIN
+    QSKIP("This test currently fails on Windows - QTBUG-24565");
+#endif
     QString s(QString::fromUtf8("ร‍ร‌.ร.“ร…ร”ร\xA0ร本ร") + QChar(0x0363)/*superscript 'a', for testing Inherited class*/);
     QTextLayout layout(s);
     layout.beginLayout();
