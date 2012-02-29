@@ -51,8 +51,30 @@ QT_BEGIN_NAMESPACE
 
 QStringList qmake_mkspec_paths(); //project.cpp
 
+static const struct {
+    const char *name;
+    QLibraryInfo::LibraryLocation loc;
+} propList[] = {
+    { "QT_INSTALL_PREFIX", QLibraryInfo::PrefixPath },
+    { "QT_INSTALL_DATA", QLibraryInfo::DataPath },
+    { "QT_INSTALL_DOCS", QLibraryInfo::DocumentationPath },
+    { "QT_INSTALL_HEADERS", QLibraryInfo::HeadersPath },
+    { "QT_INSTALL_LIBS", QLibraryInfo::LibrariesPath },
+    { "QT_INSTALL_BINS", QLibraryInfo::BinariesPath },
+    { "QT_INSTALL_TESTS", QLibraryInfo::TestsPath },
+    { "QT_INSTALL_PLUGINS", QLibraryInfo::PluginsPath },
+    { "QT_INSTALL_IMPORTS", QLibraryInfo::ImportsPath },
+    { "QT_INSTALL_TRANSLATIONS", QLibraryInfo::TranslationsPath },
+    { "QT_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath },
+    { "QT_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath },
+    { "QT_INSTALL_DEMOS", QLibraryInfo::ExamplesPath }, // Just backwards compat
+};
+
 QMakeProperty::QMakeProperty() : settings(0)
 {
+    for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++)
+        m_values[QString::fromLatin1(propList[i].name)] =
+                QLibraryInfo::location(propList[i].loc);
 }
 
 QMakeProperty::~QMakeProperty()
@@ -80,32 +102,9 @@ QMakeProperty::keyBase(bool version) const
 QString
 QMakeProperty::value(QString v, bool just_check)
 {
-    if(v == "QT_INSTALL_PREFIX")
-        return QLibraryInfo::location(QLibraryInfo::PrefixPath);
-    else if(v == "QT_INSTALL_DATA")
-        return QLibraryInfo::location(QLibraryInfo::DataPath);
-    else if(v == "QT_INSTALL_DOCS")
-        return QLibraryInfo::location(QLibraryInfo::DocumentationPath);
-    else if(v == "QT_INSTALL_HEADERS")
-        return QLibraryInfo::location(QLibraryInfo::HeadersPath);
-    else if(v == "QT_INSTALL_LIBS")
-        return QLibraryInfo::location(QLibraryInfo::LibrariesPath);
-    else if(v == "QT_INSTALL_BINS")
-        return QLibraryInfo::location(QLibraryInfo::BinariesPath);
-    else if(v == "QT_INSTALL_TESTS")
-        return QLibraryInfo::location(QLibraryInfo::TestsPath);
-    else if(v == "QT_INSTALL_PLUGINS")
-        return QLibraryInfo::location(QLibraryInfo::PluginsPath);
-    else if(v == "QT_INSTALL_IMPORTS")
-        return QLibraryInfo::location(QLibraryInfo::ImportsPath);
-    else if(v == "QT_INSTALL_TRANSLATIONS")
-        return QLibraryInfo::location(QLibraryInfo::TranslationsPath);
-    else if(v == "QT_INSTALL_CONFIGURATION")
-        return QLibraryInfo::location(QLibraryInfo::SettingsPath);
-    else if(v == "QT_INSTALL_EXAMPLES")
-        return QLibraryInfo::location(QLibraryInfo::ExamplesPath);
-    else if(v == "QT_INSTALL_DEMOS")
-        return QLibraryInfo::location(QLibraryInfo::ExamplesPath);
+    QString val = m_values.value(v);
+    if (!val.isNull())
+        return val;
     else if(v == "QMAKE_MKSPECS")
         return qmake_mkspec_paths().join(Option::dirlist_sep);
     else if(v == "QMAKE_VERSION")
@@ -194,19 +193,8 @@ QMakeProperty::exec()
                 }
             }
             QStringList specialProps;
-            specialProps.append("QT_INSTALL_PREFIX");
-            specialProps.append("QT_INSTALL_DATA");
-            specialProps.append("QT_INSTALL_DOCS");
-            specialProps.append("QT_INSTALL_HEADERS");
-            specialProps.append("QT_INSTALL_LIBS");
-            specialProps.append("QT_INSTALL_BINS");
-            specialProps.append("QT_INSTALL_TESTS");
-            specialProps.append("QT_INSTALL_PLUGINS");
-            specialProps.append("QT_INSTALL_IMPORTS");
-            specialProps.append("QT_INSTALL_TRANSLATIONS");
-            specialProps.append("QT_INSTALL_CONFIGURATION");
-            specialProps.append("QT_INSTALL_EXAMPLES");
-            specialProps.append("QT_INSTALL_DEMOS");
+            for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++)
+                specialProps.append(QString::fromLatin1(propList[i].name));
             specialProps.append("QMAKE_MKSPECS");
             specialProps.append("QMAKE_VERSION");
 #ifdef QT_VERSION_STR
