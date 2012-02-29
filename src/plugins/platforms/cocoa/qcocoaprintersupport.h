@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtPrintSupport module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,33 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QCOCOANATIVEINTERFACE_H
-#define QCOCOANATIVEINTERFACE_H
+#ifndef QCOCOAPRINTERSUPPORT_H
+#define QCOCOAPRINTERSUPPORT_H
 
-#include <QtGui/QPlatformNativeInterface>
 #include <QtPrintSupport/QPlatformPrinterSupport>
 
-class QWidget;
-
-class QCocoaNativeInterface : public QPlatformNativeInterface
+class QCocoaPrinterSupport : public QPlatformPrinterSupport
 {
-    Q_OBJECT
 public:
-    void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
+    QCocoaPrinterSupport();
+    ~QCocoaPrinterSupport();
 
-private:
-    /*
-        "Virtual" function to create the platform printer support
-        implementation.
+    Q_DECL_OVERRIDE QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
+    Q_DECL_OVERRIDE QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode);
+    Q_DECL_OVERRIDE QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
 
-        We use an invokable function instead of a virtual one, we do not want
-        this in the QPlatform* API yet.
-
-        This was added here only because QPlatformNativeInterface is a QObject
-        and allow us to use QMetaObject::indexOfMethod() from the printsupport
-        plugin.
-    */
-    Q_INVOKABLE QPlatformPrinterSupport *createPlatformPrinterSupport();
+    Q_DECL_OVERRIDE QList<QPrinterInfo> availablePrinters();
 };
 
-#endif // QCOCOANATIVEINTERFACE_H
+#endif // QCOCOAPRINTERSUPPORT_H

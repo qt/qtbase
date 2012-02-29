@@ -34,6 +34,7 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoainputcontext.mm \
     qpaintengine_mac.mm \
     qprintengine_mac.mm \
+    qcocoaprintersupport.mm \
 
 HEADERS += qcocoaintegration.h \
     qcocoatheme.h \
@@ -65,6 +66,7 @@ HEADERS += qcocoaintegration.h \
     qcocoainputcontext.h \
     qpaintengine_mac_p.h \
     qprintengine_mac_p.h \
+    qcocoaprintersupport.h \
 
 FORMS += $$PWD/../../../widgets/dialogs/qfiledialog.ui
 RESOURCES += qcocoaresources.qrc

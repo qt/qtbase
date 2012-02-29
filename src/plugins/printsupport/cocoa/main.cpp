@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtPrintSupport module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,33 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef QCOCOANATIVEINTERFACE_H
-#define QCOCOANATIVEINTERFACE_H
-
+#include <QtCore/QMetaMethod>
+#include <QtGui/QGuiApplication>
 #include <QtGui/QPlatformNativeInterface>
-#include <QtPrintSupport/QPlatformPrinterSupport>
+#include <QtPrintSupport/QPlatformPrinterSupportPlugin>
 
-class QWidget;
+QT_BEGIN_NAMESPACE
 
-class QCocoaNativeInterface : public QPlatformNativeInterface
+class QCocoaPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.QPlatformPrinterSupportFactoryInterface" FILE "cocoa.json")
+
 public:
-    void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
-
-private:
-    /*
-        "Virtual" function to create the platform printer support
-        implementation.
-
-        We use an invokable function instead of a virtual one, we do not want
-        this in the QPlatform* API yet.
-
-        This was added here only because QPlatformNativeInterface is a QObject
-        and allow us to use QMetaObject::indexOfMethod() from the printsupport
-        plugin.
-    */
-    Q_INVOKABLE QPlatformPrinterSupport *createPlatformPrinterSupport();
+    QStringList keys() const;
+    QPlatformPrinterSupport *create(const QString &);
 };
 
-#endif // QCOCOANATIVEINTERFACE_H
+QStringList QCocoaPrinterSupportPlugin::keys() const
+{
+    return QStringList(QStringLiteral("cocoaprintersupport"));
+}
+
+QPlatformPrinterSupport *QCocoaPrinterSupportPlugin::create(const QString &key)
+{
+    if (key.compare(key, QStringLiteral("cocoaprintersupport"), Qt::CaseInsensitive) != 0)
+        return 0;
+    QGuiApplication *app = qobject_cast<QGuiApplication *>(QCoreApplication::instance());
+    if (!app)
+        return 0;
+    QPlatformNativeInterface *platformNativeInterface = app->platformNativeInterface();
+    int at = platformNativeInterface->metaObject()->indexOfMethod("createPlatformPrinterSupport()");
+    if (at == -1)
+        return 0;
+    QMetaMethod createPlatformPrinterSupport = platformNativeInterface->metaObject()->method(at);
+    QPlatformPrinterSupport *platformPrinterSupport = 0;
+    if (!createPlatformPrinterSupport.invoke(platformNativeInterface, Q_RETURN_ARG(QPlatformPrinterSupport *, platformPrinterSupport)))
+        return 0;
+    return platformPrinterSupport;
+}
+
+QT_END_NAMESPACE
+
+#include "main.moc"

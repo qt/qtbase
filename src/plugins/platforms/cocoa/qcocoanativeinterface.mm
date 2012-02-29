@@ -42,6 +42,8 @@
 #include "qcocoanativeinterface.h"
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
+#include "qcocoaprintersupport.h"
+
 #include <qbytearray.h>
 #include <qwindow.h>
 #include "qplatformwindow_qpa.h"
@@ -65,4 +67,9 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
         return static_cast<QCocoaWindow *>(window->handle())->m_nsWindow;
     }
     return 0;
+}
+
+QPlatformPrinterSupport *QCocoaNativeInterface::createPlatformPrinterSupport()
+{
+    return new QCocoaPrinterSupport();
 }
