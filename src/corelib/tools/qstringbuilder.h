@@ -42,6 +42,12 @@
 #ifndef QSTRINGBUILDER_H
 #define QSTRINGBUILDER_H
 
+#if 0
+// syncqt can not handle the templates in this file, and it doesn't need to
+// process them anyway because they are internal.
+#pragma qt_sync_stop_processing
+#endif
+
 #include <QtCore/qstring.h>
 #include <QtCore/qbytearray.h>
 
@@ -64,8 +70,37 @@ protected:
 
 template <typename T> struct QConcatenable {};
 
+namespace QtStringBuilder {
+    template <typename A, typename B> struct ConvertToTypeHelper
+    { typedef A ConvertTo; };
+    template <typename T> struct ConvertToTypeHelper<T, QString>
+    { typedef QString ConvertTo; };
+}
+
+template<typename Builder, typename T>
+struct QStringBuilderCommon
+{
+    T toUpper() const { return resolved().toUpper(); }
+    T toLower() const { return resolved().toLower(); }
+
+protected:
+    const T resolved() const { return *static_cast<const Builder*>(this); }
+};
+
+template<typename Builder, typename T>
+struct QStringBuilderBase : public QStringBuilderCommon<Builder, T>
+{
+};
+
+template<typename Builder>
+struct QStringBuilderBase<Builder, QString> : public QStringBuilderCommon<Builder, QString>
+{
+    QByteArray toLatin1() const { return this->resolved().toLatin1(); }
+    QByteArray toLocal8Bit() const { return this->resolved().toLocal8Bit(); }
+};
+
 template <typename A, typename B>
-class QStringBuilder
+class QStringBuilder : public QStringBuilderBase<QStringBuilder<A, B>, typename QtStringBuilder::ConvertToTypeHelper<typename QConcatenable<A>::ConvertTo, typename QConcatenable<B>::ConvertTo>::ConvertTo>
 {
 public:
     QStringBuilder(const A &a_, const B &b_) : a(a_), b(b_) {}
@@ -94,7 +129,6 @@ private:
 public:
     operator ConvertTo() const { return convertTo<ConvertTo>(); }
 
-    QByteArray toLatin1() const { return convertTo<QString>().toLatin1(); }
     int size() const { return Concatenable::size(*this); }
 
     const A &a;
@@ -102,21 +136,20 @@ public:
 };
 
 template <>
-class QStringBuilder <QString, QString>
+class QStringBuilder <QString, QString> : public QStringBuilderBase<QStringBuilder<QString, QString>, QString>
 {
     public:
         QStringBuilder(const QString &a_, const QString &b_) : a(a_), b(b_) {}
 
         operator QString() const
         { QString r(a); r += b; return r; }
-        QByteArray toLatin1() const { return QString(*this).toLatin1(); }
 
         const QString &a;
         const QString &b;
 };
 
 template <>
-class QStringBuilder <QByteArray, QByteArray>
+class QStringBuilder <QByteArray, QByteArray> : public QStringBuilderBase<QStringBuilder<QByteArray, QByteArray>, QByteArray>
 {
     public:
         QStringBuilder(const QByteArray &a_, const QByteArray &b_) : a(a_), b(b_) {}
@@ -342,13 +375,6 @@ template <int N> struct QConcatenable<QStaticByteArrayDataPtr<N> > : private QAb
         out += N;
     }
 };
-
-namespace QtStringBuilder {
-    template <typename A, typename B> struct ConvertToTypeHelper
-    { typedef A ConvertTo; };
-    template <typename T> struct ConvertToTypeHelper<T, QString>
-    { typedef QString ConvertTo; };
-}
 
 template <typename A, typename B>
 struct QConcatenable< QStringBuilder<A, B> >
