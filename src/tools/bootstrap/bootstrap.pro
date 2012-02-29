@@ -32,10 +32,7 @@ win32:DEFINES += QT_NODLL
 INCLUDEPATH += $$QT_BUILD_TREE/include \
             $$QT_BUILD_TREE/include/QtCore \
             $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION \
-            $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION/QtCore \
-            $$QT_BUILD_TREE/include/QtXml \
-            $$QT_BUILD_TREE/include/QtXml/$$QT.xml.VERSION \
-            $$QT_BUILD_TREE/include/QtXml/$$QT.xml.VERSION/QtXml \
+            $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION/QtCore
 
 DEPENDPATH += $$INCLUDEPATH \
               ../../corelib/global \
@@ -43,8 +40,7 @@ DEPENDPATH += $$INCLUDEPATH \
               ../../corelib/tools \
               ../../corelib/io \
               ../../corelib/codecs \
-              ../../corelib/json \
-              ../../xml
+              ../../corelib/json
 
 SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \
@@ -96,9 +92,7 @@ SOURCES += \
            ../../corelib/json/qjsonarray.cpp \
            ../../corelib/json/qjsonvalue.cpp \
            ../../corelib/json/qjsonparser.cpp \
-           ../../corelib/json/qjsonwriter.cpp \
-           ../../xml/dom/qdom.cpp \
-           ../../xml/sax/qxml.cpp
+           ../../corelib/json/qjsonwriter.cpp
 
 unix:SOURCES += ../../corelib/io/qfilesystemengine_unix.cpp \
                 ../../corelib/io/qfilesystemiterator_unix.cpp \
