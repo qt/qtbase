@@ -3015,6 +3015,8 @@ int QRegExpEngine::getEscape()
         if (xmlSchemaExtensions) {
             yyCharClass->setNegative(!yyCharClass->negative());
             // fall through
+        } else {
+            break;
         }
     case 'i':
         if (xmlSchemaExtensions) {
@@ -3045,12 +3047,16 @@ int QRegExpEngine::getEscape()
             yyCharClass->addRange(0xf900, 0xfdcf);
             yyCharClass->addRange(0xfdf0, 0xfffd);
             yyCharClass->addRange((ushort)0x10000, (ushort)0xeffff);
+            return Tok_CharClass;
+        } else {
+            break;
         }
-        return Tok_CharClass;
     case 'C':
         if (xmlSchemaExtensions) {
             yyCharClass->setNegative(!yyCharClass->negative());
             // fall through
+        } else {
+            break;
         }
     case 'c':
         if (xmlSchemaExtensions) {
@@ -3087,12 +3093,16 @@ int QRegExpEngine::getEscape()
             yyCharClass->addRange((ushort)0x10000, (ushort)0xeffff);
             yyCharClass->addRange(0x0300, 0x036f);
             yyCharClass->addRange(0x203f, 0x2040);
+            return Tok_CharClass;
+        } else {
+            break;
         }
-        return Tok_CharClass;
     case 'P':
         if (xmlSchemaExtensions) {
             yyCharClass->setNegative(!yyCharClass->negative());
             // fall through
+        } else {
+            break;
         }
     case 'p':
         if (xmlSchemaExtensions) {
@@ -3246,8 +3256,10 @@ int QRegExpEngine::getEscape()
             } else {
                 error(RXERR_CATEGORY);
             }
+            return Tok_CharClass;
+        } else {
+            break;
         }
-        return Tok_CharClass;
 #endif
 #ifndef QT_NO_REGEXP_ESCAPE
     case 'x':
@@ -3265,20 +3277,21 @@ int QRegExpEngine::getEscape()
         return Tok_Char | val;
 #endif
     default:
-        if (prevCh >= '1' && prevCh <= '9') {
-#ifndef QT_NO_REGEXP_BACKREF
-            val = prevCh - '0';
-            while (yyCh >= '0' && yyCh <= '9') {
-                val = (val * 10) + (yyCh - '0');
-                yyCh = getChar();
-            }
-            return Tok_BackRef | val;
-#else
-            error(RXERR_DISABLED);
-#endif
-        }
-        return Tok_Char | prevCh;
+        break;
     }
+    if (prevCh >= '1' && prevCh <= '9') {
+#ifndef QT_NO_REGEXP_BACKREF
+        val = prevCh - '0';
+        while (yyCh >= '0' && yyCh <= '9') {
+            val = (val * 10) + (yyCh - '0');
+            yyCh = getChar();
+        }
+        return Tok_BackRef | val;
+#else
+        error(RXERR_DISABLED);
+#endif
+    }
+    return Tok_Char | prevCh;
 }
 
 #ifndef QT_NO_REGEXP_INTERVAL

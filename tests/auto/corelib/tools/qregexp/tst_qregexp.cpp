@@ -81,6 +81,7 @@ private slots:
     void interval();
     void validityCheck_data();
     void validityCheck();
+    void escapeSequences();
 };
 
 // Testing get/set functions
@@ -1371,6 +1372,29 @@ void tst_QRegExp::validityCheck()
     QCOMPARE(rx2.matchedLength(), -1);
     QCOMPARE(rx2.pos(), -1);
     QCOMPARE(rx2.cap(), QString(""));
+}
+
+void tst_QRegExp::escapeSequences()
+{
+    QString perlSyntaxSpecialChars("0123456789afnrtvbBdDwWsSx\\|[]{}()^$?+*");
+    QString w3cXmlSchema11SyntaxSpecialChars("cCiIpP"); // as well as the perl ones
+    for (int i = ' '; i <= 127; ++i) {
+        QLatin1Char c(i);
+        if (perlSyntaxSpecialChars.indexOf(c) == -1) {
+            QRegExp rx(QString("\\%1").arg(c), Qt::CaseSensitive, QRegExp::RegExp);
+            // we'll never have c == 'a' since it's a special character
+            QString s = QString("aaa%1aaa").arg(c);
+            QCOMPARE(rx.indexIn(s), 3);
+
+            rx.setPatternSyntax(QRegExp::RegExp2);
+            QCOMPARE(rx.indexIn(s), 3);
+
+            if (w3cXmlSchema11SyntaxSpecialChars.indexOf(c) == -1) {
+                rx.setPatternSyntax(QRegExp::W3CXmlSchema11);
+                QCOMPARE(rx.indexIn(s), 3);
+            }
+        }
+    }
 }
 
 
