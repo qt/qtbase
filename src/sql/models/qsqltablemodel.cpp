@@ -1088,17 +1088,18 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
     parent must be invalid, since this model does not support
     parent-child relations.
 
-    Only one row at a time can be inserted when using the
-    OnFieldChange or OnRowChange update strategies.
+    For edit strategies OnFieldChange and OnRowChange, only one row
+    may be inserted at a time and the model may not contain other
+    cached changes.
 
     The primeInsert() signal will be emitted for each new row.
     Connect to it if you want to initialize the new row with default
     values.
 
-    Returns false if the parameters are out of bounds; otherwise
-    returns true.
+    Does not submit rows, regardless of edit strategy.
 
-    Does not submit rows, regardless of edit strategy, not even OnFieldChange.
+    Returns false if the parameters are out of bounds or the row cannot be
+    inserted; otherwise returns true.
 
     \sa primeInsert(), insertRecord()
 */
@@ -1108,8 +1109,9 @@ bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
     if (row < 0 || count <= 0 || row > rowCount() || parent.isValid())
         return false;
 
-    if (d->strategy != OnManualSubmit && count != 1)
-        return false;
+    if (d->strategy != OnManualSubmit)
+        if (count != 1 || isDirty())
+            return false;
 
     d->busyInsertingRows = true;
     beginInsertRows(parent, row, row + count - 1);

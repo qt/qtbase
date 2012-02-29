@@ -590,11 +590,15 @@ void tst_QSqlTableModel::insertRowFailure()
         QCOMPARE(model.data(model.index(1, 1)).toString(), QString("blah"));
         QFAIL_SQL(model, setRecord(1, values));
         QCOMPARE(model.data(model.index(1, 1)).toString(), QString("blah"));
+        QFAIL_SQL(model, insertRow(2));
+        QCOMPARE(model.rowCount(), 2);
     } else {
         QVERIFY_SQL(model, setData(model.index(1, 1), QString("eggs")));
         QCOMPARE(model.data(model.index(1, 1)).toString(), QString("eggs"));
         QVERIFY_SQL(model, setRecord(1, values));
         QCOMPARE(model.data(model.index(1, 1)).toString(), QString("spam"));
+        QVERIFY_SQL(model, insertRow(2));
+        QCOMPARE(model.rowCount(), 3);
     }
 
     // restore empty table

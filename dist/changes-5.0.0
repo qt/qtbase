@@ -444,7 +444,7 @@ has any changes to submit. QTBUG-3108
 that fail upon resubmitting for edit strategies OnFieldChange and OnRowChange.
 Instead, pending (failed) changes cause new changes inappropriate to the
 edit strategy to be refused. The application should resolve or revert pending
-changes.
+changes. insertRows() and insertRecord() also respect the edit strategy.
 
 ****************************************************************************
 *                          Database Drivers                                *
