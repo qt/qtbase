@@ -1136,11 +1136,7 @@ void Configure::parseCmdLine()
             dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32";
         } else if (dictionary[ "QMAKESPEC" ] == QString("win32-g++")) {
             if (dictionary[ "MAKE" ].isEmpty()) dictionary[ "MAKE" ] = "mingw32-make";
-            if (Environment::detectExecutable("sh.exe")) {
-                dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32-g++-sh";
-            } else {
-                dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32-g++";
-            }
+            dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32-g++";
         } else {
             if (dictionary[ "MAKE" ].isEmpty()) dictionary[ "MAKE" ] = "make";
             dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32";
