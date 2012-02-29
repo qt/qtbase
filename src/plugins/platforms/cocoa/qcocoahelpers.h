@@ -74,6 +74,8 @@ NSImage *qt_mac_create_nsimage(const QPixmap &pm);
 
 NSSize qt_mac_toNSSize(const QSize &qtSize);
 
+QColor qt_mac_toQColor(const NSColor *color);
+
 QChar qt_mac_qtKey2CocoaKey(Qt::Key key);
 Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode);
 

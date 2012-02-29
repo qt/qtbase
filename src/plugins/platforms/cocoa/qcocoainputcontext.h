@@ -39,64 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef QNSVIEW_H
-#define QNSVIEW_H
+#ifndef QCOCOAINPUTCONTEXT_H
+#define QCOCOAINPUTCONTEXT_H
 
-#include <Cocoa/Cocoa.h>
-
-#include <QtGui/QImage>
-#include <QtGui/QAccessible>
+#include <QtGui/QPlatformInputContext>
+#include <QtCore/QPointer>
 
 QT_BEGIN_NAMESPACE
-class QCocoaWindow;
+
+class QCocoaInputContext : public QPlatformInputContext
+{
+    Q_OBJECT
+public:
+    explicit QCocoaInputContext();
+    ~QCocoaInputContext();
+
+    virtual bool isValid() const { return true; }
+
+    virtual void reset();
+
+private Q_SLOTS:
+    void inputItemChanged();
+
+private:
+    QPointer<QWindow> mWindow;
+};
+
 QT_END_NAMESPACE
 
-@interface QNSView : NSView <NSTextInput> {
-    CGImageRef m_cgImage;
-    QWindow *m_window;
-    QCocoaWindow *m_platformWindow;
-    Qt::MouseButtons m_buttons;
-    QAccessibleInterface *m_accessibleRoot;
-    QString m_composingText;
-    bool m_keyEventsAccepted;
-    QStringList *currentCustomDragTypes;
-}
-
-- (id)init;
-- (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow;
-
-- (void)setImage:(QImage *)image;
-- (void)drawRect:(NSRect)dirtyRect;
-- (void)updateGeometry;
-- (void)windowDidBecomeKey;
-- (void)windowDidResignKey;
-
-- (BOOL)isFlipped;
-- (BOOL)acceptsFirstResponder;
-
-- (void)handleMouseEvent:(NSEvent *)theEvent;
-- (void)mouseDown:(NSEvent *)theEvent;
-- (void)mouseDragged:(NSEvent *)theEvent;
-- (void)mouseUp:(NSEvent *)theEvent;
-- (void)mouseMoved:(NSEvent *)theEvent;
-- (void)mouseEntered:(NSEvent *)theEvent;
-- (void)mouseExited:(NSEvent *)theEvent;
-- (void)rightMouseDown:(NSEvent *)theEvent;
-- (void)rightMouseDragged:(NSEvent *)theEvent;
-- (void)rightMouseUp:(NSEvent *)theEvent;
-- (void)otherMouseDown:(NSEvent *)theEvent;
-- (void)otherMouseDragged:(NSEvent *)theEvent;
-- (void)otherMouseUp:(NSEvent *)theEvent;
-
-- (int) convertKeyCode : (QChar)keyCode;
-- (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags;
-- (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
-- (void)keyDown:(NSEvent *)theEvent;
-- (void)keyUp:(NSEvent *)theEvent;
-
-- (void)registerDragTypes;
-- (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender;
-
-@end
-
-#endif //QNSVIEW_H
+#endif // QCOCOAINPUTCONTEXT_H

@@ -51,6 +51,7 @@
 #include "qcocoadrag.h"
 
 #include <QtGui/QWindowSystemInterface>
+#include <QtGui/QTextFormat>
 #include <QtCore/QDebug>
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
@@ -94,6 +95,7 @@ static QTouchDevice *touchDevice = 0;
     m_window = window;
     m_platformWindow = platformWindow;
     m_accessibleRoot = 0;
+    m_keyEventsAccepted = false;
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
     // prevent rift in space-time continuum, disable
@@ -272,8 +274,15 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-    m_buttons |= Qt::LeftButton;
-    [self handleMouseEvent:theEvent];
+    if ([self hasMarkedText]) {
+        NSInputManager* inputManager = [NSInputManager currentInputManager];
+        if ([inputManager wantsToHandleMouseEvents]) {
+            [inputManager handleMouseEvent:theEvent];
+        }
+    } else {
+        m_buttons |= Qt::LeftButton;
+        [self handleMouseEvent:theEvent];
+    }
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
@@ -467,12 +476,228 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)keyDown:(NSEvent *)theEvent
 {
-    [self handleKeyEvent : theEvent eventType :int(QEvent::KeyPress)];
+    QObject *fo = QGuiApplication::focusObject();
+    m_keyEventsAccepted = false;
+    if (fo) {
+        QInputMethodQueryEvent queryEvent(Qt::ImHints);
+        if (QCoreApplication::sendEvent(fo, &queryEvent)) {
+            Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(queryEvent.value(Qt::ImHints).toUInt());
+            if (!(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText)) {
+                [self interpretKeyEvents:[NSArray arrayWithObject: theEvent]];
+            }
+        }
+    }
+
+    if (!m_keyEventsAccepted && m_composingText.isEmpty()) {
+        [self handleKeyEvent : theEvent eventType :int(QEvent::KeyPress)];
+    }
 }
 
 - (void)keyUp:(NSEvent *)theEvent
 {
-    [self handleKeyEvent : theEvent eventType :int(QEvent::KeyRelease)];
+    if (!m_keyEventsAccepted && m_composingText.isEmpty()) {
+        [self handleKeyEvent : theEvent eventType :int(QEvent::KeyRelease)];
+    }
+}
+
+- (void) doCommandBySelector:(SEL)aSelector
+{
+    [self tryToPerform:aSelector with:self];
+}
+
+- (void) insertText:(id)aString
+{
+    QString commitString;
+    if ([aString length]) {
+        if ([aString isKindOfClass:[NSAttributedString class]]) {
+            commitString = QCFString::toQString(reinterpret_cast<CFStringRef>([aString string]));
+        } else {
+            commitString = QCFString::toQString(reinterpret_cast<CFStringRef>(aString));
+        };
+    }
+    QObject *fo = QGuiApplication::focusObject();
+    if (fo) {
+        QInputMethodEvent e;
+        e.setCommitString(commitString);
+        QCoreApplication::sendEvent(fo, &e);
+        m_keyEventsAccepted = true;
+    }
+
+    m_composingText.clear();
+ }
+
+- (void) setMarkedText:(id)aString selectedRange:(NSRange)selRange
+{
+    QString preeditString;
+
+    QList<QInputMethodEvent::Attribute> attrs;
+    attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, selRange.location + selRange.length, 1, QVariant());
+
+    if ([aString isKindOfClass:[NSAttributedString class]]) {
+        // Preedit string has attribution
+        preeditString = QCFString::toQString(reinterpret_cast<CFStringRef>([aString string]));
+        int composingLength = preeditString.length();
+        int index = 0;
+        // Create attributes for individual sections of preedit text
+        while (index < composingLength) {
+            NSRange effectiveRange;
+            NSRange range = NSMakeRange(index, composingLength-index);
+            NSDictionary *attributes = [aString attributesAtIndex:index
+                                            longestEffectiveRange:&effectiveRange
+                                                          inRange:range];
+            NSNumber *underlineStyle = [attributes objectForKey:NSUnderlineStyleAttributeName];
+            if (underlineStyle) {
+                QColor clr (Qt::black);
+                NSColor *color = [attributes objectForKey:NSUnderlineColorAttributeName];
+                if (color) {
+                    clr = qt_mac_toQColor(color);
+                }
+                QTextCharFormat format;
+                format.setFontUnderline(true);
+                format.setUnderlineColor(clr);
+                attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
+                                                    effectiveRange.location,
+                                                    effectiveRange.length,
+                                                    format);
+            }
+            index = effectiveRange.location + effectiveRange.length;
+        }
+    } else {
+        // No attributes specified, take only the preedit text.
+        preeditString = QCFString::toQString(reinterpret_cast<CFStringRef>(aString));
+    }
+
+    if (attrs.isEmpty()) {
+        QTextCharFormat format;
+        format.setFontUnderline(true);
+        attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,
+                                            0, preeditString.length(), format);
+    }
+
+    m_composingText = preeditString;
+
+    QObject *fo = QGuiApplication::focusObject();
+    if (fo) {
+        QInputMethodEvent e(preeditString, attrs);
+        QCoreApplication::sendEvent(fo, &e);
+        m_keyEventsAccepted = true;
+    }
+}
+
+- (void) unmarkText
+{
+    if (!m_composingText.isEmpty()) {
+        QObject *fo = QGuiApplication::focusObject();
+        if (fo) {
+            QInputMethodEvent e;
+            e.setCommitString(m_composingText);
+            QCoreApplication::sendEvent(fo, &e);
+        }
+    }
+    m_composingText.clear();
+}
+
+- (BOOL) hasMarkedText
+{
+    return (m_composingText.isEmpty() ? NO: YES);
+}
+
+- (NSInteger) conversationIdentifier
+{
+    return (NSInteger)self;
+}
+
+- (NSAttributedString *) attributedSubstringFromRange:(NSRange)theRange
+{
+    QObject *fo = QGuiApplication::focusObject();
+    if (!fo)
+        return nil;
+    QInputMethodQueryEvent queryEvent(Qt::ImCurrentSelection);
+    if (!QCoreApplication::sendEvent(fo, &queryEvent))
+        return nil;
+
+    QString selectedText = queryEvent.value(Qt::ImCurrentSelection).toString();
+    if (selectedText.isEmpty())
+        return nil;
+
+    QCFString string(selectedText.mid(theRange.location, theRange.length));
+    const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
+    return [[[NSAttributedString alloc]  initWithString:const_cast<NSString *>(tmpString)] autorelease];
+}
+
+- (NSRange) markedRange
+{
+    NSRange range;
+    if (!m_composingText.isEmpty()) {
+        range.location = 0;
+        range.length = m_composingText.length();
+    } else {
+        range.location = NSNotFound;
+        range.length = 0;
+    }
+    return range;
+}
+
+
+- (NSRange) selectedRange
+{
+    NSRange selRange = {NSNotFound, 0};
+    selRange.location = NSNotFound;
+    selRange.length = 0;
+
+    QObject *fo = QGuiApplication::focusObject();
+    if (!fo)
+        return selRange;
+    QInputMethodQueryEvent queryEvent(Qt::ImCurrentSelection);
+    if (!QCoreApplication::sendEvent(fo, &queryEvent))
+        return selRange;
+    QString selectedText = queryEvent.value(Qt::ImCurrentSelection).toString();
+
+    if (!selectedText.isEmpty()) {
+        selRange.location = 0;
+        selRange.length = selectedText.length();
+    }
+    return selRange;
+}
+
+- (NSRect) firstRectForCharacterRange:(NSRange)theRange
+{
+    Q_UNUSED(theRange);
+    QObject *fo = QGuiApplication::focusObject();
+    if (!fo)
+        return NSZeroRect;
+
+    if (!m_window)
+        return NSZeroRect;
+
+    // The returned rect is always based on the internal cursor.
+    QRect mr = qApp->inputMethod()->cursorRectangle().toRect();
+    QPoint mp = m_window->mapToGlobal(mr.bottomLeft());
+
+    NSRect rect;
+    rect.origin.x = mp.x();
+    rect.origin.y = qt_mac_flipYCoordinate(mp.y());
+    rect.size.width = mr.width();
+    rect.size.height = mr.height();
+    return rect;
+}
+
+- (NSUInteger)characterIndexForPoint:(NSPoint)thePoint
+{
+    // We dont support cursor movements using mouse while composing.
+    Q_UNUSED(thePoint);
+    return NSNotFound;
+}
+
+- (NSArray*) validAttributesForMarkedText
+{
+    QObject *fo = QGuiApplication::focusObject();
+    if (!fo)
+        return nil;
+
+    // Support only underline color/style.
+    return [NSArray arrayWithObjects:NSUnderlineColorAttributeName,
+                                     NSUnderlineStyleAttributeName, nil];
 }
 
 -(void)registerDragTypes

@@ -137,6 +137,25 @@ NSSize qt_mac_toNSSize(const QSize &qtSize)
     return NSMakeSize(qtSize.width(), qtSize.height());
 }
 
+QColor qt_mac_toQColor(const NSColor *color)
+{
+    QColor qtColor;
+    NSString *colorSpace = [color colorSpaceName];
+    if (colorSpace == NSDeviceCMYKColorSpace) {
+        CGFloat cyan, magenta, yellow, black, alpha;
+        [color getCyan:&cyan magenta:&magenta yellow:&yellow black:&black alpha:&alpha];
+        qtColor.setCmykF(cyan, magenta, yellow, black, alpha);
+    } else {
+        NSColor *tmpColor;
+        tmpColor = [color colorUsingColorSpaceName:NSDeviceRGBColorSpace];
+        CGFloat red, green, blue, alpha;
+        [tmpColor getRed:&red green:&green blue:&blue alpha:&alpha];
+        qtColor.setRgbF(red, green, blue, alpha);
+    }
+    return qtColor;
+}
+
+
 // Use this method to keep all the information in the TextSegment. As long as it is ordered
 // we are in OK shape, and we can influence that ourselves.
 struct KeyPair

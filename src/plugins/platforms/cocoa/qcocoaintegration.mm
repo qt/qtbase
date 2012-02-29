@@ -52,6 +52,7 @@
 #include "qmenu_mac.h"
 #include "qcocoafiledialoghelper.h"
 #include "qcocoatheme.h"
+#include "qcocoainputcontext.h"
 #include "qmacmime.h"
 
 #include <QtGui/qplatformaccessibility_qpa.h>
@@ -90,6 +91,7 @@ QCocoaScreen::~QCocoaScreen()
 QCocoaIntegration::QCocoaIntegration()
     : mFontDb(new QCoreTextFontDatabase())
     , mEventDispatcher(new QCocoaEventDispatcher())
+    , mInputContext(new QCocoaInputContext)
     , mAccessibility(new QPlatformAccessibility)
     , mPlatformTheme(new QCocoaTheme)
     , mCocoaDrag(new QCocoaDrag)
@@ -193,6 +195,11 @@ QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const
 QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
 {
     return new QCocoaNativeInterface();
+}
+
+QPlatformInputContext *QCocoaIntegration::inputContext() const
+{
+    return mInputContext.data();
 }
 
 QPlatformAccessibility *QCocoaIntegration::accessibility() const

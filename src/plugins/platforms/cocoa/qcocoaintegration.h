@@ -89,6 +89,7 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
 
     QPlatformNativeInterface *nativeInterface() const;
+    QPlatformInputContext *inputContext() const;
     QPlatformAccessibility *accessibility() const;
     QPlatformDrag *drag() const;
 
@@ -98,6 +99,7 @@ private:
     QScopedPointer<QPlatformFontDatabase> mFontDb;
     QAbstractEventDispatcher *mEventDispatcher;
 
+    QScopedPointer<QPlatformInputContext> mInputContext;
     QScopedPointer<QPlatformAccessibility> mAccessibility;
     QScopedPointer<QPlatformTheme> mPlatformTheme;
     QList<QCocoaScreen *> mScreens;

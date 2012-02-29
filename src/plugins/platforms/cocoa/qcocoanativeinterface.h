@@ -48,6 +48,7 @@ class QWidget;
 
 class QCocoaNativeInterface : public QPlatformNativeInterface
 {
+    Q_OBJECT
 public:
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 };
