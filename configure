@@ -5499,6 +5499,8 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
                 echo " If you really want to build without a QPA platform plugin you must pass"
                 echo " -no-xcb and -no-wayland to configure. Doing this will produce a Qt that"
                 echo " cannot run GUI applications."
+                echo " The dependencies needed for xcb to build are listed in"
+                echo " src/plugins/platforms/xcb/README"
                 exit 1
             fi
         fi
