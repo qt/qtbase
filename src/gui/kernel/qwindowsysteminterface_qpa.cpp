@@ -266,6 +266,10 @@ void QWindowSystemInterfacePrivate::queueWindowSystemEvent(QWindowSystemInterfac
     windowSystemEventQueue.append(ev);
     queueMutex.unlock();
 
+    // Make sure the event timer is started.
+    if (!QWindowSystemInterfacePrivate::eventTime.isValid())
+      QWindowSystemInterfacePrivate::eventTime.start();
+
     QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::qt_qpa_core_dispatcher();
     if (dispatcher)
         dispatcher->wakeUp();
