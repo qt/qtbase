@@ -47,9 +47,7 @@ CFLAGS	    =	-c -o$@ -O \
 		-Igenerators/win32 -Igenerators/mac \
 		-Igenerators/integrity \
 		-I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION) -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION)/QtCore \
-		-I$(SOURCE_PATH)/include -I$(SOURCE_PATH)/include/QtCore -I$(SOURCE_PATH)/include/QtCore/$(QT_VERSION) -I$(SOURCE_PATH)/include/QtCore/$(QT_VERSION)/QtCore \
 		-I$(BUILD_PATH)/src/corelib/global \
-		-I$(BUILD_PATH)/src/corelib/xml \
 		-I$(SOURCE_PATH)/mkspecs/win32-g++  \
 		-I$(SOURCE_PATH)/tools/shared \
 		-DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT \
