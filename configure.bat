@@ -117,5 +117,5 @@ if errorlevel 1 (cd ..\.. & exit /b 1)
 cd ..\..
 
 :conf
-configure.exe -srcdir %QTSRC% %nosyncqt% %*
+configure.exe -srcdir %QTSRC% %* %nosyncqt%
 :exit
