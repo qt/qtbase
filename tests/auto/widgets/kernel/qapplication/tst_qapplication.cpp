@@ -605,9 +605,6 @@ public slots:
 
 void tst_QApplication::quitOnLastWindowClosed()
 {
-#ifdef Q_OS_WIN32
-    QSKIP("This test crashes on Windows. Remove skip once the issue causing the crash is fixed (QTBUG-24300).");
-#endif
 #ifndef Q_OS_MAC
     // Test hangs on Mac OS X, see QTBUG-24319
     {

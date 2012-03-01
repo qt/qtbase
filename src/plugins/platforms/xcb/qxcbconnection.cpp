@@ -191,7 +191,9 @@ QXcbConnection::~QXcbConnection()
 {
     delete m_clipboard;
 
-    qDeleteAll(m_screens);
+    // Delete screens in reverse order to avoid crash in case of multiple screens
+    while (!m_screens.isEmpty())
+        delete m_screens.takeLast();
 
 #ifdef XCB_USE_XINPUT2_MAEMO
     finalizeXInput2();
