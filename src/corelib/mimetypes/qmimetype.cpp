@@ -51,6 +51,8 @@
 #include <QtCore/QDebug>
 #include <QtCore/QLocale>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 bool qt_isQMimeTypeDebuggingActivated (false);
