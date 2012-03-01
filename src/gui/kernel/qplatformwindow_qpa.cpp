@@ -168,7 +168,7 @@ Qt::WindowFlags QPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
 bool QPlatformWindow::isExposed() const
 {
     Q_D(const QPlatformWindow);
-    return d->window->visible();
+    return d->window->isVisible();
 }
 
 /*!
