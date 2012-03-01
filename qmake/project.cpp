@@ -1177,6 +1177,8 @@ QMakeProject::parse(const QString &t, QHash<QString, QStringList> &place, int nu
         }
         if(var == "REQUIRES") // special case to get communicated to backends!
             doProjectCheckReqs(vallist, place);
+        else if (var == "_QMAKE_CACHE_")
+            Option::mkfile::cachefile = varlist.isEmpty() ? QString() : varlist.at(0);
     }
     return true;
 }
