@@ -17,7 +17,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
 </Incident>
-<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="117">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="118">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
@@ -26,13 +26,13 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
 </Incident>
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="114">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="115">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
 </TestFunction>
 <TestFunction name="testSkipPass">
-<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="117">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="118">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
@@ -41,27 +41,27 @@
 </Incident>
 </TestFunction>
 <TestFunction name="testSkipSkip">
-<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="117">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="118">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
-<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="117">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="118">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
 </TestFunction>
 <TestFunction name="testSkipFail">
-<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="117">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="118">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="114">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="115">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
 </TestFunction>
 <TestFunction name="testFailPass">
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="114">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="115">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
@@ -70,21 +70,21 @@
 </Incident>
 </TestFunction>
 <TestFunction name="testFailSkip">
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="114">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="115">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
-<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="117">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="118">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
 </TestFunction>
 <TestFunction name="testFailFail">
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="114">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="115">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="114">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="115">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
@@ -93,7 +93,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[before]]></DataTag>
 </Incident>
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="233">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="234">
     <DataTag><![CDATA[fail]]></DataTag>
     <Description><![CDATA[Fail in init()]]></Description>
 </Incident>
@@ -109,7 +109,7 @@
     <DataTag><![CDATA[fail]]></DataTag>
     <Description><![CDATA[This test function should execute and then QFAIL in cleanup() ]]></Description>
 </Message>
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="241">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="242">
     <DataTag><![CDATA[fail]]></DataTag>
     <Description><![CDATA[Fail in cleanup()]]></Description>
 </Incident>
@@ -121,7 +121,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[before]]></DataTag>
 </Incident>
-<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="235">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="236">
     <DataTag><![CDATA[skip]]></DataTag>
     <Description><![CDATA[Skip in init()]]></Description>
 </Message>
@@ -137,7 +137,7 @@
     <DataTag><![CDATA[skip]]></DataTag>
     <Description><![CDATA[This test function should execute and then QSKIP in cleanup() ]]></Description>
 </Message>
-<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="243">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="244">
     <DataTag><![CDATA[skip]]></DataTag>
     <Description><![CDATA[Skip in cleanup()]]></Description>
 </Message>

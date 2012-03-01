@@ -109,6 +109,7 @@ void tst_Counting::helper()
     switch (result) {
         case Pass:
             QVERIFY(true);
+            QCOMPARE(2 + 1, 3);
             break;
         case Fail:
             QVERIFY(false);
