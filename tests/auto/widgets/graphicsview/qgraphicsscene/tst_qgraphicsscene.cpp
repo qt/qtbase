@@ -2153,7 +2153,7 @@ void tst_QGraphicsScene::mouseEventPropagation_doubleclick()
 class Scene : public QGraphicsScene
 {
 public:
-    QList<QPointF> mouseMovePoints;
+    QVector<QPointF> mouseMovePoints;
 
 protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event)
