@@ -230,6 +230,7 @@ public:
     void draw_helper(const QPainterPath &path, DrawOperation operation = StrokeAndFillDraw);
     void drawStretchedGradient(const QPainterPath &path, DrawOperation operation);
     void drawOpaqueBackground(const QPainterPath &path, DrawOperation operation);
+    void drawTextItem(const QPointF &p, const QTextItem &_ti, QTextEngine *textEngine);
 
 #if !defined(QT_NO_RAWFONT)
     void drawGlyphs(const quint32 *glyphArray, QFixedPoint *positionArray, int glyphCount,
