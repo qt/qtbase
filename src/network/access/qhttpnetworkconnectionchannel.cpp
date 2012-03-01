@@ -65,6 +65,7 @@ QT_BEGIN_NAMESPACE
 QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     : socket(0)
     , ssl(false)
+    , isInitialized(false)
     , state(IdleState)
     , reply(0)
     , written(0)
@@ -152,19 +153,38 @@ void QHttpNetworkConnectionChannel::init()
         QObject::connect(sslSocket, SIGNAL(encryptedBytesWritten(qint64)),
                          this, SLOT(_q_encryptedBytesWritten(qint64)),
                          Qt::DirectConnection);
+
+        if (ignoreAllSslErrors)
+            sslSocket->ignoreSslErrors();
+
+        if (!ignoreSslErrorsList.isEmpty())
+            sslSocket->ignoreSslErrors(ignoreSslErrorsList);
+
+        if (!sslConfiguration.isNull())
+           sslSocket->setSslConfiguration(sslConfiguration);
     }
+
 #endif
+
+#ifndef QT_NO_NETWORKPROXY
+    if (proxy.type() != QNetworkProxy::NoProxy)
+        socket->setProxy(proxy);
+#endif
+    isInitialized = true;
 }
 
 
 void QHttpNetworkConnectionChannel::close()
 {
-    if (socket->state() == QAbstractSocket::UnconnectedState)
+    if (!socket)
+        state = QHttpNetworkConnectionChannel::IdleState;
+    else if (socket->state() == QAbstractSocket::UnconnectedState)
         state = QHttpNetworkConnectionChannel::IdleState;
     else
         state = QHttpNetworkConnectionChannel::ClosingState;
 
-    socket->close();
+    if (socket)
+        socket->close();
 }
 
 
@@ -527,6 +547,9 @@ void QHttpNetworkConnectionChannel::handleUnexpectedEOF()
 
 bool QHttpNetworkConnectionChannel::ensureConnection()
 {
+    if (!isInitialized)
+        init();
+
     QAbstractSocket::SocketState socketState = socket->state();
 
     // resend this request after we receive the disconnected signal
@@ -835,6 +858,46 @@ bool QHttpNetworkConnectionChannel::resetUploadData()
     }
 }
 
+#ifndef QT_NO_NETWORKPROXY
+
+void QHttpNetworkConnectionChannel::setProxy(const QNetworkProxy &networkProxy)
+{
+    if (socket)
+        socket->setProxy(networkProxy);
+
+    proxy = networkProxy;
+}
+
+#endif
+
+#ifndef QT_NO_SSL
+
+void QHttpNetworkConnectionChannel::ignoreSslErrors()
+{
+    if (socket)
+        static_cast<QSslSocket *>(socket)->ignoreSslErrors();
+
+    ignoreAllSslErrors = true;
+}
+
+
+void QHttpNetworkConnectionChannel::ignoreSslErrors(const QList<QSslError> &errors)
+{
+    if (socket)
+        static_cast<QSslSocket *>(socket)->ignoreSslErrors(errors);
+
+    ignoreSslErrorsList = errors;
+}
+
+void QHttpNetworkConnectionChannel::setSslConfiguration(const QSslConfiguration &config)
+{
+    if (socket)
+        static_cast<QSslSocket *>(socket)->setSslConfiguration(config);
+
+    sslConfiguration = config;
+}
+
+#endif
 
 void QHttpNetworkConnectionChannel::pipelineInto(HttpMessagePair &pair)
 {
