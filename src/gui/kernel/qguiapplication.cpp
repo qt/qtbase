@@ -1155,12 +1155,19 @@ void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Le
 void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
 {
     QWindow *previous = QGuiApplicationPrivate::focus_window;
-    QGuiApplicationPrivate::focus_window = e->activated.data();
+    QWindow *newFocus = e->activated.data();
 
-    if (previous == QGuiApplicationPrivate::focus_window)
+    if (previous == newFocus)
         return;
 
     QObject *previousFocusObject = previous ? previous->focusObject() : 0;
+
+    if (previous) {
+        QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange);
+        QCoreApplication::sendSpontaneousEvent(previous, &focusAboutToChange);
+    }
+
+    QGuiApplicationPrivate::focus_window = newFocus;
 
     if (previous) {
         QFocusEvent focusOut(QEvent::FocusOut);

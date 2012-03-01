@@ -5875,9 +5875,10 @@ bool QWidget::hasFocus() const
     If the window is not active, the widget will be given the focus when
     the window becomes active.
 
-    First, a focus out event is sent to the focus widget (if any) to
-    tell it that it is about to lose the focus. Then a focus in event
-    is sent to this widget to tell it that it just received the focus.
+    First, a focus about to change event is sent to the focus widget (if any) to
+    tell it that it is about to lose the focus. Then focus is changed, a
+    focus out event is sent to the previous focus item and a focus in event is sent
+    to the new item to tell it that it just received the focus.
     (Nothing happens if the focus in and focus out widgets are the
     same.)
 
@@ -5930,23 +5931,11 @@ void QWidget::setFocus(Qt::FocusReason reason)
     }
 #endif
 
-    QWidget *w = f;
-    if (isHidden()) {
-        while (w && w->isHidden()) {
-            w->d_func()->focus_child = f;
-            w = w->isWindow() ? 0 : w->parentWidget();
-        }
-    } else {
-        while (w) {
-            w->d_func()->focus_child = f;
-            w = w->isWindow() ? 0 : w->parentWidget();
-        }
-    }
-
 #ifndef QT_NO_GRAPHICSVIEW
     // Update proxy state
     if (QWExtra *topData = window()->d_func()->extra) {
         if (topData->proxyWidget && !topData->proxyWidget->hasFocus()) {
+            f->d_func()->updateFocusChild();
             topData->proxyWidget->d_func()->focusFromWidgetToProxy = 1;
             topData->proxyWidget->setFocus(reason);
             topData->proxyWidget->d_func()->focusFromWidgetToProxy = 0;
@@ -5955,6 +5944,21 @@ void QWidget::setFocus(Qt::FocusReason reason)
 #endif
 
     if (f->isActiveWindow()) {
+        QWidget *prev = QApplicationPrivate::focus_widget;
+        if (prev) {
+            if (reason != Qt::PopupFocusReason && reason != Qt::MenuBarFocusReason
+                && prev->testAttribute(Qt::WA_InputMethodEnabled)) {
+                qApp->inputMethod()->reset();
+            }
+
+            if (reason != Qt::NoFocusReason) {
+                QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange, reason);
+                QApplication::sendEvent(prev, &focusAboutToChange);
+            }
+        }
+
+        f->d_func()->updateFocusChild();
+
         QApplicationPrivate::setFocusWidget(f, reason);
 #ifndef QT_NO_ACCESSIBILITY
 # ifdef Q_OS_WIN
@@ -5999,6 +6003,30 @@ void QWidget::setFocus(Qt::FocusReason reason)
             }
         }
 #endif
+    } else {
+        f->d_func()->updateFocusChild();
+    }
+
+    if (QTLWExtra *extra = f->window()->d_func()->maybeTopData())
+        emit extra->window->focusObjectChanged(f);
+}
+
+// updates focus_child on parent widgets to point into this widget
+void QWidgetPrivate::updateFocusChild()
+{
+    Q_Q(QWidget);
+
+    QWidget *w = q;
+    if (q->isHidden()) {
+        while (w && w->isHidden()) {
+            w->d_func()->focus_child = q;
+            w = w->isWindow() ? 0 : w->parentWidget();
+        }
+    } else {
+        while (w) {
+            w->d_func()->focus_child = q;
+            w = w->isWindow() ? 0 : w->parentWidget();
+        }
     }
 }
 
@@ -6015,8 +6043,8 @@ void QWidget::setFocus(Qt::FocusReason reason)
     Takes keyboard input focus from the widget.
 
     If the widget has active focus, a \link focusOutEvent() focus out
-    event\endlink is sent to this widget to tell it that it is about
-    to lose the focus.
+    event\endlink is sent to this widget to tell it that it has
+    lost the focus.
 
     This widget must enable focus setting in order to get the keyboard
     input focus, i.e. it must call setFocusPolicy().
@@ -6027,6 +6055,14 @@ void QWidget::setFocus(Qt::FocusReason reason)
 
 void QWidget::clearFocus()
 {
+    if (hasFocus()) {
+        if (testAttribute(Qt::WA_InputMethodEnabled))
+            qApp->inputMethod()->reset();
+
+        QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange);
+        QApplication::sendEvent(this, &focusAboutToChange);
+    }
+
     QWidget *w = this;
     while (w) {
         if (w->d_func()->focus_child == this)

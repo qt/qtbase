@@ -75,6 +75,7 @@ public:
         KeyRelease = 7,                         // key released
         FocusIn = 8,                            // keyboard focus received
         FocusOut = 9,                           // keyboard focus lost
+        FocusAboutToChange = 23,                // keyboard focus is about to be lost
         Enter = 10,                             // mouse enters widget
         Leave = 11,                             // mouse leaves widget
         Paint = 12,                             // paint widget

@@ -1760,16 +1760,6 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
         }
         QWidget *prev = focus_widget;
         focus_widget = focus;
-#ifndef QT_NO_IM
-        if (prev && ((reason != Qt::PopupFocusReason && reason != Qt::MenuBarFocusReason
-                      && prev->testAttribute(Qt::WA_InputMethodEnabled))
-                     // Do reset the input context, in case the new focus widget won't accept keyboard input
-                     // or it is not created fully yet.
-                     || (focus_widget && (!focus_widget->testAttribute(Qt::WA_InputMethodEnabled)
-                                          || !focus_widget->testAttribute(Qt::WA_WState_Created))))) {
-            qApp->inputMethod()->reset();
-        }
-#endif //QT_NO_IM
 
         if(focus_widget)
             focus_widget->d_func()->setFocus_sys();
@@ -1798,7 +1788,6 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                     QApplication::sendEvent(that->style(), &in);
             }
             emit qApp->focusChanged(prev, focus_widget);
-            emit qApp->focusObjectChanged(focus_widget);
         }
     }
 }
@@ -2049,6 +2038,14 @@ void QApplication::setActiveWindow(QWidget* act)
         } else {
             toBeDeactivated.append(QApplicationPrivate::active_window);
         }
+    }
+
+    if (QApplicationPrivate::focus_widget) {
+        if (QApplicationPrivate::focus_widget->testAttribute(Qt::WA_InputMethodEnabled))
+            qApp->inputMethod()->reset();
+
+        QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange, Qt::ActiveWindowFocusReason);
+        QApplication::sendEvent(QApplicationPrivate::focus_widget, &focusAboutToChange);
     }
 
     QApplicationPrivate::active_window = window;
