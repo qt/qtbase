@@ -721,6 +721,9 @@ void tst_QMimeDatabase::findByFile_data()
     findByFileName_data();
 }
 
+// Note: this test fails on "testcompress.z" when using a shared-mime-info older than 1.0.
+// This because of commit 0f9a506069c in shared-mime-info, which fixed the writing of
+// case-insensitive patterns into mime.cache.
 void tst_QMimeDatabase::findByFile()
 {
     QFETCH(QString, filePath);
