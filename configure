@@ -6722,9 +6722,6 @@ QT_BUILD_TREE = \$\$quote($outpath)
 QT_BUILD_PARTS = $CFG_BUILD_PARTS
 
 #local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR
-QMAKE_MOC        = \$\$QT_BUILD_TREE/bin/moc
-QMAKE_UIC        = \$\$QT_BUILD_TREE/bin/uic
-QMAKE_RCC        = \$\$QT_BUILD_TREE/bin/rcc
 QMAKE_INCDIR_QT  = \$\$QT_BUILD_TREE/include
 QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
 

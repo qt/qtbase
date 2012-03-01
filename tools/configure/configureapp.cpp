@@ -2512,10 +2512,6 @@ void Configure::generateCachefile()
 
         //so that we can build without an install first (which would be impossible)
         moduleStream << "#local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR" << endl;
-        moduleStream << "QMAKE_MOC       = $$QT_BUILD_TREE" << fixSeparators("/bin/moc.exe", true) << endl;
-        moduleStream << "QMAKE_UIC       = $$QT_BUILD_TREE" << fixSeparators("/bin/uic.exe", true) << endl;
-        moduleStream << "QMAKE_RCC       = $$QT_BUILD_TREE" << fixSeparators("/bin/rcc.exe", true) << endl;
-        moduleStream << "QMAKE_DUMPCPP   = $$QT_BUILD_TREE" << fixSeparators("/bin/dumpcpp.exe", true) << endl;
         moduleStream << "QMAKE_INCDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/include", true) << endl;
         moduleStream << "QMAKE_LIBDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/lib", true) << endl;
 
