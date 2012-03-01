@@ -15,3 +15,7 @@ QT += core-private platformsupport-private
 
 OTHER_FILES += \
     evdevtouch.json
+
+# DEFINES += USE_MTDEV
+
+contains(DEFINES, USE_MTDEV): LIBS += -lmtdev
