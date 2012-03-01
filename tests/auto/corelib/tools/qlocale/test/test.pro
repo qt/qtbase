@@ -12,6 +12,8 @@ win32 {
         TARGET = ../../release/tst_qlocale
     }
 }
-TESTDATA += syslocaleapp
+
+load(testcase) # for target.path and installTestHelperApp()
+installTestHelperApp("../syslocaleapp/syslocaleapp",syslocaleapp,syslocaleapp)
 
 mac: CONFIG += insignificant_test # QTBUG-22769
