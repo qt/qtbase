@@ -124,6 +124,26 @@ void QPlatformPrinterSupport::setPrinterInfoCupsPrinterIndex(QPrinterInfo *p, in
 #endif
 }
 
+/*
+    Converts QSizeF in millimeters to a predefined PaperSize (returns Custom if
+    the size isn't a standard size)
+*/
+QPrinter::PaperSize QPlatformPrinterSupport::convertQSizeFToPaperSize(const QSizeF &sizef)
+{
+    extern QPrinter::PaperSize qSizeFTopaperSize(const QSizeF &);
+    return qSizeFTopaperSize(sizef);
+}
+
+/*
+    Converts a predefined PaperSize to a QSizeF in millimeters (returns
+    QSizeF(0.0, 0.0) if PaperSize is Custom)
+*/
+QSizeF QPlatformPrinterSupport::convertPaperSizeToQSizeF(QPrinter::PaperSize paperSize)
+{
+    extern QSizeF qt_paperSizeToQSizeF(QPrinter::PaperSize size);
+    return qt_paperSizeToQSizeF(paperSize);
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_PRINTER
