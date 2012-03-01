@@ -132,13 +132,34 @@ bool TestCompiler::errorOut()
     return false;
 }
 
+// Return the system environment, remove MAKEFLAGS variable in
+// case the CI uses jom passing flags incompatible to nmake
+// or vice versa.
+static inline QStringList systemEnvironment()
+{
+#ifdef Q_OS_WIN
+    static QStringList result;
+    if (result.isEmpty()) {
+        foreach (const QString &variable, QProcess::systemEnvironment()) {
+            if (variable.startsWith(QStringLiteral("MAKEFLAGS="), Qt::CaseInsensitive)) {
+                qWarning("Removing environment setting '%s'", qPrintable(variable));
+            } else {
+                result.push_back(variable);
+            }
+        }
+    }
+#else
+    static const QStringList result = QProcess::systemEnvironment();
+#endif // ifdef Q_OS_WIN
+    return result;
+}
+
 bool TestCompiler::runCommand( QString cmdline, bool expectFail )
 {
     testOutput_.append("Running command: " + cmdline);
 
     QProcess child;
-    if (!environment_.empty())
-        child.setEnvironment(QProcess::systemEnvironment() + environment_);
+    child.setEnvironment(systemEnvironment() + environment_);
 
     child.start(cmdline);
     if (!child.waitForStarted(-1)) {
