@@ -190,7 +190,7 @@ public:
     void detectCheckedButton();
     void notifyChecked(QAbstractButton *button);
     bool exclusive;
-    QMap<QAbstractButton*, int> mapping;
+    QHash<QAbstractButton*, int> mapping;
 };
 
 QButtonGroup::QButtonGroup(QObject *parent)

@@ -541,8 +541,8 @@ bool QGestureManager::filterEvent(QObject *receiver, QEvent *event)
 }
 
 void QGestureManager::getGestureTargets(const QSet<QGesture*> &gestures,
-    QMap<QWidget *, QList<QGesture *> > *conflicts,
-    QMap<QWidget *, QList<QGesture *> > *normal)
+    QHash<QWidget *, QList<QGesture *> > *conflicts,
+    QHash<QWidget *, QList<QGesture *> > *normal)
 {
     typedef QHash<Qt::GestureType, QHash<QWidget *, QGesture *> > GestureByTypes;
     GestureByTypes gestureByTypes;
@@ -588,7 +588,7 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
     if (gestures.isEmpty())
         return;
 
-    typedef QMap<QWidget *, QList<QGesture *> > GesturesPerWidget;
+    typedef QHash<QWidget *, QList<QGesture *> > GesturesPerWidget;
     GesturesPerWidget conflictedGestures;
     GesturesPerWidget normalStartedGestures;
 

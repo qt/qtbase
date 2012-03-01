@@ -313,7 +313,7 @@ public:
     QPointer<QWSManager> last_manager;
     QWSServerCleaner qwsServerCleaner;
 # ifndef QT_NO_DIRECTPAINTER
-    QMap<WId, QDirectPainter *> *directPainters;
+    QHash<WId, QDirectPainter *> *directPainters;
 # endif
     QRect maxWindowRect(const QScreen *screen) const { return maxWindowRects[screen]; }
     void setMaxWindowRect(const QScreen *screen, int screenNo, const QRect &rect);
@@ -393,7 +393,7 @@ public:
 
 private:
 #ifdef Q_WS_QWS
-    QMap<const QScreen*, QRect> maxWindowRects;
+    QHash<const QScreen*, QRect> maxWindowRects;
 #endif
 
     static QApplicationPrivate *self;

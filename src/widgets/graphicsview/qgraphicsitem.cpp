@@ -783,7 +783,7 @@ static inline void _q_adjustRect(QRect *rect)
 class QGraphicsItemCustomDataStore
 {
 public:
-    QMap<const QGraphicsItem *, QMap<int, QVariant> > data;
+    QHash<const QGraphicsItem *, QMap<int, QVariant> > data;
 };
 Q_GLOBAL_STATIC(QGraphicsItemCustomDataStore, qt_dataStore)
 
@@ -1379,7 +1379,7 @@ void QGraphicsItemCache::purge()
 {
     QPixmapCache::remove(key);
     key = QPixmapCache::Key();
-    QMutableMapIterator<QPaintDevice *, DeviceData> it(deviceData);
+    QMutableHashIterator<QPaintDevice *, DeviceData> it(deviceData);
     while (it.hasNext()) {
         DeviceData &data = it.next().value();
         QPixmapCache::remove(data.key);
@@ -7124,7 +7124,7 @@ void QGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if ((event->buttons() & Qt::LeftButton) && (flags() & ItemIsMovable)) {
         // Determine the list of items that need to be moved.
         QList<QGraphicsItem *> selectedItems;
-        QMap<QGraphicsItem *, QPointF> initialPositions;
+        QHash<QGraphicsItem *, QPointF> initialPositions;
         if (d_ptr->scene) {
             selectedItems = d_ptr->scene->selectedItems();
             initialPositions = d_ptr->scene->d_func()->movingItemsInitialPositions;

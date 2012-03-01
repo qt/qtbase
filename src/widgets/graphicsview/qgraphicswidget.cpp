@@ -222,7 +222,7 @@ public:
     }
 
 private:
-    QMap<const QGraphicsWidget *, QStyle *> styles;
+    QHash<const QGraphicsWidget *, QStyle *> styles;
     mutable QMutex mutex;
 };
 Q_GLOBAL_STATIC(QGraphicsWidgetStyles, widgetStyles)

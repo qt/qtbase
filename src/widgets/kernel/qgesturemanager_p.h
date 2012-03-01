@@ -138,8 +138,8 @@ private:
     void deliverEvents(const QSet<QGesture *> &gestures,
                        QSet<QGesture *> *undeliveredGestures);
     void getGestureTargets(const QSet<QGesture*> &gestures,
-                           QMap<QWidget *, QList<QGesture *> > *conflicts,
-                           QMap<QWidget *, QList<QGesture *> > *normal);
+                           QHash<QWidget *, QList<QGesture *> > *conflicts,
+                           QHash<QWidget *, QList<QGesture *> > *normal);
 
     void cancelGesturesForChildren(QGesture *originatingGesture);
 };

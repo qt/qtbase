@@ -128,7 +128,7 @@ public:
     QVector<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
 
-    QMap<QGraphicsItem *, QPointF> movingItemsInitialPositions;
+    QHash<QGraphicsItem *, QPointF> movingItemsInitialPositions;
     void registerTopLevelItem(QGraphicsItem *item);
     void unregisterTopLevelItem(QGraphicsItem *item);
     void _q_updateLater();
