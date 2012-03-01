@@ -48,518 +48,518 @@
 
   \table 90%
     \header
-        \o IBM DB2 data type
-        \o SQL type description
-        \o Recommended input (C++ or Qt data type)
+        \li IBM DB2 data type
+        \li SQL type description
+        \li Recommended input (C++ or Qt data type)
     \row
-        \o SMALLINT
-        \o 16-bit signed integer
-        \o typedef qint16
+        \li SMALLINT
+        \li 16-bit signed integer
+        \li typedef qint16
     \row
-        \o INTEGER
-        \o 32-bit signed integer
-        \o typedef qint32
+        \li INTEGER
+        \li 32-bit signed integer
+        \li typedef qint32
     \row
-        \o BIGINT
-        \o 64-bit signed integer
-        \o typedef qint64
+        \li BIGINT
+        \li 64-bit signed integer
+        \li typedef qint64
     \row
-        \o REAL
-        \o 32-bit Single-precision floating point
-        \o By default mapping to QString
+        \li REAL
+        \li 32-bit Single-precision floating point
+        \li By default mapping to QString
     \row
-        \o DOUBLE PRECISION
-        \o 64-bit Double-precision floating point
-        \o By default mapping to QString
+        \li DOUBLE PRECISION
+        \li 64-bit Double-precision floating point
+        \li By default mapping to QString
     \row
-        \o FLOAT
-        \o 64-bit Double-precision floating point
-        \o By default mapping to QString
+        \li FLOAT
+        \li 64-bit Double-precision floating point
+        \li By default mapping to QString
     \row
-        \o CHAR
-        \o Fixed-length, null-terminated character string
-        \o Mapped to QString
+        \li CHAR
+        \li Fixed-length, null-terminated character string
+        \li Mapped to QString
     \row
-        \o VARCHAR
-        \o Null-terminated varying length string
-        \o Mapped to QString
+        \li VARCHAR
+        \li Null-terminated varying length string
+        \li Mapped to QString
     \row
-        \o LONG VARCHAR
-        \o Not null-terminated varying length character string
-        \o Mapped to QString
+        \li LONG VARCHAR
+        \li Not null-terminated varying length character string
+        \li Mapped to QString
     \row
-        \o BLOB
-        \o Not null-terminated varying binary string with 4-byte string 
+        \li BLOB
+        \li Not null-terminated varying binary string with 4-byte string
         length indicator
-        \o Mapped to QByteArray
+        \li Mapped to QByteArray
     \row
-        \o CLOB
-        \o Character large string object
-        \o Mapped to QString
+        \li CLOB
+        \li Character large string object
+        \li Mapped to QString
     \row
-        \o DATE
-        \o Null-terminated character string of the following format:
+        \li DATE
+        \li Null-terminated character string of the following format:
         yyyy-mm-dd
-        \o Mapped to QDate
+        \li Mapped to QDate
     \row
-        \o TIME
-        \o Null-terminated character string of the following format: hh.mm.ss
-        \o Mapped to QTime
+        \li TIME
+        \li Null-terminated character string of the following format: hh.mm.ss
+        \li Mapped to QTime
     \row
-        \o TIMESTAMP
-        \o Null-terminated character string of the following format: yyyy-mm-dd-hh.mm.ss.nnnnnn
-        \o Mapped to QDateTime
+        \li TIMESTAMP
+        \li Null-terminated character string of the following format: yyyy-mm-dd-hh.mm.ss.nnnnnn
+        \li Mapped to QDateTime
   \endtable
 
   \section2 Borland InterBase Data Types
 
   \table 90%
     \header
-        \o Borland InterBase data type
-        \o SQL type description
-        \o Recommended input (C++ or Qt data type)
+        \li Borland InterBase data type
+        \li SQL type description
+        \li Recommended input (C++ or Qt data type)
     \row
-        \o BOOLEAN
-        \o Boolean
-        \o bool
+        \li BOOLEAN
+        \li Boolean
+        \li bool
     \row
-        \o TINYINT
-        \o 8 bit signed integer
-        \o typedef qint8
+        \li TINYINT
+        \li 8 bit signed integer
+        \li typedef qint8
     \row
-        \o SMALLINT
-        \o 16-bit signed integer
-        \o typedef qint16
+        \li SMALLINT
+        \li 16-bit signed integer
+        \li typedef qint16
     \row
-        \o INTEGER
-        \o 32-bit signed integer
-        \o typedef qint32
+        \li INTEGER
+        \li 32-bit signed integer
+        \li typedef qint32
     \row
-        \o BIGINT LONG
-        \o 64-bit signed integer
-        \o typedef qint64
+        \li BIGINT LONG
+        \li 64-bit signed integer
+        \li typedef qint64
     \row
-        \o REAL FLOAT
-        \o 32-bit floating point
-        \o By default mapping to QString
+        \li REAL FLOAT
+        \li 32-bit floating point
+        \li By default mapping to QString
     \row
-        \o FLOAT
-        \o 64-bit floating point
-        \o By default mapping to QString
+        \li FLOAT
+        \li 64-bit floating point
+        \li By default mapping to QString
     \row
-        \o DOUBLE
-        \o 64-bit floating point
-        \o By default mapping to QString
+        \li DOUBLE
+        \li 64-bit floating point
+        \li By default mapping to QString
     \row
-        \o DOUBLE PRECISION
-        \o 64-bit Double-precision floating point
-        \o By default mapping to QString
+        \li DOUBLE PRECISION
+        \li 64-bit Double-precision floating point
+        \li By default mapping to QString
     \row
-        \o VARCHAR STRING
-        \o Character string, Unicode
-        \o Mapped to QString
+        \li VARCHAR STRING
+        \li Character string, Unicode
+        \li Mapped to QString
     \row
-        \o CLOB
-        \o Character large string object
-        \o Mapped to QString
+        \li CLOB
+        \li Character large string object
+        \li Mapped to QString
     \row
-        \o DATE
-        \o Displays date. Format: 'yyyy-mm-dd'
-        \o Mapped to QDate
+        \li DATE
+        \li Displays date. Format: 'yyyy-mm-dd'
+        \li Mapped to QDate
     \row
-        \o TIME
-        \o Displays time. Format is 'hh:mm:ss' in 24-hour format
-        \o Mapped to QTime
+        \li TIME
+        \li Displays time. Format is 'hh:mm:ss' in 24-hour format
+        \li Mapped to QTime
     \row
-        \o TIMESTAMP
-        \o Displays a timestamp. Format is 'yyyy-mm-dd hh:mm:ss'
-        \o Mapped to QDateTime
+        \li TIMESTAMP
+        \li Displays a timestamp. Format is 'yyyy-mm-dd hh:mm:ss'
+        \li Mapped to QDateTime
   \endtable
 
   \section2 MySQL Data Types
 
   \table 90%
     \header
-        \o MySQL data type
-        \o SQL type description
-        \o Recommended input (C++ or Qt data type)
+        \li MySQL data type
+        \li SQL type description
+        \li Recommended input (C++ or Qt data type)
     \row
-        \o TINYINT
-        \o 8 bit signed integer
-        \o typedef qint8
+        \li TINYINT
+        \li 8 bit signed integer
+        \li typedef qint8
     \row
-        \o TINYINT UNSIGNED
-        \o 8 bit unsigned integer
-        \o typedef quint8
+        \li TINYINT UNSIGNED
+        \li 8 bit unsigned integer
+        \li typedef quint8
     \row
-        \o SMALLINT
-        \o 16-bit signed integer
-        \o typedef qint16
+        \li SMALLINT
+        \li 16-bit signed integer
+        \li typedef qint16
     \row
-        \o SMALLINT UNSIGNED
-        \o 16-bit unsigned integer
-        \o typedef quint16
+        \li SMALLINT UNSIGNED
+        \li 16-bit unsigned integer
+        \li typedef quint16
     \row
-        \o INT
-        \o 32-bit signed integer
-        \o typedef qint32
+        \li INT
+        \li 32-bit signed integer
+        \li typedef qint32
     \row
-        \o INT UNSIGNED
-        \o 32-bit unsigned integer
-        \o typedef quint32
+        \li INT UNSIGNED
+        \li 32-bit unsigned integer
+        \li typedef quint32
     \row
-        \o BIGINT
-        \o 64-bit signed integer
-        \o typedef qint64
+        \li BIGINT
+        \li 64-bit signed integer
+        \li typedef qint64
     \row
-        \o FLOAT
-        \o 32-bit Floating Point
-        \o By default mapping to QString
+        \li FLOAT
+        \li 32-bit Floating Point
+        \li By default mapping to QString
     \row
-        \o DOUBLE
-        \o 64-bit Floating Point
-        \o By default mapping to QString
+        \li DOUBLE
+        \li 64-bit Floating Point
+        \li By default mapping to QString
     \row
-        \o CHAR
-        \o Character string
-        \o Mapped to QString
+        \li CHAR
+        \li Character string
+        \li Mapped to QString
     \row
-        \o VARCHAR
-        \o Character string
-        \o Mapped to QString
+        \li VARCHAR
+        \li Character string
+        \li Mapped to QString
     \row
-        \o TINYTEXT
-        \o Character string
-        \o Mapped to QString
+        \li TINYTEXT
+        \li Character string
+        \li Mapped to QString
     \row
-        \o TEXT
-        \o Character string
-        \o Mapped to QString
+        \li TEXT
+        \li Character string
+        \li Mapped to QString
     \row
-        \o MEDIUMTEXT
-        \o Character string
-        \o Mapped to QString
+        \li MEDIUMTEXT
+        \li Character string
+        \li Mapped to QString
     \row
-        \o LONGTEXT
-        \o Character string
-        \o Mapped to QString
+        \li LONGTEXT
+        \li Character string
+        \li Mapped to QString
     \row
-        \o CLOB
-        \o Character large string object
-        \o Mapped to QString
+        \li CLOB
+        \li Character large string object
+        \li Mapped to QString
     \row
-        \o all BLOB types
-        \o BLOB
-        \o Mapped to QByteArray
+        \li all BLOB types
+        \li BLOB
+        \li Mapped to QByteArray
     \row
-        \o DATE
-        \o Date without Time
-        \o Mapped to QDate
+        \li DATE
+        \li Date without Time
+        \li Mapped to QDate
     \row
-        \o DATETIME
-        \o Date and Time
-        \o Mapped to QDateTime
+        \li DATETIME
+        \li Date and Time
+        \li Mapped to QDateTime
     \row
-        \o TIMESTAMP
-        \o Date and Time
-        \o Mapped to QDateTime
+        \li TIMESTAMP
+        \li Date and Time
+        \li Mapped to QDateTime
     \row
-        \o TIME
-        \o Time
-        \o Mapped to QTime
+        \li TIME
+        \li Time
+        \li Mapped to QTime
     \row
-        \o YEAR
-        \o Year (int)
-        \o Mapped to QDateTime
+        \li YEAR
+        \li Year (int)
+        \li Mapped to QDateTime
     \row
-        \o ENUM
-        \o Enumeration of Value Set
-        \o Mapped to QString
+        \li ENUM
+        \li Enumeration of Value Set
+        \li Mapped to QString
   \endtable
 
   \section2 Oracle Call Interface Data Types
 
   \table 90%
     \header
-        \o Oracle Call Interface data type
-        \o SQL type description
-        \o Recommended input (C++ or Qt data type)
+        \li Oracle Call Interface data type
+        \li SQL type description
+        \li Recommended input (C++ or Qt data type)
     \row
-        \o NUMBER
-        \o FLOAT, DOUBLE, PRECISIONc REAL
-        \o By default mapping to QString
+        \li NUMBER
+        \li FLOAT, DOUBLE, PRECISIONc REAL
+        \li By default mapping to QString
     \row
-        \o NUMBER(38)
-        \o INTEGER INT SMALLINT
-        \o typedef qint8/16/32/64
+        \li NUMBER(38)
+        \li INTEGER INT SMALLINT
+        \li typedef qint8/16/32/64
     \row
-        \o NUMBER(p,s)
-        \o NUMERIC(p,s) DECIMAL(p,s)a
-        \o By default mapping to QString
+        \li NUMBER(p,s)
+        \li NUMERIC(p,s) DECIMAL(p,s)a
+        \li By default mapping to QString
     \row
-        \o NVARCHAR2(n)
-        \o Character string (NATIONAL CHARACTER VARYING(n) NATIONAL 
+        \li NVARCHAR2(n)
+        \li Character string (NATIONAL CHARACTER VARYING(n) NATIONAL
         CHAR VARYING(n) NCHAR VARYING(n))
-        \o Mapped to QString
+        \li Mapped to QString
     \row
-        \o NCHAR(n)
-        \o Character string (NATIONAL CHARACTER(n) NATIONAL CHAR(n) 
+        \li NCHAR(n)
+        \li Character string (NATIONAL CHARACTER(n) NATIONAL CHAR(n)
         NCHAR(n))
-    \o Mapped to QString
+    \li Mapped to QString
     \row
-        \o CHAR(n)
-        \o Character string (CHARACTER(n) CHAR(n))
-        \o Mapped to QString
+        \li CHAR(n)
+        \li Character string (CHARACTER(n) CHAR(n))
+        \li Mapped to QString
     \row
-        \o CLOB
-        \o Character large string object
-        \o Mapped to QString
+        \li CLOB
+        \li Character large string object
+        \li Mapped to QString
     \row
-        \o BLOB
-        \o A binary large object
-        \o Mapped to QByteArray
+        \li BLOB
+        \li A binary large object
+        \li Mapped to QByteArray
     \row
-        \o TIMESTAMP
-        \o Year, month, and day values of date, as well as hour, minute,
+        \li TIMESTAMP
+        \li Year, month, and day values of date, as well as hour, minute,
         and second values of time
-        \o Mapped to QDateTime
+        \li Mapped to QDateTime
   \endtable
 
   \section2 ODBC Data Types
 
   \table 90%
     \header
-        \o ODBC data type
-        \o SQL type description
-        \o Recommended input (C++ or Qt data type)
+        \li ODBC data type
+        \li SQL type description
+        \li Recommended input (C++ or Qt data type)
     \row
-        \o BIT
-        \o Boolean
-        \o BOOL
+        \li BIT
+        \li Boolean
+        \li BOOL
     \row
-        \o TINYINT
-        \o 8 bit integer
-        \o typedef qint8
+        \li TINYINT
+        \li 8 bit integer
+        \li typedef qint8
     \row
-        \o SMALLINT
-        \o 16-bit signed integer
-        \o typedef qint16
+        \li SMALLINT
+        \li 16-bit signed integer
+        \li typedef qint16
     \row
-        \o INTEGER
-        \o 32-bit signed integer
-        \o typedef qint32
+        \li INTEGER
+        \li 32-bit signed integer
+        \li typedef qint32
     \row
-        \o BIGINT
-        \o 64-bit signed integer
-        \o typedef qint64
+        \li BIGINT
+        \li 64-bit signed integer
+        \li typedef qint64
     \row
-        \o REAL
-        \o 32-bit Single-precision floating point
-        \o By default mapping to QString
+        \li REAL
+        \li 32-bit Single-precision floating point
+        \li By default mapping to QString
     \row
-        \o FLOAT
-        \o 64-bit Double floating point
-        \o By default mapping to QString
+        \li FLOAT
+        \li 64-bit Double floating point
+        \li By default mapping to QString
     \row
-        \o DOUBLE
-        \o 64-bit Double floating point
-        \o By default mapping to QString
+        \li DOUBLE
+        \li 64-bit Double floating point
+        \li By default mapping to QString
     \row
-        \o CHAR
-        \o Character string
-        \o Mapped to QString
+        \li CHAR
+        \li Character string
+        \li Mapped to QString
     \row
-        \o VARCHAR
-        \o Character string
-        \o Mapped to QString
+        \li VARCHAR
+        \li Character string
+        \li Mapped to QString
     \row
-        \o LONGVARCHAR
-        \o Character string
-        \o Mapped to QString
+        \li LONGVARCHAR
+        \li Character string
+        \li Mapped to QString
     \row
-        \o CLOB
-        \o Character large string object
-        \o Mapped to QString
+        \li CLOB
+        \li Character large string object
+        \li Mapped to QString
     \row
-        \o DATE
-        \o Character string
-        \o Mapped to QDate
+        \li DATE
+        \li Character string
+        \li Mapped to QDate
     \row
-        \o TIME
-        \o Character Time, Character string
-        \o Mapped to QTime
+        \li TIME
+        \li Character Time, Character string
+        \li Mapped to QTime
     \row
-        \o TIMESTAMP
-        \o Character Time, Character string
-        \o Mapped to QDateTime
+        \li TIMESTAMP
+        \li Character Time, Character string
+        \li Mapped to QDateTime
   \endtable
 
   \section2 PostgreSQL Data Types
 
   \table 90%
     \header
-        \o PostgreSQL data type
-        \o SQL type description
-        \o Recommended input (C++ or Qt data type)
+        \li PostgreSQL data type
+        \li SQL type description
+        \li Recommended input (C++ or Qt data type)
     \row
-        \o BOOLEAN
-        \o Boolean
-        \o bool
+        \li BOOLEAN
+        \li Boolean
+        \li bool
     \row
-        \o SMALLINT
-        \o 16-bit signed integer
-        \o typedef qint16
+        \li SMALLINT
+        \li 16-bit signed integer
+        \li typedef qint16
     \row
-        \o INTEGER
-        \o 32-bit signed integer
-        \o typedef qint32
+        \li INTEGER
+        \li 32-bit signed integer
+        \li typedef qint32
     \row
-        \o BIGINT
-        \o 64-bit signed integer
-        \o typedef qint64
+        \li BIGINT
+        \li 64-bit signed integer
+        \li typedef qint64
     \row
-        \o REAL
-        \o 32-bit variable-precision floating point
-        \o By default mapping to QString
+        \li REAL
+        \li 32-bit variable-precision floating point
+        \li By default mapping to QString
     \row
-        \o DOUBLE PRECISION
-        \o 64-bit variable-precision floating point
-        \o By default mapping to QString
+        \li DOUBLE PRECISION
+        \li 64-bit variable-precision floating point
+        \li By default mapping to QString
     \row
-        \o DECIMAL VARIABLE
-        \o user-specified precision, exact
-        \o Mapped to QString
+        \li DECIMAL VARIABLE
+        \li user-specified precision, exact
+        \li Mapped to QString
     \row
-        \o NUMERIC VARIABLE
-        \o user-specified precision, exact
-        \o Mapped to QString
+        \li NUMERIC VARIABLE
+        \li user-specified precision, exact
+        \li Mapped to QString
     \row
-        \o VARCHAR
-        \o variable-length character string
-        \o Mapped to QString
+        \li VARCHAR
+        \li variable-length character string
+        \li Mapped to QString
     \row
-        \o CHARACTER
-        \o Character string of fixed-length
-        \o Mapped to QString
+        \li CHARACTER
+        \li Character string of fixed-length
+        \li Mapped to QString
     \row
-        \o TEXT
-        \o Character string of variable-length
-        \o Mapped to QString
+        \li TEXT
+        \li Character string of variable-length
+        \li Mapped to QString
     \row
-        \o CLOB
-        \o Character large string object
-        \o Mapped to QString
+        \li CLOB
+        \li Character large string object
+        \li Mapped to QString
     \row
-        \o TIMESTAMP
-        \o 8 bytes, both date and time
-        \o Mapped to QDateTime
+        \li TIMESTAMP
+        \li 8 bytes, both date and time
+        \li Mapped to QDateTime
     \row
-        \o TIMESTAMP
-        \o 8 bytes, both date and time, with time zone
-        \o Mapped to QDateTime
+        \li TIMESTAMP
+        \li 8 bytes, both date and time, with time zone
+        \li Mapped to QDateTime
     \row
-        \o DATE
-        \o 4 bytes, dates only
-        \o Mapped to QDate
+        \li DATE
+        \li 4 bytes, dates only
+        \li Mapped to QDate
     \row
-        \o TIME
-        \o 8 bytes, times of day only 00:00:00.00 - 23:59:59.99
-        \o Mapped to QTime
+        \li TIME
+        \li 8 bytes, times of day only 00:00:00.00 - 23:59:59.99
+        \li Mapped to QTime
     \row
-        \o TIME
-        \o 12 bytes times of day only, with time zone 00:00:00.00+12
-        \o Mapped to QDateTime
+        \li TIME
+        \li 12 bytes times of day only, with time zone 00:00:00.00+12
+        \li Mapped to QDateTime
   \endtable
 
   \section2 QSQLITE SQLite version 3 Data Types
 
   \table 90%
     \header
-        \o QSQLITE SQLite version 3 data type
-        \o SQL type description
-        \o Recommended input (C++ or Qt data type)
+        \li QSQLITE SQLite version 3 data type
+        \li SQL type description
+        \li Recommended input (C++ or Qt data type)
     \row
-        \o NULL
-        \o NULL value.
-        \o NULL
+        \li NULL
+        \li NULL value.
+        \li NULL
     \row
-        \o INTEGER
-        \o Signed integer, stored in 8, 16, 24, 32, 48, or 64-bits 
+        \li INTEGER
+        \li Signed integer, stored in 8, 16, 24, 32, 48, or 64-bits
         depending on the magnitude of the value.
-        \o typedef qint8/16/32/64
+        \li typedef qint8/16/32/64
     \row
-        \o REAL
-        \o 64-bit floating point value.
-        \o By default mapping to QString
+        \li REAL
+        \li 64-bit floating point value.
+        \li By default mapping to QString
     \row
-        \o TEXT
-        \o Character string (UTF-8, UTF-16BE or UTF-16-LE).
-        \o Mapped to QString
+        \li TEXT
+        \li Character string (UTF-8, UTF-16BE or UTF-16-LE).
+        \li Mapped to QString
     \row
-        \o CLOB
-        \o Character large string object
-        \o Mapped to QString
+        \li CLOB
+        \li Character large string object
+        \li Mapped to QString
     \row
-        \o BLOB
-        \o The value is a BLOB of data, stored exactly as it was input.
-        \o Mapped to QByteArray
+        \li BLOB
+        \li The value is a BLOB of data, stored exactly as it was input.
+        \li Mapped to QByteArray
   \endtable
 
   \section2 Sybase Adaptive Server Data Types
 
   \table 90%
     \header
-        \o Sybase Adaptive Server data type
-        \o SQL type description
-        \o Recommended input (C++ or Qt data type)
+        \li Sybase Adaptive Server data type
+        \li SQL type description
+        \li Recommended input (C++ or Qt data type)
     \row
-        \o BINARY
-        \o Describes a fixed-length binary value up to 255 bytes in size.
-        \o Mapped to QByteArray
+        \li BINARY
+        \li Describes a fixed-length binary value up to 255 bytes in size.
+        \li Mapped to QByteArray
     \row
-        \o CHAR
-        \o Character String
-        \o Mapped to QString
+        \li CHAR
+        \li Character String
+        \li Mapped to QString
     \row
-        \o DATETIME
-        \o Date and time. Range: 1753-01-01 00:00:00 through 9999-12-31 23:59:59.
-        \o Mapped to QDateTime
+        \li DATETIME
+        \li Date and time. Range: 1753-01-01 00:00:00 through 9999-12-31 23:59:59.
+        \li Mapped to QDateTime
     \row
-        \o NCHAR
-        \o Character String of fixed length
-        \o Mapped to QString
+        \li NCHAR
+        \li Character String of fixed length
+        \li Mapped to QString
     \row
-        \o NVARACHAR
-        \o Character String of variable length
-        \o Mapped to QString
+        \li NVARACHAR
+        \li Character String of variable length
+        \li Mapped to QString
     \row
-        \o VARCHAR
-        \o Character String of fixed length
-        \o Mapped to QString
+        \li VARCHAR
+        \li Character String of fixed length
+        \li Mapped to QString
     \row
-        \o CLOB
-        \o Character large string object
-        \o Mapped to QString
+        \li CLOB
+        \li Character large string object
+        \li Mapped to QString
     \row
-        \o TIMESTAMP
-        \o A unique number within a database
-        \o Mapped to QString
+        \li TIMESTAMP
+        \li A unique number within a database
+        \li Mapped to QString
     \row
-        \o SMALLDATETIME
-        \o Date and time. Range: 1900-01-01 00:00 through 2079-12-31 23:59
-        \o Mapped to QDateTime
+        \li SMALLDATETIME
+        \li Date and time. Range: 1900-01-01 00:00 through 2079-12-31 23:59
+        \li Mapped to QDateTime
     \row
-        \o UNICHAR
-        \o Character String of fixed length.(Unicode)
-        \o Mapped to QString
+        \li UNICHAR
+        \li Character String of fixed length.(Unicode)
+        \li Mapped to QString
     \row
-        \o UNIVARCHAR
-        \o Character String of variable length.(Unicode)
-        \o Mapped to QString
+        \li UNIVARCHAR
+        \li Character String of variable length.(Unicode)
+        \li Mapped to QString
     \row
-        \o VARBINARY
-        \o Describes a variable-length binary value up to 255 bytes in size
-        \o Mapped to QByteArray 
+        \li VARBINARY
+        \li Describes a variable-length binary value up to 255 bytes in size
+        \li Mapped to QByteArray
   \endtable
 
   \section2 SQLite Version 2

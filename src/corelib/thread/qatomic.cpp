@@ -83,16 +83,16 @@
 
     \list
 
-    \o Relaxed - memory ordering is unspecified, leaving the compiler
+    \li Relaxed - memory ordering is unspecified, leaving the compiler
     and processor to freely reorder memory accesses.
 
-    \o Acquire - memory access following the atomic operation (in
+    \li Acquire - memory access following the atomic operation (in
     program order) may not be re-ordered before the atomic operation.
 
-    \o Release - memory access before the atomic operation (in program
+    \li Release - memory access before the atomic operation (in program
     order) may not be re-ordered after the atomic operation.
 
-    \o Ordered - the same Acquire and Release semantics combined.
+    \li Ordered - the same Acquire and Release semantics combined.
 
     \endlist
 
@@ -180,25 +180,25 @@
 
     \list
 
-    \o Q_ATOMIC_INT_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
-    \o Q_ATOMIC_INT_REFERENCE_COUNTING_IS_SOMETIMES_NATIVE
-    \o Q_ATOMIC_INT_REFERENCE_COUNTING_IS_NOT_NATIVE
-    \o Q_ATOMIC_INT_REFERENCE_COUNTING_IS_WAIT_FREE
+    \li Q_ATOMIC_INT_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
+    \li Q_ATOMIC_INT_REFERENCE_COUNTING_IS_SOMETIMES_NATIVE
+    \li Q_ATOMIC_INT_REFERENCE_COUNTING_IS_NOT_NATIVE
+    \li Q_ATOMIC_INT_REFERENCE_COUNTING_IS_WAIT_FREE
 
-    \o Q_ATOMIC_INT_TEST_AND_SET_IS_ALWAYS_NATIVE
-    \o Q_ATOMIC_INT_TEST_AND_SET_IS_SOMETIMES_NATIVE
-    \o Q_ATOMIC_INT_TEST_AND_SET_IS_NOT_NATIVE
-    \o Q_ATOMIC_INT_TEST_AND_SET_IS_WAIT_FREE
+    \li Q_ATOMIC_INT_TEST_AND_SET_IS_ALWAYS_NATIVE
+    \li Q_ATOMIC_INT_TEST_AND_SET_IS_SOMETIMES_NATIVE
+    \li Q_ATOMIC_INT_TEST_AND_SET_IS_NOT_NATIVE
+    \li Q_ATOMIC_INT_TEST_AND_SET_IS_WAIT_FREE
 
-    \o Q_ATOMIC_INT_FETCH_AND_STORE_IS_ALWAYS_NATIVE
-    \o Q_ATOMIC_INT_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
-    \o Q_ATOMIC_INT_FETCH_AND_STORE_IS_NOT_NATIVE
-    \o Q_ATOMIC_INT_FETCH_AND_STORE_IS_WAIT_FREE
+    \li Q_ATOMIC_INT_FETCH_AND_STORE_IS_ALWAYS_NATIVE
+    \li Q_ATOMIC_INT_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
+    \li Q_ATOMIC_INT_FETCH_AND_STORE_IS_NOT_NATIVE
+    \li Q_ATOMIC_INT_FETCH_AND_STORE_IS_WAIT_FREE
 
-    \o Q_ATOMIC_INT_FETCH_AND_ADD_IS_ALWAYS_NATIVE
-    \o Q_ATOMIC_INT_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
-    \o Q_ATOMIC_INT_FETCH_AND_ADD_IS_NOT_NATIVE
-    \o Q_ATOMIC_INT_FETCH_AND_ADD_IS_WAIT_FREE
+    \li Q_ATOMIC_INT_FETCH_AND_ADD_IS_ALWAYS_NATIVE
+    \li Q_ATOMIC_INT_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
+    \li Q_ATOMIC_INT_FETCH_AND_ADD_IS_NOT_NATIVE
+    \li Q_ATOMIC_INT_FETCH_AND_ADD_IS_WAIT_FREE
 
     \endlist
 
@@ -658,16 +658,16 @@
 
     \list
 
-    \o Relaxed - memory ordering is unspecified, leaving the compiler
+    \li Relaxed - memory ordering is unspecified, leaving the compiler
     and processor to freely reorder memory accesses.
 
-    \o Acquire - memory access following the atomic operation (in
+    \li Acquire - memory access following the atomic operation (in
     program order) may not be re-ordered before the atomic operation.
 
-    \o Release - memory access before the atomic operation (in program
+    \li Release - memory access before the atomic operation (in program
     order) may not be re-ordered after the atomic operation.
 
-    \o Ordered - the same Acquire and Release semantics combined.
+    \li Ordered - the same Acquire and Release semantics combined.
 
     \endlist
 
@@ -753,20 +753,20 @@
 
     \list
 
-    \o Q_ATOMIC_POINTER_TEST_AND_SET_IS_ALWAYS_NATIVE
-    \o Q_ATOMIC_POINTER_TEST_AND_SET_IS_SOMETIMES_NATIVE
-    \o Q_ATOMIC_POINTER_TEST_AND_SET_IS_NOT_NATIVE
-    \o Q_ATOMIC_POINTER_TEST_AND_SET_IS_WAIT_FREE
+    \li Q_ATOMIC_POINTER_TEST_AND_SET_IS_ALWAYS_NATIVE
+    \li Q_ATOMIC_POINTER_TEST_AND_SET_IS_SOMETIMES_NATIVE
+    \li Q_ATOMIC_POINTER_TEST_AND_SET_IS_NOT_NATIVE
+    \li Q_ATOMIC_POINTER_TEST_AND_SET_IS_WAIT_FREE
 
-    \o Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_ALWAYS_NATIVE
-    \o Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
-    \o Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_NOT_NATIVE
-    \o Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_WAIT_FREE
+    \li Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_ALWAYS_NATIVE
+    \li Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
+    \li Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_NOT_NATIVE
+    \li Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_WAIT_FREE
 
-    \o Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_ALWAYS_NATIVE
-    \o Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
-    \o Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_NOT_NATIVE
-    \o Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_WAIT_FREE
+    \li Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_ALWAYS_NATIVE
+    \li Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
+    \li Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_NOT_NATIVE
+    \li Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_WAIT_FREE
 
     \endlist
 

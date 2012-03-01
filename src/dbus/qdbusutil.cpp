@@ -348,11 +348,11 @@ namespace QDBusUtil
 
         Valid interface names must:
         \list
-          \o not be empty
-          \o not exceed 255 characters in length
-          \o be composed of dot-separated string components that contain only ASCII letters, digits
+          \li not be empty
+          \li not exceed 255 characters in length
+          \li be composed of dot-separated string components that contain only ASCII letters, digits
              and the underscore ("_") character
-          \o contain at least two such components
+          \li contain at least two such components
         \endlist
     */
     bool isValidInterfaceName(const QString& ifaceName)
@@ -408,11 +408,11 @@ namespace QDBusUtil
 
         A valid bus name is either a valid unique connection name or follows the rules:
         \list
-          \o is not empty
-          \o does not exceed 255 characters in length
-          \o be composed of dot-separated string components that contain only ASCII letters, digits,
+          \li is not empty
+          \li does not exceed 255 characters in length
+          \li be composed of dot-separated string components that contain only ASCII letters, digits,
              hyphens or underscores ("_"), but don't start with a digit
-          \o contains at least two such elements
+          \li contains at least two such elements
         \endlist
 
         \sa isValidUniqueConnectionName()
@@ -481,10 +481,10 @@ namespace QDBusUtil
 
         Valid object paths follow the rules:
         \list
-          \o start with the slash character ("/")
-          \o do not end in a slash, unless the path is just the initial slash
-          \o do not contain any two slashes in sequence
-          \o contain slash-separated parts, each of which is composed of ASCII letters, digits and
+          \li start with the slash character ("/")
+          \li do not end in a slash, unless the path is just the initial slash
+          \li do not contain any two slashes in sequence
+          \li contain slash-separated parts, each of which is composed of ASCII letters, digits and
              underscores ("_")
         \endlist
     */

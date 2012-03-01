@@ -41,18 +41,18 @@
 
 \table 100%
 \row
-\o \image gtk-pushbutton.png 
+\li \image gtk-pushbutton.png
    \caption The QPushButton widget provides a command button.
-\o \image gtk-toolbutton.png
+\li \image gtk-toolbutton.png
    \caption The QToolButton class provides a quick-access button to commands
     or options, usually used inside a QToolBar.
 \endtable
 
 \table 100%
 \row
-\o \image gtk-checkbox.png
+\li \image gtk-checkbox.png
    \caption The QCheckBox widget provides a checkbox with a text label.
-\o \image gtk-radiobutton.png
+\li \image gtk-radiobutton.png
    \caption The QRadioButton widget provides a radio button with a text or pixmap label.
 \endtable
 
@@ -60,13 +60,13 @@
 
 \table 100%
 \row
-\o \image gtk-groupbox.png
+\li \image gtk-groupbox.png
    The The QGroupBox widget provides a group box frame with a title.
-\o \image gtk-tabwidget.png
+\li \image gtk-tabwidget.png
    The QTabWidget class provides a stack of tabbed widgets.
-\o \image gtk-frame.png
+\li \image gtk-frame.png
    The QFrame widget provides a simple decorated container for other widgets.
-\o \image gtk-toolbox.png
+\li \image gtk-toolbox.png
    The QToolBox class provides a column of tabbed widget items.
 \endtable
 
@@ -74,24 +74,24 @@
 
 \table 100%
 \row
-\o \image gtk-listview.png
+\li \image gtk-listview.png
    The QListView class provides a default model/view implementation of a list/icon view. The QListWidget class provides a classic item-based list/icon view.
-\o \image gtk-treeview.png
+\li \image gtk-treeview.png
    The QTreeView class provides a default model/view implementation of a tree view. The QTreeWidget class provides a classic item-based tree view.
-\o \image gtk-tableview.png
-   The QTableView class provides a default model/view implementation of a table view. The QTableWidget class provides a classic item-based table view.\o 
-\o 
+\li \image gtk-tableview.png
+   The QTableView class provides a default model/view implementation of a table view. The QTableWidget class provides a classic item-based table view.\li
+\li
 \endtable
 
 \section2 Display Widgets
 
 \table 100%
 \row
-\o \image gtk-progressbar.png
+\li \image gtk-progressbar.png
    The QProgressBar widget provides a horizontal progress bar.
-\o \image gtk-label.png
+\li \image gtk-label.png
    The QLabel widget provides a text or image display.
-\o \image gtk-lcdnumber.png
+\li \image gtk-lcdnumber.png
    The QLCDNumber widget displays a number with LCD-like digits.
 \endtable
 
@@ -99,43 +99,43 @@
 
 \table 100%
 \row
-\o \image gtk-lineedit.png
+\li \image gtk-lineedit.png
    The QLineEdit widget is a one-line text editor.
-\o \image gtk-dateedit.png
+\li \image gtk-dateedit.png
    The QDateEdit class provides a widget for editing dates.
-\o \image gtk-timeedit.png
+\li \image gtk-timeedit.png
    The QTimeEdit class provides a widget for editing times.
-\o \image gtk-datetimeedit.png
+\li \image gtk-datetimeedit.png
    The QDateTimeEdit class provides a widget for editing dates and times.
 \endtable
 
 \table 100%
 \row
-\o \image gtk-slider.png
+\li \image gtk-slider.png
    The QSlider widget provides a vertical or horizontal slider.
-\o \image gtk-combobox.png
+\li \image gtk-combobox.png
    The QComboBox widget is a combined button and pop-up list.
-\o \image gtk-spinbox.png
+\li \image gtk-spinbox.png
    The QSpinBox class provides a spin box widget.
 \endtable
 
 \table 100%
 \row
-\o \image gtk-fontcombobox.png
+\li \image gtk-fontcombobox.png
    The QFontComboBox widget is a specialized combobox that enables fonts to be selected from a pop-up list containing previews of available fonts.
-\o \image gtk-doublespinbox.png
+\li \image gtk-doublespinbox.png
    The QDoubleSpinBox class provides a spin box widget that allows double precision floating point numbers to be entered.
-\o \image gtk-horizontalscrollbar.png
+\li \image gtk-horizontalscrollbar.png
    The QScrollBar widget provides a vertical or horizontal scroll bar. Here, we show a scroll bar with horizontal orientation.
 \endtable
 
 \table 100%
 \row
-\o \image gtk-dial.png
+\li \image gtk-dial.png
    The QDial class provides a rounded range control (like a speedometer or potentiometer).
-\o \image gtk-textedit.png
+\li \image gtk-textedit.png
    The QTextEdit class provides a widget that is used to edit and display both plain and rich text.
-\o \image gtk-calendarwidget.png
+\li \image gtk-calendarwidget.png
    The QCalendarWidget class provides a monthly calendar widget that can be used to select dates.
 \endtable
 */

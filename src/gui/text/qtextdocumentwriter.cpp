@@ -345,10 +345,10 @@ QTextCodec *QTextDocumentWriter::codec() const
     By default, Qt can write the following formats:
 
     \table
-    \header \o Format    \o Description
-    \row    \o plaintext \o Plain text
-    \row    \o HTML      \o HyperText Markup Language
-    \row    \o ODF       \o OpenDocument Format
+    \header \li Format    \li Description
+    \row    \li plaintext \li Plain text
+    \row    \li HTML      \li HyperText Markup Language
+    \row    \li ODF       \li OpenDocument Format
     \endtable
 
     \sa setFormat()

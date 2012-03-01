@@ -41,12 +41,12 @@
     The meta-object system is based on three things:
 
     \list 1
-    \o The \l QObject class provides a base class for objects that can
+    \li The \l QObject class provides a base class for objects that can
        take advantage of the meta-object system.
-    \o The Q_OBJECT macro inside the private section of the class
+    \li The Q_OBJECT macro inside the private section of the class
        declaration is used to enable meta-object features, such as
        dynamic properties, signals, and slots.
-    \o The \l{moc}{Meta-Object Compiler} (\c moc) supplies each
+    \li The \l{moc}{Meta-Object Compiler} (\c moc) supplies each
        QObject subclass with the necessary code to implement
        meta-object features.
     \endlist
@@ -64,19 +64,19 @@
     additional features:
 
     \list
-    \o QObject::metaObject() returns the associated
+    \li QObject::metaObject() returns the associated
        \l{QMetaObject}{meta-object} for the class.
-    \o QMetaObject::className() returns the class name as a
+    \li QMetaObject::className() returns the class name as a
        string at run-time, without requiring native run-time type information
        (RTTI) support through the C++ compiler.
-    \o QObject::inherits() function returns whether an object is an
+    \li QObject::inherits() function returns whether an object is an
        instance of a class that inherits a specified class within the
        QObject inheritance tree.
-    \o QObject::tr() and QObject::trUtf8() translate strings for
+    \li QObject::tr() and QObject::trUtf8() translate strings for
        \l{Internationalization with Qt}{internationalization}.
-    \o QObject::setProperty() and QObject::property()
+    \li QObject::setProperty() and QObject::property()
        dynamically set and get properties by name.
-    \o QMetaObject::newInstance() constructs a new instance of the class.
+    \li QMetaObject::newInstance() constructs a new instance of the class.
     \endlist
 
     \target qobjectcast

@@ -69,13 +69,13 @@
     structure. The main differences between the two classes are:
 
     \list
-    \o QVarLengthArray's API is much more low-level. It provides no
+    \li QVarLengthArray's API is much more low-level. It provides no
        iterators and lacks much of QVector's functionality.
 
-    \o QVarLengthArray doesn't initialize the memory if the value is
+    \li QVarLengthArray doesn't initialize the memory if the value is
        a basic type. (QVector always does.)
 
-    \o QVector uses \l{implicit sharing} as a memory optimization.
+    \li QVector uses \l{implicit sharing} as a memory optimization.
        QVarLengthArray doesn't provide that feature; however, it
        usually produces slightly better performance due to reduced
        overhead, especially in tight loops.

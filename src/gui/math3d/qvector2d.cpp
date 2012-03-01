@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
     The QVector2D class can also be used to represent vertices in 2D space.
     We therefore do not need to provide a separate vertex class.
 
-    \bold{Note:} By design values in the QVector2D instance are stored as \c float.
+    \b{Note:} By design values in the QVector2D instance are stored as \c float.
     This means that on platforms where the \c qreal arguments to QVector2D
     functions are represented by \c double values, it is possible to
     lose precision.

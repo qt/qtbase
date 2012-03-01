@@ -377,9 +377,9 @@ QMouseEvent::~QMouseEvent()
     you will get the following QEvent::MouseMove events:
 
     \list 1
-        \o A::MouseMove
-        \o B::MouseMove
-        \o C::MouseMove
+        \li A::MouseMove
+        \li B::MouseMove
+        \li C::MouseMove
     \endlist
 
     You will get the same events for QEvent::HoverMove, except that the event
@@ -390,9 +390,9 @@ QMouseEvent::~QMouseEvent()
     In this case the events will occur in the following way:
 
     \list 1
-        \o A::HoverMove
-        \o A::HoverMove, B::HoverMove
-        \o A::HoverMove, B::HoverMove, C::HoverMove
+        \li A::HoverMove
+        \li A::HoverMove, B::HoverMove
+        \li A::HoverMove, B::HoverMove, C::HoverMove
     \endlist
 
 */
@@ -1483,20 +1483,20 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
     step process:
 
     \list 1
-    \o \bold{Starting to Compose}
+    \li \b{Starting to Compose}
 
        When the user presses the first key on a keyboard, an input
        context is created. This input context will contain a string
        of the typed characters.
 
-    \o \bold{Composing}
+    \li \b{Composing}
 
        With every new key pressed, the input method will try to create a
        matching string for the text typed so far called preedit
        string. While the input context is active, the user can only move
        the cursor inside the string belonging to this input context.
 
-    \o \bold{Completing}
+    \li \b{Completing}
 
        At some point, the user will activate a user interface component
        (perhaps using a particular key) where they can choose from a
@@ -1539,10 +1539,10 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
     following steps:
 
     \list 1
-    \o If the widget has selected text, the selected text should get
+    \li If the widget has selected text, the selected text should get
        removed.
 
-    \o Remove the text starting at replacementStart() with length
+    \li Remove the text starting at replacementStart() with length
        replacementLength() and replace it by the commitString(). If
        replacementLength() is 0, replacementStart() gives the insertion
        position for the commitString().
@@ -1556,7 +1556,7 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
        If the widget implements undo/redo, this operation gets added to
        the undo stack.
 
-    \o If there is no current preedit string, insert the
+    \li If there is no current preedit string, insert the
        preeditString() at the current cursor position; otherwise replace
        the previous preeditString with the one received from this event.
 
@@ -2060,7 +2060,7 @@ QTabletEvent::~QTabletEvent()
 
     Returns the z position of the device. Typically this is represented by a
     wheel on a 4D Mouse. If the device does not support a Z-axis, this value is
-    always zero. This is \bold not the same as pressure.
+    always zero. This is \b not the same as pressure.
 
     \sa pressure()
 */
@@ -2576,11 +2576,11 @@ QHelpEvent::~QHelpEvent()
 
     \table 100%
     \row
-    \o
+    \li
     \snippet doc/src/snippets/qstatustipevent/main.cpp 1
     \dots
     \snippet doc/src/snippets/qstatustipevent/main.cpp 3
-    \o
+    \li
     \image qstatustipevent-widget.png Widget with status tip.
     \endtable
 
@@ -2589,12 +2589,12 @@ QHelpEvent::~QHelpEvent()
 
     \table 100%
     \row
-    \o
+    \li
     \snippet doc/src/snippets/qstatustipevent/main.cpp 0
     \snippet doc/src/snippets/qstatustipevent/main.cpp 2
     \dots
     \snippet doc/src/snippets/qstatustipevent/main.cpp 3
-    \o
+    \li
     \image qstatustipevent-action.png Action with status tip.
     \endtable
 
@@ -3405,10 +3405,10 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
 
     \list
 
-    \i When the first touch point is detected, the destination widget is determined firstly by the
+    \li When the first touch point is detected, the destination widget is determined firstly by the
     location on screen and secondly by the propagation rules.
 
-    \i When additional touch points are detected, Qt first looks to see if there are any active
+    \li When additional touch points are detected, Qt first looks to see if there are any active
     touch points on any ancestor or descendent of the widget under the new touch point. If there
     are, the new touch point is grouped with the first, and the new touch point will be sent in a
     single QTouchEvent to the widget that handled the first touch point. (The widget under the new
@@ -3430,19 +3430,19 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
 
     \list
 
-    \i As mentioned above, enabling touch events means multiple widgets can be receiving touch
+    \li As mentioned above, enabling touch events means multiple widgets can be receiving touch
     events simultaneously. Combined with the default QWidget::event() handling for QTouchEvents,
     this gives you great flexibility in designing touch user interfaces. Be aware of the
     implications. For example, it is possible that the user is moving a QSlider with one finger and
     pressing a QPushButton with another. The signals emitted by these widgets will be
     interleaved.
 
-    \i Recursion into the event loop using one of the exec() methods (e.g., QDialog::exec() or
+    \li Recursion into the event loop using one of the exec() methods (e.g., QDialog::exec() or
     QMenu::exec()) in a QTouchEvent event handler is not supported. Since there are multiple event
     recipients, recursion may cause problems, including but not limited to lost events
     and unexpected infinite recursion.
 
-    \i QTouchEvents are not affected by a \l{QWidget::grabMouse()}{mouse grab} or an
+    \li QTouchEvents are not affected by a \l{QWidget::grabMouse()}{mouse grab} or an
     \l{QApplication::activePopupWidget()}{active pop-up widget}. The behavior of QTouchEvents is
     undefined when opening a pop-up or grabbing the mouse while there are more than one active touch
     points.

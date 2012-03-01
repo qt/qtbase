@@ -49,13 +49,13 @@
     approach:
 
     \list 1
-        \o \l {Step 1: Creating a Custom Graphics Driver}
+        \li \l {Step 1: Creating a Custom Graphics Driver}
         {Creating a Custom Graphics Driver}
 
-        \o \l {Step 2: Implementing a Custom Raster Paint Engine}
+        \li \l {Step 2: Implementing a Custom Raster Paint Engine}
         {Implementing a Custom Paint Engine}
 
-        \o \l {Step 3: Making the Widgets Aware of the Custom Paint
+        \li \l {Step 3: Making the Widgets Aware of the Custom Paint
         Engine}{Making the Widgets Aware of the Custom Paint Engine}
 
     \endlist
@@ -69,8 +69,8 @@
     \snippet doc/src/snippets/code/doc_src_examples_svgalib.qdoc 0
 
     \table
-    \header \o SVGAlib
-    \row \o
+    \header \li SVGAlib
+    \row \li
 
     Instead of interfacing the graphics hardware directly, this
     example relies on \l {http://www.svgalib.org}{SVGAlib} being
@@ -212,9 +212,9 @@
     respectively.
 
     \table
-    \header \o Private Header Files
+    \header \li Private Header Files
     \row
-    \o
+    \li
 
     Note the \c include statement used by this class. The files
     prefixed with \c private/ are private headers file within
@@ -285,9 +285,9 @@
     adjustments of the graphics driver.
 
     \list
-        \o \l {Implementing a Custom Paint Device}
-        \o \l {Implementing a Custom Window Surface}
-        \o \l {Adjusting the Graphics Driver}
+        \li \l {Implementing a Custom Paint Device}
+        \li \l {Implementing a Custom Window Surface}
+        \li \l {Adjusting the Graphics Driver}
     \endlist
 
     \section2 Implementing a Custom Paint Device

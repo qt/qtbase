@@ -37,7 +37,7 @@
     relying on the flexibility of the model/view architecture to handle custom editing
     and selection features.
 
-    \bold{Note that you only need to create a new view class if your data requires a
+    \b{Note that you only need to create a new view class if your data requires a
     specialized representation.} You should first consider using a standard QListView,
     QTableView, or QTreeView with a custom QItemDelegate subclass if you need to
     represent data in a special way.
@@ -61,10 +61,10 @@
     We interpret the data in the following way:
 
     \list
-    \o Column 0 contains data in two different roles:
+    \li Column 0 contains data in two different roles:
        The \l{Qt::ItemDataRole}{DisplayRole} contains a label, and the
        \l{Qt::ItemDataRole}{DecorationRole} contains the color of the pie slice.
-    \o Column 1 contains a quantity which we will convert to the angular extent of
+    \li Column 1 contains a quantity which we will convert to the angular extent of
        the slice.
     \endlist
 

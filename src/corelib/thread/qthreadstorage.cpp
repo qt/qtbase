@@ -246,11 +246,11 @@ void QThreadStorageData::finish(void **p)
 
     \list
 
-    \o The QThreadStorage destructor does not delete per-thread data.
+    \li The QThreadStorage destructor does not delete per-thread data.
     QThreadStorage only deletes per-thread data when the thread exits
     or when setLocalData() is called multiple times.
 
-    \o QThreadStorage can be used to store data for the \c main()
+    \li QThreadStorage can be used to store data for the \c main()
     thread. QThreadStorage deletes all data set for the \c main()
     thread when QApplication is destroyed, regardless of whether or
     not the \c main() thread has actually finished.

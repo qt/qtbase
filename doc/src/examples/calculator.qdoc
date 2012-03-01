@@ -38,9 +38,9 @@
     The example consists of two classes:
 
     \list
-    \o \c Calculator is the calculator widget, with all the
+    \li \c Calculator is the calculator widget, with all the
        calculator functionality.
-    \o \c Button is the widget used for each of the calculator
+    \li \c Button is the widget used for each of the calculator
        button. It derives from QToolButton.
     \endlist
 
@@ -85,18 +85,18 @@
     display (a QLineEdit), encode the state of the calculator:
 
     \list
-    \o \c sumInMemory contains the value stored in the calculator's memory
+    \li \c sumInMemory contains the value stored in the calculator's memory
        (using \gui{MS}, \gui{M+}, or \gui{MC}).
-    \o \c sumSoFar stores the value accumulated so far. When the user
+    \li \c sumSoFar stores the value accumulated so far. When the user
        clicks \gui{=}, \c sumSoFar is recomputed and shown on the
        display. \gui{Clear All} resets \c sumSoFar to zero.
-    \o \c factorSoFar stores a temporary value when doing
+    \li \c factorSoFar stores a temporary value when doing
         multiplications and divisions.
-    \o \c pendingAdditiveOperator stores the last additive operator
+    \li \c pendingAdditiveOperator stores the last additive operator
        clicked by the user.
-    \o \c pendingMultiplicativeOperator stores the last multiplicative operator
+    \li \c pendingMultiplicativeOperator stores the last multiplicative operator
        clicked by the user.
-    \o \c waitingForOperand is \c true when the calculator is
+    \li \c waitingForOperand is \c true when the calculator is
        expecting the user to start typing an operand.
     \endlist
 
@@ -109,16 +109,16 @@
     the user enters a mathematical expression.
 
     \table
-    \header \o User Input            \o Display  \o Sum so Far \o Add. Op. \o Factor so Far \o Mult. Op. \o Waiting for Operand?
-    \row    \o                       \o 0        \o 0          \o          \o               \o           \o \c true
-    \row    \o \gui{1}               \o 1        \o 0          \o          \o               \o           \o \c false
-    \row    \o \gui{1 +}             \o 1        \o 1          \o \gui{+}  \o               \o           \o \c true
-    \row    \o \gui{1 + 2}           \o 2        \o 1          \o \gui{+}  \o               \o           \o \c false
-    \row    \o \gui{1 + 2 \unicode{247}}         \o 2        \o 1          \o \gui{+}  \o 2             \o \gui{\unicode{247}}   \o \c true
-    \row    \o \gui{1 + 2 \unicode{247} 3}       \o 3        \o 1          \o \gui{+}  \o 2             \o \gui{\unicode{247}}   \o \c false
-    \row    \o \gui{1 + 2 \unicode{247} 3 -}     \o 1.66667  \o 1.66667    \o \gui{-}  \o               \o           \o \c true
-    \row    \o \gui{1 + 2 \unicode{247} 3 - 4}   \o 4        \o 1.66667    \o \gui{-}  \o               \o           \o \c false
-    \row    \o \gui{1 + 2 \unicode{247} 3 - 4 =} \o -2.33333 \o 0          \o          \o               \o           \o \c true
+    \header \li User Input            \li Display  \li Sum so Far \li Add. Op. \li Factor so Far \li Mult. Op. \li Waiting for Operand?
+    \row    \li                       \li 0        \li 0          \li          \li               \li           \li \c true
+    \row    \li \gui{1}               \li 1        \li 0          \li          \li               \li           \li \c false
+    \row    \li \gui{1 +}             \li 1        \li 1          \li \gui{+}  \li               \li           \li \c true
+    \row    \li \gui{1 + 2}           \li 2        \li 1          \li \gui{+}  \li               \li           \li \c false
+    \row    \li \gui{1 + 2 \unicode{247}}         \li 2        \li 1          \li \gui{+}  \li 2             \li \gui{\unicode{247}}   \li \c true
+    \row    \li \gui{1 + 2 \unicode{247} 3}       \li 3        \li 1          \li \gui{+}  \li 2             \li \gui{\unicode{247}}   \li \c false
+    \row    \li \gui{1 + 2 \unicode{247} 3 -}     \li 1.66667  \li 1.66667    \li \gui{-}  \li               \li           \li \c true
+    \row    \li \gui{1 + 2 \unicode{247} 3 - 4}   \li 4        \li 1.66667    \li \gui{-}  \li               \li           \li \c false
+    \row    \li \gui{1 + 2 \unicode{247} 3 - 4 =} \li -2.33333 \li 0          \li          \li               \li           \li \c true
     \endtable
 
     Unary operators, such as \gui Sqrt, require no special handling;
@@ -356,8 +356,8 @@
     base class (QToolButton) but modify it in the following ways:
 
     \list
-    \o We add 20 to the \l{QSize::height()}{height} component of the size hint.
-    \o We make the \l{QSize::width()}{width} component of the size
+    \li We add 20 to the \l{QSize::height()}{height} component of the size hint.
+    \li We make the \l{QSize::width()}{width} component of the size
        hint at least as much as the \l{QSize::width()}{height}.
     \endlist
 

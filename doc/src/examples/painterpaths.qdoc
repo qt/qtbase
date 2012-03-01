@@ -48,9 +48,9 @@
     The example consists of two classes:
 
     \list
-        \o The \c RenderArea class which is a custom widget displaying
+        \li The \c RenderArea class which is a custom widget displaying
            a single painter path.
-        \o The \c Window class which is the applications main window
+        \li The \c Window class which is the applications main window
            displaying several \c RenderArea widgets, and allowing the user
            to manipulate the painter paths' filling, pen, color
            and rotation angle.

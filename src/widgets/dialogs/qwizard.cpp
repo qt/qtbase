@@ -1826,28 +1826,28 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     QWizard supports four wizard looks:
 
     \list
-    \o ClassicStyle
-    \o ModernStyle
-    \o MacStyle
-    \o AeroStyle
+    \li ClassicStyle
+    \li ModernStyle
+    \li MacStyle
+    \li AeroStyle
     \endlist
 
     You can explicitly set the look to use using setWizardStyle()
     (e.g., if you want the same look on all platforms).
 
     \table
-    \header \o ClassicStyle
-            \o ModernStyle
-            \o MacStyle
-            \o AeroStyle
-    \row    \o \inlineimage qtwizard-classic1.png
-            \o \inlineimage qtwizard-modern1.png
-            \o \inlineimage qtwizard-mac1.png
-            \o \inlineimage qtwizard-aero1.png
-    \row    \o \inlineimage qtwizard-classic2.png
-            \o \inlineimage qtwizard-modern2.png
-            \o \inlineimage qtwizard-mac2.png
-            \o \inlineimage qtwizard-aero2.png
+    \header \li ClassicStyle
+            \li ModernStyle
+            \li MacStyle
+            \li AeroStyle
+    \row    \li \inlineimage qtwizard-classic1.png
+            \li \inlineimage qtwizard-modern1.png
+            \li \inlineimage qtwizard-mac1.png
+            \li \inlineimage qtwizard-aero1.png
+    \row    \li \inlineimage qtwizard-classic2.png
+            \li \inlineimage qtwizard-modern2.png
+            \li \inlineimage qtwizard-mac2.png
+            \li \inlineimage qtwizard-aero2.png
     \endtable
 
     Note: AeroStyle has effect only on a Windows Vista system with alpha compositing enabled.
@@ -1876,15 +1876,15 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     only one page is shown. A page has the following attributes:
 
     \list
-    \o A \l{QWizardPage::}{title}.
-    \o A \l{QWizardPage::}{subTitle}.
-    \o A set of pixmaps, which may or may not be honored, depending
+    \li A \l{QWizardPage::}{title}.
+    \li A \l{QWizardPage::}{subTitle}.
+    \li A set of pixmaps, which may or may not be honored, depending
        on the wizard's style:
         \list
-        \o WatermarkPixmap (used by ClassicStyle and ModernStyle)
-        \o BannerPixmap (used by ModernStyle)
-        \o LogoPixmap (used by ClassicStyle and ModernStyle)
-        \o BackgroundPixmap (used by MacStyle)
+        \li WatermarkPixmap (used by ClassicStyle and ModernStyle)
+        \li BannerPixmap (used by ModernStyle)
+        \li LogoPixmap (used by ClassicStyle and ModernStyle)
+        \li BackgroundPixmap (used by MacStyle)
         \endlist
     \endlist
 
@@ -2590,9 +2590,9 @@ bool QWizard::testOption(WizardOption option) const
     By default, the following options are set (depending on the platform):
 
     \list
-    \o Windows: HelpButtonOnRight.
-    \o Mac OS X: NoDefaultButton and NoCancelButton.
-    \o X11 and QWS (Qt for Embedded Linux): none.
+    \li Windows: HelpButtonOnRight.
+    \li Mac OS X: NoDefaultButton and NoCancelButton.
+    \li X11 and QWS (Qt for Embedded Linux): none.
     \endlist
 
     \sa wizardStyle
@@ -2881,14 +2881,14 @@ QPixmap QWizard::pixmap(WizardPixmap which) const
     changedSignal. The table below lists these widgets:
 
     \table
-    \header \o Widget          \o Property                            \o Change Notification Signal
-    \row    \o QAbstractButton \o bool \l{QAbstractButton::}{checked} \o \l{QAbstractButton::}{toggled()}
-    \row    \o QAbstractSlider \o int \l{QAbstractSlider::}{value}    \o \l{QAbstractSlider::}{valueChanged()}
-    \row    \o QComboBox       \o int \l{QComboBox::}{currentIndex}   \o \l{QComboBox::}{currentIndexChanged()}
-    \row    \o QDateTimeEdit   \o QDateTime \l{QDateTimeEdit::}{dateTime} \o \l{QDateTimeEdit::}{dateTimeChanged()}
-    \row    \o QLineEdit       \o QString \l{QLineEdit::}{text}       \o \l{QLineEdit::}{textChanged()}
-    \row    \o QListWidget     \o int \l{QListWidget::}{currentRow}   \o \l{QListWidget::}{currentRowChanged()}
-    \row    \o QSpinBox        \o int \l{QSpinBox::}{value}           \o \l{QSpinBox::}{valueChanged()}
+    \header \li Widget          \li Property                            \li Change Notification Signal
+    \row    \li QAbstractButton \li bool \l{QAbstractButton::}{checked} \li \l{QAbstractButton::}{toggled()}
+    \row    \li QAbstractSlider \li int \l{QAbstractSlider::}{value}    \li \l{QAbstractSlider::}{valueChanged()}
+    \row    \li QComboBox       \li int \l{QComboBox::}{currentIndex}   \li \l{QComboBox::}{currentIndexChanged()}
+    \row    \li QDateTimeEdit   \li QDateTime \l{QDateTimeEdit::}{dateTime} \li \l{QDateTimeEdit::}{dateTimeChanged()}
+    \row    \li QLineEdit       \li QString \l{QLineEdit::}{text}       \li \l{QLineEdit::}{textChanged()}
+    \row    \li QListWidget     \li int \l{QListWidget::}{currentRow}   \li \l{QListWidget::}{currentRowChanged()}
+    \row    \li QSpinBox        \li int \l{QSpinBox::}{value}           \li \l{QSpinBox::}{valueChanged()}
     \endtable
 
     \sa QWizardPage::registerField()
@@ -3361,19 +3361,19 @@ int QWizard::nextId() const
     provide custom behavior:
 
     \list
-    \o initializePage() is called to initialize the page's contents
+    \li initializePage() is called to initialize the page's contents
        when the user clicks the wizard's \gui Next button. If you
        want to derive the page's default from what the user entered
        on previous pages, this is the function to reimplement.
-    \o cleanupPage() is called to reset the page's contents when the
+    \li cleanupPage() is called to reset the page's contents when the
        user clicks the wizard's \gui Back button.
-    \o validatePage() validates the page when the user clicks \gui
+    \li validatePage() validates the page when the user clicks \gui
        Next or \gui Finish. It is often used to show an error message
        if the user has entered incomplete or invalid information.
-    \o nextId() returns the ID of the next page. It is useful when
+    \li nextId() returns the ID of the next page. It is useful when
        \l{creating non-linear wizards}, which allow different
        traversal paths based on the information provided by the user.
-    \o isComplete() is called to determine whether the \gui Next
+    \li isComplete() is called to determine whether the \gui Next
        and/or \gui Finish button should be enabled or disabled. If
        you reimplement isComplete(), also make sure that
        completeChanged() is emitted whenever the complete state
@@ -3878,14 +3878,14 @@ QVariant QWizardPage::field(const QString &name) const
     changedSignal. The table below lists these widgets:
 
     \table
-    \header \o Widget          \o Property                            \o Change Notification Signal
-    \row    \o QAbstractButton \o bool \l{QAbstractButton::}{checked} \o \l{QAbstractButton::}{toggled()}
-    \row    \o QAbstractSlider \o int \l{QAbstractSlider::}{value}    \o \l{QAbstractSlider::}{valueChanged()}
-    \row    \o QComboBox       \o int \l{QComboBox::}{currentIndex}   \o \l{QComboBox::}{currentIndexChanged()}
-    \row    \o QDateTimeEdit   \o QDateTime \l{QDateTimeEdit::}{dateTime} \o \l{QDateTimeEdit::}{dateTimeChanged()}
-    \row    \o QLineEdit       \o QString \l{QLineEdit::}{text}       \o \l{QLineEdit::}{textChanged()}
-    \row    \o QListWidget     \o int \l{QListWidget::}{currentRow}   \o \l{QListWidget::}{currentRowChanged()}
-    \row    \o QSpinBox        \o int \l{QSpinBox::}{value}           \o \l{QSpinBox::}{valueChanged()}
+    \header \li Widget          \li Property                            \li Change Notification Signal
+    \row    \li QAbstractButton \li bool \l{QAbstractButton::}{checked} \li \l{QAbstractButton::}{toggled()}
+    \row    \li QAbstractSlider \li int \l{QAbstractSlider::}{value}    \li \l{QAbstractSlider::}{valueChanged()}
+    \row    \li QComboBox       \li int \l{QComboBox::}{currentIndex}   \li \l{QComboBox::}{currentIndexChanged()}
+    \row    \li QDateTimeEdit   \li QDateTime \l{QDateTimeEdit::}{dateTime} \li \l{QDateTimeEdit::}{dateTimeChanged()}
+    \row    \li QLineEdit       \li QString \l{QLineEdit::}{text}       \li \l{QLineEdit::}{textChanged()}
+    \row    \li QListWidget     \li int \l{QListWidget::}{currentRow}   \li \l{QListWidget::}{currentRowChanged()}
+    \row    \li QSpinBox        \li int \l{QSpinBox::}{value}           \li \l{QSpinBox::}{valueChanged()}
     \endtable
 
     You can use QWizard::setDefaultProperty() to add entries to this

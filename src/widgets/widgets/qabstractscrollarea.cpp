@@ -101,14 +101,14 @@ QT_BEGIN_NAMESPACE
     following:
 
     \list
-        \o Control the scroll bars by setting their
+        \li Control the scroll bars by setting their
            range, value, page step, and tracking their
            movements.
-        \o Draw the contents of the area in the viewport according
+        \li Draw the contents of the area in the viewport according
            to the values of the scroll bars.
-        \o Handle events received by the viewport in
+        \li Handle events received by the viewport in
            viewportEvent() - notably resize events.
-        \o Use \c{viewport->update()} to update the contents of the
+        \li Use \c{viewport->update()} to update the contents of the
           viewport instead of \l{QWidget::update()}{update()}
           as all painting operations take place on the viewport.
     \endlist

@@ -264,14 +264,14 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
 
   The most important parameters are:
   \list
-  \i setOrientation() tells QPrinter which page orientation to use.
-  \i setPaperSize() tells QPrinter what paper size to expect from the
+  \li setOrientation() tells QPrinter which page orientation to use.
+  \li setPaperSize() tells QPrinter what paper size to expect from the
   printer.
-  \i setResolution() tells QPrinter what resolution you wish the
+  \li setResolution() tells QPrinter what resolution you wish the
   printer to provide, in dots per inch (DPI).
-  \i setFullPage() tells QPrinter whether you want to deal with the
+  \li setFullPage() tells QPrinter whether you want to deal with the
   full page or just with the part the printer can draw on.
-  \i setCopyCount() tells QPrinter how many copies of the document
+  \li setCopyCount() tells QPrinter how many copies of the document
   it should print.
   \endlist
 

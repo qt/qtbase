@@ -60,9 +60,9 @@
     important differences:
 
     \list
-      \o QDBusReply accepts exactly one return type, whereas
+      \li QDBusReply accepts exactly one return type, whereas
          QDBusPendingReply can have from 1 to 8 types
-      \o QDBusReply only works on already completed replies, whereas
+      \li QDBusReply only works on already completed replies, whereas
          QDBusPendingReply allows one to wait for replies from pending
          calls
     \endlist

@@ -53,16 +53,16 @@
     There are three approaches to using this class:
 
     \list 1
-    \o \bold{We can draw into the pbuffer and convert it to a QImage
+    \li \b{We can draw into the pbuffer and convert it to a QImage
        using toImage().} This is normally much faster than calling
        QGLWidget::renderPixmap().
 
-    \o \bold{We can draw into the pbuffer and copy the contents into
+    \li \b{We can draw into the pbuffer and copy the contents into
        an OpenGL texture using updateDynamicTexture().} This allows
        us to create dynamic textures and works on all systems
        with pbuffer support.
 
-    \o \bold{On systems that support it, we can bind the pbuffer to
+    \li \b{On systems that support it, we can bind the pbuffer to
        an OpenGL texture.} The texture is then updated automatically
        when the pbuffer contents change, eliminating the need for
        additional copy operations. This is supported only on Windows

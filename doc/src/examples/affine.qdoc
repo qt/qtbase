@@ -39,10 +39,10 @@
     in the following ways:
 
     \list
-    \o Dragging the red circle in the centre of each drawing moves it to a new position.
-    \o Dragging the displaced red circle causes the current drawing to be rotated about the
+    \li Dragging the red circle in the centre of each drawing moves it to a new position.
+    \li Dragging the displaced red circle causes the current drawing to be rotated about the
        central circle. Rotation can also be controlled with the \key Rotate slider.
-    \o Scaling is controlled with the \key Scale slider.
-    \o Each drawing can be sheared with the \key Shear slider.
+    \li Scaling is controlled with the \key Scale slider.
+    \li Each drawing can be sheared with the \key Shear slider.
     \endlist
 */

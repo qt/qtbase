@@ -455,10 +455,10 @@ QString QNetworkSession::errorString() const
 
     \table
         \header
-            \o Key \o Description
+            \li Key \li Description
         \row
-            \o ActiveConfiguration
-            \o If the session \l isOpen() this property returns the identifier of the
+            \li ActiveConfiguration
+            \li If the session \l isOpen() this property returns the identifier of the
             QNetworkConfiguration that is used by this session; otherwise an empty string.
 
             The main purpose of this key is to determine which Internet access point is used
@@ -479,8 +479,8 @@ QString QNetworkSession::errorString() const
                     }
                 \endcode
         \row
-            \o UserChoiceConfiguration
-            \o If the session \l isOpen() and is bound to a QNetworkConfiguration of type
+            \li UserChoiceConfiguration
+            \li If the session \l isOpen() and is bound to a QNetworkConfiguration of type
             UserChoice, this property returns the identifier of the QNetworkConfiguration that the
             configuration resolved to when \l open() was called; otherwise an empty string.
 
@@ -492,14 +492,14 @@ QString QNetworkSession::errorString() const
             whereas \e ActiveConfiguration always returns identifiers to 
             \l {QNetworkConfiguration::InternetAccessPoint}{Internet access points} configurations.
         \row
-            \o ConnectInBackground
-            \o Setting this property to \e true before calling \l open() implies that the connection attempt
+            \li ConnectInBackground
+            \li Setting this property to \e true before calling \l open() implies that the connection attempt
             is made but if no connection can be established, the user is not connsulted and asked to select
             a suitable connection. This property is not set by default and support for it depends on the platform.
 
         \row
-            \o AutoCloseSessionTimeout
-            \o If the session requires polling to keep its state up to date, this property holds
+            \li AutoCloseSessionTimeout
+            \li If the session requires polling to keep its state up to date, this property holds
                the timeout in milliseconds before the session will automatically close. If the
                value of this property is -1 the session will not automatically close. This property
                is set to -1 by default.

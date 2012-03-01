@@ -190,34 +190,34 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 
     \table
     \header
-    \o msb0
-    \o msb1
-    \o msb2
-    \o Variant 
+    \li msb0
+    \li msb1
+    \li msb2
+    \li Variant
 
     \row
-    \o 0
-    \o x
-    \o x
-    \o NCS (Network Computing System)
+    \li 0
+    \li x
+    \li x
+    \li NCS (Network Computing System)
 
     \row
-    \o 1
-    \o 0
-    \o x
-    \o DCE (Distributed Computing Environment)
+    \li 1
+    \li 0
+    \li x
+    \li DCE (Distributed Computing Environment)
 
     \row
-    \o 1
-    \o 1
-    \o 0
-    \o Microsoft (GUID)
+    \li 1
+    \li 1
+    \li 0
+    \li Microsoft (GUID)
 
     \row
-    \o 1
-    \o 1
-    \o 1
-    \o Reserved for future expansion
+    \li 1
+    \li 1
+    \li 1
+    \li Reserved for future expansion
 
     \endtable
 
@@ -234,46 +234,46 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 
     \table
     \header
-    \o msb0
-    \o msb1
-    \o msb2
-    \o msb3
-    \o Version
+    \li msb0
+    \li msb1
+    \li msb2
+    \li msb3
+    \li Version
 
     \row
-    \o 0
-    \o 0
-    \o 0
-    \o 1
-    \o Time
+    \li 0
+    \li 0
+    \li 0
+    \li 1
+    \li Time
 
     \row
-    \o 0
-    \o 0
-    \o 1
-    \o 0
-    \o Embedded POSIX
+    \li 0
+    \li 0
+    \li 1
+    \li 0
+    \li Embedded POSIX
 
     \row
-    \o 0
-    \o 0
-    \o 1
-    \o 1
-    \o Md5(Name)
+    \li 0
+    \li 0
+    \li 1
+    \li 1
+    \li Md5(Name)
 
     \row
-    \o 0
-    \o 1
-    \o 0
-    \o 0
-    \o Random
+    \li 0
+    \li 1
+    \li 0
+    \li 0
+    \li Random
 
     \row
-    \o 0
-    \o 1
-    \o 0
-    \o 1
-    \o Sha1
+    \li 0
+    \li 1
+    \li 0
+    \li 1
+    \li Sha1
 
     \endtable
 
@@ -516,28 +516,28 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
 
     \table
     \header
-    \o Field #
-    \o Source
+    \li Field #
+    \li Source
     
     \row
-    \o 1
-    \o data1
+    \li 1
+    \li data1
     
     \row
-    \o 2
-    \o data2
+    \li 2
+    \li data2
     
     \row
-    \o 3
-    \o data3
+    \li 3
+    \li data3
     
     \row
-    \o 4
-    \o data4[0] .. data4[1]
+    \li 4
+    \li data4[0] .. data4[1]
     
     \row
-    \o 5
-    \o data4[2] .. data4[7]
+    \li 5
+    \li data4[2] .. data4[7]
 
     \endtable
 */
@@ -560,28 +560,28 @@ QString QUuid::toString() const
 
     \table
     \header
-    \o Field #
-    \o Source
+    \li Field #
+    \li Source
 
     \row
-    \o 1
-    \o data1
+    \li 1
+    \li data1
 
     \row
-    \o 2
-    \o data2
+    \li 2
+    \li data2
 
     \row
-    \o 3
-    \o data3
+    \li 3
+    \li data3
 
     \row
-    \o 4
-    \o data4[0] .. data4[1]
+    \li 4
+    \li data4[0] .. data4[1]
 
     \row
-    \o 5
-    \o data4[2] .. data4[7]
+    \li 5
+    \li data4[2] .. data4[7]
 
     \endtable
 
@@ -607,24 +607,24 @@ QByteArray QUuid::toByteArray() const
 
     \table
     \header
-    \o Field #
-    \o Source
+    \li Field #
+    \li Source
 
     \row
-    \o 1
-    \o data1
+    \li 1
+    \li data1
 
     \row
-    \o 2
-    \o data2
+    \li 2
+    \li data2
 
     \row
-    \o 3
-    \o data3
+    \li 3
+    \li data3
 
     \row
-    \o 4
-    \o data4[0] .. data4[7]
+    \li 4
+    \li data4[0] .. data4[7]
 
     \endtable
 

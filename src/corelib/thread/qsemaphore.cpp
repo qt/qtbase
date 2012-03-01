@@ -66,10 +66,10 @@ QT_BEGIN_NAMESPACE
     release():
 
     \list
-    \o acquire(\e{n}) tries to acquire \e n resources. If there aren't
+    \li acquire(\e{n}) tries to acquire \e n resources. If there aren't
        that many resources available, the call will block until this
        is the case.
-    \o release(\e{n}) releases \e n resources.
+    \li release(\e{n}) releases \e n resources.
     \endlist
 
     There's also a tryAcquire() function that returns immediately if

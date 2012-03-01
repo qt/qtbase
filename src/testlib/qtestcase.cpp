@@ -109,7 +109,7 @@ QT_BEGIN_NAMESPACE
    true, execution continues. If not, a failure is recorded in the test log
    and the test won't be executed further.
 
-   \bold {Note:} This macro can only be used in a test function that is invoked
+   \b {Note:} This macro can only be used in a test function that is invoked
    by the test framework.
 
    Example:
@@ -246,7 +246,7 @@ QT_BEGIN_NAMESPACE
    \c aString and \c expected are variables on the stack that are initialized with
    the current test data.
 
-   \bold {Note:} This macro can only be used in a test function that is invoked
+   \b {Note:} This macro can only be used in a test function that is invoked
    by the test framework. The test function must have a _data function.
 */
 
@@ -266,7 +266,7 @@ QT_BEGIN_NAMESPACE
    This macro can be used to force a test failure. The test stops
    executing and the failure \a message is appended to the test log.
 
-   \bold {Note:} This macro can only be used in a test function that is invoked
+   \b {Note:} This macro can only be used in a test function that is invoked
    by the test framework.
 
    Example:
@@ -316,7 +316,7 @@ QT_BEGIN_NAMESPACE
    If called from initTestCase() or initTestCase_data(), the QSKIP() macro will
    skip all test and _data functions.
 
-   \bold {Note:} This macro can only be used in a test function or _data
+   \b {Note:} This macro can only be used in a test function or _data
    function that is invoked by the test framework.
 
    Example:
@@ -343,7 +343,7 @@ QT_BEGIN_NAMESPACE
    \a mode is a \l QTest::TestFailMode and sets whether the test should
    continue to execute or not.
 
-   \bold {Note:} This macro can only be used in a test function that is invoked
+   \b {Note:} This macro can only be used in a test function that is invoked
    by the test framework.
 
    Example 1:
@@ -379,11 +379,11 @@ QT_BEGIN_NAMESPACE
    resolves to an existing file or directory:
 
    \list
-   \o \a filename relative to QCoreApplication::applicationDirPath()
+   \li \a filename relative to QCoreApplication::applicationDirPath()
       (only if a QCoreApplication or QApplication object has been created).
-   \o \a filename relative to the test's standard install directory
+   \li \a filename relative to the test's standard install directory
       (QLibraryInfo::TestsPath with the lowercased testcase name appended).
-   \o \a filename relative to the directory containing the source file from which
+   \li \a filename relative to the directory containing the source file from which
       QFINDTESTDATA is invoked.
    \endlist
 
@@ -396,16 +396,16 @@ QT_BEGIN_NAMESPACE
    The testdata file will be resolved as the first existing file from:
 
    \list
-   \o \c{/home/user/build/myxmlparser/tests/tst_myxmlparser/testxml/simple1.xml}
-   \o \c{/usr/local/Qt-5.0.0/tests/tst_myxmlparser/testxml/simple1.xml}
-   \o \c{/home/user/sources/myxmlparser/tests/tst_myxmlparser/testxml/simple1.xml}
+   \li \c{/home/user/build/myxmlparser/tests/tst_myxmlparser/testxml/simple1.xml}
+   \li \c{/usr/local/Qt-5.0.0/tests/tst_myxmlparser/testxml/simple1.xml}
+   \li \c{/home/user/sources/myxmlparser/tests/tst_myxmlparser/testxml/simple1.xml}
    \endlist
 
    This allows the test to find its testdata regardless of whether the
    test has been installed, and regardless of whether the test's build tree
    is equal to the test's source tree.
 
-   \bold {Note:} reliable detection of testdata from the source directory requires
+   \b {Note:} reliable detection of testdata from the source directory requires
    either that qmake is used, or the \c{QT_TESTCASE_BUILDDIR} macro is defined to
    point to the working directory from which the compiler is invoked, or only
    absolute paths to the source files are passed to the compiler. Otherwise, the
@@ -427,7 +427,7 @@ QT_BEGIN_NAMESPACE
     Similarly, if qmake is used and the configuration includes \c{QT += gui}, then
     \c QT_GUI_LIB will be defined automatically.
 
-    \bold {Note:} On platforms that have keypad navigation enabled by default,
+    \b {Note:} On platforms that have keypad navigation enabled by default,
     this macro will forcefully disable it if \c QT_WIDGETS_LIB is defined.  This is done
     to simplify the usage of key events when writing autotests. If you wish to write a
     test case that uses keypad navigation, you should enable it either in the
@@ -597,7 +597,7 @@ QT_BEGIN_NAMESPACE
     Simulates pressing a \a key with an optional \a modifier on a \a widget. If \a delay
     is larger than 0, the test will wait for \a delay milliseconds before pressing the key.
 
-    \bold {Note:} At some point you should release the key using \l keyRelease().
+    \b {Note:} At some point you should release the key using \l keyRelease().
 
     \sa QTest::keyRelease(), QTest::keyClick()
 */
@@ -610,7 +610,7 @@ QT_BEGIN_NAMESPACE
     If \a delay is larger than 0, the test will wait for \a delay milliseconds
     before pressing the key.
 
-    \bold {Note:} At some point you should release the key using \l keyRelease().
+    \b {Note:} At some point you should release the key using \l keyRelease().
 
     \sa QTest::keyRelease(), QTest::keyClick()
 */
@@ -714,7 +714,7 @@ QT_BEGIN_NAMESPACE
     You can add specializations of this function to your test to enable
     verbose output.
 
-    \bold {Note:} The caller of toString() must delete the returned data
+    \b {Note:} The caller of toString() must delete the returned data
     using \c{delete[]}.  Your implementation should return a string
     created with \c{new[]} or qstrdup().
 
@@ -2128,7 +2128,7 @@ void QTest::qWarn(const char *message, const char *file, int line)
     test log. If the test finished and the \a message was not outputted,
     a test failure is appended to the test log.
 
-    \bold {Note:} Invoking this function will only ignore one message.
+    \b {Note:} Invoking this function will only ignore one message.
     If the message you want to ignore is outputted twice, you have to
     call ignoreMessage() twice, too.
 
@@ -2295,7 +2295,7 @@ void QTest::addColumnInternal(int id, const char *name)
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 20
 
-    \bold {Note:} This macro can only be used in a test's data function
+    \b {Note:} This macro can only be used in a test's data function
     that is invoked by the test framework.
 
     See \l {Chapter 2: Data Driven Testing}{Data Driven Testing} for
@@ -2328,7 +2328,7 @@ QTestData &QTest::newRow(const char *dataTag)
     To add custom types to the testdata, the type must be registered with
     QMetaType via \l Q_DECLARE_METATYPE().
 
-    \bold {Note:} This macro can only be used in a test's data function
+    \b {Note:} This macro can only be used in a test's data function
     that is invoked by the test framework.
 
     See \l {Chapter 2: Data Driven Testing}{Data Driven Testing} for
@@ -2374,7 +2374,7 @@ bool QTest::currentTestFailed()
 
     \a ms must be greater than 0.
 
-    \bold {Note:} The qSleep() function calls either \c nanosleep() on
+    \b {Note:} The qSleep() function calls either \c nanosleep() on
     unix or \c Sleep() on windows, so the accuracy of time spent in
     qSleep() depends on the operating system.
 

@@ -86,11 +86,11 @@
 
     We connect the following signals to their corresponding slots:
     \list
-        \o \c{sourceButton}'s \l{QPushButton::clicked()}{clicked()} signal is
+        \li \c{sourceButton}'s \l{QPushButton::clicked()}{clicked()} signal is
             connected to \c chooseSource(),
-        \o \c{operatorComboBox}'s \l{QComboBox::activated()}{activated()}
+        \li \c{operatorComboBox}'s \l{QComboBox::activated()}{activated()}
             signal is connected to \c recalculateResult(), and
-        \o \c{destinationButton}'s \l{QToolButton::clicked()}{clicked()} signal
+        \li \c{destinationButton}'s \l{QToolButton::clicked()}{clicked()} signal
             is connected to \c chooseDestination().
     \endlist
 

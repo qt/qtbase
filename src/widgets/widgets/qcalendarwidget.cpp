@@ -2001,9 +2001,9 @@ void QCalendarWidgetPrivate::_q_editingFinished()
     setGridVisible() function:
 
     \table
-    \row \o
+    \row \li
         \image qcalendarwidget-grid.png
-    \row \o
+    \row \li
         \snippet doc/src/snippets/code/src_gui_widgets_qcalendarwidget.cpp 0
     \endtable
 
@@ -2418,9 +2418,9 @@ void QCalendarWidget::showToday()
 
     \table
     \row
-    \o \image qcalendarwidget-minimum.png
+    \li \image qcalendarwidget-minimum.png
     \row
-    \o
+    \li
     \snippet doc/src/snippets/code/src_gui_widgets_qcalendarwidget.cpp 1
     \endtable
 
@@ -2469,9 +2469,9 @@ void QCalendarWidget::setMinimumDate(const QDate &date)
 
     \table
     \row
-    \o \image qcalendarwidget-maximum.png
+    \li \image qcalendarwidget-maximum.png
     \row
-    \o
+    \li
     \snippet doc/src/snippets/code/src_gui_widgets_qcalendarwidget.cpp 2
     \endtable
 
@@ -2638,9 +2638,9 @@ void QCalendarWidget::setVerticalHeaderFormat(QCalendarWidget::VerticalHeaderFor
 
     \table
     \row
-        \o \inlineimage qcalendarwidget-grid.png
+        \li \inlineimage qcalendarwidget-grid.png
     \row
-        \o
+        \li
         \snippet doc/src/snippets/code/src_gui_widgets_qcalendarwidget.cpp 5
     \endtable
 

@@ -55,28 +55,28 @@
     In particular we show how to:
 
     \list
-	\o Create custom graphics items.
-	\o Handle mouse events and movement of items.
-	\o Implement a graphics scene that can manage our custom items.
-	\o Custom painting of items.
-	\o Create a movable and editable text item.
+    \li Create custom graphics items.
+    \li Handle mouse events and movement of items.
+    \li Implement a graphics scene that can manage our custom items.
+    \li Custom painting of items.
+    \li Create a movable and editable text item.
     \endlist
 
     The example consists of the following classes:
     \list
-	\o \c MainWindow creates the widgets and display
+    \li \c MainWindow creates the widgets and display
 	   them in a QMainWindow. It also manages the interaction 
 	   between the widgets and the graphics scene, view and 
 	   items.
-	\o \c DiagramItem inherits QGraphicsPolygonItem and
+    \li \c DiagramItem inherits QGraphicsPolygonItem and
 	   represents a flowchart shape. 
-	\o \c TextDiagramItem inherits QGraphicsTextItem and
+    \li \c TextDiagramItem inherits QGraphicsTextItem and
 	   represents text items in the diagram. The class adds
 	   support for moving the item with the mouse, which is not
 	   supported by QGraphicsTextItem.
-	\o \c Arrow inherits QGraphicsLineItem and is an arrow
+    \li \c Arrow inherits QGraphicsLineItem and is an arrow
 	   that connect two DiagramItems. 
-	\o \c DiagramScene inherits QGraphicsDiagramScene and
+    \li \c DiagramScene inherits QGraphicsDiagramScene and
 	   provides support for \c DiagramItem, \c Arrow and 
 	   \c DiagramTextItem (In addition to the support already
 	   handled by QGraphicsScene).

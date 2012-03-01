@@ -50,10 +50,10 @@
     The example consists of the following classes:
 
     \list
-    \o \c LicenseWizard inherits QWizard and implements a non-linear
+    \li \c LicenseWizard inherits QWizard and implements a non-linear
        five-page wizard that leads the user through the process of
        choosing a license agreement.
-    \o \c IntroPage, \c EvaluatePage, \c RegisterPage, \c
+    \li \c IntroPage, \c EvaluatePage, \c RegisterPage, \c
        DetailsPage, and \c ConclusionPage are QWizardPage subclasses
        that implement the wizard pages.
     \endlist
@@ -71,12 +71,12 @@
     The enum defines the IDs associated with the various pages:
 
     \table
-    \header \o Class name \o Enum value \o Page ID
-    \row \o \c IntroPage \o \c Page_Intro \o 0
-    \row \o \c EvaluatePage \o \c Page_Evaluate \o 1
-    \row \o \c RegisterPage \o \c Page_Register \o 2
-    \row \o \c DetailsPage \o \c Page_Details \o 3
-    \row \o \c ConclusionPage \o \c Page_Conclusion \o 4
+    \header \li Class name \li Enum value \li Page ID
+    \row \li \c IntroPage \li \c Page_Intro \li 0
+    \row \li \c EvaluatePage \li \c Page_Evaluate \li 1
+    \row \li \c RegisterPage \li \c Page_Register \li 2
+    \row \li \c DetailsPage \li \c Page_Details \li 3
+    \row \li \c ConclusionPage \li \c Page_Conclusion \li 4
     \endtable
 
     For this example, the IDs are arbitrary. The only constraints are
@@ -206,11 +206,11 @@
     QWidget::setVisible():
 
     \list
-    \o If the page is shown, we set the \l{QWizard::}{CustomButton1} button's
+    \li If the page is shown, we set the \l{QWizard::}{CustomButton1} button's
        text to \gui{\underline{P}rint}, we enable the \l{QWizard::}{HaveCustomButton1}
        option, and we connect the QWizard's \l{QWizard::}{customButtonClicked()}
        signal to our \c printButtonClicked() slot.
-    \o If the page is hidden, we disable the \l{QWizard::}{HaveCustomButton1}
+    \li If the page is hidden, we disable the \l{QWizard::}{HaveCustomButton1}
        option and disconnect the \c printButtonClicked() slot.
     \endlist
 

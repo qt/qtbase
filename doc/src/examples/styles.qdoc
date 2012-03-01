@@ -56,9 +56,9 @@
     The example consists of the following classes:
 
     \list
-    \o \c NorwegianWoodStyle inherits from QMotifStyle and implements
+    \li \c NorwegianWoodStyle inherits from QMotifStyle and implements
         the Norwegian Wood style.
-    \o \c WidgetGallery is a \c QDialog subclass that shows the most
+    \li \c WidgetGallery is a \c QDialog subclass that shows the most
        common widgets and allows the user to switch style
        dynamically.
     \endlist
@@ -91,16 +91,16 @@
     resources}.
 
     \table
-    \row \o \inlineimage widgets/styles/images/woodbackground.png
+    \row \li \inlineimage widgets/styles/images/woodbackground.png
 
-         \o \bold{woodbackground.png}
+         \li \b{woodbackground.png}
 
             This texture is used as the background of most widgets.
             The wood pattern is horizontal.
 
-    \row \o \inlineimage widgets/styles/images/woodbutton.png
+    \row \li \inlineimage widgets/styles/images/woodbutton.png
 
-         \o \bold{woodbutton.png}
+         \li \b{woodbutton.png}
 
             This texture is used for filling push buttons and
             comboboxes. The wood pattern is vertical and more reddish
@@ -261,17 +261,17 @@
     them based on the state of the button:
 
     \list
-    \o If the button is a \l{QPushButton::flat}{flat button}, we use
+    \li If the button is a \l{QPushButton::flat}{flat button}, we use
        the \l{QPalette::Background}{Background} brush. We set \c
        darker to \c true if the button is
        \l{QAbstractButton::down}{down} or
        \l{QAbstractButton::checked}{checked}.
-    \o If the button is currently held down by the user or in the
+    \li If the button is currently held down by the user or in the
        \l{QAbstractButton::checked}{checked} state, we use the
        \l{QPalette::Mid}{Mid} component of the palette. We set
        \c darker to \c true if the button is
        \l{QAbstractButton::checked}{checked}.
-    \o Otherwise, we use the \l{QPalette::Button}{Button} component
+    \li Otherwise, we use the \l{QPalette::Button}{Button} component
        of the palette.
     \endlist
 

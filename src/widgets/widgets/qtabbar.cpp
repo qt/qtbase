@@ -252,21 +252,21 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
     tab:
 
     \list
-    \i tabSizeHint() calcuates the size of a tab.
-    \i tabInserted() notifies that a new tab was added.
-    \i tabRemoved() notifies that a tab was removed.
-    \i tabLayoutChange() notifies that the tabs have been re-laid out.
-    \i paintEvent() paints all tabs.
+    \li tabSizeHint() calcuates the size of a tab.
+    \li tabInserted() notifies that a new tab was added.
+    \li tabRemoved() notifies that a tab was removed.
+    \li tabLayoutChange() notifies that the tabs have been re-laid out.
+    \li paintEvent() paints all tabs.
     \endlist
 
     For subclasses, you might also need the tabRect() functions which
     returns the visual geometry of a single tab.
 
     \table 100%
-    \row \o \inlineimage plastique-tabbar.png Screenshot of a Plastique style tab bar
-         \o A tab bar shown in the Plastique widget style.
-    \row \o \inlineimage plastique-tabbar-truncated.png Screenshot of a truncated Plastique tab bar
-         \o A truncated tab bar shown in the Plastique widget style.
+    \row \li \inlineimage plastique-tabbar.png Screenshot of a Plastique style tab bar
+         \li A tab bar shown in the Plastique widget style.
+    \row \li \inlineimage plastique-tabbar-truncated.png Screenshot of a truncated Plastique tab bar
+         \li A truncated tab bar shown in the Plastique widget style.
     \endtable
 
     \sa QTabWidget

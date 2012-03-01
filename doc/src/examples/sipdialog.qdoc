@@ -34,8 +34,8 @@
     the Windows Mobile SIP (Software Input Panel) and reacts to it.
 
     \table
-    \row \o \inlineimage sipdialog-closed.png
-         \o \inlineimage sipdialog-opened.png
+    \row \li \inlineimage sipdialog-closed.png
+         \li \inlineimage sipdialog-opened.png
     \endtable
 
     Sometimes it is necessary for a dialog to take the SIP into account,
@@ -90,10 +90,10 @@
 
     The following signals are connected to their respective slots:
     \list
-        \o \c{button}'s \l{QPushButton::pressed()}{pressed()} signal to
+        \li \c{button}'s \l{QPushButton::pressed()}{pressed()} signal to
         \l{QApplication}'s \l{QApplication::closeAllWindows()}
         {closeAllWindows()} slot,
-        \o \l{QDesktopWidget}'s \l{QDesktopWidget::workAreaResized()}
+        \li \l{QDesktopWidget}'s \l{QDesktopWidget::workAreaResized()}
         {workAreaResized()} signal to \c{dialog}'s \c desktopResized() slot.
     \endlist
 

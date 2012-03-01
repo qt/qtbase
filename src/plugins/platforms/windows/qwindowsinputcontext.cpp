@@ -108,11 +108,11 @@ template <class T>
     \section1 Testing
 
     \list
-    \o Install the East Asian language support and choose Japanese (say).
-    \o Compile the \a mainwindows/mdi example and open a text window.
-    \o In the language bar, switch to Japanese and choose the
+    \li Install the East Asian language support and choose Japanese (say).
+    \li Compile the \a mainwindows/mdi example and open a text window.
+    \li In the language bar, switch to Japanese and choose the
        Input method 'Hiragana'.
-    \o In a text editor control, type the syllable \a 'la'.
+    \li In a text editor control, type the syllable \a 'la'.
        Underlined characters show up, indicating that there is completion
        available. Press the Space key two times. A completion popup occurs
        which shows the options.

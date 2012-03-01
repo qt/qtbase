@@ -40,14 +40,14 @@
     The example consists of the following classes:
 
     \list
-        \o \c StateSwitcher inherits QState and can add
+        \li \c StateSwitcher inherits QState and can add
               \c {StateSwitchTransition}s to other states.
               When entered, it will randomly transition to one of these
               states. 
-        \o \c StateSwitchTransition is a custom transition that
+        \li \c StateSwitchTransition is a custom transition that
            triggers on \c{StateSwitchEvent}s.
-        \o \c StateSwitchEvent is a QEvent that triggers \c{StateSwitchTransition}s.
-        \o \c QGraphicsRectWidget is a QGraphicsWidget that simply
+        \li \c StateSwitchEvent is a QEvent that triggers \c{StateSwitchTransition}s.
+        \li \c QGraphicsRectWidget is a QGraphicsWidget that simply
            paints its background in a solid \l{Qt::}{blue} color.
     \endlist
 

@@ -789,38 +789,38 @@ QTextCodec::ConverterState::~ConverterState()
     The supported encodings are:
 
     \list
-    \o Apple Roman
-    \o \l{Big5 Text Codec}{Big5}
-    \o \l{Big5-HKSCS Text Codec}{Big5-HKSCS}
-    \o CP949
-    \o \l{EUC-JP Text Codec}{EUC-JP}
-    \o \l{EUC-KR Text Codec}{EUC-KR}
-    \o \l{GBK Text Codec}{GB18030-0}
-    \o IBM 850
-    \o IBM 866
-    \o IBM 874
-    \o \l{ISO 2022-JP (JIS) Text Codec}{ISO 2022-JP}
-    \o ISO 8859-1 to 10
-    \o ISO 8859-13 to 16
-    \o Iscii-Bng, Dev, Gjr, Knd, Mlm, Ori, Pnj, Tlg, and Tml
-    \o JIS X 0201
-    \o JIS X 0208
-    \o KOI8-R
-    \o KOI8-U
-    \o MuleLao-1
-    \o ROMAN8
-    \o \l{Shift-JIS Text Codec}{Shift-JIS}
-    \o TIS-620
-    \o \l{TSCII Text Codec}{TSCII}
-    \o UTF-8
-    \o UTF-16
-    \o UTF-16BE
-    \o UTF-16LE
-    \o UTF-32
-    \o UTF-32BE
-    \o UTF-32LE
-    \o Windows-1250 to 1258
-    \o WINSAMI2
+    \li Apple Roman
+    \li \l{Big5 Text Codec}{Big5}
+    \li \l{Big5-HKSCS Text Codec}{Big5-HKSCS}
+    \li CP949
+    \li \l{EUC-JP Text Codec}{EUC-JP}
+    \li \l{EUC-KR Text Codec}{EUC-KR}
+    \li \l{GBK Text Codec}{GB18030-0}
+    \li IBM 850
+    \li IBM 866
+    \li IBM 874
+    \li \l{ISO 2022-JP (JIS) Text Codec}{ISO 2022-JP}
+    \li ISO 8859-1 to 10
+    \li ISO 8859-13 to 16
+    \li Iscii-Bng, Dev, Gjr, Knd, Mlm, Ori, Pnj, Tlg, and Tml
+    \li JIS X 0201
+    \li JIS X 0208
+    \li KOI8-R
+    \li KOI8-U
+    \li MuleLao-1
+    \li ROMAN8
+    \li \l{Shift-JIS Text Codec}{Shift-JIS}
+    \li TIS-620
+    \li \l{TSCII Text Codec}{TSCII}
+    \li UTF-8
+    \li UTF-16
+    \li UTF-16BE
+    \li UTF-16LE
+    \li UTF-32
+    \li UTF-32BE
+    \li UTF-32LE
+    \li Windows-1250 to 1258
+    \li WINSAMI2
     \endlist
 
     QTextCodecs can be used as follows to convert some locally encoded
@@ -871,29 +871,29 @@ QTextCodec::ConverterState::~ConverterState()
     QTextCodec and implement the functions listed in the table below.
 
     \table
-    \header \o Function \o Description
+    \header \li Function \li Description
 
-    \row \o name()
-         \o Returns the official name for the encoding. If the
+    \row \li name()
+         \li Returns the official name for the encoding. If the
             encoding is listed in the
             \l{IANA character-sets encoding file}, the name
             should be the preferred MIME name for the encoding.
 
-    \row \o aliases()
-         \o Returns a list of alternative names for the encoding.
+    \row \li aliases()
+         \li Returns a list of alternative names for the encoding.
             QTextCodec provides a default implementation that returns
             an empty list. For example, "ISO-8859-1" has "latin1",
             "CP819", "IBM819", and "iso-ir-100" as aliases.
 
-    \row \o mibEnum()
-         \o Return the MIB enum for the encoding if it is listed in
+    \row \li mibEnum()
+         \li Return the MIB enum for the encoding if it is listed in
             the \l{IANA character-sets encoding file}.
 
-    \row \o convertToUnicode()
-         \o Converts an 8-bit character string to Unicode.
+    \row \li convertToUnicode()
+         \li Converts an 8-bit character string to Unicode.
 
-    \row \o convertFromUnicode()
-         \o Converts a Unicode string to an 8-bit character string.
+    \row \li convertFromUnicode()
+         \li Converts a Unicode string to an 8-bit character string.
     \endtable
 
     \sa QTextStream, QTextDecoder, QTextEncoder, {Codecs Example}

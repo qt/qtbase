@@ -77,19 +77,19 @@ QT_BEGIN_NAMESPACE
     minimum:
 
     \table
-    \header \o Function                     \o Description
-    \row     \o QGraphicsLayoutItem::setGeometry()
-               \o Notifies you when the geometry of the layout is set. You can
+    \header \li Function                     \li Description
+    \row     \li QGraphicsLayoutItem::setGeometry()
+               \li Notifies you when the geometry of the layout is set. You can
                    store the geometry in your own layout class in a reimplementation
                    of this function.
-    \row    \o QGraphicsLayoutItem::sizeHint()
-               \o Returns the layout's size hints.
-    \row    \o QGraphicsLayout::count()
-              \o Returns the number of items in your layout.
-    \row    \o QGraphicsLayout::itemAt()
-              \o Returns a pointer to an item in your layout.
-    \row    \o QGraphicsLayout::removeAt()
-              \o Removes an item from your layout without destroying it.
+    \row    \li QGraphicsLayoutItem::sizeHint()
+               \li Returns the layout's size hints.
+    \row    \li QGraphicsLayout::count()
+              \li Returns the number of items in your layout.
+    \row    \li QGraphicsLayout::itemAt()
+              \li Returns a pointer to an item in your layout.
+    \row    \li QGraphicsLayout::removeAt()
+              \li Removes an item from your layout without destroying it.
     \endtable
 
     For more details on how to implement each function, refer to the individual

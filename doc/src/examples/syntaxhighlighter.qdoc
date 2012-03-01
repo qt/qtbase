@@ -40,9 +40,9 @@
     The example consists of two classes:
 
     \list
-        \o The \c Highlighter class defines and applies the
+        \li The \c Highlighter class defines and applies the
            highlighting rules.
-        \o The \c MainWindow widget is the application's main window.
+        \li The \c MainWindow widget is the application's main window.
     \endlist
 
     We will first review the \c Highlighter class to see how you can

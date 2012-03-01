@@ -413,14 +413,14 @@ static bool canGetData(int cf, IDataObject * pDataObj)
     Qt has predefined support for the following Windows Clipboard formats:
 
     \table
-    \header \o Windows Format \o Equivalent MIME type
-    \row \o \c CF_UNICODETEXT \o \c text/plain
-    \row \o \c CF_TEXT        \o \c text/plain
-    \row \o \c CF_DIB         \o \c{image/xyz}, where \c xyz is
+    \header \li Windows Format \li Equivalent MIME type
+    \row \li \c CF_UNICODETEXT \li \c text/plain
+    \row \li \c CF_TEXT        \li \c text/plain
+    \row \li \c CF_DIB         \li \c{image/xyz}, where \c xyz is
                                  a \l{QImageWriter::supportedImageFormats()}{Qt image format}
-    \row \o \c CF_HDROP       \o \c text/uri-list
-    \row \o \c CF_INETURL     \o \c text/uri-list
-    \row \o \c CF_HTML        \o \c text/html
+    \row \li \c CF_HDROP       \li \c text/uri-list
+    \row \li \c CF_INETURL     \li \c text/uri-list
+    \row \li \c CF_HTML        \li \c text/html
     \endtable
 
     An example use of this class would be to map the Windows Metafile

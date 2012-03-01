@@ -62,21 +62,21 @@
     Qt provides the following standard effects:
 
     \list
-    \o QGraphicsBlurEffect - blurs the item by a given radius
-    \o QGraphicsDropShadowEffect - renders a dropshadow behind the item
-    \o QGraphicsColorizeEffect - renders the item in shades of any given color
-    \o QGraphicsOpacityEffect - renders the item with an opacity
+    \li QGraphicsBlurEffect - blurs the item by a given radius
+    \li QGraphicsDropShadowEffect - renders a dropshadow behind the item
+    \li QGraphicsColorizeEffect - renders the item in shades of any given color
+    \li QGraphicsOpacityEffect - renders the item with an opacity
     \endlist
 
     \table
     \row
-    \o{2,1} \img graphicseffect-plain.png
+    \li{2,1} \img graphicseffect-plain.png
     \row
-    \o \img graphicseffect-blur.png
-    \o \img graphicseffect-colorize.png
+    \li \img graphicseffect-blur.png
+    \li \img graphicseffect-colorize.png
     \row
-    \o \img graphicseffect-opacity.png
-    \o \img graphicseffect-drop-shadow.png
+    \li \img graphicseffect-opacity.png
+    \li \img graphicseffect-drop-shadow.png
     \endtable
 
     \img graphicseffect-widget.png

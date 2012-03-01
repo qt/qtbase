@@ -164,14 +164,14 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     three different ways:
 
     \list
-    \o For standard shortcuts, a \l{QKeySequence::StandardKey}{standard key}
+    \li For standard shortcuts, a \l{QKeySequence::StandardKey}{standard key}
        can be used to request the platform-specific key sequence associated
        with each shortcut.
-    \o For custom shortcuts, human-readable strings such as "Ctrl+X" can
+    \li For custom shortcuts, human-readable strings such as "Ctrl+X" can
        be used, and these can be translated into the appropriate shortcuts
        for users of different languages. Translations are made in the
        "QShortcut" context.
-    \o For hard-coded shortcuts, integer key codes can be specified with
+    \li For hard-coded shortcuts, integer key codes can be specified with
        a combination of values defined by the Qt::Key and Qt::Modifier enum
        values. Each key code consists of a single Qt::Key value and zero or
        more modifiers, such as Qt::SHIFT, Qt::CTRL, Qt::ALT and Qt::META.
@@ -206,7 +206,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     code point of the character; for example, 'A' gives the same key sequence
     as Qt::Key_A.
 
-    \bold{Note:} On Mac OS X, references to "Ctrl", Qt::CTRL, Qt::Control
+    \b{Note:} On Mac OS X, references to "Ctrl", Qt::CTRL, Qt::Control
     and Qt::ControlModifier correspond to the \key Command keys on the
     Macintosh keyboard, and references to "Meta", Qt::META, Qt::Meta and
     Qt::MetaModifier correspond to the \key Control keys. Developers on
@@ -225,72 +225,72 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     corresponds to the \key Control keys.
 
     \table
-    \header \i StandardKey      \i Windows                              \i Mac OS X                 \i KDE          \i GNOME
-    \row    \i HelpContents     \i F1                                   \i Ctrl+?                   \i F1           \i F1
-    \row    \i WhatsThis        \i Shift+F1                             \i Shift+F1                 \i Shift+F1     \i Shift+F1
-    \row    \i Open             \i Ctrl+O                               \i Ctrl+O                   \i Ctrl+O       \i Ctrl+O
-    \row    \i Close            \i Ctrl+F4, Ctrl+W                      \i Ctrl+W, Ctrl+F4          \i Ctrl+W       \i Ctrl+W
-    \row    \i Save             \i Ctrl+S                               \i Ctrl+S                   \i Ctrl+S       \i Ctrl+S
-    \row    \i Quit             \i                                      \i Ctrl+Q                   \i Qtrl+Q       \i Qtrl+Q
-    \row    \i SaveAs           \i                                      \i Ctrl+Shift+S             \i              \i Ctrl+Shift+S
-    \row    \i New              \i Ctrl+N                               \i Ctrl+N                   \i Ctrl+N       \i Ctrl+N
-    \row    \i Delete           \i Del                                  \i Del, Meta+D              \i Del, Ctrl+D  \i Del, Ctrl+D
-    \row    \i Cut              \i Ctrl+X, Shift+Del                    \i Ctrl+X                   \i Ctrl+X, F20, Shift+Del \i Ctrl+X, F20, Shift+Del
-    \row    \i Copy             \i Ctrl+C, Ctrl+Ins                     \i Ctrl+C                   \i Ctrl+C, F16, Ctrl+Ins  \i Ctrl+C, F16, Ctrl+Ins
-    \row    \i Paste            \i Ctrl+V, Shift+Ins                    \i Ctrl+V                   \i Ctrl+V, F18, Shift+Ins \i Ctrl+V, F18, Shift+Ins
-    \row    \i Preferences      \i                                      \i Ctrl+,                   \i              \i
-    \row    \i Undo             \i Ctrl+Z, Alt+Backspace                \i Ctrl+Z                   \i Ctrl+Z, F14  \i Ctrl+Z, F14
-    \row    \i Redo             \i Ctrl+Y, Shift+Ctrl+Z, Alt+Shift+Backspace \i Ctrl+Shift+Z        \i Ctrl+Shift+Z \i Ctrl+Shift+Z
-    \row    \i Back             \i Alt+Left, Backspace                  \i Ctrl+[                   \i Alt+Left     \i Alt+Left
-    \row    \i Forward          \i Alt+Right, Shift+Backspace           \i Ctrl+]                   \i Alt+Right    \i Alt+Right
-    \row    \i Refresh          \i F5                                   \i F5                       \i F5           \i Ctrl+R, F5
-    \row    \i ZoomIn           \i Ctrl+Plus                            \i Ctrl+Plus                \i Ctrl+Plus    \i Ctrl+Plus
-    \row    \i ZoomOut          \i Ctrl+Minus                           \i Ctrl+Minus               \i Ctrl+Minus   \i Ctrl+Minus
-    \row    \i Print            \i Ctrl+P                               \i Ctrl+P                   \i Ctrl+P       \i Ctrl+P
-    \row    \i AddTab           \i Ctrl+T                               \i Ctrl+T                   \i Ctrl+Shift+N, Ctrl+T \i Ctrl+T
-    \row    \i NextChild        \i Ctrl+Tab, Forward, Ctrl+F6           \i Ctrl+}, Forward, Ctrl+Tab \i Ctrl+Tab, Forward, Ctrl+Comma \i Ctrl+Tab, Forward
-    \row    \i PreviousChild    \i Ctrl+Shift+Tab, Back, Ctrl+Shift+F6  \i Ctrl+{, Back, Ctrl+Shift+Tab \i Ctrl+Shift+Tab, Back, Ctrl+Period \i Ctrl+Shift+Tab, Back
-    \row    \i Find             \i Ctrl+F                               \i Ctrl+F                   \i Ctrl+F         \i Ctrl+F
-    \row    \i FindNext         \i F3, Ctrl+G                           \i Ctrl+G                   \i F3             \i Ctrl+G, F3
-    \row    \i FindPrevious     \i Shift+F3, Ctrl+Shift+G               \i Ctrl+Shift+G             \i Shift+F3       \i Ctrl+Shift+G, Shift+F3
-    \row    \i Replace          \i Ctrl+H                               \i (none)                   \i Ctrl+R         \i Ctrl+H
-    \row    \i SelectAll        \i Ctrl+A                               \i Ctrl+A                   \i Ctrl+A         \i Ctrl+A
-    \row    \i Bold             \i Ctrl+B                               \i Ctrl+B                   \i Ctrl+B         \i Ctrl+B
-    \row    \i Italic           \i Ctrl+I                               \i Ctrl+I                   \i Ctrl+I         \i Ctrl+I
-    \row    \i Underline        \i Ctrl+U                               \i Ctrl+U                   \i Ctrl+U         \i Ctrl+U
-    \row    \i MoveToNextChar       \i Right                            \i Right                    \i Right          \i Right
-    \row    \i MoveToPreviousChar   \i Left                             \i Left                     \i Left           \i Left
-    \row    \i MoveToNextWord       \i Ctrl+Right                       \i Alt+Right                \i Ctrl+Right     \i Ctrl+Right
-    \row    \i MoveToPreviousWord   \i Ctrl+Left                        \i Alt+Left                 \i Ctrl+Left      \i Ctrl+Left
-    \row    \i MoveToNextLine       \i Down                             \i Down                     \i Down           \i Down
-    \row    \i MoveToPreviousLine   \i Up                               \i Up                       \i Up             \i Up
-    \row    \i MoveToNextPage       \i PgDown                           \i PgDown, Alt+PgDown, Meta+Down, Meta+PgDown\i PgDown \i PgDown
-    \row    \i MoveToPreviousPage   \i PgUp                             \i PgUp, Alt+PgUp, Meta+Up, Meta+PgUp        \i PgUp   \i PgUp
-    \row    \i MoveToStartOfLine    \i Home                             \i Ctrl+Left, Meta+Left   \i Home            \i Home
-    \row    \i MoveToEndOfLine      \i End                              \i Ctrl+Right, Meta+Right \i End             \i End
-    \row    \i MoveToStartOfBlock   \i (none)                           \i Alt+Up, Meta+A         \i (none)          \i (none)
-    \row    \i MoveToEndOfBlock     \i (none)                           \i Alt+Down, Meta+E       \i (none)          \i (none)
-    \row    \i MoveToStartOfDocument\i Ctrl+Home                        \i Ctrl+Up, Home          \i Ctrl+Home       \i Ctrl+Home
-    \row    \i MoveToEndOfDocument  \i Ctrl+End                         \i Ctrl+Down, End         \i Ctrl+End        \i Ctrl+End
-    \row    \i SelectNextChar       \i Shift+Right                      \i Shift+Right            \i Shift+Right     \i Shift+Right
-    \row    \i SelectPreviousChar   \i Shift+Left                       \i Shift+Left             \i Shift+Left      \i Shift+Left
-    \row    \i SelectNextWord       \i Ctrl+Shift+Right                 \i Alt+Shift+Right        \i Ctrl+Shift+Right \i Ctrl+Shift+Right
-    \row    \i SelectPreviousWord   \i Ctrl+Shift+Left                  \i Alt+Shift+Left         \i Ctrl+Shift+Left \i Ctrl+Shift+Left
-    \row    \i SelectNextLine       \i Shift+Down                       \i Shift+Down             \i Shift+Down     \i Shift+Down
-    \row    \i SelectPreviousLine   \i Shift+Up                         \i Shift+Up               \i Shift+Up       \i Shift+Up
-    \row    \i SelectNextPage       \i Shift+PgDown                     \i Shift+PgDown           \i Shift+PgDown   \i Shift+PgDown
-    \row    \i SelectPreviousPage   \i Shift+PgUp                       \i Shift+PgUp             \i Shift+PgUp     \i Shift+PgUp
-    \row    \i SelectStartOfLine    \i Shift+Home                       \i Ctrl+Shift+Left        \i Shift+Home     \i Shift+Home
-    \row    \i SelectEndOfLine      \i Shift+End                        \i Ctrl+Shift+Right       \i Shift+End      \i Shift+End
-    \row    \i SelectStartOfBlock   \i (none)                           \i Alt+Shift+Up, Meta+Shift+A \i (none)     \i (none)
-    \row    \i SelectEndOfBlock     \i (none)                           \i Alt+Shift+Down, Meta+Shift+E \i (none)   \i (none)
-    \row    \i SelectStartOfDocument\i Ctrl+Shift+Home                  \i Ctrl+Shift+Up, Shift+Home          \i Ctrl+Shift+Home\i Ctrl+Shift+Home
-    \row    \i SelectEndOfDocument  \i Ctrl+Shift+End                   \i Ctrl+Shift+Down, Shift+End        \i Ctrl+Shift+End \i Ctrl+Shift+End
-    \row    \i DeleteStartOfWord    \i Ctrl+Backspace                   \i Alt+Backspace          \i Ctrl+Backspace \i Ctrl+Backspace
-    \row    \i DeleteEndOfWord      \i Ctrl+Del                         \i (none)                 \i Ctrl+Del       \i Ctrl+Del
-    \row    \i DeleteEndOfLine      \i (none)                           \i (none)                 \i Ctrl+K         \i Ctrl+K
-    \row    \i InsertParagraphSeparator     \i Enter                    \i Enter                  \i Enter          \i Enter
-    \row    \i InsertLineSeparator          \i Shift+Enter              \i Meta+Enter             \i Shift+Enter    \i Shift+Enter
+    \header \li StandardKey      \li Windows                              \li Mac OS X                 \li KDE          \li GNOME
+    \row    \li HelpContents     \li F1                                   \li Ctrl+?                   \li F1           \li F1
+    \row    \li WhatsThis        \li Shift+F1                             \li Shift+F1                 \li Shift+F1     \li Shift+F1
+    \row    \li Open             \li Ctrl+O                               \li Ctrl+O                   \li Ctrl+O       \li Ctrl+O
+    \row    \li Close            \li Ctrl+F4, Ctrl+W                      \li Ctrl+W, Ctrl+F4          \li Ctrl+W       \li Ctrl+W
+    \row    \li Save             \li Ctrl+S                               \li Ctrl+S                   \li Ctrl+S       \li Ctrl+S
+    \row    \li Quit             \li                                      \li Ctrl+Q                   \li Qtrl+Q       \li Qtrl+Q
+    \row    \li SaveAs           \li                                      \li Ctrl+Shift+S             \li              \li Ctrl+Shift+S
+    \row    \li New              \li Ctrl+N                               \li Ctrl+N                   \li Ctrl+N       \li Ctrl+N
+    \row    \li Delete           \li Del                                  \li Del, Meta+D              \li Del, Ctrl+D  \li Del, Ctrl+D
+    \row    \li Cut              \li Ctrl+X, Shift+Del                    \li Ctrl+X                   \li Ctrl+X, F20, Shift+Del \li Ctrl+X, F20, Shift+Del
+    \row    \li Copy             \li Ctrl+C, Ctrl+Ins                     \li Ctrl+C                   \li Ctrl+C, F16, Ctrl+Ins  \li Ctrl+C, F16, Ctrl+Ins
+    \row    \li Paste            \li Ctrl+V, Shift+Ins                    \li Ctrl+V                   \li Ctrl+V, F18, Shift+Ins \li Ctrl+V, F18, Shift+Ins
+    \row    \li Preferences      \li                                      \li Ctrl+,                   \li              \li
+    \row    \li Undo             \li Ctrl+Z, Alt+Backspace                \li Ctrl+Z                   \li Ctrl+Z, F14  \li Ctrl+Z, F14
+    \row    \li Redo             \li Ctrl+Y, Shift+Ctrl+Z, Alt+Shift+Backspace \li Ctrl+Shift+Z        \li Ctrl+Shift+Z \li Ctrl+Shift+Z
+    \row    \li Back             \li Alt+Left, Backspace                  \li Ctrl+[                   \li Alt+Left     \li Alt+Left
+    \row    \li Forward          \li Alt+Right, Shift+Backspace           \li Ctrl+]                   \li Alt+Right    \li Alt+Right
+    \row    \li Refresh          \li F5                                   \li F5                       \li F5           \li Ctrl+R, F5
+    \row    \li ZoomIn           \li Ctrl+Plus                            \li Ctrl+Plus                \li Ctrl+Plus    \li Ctrl+Plus
+    \row    \li ZoomOut          \li Ctrl+Minus                           \li Ctrl+Minus               \li Ctrl+Minus   \li Ctrl+Minus
+    \row    \li Print            \li Ctrl+P                               \li Ctrl+P                   \li Ctrl+P       \li Ctrl+P
+    \row    \li AddTab           \li Ctrl+T                               \li Ctrl+T                   \li Ctrl+Shift+N, Ctrl+T \li Ctrl+T
+    \row    \li NextChild        \li Ctrl+Tab, Forward, Ctrl+F6           \li Ctrl+}, Forward, Ctrl+Tab \li Ctrl+Tab, Forward, Ctrl+Comma \li Ctrl+Tab, Forward
+    \row    \li PreviousChild    \li Ctrl+Shift+Tab, Back, Ctrl+Shift+F6  \li Ctrl+{, Back, Ctrl+Shift+Tab \li Ctrl+Shift+Tab, Back, Ctrl+Period \li Ctrl+Shift+Tab, Back
+    \row    \li Find             \li Ctrl+F                               \li Ctrl+F                   \li Ctrl+F         \li Ctrl+F
+    \row    \li FindNext         \li F3, Ctrl+G                           \li Ctrl+G                   \li F3             \li Ctrl+G, F3
+    \row    \li FindPrevious     \li Shift+F3, Ctrl+Shift+G               \li Ctrl+Shift+G             \li Shift+F3       \li Ctrl+Shift+G, Shift+F3
+    \row    \li Replace          \li Ctrl+H                               \li (none)                   \li Ctrl+R         \li Ctrl+H
+    \row    \li SelectAll        \li Ctrl+A                               \li Ctrl+A                   \li Ctrl+A         \li Ctrl+A
+    \row    \li Bold             \li Ctrl+B                               \li Ctrl+B                   \li Ctrl+B         \li Ctrl+B
+    \row    \li Italic           \li Ctrl+I                               \li Ctrl+I                   \li Ctrl+I         \li Ctrl+I
+    \row    \li Underline        \li Ctrl+U                               \li Ctrl+U                   \li Ctrl+U         \li Ctrl+U
+    \row    \li MoveToNextChar       \li Right                            \li Right                    \li Right          \li Right
+    \row    \li MoveToPreviousChar   \li Left                             \li Left                     \li Left           \li Left
+    \row    \li MoveToNextWord       \li Ctrl+Right                       \li Alt+Right                \li Ctrl+Right     \li Ctrl+Right
+    \row    \li MoveToPreviousWord   \li Ctrl+Left                        \li Alt+Left                 \li Ctrl+Left      \li Ctrl+Left
+    \row    \li MoveToNextLine       \li Down                             \li Down                     \li Down           \li Down
+    \row    \li MoveToPreviousLine   \li Up                               \li Up                       \li Up             \li Up
+    \row    \li MoveToNextPage       \li PgDown                           \li PgDown, Alt+PgDown, Meta+Down, Meta+PgDown\li PgDown \li PgDown
+    \row    \li MoveToPreviousPage   \li PgUp                             \li PgUp, Alt+PgUp, Meta+Up, Meta+PgUp        \li PgUp   \li PgUp
+    \row    \li MoveToStartOfLine    \li Home                             \li Ctrl+Left, Meta+Left   \li Home            \li Home
+    \row    \li MoveToEndOfLine      \li End                              \li Ctrl+Right, Meta+Right \li End             \li End
+    \row    \li MoveToStartOfBlock   \li (none)                           \li Alt+Up, Meta+A         \li (none)          \li (none)
+    \row    \li MoveToEndOfBlock     \li (none)                           \li Alt+Down, Meta+E       \li (none)          \li (none)
+    \row    \li MoveToStartOfDocument\li Ctrl+Home                        \li Ctrl+Up, Home          \li Ctrl+Home       \li Ctrl+Home
+    \row    \li MoveToEndOfDocument  \li Ctrl+End                         \li Ctrl+Down, End         \li Ctrl+End        \li Ctrl+End
+    \row    \li SelectNextChar       \li Shift+Right                      \li Shift+Right            \li Shift+Right     \li Shift+Right
+    \row    \li SelectPreviousChar   \li Shift+Left                       \li Shift+Left             \li Shift+Left      \li Shift+Left
+    \row    \li SelectNextWord       \li Ctrl+Shift+Right                 \li Alt+Shift+Right        \li Ctrl+Shift+Right \li Ctrl+Shift+Right
+    \row    \li SelectPreviousWord   \li Ctrl+Shift+Left                  \li Alt+Shift+Left         \li Ctrl+Shift+Left \li Ctrl+Shift+Left
+    \row    \li SelectNextLine       \li Shift+Down                       \li Shift+Down             \li Shift+Down     \li Shift+Down
+    \row    \li SelectPreviousLine   \li Shift+Up                         \li Shift+Up               \li Shift+Up       \li Shift+Up
+    \row    \li SelectNextPage       \li Shift+PgDown                     \li Shift+PgDown           \li Shift+PgDown   \li Shift+PgDown
+    \row    \li SelectPreviousPage   \li Shift+PgUp                       \li Shift+PgUp             \li Shift+PgUp     \li Shift+PgUp
+    \row    \li SelectStartOfLine    \li Shift+Home                       \li Ctrl+Shift+Left        \li Shift+Home     \li Shift+Home
+    \row    \li SelectEndOfLine      \li Shift+End                        \li Ctrl+Shift+Right       \li Shift+End      \li Shift+End
+    \row    \li SelectStartOfBlock   \li (none)                           \li Alt+Shift+Up, Meta+Shift+A \li (none)     \li (none)
+    \row    \li SelectEndOfBlock     \li (none)                           \li Alt+Shift+Down, Meta+Shift+E \li (none)   \li (none)
+    \row    \li SelectStartOfDocument\li Ctrl+Shift+Home                  \li Ctrl+Shift+Up, Shift+Home          \li Ctrl+Shift+Home\li Ctrl+Shift+Home
+    \row    \li SelectEndOfDocument  \li Ctrl+Shift+End                   \li Ctrl+Shift+Down, Shift+End        \li Ctrl+Shift+End \li Ctrl+Shift+End
+    \row    \li DeleteStartOfWord    \li Ctrl+Backspace                   \li Alt+Backspace          \li Ctrl+Backspace \li Ctrl+Backspace
+    \row    \li DeleteEndOfWord      \li Ctrl+Del                         \li (none)                 \li Ctrl+Del       \li Ctrl+Del
+    \row    \li DeleteEndOfLine      \li (none)                           \li (none)                 \li Ctrl+K         \li Ctrl+K
+    \row    \li InsertParagraphSeparator     \li Enter                    \li Enter                  \li Enter          \li Enter
+    \row    \li InsertLineSeparator          \li Shift+Enter              \li Meta+Enter             \li Shift+Enter    \li Shift+Enter
     \endtable
 
     Note that, since the key sequences used for the standard shortcuts differ

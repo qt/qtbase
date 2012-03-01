@@ -40,10 +40,10 @@
     par Qt, tel que:
 
     \list
-    \o Les Widgets et leur mise en page à l'aide des layouts
-    \o Les signaux et slots
-    \o Les structures de données de collections
-    \o Les entrées/sorties
+    \li Les Widgets et leur mise en page à l'aide des layouts
+    \li Les signaux et slots
+    \li Les structures de données de collections
+    \li Les entrées/sorties
     \endlist
 
     Si c'est votre premier contact avec Qt, lisez \l{How to Learn Qt}{Comment apprendre Qt}
@@ -54,13 +54,13 @@
     Les chapitres du tutoriel:
 
     \list 1
-    \o \l{tutorials/addressbook-fr/part1}{Conception de l'interface utilisateur}
-    \o \l{tutorials/addressbook-fr/part2}{Ajouter des adresses}
-    \o \l{tutorials/addressbook-fr/part3}{Navigation entre les éléments}
-    \o \l{tutorials/addressbook-fr/part4}{éditer et supprimer des adresses}
-    \o \l{tutorials/addressbook-fr/part5}{Ajout d'une fonction de recherche}
-    \o \l{tutorials/addressbook-fr/part6}{Sauvegarde et chargement}
-    \o \l{tutorials/addressbook-fr/part7}{Fonctionnalités avancées}
+    \li \l{tutorials/addressbook-fr/part1}{Conception de l'interface utilisateur}
+    \li \l{tutorials/addressbook-fr/part2}{Ajouter des adresses}
+    \li \l{tutorials/addressbook-fr/part3}{Navigation entre les éléments}
+    \li \l{tutorials/addressbook-fr/part4}{éditer et supprimer des adresses}
+    \li \l{tutorials/addressbook-fr/part5}{Ajout d'une fonction de recherche}
+    \li \l{tutorials/addressbook-fr/part6}{Sauvegarde et chargement}
+    \li \l{tutorials/addressbook-fr/part7}{Fonctionnalités avancées}
     \endlist
 
     La petite application que nous développerons ici ne possède pas tous les éléments
@@ -99,10 +99,10 @@
     Trois fichiers sont nécessaires à l'implémentation de ce carnet d'adresses:
 
     \list
-        \o \c{addressbook.h} - le fichier de définition (header) pour la classe \c AddressBook,
-        \o \c{addressbook.cpp} - le fichier source, qui comprend l'implémentation de la classe
+        \li \c{addressbook.h} - le fichier de définition (header) pour la classe \c AddressBook,
+        \li \c{addressbook.cpp} - le fichier source, qui comprend l'implémentation de la classe
             \c AddressBook
-        \o \c{main.cpp} - le fichier qui contient la méthode \c main() , et
+        \li \c{main.cpp} - le fichier qui contient la méthode \c main() , et
         une instance de la classe \c AddressBook.
     \endlist
 
@@ -116,13 +116,13 @@
     ou modifier le comportement d'un widget présente les avantages suivants:
 
     \list
-    \o La possibilité d'implémenter des méthodes virtuelles et des méthodes 
+    \li La possibilité d'implémenter des méthodes virtuelles et des méthodes
     virtuelles pures pour obtenir exactement ce que l'on souhaite, avec la possibilité
     d'utiliser l'implémentation de la classe mère si besoin est.
-    \o Cela permet l'encapsulation partielle de l'interface utilisateur dans une classe,
+    \li Cela permet l'encapsulation partielle de l'interface utilisateur dans une classe,
     afin que les autres parties de l'application n'aient pas à se soucier de chacun des
     widgets qui forment l'interface utilisateur.
-    \o La classe fille peut être utilisée pour créer de nombreux widgets personnalisés
+    \li La classe fille peut être utilisée pour créer de nombreux widgets personnalisés
     dans une même application ou bibliothèque, et le code de la classe fille peut être
     réutilisé dans d'autres projets
     \endlist
@@ -343,7 +343,7 @@
     La méthode \c submitContact() peut être divisée en trois parties:
 
     \list 1
-    \o Nous extrayons les détails du contact depuis \c nameLine et \c addressText
+    \li Nous extrayons les détails du contact depuis \c nameLine et \c addressText
     et les stockons dans des objets QString. Nous les validons pour s'assurer
     que l'utilisateur n'a pas cliqué sur "Add" avec des champs de saisie
     vides; sinon un message est affiché avec QMessageBox pour rappeller à
@@ -351,7 +351,7 @@
 
     \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part1
 
-    \o Ensuite, nous vérifions si le contact existe déjà. Si aucun contacts
+    \li Ensuite, nous vérifions si le contact existe déjà. Si aucun contacts
     existant n'entre en conflit avec le nouveau, nous l'ajoutons à
     \c contacts et nous affichons un QMessageBox pour informer l'utilisateur
     que le contact a été ajouté.
@@ -363,7 +363,7 @@
     Notre objet \c contacts est basé sur des paires clé-valeur formés par
     le nom et l'adresse, nous voulons nous assurer que la \e clé est unique.
 
-    \o Une fois que les deux vérifications précédentes ont été traitées,
+    \li Une fois que les deux vérifications précédentes ont été traitées,
     nous restaurons les boutons à leur état normal à l'aide du code
     suivant:
 
@@ -482,8 +482,8 @@
     sur \c contact dans la méthode \c next(), et ensuite:
 
     \list
-        \o Si l'itérateur n'est pas à la fin de \c contacts, nous l'incrémentons
-        \o Si l'itérateur est à la fin de \c contacts, nous changeons sa position
+        \li Si l'itérateur n'est pas à la fin de \c contacts, nous l'incrémentons
+        \li Si l'itérateur est à la fin de \c contacts, nous changeons sa position
         jusqu'au début de \c contacts. Cela donne l'illusion que notre QMap 
         fonctionne comme une liste circulaire.
     \endlist
@@ -497,11 +497,11 @@
     itérateur sur \c contacts et ensuite:
 
     \list
-        \o Si l'itérateur est à la fin de \c contacts, on réinitialise
+        \li Si l'itérateur est à la fin de \c contacts, on réinitialise
            l'affichage et on retourne.
-        \o Si l'itérateur est au début de \c contacts, on change sa 
+        \li Si l'itérateur est au début de \c contacts, on change sa
            position jusqu'à la fin
-        \o Ensuite, on décrémente l'itérateur
+        \li Ensuite, on décrémente l'itérateur
     \endlist
 
     \snippet tutorials/addressbook/part3/addressbook.cpp previous() function
@@ -538,9 +538,9 @@
     Dans ce chapitre, on définit l'énumération \c Mode avec trois valeurs possibles.
 
     \list
-        \o \c{NavigationMode},
-        \o \c{AddingMode}, et
-        \o \c{EditingMode}.
+        \li \c{NavigationMode},
+        \li \c{AddingMode}, et
+        \li \c{EditingMode}.
     \endlist
 
     \section1 Définition de la classe AddressBook

@@ -38,14 +38,14 @@
 
     \list
 
-    \o \e{The asynchronous (non-blocking) approach.} Operations are scheduled
+    \li \e{The asynchronous (non-blocking) approach.} Operations are scheduled
     and performed when control returns to Qt's event loop. When the operation
     is finished, QTcpSocket emits a signal. For example,
     QTcpSocket::connectToHost() returns immediately, and when the connection
     has been established, QTcpSocket emits
     \l{QTcpSocket::connected()}{connected()}.
     
-    \o \e{The synchronous (blocking) approach.} In non-GUI and multithreaded
+    \li \e{The synchronous (blocking) approach.} In non-GUI and multithreaded
     applications, you can call the \c waitFor...() functions (e.g.,
     QTcpSocket::waitForConnected()) to suspend the calling thread until the
     operation has completed, instead of connecting to signals.

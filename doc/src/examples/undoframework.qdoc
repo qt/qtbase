@@ -61,18 +61,18 @@
     The example consists of the following classes:
 
     \list 
-        \o \c MainWindow is the main window and arranges the
+        \li \c MainWindow is the main window and arranges the
               example's widgets. It creates the commands based 
               on user input and keeps them on the command stack.
-        \o \c AddCommand adds an item to the scene.
-        \o \c DeleteCommand deletes an item from the scene.
-        \o \c MoveCommand when an item is moved the MoveCommand keeps record
+        \li \c AddCommand adds an item to the scene.
+        \li \c DeleteCommand deletes an item from the scene.
+        \li \c MoveCommand when an item is moved the MoveCommand keeps record
               of the start and stop positions of the move, and it
               moves the item according to these when \c redo() and \c undo()
               is called.
-        \o \c DiagramScene inherits QGraphicsScene and
+        \li \c DiagramScene inherits QGraphicsScene and
               emits signals for the \c MoveComands when an item is moved.
-        \o \c DiagramItem inherits QGraphicsPolygonItem and represents
+        \li \c DiagramItem inherits QGraphicsPolygonItem and represents
               an item in the diagram.
     \endlist
 

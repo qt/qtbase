@@ -67,11 +67,11 @@ const QSsl::SslOptions QSslConfigurationPrivate::defaultSslOptions = QSsl::SslOp
     The settings that QSslConfiguration currently supports are:
 
     \list
-      \o The SSL/TLS protocol to be used
-      \o The certificate to be presented to the peer during connection
+      \li The SSL/TLS protocol to be used
+      \li The certificate to be presented to the peer during connection
          and its associated private key
-      \o The ciphers allowed to be used for encrypting the connection
-      \o The list of Certificate Authorities certificates that are
+      \li The ciphers allowed to be used for encrypting the connection
+      \li The list of Certificate Authorities certificates that are
          used to validate the peer's certificate
     \endlist
 
@@ -81,9 +81,9 @@ const QSsl::SslOptions QSslConfigurationPrivate::defaultSslOptions = QSsl::SslOp
 
     The state that QSslConfiguration supports are:
     \list
-      \o The certificate the peer presented during handshake, along
+      \li The certificate the peer presented during handshake, along
          with the chain leading to a CA certificate
-      \o The cipher used to encrypt this session
+      \li The cipher used to encrypt this session
     \endlist
 
     The state can only be obtained once the SSL connection starts, but
@@ -541,10 +541,10 @@ bool QSslConfiguration::testSslOption(QSsl::SslOption option) const
     The default SSL configuration consists of:
 
     \list
-      \o no local certificate and no private key
-      \o protocol SecureProtocols (meaning either TLS 1.0 or SSL 3 will be used)
-      \o the system's default CA certificate list
-      \o the cipher list equal to the list of the SSL libraries'
+      \li no local certificate and no private key
+      \li protocol SecureProtocols (meaning either TLS 1.0 or SSL 3 will be used)
+      \li the system's default CA certificate list
+      \li the cipher list equal to the list of the SSL libraries'
          supported SSL ciphers
     \endlist
 

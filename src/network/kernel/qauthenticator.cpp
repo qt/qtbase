@@ -80,9 +80,9 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
 
   QAuthenticator supports the following authentication methods:
   \list
-    \o Basic
-    \o NTLM version 2
-    \o Digest-MD5
+    \li Basic
+    \li NTLM version 2
+    \li Digest-MD5
   \endlist
 
   \section1 Options
@@ -104,8 +104,8 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
   \section2 Basic
 
   \table
-    \header \o Option \o Direction \o Description
-    \row \o \tt{realm} \o Incoming \o Contains the realm of the authentication, the same as realm()
+    \header \li Option \li Direction \li Description
+    \row \li \tt{realm} \li Incoming \li Contains the realm of the authentication, the same as realm()
   \endtable
 
   The Basic authentication mechanism supports no outgoing options.
@@ -117,8 +117,8 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
   \section2 Digest-MD5
 
   \table
-    \header \o Option \o Direction \o Description
-    \row \o \tt{realm} \o Incoming \o Contains the realm of the authentication, the same as realm()
+    \header \li Option \li Direction \li Description
+    \row \li \tt{realm} \li Incoming \li Contains the realm of the authentication, the same as realm()
   \endtable
 
   The Digest-MD5 authentication mechanism supports no outgoing options.

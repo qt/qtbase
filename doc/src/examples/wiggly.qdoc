@@ -48,10 +48,10 @@
     The example consists of two classes:
 
     \list
-    \o \c WigglyWidget is the custom widget displaying the text
+    \li \c WigglyWidget is the custom widget displaying the text
         in a wiggly line.
 
-    \o \c Dialog is the dialog widget allowing the user to enter a
+    \li \c Dialog is the dialog widget allowing the user to enter a
         text. It combines a \c WigglyWidget and a \c QLineEdit.
     \endlist
 

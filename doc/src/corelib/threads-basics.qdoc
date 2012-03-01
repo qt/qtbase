@@ -123,8 +123,8 @@
     There are basically two use cases for threads:
 
     \list
-    \o Make processing faster by making use of multicore processors.
-    \o Keep the GUI thread or other time critical threads responsive by
+    \li Make processing faster by making use of multicore processors.
+    \li Keep the GUI thread or other time critical threads responsive by
        offloading long lasting processing or blocking calls to other threads.
     \endlist
 
@@ -138,23 +138,23 @@
 
     \table
     \header
-        \o Alternative
-        \o Comment
+        \li Alternative
+        \li Comment
     \row
-        \o QEventLoop::processEvents()
-        \o Calling QEventLoop::processEvents() repeatedly during a
+        \li QEventLoop::processEvents()
+        \li Calling QEventLoop::processEvents() repeatedly during a
            time-consuming calculation prevents GUI blocking. However, this
            solution doesn't scale well because the call to processEvents() may
            occur too often, or not often enough, depending on hardware.
     \row
-        \o QTimer
-        \o Background processing can sometimes be done conveniently using a
+        \li QTimer
+        \li Background processing can sometimes be done conveniently using a
            timer to schedule execution of a slot at some point in the future.
            A timer with an interval of 0 will time out as soon as there are no
            more events to process.
     \row
-        \o QSocketNotifier QNetworkAccessManager QIODevice::readyRead()
-        \o This is an alternative to having one or multiple threads, each with
+        \li QSocketNotifier QNetworkAccessManager QIODevice::readyRead()
+        \li This is an alternative to having one or multiple threads, each with
            a blocking read on a slow network connection. As long as the
            calculation in response to a chunk of network data can be executed
            quickly, this reactive design is better than synchronous waiting in
@@ -183,55 +183,55 @@
 
     \table
     \header
-        \o Lifetime of thread
-        \o Development task
-        \o Solution
+        \li Lifetime of thread
+        \li Development task
+        \li Solution
     \row
-        \o One call
-        \o Run one method within another thread and quit the thread when the
+        \li One call
+        \li Run one method within another thread and quit the thread when the
            method is finished.
-        \o Qt provides different solutions:
+        \li Qt provides different solutions:
            \list
-              \o Write a function and run it with QtConcurrent::run()
-              \o Derive a class from QRunnable and run it in the global thread
+              \li Write a function and run it with QtConcurrent::run()
+              \li Derive a class from QRunnable and run it in the global thread
                  pool with QThreadPool::globalInstance()->start()
-              \o Derive a class from QThread, reimplement the QThread::run()
+              \li Derive a class from QThread, reimplement the QThread::run()
                  method and use QThread::start() to run it.
            \endlist
 
     \row
-        \o One call
-        \o Operations are to be performed on all items of a container.
+        \li One call
+        \li Operations are to be performed on all items of a container.
            Processing should be performed using all available cores. A common
            example is to produce thumbnails from a list of images.
-        \o QtConcurrent provides the \l{QtConcurrent::}{map()} function for
+        \li QtConcurrent provides the \l{QtConcurrent::}{map()} function for
            applying operations on every container element,
            \l{QtConcurrent::}{filter()} for selecting container elements, and
            the option of specifying a reduce function for combining the
            remaining elements.
     \row
-        \o One call
-        \o A long running operation has to be put in another thread. During the
+        \li One call
+        \li A long running operation has to be put in another thread. During the
            course of processing, status information should be sent to the GUI
            thread.
-        \o Use QThread, reimplement run and emit signals as needed. Connect the
+        \li Use QThread, reimplement run and emit signals as needed. Connect the
            signals to the GUI thread's slots using queued signal/slot
            connections.
 
     \row
-        \o Permanent
-        \o Have an object living in another thread and let it perform different
+        \li Permanent
+        \li Have an object living in another thread and let it perform different
            tasks upon request.
            This means communication to and from the worker thread is required.
-        \o Derive a class from QObject and implement the necessary slots and
+        \li Derive a class from QObject and implement the necessary slots and
            signals, move the object to a thread with a running event loop and
            communicate with the object over queued signal/slot connections.
     \row
-        \o Permanent
-        \o Have an object living in another thread, let the object perform
+        \li Permanent
+        \li Have an object living in another thread, let the object perform
            repeated tasks such as polling a port and enable communication with
            the GUI thread.
-        \o Same as above but also use a timer in the worker thread to implement
+        \li Same as above but also use a timer in the worker thread to implement
            polling. However, the best solution for polling is to avoid it
            completely. Sometimes using QSocketNotifier is an alternative.
     \endtable
@@ -304,18 +304,18 @@
     The anatomy of QThread is quite interesting:
 
     \list
-    \o QThread does not live in the new thread where \l{QThread::}{run()} is
+    \li QThread does not live in the new thread where \l{QThread::}{run()} is
        executed. It lives in the old thread.
-    \o Most QThread methods are the thread's control interface and are meant to
+    \li Most QThread methods are the thread's control interface and are meant to
        be called from the old thread. Do not move this interface to the newly
        created thread using \l{QObject::}{moveToThread()}; i.e., calling
        \l{QObject::moveToThread()}{moveToThread(this)} is regarded as bad
        practice.
-    \o \l{QThread::}{exec()} and the static methods
+    \li \l{QThread::}{exec()} and the static methods
        \l{QThread::}{usleep()}, \l{QThread::}{msleep()},
        \l{QThread::}{sleep()} are meant to be called from the newly created
        thread.
-    \o Additional members defined in the QThread subclass are
+    \li Additional members defined in the QThread subclass are
        accessible by both threads. The developer is responsible for
        coordinating access. A typical strategy is to set the members before
        \l{QThread::}{start()} is called. Once the worker thread is running,
@@ -432,11 +432,11 @@
     main thread.
 
     \list
-    \o Using QThread as shown \l{Qt thread basics}{above}
-    \o \l{Example 1: Using the Thread Pool}{Using the global QThreadPool}
-    \o \l{Example 2: Using QtConcurrent}{Using QtConcurrent}
-    \o \l{Example 3: Clock}{Communication with the GUI thread}
-    \o \l{Example 4: A Permanent Thread}{A permanent QObject in another thread
+    \li Using QThread as shown \l{Qt thread basics}{above}
+    \li \l{Example 1: Using the Thread Pool}{Using the global QThreadPool}
+    \li \l{Example 2: Using QtConcurrent}{Using QtConcurrent}
+    \li \l{Example 3: Clock}{Communication with the GUI thread}
+    \li \l{Example 4: A Permanent Thread}{A permanent QObject in another thread
        provides service to the main thread}
     \endlist
 
@@ -558,13 +558,13 @@
     can help you go into the subject in more depth:
 
     \list
-    \o Good video tutorials about threads with Qt can be found in the material
+    \li Good video tutorials about threads with Qt can be found in the material
        from the \l{Training Day at Qt Developer Days 2009}.
-    \o The \l{Thread Support in Qt} document is a good starting point into
+    \li The \l{Thread Support in Qt} document is a good starting point into
        the reference documentation.
-    \o Qt comes with several additional examples for
+    \li Qt comes with several additional examples for
        \l{Threading and Concurrent Programming Examples}{QThread and QtConcurrent}.
-    \o Several good books describe how to work with Qt threads. The most
+    \li Several good books describe how to work with Qt threads. The most
        extensive coverage can be found in \e{Advanced Qt Programming} by Mark
        Summerfield, Prentice Hall - roughly 70 of 500 pages cover QThread and
        QtConcurrent.

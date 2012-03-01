@@ -45,13 +45,13 @@
     The example consists of three classes:
 
     \list
-        \o \c ImageItem is a custom graphics item class used to
+        \li \c ImageItem is a custom graphics item class used to
         display the office images.
 
-        \o \c View is the main application widget allowing the user to
+        \li \c View is the main application widget allowing the user to
         browse through the various locations.
 
-        \o \c InformationWindow displays the requested information,
+        \li \c InformationWindow displays the requested information,
         allowing the users to alter it and submit their changes to the
         database.
     \endlist

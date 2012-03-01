@@ -650,16 +650,16 @@ QStringList QSqlDatabase::connectionNames()
     The currently available driver types are:
 
     \table
-    \header \i Driver Type \i Description
-    \row \i QDB2     \i IBM DB2
-    \row \i QIBASE   \i Borland InterBase Driver
-    \row \i QMYSQL   \i MySQL Driver
-    \row \i QOCI     \i Oracle Call Interface Driver
-    \row \i QODBC    \i ODBC Driver (includes Microsoft SQL Server)
-    \row \i QPSQL    \i PostgreSQL Driver
-    \row \i QSQLITE  \i SQLite version 3 or above
-    \row \i QSQLITE2 \i SQLite version 2
-    \row \i QTDS     \i Sybase Adaptive Server
+    \header \li Driver Type \li Description
+    \row \li QDB2     \li IBM DB2
+    \row \li QIBASE   \li Borland InterBase Driver
+    \row \li QMYSQL   \li MySQL Driver
+    \row \li QOCI     \li Oracle Call Interface Driver
+    \row \li QODBC    \li ODBC Driver (includes Microsoft SQL Server)
+    \row \li QPSQL    \li PostgreSQL Driver
+    \row \li QSQLITE  \li SQLite version 3 or above
+    \row \li QSQLITE2 \li SQLite version 2
+    \row \li QTDS     \li Sybase Adaptive Server
     \endtable
 
     Additional third party drivers, including your own custom
@@ -1202,77 +1202,77 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     database client used:
 
     \table
-    \header \i ODBC \i MySQL \i PostgreSQL
+    \header \li ODBC \li MySQL \li PostgreSQL
     \row
 
-    \i
+    \li
     \list
-    \i SQL_ATTR_ACCESS_MODE
-    \i SQL_ATTR_LOGIN_TIMEOUT
-    \i SQL_ATTR_CONNECTION_TIMEOUT
-    \i SQL_ATTR_CURRENT_CATALOG
-    \i SQL_ATTR_METADATA_ID
-    \i SQL_ATTR_PACKET_SIZE
-    \i SQL_ATTR_TRACEFILE
-    \i SQL_ATTR_TRACE
-    \i SQL_ATTR_CONNECTION_POOLING
-    \i SQL_ATTR_ODBC_VERSION
+    \li SQL_ATTR_ACCESS_MODE
+    \li SQL_ATTR_LOGIN_TIMEOUT
+    \li SQL_ATTR_CONNECTION_TIMEOUT
+    \li SQL_ATTR_CURRENT_CATALOG
+    \li SQL_ATTR_METADATA_ID
+    \li SQL_ATTR_PACKET_SIZE
+    \li SQL_ATTR_TRACEFILE
+    \li SQL_ATTR_TRACE
+    \li SQL_ATTR_CONNECTION_POOLING
+    \li SQL_ATTR_ODBC_VERSION
     \endlist
 
-    \i
+    \li
     \list
-    \i CLIENT_COMPRESS
-    \i CLIENT_FOUND_ROWS
-    \i CLIENT_IGNORE_SPACE
-    \i CLIENT_SSL
-    \i CLIENT_ODBC
-    \i CLIENT_NO_SCHEMA
-    \i CLIENT_INTERACTIVE
-    \i UNIX_SOCKET
-    \i MYSQL_OPT_RECONNECT
+    \li CLIENT_COMPRESS
+    \li CLIENT_FOUND_ROWS
+    \li CLIENT_IGNORE_SPACE
+    \li CLIENT_SSL
+    \li CLIENT_ODBC
+    \li CLIENT_NO_SCHEMA
+    \li CLIENT_INTERACTIVE
+    \li UNIX_SOCKET
+    \li MYSQL_OPT_RECONNECT
     \endlist
 
-    \i
+    \li
     \list
-    \i connect_timeout
-    \i options
-    \i tty
-    \i requiressl
-    \i service
+    \li connect_timeout
+    \li options
+    \li tty
+    \li requiressl
+    \li service
     \endlist
 
-    \header \i DB2 \i OCI \i TDS
+    \header \li DB2 \li OCI \li TDS
     \row
 
-    \i
+    \li
     \list
-    \i SQL_ATTR_ACCESS_MODE
-    \i SQL_ATTR_LOGIN_TIMEOUT
+    \li SQL_ATTR_ACCESS_MODE
+    \li SQL_ATTR_LOGIN_TIMEOUT
     \endlist
 
-    \i
+    \li
     \list
-    \i OCI_ATTR_PREFETCH_ROWS
-    \i OCI_ATTR_PREFETCH_MEMORY
+    \li OCI_ATTR_PREFETCH_ROWS
+    \li OCI_ATTR_PREFETCH_MEMORY
     \endlist
 
-    \i
+    \li
     \e none
 
-    \header \i SQLite \i Interbase
+    \header \li SQLite \li Interbase
     \row
 
-    \i
+    \li
     \list
-    \i QSQLITE_BUSY_TIMEOUT
-    \i QSQLITE_OPEN_READONLY
-    \i QSQLITE_ENABLE_SHARED_CACHE
+    \li QSQLITE_BUSY_TIMEOUT
+    \li QSQLITE_OPEN_READONLY
+    \li QSQLITE_ENABLE_SHARED_CACHE
     \endlist
 
-    \i
+    \li
     \list
-    \i ISC_DPB_LC_CTYPE
-    \i ISC_DPB_SQL_ROLE_NAME
+    \li ISC_DPB_LC_CTYPE
+    \li ISC_DPB_SQL_ROLE_NAME
     \endlist
 
     \endtable
@@ -1354,47 +1354,47 @@ bool QSqlDatabase::isDriverAvailable(const QString& name)
     and their constructor arguments:
 
     \table
-    \header \i Driver \i Class name \i Constructor arguments \i File to include
+    \header \li Driver \li Class name \li Constructor arguments \li File to include
     \row
-    \i QPSQL
-    \i QPSQLDriver
-    \i PGconn *connection
-    \i \c qsql_psql.cpp
+    \li QPSQL
+    \li QPSQLDriver
+    \li PGconn *connection
+    \li \c qsql_psql.cpp
     \row
-    \i QMYSQL
-    \i QMYSQLDriver
-    \i MYSQL *connection
-    \i \c qsql_mysql.cpp
+    \li QMYSQL
+    \li QMYSQLDriver
+    \li MYSQL *connection
+    \li \c qsql_mysql.cpp
     \row
-    \i QOCI
-    \i QOCIDriver
-    \i OCIEnv *environment, OCISvcCtx *serviceContext
-    \i \c qsql_oci.cpp
+    \li QOCI
+    \li QOCIDriver
+    \li OCIEnv *environment, OCISvcCtx *serviceContext
+    \li \c qsql_oci.cpp
     \row
-    \i QODBC
-    \i QODBCDriver
-    \i SQLHANDLE environment, SQLHANDLE connection
-    \i \c qsql_odbc.cpp
+    \li QODBC
+    \li QODBCDriver
+    \li SQLHANDLE environment, SQLHANDLE connection
+    \li \c qsql_odbc.cpp
     \row
-    \i QDB2
-    \i QDB2
-    \i SQLHANDLE environment, SQLHANDLE connection
-    \i \c qsql_db2.cpp
+    \li QDB2
+    \li QDB2
+    \li SQLHANDLE environment, SQLHANDLE connection
+    \li \c qsql_db2.cpp
     \row
-    \i QTDS
-    \i QTDSDriver
-    \i LOGINREC *loginRecord, DBPROCESS *dbProcess, const QString &hostName
-    \i \c qsql_tds.cpp
+    \li QTDS
+    \li QTDSDriver
+    \li LOGINREC *loginRecord, DBPROCESS *dbProcess, const QString &hostName
+    \li \c qsql_tds.cpp
     \row
-    \i QSQLITE
-    \i QSQLiteDriver
-    \i sqlite *connection
-    \i \c qsql_sqlite.cpp
+    \li QSQLITE
+    \li QSQLiteDriver
+    \li sqlite *connection
+    \li \c qsql_sqlite.cpp
     \row
-    \i QIBASE
-    \i QIBaseDriver
-    \i isc_db_handle connection
-    \i \c qsql_ibase.cpp
+    \li QIBASE
+    \li QIBaseDriver
+    \li isc_db_handle connection
+    \li \c qsql_ibase.cpp
     \endtable
 
     The host name (or service name) is needed when constructing the

@@ -61,15 +61,15 @@
     The example consists of the following:
 
     \list
-        \o The \c MainWindow class inherits QMainWindow and creates
+        \li The \c MainWindow class inherits QMainWindow and creates
            the examples menus and connect their slots and signals.
-	\o The \c TabletCanvas class inherits QWidget and 
+    \li The \c TabletCanvas class inherits QWidget and
 	   receives tablet events. It uses the events to paint on a
            offscreen pixmap, which it draws onto itself.
-	\o The \c TabletApplication class inherits QApplication. This
+    \li The \c TabletApplication class inherits QApplication. This
 	   class handles tablet events that are not sent to \c tabletEvent(). 
 	   We will look at this later.
-	\o The \c main() function creates a \c MainWindow and shows it
+    \li The \c main() function creates a \c MainWindow and shows it
 	   as a top level window.
     \endlist
 

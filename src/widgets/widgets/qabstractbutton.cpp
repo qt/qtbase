@@ -109,21 +109,21 @@ Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets;
 
     \list
 
-    \o isDown() indicates whether the button is \e pressed down.
+    \li isDown() indicates whether the button is \e pressed down.
 
-    \o isChecked() indicates whether the button is \e checked.  Only
+    \li isChecked() indicates whether the button is \e checked.  Only
     checkable buttons can be checked and unchecked (see below).
 
-    \o isEnabled() indicates whether the button can be pressed by the
+    \li isEnabled() indicates whether the button can be pressed by the
     user. \note As opposed to other widgets, buttons derived from
     QAbstractButton accepts mouse and context menu events
     when disabled.
 
-    \o setAutoRepeat() sets whether the button will auto-repeat if the
+    \li setAutoRepeat() sets whether the button will auto-repeat if the
     user holds it down. \l autoRepeatDelay and \l autoRepeatInterval
     define how auto-repetition is done.
 
-    \o setCheckable() sets whether the button is a toggle button or not.
+    \li setCheckable() sets whether the button is a toggle button or not.
 
     \endlist
 
@@ -138,16 +138,16 @@ Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets;
 
     \list 1
 
-    \o pressed() is emitted when the left mouse button is pressed while
+    \li pressed() is emitted when the left mouse button is pressed while
     the mouse cursor is inside the button.
 
-    \o released() is emitted when the left mouse button is released.
+    \li released() is emitted when the left mouse button is released.
 
-    \o clicked() is emitted when the button is first pressed and then
+    \li clicked() is emitted when the button is first pressed and then
     released, when the shortcut key is typed, or when click() or
     animateClick() is called.
 
-    \o toggled() is emitted when the state of a toggle button changes.
+    \li toggled() is emitted when the state of a toggle button changes.
 
     \endlist
 

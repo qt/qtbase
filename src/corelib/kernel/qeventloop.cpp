@@ -222,11 +222,11 @@ int QEventLoop::exec(ProcessEventsFlags flags)
     operation and want to show its progress without allowing user
     input, i.e. by using the \l ExcludeUserInputEvents flag.
 
-    \bold{Notes:}
+    \b{Notes:}
     \list
-    \o This function does not process events continuously; it
+    \li This function does not process events continuously; it
        returns after all available events are processed.
-    \o Specifying the \l WaitForMoreEvents flag makes no sense
+    \li Specifying the \l WaitForMoreEvents flag makes no sense
        and will be ignored.
     \endlist
 */

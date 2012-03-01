@@ -266,7 +266,7 @@
     This enum provides shorter names for the keyboard modifier keys
     supported by Qt.
 
-    \bold{Note:} On Mac OS X, the \c CTRL value corresponds to
+    \b{Note:} On Mac OS X, the \c CTRL value corresponds to
     the Command keys on the Macintosh keyboard, and the \c META value
     corresponds to the Control keys.
 
@@ -319,21 +319,21 @@
 
     \table
     \row
-    \o \inlineimage qpen-solid.png
-    \o \inlineimage qpen-dash.png
-    \o \inlineimage qpen-dot.png
+    \li \inlineimage qpen-solid.png
+    \li \inlineimage qpen-dash.png
+    \li \inlineimage qpen-dot.png
     \row
-    \o Qt::SolidLine
-    \o Qt::DashLine
-    \o Qt::DotLine
+    \li Qt::SolidLine
+    \li Qt::DashLine
+    \li Qt::DotLine
     \row
-    \o \inlineimage qpen-dashdot.png
-    \o \inlineimage qpen-dashdotdot.png
-    \o \inlineimage qpen-custom.png
+    \li \inlineimage qpen-dashdot.png
+    \li \inlineimage qpen-dashdotdot.png
+    \li \inlineimage qpen-custom.png
     \row
-    \o Qt::DashDotLine
-    \o Qt::DashDotDotLine
-    \o Qt::CustomDashLine
+    \li Qt::DashDotLine
+    \li Qt::DashDotDotLine
+    \li Qt::CustomDashLine
     \endtable
 
     \value NoPen  no line at all. For example, QPainter::drawRect()
@@ -360,13 +360,13 @@
 
     \table
     \row
-    \o \inlineimage qpen-square.png
-    \o \inlineimage qpen-flat.png
-    \o \inlineimage qpen-roundcap.png
+    \li \inlineimage qpen-square.png
+    \li \inlineimage qpen-flat.png
+    \li \inlineimage qpen-roundcap.png
     \row
-    \o Qt::SquareCap
-    \o Qt::FlatCap
-    \o Qt::RoundCap
+    \li Qt::SquareCap
+    \li Qt::FlatCap
+    \li Qt::RoundCap
     \endtable
 
     \value FlatCap  a square line end that does not cover the end
@@ -388,13 +388,13 @@
 
     \table
     \row
-    \o \inlineimage qpen-bevel.png
-    \o \inlineimage qpen-miter.png
-    \o \inlineimage qpen-roundjoin.png
+    \li \inlineimage qpen-bevel.png
+    \li \inlineimage qpen-miter.png
+    \li \inlineimage qpen-roundjoin.png
     \row
-    \o Qt::BevelJoin
-    \o Qt::MiterJoin
-    \o Qt::RoundJoin
+    \li Qt::BevelJoin
+    \li Qt::MiterJoin
+    \li Qt::RoundJoin
     \endtable
 
     \value MiterJoin  The outer edges of the lines are extended to
@@ -968,7 +968,7 @@
     \value WA_NoSystemBackground Indicates that the widget has no background,
     i.e. when the widget receives paint events, the background is not
     automatically repainted. \note Unlike WA_OpaquePaintEvent, newly exposed
-    areas are \bold never filled with the background (e.g., after showing a
+    areas are \b never filled with the background (e.g., after showing a
     window for the first time the user can see "through" it until the
     application processes the paint events). This flag is set or cleared by the
     widget's author.

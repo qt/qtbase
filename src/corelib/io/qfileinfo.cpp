@@ -812,7 +812,7 @@ QString QFileInfo::suffix() const
 /*!
     Returns the path of the object's parent directory as a QDir object.
 
-    \bold{Note:} The QDir returned always corresponds to the object's
+    \b{Note:} The QDir returned always corresponds to the object's
     parent directory, even if the QFileInfo represents a directory.
 
     For each of the following, dir() returns a QDir for
@@ -901,7 +901,7 @@ bool QFileInfo::isExecutable() const
 /*!
     Returns true if this is a `hidden' file; otherwise returns false.
 
-    \bold{Note:} This function returns true for the special entries
+    \b{Note:} This function returns true for the special entries
     "." and ".." on Unix, even though QDir::entryList threats them as shown.
 */
 bool QFileInfo::isHidden() const
@@ -923,7 +923,7 @@ bool QFileInfo::isHidden() const
     Returns false if the file is otherwise supported by a virtual file system
     inside Qt, such as \l{the Qt Resource System}.
 
-    \bold{Note:} Native paths may still require conversion of path separators
+    \b{Note:} Native paths may still require conversion of path separators
     and character encoding, depending on platform and input requirements of the
     native API.
 

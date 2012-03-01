@@ -232,7 +232,7 @@ int QStackedWidget::insertWidget(int index, QWidget *widget)
     not deleted but simply removed from the stacked layout, causing it
     to be hidden.
 
-    \bold{Note:} Ownership of \a widget reverts to the application.
+    \b{Note:} Ownership of \a widget reverts to the application.
 
     \sa addWidget(), insertWidget(), currentWidget()
 */

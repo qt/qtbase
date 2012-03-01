@@ -59,12 +59,12 @@
     JSON is a format to store structured data. It has 6 basic data types:
 
     \list
-    \o bool
-    \o double
-    \o string
-    \o array
-    \o object
-    \o null
+    \li bool
+    \li double
+    \li string
+    \li array
+    \li object
+    \li null
     \endlist
 
     Any value can be any of the above type. A boolean value is represented by the

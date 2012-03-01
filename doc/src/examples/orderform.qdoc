@@ -161,21 +161,21 @@
 
     \table
         \row
-            \o {1, 8} frame with \e{referenceFrameFormat}
+            \li {1, 8} frame with \e{referenceFrameFormat}
         \row
-            \o block \o \c{A company}
+            \li block \li \c{A company}
         \row
-            \o block
+            \li block
         \row
-            \o block \o \c{321 City Street}
+            \li block \li \c{321 City Street}
         \row
-            \o block
+            \li block
         \row
-            \o block \o \c{Industry Park}
+            \li block \li \c{Industry Park}
         \row
-            \o block
+            \li block
         \row
-            \o block \o \c{Another country}
+            \li block \li \c{Another country}
     \endtable
 
     This is accomplished with the following code:
@@ -196,11 +196,11 @@
 
     \table
         \row
-            \o block \o \c{Donald}
+            \li block \li \c{Donald}
         \row
-            \o block \o \c{47338 Park Avenue}
+            \li block \li \c{47338 Park Avenue}
         \row
-            \o block \o \c{Big City}
+            \li block \li \c{Big City}
     \endtable
 
     For spacing purposes, we invoke \l{QTextCursor::insertBlock()}
@@ -221,21 +221,21 @@
 
     \table
         \row
-            \o block
+            \li block
         \row
-            \o block
+            \li block
         \row
-            \o block \o \c{Date: 25 May 2007}
+            \li block \li \c{Date: 25 May 2007}
         \row
-            \o block
+            \li block
         \row
-            \o {1, 4} frame with \e{bodyFrameFormat}
+            \li {1, 4} frame with \e{bodyFrameFormat}
         \row
-            \o block \o \c{I would like to place an order for the following items:}
+            \li block \li \c{I would like to place an order for the following items:}
         \row
-            \o block
+            \li block
         \row
-            \o block
+            \li block
     \endtable
 
     A QTextTableFormat object, \c orderTableFormat, is used to hold the type
@@ -257,27 +257,27 @@
 
     \table
         \row
-            \o {1, 11} \c{orderTable} with \e{orderTableFormat}
+            \li {1, 11} \c{orderTable} with \e{orderTableFormat}
         \row
-            \o block \o \c{Product}
+            \li block \li \c{Product}
         \row
-            \o block \o \c{Quantity}
+            \li block \li \c{Quantity}
         \row
-            \o block \o \c{T-shirt}
+            \li block \li \c{T-shirt}
         \row
-            \o block \o \c{4}
+            \li block \li \c{4}
         \row
-            \o block \o \c{Badge}
+            \li block \li \c{Badge}
         \row
-            \o block \o \c{3}
+            \li block \li \c{3}
         \row
-            \o block \o \c{Reference book}
+            \li block \li \c{Reference book}
         \row
-            \o block \o \c{2}
+            \li block \li \c{2}
         \row
-            \o block \o \c{Coffee cup}
+            \li block \li \c{Coffee cup}
         \row
-            \o block \o \c{5}
+            \li block \li \c{5}
     \endtable
 
     The \c cursor is then moved back to \c{topFrame}'s
@@ -296,19 +296,19 @@
 
     \table
         \row
-            \o block
+            \li block
         \row
-            \o block\o \c{Please update my...}
+            \li block\li \c{Please update my...}
         \row
-            \o {1, 5} block
+            \li {1, 5} block
         \row
-            \o {1, 4} \c{offersTable}
+            \li {1, 4} \c{offersTable}
         \row
-            \o block \o \c{I want to receive...}
+            \li block \li \c{I want to receive...}
         \row
-            \o block \o \c{I do not want to receive...}
+            \li block \li \c{I do not want to receive...}
         \row
-            \o block \o \c{X}
+            \li block \li \c{X}
     \endtable
 
     The \c cursor is moved to insert "Sincerely" along with the customer's
@@ -321,17 +321,17 @@
 
     \table
         \row
-            \o block
+            \li block
         \row
-            \o {1, 5} block\o \c{Sincerely,}
+            \li {1, 5} block\li \c{Sincerely,}
         \row
-            \o block
+            \li block
         \row
-            \o block
+            \li block
         \row
-            \o block
+            \li block
         \row
-            \o block \o \c{Donald}
+            \li block \li \c{Donald}
     \endtable
 
     The \c createSample() function is used for illustration purposes, to create

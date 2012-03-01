@@ -37,11 +37,11 @@
     Elements in the demo can be controlled using the mouse in the following
     ways:
     \list
-        \o Dragging the mouse while pressing the left mouse button rotates the
+        \li Dragging the mouse while pressing the left mouse button rotates the
            box in the center.
-        \o Dragging the mouse while pressing the right mouse button rotates the
+        \li Dragging the mouse while pressing the right mouse button rotates the
            satellite boxes.
-        \o Scrolling the mouse wheel zooms in and out of the scene.
+        \li Scrolling the mouse wheel zooms in and out of the scene.
     \endlist
 
     The options pane can be used to fine-tune various parameters in the demo,

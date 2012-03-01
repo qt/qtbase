@@ -279,11 +279,11 @@ void QDataWidgetMapperPrivate::_q_modelDestroyed()
     Let us assume that we have an item model named \c{model} with the following contents:
 
     \table
-    \row \o 1 \o Qt Norway       \o Oslo
-    \row \o 2 \o Qt Australia    \o Brisbane
-    \row \o 3 \o Qt USA          \o Palo Alto
-    \row \o 4 \o Qt China        \o Beijing
-    \row \o 5 \o Qt Germany      \o Berlin
+    \row \li 1 \li Qt Norway       \li Oslo
+    \row \li 2 \li Qt Australia    \li Brisbane
+    \row \li 3 \li Qt USA          \li Palo Alto
+    \row \li 4 \li Qt China        \li Beijing
+    \row \li 5 \li Qt Germany      \li Berlin
     \endtable
 
     The following code will map the columns of the model to widgets called \c mySpinBox,
@@ -478,11 +478,11 @@ QModelIndex QDataWidgetMapper::rootIndex() const
 
     \snippet doc/src/snippets/code/src_gui_itemviews_qdatawidgetmapper.cpp 1
 
-    \bold{Notes:}
+    \b{Notes:}
     \list
-    \o If the \a widget is already mapped to a section, the
+    \li If the \a widget is already mapped to a section, the
     old mapping will be replaced by the new one.
-    \o Only one-to-one mappings between sections and widgets are allowed.
+    \li Only one-to-one mappings between sections and widgets are allowed.
     It is not possible to map a single section to multiple widgets, or to
     map a single widget to multiple sections.
     \endlist
@@ -781,11 +781,11 @@ void QDataWidgetMapper::clearMapping()
     Use Qt::Horizontal for tabular data that looks like this:
 
     \table
-    \row \o 1 \o Qt Norway       \o Oslo
-    \row \o 2 \o Qt Australia    \o Brisbane
-    \row \o 3 \o Qt USA          \o Silicon Valley
-    \row \o 4 \o Qt China        \o Beijing
-    \row \o 5 \o Qt Germany      \o Berlin
+    \row \li 1 \li Qt Norway       \li Oslo
+    \row \li 2 \li Qt Australia    \li Brisbane
+    \row \li 3 \li Qt USA          \li Silicon Valley
+    \row \li 4 \li Qt China        \li Beijing
+    \row \li 5 \li Qt Germany      \li Berlin
     \endtable
 
     If the orientation is set to Qt::Vertical, a widget is mapped to
@@ -796,9 +796,9 @@ void QDataWidgetMapper::clearMapping()
     Use Qt::Vertical for tabular data that looks like this:
 
     \table
-    \row \o 1 \o 2 \o 3 \o 4 \o 5
-    \row \o Qt Norway \o Qt Australia \o Qt USA \o Qt China \o Qt Germany
-    \row \o Oslo \o Brisbane \o Silicon Valley \o Beijing \i Berlin
+    \row \li 1 \li 2 \li 3 \li 4 \li 5
+    \row \li Qt Norway \li Qt Australia \li Qt USA \li Qt China \li Qt Germany
+    \row \li Oslo \li Brisbane \li Silicon Valley \li Beijing \li Berlin
     \endtable
 
     Changing the orientation clears all existing mappings.

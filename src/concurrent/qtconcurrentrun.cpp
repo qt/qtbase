@@ -121,9 +121,9 @@
     this:
     
     \list
-    \o To call a function that takes more than 5 arguments.
-    \o To simplify calling a function with constant arguments.
-    \o Changing the order of arguments.
+    \li To call a function that takes more than 5 arguments.
+    \li To simplify calling a function with constant arguments.
+    \li Changing the order of arguments.
     \endlist
     
     See the documentation for the relevant functions for details on how to use

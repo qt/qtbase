@@ -46,10 +46,10 @@
 
     \list
 
-    \o \c SlidersGroup is a custom widget. It combines a QSlider, a
+    \li \c SlidersGroup is a custom widget. It combines a QSlider, a
     QScrollBar and a QDial.
 
-    \o \c Window is the main widget combining a QGroupBox and a
+    \li \c Window is the main widget combining a QGroupBox and a
     QStackedWidget. In this example, the QStackedWidget provides a
     stack of two \c SlidersGroup widgets. The QGroupBox contain
     several widgets that control the behavior of the slider-like
@@ -122,10 +122,10 @@
     slider-like widgets:
 
     \table
-    \header \o                \o{2,1} QSlider                   \o{2,1} QScrollBar                \o{2,1} QDial
-    \header \o                \o Normal        \o Inverted      \o Normal        \o Inverted      \o Normal         \o Inverted
-    \row    \o Qt::Horizontal \o Left to right \o Right to left \o Left to right \o Right to left \o Clockwise \o Counterclockwise
-    \row    \o Qt::Vertical   \o Bottom to top \o Top to bottom \o Top to bottom \o Bottom to top \o Clockwise \o Counterclockwise
+    \header \li                \li{2,1} QSlider                   \li{2,1} QScrollBar                \li{2,1} QDial
+    \header \li                \li Normal        \li Inverted      \li Normal        \li Inverted      \li Normal         \li Inverted
+    \row    \li Qt::Horizontal \li Left to right \li Right to left \li Left to right \li Right to left \li Clockwise \li Counterclockwise
+    \row    \li Qt::Vertical   \li Bottom to top \li Top to bottom \li Top to bottom \li Bottom to top \li Clockwise \li Counterclockwise
     \endtable
 
     It is common to invert the appearance of a vertical QSlider. A

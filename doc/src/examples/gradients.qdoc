@@ -37,10 +37,10 @@
     There are three types of gradients:
 
     \list
-      \o \bold{Linear} gradients interpolate colors between start and end points.
-      \o \bold{Radial} gradients interpolate colors between a focal point and the
+      \li \b{Linear} gradients interpolate colors between start and end points.
+      \li \b{Radial} gradients interpolate colors between a focal point and the
           points on a circle surrounding it.
-      \o \bold{Conical} gradients interpolate colors around a center point.
+      \li \b{Conical} gradients interpolate colors around a center point.
     \endlist
 
     The panel on the right contains a color table editor that defines

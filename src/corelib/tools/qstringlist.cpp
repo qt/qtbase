@@ -342,7 +342,7 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QString &b
     \snippet doc/src/snippets/qstringlist/main.cpp 14
 
     For regular expressions that contain \l{capturing parentheses},
-    occurrences of \bold{\\1}, \bold{\\2}, ..., in \a after are
+    occurrences of \b{\\1}, \b{\\2}, ..., in \a after are
     replaced with \a{rx}.cap(1), \a{rx}.cap(2), ...
 
     For example:

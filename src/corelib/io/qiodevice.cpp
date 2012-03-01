@@ -163,12 +163,12 @@ QIODevicePrivate::~QIODevicePrivate()
     random-access devices and sequential devices.
 
     \list
-    \o Random-access devices support seeking to arbitrary
+    \li Random-access devices support seeking to arbitrary
     positions using seek(). The current position in the file is
     available by calling pos(). QFile and QBuffer are examples of
     random-access devices.
 
-    \o Sequential devices don't support seeking to arbitrary
+    \li Sequential devices don't support seeking to arbitrary
     positions. The data must be read in one pass. The functions
     pos() and size() don't work for sequential devices.
     QTcpSocket and QProcess are examples of sequential devices.
@@ -199,14 +199,14 @@ QIODevicePrivate::~QIODevicePrivate()
     a separate thread:
 
     \list
-    \o waitForReadyRead() - This function suspends operation in the
+    \li waitForReadyRead() - This function suspends operation in the
     calling thread until new data is available for reading.
 
-    \o waitForBytesWritten() - This function suspends operation in the
+    \li waitForBytesWritten() - This function suspends operation in the
     calling thread until one payload of data has been written to the
     device.
 
-    \o waitFor....() - Subclasses of QIODevice implement blocking
+    \li waitFor....() - Subclasses of QIODevice implement blocking
     functions for device-specific operations. For example, QProcess
     has a function called waitForStarted() which suspends operation in
     the calling thread until the process has started.
@@ -1038,9 +1038,9 @@ QByteArray QIODevice::readAll()
     Data is read until either of the following conditions are met:
 
     \list
-    \o The first '\n' character is read.
-    \o \a maxSize - 1 bytes are read.
-    \o The end of the device data is detected.
+    \li The first '\n' character is read.
+    \li \a maxSize - 1 bytes are read.
+    \li The end of the device data is detected.
     \endlist
 
     For example, the following code reads a line of characters from a

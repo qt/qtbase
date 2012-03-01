@@ -49,18 +49,18 @@
     to:
 
     \list
-    \o \gui{Open...} - Open an image file
-    \o \gui{Print...} - Print an image
-    \o \gui{Exit} - Exit the application
+    \li \gui{Open...} - Open an image file
+    \li \gui{Print...} - Print an image
+    \li \gui{Exit} - Exit the application
     \endlist
 
     Once an image is loaded, the \gui View menu allows the users to:
 
     \list
-    \o \gui{Zoom In} - Scale the image up by 25%
-    \o \gui{Zoom Out} - Scale the image down by 25%
-    \o \gui{Normal Size} - Show the image at its original size
-    \o \gui{Fit to Window} - Stretch the image to occupy the entire window
+    \li \gui{Zoom In} - Scale the image up by 25%
+    \li \gui{Zoom Out} - Scale the image down by 25%
+    \li \gui{Normal Size} - Show the image at its original size
+    \li \gui{Fit to Window} - Stretch the image to occupy the entire window
     \endlist
 
     In addition the \gui Help menu provides the users with information
@@ -202,9 +202,9 @@
 
     \table
     \row
-    \o \inlineimage imageviewer-original_size.png
-    \o \inlineimage imageviewer-zoom_in_1.png
-    \o \inlineimage imageviewer-zoom_in_2.png
+    \li \inlineimage imageviewer-original_size.png
+    \li \inlineimage imageviewer-zoom_in_1.png
+    \li \inlineimage imageviewer-zoom_in_2.png
     \endtable
 
     \snippet examples/widgets/imageviewer/imageviewer.cpp 11
@@ -246,9 +246,9 @@
 
     \table
     \row
-    \o \inlineimage imageviewer-original_size.png
-    \o \inlineimage imageviewer-fit_to_window_1.png
-    \o \inlineimage imageviewer-fit_to_window_2.png
+    \li \inlineimage imageviewer-original_size.png
+    \li \inlineimage imageviewer-fit_to_window_1.png
+    \li \inlineimage imageviewer-fit_to_window_2.png
     \endtable
 
     If the slot is called to turn off the option, the

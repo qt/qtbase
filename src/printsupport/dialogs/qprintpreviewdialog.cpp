@@ -647,13 +647,13 @@ void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
     straightforward:
 
     \list 1
-    \o Create the QPrintPreviewDialog.
+    \li Create the QPrintPreviewDialog.
 
     You can construct a QPrintPreviewDialog with an existing QPrinter
     object, or you can have QPrintPreviewDialog create one for you,
     which will be the system default printer.
 
-    \o Connect the paintRequested() signal to a slot.
+    \li Connect the paintRequested() signal to a slot.
 
     When the dialog needs to generate a set of preview pages, the
     paintRequested() signal will be emitted. You can use the exact
@@ -663,7 +663,7 @@ void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
     signal, where you draw onto the QPrinter object that is passed
     into the slot.
 
-    \o Call exec().
+    \li Call exec().
 
     Call QPrintPreviewDialog::exec() to show the preview dialog.
     \endlist

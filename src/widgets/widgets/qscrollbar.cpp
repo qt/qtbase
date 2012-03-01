@@ -83,21 +83,21 @@ QT_BEGIN_NAMESPACE
     needs.
 
     \table
-    \row \o \image qscrollbar-picture.png
-    \o Scroll bars typically include four separate controls: a slider,
+    \row \li \image qscrollbar-picture.png
+    \li Scroll bars typically include four separate controls: a slider,
     scroll arrows, and a page control.
 
     \list
-    \o a. The slider provides a way to quickly go to any part of the
+    \li a. The slider provides a way to quickly go to any part of the
     document, but does not support accurate navigation within large
     documents.
-    \o b. The scroll arrows are push buttons which can be used to accurately
+    \li b. The scroll arrows are push buttons which can be used to accurately
     navigate to a particular place in a document. For a vertical scroll bar
     connected to a text editor, these typically move the current position one
     "line" up or down, and adjust the position of the slider by a small
     amount. In editors and list boxes a "line" might mean one line of text;
     in an image viewer it might mean 20 pixels.
-    \o c. The page control is the area over which the slider is dragged (the
+    \li c. The page control is the area over which the slider is dragged (the
     scroll bar's background). Clicking here moves the scroll bar towards
     the click by one "page". This value is usually the same as the length of
     the slider.
@@ -135,8 +135,8 @@ QT_BEGIN_NAMESPACE
     value of 80. This would give us a scroll bar with five "pages".
 
     \table
-    \row \o \inlineimage qscrollbar-values.png
-    \o The relationship between a document length, the range of values used
+    \row \li \inlineimage qscrollbar-values.png
+    \li The relationship between a document length, the range of values used
     in a scroll bar, and the page step is simple in many common situations.
     The scroll bar's range of values is determined by subtracting a
     chosen page step from some value representing the length of the document.
@@ -153,18 +153,18 @@ QT_BEGIN_NAMESPACE
 
     ScrollBar inherits a comprehensive set of signals from QAbstractSlider:
     \list
-    \o \l{QAbstractSlider::valueChanged()}{valueChanged()} is emitted when the
+    \li \l{QAbstractSlider::valueChanged()}{valueChanged()} is emitted when the
        scroll bar's value has changed. The tracking() determines whether this
        signal is emitted during user interaction.
-    \o \l{QAbstractSlider::rangeChanged()}{rangeChanged()} is emitted when the
+    \li \l{QAbstractSlider::rangeChanged()}{rangeChanged()} is emitted when the
        scroll bar's range of values has changed.
-    \o \l{QAbstractSlider::sliderPressed()}{sliderPressed()} is emitted when
+    \li \l{QAbstractSlider::sliderPressed()}{sliderPressed()} is emitted when
        the user starts to drag the slider.
-    \o \l{QAbstractSlider::sliderMoved()}{sliderMoved()} is emitted when the user
+    \li \l{QAbstractSlider::sliderMoved()}{sliderMoved()} is emitted when the user
        drags the slider.
-    \o \l{QAbstractSlider::sliderReleased()}{sliderReleased()} is emitted when
+    \li \l{QAbstractSlider::sliderReleased()}{sliderReleased()} is emitted when
        the user releases the slider.
-    \o \l{QAbstractSlider::actionTriggered()}{actionTriggered()} is emitted
+    \li \l{QAbstractSlider::actionTriggered()}{actionTriggered()} is emitted
        when the scroll bar is changed by user interaction or via the
        \l{QAbstractSlider::triggerAction()}{triggerAction()} function.
     \endlist
@@ -173,12 +173,12 @@ QT_BEGIN_NAMESPACE
     default focusPolicy() of Qt::NoFocus. Use setFocusPolicy() to
     enable keyboard interaction with the scroll bar:
     \list
-         \o Left/Right move a horizontal scroll bar by one single step.
-         \o Up/Down move a vertical scroll bar by one single step.
-         \o PageUp moves up one page.
-         \o PageDown moves down one page.
-         \o Home moves to the start (mininum).
-         \o End moves to the end (maximum).
+         \li Left/Right move a horizontal scroll bar by one single step.
+         \li Up/Down move a vertical scroll bar by one single step.
+         \li PageUp moves up one page.
+         \li PageDown moves down one page.
+         \li Home moves to the start (mininum).
+         \li End moves to the end (maximum).
      \endlist
 
     The slider itself can be controlled by using the
@@ -190,12 +190,12 @@ QT_BEGIN_NAMESPACE
     slider.
 
     \table 100%
-    \row \o \inlineimage macintosh-horizontalscrollbar.png Screenshot of a Macintosh style scroll bar
-         \o A scroll bar shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-    \row \o \inlineimage windowsxp-horizontalscrollbar.png Screenshot of a Windows XP style scroll bar
-         \o A scroll bar shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
-    \row \o \inlineimage plastique-horizontalscrollbar.png Screenshot of a Plastique style scroll bar
-         \o A scroll bar shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \row \li \inlineimage macintosh-horizontalscrollbar.png Screenshot of a Macintosh style scroll bar
+         \li A scroll bar shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
+    \row \li \inlineimage windowsxp-horizontalscrollbar.png Screenshot of a Windows XP style scroll bar
+         \li A scroll bar shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+    \row \li \inlineimage plastique-horizontalscrollbar.png Screenshot of a Plastique style scroll bar
+         \li A scroll bar shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
     \endtable
 
     \sa QScrollArea, QSlider, QDial, QSpinBox, {fowler}{GUI Design Handbook: Scroll Bar}, {Sliders Example}

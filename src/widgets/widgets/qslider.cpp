@@ -225,17 +225,17 @@ QStyle::SubControl QSliderPrivate::newHoverControl(const QPoint &pos)
 
     QSlider inherits a comprehensive set of signals:
     \table
-    \header \o Signal \o Description
-    \row \o \l valueChanged()
-    \o Emitted when the slider's value has changed. The tracking()
+    \header \li Signal \li Description
+    \row \li \l valueChanged()
+    \li Emitted when the slider's value has changed. The tracking()
        determines whether this signal is emitted during user
        interaction.
-    \row \o \l sliderPressed()
-    \o Emitted when the user starts to drag the slider.
-    \row \o \l sliderMoved()
-    \o Emitted when the user drags the slider.
-    \row \o \l sliderReleased()
-    \o Emitted when the user releases the slider.
+    \row \li \l sliderPressed()
+    \li Emitted when the user starts to drag the slider.
+    \row \li \l sliderMoved()
+    \li Emitted when the user drags the slider.
+    \row \li \l sliderReleased()
+    \li Emitted when the user releases the slider.
     \endtable
 
     QSlider only provides integer ranges. Note that although
@@ -246,21 +246,21 @@ QStyle::SubControl QSliderPrivate::newHoverControl(const QPoint &pos)
     keyboard interface. The keyboard interface is the following:
 
     \list
-        \o Left/Right move a horizontal slider by one single step.
-        \o Up/Down move a vertical slider by one single step.
-        \o PageUp moves up one page.
-        \o PageDown moves down one page.
-        \o Home moves to the start (mininum).
-        \o End moves to the end (maximum).
+        \li Left/Right move a horizontal slider by one single step.
+        \li Up/Down move a vertical slider by one single step.
+        \li PageUp moves up one page.
+        \li PageDown moves down one page.
+        \li Home moves to the start (mininum).
+        \li End moves to the end (maximum).
     \endlist
 
     \table 100%
-    \row \o \inlineimage macintosh-slider.png Screenshot of a Macintosh slider
-         \o A slider shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-    \row \o \inlineimage windows-slider.png Screenshot of a Windows XP slider
-         \o A slider shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
-    \row \o \inlineimage plastique-slider.png Screenshot of a Plastique slider
-         \o A slider shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \row \li \inlineimage macintosh-slider.png Screenshot of a Macintosh slider
+         \li A slider shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
+    \row \li \inlineimage windows-slider.png Screenshot of a Windows XP slider
+         \li A slider shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+    \row \li \inlineimage plastique-slider.png Screenshot of a Plastique slider
+         \li A slider shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
     \endtable
 
     \sa QScrollBar, QSpinBox, QDial, {fowler}{GUI Design Handbook: Slider}, {Sliders Example}

@@ -77,12 +77,12 @@ QT_BEGIN_NAMESPACE
 
     The normal way to use QTabWidget is to do the following:
     \list 1
-    \i Create a QTabWidget.
-    \i Create a QWidget for each of the pages in the tab dialog, but
+    \li Create a QTabWidget.
+    \li Create a QWidget for each of the pages in the tab dialog, but
        do not specify parent widgets for them.
-    \i Insert child widgets into the page widget, using layouts to
+    \li Insert child widgets into the page widget, using layouts to
        position them as normal.
-    \i Call addTab() or insertTab() to put the page widgets into the
+    \li Call addTab() or insertTab() to put the page widgets into the
        tab widget, giving each tab a suitable label with an optional
        keyboard shortcut.
     \endlist
@@ -120,12 +120,12 @@ QT_BEGIN_NAMESPACE
     area, organizing the individual pages).
 
     \table 100%
-    \row \o \inlineimage windowsxp-tabwidget.png Screenshot of a Windows XP style tab widget
-         \o \inlineimage macintosh-tabwidget.png Screenshot of a Macintosh style tab widget
-         \o \inlineimage plastique-tabwidget.png Screenshot of a Plastique style tab widget
-    \row \o A Windows XP style tab widget.
-         \o A Macintosh style tab widget.
-         \o A Plastique style tab widget.
+    \row \li \inlineimage windowsxp-tabwidget.png Screenshot of a Windows XP style tab widget
+         \li \inlineimage macintosh-tabwidget.png Screenshot of a Macintosh style tab widget
+         \li \inlineimage plastique-tabwidget.png Screenshot of a Plastique style tab widget
+    \row \li A Windows XP style tab widget.
+         \li A Macintosh style tab widget.
+         \li A Plastique style tab widget.
     \endtable
 
     \sa QTabBar, QStackedWidget, QToolBox, {Tab Dialog Example}

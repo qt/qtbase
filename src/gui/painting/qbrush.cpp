@@ -309,15 +309,15 @@ struct QBrushDataPointerDeleter
     otherwise false. A brush is considered opaque if:
 
     \list
-    \o The alpha component of the color() is 255.
-    \o Its texture() does not have an alpha channel and is not a QBitmap.
-    \o The colors in the gradient() all have an alpha component that is 255.
+    \li The alpha component of the color() is 255.
+    \li Its texture() does not have an alpha channel and is not a QBitmap.
+    \li The colors in the gradient() all have an alpha component that is 255.
     \endlist
 
     \table 100%
     \row
-    \o \inlineimage brush-outline.png Outlines
-    \o
+    \li \inlineimage brush-outline.png Outlines
+    \li
 
     To specify the style and color of lines and outlines, use the
     QPainter's \l {QPen}{pen} combined with Qt::PenStyle and
@@ -826,10 +826,10 @@ Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush)
     is considered opaque if:
 
     \list
-    \i The alpha component of the color() is 255.
-    \i Its texture() does not have an alpha channel and is not a QBitmap.
-    \i The colors in the gradient() all have an alpha component that is 255.
-    \i It is an extended radial gradient.
+    \li The alpha component of the color() is 255.
+    \li Its texture() does not have an alpha channel and is not a QBitmap.
+    \li The colors in the gradient() all have an alpha component that is 255.
+    \li It is an extended radial gradient.
     \endlist
 */
 
@@ -1178,12 +1178,12 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
     Qt currently supports three types of gradient fills:
 
     \list
-    \o \e Linear gradients interpolate colors between start and end points.
-    \o \e Simple radial gradients interpolate colors between a focal point
+    \li \e Linear gradients interpolate colors between start and end points.
+    \li \e Simple radial gradients interpolate colors between a focal point
         and end points on a circle surrounding it.
-    \o \e Extended radial gradients interpolate colors between a center and
+    \li \e Extended radial gradients interpolate colors between a center and
         a focal circle.
-    \o \e Conical gradients interpolate colors around a center point.
+    \li \e Conical gradients interpolate colors around a center point.
     \endlist
 
     A gradient's type can be retrieved using the type() function.
@@ -1191,13 +1191,13 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
 
     \table
     \header
-    \o QLinearGradient
-    \o QRadialGradient
-    \o QConicalGradient
+    \li QLinearGradient
+    \li QRadialGradient
+    \li QConicalGradient
     \row
-    \o \inlineimage qgradient-linear.png
-    \o \inlineimage qgradient-radial.png
-    \o \inlineimage qgradient-conical.png
+    \li \inlineimage qgradient-linear.png
+    \li \inlineimage qgradient-radial.png
+    \li \inlineimage qgradient-conical.png
     \endtable
 
     The colors in a gradient are defined using stop points of the
@@ -1232,13 +1232,13 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
 
     \table
     \row
-    \o \inlineimage qradialgradient-pad.png
-    \o \inlineimage qradialgradient-repeat.png
-    \o \inlineimage qradialgradient-reflect.png
+    \li \inlineimage qradialgradient-pad.png
+    \li \inlineimage qradialgradient-repeat.png
+    \li \inlineimage qradialgradient-reflect.png
     \row
-    \o \l {QGradient::PadSpread}{PadSpread}
-    \o \l {QGradient::RepeatSpread}{RepeatSpread}
-    \o \l {QGradient::ReflectSpread}{ReflectSpread}
+    \li \l {QGradient::PadSpread}{PadSpread}
+    \li \l {QGradient::RepeatSpread}{RepeatSpread}
+    \li \l {QGradient::ReflectSpread}{ReflectSpread}
     \endtable
 
     Note that the setSpread() function only has effect for linear and
@@ -1537,13 +1537,13 @@ bool QGradient::operator==(const QGradient &gradient) const
 
     \table
     \row
-    \o \inlineimage qlineargradient-pad.png
-    \o \inlineimage qlineargradient-reflect.png
-    \o \inlineimage qlineargradient-repeat.png
+    \li \inlineimage qlineargradient-pad.png
+    \li \inlineimage qlineargradient-reflect.png
+    \li \inlineimage qlineargradient-repeat.png
     \row
-    \o \l {QGradient::PadSpread}{PadSpread} (default)
-    \o \l {QGradient::ReflectSpread}{ReflectSpread}
-    \o \l {QGradient::RepeatSpread}{RepeatSpread}
+    \li \l {QGradient::PadSpread}{PadSpread} (default)
+    \li \l {QGradient::ReflectSpread}{ReflectSpread}
+    \li \l {QGradient::RepeatSpread}{RepeatSpread}
     \endtable
 
     The colors in a gradient is defined using stop points of the
@@ -1723,13 +1723,13 @@ void QLinearGradient::setFinalStop(const QPointF &stop)
 
     \table
     \row
-    \o \inlineimage qradialgradient-pad.png
-    \o \inlineimage qradialgradient-reflect.png
-    \o \inlineimage qradialgradient-repeat.png
+    \li \inlineimage qradialgradient-pad.png
+    \li \inlineimage qradialgradient-reflect.png
+    \li \inlineimage qradialgradient-repeat.png
     \row
-    \o \l {QGradient::PadSpread}{PadSpread} (default)
-    \o \l {QGradient::ReflectSpread}{ReflectSpread}
-    \o \l {QGradient::RepeatSpread}{RepeatSpread}
+    \li \l {QGradient::PadSpread}{PadSpread} (default)
+    \li \l {QGradient::ReflectSpread}{ReflectSpread}
+    \li \l {QGradient::RepeatSpread}{RepeatSpread}
     \endtable
 
     The colors in a gradient is defined using stop points of the

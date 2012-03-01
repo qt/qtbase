@@ -90,21 +90,21 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     substrings in a text. This is useful in many contexts, e.g.,
 
     \table
-    \row \i Validation
-         \i A regexp can test whether a substring meets some criteria,
+    \row \li Validation
+         \li A regexp can test whether a substring meets some criteria,
          e.g. is an integer or contains no whitespace.
-    \row \i Searching
-         \i A regexp provides more powerful pattern matching than
+    \row \li Searching
+         \li A regexp provides more powerful pattern matching than
          simple substring matching, e.g., match one of the words
          \e{mail}, \e{letter} or \e{correspondence}, but none of the
          words \e{email}, \e{mailman}, \e{mailer}, \e{letterbox}, etc.
-     \row \i Search and Replace
-         \i A regexp can replace all occurrences of a substring with a
+     \row \li Search and Replace
+         \li A regexp can replace all occurrences of a substring with a
          different substring, e.g., replace all occurrences of \e{&}
          with \e{\&amp;} except where the \e{&} is already followed by
          an \e{amp;}.
-    \row \i String Splitting
-         \i A regexp can be used to identify where a string should be
+    \row \li String Splitting
+         \li A regexp can be used to identify where a string should be
          split apart, e.g. splitting tab-delimited strings.
     \endtable
 
@@ -127,18 +127,18 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     \section1 Introduction
 
     Regexps are built up from expressions, quantifiers, and
-    assertions. The simplest expression is a character, e.g. \bold{x}
-    or \bold{5}. An expression can also be a set of characters
-    enclosed in square brackets. \bold{[ABCD]} will match an \bold{A}
-    or a \bold{B} or a \bold{C} or a \bold{D}. We can write this same
-    expression as \bold{[A-D]}, and an experession to match any
+    assertions. The simplest expression is a character, e.g. \b{x}
+    or \b{5}. An expression can also be a set of characters
+    enclosed in square brackets. \b{[ABCD]} will match an \b{A}
+    or a \b{B} or a \b{C} or a \b{D}. We can write this same
+    expression as \b{[A-D]}, and an experession to match any
     captital letter in the English alphabet is written as
-    \bold{[A-Z]}.
+    \b{[A-Z]}.
 
     A quantifier specifies the number of occurrences of an expression
-    that must be matched. \bold{x{1,1}} means match one and only one
-    \bold{x}. \bold{x{1,5}} means match a sequence of \bold{x}
-    characters that contains at least one \bold{x} but no more than
+    that must be matched. \b{x{1,1}} means match one and only one
+    \b{x}. \b{x{1,5}} means match a sequence of \b{x}
+    characters that contains at least one \b{x} but no more than
     five.
 
     Note that in general regexps cannot be used to check for balanced
@@ -156,35 +156,35 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 
     Suppose we want a regexp to match integers in the range 0 to 99.
     At least one digit is required, so we start with the expression
-    \bold{[0-9]{1,1}}, which matches a single digit exactly once. This
+    \b{[0-9]{1,1}}, which matches a single digit exactly once. This
     regexp matches integers in the range 0 to 9. To match integers up
     to 99, increase the maximum number of occurrences to 2, so the
-    regexp becomes \bold{[0-9]{1,2}}. This regexp satisfies the
+    regexp becomes \b{[0-9]{1,2}}. This regexp satisfies the
     original requirement to match integers from 0 to 99, but it will
     also match integers that occur in the middle of strings. If we
     want the matched integer to be the whole string, we must use the
-    anchor assertions, \bold{^} (caret) and \bold{$} (dollar). When
-    \bold{^} is the first character in a regexp, it means the regexp
-    must match from the beginning of the string. When \bold{$} is the
+    anchor assertions, \b{^} (caret) and \b{$} (dollar). When
+    \b{^} is the first character in a regexp, it means the regexp
+    must match from the beginning of the string. When \b{$} is the
     last character of the regexp, it means the regexp must match to
-    the end of the string. The regexp becomes \bold{^[0-9]{1,2}$}.
-    Note that assertions, e.g. \bold{^} and \bold{$}, do not match
+    the end of the string. The regexp becomes \b{^[0-9]{1,2}$}.
+    Note that assertions, e.g. \b{^} and \b{$}, do not match
     characters but locations in the string.
 
     If you have seen regexps described elsewhere, they may have looked
     different from the ones shown here. This is because some sets of
     characters and some quantifiers are so common that they have been
-    given special symbols to represent them. \bold{[0-9]} can be
-    replaced with the symbol \bold{\\d}. The quantifier to match
-    exactly one occurrence, \bold{{1,1}}, can be replaced with the
-    expression itself, i.e. \bold{x{1,1}} is the same as \bold{x}. So
-    our 0 to 99 matcher could be written as \bold{^\\d{1,2}$}. It can
-    also be written \bold{^\\d\\d{0,1}$}, i.e. \e{From the start of
+    given special symbols to represent them. \b{[0-9]} can be
+    replaced with the symbol \b{\\d}. The quantifier to match
+    exactly one occurrence, \b{{1,1}}, can be replaced with the
+    expression itself, i.e. \b{x{1,1}} is the same as \b{x}. So
+    our 0 to 99 matcher could be written as \b{^\\d{1,2}$}. It can
+    also be written \b{^\\d\\d{0,1}$}, i.e. \e{From the start of
     the string, match a digit, followed immediately by 0 or 1 digits}.
-    In practice, it would be written as \bold{^\\d\\d?$}. The \bold{?}
-    is shorthand for the quantifier \bold{{0,1}}, i.e. 0 or 1
-    occurrences. \bold{?} makes an expression optional. The regexp
-    \bold{^\\d\\d?$} means \e{From the beginning of the string, match
+    In practice, it would be written as \b{^\\d\\d?$}. The \b{?}
+    is shorthand for the quantifier \b{{0,1}}, i.e. 0 or 1
+    occurrences. \b{?} makes an expression optional. The regexp
+    \b{^\\d\\d?$} means \e{From the beginning of the string, match
     one digit, followed immediately by 0 or 1 more digit, followed
     immediately by end of string}.
 
@@ -192,45 +192,45 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     'letter' \e or 'correspondence' but does not match words that
     contain these words, e.g., 'email', 'mailman', 'mailer', and
     'letterbox', start with a regexp that matches 'mail'. Expressed
-    fully, the regexp is \bold{m{1,1}a{1,1}i{1,1}l{1,1}}, but because
+    fully, the regexp is \b{m{1,1}a{1,1}i{1,1}l{1,1}}, but because
     a character expression is automatically quantified by
-    \bold{{1,1}}, we can simplify the regexp to \bold{mail}, i.e., an
+    \b{{1,1}}, we can simplify the regexp to \b{mail}, i.e., an
     'm' followed by an 'a' followed by an 'i' followed by an 'l'. Now
-    we can use the vertical bar \bold{|}, which means \bold{or}, to
+    we can use the vertical bar \b{|}, which means \b{or}, to
     include the other two words, so our regexp for matching any of the
-    three words becomes \bold{mail|letter|correspondence}. Match
-    'mail' \bold{or} 'letter' \bold{or} 'correspondence'. While this
+    three words becomes \b{mail|letter|correspondence}. Match
+    'mail' \b{or} 'letter' \b{or} 'correspondence'. While this
     regexp will match one of the three words we want to match, it will
     also match words we don't want to match, e.g., 'email'.  To
     prevent the regexp from matching unwanted words, we must tell it
     to begin and end the match at word boundaries. First we enclose
-    our regexp in parentheses, \bold{(mail|letter|correspondence)}.
+    our regexp in parentheses, \b{(mail|letter|correspondence)}.
     Parentheses group expressions together, and they identify a part
     of the regexp that we wish to \l{capturing text}{capture}.
     Enclosing the expression in parentheses allows us to use it as a
     component in more complex regexps. It also allows us to examine
     which of the three words was actually matched. To force the match
     to begin and end on word boundaries, we enclose the regexp in
-    \bold{\\b} \e{word boundary} assertions:
-    \bold{\\b(mail|letter|correspondence)\\b}.  Now the regexp means:
+    \b{\\b} \e{word boundary} assertions:
+    \b{\\b(mail|letter|correspondence)\\b}.  Now the regexp means:
     \e{Match a word boundary, followed by the regexp in parentheses,
-    followed by a word boundary}. The \bold{\\b} assertion matches a
+    followed by a word boundary}. The \b{\\b} assertion matches a
     \e position in the regexp, not a \e character. A word boundary is
     any non-word character, e.g., a space, newline, or the beginning
     or ending of a string.
 
     If we want to replace ampersand characters with the HTML entity
-    \bold{\&amp;}, the regexp to match is simply \bold{\&}. But this
+    \b{\&amp;}, the regexp to match is simply \b{\&}. But this
     regexp will also match ampersands that have already been converted
     to HTML entities. We want to replace only ampersands that are not
-    already followed by \bold{amp;}. For this, we need the negative
-    lookahead assertion, \bold{(?!}__\bold{)}. The regexp can then be
-    written as \bold{\&(?!amp;)}, i.e. \e{Match an ampersand that is}
-    \bold{not} \e{followed by} \bold{amp;}.
+    already followed by \b{amp;}. For this, we need the negative
+    lookahead assertion, \b{(?!}__\b{)}. The regexp can then be
+    written as \b{\&(?!amp;)}, i.e. \e{Match an ampersand that is}
+    \b{not} \e{followed by} \b{amp;}.
 
     If we want to count all the occurrences of 'Eric' and 'Eirik' in a
-    string, two valid solutions are \bold{\\b(Eric|Eirik)\\b} and
-    \bold{\\bEi?ri[ck]\\b}. The word boundary assertion '\\b' is
+    string, two valid solutions are \b{\\b(Eric|Eirik)\\b} and
+    \b{\\bEi?ri[ck]\\b}. The word boundary assertion '\\b' is
     required to avoid matching words that contain either name,
     e.g. 'Ericsson'. Note that the second regexp matches more
     spellings than we want: 'Eric', 'Erik', 'Eiric' and 'Eirik'.
@@ -242,52 +242,52 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     \section1 Characters and Abbreviations for Sets of Characters
 
     \table
-    \header \i Element \i Meaning
-    \row \i \bold{c}
-         \i A character represents itself unless it has a special
-         regexp meaning. e.g. \bold{c} matches the character \e c.
-    \row \i \bold{\\c}
-         \i A character that follows a backslash matches the character
+    \header \li Element \li Meaning
+    \row \li \b{c}
+         \li A character represents itself unless it has a special
+         regexp meaning. e.g. \b{c} matches the character \e c.
+    \row \li \b{\\c}
+         \li A character that follows a backslash matches the character
          itself, except as specified below. e.g., To match a literal
-         caret at the beginning of a string, write \bold{\\^}.
-    \row \i \bold{\\a}
-         \i Matches the ASCII bell (BEL, 0x07).
-    \row \i \bold{\\f}
-         \i Matches the ASCII form feed (FF, 0x0C).
-    \row \i \bold{\\n}
-         \i Matches the ASCII line feed (LF, 0x0A, Unix newline).
-    \row \i \bold{\\r}
-         \i Matches the ASCII carriage return (CR, 0x0D).
-    \row \i \bold{\\t}
-         \i Matches the ASCII horizontal tab (HT, 0x09).
-    \row \i \bold{\\v}
-         \i Matches the ASCII vertical tab (VT, 0x0B).
-    \row \i \bold{\\x\e{hhhh}}
-         \i Matches the Unicode character corresponding to the
+         caret at the beginning of a string, write \b{\\^}.
+    \row \li \b{\\a}
+         \li Matches the ASCII bell (BEL, 0x07).
+    \row \li \b{\\f}
+         \li Matches the ASCII form feed (FF, 0x0C).
+    \row \li \b{\\n}
+         \li Matches the ASCII line feed (LF, 0x0A, Unix newline).
+    \row \li \b{\\r}
+         \li Matches the ASCII carriage return (CR, 0x0D).
+    \row \li \b{\\t}
+         \li Matches the ASCII horizontal tab (HT, 0x09).
+    \row \li \b{\\v}
+         \li Matches the ASCII vertical tab (VT, 0x0B).
+    \row \li \b{\\x\e{hhhh}}
+         \li Matches the Unicode character corresponding to the
          hexadecimal number \e{hhhh} (between 0x0000 and 0xFFFF).
-    \row \i \bold{\\0\e{ooo}} (i.e., \\zero \e{ooo})
-         \i matches the ASCII/Latin1 character for the octal number
+    \row \li \b{\\0\e{ooo}} (i.e., \\zero \e{ooo})
+         \li matches the ASCII/Latin1 character for the octal number
          \e{ooo} (between 0 and 0377).
-    \row \i \bold{. (dot)}
-         \i Matches any character (including newline).
-    \row \i \bold{\\d}
-         \i Matches a digit (QChar::isDigit()).
-    \row \i \bold{\\D}
-         \i Matches a non-digit.
-    \row \i \bold{\\s}
-         \i Matches a whitespace character (QChar::isSpace()).
-    \row \i \bold{\\S}
-         \i Matches a non-whitespace character.
-    \row \i \bold{\\w}
-         \i Matches a word character (QChar::isLetterOrNumber(), QChar::isMark(), or '_').
-    \row \i \bold{\\W}
-         \i Matches a non-word character.
-    \row \i \bold{\\\e{n}}
-         \i The \e{n}-th \l backreference, e.g. \\1, \\2, etc.
+    \row \li \b{. (dot)}
+         \li Matches any character (including newline).
+    \row \li \b{\\d}
+         \li Matches a digit (QChar::isDigit()).
+    \row \li \b{\\D}
+         \li Matches a non-digit.
+    \row \li \b{\\s}
+         \li Matches a whitespace character (QChar::isSpace()).
+    \row \li \b{\\S}
+         \li Matches a non-whitespace character.
+    \row \li \b{\\w}
+         \li Matches a word character (QChar::isLetterOrNumber(), QChar::isMark(), or '_').
+    \row \li \b{\\W}
+         \li Matches a non-word character.
+    \row \li \b{\\\e{n}}
+         \li The \e{n}-th \l backreference, e.g. \\1, \\2, etc.
     \endtable
 
-    \bold{Note:} The C++ compiler transforms backslashes in strings.
-    To include a \bold{\\} in a regexp, enter it twice, i.e. \c{\\}.
+    \b{Note:} The C++ compiler transforms backslashes in strings.
+    To include a \b{\\} in a regexp, enter it twice, i.e. \c{\\}.
     To match the backslash character itself, enter it four times, i.e.
     \c{\\\\}.
 
@@ -301,24 +301,24 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     characters do not have special meanings in square brackets.
 
     \table
-    \row \i \bold{^}
+    \row \li \b{^}
 
-         \i The caret negates the character set if it occurs as the
+         \li The caret negates the character set if it occurs as the
          first character (i.e. immediately after the opening square
-         bracket). \bold{[abc]} matches 'a' or 'b' or 'c', but
-         \bold{[^abc]} matches anything \e but 'a' or 'b' or 'c'.
+         bracket). \b{[abc]} matches 'a' or 'b' or 'c', but
+         \b{[^abc]} matches anything \e but 'a' or 'b' or 'c'.
 
-    \row \i \bold{-}
+    \row \li \b{-}
 
-         \i The dash indicates a range of characters. \bold{[W-Z]}
+         \li The dash indicates a range of characters. \b{[W-Z]}
          matches 'W' or 'X' or 'Y' or 'Z'.
 
     \endtable
 
     Using the predefined character set abbreviations is more portable
     than using character ranges across platforms and languages. For
-    example, \bold{[0-9]} matches a digit in Western alphabets but
-    \bold{\\d} matches a digit in \e any alphabet.
+    example, \b{[0-9]} matches a digit in Western alphabets but
+    \b{\\d} matches a digit in \e any alphabet.
 
     Note: In other regexp documentation, sets of characters are often
     called "character classes".
@@ -327,64 +327,64 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     \section1 Quantifiers
 
     By default, an expression is automatically quantified by
-    \bold{{1,1}}, i.e. it should occur exactly once. In the following
-    list, \bold{\e {E}} stands for expression. An expression is a
+    \b{{1,1}}, i.e. it should occur exactly once. In the following
+    list, \b{\e {E}} stands for expression. An expression is a
     character, or an abbreviation for a set of characters, or a set of
     characters in square brackets, or an expression in parentheses.
 
     \table
-    \row \i \bold{\e {E}?}
+    \row \li \b{\e {E}?}
 
-         \i Matches zero or one occurrences of \e E. This quantifier
+         \li Matches zero or one occurrences of \e E. This quantifier
          means \e{The previous expression is optional}, because it
-         will match whether or not the expression is found. \bold{\e
-         {E}?} is the same as \bold{\e {E}{0,1}}. e.g., \bold{dents?}
+         will match whether or not the expression is found. \b{\e
+         {E}?} is the same as \b{\e {E}{0,1}}. e.g., \b{dents?}
          matches 'dent' or 'dents'.
 
-    \row \i \bold{\e {E}+}
+    \row \li \b{\e {E}+}
 
-         \i Matches one or more occurrences of \e E. \bold{\e {E}+} is
-         the same as \bold{\e {E}{1,}}. e.g., \bold{0+} matches '0',
+         \li Matches one or more occurrences of \e E. \b{\e {E}+} is
+         the same as \b{\e {E}{1,}}. e.g., \b{0+} matches '0',
          '00', '000', etc.
 
-    \row \i \bold{\e {E}*}
+    \row \li \b{\e {E}*}
 
-         \i Matches zero or more occurrences of \e E. It is the same
-         as \bold{\e {E}{0,}}. The \bold{*} quantifier is often used
-         in error where \bold{+} should be used. For example, if
-         \bold{\\s*$} is used in an expression to match strings that
+         \li Matches zero or more occurrences of \e E. It is the same
+         as \b{\e {E}{0,}}. The \b{*} quantifier is often used
+         in error where \b{+} should be used. For example, if
+         \b{\\s*$} is used in an expression to match strings that
          end in whitespace, it will match every string because
-         \bold{\\s*$} means \e{Match zero or more whitespaces followed
+         \b{\\s*$} means \e{Match zero or more whitespaces followed
          by end of string}. The correct regexp to match strings that
          have at least one trailing whitespace character is
-         \bold{\\s+$}.
+         \b{\\s+$}.
 
-    \row \i \bold{\e {E}{n}}
+    \row \li \b{\e {E}{n}}
 
-         \i Matches exactly \e n occurrences of \e E. \bold{\e {E}{n}}
+         \li Matches exactly \e n occurrences of \e E. \b{\e {E}{n}}
          is the same as repeating \e E \e n times. For example,
-         \bold{x{5}} is the same as \bold{xxxxx}. It is also the same
-         as \bold{\e {E}{n,n}}, e.g. \bold{x{5,5}}.
+         \b{x{5}} is the same as \b{xxxxx}. It is also the same
+         as \b{\e {E}{n,n}}, e.g. \b{x{5,5}}.
 
-    \row \i \bold{\e {E}{n,}}
-         \i Matches at least \e n occurrences of \e E.
+    \row \li \b{\e {E}{n,}}
+         \li Matches at least \e n occurrences of \e E.
 
-    \row \i \bold{\e {E}{,m}}
-         \i Matches at most \e m occurrences of \e E. \bold{\e {E}{,m}}
-         is the same as \bold{\e {E}{0,m}}.
+    \row \li \b{\e {E}{,m}}
+         \li Matches at most \e m occurrences of \e E. \b{\e {E}{,m}}
+         is the same as \b{\e {E}{0,m}}.
 
-    \row \i \bold{\e {E}{n,m}}
-         \i Matches at least \e n and at most \e m occurrences of \e E.
+    \row \li \b{\e {E}{n,m}}
+         \li Matches at least \e n and at most \e m occurrences of \e E.
     \endtable
 
     To apply a quantifier to more than just the preceding character,
     use parentheses to group characters together in an expression. For
-    example, \bold{tag+} matches a 't' followed by an 'a' followed by
-    at least one 'g', whereas \bold{(tag)+} matches at least one
+    example, \b{tag+} matches a 't' followed by an 'a' followed by
+    at least one 'g', whereas \b{(tag)+} matches at least one
     occurrence of 'tag'.
 
     Note: Quantifiers are normally "greedy". They always match as much
-    text as they can. For example, \bold{0+} matches the first zero it
+    text as they can. For example, \b{0+} matches the first zero it
     finds and all the consecutive zeros after the first zero. Applied
     to '20005', it matches'2\underline{000}5'. Quantifiers can be made
     non-greedy, see setMinimal().
@@ -395,10 +395,10 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 
     Parentheses allow us to group elements together so that we can
     quantify and capture them. For example if we have the expression
-    \bold{mail|letter|correspondence} that matches a string we know
+    \b{mail|letter|correspondence} that matches a string we know
     that \e one of the words matched but not which one. Using
     parentheses allows us to "capture" whatever is matched within
-    their bounds, so if we used \bold{(mail|letter|correspondence)}
+    their bounds, so if we used \b{(mail|letter|correspondence)}
     and matched this regexp against the string "I sent you some email"
     we can use the cap() or capturedTexts() functions to extract the
     matched characters, in this case 'mail'.
@@ -406,14 +406,14 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     We can use captured text within the regexp itself. To refer to the
     captured text we use \e backreferences which are indexed from 1,
     the same as for cap(). For example we could search for duplicate
-    words in a string using \bold{\\b(\\w+)\\W+\\1\\b} which means match a
+    words in a string using \b{\\b(\\w+)\\W+\\1\\b} which means match a
     word boundary followed by one or more word characters followed by
     one or more non-word characters followed by the same text as the
     first parenthesized expression followed by a word boundary.
 
     If we want to use parentheses purely for grouping and not for
     capturing we can use the non-capturing syntax, e.g.
-    \bold{(?:green|blue)}. Non-capturing parentheses begin '(?:' and
+    \b{(?:green|blue)}. Non-capturing parentheses begin '(?:' and
     end ')'. In this example we match either 'green' or 'blue' but we
     do not capture the match so we only know whether or not we matched
     but not which color we actually found. Using non-capturing
@@ -424,9 +424,9 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 
     \target greedy quantifiers
 
-    For historical reasons, quantifiers (e.g. \bold{*}) that apply to
+    For historical reasons, quantifiers (e.g. \b{*}) that apply to
     capturing parentheses are more "greedy" than other quantifiers.
-    For example, \bold{a*(a*)} will match "aaa" with cap(1) == "aaa".
+    For example, \b{a*(a*)} will match "aaa" with cap(1) == "aaa".
     This behavior is different from what other regexp engines do
     (notably, Perl). To obtain a more intuitive capturing behavior,
     specify QRegExp::RegExp2 to the QRegExp constructor or call
@@ -444,54 +444,54 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 
     Assertions make some statement about the text at the point where
     they occur in the regexp but they do not match any characters. In
-    the following list \bold{\e {E}} stands for any expression.
+    the following list \b{\e {E}} stands for any expression.
 
     \table
-    \row \i \bold{^}
-         \i The caret signifies the beginning of the string. If you
+    \row \li \b{^}
+         \li The caret signifies the beginning of the string. If you
          wish to match a literal \c{^} you must escape it by
-         writing \c{\\^}. For example, \bold{^#include} will only
+         writing \c{\\^}. For example, \b{^#include} will only
          match strings which \e begin with the characters '#include'.
          (When the caret is the first character of a character set it
          has a special meaning, see \link #sets-of-characters Sets of
          Characters \endlink.)
 
-    \row \i \bold{$}
-         \i The dollar signifies the end of the string. For example
-         \bold{\\d\\s*$} will match strings which end with a digit
+    \row \li \b{$}
+         \li The dollar signifies the end of the string. For example
+         \b{\\d\\s*$} will match strings which end with a digit
          optionally followed by whitespace. If you wish to match a
          literal \c{$} you must escape it by writing
          \c{\\$}.
 
-    \row \i \bold{\\b}
-         \i A word boundary. For example the regexp
-         \bold{\\bOK\\b} means match immediately after a word
+    \row \li \b{\\b}
+         \li A word boundary. For example the regexp
+         \b{\\bOK\\b} means match immediately after a word
          boundary (e.g. start of string or whitespace) the letter 'O'
          then the letter 'K' immediately before another word boundary
          (e.g. end of string or whitespace). But note that the
          assertion does not actually match any whitespace so if we
-         write \bold{(\\bOK\\b)} and we have a match it will only
+         write \b{(\\bOK\\b)} and we have a match it will only
          contain 'OK' even if the string is "It's \underline{OK} now".
 
-    \row \i \bold{\\B}
-         \i A non-word boundary. This assertion is true wherever
-         \bold{\\b} is false. For example if we searched for
-         \bold{\\Bon\\B} in "Left on" the match would fail (space
+    \row \li \b{\\B}
+         \li A non-word boundary. This assertion is true wherever
+         \b{\\b} is false. For example if we searched for
+         \b{\\Bon\\B} in "Left on" the match would fail (space
          and end of string aren't non-word boundaries), but it would
          match in "t\underline{on}ne".
 
-    \row \i \bold{(?=\e E)}
-         \i Positive lookahead. This assertion is true if the
+    \row \li \b{(?=\e E)}
+         \li Positive lookahead. This assertion is true if the
          expression matches at this point in the regexp. For example,
-         \bold{const(?=\\s+char)} matches 'const' whenever it is
+         \b{const(?=\\s+char)} matches 'const' whenever it is
          followed by 'char', as in 'static \underline{const} char *'.
-         (Compare with \bold{const\\s+char}, which matches 'static
+         (Compare with \b{const\\s+char}, which matches 'static
          \underline{const char} *'.)
 
-    \row \i \bold{(?!\e E)}
-         \i Negative lookahead. This assertion is true if the
+    \row \li \b{(?!\e E)}
+         \li Negative lookahead. This assertion is true if the
          expression does not match at this point in the regexp. For
-         example, \bold{const(?!\\s+char)} matches 'const' \e except
+         example, \b{const(?!\\s+char)} matches 'const' \e except
          when it is followed by 'char'.
     \endtable
 
@@ -505,17 +505,17 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     simpler than full regexps and has only four features:
 
     \table
-    \row \i \bold{c}
-         \i Any character represents itself apart from those mentioned
-         below. Thus \bold{c} matches the character \e c.
-    \row \i \bold{?}
-         \i Matches any single character. It is the same as
-         \bold{.} in full regexps.
-    \row \i \bold{*}
-         \i Matches zero or more of any characters. It is the
-         same as \bold{.*} in full regexps.
-    \row \i \bold{[...]}
-         \i Sets of characters can be represented in square brackets,
+    \row \li \b{c}
+         \li Any character represents itself apart from those mentioned
+         below. Thus \b{c} matches the character \e c.
+    \row \li \b{?}
+         \li Matches any single character. It is the same as
+         \b{.} in full regexps.
+    \row \li \b{*}
+         \li Matches zero or more of any characters. It is the
+         same as \b{.*} in full regexps.
+    \row \li \b{[...]}
+         \li Sets of characters can be represented in square brackets,
          similar to full regexps. Within the character class, like
          outside, backslash has no special meaning.
     \endtable
@@ -525,7 +525,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     wildcard.
 
     For example if we are in wildcard mode and have strings which
-    contain filenames we could identify HTML files with \bold{*.html}.
+    contain filenames we could identify HTML files with \b{*.html}.
     This will match zero or more characters followed by a dot followed
     by 'h', 't', 'm' and 'l'.
 
@@ -553,7 +553,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     (but see the \l{greedy quantifiers}{note above}). Non-greedy
     matching cannot be applied to individual quantifiers, but can be
     applied to all the quantifiers in the pattern. For example, to
-    match the Perl regexp \bold{ro+?m} requires:
+    match the Perl regexp \b{ro+?m} requires:
 
     \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 2
 
@@ -562,7 +562,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 
     Perl's \c{/g} option can be emulated using a \l{#cap_in_a_loop}{loop}.
 
-    In QRegExp \bold{.} matches any character, therefore all QRegExp
+    In QRegExp \b{.} matches any character, therefore all QRegExp
     regexps have the equivalent of Perl's \c{/s} option. QRegExp
     does not have an equivalent to Perl's \c{/m} option, but this
     can be emulated in various ways for example by splitting the input
@@ -598,7 +598,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     to Perl's split and join functions.
 
     Note: because C++ transforms \\'s they must be written \e twice in
-    code, e.g. \bold{\\b} must be written \bold{\\\\b}.
+    code, e.g. \b{\\b} must be written \b{\\\\b}.
 
     \target code-examples
     \section1 Code Examples
@@ -670,10 +670,10 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 
     Wildcard matching can be convenient because of its simplicity, but
     any wildcard regexp can be defined using full regexps, e.g.
-    \bold{.*\\.html$}. Notice that we can't match both \c .html and \c
-    .htm files with a wildcard unless we use \bold{*.htm*} which will
+    \b{.*\\.html$}. Notice that we can't match both \c .html and \c
+    .htm files with a wildcard unless we use \b{*.htm*} which will
     also match 'test.html.bak'. A full regexp gives us the precision
-    we need, \bold{.*\\.html?$}.
+    we need, \b{.*\\.html?$}.
 
     QRegExp can match case insensitively using setCaseSensitivity(),
     and can use non-greedy matching, see setMinimal(). By
@@ -3898,7 +3898,7 @@ static void invalidateEngine(QRegExpPrivate *priv)
     \enum QRegExp::CaretMode
 
     The CaretMode enum defines the different meanings of the caret
-    (\bold{^}) in a regular expression. The possible values are:
+    (\b{^}) in a regular expression. The possible values are:
 
     \value CaretAtZero
            The caret corresponds to index 0 in the searched string.
@@ -4065,11 +4065,11 @@ bool QRegExp::isEmpty() const
     Returns true if the regular expression is valid; otherwise returns
     false. An invalid regular expression never matches.
 
-    The pattern \bold{[a-z} is an example of an invalid pattern, since
+    The pattern \b{[a-z} is an example of an invalid pattern, since
     it lacks a closing square bracket.
 
     Note that the validity of a regexp may also depend on the setting
-    of the wildcard flag, for example \bold{*.html} is a valid
+    of the wildcard flag, for example \b{*.html} is a valid
     wildcard regexp but an invalid full regexp.
 
     \sa errorString()
@@ -4124,7 +4124,7 @@ Qt::CaseSensitivity QRegExp::caseSensitivity() const
 /*!
     Sets case sensitive matching to \a cs.
 
-    If \a cs is Qt::CaseSensitive, \bold{\\.txt$} matches
+    If \a cs is Qt::CaseSensitive, \b{\\.txt$} matches
     \c{readme.txt} but not \c{README.TXT}.
 
     \sa setPatternSyntax(), setPattern(), setMinimal()
@@ -4153,7 +4153,7 @@ QRegExp::PatternSyntax QRegExp::patternSyntax() const
     QRegExp::RegExp.
 
     Setting \a syntax to QRegExp::Wildcard enables simple shell-like
-    \l{wildcard matching}. For example, \bold{r*.txt} matches the
+    \l{wildcard matching}. For example, \b{r*.txt} matches the
     string \c{readme.txt} in wildcard mode, but does not match
     \c{readme}.
 
@@ -4188,13 +4188,13 @@ bool QRegExp::isMinimal() const
 
     For example, suppose we have the input string "We must be
     <b>bold</b>, very <b>bold</b>!" and the pattern
-    \bold{<b>.*</b>}. With the default greedy (maximal) matching,
+    \b{<b>.*</b>}. With the default greedy (maximal) matching,
     the match is "We must be \underline{<b>bold</b>, very
     <b>bold</b>}!". But with minimal (non-greedy) matching, the
     first match is: "We must be \underline{<b>bold</b>}, very
     <b>bold</b>!" and the second match is "We must be <b>bold</b>,
     very \underline{<b>bold</b>}!". In practice we might use the pattern
-    \bold{<b>[^<]*\</b>} instead, although this will still fail for
+    \b{<b>[^<]*\</b>} instead, although this will still fail for
     nested tags.
 
     \sa setCaseSensitivity()
@@ -4215,7 +4215,7 @@ void QRegExp::setMinimal(bool minimal)
     in the start of string and end of string anchors, except that it
     sets matchedLength() differently.
 
-    For example, if the regular expression is \bold{blue}, then
+    For example, if the regular expression is \b{blue}, then
     exactMatch() returns true only for input \c blue. For inputs \c
     bluebell, \c blutak and \c lightblue, exactMatch() returns false
     and matchedLength() will return 4, 3 and 0 respectively.
@@ -4247,7 +4247,7 @@ bool QRegExp::exactMatch(const QString &str) const
     Returns the position of the first match, or -1 if there was no
     match.
 
-    The \a caretMode parameter can be used to instruct whether \bold{^}
+    The \a caretMode parameter can be used to instruct whether \b{^}
     should match at index 0 or at \a offset.
 
     You might prefer to use QString::indexOf(), QString::contains(),
@@ -4286,7 +4286,7 @@ int QRegExp::indexIn(const QString &str, int offset, CaretMode caretMode) const
     Returns the position of the first match, or -1 if there was no
     match.
 
-    The \a caretMode parameter can be used to instruct whether \bold{^}
+    The \a caretMode parameter can be used to instruct whether \b{^}
     should match at index 0 or at \a offset.
 
     Although const, this function sets matchedLength(),
@@ -4371,7 +4371,7 @@ int QRegExp::captureCount() const
 
     Some regexps can match an indeterminate number of times. For
     example if the input string is "Offsets: 12 14 99 231 7" and the
-    regexp, \c{rx}, is \bold{(\\d+)+}, we would hope to get a list of
+    regexp, \c{rx}, is \b{(\\d+)+}, we would hope to get a list of
     all the numbers matched. However, after calling
     \c{rx.indexIn(str)}, capturedTexts() will return the list ("12",
     "12"), i.e. the entire match was "12" and the first subexpression

@@ -36,13 +36,13 @@
     to writing and implementing this graphics driver:
 
     \list 1
-        \o \l {Step 1: Creating a Custom Graphics Driver}
+        \li \l {Step 1: Creating a Custom Graphics Driver}
         {Creating a Custom Graphics Driver}
 
-        \o \l {Step 2: Implementing the Back Buffer}
+        \li \l {Step 2: Implementing the Back Buffer}
         {Implementing the Back Buffer}
 
-        \o \l {Step 3: Creating the Driver Plugin}
+        \li \l {Step 3: Creating the Driver Plugin}
         {Creating the Driver Plugin}
 
     \endlist
@@ -71,11 +71,11 @@
     functions belonging to QScreen:
 
     \list
-        \o \l{QScreen::initDevice()}{initDevice()},
-        \o \l{QScreen::shutdownDevice()}{shutdownDevice()},
-        \o \l{QScreen::blit()}{blit()},
-        \o \l{QScreen::solidFill()}{solidFill()}, and
-        \o \l{QScreen::exposeRegion()}{exposeRegion()}.
+        \li \l{QScreen::initDevice()}{initDevice()},
+        \li \l{QScreen::shutdownDevice()}{shutdownDevice()},
+        \li \l{QScreen::blit()}{blit()},
+        \li \l{QScreen::solidFill()}{solidFill()}, and
+        \li \l{QScreen::exposeRegion()}{exposeRegion()}.
     \endlist
 
     \snippet examples/qws/dbscreen/dbscreen.h 0
@@ -89,10 +89,10 @@
     The graphics driver must carry out three main functions:
 
     \list 1
-        \o Allocate the back buffer on startup and deallocate it on shutdown.
-        \o Draw to the back buffer instead of directly to the screen
+        \li Allocate the back buffer on startup and deallocate it on shutdown.
+        \li Draw to the back buffer instead of directly to the screen
            (which is what QLinuxFbScreen does).
-        \o Copy the back buffer to the screen whenever a screen update is
+        \li Copy the back buffer to the screen whenever a screen update is
            done.
     \endlist
 
@@ -165,9 +165,9 @@
     There are only two functions to reimplement:
 
     \list
-        \o \l{QScreenDriverPlugin::create()}{create()} - creates a driver
+        \li \l{QScreenDriverPlugin::create()}{create()} - creates a driver
            matching the given key
-        \o \l{QScreenDriverPlugin::create()}{keys()} - returns a list of
+        \li \l{QScreenDriverPlugin::create()}{keys()} - returns a list of
            valid keys representing the drivers supported by the plugin
     \endlist
 

@@ -93,10 +93,10 @@
     bar. Most draw functions now take four arguments:
 
     \list
-    \o an enum value specifying which graphical element to draw
-    \o a QStyleOption specifying how and where to render that element
-    \o a QPainter that should be used to draw the element
-    \o a QWidget on which the drawing is performed (optional)
+    \li an enum value specifying which graphical element to draw
+    \li a QStyleOption specifying how and where to render that element
+    \li a QPainter that should be used to draw the element
+    \li a QWidget on which the drawing is performed (optional)
     \endlist
 
     When a widget asks a style to draw an element, it provides the style
@@ -309,11 +309,11 @@
     following parameters:
 
     \list
-        \o the enum value of the element to draw
-        \o a QStyleOption which contains the information needed to
+        \li the enum value of the element to draw
+        \li a QStyleOption which contains the information needed to
            draw the element.
-        \o a QPainter with which to draw the element.
-        \o a pointer to a QWidget, typically the widget
+        \li a QPainter with which to draw the element.
+        \li a pointer to a QWidget, typically the widget
            that the element is painted on.
     \endlist
 
@@ -337,27 +337,27 @@
     typically takes the same arguments.
 
     \list
-        \o The \l{QStyle::}{subElementRect()} function takes a
+        \li The \l{QStyle::}{subElementRect()} function takes a
         \l{QStyle::}{SubElement} enum value, and calculates a bounding
         rectangle for a sub element. The style uses this function to
         know where to draw the different parts of an element. This is
         mainly done for reuse. If you create a new style, you can use
         the same location of sub elements as the super class.
 
-        \o The \l{QStyle::}{subControlRect()} function is used to
+        \li The \l{QStyle::}{subControlRect()} function is used to
         calculate bounding rectangles for sub controls in complex
         controls. When you implement a new style, you reimplement \c
         subControlRect() and calculate the rectangles that are different
         from the super class.
 
-        \o The \l{QStyle::}{pixelMetric()} function returns a pixel
+        \li The \l{QStyle::}{pixelMetric()} function returns a pixel
         metric, which is a style dependent size given in screen
         pixels. It takes a value of the \l{QStyle::}{PixelMetric} enum
         and returns the correct measure. Note that pixel metrics do
         not necessarily have to be static measures, but can be
         calculated with, for example, the style option.
 
-        \o The \l{QStyle::}{hitTestComplexControl()} function returns the
+        \li The \l{QStyle::}{hitTestComplexControl()} function returns the
         sub control that the mouse pointer is over in a complex control.
         Usually, this is simply a matter of using
         \l{QStyle::}{subControlRect()} to get the bounding rectangles of
@@ -588,35 +588,35 @@
 
     \table 90%
     \header
-        \o State flag
-        \o Set
+        \li State flag
+        \li Set
     \row
-        \o State_Sunken
-        \o Yes
+        \li State_Sunken
+        \li Yes
     \row
-        \o State_NoChange
-        \o No
+        \li State_NoChange
+        \li No
     \row
-        \o State_On
-        \o Yes
+        \li State_On
+        \li Yes
     \row
-        \o State_Off
-        \o No
+        \li State_Off
+        \li No
     \row
-        \o State_MouseOver
-        \o Yes
+        \li State_MouseOver
+        \li Yes
     \row
-        \o State_Enabled
-        \o Yes
+        \li State_Enabled
+        \li Yes
     \row
-        \o State_HasFocus
-        \o Yes
+        \li State_HasFocus
+        \li Yes
     \row
-        \o State_KeyboardFocusChange
-        \o No
+        \li State_KeyboardFocusChange
+        \li No
     \row
-        \o State_Active
-        \o Yes
+        \li State_Active
+        \li Yes
     \endtable
 
     The QCheckBox paints itself in QWidget::paintEvent() with
@@ -714,16 +714,16 @@
     The following is given for each widget:
 
     \list
-        \o A table with the members (variables, etc.) of its style option.
-        \o A table over the state flags (QStyle::StateFlag) that
+        \li A table with the members (variables, etc.) of its style option.
+        \li A table over the state flags (QStyle::StateFlag) that
            can be set on the widget and when the states are set.
-        \o Its element tree (see section \l{The Style Elements}).
-        \o An image of the widget in which the elements are outlined.
+        \li Its element tree (see section \l{The Style Elements}).
+        \li An image of the widget in which the elements are outlined.
         \omit This is not written yet - probably never will be
               either
-        \o List of style hints that should be checked for the
+        \li List of style hints that should be checked for the
            widget.
-        \o List of standard pixmaps that could be used by the
+        \li List of standard pixmaps that could be used by the
            elements.
         \endomit
     \endlist
@@ -737,7 +737,7 @@
 
     Our approach on styling center on the drawing of the widgets. The
     calculations of sub elements rectangles, sub controls, and pixel
-    metrics used \bold during drawing is only listed as contents in
+    metrics used \b during drawing is only listed as contents in
     the element trees. Note that there are rectangles and pixel
     metrics that are only used by widgets. This leaves these
     calculations untreated in the walkthrough. For instance, the
@@ -778,53 +778,53 @@
 
     \table 90%
         \header
-            \o State
-            \o State Set When
+            \li State
+            \li State Set When
         \row
-            \o State_Enabled
-            \o Set if the widget is not disabled (see
+            \li State_Enabled
+            \li Set if the widget is not disabled (see
                QWidget::setEnabled())
         \row
-            \o State_Focus
-            \o Set if the widget has focus (see
+            \li State_Focus
+            \li Set if the widget has focus (see
                QWidget::hasFocus())
         \row
-            \o State_KeyobordFocusChange
-            \o Set when the user changes focus with the keyboard
+            \li State_KeyobordFocusChange
+            \li Set when the user changes focus with the keyboard
                (see Qt::WA_KeyboardFocusChange)
         \row
-            \o State_MouseOver
-            \o Set if the mouse cursor is over the widget
+            \li State_MouseOver
+            \li Set if the mouse cursor is over the widget
         \row
-            \o State_Active
-            \o Set if the widget is a child of the active window.
+            \li State_Active
+            \li Set if the widget is a child of the active window.
         \row
-            \o State_HasEditFocus
-            \o Set if the widget has the edit focus
+            \li State_HasEditFocus
+            \li Set if the widget has the edit focus
     \endtable
 
     The other common members for widgets are:
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o rect
-            \o The bounding rectangle of the element to draw. This
+            \li rect
+            \li The bounding rectangle of the element to draw. This
                is set to the widget bounding rectangle
                (QWidget::rect()).
         \row
-            \o direction
-            \o The layout direction; a value of the
+            \li direction
+            \li The layout direction; a value of the
                Qt::LayoutDirection enum.
         \row
-            \o palette
-            \o The QPalette to use when drawing the element. This
+            \li palette
+            \li The QPalette to use when drawing the element. This
                is set to the widgets palette (QWidget::palette()).
         \row
-            \o fontMetrics
-            \o The QFontMetrics to use when drawing text on the
+            \li fontMetrics
+            \li The QFontMetrics to use when drawing text on the
                widget.
     \endtable
 
@@ -885,38 +885,38 @@
 
     \table 90%
         \header
-            \o State
-            \o State Set When
+            \li State
+            \li State Set When
         \row
-            \o State_Sunken
-            \o Button is down or menu is pressed shown
+            \li State_Sunken
+            \li Button is down or menu is pressed shown
         \row
-            \o State_On
-            \o Button is checked
+            \li State_On
+            \li Button is checked
         \row
-            \o State_Raised
-            \o Button is not flat and not pressed down
+            \li State_Raised
+            \li Button is not flat and not pressed down
     \endtable
 
     Other members of QStyleOptionButton is:
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o features
-            \o Flags of the QStyleOptionButton::ButtonFeatures enum,
+            \li features
+            \li Flags of the QStyleOptionButton::ButtonFeatures enum,
                which describes various button properties (see enum)
         \row
-            \o icon
-            \o The buttons QIcon (if any)
+            \li icon
+            \li The buttons QIcon (if any)
         \row
-            \o iconSize
-            \o The QSize of the icon
+            \li iconSize
+            \li The QSize of the icon
         \row
-            \o text
-            \o a QString with the buttons text
+            \li text
+            \li a QString with the buttons text
     \endtable
 
     \section3 Check and Radio Buttons
@@ -933,21 +933,21 @@
 
     \table 90%
         \header
-            \o State
-            \o State Set When
+            \li State
+            \li State Set When
         \row
-            \o State_sunken
-            \o The box is pressed down
+            \li State_sunken
+            \li The box is pressed down
         \row
-            \o State_NoChange
-            \o The box is partially checked (for tristate
+            \li State_NoChange
+            \li The box is partially checked (for tristate
                checkboxes.)
         \row
-            \o State_On
-            \o The box is checked
+            \li State_On
+            \li The box is checked
         \row
-            \o State_Off
-            \o The box is unchecked
+            \li State_Off
+            \li The box is unchecked
     \endtable
 
     See \l{Push Buttons} for a table over other members in the
@@ -1017,17 +1017,17 @@
 
     \table 90%
         \header
-            \o State
-            \o State Set When
+            \li State
+            \li State Set When
         \row
-            \o State_Sunken
-            \o The tab is pressed on with the mouse.
+            \li State_Sunken
+            \li The tab is pressed on with the mouse.
         \row
-            \o State_Selected
-            \o If it is the current tab.
+            \li State_Selected
+            \li If it is the current tab.
         \row
-            \o State_HasFocus
-            \o The tab bar has focus and the tab is selected
+            \li State_HasFocus
+            \li The tab bar has focus and the tab is selected
     \endtable
 
     Note that individual tabs may be disabled even if the tab bar
@@ -1037,38 +1037,38 @@
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o cornerWidgets
-            \o Is flags of the CornerWidget enum, which indicate
+            \li cornerWidgets
+            \li Is flags of the CornerWidget enum, which indicate
                if and which corner widgets the tab bar has.
         \row
-            \o icon
-            \o The QIcon of the tab
+            \li icon
+            \li The QIcon of the tab
         \row
-            \o iconSize
-            \o The QSize of the icon
+            \li iconSize
+            \li The QSize of the icon
         \row
-            \o position
-            \o A TabPosition enum value that indicates the tabs
+            \li position
+            \li A TabPosition enum value that indicates the tabs
                position on the bar relative to the other tabs.
         \row
-            \o row
-            \o holds which row the tab is in
+            \li row
+            \li holds which row the tab is in
         \row
-            \o selectedPosition
-            \o A value of the SelectedPosition enum that indicates
+            \li selectedPosition
+            \li A value of the SelectedPosition enum that indicates
                whether the selected tab is adjacent to or is the
                tab.
         \row
-            \o shape
-            \o A value of the QTabBar::Shape enum indication
+            \li shape
+            \li A value of the QTabBar::Shape enum indication
                whether the tab has rounded or triangular corners
                and the orientation of the tab.
         \row
-            \o text
-            \o The tab text
+            \li text
+            \li The tab text
     \endtable
 
     The frame for tab widgets use QStyleOptionTabWidgetFrame as
@@ -1077,26 +1077,26 @@
 
     \table 90%
         \header
-            \o Member
-            \o content
+            \li Member
+            \li content
         \row
-            \o leftCornerWidgetSize
-            \o The QSize of the left corner widget (if any).
+            \li leftCornerWidgetSize
+            \li The QSize of the left corner widget (if any).
         \row
-            \o rightCornerWidgetSize
-            \o The QSize of the right corner widget (if any).
+            \li rightCornerWidgetSize
+            \li The QSize of the right corner widget (if any).
         \row
-            \o lineWidth
-            \o holds the line with for drawing the panel.
+            \li lineWidth
+            \li holds the line with for drawing the panel.
         \row
-            \o midLineWith
-            \o this value is currently always 0.
+            \li midLineWith
+            \li this value is currently always 0.
         \row
-            \o shape
-            \o The shape of the tabs on the tab bar.
+            \li shape
+            \li The shape of the tabs on the tab bar.
         \row
-            \o tabBarSize
-            \o The QSize of the tab bar.
+            \li tabBarSize
+            \li The QSize of the tab bar.
     \endtable
 
     \section3 Scroll Bars
@@ -1130,11 +1130,11 @@
 
     \table 90%
         \header
-            \o State
-            \o State Set When
+            \li State
+            \li State Set When
         \row
-            \o State_Horizontal
-            \o The scroll bar is horizontal
+            \li State_Horizontal
+            \li The scroll bar is horizontal
     \endtable
 
     The style option of QScrollBar is QStyleOptionSlider. Its
@@ -1144,43 +1144,43 @@
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o maximum
-            \o the maximum value of the scroll bar
+            \li maximum
+            \li the maximum value of the scroll bar
         \row
-            \o minimum
-            \o the minimum value of the scroll bar
+            \li minimum
+            \li the minimum value of the scroll bar
         \row
-            \o notchTarget
-            \o the number of pixels between notches
+            \li notchTarget
+            \li the number of pixels between notches
         \row
-            \o orientation
-            \o a value of the Qt::Orientation enum that specifies
+            \li orientation
+            \li a value of the Qt::Orientation enum that specifies
                whether the scroll bar is vertical or horizontal
         \row
-            \o pageStep
-            \o the number to increase or decrease the sliders
+            \li pageStep
+            \li the number to increase or decrease the sliders
                value (relative to the size of the slider and its value
                range) on page steps.
         \row
-            \o singleStep
-            \o the number to increase or decrease the sliders
+            \li singleStep
+            \li the number to increase or decrease the sliders
                value on single (or line) steps
         \row
-            \o sliderValue
-            \o The value of the slider
+            \li sliderValue
+            \li The value of the slider
         \row
-            \o sliderPosition
-            \o the position of the slider handle. This is the same
+            \li sliderPosition
+            \li the position of the slider handle. This is the same
                as \c sliderValue if the scroll bar is
                QAbstractSlider::tracking. If not, the scroll
                bar does not update its value before the mouse
                releases the handle.
         \row
-            \o upsideDown
-            \o holds the direction in which the scroll bar
+            \li upsideDown
+            \li holds the direction in which the scroll bar
                increases its value. This is used instead of
                QStyleOption::direction for all abstract sliders.
     \endtable
@@ -1207,42 +1207,42 @@
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o maximum
-            \o the maximum value of the slider
+            \li maximum
+            \li the maximum value of the slider
         \row
-            \o minimum
-            \o the minimum value of the slider
+            \li minimum
+            \li the minimum value of the slider
         \row
-            \o notchTarget
-            \o this is the number of pixels between each notch
+            \li notchTarget
+            \li this is the number of pixels between each notch
         \row
-            \o orientation
-            \o a Qt::Orientation enum value that gives whether the
+            \li orientation
+            \li a Qt::Orientation enum value that gives whether the
                slider is vertical or horizontal.
         \row
-            \o pageStep
-            \o a number in slider value to increase or decrease
+            \li pageStep
+            \li a number in slider value to increase or decrease
                for page steps
         \row
-            \o singleStep
-            \o the number to increase or decrease the sliders
+            \li singleStep
+            \li the number to increase or decrease the sliders
                value on single (or line) steps.
         \row
-            \o sliderValue
-            \o the value of the slider.
+            \li sliderValue
+            \li the value of the slider.
         \row
-            \o sliderPosition
-            \o the position of the slider given as a slider value.
+            \li sliderPosition
+            \li the position of the slider given as a slider value.
                This  will be equal to the \c sliderValue if the
                slider is \l{QAbstractSlider::}{tracking}; if
                not, the sliders value will not change until the handle is
                released with the mouse.
         \row
-            \o  upsideDown
-            \o  this member is used instead of QStyleOption::direction
+            \li  upsideDown
+            \li  this member is used instead of QStyleOption::direction
                 for all abstract sliders.
     \endtable
 
@@ -1270,11 +1270,11 @@
 
     \table 90%
         \header
-            \o State
-            \o State Set When
+            \li State
+            \li State Set When
         \row
-            \o State_Sunken
-            \o Is set if one of the sub controls CC_SpinUp or
+            \li State_Sunken
+            \li Is set if one of the sub controls CC_SpinUp or
                CC_SpinDown is pressed on with the mouse.
     \endtable
 
@@ -1282,19 +1282,19 @@
 
     \table 90%
         \header
-            \o Property
-            \o Function
+            \li Property
+            \li Function
         \row
-            \o frame
-            \o boolean that is true if the spin box is to draw a
+            \li frame
+            \li boolean that is true if the spin box is to draw a
                frame.
         \row
-            \o buttonSymbols
-            \o Value of the ButtonSymbols enum that decides the
+            \li buttonSymbols
+            \li Value of the ButtonSymbols enum that decides the
                symbol on the up/down buttons.
         \row
-            \o stepEnabled
-            \o A value of the StepEnabled indication which of the
+            \li stepEnabled
+            \li A value of the StepEnabled indication which of the
                spin box buttons are pressed down.
     \endtable
 
@@ -1326,21 +1326,21 @@
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o icon
-            \o The title bars icon
+            \li icon
+            \li The title bars icon
         \row
-            \o text
-            \o the text for the title bar's label
+            \li text
+            \li the text for the title bar's label
         \row
-            \o windowFlags
-            \o flags of the Qt::WindowFlag enum. The window flags
+            \li windowFlags
+            \li flags of the Qt::WindowFlag enum. The window flags
                used by QMdiArea for window management.
         \row
-            \o titleBarState
-            \o this is the QWidget::windowState() of the window
+            \li titleBarState
+            \li this is the QWidget::windowState() of the window
                that contains the title bar.
     \endtable
 
@@ -1374,44 +1374,44 @@
 
     \table 90%
         \header
-            \o State
-            \o Set When
+            \li State
+            \li Set When
         \row
-            \o State_Selected
-            \o The box is not editable and has focus
+            \li State_Selected
+            \li The box is not editable and has focus
         \row
-            \o State_Sunken
-            \o SC_ComboBoxArrow is active
+            \li State_Sunken
+            \li SC_ComboBoxArrow is active
         \row
-            \o State_on
-            \o The container (list) of the box is visible
+            \li State_on
+            \li The container (list) of the box is visible
     \endtable
 
     The style options other members are:
 
     \table
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o currentIcon
-            \o the icon of the current (selected) item of the
+            \li currentIcon
+            \li the icon of the current (selected) item of the
                combo box.
         \row
-            \o currentText
-            \o the text of the current item in the box.
+            \li currentText
+            \li the text of the current item in the box.
         \row
-            \o editable
-            \o holds whether the combo box is editable or not
+            \li editable
+            \li holds whether the combo box is editable or not
         \row
-            \o frame
-            \o holds whether the combo box has a frame or not
+            \li frame
+            \li holds whether the combo box has a frame or not
         \row
-            \o iconSize
-            \o the size of the current items icon.
+            \li iconSize
+            \li the size of the current items icon.
         \row
-            \o popupRect
-            \o the bounding rectangle of the combo box's popup
+            \li popupRect
+            \li the bounding rectangle of the combo box's popup
                list.
     \endtable
 
@@ -1438,42 +1438,42 @@
 
     \table 90%
         \header
-            \o State
-            \o Set When
+            \li State
+            \li Set When
         \row
-            \o State_On
-            \o The check box is checked
+            \li State_On
+            \li The check box is checked
         \row
-            \o State_Sunken
-            \o The checkbox is pressed down
+            \li State_Sunken
+            \li The checkbox is pressed down
         \row
-            \o State_Off
-            \o The check box is unchecked (or there is no check box)
+            \li State_Off
+            \li The check box is unchecked (or there is no check box)
     \endtable
 
     The remaining members of QStyleOptionGroupBox are:
 
     \table
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o features
-            \o flags of the QStyleOptionFrameV2::FrameFeatures
+            \li features
+            \li flags of the QStyleOptionFrameV2::FrameFeatures
                enum describing the frame of the group box.
         \row
-            \o lineWidth
-            \o the line width with which to draw the panel. This
+            \li lineWidth
+            \li the line width with which to draw the panel. This
                is always 1.
         \row
-            \o text
-            \o the text of the group box.
+            \li text
+            \li the text of the group box.
         \row
-            \o textAlignment
-            \o the alignment of the group box title
+            \li textAlignment
+            \li the alignment of the group box title
         \row
-            \o textColor
-            \o the QColor of the text
+            \li textColor
+            \li the QColor of the text
     \endtable
 
     \section3 Splitters
@@ -1487,11 +1487,11 @@
 
     \table 90%
         \header
-            \o State
-            \o Set When
+            \li State
+            \li Set When
         \row
-            \o State_Horizontal
-            \o Set if it is a horizontal splitter
+            \li State_Horizontal
+            \li Set if it is a horizontal splitter
     \endtable
 
     QSplitter does not use \l{QStyleOption::}{initFrom()} to set up its
@@ -1517,36 +1517,36 @@
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o minimum
-            \o The minimum value of the bar
+            \li minimum
+            \li The minimum value of the bar
         \row
-            \o maximum
-            \o The maximum value of the bar
+            \li maximum
+            \li The maximum value of the bar
         \row
-            \o progress
-            \o The current value of the bar
+            \li progress
+            \li The current value of the bar
         \row
-            \o textAlignment
-            \o How the text is aligned in the label
+            \li textAlignment
+            \li How the text is aligned in the label
         \row
-            \o textVisible
-            \o Whether the label is drawn
+            \li textVisible
+            \li Whether the label is drawn
         \row
-            \o text
-            \o The label text
+            \li text
+            \li The label text
         \row
-            \o orientation
-            \o Progress bars can be vertical or horizontal
+            \li orientation
+            \li Progress bars can be vertical or horizontal
         \row
-            \o invertedAppearance
-            \o The progress is inverted (i.e., right to left in a
+            \li invertedAppearance
+            \li The progress is inverted (i.e., right to left in a
                horizontal bar)
         \row
-            \o bottomToTop
-            \o Boolean that if true, turns the label of vertical
+            \li bottomToTop
+            \li Boolean that if true, turns the label of vertical
                progress bars 90 degrees.
     \endtable
 
@@ -1578,58 +1578,58 @@
 
     \table 90%
         \header
-            \o State
-            \o Set When
+            \li State
+            \li Set When
         \row
-            \o State_AutoRise
-            \o the tool button has the autoRise property set
+            \li State_AutoRise
+            \li the tool button has the autoRise property set
         \row
-            \o State_raised
-            \o the button is not sunken (i.e., by being checked or
+            \li State_raised
+            \li the button is not sunken (i.e., by being checked or
                pressed on with the mouse).
         \row
-            \o State_Sunken
-            \o the button is down
+            \li State_Sunken
+            \li the button is down
         \row
-            \o State_On
-            \o the button is checkable and checked.
+            \li State_On
+            \li the button is checkable and checked.
     \endtable
 
     QStyleOptionToolButton also contains the following members:
 
     \table
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o arrowType
-            \o a Qt::ArrowType enum value, which contains the
+            \li arrowType
+            \li a Qt::ArrowType enum value, which contains the
                  direction of the buttons arrow (if an arrow is to
                  be used in place of an icon)
         \row
-            \o features
-            \o flags of the QStyleOptionToolButton::ButtonFeature
+            \li features
+            \li flags of the QStyleOptionToolButton::ButtonFeature
                enum describing if the button has an arrow, a menu,
                and/or has a popup-delay.
         \row
-            \o font
-            \o the QFont of the buttons label
+            \li font
+            \li the QFont of the buttons label
         \row
-            \o icon
-            \o the QIcon of the tool button
+            \li icon
+            \li the QIcon of the tool button
         \row
-            \o iconSize
-            \o the icon size of the button's icon
+            \li iconSize
+            \li the icon size of the button's icon
         \row
-            \o pos
-            \o the position of the button, as given by
+            \li pos
+            \li the position of the button, as given by
                QWidget::pos()
         \row
-            \o text
-            \o the text of the button
+            \li text
+            \li the text of the button
         \row
-            \o toolButtonStyle
-            \o a Qt::ToolButtonStyle enum value which decides
+            \li toolButtonStyle
+            \li a Qt::ToolButtonStyle enum value which decides
                whether the button shows the icon, the text, or both.
     \endtable
 
@@ -1677,29 +1677,29 @@
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o features
-            \o Holds whether the bar is movable in a value of the
+            \li features
+            \li Holds whether the bar is movable in a value of the
                ToolBarFeature, which is either Movable or None.
         \row
-            \o lineWidth
-            \o The width of the tool bar frame.
+            \li lineWidth
+            \li The width of the tool bar frame.
         \row
-            \o midLineWidth
-            \o This variable is currently not used and is always
+            \li midLineWidth
+            \li This variable is currently not used and is always
                0.
         \row
-            \o positionOfLine
-            \o The position of the toolbar line within the toolbar
+            \li positionOfLine
+            \li The position of the toolbar line within the toolbar
                area to which it belongs.
         \row
-            \o positionWithinLine
-            \o The position of the toolbar within the toolbar line.
+            \li positionWithinLine
+            \li The position of the toolbar within the toolbar line.
         \row
-            \o toolBarArea
-            \o The toolbar area in which the toolbar lives.
+            \li toolBarArea
+            \li The toolbar area in which the toolbar lives.
     \endtable
 
     \section3 Menus
@@ -1740,61 +1740,61 @@
 
     \table 90%
         \header
-            \o State
-            \o Set When
+            \li State
+            \li Set When
         \row
-            \o State_Selected
-            \o The mouse is over the action and the action is not
+            \li State_Selected
+            \li The mouse is over the action and the action is not
                a separator.
         \row
-            \o State_Sunken
-            \o The mouse is pressed down on the menu item.
+            \li State_Sunken
+            \li The mouse is pressed down on the menu item.
         \row
-            \o State_DownArrow
-            \o Set if the menu item is a menu scroller and it scrolls
+            \li State_DownArrow
+            \li Set if the menu item is a menu scroller and it scrolls
                the menu downwards.
     \endtable
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o checkType
-            \o A value of the \l{QStyleOptionMenuItem::}{CheckType} enum,
+            \li checkType
+            \li A value of the \l{QStyleOptionMenuItem::}{CheckType} enum,
                which is either NotCheckable, Exclusive, or
                NonExclusive.
         \row
-            \o checked
-            \o Boolean that is true if the menu item is checked.
+            \li checked
+            \li Boolean that is true if the menu item is checked.
         \row
-            \o font
-            \o The QFont to use for the menu item's text.
+            \li font
+            \li The QFont to use for the menu item's text.
         \row
-            \o icon
-            \o the QIcon of the menu item.
+            \li icon
+            \li the QIcon of the menu item.
         \row
-            \o maxIconWidth
-            \o The maximum width allowed for the icon
+            \li maxIconWidth
+            \li The maximum width allowed for the icon
         \row
-            \o menuHasChecableItem
-            \o Boolean which is true if at least one item in the
+            \li menuHasChecableItem
+            \li Boolean which is true if at least one item in the
                menu is checkable.
         \row
-            \o menuItemType
-            \o The type of the menu item. This a value of the
+            \li menuItemType
+            \li The type of the menu item. This a value of the
                \l{QStyleOptionMenuItem::}{MenuItemType}.
         \row
-            \o menuRect
-            \o The bounding rectangle for the QMenu that the menu
+            \li menuRect
+            \li The bounding rectangle for the QMenu that the menu
                item lives in.
         \row
-            \o tabWidth
-            \o This is the distance between the text of the menu
+            \li tabWidth
+            \li This is the distance between the text of the menu
                item and the shortcut.
         \row
-            \o text
-            \o The text of the menu item.
+            \li text
+            \li The text of the menu item.
     \endtable
 
     The setup of the style option for CE_MenuTearOff and
@@ -1825,18 +1825,18 @@
 
     \table
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o menuRect
-            \o the bounding rectangle of the entire menu bar to
+            \li menuRect
+            \li the bounding rectangle of the entire menu bar to
                which the item belongs.
         \row
-            \o text
-            \o the text of the item
+            \li text
+            \li the text of the item
         \row
-            \o icon
-            \o the icon of the menu item (it is not common that
+            \li icon
+            \li the icon of the menu item (it is not common that
                styles draw this icon)
     \endtable
 
@@ -1874,44 +1874,44 @@
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o icon
-            \o the icon of the header (for section that is being
+            \li icon
+            \li the icon of the header (for section that is being
                drawn).
         \row
-            \o iconAlignment
-            \o the alignment (Qt::Alignment) of the icon in the header.
+            \li iconAlignment
+            \li the alignment (Qt::Alignment) of the icon in the header.
         \row
-            \o orientation
-            \o a Qt::Orientation value deciding whether the header
+            \li orientation
+            \li a Qt::Orientation value deciding whether the header
                is the horizontal header above the view or the
                vertical header on the left.
         \row
-            \o position
-            \o a QStyleOptionHeader::SectionPosition value
+            \li position
+            \li a QStyleOptionHeader::SectionPosition value
                giving the header section's position relative to
                the other sections.
         \row
-            \o section
-            \o holds the section that is being drawn.
+            \li section
+            \li holds the section that is being drawn.
         \row
-            \o selectedPosition
-            \o a QStyleOptionHeader::SelectedPosition value giving
+            \li selectedPosition
+            \li a QStyleOptionHeader::SelectedPosition value giving
                the selected section's position relative to the
                section that is being painted.
         \row
-            \o sortIndicator
-            \o a QStyleOptionHeader::SortIndicator value that
+            \li sortIndicator
+            \li a QStyleOptionHeader::SortIndicator value that
                describes the direction in which the section's sort
                indicator should be drawn.
         \row
-            \o text
-            \o the text of the currently drawn section.
+            \li text
+            \li the text of the currently drawn section.
         \row
-            \o textAlignment
-            \o the Qt::Alignment of the text within the
+            \li textAlignment
+            \li the Qt::Alignment of the text within the
                headersection.
     \endtable
 
@@ -1927,22 +1927,22 @@
 
     \table 90%
         \header
-            \o State
-            \o Set When
+            \li State
+            \li Set When
         \row
-            \o State_Sibling
-            \o the node in the tree has a sibling (i.e., there is
+            \li State_Sibling
+            \li the node in the tree has a sibling (i.e., there is
                another node in the same column).
         \row
-            \o State_Item
-            \o this branch indicator has an item.
+            \li State_Item
+            \li this branch indicator has an item.
         \row
-            \o State_Children
-            \o the branch has children (i.e., a new sub-tree can
+            \li State_Children
+            \li the branch has children (i.e., a new sub-tree can
                be opened at the branch).
         \row
-            \o State_Open
-            \o the branch indicator has an opened sub-tree.
+            \li State_Open
+            \li the branch indicator has an opened sub-tree.
     \endtable
 
     The tree view (and tree widget) use the style to draw the branches
@@ -1986,14 +1986,14 @@
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o icon
-            \o the icon on the toolbox tab
+            \li icon
+            \li the icon on the toolbox tab
         \row
-            \o text
-            \o the text on the toolbox tab
+            \li text
+            \li the text on the toolbox tab
     \endtable
 
     \section3 Size Grip
@@ -2014,11 +2014,11 @@
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o corner
-            \o a Qt::Corner value that describe which corner in a
+            \li corner
+            \li a Qt::Corner value that describe which corner in a
                window (or equivalent) the grip is located.
     \endtable
 
@@ -2038,15 +2038,15 @@
 
     \table
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o opaque
-            \o boolean that is true if the rubber band must be
+            \li opaque
+            \li boolean that is true if the rubber band must be
                drawn in an opaque style (i.e., color)
         \row
-            \o shape
-            \o a QRubberBand::Shape enum value that holds the
+            \li shape
+            \li a QRubberBand::Shape enum value that holds the
                shape of the band (which is either a rectangle or a
                line) 
     \endtable
@@ -2076,24 +2076,24 @@
 
     \table 90%
         \header
-            \o Member
-            \o Content
+            \li Member
+            \li Content
         \row
-            \o closeable
-            \o boolean that holds whether the dock window can be
+            \li closeable
+            \li boolean that holds whether the dock window can be
                closed
         \row
-            \o floatable
-            \o boolean that holds whether the dock window can
+            \li floatable
+            \li boolean that holds whether the dock window can
                float (i.e., detach from the main window in which
                it lives)
         \row
-            \o movable
-            \o boolean that holds whether the window is movable
+            \li movable
+            \li boolean that holds whether the window is movable
                (i.e., can move to other dock widget areas)
         \row
-            \o title
-            \o the title text of the dock window
+            \li title
+            \li the title text of the dock window
     \endtable
 
     For the buttons, QStyleOptionButton is used (see \l{Tool Buttons}

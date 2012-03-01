@@ -159,8 +159,8 @@ bool QToolButtonPrivate::hasMenu() const
     adjust it with setPopupDelay().
 
     \table 100%
-    \row \o \inlineimage assistant-toolbar.png Qt Assistant's toolbar with tool buttons
-    \row \o Qt Assistant's toolbar contains tool buttons that are associated
+    \row \li \inlineimage assistant-toolbar.png Qt Assistant's toolbar with tool buttons
+    \row \li Qt Assistant's toolbar contains tool buttons that are associated
          with actions used in other parts of the main window.
     \endtable
 

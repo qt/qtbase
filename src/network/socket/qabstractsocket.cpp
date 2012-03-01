@@ -56,8 +56,8 @@
     you need a socket, you have two options:
 
     \list
-    \i  Instantiate QTcpSocket or QUdpSocket.
-    \i  Create a native socket descriptor, instantiate
+    \li  Instantiate QTcpSocket or QUdpSocket.
+    \li  Create a native socket descriptor, instantiate
         QAbstractSocket, and call setSocketDescriptor() to wrap the
         native socket.
     \endlist
@@ -129,15 +129,15 @@
     can be used to implement blocking sockets:
 
     \list
-    \o waitForConnected() blocks until a connection has been established.
+    \li waitForConnected() blocks until a connection has been established.
 
-    \o waitForReadyRead() blocks until new data is available for
+    \li waitForReadyRead() blocks until new data is available for
     reading.
 
-    \o waitForBytesWritten() blocks until one payload of data has been
+    \li waitForBytesWritten() blocks until one payload of data has been
     written to the socket.
 
-    \o waitForDisconnected() blocks until the connection has closed.
+    \li waitForDisconnected() blocks until the connection has closed.
     \endlist
 
     We show an example:
@@ -377,15 +377,15 @@
     Possible values for the \e{TypeOfServiceOption} are:
 
     \table
-    \header \o Value \o Description
-    \row \o 224 \o Network control
-    \row \o 192 \o Internetwork control
-    \row \o 160 \o CRITIC/ECP
-    \row \o 128 \o Flash override
-    \row \o 96 \o Flash
-    \row \o 64 \o Immediate
-    \row \o 32 \o Priority
-    \row \o 0 \o Routine
+    \header \li Value \li Description
+    \row \li 224 \li Network control
+    \row \li 192 \li Internetwork control
+    \row \li 160 \li CRITIC/ECP
+    \row \li 128 \li Flash override
+    \row \li 96 \li Flash
+    \row \li 64 \li Immediate
+    \row \li 32 \li Priority
+    \row \li 0 \li Routine
     \endtable
 
     \sa QAbstractSocket::setSocketOption(), QAbstractSocket::socketOption()
@@ -1510,7 +1510,7 @@ bool QAbstractSocket::bind(quint16 port, BindMode mode)
     Returns true if the socket is valid and ready for use; otherwise
     returns false.
 
-    \bold{Note:} The socket's state must be ConnectedState before reading and
+    \b{Note:} The socket's state must be ConnectedState before reading and
     writing can occur.
 
     \sa state()
@@ -1792,7 +1792,7 @@ qintptr QAbstractSocket::socketDescriptor() const
     The socket is opened in the mode specified by \a openMode, and
     enters the socket state specified by \a socketState.
 
-    \bold{Note:} It is not possible to initialize two abstract sockets
+    \b{Note:} It is not possible to initialize two abstract sockets
     with the same native socket descriptor.
 
     \sa socketDescriptor()

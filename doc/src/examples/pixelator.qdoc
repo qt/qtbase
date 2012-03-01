@@ -44,9 +44,9 @@
     of standard views. To do this, we implement the following components:
 
     \list
-    \i A model which represents each pixel in an image as an item of data, where each
+    \li A model which represents each pixel in an image as an item of data, where each
        item contains a value for the brightness of the corresponding pixel.
-    \i A custom delegate that uses the information supplied by the model to represent
+    \li A custom delegate that uses the information supplied by the model to represent
        each pixel as a black circle on a white background, where the radius of the
        circle corresponds to the darkness of the pixel.
     \endlist

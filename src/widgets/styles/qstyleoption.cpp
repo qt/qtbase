@@ -1795,7 +1795,7 @@ QStyleOptionMenuItem::QStyleOptionMenuItem(int version)
     \brief the text for the menu item
 
     Note that the text format is something like this "Menu
-    text\bold{\\t}Shortcut".
+    text\b{\\t}Shortcut".
 
     If the menu item doesn't have a shortcut, it will just contain the
     menu item's text. The default value is an empty string.
@@ -2240,7 +2240,7 @@ QStyleOptionSpinBox::QStyleOptionSpinBox(int version)
     \inmodule QtWidgets
  
     This class is used for drawing the compatibility Q3ListView's
-    items. \bold {It is not recommended for new classes}.
+    items. \b {It is not recommended for new classes}.
 
     QStyleOptionQ3ListViewItem contains all the information that
     QStyle functions need to draw the Q3ListView items.
@@ -2376,7 +2376,7 @@ QStyleOptionQ3ListViewItem::QStyleOptionQ3ListViewItem(int version)
 
     \inmodule QtWidgets
  
-    This class is used for drawing the compatibility Q3ListView. \bold
+    This class is used for drawing the compatibility Q3ListView. \b
     {It is not recommended for new classes}.
 
     QStyleOptionQ3ListView contains all the information that QStyle
@@ -2523,7 +2523,7 @@ QStyleOptionQ3ListView::QStyleOptionQ3ListView(int version)
     \inmodule QtWidgets
  
     This class is used for drawing the old Q3DockWindow and its
-    parts. \bold {It is not recommended for new classes}.
+    parts. \b {It is not recommended for new classes}.
 
     QStyleOptionQ3DockWindow contains all the information that QStyle
     functions need to draw Q3DockWindow and its parts.

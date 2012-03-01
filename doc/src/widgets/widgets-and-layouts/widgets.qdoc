@@ -58,8 +58,8 @@
 
   \table
   \row    
-  \o \image qgridlayout-with-5-children.png
-  \o \image qformlayout-with-6-children.png
+  \li \image qgridlayout-with-5-children.png
+  \li \image qformlayout-with-6-children.png
   \endtable
 
   \l{Qt Designer Manual}{\QD} is a powerful tool for interactively creating and
@@ -74,9 +74,9 @@
     
   \table
   \row
-  \o \image windowsxp-tabwidget.png
-  \o \image plastique-tabwidget.png
-  \o \image macintosh-tabwidget.png
+  \li \image windowsxp-tabwidget.png
+  \li \image plastique-tabwidget.png
+  \li \image macintosh-tabwidget.png
   \endtable
 
   \l{Qt Style Sheets} are a powerful mechanism that allows you to customize the
@@ -94,13 +94,13 @@
 
   \table
   \row
-  \o \image windows-label.png
-  \o \image windowsvista-pushbutton.png
-  \o \image gtk-progressbar.png
+  \li \image windows-label.png
+  \li \image windowsvista-pushbutton.png
+  \li \image gtk-progressbar.png
   \row
-  \o \image plastique-combobox.png
-  \o \image macintosh-radiobutton.png
-  \o \image cde-lineedit.png
+  \li \image plastique-combobox.png
+  \li \image macintosh-radiobutton.png
+  \li \image cde-lineedit.png
   \endtable
 
   \annotatedlist basicwidgets
@@ -112,17 +112,17 @@
 
   \table
   \row
-  \o \image windowsxp-treeview.png
-  \o \image gtk-calendarwidget.png
-  \o \image qundoview.png
+  \li \image windowsxp-treeview.png
+  \li \image gtk-calendarwidget.png
+  \li \image qundoview.png
   \endtable
 
   \annotatedlist advanced
 
   \table
   \row
-  \o \image windowsvista-tabwidget.png 
-  \o \image macintosh-groupbox.png
+  \li \image windowsvista-tabwidget.png
+  \li \image macintosh-groupbox.png
   \endtable
 
   \section2 Organizer Widgets

@@ -52,18 +52,18 @@
     \section1 Topics:
 
     \list
-    \o \l{Database Classes}
-    \o \l{Connecting to Databases}
+    \li \l{Database Classes}
+    \li \l{Connecting to Databases}
         \list
-        \o \l{SQL Database Drivers}
+        \li \l{SQL Database Drivers}
         \endlist
-    \o \l{Executing SQL Statements}
+    \li \l{Executing SQL Statements}
         \list
-        \o \l{Data Types for Qt-supported Database Systems}
+        \li \l{Data Types for Qt-supported Database Systems}
         \endlist
-    \o \l{Using the SQL Model Classes}
-    \o \l{Presenting Data in a Table View}
-    \o \l{Creating Data-Aware Forms}
+    \li \l{Using the SQL Model Classes}
+    \li \l{Presenting Data in a Table View}
+    \li \l{Creating Data-Aware Forms}
     \endlist    
 
     \section1 Database Classes
@@ -338,12 +338,12 @@
     QSqlTableModel, and QSqlRelationalTableModel.
 
     \table
-    \row \o QSqlQueryModel
-         \o A read-only model based on an arbitrary SQL query.
-    \row \o QSqlTableModel
-         \o A read-write model that works on a single table.
-    \row \o QSqlRelationalTableModel
-         \o A QSqlTableModel subclass with foreign key support.
+    \row \li QSqlQueryModel
+         \li A read-only model based on an arbitrary SQL query.
+    \row \li QSqlTableModel
+         \li A read-write model that works on a single table.
+    \row \li QSqlRelationalTableModel
+         \li A QSqlTableModel subclass with foreign key support.
     \endtable
 
     These classes derive from QAbstractTableModel (which in turn
@@ -435,8 +435,8 @@
     pitfalls, though:
 
     \list
-    \o Without any caching, performance may drop significantly.
-    \o If you modify a primary key, the record might slip through
+    \li Without any caching, performance may drop significantly.
+    \li If you modify a primary key, the record might slip through
        your fingers while you are trying to populate it.
     \endlist
 
@@ -450,8 +450,8 @@
     that \c authorid is a foreign key.
 
     \table
-    \row \o \inlineimage noforeignkeys.png
-         \o \inlineimage foreignkeys.png
+    \row \li \inlineimage noforeignkeys.png
+         \li \inlineimage foreignkeys.png
     \endtable
 
     The screenshot on the left shows a plain QSqlTableModel in a

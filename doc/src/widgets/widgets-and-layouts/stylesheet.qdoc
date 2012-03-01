@@ -51,12 +51,12 @@
     Topics:
 
     \list
-    \i \l{Overview}
-    \i \l{The Style Sheet Syntax}
-    \i \l{Qt Designer Integration}
-    \i \l{Customizing Qt Widgets Using Style Sheets}
-    \i \l{Qt Style Sheets Reference}
-    \i \l{Qt Style Sheets Examples}
+    \li \l{Overview}
+    \li \l{The Style Sheet Syntax}
+    \li \l{Qt Designer Integration}
+    \li \l{Customizing Qt Widgets Using Style Sheets}
+    \li \l{Qt Style Sheets Reference}
+    \li \l{Qt Style Sheets Examples}
     \endlist
 
     \target overview
@@ -111,17 +111,17 @@
     will.
 
     \table
-    \row \o \inlineimage stylesheet-coffee-xp.png
-         \o \inlineimage stylesheet-pagefold.png
-    \row \o Coffee theme running on Windows XP
-         \o Pagefold theme running on Windows XP
+    \row \li \inlineimage stylesheet-coffee-xp.png
+         \li \inlineimage stylesheet-pagefold.png
+    \row \li Coffee theme running on Windows XP
+         \li Pagefold theme running on Windows XP
     \endtable
 
     \table
-    \row \o \inlineimage stylesheet-coffee-cleanlooks.png
-         \o \inlineimage stylesheet-pagefold-mac.png
-    \row \o Coffee theme running on Ubuntu Linux
-         \o Pagefold theme running on Mac OS X
+    \row \li \inlineimage stylesheet-coffee-cleanlooks.png
+         \li \inlineimage stylesheet-pagefold-mac.png
+    \row \li Coffee theme running on Ubuntu Linux
+         \li Pagefold theme running on Mac OS X
     \endtable
 
     When a style sheet is active, the QStyle returned by QWidget::style()
@@ -199,24 +199,24 @@
 
     \table 100%
     \header
-        \o Selector
-        \o Example
-        \o Explanation
+        \li Selector
+        \li Example
+        \li Explanation
 
     \row
-        \o Universal Selector
-        \o \c *
-        \o Matches all widgets.
+        \li Universal Selector
+        \li \c *
+        \li Matches all widgets.
 
     \row
-        \o Type Selector
-        \o \c QPushButton
-        \o Matches instances of QPushButton and of its subclasses.
+        \li Type Selector
+        \li \c QPushButton
+        \li Matches instances of QPushButton and of its subclasses.
 
     \row
-        \o Property Selector
-        \o \c{QPushButton[flat="false"]}
-        \o Matches instances of QPushButton that are not
+        \li Property Selector
+        \li \c{QPushButton[flat="false"]}
+        \li Matches instances of QPushButton that are not
            \l{QPushButton::}{flat}. You may use this selector to test
            for any Qt \l{Qt's Property System}{property} that supports
            QVariant::toString() (see the \l{QVariant::}{toString()}
@@ -237,29 +237,29 @@
            unset the style sheet and set it again.
 
     \row
-        \o Class Selector
-        \o \c .QPushButton
-        \o Matches instances of QPushButton, but not of its subclasses.
+        \li Class Selector
+        \li \c .QPushButton
+        \li Matches instances of QPushButton, but not of its subclasses.
 
            This is equivalent to \c{*[class~="QPushButton"]}.
 
     \row
-        \o ID \target ID Selector
+        \li ID \target ID Selector
            Selector
-        \o \c{QPushButton#okButton}
-        \o Matches all QPushButton instances whose
+        \li \c{QPushButton#okButton}
+        \li Matches all QPushButton instances whose
            \l{QObject::objectName}{object name} is \c okButton.
 
     \row
-        \o Descendant Selector
-        \o \c{QDialog QPushButton}
-        \o Matches all instances of QPushButton that are descendants
+        \li Descendant Selector
+        \li \c{QDialog QPushButton}
+        \li Matches all instances of QPushButton that are descendants
            (children, grandchildren, etc.) of a QDialog.
 
     \row
-        \o Child Selector
-        \o \c{QDialog > QPushButton}
-        \o Matches all instances of QPushButton that are direct
+        \li Child Selector
+        \li \c{QDialog > QPushButton}
+        \li Matches all instances of QPushButton that are direct
            children of a QDialog.
     \endtable
 
@@ -329,7 +329,7 @@
     Sub-Control} for a realistic example.
 
     \note With complex widgets such as QComboBox and QScrollBar, if one
-    property or sub-control is customized, \bold{all} the other properties or
+    property or sub-control is customized, \b{all} the other properties or
     sub-controls must be customized as well.
 
     \section1 Pseudo-States
@@ -436,10 +436,10 @@
     \e{A selector's specificity is calculated as follows:}
 
     \list
-    \o \e{count the number of ID attributes in the selector (= a)}
-    \o \e{count the number of other attributes and pseudo-classes in the selector (= b)}
-    \o \e{count the number of element names in the selector (= c)}
-    \o \e{ignore pseudo-elements [i.e., \l{subcontrols}].}
+    \li \e{count the number of ID attributes in the selector (= a)}
+    \li \e{count the number of other attributes and pseudo-classes in the selector (= b)}
+    \li \e{count the number of element names in the selector (= c)}
+    \li \e{ignore pseudo-elements [i.e., \l{subcontrols}].}
     \endlist
 
     \e{Concatenating the three numbers a-b-c (in a number system with a
@@ -495,7 +495,7 @@
 
     In classic CSS, when font and color of an item is not explicitly set,
     it gets automatically inherited from the parent. When using Qt Style Sheets,
-    a widget does \bold{not} automatically inherit its font and color setting
+    a widget does \b{not} automatically inherit its font and color setting
     from its parent widget.
 
     For example, consider a QPushButton inside a QGroupBox:
@@ -589,11 +589,11 @@
     \image stylesheet-boxmodel.png
 
     \list
-    \o The margin falls outside the border.
-    \o The border is drawn between the margin and the padding.
-    \o The padding falls inside the border, between the border and
+    \li The margin falls outside the border.
+    \li The border is drawn between the margin and the padding.
+    \li The padding falls inside the border, between the border and
        the actual contents.
-    \o The content is what is left from the original widget or
+    \li The content is what is left from the original widget or
        subcontrol once we have removed the margin, the border, and
        the padding.
     \endlist
@@ -636,10 +636,10 @@
 
     The steps to render a rule are as follows:
         \list
-        \o Set clip for entire rendering operation (border-radius)
-        \o Draw the background (background-image)
-        \o Draw the border (border-image, border)
-        \o Draw overlay image (image)
+        \li Set clip for entire rendering operation (border-radius)
+        \li Draw the background (background-image)
+        \li Draw the border (border-image, border)
+        \li Draw overlay image (image)
         \endlist
 
     \target sub controls
@@ -650,9 +650,9 @@
     followed by the down-arrow sub-control. A QComboBox is thus rendered as
     follows:
         \list
-        \o Render the QComboBox { } rule
-        \o Render the QComboBox::drop-down { } rule
-        \o Render the QComboBox::down-arrow { } rule
+        \li Render the QComboBox { } rule
+        \li Render the QComboBox::drop-down { } rule
+        \li Render the QComboBox::down-arrow { } rule
         \endlist
 
     Sub-controls share a parent-child relationship. In the case of QComboBox,
@@ -666,7 +666,7 @@
     Once positioned, sub-controls can be styled using the \l{box model}.
 
     \note With complex widgets such as QComboBox and QScrollBar, if one
-    property or sub-control is customized, \bold{all} the other properties or
+    property or sub-control is customized, \b{all} the other properties or
     sub-controls must be customized as well.
 
 */
@@ -691,12 +691,12 @@
 
     \table 100%
     \header
-        \o Widget
-        \o How to Style
+        \li Widget
+        \li How to Style
 
     \row
-        \o QAbstractScrollArea \target qabstractscrollarea-widget
-        \o Supports the \l{box model}.
+        \li QAbstractScrollArea \target qabstractscrollarea-widget
+        \li Supports the \l{box model}.
 
            All derivatives of QAbstractScrollArea, including QTextEdit,
            and QAbstractItemView (all item view classes), support
@@ -711,8 +711,8 @@
            {Customizing QAbstractScrollArea} for an example.
 
     \row
-        \o QCheckBox \target qcheckbox-widget
-        \o Supports the \l{box model}. The check indicator can be
+        \li QCheckBox \target qcheckbox-widget
+        \li Supports the \l{box model}. The check indicator can be
            styled using the \l{#indicator-sub}{::indicator}
            subcontrol. By default, the indicator is placed in the Top
            Left corner of the Contents rectangle of the widget.
@@ -725,15 +725,15 @@
            {Customizing QCheckBox} for an example.
 
     \row
-        \o QColumnView \target qcolumnview-widget
-        \o The grip can be styled be using the \l{image-prop}{image} property.
+        \li QColumnView \target qcolumnview-widget
+        \li The grip can be styled be using the \l{image-prop}{image} property.
            The arrow indicators can by styled using the
            \l{left-arrow-sub}{::left-arrow} subcontrol and the
            \l{right-arrow-sub}{::right-arrow} subcontrol.
 
     \row
-        \o QComboBox \target qcombobox-widget
-        \o The frame around the combobox can be styled using the
+        \li QComboBox \target qcombobox-widget
+        \li The frame around the combobox can be styled using the
            \l{box model}. The drop-down button can be styled using
            the \l{#drop-down-sub}{::drop-down} subcontrol. By default, the
            drop-down button is placed in the top right corner of the padding
@@ -746,16 +746,16 @@
            for an example.
 
     \row
-        \o QDateEdit \target qdateedit-widget
-        \o See \l{#qspinbox-widget}{QSpinBox}.
+        \li QDateEdit \target qdateedit-widget
+        \li See \l{#qspinbox-widget}{QSpinBox}.
 
     \row
-        \o QDateTimeEdit \target qdatetimeedit-widget
-        \o See \l{#qspinbox-widget}{QSpinBox}.
+        \li QDateTimeEdit \target qdatetimeedit-widget
+        \li See \l{#qspinbox-widget}{QSpinBox}.
 
     \row
-        \o QDialog \target qdialog-widget
-        \o Supports only the \l{Qt Style Sheets Reference#background-prop}{background},
+        \li QDialog \target qdialog-widget
+        \li Supports only the \l{Qt Style Sheets Reference#background-prop}{background},
            \l{#background-clip-prop}{background-clip} and
            \l{#background-origin-prop}{background-origin} properties.
 
@@ -763,13 +763,13 @@
            widget.
 
     \row
-        \o QDialogButtonBox \target qdialogbuttonbox-widget
-        \o The layout of buttons can be altered using the
+        \li QDialogButtonBox \target qdialogbuttonbox-widget
+        \li The layout of buttons can be altered using the
            \l{#button-layout-prop}{button-layout} property.
 
     \row
-        \o QDockWidget \target qdockwidget-widget
-        \o Supports styling of the title bar and the title bar buttons when docked.
+        \li QDockWidget \target qdockwidget-widget
+        \li Supports styling of the title bar and the title bar buttons when docked.
 
         The dock widget border can be styled using the \l{#border-prop}{border}
         property. The \l{#title-sub}{::title} subcontrol can be used to customize
@@ -792,12 +792,12 @@
         {Customizing QDockWidget} for an example.
 
     \row
-        \o QDoubleSpinBox \target qdoublespinbox-widget
-        \o See \l{#qspinbox-widget}{QSpinBox}.
+        \li QDoubleSpinBox \target qdoublespinbox-widget
+        \li See \l{#qspinbox-widget}{QSpinBox}.
 
     \row
-        \o QFrame \target qframe-widget
-        \o Supports the \l{box model}.
+        \li QFrame \target qframe-widget
+        \li Supports the \l{box model}.
 
            Since 4.3, setting a stylesheet on a QLabel automatically
            sets the QFrame::frameStyle property to QFrame::StyledPanel.
@@ -806,8 +806,8 @@
            for an example.
 
     \row
-        \o QGroupBox \target qgroupbox-widget
-        \o Supports the \l{box model}. The title can be styled using the
+        \li QGroupBox \target qgroupbox-widget
+        \li Supports the \l{box model}. The title can be styled using the
            \l{#title-sub}{::title} subcontrol. By default, the title is placed
            depending on QGroupBox::textAlignment.
 
@@ -821,8 +821,8 @@
            for an example.
 
     \row
-        \o QHeaderView \target qheaderview-widget
-        \o Supports the \l{box model}. The sections of the header view are
+        \li QHeaderView \target qheaderview-widget
+        \li Supports the \l{box model}. The sections of the header view are
            styled using the \l{#section-sub}{::section} sub control. The
            \c{section} Sub-control supports the \l{#middle-ps}{:middle},
            \l{#first-ps}{:first}, \l{#last-ps}{:last},
@@ -839,8 +839,8 @@
            for an example.
 
     \row
-        \o QLabel \target qlabel-widget
-        \o Supports the \l{box model}. Does not support the
+        \li QLabel \target qlabel-widget
+        \li Supports the \l{box model}. Does not support the
            \l{#hover-ps}{:hover} pseudo-state.
 
            Since 4.3, setting a stylesheet on a QLabel automatically
@@ -850,8 +850,8 @@
            example (a QLabel derives from QFrame).
 
     \row
-        \o QLineEdit \target qlineedit-widget
-        \o Support the \l{box model}.
+        \li QLineEdit \target qlineedit-widget
+        \li Support the \l{box model}.
 
            The color and background of the selected item is styled using
            \l{#selection-color-prop}{selection-color} and
@@ -866,8 +866,8 @@
            for an example.
 
     \row
-        \o QListView \target qlistview-widget
-        \o Supports the \l{box model}. When
+        \li QListView \target qlistview-widget
+        \li Supports the \l{box model}. When
            \l{QAbstractItemView::alternatingRowColors}{alternating row colors}
            is enabled, the alternating colors can be styled using the
            \l{#alternate-background-color-prop}{alternate-background-color}
@@ -891,12 +891,12 @@
            {Customzing QListView} for an example.
 
     \row
-        \o QListWidget \target qlistwidget-widget
-        \o See \l{#qlistview-widget}{QListView}.
+        \li QListWidget \target qlistwidget-widget
+        \li See \l{#qlistview-widget}{QListView}.
 
     \row
-        \o QMainWindow \target qmainwindow-widget
-        \o Supports styling of the separator
+        \li QMainWindow \target qmainwindow-widget
+        \li Supports styling of the separator
 
            The separator in a QMainWindow when using QDockWidget is styled
            using the \l{#separator-sub}{::separator} subcontrol.
@@ -905,8 +905,8 @@
            for an example.
 
     \row
-        \o QMenu \target qmenu-widget
-        \o Supports the \l{box model}.
+        \li QMenu \target qmenu-widget
+        \li Supports the \l{box model}.
 
            Individual items are styled using the \l{#item-sub}{::item}
            subcontrol. In addition to the usually supported pseudo states,
@@ -933,8 +933,8 @@
            for an example.
 
     \row
-        \o QMenuBar \target qmenubar-widget
-        \o Supports the \l{box model}. The \l{#spacing-prop}{spacing}
+        \li QMenuBar \target qmenubar-widget
+        \li Supports the \l{box model}. The \l{#spacing-prop}{spacing}
            property specifies the spacing between menu items.
            Individual items are styled using the \l{#item-sub}{::item}
            subcontrol.
@@ -946,14 +946,14 @@
            for an example.
 
     \row
-        \o QMessageBox \target qmessagebox-widget
-        \o The \l{#messagebox-text-interaction-flags-prop}
+        \li QMessageBox \target qmessagebox-widget
+        \li The \l{#messagebox-text-interaction-flags-prop}
            {messagebox-text-interaction-flags} property can be used to alter
            the interaction with text in the message box.
 
     \row
-        \o QProgressBar \target qprogressbar-widget
-        \o Supports the \l{box model}. The chunks of the progress bar
+        \li QProgressBar \target qprogressbar-widget
+        \li Supports the \l{box model}. The chunks of the progress bar
            can be styled using the \l{#chunk-sub}{::chunk} subcontrol.
            The chunk is displayed on the Contents rectangle of the widget.
 
@@ -967,8 +967,8 @@
            for an example.
 
     \row
-        \o QPushButton \target qpushbutton-widget
-        \o Supports the \l{box model}. Supports the \l{#default-ps}{:default},
+        \li QPushButton \target qpushbutton-widget
+        \li Supports the \l{box model}. Supports the \l{#default-ps}{:default},
            \l{#flat-ps}{:flat}, \l{#checked-ps}{:checked} pseudo states.
 
            For QPushButton with a menu, the menu indicator is styled
@@ -988,8 +988,8 @@
            for an example.
 
     \row
-        \o QRadioButton \target qradiobutton-widget
-        \o Supports the \l{box model}. The check indicator can be
+        \li QRadioButton \target qradiobutton-widget
+        \li Supports the \l{box model}. The check indicator can be
            styled using the \l{#indicator-sub}{::indicator}
            subcontrol. By default, the indicator is placed in the Top
            Left corner of the Contents rectangle of the widget.
@@ -1002,8 +1002,8 @@
            {Customizing QRadioButton} for an example.
 
     \row
-        \o QScrollBar \target qscrollbar-widget
-        \o Supports the \l{box model}. The Contents rectangle of the widget
+        \li QScrollBar \target qscrollbar-widget
+        \li Supports the \l{box model}. The Contents rectangle of the widget
            is considered to be the groove over which the slider moves. The extent
            of the QScrollBar (i.e the width or the height depending on the orientation)
            is set using the \l{#width-prop}{width} or \l{#height-prop}{height} property
@@ -1037,8 +1037,8 @@
            for an example.
 
     \row
-        \o QSizeGrip \target qsizegrip-widget
-        \o Supports the \l{#width-prop}{width},
+        \li QSizeGrip \target qsizegrip-widget
+        \li Supports the \l{#width-prop}{width},
            \l{#height-prop}{height}, and \l{#image-prop}{image}
            properties.
 
@@ -1046,8 +1046,8 @@
            for an example.
 
     \row
-        \o QSlider \target qslider-widget
-        \o Supports the \l{box model}. For horizontal slides, the
+        \li QSlider \target qslider-widget
+        \li Supports the \l{box model}. For horizontal slides, the
            \l{min-width-prop}{min-width} and \l{height-prop}{height}
            properties must be provided. For vertical sliders, the
            \l{min-height-prop}{min-height} and \l{width-prop}{width}
@@ -1064,8 +1064,8 @@
            for an example.
 
     \row
-        \o QSpinBox \target qspinbox-widget
-        \o The frame of the spin box can be styled using the \l{box
+        \li QSpinBox \target qspinbox-widget
+        \li The frame of the spin box can be styled using the \l{box
            model}.
 
            The up button and arrow can be styled using the
@@ -1090,16 +1090,16 @@
            for an example.
 
     \row
-        \o QSplitter \target qsplitter-widget
-        \o Supports the \l{box model}. The handle of the splitter
+        \li QSplitter \target qsplitter-widget
+        \li Supports the \l{box model}. The handle of the splitter
            is styled using the \l{#handle-sub}{::handle} subcontrol.
 
            See \l{Qt Style Sheets Examples#Customizing QSplitter}{Customizing QSplitter}
            for an example.
 
     \row
-        \o QStatusBar \target qstatusbar-widget
-        \o Supports only the \l{Qt Style Sheets Reference#background-prop}
+        \li QStatusBar \target qstatusbar-widget
+        \li Supports only the \l{Qt Style Sheets Reference#background-prop}
            {background} property.
            The frame for individual items can be style using the
            \l{#item-sub}{::item} subcontrol.
@@ -1108,8 +1108,8 @@
            for an example.
 
     \row
-        \o QTabBar \target qtabbar-widget
-        \o Individual tabs may be styled using the \l{#tab-sub}{::tab}  subcontrol.
+        \li QTabBar \target qtabbar-widget
+        \li Individual tabs may be styled using the \l{#tab-sub}{::tab}  subcontrol.
            Close buttons using the \l{#close-button-sub}{::close-button}
            The tabs support the
            \l{#only-one-ps}{:only-one}, \l{#first-ps}{:first},
@@ -1143,8 +1143,8 @@
            for an example.
 
     \row
-        \o QTabWidget \target qtabwidget-widget
-        \o The frame of the tab widget is styled using the
+        \li QTabWidget \target qtabwidget-widget
+        \li The frame of the tab widget is styled using the
            \l{#pane-sub}{::pane} subcontrol. The left and right
            corners are styled using the \l{#left-corner-sub}{::left-corner}
            and \l{#right-corner-sub}{::right-corner} respectively.
@@ -1163,8 +1163,8 @@
            {Customizing QTabWidget} for an example.
 
     \row
-        \o QTableView \target qtableview-widget
-        \o Supports the \l{box model}. When
+        \li QTableView \target qtableview-widget
+        \li Supports the \l{box model}. When
            \l{QAbstractItemView::alternatingRowColors}{alternating row colors}
            is enabled, the alternating colors can be styled using the
            \l{#alternate-background-color-prop}{alternate-background-color}
@@ -1194,12 +1194,12 @@
            {Customzing QTableView} for an example.
 
     \row
-        \o QTableWidget \target qtablewidget-widget
-        \o See \l{#qtableview-widget}{QTableView}.
+        \li QTableWidget \target qtablewidget-widget
+        \li See \l{#qtableview-widget}{QTableView}.
 
     \row
-        \o QTextEdit \target qtextedit-widget
-        \o Supports the \l{box model}.
+        \li QTextEdit \target qtextedit-widget
+        \li Supports the \l{box model}.
 
            The color and background of selected text is styled using
            \l{#selection-color-prop}{selection-color} and
@@ -1210,12 +1210,12 @@
            style scrollable backgrounds.
 
     \row
-        \o QTimeEdit \target qtimeedit-widget
-        \o See \l{#qspinbox-widget}{QSpinBox}.
+        \li QTimeEdit \target qtimeedit-widget
+        \li See \l{#qspinbox-widget}{QSpinBox}.
 
     \row
-        \o QToolBar \target qtoolbar-widget
-        \o Supports the \l{box model}.
+        \li QToolBar \target qtoolbar-widget
+        \li Supports the \l{box model}.
 
            The \l{#top-ps}{:top}, \l{#left-ps}{:left}, \l{#right-ps}{:right},
            \l{#bottom-ps}{:bottom} pseudo states depending on the area in
@@ -1236,8 +1236,8 @@
            for an example.
 
     \row
-        \o QToolButton \target qtoolbutton-widget
-        \o Supports the \l{box model}.
+        \li QToolButton \target qtoolbutton-widget
+        \li Supports the \l{box model}.
 
            If the QToolButton has a menu, is
            \l{#menu-indicator-sub}{::menu-indicator} subcontrol can be used to
@@ -1266,8 +1266,8 @@
            for an example.
 
     \row
-        \o QToolBox \target qtoolbox-widget
-        \o Supports the \l{box model}.
+        \li QToolBox \target qtoolbox-widget
+        \li Supports the \l{box model}.
 
           The individual tabs can by styled using the
           \l{#tab-sub}{::tab} subcontrol. The tabs support the
@@ -1278,16 +1278,16 @@
           \l{#selected-ps}{:selected} pseudo states.
 
     \row
-        \o QToolTip \target qtooltip-widget
-        \o Supports the \l{box model}. The \l{#opacity-prop}{opacity}
+        \li QToolTip \target qtooltip-widget
+        \li Supports the \l{box model}. The \l{#opacity-prop}{opacity}
            property controls the opacity of the tooltip.
 
            See \l{Qt Style Sheets Examples#Customizing QFrame}{Customizing QFrame}
            for an example (a QToolTip is a QFrame).
 
     \row
-        \o QTreeView \target qtreeview-widget
-        \o Supports the \l{box model}. When
+        \li QTreeView \target qtreeview-widget
+        \li Supports the \l{box model}. When
            \l{QAbstractItemView::alternatingRowColors}{alternating row colors}
            is enabled, the alternating colors can be styled using the
            \l{#alternate-background-color-prop}{alternate-background-color}
@@ -1317,12 +1317,12 @@
            for an example to style the branches.
 
     \row
-        \o QTreeWidget \target qtreewidget-widget
-        \o See \l{#qtreeview-widget}{QTreeView}.
+        \li QTreeWidget \target qtreewidget-widget
+        \li See \l{#qtreeview-widget}{QTreeView}.
 
     \row
-        \o QWidget \target qwidget-widget
-        \o Supports only the \l{Qt Style Sheets Reference#background-prop}{background},
+        \li QWidget \target qwidget-widget
+        \li Supports only the \l{Qt Style Sheets Reference#background-prop}{background},
            \l{#background-clip-prop}{background-clip} and
            \l{#background-origin-prop}{background-origin} properties.
 
@@ -1348,14 +1348,14 @@
 
     \table 100%
     \header
-        \o Property
-        \o Type
-        \o Description
+        \li Property
+        \li Type
+        \li Description
 
     \row
-        \o \bold{\c alternate-background-color} \target alternate-background-color-prop
-        \o \l{#Brush}{Brush} \BR
-        \o The \l{QAbstractItemView::alternatingRowColors}
+        \li \b{\c alternate-background-color} \target alternate-background-color-prop
+        \li \l{#Brush}{Brush} \BR
+        \li The \l{QAbstractItemView::alternatingRowColors}
            {alternate background color} used in QAbstractItemView subclasses.
 
            If this property is not set, the default value is
@@ -1370,9 +1370,9 @@
            \l{#selection-background-color-prop}{selection-background-color}.
 
     \row
-        \o \bold{\c background} \target background-prop
-        \o \l{#Background}{Background}
-        \o Shorthand notation for setting the background. Equivalent
+        \li \b{\c background} \target background-prop
+        \li \l{#Background}{Background}
+        \li Shorthand notation for setting the background. Equivalent
            to specifying \c background-color, \c background-image, \c
            background-repeat, and/or \c background-position.
 
@@ -1404,18 +1404,18 @@
            and \l{#alternate-background-color-prop}{alternate-background-color}.
 
     \row
-        \o \c background-color \target background-color-prop
-        \o \l{#Brush}{Brush} \BR
-        \o The background color used for the widget.
+        \li \c background-color \target background-color-prop
+        \li \l{#Brush}{Brush} \BR
+        \li The background color used for the widget.
 
            Examples:
 
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 36
 
     \row
-        \o \c background-image \target background-image-prop
-        \o \l{#Url}{Url}
-        \o The background image used for the widget. Semi-transparent
+        \li \c background-image \target background-image-prop
+        \li \l{#Url}{Url}
+        \li The background image used for the widget. Semi-transparent
            parts of the image let the \c background-color shine
            through.
 
@@ -1424,9 +1424,9 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 37
 
     \row
-        \o \c background-repeat \target background-repeat-prop
-        \o \l{#Repeat}{Repeat}
-        \o Whether and how the background image is repeated to fill
+        \li \c background-repeat \target background-repeat-prop
+        \li \l{#Repeat}{Repeat}
+        \li Whether and how the background image is repeated to fill
            the \c background-origin rectangle.
 
            If this property is not specified, the background image
@@ -1437,9 +1437,9 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 38
 
     \row
-        \o \c background-position
-        \o \l{#Alignment}{Alignment}
-        \o The alignment of the background image within the \c
+        \li \c background-position
+        \li \l{#Alignment}{Alignment}
+        \li The alignment of the background image within the \c
            background-origin rectangle.
 
            If this property is not specified, the alignment is \c
@@ -1450,9 +1450,9 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 39
 
     \row
-        \o \bold{\c background-attachment} \target background-attachment-prop
-        \o \l{#Attachment}{Attachment}
-        \o Determines whether the background-image in a QAbstractScrollArea
+        \li \b{\c background-attachment} \target background-attachment-prop
+        \li \l{#Attachment}{Attachment}
+        \li Determines whether the background-image in a QAbstractScrollArea
            is scrolled or fixed with respect to the viewport.
            By default, the background-image scrolls with the viewport.
 
@@ -1463,9 +1463,9 @@
         See also \l{Qt Style Sheets Reference#background-prop}{background}
 
     \row
-        \o \bold{\c background-clip} \target background-clip-prop
-        \o \l{#Origin}{Origin}
-        \o The widget's rectangle, in which the \c background is drawn.
+        \li \b{\c background-clip} \target background-clip-prop
+        \li \l{#Origin}{Origin}
+        \li The widget's rectangle, in which the \c background is drawn.
 
            This property specifies the rectangle to which the \c background-color
            and \c background-image are clipped.
@@ -1487,9 +1487,9 @@
            \l{#background-origin-prop}{background-origin} and \l{The Box Model}.
 
     \row
-        \o \bold{\c background-origin} \target background-origin-prop
-        \o \l{#Origin}{Origin}
-        \o The widget's background rectangle, to use in conjunction
+        \li \b{\c background-origin} \target background-origin-prop
+        \li \l{#Origin}{Origin}
+        \li The widget's background rectangle, to use in conjunction
            with \c background-position and \c background-image.
 
            This property is supported by QAbstractItemView
@@ -1509,9 +1509,9 @@
            \l{The Box Model}.
 
     \row
-        \o \bold{\c border} \target border-prop
-        \o \l{#Border}{Border}
-        \o Shorthand notation for setting the widget's border. Equivalent
+        \li \b{\c border} \target border-prop
+        \li \l{#Border}{Border}
+        \li Shorthand notation for setting the widget's border. Equivalent
            to specifying \c border-color, \c border-style, and/or
            \c border-width.
 
@@ -1526,38 +1526,38 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 43
 
     \row
-        \o \c border-top
-        \o \l{#Border}{Border}
-        \o Shorthand notation for setting the widget's top border.
+        \li \c border-top
+        \li \l{#Border}{Border}
+        \li Shorthand notation for setting the widget's top border.
            Equivalent to specifying \c border-top-color, \c
            border-top-style, and/or \c border-top-width.
 
     \row
-        \o \c border-right
-        \o \l{#Border}{Border}
-        \o Shorthand notation for setting the widget's right border.
+        \li \c border-right
+        \li \l{#Border}{Border}
+        \li Shorthand notation for setting the widget's right border.
            Equivalent to specifying \c border-right-color, \c
            border-right-style, and/or \c border-right-width.
 
     \row
-        \o \c border-bottom
-        \o \l{#Border}{Border}
-        \o Shorthand notation for setting the widget's bottom border.
+        \li \c border-bottom
+        \li \l{#Border}{Border}
+        \li Shorthand notation for setting the widget's bottom border.
            Equivalent to specifying \c border-bottom-color, \c
            border-bottom-style, and/or \c border-bottom-width.
 
     \row
-        \o \c border-left
-        \o \l{#Border}{Border}
-        \o Shorthand notation for setting the widget's left border.
+        \li \c border-left
+        \li \l{#Border}{Border}
+        \li Shorthand notation for setting the widget's left border.
            Equivalent to specifying \c border-left-color, \c
            border-left-style, and/or \c border-left-width.
 
     \row
-        \o \bold{\c border-color} \target border-attrs
+        \li \b{\c border-color} \target border-attrs
            \target border-color-prop
-        \o \l{#Box Colors}{Box Colors}
-        \o The color of all the border's edges. Equivalent to
+        \li \l{#Box Colors}{Box Colors}
+        \li The color of all the border's edges. Equivalent to
            specifying \c border-top-color, \c border-right-color, \c
            border-bottom-color, and \c border-left-color.
 
@@ -1580,29 +1580,29 @@
            \l{#border-image-prop}{border-image}, and \l{The Box Model}.
 
     \row
-        \o \c border-top-color
-        \o \l{#Brush}{Brush} \BR
-        \o The color of the border's top edge.
+        \li \c border-top-color
+        \li \l{#Brush}{Brush} \BR
+        \li The color of the border's top edge.
 
     \row
-        \o \c border-right-color
-        \o \l{#Brush}{Brush} \BR
-        \o The color of the border's right edge.
+        \li \c border-right-color
+        \li \l{#Brush}{Brush} \BR
+        \li The color of the border's right edge.
 
     \row
-        \o \c border-bottom-color
-        \o \l{#Brush}{Brush} \BR
-        \o The color of the border's bottom edge.
+        \li \c border-bottom-color
+        \li \l{#Brush}{Brush} \BR
+        \li The color of the border's bottom edge.
 
     \row
-        \o \c border-left-color
-        \o \l{#Brush}{Brush} \BR
-        \o The color of the border's left edge.
+        \li \c border-left-color
+        \li \l{#Brush}{Brush} \BR
+        \li The color of the border's left edge.
 
     \row
-        \o \bold{\c border-image} \target border-image-prop
-        \o \l{#Border Image}{Border Image}
-        \o The image used to fill the border. The image is cut into
+        \li \b{\c border-image} \target border-image-prop
+        \li \l{#Border Image}{Border Image}
+        \li The image used to fill the border. The image is cut into
            nine parts and stretched appropriately if necessary. See
            \l{#Border Image}{Border Image} for details.
 
@@ -1618,9 +1618,9 @@
            \l{The Box Model}.
 
     \row
-        \o \bold{\c border-radius} \target border-radius-prop
-        \o \l{#Radius}{Radius}
-        \o The radius of the border's corners. Equivalent to
+        \li \b{\c border-radius} \target border-radius-prop
+        \li \l{#Radius}{Radius}
+        \li The radius of the border's corners. Equivalent to
            specifying \c border-top-left-radius, \c
            border-top-right-radius, \c border-bottom-right-radius,
            and \c border-bottom-left-radius.
@@ -1644,32 +1644,32 @@
            \l{The Box Model}.
 
     \row
-        \o \c border-top-left-radius
-        \o \l{#Radius}{Radius}
-        \o The radius of the border's top-left corner.
+        \li \c border-top-left-radius
+        \li \l{#Radius}{Radius}
+        \li The radius of the border's top-left corner.
 
     \row
-        \o \c border-top-right-radius
-        \o \l{#Radius}{Radius}
-        \o The radius of the border's top-right corner.
+        \li \c border-top-right-radius
+        \li \l{#Radius}{Radius}
+        \li The radius of the border's top-right corner.
 
     \row
-        \o \c border-bottom-right-radius
-        \o \l{#Radius}{Radius}
-        \o The radius of the border's bottom-right corner. Setting
+        \li \c border-bottom-right-radius
+        \li \l{#Radius}{Radius}
+        \li The radius of the border's bottom-right corner. Setting
            this property to a positive value results in a rounded
            corner.
 
     \row
-        \o \c border-bottom-left-radius
-        \o \l{#Radius}{Radius}
-        \o The radius of the border's bottom-left corner. Setting this
+        \li \c border-bottom-left-radius
+        \li \l{#Radius}{Radius}
+        \li The radius of the border's bottom-left corner. Setting this
            property to a positive value results in a rounded corner.
 
     \row
-        \o \bold{\c border-style} \target border-style-prop
-        \o \l {Border Style}
-        \o The style of all the border's edges.
+        \li \b{\c border-style} \target border-style-prop
+        \li \l {Border Style}
+        \li The style of all the border's edges.
 
            This property is supported by QAbstractItemView
            subclasses, QAbstractSpinBox subclasses, QCheckBox,
@@ -1688,29 +1688,29 @@
            \l{#border-image-prop}{border-image}, and \l{The Box Model}.
 
     \row
-        \o \c border-top-style
-        \o \l{#Border Style}{Border Style}
-        \o The style of the border's top edge.
+        \li \c border-top-style
+        \li \l{#Border Style}{Border Style}
+        \li The style of the border's top edge.
 
     \row
-        \o \c border-right-style
-        \o \l{#Border Style}{Border Style}
-        \o The style of the border's right edge/
+        \li \c border-right-style
+        \li \l{#Border Style}{Border Style}
+        \li The style of the border's right edge/
 
     \row
-        \o \c border-bottom-style
-        \o \l{#Border Style}{Border Style}
-        \o The style of the border's bottom edge.
+        \li \c border-bottom-style
+        \li \l{#Border Style}{Border Style}
+        \li The style of the border's bottom edge.
 
     \row
-        \o \c border-left-style
-        \o \l{#Border Style}{Border Style}
-        \o The style of the border's left edge.
+        \li \c border-left-style
+        \li \l{#Border Style}{Border Style}
+        \li The style of the border's left edge.
 
     \row
-        \o \bold{\c border-width} \target border-width-prop
-        \o \l{#Box Lengths}{Box Lengths}
-        \o The width of the border. Equivalent to setting \c
+        \li \b{\c border-width} \target border-width-prop
+        \li \l{#Box Lengths}{Box Lengths}
+        \li The width of the border. Equivalent to setting \c
            border-top-width, \c border-right-width, \c
            border-bottom-width, and \c border-left-width.
 
@@ -1731,29 +1731,29 @@
            \l{The Box Model}.
 
     \row
-        \o \c border-top-width
-        \o \l{#Length}{Length}
-        \o The width of the border's top edge.
+        \li \c border-top-width
+        \li \l{#Length}{Length}
+        \li The width of the border's top edge.
 
     \row
-        \o \c border-right-width
-        \o \l{#Length}{Length}
-        \o The width of the border's right edge.
+        \li \c border-right-width
+        \li \l{#Length}{Length}
+        \li The width of the border's right edge.
 
     \row
-        \o \c border-bottom-width
-        \o \l{#Length}{Length}
-        \o The width of the border's bottom edge.
+        \li \c border-bottom-width
+        \li \l{#Length}{Length}
+        \li The width of the border's bottom edge.
 
     \row
-        \o \c border-left-width
-        \o \l{#Length}{Length}
-        \o The width of the border's left edge.
+        \li \c border-left-width
+        \li \l{#Length}{Length}
+        \li The width of the border's left edge.
 
     \row
-        \o \bold{\c bottom} \target bottom-prop
-        \o \l{#Length}{Length}
-        \o If \l{#position-prop}{position} is \c relative (the
+        \li \b{\c bottom} \target bottom-prop
+        \li \l{#Length}{Length}
+        \li If \l{#position-prop}{position} is \c relative (the
            default), moves a \l{subcontrol} by a certain offset up;
            specifying \tt{bottom: \e{y}} is then equivalent to
            specifying \tt{\l{Qt Style Sheets Reference#top-prop}{top}: -\e{y}}.
@@ -1772,9 +1772,9 @@
            \l{Qt Style Sheets Reference#top-prop}{top}.
 
     \row
-        \o \bold{\c button-layout} \target button-layout-prop
-        \o \l{#Number}{Number}
-        \o The layout of buttons in a QDialogButtonBox or
+        \li \b{\c button-layout} \target button-layout-prop
+        \li \l{#Number}{Number}
+        \li The layout of buttons in a QDialogButtonBox or
            a QMessageBox. The possible values are 0
            (\l{QDialogButtonBox::}{WinLayout}), 1
            (\l{QDialogButtonBox::}{MacLayout}), 2
@@ -1790,9 +1790,9 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 49
 
     \row
-        \o \bold{\c color} \target color-prop
-        \o \l{#Brush}{Brush} \BR
-        \o The color used to render text.
+        \li \b{\c color} \target color-prop
+        \li \l{#Brush}{Brush} \BR
+        \li The color used to render text.
 
            This property is supported by all widgets that respect
            the \l QWidget::palette.
@@ -1809,9 +1809,9 @@
            \l{#selection-color-prop}{selection-color}.
 
     \row
-        \o \bold{\c dialogbuttonbox-buttons-have-icons}
-        \o \l{#Boolean}{Boolean}
-        \o Whether the buttons in a QDialogButtonBox show icons
+        \li \b{\c dialogbuttonbox-buttons-have-icons}
+        \li \l{#Boolean}{Boolean}
+        \li Whether the buttons in a QDialogButtonBox show icons
 
         If this property is set to 1, the buttons of a QDialogButtonBox
         show icons; if it is set to 0, the icons are not shown.
@@ -1827,9 +1827,9 @@
 
     \omit
     \row
-        \o \bold{\c etch-disabled-text}*
-        \o \l{#Boolean}{Boolean}
-        \o Whether disabled text is drawn etched.
+        \li \b{\c etch-disabled-text}*
+        \li \l{#Boolean}{Boolean}
+        \li Whether disabled text is drawn etched.
 
            If this property is not specified, it defaults to the
            value specified by the current style for the
@@ -1841,9 +1841,9 @@
     \endomit
 
     \row
-        \o \bold{\c font} \target font-prop
-        \o \l{#Font}{Font}
-        \o Shorthand notation for setting the text's font. Equivalent
+        \li \b{\c font} \target font-prop
+        \li \l{#Font}{Font}
+        \li Shorthand notation for setting the text's font. Equivalent
            to specifying \c font-family, \c font-size, \c font-style,
            and/or \c font-weight.
 
@@ -1858,18 +1858,18 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 53
 
     \row
-        \o \c font-family
-        \o String
-        \o The font family.
+        \li \c font-family
+        \li String
+        \li The font family.
 
            Example:
 
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 54
 
     \row
-        \o \c font-size
-        \o \l{#Font Size}{Font Size}
-        \o The font size. In this version of Qt, only pt and px metrics are
+        \li \c font-size
+        \li \l{#Font Size}{Font Size}
+        \li The font size. In this version of Qt, only pt and px metrics are
            supported.
 
            Example:
@@ -1877,23 +1877,23 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 55
 
     \row
-        \o \c font-style
-        \o \l {Font Style}
-        \o The font style.
+        \li \c font-style
+        \li \l {Font Style}
+        \li The font style.
 
            Example:
 
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 56
 
     \row
-        \o \c font-weight
-        \o \l{#Font Weight}{Font Weight}
-        \o The weight of the font.
+        \li \c font-weight
+        \li \l{#Font Weight}{Font Weight}
+        \li The weight of the font.
 
     \row
-        \o \bold{\c gridline-color}* \target gridline-color-prop
-        \o \l{#Color}{Color} \BR
-        \o The color of the grid line in a QTableView.
+        \li \b{\c gridline-color}* \target gridline-color-prop
+        \li \l{#Color}{Color} \BR
+        \li The color of the grid line in a QTableView.
 
            If this property is not specified, it defaults to the
            value specified by the current style for the
@@ -1904,9 +1904,9 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 57
 
     \row
-        \o \bold{\c height} \target height-prop
-        \o \l{#Length}{Length}
-        \o The height of a \l{subcontrol} (or in some case, a widget).
+        \li \b{\c height} \target height-prop
+        \li \l{#Length}{Length}
+        \li The height of a \l{subcontrol} (or in some case, a widget).
 
            If this property is not specified, it defaults to a value
            that depends on the subcontrol/widget and on the current style.
@@ -1923,27 +1923,27 @@
            See also \l{#width-prop}{width}.
 
     \row
-        \o \bold{\c icon-size} \target icon-size-prop
-        \o \l{#Length}{Length}
-        \o The width and height of the icon in a widget.
+        \li \b{\c icon-size} \target icon-size-prop
+        \li \l{#Length}{Length}
+        \li The width and height of the icon in a widget.
 
            The icon size of the following widgets can be set using this
            property.
                \list
-               \i QCheckBox
-               \i QListView
-               \i QPushButton
-               \i QRadioButton
-               \i QTabBar
-               \i QToolBar
-               \i QToolBox
-               \i QTreeView
+               \li QCheckBox
+               \li QListView
+               \li QPushButton
+               \li QRadioButton
+               \li QTabBar
+               \li QToolBar
+               \li QToolBox
+               \li QTreeView
                \endlist
 
     \row
-        \o \bold{\c image}* \target image-prop
-        \o \l{#Url}{Url}+
-        \o The image that is drawn in the contents rectangle of a
+        \li \b{\c image}* \target image-prop
+        \li \l{#Url}{Url}+
+        \li The image that is drawn in the contents rectangle of a
            \l{subcontrol}.
 
            The image property accepts a list of \l{#Url}{Url}s or
@@ -1969,15 +1969,15 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 59
 
     \row
-        \o \bold{\c image-position} \target image-position-prop
-        \o \l{#Alignment}{alignment}
-        \o In Qt 4.3 and later, the alignment of the image image's position can be specified
+        \li \b{\c image-position} \target image-position-prop
+        \li \l{#Alignment}{alignment}
+        \li In Qt 4.3 and later, the alignment of the image image's position can be specified
            using relative or absolute position.
 
     \row
-        \o \bold{\c left} \target left-prop
-        \o \l{#Length}{Length}
-        \o If \l{#position-prop}{position} is \c relative (the
+        \li \b{\c left} \target left-prop
+        \li \l{#Length}{Length}
+        \li If \l{#position-prop}{position} is \c relative (the
            default), moves a \l{subcontrol} by a certain offset to
            the right.
 
@@ -1996,9 +1996,9 @@
            \l{#bottom-prop}{bottom}.
 
     \row
-        \o \bold{\c lineedit-password-character*} \target lineedit-password-character-prop
-        \o \l{#Number}{Number}
-        \o The QLineEdit password character as a Unicode number.
+        \li \b{\c lineedit-password-character*} \target lineedit-password-character-prop
+        \li \l{#Number}{Number}
+        \li The QLineEdit password character as a Unicode number.
 
            If this property is not specified, it defaults to the
            value specified by the current style for the
@@ -2009,9 +2009,9 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 61
 
     \row
-        \o \bold{\c margin} \target margin-prop
-        \o \l {Box Lengths}
-        \o The widget's margins. Equivalent to specifying \c
+        \li \b{\c margin} \target margin-prop
+        \li \l {Box Lengths}
+        \li The widget's margins. Equivalent to specifying \c
            margin-top, \c margin-right, \c margin-bottom, and \c
            margin-left.
 
@@ -2031,29 +2031,29 @@
            \l{#spacing-prop}{spacing}, and \l{The Box Model}.
 
     \row
-        \o \c margin-top
-        \o \l{#Length}{Length}
-        \o The widget's top margin.
+        \li \c margin-top
+        \li \l{#Length}{Length}
+        \li The widget's top margin.
 
     \row
-        \o \c margin-right
-        \o \l{#Length}{Length}
-        \o The widget's right margin.
+        \li \c margin-right
+        \li \l{#Length}{Length}
+        \li The widget's right margin.
 
     \row
-        \o \c margin-bottom
-        \o \l{#Length}{Length}
-        \o The widget's bottom margin.
+        \li \c margin-bottom
+        \li \l{#Length}{Length}
+        \li The widget's bottom margin.
 
     \row
-        \o \c margin-left
-        \o \l{#Length}{Length}
-        \o The widget's left margin.
+        \li \c margin-left
+        \li \l{#Length}{Length}
+        \li The widget's left margin.
 
     \row
-        \o \bold{\c max-height} \target max-height-prop
-        \o \l{#Length}{Length}
-        \o The widget's or a subcontrol's maximum height.
+        \li \b{\c max-height} \target max-height-prop
+        \li \l{#Length}{Length}
+        \li The widget's or a subcontrol's maximum height.
 
            This property is supported by QAbstractItemView
            subclasses, QAbstractSpinBox subclasses, QCheckBox,
@@ -2071,9 +2071,9 @@
            See also \l{#max-width-prop}{max-width}.
 
     \row
-        \o \bold{\c max-width} \target max-width-prop
-        \o \l{#Length}{Length}
-        \o The widget's or a subcontrol's maximum width.
+        \li \b{\c max-width} \target max-width-prop
+        \li \l{#Length}{Length}
+        \li The widget's or a subcontrol's maximum width.
 
            This property is supported by QAbstractItemView
            subclasses, QAbstractSpinBox subclasses, QCheckBox,
@@ -2092,9 +2092,9 @@
 
 
     \row
-        \o \bold{\c messagebox-text-interaction-flags*} \target messagebox-text-interaction-flags-prop
-        \o \l{#Number}{Number}
-        \o The interaction behavior for text in a message box.
+        \li \b{\c messagebox-text-interaction-flags*} \target messagebox-text-interaction-flags-prop
+        \li \l{#Number}{Number}
+        \li The interaction behavior for text in a message box.
            Possible values are based on Qt::TextInteractionFlags.
 
            If this property is not specified, it defaults to the
@@ -2107,9 +2107,9 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 65
 
     \row
-        \o \bold{\c min-height} \target min-height-prop
-        \o \l{#Length}{Length}
-        \o The widget's or a subcontrol's minimum height.
+        \li \b{\c min-height} \target min-height-prop
+        \li \l{#Length}{Length}
+        \li The widget's or a subcontrol's minimum height.
 
            This property is supported by QAbstractItemView
            subclasses, QAbstractSpinBox subclasses, QCheckBox,
@@ -2130,9 +2130,9 @@
            See also \l{#min-width-prop}{min-width}.
 
     \row
-        \o \bold{\c min-width} \target min-width-prop
-        \o \l{#Length}{Length}
-        \o The widget's or a subcontrol's minimum width.
+        \li \b{\c min-width} \target min-width-prop
+        \li \l{#Length}{Length}
+        \li The widget's or a subcontrol's minimum width.
 
            This property is supported by QAbstractItemView
            subclasses, QAbstractSpinBox subclasses, QCheckBox,
@@ -2153,9 +2153,9 @@
            See also \l{#min-height-prop}{min-height}.
 
     \row
-        \o \bold{\c opacity*} \target opacity-prop
-        \o \l{#Number}{Number}
-        \o The opacity for a widget. Possible values are from 0
+        \li \b{\c opacity*} \target opacity-prop
+        \li \l{#Number}{Number}
+        \li The opacity for a widget. Possible values are from 0
            (transparent) to 255 (opaque). For the moment, this is
            only supported for \l{QToolTip}{tooltips}.
 
@@ -2168,9 +2168,9 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 68
 
     \row
-        \o \bold{\c padding} \target padding-prop
-        \o \l{#Box Lengths}{Box Lengths}
-        \o The widget's padding. Equivalent to specifying \c
+        \li \b{\c padding} \target padding-prop
+        \li \l{#Box Lengths}{Box Lengths}
+        \li The widget's padding. Equivalent to specifying \c
            padding-top, \c padding-right, \c padding-bottom, and \c
            padding-left.
 
@@ -2190,37 +2190,37 @@
            \l{#spacing-prop}{spacing}, and \l{The Box Model}.
 
     \row
-        \o \c padding-top
-        \o \l{#Length}{Length}
-        \o The widget's top padding.
+        \li \c padding-top
+        \li \l{#Length}{Length}
+        \li The widget's top padding.
 
     \row
-        \o \c padding-right
-        \o \l{#Length}{Length}
-        \o The widget's right padding.
+        \li \c padding-right
+        \li \l{#Length}{Length}
+        \li The widget's right padding.
 
     \row
-        \o \c padding-bottom
-        \o \l{#Length}{Length}
-        \o The widget's bottom padding.
+        \li \c padding-bottom
+        \li \l{#Length}{Length}
+        \li The widget's bottom padding.
 
     \row
-        \o \c padding-left
-        \o \l{#Length}{Length}
-        \o The widget's left padding.
+        \li \c padding-left
+        \li \l{#Length}{Length}
+        \li The widget's left padding.
 
     \row
-        \o \bold{\c paint-alternating-row-colors-for-empty-area}
+        \li \b{\c paint-alternating-row-colors-for-empty-area}
             \target paint-alternating-row-colors-for-empty-area-prop
-        \o \c bool
-        \o Whether the QTreeView paints alternating row colors for the empty
+        \li \c bool
+        \li Whether the QTreeView paints alternating row colors for the empty
            area (i.e the area where there are no items)
 
     \row
-        \o \bold{\c position} \target position-prop
-        \o \c relative \BR
+        \li \b{\c position} \target position-prop
+        \li \c relative \BR
            | \c absolute
-        \o Whether offsets specified using \l{Qt Style Sheets Reference#left-prop}{left},
+        \li Whether offsets specified using \l{Qt Style Sheets Reference#left-prop}{left},
            \l{#right-prop}{right}, \l{Qt Style Sheets Reference#top-prop}{top}, and
            \l{#bottom-prop}{bottom} are relative or absolute
            coordinates.
@@ -2229,9 +2229,9 @@
            relative.
 
     \row
-        \o \bold{\c right} \target right-prop
-        \o \l{#Length}{Length}
-        \o If \l{#position-prop}{position} is \c relative (the
+        \li \b{\c right} \target right-prop
+        \li \l{#Length}{Length}
+        \li If \l{#position-prop}{position} is \c relative (the
            default), moves a \l{subcontrol} by a certain offset to
            the left; specifying \tt{right: \e{x}} is then equivalent
            to specifying \tt{\l{Qt Style Sheets Reference#left-prop}{left}: -\e{x}}.
@@ -2249,9 +2249,9 @@
            \l{#bottom-prop}{bottom}.
 
     \row
-        \o \bold{\c selection-background-color*} \target selection-background-color-prop
-        \o \l{#Brush}{Brush} \BR
-        \o The background of selected text or items.
+        \li \b{\c selection-background-color*} \target selection-background-color-prop
+        \li \l{#Brush}{Brush} \BR
+        \li The background of selected text or items.
 
            This property is supported by all widgets that respect
            the \l QWidget::palette and that show selection text.
@@ -2268,9 +2268,9 @@
            \l{Qt Style Sheets Reference#background-prop}{background}.
 
     \row
-        \o \bold{\c selection-color*} \target selection-color-prop
-        \o \l{#Brush}{Brush} \BR
-        \o The foreground of selected text or items.
+        \li \b{\c selection-color*} \target selection-color-prop
+        \li \l{#Brush}{Brush} \BR
+        \li The foreground of selected text or items.
 
            This property is supported by all widgets that respect
            the \l QWidget::palette and that show selection text.
@@ -2288,9 +2288,9 @@
            and \l{#color-prop}{color}.
 
     \row
-        \o \bold{\c show-decoration-selected*} \target show-decoration-selected-prop
-        \o \l{#Boolean}{Boolean}
-        \o Controls whether selections in a QListView cover the
+        \li \b{\c show-decoration-selected*} \target show-decoration-selected-prop
+        \li \l{#Boolean}{Boolean}
+        \li Controls whether selections in a QListView cover the
            entire row or just the extent of the text.
 
            If this property is not specified, it defaults to the
@@ -2303,9 +2303,9 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 73
 
     \row
-        \o \bold{\c spacing*} \target spacing-prop
-        \o \l{#Length}{Length}
-        \o Internal spacing in the widget.
+        \li \b{\c spacing*} \target spacing-prop
+        \li \l{#Length}{Length}
+        \li Internal spacing in the widget.
 
            This property is supported by QCheckBox, checkable
            \l{QGroupBox}es, QMenuBar, and QRadioButton.
@@ -2321,9 +2321,9 @@
            \l{#margin-prop}{margin}.
 
     \row
-        \o \bold{\c subcontrol-origin*} \target subcontrol-origin-prop
-        \o \l{#Origin}{Origin}
-        \o The origin rectangle of the \l subcontrol within the
+        \li \b{\c subcontrol-origin*} \target subcontrol-origin-prop
+        \li \l{#Origin}{Origin}
+        \li The origin rectangle of the \l subcontrol within the
            parent element.
 
            If this property is not specified, the default is \c
@@ -2337,9 +2337,9 @@
            \l{Qt Style Sheets Reference#subcontrol-position-prop}{subcontrol-position}.
 
     \row
-        \o \bold{\c subcontrol-position*} \target subcontrol-position-prop
-        \o \l{#Alignment}{Alignment}
-        \o The alignment of the \l subcontrol within the origin
+        \li \b{\c subcontrol-position*} \target subcontrol-position-prop
+        \li \l{#Alignment}{Alignment}
+        \li The alignment of the \l subcontrol within the origin
            rectangle specified by \l{Qt Style Sheets Reference#subcontrol-origin-prop}
            {subcontrol-origin}.
 
@@ -2354,9 +2354,9 @@
            \l{Qt Style Sheets Reference#subcontrol-origin-prop}{subcontrol-origin}.
 
     \row
-        \o \bold{\c text-align} \target text-align-prop
-        \o \l{#Alignment}{Alignment}
-        \o The alignment of text and icon within the contents of the widget.
+        \li \b{\c text-align} \target text-align-prop
+        \li \l{#Alignment}{Alignment}
+        \li The alignment of text and icon within the contents of the widget.
 
            If this value is not specified, it defaults to the value
            that depends on the native style.
@@ -2369,17 +2369,17 @@
             and QProgressBar.
 
     \row
-        \o \bold{\c text-decoration}
-        \o \c none \BR
+        \li \b{\c text-decoration}
+        \li \c none \BR
            \c underline \BR
            \c overline \BR
            \c line-through
-        \o Additional text effects
+        \li Additional text effects
 
     \row
-        \o \bold{\c top} \target top-prop
-        \o \l{#Length}{Length}
-        \o If \l{#position-prop}{position} is \c relative (the
+        \li \b{\c top} \target top-prop
+        \li \l{#Length}{Length}
+        \li If \l{#position-prop}{position} is \c relative (the
            default), moves a \l{subcontrol} by a certain offset
            down.
 
@@ -2398,9 +2398,9 @@
            \l{#bottom-prop}{bottom}.
 
     \row
-        \o \bold{\c width} \target width-prop
-        \o \l{#Length}{Length}
-        \o The width of a \l{subcontrol} (or a widget in some cases).
+        \li \b{\c width} \target width-prop
+        \li \l{#Length}{Length}
+        \li The width of a \l{subcontrol} (or a widget in some cases).
 
            If this property is not specified, it defaults to a value
            that depends on the subcontrol/widget and on the current style.
@@ -2430,222 +2430,222 @@
 
     \table 100%
     \header
-        \o Name
-        \o QStyle::StandardPixmap
+        \li Name
+        \li QStyle::StandardPixmap
 
     \row
-        \o backward-icon
-        \o QStyle::SP_ArrowBack
+        \li backward-icon
+        \li QStyle::SP_ArrowBack
 
     \row
-        \o cd-icon
-        \o QStyle::SP_DriveCDIcon
+        \li cd-icon
+        \li QStyle::SP_DriveCDIcon
 
     \row
-        \o computer-icon
-        \o QStyle::SP_ComputerIcon
+        \li computer-icon
+        \li QStyle::SP_ComputerIcon
 
     \row
-        \o desktop-icon
-        \o QStyle::SP_DesktopIcon
+        \li desktop-icon
+        \li QStyle::SP_DesktopIcon
 
     \row
-        \o dialog-apply-icon
-        \o QStyle::SP_DialogApplyButton
+        \li dialog-apply-icon
+        \li QStyle::SP_DialogApplyButton
 
     \row
-        \o dialog-cancel-icon
-        \o QStyle::SP_DialogCancelButton
+        \li dialog-cancel-icon
+        \li QStyle::SP_DialogCancelButton
 
     \row
-        \o dialog-close-icon
-        \o QStyle::SP_DialogCloseButton
+        \li dialog-close-icon
+        \li QStyle::SP_DialogCloseButton
 
     \row
-        \o dialog-discard-icon
-        \o QStyle::SP_DialogDiscardButton
+        \li dialog-discard-icon
+        \li QStyle::SP_DialogDiscardButton
 
     \row
-        \o dialog-help-icon
-        \o QStyle::SP_DialogHelpButton
+        \li dialog-help-icon
+        \li QStyle::SP_DialogHelpButton
 
     \row
-        \o dialog-no-icon
-        \o QStyle::SP_DialogNoButton
+        \li dialog-no-icon
+        \li QStyle::SP_DialogNoButton
 
     \row
-        \o dialog-ok-icon
-        \o QStyle::SP_DialogOkButton
+        \li dialog-ok-icon
+        \li QStyle::SP_DialogOkButton
 
     \row
-        \o dialog-open-icon
-        \o QStyle::SP_DialogOpenButton
+        \li dialog-open-icon
+        \li QStyle::SP_DialogOpenButton
 
     \row
-        \o dialog-reset-icon
-        \o QStyle::SP_DialogResetButton
+        \li dialog-reset-icon
+        \li QStyle::SP_DialogResetButton
 
     \row
-        \o dialog-save-icon
-        \o QStyle::SP_DialogSaveButton
+        \li dialog-save-icon
+        \li QStyle::SP_DialogSaveButton
 
     \row
-        \o dialog-yes-icon
-        \o QStyle::SP_DialogYesButton
+        \li dialog-yes-icon
+        \li QStyle::SP_DialogYesButton
 
     \row
-        \o directory-closed-icon
-        \o QStyle::SP_DirClosedIcon
+        \li directory-closed-icon
+        \li QStyle::SP_DirClosedIcon
 
     \row
-        \o directory-icon
-        \o QStyle::SP_DirIcon
+        \li directory-icon
+        \li QStyle::SP_DirIcon
 
     \row
-        \o directory-link-icon
-        \o QStyle::SP_DirLinkIcon
+        \li directory-link-icon
+        \li QStyle::SP_DirLinkIcon
 
     \row
-        \o directory-open-icon
-        \o QStyle::SP_DirOpenIcon
+        \li directory-open-icon
+        \li QStyle::SP_DirOpenIcon
 
     \row
-        \o dockwidget-close-icon
-        \o QStyle::SP_DockWidgetCloseButton
+        \li dockwidget-close-icon
+        \li QStyle::SP_DockWidgetCloseButton
 
     \row
-        \o downarrow-icon
-        \o QStyle::SP_ArrowDown
+        \li downarrow-icon
+        \li QStyle::SP_ArrowDown
 
     \row
-        \o dvd-icon
-        \o QStyle::SP_DriveDVDIcon
+        \li dvd-icon
+        \li QStyle::SP_DriveDVDIcon
 
     \row
-        \o file-icon
-        \o QStyle::SP_FileIcon
+        \li file-icon
+        \li QStyle::SP_FileIcon
 
     \row
-        \o file-link-icon
-        \o QStyle::SP_FileLinkIcon
+        \li file-link-icon
+        \li QStyle::SP_FileLinkIcon
 
     \omit
     \row
-        \o filedialog-backward-icon
-        \o QStyle::SP_FileDialogBack
+        \li filedialog-backward-icon
+        \li QStyle::SP_FileDialogBack
     \endomit
 
     \row
-        \o filedialog-contentsview-icon
-        \o QStyle::SP_FileDialogContentsView
+        \li filedialog-contentsview-icon
+        \li QStyle::SP_FileDialogContentsView
 
     \row
-        \o filedialog-detailedview-icon
-        \o QStyle::SP_FileDialogDetailedView
+        \li filedialog-detailedview-icon
+        \li QStyle::SP_FileDialogDetailedView
 
     \row
-        \o filedialog-end-icon
-        \o QStyle::SP_FileDialogEnd
+        \li filedialog-end-icon
+        \li QStyle::SP_FileDialogEnd
 
     \row
-        \o filedialog-infoview-icon
-        \o QStyle::SP_FileDialogInfoView
+        \li filedialog-infoview-icon
+        \li QStyle::SP_FileDialogInfoView
 
     \row
-        \o filedialog-listview-icon
-        \o QStyle::SP_FileDialogListView
+        \li filedialog-listview-icon
+        \li QStyle::SP_FileDialogListView
 
     \row
-        \o filedialog-new-directory-icon
-        \o QStyle::SP_FileDialogNewFolder
+        \li filedialog-new-directory-icon
+        \li QStyle::SP_FileDialogNewFolder
 
     \row
-        \o filedialog-parent-directory-icon
-        \o QStyle::SP_FileDialogToParent
+        \li filedialog-parent-directory-icon
+        \li QStyle::SP_FileDialogToParent
 
     \row
-        \o filedialog-start-icon
-        \o  QStyle::SP_FileDialogStart
+        \li filedialog-start-icon
+        \li  QStyle::SP_FileDialogStart
 
     \row
-        \o floppy-icon
-        \o QStyle::SP_DriveFDIcon
+        \li floppy-icon
+        \li QStyle::SP_DriveFDIcon
 
     \row
-        \o forward-icon
-        \o QStyle::SP_ArrowForward
+        \li forward-icon
+        \li QStyle::SP_ArrowForward
 
     \row
-        \o harddisk-icon
-        \o QStyle::SP_DriveHDIcon
+        \li harddisk-icon
+        \li QStyle::SP_DriveHDIcon
 
     \row
-        \o home-icon
-        \o QStyle::SP_DirHomeIcon
+        \li home-icon
+        \li QStyle::SP_DirHomeIcon
 
     \row
-        \o leftarrow-icon
-        \o QStyle::SP_ArrowLeft
+        \li leftarrow-icon
+        \li QStyle::SP_ArrowLeft
 
     \row
-        \o messagebox-critical-icon
-        \o QStyle::SP_MessageBoxCritical
+        \li messagebox-critical-icon
+        \li QStyle::SP_MessageBoxCritical
 
     \row
-        \o messagebox-information-icon
-        \o QStyle::SP_MessageBoxInformation
+        \li messagebox-information-icon
+        \li QStyle::SP_MessageBoxInformation
 
     \row
-        \o messagebox-question-icon
-        \o QStyle::SP_MessageBoxQuestion
+        \li messagebox-question-icon
+        \li QStyle::SP_MessageBoxQuestion
 
     \row
-        \o messagebox-warning-icon
-        \o QStyle::SP_MessageBoxWarning
+        \li messagebox-warning-icon
+        \li QStyle::SP_MessageBoxWarning
 
     \row
-        \o network-icon
-        \o QStyle::SP_DriveNetIcon
+        \li network-icon
+        \li QStyle::SP_DriveNetIcon
 
     \row
-        \o rightarrow-icon
-        \o QStyle::SP_ArrowRight
+        \li rightarrow-icon
+        \li QStyle::SP_ArrowRight
 
     \row
-        \o titlebar-contexthelp-icon
-        \o QStyle::SP_TitleBarContextHelpButton
+        \li titlebar-contexthelp-icon
+        \li QStyle::SP_TitleBarContextHelpButton
 
     \row
-        \o titlebar-maximize-icon
-        \o QStyle::SP_TitleBarMaxButton
+        \li titlebar-maximize-icon
+        \li QStyle::SP_TitleBarMaxButton
 
     \row
-        \o titlebar-menu-icon
-        \o QStyle::SP_TitleBarMenuButton
+        \li titlebar-menu-icon
+        \li QStyle::SP_TitleBarMenuButton
 
     \row
-        \o titlebar-minimize-icon
-        \o QStyle::SP_TitleBarMinButton
+        \li titlebar-minimize-icon
+        \li QStyle::SP_TitleBarMinButton
 
     \row
-        \o titlebar-normal-icon
-        \o QStyle::SP_TitleBarNormalButton
+        \li titlebar-normal-icon
+        \li QStyle::SP_TitleBarNormalButton
 
     \row
-        \o titlebar-shade-icon
-        \o QStyle::SP_TitleBarShadeButton
+        \li titlebar-shade-icon
+        \li QStyle::SP_TitleBarShadeButton
 
     \row
-        \o titlebar-unshade-icon
-        \o QStyle::SP_TitleBarUnshadeButton
+        \li titlebar-unshade-icon
+        \li QStyle::SP_TitleBarUnshadeButton
 
     \row
-        \o trash-icon
-        \o QStyle::SP_TrashIcon
+        \li trash-icon
+        \li QStyle::SP_TrashIcon
 
     \row
-        \o uparrow-icon
-        \o QStyle::SP_ArrowUp
+        \li uparrow-icon
+        \li QStyle::SP_ArrowUp
 
     \endtable
 
@@ -2656,59 +2656,59 @@
 
     \table 100%
     \header
-        \o Type
-        \o Syntax
-        \o Description
+        \li Type
+        \li Syntax
+        \li Description
 
     \row
-        \o \bold Alignment \target Alignment
-        \o \{ \c top \BR
+        \li \b Alignment \target Alignment
+        \li \{ \c top \BR
            | \c bottom \BR
            | \c left \BR
            | \c right \BR
            | \c center \}*
-        \o Horizontal and/or vertical alignment.
+        \li Horizontal and/or vertical alignment.
 
            Example:
 
     \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 80
 
     \row
-        \o \bold Attachment \target Attachment
-        \o \{ \c scroll \BR
+        \li \b Attachment \target Attachment
+        \li \{ \c scroll \BR
            | \c fixed \}*
-        \o Scroll or fixed attachment.
+        \li Scroll or fixed attachment.
 
     \row
-        \o \bold Background \target Background
-        \o \{ \l{#Brush}{Brush} \BR
+        \li \b Background \target Background
+        \li \{ \l{#Brush}{Brush} \BR
            | \l{#Url}{Url} \BR
            | \l{#Repeat}{Repeat} \BR
            | \l{#Alignment}{Alignment} \}*
-        \o A sequence of \l{#Brush}{Brush}, \l{#Url}{Url},
+        \li A sequence of \l{#Brush}{Brush}, \l{#Url}{Url},
            \l{#Repeat}{Repeat}, and \l{#Alignment}{Alignment}.
 
     \row
-        \o \bold Boolean \target Boolean
-        \o 0 | 1
-        \o True (\c 1) or false (\c 0).
+        \li \b Boolean \target Boolean
+        \li 0 | 1
+        \li True (\c 1) or false (\c 0).
 
            Example:
 
     \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 81
 
     \row
-        \o \bold Border \target Border
-        \o \{ \l{#Border Style}{Border Style} \BR
+        \li \b Border \target Border
+        \li \{ \l{#Border Style}{Border Style} \BR
            | \l{#Length}{Length} \BR
            | \l{#Brush}{Brush} \}*
-        \o Shorthand border property.
+        \li Shorthand border property.
 
     \row
-        \o \bold{Border Image} \target Border Image
-        \o \c none \BR
+        \li \b{Border Image} \target Border Image
+        \li \c none \BR
            | \l{Url} \l{Number}\{4\} \BR (\c stretch | \c repeat){0,2}
-        \o A border image is an image that is composed of nine parts
+        \li A border image is an image that is composed of nine parts
            (top left, top center, top right, center left, center,
            center right, bottom left, bottom center, and bottom
            right). When a border of a certain size is required, the
@@ -2721,8 +2721,8 @@
            {CSS3 Draft Specification} for details.
 
     \row
-        \o \bold{Border Style} \target Border Style
-        \o \c dashed \BR
+        \li \b{Border Style} \target Border Style
+        \li \c dashed \BR
            | \c dot-dash \BR
            | \c dot-dot-dash \BR
            | \c dotted \BR
@@ -2733,14 +2733,14 @@
            | \c ridge \BR
            | \c solid \BR
            | \c none
-        \o Specifies the pattern used to draw a border.
+        \li Specifies the pattern used to draw a border.
            See the \l{http://www.w3.org/TR/css3-background/#border-style}
            {CSS3 Draft Specification} for details.
 
     \row
-        \o \bold{Box Colors} \target Box Colors
-        \o \l{#Brush}{Brush}\{1,4\}
-        \o One to four occurrences of \l{#Brush}{Brush}, specifying the top,
+        \li \b{Box Colors} \target Box Colors
+        \li \l{#Brush}{Brush}\{1,4\}
+        \li One to four occurrences of \l{#Brush}{Brush}, specifying the top,
            right, bottom, and left edges of a box, respectively. If
            the left color is not specified, it is taken to be the
            same as the right color. If the bottom color is not
@@ -2753,9 +2753,9 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 82
 
     \row
-        \o \bold{Box Lengths} \target Box Lengths
-        \o \l{#Length}{Length}\{1,4\}
-        \o One to four occurrences of \l{#Length}{Length}, specifying the
+        \li \b{Box Lengths} \target Box Lengths
+        \li \l{#Length}{Length}\{1,4\}
+        \li One to four occurrences of \l{#Length}{Length}, specifying the
            top, right, bottom, and left edges of a box,
            respectively. If the left length is not specified, it is
            taken to be the same as the right length. If the bottom
@@ -2768,21 +2768,21 @@
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 83
 
     \row
-        \o \bold{Brush} \target Brush
-        \o \l{#Color}{Color} \BR
+        \li \b{Brush} \target Brush
+        \li \l{#Color}{Color} \BR
            | \l{Gradient} \BR
            | \l{PaletteRole}
-        \o Specifies a Color or a Gradient or an entry in the Palette.
+        \li Specifies a Color or a Gradient or an entry in the Palette.
 
     \row
-        \o \bold{Color} \target Color
-        \o \tt{rgb(\e{r}, \e{g}, \e{b})} \BR
+        \li \b{Color} \target Color
+        \li \tt{rgb(\e{r}, \e{g}, \e{b})} \BR
            | \tt{rgba(\e{r}, \e{g}, \e{b}, \e{a})} \BR
            | \tt{hsv(\e{h}, \e{s}, \e{v})} \BR
            | \tt{hsva(\e{h}, \e{s}, \e{v}, \e{a})} \BR
            | \tt{#\e{rrggbb}} \BR
            | \l{QColor::setNamedColor()}{Color Name} \BR
-        \o Specifies a color as RGB (red, green, blue) or RGBA
+        \li Specifies a color as RGB (red, green, blue) or RGBA
            (red, green, blue, alpha) or HSV (hue, saturation, value) or HSVA
            (hue, saturation, value, alpha) or a named color. The \c rgb() or \c rgba()
            syntax can be used with integer values between 0 and 255, or with
@@ -2798,45 +2798,45 @@
             \l{http://www.w3.org/TR/CSS21/syndata.html#color-units}{here}.
 
     \row
-        \o \bold{Font} \target Font
-        \o (\l{#Font Style}{Font Style} | \l{#Font Weight}{Font Weight}){0,2} \l{#Font Size}{Font Size} String
-        \o Shorthand font property.
+        \li \b{Font} \target Font
+        \li (\l{#Font Style}{Font Style} | \l{#Font Weight}{Font Weight}){0,2} \l{#Font Size}{Font Size} String
+        \li Shorthand font property.
 
     \row
-        \o \bold{Font Size} \target Font Size
-        \o \l{Length}
-        \o The size of a font.
+        \li \b{Font Size} \target Font Size
+        \li \l{Length}
+        \li The size of a font.
 
     \row
-        \o \bold{Font Style} \target Font Style
-        \o \c normal \BR
+        \li \b{Font Style} \target Font Style
+        \li \c normal \BR
            | \c italic \BR
            | \c oblique
-        \o The style of a font.
+        \li The style of a font.
 
     \row
-        \o \bold{Font Weight} \target Font Weight
-        \o \c normal \BR
+        \li \b{Font Weight} \target Font Weight
+        \li \c normal \BR
            | \c bold \BR
            | \c 100 \BR
            | \c 200 \BR
            ... \BR
            | \c 900
-        \o The weight of a font.
+        \li The weight of a font.
 
     \row
-        \o \bold{Gradient} \target Gradient
-        \o \c qlineargradient \BR
+        \li \b{Gradient} \target Gradient
+        \li \c qlineargradient \BR
            | \c qradialgradient \BR
            | \c qconicalgradient
-        \o Specifies gradient fills. There are three types of gradient fills:
+        \li Specifies gradient fills. There are three types of gradient fills:
 
            \list
-           \o \e{Linear} gradients interpolate colors between start and
+           \li \e{Linear} gradients interpolate colors between start and
               end points.
-           \o \e{Radial} gradients interpolate colors between a focal
+           \li \e{Radial} gradients interpolate colors between a focal
               point and end points on a circle surrounding it.
-           \o \e{Conical} gradients interpolate colors around a center
+           \li \e{Conical} gradients interpolate colors around a center
               point.
            \endlist
 
@@ -2855,18 +2855,18 @@
         \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 85
 
     \row
-        \o \bold{Icon} \target Icon
-        \o (\l{#Url}{Url} (\c disabled | \c active | \c normal | \c selected)?
+        \li \b{Icon} \target Icon
+        \li (\l{#Url}{Url} (\c disabled | \c active | \c normal | \c selected)?
             (\c on | \c off)? )*
-        \o A list of url, QIcon::Mode and QIcon::State.
+        \li A list of url, QIcon::Mode and QIcon::State.
 
             Example:
             \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 86
 
     \row
-        \o \bold{Length} \target Length
-        \o \l{#Number}{Number} (\c px | \c pt | \c em | \c ex)?
-        \o A number followed by a measurement unit. The CSS standard recommends
+        \li \b{Length} \target Length
+        \li \l{#Number}{Number} (\c px | \c pt | \c em | \c ex)?
+        \li A number followed by a measurement unit. The CSS standard recommends
            that user agents must
            \l{http://www.w3.org/TR/CSS21/syndata.html#illegalvalues}{ignore}
            a declaration with an illegal value. In Qt, it is mandatory to
@@ -2875,32 +2875,32 @@
            in most contexts. The supported units are:
 
            \list
-           \o \c px: pixels
-           \o \c pt: the size of one point (i.e., 1/72 of an inch)
-           \o \c em: the em width of the font (i.e., the width of 'M')
-           \o \c ex: the ex width of the font (i.e., the height of 'x')
+           \li \c px: pixels
+           \li \c pt: the size of one point (i.e., 1/72 of an inch)
+           \li \c em: the em width of the font (i.e., the width of 'M')
+           \li \c ex: the ex width of the font (i.e., the height of 'x')
            \endlist
 
     \row
-        \o \bold{Number} \target Number
-        \o A decimal integer or a real number
-        \o Examples: \c 0, \c 18, \c +127, \c -255, \c 12.34, \c -.5,
+        \li \b{Number} \target Number
+        \li A decimal integer or a real number
+        \li Examples: \c 0, \c 18, \c +127, \c -255, \c 12.34, \c -.5,
            \c 0009.
 
     \row
-        \o \bold{Origin} \target Origin
-        \o \c margin \BR
+        \li \b{Origin} \target Origin
+        \li \c margin \BR
            | \c border \BR
            | \c padding \BR
            | \c content
-        \o Indicates which of four rectangles to use.
+        \li Indicates which of four rectangles to use.
 
            \list
-           \o \c margin: The margin rectangle. The margin falls outside the border.
-           \o \c border: The border rectangle. This is where any border is drawn.
-           \o \c padding: The padding rectangle. Unlike the margins,
+           \li \c margin: The margin rectangle. The margin falls outside the border.
+           \li \c border: The border rectangle. This is where any border is drawn.
+           \li \c padding: The padding rectangle. Unlike the margins,
                           padding is located inside the border.
-           \o \c content: The content rectangle. This specifies where
+           \li \c content: The content rectangle. This specifies where
                           the actual contents go, excluding any
                           padding, border, or margin.
            \endlist
@@ -2908,8 +2908,8 @@
            See also \l{The Box Model}.
 
     \row
-        \o \bold{PaletteRole} \target PaletteRole
-        \o \c alternate-base \BR
+        \li \b{PaletteRole} \target PaletteRole
+        \li \c alternate-base \BR
               | \c base \BR
               | \c bright-text \BR
               | \c button \BR
@@ -2926,40 +2926,40 @@
               | \c text \BR
               | \c window \BR
               | \c window-text \BR
-        \o These values correspond the \l{QPalette::ColorRole}{Color roles}
+        \li These values correspond the \l{QPalette::ColorRole}{Color roles}
            in the widget's QPalette.
 
             For example,
             \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 87
 
     \row
-        \o \bold{Radius} \target Radius
-        \o \l{#Length}{Length}\{1, 2\}
-        \o One or two occurrences of \l{#Length}{Length}. If only one length is
+        \li \b{Radius} \target Radius
+        \li \l{#Length}{Length}\{1, 2\}
+        \li One or two occurrences of \l{#Length}{Length}. If only one length is
            specified, it is used as the radius of the quarter circle
            defining the corner. If two lengths are specified, the
            first length is the horizontal radius of a quarter
            ellipse, whereas the second length is the vertical radius.
 
     \row
-        \o \bold{Repeat} \target Repeat
-        \o \c repeat-x \BR
+        \li \b{Repeat} \target Repeat
+        \li \c repeat-x \BR
            | \c repeat-y \BR
            | \c repeat \BR
            | \c no-repeat
-        \o A value indicating the nature of repetition.
+        \li A value indicating the nature of repetition.
 
            \list
-           \o \c repeat-x: Repeat horizontally.
-           \o \c repeat-y: Repeat vertically.
-           \o \c repeat: Repeat horizontally and vertically.
-           \o \c no-repeat: Don't repeat.
+           \li \c repeat-x: Repeat horizontally.
+           \li \c repeat-y: Repeat vertically.
+           \li \c repeat: Repeat horizontally and vertically.
+           \li \c no-repeat: Don't repeat.
            \endlist
 
     \row
-        \o \bold{Url} \target Url
-        \o \tt{url(\e{filename})}
-        \o \tt{\e{filename}} is the name of a file on the local disk
+        \li \b{Url} \target Url
+        \li \tt{url(\e{filename})}
+        \li \tt{\e{filename}} is the name of a file on the local disk
            or stored using \l{the Qt Resource System}. Setting an
            image implicitly sets the width and height of the element.
 
@@ -2971,218 +2971,218 @@
 
     \table 100%
     \header
-        \o Pseudo-State
-        \o Description
+        \li Pseudo-State
+        \li Description
 
-    \row \o \c :active \target active
-          \o This state is set when the widget resides in an active window.
+    \row \li \c :active \target active
+          \li This state is set when the widget resides in an active window.
 
     \row
-        \o \c :adjoins-item \target adjoins-item-ps
-        \o This state is set when the \l{#branch-sub}{::branch} of a QTreeView
+        \li \c :adjoins-item \target adjoins-item-ps
+        \li This state is set when the \l{#branch-sub}{::branch} of a QTreeView
            is adjacent to an item.
 
     \row
-        \o \c :alternate \target alternate-ps
-        \o This state is set for every alternate row whe painting the row of
+        \li \c :alternate \target alternate-ps
+        \li This state is set for every alternate row whe painting the row of
            a QAbstractItemView when QAbstractItemView::alternatingRowColors()
            is  set to true.
 
     \row
-        \o \c :bottom \target bottom-ps
-        \o The item is positioned at the bottom. For example, a QTabBar
+        \li \c :bottom \target bottom-ps
+        \li The item is positioned at the bottom. For example, a QTabBar
            that has its tabs positioned at the bottom.
 
     \row
-        \o \c :checked \target checked-ps
-        \o The item is checked. For example, the
+        \li \c :checked \target checked-ps
+        \li The item is checked. For example, the
             \l{QAbstractButton::checked}{checked} state of QAbstractButton.
 
     \row
-        \o \c :closable \target closable-ps
-        \o The items can be closed. For example, the QDockWidget has the
+        \li \c :closable \target closable-ps
+        \li The items can be closed. For example, the QDockWidget has the
            QDockWidget::DockWidgetClosable feature turned on.
 
     \row
-        \o \c :closed \target closed-ps
-        \o The item is in the closed state. For example, an non-expanded
+        \li \c :closed \target closed-ps
+        \li The item is in the closed state. For example, an non-expanded
            item in a QTreeView
 
     \row
-        \o \c :default \target default-ps
-        \o The item is the default. For example, a
+        \li \c :default \target default-ps
+        \li The item is the default. For example, a
            \l{QPushButton::default}{default} QPushButton or a default action
            in a QMenu.
 
     \row
-        \o \c :disabled \target disabled-ps
-        \o The item is \l{QWidget::enabled}{disabled}.
+        \li \c :disabled \target disabled-ps
+        \li The item is \l{QWidget::enabled}{disabled}.
 
     \row
-        \o \c :editable \target editable-ps
-        \o The QComboBox is editable.
+        \li \c :editable \target editable-ps
+        \li The QComboBox is editable.
 
     \row
-        \o \c :edit-focus \target edit-focus-ps
-        \o The item has edit focus (See QStyle::State_HasEditFocus). This state
+        \li \c :edit-focus \target edit-focus-ps
+        \li The item has edit focus (See QStyle::State_HasEditFocus). This state
            is available only for Qt Extended applications.
 
     \row
-        \o \c :enabled \target enabled-ps
-        \o The item is \l{QWidget::enabled}{enabled}.
+        \li \c :enabled \target enabled-ps
+        \li The item is \l{QWidget::enabled}{enabled}.
 
     \row
-        \o \c :exclusive \target exclusive-ps
-        \o The item is part of an exclusive item group. For example, a menu
+        \li \c :exclusive \target exclusive-ps
+        \li The item is part of an exclusive item group. For example, a menu
            item in a exclusive QActionGroup.
 
     \row
-        \o \c :first \target first-ps
-        \o The item is the first (in a list). For example, the first
+        \li \c :first \target first-ps
+        \li The item is the first (in a list). For example, the first
            tab in a QTabBar.
 
     \row
-        \o \c :flat \target flat-ps
-        \o The item is flat. For example, a
+        \li \c :flat \target flat-ps
+        \li The item is flat. For example, a
            \l{QPushButton::flat}{flat} QPushButton.
 
     \row
-        \o \c :floatable \target floatable-ps
-        \o The items can be floated. For example, the QDockWidget has the
+        \li \c :floatable \target floatable-ps
+        \li The items can be floated. For example, the QDockWidget has the
            QDockWidget::DockWidgetFloatable feature turned on.
 
     \row
-        \o \c :focus \target focus-ps
-        \o The item has \l{QWidget::hasFocus()}{input focus}.
+        \li \c :focus \target focus-ps
+        \li The item has \l{QWidget::hasFocus()}{input focus}.
 
     \row
-        \o \c :has-children \target has-children-ps
-        \o The item has children. For example, an item in a
+        \li \c :has-children \target has-children-ps
+        \li The item has children. For example, an item in a
            QTreeView that has child items.
 
     \row
-        \o \c :has-siblings \target has-siblings-ps
-        \o The item has siblings. For example, an item in a
+        \li \c :has-siblings \target has-siblings-ps
+        \li The item has siblings. For example, an item in a
            QTreeView that siblings.
 
     \row
-        \o \c :horizontal \target horizontal-ps
-        \o The item has horizontal orientation
+        \li \c :horizontal \target horizontal-ps
+        \li The item has horizontal orientation
 
     \row
-        \o \c :hover \target hover-ps
-        \o The mouse is hovering over the item.
+        \li \c :hover \target hover-ps
+        \li The mouse is hovering over the item.
 
     \row
-        \o \c :indeterminate \target indeterminate-ps
-        \o The item has indeterminate state. For example, a QCheckBox
+        \li \c :indeterminate \target indeterminate-ps
+        \li The item has indeterminate state. For example, a QCheckBox
            or QRadioButton is \l{Qt::PartiallyChecked}{partially checked}.
 
     \row
-        \o \c :last \target last-ps
-        \o The item is the last (in a list). For example, the last
+        \li \c :last \target last-ps
+        \li The item is the last (in a list). For example, the last
            tab in a QTabBar.
 
     \row
-        \o \c :left \target left-ps
-        \o The item is positioned at the left. For example, a QTabBar
+        \li \c :left \target left-ps
+        \li The item is positioned at the left. For example, a QTabBar
            that has its tabs positioned at the left.
 
     \row
-        \o \c :maximized \target maximized-ps
-        \o The item is maximized. For example, a maximized QMdiSubWindow.
+        \li \c :maximized \target maximized-ps
+        \li The item is maximized. For example, a maximized QMdiSubWindow.
 
     \row
-        \o \c :middle \target middle-ps
-        \o The item is in the middle (in a list). For example, a tab
+        \li \c :middle \target middle-ps
+        \li The item is in the middle (in a list). For example, a tab
            that is not in the beginning or the end in a QTabBar.
 
     \row
-        \o \c :minimized \target minimized-ps
-        \o The item is minimized. For example, a minimized QMdiSubWindow.
+        \li \c :minimized \target minimized-ps
+        \li The item is minimized. For example, a minimized QMdiSubWindow.
 
     \row
-        \o \c :movable \target movable-ps
-        \o The item can be moved around. For example, the QDockWidget has the
+        \li \c :movable \target movable-ps
+        \li The item can be moved around. For example, the QDockWidget has the
            QDockWidget::DockWidgetMovable feature turned on.
 
     \row
-        \o \c :no-frame \target no-frame-ps
-        \o The item has no frame. For example, a frameless QSpinBox
+        \li \c :no-frame \target no-frame-ps
+        \li The item has no frame. For example, a frameless QSpinBox
            or QLineEdit.
 
     \row
-        \o \c :non-exclusive \target non-exclusive-ps
-        \o The item is part of a non-exclusive item group. For example, a menu
+        \li \c :non-exclusive \target non-exclusive-ps
+        \li The item is part of a non-exclusive item group. For example, a menu
            item in a non-exclusive QActionGroup.
 
     \row
-        \o \c :off \target off-ps
-        \o For items that can be toggled, this applies to items
+        \li \c :off \target off-ps
+        \li For items that can be toggled, this applies to items
            in the "off" state.
 
     \row
-        \o \c :on \target on-ps
-        \o For items that can be toggled, this applies to widgets
+        \li \c :on \target on-ps
+        \li For items that can be toggled, this applies to widgets
            in the "on" state.
 
     \row
-        \o \c :only-one \target only-one-ps
-        \o The item is the only one (in a list). For example, a lone tab
+        \li \c :only-one \target only-one-ps
+        \li The item is the only one (in a list). For example, a lone tab
            in a QTabBar.
 
     \row
-        \o \c :open \target open-ps
-        \o The item is in the open state. For example, an expanded
+        \li \c :open \target open-ps
+        \li The item is in the open state. For example, an expanded
            item in a QTreeView, or a QComboBox or QPushButton with
            an open menu.
 
     \row
-        \o \c :next-selected \target next-selected-ps
-        \o The next item (in a list) is selected. For example, the
+        \li \c :next-selected \target next-selected-ps
+        \li The next item (in a list) is selected. For example, the
            selected tab of a QTabBar is next to this item.
 
     \row
-        \o \c :pressed \target pressed-ps
-        \o The item is being pressed using the mouse.
+        \li \c :pressed \target pressed-ps
+        \li The item is being pressed using the mouse.
 
     \row
-        \o \c :previous-selected \target previous-selected-ps
-        \o The previous item (in a list) is selected. For example, a
+        \li \c :previous-selected \target previous-selected-ps
+        \li The previous item (in a list) is selected. For example, a
            tab in a QTabBar that is next to the selected tab.
 
     \row
-        \o \c :read-only \target read-only-ps
-        \o The item is marked read only or non-editable. For example,
+        \li \c :read-only \target read-only-ps
+        \li The item is marked read only or non-editable. For example,
            a read only QLineEdit or a non-editable QComboBox.
 
     \row
-        \o \c :right \target right-ps
-        \o The item is positioned at the right. For example, a QTabBar
+        \li \c :right \target right-ps
+        \li The item is positioned at the right. For example, a QTabBar
            that has its tabs positioned at the right.
 
     \row
-        \o \c :selected \target selected-ps
-        \o The item is selected. For example, the selected tab in
+        \li \c :selected \target selected-ps
+        \li The item is selected. For example, the selected tab in
            a QTabBar or the selected item in a QMenu.
 
     \row
-        \o \c :top \target top-ps
-        \o The item is positioned at the top. For example, a QTabBar
+        \li \c :top \target top-ps
+        \li The item is positioned at the top. For example, a QTabBar
            that has its tabs positioned at the top.
 
     \row
-        \o \c :unchecked \target unchecked-ps
-        \o The item is
+        \li \c :unchecked \target unchecked-ps
+        \li The item is
            \l{QAbstractButton::checked}{unchecked}.
 
     \row
-        \o \c :vertical \target vertical-ps
-        \o The item has vertical orientation.
+        \li \c :vertical \target vertical-ps
+        \li The item has vertical orientation.
 
     \row
-        \o \c :window \target window-ps
-        \o The widget is a window (i.e top level widget)
+        \li \c :window \target window-ps
+        \li The widget is a window (i.e top level widget)
 
     \endtable
 
@@ -3193,162 +3193,162 @@
 
     \table 100%
     \header
-        \o Sub-Control
-        \o Description
+        \li Sub-Control
+        \li Description
 
     \row
-        \o \c ::add-line \target add-line-sub
-        \o The button to add a line of a QScrollBar.
+        \li \c ::add-line \target add-line-sub
+        \li The button to add a line of a QScrollBar.
 
     \row
-        \o \c ::add-page \target add-page-sub
-        \o The region between the handle (slider) and the \l{#add-line-sub}{add-line}
+        \li \c ::add-page \target add-page-sub
+        \li The region between the handle (slider) and the \l{#add-line-sub}{add-line}
            of a QScrollBar.
 
     \row
-        \o \c ::branch \target branch-sub
-        \o The branch indicator of a QTreeView.
+        \li \c ::branch \target branch-sub
+        \li The branch indicator of a QTreeView.
 
     \row
-        \o \c ::chunk \target chunk-sub
-        \o The progress chunk of a QProgressBar.
+        \li \c ::chunk \target chunk-sub
+        \li The progress chunk of a QProgressBar.
 
     \row
-        \o \c ::close-button \target close-button-sub
-        \o The close button of a QDockWidget or tabs of QTabBar
+        \li \c ::close-button \target close-button-sub
+        \li The close button of a QDockWidget or tabs of QTabBar
 
     \row
-        \o \c ::corner \target corner-sub
-        \o The corner between two scrollbars in a QAbstractScrollArea
+        \li \c ::corner \target corner-sub
+        \li The corner between two scrollbars in a QAbstractScrollArea
 
     \row
-        \o \c ::down-arrow \target down-arrow-sub
-        \o The down arrow of a QComboBox, QHeaderView (sort indicator),
+        \li \c ::down-arrow \target down-arrow-sub
+        \li The down arrow of a QComboBox, QHeaderView (sort indicator),
            QScrollBar or QSpinBox.
 
     \row
-        \o \c ::down-button \target down-button-sub
-        \o  The down button of a QScrollBar or a QSpinBox.
+        \li \c ::down-button \target down-button-sub
+        \li  The down button of a QScrollBar or a QSpinBox.
 
     \row
-        \o \c ::drop-down \target drop-down-sub
-        \o The drop-down button of a QComboBox.
+        \li \c ::drop-down \target drop-down-sub
+        \li The drop-down button of a QComboBox.
 
     \row
-        \o \c ::float-button \target float-button-sub
-        \o The float button of a QDockWidget
+        \li \c ::float-button \target float-button-sub
+        \li The float button of a QDockWidget
 
     \row
-        \o \c ::groove \target groove-sub
-        \o The groove of a QSlider.
+        \li \c ::groove \target groove-sub
+        \li The groove of a QSlider.
 
     \row
-        \o \c ::indicator \target indicator-sub
-        \o The indicator of a QAbstractItemView, a QCheckBox, a QRadioButton,
+        \li \c ::indicator \target indicator-sub
+        \li The indicator of a QAbstractItemView, a QCheckBox, a QRadioButton,
            a checkable QMenu item or a checkable QGroupBox.
 
     \row
-        \o \c ::handle \target handle-sub
-        \o The handle (slider) of a QScrollBar, a QSplitter, or a QSlider.
+        \li \c ::handle \target handle-sub
+        \li The handle (slider) of a QScrollBar, a QSplitter, or a QSlider.
 
     \row
-        \o \c ::icon \target icon-sub
-        \o The icon of a QAbstractItemView or a QMenu.
+        \li \c ::icon \target icon-sub
+        \li The icon of a QAbstractItemView or a QMenu.
 
     \row
-        \o \c ::item \target item-sub
-        \o An item of a QAbstractItemView, a QMenuBar, a QMenu, or
+        \li \c ::item \target item-sub
+        \li An item of a QAbstractItemView, a QMenuBar, a QMenu, or
         a QStatusBar.
 
     \row
-        \o \c ::left-arrow \target left-arrow-sub
-        \o The left arrow of a QScrollBar.
+        \li \c ::left-arrow \target left-arrow-sub
+        \li The left arrow of a QScrollBar.
 
     \row
-        \o \c ::left-corner \target left-corner-sub
-        \o The left corner of a QTabWidget. For example, this control can be
+        \li \c ::left-corner \target left-corner-sub
+        \li The left corner of a QTabWidget. For example, this control can be
            used to control position the left corner widget in a QTabWidget.
 
     \row
-        \o \c ::menu-arrow \target menu-arrow-sub
-        \o The arrow of a QToolButton with a menu.
+        \li \c ::menu-arrow \target menu-arrow-sub
+        \li The arrow of a QToolButton with a menu.
 
     \row
-        \o \c ::menu-button \target menu-button-sub
-        \o The menu button of a QToolButton.
+        \li \c ::menu-button \target menu-button-sub
+        \li The menu button of a QToolButton.
 
     \row
-        \o \c ::menu-indicator \target menu-indicator-sub
-        \o The menu indicator of a QPushButton.
+        \li \c ::menu-indicator \target menu-indicator-sub
+        \li The menu indicator of a QPushButton.
 
     \row
-        \o \c ::right-arrow \target right-arrow-sub
-        \o The right arrow of a QMenu or a QScrollBar.
+        \li \c ::right-arrow \target right-arrow-sub
+        \li The right arrow of a QMenu or a QScrollBar.
 
     \row
-        \o \c ::pane \target pane-sub
-        \o The pane (frame) of a QTabWidget.
+        \li \c ::pane \target pane-sub
+        \li The pane (frame) of a QTabWidget.
 
     \row
-        \o \c ::right-corner \target right-corner-sub
-        \o The right corner of a QTabWidget. For example, this control can be
+        \li \c ::right-corner \target right-corner-sub
+        \li The right corner of a QTabWidget. For example, this control can be
            used to control the position the right corner widget in a QTabWidget.
 
     \row
-        \o \c ::scroller \target scroller-sub
-        \o The scroller of a QMenu or QTabBar.
+        \li \c ::scroller \target scroller-sub
+        \li The scroller of a QMenu or QTabBar.
 
     \row
-        \o \c ::section \target section-sub
-        \o The section of a QHeaderView.
+        \li \c ::section \target section-sub
+        \li The section of a QHeaderView.
 
     \row
-        \o \c ::separator \target separator-sub
-        \o The separator of a QMenu or in a QMainWindow.
+        \li \c ::separator \target separator-sub
+        \li The separator of a QMenu or in a QMainWindow.
 
     \row
-        \o \c ::sub-line \target sub-line-sub
-        \o The button to subtract a line of a QScrollBar.
+        \li \c ::sub-line \target sub-line-sub
+        \li The button to subtract a line of a QScrollBar.
 
     \row
-        \o \c ::sub-page \target sub-page-sub
-        \o The region between the handle (slider) and the \l{#sub-line-sub}{sub-line}
+        \li \c ::sub-page \target sub-page-sub
+        \li The region between the handle (slider) and the \l{#sub-line-sub}{sub-line}
            of a QScrollBar.
 
     \row
-        \o \c ::tab \target tab-sub
-        \o The tab of a QTabBar or QToolBox.
+        \li \c ::tab \target tab-sub
+        \li The tab of a QTabBar or QToolBox.
 
     \row
-        \o \c ::tab-bar \target tab-bar-sub
-        \o The tab bar of a QTabWidget. This subcontrol exists only to
+        \li \c ::tab-bar \target tab-bar-sub
+        \li The tab bar of a QTabWidget. This subcontrol exists only to
            control the position of the QTabBar inside the QTabWidget. To
            style the tabs using the \l{#tab-sub}{::tab} subcontrol.
 
     \row
-        \o \c ::tear \target tear-sub
-        \o The tear indicator of a QTabBar.
+        \li \c ::tear \target tear-sub
+        \li The tear indicator of a QTabBar.
 
     \row
-        \o \c ::tearoff \target tearoff-sub
-        \o The tear-off indicator of a QMenu.
+        \li \c ::tearoff \target tearoff-sub
+        \li The tear-off indicator of a QMenu.
 
     \row
-        \o \c ::text \target text-ps
-        \o The text of a QAbstractItemView.
+        \li \c ::text \target text-ps
+        \li The text of a QAbstractItemView.
 
     \row
-        \o \c ::title \target title-sub
-        \o The title of a QGroupBox or a QDockWidget.
+        \li \c ::title \target title-sub
+        \li The title of a QGroupBox or a QDockWidget.
 
     \row
-        \o \c ::up-arrow \target up-arrow-sub
-        \o The up arrow of a QHeaderView (sort indicator), QScrollBar
+        \li \c ::up-arrow \target up-arrow-sub
+        \li The up arrow of a QHeaderView (sort indicator), QScrollBar
            or a QSpinBox.
 
     \row
-        \o \c ::up-button \target up-button-sub
-        \o The up button of a QSpinBox.
+        \li \c ::up-button \target up-button-sub
+        \li The up button of a QSpinBox.
 
     \endtable
 
@@ -3441,11 +3441,11 @@
     What happened is this:
 
     \list
-    \o We have made a request that cannot be satisfied using the
+    \li We have made a request that cannot be satisfied using the
        native styles alone (e.g., the Windows XP theme engine doesn't
        let us specify the background color of a button).
-    \o Therefore, the button is rendered using style sheets.
-    \o We haven't specified any values for
+    \li Therefore, the button is rendered using style sheets.
+    \li We haven't specified any values for
        \l{Qt Style Sheets Reference#border-width-prop}{border-width} and
        \l{Qt Style Sheets Reference#border-style-prop}{border-style}, so by default we obtain
        a 0-pixel wide border of style \c none.
@@ -3836,18 +3836,18 @@
 
     There are three types of QToolButtons.
     \list
-       \i The QToolButton has no menu. In this case, the QToolButton is styled
+       \li The QToolButton has no menu. In this case, the QToolButton is styled
           exactly like QPushButton.  See
           \l{#Customizing QPushButton}{Customizing QPushButton} for an
           example.
 
-       \i The QToolButton has a menu and has the QToolButton::popupMode set to
+       \li The QToolButton has a menu and has the QToolButton::popupMode set to
           QToolButton::DelayedPopup or QToolButton::InstantPopup. In this case,
           the QToolButton is styled exactly like a QPushButton with a menu.
           See \l{#Customizing QPushButton}{Customizing QPushButton} for an
           example of the usage of the menu-indicator pseudo state.
 
-        \i The QToolButton has its QToolButton::popupMode set to
+        \li The QToolButton has its QToolButton::popupMode set to
            QToolButton::MenuButtonPopup. In this case, we style it as follows:
     \endlist
 
@@ -3885,17 +3885,17 @@
 
     \table
     \row
-    \o \inlineimage stylesheet-vline.png
-    \o \inlineimage stylesheet-branch-more.png
-    \o \inlineimage stylesheet-branch-end.png
-    \o \inlineimage stylesheet-branch-closed.png
-    \o \inlineimage stylesheet-branch-open.png
+    \li \inlineimage stylesheet-vline.png
+    \li \inlineimage stylesheet-branch-more.png
+    \li \inlineimage stylesheet-branch-end.png
+    \li \inlineimage stylesheet-branch-closed.png
+    \li \inlineimage stylesheet-branch-open.png
     \row
-    \o vline.png
-    \o branch-more.png
-    \o branch-end.png
-    \o branch-closed.png
-    \o branch-open.png
+    \li vline.png
+    \li branch-more.png
+    \li branch-end.png
+    \li branch-closed.png
+    \li branch-open.png
     \endtable
 
     \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 158
@@ -3948,16 +3948,16 @@
 
     \table
     \row
-    \o \inlineimage stylesheet-border-image-stretched.png
+    \li \inlineimage stylesheet-border-image-stretched.png
     \row
-    \o With borders
+    \li With borders
     \endtable
 
     \table
     \row
-    \o \inlineimage stylesheet-border-image-wrong.png
+    \li \inlineimage stylesheet-border-image-wrong.png
     \row
-    \o Without borders
+    \li Without borders
     \endtable
 
     */

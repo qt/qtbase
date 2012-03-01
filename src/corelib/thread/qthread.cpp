@@ -658,11 +658,11 @@ QThread::Priority QThread::priority() const
     Blocks the thread until either of these conditions is met:
 
     \list
-    \o The thread associated with this QThread object has finished
+    \li The thread associated with this QThread object has finished
        execution (i.e. when it returns from \l{run()}). This function
        will return true if the thread has finished. It also returns
        true if the thread has not been started yet.
-    \o \a time milliseconds has elapsed. If \a time is ULONG_MAX (the
+    \li \a time milliseconds has elapsed. If \a time is ULONG_MAX (the
         default), then the wait will never timeout (the thread must
         return from \l{run()}). This function will return false if the
         wait timed out.

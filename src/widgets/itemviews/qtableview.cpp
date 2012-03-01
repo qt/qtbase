@@ -980,8 +980,8 @@ void QTableViewPrivate::drawCell(QPainter *painter, const QStyleOptionViewItemV4
     later retrieved with \l{QAbstractItemView::}{indexWidget()}.
 
     \table
-    \row \o \inlineimage qtableview-resized.png
-    \o By default, the cells in a table do not expand to fill the available space.
+    \row \li \inlineimage qtableview-resized.png
+    \li By default, the cells in a table do not expand to fill the available space.
 
     You can make the cells fill the available space by stretching the last
     header section. Access the relevant header using horizontalHeader()
@@ -1010,12 +1010,12 @@ void QTableViewPrivate::drawCell(QPainter *painter, const QStyleOptionViewItemV4
     its appearance in other styles.
 
     \table 100%
-    \row \o \inlineimage windowsxp-tableview.png Screenshot of a Windows XP style table view
-         \o \inlineimage macintosh-tableview.png Screenshot of a Macintosh style table view
-         \o \inlineimage plastique-tableview.png Screenshot of a Plastique style table view
-    \row \o A \l{Windows XP Style Widget Gallery}{Windows XP style} table view.
-         \o A \l{Macintosh Style Widget Gallery}{Macintosh style} table view.
-         \o A \l{Plastique Style Widget Gallery}{Plastique style} table view.
+    \row \li \inlineimage windowsxp-tableview.png Screenshot of a Windows XP style table view
+         \li \inlineimage macintosh-tableview.png Screenshot of a Macintosh style table view
+         \li \inlineimage plastique-tableview.png Screenshot of a Plastique style table view
+    \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} table view.
+         \li A \l{Macintosh Style Widget Gallery}{Macintosh style} table view.
+         \li A \l{Plastique Style Widget Gallery}{Plastique style} table view.
     \endtable
 
     \sa QTableWidget, {View Classes}, QAbstractItemModel, QAbstractItemView,

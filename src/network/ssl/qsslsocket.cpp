@@ -132,12 +132,12 @@
     The following features can also be customized:
 
     \list
-    \o The socket's cryptographic cipher suite can be customized before
+    \li The socket's cryptographic cipher suite can be customized before
     the handshake phase with setCiphers() and setDefaultCiphers().
-    \o The socket's local certificate and private key can be customized
+    \li The socket's local certificate and private key can be customized
     before the handshake phase with setLocalCertificate() and
     setPrivateKey().
-    \o The CA certificate database can be extended and customized with
+    \li The CA certificate database can be extended and customized with
     addCaCertificate(), addCaCertificates(), setCaCertificates(),
     addDefaultCaCertificate(), addDefaultCaCertificates(), and
     setDefaultCaCertificates().
@@ -398,7 +398,7 @@ void QSslSocket::resume()
 
     \snippet doc/src/snippets/code/src_network_ssl_qsslsocket.cpp 3
 
-    \bold{Note:} The example above shows that text can be written to
+    \b{Note:} The example above shows that text can be written to
     the socket immediately after requesting the encrypted connection,
     before the encrypted() signal has been emitted. In such cases, the
     text is queued in the object and written to the socket \e after
@@ -468,7 +468,7 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port,
     The socket is opened in the mode specified by \a openMode, and
     enters the socket state specified by \a state.
 
-    \bold{Note:} It is not possible to initialize two sockets with the same
+    \b{Note:} It is not possible to initialize two sockets with the same
     native socket descriptor.
 
     \sa socketDescriptor()

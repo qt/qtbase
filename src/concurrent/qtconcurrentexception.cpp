@@ -69,10 +69,10 @@ QT_BEGIN_NAMESPACE
 
     When using QFuture, transferred exceptions will be thrown when calling the following functions:
     \list
-    \o QFuture::waitForFinished()
-    \o QFuture::result()
-    \o QFuture::resultAt()
-    \o QFuture::results()
+    \li QFuture::waitForFinished()
+    \li QFuture::result()
+    \li QFuture::resultAt()
+    \li QFuture::results()
     \endlist
 */
 

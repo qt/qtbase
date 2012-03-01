@@ -90,13 +90,13 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 
     \list
 
-    \o Chunk by chunk, by calling readLine() or readAll().
+    \li Chunk by chunk, by calling readLine() or readAll().
 
-    \o Word by word. QTextStream supports streaming into QStrings,
+    \li Word by word. QTextStream supports streaming into QStrings,
     QByteArrays and char* buffers. Words are delimited by space, and
     leading white space is automatically skipped.
 
-    \o Character by character, by streaming into QChar or char types.
+    \li Character by character, by streaming into QChar or char types.
     This method is often used for convenient input handling when
     parsing files, independent of character encoding and end-of-line
     semantics. To skip white space, call skipWhiteSpace().
@@ -134,31 +134,31 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     defines several global manipulator functions:
 
     \table
-    \header \o Manipulator        \o Description
-    \row    \o \c bin             \o Same as setIntegerBase(2).
-    \row    \o \c oct             \o Same as setIntegerBase(8).
-    \row    \o \c dec             \o Same as setIntegerBase(10).
-    \row    \o \c hex             \o Same as setIntegerBase(16).
-    \row    \o \c showbase        \o Same as setNumberFlags(numberFlags() | ShowBase).
-    \row    \o \c forcesign       \o Same as setNumberFlags(numberFlags() | ForceSign).
-    \row    \o \c forcepoint      \o Same as setNumberFlags(numberFlags() | ForcePoint).
-    \row    \o \c noshowbase      \o Same as setNumberFlags(numberFlags() & ~ShowBase).
-    \row    \o \c noforcesign     \o Same as setNumberFlags(numberFlags() & ~ForceSign).
-    \row    \o \c noforcepoint    \o Same as setNumberFlags(numberFlags() & ~ForcePoint).
-    \row    \o \c uppercasebase   \o Same as setNumberFlags(numberFlags() | UppercaseBase).
-    \row    \o \c uppercasedigits \o Same as setNumberFlags(numberFlags() | UppercaseDigits).
-    \row    \o \c lowercasebase   \o Same as setNumberFlags(numberFlags() & ~UppercaseBase).
-    \row    \o \c lowercasedigits \o Same as setNumberFlags(numberFlags() & ~UppercaseDigits).
-    \row    \o \c fixed           \o Same as setRealNumberNotation(FixedNotation).
-    \row    \o \c scientific      \o Same as setRealNumberNotation(ScientificNotation).
-    \row    \o \c left            \o Same as setFieldAlignment(AlignLeft).
-    \row    \o \c right           \o Same as setFieldAlignment(AlignRight).
-    \row    \o \c center          \o Same as setFieldAlignment(AlignCenter).
-    \row    \o \c endl            \o Same as operator<<('\n') and flush().
-    \row    \o \c flush           \o Same as flush().
-    \row    \o \c reset           \o Same as reset().
-    \row    \o \c ws              \o Same as skipWhiteSpace().
-    \row    \o \c bom             \o Same as setGenerateByteOrderMark(true).
+    \header \li Manipulator        \li Description
+    \row    \li \c bin             \li Same as setIntegerBase(2).
+    \row    \li \c oct             \li Same as setIntegerBase(8).
+    \row    \li \c dec             \li Same as setIntegerBase(10).
+    \row    \li \c hex             \li Same as setIntegerBase(16).
+    \row    \li \c showbase        \li Same as setNumberFlags(numberFlags() | ShowBase).
+    \row    \li \c forcesign       \li Same as setNumberFlags(numberFlags() | ForceSign).
+    \row    \li \c forcepoint      \li Same as setNumberFlags(numberFlags() | ForcePoint).
+    \row    \li \c noshowbase      \li Same as setNumberFlags(numberFlags() & ~ShowBase).
+    \row    \li \c noforcesign     \li Same as setNumberFlags(numberFlags() & ~ForceSign).
+    \row    \li \c noforcepoint    \li Same as setNumberFlags(numberFlags() & ~ForcePoint).
+    \row    \li \c uppercasebase   \li Same as setNumberFlags(numberFlags() | UppercaseBase).
+    \row    \li \c uppercasedigits \li Same as setNumberFlags(numberFlags() | UppercaseDigits).
+    \row    \li \c lowercasebase   \li Same as setNumberFlags(numberFlags() & ~UppercaseBase).
+    \row    \li \c lowercasedigits \li Same as setNumberFlags(numberFlags() & ~UppercaseDigits).
+    \row    \li \c fixed           \li Same as setRealNumberNotation(FixedNotation).
+    \row    \li \c scientific      \li Same as setRealNumberNotation(ScientificNotation).
+    \row    \li \c left            \li Same as setFieldAlignment(AlignLeft).
+    \row    \li \c right           \li Same as setFieldAlignment(AlignRight).
+    \row    \li \c center          \li Same as setFieldAlignment(AlignCenter).
+    \row    \li \c endl            \li Same as operator<<('\n') and flush().
+    \row    \li \c flush           \li Same as flush().
+    \row    \li \c reset           \li Same as reset().
+    \row    \li \c ws              \li Same as skipWhiteSpace().
+    \row    \li \c bom             \li Same as setGenerateByteOrderMark(true).
     \endtable
 
     In addition, Qt provides three global manipulators that take a
@@ -2065,12 +2065,12 @@ QTextStream &QTextStream::operator>>(char &c)
     number using the following rules:
 
     \table
-    \header \o Prefix                \o Base
-    \row    \o "0b" or "0B"          \o 2 (binary)
-    \row    \o "0" followed by "0-7" \o 8 (octal)
-    \row    \o "0" otherwise         \o 10 (decimal)
-    \row    \o "0x" or "0X"          \o 16 (hexadecimal)
-    \row    \o "1" to "9"            \o 10 (decimal)
+    \header \li Prefix                \li Base
+    \row    \li "0b" or "0B"          \li 2 (binary)
+    \row    \li "0" followed by "0-7" \li 8 (octal)
+    \row    \li "0" otherwise         \li 10 (decimal)
+    \row    \li "0x" or "0X"          \li 16 (hexadecimal)
+    \row    \li "1" to "9"            \li 10 (decimal)
     \endtable
 
     By calling setIntegerBase(), you can specify the integer base

@@ -371,14 +371,14 @@ QT_BEGIN_NAMESPACE
 
     In general you should use one of the predefined action names, unless describing an action that does not fit these:
     \table
-    \header \o Action name         \o Description
-    \row    \o \l checkAction()    \o checks the item (checkbox, radio button, ...)
-    \row    \o \l decreaseAction() \o decrease the value of the accessible (e.g. spinbox)
-    \row    \o \l increaseAction() \o increase the value of the accessible (e.g. spinbox)
-    \row    \o \l pressAction()    \o press or click or activate the accessible (should correspont to clicking the object with the mouse)
-    \row    \o \l setFocusAction() \o set the focus to this accessible
-    \row    \o \l showMenuAction() \o show a context menu, corresponds to right-clicks
-    \row    \o \l uncheckAction()  \o uncheck the item (checkbox, radio button, ...)
+    \header \li Action name         \li Description
+    \row    \li \l checkAction()    \li checks the item (checkbox, radio button, ...)
+    \row    \li \l decreaseAction() \li decrease the value of the accessible (e.g. spinbox)
+    \row    \li \l increaseAction() \li increase the value of the accessible (e.g. spinbox)
+    \row    \li \l pressAction()    \li press or click or activate the accessible (should correspont to clicking the object with the mouse)
+    \row    \li \l setFocusAction() \li set the focus to this accessible
+    \row    \li \l showMenuAction() \li show a context menu, corresponds to right-clicks
+    \row    \li \l uncheckAction()  \li uncheck the item (checkbox, radio button, ...)
     \endtable
 
     In order to invoke the action, \l doAction() is called with an action name.

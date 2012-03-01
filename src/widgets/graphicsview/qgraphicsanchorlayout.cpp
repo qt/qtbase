@@ -107,11 +107,11 @@
     avoid any future regressions in behaviour:
     \list
 
-    \o Stretch factors are not respected.
+    \li Stretch factors are not respected.
 
-    \o QSizePolicy::ExpandFlag is not respected.
+    \li QSizePolicy::ExpandFlag is not respected.
 
-    \o Height for width is not respected.
+    \li Height for width is not respected.
 
     \endlist
 

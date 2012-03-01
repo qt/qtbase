@@ -621,10 +621,10 @@ static quint16 localePrivateIndex(const QLocalePrivate *p)
     "language[_script][_country][.codeset][@modifier]" or "C", where:
 
     \list
-    \i language is a lowercase, two-letter, ISO 639 language code,
-    \i script is a titlecase, four-letter, ISO 15924 script code,
-    \i country is an uppercase, two- or three-letter, ISO 3166 country code (also "419" as defined by United Nations),
-    \i and codeset and modifier are ignored.
+    \li language is a lowercase, two-letter, ISO 639 language code,
+    \li script is a titlecase, four-letter, ISO 15924 script code,
+    \li country is an uppercase, two- or three-letter, ISO 3166 country code (also "419" as defined by United Nations),
+    \li and codeset and modifier are ignored.
     \endlist
 
     The separator can be either underscore or a minus sign.
@@ -671,11 +671,11 @@ QLocale::QLocale()
     country.
 
     \list
-    \i If the language/country pair is found in the database, it is used.
-    \i If the language is found but the country is not, or if the country
+    \li If the language/country pair is found in the database, it is used.
+    \li If the language is found but the country is not, or if the country
        is \c AnyCountry, the language is used with the most
        appropriate available country (for example, Germany for German),
-    \i If neither the language nor the country are found, QLocale
+    \li If neither the language nor the country are found, QLocale
        defaults to the default locale (see setDefault()).
     \endlist
 
@@ -707,14 +707,14 @@ QLocale::QLocale(Language language, Country country)
     \a country.
 
     \list
-    \i If the language/script/country is found in the database, it is used.
-    \i If both \a script is AnyScript and \a country is AnyCountry, the
+    \li If the language/script/country is found in the database, it is used.
+    \li If both \a script is AnyScript and \a country is AnyCountry, the
        language is used with the most appropriate available script and country
        (for example, Germany for German),
-    \i If either \a script is AnyScript or \a country is AnyCountry, the
+    \li If either \a script is AnyScript or \a country is AnyCountry, the
        language is used with the first locale that matches the given \a script
        and \a country.
-    \i If neither the language nor the country are found, QLocale
+    \li If neither the language nor the country are found, QLocale
        defaults to the default locale (see setDefault()).
     \endlist
 

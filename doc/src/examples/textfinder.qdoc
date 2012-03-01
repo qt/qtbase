@@ -37,16 +37,16 @@
     resource and is loaded into the display at startup.
 
     \table
-    \row \o \inlineimage textfinder-example-find.png
-         \o \inlineimage textfinder-example-find2.png
+    \row \li \inlineimage textfinder-example-find.png
+         \li \inlineimage textfinder-example-find2.png
     \endtable
 
     \section1 Setting Up The Resource File
 
     The resources required for Text Finder are:
     \list
-        \o \e{textfinder.ui} - the user interface file created in QtDesigner
-        \o \e{input.txt} - a text file containing some text to be displayed
+        \li \e{textfinder.ui} - the user interface file created in QtDesigner
+        \li \e{input.txt} - a text file containing some text to be displayed
                            in the QTextEdit
     \endlist
 

@@ -166,7 +166,7 @@ QVariant QDialogPrivate::styleHint(QPlatformDialogHelper::StyleHint hint) const
 
     \section1 Modal Dialogs
 
-    A \bold{modal} dialog is a dialog that blocks input to other
+    A \b{modal} dialog is a dialog that blocks input to other
     visible windows in the same application. Dialogs that are used to
     request a file name from the user or that are used to set
     application preferences are usually modal. Dialogs can be
@@ -200,7 +200,7 @@ QVariant QDialogPrivate::styleHint(QPlatformDialogHelper::StyleHint hint) const
 
     \section1 Modeless Dialogs
 
-    A \bold{modeless} dialog is a dialog that operates
+    A \b{modeless} dialog is a dialog that operates
     independently of other windows in the same application. Find and
     replace dialogs in word-processors are often modeless to allow the
     user to interact with both the application's main window and with

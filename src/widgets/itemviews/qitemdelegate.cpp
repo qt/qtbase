@@ -231,12 +231,12 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     reimplemented here:
 
     \list
-        \o createEditor() returns the widget used to change data from the model
+        \li createEditor() returns the widget used to change data from the model
            and can be reimplemented to customize editing behavior.
-        \o setEditorData() provides the widget with data to manipulate.
-        \o updateEditorGeometry() ensures that the editor is displayed correctly
+        \li setEditorData() provides the widget with data to manipulate.
+        \li updateEditorGeometry() ensures that the editor is displayed correctly
            with respect to the item view.
-        \o setModelData() returns updated data to the model.
+        \li setModelData() returns updated data to the model.
     \endlist
 
     The closeEditor() signal indicates that the user has completed editing the data,
@@ -250,28 +250,28 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     appearance of the delegate as described in the following table.
 
     \table
-    \header \o Role \o Accepted Types
+    \header \li Role \li Accepted Types
     \omit
-    \row    \o \l Qt::AccessibleDescriptionRole \o QString
-    \row    \o \l Qt::AccessibleTextRole \o QString
+    \row    \li \l Qt::AccessibleDescriptionRole \li QString
+    \row    \li \l Qt::AccessibleTextRole \li QString
     \endomit
-    \row    \o \l Qt::BackgroundRole \o QBrush
-    \row    \o \l Qt::BackgroundColorRole \o QColor (obsolete; use Qt::BackgroundRole instead)
-    \row    \o \l Qt::CheckStateRole \o Qt::CheckState
-    \row    \o \l Qt::DecorationRole \o QIcon, QPixmap and QColor
-    \row    \o \l Qt::DisplayRole \o QString and types with a string representation
-    \row    \o \l Qt::EditRole \o See QItemEditorFactory for details
-    \row    \o \l Qt::FontRole \o QFont
-    \row    \o \l Qt::SizeHintRole \o QSize
+    \row    \li \l Qt::BackgroundRole \li QBrush
+    \row    \li \l Qt::BackgroundColorRole \li QColor (obsolete; use Qt::BackgroundRole instead)
+    \row    \li \l Qt::CheckStateRole \li Qt::CheckState
+    \row    \li \l Qt::DecorationRole \li QIcon, QPixmap and QColor
+    \row    \li \l Qt::DisplayRole \li QString and types with a string representation
+    \row    \li \l Qt::EditRole \li See QItemEditorFactory for details
+    \row    \li \l Qt::FontRole \li QFont
+    \row    \li \l Qt::SizeHintRole \li QSize
     \omit
-    \row    \o \l Qt::StatusTipRole \o
+    \row    \li \l Qt::StatusTipRole \li
     \endomit
-    \row    \o \l Qt::TextAlignmentRole \o Qt::Alignment
-    \row    \o \l Qt::ForegroundRole \o QBrush
-    \row    \o \l Qt::TextColorRole \o QColor (obsolete; use Qt::ForegroundRole instead)
+    \row    \li \l Qt::TextAlignmentRole \li Qt::Alignment
+    \row    \li \l Qt::ForegroundRole \li QBrush
+    \row    \li \l Qt::TextColorRole \li QColor (obsolete; use Qt::ForegroundRole instead)
     \omit
-    \row    \o \l Qt::ToolTipRole
-    \row    \o \l Qt::WhatsThisRole
+    \row    \li \l Qt::ToolTipRole
+    \row    \li \l Qt::WhatsThisRole
     \endomit
     \endtable
 
@@ -1152,11 +1152,11 @@ QRect QItemDelegate::textRectangle(QPainter * /*painter*/, const QRect &rect,
     key press events are handled by default:
 
     \list
-        \o \gui Tab
-        \o \gui Backtab
-        \o \gui Enter
-        \o \gui Return
-        \o \gui Esc
+        \li \gui Tab
+        \li \gui Backtab
+        \li \gui Enter
+        \li \gui Return
+        \li \gui Esc
     \endlist
 
     In the case of \gui Tab, \gui Backtab, \gui Enter and \gui Return

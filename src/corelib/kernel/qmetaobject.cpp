@@ -86,16 +86,16 @@ QT_BEGIN_NAMESPACE
 
     The functions you are most likely to find useful are these:
     \list
-    \o className() returns the name of a class.
-    \o superClass() returns the superclass's meta-object.
-    \o method() and methodCount() provide information
+    \li className() returns the name of a class.
+    \li superClass() returns the superclass's meta-object.
+    \li method() and methodCount() provide information
        about a class's meta-methods (signals, slots and other
        \l{Q_INVOKABLE}{invokable} member functions).
-    \o enumerator() and enumeratorCount() and provide information about
+    \li enumerator() and enumeratorCount() and provide information about
        a class's enumerators.
-    \o propertyCount() and property() provide information about a
+    \li propertyCount() and property() provide information about a
        class's properties.
-    \o constructor() and constructorCount() provide information
+    \li constructor() and constructorCount() provide information
        about a class's meta-constructors.
     \endlist
 
@@ -1051,18 +1051,18 @@ enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
     depending on \a type:
 
     \list
-    \o If \a type is Qt::DirectConnection, the member will be invoked immediately.
+    \li If \a type is Qt::DirectConnection, the member will be invoked immediately.
 
-    \o If \a type is Qt::QueuedConnection,
+    \li If \a type is Qt::QueuedConnection,
        a QEvent will be sent and the member is invoked as soon as the application
        enters the main event loop.
 
-    \o If \a type is Qt::BlockingQueuedConnection, the method will be invoked in
+    \li If \a type is Qt::BlockingQueuedConnection, the method will be invoked in
        the same way as for Qt::QueuedConnection, except that the current thread
        will block until the event is delivered. Using this connection type to
        communicate between objects in the same thread will lead to deadlocks.
 
-    \o If \a type is Qt::AutoConnection, the member is invoked
+    \li If \a type is Qt::AutoConnection, the member is invoked
        synchronously if \a obj lives in the same thread as the
        caller; otherwise it will invoke the member asynchronously.
     \endlist
@@ -1456,13 +1456,13 @@ QMetaMethod::MethodType QMetaMethod::methodType() const
     \a connectionType:
 
     \list
-    \o If \a connectionType is Qt::DirectConnection, the member will be invoked immediately.
+    \li If \a connectionType is Qt::DirectConnection, the member will be invoked immediately.
 
-    \o If \a connectionType is Qt::QueuedConnection,
+    \li If \a connectionType is Qt::QueuedConnection,
        a QEvent will be posted and the member is invoked as soon as the application
        enters the main event loop.
 
-    \o If \a connectionType is Qt::AutoConnection, the member is invoked
+    \li If \a connectionType is Qt::AutoConnection, the member is invoked
        synchronously if \a object lives in the same thread as the
        caller; otherwise it will invoke the member asynchronously.
     \endlist

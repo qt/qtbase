@@ -86,13 +86,13 @@ QT_BEGIN_NAMESPACE
 
    QRawFont can be constructed in a number of ways:
    \list
-   \o It can be constructed by calling QTextLayout::glyphs() or QTextFragment::glyphs(). The
+   \li It can be constructed by calling QTextLayout::glyphs() or QTextFragment::glyphs(). The
       returned QGlyphs objects will contain QRawFont objects which represent the actual fonts
       used to render each portion of the text.
-   \o It can be constructed by passing a QFont object to QRawFont::fromFont(). The function
+   \li It can be constructed by passing a QFont object to QRawFont::fromFont(). The function
       will return a QRawFont object representing the font that will be selected as response to
       the QFont query and the selected writing system.
-   \o It can be constructed by passing a file name or QByteArray directly to the QRawFont
+   \li It can be constructed by passing a file name or QByteArray directly to the QRawFont
       constructor, or by calling loadFromFile() or loadFromData(). In this case, the
       font will not be registered in QFontDatabase, and it will not be available as part of
       regular font selection.

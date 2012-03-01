@@ -69,11 +69,11 @@ QT_BEGIN_NAMESPACE
 
     \table
     \header
-    \o RGB \o HSV \o CMYK
+    \li RGB \li HSV \li CMYK
     \row
-    \o \inlineimage qcolor-rgb.png
-    \o \inlineimage qcolor-hsv.png
-    \o \inlineimage qcolor-cmyk.png
+    \li \inlineimage qcolor-rgb.png
+    \li \inlineimage qcolor-hsv.png
+    \li \inlineimage qcolor-cmyk.png
     \endtable
 
     The QColor constructor creates the color based on RGB values.  To
@@ -194,20 +194,20 @@ QT_BEGIN_NAMESPACE
     HSV, like RGB, has three components:
 
     \list
-    \o H, for hue, is in the range 0 to 359 if the color is chromatic (not
+    \li H, for hue, is in the range 0 to 359 if the color is chromatic (not
     gray), or meaningless if it is gray. It represents degrees on the
     color wheel familiar to most people. Red is 0 (degrees), green is
     120, and blue is 240.
 
     \inlineimage qcolor-hue.png
 
-    \o S, for saturation, is in the range 0 to 255, and the bigger it is,
+    \li S, for saturation, is in the range 0 to 255, and the bigger it is,
     the stronger the color is. Grayish colors have saturation near 0; very
     strong colors have saturation near 255.
 
     \inlineimage qcolor-saturation.png
 
-    \o V, for value, is in the range 0 to 255 and represents lightness or
+    \li V, for value, is in the range 0 to 255 and represents lightness or
     brightness of the color. 0 is black; 255 is as far from black as
     possible.
 
@@ -498,16 +498,16 @@ QString QColor::name() const
     of these formats:
 
     \list
-    \i #RGB (each of R, G, and B is a single hex digit)
-    \i #RRGGBB
-    \i #RRRGGGBBB
-    \i #RRRRGGGGBBBB
-    \i A name from the list of colors defined in the list of \l{SVG color keyword names}
+    \li #RGB (each of R, G, and B is a single hex digit)
+    \li #RRGGBB
+    \li #RRRGGGBBB
+    \li #RRRRGGGGBBBB
+    \li A name from the list of colors defined in the list of \l{SVG color keyword names}
        provided by the World Wide Web Consortium; for example, "steelblue" or "gainsboro".
        These color names work on all platforms. Note that these color names are \e not the
        same as defined by the Qt::GlobalColor enums, e.g. "green" and Qt::green does not
        refer to the same color.
-    \i \c transparent - representing the absence of a color.
+    \li \c transparent - representing the absence of a color.
     \endlist
 
     The color is invalid if \a name cannot be parsed.

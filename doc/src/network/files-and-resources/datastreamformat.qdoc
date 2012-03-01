@@ -43,326 +43,326 @@
     the application happens to be running on.
 
     \table
-    \row \o bool
-         \o \list
-            \o boolean
+    \row \li bool
+         \li \list
+            \li boolean
             \endlist
-    \row \o qint8
-         \o \list
-            \o signed byte
+    \row \li qint8
+         \li \list
+            \li signed byte
             \endlist
-    \row \o qint16
-         \o \list
-            \o signed 16-bit integer
+    \row \li qint16
+         \li \list
+            \li signed 16-bit integer
             \endlist
-    \row \o qint32
-         \o \list
-            \o signed 32-bit integer
+    \row \li qint32
+         \li \list
+            \li signed 32-bit integer
             \endlist
-    \row \o qint64
-         \o \list
-            \o signed 64-bit integer
+    \row \li qint64
+         \li \list
+            \li signed 64-bit integer
             \endlist
-    \row \o quint8
-         \o \list
-            \o unsigned byte
+    \row \li quint8
+         \li \list
+            \li unsigned byte
             \endlist
-    \row \o quint16
-         \o \list
-            \o unsigned 16-bit integer
+    \row \li quint16
+         \li \list
+            \li unsigned 16-bit integer
             \endlist
-    \row \o quint32
-         \o \list
-            \o unsigned 32-bit integer
+    \row \li quint32
+         \li \list
+            \li unsigned 32-bit integer
             \endlist
-    \row \o quint64
-         \o \list
-            \o unsigned 64-bit integer
+    \row \li quint64
+         \li \list
+            \li unsigned 64-bit integer
             \endlist
-    \row \o \c float
-         \o \list
-            \o 32-bit floating point number using the standard IEEE 754 format
+    \row \li \c float
+         \li \list
+            \li 32-bit floating point number using the standard IEEE 754 format
             \endlist
-    \row \o \c double
-         \o \list
-            \o 64-bit floating point number using the standard IEEE 754 format
+    \row \li \c double
+         \li \list
+            \li 64-bit floating point number using the standard IEEE 754 format
             \endlist
-    \row \o \c {const char *}
-         \o \list
-            \o The string length (quint32)
-            \o The string bytes, excluding the terminating 0
+    \row \li \c {const char *}
+         \li \list
+            \li The string length (quint32)
+            \li The string bytes, excluding the terminating 0
             \endlist
-    \row \o QBitArray
-         \o \list
-            \o The array size (quint32)
-            \o The array bits, i.e. (size + 7)/8 bytes
+    \row \li QBitArray
+         \li \list
+            \li The array size (quint32)
+            \li The array bits, i.e. (size + 7)/8 bytes
             \endlist
-    \row \o QBrush
-         \o \list
-            \o The brush style (quint8)
-            \o The brush color (QColor)
-            \o If style is CustomPattern, the brush pixmap (QPixmap)
+    \row \li QBrush
+         \li \list
+            \li The brush style (quint8)
+            \li The brush color (QColor)
+            \li If style is CustomPattern, the brush pixmap (QPixmap)
             \endlist
-    \row \o QByteArray
-         \o \list
-            \o If the byte array is null: 0xFFFFFFFF (quint32)
-            \o Otherwise: the array size (quint32) followed by the array bytes, i.e. size bytes
+    \row \li QByteArray
+         \li \list
+            \li If the byte array is null: 0xFFFFFFFF (quint32)
+            \li Otherwise: the array size (quint32) followed by the array bytes, i.e. size bytes
             \endlist
-    \row \o \l QColor
-         \o \list
-            \o Color spec (qint8)
-            \o Alpha value (quint16)
-            \o Red value (quint16)
-            \o Green value (quint16)
-            \o Blue value (quint16)
-            \o Pad value (quint16)
+    \row \li \l QColor
+         \li \list
+            \li Color spec (qint8)
+            \li Alpha value (quint16)
+            \li Red value (quint16)
+            \li Green value (quint16)
+            \li Blue value (quint16)
+            \li Pad value (quint16)
             \endlist
-    \row \o QCursor
-         \o \list
-            \o Shape ID (qint16)
-            \o If shape is BitmapCursor: The bitmap (QPixmap), mask (QPixmap), and hot spot (QPoint)
+    \row \li QCursor
+         \li \list
+            \li Shape ID (qint16)
+            \li If shape is BitmapCursor: The bitmap (QPixmap), mask (QPixmap), and hot spot (QPoint)
             \endlist
-    \row \o QDate
-         \o \list
-            \o Julian day (quint32)
+    \row \li QDate
+         \li \list
+            \li Julian day (quint32)
             \endlist
-    \row \o QDateTime
-         \o \list
-            \o Date (QDate)
-            \o Time (QTime)
-            \o 0 for Qt::LocalTime, 1 for Qt::UTC (quint8)
+    \row \li QDateTime
+         \li \list
+            \li Date (QDate)
+            \li Time (QTime)
+            \li 0 for Qt::LocalTime, 1 for Qt::UTC (quint8)
             \endlist
-    \row \o QEasingCurve
-         \o \list
-            \o type (quint8)
-            \o func (quint64)
-            \o hasConfig (bool)
-            \o If hasConfig is true then these fields follow:
-            \o list
-                \o period (double)
-                \o amplitude (double)
-                \o overshoot (double)
+    \row \li QEasingCurve
+         \li \list
+            \li type (quint8)
+            \li func (quint64)
+            \li hasConfig (bool)
+            \li If hasConfig is true then these fields follow:
+            \li list
+                \li period (double)
+                \li amplitude (double)
+                \li overshoot (double)
             \endlist
-    \row \o QFont
-         \o \list
-            \o The family (QString)
-            \o The point size (qint16)
-            \o The style hint (quint8)
-            \o The char set (quint8)
-            \o The weight (quint8)
-            \o The font bits (quint8)
+    \row \li QFont
+         \li \list
+            \li The family (QString)
+            \li The point size (qint16)
+            \li The style hint (quint8)
+            \li The char set (quint8)
+            \li The weight (quint8)
+            \li The font bits (quint8)
             \endlist
-    \row \o QHash<Key, T>
-         \o \list
-            \o The number of items (quint32)
-            \o For all items, the key (Key) and value (T)
+    \row \li QHash<Key, T>
+         \li \list
+            \li The number of items (quint32)
+            \li For all items, the key (Key) and value (T)
             \endlist
-    \row \o QIcon
-         \o \list
-            \o The number of pixmap entries (quint32)
-            \o For all pixmap entries:
+    \row \li QIcon
+         \li \list
+            \li The number of pixmap entries (quint32)
+            \li For all pixmap entries:
                \list
-               \o The pixmap (QPixmap)
-               \o The file name (QString)
-               \o The pixmap size (QSize)
-               \o The \l{QIcon::Mode}{mode} (quint32)
-               \o The \l{QIcon::State}{state} (quint32)
+               \li The pixmap (QPixmap)
+               \li The file name (QString)
+               \li The pixmap size (QSize)
+               \li The \l{QIcon::Mode}{mode} (quint32)
+               \li The \l{QIcon::State}{state} (quint32)
                \endlist
             \endlist
-    \row \o QImage
-         \o \list
-            \o If the image is null a "null image" marker is saved;
+    \row \li QImage
+         \li \list
+            \li If the image is null a "null image" marker is saved;
             otherwise the image is saved in PNG or BMP format (depending
             on the stream version). If you want control of the format,
             stream the image into a QBuffer (using QImageIO) and stream
             that.
             \endlist
-    \row \o QKeySequence
-         \o \list
-            \o A QList<int>, where each integer is a key in the key sequence
+    \row \li QKeySequence
+         \li \list
+            \li A QList<int>, where each integer is a key in the key sequence
             \endlist
-    \row \o QLinkedList<T>
-         \o \list
-            \o The number of items (quint32)
-            \o The items (T)
+    \row \li QLinkedList<T>
+         \li \list
+            \li The number of items (quint32)
+            \li The items (T)
             \endlist
-    \row \o QList<T>
-         \o \list
-            \o The number of items (quint32)
-            \o The items (T)
+    \row \li QList<T>
+         \li \list
+            \li The number of items (quint32)
+            \li The items (T)
             \endlist
-    \row \o QMap<Key, T>
-         \o \list
-            \o The number of items (quint32)
-            \o For all items, the key (Key) and value (T)
+    \row \li QMap<Key, T>
+         \li \list
+            \li The number of items (quint32)
+            \li For all items, the key (Key) and value (T)
             \endlist
-    \row \o QMargins
-         \o \list
-            \o left (int)
-            \o top (int)
-            \o right (int)
-            \o bottom (int)
+    \row \li QMargins
+         \li \list
+            \li left (int)
+            \li top (int)
+            \li right (int)
+            \li bottom (int)
             \endlist
-    \row \o QMatrix
-         \o \list
-            \o m11 (double)
-            \o m12 (double)
-            \o m21 (double)
-            \o m22 (double)
-            \o dx (double)
-            \o dy (double)
+    \row \li QMatrix
+         \li \list
+            \li m11 (double)
+            \li m12 (double)
+            \li m21 (double)
+            \li m22 (double)
+            \li dx (double)
+            \li dy (double)
             \endlist
-    \row \o QMatrix4x4
-         \o \list
-            \o m11 (double)
-            \o m12 (double)
-            \o m13 (double)
-            \o m14 (double)
-            \o m21 (double)
-            \o m22 (double)
-            \o m23 (double)
-            \o m24 (double)
-            \o m31 (double)
-            \o m32 (double)
-            \o m33 (double)
-            \o m34 (double)
-            \o m41 (double)
-            \o m42 (double)
-            \o m43 (double)
-            \o m44 (double)
+    \row \li QMatrix4x4
+         \li \list
+            \li m11 (double)
+            \li m12 (double)
+            \li m13 (double)
+            \li m14 (double)
+            \li m21 (double)
+            \li m22 (double)
+            \li m23 (double)
+            \li m24 (double)
+            \li m31 (double)
+            \li m32 (double)
+            \li m33 (double)
+            \li m34 (double)
+            \li m41 (double)
+            \li m42 (double)
+            \li m43 (double)
+            \li m44 (double)
             \endlist
-    \row \o QPair<T1, T2>
-         \o \list
-            \o first (T1)
-            \o second (T2)
+    \row \li QPair<T1, T2>
+         \li \list
+            \li first (T1)
+            \li second (T2)
             \endlist
-    \row \o QPalette
-         \o The disabled, active, and inactive color groups, each of which consists
+    \row \li QPalette
+         \li The disabled, active, and inactive color groups, each of which consists
             of the following:
             \list
-            \o foreground (QBrush)
-            \o button (QBrush)
-            \o light (QBrush)
-            \o midlight (QBrush)
-            \o dark (QBrush)
-            \o mid (QBrush)
-            \o text (QBrush)
-            \o brightText (QBrush)
-            \o buttonText (QBrush)
-            \o base (QBrush)
-            \o background (QBrush)
-            \o shadow (QBrush)
-            \o highlight (QBrush)
-            \o highlightedText (QBrush)
-            \o link (QBrush)
-            \o linkVisited (QBrush)
+            \li foreground (QBrush)
+            \li button (QBrush)
+            \li light (QBrush)
+            \li midlight (QBrush)
+            \li dark (QBrush)
+            \li mid (QBrush)
+            \li text (QBrush)
+            \li brightText (QBrush)
+            \li buttonText (QBrush)
+            \li base (QBrush)
+            \li background (QBrush)
+            \li shadow (QBrush)
+            \li highlight (QBrush)
+            \li highlightedText (QBrush)
+            \li link (QBrush)
+            \li linkVisited (QBrush)
             \endlist
-    \row \o QPen
-         \o \list
-            \o The pen styles (quint8)
-            \o The pen width (quint16)
-            \o The pen color (QColor)
+    \row \li QPen
+         \li \list
+            \li The pen styles (quint8)
+            \li The pen width (quint16)
+            \li The pen color (QColor)
             \endlist
-    \row \o QPicture
-         \o \list
-            \o The size of the picture data (quint32)
-            \o The raw bytes of picture data (char)
+    \row \li QPicture
+         \li \list
+            \li The size of the picture data (quint32)
+            \li The raw bytes of picture data (char)
             \endlist
-    \row \o QPixmap
-         \o \list
-            \o Save it as a PNG image.
+    \row \li QPixmap
+         \li \list
+            \li Save it as a PNG image.
             \endlist
-    \row \o QPoint
-         \o \list
-            \o The x coordinate (qint32)
-            \o The y coordinate (qint32)
+    \row \li QPoint
+         \li \list
+            \li The x coordinate (qint32)
+            \li The y coordinate (qint32)
             \endlist
-    \row \o QQuaternion
-         \o \list
-            \o The scalar component (double)
-            \o The x coordinate (double)
-            \o The y coordinate (double)
-            \o The z coordinate (double)
+    \row \li QQuaternion
+         \li \list
+            \li The scalar component (double)
+            \li The x coordinate (double)
+            \li The y coordinate (double)
+            \li The z coordinate (double)
             \endlist
-    \row \o QRect
-         \o \list
-            \o left (qint32)
-            \o top (qint32)
-            \o right (qint32)
-            \o bottom (qint32)
+    \row \li QRect
+         \li \list
+            \li left (qint32)
+            \li top (qint32)
+            \li right (qint32)
+            \li bottom (qint32)
             \endlist
-    \row \o QRegExp
-         \o \list
-            \o The regexp pattern (QString)
-            \o Case sensitivity (quint8)
-            \o Regular expression syntax (quint8)
-            \o Minimal matching (quint8)
+    \row \li QRegExp
+         \li \list
+            \li The regexp pattern (QString)
+            \li Case sensitivity (quint8)
+            \li Regular expression syntax (quint8)
+            \li Minimal matching (quint8)
             \endlist
-    \row \o QRegion
-         \o \list
-            \o The size of the data, i.e. 8 + 16 * (number of rectangles) (quint32)
-            \o 10 (qint32)
-            \o The number of rectangles (quint32)
-            \o The rectangles in sequential order (QRect)
+    \row \li QRegion
+         \li \list
+            \li The size of the data, i.e. 8 + 16 * (number of rectangles) (quint32)
+            \li 10 (qint32)
+            \li The number of rectangles (quint32)
+            \li The rectangles in sequential order (QRect)
             \endlist
-    \row \o QSize
-         \o \list
-            \o width (qint32)
-            \o height (qint32)
+    \row \li QSize
+         \li \list
+            \li width (qint32)
+            \li height (qint32)
             \endlist
-    \row \o QString
-         \o \list
-            \o If the string is null: 0xFFFFFFFF (quint32)
-            \o Otherwise: The string length in bytes (quint32) followed by the data in UTF-16
+    \row \li QString
+         \li \list
+            \li If the string is null: 0xFFFFFFFF (quint32)
+            \li Otherwise: The string length in bytes (quint32) followed by the data in UTF-16
             \endlist
-    \row \o QTime
-         \o \list
-            \o Milliseconds since midnight (quint32)
+    \row \li QTime
+         \li \list
+            \li Milliseconds since midnight (quint32)
             \endlist
-    \row \o QTransform
-         \o \list
-            \o m11 (double)
-            \o m12 (double)
-            \o m13 (double)
-            \o m21 (double)
-            \o m22 (double)
-            \o m23 (double)
-            \o m31 (double)
-            \o m32 (double)
-            \o m33 (double)
+    \row \li QTransform
+         \li \list
+            \li m11 (double)
+            \li m12 (double)
+            \li m13 (double)
+            \li m21 (double)
+            \li m22 (double)
+            \li m23 (double)
+            \li m31 (double)
+            \li m32 (double)
+            \li m33 (double)
             \endlist
-    \row \o QUrl
-         \o \list
-            \o Holds an URL (QString)
+    \row \li QUrl
+         \li \list
+            \li Holds an URL (QString)
             \endlist
-    \row \o QVariant
-         \o \list
-            \o The type of the data (quint32)
-            \o The null flag (qint8)
-            \o The data of the specified type
+    \row \li QVariant
+         \li \list
+            \li The type of the data (quint32)
+            \li The null flag (qint8)
+            \li The data of the specified type
             \endlist
-    \row \o QVector2D
-         \o \list
-            \o the x coordinate (double)
-            \o the y coordinate (double)
+    \row \li QVector2D
+         \li \list
+            \li the x coordinate (double)
+            \li the y coordinate (double)
             \endlist
-    \row \o QVector3D
-         \o \list
-            \o the x coordinate (double)
-            \o the y coordinate (double)
-            \o the z coordinate (double)
+    \row \li QVector3D
+         \li \list
+            \li the x coordinate (double)
+            \li the y coordinate (double)
+            \li the z coordinate (double)
             \endlist
-    \row \o QVector4D
-         \o \list
-            \o the x coordinate (double)
-            \o the y coordinate (double)
-            \o the z coordinate (double)
-            \o the w coordinate (double)
+    \row \li QVector4D
+         \li \list
+            \li the x coordinate (double)
+            \li the y coordinate (double)
+            \li the z coordinate (double)
+            \li the w coordinate (double)
             \endlist
-    \row \o QVector<T>
-         \o \list
-            \o The number of items (quint32)
-            \o The items (T)
+    \row \li QVector<T>
+         \li \list
+            \li The number of items (quint32)
+            \li The items (T)
             \endlist
     \endtable
 */

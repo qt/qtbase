@@ -87,8 +87,8 @@ public:
     non-exclusive checkboxes.
 
     \table
-    \row \o \inlineimage checkboxes-exclusive.png
-         \o \inlineimage checkboxes-non-exclusive.png
+    \row \li \inlineimage checkboxes-exclusive.png
+         \li \inlineimage checkboxes-non-exclusive.png
     \endtable
 
     Whenever a checkbox is checked or cleared it emits the signal
@@ -121,14 +121,14 @@ public:
 
     \table 100%
     \row
-        \o \inlineimage macintosh-checkbox.png Screenshot of a Macintosh style checkbox
-        \o A checkbox shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
+        \li \inlineimage macintosh-checkbox.png Screenshot of a Macintosh style checkbox
+        \li A checkbox shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
     \row
-        \o \inlineimage windows-checkbox.png Screenshot of a Windows XP style checkbox
-        \o A checkbox shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+        \li \inlineimage windows-checkbox.png Screenshot of a Windows XP style checkbox
+        \li A checkbox shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
     \row
-        \o \inlineimage plastique-checkbox.png Screenshot of a Plastique style checkbox
-        \o A checkbox shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+        \li \inlineimage plastique-checkbox.png Screenshot of a Plastique style checkbox
+        \li A checkbox shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
     \endtable
 
     \sa QAbstractButton, QRadioButton, {fowler}{GUI Design Handbook: Check Box}

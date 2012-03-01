@@ -81,16 +81,16 @@ lists the major QNetworkSession functions and how they fit into the session and
 hardware management categories:
 
 \table 60%
-\header \o Interface management             \o Session management
-\row    \o QNetworkSession::stop()          \o QNetworkSession::open()
-\row    \o QNetworkSession::interface()     \o QNetworkSession::close()
-\row    \o QNetworkSession::state()         \o QNetworkSession::isOpen()
-\row    \o QNetworkSession::bytesWritten()  \o QNetworkSession::migrate()
-\row    \o QNetworkSession::bytesReceived() \o QNetworkSession::ignore()
-\row    \o QNetworkSession::activeTime()    \o QNetworkSession::accept()
-\row    \o QNetworkSession::stateChanged()  \o QNetworkSession::reject()
-\row    \o                                  \o QNetworkSession::opened()
-\row    \o                                  \o QNetworkSession::closed()
+\header \li Interface management             \li Session management
+\row    \li QNetworkSession::stop()          \li QNetworkSession::open()
+\row    \li QNetworkSession::interface()     \li QNetworkSession::close()
+\row    \li QNetworkSession::state()         \li QNetworkSession::isOpen()
+\row    \li QNetworkSession::bytesWritten()  \li QNetworkSession::migrate()
+\row    \li QNetworkSession::bytesReceived() \li QNetworkSession::ignore()
+\row    \li QNetworkSession::activeTime()    \li QNetworkSession::accept()
+\row    \li QNetworkSession::stateChanged()  \li QNetworkSession::reject()
+\row    \li                                  \li QNetworkSession::opened()
+\row    \li                                  \li QNetworkSession::closed()
 \endtable
 
 The state of the session represents the state of the underlying access point
@@ -242,27 +242,27 @@ determining the feature support:
 
 \table
     \header
-    \o Platform
-    \o Backend capabilities
+    \li Platform
+    \li Backend capabilities
     \row
-        \o Linux\unicode{0xAE}
-        \o Linux uses the \l {http://projects.gnome.org/NetworkManager}{NetworkManager}
+        \li Linux\unicode{0xAE}
+        \li Linux uses the \l {http://projects.gnome.org/NetworkManager}{NetworkManager}
            and \l {http://connman.net/}{ConnMan} / \l {http://ofono.org/}{oFono} APIs
            which support interface notifications and starting and stopping of network
            interfaces.
     \row
-        \o Windows\unicode{0xAE} XP
-        \o This platform supports interface notifications without active polling.
+        \li Windows\unicode{0xAE} XP
+        \li This platform supports interface notifications without active polling.
     \row
-        \o Windows XP SP2+Hotfixes, Windows XP SP3, Windows Vista, Windows 7
-        \o In addition to standard Windows XP wifi access point monitoring has been improved which includes the ability to start and stop wifi interfaces. This requires Windows to manage the wifi interfaces.
+        \li Windows XP SP2+Hotfixes, Windows XP SP3, Windows Vista, Windows 7
+        \li In addition to standard Windows XP wifi access point monitoring has been improved which includes the ability to start and stop wifi interfaces. This requires Windows to manage the wifi interfaces.
     \row
-        \o Mac OS\unicode{0xAE}
-        \o This platform has full support by way of CoreWLAN offered in Mac OS 10.6. Previous
+        \li Mac OS\unicode{0xAE}
+        \li This platform has full support by way of CoreWLAN offered in Mac OS 10.6. Previous
            versions of Mac OS - 10.5 and 10.4 have limited support.
     \row
-        \o All other platforms (*nix, Windows Mobile)
-        \o This backend is the fallback for all platforms supports network interface notifications via active polling only.
+        \li All other platforms (*nix, Windows Mobile)
+        \li This backend is the fallback for all platforms supports network interface notifications via active polling only.
 \endtable
 
 */

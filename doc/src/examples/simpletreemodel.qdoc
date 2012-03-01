@@ -59,8 +59,8 @@
 
     \target SimpleTreeModelStructure
     \table
-    \row \i \inlineimage treemodel-structure.png
-    \i \bold{Simple Tree Model Structure}
+    \row \li \inlineimage treemodel-structure.png
+    \li \b{Simple Tree Model Structure}
 
     The data is stored internally in the model using \c TreeItem objects that
     are linked together in a pointer-based tree structure. Generally, each
@@ -101,14 +101,14 @@
     structure. The functions provide the following features:
 
     \list
-    \o The \c appendChildItem() is used to add data when the model is first
+    \li The \c appendChildItem() is used to add data when the model is first
        constructed and is not used during normal use.
-    \o The \c child() and \c childCount() functions allow the model to obtain
+    \li The \c child() and \c childCount() functions allow the model to obtain
        information about any child items.
-    \o Information about the number of columns associated with the item is
+    \li Information about the number of columns associated with the item is
        provided by \c columnCount(), and the data in each column can be
        obtained with the data() function.
-    \o The \c row() and \c parent() functions are used to obtain the item's
+    \li The \c row() and \c parent() functions are used to obtain the item's
        row number and parent item.
     \endlist
 
@@ -320,10 +320,10 @@
     We process the text file with the following two rules:
 
     \list
-    \o For each pair of strings on each line, create an item (or node)
+    \li For each pair of strings on each line, create an item (or node)
        in a tree structure, and place each string in a column of data
        in the item.
-    \o When the first string on a line is indented with respect to the
+    \li When the first string on a line is indented with respect to the
        first string on the previous line, make the item a child of the
        previous item created.
     \endlist

@@ -184,7 +184,7 @@ QT_BEGIN_NAMESPACE
     \endcode
 
     To see if your favorite Qt class has similar stream operators
-    defined, check the \bold {Related Non-Members} section of the
+    defined, check the \b {Related Non-Members} section of the
     class's documentation page.
 
     \sa QTextStream QVariant
@@ -571,19 +571,19 @@ void QDataStream::setByteOrder(ByteOrder bo)
     serialization format used by QDataStream.
 
     \table
-    \header \i Qt Version       \i QDataStream Version
-    \row \i Qt 4.6                  \i 12
-    \row \i Qt 4.5                  \i 11
-    \row \i Qt 4.4                  \i 10
-    \row \i Qt 4.3                  \i 9
-    \row \i Qt 4.2                  \i 8
-    \row \i Qt 4.0, 4.1            \i 7
-    \row \i Qt 3.3                  \i 6
-    \row \i Qt 3.1, 3.2             \i 5
-    \row \i Qt 3.0                  \i 4
-    \row \i Qt 2.1, 2.2, 2.3      \i 3
-    \row \i Qt 2.0                  \i 2
-    \row \i Qt 1.x                  \i 1
+    \header \li Qt Version       \li QDataStream Version
+    \row \li Qt 4.6                  \li 12
+    \row \li Qt 4.5                  \li 11
+    \row \li Qt 4.4                  \li 10
+    \row \li Qt 4.3                  \li 9
+    \row \li Qt 4.2                  \li 8
+    \row \li Qt 4.0, 4.1            \li 7
+    \row \li Qt 3.3                  \li 6
+    \row \li Qt 3.1, 3.2             \li 5
+    \row \li Qt 3.0                  \li 4
+    \row \li Qt 2.1, 2.2, 2.3      \li 3
+    \row \li Qt 2.0                  \li 2
+    \row \li Qt 1.x                  \li 1
     \endtable
 
     The \l Version enum provides symbolic constants for the different

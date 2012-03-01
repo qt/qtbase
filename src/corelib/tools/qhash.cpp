@@ -547,11 +547,11 @@ void QHashData::checkSanity()
     differences are:
 
     \list
-    \i QHash provides faster lookups than QMap. (See \l{Algorithmic
+    \li QHash provides faster lookups than QMap. (See \l{Algorithmic
        Complexity} for details.)
-    \i When iterating over a QMap, the items are always sorted by
+    \li When iterating over a QMap, the items are always sorted by
        key. With QHash, the items are arbitrarily ordered.
-    \i The key type of a QMap must provide operator<(). The key
+    \li The key type of a QMap must provide operator<(). The key
        type of a QHash must provide operator==() and a global
        hash function called qHash() (see the related non-member
        functions).

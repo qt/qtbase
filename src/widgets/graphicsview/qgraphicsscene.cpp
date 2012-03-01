@@ -3118,12 +3118,12 @@ bool QGraphicsScene::stickyFocus() const
     the following events occur:
 
     \list
-    \o If the item receives a mouse release event when there are no other
+    \li If the item receives a mouse release event when there are no other
     buttons pressed, it loses the mouse grab.
-    \o If the item becomes invisible (i.e., someone calls \c {item->setVisible(false)}),
+    \li If the item becomes invisible (i.e., someone calls \c {item->setVisible(false)}),
     or if it becomes disabled (i.e., someone calls \c {item->setEnabled(false)}),
     it loses the mouse grab.
-    \o If the item is removed from the scene, it loses the mouse grab.
+    \li If the item is removed from the scene, it loses the mouse grab.
     \endlist
 
     If the item loses its mouse grab, the scene will ignore all mouse events

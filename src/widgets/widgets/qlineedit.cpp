@@ -177,39 +177,39 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
     that presents some of these editing options.
     \target desc
     \table
-    \header \i Keypress \i Action
-    \row \i Left Arrow \i Moves the cursor one character to the left.
-    \row \i Shift+Left Arrow \i Moves and selects text one character to the left.
-    \row \i Right Arrow \i Moves the cursor one character to the right.
-    \row \i Shift+Right Arrow \i Moves and selects text one character to the right.
-    \row \i Home \i Moves the cursor to the beginning of the line.
-    \row \i End \i Moves the cursor to the end of the line.
-    \row \i Backspace \i Deletes the character to the left of the cursor.
-    \row \i Ctrl+Backspace \i Deletes the word to the left of the cursor.
-    \row \i Delete \i Deletes the character to the right of the cursor.
-    \row \i Ctrl+Delete \i Deletes the word to the right of the cursor.
-    \row \i Ctrl+A \i Select all.
-    \row \i Ctrl+C \i Copies the selected text to the clipboard.
-    \row \i Ctrl+Insert \i Copies the selected text to the clipboard.
-    \row \i Ctrl+K \i Deletes to the end of the line.
-    \row \i Ctrl+V \i Pastes the clipboard text into line edit.
-    \row \i Shift+Insert \i Pastes the clipboard text into line edit.
-    \row \i Ctrl+X \i Deletes the selected text and copies it to the clipboard.
-    \row \i Shift+Delete \i Deletes the selected text and copies it to the clipboard.
-    \row \i Ctrl+Z \i Undoes the last operation.
-    \row \i Ctrl+Y \i Redoes the last undone operation.
+    \header \li Keypress \li Action
+    \row \li Left Arrow \li Moves the cursor one character to the left.
+    \row \li Shift+Left Arrow \li Moves and selects text one character to the left.
+    \row \li Right Arrow \li Moves the cursor one character to the right.
+    \row \li Shift+Right Arrow \li Moves and selects text one character to the right.
+    \row \li Home \li Moves the cursor to the beginning of the line.
+    \row \li End \li Moves the cursor to the end of the line.
+    \row \li Backspace \li Deletes the character to the left of the cursor.
+    \row \li Ctrl+Backspace \li Deletes the word to the left of the cursor.
+    \row \li Delete \li Deletes the character to the right of the cursor.
+    \row \li Ctrl+Delete \li Deletes the word to the right of the cursor.
+    \row \li Ctrl+A \li Select all.
+    \row \li Ctrl+C \li Copies the selected text to the clipboard.
+    \row \li Ctrl+Insert \li Copies the selected text to the clipboard.
+    \row \li Ctrl+K \li Deletes to the end of the line.
+    \row \li Ctrl+V \li Pastes the clipboard text into line edit.
+    \row \li Shift+Insert \li Pastes the clipboard text into line edit.
+    \row \li Ctrl+X \li Deletes the selected text and copies it to the clipboard.
+    \row \li Shift+Delete \li Deletes the selected text and copies it to the clipboard.
+    \row \li Ctrl+Z \li Undoes the last operation.
+    \row \li Ctrl+Y \li Redoes the last undone operation.
     \endtable
 
     Any other key sequence that represents a valid character, will
     cause the character to be inserted into the line edit.
 
     \table 100%
-    \row \o \inlineimage macintosh-lineedit.png Screenshot of a Macintosh style line edit
-         \o A line edit shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-    \row \o \inlineimage windows-lineedit.png Screenshot of a Windows XP style line edit
-         \o A line edit shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
-    \row \o \inlineimage plastique-lineedit.png Screenshot of a Plastique style line edit
-         \o A line edit shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \row \li \inlineimage macintosh-lineedit.png Screenshot of a Macintosh style line edit
+         \li A line edit shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
+    \row \li \inlineimage windows-lineedit.png Screenshot of a Windows XP style line edit
+         \li A line edit shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+    \row \li \inlineimage plastique-lineedit.png Screenshot of a Plastique style line edit
+         \li A line edit shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
     \endtable
 
     \sa QTextEdit, QLabel, QComboBox, {fowler}{GUI Design Handbook: Field, Entry}, {Line Edits Example}
@@ -1096,26 +1096,26 @@ QMargins QLineEdit::textMargins() const
     where a character is \e{permitted but not required}.
 
     \table
-    \header \i Character \i Meaning
-    \row \i \c A \i ASCII alphabetic character required. A-Z, a-z.
-    \row \i \c a \i ASCII alphabetic character permitted but not required.
-    \row \i \c N \i ASCII alphanumeric character required. A-Z, a-z, 0-9.
-    \row \i \c n \i ASCII alphanumeric character permitted but not required.
-    \row \i \c X \i Any character required.
-    \row \i \c x \i Any character permitted but not required.
-    \row \i \c 9 \i ASCII digit required. 0-9.
-    \row \i \c 0 \i ASCII digit permitted but not required.
-    \row \i \c D \i ASCII digit required. 1-9.
-    \row \i \c d \i ASCII digit permitted but not required (1-9).
-    \row \i \c # \i ASCII digit or plus/minus sign permitted but not required.
-    \row \i \c H \i Hexadecimal character required. A-F, a-f, 0-9.
-    \row \i \c h \i Hexadecimal character permitted but not required.
-    \row \i \c B \i Binary character required. 0-1.
-    \row \i \c b \i Binary character permitted but not required.
-    \row \i \c > \i All following alphabetic characters are uppercased.
-    \row \i \c < \i All following alphabetic characters are lowercased.
-    \row \i \c ! \i Switch off case conversion.
-    \row \i \tt{\\} \i Use \tt{\\} to escape the special
+    \header \li Character \li Meaning
+    \row \li \c A \li ASCII alphabetic character required. A-Z, a-z.
+    \row \li \c a \li ASCII alphabetic character permitted but not required.
+    \row \li \c N \li ASCII alphanumeric character required. A-Z, a-z, 0-9.
+    \row \li \c n \li ASCII alphanumeric character permitted but not required.
+    \row \li \c X \li Any character required.
+    \row \li \c x \li Any character permitted but not required.
+    \row \li \c 9 \li ASCII digit required. 0-9.
+    \row \li \c 0 \li ASCII digit permitted but not required.
+    \row \li \c D \li ASCII digit required. 1-9.
+    \row \li \c d \li ASCII digit permitted but not required (1-9).
+    \row \li \c # \li ASCII digit or plus/minus sign permitted but not required.
+    \row \li \c H \li Hexadecimal character required. A-F, a-f, 0-9.
+    \row \li \c h \li Hexadecimal character permitted but not required.
+    \row \li \c B \li Binary character required. 0-1.
+    \row \li \c b \li Binary character permitted but not required.
+    \row \li \c > \li All following alphabetic characters are uppercased.
+    \row \li \c < \li All following alphabetic characters are lowercased.
+    \row \li \c ! \li Switch off case conversion.
+    \row \li \tt{\\} \li Use \tt{\\} to escape the special
                            characters listed above to use them as
                            separators.
     \endtable
@@ -1127,11 +1127,11 @@ QMargins QLineEdit::textMargins() const
 
     Examples:
     \table
-    \header \i Mask \i Notes
-    \row \i \c 000.000.000.000;_ \i IP address; blanks are \c{_}.
-    \row \i \c HH:HH:HH:HH:HH:HH;_ \i MAC address
-    \row \i \c 0000-00-00 \i ISO Date; blanks are \c space
-    \row \i \c >AAAAA-AAAAA-AAAAA-AAAAA-AAAAA;# \i License number;
+    \header \li Mask \li Notes
+    \row \li \c 000.000.000.000;_ \li IP address; blanks are \c{_}.
+    \row \li \c HH:HH:HH:HH:HH:HH;_ \li MAC address
+    \row \li \c 0000-00-00 \li ISO Date; blanks are \c space
+    \row \li \c >AAAAA-AAAAA-AAAAA-AAAAA-AAAAA;# \li License number;
     blanks are \c - and all (alphabetic) characters are converted to
     uppercase.
     \endtable

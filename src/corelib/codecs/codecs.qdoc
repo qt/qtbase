@@ -77,9 +77,9 @@
     are met:
 
     \list 1
-    \o Redistributions of source code must retain the above copyright
+    \li Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
-    \o Redistributions in binary form must reproduce the above copyright
+    \li Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
        documentation and/or other materials provided with the distribution.
     \endlist
@@ -126,9 +126,9 @@
     Currently, the Big5-HKSCS tables are generated from the following
     sources, and with the Euro character added:
     \list 1
-    \o \l{http://www.microsoft.com/typography/unicode/950.txt}
-    \o \l{http://www.info.gov.hk/digital21/chi/hkscs/download/big5-iso.txt}
-    \o \l{http://www.info.gov.hk/digital21/chi/hkscs/download/big5cmp.txt}
+    \li \l{http://www.microsoft.com/typography/unicode/950.txt}
+    \li \l{http://www.info.gov.hk/digital21/chi/hkscs/download/big5-iso.txt}
+    \li \l{http://www.info.gov.hk/digital21/chi/hkscs/download/big5cmp.txt}
     \endlist
 
     There may be more fine-tuning to the QBig5hkscsCodec to maximize its
@@ -147,9 +147,9 @@
     are met:
 
     \list 1
-    \o Redistributions of source code must retain the above copyright
+    \li Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
-    \o Redistributions in binary form must reproduce the above copyright
+    \li Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
        documentation and/or other materials provided with the distribution.
     \endlist
@@ -195,9 +195,9 @@
     are met:
 
     \list 1
-    \o Redistributions of source code must retain the above copyright
+    \li Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
-    \o Redistributions in binary form must reproduce the above copyright
+    \li Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
        documentation and/or other materials provided with the distribution.
     \endlist
@@ -238,9 +238,9 @@
     are met:
 
     \list 1
-    \o Redistributions of source code must retain the above copyright
+    \li Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
-    \o Redistributions in binary form must reproduce the above copyright
+    \li Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
        documentation and/or other materials provided with the distribution.
     \endlist
@@ -282,9 +282,9 @@
     Some must-read documents are:
 
     \list
-    \o \l{ftp://ftp.oreilly.com/pub/examples/nutshell/cjkv/pdf/GB18030_Summary.pdf}
-    \o \l{http://oss.software.ibm.com/cvs/icu/~checkout~/charset/source/gb18030/gb18030.html}
-    \o \l{http://oss.software.ibm.com/cvs/icu/~checkout~/charset/data/xml/gb-18030-2000.xml}
+    \li \l{ftp://ftp.oreilly.com/pub/examples/nutshell/cjkv/pdf/GB18030_Summary.pdf}
+    \li \l{http://oss.software.ibm.com/cvs/icu/~checkout~/charset/source/gb18030/gb18030.html}
+    \li \l{http://oss.software.ibm.com/cvs/icu/~checkout~/charset/data/xml/gb-18030-2000.xml}
     \endlist
 
     The GBK codec was contributed to Qt by
@@ -316,9 +316,9 @@
     are met:
 
     \list 1
-    \o Redistributions of source code must retain the above copyright
+    \li Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
-    \o Redistributions in binary form must reproduce the above copyright
+    \li Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
        documentation and/or other materials provided with the distribution.
     \endlist
@@ -354,30 +354,30 @@
 
     \list
 
-    \o "unicode-0.9" or "unicode-0201" for Unicode style. This assumes
+    \li "unicode-0.9" or "unicode-0201" for Unicode style. This assumes
     JISX0201 for 0x00-0x7f. (0.9 is a table version of jisx02xx mapping
     used for Unicode 1.1.)
 
-    \o "unicode-ascii" This assumes US-ASCII for 0x00-0x7f; some
+    \li "unicode-ascii" This assumes US-ASCII for 0x00-0x7f; some
     chars (JISX0208 0x2140 and JISX0212 0x2237) are different from
     Unicode 1.1 to avoid conflict.
 
-    \o "open-19970715-0201" ("open-0201" for convenience) or
+    \li "open-19970715-0201" ("open-0201" for convenience) or
     "jisx0221-1995" for JISX0221-JISX0201 style. JIS X 0221 is JIS
     version of Unicode, but a few chars (0x5c, 0x7e, 0x2140, 0x216f,
     0x2131) are different from Unicode 1.1. This is used when 0x5c is
     treated as YEN SIGN.
 
-    \o "open-19970715-ascii" ("open-ascii" for convenience) for
+    \li "open-19970715-ascii" ("open-ascii" for convenience) for
     JISX0221-ASCII style. This is used when 0x5c is treated as REVERSE
     SOLIDUS.
 
-    \o "open-19970715-ms" ("open-ms" for convenience) or "cp932" for
+    \li "open-19970715-ms" ("open-ms" for convenience) or "cp932" for
     Microsoft Windows style. Windows Code Page 932. Some chars (0x2140,
     0x2141, 0x2142, 0x215d, 0x2171, 0x2172) are different from Unicode
     1.1.
 
-    \o "jdk1.1.7" for Sun's JDK style. Same as Unicode 1.1, except that
+    \li "jdk1.1.7" for Sun's JDK style. Same as Unicode 1.1, except that
     JIS 0x2140 is mapped to UFF3C. Either ASCII or JISX0201 can be used
     for 0x00-0x7f.
 
@@ -405,9 +405,9 @@
     are met:
 
     \list 1
-    \o Redistributions of source code must retain the above copyright
+    \li Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
-    \o Redistributions in binary form must reproduce the above copyright
+    \li Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
        documentation and/or other materials provided with the distribution.
     \endlist
@@ -454,9 +454,9 @@
     are met:
 
     \list 1
-    \o Redistributions of source code must retain the above copyright
+    \li Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
-    \o Redistributions in binary form must reproduce the above copyright
+    \li Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
        documentation and/or other materials provided with the distribution.
     \endlist
@@ -510,9 +510,9 @@
     are met:
 
     \list 1
-    \o Redistributions of source code must retain the above copyright
+    \li Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
-    \o Redistributions in binary form must reproduce the above copyright
+    \li Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
        documentation and/or other materials provided with the distribution.
     \endlist

@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
     To set or get the position of the mouse cursor use the static
     methods QCursor::pos() and QCursor::setPos().
 
-    \bold{Note:} It is possible to create a QCursor before
+    \b{Note:} It is possible to create a QCursor before
     QGuiApplication, but it is not useful except as a place-holder for a
     real QCursor created after QGuiApplication. Attempting to use a
     QCursor that was created before QGuiApplication will result in a
@@ -104,50 +104,50 @@ QT_BEGIN_NAMESPACE
     theme, while others will use an internal bitmap cursor.
 
     \table
-    \header \o Shape \o Qt::CursorShape Value \o Cursor Name
-            \o Shape \o Qt::CursorShape Value \o Cursor Name
-    \row \o \inlineimage cursor-arrow.png
-         \o Qt::ArrowCursor   \o \c left_ptr
-         \o \inlineimage      cursor-sizev.png
-         \o Qt::SizeVerCursor \o \c size_ver
-    \row \o \inlineimage      cursor-uparrow.png
-         \o Qt::UpArrowCursor \o \c up_arrow
-         \o \inlineimage      cursor-sizeh.png
-         \o Qt::SizeHorCursor \o \c size_hor
-    \row \o \inlineimage      cursor-cross.png
-         \o Qt::CrossCursor   \o \c cross
-         \o \inlineimage      cursor-sizeb.png
-         \o Qt::SizeBDiagCursor \o \c size_bdiag
-    \row \o \inlineimage      cursor-ibeam.png
-         \o Qt::IBeamCursor   \o \c ibeam
-         \o \inlineimage      cursor-sizef.png
-         \o Qt::SizeFDiagCursor \o \c size_fdiag
-    \row \o \inlineimage      cursor-wait.png
-         \o Qt::WaitCursor    \o \c wait
-         \o \inlineimage      cursor-sizeall.png
-         \o Qt::SizeAllCursor \o \c size_all
-    \row \o \inlineimage      cursor-busy.png
-         \o Qt::BusyCursor    \o \c left_ptr_watch
-         \o \inlineimage      cursor-vsplit.png
-         \o Qt::SplitVCursor  \o \c split_v
-    \row \o \inlineimage      cursor-forbidden.png
-         \o Qt::ForbiddenCursor \o \c forbidden
-         \o \inlineimage      cursor-hsplit.png
-         \o Qt::SplitHCursor  \o \c split_h
-    \row \o \inlineimage      cursor-hand.png
-         \o Qt::PointingHandCursor \o \c pointing_hand
-         \o \inlineimage      cursor-openhand.png
-         \o Qt::OpenHandCursor  \o \c openhand
-    \row \o \inlineimage      cursor-whatsthis.png
-         \o Qt::WhatsThisCursor \o \c whats_this
-         \o \inlineimage      cursor-closedhand.png
-         \o Qt::ClosedHandCursor \o \c closedhand
-    \row \o
-         \o Qt::DragMoveCursor      \o \c dnd-move or \c move
-         \o
-         \o Qt::DragCopyCursor      \o \c dnd-copy or \c copy
-    \row \o
-         \o Qt::DragLinkCursor      \o \c dnd-link or \c link
+    \header \li Shape \li Qt::CursorShape Value \li Cursor Name
+            \li Shape \li Qt::CursorShape Value \li Cursor Name
+    \row \li \inlineimage cursor-arrow.png
+         \li Qt::ArrowCursor   \li \c left_ptr
+         \li \inlineimage      cursor-sizev.png
+         \li Qt::SizeVerCursor \li \c size_ver
+    \row \li \inlineimage      cursor-uparrow.png
+         \li Qt::UpArrowCursor \li \c up_arrow
+         \li \inlineimage      cursor-sizeh.png
+         \li Qt::SizeHorCursor \li \c size_hor
+    \row \li \inlineimage      cursor-cross.png
+         \li Qt::CrossCursor   \li \c cross
+         \li \inlineimage      cursor-sizeb.png
+         \li Qt::SizeBDiagCursor \li \c size_bdiag
+    \row \li \inlineimage      cursor-ibeam.png
+         \li Qt::IBeamCursor   \li \c ibeam
+         \li \inlineimage      cursor-sizef.png
+         \li Qt::SizeFDiagCursor \li \c size_fdiag
+    \row \li \inlineimage      cursor-wait.png
+         \li Qt::WaitCursor    \li \c wait
+         \li \inlineimage      cursor-sizeall.png
+         \li Qt::SizeAllCursor \li \c size_all
+    \row \li \inlineimage      cursor-busy.png
+         \li Qt::BusyCursor    \li \c left_ptr_watch
+         \li \inlineimage      cursor-vsplit.png
+         \li Qt::SplitVCursor  \li \c split_v
+    \row \li \inlineimage      cursor-forbidden.png
+         \li Qt::ForbiddenCursor \li \c forbidden
+         \li \inlineimage      cursor-hsplit.png
+         \li Qt::SplitHCursor  \li \c split_h
+    \row \li \inlineimage      cursor-hand.png
+         \li Qt::PointingHandCursor \li \c pointing_hand
+         \li \inlineimage      cursor-openhand.png
+         \li Qt::OpenHandCursor  \li \c openhand
+    \row \li \inlineimage      cursor-whatsthis.png
+         \li Qt::WhatsThisCursor \li \c whats_this
+         \li \inlineimage      cursor-closedhand.png
+         \li Qt::ClosedHandCursor \li \c closedhand
+    \row \li
+         \li Qt::DragMoveCursor      \li \c dnd-move or \c move
+         \li
+         \li Qt::DragCopyCursor      \li \c dnd-copy or \c copy
+    \row \li
+         \li Qt::DragLinkCursor      \li \c dnd-link or \c link
     \endtable
 
     \sa QWidget, {fowler}{GUI Design Handbook: Cursors}
@@ -346,10 +346,10 @@ QCursor::QCursor(const QPixmap &pixmap, int hotX, int hotY)
 
     The cursor \a bitmap (B) and \a mask (M) bits are combined like this:
     \list
-    \o B=1 and M=1 gives black.
-    \o B=0 and M=1 gives white.
-    \o B=0 and M=0 gives transparent.
-    \o B=1 and M=0 gives an XOR'd result under Windows, undefined
+    \li B=1 and M=1 gives black.
+    \li B=0 and M=1 gives white.
+    \li B=0 and M=0 gives transparent.
+    \li B=1 and M=0 gives an XOR'd result under Windows, undefined
     results on all other platforms.
     \endlist
 

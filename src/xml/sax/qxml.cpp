@@ -516,29 +516,29 @@ private:
 
 
     \list
-        \o "no error occurred"
-        \o "error triggered by consumer"
-        \o "unexpected end of file"
-        \o "more than one document type definition"
-        \o "error occurred while parsing element"
-        \o "tag mismatch"
-        \o "error occurred while parsing content"
-        \o "unexpected character"
-        \o "invalid name for processing instruction"
-        \o "version expected while reading the XML declaration"
-        \o "wrong value for standalone declaration"
-        \o "encoding declaration or standalone declaration expected while reading the XML declaration"
-        \o "standalone declaration expected while reading the XML declaration"
-        \o "error occurred while parsing document type definition"
-        \o "letter is expected"
-        \o "error occurred while parsing comment"
-        \o "error occurred while parsing reference"
-        \o "internal general entity reference not allowed in DTD"
-        \o "external parsed general entity reference not allowed in attribute value"
-        \o "external parsed general entity reference not allowed in DTD"
-        \o "unparsed entity reference n wrong context"
-        \o "recursive entities"
-        \o "error in the text declaration of an external entity"
+        \li "no error occurred"
+        \li "error triggered by consumer"
+        \li "unexpected end of file"
+        \li "more than one document type definition"
+        \li "error occurred while parsing element"
+        \li "tag mismatch"
+        \li "error occurred while parsing content"
+        \li "unexpected character"
+        \li "invalid name for processing instruction"
+        \li "version expected while reading the XML declaration"
+        \li "wrong value for standalone declaration"
+        \li "encoding declaration or standalone declaration expected while reading the XML declaration"
+        \li "standalone declaration expected while reading the XML declaration"
+        \li "error occurred while parsing document type definition"
+        \li "letter is expected"
+        \li "error occurred while parsing comment"
+        \li "error occurred while parsing reference"
+        \li "internal general entity reference not allowed in DTD"
+        \li "external parsed general entity reference not allowed in attribute value"
+        \li "external parsed general entity reference not allowed in DTD"
+        \li "unparsed entity reference n wrong context"
+        \li "recursive entities"
+        \li "error in the text declaration of an external entity"
     \endlist
 
     Note that, if you want to display these error messages to your
@@ -3157,24 +3157,24 @@ bool QXmlSimpleReader::feature(const QString& name, bool *ok) const
 
     The \a name parameter must be one of the following strings:
     \table
-    \header \i Feature \i Default \i Notes
-    \row \i \e http://xml.org/sax/features/namespaces
-         \i true
-         \i If enabled, namespaces are reported to the content handler.
-    \row \i \e http://xml.org/sax/features/namespace-prefixes
-         \i false
-         \i If enabled, the original prefixed names
+    \header \li Feature \li Default \li Notes
+    \row \li \e http://xml.org/sax/features/namespaces
+         \li true
+         \li If enabled, namespaces are reported to the content handler.
+    \row \li \e http://xml.org/sax/features/namespace-prefixes
+         \li false
+         \li If enabled, the original prefixed names
             and attributes used for namespace declarations are
             reported.
-    \row \i \e http://trolltech.com/xml/features/report-whitespace-only-CharData
-         \i true
-         \i If enabled, CharData that consist of
+    \row \li \e http://trolltech.com/xml/features/report-whitespace-only-CharData
+         \li true
+         \li If enabled, CharData that consist of
             only whitespace characters are reported
             using QXmlContentHandler::characters(). If disabled, whitespace is silently
             discarded.
-    \row \i \e http://trolltech.com/xml/features/report-start-end-entity
-         \i false
-         \i If enabled, the parser reports
+    \row \li \e http://trolltech.com/xml/features/report-start-end-entity
+         \li false
+         \li If enabled, the parser reports
             QXmlContentHandler::startEntity() and
             QXmlContentHandler::endEntity() events, so character data
             might be reported in chunks.

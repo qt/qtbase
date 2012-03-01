@@ -55,16 +55,16 @@
     such as:
 
     \list
-    \o The difference between standard and model/view widgets
-    \o Adapters between forms and models
-    \o Developing a simple model/view application
-    \o Predefined models
-    \o Intermediate topics such as:
+    \li The difference between standard and model/view widgets
+    \li Adapters between forms and models
+    \li Developing a simple model/view application
+    \li Predefined models
+    \li Intermediate topics such as:
       \list
-      \o Tree views
-      \o Selection
-      \o Delegates
-      \o Debugging with model test
+      \li Tree views
+      \li Selection
+      \li Delegates
+      \li Debugging with model test
       \endlist
     \endlist
 
@@ -91,11 +91,11 @@
 
     \table
         \row
-            \o  Standard widgets use data that is part of the widget.
-            \o  \image standardwidget.png
+            \li  Standard widgets use data that is part of the widget.
+            \li  \image standardwidget.png
         \row
-            \o  View classes operate on external data (the model)
-            \o  \image modelview.png
+            \li  View classes operate on external data (the model)
+            \li  \image modelview.png
     \endtable
 
     \section2 1.1 Standard Widgets
@@ -133,30 +133,30 @@
 
     \table
         \header
-            \o  Widget
-            \o  Standard Widget\br
+            \li  Widget
+            \li  Standard Widget\br
                 (an item based convenience class)
-            \o  Model/View View Class\br
+            \li  Model/View View Class\br
                 (for use with external data)
         \row
-            \o  \inlineimage listview.png
-            \o  \l QListWidget
-            \o  \l QListView
+            \li  \inlineimage listview.png
+            \li  \l QListWidget
+            \li  \l QListView
         \row
-            \o  \inlineimage tableview.png
-            \o  \l QTableWidget
-            \o  \l QTableView
+            \li  \inlineimage tableview.png
+            \li  \l QTableWidget
+            \li  \l QTableView
         \row
-            \o  \inlineimage treeview.png
-            \o  \l QTreeWidget
-            \o  \l QTreeView
+            \li  \inlineimage treeview.png
+            \li  \l QTreeWidget
+            \li  \l QTreeView
         \row
-            \o  \inlineimage columnview.png
-            \o
-            \o  \l QColumnView shows a tree as a hierarchy of lists
+            \li  \inlineimage columnview.png
+            \li
+            \li  \l QColumnView shows a tree as a hierarchy of lists
         \row
-            \o  \inlineimage modelview-combobox.png
-            \o {2, 1} \l QComboBox can work as both a view class and also
+            \li  \inlineimage modelview-combobox.png
+            \li {2, 1} \l QComboBox can work as both a view class and also
                       as a traditional widget
     \endtable
 
@@ -212,8 +212,8 @@
     things:
 
     \list
-       \o How many rows and columns should be displayed.
-       \o What content should be printed into each cell.
+       \li How many rows and columns should be displayed.
+       \li What content should be printed into each cell.
     \endlist
 
     The model needs some code to respond to this.
@@ -271,33 +271,33 @@
 
     \table
         \header
-            \o \l{Qt::ItemDataRole}{enum Qt::ItemDataRole}
-            \o  Meaning
-            \o  Type
+            \li \l{Qt::ItemDataRole}{enum Qt::ItemDataRole}
+            \li  Meaning
+            \li  Type
         \row
-            \o \l{Qt::ItemDataRole}{}Qt::DisplayRole
-            \o  text
-            \o  QString
+            \li \l{Qt::ItemDataRole}{}Qt::DisplayRole
+            \li  text
+            \li  QString
         \row
-            \o \l{Qt::ItemDataRole}{Qt::FontRole}
-            \o  font
-            \o  QFont
+            \li \l{Qt::ItemDataRole}{Qt::FontRole}
+            \li  font
+            \li  QFont
         \row
-            \o \l{Qt::ItemDataRole}{BackgroundRole}
-            \o  brush for the background of the cell
-            \o  QBrush
+            \li \l{Qt::ItemDataRole}{BackgroundRole}
+            \li  brush for the background of the cell
+            \li  QBrush
         \row
-            \o \l{Qt::ItemDataRole}{Qt::TextAlignmentRole}
-            \o  text alignment
-            \o  \l{Qt::AlignmentFlag}{enum Qt::AlignmentFlag}
+            \li \l{Qt::ItemDataRole}{Qt::TextAlignmentRole}
+            \li  text alignment
+            \li  \l{Qt::AlignmentFlag}{enum Qt::AlignmentFlag}
         \row
-        \o {1, 3}  \l{Qt::ItemDataRole}{Qt::CheckStateRole}
-        \o {1, 3} suppresses checkboxes with \l{QVariant}{QVariant()},
+        \li {1, 3}  \l{Qt::ItemDataRole}{Qt::CheckStateRole}
+        \li {1, 3} suppresses checkboxes with \l{QVariant}{QVariant()},
 
               sets checkboxes with \l{Qt::CheckState}{Qt::Checked}
 
               or \l{Qt::CheckState}{Qt::Unchecked}
-        \o {1, 3}  \l{Qt::ItemDataRole}{enum Qt::ItemDataRole}
+        \li {1, 3}  \l{Qt::ItemDataRole}{enum Qt::ItemDataRole}
     \endtable
 
     Refer to the Qt namespace documentation to learn more about the
@@ -490,27 +490,27 @@
 
     \table
         \row
-            \o  QStringListModel
-            \o  Stores a list of strings
+            \li  QStringListModel
+            \li  Stores a list of strings
         \row
-            \o  QStandardItemModel
-            \o  Stores arbitrary hierarchical items
+            \li  QStandardItemModel
+            \li  Stores arbitrary hierarchical items
         \row
-            \o  QFileSystemModel\br
+            \li  QFileSystemModel\br
                 QDirModel
-            \o  Encapsulate the local file system
+            \li  Encapsulate the local file system
         \row
-            \o  QSqlQueryModel
-            \o  Encapsulate an SQL result set
+            \li  QSqlQueryModel
+            \li  Encapsulate an SQL result set
         \row
-            \o  QSqlTableModel
-            \o  Encapsulates an SQL table
+            \li  QSqlTableModel
+            \li  Encapsulates an SQL table
         \row
-            \o  QSqlRelationalTableModel
-            \o  Encapsulates an SQL table with foreign keys
+            \li  QSqlRelationalTableModel
+            \li  Encapsulates an SQL table with foreign keys
         \row
-            \o  QSortFilterProxyModel
-            \o  Sorts and/or filters another model
+            \li  QSortFilterProxyModel
+            \li  Sorts and/or filters another model
 
     \endtable
 
@@ -562,11 +562,11 @@
     Other references to delegates in Qt Documentation:
 
     \list
-    \o \l{Spin Box Delegate Example}
-    \o \l{QAbstractItemDelegate}{QAbstractItemDelegate Class Reference}
-    \o \l{QSqlRelationalDelegate}{QSqlRelationalDelegate Class Reference}
-    \o \l{QStyledItemDelegate}{QStyledItemDelegate Class Reference}
-    \o \l{QItemDelegate}{QItemDelegate Class Reference}
+    \li \l{Spin Box Delegate Example}
+    \li \l{QAbstractItemDelegate}{QAbstractItemDelegate Class Reference}
+    \li \l{QSqlRelationalDelegate}{QSqlRelationalDelegate Class Reference}
+    \li \l{QStyledItemDelegate}{QStyledItemDelegate Class Reference}
+    \li \l{QItemDelegate}{QItemDelegate Class Reference}
     \endlist
 
 
@@ -599,16 +599,16 @@
     Qt but also in several good books.
 
     \list 1
-       \o \bold{C++ GUI Programming with Qt 4} / Jasmin Blanchette, Mark Summerfield,
+       \li \b{C++ GUI Programming with Qt 4} / Jasmin Blanchette, Mark Summerfield,
           \e{Prentice Hall, 2nd edition}, ISBN 0-13-235416-0. Also available in
-          German: \bold{C++ GUI Programmierung mit Qt 4: Die offizielle Einführung},
+          German: \b{C++ GUI Programmierung mit Qt 4: Die offizielle Einführung},
           \e{Addison-Wesley}, ISBN 3-827327-29-6
-       \o \bold{The Book of Qt4, The Art of Building Qt Applications} / Daniel Molkentin,
+       \li \b{The Book of Qt4, The Art of Building Qt Applications} / Daniel Molkentin,
           \e{Open Source Press}, ISBN 1-59327-147-6.
-          Translated from \bold{Qt 4, Einführung in die Applikationsentwicklung},
+          Translated from \b{Qt 4, Einführung in die Applikationsentwicklung},
           \e{Open Source Press}, ISBN 3-937514-12-0.
-       \o \bold{Foundations of Qt Development} / Johan Thelin, \e{Apress}, ISBN 1-59059-831-8.
-       \o \bold{Advanced Qt Programming} / Mark Summerfield, \e{Prentice Hall}, ISBN 0-321-63590-6. 
+       \li \b{Foundations of Qt Development} / Johan Thelin, \e{Apress}, ISBN 1-59059-831-8.
+       \li \b{Advanced Qt Programming} / Mark Summerfield, \e{Prentice Hall}, ISBN 0-321-63590-6.
           This book covers Model/View programming on more than 150 pages. 
     \endlist
 
@@ -621,157 +621,157 @@
 
     \table
         \header
-            \o  Example name
-            \o  View class used
-            \o  Model used
-            \o  Aspects covered
-            \o
+            \li  Example name
+            \li  View class used
+            \li  Model used
+            \li  Aspects covered
+            \li
         \row
-            \o  Team Leaders
-            \o  QListview
-            \o  QStringListModel
-            \o
-            \o  Book 1, Chapter 10, Figure 10.6
+            \li  Team Leaders
+            \li  QListview
+            \li  QStringListModel
+            \li
+            \li  Book 1, Chapter 10, Figure 10.6
         \row
-            \o  Directory Viewer
-            \o  QTreeView
-            \o  QDirModel
-            \o
-            \o  Book 1, Chapter 10, Figure 10.7
+            \li  Directory Viewer
+            \li  QTreeView
+            \li  QDirModel
+            \li
+            \li  Book 1, Chapter 10, Figure 10.7
         \row
-            \o  Color Names
-            \o  QListView
-            \o  QSortFilterProxyModel
+            \li  Color Names
+            \li  QListView
+            \li  QSortFilterProxyModel
                 applied to QStringListModel
-            \o
-            \o  Book 1, Chapter 10, Figure 10.8
+            \li
+            \li  Book 1, Chapter 10, Figure 10.8
         \row
-            \o  Currencies
-            \o  QTableView
-            \o  custom model based on
+            \li  Currencies
+            \li  QTableView
+            \li  custom model based on
                 QAbstractTableModel
-            \o  Read only
-            \o  Book 1, Chapter 10, Figure 10.10
+            \li  Read only
+            \li  Book 1, Chapter 10, Figure 10.10
         \row
-            \o  Cities
-            \o  QTableView
-            \o  Custom model based on
+            \li  Cities
+            \li  QTableView
+            \li  Custom model based on
                 QAbstractTableModel
-            \o  Read / write
-            \o  Book 1, Chapter 10, Figure 10.12
+            \li  Read / write
+            \li  Book 1, Chapter 10, Figure 10.12
         \row
-            \o  Boolean Parser
-            \o  QTreeView
-            \o  Custom model based on
+            \li  Boolean Parser
+            \li  QTreeView
+            \li  Custom model based on
                 QAbstractItemModel
-            \o  Read only
-            \o  Book 1, Chapter 10, Figure 10.14
+            \li  Read only
+            \li  Book 1, Chapter 10, Figure 10.14
         \row
-            \o  Track Editor
-            \o  {2, 1} QTableWidget
-            \o  Custom delegate providing a custom editor
-            \o  Book 1, Chapter 10, Figure 10.15
+            \li  Track Editor
+            \li  {2, 1} QTableWidget
+            \li  Custom delegate providing a custom editor
+            \li  Book 1, Chapter 10, Figure 10.15
 
         \row
-            \o  Four directory views
-            \o  QListView
+            \li  Four directory views
+            \li  QListView
                 QTableView
                 QTreeView
-            \o  QDirModel
-            \o  Demonstrates the use of multiple views
-            \o  Book2, Chapter 8.2
+            \li  QDirModel
+            \li  Demonstrates the use of multiple views
+            \li  Book2, Chapter 8.2
         \row
-            \o  Address Book
-            \o  QListView
+            \li  Address Book
+            \li  QListView
                 QTableView
                 QTreeView
-            \o  Custom model based on
+            \li  Custom model based on
                 QAbstractTableModel
-            \o  Read / write
-            \o  Book2, Chapter 8.4
+            \li  Read / write
+            \li  Book2, Chapter 8.4
         \row
-            \o  Address Book with sorting
-            \o
-            \o  QProxyModel
-            \o  Introducing sort and filter capabilities
-            \o  Book2, Chapter 8.5
+            \li  Address Book with sorting
+            \li
+            \li  QProxyModel
+            \li  Introducing sort and filter capabilities
+            \li  Book2, Chapter 8.5
         \row
-            \o  Address Book
+            \li  Address Book
                 with checkboxes
-            \o
-            \o
-            \o  Introducing checkboxes in model/view
-            \o  Book2, Chapter 8.6
+            \li
+            \li
+            \li  Introducing checkboxes in model/view
+            \li  Book2, Chapter 8.6
         \row
-            \o  Address Book with transposed grid
-            \o
-            \o  Custom proxy Model based on QAbstractProxyModel
-            \o  Introducing a custom model
-            \o  Book2, Chapter 8.7
+            \li  Address Book with transposed grid
+            \li
+            \li  Custom proxy Model based on QAbstractProxyModel
+            \li  Introducing a custom model
+            \li  Book2, Chapter 8.7
         \row
-            \o  Address Book with drag and drop
-            \o
-            \o
-            \o  Introducing drag and drop support
-            \o  Book2, Chapter 8.8
+            \li  Address Book with drag and drop
+            \li
+            \li
+            \li  Introducing drag and drop support
+            \li  Book2, Chapter 8.8
         \row
-            \o  Address Book with custom editor
-            \o
-            \o
-            \o  Introducing custom delegates
-            \o  Book2, Chapter 8.9
+            \li  Address Book with custom editor
+            \li
+            \li
+            \li  Introducing custom delegates
+            \li  Book2, Chapter 8.9
         \row
-            \o  Views
-            \o  QListView
+            \li  Views
+            \li  QListView
                 QTableView
                 QTreeView
-            \o  QStandardItemModel
-            \o  Read only
-            \o  Book 3, Chapter 5, figure 5-3
+            \li  QStandardItemModel
+            \li  Read only
+            \li  Book 3, Chapter 5, figure 5-3
         \row
-            \o  Bardelegate
-            \o  QTableView
-            \o
-            \o  Custom delegate for presentation based on QAbstractItemDelegate
-            \o  Book 3, Chapter 5, figure 5-5
+            \li  Bardelegate
+            \li  QTableView
+            \li
+            \li  Custom delegate for presentation based on QAbstractItemDelegate
+            \li  Book 3, Chapter 5, figure 5-5
         \row
-            \o  Editdelegate
-            \o  QTableView
-            \o
-            \o  Custom delegate for editing based on QAbstractItemDelegate
-            \o  Book 3, Chapter 5, figure 5-6
+            \li  Editdelegate
+            \li  QTableView
+            \li
+            \li  Custom delegate for editing based on QAbstractItemDelegate
+            \li  Book 3, Chapter 5, figure 5-6
         \row
-            \o  Singleitemview
-            \o  Custom view based on QAbstractItemView
-            \o
-            \o  Custom view
-            \o  Book 3,
+            \li  Singleitemview
+            \li  Custom view based on QAbstractItemView
+            \li
+            \li  Custom view
+            \li  Book 3,
                 Chapter 5,
                 figure 5-7
         \row
-            \o  listmodel
-            \o  QTableView
-            \o  Custom Model based on QAbstractTableModel
-            \o  Read only
-            \o  Book 3, Chapter 5, Figure 5-8
+            \li  listmodel
+            \li  QTableView
+            \li  Custom Model based on QAbstractTableModel
+            \li  Read only
+            \li  Book 3, Chapter 5, Figure 5-8
         \row
-            \o  treemodel
-            \o  QTreeView
-            \o  Custom Model based on QAbstractItemModel
-            \o  Read only
-            \o  Book 3, Chapter 5, Figure 5-10
+            \li  treemodel
+            \li  QTreeView
+            \li  Custom Model based on QAbstractItemModel
+            \li  Read only
+            \li  Book 3, Chapter 5, Figure 5-10
         \row
-            \o  edit integers
-            \o  QListView
-            \o  Custom Model based on QAbstractListModel
-            \o  Read / write
-            \o  Book 3, Chapter 5, Listing 5-37, Figure 5-11
+            \li  edit integers
+            \li  QListView
+            \li  Custom Model based on QAbstractListModel
+            \li  Read / write
+            \li  Book 3, Chapter 5, Listing 5-37, Figure 5-11
         \row
-            \o  sorting
-            \o  QTableView
-            \o  QSortFilterProxyModel applied to QStringListModel
-            \o  Demonstrates sorting
-            \o  Book 3, Chapter 5, Figure 5-12
+            \li  sorting
+            \li  QTableView
+            \li  QSortFilterProxyModel applied to QStringListModel
+            \li  Demonstrates sorting
+            \li  Book 3, Chapter 5, Figure 5-12
     \endtable
 
 
@@ -782,108 +782,108 @@
 
     \table
         \header
-            \o  Example name
-            \o  View class used
-            \o  Model used
-            \o  Aspects covered
+            \li  Example name
+            \li  View class used
+            \li  Model used
+            \li  Aspects covered
         \row
-            \o  Address Book
-            \o  QTableView
-            \o  QAbstractTableModel
+            \li  Address Book
+            \li  QTableView
+            \li  QAbstractTableModel
                 QSortFilterProxyModel
-            \o  Usage of QSortFilterProxyModel to generate different
+            \li  Usage of QSortFilterProxyModel to generate different
                 subsets from one data pool
         \row
-            \o  Basic Sort/Filter Model
-            \o  QTreeView
-            \o  QStandardItemModel
+            \li  Basic Sort/Filter Model
+            \li  QTreeView
+            \li  QStandardItemModel
                 QSortFilterProxyModel
-            \o
+            \li
         \row
-            \o  Chart
-            \o  Custom view
-            \o  QStandardItemModel
-            \o  Designing custom views that cooperate with selection models
+            \li  Chart
+            \li  Custom view
+            \li  QStandardItemModel
+            \li  Designing custom views that cooperate with selection models
         \row
-            \o  Color Editor Factory
-            \o  {2, 1}  QTableWidget
-            \o  Enhancing the standard delegate with a new custom editor to choose colours
+            \li  Color Editor Factory
+            \li  {2, 1}  QTableWidget
+            \li  Enhancing the standard delegate with a new custom editor to choose colours
         \row
-            \o  Combo Widget Mapper
-            \o  QDataWidgetMapper to map QLineEdit, QTextEdit and QComboBox
-            \o  QStandardItemModel
-            \o  Shows how a QComboBox can serve as a view class
+            \li  Combo Widget Mapper
+            \li  QDataWidgetMapper to map QLineEdit, QTextEdit and QComboBox
+            \li  QStandardItemModel
+            \li  Shows how a QComboBox can serve as a view class
         \row
-            \o  Custom Sort/Filter Model
-            \o  QTreeView
-            \o  QStandardItemModel
+            \li  Custom Sort/Filter Model
+            \li  QTreeView
+            \li  QStandardItemModel
                 QSortFilterProxyModel
-            \o  Subclass QSortFilterProxyModel for advanced sorting and filtering
+            \li  Subclass QSortFilterProxyModel for advanced sorting and filtering
         \row
-            \o  Dir View
-            \o  QTreeView
-            \o  QDirModel
-            \o  Very small example to demonstrate how to assign a model to a view
+            \li  Dir View
+            \li  QTreeView
+            \li  QDirModel
+            \li  Very small example to demonstrate how to assign a model to a view
         \row
-            \o  Editable Tree Model
-            \o  QTreeView
-            \o  Custom tree model
-            \o  Comprehensive example for working with trees, demonstrates
+            \li  Editable Tree Model
+            \li  QTreeView
+            \li  Custom tree model
+            \li  Comprehensive example for working with trees, demonstrates
                 editing cells and tree structure with an underlying custom
                 model
         \row
-            \o  Fetch More
-            \o  QListView
-            \o  Custom list model
-            \o  Dynamically changing model
+            \li  Fetch More
+            \li  QListView
+            \li  Custom list model
+            \li  Dynamically changing model
         \row
-            \o  Frozen Column
-            \o  QTableView
-            \o  QStandardItemModel
-            \o
+            \li  Frozen Column
+            \li  QTableView
+            \li  QStandardItemModel
+            \li
         \row
-            \o  Interview
-            \o  Multiple
-            \o  Custom item model
-            \o  Multiple views
+            \li  Interview
+            \li  Multiple
+            \li  Custom item model
+            \li  Multiple views
         \row
-            \o  Pixelator
-            \o  QTableView
-            \o  Custom table model
-            \o  Implementation of a custom delegate
+            \li  Pixelator
+            \li  QTableView
+            \li  Custom table model
+            \li  Implementation of a custom delegate
         \row
-            \o  Puzzle
-            \o  QListView
-            \o  Custom list model
-            \o  Model/view with drag and drop
+            \li  Puzzle
+            \li  QListView
+            \li  Custom list model
+            \li  Model/view with drag and drop
         \row
-            \o  Simple DOM Model
-            \o  QTreeView
-            \o  Custom tree model
-            \o  Read only example for a custom tree model
+            \li  Simple DOM Model
+            \li  QTreeView
+            \li  Custom tree model
+            \li  Read only example for a custom tree model
         \row
-            \o  Simple Tree Model
-            \o  QTreeView
-            \o  Custom tree model
-            \o  Read only example for a custom tree model
+            \li  Simple Tree Model
+            \li  QTreeView
+            \li  Custom tree model
+            \li  Read only example for a custom tree model
         \row
-            \o  Simple Widget Mapper
-            \o  QDataWidgetMapper to map QLineEdit, QTextEdit and QSpinBox
-            \o  QStandardItemModel
-            \o  Basic QDataWidgetMapper usage
+            \li  Simple Widget Mapper
+            \li  QDataWidgetMapper to map QLineEdit, QTextEdit and QSpinBox
+            \li  QStandardItemModel
+            \li  Basic QDataWidgetMapper usage
         \row
-            \o  Spin Box Delegate
-            \o  QTableView
-            \o  QStandardItemModel
-            \o  Custom delegate that uses a spin box as a cell editor
+            \li  Spin Box Delegate
+            \li  QTableView
+            \li  QStandardItemModel
+            \li  Custom delegate that uses a spin box as a cell editor
         \row
-            \o  Spreadsheet
-            \o  {2, 1}  QTableView
-            \o  Custom delegates
+            \li  Spreadsheet
+            \li  {2, 1}  QTableView
+            \li  Custom delegates
         \row
-            \o  Star Delegate
-            \o  {2, 1}  QTableWidget
-            \o  Comprehensive custom delegate example.
+            \li  Star Delegate
+            \li  {2, 1}  QTableWidget
+            \li  Comprehensive custom delegate example.
     \endtable
 
     A \l{Model/View Programming}{reference document} for model/view technology
