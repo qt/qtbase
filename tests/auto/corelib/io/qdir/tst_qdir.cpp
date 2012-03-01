@@ -1214,7 +1214,8 @@ void tst_QDir::remove()
     f.close();
     QDir dir;
     QVERIFY(dir.remove("remove-test"));
-    QVERIFY(!dir.remove("/remove-test"));
+    // Test that the file just removed is gone
+    QVERIFY(!dir.remove("remove-test"));
     QTest::ignoreMessage(QtWarningMsg, "QDir::remove: Empty or null file name");
     QVERIFY(!dir.remove(""));
 }
