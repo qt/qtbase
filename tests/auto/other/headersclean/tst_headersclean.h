@@ -39,12 +39,23 @@
 **
 ****************************************************************************/
 
-#include "tst_headersclean.h"
-#include <QTest>
+#ifndef TST_HEADERSCLEAN_H
+#define TST_HEADERSCLEAN_H
 
-void tst_HeadersClean::initTestCase()
+#define signals int
+#define slots int
+#define emit public:;
+#define foreach public:;
+#define forever public:;
+
+#include <qt_headersclean_headers.h>
+#include <QObject>
+
+class tst_HeadersClean: public QObject
 {
-    QWARN("This is a compile test only");
-}
+    Q_OBJECT
+private Q_SLOTS:
+    void initTestCase();
+};
 
-QTEST_MAIN(tst_HeadersClean)
+#endif

@@ -39,12 +39,32 @@
 **
 ****************************************************************************/
 
-#include "tst_headersclean.h"
-#include <QTest>
+#ifndef QT_HEADERSCLEAN_HEADERS
+#define QT_HEADERSCLEAN_HEADERS
 
-void tst_HeadersClean::initTestCase()
-{
-    QWARN("This is a compile test only");
-}
+/*
+    This file should include all the headers to be tested by the headersclean
+    test.  It may be copied and customized for each module.
+*/
 
-QTEST_MAIN(tst_HeadersClean)
+#include <QtCore/QtCore>
+#include <QtConcurrent/QtConcurrent>
+#include <QtTest/QtTest>
+
+#include <QtNetwork/QtNetwork>
+#include <QtXml/QtXml>
+#include <QtSql/QtSql>
+#include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
+#include <QtPrintSupport/QtPrintSupport>
+#include <QtPlatformSupport/QtPlatformSupport>
+
+#ifndef QT_NO_OPENGL
+#include <QtOpenGL/QtOpenGL>
+#endif
+
+#if !defined(QT_NO_DBUS) && defined(Q_OS_UNIX)
+#include <QtDBus/QtDBus>
+#endif
+
+#endif
