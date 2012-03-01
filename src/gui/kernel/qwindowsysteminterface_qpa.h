@@ -98,7 +98,7 @@ public:
         Qt::TouchPointState state; //Qt::TouchPoint{Pressed|Moved|Stationary|Released}
         QVector2D velocity;     // in screen coordinate system, pixels / seconds
         QTouchEvent::TouchPoint::InfoFlags flags;
-        QList<QPointF> rawPositions; // in screen coordinates
+        QVector<QPointF> rawPositions; // in screen coordinates
     };
 
     static void registerTouchDevice(QTouchDevice *device);

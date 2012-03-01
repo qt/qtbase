@@ -753,7 +753,7 @@ public:
         qreal pressure() const;
         QVector2D velocity() const;
         InfoFlags flags() const;
-        QList<QPointF> rawScreenPositions() const;
+        QVector<QPointF> rawScreenPositions() const;
 
         // internal
         void setId(int id);
@@ -776,7 +776,7 @@ public:
         void setPressure(qreal pressure);
         void setVelocity(const QVector2D &v);
         void setFlags(InfoFlags flags);
-        void setRawScreenPositions(const QList<QPointF> &positions);
+        void setRawScreenPositions(const QVector<QPointF> &positions);
 
     private:
         QTouchEventTouchPointPrivate *d;

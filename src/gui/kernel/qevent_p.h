@@ -107,7 +107,7 @@ public:
     qreal pressure;
     QVector2D velocity;
     QTouchEvent::TouchPoint::InfoFlags flags;
-    QList<QPointF> rawScreenPositions;
+    QVector<QPointF> rawScreenPositions;
 };
 
 class QFileOpenEventPrivate
