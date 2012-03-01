@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="22" failures="8" tests="15" name="tst_Counting">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="testPassPass">
+    <!-- tag="row 1" message="QVERIFY(true)" type="info" -->
+    <!-- tag="row 2" message="QVERIFY(true)" type="info" -->
+  </testcase>
+  <testcase result="pass" name="testPassSkip">
+    <!-- tag="row 1" message="QVERIFY(true)" type="info" -->
+    <!-- tag="row 2" message="Skipping" type="skip" -->
+  </testcase>
+  <testcase result="fail" name="testPassFail">
+    <!-- tag="row 1" message="QVERIFY(true)" type="info" -->
+    <!-- tag="row 2" message="QVERIFY(false)" type="info" -->
+    <failure tag="row 2" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="testSkipPass">
+    <!-- tag="row 1" message="Skipping" type="skip" -->
+    <!-- tag="row 2" message="QVERIFY(true)" type="info" -->
+  </testcase>
+  <testcase name="testSkipSkip">
+    <!-- tag="row 1" message="Skipping" type="skip" -->
+    <!-- tag="row 2" message="Skipping" type="skip" -->
+  </testcase>
+  <testcase result="fail" name="testSkipFail">
+    <!-- tag="row 1" message="Skipping" type="skip" -->
+    <!-- tag="row 2" message="QVERIFY(false)" type="info" -->
+    <failure tag="row 2" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="testFailPass">
+    <!-- tag="row 1" message="QVERIFY(false)" type="info" -->
+    <failure tag="row 1" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+    <!-- tag="row 2" message="QVERIFY(true)" type="info" -->
+  </testcase>
+  <testcase result="fail" name="testFailSkip">
+    <!-- tag="row 1" message="QVERIFY(false)" type="info" -->
+    <failure tag="row 1" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+    <!-- tag="row 2" message="Skipping" type="skip" -->
+  </testcase>
+  <testcase result="fail" name="testFailFail">
+    <!-- tag="row 1" message="QVERIFY(false)" type="info" -->
+    <failure tag="row 1" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+    <!-- tag="row 2" message="QVERIFY(false)" type="info" -->
+    <failure tag="row 2" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="testFailInInit">
+    <failure tag="fail" message="Fail in init()" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="testFailInCleanup">
+    <!-- tag="fail" message="This test function should execute and then QFAIL in cleanup() " type="qdebug" -->
+    <failure tag="fail" message="Fail in cleanup()" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="testSkipInInit">
+    <!-- tag="skip" message="Skip in init()" type="skip" -->
+  </testcase>
+  <testcase result="pass" name="testSkipInCleanup">
+    <!-- tag="skip" message="This test function should execute and then QSKIP in cleanup() " type="qdebug" -->
+    <!-- tag="skip" message="Skip in cleanup()" type="skip" -->
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[QVERIFY(true)]]>
+<![CDATA[QVERIFY(true)]]>
+<![CDATA[QVERIFY(true)]]>
+<![CDATA[Skipping]]>
+<![CDATA[QVERIFY(true)]]>
+<![CDATA[QVERIFY(false)]]>
+<![CDATA[Skipping]]>
+<![CDATA[QVERIFY(true)]]>
+<![CDATA[Skipping]]>
+<![CDATA[Skipping]]>
+<![CDATA[Skipping]]>
+<![CDATA[QVERIFY(false)]]>
+<![CDATA[QVERIFY(false)]]>
+<![CDATA[QVERIFY(true)]]>
+<![CDATA[QVERIFY(false)]]>
+<![CDATA[Skipping]]>
+<![CDATA[QVERIFY(false)]]>
+<![CDATA[QVERIFY(false)]]>
+<![CDATA[This test function should execute and then QFAIL in cleanup() ]]>
+<![CDATA[Skip in init()]]>
+<![CDATA[This test function should execute and then QSKIP in cleanup() ]]>
+<![CDATA[Skip in cleanup()]]>
+  </system-err>
+</testsuite>

@@ -1,0 +1,93 @@
+********* Start testing of tst_Counting *********
+Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+INFO   : tst_Counting::initTestCase() entering
+PASS   : tst_Counting::initTestCase()
+INFO   : tst_Counting::testPassPass() entering
+INFO   : tst_Counting::testPassPass(row 1) QVERIFY(true)
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(111)]
+PASS   : tst_Counting::testPassPass(row 1)
+INFO   : tst_Counting::testPassPass(row 2) QVERIFY(true)
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(111)]
+PASS   : tst_Counting::testPassPass(row 2)
+INFO   : tst_Counting::testPassSkip() entering
+INFO   : tst_Counting::testPassSkip(row 1) QVERIFY(true)
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(111)]
+PASS   : tst_Counting::testPassSkip(row 1)
+SKIP   : tst_Counting::testPassSkip(row 2) Skipping
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(117)]
+INFO   : tst_Counting::testPassFail() entering
+INFO   : tst_Counting::testPassFail(row 1) QVERIFY(true)
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(111)]
+PASS   : tst_Counting::testPassFail(row 1)
+INFO   : tst_Counting::testPassFail(row 2) QVERIFY(false)
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(114)]
+FAIL!  : tst_Counting::testPassFail(row 2) 'false' returned FALSE. ()
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(114)]
+INFO   : tst_Counting::testSkipPass() entering
+SKIP   : tst_Counting::testSkipPass(row 1) Skipping
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(117)]
+INFO   : tst_Counting::testSkipPass(row 2) QVERIFY(true)
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(111)]
+PASS   : tst_Counting::testSkipPass(row 2)
+INFO   : tst_Counting::testSkipSkip() entering
+SKIP   : tst_Counting::testSkipSkip(row 1) Skipping
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(117)]
+SKIP   : tst_Counting::testSkipSkip(row 2) Skipping
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(117)]
+INFO   : tst_Counting::testSkipFail() entering
+SKIP   : tst_Counting::testSkipFail(row 1) Skipping
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(117)]
+INFO   : tst_Counting::testSkipFail(row 2) QVERIFY(false)
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(114)]
+FAIL!  : tst_Counting::testSkipFail(row 2) 'false' returned FALSE. ()
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(114)]
+INFO   : tst_Counting::testFailPass() entering
+INFO   : tst_Counting::testFailPass(row 1) QVERIFY(false)
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(114)]
+FAIL!  : tst_Counting::testFailPass(row 1) 'false' returned FALSE. ()
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(114)]
+INFO   : tst_Counting::testFailPass(row 2) QVERIFY(true)
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(111)]
+PASS   : tst_Counting::testFailPass(row 2)
+INFO   : tst_Counting::testFailSkip() entering
+INFO   : tst_Counting::testFailSkip(row 1) QVERIFY(false)
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(114)]
+FAIL!  : tst_Counting::testFailSkip(row 1) 'false' returned FALSE. ()
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(114)]
+SKIP   : tst_Counting::testFailSkip(row 2) Skipping
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(117)]
+INFO   : tst_Counting::testFailFail() entering
+INFO   : tst_Counting::testFailFail(row 1) QVERIFY(false)
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(114)]
+FAIL!  : tst_Counting::testFailFail(row 1) 'false' returned FALSE. ()
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(114)]
+INFO   : tst_Counting::testFailFail(row 2) QVERIFY(false)
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(114)]
+FAIL!  : tst_Counting::testFailFail(row 2) 'false' returned FALSE. ()
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(114)]
+INFO   : tst_Counting::testFailInInit() entering
+PASS   : tst_Counting::testFailInInit(before)
+FAIL!  : tst_Counting::testFailInInit(fail) Fail in init()
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(233)]
+PASS   : tst_Counting::testFailInInit(after)
+INFO   : tst_Counting::testFailInCleanup() entering
+PASS   : tst_Counting::testFailInCleanup(before)
+QDEBUG : tst_Counting::testFailInCleanup(fail) This test function should execute and then QFAIL in cleanup() 
+FAIL!  : tst_Counting::testFailInCleanup(fail) Fail in cleanup()
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(241)]
+PASS   : tst_Counting::testFailInCleanup(after)
+INFO   : tst_Counting::testSkipInInit() entering
+PASS   : tst_Counting::testSkipInInit(before)
+SKIP   : tst_Counting::testSkipInInit(skip) Skip in init()
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(235)]
+PASS   : tst_Counting::testSkipInInit(after)
+INFO   : tst_Counting::testSkipInCleanup() entering
+PASS   : tst_Counting::testSkipInCleanup(before)
+QDEBUG : tst_Counting::testSkipInCleanup(skip) This test function should execute and then QSKIP in cleanup() 
+SKIP   : tst_Counting::testSkipInCleanup(skip) Skip in cleanup()
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(243)]
+PASS   : tst_Counting::testSkipInCleanup(after)
+INFO   : tst_Counting::cleanupTestCase() entering
+PASS   : tst_Counting::cleanupTestCase()
+Totals: 16 passed, 8 failed, 8 skipped
+********* Finished testing of tst_Counting *********

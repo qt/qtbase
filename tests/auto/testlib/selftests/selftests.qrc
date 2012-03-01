@@ -75,6 +75,10 @@
         <file>expected_fetchbogus.txt</file>
         <file>expected_fetchbogus.xml</file>
         <file>expected_fetchbogus.xunitxml</file>
+        <file>expected_findtestdata.lightxml</file>
+        <file>expected_findtestdata.txt</file>
+        <file>expected_findtestdata.xml</file>
+        <file>expected_findtestdata.xunitxml</file>
         <file>expected_float.txt</file>
         <file>expected_globaldata.lightxml</file>
         <file>expected_globaldata.txt</file>
@@ -122,10 +126,14 @@
         <file>expected_subtest.txt</file>
         <file>expected_subtest.xml</file>
         <file>expected_subtest.xunitxml</file>
-        <file>expected_findtestdata.lightxml</file>
-        <file>expected_findtestdata.txt</file>
-        <file>expected_findtestdata.xml</file>
-        <file>expected_findtestdata.xunitxml</file>
+        <file>expected_verbose1.lightxml</file>
+        <file>expected_verbose1.txt</file>
+        <file>expected_verbose1.xml</file>
+        <file>expected_verbose1.xunitxml</file>
+        <file>expected_verbose2.lightxml</file>
+        <file>expected_verbose2.txt</file>
+        <file>expected_verbose2.xml</file>
+        <file>expected_verbose2.xunitxml</file>
         <file>expected_warnings.lightxml</file>
         <file>expected_warnings.txt</file>
         <file>expected_warnings.xml</file>
