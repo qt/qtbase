@@ -58,8 +58,6 @@
 
 #if defined (Q_WS_WIN)
 #include <private/qprintengine_win_p.h>
-#elif defined (Q_WS_MAC)
-#include <private/qprintengine_mac_p.h>
 #elif defined (QTOPIA_PRINTENGINE)
 #include <private/qprintengine_qws_p.h>
 #endif
@@ -176,11 +174,6 @@ void QPrinterPrivate::createDefaultEngines()
             paintEngine = pdfEngine;
             printEngine = pdfEngine;
         }
-#if defined (Q_WS_MAC)
-        QMacPrintEngine *macEngine = new QMacPrintEngine(printerMode);
-        paintEngine = macEngine;
-        printEngine = macEngine;
-#endif
         }
         break;
     case QPrinter::PdfFormat: {
