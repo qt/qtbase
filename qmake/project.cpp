@@ -81,7 +81,7 @@ enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST
                   E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_REPLACE,
-                  E_SIZE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS };
+                  E_SIZE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS, E_ENUMERATE_VARS };
 QHash<QString, ExpandFunc> qmake_expandFunctions()
 {
     static QHash<QString, ExpandFunc> *qmake_expand_functions = 0;
@@ -115,6 +115,7 @@ QHash<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("size", E_SIZE);
         qmake_expand_functions->insert("sort_depends", E_SORT_DEPENDS);
         qmake_expand_functions->insert("resolve_depends", E_RESOLVE_DEPENDS);
+        qmake_expand_functions->insert("enumerate_vars", E_ENUMERATE_VARS);
     }
     return *qmake_expand_functions;
 }
@@ -2477,6 +2478,9 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             }
         }
         break; }
+    case E_ENUMERATE_VARS:
+        ret += place.keys();
+        break;
     default: {
         fprintf(stderr, "%s:%d: Unknown replace function: %s\n",
                 parser.file.toLatin1().constData(), parser.line_no,
