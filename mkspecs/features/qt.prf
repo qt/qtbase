@@ -125,6 +125,27 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
 !isEmpty(QT_BUILD_TREE):QMAKE_LIBDIR = $$QT_BUILD_TREE/lib $$QMAKE_LIBDIR #as above, prepending prevents us from picking up "stale" libs
 QMAKE_LIBDIR += $$QMAKE_LIBDIR_QT
 
+qtestlib {
+    warning("CONFIG+=qtestlib is deprecated. Use QT+=testlib instead.")
+    QT += testlib
+}
+qdbus {
+    warning("CONFIG+=qdbus is deprecated. Use QT+=dbus instead.")
+    QT += dbus
+}
+help {
+    warning("CONFIG+=help is deprecated. Use QT+=help instead.")
+    QT += help-private   # sic!
+}
+designer {
+    warning("CONFIG+=desiger is deprecated. Use QT+=designer instead.")
+    QT += designer
+}
+uitools {
+    warning("CONFIG+=uitools is deprecated. Use QT+=uitools instead.")
+    QT += uitools
+}
+
 # Figure out from which modules we're wanting to use the private headers
 unset(using_privates)
 NEWQT =
