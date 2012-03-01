@@ -713,8 +713,18 @@ public:
         Q_DECLARE_FLAGS(InfoFlags, InfoFlag)
 
         explicit TouchPoint(int id = -1);
-        TouchPoint(const QTouchEvent::TouchPoint &other);
+        TouchPoint(const TouchPoint &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+        TouchPoint(TouchPoint &&other) : d(other.d) { other.d = 0; }
+        TouchPoint &operator=(TouchPoint &&other)
+        { qSwap(d, other.d); return *this; }
+#endif
         ~TouchPoint();
+
+        TouchPoint &operator=(const TouchPoint &other)
+        { if ( d != other.d ) { TouchPoint copy(other); swap(copy); } return *this; }
+
+        void swap(TouchPoint &other) { qSwap(d, other.d); }
 
         int id() const;
 
@@ -767,7 +777,6 @@ public:
         void setVelocity(const QVector2D &v);
         void setFlags(InfoFlags flags);
         void setRawScreenPositions(const QList<QPointF> &positions);
-        QTouchEvent::TouchPoint &operator=(const QTouchEvent::TouchPoint &other);
 
     private:
         QTouchEventTouchPointPrivate *d;
@@ -819,7 +828,7 @@ protected:
     friend class QApplication;
     friend class QApplicationPrivate;
 };
-
+Q_DECLARE_TYPEINFO(QTouchEvent::TouchPoint, Q_MOVABLE_TYPE);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchEvent::TouchPoint::InfoFlags)
 
 class QScrollPrepareEventPrivate;

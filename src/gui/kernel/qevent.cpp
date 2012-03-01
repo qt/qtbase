@@ -3621,7 +3621,7 @@ QTouchEvent::TouchPoint::TouchPoint(const QTouchEvent::TouchPoint &other)
 */
 QTouchEvent::TouchPoint::~TouchPoint()
 {
-    if (!d->ref.deref())
+    if (d && !d->ref.deref())
         delete d;
 }
 
@@ -4043,16 +4043,15 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
     d->flags = flags;
 }
 
-/*! \internal */
-QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::TouchPoint &other)
-{
-    other.d->ref.ref();
-    if (!d->ref.deref())
-        delete d;
-    d = other.d;
-    return *this;
-}
+/*!
+    \fn QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::TouchPoint &other)
+    \internal
+ */
 
+/*!
+    \fn void QTouchEvent::TouchPoint::swap(TouchPoint &other);
+    \internal
+*/
 
 /*!
     \class QScrollPrepareEvent
