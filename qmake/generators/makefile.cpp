@@ -306,7 +306,6 @@ MakefileGenerator::setProjectFile(QMakeProject *p)
         return;
     project = p;
     init();
-    usePlatformDir();
     findLibraries();
     if(Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE &&
        project->isActiveConfig("link_prl")) //load up prl's'
@@ -1028,7 +1027,6 @@ MakefileGenerator::writePrlFile(QTextStream &t)
 bool
 MakefileGenerator::writeProjectMakefile()
 {
-    usePlatformDir();
     QTextStream t(&Option::output);
 
     //header
@@ -1143,36 +1141,6 @@ MakefileGenerator::writePrlFile()
             QTextStream t(&ft);
             writePrlFile(t);
         }
-    }
-}
-
-// Manipulate directories, so it's possible to build
-// several cross-platform targets concurrently
-void
-MakefileGenerator::usePlatformDir()
-{
-    QString pltDir(project->first("QMAKE_PLATFORM_DIR"));
-    if(pltDir.isEmpty())
-        return;
-    QChar sep = QDir::separator();
-    QString slashPltDir = sep + pltDir;
-
-    QString dirs[] = { QString("OBJECTS_DIR"), QString("DESTDIR"), QString("QMAKE_PKGCONFIG_DESTDIR"),
-                       QString("SUBLIBS_DIR"), QString("DLLDESTDIR"), QString("QMAKE_LIBTOOL_DESTDIR"),
-                       QString("PRECOMPILED_DIR"), QString("QMAKE_LIBDIR_QT"), QString() };
-    for(int i = 0; !dirs[i].isEmpty(); ++i) {
-        QString filePath = project->first(dirs[i]);
-        project->values(dirs[i]) = QStringList(filePath + (filePath.isEmpty() ? pltDir : slashPltDir));
-    }
-
-    QString libs[] = { QString("QMAKE_LIBS_QT"), QString("QMAKE_LIBS_QT_THREAD"), QString("QMAKE_LIBS_QT_ENTRY"), QString() };
-    for(int i = 0; !libs[i].isEmpty(); ++i) {
-        QString filePath = project->first(libs[i]);
-        int fpi = filePath.lastIndexOf(sep);
-        if(fpi == -1)
-            project->values(libs[i]).prepend(pltDir + sep);
-        else
-            project->values(libs[i]) = QStringList(filePath.left(fpi) + slashPltDir + filePath.mid(fpi));
     }
 }
 
