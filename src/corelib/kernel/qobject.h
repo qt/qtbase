@@ -549,6 +549,52 @@ template <class T> inline const char * qobject_interface_iid()
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QObject *);
 #endif
 
+class Q_CORE_EXPORT QSignalBlocker
+{
+public:
+    inline explicit QSignalBlocker(QObject *o);
+    inline explicit QSignalBlocker(QObject &o);
+    inline ~QSignalBlocker();
+
+    inline void reblock();
+    inline void unblock();
+private:
+    Q_DISABLE_COPY(QSignalBlocker)
+    QObject * const m_o;
+    bool m_blocked;
+    bool m_inhibited;
+};
+
+QSignalBlocker::QSignalBlocker(QObject *o)
+    : m_o(o),
+      m_blocked(o && o->blockSignals(true)),
+      m_inhibited(false)
+{}
+
+QSignalBlocker::QSignalBlocker(QObject &o)
+    : m_o(&o),
+      m_blocked(o.blockSignals(true)),
+      m_inhibited(false)
+{}
+
+QSignalBlocker::~QSignalBlocker()
+{
+    if (m_o && !m_inhibited)
+        m_o->blockSignals(m_blocked);
+}
+
+void QSignalBlocker::reblock()
+{
+    if (m_o) m_o->blockSignals(true);
+    m_inhibited = false;
+}
+
+void QSignalBlocker::unblock()
+{
+    if (m_o) m_o->blockSignals(m_blocked);
+    m_inhibited = true;
+}
+
 namespace QtPrivate {
     inline QObject & deref_for_methodcall(QObject &o) { return  o; }
     inline QObject & deref_for_methodcall(QObject *o) { return *o; }

@@ -25,5 +25,7 @@ QtWidgets
 QtCore
 ------
 
+- QSignalBlocker: (new) RAII wrapper around QObject::blockSignals()
+
 QtGui
 -----

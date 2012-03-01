@@ -102,6 +102,7 @@ private slots:
 #ifndef QT_NO_PROCESS
     void recursiveSignalEmission();
 #endif
+    void signalBlocking();
     void blockingQueuedConnection();
     void childEvents();
     void installEventFilter();
@@ -2978,6 +2979,54 @@ void tst_QObject::recursiveSignalEmission()
     QCOMPARE(proc.exitCode(), 0);
 }
 #endif
+
+void tst_QObject::signalBlocking()
+{
+    SenderObject sender;
+    ReceiverObject receiver;
+
+    receiver.connect(&sender, SIGNAL(signal1()), SLOT(slot1()));
+
+    sender.emitSignal1();
+    QVERIFY(receiver.called(1));
+    receiver.reset();
+
+    {
+        QSignalBlocker blocker(&sender);
+
+        sender.emitSignal1();
+        QVERIFY(!receiver.called(1));
+        receiver.reset();
+
+        sender.blockSignals(false);
+
+        sender.emitSignal1();
+        QVERIFY(receiver.called(1));
+        receiver.reset();
+
+        sender.blockSignals(true);
+
+        sender.emitSignal1();
+        QVERIFY(!receiver.called(1));
+        receiver.reset();
+
+        blocker.unblock();
+
+        sender.emitSignal1();
+        QVERIFY(receiver.called(1));
+        receiver.reset();
+
+        blocker.reblock();
+
+        sender.emitSignal1();
+        QVERIFY(!receiver.called(1));
+        receiver.reset();
+    }
+
+    sender.emitSignal1();
+    QVERIFY(receiver.called(1));
+    receiver.reset();
+}
 
 void tst_QObject::blockingQueuedConnection()
 {
