@@ -43,6 +43,7 @@
 #include "chip.h"
 
 #include <QtGui>
+#include <QScrollBar>
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL>
 #endif
