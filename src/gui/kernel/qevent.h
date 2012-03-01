@@ -464,6 +464,7 @@ private:
     int replace_length;
     QString tentativeCommit;
 };
+Q_DECLARE_TYPEINFO(QInputMethodEvent::Attribute, Q_MOVABLE_TYPE);
 
 class Q_GUI_EXPORT QInputMethodQueryEvent : public QEvent
 {
