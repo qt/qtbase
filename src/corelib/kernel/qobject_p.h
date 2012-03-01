@@ -284,8 +284,9 @@ private:
 
 class QBoolBlocker
 {
+    Q_DISABLE_COPY(QBoolBlocker)
 public:
-    inline QBoolBlocker(bool &b, bool value=true):block(b), reset(b){block = value;}
+    explicit inline QBoolBlocker(bool &b, bool value=true):block(b), reset(b){block = value;}
     inline ~QBoolBlocker(){block = reset; }
 private:
     bool &block;
