@@ -3,7 +3,7 @@ TARGET		= moc
 
 DEFINES         += QT_MOC QT_NO_CAST_FROM_BYTEARRAY QT_NO_COMPRESS
 DESTDIR         = ../../../bin
-INCLUDEPATH	+= . 
+INCLUDEPATH	+= . $$OUT_PWD/../../corelib/global
 DEPENDPATH	+= .
 LIBS	        =
 OBJECTS_DIR	= .
