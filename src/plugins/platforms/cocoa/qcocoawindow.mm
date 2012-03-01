@@ -201,7 +201,7 @@ void QCocoaWindow::propagateSizeHints()
         [m_nsWindow setResizeIncrements : qt_mac_toNSSize(window()->sizeIncrement())];
 
     QSize baseSize = window()->baseSize();
-    if (!baseSize.isNull()) {
+    if (!baseSize.isNull() && baseSize.isValid()) {
         [m_nsWindow setFrameSize : NSMakeSize(baseSize.width(), baseSize.height()) display : YES];
     }
 }
