@@ -96,36 +96,36 @@ CONFIG -= qt
 #qmake
 qmake.path = $$[QT_HOST_BINS]
 win32 {
-   qmake.files=$$QT_BUILD_TREE/bin/qmake.exe
+   qmake.files = $$OUT_PWD/bin/qmake.exe
 } else {
-   qmake.files=$$QT_BUILD_TREE/bin/qmake
+   qmake.files = $$OUT_PWD/bin/qmake
 }
 INSTALLS += qmake
 
 #syncqt
 syncqt.path = $$[QT_HOST_BINS]
-syncqt.files=$$QT_BUILD_TREE/bin/syncqt
-win32:syncqt.files=$$QT_BUILD_TREE/bin/syncqt.bat
+syncqt.files = $$OUT_PWD/bin/syncqt
+win32:syncqt.files = $$OUT_PWD/bin/syncqt.bat
 INSTALLS += syncqt
 
 #qtmodule-configtests
 configtests.path = $$[QT_HOST_BINS]
-configtests.files=$$QT_BUILD_TREE/bin/qtmodule-configtests
+configtests.files = $$PWD/bin/qtmodule-configtests
 INSTALLS += configtests
 
 #mkspecs
 mkspecs.path = $$[QT_HOST_DATA]/mkspecs
-mkspecs.files=$$QT_BUILD_TREE/mkspecs/qconfig.pri $$QT_BUILD_TREE/mkspecs/qmodule.pri $$files($$QT_SOURCE_TREE/mkspecs/*)
-mkspecs.files -= $$QT_SOURCE_TREE/mkspecs/modules
+mkspecs.files = $$OUT_PWD/mkspecs/qconfig.pri $$OUT_PWD/mkspecs/qmodule.pri $$files($$PWD/mkspecs/*)
+mkspecs.files -= $$PWD/mkspecs/modules
 unix { 
    DEFAULT_QMAKESPEC = $$QMAKESPEC
    DEFAULT_QMAKESPEC ~= s,^.*mkspecs/,,g
    mkspecs.commands += $(DEL_FILE) $(INSTALL_ROOT)$$mkspecs.path/default; $(SYMLINK) $$DEFAULT_QMAKESPEC $(INSTALL_ROOT)$$mkspecs.path/default
-   mkspecs.files -= $$QT_SOURCE_TREE/mkspecs/default
+   mkspecs.files -= $$PWD/mkspecs/default
 }
-win32:!equals(QT_BUILD_TREE, $$QT_SOURCE_TREE) {
+win32:!equals(OUT_PWD, $$PWD) {
     # When shadow building on Windows, the default mkspec only exists in the build tree.
-    mkspecs.files += $$QT_BUILD_TREE/mkspecs/default
+    mkspecs.files += $$OUT_PWD/mkspecs/default
 }
 INSTALLS += mkspecs
 
