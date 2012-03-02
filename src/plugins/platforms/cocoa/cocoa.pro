@@ -32,6 +32,8 @@ OBJECTIVE_SOURCES += main.mm \
     qmacmime.mm \
     qcocoasystemsettings.mm \
     qcocoainputcontext.mm \
+    qpaintengine_mac.mm \
+    qprintengine_mac.mm \
 
 HEADERS += qcocoaintegration.h \
     qcocoatheme.h \
@@ -61,13 +63,15 @@ HEADERS += qcocoaintegration.h \
     qmacmime.h \
     qcocoasystemsettings.h \
     qcocoainputcontext.h \
+    qpaintengine_mac_p.h \
+    qprintengine_mac_p.h \
 
 FORMS += $$PWD/../../../widgets/dialogs/qfiledialog.ui
 RESOURCES += qcocoaresources.qrc
 
 LIBS += -framework Cocoa
 
-QT += core-private gui-private widgets-private platformsupport-private
+QT += core-private gui-private widgets-private platformsupport-private printsupport
 
 OTHER_FILES += cocoa.json
 target.path += $$[QT_INSTALL_PLUGINS]/platforms

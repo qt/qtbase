@@ -76,6 +76,13 @@ NSSize qt_mac_toNSSize(const QSize &qtSize);
 
 QColor qt_mac_toQColor(const NSColor *color);
 
+// Creates a mutable shape, it's the caller's responsibility to release.
+HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region);
+
+OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
+
+CGFloat qt_mac_get_scalefactor();
+
 QChar qt_mac_qtKey2CocoaKey(Qt::Key key);
 Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode);
 

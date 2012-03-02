@@ -132,6 +132,22 @@ NSImage *qt_mac_create_nsimage(const QPixmap &pm)
     return qt_mac_cgimage_to_nsimage(qt_mac_image_to_cgimage(image));
 }
 
+HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region)
+{
+    HIMutableShapeRef shape = HIShapeCreateMutable();
+    QVector<QRect> rects = region.rects();
+    if (!rects.isEmpty()) {
+        int n = rects.count();
+        const QRect *qt_r = rects.constData();
+        while (n--) {
+            CGRect cgRect = CGRectMake(qt_r->x(), qt_r->y(), qt_r->width(), qt_r->height());
+            HIShapeUnionWithRect(shape, &cgRect);
+            ++qt_r;
+        }
+    }
+    return shape;
+}
+
 NSSize qt_mac_toNSSize(const QSize &qtSize)
 {
     return NSMakeSize(qtSize.width(), qtSize.height());
@@ -536,6 +552,33 @@ NSRect qt_mac_flipRect(const QRect &rect, QWindow *window)
     QPlatformScreen *onScreen = QPlatformScreen::platformScreenForWindow(window);
     int flippedY = onScreen->geometry().height() - rect.y() - rect.height();
     return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
+}
+
+OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage)
+{
+    // Verbatim copy if HIViewDrawCGImage (as shown on Carbon-Dev)
+    OSStatus err = noErr;
+
+    require_action(inContext != NULL, InvalidContext, err = paramErr);
+    require_action(inBounds != NULL, InvalidBounds, err = paramErr);
+    require_action(inImage != NULL, InvalidImage, err = paramErr);
+
+    CGContextSaveGState( inContext );
+    CGContextTranslateCTM (inContext, 0, inBounds->origin.y + CGRectGetMaxY(*inBounds));
+    CGContextScaleCTM(inContext, 1, -1);
+
+    CGContextDrawImage(inContext, *inBounds, inImage);
+
+    CGContextRestoreGState(inContext);
+InvalidImage:
+InvalidBounds:
+InvalidContext:
+        return err;
+}
+
+CGFloat qt_mac_get_scalefactor()
+{
+    return [[NSScreen mainScreen] userSpaceScaleFactor];
 }
 
 QT_END_NAMESPACE

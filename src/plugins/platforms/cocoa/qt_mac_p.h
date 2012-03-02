@@ -159,7 +159,7 @@ class QMacCGContext
 {
     CGContextRef context;
 public:
-    QMacCGContext(QPainter *p); //qpaintengine_mac.cpp
+    QMacCGContext(QPainter *p); //qpaintengine_mac.mm
     inline QMacCGContext() { context = 0; }
     inline QMacCGContext(const QPaintDevice *pdev) {
         extern CGContextRef qt_mac_cg_context(const QPaintDevice *);
