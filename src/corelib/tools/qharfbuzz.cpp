@@ -122,7 +122,12 @@ HB_Bool qShapeItem(HB_ShaperItem *item)
 
 HB_Face qHBNewFace(void *font, HB_GetFontTableFunc tableFunc)
 {
-    return HB_NewFace(font, tableFunc);
+    return HB_AllocFace(font, tableFunc);
+}
+
+HB_Face qHBLoadFace(HB_Face face)
+{
+    return HB_LoadFace(face);
 }
 
 void qHBFreeFace(HB_Face face)

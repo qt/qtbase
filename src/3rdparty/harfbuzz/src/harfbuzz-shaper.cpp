@@ -995,7 +995,7 @@ static HB_Stream getTableStream(void *font, HB_GetFontTableFunc tableFunc, HB_Ta
     return stream;
 }
 
-HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
+HB_Face HB_AllocFace(void *font, HB_GetFontTableFunc tableFunc)
 {
     HB_Face face = (HB_Face )malloc(sizeof(HB_FaceRec));
     if (!face)
@@ -1012,6 +1012,30 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
     face->tmpLogClusters = 0;
     face->glyphs_substituted = false;
     face->buffer = 0;
+    face->font_for_init = font;
+    face->get_font_table_func = tableFunc;
+
+    return face;
+}
+
+HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
+{
+    HB_Face face = HB_AllocFace(font, tableFunc);
+    if (face)
+        face = HB_LoadFace(face);
+    return face;
+}
+
+HB_Face HB_LoadFace(HB_Face face)
+{
+    void *font = face->font_for_init;
+    if (!font)
+        return face;
+
+    HB_GetFontTableFunc tableFunc = face->get_font_table_func;
+
+    face->get_font_table_func = 0;
+    face->font_for_init = 0;
 
     HB_Error error = HB_Err_Ok;
     HB_Stream stream;
