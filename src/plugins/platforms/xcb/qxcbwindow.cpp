@@ -1281,7 +1281,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             m_syncValue.lo = event->data.data32[2];
             m_syncValue.hi = event->data.data32[3];
         } else {
-            qWarning() << "unhandled WM_PROTOCOLS message:" << connection()->atomName(event->data.data32[0]);
+            qWarning() << "QXcbWindow: Unhandled WM_PROTOCOLS message:" << connection()->atomName(event->data.data32[0]);
         }
     } else if (event->type == atom(QXcbAtom::XdndEnter)) {
         connection()->drag()->handleEnter(window(), event);
@@ -1292,7 +1292,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
     } else if (event->type == atom(QXcbAtom::XdndDrop)) {
         connection()->drag()->handleDrop(window(), event);
     } else {
-        qWarning() << "unhandled client message:" << connection()->atomName(event->type);
+        qWarning() << "QXcbWindow: Unhandled client message:" << connection()->atomName(event->type);
     }
 }
 

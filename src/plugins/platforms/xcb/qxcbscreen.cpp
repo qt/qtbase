@@ -55,6 +55,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
     , m_screen(screen)
     , m_number(number)
 {
+#ifdef Q_XCB_DEBUG
     qDebug();
     qDebug("Information of screen %d:", screen->root);
     qDebug("  width.........: %d", screen->width_in_pixels);
@@ -63,6 +64,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
     qDebug("  white pixel...: %x", screen->white_pixel);
     qDebug("  black pixel...: %x", screen->black_pixel);
     qDebug();
+#endif
 
     const quint32 mask = XCB_CW_EVENT_MASK;
     const quint32 values[] = {
@@ -93,7 +95,9 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
                                      atom(QXcbAtom::UTF8_STRING), 0, 1024), &error);
             if (windowManagerReply && windowManagerReply->format == 8 && windowManagerReply->type == atom(QXcbAtom::UTF8_STRING)) {
                 m_windowManagerName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply), xcb_get_property_value_length(windowManagerReply));
+#ifdef Q_XCB_DEBUG
                 qDebug("Running window manager: %s", qPrintable(m_windowManagerName));
+#endif
             } else if (error) {
                 connection->handleXcbError(error);
                 free(error);
