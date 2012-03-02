@@ -543,10 +543,6 @@ void QCoreApplication::init()
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = this;
 
-#ifndef QT_NO_THREAD
-    QThread::initialize();
-#endif
-
     // use the event dispatcher created by the app programmer (if any)
     if (!QCoreApplicationPrivate::eventDispatcher)
         QCoreApplicationPrivate::eventDispatcher = d->threadData->eventDispatcher;
@@ -602,7 +598,6 @@ QCoreApplication::~QCoreApplication()
     }
     if (globalThreadPool)
         globalThreadPool->waitForDone();
-    QThread::cleanup();
 #endif
 
     d_func()->threadData->eventDispatcher = 0;
