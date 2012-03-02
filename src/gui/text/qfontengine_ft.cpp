@@ -835,7 +835,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     }
 
     Glyph *g = set ? set->getGlyph(glyph, subPixelPosition) : 0;
-    if (g && g->format == format)
+    if (g && g->format == format && (fetchMetricsOnly || g->data))
         return g;
 
     QFontEngineFT::GlyphInfo info;
@@ -877,10 +877,28 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     if (err != FT_Err_Ok)
         qWarning("load glyph failed err=%x face=%p, glyph=%d", err, face, glyph);
 
-    if ((!set || set->outline_drawing) && fetchMetricsOnly)
-        return 0;
-
     FT_GlyphSlot slot = face->glyph;
+    if ((set && set->outline_drawing) || fetchMetricsOnly) {
+        g = new Glyph;
+        g->data = 0;
+        g->linearAdvance = slot->linearHoriAdvance >> 10;
+        int left  = FLOOR(slot->metrics.horiBearingX);
+        int right = CEIL(slot->metrics.horiBearingX + slot->metrics.width);
+        int top    = CEIL(slot->metrics.horiBearingY);
+        int bottom = FLOOR(slot->metrics.horiBearingY - slot->metrics.height);
+        g->width = TRUNC(right-left);
+        g->height = TRUNC(top-bottom);
+        g->x = TRUNC(left);
+        g->y = TRUNC(top);
+        g->advance = TRUNC(ROUND(slot->advance.x));
+        g->format = format;
+
+        if (set)
+            set->setGlyph(glyph, subPixelPosition, g);
+
+        return g;
+    }
+
     if (embolden) Q_FT_GLYPHSLOT_EMBOLDEN(slot);
     if (obliquen) {
         Q_FT_GLYPHSLOT_OBLIQUE(slot);
@@ -1870,7 +1888,7 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
     lockFace();
 
     Glyph *glyph = loadGlyphFor(g, subPixelPosition, antialias ? Format_A8 : Format_Mono);
-    if (!glyph) {
+    if (!glyph || !glyph->data) {
         unlockFace();
         return QFontEngine::alphaMapForGlyph(g);
     }
@@ -1907,7 +1925,7 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, co
     lockFace();
 
     Glyph *glyph = loadGlyphFor(g, subPixelPosition, Format_A32);
-    if (!glyph) {
+    if (!glyph || !glyph->data) {
         unlockFace();
         return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
     }
