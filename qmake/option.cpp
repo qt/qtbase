@@ -594,7 +594,8 @@ QStringList Option::mkspecPaths()
         for (QStringList::ConstIterator it = lst.begin(); it != lst.end(); ++it)
             ret << ((*it) + concat);
     }
-    ret << Option::mkfile::project_build_root + concat;
+    if (!Option::mkfile::project_build_root.isEmpty())
+        ret << Option::mkfile::project_build_root + concat;
     if (!Option::mkfile::project_root.isEmpty())
         ret << Option::mkfile::project_root + concat;
     ret << QLibraryInfo::location(QLibraryInfo::HostDataPath) + concat;
