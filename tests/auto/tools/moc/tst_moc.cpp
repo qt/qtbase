@@ -874,6 +874,8 @@ void tst_Moc::slotsWithVoidTemplate()
                              &test, SLOT(dummySlot(void))));
     QVERIFY(QObject::connect(&test, SIGNAL(mySignal(const TestTemplate<void> &)),
                              &test, SLOT(anotherSlot(const TestTemplate<void> &))));
+    QVERIFY(QObject::connect(&test, SIGNAL(myVoidSignal2()),
+                             &test, SLOT(dummySlot2())));
 }
 
 void tst_Moc::structQObject()
