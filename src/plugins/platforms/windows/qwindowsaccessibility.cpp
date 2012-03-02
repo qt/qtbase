@@ -121,6 +121,21 @@ void accessibleDebugClientCalls_helper(const char* funcName, const QAccessibleIn
 
 typedef QSharedPointer<QAccessibleInterface> QAIPointer;
 
+static bool compareAccessible(QAccessibleInterface *one, QAccessibleInterface *other)
+{
+    if (one == other) return true;
+    if (!one || !other) return false;
+
+    if (one->object() && other->object() && (one->object() == other->object()))
+        return true;
+    QAIPointer onePar(one->parent());
+    QAIPointer otherPar(other->parent());
+
+    if (compareAccessible(onePar.data(), otherPar.data()))
+        return onePar->indexOfChild(one) == otherPar->indexOfChild(other);
+    return false;
+}
+
 // This stuff is used for widgets/items with no window handle:
 typedef QMap<int, QPair<QObject*,int> > NotifyMap;
 Q_GLOBAL_STATIC(NotifyMap, qAccessibleRecentSentEvents)
@@ -1221,7 +1236,22 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accSelect(long flagsSelect, VARIAN
     return res ? S_OK : S_FALSE;
 }
 
-// moz: [important]
+/*!
+    \internal
+    Can return:
+
+  +-------------+------------------------------------------------------------------------------+
+  | VT_EMPTY    | None. Neither this object nor any of its children has the keyboard focus.    |
+  +-------------+------------------------------------------------------------------------------+
+  | VT_I4       | lVal is CHILDID_SELF. The object itself has the keyboard focus.              |
+  +-------------+------------------------------------------------------------------------------+
+  | VT_I4       | lVal contains the child ID of the child element that has the keyboard focus. |
+  +-------------+------------------------------------------------------------------------------+
+  | VT_DISPATCH | pdispVal member is the address of the IDispatch interface for the child      |
+  |             | object that has the keyboard focus.                                          |
+  +-------------+------------------------------------------------------------------------------+
+    moz: [important]
+*/
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accFocus(VARIANT *pvarID)
 {
     accessibleDebugClientCalls(accessible);
@@ -1229,16 +1259,20 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accFocus(VARIANT *pvarID)
         return E_FAIL;
 
     if (QAccessibleInterface *acc = accessible->focusChild()) {
-        QWindowsAccessible* wacc = new QWindowsAccessible(acc);
-        IDispatch *iface = 0;
-        wacc->QueryInterface(IID_IDispatch, (void**)&iface);
-        if (iface) {
+        if (compareAccessible(acc, accessible)) {
+            (*pvarID).vt = VT_I4;
+            (*pvarID).lVal = CHILDID_SELF;
+            delete acc;
+            return S_OK;
+        } else {
+            QWindowsAccessible* wacc = new QWindowsAccessible(acc);
+            IDispatch *iface = 0;
+            wacc->QueryInterface(IID_IDispatch, (void**)&iface);
             (*pvarID).vt = VT_DISPATCH;
             (*pvarID).pdispVal = iface;
             return S_OK;
-        } else {
-            delete wacc;
         }
+        delete acc;
     }
     (*pvarID).vt = VT_EMPTY;
     return S_FALSE;
