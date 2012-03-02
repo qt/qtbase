@@ -207,6 +207,7 @@ void tst_QMimeDatabase::mimeTypeForFileName_data()
     QTest::newRow("directory") << "/" << "inode/directory";
     QTest::newRow("doesn't exist, no extension") << "IDontExist" << "application/octet-stream";
     QTest::newRow("doesn't exist but has known extension") << "IDontExist.txt" << "text/plain";
+    QTest::newRow("empty") << "" << "application/octet-stream";
 }
 
 static inline QByteArray msgMimeTypeForFileNameFailed(const QList<QMimeType> &actual,
