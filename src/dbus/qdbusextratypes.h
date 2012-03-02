@@ -58,42 +58,39 @@ QT_BEGIN_NAMESPACE
 // defined in qhash.cpp
 Q_CORE_EXPORT uint qHash(const QString &key);
 
-class Q_DBUS_EXPORT QDBusObjectPath : private QString
+class Q_DBUS_EXPORT QDBusObjectPath
 {
+    QString m_path;
 public:
     inline QDBusObjectPath() { }
 
     inline explicit QDBusObjectPath(const char *path);
     inline explicit QDBusObjectPath(const QLatin1String &path);
     inline explicit QDBusObjectPath(const QString &path);
-    inline QDBusObjectPath &operator=(const QDBusObjectPath &path);
 
     inline void setPath(const QString &path);
 
     inline QString path() const
-    { return *this; }
+    { return m_path; }
 
 private:
     void doCheck();
 };
 
 inline QDBusObjectPath::QDBusObjectPath(const char *objectPath)
-    : QString(QString::fromLatin1(objectPath))
+    : m_path(QString::fromLatin1(objectPath))
 { doCheck(); }
 
 inline QDBusObjectPath::QDBusObjectPath(const QLatin1String &objectPath)
-    : QString(objectPath)
+    : m_path(objectPath)
 { doCheck(); }
 
 inline QDBusObjectPath::QDBusObjectPath(const QString &objectPath)
-    : QString(objectPath)
+    : m_path(objectPath)
 { doCheck(); }
 
-inline QDBusObjectPath &QDBusObjectPath::operator=(const QDBusObjectPath &_path)
-{ QString::operator=(_path); doCheck(); return *this; }
-
 inline void QDBusObjectPath::setPath(const QString &objectPath)
-{ QString::operator=(objectPath); doCheck(); }
+{ m_path = objectPath; doCheck(); }
 
 inline bool operator==(const QDBusObjectPath &lhs, const QDBusObjectPath &rhs)
 { return lhs.path() == rhs.path(); }
@@ -108,42 +105,39 @@ inline uint qHash(const QDBusObjectPath &objectPath)
 { return qHash(objectPath.path()); }
 
 
-class Q_DBUS_EXPORT QDBusSignature : private QString
+class Q_DBUS_EXPORT QDBusSignature
 {
+    QString m_signature;
 public:
     inline QDBusSignature() { }
 
     inline explicit QDBusSignature(const char *signature);
     inline explicit QDBusSignature(const QLatin1String &signature);
     inline explicit QDBusSignature(const QString &signature);
-    inline QDBusSignature &operator=(const QDBusSignature &signature);
 
     inline void setSignature(const QString &signature);
 
     inline QString signature() const
-    { return *this; }
+    { return m_signature; }
 
 private:
     void doCheck();
 };
 
 inline QDBusSignature::QDBusSignature(const char *dBusSignature)
-    : QString(QString::fromAscii(dBusSignature))
+    : m_signature(QString::fromAscii(dBusSignature))
 { doCheck(); }
 
 inline QDBusSignature::QDBusSignature(const QLatin1String &dBusSignature)
-    : QString(dBusSignature)
+    : m_signature(dBusSignature)
 { doCheck(); }
 
 inline QDBusSignature::QDBusSignature(const QString &dBusSignature)
-    : QString(dBusSignature)
+    : m_signature(dBusSignature)
 { doCheck(); }
 
-inline QDBusSignature &QDBusSignature::operator=(const QDBusSignature &dbusSignature)
-{ QString::operator=(dbusSignature); doCheck(); return *this; }
-
 inline void QDBusSignature::setSignature(const QString &dBusSignature)
-{ QString::operator=(dBusSignature); doCheck(); }
+{ m_signature = dBusSignature; doCheck(); }
 
 inline bool operator==(const QDBusSignature &lhs, const QDBusSignature &rhs)
 { return lhs.signature() == rhs.signature(); }
@@ -157,8 +151,9 @@ inline bool operator<(const QDBusSignature &lhs, const QDBusSignature &rhs)
 inline uint qHash(const QDBusSignature &signature)
 { return qHash(signature.signature()); }
 
-class QDBusVariant : private QVariant
+class QDBusVariant
 {
+    QVariant m_variant;
 public:
     inline QDBusVariant() { }
     inline explicit QDBusVariant(const QVariant &variant);
@@ -166,14 +161,14 @@ public:
     inline void setVariant(const QVariant &variant);
 
     inline QVariant variant() const
-    { return *this; }
+    { return m_variant; }
 };
 
 inline  QDBusVariant::QDBusVariant(const QVariant &dBusVariant)
-    : QVariant(dBusVariant) { }
+    : m_variant(dBusVariant) { }
 
 inline void QDBusVariant::setVariant(const QVariant &dBusVariant)
-{ QVariant::operator=(dBusVariant); }
+{ m_variant = dBusVariant; }
 
 inline bool operator==(const QDBusVariant &v1, const QDBusVariant &v2)
 { return v1.variant() == v2.variant(); }
