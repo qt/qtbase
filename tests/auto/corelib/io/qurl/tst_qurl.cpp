@@ -1001,6 +1001,7 @@ void tst_QUrl::toLocalFile()
 
     QUrl url(theUrl);
     QCOMPARE(url.toLocalFile(), theFile);
+    QCOMPARE(url.isLocalFile(), !theFile.isEmpty());
 }
 
 void tst_QUrl::fromLocalFile_data()
