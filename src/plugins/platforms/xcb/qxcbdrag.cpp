@@ -216,7 +216,7 @@ translateCoordinates(QXcbConnection *c, xcb_window_t from, xcb_window_t to, int 
 }
 
 static
-bool windowInteractsWithPosition(xcb_connection_t *connection, const QPoint & pos, xcb_window_t w, int shapeType)
+bool windowInteractsWithPosition(xcb_connection_t *connection, const QPoint & pos, xcb_window_t w, xcb_shape_sk_t shapeType)
 {
     bool interacts = true;
     xcb_shape_get_rectangles_reply_t *reply = xcb_shape_get_rectangles_reply(connection, xcb_shape_get_rectangles(connection, w, shapeType), NULL);
@@ -263,9 +263,11 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
                 free(reply);
                 if (isAware) {
                     // When ShapeInput and ShapeBounding are not set they return a single rectangle with the geometry of the window, this is why we
-                    // need an && here so that in the case one is set and the other is not we still get the correct result.
-                    windowContainsMouse = windowInteractsWithPosition(xcb_connection(), pos, w, XCB_SHAPE_SK_INPUT) &&
-                                          windowInteractsWithPosition(xcb_connection(), pos, w, XCB_SHAPE_SK_BOUNDING);
+                    // need to check both here so that in the case one is set and the other is not we still get the correct result.
+                    if (connection()->hasInputShape())
+                        windowContainsMouse = windowInteractsWithPosition(xcb_connection(), pos, w, XCB_SHAPE_SK_INPUT);
+                    if (windowContainsMouse && connection()->hasXShape())
+                        windowContainsMouse = windowInteractsWithPosition(xcb_connection(), pos, w, XCB_SHAPE_SK_BOUNDING);
                     if (windowContainsMouse)
                         return w;
                 }

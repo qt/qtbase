@@ -109,6 +109,8 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     , m_has_support_for_dri2(false)
 #endif
     , xfixes_first_event(0)
+    , has_shape_extension(false)
+    , has_input_shape(false)
 {
     m_primaryScreen = 0;
 
@@ -175,6 +177,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
 #ifdef XCB_USE_XINPUT2_MAEMO
     initializeXInput2();
 #endif
+    initializeXShape();
 
     m_wmSupport.reset(new QXcbWMSupport(this));
     m_keyboard = new QXcbKeyboard(this);
@@ -1048,6 +1051,25 @@ void QXcbConnection::initializeXRender()
     }
     free(xrender_query);
 #endif
+}
+
+void QXcbConnection::initializeXShape()
+{
+    const xcb_query_extension_reply_t *xshape_reply = xcb_get_extension_data(m_connection, &xcb_shape_id);
+    if (!xshape_reply || !xshape_reply->present)
+        return;
+
+    has_shape_extension = true;
+    xcb_shape_query_version_cookie_t cookie = xcb_shape_query_version(m_connection);
+    xcb_shape_query_version_reply_t *shape_query = xcb_shape_query_version_reply(m_connection,
+                                                                                 cookie, NULL);
+    if (!shape_query) {
+        qWarning("QXcbConnection: Failed to initialize SHAPE extension");
+    } else if (shape_query->major_version > 1 || (shape_query->major_version == 1 && shape_query->minor_version >= 1)) {
+        // The input shape is the only thing added in SHAPE 1.1
+        has_input_shape = true;
+    }
+    free(shape_query);
 }
 
 #if defined(XCB_USE_EGL)
