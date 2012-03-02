@@ -3141,7 +3141,12 @@ bool QWizard::event(QEvent *event)
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
     else if (event->type() == QEvent::Show && d->vistaInitPending) {
         d->vistaInitPending = false;
-        d->wizStyle = AeroStyle;
+        // Do not force AeroStyle when in Classic theme.
+        // Note that d->handleAeroStyleChange() needs to be called in any case as it does some
+        // necessary initialization, like ensures that the Aero specific back button is hidden if
+        // Aero theme isn't active.
+        if (QVistaHelper::vistaState() != QVistaHelper::Classic)
+            d->wizStyle = AeroStyle;
         d->handleAeroStyleChange();
     }
     else if (d->isVistaThemeEnabled()) {
