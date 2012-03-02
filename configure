@@ -651,7 +651,6 @@ CFG_CONFIGURE_EXIT_ON_ERROR=yes
 CFG_PROFILE=no
 CFG_EXCEPTIONS=unspecified
 CFG_GUI=auto # (yes|no|auto)
-CFG_INCREMENTAL=auto
 CFG_QCONFIG=full
 CFG_DEBUG=auto
 CFG_MYSQL_CONFIG=
@@ -888,7 +887,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1356,13 +1355,6 @@ while [ "$#" -gt 0 ]; do
             CFG_SHARED=no
         elif [ "$VAL" = "no" ]; then
             CFG_SHARED=yes
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    incremental)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_INCREMENTAL="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -6580,21 +6572,6 @@ else
    echo "QMAKESPEC = $XPLATFORM" >> "$CACHEFILE.tmp"
 fi
 
-# incrementals
-INCREMENTAL=""
-[ "$CFG_INCREMENTAL" = "auto" ] && "$WHICH" p4 >/dev/null 2>&1 && [ "$CFG_DEV" = "yes" ] && CFG_INCREMENTAL="yes"
-if [ "$CFG_INCREMENTAL" = "yes" ]; then
-    find "$relpath" -perm u+w -mtime -3 | grep 'cpp$' | while read f; do
-        # don't need to worry about generated files
-        [ -r `echo $f | sed "s,cpp$,ui,"` ] && continue
-        basename "$f" | grep '^moc_' >/dev/null 2>&1 && continue
-        # done
-        INCREMENTAL="$INCREMENTAL `basename \"$f\" | sed 's,.cpp,.o,'`"
-    done
-    [ '!' -z "$INCREMENTAL" ] && echo "QMAKE_INCREMENTAL += $INCREMENTAL" >> "$CACHEFILE.tmp"
-    [ -r "$outpath/.qmake.incremental" ] && echo "include($outpath/.qmake.incremental)" >> "$CACHEFILE.tmp"
-fi
-
 # replace .qmake.cache if it differs from the newly created temp file
 if cmp -s "$CACHEFILE.tmp" "$CACHEFILE"; then
     rm -f "$CACHEFILE.tmp"
@@ -6677,7 +6654,6 @@ if [ "$OPT_VERBOSE" = "yes" ]; then
     echo "qmake switches ......... $QMAKE_SWITCHES"
 fi
 
-[ "$CFG_INCREMENTAL" = "yes" ] && [ '!' -z "$INCREMENTAL" ] && echo "Incremental ............ $INCREMENTAL"
 echo "Build .................. $CFG_BUILD_PARTS"
 echo "Configuration .......... $QMAKE_CONFIG $QT_CONFIG"
 if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
