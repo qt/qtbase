@@ -65,7 +65,8 @@ OBJECTS = \
     qxmlutils.obj \
     quuid.obj \
     qcryptographichash.obj \
-    registry.obj
+    registry.obj \
+    configure_pch.obj
 
 $(TARGET): $(OBJECTS)
 	$(LINK) $(LFLAGS) /OUT:$(TARGET) @<<
