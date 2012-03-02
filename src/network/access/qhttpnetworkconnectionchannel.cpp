@@ -646,7 +646,7 @@ void QHttpNetworkConnectionChannel::allDone()
     Q_ASSERT(reply);
 
     if (!reply) {
-        qWarning() << "QHttpNetworkConnectionChannel::allDone() called without reply. Please report at http://bugreports.qt.nokia.com/";
+        qWarning() << "QHttpNetworkConnectionChannel::allDone() called without reply. Please report at http://bugreports.qt-project.org/";
         return;
     }
 

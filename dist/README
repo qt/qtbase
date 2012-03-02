@@ -74,7 +74,7 @@ HOW TO REPORT A BUG
 
 If you think you have found a bug in Qt, we would like to hear about
 it so that we can fix it.  The Qt bug tracking system is open to the
-public at http://bugreports.qt.nokia.com/.
+public at http://bugreports.qt-project.org/.
 
 Before reporting a bug, please use the bug-tracker's search functions
 and consult http://qt.nokia.com/developer/faqs/ to see if the issue is
