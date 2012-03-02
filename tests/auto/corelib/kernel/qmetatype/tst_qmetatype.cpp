@@ -100,12 +100,29 @@ private slots:
 
 struct Foo { int i; };
 
+
+class CustomQObject : public QObject
+{
+    Q_OBJECT
+public:
+    CustomQObject(QObject *parent = 0)
+      : QObject(parent)
+    {
+    }
+};
+
+class CustomNonQObject {};
+
 void tst_QMetaType::defined()
 {
     QCOMPARE(int(QMetaTypeId2<QString>::Defined), 1);
     QCOMPARE(int(QMetaTypeId2<Foo>::Defined), 0);
     QCOMPARE(int(QMetaTypeId2<void*>::Defined), 1);
     QCOMPARE(int(QMetaTypeId2<int*>::Defined), 0);
+    QVERIFY(QMetaTypeId2<CustomQObject*>::Defined);
+    QVERIFY(!QMetaTypeId2<CustomQObject>::Defined);
+    QVERIFY(!QMetaTypeId2<CustomNonQObject>::Defined);
+    QVERIFY(!QMetaTypeId2<CustomNonQObject*>::Defined);
 }
 
 struct Bar
