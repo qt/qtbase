@@ -114,7 +114,7 @@ class QResourceRoot
     };
     const uchar *tree, *names, *payloads;
     inline int findOffset(int node) const { return node * 14; } //sizeof each tree element
-    int hash(int node) const;
+    uint hash(int node) const;
     QString name(int node) const;
     short flags(int node) const;
 public:
@@ -594,7 +594,7 @@ QResource::searchPaths()
     return *resourceSearchPaths();
 }
 
-inline int QResourceRoot::hash(int node) const
+inline uint QResourceRoot::hash(int node) const
 {
     if(!node) //root
         return 0;
@@ -673,13 +673,13 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
             qDebug() << "   " << child+j << " :: " << name(child+j);
         }
 #endif
-        const int h = qHash(segment);
+        const uint h = qHash(segment);
 
         //do the binary search for the hash
         int l = 0, r = child_count-1;
         int sub_node = (l+r+1)/2;
         while(r != l) {
-            const int sub_node_hash = hash(child+sub_node);
+            const uint sub_node_hash = hash(child+sub_node);
             if(h == sub_node_hash)
                 break;
             else if(h < sub_node_hash)
