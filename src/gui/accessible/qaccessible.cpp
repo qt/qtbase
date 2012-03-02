@@ -1198,11 +1198,23 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
         if (iface->object()) {
             d << "obj=" << iface->object();
         }
-        if (iface->state().invisible) {
-            d << "invisible";
-        } else {
+        QStringList stateStrings;
+        QAccessible::State st = iface->state();
+        if (st.focusable)
+            stateStrings << QLatin1String("focusable");
+        if (st.focused)
+            stateStrings << QLatin1String("focused");
+        if (st.selected)
+            stateStrings << QLatin1String("selected");
+        if (st.invisible)
+            stateStrings << QLatin1String("invisible");
+
+        if (!stateStrings.isEmpty())
+            d << stateStrings.join(QLatin1String("|"));
+
+        if (!st.invisible)
             d << "rect=" << iface->rect();
-        }
+
     } else {
         d << " invalid";
     }
