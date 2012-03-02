@@ -262,9 +262,16 @@ void tst_QUrl::hashInPath()
     QCOMPARE(withHashInPath.path(), QString::fromLatin1("hi#mum.txt"));
     QCOMPARE(withHashInPath.toEncoded(), QByteArray("hi%23mum.txt"));
     QCOMPARE(withHashInPath.toString(), QString("hi%23mum.txt"));
+    QCOMPARE(withHashInPath.toDisplayString(QUrl::PreferLocalFile), QString("hi%23mum.txt"));
 
     QUrl fromHashInPath = QUrl::fromEncoded(withHashInPath.toEncoded());
     QVERIFY(withHashInPath == fromHashInPath);
+
+    const QUrl localWithHash = QUrl::fromLocalFile("/hi#mum.txt");
+    QCOMPARE(localWithHash.path(), QString::fromLatin1("/hi#mum.txt"));
+    QCOMPARE(localWithHash.toEncoded(), QByteArray("file:///hi%23mum.txt"));
+    QCOMPARE(localWithHash.toString(), QString("file:///hi%23mum.txt"));
+    QCOMPARE(localWithHash.toDisplayString(QUrl::PreferLocalFile), QString("/hi#mum.txt"));
 }
 
 void tst_QUrl::unc()
@@ -352,6 +359,7 @@ void tst_QUrl::setUrl()
         QCOMPARE(url.port(), -1);
         QCOMPARE(url.toString(), QString::fromLatin1("file:///"));
         QCOMPARE(url.toDisplayString(), QString::fromLatin1("file:///"));
+        QCOMPARE(url.toDisplayString(QUrl::PreferLocalFile), QString::fromLatin1("/"));
     }
 
     {
@@ -367,6 +375,7 @@ void tst_QUrl::setUrl()
         QCOMPARE(url.port(), 80);
         QCOMPARE(url.toString(), QString::fromLatin1("http://www.foo.bar:80"));
         QCOMPARE(url.toDisplayString(), QString::fromLatin1("http://www.foo.bar:80"));
+        QCOMPARE(url.toDisplayString(QUrl::PreferLocalFile), QString::fromLatin1("http://www.foo.bar:80"));
 
         QUrl url2("//www1.foo.bar");
         QCOMPARE(url.resolved(url2).toString(), QString::fromLatin1("http://www1.foo.bar"));
@@ -451,15 +460,7 @@ void tst_QUrl::setUrl()
         QUrl url = u1;
         QVERIFY(url.isValid());
         QCOMPARE(url.toString(), QString::fromLatin1("file:///home/dfaure/my#myref"));
-        QCOMPARE(url.fragment(), QString::fromLatin1("myref"));
-    }
-
-    {
-        QString u1 = "file:/home/dfaure/my#myref";
-        QUrl url = u1;
-        QVERIFY(url.isValid());
-
-        QCOMPARE(url.toString(), QString::fromLatin1("file:///home/dfaure/my#myref"));
+        QCOMPARE(url.toString(QUrl::PreferLocalFile), QString::fromLatin1("file:///home/dfaure/my#myref"));
         QCOMPARE(url.fragment(), QString::fromLatin1("myref"));
     }
 
