@@ -650,8 +650,6 @@ void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
 {
     Q_ASSERT(object);
 
-    qWarning("QAccessible::updateAccessibility is deprecated.");
-
     QAccessibleEvent event = QAccessibleEvent(reason, object, child);
     updateAccessibility(event);
 }
