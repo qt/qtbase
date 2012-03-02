@@ -47,6 +47,9 @@
 #include <private/qdrawhelper_arm_simd_p.h>
 #endif
 #include <private/qdrawhelper_neon_p.h>
+#ifdef QT_HAVE_MIPS_DSP
+#include <private/qdrawhelper_mips_dsp_p.h>
+#endif
 #include <private/qmath_p.h>
 #include <qmath.h>
 
@@ -6057,6 +6060,22 @@ void qInitDrawhelperAsm()
     }
 #endif
 
+#if defined(QT_HAVE_MIPS_DSP)
+        functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_asm_mips_dsp;
+        functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_mips_dsp;
+
+        qt_memfill32 = qt_memfill32_asm_mips_dsp;
+
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_mips_dsp;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_mips_dsp;
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_mips_dsp;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_mips_dsp;
+
+        destFetchProc[QImage::Format_ARGB32] = qt_destFetchARGB32_mips_dsp;
+
+        destStoreProc[QImage::Format_ARGB32] = qt_destStoreARGB32_mips_dsp;
+
+#endif // QT_HAVE_MIPS_DSP
     if (functionForModeSolidAsm) {
         const int destinationMode = QPainter::CompositionMode_Destination;
         functionForModeSolidAsm[destinationMode] = functionForModeSolid_C[destinationMode];

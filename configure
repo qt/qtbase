@@ -739,6 +739,8 @@ CFG_NAS=no
 CFG_ACCESSIBILITY=auto
 CFG_IWMMXT=no
 CFG_NEON=auto
+CFG_MIPS_DSP=yes
+CFG_MIPS_DSPR2=yes
 CFG_CLOCK_GETTIME=auto
 CFG_CLOCK_MONOTONIC=auto
 CFG_MREMAP=auto
@@ -1538,6 +1540,20 @@ while [ "$#" -gt 0 ]; do
     neon)
         if [ "$VAL" = "no" ]; then
             CFG_NEON="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    mips_dsp)
+        if [ "$VAL" = "no" ]; then
+            CFG_MIPS_DSP="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    mips_dspr2)
+        if [ "$VAL" = "no" ]; then
+            CFG_MIPS_DSPR2="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3093,6 +3109,8 @@ cat << EOF
     -no-sse4.2.......... Do not compile with use of SSE4.2 instructions.
     -no-avx ............ Do not compile with use of AVX instructions.
     -no-neon ........... Do not compile with use of NEON instructions.
+    -no-mips_dsp ....... Do not compile with use of MIPS DSP instructions.
+    -no-mips_dspr2 ..... Do not compile with use of MIPS DSP rev2 instructions.
 
     -qtnamespace <name>  Wraps all Qt library code in 'namespace <name> {...}'.
     -qtlibinfix <infix>  Renames all libQt*.so to libQt*<infix>.so.
@@ -4044,6 +4062,20 @@ if [ "$CFG_ARCH" = "arm" ] && [ "${CFG_NEON}" = "auto" ]; then
     fi
 elif [ "$CFG_ARCH" != "arm" ]; then
     CFG_NEON=no
+fi
+
+# detect mips_dsp support
+if [ "${CFG_ARCH}" = "mips" ] && [ "${CFG_MIPS_DSP}" = "yes" ]; then
+  CFG_MIPS_DSP=yes
+    else
+  CFG_MIPS_DSP=no
+fi
+
+# detect mips_dspr2 support
+if [ "${CFG_ARCH}" = "mips" ] && [ "${CFG_MIPS_DSPR2}" = "yes" ]; then
+  CFG_MIPS_DSPR2=yes
+    else
+  CFG_MIPS_DSPR2=no
 fi
 
 [ "$XPLATFORM_MINGW" = "yes" ] && QMakeVar add styles "windowsxp windowsvista"
@@ -5581,6 +5613,10 @@ fi
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
+if [ "$CFG_ARCH" = "mips" ]; then
+    [ "$CFG_MIPS_DSP" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mips_dsp"
+    [ "$CFG_MIPS_DSPR2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mips_dspr2"
+fi
 if [ "$CFG_CLOCK_GETTIME" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG clock-gettime"
 fi
@@ -6534,6 +6570,9 @@ if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
 elif [ "$CFG_ARCH" = "arm" ]; then
     echo "iWMMXt support ......... ${CFG_IWMMXT}"
     echo "NEON support ........... ${CFG_NEON}"
+fi
+if [ "$CFG_ARCH" = "mips" ]; then
+    echo "MIPS_DSP/MIPS_DSPR2..... ${CFG_MIPS_DSP}/${CFG_MIPS_DSPR2}"
 fi
 echo "IPv6 ifname support .... $CFG_IPV6IFNAME"
 echo "getaddrinfo support .... $CFG_GETADDRINFO"
