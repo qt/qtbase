@@ -203,6 +203,19 @@ class QVariantIsNull
     /// \internal
     /// This class checks if a type T has method called isNull. Result is kept in the Value property
     /// TODO Can we somehow generalize it? A macro version?
+#if defined(Q_COMPILER_DECLTYPE) // C++11 version
+    template<typename T>
+    class HasIsNullMethod {
+        struct Yes { char unused[1]; };
+        struct No { char unused[2]; };
+        Q_STATIC_ASSERT(sizeof(Yes) != sizeof(No));
+
+        template<class C> static decltype(static_cast<const C*>(0)->isNull(), Yes()) test(int);
+        template<class C> static No test(...);
+    public:
+        static const bool Value = (sizeof(test<T>(0)) == sizeof(Yes));
+    };
+#else // C++98 version (doesn't work for final classes)
     template<typename T, bool IsClass = QTypeInfo<T>::isComplex>
     class HasIsNullMethod
     {
@@ -211,7 +224,7 @@ class QVariantIsNull
         Q_STATIC_ASSERT(sizeof(Yes) != sizeof(No));
 
         struct FallbackMixin { bool isNull() const; };
-        struct Derived : public T, public FallbackMixin {};
+        struct Derived : public T, public FallbackMixin {}; // <- doesn't work for final classes
         template<class C, C> struct TypeCheck {};
 
         template<class C> static Yes test(...);
@@ -227,6 +240,7 @@ class QVariantIsNull
     public:
         static const bool Value = false;
     };
+#endif
 
     // TODO This part should go to autotests during HasIsNullMethod generalization.
     Q_STATIC_ASSERT(!HasIsNullMethod<bool>::Value);
@@ -236,6 +250,12 @@ class QVariantIsNull
     Q_STATIC_ASSERT(!HasIsNullMethod<SelfTest2>::Value);
     struct SelfTest3 : public SelfTest1 {};
     Q_STATIC_ASSERT(HasIsNullMethod<SelfTest3>::Value);
+    struct SelfTestFinal1 Q_DECL_FINAL_CLASS { bool isNull() const; };
+    Q_STATIC_ASSERT(HasIsNullMethod<SelfTestFinal1>::Value);
+    struct SelfTestFinal2 Q_DECL_FINAL_CLASS {};
+    Q_STATIC_ASSERT(!HasIsNullMethod<SelfTestFinal2>::Value);
+    struct SelfTestFinal3 Q_DECL_FINAL_CLASS : public SelfTest1 {};
+    Q_STATIC_ASSERT(HasIsNullMethod<SelfTestFinal3>::Value);
 
     template<typename T, bool HasIsNull = HasIsNullMethod<T>::Value>
     struct CallFilteredIsNull
