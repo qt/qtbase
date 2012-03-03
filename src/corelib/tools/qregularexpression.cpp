@@ -73,21 +73,21 @@ QT_BEGIN_NAMESPACE
     strings and texts. This is useful in many contexts, e.g.,
 
     \table
-    \row \i Validation
-         \i A regexp can test whether a substring meets some criteria,
+    \row \li Validation
+         \li A regexp can test whether a substring meets some criteria,
          e.g. is an integer or contains no whitespace.
-    \row \i Searching
-         \i A regexp provides more powerful pattern matching than
+    \row \li Searching
+         \li A regexp provides more powerful pattern matching than
          simple substring matching, e.g., match one of the words
          \e{mail}, \e{letter} or \e{correspondence}, but none of the
          words \e{email}, \e{mailman}, \e{mailer}, \e{letterbox}, etc.
-     \row \i Search and Replace
-         \i A regexp can replace all occurrences of a substring with a
+    \row \li Search and Replace
+         \li A regexp can replace all occurrences of a substring with a
          different substring, e.g., replace all occurrences of \e{&}
          with \e{\&amp;} except where the \e{&} is already followed by
          an \e{amp;}.
-    \row \i String Splitting
-         \i A regexp can be used to identify where a string should be
+    \row \li String Splitting
+         \li A regexp can be used to identify where a string should be
          split apart, e.g. splitting tab-delimited strings.
     \endtable
 
@@ -99,12 +99,12 @@ QT_BEGIN_NAMESPACE
     Good references about regular expressions include:
 
     \list
-    \o \e {Mastering Regular Expressions} (Third Edition) by Jeffrey E. F.
+    \li \e {Mastering Regular Expressions} (Third Edition) by Jeffrey E. F.
     Friedl, ISBN 0-596-52812-4;
-    \o the \l{http://pcre.org/pcre.txt} {pcrepattern(3)} man page, describing
+    \li the \l{http://pcre.org/pcre.txt} {pcrepattern(3)} man page, describing
     the pattern syntax supported by PCRE (the reference implementation of
     Perl-compatible regular expressions);
-    \o the \l{http://perldoc.perl.org/perlre.html} {Perl's regular expression
+    \li the \l{http://perldoc.perl.org/perlre.html} {Perl's regular expression
     documentation} and the \l{http://perldoc.perl.org/perlretut.html} {Perl's
     regular expression tutorial}.
     \endlist
@@ -117,7 +117,7 @@ QT_BEGIN_NAMESPACE
     supports Unicode. For an overview of the regular expression syntax
     supported by QRegularExpression, please refer to the aforementioned
     pcrepattern(3) man page. A regular expression is made up of two things: a
-    \bold{pattern string} and a set of \bold{pattern options} that change the
+    \b{pattern string} and a set of \b{pattern options} that change the
     meaning of the pattern string.
 
     You can set the pattern string by passing a string to the QRegularExpression
@@ -307,9 +307,9 @@ QT_BEGIN_NAMESPACE
     to do so we must distinguish three cases:
 
     \list
-    \o the input cannot possibly match the regular expression;
-    \o the input does match the regular expression;
-    \o the input does not match the regular expression right now,
+    \li the input cannot possibly match the regular expression;
+    \li the input does match the regular expression;
+    \li the input does not match the regular expression right now,
     but it will if more charaters will be added to it.
     \endlist
 
@@ -653,7 +653,7 @@ QT_BEGIN_NAMESPACE
 
     \value ExtendedPatternSyntaxOption
         Any whitespace in the pattern string which is not escaped and outside a
-        character class is ignored. Moreover, an unescaped sharp (\bold{#})
+        character class is ignored. Moreover, an unescaped sharp (\b{#})
         outside a character class causes all the following characters, until
         the first newline (included), to be ignored. This can be used to
         increase the readability of a pattern string as well as put comments
