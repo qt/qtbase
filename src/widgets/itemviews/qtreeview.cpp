@@ -848,7 +848,7 @@ void QTreeView::setSortingEnabled(bool enable)
 {
     Q_D(QTreeView);
     header()->setSortIndicatorShown(enable);
-    header()->setClickable(enable);
+    header()->setSectionsClickable(enable);
     if (enable) {
         //sortByColumn has to be called before we connect or set the sortingEnabled flag
         // because otherwise it will not call sort on the model.
@@ -2886,7 +2886,7 @@ void QTreeViewPrivate::initialize()
     q->setAttribute(Qt::WA_MacShowFocusRect);
 
     QHeaderView *header = new QHeaderView(Qt::Horizontal, q);
-    header->setMovable(true);
+    header->setSectionsMovable(true);
     header->setStretchLastSection(true);
     header->setDefaultAlignment(Qt::AlignLeft|Qt::AlignVCenter);
     q->setHeader(header);

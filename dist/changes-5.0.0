@@ -352,6 +352,22 @@ QtWidgets
   the proper Qt API: due to the version bump, QStyle will try to use the additional
   QStyleOption members, which are left default-initialized.
 
+* QHeaderView - The following functions have been obsoleted.
+
+  * void setMovable(bool movable) - use void setSectionsMovable(bool movable) instead.
+
+  * bool isMovable() const - use bool sectionsMovable() const instead.
+
+  * void setClickable(bool clickable) - use void setSectionsClickable(bool clickable) instead.
+
+  * bool isClickable() const - use bool sectionsClickable() instead.
+
+  * void setResizeMode(int logicalindex, ResizeMode mode) -
+    use setSectionResizeMode(logicalindex, mode) instead.
+
+  * ResizeMode resizeMode(int logicalindex) const -
+    use sectionResizeMode(int logicalindex) instead.
+
 QtNetwork
 ---------
 * QHostAddress::isLoopback() API added. Returns true if the address is

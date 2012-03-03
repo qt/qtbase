@@ -616,12 +616,12 @@ void QTableViewPrivate::init()
     q->setEditTriggers(editTriggers|QAbstractItemView::AnyKeyPressed);
 
     QHeaderView *vertical = new QHeaderView(Qt::Vertical, q);
-    vertical->setClickable(true);
+    vertical->setSectionsClickable(true);
     vertical->setHighlightSections(true);
     q->setVerticalHeader(vertical);
 
     QHeaderView *horizontal = new QHeaderView(Qt::Horizontal, q);
-    horizontal->setClickable(true);
+    horizontal->setSectionsClickable(true);
     horizontal->setHighlightSections(true);
     q->setHorizontalHeader(horizontal);
 

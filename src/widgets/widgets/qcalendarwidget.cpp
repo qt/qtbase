@@ -2068,9 +2068,9 @@ QCalendarWidget::QCalendarWidget(QWidget *parent)
     d->m_view->setSelectionBehavior(QAbstractItemView::SelectItems);
     d->m_view->setSelectionMode(QAbstractItemView::SingleSelection);
     d->m_view->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
-    d->m_view->horizontalHeader()->setClickable(false);
+    d->m_view->horizontalHeader()->setSectionsClickable(false);
     d->m_view->verticalHeader()->setResizeMode(QHeaderView::Stretch);
-    d->m_view->verticalHeader()->setClickable(false);
+    d->m_view->verticalHeader()->setSectionsClickable(false);
     d->m_selection = d->m_view->selectionModel();
     d->createNavigationBar(this);
     d->m_view->setFrameStyle(QFrame::NoFrame);

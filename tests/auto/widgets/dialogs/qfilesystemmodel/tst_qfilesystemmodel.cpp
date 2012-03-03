@@ -847,7 +847,7 @@ void tst_QFileSystemModel::sort()
     tree->resize(800, 800);
     QTest::qWait(500);
     tree->header()->setSortIndicator(1,Qt::DescendingOrder);
-    tree->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+    tree->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     QStringList dirsToOpen;
     do
     {

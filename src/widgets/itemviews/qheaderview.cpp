@@ -120,9 +120,9 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
 
     \section1 Moving Header Sections
 
-    A header can be fixed in place, or made movable with setMovable(). It can
-    be made clickable with setClickable(), and has resizing behavior in
-    accordance with setResizeMode().
+    A header can be fixed in place, or made movable with setSectionsMovable(). It can
+    be made clickable with setSectionsClickable(), and has resizing behavior in
+    accordance with setResizeMode() and setSectionResizeMode()
 
     \note Double-clicking on a header to resize a section only applies for
     visible rows.
@@ -185,7 +185,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
     The following values are obsolete:
     \value Custom Use Fixed instead.
 
-    \sa setResizeMode() stretchLastSection minimumSectionSize
+    \sa setResizeMode() setSectionResizeMode() stretchLastSection minimumSectionSize
 */
 
 /*!
@@ -216,7 +216,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
     This signal is emitted when a section is pressed. The section's logical
     index is specified by \a logicalIndex.
 
-    \sa setClickable()
+    \sa setSectionsClickable()
 */
 
 /*!
@@ -227,7 +227,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
 
     Note that the sectionPressed signal will also be emitted.
 
-    \sa setClickable(), sectionPressed()
+    \sa setSectionsClickable(), sectionPressed()
 */
 
 /*!
@@ -238,7 +238,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
     mouse button is pressed. The section's logical index is specified by
     \a logicalIndex.
 
-    \sa setClickable(), sectionPressed()
+    \sa setSectionsClickable(), sectionPressed()
 */
 
 /*!
@@ -247,7 +247,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
     This signal is emitted when a section is double-clicked. The section's
     logical index is specified by \a logicalIndex.
 
-    \sa setClickable()
+    \sa setSectionsClickable()
 */
 
 /*!
@@ -266,7 +266,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
     This signal is emitted when a section is double-clicked. The section's
     logical index is specified by \a logicalIndex.
 
-    \sa setClickable()
+    \sa setSectionsClickable()
 */
 
 /*!
@@ -1085,61 +1085,97 @@ int QHeaderView::logicalIndex(int visualIndex) const
 }
 
 /*!
-    If \a movable is true, the header may be moved by the user; otherwise it
+    If \a sectionsMovable is true, the header may be moved by the user; otherwise it
     is fixed in place.
 
-    \sa isMovable(), sectionMoved()
+    \sa sectionsMovable(), sectionMoved()
 */
 
-// ### Qt 5: change to setSectionsMovable()
-void QHeaderView::setMovable(bool movable)
+void QHeaderView::setSectionsMovable(bool movable)
 {
     Q_D(QHeaderView);
     d->movableSections = movable;
 }
 
+// ### Qt 6 - remove this obsolete function
+/*!
+    \obsolete
+    \fn void QHeaderView::setMovable(bool movable)
+
+    Use setSectionsMovable instead.
+
+    \sa setSectionsMovable()
+*/
+
 /*!
     Returns true if the header can be moved by the user; otherwise returns
     false.
 
-    \sa setMovable()
+    \sa setSectionsMovable()
 */
 
-// ### Qt 5: change to sectionsMovable()
-bool QHeaderView::isMovable() const
+bool QHeaderView::sectionsMovable() const
 {
     Q_D(const QHeaderView);
     return d->movableSections;
 }
 
+// ### Qt 6 - remove this obsolete function
+/*!
+    \obsolete
+    \fn bool QHeaderView::isMovable(bool movable)
+
+    Use sectionsMovable instead.
+
+    \sa sectionsMovable()
+*/
+
 /*!
     If \a clickable is true, the header will respond to single clicks.
 
-    \sa isClickable(), sectionClicked(), sectionPressed(),
+    \sa sectionsClickable(), sectionClicked(), sectionPressed(),
     setSortIndicatorShown()
 */
 
-// ### Qt 5: change to setSectionsClickable()
-void QHeaderView::setClickable(bool clickable)
+void QHeaderView::setSectionsClickable(bool clickable)
 {
     Q_D(QHeaderView);
     d->clickableSections = clickable;
 }
+
+// ### Qt 6 - remove this obsolete function
+/*!
+    \obsolete
+    \fn void QHeaderView::setClickable(bool clickable)
+
+    Use setSectionsClickable instead.
+
+    \sa setSectionsClickable()
+*/
 
 /*!
     Returns true if the header is clickable; otherwise returns false. A
     clickable header could be set up to allow the user to change the
     representation of the data in the view related to the header.
 
-    \sa setClickable()
+    \sa setSectionsClickable()
 */
 
-// ### Qt 5: change to sectionsClickable()
-bool QHeaderView::isClickable() const
+bool QHeaderView::sectionsClickable() const
 {
     Q_D(const QHeaderView);
     return d->clickableSections;
 }
+
+// ### Qt 6 - remove this obsolete function
+/*!
+    \obsolete
+    \fn bool QHeaderView::isClickable() const
+
+    Use sectionsClickable instead.
+
+    \sa sectionsClickable()
+*/
 
 void QHeaderView::setHighlightSections(bool highlight)
 {
@@ -1172,8 +1208,6 @@ void QHeaderView::setResizeMode(ResizeMode mode)
 }
 
 /*!
-    \overload
-
     Sets the constraints on how the section specified by \a logicalIndex in
     the header can be resized to those described by the given \a mode. The logical
     index should exist at the time this function is called.
@@ -1185,8 +1219,7 @@ void QHeaderView::setResizeMode(ResizeMode mode)
     \sa setStretchLastSection()
 */
 
-// ### Qt 5: change to setSectionResizeMode()
-void QHeaderView::setResizeMode(int logicalIndex, ResizeMode mode)
+void QHeaderView::setSectionResizeMode(int logicalIndex, ResizeMode mode)
 {
     Q_D(QHeaderView);
     int visual = visualIndex(logicalIndex);
@@ -1208,6 +1241,17 @@ void QHeaderView::setResizeMode(int logicalIndex, ResizeMode mode)
         d->doDelayedResizeSections(); // section sizes may change as a result of the new mode
 }
 
+// ### Qt 6 - remove this obsolete function
+/*!
+    \overload
+    \obsolete
+    \fn void QHeaderView::setResizeMode(int logicalIndex, ResizeMode mode)
+
+    Use setSectionResizeMode instead.
+
+    \sa setSectionResizeMode()
+*/
+
 /*!
     Returns the resize mode that applies to the section specified by the given
     \a logicalIndex.
@@ -1215,7 +1259,7 @@ void QHeaderView::setResizeMode(int logicalIndex, ResizeMode mode)
     \sa setResizeMode()
 */
 
-QHeaderView::ResizeMode QHeaderView::resizeMode(int logicalIndex) const
+QHeaderView::ResizeMode QHeaderView::sectionResizeMode(int logicalIndex) const
 {
     Q_D(const QHeaderView);
     int visual = visualIndex(logicalIndex);
@@ -1223,6 +1267,16 @@ QHeaderView::ResizeMode QHeaderView::resizeMode(int logicalIndex) const
         return Fixed; //the default value
     return d->headerSectionResizeMode(visual);
 }
+
+// ### Qt 6 - remove this obsolete function
+/*!
+    \obsolete
+    \fn QHeaderView::ResizeMode QHeaderView::resizeMode(int logicalIndex) const
+
+    Use sectionResizeMode instead.
+
+    \sa sectionResizeMode()
+*/
 
 /*!
     \since 4.1
@@ -1246,7 +1300,7 @@ int QHeaderView::stretchSectionCount() const
 
   By default, this property is false.
 
-  \sa setClickable()
+  \sa setSectionsClickable()
 */
 
 void QHeaderView::setSortIndicatorShown(bool show)
@@ -1299,8 +1353,8 @@ void QHeaderView::setSortIndicator(int logicalIndex, Qt::SortOrder order)
     }
 
     if (old != logicalIndex
-        && ((logicalIndex >= 0 && resizeMode(logicalIndex) == ResizeToContents)
-            || old >= d->sectionCount() || (old >= 0 && resizeMode(old) == ResizeToContents))) {
+        && ((logicalIndex >= 0 && sectionResizeMode(logicalIndex) == ResizeToContents)
+            || old >= d->sectionCount() || (old >= 0 && sectionResizeMode(old) == ResizeToContents))) {
         resizeSections();
         d->viewport->update();
     } else {
@@ -2207,7 +2261,7 @@ void QHeaderView::mousePressEvent(QMouseEvent *e)
             updateSection(d->pressed);
             d->state = QHeaderViewPrivate::SelectSections;
         }
-    } else if (resizeMode(handle) == Interactive) {
+    } else if (sectionResizeMode(handle) == Interactive) {
         d->originalSize = sectionSize(handle);
         d->state = QHeaderViewPrivate::ResizeSection;
         d->section = handle;
@@ -2289,7 +2343,7 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
 #ifndef QT_NO_CURSOR
             int handle = d->sectionHandleAt(pos);
             bool hasCursor = testAttribute(Qt::WA_SetCursor);
-            if (handle != -1 && (resizeMode(handle) == Interactive)) {
+            if (handle != -1 && (sectionResizeMode(handle) == Interactive)) {
                 if (!hasCursor)
                     setCursor(d->orientation == Qt::Horizontal ? Qt::SplitHCursor : Qt::SplitVCursor);
             } else if (hasCursor) {
@@ -2360,7 +2414,7 @@ void QHeaderView::mouseDoubleClickEvent(QMouseEvent *e)
     Q_D(QHeaderView);
     int pos = d->orientation == Qt::Horizontal ? e->x() : e->y();
     int handle = d->sectionHandleAt(pos);
-    if (handle > -1 && resizeMode(handle) == Interactive) {
+    if (handle > -1 && sectionResizeMode(handle) == Interactive) {
         emit sectionHandleDoubleClicked(handle);
 #ifndef QT_NO_CURSOR
         Qt::CursorShape splitCursor = (d->orientation == Qt::Horizontal)
@@ -2368,7 +2422,7 @@ void QHeaderView::mouseDoubleClickEvent(QMouseEvent *e)
         if (cursor().shape() == splitCursor) {
             // signal handlers may have changed the section size
             handle = d->sectionHandleAt(pos);
-            if (!(handle > -1 && resizeMode(handle) == Interactive))
+            if (!(handle > -1 && sectionResizeMode(handle) == Interactive))
                 setCursor(Qt::ArrowCursor);
         }
 #endif
@@ -2673,7 +2727,7 @@ void QHeaderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bot
         int first = orientation() == Qt::Horizontal ? topLeft.column() : topLeft.row();
         int last = orientation() == Qt::Horizontal ? bottomRight.column() : bottomRight.row();
         for (int i = first; i <= last && !resizeRequired; ++i)
-            resizeRequired = (resizeMode(i) == ResizeToContents);
+            resizeRequired = (sectionResizeMode(i) == ResizeToContents);
         if (resizeRequired)
             d->doDelayedResizeSections();
     }
