@@ -139,7 +139,9 @@ public:
     inline bool operator!=(const QPalette &p) const { return !(operator==(p)); }
     bool isCopyOf(const QPalette &p) const;
 
-    int serialNumber() const;
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline int serialNumber() const { return cacheKey() >> 32; }
+#endif
     qint64 cacheKey() const;
 
     QPalette resolve(const QPalette &) const;

@@ -8,7 +8,7 @@ isEmpty(QMAKE_QT_MODULE)|!exists($$QMAKE_QT_MODULE) {
    !exists($$QMAKE_QT_MODULE):exists($$QMAKE_CACHE_DIR/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$QMAKE_CACHE_DIR/mkspecs/qmodule.pri
    !exists($$QMAKE_QT_MODULE):exists($$QMAKE_CACHE_DIR/qtbase/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$QMAKE_CACHE_DIR/qtbase/mkspecs/qmodule.pri
    !exists($$QMAKE_QT_MODULE):if(!isEmpty(QT_BUILD_TREE) & exists($$QT_BUILD_TREE/mkspecs/qmodule.pri)):QMAKE_QT_MODULE = $$QT_BUILD_TREE/mkspecs/qmodule.pri
-   !exists($$QMAKE_QT_MODULE):exists($$[QT_INSTALL_DATA]/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$[QT_INSTALL_DATA]/mkspecs/qmodule.pri
+   !exists($$QMAKE_QT_MODULE):exists($$[QT_HOST_DATA]/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$[QT_HOST_DATA]/mkspecs/qmodule.pri
 }
 
 !contains(QMAKE_INTERNAL_INCLUDED_FILES, .*qmodule\\.pri) {

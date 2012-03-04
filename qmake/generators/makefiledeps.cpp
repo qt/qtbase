@@ -185,9 +185,9 @@ SourceFile *SourceFiles::lookupFile(const char *file)
 
 void SourceFiles::addFile(SourceFile *p, const char *k, bool own_file)
 {
-    QByteArray ba = p->file.local().toLatin1();
+    const QByteArray ba = p->file.local().toLatin1();
     if(!k)
-        k = ba;
+        k = ba.constData();
     int h = hash(k) % num_nodes;
     SourceFileNode *pn = new SourceFileNode;
     pn->own_file = own_file;

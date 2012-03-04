@@ -2132,7 +2132,8 @@ QString &QString::replace(QChar c, const QLatin1String &after, Qt::CaseSensitivi
 
 
 /*!
-  Returns true if string \a other is equal to this string; otherwise
+  \relates QString
+  Returns true if string \a s1 is equal to string \a s2; otherwise
   returns false.
 
   The comparison is based exclusively on the numeric Unicode values of
@@ -2140,12 +2141,12 @@ QString &QString::replace(QChar c, const QLatin1String &after, Qt::CaseSensitivi
   expect. Consider sorting user-interface strings with
   localeAwareCompare().
 */
-bool QString::operator==(const QString &other) const
+bool operator==(const QString &s1, const QString &s2)
 {
-    if (d->size != other.d->size)
+    if (s1.d->size != s2.d->size)
         return false;
 
-    return qMemEquals(d->data(), other.d->data(), d->size);
+    return qMemEquals(s1.d->data(), s2.d->data(), s1.d->size);
 }
 
 /*!
@@ -2200,17 +2201,18 @@ bool QString::operator==(const QLatin1String &other) const
 */
 
 /*!
-    Returns true if this string is lexically less than string \a
-    other; otherwise returns false.
+   \relates QString
+    Returns true if string \a s1 is lexically less than string
+    \a s2; otherwise returns false.
 
     The comparison is based exclusively on the numeric Unicode values
     of the characters and is very fast, but is not what a human would
     expect. Consider sorting user-interface strings using the
     QString::localeAwareCompare() function.
 */
-bool QString::operator<(const QString &other) const
+bool operator<(const QString &s1, const QString &s2)
 {
-    return ucstrcmp(constData(), length(), other.constData(), other.length()) < 0;
+    return ucstrcmp(s1.constData(), s1.length(), s2.constData(), s2.length()) < 0;
 }
 
 /*!
@@ -2261,10 +2263,11 @@ bool QString::operator<(const QLatin1String &other) const
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool QString::operator<=(const QString &other) const
+/*! \fn bool operator<=(const QString &s1, const QString &s2)
+    \relates QString
 
-    Returns true if this string is lexically less than or equal to
-    string \a other; otherwise returns false.
+    Returns true if string \a s1 is lexically less than or equal to
+    string \a s2; otherwise returns false.
 
     The comparison is based exclusively on the numeric Unicode values
     of the characters and is very fast, but is not what a human would
@@ -2304,10 +2307,11 @@ bool QString::operator<(const QLatin1String &other) const
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool QString::operator>(const QString &other) const
+/*! \fn bool operator>(const QString &s1, const QString &s2)
+    \relates QString
 
-    Returns true if this string is lexically greater than string \a
-    other; otherwise returns false.
+    Returns true if string \a s1 is lexically greater than string \a
+    s2; otherwise returns false.
 
     The comparison is based exclusively on the numeric Unicode values
     of the characters and is very fast, but is not what a human would
@@ -2363,10 +2367,11 @@ bool QString::operator>(const QLatin1String &other) const
     for example.
 */
 
-/*! \fn bool QString::operator>=(const QString &other) const
+/*! \fn bool operator>=(const QString &s1, const QString &s2)
+    \relates QString
 
-    Returns true if this string is lexically greater than or equal to
-    string \a other; otherwise returns false.
+    Returns true if string \a s1 is lexically greater than or equal to
+    string \a s2; otherwise returns false.
 
     The comparison is based exclusively on the numeric Unicode values
     of the characters and is very fast, but is not what a human would
@@ -2406,9 +2411,10 @@ bool QString::operator>(const QLatin1String &other) const
     for example.
 */
 
-/*! \fn bool QString::operator!=(const QString &other) const
+/*! \fn bool operator!=(const QString &s1, const QString &s2)
+    \relates QString
 
-    Returns true if this string is not equal to string \a other;
+    Returns true if string \a s1 is not equal to string \a s2;
     otherwise returns false.
 
     The comparison is based exclusively on the numeric Unicode values
@@ -4727,7 +4733,7 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
     } // else fall through
 #  endif
     // declared in <string.h>
-    int delta = strcoll(toLocal8Bit_helper(data1, length1), toLocal8Bit_helper(data2, length2));
+    int delta = strcoll(toLocal8Bit_helper(data1, length1).constData(), toLocal8Bit_helper(data2, length2).constData());
     if (delta == 0)
         delta = ucstrcmp(data1, length1, data2, length2);
     return delta;

@@ -2325,7 +2325,7 @@ void QTextCursor::insertImage(const QImage &image, const QString &name)
     }
     QString imageName = name;
     if (name.isEmpty())
-        imageName = QString::number(image.serialNumber());
+        imageName = QString::number(image.cacheKey());
     d->priv->document()->addResource(QTextDocument::ImageResource, QUrl(imageName), image);
     QTextImageFormat format;
     format.setName(imageName);

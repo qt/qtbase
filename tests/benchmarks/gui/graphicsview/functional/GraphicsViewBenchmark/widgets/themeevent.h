@@ -50,7 +50,7 @@ static QEvent::Type ThemeEventType = (QEvent::Type) 1010;
 class ThemeEvent : public QEvent
 {
 public:
-    ThemeEvent(QString newTheme, QEvent::Type type = ThemeEventType );
+    explicit ThemeEvent(const QString &newTheme, QEvent::Type type = ThemeEventType );
     ~ThemeEvent();
 
 public:

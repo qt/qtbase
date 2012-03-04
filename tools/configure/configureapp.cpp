@@ -1063,11 +1063,33 @@ void Configure::parseCmdLine()
             dictionary[ "QT_INSTALL_TESTS" ] = configCmdLine.at(i);
         }
 
-        else if (configCmdLine.at(i) == "-hostprefix") {
+        else if (configCmdLine.at(i) == "-sysroot") {
             ++i;
             if (i == argCount)
                 break;
-            dictionary[ "QT_HOST_PREFIX" ] = configCmdLine.at(i);
+            dictionary[ "CFG_SYSROOT" ] = configCmdLine.at(i);
+        }
+
+        else if (configCmdLine.at(i) == "-hostprefix") {
+            ++i;
+            if (i == argCount || configCmdLine.at(i).startsWith('-'))
+                dictionary[ "QT_HOST_PREFIX" ] = dictionary[ "QT_BUILD_TREE" ];
+            else
+                dictionary[ "QT_HOST_PREFIX" ] = configCmdLine.at(i);
+        }
+
+        else if (configCmdLine.at(i) == "-hostbindir") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary[ "QT_HOST_BINS" ] = configCmdLine.at(i);
+        }
+
+        else if (configCmdLine.at(i) == "-hostdatadir") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary[ "QT_HOST_DATA" ] = configCmdLine.at(i);
         }
 
         else if (configCmdLine.at(i) == "-make") {
@@ -2377,6 +2399,16 @@ void Configure::generateOutputVars()
     if (!dictionary[ "QT_INSTALL_TESTS" ].size())
         dictionary[ "QT_INSTALL_TESTS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/tests");
 
+    bool haveHpx = false;
+    if (dictionary[ "QT_HOST_PREFIX" ].isEmpty())
+        dictionary[ "QT_HOST_PREFIX" ] = dictionary[ "QT_INSTALL_PREFIX" ];
+    else
+        haveHpx = true;
+    if (dictionary[ "QT_HOST_BINS" ].isEmpty())
+        dictionary[ "QT_HOST_BINS" ] = haveHpx ? fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/bin") : dictionary[ "QT_INSTALL_BINS" ];
+    if (dictionary[ "QT_HOST_DATA" ].isEmpty())
+        dictionary[ "QT_HOST_DATA" ] = haveHpx ? dictionary[ "QT_HOST_PREFIX" ] : dictionary[ "QT_INSTALL_DATA" ];
+
     if (dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("linux"))
         dictionary[ "QMAKE_RPATHDIR" ] = dictionary[ "QT_INSTALL_LIBS" ];
 
@@ -2594,6 +2626,17 @@ void Configure::generateCachefile()
                      << "QT_MAJOR_VERSION = " << dictionary["VERSION_MAJOR"] << endl
                      << "QT_MINOR_VERSION = " << dictionary["VERSION_MINOR"] << endl
                      << "QT_PATCH_VERSION = " << dictionary["VERSION_PATCH"] << endl;
+
+        if (!dictionary["CFG_SYSROOT"].isEmpty()) {
+            QString targetSpec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : dictionary[ "QMAKESPEC" ];
+            configStream << endl
+                         << "# sysroot" << endl
+                         << targetSpec << " {" << endl
+                         << "    QMAKE_CFLAGS    += --sysroot=$$[QT_SYSROOT]" << endl
+                         << "    QMAKE_CXXFLAGS  += --sysroot=$$[QT_SYSROOT]" << endl
+                         << "    QMAKE_LFLAGS    += --sysroot=$$[QT_SYSROOT]" << endl
+                         << "}" << endl;
+        }
 
         configStream.flush();
         configFile.close();
@@ -2853,51 +2896,31 @@ void Configure::generateConfigfiles()
                   << endl
                   << "/* Build date */" << endl
                   << "static const char qt_configure_installation          [11  + 12] = \"qt_instdate=" << QDate::currentDate().toString(Qt::ISODate) << "\";" << endl
-                  << endl;
-        if (!dictionary[ "QT_HOST_PREFIX" ].isNull())
-            tmpStream << "#if !defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE)" << endl;
-        tmpStream << "static const char qt_configure_prefix_path_str       [512 + 12] = \"qt_prfxpath=" << escapeSeparators(dictionary["QT_INSTALL_PREFIX"]) << "\";" << endl
-                  << "static const char qt_configure_documentation_path_str[512 + 12] = \"qt_docspath=" << escapeSeparators(dictionary["QT_INSTALL_DOCS"]) << "\";"  << endl
-                  << "static const char qt_configure_headers_path_str      [512 + 12] = \"qt_hdrspath=" << escapeSeparators(dictionary["QT_INSTALL_HEADERS"]) << "\";"  << endl
-                  << "static const char qt_configure_libraries_path_str    [512 + 12] = \"qt_libspath=" << escapeSeparators(dictionary["QT_INSTALL_LIBS"]) << "\";"  << endl
-                  << "static const char qt_configure_binaries_path_str     [512 + 12] = \"qt_binspath=" << escapeSeparators(dictionary["QT_INSTALL_BINS"]) << "\";"  << endl
-                  << "static const char qt_configure_plugins_path_str      [512 + 12] = \"qt_plugpath=" << escapeSeparators(dictionary["QT_INSTALL_PLUGINS"]) << "\";"  << endl
-                  << "static const char qt_configure_imports_path_str      [512 + 12] = \"qt_impspath=" << escapeSeparators(dictionary["QT_INSTALL_IMPORTS"]) << "\";"  << endl
-                  << "static const char qt_configure_data_path_str         [512 + 12] = \"qt_datapath=" << escapeSeparators(dictionary["QT_INSTALL_DATA"]) << "\";"  << endl
-                  << "static const char qt_configure_translations_path_str [512 + 12] = \"qt_trnspath=" << escapeSeparators(dictionary["QT_INSTALL_TRANSLATIONS"]) << "\";" << endl
-                  << "static const char qt_configure_examples_path_str     [512 + 12] = \"qt_xmplpath=" << escapeSeparators(dictionary["QT_INSTALL_EXAMPLES"]) << "\";"  << endl
-                  << "static const char qt_configure_tests_path_str        [512 + 12] = \"qt_tstspath=" << escapeSeparators(dictionary["QT_INSTALL_TESTS"]) << "\";"  << endl
+                  << endl
+                  << "static const char qt_configure_prefix_path_strs[][12 + 512] = {" << endl
+                  << "    \"qt_prfxpath=" << escapeSeparators(dictionary["QT_INSTALL_PREFIX"]) << "\"," << endl
+                  << "    \"qt_docspath=" << escapeSeparators(dictionary["QT_INSTALL_DOCS"]) << "\","  << endl
+                  << "    \"qt_hdrspath=" << escapeSeparators(dictionary["QT_INSTALL_HEADERS"]) << "\","  << endl
+                  << "    \"qt_libspath=" << escapeSeparators(dictionary["QT_INSTALL_LIBS"]) << "\","  << endl
+                  << "    \"qt_binspath=" << escapeSeparators(dictionary["QT_INSTALL_BINS"]) << "\","  << endl
+                  << "    \"qt_plugpath=" << escapeSeparators(dictionary["QT_INSTALL_PLUGINS"]) << "\","  << endl
+                  << "    \"qt_impspath=" << escapeSeparators(dictionary["QT_INSTALL_IMPORTS"]) << "\","  << endl
+                  << "    \"qt_datapath=" << escapeSeparators(dictionary["QT_INSTALL_DATA"]) << "\","  << endl
+                  << "    \"qt_trnspath=" << escapeSeparators(dictionary["QT_INSTALL_TRANSLATIONS"]) << "\"," << endl
+                  << "    \"qt_xmplpath=" << escapeSeparators(dictionary["QT_INSTALL_EXAMPLES"]) << "\","  << endl
+                  << "    \"qt_tstspath=" << escapeSeparators(dictionary["QT_INSTALL_TESTS"]) << "\","  << endl
+                  << "#ifdef QT_BUILD_QMAKE" << endl
+                  << "    \"qt_ssrtpath=" << escapeSeparators(dictionary["CFG_SYSROOT"]) << "\"," << endl
+                  << "    \"qt_hpfxpath=" << escapeSeparators(dictionary["QT_HOST_PREFIX"]) << "\"," << endl
+                  << "    \"qt_hbinpath=" << escapeSeparators(dictionary["QT_HOST_BINS"]) << "\"," << endl
+                  << "    \"qt_hdatpath=" << escapeSeparators(dictionary["QT_HOST_DATA"]) << "\"," << endl
+                  << "#endif" << endl
+                  << "};" << endl
                   //<< "static const char qt_configure_settings_path_str [256] = \"qt_stngpath=" << escapeSeparators(dictionary["QT_INSTALL_SETTINGS"]) << "\";" << endl
-                  ;
-        if (!dictionary[ "QT_HOST_PREFIX" ].isNull()) {
-             tmpStream << "#else" << endl
-                       << "static const char qt_configure_prefix_path_str       [512 + 12] = \"qt_prfxpath=" << escapeSeparators(dictionary[ "QT_HOST_PREFIX" ]) << "\";" << endl
-                       << "static const char qt_configure_documentation_path_str[512 + 12] = \"qt_docspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/doc", true) <<"\";"  << endl
-                       << "static const char qt_configure_headers_path_str      [512 + 12] = \"qt_hdrspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/include", true) <<"\";"  << endl
-                       << "static const char qt_configure_libraries_path_str    [512 + 12] = \"qt_libspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/lib", true) <<"\";"  << endl
-                       << "static const char qt_configure_binaries_path_str     [512 + 12] = \"qt_binspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/bin", true) <<"\";"  << endl
-                       << "static const char qt_configure_plugins_path_str      [512 + 12] = \"qt_plugpath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/plugins", true) <<"\";"  << endl
-                       << "static const char qt_configure_imports_path_str      [512 + 12] = \"qt_impspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/imports", true) <<"\";"  << endl
-                       << "static const char qt_configure_data_path_str         [512 + 12] = \"qt_datapath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ], true) <<"\";"  << endl
-                       << "static const char qt_configure_translations_path_str [512 + 12] = \"qt_trnspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/translations", true) <<"\";" << endl
-                       << "static const char qt_configure_examples_path_str     [512 + 12] = \"qt_xmplpath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/example", true) <<"\";"  << endl
-                       << "static const char qt_configure_tests_path_str        [512 + 12] = \"qt_tstspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/tests", true) <<"\";"  << endl
-                       << "#endif //QT_BOOTSTRAPPED" << endl;
-        }
-        tmpStream << "/* strlen( \"qt_lcnsxxxx\") == 12 */" << endl
+                  << endl
+                  << "/* strlen( \"qt_lcnsxxxx\") == 12 */" << endl
                   << "#define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12;" << endl
                   << "#define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12;" << endl
-                  << "#define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12;" << endl
-                  << "#define QT_CONFIGURE_DOCUMENTATION_PATH qt_configure_documentation_path_str + 12;" << endl
-                  << "#define QT_CONFIGURE_HEADERS_PATH qt_configure_headers_path_str + 12;" << endl
-                  << "#define QT_CONFIGURE_LIBRARIES_PATH qt_configure_libraries_path_str + 12;" << endl
-                  << "#define QT_CONFIGURE_BINARIES_PATH qt_configure_binaries_path_str + 12;" << endl
-                  << "#define QT_CONFIGURE_PLUGINS_PATH qt_configure_plugins_path_str + 12;" << endl
-                  << "#define QT_CONFIGURE_IMPORTS_PATH qt_configure_imports_path_str + 12;" << endl
-                  << "#define QT_CONFIGURE_DATA_PATH qt_configure_data_path_str + 12;" << endl
-                  << "#define QT_CONFIGURE_TRANSLATIONS_PATH qt_configure_translations_path_str + 12;" << endl
-                  << "#define QT_CONFIGURE_EXAMPLES_PATH qt_configure_examples_path_str + 12;" << endl
-                  << "#define QT_CONFIGURE_TESTS_PATH qt_configure_tests_path_str + 12;" << endl
                   //<< "#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;" << endl
                   << endl;
 

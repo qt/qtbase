@@ -50,7 +50,7 @@ public:
     {
     }
 
-    StateSwitchEvent(int rand)
+    explicit StateSwitchEvent(int rand)
         : QEvent(Type(StateSwitchType)),
           m_rand(rand)
     {

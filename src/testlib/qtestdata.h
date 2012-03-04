@@ -89,6 +89,14 @@ inline QTestData &operator<<(QTestData &data, const char * value)
     return data;
 }
 
+#ifdef QT_USE_QSTRINGBUILDER
+template<typename A, typename B>
+inline QTestData &operator<<(QTestData &data, const QStringBuilder<A, B> &value)
+{
+    return data << typename QConcatenable<QStringBuilder<A, B> >::ConvertTo(value);
+}
+#endif
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

@@ -1,5 +1,5 @@
 !isEmpty(MODULE_PRI) {
-    pritarget.path = $$[QT_INSTALL_DATA]/mkspecs/modules
+    pritarget.path = $$[QT_HOST_DATA]/mkspecs/modules
     pritarget.files = $$MODULE_PRI
     INSTALLS += pritarget
 } else {

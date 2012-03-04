@@ -594,7 +594,7 @@ QStringList Option::mkspecPaths()
     ret << Option::mkfile::project_build_root + concat;
     if (!Option::mkfile::project_root.isEmpty())
         ret << Option::mkfile::project_root + concat;
-    ret << QLibraryInfo::location(QLibraryInfo::DataPath) + concat;
+    ret << QLibraryInfo::location(QLibraryInfo::HostDataPath) + concat;
     return ret;
 }
 

@@ -176,8 +176,8 @@ void WriteIconData::writeImage(QTextStream &output, const QString &indent,
 
 void WriteIconData::writeImage(QIODevice &output, DomImage *image)
 {
-    QByteArray array = transformImageData(image->elementData()->text());
-    output.write(array, array.size());
+    const QByteArray array = transformImageData(image->elementData()->text());
+    output.write(array.constData(), array.size());
 }
 
 } // namespace CPP

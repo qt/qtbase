@@ -46,11 +46,7 @@
 #include "qlibraryinfo.h"
 #include "qscopedpointer.h"
 
-#if defined(QT_BUILD_QMAKE) || defined(QT_BOOTSTRAPPED)
-# define BOOTSTRAPPING
-#endif
-
-#ifdef BOOTSTRAPPING
+#ifdef QT_BUILD_QMAKE
 QT_BEGIN_NAMESPACE
 extern QString qmake_libraryInfoFile();
 QT_END_NAMESPACE
@@ -97,7 +93,7 @@ public:
 QLibrarySettings::QLibrarySettings()
     : settings(QLibraryInfoPrivate::findConfiguration())
 {
-#ifndef BOOTSTRAPPING
+#ifndef QT_BUILD_QMAKE
     qAddPostRoutine(QLibraryInfoPrivate::cleanup);
 #endif
 }
@@ -105,7 +101,7 @@ QLibrarySettings::QLibrarySettings()
 QSettings *QLibraryInfoPrivate::findConfiguration()
 {
     QString qtconfig = QLatin1String(":/qt/etc/qt.conf");
-#ifdef BOOTSTRAPPING
+#ifdef QT_BUILD_QMAKE
     if(!QFile::exists(qtconfig))
         qtconfig = qmake_libraryInfoFile();
 #else
@@ -151,6 +147,8 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
 
     \sa QSysInfo, {Using qt.conf}
 */
+
+#ifndef QT_BUILD_QMAKE
 
 /*! \internal
 
@@ -214,135 +212,82 @@ QLibraryInfo::isDebugBuild()
     return false;
 }
 
+#endif // QT_BUILD_QMAKE
+
+static const struct {
+    char key[14], value[13];
+} qtConfEntries[] = {
+    { "Prefix", "" },
+    { "Documentation", "doc" },
+    { "Headers", "include" },
+    { "Libraries", "lib" },
+    { "Binaries", "bin" },
+    { "Plugins", "plugins" },
+    { "Imports", "imports" },
+    { "Data", "" },
+    { "Translations", "translations" },
+    { "Examples", "" },
+    { "Tests", "tests" },
+#ifdef QT_BUILD_QMAKE
+    { "Sysroot", "" },
+    { "HostPrefix", "" },
+    { "HostBinaries", "bin" },
+    { "HostData", "" },
+#endif
+};
+
 /*!
   Returns the location specified by \a loc.
 
 */
-
 QString
 QLibraryInfo::location(LibraryLocation loc)
 {
+#ifdef QT_BUILD_QMAKE
+    QString ret = rawLocation(loc);
+
+    // Automatically prepend the sysroot to target paths
+    if (loc < SysrootPath || loc > LastHostPath) {
+        QString sysroot = rawLocation(SysrootPath);
+        if (!sysroot.isEmpty() && ret.length() > 2 && ret.at(1) == QLatin1Char(':')
+            && (ret.at(2) == QLatin1Char('/') || ret.at(2) == QLatin1Char('\\')))
+            ret.replace(0, 2, sysroot); // Strip out the drive on Windows targets
+        else
+            ret.prepend(sysroot);
+    }
+
+    return ret;
+}
+
+QString
+QLibraryInfo::rawLocation(LibraryLocation loc)
+{
+#else
+# define rawLocation location
+#endif
     QString ret;
     if(!QLibraryInfoPrivate::configuration()) {
         const char *path = 0;
-        switch (loc) {
-#ifdef QT_CONFIGURE_PREFIX_PATH
-        case PrefixPath:
-            path = QT_CONFIGURE_PREFIX_PATH;
-            break;
-#endif
-#ifdef QT_CONFIGURE_DOCUMENTATION_PATH
-        case DocumentationPath:
-            path = QT_CONFIGURE_DOCUMENTATION_PATH;
-            break;
-#endif
-#ifdef QT_CONFIGURE_HEADERS_PATH
-        case HeadersPath:
-            path = QT_CONFIGURE_HEADERS_PATH;
-            break;
-#endif
-#ifdef QT_CONFIGURE_LIBRARIES_PATH
-        case LibrariesPath:
-            path = QT_CONFIGURE_LIBRARIES_PATH;
-            break;
-#endif
-#ifdef QT_CONFIGURE_BINARIES_PATH
-        case BinariesPath:
-            path = QT_CONFIGURE_BINARIES_PATH;
-            break;
-#endif
-#ifdef QT_CONFIGURE_PLUGINS_PATH
-        case PluginsPath:
-            path = QT_CONFIGURE_PLUGINS_PATH;
-            break;
-#endif
-#ifdef QT_CONFIGURE_IMPORTS_PATH
-        case ImportsPath:
-            path = QT_CONFIGURE_IMPORTS_PATH;
-            break;
-#endif
-#ifdef QT_CONFIGURE_DATA_PATH
-        case DataPath:
-            path = QT_CONFIGURE_DATA_PATH;
-            break;
-#endif
-#ifdef QT_CONFIGURE_TRANSLATIONS_PATH
-        case TranslationsPath:
-            path = QT_CONFIGURE_TRANSLATIONS_PATH;
-            break;
-#endif
-#ifdef QT_CONFIGURE_SETTINGS_PATH
-        case SettingsPath:
+        if (loc >= 0 && loc < sizeof(qt_configure_prefix_path_strs)/sizeof(qt_configure_prefix_path_strs[0]))
+            path = qt_configure_prefix_path_strs[loc] + 12;
+#ifndef Q_OS_WIN // On Windows we use the registry
+        else if (loc == SettingsPath)
             path = QT_CONFIGURE_SETTINGS_PATH;
-            break;
 #endif
-#ifdef QT_CONFIGURE_EXAMPLES_PATH
-        case ExamplesPath:
-            path = QT_CONFIGURE_EXAMPLES_PATH;
-            break;
-#endif
-#ifdef QT_CONFIGURE_TESTS_PATH
-        case TestsPath:
-            path = QT_CONFIGURE_TESTS_PATH;
-            break;
-#endif
-        default:
-            break;
-        }
 
         if (path)
             ret = QString::fromLocal8Bit(path);
     } else {
         QString key;
         QString defaultValue;
-        switch(loc) {
-        case PrefixPath:
-            key = QLatin1String("Prefix");
-            break;
-        case DocumentationPath:
-            key = QLatin1String("Documentation");
-            defaultValue = QLatin1String("doc");
-            break;
-        case HeadersPath:
-            key = QLatin1String("Headers");
-            defaultValue = QLatin1String("include");
-            break;
-        case LibrariesPath:
-            key = QLatin1String("Libraries");
-            defaultValue = QLatin1String("lib");
-            break;
-        case BinariesPath:
-            key = QLatin1String("Binaries");
-            defaultValue = QLatin1String("bin");
-            break;
-        case PluginsPath:
-            key = QLatin1String("Plugins");
-            defaultValue = QLatin1String("plugins");
-            break;
-        case ImportsPath:
-            key = QLatin1String("Imports");
-            defaultValue = QLatin1String("imports");
-            break;
-        case DataPath:
-            key = QLatin1String("Data");
-            break;
-        case TranslationsPath:
-            key = QLatin1String("Translations");
-            defaultValue = QLatin1String("translations");
-            break;
-        case SettingsPath:
-            key = QLatin1String("Settings");
-            break;
-        case ExamplesPath:
-            key = QLatin1String("Examples");
-            break;
-        case TestsPath:
-            key = QLatin1String("Tests");
-            defaultValue = QLatin1String("tests");
-            break;
-        default:
-            break;
+        if (loc >= 0 && loc < sizeof(qtConfEntries)/sizeof(qtConfEntries[0])) {
+            key = QLatin1String(qtConfEntries[loc].key);
+            defaultValue = QLatin1String(qtConfEntries[loc].value);
         }
+#ifndef Q_OS_WIN // On Windows we use the registry
+        else if (loc == SettingsPath)
+            key = QLatin1String("Settings");
+#endif
 
         if(!key.isNull()) {
             QSettings *config = QLibraryInfoPrivate::configuration();
@@ -366,11 +311,19 @@ QLibraryInfo::location(LibraryLocation loc)
 
     if (QDir::isRelativePath(ret)) {
         QString baseDir;
-        if (loc == PrefixPath) {
-            // we make the prefix path absolute to the executable's directory
-#ifdef BOOTSTRAPPING
+#ifdef QT_BUILD_QMAKE
+        if (loc == HostPrefixPath || loc == PrefixPath) {
+            // We make the prefix path absolute to the executable's directory.
+            // loc == PrefixPath while a sysroot is set would make no sense here.
             baseDir = QFileInfo(qmake_libraryInfoFile()).absolutePath();
+        } else if (loc == SysrootPath) {
+            // The sysroot is bare
+            return ret;
+        } else if (loc > SysrootPath && loc <= LastHostPath) {
+            // We make any other host path absolute to the host prefix directory.
+            baseDir = rawLocation(HostPrefixPath);
 #else
+        if (loc == PrefixPath) {
             if (QCoreApplication::instance()) {
 #ifdef Q_OS_MAC
                 CFBundleRef bundleRef = CFBundleGetMainBundle();
@@ -382,6 +335,7 @@ QLibraryInfo::location(LibraryLocation loc)
                     }
                 }
 #endif
+                // We make the prefix path absolute to the executable's directory.
                 baseDir = QCoreApplication::applicationDirPath();
             } else {
                 baseDir = QDir::currentPath();
@@ -389,7 +343,7 @@ QLibraryInfo::location(LibraryLocation loc)
 #endif
         } else {
             // we make any other path absolute to the prefix directory
-            baseDir = location(PrefixPath);
+            baseDir = rawLocation(PrefixPath);
         }
         ret = QDir::cleanPath(baseDir + QLatin1Char('/') + ret);
     }
@@ -413,9 +367,9 @@ QLibraryInfo::location(LibraryLocation loc)
     \value ImportsPath The location of installed QML extensions to import.
     \value DataPath The location of general Qt data.
     \value TranslationsPath The location of translation information for Qt strings.
-    \value SettingsPath The location for Qt settings.
     \value ExamplesPath The location for examples upon install.
     \value TestsPath The location of installed Qt testcases.
+    \value SettingsPath The location for Qt settings. Not applicable on Windows.
 
     \sa location()
 */
@@ -443,9 +397,9 @@ void qt_core_boilerplate()
            "Library path:        %s\n"
            "Include path:        %s\n",
            qt_configure_installation + 12,
-           qt_configure_prefix_path_str + 12,
-           qt_configure_libraries_path_str + 12,
-           qt_configure_headers_path_str + 12);
+           qt_configure_prefix_path_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::PrefixPath] + 12,
+           qt_configure_prefix_path_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::LibrariesPath] + 12,
+           qt_configure_prefix_path_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::HeadersPath] + 12);
 
     QT_PREPEND_NAMESPACE(qDumpCPUFeatures)();
 

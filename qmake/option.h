@@ -46,6 +46,7 @@
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qfile.h>
+#include <qlibraryinfo.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -218,28 +219,6 @@ private:
 
 inline QString fixEnvVariables(const QString &x) { return Option::fixString(x, Option::FixEnvVars); }
 inline QStringList splitPathList(const QString &paths) { return paths.split(Option::dirlist_sep); }
-
-// this is a stripped down version of the one found in QtCore
-class QLibraryInfo
-{
-public:
-    enum LibraryLocation
-    {
-        PrefixPath,
-        DocumentationPath,
-        HeadersPath,
-        LibrariesPath,
-        BinariesPath,
-        PluginsPath,
-        DataPath,
-        TranslationsPath,
-        SettingsPath,
-        ExamplesPath,
-        ImportsPath,
-        TestsPath
-    };
-    static QString location(LibraryLocation);
-};
 
 QT_END_NAMESPACE
 

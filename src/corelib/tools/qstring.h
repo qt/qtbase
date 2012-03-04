@@ -417,6 +417,10 @@ public:
     {
         return fromLocal8Bit_helper(str, (str && size == -1) ? int(strlen(str)) : size);
     }
+    static inline QString fromAscii(const QByteArray &str) { return fromAscii(str.data(), str.size()); }
+    static inline QString fromLatin1(const QByteArray &str) { return fromLatin1(str.data(), str.size()); }
+    static inline QString fromUtf8(const QByteArray &str) { return fromUtf8(str.data(), str.size()); }
+    static inline QString fromLocal8Bit(const QByteArray &str) { return fromLocal8Bit(str.data(), str.size()); }
     static QString fromUtf16(const ushort *, int size = -1);
     static QString fromUcs4(const uint *, int size = -1);
     static QString fromRawData(const QChar *, int size);
@@ -482,12 +486,12 @@ public:
     static QString number(qulonglong, int base=10);
     static QString number(double, char f='g', int prec=6);
 
-    bool operator==(const QString &s) const;
-    bool operator<(const QString &s) const;
-    inline bool operator>(const QString &s) const { return s < *this; }
-    inline bool operator!=(const QString &s) const { return !operator==(s); }
-    inline bool operator<=(const QString &s) const { return !operator>(s); }
-    inline bool operator>=(const QString &s) const { return !operator<(s); }
+    friend Q_CORE_EXPORT bool operator==(const QString &s1, const QString &s2);
+    friend Q_CORE_EXPORT bool operator<(const QString &s1, const QString &s2);
+    friend inline bool operator>(const QString &s1, const QString &s2) { return s2 < s1; }
+    friend inline bool operator!=(const QString &s1, const QString &s2) { return !(s1 == s2); }
+    friend inline bool operator<=(const QString &s1, const QString &s2) { return !(s1 > s2); }
+    friend inline bool operator>=(const QString &s1, const QString &s2) { return !(s1 < s2); }
 
     bool operator==(const QLatin1String &s) const;
     bool operator<(const QLatin1String &s) const;

@@ -69,6 +69,16 @@
 
 QT_BEGIN_NAMESPACE
 
+struct QObjectPrivate::ExtraData
+{
+    ExtraData() {}
+#ifndef QT_NO_USERDATA
+    QVector<QObjectUserData *> userData;
+#endif
+    QList<QByteArray> propertyNames;
+    QList<QVariant> propertyValues;
+};
+
 static int DIRECT_CONNECTION_ONLY = 0;
 
 static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)

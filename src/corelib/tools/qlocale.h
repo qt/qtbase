@@ -42,7 +42,6 @@
 #ifndef QLOCALE_H
 #define QLOCALE_H
 
-#include <QtCore/qvariant.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qobjectdefs.h>
 

@@ -49,8 +49,48 @@
 
 QT_BEGIN_NAMESPACE
 
+static const struct {
+    const char *name;
+    QLibraryInfo::LibraryLocation loc;
+    bool raw;
+} propList[] = {
+    { "QT_SYSROOT", QLibraryInfo::SysrootPath, true },
+    { "QT_INSTALL_PREFIX", QLibraryInfo::PrefixPath, false },
+    { "QT_INSTALL_DATA", QLibraryInfo::DataPath, false },
+    { "QT_INSTALL_DOCS", QLibraryInfo::DocumentationPath, false },
+    { "QT_INSTALL_HEADERS", QLibraryInfo::HeadersPath, false },
+    { "QT_INSTALL_LIBS", QLibraryInfo::LibrariesPath, false },
+    { "QT_INSTALL_BINS", QLibraryInfo::BinariesPath, false },
+    { "QT_INSTALL_TESTS", QLibraryInfo::TestsPath, false },
+    { "QT_INSTALL_PLUGINS", QLibraryInfo::PluginsPath, false },
+    { "QT_INSTALL_IMPORTS", QLibraryInfo::ImportsPath, false },
+    { "QT_INSTALL_TRANSLATIONS", QLibraryInfo::TranslationsPath, false },
+    { "QT_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath, false },
+    { "QT_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath, false },
+    { "QT_INSTALL_DEMOS", QLibraryInfo::ExamplesPath, false }, // Just backwards compat
+    { "QT_RAW_INSTALL_PREFIX", QLibraryInfo::PrefixPath, true },
+    { "QT_RAW_INSTALL_DATA", QLibraryInfo::DataPath, true },
+    { "QT_RAW_INSTALL_DOCS", QLibraryInfo::DocumentationPath, true },
+    { "QT_RAW_INSTALL_HEADERS", QLibraryInfo::HeadersPath, true },
+    { "QT_RAW_INSTALL_LIBS", QLibraryInfo::LibrariesPath, true },
+    { "QT_RAW_INSTALL_BINS", QLibraryInfo::BinariesPath, true },
+    { "QT_RAW_INSTALL_TESTS", QLibraryInfo::TestsPath, true },
+    { "QT_RAW_INSTALL_PLUGINS", QLibraryInfo::PluginsPath, true },
+    { "QT_RAW_INSTALL_IMPORTS", QLibraryInfo::ImportsPath, true },
+    { "QT_RAW_INSTALL_TRANSLATIONS", QLibraryInfo::TranslationsPath, true },
+    { "QT_RAW_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath, true },
+    { "QT_RAW_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath, true },
+    { "QT_HOST_PREFIX", QLibraryInfo::HostPrefixPath, true },
+    { "QT_HOST_DATA", QLibraryInfo::HostDataPath, true },
+    { "QT_HOST_BINS", QLibraryInfo::HostBinariesPath, true },
+};
+
 QMakeProperty::QMakeProperty() : settings(0)
 {
+    for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++)
+        m_values[QString::fromLatin1(propList[i].name)] = propList[i].raw
+                ? QLibraryInfo::rawLocation(propList[i].loc)
+                : QLibraryInfo::location(propList[i].loc);
 }
 
 QMakeProperty::~QMakeProperty()
@@ -78,32 +118,9 @@ QMakeProperty::keyBase(bool version) const
 QString
 QMakeProperty::value(QString v, bool just_check)
 {
-    if(v == "QT_INSTALL_PREFIX")
-        return QLibraryInfo::location(QLibraryInfo::PrefixPath);
-    else if(v == "QT_INSTALL_DATA")
-        return QLibraryInfo::location(QLibraryInfo::DataPath);
-    else if(v == "QT_INSTALL_DOCS")
-        return QLibraryInfo::location(QLibraryInfo::DocumentationPath);
-    else if(v == "QT_INSTALL_HEADERS")
-        return QLibraryInfo::location(QLibraryInfo::HeadersPath);
-    else if(v == "QT_INSTALL_LIBS")
-        return QLibraryInfo::location(QLibraryInfo::LibrariesPath);
-    else if(v == "QT_INSTALL_BINS")
-        return QLibraryInfo::location(QLibraryInfo::BinariesPath);
-    else if(v == "QT_INSTALL_TESTS")
-        return QLibraryInfo::location(QLibraryInfo::TestsPath);
-    else if(v == "QT_INSTALL_PLUGINS")
-        return QLibraryInfo::location(QLibraryInfo::PluginsPath);
-    else if(v == "QT_INSTALL_IMPORTS")
-        return QLibraryInfo::location(QLibraryInfo::ImportsPath);
-    else if(v == "QT_INSTALL_TRANSLATIONS")
-        return QLibraryInfo::location(QLibraryInfo::TranslationsPath);
-    else if(v == "QT_INSTALL_CONFIGURATION")
-        return QLibraryInfo::location(QLibraryInfo::SettingsPath);
-    else if(v == "QT_INSTALL_EXAMPLES")
-        return QLibraryInfo::location(QLibraryInfo::ExamplesPath);
-    else if(v == "QT_INSTALL_DEMOS")
-        return QLibraryInfo::location(QLibraryInfo::ExamplesPath);
+    QString val = m_values.value(v);
+    if (!val.isNull())
+        return val;
     else if(v == "QMAKE_MKSPECS")
         return Option::mkspecPaths().join(Option::dirlist_sep);
     else if(v == "QMAKE_VERSION")
@@ -192,19 +209,8 @@ QMakeProperty::exec()
                 }
             }
             QStringList specialProps;
-            specialProps.append("QT_INSTALL_PREFIX");
-            specialProps.append("QT_INSTALL_DATA");
-            specialProps.append("QT_INSTALL_DOCS");
-            specialProps.append("QT_INSTALL_HEADERS");
-            specialProps.append("QT_INSTALL_LIBS");
-            specialProps.append("QT_INSTALL_BINS");
-            specialProps.append("QT_INSTALL_TESTS");
-            specialProps.append("QT_INSTALL_PLUGINS");
-            specialProps.append("QT_INSTALL_IMPORTS");
-            specialProps.append("QT_INSTALL_TRANSLATIONS");
-            specialProps.append("QT_INSTALL_CONFIGURATION");
-            specialProps.append("QT_INSTALL_EXAMPLES");
-            specialProps.append("QT_INSTALL_DEMOS");
+            for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++)
+                specialProps.append(QString::fromLatin1(propList[i].name));
             specialProps.append("QMAKE_MKSPECS");
             specialProps.append("QMAKE_VERSION");
 #ifdef QT_VERSION_STR

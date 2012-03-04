@@ -115,7 +115,7 @@ void QRasterPlatformPixmap::resize(int width, int height)
         image.setColor(1, QColor(Qt::color1).rgba());
     }
 
-    setSerialNumber(image.serialNumber());
+    setSerialNumber(image.cacheKey() >> 32);
 }
 
 bool QRasterPlatformPixmap::fromData(const uchar *buffer, uint len, const char *format,
@@ -349,7 +349,7 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
     }
     is_null = (w <= 0 || h <= 0);
 
-    setSerialNumber(image.serialNumber());
+    setSerialNumber(image.cacheKey() >> 32);
 }
 
 QImage* QRasterPlatformPixmap::buffer()

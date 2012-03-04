@@ -1335,7 +1335,7 @@ void tst_QComboBox::textpixmapdata()
 
     for (int i = 0; i<text.count(); ++i) {
         QIcon icon = testWidget->itemIcon(i);
-        QVERIFY(icon.serialNumber() == icons.at(i).serialNumber());
+        QCOMPARE(icon.cacheKey(), icons.at(i).cacheKey());
         QPixmap original = icons.at(i).pixmap(1024);
         QPixmap pixmap = icon.pixmap(1024);
         QVERIFY(pixmap.toImage() == original.toImage());

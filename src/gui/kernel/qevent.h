@@ -71,7 +71,7 @@ class QScreen;
 class Q_GUI_EXPORT QInputEvent : public QEvent
 {
 public:
-    QInputEvent(Type type, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    explicit QInputEvent(Type type, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     ~QInputEvent();
     inline Qt::KeyboardModifiers modifiers() const { return modState; }
     inline void setModifiers(Qt::KeyboardModifiers amodifiers) { modState = amodifiers; }
@@ -276,7 +276,7 @@ protected:
 class Q_GUI_EXPORT QFocusEvent : public QEvent
 {
 public:
-    QFocusEvent(Type type, Qt::FocusReason reason=Qt::OtherFocusReason);
+    explicit QFocusEvent(Type type, Qt::FocusReason reason=Qt::OtherFocusReason);
     ~QFocusEvent();
 
     inline bool gotFocus() const { return type() == FocusIn; }
@@ -292,8 +292,8 @@ private:
 class Q_GUI_EXPORT QPaintEvent : public QEvent
 {
 public:
-    QPaintEvent(const QRegion& paintRegion);
-    QPaintEvent(const QRect &paintRect);
+    explicit QPaintEvent(const QRegion& paintRegion);
+    explicit QPaintEvent(const QRect &paintRect);
     ~QPaintEvent();
 
     inline const QRect &rect() const { return m_rect; }
@@ -311,7 +311,7 @@ protected:
 class Q_GUI_EXPORT QUpdateLaterEvent : public QEvent
 {
 public:
-    QUpdateLaterEvent(const QRegion& paintRegion);
+    explicit QUpdateLaterEvent(const QRegion& paintRegion);
     ~QUpdateLaterEvent();
 
     inline const QRegion &region() const { return m_region; }
@@ -337,7 +337,7 @@ protected:
 class Q_GUI_EXPORT QExposeEvent : public QEvent
 {
 public:
-    QExposeEvent(const QRegion &rgn);
+    explicit QExposeEvent(const QRegion &rgn);
     ~QExposeEvent();
 
     inline const QRegion &region() const { return rgn; }
@@ -464,11 +464,12 @@ private:
     int replace_length;
     QString tentativeCommit;
 };
+Q_DECLARE_TYPEINFO(QInputMethodEvent::Attribute, Q_MOVABLE_TYPE);
 
 class Q_GUI_EXPORT QInputMethodQueryEvent : public QEvent
 {
 public:
-    QInputMethodQueryEvent(Qt::InputMethodQueries queries);
+    explicit QInputMethodQueryEvent(Qt::InputMethodQueries queries);
     ~QInputMethodQueryEvent();
 
     Qt::InputMethodQueries queries() const { return m_queries; }
@@ -586,7 +587,7 @@ private:
 class Q_GUI_EXPORT QStatusTipEvent : public QEvent
 {
 public:
-    QStatusTipEvent(const QString &tip);
+    explicit QStatusTipEvent(const QString &tip);
     ~QStatusTipEvent();
 
     inline QString tip() const { return s; }
@@ -599,7 +600,7 @@ private:
 class Q_GUI_EXPORT QWhatsThisClickedEvent : public QEvent
 {
 public:
-    QWhatsThisClickedEvent(const QString &href);
+    explicit QWhatsThisClickedEvent(const QString &href);
     ~QWhatsThisClickedEvent();
 
     inline QString href() const { return s; }
@@ -624,8 +625,8 @@ public:
 class Q_GUI_EXPORT QFileOpenEvent : public QEvent
 {
 public:
-    QFileOpenEvent(const QString &file);
-    QFileOpenEvent(const QUrl &url);
+    explicit QFileOpenEvent(const QString &file);
+    explicit QFileOpenEvent(const QUrl &url);
     ~QFileOpenEvent();
 
     inline QString file() const { return f; }
@@ -639,7 +640,7 @@ private:
 class Q_GUI_EXPORT QToolBarChangeEvent : public QEvent
 {
 public:
-    QToolBarChangeEvent(bool t);
+    explicit QToolBarChangeEvent(bool t);
     ~QToolBarChangeEvent();
 
     inline bool toggle() const { return tog; }
@@ -669,7 +670,7 @@ protected:
 class Q_GUI_EXPORT QClipboardEvent : public QEvent
 {
 public:
-    QClipboardEvent(QEventPrivate *data);
+    explicit QClipboardEvent(QEventPrivate *data);
     ~QClipboardEvent();
 
     QEventPrivate *data() { return d; }
@@ -679,7 +680,7 @@ public:
 class Q_GUI_EXPORT QWindowStateChangeEvent: public QEvent
 {
 public:
-    QWindowStateChangeEvent(Qt::WindowStates aOldState);
+    explicit QWindowStateChangeEvent(Qt::WindowStates aOldState);
     QWindowStateChangeEvent(Qt::WindowStates aOldState, bool isOverride);
     ~QWindowStateChangeEvent();
 
@@ -711,7 +712,7 @@ public:
         };
         Q_DECLARE_FLAGS(InfoFlags, InfoFlag)
 
-        TouchPoint(int id = -1);
+        explicit TouchPoint(int id = -1);
         TouchPoint(const QTouchEvent::TouchPoint &other);
         ~TouchPoint();
 
@@ -783,11 +784,11 @@ public:
     };
 #endif
 
-    QTouchEvent(QEvent::Type eventType,
-                QTouchDevice *device = 0,
-                Qt::KeyboardModifiers modifiers = Qt::NoModifier,
-                Qt::TouchPointStates touchPointStates = 0,
-                const QList<QTouchEvent::TouchPoint> &touchPoints = QList<QTouchEvent::TouchPoint>());
+    explicit QTouchEvent(QEvent::Type eventType,
+                         QTouchDevice *device = 0,
+                         Qt::KeyboardModifiers modifiers = Qt::NoModifier,
+                         Qt::TouchPointStates touchPointStates = 0,
+                         const QList<QTouchEvent::TouchPoint> &touchPoints = QList<QTouchEvent::TouchPoint>());
     ~QTouchEvent();
 
     inline QWindow *window() const { return _window; }
@@ -825,7 +826,7 @@ class QScrollPrepareEventPrivate;
 class Q_GUI_EXPORT QScrollPrepareEvent : public QEvent
 {
 public:
-    QScrollPrepareEvent(const QPointF &startPos);
+    explicit QScrollPrepareEvent(const QPointF &startPos);
     ~QScrollPrepareEvent();
 
     QPointF startPos() const;

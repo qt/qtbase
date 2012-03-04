@@ -63,6 +63,22 @@ struct QPair
     T2 second;
 };
 
+// mark QPair<T1,T2> as complex/movable/primitive depending on the
+// typeinfos of the constituents:
+template<class T1, class T2>
+class QTypeInfo< QPair<T1, T2> >
+{
+public:
+    enum {
+        isComplex = QTypeInfo<T1>::isComplex || QTypeInfo<T2>::isComplex,
+        isStatic  = QTypeInfo<T1>::isStatic  || QTypeInfo<T2>::isStatic,
+        isLarge   = sizeof(QPair<T1, T2>) > sizeof(void*),
+        isPointer = false,
+        isDummy   = false,
+        sizeOf    = sizeof(QPair<T1, T2>)
+    };
+};
+
 template <class T1, class T2>
 Q_INLINE_TEMPLATE bool operator==(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 { return p1.first == p2.first && p1.second == p2.second; }

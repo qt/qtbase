@@ -73,6 +73,7 @@ void runScenario()
     QString string(l1string);
     QStringRef stringref(&string, 2, 10);
     QLatin1Char achar('c');
+    QChar::SpecialCharacter special(QChar::Nbsp);
     QString r2(QLatin1String(LITERAL LITERAL));
     QString r3 = QString::fromUtf8(UTF8_LITERAL UTF8_LITERAL);
     QString r;
@@ -97,6 +98,8 @@ void runScenario()
     QCOMPARE(r, QString(string P achar));
     r = achar + string;
     QCOMPARE(r, QString(achar P string));
+    r = special + string;
+    QCOMPARE(r, QString(special P string));
 
 #ifdef Q_COMPILER_UNICODE_STRINGS
     r = QStringLiteral(UNICODE_LITERAL);
