@@ -1089,15 +1089,16 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authen
                                                           QNetworkReply *reply,
                                                           bool synchronous,
                                                           QUrl &url,
-                                                          QUrl *urlForLastAuthentication)
+                                                          QUrl *urlForLastAuthentication,
+                                                          bool allowAuthenticationReuse)
 {
     Q_Q(QNetworkAccessManager);
 
     // don't try the cache for the same URL twice in a row
     // being called twice for the same URL means the authentication failed
     // also called when last URL is empty, e.g. on first call
-    if (urlForLastAuthentication->isEmpty()
-            || url != *urlForLastAuthentication) {
+    if (allowAuthenticationReuse && (urlForLastAuthentication->isEmpty()
+            || url != *urlForLastAuthentication)) {
         // if credentials are included in the url, then use them
         if (!url.userName().isEmpty()
             && !url.password().isEmpty()) {
@@ -1124,7 +1125,8 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authen
 
     *urlForLastAuthentication = url;
     emit q->authenticationRequired(reply, authenticator);
-    authenticationManager->cacheCredentials(url, authenticator);
+    if (allowAuthenticationReuse)
+        authenticationManager->cacheCredentials(url, authenticator);
 }
 
 #ifndef QT_NO_NETWORKPROXY
