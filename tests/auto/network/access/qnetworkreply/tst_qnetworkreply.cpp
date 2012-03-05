@@ -3385,6 +3385,7 @@ void tst_QNetworkReply::ioGetFromHttpWithCache_data()
             << QNetworkCacheMetaData::RawHeader("Cache-control", "max-age=0"); // isn't used in cache loading
     content.first.setRawHeaders(rawHeaders);
     content.first.setLastModified(past);
+    content.first.setExpirationDate(past);
 
     QTest::newRow("expired,200,prefer-network")
             << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferNetwork) << QStringList() << false << true;
