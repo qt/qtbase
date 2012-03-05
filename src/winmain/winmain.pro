@@ -11,11 +11,11 @@ win32 {
 	win32-borland:DEFINES += QT_NEEDS_QMAIN
 	SOURCES		= qtmain_win.cpp
 	CONFIG		+= png
-	INCLUDEPATH	+= tmp $$QMAKE_INCDIR_QT/QtCore
+	INCLUDEPATH	+= tmp $$QT.core.includes
 }
 
 !win32:error("$$_FILE_ is intended only for Windows!")
 load(qt_module_config)
-DESTDIR = $$QMAKE_LIBDIR_QT
+DESTDIR = $$QT.core.libs
 wince*:QMAKE_POST_LINK =
 

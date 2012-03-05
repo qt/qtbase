@@ -146,7 +146,7 @@ defineTest(qtAddModule) {
     # to give access to sources or include files, and not for linking.
     !isEmpty(MODULE_LIBS) {
         !isEmpty(QMAKE_LSB) {
-            QMAKE_LFLAGS *= --lsb-libpath=$$$$QMAKE_LIBDIR_QT
+            QMAKE_LFLAGS *= --lsb-libpath=$$MODULE_LIBS
             QMAKE_LFLAGS *= -L/opt/lsb/lib
             QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
         }

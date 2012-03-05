@@ -3,7 +3,7 @@ TARGET     = QtPlatformSupport
 QPRO_PWD   = $$PWD
 QT         += core-private gui-private
 TEMPLATE   = lib
-DESTDIR    = $$QMAKE_LIBDIR_QT
+DESTDIR    = $$QT.gui.libs
 
 CONFIG += module
 CONFIG += staticlib

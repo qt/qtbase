@@ -189,7 +189,7 @@ for(QTLIB, QT) {
 
 qt_compat {
    !qt_compat_no_warning:QTDIR_build:warning(***USE of COMPAT inside of QTDIR!**) #just for us
-   INCLUDEPATH *= $$QMAKE_INCDIR_QT/Qt
+   INCLUDEPATH *= $$QT.core.includes
    DEFINES *= QT_COMPAT
 }
 
