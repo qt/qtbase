@@ -52,6 +52,8 @@
 #include "qopenglcontext.h"
 #include <qdebug.h>
 
+#include "qprintengine_mac_p.h"
+
 void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     if (!window->handle()) {
@@ -72,4 +74,10 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
 QPlatformPrinterSupport *QCocoaNativeInterface::createPlatformPrinterSupport()
 {
     return new QCocoaPrinterSupport();
+}
+
+void *QCocoaNativeInterface::NSPrintInfoForPrintEngine(QPrintEngine *printEngine)
+{
+    QMacPrintEngine *macPrintEngine = static_cast<QMacPrintEngine *>(printEngine);
+    return macPrintEngine->d_func()->printInfo;
 }

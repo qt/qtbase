@@ -108,6 +108,9 @@ public:
     virtual void drawTextItem(const QPointF &p, const QTextItem &ti);
     virtual void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
     virtual void drawPath(const QPainterPath &);
+
+private:
+    friend class QCocoaNativeInterface;
 };
 
 class QMacPrintEnginePrivate : public QPaintEnginePrivate
