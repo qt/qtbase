@@ -451,11 +451,11 @@ inline void QDirPrivate::initFileEngine()
     for these that return strings:
 
     \table
-    \header \o QDir      \o QString         \o Return Value
-    \row    \o current() \o currentPath()   \o The application's working directory
-    \row    \o home()    \o homePath()      \o The user's home directory
-    \row    \o root()    \o rootPath()      \o The root directory
-    \row    \o temp()    \o tempPath()      \o The system's temporary directory
+    \header \li QDir      \li QString         \li Return Value
+    \row    \li current() \li currentPath()   \li The application's working directory
+    \row    \li home()    \li homePath()      \li The user's home directory
+    \row    \li root()    \li rootPath()      \li The root directory
+    \row    \li temp()    \li tempPath()      \li The system's temporary directory
     \endtable
 
     The setCurrent() static function can also be used to set the application's
@@ -1878,13 +1878,13 @@ QString QDir::currentPath()
     the given order) until an existing and available path is found:
 
     \list 1
-    \o The path specified by the \c USERPROFILE environment variable.
-    \o The path formed by concatenating the \c HOMEDRIVE and \c HOMEPATH
+    \li The path specified by the \c USERPROFILE environment variable.
+    \li The path formed by concatenating the \c HOMEDRIVE and \c HOMEPATH
     environment variables.
-    \o The path specified by the \c HOME environment variable.
-    \o The path returned by the rootPath() function (which uses the \c SystemDrive
+    \li The path specified by the \c HOME environment variable.
+    \li The path returned by the rootPath() function (which uses the \c SystemDrive
     environment variable)
-    \o  The \c{C:/} directory.
+    \li  The \c{C:/} directory.
     \endlist
 
     Under non-Windows operating systems the \c HOME environment

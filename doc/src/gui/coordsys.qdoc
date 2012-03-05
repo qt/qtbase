@@ -67,11 +67,11 @@
 
     \table
     \row
-    \o \inlineimage coordinatesystem-rect.png
-    \o \inlineimage coordinatesystem-line.png
+    \li \inlineimage coordinatesystem-rect.png
+    \li \inlineimage coordinatesystem-line.png
     \row
-    \o QRect(1, 2, 6, 4)
-    \o QLine(2, 7, 6, 1)
+    \li QRect(1, 2, 6, 4)
+    \li QLine(2, 7, 6, 1)
     \endtable
 
     \section2 Aliased Painting
@@ -92,14 +92,14 @@
 
     \table
     \row
-    \o \inlineimage coordinatesystem-rect-raster.png
-    \o \inlineimage coordinatesystem-line-raster.png
+    \li \inlineimage coordinatesystem-rect-raster.png
+    \li \inlineimage coordinatesystem-line-raster.png
 
     \row
-    \o
+    \li
     \snippet doc/src/snippets/code/doc_src_coordsys.cpp 0
 
-    \o
+    \li
     \snippet doc/src/snippets/code/doc_src_coordsys.cpp 1
     \endtable
 
@@ -112,19 +112,19 @@
 
     \table
     \header
-    \o {3,1} QRectF
+    \li {3,1} QRectF
     \row
-    \o \inlineimage qrect-diagram-zero.png
-    \o \inlineimage qrectf-diagram-one.png
+    \li \inlineimage qrect-diagram-zero.png
+    \li \inlineimage qrectf-diagram-one.png
     \row
-    \o Logical representation
-    \o One pixel wide pen
+    \li Logical representation
+    \li One pixel wide pen
     \row
-    \o \inlineimage qrectf-diagram-two.png
-    \o \inlineimage qrectf-diagram-three.png
+    \li \inlineimage qrectf-diagram-two.png
+    \li \inlineimage qrectf-diagram-three.png
     \row
-    \o Two pixel wide pen
-    \o Three pixel wide pen
+    \li Two pixel wide pen
+    \li Three pixel wide pen
     \endtable
 
     Note that for historical reasons the return value of the
@@ -158,14 +158,14 @@
 
     \table
     \row
-    \o \inlineimage coordinatesystem-rect-antialias.png
-    \o \inlineimage coordinatesystem-line-antialias.png
+    \li \inlineimage coordinatesystem-rect-antialias.png
+    \li \inlineimage coordinatesystem-line-antialias.png
     \row
-    \o
+    \li
 
     \snippet doc/src/snippets/code/doc_src_coordsys.cpp 2
 
-    \o
+    \li
     \snippet doc/src/snippets/code/doc_src_coordsys.cpp 3
     \endtable
 
@@ -183,15 +183,15 @@
 
     \table
     \row
-    \o \inlineimage qpainter-clock.png
-    \o \inlineimage qpainter-rotation.png
-    \o \inlineimage qpainter-scale.png
-    \o \inlineimage qpainter-translation.png
+    \li \inlineimage qpainter-clock.png
+    \li \inlineimage qpainter-rotation.png
+    \li \inlineimage qpainter-scale.png
+    \li \inlineimage qpainter-translation.png
     \row
-    \o nop
-    \o \l {QPainter::rotate()}{rotate()}
-    \o \l {QPainter::scale()}{scale()}
-    \o \l {QPainter::translate()}{translate()}
+    \li nop
+    \li \l {QPainter::rotate()}{rotate()}
+    \li \l {QPainter::scale()}{scale()}
+    \li \l {QPainter::translate()}{translate()}
     \endtable
 
     You can also twist the coordinate system around the origin using
@@ -218,10 +218,10 @@
 
     \table 100%
     \header
-    \o {2,1} Analog Clock Example
+    \li {2,1} Analog Clock Example
     \row
-    \o \inlineimage coordinatesystem-analogclock.png
-    \o
+    \li \inlineimage coordinatesystem-analogclock.png
+    \li
     The Analog Clock example shows how to draw the contents of a
     custom widget using QPainter's transformation matrix.
 
@@ -236,7 +236,7 @@
     sizes.
 
     \row
-    \o {2,1}
+    \li {2,1}
 
     \snippet examples/widgets/analogclock/analogclock.cpp 9
 
@@ -368,23 +368,23 @@
     QPaintDevice, and QPaintEngine classes:
 
     \table
-    \header \o Class \o Description
+    \header \li Class \li Description
     \row
-    \o QPainter
-    \o
+    \li QPainter
+    \li
     The QPainter class performs low-level painting on widgets and
     other paint devices.  QPainter can operate on any object that
     inherits the QPaintDevice class, using the same code.
     \row
-    \o QPaintDevice
-    \o
+    \li QPaintDevice
+    \li
     The QPaintDevice class is the base class of objects that can be
     painted. Qt provides several devices: QWidget, QImage, QPixmap,
     QPrinter and QPicture, and other devices can also be defined by
     subclassing QPaintDevice.
     \row
-    \o QPaintEngine
-    \o
+    \li QPaintEngine
+    \li
     The QPaintEngine class provides an abstract definition of how
     QPainter draws to a given device on a given platform.  Qt 4
     provides several premade implementations of QPaintEngine for the
@@ -397,10 +397,10 @@
     using the QTransform class:
 
     \table
-    \header \o Class \o Description
+    \header \li Class \li Description
     \row
-    \o QTransform
-    \o
+    \li QTransform
+    \li
     A 3 x 3 transformation matrix. Use QTransform to rotate, shear,
     scale, or translate the coordinate system.
     \endtable
@@ -411,45 +411,45 @@
     name is suffixed with an \c F.
 
     \table
-    \header \o Class \o Description
+    \header \li Class \li Description
     \row
-    \o \l{QPoint}(\l{QPointF}{F})
-    \o
+    \li \l{QPoint}(\l{QPointF}{F})
+    \li
     A single 2D point in the coordinate system. Most functions in Qt
     that deal with points can accept either a QPoint, a QPointF, two
     \c{int}s, or two \c{qreal}s.
     \row
-    \o \l{QSize}(\l{QSizeF}{F})
-    \o
+    \li \l{QSize}(\l{QSizeF}{F})
+    \li
     A single 2D vector. Internally, QPoint and QSize are the same, but
     a point is not the same as a size, so both classes exist.  Again,
     most functions accept either QSizeF, a QSize, two \c{int}s, or two
     \c{qreal}s.
     \row
-    \o \l{QRect}(\l{QRectF}{F})
-    \o
+    \li \l{QRect}(\l{QRectF}{F})
+    \li
     A 2D rectangle. Most functions accept either a QRectF, a QRect,
     four \c{int}s, or four \c {qreal}s.
     \row
-    \o \l{QLine}(\l{QLineF}{F})
-    \o
+    \li \l{QLine}(\l{QLineF}{F})
+    \li
     A 2D finite-length line, characterized by a start point and an end
     point.
     \row
-    \o \l{QPolygon}(\l{QPolygonF}{F})
-    \o
+    \li \l{QPolygon}(\l{QPolygonF}{F})
+    \li
     A 2D polygon. A polygon is a vector of \c{QPoint(F)}s. If the
     first and last points are the same, the polygon is closed.
     \row
-    \o QPainterPath
-    \o
+    \li QPainterPath
+    \li
     A vectorial specification of a 2D shape. Painter paths are the
     ultimate painting primitive, in the sense that any shape
     (rectange, ellipse, spline) or combination of shapes can be
     expressed as a path. A path specifies both an outline and an area.
     \row
-    \o QRegion
-    \o
+    \li QRegion
+    \li
     An area in a paint device, expressed as a list of
     \l{QRect}s. In general, we recommend using the vectorial
     QPainterPath class instead of QRegion for specifying areas,

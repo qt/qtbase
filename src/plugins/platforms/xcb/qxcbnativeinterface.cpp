@@ -137,7 +137,7 @@ QPlatformNativeInterface::EventFilter QXcbNativeInterface::setEventFilter(const 
     if (eventType == QByteArrayLiteral("xcb_generic_event_t"))
         type = GenericEventFilter;
     if (type == -1) {
-        qWarning("%s: Attempt to set invalid event filter type '%s'.",
+        qWarning("QXcbNativeInterface: %s: Attempt to set invalid event filter type '%s'.",
                  Q_FUNC_INFO, eventType.constData());
         return 0;
     }

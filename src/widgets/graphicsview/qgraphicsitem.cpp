@@ -59,14 +59,14 @@
     common shapes. These are:
 
     \list
-    \o QGraphicsEllipseItem provides an ellipse item
-    \o QGraphicsLineItem provides a line item
-    \o QGraphicsPathItem provides an arbitrary path item
-    \o QGraphicsPixmapItem provides a pixmap item
-    \o QGraphicsPolygonItem provides a polygon item
-    \o QGraphicsRectItem provides a rectangular item
-    \o QGraphicsSimpleTextItem provides a simple text label item
-    \o QGraphicsTextItem provides an advanced text browser item
+    \li QGraphicsEllipseItem provides an ellipse item
+    \li QGraphicsLineItem provides a line item
+    \li QGraphicsPathItem provides an arbitrary path item
+    \li QGraphicsPixmapItem provides a pixmap item
+    \li QGraphicsPolygonItem provides a polygon item
+    \li QGraphicsRectItem provides a rectangular item
+    \li QGraphicsSimpleTextItem provides a simple text label item
+    \li QGraphicsTextItem provides an advanced text browser item
     \endlist
 
     All of an item's geometric information is based on its local coordinate
@@ -112,12 +112,12 @@
 
     \list 1
 
-    \o Reimplement shape() to return an accurate shape for your item,
+    \li Reimplement shape() to return an accurate shape for your item,
     and rely on the default implementation of collidesWithItem() to do
     shape-shape intersection. This can be rather expensive if the
     shapes are complex.
 
-    \o Reimplement collidesWithItem() to provide your own custom item
+    \li Reimplement collidesWithItem() to provide your own custom item
     and shape collision algorithm.
 
     \endlist
@@ -165,10 +165,10 @@
     QGraphicsItem always applies the properties in a fixed, defined order:
 
     \list
-    \o The item's base transform is applied (transform())
-    \o The item's transformations list is applied in order (transformations())
-    \o The item is rotated relative to its transform origin point (rotation(), transformOriginPoint())
-    \o The item is scaled relative to its transform origin point (scale(), transformOriginPoint())
+    \li The item's base transform is applied (transform())
+    \li The item's transformations list is applied in order (transformations())
+    \li The item is rotated relative to its transform origin point (rotation(), transformOriginPoint())
+    \li The item is scaled relative to its transform origin point (scale(), transformOriginPoint())
     \endlist
 
     \section1 Painting
@@ -215,14 +215,14 @@
     For advanced users, there are ways to alter how your items are sorted:
 
     \list
-    \o You can call setZValue() on an item to explicitly stack it on top of, or
+    \li You can call setZValue() on an item to explicitly stack it on top of, or
     under, other sibling items. The default Z value for an item is 0. Items
     with the same Z value are stacked by insertion order.
 
-    \o You can call stackBefore() to reorder the list of children. This will
+    \li You can call stackBefore() to reorder the list of children. This will
     directly modify the insertion order.
 
-    \o You can set the ItemStacksBehindParent flag to stack a child item behind
+    \li You can set the ItemStacksBehindParent flag to stack a child item behind
     its parent.
     \endlist
 
@@ -238,13 +238,13 @@
     to a set of convenience event handlers:
 
     \list
-    \o contextMenuEvent() handles context menu events
-    \o focusInEvent() and focusOutEvent() handle focus in and out events
-    \o hoverEnterEvent(), hoverMoveEvent(), and hoverLeaveEvent() handles
+    \li contextMenuEvent() handles context menu events
+    \li focusInEvent() and focusOutEvent() handle focus in and out events
+    \li hoverEnterEvent(), hoverMoveEvent(), and hoverLeaveEvent() handles
     hover enter, move and leave events
-    \o inputMethodEvent() handles input events, for accessibility support
-    \o keyPressEvent() and keyReleaseEvent() handle key press and release events
-    \o mousePressEvent(), mouseMoveEvent(), mouseReleaseEvent(), and
+    \li inputMethodEvent() handles input events, for accessibility support
+    \li keyPressEvent() and keyReleaseEvent() handle key press and release events
+    \li mousePressEvent(), mouseMoveEvent(), mouseReleaseEvent(), and
     mouseDoubleClickEvent() handles mouse press, move, release, click and
     doubleclick events
     \endlist
@@ -783,7 +783,7 @@ static inline void _q_adjustRect(QRect *rect)
 class QGraphicsItemCustomDataStore
 {
 public:
-    QMap<const QGraphicsItem *, QMap<int, QVariant> > data;
+    QHash<const QGraphicsItem *, QMap<int, QVariant> > data;
 };
 Q_GLOBAL_STATIC(QGraphicsItemCustomDataStore, qt_dataStore)
 
@@ -1379,7 +1379,7 @@ void QGraphicsItemCache::purge()
 {
     QPixmapCache::remove(key);
     key = QPixmapCache::Key();
-    QMutableMapIterator<QPaintDevice *, DeviceData> it(deviceData);
+    QMutableHashIterator<QPaintDevice *, DeviceData> it(deviceData);
     while (it.hasNext()) {
         DeviceData &data = it.next().value();
         QPixmapCache::remove(data.key);
@@ -3469,11 +3469,11 @@ QGraphicsItem *QGraphicsItem::focusScopeItem() const
     following events occurs:
 
     \list
-    \o The item becomes invisible
-    \o The item is removed from the scene
-    \o The item is deleted
-    \o The item call ungrabMouse()
-    \o Another item calls grabMouse(); the item will regain the mouse grab
+    \li The item becomes invisible
+    \li The item is removed from the scene
+    \li The item is deleted
+    \li The item call ungrabMouse()
+    \li Another item calls grabMouse(); the item will regain the mouse grab
     when the other item calls ungrabMouse().
     \endlist
 
@@ -3531,11 +3531,11 @@ void QGraphicsItem::ungrabMouse()
     following events occur:
 
     \list
-    \o The item becomes invisible
-    \o The item is removed from the scene
-    \o The item is deleted
-    \o The item calls ungrabKeyboard()
-    \o Another item calls grabKeyboard(); the item will regain the keyboard grab
+    \li The item becomes invisible
+    \li The item is removed from the scene
+    \li The item is deleted
+    \li The item calls ungrabKeyboard()
+    \li Another item calls grabKeyboard(); the item will regain the keyboard grab
     when the other item calls ungrabKeyboard().
     \endlist
 
@@ -5730,7 +5730,7 @@ void QGraphicsItem::update(const QRectF &rect)
     viewport, which does not benefit from scroll optimizations), this function
     is equivalent to calling update(\a rect).
 
-    \bold{Note:} Scrolling is only supported when QGraphicsItem::ItemCoordinateCache
+    \b{Note:} Scrolling is only supported when QGraphicsItem::ItemCoordinateCache
     is enabled; in all other cases calling this function is equivalent to calling
     update(\a rect). If you for sure know that the item is opaque and not overlapped
     by other items, you can map the \a rect to viewport coordinates and scroll the
@@ -7124,7 +7124,7 @@ void QGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if ((event->buttons() & Qt::LeftButton) && (flags() & ItemIsMovable)) {
         // Determine the list of items that need to be moved.
         QList<QGraphicsItem *> selectedItems;
-        QMap<QGraphicsItem *, QPointF> initialPositions;
+        QHash<QGraphicsItem *, QPointF> initialPositions;
         if (d_ptr->scene) {
             selectedItems = d_ptr->scene->selectedItems();
             initialPositions = d_ptr->scene->d_func()->movingItemsInitialPositions;
@@ -8652,8 +8652,8 @@ QVariant QGraphicsRectItem::extension(const QVariant &variant) const
 
     \table
         \row
-            \o \inlineimage graphicsview-ellipseitem.png
-            \o \inlineimage graphicsview-ellipseitem-pie.png
+            \li \inlineimage graphicsview-ellipseitem.png
+            \li \inlineimage graphicsview-ellipseitem-pie.png
     \endtable
 
     To set the item's ellipse, pass a QRectF to QGraphicsEllipseItem's

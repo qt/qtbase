@@ -822,20 +822,20 @@ QString QHostAddress::toString() const
 
     \list
 
-    \o Node-local: Addresses that are only used for communicating with
+    \li Node-local: Addresses that are only used for communicating with
     services on the same interface (e.g., the loopback interface "::1").
 
-    \o Link-local: Addresses that are local to the network interface
+    \li Link-local: Addresses that are local to the network interface
     (\e{link}). There is always one link-local address for each IPv6 interface
     on your host. Link-local addresses ("fe80...") are generated from the MAC
     address of the local network adaptor, and are not guaranteed to be unique.
 
-    \o Site-local: Addresses that are local to the site / private network
+    \li Site-local: Addresses that are local to the site / private network
     (e.g., the company intranet). Site-local addresses ("fec0...")  are
     usually distributed by the site router, and are not guaranteed to be
     unique outside of the local site.
 
-    \o Global: For globally routable addresses, such as public servers on the
+    \li Global: For globally routable addresses, such as public servers on the
     Internet.
 
     \endlist
@@ -1001,9 +1001,9 @@ bool QHostAddress::isInSubnet(const QPair<QHostAddress, int> &subnet) const
 
     This function supports arguments in the form:
     \list
-      \o 123.123.123.123/n  where n is any value between 0 and 32
-      \o 123.123.123.123/255.255.255.255
-      \o <ipv6-address>/n  where n is any value between 0 and 128
+      \li 123.123.123.123/n  where n is any value between 0 and 32
+      \li 123.123.123.123/255.255.255.255
+      \li <ipv6-address>/n  where n is any value between 0 and 128
     \endlist
 
     For IP version 4, this function accepts as well missing trailing

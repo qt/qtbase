@@ -52,9 +52,18 @@
     from from stdint.h, but since this header is not available on all platforms
     (MSVC 2008, for example), we need to define them ourselves.
 */
+#ifndef _UINT64_T_DECLARED
 typedef QT_PREPEND_NAMESPACE(quint64) uint64_t;
+#endif
+
+#ifndef _UINT32_T_DECLARED
 typedef QT_PREPEND_NAMESPACE(quint32) uint32_t;
+#endif
+
+#ifndef _UINT8_T_DECLARED
 typedef QT_PREPEND_NAMESPACE(quint8) uint8_t;
+#endif
+
 typedef QT_PREPEND_NAMESPACE(qint16) int_least16_t;
 // Header from rfc6234 with 1 modification:
 // sha1.h - commented out '#include <stdint.h>' on line 74

@@ -79,6 +79,7 @@ public:
     void generateMakefiles();
     void appendMakeItem(int inList, const QString &item);
 #if !defined(EVAL)
+    bool copySpec(const char *name, const char *pfx, const QString &spec);
     void generateConfigfiles();
 #endif
     void showSummary();

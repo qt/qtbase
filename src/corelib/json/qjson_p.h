@@ -309,6 +309,7 @@ public:
     {
         d->length = str.length();
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        const qle_ushort *uc = (const qle_ushort *)str.unicode();
         for (int i = 0; i < str.length(); ++i)
             d->utf16[i] = uc[i];
 #else
@@ -359,7 +360,7 @@ public:
         QString str(l, Qt::Uninitialized);
         QChar *ch = str.data();
         for (int i = 0; i < l; ++i)
-            ch[i] = d->utf16[i];
+            ch[i] = QChar(d->utf16[i]);
         return str;
 #endif
     }

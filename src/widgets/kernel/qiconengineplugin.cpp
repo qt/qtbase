@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
     \ingroup plugins
     \inmodule QtWidgets
 
-    \bold {Use QIconEnginePluginV2 instead.}
+    \b {Use QIconEnginePluginV2 instead.}
 
     The icon engine plugin is a simple plugin interface that makes it easy to
     create custom icon engines that can be loaded dynamically into applications

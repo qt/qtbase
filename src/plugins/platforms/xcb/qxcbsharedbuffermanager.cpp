@@ -581,7 +581,7 @@ QXcbSharedBufferManager::Buffer *QXcbSharedBufferManager::allocateBuffer(int wid
     bool ok = buffer->buffer->create(buffer->width * buffer->height * buffer->bytesPerPixel,
                                      QSharedMemory::ReadWrite);
     if (!ok) {
-        qWarning("SharedBufferManager::findAvailableBuffer: Can't create new buffer (%s)",
+        qWarning("QXcbSharedBufferManager::findAvailableBuffer: Can't create new buffer (%s)",
                  qPrintable(buffer->buffer->errorString()));
         delete buffer;
         return 0;

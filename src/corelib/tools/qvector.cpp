@@ -108,21 +108,21 @@ int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive
     similar functionality. Here's an overview:
 
     \list
-    \i For most purposes, QList is the right class to use. Operations
+    \li For most purposes, QList is the right class to use. Operations
        like prepend() and insert() are usually faster than with
        QVector because of the way QList stores its items in memory
        (see \l{Algorithmic Complexity} for details),
        and its index-based API is more convenient than QLinkedList's
        iterator-based API. It also expands to less code in your
        executable.
-    \i If you need a real linked list, with guarantees of \l{constant
+    \li If you need a real linked list, with guarantees of \l{constant
        time} insertions in the middle of the list and iterators to
        items rather than indexes, use QLinkedList.
-    \i If you want the items to occupy adjacent memory positions, or
+    \li If you want the items to occupy adjacent memory positions, or
        if your items are larger than a pointer and you want to avoid
        the overhead of allocating them on the heap individually at
        insertion time, then use QVector.
-    \i If you want a low-level variable-size array, QVarLengthArray
+    \li If you want a low-level variable-size array, QVarLengthArray
        may be sufficient.
     \endlist
 

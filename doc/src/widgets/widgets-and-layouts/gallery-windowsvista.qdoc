@@ -38,18 +38,18 @@
 
 \table 100%
 \row
-\o \image windowsvista-pushbutton.png 
+\li \image windowsvista-pushbutton.png
    \caption The QPushButton widget provides a command button.
-\o \image windowsvista-toolbutton.png
+\li \image windowsvista-toolbutton.png
    \caption The QToolButton class provides a quick-access button to commands
     or options, usually used inside a QToolBar.
 \endtable
 
 \table 100%
 \row
-\o \image windowsvista-checkbox.png
+\li \image windowsvista-checkbox.png
    \caption The QCheckBox widget provides a checkbox with a text label.
-\o \image windowsvista-radiobutton.png
+\li \image windowsvista-radiobutton.png
    \caption The QRadioButton widget provides a radio button with a text or pixmap label.
 \endtable
 
@@ -57,13 +57,13 @@
 
 \table 100%
 \row
-\o \image windowsvista-groupbox.png
+\li \image windowsvista-groupbox.png
    The The QGroupBox widget provides a group box frame with a title.
-\o \image windowsvista-tabwidget.png
+\li \image windowsvista-tabwidget.png
    The QTabWidget class provides a stack of tabbed widgets.
-\o \image windowsvista-frame.png
+\li \image windowsvista-frame.png
    The QFrame widget provides a simple decorated container for other widgets.
-\o \image windowsvista-toolbox.png
+\li \image windowsvista-toolbox.png
    The QToolBox class provides a column of tabbed widget items.
 \endtable
 
@@ -71,24 +71,24 @@
 
 \table 100%
 \row
-\o \image windowsvista-listview.png
+\li \image windowsvista-listview.png
    The QListView class provides a default model/view implementation of a list/icon view. The QListWidget class provides a classic item-based list/icon view.
-\o \image windowsvista-treeview.png
+\li \image windowsvista-treeview.png
    The QTreeView class provides a default model/view implementation of a tree view. The QTreeWidget class provides a classic item-based tree view.
-\o \image windowsvista-tableview.png
-   The QTableView class provides a default model/view implementation of a table view. The QTableWidget class provides a classic item-based table view.\o 
-\o 
+\li \image windowsvista-tableview.png
+   The QTableView class provides a default model/view implementation of a table view. The QTableWidget class provides a classic item-based table view.\li
+\li
 \endtable
 
 \section2 Display Widgets
 
 \table 100%
 \row
-\o \image windowsvista-progressbar.png
+\li \image windowsvista-progressbar.png
    The QProgressBar widget provides a horizontal progress bar.
-\o \image windowsvista-label.png
+\li \image windowsvista-label.png
    The QLabel widget provides a text or image display.
-\o \image windowsvista-lcdnumber.png
+\li \image windowsvista-lcdnumber.png
    The QLCDNumber widget displays a number with LCD-like digits.
 \endtable
 
@@ -96,43 +96,43 @@
 
 \table 100%
 \row
-\o \image windowsvista-lineedit.png
+\li \image windowsvista-lineedit.png
    The QLineEdit widget is a one-line text editor.
-\o \image windowsvista-dateedit.png
+\li \image windowsvista-dateedit.png
    The QDateEdit class provides a widget for editing dates.
-\o \image windowsvista-timeedit.png
+\li \image windowsvista-timeedit.png
    The QTimeEdit class provides a widget for editing times.
-\o \image windowsvista-datetimeedit.png
+\li \image windowsvista-datetimeedit.png
    The QDateTimeEdit class provides a widget for editing dates and times.
 \endtable
 
 \table 100%
 \row
-\o \image windowsvista-slider.png
+\li \image windowsvista-slider.png
    The QSlider widget provides a vertical or horizontal slider.
-\o \image windowsvista-combobox.png
+\li \image windowsvista-combobox.png
    The QComboBox widget is a combined button and pop-up list.
-\o \image windowsvista-spinbox.png
+\li \image windowsvista-spinbox.png
    The QSpinBox class provides a spin box widget.
 \endtable
 
 \table 100%
 \row
-\o \image windowsvista-fontcombobox.png
+\li \image windowsvista-fontcombobox.png
    The QFontComboBox widget is a specialized combobox that enables fonts to be selected from a pop-up list containing previews of available fonts.
-\o \image windowsvista-doublespinbox.png
+\li \image windowsvista-doublespinbox.png
    The QDoubleSpinBox class provides a spin box widget that allows double precision floating point numbers to be entered.
-\o \image windowsvista-horizontalscrollbar.png
+\li \image windowsvista-horizontalscrollbar.png
    The QScrollBar widget provides a vertical or horizontal scroll bar. Here, we show a scroll bar with horizontal orientation.
 \endtable
 
 \table 100%
 \row
-\o \image windowsvista-dial.png
+\li \image windowsvista-dial.png
    The QDial class provides a rounded range control (like a speedometer or potentiometer).
-\o \image windowsvista-textedit.png
+\li \image windowsvista-textedit.png
    The QTextEdit class provides a widget that is used to edit and display both plain and rich text.
-\o \image windowsvista-calendarwidget.png
+\li \image windowsvista-calendarwidget.png
    The QCalendarWidget class provides a monthly calendar widget that can be used to select dates.
 \endtable
 */

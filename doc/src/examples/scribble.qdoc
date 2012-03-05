@@ -55,9 +55,9 @@
     The example consists of two classes:
 
     \list
-    \o \c ScribbleArea is a custom widget that displays a QImage and
+    \li \c ScribbleArea is a custom widget that displays a QImage and
        allows to the user to draw on it.
-    \o \c MainWindow provides a menu above the \c ScribbleArea.
+    \li \c MainWindow provides a menu above the \c ScribbleArea.
     \endlist
 
     We will start by reviewing the \c ScribbleArea class. Then we will
@@ -85,14 +85,14 @@
     We also need the following private variables:
 
     \list
-    \o \c modified is \c true if there are unsaved
+    \li \c modified is \c true if there are unsaved
        changes to the image displayed in the scribble area.
-    \o \c scribbling is \c true while the user is pressing
+    \li \c scribbling is \c true while the user is pressing
        the left mouse button within the scribble area.
-    \o \c penWidth and \c penColor hold the currently
+    \li \c penWidth and \c penColor hold the currently
        set width and color for the pen used in the application.
-    \o \c image stores the image drawn by the user.
-    \o \c lastPoint holds the position of the cursor at the last
+    \li \c image stores the image drawn by the user.
+    \li \c lastPoint holds the position of the cursor at the last
        mouse press or mouse move event.
     \endlist
 
@@ -176,18 +176,18 @@
     good reasons for this:
 
     \list
-    \o The window system requires us to be able to redraw the widget
+    \li The window system requires us to be able to redraw the widget
        \e{at any time}. For example, if the window is minimized and
        restored, the window system might have forgotten the contents
        of the widget and send us a paint event. In other words, we
        can't rely on the window system to remember our image.
 
-    \o Qt normally doesn't allow us to paint outside of \c
+    \li Qt normally doesn't allow us to paint outside of \c
        paintEvent(). In particular, we can't paint from the mouse
        event handlers. (This behavior can be changed using the
        Qt::WA_PaintOnScreen widget attribute, though.)
 
-    \o If initialized properly, a QImage is guaranteed to use 8-bit
+    \li If initialized properly, a QImage is guaranteed to use 8-bit
        for each color channel (red, green, blue, and alpha), whereas
        a QWidget might have a lower color depth, depending on the
        monitor configuration. This means that if we load a 24-bit or

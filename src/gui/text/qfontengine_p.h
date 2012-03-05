@@ -85,6 +85,7 @@ struct QGlyphLayout;
 
 class Q_GUI_EXPORT QFontEngine : public QObject
 {
+    Q_OBJECT
 public:
     enum Type {
         Box,
@@ -343,6 +344,7 @@ private:
 
 class Q_GUI_EXPORT QFontEngineMulti : public QFontEngine
 {
+    Q_OBJECT
 public:
     explicit QFontEngineMulti(int engineCount);
     ~QFontEngineMulti();

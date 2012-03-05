@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <qdrag.h>
+#include "private/qguiapplication_p.h"
 #include <qpixmap.h>
 #include <qpoint.h>
 #include "qdnd_p.h"
@@ -114,9 +115,9 @@ QDrag::QDrag(QObject *dragSource)
     d->target = 0;
     d->data = 0;
     d->hotspot = QPoint(-10, -10);
-    d->possible_actions = Qt::CopyAction;
     d->executed_action = Qt::IgnoreAction;
-    d->defaultDropAction = Qt::IgnoreAction;
+    d->supported_actions = Qt::IgnoreAction;
+    d->default_action = Qt::IgnoreAction;
 }
 
 /*!
@@ -126,9 +127,6 @@ QDrag::~QDrag()
 {
     Q_D(QDrag);
     delete d->data;
-    QDragManager *manager = QDragManager::self();
-    if (manager && manager->object == this)
-        manager->cancel(false);
 }
 
 /*!
@@ -178,7 +176,7 @@ QPixmap QDrag::pixmap() const
     Sets the position of the hot spot relative to the top-left corner of the
     pixmap used to the point specified by \a hotspot.
 
-    \bold{Note:} on X11, the pixmap may not be able to keep up with the mouse
+    \b{Note:} on X11, the pixmap may not be able to keep up with the mouse
     movements if the hot spot causes the pixmap to be displayed
     directly under the cursor.
 */
@@ -226,7 +224,7 @@ QObject *QDrag::target() const
     from are specified in \a supportedActions. The default proposed action will be selected
     among the allowed actions in the following order: Move, Copy and Link.
 
-    \bold{Note:} On Linux and Mac OS X, the drag and drop operation
+    \b{Note:} On Linux and Mac OS X, the drag and drop operation
     can take some time, but this function does not block the event
     loop. Other events are still delivered to the application while
     the operation is performed. On Windows, the Qt event loop is
@@ -248,7 +246,7 @@ Qt::DropAction QDrag::exec(Qt::DropActions supportedActions)
     The \a defaultDropAction determines which action will be proposed when the user performs a
     drag without using modifier keys.
 
-    \bold{Note:} On Linux and Mac OS X, the drag and drop operation
+    \b{Note:} On Linux and Mac OS X, the drag and drop operation
     can take some time, but this function does not block the event
     loop. Other events are still delivered to the application while
     the operation is performed. On Windows, the Qt event loop is
@@ -264,24 +262,22 @@ Qt::DropAction QDrag::exec(Qt::DropActions supportedActions, Qt::DropAction defa
         qWarning("QDrag: No mimedata set before starting the drag");
         return d->executed_action;
     }
-    QDragManager *manager = QDragManager::self();
-    d->defaultDropAction = Qt::IgnoreAction;
-    d->possible_actions = supportedActions;
+    Qt::DropAction transformedDefaultDropAction = Qt::IgnoreAction;
 
-    if (manager) {
-        if (defaultDropAction == Qt::IgnoreAction) {
-            if (supportedActions & Qt::MoveAction) {
-                d->defaultDropAction = Qt::MoveAction;
-            } else if (supportedActions & Qt::CopyAction) {
-                d->defaultDropAction = Qt::CopyAction;
-            } else if (supportedActions & Qt::LinkAction) {
-                d->defaultDropAction = Qt::LinkAction;
-            }
-        } else {
-            d->defaultDropAction = defaultDropAction;
+    if (defaultDropAction == Qt::IgnoreAction) {
+        if (supportedActions & Qt::MoveAction) {
+            transformedDefaultDropAction = Qt::MoveAction;
+        } else if (supportedActions & Qt::CopyAction) {
+            transformedDefaultDropAction = Qt::CopyAction;
+        } else if (supportedActions & Qt::LinkAction) {
+            transformedDefaultDropAction = Qt::LinkAction;
         }
-        d->executed_action = manager->drag(this);
+    } else {
+        transformedDefaultDropAction = defaultDropAction;
     }
+    d->supported_actions = supportedActions;
+    d->default_action = transformedDefaultDropAction;
+    d->executed_action = QDragManager::self()->drag(this);
 
     return d->executed_action;
 }
@@ -289,13 +285,13 @@ Qt::DropAction QDrag::exec(Qt::DropActions supportedActions, Qt::DropAction defa
 /*!
     \obsolete
 
-    \bold{Note:} It is recommended to use exec() instead of this function.
+    \b{Note:} It is recommended to use exec() instead of this function.
 
     Starts the drag and drop operation and returns a value indicating the requested
     drop action when it is completed. The drop actions that the user can choose
     from are specified in \a request. Qt::CopyAction is always allowed.
 
-    \bold{Note:} Although the drag and drop operation can take some time, this function
+    \b{Note:} Although the drag and drop operation can take some time, this function
     does not block the event loop. Other events are still delivered to the application
     while the operation is performed.
 
@@ -308,11 +304,9 @@ Qt::DropAction QDrag::start(Qt::DropActions request)
         qWarning("QDrag: No mimedata set before starting the drag");
         return d->executed_action;
     }
-    QDragManager *manager = QDragManager::self();
-    d->defaultDropAction = Qt::IgnoreAction;
-    d->possible_actions = request | Qt::CopyAction;
-    if (manager)
-        d->executed_action = manager->drag(this);
+    d->supported_actions = request | Qt::CopyAction;
+    d->default_action = Qt::IgnoreAction;
+    d->executed_action = QDragManager::self()->drag(this);
     return d->executed_action;
 }
 
@@ -335,6 +329,49 @@ void QDrag::setDragCursor(const QPixmap &cursor, Qt::DropAction action)
         d->customCursors[action] = cursor;
 }
 
+/*!
+    Returns the drag cursor for the \a action.
+
+    \since 5.0
+*/
+
+QPixmap QDrag::dragCursor(Qt::DropAction action) const
+{
+    typedef QMap<Qt::DropAction, QPixmap>::const_iterator Iterator;
+
+    Q_D(const QDrag);
+    const Iterator it = d->customCursors.constFind(action);
+    if (it != d->customCursors.constEnd())
+        return it.value();
+
+    Qt::CursorShape shape = Qt::ForbiddenCursor;
+    switch (action) {
+    case Qt::MoveAction:
+        shape = Qt::DragMoveCursor;
+        break;
+    case Qt::CopyAction:
+        shape = Qt::DragCopyCursor;
+        break;
+    case Qt::LinkAction:
+        shape = Qt::DragLinkCursor;
+        break;
+    default:
+        shape = Qt::ForbiddenCursor;
+    }
+    return QGuiApplicationPrivate::instance()->getPixmapCursor(shape);
+}
+
+Qt::DropActions QDrag::supportedActions() const
+{
+    Q_D(const QDrag);
+    return d->supported_actions;
+}
+
+Qt::DropAction QDrag::defaultAction() const
+{
+    Q_D(const QDrag);
+    return d->default_action;
+}
 /*!
     \fn void QDrag::actionChanged(Qt::DropAction action)
 

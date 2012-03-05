@@ -525,33 +525,23 @@ void tst_Compiler::privateStaticTemplateMember() const
 // the second member of the union
 static const union { unsigned char c[8]; double d; } qt_be_inf_bytes = { { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 } };
 static const union { unsigned char c[8]; double d; } qt_le_inf_bytes = { { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f } };
-static const union { unsigned char c[8]; double d; } qt_armfpa_inf_bytes = { { 0, 0, 0xf0, 0x7f, 0, 0, 0, 0 } };
 static inline double qt_inf()
 {
-#ifdef QT_ARMFPA
-    return qt_armfpa_inf_bytes.d;
-#else
     return (QSysInfo::ByteOrder == QSysInfo::BigEndian
             ? qt_be_inf_bytes.d
             : qt_le_inf_bytes.d);
-#endif
 }
 
 #else
 
 static const unsigned char qt_be_inf_bytes[] = { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 };
 static const unsigned char qt_le_inf_bytes[] = { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f };
-static const unsigned char qt_armfpa_inf_bytes[] = { 0, 0, 0xf0, 0x7f, 0, 0, 0, 0 };
 static inline double qt_inf()
 {
     const uchar *bytes;
-#ifdef QT_ARMFPA
-    bytes = qt_armfpa_inf_bytes;
-#else
     bytes = (QSysInfo::ByteOrder == QSysInfo::BigEndian
              ? qt_be_inf_bytes
              : qt_le_inf_bytes);
-#endif
 
     union { uchar c[8]; double d; } returnValue;
     memcpy(returnValue.c, bytes, sizeof(returnValue.c));

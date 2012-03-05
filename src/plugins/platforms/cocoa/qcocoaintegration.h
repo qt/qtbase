@@ -97,6 +97,7 @@ private:
 
     QScopedPointer<QPlatformAccessibility> mAccessibility;
     QScopedPointer<QPlatformTheme> mPlatformTheme;
+    QList<QCocoaScreen *> mScreens;
 };
 
 QT_END_NAMESPACE

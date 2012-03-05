@@ -309,7 +309,7 @@ QDebug QMessageLogger::critical()
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the debugger.
 
-    If you are using the \bold{default message handler} this function will
+    If you are using the \b{default message handler} this function will
     abort on Unix systems to create a core dump. On Windows, for debug builds,
     this function will report a _CRT_ERROR enabling you to connect a debugger
     to the application.

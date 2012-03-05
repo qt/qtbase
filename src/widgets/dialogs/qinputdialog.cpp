@@ -1031,10 +1031,10 @@ QString QInputDialog::cancelButtonText() const
     in \a member. These are:
 
     \list
-      \o textValueSelected() if \a member has a QString for its first argument.
-      \o intValueSelected() if \a member has an int for its first argument.
-      \o doubleValueSelected() if \a member has a double for its first argument.
-      \o accepted() if \a member has NO arguments.
+      \li textValueSelected() if \a member has a QString for its first argument.
+      \li intValueSelected() if \a member has an int for its first argument.
+      \li doubleValueSelected() if \a member has a double for its first argument.
+      \li accepted() if \a member has NO arguments.
     \endlist
 
     The signal will be disconnected from the slot when the dialog is closed.

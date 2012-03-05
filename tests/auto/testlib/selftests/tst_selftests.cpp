@@ -346,6 +346,7 @@ void tst_Selftests::runSubTest_data()
         // Disable this test on Windows, as the run-time will popup dialogs with warnings
         << "fetchbogus"
 #endif
+        << "findtestdata"
         << "float"
         << "globaldata"
         << "longstring"
@@ -363,7 +364,8 @@ void tst_Selftests::runSubTest_data()
         << "sleep"
         << "strcmp"
         << "subtest"
-        << "findtestdata"
+        << "verbose1"
+        << "verbose2"
         << "warnings"
         << "xunit"
     ;
@@ -412,6 +414,12 @@ void tst_Selftests::runSubTest_data()
             }
             else if (subtest == "silent") {
                 arguments << "-silent";
+            }
+            else if (subtest == "verbose1") {
+                arguments << "-v1";
+            }
+            else if (subtest == "verbose2") {
+                arguments << "-v2";
             }
 
 

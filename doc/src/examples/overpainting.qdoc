@@ -214,30 +214,30 @@
     calls, using the following approach:
 
     \list
-    \o Reimplement QGLWidget::initializeGL(), but only perform minimal
+    \li Reimplement QGLWidget::initializeGL(), but only perform minimal
        initialization. QPainter will perform its own initialization
        routines, modifying the matrix and property stacks, so it is better
        to defer certain initialization tasks until just before you render
        the 3D scene.
-    \o Reimplement QGLWidget::resizeGL() as in the pure 3D case.
-    \o Reimplement QWidget::paintEvent() to draw both 2D and 3D graphics.
+    \li Reimplement QGLWidget::resizeGL() as in the pure 3D case.
+    \li Reimplement QWidget::paintEvent() to draw both 2D and 3D graphics.
     \endlist
 
     The \l{QWidget::paintEvent()}{paintEvent()} implementation performs the
     following tasks:
 
     \list
-    \o Push the current OpenGL modelview matrix onto a stack.
-    \o Perform initialization tasks usually done in the
+    \li Push the current OpenGL modelview matrix onto a stack.
+    \li Perform initialization tasks usually done in the
        \l{QGLWidget::initializeGL()}{initializeGL()} function.
-    \o Perform code that would normally be located in the widget's
+    \li Perform code that would normally be located in the widget's
        \l{QGLWidget::resizeGL()}{resizeGL()} function to set the correct
        perspective transformation and set up the viewport.
-    \o Render the scene using OpenGL calls.
-    \o Pop the OpenGL modelview matrix off the stack.
-    \o Construct a QPainter object.
-    \o Initialize it for use on the widget with the QPainter::begin() function.
-    \o Draw primitives using QPainter's member functions.
-    \o Call QPainter::end() to finish painting.
+    \li Render the scene using OpenGL calls.
+    \li Pop the OpenGL modelview matrix off the stack.
+    \li Construct a QPainter object.
+    \li Initialize it for use on the widget with the QPainter::begin() function.
+    \li Draw primitives using QPainter's member functions.
+    \li Call QPainter::end() to finish painting.
     \endlist
 */

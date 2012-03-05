@@ -75,7 +75,7 @@ QT_BEGIN_NAMESPACE
     Finally, you can use the setHandle() function to register a new event
     object, and the handle() function to retrieve the event handle.
 
-    \bold{Further information:}
+    \b{Further information:}
     Although the class is called QWinEventNotifier, it can be used for
     certain other objects which are so-called synchronization
     objects, such as Processes, Threads, Waitable timers.
@@ -140,7 +140,7 @@ QWinEventNotifier::~QWinEventNotifier()
     Register the HANDLE \a hEvent. The old HANDLE will be automatically
     unregistered.
 
-    \bold Note: The notifier will be disabled as a side effect and needs
+    \b Note: The notifier will be disabled as a side effect and needs
     to be re-enabled.
 
     \sa handle(), setEnabled()

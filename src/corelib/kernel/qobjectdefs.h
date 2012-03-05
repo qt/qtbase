@@ -65,8 +65,10 @@ class QString;
 # if defined(QT_NO_KEYWORDS)
 #  define QT_NO_EMIT
 # else
-#   define slots
-#   define signals public
+#   ifndef QT_NO_SIGNALS_SLOTS_KEYWORDS
+#     define slots
+#     define signals public
+#   endif
 # endif
 # define Q_SLOTS
 # define Q_SIGNALS public

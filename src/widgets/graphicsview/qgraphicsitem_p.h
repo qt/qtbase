@@ -145,7 +145,7 @@ public:
         QPoint cacheIndent;
         QPixmapCache::Key key;
     };
-    QMap<QPaintDevice *, DeviceData> deviceData;
+    QHash<QPaintDevice *, DeviceData> deviceData;
 
     // List of logical exposed rects
     QVector<QRectF> exposed;
@@ -508,7 +508,7 @@ public:
 
     QRectF childrenBoundingRect;
     QRectF needsRepaint;
-    QMap<QWidget *, QRect> paintedViewBoundingRects;
+    QHash<QWidget *, QRect> paintedViewBoundingRects;
     QPointF pos;
     qreal z;
     qreal opacity;

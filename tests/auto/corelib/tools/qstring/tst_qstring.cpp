@@ -4147,16 +4147,7 @@ void tst_QString::tortureSprintfDouble()
 #            error "Q_BYTE_ORDER not defined"
 #        endif
 
-#       ifdef QT_ARMFPA
-        buff[0] = data->bytes[4];
-        buff[1] = data->bytes[5];
-        buff[2] = data->bytes[6];
-        buff[3] = data->bytes[7];
-        buff[4] = data->bytes[0];
-        buff[5] = data->bytes[1];
-        buff[6] = data->bytes[2];
-        buff[7] = data->bytes[3];
-#        elif Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+#        if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         for (uint i = 0; i < 8; ++i)
             buff[i] = data->bytes[i];
 #        else

@@ -39,9 +39,9 @@
     the words on the magnets. The example consists of two classes:
 
     \list
-        \o \c DragLabel is a custom widget representing one
+        \li \c DragLabel is a custom widget representing one
            single fridge magnet.
-        \o \c DragWidget provides the main application window.
+        \li \c DragWidget provides the main application window.
     \endlist
 
     We will first take a look at the \c DragLabel class, then we will

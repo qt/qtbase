@@ -127,15 +127,15 @@ QSizePolicy::operator QVariant() const
     manipulating empty space in layouts:
 
     \table
-    \header \o Class
-            \o Functions
-    \row    \o QHBoxLayout
-            \o \l{QBoxLayout::addSpacing()}{addSpacing()},
+    \header \li Class
+            \li Functions
+    \row    \li QHBoxLayout
+            \li \l{QBoxLayout::addSpacing()}{addSpacing()},
                \l{QBoxLayout::addStretch()}{addStretch()},
                \l{QBoxLayout::insertSpacing()}{insertSpacing()},
                \l{QBoxLayout::insertStretch()}{insertStretch()}
-    \row    \o QGridLayout
-            \o \l{QGridLayout::setRowMinimumHeight()}{setRowMinimumHeight()},
+    \row    \li QGridLayout
+            \li \l{QGridLayout::setRowMinimumHeight()}{setRowMinimumHeight()},
                \l{QGridLayout::setRowStretch()}{setRowStretch()},
                \l{QGridLayout::setColumnMinimumWidth()}{setColumnMinimumWidth()},
                \l{QGridLayout::setColumnStretch()}{setColumnStretch()}
@@ -156,16 +156,16 @@ QSizePolicy::operator QVariant() const
     manipulating widgets in layouts:
 
     \table
-    \header \o Class
-            \o Functions
-    \row    \o QBoxLayout
-            \o \l{QBoxLayout::addWidget()}{addWidget()},
+    \header \li Class
+            \li Functions
+    \row    \li QBoxLayout
+            \li \l{QBoxLayout::addWidget()}{addWidget()},
                \l{QBoxLayout::insertWidget()}{insertWidget()},
                \l{QBoxLayout::setStretchFactor()}{setStretchFactor()}
-    \row    \o QGridLayout
-            \o \l{QGridLayout::addWidget()}{addWidget()}
-    \row    \o QStackedLayout
-            \o \l{QStackedLayout::addWidget()}{addWidget()},
+    \row    \li QGridLayout
+            \li \l{QGridLayout::addWidget()}{addWidget()}
+    \row    \li QStackedLayout
+            \li \l{QStackedLayout::addWidget()}{addWidget()},
                \l{QStackedLayout::insertWidget()}{insertWidget()},
                \l{QStackedLayout::currentWidget()}{currentWidget()},
                \l{QStackedLayout::setCurrentWidget()}{setCurrentWidget()},
@@ -191,7 +191,7 @@ QSizePolicy::operator QVariant() const
 /*!
     Sets the alignment of this item to \a alignment.
 
-    \bold{Note:} Item alignment is only supported by QLayoutItem subclasses
+    \b{Note:} Item alignment is only supported by QLayoutItem subclasses
     where it would have a visual effect. Except for QSpacerItem, which provides
     blank space for layouts, all public Qt classes that inherit QLayoutItem
     support item alignment.

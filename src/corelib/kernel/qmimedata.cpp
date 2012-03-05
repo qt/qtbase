@@ -246,12 +246,12 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     functions to access the data:
 
     \table
-    \header \o Tester       \o Getter       \o Setter           \o MIME Types
-    \row    \o hasText()    \o text()       \o setText()        \o \c text/plain
-    \row    \o hasHtml()    \o html()       \o setHtml()        \o \c text/html
-    \row    \o hasUrls()    \o urls()       \o setUrls()        \o \c text/uri-list
-    \row    \o hasImage()   \o imageData()  \o setImageData()   \o \c image/ *
-    \row    \o hasColor()   \o colorData()  \o setColorData()   \o \c application/x-color
+    \header \li Tester       \li Getter       \li Setter           \li MIME Types
+    \row    \li hasText()    \li text()       \li setText()        \li \c text/plain
+    \row    \li hasHtml()    \li html()       \li setHtml()        \li \c text/html
+    \row    \li hasUrls()    \li urls()       \li setUrls()        \li \c text/uri-list
+    \row    \li hasImage()   \li imageData()  \li setImageData()   \li \c image/ *
+    \row    \li hasColor()   \li colorData()  \li setColorData()   \li \c application/x-color
     \endtable
 
     For example, if your write a widget that accepts URL drags, you
@@ -263,15 +263,15 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     object:
 
     \list 1
-    \o  Custom data can be stored directly in a QMimeData object as a
+    \li  Custom data can be stored directly in a QMimeData object as a
         QByteArray using setData(). For example:
 
         \snippet doc/src/snippets/code/src_corelib_kernel_qmimedata.cpp 1
 
-    \o  We can subclass QMimeData and reimplement hasFormat(),
+    \li  We can subclass QMimeData and reimplement hasFormat(),
         formats(), and retrieveData().
 
-    \o  If the drag and drop operation occurs within a single
+    \li  If the drag and drop operation occurs within a single
         application, we can subclass QMimeData and add extra data in
         it, and use a qobject_cast() in the receiver's drop event
         handler. For example:

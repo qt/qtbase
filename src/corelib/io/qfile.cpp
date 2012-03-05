@@ -1034,13 +1034,13 @@ bool QFile::open(OpenMode mode)
     then calling close() closes the adopted handle.
     Otherwise, close() does not actually close the file, but only flushes it.
 
-    \bold{Warning:}
+    \b{Warning:}
     \list 1
-        \o If \a fh does not refer to a regular file, e.g., it is \c stdin,
+        \li If \a fh does not refer to a regular file, e.g., it is \c stdin,
            \c stdout, or \c stderr, you may not be able to seek(). size()
            returns \c 0 in those cases. See QIODevice::isSequential() for
            more information.
-        \o Since this function opens the file without specifying the file name,
+        \li Since this function opens the file without specifying the file name,
            you cannot use this QFile with a QFileInfo.
     \endlist
 
@@ -1048,7 +1048,7 @@ bool QFile::open(OpenMode mode)
 
     \sa close(), {qmake Variable Reference#CONFIG}{qmake Variable Reference}
 
-    \bold{Note for the Windows Platform}
+    \b{Note for the Windows Platform}
 
     \a fh must be opened in binary mode (i.e., the mode string must contain
     'b', as in "rb" or "wb") when accessing files and other random-access

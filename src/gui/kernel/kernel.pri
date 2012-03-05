@@ -56,7 +56,8 @@ HEADERS += \
         kernel/qtouchdevice_p.h \
         kernel/qplatformsharedgraphicscache_qpa.h \
         kernel/qplatformdialoghelper_qpa.h \
-        kernel/qplatformservices_qpa.h
+        kernel/qplatformservices_qpa.h \
+        kernel/qplatformscreenpageflipper_qpa.h
 
 SOURCES += \
         kernel/qclipboard_qpa.cpp \
@@ -66,6 +67,7 @@ SOURCES += \
         kernel/qwindowsysteminterface_qpa.cpp \
         kernel/qplatforminputcontext_qpa.cpp \
         kernel/qplatformintegration_qpa.cpp \
+        kernel/qplatformdrag_qpa.cpp \
         kernel/qplatformscreen_qpa.cpp \
         kernel/qplatformintegrationfactory_qpa.cpp \
         kernel/qplatformintegrationplugin_qpa.cpp \
@@ -99,7 +101,8 @@ SOURCES += \
         kernel/qtouchdevice.cpp \
         kernel/qplatformsharedgraphicscache_qpa.cpp \
         kernel/qplatformdialoghelper_qpa.cpp \
-        kernel/qplatformservices_qpa.cpp
+        kernel/qplatformservices_qpa.cpp \
+        kernel/qplatformscreenpageflipper_qpa.cpp
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2)|contains(QT_CONFIG, egl) {
     HEADERS += \

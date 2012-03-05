@@ -200,11 +200,11 @@
     editor and follow these steps:
 
     \list
-    \o Uncomment the two lines that create a QLabel with the text
+    \li Uncomment the two lines that create a QLabel with the text
          "\<b\>TROLL PRINT\</b\>" in \c printpanel.cpp.
-    \o Word-tidying: Replace "2-sided" by "Two-sided" in \c printpanel.cpp.
-    \o Replace "1.0" with "1.1" everywhere it occurs in \c mainwindow.cpp.
-    \o Update the copyright year to 1999-2000 in \c mainwindow.cpp.
+    \li Word-tidying: Replace "2-sided" by "Two-sided" in \c printpanel.cpp.
+    \li Replace "1.0" with "1.1" everywhere it occurs in \c mainwindow.cpp.
+    \li Update the copyright year to 1999-2000 in \c mainwindow.cpp.
     \endlist
 
     (Of course the version number and copyright year would be consts or
@@ -214,25 +214,25 @@
     Linguist}. The following items are of special interest:
 
     \list
-    \o \c MainWindow
+    \li \c MainWindow
          \list
-         \o Troll Print 1.0 - marked "(obs.)", obsolete
-         \o About Troll Print 1.0 - marked "(obs.)", obsolete
-         \o Troll Print 1.0. Copyright 1999 Software, Inc. -
+         \li Troll Print 1.0 - marked "(obs.)", obsolete
+         \li About Troll Print 1.0 - marked "(obs.)", obsolete
+         \li Troll Print 1.0. Copyright 1999 Software, Inc. -
        marked obsolete
-         \o Troll Print 1.1 - automatically translated as
+         \li Troll Print 1.1 - automatically translated as
        "Troll Imprimir 1.1"
-         \o About Troll Print 1.1 - automatically translated as
+         \li About Troll Print 1.1 - automatically translated as
        "Troll Imprimir 1.1"
-         \o Troll Print 1.1. Copyright 1999-2000 Software,
+         \li Troll Print 1.1. Copyright 1999-2000 Software,
        Inc. - automatically translated as "Troll Imprimir 1.1.
        Copyright 1999-2000 Software, Inc."
          \endlist
-    \o \c PrintPanel
+    \li \c PrintPanel
          \list
-         \o 2-sided - marked "(obs.)", obsolete
-         \o \<b\>TROLL PRINT\</b\> - unmarked, i.e. untranslated
-         \o Two-sided - unmarked, i.e. untranslated.
+         \li 2-sided - marked "(obs.)", obsolete
+         \li \<b\>TROLL PRINT\</b\> - unmarked, i.e. untranslated
+         \li Two-sided - unmarked, i.e. untranslated.
          \endlist
     \endlist
 

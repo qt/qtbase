@@ -93,11 +93,6 @@ Yes, it is an informative comment ;-)
 
 #include <QtCore/qglobal.h>
 
-#ifdef qDebug
-#  define old_qDebug qDebug
-#  undef qDebug
-#endif
-
 #ifdef __LP64__
 typedef signed int OSStatus;
 #else
@@ -148,10 +143,4 @@ typedef AERecord AppleEvent;
 
 #ifdef check
 #undef check
-#endif
-
-#ifdef old_qDebug
-#  undef qDebug
-#  define qDebug QT_NO_QDEBUG_MACRO
-#  undef old_qDebug
 #endif

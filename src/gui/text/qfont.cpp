@@ -419,14 +419,14 @@ QFontEngineData::~QFontEngineData()
     \target fontmatching
     The font matching algorithm works as follows:
     \list 1
-    \o The specified font family is searched for.
-    \o If not found, the styleHint() is used to select a replacement
+    \li The specified font family is searched for.
+    \li If not found, the styleHint() is used to select a replacement
        family.
-    \o Each replacement font family is searched for.
-    \o If none of these are found or there was no styleHint(), "helvetica"
+    \li Each replacement font family is searched for.
+    \li If none of these are found or there was no styleHint(), "helvetica"
        will be searched for.
-    \o If "helvetica" isn't found Qt will try the lastResortFamily().
-    \o If the lastResortFamily() isn't found Qt will try the
+    \li If "helvetica" isn't found Qt will try the lastResortFamily().
+    \li If the lastResortFamily() isn't found Qt will try the
        lastResortFont() which will always return a name of some kind.
     \endlist
 
@@ -440,10 +440,10 @@ QFontEngineData::~QFontEngineData()
     Once a font is found, the remaining attributes are matched in order of
     priority:
     \list 1
-    \o fixedPitch()
-    \o pointSize() (see below)
-    \o weight()
-    \o style()
+    \li fixedPitch()
+    \li pointSize() (see below)
+    \li weight()
+    \li style()
     \endlist
 
     If you have a font which matches on family, even if none of the
@@ -861,35 +861,35 @@ int QFont::pointSize() const
 
     \table
     \header
-    \o
-    \o PreferDefaultHinting
-    \o PreferNoHinting
-    \o PreferVerticalHinting
-    \o PreferFullHinting
+    \li
+    \li PreferDefaultHinting
+    \li PreferNoHinting
+    \li PreferVerticalHinting
+    \li PreferFullHinting
     \row
-    \o Windows Vista (w/o Platform Update) and earlier
-    \o Full hinting
-    \o Full hinting
-    \o Full hinting
-    \o Full hinting
+    \li Windows Vista (w/o Platform Update) and earlier
+    \li Full hinting
+    \li Full hinting
+    \li Full hinting
+    \li Full hinting
     \row
-    \o Windows 7 and Windows Vista (w/Platform Update) and DirectWrite enabled in Qt
-    \o Full hinting
-    \o Vertical hinting
-    \o Vertical hinting
-    \o Full hinting
+    \li Windows 7 and Windows Vista (w/Platform Update) and DirectWrite enabled in Qt
+    \li Full hinting
+    \li Vertical hinting
+    \li Vertical hinting
+    \li Full hinting
     \row
-    \o FreeType
-    \o Operating System setting
-    \o No hinting
-    \o Vertical hinting (light)
-    \o Full hinting
+    \li FreeType
+    \li Operating System setting
+    \li No hinting
+    \li Vertical hinting (light)
+    \li Full hinting
     \row
-    \o Cocoa on Mac OS X
-    \o No hinting
-    \o No hinting
-    \o No hinting
-    \o No hinting
+    \li Cocoa on Mac OS X
+    \li No hinting
+    \li No hinting
+    \li No hinting
+    \li No hinting
     \endtable
 
     \note Please be aware that altering the hinting preference on Windows is available through
@@ -2277,7 +2277,7 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
 
     There are three ways to create a QFontInfo object.
     \list 1
-    \o Calling the QFontInfo constructor with a QFont creates a font
+    \li Calling the QFontInfo constructor with a QFont creates a font
     info object for a screen-compatible font, i.e. the font cannot be
     a printer font. If the font is changed later, the font
     info object is \e not updated.
@@ -2286,12 +2286,12 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     inaccurate. Printer fonts are not always accessible so the nearest
     screen font is used if a printer font is supplied.)
 
-    \o QWidget::fontInfo() returns the font info for a widget's font.
+    \li QWidget::fontInfo() returns the font info for a widget's font.
     This is equivalent to calling QFontInfo(widget->font()). If the
     widget's font is changed later, the font info object is \e not
     updated.
 
-    \o QPainter::fontInfo() returns the font info for a painter's
+    \li QPainter::fontInfo() returns the font info for a painter's
     current font. If the painter's font is changed later, the font
     info object is \e not updated.
     \endlist
@@ -2715,18 +2715,22 @@ QFontEngine *QFontCache::findEngine(const Key &key)
     EngineCache::Iterator it = engineCache.find(key),
                          end = engineCache.end();
     if (it == end) return 0;
-
     // found... update the hitcount and timestamp
-    it.value().hits++;
-    it.value().timestamp = ++current_timestamp;
+    updateHitCountAndTimeStamp(it.value());
+
+    return it.value().data;
+}
+
+void QFontCache::updateHitCountAndTimeStamp(Engine &value)
+{
+    value.hits++;
+    value.timestamp = ++current_timestamp;
 
     FC_DEBUG("QFontCache: found font engine\n"
              "  %p: timestamp %4u hits %3u ref %2d/%2d, type '%s'",
-             it.value().data, it.value().timestamp, it.value().hits,
-             it.value().data->ref.load(), it.value().data->cache_count,
-             it.value().data->name());
-
-    return it.value().data;
+             value.data, value.timestamp, value.hits,
+             value.data->ref.load(), value.data->cache_count,
+             value.data->name());
 }
 
 void QFontCache::removeEngine(QFontEngine *engine)
@@ -2743,14 +2747,17 @@ void QFontCache::removeEngine(QFontEngine *engine)
     }
 }
 
-void QFontCache::insertEngine(const Key &key, QFontEngine *engine)
+void QFontCache::insertEngine(const Key &key, QFontEngine *engine, bool insertMulti)
 {
     FC_DEBUG("QFontCache: inserting new engine %p", engine);
 
     Engine data(engine);
     data.timestamp = ++current_timestamp;
 
-    engineCache.insert(key, data);
+    if (insertMulti)
+        engineCache.insertMulti(key, data);
+    else
+        engineCache.insert(key, data);
 
     // only increase the cost if this is the first time we insert the engine
     if (engine->cache_count == 0)

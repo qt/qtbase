@@ -48,6 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QPalette;
 class QCocoaTheme : public QPlatformTheme
 {
 public:
@@ -60,7 +61,11 @@ public:
     bool usePlatformNativeDialog(DialogType dialogType) const;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const;
 
+    const QPalette *palette(Palette type = SystemPalette) const;
+
     QVariant themeHint(ThemeHint hint) const;
+private:
+    mutable QPalette *m_systemPalette;
 };
 
 QT_END_NAMESPACE

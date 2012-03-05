@@ -53,9 +53,9 @@
     The Basic Drawing example consists of two classes:
 
     \list
-    \o \c RenderArea is a custom widget that renders multiple
+    \li \c RenderArea is a custom widget that renders multiple
        copies of the currently active shape.
-    \o \c Window is the application's main window displaying a
+    \li \c Window is the application's main window displaying a
        \c RenderArea widget in addition to several parameter widgets.
     \endlist
 
@@ -415,19 +415,19 @@
     the associated QPainter drawing function:
 
     \list
-        \o QPainter::drawLine(),
-        \o QPainter::drawPoints(),
-        \o QPainter::drawPolyline(),
-        \o QPainter::drawPolygon(),
-        \o QPainter::drawRect(),
-        \o QPainter::drawRoundedRect(),
-        \o QPainter::drawEllipse(),
-        \o QPainter::drawArc(),
-        \o QPainter::drawChord(),
-        \o QPainter::drawPie(),
-        \o QPainter::drawPath(),
-        \o QPainter::drawText() or
-        \o QPainter::drawPixmap()
+        \li QPainter::drawLine(),
+        \li QPainter::drawPoints(),
+        \li QPainter::drawPolyline(),
+        \li QPainter::drawPolygon(),
+        \li QPainter::drawRect(),
+        \li QPainter::drawRoundedRect(),
+        \li QPainter::drawEllipse(),
+        \li QPainter::drawArc(),
+        \li QPainter::drawChord(),
+        \li QPainter::drawPie(),
+        \li QPainter::drawPath(),
+        \li QPainter::drawText() or
+        \li QPainter::drawPixmap()
     \endlist
 
     Before we started rendering, we saved the current painter state

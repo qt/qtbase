@@ -59,6 +59,8 @@ QT_BEGIN_NAMESPACE
 
 class QMimeData;
 class QTouchDevice;
+class QPlatformDragQtResponse;
+class QPlatformDropQtResponse;
 
 
 class Q_GUI_EXPORT QWindowSystemInterface
@@ -122,8 +124,8 @@ public:
     static void handleSynchronousExposeEvent(QWindow *tlw, const QRegion &region);
 
     // Drag and drop. These events are sent immediately.
-    static Qt::DropAction handleDrag(QWindow *w, QMimeData *dropData, const QPoint &p);
-    static Qt::DropAction handleDrop(QWindow *w, QMimeData *dropData, const QPoint &p);
+    static QPlatformDragQtResponse handleDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
+    static QPlatformDropQtResponse handleDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
 
     static bool handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
 

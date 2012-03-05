@@ -48,10 +48,10 @@
 
     \list
 
-        \o The \c MySortFilterProxyModel class provides a custom proxy
+        \li The \c MySortFilterProxyModel class provides a custom proxy
         model.
 
-        \o The \c Window class provides the main application window,
+        \li The \c Window class provides the main application window,
         using the custom proxy model to sort and filter a standard
         item model.
 

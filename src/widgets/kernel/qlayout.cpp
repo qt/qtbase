@@ -215,7 +215,7 @@ QSpacerItem *QLayoutPrivate::createSpacerItem(const QLayout *layout, int w, int 
     to a layout, use the addWidget() function; to add a child layout, use the
     addLayout() function provided by the relevant QLayout subclass.
 
-    \bold{Note:} The ownership of \a item is transferred to the layout, and it's
+    \b{Note:} The ownership of \a item is transferred to the layout, and it's
     the layout's responsibility to delete it.
 
     \sa addWidget(), QBoxLayout::addLayout(), QGridLayout::addLayout()
@@ -1270,7 +1270,7 @@ QRect QLayout::alignmentRect(const QRect &r) const
     is the caller's responsibility to give the widget a reasonable
     geometry or to put the widget back into a layout.
     
-    \bold{Note:} The ownership of \a widget remains the same as
+    \b{Note:} The ownership of \a widget remains the same as
     when it was added.
 
     \sa removeItem(), QWidget::setGeometry(), addWidget()

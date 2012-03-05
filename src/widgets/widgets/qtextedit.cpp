@@ -412,19 +412,19 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     When QTextEdit is used read-only the key bindings are limited to
     navigation, and text may only be selected with the mouse:
     \table
-    \header \i Keypresses \i Action
-    \row \i Up        \i Moves one line up.
-    \row \i Down        \i Moves one line down.
-    \row \i Left        \i Moves one character to the left.
-    \row \i Right        \i Moves one character to the right.
-    \row \i PageUp        \i Moves one (viewport) page up.
-    \row \i PageDown        \i Moves one (viewport) page down.
-    \row \i Home        \i Moves to the beginning of the text.
-    \row \i End                \i Moves to the end of the text.
-    \row \i Alt+Wheel
-         \i Scrolls the page horizontally (the Wheel is the mouse wheel).
-    \row \i Ctrl+Wheel        \i Zooms the text.
-    \row \i Ctrl+A            \i Selects all text.
+    \header \li Keypresses \li Action
+    \row \li Up        \li Moves one line up.
+    \row \li Down        \li Moves one line down.
+    \row \li Left        \li Moves one character to the left.
+    \row \li Right        \li Moves one character to the right.
+    \row \li PageUp        \li Moves one (viewport) page up.
+    \row \li PageDown        \li Moves one (viewport) page down.
+    \row \li Home        \li Moves to the beginning of the text.
+    \row \li End                \li Moves to the end of the text.
+    \row \li Alt+Wheel
+         \li Scrolls the page horizontally (the Wheel is the mouse wheel).
+    \row \li Ctrl+Wheel        \li Zooms the text.
+    \row \li Ctrl+A            \li Selects all text.
     \endtable
 
     The text edit may be able to provide some meta-information. For
@@ -486,31 +486,31 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
 
     The list of key bindings which are implemented for editing:
     \table
-    \header \i Keypresses \i Action
-    \row \i Backspace \i Deletes the character to the left of the cursor.
-    \row \i Delete \i Deletes the character to the right of the cursor.
-    \row \i Ctrl+C \i Copy the selected text to the clipboard.
-    \row \i Ctrl+Insert \i Copy the selected text to the clipboard.
-    \row \i Ctrl+K \i Deletes to the end of the line.
-    \row \i Ctrl+V \i Pastes the clipboard text into text edit.
-    \row \i Shift+Insert \i Pastes the clipboard text into text edit.
-    \row \i Ctrl+X \i Deletes the selected text and copies it to the clipboard.
-    \row \i Shift+Delete \i Deletes the selected text and copies it to the clipboard.
-    \row \i Ctrl+Z \i Undoes the last operation.
-    \row \i Ctrl+Y \i Redoes the last operation.
-    \row \i Left \i Moves the cursor one character to the left.
-    \row \i Ctrl+Left \i Moves the cursor one word to the left.
-    \row \i Right \i Moves the cursor one character to the right.
-    \row \i Ctrl+Right \i Moves the cursor one word to the right.
-    \row \i Up \i Moves the cursor one line up.
-    \row \i Down \i Moves the cursor one line down.
-    \row \i PageUp \i Moves the cursor one page up.
-    \row \i PageDown \i Moves the cursor one page down.
-    \row \i Home \i Moves the cursor to the beginning of the line.
-    \row \i Ctrl+Home \i Moves the cursor to the beginning of the text.
-    \row \i End \i Moves the cursor to the end of the line.
-    \row \i Ctrl+End \i Moves the cursor to the end of the text.
-    \row \i Alt+Wheel \i Scrolls the page horizontally (the Wheel is the mouse wheel).
+    \header \li Keypresses \li Action
+    \row \li Backspace \li Deletes the character to the left of the cursor.
+    \row \li Delete \li Deletes the character to the right of the cursor.
+    \row \li Ctrl+C \li Copy the selected text to the clipboard.
+    \row \li Ctrl+Insert \li Copy the selected text to the clipboard.
+    \row \li Ctrl+K \li Deletes to the end of the line.
+    \row \li Ctrl+V \li Pastes the clipboard text into text edit.
+    \row \li Shift+Insert \li Pastes the clipboard text into text edit.
+    \row \li Ctrl+X \li Deletes the selected text and copies it to the clipboard.
+    \row \li Shift+Delete \li Deletes the selected text and copies it to the clipboard.
+    \row \li Ctrl+Z \li Undoes the last operation.
+    \row \li Ctrl+Y \li Redoes the last operation.
+    \row \li Left \li Moves the cursor one character to the left.
+    \row \li Ctrl+Left \li Moves the cursor one word to the left.
+    \row \li Right \li Moves the cursor one character to the right.
+    \row \li Ctrl+Right \li Moves the cursor one word to the right.
+    \row \li Up \li Moves the cursor one line up.
+    \row \li Down \li Moves the cursor one line down.
+    \row \li PageUp \li Moves the cursor one page up.
+    \row \li PageDown \li Moves the cursor one page down.
+    \row \li Home \li Moves the cursor to the beginning of the line.
+    \row \li Ctrl+Home \li Moves the cursor to the beginning of the text.
+    \row \li End \li Moves the cursor to the end of the line.
+    \row \li Ctrl+End \li Moves the cursor to the end of the text.
+    \row \li Alt+Wheel \li Scrolls the page horizontally (the Wheel is the mouse wheel).
     \endtable
 
     To select (mark) text hold down the Shift key whilst pressing one

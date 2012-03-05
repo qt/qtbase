@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 
 class QPaintDevice;
 
-class QPaintEnginePrivate
+class Q_GUI_EXPORT QPaintEnginePrivate
 {
     Q_DECLARE_PUBLIC(QPaintEngine)
 public:

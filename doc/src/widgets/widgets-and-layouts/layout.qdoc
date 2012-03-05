@@ -63,15 +63,15 @@
     is set on a widget in this way, it takes charge of the following tasks:
 
     \list
-    \o Positioning of child widgets.
-    \o Sensible default sizes for windows.
-    \o Sensible minimum sizes for windows.
-    \o Resize handling.
-    \o Automatic updates when contents change:
+    \li Positioning of child widgets.
+    \li Sensible default sizes for windows.
+    \li Sensible minimum sizes for windows.
+    \li Resize handling.
+    \li Automatic updates when contents change:
         \list
-        \o Font size, text or other contents of child widgets.
-        \o Hiding or showing a child widget.
-        \o Removal of child widgets.
+        \li Font size, text or other contents of child widgets.
+        \li Hiding or showing a child widget.
+        \li Removal of child widgets.
         \endlist
     \endlist
 
@@ -95,19 +95,19 @@
     create more complex layouts, you can nest layout managers inside each other.
 
     \list
-        \o  A QHBoxLayout lays out widgets in a horizontal row, from left to
+        \li  A QHBoxLayout lays out widgets in a horizontal row, from left to
             right (or right to left for right-to-left languages).
             \image qhboxlayout-with-5-children.png
 
-        \o  A QVBoxLayout lays out widgets in a vertical column, from top to
+        \li  A QVBoxLayout lays out widgets in a vertical column, from top to
             bottom.
             \image qvboxlayout-with-5-children.png
 
-        \o  A QGridLayout lays out widgets in a two-dimensional grid. Widgets
+        \li  A QGridLayout lays out widgets in a two-dimensional grid. Widgets
             can occupy multiple cells.
             \image qgridlayout-with-5-children.png
 
-        \o  A QFormLayout lays out widgets in a 2-column descriptive label-
+        \li  A QFormLayout lays out widgets in a 2-column descriptive label-
             field style.
             \image qformlayout-with-6-children.png
     \endlist
@@ -176,26 +176,26 @@
     When you add widgets to a layout, the layout process works as follows:
 
     \list 1
-        \o  All the widgets will initially be allocated an amount of space in
+        \li  All the widgets will initially be allocated an amount of space in
             accordance with their QWidget::sizePolicy() and
             QWidget::sizeHint().
 
-        \o  If any of the widgets have stretch factors set, with a value
+        \li  If any of the widgets have stretch factors set, with a value
             greater than zero, then they are allocated space in proportion to
             their stretch factor (explained below).
 
-        \o  If any of the widgets have stretch factors set to zero they will
+        \li  If any of the widgets have stretch factors set to zero they will
             only get more space if no other widgets want the space. Of these,
             space is allocated to widgets with an
             \l{QSizePolicy::Expanding}{Expanding} size policy first.
 
-        \o  Any widgets that are allocated less space than their minimum size
+        \li  Any widgets that are allocated less space than their minimum size
             (or minimum size hint if no minimum size is specified) are
             allocated this minimum size they require. (Widgets don't have to
             have a minimum size or minimum size hint in which case the stretch
             factor is their determining factor.)
 
-        \o  Any widgets that are allocated more space than their maximum size
+        \li  Any widgets that are allocated more space than their maximum size
             are allocated the maximum size space they require. (Widgets do not
             have to have a maximum size in which case the stretch factor is
             their determining factor.)
@@ -231,11 +231,11 @@
     following mechanisms:
 
     \list
-        \o  Reimplement QWidget::sizeHint() to return the preferred size of the
+        \li  Reimplement QWidget::sizeHint() to return the preferred size of the
             widget.
-        \o  Reimplement QWidget::minimumSizeHint() to return the smallest size
+        \li  Reimplement QWidget::minimumSizeHint() to return the smallest size
             the widget can have.
-        \o  Call QWidget::setSizePolicy() to specify the space requirements of
+        \li  Call QWidget::setSizePolicy() to specify the space requirements of
             the widget.
     \endlist
 
@@ -304,14 +304,14 @@
 
     To write your own layout class, you must define the following:
     \list
-        \o  A data structure to store the items handled by the layout. Each
+        \li  A data structure to store the items handled by the layout. Each
             item is a \link QLayoutItem QLayoutItem\endlink. We will use a
             QList in this example.
-        \o  \l{QLayout::}{addItem()}, how to add items to the layout.
-        \o  \l{QLayout::}{setGeometry()}, how to perform the layout.
-        \o  \l{QLayout::}{sizeHint()}, the preferred size of the layout.
-        \o  \l{QLayout::}{itemAt()}, how to iterate over the layout.
-        \o  \l{QLayout::}{takeAt()}, how to remove items from the layout.
+        \li  \l{QLayout::}{addItem()}, how to add items to the layout.
+        \li  \l{QLayout::}{setGeometry()}, how to perform the layout.
+        \li  \l{QLayout::}{sizeHint()}, the preferred size of the layout.
+        \li  \l{QLayout::}{itemAt()}, how to iterate over the layout.
+        \li  \l{QLayout::}{takeAt()}, how to remove items from the layout.
     \endlist
 
     In most cases, you will also implement \l{QLayout::}{minimumSize()}.
@@ -376,16 +376,16 @@
     \section2 Further Notes
 
     \list
-        \o  This custom layout does not handle height for width.
-        \o  We ignore QLayoutItem::isEmpty(); this means that the layout will
+        \li  This custom layout does not handle height for width.
+        \li  We ignore QLayoutItem::isEmpty(); this means that the layout will
             treat hidden widgets as visible.
-        \o  For complex layouts, speed can be greatly increased by caching
+        \li  For complex layouts, speed can be greatly increased by caching
             calculated values. In that case, implement
             QLayoutItem::invalidate() to mark the cached data is dirty.
-        \o  Calling QLayoutItem::sizeHint(), etc. may be expensive. So, you
+        \li  Calling QLayoutItem::sizeHint(), etc. may be expensive. So, you
             should store the value in a local variable if you need it again
             later within in the same function.
-        \o  You should not call QLayoutItem::setGeometry() twice on the same
+        \li  You should not call QLayoutItem::setGeometry() twice on the same
             item in the same function. This call can be very expensive if the
             item has several child widgets, because the layout manager must do
             a complete layout every time. Instead, calculate the geometry and

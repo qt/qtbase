@@ -1,0 +1,100 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/
+**
+** This file is part of the plugins of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights. These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qshapedpixmapdndwindow_p.h"
+
+#include <QtGui/QPainter>
+#include <QtGui/QCursor>
+
+QT_BEGIN_NAMESPACE
+
+QShapedPixmapWindow::QShapedPixmapWindow()
+    : QWindow(),
+      m_backingStore(0)
+{
+    setSurfaceType(RasterSurface);
+    setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint |
+                   Qt::X11BypassWindowManagerHint | Qt::WindowTransparentForInput);
+    create();
+    m_backingStore = new QBackingStore(this);
+}
+
+void QShapedPixmapWindow::render()
+{
+    QRect rect(QPoint(), geometry().size());
+
+    m_backingStore->beginPaint(rect);
+
+    QPaintDevice *device = m_backingStore->paintDevice();
+
+    {
+        QPainter p(device);
+        p.drawPixmap(0, 0, m_pixmap);
+    }
+
+    m_backingStore->endPaint();
+    m_backingStore->flush(rect);
+}
+
+void QShapedPixmapWindow::setPixmap(const QPixmap &pixmap)
+{
+    m_pixmap = pixmap;
+}
+
+void QShapedPixmapWindow::setHotspot(const QPoint &hotspot)
+{
+    m_hotSpot = hotspot;
+}
+
+void QShapedPixmapWindow::updateGeometry()
+{
+    QRect rect(QCursor::pos() - m_hotSpot, m_pixmap.size());
+    if (m_backingStore->size() != m_pixmap.size())
+        m_backingStore->resize(m_pixmap.size());
+    setGeometry(rect);
+}
+
+void QShapedPixmapWindow::exposeEvent(QExposeEvent *)
+{
+    render();
+}
+
+QT_END_NAMESPACE

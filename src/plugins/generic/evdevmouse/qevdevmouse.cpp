@@ -176,12 +176,27 @@ void QEvdevMouseHandler::readMouseData()
 
             sendMouseEvent();
             pendingMouseEvent = false;
-        } else if (data->type == EV_KEY && data->code >= BTN_LEFT && data->code <= BTN_MIDDLE) {
+        } else if (data->type == EV_KEY && data->code >= BTN_LEFT && data->code <= BTN_JOYSTICK) {
             Qt::MouseButton button = Qt::NoButton;
+            // BTN_LEFT == 0x110 in kernel's input.h
+            // The range of possible mouse buttons ends just before BTN_JOYSTICK, value 0x120.
             switch (data->code) {
-            case BTN_LEFT: button = Qt::LeftButton; break;
-            case BTN_MIDDLE: button = Qt::MidButton; break;
-            case BTN_RIGHT: button = Qt::RightButton; break;
+            case 0x110: button = Qt::LeftButton; break;    // BTN_LEFT
+            case 0x111: button = Qt::RightButton; break;
+            case 0x112: button = Qt::MiddleButton; break;
+            case 0x113: button = Qt::ExtraButton1; break;  // AKA Qt::BackButton
+            case 0x114: button = Qt::ExtraButton2; break;  // AKA Qt::ForwardButton
+            case 0x115: button = Qt::ExtraButton3; break;  // AKA Qt::TaskButton
+            case 0x116: button = Qt::ExtraButton4; break;
+            case 0x117: button = Qt::ExtraButton5; break;
+            case 0x118: button = Qt::ExtraButton6; break;
+            case 0x119: button = Qt::ExtraButton7; break;
+            case 0x11a: button = Qt::ExtraButton8; break;
+            case 0x11b: button = Qt::ExtraButton9; break;
+            case 0x11c: button = Qt::ExtraButton10; break;
+            case 0x11d: button = Qt::ExtraButton11; break;
+            case 0x11e: button = Qt::ExtraButton12; break;
+            case 0x11f: button = Qt::ExtraButton13; break;
             }
             if (data->value)
                 m_buttons |= button;

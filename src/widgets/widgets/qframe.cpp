@@ -97,15 +97,15 @@ inline void QFramePrivate::init()
     border: \l lineWidth, \l midLineWidth, and \l frameWidth.
 
     \list
-    \o The line width is the width of the frame border. It can be modified
+    \li The line width is the width of the frame border. It can be modified
        to customize the frame's appearance.
 
-    \o The mid-line width specifies the width of an extra line in the
+    \li The mid-line width specifies the width of an extra line in the
        middle of the frame, which uses a third color to obtain a special
        3D effect. Notice that a mid-line is only drawn for \l Box, \l
        HLine and \l VLine frames that are raised or sunken.
 
-    \o The frame width is determined by the frame style, and the frameWidth()
+    \li The frame width is determined by the frame style, and the frameWidth()
        function is used to obtain the value defined for the style used.
     \endlist
 

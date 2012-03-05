@@ -950,15 +950,15 @@ QTextLayout *QTextCursorPrivate::blockLayout(QTextBlock &block) const{
     document with the cursor:
 
     \list
-    \i Lists are ordered sequences of block elements that are decorated with
+    \li Lists are ordered sequences of block elements that are decorated with
        bullet points or symbols. These are inserted in a specified format
        with insertList().
-    \i Tables are inserted with the insertTable() function, and can be
+    \li Tables are inserted with the insertTable() function, and can be
        given an optional format. These contain an array of cells that can
        be traversed using the cursor.
-    \i Inline images are inserted with insertImage(). The image to be
+    \li Inline images are inserted with insertImage(). The image to be
        used can be specified in an image format, or by name.
-    \i Frames are inserted by calling insertFrame() with a specified format.
+    \li Frames are inserted by calling insertFrame() with a specified format.
     \endlist
 
     Actions can be grouped (i.e. treated as a single action for
@@ -1621,7 +1621,7 @@ void QTextCursor::selectedTableCells(int *firstRow, int *numRows, int *firstColu
 /*!
     Clears the current selection by setting the anchor to the cursor position.
 
-    Note that it does \bold{not} delete the text of the selection.
+    Note that it does \b{not} delete the text of the selection.
 
     \sa removeSelectedText() hasSelection()
 */

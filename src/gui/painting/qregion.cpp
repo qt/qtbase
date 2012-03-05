@@ -894,11 +894,11 @@ QRegion QRegion::intersect(const QRect &r) const
     The rectangles \e must be optimally Y-X sorted and follow these restrictions:
 
     \list
-    \o The rectangles must not intersect.
-    \o All rectangles with a given top coordinate must have the same height.
-    \o No two rectangles may abut horizontally (they should be combined
+    \li The rectangles must not intersect.
+    \li All rectangles with a given top coordinate must have the same height.
+    \li No two rectangles may abut horizontally (they should be combined
        into a single wider rectangle in that case).
-    \o The rectangles must be sorted in ascending order, with Y as the major
+    \li The rectangles must be sorted in ascending order, with Y as the major
        sort key and X as the minor sort key.
     \endlist
     \omit

@@ -54,6 +54,9 @@ QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
 class QTouchScreenData;
+#ifdef USE_MTDEV
+struct mtdev;
+#endif
 
 class QTouchScreenHandler : public QObject
 {
@@ -67,11 +70,12 @@ private slots:
     void readData();
 
 private:
-    void pathFromUdev(QString *path);
-
     QSocketNotifier *m_notify;
     int m_fd;
     QTouchScreenData *d;
+#ifdef USE_MTDEV
+    mtdev *m_mtdev;
+#endif
 };
 
 class QTouchScreenHandlerThread : public QThread

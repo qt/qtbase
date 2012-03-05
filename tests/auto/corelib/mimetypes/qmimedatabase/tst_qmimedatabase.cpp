@@ -44,49 +44,85 @@
 #include "qstandardpaths.h"
 
 #include <QtCore/QFile>
+#include <QtCore/QFileInfo>
+#include <QtCore/QTextStream>
 #include <QtConcurrent/QtConcurrentRun>
 #include <QtConcurrent/QFuture>
 
 #include <QtTest/QtTest>
 
+static const char yastFileName[] ="yast2-metapackage-handler-mimetypes.xml";
+
 void initializeLang()
 {
     qputenv("LC_ALL", "");
     qputenv("LANG", "en_US");
+    QCoreApplication::setApplicationName("tst_qmimedatabase"); // temporary directory pattern
+}
+
+static inline QString testSuiteWarning()
+{
+
+    QString result;
+    QTextStream str(&result);
+    str << "\nCannot find the shared-mime-info test suite\nstarting from: "
+        << QDir::toNativeSeparators(QDir::currentPath()) << "\n"
+           "cd " << QDir::toNativeSeparators(QStringLiteral("tests/auto/corelib/mimetypes/qmimedatabase")) << "\n"
+           "wget http://cgit.freedesktop.org/xdg/shared-mime-info/snapshot/Release-1-0.zip\n"
+           "unzip Release-1-0.zip\n";
+#ifdef Q_OS_WIN
+    str << "mkdir testfiles\nxcopy /s Release-1-0\\tests testfiles\n";
+#else
+    str << "ln -s Release-1-0/tests testfiles\n";
+#endif
+    return result;
 }
 
 // Set LANG before QCoreApplication is created
 Q_CONSTRUCTOR_FUNCTION(initializeLang)
 
+tst_QMimeDatabase::tst_QMimeDatabase()
+{
+}
+
 void tst_QMimeDatabase::initTestCase()
 {
+    QVERIFY(m_temporaryDir.isValid());
+
     // Create a "global" and a "local" XDG data dir, right here.
     // The local dir will be empty initially, while the global dir will contain a copy of freedesktop.org.xml
 
-    QDir here = QDir::currentPath();
+    const QDir here = QDir(m_temporaryDir.path());
 
-    qputenv("XDG_DATA_DIRS", QFile::encodeName(here.absolutePath()));
-    QDir(here.absolutePath() + "/mime").removeRecursively();
-    here.mkpath(QString::fromLatin1("mime/packages"));
+    m_globalXdgDir = m_temporaryDir.path() + QStringLiteral("/global");
+    m_localXdgDir = m_temporaryDir.path() + QStringLiteral("/local");
 
-    QFile xml(QFile::decodeName(SRCDIR "../../../src/mimetypes/mime/packages/freedesktop.org.xml"));
-    const QString mimeDir = here.absolutePath() + QLatin1String("/mime");
-    xml.copy(mimeDir + QLatin1String("/packages/freedesktop.org.xml"));
+    const QString globalPackageDir = m_globalXdgDir + QStringLiteral("/mime/packages");
+    QVERIFY(here.mkpath(globalPackageDir) && here.mkpath(m_localXdgDir));
 
-    m_dataHome = here.absolutePath() + QLatin1String("/../datahome");
-    qputenv("XDG_DATA_HOME", QFile::encodeName(m_dataHome));
-    //qDebug() << "XDG_DATA_HOME=" << m_dataHome;
+    qputenv("XDG_DATA_DIRS", QFile::encodeName(m_globalXdgDir));
+    qputenv("XDG_DATA_HOME", QFile::encodeName(m_localXdgDir));
+    qDebug() << "\nLocal XDG_DATA_HOME: " << m_localXdgDir
+             << "\nGlobal XDG_DATA_DIRS: " << m_globalXdgDir;
 
-    // Make sure we start clean
-    cleanupTestCase();
-}
+    const QString freeDesktopXml = QStringLiteral("freedesktop.org.xml");
+    const QString xmlFileName = QLatin1String(CORE_SOURCES)
+                          + QStringLiteral("/mimetypes/mime/packages/")
+                          + freeDesktopXml;
+    QVERIFY2(QFileInfo(xmlFileName).exists(), qPrintable(xmlFileName + QStringLiteral(" does not exist")));
+    QFile xml(xmlFileName);
+    QVERIFY(xml.copy(globalPackageDir + '/' + freeDesktopXml));
 
-void tst_QMimeDatabase::cleanupTestCase()
-{
-    QDir here = QDir::currentPath();
-    here.remove(QString::fromLatin1("mime/packages/yast2-metapackage-handler-mimetypes.xml"));
+    m_testSuite = QFINDTESTDATA("testfiles");
+    if (m_testSuite.isEmpty())
+        qWarning("%s", qPrintable(testSuiteWarning()));
 
-    QDir(m_dataHome).removeRecursively();
+    m_yastMimeTypes = QFINDTESTDATA(yastFileName);
+    QVERIFY2(!m_yastMimeTypes.isEmpty(),
+             qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
+                        arg(yastFileName, QDir::currentPath())));
+
+    init();
 }
 
 void tst_QMimeDatabase::mimeTypeForName()
@@ -173,6 +209,19 @@ void tst_QMimeDatabase::mimeTypeForFileName_data()
     QTest::newRow("doesn't exist but has known extension") << "IDontExist.txt" << "text/plain";
 }
 
+static inline QByteArray msgMimeTypeForFileNameFailed(const QList<QMimeType> &actual,
+                                                      const QString &expected)
+{
+    QByteArray result = "Actual (";
+    foreach (const QMimeType &m, actual) {
+        result += m.name().toLocal8Bit();
+        result +=  ' ';
+    }
+    result +=  ") , expected: ";
+    result +=  expected.toLocal8Bit();
+    return result;
+}
+
 void tst_QMimeDatabase::mimeTypeForFileName()
 {
     QFETCH(QString, fileName);
@@ -186,8 +235,8 @@ void tst_QMimeDatabase::mimeTypeForFileName()
     if (expectedMimeType == "application/octet-stream") {
         QVERIFY(mimes.isEmpty());
     } else {
-        QVERIFY(!mimes.isEmpty());
-        QCOMPARE(mimes.count(), 1);
+        QVERIFY2(!mimes.isEmpty(), msgMimeTypeForFileNameFailed(mimes, expectedMimeType).constData());
+        QVERIFY2(mimes.count() == 1, msgMimeTypeForFileNameFailed(mimes, expectedMimeType).constData());
         QCOMPARE(mimes.first().name(), expectedMimeType);
     }
 }
@@ -549,20 +598,14 @@ void tst_QMimeDatabase::findByFileName_data()
     QTest::addColumn<QString>("mimeTypeName");
     QTest::addColumn<QString>("xFail");
 
-    QString prefix = QLatin1String(SRCDIR "testfiles/");
-
-    QFile f(prefix + QLatin1String("list"));
-    if (!f.open(QIODevice::ReadOnly)) {
-        const QString warning = QString::fromLatin1(
-                "Please download the shared-mime-info test suite:\n"
-                "cd tests/auto/corelib/mimetypes/qmimedatabase\n"
-                "wget http://cgit.freedesktop.org/xdg/shared-mime-info/snapshot/Release-1-0.zip\n"
-                "unzip Release-1-0.zip\n"
-                "ln -s Release-1-0/tests testfiles\n"
-        );
-        qWarning() << warning;
+    if (m_testSuite.isEmpty())
         QSKIP("shared-mime-info test suite not available.");
-    }
+
+    const QString prefix = m_testSuite + QLatin1Char('/');
+    const QString fileName = prefix + QLatin1String("list");
+    QFile f(fileName);
+    QVERIFY2(f.open(QIODevice::ReadOnly|QIODevice::Text),
+             qPrintable(QString::fromLatin1("Cannot open %1: %2").arg(fileName, f.errorString())));
 
     QByteArray line(1024, Qt::Uninitialized);
 
@@ -582,7 +625,9 @@ void tst_QMimeDatabase::findByFileName_data()
         if (list.size() >= 3)
             xFail = list.at(2);
 
-        QTest::newRow(filePath.toLatin1().constData()) << QString(prefix + filePath) << mimeTypeType << xFail;
+        QTest::newRow(filePath.toLatin1().constData())
+                      << QString(prefix + filePath)
+                      << mimeTypeType << xFail;
     }
 }
 
@@ -676,6 +721,9 @@ void tst_QMimeDatabase::findByFile_data()
     findByFileName_data();
 }
 
+// Note: this test fails on "testcompress.z" when using a shared-mime-info older than 1.0.
+// This because of commit 0f9a506069c in shared-mime-info, which fixed the writing of
+// case-insensitive patterns into mime.cache.
 void tst_QMimeDatabase::findByFile()
 {
     QFETCH(QString, filePath);
@@ -717,13 +765,21 @@ void tst_QMimeDatabase::fromThreads()
 
 static bool runUpdateMimeDatabase(const QString &path) // TODO make it a QMimeDatabase method?
 {
-    const QString umd = QStandardPaths::findExecutable(QString::fromLatin1("update-mime-database"));
-    if (umd.isEmpty())
+    const QString umdCommand = QString::fromLatin1("update-mime-database");
+    const QString umd = QStandardPaths::findExecutable(umdCommand);
+    if (umd.isEmpty()) {
+        qWarning("%s does not exist.", qPrintable(umdCommand));
         return false;
+    }
 
     QProcess proc;
     proc.setProcessChannelMode(QProcess::MergedChannels); // silence output
-    proc.start(umd, QStringList() << path);
+    proc.start(umd, QStringList(path));
+    if (!proc.waitForStarted()) {
+        qWarning("Cannot start %s: %s",
+                 qPrintable(umd), qPrintable(proc.errorString()));
+        return false;
+    }
     proc.waitForFinished();
     //qDebug() << "runUpdateMimeDatabase" << path;
     return true;
@@ -733,7 +789,7 @@ static bool waitAndRunUpdateMimeDatabase(const QString &path)
 {
     QFileInfo mimeCacheInfo(path + QString::fromLatin1("/mime.cache"));
     if (mimeCacheInfo.exists()) {
-        // Wait until the begining of the next second
+        // Wait until the beginning of the next second
         while (mimeCacheInfo.lastModified().secsTo(QDateTime::currentDateTime()) == 0) {
             QTest::qSleep(200);
         }
@@ -767,16 +823,15 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     QMimeDatabase db;
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
 
-    const QString fileName = QLatin1String("yast2-metapackage-handler-mimetypes.xml");
-    const QString srcFile = QFile::decodeName(SRCDIR) + fileName;
-
-    QDir here = QDir::currentPath();
-    const QString mimeDir = here.absolutePath() + QLatin1String("/mime");
+    const QString mimeDir = m_globalXdgDir + QLatin1String("/mime");
     const QString destDir = mimeDir + QLatin1String("/packages/");
-    const QString destFile = destDir + fileName;
+    const QString destFile = destDir + QLatin1String(yastFileName);
     QFile::remove(destFile);
     //qDebug() << destFile;
-    QVERIFY(QFile::copy(srcFile, destFile));
+
+    if (!QFileInfo(destDir).isDir())
+        QVERIFY(QDir(m_globalXdgDir).mkpath(destDir));
+    QVERIFY(QFile::copy(m_yastMimeTypes, destFile));
     if (!waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
 
@@ -801,16 +856,17 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QMimeDatabase db;
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
 
-    const QString fileName = QLatin1String("yast2-metapackage-handler-mimetypes.xml");
-    const QString srcFile = QFile::decodeName(SRCDIR) + fileName;
-    const QString mimeDir = m_dataHome + QLatin1String("/mime");
+    const QString mimeDir = m_localXdgDir + QLatin1String("/mime");
     const QString destDir = mimeDir + QLatin1String("/packages/");
     QDir().mkpath(destDir);
-    const QString destFile = destDir + fileName;
+    const QString destFile = destDir + QLatin1String(yastFileName);
     QFile::remove(destFile);
-    QVERIFY(QFile::copy(srcFile, destFile));
-    if (!runUpdateMimeDatabase(mimeDir))
-        QSKIP("shared-mime-info not found, skipping mime.cache test");;
+    QVERIFY(QFile::copy(m_yastMimeTypes, destFile));
+    if (!runUpdateMimeDatabase(mimeDir)) {
+        const QString skipWarning = QStringLiteral("shared-mime-info not found, skipping mime.cache test (")
+                                    + QDir::toNativeSeparators(mimeDir) + QLatin1Char(')');
+        QSKIP(qPrintable(skipWarning));
+    }
 
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("text/x-suse-ymu"));

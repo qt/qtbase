@@ -81,10 +81,10 @@ QT_BEGIN_NAMESPACE
     over QGraphicsItem. It is similar to QWidget in many ways:
 
     \list
-        \o Provides a \l palette, a \l font and a \l style().
-        \o Has a defined geometry().
-        \o Supports layouts with setLayout() and layout().
-        \o Supports shortcuts and actions with grabShortcut() and insertAction()
+        \li Provides a \l palette, a \l font and a \l style().
+        \li Has a defined geometry().
+        \li Supports layouts with setLayout() and layout().
+        \li Supports shortcuts and actions with grabShortcut() and insertAction()
     \endlist
 
     Unlike QGraphicsItem, QGraphicsWidget is not an abstract class; you can
@@ -106,23 +106,23 @@ QT_BEGIN_NAMESPACE
     Noticeable differences between QGraphicsWidget and QWidget are:
 
     \table
-    \header \o QGraphicsWidget
-                \o QWidget
-    \row      \o Coordinates and geometry are defined with qreals (doubles or
+    \header \li QGraphicsWidget
+                \li QWidget
+    \row      \li Coordinates and geometry are defined with qreals (doubles or
                     floats, depending on the platform).
-                \o QWidget uses integer geometry (QPoint, QRect).
-    \row      \o The widget is already visible by default; you do not have to
+                \li QWidget uses integer geometry (QPoint, QRect).
+    \row      \li The widget is already visible by default; you do not have to
                     call show() to display the widget.
-                \o QWidget is hidden by default until you call show().
-    \row      \o A subset of widget attributes are supported.
-                \o All widget attributes are supported.
-    \row      \o A top-level item's style defaults to QGraphicsScene::style
-                \o A top-level widget's style defaults to QApplication::style
-    \row      \o Graphics View provides a custom drag and drop framework, different
+                \li QWidget is hidden by default until you call show().
+    \row      \li A subset of widget attributes are supported.
+                \li All widget attributes are supported.
+    \row      \li A top-level item's style defaults to QGraphicsScene::style
+                \li A top-level widget's style defaults to QApplication::style
+    \row      \li Graphics View provides a custom drag and drop framework, different
                     from QWidget.
-                \o Standard drag and drop framework.
-    \row      \o Widget items do not support modality.
-                \o Full modality support.
+                \li Standard drag and drop framework.
+    \row      \li Widget items do not support modality.
+                \li Full modality support.
     \endtable
 
     QGraphicsWidget supports a subset of Qt's widget attributes,
@@ -130,32 +130,32 @@ QT_BEGIN_NAMESPACE
     listed in this table are unsupported, or otherwise unused.
 
     \table
-    \header \o Widget Attribute                         \o Usage
-    \row    \o Qt::WA_SetLayoutDirection
-                    \o Set by setLayoutDirection(), cleared by
+    \header \li Widget Attribute                         \li Usage
+    \row    \li Qt::WA_SetLayoutDirection
+                    \li Set by setLayoutDirection(), cleared by
                         unsetLayoutDirection(). You can test this attribute to
                         check if the widget has been explicitly assigned a
                         \l{QGraphicsWidget::layoutDirection()}
                         {layoutDirection}. If the attribute is not set, the
                         \l{QGraphicsWidget::layoutDirection()}
                         {layoutDirection()} is inherited.
-    \row    \o Qt::WA_RightToLeft
-                    \o Toggled by setLayoutDirection(). Inherited from the
+    \row    \li Qt::WA_RightToLeft
+                    \li Toggled by setLayoutDirection(). Inherited from the
                         parent/scene. If set, the widget's layout will order
                         horizontally arranged widgets from right to left.
-    \row    \o Qt::WA_SetStyle
-                    \o Set and cleared by setStyle(). If this attribute is
+    \row    \li Qt::WA_SetStyle
+                    \li Set and cleared by setStyle(). If this attribute is
                         set, the widget has been explicitly assigned a style.
                         If it is unset, the widget will use the scene's or the
                         application's style.
-    \row    \o Qt::WA_Resized
-                    \o Set by setGeometry() and resize().
-    \row    \o Qt::WA_SetPalette
-                    \o Set by setPalette().
-    \row    \o Qt::WA_SetFont
-                    \o Set by setFont().
-    \row    \o Qt::WA_WindowPropagation
-                    \o Enables propagation to window widgets.
+    \row    \li Qt::WA_Resized
+                    \li Set by setGeometry() and resize().
+    \row    \li Qt::WA_SetPalette
+                    \li Set by setPalette().
+    \row    \li Qt::WA_SetFont
+                    \li Set by setFont().
+    \row    \li Qt::WA_WindowPropagation
+                    \li Enables propagation to window widgets.
     \endtable
 
     Although QGraphicsWidget inherits from both QObject and QGraphicsItem,
@@ -222,7 +222,7 @@ public:
     }
 
 private:
-    QMap<const QGraphicsWidget *, QStyle *> styles;
+    QHash<const QGraphicsWidget *, QStyle *> styles;
     mutable QMutex mutex;
 };
 Q_GLOBAL_STATIC(QGraphicsWidgetStyles, widgetStyles)
@@ -646,29 +646,29 @@ QRectF QGraphicsWidget::windowFrameRect() const
 
     \table
       \header
-        \o Style Option Property
-        \o Value
+        \li Style Option Property
+        \li Value
       \row
-        \o state & QStyle::State_Enabled
-        \o Corresponds to QGraphicsItem::isEnabled().
+        \li state & QStyle::State_Enabled
+        \li Corresponds to QGraphicsItem::isEnabled().
       \row
-        \o state & QStyle::State_HasFocus
-        \o Corresponds to QGraphicsItem::hasFocus().
+        \li state & QStyle::State_HasFocus
+        \li Corresponds to QGraphicsItem::hasFocus().
       \row
-        \o state & QStyle::State_MouseOver
-        \o Corresponds to QGraphicsItem::isUnderMouse().
+        \li state & QStyle::State_MouseOver
+        \li Corresponds to QGraphicsItem::isUnderMouse().
       \row
-        \o direction
-        \o Corresponds to QGraphicsWidget::layoutDirection().
+        \li direction
+        \li Corresponds to QGraphicsWidget::layoutDirection().
       \row
-        \o rect
-        \o Corresponds to QGraphicsWidget::rect().toRect().
+        \li rect
+        \li Corresponds to QGraphicsWidget::rect().toRect().
       \row
-        \o palette
-        \o Corresponds to QGraphicsWidget::palette().
+        \li palette
+        \li Corresponds to QGraphicsWidget::palette().
       \row
-        \o fontMetrics
-        \o Corresponds to QFontMetrics(QGraphicsWidget::font()).
+        \li fontMetrics
+        \li Corresponds to QFontMetrics(QGraphicsWidget::font()).
     \endtable
 
     Subclasses of QGraphicsWidget should call the base implementation, and
@@ -1201,11 +1201,11 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
 
     QGraphicsWidget delivers notifications for the following properties:
 
-    \table     \o propertyName        \o Property
-    \row       \o layoutDirection     \o QGraphicsWidget::layoutDirection
-    \row       \o size                \o QGraphicsWidget::size
-    \row       \o font                \o QGraphicsWidget::font
-    \row       \o palette             \o QGraphicsWidget::palette
+    \table     \li propertyName        \li Property
+    \row       \li layoutDirection     \li QGraphicsWidget::layoutDirection
+    \row       \li size                \li QGraphicsWidget::size
+    \row       \li font                \li QGraphicsWidget::font
+    \row       \li palette             \li QGraphicsWidget::palette
     \endtable
 
     \sa itemChange()
@@ -1347,33 +1347,33 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
     Handles the \a event.  QGraphicsWidget handles the following
     events:
 
-    \table   \o Event                 \o Usage
-    \row     \o Polish
-                    \o Delivered to the widget some time after it has been
+    \table   \li Event                 \li Usage
+    \row     \li Polish
+                    \li Delivered to the widget some time after it has been
                         shown.
-    \row     \o GraphicsSceneMove
-                    \o Delivered to the widget after its local position has
+    \row     \li GraphicsSceneMove
+                    \li Delivered to the widget after its local position has
                         changed.
-    \row     \o GraphicsSceneResize
-                    \o Delivered to the widget after its size has changed.
-    \row     \o Show
-                    \o Delivered to the widget before it has been shown.
-    \row     \o Hide
-                    \o Delivered to the widget after it has been hidden.
-    \row     \o PaletteChange
-                    \o Delivered to the widget after its palette has changed.
-    \row     \o FontChange
-                    \o Delivered to the widget after its font has changed.
-    \row     \o EnabledChange
-                    \o Delivered to the widget after its enabled state has
+    \row     \li GraphicsSceneResize
+                    \li Delivered to the widget after its size has changed.
+    \row     \li Show
+                    \li Delivered to the widget before it has been shown.
+    \row     \li Hide
+                    \li Delivered to the widget after it has been hidden.
+    \row     \li PaletteChange
+                    \li Delivered to the widget after its palette has changed.
+    \row     \li FontChange
+                    \li Delivered to the widget after its font has changed.
+    \row     \li EnabledChange
+                    \li Delivered to the widget after its enabled state has
                         changed.
-    \row     \o StyleChange
-                    \o Delivered to the widget after its style has changed.
-    \row     \o LayoutDirectionChange
-                    \o Delivered to the widget after its layout direction has
+    \row     \li StyleChange
+                    \li Delivered to the widget after its style has changed.
+    \row     \li LayoutDirectionChange
+                    \li Delivered to the widget after its layout direction has
                         changed.
-    \row     \o ContentsRectChange
-                    \o Delivered to the widget after its contents margins/
+    \row     \li ContentsRectChange
+                    \li Delivered to the widget after its contents margins/
                         contents rect has changed.
     \endtable
 */

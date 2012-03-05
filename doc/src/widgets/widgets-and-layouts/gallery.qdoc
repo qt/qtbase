@@ -36,15 +36,15 @@
 
   \table
   \row
-  \o \image plastique-tabwidget.png Plastique Style Widget Gallery
+  \li \image plastique-tabwidget.png Plastique Style Widget Gallery
   \caption \l{Plastique Style Widget Gallery}
 
   The Plastique style is provided by QPlastiqueStyle.
-  \o \image windowsxp-tabwidget.png Windows XP Style Widget Gallery
+  \li \image windowsxp-tabwidget.png Windows XP Style Widget Gallery
   \caption \l{Windows XP Style Widget Gallery}
 
   The Windows XP style is provided by QWindowsXPStyle.
-  \o \image windows-tabwidget.png Windows Style Widget Gallery
+  \li \image windows-tabwidget.png Windows Style Widget Gallery
   \caption \l{Windows Style Widget Gallery}
 
   The Windows style is provided by QWindowsStyle.
@@ -52,15 +52,15 @@
 
   \table
   \row
-  \o \image macintosh-tabwidget.png Macintosh Style Widget Gallery
+  \li \image macintosh-tabwidget.png Macintosh Style Widget Gallery
   \caption \l{Macintosh Style Widget Gallery}
 
   The Macintosh style is provided by QMacStyle.
-  \o \image cleanlooks-tabwidget.png Cleanlooks Style Widget Gallery
+  \li \image cleanlooks-tabwidget.png Cleanlooks Style Widget Gallery
   \caption \l{Cleanlooks Style Widget Gallery}
 
   The Cleanlooks style is provided by QCleanlooksStyle.
-  \o \image windowsvista-tabwidget.png Windows Vista Style Widget Gallery
+  \li \image windowsvista-tabwidget.png Windows Vista Style Widget Gallery
   \caption \l{Windows Vista Style Widget Gallery}
 
   The Windows Vista style is provided by QWindowsVistaStyle.
@@ -68,15 +68,15 @@
 
   \table
   \row
-  \o \image gtk-tabwidget.png GTK Style Widget Gallery
+  \li \image gtk-tabwidget.png GTK Style Widget Gallery
   \caption \l{GTK Style Widget Gallery}
 
   The GTK style is provided by QGtkStyle.
-  \o \image motif-tabwidget.png Motif Style Widget Gallery
+  \li \image motif-tabwidget.png Motif Style Widget Gallery
   \caption \l{Motif Style Widget Gallery}
 
   The Motif style is provided by QMotifStyle.
-  \o \image cde-tabwidget.png CDE Style Widget Gallery
+  \li \image cde-tabwidget.png CDE Style Widget Gallery
   \caption \l{CDE Style Widget Gallery}
 
   The Common Desktop Environment style is provided by QCDEStyle.

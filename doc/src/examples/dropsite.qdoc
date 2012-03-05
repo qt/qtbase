@@ -53,10 +53,10 @@
     reimplementations of four \l{QWidget} event handlers:
 
     \list 1
-        \o \l{QWidget::dragEnterEvent()}{dragEnterEvent()}
-        \o \l{QWidget::dragMoveEvent()}{dragMoveEvent()}
-        \o \l{QWidget::dragLeaveEvent()}{dragLeaveEvent()}
-        \o \l{QWidget::dropEvent()}{dropEvent()}
+        \li \l{QWidget::dragEnterEvent()}{dragEnterEvent()}
+        \li \l{QWidget::dragMoveEvent()}{dragMoveEvent()}
+        \li \l{QWidget::dragLeaveEvent()}{dragLeaveEvent()}
+        \li \l{QWidget::dropEvent()}{dropEvent()}
     \endlist
 
     These event handlers are further explained in the implementation of the
@@ -108,17 +108,17 @@
     \snippet draganddrop/dropsite/droparea.cpp dropEvent() function part2
 
     \list
-        \o If \c mimeData contains an image, we display it in \c DropArea with
+        \li If \c mimeData contains an image, we display it in \c DropArea with
            \l{QLabel::setPixmap()}{setPixmap()}.
-        \o If \c mimeData contains HTML, we display it with
+        \li If \c mimeData contains HTML, we display it with
            \l{QLabel::setText()}{setText()} and set \c{DropArea}'s text format
            as Qt::RichText.
-        \o If \c mimeData contains plain text, we display it with
+        \li If \c mimeData contains plain text, we display it with
            \l{QLabel::setText()}{setText()} and set \c{DropArea}'s text format
            as Qt::PlainText. In the event that \c mimeData contains URLs, we
            iterate through the list of URLs to display them on individual
            lines.
-        \o If \c mimeData contains other types of objects, we set
+        \li If \c mimeData contains other types of objects, we set
            \c{DropArea}'s text, with \l{QLabel::setText()}{setText()} to
            "Cannot display data" to inform the user.
     \endlist

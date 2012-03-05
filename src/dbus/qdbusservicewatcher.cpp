@@ -153,9 +153,9 @@ void QDBusServiceWatcherPrivate::removeService(const QString &service)
     modes:
 
     \list
-      \o Watching for service registration only.
-      \o Watching for service unregistration only.
-      \o Watching for any kind of service ownership change (the default mode).
+      \li Watching for service registration only.
+      \li Watching for service unregistration only.
+      \li Watching for any kind of service ownership change (the default mode).
     \endlist
 
     Besides being created or deleted, services may change owners without a

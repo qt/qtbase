@@ -541,22 +541,22 @@ void QTextTablePrivate::update() const
 
     \table 80%
     \row
-        \o \inlineimage texttable-split.png Original Table
-        \o Suppose we have a 2x3 table of names and addresses. To merge both
+        \li \inlineimage texttable-split.png Original Table
+        \li Suppose we have a 2x3 table of names and addresses. To merge both
         columns in the first row we invoke mergeCells() with \a row = 0,
         \a column = 0, \a numRows = 1 and \a numColumns = 2.
         \snippet doc/src/snippets/textdocument-texttable/main.cpp 0
 
     \row
-        \o \inlineimage texttable-merge.png
-        \o  This gives us the following table. To split the first row of the table
+        \li \inlineimage texttable-merge.png
+        \li  This gives us the following table. To split the first row of the table
         back into two cells, we invoke the splitCell() function with \a numRows
         and \a numCols = 1.
         \snippet doc/src/snippets/textdocument-texttable/main.cpp 1
 
     \row
-        \o \inlineimage texttable-split.png Split Table
-        \o This results in the original table.
+        \li \inlineimage texttable-split.png Split Table
+        \li This results in the original table.
     \endtable
 
     \sa QTextTableFormat

@@ -230,10 +230,10 @@ int QDialPrivate::valueFromPoint(const QPoint &p) const
     \l {QAbstractSlider::pageStep} {pageStep}.
 
     \table
-    \row \o \inlineimage plastique-dial.png Screenshot of a dial in the Plastique widget style
-    \o \inlineimage windowsxp-dial.png Screenshot of a dial in the Windows XP widget style
-    \o \inlineimage macintosh-dial.png Screenshot of a dial in the Macintosh widget style
-    \row \o {3,1} Dials shown in various widget styles (from left to right):
+    \row \li \inlineimage plastique-dial.png Screenshot of a dial in the Plastique widget style
+    \li \inlineimage windowsxp-dial.png Screenshot of a dial in the Windows XP widget style
+    \li \inlineimage macintosh-dial.png Screenshot of a dial in the Macintosh widget style
+    \row \li {3,1} Dials shown in various widget styles (from left to right):
          \l{Plastique Style Widget Gallery}{Plastique},
          \l{Windows XP Style Widget Gallery}{Windows XP},
          \l{Macintosh Style Widget Gallery}{Macintosh}.

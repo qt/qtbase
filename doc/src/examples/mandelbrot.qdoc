@@ -66,9 +66,9 @@
 
     \table
     \row
-    \o \inlineimage mandelbrot_zoom1.png
-    \o \inlineimage mandelbrot_zoom2.png
-    \o \inlineimage mandelbrot_zoom3.png
+    \li \inlineimage mandelbrot_zoom1.png
+    \li \inlineimage mandelbrot_zoom2.png
+    \li \inlineimage mandelbrot_zoom3.png
     \endtable
 
     Similarly, when the user scrolls, the previous pixmap is scrolled
@@ -77,17 +77,17 @@
 
     \table
     \row
-    \o \inlineimage mandelbrot_scroll1.png
-    \o \inlineimage mandelbrot_scroll2.png
-    \o \inlineimage mandelbrot_scroll3.png
+    \li \inlineimage mandelbrot_scroll1.png
+    \li \inlineimage mandelbrot_scroll2.png
+    \li \inlineimage mandelbrot_scroll3.png
     \endtable
 
     The application consists of two classes:
 
     \list
-    \o \c RenderThread is a QThread subclass that renders
+    \li \c RenderThread is a QThread subclass that renders
        the Mandelbrot set.
-    \o \c MandelbrotWidget is a QWidget subclass that shows the
+    \li \c MandelbrotWidget is a QWidget subclass that shows the
        Mandelbrot set on screen and lets the user zoom and scroll.
     \endlist
 

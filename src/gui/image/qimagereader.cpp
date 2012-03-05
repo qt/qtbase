@@ -703,22 +703,22 @@ QByteArray QImageReader::format() const
 
     \list
 
-    \o Image plugins are queried first, based on either the optional format
+    \li Image plugins are queried first, based on either the optional format
     string, or the file name suffix (if the source device is a file). No
     content detection is done at this stage. QImageReader will choose the
     first plugin that supports reading for this format.
 
-    \o If no plugin supports the image format, Qt's built-in handlers are
+    \li If no plugin supports the image format, Qt's built-in handlers are
     checked based on either the optional format string, or the file name
     suffix.
 
-    \o If no capable plugins or built-in handlers are found, each plugin is
+    \li If no capable plugins or built-in handlers are found, each plugin is
     tested by inspecting the content of the data stream.
 
-    \o If no plugins could detect the image format based on data contents,
+    \li If no plugins could detect the image format based on data contents,
     each built-in image handler is tested by inspecting the contents.
 
-    \o Finally, if all above approaches fail, QImageReader will report failure
+    \li Finally, if all above approaches fail, QImageReader will report failure
     when trying to read the image.
 
     \endlist
@@ -1423,18 +1423,18 @@ QByteArray QImageReader::imageFormat(QIODevice *device)
     By default, Qt can read the following formats:
 
     \table
-    \header \o Format \o Description
-    \row    \o BMP    \o Windows Bitmap
-    \row    \o GIF    \o Graphic Interchange Format (optional)
-    \row    \o JPG    \o Joint Photographic Experts Group
-    \row    \o JPEG   \o Joint Photographic Experts Group
-    \row    \o PNG    \o Portable Network Graphics
-    \row    \o PBM    \o Portable Bitmap
-    \row    \o PGM    \o Portable Graymap
-    \row    \o PPM    \o Portable Pixmap
-    \row    \o XBM    \o X11 Bitmap
-    \row    \o XPM    \o X11 Pixmap
-    \row    \o SVG    \o Scalable Vector Graphics
+    \header \li Format \li Description
+    \row    \li BMP    \li Windows Bitmap
+    \row    \li GIF    \li Graphic Interchange Format (optional)
+    \row    \li JPG    \li Joint Photographic Experts Group
+    \row    \li JPEG   \li Joint Photographic Experts Group
+    \row    \li PNG    \li Portable Network Graphics
+    \row    \li PBM    \li Portable Bitmap
+    \row    \li PGM    \li Portable Graymap
+    \row    \li PPM    \li Portable Pixmap
+    \row    \li XBM    \li X11 Bitmap
+    \row    \li XPM    \li X11 Pixmap
+    \row    \li SVG    \li Scalable Vector Graphics
     \endtable
 
     Reading and writing SVG files is supported through Qt's

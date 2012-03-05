@@ -38,18 +38,18 @@
 
 \table 100%
 \row
-\o \image macintosh-pushbutton.png 
+\li \image macintosh-pushbutton.png
    \caption The QPushButton widget provides a command button.
-\o \image macintosh-toolbutton.png
+\li \image macintosh-toolbutton.png
    \caption The QToolButton class provides a quick-access button to commands
     or options, usually used inside a QToolBar.
 \endtable
 
 \table 100%
 \row
-\o \image macintosh-checkbox.png
+\li \image macintosh-checkbox.png
    \caption The QCheckBox widget provides a checkbox with a text label.
-\o \image macintosh-radiobutton.png
+\li \image macintosh-radiobutton.png
    \caption The QRadioButton widget provides a radio button with a text or pixmap label.
 \endtable
 
@@ -57,13 +57,13 @@
 
 \table 100%
 \row
-\o \image macintosh-groupbox.png
+\li \image macintosh-groupbox.png
    The The QGroupBox widget provides a group box frame with a title.
-\o \image macintosh-tabwidget.png
+\li \image macintosh-tabwidget.png
    The QTabWidget class provides a stack of tabbed widgets.
-\o \image macintosh-frame.png
+\li \image macintosh-frame.png
    The QFrame widget provides a simple decorated container for other widgets.
-\o \image macintosh-toolbox.png
+\li \image macintosh-toolbox.png
    The QToolBox class provides a column of tabbed widget items.
 \endtable
 
@@ -71,24 +71,24 @@
 
 \table 100%
 \row
-\o \image macintosh-listview.png
+\li \image macintosh-listview.png
    The QListView class provides a default model/view implementation of a list/icon view. The QListWidget class provides a classic item-based list/icon view.
-\o \image macintosh-treeview.png
+\li \image macintosh-treeview.png
    The QTreeView class provides a default model/view implementation of a tree view. The QTreeWidget class provides a classic item-based tree view.
-\o \image macintosh-tableview.png
-   The QTableView class provides a default model/view implementation of a table view. The QTableWidget class provides a classic item-based table view.\o 
-\o 
+\li \image macintosh-tableview.png
+   The QTableView class provides a default model/view implementation of a table view. The QTableWidget class provides a classic item-based table view.\li
+\li
 \endtable
 
 \section2 Display Widgets
 
 \table 100%
 \row
-\o \image macintosh-progressbar.png
+\li \image macintosh-progressbar.png
    The QProgressBar widget provides a horizontal progress bar.
-\o \image macintosh-label.png
+\li \image macintosh-label.png
    The QLabel widget provides a text or image display.
-\o \image macintosh-lcdnumber.png
+\li \image macintosh-lcdnumber.png
    The QLCDNumber widget displays a number with LCD-like digits.
 \endtable
 
@@ -96,43 +96,43 @@
 
 \table 100%
 \row
-\o \image macintosh-lineedit.png
+\li \image macintosh-lineedit.png
    The QLineEdit widget is a one-line text editor.
-\o \image macintosh-dateedit.png
+\li \image macintosh-dateedit.png
    The QDateEdit class provides a widget for editing dates.
-\o \image macintosh-timeedit.png
+\li \image macintosh-timeedit.png
    The QTimeEdit class provides a widget for editing times.
-\o \image macintosh-datetimeedit.png
+\li \image macintosh-datetimeedit.png
    The QDateTimeEdit class provides a widget for editing dates and times.
 \endtable
 
 \table 100%
 \row
-\o \image macintosh-slider.png
+\li \image macintosh-slider.png
    The QSlider widget provides a vertical or horizontal slider.
-\o \image macintosh-combobox.png
+\li \image macintosh-combobox.png
    The QComboBox widget is a combined button and pop-up list.
-\o \image macintosh-spinbox.png
+\li \image macintosh-spinbox.png
    The QSpinBox class provides a spin box widget.
 \endtable
 
 \table 100%
 \row
-\o \image macintosh-fontcombobox.png
+\li \image macintosh-fontcombobox.png
    The QFontComboBox widget is a specialized combobox that enables fonts to be selected from a pop-up list containing previews of available fonts.
-\o \image macintosh-doublespinbox.png
+\li \image macintosh-doublespinbox.png
    The QDoubleSpinBox class provides a spin box widget that allows double precision floating point numbers to be entered.
-\o \image macintosh-horizontalscrollbar.png
+\li \image macintosh-horizontalscrollbar.png
    The QScrollBar widget provides a vertical or horizontal scroll bar. Here, we show a scroll bar with horizontal orientation.
 \endtable
 
 \table 100%
 \row
-\o \image macintosh-dial.png
+\li \image macintosh-dial.png
    The QDial class provides a rounded range control (like a speedometer or potentiometer).
-\o \image macintosh-textedit.png
+\li \image macintosh-textedit.png
    The QTextEdit class provides a widget that is used to edit and display both plain and rich text.
-\o \image macintosh-calendarwidget.png
+\li \image macintosh-calendarwidget.png
    The QCalendarWidget class provides a monthly calendar widget that can be used to select dates.
 \endtable
 */

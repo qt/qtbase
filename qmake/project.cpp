@@ -530,9 +530,10 @@ static void qmake_error_msg(const QString &msg)
 */
 QStringList qmake_feature_paths(QMakeProperty *prop=0)
 {
+    const QString mkspecs_concat = QLatin1String("/mkspecs");
+    const QString base_concat = QLatin1String("/features");
     QStringList concat;
     {
-        const QString base_concat = QLatin1String("/features");
         switch(Option::target_mode) {
         case Option::TARG_MACX_MODE:                     //also a unix
             concat << base_concat + QLatin1String("/mac");
@@ -549,7 +550,7 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         }
         concat << base_concat;
     }
-    const QString mkspecs_concat = QLatin1String("/mkspecs");
+
     QStringList feature_roots;
     QByteArray mkspec_path = qgetenv("QMAKEFEATURES");
     if(!mkspec_path.isNull())
@@ -574,19 +575,17 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
                     feature_roots << ((*it) + mkspecs_concat + (*concat_it));
         }
     }
-    if(!Option::mkfile::qmakespec.isEmpty())
-        feature_roots << Option::mkfile::qmakespec + QLatin1String("/features");
     if(!Option::mkfile::qmakespec.isEmpty()) {
+        // The spec is already platform-dependent, so no subdirs here.
+        feature_roots << Option::mkfile::qmakespec + base_concat;
+
         QFileInfo specfi(Option::mkfile::qmakespec);
-        QDir specdir(specfi.absoluteFilePath());
-        while(!specdir.isRoot()) {
-            if(!specdir.cdUp() || specdir.isRoot())
-                break;
-            if(QFile::exists(specdir.path() + QLatin1String("/features"))) {
+        if (!specfi.isRoot()) {
+            QDir specdir(specfi.absolutePath());
+            if (specdir.exists(QLatin1String("features"))) {
                 for(QStringList::Iterator concat_it = concat.begin();
                     concat_it != concat.end(); ++concat_it)
                     feature_roots << (specdir.path() + (*concat_it));
-                break;
             }
         }
     }
@@ -595,21 +594,6 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         feature_roots << (QLibraryInfo::location(QLibraryInfo::HostDataPath) +
                           mkspecs_concat + (*concat_it));
     return feature_roots;
-}
-
-QStringList qmake_mkspec_paths()
-{
-    QStringList ret;
-    const QString concat = QLatin1String("/mkspecs");
-    QByteArray qmakepath = qgetenv("QMAKEPATH");
-    if (!qmakepath.isEmpty()) {
-        const QStringList lst = splitPathList(QString::fromLocal8Bit(qmakepath));
-        for(QStringList::ConstIterator it = lst.begin(); it != lst.end(); ++it)
-            ret << ((*it) + concat);
-    }
-    ret << QLibraryInfo::location(QLibraryInfo::HostDataPath) + concat;
-
-    return ret;
 }
 
 QMakeProject::~QMakeProject()
@@ -630,10 +614,8 @@ QMakeProject::~QMakeProject()
 
 
 void
-QMakeProject::init(QMakeProperty *p, const QHash<QString, QStringList> *vars)
+QMakeProject::init(QMakeProperty *p)
 {
-    if(vars)
-        base_vars = *vars;
     if(!p) {
         prop = new QMakeProperty;
         own_prop = true;
@@ -647,7 +629,8 @@ QMakeProject::init(QMakeProperty *p, const QHash<QString, QStringList> *vars)
 
 QMakeProject::QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *vars)
 {
-    init(p->properties(), vars ? vars : &p->variables());
+    init(p->properties());
+    base_vars = vars ? *vars : p->variables();
     for(QHash<QString, FunctionBlock*>::iterator it = p->replaceFunctions.begin(); it != p->replaceFunctions.end(); ++it) {
         it.value()->ref();
         replaceFunctions.insert(it.key(), it.value());
@@ -1174,6 +1157,8 @@ QMakeProject::parse(const QString &t, QHash<QString, QStringList> &place, int nu
         }
         if(var == "REQUIRES") // special case to get communicated to backends!
             doProjectCheckReqs(vallist, place);
+        else if (var == "_QMAKE_CACHE_")
+            Option::mkfile::cachefile = varlist.isEmpty() ? QString() : varlist.at(0);
     }
     return true;
 }
@@ -1286,50 +1271,7 @@ QMakeProject::read(uchar cmd)
                         Option::output_dir.mid(Option::mkfile::project_build_root.length()).count('/');
         }
         if (cmd & ReadSetup) {             // parse mkspec
-            QString qmakespec = fixEnvVariables(Option::mkfile::qmakespec);
-            QStringList mkspec_roots = qmake_mkspec_paths();
-            debug_msg(2, "Looking for mkspec %s in (%s)", qmakespec.toLatin1().constData(),
-                      mkspec_roots.join("::").toLatin1().constData());
-            if(qmakespec.isEmpty()) {
-                for(QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
-                    QString mkspec = (*it) + QLatin1String("/default");
-                    QFileInfo default_info(mkspec);
-                    if(default_info.exists() && default_info.isDir()) {
-                        qmakespec = mkspec;
-                        break;
-                    }
-                }
-                if(qmakespec.isEmpty()) {
-                    fprintf(stderr, "QMAKESPEC has not been set, so configuration cannot be deduced.\n");
-                    return false;
-                }
-                Option::mkfile::qmakespec = qmakespec;
-            }
-
-            if(QDir::isRelativePath(qmakespec)) {
-                if (QFile::exists(Option::output_dir+"/"+qmakespec+"/qmake.conf")) {
-                    qmakespec = Option::mkfile::qmakespec = QFileInfo(Option::output_dir+"/"+qmakespec).absoluteFilePath();
-                } else if (QFile::exists(qmakespec+"/qmake.conf")) {
-                    Option::mkfile::qmakespec = QFileInfo(Option::mkfile::qmakespec).absoluteFilePath();
-                } else {
-                    bool found_mkspec = false;
-                    for(QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
-                        QString mkspec = (*it) + QLatin1Char('/') + qmakespec;
-                        if(QFile::exists(mkspec)) {
-                            found_mkspec = true;
-                            Option::mkfile::qmakespec = qmakespec = mkspec;
-                            break;
-                        }
-                    }
-                    if(!found_mkspec) {
-                        fprintf(stderr, "Could not find mkspecs for your QMAKESPEC(%s) after trying:\n\t%s\n",
-                                qmakespec.toLatin1().constData(), mkspec_roots.join("\n\t").toLatin1().constData());
-                        return false;
-                    }
-                }
-            }
-
-            // parse qmake configuration
+            QString qmakespec = Option::mkfile::qmakespec;
             while(qmakespec.endsWith(QLatin1Char('/')))
                 qmakespec.truncate(qmakespec.length()-1);
             QString spec = qmakespec + QLatin1String("/qmake.conf");
@@ -1348,6 +1290,10 @@ QMakeProject::read(uchar cmd)
     }
 
     vars = base_vars; // start with the base
+
+    for (QHash<QString, QStringList>::ConstIterator it = extra_vars.constBegin();
+         it != extra_vars.constEnd(); ++it)
+        vars.insert(it.key(), it.value());
 
     if(cmd & ReadFeatures) {
         debug_msg(1, "Processing default_pre: %s", vars["CONFIG"].join("::").toLatin1().constData());
@@ -1375,12 +1321,12 @@ QMakeProject::read(uchar cmd)
         }
     }
 
-    //commandline configs
-    if ((cmd & ReadSetup) && !Option::user_configs.isEmpty()) {
-        parser.file = "(configs)";
+    // After user configs, to override them
+    if (!extra_configs.isEmpty()) {
+        parser.file = "(extra configs)";
         parser.from_file = false;
         parser.line_no = 1; //really arg count now.. duh
-        parse("CONFIG += " + Option::user_configs.join(" "), vars);
+        parse("CONFIG += " + extra_configs.join(" "), vars);
     }
 
     if(cmd & ReadProFile) { // parse project file
@@ -1406,12 +1352,14 @@ QMakeProject::read(uchar cmd)
         }
     }
 
-    //after configs (set in BUILDS)
-    if ((cmd & ReadSetup) && !Option::after_user_configs.isEmpty()) {
-        parser.file = "(configs)";
+    // Again, to ensure the project does not mess with us.
+    // Specifically, do not allow a project to override debug/release within a
+    // debug_and_release build pass - it's too late for that at this point anyway.
+    if (!extra_configs.isEmpty()) {
+        parser.file = "(extra configs)";
         parser.from_file = false;
         parser.line_no = 1; //really arg count now.. duh
-        parse("CONFIG += " + Option::after_user_configs.join(" "), vars);
+        parse("CONFIG += " + extra_configs.join(" "), vars);
     }
 
     if(cmd & ReadFeatures) {

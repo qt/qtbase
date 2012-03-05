@@ -1475,7 +1475,7 @@ int QCompleter::completionCount() const
     The sort order (i.e ascending or descending order) of the model is determined
     dynamically by inspecting the contents of the model.
 
-    \bold{Note:} The performance improvements described above cannot take place
+    \b{Note:} The performance improvements described above cannot take place
     when the completer's \l caseSensitivity is different to the case sensitivity
     used by the model's when sorting.
 

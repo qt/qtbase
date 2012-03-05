@@ -938,7 +938,7 @@ void tst_NetworkSelfTest::socks5ProxyAuth()
 void tst_NetworkSelfTest::supportsSsl()
 {
 #ifdef QT_NO_SSL
-    QFAIL("SSL not compiled in");
+    QSKIP("SSL not compiled in");
 #else
     QVERIFY2(QSslSocket::supportsSsl(), "Could not load SSL libraries");
 #endif

@@ -577,21 +577,21 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
 
     \table
     \row
-    \o \img qmessagebox-quest.png
-    \o \l Question
-    \o For asking a question during normal operations.
+    \li \img qmessagebox-quest.png
+    \li \l Question
+    \li For asking a question during normal operations.
     \row
-    \o \img qmessagebox-info.png
-    \o \l Information
-    \o For reporting information about normal operations.
+    \li \img qmessagebox-info.png
+    \li \l Information
+    \li For reporting information about normal operations.
     \row
-    \o \img qmessagebox-warn.png
-    \o \l Warning
-    \o For reporting non-critical errors.
+    \li \img qmessagebox-warn.png
+    \li \l Warning
+    \li For reporting non-critical errors.
     \row
-    \o \img qmessagebox-crit.png
-    \o \l Critical
-    \o For reporting critical errors.
+    \li \img qmessagebox-crit.png
+    \li \l Critical
+    \li For reporting critical errors.
     \endtable
 
     \l{QMessageBox::Icon}{Predefined icons} are not defined by QMessageBox, but
@@ -663,13 +663,13 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
 
     \list 1
 
-    \o If there is only one button, it is the button activated when
+    \li If there is only one button, it is the button activated when
     \key Esc is pressed.
 
-    \o If there is a \l Cancel button, it is the button activated when
+    \li If there is a \l Cancel button, it is the button activated when
     \key Esc is pressed.
 
-    \o If there is exactly one button having either
+    \li If there is exactly one button having either
        \l{QMessageBox::RejectRole} {the Reject role} or the
        \l{QMessageBox::NoRole} {the No role}, it is the button
        activated when \key Esc is pressed.
@@ -927,9 +927,9 @@ QAbstractButton *QMessageBox::button(StandardButton which) const
     escape button as follows:
 
     \list 1
-    \o If there is only one button, it is made the escape button.
-    \o If there is a \l Cancel button, it is made the escape button.
-    \o On Mac OS X only, if there is exactly one button with the role
+    \li If there is only one button, it is made the escape button.
+    \li If there is a \l Cancel button, it is made the escape button.
+    \li On Mac OS X only, if there is exactly one button with the role
        QMessageBox::RejectRole, it is made the escape button.
     \endlist
 
@@ -1142,11 +1142,11 @@ void QMessageBox::setText(const QString &text)
     values:
 
     \list
-    \o QMessageBox::NoIcon
-    \o QMessageBox::Question
-    \o QMessageBox::Information
-    \o QMessageBox::Warning
-    \o QMessageBox::Critical
+    \li QMessageBox::NoIcon
+    \li QMessageBox::Question
+    \li QMessageBox::Information
+    \li QMessageBox::Warning
+    \li QMessageBox::Critical
     \endlist
 
     The default is QMessageBox::NoIcon.
@@ -1649,12 +1649,12 @@ QMessageBox::StandardButton QMessageBox::critical(QWidget *parent, const QString
     about() looks for a suitable icon in four locations:
 
     \list 1
-    \o It prefers \link QWidget::windowIcon() parent->icon() \endlink
+    \li It prefers \link QWidget::windowIcon() parent->icon() \endlink
     if that exists.
-    \o If not, it tries the top-level widget containing \a parent.
-    \o If that fails, it tries the \link
+    \li If not, it tries the top-level widget containing \a parent.
+    \li If that fails, it tries the \link
     QApplication::activeWindow() active window. \endlink
-    \o As a last resort it uses the Information icon.
+    \li As a last resort it uses the Information icon.
     \endlist
 
     The about box has a single button labelled "OK". On Mac OS X, the
@@ -1929,26 +1929,26 @@ void QMessageBoxPrivate::retranslateStrings()
 
     The \a icon must be one of the following:
     \list
-    \o QMessageBox::NoIcon
-    \o QMessageBox::Question
-    \o QMessageBox::Information
-    \o QMessageBox::Warning
-    \o QMessageBox::Critical
+    \li QMessageBox::NoIcon
+    \li QMessageBox::Question
+    \li QMessageBox::Information
+    \li QMessageBox::Warning
+    \li QMessageBox::Critical
     \endlist
 
     Each button, \a button0, \a button1 and \a button2, can have one
     of the following values:
     \list
-    \o QMessageBox::NoButton
-    \o QMessageBox::Ok
-    \o QMessageBox::Cancel
-    \o QMessageBox::Yes
-    \o QMessageBox::No
-    \o QMessageBox::Abort
-    \o QMessageBox::Retry
-    \o QMessageBox::Ignore
-    \o QMessageBox::YesAll
-    \o QMessageBox::NoAll
+    \li QMessageBox::NoButton
+    \li QMessageBox::Ok
+    \li QMessageBox::Cancel
+    \li QMessageBox::Yes
+    \li QMessageBox::No
+    \li QMessageBox::Abort
+    \li QMessageBox::Retry
+    \li QMessageBox::Ignore
+    \li QMessageBox::YesAll
+    \li QMessageBox::NoAll
     \endlist
 
     Use QMessageBox::NoButton for the later parameters to have fewer
@@ -1994,16 +1994,16 @@ QMessageBox::QMessageBox(const QString &title, const QString &text, Icon icon,
     of the following values:
 
     \list
-    \o QMessageBox::NoButton
-    \o QMessageBox::Ok
-    \o QMessageBox::Cancel
-    \o QMessageBox::Yes
-    \o QMessageBox::No
-    \o QMessageBox::Abort
-    \o QMessageBox::Retry
-    \o QMessageBox::Ignore
-    \o QMessageBox::YesAll
-    \o QMessageBox::NoAll
+    \li QMessageBox::NoButton
+    \li QMessageBox::Ok
+    \li QMessageBox::Cancel
+    \li QMessageBox::Yes
+    \li QMessageBox::No
+    \li QMessageBox::Abort
+    \li QMessageBox::Retry
+    \li QMessageBox::Ignore
+    \li QMessageBox::YesAll
+    \li QMessageBox::NoAll
     \endlist
 
     If you don't want all three buttons, set the last button, or last
@@ -2080,16 +2080,16 @@ int QMessageBox::information(QWidget *parent, const QString &title, const QStrin
     following values:
 
     \list
-    \o QMessageBox::NoButton
-    \o QMessageBox::Ok
-    \o QMessageBox::Cancel
-    \o QMessageBox::Yes
-    \o QMessageBox::No
-    \o QMessageBox::Abort
-    \o QMessageBox::Retry
-    \o QMessageBox::Ignore
-    \o QMessageBox::YesAll
-    \o QMessageBox::NoAll
+    \li QMessageBox::NoButton
+    \li QMessageBox::Ok
+    \li QMessageBox::Cancel
+    \li QMessageBox::Yes
+    \li QMessageBox::No
+    \li QMessageBox::Abort
+    \li QMessageBox::Retry
+    \li QMessageBox::Ignore
+    \li QMessageBox::YesAll
+    \li QMessageBox::NoAll
     \endlist
 
     If you don't want all three buttons, set the last button, or last
@@ -2166,16 +2166,16 @@ int QMessageBox::question(QWidget *parent, const QString &title, const QString& 
     one of the following values:
 
     \list
-    \o QMessageBox::NoButton
-    \o QMessageBox::Ok
-    \o QMessageBox::Cancel
-    \o QMessageBox::Yes
-    \o QMessageBox::No
-    \o QMessageBox::Abort
-    \o QMessageBox::Retry
-    \o QMessageBox::Ignore
-    \o QMessageBox::YesAll
-    \o QMessageBox::NoAll
+    \li QMessageBox::NoButton
+    \li QMessageBox::Ok
+    \li QMessageBox::Cancel
+    \li QMessageBox::Yes
+    \li QMessageBox::No
+    \li QMessageBox::Abort
+    \li QMessageBox::Retry
+    \li QMessageBox::Ignore
+    \li QMessageBox::YesAll
+    \li QMessageBox::NoAll
     \endlist
 
     If you don't want all three buttons, set the last button, or last
@@ -2251,16 +2251,16 @@ int QMessageBox::warning(QWidget *parent, const QString &title, const QString& t
     one of the following values:
 
     \list
-    \o QMessageBox::NoButton
-    \o QMessageBox::Ok
-    \o QMessageBox::Cancel
-    \o QMessageBox::Yes
-    \o QMessageBox::No
-    \o QMessageBox::Abort
-    \o QMessageBox::Retry
-    \o QMessageBox::Ignore
-    \o QMessageBox::YesAll
-    \o QMessageBox::NoAll
+    \li QMessageBox::NoButton
+    \li QMessageBox::Ok
+    \li QMessageBox::Cancel
+    \li QMessageBox::Yes
+    \li QMessageBox::No
+    \li QMessageBox::Abort
+    \li QMessageBox::Retry
+    \li QMessageBox::Ignore
+    \li QMessageBox::YesAll
+    \li QMessageBox::NoAll
     \endlist
 
     If you don't want all three buttons, set the last button, or last

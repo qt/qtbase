@@ -984,41 +984,41 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \list
 
-    \o font() is the font used for drawing text. If the painter
+    \li font() is the font used for drawing text. If the painter
         isActive(), you can retrieve information about the currently set
         font, and its metrics, using the fontInfo() and fontMetrics()
         functions respectively.
 
-    \o brush() defines the color or pattern that is used for filling
+    \li brush() defines the color or pattern that is used for filling
        shapes.
 
-    \o pen() defines the color or stipple that is used for drawing
+    \li pen() defines the color or stipple that is used for drawing
        lines or boundaries.
 
-    \o backgroundMode() defines whether there is a background() or
+    \li backgroundMode() defines whether there is a background() or
        not, i.e it is either Qt::OpaqueMode or Qt::TransparentMode.
 
-    \o background() only applies when backgroundMode() is \l
+    \li background() only applies when backgroundMode() is \l
        Qt::OpaqueMode and pen() is a stipple. In that case, it
        describes the color of the background pixels in the stipple.
 
-    \o brushOrigin() defines the origin of the tiled brushes, normally
+    \li brushOrigin() defines the origin of the tiled brushes, normally
        the origin of widget's background.
 
-    \o viewport(), window(), worldTransform() make up the painter's coordinate
+    \li viewport(), window(), worldTransform() make up the painter's coordinate
         transformation system. For more information, see the \l
         {Coordinate Transformations} section and the \l {Coordinate
         System} documentation.
 
-    \o hasClipping() tells whether the painter clips at all. (The paint
+    \li hasClipping() tells whether the painter clips at all. (The paint
        device clips, too.) If the painter clips, it clips to clipRegion().
 
-    \o layoutDirection() defines the layout direction used by the
+    \li layoutDirection() defines the layout direction used by the
        painter when drawing text.
 
-    \o worldMatrixEnabled() tells whether world transformation is enabled.
+    \li worldMatrixEnabled() tells whether world transformation is enabled.
 
-    \o viewTransformEnabled() tells whether view transformation is
+    \li viewTransformEnabled() tells whether view transformation is
         enabled.
 
     \endlist
@@ -1052,9 +1052,9 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \table 100%
     \row
-    \o \inlineimage qpainter-basicdrawing.png
-    \o
-    \bold {Basic Drawing Example}
+    \li \inlineimage qpainter-basicdrawing.png
+    \li
+    \b {Basic Drawing Example}
 
     The \l {painting/basicdrawing}{Basic Drawing} example shows how to
     display basic graphics primitives in a variety of styles using the
@@ -1068,8 +1068,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \table 100%
     \row
-    \o
-    \bold {Painter Paths example}
+    \li
+    \b {Painter Paths example}
 
     The QPainterPath class provides a container for painting
     operations, enabling graphical shapes to be constructed and
@@ -1078,7 +1078,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     The \l {painting/painterpaths}{Painter Paths} example shows how
     painter paths can be used to build complex shapes for rendering.
 
-    \o \inlineimage qpainter-painterpaths.png
+    \li \inlineimage qpainter-painterpaths.png
     \endtable
 
     QPainter also provides the fillPath() function which fills the
@@ -1096,13 +1096,13 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \table
     \header
-    \o \l {painting/deform}{Vector Deformation}
-    \o \l {painting/gradients}{Gradients}
-    \o \l {painting/pathstroke}{Path Stroking}
+    \li \l {painting/deform}{Vector Deformation}
+    \li \l {painting/gradients}{Gradients}
+    \li \l {painting/pathstroke}{Path Stroking}
     \row
-    \o \inlineimage qpainter-vectordeformation.png
-    \o \inlineimage qpainter-gradients.png
-    \o \inlineimage qpainter-pathstroking.png
+    \li \inlineimage qpainter-vectordeformation.png
+    \li \inlineimage qpainter-gradients.png
+    \li \inlineimage qpainter-pathstroking.png
     \endtable
 
 
@@ -1136,9 +1136,9 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \table 100%
     \row
-    \o \inlineimage qpainter-concentriccircles.png
-    \o
-    \bold {Concentric Circles Example}
+    \li \inlineimage qpainter-concentriccircles.png
+    \li
+    \b {Concentric Circles Example}
 
     The \l {painting/concentriccircles}{Concentric Circles} example
     shows the improved rendering quality that can be obtained using
@@ -1176,12 +1176,12 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \table
     \header
-    \o  nop \o rotate() \o scale() \o translate()
+    \li  nop \li rotate() \li scale() \li translate()
     \row
-    \o \inlineimage qpainter-clock.png
-    \o \inlineimage qpainter-rotation.png
-    \o \inlineimage qpainter-scale.png
-    \o \inlineimage qpainter-translation.png
+    \li \inlineimage qpainter-clock.png
+    \li \inlineimage qpainter-rotation.png
+    \li \inlineimage qpainter-scale.png
+    \li \inlineimage qpainter-translation.png
     \endtable
 
     The most commonly used transformations are scaling, rotation,
@@ -1200,15 +1200,15 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \table 100%
     \row
-    \o
-    \bold {Affine Transformations Example}
+    \li
+    \b {Affine Transformations Example}
 
     The \l {painting/affine}{Affine Transformations} example shows Qt's
     ability to perform affine transformations on painting
     operations. The demo also allows the user to experiment with the
     transformation operations and see the results immediately.
 
-    \o \inlineimage qpainter-affinetransformations.png
+    \li \inlineimage qpainter-affinetransformations.png
     \endtable
 
     All the tranformation operations operate on the transformation
@@ -1282,10 +1282,10 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \table 100%
     \row
-    \o \inlineimage qpainter-compositiondemo.png
+    \li \inlineimage qpainter-compositiondemo.png
 
-    \o
-    \bold {Composition Modes Example}
+    \li
+    \b {Composition Modes Example}
 
     The \l {painting/composition}{Composition Modes} example, available in
     Qt's examples directory, allows you to experiment with the various
@@ -1333,14 +1333,14 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \list
 
-    \o Raster - This backend implements all rendering in pure software
+    \li Raster - This backend implements all rendering in pure software
     and is always used to render into QImages. For optimal performance
     only use the format types QImage::Format_ARGB32_Premultiplied,
     QImage::Format_RGB32 or QImage::Format_RGB16. Any other format,
     including QImage::Format_ARGB32, has significantly worse
     performance. This engine is used by default for QWidget and QPixmap.
 
-    \o OpenGL 2.0 (ES) - This backend is the primary backend for
+    \li OpenGL 2.0 (ES) - This backend is the primary backend for
     hardware accelerated graphics. It can be run on desktop machines
     and embedded devices supporting the OpenGL 2.0 or OpenGL/ES 2.0
     specification. This includes most graphics chips produced in the
@@ -1348,7 +1348,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     onto a QOpenGLWidget or by passing \c {-graphicssystem opengl} on the
     command line when the underlying system supports it.
 
-    \o OpenVG - This backend implements the Khronos standard for 2D
+    \li OpenVG - This backend implements the Khronos standard for 2D
     and Vector Graphics. It is primarily for embedded devices with
     hardware support for OpenVG.  The engine can be enabled by
     passing \c {-graphicssystem openvg} on the command line when
@@ -1360,26 +1360,26 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \list
 
-    \o Simple transformations, meaning translation and scaling, pluss
+    \li Simple transformations, meaning translation and scaling, pluss
     0, 90, 180, 270 degree rotations.
 
-    \o \c drawPixmap() in combination with simple transformations and
+    \li \c drawPixmap() in combination with simple transformations and
     opacity with non-smooth transformation mode
     (\c QPainter::SmoothPixmapTransform not enabled as a render hint).
 
-    \o Rectangle fills with solid color, two-color linear gradients
+    \li Rectangle fills with solid color, two-color linear gradients
     and simple transforms.
 
-    \o Rectangular clipping with simple transformations and intersect
+    \li Rectangular clipping with simple transformations and intersect
     clip.
 
-    \o Composition Modes \c QPainter::CompositionMode_Source and
+    \li Composition Modes \c QPainter::CompositionMode_Source and
     QPainter::CompositionMode_SourceOver
 
-    \o Rounded rectangle filling using solid color and two-color
+    \li Rounded rectangle filling using solid color and two-color
     linear gradients fills.
 
-    \o 3x3 patched pixmaps, via qDrawBorderPixmap.
+    \li 3x3 patched pixmaps, via qDrawBorderPixmap.
 
     \endlist
 
@@ -1963,14 +1963,14 @@ QPaintEngine *QPainter::paintEngine() const
     2 engine:
 
     \list
-    \i blending is disabled
-    \i the depth, stencil and scissor tests are disabled
-    \i the active texture unit is reset to 0
-    \i the depth mask, depth function and the clear depth are reset to their
+    \li blending is disabled
+    \li the depth, stencil and scissor tests are disabled
+    \li the active texture unit is reset to 0
+    \li the depth mask, depth function and the clear depth are reset to their
     default values
-    \i the stencil mask, stencil operation and stencil function are reset to
+    \li the stencil mask, stencil operation and stencil function are reset to
     their default values
-     \i the current color is reset to solid white
+     \li the current color is reset to solid white
     \endlist
 
     If, for example, the OpenGL polygon mode is changed by the user inside a
@@ -2885,10 +2885,10 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
     The following functions can transform the coordinate system without using
     a QMatrix:
     \list
-    \i translate()
-    \i scale()
-    \i shear()
-    \i rotate()
+    \li translate()
+    \li scale()
+    \li shear()
+    \li rotate()
     \endlist
 
     They operate on the painter's worldMatrix() and are implemented like this:
@@ -3360,8 +3360,8 @@ void QPainter::fillPath(const QPainterPath &path, const QBrush &brush)
 
     \table 100%
     \row
-    \o \inlineimage qpainter-path.png
-    \o
+    \li \inlineimage qpainter-path.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 5
     \endtable
 
@@ -3405,8 +3405,8 @@ void QPainter::drawPath(const QPainterPath &path)
 
     \table 100%
     \row
-    \o \inlineimage qpainter-line.png
-    \o
+    \li \inlineimage qpainter-line.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 6
     \endtable
 
@@ -3452,8 +3452,8 @@ void QPainter::drawPath(const QPainterPath &path)
 
     \table 100%
     \row
-    \o \inlineimage qpainter-rectangle.png
-    \o
+    \li \inlineimage qpainter-rectangle.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 7
     \endtable
 
@@ -4121,8 +4121,8 @@ const QFont &QPainter::font() const
 
     \table 100%
     \row
-    \o \inlineimage qpainter-roundrect.png
-    \o
+    \li \inlineimage qpainter-roundrect.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 8
     \endtable
 
@@ -4221,8 +4221,8 @@ void QPainter::drawRoundRect(const QRectF &r, int xRnd, int yRnd)
 
     \table 100%
     \row
-    \o \inlineimage qpainter-ellipse.png
-    \o
+    \li \inlineimage qpainter-ellipse.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 9
     \endtable
 
@@ -4347,8 +4347,8 @@ void QPainter::drawEllipse(const QRect &r)
 
     \table 100%
     \row
-    \o \inlineimage qpainter-arc.png
-    \o
+    \li \inlineimage qpainter-arc.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 10
     \endtable
 
@@ -4411,8 +4411,8 @@ void QPainter::drawArc(const QRectF &r, int a, int alen)
 
     \table 100%
     \row
-    \o \inlineimage qpainter-pie.png
-    \o
+    \li \inlineimage qpainter-pie.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 11
     \endtable
 
@@ -4480,8 +4480,8 @@ void QPainter::drawPie(const QRectF &r, int a, int alen)
 
     \table 100%
     \row
-    \o \inlineimage qpainter-chord.png
-    \o
+    \li \inlineimage qpainter-chord.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 12
     \endtable
 
@@ -4696,7 +4696,7 @@ void QPainter::drawLines(const QPoint *pointPairs, int lineCount)
 
     \table 100%
     \row
-    \o
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 13
     \endtable
 
@@ -4802,8 +4802,8 @@ void QPainter::drawPolyline(const QPoint *points, int pointCount)
 
     \table 100%
     \row
-    \o \inlineimage qpainter-polygon.png
-    \o
+    \li \inlineimage qpainter-polygon.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 14
     \endtable
 
@@ -4915,8 +4915,8 @@ void QPainter::drawPolygon(const QPoint *points, int pointCount, Qt::FillRule fi
 
     \table 100%
     \row
-    \o \inlineimage qpainter-polygon.png
-    \o
+    \li \inlineimage qpainter-polygon.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 15
     \endtable
 
@@ -5039,7 +5039,7 @@ static inline QPointF roundInDeviceCoordinates(const QPointF &p, const QTransfor
 
     \table 100%
     \row
-    \o
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 16
     \endtable
 
@@ -5952,8 +5952,8 @@ void QPainter::drawText(const QRect &r, int flags, const QString &str, QRect *br
 
     \table 100%
     \row
-    \o \inlineimage qpainter-text.png
-    \o
+    \li \inlineimage qpainter-text.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 17
     \endtable
 
@@ -5962,20 +5962,20 @@ void QPainter::drawText(const QRect &r, int flags, const QString &str, QRect *br
     OR of the following flags:
 
     \list
-    \o Qt::AlignLeft
-    \o Qt::AlignRight
-    \o Qt::AlignHCenter
-    \o Qt::AlignJustify
-    \o Qt::AlignTop
-    \o Qt::AlignBottom
-    \o Qt::AlignVCenter
-    \o Qt::AlignCenter
-    \o Qt::TextDontClip
-    \o Qt::TextSingleLine
-    \o Qt::TextExpandTabs
-    \o Qt::TextShowMnemonic
-    \o Qt::TextWordWrap
-    \o Qt::TextIncludeTrailingSpaces
+    \li Qt::AlignLeft
+    \li Qt::AlignRight
+    \li Qt::AlignHCenter
+    \li Qt::AlignJustify
+    \li Qt::AlignTop
+    \li Qt::AlignBottom
+    \li Qt::AlignVCenter
+    \li Qt::AlignCenter
+    \li Qt::TextDontClip
+    \li Qt::TextSingleLine
+    \li Qt::TextExpandTabs
+    \li Qt::TextShowMnemonic
+    \li Qt::TextWordWrap
+    \li Qt::TextIncludeTrailingSpaces
     \endlist
 
     \sa Qt::AlignmentFlag, Qt::TextFlag, boundingRect(), layoutDirection()
@@ -6044,18 +6044,18 @@ void QPainter::drawText(const QRectF &r, int flags, const QString &str, QRectF *
     the following flags:
 
     \list
-    \o Qt::AlignLeft
-    \o Qt::AlignRight
-    \o Qt::AlignHCenter
-    \o Qt::AlignJustify
-    \o Qt::AlignTop
-    \o Qt::AlignBottom
-    \o Qt::AlignVCenter
-    \o Qt::AlignCenter
-    \o Qt::TextSingleLine
-    \o Qt::TextExpandTabs
-    \o Qt::TextShowMnemonic
-    \o Qt::TextWordWrap
+    \li Qt::AlignLeft
+    \li Qt::AlignRight
+    \li Qt::AlignHCenter
+    \li Qt::AlignJustify
+    \li Qt::AlignTop
+    \li Qt::AlignBottom
+    \li Qt::AlignVCenter
+    \li Qt::AlignCenter
+    \li Qt::TextSingleLine
+    \li Qt::TextExpandTabs
+    \li Qt::TextShowMnemonic
+    \li Qt::TextWordWrap
     \endlist
 
     By default, QPainter draws text anti-aliased.
@@ -6472,18 +6472,18 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
 
     The \a flags argument is a bitwise OR of the following flags:
     \list
-         \o Qt::AlignLeft
-         \o Qt::AlignRight
-         \o Qt::AlignHCenter
-         \o Qt::AlignTop
-         \o Qt::AlignBottom
-         \o Qt::AlignVCenter
-         \o Qt::AlignCenter
-         \o Qt::TextSingleLine
-         \o Qt::TextExpandTabs
-         \o Qt::TextShowMnemonic
-         \o Qt::TextWordWrap
-         \o Qt::TextIncludeTrailingSpaces
+         \li Qt::AlignLeft
+         \li Qt::AlignRight
+         \li Qt::AlignHCenter
+         \li Qt::AlignTop
+         \li Qt::AlignBottom
+         \li Qt::AlignVCenter
+         \li Qt::AlignCenter
+         \li Qt::TextSingleLine
+         \li Qt::TextExpandTabs
+         \li Qt::TextShowMnemonic
+         \li Qt::TextWordWrap
+         \li Qt::TextIncludeTrailingSpaces
     \endlist
     If several of the horizontal or several of the vertical alignment
     flags are set, the resulting alignment is undefined.
@@ -6691,7 +6691,7 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
 
     \table 100%
     \row
-    \o
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 18
     \endtable
 
@@ -7675,7 +7675,7 @@ void QPainterState::init(QPainter *p) {
 
     \table 100%
     \row
-    \o
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 20
     \endtable
 
@@ -7791,21 +7791,21 @@ void QPainterState::init(QPainter *p) {
     \target GetFunction
 
     \table
-    \header \o Property Flag \o Current Property Value
-    \row \o QPaintEngine::DirtyBackground \o backgroundBrush()
-    \row \o QPaintEngine::DirtyBackgroundMode \o backgroundMode()
-    \row \o QPaintEngine::DirtyBrush \o brush()
-    \row \o QPaintEngine::DirtyBrushOrigin \o brushOrigin()
-    \row \o QPaintEngine::DirtyClipRegion \e or QPaintEngine::DirtyClipPath
-         \o clipOperation()
-    \row \o QPaintEngine::DirtyClipPath \o clipPath()
-    \row \o QPaintEngine::DirtyClipRegion \o clipRegion()
-    \row \o QPaintEngine::DirtyCompositionMode \o compositionMode()
-    \row \o QPaintEngine::DirtyFont \o font()
-    \row \o QPaintEngine::DirtyTransform \o transform()
-    \row \o QPaintEngine::DirtyClipEnabled \o isClipEnabled()
-    \row \o QPaintEngine::DirtyPen \o pen()
-    \row \o QPaintEngine::DirtyHints \o renderHints()
+    \header \li Property Flag \li Current Property Value
+    \row \li QPaintEngine::DirtyBackground \li backgroundBrush()
+    \row \li QPaintEngine::DirtyBackgroundMode \li backgroundMode()
+    \row \li QPaintEngine::DirtyBrush \li brush()
+    \row \li QPaintEngine::DirtyBrushOrigin \li brushOrigin()
+    \row \li QPaintEngine::DirtyClipRegion \e or QPaintEngine::DirtyClipPath
+         \li clipOperation()
+    \row \li QPaintEngine::DirtyClipPath \li clipPath()
+    \row \li QPaintEngine::DirtyClipRegion \li clipRegion()
+    \row \li QPaintEngine::DirtyCompositionMode \li compositionMode()
+    \row \li QPaintEngine::DirtyFont \li font()
+    \row \li QPaintEngine::DirtyTransform \li transform()
+    \row \li QPaintEngine::DirtyClipEnabled \li isClipEnabled()
+    \row \li QPaintEngine::DirtyPen \li pen()
+    \row \li QPaintEngine::DirtyHints \li renderHints()
     \endtable
 
     The QPaintEngineState class also provide the painter() function

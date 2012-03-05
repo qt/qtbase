@@ -111,9 +111,9 @@ QT_BEGIN_NAMESPACE
     follow these steps when you receive a notification:
 
     \list 1
-    \o Disable the notifier.
-    \o Read data from the socket.
-    \o Re-enable the notifier if you are interested in more data (such as after
+    \li Disable the notifier.
+    \li Read data from the socket.
+    \li Re-enable the notifier if you are interested in more data (such as after
        having written a new command to a remote server).
     \endlist
 
@@ -121,12 +121,12 @@ QT_BEGIN_NAMESPACE
     follow these steps when you receive a notification:
 
     \list 1
-    \o Disable the notifier.
-    \o Write as much data as you can (before \c EWOULDBLOCK is returned).
-    \o Re-enable notifier if you have more data to write.
+    \li Disable the notifier.
+    \li Write as much data as you can (before \c EWOULDBLOCK is returned).
+    \li Re-enable notifier if you have more data to write.
     \endlist
 
-    \bold{Further information:}
+    \b{Further information:}
     On Windows, Qt always disables the notifier after getting a notification,
     and only re-enables it if more data is expected. For example, if data is
     read from the socket and it can be used to read more, or if reading or
@@ -162,7 +162,7 @@ QT_BEGIN_NAMESPACE
     It is generally advisable to explicitly enable or disable the
     socket notifier, especially for write notifiers.
 
-    \bold{Note for Windows users:} The socket passed to QSocketNotifier
+    \b{Note for Windows users:} The socket passed to QSocketNotifier
     will become non-blocking, even if it was created as a blocking socket.
 
     \sa setEnabled(), isEnabled()

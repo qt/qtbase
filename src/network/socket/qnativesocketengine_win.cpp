@@ -427,10 +427,14 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
         break;
     }
 
-    int v = -1;
+#if Q_BYTE_ORDER != Q_LITTLE_ENDIAN
+#error code assumes windows is little endian
+#endif
+    int v = 0; //note: windows doesn't write to all bytes if the option type is smaller than int
     QT_SOCKOPTLEN_T len = sizeof(v);
-    if (getsockopt(socketDescriptor, level, n, (char *) &v, &len) != -1)
+    if (getsockopt(socketDescriptor, level, n, (char *) &v, &len) == 0)
         return v;
+    WS_ERROR_DEBUG(WSAGetLastError());
     return -1;
 }
 
@@ -563,12 +567,10 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
 #if defined (IPV6_V6ONLY)
     // determine if local address is dual mode
     DWORD ipv6only = 0;
-    int optlen = sizeof(ipv6only);
+    QT_SOCKOPTLEN_T optlen = sizeof(ipv6only);
     if (localAddress == QHostAddress::AnyIPv6
         && QSysInfo::windowsVersion() >= QSysInfo::WV_6_0
         && !getsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, &optlen )) {
-            if (optlen != sizeof(ipv6only))
-                qWarning("unexpected size of IPV6_V6ONLY socket option");
             if (!ipv6only) {
                 socketProtocol = QAbstractSocket::AnyIPProtocol;
                 localAddress = QHostAddress::Any;

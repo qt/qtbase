@@ -562,8 +562,8 @@ void tst_QWizard::setDefaultProperty()
 
     // make sure the data structure is reasonable
     for (int i = 0; i < 200000; ++i) {
-        wizard.setDefaultProperty("QLineEdit", "x" + QByteArray::number(i), 0);
-        wizard.setDefaultProperty("QLabel", "y" + QByteArray::number(i), 0);
+        wizard.setDefaultProperty("QLineEdit", QByteArray("x" + QByteArray::number(i)).constData(), 0);
+        wizard.setDefaultProperty("QLabel", QByteArray("y" + QByteArray::number(i)).constData(), 0);
     }
 }
 

@@ -113,29 +113,29 @@ QT_BEGIN_NAMESPACE
     navigate in the view and interact with the contents of items:
 
     \table
-    \header \o Key \o Action
-    \row \o Up   \o Moves the cursor to the item in the same column on
+    \header \li Key \li Action
+    \row \li Up   \li Moves the cursor to the item in the same column on
          the previous row. If the parent of the current item has no more rows to
          navigate to, the cursor moves to the relevant item in the last row
          of the sibling that precedes the parent.
-    \row \o Down \o Moves the cursor to the item in the same column on
+    \row \li Down \li Moves the cursor to the item in the same column on
          the next row. If the parent of the current item has no more rows to
          navigate to, the cursor moves to the relevant item in the first row
          of the sibling that follows the parent.
-    \row \o Left  \o Hides the children of the current item (if present)
+    \row \li Left  \li Hides the children of the current item (if present)
          by collapsing a branch.
-    \row \o Minus  \o Same as LeftArrow.
-    \row \o Right \o Reveals the children of the current item (if present)
+    \row \li Minus  \li Same as LeftArrow.
+    \row \li Right \li Reveals the children of the current item (if present)
          by expanding a branch.
-    \row \o Plus  \o Same as RightArrow.
-    \row \o Asterisk  \o Expands all children of the current item (if present).
-    \row \o PageUp   \o Moves the cursor up one page.
-    \row \o PageDown \o Moves the cursor down one page.
-    \row \o Home \o Moves the cursor to an item in the same column of the first
+    \row \li Plus  \li Same as RightArrow.
+    \row \li Asterisk  \li Expands all children of the current item (if present).
+    \row \li PageUp   \li Moves the cursor up one page.
+    \row \li PageDown \li Moves the cursor down one page.
+    \row \li Home \li Moves the cursor to an item in the same column of the first
          row of the first top-level item in the model.
-    \row \o End  \o Moves the cursor to an item in the same column of the last
+    \row \li End  \li Moves the cursor to an item in the same column of the last
          row of the last top-level item in the model.
-    \row \o F2   \o In editable models, this opens the current item for editing.
+    \row \li F2   \li In editable models, this opens the current item for editing.
          The Escape key can be used to cancel the editing process and revert
          any changes to the data displayed.
     \endtable
@@ -145,12 +145,12 @@ QT_BEGIN_NAMESPACE
     \endomit
 
     \table 100%
-    \row \o \inlineimage windowsxp-treeview.png Screenshot of a Windows XP style tree view
-         \o \inlineimage macintosh-treeview.png Screenshot of a Macintosh style tree view
-         \o \inlineimage plastique-treeview.png Screenshot of a Plastique style tree view
-    \row \o A \l{Windows XP Style Widget Gallery}{Windows XP style} tree view.
-         \o A \l{Macintosh Style Widget Gallery}{Macintosh style} tree view.
-         \o A \l{Plastique Style Widget Gallery}{Plastique style} tree view.
+    \row \li \inlineimage windowsxp-treeview.png Screenshot of a Windows XP style tree view
+         \li \inlineimage macintosh-treeview.png Screenshot of a Macintosh style tree view
+         \li \inlineimage plastique-treeview.png Screenshot of a Plastique style tree view
+    \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} tree view.
+         \li A \l{Macintosh Style Widget Gallery}{Macintosh style} tree view.
+         \li A \l{Plastique Style Widget Gallery}{Plastique style} tree view.
     \endtable
 
     \section1 Improving Performance
@@ -3146,7 +3146,7 @@ void QTreeViewPrivate::_q_columnsRemoved(const QModelIndex &parent, int start, i
 }
 
 /** \internal
-    creates and initialize the viewItem structure of the children of the element \i
+    creates and initialize the viewItem structure of the children of the element \li
 
     set \a recursiveExpanding if the function has to expand all the children (called from expandAll)
     \a afterIsUninitialized is when we recurse from layout(-1), it means all the items after 'i' are

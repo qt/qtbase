@@ -51,11 +51,11 @@
 
     \list 1
 
-    \o The user presses \key Tab (or \key Shift+Tab).
-    \o The user clicks a widget.
-    \o The user presses a keyboard shortcut.
-    \o The user uses the mouse wheel.
-    \o The user moves the focus to a window, and the application must
+    \li The user presses \key Tab (or \key Shift+Tab).
+    \li The user clicks a widget.
+    \li The user presses a keyboard shortcut.
+    \li The user uses the mouse wheel.
+    \li The user moves the focus to a window, and the application must
        determine which widget within the window should get the focus.
     \endlist
 
@@ -93,14 +93,14 @@
 
     \list 1
 
-    \o If the program can determine whether the field is needed, it can
+    \li If the program can determine whether the field is needed, it can
     move focus there when the user finishes entry and presses \gui OK, or when
     the user presses Enter after finishing the other fields. Alternately,
     include the field in the tab order but disable it. Enable it if it
     becomes appropriate in view of what the user has set in the other
     fields.
 
-    \o The label for the field can include a keyboard shortcut that moves
+    \li The label for the field can include a keyboard shortcut that moves
     focus to this field.
 
     \endlist

@@ -1096,7 +1096,7 @@ QStringList qt_make_filter_list(const QString &filter)
     Sets the filter used in the file dialog to the given \a filter.
 
     If \a filter contains a pair of parentheses containing one or more
-    of \bold{anything*something}, separated by spaces, then only the
+    of \b{anything*something}, separated by spaces, then only the
     text contained in the parentheses is used as the filter. This means
     that these calls are all equivalent:
 

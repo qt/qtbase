@@ -7,6 +7,6 @@ QT = core testlib concurrent
 SOURCES = tst_qmimedatabase-cache.cpp
 HEADERS = ../tst_qmimedatabase.h
 
-DEFINES += SRCDIR='"\\"$$PWD/../\\""'
+DEFINES += CORE_SOURCES='"\\"$$QT.core.sources\\""'
 
 *-g++*:QMAKE_CXXFLAGS += -W -Wall -Wextra -Werror -Wshadow -Wno-long-long -Wnon-virtual-dtor

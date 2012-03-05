@@ -98,18 +98,18 @@ QT_BEGIN_NAMESPACE
     supported QVariant types:
 
     \list
-        \o \l{QMetaType::}{Int}
-        \o \l{QMetaType::}{Double}
-        \o \l{QMetaType::}{Float}
-        \o \l{QMetaType::}{QLine}
-        \o \l{QMetaType::}{QLineF}
-        \o \l{QMetaType::}{QPoint}
-        \o \l{QMetaType::}{QPointF}
-        \o \l{QMetaType::}{QSize}
-        \o \l{QMetaType::}{QSizeF}
-        \o \l{QMetaType::}{QRect}
-        \o \l{QMetaType::}{QRectF}
-        \o \l{QMetaType::}{QColor}
+        \li \l{QMetaType::}{Int}
+        \li \l{QMetaType::}{Double}
+        \li \l{QMetaType::}{Float}
+        \li \l{QMetaType::}{QLine}
+        \li \l{QMetaType::}{QLineF}
+        \li \l{QMetaType::}{QPoint}
+        \li \l{QMetaType::}{QPointF}
+        \li \l{QMetaType::}{QSize}
+        \li \l{QMetaType::}{QSizeF}
+        \li \l{QMetaType::}{QRect}
+        \li \l{QMetaType::}{QRectF}
+        \li \l{QMetaType::}{QColor}
     \endlist
 
     If you need to interpolate other variant types, including custom

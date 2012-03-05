@@ -86,18 +86,18 @@ QT_BEGIN_NAMESPACE
 
     \list
 
-    \i The X11 Window System has the concept of a separate selection
+    \li The X11 Window System has the concept of a separate selection
     and clipboard.  When text is selected, it is immediately available
     as the global mouse selection.  The global mouse selection may
     later be copied to the clipboard.  By convention, the middle mouse
     button is used to paste the global mouse selection.
 
-    \i X11 also has the concept of ownership; if you change the
+    \li X11 also has the concept of ownership; if you change the
     selection within a window, X11 will only notify the owner and the
     previous owner of the change, i.e. it will not notify all
     applications that the selection or clipboard data changed.
 
-    \i Lastly, the X11 clipboard is event driven, i.e. the clipboard
+    \li Lastly, the X11 clipboard is event driven, i.e. the clipboard
     will not function properly if the event loop is not running.
     Similarly, it is recommended that the contents of the clipboard
     are stored or retrieved in direct response to user-input events,
@@ -105,7 +105,7 @@ QT_BEGIN_NAMESPACE
     store or retrieve the clipboard contents in response to timer or
     non-user-input events.
 
-    \i Since there is no standard way to copy and paste files between
+    \li Since there is no standard way to copy and paste files between
     applications on X11, various MIME types and conventions are currently
     in use. For instance, Nautilus expects files to be supplied with a
     \c{x-special/gnome-copied-files} MIME type with data beginning with
@@ -123,12 +123,12 @@ QT_BEGIN_NAMESPACE
 
     \list
 
-    \i Windows and Mac OS X do not support the global mouse
+    \li Windows and Mac OS X do not support the global mouse
     selection; they only supports the global clipboard, i.e. they
     only add text to the clipboard when an explicit copy or cut is
     made.
 
-    \i Windows and Mac OS X does not have the concept of ownership;
+    \li Windows and Mac OS X does not have the concept of ownership;
     the clipboard is a fully global resource so all applications are
     notified of changes.
 

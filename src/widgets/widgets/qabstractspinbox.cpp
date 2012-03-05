@@ -90,11 +90,11 @@ QT_BEGIN_NAMESPACE
 
     \list 1
 
-    \i \l text: The text that is displayed in the QAbstractSpinBox.
+    \li \l text: The text that is displayed in the QAbstractSpinBox.
 
-    \i \l alignment: The alignment of the text in the QAbstractSpinBox.
+    \li \l alignment: The alignment of the text in the QAbstractSpinBox.
 
-    \i \l wrapping: Whether the QAbstractSpinBox wraps from the
+    \li \l wrapping: Whether the QAbstractSpinBox wraps from the
     minimum value to the maximum value and vica versa.
 
     \endlist
@@ -167,7 +167,7 @@ QAbstractSpinBox::~QAbstractSpinBox()
     \inlineimage qspinbox-plusminus.png
 
     \value UpDownArrows Little arrows in the classic style.
-    \value PlusMinus \bold{+} and \bold{-} symbols.
+    \value PlusMinus \b{+} and \b{-} symbols.
     \value NoButtons Don't display buttons.
 
     \sa QAbstractSpinBox::buttonSymbols
@@ -918,17 +918,17 @@ void QAbstractSpinBox::paintEvent(QPaintEvent *)
 
     The following keys are handled specifically:
     \table
-    \row \i Enter/Return
-         \i This will reinterpret the text and emit a signal even if the value has not changed
+    \row \li Enter/Return
+         \li This will reinterpret the text and emit a signal even if the value has not changed
          since last time a signal was emitted.
-    \row \i Up
-         \i This will invoke stepBy(1)
-    \row \i Down
-         \i This will invoke stepBy(-1)
-    \row \i Page up
-         \i This will invoke stepBy(10)
-    \row \i Page down
-         \i This will invoke stepBy(-10)
+    \row \li Up
+         \li This will invoke stepBy(1)
+    \row \li Down
+         \li This will invoke stepBy(-1)
+    \row \li Page up
+         \li This will invoke stepBy(10)
+    \row \li Page down
+         \li This will invoke stepBy(-10)
     \endtable
 */
 

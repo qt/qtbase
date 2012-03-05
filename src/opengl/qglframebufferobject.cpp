@@ -87,10 +87,10 @@ extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
     A framebuffer object has several characteristics:
     \list
-    \i \link setSamples() Number of samples per pixels.\endlink
-    \i \link setAttachment() Depth and/or stencil attachments.\endlink
-    \i \link setTextureTarget() Texture target.\endlink
-    \i \link setInternalTextureFormat() Internal texture format.\endlink
+    \li \link setSamples() Number of samples per pixels.\endlink
+    \li \link setAttachment() Depth and/or stencil attachments.\endlink
+    \li \link setTextureTarget() Texture target.\endlink
+    \li \link setInternalTextureFormat() Internal texture format.\endlink
     \endlist
 
     Note that the desired attachments or number of samples per pixels might not
@@ -674,7 +674,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     generates a 2D GL texture (using the \c{GL_TEXTURE_2D} target),
     which is used as the internal rendering target.
 
-    \bold{It is important to have a current GL context when creating a
+    \b{It is important to have a current GL context when creating a
     QGLFramebufferObject, otherwise initialization will fail.}
 
     OpenGL framebuffer objects and pbuffers (see
@@ -683,22 +683,22 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     using framebuffer objects instead of pbuffers:
 
     \list 1
-    \o A framebuffer object does not require a separate rendering
+    \li A framebuffer object does not require a separate rendering
     context, so no context switching will occur when switching
     rendering targets. There is an overhead involved in switching
     targets, but in general it is cheaper than a context switch to a
     pbuffer.
 
-    \o Rendering to dynamic textures (i.e. render-to-texture
+    \li Rendering to dynamic textures (i.e. render-to-texture
     functionality) works on all platforms. No need to do explicit copy
     calls from a render buffer into a texture, as was necessary on
     systems that did not support the \c{render_texture} extension.
 
-    \o It is possible to attach several rendering buffers (or texture
+    \li It is possible to attach several rendering buffers (or texture
     objects) to the same framebuffer object, and render to all of them
     without doing a context switch.
 
-    \o The OpenGL framebuffer extension is a pure GL extension with no
+    \li The OpenGL framebuffer extension is a pure GL extension with no
     system dependant WGL, CGL, or GLX parts. This makes using
     framebuffer objects more portable.
     \endlist

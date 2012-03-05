@@ -76,7 +76,7 @@ extern void qt_format_text(const QFont& font, const QRectF &_r,
     QFontMetrics object:
 
     \list 1
-    \o Calling the QFontMetrics constructor with a QFont creates a
+    \li Calling the QFontMetrics constructor with a QFont creates a
     font metrics object for a screen-compatible font, i.e. the font
     cannot be a printer font. If the font is changed
     later, the font metrics object is \e not updated.
@@ -85,12 +85,12 @@ extern void qt_format_text(const QFont& font, const QRectF &_r,
     inaccurate. Printer fonts are not always accessible so the nearest
     screen font is used if a printer font is supplied.)
 
-    \o QWidget::fontMetrics() returns the font metrics for a widget's
+    \li QWidget::fontMetrics() returns the font metrics for a widget's
     font. This is equivalent to QFontMetrics(widget->font()). If the
     widget's font is changed later, the font metrics object is \e not
     updated.
 
-    \o QPainter::fontMetrics() returns the font metrics for a
+    \li QPainter::fontMetrics() returns the font metrics for a
     painter's current font. If the painter's font is changed later, the
     font metrics object is \e not updated.
     \endlist
@@ -713,20 +713,20 @@ QRect QFontMetrics::boundingRect(QChar ch) const
 
     The \a flags argument is the bitwise OR of the following flags:
     \list
-    \o Qt::AlignLeft aligns to the left border, except for
+    \li Qt::AlignLeft aligns to the left border, except for
           Arabic and Hebrew where it aligns to the right.
-    \o Qt::AlignRight aligns to the right border, except for
+    \li Qt::AlignRight aligns to the right border, except for
           Arabic and Hebrew where it aligns to the left.
-    \o Qt::AlignJustify produces justified text.
-    \o Qt::AlignHCenter aligns horizontally centered.
-    \o Qt::AlignTop aligns to the top border.
-    \o Qt::AlignBottom aligns to the bottom border.
-    \o Qt::AlignVCenter aligns vertically centered
-    \o Qt::AlignCenter (== \c{Qt::AlignHCenter | Qt::AlignVCenter})
-    \o Qt::TextSingleLine ignores newline characters in the text.
-    \o Qt::TextExpandTabs expands tabs (see below)
-    \o Qt::TextShowMnemonic interprets "&x" as \underline{x}; i.e., underlined.
-    \o Qt::TextWordWrap breaks the text to fit the rectangle.
+    \li Qt::AlignJustify produces justified text.
+    \li Qt::AlignHCenter aligns horizontally centered.
+    \li Qt::AlignTop aligns to the top border.
+    \li Qt::AlignBottom aligns to the bottom border.
+    \li Qt::AlignVCenter aligns vertically centered
+    \li Qt::AlignCenter (== \c{Qt::AlignHCenter | Qt::AlignVCenter})
+    \li Qt::TextSingleLine ignores newline characters in the text.
+    \li Qt::TextExpandTabs expands tabs (see below)
+    \li Qt::TextShowMnemonic interprets "&x" as \underline{x}; i.e., underlined.
+    \li Qt::TextWordWrap breaks the text to fit the rectangle.
     \endlist
 
     Qt::Horizontal alignment defaults to Qt::AlignLeft and vertical
@@ -780,10 +780,10 @@ QRect QFontMetrics::boundingRect(const QRect &rect, int flags, const QString &te
 
     The \a flags argument is the bitwise OR of the following flags:
     \list
-    \o Qt::TextSingleLine ignores newline characters.
-    \o Qt::TextExpandTabs expands tabs (see below)
-    \o Qt::TextShowMnemonic interprets "&x" as \underline{x}; i.e., underlined.
-    \o Qt::TextWordBreak breaks the text to fit the rectangle.
+    \li Qt::TextSingleLine ignores newline characters.
+    \li Qt::TextExpandTabs expands tabs (see below)
+    \li Qt::TextShowMnemonic interprets "&x" as \underline{x}; i.e., underlined.
+    \li Qt::TextWordBreak breaks the text to fit the rectangle.
     \endlist
 
     If Qt::TextExpandTabs is set in \a flags, then: if \a tabArray is
@@ -1490,20 +1490,20 @@ QRectF QFontMetricsF::boundingRect(QChar ch) const
 
     The \a flags argument is the bitwise OR of the following flags:
     \list
-    \o Qt::AlignLeft aligns to the left border, except for
+    \li Qt::AlignLeft aligns to the left border, except for
           Arabic and Hebrew where it aligns to the right.
-    \o Qt::AlignRight aligns to the right border, except for
+    \li Qt::AlignRight aligns to the right border, except for
           Arabic and Hebrew where it aligns to the left.
-    \o Qt::AlignJustify produces justified text.
-    \o Qt::AlignHCenter aligns horizontally centered.
-    \o Qt::AlignTop aligns to the top border.
-    \o Qt::AlignBottom aligns to the bottom border.
-    \o Qt::AlignVCenter aligns vertically centered
-    \o Qt::AlignCenter (== \c{Qt::AlignHCenter | Qt::AlignVCenter})
-    \o Qt::TextSingleLine ignores newline characters in the text.
-    \o Qt::TextExpandTabs expands tabs (see below)
-    \o Qt::TextShowMnemonic interprets "&x" as \underline{x}; i.e., underlined.
-    \o Qt::TextWordWrap breaks the text to fit the rectangle.
+    \li Qt::AlignJustify produces justified text.
+    \li Qt::AlignHCenter aligns horizontally centered.
+    \li Qt::AlignTop aligns to the top border.
+    \li Qt::AlignBottom aligns to the bottom border.
+    \li Qt::AlignVCenter aligns vertically centered
+    \li Qt::AlignCenter (== \c{Qt::AlignHCenter | Qt::AlignVCenter})
+    \li Qt::TextSingleLine ignores newline characters in the text.
+    \li Qt::TextExpandTabs expands tabs (see below)
+    \li Qt::TextShowMnemonic interprets "&x" as \underline{x}; i.e., underlined.
+    \li Qt::TextWordWrap breaks the text to fit the rectangle.
     \endlist
 
     Qt::Horizontal alignment defaults to Qt::AlignLeft and vertical
@@ -1517,9 +1517,9 @@ QRectF QFontMetricsF::boundingRect(QChar ch) const
     If Qt::TextExpandTabs is set in \a flags, the following behavior is
     used to interpret tab characters in the text:
     \list
-    \o If \a tabArray is non-null, it specifies a 0-terminated sequence of
+    \li If \a tabArray is non-null, it specifies a 0-terminated sequence of
        pixel-positions for tabs in the text.
-    \o If \a tabStops is non-zero, it is used as the tab spacing (in pixels).
+    \li If \a tabStops is non-zero, it is used as the tab spacing (in pixels).
     \endlist
 
     Note that the bounding rectangle may extend to the left of (0, 0),
@@ -1559,10 +1559,10 @@ QRectF QFontMetricsF::boundingRect(const QRectF &rect, int flags, const QString&
 
     The \a flags argument is the bitwise OR of the following flags:
     \list
-    \o Qt::TextSingleLine ignores newline characters.
-    \o Qt::TextExpandTabs expands tabs (see below)
-    \o Qt::TextShowMnemonic interprets "&x" as \underline{x}; i.e., underlined.
-    \o Qt::TextWordBreak breaks the text to fit the rectangle.
+    \li Qt::TextSingleLine ignores newline characters.
+    \li Qt::TextExpandTabs expands tabs (see below)
+    \li Qt::TextShowMnemonic interprets "&x" as \underline{x}; i.e., underlined.
+    \li Qt::TextWordBreak breaks the text to fit the rectangle.
     \endlist
 
     These flags are defined in \l{Qt::TextFlags}.
@@ -1570,9 +1570,9 @@ QRectF QFontMetricsF::boundingRect(const QRectF &rect, int flags, const QString&
     If Qt::TextExpandTabs is set in \a flags, the following behavior is
     used to interpret tab characters in the text:
     \list
-    \o If \a tabArray is non-null, it specifies a 0-terminated sequence of
+    \li If \a tabArray is non-null, it specifies a 0-terminated sequence of
        pixel-positions for tabs in the text.
-    \o If \a tabStops is non-zero, it is used as the tab spacing (in pixels).
+    \li If \a tabStops is non-zero, it is used as the tab spacing (in pixels).
     \endlist
 
     Newline characters are processed as line breaks.

@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 class QRingBuffer
 {
 public:
-    inline QRingBuffer(int growth = 4096) : basicBlockSize(growth) {
+    explicit inline QRingBuffer(int growth = 4096) : basicBlockSize(growth) {
         buffers << QByteArray();
         clear();
     }

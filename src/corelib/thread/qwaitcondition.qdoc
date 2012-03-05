@@ -129,9 +129,9 @@
     calling thread will block until either of these conditions is met:
 
     \list
-    \o Another thread signals it using wakeOne() or wakeAll(). This
+    \li Another thread signals it using wakeOne() or wakeAll(). This
        function will return true in this case.
-    \o \a time milliseconds has elapsed. If \a time is \c ULONG_MAX
+    \li \a time milliseconds has elapsed. If \a time is \c ULONG_MAX
        (the default), then the wait will never timeout (the event
        must be signalled). This function will return false if the
        wait timed out.
@@ -157,9 +157,9 @@
     calling thread will block until either of these conditions is met:
 
     \list
-    \o Another thread signals it using wakeOne() or wakeAll(). This
+    \li Another thread signals it using wakeOne() or wakeAll(). This
        function will return true in this case.
-    \o \a time milliseconds has elapsed. If \a time is \c ULONG_MAX
+    \li \a time milliseconds has elapsed. If \a time is \c ULONG_MAX
        (the default), then the wait will never timeout (the event
        must be signalled). This function will return false if the
        wait timed out.

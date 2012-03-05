@@ -130,11 +130,11 @@ QSqlQueryPrivate::~QSqlQueryPrivate()
     Navigating records is performed with the following functions:
 
     \list
-    \o next()
-    \o previous()
-    \o first()
-    \o last()
-    \o seek()
+    \li next()
+    \li previous()
+    \li first()
+    \li last()
+    \li seek()
     \endlist
 
     These functions allow the programmer to move forward, backward
@@ -188,23 +188,23 @@ QSqlQueryPrivate::~QSqlQueryPrivate()
     different binding approaches, as well as one example of binding
     values to a stored procedure.
 
-    \bold{Named binding using named placeholders:}
+    \b{Named binding using named placeholders:}
 
     \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 9
 
-    \bold{Positional binding using named placeholders:}
+    \b{Positional binding using named placeholders:}
 
     \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 10
 
-    \bold{Binding values using positional placeholders (version 1):}
+    \b{Binding values using positional placeholders (version 1):}
 
     \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 11
 
-    \bold{Binding values using positional placeholders (version 2):}
+    \b{Binding values using positional placeholders (version 2):}
 
     \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 12
 
-    \bold{Binding values to a stored procedure:}
+    \b{Binding values to a stored procedure:}
 
     This code calls a stored procedure called \c AsciiToInt(), passing
     it a character through its in parameter, and taking its result in
@@ -460,10 +460,10 @@ const QSqlResult* QSqlQuery::result() const
 
   \list
 
-  \o If \a index is negative, the result is positioned before the
+  \li If \a index is negative, the result is positioned before the
   first record and false is returned.
 
-  \o Otherwise, an attempt is made to move to the record at position
+  \li Otherwise, an attempt is made to move to the record at position
   \a index. If the record at position \a index could not be retrieved,
   the result is positioned after the last record and false is
   returned. If the record is successfully retrieved, true is returned.
@@ -474,18 +474,18 @@ const QSqlResult* QSqlQuery::result() const
 
   \list
 
-  \o If the result is currently positioned before the first record or
+  \li If the result is currently positioned before the first record or
   on the first record, and \a index is negative, there is no change,
   and false is returned.
 
-  \o If the result is currently located after the last record, and \a
+  \li If the result is currently located after the last record, and \a
   index is positive, there is no change, and false is returned.
 
-  \o If the result is currently located somewhere in the middle, and
+  \li If the result is currently located somewhere in the middle, and
   the relative offset \a index moves the result below zero, the result
   is positioned before the first record and false is returned.
 
-  \o Otherwise, an attempt is made to move to the record \a index
+  \li Otherwise, an attempt is made to move to the record \a index
   records ahead of the current record (or \a index records behind the
   current record if \a index is negative). If the record at offset \a
   index could not be retrieved, the result is positioned after the
@@ -571,14 +571,14 @@ bool QSqlQuery::seek(int index, bool relative)
 
   \list
 
-  \o If the result is currently located before the first record,
+  \li If the result is currently located before the first record,
   e.g. immediately after a query is executed, an attempt is made to
   retrieve the first record.
 
-  \o If the result is currently located after the last record, there
+  \li If the result is currently located after the last record, there
   is no change and false is returned.
 
-  \o If the result is located somewhere in the middle, an attempt is
+  \li If the result is located somewhere in the middle, an attempt is
   made to retrieve the next record.
 
   \endlist
@@ -621,13 +621,13 @@ bool QSqlQuery::next()
 
   \list
 
-  \o If the result is currently located before the first record, there
+  \li If the result is currently located before the first record, there
   is no change and false is returned.
 
-  \o If the result is currently located after the last record, an
+  \li If the result is currently located after the last record, an
   attempt is made to retrieve the last record.
 
-  \o If the result is somewhere in the middle, an attempt is made to
+  \li If the result is somewhere in the middle, an attempt is made to
   retrieve the previous record.
 
   \endlist

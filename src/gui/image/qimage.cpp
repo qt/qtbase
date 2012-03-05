@@ -327,17 +327,17 @@ bool QImageData::checkForAlphaPixels() const
     formats:
 
     \table
-    \header \o Format \o Description                      \o Qt's support
-    \row    \o BMP    \o Windows Bitmap                   \o Read/write
-    \row    \o GIF    \o Graphic Interchange Format (optional) \o Read
-    \row    \o JPG    \o Joint Photographic Experts Group \o Read/write
-    \row    \o JPEG   \o Joint Photographic Experts Group \o Read/write
-    \row    \o PNG    \o Portable Network Graphics        \o Read/write
-    \row    \o PBM    \o Portable Bitmap                  \o Read
-    \row    \o PGM    \o Portable Graymap                 \o Read
-    \row    \o PPM    \o Portable Pixmap                  \o Read/write
-    \row    \o XBM    \o X11 Bitmap                       \o Read/write
-    \row    \o XPM    \o X11 Pixmap                       \o Read/write
+    \header \li Format \li Description                      \li Qt's support
+    \row    \li BMP    \li Windows Bitmap                   \li Read/write
+    \row    \li GIF    \li Graphic Interchange Format (optional) \li Read
+    \row    \li JPG    \li Joint Photographic Experts Group \li Read/write
+    \row    \li JPEG   \li Joint Photographic Experts Group \li Read/write
+    \row    \li PNG    \li Portable Network Graphics        \li Read/write
+    \row    \li PBM    \li Portable Bitmap                  \li Read
+    \row    \li PGM    \li Portable Graymap                 \li Read
+    \row    \li PPM    \li Portable Pixmap                  \li Read/write
+    \row    \li XBM    \li X11 Bitmap                       \li Read/write
+    \row    \li XPM    \li X11 Pixmap                       \li Read/write
     \endtable
 
     \section1 Image Information
@@ -347,11 +347,11 @@ bool QImageData::checkForAlphaPixels() const
 
     \table
     \header
-    \o \o Available Functions
+    \li \li Available Functions
 
     \row
-    \o Geometry
-    \o
+    \li Geometry
+    \li
 
     The size(), width(), height(), dotsPerMeterX(), and
     dotsPerMeterY() functions provide information about the image size
@@ -365,8 +365,8 @@ bool QImageData::checkForAlphaPixels() const
     setOffset() function.
 
     \row
-    \o Colors
-    \o
+    \li Colors
+    \li
 
     The color of a pixel can be retrieved by passing its coordinates
     to the pixel() function.  The pixel() function returns the color
@@ -392,8 +392,8 @@ bool QImageData::checkForAlphaPixels() const
     sections.
 
     \row
-    \o Text
-    \o
+    \li Text
+    \li
 
     The text() function returns the image text associated with the
     given text key. An image's text keys can be retrieved using the
@@ -401,8 +401,8 @@ bool QImageData::checkForAlphaPixels() const
     image's text.
 
     \row
-    \o Low-level information
-    \o
+    \li Low-level information
+    \li
 
     The depth() function returns the depth of the image. The supported
     depths are 1 (monochrome), 8, 16, 24 and 32 bits. The
@@ -434,10 +434,10 @@ bool QImageData::checkForAlphaPixels() const
 
     \table
     \header
-    \o {2,1}32-bit
+    \li {2,1}32-bit
     \row
-    \o \inlineimage qimage-32bit_scaled.png
-    \o
+    \li \inlineimage qimage-32bit_scaled.png
+    \li
     \snippet doc/src/snippets/code/src_gui_image_qimage.cpp 0
     \endtable
 
@@ -455,10 +455,10 @@ bool QImageData::checkForAlphaPixels() const
 
     \table
     \header
-    \o {2,1} 8-bit
+    \li {2,1} 8-bit
     \row
-    \o \inlineimage qimage-8bit_scaled.png
-    \o
+    \li \inlineimage qimage-8bit_scaled.png
+    \li
     \snippet doc/src/snippets/code/src_gui_image_qimage.cpp 1
     \endtable
 
@@ -529,28 +529,28 @@ bool QImageData::checkForAlphaPixels() const
     in-place:
 
     \table
-    \header \o Function \o Description
+    \header \li Function \li Description
     \row
-    \o setDotsPerMeterX()
-    \o Defines the aspect ratio by setting the number of pixels that fit
+    \li setDotsPerMeterX()
+    \li Defines the aspect ratio by setting the number of pixels that fit
     horizontally in a physical meter.
     \row
-    \o setDotsPerMeterY()
-    \o Defines the aspect ratio by setting the number of pixels that fit
+    \li setDotsPerMeterY()
+    \li Defines the aspect ratio by setting the number of pixels that fit
     vertically in a physical meter.
     \row
-    \o fill()
-    \o Fills the entire image with the given pixel value.
+    \li fill()
+    \li Fills the entire image with the given pixel value.
     \row
-    \o invertPixels()
-    \o Inverts all pixel values in the image using the given InvertMode value.
+    \li invertPixels()
+    \li Inverts all pixel values in the image using the given InvertMode value.
     \row
-    \o setColorTable()
-    \o Sets the color table used to translate color indexes. Only
+    \li setColorTable()
+    \li Sets the color table used to translate color indexes. Only
     monochrome and 8-bit formats.
     \row
-    \o setColorCount()
-    \o Resizes the color table. Only monochrome and 8-bit formats.
+    \li setColorCount()
+    \li Resizes the color table. Only monochrome and 8-bit formats.
 
     \endtable
 
@@ -3794,11 +3794,11 @@ bool QImage::isGrayscale() const
     \image qimage-scaling.png
 
     \list
-    \i If \a aspectRatioMode is Qt::IgnoreAspectRatio, the image
+    \li If \a aspectRatioMode is Qt::IgnoreAspectRatio, the image
        is scaled to \a size.
-    \i If \a aspectRatioMode is Qt::KeepAspectRatio, the image is
+    \li If \a aspectRatioMode is Qt::KeepAspectRatio, the image is
        scaled to a rectangle as large as possible inside \a size, preserving the aspect ratio.
-    \i If \a aspectRatioMode is Qt::KeepAspectRatioByExpanding,
+    \li If \a aspectRatioMode is Qt::KeepAspectRatioByExpanding,
        the image is scaled to a rectangle as small as possible
        outside \a size, preserving the aspect ratio.
     \endlist

@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
     The QVector3D class can also be used to represent vertices in 3D space.
     We therefore do not need to provide a separate vertex class.
 
-    \bold{Note:} By design values in the QVector3D instance are stored as \c float.
+    \b{Note:} By design values in the QVector3D instance are stored as \c float.
     This means that on platforms where the \c qreal arguments to QVector3D
     functions are represented by \c double values, it is possible to
     lose precision.

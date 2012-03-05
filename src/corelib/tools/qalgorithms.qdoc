@@ -159,14 +159,14 @@
     bidirectional iterator, and supports the following operations:
 
     \table
-    \row \i \c{i += n} \i advances iterator \c i by \c n positions
-    \row \i \c{i -= n} \i moves iterator \c i back by \c n positions
-    \row \i \c{i + n} or \c{n + i} \i returns the iterator for the item \c
+    \row \li \c{i += n} \li advances iterator \c i by \c n positions
+    \row \li \c{i -= n} \li moves iterator \c i back by \c n positions
+    \row \li \c{i + n} or \c{n + i} \li returns the iterator for the item \c
        n positions ahead of iterator \c i
-    \row \i \c{i - n} \i returns the iterator for the item \c n positions behind of iterator \c i
-    \row \i \c{i - j} \i returns the number of items between iterators \c i and \c j
-    \row \i \c{i[n]} \i same as \c{*(i + n)}
-    \row \i \c{i < j} \i returns true if iterator \c j comes after iterator \c i
+    \row \li \c{i - n} \li returns the iterator for the item \c n positions behind of iterator \c i
+    \row \li \c{i - j} \li returns the number of items between iterators \c i and \c j
+    \row \li \c{i[n]} \li same as \c{*(i + n)}
+    \row \li \c{i < j} \li returns true if iterator \c j comes after iterator \c i
     \endtable
 
     QList and QVector's non-const iterator types are random access iterators.

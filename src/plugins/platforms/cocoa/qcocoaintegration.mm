@@ -134,6 +134,7 @@ QCocoaIntegration::QCocoaIntegration()
     NSArray *screens = [NSScreen screens];
     for (uint i = 0; i < [screens count]; i++) {
         QCocoaScreen *screen = new QCocoaScreen(i);
+        mScreens.append(screen);
         screenAdded(screen);
     }
 
@@ -142,6 +143,11 @@ QCocoaIntegration::QCocoaIntegration()
 QCocoaIntegration::~QCocoaIntegration()
 {
     [[NSApplication sharedApplication] setDelegate: 0];
+
+    // Delete screens in reverse order to avoid crash in case of multiple screens
+    while (!mScreens.isEmpty()) {
+        delete mScreens.takeLast();
+    }
 }
 
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const

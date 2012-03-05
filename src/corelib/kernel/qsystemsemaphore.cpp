@@ -90,16 +90,16 @@ QT_BEGIN_NAMESPACE
   When using this class, be aware of the following platform
   differences:
 
-  \bold{Windows:} QSystemSemaphore does not own its underlying system
+  \b{Windows:} QSystemSemaphore does not own its underlying system
   semaphore. Windows owns it. This means that when all instances of
   QSystemSemaphore for a particular key have been destroyed, either by
   having their destructors called, or because one or more processes
   crash, Windows removes the underlying system semaphore.
 
-  \bold{Unix:}
+  \b{Unix:}
 
   \list
-  \o QSystemSemaphore owns the underlying system semaphore
+  \li QSystemSemaphore owns the underlying system semaphore
   in Unix systems. This means that the last process having an instance of
   QSystemSemaphore for a particular key must remove the underlying
   system semaphore in its destructor. If the last process crashes
@@ -117,7 +117,7 @@ QT_BEGIN_NAMESPACE
   {QSystemSemaphore::} {Create}, which will force Unix to reset the
   resource count in the underlying system semaphore.
 
-  \o When a process using QSystemSemaphore terminates for
+  \li When a process using QSystemSemaphore terminates for
   any reason, Unix automatically reverses the effect of all acquire
   operations that were not released. Thus if the process acquires a
   resource and then exits without releasing it, Unix will release that

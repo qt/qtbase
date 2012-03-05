@@ -59,9 +59,9 @@
     The example consists of two classes:
 
     \list
-    \o \c CircleWidget is a custom widget which renders several animated
+    \li \c CircleWidget is a custom widget which renders several animated
        concentric circles.
-    \o \c Window is the application's main window displaying four \c
+    \li \c Window is the application's main window displaying four \c
        {CircleWidget}s drawn using different combinations of precision
        and aliasing.
     \endlist

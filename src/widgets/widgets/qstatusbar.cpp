@@ -165,12 +165,12 @@ QRect QStatusBarPrivate::messageRect() const
     Each status indicator falls into one of three categories:
 
     \list
-    \o \e Temporary - briefly occupies most of the status bar. Used
+    \li \e Temporary - briefly occupies most of the status bar. Used
         to explain tool tip texts or menu entries, for example.
-    \o \e Normal - occupies part of the status bar and may be hidden
+    \li \e Normal - occupies part of the status bar and may be hidden
         by temporary messages. Used to display the page and line
         number in a word processor, for example.
-    \o \e Permanent - is never hidden. Used for important mode
+    \li \e Permanent - is never hidden. Used for important mode
         indications, for example, some applications put a Caps Lock
         indicator in the status bar.
     \endlist

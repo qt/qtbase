@@ -55,13 +55,13 @@
     Plug & Paint consists of the following classes:
 
     \list
-    \o \c MainWindow is a QMainWindow subclass that provides the menu
+    \li \c MainWindow is a QMainWindow subclass that provides the menu
        system and that contains a \c PaintArea as the central widget.
-    \o \c PaintArea is a QWidget that allows the user to draw using a
+    \li \c PaintArea is a QWidget that allows the user to draw using a
        brush and to insert shapes.
-    \o \c PluginDialog is a dialog that shows information about the
+    \li \c PluginDialog is a dialog that shows information about the
        plugins detected by the application.
-    \o \c BrushInterface, \c ShapeInterface, and \c FilterInterface are
+    \li \c BrushInterface, \c ShapeInterface, and \c FilterInterface are
        abstract base classes that can be implemented by plugins to
        provide custom brushes, shapes, and image filters.
     \endlist
@@ -321,10 +321,10 @@
     plugin:
 
     \list 1
-    \o Declare a plugin class.
-    \o Implement the interfaces provided by the plugin.
-    \o Export the plugin using the Q_EXPORT_PLUGIN2() macro.
-    \o Build the plugin using an adequate \c .pro file.
+    \li Declare a plugin class.
+    \li Implement the interfaces provided by the plugin.
+    \li Export the plugin using the Q_EXPORT_PLUGIN2() macro.
+    \li Build the plugin using an adequate \c .pro file.
     \endlist
 
     \section1 Declaration of the Plugin Class
@@ -377,15 +377,15 @@
     Then comes the brush-dependent part of the code:
 
     \list
-    \o If the brush is \gui{Pencil}, we just call
+    \li If the brush is \gui{Pencil}, we just call
        QPainter::drawLine() with the current QPen.
 
-    \o If the brush is \gui{Air Brush}, we start by setting the
+    \li If the brush is \gui{Air Brush}, we start by setting the
        painter's QBrush to Qt::Dense6Pattern to obtain a dotted
        pattern. Then we draw a circle filled with that QBrush several
        times, resulting in a thick line.
 
-    \o If the brush is \gui{Random Letters}, we draw a random letter
+    \li If the brush is \gui{Random Letters}, we draw a random letter
        at the new cursor position. Most of the code is for setting
        the font to be bold and larger than the default font and for
        computing an appropriate bounding rect.

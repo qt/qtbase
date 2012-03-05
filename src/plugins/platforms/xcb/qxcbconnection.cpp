@@ -109,6 +109,8 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     , m_has_support_for_dri2(false)
 #endif
     , xfixes_first_event(0)
+    , has_shape_extension(false)
+    , has_input_shape(false)
 {
     m_primaryScreen = 0;
 
@@ -133,7 +135,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
 #endif //XCB_USE_XLIB
 
     if (!m_connection || xcb_connection_has_error(m_connection))
-        qFatal("Could not connect to display %s", m_displayName.constData());
+        qFatal("QXcbConnection: Could not connect to display %s", m_displayName.constData());
 
     m_reader = new QXcbEventReader(this);
 #ifdef XCB_POLL_FOR_QUEUED_EVENT
@@ -175,6 +177,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
 #ifdef XCB_USE_XINPUT2_MAEMO
     initializeXInput2();
 #endif
+    initializeXShape();
 
     m_wmSupport.reset(new QXcbWMSupport(this));
     m_keyboard = new QXcbKeyboard(this);
@@ -191,7 +194,9 @@ QXcbConnection::~QXcbConnection()
 {
     delete m_clipboard;
 
-    qDeleteAll(m_screens);
+    // Delete screens in reverse order to avoid crash in case of multiple screens
+    while (!m_screens.isEmpty())
+        delete m_screens.takeLast();
 
 #ifdef XCB_USE_XINPUT2_MAEMO
     finalizeXInput2();
@@ -250,7 +255,7 @@ void printXcbEvent(const char *message, xcb_generic_event_t *event)
 #ifdef XCB_EVENT_DEBUG
 #define PRINT_XCB_EVENT(ev) \
     case ev: \
-        qDebug("%s: %d - %s - sequence: %d", message, int(ev), #ev, event->sequence); \
+        qDebug("QXcbConnection: %s: %d - %s - sequence: %d", message, int(ev), #ev, event->sequence); \
         break;
 
     switch (event->response_type & ~0x80) {
@@ -287,7 +292,7 @@ void printXcbEvent(const char *message, xcb_generic_event_t *event)
     PRINT_XCB_EVENT(XCB_CLIENT_MESSAGE);
     PRINT_XCB_EVENT(XCB_MAPPING_NOTIFY);
     default:
-        qDebug("%s: unknown event - response_type: %d - sequence: %d", message, int(event->response_type & ~0x80), int(event->sequence));
+        qDebug("QXcbConnection: %s: unknown event - response_type: %d - sequence: %d", message, int(event->response_type & ~0x80), int(event->sequence));
     }
 #else
     Q_UNUSED(message);
@@ -460,7 +465,7 @@ void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
     uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
     uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
 
-    qDebug("XCB error: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d",
+    qWarning("QXcbConnection: XCB error: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d",
            int(error->error_code), xcb_errors[clamped_error_code],
            int(error->sequence), int(error->resource_id),
            int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
@@ -552,7 +557,6 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             break;
         case XCB_SELECTION_NOTIFY:
             setTime(((xcb_selection_notify_event_t *)event)->time);
-            qDebug() << "XCB_SELECTION_NOTIFY";
             handled = false;
             break;
         case XCB_PROPERTY_NOTIFY:
@@ -714,9 +718,9 @@ void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *
         return;
 
     if (event->type == atom(QXcbAtom::XdndStatus)) {
-        drag()->handleStatus(event, false);
+        drag()->handleStatus(event);
     } else if (event->type == atom(QXcbAtom::XdndFinished)) {
-        drag()->handleFinished(event, false);
+        drag()->handleFinished(event);
     }
 
     QXcbWindow *window = platformWindowFromId(event->window);
@@ -1024,7 +1028,7 @@ void QXcbConnection::initializeXFixes()
     xcb_xfixes_query_version_reply_t *xfixes_query = xcb_xfixes_query_version_reply (m_connection,
                                                                                      xfixes_query_cookie, &error);
     if (!xfixes_query || error || xfixes_query->major_version < 2) {
-        qWarning("Failed to initialize XFixes");
+        qWarning("QXcbConnection: Failed to initialize XFixes");
         free(error);
         xfixes_first_event = 0;
     }
@@ -1041,11 +1045,30 @@ void QXcbConnection::initializeXRender()
     xcb_render_query_version_reply_t *xrender_query = xcb_render_query_version_reply(m_connection,
                                                                                      xrender_query_cookie, &error);
     if (!xrender_query || error || (xrender_query->major_version == 0 && xrender_query->minor_version < 5)) {
-        qWarning("Failed to initialize XRender");
+        qWarning("QXcbConnection: Failed to initialize XRender");
         free(error);
     }
     free(xrender_query);
 #endif
+}
+
+void QXcbConnection::initializeXShape()
+{
+    const xcb_query_extension_reply_t *xshape_reply = xcb_get_extension_data(m_connection, &xcb_shape_id);
+    if (!xshape_reply || !xshape_reply->present)
+        return;
+
+    has_shape_extension = true;
+    xcb_shape_query_version_cookie_t cookie = xcb_shape_query_version(m_connection);
+    xcb_shape_query_version_reply_t *shape_query = xcb_shape_query_version_reply(m_connection,
+                                                                                 cookie, NULL);
+    if (!shape_query) {
+        qWarning("QXcbConnection: Failed to initialize SHAPE extension");
+    } else if (shape_query->major_version > 1 || (shape_query->major_version == 1 && shape_query->minor_version >= 1)) {
+        // The input shape is the only thing added in SHAPE 1.1
+        has_input_shape = true;
+    }
+    free(shape_query);
 }
 
 #if defined(XCB_USE_EGL)
@@ -1066,7 +1089,7 @@ void QXcbConnection::initializeDri2()
                                                                 connect_cookie, NULL);
 
     if (! connect || connect->driver_name_length + connect->device_name_length == 0) {
-        qDebug() << "Failed to connect to dri2";
+        qWarning("QXcbConnection: Failed to connect to DRI2");
         return;
     }
 
@@ -1076,14 +1099,14 @@ void QXcbConnection::initializeDri2()
 
     int fd = open(m_dri2_device_name.constData(), O_RDWR);
     if (fd < 0) {
-        qDebug() << "InitializeDri2: Could'nt open device << dri2DeviceName";
+        qWarning() << "QXcbConnection: Couldn't open DRI2 device" << m_dri2_device_name;
         m_dri2_device_name = QByteArray();
         return;
     }
 
     drm_magic_t magic;
     if (drmGetMagic(fd, &magic)) {
-        qDebug() << "Failed to get drmMagic";
+        qWarning("QXcbConnection: Failed to get drmMagic");
         return;
     }
 
@@ -1092,7 +1115,7 @@ void QXcbConnection::initializeDri2()
     xcb_dri2_authenticate_reply_t *authenticate = xcb_dri2_authenticate_reply(m_connection,
                                                                               authenticate_cookie, NULL);
     if (authenticate == NULL || !authenticate->authenticated) {
-        qWarning("DRI2: failed to authenticate");
+        qWarning("QXcbConnection: DRI2: failed to authenticate");
         free(authenticate);
         return;
     }
@@ -1101,14 +1124,14 @@ void QXcbConnection::initializeDri2()
 
     EGLDisplay display = eglGetDRMDisplayMESA(fd);
     if (!display) {
-        qWarning("failed to create display");
+        qWarning("QXcbConnection: Failed to create EGL display using DRI2");
         return;
     }
 
     m_egl_display = display;
     EGLint major,minor;
     if (!eglInitialize(display, &major, &minor)) {
-        qWarning("failed to initialize display");
+        qWarning("QXcbConnection: Failed to initialize EGL display using DRI2");
         return;
     }
 }

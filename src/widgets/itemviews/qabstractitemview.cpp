@@ -251,34 +251,34 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
 
     \table
         \header
-            \o Keys
-            \o Functionality
+            \li Keys
+            \li Functionality
         \row
-            \o Arrow keys
-            \o Changes the current item and selects it.
+            \li Arrow keys
+            \li Changes the current item and selects it.
         \row
-            \o Ctrl+Arrow keys
-            \o Changes the current item but does not select it.
+            \li Ctrl+Arrow keys
+            \li Changes the current item but does not select it.
         \row
-            \o Shift+Arrow keys
-            \o Changes the current item and selects it. The previously
+            \li Shift+Arrow keys
+            \li Changes the current item and selects it. The previously
                selected item(s) is not deselected.
         \row
-            \o Ctr+Space
-            \o Toggles selection of the current item.
+            \li Ctr+Space
+            \li Toggles selection of the current item.
         \row
-            \o Tab/Backtab
-            \o Changes the current item to the next/previous item.
+            \li Tab/Backtab
+            \li Changes the current item to the next/previous item.
         \row
-            \o Home/End
-            \o Selects the first/last item in the model.
+            \li Home/End
+            \li Selects the first/last item in the model.
         \row
-            \o Page up/Page down
-            \o Scrolls the rows shown up/down by the number of
+            \li Page up/Page down
+            \li Scrolls the rows shown up/down by the number of
                visible rows in the view.
         \row
-            \o Ctrl+A
-            \o Selects all items in the model.
+            \li Ctrl+A
+            \li Selects all items in the model.
     \endtable
 
     Note that the above table assumes that the
@@ -1428,7 +1428,7 @@ bool QAbstractItemView::dragEnabled() const
     \value DragOnly The view supports dragging of its own items
     \value DropOnly The view accepts drops
     \value DragDrop The view supports both dragging and dropping
-    \value InternalMove The view accepts move (\bold{not copy}) operations only
+    \value InternalMove The view accepts move (\b{not copy}) operations only
            from itself.
 
     Note that the model used needs to provide support for drag and drop operations.

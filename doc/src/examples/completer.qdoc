@@ -77,8 +77,8 @@
     The screenshots below illustrate this difference:
 
     \table
-    \row \o \inlineimage completer-example-qdirmodel.png
-         \o \inlineimage completer-example-dirmodel.png
+    \row \li \inlineimage completer-example-qdirmodel.png
+         \li \inlineimage completer-example-dirmodel.png
     \endtable
 
     The Qt::EditRole, which QCompleter uses to look for matches, is left

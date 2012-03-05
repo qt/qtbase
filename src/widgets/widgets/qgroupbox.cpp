@@ -172,12 +172,12 @@ void QGroupBoxPrivate::click()
     \snippet examples/widgets/groupbox/window.cpp 2
 
     \table 100%
-    \row \o \inlineimage windowsxp-groupbox.png Screenshot of a Windows XP style group box
-         \o \inlineimage macintosh-groupbox.png Screenshot of a Macintosh style group box
-         \o \inlineimage plastique-groupbox.png Screenshot of a Plastique style group box
-    \row \o A \l{Windows XP Style Widget Gallery}{Windows XP style} group box.
-         \o A \l{Macintosh Style Widget Gallery}{Macintosh style} group box.
-         \o A \l{Plastique Style Widget Gallery}{Plastique style} group box.
+    \row \li \inlineimage windowsxp-groupbox.png Screenshot of a Windows XP style group box
+         \li \inlineimage macintosh-groupbox.png Screenshot of a Macintosh style group box
+         \li \inlineimage plastique-groupbox.png Screenshot of a Plastique style group box
+    \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} group box.
+         \li A \l{Macintosh Style Widget Gallery}{Macintosh style} group box.
+         \li A \l{Plastique Style Widget Gallery}{Plastique style} group box.
     \endtable
 
     \sa QButtonGroup, {Group Box Example}
@@ -287,9 +287,9 @@ QString QGroupBox::title() const
     the following list:
 
     \list
-    \i Qt::AlignLeft aligns the title text with the left-hand side of the group box.
-    \i Qt::AlignRight aligns the title text with the right-hand side of the group box.
-    \i Qt::AlignHCenter aligns the title text with the horizontal center of the group box.
+    \li Qt::AlignLeft aligns the title text with the left-hand side of the group box.
+    \li Qt::AlignRight aligns the title text with the right-hand side of the group box.
+    \li Qt::AlignHCenter aligns the title text with the horizontal center of the group box.
     \endlist
 
     The default alignment is Qt::AlignLeft.
@@ -516,7 +516,7 @@ QSize QGroupBox::minimumSizeHint() const
     By default, this property is disabled; i.e. group boxes are not flat unless
     explicitly specified.
 
-    \bold{Note:} In some styles, flat and non-flat group boxes have similar
+    \b{Note:} In some styles, flat and non-flat group boxes have similar
     representations and may not be as distinguishable as they are in other
     styles.
 

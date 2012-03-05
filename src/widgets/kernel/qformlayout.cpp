@@ -1019,20 +1019,20 @@ QStyle* QFormLayoutPrivate::getStyle() const
     provides the following advantages:
 
     \list
-    \o \bold{Adherence to the different platform's look and feel guidelines.}
+    \li \b{Adherence to the different platform's look and feel guidelines.}
 
         For example, the
         \l{Mac OS X Aqua} and KDE guidelines specify that the
         labels should be right-aligned, whereas Windows and GNOME
         applications normally use left-alignment.
 
-    \o \bold{Support for wrapping long rows.}
+    \li \b{Support for wrapping long rows.}
 
        For devices with small displays, QFormLayout can be set to
        \l{WrapLongRows}{wrap long rows}, or even to
        \l{WrapAllRows}{wrap all rows}.
 
-    \o \bold{Convenient API for creating label--field pairs.}
+    \li \b{Convenient API for creating label--field pairs.}
 
        The addRow() overload that takes a QString and a QWidget *
        creates a QLabel behind the scenes and automatically set up
@@ -1049,30 +1049,30 @@ QStyle* QFormLayoutPrivate::getStyle() const
 
     \table
     \header
-        \o QCommonStyle derived styles (except QPlastiqueStyle)
-        \o QMacStyle
-        \o QPlastiqueStyle
-        \o Qt Extended styles
+        \li QCommonStyle derived styles (except QPlastiqueStyle)
+        \li QMacStyle
+        \li QPlastiqueStyle
+        \li Qt Extended styles
     \row
-        \o \inlineimage qformlayout-win.png
-        \o \inlineimage qformlayout-mac.png
-        \o \inlineimage qformlayout-kde.png
-        \o \inlineimage qformlayout-qpe.png
+        \li \inlineimage qformlayout-win.png
+        \li \inlineimage qformlayout-mac.png
+        \li \inlineimage qformlayout-kde.png
+        \li \inlineimage qformlayout-qpe.png
     \row
-        \o Traditional style used for Windows, GNOME, and earlier
+        \li Traditional style used for Windows, GNOME, and earlier
            versions of KDE. Labels are left aligned, and expanding
            fields grow to fill the available space. (This normally
            corresponds to what we would get using a two-column
            QGridLayout.)
-        \o Style based on the
+        \li Style based on the
            \l{Mac OS X Aqua} guidelines. Labels are right-aligned,
            the fields don't grow beyond their size hint, and the
            form is horizontally centered.
-        \o Recommended style for
+        \li Recommended style for
            \l{KDE applications}. Similar to MacStyle, except that the form
            is left-aligned and all fields grow to fill the available
            space.
-        \o Default style for Qt Extended styles. Labels are right-aligned,
+        \li Default style for Qt Extended styles. Labels are right-aligned,
            expanding fields grow to fill the available space, and row
            wrapping is enabled for long lines.
     \endtable
@@ -1966,7 +1966,7 @@ void QFormLayoutPrivate::arrangeWidgets(const QVector<QLayoutStruct>& layouts, Q
     If the cell is already occupied, the \a widget is not inserted and an error message is
     sent to the console.
 
-    \bold{Note:} For most applications, addRow() or insertRow() should be used instead of setWidget().
+    \b{Note:} For most applications, addRow() or insertRow() should be used instead of setWidget().
 
     \sa setLayout()
 */
@@ -1986,7 +1986,7 @@ void QFormLayout::setWidget(int row, ItemRole role, QWidget *widget)
     If the cell is already occupied, the \a layout is not inserted and an error message is
     sent to the console.
 
-    \bold{Note:} For most applications, addRow() or insertRow() should be used instead of setLayout().
+    \b{Note:} For most applications, addRow() or insertRow() should be used instead of setLayout().
 
     \sa setWidget()
 */

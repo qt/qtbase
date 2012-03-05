@@ -132,7 +132,7 @@ void QPlatformNativeInterface::setWindowProperty(QPlatformWindow *window, const 
 
     The event filter function set here is called for all messages
     received from the platform if they are given type \eventType.
-    It is \i not called for messages that are not meant for Qt objects.
+    It is \e not called for messages that are not meant for Qt objects.
 
     The type of event is specific to the platform plugin chosen at run-time.
 

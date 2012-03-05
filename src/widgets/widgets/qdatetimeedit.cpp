@@ -103,12 +103,12 @@ QT_BEGIN_NAMESPACE
   calendar widget can be retrieved with calendarWidget().
 
   \table 100%
-  \row \o \inlineimage windowsxp-datetimeedit.png Screenshot of a Windows XP style date time editing widget
-       \o A date time editing widget shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
-  \row \o \inlineimage macintosh-datetimeedit.png Screenshot of a Macintosh style date time editing widget
-       \o A date time editing widget shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-  \row \o \inlineimage plastique-datetimeedit.png Screenshot of a Plastique style date time editing widget
-       \o A date time editing widget shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+  \row \li \inlineimage windowsxp-datetimeedit.png Screenshot of a Windows XP style date time editing widget
+       \li A date time editing widget shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+  \row \li \inlineimage macintosh-datetimeedit.png Screenshot of a Macintosh style date time editing widget
+       \li A date time editing widget shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
+  \row \li \inlineimage plastique-datetimeedit.png Screenshot of a Plastique style date time editing widget
+       \li A date time editing widget shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
   \endtable
 
   \sa QDateEdit, QTimeEdit, QDate, QTime
@@ -835,10 +835,10 @@ QString QDateTimeEdit::sectionText(Section section) const
   Example format strings (assuming that the date is 2nd of July 1969):
 
   \table
-  \header \i Format \i Result
-  \row \i dd.MM.yyyy \i 02.07.1969
-  \row \i MMM d yy \i Jul 2 69
-  \row \i MMMM d yy \i July 2 69
+  \header \li Format \li Result
+  \row \li dd.MM.yyyy \li 02.07.1969
+  \row \li MMM d yy \li Jul 2 69
+  \row \li MMMM d yy \li July 2 69
   \endtable
 
   Note that if you specify a two digit year, it will be interpreted
@@ -1520,22 +1520,22 @@ void QDateTimeEdit::mousePressEvent(QMouseEvent *event)
   class:
 
   \list
-  \o \l{QDateTimeEdit::time}{time} holds the date displayed by the widget.
-  \o \l{QDateTimeEdit::minimumTime}{minimumTime} defines the minimum (earliest) time
+  \li \l{QDateTimeEdit::time}{time} holds the date displayed by the widget.
+  \li \l{QDateTimeEdit::minimumTime}{minimumTime} defines the minimum (earliest) time
      that can be set by the user.
-  \o \l{QDateTimeEdit::maximumTime}{maximumTime} defines the maximum (latest) time
+  \li \l{QDateTimeEdit::maximumTime}{maximumTime} defines the maximum (latest) time
      that can be set by the user.
-  \o \l{QDateTimeEdit::displayFormat}{displayFormat} contains a string that is used
+  \li \l{QDateTimeEdit::displayFormat}{displayFormat} contains a string that is used
      to format the time displayed in the widget.
   \endlist
 
   \table 100%
-  \row \o \inlineimage windowsxp-timeedit.png Screenshot of a Windows XP style time editing widget
-       \o A time editing widget shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
-  \row \o \inlineimage macintosh-timeedit.png Screenshot of a Macintosh style time editing widget
-       \o A time editing widget shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-  \row \o \inlineimage plastique-timeedit.png Screenshot of a Plastique style time editing widget
-       \o A time editing widget shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+  \row \li \inlineimage windowsxp-timeedit.png Screenshot of a Windows XP style time editing widget
+       \li A time editing widget shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+  \row \li \inlineimage macintosh-timeedit.png Screenshot of a Macintosh style time editing widget
+       \li A time editing widget shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
+  \row \li \inlineimage plastique-timeedit.png Screenshot of a Plastique style time editing widget
+       \li A time editing widget shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
   \endtable
 
   \sa QDateEdit, QDateTimeEdit
@@ -1575,22 +1575,22 @@ QTimeEdit::QTimeEdit(const QTime &time, QWidget *parent)
   class:
 
   \list
-  \o \l{QDateTimeEdit::date}{date} holds the date displayed by the widget.
-  \o \l{QDateTimeEdit::minimumDate}{minimumDate} defines the minimum (earliest)
+  \li \l{QDateTimeEdit::date}{date} holds the date displayed by the widget.
+  \li \l{QDateTimeEdit::minimumDate}{minimumDate} defines the minimum (earliest)
      date that can be set by the user.
-  \o \l{QDateTimeEdit::maximumDate}{maximumDate} defines the maximum (latest) date
+  \li \l{QDateTimeEdit::maximumDate}{maximumDate} defines the maximum (latest) date
      that can be set by the user.
-  \o \l{QDateTimeEdit::displayFormat}{displayFormat} contains a string that is used
+  \li \l{QDateTimeEdit::displayFormat}{displayFormat} contains a string that is used
      to format the date displayed in the widget.
   \endlist
 
   \table 100%
-  \row \o \inlineimage windowsxp-dateedit.png Screenshot of a Windows XP style date editing widget
-       \o A date editing widget shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
-  \row \o \inlineimage macintosh-dateedit.png Screenshot of a Macintosh style date editing widget
-       \o A date editing widget shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-  \row \o \inlineimage plastique-dateedit.png Screenshot of a Plastique style date editing widget
-       \o A date editing widget shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+  \row \li \inlineimage windowsxp-dateedit.png Screenshot of a Windows XP style date editing widget
+       \li A date editing widget shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+  \row \li \inlineimage macintosh-dateedit.png Screenshot of a Macintosh style date editing widget
+       \li A date editing widget shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
+  \row \li \inlineimage plastique-dateedit.png Screenshot of a Plastique style date editing widget
+       \li A date editing widget shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
   \endtable
 
   \sa QTimeEdit, QDateTimeEdit

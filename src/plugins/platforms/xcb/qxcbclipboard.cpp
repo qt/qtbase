@@ -74,7 +74,7 @@ public:
             break;
 
         default:
-            qWarning("QTestLiteMime: Internal error: Unsupported clipboard mode");
+            qWarning("QXcbClipboardMime: Internal error: Unsupported clipboard mode");
             break;
         }
     }
@@ -209,7 +209,7 @@ QXcbClipboard::~QXcbClipboard()
 
             // waiting until the clipboard manager fetches the content.
             if (!waitForClipboardEvent(m_owner, XCB_SELECTION_NOTIFY, clipboard_timeout, true)) {
-                qWarning("QClipboard: Unable to receive an event from the "
+                qWarning("QXcbClipboard: Unable to receive an event from the "
                          "clipboard manager in a reasonable time");
             }
         }
@@ -292,7 +292,7 @@ void QXcbClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
     xcb_set_selection_owner(xcb_connection(), newOwner, modeAtom, connection()->time());
 
     if (getSelectionOwner(modeAtom) != newOwner) {
-        qWarning("QClipboard::setData: Cannot set X11 selection owner");
+        qWarning("QXcbClipboard::setData: Cannot set X11 selection owner");
     }
 
     emitChanged(mode);
@@ -403,7 +403,7 @@ xcb_atom_t QXcbClipboard::sendSelection(QMimeData *d, xcb_atom_t target, xcb_win
                                 atom(QXcbAtom::INCR), 32, 1, (const void *)&bytes);
 
 //            (void)new QClipboardINCRTransaction(window, property, atomFormat, dataFormat, data, increment);
-            qWarning() << "not implemented INCR just YET!";
+            qWarning("QXcbClipboard: INCR is unimplemented");
             return property;
         }
 
@@ -445,7 +445,7 @@ void QXcbClipboard::handleSelectionClearRequest(xcb_selection_clear_event_t *eve
 void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
 {
     if (requestor() && req->requestor == requestor()) {
-        qDebug() << "This should be caught before";
+        qWarning("QXcbClipboard: Selection request should be caught before");
         return;
     }
 
@@ -460,7 +460,7 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
     QMimeData *d;
     QClipboard::Mode mode = modeForAtom(req->selection);
     if (mode > QClipboard::Selection) {
-        qWarning() << "QClipboard: Unknown selection" << connection()->atomName(req->selection);
+        qWarning() << "QXcbClipboard: Unknown selection" << connection()->atomName(req->selection);
         xcb_send_event(xcb_connection(), false, req->requestor, XCB_EVENT_MASK_NO_EVENT, (const char *)&event);
         return;
     }
@@ -468,14 +468,14 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
     d = m_clientClipboard[mode];
 
     if (!d) {
-        qWarning("QClipboard: Cannot transfer data, no data available");
+        qWarning("QXcbClipboard: Cannot transfer data, no data available");
         xcb_send_event(xcb_connection(), false, req->requestor, XCB_EVENT_MASK_NO_EVENT, (const char *)&event);
         return;
     }
 
     if (m_timestamp[mode] == XCB_CURRENT_TIME // we don't own the selection anymore
             || (req->time != XCB_CURRENT_TIME && req->time < m_timestamp[mode])) {
-        qDebug("QClipboard: SelectionRequest too old");
+        qWarning("QXcbClipboard: SelectionRequest too old");
         xcb_send_event(xcb_connection(), false, req->requestor, XCB_EVENT_MASK_NO_EVENT, (const char *)&event);
         return;
     }
@@ -530,7 +530,7 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
                                     property, XCB_ATOM_INTEGER, 32, 1, &m_timestamp[mode]);
                 ret = property;
             } else {
-                qWarning("QClipboard: Invalid data timestamp");
+                qWarning("QXcbClipboard: Invalid data timestamp");
             }
         } else if (target == xa_targets) {
             ret = sendTargetsSelection(d, req->requestor, property);

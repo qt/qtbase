@@ -336,7 +336,7 @@ public:
 
     static QAccessibleInterface *queryAccessibleInterface(QObject *);
 
-    static void updateAccessibility(QObject *object, int child, Event reason);
+    QT_DEPRECATED static void updateAccessibility(QObject *object, int child, Event reason);
     static void updateAccessibility(const QAccessibleEvent &event);
 
     static bool isActive();

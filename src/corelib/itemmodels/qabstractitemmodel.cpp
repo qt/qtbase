@@ -1161,16 +1161,16 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     \e before and \e after they occur:
 
     \list
-        \o An insertRows() implementation must call beginInsertRows() \e before
+        \li An insertRows() implementation must call beginInsertRows() \e before
            inserting new rows into the data structure, and endInsertRows()
            \e{immediately afterwards}.
-        \o An insertColumns() implementation must call beginInsertColumns()
+        \li An insertColumns() implementation must call beginInsertColumns()
            \e before inserting new columns into the data structure, and
            endInsertColumns() \e{immediately afterwards}.
-        \o A removeRows() implementation must call beginRemoveRows() \e before
+        \li A removeRows() implementation must call beginRemoveRows() \e before
            the rows are removed from the data structure, and endRemoveRows()
            \e{immediately afterwards}.
-        \o A removeColumns() implementation must call beginRemoveColumns()
+        \li A removeColumns() implementation must call beginRemoveColumns()
            \e before the columns are removed from the data structure, and
            endRemoveColumns() \e{immediately afterwards}.
     \endlist
@@ -1179,7 +1179,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     the chance to take action before any data becomes unavailable. The
     encapsulation of the insert and remove operations with these begin and end
     functions also enables the model to manage \l{QPersistentModelIndex}
-    {persistent model indexes} correctly. \bold{If you want selections to be
+    {persistent model indexes} correctly. \b{If you want selections to be
     handled properly, you must ensure that you call these functions.} If you
     insert or remove an item with children, you do not need to call these
     functions for the child items. In other words, the parent item will take
@@ -1338,11 +1338,11 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     layoutChanged(). In other words, when the structure changes:
 
     \list
-        \o  emit layoutAboutToBeChanged
-        \o  Remember the QModelIndex that will change
-        \o  Update your internal data
-        \o  Call changePersistentIndex()
-        \o  emit layoutChanged
+        \li  emit layoutAboutToBeChanged
+        \li  Remember the QModelIndex that will change
+        \li  Update your internal data
+        \li  Call changePersistentIndex()
+        \li  emit layoutChanged
     \endlist
 
     \sa layoutAboutToBeChanged(), dataChanged(), headerDataChanged(), modelReset(),
@@ -1500,7 +1500,7 @@ QAbstractItemModel::~QAbstractItemModel()
     inclusive, under the given \a sourceParent item have been moved to \a destinationParent
     starting at the row \a destinationRow.
 
-    \bold{Note:} Components connected to this signal use it to adapt to changes
+    \b{Note:} Components connected to this signal use it to adapt to changes
     in the model's dimensions. It can only be emitted by the QAbstractItemModel
     implementation, and cannot be explicitly emitted in subclass code.
 
@@ -1516,7 +1516,7 @@ QAbstractItemModel::~QAbstractItemModel()
     inclusive, under the given \a sourceParent item. They will be moved to \a destinationParent
     starting at the row \a destinationRow.
 
-    \bold{Note:} Components connected to this signal use it to adapt to changes
+    \b{Note:} Components connected to this signal use it to adapt to changes
     in the model's dimensions. It can only be emitted by the QAbstractItemModel
     implementation, and cannot be explicitly emitted in subclass code.
 
@@ -1532,7 +1532,7 @@ QAbstractItemModel::~QAbstractItemModel()
     inclusive, under the given \a sourceParent item have been moved to \a destinationParent
     starting at the column \a destinationColumn.
 
-    \bold{Note:} Components connected to this signal use it to adapt to changes
+    \b{Note:} Components connected to this signal use it to adapt to changes
     in the model's dimensions. It can only be emitted by the QAbstractItemModel
     implementation, and cannot be explicitly emitted in subclass code.
 
@@ -1548,7 +1548,7 @@ QAbstractItemModel::~QAbstractItemModel()
     inclusive, under the given \a sourceParent item. They will be moved to \a destinationParent
     starting at the column \a destinationColumn.
 
-    \bold{Note:} Components connected to this signal use it to adapt to changes
+    \b{Note:} Components connected to this signal use it to adapt to changes
     in the model's dimensions. It can only be emitted by the QAbstractItemModel
     implementation, and cannot be explicitly emitted in subclass code.
 
@@ -1683,7 +1683,7 @@ bool QAbstractItemModel::setData(const QModelIndex &index, const QVariant &value
     Returns the data stored under the given \a role for the item referred to
     by the \a index.
 
-    \note If you do not have a value to return, return an \bold invalid
+    \note If you do not have a value to return, return an \b invalid
     QVariant instead of returning 0.
 
     \sa Qt::ItemDataRole, setData(), headerData()
@@ -2437,8 +2437,8 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
 
     \table 80%
     \row
-        \o  \inlineimage modelview-begin-insert-rows.png Inserting rows
-        \o  Specify the first and last row numbers for the span of rows you
+        \li  \inlineimage modelview-begin-insert-rows.png Inserting rows
+        \li  Specify the first and last row numbers for the span of rows you
             want to insert into an item in a model.
 
             For example, as shown in the diagram, we insert three rows before
@@ -2448,8 +2448,8 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
 
             This inserts the three new rows as rows 2, 3, and 4.
     \row
-        \o  \inlineimage modelview-begin-append-rows.png Appending rows
-        \o  To append rows, insert them after the last row.
+        \li  \inlineimage modelview-begin-append-rows.png Appending rows
+        \li  To append rows, insert them after the last row.
 
             For example, as shown in the diagram, we append two rows to a
             collection of 4 existing rows (ending in row 3), so \a first is 4
@@ -2503,8 +2503,8 @@ void QAbstractItemModel::endInsertRows()
 
     \table 80%
     \row
-        \o  \inlineimage modelview-begin-remove-rows.png Removing rows
-        \o  Specify the first and last row numbers for the span of rows you
+        \li  \inlineimage modelview-begin-remove-rows.png Removing rows
+        \li  Specify the first and last row numbers for the span of rows you
             want to remove from an item in a model.
 
             For example, as shown in the diagram, we remove the two rows from
@@ -2616,8 +2616,8 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
 
     \table 80%
     \row
-        \o  \inlineimage modelview-move-rows-1.png Moving rows to another parent
-        \o  Specify the first and last row numbers for the span of rows in
+        \li  \inlineimage modelview-move-rows-1.png Moving rows to another parent
+        \li  Specify the first and last row numbers for the span of rows in
             the source parent you want to move in the model. Also specify
             the row in the destination parent to move the span to.
 
@@ -2630,8 +2630,8 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
             This moves the three rows rows 2, 3, and 4 in the source to become 2, 3 and 4 in
             the destination. Other affected siblings are displaced accordingly.
     \row
-        \o  \inlineimage modelview-move-rows-2.png Moving rows to append to another parent
-        \o  To append rows to another parent, move them to after the last row.
+        \li  \inlineimage modelview-move-rows-2.png Moving rows to append to another parent
+        \li  To append rows to another parent, move them to after the last row.
 
             For example, as shown in the diagram, we move three rows to a
             collection of 6 existing rows (ending in row 5), so \a destinationChild is 6:
@@ -2640,8 +2640,8 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
 
             This moves the target rows to the end of the target parent as 6, 7 and 8.
     \row
-        \o  \inlineimage modelview-move-rows-3.png Moving rows in the same parent up
-        \o  To move rows within the same parent, specify the row to move them to.
+        \li  \inlineimage modelview-move-rows-3.png Moving rows in the same parent up
+        \li  To move rows within the same parent, specify the row to move them to.
 
             For example, as shown in the diagram, we move one item from row 2 to row 0,
             so \a sourceFirst and \a sourceLast are 2 and \a destinationChild is 0.
@@ -2655,8 +2655,8 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
             it is already)
 
     \row
-        \o  \inlineimage modelview-move-rows-4.png Moving rows in the same parent down
-        \o  To move rows within the same parent, specify the row to move them to.
+        \li  \inlineimage modelview-move-rows-4.png Moving rows in the same parent down
+        \li  To move rows within the same parent, specify the row to move them to.
 
             For example, as shown in the diagram, we move one item from row 2 to row 4,
             so \a sourceFirst and \a sourceLast are 2 and \a destinationChild is 4.
@@ -2737,8 +2737,8 @@ void QAbstractItemModel::endMoveRows()
 
     \table 80%
     \row
-        \o  \inlineimage modelview-begin-insert-columns.png Inserting columns
-        \o  Specify the first and last column numbers for the span of columns
+        \li  \inlineimage modelview-begin-insert-columns.png Inserting columns
+        \li  Specify the first and last column numbers for the span of columns
             you want to insert into an item in a model.
 
             For example, as shown in the diagram, we insert three columns
@@ -2748,8 +2748,8 @@ void QAbstractItemModel::endMoveRows()
 
             This inserts the three new columns as columns 4, 5, and 6.
     \row
-        \o  \inlineimage modelview-begin-append-columns.png Appending columns
-        \o  To append columns, insert them after the last column.
+        \li  \inlineimage modelview-begin-append-columns.png Appending columns
+        \li  To append columns, insert them after the last column.
 
             For example, as shown in the diagram, we append three columns to a
             collection of six existing columns (ending in column 5), so
@@ -2805,8 +2805,8 @@ void QAbstractItemModel::endInsertColumns()
 
     \table 80%
     \row
-        \o  \inlineimage modelview-begin-remove-columns.png Removing columns
-        \o  Specify the first and last column numbers for the span of columns
+        \li  \inlineimage modelview-begin-remove-columns.png Removing columns
+        \li  Specify the first and last column numbers for the span of columns
             you want to remove from an item in a model.
 
             For example, as shown in the diagram, we remove the three columns
@@ -3135,16 +3135,16 @@ QModelIndexList QAbstractItemModel::persistentIndexList() const
     are aware of any changes:
 
     \list
-    \o An insertRows() implementation must call beginInsertRows()
+    \li An insertRows() implementation must call beginInsertRows()
        \e before inserting new rows into the data structure, and it must
        call endInsertRows() \e{immediately afterwards}.
-    \o An insertColumns() implementation must call beginInsertColumns()
+    \li An insertColumns() implementation must call beginInsertColumns()
        \e before inserting new columns into the data structure, and it must
        call endInsertColumns() \e{immediately afterwards}.
-    \o A removeRows() implementation must call beginRemoveRows()
+    \li A removeRows() implementation must call beginRemoveRows()
        \e before the rows are removed from the data structure, and it must
        call endRemoveRows() \e{immediately afterwards}.
-    \o A removeColumns() implementation must call beginRemoveColumns()
+    \li A removeColumns() implementation must call beginRemoveColumns()
        \e before the columns are removed from the data structure, and it must
        call endRemoveColumns() \e{immediately afterwards}.
     \endlist
@@ -3271,10 +3271,10 @@ bool QAbstractTableModel::hasChildren(const QModelIndex &parent) const
     functions so that all connected views are aware of any changes:
 
     \list
-    \o An insertRows() implementation must call beginInsertRows()
+    \li An insertRows() implementation must call beginInsertRows()
        \e before inserting new rows into the data structure, and it must
        call endInsertRows() \e{immediately afterwards}.
-    \o A removeRows() implementation must call beginRemoveRows()
+    \li A removeRows() implementation must call beginRemoveRows()
        \e before the rows are removed from the data structure, and it must
        call endRemoveRows() \e{immediately afterwards}.
     \endlist

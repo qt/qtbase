@@ -62,11 +62,11 @@ QT_BEGIN_NAMESPACE
     Internally the data is stored as column-major format, so as to be optimal for
     passing to OpenGL functions, which expect column-major data.
 
-    When using these functions be aware that they return data in \bold{column-major}
+    When using these functions be aware that they return data in \b{column-major}
     format:
     \list
-    \o data()
-    \o constData()
+    \li data()
+    \li constData()
     \endlist
 
     \sa QVector3D, QGenericMatrix

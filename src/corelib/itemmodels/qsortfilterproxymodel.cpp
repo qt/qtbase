@@ -2531,16 +2531,16 @@ void QSortFilterProxyModel::invalidateFilter()
     the following QVariant types:
 
     \list
-    \o QVariant::Int
-    \o QVariant::UInt
-    \o QVariant::LongLong
-    \o QVariant::ULongLong
-    \o QVariant::Double
-    \o QVariant::Char
-    \o QVariant::Date
-    \o QVariant::Time
-    \o QVariant::DateTime
-    \o QVariant::String
+    \li QVariant::Int
+    \li QVariant::UInt
+    \li QVariant::LongLong
+    \li QVariant::ULongLong
+    \li QVariant::Double
+    \li QVariant::Char
+    \li QVariant::Date
+    \li QVariant::Time
+    \li QVariant::DateTime
+    \li QVariant::String
     \endlist
 
     Any other type will be converted to a QString using

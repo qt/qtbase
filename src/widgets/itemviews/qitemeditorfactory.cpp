@@ -102,16 +102,16 @@ public:
     types and the standard editors provided.
 
     \table
-    \header \o Type \o Editor Widget
-    \row    \o bool \o QComboBox
-    \row    \o double \o QDoubleSpinBox
-    \row    \o int \o{1,2} QSpinBox
-    \row    \o unsigned int
-    \row    \o QDate \o QDateEdit
-    \row    \o QDateTime \o QDateTimeEdit
-    \row    \o QPixmap \o QLabel
-    \row    \o QString \o QLineEdit
-    \row    \o QTime \o QTimeEdit
+    \header \li Type \li Editor Widget
+    \row    \li bool \li QComboBox
+    \row    \li double \li QDoubleSpinBox
+    \row    \li int \li{1,2} QSpinBox
+    \row    \li unsigned int
+    \row    \li QDate \li QDateEdit
+    \row    \li QDateTime \li QDateTimeEdit
+    \row    \li QPixmap \li QLabel
+    \row    \li QString \li QLineEdit
+    \row    \li QTime \li QTimeEdit
     \endtable
 
     Additional editors can be registered with the registerEditor() function.
@@ -168,7 +168,7 @@ QItemEditorFactory::~QItemEditorFactory()
 /*!
     Registers an item editor creator specified by \a creator for the given \a userType of data.
 
-    \bold{Note:} The factory takes ownership of the item editor creator and will destroy
+    \b{Note:} The factory takes ownership of the item editor creator and will destroy
     it if a new creator for the same type is registered later.
 
     \sa createEditor()

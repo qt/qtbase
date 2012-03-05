@@ -99,6 +99,8 @@ public:
         CdeKeyboardScheme
     };
 
+    virtual ~QPlatformTheme();
+
     virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
     virtual QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
 

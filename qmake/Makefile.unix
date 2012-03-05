@@ -73,7 +73,7 @@ CPPFLAGS = -g -I. -Igenerators -Igenerators/unix -Igenerators/win32 \
            -Igenerators/mac -Igenerators/integrity \
 	   -I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
 	   -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION) -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION)/QtCore \
-	   -I$(BUILD_PATH)/src/corelib/global -I$(BUILD_PATH)/src/corelib/xml \
+	   -I$(BUILD_PATH)/src/corelib/global \
 	   -I$(SOURCE_PATH)/tools/shared \
 	   -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED \
 	   -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_STL \

@@ -102,6 +102,11 @@ QT_BEGIN_NAMESPACE
     \sa themeHint(), QStyle::pixelMetric()
 */
 
+QPlatformTheme::~QPlatformTheme()
+{
+
+}
+
 QPlatformMenu *QPlatformTheme::createPlatformMenu(QMenu *menu) const
 {
     Q_UNUSED(menu);

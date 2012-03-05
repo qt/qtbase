@@ -366,10 +366,10 @@ void eatMouseMove()
     There 2 types of native dialogs:
 
     \list
-    \o Dialogs provided by the Comdlg32 library (ChooseColor,
+    \li Dialogs provided by the Comdlg32 library (ChooseColor,
        ChooseFont). They only provide a modal, blocking
        function call (with idle processing).
-    \o File dialogs are classes derived from IFileDialog. They
+    \li File dialogs are classes derived from IFileDialog. They
        inherit IModalWindow and their exec() method (calling
        IModalWindow::Show()) is similarly blocking, but methods
        like close() can be called on them from event handlers.

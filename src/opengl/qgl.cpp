@@ -169,17 +169,17 @@ QGLSignalProxy *QGLSignalProxy::instance()
 
     A display format has several characteristics:
     \list
-    \i \link setDoubleBuffer() Double or single buffering.\endlink
-    \i \link setDepth() Depth buffer.\endlink
-    \i \link setRgba() RGBA or color index mode.\endlink
-    \i \link setAlpha() Alpha channel.\endlink
-    \i \link setAccum() Accumulation buffer.\endlink
-    \i \link setStencil() Stencil buffer.\endlink
-    \i \link setStereo() Stereo buffers.\endlink
-    \i \link setDirectRendering() Direct rendering.\endlink
-    \i \link setOverlay() Presence of an overlay.\endlink
-    \i \link setPlane() Plane of an overlay.\endlink
-    \i \link setSampleBuffers() Multisample buffers.\endlink
+    \li \link setDoubleBuffer() Double or single buffering.\endlink
+    \li \link setDepth() Depth buffer.\endlink
+    \li \link setRgba() RGBA or color index mode.\endlink
+    \li \link setAlpha() Alpha channel.\endlink
+    \li \link setAccum() Accumulation buffer.\endlink
+    \li \link setStencil() Stencil buffer.\endlink
+    \li \link setStereo() Stereo buffers.\endlink
+    \li \link setDirectRendering() Direct rendering.\endlink
+    \li \link setOverlay() Presence of an overlay.\endlink
+    \li \link setPlane() Plane of an overlay.\endlink
+    \li \link setSampleBuffers() Multisample buffers.\endlink
     \endlist
 
     You can also specify preferred bit depths for the color buffer,
@@ -275,17 +275,17 @@ static inline GLint qgluProject(GLdouble objx, GLdouble objy, GLdouble objz,
 /*!
     Constructs a QGLFormat object with the following default settings:
     \list
-    \i \link setDoubleBuffer() Double buffer:\endlink Enabled.
-    \i \link setDepth() Depth buffer:\endlink Enabled.
-    \i \link setRgba() RGBA:\endlink Enabled (i.e., color index disabled).
-    \i \link setAlpha() Alpha channel:\endlink Disabled.
-    \i \link setAccum() Accumulator buffer:\endlink Disabled.
-    \i \link setStencil() Stencil buffer:\endlink Enabled.
-    \i \link setStereo() Stereo:\endlink Disabled.
-    \i \link setDirectRendering() Direct rendering:\endlink Enabled.
-    \i \link setOverlay() Overlay:\endlink Disabled.
-    \i \link setPlane() Plane:\endlink 0 (i.e., normal plane).
-    \i \link setSampleBuffers() Multisample buffers:\endlink Disabled.
+    \li \link setDoubleBuffer() Double buffer:\endlink Enabled.
+    \li \link setDepth() Depth buffer:\endlink Enabled.
+    \li \link setRgba() RGBA:\endlink Enabled (i.e., color index disabled).
+    \li \link setAlpha() Alpha channel:\endlink Disabled.
+    \li \link setAccum() Accumulator buffer:\endlink Disabled.
+    \li \link setStencil() Stencil buffer:\endlink Enabled.
+    \li \link setStereo() Stereo:\endlink Disabled.
+    \li \link setDirectRendering() Direct rendering:\endlink Enabled.
+    \li \link setOverlay() Overlay:\endlink Disabled.
+    \li \link setPlane() Plane:\endlink 0 (i.e., normal plane).
+    \li \link setSampleBuffers() Multisample buffers:\endlink Disabled.
     \endlist
 */
 
@@ -1339,17 +1339,17 @@ void QGLFormat::setDefaultFormat(const QGLFormat &f)
 
     The default overlay format is:
     \list
-    \i \link setDoubleBuffer() Double buffer:\endlink Disabled.
-    \i \link setDepth() Depth buffer:\endlink Disabled.
-    \i \link setRgba() RGBA:\endlink Disabled (i.e., color index enabled).
-    \i \link setAlpha() Alpha channel:\endlink Disabled.
-    \i \link setAccum() Accumulator buffer:\endlink Disabled.
-    \i \link setStencil() Stencil buffer:\endlink Disabled.
-    \i \link setStereo() Stereo:\endlink Disabled.
-    \i \link setDirectRendering() Direct rendering:\endlink Enabled.
-    \i \link setOverlay() Overlay:\endlink Disabled.
-    \i \link setSampleBuffers() Multisample buffers:\endlink Disabled.
-    \i \link setPlane() Plane:\endlink 1 (i.e., first overlay plane).
+    \li \link setDoubleBuffer() Double buffer:\endlink Disabled.
+    \li \link setDepth() Depth buffer:\endlink Disabled.
+    \li \link setRgba() RGBA:\endlink Disabled (i.e., color index enabled).
+    \li \link setAlpha() Alpha channel:\endlink Disabled.
+    \li \link setAccum() Accumulator buffer:\endlink Disabled.
+    \li \link setStencil() Stencil buffer:\endlink Disabled.
+    \li \link setStereo() Stereo:\endlink Disabled.
+    \li \link setDirectRendering() Direct rendering:\endlink Enabled.
+    \li \link setOverlay() Overlay:\endlink Disabled.
+    \li \link setSampleBuffers() Multisample buffers:\endlink Disabled.
+    \li \link setPlane() Plane:\endlink 1 (i.e., first overlay plane).
     \endlist
 
     \sa setDefaultFormat()
@@ -2642,10 +2642,10 @@ static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint tex
     This function supports the following use cases:
 
     \list
-    \i On OpenGL and OpenGL ES 1.x it draws the given texture, \a textureId,
+    \li On OpenGL and OpenGL ES 1.x it draws the given texture, \a textureId,
     to the given target rectangle, \a target, in OpenGL model space. The
     \a textureTarget should be a 2D texture target.
-    \i On OpenGL and OpenGL ES 2.x, if a painter is active, not inside a
+    \li On OpenGL and OpenGL ES 2.x, if a painter is active, not inside a
     beginNativePainting / endNativePainting block, and uses the
     engine with type QPaintEngine::OpenGL2, the function will draw the given
     texture, \a textureId, to the given target rectangle, \a target,
@@ -2709,10 +2709,10 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
     This function supports the following use cases:
 
     \list
-    \i By default it draws the given texture, \a textureId,
+    \li By default it draws the given texture, \a textureId,
     at the given \a point in OpenGL model space. The
     \a textureTarget should be a 2D texture target.
-    \i If a painter is active, not inside a
+    \li If a painter is active, not inside a
     beginNativePainting / endNativePainting block, and uses the
     engine with type QPaintEngine::OpenGL2, the function will draw the given
     texture, \a textureId, at the given \a point,
@@ -3104,7 +3104,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 
 /*! \fn int QGLContext::choosePixelFormat(void* dummyPfd, HDC pdc)
 
-    \bold{Win32 only:} This virtual function chooses a pixel format
+    \b{Win32 only:} This virtual function chooses a pixel format
     that matches the OpenGL \link setFormat() format\endlink.
     Reimplement this function in a subclass if you need a custom
     context.
@@ -3118,7 +3118,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 
 /*! \fn void *QGLContext::chooseVisual()
 
-  \bold{X11 only:} This virtual function tries to find a visual that
+  \b{X11 only:} This virtual function tries to find a visual that
   matches the format, reducing the demands if the original request
   cannot be met.
 
@@ -3132,7 +3132,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 /*! \fn void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
   \internal
 
-  \bold{X11 only:} This virtual function chooses a visual that matches
+  \b{X11 only:} This virtual function chooses a visual that matches
   the OpenGL \link format() format\endlink. Reimplement this function
   in a subclass if you need a custom visual.
 
@@ -3220,13 +3220,13 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     reimplement in your subclass to perform the typical OpenGL tasks:
 
     \list
-    \i paintGL() - Renders the OpenGL scene. Gets called whenever the widget
+    \li paintGL() - Renders the OpenGL scene. Gets called whenever the widget
     needs to be updated.
-    \i resizeGL() - Sets up the OpenGL viewport, projection, etc. Gets
+    \li resizeGL() - Sets up the OpenGL viewport, projection, etc. Gets
     called whenever the widget has been resized (and also when it
     is shown for the first time because all newly created widgets get a
     resize event automatically).
-    \i initializeGL() - Sets up the OpenGL rendering context, defines display
+    \li initializeGL() - Sets up the OpenGL rendering context, defines display
     lists, etc. Gets called once before the first time resizeGL() or
     paintGL() is called.
     \endlist
@@ -3277,9 +3277,9 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     implement some or all of these virtual methods:
 
     \list
-    \i paintOverlayGL()
-    \i resizeOverlayGL()
-    \i initializeOverlayGL()
+    \li paintOverlayGL()
+    \li resizeOverlayGL()
+    \li initializeOverlayGL()
     \endlist
 
     These methods work in the same way as the normal paintGL() etc.
@@ -3298,9 +3298,9 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     following way:
 
     \list
-    \o Reimplement the QGLWidget::initializeGL() and QGLWidget::resizeGL() to
+    \li Reimplement the QGLWidget::initializeGL() and QGLWidget::resizeGL() to
        set up the OpenGL state and provide a perspective transformation.
-    \o Reimplement QGLWidget::paintGL() to paint the 3D scene, calling only
+    \li Reimplement QGLWidget::paintGL() to paint the 3D scene, calling only
        OpenGL functions to draw on the widget.
     \endlist
 
@@ -3308,10 +3308,10 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     to reimplement QGLWidget::paintEvent() and do the following:
 
     \list
-    \o Construct a QPainter object.
-    \o Initialize it for use on the widget with the QPainter::begin() function.
-    \o Draw primitives using QPainter's member functions.
-    \o Call QPainter::end() to finish painting.
+    \li Construct a QPainter object.
+    \li Initialize it for use on the widget with the QPainter::begin() function.
+    \li Draw primitives using QPainter's member functions.
+    \li Call QPainter::end() to finish painting.
     \endlist
 
     Overpainting 2D content on top of 3D content takes a little more effort.
@@ -3323,7 +3323,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     As of Qt version 4.8, support for doing threaded GL rendering has
     been improved. There are three scenarios that we currently support:
     \list
-    \o 1. Buffer swapping in a thread.
+    \li 1. Buffer swapping in a thread.
 
     Swapping buffers in a double buffered context may be a
     synchronous, locking call that may be a costly operation in some
@@ -3350,7 +3350,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     having the main thread wait while the GPU finishes the swap
     operation. Note that this is highly implementation dependent.
 
-    \o 2. Texture uploading in a thread.
+    \li 2. Texture uploading in a thread.
 
     Doing texture uploads in a thread may be very useful for
     applications handling large amounts of images that needs to be
@@ -3363,7 +3363,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     thread. For each texture that is bound via bindTexture(), notify
     the main thread so that it can start using the texture.
 
-    \o 3. Using QPainter to draw into a QGLWidget in a thread.
+    \li 3. Using QPainter to draw into a QGLWidget in a thread.
 
     In Qt 4.8, it is possible to draw into a QGLWidget using a
     QPainter in a separate thread. Note that this is also possible for

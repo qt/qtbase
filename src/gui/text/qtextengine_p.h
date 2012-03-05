@@ -581,7 +581,10 @@ public:
     mutable FontEngineCache feCache;
 
     QString text;
-    QFont fnt;
+    mutable QFont fnt;
+#ifndef QT_NO_RAWFONT
+    QRawFont rawFont;
+#endif
     QTextBlock block;
 
     QTextOption option;
@@ -594,6 +597,9 @@ public:
     uint stackEngine : 1;
     uint forceJustification : 1;
     uint visualMovement : 1;
+#ifndef QT_NO_RAWFONT
+    uint useRawFont : 1;
+#endif
 
     int *underlinePositions;
 

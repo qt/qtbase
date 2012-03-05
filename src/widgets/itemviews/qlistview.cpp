@@ -108,12 +108,12 @@ QT_BEGIN_NAMESPACE
     be rendered as large or small icons depending on their iconSize().
 
     \table 100%
-    \row \o \inlineimage windowsxp-listview.png Screenshot of a Windows XP style list view
-         \o \inlineimage macintosh-listview.png Screenshot of a Macintosh style table view
-         \o \inlineimage plastique-listview.png Screenshot of a Plastique style table view
-    \row \o A \l{Windows XP Style Widget Gallery}{Windows XP style} list view.
-         \o A \l{Macintosh Style Widget Gallery}{Macintosh style} list view.
-         \o A \l{Plastique Style Widget Gallery}{Plastique style} list view.
+    \row \li \inlineimage windowsxp-listview.png Screenshot of a Windows XP style list view
+         \li \inlineimage macintosh-listview.png Screenshot of a Macintosh style table view
+         \li \inlineimage plastique-listview.png Screenshot of a Plastique style table view
+    \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} list view.
+         \li A \l{Macintosh Style Widget Gallery}{Macintosh style} list view.
+         \li A \l{Plastique Style Widget Gallery}{Plastique style} list view.
     \endtable
 
     \section1 Improving Performance

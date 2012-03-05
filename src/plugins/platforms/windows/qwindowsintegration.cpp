@@ -74,9 +74,9 @@ QT_BEGIN_NAMESPACE
 
     Currently implemented keys
     \list
-    \o handle (HWND)
-    \o getDC (DC)
-    \o releaseDC Releases the previously acquired DC and returns 0.
+    \li handle (HWND)
+    \li getDC (DC)
+    \li releaseDC Releases the previously acquired DC and returns 0.
     \endlist
 
     \ingroup qt-lighthouse-win

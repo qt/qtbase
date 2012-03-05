@@ -601,7 +601,7 @@ QT_END_INCLUDE_NAMESPACE
 #error Exactly one of IEEE_BIG_OR_LITTLE_ENDIAN, VAX, or IBM should be defined.
 #endif
 
-static inline ULong _getWord0(const NEEDS_VOLATILE double x)
+static inline ULong getWord0(const NEEDS_VOLATILE double x)
 {
     const NEEDS_VOLATILE uchar *ptr = reinterpret_cast<const NEEDS_VOLATILE uchar *>(&x);
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
@@ -611,7 +611,7 @@ static inline ULong _getWord0(const NEEDS_VOLATILE double x)
     }
 }
 
-static inline void _setWord0(NEEDS_VOLATILE double *x, ULong l)
+static inline void setWord0(NEEDS_VOLATILE double *x, ULong l)
 {
     NEEDS_VOLATILE uchar *ptr = reinterpret_cast<NEEDS_VOLATILE uchar *>(x);
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
@@ -627,7 +627,7 @@ static inline void _setWord0(NEEDS_VOLATILE double *x, ULong l)
     }
 }
 
-static inline ULong _getWord1(const NEEDS_VOLATILE double x)
+static inline ULong getWord1(const NEEDS_VOLATILE double x)
 {
     const NEEDS_VOLATILE uchar *ptr = reinterpret_cast<const NEEDS_VOLATILE uchar *>(&x);
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
@@ -636,7 +636,7 @@ static inline ULong _getWord1(const NEEDS_VOLATILE double x)
         return (ptr[3]<<24) + (ptr[2]<<16) + (ptr[1]<<8) + ptr[0];
     }
 }
-static inline void _setWord1(NEEDS_VOLATILE double *x, ULong l)
+static inline void setWord1(NEEDS_VOLATILE double *x, ULong l)
 {
     NEEDS_VOLATILE uchar *ptr = reinterpret_cast<uchar NEEDS_VOLATILE *>(x);
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
@@ -650,42 +650,6 @@ static inline void _setWord1(NEEDS_VOLATILE double *x, ULong l)
         ptr[1] = uchar(l>>8);
         ptr[0] = uchar(l);
     }
-}
-
-static inline ULong getWord0(const NEEDS_VOLATILE double x)
-{
-#ifdef QT_ARMFPA
-    return _getWord1(x);
-#else
-    return _getWord0(x);
-#endif
-}
-
-static inline void setWord0(NEEDS_VOLATILE double *x, ULong l)
-{
-#ifdef QT_ARMFPA
-    _setWord1(x, l);
-#else
-    _setWord0(x, l);
-#endif
-}
-
-static inline ULong getWord1(const NEEDS_VOLATILE double x)
-{
-#ifdef QT_ARMFPA
-    return _getWord0(x);
-#else
-    return _getWord1(x);
-#endif
-}
-
-static inline void setWord1(NEEDS_VOLATILE double *x, ULong l)
-{
-#ifdef QT_ARMFPA
-    _setWord0(x, l);
-#else
-    _setWord1(x, l);
-#endif
 }
 
 static inline void Storeinc(ULong *&a, const ULong &b, const ULong &c)

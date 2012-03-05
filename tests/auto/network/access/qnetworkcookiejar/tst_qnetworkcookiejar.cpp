@@ -278,6 +278,8 @@ void tst_QNetworkCookieJar::cookiesForUrl_data()
     QTest::newRow("no-match-5") << allCookies << "http://qt.nokia.com" << result;
     QTest::newRow("no-match-6") << allCookies << "http://nokia.com/webinar" << result;
     QTest::newRow("no-match-7") << allCookies << "http://qt.nokia.com/webinar" << result;
+    QTest::newRow("no-match-8") << allCookies << "http://qt.nokia.com./web" << result;
+    QTest::newRow("no-match-9") << allCookies << "http://nokia.com./web" << result;
 
     result = allCookies;
     QTest::newRow("match-1") << allCookies << "http://nokia.com/web" << result;
@@ -350,6 +352,16 @@ void tst_QNetworkCookieJar::cookiesForUrl_data()
     QTest::newRow("match-secure-1") << allCookies << "https://nokia.com/web" << result;
     QTest::newRow("match-secure-2") << allCookies << "https://qt.nokia.com/web" << result;
 
+    // domain ending in .
+    allCookies.clear();
+    result.clear();
+    QNetworkCookie cookieDot;
+    cookieDot.setDomain(".example.com.");
+    cookieDot.setName("a");
+    allCookies += cookieDot;
+    QTest::newRow("no-match-domain-dot") << allCookies << "http://example.com" << result;
+    result += cookieDot;
+    QTest::newRow("match-domain-dot") << allCookies << "http://example.com." << result;
 }
 
 void tst_QNetworkCookieJar::cookiesForUrl()

@@ -130,12 +130,12 @@ QT_BEGIN_NAMESPACE
     \fn bool QFileSystemModel::rmdir(const QModelIndex &index) const
 
     Removes the directory corresponding to the model item \a index in the
-    file system model and \bold{deletes the corresponding directory from the
+    file system model and \b{deletes the corresponding directory from the
     file system}, returning true if successful. If the directory cannot be
     removed, false is returned.
 
     \warning This function deletes directories from the file system; it does
-    \bold{not} move them to a location where they can be recovered.
+    \b{not} move them to a location where they can be recovered.
 
     \sa remove()
 */
@@ -185,11 +185,11 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QFileSystemModel::remove(const QModelIndex &index) const
 
-    Removes the model item \a index from the file system model and \bold{deletes the
+    Removes the model item \a index from the file system model and \b{deletes the
     corresponding file from the file system}, returning true if successful. If the
     item cannot be removed, false is returned.
 
-    \warning This function deletes files from the file system; it does \bold{not}
+    \warning This function deletes files from the file system; it does \b{not}
     move them to a location where they can be recovered.
 
     \sa rmdir()

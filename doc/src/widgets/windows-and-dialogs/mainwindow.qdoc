@@ -94,13 +94,13 @@
     most common usage transparently.
 
     \list
-    \o \bold{Including the window frame:}
+    \li \b{Including the window frame:}
         \l{QWidget::x()}{x()},
         \l{QWidget::y()}{y()},
         \l{QWidget::frameGeometry()}{frameGeometry()},
         \l{QWidget::pos()}{pos()}, and
         \l{QWidget::move()}{move()}.
-    \o \bold{Excluding the window frame:}
+    \li \b{Excluding the window frame:}
         \l{QWidget::geometry()}{geometry()},
         \l{QWidget::width()}{width()},
         \l{QWidget::height()}{height()},
@@ -169,17 +169,17 @@
     associated user interface components:
 
     \list
-    \o QMainWindow remains the central class around which applications
+    \li QMainWindow remains the central class around which applications
        can be built. The interface to this class has been simplified, and
        much of the functionality previously included in this class is now
        present in the companion QDockWidget and QToolBar classes.
 
-    \o QDockWidget provides a widget that can be used to create
+    \li QDockWidget provides a widget that can be used to create
        detachable tool palettes or helper windows. Dock widgets keep track
        of their own properties, and they can be moved, closed, and floated
        as external windows.
 
-    \o QToolBar provides a generic toolbar widget that can hold a
+    \li QToolBar provides a generic toolbar widget that can hold a
        number of different action-related widgets, such as buttons,
        drop-down menus, comboboxes, and spin boxes. The emphasis on a
        unified action model in Qt 4 means that toolbars cooperate well

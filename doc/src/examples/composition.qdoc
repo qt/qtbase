@@ -33,10 +33,10 @@
 
     \image composition-demo.png
 
-    The two most common forms of composition are \bold{Source} and \bold{SourceOver}.
-    \bold{Source} is used to draw opaque objects onto a paint device. In this mode,
+    The two most common forms of composition are \b{Source} and \b{SourceOver}.
+    \b{Source} is used to draw opaque objects onto a paint device. In this mode,
     each pixel in the source replaces the corresponding pixel in the destination.
-    In \bold{SourceOver} composition mode, the source object is transparent and is
+    In \b{SourceOver} composition mode, the source object is transparent and is
     drawn on top of the destination.
 
     In addition to these standard modes, Qt defines the complete set of composition modes

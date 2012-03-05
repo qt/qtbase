@@ -569,22 +569,22 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
 
     \list
 
-    \i If \a field is character data, the value is returned enclosed
+    \li If \a field is character data, the value is returned enclosed
     in single quotation marks, which is appropriate for many SQL
     databases. Any embedded single-quote characters are escaped
     (replaced with two single-quote characters). If \a trimStrings is
     true (the default is false), all trailing whitespace is trimmed
     from the field.
 
-    \i If \a field is date/time data, the value is formatted in ISO
+    \li If \a field is date/time data, the value is formatted in ISO
     format and enclosed in single quotation marks. If the date/time
     data is invalid, "NULL" is returned.
 
-    \i If \a field is \link QByteArray bytearray\endlink data, and the
+    \li If \a field is \link QByteArray bytearray\endlink data, and the
     driver can edit binary fields, the value is formatted as a
     hexadecimal string.
 
-    \i For any other field type, toString() is called on its value
+    \li For any other field type, toString() is called on its value
     and the result of this is returned.
 
     \endlist

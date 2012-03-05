@@ -37,10 +37,10 @@
     Specifically, the example demonstrates the following:
 
     \list
-      \o Use of a text editor with a text document
-      \o Insertion of tables and frames into a document
-      \o Navigation within a table
-      \o Insert text in different styles
+      \li Use of a text editor with a text document
+      \li Insertion of tables and frames into a document
+      \li Navigation within a table
+      \li Insert text in different styles
     \endlist
 
     The rich text editor used to display the document is used within a main window

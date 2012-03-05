@@ -38,11 +38,11 @@
 
 \table 100%
 \row
-\o \image cde-checkbox.png
+\li \image cde-checkbox.png
    \caption The QCheckBox widget provides a checkbox with a text label.
-\o \image cde-radiobutton.png
+\li \image cde-radiobutton.png
    \caption The QRadioButton widget provides a radio button with a text or pixmap label.
-\o \image cde-pushbutton.png 
+\li \image cde-pushbutton.png
  \image cde-toolbutton.png
  \caption The QPushButton widget provides a command button.
 \endtable
@@ -51,13 +51,13 @@
 
 \table 100%
 \row
-\o \image cde-groupbox.png
+\li \image cde-groupbox.png
    The The QGroupBox widget provides a group box frame with a title.
-\o \image cde-tabwidget.png
+\li \image cde-tabwidget.png
    The QTabWidget class provides a stack of tabbed widgets.
-\o \image cde-frame.png
+\li \image cde-frame.png
    The QFrame widget provides a simple decorated container for other widgets.
-\o \image cde-toolbox.png
+\li \image cde-toolbox.png
    The QToolBox class provides a column of tabbed widget items.
 \endtable
 
@@ -65,24 +65,24 @@
 
 \table 100%
 \row
-\o \image cde-listview.png
+\li \image cde-listview.png
    The QListView class provides a default model/view implementation of a list/icon view. The QListWidget class provides a classic item-based list/icon view.
-\o \image cde-treeview.png
+\li \image cde-treeview.png
    The QTreeView class provides a default model/view implementation of a tree view. The QTreeWidget class provides a classic item-based tree view.
-\o \image cde-tableview.png
-   The QTableView class provides a default model/view implementation of a table view. The QTableWidget class provides a classic item-based table view.\o 
-\o 
+\li \image cde-tableview.png
+   The QTableView class provides a default model/view implementation of a table view. The QTableWidget class provides a classic item-based table view.\li
+\li
 \endtable
 
 \section2 Display Widgets
 
 \table 100%
 \row
-\o \image cde-progressbar.png
+\li \image cde-progressbar.png
    The QProgressBar widget provides a horizontal progress bar.
-\o \image cde-label.png
+\li \image cde-label.png
    The QLabel widget provides a text or image display.
-\o \image cde-lcdnumber.png
+\li \image cde-lcdnumber.png
    The QLCDNumber widget displays a number with LCD-like digits.
 \endtable
 
@@ -90,43 +90,43 @@
 
 \table 100%
 \row
-\o \image cde-lineedit.png
+\li \image cde-lineedit.png
    The QLineEdit widget is a one-line text editor.
-\o \image cde-dateedit.png
+\li \image cde-dateedit.png
    The QDateEdit class provides a widget for editing dates.
-\o \image cde-timeedit.png
+\li \image cde-timeedit.png
    The QTimeEdit class provides a widget for editing times.
-\o \image cde-datetimeedit.png
+\li \image cde-datetimeedit.png
    The QDateTimeEdit class provides a widget for editing dates and times.
 \endtable
 
 \table 100%
 \row
-\o \image cde-slider.png
+\li \image cde-slider.png
    The QSlider widget provides a vertical or horizontal slider.
-\o \image cde-combobox.png
+\li \image cde-combobox.png
    The QComboBox widget is a combined button and pop-up list.
-\o \image cde-spinbox.png
+\li \image cde-spinbox.png
    The QSpinBox class provides a spin box widget.
 \endtable
 
 \table 100%
 \row
-\o \image cde-fontcombobox.png
+\li \image cde-fontcombobox.png
    The QFontComboBox widget is a specialized combobox that enables fonts to be selected from a pop-up list containing previews of available fonts.
-\o \image cde-doublespinbox.png
+\li \image cde-doublespinbox.png
    The QDoubleSpinBox class provides a spin box widget that allows double precision floating point numbers to be entered.
-\o \image cde-horizontalscrollbar.png
+\li \image cde-horizontalscrollbar.png
    The QScrollBar widget provides a vertical or horizontal scroll bar. Here, we show a scroll bar with horizontal orientation.
 \endtable
 
 \table 100%
 \row
-\o \image cde-dial.png
+\li \image cde-dial.png
    The QDial class provides a rounded range control (like a speedometer or potentiometer).
-\o \image cde-textedit.png
+\li \image cde-textedit.png
    The QTextEdit class provides a widget that is used to edit and display both plain and rich text.
-\o \image cde-calendarwidget.png
+\li \image cde-calendarwidget.png
    The QCalendarWidget class provides a monthly calendar widget that can be used to select dates.
 \endtable
 

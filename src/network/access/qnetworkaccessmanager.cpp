@@ -451,12 +451,12 @@ QNetworkProxyFactory *QNetworkAccessManager::proxyFactory() const
 
     For example, a proxy factory could apply the following rules:
     \list
-      \o if the target address is in the local network (for example,
+      \li if the target address is in the local network (for example,
          if the hostname contains no dots or if it's an IP address in
          the organization's range), return QNetworkProxy::NoProxy
-      \o if the request is FTP, return an FTP proxy
-      \o if the request is HTTP or HTTPS, then return an HTTP proxy
-      \o otherwise, return a SOCKSv5 proxy server
+      \li if the request is FTP, return an FTP proxy
+      \li if the request is HTTP or HTTPS, then return an HTTP proxy
+      \li otherwise, return a SOCKSv5 proxy server
     \endlist
 
     The lifetime of the object \a factory will be managed by

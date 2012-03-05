@@ -772,7 +772,7 @@ void tst_QImageReader::animatedGif()
     }
 }
 
-// http://bugreports.qt.nokia.com/browse/QTBUG-6696
+// http://bugreports.qt-project.org/browse/QTBUG-6696
 // Check the count of images in various call orders...
 void tst_QImageReader::gifImageCount()
 {
@@ -1368,7 +1368,7 @@ void tst_QImageReader::readFromResources()
     SKIP_IF_UNSUPPORTED(format);
 
     for (int i = 0; i < 2; ++i) {
-        QString file = i ? (":/images/" + fileName) : (prefix + fileName);
+        QString file = i ? QString(QStringLiteral(":/images/") + fileName) : QString(prefix + fileName);
         {
             // suppress warnings if we expect them
             if (!message.isEmpty()) {

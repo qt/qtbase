@@ -84,7 +84,6 @@ public:
           pressed(-1),
           hover(-1),
           length(0),
-          sectionCount(0),
           movableSections(false),
           clickableSections(false),
           highlightSelected(false),
@@ -137,10 +136,12 @@ public:
     inline void prepareSectionSelected() {
         if (!selectionModel || !selectionModel->hasSelection())
             sectionSelected.clear();
-        else if (sectionSelected.count() != sectionCount * 2)
-            sectionSelected.fill(false, sectionCount * 2);
+        else if (sectionSelected.count() != sectionCount() * 2)
+            sectionSelected.fill(false, sectionCount() * 2);
         else sectionSelected.fill(false);
     }
+
+    inline int sectionCount() const {return sectionSpans.count();}
 
     inline bool reverse() const {
         return orientation == Qt::Horizontal && q_func()->isRightToLeft();
@@ -182,11 +183,11 @@ public:
     }
 
     inline void initializeIndexMapping() const {
-        if (visualIndices.count() != sectionCount
-            || logicalIndices.count() != sectionCount) {
-            visualIndices.resize(sectionCount);
-            logicalIndices.resize(sectionCount);
-            for (int s = 0; s < sectionCount; ++s) {
+        if (visualIndices.count() != sectionCount()
+            || logicalIndices.count() != sectionCount()) {
+            visualIndices.resize(sectionCount());
+            logicalIndices.resize(sectionCount());
+            for (int s = 0; s < sectionCount(); ++s) {
                 visualIndices[s] = s;
                 logicalIndices[s] = s;
             }
@@ -194,7 +195,7 @@ public:
     }
 
     inline void clearCascadingSections() {
-        firstCascadingSection = sectionCount;
+        firstCascadingSection = sectionSpans.count();
         lastCascadingSection = 0;
         cascadingSectionSize.clear();
     }
@@ -265,7 +266,6 @@ public:
     int hover;
 
     int length;
-    int sectionCount;
     bool movableSections;
     bool clickableSections;
     bool highlightSelected;

@@ -560,7 +560,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 
 /*! \typedef QJsonArray::iterator::iterator_category
 
-  A synonym for \i {std::random_access_iterator_tag} indicating
+  A synonym for \e {std::random_access_iterator_tag} indicating
   this iterator is a random access iterator.
 */
 
@@ -794,7 +794,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 
 /*! \typedef QJsonArray::const_iterator::iterator_category
 
-  A synonym for \i {std::random_access_iterator_tag} indicating
+  A synonym for \e {std::random_access_iterator_tag} indicating
   this iterator is a random access iterator.
 */
 

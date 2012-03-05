@@ -82,18 +82,18 @@ QT_BEGIN_NAMESPACE
 
     \list
 
-    \i For a line edit that accepts integers from 10 to 1000 inclusive,
+    \li For a line edit that accepts integers from 10 to 1000 inclusive,
     42 and 123 are \l Acceptable, the empty string and 5 are \l
     Intermediate, and "asdf" and 1114 is \l Invalid.
 
-    \i For an editable combobox that accepts URLs, any well-formed URL
+    \li For an editable combobox that accepts URLs, any well-formed URL
     is \l Acceptable, "http://example.com/," is \l Intermediate
     (it might be a cut and paste action that accidentally took in a
     comma at the end), the empty string is \l Intermediate (the user
     might select and delete all of the text in preparation for entering
     a new URL) and "http:///./" is \l Invalid.
 
-    \i For a spin box that accepts lengths, "11cm" and "1in" are \l
+    \li For a spin box that accepts lengths, "11cm" and "1in" are \l
     Acceptable, "11" and the empty string are \l Intermediate, and
     "http://example.com" and "hour" are \l Invalid.
 
@@ -801,13 +801,13 @@ QDoubleValidator::Notation QDoubleValidator::notation() const
 
     When QRegExpValidator determines whether a string is \l Acceptable
     or not, the regexp is treated as if it begins with the start of string
-    assertion (\bold{^}) and ends with the end of string assertion
-    (\bold{$}); the match is against the entire input string, or from
+    assertion (\b{^}) and ends with the end of string assertion
+    (\b{$}); the match is against the entire input string, or from
     the given position if a start position greater than zero is given.
 
     If a string is a prefix of an \l Acceptable string, it is considered
     \l Intermediate. For example, "" and "A" are \l Intermediate for the
-    regexp \bold{[A-Z][0-9]} (whereas "_" would be \l Invalid).
+    regexp \b{[A-Z][0-9]} (whereas "_" would be \l Invalid).
 
     For a brief introduction to Qt's regexp engine, see \l QRegExp.
 
@@ -837,7 +837,7 @@ QRegExpValidator::QRegExpValidator(QObject *parent)
     accepts all strings that match the regular expression \a rx.
 
     The match is made against the entire string; e.g. if the regexp is
-    \bold{[A-Fa-f0-9]+} it will be treated as \bold{^[A-Fa-f0-9]+$}.
+    \b{[A-Fa-f0-9]+} it will be treated as \b{^[A-Fa-f0-9]+$}.
 */
 
 QRegExpValidator::QRegExpValidator(const QRegExp& rx, QObject *parent)
@@ -862,7 +862,7 @@ QRegExpValidator::~QRegExpValidator()
 
     The \a pos parameter is set to the length of the \a input parameter.
 
-    For example, if the regular expression is \bold{\\w\\d\\d}
+    For example, if the regular expression is \b{\\w\\d\\d}
     (word-character, digit, digit) then "A57" is \l Acceptable,
     "E5" is \l Intermediate, and "+9" is \l Invalid.
 

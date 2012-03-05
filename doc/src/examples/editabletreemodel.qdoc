@@ -82,8 +82,8 @@
 
     \target Relations-between-internal-items
     \table
-    \row \o \inlineimage itemviews-editabletreemodel-items.png
-    \o \bold{Relations between internal items}
+    \row \li \inlineimage itemviews-editabletreemodel-items.png
+    \li \b{Relations between internal items}
 
     When designing a data structure for use with a custom model, it is useful
     to expose each item's parent via a function like
@@ -99,10 +99,10 @@
     \l{TreeItem::parent}{parent()} and \l{TreeItem::child}{child()}
     functions.
 
-    In the example shown, two top-level items, \bold{A} and
-    \bold{B}, can be obtained from the root item by calling its child()
+    In the example shown, two top-level items, \b{A} and
+    \b{B}, can be obtained from the root item by calling its child()
     function, and each of these items return the root node from their
-    parent() functions, though this is only shown for item \bold{A}.
+    parent() functions, though this is only shown for item \b{A}.
     \endtable
 
     Each \c TreeItem stores data for each column in the row it represents
@@ -126,23 +126,23 @@
     horizontal header titles.
 
     \table
-    \row \o \inlineimage itemviews-editabletreemodel-model.png
-    \o \bold{Accessing data via the model}
+    \row \li \inlineimage itemviews-editabletreemodel-model.png
+    \li \b{Accessing data via the model}
 
     In the case shown in the diagram, the piece of information represented
-    by \bold{a} can be obtained using the standard model/view API:
+    by \b{a} can be obtained using the standard model/view API:
 
     \snippet doc/src/snippets/code/doc_src_examples_editabletreemodel.cpp 0
 
     Since each items holds pieces of data for each column in a given row,
     there can be many model indexes that map to the same \c TreeItem object.
-    For example, the information represented by \bold{b} can be obtained
+    For example, the information represented by \b{b} can be obtained
     using the following code:
 
     \snippet doc/src/snippets/code/doc_src_examples_editabletreemodel.cpp 1
 
     The same underlying \c TreeItem would be accessed to obtain information
-    for the other model indexes in the same row as \bold{b}.
+    for the other model indexes in the same row as \b{b}.
     \endtable
 
     In the model class, \c TreeModel, we relate \c TreeItem objects to
@@ -166,20 +166,20 @@
     that the model does not attempt to access items that have been deleted.
 
     \table
-    \row \o \bold{Storing information in the underlying data structure}
+    \row \li \b{Storing information in the underlying data structure}
 
     Several pieces of data are stored as QVariant objects in the \c itemData
     member of each \c TreeItem instance
 
     The diagram shows how pieces of information,
-    represented by the labels \bold{a}, \bold{b} and \bold{c} in the
-    previous two diagrams, are stored in items \bold{A}, \bold{B} and
-    \bold{C} in the underlying data structure. Note that pieces of
+    represented by the labels \b{a}, \b{b} and \b{c} in the
+    previous two diagrams, are stored in items \b{A}, \b{B} and
+    \b{C} in the underlying data structure. Note that pieces of
     information from the same row in the model are all obtained from the
     same item. Each element in a list corresponds to a piece of information
     exposed by each column in a given row in the model.
 
-    \o \inlineimage itemviews-editabletreemodel-values.png
+    \li \inlineimage itemviews-editabletreemodel-values.png
     \endtable
 
     Since the \c TreeModel implementation has been designed for use with
@@ -202,8 +202,8 @@
     \target Relating-items-using-model-indexes
     \table
     \row
-    \o \inlineimage itemviews-editabletreemodel-indexes.png
-    \o \bold{Relating items using model indexes}
+    \li \inlineimage itemviews-editabletreemodel-indexes.png
+    \li \b{Relating items using model indexes}
 
     As with the \l{itemviews/simpletreemodel}{Simple Tree Model} example,
     the \c TreeModel needs to be able to take a model index, find the
@@ -215,13 +215,13 @@
     an item supplied by the caller, using the items shown in a
     \l{Relations-between-internal-items}{previous diagram}.
 
-    A pointer to item \bold{C} is obtained from the corresponding model index
+    A pointer to item \b{C} is obtained from the corresponding model index
     using the \l{QModelIndex::internalPointer()} function. The pointer was
     stored internally in the index when it was created. Since the child
     contains a pointer to its parent, we use its \l{TreeItem::parent}{parent()}
-    function to obtain a pointer to item \bold{B}. The parent model index is
+    function to obtain a pointer to item \b{B}. The parent model index is
     created using the QAbstractItemModel::createIndex() function, passing
-    the pointer to item \bold{B} as the internal pointer.
+    the pointer to item \b{B} as the internal pointer.
     \endtable
 
     \section1 TreeItem Class Definition

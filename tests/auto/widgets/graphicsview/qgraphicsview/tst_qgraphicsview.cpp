@@ -69,6 +69,7 @@
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QDesktopWidget>
+#include <private/qgraphicsscene_p.h>
 #include <private/qgraphicsview_p.h>
 #include "../../../platformquirks.h"
 #include "../../../shared/platforminputcontext.h"
@@ -136,6 +137,14 @@ protected:
     QEvent::Type spied;
 };
 
+#if defined QT_BUILD_INTERNAL
+class FriendlyGraphicsScene : public QGraphicsScene
+{
+    friend class tst_QGraphicsView;
+    Q_DECLARE_PRIVATE(QGraphicsScene);
+};
+#endif
+
 class tst_QGraphicsView : public QObject
 {
     Q_OBJECT
@@ -167,6 +176,10 @@ private slots:
     void ensureVisibleRect();
     void fitInView();
     void itemsAtPoint();
+#if defined QT_BUILD_INTERNAL
+    void itemsAtPosition_data();
+    void itemsAtPosition();
+#endif
     void itemsInRect();
     void itemsInRect_cosmeticAdjust_data();
     void itemsInRect_cosmeticAdjust();
@@ -1353,6 +1366,55 @@ void tst_QGraphicsView::itemsAtPoint()
     QCOMPARE(items.takeFirst()->zValue(), qreal(0));
     QCOMPARE(items.takeFirst()->zValue(), qreal(-1));
 }
+
+#if defined QT_BUILD_INTERNAL
+void tst_QGraphicsView::itemsAtPosition_data()
+{
+    QTest::addColumn<float>("rotation");
+    QTest::addColumn<float>("scale");
+    QTest::addColumn<QPoint>("viewPos");
+    QTest::addColumn<bool>("ignoreTransform");
+    QTest::addColumn<bool>("hit");
+    QTest::newRow("scaled + ignore transform, no hit") << 0.0f << 1000.0f << QPoint(0, 0) << true << false;
+    QTest::newRow("scaled + ignore transform, hit") << 0.0f << 1000.0f << QPoint(100, 100) << true << true;
+    QTest::newRow("rotated + scaled, no hit") << 45.0f << 2.0f << QPoint(90, 90) << false << false;
+    QTest::newRow("rotated + scaled, hit") << 45.0f << 2.0f << QPoint(100, 100) << false << true;
+}
+
+void tst_QGraphicsView::itemsAtPosition()
+{
+    QFETCH(float, rotation);
+    QFETCH(float, scale);
+    QFETCH(QPoint, viewPos);
+    QFETCH(bool, ignoreTransform);
+    QFETCH(bool, hit);
+
+    FriendlyGraphicsScene scene;
+    scene.setSceneRect(QRect(-100, -100, 200, 200));
+    QGraphicsItem *item = scene.addRect(-5, -5, 10, 10);
+
+    if (ignoreTransform)
+        item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+
+    QGraphicsView view;
+    view.setFrameStyle(QFrame::NoFrame);
+    view.resize(200, 200);
+    view.scale(scale, scale);
+    view.rotate(rotation);
+    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setScene(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QPoint screenPos = view.viewport()->mapToGlobal(viewPos);
+    QPointF scenePos = view.mapToScene(viewPos);
+    QGraphicsScenePrivate *viewPrivate = scene.d_func();
+    QList<QGraphicsItem *> items;
+    items = viewPrivate->itemsAtPosition(screenPos, scenePos, view.viewport());
+    QCOMPARE(!items.empty(), hit);
+}
+#endif
 
 void tst_QGraphicsView::itemsInRect()
 {

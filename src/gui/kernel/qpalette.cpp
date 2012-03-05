@@ -342,9 +342,9 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     The color groups:
     \list
-    \i The Active group is used for the window that has keyboard focus.
-    \i The Inactive group is used for other windows.
-    \i The Disabled group is used for widgets (not windows) that are
+    \li The Active group is used for the window that has keyboard focus.
+    \li The Inactive group is used for other windows.
+    \li The Disabled group is used for widgets (not windows) that are
     disabled for some reason.
     \endlist
 

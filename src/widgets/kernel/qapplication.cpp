@@ -185,7 +185,7 @@ QApplicationPrivate::~QApplicationPrivate()
     for QWidget-based applications. It handles widget specific initialization,
     finalization, and provides session management.
 
-    For any GUI application using Qt, there is precisely \bold one QApplication
+    For any GUI application using Qt, there is precisely \b one QApplication
     object, no matter whether the application has 0, 1, 2 or more windows at
     any given time. For non-QWidget based Qt applications, use QGuiApplication instead,
     as it does not depend on the \l QtWidgets library.
@@ -195,41 +195,41 @@ QApplicationPrivate::~QApplicationPrivate()
 
     QApplication's main areas of responsibility are:
         \list
-            \o  It initializes the application with the user's desktop settings
+            \li  It initializes the application with the user's desktop settings
                 such as palette(), font() and doubleClickInterval(). It keeps
                 track of these properties in case the user changes the desktop
                 globally, for example through some kind of control panel.
 
-            \o  It performs event handling, meaning that it receives events
+            \li  It performs event handling, meaning that it receives events
                 from the underlying window system and dispatches them to the
                 relevant widgets. By using sendEvent() and postEvent() you can
                 send your own events to widgets.
 
-            \o  It parses common command line arguments and sets its internal
+            \li  It parses common command line arguments and sets its internal
                 state accordingly. See the \l{QApplication::QApplication()}
                 {constructor documentation} below for more details.
 
-            \o  It defines the application's look and feel, which is
+            \li  It defines the application's look and feel, which is
                 encapsulated in a QStyle object. This can be changed at runtime
                 with setStyle().
 
-            \o  It specifies how the application is to allocate colors. See
+            \li  It specifies how the application is to allocate colors. See
                 setColorSpec() for details.
 
-            \o  It provides localization of strings that are visible to the
+            \li  It provides localization of strings that are visible to the
                 user via translate().
 
-            \o  It provides some magical objects like the desktop() and the
+            \li  It provides some magical objects like the desktop() and the
                 clipboard().
 
-            \o  It knows about the application's windows. You can ask which
+            \li  It knows about the application's windows. You can ask which
                 widget is at a certain position using widgetAt(), get a list of
                 topLevelWidgets() and closeAllWindows(), etc.
 
-            \o  It manages the application's mouse cursor handling, see
+            \li  It manages the application's mouse cursor handling, see
                 setOverrideCursor()
 
-            \o  It provides support for sophisticated \l{Session Management}
+            \li  It provides support for sophisticated \l{Session Management}
                 {session management}. This makes it possible for applications
                 to terminate gracefully when the user logs out, to cancel a
                 shutdown process if termination isn't possible and even to
@@ -246,11 +246,11 @@ QApplicationPrivate::~QApplicationPrivate()
 
     \table
     \header
-        \o{2,1} Groups of functions
+        \li{2,1} Groups of functions
 
         \row
-        \o  System settings
-        \o  desktopSettingsAware(),
+        \li  System settings
+        \li  desktopSettingsAware(),
             setDesktopSettingsAware(),
             cursorFlashTime(),
             setCursorFlashTime(),
@@ -266,8 +266,8 @@ QApplicationPrivate::~QApplicationPrivate()
             fontMetrics().
 
         \row
-        \o  Event handling
-        \o  exec(),
+        \li  Event handling
+        \li  exec(),
             processEvents(),
             exit(),
             quit().
@@ -279,24 +279,24 @@ QApplicationPrivate::~QApplicationPrivate()
             notify().
 
         \row
-        \o  GUI Styles
-        \o  style(),
+        \li  GUI Styles
+        \li  style(),
             setStyle().
 
         \row
-        \o  Color usage
-        \o  colorSpec(),
+        \li  Color usage
+        \li  colorSpec(),
             setColorSpec().
 
         \row
-        \o  Text handling
-        \o  installTranslator(),
+        \li  Text handling
+        \li  installTranslator(),
             removeTranslator()
             translate().
 
         \row
-        \o  Widgets
-        \o  allWidgets(),
+        \li  Widgets
+        \li  allWidgets(),
             topLevelWidgets(),
             desktop(),
             activePopupWidget(),
@@ -307,21 +307,21 @@ QApplicationPrivate::~QApplicationPrivate()
             widgetAt().
 
         \row
-        \o  Advanced cursor handling
-        \o  overrideCursor(),
+        \li  Advanced cursor handling
+        \li  overrideCursor(),
             setOverrideCursor(),
             restoreOverrideCursor().
 
         \row
-        \o  Session management
-        \o  isSessionRestored(),
+        \li  Session management
+        \li  isSessionRestored(),
             sessionId(),
             commitData(),
             saveState().
 
         \row
-        \o  Miscellaneous
-        \o  closeAllWindows(),
+        \li  Miscellaneous
+        \li  closeAllWindows(),
             startingUp(),
             closingDown(),
             type().
@@ -534,25 +534,25 @@ void QApplicationPrivate::process_cmdline()
 
     All Qt programs automatically support the following command line options:
     \list
-        \o  -style= \e style, sets the application GUI style. Possible values
+        \li  -style= \e style, sets the application GUI style. Possible values
             are \c motif, \c windows, and \c platinum. If you compiled Qt with
             additional styles or have additional styles as plugins these will
             be available to the \c -style command line option.
-        \o  -style \e style, is the same as listed above.
-        \o  -stylesheet= \e stylesheet, sets the application \l styleSheet. The
+        \li  -style \e style, is the same as listed above.
+        \li  -stylesheet= \e stylesheet, sets the application \l styleSheet. The
             value must be a path to a file that contains the Style Sheet.
             \note Relative URLs in the Style Sheet file are relative to the
             Style Sheet file's path.
-        \o  -stylesheet \e stylesheet, is the same as listed above.
-        \o  -session= \e session, restores the application from an earlier
+        \li  -stylesheet \e stylesheet, is the same as listed above.
+        \li  -session= \e session, restores the application from an earlier
             \l{Session Management}{session}.
-        \o  -session \e session, is the same as listed above.
-        \o  -widgetcount, prints debug message at the end about number of
+        \li  -session \e session, is the same as listed above.
+        \li  -widgetcount, prints debug message at the end about number of
             widgets left undestroyed and maximum number of widgets existed at
             the same time
-        \o  -reverse, sets the application's layout direction to
+        \li  -reverse, sets the application's layout direction to
             Qt::RightToLeft
-        \o  -qmljsdebugger=, activates the QML/JS debugger with a specified port.
+        \li  -qmljsdebugger=, activates the QML/JS debugger with a specified port.
             The value must be of format port:1234[,block], where block is optional
             and will make the application wait until a debugger connects to it.
     \endlist
@@ -968,7 +968,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     \since 4.4
     \brief defines a threshold for auto maximizing widgets
 
-    \bold{The auto maximize threshold is only available as part of Qt for
+    \b{The auto maximize threshold is only available as part of Qt for
     Windows CE.}
 
     This property defines a threshold for the size of a window as a percentage
@@ -997,7 +997,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     the WA_InputMethodEnabled attribute set, and is typically used to launch
     a virtual keyboard on devices which have very few or no keys.
 
-    \bold{ The property only has an effect on platforms which use software input
+    \b{ The property only has an effect on platforms which use software input
     panels, such as Windows CE.}
 
     The default is platform dependent.
@@ -1275,21 +1275,21 @@ int QApplication::colorSpec()
 
     The options are:
     \list
-        \o  QApplication::NormalColor. This is the default color allocation
+        \li  QApplication::NormalColor. This is the default color allocation
             strategy. Use this option if your application uses buttons, menus,
             texts and pixmaps with few colors. With this option, the
             application uses system global colors. This works fine for most
             applications under X11, but on the Windows platform, it may cause
             dithering of non-standard colors.
-        \o  QApplication::CustomColor. Use this option if your application
+        \li  QApplication::CustomColor. Use this option if your application
             needs a small number of custom colors. On X11, this option is the
             same as NormalColor. On Windows, Qt creates a Windows palette, and
             allocates colors to it on demand.
-        \o  QApplication::ManyColor. Use this option if your application is
+        \li  QApplication::ManyColor. Use this option if your application is
             very color hungry, e.g., it requires thousands of colors. \br
             Under X11 the effect is:
             \list
-                \o  For 256-color displays which have at best a 256 color true
+                \li  For 256-color displays which have at best a 256 color true
                     color visual, the default visual is used, and colors are
                     allocated from a color cube. The color cube is the 6x6x6
                     (216 color) "Web palette" (the red, green, and blue
@@ -1298,7 +1298,7 @@ int QApplication::colorSpec()
                     can be changed by the \e -ncols option. The user can force
                     the application to use the true color visual with the
                     \l{QApplication::QApplication()}{-visual} option.
-                \o  For 256-color displays which have a true color visual with
+                \li  For 256-color displays which have a true color visual with
                     more than 256 colors, use that visual. Silicon Graphics X
                     servers this feature, for example. They provide an 8 bit
                     visual by default but can deliver true color when asked.

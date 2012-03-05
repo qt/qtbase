@@ -878,8 +878,8 @@ QSize QWorkspaceTitleBar::sizeHint() const
     connect menu entries to them.
 
     \table
-    \row \o \inlineimage mdi-cascade.png
-         \o \inlineimage mdi-tile.png
+    \row \li \inlineimage mdi-cascade.png
+         \li \inlineimage mdi-tile.png
     \endtable
 
     If you want your users to be able to work with child windows

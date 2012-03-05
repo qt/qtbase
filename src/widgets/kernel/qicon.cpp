@@ -941,8 +941,8 @@ QString QIcon::themeName()
     specification can be obtained here:
 
     \list
-    \o \l{http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html}
-    \o \l{http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html}
+    \li \l{http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html}
+    \li \l{http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html}
     \endlist
 
     To fetch an icon from the current icon theme:

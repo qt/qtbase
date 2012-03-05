@@ -51,12 +51,12 @@
     following effects:
 
     \list
-    \i If a QLocale object is constructed with the default constructor,
+    \li If a QLocale object is constructed with the default constructor,
        it will use the default locale's settings.
-    \i QString::toInt(), QString::toDouble(), etc., interpret the
+    \li QString::toInt(), QString::toDouble(), etc., interpret the
        string according to the default locale. If this fails, it
        falls back on the "C" locale.
-    \i QString::arg() uses the default locale to format a number when
+    \li QString::arg() uses the default locale to format a number when
        its position specifier in the format string contains an 'L',
        e.g. "%L1".
     \endlist
@@ -69,11 +69,11 @@
     of three things can happen:
 
     \list
-    \i If the language/country pair is found in the database, it is used.
-    \i If the language is found but the country is not, or if the country
+    \li If the language/country pair is found in the database, it is used.
+    \li If the language is found but the country is not, or if the country
        is \c AnyCountry, the language is used with the most
        appropriate available country (for example, Germany for German),
-    \i If neither the language nor the country are found, QLocale
+    \li If neither the language nor the country are found, QLocale
        defaults to the default locale (see setDefault()).
     \endlist
 

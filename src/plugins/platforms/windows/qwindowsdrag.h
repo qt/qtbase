@@ -45,9 +45,9 @@
 #include "qwindowsinternalmimedata.h"
 
 #include <QtGui/QPlatformDrag>
+#include <QtGui/QPixmap>
 
 QT_BEGIN_NAMESPACE
-
 class QWindowsDropMimeData : public QWindowsInternalMimeData {
 public:
     QWindowsDropMimeData() {}
@@ -73,11 +73,10 @@ public:
 
 private:
     inline QWindow *findDragOverWindow(const POINTL &pt) const;
-    void sendDragEnterEvent(QWindow *to, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
+    void handleDrag(QWindow *window, DWORD grfKeyState, const QPoint &, LPDWORD pdwEffect);
 
     ULONG m_refs;
     QWindow *const m_window;
-    QWindow *m_currentWindow;
     QRect m_answerRect;
     QPoint m_lastPoint;
     DWORD m_chosenEffect;
@@ -92,25 +91,20 @@ public:
 
     virtual QMimeData *platformDropData() { return &m_dropData; }
 
-    virtual void startDrag();
-    virtual void move(const QMouseEvent *me);
-    virtual void drop(const QMouseEvent *me);
-    virtual void cancel();
+    virtual Qt::DropAction drag(QDrag *drag);
 
     static QWindowsDrag *instance();
 
     IDataObject *dropDataObject() const             { return m_dropDataObject; }
     void setDropDataObject(IDataObject *dataObject) { m_dropDataObject = dataObject; }
     void releaseDropDataObject();
-
-    bool dragBeingCancelled() const { return m_dragBeingCancelled; }
+    QMimeData *dropData();
 
     QPixmap defaultCursor(Qt::DropAction action) const;
 
 private:
     QWindowsDropMimeData m_dropData;
     IDataObject *m_dropDataObject;
-    bool m_dragBeingCancelled;
 
     mutable QPixmap m_copyDragCursor;
     mutable QPixmap m_moveDragCursor;

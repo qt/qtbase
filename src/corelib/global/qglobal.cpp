@@ -892,13 +892,13 @@ bool qSharedBuild()
     \brief The QSysInfo class provides information about the system.
 
     \list
-    \o \l WordSize specifies the size of a pointer for the platform
+    \li \l WordSize specifies the size of a pointer for the platform
        on which the application is compiled.
-    \o \l ByteOrder specifies whether the platform is big-endian or
+    \li \l ByteOrder specifies whether the platform is big-endian or
        little-endian.
-    \o \l WindowsVersion specifies the version of the Windows operating
+    \li \l WindowsVersion specifies the version of the Windows operating
        system on which the application is run (Windows only)
-    \o \l MacintoshVersion specifies the version of the Macintosh
+    \li \l MacintoshVersion specifies the version of the Macintosh
        operating system on which the application is run (Mac only).
     \endlist
 
@@ -2462,12 +2462,12 @@ int qrand()
     \a Flags can be one of the following:
 
     \list
-    \o \c Q_PRIMITIVE_TYPE specifies that \a Type is a POD (plain old
+    \li \c Q_PRIMITIVE_TYPE specifies that \a Type is a POD (plain old
        data) type with no constructor or destructor.
-    \o \c Q_MOVABLE_TYPE specifies that \a Type has a constructor
+    \li \c Q_MOVABLE_TYPE specifies that \a Type has a constructor
        and/or a destructor but can be moved in memory using \c
        memcpy().
-    \o \c Q_COMPLEX_TYPE (the default) specifies that \a Type has
+    \li \c Q_COMPLEX_TYPE (the default) specifies that \a Type has
        constructors and/or a destructor and that it may not be moved
        in memory.
     \endlist

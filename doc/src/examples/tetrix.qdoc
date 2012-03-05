@@ -53,11 +53,11 @@
     This example shows how a simple game can be created using only three classes:
 
     \list
-    \o The \c TetrixWindow class is used to display the player's score, number of
+    \li The \c TetrixWindow class is used to display the player's score, number of
        lives, and information about the next piece to appear.
-    \o The \c TetrixBoard class contains the game logic, handles keyboard input, and
+    \li The \c TetrixBoard class contains the game logic, handles keyboard input, and
        displays the pieces on the playing area.
-    \o The \c TetrixPiece class contains information about each piece.
+    \li The \c TetrixPiece class contains information about each piece.
     \endlist
 
     In this approach, the \c TetrixBoard class is the most complex class, since it

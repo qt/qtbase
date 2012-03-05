@@ -1,7 +1,7 @@
 Some of the changes listed in this file include issue tracking numbers
 corresponding to tasks in the Qt Bug Tracker:
 
-  http://bugreports.qt.nokia.com/
+  http://bugreports.qt-project.org/
 
 Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
@@ -202,6 +202,7 @@ information about a particular change.
 
 - qmake
   * Projects which explicitly set an empty TARGET are considered broken now.
+  * The makespec and .qmake.cache do not see build pass specific variables any more.
   * Configure's -sysroot and -hostprefix are now handled slightly differently.
     The QT_INSTALL_... properties are now automatically prefixed with the sysroot;
     the raw values are available as QT_RAW_INSTALL_... and the sysroot as QT_SYSROOT.

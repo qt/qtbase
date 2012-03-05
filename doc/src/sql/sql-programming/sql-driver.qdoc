@@ -49,18 +49,18 @@
     are provided with Open Source Versions of Qt.
 
     \table
-    \header \o Driver name \o DBMS
-    \row \o \link #QDB2 QDB2\endlink \o IBM DB2 (version 7.1 and above)
-    \row \o \link #QIBASE QIBASE\endlink \o Borland InterBase
-    \row \o \link #QMYSQL QMYSQL\endlink \o MySQL
-    \row \o \link #QOCI QOCI\endlink \o Oracle Call Interface Driver
-    \row \o \link #QODBC QODBC\endlink
-         \o Open Database Connectivity (ODBC) - Microsoft SQL Server and other
+    \header \li Driver name \li DBMS
+    \row \li \link #QDB2 QDB2\endlink \li IBM DB2 (version 7.1 and above)
+    \row \li \link #QIBASE QIBASE\endlink \li Borland InterBase
+    \row \li \link #QMYSQL QMYSQL\endlink \li MySQL
+    \row \li \link #QOCI QOCI\endlink \li Oracle Call Interface Driver
+    \row \li \link #QODBC QODBC\endlink
+         \li Open Database Connectivity (ODBC) - Microsoft SQL Server and other
             ODBC-compliant databases
-    \row \o \link #QPSQL QPSQL\endlink \o PostgreSQL (versions 7.3 and above)
-    \row \o \link #QSQLITE2 QSQLITE2\endlink \o SQLite version 2
-    \row \o \link #QSQLITE QSQLITE\endlink \o SQLite version 3
-    \row \o \link #QTDS QTDS\endlink \o Sybase Adaptive Server \note obsolete from Qt 4.7
+    \row \li \link #QPSQL QPSQL\endlink \li PostgreSQL (versions 7.3 and above)
+    \row \li \link #QSQLITE2 QSQLITE2\endlink \li SQLite version 2
+    \row \li \link #QSQLITE QSQLITE\endlink \li SQLite version 3
+    \row \li \link #QTDS QTDS\endlink \li Sybase Adaptive Server \note obsolete from Qt 4.7
     \endtable
 
     SQLite is the in-process database system with the best test coverage
@@ -69,7 +69,7 @@
     Linux. The completeness of the support for other systems depends on the
     availability and quality of client libraries.
 
-    \bold{Note:} To build a driver plugin you need to have the appropriate
+    \b{Note:} To build a driver plugin you need to have the appropriate
     client library for your Database Management System (DBMS). This provides
     access to the API exposed by the DBMS, and is typically shipped with it.
     Most installation programs also allow you to install "development
@@ -123,7 +123,7 @@
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.cpp 2
 
-    \bold{Note:} \c{@outval1} and \c{@outval2} are variables local to the current
+    \b{Note:} \c{@outval1} and \c{@outval2} are variables local to the current
     connection and will not be affected by queries sent from another host
     or connection.
 
@@ -185,59 +185,59 @@
 
     \list
 
-    \o Download the following components:
+    \li Download the following components:
     \list
-    \o \c{MinGW-5.1.6.exe}
-    \o \c{mingw-utils-0.3.tar.gz}
-    \o Qt sources, e.g. \c{qt-everywhere-opensource-src-4.6.2.zip}
-    \o \c{mysql-5.1.35-win32.msi}
+    \li \c{MinGW-5.1.6.exe}
+    \li \c{mingw-utils-0.3.tar.gz}
+    \li Qt sources, e.g. \c{qt-everywhere-opensource-src-4.6.2.zip}
+    \li \c{mysql-5.1.35-win32.msi}
     \endlist
 
-    \o Install \c{MinGW-5.1.6.exe} in, e.g. \c{C:\MinGW}.
+    \li Install \c{MinGW-5.1.6.exe} in, e.g. \c{C:\MinGW}.
 
-    \o Extract \c{mingw-utils-0.3.tar.gz} into, e.g. \c{C:\MinGW}.
+    \li Extract \c{mingw-utils-0.3.tar.gz} into, e.g. \c{C:\MinGW}.
 
-    \o Add the path for \c{MinGW-5.1.6.exe} to your \c{PATH} variable,
+    \li Add the path for \c{MinGW-5.1.6.exe} to your \c{PATH} variable,
        e.g. \c{C:\MinGW\bin;}
 
-    \o Extract the Qt sources, (\c{qt-everywhere-opensource-src-4.6.2.zip}),
+    \li Extract the Qt sources, (\c{qt-everywhere-opensource-src-4.6.2.zip}),
      into, e.g. \c{C:\Qt}.
 
-    \o Add the path for the eventual Qt binary to your \c{PATH} variable,
+    \li Add the path for the eventual Qt binary to your \c{PATH} variable,
        e.g. \c{C:\Qt\4.6.2\bin;}.
 
-    \o Install MySQL (\c{mysql-5.1.35-win32.msi}), customizing the
+    \li Install MySQL (\c{mysql-5.1.35-win32.msi}), customizing the
        components. Select only the headers and libraries. Install in,
        e.g. \c{C:\MySQL\MySQL51}.
 
-    \o Open the DOS prompt, go to \c{C:\MySQL\MySQL51\lib\opt}, and run
+    \li Open the DOS prompt, go to \c{C:\MySQL\MySQL51\lib\opt}, and run
        the following commands:
        \list 
-       \o \c{reimp -d libmysql.lib} 
-       \o \c{dlltool -k -d libmysql.def -l libmysql.a}
+       \li \c{reimp -d libmysql.lib}
+       \li \c{dlltool -k -d libmysql.def -l libmysql.a}
        \endlist
 
-    \o Open the DOS prompt, go to \c{C:\Qt\4.6.2} and run the following commands:
+    \li Open the DOS prompt, go to \c{C:\Qt\4.6.2} and run the following commands:
     \list
-       \o \c{configure.exe -debug-and-release -platform win32-g++ -qt-sql-mysql
+       \li \c{configure.exe -debug-and-release -platform win32-g++ -qt-sql-mysql
          -l mysql -I C:\MySQL\MySQL51\include -L C:\MySQL\MySQL51\lib\opt}
-       \o \c{mingw32-make sub-src}
+       \li \c{mingw32-make sub-src}
     \endlist
     This step takes a long time.
 
-    \o Open the DOS prompt, go to
+    \li Open the DOS prompt, go to
         \c{C:\Qt\4.6.2\src\plugins\sqldrivers\mysql} and run the
         following command: 
 	\list
-        \o \c{qmake "INCLUDEPATH+=C:\MySQL\MySQL51\include" "LIBS+=-L. mysql" mysql.pro}
+        \li \c{qmake "INCLUDEPATH+=C:\MySQL\MySQL51\include" "LIBS+=-L. mysql" mysql.pro}
 	\endlist
 
-    \o Now the following libraries are ready in \c{C:\Qt\4.6.2\plugins\sqldrivers}.
+    \li Now the following libraries are ready in \c{C:\Qt\4.6.2\plugins\sqldrivers}.
     \list
-       \o \c{libqsqlmysql4.a}
-       \o \c{libqsqlmysqld4.a}
-       \o \c{qsqlmysql4.dll}
-       \o \c{qsqlmysqld4.dll}
+       \li \c{libqsqlmysql4.a}
+       \li \c{libqsqlmysqld4.a}
+       \li \c{qsqlmysql4.dll}
+       \li \c{qsqlmysqld4.dll}
     \endlist
     To use the SDK and QtCreator directly, copy these libraries to
     your \c{C:\Qt\...\qt\plugins\sqldrivers\}, and copy
@@ -287,8 +287,8 @@
     Oracle library files required to build the driver:
 
     \list
-    \i \c libclntsh.so (all versions)
-    \i \c libwtc9.so (only Oracle 9)
+    \li \c libclntsh.so (all versions)
+    \li \c libwtc9.so (only Oracle 9)
     \endlist
 
     Tell \c qmake where to find the Oracle header files and shared
@@ -301,7 +301,7 @@
     Instant Client Package SDK (you need to adjust the version number accordingly):
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 7
 
-    \bold{Note:} If you are using the Oracle Instant Client package,
+    \b{Note:} If you are using the Oracle Instant Client package,
     you will need to set LD_LIBRARY_PATH when building the OCI SQL plugin
     and when running an application that uses the OCI SQL plugin. You can
     avoid this requirement by setting and RPATH and listing all of the
@@ -331,7 +331,7 @@
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 9
 
-    \bold{Note:} This database plugin is not supported for Windows CE.
+    \b{Note:} This database plugin is not supported for Windows CE.
 
     \target QODBC
     \section2 QODBC for Open Database Connectivity (ODBC)
@@ -345,7 +345,7 @@
     driver manager that is installed on your system. The QODBC plugin
     then allows you to use these data sources in your Qt applications.
 
-    \bold{Note:} You should use native drivers in preference to the ODBC
+    \b{Note:} You should use native drivers in preference to the ODBC
     driver where they are available. ODBC support can be used as a fallback
     for compliant databases if no native drivers are available.
 
@@ -396,7 +396,7 @@
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.cpp 10
 
-    \bold{Note:} The value returned by the stored procedure's return statement
+    \b{Note:} The value returned by the stored procedure's return statement
     is discarded.
 
     \section3 ODBC Unicode Support
@@ -435,7 +435,7 @@
     If you are not using a Microsoft compiler, replace \c nmake with \c
     make in the line above.
 
-    \bold{Note:} This database plugin is not officially supported for Windows CE.
+    \b{Note:} This database plugin is not officially supported for Windows CE.
 
     \target QPSQL
     \section2 QPSQL for PostgreSQL (Version 7.3 and Above)
@@ -496,7 +496,7 @@
     Users of MinGW may wish to consult the following online document:
     \l{PostgreSQL MinGW/Native Windows}.
 
-    \bold{Note:} This database plugin is not supported for Windows CE.
+    \b{Note:} This database plugin is not supported for Windows CE.
 
     \target QTDS
     \section2 QTDS for Sybase Adaptive Server
@@ -515,11 +515,11 @@
     Under Unix, two libraries are available which support the TDS protocol:
 
     \list
-    \i FreeTDS, a free implementation of the TDS protocol
+    \li FreeTDS, a free implementation of the TDS protocol
       (\l{http://www.freetds.org}). Note that FreeTDS is not yet stable,
       so some functionality may not work as expected.
 
-    \i Sybase Open Client, available from \l{http://www.sybase.com}.
+    \li Sybase Open Client, available from \l{http://www.sybase.com}.
       Note for Linux users: Get the Open Client RPM from
       \l{http://linux.sybase.com}.
     \endlist
@@ -545,7 +545,7 @@
     are not using a Microsoft compiler, replace \c nmake with \c make in
     the line above.
 
-    \bold{Note:} This database plugin is not supported for Windows CE.
+    \b{Note:} This database plugin is not supported for Windows CE.
 
     \target QDB2
     \section2 QDB2 for IBM DB2 (Version 7.1 and Above)
@@ -582,7 +582,7 @@
     If you are not using a Microsoft compiler, replace \c nmake
     with \c make in the line above.
 
-    \bold{Note:} This database plugin is not supported for Windows CE.
+    \b{Note:} This database plugin is not supported for Windows CE.
 
     \target QSQLITE2
     \section2 QSQLITE2 for SQLite Version 2
@@ -745,7 +745,7 @@
 
     Note that \c{C:\interbase\bin} must be in the \c PATH.
 
-    \bold{Note:} This database plugin is not supported for Windows CE.
+    \b{Note:} This database plugin is not supported for Windows CE.
 
     \target troubleshooting
     \section1 Troubleshooting
@@ -763,16 +763,16 @@
     make sure that the following requirements are met:
 
     \list
-    \i Ensure that you are using a shared Qt library; you cannot use the
+    \li Ensure that you are using a shared Qt library; you cannot use the
         plugins with a static build.
-    \i Ensure that the plugin is in the correct directory. You can use
+    \li Ensure that the plugin is in the correct directory. You can use
         QApplication::libraryPaths() to determine where Qt looks for plugins.
-    \i Ensure that the client libraries of the DBMS are available on the
+    \li Ensure that the client libraries of the DBMS are available on the
         system. On Unix, run the command \c{ldd} and pass the name of the
         plugin as parameter, for example \c{ldd libqsqlmysql.so}. You will
         get a warning if any of the client libraries couldn't be found.
         On Windows, you can use Visual Studio's dependency walker.
-    \i Compile Qt with \c{QT_DEBUG_COMPONENT} defined to get very verbose
+    \li Compile Qt with \c{QT_DEBUG_COMPONENT} defined to get very verbose
         debug output when loading plugins.
     \endlist
 

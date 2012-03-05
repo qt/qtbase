@@ -83,10 +83,10 @@ QT_BEGIN_NAMESPACE
 
     A framebuffer object has several characteristics:
     \list
-    \i \link setSamples() Number of samples per pixels.\endlink
-    \i \link setAttachment() Depth and/or stencil attachments.\endlink
-    \i \link setTextureTarget() Texture target.\endlink
-    \i \link setInternalTextureFormat() Internal texture format.\endlink
+    \li \link setSamples() Number of samples per pixels.\endlink
+    \li \link setAttachment() Depth and/or stencil attachments.\endlink
+    \li \link setTextureTarget() Texture target.\endlink
+    \li \link setInternalTextureFormat() Internal texture format.\endlink
     \endlist
 
     Note that the desired attachments or number of samples per pixels might not
@@ -407,6 +407,12 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     if (samples == 0) {
         glGenTextures(1, &texture);
         glBindTexture(target, texture);
+
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
         glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         if (mipmap) {
@@ -421,10 +427,6 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
                         GL_RGBA, GL_UNSIGNED_BYTE, NULL);
             }
         }
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         funcs.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                 target, texture, 0);
 
@@ -655,7 +657,7 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
     generates a 2D OpenGL texture (using the \c{GL_TEXTURE_2D} target),
     which is used as the internal rendering target.
 
-    \bold{It is important to have a current OpenGL context when creating a
+    \b{It is important to have a current OpenGL context when creating a
     QOpenGLFramebufferObject, otherwise initialization will fail.}
 
     When using a QPainter to paint to a QOpenGLFramebufferObject you should take

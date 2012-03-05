@@ -66,9 +66,9 @@ QT_BEGIN_NAMESPACE
     using QLibrary:
 
     \list
-    \o QPluginLoader checks that a plugin is linked against the same
+    \li QPluginLoader checks that a plugin is linked against the same
        version of Qt as the application.
-    \o QPluginLoader provides direct access to a root component object
+    \li QPluginLoader provides direct access to a root component object
        (instance()), instead of forcing you to resolve a C function manually.
     \endlist
 

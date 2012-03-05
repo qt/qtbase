@@ -73,8 +73,11 @@
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "private/qwindow_p.h"
 #include "private/qcursor_p.h"
+
 #include "private/qdnd_p.h"
 #include <private/qplatformthemefactory_qpa_p.h>
+#include "qplatformdrag_qpa.h"
+
 #ifndef QT_NO_CURSOR
 #include "qplatformcursor_qpa.h"
 #endif
@@ -192,7 +195,7 @@ static inline void clearFontUnlocked()
     application's initialization and finalization. In addition, QGuiApplication handles
     most of the system-wide and application-wide settings.
 
-    For any GUI application using Qt, there is precisely \bold one QGuiApplication
+    For any GUI application using Qt, there is precisely \b one QGuiApplication
     object no matter whether the application has 0, 1, 2 or more windows at
     any given time. For non-GUI Qt applications, use QCoreApplication instead,
     as it does not depend on the \l QtGui library.
@@ -202,30 +205,30 @@ static inline void clearFontUnlocked()
 
     QGuiApplication's main areas of responsibility are:
         \list
-            \o  It initializes the application with the user's desktop settings,
+            \li  It initializes the application with the user's desktop settings,
                 such as palette(), font() and styleHints(). It keeps
                 track of these properties in case the user changes the desktop
                 globally, for example, through some kind of control panel.
 
-            \o  It performs event handling, meaning that it receives events
+            \li  It performs event handling, meaning that it receives events
                 from the underlying window system and dispatches them to the
                 relevant widgets. You can send your own events to windows by
                 using sendEvent() and postEvent().
 
-            \o  It parses common command line arguments and sets its internal
+            \li  It parses common command line arguments and sets its internal
                 state accordingly. See the \l{QGuiApplication::QGuiApplication()}
                 {constructor documentation} below for more details.
 
-            \o  It provides localization of strings that are visible to the
+            \li  It provides localization of strings that are visible to the
                 user via translate().
 
-            \o  It provides some magical objects like the clipboard().
+            \li  It provides some magical objects like the clipboard().
 
-            \o  It knows about the application's windows. You can ask which
+            \li  It knows about the application's windows. You can ask which
                 window is at a certain position using topLevelAt(), get a list of
                 topLevelWindows(), etc.
 
-            \o  It manages the application's mouse cursor handling, see
+            \li  It manages the application's mouse cursor handling, see
                 setOverrideCursor()
         \endlist
 
@@ -237,11 +240,11 @@ static inline void clearFontUnlocked()
 
     \table
     \header
-        \o{2,1} Groups of functions
+        \li{2,1} Groups of functions
 
         \row
-        \o  System settings
-        \o  desktopSettingsAware(),
+        \li  System settings
+        \li  desktopSettingsAware(),
             setDesktopSettingsAware(),
             styleHints(),
             palette(),
@@ -250,8 +253,8 @@ static inline void clearFontUnlocked()
             setFont().
 
         \row
-        \o  Event handling
-        \o  exec(),
+        \li  Event handling
+        \li  exec(),
             processEvents(),
             exit(),
             quit().
@@ -263,22 +266,22 @@ static inline void clearFontUnlocked()
             notify().
 
         \row
-        \o  Windows
-        \o  allWindows(),
+        \li  Windows
+        \li  allWindows(),
             topLevelWindows(),
             focusWindow(),
             clipboard(),
             topLevelAt().
 
         \row
-        \o  Advanced cursor handling
-        \o  overrideCursor(),
+        \li  Advanced cursor handling
+        \li  overrideCursor(),
             setOverrideCursor(),
             restoreOverrideCursor().
 
         \row
-        \o  Miscellaneous
-        \o  startingUp(),
+        \li  Miscellaneous
+        \li  startingUp(),
             closingDown(),
             type().
     \endtable
@@ -306,9 +309,9 @@ static inline void clearFontUnlocked()
 
     All Qt programs automatically support the following command line options:
     \list
-        \o  -reverse, sets the application's layout direction to
+        \li  -reverse, sets the application's layout direction to
             Qt::RightToLeft
-        \o  -qmljsdebugger=, activates the QML/JS debugger with a specified port.
+        \li  -qmljsdebugger=, activates the QML/JS debugger with a specified port.
             The value must be of format port:1234[,block], where block is optional
             and will make the application wait until a debugger connects to it.
     \endlist
@@ -326,8 +329,7 @@ QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
 QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
     : QCoreApplication(p)
 {
-    d_func()->init();
-}
+    d_func()->init(); }
 
 /*!
     Destructs the application.
@@ -1547,49 +1549,62 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
     QCoreApplication::sendSpontaneousEvent(window, &exposeEvent);
 }
 
-Qt::DropAction QGuiApplicationPrivate::processDrag(QWindow *w, QMimeData *dropData, const QPoint &p)
+QPlatformDragQtResponse QGuiApplicationPrivate::processDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
     static QPointer<QWindow> currentDragWindow;
-    QDragManager *manager = QDragManager::self();
+    static Qt::DropAction lastAcceptedDropAction = Qt::IgnoreAction;
+    QPlatformDrag *platformDrag = platformIntegration()->drag();
+    if (!platformDrag) {
+        lastAcceptedDropAction = Qt::IgnoreAction;
+        return QPlatformDragQtResponse(false, lastAcceptedDropAction, QRect());
+    }
+
     if (!dropData) {
         if (currentDragWindow.data() == w)
             currentDragWindow = 0;
         QDragLeaveEvent e;
         QGuiApplication::sendEvent(w, &e);
-        manager->global_accepted_action = Qt::IgnoreAction;
-        return Qt::IgnoreAction;
+        lastAcceptedDropAction = Qt::IgnoreAction;
+        return QPlatformDragQtResponse(false, lastAcceptedDropAction, QRect());
     }
-    QDragMoveEvent me(p, manager->possible_actions, dropData,
+    QDragMoveEvent me(p, supportedActions, dropData,
                       QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
+
     if (w != currentDragWindow) {
+        lastAcceptedDropAction = Qt::IgnoreAction;
         if (currentDragWindow) {
             QDragLeaveEvent e;
             QGuiApplication::sendEvent(currentDragWindow, &e);
-            manager->global_accepted_action = Qt::IgnoreAction;
         }
         currentDragWindow = w;
-        QDragEnterEvent e(p, manager->possible_actions, dropData,
+        QDragEnterEvent e(p, supportedActions, dropData,
                           QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
         QGuiApplication::sendEvent(w, &e);
-        manager->global_accepted_action = e.isAccepted() ? e.dropAction() : Qt::IgnoreAction;
-        if (manager->global_accepted_action != Qt::IgnoreAction) {
-            me.setDropAction(manager->global_accepted_action);
-            me.accept();
-        }
+        if (e.isAccepted() && e.dropAction() != Qt::IgnoreAction)
+            lastAcceptedDropAction = e.dropAction();
+    }
+
+    // Handling 'DragEnter' should suffice for the application.
+    if (lastAcceptedDropAction != Qt::IgnoreAction
+        && (supportedActions & lastAcceptedDropAction)) {
+        me.setDropAction(lastAcceptedDropAction);
+        me.accept();
     }
     QGuiApplication::sendEvent(w, &me);
-    manager->global_accepted_action = me.isAccepted() ? me.dropAction() : Qt::IgnoreAction;
-    return manager->global_accepted_action;
+    lastAcceptedDropAction = me.isAccepted() ?
+                             me.dropAction() :  Qt::IgnoreAction;
+    return QPlatformDragQtResponse(me.isAccepted(), lastAcceptedDropAction, me.answerRect());
 }
 
-Qt::DropAction QGuiApplicationPrivate::processDrop(QWindow *w, QMimeData *dropData, const QPoint &p)
+QPlatformDropQtResponse QGuiApplicationPrivate::processDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
-    QDragManager *manager = QDragManager::self();
-    QDropEvent de(p, manager->possible_actions, dropData,
+    QDropEvent de(p, supportedActions, dropData,
                   QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
     QGuiApplication::sendEvent(w, &de);
-    manager->global_accepted_action = de.isAccepted() ? de.dropAction() : Qt::IgnoreAction;
-    return manager->global_accepted_action;
+
+    Qt::DropAction acceptedAction = de.isAccepted() ? de.dropAction() : Qt::IgnoreAction;
+    QPlatformDropQtResponse response(de.isAccepted(),acceptedAction);
+    return response;
 }
 
 #ifndef QT_NO_CLIPBOARD

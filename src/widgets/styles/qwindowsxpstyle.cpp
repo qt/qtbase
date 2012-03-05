@@ -339,7 +339,7 @@ HWND QWindowsXPStylePrivate::winId(const QWidget *widget)
 
     // Find top level with native window (there might be dialogs that do not have one).
     foreach (const QWidget *toplevel, QApplication::topLevelWidgets())
-        if (toplevel->windowHandle())
+        if (toplevel->windowHandle() && toplevel->windowHandle()->handle())
             if (const HWND topLevelHwnd = QApplicationPrivate::getHWNDForWidget(toplevel))
                 return topLevelHwnd;
 
@@ -698,7 +698,10 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
     }
 
     // Draw on backing store DC only for real widgets.
-    const bool useFallback = !themeData.widget || painter->device()->devType() != QInternal::Widget
+    // Access paintDevice via engine since the painter may
+    // return the clip device which can still be a widget device in case of grabWidget().
+    const bool useFallback = !themeData.widget
+        || painter->paintEngine()->paintDevice()->devType() != QInternal::Widget
         || painter->opacity() != 1.0 || themeData.rotate
         || complexXForm  || themeData.mirrorVertically
         || (themeData.mirrorHorizontally && pDrawThemeBackgroundEx == 0)

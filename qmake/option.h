@@ -109,7 +109,8 @@ struct Option
     //both of these must be called..
     static int init(int argc=0, char **argv=0); //parse cmdline
     static void applyHostMode();
-    static bool prepareProject();
+    static QStringList mkspecPaths();
+    static bool prepareProject(const QString &pfile);
     static bool postProcessProject(QMakeProject *);
 
     enum StringFixFlags {
@@ -173,7 +174,7 @@ struct Option
     static int warn_level;
     enum QMAKE_RECURSIVE { QMAKE_RECURSIVE_DEFAULT, QMAKE_RECURSIVE_YES, QMAKE_RECURSIVE_NO };
     static QMAKE_RECURSIVE recursive;
-    static QStringList before_user_vars, after_user_vars, user_configs, after_user_configs;
+    static QStringList before_user_vars, after_user_vars;
     enum HOST_MODE { HOST_UNKNOWN_MODE, HOST_UNIX_MODE, HOST_WIN_MODE, HOST_MACX_MODE };
     static HOST_MODE host_mode;
     enum TARG_MODE { TARG_UNKNOWN_MODE, TARG_UNIX_MODE, TARG_WIN_MODE, TARG_MACX_MODE,
@@ -203,6 +204,7 @@ struct Option
         static bool do_dep_heuristics;
         static bool do_preprocess;
         static bool do_stub_makefile;
+        static QString project_root;
         static QString project_build_root;
         static QString cachefile;
         static int cachefile_depth;
@@ -212,6 +214,7 @@ struct Option
 
 private:
     static int parseCommandLine(int, char **, int=0);
+    static bool resolveSpec(QString *spec);
 };
 
 inline QString fixEnvVariables(const QString &x) { return Option::fixString(x, Option::FixEnvVars); }

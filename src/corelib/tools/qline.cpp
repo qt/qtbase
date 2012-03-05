@@ -61,8 +61,8 @@ QT_BEGIN_NAMESPACE
 
     \table
     \row
-        \o \inlineimage qline-point.png
-        \o \inlineimage qline-coordinates.png
+        \li \inlineimage qline-point.png
+        \li \inlineimage qline-coordinates.png
     \endtable
 
     The positions of the line's start and end points can be retrieved
@@ -322,8 +322,8 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
     \table
     \row
-        \o \inlineimage qline-point.png
-        \o \inlineimage qline-coordinates.png
+        \li \inlineimage qline-point.png
+        \li \inlineimage qline-coordinates.png
     \endtable
 
     The positions of the line's start and end points can be retrieved
@@ -360,11 +360,11 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
     \table
     \row
-    \o \inlineimage qlinef-unbounded.png
-    \o \inlineimage qlinef-bounded.png
+    \li \inlineimage qlinef-unbounded.png
+    \li \inlineimage qlinef-bounded.png
     \row
-    \o QLineF::UnboundedIntersection
-    \o QLineF::BoundedIntersection
+    \li QLineF::UnboundedIntersection
+    \li QLineF::BoundedIntersection
     \endtable
 
     \value NoIntersection Indicates that the lines do not intersect;
@@ -795,8 +795,8 @@ qreal QLineF::angleTo(const QLineF &l) const
 
   \table
   \row
-  \o \inlineimage qlinef-angle-identicaldirection.png
-  \o \inlineimage qlinef-angle-oppositedirection.png
+  \li \inlineimage qlinef-angle-identicaldirection.png
+  \li \inlineimage qlinef-angle-oppositedirection.png
   \endtable
 
   When the lines are parallel, this function returns 0 if they have
