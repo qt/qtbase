@@ -829,16 +829,8 @@ bool tst_QDBusConnection::callMethod(const QDBusConnection &conn, const QString 
     QDBusMessage reply = conn.call(msg, QDBus::Block/*WithGui*/);
     if (reply.type() != QDBusMessage::ReplyMessage)
         return false;
-    if (MyObject::path == path) {
-        QTest::compare_helper(true, "COMPARE()", __FILE__, __LINE__);
-    } else {
-        QTest::compare_helper(false, "Compared values are not the same",
-                              QTest::toString(MyObject::path), QTest::toString(path),
-                              "MyObject::path", "path", __FILE__, __LINE__);
-        return false;
-    }
-
-    return true;
+    QTest::qCompare(MyObject::path, path, "MyObject::path", "path", __FILE__, __LINE__);
+    return (MyObject::path == path);
 }
 
 bool tst_QDBusConnection::callMethodPeer(const QDBusConnection &conn, const QString &path)
@@ -848,16 +840,8 @@ bool tst_QDBusConnection::callMethodPeer(const QDBusConnection &conn, const QStr
 
     if (reply.type() != QDBusMessage::ReplyMessage)
         return false;
-    if (MyObject::path == path) {
-        QTest::compare_helper(true, "COMPARE()", __FILE__, __LINE__);
-    } else {
-        QTest::compare_helper(false, "Compared values are not the same",
-                              QTest::toString(MyObject::path), QTest::toString(path),
-                              "MyObject::path", "path", __FILE__, __LINE__);
-        return false;
-    }
-
-    return true;
+    QTest::qCompare(MyObject::path, path, "MyObject::path", "path", __FILE__, __LINE__);
+    return (MyObject::path == path);
 }
 
 class TestObject : public QObject
