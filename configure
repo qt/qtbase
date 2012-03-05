@@ -7169,7 +7169,7 @@ for file in .projects .projects.3; do
             fi
             SPEC=$XQMAKESPEC ;;
         */qmake/qmake.pro) continue ;;
-        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*) SPEC=$QMAKESPEC ;;
+        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*tools/qdoc*) SPEC=$QMAKESPEC ;;
         *) if [ "$CFG_NOPROCESS" = "yes" ]; then
               continue
            else

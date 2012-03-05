@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-TOOLS_SUBDIRS = src_tools_bootstrap src_tools_moc src_tools_rcc
+TOOLS_SUBDIRS = src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_qdoc
 !contains(QT_CONFIG, no-gui): TOOLS_SUBDIRS += src_tools_uic
 # Set subdir and respective target name
 src_tools_bootstrap.subdir = $$QT_SOURCE_TREE/src/tools/bootstrap
@@ -11,12 +11,15 @@ src_tools_rcc.subdir = $$QT_SOURCE_TREE/src/tools/rcc
 src_tools_rcc.target = sub-rcc
 src_tools_uic.subdir = $$QT_SOURCE_TREE/src/tools/uic
 src_tools_uic.target = sub-uic
+src_tools_qdoc.subdir = $$QT_SOURCE_TREE/src/tools/qdoc
+src_tools_qdoc.target = sub-qdoc
 
 !wince*:!ordered {
     # Set dependencies for each subdir
     src_tools_moc.depends = src_tools_bootstrap
     src_tools_rcc.depends = src_tools_bootstrap
     src_tools_uic.depends = src_tools_bootstrap
+    src_tools_qdoc.depends = src_tools_bootstrap
 }
 
 # Special handling, depending on type of project, if it used debug/release or only has one configuration

@@ -1,0 +1,84 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example componentset
+    \title QML Documentation Example
+
+    This example demonstrates one of the ways to document QML components.
+
+    In particular, there are sample components that are documented with QDoc
+    commands comments. There are documentation comments for the QML components
+    and their public interfaces. The components are grouped into a module, the
+    \l {UI Components} module.
+
+    The \l{componentset/uicomponents.qdoc}{uicomponents.qdoc} file generates
+    the overview page for the \l {UI Components} module page.
+
+    The generated documentation is available in the \l {UI Components} module.
+
+    \section1 QML Class
+
+    The components use the \l{qmlclass-command}{\\qmlclass} to document the
+    component. In addition, they have the \l{inmodule-command}{\\inmodule}
+    command in order for QDoc to associate them to the \c UIComponents module.
+
+    QDoc uses the \l{brief-command}{\\brief} command to place a basic
+    description when listing the component.
+
+    \section1 Properties, Signals, Handlers, and Methods
+
+    The components have their properties, signals, handlers, and methods
+    defined in their respective QML files. QDoc associates the properties and
+    methods to the components, therefore, you only need to place the
+    documentation above the property, method, or signal.
+
+    To document the type of a \e {property alias}, you must use the
+    \l{qmlproperty-command}{\\qmlproperty} command to specify the data type.
+
+    \code
+        \qmlproperty int anAliasedProperty
+        An aliased property of type int.
+    \endcode
+
+    \section2 Internal Documentation
+
+    You may declare that a documentation is for internal use by placing the
+    \l{internal-command}{\\internal} command after the beginning QDoc comment
+    \begincomment. QDoc will prevent the internal documentation from appearing
+    in the public API.
+
+    If you wish to omit certain parts of the documentation, you may use the
+    \l{omit-command}{\\omit} and \l{omit-command}{\\endomit} command.
+
+    \section1 Components with C++ Implementation
+
+    This example only demonstrates the documentation for components in QML
+    files, but the regular \l{qml-documentation}{QML commands} may be placed
+    inside C++ classes to define the public API of the component.
+
+*/

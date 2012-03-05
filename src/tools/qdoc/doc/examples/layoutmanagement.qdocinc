@@ -1,0 +1,13 @@
+\section1 Layout Classes
+
+The Qt layout system provides a simple and powerful way of specifying
+the layout of child widgets.
+
+By specifying the logical layout once, you get the following benefits:
+
+\list
+    \o Positioning of child widgets.
+    \o Sensible default sizes for windows.
+    \o Sensible minimum sizes for windows.
+    \o ...
+\endlist
