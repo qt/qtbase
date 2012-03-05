@@ -555,11 +555,11 @@ void tst_QStyleSheetStyle::layoutSpacing()
 void tst_QStyleSheetStyle::qproperty()
 {
     QPushButton pb;
-    pb.setStyleSheet("QPushButton { qproperty-text: hello; qproperty-checkable: true; qproperty-checked: 1}");
+    pb.setStyleSheet("QPushButton { qproperty-text: hello; qproperty-checkable: 1; qproperty-checked: false}");
     pb.ensurePolished();
     QCOMPARE(pb.text(), QString("hello"));
     QCOMPARE(pb.isCheckable(), true);
-    QCOMPARE(pb.isChecked(), true);
+    QCOMPARE(pb.isChecked(), false);
 }
 
 namespace ns {
