@@ -3,5 +3,5 @@ contains(QT_CONFIG, libudev) {
     SOURCES += $$PWD/qudevicehelper.cpp
 
     INCLUDEPATH += $$QMAKE_INCDIR_LIBUDEV
-    LIBS += -ludev
+    LIBS += $$QMAKE_LIBS_LIBUDEV
 }
