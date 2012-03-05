@@ -44,6 +44,7 @@
 #include <QtTest/QtTest>
 #include <stdio.h>
 #include <qobject.h>
+#include <qmetaobject.h>
 
 #include "using-namespaces.h"
 #include "assign-namespace.h"
@@ -70,6 +71,7 @@
 #include "parse-boost.h"
 #endif
 #include "cxx11-enums.h"
+#include "cxx11-final-classes.h"
 
 QT_USE_NAMESPACE
 
@@ -475,7 +477,6 @@ CtorTestClass::CtorTestClass(QObject *parent)
 
 CtorTestClass::CtorTestClass(int, int, int) {}
 
-
 class tst_Moc : public QObject
 {
     Q_OBJECT
@@ -542,8 +543,9 @@ private slots:
     void cxx11Enums_data();
     void cxx11Enums();
     void returnRefs();
-
     void privateSignalConnection();
+    void finalClasses_data();
+    void finalClasses();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -2225,7 +2227,33 @@ void tst_Moc::privateSignalConnection()
     // Which doesn't work as ClassWithPrivateSignals::QPrivateSignal is private.
 }
 
+void tst_Moc::finalClasses_data()
+{
+    QTest::addColumn<QString>("className");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("FinalTestClassQt") << FinalTestClassQt::staticMetaObject.className() << "FinalTestClassQt";
+    QTest::newRow("ExportedFinalTestClassQt") << ExportedFinalTestClassQt::staticMetaObject.className() << "ExportedFinalTestClassQt";
+    QTest::newRow("ExportedFinalTestClassQtX") << ExportedFinalTestClassQtX::staticMetaObject.className() << "ExportedFinalTestClassQtX";
+
+    QTest::newRow("FinalTestClassCpp11") << FinalTestClassCpp11::staticMetaObject.className() << "FinalTestClassCpp11";
+    QTest::newRow("ExportedFinalTestClassCpp11") << ExportedFinalTestClassCpp11::staticMetaObject.className() << "ExportedFinalTestClassCpp11";
+    QTest::newRow("ExportedFinalTestClassCpp11X") << ExportedFinalTestClassCpp11X::staticMetaObject.className() << "ExportedFinalTestClassCpp11X";
+
+    QTest::newRow("SealedTestClass") << SealedTestClass::staticMetaObject.className() << "SealedTestClass";
+    QTest::newRow("ExportedSealedTestClass") << ExportedSealedTestClass::staticMetaObject.className() << "ExportedSealedTestClass";
+    QTest::newRow("ExportedSealedTestClassX") << ExportedSealedTestClassX::staticMetaObject.className() << "ExportedSealedTestClassX";
+}
+
+void tst_Moc::finalClasses()
+{
+    QFETCH(QString, className);
+    QFETCH(QString, expected);
+
+    QCOMPARE(className, expected);
+}
 
 QTEST_MAIN(tst_Moc)
+
 #include "tst_moc.moc"
 

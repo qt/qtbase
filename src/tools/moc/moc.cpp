@@ -100,13 +100,16 @@ bool Moc::parseClassHead(ClassDef *def)
     QByteArray name = lexem();
 
     // support "class IDENT name" and "class IDENT(IDENT) name"
+    // also support "class IDENT name (final|sealed|Q_DECL_FINAL)"
     if (test(LPAREN)) {
         until(RPAREN);
         if (!test(IDENTIFIER))
             return false;
         name = lexem();
     } else  if (test(IDENTIFIER)) {
-        name = lexem();
+        const QByteArray lex = lexem();
+        if (lex != "final" && lex != "sealed" && lex != "Q_DECL_FINAL")
+            name = lex;
     }
 
     def->qualified += name;
@@ -118,6 +121,13 @@ bool Moc::parseClassHead(ClassDef *def)
         }
     }
     def->classname = name;
+
+    if (test(IDENTIFIER)) {
+        const QByteArray lex = lexem();
+        if (lex != "final" && lex != "sealed" && lex != "Q_DECL_FINAL")
+            return false;
+    }
+
     if (test(COLON)) {
         do {
             test(VIRTUAL);
