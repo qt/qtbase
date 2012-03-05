@@ -3874,6 +3874,10 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
     QNetworkReplyPtr reply = manager.put(QNetworkRequest(url), passive);
     passive->setParent(reply);
 
+#ifdef Q_OS_WIN
+    if (!data.isEmpty())
+        QEXPECT_FAIL("", "QTBUG-18385", Abort);
+#endif
     QVERIFY(waitForFinish(reply) == Success);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 
