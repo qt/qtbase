@@ -255,7 +255,7 @@ public:
     static bool load(QDataStream &stream, int type, void *data);
 #endif
 
-    QMetaType(const int type);
+    explicit QMetaType(const int type);
     inline ~QMetaType();
 
     inline bool isValid() const;
