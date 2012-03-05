@@ -39,12 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qpagesetupdialog.h"
+#include <Cocoa/Cocoa.h>
 
-#include <qhash.h>
-#include <private/qapplication_p.h>
-#include <private/qprintengine_mac_p.h>
-#include <private/qabstractpagesetupdialog_p.h>
+#include "qpagesetupdialog.h"
+#include "qabstractpagesetupdialog_p.h"
+
+#include <QtGui/qplatformnativeinterface_qpa.h>
+#include <QtPrintSupport/qprintengine.h>
 
 #ifndef QT_NO_PRINTDIALOG
 
@@ -52,20 +53,21 @@ QT_USE_NAMESPACE
 
 @class QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate);
 
-@interface QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) : NSObject {
-    QMacPrintEnginePrivate *pe;
+@interface QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) : NSObject
+{
+    NSPrintInfo *printInfo;
 }
-- (id)initWithMacPrintEngine:(QMacPrintEnginePrivate *)printEngine;
+- (id)initWithNSPrintInfo:(NSPrintInfo *)nsPrintInfo;
 - (void)pageLayoutDidEnd:(NSPageLayout *)pageLayout
         returnCode:(int)returnCode contextInfo:(void *)contextInfo;
 @end
 
 @implementation QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate)
-- (id)initWithMacPrintEngine:(QMacPrintEnginePrivate *)printEngine
+- (id)initWithNSPrintInfo:(NSPrintInfo *)nsPrintInfo
 {
     self = [super init];
     if (self) {
-        pe = printEngine;
+        printInfo = nsPrintInfo;
     }
     return self;
 
@@ -75,29 +77,30 @@ QT_USE_NAMESPACE
 {
     Q_UNUSED(pageLayout);
     QPageSetupDialog *dialog = static_cast<QPageSetupDialog *>(contextInfo);
+    QPrinter *printer = dialog->printer();
+
     if (returnCode == NSOKButton) {
+        PMPageFormat format = static_cast<PMPageFormat>([printInfo PMPageFormat]);
         PMRect paperRect;
-        PMGetUnadjustedPaperRect(pe->format, &paperRect);
-        pe->customSize = QSizeF(paperRect.right - paperRect.left,
-                                paperRect.bottom - paperRect.top);
+        PMGetUnadjustedPaperRect(format, &paperRect);
+        QSizeF paperSize = QSizeF(paperRect.right - paperRect.left, paperRect.bottom - paperRect.top);
+        printer->printEngine()->setProperty(QPrintEngine::PPK_CustomPaperSize, paperSize);
     }
+
     dialog->done((returnCode == NSOKButton) ? QDialog::Accepted : QDialog::Rejected);
 }
 @end
 
 QT_BEGIN_NAMESPACE
 
-extern void macStartInterceptWindowTitle(QWidget *window);
-extern void macStopInterceptWindowTitle();
-
 class QPageSetupDialogPrivate : public QAbstractPageSetupDialogPrivate
 {
     Q_DECLARE_PUBLIC(QPageSetupDialog)
 
 public:
-    QPageSetupDialogPrivate() : ep(0)
-    ,pageLayout(0)
-    {}
+    QPageSetupDialogPrivate()
+        : printInfo(0), pageLayout(0)
+    { }
 
     ~QPageSetupDialogPrivate() {
     }
@@ -105,7 +108,7 @@ public:
     void openCocoaPageLayout(Qt::WindowModality modality);
     void closeCocoaPageLayout();
 
-    QMacPrintEnginePrivate *ep;
+    NSPrintInfo *printInfo;
     NSPageLayout *pageLayout;
 };
 
@@ -113,56 +116,50 @@ void QPageSetupDialogPrivate::openCocoaPageLayout(Qt::WindowModality modality)
 {
     Q_Q(QPageSetupDialog);
 
-    // If someone is reusing a QPrinter object, the end released all our old
-    // information. In this case, we must reinitialize.
-    if (ep->session == 0)
-        ep->initialize();
+    // get the NSPrintInfo from the print engine in the platform plugin
+    void *voidp = 0;
+    (void) QMetaObject::invokeMethod(qApp->platformNativeInterface(),
+                                     "NSPrintInfoForPrintEngine",
+                                     Q_RETURN_ARG(void *, voidp),
+                                     Q_ARG(QPrintEngine *, printer->printEngine()));
+    printInfo = static_cast<NSPrintInfo *>(voidp);
+    [printInfo retain];
 
-    macStartInterceptWindowTitle(q);
     pageLayout = [NSPageLayout pageLayout];
     // Keep a copy to this since we plan on using it for a bit.
     [pageLayout retain];
-    QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) alloc] initWithMacPrintEngine:ep];
+    QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) alloc] initWithNSPrintInfo:printInfo];
 
     if (modality == Qt::ApplicationModal) {
-        int rval = [pageLayout runModalWithPrintInfo:ep->printInfo];
+        int rval = [pageLayout runModalWithPrintInfo:printInfo];
         [delegate pageLayoutDidEnd:pageLayout returnCode:rval contextInfo:q];
     } else {
         Q_ASSERT(q->parentWidget());
-        [pageLayout beginSheetWithPrintInfo:ep->printInfo
-                             modalForWindow:qt_mac_window_for(q->parentWidget())
+        QWindow *parentWindow = q->parentWidget()->windowHandle();
+        NSWindow *window = static_cast<NSWindow *>(qApp->platformNativeInterface()->nativeResourceForWindow("nswindow", parentWindow));
+        [pageLayout beginSheetWithPrintInfo:printInfo
+                             modalForWindow:window
                                    delegate:delegate
                              didEndSelector:@selector(pageLayoutDidEnd:returnCode:contextInfo:)
                                 contextInfo:q];
     }
-
-    macStopInterceptWindowTitle();
 }
 
 void QPageSetupDialogPrivate::closeCocoaPageLayout()
 {
-    // NSPageLayout can change the session behind our back and then our
-    // d->ep->session object will become a dangling pointer. Update it
-    // based on the "current" session
-    ep->session = static_cast<PMPrintSession>([ep->printInfo PMPrintSession]);
-
+    [printInfo release];
+    printInfo = 0;
     [pageLayout release];
     pageLayout = 0;
 }
 
 QPageSetupDialog::QPageSetupDialog(QPrinter *printer, QWidget *parent)
     : QAbstractPageSetupDialog(*(new QPageSetupDialogPrivate), printer, parent)
-{
-    Q_D(QPageSetupDialog);
-    d->ep = static_cast<QMacPrintEngine *>(d->printer->paintEngine())->d_func();
-}
+{ }
 
 QPageSetupDialog::QPageSetupDialog(QWidget *parent)
     : QAbstractPageSetupDialog(*(new QPageSetupDialogPrivate), 0, parent)
-{
-    Q_D(QPageSetupDialog);
-    d->ep = static_cast<QMacPrintEngine *>(d->printer->paintEngine())->d_func();
-}
+{ }
 
 void QPageSetupDialog::setVisible(bool visible)
 {
@@ -194,9 +191,10 @@ int QPageSetupDialog::exec()
     if (d->printer->outputFormat() != QPrinter::NativeFormat)
         return Rejected;
 
-    QMacCocoaAutoReleasePool pool;
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     d->openCocoaPageLayout(Qt::ApplicationModal);
     d->closeCocoaPageLayout();
+    [pool release];
     return result();
 }
 

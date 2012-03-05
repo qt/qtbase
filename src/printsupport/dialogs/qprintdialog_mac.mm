@@ -41,13 +41,16 @@
 
 #ifndef QT_NO_PRINTDIALOG
 
-#include <private/qt_mac_p.h>
+#include <Cocoa/Cocoa.h>
 
-#include <qhash.h>
-#include <qprintdialog.h>
-#include <private/qapplication_p.h>
-#include <private/qabstractprintdialog_p.h>
-#include <private/qprintengine_mac_p.h>
+#include "qprintdialog.h"
+#include "qabstractprintdialog_p.h"
+
+#include <QtCore/qhash.h>
+#include <QtCore/private/qcore_mac_p.h>
+#include <QtWidgets/private/qapplication_p.h>
+#include <QtPrintSupport/qprinter.h>
+#include <QtPrintSupport/qprintengine.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,12 +59,11 @@ class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
     Q_DECLARE_PUBLIC(QPrintDialog)
 
 public:
-    QPrintDialogPrivate() : ep(0), printPanel(0)
+    QPrintDialogPrivate() : printInfo(0), printPanel(0)
        {}
 
     void openCocoaPrintPanel(Qt::WindowModality modality);
     void closeCocoaPrintPanel();
-    void initBeforeRun();
 
     inline QPrintDialog *printDialog() { return q_func(); }
 
@@ -76,7 +78,7 @@ public:
     inline void _q_btnBrowseClicked() {}
     inline void _q_btnPropertiesClicked() {}
 
-    QMacPrintEnginePrivate *ep;
+    NSPrintInfo *printInfo;
     NSPrintPanel *printPanel;
 };
 
@@ -87,25 +89,38 @@ QT_USE_NAMESPACE
 
 @class QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate);
 
-@interface QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) : NSObject {
+@interface QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) : NSObject
+{
+    NSPrintInfo *printInfo;
 }
+- (id)initWithNSPrintInfo:(NSPrintInfo *)nsPrintInfo;
 - (void)printPanelDidEnd:(NSPrintPanel *)printPanel
         returnCode:(int)returnCode contextInfo:(void *)contextInfo;
 @end
 
 @implementation QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate)
+- (id)initWithNSPrintInfo:(NSPrintInfo *)nsPrintInfo
+{
+    if (self = [super init]) {
+        printInfo = nsPrintInfo;
+    }
+    return self;
+}
 - (void)printPanelDidEnd:(NSPrintPanel *)printPanel
         returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
     Q_UNUSED(printPanel);
 
-    QPrintDialogPrivate *d = static_cast<QPrintDialogPrivate *>(contextInfo);
-    QPrintDialog *dialog = d->printDialog();
+    QPrintDialog *dialog = static_cast<QPrintDialog *>(contextInfo);
+    QPrinter *printer = dialog->printer();
 
     if (returnCode == NSOKButton) {
+        PMPrintSession session = static_cast<PMPrintSession>([printInfo PMPrintSession]);
+        PMPrintSettings settings = static_cast<PMPrintSettings>([printInfo PMPrintSettings]);
+
         UInt32 frompage, topage;
-        PMGetFirstPage(d->ep->settings, &frompage);
-        PMGetLastPage(d->ep->settings, &topage);
+        PMGetFirstPage(settings, &frompage);
+        PMGetLastPage(settings, &topage);
         topage = qMin(UInt32(INT_MAX), topage);
         dialog->setFromTo(frompage, topage);
 
@@ -128,22 +143,19 @@ QT_USE_NAMESPACE
         // If the user selected print to file, the session has been
         // changed behind our back and our d->ep->session object is a
         // dangling pointer. Update it based on the "current" session
-        d->ep->session = static_cast<PMPrintSession>([d->ep->printInfo PMPrintSession]);
-
-        PMSessionGetDestinationType(d->ep->session, d->ep->settings, &dest);
+        PMSessionGetDestinationType(session, settings, &dest);
         if (dest == kPMDestinationFile) {
             QCFType<CFURLRef> file;
-            PMSessionCopyDestinationLocation(d->ep->session, d->ep->settings, &file);
+            PMSessionCopyDestinationLocation(session, settings, &file);
             UInt8 localFile[2048];  // Assuming there's a POSIX file system here.
             CFURLGetFileSystemRepresentation(file, true, localFile, sizeof(localFile));
-            d->ep->outputFilename
-                = QString::fromUtf8(reinterpret_cast<const char *>(localFile));
+            printer->setOutputFileName(QString::fromUtf8(reinterpret_cast<const char *>(localFile)));
         } else {
             // Keep output format.
             QPrinter::OutputFormat format;
-            format = d->printer->outputFormat();
-            d->printer->setOutputFileName(QString());
-            d->printer->setOutputFormat(format);
+            format = printer->outputFormat();
+            printer->setOutputFileName(QString());
+            printer->setOutputFormat(format);
         }
     }
 
@@ -151,38 +163,33 @@ QT_USE_NAMESPACE
 }
 @end
 
-
 QT_BEGIN_NAMESPACE
-
-extern void macStartInterceptWindowTitle(QWidget *window);
-extern void macStopInterceptWindowTitle();
-
-
-void QPrintDialogPrivate::initBeforeRun()
-{
-    Q_Q(QPrintDialog);
-    // If someone is reusing a QPrinter object, the end released all our old
-    // information. In this case, we must reinitialize.
-    if (ep->session == 0)
-        ep->initialize();
-
-
-    // It seems the only way that PM lets you use all is if the minimum
-    // for the page range is 1. This _kind of_ makes sense if you think about
-    // it. However, calling PMSetFirstPage() or PMSetLastPage() always enforces
-    // the range.
-    PMSetPageRange(ep->settings, q->minPage(), q->maxPage());
-    if (q->printRange() == QAbstractPrintDialog::PageRange) {
-        PMSetFirstPage(ep->settings, q->fromPage(), false);
-        PMSetLastPage(ep->settings, q->toPage(), false);
-    }
-}
 
 void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
 {
     Q_Q(QPrintDialog);
 
-    initBeforeRun();
+    // get the NSPrintInfo from the print engine in the platform plugin
+    void *voidp = 0;
+    (void) QMetaObject::invokeMethod(qApp->platformNativeInterface(),
+                                     "NSPrintInfoForPrintEngine",
+                                     Q_RETURN_ARG(void *, voidp),
+                                     Q_ARG(QPrintEngine *, printer->printEngine()));
+    printInfo = static_cast<NSPrintInfo *>(voidp);
+    [printInfo retain];
+
+    // It seems the only way that PM lets you use all is if the minimum
+    // for the page range is 1. This _kind of_ makes sense if you think about
+    // it. However, calling PMSetFirstPage() or PMSetLastPage() always enforces
+    // the range.
+    // get print settings from the platform plugin
+    PMPrintSettings settings = static_cast<PMPrintSettings>([printInfo PMPrintSettings]);
+    PMSetPageRange(settings, q->minPage(), q->maxPage());
+    if (q->printRange() == QAbstractPrintDialog::PageRange) {
+        PMSetFirstPage(settings, q->fromPage(), false);
+        PMSetLastPage(settings, q->toPage(), false);
+    }
+    [printInfo updateFromPMPrintSettings];
 
     QPrintDialog::PrintDialogOptions qtOptions = q->options();
     NSPrintPanelOptions macOptions = NSPrintPanelShowsCopies;
@@ -192,30 +199,32 @@ void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
         macOptions |= NSPrintPanelShowsPaperSize | NSPrintPanelShowsPageSetupAccessory
                       | NSPrintPanelShowsOrientation;
 
-    macStartInterceptWindowTitle(q);
     printPanel = [NSPrintPanel printPanel];
-    QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) alloc] init];
+    [printPanel retain];
     [printPanel setOptions:macOptions];
 
+    QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) alloc] init];
     if (modality == Qt::ApplicationModal) {
-        int rval = [printPanel runModalWithPrintInfo:ep->printInfo];
+        int rval = [printPanel runModalWithPrintInfo:printInfo];
         [delegate printPanelDidEnd:printPanel returnCode:rval contextInfo:this];
     } else {
         Q_ASSERT(q->parentWidget());
-        NSWindow *windowRef = qt_mac_window_for(q->parentWidget());
-        [printPanel beginSheetWithPrintInfo:ep->printInfo
-                             modalForWindow:windowRef
+        QWindow *parentWindow = q->parentWidget()->windowHandle();
+        NSWindow *window = static_cast<NSWindow *>(qApp->platformNativeInterface()->nativeResourceForWindow("nswindow", parentWindow));
+        [printPanel beginSheetWithPrintInfo:printInfo
+                             modalForWindow:window
                                    delegate:delegate
                              didEndSelector:@selector(printPanelDidEnd:returnCode:contextInfo:)
                                 contextInfo:this];
     }
-
-    macStopInterceptWindowTitle();
 }
 
 void QPrintDialogPrivate::closeCocoaPrintPanel()
 {
-    // ###
+    [printInfo release];
+    printInfo = 0;
+    [printPanel release];
+    printPanel = 0;
 }
 
 static bool warnIfNotNative(QPrinter *printer)
@@ -234,7 +243,6 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     Q_D(QPrintDialog);
     if (!warnIfNotNative(d->printer))
         return;
-    d->ep = static_cast<QMacPrintEngine *>(d->printer->paintEngine())->d_func();
 }
 
 QPrintDialog::QPrintDialog(QWidget *parent)
@@ -243,7 +251,6 @@ QPrintDialog::QPrintDialog(QWidget *parent)
     Q_D(QPrintDialog);
     if (!warnIfNotNative(d->printer))
         return;
-    d->ep = static_cast<QMacPrintEngine *>(d->printer->paintEngine())->d_func();
 }
 
 QPrintDialog::~QPrintDialog()
@@ -256,10 +263,10 @@ int QPrintDialog::exec()
     if (!warnIfNotNative(d->printer))
         return QDialog::Rejected;
 
-    QMacCocoaAutoReleasePool pool;
-
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     d->openCocoaPrintPanel(Qt::ApplicationModal);
     d->closeCocoaPrintPanel();
+    [pool release];
     return result();
 }
 

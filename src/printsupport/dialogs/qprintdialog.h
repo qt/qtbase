@@ -55,7 +55,7 @@ class QPrintDialogPrivate;
 class QPushButton;
 class QPrinter;
 
-#if defined (Q_OS_UNIX)
+#if defined (Q_OS_UNIX) && !defined(Q_OS_MAC)
 class QUnixPrintWidgetPrivate;
 
 class Q_PRINTSUPPORT_EXPORT QUnixPrintWidget : public QWidget
@@ -90,7 +90,7 @@ public:
     ~QPrintDialog();
 
     int exec();
-#if defined (Q_OS_UNIX)
+#if defined (Q_OS_UNIX) && !defined(Q_OS_MAC)
     virtual void accept();
 #endif
     void done(int result);
@@ -130,10 +130,10 @@ Q_SIGNALS:
 
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_chbPrintLastFirstToggled(bool))
-#if defined (Q_OS_UNIX)
+#if defined (Q_OS_UNIX) && !defined(Q_OS_MAC)
     Q_PRIVATE_SLOT(d_func(), void _q_collapseOrExpandDialog())
 #endif
-# if defined(Q_OS_UNIX) && !defined(QT_NO_MESSAGEBOX)
+# if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(QT_NO_MESSAGEBOX)
     Q_PRIVATE_SLOT(d_func(), void _q_checkFields())
 # endif
     friend class QUnixPrintWidget;

@@ -9,10 +9,10 @@ HEADERS += \
         dialogs/qprintdialog.h \
         dialogs/qprintpreviewdialog.h
 
-# ### fixme
-false {
+mac {
     OBJECTIVE_SOURCES += dialogs/qpagesetupdialog_mac.mm \
                          dialogs/qprintdialog_mac.mm
+    LIBS += -framework Cocoa
 }
 
 win32 {
@@ -20,7 +20,7 @@ win32 {
                dialogs/qprintdialog_win.cpp
 }
 
-unix {
+unix:!mac {
     HEADERS += dialogs/qpagesetupdialog_unix_p.h
     SOURCES += dialogs/qprintdialog_unix.cpp \
                dialogs/qpagesetupdialog_unix.cpp
