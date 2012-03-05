@@ -844,14 +844,12 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, I
         QPair<QObject*, int> ref = qAccessibleRecentSentEvents()->value(entry);
         if (ref.first) {
             acc = QAccessible::queryAccessibleInterface(ref.first);
-            if (acc && ref.second) {
-                if (ref.second) {
-                    QAccessibleInterface *res = acc->child(ref.second - 1);
-                    delete acc;
-                    if (!res)
-                        return E_INVALIDARG;
-                    acc = res;
-                }
+            if (acc && ref.second >= 0) {
+                QAccessibleInterface *res = acc->child(ref.second);
+                delete acc;
+                if (!res)
+                    return E_INVALIDARG;
+                acc = res;
             }
         }
     } else {

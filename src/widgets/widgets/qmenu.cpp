@@ -1075,7 +1075,7 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
     if (action_e == QAction::Hover) {
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
-            int actionIndex = indexOf(action) + 1;
+            int actionIndex = indexOf(action);
             QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, q, actionIndex));
             QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, q, actionIndex));
         }
