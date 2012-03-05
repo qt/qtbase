@@ -288,7 +288,7 @@ public:
         MaxUser = 65535                         // last user event id
     };
 
-    QEvent(Type type);
+    explicit QEvent(Type type);
     virtual ~QEvent();
     inline Type type() const { return static_cast<Type>(t); }
     inline bool spontaneous() const { return spont; }
@@ -330,7 +330,7 @@ private:
 class Q_CORE_EXPORT QTimerEvent : public QEvent
 {
 public:
-    QTimerEvent( int timerId );
+    explicit QTimerEvent( int timerId );
     ~QTimerEvent();
     int timerId() const { return id; }
 protected:
@@ -355,7 +355,7 @@ protected:
 class Q_CORE_EXPORT QDynamicPropertyChangeEvent : public QEvent
 {
 public:
-    QDynamicPropertyChangeEvent(const QByteArray &name);
+    explicit QDynamicPropertyChangeEvent(const QByteArray &name);
     ~QDynamicPropertyChangeEvent();
 
     inline QByteArray propertyName() const { return n; }

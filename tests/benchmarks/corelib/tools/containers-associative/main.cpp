@@ -72,8 +72,8 @@ void tst_associative_containers::insert_data()
     
         const QByteArray sizeString = QByteArray::number(size);
 
-        QTest::newRow(("hash--" + sizeString).constData()) << true << size;
-        QTest::newRow(("map--" + sizeString).constData()) << false << size;
+        QTest::newRow(QByteArray("hash--" + sizeString).constData()) << true << size;
+        QTest::newRow(QByteArray("map--" + sizeString).constData()) << false << size;
     }
 }
 
@@ -104,8 +104,8 @@ void tst_associative_containers::lookup_data()
     
         const QByteArray sizeString = QByteArray::number(size);
 
-        QTest::newRow(("hash--" + sizeString).constData()) << true << size;
-        QTest::newRow(("map--" + sizeString).constData()) << false << size;
+        QTest::newRow(QByteArray("hash--" + sizeString).constData()) << true << size;
+        QTest::newRow(QByteArray("map--" + sizeString).constData()) << false << size;
     }
 }
 

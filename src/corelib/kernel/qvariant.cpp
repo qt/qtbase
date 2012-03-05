@@ -1696,7 +1696,7 @@ void QVariant::load(QDataStream &s)
     if (typeId == QVariant::UserType) {
         QByteArray name;
         s >> name;
-        typeId = QMetaType::type(name);
+        typeId = QMetaType::type(name.constData());
         if (!typeId) {
             s.setStatus(QDataStream::ReadCorruptData);
             return;

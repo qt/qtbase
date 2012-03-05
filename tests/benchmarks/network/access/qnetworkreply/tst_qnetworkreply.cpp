@@ -530,7 +530,7 @@ void tst_qnetworkreply::downloadPerformance()
     // unlike the above function, this one tries to send as fast as possible
     // and measures how fast it was.
     TimedSender sender(5000);
-    QNetworkRequest request("debugpipe://127.0.0.1:" + QString::number(sender.serverPort()) + "/?bare=1");
+    QNetworkRequest request(QUrl(QStringLiteral("debugpipe://127.0.0.1:") + QString::number(sender.serverPort()) + QStringLiteral("/?bare=1")));
     QNetworkReplyPtr reply = manager.get(request);
     DataReader reader(reply, false);
 
@@ -552,7 +552,7 @@ void tst_qnetworkreply::uploadPerformance()
       DataGenerator generator;
 
 
-      QNetworkRequest request("debugpipe://127.0.0.1:" + QString::number(reader.serverPort()) + "/?bare=1");
+      QNetworkRequest request(QUrl(QStringLiteral("debugpipe://127.0.0.1:") + QString::number(reader.serverPort()) + QStringLiteral("/?bare=1")));
       QNetworkReplyPtr reply = manager.put(request, &generator);
       generator.start();
       connect(&reader, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));

@@ -55,6 +55,7 @@
 
 #include "QtCore/qabstracteventdispatcher.h"
 #include "QtCore/qt_windows.h"
+#include "QtCore/qhash.h"
 
 #include "qabstracteventdispatcher_p.h"
 
@@ -130,7 +131,7 @@ struct WinTimerInfo {                           // internal timer info
 class QZeroTimerEvent : public QTimerEvent
 {
 public:
-    inline QZeroTimerEvent(int timerId)
+    explicit inline QZeroTimerEvent(int timerId)
         : QTimerEvent(timerId)
     { t = QEvent::ZeroTimerEvent; }
 };

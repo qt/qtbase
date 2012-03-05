@@ -44,6 +44,7 @@
 
 #include <qglobal.h>
 #include <qstring.h>
+#include <qhash.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,6 +56,9 @@ class QMakeProperty
     void initSettings();
     QString keyBase(bool =true) const;
     QString value(QString, bool just_check);
+
+    QHash<QString, QString> m_values;
+
 public:
     QMakeProperty();
     ~QMakeProperty();

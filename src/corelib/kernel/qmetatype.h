@@ -565,6 +565,7 @@ template <class T> class QSet;
 template <class T> class QSharedPointer;
 template <class T1, class T2> class QMap;
 template <class T1, class T2> class QHash;
+template <class T1, class T2> struct QPair;
 typedef QList<QVariant> QVariantList;
 typedef QMap<QString, QVariant> QVariantMap;
 typedef QHash<QString, QVariant> QVariantHash;
@@ -586,6 +587,23 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
     } \
 };
 
+#define Q_DECLARE_METATYPE_TEMPLATE_2ARG(DOUBLE_ARG_TEMPLATE) \
+template<typename T, typename U> \
+struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
+{ \
+    enum { \
+        Defined = QMetaTypeId2<T>::Defined && QMetaTypeId2<U>::Defined \
+    }; \
+    static int qt_metatype_id() \
+    { \
+        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
+        if (!metatype_id.load()) \
+            metatype_id.storeRelease(qRegisterMetaType< DOUBLE_ARG_TEMPLATE<T, U> >( QByteArray(QByteArray(#DOUBLE_ARG_TEMPLATE "<") + QMetaType::typeName(qMetaTypeId<T>()) + ", " + QMetaType::typeName(qMetaTypeId<U>()) + ">").constData(), \
+                        reinterpret_cast< DOUBLE_ARG_TEMPLATE<T, U> *>(quintptr(-1)))); \
+        return metatype_id.loadAcquire(); \
+    } \
+};
+
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QList)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QVector)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QQueue)
@@ -593,6 +611,10 @@ Q_DECLARE_METATYPE_TEMPLATE_1ARG(QStack)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSet)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSharedPointer)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QLinkedList)
+
+Q_DECLARE_METATYPE_TEMPLATE_2ARG(QHash)
+Q_DECLARE_METATYPE_TEMPLATE_2ARG(QMap)
+Q_DECLARE_METATYPE_TEMPLATE_2ARG(QPair)
 
 inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeInterface *info,
                             Creator creator,

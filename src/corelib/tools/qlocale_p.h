@@ -55,7 +55,7 @@
 
 #include "QtCore/qstring.h"
 #include "QtCore/qvarlengtharray.h"
-#include "QtCore/qmetatype.h"
+#include "QtCore/qvariant.h"
 
 #include "qlocale.h"
 

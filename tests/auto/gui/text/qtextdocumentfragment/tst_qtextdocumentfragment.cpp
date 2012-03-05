@@ -2938,7 +2938,7 @@ void tst_QTextDocumentFragment::backgroundImage()
     doc.setHtml("<p style=\"background-image: url(testPixmap)\">Hello</p>");
     QBrush bg = doc.begin().blockFormat().background();
     QVERIFY(bg.style() == Qt::TexturePattern);
-    QVERIFY(bg.texture().serialNumber() == doc.testPixmap.serialNumber());
+    QCOMPARE(bg.texture().cacheKey(), doc.testPixmap.cacheKey());
 }
 
 void tst_QTextDocumentFragment::dontMergePreAndNonPre()

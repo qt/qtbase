@@ -45,6 +45,8 @@ information about a particular change.
   in Qt4, so these methods return a bool now. If your code used the undocumented
   QBool, simply replace it with bool.
 
+- qIsDetached<> has been removed without replacement.
+
 - QMetaType:
   * QMetaType::construct() has been renamed to QMetaType::create().
   * QMetaType::unregisterType() has been removed.
@@ -201,6 +203,10 @@ information about a particular change.
 - qmake
   * Projects which explicitly set an empty TARGET are considered broken now.
   * The makespec and .qmake.cache do not see build pass specific variables any more.
+  * Configure's -sysroot and -hostprefix are now handled slightly differently.
+    The QT_INSTALL_... properties are now automatically prefixed with the sysroot;
+    the raw values are available as QT_RAW_INSTALL_... and the sysroot as QT_SYSROOT.
+    The new QT_HOST_... properties can be used to refer to the Qt host tools.
   * Several functions and built-in variables were modified to return normalized paths.
 
 - QTextCodecPlugin has been removed since it is no longer used. All text codecs

@@ -248,10 +248,10 @@ public:
 
 
     QXmlStreamReader();
-    QXmlStreamReader(QIODevice *device);
-    QXmlStreamReader(const QByteArray &data);
-    QXmlStreamReader(const QString &data);
-    QXmlStreamReader(const char * data);
+    explicit QXmlStreamReader(QIODevice *device);
+    explicit QXmlStreamReader(const QByteArray &data);
+    explicit QXmlStreamReader(const QString &data);
+    explicit QXmlStreamReader(const char * data);
     ~QXmlStreamReader();
 
     void setDevice(QIODevice *device);
@@ -361,9 +361,9 @@ class Q_CORE_EXPORT QXmlStreamWriter
     QDOC_PROPERTY(int autoFormattingIndent READ autoFormattingIndent WRITE setAutoFormattingIndent)
 public:
     QXmlStreamWriter();
-    QXmlStreamWriter(QIODevice *device);
-    QXmlStreamWriter(QByteArray *array);
-    QXmlStreamWriter(QString *string);
+    explicit QXmlStreamWriter(QIODevice *device);
+    explicit QXmlStreamWriter(QByteArray *array);
+    explicit QXmlStreamWriter(QString *string);
     ~QXmlStreamWriter();
 
     void setDevice(QIODevice *device);

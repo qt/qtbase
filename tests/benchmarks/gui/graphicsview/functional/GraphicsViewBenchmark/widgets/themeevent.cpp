@@ -41,7 +41,7 @@
 
 #include "themeevent.h"
 
-ThemeEvent::ThemeEvent( QString newTheme, Type type) : QEvent(type),
+ThemeEvent::ThemeEvent( const QString &newTheme, Type type) : QEvent(type),
     m_theme(newTheme)
 {
     

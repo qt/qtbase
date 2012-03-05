@@ -123,6 +123,15 @@ void tst_QFlags::constExpr()
 #endif
 }
 
+// (statically) check QTypeInfo for QFlags instantiations:
+enum MyEnum { Zero, One, Two, Four=4 };
+Q_DECLARE_FLAGS( MyFlags, MyEnum );
+Q_DECLARE_OPERATORS_FOR_FLAGS( MyFlags );
+
+Q_STATIC_ASSERT( !QTypeInfo<MyFlags>::isComplex );
+Q_STATIC_ASSERT( !QTypeInfo<MyFlags>::isStatic );
+Q_STATIC_ASSERT( !QTypeInfo<MyFlags>::isLarge );
+Q_STATIC_ASSERT( !QTypeInfo<MyFlags>::isPointer );
 
 QTEST_MAIN(tst_QFlags)
 #include "tst_qflags.moc"

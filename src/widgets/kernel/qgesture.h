@@ -270,7 +270,7 @@ class QGestureEventPrivate;
 class Q_WIDGETS_EXPORT QGestureEvent : public QEvent
 {
 public:
-    QGestureEvent(const QList<QGesture *> &gestures);
+    explicit QGestureEvent(const QList<QGesture *> &gestures);
     ~QGestureEvent();
 
     QList<QGesture *> gestures() const;

@@ -1378,7 +1378,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     }
     tmp = project->values("QMAKE_PBX_VARS");
     for(int i = 0; i < tmp.count(); i++) {
-        QString var = tmp[i], val = qgetenv(var.toLatin1());
+        QString var = tmp[i], val = QString::fromAscii(qgetenv(var.toLatin1().constData()));
         if(val.isEmpty() && var == "TB")
             val = "/usr/bin/";
         t << "\t\t\t\t" << writeSettings(var, escapeFilePath(val)) << ";" << "\n";

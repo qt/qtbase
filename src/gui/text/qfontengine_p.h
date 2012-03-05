@@ -279,7 +279,6 @@ public:
     int m_subPixelPositionCount; // Number of positions within a single pixel for this cache
 
 protected:
-    static const QVector<QRgb> &grayPalette();
     QFixed lastRightBearing(const QGlyphLayout &glyphs, bool round = false);
 
 private:

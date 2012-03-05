@@ -132,7 +132,7 @@ public:
 class StartStopEvent: public QEvent
 {
 public:
-    StartStopEvent(int type, QEventLoop *loop = 0)
+    explicit StartStopEvent(int type, QEventLoop *loop = 0)
         : QEvent(Type(type)), el(loop)
     { }
 

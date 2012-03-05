@@ -93,7 +93,7 @@ void tst_QAuthenticator::basicAuth()
     QVERIFY(priv->phase == QAuthenticatorPrivate::Start);
 
     QList<QPair<QByteArray, QByteArray> > headers;
-    headers << qMakePair(QByteArray("WWW-Authenticate"), "Basic " + data.toUtf8());
+    headers << qMakePair<QByteArray, QByteArray>(QByteArray("WWW-Authenticate"), "Basic " + data.toUtf8());
     priv->parseHttpResponse(headers, /*isProxy = */ false);
 
     QCOMPARE(auth.realm(), realm);
@@ -104,7 +104,7 @@ void tst_QAuthenticator::basicAuth()
 
     QVERIFY(priv->phase == QAuthenticatorPrivate::Start);
 
-    QCOMPARE(priv->calculateResponse("GET", "/").constData(), ("Basic " + expectedReply).constData());
+    QCOMPARE(priv->calculateResponse("GET", "/").constData(), QByteArray("Basic " + expectedReply).constData());
 }
 
 void tst_QAuthenticator::ntlmAuth_data()
@@ -138,7 +138,7 @@ void tst_QAuthenticator::ntlmAuth()
 
     // NTLM phase 2: challenge
     headers.clear();
-    headers << qMakePair(QByteArray("WWW-Authenticate"), "NTLM " + data.toUtf8());
+    headers << qMakePair<QByteArray, QByteArray>(QByteArray("WWW-Authenticate"), "NTLM " + data.toUtf8());
     priv->parseHttpResponse(headers, /*isProxy = */ false);
 
     QEXPECT_FAIL("with-realm", "NTLM authentication code doesn't extract the realm", Continue);

@@ -5684,24 +5684,24 @@ static QByteArray encodeEntity(const QByteArray& str)
     QByteArray tmp(str);
     int len = tmp.size();
     int i = 0;
-    const char* d = tmp.data();
+    const char* d = tmp.constData();
     while (i < len) {
         if (d[i] == '%'){
             tmp.replace(i, 1, "&#60;");
-            d = tmp;
+            d = tmp.constData();
             len += 4;
             i += 5;
         }
         else if (d[i] == '"') {
             tmp.replace(i, 1, "&#34;");
-            d = tmp;
+            d = tmp.constData();
             len += 4;
             i += 5;
         } else if (d[i] == '&' && i + 1 < len && d[i+1] == '#') {
             // Dont encode &lt; or &quot; or &custom;.
             // Only encode character references
             tmp.replace(i, 1, "&#38;");
-            d = tmp;
+            d = tmp.constData();
             len += 4;
             i += 5;
         } else {

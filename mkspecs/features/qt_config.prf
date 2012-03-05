@@ -8,7 +8,7 @@ exists($$_QMAKE_CACHE_) {
 isEmpty(QMAKE_QT_CONFIG)|!exists($$QMAKE_QT_CONFIG) {
    !isEmpty(QT_BUILD_TREE):QMAKE_QT_CONFIG = $$QT_BUILD_TREE
    else:exists($$_QMAKE_CACHE_):QMAKE_QT_CONFIG = $$fromfile($$_QMAKE_CACHE_, QT_BUILD_TREE)
-   isEmpty(QMAKE_QT_CONFIG):QMAKE_QT_CONFIG = $$[QT_INSTALL_DATA]
+   isEmpty(QMAKE_QT_CONFIG):QMAKE_QT_CONFIG = $$[QT_HOST_DATA]
    QMAKE_QT_CONFIG = $$QMAKE_QT_CONFIG/mkspecs/qconfig.pri
 }
 !exists($$QMAKE_QT_CONFIG)|!include($$QMAKE_QT_CONFIG, "", true) {

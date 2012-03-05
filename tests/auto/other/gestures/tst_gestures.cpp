@@ -87,7 +87,7 @@ class CustomEvent : public QEvent
 public:
     static int EventType;
 
-    CustomEvent(int serial_ = 0)
+    explicit CustomEvent(int serial_ = 0)
         : QEvent(QEvent::Type(CustomEvent::EventType)),
           serial(serial_), hasHotSpot(false)
     {
