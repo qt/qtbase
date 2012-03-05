@@ -1175,8 +1175,10 @@ void tst_QArrayData::setSharable_data()
 
     QArrayDataPointer<int> emptyReserved(QTypedArrayData<int>::allocate(5,
                 QArrayData::CapacityReserved));
-    QArrayDataPointer<int> nonEmpty(QTypedArrayData<int>::allocate(10,
+    QArrayDataPointer<int> nonEmpty(QTypedArrayData<int>::allocate(5,
                 QArrayData::Default));
+    QArrayDataPointer<int> nonEmptyExtraCapacity(
+            QTypedArrayData<int>::allocate(10, QArrayData::Default));
     QArrayDataPointer<int> nonEmptyReserved(QTypedArrayData<int>::allocate(15,
                 QArrayData::CapacityReserved));
     QArrayDataPointer<int> staticArray(
@@ -1185,13 +1187,15 @@ void tst_QArrayData::setSharable_data()
             QTypedArrayData<int>::fromRawData(staticArrayData.data, 10));
 
     nonEmpty->copyAppend(5, 1);
+    nonEmptyExtraCapacity->copyAppend(5, 1);
     nonEmptyReserved->copyAppend(7, 2);
 
     QTest::newRow("shared-null") << null << size_t(0) << size_t(0) << false << 0;
     QTest::newRow("shared-empty") << empty << size_t(0) << size_t(0) << false << 0;
     // unsharable-empty implicitly tested in shared-empty
     QTest::newRow("empty-reserved") << emptyReserved << size_t(0) << size_t(5) << true << 0;
-    QTest::newRow("non-empty") << nonEmpty << size_t(5) << size_t(10) << false << 1;
+    QTest::newRow("non-empty") << nonEmpty << size_t(5) << size_t(5) << false << 1;
+    QTest::newRow("non-empty-extra-capacity") << nonEmptyExtraCapacity << size_t(5) << size_t(10) << false << 1;
     QTest::newRow("non-empty-reserved") << nonEmptyReserved << size_t(7) << size_t(15) << true << 2;
     QTest::newRow("static-array") << staticArray << size_t(10) << size_t(0) << false << 3;
     QTest::newRow("raw-data") << rawData << size_t(10) << size_t(0) << false << 3;
@@ -1229,8 +1233,10 @@ void tst_QArrayData::setSharable()
     // Unshare, must detach
     array.setSharable(false);
 
-    // Immutability (alloc == 0) is lost on detach
-    if (capacity == 0 && size != 0)
+    // Immutability (alloc == 0) is lost on detach, as is additional capacity
+    // if capacityReserved flag is not set.
+    if ((capacity == 0 && size != 0)
+            || (!isCapacityReserved && capacity > size))
         capacity = size;
 
     QVERIFY(!array->ref.isShared());

@@ -184,7 +184,7 @@ public:
         if (d->ref.isShared()
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
-                        qMax(capacity(), size() + (last - first)),
+                        d->detachCapacity(size() + (last - first)),
                         d->detachFlags() | Data::Grow));
 
             detached.d->copyAppend(first, last);
@@ -205,7 +205,7 @@ public:
         if (d->ref.isShared()
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
-                        qMax(capacity(), size() + (last - first)),
+                        d->detachCapacity(size() + (last - first)),
                         d->detachFlags() | Data::Grow));
 
             if (d->size) {
@@ -245,7 +245,7 @@ public:
         if (d->ref.isShared()
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
-                        qMax(capacity(), size() + (last - first)),
+                        d->detachCapacity(size() + (last - first)),
                         d->detachFlags() | Data::Grow));
 
             if (position)

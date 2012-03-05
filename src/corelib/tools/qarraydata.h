@@ -91,6 +91,13 @@ struct Q_CORE_EXPORT QArrayData
 
     Q_DECLARE_FLAGS(AllocationOptions, AllocationOption)
 
+    size_t detachCapacity(size_t newSize) const
+    {
+        if (capacityReserved && newSize < alloc)
+            return alloc;
+        return newSize;
+    }
+
     AllocationOptions detachFlags() const
     {
         AllocationOptions result;
