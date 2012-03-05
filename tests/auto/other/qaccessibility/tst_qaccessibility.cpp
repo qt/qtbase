@@ -777,6 +777,7 @@ void tst_QAccessibility::actionTest()
     {
     QPushButton *button = new QPushButton;
     button->show();
+    QTest::qWaitForWindowShown(button);
     button->clearFocus();
     QCOMPARE(button->hasFocus(), false);
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(button);
