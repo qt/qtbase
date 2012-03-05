@@ -74,13 +74,12 @@ class QPlatformCursor;
 
 class Q_GUI_EXPORT QPlatformCursorPrivate {
 public:
-    static QList<QWeakPointer<QPlatformCursor> > getInstances() { return instances; }
-    static QList<QWeakPointer<QPlatformCursor> > instances;
+    static QList<QPlatformCursor *> getInstances();
 };
 
 class Q_GUI_EXPORT QPlatformCursor : public QObject {
 public:
-    QPlatformCursor(QPlatformScreen *);
+    QPlatformCursor();
 
     // input methods
     virtual void pointerEvent(const QMouseEvent & event) { Q_UNUSED(event); }
@@ -88,11 +87,8 @@ public:
     virtual QPoint pos() const;
     virtual void setPos(const QPoint &pos);
 
-protected:
-    QPlatformScreen* screen;  // Where to request an update
-
 private:
-    Q_DECLARE_PRIVATE(QPlatformCursor);
+    Q_DECLARE_PRIVATE(QPlatformCursor)
     friend void qt_qpa_set_cursor(QWidget * w, bool force);
     friend class QApplicationPrivate;
 };

@@ -905,16 +905,12 @@ void QWidgetPrivate::setModal_sys()
 }
 
 #ifndef QT_NO_CURSOR
-static void applyCursor(QWidget *w, const QCursor &c)
+static inline void applyCursor(QWidget *w, QCursor c)
 {
-    QCursor cc = c;
-    QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
-    int cursorCount = cursors.count();
-    for (int i = 0; i < cursorCount; ++i) {
-        const QWeakPointer<QPlatformCursor> &cursor(cursors.at(i));
-        if (cursor)
-            cursor.data()->changeCursor(&cc, w->window()->windowHandle());
-    }
+    if (QWindow *window = w->windowHandle())
+        if (const QScreen *screen = window->screen())
+            if (QPlatformCursor *cursor = screen->handle()->cursor())
+                cursor->changeCursor(&c, window);
 }
 
 void qt_qpa_set_cursor(QWidget *w, bool force)

@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 class QCocoaCursor : public QPlatformCursor
 {
 public:
-    explicit QCocoaCursor(QPlatformScreen *);
+    QCocoaCursor();
 
     virtual void changeCursor(QCursor * widgetCursor, QWindow * widget);
     virtual QPoint pos() const;

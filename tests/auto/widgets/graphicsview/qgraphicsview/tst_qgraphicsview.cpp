@@ -4338,9 +4338,16 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
     QPointF newMouseScenePos = view.mapToScene(mouseViewPos);
 
     qreal slack = 1;
-    QEXPECT_FAIL("", "QTBUG-22455", Abort);
-    QVERIFY(qAbs(newMouseScenePos.x() - mouseScenePos.x()) < slack);
-    QVERIFY(qAbs(newMouseScenePos.y() - mouseScenePos.y()) < slack);
+
+    const qreal dx = qAbs(newMouseScenePos.x() - mouseScenePos.x());
+    const qreal dy = qAbs(newMouseScenePos.y() - mouseScenePos.y());
+    const QByteArray message = QString::fromLatin1("QTBUG-22455, distance: dx=%1, dy=%2 slack=%3 (%4).").
+                     arg(dx).arg(dy).arg(slack).arg(qApp->style()->metaObject()->className()).toLocal8Bit();
+    // This is highly unstable (observed to pass on Windows and some Linux configurations).
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", message.constData(), Abort);
+#endif
+    QVERIFY2(dx < slack && dy < slack, message.constData());
 #endif
 }
 

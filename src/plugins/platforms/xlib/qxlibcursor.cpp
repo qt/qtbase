@@ -52,8 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QXlibCursor::QXlibCursor(QXlibScreen *screen)
-    : QPlatformCursor(screen)
+QXlibCursor::QXlibCursor(QXlibScreen *screen) : m_screen(screen)
 {
 }
 
@@ -189,11 +188,6 @@ Cursor QXlibCursor::createCursorShape(int cshape)
         break;
     }
     return cursor;
-}
-
-QXlibScreen * QXlibCursor::testLiteScreen() const
-{
-    return static_cast<QXlibScreen *>(screen);
 }
 
 QT_END_NAMESPACE

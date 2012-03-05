@@ -70,7 +70,7 @@ private:
 class QWindowsCursor : public QPlatformCursor
 {
 public:
-    explicit QWindowsCursor(QPlatformScreen *);
+    QWindowsCursor() {}
 
     virtual void changeCursor(QCursor * widgetCursor, QWindow * widget);
     virtual QPoint pos() const { return mousePosition(); }

@@ -562,9 +562,6 @@ void tst_QMenu::tearOff()
     QTest::mouseClick(menu, Qt::LeftButton, 0, QPoint(3, 3), 10);
     QTest::qWait(100);
 
-#ifndef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-22565", Abort);
-#endif
     QVERIFY(menu->isTearOffMenuVisible());
     QPointer<QMenu> torn = 0;
     foreach (QWidget *w, QApplication::allWidgets()) {
@@ -783,9 +780,6 @@ void tst_QMenu::task258920_mouseBorder()
 #ifdef Q_OS_WINCE_WM
     QSKIP("Mouse move related signals for Windows Mobile unavailable");
 #endif
-    // ### fixme: Check platforms
-    QSKIP("QTBUG-20753 QCursor::setPos() / QTest::mouseMove() doesn't work on qpa");
-
     Menu258920 menu;
     // For styles which inherit from QWindowsStyle, styleHint(QStyle::SH_Menu_MouseTracking) is true.
     menu.setMouseTracking(true);

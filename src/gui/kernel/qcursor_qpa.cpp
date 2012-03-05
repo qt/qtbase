@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <qcursor.h>
+#include <qscreen.h>
 #include <private/qcursor_p.h>
 #include <qplatformcursor_qpa.h>
 #include <private/qguiapplication_p.h>
@@ -110,27 +111,34 @@ void QCursorData::update()
 
 QPoint QCursor::pos()
 {
+    return QCursor::pos(QGuiApplication::primaryScreen());
+}
+
+QPoint QCursor::pos(const QScreen *screen)
+{
+    if (screen)
+        if (const QPlatformCursor *cursor = screen->handle()->cursor())
+            return cursor->pos();
     return QGuiApplicationPrivate::lastCursorPosition.toPoint();
+}
+
+void QCursor::setPos(QScreen *screen, int x, int y)
+{
+    if (screen) {
+        if (QPlatformCursor *cursor = screen->handle()->cursor()) {
+            const QPoint pos = QPoint(x, y);
+            // Need to check, since some X servers generate null mouse move
+            // events, causing looping in applications which call setPos() on
+            // every mouse move event.
+            if (pos != cursor->pos())
+                cursor->setPos(pos);
+        }
+    }
 }
 
 void QCursor::setPos(int x, int y)
 {
-    QPoint target(x, y);
-
-    // Need to check, since some X servers generate null mouse move
-    // events, causing looping in applications which call setPos() on
-    // every mouse move event.
-    //
-    if (pos() == target)
-        return;
-
-    QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
-    int cursorCount = cursors.count();
-    for (int i = 0; i < cursorCount; ++i) {
-        const QWeakPointer<QPlatformCursor> &cursor(cursors.at(i));
-        if (cursor)
-            cursor.data()->setPos(target);
-    }
+    QCursor::setPos(QGuiApplication::primaryScreen(), x, y);
 }
 
 QT_END_NAMESPACE

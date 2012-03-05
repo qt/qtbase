@@ -618,7 +618,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     m_windowState(aWindow->windowState()),
     m_opacity(1.0),
     m_mouseGrab(false),
-    m_cursor(QWindowsScreen::screenOf(aWindow)->cursor().standardWindowCursor()),
+    m_cursor(QWindowsScreen::screenOf(aWindow)->windowsCursor()->standardWindowCursor()),
     m_dropTarget(0),
     m_savedStyle(0)
 {

@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 QKmsCursor::QKmsCursor(QKmsScreen *screen)
-    : QPlatformCursor(screen), m_screen(screen),
+    : m_screen(screen),
       m_graphicsBufferManager(screen->device()->gbmDevice())
 {
     gbm_bo *bo = gbm_bo_create(m_graphicsBufferManager, 64, 64,

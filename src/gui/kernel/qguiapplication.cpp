@@ -978,10 +978,9 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers);
         ev.setTimestamp(e->timestamp);
 #ifndef QT_NO_CURSOR
-        QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
-        for (int i = 0; i < cursors.count(); ++i)
-            if (cursors.at(i))
-                cursors.at(i).data()->pointerEvent(ev);
+        if (const QScreen *screen = window->screen())
+            if (QPlatformCursor *cursor = screen->handle()->cursor())
+                cursor->pointerEvent(ev);
 #endif
         QGuiApplication::sendSpontaneousEvent(window, &ev);
         if (!e->synthetic && !ev.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {
@@ -1814,16 +1813,11 @@ void QGuiApplication::changeOverrideCursor(const QCursor &cursor)
 
 
 #ifndef QT_NO_CURSOR
-static void applyCursor(QWindow *w, const QCursor &c)
+static inline void applyCursor(QWindow *w, QCursor c)
 {
-    QCursor cc = c;
-    QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
-    int cursorCount = cursors.count();
-    for (int i = 0; i < cursorCount; ++i) {
-        const QWeakPointer<QPlatformCursor> &cursor(cursors.at(i));
-        if (cursor)
-            cursor.data()->changeCursor(&cc, w);
-    }
+    if (const QScreen *screen = w->screen())
+        if (QPlatformCursor *cursor = screen->handle()->cursor())
+            cursor->changeCursor(&c, w);
 }
 
 static inline void applyCursor(const QList<QWindow *> &l, const QCursor &c)
