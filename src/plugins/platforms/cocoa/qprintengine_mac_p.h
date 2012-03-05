@@ -118,9 +118,6 @@ public:
     QPrinter::PrinterState state;
     QPrinter::Orientation orient;
     NSPrintInfo *printInfo;
-    PMPageFormat format;
-    PMPrintSettings settings;
-    PMPrintSession session;
     PMResolution resolution;
     QString outputFilename;
     bool fullPage;
@@ -134,8 +131,7 @@ public:
     qreal bottomMargin;
     QHash<QMacPrintEngine::PrintEnginePropertyKey, QVariant> valueCache;
     QMacPrintEnginePrivate() : mode(QPrinter::ScreenResolution), state(QPrinter::Idle),
-                               orient(QPrinter::Portrait), printInfo(0), format(0), settings(0),
-                               session(0), paintEngine(0),
+                               orient(QPrinter::Portrait), printInfo(0), paintEngine(0),
                                hasCustomPaperSize(false), hasCustomPageMargins(false) {}
     ~QMacPrintEnginePrivate();
     void initialize();
@@ -148,6 +144,10 @@ public:
     {
         return printInfo != 0;
     }
+
+    PMPageFormat format() const { return static_cast<PMPageFormat>([printInfo PMPageFormat]); }
+    PMPrintSession session() const { return static_cast<PMPrintSession>([printInfo PMPrintSession]); }
+    PMPrintSettings settings() const { return static_cast<PMPrintSettings>([printInfo PMPrintSettings]); }
 };
 
 QT_END_NAMESPACE

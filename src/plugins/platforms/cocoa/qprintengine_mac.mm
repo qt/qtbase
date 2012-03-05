@@ -73,8 +73,8 @@ bool QMacPrintEngine::begin(QPaintDevice *dev)
     d->paintEngine->begin(dev);
     Q_ASSERT_X(d->state == QPrinter::Idle, "QMacPrintEngine", "printer already active");
 
-    if (PMSessionValidatePrintSettings(d->session, d->settings, kPMDontWantBoolean) != noErr
-        || PMSessionValidatePageFormat(d->session, d->format, kPMDontWantBoolean) != noErr) {
+    if (PMSessionValidatePrintSettings(d->session(), d->settings(), kPMDontWantBoolean) != noErr
+        || PMSessionValidatePageFormat(d->session(), d->format(), kPMDontWantBoolean) != noErr) {
         d->state = QPrinter::Error;
         return false;
     }
@@ -84,14 +84,14 @@ bool QMacPrintEngine::begin(QPaintDevice *dev)
                                                                   QCFString(d->outputFilename),
                                                                   kCFURLPOSIXPathStyle,
                                                                   false);
-        if (PMSessionSetDestination(d->session, d->settings, kPMDestinationFile,
+        if (PMSessionSetDestination(d->session(), d->settings(), kPMDestinationFile,
                                     kPMDocumentFormatPDF, outFile) != noErr) {
             qWarning("QMacPrintEngine::begin: Problem setting file [%s]", d->outputFilename.toUtf8().constData());
             return false;
         }
     }
 
-    OSStatus status = PMSessionBeginCGDocumentNoDialog(d->session, d->settings, d->format);
+    OSStatus status = PMSessionBeginCGDocumentNoDialog(d->session(), d->settings(), d->format());
     if (status != noErr) {
         d->state = QPrinter::Error;
         return false;
@@ -145,8 +145,8 @@ void QMacPrintEnginePrivate::setPaperSize(QPrinter::PaperSize ps)
     QCFType<CFArrayRef> formats;
     PMPrinter printer;
 
-    if (PMSessionGetCurrentPrinter(session, &printer) == noErr
-        && PMSessionCreatePageFormatList(session, printer, &formats) == noErr) {
+    if (PMSessionGetCurrentPrinter(session(), &printer) == noErr
+        && PMSessionCreatePageFormatList(session(), printer, &formats) == noErr) {
         CFIndex total = CFArrayGetCount(formats);
         PMPageFormat tmp;
         PMRect paper;
@@ -157,10 +157,10 @@ void QMacPrintEnginePrivate::setPaperSize(QPrinter::PaperSize ps)
             int wMM = int((paper.right - paper.left) / 72 * 25.4 + 0.5);
             int hMM = int((paper.bottom - paper.top) / 72 * 25.4 + 0.5);
             if (newSize.width() == wMM && newSize.height() == hMM) {
-                PMCopyPageFormat(tmp, format);
+                PMCopyPageFormat(tmp, format());
                 // reset the orientation and resolution as they are lost in the copy.
                 q->setProperty(QPrintEngine::PPK_Orientation, orient);
-                if (PMSessionValidatePageFormat(session, format, kPMDontWantBoolean) != noErr) {
+                if (PMSessionValidatePageFormat(session(), format(), kPMDontWantBoolean) != noErr) {
                     // Don't know, warn for the moment.
                     qWarning("QMacPrintEngine, problem setting format and resolution for this page size");
                 }
@@ -175,19 +175,19 @@ QPrinter::PaperSize QMacPrintEnginePrivate::paperSize() const
     if (hasCustomPaperSize)
         return QPrinter::Custom;
     PMRect paper;
-    PMGetUnadjustedPaperRect(format, &paper);
+    PMGetUnadjustedPaperRect(format(), &paper);
     QSizeF sizef((paper.right - paper.left) / 72.0 * 25.4, (paper.bottom - paper.top) / 72.0 * 25.4);
     return QPlatformPrinterSupport::convertQSizeFToPaperSize(sizef);
 }
 
 QList<QVariant> QMacPrintEnginePrivate::supportedResolutions() const
 {
-    Q_ASSERT_X(session, "QMacPrinterEngine::supportedResolutions",
+    Q_ASSERT_X(printInfo, "QMacPrinterEngine::supportedResolutions",
                "must have a valid printer session");
     UInt32 resCount;
     QList<QVariant> resolutions;
     PMPrinter printer;
-    if (PMSessionGetCurrentPrinter(session, &printer) == noErr) {
+    if (PMSessionGetCurrentPrinter(session(), &printer) == noErr) {
         PMResolution res;
         OSStatus status = PMPrinterGetPrinterResolutionCount(printer, &resCount);
         if (status  == kPMNotImplemented) {
@@ -228,8 +228,7 @@ bool QMacPrintEngine::newPage()
 {
     Q_D(QMacPrintEngine);
     Q_ASSERT(d->state == QPrinter::Active);
-    OSStatus err =
-    PMSessionEndPageNoDialog(d->session);
+    OSStatus err = PMSessionEndPageNoDialog(d->session());
     if (err != noErr)  {
         if (err == kPMCancel) {
             // User canceled, we need to abort!
@@ -302,7 +301,7 @@ int QMacPrintEngine::metric(QPaintDevice::PaintDeviceMetric m) const
                 val -= qRound(margins.at(0).toDouble() + margins.at(2).toDouble());
             }
         } else {
-            val = qt_get_PDMWidth(d->format, property(PPK_FullPage).toBool(), d->resolution);
+            val = qt_get_PDMWidth(d->format(), property(PPK_FullPage).toBool(), d->resolution);
         }
         break;
     case QPaintDevice::PdmHeight:
@@ -315,7 +314,7 @@ int QMacPrintEngine::metric(QPaintDevice::PaintDeviceMetric m) const
                 val -= qRound(margins.at(1).toDouble() + margins.at(3).toDouble());
             }
         } else {
-            val = qt_get_PDMHeight(d->format, property(PPK_FullPage).toBool(), d->resolution);
+            val = qt_get_PDMHeight(d->format(), property(PPK_FullPage).toBool(), d->resolution);
         }
         break;
     case QPaintDevice::PdmWidthMM:
@@ -329,9 +328,9 @@ int QMacPrintEngine::metric(QPaintDevice::PaintDeviceMetric m) const
     case QPaintDevice::PdmPhysicalDpiX:
     case QPaintDevice::PdmPhysicalDpiY: {
         PMPrinter printer;
-        if (PMSessionGetCurrentPrinter(d->session, &printer) == noErr) {
+        if (PMSessionGetCurrentPrinter(d->session(), &printer) == noErr) {
             PMResolution resolution;
-            PMPrinterGetOutputResolution(printer, d->settings, &resolution);
+            PMPrinterGetOutputResolution(printer, d->settings(), &resolution);
             val = (int)resolution.vRes;
             break;
         }
@@ -371,10 +370,9 @@ void QMacPrintEnginePrivate::initialize()
 
     QCocoaAutoReleasePool pool;
     printInfo = [[NSPrintInfo alloc] initWithDictionary:[NSDictionary dictionary]];
-    session = static_cast<PMPrintSession>([printInfo PMPrintSession]);
 
     PMPrinter printer;
-    if (session && PMSessionGetCurrentPrinter(session, &printer) == noErr) {
+    if (printInfo && PMSessionGetCurrentPrinter(session(), &printer) == noErr) {
         QList<QVariant> resolutions = supportedResolutions();
         if (!resolutions.isEmpty() && mode != QPrinter::ScreenResolution) {
             if (resolutions.count() > 1 && mode == QPrinter::HighResolution) {
@@ -395,9 +393,6 @@ void QMacPrintEnginePrivate::initialize()
         }
     }
 
-    settings = static_cast<PMPrintSettings>([printInfo PMPrintSettings]);
-    format = static_cast<PMPageFormat>([printInfo PMPageFormat]);
-
     QHash<QMacPrintEngine::PrintEnginePropertyKey, QVariant>::const_iterator propC;
     for (propC = valueCache.constBegin(); propC != valueCache.constEnd(); propC++) {
         q->setProperty(propC.key(), propC.value());
@@ -406,11 +401,10 @@ void QMacPrintEnginePrivate::initialize()
 
 void QMacPrintEnginePrivate::releaseSession()
 {
-    PMSessionEndPageNoDialog(session);
-    PMSessionEndDocumentNoDialog(session);
+    PMSessionEndPageNoDialog(session());
+    PMSessionEndDocumentNoDialog(session());
     [printInfo release];
     printInfo = 0;
-    session = 0;
 }
 
 bool QMacPrintEnginePrivate::newPage_helper()
@@ -418,7 +412,7 @@ bool QMacPrintEnginePrivate::newPage_helper()
     Q_Q(QMacPrintEngine);
     Q_ASSERT(state == QPrinter::Active);
 
-    if (PMSessionError(session) != noErr) {
+    if (PMSessionError(session()) != noErr) {
         q->abort();
         return false;
     }
@@ -430,7 +424,7 @@ bool QMacPrintEnginePrivate::newPage_helper()
     while (cgEngine->d_func()->stackCount > 0)
         cgEngine->d_func()->restoreGraphicsState();
 
-    OSStatus status = PMSessionBeginPageNoDialog(session, format, 0);
+    OSStatus status = PMSessionBeginPageNoDialog(session(), format(), 0);
     if (status != noErr) {
         state = QPrinter::Error;
         return false;
@@ -441,7 +435,7 @@ bool QMacPrintEnginePrivate::newPage_helper()
 
     CGContextRef cgContext;
     OSStatus err = noErr;
-    err = PMSessionGetCGGraphicsContext(session, &cgContext);
+    err = PMSessionGetCGGraphicsContext(session(), &cgContext);
     if (err != noErr) {
         qWarning("QMacPrintEngine::newPage: Cannot retrieve CoreGraphics context: %ld", long(err));
         state = QPrinter::Error;
@@ -550,7 +544,7 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     Q_D(QMacPrintEngine);
 
     d->valueCache.insert(key, value);
-    if (!d->session)
+    if (!d->printInfo)
         return;
 
     switch (key) {
@@ -571,7 +565,7 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     case PPK_Resolution:  {
         PMPrinter printer;
         UInt32 count;
-        if (PMSessionGetCurrentPrinter(d->session, &printer) != noErr)
+        if (PMSessionGetCurrentPrinter(d->session(), &printer) != noErr)
             break;
         if (PMPrinterGetPrinterResolutionCount(printer, &count) != noErr)
             break;
@@ -593,7 +587,7 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
                 }
             }
         }
-        PMSessionValidatePageFormat(d->session, d->format, kPMDontWantBoolean);
+        PMSessionValidatePageFormat(d->session(), d->format(), kPMDontWantBoolean);
         break;
     }
 
@@ -602,7 +596,7 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         break;
     case PPK_CopyCount: // fallthrough
     case PPK_NumberOfCopies:
-        PMSetCopies(d->settings, value.toInt(), false);
+        PMSetCopies(d->settings(), value.toInt(), false);
         break;
     case PPK_Orientation: {
         if (d->state == QPrinter::Active) {
@@ -613,8 +607,8 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
                 d->customSize = QSizeF(d->customSize.height(), d->customSize.width());
             d->orient = newOrientation;
             PMOrientation o = d->orient == QPrinter::Portrait ? kPMPortrait : kPMLandscape;
-            PMSetOrientation(d->format, o, false);
-            PMSessionValidatePageFormat(d->session, d->format, kPMDontWantBoolean);
+            PMSetOrientation(d->format(), o, false);
+            PMSessionValidatePageFormat(d->session(), d->format(), kPMDontWantBoolean);
         }
         break; }
     case PPK_OutputFileName:
@@ -634,7 +628,7 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
                 PMPrinter printer = static_cast<PMPrinter>(const_cast<void *>(CFArrayGetValueAtIndex(printerList, i)));
                 QString name = QCFString::toQString(PMPrinterGetName(printer));
                 if (name == value.toString()) {
-                    status = PMSessionSetCurrentPMPrinter(d->session, printer);
+                    status = PMSessionSetCurrentPMPrinter(d->session(), printer);
                     printerNameSet = true;
                     break;
                 }
@@ -653,7 +647,7 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     case PPK_CustomPaperSize:
     {
         PMOrientation orientation;
-        PMGetOrientation(d->format, &orientation);
+        PMGetOrientation(d->format(), &orientation);
         d->hasCustomPaperSize = true;
         d->customSize = value.toSizeF();
         if (orientation != kPMPortrait)
@@ -682,7 +676,7 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
     Q_D(const QMacPrintEngine);
     QVariant ret;
 
-    if (!d->session && d->valueCache.contains(key))
+    if (!d->printInfo && d->valueCache.contains(key))
         return *d->valueCache.find(key);
 
     switch (key) {
@@ -704,7 +698,7 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         break;
     case PPK_CopyCount: {
         UInt32 copies = 1;
-        PMGetCopies(d->settings, &copies);
+        PMGetCopies(d->settings(), &copies);
         ret = (uint) copies;
         break;
     }
@@ -713,7 +707,7 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         break;
     case PPK_Orientation:
         PMOrientation orientation;
-        PMGetOrientation(d->format, &orientation);
+        PMGetOrientation(d->format(), &orientation);
         ret = orientation == kPMPortrait ? QPrinter::Portrait : QPrinter::Landscape;
         break;
     case PPK_OutputFileName:
@@ -741,8 +735,8 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
                          -qRound(margins.at(2).toDouble() * hRatio),
                          -qRound(margins.at(3).toDouble()) * vRatio);
             }
-        } else if (PMGetAdjustedPageRect(d->format, &macrect) == noErr
-                   && PMGetAdjustedPaperRect(d->format, &macpaper) == noErr)
+        } else if (PMGetAdjustedPageRect(d->format(), &macrect) == noErr
+                   && PMGetAdjustedPaperRect(d->format(), &macpaper) == noErr)
         {
             if (d->fullPage || d->hasCustomPageMargins) {
                 r.setCoords(int(macpaper.left * hRatio), int(macpaper.top * vRatio),
@@ -770,7 +764,7 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         qreal vRatio = d->resolution.vRes / 72;
         if (d->hasCustomPaperSize) {
             r = QRect(0, 0, qRound(d->customSize.width() * hRatio), qRound(d->customSize.height() * vRatio));
-        } else if (PMGetAdjustedPaperRect(d->format, &macrect) == noErr) {
+        } else if (PMGetAdjustedPaperRect(d->format(), &macrect) == noErr) {
             r.setCoords(int(macrect.left * hRatio), int(macrect.top * vRatio),
                         int(macrect.right * hRatio), int(macrect.bottom * vRatio));
             r.translate(-r.x(), -r.y());
@@ -779,7 +773,7 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         break; }
     case PPK_PrinterName: {
         PMPrinter printer;
-        OSStatus status = PMSessionGetCurrentPrinter(d->session, &printer);
+        OSStatus status = PMSessionGetCurrentPrinter(d->session(), &printer);
         if (status != noErr)
             qWarning("QMacPrintEngine::printerName: Failed getting current PMPrinter: %ld", long(status));
         if (printer)
@@ -804,7 +798,7 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         } else {
             PMPaperMargins paperMargins;
             PMPaper paper;
-            PMGetPageFormatPaper(d->format, &paper);
+            PMGetPageFormatPaper(d->format(), &paper);
             PMPaperGetMargins(paper, &paperMargins);
             margins << paperMargins.left << paperMargins.top
                     << paperMargins.right << paperMargins.bottom;
