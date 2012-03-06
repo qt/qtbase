@@ -134,7 +134,7 @@ void QTouchScreenData::registerDevice()
 
 static inline bool testBit(long bit, const long *array)
 {
-    return array[bit / LONG_BITS] & (1 << (bit & (LONG_BITS - 1)));
+    return (array[bit / LONG_BITS] >> bit % LONG_BITS) & 1;
 }
 
 QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
