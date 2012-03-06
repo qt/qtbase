@@ -484,6 +484,7 @@ inline int qMetaTypeId(
 #endif
 )
 {
+    Q_STATIC_ASSERT_X(QMetaTypeId2<T>::Defined, "Type is not registered, please use Q_DECLARE_METATYPE macro to make it know to Qt's meta-object system");
     return QMetaTypeId2<T>::qt_metatype_id();
 }
 
