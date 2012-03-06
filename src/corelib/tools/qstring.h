@@ -98,7 +98,9 @@ template<int N> struct QConstStringData
 
 #define QT_UNICODE_LITERAL_II(str) u"" str
 
-#elif defined(Q_OS_WIN) || (defined(__SIZEOF_WCHAR_T__) && __SIZEOF_WCHAR_T__ == 2) || defined(WCHAR_MAX) && (WCHAR_MAX - 0 < 65536)
+#elif defined(Q_OS_WIN) \
+       || (defined(__SIZEOF_WCHAR_T__) && __SIZEOF_WCHAR_T__ == 2) \
+       || (!defined(__SIZEOF_WCHAR_T__) && defined(WCHAR_MAX) && (WCHAR_MAX - 0 < 65536))
 // wchar_t is 2 bytes
 template<int N> struct QConstStringData
 {
