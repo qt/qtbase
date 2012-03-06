@@ -2445,6 +2445,8 @@ bool QVariant::canConvert(int targetTypeId) const
 
     if (currentType == uint(targetTypeId))
         return true;
+    if (targetTypeId < 0 || targetTypeId >= QMetaType::User)
+        return false;
 
     // FIXME It should be LastCoreType intead of Uuid
     if (currentType > int(QMetaType::QUuid) || targetTypeId > int(QMetaType::QUuid)) {

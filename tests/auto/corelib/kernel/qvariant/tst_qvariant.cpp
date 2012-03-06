@@ -612,6 +612,12 @@ void tst_QVariant::canConvert()
     QCOMPARE(val.canConvert(QVariant::Time), TimeCast);
     QCOMPARE(val.canConvert(QVariant::UInt), UIntCast);
     QCOMPARE(val.canConvert(QVariant::ULongLong), ULongLongCast);
+
+    // Invalid type ids
+    QCOMPARE(val.canConvert(-1), false);
+    QCOMPARE(val.canConvert(-23), false);
+    QCOMPARE(val.canConvert(-23876), false);
+    QCOMPARE(val.canConvert(23876), false);
 }
 
 void tst_QVariant::toInt_data()
