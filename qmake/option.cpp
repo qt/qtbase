@@ -149,8 +149,11 @@ static QString detectProjectFile(const QString &path)
 static QString cleanSpec(const QString &spec)
 {
     QString ret = QDir::cleanPath(spec);
-    if (ret.contains('/'))
-        ret = QDir::cleanPath(QFileInfo(ret).absoluteFilePath());
+    if (ret.contains('/')) {
+        const QFileInfo specDirInfo(ret);
+        if (specDirInfo.exists() && specDirInfo.isDir())
+            ret = QDir::cleanPath(specDirInfo.absoluteFilePath());
+    }
     return ret;
 }
 
