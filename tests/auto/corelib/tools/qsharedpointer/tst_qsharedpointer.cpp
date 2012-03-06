@@ -114,15 +114,19 @@ public:
     }
 };
 
-template <typename Base>
-class RefCountHack: public Base
+template<typename T> static inline
+QtSharedPointer::ExternalRefCountData *refCountData(const QtSharedPointer::ExternalRefCount<T> &b)
 {
-public:
-    using Base::d;
-};
-template<typename Base> static inline
-QtSharedPointer::ExternalRefCountData *refCountData(const Base &b)
-{ return static_cast<const RefCountHack<Base> *>(&b)->d; }
+    // access d-pointer:
+    struct Dummy {
+        void* value;
+        QtSharedPointer::ExternalRefCountData* data;
+    };
+    // sanity checks:
+    Q_STATIC_ASSERT(sizeof(QtSharedPointer::ExternalRefCount<T>) == sizeof(Dummy));
+    Q_ASSERT(static_cast<const Dummy*>(static_cast<const void*>(&b))->value == b.data());
+    return static_cast<const Dummy*>(static_cast<const void*>(&b))->data;
+}
 
 class Data
 {
