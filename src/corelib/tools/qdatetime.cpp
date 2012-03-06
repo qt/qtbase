@@ -3511,7 +3511,10 @@ void QDateTime::detach()
 
 QDataStream &operator<<(QDataStream &out, const QDate &date)
 {
-    return out << (qint64)(date.jd);
+    if (out.version() < QDataStream::Qt_5_0)
+        return out << quint32(date.jd);
+    else
+        return out << qint64(date.jd);
 }
 
 /*!
@@ -3524,9 +3527,16 @@ QDataStream &operator<<(QDataStream &out, const QDate &date)
 
 QDataStream &operator>>(QDataStream &in, QDate &date)
 {
-    qint64 jd;
-    in >> jd;
-    date.jd = jd;
+    if (in.version() < QDataStream::Qt_5_0) {
+        quint32 jd;
+        in >> jd;
+        date.jd = jd;
+    } else {
+        qint64 jd;
+        in >> jd;
+        date.jd = jd;
+    }
+
     return in;
 }
 
