@@ -51,15 +51,7 @@
 #include "../../../network-settings.h"
 
 #ifndef QT_NO_OPENSSL
-class QSslSocketPtr: public QSharedPointer<QSslSocket>
-{
-public:
-    inline QSslSocketPtr(QSslSocket *ptr = 0)
-        : QSharedPointer<QSslSocket>(ptr)
-    { }
-
-    inline operator QSslSocket *() const { return data(); }
-};
+typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 #endif
 
 class tst_QSslSocket_onDemandCertificates_static : public QObject
@@ -202,14 +194,14 @@ void tst_QSslSocket_onDemandCertificates_static::onDemandRootCertLoadingStaticMe
     // not using any root certs -> should not work
     QSslSocket::setDefaultCaCertificates(QList<QSslCertificate>());
     QSslSocketPtr socket = newSocket();
-    this->socket = socket;
+    this->socket = socket.data();
     socket->connectToHostEncrypted(host, 443);
     QVERIFY(!socket->waitForEncrypted());
 
     // using system root certs -> should work
     QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());
     QSslSocketPtr socket2 = newSocket();
-    this->socket = socket2;
+    this->socket = socket2.data();
     socket2->connectToHostEncrypted(host, 443);
     QEXPECT_FAIL("", "QTBUG-20983 fails", Abort);
     QVERIFY2(socket2->waitForEncrypted(), qPrintable(socket2->errorString()));
@@ -217,7 +209,7 @@ void tst_QSslSocket_onDemandCertificates_static::onDemandRootCertLoadingStaticMe
     // not using any root certs again -> should not work
     QSslSocket::setDefaultCaCertificates(QList<QSslCertificate>());
     QSslSocketPtr socket3 = newSocket();
-    this->socket = socket3;
+    this->socket = socket3.data();
     socket3->connectToHostEncrypted(host, 443);
     QVERIFY(!socket3->waitForEncrypted());
 
@@ -228,7 +220,7 @@ void tst_QSslSocket_onDemandCertificates_static::onDemandRootCertLoadingStaticMe
     QSslConfiguration originalDefaultConf = QSslConfiguration::defaultConfiguration();
     QSslConfiguration::setDefaultConfiguration(conf);
     QSslSocketPtr socket4 = newSocket();
-    this->socket = socket4;
+    this->socket = socket4.data();
     socket4->connectToHostEncrypted(host, 443);
     QVERIFY(!socket4->waitForEncrypted(4000));
     QSslConfiguration::setDefaultConfiguration(originalDefaultConf); // restore old behaviour for run with proxies etc.
