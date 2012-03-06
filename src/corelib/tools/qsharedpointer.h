@@ -85,6 +85,11 @@ public:
 
     void clear();
 
+    void reset();
+    void reset(T *t);
+    template <typename Deleter>
+    void reset(T *t, Deleter deleter);
+
     // casts:
     template <class X> QSharedPointer<X> staticCast() const;
     template <class X> QSharedPointer<X> dynamicCast() const;

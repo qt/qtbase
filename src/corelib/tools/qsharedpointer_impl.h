@@ -510,6 +510,13 @@ public:
     inline void swap(QSharedPointer &other)
     { QSharedPointer<T>::internalSwap(other); }
 
+    inline void reset() { clear(); }
+    inline void reset(T *t)
+    { QSharedPointer copy(t); swap(copy); }
+    template <typename Deleter>
+    inline void reset(T *t, Deleter deleter)
+    { QSharedPointer copy(t, deleter); swap(copy); }
+
     template <class X>
     QSharedPointer<X> staticCast() const
     {

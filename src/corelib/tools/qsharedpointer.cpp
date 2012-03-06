@@ -698,6 +698,35 @@
 */
 
 /*!
+    \fn void QSharedPointer::reset()
+    \since 5.0
+
+    Same as clear(). For std::shared_ptr compatibility.
+*/
+
+/*!
+    \fn void QSharedPointer::reset(T *t)
+    \since 5.0
+
+    Resets this QSharedPointer object to point to \a t
+    instead. Equivalent to:
+    \code
+    QSharedPointer<T> other(t); this->swap(other);
+    \endcode
+*/
+
+/*!
+    \fn void QSharedPointer::reset(T *t, Deleter deleter)
+    \since 5.0
+
+    Resets this QSharedPointer object to point to \a t
+    instead, with deleter \a deleter. Equivalent to:
+    \code
+    QSharedPointer<T> other(t, deleter); this->swap(other);
+    \endcode
+*/
+
+/*!
     \fn QWeakPointer::QWeakPointer()
 
     Creates a QWeakPointer that points to nothing.
