@@ -18,7 +18,6 @@ SUBDIRS=\
    qaccessibility \
    qcomplextext \
    qfocusevent \
-   qmultiscreen \
    qnetworkaccessmanager_and_qprogressdialog \
    qobjectperformance \
    qobjectrace \
@@ -40,8 +39,7 @@ wince*|!contains(QT_CONFIG, accessibility):SUBDIRS -= qaccessibility
            macplist
 
 !embedded|wince*: SUBDIRS -= \
-           qdirectpainter \
-           qmultiscreen \
+           qdirectpainter
 
 !linux*-g++*:SUBDIRS -= exceptionsafety_objects
 

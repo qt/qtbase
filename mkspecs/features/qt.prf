@@ -86,7 +86,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
        BEARERPLUGINS = qgenericbearer qnativewifibearer
        CODECPLUGINS = qcncodecs qjpcodecs qkrcodecs qtwcodecs
        DECORATIONPLUGINS = qdecorationdefault qdecorationstyled qdecorationwindows
-       GFXDRIVERPLUGINS = qgfxvnc qscreenvfb qgfxtransformed qgfxshadowfb qgfxpvregl qscreenlinuxfb qeglnullws qdirectfbscreen qahiscreen
+       GFXDRIVERPLUGINS = qscreenvfb qgfxtransformed qgfxshadowfb qgfxpvregl qscreenlinuxfb qeglnullws qdirectfbscreen qahiscreen
        GRAPHICSSYSTEMPLUGINS = qmeegographicssystem qglgraphicssystem qvggraphicssystem qshivavggraphicssystem
        IMAGEPLUGINS = qgif qico qjpeg qsvg
        INPUTPLUGINS = qimsw-multi

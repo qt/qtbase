@@ -1381,7 +1381,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
         dictionary[ "KBD_DRIVERS" ]         = "tty";
-        dictionary[ "GFX_DRIVERS" ]         = "linuxfb vnc";
+        dictionary[ "GFX_DRIVERS" ]         = "linuxfb";
         dictionary[ "MOUSE_DRIVERS" ]       = "pc linuxtp";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "EXCEPTIONS" ]          = "no";
@@ -2860,7 +2860,7 @@ void Configure::generateConfigfiles()
 
             QStringList gfxDrivers = dictionary["GFX_DRIVERS"].split(" ");
             QStringList allGfxDrivers;
-            allGfxDrivers<<"linuxfb"<<"transformed"<<"qvfb"<<"vnc"<<"multiscreen"<<"ahi";
+            allGfxDrivers<<"linuxfb"<<"transformed"<<"qvfb"<<"multiscreen"<<"ahi";
             foreach (const QString &gfx, allGfxDrivers) {
                 if (!gfxDrivers.contains(gfx))
                     tmpStream<<"#define QT_NO_QWS_"<<gfx.toUpper()<<endl;
