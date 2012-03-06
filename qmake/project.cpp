@@ -579,14 +579,19 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         // The spec is already platform-dependent, so no subdirs here.
         feature_roots << Option::mkfile::qmakespec + base_concat;
 
+        // Also check directly under the root directory of the mkspecs collection
         QFileInfo specfi(Option::mkfile::qmakespec);
-        if (!specfi.isRoot()) {
-            QDir specdir(specfi.absolutePath());
-            if (specdir.exists(QLatin1String("features"))) {
-                for(QStringList::Iterator concat_it = concat.begin();
-                    concat_it != concat.end(); ++concat_it)
-                    feature_roots << (specdir.path() + (*concat_it));
+        QDir specrootdir(specfi.absolutePath());
+        while (!specrootdir.isRoot()) {
+            const QString specrootpath = specrootdir.path();
+            if (specrootpath.endsWith(mkspecs_concat)) {
+                if (QFile::exists(specrootpath + base_concat))
+                    for (QStringList::Iterator concat_it = concat.begin();
+                         concat_it != concat.end(); ++concat_it)
+                        feature_roots << (specrootpath + (*concat_it));
+                break;
             }
+            specrootdir.cdUp();
         }
     }
     for(QStringList::Iterator concat_it = concat.begin();
