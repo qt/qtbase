@@ -584,9 +584,9 @@ static inline bool addHexDigit(char digit, uint *result)
     if (digit >= '0' && digit <= '9')
         *result |= (digit - '0');
     else if (digit >= 'a' && digit <= 'f')
-        *result |= (digit - 'a');
+        *result |= (digit - 'a') + 10;
     else if (digit >= 'A' && digit <= 'F')
-            *result |= (digit - 'A');
+        *result |= (digit - 'A') + 10;
     else
         return false;
     return true;
