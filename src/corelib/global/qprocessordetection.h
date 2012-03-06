@@ -93,7 +93,7 @@
       || defined(__ARM_ARCH_7A__) \
       || defined(__ARM_ARCH_7R__) \
       || defined(__ARM_ARCH_7M__) \
-      || (__TARGET_ARCH_ARM-0 >= 7)
+      || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 7)
 #    define Q_PROCESSOR_ARM_V7
 #    define Q_PROCESSOR_ARM_V6
 #    define Q_PROCESSOR_ARM_V5
@@ -104,11 +104,11 @@
       || defined(__ARM_ARCH_6K__) \
       || defined(__ARM_ARCH_6ZK__) \
       || defined(__ARM_ARCH_6M__) \
-      || (__TARGET_ARCH_ARM-0 >= 6)
+      || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 6)
 #    define Q_PROCESSOR_ARM_V6
 #    define Q_PROCESSOR_ARM_V5
 #  elif defined(__ARM_ARCH_5TEJ__) \
-        || (__TARGET_ARCH_ARM-0 >= 5)
+        || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 5)
 #    define Q_PROCESSOR_ARM_V5
 #  endif
 #  if defined(__ARMEL__)
