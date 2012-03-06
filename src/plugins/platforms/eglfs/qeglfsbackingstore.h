@@ -53,7 +53,7 @@ class QEglFSBackingStore : public QPlatformBackingStore
 {
 public:
     QEglFSBackingStore(QWindow *window);
-    ~QEglFSBackingStore() {}
+    ~QEglFSBackingStore() { delete m_paintDevice; }
 
     QPaintDevice *paintDevice() { return m_paintDevice; }
     void flush(QWindow *window, const QRegion &region, const QPoint &offset);
