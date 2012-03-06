@@ -114,7 +114,7 @@ public:
     explicit QDataStream(QIODevice *);
     QDataStream(QByteArray *, QIODevice::OpenMode flags);
     QDataStream(const QByteArray &);
-    virtual ~QDataStream();
+    ~QDataStream();
 
     QIODevice *device() const;
     void setDevice(QIODevice *);
