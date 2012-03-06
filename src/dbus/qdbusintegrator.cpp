@@ -1928,7 +1928,7 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
         }
 
         QDBusMessage reply = pcall->replyMessage;
-        lastError = reply;      // set or clear error
+        lastError = QDBusError(reply);      // set or clear error
 
         delete pcall;
         return reply;
@@ -2368,7 +2368,7 @@ QDBusConnectionPrivate::findMetaObject(const QString &service, const QString &pa
             // fetch the XML description
             xml = reply.arguments().at(0).toString();
     } else {
-        error = reply;
+        error = QDBusError(reply);
         lastError = error;
         if (reply.type() != QDBusMessage::ErrorMessage || error.type() != QDBusError::UnknownMethod)
             return 0; // error

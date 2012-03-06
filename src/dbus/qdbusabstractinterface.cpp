@@ -148,7 +148,7 @@ void QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, QVariant &
     QDBusMessage reply = connection.call(msg, QDBus::Block, timeout);
 
     if (reply.type() != QDBusMessage::ReplyMessage) {
-        lastError = reply;
+        lastError = QDBusError(reply);
         where.clear();
         return;
     }
@@ -214,7 +214,7 @@ bool QDBusAbstractInterfacePrivate::setProperty(const QMetaProperty &mp, const Q
     QDBusMessage reply = connection.call(msg, QDBus::Block, timeout);
 
     if (reply.type() != QDBusMessage::ReplyMessage) {
-        lastError = reply;
+        lastError = QDBusError(reply);
         return false;
     }
     return true;
@@ -467,7 +467,7 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
 
     QDBusMessage reply = d->connection.call(msg, mode, d->timeout);
     if (thread() == QThread::currentThread())
-        d->lastError = reply;       // will clear if reply isn't an error
+        d->lastError = QDBusError(reply);       // will clear if reply isn't an error
 
     // ensure that there is at least one element
     if (reply.arguments().isEmpty())
@@ -540,7 +540,7 @@ bool QDBusAbstractInterface::callWithCallback(const QString &method,
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg.setArguments(args);
 
-    d->lastError = 0;
+    d->lastError = QDBusError();
     return d->connection.callWithCallback(msg,
                                           receiver,
                                           returnMethod,

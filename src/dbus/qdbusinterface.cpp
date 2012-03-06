@@ -316,7 +316,7 @@ int QDBusInterfacePrivate::metacall(QMetaObject::Call c, int id, void **argv)
             }
 
             // done
-            lastError = reply;
+            lastError = QDBusError(reply);
             return -1;
         }
     }

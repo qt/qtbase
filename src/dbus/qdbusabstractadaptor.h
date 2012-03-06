@@ -57,7 +57,7 @@ class Q_DBUS_EXPORT QDBusAbstractAdaptor: public QObject
 {
     Q_OBJECT
 protected:
-    QDBusAbstractAdaptor(QObject *parent);
+    explicit QDBusAbstractAdaptor(QObject *parent);
 
 public:
     ~QDBusAbstractAdaptor();

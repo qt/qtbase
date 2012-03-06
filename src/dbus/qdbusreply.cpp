@@ -186,7 +186,7 @@ QT_BEGIN_NAMESPACE
 */
 void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data)
 {
-    error = reply;
+    error = QDBusError(reply);
 
     if (error.isValid()) {
         data = QVariant();      // clear it

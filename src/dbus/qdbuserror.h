@@ -93,8 +93,8 @@ public:
 #endif
     };
 
-    QDBusError(const DBusError *error = 0);
-    QDBusError(const QDBusMessage& msg);
+    explicit QDBusError(const DBusError *error = 0);
+    /*implicit*/ QDBusError(const QDBusMessage& msg);
     QDBusError(ErrorType error, const QString &message);
     QDBusError(const QDBusError &other);
     QDBusError &operator=(const QDBusError &other);
