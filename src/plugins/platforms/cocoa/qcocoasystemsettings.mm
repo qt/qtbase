@@ -45,6 +45,8 @@
 
 #include <Carbon/Carbon.h>
 
+QT_BEGIN_NAMESPACE
+
 QColor qt_mac_colorFromCGColor(CGColorRef cgcolor)
 {
     QColor pc;
@@ -144,7 +146,6 @@ QPalette * qt_mac_createSystemPalette()
     return palette;
 }
 
-
 struct QMacPaletteMap {
     inline QMacPaletteMap(QPlatformTheme::Palette p, ThemeBrush a, ThemeBrush i) :
         paletteRole(p), active(a), inactive(i) { }
@@ -227,3 +228,5 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
     }
     return palettes;
 }
+
+QT_END_NAMESPACE
