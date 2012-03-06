@@ -82,8 +82,8 @@ public:
         EmailAddress
     };
 
-    QSslCertificate(QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
-    QSslCertificate(const QByteArray &data = QByteArray(), QSsl::EncodingFormat format = QSsl::Pem);
+    explicit QSslCertificate(QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
+    explicit QSslCertificate(const QByteArray &data = QByteArray(), QSsl::EncodingFormat format = QSsl::Pem);
     QSslCertificate(const QSslCertificate &other);
     ~QSslCertificate();
     QSslCertificate &operator=(const QSslCertificate &other);

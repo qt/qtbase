@@ -68,10 +68,10 @@ public:
     };
 
     QNetworkProxyQuery();
-    QNetworkProxyQuery(const QUrl &requestUrl, QueryType queryType = UrlRequest);
+    explicit QNetworkProxyQuery(const QUrl &requestUrl, QueryType queryType = UrlRequest);
     QNetworkProxyQuery(const QString &hostname, int port, const QString &protocolTag = QString(),
                        QueryType queryType = TcpSocket);
-    QNetworkProxyQuery(quint16 bindPort, const QString &protocolTag = QString(),
+    explicit QNetworkProxyQuery(quint16 bindPort, const QString &protocolTag = QString(),
                        QueryType queryType = TcpServer);
     QNetworkProxyQuery(const QNetworkProxyQuery &other);
 #ifndef QT_NO_BEARERMANAGEMENT

@@ -191,7 +191,7 @@ public:
         TXT = 16
     };
 
-    QDnsLookup(QObject *parent = 0);
+    explicit QDnsLookup(QObject *parent = 0);
     QDnsLookup(Type type, const QString &name, QObject *parent = 0);
     ~QDnsLookup();
 

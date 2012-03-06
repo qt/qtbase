@@ -74,7 +74,7 @@ public:
     };
     Q_DECLARE_FLAGS(SocketOptions, SocketOption)
 
-    QLocalServer(QObject *parent = 0);
+    explicit QLocalServer(QObject *parent = 0);
     ~QLocalServer();
 
     void close();
