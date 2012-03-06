@@ -392,6 +392,8 @@ bool QSqlTableModel::select()
 }
 
 /*!
+    \since 5.0
+
     Refreshes \a row in the model with values from the database table row matching
     on primary key values. Without a primary key, all column values must match. If
     no matching row is found, the model will show an empty row.
