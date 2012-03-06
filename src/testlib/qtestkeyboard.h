@@ -192,17 +192,19 @@ namespace QTest
         if (!widget)
             widget = QWidget::keyboardGrabber();
         if (!widget) {
+            // Popup widgets stealthily steal the keyboard grab
+            if (QWidget *apw = QApplication::activePopupWidget())
+                widget = apw->focusWidget() ? apw->focusWidget() : apw;
+        }
+        if (!widget) {
             QWindow *window = QGuiApplication::focusWindow();
             if (window) {
                 sendKeyEvent(action, window, code, text, modifier, delay);
                 return;
             }
-
-            if (QWidget *apw = QApplication::activePopupWidget())
-                widget = apw->focusWidget() ? apw->focusWidget() : apw;
-            else
-                widget = QApplication::focusWidget();
         }
+        if (!widget)
+            widget = QApplication::focusWidget();
         if (!widget)
             widget = QApplication::activeWindow();
 
