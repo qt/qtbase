@@ -94,8 +94,8 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
 
 public:
 
-    QWindow(QScreen *screen = 0);
-    QWindow(QWindow *parent);
+    explicit QWindow(QScreen *screen = 0);
+    explicit QWindow(QWindow *parent);
     virtual ~QWindow();
 
     void setSurfaceType(SurfaceType surfaceType);

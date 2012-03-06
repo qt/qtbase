@@ -198,7 +198,7 @@ class Q_GUI_EXPORT QOpenGLFunctions
 {
 public:
     QOpenGLFunctions();
-    QOpenGLFunctions(QOpenGLContext *context);
+    explicit QOpenGLFunctions(QOpenGLContext *context);
     ~QOpenGLFunctions() {}
 
     enum OpenGLFeature

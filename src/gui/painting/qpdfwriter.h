@@ -57,8 +57,8 @@ class Q_GUI_EXPORT QPdfWriter : public QObject, public QPagedPaintDevice
 {
     Q_OBJECT
 public:
-    QPdfWriter(const QString &filename);
-    QPdfWriter(QIODevice *device);
+    explicit QPdfWriter(const QString &filename);
+    explicit QPdfWriter(QIODevice *device);
     ~QPdfWriter();
 
     QString title() const;

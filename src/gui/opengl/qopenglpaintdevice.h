@@ -71,7 +71,7 @@ class Q_GUI_EXPORT QOpenGLPaintDevice : public QPaintDevice
 {
     Q_DECLARE_PRIVATE(QOpenGLPaintDevice)
 public:
-    QOpenGLPaintDevice(const QSize &size);
+    explicit QOpenGLPaintDevice(const QSize &size);
     QOpenGLPaintDevice(int width, int height);
     virtual ~QOpenGLPaintDevice();
 

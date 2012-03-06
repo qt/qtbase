@@ -80,7 +80,7 @@ public:
     virtual QSize size() const = 0;
 
 protected:
-    QSurface(SurfaceClass type);
+    explicit QSurface(SurfaceClass type);
 
     SurfaceClass m_type;
 

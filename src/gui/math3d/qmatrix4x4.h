@@ -201,7 +201,7 @@ private:
     };
 
     // Construct without initializing identity matrix.
-    QMatrix4x4(int) { }
+    explicit QMatrix4x4(int) { }
 
     QMatrix4x4 orthonormalInverse() const;
 

@@ -272,7 +272,7 @@ public:
     inline void resolve(uint mask) { resolve_mask = mask; }
 
 private:
-    QFont(QFontPrivate *);
+    explicit QFont(QFontPrivate *);
 
     void detach();
 

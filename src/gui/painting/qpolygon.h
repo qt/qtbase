@@ -61,9 +61,9 @@ class Q_GUI_EXPORT QPolygon : public QVector<QPoint>
 public:
     inline QPolygon() {}
     inline ~QPolygon() {}
-    inline QPolygon(int size);
+    inline explicit QPolygon(int size);
     inline QPolygon(const QPolygon &a) : QVector<QPoint>(a) {}
-    inline QPolygon(const QVector<QPoint> &v) : QVector<QPoint>(v) {}
+    inline /*implicit*/ QPolygon(const QVector<QPoint> &v) : QVector<QPoint>(v) {}
     QPolygon(const QRect &r, bool closed=false);
     QPolygon(int nPoints, const int *points);
     inline void swap(QPolygon &other) { QVector<QPoint>::swap(other); } // prevent QVector<QPoint><->QPolygon swaps
@@ -135,11 +135,11 @@ class Q_GUI_EXPORT QPolygonF : public QVector<QPointF>
 public:
     inline QPolygonF() {}
     inline ~QPolygonF() {}
-    inline QPolygonF(int size);
+    inline explicit QPolygonF(int size);
     inline QPolygonF(const QPolygonF &a) : QVector<QPointF>(a) {}
-    inline QPolygonF(const QVector<QPointF> &v) : QVector<QPointF>(v) {}
+    inline /*implicit*/ QPolygonF(const QVector<QPointF> &v) : QVector<QPointF>(v) {}
     QPolygonF(const QRectF &r);
-    QPolygonF(const QPolygon &a);
+    /*implicit*/ QPolygonF(const QPolygon &a);
     inline void swap(QPolygonF &other) { QVector<QPointF>::swap(other); } // prevent QVector<QPointF><->QPolygonF swaps
 
     inline void translate(qreal dx, qreal dy);

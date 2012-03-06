@@ -142,7 +142,7 @@ Q_SIGNALS:
     void orientationChanged(Qt::ScreenOrientation orientation);
 
 private:
-    QScreen(QPlatformScreen *screen);
+    explicit QScreen(QPlatformScreen *screen);
 
     Q_DISABLE_COPY(QScreen)
     friend class QGuiApplicationPrivate;

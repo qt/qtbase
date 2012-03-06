@@ -59,7 +59,7 @@ public:
     QSurface::SurfaceClass surfaceClass() const;
 
 private:
-    QPlatformSurface(QSurface::SurfaceClass type);
+    explicit QPlatformSurface(QSurface::SurfaceClass type);
 
     QSurface::SurfaceClass m_type;
 
