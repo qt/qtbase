@@ -401,7 +401,6 @@ protected:
     friend class QPSPrintEngineFontMulti;
     friend class QRawFont;
     virtual void loadEngine(int at) = 0;
-    virtual void unloadEngine(int at);
     QVector<QFontEngine *> engines;
 };
 
