@@ -246,16 +246,32 @@ QList<QByteArray> QFontEngineQPF::cleanUpAfterClientCrash(const QList<int> &cras
 
         int fd = QT_OPEN(fileName.constData(), O_RDONLY, 0);
         if (fd >= 0) {
-            void *header = ::mmap(0, sizeof(QFontEngineQPF::Header), PROT_READ, MAP_SHARED, fd, 0);
-            if (header && header != MAP_FAILED) {
-                quint32 lockValue = reinterpret_cast<QFontEngineQPF::Header *>(header)->lock;
+            QT_STATBUF st;
+            int nDataSize = 0;
+            if (QT_FSTAT(fd, &st)) {
+#if defined(DEBUG_FONTENGINE)
+                qDebug() << "stat failed! " << fileName;
+#endif
+            } else {
+                nDataSize = st.st_size;
+            }
 
-                if (lockValue && crashedClientIds.contains(lockValue)) {
-                    removedFonts.append(fileName);
-                    QFile::remove(QFile::decodeName(fileName));
+            if (nDataSize >= (int)sizeof(QFontEngineQPF::Header)) {
+                void *header = ::mmap(0, sizeof(QFontEngineQPF::Header), PROT_READ, MAP_SHARED, fd, 0);
+                if (header && header != MAP_FAILED) {
+                    quint32 lockValue = reinterpret_cast<QFontEngineQPF::Header *>(header)->lock;
+
+                    if (lockValue && crashedClientIds.contains(lockValue)) {
+                        removedFonts.append(fileName);
+                        QFile::remove(QFile::decodeName(fileName));
+                    }
+
+                    ::munmap(header, sizeof(QFontEngineQPF::Header));
                 }
-
-                ::munmap(header, sizeof(QFontEngineQPF::Header));
+            } else {
+#if defined(DEBUG_FONTENGINE)
+                qDebug() << "Unsufficient header data in QSF file " << fileName;
+#endif
             }
             QT_CLOSE(fd);
         }
@@ -363,6 +379,7 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
 #if defined(DEBUG_FONTENGINE)
                     qErrnoWarning(errno, "QFontEngineQPF: write() failed for %s", encodedName.constData());
 #endif
+                    QFile::remove(fileName);
                     return;
                 }
             } else {
