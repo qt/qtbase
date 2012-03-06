@@ -146,8 +146,7 @@ public:
     };
 
     QKeySequence();
-    QKeySequence(const QString &key);
-    QKeySequence(const QString &key, SequenceFormat format);
+    QKeySequence(const QString &key, SequenceFormat format = NativeText);
     QKeySequence(int k1, int k2 = 0, int k3 = 0, int k4 = 0);
     QKeySequence(const QKeySequence &ks);
     QKeySequence(StandardKey key);
