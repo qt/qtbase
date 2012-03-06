@@ -1048,6 +1048,59 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     return true;
 }
 #endif // QT_NO_DATASTREAM
+namespace {
+class TypeCreator {
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
+    struct CreatorImpl {
+        static void *Create(const int /* type */, const void *copy)
+        {
+            // Using qMetaTypeCreateHelper<T> adds function call cost, even if it is a template (gcc).
+            // This "copy" check is moved out from the switcher by compiler (at least by gcc)
+            return copy ? new T(*static_cast<const T*>(copy)) : new T();
+        }
+    };
+    template<typename T>
+    struct CreatorImpl<T, /* IsAcceptedType = */ false> {
+        static void *Create(const int type, const void *copy)
+        {
+            if (QTypeModuleInfo<T>::IsGui) {
+                if (Q_LIKELY(qMetaTypeGuiHelper))
+                    return qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].creator(copy);
+            }
+            if (QTypeModuleInfo<T>::IsWidget) {
+                if (Q_LIKELY(qMetaTypeWidgetsHelper))
+                    return qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].creator(copy);
+            }
+            // This point can be reached only for known types that definition is not available, for example
+            // in bootstrap mode. We have no other choice then ignore it.
+            return 0;
+        }
+    };
+public:
+    TypeCreator(const int type)
+        : m_type(type)
+    {}
+
+    template<typename T>
+    void *delegate(const T *copy) { return CreatorImpl<T>::Create(m_type, copy); }
+    void *delegate(const void*) { return 0; }
+    void *delegate(const QMetaTypeSwitcher::NotBuiltinType *copy)
+    {
+        QMetaType::Creator creator;
+        const QVector<QCustomTypeInfo> * const ct = customTypes();
+        {
+            QReadLocker locker(customTypesLock());
+            if (Q_UNLIKELY(m_type < QMetaType::User || !ct || ct->count() <= m_type - QMetaType::User))
+                return 0;
+            creator = ct->at(m_type - QMetaType::User).creator;
+        }
+        Q_ASSERT_X(creator, "void *QMetaType::create(int type, const void *copy)", "The type was not properly registered");
+        return creator(copy);
+    }
+private:
+    const int m_type;
+};
+} // namespace
 
 /*!
     Returns a copy of \a copy, assuming it is of type \a type. If \a
@@ -1057,234 +1110,8 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
 */
 void *QMetaType::create(int type, const void *copy)
 {
-    if (copy) {
-        switch(type) {
-        case QMetaType::VoidStar:
-        case QMetaType::QObjectStar:
-        case QMetaType::QWidgetStar:
-            return new void *(*static_cast<void* const *>(copy));
-        case QMetaType::Long:
-            return new long(*static_cast<const long*>(copy));
-        case QMetaType::Int:
-            return new int(*static_cast<const int*>(copy));
-        case QMetaType::Short:
-            return new short(*static_cast<const short*>(copy));
-        case QMetaType::Char:
-            return new char(*static_cast<const char*>(copy));
-        case QMetaType::ULong:
-            return new ulong(*static_cast<const ulong*>(copy));
-        case QMetaType::UInt:
-            return new uint(*static_cast<const uint*>(copy));
-        case QMetaType::LongLong:
-            return new qlonglong(*static_cast<const qlonglong*>(copy));
-        case QMetaType::ULongLong:
-            return new qulonglong(*static_cast<const qulonglong*>(copy));
-        case QMetaType::UShort:
-            return new ushort(*static_cast<const ushort*>(copy));
-        case QMetaType::UChar:
-            return new uchar(*static_cast<const uchar*>(copy));
-        case QMetaType::Bool:
-            return new bool(*static_cast<const bool*>(copy));
-        case QMetaType::Float:
-            return new float(*static_cast<const float*>(copy));
-        case QMetaType::Double:
-            return new double(*static_cast<const double*>(copy));
-        case QMetaType::QChar:
-            return new NS(QChar)(*static_cast<const NS(QChar)*>(copy));
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QVariantMap:
-            return new NS(QVariantMap)(*static_cast<const NS(QVariantMap)*>(copy));
-        case QMetaType::QVariantHash:
-            return new NS(QVariantHash)(*static_cast<const NS(QVariantHash)*>(copy));
-        case QMetaType::QVariantList:
-            return new NS(QVariantList)(*static_cast<const NS(QVariantList)*>(copy));
-        case QMetaType::QVariant:
-            return new NS(QVariant)(*static_cast<const NS(QVariant)*>(copy));
-#endif
-        case QMetaType::QByteArray:
-            return new NS(QByteArray)(*static_cast<const NS(QByteArray)*>(copy));
-        case QMetaType::QString:
-            return new NS(QString)(*static_cast<const NS(QString)*>(copy));
-        case QMetaType::QStringList:
-            return new NS(QStringList)(*static_cast<const NS(QStringList)*>(copy));
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QBitArray:
-            return new NS(QBitArray)(*static_cast<const NS(QBitArray)*>(copy));
-#endif
-        case QMetaType::QDate:
-            return new NS(QDate)(*static_cast<const NS(QDate)*>(copy));
-        case QMetaType::QTime:
-            return new NS(QTime)(*static_cast<const NS(QTime)*>(copy));
-        case QMetaType::QDateTime:
-            return new NS(QDateTime)(*static_cast<const NS(QDateTime)*>(copy));
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QUrl:
-            return new NS(QUrl)(*static_cast<const NS(QUrl)*>(copy));
-#endif
-        case QMetaType::QLocale:
-            return new NS(QLocale)(*static_cast<const NS(QLocale)*>(copy));
-#ifndef QT_NO_GEOM_VARIANT
-        case QMetaType::QRect:
-            return new NS(QRect)(*static_cast<const NS(QRect)*>(copy));
-        case QMetaType::QRectF:
-            return new NS(QRectF)(*static_cast<const NS(QRectF)*>(copy));
-        case QMetaType::QSize:
-            return new NS(QSize)(*static_cast<const NS(QSize)*>(copy));
-        case QMetaType::QSizeF:
-            return new NS(QSizeF)(*static_cast<const NS(QSizeF)*>(copy));
-        case QMetaType::QLine:
-            return new NS(QLine)(*static_cast<const NS(QLine)*>(copy));
-        case QMetaType::QLineF:
-            return new NS(QLineF)(*static_cast<const NS(QLineF)*>(copy));
-        case QMetaType::QPoint:
-            return new NS(QPoint)(*static_cast<const NS(QPoint)*>(copy));
-        case QMetaType::QPointF:
-            return new NS(QPointF)(*static_cast<const NS(QPointF)*>(copy));
-#endif
-#ifndef QT_NO_REGEXP
-        case QMetaType::QRegExp:
-            return new NS(QRegExp)(*static_cast<const NS(QRegExp)*>(copy));
-#endif
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QEasingCurve:
-            return new NS(QEasingCurve)(*static_cast<const NS(QEasingCurve)*>(copy));
-#endif
-        case QMetaType::QUuid:
-            return new NS(QUuid)(*static_cast<const NS(QUuid)*>(copy));
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QModelIndex:
-            return new NS(QModelIndex)(*static_cast<const NS(QModelIndex)*>(copy));
-#endif
-        case QMetaType::Void:
-            return 0;
-        default:
-            ;
-        }
-    } else {
-        switch(type) {
-        case QMetaType::VoidStar:
-        case QMetaType::QObjectStar:
-        case QMetaType::QWidgetStar:
-            return new void *;
-        case QMetaType::Long:
-            return new long;
-        case QMetaType::Int:
-            return new int;
-        case QMetaType::Short:
-            return new short;
-        case QMetaType::Char:
-            return new char;
-        case QMetaType::ULong:
-            return new ulong;
-        case QMetaType::UInt:
-            return new uint;
-        case QMetaType::LongLong:
-            return new qlonglong;
-        case QMetaType::ULongLong:
-            return new qulonglong;
-        case QMetaType::UShort:
-            return new ushort;
-        case QMetaType::UChar:
-            return new uchar;
-        case QMetaType::Bool:
-            return new bool;
-        case QMetaType::Float:
-            return new float;
-        case QMetaType::Double:
-            return new double;
-        case QMetaType::QChar:
-            return new NS(QChar);
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QVariantMap:
-            return new NS(QVariantMap);
-        case QMetaType::QVariantHash:
-            return new NS(QVariantHash);
-        case QMetaType::QVariantList:
-            return new NS(QVariantList);
-        case QMetaType::QVariant:
-            return new NS(QVariant);
-#endif
-        case QMetaType::QByteArray:
-            return new NS(QByteArray);
-        case QMetaType::QString:
-            return new NS(QString);
-        case QMetaType::QStringList:
-            return new NS(QStringList);
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QBitArray:
-            return new NS(QBitArray);
-#endif
-        case QMetaType::QDate:
-            return new NS(QDate);
-        case QMetaType::QTime:
-            return new NS(QTime);
-        case QMetaType::QDateTime:
-            return new NS(QDateTime);
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QUrl:
-            return new NS(QUrl);
-#endif
-        case QMetaType::QLocale:
-            return new NS(QLocale);
-#ifndef QT_NO_GEOM_VARIANT
-        case QMetaType::QRect:
-            return new NS(QRect);
-        case QMetaType::QRectF:
-            return new NS(QRectF);
-        case QMetaType::QSize:
-            return new NS(QSize);
-        case QMetaType::QSizeF:
-            return new NS(QSizeF);
-        case QMetaType::QLine:
-            return new NS(QLine);
-        case QMetaType::QLineF:
-            return new NS(QLineF);
-        case QMetaType::QPoint:
-            return new NS(QPoint);
-        case QMetaType::QPointF:
-            return new NS(QPointF);
-#endif
-#ifndef QT_NO_REGEXP
-        case QMetaType::QRegExp:
-            return new NS(QRegExp);
-#endif
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QEasingCurve:
-            return new NS(QEasingCurve);
-#endif
-        case QMetaType::QUuid:
-            return new NS(QUuid);
-#ifndef QT_BOOTSTRAPPED
-        case QMetaType::QModelIndex:
-            return new NS(QModelIndex);
-#endif
-        case QMetaType::Void:
-            return 0;
-        default:
-            ;
-        }
-    }
-
-    Creator creator = 0;
-    if (type >= FirstGuiType && type <= LastGuiType) {
-        if (!qMetaTypeGuiHelper)
-            return 0;
-        creator = qMetaTypeGuiHelper[type - FirstGuiType].creator;
-    } else if (type >= FirstWidgetsType && type <= LastWidgetsType) {
-        if (!qMetaTypeWidgetsHelper)
-            return 0;
-        creator = qMetaTypeWidgetsHelper[type - FirstWidgetsType].creator;
-    } else {
-        const QVector<QCustomTypeInfo> * const ct = customTypes();
-        QReadLocker locker(customTypesLock());
-        if (type < User || !ct || ct->count() <= type - User)
-            return 0;
-        if (ct->at(type - User).typeName.isEmpty())
-            return 0;
-        creator = ct->at(type - User).creator;
-    }
-
-    return creator(copy);
+    TypeCreator typeCreator(type);
+    return QMetaTypeSwitcher::switcher<void*>(typeCreator, type, copy);
 }
 
 namespace {
