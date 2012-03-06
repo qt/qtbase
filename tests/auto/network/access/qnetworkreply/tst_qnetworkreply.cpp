@@ -5632,6 +5632,7 @@ void tst_QNetworkReply::getAndThenDeleteObject_data()
 
 void tst_QNetworkReply::getAndThenDeleteObject()
 {
+    QSKIP("unstable test - reply may be finished too early");
     // yes, this will leak if the testcase fails. I don't care. It must not fail then :P
     QNetworkAccessManager *manager = new QNetworkAccessManager();
     QNetworkRequest request("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile");
