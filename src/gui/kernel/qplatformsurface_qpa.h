@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QPlatformSurface
 {
 public:
+    virtual ~QPlatformSurface();
     virtual QSurfaceFormat format() const = 0;
 
     QSurface::SurfaceClass surfaceClass() const;
