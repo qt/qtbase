@@ -1386,7 +1386,6 @@ QMakeProject::read(uchar cmd)
                 break;
         }
     }
-    Option::postProcessProject(this);   // let Option post-process
     return true;
 }
 

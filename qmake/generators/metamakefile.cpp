@@ -447,6 +447,8 @@ QT_END_INCLUDE_NAMESPACE
 MakefileGenerator *
 MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
 {
+    Option::postProcessProject(proj);
+
     MakefileGenerator *mkfile = NULL;
     if(Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT) {
         mkfile = new ProjectGenerator;
@@ -492,6 +494,8 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
 MetaMakefileGenerator *
 MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &name, bool op, bool *success)
 {
+    Option::postProcessProject(proj);
+
     MetaMakefileGenerator *ret = 0;
     if ((Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
          Option::qmake_mode == Option::QMAKE_GENERATE_PRL)) {
