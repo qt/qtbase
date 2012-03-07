@@ -571,12 +571,13 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
         // the actual output.
         if (exp.count() == 0) {
             QList<QList<QByteArray> > expArr;
+            QList<QByteArray> tmp;
             int i = 1;
             do {
-                exp = expectedResult(subdir + QString("_%1").arg(i++), logger);
-                if (exp.count())
-                    expArr += exp;
-            } while (exp.count());
+                tmp = expectedResult(subdir + QString("_%1").arg(i++), logger);
+                if (tmp.count())
+                    expArr += tmp;
+            } while (tmp.count());
 
             for (int j = 0; j < expArr.count(); ++j) {
                 if (res.count() == expArr.at(j).count()) {
@@ -584,11 +585,23 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
                     break;
                 }
             }
+
+            if (expArr.count()) {
+                QVERIFY2(exp.count(),
+                         qPrintable(QString::fromLatin1("None of the expected output files for "
+                                                        "%1 format has matching line count.")
+                                    .arg(loggers.at(n))));
+            }
         } else {
             QVERIFY2(res.count() == exp.count(),
                      qPrintable(QString::fromLatin1("Mismatch in line count: %1 != %2 (%3).")
                                 .arg(res.count()).arg(exp.count()).arg(loggers.at(n))));
         }
+
+        // By this point, we should have loaded a non-empty expected data file.
+        QVERIFY2(exp.count(),
+                 qPrintable(QString::fromLatin1("Expected test data for %1 format is empty or not found.")
+                            .arg(loggers.at(n))));
 
         // For xml output formats, verify that the log is valid XML.
         if (logFormat(logger) == "xunitxml" || logFormat(logger) == "xml" || logFormat(logger) == "lightxml") {
