@@ -314,11 +314,11 @@ void tst_QArrayData::simpleVector()
     QVERIFY(!v1.isSharedWith(v5));
     QVERIFY(!v1.isSharedWith(v6));
 
-    QVERIFY(v1.constBegin() == v1.constEnd());
-    QVERIFY(v4.constBegin() == v4.constEnd());
-    QVERIFY(v6.constBegin() + v6.size() == v6.constEnd());
-    QVERIFY(v7.constBegin() + v7.size() == v7.constEnd());
-    QVERIFY(v8.constBegin() + v8.size() == v8.constEnd());
+    QCOMPARE((void *)v1.constBegin(), (void *)v1.constEnd());
+    QCOMPARE((void *)v4.constBegin(), (void *)v4.constEnd());
+    QCOMPARE((void *)(v6.constBegin() + v6.size()), (void *)v6.constEnd());
+    QCOMPARE((void *)(v7.constBegin() + v7.size()), (void *)v7.constEnd());
+    QCOMPARE((void *)(v8.constBegin() + v8.size()), (void *)v8.constEnd());
 
     QVERIFY(v1 == v2);
     QVERIFY(v1 == v3);
@@ -1216,7 +1216,7 @@ void tst_QArrayData::fromRawData()
 
         QCOMPARE(raw.size(), size_t(11));
         QCOMPARE(raw.constBegin(), array);
-        QCOMPARE(raw.constEnd(), array + sizeof(array)/sizeof(array[0]));
+        QCOMPARE((void *)raw.constEnd(), (void *)(array + sizeof(array)/sizeof(array[0])));
 
         QVERIFY(!raw.isShared());
         QVERIFY(SimpleVector<int>(raw).isSharedWith(raw));
@@ -1234,7 +1234,7 @@ void tst_QArrayData::fromRawData()
 
         QCOMPARE(raw.size(), size_t(11));
         QCOMPARE(raw.constBegin(), array);
-        QCOMPARE(raw.constEnd(), array + sizeof(array)/sizeof(array[0]));
+        QCOMPARE((void *)raw.constEnd(), (void *)(array + sizeof(array)/sizeof(array[0])));
 
         SimpleVector<int> copy(raw);
         QVERIFY(!copy.isSharedWith(raw));
@@ -1247,7 +1247,7 @@ void tst_QArrayData::fromRawData()
 
         QCOMPARE(raw.size(), size_t(11));
         QCOMPARE(raw.constBegin(), array);
-        QCOMPARE(raw.constEnd(), array + sizeof(array)/sizeof(array[0]));
+        QCOMPARE((void *)raw.constEnd(), (void *)(array + sizeof(array)/sizeof(array[0])));
 
         // Detach
         QCOMPARE(raw.back(), 11);
@@ -1286,7 +1286,7 @@ void tst_QArrayData::literals()
 #endif
 
         QVERIFY(v.isSharable());
-        QCOMPARE(v.constBegin() + v.size(), v.constEnd());
+        QCOMPARE((void *)(v.constBegin() + v.size()), (void *)v.constEnd());
 
         for (int i = 0; i < 10; ++i)
             QCOMPARE(const_(v)[i], char('A' + i));
@@ -1335,7 +1335,7 @@ void tst_QArrayData::variadicLiterals()
         QVERIFY(v.isStatic());
 
         QVERIFY(v.isSharable());
-        QVERIFY(v.constBegin() + v.size() == v.constEnd());
+        QCOMPARE((void *)(v.constBegin() + v.size()), (void *)v.constEnd());
 
         for (int i = 0; i < 7; ++i)
             QCOMPARE(const_(v)[i], i);
