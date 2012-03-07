@@ -88,7 +88,6 @@ public:
     virtual QString rowDescription(int row) const;
     virtual int columnCount() const;
     virtual int rowCount() const;
-    virtual QAccessible2::TableModelChange modelChange() const;
 
     // selection
     virtual int selectedCellCount() const;
@@ -105,17 +104,7 @@ public:
     virtual bool unselectColumn(int column);
 
 protected:
-    virtual void modelReset();
-    virtual void rowsInserted(const QModelIndex &parent, int first, int last);
-    virtual void rowsRemoved(const QModelIndex &parent, int first, int last);
-    virtual void columnsInserted(const QModelIndex &parent, int first, int last);
-    virtual void columnsRemoved(const QModelIndex &parent, int first, int last);
-    virtual void rowsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int row);
-    virtual void columnsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int column);
-
-protected:
     QAbstractItemView* view;
-    QAccessible2::TableModelChange lastChange;
     inline QAccessibleTableCell *cell(const QModelIndex &index) const;
     inline QAccessible::Role cellRole() const {
         switch (m_role) {

@@ -70,24 +70,6 @@ namespace QAccessible2
         LineBoundary,
         NoBoundary
     };
-
-    enum TableModelChangeType {
-        TableModelChangeInsert,
-        TableModelChangeDelete,
-        TableModelChangeUpdate
-    };
-
-    struct TableModelChange {
-        int firstColumn;
-        int firstRow;
-        int lastColumn;
-        int lastRow;
-        TableModelChangeType type;
-
-        TableModelChange()
-            : firstColumn(0), firstRow(0), lastColumn(0), lastRow(0), type(TableModelChangeUpdate)
-        {}
-    };
 }
 
 class Q_GUI_EXPORT QAccessibleTextInterface
@@ -230,19 +212,8 @@ public:
     virtual bool unselectRow(int row) = 0;
     // Unselects one column, leaving other selected columns selected (if any).
     virtual bool unselectColumn(int column) = 0;
-    // Returns the type and extents describing how a table changed.
-    virtual QAccessible2::TableModelChange modelChange() const = 0;
 
 protected:
-    // These functions are called when the model changes.
-    virtual void modelReset() = 0;
-    virtual void rowsInserted(const QModelIndex &parent, int first, int last) = 0;
-    virtual void rowsRemoved(const QModelIndex &parent, int first, int last) = 0;
-    virtual void columnsInserted(const QModelIndex &parent, int first, int last) = 0;
-    virtual void columnsRemoved(const QModelIndex &parent, int first, int last) = 0;
-    virtual void rowsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int row) = 0;
-    virtual void columnsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int column) = 0;
-
 friend class QAbstractItemView;
 friend class QAbstractItemViewPrivate;
 };

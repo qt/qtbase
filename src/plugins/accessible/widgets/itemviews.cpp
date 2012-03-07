@@ -156,63 +156,6 @@ QHeaderView *QAccessibleTable::verticalHeader() const
     return header;
 }
 
-void QAccessibleTable::modelReset()
-{}
-
-void QAccessibleTable::rowsInserted(const QModelIndex &, int first, int last)
-{
-    lastChange.firstRow = first;
-    lastChange.lastRow = last;
-    lastChange.firstColumn = 0;
-    lastChange.lastColumn = 0;
-    lastChange.type = QAccessible2::TableModelChangeInsert;
-}
-
-void QAccessibleTable::rowsRemoved(const QModelIndex &, int first, int last)
-{
-    lastChange.firstRow = first;
-    lastChange.lastRow = last;
-    lastChange.firstColumn = 0;
-    lastChange.lastColumn = 0;
-    lastChange.type = QAccessible2::TableModelChangeDelete;
-}
-
-void QAccessibleTable::columnsInserted(const QModelIndex &, int first, int last)
-{
-    lastChange.firstRow = 0;
-    lastChange.lastRow = 0;
-    lastChange.firstColumn = first;
-    lastChange.lastColumn = last;
-    lastChange.type = QAccessible2::TableModelChangeInsert;
-}
-
-void QAccessibleTable::columnsRemoved(const QModelIndex &, int first, int last)
-{
-    lastChange.firstRow = 0;
-    lastChange.lastRow = 0;
-    lastChange.firstColumn = first;
-    lastChange.lastColumn = last;
-    lastChange.type = QAccessible2::TableModelChangeDelete;
-}
-
-void QAccessibleTable::rowsMoved( const QModelIndex &, int, int, const QModelIndex &, int)
-{
-    lastChange.firstRow = 0;
-    lastChange.lastRow = 0;
-    lastChange.firstColumn = 0;
-    lastChange.lastColumn = 0;
-    lastChange.type = QAccessible2::TableModelChangeUpdate;
-}
-
-void QAccessibleTable::columnsMoved( const QModelIndex &, int, int, const QModelIndex &, int)
-{
-    lastChange.firstRow = 0;
-    lastChange.lastRow = 0;
-    lastChange.firstColumn = 0;
-    lastChange.lastColumn = 0;
-    lastChange.type = QAccessible2::TableModelChangeUpdate;
-}
-
 QAccessibleTableCell *QAccessibleTable::cell(const QModelIndex &index) const
 {
     if (index.isValid())
@@ -347,13 +290,6 @@ bool QAccessibleTable::unselectColumn(int column)
         return false;
     view->selectionModel()->select(index, QItemSelectionModel::Columns & QItemSelectionModel::Deselect);
     return true;
-}
-
-QAccessible2::TableModelChange QAccessibleTable::modelChange() const
-{
-    QAccessible2::TableModelChange change;
-    // FIXME
-    return change;
 }
 
 QAccessible::Role QAccessibleTable::role() const
