@@ -45,6 +45,7 @@
 #include "qwindowsaccessibility.h"
 
 #include <QtGui/qaccessible2.h>
+#include <QtGui/qclipboard.h>
 #include <QtWidgets/qapplication.h>
 #include <QtCore/qdebug.h>
 
@@ -241,9 +242,11 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryInterface(REFIID id, LPVOI
         } else if (id == IID_IAccessibleComponent) {
             *iface = (IAccessibleComponent*)this;
         } else if (id == IID_IAccessibleEditableText) {
-            //if (accessible->editableTextInterface()) {
-                //*iface = (IAccessibleEditableText*)this;
-            //}
+            if (accessible->editableTextInterface() ||
+                accessible->role() == QAccessible::EditableText)
+            {
+                *iface = (IAccessibleEditableText*)this;
+            }
         } else if (id == IID_IAccessibleHyperlink) {
             //*iface = (IAccessibleHyperlink*)this;
         } else if (id == IID_IAccessibleHypertext) {
@@ -671,6 +674,126 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_background(IA2Color *backgr
     *background = (IA2Color)accessible->backgroundColor().rgb();
     return S_OK;
 }
+
+/**************************************************************\
+ *                     IAccessibleEditableText                *
+ **************************************************************/
+#ifndef QT_NO_CLIPBOARD
+/*!
+    \internal
+
+    if \a endOffset == -1 it means end of the text
+*/
+QString QWindowsIA2Accessible::textForRange(int startOffset, int endOffset) const
+{
+    if (QAccessibleTextInterface *textIface = accessible->textInterface()) {
+        if (endOffset == IA2_TEXT_OFFSET_LENGTH)
+            endOffset = textIface->characterCount();
+        return textIface->text(startOffset, endOffset);
+    }
+    QString txt = accessible->text(QAccessible::Value);
+    if (endOffset == IA2_TEXT_OFFSET_LENGTH)
+        endOffset = txt.length();
+    return txt.mid(startOffset, endOffset - startOffset);
+}
+#endif
+
+/*!
+    \internal
+*/
+void QWindowsIA2Accessible::replaceTextFallback(long startOffset, long endOffset, const QString &txt)
+{
+    QString t = textForRange(0, -1);
+    if (endOffset == IA2_TEXT_OFFSET_LENGTH)
+        endOffset = t.length();
+    if (endOffset - startOffset == 0) {
+        t.insert(startOffset, txt);
+    } else {
+        t.replace(startOffset, endOffset - startOffset, txt);
+    }
+    accessible->setText(QAccessible::Value, t);
+}
+
+HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::copyText(long startOffset, long endOffset)
+{
+    accessibleDebugClientCalls(accessible);
+#ifndef QT_NO_CLIPBOARD
+    const QString t = textForRange(startOffset, endOffset);
+    QGuiApplication::clipboard()->setText(t);
+    return S_OK;
+#else
+    return E_NOTIMPL;
+#endif
+}
+
+HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::deleteText(long startOffset, long endOffset)
+{
+    accessibleDebugClientCalls(accessible);
+    if (QAccessibleEditableTextInterface *editableTextIface = accessible->editableTextInterface())
+        editableTextIface->deleteText(startOffset, endOffset);
+    else
+        replaceTextFallback(startOffset, endOffset, QString());
+    return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::insertText(long offset, BSTR *text)
+{
+    accessibleDebugClientCalls(accessible);
+    const QString txt(BSTRToQString(*text));
+    if (QAccessibleEditableTextInterface *editableTextIface = accessible->editableTextInterface())
+        editableTextIface->insertText(offset, txt);
+    else
+        replaceTextFallback(offset, offset, txt);
+    return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::cutText(long startOffset, long endOffset)
+{
+    accessibleDebugClientCalls(accessible);
+#ifndef QT_NO_CLIPBOARD
+    const QString t = textForRange(startOffset, endOffset);
+    if (QAccessibleEditableTextInterface *editableTextIface = accessible->editableTextInterface())
+        editableTextIface->deleteText(startOffset, endOffset);
+    else
+        replaceTextFallback(startOffset, endOffset, QString());
+    QGuiApplication::clipboard()->setText(t);
+    return S_OK;
+#else
+    return E_NOTIMPL;
+#endif
+}
+
+HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::pasteText(long offset)
+{
+    accessibleDebugClientCalls(accessible);
+#ifndef QT_NO_CLIPBOARD
+    const QString txt = QGuiApplication::clipboard()->text();
+    if (QAccessibleEditableTextInterface *editableTextIface = accessible->editableTextInterface())
+        editableTextIface->insertText(offset, txt);
+    else
+        replaceTextFallback(offset, offset, txt);
+    return S_OK;
+#else
+    return E_NOTIMPL;
+#endif
+}
+
+HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::replaceText(long startOffset, long endOffset, BSTR *text)
+{
+    accessibleDebugClientCalls(accessible);
+    const QString txt(BSTRToQString(*text));
+    if (QAccessibleEditableTextInterface *editableTextIface = accessible->editableTextInterface())
+        editableTextIface->replaceText(startOffset, endOffset, txt);
+    else
+        replaceTextFallback(startOffset, endOffset, txt);
+    return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::setAttributes(long /*startOffset*/, long /*endOffset*/, BSTR * /*attributes*/)
+{
+    return E_NOTIMPL;
+}
+
 
 /**************************************************************\
  *                     IAccessibleTable2                      *

@@ -137,8 +137,7 @@ private:
 #endif
 
 #ifndef QT_NO_LINEEDIT
-class QAccessibleLineEdit : public QAccessibleWidget, public QAccessibleTextInterface,
-                            public QAccessibleSimpleEditableTextInterface
+class QAccessibleLineEdit : public QAccessibleWidget, public QAccessibleTextInterface
 {
 public:
     explicit QAccessibleLineEdit(QWidget *o, const QString &name = QString());

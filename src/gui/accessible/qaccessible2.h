@@ -97,30 +97,9 @@ class Q_GUI_EXPORT QAccessibleEditableTextInterface
 public:
     virtual ~QAccessibleEditableTextInterface() {}
 
-    virtual void copyText(int startOffset, int endOffset) const = 0;
     virtual void deleteText(int startOffset, int endOffset) = 0;
     virtual void insertText(int offset, const QString &text) = 0;
-    virtual void cutText(int startOffset, int endOffset) = 0;
-    virtual void pasteText(int offset) = 0;
     virtual void replaceText(int startOffset, int endOffset, const QString &text) = 0;
-    virtual void setAttributes(int startOffset, int endOffset, const QString &attributes) = 0;
-};
-
-class Q_GUI_EXPORT QAccessibleSimpleEditableTextInterface: public QAccessibleEditableTextInterface
-{
-public:
-    explicit QAccessibleSimpleEditableTextInterface(QAccessibleInterface *accessibleInterface);  //###
-
-    void copyText(int startOffset, int endOffset) const;
-    void deleteText(int startOffset, int endOffset);
-    void insertText(int offset, const QString &text);
-    void cutText(int startOffset, int endOffset);
-    void pasteText(int offset);
-    void replaceText(int startOffset, int endOffset, const QString &text);
-    inline void setAttributes(int, int, const QString &) {}
-
-private:
-    QAccessibleInterface *iface;
 };
 
 class Q_GUI_EXPORT QAccessibleValueInterface

@@ -142,12 +142,20 @@ void QAccessibleTextEdit::setText(QAccessible::Text t, const QString &text)
     textEdit()->setText(text);
 }
 
+QAccessible::State QAccessibleTextEdit::state() const
+{
+    QAccessible::State st = QAccessibleWidget::state();
+    if (textEdit()->isReadOnly())
+        st.readOnly = true;
+    else
+        st.editable = true;
+    return st;
+}
+
 void *QAccessibleTextEdit::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::TextInterface)
         return static_cast<QAccessibleTextInterface*>(this);
-    else if (t == QAccessible::EditableTextInterface)
-        return static_cast<QAccessibleEditableTextInterface*>(this);
     return QAccessibleWidget::interface_cast(t);
 }
 
@@ -467,24 +475,9 @@ static QTextCursor cursorForRange(QTextEdit *textEdit, int startOffset, int endO
     QTextCursor cursor(textEdit->document());
     cursor.setPosition(startOffset, QTextCursor::MoveAnchor);
     cursor.setPosition(endOffset, QTextCursor::KeepAnchor);
-
     return cursor;
 }
 
-void QAccessibleTextEdit::copyText(int startOffset, int endOffset) const
-{
-#ifndef QT_NO_CLIPBOARD
-    QTextCursor previousCursor = textEdit()->textCursor();
-    QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
-
-    if (!cursor.hasSelection())
-        return;
-
-    textEdit()->setTextCursor(cursor);
-    textEdit()->copy();
-    textEdit()->setTextCursor(previousCursor);
-#endif
-}
 
 void QAccessibleTextEdit::deleteText(int startOffset, int endOffset)
 {
@@ -501,34 +494,6 @@ void QAccessibleTextEdit::insertText(int offset, const QString &text)
     cursor.insertText(text);
 }
 
-void QAccessibleTextEdit::cutText(int startOffset, int endOffset)
-{
-#ifndef QT_NO_CLIPBOARD
-    QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
-
-    if (!cursor.hasSelection())
-        return;
-
-    textEdit()->setTextCursor(cursor);
-    textEdit()->cut();
-#endif
-}
-
-void QAccessibleTextEdit::pasteText(int offset)
-{
-    QTextEdit *edit = textEdit();
-
-    QTextCursor oldCursor = edit->textCursor();
-    QTextCursor newCursor = oldCursor;
-    newCursor.setPosition(offset);
-
-    edit->setTextCursor(newCursor);
-#ifndef QT_NO_CLIPBOARD
-    edit->paste();
-#endif
-    edit->setTextCursor(oldCursor);
-}
-
 void QAccessibleTextEdit::replaceText(int startOffset, int endOffset, const QString &text)
 {
     QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
@@ -537,13 +502,6 @@ void QAccessibleTextEdit::replaceText(int startOffset, int endOffset, const QStr
     cursor.insertText(text);
 }
 
-void QAccessibleTextEdit::setAttributes(int startOffset, int endOffset, const QString &attributes)
-{
-    // TODO
-    Q_UNUSED(startOffset);
-    Q_UNUSED(endOffset);
-    Q_UNUSED(attributes);
-}
 #endif // QT_NO_TEXTEDIT
 
 #ifndef QT_NO_STACKEDWIDGET

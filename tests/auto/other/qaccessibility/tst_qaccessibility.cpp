@@ -46,16 +46,19 @@
 # include <oleacc.h>
 # include <servprov.h>
 # include <winuser.h>
-# ifndef Q_CC_MINGW
+# ifdef QT_SUPPORTS_IACCESSIBLE2
 #  include <Accessible2.h>
 #  include <AccessibleAction.h>
 #  include <AccessibleComponent.h>
+#  include <AccessibleEditableText.h>
+#  include <AccessibleText.h>
 # endif
 #endif
 #include <QtTest/QtTest>
 #include <QtGui>
 #include <QtWidgets>
 #include <math.h>
+#include <qpa/qplatformnativeinterface.h>
 
 #if defined(Q_OS_WIN) && defined(interface)
 #   undef interface
@@ -1560,12 +1563,6 @@ void tst_QAccessibility::textEditTest()
     QCOMPARE(iface->textInterface()->characterRect(5).size(), QSize(fm.width(" "), fm.height()));
     QCOMPARE(iface->textInterface()->characterRect(6).size(), QSize(fm.width("w"), fm.height()));
 
-    iface->editableTextInterface()->copyText(6, 11);
-    QCOMPARE(QApplication::clipboard()->text(), QLatin1String("world"));
-    iface->editableTextInterface()->cutText(12, 16);
-    QCOMPARE(QApplication::clipboard()->text(), QLatin1String("how "));
-    QCOMPARE(iface->textInterface()->text(12, 15), QLatin1String("are"));
-
     QTestAccessibility::clearEvents();
 
     // select text
@@ -2922,6 +2919,28 @@ void tst_QAccessibility::accelerators()
     QTestAccessibility::clearEvents();
 }
 
+#ifdef QT_SUPPORTS_IACCESSIBLE2
+static IUnknown *queryIA2(IAccessible *acc, const IID &iid)
+{
+    IUnknown *resultInterface = 0;
+    IServiceProvider *pService = 0;
+    HRESULT hr = acc->QueryInterface(IID_IServiceProvider, (void **)&pService);
+    if (SUCCEEDED(hr)) {
+        IAccessible2 *pIA2 = 0;
+        hr = pService->QueryService(IID_IAccessible, IID_IAccessible2, (void**)&pIA2);
+        if (SUCCEEDED(hr) && pIA2) {
+            // The control supports IAccessible2.
+            // pIA2 is the reference to the accessible object's IAccessible2 interface.
+            hr = pIA2->QueryInterface(iid, (void**)&resultInterface);
+            pIA2->Release();
+        }
+        // The control supports IAccessible2.
+        pService->Release();
+    }
+    return resultInterface;
+}
+#endif
+
 void tst_QAccessibility::bridgeTest()
 {
     // For now this is a simple test to see if the bridge is working at all.
@@ -2931,27 +2950,31 @@ void tst_QAccessibility::bridgeTest()
     QWidget *window = new QWidget;
     QVBoxLayout *lay = new QVBoxLayout(window);
     QPushButton *button = new QPushButton(tr("Push me"), window);
-    QLineEdit *le = new QLineEdit(window);
+    QTextEdit *te = new QTextEdit(window);
+    te->setText(QLatin1String("hello world\nhow are you today?\n"));
     lay->addWidget(button);
-    lay->addWidget(le);
+    lay->addWidget(te);
 
     window->show();
     QTest::qWaitForWindowShown(window);
 
+
+    /**************************************************
+     *   QPushButton
+     **************************************************/
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(button);
     QPoint buttonPos = button->mapToGlobal(QPoint(0,0));
     QRect buttonRect = iface->rect();
     QCOMPARE(buttonRect.topLeft(), buttonPos);
 
-
     // All set, now test the bridge.
     POINT pt;
     pt.x = buttonRect.center().x();
     pt.y = buttonRect.center().y();
-    IAccessible *iacc;
+    IAccessible *iaccButton;
 
     VARIANT varChild;
-    HRESULT hr = ::AccessibleObjectFromPoint(pt, &iacc, &varChild);
+    HRESULT hr = ::AccessibleObjectFromPoint(pt, &iaccButton, &varChild);
     QVERIFY(SUCCEEDED(hr));
     VARIANT varSELF;
     varSELF.vt = VT_I4;
@@ -2959,7 +2982,7 @@ void tst_QAccessibility::bridgeTest()
 
     // **** Test get_accRole ****
     VARIANT varRole;
-    hr = iacc->get_accRole(varSELF, &varRole);
+    hr = iaccButton->get_accRole(varSELF, &varRole);
     QVERIFY(SUCCEEDED(hr));
 
     QCOMPARE(varRole.vt, (VARTYPE)VT_I4);
@@ -2967,52 +2990,106 @@ void tst_QAccessibility::bridgeTest()
 
     // **** Test accLocation ****
     long x, y, w, h;
-    hr = iacc->accLocation(&x, &y, &w, &h, varSELF);
+    hr = iaccButton->accLocation(&x, &y, &w, &h, varSELF);
     QCOMPARE(buttonRect, QRect(x, y, w, h));
 
-#ifndef Q_CC_MINGW
+#ifdef QT_SUPPORTS_IACCESSIBLE2
     // Test IAccessible2 part of bridge
-    IServiceProvider *pService = 0;
-    hr = iacc->QueryInterface(IID_IServiceProvider, (void **)&pService);
-    if (SUCCEEDED(hr)) {
-        IAccessible2 *pIA2 = 0;
-        hr = pService->QueryService(IID_IAccessible, IID_IAccessible2, (void**)&pIA2);
-        if (SUCCEEDED(hr) && pIA2) {
-            // The control supports IAccessible2.
-            // pIA2 is the reference to the accessible object's IAccessible2 interface.
+    if (IAccessible2 *ia2Button = (IAccessible2*)queryIA2(iaccButton, IID_IAccessible2)) {
+        // The control supports IAccessible2.
+        // ia2Button is the reference to the accessible object's IAccessible2 interface.
 
-            /***** Test IAccessibleComponent *****/
-            IAccessibleComponent *ia2Component = 0;
-            hr = pIA2->QueryInterface(IID_IAccessibleComponent, (void**)&ia2Component);
-            QVERIFY(SUCCEEDED(hr));
-            long x, y;
-            hr = ia2Component->get_locationInParent(&x, &y);
-            QVERIFY(SUCCEEDED(hr));
-            QCOMPARE(button->pos(), QPoint(x, y));
-            ia2Component->Release();
+        /***** Test IAccessibleComponent *****/
+        IAccessibleComponent *ia2Component = 0;
+        hr = ia2Button->QueryInterface(IID_IAccessibleComponent, (void**)&ia2Component);
+        QVERIFY(SUCCEEDED(hr));
+        long x, y;
+        hr = ia2Component->get_locationInParent(&x, &y);
+        QVERIFY(SUCCEEDED(hr));
+        QCOMPARE(button->pos(), QPoint(x, y));
+        ia2Component->Release();
 
-            /***** Test IAccessibleAction *****/
-            IAccessibleAction *ia2Action = 0;
-            hr = pIA2->QueryInterface(IID_IAccessibleAction, (void**)&ia2Action);
-            QVERIFY(SUCCEEDED(hr));
-            QVERIFY(ia2Action);
-            long nActions;
-            ia2Action->nActions(&nActions);
-            QVERIFY(nActions >= 1); // "Press" and "SetFocus"
-            BSTR actionName;
-            ia2Action->get_name(0, &actionName);
-            QString name((QChar*)actionName);
-            QCOMPARE(name, QAccessibleActionInterface::pressAction());
-            ia2Action->Release();
+        /***** Test IAccessibleAction *****/
+        IAccessibleAction *ia2Action = 0;
+        hr = ia2Button->QueryInterface(IID_IAccessibleAction, (void**)&ia2Action);
+        QVERIFY(SUCCEEDED(hr));
+        QVERIFY(ia2Action);
+        long nActions;
+        ia2Action->nActions(&nActions);
+        QVERIFY(nActions >= 1); // "Press" and "SetFocus"
+        BSTR actionName;
+        ia2Action->get_name(0, &actionName);
+        QString name((QChar*)actionName);
+        QCOMPARE(name, QAccessibleActionInterface::pressAction());
+        ia2Action->Release();
 
-            // Done testing
-            pIA2->Release();
-        }
-        pService->Release();
+
+        // Done testing
+        ia2Button->Release();
     }
 #endif
-    iacc->Release();
+    iaccButton->Release();
 
+    /**************************************************
+     *   QWidget
+     **************************************************/
+    QWindow *windowHandle = window->windowHandle();
+    QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
+    HWND hWnd = (HWND)platform->nativeResourceForWindow("handle", windowHandle);
+
+    IAccessible *iaccWindow;
+    hr = ::AccessibleObjectFromWindow(hWnd, OBJID_CLIENT, IID_IAccessible, (void**)&iaccWindow);
+    QVERIFY(SUCCEEDED(hr));
+    hr = iaccWindow->get_accRole(varSELF, &varRole);
+    QVERIFY(SUCCEEDED(hr));
+
+    QCOMPARE(varRole.vt, (VARTYPE)VT_I4);
+    QCOMPARE(varRole.lVal, (LONG)ROLE_SYSTEM_CLIENT);
+
+    long nChildren;
+    hr = iaccWindow->get_accChildCount(&nChildren);
+    QVERIFY(SUCCEEDED(hr));
+    QCOMPARE(nChildren, (long)2);
+
+    /**************************************************
+     *   QTextEdit
+     **************************************************/
+    // Get the second child (the accessible interface for the text edit)
+    varChild.vt = VT_I4;
+    varChild.lVal = 2;
+    QVERIFY(iaccWindow);
+    IAccessible *iaccTextEdit;
+    hr = iaccWindow->get_accChild(varChild, (IDispatch**)&iaccTextEdit);
+    QVERIFY(SUCCEEDED(hr));
+    QVERIFY(iaccTextEdit);
+    hr = iaccTextEdit->get_accRole(varSELF, &varRole);
+    QVERIFY(SUCCEEDED(hr));
+
+    QCOMPARE(varRole.vt, (VARTYPE)VT_I4);
+    QCOMPARE(varRole.lVal, (LONG)ROLE_SYSTEM_TEXT);
+
+
+
+#ifdef QT_SUPPORTS_IACCESSIBLE2
+    if (IAccessibleEditableText *ia2TextEdit = (IAccessibleEditableText*)queryIA2(iaccTextEdit, IID_IAccessibleEditableText)) {
+        ia2TextEdit->copyText(6, 11);
+        QCOMPARE(QApplication::clipboard()->text(), QLatin1String("world"));
+        ia2TextEdit->cutText(12, 16);
+        QCOMPARE(QApplication::clipboard()->text(), QLatin1String("how "));
+        ia2TextEdit->Release();
+    }
+    if (IAccessibleText *ia2Text = (IAccessibleText*)queryIA2(iaccTextEdit, IID_IAccessibleText)) {
+        BSTR txt;
+        hr = ia2Text->get_text(12, 15, &txt);
+        QVERIFY(SUCCEEDED(hr));
+        QCOMPARE(QString((QChar*)txt), QLatin1String("are"));
+        ia2Text->Release();
+    }
+#endif
+    iaccTextEdit->Release();
+
+
+    iaccWindow->Release();
     QTestAccessibility::clearEvents();
 #endif
 }

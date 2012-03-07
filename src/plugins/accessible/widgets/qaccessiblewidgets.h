@@ -73,6 +73,7 @@ public:
 
     QString text(QAccessible::Text t) const;
     void setText(QAccessible::Text t, const QString &text);
+    QAccessible::State state() const;
 
     void *interface_cast(QAccessible::InterfaceType t);
 
@@ -98,13 +99,9 @@ public:
     void scrollToSubstring(int startIndex, int endIndex);
 
     // QAccessibleEditableTextInterface
-    void copyText(int startOffset, int endOffset) const;
     void deleteText(int startOffset, int endOffset);
     void insertText(int offset, const QString &text);
-    void cutText(int startOffset, int endOffset);
-    void pasteText(int offset);
     void replaceText(int startOffset, int endOffset, const QString &text);
-    void setAttributes(int startOffset, int endOffset, const QString &attributes);
 
 protected:
     QTextEdit *textEdit() const;

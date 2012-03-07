@@ -575,7 +575,7 @@ QStringList QAccessibleGroupBox::keyBindingsForAction(const QString &) const
   \a name is propagated to the QAccessibleWidget constructor.
 */
 QAccessibleLineEdit::QAccessibleLineEdit(QWidget *w, const QString &name)
-: QAccessibleWidget(w, QAccessible::EditableText, name), QAccessibleSimpleEditableTextInterface(this)
+: QAccessibleWidget(w, QAccessible::EditableText, name)
 {
     addControllingSignal(QLatin1String("textChanged(const QString&)"));
     addControllingSignal(QLatin1String("returnPressed()"));
@@ -626,6 +626,9 @@ QAccessible::State QAccessibleLineEdit::state() const
     QLineEdit *l = lineEdit();
     if (l->isReadOnly())
         state.readOnly = true;
+    else
+        state.editable = true;
+
     if (l->echoMode() != QLineEdit::Normal)
         state.passwordEdit = true;
     state.selectable = true;
@@ -643,8 +646,6 @@ void *QAccessibleLineEdit::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::TextInterface)
         return static_cast<QAccessibleTextInterface*>(this);
-    else if (t == QAccessible::EditableTextInterface)
-        return static_cast<QAccessibleEditableTextInterface*>(this);
     return QAccessibleWidget::interface_cast(t);
 }
 

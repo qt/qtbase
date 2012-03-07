@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsIA2Accessible : public QWindowsMsaaAccessible,
         public IAccessibleAction,
         public IAccessibleComponent,
-        /*public IAccessibleEditableText,*/
+        public IAccessibleEditableText,
         public IAccessibleTable2,
         public IAccessibleTableCell,
         public IAccessibleText,
@@ -122,7 +122,6 @@ public:
     HRESULT STDMETHODCALLTYPE get_background(IA2Color *background);
 
     /* IAccessibleEditableText */
-    /*
     HRESULT STDMETHODCALLTYPE copyText(long startOffset, long endOffset);
     HRESULT STDMETHODCALLTYPE deleteText(long startOffset, long endOffset);
     HRESULT STDMETHODCALLTYPE insertText(long offset, BSTR *text);
@@ -130,7 +129,6 @@ public:
     HRESULT STDMETHODCALLTYPE pasteText(long offset);
     HRESULT STDMETHODCALLTYPE replaceText(long startOffset, long endOffset, BSTR *text);
     HRESULT STDMETHODCALLTYPE setAttributes(long startOffset, long endOffset, BSTR *attributes);
-    */
 
     /* IAccessibleTable2 */
     HRESULT STDMETHODCALLTYPE get_cellAt( long row, long column, IUnknown **cell);
@@ -265,6 +263,8 @@ private:
     HRESULT wrapListOfCells(const QList<QAccessibleInterface*> &inputCells, IUnknown ***outputAccessibles, long *nCellCount);
     uint uniqueID() const;
     QByteArray IIDToString(REFIID id);
+    QString textForRange(int startOffset, int endOffset) const;
+    void replaceTextFallback(long startOffset, long endOffset, const QString &txt);
 
 };
 

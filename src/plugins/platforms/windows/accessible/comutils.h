@@ -54,6 +54,11 @@ class QVariant;
 
 bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &typeName, bool out);
 
+inline QString BSTRToQString(const BSTR &bstr)
+{
+    return QString((QChar*)bstr);
+}
+
 inline BSTR QStringToBSTR(const QString &str)
 {
     return SysAllocStringLen((OLECHAR*)str.unicode(), str.length());
