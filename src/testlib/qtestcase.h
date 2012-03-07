@@ -198,8 +198,6 @@ namespace QTest
     Q_TESTLIB_EXPORT Qt::Key asciiToKey(char ascii);
     Q_TESTLIB_EXPORT char keyToAscii(Qt::Key key);
 
-    Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *msg, const char *file,
-                                          int line);
     Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *failureMsg,
                                          char *val1, char *val2,
                                          const char *actual, const char *expected,

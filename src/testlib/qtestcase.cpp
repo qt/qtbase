@@ -2441,21 +2441,6 @@ QObject *QTest::testObject()
 }
 
 /*! \internal
- */
-bool QTest::compare_helper(bool success, const char *msg, const char *file, int line)
-{
-    static bool warned = false;
-    if (!warned) {
-        warned = true;
-        QTest::qWarn("QTest::compare_helper(bool, const char *, const char *, int) is obsolete "
-                     "and will soon be removed. Please update your code to use the other "
-                     "version of this function.");
-    }
-
-    return QTestResult::compare(success, msg, file, line);
-}
-
-/*! \internal
     This function is called by various specializations of QTest::qCompare
     to decide whether to report a failure and to produce verbose test output.
 
