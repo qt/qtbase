@@ -403,8 +403,8 @@ void tst_QAccessibility::cleanup()
         qWarning("%d accessibility event(s) were not handled in testfunction '%s':", list.count(),
                  QString(QTest::currentTestFunction()).toAscii().constData());
         for (int i = 0; i < list.count(); ++i)
-            qWarning(" %d: Object: %p Event: '%s' (%d) Child: %d", i + 1, list.at(i).object,
-                     eventName(list.at(i).event).toAscii().constData(), list.at(i).event, list.at(i).child);
+            qWarning(" %d: Object: %p Event: '%s' Child: %d", i + 1, list.at(i).object(),
+                     eventName(list.at(i).type()).toAscii().constData(), list.at(i).child());
     }
     QTestAccessibility::clearEvents();
 }
@@ -415,18 +415,18 @@ void tst_QAccessibility::eventTest()
     button->setObjectName(QString("Olaf"));
 
     button->show();
-    QVERIFY_EVENT(button, -1, QAccessible::ObjectShow);
+    QVERIFY_EVENT(QAccessibleEvent(QAccessible::ObjectShow, button, -1));
     button->setFocus(Qt::MouseFocusReason);
     QTestAccessibility::clearEvents();
     QTest::mouseClick(button, Qt::LeftButton, 0);
 
     button->setAccessibleName("Olaf the second");
-    QVERIFY_EVENT(button, -1, QAccessible::NameChanged);
+    QVERIFY_EVENT(QAccessibleEvent(QAccessible::NameChanged, button));
     button->setAccessibleDescription("This is a button labeled Olaf");
-    QVERIFY_EVENT(button, -1, QAccessible::DescriptionChanged);
+    QVERIFY_EVENT(QAccessibleEvent(QAccessible::DescriptionChanged, button));
 
     button->hide();
-    QVERIFY_EVENT(button, -1, QAccessible::ObjectHide);
+    QVERIFY_EVENT(QAccessibleEvent(QAccessible::ObjectHide, button));
 
     delete button;
 }
@@ -730,16 +730,16 @@ void tst_QAccessibility::hideShowTest()
     window->show();
     QVERIFY(!state(window).invisible);
     QVERIFY(!state(child).invisible);
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(window, -1, QAccessible::ObjectShow)));
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(child, -1, QAccessible::ObjectShow)));
+    QVERIFY(QTestAccessibility::events().contains(QAccessibleEvent(QAccessible::ObjectShow, window)));
+    QVERIFY(QTestAccessibility::events().contains(QAccessibleEvent(QAccessible::ObjectShow, child)));
     QTestAccessibility::clearEvents();
 
     // hide() and veryfy that both window and child are invisible and get ObjectHide events.
     window->hide();
     QVERIFY(state(window).invisible);
     QVERIFY(state(child).invisible);
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(window, -1, QAccessible::ObjectHide)));
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(child, -1, QAccessible::ObjectHide)));
+    QVERIFY(QTestAccessibility::events().contains(QAccessibleEvent(QAccessible::ObjectHide, window)));
+    QVERIFY(QTestAccessibility::events().contains(QAccessibleEvent(QAccessible::ObjectHide, child)));
     QTestAccessibility::clearEvents();
 
     delete window;
@@ -820,7 +820,7 @@ void tst_QAccessibility::mainWindowTest()
     QLatin1String name = QLatin1String("I am the main window");
     mw->setWindowTitle(name);
     QTest::qWaitForWindowShown(mw);
-    QVERIFY_EVENT(mw, -1, QAccessible::ObjectShow);
+    QVERIFY_EVENT(QAccessibleEvent(QAccessible::ObjectShow, mw));
 
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(mw);
     QCOMPARE(interface->text(QAccessible::Name), name);
@@ -1050,12 +1050,12 @@ void tst_QAccessibility::scrollBarTest()
     scrollBar->resize(200, 50);
     scrollBar->show();
     QVERIFY(!scrollBarInterface->state().invisible);
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(scrollBar, -1, QAccessible::ObjectShow)));
+    QVERIFY(QTestAccessibility::events().contains(QAccessibleEvent(QAccessible::ObjectShow, scrollBar)));
     QTestAccessibility::clearEvents();
 
     scrollBar->hide();
     QVERIFY(scrollBarInterface->state().invisible);
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(scrollBar, -1, QAccessible::ObjectHide)));
+    QVERIFY(QTestAccessibility::events().contains(QAccessibleEvent(QAccessible::ObjectHide, scrollBar)));
     QTestAccessibility::clearEvents();
 
     // Test that the left/right subcontrols are set to unavailable when the scrollBar is at the minimum/maximum.
@@ -1496,7 +1496,7 @@ void tst_QAccessibility::spinBoxTest()
     QTest::keyPress(spinBox, Qt::Key_Up);
     QTest::qWait(200);
     EventList events = QTestAccessibility::events();
-    QTestAccessibilityEvent expectedEvent(spinBox, -1, (int)QAccessible::ValueChanged);
+    QAccessibleEvent expectedEvent(QAccessible::ValueChanged, spinBox);
     QVERIFY(events.contains(expectedEvent));
     delete spinBox;
     QTestAccessibility::clearEvents();
@@ -1767,7 +1767,7 @@ void tst_QAccessibility::lineEditTest()
     le->setFocus(Qt::TabFocusReason);
     QTestAccessibility::clearEvents();
     le2->setFocus(Qt::TabFocusReason);
-    QTRY_VERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(le2, -1, QAccessible::Focus)));
+    QTRY_VERIFY(QTestAccessibility::events().contains(QAccessibleEvent(QAccessible::Focus, le2)));
 
     le->setText(QLatin1String("500"));
     le->setValidator(new QIntValidator());
@@ -1787,7 +1787,7 @@ void tst_QAccessibility::lineEditTest()
     le3->deselect();
     le3->setCursorPosition(3);
     QCOMPARE(textIface->cursorPosition(), 3);
-    QTRY_VERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(le3, -1, QAccessible::TextCaretMoved)));
+    QTRY_VERIFY(QTestAccessibility::events().contains(QAccessibleEvent(QAccessible::TextCaretMoved, le3)));
     QCOMPARE(textIface->selectionCount(), 0);
     QTestAccessibility::clearEvents();
 
@@ -2158,11 +2158,11 @@ void tst_QAccessibility::listTest()
 
     // Check for events
     QTest::mouseClick(listView->viewport(), Qt::LeftButton, 0, listView->visualItemRect(listView->item(1)).center());
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(listView, 2, QAccessible::Selection)));
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(listView, 2, QAccessible::Focus)));
+    QVERIFY(QTestAccessibility::events().contains(QAccessibleEvent(QAccessible::Selection, listView, 2)));
+    QVERIFY(QTestAccessibility::events().contains(QAccessibleEvent(QAccessible::Focus, listView, 2)));
     QTest::mouseClick(listView->viewport(), Qt::LeftButton, 0, listView->visualItemRect(listView->item(2)).center());
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(listView, 3, QAccessible::Selection)));
-    QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(listView, 3, QAccessible::Focus)));
+    QVERIFY(QTestAccessibility::events().contains(QAccessibleEvent(QAccessible::Selection, listView, 3)));
+    QVERIFY(QTestAccessibility::events().contains(QAccessibleEvent(QAccessible::Focus, listView, 3)));
 
     listView->addItem("Munich");
     QCOMPARE(iface->childCount(), 4);
