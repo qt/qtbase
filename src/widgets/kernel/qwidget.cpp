@@ -8390,7 +8390,6 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void QWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    mousePressEvent(event);                        // try mouse press event
 }
 
 #ifndef QT_NO_WHEELEVENT
