@@ -113,6 +113,7 @@ public:
     static void setPalette(const QPalette &pal);
 
     static Qt::KeyboardModifiers keyboardModifiers();
+    static Qt::KeyboardModifiers queryKeyboardModifiers();
     static Qt::MouseButtons mouseButtons();
 
     static void setLayoutDirection(Qt::LayoutDirection direction);

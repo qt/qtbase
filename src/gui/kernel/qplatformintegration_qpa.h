@@ -124,6 +124,8 @@ public:
 
     virtual QVariant styleHint(StyleHint hint) const;
 
+    virtual Qt::KeyboardModifiers queryKeyboardModifiers() const;
+
     virtual QPlatformTheme *platformTheme() const;
 
 protected:

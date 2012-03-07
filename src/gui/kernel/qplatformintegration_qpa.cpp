@@ -291,6 +291,11 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
     return 0;
 }
 
+Qt::KeyboardModifiers QPlatformIntegration::queryKeyboardModifiers() const
+{
+    return QGuiApplication::keyboardModifiers();
+}
+
 /*!
   Should be called by the implementation whenever a new screen is added.
 
