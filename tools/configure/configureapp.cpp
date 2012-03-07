@@ -198,6 +198,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "NOPROCESS" ]       = "no";
     dictionary[ "STL" ]             = "yes";
     dictionary[ "EXCEPTIONS" ]      = "yes";
+    dictionary[ "WIDGETS" ]         = "yes";
     dictionary[ "RTTI" ]            = "yes";
     dictionary[ "MMX" ]             = "auto";
     dictionary[ "3DNOW" ]           = "auto";
@@ -770,6 +771,11 @@ void Configure::parseCmdLine()
             dictionary[ "EXCEPTIONS" ] = "yes";
         else if (configCmdLine.at(i) == "-no-exceptions")
             dictionary[ "EXCEPTIONS" ] = "no";
+
+        else if (configCmdLine.at(i) == "-widgets")
+            dictionary[ "WIDGETS" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-widgets")
+            dictionary[ "WIDGETS" ] = "no";
 
         else if (configCmdLine.at(i) == "-rtti")
             dictionary[ "RTTI" ] = "yes";
@@ -1462,7 +1468,7 @@ bool Configure::displayHelp()
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
                     "[-no-webkit] [-webkit] [-webkit-debug]\n"
-                    "[-no-directwrite] [-directwrite] [-qpa]\n\n", 0, 7);
+                    "[-no-directwrite] [-directwrite] [-qpa] [-no-widgets] \n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1495,6 +1501,8 @@ bool Configure::displayHelp()
 
         desc("EXCEPTIONS", "no", "-no-exceptions",      "Disable exceptions on platforms that support it.");
         desc("EXCEPTIONS", "yes","-exceptions",         "Enable exceptions on platforms that support it.\n");
+
+        desc("WIDGETS", "no", "-no-widgets",            "Disable QtWidgets module\n");
 
         desc("ACCESSIBILITY", "no",  "-no-accessibility", "Do not compile Windows Active Accessibility support.");
         desc("ACCESSIBILITY", "yes", "-accessibility",    "Compile Windows Active Accessibility support.\n");
@@ -2096,6 +2104,9 @@ void Configure::generateOutputVars()
             qtConfig += "debug";
         qtConfig += "release";
     }
+
+    if (dictionary[ "WIDGETS" ] == "no")
+        qtConfig += "no-widgets";
 
     // Compression --------------------------------------------------
     if (dictionary[ "ZLIB" ] == "qt")
@@ -2804,6 +2815,7 @@ void Configure::generateConfigfiles()
 
         if (dictionary["ACCESSIBILITY"] == "no")     qconfigList += "QT_NO_ACCESSIBILITY";
         if (dictionary["EXCEPTIONS"] == "no")        qconfigList += "QT_NO_EXCEPTIONS";
+        if (dictionary["WIDGETS"] == "no")           qconfigList += "QT_NO_WIDGETS";
         if (dictionary["OPENGL"] == "no")            qconfigList += "QT_NO_OPENGL";
         if (dictionary["OPENVG"] == "no")            qconfigList += "QT_NO_OPENVG";
         if (dictionary["OPENSSL"] == "no") {
@@ -3038,6 +3050,7 @@ void Configure::displayConfig()
     cout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
     cout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
     cout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
+    cout << "QtWidgets module support...." << dictionary[ "WIDGETS" ] << endl;
     cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
     cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
 

@@ -651,6 +651,7 @@ CFG_CONFIGURE_EXIT_ON_ERROR=yes
 CFG_PROFILE=no
 CFG_EXCEPTIONS=unspecified
 CFG_GUI=auto # (yes|no|auto)
+CFG_WIDGETS=yes
 CFG_QCONFIG=full
 CFG_DEBUG=auto
 CFG_MYSQL_CONFIG=
@@ -1710,6 +1711,15 @@ while [ "$#" -gt 0 ]; do
             else
                 UNKNOWN_OPT=yes
             fi
+        fi
+        ;;
+    widgets)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
+            CFG_WIDGETS="yes"
+        elif [ "$VAL" = "no" ]; then
+            CFG_WIDGETS="no"
+        else
+            UNKNOWN_OPT=yes
         fi
         ;;
     dbus)
@@ -5602,8 +5612,12 @@ if [ "$CFG_GUI" = "auto" ]; then
 fi
 if [ "$CFG_GUI" = "no" ]; then
     QT_CONFIG="$QT_CONFIG no-gui"
+    CFG_WIDGETS="no"
 fi
-
+if [ "$CFG_WIDGETS" = "no" ]; then
+    QT_CONFIG="$QT_CONFIG no-widgets"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WIDGETS"
+fi
 
 if [ "x$BUILD_ON_MAC" = "xyes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     #On Mac we implicitly link against libz, so we
@@ -6473,6 +6487,7 @@ fi
 [ "$CFG_DBUS" = "linked" ] && echo "QtDBus module .......... yes (linked)"
 echo "QtConcurrent code ...... $CFG_CONCURRENT"
 echo "QtGui module ........... $CFG_GUI"
+echo "QtWidgets module ....... $CFG_WIDGETS"
 if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
     echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
 else
