@@ -225,7 +225,7 @@
 /*
     SuperH family, optional revision: SH-4A
 
-    SuperH is bi-endian, use endianness auto-detection descrived above.
+    SuperH is bi-endian, use endianness auto-detection described above.
 */
 // #elif defined(__sh__)
 // #  define Q_PROCESSOR_SH

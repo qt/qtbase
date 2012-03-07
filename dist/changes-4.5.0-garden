@@ -118,7 +118,7 @@ Optimizations
       SystemGc from the CCoeControl we are currently painting on instead.
 
 - qeventdispatcher_s60.cpp
-    * Stopped using Active Objects to recieve events, we get them from
+    * Stopped using Active Objects to receive events, we get them from
       C*AppUi and CCoeControl instead.
 
 - QWidget
