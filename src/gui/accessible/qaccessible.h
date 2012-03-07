@@ -437,6 +437,9 @@ public:
         Q_ASSERT(obj);
     }
 
+    virtual ~QAccessibleEvent()
+    {}
+
     QAccessible::Event type() const { return m_type; }
     QObject *object() const { return m_object; }
     int child() const { return m_child; }
