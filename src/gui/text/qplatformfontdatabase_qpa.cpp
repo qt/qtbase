@@ -276,10 +276,9 @@ void QPlatformFontDatabase::populateFontDatabase()
     a certain character.
 */
 QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine,
-                                                         QUnicodeTables::Script script,
-                                                         const QStringList &fallbacks)
+                                                         QUnicodeTables::Script script)
 {
-    return new QFontEngineMultiQPA(fontEngine, script, fallbacks);
+    return new QFontEngineMultiQPA(fontEngine, script);
 }
 
 /*!

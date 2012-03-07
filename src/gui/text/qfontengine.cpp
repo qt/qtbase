@@ -1366,6 +1366,7 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
     if (!engine(0)->stringToCMap(str, len, glyphs, &ng, flags))
         return false;
 
+    const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
     int glyph_pos = 0;
     for (int i = 0; i < len; ++i) {
         bool surrogate = (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate());

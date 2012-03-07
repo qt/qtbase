@@ -674,6 +674,7 @@ QFontEngineMultiQPA::QFontEngineMultiQPA(QFontEngine *fe, int _script)
     , script(_script)
     , fallbacksQueried(false)
 {
+    fallbackFamilies << QString();
     init(fe);
 }
 
@@ -688,35 +689,42 @@ void QFontEngineMultiQPA::init(QFontEngine *fe)
 
 void QFontEngineMultiQPA::loadEngine(int at)
 {
-    bool canLoadFallbackEngine = true;
-    if (!fallbacksQueried) {
-        // Original FontEngine to restore after the fill.
-        QFontEngine *fe = engines[0];
-        fallbackFamilies = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fallbacksForFamily(fe->fontDef.family, QFont::Style(fe->fontDef.style)
-                                                                                                                         , QFont::AnyStyle, QUnicodeTables::Script(script));
-        if (fallbackFamilies.size() > 1) {
-            engines.fill(0, fallbackFamilies.size() + 1);
-            engines[0] = fe;
-        } else {
-            // Turns out we lied about having any fallback at all.
-            canLoadFallbackEngine = false;
-            engines[1] = fe;
-        }
-        fallbacksQueried = true;
-    }
+    ensureFallbackFamiliesQueried();
     Q_ASSERT(at < engines.size());
     Q_ASSERT(engines.at(at) == 0);
     QFontDef request = fontDef;
-    if (canLoadFallbackEngine) {
-        request.styleStrategy |= QFont::NoFontMerging;
-        request.family = fallbackFamilies.at(at-1);
-        engines[at] = QFontDatabase::findFont(script,
-                                              /*fontprivate = */0,
-                                              request, /*multi = */false);
-    }
+    request.styleStrategy |= QFont::NoFontMerging;
+    request.family = fallbackFamilies.at(at-1);
+    engines[at] = QFontDatabase::findFont(script,
+                                          /*fontprivate = */0,
+                                          request, /*multi = */false);
     Q_ASSERT(engines[at]);
     engines[at]->ref.ref();
     engines[at]->fontDef = request;
+}
+void QFontEngineMultiQPA::ensureFallbackFamiliesQueried()
+{
+    if (fallbacksQueried)
+        return;
+    QStringList fallbacks = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fallbacksForFamily(engine(0)->fontDef.family, QFont::Style(engine(0)->fontDef.style)
+                                                                                                                     , QFont::AnyStyle, QUnicodeTables::Script(script));
+    setFallbackFamiliesList(fallbacks);
+}
+
+void QFontEngineMultiQPA::setFallbackFamiliesList(const QStringList &fallbacks)
+{
+    // Original FontEngine to restore after the fill.
+    QFontEngine *fe = engines[0];
+    fallbackFamilies = fallbacks;
+    if (!fallbackFamilies.isEmpty()) {
+        engines.fill(0, fallbackFamilies.size() + 1);
+        engines[0] = fe;
+    } else {
+        // Turns out we lied about having any fallback at all.
+        fallbackFamilies << fe->fontDef.family;
+        engines[1] = fe;
+    }
+    fallbacksQueried = true;
 }
 
 /*
@@ -750,7 +758,7 @@ QFontEngine* QFontEngineMultiQPA::createMultiFontEngine(QFontEngine *fe, int scr
         it++;
     }
     if (!engine) {
-        engine = new QFontEngineMultiQPA(fe, script);
+        engine = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fontEngineMulti(fe, QUnicodeTables::Script(script));
         QFontCache::instance()->insertEngine(key, engine, /* insertMulti */ !faceIsLocal);
     }
     Q_ASSERT(engine);

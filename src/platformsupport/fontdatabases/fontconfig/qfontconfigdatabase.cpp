@@ -472,10 +472,9 @@ void QFontconfigDatabase::populateFontDatabase()
 }
 
 QFontEngineMulti *QFontconfigDatabase::fontEngineMulti(QFontEngine *fontEngine,
-                                                       QUnicodeTables::Script script,
-                                                       const QStringList &fallbacks)
+                                                       QUnicodeTables::Script script)
 {
-    return new QFontEngineMultiFontConfig(fontEngine, script, fallbacks);
+    return new QFontEngineMultiFontConfig(fontEngine, script);
 }
 
 QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::Script script, void *usrPtr)

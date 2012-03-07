@@ -46,9 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QFontEngineMultiFontConfig::QFontEngineMultiFontConfig(QFontEngine *fe, int script,
-                                                       const QStringList &fallbacks)
-    : QFontEngineMultiQPA(fe, script, fallbacks)
+QFontEngineMultiFontConfig::QFontEngineMultiFontConfig(QFontEngine *fe, int script)
+    : QFontEngineMultiQPA(fe, script)
 {
 }
 

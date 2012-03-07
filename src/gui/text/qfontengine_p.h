@@ -395,12 +395,14 @@ public:
     }
 
     virtual bool shouldLoadFontEngineForCharacter(int at, uint ucs4) const;
+    virtual void setFallbackFamiliesList(const QStringList &) {}
 
 protected:
     friend class QPSPrintEnginePrivate;
     friend class QPSPrintEngineFontMulti;
     friend class QRawFont;
     virtual void loadEngine(int at) = 0;
+    virtual void ensureFallbackFamiliesQueried() {}
     QVector<QFontEngine *> engines;
 };
 
