@@ -44,6 +44,7 @@
 #include "qwindowscontext.h"
 #include "qwindowsintegration.h"
 #include "qt_windows.h"
+#include "qwindowsfontdatabase_ft.h"
 
 #include <QtCore/QVariant>
 #include <QtCore/QCoreApplication>
@@ -74,6 +75,22 @@ static inline QString paletteToString(const QPalette &palette)
     str << "text=" << palette.color(QPalette::WindowText)
         << " background=" << palette.color(QPalette::Window);
     return result;
+}
+
+static inline bool booleanSystemParametersInfo(UINT what, bool defaultValue)
+{
+    BOOL result;
+    if (SystemParametersInfo(what, 0, &result, 0))
+        return result ? true : false;
+    return defaultValue;
+}
+
+static inline bool dWordSystemParametersInfo(UINT what, DWORD defaultValue)
+{
+    DWORD result;
+    if (SystemParametersInfo(what, 0, &result, 0))
+        return result;
+    return defaultValue;
 }
 
 static inline QColor mixColors(const QColor &c1, const QColor &c2)
@@ -138,7 +155,7 @@ static inline QPalette systemPalette()
     return result;
 }
 
-QPalette toolTipPalette(const QPalette &systemPalette)
+static inline QPalette toolTipPalette(const QPalette &systemPalette)
 {
     QPalette result(systemPalette);
     const QColor tipBgColor(getSysColor(COLOR_INFOBK));
@@ -163,24 +180,58 @@ QPalette toolTipPalette(const QPalette &systemPalette)
     return result;
 }
 
-static inline bool booleanSystemParametersInfo(UINT what, bool defaultValue)
+static inline QPalette menuPalette(const QPalette &systemPalette)
 {
-    BOOL result;
-    if (SystemParametersInfo(what, 0, &result, 0))
-        return result ? true : false;
-    return defaultValue;
+    QPalette result(systemPalette);
+    const QColor menuColor(getSysColor(COLOR_INFOBK));
+    const QColor menuTextColor(getSysColor(COLOR_MENUTEXT));
+    const QColor disabled(getSysColor(COLOR_GRAYTEXT));
+    const bool isFlat = booleanSystemParametersInfo(SPI_GETFLATMENU, false);
+    // we might need a special color group for the result.
+    result.setColor(QPalette::Active, QPalette::Button, menuColor);
+    result.setColor(QPalette::Active, QPalette::Text, menuTextColor);
+    result.setColor(QPalette::Active, QPalette::WindowText, menuTextColor);
+    result.setColor(QPalette::Active, QPalette::ButtonText, menuTextColor);
+    result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
+    result.setColor(QPalette::Disabled, QPalette::Text, disabled);
+    result.setColor(QPalette::Disabled, QPalette::Highlight,
+                    getSysColor(isFlat ? COLOR_MENUHILIGHT : COLOR_HIGHLIGHT));
+    result.setColor(QPalette::Disabled, QPalette::HighlightedText, disabled);
+    result.setColor(QPalette::Disabled, QPalette::Button,
+                    result.color(QPalette::Active, QPalette::Button));
+    result.setColor(QPalette::Inactive, QPalette::Button,
+                    result.color(QPalette::Active, QPalette::Button));
+    result.setColor(QPalette::Inactive, QPalette::Text,
+                    result.color(QPalette::Active, QPalette::Text));
+    result.setColor(QPalette::Inactive, QPalette::WindowText,
+                    result.color(QPalette::Active, QPalette::WindowText));
+    result.setColor(QPalette::Inactive, QPalette::ButtonText,
+                    result.color(QPalette::Active, QPalette::ButtonText));
+    result.setColor(QPalette::Inactive, QPalette::Highlight,
+                    result.color(QPalette::Active, QPalette::Highlight));
+    result.setColor(QPalette::Inactive, QPalette::HighlightedText,
+                    result.color(QPalette::Active, QPalette::HighlightedText));
+    result.setColor(QPalette::Inactive, QPalette::ButtonText,
+                    systemPalette.color(QPalette::Inactive, QPalette::Dark));
+    return result;
 }
 
-static inline bool dWordSystemParametersInfo(UINT what, DWORD defaultValue)
+static inline QPalette *menuBarPalette(const QPalette &menuPalette)
 {
-    DWORD result;
-    if (SystemParametersInfo(what, 0, &result, 0))
-        return result;
-    return defaultValue;
+    QPalette *result = 0;
+    if (booleanSystemParametersInfo(SPI_GETFLATMENU, false)) {
+        result = new QPalette(menuPalette);
+        const QColor menubar(getSysColor(COLOR_MENUBAR));
+        result->setColor(QPalette::Active, QPalette::Button, menubar);
+        result->setColor(QPalette::Disabled, QPalette::Button, menubar);
+        result->setColor(QPalette::Inactive, QPalette::Button, menubar);
+    }
+    return result;
 }
 
 QWindowsTheme::QWindowsTheme()
 {
+    qFill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
     qFill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
     refresh();
 }
@@ -188,12 +239,7 @@ QWindowsTheme::QWindowsTheme()
 QWindowsTheme::~QWindowsTheme()
 {
     clearPalettes();
-}
-
-void QWindowsTheme::clearPalettes()
-{
-    qDeleteAll(m_palettes, m_palettes + NPalettes);
-    qFill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
+    clearFonts();
 }
 
 QWindowsTheme *QWindowsTheme::instance()
@@ -243,17 +289,65 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
     return QPlatformTheme::themeHint(hint);
 }
 
-void QWindowsTheme::refresh()
+void QWindowsTheme::clearPalettes()
 {
-    clearPalettes();
-    if (QGuiApplication::desktopSettingsAware()) {
-        m_palettes[SystemPalette] = new QPalette(systemPalette());
-        m_palettes[ToolTipPalette] = new QPalette(toolTipPalette(*m_palettes[SystemPalette]));
-        if (QWindowsContext::verboseTheming)
-            qDebug() << __FUNCTION__ << '\n'
-                     << "  system=" << paletteToString(*m_palettes[SystemPalette])
-                     << "  tooltip=" << paletteToString(*m_palettes[ToolTipPalette]);
-    }
+    qDeleteAll(m_palettes, m_palettes + NPalettes);
+    qFill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
+}
+
+void QWindowsTheme::refreshPalettes()
+{
+
+    if (!QGuiApplication::desktopSettingsAware())
+        return;
+    m_palettes[SystemPalette] = new QPalette(systemPalette());
+    m_palettes[ToolTipPalette] = new QPalette(toolTipPalette(*m_palettes[SystemPalette]));
+    m_palettes[MenuPalette] = new QPalette(menuPalette(*m_palettes[SystemPalette]));
+    m_palettes[MenuBarPalette] = menuBarPalette(*m_palettes[MenuPalette]);
+    if (QWindowsContext::verboseTheming)
+        qDebug() << __FUNCTION__ << '\n'
+                 << "  system=" << paletteToString(*m_palettes[SystemPalette])
+                 << "  tooltip=" << paletteToString(*m_palettes[ToolTipPalette]);
+}
+
+void QWindowsTheme::clearFonts()
+{
+    qDeleteAll(m_fonts, m_fonts + NFonts);
+    qFill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
+}
+
+void QWindowsTheme::refreshFonts()
+{
+    clearFonts();
+    if (!QGuiApplication::desktopSettingsAware())
+        return;
+    NONCLIENTMETRICS ncm;
+    ncm.cbSize = FIELD_OFFSET(NONCLIENTMETRICS, lfMessageFont) + sizeof(LOGFONT);
+    SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize , &ncm, 0);
+
+    const QFont menuFont = QWindowsFontDatabaseFT::LOGFONT_to_QFont(ncm.lfMenuFont);
+    const QFont messageBoxFont = QWindowsFontDatabaseFT::LOGFONT_to_QFont(ncm.lfMessageFont);
+    const QFont statusFont = QWindowsFontDatabaseFT::LOGFONT_to_QFont(ncm.lfStatusFont);
+    const QFont titleFont = QWindowsFontDatabaseFT::LOGFONT_to_QFont(ncm.lfCaptionFont);
+
+    LOGFONT lfIconTitleFont;
+    SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIconTitleFont), &lfIconTitleFont, 0);
+    const QFont iconTitleFont = QWindowsFontDatabaseFT::LOGFONT_to_QFont(lfIconTitleFont);
+
+    m_fonts[SystemFont] = new QFont(QWindowsFontDatabaseFT::systemDefaultFont());
+    m_fonts[MenuFont] = new QFont(menuFont);
+    m_fonts[MenuBarFont] = new QFont(menuFont);
+    m_fonts[MessageBoxFont] = new QFont(messageBoxFont);
+    m_fonts[TipLabelFont] = new QFont(statusFont);
+    m_fonts[StatusBarFont] = new QFont(statusFont);
+    m_fonts[MdiSubWindowTitleFont] = new QFont(titleFont);
+    m_fonts[DockWidgetTitleFont] = new QFont(titleFont);
+    m_fonts[ItemViewFont] = new QFont(iconTitleFont);
+
+    if (QWindowsContext::verboseTheming)
+        qDebug() << __FUNCTION__ << '\n'
+                 << "  menuFont=" << menuFont
+                 << "  messageBox=" << MessageBoxFont;
 }
 
 bool QWindowsTheme::usePlatformNativeDialog(DialogType type) const

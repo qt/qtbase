@@ -118,6 +118,14 @@ const QPalette *QCocoaTheme::palette(Palette type) const
     return 0;
 }
 
+const QFont *QCocoaTheme::font(Font type) const
+{
+    if (m_fonts.isEmpty()) {
+        m_fonts = qt_mac_createRoleFonts();
+    }
+    return m_fonts.value(type, 0);
+}
+
 QVariant QCocoaTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {

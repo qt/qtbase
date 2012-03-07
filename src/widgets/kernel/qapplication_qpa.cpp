@@ -318,6 +318,58 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
     setPossiblePalette(platformTheme->palette(QPlatformTheme::TextLineEditPalette), "QLineEdit");
 }
 
+void QApplicationPrivate::initializeWidgetFontHash()
+{
+    const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
+    if (!theme)
+        return;
+    FontHash *fontHash = qt_app_fonts_hash();
+    if (const QFont *font = theme->font(QPlatformTheme::MenuFont))
+        fontHash->insert(QByteArrayLiteral("QMenu"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::MenuBarFont))
+        fontHash->insert(QByteArrayLiteral("QMenuBar"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::MenuItemFont))
+        fontHash->insert(QByteArrayLiteral("QMenuItem"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::MessageBoxFont))
+        fontHash->insert(QByteArrayLiteral("QMessageBox"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::LabelFont))
+        fontHash->insert(QByteArrayLiteral("QLabel"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::TipLabelFont))
+        fontHash->insert(QByteArrayLiteral("QTipLabel"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::TitleBarFont))
+        fontHash->insert(QByteArrayLiteral("QTitleBar"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::StatusBarFont))
+        fontHash->insert(QByteArrayLiteral("QStatusBar"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::MdiSubWindowTitleFont)) {
+        fontHash->insert(QByteArrayLiteral("QWorkspaceTitleBar"), *font);
+        fontHash->insert(QByteArrayLiteral("QMdiSubWindowTitleBar"), *font);
+    }
+    if (const QFont *font = theme->font(QPlatformTheme::DockWidgetTitleFont))
+        fontHash->insert(QByteArrayLiteral("QDockWidgetTitle"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::PushButtonFont))
+        fontHash->insert(QByteArrayLiteral("QPushButton"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::ToolButtonFont))
+        fontHash->insert(QByteArrayLiteral("QToolButton"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::ItemViewFont))
+        fontHash->insert(QByteArrayLiteral("QAbstractItemView"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::ListViewFont))
+        fontHash->insert(QByteArrayLiteral("QListViewFont"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::HeaderViewFont)) {
+        fontHash->insert(QByteArrayLiteral("QHeaderViewFont"), *font);
+        fontHash->insert(QByteArrayLiteral("Q3Header"), *font);
+    }
+    if (const QFont *font = theme->font(QPlatformTheme::ListBoxFont))
+        fontHash->insert(QByteArrayLiteral("QListBox"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::ComboMenuItemFont))
+        fontHash->insert(QByteArrayLiteral("QComboMenuItemFont"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::ComboLineEditFont))
+        fontHash->insert(QByteArrayLiteral("QComboLineEditFont"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::SmallFont))
+        fontHash->insert(QByteArrayLiteral("QSmallFont"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::MiniFont))
+        fontHash->insert(QByteArrayLiteral("QMiniFont"), *font);
+}
+
 #ifndef QT_NO_WHEELEVENT
 void QApplication::setWheelScrollLines(int lines)
 {
@@ -416,6 +468,7 @@ QPlatformNativeInterface *QApplication::platformNativeInterface()
 
 void qt_init(QApplicationPrivate *priv, int type)
 {
+    Q_UNUSED(priv);
     Q_UNUSED(type);
 
     qApp->setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
@@ -423,6 +476,7 @@ void qt_init(QApplicationPrivate *priv, int type)
 
     if (const QPalette *toolTipPalette = QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::ToolTipPalette))
         QToolTip::setPalette(*toolTipPalette);
+    QApplicationPrivate::initializeWidgetFontHash();
     qApp->setObjectName(appName);
 }
 

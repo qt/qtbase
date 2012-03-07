@@ -172,6 +172,11 @@ static inline void clearPalette()
 
 static void initFontUnlocked()
 {
+    if (!QGuiApplicationPrivate::app_font) {
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+            if (const QFont *font = theme->font(QPlatformTheme::SystemFont))
+                QGuiApplicationPrivate::app_font = new QFont(*font);
+    }
     if (!QGuiApplicationPrivate::app_font)
         QGuiApplicationPrivate::app_font =
             new QFont(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont());

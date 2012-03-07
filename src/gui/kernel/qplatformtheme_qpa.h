@@ -55,6 +55,7 @@ class QPlatformMenuBar;
 class QPlatformDialogHelper;
 class QVariant;
 class QPalette;
+class QFont;
 
 class Q_GUI_EXPORT QPlatformTheme
 {
@@ -102,6 +103,31 @@ public:
         NPalettes
     };
 
+    enum Font {
+        SystemFont,
+        MenuFont,
+        MenuBarFont,
+        MenuItemFont,
+        MessageBoxFont,
+        LabelFont,
+        TipLabelFont,
+        StatusBarFont,
+        TitleBarFont,
+        MdiSubWindowTitleFont,
+        DockWidgetTitleFont,
+        PushButtonFont,
+        ToolButtonFont,
+        ItemViewFont,
+        ListViewFont,
+        HeaderViewFont,
+        ListBoxFont,
+        ComboMenuItemFont,
+        ComboLineEditFont,
+        SmallFont,
+        MiniFont,
+        NFonts
+    };
+
     enum KeyboardSchemes
     {
         WindowsKeyboardScheme,
@@ -121,6 +147,8 @@ public:
     virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
 
     virtual const QPalette *palette(Palette type = SystemPalette) const;
+
+    virtual const QFont *font(Font type = SystemFont) const;
 
     virtual QVariant themeHint(ThemeHint hint) const;
 };

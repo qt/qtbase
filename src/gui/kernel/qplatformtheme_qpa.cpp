@@ -137,6 +137,12 @@ const QPalette *QPlatformTheme::palette(Palette type) const
     return 0;
 }
 
+const QFont *QPlatformTheme::font(Font type) const
+{
+    Q_UNUSED(type)
+    return 0;
+}
+
 QVariant QPlatformTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {

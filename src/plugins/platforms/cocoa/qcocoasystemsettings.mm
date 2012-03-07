@@ -42,6 +42,7 @@
 #include "qcocoasystemsettings.h"
 
 #include <QtCore/private/qcore_mac_p.h>
+#include <QtGui/qfont.h>
 
 #include <Carbon/Carbon.h>
 
@@ -227,6 +228,45 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
         palettes.insert(mac_widget_colors[i].paletteRole, new QPalette(pal));
     }
     return palettes;
+}
+
+QFont *qt_mac_qfontForThemeFont(ThemeFontID themeID)
+{
+    CTFontUIFontType ctID = HIThemeGetUIFontType(themeID);
+    QCFType<CTFontRef> ctfont = CTFontCreateUIFontForLanguage(ctID, 0, 0);
+    QString familyName = QCFString(CTFontCopyFamilyName(ctfont));
+    QCFType<CFDictionaryRef> dict = CTFontCopyTraits(ctfont);
+    CFNumberRef num = static_cast<CFNumberRef>(CFDictionaryGetValue(dict, kCTFontWeightTrait));
+    float fW;
+    CFNumberGetValue(num, kCFNumberFloat32Type, &fW);
+    QFont::Weight wght = fW > 0. ? QFont::Bold : QFont::Normal;
+    num = static_cast<CFNumberRef>(CFDictionaryGetValue(dict, kCTFontSlantTrait));
+    CFNumberGetValue(num, kCFNumberFloatType, &fW);
+    bool italic = (fW != 0.0);
+    return new QFont(familyName, CTFontGetSize(ctfont), wght, italic);
+}
+
+QHash<QPlatformTheme::Font, QFont *> qt_mac_createRoleFonts()
+{
+    QHash<QPlatformTheme::Font, QFont *> fonts;
+
+    fonts.insert(QPlatformTheme::SystemFont, qt_mac_qfontForThemeFont(kThemeApplicationFont));
+    fonts.insert(QPlatformTheme::PushButtonFont, qt_mac_qfontForThemeFont(kThemePushButtonFont));
+    fonts.insert(QPlatformTheme::ListViewFont, qt_mac_qfontForThemeFont(kThemeViewsFont));
+    fonts.insert(QPlatformTheme::ListBoxFont, qt_mac_qfontForThemeFont(kThemeViewsFont));
+    fonts.insert(QPlatformTheme::TitleBarFont, qt_mac_qfontForThemeFont(kThemeWindowTitleFont));
+    fonts.insert(QPlatformTheme::MenuFont, qt_mac_qfontForThemeFont(kThemeMenuItemFont));
+    fonts.insert(QPlatformTheme::ComboMenuItemFont, qt_mac_qfontForThemeFont(kThemeSystemFont));
+    fonts.insert(QPlatformTheme::HeaderViewFont, qt_mac_qfontForThemeFont(kThemeSmallSystemFont));
+    fonts.insert(QPlatformTheme::TipLabelFont, qt_mac_qfontForThemeFont(kThemeSmallSystemFont));
+    fonts.insert(QPlatformTheme::LabelFont, qt_mac_qfontForThemeFont(kThemeSystemFont));
+    fonts.insert(QPlatformTheme::ToolButtonFont, qt_mac_qfontForThemeFont(kThemeSmallSystemFont));
+    fonts.insert(QPlatformTheme::MenuItemFont, qt_mac_qfontForThemeFont(kThemeMenuItemFont));
+    fonts.insert(QPlatformTheme::ComboLineEditFont, qt_mac_qfontForThemeFont(kThemeViewsFont));
+    fonts.insert(QPlatformTheme::SmallFont, qt_mac_qfontForThemeFont(kThemeSmallSystemFont));
+    fonts.insert(QPlatformTheme::MiniFont, qt_mac_qfontForThemeFont(kThemeMiniSystemFont));
+
+    return fonts;
 }
 
 QT_END_NAMESPACE

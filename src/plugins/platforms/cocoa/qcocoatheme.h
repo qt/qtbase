@@ -61,11 +61,13 @@ public:
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const;
 
     const QPalette *palette(Palette type = SystemPalette) const;
+    const QFont *font(Font type = SystemFont) const;
 
     QVariant themeHint(ThemeHint hint) const;
 private:
     mutable QPalette *m_systemPalette;
     mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;
+    mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
 };
 
 QT_END_NAMESPACE

@@ -460,7 +460,7 @@ static inline int verticalDPI()
     return GetDeviceCaps(QWindowsContext::instance()->displayContext(), LOGPIXELSY);
 }
 
-QFont QWindowsFontDatabaseFT::defaultFont() const
+QFont QWindowsFontDatabaseFT::systemDefaultFont()
 {
     LOGFONT lf;
     GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
@@ -471,44 +471,6 @@ QFont QWindowsFontDatabaseFT::defaultFont() const
     if (QWindowsContext::verboseFonts)
         qDebug() << __FUNCTION__ << systemFont;
     return systemFont;
-}
-
-QHash<QByteArray, QFont> QWindowsFontDatabaseFT::defaultFonts() const
-{
-    QHash<QByteArray, QFont> result;
-    NONCLIENTMETRICS ncm;
-    ncm.cbSize = FIELD_OFFSET(NONCLIENTMETRICS, lfMessageFont) + sizeof(LOGFONT);
-    SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize , &ncm, 0);
-
-    const int verticalRes = verticalDPI();
-
-    const QFont menuFont = LOGFONT_to_QFont(ncm.lfMenuFont, verticalRes);
-    const QFont messageFont = LOGFONT_to_QFont(ncm.lfMessageFont, verticalRes);
-    const QFont statusFont = LOGFONT_to_QFont(ncm.lfStatusFont, verticalRes);
-    const QFont titleFont = LOGFONT_to_QFont(ncm.lfCaptionFont, verticalRes);
-
-    LOGFONT lfIconTitleFont;
-    SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIconTitleFont), &lfIconTitleFont, 0);
-    const QFont iconTitleFont = LOGFONT_to_QFont(lfIconTitleFont, verticalRes);
-
-    result.insert(QByteArray("QMenu"), menuFont);
-    result.insert(QByteArray("QMenuBar"), menuFont);
-    result.insert(QByteArray("QMessageBox"), messageFont);
-    result.insert(QByteArray("QTipLabel"), statusFont);
-    result.insert(QByteArray("QStatusBar"), statusFont);
-    result.insert(QByteArray("Q3TitleBar"), titleFont);
-    result.insert(QByteArray("QWorkspaceTitleBar"), titleFont);
-    result.insert(QByteArray("QAbstractItemView"), iconTitleFont);
-    result.insert(QByteArray("QDockWidgetTitle"), iconTitleFont);
-    if (QWindowsContext::verboseFonts) {
-        typedef QHash<QByteArray, QFont>::const_iterator CIT;
-        QDebug nsp = qDebug().nospace();
-        nsp << __FUNCTION__ << " DPI=" << verticalRes << "\n";
-        const CIT cend = result.constEnd();
-        for (CIT it = result.constBegin(); it != cend; ++it)
-            nsp << it.key() << ' ' << it.value() << '\n';
-    }
-    return result;
 }
 
 QFont QWindowsFontDatabaseFT::LOGFONT_to_QFont(const LOGFONT& logFont, int verticalDPI_In)
