@@ -32,8 +32,6 @@ include(util/util.pri)
 include(math3d/math3d.pri)
 include(opengl/opengl.pri)
 
-include(egl/egl.pri)
-
 QMAKE_LIBS += $$QMAKE_LIBS_GUI
 
 DEFINES += Q_INTERNAL_QAPP_SRC
