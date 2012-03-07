@@ -452,6 +452,21 @@ private:
     int m_child;
 };
 
+class Q_GUI_EXPORT QAccessibleStateChangeEvent :public QAccessibleEvent
+{
+public:
+    inline QAccessibleStateChangeEvent(QAccessible::State state, QObject *obj, int chld = -1)
+        : QAccessibleEvent(QAccessible::StateChanged, obj, chld), m_changedStates(state)
+    {}
+
+    QAccessible::State changedStates() const {
+        return m_changedStates;
+    }
+
+private:
+    QAccessible::State m_changedStates;
+};
+
 
 #define QAccessibleInterface_iid "org.qt-project.Qt.QAccessibleInterface"
 Q_DECLARE_INTERFACE(QAccessibleInterface, QAccessibleInterface_iid)

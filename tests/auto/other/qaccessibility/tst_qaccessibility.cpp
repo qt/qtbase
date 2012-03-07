@@ -419,8 +419,6 @@ void tst_QAccessibility::eventTest()
     button->setFocus(Qt::MouseFocusReason);
     QTestAccessibility::clearEvents();
     QTest::mouseClick(button, Qt::LeftButton, 0);
-    QVERIFY_EVENT(button, 0, QAccessible::StateChanged);
-    QVERIFY_EVENT(button, 0, QAccessible::StateChanged);
 
     button->setAccessibleName("Olaf the second");
     QVERIFY_EVENT(button, -1, QAccessible::NameChanged);

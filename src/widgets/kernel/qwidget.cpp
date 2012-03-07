@@ -8245,12 +8245,15 @@ bool QWidget::event(QEvent *event)
 void QWidget::changeEvent(QEvent * event)
 {
     switch(event->type()) {
-    case QEvent::EnabledChange:
+    case QEvent::EnabledChange: {
         update();
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::StateChanged, this, 0));
+        QAccessible::State s;
+        s.disabled = true;
+        QAccessible::updateAccessibility(QAccessibleStateChangeEvent(s, this));
 #endif
         break;
+    }
 
     case QEvent::FontChange:
     case QEvent::StyleChange: {
@@ -10515,13 +10518,6 @@ void QWidget::updateMicroFocus()
 {
     // updating everything since this is currently called for any kind of state change
     qApp->inputMethod()->update(Qt::ImQueryAll);
-
-#ifndef QT_NO_ACCESSIBILITY
-    if (isVisible()) {
-        // ##### is this correct
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::StateChanged, this, 0));
-    }
-#endif
 }
 
 /*!

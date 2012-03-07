@@ -257,7 +257,8 @@ QT_BEGIN_NAMESPACE
     \value SelectionWithin                  Several changes to a selection has occurred in an item
                                             view.
     \value SoundPlayed                      A sound has been played by an object
-    \value StateChanged                     The QAccessible::State of an object has changed.
+    \omitvalue StateChanged                 The QAccessible::State of an object has changed.
+                                            This value is used internally for the QAccessibleStateChangeEvent.
     \value TableCaptionChanged              A table caption has been changed.
     \value TableColumnDescriptionChanged    The description of a table column, typically found in
                                             the column's header, has been changed.
