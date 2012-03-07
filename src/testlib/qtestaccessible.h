@@ -63,7 +63,8 @@ QT_BEGIN_NAMESPACE
 
 class QObject;
 
-typedef QList<QAccessibleEvent> EventList;
+// Use pointers since we subclass QAccessibleEvent
+typedef QList<QAccessibleEvent*> EventList;
 
 bool operator==(const QAccessibleEvent &l, const QAccessibleEvent &r)
 {
@@ -100,8 +101,18 @@ public:
     static bool verifyEvent(const QAccessibleEvent& ev)
     {
         if (eventList().isEmpty())
-            return FALSE;
-        return eventList().takeFirst() == ev;
+            return false;
+        QAccessibleEvent *first = eventList().takeFirst();
+        bool res = *first == ev;
+        delete first;
+        return res;
+    }
+    static bool containsEvent(const QAccessibleEvent &event) {
+        Q_FOREACH (QAccessibleEvent *ev, eventList()) {
+            if (*ev == event)
+                return true;
+        }
+        return false;
     }
 
 private:
@@ -134,12 +145,12 @@ private:
         eventList().append(copyEvent(event));
     }
 
-    static QAccessibleEvent copyEvent(const QAccessibleEvent &event)
+    static QAccessibleEvent *copyEvent(const QAccessibleEvent &event)
     {
         if (event.type() == QAccessible::StateChanged)
-            return QAccessibleStateChangeEvent(static_cast<const QAccessibleStateChangeEvent*>(&event)->changedStates(),
+            return new QAccessibleStateChangeEvent(static_cast<const QAccessibleStateChangeEvent*>(&event)->changedStates(),
                                                event.object(), event.child());
-        return QAccessibleEvent(event.type(), event.object(), event.child());
+        return new QAccessibleEvent(event.type(), event.object(), event.child());
     }
 
     static EventList &eventList()
