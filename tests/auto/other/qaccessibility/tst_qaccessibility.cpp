@@ -981,9 +981,12 @@ void tst_QAccessibility::buttonTest()
     QAccessible::State st;
     st.checked = true;
     QVERIFY_EVENT(QAccessibleStateChangeEvent(st, &checkBox));
+    checkBox.setChecked(false);
+    QVERIFY_EVENT(QAccessibleStateChangeEvent(st, &checkBox));
     delete interface;
     }
 
+    {
     // test radiobutton
     interface = QAccessible::queryAccessibleInterface(&radio);
     actionInterface = interface->actionInterface();
@@ -994,8 +997,12 @@ void tst_QAccessibility::buttonTest()
     QTest::qWait(500);
     QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::checkAction() << QAccessibleActionInterface::setFocusAction());
     QVERIFY(interface->state().checked);
-    QVERIFY(checkBox.isChecked());
+    QVERIFY(radio.isChecked());
+    QAccessible::State st;
+    st.checked = true;
+    QVERIFY_EVENT(QAccessibleStateChangeEvent(st, &radio));
     delete interface;
+    }
 
 //    // test standard toolbutton
 //    QVERIFY(QAccessible::queryAccessibleInterface(&toolbutton, &test));
@@ -1045,8 +1052,6 @@ void tst_QAccessibility::buttonTest()
 //    QCOMPARE(test->actionText(test->defaultAction(2), QAccessible::Name, 2), QString("Open"));
 //    QCOMPARE(test->state(2), (int)QAccessible::HasPopup);
 //    test->release();
-
-    QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::scrollBarTest()
