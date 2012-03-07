@@ -1707,7 +1707,7 @@ void QHeaderView::sectionsInserted(const QModelIndex &parent,
 {
     Q_D(QHeaderView);
     if (parent != d->root)
-        return; // we only handle changes in the top level
+        return; // we only handle changes in the root level
     int oldCount = d->sectionCount();
 
     d->invalidateCachedSizeHint();
@@ -1838,7 +1838,7 @@ void QHeaderViewPrivate::_q_sectionsRemoved(const QModelIndex &parent,
 {
     Q_Q(QHeaderView);
     if (parent != root)
-        return; // we only handle changes in the top level
+        return; // we only handle changes in the root level
     if (qMin(logicalFirst, logicalLast) < 0
         || qMax(logicalLast, logicalFirst) >= sectionCount())
         return;
