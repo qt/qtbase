@@ -215,6 +215,8 @@ private slots:
     void QTBUG_21884();
     void QTBUG_16967_data() { generic_data("QSQLITE"); }
     void QTBUG_16967(); //clean close
+    void QTBUG_23895_data() { generic_data("QSQLITE"); }
+    void QTBUG_23895(); //sqlite boolean type
 
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
@@ -331,6 +333,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName("bug5765", __FILE__)
                << qTableName("bug6852", __FILE__)
                << qTableName("bug21884", __FILE__)
+               << qTableName("bug23895", __FILE__)
                << qTableName( "qtest_lockedtable", __FILE__ )
                << qTableName( "Planet", __FILE__ )
                << qTableName( "task_250026", __FILE__ )
@@ -3262,6 +3265,64 @@ void tst_QSqlQuery::QTBUG_16967()
         db.close();
         QCOMPARE(db.lastError().type(), QSqlError::NoError);
     }
+}
+
+/**
+  * In SQLite when a boolean value is bound to a placeholder, it should be converted
+  * into integer 0/1 rather than text "false"/"true". According to documentation,
+  * SQLite does not have separate Boolean storage class. Instead, Boolean values are
+  * stored as integers.
+  */
+void tst_QSqlQuery::QTBUG_23895()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+
+    QString tableName(qTableName("bug23895", __FILE__ ));
+    q.prepare("create table " + tableName + "(id integer primary key, val1 bool, val2 boolean)");
+    QVERIFY_SQL(q, exec());
+    q.prepare("insert into " + tableName + "(id, val1, val2) values(?, ?, ?);");
+    q.addBindValue(1);
+    q.addBindValue(true);
+    q.addBindValue(false);
+    QVERIFY_SQL(q, exec());
+
+    QString sql="select * from " + tableName;
+    QVERIFY_SQL(q, exec(sql));
+    QVERIFY_SQL(q, next());
+
+    QCOMPARE(q.record().field(0).type(), QVariant::Int);
+    QCOMPARE(q.value(0).type(), QVariant::LongLong);
+    QCOMPARE(q.value(0).toInt(), 1);
+    QCOMPARE(q.record().field(1).type(), QVariant::Bool);
+    QCOMPARE(q.value(1).type(), QVariant::LongLong);
+    QCOMPARE(q.value(1).toBool(), true);
+    QCOMPARE(q.record().field(2).type(), QVariant::Bool);
+    QCOMPARE(q.value(2).type(), QVariant::LongLong);
+    QCOMPARE(q.value(2).toBool(), false);
+
+    q.prepare("insert into " + tableName + "(id, val1, val2) values(?, ?, ?);");
+    q.addBindValue(2);
+    q.addBindValue(false);
+    q.addBindValue(false);
+    QVERIFY_SQL(q, exec());
+
+    sql="select * from " + tableName + " where val1";
+    QVERIFY_SQL(q, exec(sql));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 1);
+    QVERIFY(!q.next());
+
+    sql="select * from " + tableName + " where not val2";
+    QVERIFY_SQL(q, exec(sql));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 1);
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 2);
+    QVERIFY(!q.next());
 }
 
 void tst_QSqlQuery::oraOCINumber()

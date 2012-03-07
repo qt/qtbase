@@ -92,6 +92,9 @@ static QVariant::Type qGetColumnType(const QString &tpName)
         return QVariant::Double;
     if (typeName == QLatin1String("blob"))
         return QVariant::ByteArray;
+    if (typeName == QLatin1String("boolean")
+        || typeName == QLatin1String("bool"))
+        return QVariant::Bool;
     return QVariant::String;
 }
 
@@ -413,6 +416,7 @@ bool QSQLiteResult::exec()
                                             ba->size(), SQLITE_STATIC);
                     break; }
                 case QVariant::Int:
+                case QVariant::Bool:
                     res = sqlite3_bind_int(d->stmt, i + 1, value.toInt());
                     break;
                 case QVariant::Double:
