@@ -591,7 +591,8 @@ QModelIndex QSqlQueryModel::indexInQuery(const QModelIndex &item) const
 {
     Q_D(const QSqlQueryModel);
     if (item.column() < 0 || item.column() >= d->rec.count()
-        || !d->rec.isGenerated(item.column()))
+        || !d->rec.isGenerated(item.column())
+        || item.column() >= d->colOffsets.size())
         return QModelIndex();
     return createIndex(item.row(), item.column() - d->colOffsets[item.column()],
                        item.internalPointer());

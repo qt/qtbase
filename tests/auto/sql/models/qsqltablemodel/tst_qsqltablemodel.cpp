@@ -133,6 +133,9 @@ private slots:
 
     void insertBeforeDelete_data() { generic_data(); }
     void insertBeforeDelete();
+
+    void invalidFilterAndHeaderData_data() { generic_data(); }
+    void invalidFilterAndHeaderData(); //QTBUG-23879
 private:
     void generic_data(const QString& engine=QString());
     void generic_data_with_strategies(const QString& engine=QString());
@@ -1679,6 +1682,26 @@ void tst_QSqlTableModel::insertBeforeDelete()
     QVERIFY_SQL(model, removeRow(5));
     QVERIFY_SQL(model, submitAll());
     QCOMPARE(model.rowCount(), 5);
+}
+
+void tst_QSqlTableModel::invalidFilterAndHeaderData()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlTableModel model(0, db);
+    model.setTable(test);
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    QVERIFY_SQL(model, select());
+    QVERIFY_SQL(model, setHeaderData(0, Qt::Horizontal, "id"));
+    QVERIFY_SQL(model, setHeaderData(1, Qt::Horizontal, "name"));
+    QVERIFY_SQL(model, setHeaderData(2, Qt::Horizontal, "title"));
+
+    model.setFilter("some nonsense");
+
+    QVariant v = model.headerData(0, Qt::Horizontal, Qt::SizeHintRole);
+    QVERIFY(!v.isValid());
 }
 
 QTEST_MAIN(tst_QSqlTableModel)
