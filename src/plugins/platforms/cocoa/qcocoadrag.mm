@@ -39,62 +39,61 @@
 **
 ****************************************************************************/
 
-#ifndef QNSVIEW_H
-#define QNSVIEW_H
-
-#include <Cocoa/Cocoa.h>
-
-#include <QtGui/QImage>
-#include <QtGui/QAccessible>
+#include "qcocoadrag.h"
+#include "qmacmime.h"
+#include "qmacclipboard.h"
 
 QT_BEGIN_NAMESPACE
-class QCocoaWindow;
-QT_END_NAMESPACE
 
-@interface QNSView : NSView {
-    CGImageRef m_cgImage;
-    QWindow *m_window;
-    QCocoaWindow *m_platformWindow;
-    Qt::MouseButtons m_buttons;
-    QAccessibleInterface *m_accessibleRoot;
-    QStringList *currentCustomDragTypes;
+QCocoaDropData::QCocoaDropData(NSPasteboard *pasteboard)
+{
+    dropPasteboard = reinterpret_cast<CFStringRef>(const_cast<const NSString *>([pasteboard name]));
+    CFRetain(dropPasteboard);
 }
 
-- (id)init;
-- (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow;
+QCocoaDropData::~QCocoaDropData()
+{
+    CFRelease(dropPasteboard);
+}
 
-- (void)setImage:(QImage *)image;
-- (void)drawRect:(NSRect)dirtyRect;
-- (void)updateGeometry;
-- (void)windowDidBecomeKey;
-- (void)windowDidResignKey;
+QStringList QCocoaDropData::formats_sys() const
+{
+    QStringList formats;
+    PasteboardRef board;
+    if (PasteboardCreate(dropPasteboard, &board) != noErr) {
+        qDebug("DnD: Cannot get PasteBoard!");
+        return formats;
+    }
+    formats = QMacPasteboard(board, QMacPasteboardMime::MIME_DND).formats();
+    return formats;
+}
 
-- (BOOL)isFlipped;
-- (BOOL)acceptsFirstResponder;
+QVariant QCocoaDropData::retrieveData_sys(const QString &mimeType, QVariant::Type type) const
+{
+    QVariant data;
+    PasteboardRef board;
+    if (PasteboardCreate(dropPasteboard, &board) != noErr) {
+        qDebug("DnD: Cannot get PasteBoard!");
+        return data;
+    }
+    data = QMacPasteboard(board, QMacPasteboardMime::MIME_DND).retrieveData(mimeType, type);
+    CFRelease(board);
+    return data;
+}
 
-- (void)handleMouseEvent:(NSEvent *)theEvent;
-- (void)mouseDown:(NSEvent *)theEvent;
-- (void)mouseDragged:(NSEvent *)theEvent;
-- (void)mouseUp:(NSEvent *)theEvent;
-- (void)mouseMoved:(NSEvent *)theEvent;
-- (void)mouseEntered:(NSEvent *)theEvent;
-- (void)mouseExited:(NSEvent *)theEvent;
-- (void)rightMouseDown:(NSEvent *)theEvent;
-- (void)rightMouseDragged:(NSEvent *)theEvent;
-- (void)rightMouseUp:(NSEvent *)theEvent;
-- (void)otherMouseDown:(NSEvent *)theEvent;
-- (void)otherMouseDragged:(NSEvent *)theEvent;
-- (void)otherMouseUp:(NSEvent *)theEvent;
+bool QCocoaDropData::hasFormat_sys(const QString &mimeType) const
+{
+    bool has = false;
+    PasteboardRef board;
+    if (PasteboardCreate(dropPasteboard, &board) != noErr) {
+        qDebug("DnD: Cannot get PasteBoard!");
+        return has;
+    }
+    has = QMacPasteboard(board, QMacPasteboardMime::MIME_DND).hasFormat(mimeType);
+    CFRelease(board);
+    return has;
+}
 
-- (int) convertKeyCode : (QChar)keyCode;
-- (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags;
-- (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
-- (void)keyDown:(NSEvent *)theEvent;
-- (void)keyUp:(NSEvent *)theEvent;
 
-- (void)registerDragTypes;
-- (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender;
+QT_END_NAMESPACE
 
-@end
-
-#endif //QNSVIEW_H

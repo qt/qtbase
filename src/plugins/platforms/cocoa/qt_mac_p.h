@@ -196,44 +196,6 @@ public:
 class QMacPasteboardMime;
 class QMimeData;
 
-class QMacPasteboard
-{
-    struct Promise {
-        Promise() : itemId(0), convertor(0) { }
-        Promise(int itemId, QMacPasteboardMime *c, QString m, QVariant d, int o=0) : itemId(itemId), offset(o), convertor(c), mime(m), data(d) { }
-        int itemId, offset;
-        QMacPasteboardMime *convertor;
-        QString mime;
-        QVariant data;
-    };
-    QList<Promise> promises;
-
-    OSPasteboardRef paste;
-    uchar mime_type;
-    mutable QPointer<QMimeData> mime;
-    mutable bool mac_mime_source;
-    static OSStatus promiseKeeper(OSPasteboardRef, PasteboardItemID, CFStringRef, void *);
-    void clear_helper();
-public:
-    QMacPasteboard(OSPasteboardRef p, uchar mime_type=0);
-    QMacPasteboard(uchar mime_type);
-    QMacPasteboard(CFStringRef name=0, uchar mime_type=0);
-    ~QMacPasteboard();
-
-    bool hasFlavor(QString flavor) const;
-    bool hasOSType(int c_flavor) const;
-
-    OSPasteboardRef pasteBoard() const;
-    QMimeData *mimeData() const;
-    void setMimeData(QMimeData *mime);
-
-    QStringList formats() const;
-    bool hasFormat(const QString &format) const;
-    QVariant retrieveData(const QString &format, QVariant::Type) const;
-
-    void clear();
-    bool sync() const;
-};
 
 extern QPaintDevice *qt_mac_safe_pdev; //qapplication_mac.cpp
 

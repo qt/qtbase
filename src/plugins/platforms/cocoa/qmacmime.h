@@ -39,62 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QNSVIEW_H
-#define QNSVIEW_H
+#ifndef QMACMIME_H
+#define QMACMIME_H
 
-#include <Cocoa/Cocoa.h>
+#include <QtCore>
 
-#include <QtGui/QImage>
-#include <QtGui/QAccessible>
+#include <CoreFoundation/CoreFoundation.h>
 
-QT_BEGIN_NAMESPACE
-class QCocoaWindow;
-QT_END_NAMESPACE
+class Q_GUI_EXPORT QMacPasteboardMime {
+    char type;
+public:
+    enum QMacPasteboardMimeType { MIME_DND=0x01,
+        MIME_CLIP=0x02,
+        MIME_QT_CONVERTOR=0x04,
+        MIME_QT3_CONVERTOR=0x08,
+        MIME_ALL=MIME_DND|MIME_CLIP
+    };
+    explicit QMacPasteboardMime(char);
+    virtual ~QMacPasteboardMime();
 
-@interface QNSView : NSView {
-    CGImageRef m_cgImage;
-    QWindow *m_window;
-    QCocoaWindow *m_platformWindow;
-    Qt::MouseButtons m_buttons;
-    QAccessibleInterface *m_accessibleRoot;
-    QStringList *currentCustomDragTypes;
-}
+    static void initialize();
 
-- (id)init;
-- (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow;
+    static QList<QMacPasteboardMime*> all(uchar);
+    static QMacPasteboardMime *convertor(uchar, const QString &mime, QString flav);
+    static QString flavorToMime(uchar, QString flav);
 
-- (void)setImage:(QImage *)image;
-- (void)drawRect:(NSRect)dirtyRect;
-- (void)updateGeometry;
-- (void)windowDidBecomeKey;
-- (void)windowDidResignKey;
+    virtual QString convertorName() = 0;
 
-- (BOOL)isFlipped;
-- (BOOL)acceptsFirstResponder;
+    virtual bool canConvert(const QString &mime, QString flav) = 0;
+    virtual QString mimeFor(QString flav) = 0;
+    virtual QString flavorFor(const QString &mime) = 0;
+    virtual QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav) = 0;
+    virtual QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav) = 0;
+};
 
-- (void)handleMouseEvent:(NSEvent *)theEvent;
-- (void)mouseDown:(NSEvent *)theEvent;
-- (void)mouseDragged:(NSEvent *)theEvent;
-- (void)mouseUp:(NSEvent *)theEvent;
-- (void)mouseMoved:(NSEvent *)theEvent;
-- (void)mouseEntered:(NSEvent *)theEvent;
-- (void)mouseExited:(NSEvent *)theEvent;
-- (void)rightMouseDown:(NSEvent *)theEvent;
-- (void)rightMouseDragged:(NSEvent *)theEvent;
-- (void)rightMouseUp:(NSEvent *)theEvent;
-- (void)otherMouseDown:(NSEvent *)theEvent;
-- (void)otherMouseDragged:(NSEvent *)theEvent;
-- (void)otherMouseUp:(NSEvent *)theEvent;
+#endif
 
-- (int) convertKeyCode : (QChar)keyCode;
-- (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags;
-- (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
-- (void)keyDown:(NSEvent *)theEvent;
-- (void)keyUp:(NSEvent *)theEvent;
-
-- (void)registerDragTypes;
-- (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender;
-
-@end
-
-#endif //QNSVIEW_H

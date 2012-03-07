@@ -46,7 +46,9 @@
 #include "qnsview.h"
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
+#include "qcocoaautoreleasepool.h"
 #include "qmultitouch_mac_p.h"
+#include "qcocoadrag.h"
 
 #include <QtGui/QWindowSystemInterface>
 #include <QtCore/QDebug>
@@ -72,6 +74,7 @@ static QTouchDevice *touchDevice = 0;
         m_cgImage = 0;
         m_window = 0;
         m_buttons = Qt::NoButton;
+        currentCustomDragTypes = 0;
         if (!touchDevice) {
             touchDevice = new QTouchDevice;
             touchDevice->setType(QTouchDevice::TouchPad);
@@ -109,6 +112,7 @@ static QTouchDevice *touchDevice = 0;
     m_accessibleRoot = window->accessibleRoot();
 #endif
 
+    [self registerDragTypes];
     [self setPostsFrameChangedNotifications : YES];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                           selector:@selector(updateGeometry)
@@ -469,6 +473,76 @@ static QTouchDevice *touchDevice = 0;
 - (void)keyUp:(NSEvent *)theEvent
 {
     [self handleKeyEvent : theEvent eventType :int(QEvent::KeyRelease)];
+}
+
+-(void)registerDragTypes
+{
+    QCocoaAutoReleasePool pool;
+    // ### Custom types disabled.
+    QStringList customTypes;  // = qEnabledDraggedTypes();
+    if (currentCustomDragTypes == 0 || *currentCustomDragTypes != customTypes) {
+        if (currentCustomDragTypes == 0)
+            currentCustomDragTypes = new QStringList();
+        *currentCustomDragTypes = customTypes;
+        const NSString* mimeTypeGeneric = @"com.trolltech.qt.MimeTypeName";
+        NSMutableArray *supportedTypes = [NSMutableArray arrayWithObjects:NSColorPboardType,
+                       NSFilenamesPboardType, NSStringPboardType,
+                       NSFilenamesPboardType, NSPostScriptPboardType, NSTIFFPboardType,
+                       NSRTFPboardType, NSTabularTextPboardType, NSFontPboardType,
+                       NSRulerPboardType, NSFileContentsPboardType, NSColorPboardType,
+                       NSRTFDPboardType, NSHTMLPboardType, NSPICTPboardType,
+                       NSURLPboardType, NSPDFPboardType, NSVCardPboardType,
+                       NSFilesPromisePboardType, NSInkTextPboardType,
+                       NSMultipleTextSelectionPboardType, mimeTypeGeneric, nil];
+        // Add custom types supported by the application.
+        for (int i = 0; i < customTypes.size(); i++) {
+           [supportedTypes addObject:QCFString::toNSString(customTypes[i])];
+        }
+        [self registerForDraggedTypes:supportedTypes];
+    }
+}
+
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+{
+    return [self handleDrag : sender];
+}
+
+- (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender
+{
+    return [self handleDrag : sender];
+}
+
+// Sends drag update to Qt, return the action
+- (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender
+{
+    NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
+    QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
+    Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
+    QCocoaDropData mimeData([sender draggingPasteboard]);
+
+    QPlatformDragQtResponse response = QWindowSystemInterface::handleDrag(m_window, &mimeData, qt_windowPoint, qtAllowed);
+    return qt_mac_mapDropAction(response.acceptedAction());
+}
+
+- (void)draggingExited:(id <NSDraggingInfo>)sender
+{
+    NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
+    QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
+
+    // Send 0 mime data to indicate drag exit
+    QWindowSystemInterface::handleDrag(m_window, 0 ,qt_windowPoint, Qt::IgnoreAction);
+}
+
+// called on drop, send the drop to Qt and return if it was accepted.
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{
+    NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
+    QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
+    Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
+    QCocoaDropData mimeData([sender draggingPasteboard]);
+
+    QPlatformDropQtResponse response = QWindowSystemInterface::handleDrop(m_window, &mimeData, qt_windowPoint, qtAllowed);
+    return response.isAccepted();
 }
 
 @end

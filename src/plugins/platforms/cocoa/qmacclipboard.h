@@ -39,62 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef QNSVIEW_H
-#define QNSVIEW_H
+#ifndef QMACCLIPBOARD_H
+#define QMACCLIPBOARD_H
 
-#include <Cocoa/Cocoa.h>
+#include <QtGui>
+#include "qmacmime.h"
 
-#include <QtGui/QImage>
-#include <QtGui/QAccessible>
+#undef slots
 
-QT_BEGIN_NAMESPACE
-class QCocoaWindow;
-QT_END_NAMESPACE
+#import <Cocoa/Cocoa.h>
 
-@interface QNSView : NSView {
-    CGImageRef m_cgImage;
-    QWindow *m_window;
-    QCocoaWindow *m_platformWindow;
-    Qt::MouseButtons m_buttons;
-    QAccessibleInterface *m_accessibleRoot;
-    QStringList *currentCustomDragTypes;
-}
+class QMacPasteboard
+{
+    struct Promise {
+        Promise() : itemId(0), convertor(0) { }
+        Promise(int itemId, QMacPasteboardMime *c, QString m, QVariant d, int o=0) : itemId(itemId), offset(o), convertor(c), mime(m), data(d) { }
+        int itemId, offset;
+        QMacPasteboardMime *convertor;
+        QString mime;
+        QVariant data;
+    };
+    QList<Promise> promises;
 
-- (id)init;
-- (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow;
+    PasteboardRef paste;
+    uchar mime_type;
+    mutable QPointer<QMimeData> mime;
+    mutable bool mac_mime_source;
+    static OSStatus promiseKeeper(PasteboardRef, PasteboardItemID, CFStringRef, void *);
+    void clear_helper();
+public:
+    QMacPasteboard(PasteboardRef p, uchar mime_type=0);
+    QMacPasteboard(uchar mime_type);
+    QMacPasteboard(CFStringRef name=0, uchar mime_type=0);
+    ~QMacPasteboard();
 
-- (void)setImage:(QImage *)image;
-- (void)drawRect:(NSRect)dirtyRect;
-- (void)updateGeometry;
-- (void)windowDidBecomeKey;
-- (void)windowDidResignKey;
+    bool hasFlavor(QString flavor) const;
+    bool hasOSType(int c_flavor) const;
 
-- (BOOL)isFlipped;
-- (BOOL)acceptsFirstResponder;
+    PasteboardRef pasteBoard() const;
+    QMimeData *mimeData() const;
+    void setMimeData(QMimeData *mime);
 
-- (void)handleMouseEvent:(NSEvent *)theEvent;
-- (void)mouseDown:(NSEvent *)theEvent;
-- (void)mouseDragged:(NSEvent *)theEvent;
-- (void)mouseUp:(NSEvent *)theEvent;
-- (void)mouseMoved:(NSEvent *)theEvent;
-- (void)mouseEntered:(NSEvent *)theEvent;
-- (void)mouseExited:(NSEvent *)theEvent;
-- (void)rightMouseDown:(NSEvent *)theEvent;
-- (void)rightMouseDragged:(NSEvent *)theEvent;
-- (void)rightMouseUp:(NSEvent *)theEvent;
-- (void)otherMouseDown:(NSEvent *)theEvent;
-- (void)otherMouseDragged:(NSEvent *)theEvent;
-- (void)otherMouseUp:(NSEvent *)theEvent;
+    QStringList formats() const;
+    bool hasFormat(const QString &format) const;
+    QVariant retrieveData(const QString &format, QVariant::Type) const;
 
-- (int) convertKeyCode : (QChar)keyCode;
-- (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags;
-- (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
-- (void)keyDown:(NSEvent *)theEvent;
-- (void)keyUp:(NSEvent *)theEvent;
+    void clear();
+    bool sync() const;
+};
 
-- (void)registerDragTypes;
-- (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender;
+QString qt_mac_get_pasteboardString(PasteboardRef paste);
 
-@end
-
-#endif //QNSVIEW_H
+#endif

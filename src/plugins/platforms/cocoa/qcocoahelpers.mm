@@ -270,6 +270,64 @@ Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode)
     return i->qtKey;
 }
 
+struct dndenum_mapper
+{
+    NSDragOperation mac_code;
+    Qt::DropAction qt_code;
+    bool Qt2Mac;
+};
+
+static dndenum_mapper dnd_enums[] = {
+    { NSDragOperationLink,  Qt::LinkAction, true },
+    { NSDragOperationMove,  Qt::MoveAction, true },
+    { NSDragOperationCopy,  Qt::CopyAction, true },
+    { NSDragOperationGeneric,  Qt::CopyAction, false },
+    { NSDragOperationEvery, Qt::ActionMask, false },
+    { NSDragOperationNone, Qt::IgnoreAction, false }
+};
+
+NSDragOperation qt_mac_mapDropAction(Qt::DropAction action)
+{
+    for (int i=0; dnd_enums[i].qt_code; i++) {
+        if (dnd_enums[i].Qt2Mac && (action & dnd_enums[i].qt_code)) {
+            return dnd_enums[i].mac_code;
+        }
+    }
+    return NSDragOperationNone;
+}
+
+NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions)
+{
+    NSDragOperation nsActions = NSDragOperationNone;
+    for (int i=0; dnd_enums[i].qt_code; i++) {
+        if (dnd_enums[i].Qt2Mac && (actions & dnd_enums[i].qt_code))
+            nsActions |= dnd_enums[i].mac_code;
+    }
+    return nsActions;
+}
+
+Qt::DropAction qt_mac_mapNSDragOperation(NSDragOperation nsActions)
+{
+    Qt::DropAction action = Qt::IgnoreAction;
+    for (int i=0; dnd_enums[i].mac_code; i++) {
+        if (nsActions & dnd_enums[i].mac_code)
+            return dnd_enums[i].qt_code;
+    }
+    return action;
+}
+
+Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions)
+{
+    Qt::DropActions actions = Qt::IgnoreAction;
+    for (int i=0; dnd_enums[i].mac_code; i++) {
+        if (nsActions & dnd_enums[i].mac_code)
+            actions |= dnd_enums[i].qt_code;
+    }
+    return actions;
+}
+
+
+
 //
 // Misc
 //
