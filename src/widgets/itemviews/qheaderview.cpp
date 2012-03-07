@@ -3030,7 +3030,7 @@ int QHeaderViewPrivate::lastVisibleVisualIndex() const
 /*!
     \internal
     Go through and resize all of the sections applying stretchLastSection,
-    manualy stretches, sizes, and useGlobalMode.
+    manual stretches, sizes, and useGlobalMode.
 
     The different resize modes are:
     Interactive - the user decides the size
@@ -3063,8 +3063,8 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
     if (stretchLastSection && !useGlobalMode)
         stretchSection = lastVisibleVisualIndex();
 
-    // count up the number of strected sections and how much space left for them
-    int lengthToStrech = (orientation == Qt::Horizontal ? viewport->width() : viewport->height());
+    // count up the number of stretched sections and how much space left for them
+    int lengthToStretch = (orientation == Qt::Horizontal ? viewport->width() : viewport->height());
     int numberOfStretchedSections = 0;
     QList<int> section_sizes;
     for (int i = 0; i < sectionCount(); ++i) {
@@ -3083,7 +3083,7 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
             continue;
         }
 
-        // because it isn't stretch, determine its width and remove that from lengthToStrech
+        // because it isn't stretch, determine its width and remove that from lengthToStretch
         int sectionSize = 0;
         if (resizeMode == QHeaderView::Interactive || resizeMode == QHeaderView::Fixed) {
             sectionSize = headerSectionSize(i);
@@ -3093,16 +3093,16 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
                                q->sectionSizeHint(logicalIndex));
         }
         section_sizes.append(sectionSize);
-        lengthToStrech -= sectionSize;
+        lengthToStretch -= sectionSize;
     }
 
     // calculate the new length for all of the stretched sections
     int stretchSectionLength = -1;
     int pixelReminder = 0;
-    if (numberOfStretchedSections > 0 && lengthToStrech > 0) { // we have room to stretch in
-        int hintLengthForEveryStretchedSection = lengthToStrech / numberOfStretchedSections;
+    if (numberOfStretchedSections > 0 && lengthToStretch > 0) { // we have room to stretch in
+        int hintLengthForEveryStretchedSection = lengthToStretch / numberOfStretchedSections;
         stretchSectionLength = qMax(hintLengthForEveryStretchedSection, q->minimumSectionSize());
-        pixelReminder = lengthToStrech % numberOfStretchedSections;
+        pixelReminder = lengthToStretch % numberOfStretchedSections;
     }
 
     // ### The code below would be nicer if it was cleaned up a bit (since spans has been replaced with items)
