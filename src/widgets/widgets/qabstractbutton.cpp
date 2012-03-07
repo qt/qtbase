@@ -647,7 +647,7 @@ void QAbstractButton::setText(const QString &text)
     update();
     updateGeometry();
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this, 0));
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this));
 #endif
 }
 

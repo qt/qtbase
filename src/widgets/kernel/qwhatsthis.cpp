@@ -412,7 +412,7 @@ QWhatsThisPrivate::QWhatsThisPrivate()
 #endif
     }
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ContextHelpStart, this, 0));
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ContextHelpStart, this));
 #endif
 }
 
@@ -424,7 +424,7 @@ QWhatsThisPrivate::~QWhatsThisPrivate()
     QApplication::restoreOverrideCursor();
 #endif
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ContextHelpEnd, this, 0));
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ContextHelpEnd, this));
 #endif
     instance = 0;
 }
