@@ -2407,6 +2407,40 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 /*QUuid*/         1 << QVariant::String
 };
 
+#ifndef QT_BOOTSTRAPPED
+/*!
+    Returns true if from inherits to.
+*/
+static bool canConvertMetaObject(const QMetaObject *from, const QMetaObject *to)
+{
+    if (from && to == &QObject::staticMetaObject)
+        return true;
+
+    while (from) {
+        if (from == to)
+            return true;
+        from = from->superClass();
+    }
+
+    return false;
+}
+#endif
+
+static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
+{
+#ifndef QT_BOOTSTRAPPED
+    QMetaType toType(toId);
+    if ((QMetaType::typeFlags(fromId) & QMetaType::PointerToQObject) && (toType.flags() & QMetaType::PointerToQObject))
+        return canConvertMetaObject(fromObject->metaObject(), toType.metaObject());
+#else
+    Q_UNUSED(fromId);
+    Q_UNUSED(toId);
+    Q_UNUSED(fromObject);
+#endif
+    return false;
+}
+
+
 /*!
     Returns true if the variant's type can be cast to the requested
     type, \a targetTypeId. Such casting is done automatically when calling the
@@ -2439,6 +2473,10 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
     \row \li \l ULongLong \li \l Bool, \l Char, \l Double, \l Int, \l LongLong, \l String, \l UInt
     \endtable
 
+    A QVariant containing a pointer to a type derived from QObject will also return true for this
+    function if a qobject_cast to the type described by \a targetTypeId would succeed. Note that
+    this only works for QObject subclasses which use the Q_OBJECT macro.
+
     \sa convert()
 */
 bool QVariant::canConvert(int targetTypeId) const
@@ -2455,8 +2493,10 @@ bool QVariant::canConvert(int targetTypeId) const
     if (currentType == uint(targetTypeId))
         return true;
 
-    if (targetTypeId < 0 || targetTypeId >= QMetaType::User)
+    if (targetTypeId < 0)
         return false;
+    if (targetTypeId >= QMetaType::User)
+        return canConvertMetaObject(currentType, targetTypeId, d.data.o);
 
     // FIXME It should be LastCoreType intead of Uuid
     if (currentType > int(QMetaType::QUuid) || targetTypeId > int(QMetaType::QUuid)) {
@@ -2502,6 +2542,9 @@ bool QVariant::canConvert(int targetTypeId) const
         case QMetaType::Short:
         case QMetaType::UShort:
             return qCanConvertMatrix[QVariant::Int] & (1 << currentType) || currentType == QVariant::Int;
+        case QMetaType::QWidgetStar:
+        case QMetaType::QObjectStar:
+            return canConvertMetaObject(currentType, targetTypeId, d.data.o);
         default:
             return false;
         }
@@ -2516,6 +2559,11 @@ bool QVariant::canConvert(int targetTypeId) const
     Casts the variant to the requested type, \a targetTypeId. If the cast cannot be
     done, the variant is cleared. Returns true if the current type of
     the variant was successfully cast; otherwise returns false.
+
+    A QVariant containing a pointer to a type derived from QObject will also convert
+    and return true for this function if a qobject_cast to the type described
+    by \a targetTypeId would succeed. Note that this only works for QObject subclasses
+    which use the Q_OBJECT macro.
 
     \warning For historical reasons, converting a null QVariant results
     in a null value of the desired type (e.g., an empty string for
@@ -2538,6 +2586,11 @@ bool QVariant::convert(int targetTypeId)
     create(targetTypeId, 0);
     if (oldValue.isNull())
         return false;
+
+    if ((QMetaType::typeFlags(d.type) & QMetaType::PointerToQObject) && (QMetaType::typeFlags(targetTypeId) & QMetaType::PointerToQObject)) {
+        create(targetTypeId, &oldValue.d.data.o);
+        return true;
+    }
 
     bool isOk = true;
     if (!handlerManager[d.type]->convert(&oldValue.d, targetTypeId, data(), &isOk))
@@ -2710,6 +2763,12 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \snippet code/src_corelib_kernel_qvariant.cpp 5
 
+    If the QVariant contains a pointer to a type derived from QObject then
+    \c{T} may be any QObject type. If the pointer stored in the QVariant can be
+    qobject_cast to T, then that result is returned. Otherwise a null pointer is
+    returned. Note that this only works for QObject subclasses which use the
+    Q_OBJECT macro.
+
     \sa setValue(), fromValue(), canConvert()
 */
 
@@ -2721,6 +2780,10 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     Example:
 
     \snippet code/src_corelib_kernel_qvariant.cpp 6
+
+    A QVariant containing a pointer to a type derived from QObject will also return true for this
+    function if a qobject_cast to the template type \c{T} would succeed. Note that this only works
+    for QObject subclasses which use the Q_OBJECT macro.
 
     \sa convert()
 */

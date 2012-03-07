@@ -2640,6 +2640,19 @@ void tst_QVariant::qvariant_cast_QObject()
     QCOMPARE(o != 0, success);
     if (success) {
         QCOMPARE(o->objectName(), QString::fromLatin1("Hello"));
+        QVERIFY(data.canConvert<QObject*>());
+        QVERIFY(data.canConvert(QMetaType::QObjectStar));
+        QVERIFY(data.canConvert(::qMetaTypeId<QObject*>()));
+        QVERIFY(data.value<QObject*>());
+        QVERIFY(data.convert(QMetaType::QObjectStar));
+        QCOMPARE(data.userType(), int(QMetaType::QObjectStar));
+    } else {
+        QVERIFY(!data.canConvert<QObject*>());
+        QVERIFY(!data.canConvert(QMetaType::QObjectStar));
+        QVERIFY(!data.canConvert(::qMetaTypeId<QObject*>()));
+        QVERIFY(!data.value<QObject*>());
+        QVERIFY(!data.convert(QMetaType::QObjectStar));
+        QVERIFY(data.userType() != QMetaType::QObjectStar);
     }
 }
 
