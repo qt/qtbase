@@ -1396,10 +1396,6 @@ void tst_QGL::glWidgetRenderPixmap()
     QImage reference(fb.size(), QImage::Format_RGB32);
     reference.fill(0xffff0000);
 
-#if defined(QGL_EGL) && !defined(Q_WS_X11)
-    QSKIP("renderPixmap() not yet supported under EGL on your platform");
-#endif
-
     QFUZZY_COMPARE_IMAGES(fb, reference);
 }
 

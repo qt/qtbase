@@ -512,6 +512,8 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         const QString defaultPlatform = QLatin1String("xcb");
 #elif !defined (QT_NO_WAYLAND)
         const QString defaultPlatform = QLatin1String("wayland");
+#elif !defined (QT_NO_EGLFS)
+        const QString defaultPlatform = QLatin1String("eglfs");
 #else
         const QString defaultPlatform = QLatin1String("minimal");
 #endif

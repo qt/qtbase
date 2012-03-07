@@ -1544,8 +1544,6 @@ bool Configure::displayHelp()
 
         desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality\n");
         desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality");
-        desc(                   "",                     "Requires EGL support, typically supplied by an OpenGL", false, ' ');
-        desc(                   "",                     "or other graphics implementation\n", false, ' ');
         desc(                   "-force-asserts",       "Activate asserts in release mode.\n");
 #endif
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
@@ -2849,10 +2847,6 @@ void Configure::generateConfigfiles()
         if (dictionary["DECLARATIVE_DEBUG"] == "no") qconfigList += "QDECLARATIVE_NO_DEBUG_PROTOCOL";
         if (dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
         if (dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
-
-        if (dictionary["OPENGL_ES_CM"] == "no" &&
-           dictionary["OPENGL_ES_2"]  == "no" &&
-           dictionary["OPENVG"]       == "no")      qconfigList += "QT_NO_EGL";
 
         if (dictionary["OPENGL_ES_CM"] == "yes" ||
            dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
