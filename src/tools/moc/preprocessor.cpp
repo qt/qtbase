@@ -937,10 +937,15 @@ Symbols Preprocessor::preprocessed(const QByteArray &filename, FILE *file)
 {
     QFile qfile;
     qfile.open(file, QFile::ReadOnly);
-    QByteArray input = qfile.readAll();
+    return preprocessed(filename, &qfile);
+}
+
+Symbols Preprocessor::preprocessed(const QByteArray &filename, QIODevice *file)
+{
+    QByteArray input = file->readAll();
     if (input.isEmpty())
         return symbols;
-    
+
     // phase 1: get rid of backslash-newlines
     input = cleaned(input);
 
