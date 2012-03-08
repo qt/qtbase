@@ -978,25 +978,25 @@ void tst_QMetaObject::propertyNotify()
     QVERIFY(prop.isValid());
     QVERIFY(prop.hasNotifySignal());
     QMetaMethod signal = prop.notifySignal();
-    QCOMPARE(signal.signature(), "value6Changed()");
+    QCOMPARE(signal.methodSignature(), QByteArray("value6Changed()"));
 
     prop = mo->property(mo->indexOfProperty("value7"));
     QVERIFY(prop.isValid());
     QVERIFY(prop.hasNotifySignal());
     signal = prop.notifySignal();
-    QCOMPARE(signal.signature(), "value7Changed(QString)");
+    QCOMPARE(signal.methodSignature(), QByteArray("value7Changed(QString)"));
 
     prop = mo->property(mo->indexOfProperty("value8"));
     QVERIFY(prop.isValid());
     QVERIFY(!prop.hasNotifySignal());
     signal = prop.notifySignal();
-    QCOMPARE(signal.signature(), (const char *)0);
+    QCOMPARE(signal.methodSignature(), QByteArray());
 
     prop = mo->property(mo->indexOfProperty("value"));
     QVERIFY(prop.isValid());
     QVERIFY(!prop.hasNotifySignal());
     signal = prop.notifySignal();
-    QCOMPARE(signal.signature(), (const char *)0);
+    QCOMPARE(signal.methodSignature(), QByteArray());
 }
 
 void tst_QMetaObject::propertyConstant()
@@ -1114,7 +1114,7 @@ void tst_QMetaObject::indexOfMethod()
     QFETCH(bool, isSignal);
     int idx = object->metaObject()->indexOfMethod(name);
     QVERIFY(idx >= 0);
-    QCOMPARE(object->metaObject()->method(idx).signature(), name.constData());
+    QCOMPARE(object->metaObject()->method(idx).methodSignature(), name);
     QCOMPARE(object->metaObject()->indexOfSlot(name), isSignal ? -1 : idx);
     QCOMPARE(object->metaObject()->indexOfSignal(name), !isSignal ? -1 : idx);
 }

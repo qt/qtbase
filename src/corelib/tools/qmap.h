@@ -179,7 +179,7 @@ public:
     inline QMap() : d(const_cast<QMapData *>(&QMapData::shared_null)) { }
     inline QMap(const QMap<Key, T> &other) : d(other.d)
     { d->ref.ref(); if (!d->sharable) detach(); }
-    inline ~QMap() { if (!d) return; if (!d->ref.deref()) freeData(d); }
+    inline ~QMap() { if (!d->ref.deref()) freeData(d); }
 
     QMap<Key, T> &operator=(const QMap<Key, T> &other);
 #ifdef Q_COMPILER_RVALUE_REFS
@@ -199,8 +199,8 @@ public:
 
     inline bool isEmpty() const { return d->size == 0; }
 
-    inline void detach() { if (d->ref != 1) detach_helper(); }
-    inline bool isDetached() const { return d->ref == 1; }
+    inline void detach() { if (d->ref.isShared()) detach_helper(); }
+    inline bool isDetached() const { return !d->ref.isShared(); }
     inline void setSharable(bool sharable) { if (!sharable) detach(); if (d != &QMapData::shared_null) d->sharable = sharable; }
     inline bool isSharedWith(const QMap<Key, T> &other) const { return d == other.d; }
     inline void setInsertInOrder(bool ordered) { if (ordered) detach(); if (d != &QMapData::shared_null) d->insertInOrder = ordered; }

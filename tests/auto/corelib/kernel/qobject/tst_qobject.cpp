@@ -1793,56 +1793,56 @@ void tst_QObject::metamethod()
     QMetaMethod m;
 
     m = mobj->method(mobj->indexOfMethod("invoke1()"));
-    QVERIFY(QByteArray(m.signature()) == "invoke1()");
+    QVERIFY(m.methodSignature() == "invoke1()");
     QVERIFY(m.methodType() == QMetaMethod::Method);
     QVERIFY(m.access() == QMetaMethod::Public);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("sinvoke1()"));
-    QVERIFY(QByteArray(m.signature()) == "sinvoke1()");
+    QVERIFY(m.methodSignature() == "sinvoke1()");
     QVERIFY(m.methodType() == QMetaMethod::Method);
     QVERIFY(m.access() == QMetaMethod::Public);
     QVERIFY((m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("invoke2()"));
-    QVERIFY(QByteArray(m.signature()) == "invoke2()");
+    QVERIFY(m.methodSignature() == "invoke2()");
     QVERIFY(m.methodType() == QMetaMethod::Method);
     QVERIFY(m.access() == QMetaMethod::Protected);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY((m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("sinvoke2()"));
-    QVERIFY(QByteArray(m.signature()) == "sinvoke2()");
+    QVERIFY(m.methodSignature() == "sinvoke2()");
     QVERIFY(m.methodType() == QMetaMethod::Method);
     QVERIFY(m.access() == QMetaMethod::Protected);
     QVERIFY((m.attributes() & QMetaMethod::Scriptable));
     QVERIFY((m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("invoke3()"));
-    QVERIFY(QByteArray(m.signature()) == "invoke3()");
+    QVERIFY(m.methodSignature() == "invoke3()");
     QVERIFY(m.methodType() == QMetaMethod::Method);
     QVERIFY(m.access() == QMetaMethod::Private);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("sinvoke3()"));
-    QVERIFY(QByteArray(m.signature()) == "sinvoke3()");
+    QVERIFY(m.methodSignature() == "sinvoke3()");
     QVERIFY(m.methodType() == QMetaMethod::Method);
     QVERIFY(m.access() == QMetaMethod::Private);
     QVERIFY((m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("signal5()"));
-    QVERIFY(QByteArray(m.signature()) == "signal5()");
+    QVERIFY(m.methodSignature() == "signal5()");
     QVERIFY(m.methodType() == QMetaMethod::Signal);
     QVERIFY(m.access() == QMetaMethod::Protected);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY((m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("aPublicSlot()"));
-    QVERIFY(QByteArray(m.signature()) == "aPublicSlot()");
+    QVERIFY(m.methodSignature() == "aPublicSlot()");
     QVERIFY(m.methodType() == QMetaMethod::Slot);
     QVERIFY(m.access() == QMetaMethod::Public);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));

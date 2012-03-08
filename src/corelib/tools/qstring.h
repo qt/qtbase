@@ -75,25 +75,24 @@ struct QStringData {
     int size;
     uint alloc : 31;
     uint capacityReserved : 1;
-    union {
-        qptrdiff offset; // will always work as we add/subtract from a ushort ptr
-        ushort d[sizeof(qptrdiff)/sizeof(ushort)];
-    };
-    inline ushort *data() { return d + sizeof(qptrdiff)/sizeof(ushort) + offset; }
-    inline const ushort *data() const { return d + sizeof(qptrdiff)/sizeof(ushort) + offset; }
+
+    qptrdiff offset;
+
+    inline ushort *data() { return reinterpret_cast<ushort *>(reinterpret_cast<char *>(this) + offset); }
+    inline const ushort *data() const { return reinterpret_cast<const ushort *>(reinterpret_cast<const char *>(this) + offset); }
 };
 
-template<int N> struct QConstStringData;
-template<int N> struct QConstStringDataPtr
+template<int N> struct QStaticStringData;
+template<int N> struct QStaticStringDataPtr
 {
-    const QConstStringData<N> *ptr;
+    const QStaticStringData<N> *ptr;
 };
 
 #if defined(Q_COMPILER_UNICODE_STRINGS)
-template<int N> struct QConstStringData
+template<int N> struct QStaticStringData
 {
-    const QStringData str;
-    const char16_t data[N + 1];
+    QStringData str;
+    char16_t data[N + 1];
 };
 
 #define QT_UNICODE_LITERAL_II(str) u"" str
@@ -102,10 +101,10 @@ template<int N> struct QConstStringData
        || (defined(__SIZEOF_WCHAR_T__) && __SIZEOF_WCHAR_T__ == 2) \
        || (!defined(__SIZEOF_WCHAR_T__) && defined(WCHAR_MAX) && (WCHAR_MAX - 0 < 65536))
 // wchar_t is 2 bytes
-template<int N> struct QConstStringData
+template<int N> struct QStaticStringData
 {
-    const QStringData str;
-    const wchar_t data[N + 1];
+    QStringData str;
+    wchar_t data[N + 1];
 };
 
 #if defined(Q_CC_MSVC)
@@ -115,21 +114,21 @@ template<int N> struct QConstStringData
 #endif
 
 #else
-template<int N> struct QConstStringData
+template<int N> struct QStaticStringData
 {
-    const QStringData str;
-    const ushort data[N + 1];
+    QStringData str;
+    ushort data[N + 1];
 };
 #endif
 
 #if defined(QT_UNICODE_LITERAL_II)
 #  define QT_UNICODE_LITERAL(str) QT_UNICODE_LITERAL_II(str)
 # if defined(Q_COMPILER_LAMBDA)
-#  define QStringLiteral(str) ([]() -> QConstStringDataPtr<sizeof(QT_UNICODE_LITERAL(str))/2 - 1> { \
+#  define QStringLiteral(str) ([]() -> QStaticStringDataPtr<sizeof(QT_UNICODE_LITERAL(str))/2 - 1> { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
-        static const QConstStringData<Size> qstring_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, QT_UNICODE_LITERAL(str) }; \
-        QConstStringDataPtr<Size> holder = { &qstring_literal }; \
+        static const QStaticStringData<Size> qstring_literal = \
+        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, sizeof(QStringData) }, QT_UNICODE_LITERAL(str) }; \
+        QStaticStringDataPtr<Size> holder = { &qstring_literal }; \
     return holder; }())
 
 # elif defined(Q_CC_GNU)
@@ -140,9 +139,9 @@ template<int N> struct QConstStringData
 #  define QStringLiteral(str) \
     __extension__ ({ \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
-        static const QConstStringData<Size> qstring_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, QT_UNICODE_LITERAL(str) }; \
-        QConstStringDataPtr<Size> holder = { &qstring_literal }; \
+        static const QStaticStringData<Size> qstring_literal = \
+        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, sizeof(QStringData) }, QT_UNICODE_LITERAL(str) }; \
+        QStaticStringDataPtr<Size> holder = { &qstring_literal }; \
         holder; })
 # endif
 #endif
@@ -160,8 +159,7 @@ public:
     typedef QStringData Data;
 
     inline QString();
-    QString(const QChar *unicode, int size); // Qt5: don't cap size < 0
-    explicit QString(const QChar *unicode); // Qt5: merge with the above
+    explicit QString(const QChar *unicode, int size = -1);
     QString(QChar c);
     QString(int size, QChar c);
     inline QString(const QLatin1String &latin1);
@@ -340,7 +338,7 @@ public:
     inline QString &prepend(const QLatin1String &s) { return insert(0, s); }
 
     inline QString &operator+=(QChar c) {
-        if (d->ref != 1 || d->size + 1 > int(d->alloc))
+        if (d->ref.isShared() || d->size + 1 > int(d->alloc))
             realloc(grow(d->size + 1));
         d->data()[d->size++] = c.unicode();
         d->data()[d->size] = '\0';
@@ -592,9 +590,9 @@ public:
 
     QString(int size, Qt::Initialization);
     template <int n>
-    inline QString(const QConstStringData<n> &dd) : d(const_cast<QStringData *>(&dd.str)) {}
+    inline QString(const QStaticStringData<n> &dd) : d(const_cast<QStringData *>(&dd.str)) {}
     template <int N>
-    Q_DECL_CONSTEXPR inline QString(QConstStringDataPtr<N> dd) : d(const_cast<QStringData *>(&dd.ptr->str)) {}
+    Q_DECL_CONSTEXPR inline QString(QStaticStringDataPtr<N> dd) : d(const_cast<QStringData *>(&dd.ptr->str)) {}
 
 private:
 #if defined(QT_NO_CAST_FROM_ASCII) && !defined(Q_NO_DECLARED_NOT_DEFINED)
@@ -606,8 +604,8 @@ private:
     QString &operator=(const QByteArray &a);
 #endif
 
-    static const QConstStringData<1> shared_null;
-    static const QConstStringData<1> shared_empty;
+    static const QStaticStringData<1> shared_null;
+    static const QStaticStringData<1> shared_empty;
     Data *d;
     inline QString(Data *dd, int /*dummy*/) : d(dd) {}
 
@@ -709,9 +707,9 @@ inline QChar *QString::data()
 inline const QChar *QString::constData() const
 { return reinterpret_cast<const QChar*>(d->data()); }
 inline void QString::detach()
-{ if (d->ref != 1 || d->offset) realloc(); }
+{ if (d->ref.isShared() || (d->offset != sizeof(QStringData))) realloc(); }
 inline bool QString::isDetached() const
-{ return d->ref == 1; }
+{ return !d->ref.isShared(); }
 inline QString &QString::operator=(const QLatin1String &s)
 {
     *this = fromLatin1(s.latin1(), s.size());
@@ -874,7 +872,7 @@ inline QString::~QString() { if (!d->ref.deref()) free(d); }
 
 inline void QString::reserve(int asize)
 {
-    if (d->ref != 1 || asize > int(d->alloc))
+    if (d->ref.isShared() || asize > int(d->alloc))
         realloc(asize);
 
     if (!d->capacityReserved) {
@@ -885,11 +883,12 @@ inline void QString::reserve(int asize)
 
 inline void QString::squeeze()
 {
-    if (d->ref > 1 || d->size < int(d->alloc))
+    if (d->ref.isShared() || d->size < int(d->alloc))
         realloc();
 
     if (d->capacityReserved) {
-        // cannot set unconditionally, since d could be the shared_null/shared_empty (which is const)
+        // cannot set unconditionally, since d could be shared_null or
+        // otherwise static.
         d->capacityReserved = false;
     }
 }

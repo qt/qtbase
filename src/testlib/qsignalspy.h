@@ -122,9 +122,11 @@ private:
         QList<QByteArray> params = member.parameterTypes();
         for (int i = 0; i < params.count(); ++i) {
             int tp = QMetaType::type(params.at(i).constData());
-            if (tp == QMetaType::Void)
+            if (tp == QMetaType::UnknownType) {
+                Q_ASSERT(tp != QMetaType::Void); // void parameter => metaobject is corrupt
                 qWarning("Don't know how to handle '%s', use qRegisterMetaType to register it.",
                          params.at(i).constData());
+            }
             args << tp;
         }
     }

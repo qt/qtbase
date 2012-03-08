@@ -71,12 +71,11 @@ struct Q_DBUS_EXPORT QDBusMetaObject: public QMetaObject
                                              QDBusError &error);
     ~QDBusMetaObject()
     {
-        delete [] d.stringdata;
+        delete [] reinterpret_cast<const char *>(d.stringdata);
         delete [] d.data;
     }
 
     // methods (slots & signals):
-    const char *dbusNameForMethod(int id) const;
     const int *inputTypesForMethod(int id) const;
     const int *outputTypesForMethod(int id) const;
 

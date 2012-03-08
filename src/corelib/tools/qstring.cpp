@@ -94,6 +94,8 @@
 #define ULLONG_MAX quint64_C(18446744073709551615)
 #endif
 
+#define IS_RAW_DATA(d) ((d)->offset != sizeof(QStringData))
+
 QT_BEGIN_NAMESPACE
 
 #ifdef QT_USE_ICU
@@ -793,8 +795,8 @@ const QString::Null QString::null = { };
     \sa split()
 */
 
-const QConstStringData<1> QString::shared_null = { { Q_REFCOUNT_INITIALIZER(-1), 0, 0, false, { 0 } }, { 0 } };
-const QConstStringData<1> QString::shared_empty = { { Q_REFCOUNT_INITIALIZER(-1), 0, 0, false, { 0 } }, { 0 } };
+const QStaticStringData<1> QString::shared_null = { { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, false, sizeof(QStringData) }, { 0 } };
+const QStaticStringData<1> QString::shared_empty = { { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, false, sizeof(QStringData) }, { 0 } };
 
 int QString::grow(int size)
 {
@@ -1015,61 +1017,42 @@ int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
     Constructs a string initialized with the first \a size characters
     of the QChar array \a unicode.
 
+    If \a unicode is 0, a null string is constructed.
+
+    If \a size is negative, \a unicode is assumed to point to a nul-terminated
+    array and its length is determined dynamically. The terminating
+    nul-character is not considered part of the string.
+
     QString makes a deep copy of the string data. The unicode data is copied as
     is and the Byte Order Mark is preserved if present.
+
+    \sa fromRawData()
 */
 QString::QString(const QChar *unicode, int size)
 {
    if (!unicode) {
         d = const_cast<Data *>(&shared_null.str);
-    } else if (size <= 0) {
-        d = const_cast<Data *>(&shared_empty.str);
     } else {
-        d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
-        Q_CHECK_PTR(d);
-        d->ref = 1;
-        d->size = size;
-        d->alloc = (uint) size;
-        d->capacityReserved = false;
-        d->offset = 0;
-        memcpy(d->data(), unicode, size * sizeof(QChar));
-        d->data()[size] = '\0';
+        if (size < 0) {
+            size = 0;
+            while (unicode[size] != 0)
+                ++size;
+        }
+        if (!size) {
+            d = const_cast<Data *>(&shared_empty.str);
+        } else {
+            d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
+            Q_CHECK_PTR(d);
+            d->ref.initializeOwned();
+            d->size = size;
+            d->alloc = (uint) size;
+            d->capacityReserved = false;
+            d->offset = sizeof(QStringData);
+            memcpy(d->data(), unicode, size * sizeof(QChar));
+            d->data()[size] = '\0';
+        }
     }
 }
-
-/*!
-    \since 4.7
-
-    Constructs a string initialized with the characters of the QChar array
-    \a unicode, which must be terminated with a 0.
-
-    QString makes a deep copy of the string data. The unicode data is copied as
-    is and the Byte Order Mark is preserved if present.
-*/
-QString::QString(const QChar *unicode)
-{
-     if (!unicode) {
-         d = const_cast<Data *>(&shared_null.str);
-     } else {
-         int size = 0;
-         while (unicode[size] != 0)
-             ++size;
-         if (!size) {
-             d = const_cast<Data *>(&shared_empty.str);
-         } else {
-             d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
-             Q_CHECK_PTR(d);
-             d->ref = 1;
-             d->size = size;
-             d->alloc = (uint) size;
-             d->capacityReserved = false;
-             d->offset = 0;
-             memcpy(d->data(), unicode, size * sizeof(QChar));
-             d->data()[size] = '\0';
-         }
-     }
-}
-
 
 /*!
     Constructs a string of the given \a size with every character set
@@ -1084,11 +1067,11 @@ QString::QString(int size, QChar ch)
     } else {
         d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
         Q_CHECK_PTR(d);
-        d->ref = 1;
+        d->ref.initializeOwned();
         d->size = size;
         d->alloc = (uint) size;
         d->capacityReserved = false;
-        d->offset = 0;
+        d->offset = sizeof(QStringData);
         d->data()[size] = '\0';
         ushort *i = d->data() + size;
         ushort *b = d->data();
@@ -1108,11 +1091,11 @@ QString::QString(int size, Qt::Initialization)
 {
     d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
     Q_CHECK_PTR(d);
-    d->ref = 1;
+    d->ref.initializeOwned();
     d->size = size;
     d->alloc = (uint) size;
     d->capacityReserved = false;
-    d->offset = 0;
+    d->offset = sizeof(QStringData);
     d->data()[size] = '\0';
 }
 
@@ -1130,11 +1113,11 @@ QString::QString(QChar ch)
 {
     d = (Data *) ::malloc(sizeof(Data) + 2*sizeof(QChar));
     Q_CHECK_PTR(d);
-    d->ref = 1;
+    d->ref.initializeOwned();
     d->size = 1;
     d->alloc = 1;
     d->capacityReserved = false;
-    d->offset = 0;
+    d->offset = sizeof(QStringData);
     d->data()[0] = ch.unicode();
     d->data()[1] = '\0';
 }
@@ -1232,7 +1215,7 @@ void QString::resize(int size)
     if (size < 0)
         size = 0;
 
-    if (d->offset && d->ref == 1 && size < d->size) {
+    if (IS_RAW_DATA(d) && !d->ref.isShared() && size < d->size) {
         d->size = size;
         return;
     }
@@ -1243,7 +1226,7 @@ void QString::resize(int size)
             QString::free(d);
         d = x;
     } else {
-        if (d->ref != 1 || size > int(d->alloc) ||
+        if (d->ref.isShared() || size > int(d->alloc) ||
             (!d->capacityReserved && size < d->size && size < int(d->alloc) >> 1))
             realloc(grow(size));
         if (int(d->alloc) >= size) {
@@ -1306,14 +1289,14 @@ void QString::resize(int size)
 // ### Qt 5: rename reallocData() to avoid confusion. 197625
 void QString::realloc(int alloc)
 {
-    if (d->ref != 1 || d->offset) {
+    if (d->ref.isShared() || IS_RAW_DATA(d)) {
         Data *x = static_cast<Data *>(::malloc(sizeof(Data) + (alloc+1) * sizeof(QChar)));
         Q_CHECK_PTR(x);
-        x->ref = 1;
+        x->ref.initializeOwned();
         x->size = qMin(alloc, d->size);
         x->alloc = (uint) alloc;
         x->capacityReserved = d->capacityReserved;
-        x->offset =0;
+        x->offset = sizeof(QStringData);
         ::memcpy(x->data(), d->data(), x->size * sizeof(QChar));
         x->data()[x->size] = 0;
         if (!d->ref.deref())
@@ -1324,7 +1307,7 @@ void QString::realloc(int alloc)
         Q_CHECK_PTR(p);
         d = p;
         d->alloc = alloc;
-        d->offset = 0;
+        d->offset = sizeof(QStringData);
     }
 }
 
@@ -1536,7 +1519,7 @@ QString &QString::append(const QString &str)
         if (d == &shared_null.str) {
             operator=(str);
         } else {
-            if (d->ref != 1 || d->size + str.d->size > int(d->alloc))
+            if (d->ref.isShared() || d->size + str.d->size > int(d->alloc))
                 realloc(grow(d->size + str.d->size));
             memcpy(d->data() + d->size, str.d->data(), str.d->size * sizeof(QChar));
             d->size += str.d->size;
@@ -1556,7 +1539,7 @@ QString &QString::append(const QLatin1String &str)
     const uchar *s = (const uchar *)str.latin1();
     if (s) {
         int len = str.size();
-        if (d->ref != 1 || d->size + len > int(d->alloc))
+        if (d->ref.isShared() || d->size + len > int(d->alloc))
             realloc(grow(d->size + len));
         ushort *i = d->data() + d->size;
         while ((*i++ = *s++))
@@ -1599,7 +1582,7 @@ QString &QString::append(const QLatin1String &str)
 */
 QString &QString::append(QChar ch)
 {
-    if (d->ref != 1 || d->size + 1 > int(d->alloc))
+    if (d->ref.isShared() || d->size + 1 > int(d->alloc))
         realloc(grow(d->size + 1));
     d->data()[d->size++] = ch.unicode();
     d->data()[d->size] = '\0';
@@ -3390,15 +3373,11 @@ QString QString::right(int n) const
 
 QString QString::mid(int position, int n) const
 {
-    if (d == &shared_null.str || position > d->size)
+    if (position > d->size)
         return QString();
-    if (n < 0)
-        n = d->size - position;
-    if (position < 0) {
-        n += position;
+    if (position < 0)
         position = 0;
-    }
-    if (n + position > d->size)
+    if (n < 0 || n > d->size - position)
         n = d->size - position;
     if (position == 0 && n == d->size)
         return *this;
@@ -3753,11 +3732,11 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
             size = qstrlen(str);
         d = static_cast<Data *>(::malloc(sizeof(Data) + (size+1) * sizeof(QChar)));
         Q_CHECK_PTR(d);
-        d->ref = 1;
+        d->ref.initializeOwned();
         d->size = size;
         d->alloc = (uint) size;
         d->capacityReserved = false;
-        d->offset = 0;
+        d->offset = sizeof(QStringData);
         d->data()[size] = '\0';
         ushort *dst = d->data();
         /* SIMD:
@@ -4765,7 +4744,7 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
 
 const ushort *QString::utf16() const
 {
-    if (d->offset)
+    if (IS_RAW_DATA(d))
         const_cast<QString*>(this)->realloc();   // ensure '\\0'-termination for ::fromRawData strings
     return d->data();
 }
@@ -7067,11 +7046,11 @@ QString QString::fromRawData(const QChar *unicode, int size)
     } else {
         x = static_cast<Data *>(::malloc(sizeof(Data) + sizeof(ushort)));
         Q_CHECK_PTR(x);
-        x->ref = 1;
+        x->ref.initializeOwned();
         x->size = size;
         x->alloc = 0;
         x->capacityReserved = false;
-        x->offset = (const ushort *)unicode - (x->d + sizeof(qptrdiff)/sizeof(ushort));
+        x->offset = reinterpret_cast<const char *>(unicode) - reinterpret_cast<char *>(x);
     }
     return QString(x, 0);
 }
@@ -7092,14 +7071,14 @@ QString QString::fromRawData(const QChar *unicode, int size)
 */
 QString &QString::setRawData(const QChar *unicode, int size)
 {
-    if (d->ref != 1 || d->alloc) {
+    if (d->ref.isShared() || d->alloc) {
         *this = fromRawData(unicode, size);
     } else {
         if (unicode) {
             d->size = size;
-            d->offset = (const ushort *)unicode - (d->d + sizeof(qptrdiff)/sizeof(ushort));
+            d->offset = reinterpret_cast<const char *>(unicode) - reinterpret_cast<char *>(d);
         } else {
-            d->offset = 0;
+            d->offset = sizeof(QStringData);
             d->size = 0;
         }
     }
@@ -8059,15 +8038,11 @@ QStringRef QString::rightRef(int n) const
 
 QStringRef QString::midRef(int position, int n) const
 {
-    if (d == &shared_null.str || position > d->size)
+    if (position > d->size)
         return QStringRef();
-    if (n < 0)
-        n = d->size - position;
-    if (position < 0) {
-        n += position;
+    if (position < 0)
         position = 0;
-    }
-    if (n + position > d->size)
+    if (n < 0 || n > d->size - position)
         n = d->size - position;
     return QStringRef(this, position, n);
 }

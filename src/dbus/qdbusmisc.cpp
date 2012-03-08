@@ -141,7 +141,7 @@ int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes)
     for ( ; it != end; ++it) {
         const QByteArray &type = *it;
         if (type.endsWith('*')) {
-            //qWarning("Could not parse the method '%s'", mm.signature());
+            //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
             // pointer?
             return -1;
         }
@@ -152,7 +152,7 @@ int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes)
 
             int id = QMetaType::type(basictype);
             if (id == 0) {
-                //qWarning("Could not parse the method '%s'", mm.signature());
+                //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
                 // invalid type in method parameter list
                 return -1;
             } else if (QDBusMetaType::typeToSignature(id) == 0)
@@ -164,14 +164,14 @@ int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes)
         }
 
         if (seenMessage) {      // && !type.endsWith('&')
-            //qWarning("Could not parse the method '%s'", mm.signature());
+            //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
             // non-output parameters after message or after output params
             return -1;          // not allowed
         }
 
         int id = QMetaType::type(type);
-        if (id == 0) {
-            //qWarning("Could not parse the method '%s'", mm.signature());
+        if (id == QMetaType::UnknownType) {
+            //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
             // invalid type in method parameter list
             return -1;
         }

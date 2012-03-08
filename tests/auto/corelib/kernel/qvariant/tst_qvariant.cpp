@@ -3557,6 +3557,10 @@ void tst_QVariant::loadQVariantFromDataStream(QDataStream::Version version)
     stream >> typeName >> loadedVariant;
 
     const int id = QMetaType::type(typeName.toLatin1());
+    if (id == QMetaType::Void) {
+        // Void type is not supported by QVariant
+        return;
+    }
 
     QVariant constructedVariant(static_cast<QVariant::Type>(id));
     QCOMPARE(constructedVariant.userType(), id);
@@ -3576,6 +3580,10 @@ void tst_QVariant::saveQVariantFromDataStream(QDataStream::Version version)
     dataFileStream >> typeName;
     QByteArray data = file.readAll();
     const int id = QMetaType::type(typeName.toLatin1());
+    if (id == QMetaType::Void) {
+        // Void type is not supported by QVariant
+        return;
+    }
 
     QBuffer buffer;
     buffer.open(QIODevice::ReadWrite);
@@ -3636,7 +3644,9 @@ void tst_QVariant::debugStream_data()
         const char *tagName = QMetaType::typeName(id);
         if (!tagName)
             continue;
-        QTest::newRow(tagName) << QVariant(static_cast<QVariant::Type>(id)) << id;
+        if (id != QMetaType::Void) {
+            QTest::newRow(tagName) << QVariant(static_cast<QVariant::Type>(id)) << id;
+        }
     }
     QTest::newRow("QBitArray(111)") << QVariant(QBitArray(3, true)) << qMetaTypeId<QBitArray>();
     QTest::newRow("CustomStreamableClass") << QVariant(qMetaTypeId<CustomStreamableClass>(), 0) << qMetaTypeId<CustomStreamableClass>();

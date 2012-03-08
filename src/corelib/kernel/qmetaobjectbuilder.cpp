@@ -78,26 +78,17 @@ QT_BEGIN_NAMESPACE
 */
 
 // copied from moc's generator.cpp
-uint qvariant_nameToType(const char* name)
+bool isBuiltinType(const QByteArray &type)
 {
-    if (!name)
-        return 0;
-
-    uint tp = QMetaType::type(name);
-    return tp < QMetaType::User ? tp : 0;
+    int id = QMetaType::type(type);
+    if (!id && !type.isEmpty() && type != "void")
+        return false;
+    return (id < QMetaType::User);
 }
 
-/*
-  Returns true if the type is a QVariant types.
-*/
-bool isVariantType(const char* type)
-{
-    return qvariant_nameToType(type) != 0;
-}
-
+// copied from qmetaobject.cpp
 static inline const QMetaObjectPrivate *priv(const uint* data)
 { return reinterpret_cast<const QMetaObjectPrivate*>(data); }
-// end of copied lines from qmetaobject.cpp
 
 class QMetaMethodBuilderPrivate
 {
@@ -135,6 +126,21 @@ public:
     void setAccess(QMetaMethod::Access value)
     {
         attributes = ((attributes & ~AccessMask) | (int)value);
+    }
+
+    QList<QByteArray> parameterTypes() const
+    {
+        return QMetaObjectPrivate::parameterTypeNamesFromSignature(signature);
+    }
+
+    int parameterCount() const
+    {
+        return parameterTypes().size();
+    }
+
+    QByteArray name() const
+    {
+        return signature.left(qMax(signature.indexOf('('), 0));
     }
 };
 
@@ -458,13 +464,13 @@ QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QMetaMethod& prototype)
 {
     QMetaMethodBuilder method;
     if (prototype.methodType() == QMetaMethod::Method)
-        method = addMethod(prototype.signature());
+        method = addMethod(prototype.methodSignature());
     else if (prototype.methodType() == QMetaMethod::Signal)
-        method = addSignal(prototype.signature());
+        method = addSignal(prototype.methodSignature());
     else if (prototype.methodType() == QMetaMethod::Slot)
-        method = addSlot(prototype.signature());
+        method = addSlot(prototype.methodSignature());
     else if (prototype.methodType() == QMetaMethod::Constructor)
-        method = addConstructor(prototype.signature());
+        method = addConstructor(prototype.methodSignature());
     method.setReturnType(prototype.typeName());
     method.setParameterNames(prototype.parameterNames());
     method.setTag(prototype.tag());
@@ -535,7 +541,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QByteArray& signatur
 QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QMetaMethod& prototype)
 {
     Q_ASSERT(prototype.methodType() == QMetaMethod::Constructor);
-    QMetaMethodBuilder ctor = addConstructor(prototype.signature());
+    QMetaMethodBuilder ctor = addConstructor(prototype.methodSignature());
     ctor.setReturnType(prototype.typeName());
     ctor.setParameterNames(prototype.parameterNames());
     ctor.setTag(prototype.tag());
@@ -588,7 +594,7 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty& protot
     if (prototype.hasNotifySignal()) {
         // Find an existing method for the notify signal, or add a new one.
         QMetaMethod method = prototype.notifySignal();
-        int index = indexOfMethod(method.signature());
+        int index = indexOfMethod(method.methodSignature());
         if (index == -1)
             index = addMethod(method).index();
         d->properties[property._index].notifySignal = index;
@@ -1070,75 +1076,82 @@ int QMetaObjectBuilder::indexOfClassInfo(const QByteArray& name)
 #define ALIGN(size,type)    \
     (size) = ((size) + sizeof(type) - 1) & ~(sizeof(type) - 1)
 
-class MetaStringTable
+/*!
+    \class QMetaStringTable
+    \internal
+    \brief The QMetaStringTable class can generate a meta-object string table at runtime.
+*/
+
+QMetaStringTable::QMetaStringTable()
+    : m_index(0) {}
+
+// Enters the given value into the string table (if it hasn't already been
+// entered). Returns the index of the string.
+int QMetaStringTable::enter(const QByteArray &value)
 {
-public:
-    typedef QHash<QByteArray, int> Entries; // string --> offset mapping
-    typedef Entries::const_iterator const_iterator;
-    Entries::const_iterator constBegin() const
-    { return m_entries.constBegin(); }
-    Entries::const_iterator constEnd() const
-    { return m_entries.constEnd(); }
+    Entries::iterator it = m_entries.find(value);
+    if (it != m_entries.end())
+        return it.value();
+    int pos = m_index;
+    m_entries.insert(value, pos);
+    ++m_index;
+    return pos;
+}
 
-    MetaStringTable() : m_offset(0) {}
-
-    int enter(const QByteArray &value)
-    {
-        Entries::iterator it = m_entries.find(value);
-        if (it != m_entries.end())
-            return it.value();
-        int pos = m_offset;
-        m_entries.insert(value, pos);
-        m_offset += value.size() + 1;
-        return pos;
-    }
-
-    int arraySize() const { return m_offset; }
-
-private:
-    Entries m_entries;
-    int m_offset;
-};
-
-// Build the parameter array string for a method.
-static QByteArray buildParameterNames
-        (const QByteArray& signature, const QList<QByteArray>& parameterNames)
+int QMetaStringTable::preferredAlignment()
 {
-    // If the parameter name list is specified, then concatenate them.
-    if (!parameterNames.isEmpty()) {
-        QByteArray names;
-        bool first = true;
-        foreach (const QByteArray &name, parameterNames) {
-            if (first)
-                first = false;
-            else
-                names += (char)',';
-            names += name;
-        }
-        return names;
-    }
+#ifdef Q_ALIGNOF
+    return Q_ALIGNOF(QByteArrayData);
+#else
+    return sizeof(void *);
+#endif
+}
 
-    // Count commas in the signature, excluding those inside template arguments.
-    int index = signature.indexOf('(');
-    if (index < 0)
-        return QByteArray();
-    ++index;
-    if (index >= signature.size())
-        return QByteArray();
-    if (signature[index] == ')')
-        return QByteArray();
-    int count = 1;
-    int brackets = 0;
-    while (index < signature.size() && signature[index] != ',') {
-        char ch = signature[index++];
-        if (ch == '<')
-            ++brackets;
-        else if (ch == '>')
-            --brackets;
-        else if (ch == ',' && brackets <= 0)
-            ++count;
+// Returns the size (in bytes) required for serializing this string table.
+int QMetaStringTable::blobSize() const
+{
+    int size = m_entries.size() * sizeof(QByteArrayData);
+    Entries::const_iterator it;
+    for (it = m_entries.constBegin(); it != m_entries.constEnd(); ++it)
+        size += it.key().size() + 1;
+    return size;
+}
+
+// Writes strings to string data struct.
+// The struct consists of an array of QByteArrayData, followed by a char array
+// containing the actual strings. This format must match the one produced by
+// moc (see generator.cpp).
+void QMetaStringTable::writeBlob(char *out)
+{
+    Q_ASSERT(!(reinterpret_cast<quintptr>(out) & (preferredAlignment()-1)));
+
+    int offsetOfStringdataMember = m_entries.size() * sizeof(QByteArrayData);
+    int stringdataOffset = 0;
+    for (int i = 0; i < m_entries.size(); ++i) {
+        const QByteArray &str = m_entries.key(i);
+        int size = str.size();
+        qptrdiff offset = offsetOfStringdataMember + stringdataOffset
+                - i * sizeof(QByteArrayData);
+        const QByteArrayData data = { Q_REFCOUNT_INITIALIZE_STATIC, size, 0, 0, offset };
+
+        memcpy(out + i * sizeof(QByteArrayData), &data, sizeof(QByteArrayData));
+
+        memcpy(out + offsetOfStringdataMember + stringdataOffset, str.constData(), size);
+        out[offsetOfStringdataMember + stringdataOffset + size] = '\0';
+
+        stringdataOffset += size + 1;
     }
-    return QByteArray(count - 1, ',');
+}
+
+// Returns the sum of all parameters (including return type) for the given
+// \a methods. This is needed for calculating the size of the methods'
+// parameter type/name meta-data.
+static int aggregateParameterCount(const QList<QMetaMethodBuilderPrivate> &methods)
+{
+    int sum = 0;
+    for (int i = 0; i < methods.size(); ++i)
+        sum += methods.at(i).parameterCount() + 1; // +1 for return type
+    return sum;
 }
 
 // Build a QMetaObject in "buf" based on the information in "d".
@@ -1151,6 +1164,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     Q_UNUSED(expectedSize); // Avoid warning in release mode
     int size = 0;
     int dataIndex;
+    int paramsIndex;
     int enumIndex;
     int index;
     bool hasRevisionedMethods = d->hasRevisionedMethods();
@@ -1181,8 +1195,13 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             break;
         }
     }
+    int methodParametersDataSize =
+            ((aggregateParameterCount(d->methods)
+             + aggregateParameterCount(d->constructors)) * 2) // types and parameter names
+            - d->methods.size()       // return "parameters" don't have names
+            - d->constructors.size(); // "this" parameters don't have names
     if (buf) {
-        Q_STATIC_ASSERT_X(QMetaObjectPrivate::OutputRevision == 6, "QMetaObjectBuilder should generate the same version as moc");
+        Q_STATIC_ASSERT_X(QMetaObjectPrivate::OutputRevision == 7, "QMetaObjectBuilder should generate the same version as moc");
         pmeta->revision = QMetaObjectPrivate::OutputRevision;
         pmeta->flags = d->flags;
         pmeta->className = 0;   // Class name is always the first string.
@@ -1197,6 +1216,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         dataIndex += 5 * d->methods.size();
         if (hasRevisionedMethods)
             dataIndex += d->methods.size();
+        paramsIndex = dataIndex;
+        dataIndex += methodParametersDataSize;
 
         pmeta->propertyCount = d->properties.size();
         pmeta->propertyData = dataIndex;
@@ -1218,6 +1239,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         dataIndex += 5 * d->methods.size();
         if (hasRevisionedMethods)
             dataIndex += d->methods.size();
+        paramsIndex = dataIndex;
+        dataIndex += methodParametersDataSize;
         dataIndex += 3 * d->properties.size();
         if (hasNotifySignals)
             dataIndex += d->properties.size();
@@ -1240,13 +1263,14 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     // Find the start of the data and string tables.
     int *data = reinterpret_cast<int *>(pmeta);
     size += dataIndex * sizeof(int);
+    ALIGN(size, void *);
     char *str = reinterpret_cast<char *>(buf + size);
     if (buf) {
         if (relocatable) {
-            meta->d.stringdata = reinterpret_cast<const char *>((quintptr)size);
+            meta->d.stringdata = reinterpret_cast<const QByteArrayData *>((quintptr)size);
             meta->d.data = reinterpret_cast<uint *>((quintptr)pmetaSize);
         } else {
-            meta->d.stringdata = str;
+            meta->d.stringdata = reinterpret_cast<const QByteArrayData *>(str);
             meta->d.data = reinterpret_cast<uint *>(data);
         }
     }
@@ -1254,7 +1278,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     // Reset the current data position to just past the QMetaObjectPrivate.
     dataIndex = MetaObjectPrivateFieldCount;
 
-    MetaStringTable strings;
+    QMetaStringTable strings;
     strings.enter(d->className);
 
     // Output the class infos,
@@ -1273,24 +1297,21 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     Q_ASSERT(!buf || dataIndex == pmeta->methodData);
     for (index = 0; index < d->methods.size(); ++index) {
         QMetaMethodBuilderPrivate *method = &(d->methods[index]);
-        int sig = strings.enter(method->signature);
-        int params;
-        QByteArray names = buildParameterNames
-            (method->signature, method->parameterNames);
-        params = strings.enter(names);
-        int ret = strings.enter(method->returnType);
+        int name = strings.enter(method->name());
+        int argc = method->parameterCount();
         int tag = strings.enter(method->tag);
         int attrs = method->attributes;
         if (buf) {
-            data[dataIndex]     = sig;
-            data[dataIndex + 1] = params;
-            data[dataIndex + 2] = ret;
+            data[dataIndex]     = name;
+            data[dataIndex + 1] = argc;
+            data[dataIndex + 2] = paramsIndex;
             data[dataIndex + 3] = tag;
             data[dataIndex + 4] = attrs;
             if (method->methodType() == QMetaMethod::Signal)
                 pmeta->signalCount++;
         }
         dataIndex += 5;
+        paramsIndex += 1 + argc * 2;
     }
     if (hasRevisionedMethods) {
         for (index = 0; index < d->methods.size(); ++index) {
@@ -1301,23 +1322,59 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         }
     }
 
+    // Output the method parameters in the class.
+    Q_ASSERT(!buf || dataIndex == pmeta->methodData + d->methods.size() * 5
+             + (hasRevisionedMethods ? d->methods.size() : 0));
+    for (int x = 0; x < 2; ++x) {
+        QList<QMetaMethodBuilderPrivate> &methods = (x == 0) ? d->methods : d->constructors;
+        for (index = 0; index < methods.size(); ++index) {
+            QMetaMethodBuilderPrivate *method = &(methods[index]);
+            QList<QByteArray> paramTypeNames = method->parameterTypes();
+            int paramCount = paramTypeNames.size();
+            for (int i = -1; i < paramCount; ++i) {
+                const QByteArray &typeName = (i < 0) ? method->returnType : paramTypeNames.at(i);
+                int typeInfo;
+                if (isBuiltinType(typeName))
+                    typeInfo = QMetaType::type(typeName);
+                else
+                    typeInfo = IsUnresolvedType | strings.enter(typeName);
+                if (buf)
+                    data[dataIndex] = typeInfo;
+                ++dataIndex;
+            }
+
+            QList<QByteArray> paramNames = method->parameterNames;
+            while (paramNames.size() < paramCount)
+                paramNames.append(QByteArray());
+            for (int i = 0; i < paramCount; ++i) {
+                int stringIndex = strings.enter(paramNames.at(i));
+                if (buf)
+                    data[dataIndex] = stringIndex;
+                ++dataIndex;
+            }
+        }
+    }
+
     // Output the properties in the class.
     Q_ASSERT(!buf || dataIndex == pmeta->propertyData);
     for (index = 0; index < d->properties.size(); ++index) {
         QMetaPropertyBuilderPrivate *prop = &(d->properties[index]);
         int name = strings.enter(prop->name);
-        int type = strings.enter(prop->type);
+
+        int typeInfo;
+        if (isBuiltinType(prop->type))
+            typeInfo = QMetaType::type(prop->type);
+        else
+            typeInfo = IsUnresolvedType | strings.enter(prop->type);
+
         int flags = prop->flags;
 
-        if (!isVariantType(prop->type)) {
+        if (!isBuiltinType(prop->type))
             flags |= EnumOrFlag;
-        } else {
-            flags |= qvariant_nameToType(prop->type) << 24;
-        }
 
         if (buf) {
             data[dataIndex]     = name;
-            data[dataIndex + 1] = type;
+            data[dataIndex + 1] = typeInfo;
             data[dataIndex + 2] = flags;
         }
         dataIndex += 3;
@@ -1372,34 +1429,25 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     Q_ASSERT(!buf || dataIndex == pmeta->constructorData);
     for (index = 0; index < d->constructors.size(); ++index) {
         QMetaMethodBuilderPrivate *method = &(d->constructors[index]);
-        int sig = strings.enter(method->signature);
-        int params;
-        QByteArray names = buildParameterNames
-            (method->signature, method->parameterNames);
-        params = strings.enter(names);
-        int ret = strings.enter(method->returnType);
+        int name = strings.enter(method->name());
+        int argc = method->parameterCount();
         int tag = strings.enter(method->tag);
         int attrs = method->attributes;
         if (buf) {
-            data[dataIndex]     = sig;
-            data[dataIndex + 1] = params;
-            data[dataIndex + 2] = ret;
+            data[dataIndex]     = name;
+            data[dataIndex + 1] = argc;
+            data[dataIndex + 2] = paramsIndex;
             data[dataIndex + 3] = tag;
             data[dataIndex + 4] = attrs;
         }
         dataIndex += 5;
+        paramsIndex += 1 + argc * 2;
     }
 
-    size += strings.arraySize();
+    size += strings.blobSize();
 
-    if (buf) {
-        // Write strings to string data array.
-        MetaStringTable::const_iterator it;
-        for (it = strings.constBegin(); it != strings.constEnd(); ++it) {
-            memcpy(str + it.value(), it.key().constData(), it.key().size());
-            str[it.value() + it.key().size()] = '\0';
-        }
-    }
+    if (buf)
+        strings.writeBlob(str);
 
     // Output the zero terminator in the data array.
     if (buf)
@@ -1508,7 +1556,7 @@ void QMetaObjectBuilder::fromRelocatableData(QMetaObject *output,
     quintptr dataOffset = (quintptr)dataMo->d.data;
 
     output->d.superdata = superclass;
-    output->d.stringdata = buf + stringdataOffset;
+    output->d.stringdata = reinterpret_cast<const QByteArrayData *>(buf + stringdataOffset);
     output->d.data = reinterpret_cast<const uint *>(buf + dataOffset);
     output->d.extradata = 0;
 }
@@ -1896,13 +1944,27 @@ QByteArray QMetaMethodBuilder::returnType() const
     is empty, then the method's return type is \c{void}.  The \a value
     will be normalized before it is added to the method.
 
-    \sa returnType(), signature()
+    \sa returnType(), parameterTypes(), signature()
 */
 void QMetaMethodBuilder::setReturnType(const QByteArray& value)
 {
     QMetaMethodBuilderPrivate *d = d_func();
     if (d)
         d->returnType = QMetaObject::normalizedType(value);
+}
+
+/*!
+    Returns the list of parameter types for this method.
+
+    \sa returnType(), parameterNames()
+*/
+QList<QByteArray> QMetaMethodBuilder::parameterTypes() const
+{
+    QMetaMethodBuilderPrivate *d = d_func();
+    if (d)
+        return d->parameterTypes();
+    else
+        return QList<QByteArray>();
 }
 
 /*!

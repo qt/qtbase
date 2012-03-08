@@ -90,7 +90,7 @@ static const char qt_meta_stringdata_OldNormalizeObject[] = {
 };
 
 const QMetaObject OldNormalizeObject::staticMetaObject = {
-    { &QObject::staticMetaObject, qt_meta_stringdata_OldNormalizeObject,
+    { &QObject::staticMetaObject, reinterpret_cast<const QByteArrayData *>(qt_meta_stringdata_OldNormalizeObject),
       qt_meta_data_OldNormalizeObject, 0 }
 };
 

@@ -397,16 +397,21 @@ void tst_QDBusMetaObject::types()
     for (int i = metaobject->methodOffset(); i < metaobject->methodCount(); ++i) {
         QMetaMethod expected = metaobject->method(i);
 
-        int methodIdx = result->indexOfMethod(expected.signature());
+        int methodIdx = result->indexOfMethod(expected.methodSignature().constData());
         QVERIFY(methodIdx != -1);
         QMetaMethod constructed = result->method(methodIdx);
 
         QCOMPARE(int(constructed.access()), int(expected.access()));
         QCOMPARE(int(constructed.methodType()), int(expected.methodType()));
+        QCOMPARE(constructed.name(), expected.name());
+        QCOMPARE(constructed.parameterCount(), expected.parameterCount());
         QCOMPARE(constructed.parameterNames(), expected.parameterNames());
         QCOMPARE(constructed.parameterTypes(), expected.parameterTypes());
+        for (int j = 0; j < constructed.parameterCount(); ++j)
+            QCOMPARE(constructed.parameterType(j), expected.parameterType(j));
         QCOMPARE(constructed.tag(), expected.tag());
         QCOMPARE(constructed.typeName(), expected.typeName());
+        QCOMPARE(constructed.returnType(), expected.returnType());
     }
 
     for (int i = metaobject->propertyOffset(); i < metaobject->propertyCount(); ++i) {
@@ -427,6 +432,8 @@ void tst_QDBusMetaObject::types()
         QCOMPARE(constructed.isUser(), expected.isUser());
         QCOMPARE(constructed.isWritable(), expected.isWritable());
         QCOMPARE(constructed.typeName(), expected.typeName());
+        QCOMPARE(constructed.type(), expected.type());
+        QCOMPARE(constructed.userType(), expected.userType());
     }
 }
 
@@ -667,6 +674,204 @@ const char PropertyTest4_xml[] =
     "<annotation name=\"com.trolltech.QtDBus.QtTypeName\" value=\"Struct1\"/>"
     "</property>";
 
+class PropertyTest_b: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(bool property READ property WRITE setProperty)
+public:
+    bool property() { return false; }
+    void setProperty(bool) { }
+};
+const char PropertyTest_b_xml[] =
+    "<property name=\"property\" type=\"b\" access=\"readwrite\"/>";
+
+class PropertyTest_y: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(uchar property READ property WRITE setProperty)
+public:
+    uchar property() { return 0; }
+    void setProperty(uchar) { }
+};
+const char PropertyTest_y_xml[] =
+    "<property name=\"property\" type=\"y\" access=\"readwrite\"/>";
+
+class PropertyTest_n: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(short property READ property WRITE setProperty)
+public:
+    short property() { return 0; }
+    void setProperty(short) { }
+};
+const char PropertyTest_n_xml[] =
+    "<property name=\"property\" type=\"n\" access=\"readwrite\"/>";
+
+class PropertyTest_q: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(ushort property READ property WRITE setProperty)
+public:
+    ushort property() { return 0; }
+    void setProperty(ushort) { }
+};
+const char PropertyTest_q_xml[] =
+    "<property name=\"property\" type=\"q\" access=\"readwrite\"/>";
+
+class PropertyTest_u: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(uint property READ property WRITE setProperty)
+public:
+    uint property() { return 0; }
+    void setProperty(uint) { }
+};
+const char PropertyTest_u_xml[] =
+    "<property name=\"property\" type=\"u\" access=\"readwrite\"/>";
+
+class PropertyTest_x: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(qlonglong property READ property WRITE setProperty)
+public:
+    qlonglong property() { return 0; }
+    void setProperty(qlonglong) { }
+};
+const char PropertyTest_x_xml[] =
+    "<property name=\"property\" type=\"x\" access=\"readwrite\"/>";
+
+class PropertyTest_t: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(qulonglong property READ property WRITE setProperty)
+public:
+    qulonglong property() { return 0; }
+    void setProperty(qulonglong) { }
+};
+const char PropertyTest_t_xml[] =
+    "<property name=\"property\" type=\"t\" access=\"readwrite\"/>";
+
+class PropertyTest_d: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(double property READ property WRITE setProperty)
+public:
+    double property() { return 0; }
+    void setProperty(double) { }
+};
+const char PropertyTest_d_xml[] =
+    "<property name=\"property\" type=\"d\" access=\"readwrite\"/>";
+
+class PropertyTest_s: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString property READ property WRITE setProperty)
+public:
+    QString property() { return QString(); }
+    void setProperty(QString) { }
+};
+const char PropertyTest_s_xml[] =
+    "<property name=\"property\" type=\"s\" access=\"readwrite\"/>";
+
+class PropertyTest_v: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QDBusVariant property READ property WRITE setProperty)
+public:
+    QDBusVariant property() { return QDBusVariant(); }
+    void setProperty(QDBusVariant) { }
+};
+const char PropertyTest_v_xml[] =
+    "<property name=\"property\" type=\"v\" access=\"readwrite\"/>";
+
+class PropertyTest_o: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QDBusObjectPath property READ property WRITE setProperty)
+public:
+    QDBusObjectPath property() { return QDBusObjectPath(); }
+    void setProperty(QDBusObjectPath) { }
+};
+const char PropertyTest_o_xml[] =
+    "<property name=\"property\" type=\"o\" access=\"readwrite\"/>";
+
+class PropertyTest_g: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QDBusSignature property READ property WRITE setProperty)
+public:
+    QDBusSignature property() { return QDBusSignature(); }
+    void setProperty(QDBusSignature) { }
+};
+const char PropertyTest_g_xml[] =
+    "<property name=\"property\" type=\"g\" access=\"readwrite\"/>";
+
+class PropertyTest_h: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QDBusUnixFileDescriptor property READ property WRITE setProperty)
+public:
+    QDBusUnixFileDescriptor property() { return QDBusUnixFileDescriptor(); }
+    void setProperty(QDBusUnixFileDescriptor) { }
+};
+const char PropertyTest_h_xml[] =
+    "<property name=\"property\" type=\"h\" access=\"readwrite\"/>";
+
+class PropertyTest_ay: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QByteArray property READ property WRITE setProperty)
+public:
+    QByteArray property() { return QByteArray(); }
+    void setProperty(QByteArray) { }
+};
+const char PropertyTest_ay_xml[] =
+    "<property name=\"property\" type=\"ay\" access=\"readwrite\"/>";
+
+class PropertyTest_as: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QStringList property READ property WRITE setProperty)
+public:
+    QStringList property() { return QStringList(); }
+    void setProperty(QStringList) { }
+};
+const char PropertyTest_as_xml[] =
+    "<property name=\"property\" type=\"as\" access=\"readwrite\"/>";
+
+class PropertyTest_av: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QVariantList property READ property WRITE setProperty)
+public:
+    QVariantList property() { return QVariantList(); }
+    void setProperty(QVariantList) { }
+};
+const char PropertyTest_av_xml[] =
+    "<property name=\"property\" type=\"av\" access=\"readwrite\"/>";
+
+class PropertyTest_ao: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QList<QDBusObjectPath> property READ property WRITE setProperty)
+public:
+    QList<QDBusObjectPath> property() { return QList<QDBusObjectPath>(); }
+    void setProperty(QList<QDBusObjectPath>) { }
+};
+const char PropertyTest_ao_xml[] =
+    "<property name=\"property\" type=\"ao\" access=\"readwrite\"/>";
+
+class PropertyTest_ag: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QList<QDBusSignature> property READ property WRITE setProperty)
+public:
+    QList<QDBusSignature> property() { return QList<QDBusSignature>(); }
+    void setProperty(QList<QDBusSignature>) { }
+};
+const char PropertyTest_ag_xml[] =
+    "<property name=\"property\" type=\"ag\" access=\"readwrite\"/>";
+
 void tst_QDBusMetaObject::properties_data()
 {
     QTest::addColumn<const QMetaObject *>("metaobject");
@@ -676,6 +881,25 @@ void tst_QDBusMetaObject::properties_data()
     QTest::newRow("readwrite") << &PropertyTest2::staticMetaObject << QString(PropertyTest2_xml);
     QTest::newRow("write") << &PropertyTest3::staticMetaObject << QString(PropertyTest3_xml);
     QTest::newRow("customtype") << &PropertyTest4::staticMetaObject << QString(PropertyTest4_xml);
+
+    QTest::newRow("bool") << &PropertyTest_b::staticMetaObject << QString(PropertyTest_b_xml);
+    QTest::newRow("byte") << &PropertyTest_y::staticMetaObject << QString(PropertyTest_y_xml);
+    QTest::newRow("short") << &PropertyTest_n::staticMetaObject << QString(PropertyTest_n_xml);
+    QTest::newRow("ushort") << &PropertyTest_q::staticMetaObject << QString(PropertyTest_q_xml);
+    QTest::newRow("uint") << &PropertyTest_u::staticMetaObject << QString(PropertyTest_u_xml);
+    QTest::newRow("qlonglong") << &PropertyTest_x::staticMetaObject << QString(PropertyTest_x_xml);
+    QTest::newRow("qulonglong") << &PropertyTest_t::staticMetaObject << QString(PropertyTest_t_xml);
+    QTest::newRow("double") << &PropertyTest_d::staticMetaObject << QString(PropertyTest_d_xml);
+    QTest::newRow("QString") << &PropertyTest_s::staticMetaObject << QString(PropertyTest_s_xml);
+    QTest::newRow("QDBusVariant") << &PropertyTest_v::staticMetaObject << QString(PropertyTest_v_xml);
+    QTest::newRow("QDBusObjectPath") << &PropertyTest_o::staticMetaObject << QString(PropertyTest_o_xml);
+    QTest::newRow("QDBusSignature") << &PropertyTest_g::staticMetaObject << QString(PropertyTest_g_xml);
+    QTest::newRow("QDBusUnixFileDescriptor") << &PropertyTest_h::staticMetaObject << QString(PropertyTest_h_xml);
+    QTest::newRow("QByteArray") << &PropertyTest_ay::staticMetaObject << QString(PropertyTest_ay_xml);
+    QTest::newRow("QStringList") << &PropertyTest_as::staticMetaObject << QString(PropertyTest_as_xml);
+    QTest::newRow("QVariantList") << &PropertyTest_av::staticMetaObject << QString(PropertyTest_av_xml);
+    QTest::newRow("QList<QDBusObjectPath>") << &PropertyTest_ao::staticMetaObject << QString(PropertyTest_ao_xml);
+    QTest::newRow("QList<QDBusSignature>") << &PropertyTest_ag::staticMetaObject << QString(PropertyTest_ag_xml);
 }
 
 void tst_QDBusMetaObject::properties()

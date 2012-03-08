@@ -85,6 +85,8 @@ private slots:
     void initializeList();
 
     void const_shared_null();
+    void setSharable_data();
+    void setSharable();
 };
 
 void tst_QVector::constructors() const
@@ -944,6 +946,98 @@ void tst_QVector::const_shared_null()
     QVector<int> v2;
     v2.setSharable(true);
     QVERIFY(!v2.isDetached());
+}
+
+Q_DECLARE_METATYPE(QVector<int>);
+
+void tst_QVector::setSharable_data()
+{
+    QTest::addColumn<QVector<int> >("vector");
+    QTest::addColumn<int>("size");
+    QTest::addColumn<int>("capacity");
+    QTest::addColumn<bool>("isCapacityReserved");
+
+    QVector<int> null;
+    QVector<int> empty(0, 5);
+    QVector<int> emptyReserved;
+    QVector<int> nonEmpty;
+    QVector<int> nonEmptyReserved;
+
+    emptyReserved.reserve(10);
+    nonEmptyReserved.reserve(15);
+
+    nonEmpty << 0 << 1 << 2 << 3 << 4;
+    nonEmptyReserved << 0 << 1 << 2 << 3 << 4 << 5 << 6;
+
+    QVERIFY(emptyReserved.capacity() >= 10);
+    QVERIFY(nonEmptyReserved.capacity() >= 15);
+
+    QTest::newRow("null") << null << 0 << 0 << false;
+    QTest::newRow("empty") << empty << 0 << 0 << false;
+    QTest::newRow("empty, Reserved") << emptyReserved << 0 << 10 << true;
+    QTest::newRow("non-empty") << nonEmpty << 5 << 0 << false;
+    QTest::newRow("non-empty, Reserved") << nonEmptyReserved << 7 << 15 << true;
+}
+
+void tst_QVector::setSharable()
+{
+    QFETCH(QVector<int>, vector);
+    QFETCH(int, size);
+    QFETCH(int, capacity);
+    QFETCH(bool, isCapacityReserved);
+
+    QVERIFY(!vector.isDetached()); // Shared with QTest
+
+    vector.setSharable(true);
+
+    QCOMPARE(vector.size(), size);
+    if (isCapacityReserved)
+        QVERIFY2(vector.capacity() >= capacity,
+                qPrintable(QString("Capacity is %1, expected at least %2.")
+                    .arg(vector.capacity())
+                    .arg(capacity)));
+
+    {
+        QVector<int> copy(vector);
+
+        QVERIFY(!copy.isDetached());
+        QVERIFY(copy.isSharedWith(vector));
+    }
+
+    vector.setSharable(false);
+    QVERIFY(vector.isDetached() || vector.isSharedWith(QVector<int>()));
+
+    {
+        QVector<int> copy(vector);
+
+        QVERIFY(copy.isDetached() || copy.isSharedWith(QVector<int>()));
+        QCOMPARE(copy.size(), size);
+        if (isCapacityReserved)
+            QVERIFY2(copy.capacity() >= capacity,
+                    qPrintable(QString("Capacity is %1, expected at least %2.")
+                        .arg(vector.capacity())
+                        .arg(capacity)));
+        QCOMPARE(copy, vector);
+    }
+
+    vector.setSharable(true);
+
+    {
+        QVector<int> copy(vector);
+
+        QVERIFY(!copy.isDetached());
+        QVERIFY(copy.isSharedWith(vector));
+    }
+
+    for (int i = 0; i < vector.size(); ++i)
+        QCOMPARE(vector[i], i);
+
+    QCOMPARE(vector.size(), size);
+    if (isCapacityReserved)
+        QVERIFY2(vector.capacity() >= capacity,
+                qPrintable(QString("Capacity is %1, expected at least %2.")
+                    .arg(vector.capacity())
+                    .arg(capacity)));
 }
 
 QTEST_APPLESS_MAIN(tst_QVector)
