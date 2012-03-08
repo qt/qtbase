@@ -43,12 +43,9 @@
 #include <QString>
 #include <QVarLengthArray>
 #include <QFile>
-#include <QProcess>
-#include <QMetaObject>
 #include <QList>
+#include <QBuffer>
 #include <QRegExp>
-#include <QCoreApplication>
-#include <QLibraryInfo>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,20 +53,26 @@
 #include <stdlib.h>
 
 #include "qdbusconnection.h"    // for the Export* flags
+#include "qdbusconnection_p.h"    // for the qDBusCheckAsyncTag
 
 // copied from dbus-protocol.h:
 static const char docTypeHeader[] =
     "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" "
     "\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n";
 
-// in qdbusxmlgenerator.cpp
-QT_BEGIN_NAMESPACE
-extern Q_DBUS_EXPORT QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo,
-                                                       const QMetaObject *base, int flags);
-QT_END_NAMESPACE
+#define ANNOTATION_NO_WAIT      "org.freedesktop.DBus.Method.NoReply"
+#define QCLASSINFO_DBUS_INTERFACE       "D-Bus Interface"
+#define QCLASSINFO_DBUS_INTROSPECTION   "D-Bus Introspection"
+
+#include "qdbusmetatype_p.h"
+#include "qdbusmetatype.h"
+#include "qdbusutil_p.h"
+
+#include "moc.h"
+#include "generator.h"
 
 #define PROGRAMNAME     "qdbuscpp2xml"
-#define PROGRAMVERSION  "0.1"
+#define PROGRAMVERSION  "0.2"
 #define PROGRAMCOPYRIGHT "Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies)."
 
 static QString outputFile;
@@ -90,199 +93,218 @@ static const char help[] =
     "  -V             Show the program version and quit.\n"
     "\n";
 
-class MocParser
+
+int qDBusParametersForMethod(const FunctionDef &mm, QList<int>& metaTypes)
 {
-    void parseError();
-    QByteArray readLine();
-    void loadIntData(uint *&data);
-    void loadStringData(char *&stringdata);
+    QList<QByteArray> parameterTypes;
 
-    QIODevice *input;
-    const char *filename;
-    int lineNumber;
-public:
-    ~MocParser();
-    void parse(const char *filename, QIODevice *input, int lineNumber = 0);
+    foreach (const ArgumentDef &arg, mm.arguments)
+        parameterTypes.append(arg.normalizedType);
 
-    QList<QMetaObject> objects;
-};
-
-void MocParser::parseError()
-{
-    fprintf(stderr, PROGRAMNAME ": error parsing input file '%s' line %d \n", filename, lineNumber);
-    exit(1);
+    return qDBusParametersForMethod(parameterTypes, metaTypes);
 }
 
-QByteArray MocParser::readLine()
+
+static inline QString typeNameToXml(const char *typeName)
 {
-    ++lineNumber;
-    return input->readLine();
+    QString plain = QLatin1String(typeName);
+    return plain.toHtmlEscaped();
 }
 
-void MocParser::loadIntData(uint *&data)
-{
-    data = 0;                   // initialise
-    QVarLengthArray<uint> array;
-    QRegExp rx(QLatin1String("(\\d+|0x[0-9abcdef]+)"), Qt::CaseInsensitive);
+static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
 
-    while (!input->atEnd()) {
-        QString line = QLatin1String(readLine());
-        int pos = line.indexOf(QLatin1String("//"));
-        if (pos != -1)
-            line.truncate(pos); // drop comments
+    QString xml = QString::fromLatin1("    <%1 name=\"%2\">\n")
+                  .arg(isSignal ? QLatin1String("signal") : QLatin1String("method"))
+                  .arg(QLatin1String(mm.name));
 
-        if (line == QLatin1String("};\n")) {
-            // end of data
-            data = new uint[array.count()];
-            memcpy(data, array.data(), array.count() * sizeof(*data));
-            return;
-        }
+    // check the return type first
+    int typeId = QMetaType::type(mm.normalizedType.constData());
+    if (typeId != QMetaType::Void) {
+        if (typeId) {
+            const char *typeName = QDBusMetaType::typeToSignature(typeId);
+            if (typeName) {
+                xml += QString::fromLatin1("      <arg type=\"%1\" direction=\"out\"/>\n")
+                        .arg(typeNameToXml(typeName));
 
-        pos = 0;
-        while ((pos = rx.indexIn(line, pos)) != -1) {
-            QString num = rx.cap(1);
-            if (num.startsWith(QLatin1String("0x")))
-                array.append(num.mid(2).toUInt(0, 16));
-            else
-                array.append(num.toUInt());
-            pos += rx.matchedLength();
-        }
-    }
-
-    parseError();
-}
-
-void MocParser::loadStringData(char *&stringdata)
-{
-    stringdata = 0;
-    QVarLengthArray<char, 1024> array;
-
-    while (!input->atEnd()) {
-        QByteArray line = readLine();
-        if (line == "};\n") {
-            // end of data
-            stringdata = new char[array.count()];
-            memcpy(stringdata, array.data(), array.count() * sizeof(*stringdata));
-            return;
-        }
-
-        int start = line.indexOf('"');
-        if (start == -1)
-            parseError();
-
-        int len = line.length() - 1;
-        line.truncate(len);     // drop ending \n
-        if (line.at(len - 1) != '"')
-            parseError();
-
-        --len;
-        ++start;
-        for ( ; start < len; ++start)
-            if (line.at(start) == '\\') {
-                // parse escaped sequence
-                ++start;
-                if (start == len)
-                    parseError();
-
-                QChar c(QLatin1Char(line.at(start)));
-                if (!c.isDigit()) {
-                    switch (c.toLatin1()) {
-                    case 'a':
-                        array.append('\a');
-                        break;
-                    case 'b':
-                        array.append('\b');
-                        break;
-                    case 'f':
-                        array.append('\f');
-                        break;
-                    case 'n':
-                        array.append('\n');
-                        break;
-                    case 'r':
-                        array.append('\r');
-                        break;
-                    case 't':
-                        array.append('\t');
-                        break;
-                    case 'v':
-                        array.append('\v');
-                        break;
-                    case '\\':
-                    case '?':
-                    case '\'':
-                    case '"':
-                        array.append(c.toLatin1());
-                        break;
-
-                    case 'x':
-                        if (start + 2 <= len)
-                            parseError();
-                        array.append(char(line.mid(start + 1, 2).toInt(0, 16)));
-                        break;
-
-                    default:
-                        array.append(c.toLatin1());
-                        fprintf(stderr, PROGRAMNAME ": warning: invalid escape sequence '\\%c' found in input",
-                                c.toLatin1());
-                    }
-                } else {
-                    // octal
-                    QRegExp octal(QLatin1String("([0-7]+)"));
-                    if (octal.indexIn(QLatin1String(line), start) == -1)
-                        parseError();
-                    array.append(char(octal.cap(1).toInt(0, 8)));
-                }
+                    // do we need to describe this argument?
+                    if (QDBusMetaType::signatureToType(typeName) == QVariant::Invalid)
+                        xml += QString::fromLatin1("      <annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"%1\"/>\n")
+                            .arg(typeNameToXml(mm.normalizedType.constData()));
             } else {
-                array.append(line.at(start));
+                return QString();
             }
+        } else if (!mm.normalizedType.isEmpty()) {
+            return QString();           // wasn't a valid type
+        }
     }
+    QList<ArgumentDef> names = mm.arguments;
+    QList<int> types;
+    int inputCount = qDBusParametersForMethod(mm, types);
+    if (inputCount == -1)
+        return QString();           // invalid form
+    if (isSignal && inputCount + 1 != types.count())
+        return QString();           // signal with output arguments?
+    if (isSignal && types.at(inputCount) == QDBusMetaTypeId::message)
+        return QString();           // signal with QDBusMessage argument?
 
-    parseError();
-}
+    bool isScriptable = mm.isScriptable;
+    for (int j = 1; j < types.count(); ++j) {
+        // input parameter for a slot or output for a signal
+        if (types.at(j) == QDBusMetaTypeId::message) {
+            isScriptable = true;
+            continue;
+        }
 
-void MocParser::parse(const char *fname, QIODevice *io, int lineNum)
-{
-    filename = fname;
-    input = io;
-    lineNumber = lineNum;
+        QString name;
+        if (!names.at(j - 1).name.isEmpty())
+            name = QString::fromLatin1("name=\"%1\" ").arg(QString::fromLatin1(names.at(j - 1).name));
 
-    while (!input->atEnd()) {
-        QByteArray line = readLine();
-        if (line.startsWith("static const uint qt_meta_data_")) {
-            // start of new class data
-            uint *data;
-            loadIntData(data);
+        bool isOutput = isSignal || j > inputCount;
 
-            // find the start of the string data
-            do {
-                line = readLine();
-                if (input->atEnd())
-                    parseError();
-            } while (!line.startsWith("static const char qt_meta_stringdata_"));
+        const char *signature = QDBusMetaType::typeToSignature(types.at(j));
+        xml += QString::fromLatin1("      <arg %1type=\"%2\" direction=\"%3\"/>\n")
+                .arg(name)
+                .arg(QLatin1String(signature))
+                .arg(isOutput ? QLatin1String("out") : QLatin1String("in"));
 
-            char *stringdata;
-            loadStringData(stringdata);
-
-            QMetaObject mo;
-            mo.d.superdata = &QObject::staticMetaObject;
-            mo.d.stringdata = stringdata;
-            mo.d.data = data;
-            mo.d.extradata = 0;
-            objects.append(mo);
+        // do we need to describe this argument?
+        if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
+            const char *typeName = QMetaType::typeName(types.at(j));
+            xml += QString::fromLatin1("      <annotation name=\"com.trolltech.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
+                    .arg(isOutput ? QLatin1String("Out") : QLatin1String("In"))
+                    .arg(isOutput && !isSignal ? j - inputCount : j - 1)
+                    .arg(typeNameToXml(typeName));
         }
     }
 
-    fname = 0;
-    input = 0;
+    int wantedMask;
+    if (isScriptable)
+        wantedMask = isSignal ? QDBusConnection::ExportScriptableSignals
+                              : QDBusConnection::ExportScriptableSlots;
+    else
+        wantedMask = isSignal ? QDBusConnection::ExportNonScriptableSignals
+                              : QDBusConnection::ExportNonScriptableSlots;
+    if ((flags & wantedMask) != wantedMask)
+        return QString();
+
+    if (qDBusCheckAsyncTag(mm.tag.constData()))
+        // add the no-reply annotation
+        xml += QLatin1String("      <annotation name=\"" ANNOTATION_NO_WAIT "\""
+                              " value=\"true\"/>\n");
+
+    QString retval = xml;
+    retval += QString::fromLatin1("    </%1>\n")
+              .arg(isSignal ? QLatin1String("signal") : QLatin1String("method"));
+
+    return retval;
 }
 
-MocParser::~MocParser()
+
+static QString generateInterfaceXml(const ClassDef *mo)
 {
-    foreach (QMetaObject mo, objects) {
-        delete const_cast<char *>(mo.d.stringdata);
-        delete const_cast<uint *>(mo.d.data);
+    QString retval;
+
+    // start with properties:
+    if (flags & (QDBusConnection::ExportScriptableProperties |
+                 QDBusConnection::ExportNonScriptableProperties)) {
+        static const char *accessvalues[] = {0, "read", "write", "readwrite"};
+        foreach (const PropertyDef &mp, mo->propertyList) {
+            if (!((!mp.scriptable.isEmpty() && (flags & QDBusConnection::ExportScriptableProperties)) ||
+                  (!mp.scriptable.isEmpty() && (flags & QDBusConnection::ExportNonScriptableProperties))))
+                continue;
+
+            int access = 0;
+            if (!mp.read.isEmpty())
+                access |= 1;
+            if (!mp.write.isEmpty())
+                access |= 2;
+
+            int typeId = QMetaType::type(mp.type.constData());
+            if (!typeId)
+                continue;
+            const char *signature = QDBusMetaType::typeToSignature(typeId);
+            if (!signature)
+                continue;
+
+            retval += QString::fromLatin1("    <property name=\"%1\" type=\"%2\" access=\"%3\"")
+                      .arg(QLatin1String(mp.name))
+                      .arg(QLatin1String(signature))
+                      .arg(QLatin1String(accessvalues[access]));
+
+            if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
+                retval += QString::fromLatin1(">\n      <annotation name=\"com.trolltech.QtDBus.QtTypeName\" value=\"%3\"/>\n    </property>\n")
+                          .arg(typeNameToXml(mp.type.constData()));
+            } else {
+                retval += QLatin1String("/>\n");
+            }
+        }
     }
+
+    // now add methods:
+
+    if (flags & (QDBusConnection::ExportScriptableSignals | QDBusConnection::ExportNonScriptableSignals)) {
+        foreach (const FunctionDef &mm, mo->signalList) {
+            if (mm.wasCloned)
+                continue;
+
+            retval += addFunction(mm, true);
+        }
+    }
+
+    if (flags & (QDBusConnection::ExportScriptableSlots | QDBusConnection::ExportNonScriptableSlots)) {
+        foreach (const FunctionDef &slot, mo->slotList) {
+            if (slot.access == FunctionDef::Public)
+              retval += addFunction(slot);
+        }
+        foreach (const FunctionDef &method, mo->methodList) {
+            if (method.access == FunctionDef::Public)
+              retval += addFunction(method);
+        }
+    }
+    return retval;
+}
+
+QString qDBusInterfaceFromClassDef(const ClassDef *mo)
+{
+    QString interface;
+
+    foreach (ClassInfoDef cid, mo->classInfoList) {
+        if (cid.name == QCLASSINFO_DBUS_INTERFACE)
+            return QString::fromUtf8(cid.value);
+    }
+    interface = QLatin1String(mo->classname);
+    interface.replace(QLatin1String("::"), QLatin1String("."));
+
+    if (interface.startsWith(QLatin1String("QDBus"))) {
+        interface.prepend(QLatin1String("com.trolltech.QtDBus."));
+    } else if (interface.startsWith(QLatin1Char('Q')) &&
+                interface.length() >= 2 && interface.at(1).isUpper()) {
+        // assume it's Qt
+        interface.prepend(QLatin1String("local.com.trolltech.Qt."));
+    } else {
+        interface.prepend(QLatin1String("local."));
+    }
+
+    return interface;
+}
+
+
+QString qDBusGenerateClassDefXml(const ClassDef *cdef)
+{
+    foreach (const ClassInfoDef &cid, cdef->classInfoList) {
+        if (cid.name == QCLASSINFO_DBUS_INTROSPECTION)
+            return QString::fromUtf8(cid.value);
+    }
+
+    // generate the interface name from the meta object
+    QString interface = qDBusInterfaceFromClassDef(cdef);
+
+    QString xml = generateInterfaceXml(cdef);
+
+    if (xml.isEmpty())
+        return QString();       // don't add an empty interface
+    return QString::fromLatin1("  <interface name=\"%1\">\n%2  </interface>\n")
+        .arg(interface, xml);
 }
 
 static void showHelp()
@@ -300,7 +322,8 @@ static void showVersion()
 
 static void parseCmdLine(QStringList &arguments)
 {
-    for (int i = 1; i < arguments.count(); ++i) {
+    flags = 0;
+    for (int i = 0; i < arguments.count(); ++i) {
         const QString arg = arguments.at(i);
 
         if (arg == QLatin1String("--help"))
@@ -369,14 +392,16 @@ static void parseCmdLine(QStringList &arguments)
 
 int main(int argc, char **argv)
 {
-    QCoreApplication app(argc, argv);
-    QStringList args = app.arguments();
-
-    MocParser parser;
+    QStringList args;
+    for (int n = 1; n < argc; ++n)
+        args.append(QString::fromLocal8Bit(argv[n]));
     parseCmdLine(args);
 
-    for (int i = 1; i < args.count(); ++i) {
+    QList<ClassDef> classes;
+
+    for (int i = 0; i < args.count(); ++i) {
         const QString arg = args.at(i);
+
         if (arg.startsWith(QLatin1Char('-')))
             continue;
 
@@ -387,35 +412,22 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        f.readLine();
+        Preprocessor pp;
+        Moc moc(pp);
+        pp.macros["Q_MOC_RUN"];
+        pp.macros["__cplusplus"];
 
-        QByteArray line = f.readLine();
-        if (line.contains("Meta object code from reading C++ file"))
-            // this is a moc-generated file
-            parser.parse(argv[i], &f, 3);
-        else {
-            // run moc on this file
-            QProcess proc;
-            proc.start(QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/moc"), QStringList() << QFile::decodeName(argv[i]), QIODevice::ReadOnly | QIODevice::Text);
+        const QByteArray filename = QFile::decodeName(argv[i]).toLatin1();
 
-            if (!proc.waitForStarted()) {
-                fprintf(stderr, PROGRAMNAME ": could not execute moc! Aborting.\n");
-                return 1;
-            }
+        moc.filename = filename;
+        moc.currentFilenames.push(filename);
 
-            proc.closeWriteChannel();
+        moc.symbols = pp.preprocessed(moc.filename, &f);
+        moc.parse();
 
-            if (!proc.waitForFinished() || proc.exitStatus() != QProcess::NormalExit ||
-                proc.exitCode() != 0) {
-                // output the moc errors:
-                fprintf(stderr, "%s", proc.readAllStandardError().constData());
-                fprintf(stderr, PROGRAMNAME ": exit code %d from moc. Aborting\n", proc.exitCode());
-                return 1;
-            }
-            fprintf(stderr, "%s", proc.readAllStandardError().constData());
-
-            parser.parse(argv[i], &proc, 1);
-        }
+        if (moc.classList.isEmpty())
+            return 0;
+        classes = moc.classList;
 
         f.close();
     }
@@ -434,9 +446,8 @@ int main(int argc, char **argv)
 
     output.write(docTypeHeader);
     output.write("<node>\n");
-    foreach (QMetaObject mo, parser.objects) {
-        QString xml = qDBusGenerateMetaObjectXml(QString(), &mo, &QObject::staticMetaObject,
-                                                 flags);
+    foreach (const ClassDef &cdef, classes) {
+        QString xml = qDBusGenerateClassDefXml(&cdef);
         output.write(xml.toLocal8Bit());
     }
     output.write("</node>\n");
