@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include <QtCore/qbytearray.h>
-#include <QtCore/qcoreapplication.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qfile.h>
@@ -49,15 +48,14 @@
 #include <QtCore/qtextstream.h>
 #include <QtCore/qset.h>
 
-#include <QtDBus/QtDBus>
-#include "private/qdbusmetaobject_p.h"
+#include "qdbusmetatype.h"
 #include "private/qdbusintrospection_p.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #define PROGRAMNAME     "qdbusxml2cpp"
-#define PROGRAMVERSION  "0.7"
+#define PROGRAMVERSION  "0.8"
 #define PROGRAMCOPYRIGHT "Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies)."
 
 #define ANNOTATION_NO_WAIT      "org.freedesktop.DBus.Method.NoReply"
@@ -1110,8 +1108,13 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
 
 int main(int argc, char **argv)
 {
-    QCoreApplication app(argc, argv);
-    parseCmdLine(app.arguments());
+    QStringList arguments;
+
+    for (int i = 0; i < argc; ++i) {
+        arguments.append(QString::fromLocal8Bit(argv[i]));
+    }
+
+    parseCmdLine(arguments);
 
     QDBusIntrospection::Interfaces interfaces = readInput();
     cleanInterfaces(interfaces);
