@@ -39,9 +39,9 @@
 
     There are three essential materials for generating documentation with qdoc:
     \list
-        \o \c QDoc binary
-        \o \c qdocconf configuration files
-        \o \c Documentation in \c C++, \c QML, and \c .qdoc files
+        \li \c QDoc binary
+        \li \c qdocconf configuration files
+        \li \c Documentation in \c C++, \c QML, and \c .qdoc files
     \endlist
 
     This section intends to cover the basic necessities for creating a
@@ -55,11 +55,11 @@
     \section1 Chapters
 
     \list 1
-    \o \l{Creating QDoc Configuration Files}
-    \o \l{Writing Documentation}
-    \o \l{Categories of Documentation}
-    \o \l{Configuration File Example}
-    \o \l{QML Documentation Example}
+    \li \l{Creating QDoc Configuration Files}
+    \li \l{Writing Documentation}
+    \li \l{Categories of Documentation}
+    \li \l{Configuration File Example}
+    \li \l{QML Documentation Example}
     \endlist
 
 */
@@ -236,9 +236,6 @@
     HTML file, which will appear as the Greek \pi symbol when viewed in
     browsers.
 
-    There is quite a long list of macros for inserting text and
-    \l{alias-variable}{aliases} available.
-
     \section2 QML Additions
 
     QDoc is able to parse QML files for QDoc comments. QDoc will parse files
@@ -296,21 +293,21 @@
 
     Example of topic commands:
     \list
-        \o \l{enum-command}{\\enum} - for enumeration documentation
-        \o \l{class-command}{\\class} - for C++ class documentation
-        \o \l{qmlclass-command}{\\qmlclass} - for QML component documentation
-        \o \l{page-command}{\\page} - for creating a page.
+        \li \l{enum-command}{\\enum} - for enumeration documentation
+        \li \l{class-command}{\\class} - for C++ class documentation
+        \li \l{qmlclass-command}{\\qmlclass} - for QML component documentation
+        \li \l{page-command}{\\page} - for creating a page.
     \endlist
 
     The \l{page-command}{\\page} command is for creating articles that are not
     part of source documentation. The command can also accept two arguments: the
     file name of the article and the documentation type. The possible types are:
     \list
-    \o \c howto
-    \o \c overview
-    \o \c tutorial
-    \o \c faq
-    \o \c article - \e default when there is no type
+    \li \c howto
+    \li \c overview
+    \li \c tutorial
+    \li \c faq
+    \li \c article - \e default when there is no type
     \endlist
 
     \snippet examples/samples.qdocinc sample-faq
@@ -338,12 +335,12 @@
     \target writing-markup
     \section2 Documentation Markup
 
-    QDoc can provide \e markup to content similar to other markup or
-    documentation tools. QDoc can mark a section of text in \bold{bold} when
-    the text is marked up with the \l{bold-command}{\\bold} command.
+    QDoc can do \e markup of text similar to other markup or
+    documentation tools. QDoc can mark a section of text in \b{bold},
+    when the text is marked up with the \l{b-command}{\\b} command.
 
     \code
-        \bold{This} text will be in \bold{bold}.
+        \b{This} text will be in \b{bold}.
     \endcode
 
     The \l{Markup Commands} page has a full listing of the available markup
@@ -355,15 +352,15 @@
     ingredients present.
 
     \list
-        \o Assign a topic to a  QDoc comment - A comment could be a page, a
+        \li Assign a topic to a  QDoc comment - A comment could be a page, a
         property documentation, a class documentation, or any of the available
         \l{Topic Commands}{topic commands}.
 
-        \o Give the topic a context - QDoc can associate certain topics to other
+        \li Give the topic a context - QDoc can associate certain topics to other
         pages such as associating obsolete functions when the documentation is
         marked with \l{obsolete-command}{\\obsolete}.
 
-        \o Mark sections of the document with
+        \li Mark sections of the document with
         \l{Markup Commands}{markup commands} - QDoc can create layouts and
         format the documentation for the documentation.
     \endlist
@@ -408,14 +405,14 @@
     There are several types of predefined documentation \e categories or
     \e types:
     \list
-    \o How-To's
-    \o Tutorial
-    \o Overview
-    \o Article
-    \o FAQ (Frequently Asked Questions)
-    \o C++ API Documentation
-    \o QML Component Documentation
-    \o Code Example
+    \li How-To's
+    \li Tutorial
+    \li Overview
+    \li Article
+    \li FAQ (Frequently Asked Questions)
+    \li C++ API Documentation
+    \li QML Component Documentation
+    \li Code Example
     \endlist
 
     QDoc has the ability to format a page depending on the type. Further,
@@ -453,42 +450,64 @@
 
     A list of QML related QDoc commands:
     \list
-    \o \l{qmlattachedproperty-command}{\\qmlattachedproperty}
-    \o \l{qmlattachedsignal-command}{\\qmlattachedsignal}
-    \o \l{qmlbasictype-command}{\\qmlbasictype}
-    \o \l{qmlclass-command}{\\qmlclass} - creates a QML component documentation
-    \o \l{qmlmethod-command}{\\qmlmethod}
-    \o \l{qmlproperty-command}{\\qmlproperty}
-    \o \l{qmlsignal-command}{\\qmlsignal}
-    \o \l{inherits-command}{\\inherits}
-    \o \l{qmlmodule-command}{\\qmlmodule}
-    \o \l{inqmlmodule-command}{\\inqmlmodule}
+    \li \l{qmlattachedproperty-command}{\\qmlattachedproperty}
+    \li \l{qmlattachedsignal-command}{\\qmlattachedsignal}
+    \li \l{qmlbasictype-command}{\\qmlbasictype}
+    \li \l{qmlclass-command}{\\qmlclass} - creates a QML component documentation
+    \li \l{qmlmethod-command}{\\qmlmethod}
+    \li \l{qmlproperty-command}{\\qmlproperty}
+    \li \l{qmlsignal-command}{\\qmlsignal}
+    \li \l{inherits-command}{\\inherits}
+    \li \l{qmlmodule-command}{\\qmlmodule}
+    \li \l{inqmlmodule-command}{\\inqmlmodule}
 
     \endlist
 
     \note Remember to enable QML parsing by including the \c{*.qml} filetype in
     the \l{qdoc-input-output-dir}{fileextension} variable.
 
-    Essentially, to create an API documentation of a QML component, create
-    a QDoc comment with a \l{qmlclass-command}{\\qmlclass} command. Similar to
-    C++ API documentation, QML API are documented using their corresponding QDoc
-    commands.
+    To document a QML type, start by creating a QDoc comment that uses the
+    \l{qmlclass-command} {\\qmlclass} command as its topic command.
 
     \section3 QML Parser
 
-    You may either document a QML component rom a C++ class or from a QML file.
-    QDoc supports both types and can parse both C++ and QML files.
+    If your QML type is defined in a \e qml file, document it there.
+    If your QML type is represented by a C++ class, document it in the
+    \e cpp file for that C++ class. Don't document a QML type in a
+    \e{cpp} file if the QML type is defined in a \e{qml} file.
 
-    In a QML file, you may simply place the QDoc comment above the property,
-    signal, handler, or method. QDoc will collect the comments and form the API
-    documentation. Additionally, QDoc can detect
-    \l{qml-property-aliases}{property-aliases}, but the property type must be
-    manually declared using the \l{qmlproperty-command}{\\qmlproperty} command.
+    When documenting a QML type in a \e{qml} file, place each QDoc
+    comment directly above the entity to which the comment applies.
+    For example, place the QDoc comment containing the \e{\\qmlclass}
+    command (the topic comment) directly above the outer QML type in
+    the \e{qml} file. Place the comment for documenting a QML property
+    directly above the property declaration, and so on for QML signal
+    handlers and QML methods. Note that when documenting QML
+    properties in a \e{qml} file, you don't normally include the
+    \e{\\qmlproperty} command as a topic command (which you must do
+    when documenting QML types in \e{cpp} files), because the QML
+    parser automatically associates each QDoc comment with the next
+    QML declaration it parses. The same is true for QML signal handler
+    and QML method comments. But it is sometimes useful to include one
+    or more \e{\\qmlproperty} commands in the comment, e.g. when the
+    property type is another QML type and you want the user to only
+    use certain properties within that other QML type, but not all of
+    them. But when documenting a property that has an alias, place the
+    QDoc comment for it directly above the alias declaration. In these
+    cases, the QDoc comment \e must contain a \e{\\qmlproperty}
+    command, because that is the only way QDoc can know the type of
+    the aliased property.
 
-    QML components in C++ classes have their documentation above their property
-    or method documentation. However, the QML commands must be used instead of
-    the C++ documentation topic commands. Instead of the \c {\\class}
-    command, use the \l{qmlclass-command}{\\qmlclass} command.
+    When documenting a QML type in the \e cpp file of its
+    corresponding C++ class (if it has one), you normally place each
+    QDoc comment directly above the entity it documents. However, QDoc
+    does not use the QML parser to parse these files (the C++ parser
+    is used), so these QML QDoc comments can appear anywhere in the
+    \e{cpp} file. Note that QML QDoc comments in \e cpp files \e must
+    use the QML topic commands. i.e., the \l{qmlclass-command}
+    {\\qmlclass} command \e must appear in the QDoc comment for the
+    QML type, and a \l{qmlproperty-command} {\\qmlproperty} command \e
+    must appear in each QML property QDoc comment.
 
     \section3 QML Modules
 
@@ -500,14 +519,14 @@
 
     Modules affect the way Qdoc link and relate the components. The
     \l{qmlclass-command}{\\qmlclass} topic command must have an
-    \l{inqmlmodule-command}{\\inqmlmodule} context command to relate the
-    component to a module. Similarly, a \l{qmlmodule-command}{\\qmlmodule} topic
+    \l{inqmlmodule-command}{\\inqmlmodule} context command to relate the
+    component to a module. Similarly, a \l{qmlmodule-command}{\\qmlmodule} topic
     command must exist in a separate \c .qdoc file to create the overview page
     for the module. The overview page will list the related components.
 
     The links to the components, must therefore, also contain the module name.
     For example, if a component called \c TabWidget is in the \c UIComponents
-    module, it must be linked as \c {UIComponents::TabWidget}.
+    module, it must be linked as \c {UIComponents::TabWidget}.
 
     The \l{componentset}{UIComponents} example demonstrates proper usage of
     QDoc commands to document QML components and QML modules.
@@ -607,10 +626,10 @@
 
     \section1 Macros and other Definitions
     \list
-    \o \l{config/compat.qdocconf}
-    \o \l{config/macros.qdocconf}
-    \o \l{config/qt-cpp-ignore.qdocconf}
-    \o \l{config/qt-defines.qdocconf}
+    \li \l{config/compat.qdocconf}
+    \li \l{config/macros.qdocconf}
+    \li \l{config/qt-cpp-ignore.qdocconf}
+    \li \l{config/qt-defines.qdocconf}
     \endlist
 
     QDoc allows macros to help with aliasing and for inputting special HTML
@@ -624,9 +643,9 @@
 
     \section1 Project Information
     \list
-    \o \l{config/qdoc-online.qdocconf}
-    \o \l{config/qdoc.qdocconf}
-    \o \l{config/qdoc-project.qdocconf}
+    \li \l{config/qdoc-online.qdocconf}
+    \li \l{config/qdoc.qdocconf}
+    \li \l{config/qdoc-project.qdocconf}
     \endlist
 
     These configuration files dictate how QDoc will generate the project.
@@ -643,10 +662,10 @@
 
     \section1 HTML Styles
     \list
-    \o \l{config/qt-html-default-styles.qdocconf}
-    \o \l{config/qt-html-online-styles.qdocconf}
-    \o \l{config/qt-html-templates-online.qdocconf}
-    \o \l{config/qt-html-templates.qdocconf}
+    \li \l{config/qt-html-default-styles.qdocconf}
+    \li \l{config/qt-html-online-styles.qdocconf}
+    \li \l{config/qt-html-templates-online.qdocconf}
+    \li \l{config/qt-html-templates.qdocconf}
     \endlist
 
     These files indicate which styles QDoc should use for the HTML formats.
@@ -657,7 +676,7 @@
 
     \section1 Project File
     \list
-    \o \l{config/config.pro}
+    \li \l{config/config.pro}
     \endlist
 
     Every example page (such as this one) needs a Qt project file. QDoc will

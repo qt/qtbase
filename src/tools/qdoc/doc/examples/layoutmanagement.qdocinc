@@ -6,8 +6,8 @@ the layout of child widgets.
 By specifying the logical layout once, you get the following benefits:
 
 \list
-    \o Positioning of child widgets.
-    \o Sensible default sizes for windows.
-    \o Sensible minimum sizes for windows.
-    \o ...
+    \li Positioning of child widgets.
+    \li Sensible default sizes for windows.
+    \li Sensible minimum sizes for windows.
+    \li ...
 \endlist

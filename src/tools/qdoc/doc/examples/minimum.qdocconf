@@ -36,7 +36,3 @@ exampledirs = .
 # directories containing the images used in the documentation.
 
 imagedirs   = ./images
-
-
-
-

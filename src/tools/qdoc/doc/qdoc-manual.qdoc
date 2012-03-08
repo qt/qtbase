@@ -32,42 +32,42 @@
     \title Table of Contents
 
     \list
-      \o \l {Introduction to QDoc}
-      \o \l {Getting Started with QDoc}
-      \o \l {Command Index}
-      \o \l {Topic Commands}
-      \o \l {Context Commands}
+      \li \l {Introduction to QDoc}
+      \li \l {Getting Started with QDoc}
+      \li \l {Command Index}
+      \li \l {Topic Commands}
+      \li \l {Context Commands}
         \list
-          \o \l {Document Navigation}
-          \o \l {Reporting Status}
-          \o \l {Thread Support}
-          \o \l {Relating Things}
-          \o \l {Grouping Things}
-          \o \l {Naming Things}
+          \li \l {Document Navigation}
+          \li \l {Reporting Status}
+          \li \l {Thread Support}
+          \li \l {Relating Things}
+          \li \l {Grouping Things}
+          \li \l {Naming Things}
         \endlist
-      \o \l{Markup Commands}
+      \li \l{Markup Commands}
         \list
-          \o \l {Text Markup}
-          \o \l {Document Structure}
-          \o \l {Including Code Inline}
-          \o \l {Including External Code}
-          \o \l {Creating Links}
-          \o \l {Including Images}
-          \o \l {Tables and Lists}
-          \o \l {Special Content}
-          \o \l {Miscellaneous}
+          \li \l {Text Markup}
+          \li \l {Document Structure}
+          \li \l {Including Code Inline}
+          \li \l {Including External Code}
+          \li \l {Creating Links}
+          \li \l {Including Images}
+          \li \l {Tables and Lists}
+          \li \l {Special Content}
+          \li \l {Miscellaneous}
         \endlist
-      \o \l {The QDoc Configuration File}
+      \li \l{Creating DITA Maps}
+      \li \l {The QDoc Configuration File}
         \list
-          \o \l {Generic Configuration Variables}
-          \o \l {Creating Help Project Files}
-          \o \l {C++ Specific Configuration Variables}
-          \o \l {HTML Specific Configuration Variables}
-          \o \l {Supporting Derived Projects}
-          \o \l {Compatibility Issues}
-          \o \l {qt.qdocconf}
-          \o \l {minimum.qdocconf}
-          \o \l {Generating DITA XML Output}
+          \li \l {Generic Configuration Variables}
+          \li \l {Creating Help Project Files}
+          \li \l {C++ Specific Configuration Variables}
+          \li \l {HTML Specific Configuration Variables}
+          \li \l {Supporting Derived Projects}
+          \li \l {qt.qdocconf}
+          \li \l {minimum.qdocconf}
+          \li \l {Generating DITA XML Output}
         \endlist
     \endlist
 
@@ -87,7 +87,7 @@
     pages or DITA XML documents, etc. QDoc finds qdoc comments in \c
     {.cpp} files and in \c {.qdoc} files. QDoc does not look for qdoc
     comments in \c {.h} files. A qdoc comment always begins with an
-    exclamation mark \bold{!} e.g.:
+    exclamation mark \b{!} e.g.:
 
     \code
         / *!
@@ -185,7 +185,7 @@
     {sources} variable to find and parse all the \c {.cpp} and \c
     {.qdoc} files for your project. These are the files QDoc scans for
     \e {qdoc comments}. Remember that a qdoc comment begins with
-    an exclamation mark, i.e. \bold {/*!} .
+    an exclamation mark, i.e. \b {/*!} .
 
     For each qdoc comment it finds, it searches the master tree for
     the item where the documentation belongs. The it interprets the
@@ -205,9 +205,9 @@
     QDoc interprets three types of commands:
 
     \list
-    \o \l {Topic Commands}
-    \o \l {Context Commands}
-    \o \l {Markup Commands}
+    \li \l {Topic Commands}
+    \li \l {Context Commands}
+    \li \l {Markup Commands}
     \endlist
 
     Topic commands identify the elememt you are documenting, e.g. a C++
@@ -239,69 +239,72 @@
     appearance and logical structure.
 
     \list
-    \o \l {04-qdoc-commands-textmarkup.html#a-command} {\\a}
-    \o \l {11-qdoc-commands-specialcontent.html#abstract-command} {\\abstract}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#annotatedlist-command} {\\annotatedlist}
-    \o \l {06-qdoc-commands-includecodeinline.html#badcode-command} {\\badcode}
-    \o \l {04-qdoc-commands-textmarkup.html#bold-command} {\\bold}
-    \o \l {11-qdoc-commands-specialcontent.html#brief-command} {\\brief}
-    \o \l {04-qdoc-commands-textmarkup.html#c-command} {\\c}
-    \o \l {09-qdoc-commands-includingimages.html#caption-command} {\\caption}
-    \o \l {05-qdoc-commands-documentstructure.html#chapter-command} {\\chapter}
-    \o \l {06-qdoc-commands-includecodeinline.html#code-command} {\\code}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#codeline-command} {\\codeline}
-    \o \l {04-qdoc-commands-textmarkup.html#div-command} {\\div}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#dots-command} {\\dots}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#else-command} {\\else}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#endif-command} {\\endif}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#expire-command} {\\expire}
-    \o \l {11-qdoc-commands-specialcontent.html#footnote-command} {\\footnote}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#generatelist-command} {\\generatelist}
-    \o \l {10-qdoc-commands-tablesandlists.html#header-command} {\\header}
-    \o \l {04-qdoc-commands-textmarkup.html#i-command} {\\i}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#if-command} {\\if}
-    \o \l {09-qdoc-commands-includingimages.html#image-command} {\\image}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#include-command} {\\include}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#include-command} {\\input}
-    \o \l {09-qdoc-commands-includingimages.html#inlineimage-command} {\\inlineimage}
-    \o \l {08-qdoc-commands-creatinglinks.html#keyword-command} {\\keyword}
-    \o \l {08-qdoc-commands-creatinglinks.html#l-command} {\\l}
-    \o \l {11-qdoc-commands-specialcontent.html#legalese-command} {\\legalese}
-    \o \l {10-qdoc-commands-tablesandlists.html#list-command} {\\list}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#meta-command} {\\meta}
-    \o \l {06-qdoc-commands-includecodeinline.html#newcode-command} {\\newcode}
-    \o \l {10-qdoc-commands-tablesandlists.html#o-command} {\\o}
-    \o \l {06-qdoc-commands-includecodeinline.html#oldcode-command} {\\oldcode}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#omit-command} {\\omit}
-    \o \l {05-qdoc-commands-documentstructure.html#part-command} {\\part}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#printline-command} {\\printline}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#printto-command} {\\printto}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#printuntil-command} {\\printuntil}
-    \o \l {11-qdoc-commands-specialcontent.html#quotation-command} {\\quotation}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#quotefile-command} {\\quotefile}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#quotefromfile-command} {\\quotefromfile}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\raw}
-    \o \l {10-qdoc-commands-tablesandlists.html#row-command} {\\row}
-    \o \l {08-qdoc-commands-creatinglinks.html#sa-command} {\\sa}
-    \o \l {05-qdoc-commands-documentstructure.html#sectionOne-command} {\\section1}
-    \o \l {05-qdoc-commands-documentstructure.html#sectionTwo-command} {\\section2}
-    \o \l {05-qdoc-commands-documentstructure.html#sectionThree-command} {\\section3}
-    \o \l {05-qdoc-commands-documentstructure.html#sectionFour-command} {\\section4}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#skipline-command} {\\skipline}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#skipto-command} {\\skipto}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#skipuntil-command} {\\skipuntil}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#snippet-command} {\\snippet}
-    \o \l {04-qdoc-commands-textmarkup.html#span-command} {\\span}
-    \o \l {04-qdoc-commands-textmarkup.html#sub-command} {\\sub}
-    \o \l {04-qdoc-commands-textmarkup.html#sup-command} {\\sup}
-    \o \l {10-qdoc-commands-tablesandlists.html#table-command} {\\table}
-    \o \l {11-qdoc-commands-specialcontent.html#tableofcontents-command} {\\tableofcontents}
-    \o \l {08-qdoc-commands-creatinglinks.html#target-command} {\\target}
-    \o \l {04-qdoc-commands-textmarkup.html#tt-command} {\\tt}
-    \o \l {04-qdoc-commands-textmarkup.html#underline-command} {\\underline}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\unicode}
-    \o \l {11-qdoc-commands-specialcontent.html#warning-command} {\\warning}
-    \o \l {04-qdoc-commands-textmarkup.html#backslash-command} {\\\\}
+    \li \l {04-qdoc-commands-textmarkup.html#a-command} {\\a}
+    \li \l {11-qdoc-commands-specialcontent.html#abstract-command} {\\abstract}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#annotatedlist-command} {\\annotatedlist}
+    \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\b} \span {class="newStuff"} {(new 5/3/2012)}
+    \li \l {06-qdoc-commands-includecodeinline.html#badcode-command} {\\badcode}
+    \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\bold} {(deprecated, use \\b)}
+    \li \l {11-qdoc-commands-specialcontent.html#brief-command} {\\brief}
+    \li \l {04-qdoc-commands-textmarkup.html#c-command} {\\c}
+    \li \l {09-qdoc-commands-includingimages.html#caption-command} {\\caption}
+    \li \l {05-qdoc-commands-documentstructure.html#chapter-command} {\\chapter}
+    \li \l {06-qdoc-commands-includecodeinline.html#code-command} {\\code}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#codeline-command} {\\codeline}
+    \li \l {04-qdoc-commands-textmarkup.html#div-command} {\\div}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#dots-command} {\\dots}
+    \li \l {04-qdoc-commands-textmarkup.html#e-command} {\\e} \span {class="newStuff"} {(new 5/3/2012)}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#else-command} {\\else}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#endif-command} {\\endif}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#expire-command} {\\expire}
+    \li \l {11-qdoc-commands-specialcontent.html#footnote-command} {\\footnote}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#generatelist-command} {\\generatelist}
+    \li \l {10-qdoc-commands-tablesandlists.html#header-command} {\\header}
+    \li \l {04-qdoc-commands-textmarkup.html#e-command} {\\i} \span {class="newStuff"} {(deprecated, use \\e)}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#if-command} {\\if}
+    \li \l {09-qdoc-commands-includingimages.html#image-command} {\\image}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#include-command} {\\include}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#include-command} {\\input}
+    \li \l {09-qdoc-commands-includingimages.html#inlineimage-command} {\\inlineimage}
+    \li \l {08-qdoc-commands-creatinglinks.html#keyword-command} {\\keyword}
+    \li \l {08-qdoc-commands-creatinglinks.html#l-command} {\\l}
+    \li \l {11-qdoc-commands-specialcontent.html#legalese-command} {\\legalese}
+    \li \l {10-qdoc-commands-tablesandlists.html#li-command} {\\li} \span {class="newStuff"} {(new 5/3/2012)}
+    \li \l {10-qdoc-commands-tablesandlists.html#list-command} {\\list}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#meta-command} {\\meta}
+    \li \l {06-qdoc-commands-includecodeinline.html#newcode-command} {\\newcode}
+    \li \l {10-qdoc-commands-tablesandlists.html#li-command} {\\o} \span {class="newStuff"} {(deprecated, use \\li)}
+    \li \l {06-qdoc-commands-includecodeinline.html#oldcode-command} {\\oldcode}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#omit-command} {\\omit}
+    \li \l {05-qdoc-commands-documentstructure.html#part-command} {\\part}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#printline-command} {\\printline}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#printto-command} {\\printto}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#printuntil-command} {\\printuntil}
+    \li \l {11-qdoc-commands-specialcontent.html#quotation-command} {\\quotation}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#quotefile-command} {\\quotefile}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#quotefromfile-command} {\\quotefromfile}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\raw}
+    \li \l {10-qdoc-commands-tablesandlists.html#row-command} {\\row}
+    \li \l {08-qdoc-commands-creatinglinks.html#sa-command} {\\sa}
+    \li \l {05-qdoc-commands-documentstructure.html#sectionOne-command} {\\section1}
+    \li \l {05-qdoc-commands-documentstructure.html#sectionTwo-command} {\\section2}
+    \li \l {05-qdoc-commands-documentstructure.html#sectionThree-command} {\\section3}
+    \li \l {05-qdoc-commands-documentstructure.html#sectionFour-command} {\\section4}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#skipline-command} {\\skipline}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#skipto-command} {\\skipto}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#skipuntil-command} {\\skipuntil}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#snippet-command} {\\snippet}
+    \li \l {04-qdoc-commands-textmarkup.html#span-command} {\\span}
+    \li \l {04-qdoc-commands-textmarkup.html#sub-command} {\\sub}
+    \li \l {04-qdoc-commands-textmarkup.html#sup-command} {\\sup}
+    \li \l {10-qdoc-commands-tablesandlists.html#table-command} {\\table}
+    \li \l {11-qdoc-commands-specialcontent.html#tableofcontents-command} {\\tableofcontents}
+    \li \l {08-qdoc-commands-creatinglinks.html#target-command} {\\target}
+    \li \l {04-qdoc-commands-textmarkup.html#tt-command} {\\tt}
+    \li \l {04-qdoc-commands-textmarkup.html#underline-command} {\\underline}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\unicode}
+    \li \l {11-qdoc-commands-specialcontent.html#warning-command} {\\warning}
+    \li \l {04-qdoc-commands-textmarkup.html#backslash-command} {\\\\}
     \endlist
 */
 
@@ -343,7 +346,7 @@
     QDoc renders this as:
 
     \quotation
-        \bold {QLineEdit::QLineEdit ( const QString &
+        \b {QLineEdit::QLineEdit ( const QString &
         contents, QWidget *parent )}
 
         Constructs a line edit containing the text \a contents.
@@ -453,7 +456,7 @@
     Your DITA XML publishing program must then recognize the \e
     {outputclass} attribute value.
 
-    \note The \bold {\\div} command can be nested.
+    \note The \b {\\div} command can be nested.
 
     Below is an example taken from the index.qdoc file used to
     generate index.html for Qt 4.7:
@@ -475,12 +478,12 @@
                 \enddiv
                 \div {class="section sectionlist"}
                     \list
-                       \o \l{Getting Started Guides} {Getting started}
-                       \o \l{Installation} {Installation}
-                       \o \l{how-to-learn-qt.html} {How to learn Qt}
-                       \o \l{tutorials.html} {Tutorials}
-                       \o \l{Qt Examples} {Examples}
-                       \o \l{qt4-7-intro.html} {What's new in Qt 4.7}
+                       \li \l{Getting Started Guides} {Getting started}
+                       \li \l{Installation} {Installation}
+                       \li \l{how-to-learn-qt.html} {How to learn Qt}
+                       \li \l{tutorials.html} {Tutorials}
+                       \li \l{Qt Examples} {Examples}
+                       \li \l{qt4-7-intro.html} {What's new in Qt 4.7}
                     \endlist
                 \enddiv
             \enddiv
@@ -507,12 +510,12 @@
               \enddiv
               \div {class="section sectionlist"}
                 \list
-                  \o \l{Getting Started Guides} {Getting started}
-                  \o \l{Installation} {Installation}
-                  \o \l{how-to-learn-qt.html} {How to learn Qt}
-                  \o \l{tutorials.html} {Tutorials}
-                  \o \l{Qt Examples} {Examples}
-                  \o \l{qt4-7-intro.html} {What's new in Qt 4.7}
+                  \li \l{Getting Started Guides} {Getting started}
+                  \li \l{Installation} {Installation}
+                  \li \l{how-to-learn-qt.html} {How to learn Qt}
+                  \li \l{tutorials.html} {Tutorials}
+                  \li \l{Qt Examples} {Examples}
+                  \li \l{qt4-7-intro.html} {What's new in Qt 4.7}
                 \endlist
              \enddiv
             \enddiv
@@ -586,10 +589,10 @@
         / *!
             Global variables with complex types:
         \list 1
-                \o \span {class="variableName"} {mutableComplex1} in globals.cpp at line 14
-                \o \span {class="variableName"} {mutableComplex2} in globals.cpp at line 15
-                \o \span {class="variableName"} {constComplex1} in globals.cpp at line 16
-                \o \span {class="variableName"} {constComplex2} in globals.cpp at line 17
+                \li \span {class="variableName"} {mutableComplex1} in globals.cpp at line 14
+                \li \span {class="variableName"} {mutableComplex2} in globals.cpp at line 15
+                \li \span {class="variableName"} {constComplex1} in globals.cpp at line 16
+                \li \span {class="variableName"} {constComplex2} in globals.cpp at line 17
             \endlist
         * /
     \endcode
@@ -608,13 +611,13 @@
 
     Global variables with complex types:
     \list 1
-        \o \span {class="variableName"} {mutableComplex1} in globals.cpp at line 14
-        \o \span {class="variableName"} {mutableComplex2} in globals.cpp at line 15
-        \o \span {class="variableName"} {constComplex1} in globals.cpp at line 16
-        \o \span {class="variableName"} {constComplex2} in globals.cpp at line 17
+        \li \span {class="variableName"} {mutableComplex1} in globals.cpp at line 14
+        \li \span {class="variableName"} {mutableComplex2} in globals.cpp at line 15
+        \li \span {class="variableName"} {constComplex1} in globals.cpp at line 16
+        \li \span {class="variableName"} {constComplex2} in globals.cpp at line 17
     \endlist
 
-    \note The \bold span command does not cause a new paragraph to be
+    \note The \b span command does not cause a new paragraph to be
     started.
 
     See also \l {div-command} {\\div}.
@@ -625,7 +628,7 @@
     The \\tt command renders its argument in a monospace font. This
     command behaves just like the \l {c-command} {\\c} command, except
     that \\tt allows you to nest QDoc commands within the argument
-    (e.g. \l {i-command} {\\i}, \l {bold-command} {\\bold} and \l
+    (e.g. \l {e-command} {\\e}, \l {b-command} {\\b} and \l
     {underline-command} {\\underline}).
 
     \code
@@ -661,43 +664,38 @@
 
     See also \l {c-command} {\\c}.
 
-    \target bold-command
-    \section1 \\bold
+    \target b-command
+    \section1 \\b
 
-    The \\bold command renders its argument in bold font.
+    The \\b command renders its argument in bold font. This command used
+    to be called \\bold.
 
     \code
     / *!
-        This is regular text; \bold {this text is
-        rendered using the \\bold command}.
+        This is regular text; \b {this text is
+        rendered using the \\b command}.
     * /
     \endcode
 
     QDoc renders this as:
 
     \quotation
-    This is regular text; \bold {this text is rendered using
-    the \\bold command}.
+    This is regular text; \b {this text is rendered using
+    the \\b command}.
     \endquotation
 
-    \target i-command
-    \section1 \\i (italics)
+    \target e-command
+    \section1 \\e (emphasis, italics) \span {class="newStuff"} {(new 5/3/2012)}
 
-    The \\i command renders its argument in italics.
-
-    \warning If \\i doesn't work and you get some strange error
-    meesages from qdoc3 about using \\o outside of tables and lists,
-    use \bold{\\e} for italics instead of \\i. For more information,
-    see the relevant explanation in the section on \l
-    {26-qdoc-commands-compatibility.html#i-versus-e} {compatibility
-    issues}.
+    The \\e command renders its argument in a special font, normally italics. This
+    command used to be called \\i, which is now deprecated. Use \e for italics.
 
     If the argument contains spaces or other punctuation, enclose the
     argument in curly brackets.
 
     \code
     / *!
-        Here, we render \i {a few words} in italic.
+        Here, we render \e {a few words} in italic.
     * /
     \endcode
 
@@ -708,14 +706,14 @@
     \endquotation
 
     If you want to use other QDoc commands within an argument that
-    contains spaces, you always need to enclose the argument with
+    contains spaces, you always need to enclose the argument in
     braces. But QDoc is smart enough to count parentheses [3], so you
     don't need braces in cases like this:
 
     \code
     / *!
         An argument can sometimes contain whitespaces,
-        for example: \i QPushButton(tr("A Brand New Button"))
+        for example: \e QPushButton(tr("A Brand New Button"))
     * /
     \endcode
 
@@ -1148,7 +1146,7 @@
     formatting. The source code begins on a new line, rendered in the
     code.
 
-    \bold{Note:} Although all these commands are for rendering C++
+    \b{Note:} Although all these commands are for rendering C++
     code, the
     \l{07-0-qdoc-commands-includingexternalcode.html#snippet-command}
     {\\snippet} and
@@ -1396,7 +1394,7 @@
     others. The typical use of the latter is to quote a file chunk by
     chunk.
 
-    \bold{Note:} Although all these commands are for rendering C++
+    \b{Note:} Although all these commands are for rendering C++
     code, the
     \l{07-0-qdoc-commands-includingexternalcode.html#snippet-command}
     {\\snippet} and
@@ -1510,14 +1508,9 @@
 
     (\l {Example File} {The complete example file...})
 
-    QDoc remembers which file it's quoting, and the current position
-    within that file (see \l {file} {\\printline} for more
+    QDoc remembers which file it is quoting from, and the current
+    position in that file (see \l {file} {\\printline} for more
     information). There is no need to "close" the file.
-
-    Earlier we called this command \\quotefile. For more information,
-    see the \l
-    {26-qdoc-commands-compatibility.html#quotefromfile-versus-quotefile}
-    {compatibility} section.
 
     See also \l {quotefile-command} {\\quotefile}, \l {code-command}
     {\\code} and \l {dots} {\\dots}.
@@ -1608,7 +1601,7 @@
 
            \code
            / *!
-               \quotefromfile widgets/scribble/mainwindow.cpp
+               \quotefromfile examples/mainwindow.cpp
 
                \skipto closeEvent
                \printuntil /^\}/
@@ -1624,7 +1617,7 @@
     QDoc renders this as:
 
            \quotation
-               \quotefromfile widgets/scribble/mainwindow.cpp
+               \quotefromfile examples/mainwindow.cpp
 
                \skipto closeEvent
                \printuntil /^\}/
@@ -2112,35 +2105,35 @@
 
     \list
 
-    \o \c {\l QWidget} - The name of a class documented with the \l
+    \li \c {\l QWidget} - The name of a class documented with the \l
     {class-command} {\\class} command.
 
-    \o \c {\l QWidget::sizeHint()} - The name of a member function,
+    \li \c {\l QWidget::sizeHint()} - The name of a member function,
     documented with or without an \l {fn-command} {\\fn} command.
 
-    \o \c {\l <QtGlobal>} - The subject of a \l {headerfile-command}
+    \li \c {\l <QtGlobal>} - The subject of a \l {headerfile-command}
     {\\headerfile} command.
 
-    \o \c {\l widgets/wiggly} - The relative path used in an \l
+    \li \c {\l widgets/wiggly} - The relative path used in an \l
     {example-command} {\\example} command.
 
-    \o \c {\l {QWidget Class Reference}} - The title used in a
+    \li \c {\l {QWidget Class Reference}} - The title used in a
     \l {title-command} {\\title} command.
 
-    \o \c {\l {Introduction to QDoc}}- The text from one of the
+    \li \c {\l {Introduction to QDoc}}- The text from one of the
     \l{part-command} {\\part}, \l{chapter} {\\chapter} or \l
     {sectionOne-command} {\\section} commands.
 
-    \o \c {\l fontmatching} - The argument of a \l {target-command}
+    \li \c {\l fontmatching} - The argument of a \l {target-command}
     {\\target} command.
 
-    \o \c {\l {Shared Classes}} - A keyword named in a \l
+    \li \c {\l {Shared Classes}} - A keyword named in a \l
     {keyword-command} {\\keyword} command.
 
-    \o \c {\l network.html} - The file name used in a \l
+    \li \c {\l network.html} - The file name used in a \l
     {page-command} {\\page} command.
 
-    \o \c {\l http://qt.nokia.com/} - A URL.
+    \li \c {\l http://qt.nokia.com/} - A URL.
 
     \endlist
 
@@ -2153,7 +2146,7 @@
     appear in the link, you can use the following syntax:
 
     \list
-        \o \c {\l {QWidget::} {sizeHint()}}
+        \li \c {\l {QWidget::} {sizeHint()}}
     \endlist
 
     QDoc renders this as:
@@ -2192,10 +2185,10 @@
     different syntax versions:
 
     \list
-      \o \c property()
-      \o \c setProperty()
-      \o \c isProperty()
-      \o \c hasProperty()
+      \li \c property()
+      \li \c setProperty()
+      \li \c isProperty()
+      \li \c hasProperty()
     \endlist
 
     The \\sa command supports the same kind of links as the \l
@@ -2217,7 +2210,7 @@
     QDoc renders this as:
 
     \quotation
-        \bold {void QWidget::addActions ( QList<QAction*>
+        \b {void QWidget::addActions ( QList<QAction*>
         \e actions )}
 
         Appends the actions \e actions to this widget's list of
@@ -2259,8 +2252,8 @@
     within the same document containing the target in two ways:
 
     \list
-      \o \c {\l {capturing parentheses}} (from within the same qdoc comment)
-      \o \c {\l qregexp.html#capturing-parentheses} (from elsewhere in the same document)
+      \li \c {\l {capturing parentheses}} (from within the same qdoc comment)
+      \li \c {\l qregexp.html#capturing-parentheses} (from elsewhere in the same document)
     \endlist
 
     \note The brackets in the link example are required because the
@@ -2269,7 +2262,7 @@
     From other documents, the target name can be linked this way:
 
     \list
-      \o \c {\l http://doc.qt.nokia.com/4.0/qregexp.html#capturing-parentheses}
+      \li \c {\l http://doc.qt.nokia.com/4.0/qregexp.html#capturing-parentheses}
     \endlist
 
     See also \l {l-command} {\\l}, \l {sa-command} {\\sa} and \l
@@ -2352,11 +2345,6 @@
     The \\image command expands to the image specified by its first
     argument, and renders it centered as a separate paragraph.
 
-    The \\image command replaces the old \\img command. For more
-    information, see the \l
-    {26-qdoc-commands-compatibility.html#image-versus-img}
-    {compatibility} section.
-
     The command takes two arguments. The first argument is the name of
     the image file. The second argument is optional and is a simple
     description of the image, equivalent to the HTML alt="" in an image
@@ -2413,9 +2401,9 @@
     \code
     / *!
         \list 1
-          \o \inlineimage happy.gif Oh so happy!
-          \o \inlineimage happy.gif Oh so happy!
-          \o \inlineimage happy.gif Oh so happy!
+          \li \inlineimage happy.gif Oh so happy!
+          \li \inlineimage happy.gif Oh so happy!
+          \li \inlineimage happy.gif Oh so happy!
         \endlist
     * /
     \endcode
@@ -2423,9 +2411,9 @@
     QDoc renders this as:
 
     \list 1
-      \o \inlineimage happy.gif Oh so happy!
-      \o \inlineimage happy.gif Oh so happy!
-      \o \inlineimage happy.gif Oh so happy!
+      \li \inlineimage happy.gif Oh so happy!
+      \li \inlineimage happy.gif Oh so happy!
+      \li \inlineimage happy.gif Oh so happy!
     \endlist
 
     Here is an example of including inline images in a table:
@@ -2434,14 +2422,14 @@
     / *!
         \table
         \header
-            \o Qt
-            \o Qt Creator
+            \li Qt
+            \li Qt Creator
         \row
-            \o \inlineimage happy.gif Oh so happy!
-            \o \inlineimage happy.gif Oh so happy!
+            \li \inlineimage happy.gif Oh so happy!
+            \li \inlineimage happy.gif Oh so happy!
         \row
-            \o \inlineimage happy.gif Oh so happy!
-            \o \inlineimage happy.gif Oh so happy!
+            \li \inlineimage happy.gif Oh so happy!
+            \li \inlineimage happy.gif Oh so happy!
         \endtable
     * /
     \endcode
@@ -2511,9 +2499,9 @@
     / *!
       \table 100%
         \row
-          \o \image windowsvista-pushbutton.png
+          \li \image windowsvista-pushbutton.png
              \caption The QPushButton widget provides a command button.
-          \o \image windowsvista-toolbutton.png
+          \li \image windowsvista-toolbutton.png
              \caption The QToolButton class provides a quick-access button to commands
              or options, usually used inside a QToolBar.
        \endtable
@@ -2524,9 +2512,9 @@
 
     \table 100%
       \row
-        \o \image windowsvista-pushbutton.png
+        \li \image windowsvista-pushbutton.png
            \caption The QPushButton widget provides a command button.
-        \o \image windowsvista-toolbutton.png
+        \li \image windowsvista-toolbutton.png
            \caption The QToolButton class provides a quick-access button to commands
            or options, usually used inside a QToolBar.
     \endtable
@@ -2572,29 +2560,29 @@
     be centered in the generated documentation.
 
     A table can contain headers, rows and columns. A row starts with a
-    \l {row-command} {\\row} command and consists of cells, which
-    starts with a \l {o-command} {\\o} command. There is also a \l
+    \l {row-command} {\\row} command and consists of cells, each of which
+    starts with an \l {li-command} {\\li} command. There is also a \l
     {header-command} {\\header} command which is a special kind of row
-    with a special formatting.
+    that has a special format.
 
            \code
            / *!
                \table
                \header
-                   \o Qt Core Feature
-                   \o Brief Description
+                   \li Qt Core Feature
+                   \li Brief Description
                \row
-                   \o \l {Signal and Slots}
-                   \o Signals and slots are used for communication
+                   \li \l {Signal and Slots}
+                   \li Signals and slots are used for communication
                       between objects.
                \row
-                   \o \l {Layout Management}
-                   \o The Qt layout system provides a simple
+                   \li \l {Layout Management}
+                   \li The Qt layout system provides a simple
                       and powerful way of specifying the layout
                       of child widgets.
                \row
-                   \o \l {Drag and Drop}
-                   \o Drag and drop provides a simple visual
+                   \li \l {Drag and Drop}
+                   \li Drag and drop provides a simple visual
                       mechanism which users can use to transfer
                       information between and within applications.
                \endtable
@@ -2648,16 +2636,16 @@
            / *!
                \table
                \header
-                   \o {3,1} This header cell spans three columns
+                   \li {3,1} This header cell spans three columns
                       but only one row.
                \row
-                   \o {2, 1} This table cell spans two columns
+                   \li {2, 1} This table cell spans two columns
                       but only one row
-                   \o {1, 2} This table cell spans only one column,
+                   \li {1, 2} This table cell spans only one column,
                    but two rows.
                \row
-                   \o A regular table cell
-                   \o A regular table cell
+                   \li A regular table cell
+                   \li A regular table cell
                \endtable
            * /
            \endcode
@@ -2691,7 +2679,7 @@
                </table>
            \endraw
 
-    See also \l {header-command} {\\header}, \l {row-command} {\\row} and \l {o-command} {\\o}.
+    See also \l {header-command} {\\header}, \l {row-command} {\\row} and \l {li-command} {\\li}.
 
     \target header-command
     \section1 \\header
@@ -2701,7 +2689,7 @@
 
     The command can only be used within the \l{table-command}
     {\\table...\\endtable} commands. A header can contain several
-    cells. A cell is created with the \l {o-command} {\\o} command.
+    cells. A cell is created with the \l {li-command} {\\li} command.
 
     A header cell's text is centered within the table cell and
     rendered using a bold font.
@@ -2710,11 +2698,11 @@
            / *!
                \table
                \header
-                   \o Qt Core Feature
-                   \o Brief Description
+                   \li Qt Core Feature
+                   \li Brief Description
                \row
-                   \o \l {Signal and Slots}
-                   \o Signals and slots are used for communication
+                   \li \l {Signal and Slots}
+                   \li Signals and slots are used for communication
                       between objects.
                \endtable
            * /
@@ -2741,18 +2729,18 @@
                </table>
            \endraw
 
-    See also \l {table-command} {\\table}, \l {row-command} {\\row} and \l {o-command} {\\o}.
+    See also \l {table-command} {\\table}, \l {row-command} {\\row} and \l {li-command} {\\li}.
 
     \target row-command
     \section1 \\row
 
-    The \\row command begins a new row in a table. The \l {o-command}
-    {\\o items} that belong in the new row will immediately follow the
+    The \\row command begins a new row in a table. The \l {li-command}
+    {\\li items} that belong in the new row will immediately follow the
     \\row.
 
     The command can only be used within the \l{table-command}
     {\\table...\\endtable} commands. A row can contain several
-    cells. A cell is created with the \l {o-command} {\\o} command.
+    cells. A cell is created with the \l {li-command} {\\li} command.
 
     The background cell color of each row alternates between two
     shades of grey, making it easier to distinguish the rows from each
@@ -2762,20 +2750,20 @@
            / *!
                \table
                \header
-                   \o Qt Core Feature
-                   \o Brief Description
+                   \li Qt Core Feature
+                   \li Brief Description
                \row
-                   \o \l {Signal and Slots}
-                   \o Signals and slots are used for communication
+                   \li \l {Signal and Slots}
+                   \li Signals and slots are used for communication
                       between objects.
                \row
-                   \o \l {Layout Management}
-                   \o The Qt layout system provides a simple
+                   \li \l {Layout Management}
+                   \li The Qt layout system provides a simple
                       and powerful way of specifying the layout
                       of child widgets.
                \row
-                   \o \l {Drag and Drop}
-                   \o Drag and drop provides a simple visual
+                   \li \l {Drag and Drop}
+                   \li Drag and drop provides a simple visual
                       mechanism which users can use to transfer
                       information between and within applications.
                \endtable
@@ -2823,7 +2811,7 @@
            \endraw
 
     See also \l {table-command} {\\table}, \l {header-command}
-    {\\header} and \l {o-command} {\\o}.
+    {\\header} and \l {li-command} {\\li}.
 
     \target value-command
     \section1 \\value
@@ -2858,24 +2846,24 @@
 
     The \\list and \\endlist commands delimit a list of items.
 
-    Create each list item with the \l {o-command} {\\o} command. A
+    Create each list item with the \l {li-command} {\\li} command. A
     list always contains one or more items. Lists can be nested. For
     example:
 
            \code
            / *!
                \list
-               \o Qt Reference Documentation: Getting Started
+               \li Qt Reference Documentation: Getting Started
                    \list
-                   \o How to Learn Qt
-                   \o Installation
+                   \li How to Learn Qt
+                   \li Installation
                        \list
-                       \o Qt/X11
-                       \o Qt/Windows
-                       \o Qt/Mac
-                       \o Qt/Embedded
+                       \li Qt/X11
+                       \li Qt/Windows
+                       \li Qt/Mac
+                       \li Qt/Embedded
                        \endlist
-                   \o Tutorial and Examples
+                   \li Tutorial and Examples
                    \endlist
                \endlist
            * /
@@ -2884,17 +2872,17 @@
     QDoc renders this as:
 
            \list
-           \o Qt Reference Documentation: Getting Started
+           \li Qt Reference Documentation: Getting Started
                \list
-               \o How to Learn Qt
-               \o Installation
+               \li How to Learn Qt
+               \li Installation
                    \list
-                   \o Qt/X11
-                   \o Qt/Windows
-                   \o Qt/Mac
-                   \o Qt/Embedded
+                   \li Qt/X11
+                   \li Qt/Windows
+                   \li Qt/Mac
+                   \li Qt/Embedded
                    \endlist
-               \o Tutorial and Examples
+               \li Tutorial and Examples
                \endlist
            \endlist
 
@@ -2904,9 +2892,9 @@
            \code
            / *!
                \list
-                   \o How to Learn Qt
-                   \o Installation
-                   \o Tutorial and Examples
+                   \li How to Learn Qt
+                   \li Installation
+                   \li Tutorial and Examples
                \endlist
            * /
            \endcode
@@ -2914,9 +2902,9 @@
      QDoc renders the list items with bullets (the default):
 
            \list
-               \o How to Learn Qt
-               \o Installation
-               \o Tutorial and Examples
+               \li How to Learn Qt
+               \li Installation
+               \li Tutorial and Examples
            \endlist
 
     \warning There appears to be a bug in qdoc3 here. If you include
@@ -2927,18 +2915,18 @@
     bullets are replaced with characters in alphabetical order:
 
            \list A
-               \o How to Learn Qt
-               \o Installation
-               \o Tutorial and Examples
+               \li How to Learn Qt
+               \li Installation
+               \li Tutorial and Examples
            \endlist
 
      If you replace 'A' with '1', the list items are numbered in
      ascending order:
 
            \list 1
-               \o How to Learn Qt
-               \o Installation
-               \o Tutorial and Examples
+               \li How to Learn Qt
+               \li Installation
+               \li Tutorial and Examples
 
            \endlist
 
@@ -2946,9 +2934,9 @@
     roman numerals:
 
            \list i
-               \o How to Learn Qt
-               \o Installation
-               \o Tutorial and Examples
+               \li How to Learn Qt
+               \li Installation
+               \li Tutorial and Examples
            \endlist
 
     Finally, you can make the list items appear with roman numbers
@@ -2956,9 +2944,9 @@
     argument:
 
            \list I
-               \o How to Learn Qt
-               \o Installation
-               \o Tutorial and Examples
+               \li How to Learn Qt
+               \li Installation
+               \li Tutorial and Examples
            \endlist
 
     You can also make the listing start at any character or number by
@@ -2968,9 +2956,9 @@
            \code
            / *!
                \list G
-                   \o How to Learn Qt
-                   \o Installation
-                   \o Tutorial and Examples
+                   \li How to Learn Qt
+                   \li Installation
+                   \li Tutorial and Examples
                \endlist
            * /
            \endcode
@@ -2978,50 +2966,42 @@
     QDoc renders this as:
 
            \list G
-               \o How to Learn Qt
-               \o Installation
-               \o Tutorial and Examples
+               \li How to Learn Qt
+               \li Installation
+               \li Tutorial and Examples
            \endlist
 
-    See also \l {o-command} {\\o}.
+    See also \l {li-command} {\\li}.
 
-    \target o-command
-    \section1 \\o (cell, item)
+    \target li-command
+    \section1 \\li (table cell, list item)
 
-    The \\o command announce a table or list item.
+    The \\li command marks a table cell or a list item. This command
+    is only used in \l{table-command} {tables} and \l{list-command}
+    {lists}.
 
-    Earlier we used the \l {i-command} {\\i} command for this
-    purpose. For more information see the \l
-    {26-qdoc-commands-compatibility.html#o-versus-i} {compatibility}
-    section.
+    It considers everything until the next \\li command, or until the
+    next \l {table-command} {\\endtable} or \l {list-command} {\\endlist}
+    command, as its argument. See \l {table-command} {\\table} and \l
+    {list-command} {\\list} for examples.
 
-    The command can only be used within the \l{table-command}
-    {\\table...\\endtable} or \l{list-command} {\\list... \\endlist}
-    commands.
-
-    It considers everything until the next occurrence of the \\o
-    command, or the currently applicable \l {table-command}
-    {\\endtable} or \l {list-command} {\\endlist} command, as its
-    argument. For examples, see \l {table-command} {\\table} and \l
-    {list-command} {\\list}.
-
-    If the command is used within a table, you can in addition specify
+    If the command is used within a table, you can also specify
     how many rows or columns the item should span.
 
            \code
            / *!
                \table
                \header
-                   \o {3,1} This header cell spans three columns
+                   \li {3,1} This header cell spans three columns
                       but only one row.
                \row
-                   \o {2, 1} This table item spans two columns
+                   \li {2, 1} This table item spans two columns
                       but only one row
-                   \o {1, 2} This table item spans only one column,
+                   \li {1, 2} This table item spans only one column,
                    but two rows.
                \row
-                   \o A regular table item
-                   \o A regular table item
+                   \li A regular table item
+                   \li A regular table item
                \endtable
            * /
            \endcode
@@ -3058,7 +3038,7 @@
     If not specified, the item will span one column and one row.
 
     See also \l {table-command} {\\table}, \l {header-command}
-    {\\header}, \l {list-command} {\\list} and \l {o-command} {\\o}.
+    {\\header}, and \l {list-command} {\\list}.
 
 */
 
@@ -3083,7 +3063,7 @@
     The abstract section is rendered as an indented italicized
     paragraph.
 
-    \warning The \bold{\\abstract} and \bold{\\endabstract} commands
+    \warning The \b{\\abstract} and \b{\\endabstract} commands
     have not been implemented. The abstract section is rendered as a
     regular HTML paragraph.
 
@@ -3093,7 +3073,7 @@
     The \\quotation and \\endquotation commands delimit a long quotation.
 
     The text in the delimited block is surrounded by
-    \bold{<blockquote>} and \bold{</blockquote>} in the html output,
+    \b{<blockquote>} and \b{</blockquote>} in the html output,
     e.g.:
 
         \code
@@ -3112,7 +3092,7 @@
         * /
         \endcode
 
-    The text in the \bold{\\quotation} block will appear in the generated HTML as:
+    The text in the \b{\\quotation} block will appear in the generated HTML as:
 
     \code
     <blockquote>
@@ -3133,12 +3113,7 @@
              applications.
           \endquotation
 
-    But you can redefine the \bold{<blockquote>} tag in your style.css file.
-
-    This command replaces the old \\quote command. For more
-    information see the \l
-    {26-qdoc-commands-compatibility.html#quotation-versus-quote}
-    {compatibility} section.
+    But you can redefine the \b{<blockquote>} tag in your style.css file.
 
     \target footnote-command
     \section1 \\footnote
@@ -3147,7 +3122,7 @@
 
     The footnote is rendered at the bottom of the page.
 
-    \warning The \bold{\\footnote} and \bold{\\endfootnote} commands
+    \warning The \b{\\footnote} and \b{\\endfootnote} commands
     have not been implemented. The footnote is rendered as a regular
     HTML paragraph.
 
@@ -3233,9 +3208,9 @@
 
                Access functions:
                \list
-                   \o \bold {const QRect & geometry () const}
-                   \o \bold {void setGeometry ( int x, int y, int w, int h )}
-                   \o \bold {void setGeometry ( const QRect & )}
+                   \li \b {const QRect & geometry () const}
+                   \li \b {void setGeometry ( int x, int y, int w, int h )}
+                   \li \b {void setGeometry ( const QRect & )}
                \endlist
 
                See also \l
@@ -3289,8 +3264,8 @@
                \endraw
 
                \list
-                   \o 52 properties inherited from QWidget
-                   \o 1 property inherited from QObject
+                   \li 52 properties inherited from QWidget
+                   \li 1 property inherited from QObject
                \endlist
 
                \raw HTML
@@ -3298,13 +3273,13 @@
                \endraw
 
                \list
-                   \o \l {constructor} {PreviewWindow}(QWidget *parent = 0)
-                   \o void \l {function} {setWindowFlags}(Qt::WindowFlags flags)
+                   \li \l {constructor} {PreviewWindow}(QWidget *parent = 0)
+                   \li void \l {function} {setWindowFlags}(Qt::WindowFlags flags)
                \endlist
 
                \list
-                   \o 183 public functions inherited from QWidget
-                   \o 28 public functions inherited from QObject
+                   \li 183 public functions inherited from QWidget
+                   \li 28 public functions inherited from QObject
                \endlist
 
                \raw HTML
@@ -3312,8 +3287,8 @@
                \endraw
 
                \list
-                   \o 17 public slots inherited from QWidget
-                   \o 1 public slot inherited from QObject
+                   \li 17 public slots inherited from QWidget
+                   \li 1 public slot inherited from QObject
                \endlist
 
                \raw HTML
@@ -3321,12 +3296,12 @@
                \endraw
 
                \list
-                   \o 1 signal inherited from QWidget
-                   \o 1 signal inherited from QObject
-                   \o 4 static public members inherited from QWidget
-                   \o 4 static public members inherited from QObject
-                   \o 39 protected functions inherited from QWidget
-                   \o 7 protected functions inherited from QObject
+                   \li 1 signal inherited from QWidget
+                   \li 1 signal inherited from QObject
+                   \li 4 static public members inherited from QWidget
+                   \li 4 static public members inherited from QObject
+                   \li 39 protected functions inherited from QWidget
+                   \li 7 protected functions inherited from QObject
                \endlist
 
                \target preview window
@@ -3409,8 +3384,8 @@
 
     The \\legalese and \\endlegalese commands delimit a licence agreement.
 
-    In the generated HTML, the delimited text is surrounded by a \bold
-    {<div class="LegaleseLeft">} and \bold {</div>} tags.
+    In the generated HTML, the delimited text is surrounded by a \b
+    {<div class="LegaleseLeft">} and \b {</div>} tags.
 
     For example, here is a license agreement enclosed in \\legalese
     and \\endlegalese:
@@ -3506,7 +3481,7 @@
     \page 12-0-qdoc-commands-miscellaneous.html
     \previouspage Special Content
     \contentspage Table of Contents
-    \nextpage The QDoc Configuration File
+    \nextpage Creating DITA Maps
 
     \title Miscellaneous
 
@@ -3608,14 +3583,14 @@
 
     \table
       \row
-        \o QDial
-    \o Rounded range control (like a speedometer or potentiometer)
+        \li QDial
+    \li Rounded range control (like a speedometer or potentiometer)
       \row
-        \o QDialog
-    \o The base class of dialog windows
+        \li QDialog
+    \li The base class of dialog windows
       \row
-        \o QDir
-        \o Access to directory structures and their contents
+        \li QDir
+        \li Access to directory structures and their contents
     \endtable
 
     A C++ class is documented with the \l {class-command} {\\class}
@@ -3848,7 +3823,7 @@
            / *!
                \if defined(opensourceedition)
 
-               \bold{Note:} This edition is for the development of
+               \b{Note:} This edition is for the development of
                \l{Qt Open Source Edition} {Free and Open Source}
                software only; see \l{Qt Commercial Editions}.
 
@@ -4147,20 +4122,20 @@
             / *!
                 \table
                 \row
-                    \o Basic Widgets
-                    \o Basic GUI widgets such as buttons, comboboxes
+                    \li Basic Widgets
+                    \li Basic GUI widgets such as buttons, comboboxes
                        and scrollbars.
 
                 \omit
                 \row
-                    \o Component Model
-                    \o Interfaces and helper classes for the Qt
+                    \li Component Model
+                    \li Interfaces and helper classes for the Qt
                        Component Model.
                 \endomit
 
                 \row
-                    \o Database Classes
-                    \o Database related classes, e.g. for SQL databases.
+                    \li Database Classes
+                    \li Database related classes, e.g. for SQL databases.
                 \endtable
             * /
             \endcode
@@ -4464,8 +4439,8 @@
         \endraw
 
         \list
-            \o 52 properties inherited from QWidget
-            \o 1 property inherited from QObject
+            \li 52 properties inherited from QWidget
+            \li 1 property inherited from QObject
         \endlist
 
         \raw HTML
@@ -4473,13 +4448,13 @@
         \endraw
 
         \list
-            \o \l {constructor} {PreviewWindow}(QWidget *parent = 0)
-            \o void \l {function} {setWindowFlags}(Qt::WindowFlags flags)
+            \li \l {constructor} {PreviewWindow}(QWidget *parent = 0)
+            \li void \l {function} {setWindowFlags}(Qt::WindowFlags flags)
         \endlist
 
         \list
-            \o 183 public functions inherited from QWidget
-            \o 28 public functions inherited from QObject
+            \li 183 public functions inherited from QWidget
+            \li 28 public functions inherited from QObject
         \endlist
 
         \raw HTML
@@ -4487,8 +4462,8 @@
         \endraw
 
         \list
-            \o 17 public slots inherited from QWidget
-            \o 1 public slot inherited from QObject
+            \li 17 public slots inherited from QWidget
+            \li 1 public slot inherited from QObject
         \endlist
 
         \raw HTML
@@ -4496,12 +4471,12 @@
         \endraw
 
         \list
-            \o 1 signal inherited from QWidget
-            \o 1 signal inherited from QObject
-            \o 4 static public members inherited from QWidget
-            \o 4 static public members inherited from QObject
-            \o 39 protected functions inherited from QWidget
-            \o 7 protected functions inherited from QObject
+            \li 1 signal inherited from QWidget
+            \li 1 signal inherited from QObject
+            \li 4 static public members inherited from QWidget
+            \li 4 static public members inherited from QObject
+            \li 39 protected functions inherited from QWidget
+            \li 7 protected functions inherited from QObject
         \endlist
 
         \target preview window
@@ -4687,11 +4662,11 @@
 
         Files:
         \list
-        \o \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-imageviewer-cpp.html}
+        \li \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-imageviewer-cpp.html}
            {widgets/imageviewer/imageviewer.cpp}
-        \o \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-imageviewer-h.html}
+        \li \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-imageviewer-h.html}
            {widgets/imageviewer/imageviewer.h}
-        \o \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-main-cpp.html}
+        \li \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-main-cpp.html}
            {widgets/imageviewer/main.cpp}
         \endlist
 
@@ -5214,19 +5189,19 @@
 
     \list
 
-    \o faq - A frequently asked question.
+    \li faq - A frequently asked question.
 
-    \o howto - A user guide for how to use some component of the
+    \li howto - A user guide for how to use some component of the
     software.
 
-    \o example - A page that describes a working example.
+    \li example - A page that describes a working example.
 
-    \o overview - For text pages that provide an overview of some
+    \li overview - For text pages that provide an overview of some
     important subject.
 
-    \o tutorial - For text pages that are part of a tutorial.
+    \li tutorial - For text pages that are part of a tutorial.
 
-    \o api - This is the type of page used for C++ class references
+    \li api - This is the type of page used for C++ class references
     and QML element references, etc. You should never use this one for
     the pages you write, because this one is reserved for qdoc.
 
@@ -5309,8 +5284,8 @@
         Access functions:
 
         \list
-        \o \bold { bool isFlat () const}
-        \o \bold { void setFlat ( bool )}
+        \li \b { bool isFlat () const}
+        \li \b { void setFlat ( bool )}
         \endlist
 
     \endquotation
@@ -5343,7 +5318,7 @@
         Access functions:
 
         \list
-        \o \bold { int width () const}
+        \li \b { int width () const}
         \endlist
 
         See also \l{QWidget::geometry} {geometry},
@@ -5490,9 +5465,9 @@
         are available:
 
         \list
-          \o \l Rotation
-          \o \l Scale
-          \o \l Translate
+          \li \l Rotation
+          \li \l Scale
+          \li \l Translate
         \endlist
 
         The Transform elements let you create and control advanced
@@ -5843,28 +5818,28 @@
     below the \l {Topic Commands} {topic} command.
 
     \list
-      \o \l {16-qdoc-commands-status.html#compat-command}{\\compat},
-      \o \l {15-qdoc-commands-navigation.html#contentspage-command}{\\contentspage},
-      \o \l {15-qdoc-commands-navigation.html#indexpage-command}{\\indexpage},
-      \o \l {19-qdoc-commands-grouping.html#ingroup-command}{\\ingroup},
-      \o \l {18-qdoc-commands-relating.html#inherits-command}{\\inherits},
-      \o \l {19-qdoc-commands-grouping.html#inmodule-command}{\\inmodule},
-      \o \l {16-qdoc-commands-status.html#internal-command}{\\internal},
-      \o \l {19-qdoc-commands-grouping.html#mainclass-command}{\\mainclass},
-      \o \l {15-qdoc-commands-navigation.html#nextpage-command}{\\nextpage},
-      \o \l {17-qdoc-commands-thread.html#nonreentrant-command}{\\nonreentrant},
-      \o \l {16-qdoc-commands-status.html#obsolete-command}{\\obsolete},
-      \o \l {18-qdoc-commands-relating.html#overload-command}{\\overload},
-      \o \l {16-qdoc-commands-status.html#preliminary-command}{\\preliminary},
-      \o \l {15-qdoc-commands-navigation.html#previouspage-command}{\\previouspage},
-      \o \l {17-qdoc-commands-thread.html#reentrant-command}{\\reentrant},
-      \o \l {18-qdoc-commands-relating.html#reimp-command}{\\reimp},
-      \o \l {18-qdoc-commands-relating.html#relates-command}{\\relates},
-      \o \l {16-qdoc-commands-status.html#since-command}{\\since},
-      \o \l {15-qdoc-commands-navigation.html#startpage-command}{\\startpage},
-      \o \l {20-qdoc-commands-namingthings.html#subtitle-command}{\\subtitle}
-      \o \l {17-qdoc-commands-thread.html#threadsafe-command}{\\threadsafe},
-      \o \l {20-qdoc-commands-namingthings.html#title-command}{\\title}
+      \li \l {16-qdoc-commands-status.html#compat-command}{\\compat},
+      \li \l {15-qdoc-commands-navigation.html#contentspage-command}{\\contentspage},
+      \li \l {15-qdoc-commands-navigation.html#indexpage-command}{\\indexpage},
+      \li \l {19-qdoc-commands-grouping.html#ingroup-command}{\\ingroup},
+      \li \l {18-qdoc-commands-relating.html#inherits-command}{\\inherits},
+      \li \l {19-qdoc-commands-grouping.html#inmodule-command}{\\inmodule},
+      \li \l {16-qdoc-commands-status.html#internal-command}{\\internal},
+      \li \l {19-qdoc-commands-grouping.html#mainclass-command}{\\mainclass},
+      \li \l {15-qdoc-commands-navigation.html#nextpage-command}{\\nextpage},
+      \li \l {17-qdoc-commands-thread.html#nonreentrant-command}{\\nonreentrant},
+      \li \l {16-qdoc-commands-status.html#obsolete-command}{\\obsolete},
+      \li \l {18-qdoc-commands-relating.html#overload-command}{\\overload},
+      \li \l {16-qdoc-commands-status.html#preliminary-command}{\\preliminary},
+      \li \l {15-qdoc-commands-navigation.html#previouspage-command}{\\previouspage},
+      \li \l {17-qdoc-commands-thread.html#reentrant-command}{\\reentrant},
+      \li \l {18-qdoc-commands-relating.html#reimp-command}{\\reimp},
+      \li \l {18-qdoc-commands-relating.html#relates-command}{\\relates},
+      \li \l {16-qdoc-commands-status.html#since-command}{\\since},
+      \li \l {15-qdoc-commands-navigation.html#startpage-command}{\\startpage},
+      \li \l {20-qdoc-commands-namingthings.html#subtitle-command}{\\subtitle}
+      \li \l {17-qdoc-commands-thread.html#threadsafe-command}{\\threadsafe},
+      \li \l {20-qdoc-commands-namingthings.html#title-command}{\\title}
     \endlist
 
 */
@@ -5901,9 +5876,9 @@
         Table of contents:
 
         \list
-        \o \l {Getting Started}
-        \o \l {Creating Dialogs}
-        \o \l {Creating Main Windows}
+        \li \l {Getting Started}
+        \li \l {Creating Dialogs}
+        \li \l {Creating Main Windows}
         \endlist
     * /
 
@@ -5945,9 +5920,9 @@
         \title Index
 
         \list
-            \o \l {Basic Qt}
-            \o \l {Creating Dialogs}
-            \o \l {Getting Started}
+            \li \l {Basic Qt}
+            \li \l {Creating Dialogs}
+            \li \l {Getting Started}
         \endlist
     * /
     \endcode
@@ -6108,7 +6083,7 @@
     reference page.
 
     \quotation
-        \bold {This class is part of the Qt 3 support
+        \b {This class is part of the Qt 3 support
         library.} It is provided to keep old source code
         working. We strongly advise against using it in new
         code. See the \l
@@ -6137,15 +6112,15 @@
         <h1>Qt 3 Support Members for MyClass</h1>
         \endraw
 
-        \bold {The following class members are part of the Qt 3
+        \b {The following class members are part of the Qt 3
         support layer.} They are provided to help you port old code to
         Qt 4. We advise against using them in new code.
 
         ...
 
         \list
-            \o void MyQt3SupportMemberFunction()
-            \o ...
+            \li void MyQt3SupportMemberFunction()
+            \li ...
         \endlist
 
         \raw HTML
@@ -6211,15 +6186,15 @@
         <h1>Obsolete Members for MyClass</h1>
         \endraw
 
-        \bold {The following class members are obsolete.} They are
+        \b {The following class members are obsolete.} They are
         provided to keep old source code working. We strongly advise
         against using them in new code.
 
         ...
 
         \list
-            \o void MyObsoleteFunction() \c (obsolete)
-            \o ...
+            \li void MyObsoleteFunction() \c (obsolete)
+            \li ...
         \endlist
 
         \raw HTML
@@ -6297,7 +6272,7 @@
         QChar::joining () const</h3>
         \endraw
 
-        \bold {This function is under development and
+        \b {This function is under development and
         subject to change.}
 
         Returns information about the joining properties of the
@@ -6310,12 +6285,12 @@
 
     \quotation
         \list
-        \o ...
-        \o Joining
+        \li ...
+        \li Joining
            \l {http://qt.nokia.com/doc/4.0/qchar.html#Joining-enum}
               {joining}()
            const   \c (preliminary)
-       \o ...
+       \li ...
        \endlist
     \endquotation
 
@@ -6451,7 +6426,7 @@
         #include <QLocale>
         \endcode
 
-        \bold {Note:} All the functions in this class are \l
+        \b {Note:} All the functions in this class are \l
         {threads.html#reentrant} {reentrant}, except \l
         {QLocale::setDefault()} {setDefault()}.
 
@@ -6489,7 +6464,7 @@
     declared reentrant, and lists the exceptions (the declared
     nonreentrant functions). A link to the general documentation on \l
     {threads.html#reentrant} {reentrancy and thread-safety} is
-    included.  In addition a warning, "\bold Warning: This function is
+    included.  In addition a warning, "\b Warning: This function is
     not reentrant.", is generated in the nonreentrant functions'
     documentation.
 
@@ -6578,7 +6553,7 @@
 
     \code
     / *!
-        \qmlclass PauseAnimation QQuickPauseAnimation
+        \qmlclass PauseAnimation QDeclarativePauseAnimation
         \ingroup qml-animation-transition
         \since 4.7
         \inherits Animation
@@ -6617,12 +6592,12 @@
 
     For a function name that is overloaded (except constructors), QDoc
     expects one primary version of the function, and all the others
-    marked with the \bold {\\overload command}.  The primary version
+    marked with the \b {\\overload command}.  The primary version
     should be fully documented. Each overload can have whatever extra
     documentation you want to add for just that overloaded version.
 
     From Qt 4.5, you can include the function name plus '()' as a
-    parameter to the \bold{\\overload} command, which will include a
+    parameter to the \b{\\overload} command, which will include a
     standard \e{This function overloads...}  line of text with a link
     to the documentation for the primary version of the function.
 
@@ -6667,7 +6642,7 @@
         {QWidget::addAction}().
     \endquotation
 
-    If you don't include the function name with the \bold{\\overlaod}
+    If you don't include the function name with the \b{\\overlaod}
     command, then instead of the "This function overloads..." line
     with the link to the documentation for the primary version, you
     get the old standard line:
@@ -6937,8 +6912,145 @@
 */
 
 /*!
-    \page 21-0-qdoc-configuration.html
+    \page 21-0-qdoc-creating-dita-maps.html
     \previouspage Miscellaneous
+    \contentspage Table of Contents
+    \nextpage The QDoc Configuration File
+
+    \title Creating DITA Maps
+
+    You can create DITA map files using three new qdoc commands, the \l{ditamap-command}
+    {ditamap} command, the \l{topicref-command} {topicref} command, and the \l{mapref-command}
+    {mapref} command. How these DITA maps will be used automatically or manually by the
+    documentation build process is still under consideration. This section will be updated
+    as the decisions are made.
+
+    \section1 What is a DITA map?
+
+    A complete description of DITA can be found at the
+    \l{http://www.oasis-open.org/committees/tc_home.php?wg_abbrev=dita}
+    {OASIS Darwin Information Typing Architecture} site.
+
+    An explanation of the DITA map is found at that site
+    \l{http://docs.oasis-open.org/dita/v1.2/os/spec/langref/map.html}{here}.
+
+    \target ditamap-command
+    \section1 \\ditamap
+
+    The \\ditamap command is for creating a DITA map using qdoc commands.
+    The \\ditamap command is a kind of \\page command that produces a
+    \e{.ditamap} instead of a \e{.html} or \e{.xml} file. The file that
+    is created actually contains XML text, but the \e{.ditamap} suffix is
+    used to identify the file as containing a DITA MAP.
+
+    The argument is the name of the the file to be created. In the following
+    example, the file \e{creator.ditamap} is output:
+    \code
+      \ditamap creator.ditamap
+    \endcode
+
+    \target topicref-command
+    \section1 \\topicref \\endtopicref
+
+    The \\topicref \\endtopicref commands are for creating a topicref
+    in the ditamap. The \\endtopicref command is required because
+    \\topicref commands can be nested.
+
+    \\topicref has two arguments. The first argument becomes the value
+    of the \e navtitle attribute. Normally, you use the title of the
+    topic being referenced. This title is often what will appear in a
+    table of contents constructed from the ditamap.
+
+    The second argument is the name of the page being referenced. The
+    second argument is actually optional, for example if you are using
+    a topicref as a container for other topicrefs and maprefs. It is
+    also optional if you want qdoc to find the page name for you by
+    looking up the title in its internal data structure. It is recommended
+    that you provide the second parameter if you know the page name.
+
+    \code
+      \topicref {QML Module QtQuick 2} {qtquick-2.xml}
+        \mapref {Creator Manual} {creator-manual.ditamap} \endmapref
+        \topicref {QML Mouse Events} {qtquick2-mouseevents.xml} \endtopicref
+        \topicref {Property Binding} {qtquick2-propertybinding.xml} \endtopicref
+      \endtopicref
+    \endcode
+
+    \target mapref-command
+    \section1 \\mapref
+
+    The \\mapref command is for creating a mapref in the ditamap. A
+    mapref refers to another ditamap, which you want to include in
+    your ditamap.  Like the \\topicref command, the \\mapref command
+    has two arguments, but for the \\mapref command, both arguments
+    are required. The arguments are essentially the same as described
+    for \\topicref, but for \\mapref, the second command must be the
+    name of another ditamap, i.e. it must have the \e{.ditamap}
+    suffix. You must provide the file name. qdoc can't look up the
+    file name for you.
+
+    \code
+        \mapref {Creator Manual} {creator-manual.ditamap} \endmapref
+    \endcode
+
+    \section1 An example ditamap page
+
+    The following example uses the three qdoc ditamap commands described above.
+
+    \code
+      \ditamap creator.ditamap
+      \title The DITA Map For Creator
+
+      \topicref {QML Module QtQuick 1}
+        \topicref {QML Mouse Events} \endtopicref
+        \topicref {Property Binding} \endtopicref
+      \endtopicref
+
+      \topicref {QML Module QtQuick 2} {qtquick-2.xml}
+        \mapref {Creator Manual} {creator-manual.ditamap} \endmapref
+        \topicref {QML Mouse Events} {qtquick2-mouseevents.xml} \endtopicref
+        \topicref {Property Binding} {qtquick2-propertybinding.xml} \endtopicref
+      \endtopicref
+
+      \topicref {QML Module QtQuick.Particles 2} {qtquick-particles-2.xml}
+        \topicref {Age} {qml-qtquick-particles2-age.xml} \endtopicref
+      \endtopicref
+    \endcode
+
+    \section1 The resulting ditamap file
+
+    This is the \e{.ditamap} file you get when you input the qdoc
+    ditamap page shown above. Note that you can write ditamap files
+    directly in XML just as easily as you can write them using the
+    qdoc commands. The choice is yours.
+
+    \code
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+      <map>
+        <topicmeta>
+          <shortdesc>The DITA Map For Creator</shortdesc>
+        </topicmeta>
+        <topicref navtitle="QML Module QtQuick 1" href="qtquick-1.xml">
+          <topicref navtitle="QML Mouse Events" href="qtquick2-mouseevents.xml"/>
+          <topicref navtitle="Property Binding" href="qtquick2-propertybinding.xml"/>
+        </topicref>
+        <topicref navtitle="QML Module QtQuick 2" href="qtquick-2.xml">
+          <mapref navtitle="Creator Manual" href="creator-manual.ditamap"/>
+          <topicref navtitle="QML Mouse Events" href="qtquick2-mouseevents.xml"/>
+          <topicref navtitle="Property Binding" href="qtquick2-propertybinding.xml"/>
+        </topicref>
+        <topicref navtitle="QML Module QtQuick.Particles 2" href="qtquick-particles-2.xml">
+          <topicref navtitle="Age" href="qml-qtquick-particles2-age.xml"/>
+        </topicref>
+      </map>
+    \endcode
+
+*/
+
+/*!
+    \page 21-0-qdoc-configuration.html
+    \previouspage Creating DITA Maps
     \contentspage Table of Contents
     \nextpage Generic Configuration Variables
 
@@ -6998,54 +7110,54 @@
     \section1 Variable List
 
     \list
-    \o \l {22-qdoc-configuration-generalvariables.html#alias-variable} {alias}
-    \o \l {23-qdoc-configuration-cppvariables.html#Cpp.ignoredirectives-variable} {Cpp.ignoredirectives}
-    \o \l {23-qdoc-configuration-cppvariables.html#Cpp.ignoretokens-variable} {Cpp.ignoretokens}
-    \o \l {23-qdoc-configuration-cppvariables.html#basedir-variable} {basedir} \span {class="newStuff"} {(experimental)}
-    \o \l {22-qdoc-configuration-generalvariables.html#defines-variable} {defines}
-    \o \l {22-qdoc-configuration-generalvariables.html#edition-variable} {edition}
-    \o \l {22-qdoc-configuration-generalvariables.html#exampledirs-variable} {exampledirs}
-    \o \l {22-qdoc-configuration-generalvariables.html#examples-variable} {examples}
-    \o \l {22-qdoc-configuration-generalvariables.html#examples.fileextensions-variable} {examples.fileextensions}
-    \o \l {22-qdoc-configuration-generalvariables.html#excludedirs-variable} {excludedirs}
-    \o \l {22-qdoc-configuration-generalvariables.html#excludefiles-variable} {excludefiles}
-    \o \l {22-qdoc-configuration-generalvariables.html#extraimages-variable} {extraimages}
-    \o \l {22-qdoc-configuration-generalvariables.html#falsehoods-variable} {falsehoods}
-    \o \l {22-qdoc-configuration-generalvariables.html#headerdirs-variable} {headerdirs}
-    \o \l {22-qdoc-configuration-generalvariables.html#headers-variable} {headers}
-    \o \l {22-qdoc-configuration-generalvariables.html#headers.fileextensions-variable} {headers.fileextensions}
-    \o \l {24-qdoc-configuration-htmlvariables.html#HTML.footer-variable} {HTML.footer}
-    \o \l {24-qdoc-configuration-htmlvariables.html#HTML.postheader-variable} {HTML.postheader}
-    \o \l {24-qdoc-configuration-htmlvariables.html#HTML.style-variable} {HTML.style}
-    \o \l {22-qdoc-configuration-generalvariables.html#imagedirs-variable} {imagedirs}
-    \o \l {22-qdoc-configuration-generalvariables.html#images-variable} {images}
-    \o \l {22-qdoc-configuration-generalvariables.html#images.fileextensions-variable} {images.fileextensions}
-    \o \l {22-qdoc-configuration-generalvariables.html#language-variable} {language}
-    \o \l {22-qdoc-configuration-generalvariables.html#macro-variable} {macro}
-    \o \l {22-qdoc-configuration-generalvariables.html#outputdir-variable} {outputdir}
-    \o \l {22-qdoc-configuration-generalvariables.html#outputformats-variable} {outputformats}
-    \o \l {22-qdoc-configuration-generalvariables.html#sourcedirs-variable} {sourcedirs}
-    \o \l {22-qdoc-configuration-generalvariables.html#sources-variable} {sources}
-    \o \l {22-qdoc-configuration-generalvariables.html#sources.fileextensions-variable} {sources.fileextensions}
-    \o \l {22-qdoc-configuration-generalvariables.html#spurious-variable} {spurious}
-    \o \l {22-qdoc-configuration-generalvariables.html#tabsize-variable} {tabsize}
-    \o \l {22-qdoc-configuration-generalvariables.html#version-variable} {version}
-    \o \l {22-qdoc-configuration-generalvariables.html#versionsym-variable} {versionsym}
+    \li \l {22-qdoc-configuration-generalvariables.html#alias-variable} {alias}
+    \li \l {23-qdoc-configuration-cppvariables.html#Cpp.ignoredirectives-variable} {Cpp.ignoredirectives}
+    \li \l {23-qdoc-configuration-cppvariables.html#Cpp.ignoretokens-variable} {Cpp.ignoretokens}
+    \li \l {22-qdoc-configuration-generalvariables.html#basedir-variable} {basedir} \span {class="newStuff"} {(experimental)}
+    \li \l {22-qdoc-configuration-generalvariables.html#defines-variable} {defines}
+    \li \l {22-qdoc-configuration-generalvariables.html#edition-variable} {edition}
+    \li \l {22-qdoc-configuration-generalvariables.html#exampledirs-variable} {exampledirs}
+    \li \l {22-qdoc-configuration-generalvariables.html#examples-variable} {examples}
+    \li \l {22-qdoc-configuration-generalvariables.html#examples.fileextensions-variable} {examples.fileextensions}
+    \li \l {22-qdoc-configuration-generalvariables.html#excludedirs-variable} {excludedirs}
+    \li \l {22-qdoc-configuration-generalvariables.html#excludefiles-variable} {excludefiles}
+    \li \l {22-qdoc-configuration-generalvariables.html#extraimages-variable} {extraimages}
+    \li \l {22-qdoc-configuration-generalvariables.html#falsehoods-variable} {falsehoods}
+    \li \l {22-qdoc-configuration-generalvariables.html#headerdirs-variable} {headerdirs}
+    \li \l {22-qdoc-configuration-generalvariables.html#headers-variable} {headers}
+    \li \l {22-qdoc-configuration-generalvariables.html#headers.fileextensions-variable} {headers.fileextensions}
+    \li \l {24-qdoc-configuration-htmlvariables.html#HTML.footer-variable} {HTML.footer}
+    \li \l {24-qdoc-configuration-htmlvariables.html#HTML.postheader-variable} {HTML.postheader}
+    \li \l {24-qdoc-configuration-htmlvariables.html#HTML.style-variable} {HTML.style}
+    \li \l {22-qdoc-configuration-generalvariables.html#imagedirs-variable} {imagedirs}
+    \li \l {22-qdoc-configuration-generalvariables.html#images-variable} {images}
+    \li \l {22-qdoc-configuration-generalvariables.html#images.fileextensions-variable} {images.fileextensions}
+    \li \l {22-qdoc-configuration-generalvariables.html#language-variable} {language}
+    \li \l {22-qdoc-configuration-generalvariables.html#macro-variable} {macro}
+    \li \l {22-qdoc-configuration-generalvariables.html#outputdir-variable} {outputdir}
+    \li \l {22-qdoc-configuration-generalvariables.html#outputformats-variable} {outputformats}
+    \li \l {22-qdoc-configuration-generalvariables.html#sourcedirs-variable} {sourcedirs}
+    \li \l {22-qdoc-configuration-generalvariables.html#sources-variable} {sources}
+    \li \l {22-qdoc-configuration-generalvariables.html#sources.fileextensions-variable} {sources.fileextensions}
+    \li \l {22-qdoc-configuration-generalvariables.html#spurious-variable} {spurious}
+    \li \l {22-qdoc-configuration-generalvariables.html#tabsize-variable} {tabsize}
+    \li \l {22-qdoc-configuration-generalvariables.html#version-variable} {version}
+    \li \l {22-qdoc-configuration-generalvariables.html#versionsym-variable} {versionsym}
     \endlist
 
     \section1 Categories
 
     \list
-    \o \l {Generic Configuration Variables}
-    \o \l {C++ Specific Configuration Variables}
-    \o \l {HTML Specific Configuration Variables}
+    \li \l {Generic Configuration Variables}
+    \li \l {C++ Specific Configuration Variables}
+    \li \l {HTML Specific Configuration Variables}
     \endlist
 
     \section1 Configuration File Examples
 
     \list
-    \o A minimum configuration file: \l minimum.qdocconf
-    \o The Qt configuration file: \l qt.qdocconf
+    \li A minimum configuration file: \l minimum.qdocconf
+    \li The Qt configuration file: \l qt.qdocconf
     \endlist
 */
 
@@ -7062,7 +7174,7 @@
 
 /*!
     \page 21-2-qt-qdocconf.html
-    \previouspage Compatibility Issues
+    \previouspage Supporting Derived Projects
     \contentspage Table of Contents
     \nextpage minimum.qdocconf
 
@@ -7153,13 +7265,11 @@
     temporary-command-name}.
 
     \code
-        alias.i = e
+        alias.e = i
     \endcode
 
-    This renames the built-in command \\i (italics) to \\e.  The \c
-    alias variable is often used for compatibility reasons; for more
-    information see the \l {Compatibility Issues} {compatibility
-    section}.
+    This renames the built-in command \\e (italics) to be \\i.  The \c
+    alias variable is often used for compatibility reasons.
 
     See also \l {macro-variable} {macro}.
 
@@ -7176,7 +7286,7 @@
     to adjust the appearance of certain types of HTML elements, this
     level of indentation is not always required.
 
-    \target basedir-variable \span {class="newStuff"} {(experimental)}
+    \target basedir-variable
     \section1 basedir
 
     The \c basedir variable tells QDoc two things. First, the fact that
@@ -7746,7 +7856,7 @@
     when generating DITA XML.
 
     \code
-        macro.gui              = "\\bold"
+        macro.gui              = "\\b"
         macro.raisedaster.HTML = "<sup>*</sup>"
     \endcode
 
@@ -8379,7 +8489,6 @@
     \page 25-qdoc-configuration-derivedprojects.html
     \previouspage HTML Specific Configuration Variables
     \contentspage Table of Contents
-    \nextpage Compatibility Issues
 
     \title Supporting Derived Projects
 
@@ -8486,8 +8595,6 @@
     check the Qt Creator documentation:
 
     \code
-        include($QTDIR/tools/qdoc3/test/compat.qdocconf)
-
         project                 = QtCreator
         description             = Qt Creator Class Documentation
         url                     = http://doc.qt.nokia.com/qtcreator-2.2
@@ -8505,11 +8612,9 @@
     \endcode
 
     The code above requires that you run QDoc from the directory that
-    contains this file. You need to include the compat.qdocconf
-    file for compatibility reasons; this is further explained in the
-    \l {Compatibility Issues} section.
+    contains this file.
 
-    \bold {To resolve the actual links to Qt classes, the
+    \b {To resolve the actual links to Qt classes, the
     mini-project's \c .qdocconf file needs to assign a value to the \l
     indexes variable; \c $QTDIR/doc/html/qt.index makes sure that you
     always use the updated index file for the Qt documentation.}
@@ -8519,134 +8624,6 @@
     index back again later isn't instantaneous either, but it's
     quicker than processing all the Qt classes each time you need to
     write a new document.
-*/
-
-/*!
-    \page 26-qdoc-commands-compatibility.html
-    \previouspage Supporting Derived Projects
-    \contentspage Table of Contents
-    \nextpage qt.qdocconf
-
-    \title Compatibility Issues
-
-    \section1 General Description
-
-    \target reason
-
-    Because QDoc evolves to suit our documentation needs, there can be
-    some compatibility issues when converting to a new version.
-
-    To allow you to proceed at your own speed when converting your
-    qdoc comments to use new qdoc commands and formats, the ability to
-    include a configuration file called \c {compat.qdocconf} is
-    provided.
-
-    A \c {compat.qdocconf} file is a separate configuration file,
-    which you include in your main configuration file. It typically
-    contains the mappings from old qdoc commands to new ones using
-    \l {alias} and
-    \l {22-qdoc-configuration-generalvariables.html#macro-variable}
-    {macro} configuration variables.
-
-    \section1 Qt Compatibility
-
-    In Qt's documentation there still exist occurrences of old
-    commands, and the Qt \l {qt.qdocconf} {configuration file} needs to
-    include the compat.qdocconf file tailored for Qt. For more
-    detailed information about the commands creating compatibility
-    issues, see the \l {Command Comments} {command comments}.
-
-    \section1 Qt's current compat.qdocconf file
-
-    \quotefile files/compat.qdocconf
-
-    \section1 Command Comments
-
-    \table
-    \header
-        \o New Command
-        \o Old Command
-        \o Description
-
-    \row
-        \o \\i \target i-versus-e
-        \o \\e
-        \o Earlier we
-           used the \\i command to indicate a list or table item, and
-           the \\e command for rendering in italic. Now we want the
-           \\i command to render in italic discarding the
-           \\e command name.
-
-           \bold {We still need to use the \\e command to render in
-           italic in new documentation for \l {reason} {compatibility
-           reasons}}.
-
-    \row
-        \o \\include \target include-versus-input
-        \o \\input
-        \o The \\include command was previously used to quote the
-           complete contents of a source file, now we want to use the
-           command to include separate documentation.
-           That is the functionality of the old \\input command
-           which name we want to discard.
-
-           \bold {We still need to use the \\input command to include
-           plain text in new documentation for \l
-           {reason} {compatibility reasons}}.
-
-    \row
-        \o \\quotefile \target quotefile-versus-include
-        \o \\include
-        \o Earlier, we have used the \\quotefile command to
-           quote from file, i.e. quote parts from file, and the
-           \\include command to quote the entire file. Since we now want
-           \\include to include separate documentation, we change the use of
-           \\quotefile to quote a complete source file.
-
-           \bold {We still need to use the \\include command to quote
-           the entire contents of a source file in new documentation
-           for \l {reason} {compatibility reasons}}.
-
-    \row
-        \o \\quotefromfile \target quotefromfile-versus-quotefile
-        \o \\quotefile
-        \o Earlier, we have used the \\quotefile command to
-           quote from file, i.e. quote parts from file. Since we now want
-           that command to quote an entire file, we introduce the new
-           \\quotefromfile command to quote from file.
-
-           \bold {Use \l {quotefromfile-command} {\\quotefromfile} to quote
-           parts from a source file in new documentation}.
-
-    \row
-        \o \\o \target o-versus-i
-        \o \\i
-        \o Earlier we used the \\i command to indicate list items
-           and table items. Since we now want the \\i command to render
-           in italic instead, we introduce the new \\o command for
-           this purpose.
-
-           \bold {Use \l {o-command} {\\o} to indicate list and table items in
-           new documentation}.
-
-    \row
-        \o \\quotation \target quotation-versus-quote
-        \o \\quote
-        \o These commands are equivalent, and represent a simple name
-          change.
-
-          \bold {Use \l {quotation} {\\quotation} in new
-          documentation}.
-
-    \row
-        \o \\image \target image-versus-img
-        \o \\img
-        \o These commands are equivalent, and represent a simple name
-           change.
-
-           \bold {Use \l {image-command} {\\image} in new documentation}.
-
-    \endtable
 */
 
 /*!
@@ -8661,116 +8638,123 @@
 
     \list
 
-    \o \l {04-qdoc-commands-textmarkup.html#a-command} {\\a}
-    \o \l {11-qdoc-commands-specialcontent.html#abstract-command} {\\abstract}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#annotatedlist-command} {\\annotatedlist} \span {class="newStuff"} {(new 03/11/11)}
-    \o \l {23-qdoc-configuration-cppvariables.html#basedir-variable} {basedir} \span {class="newStuff"} {(experimental)}
-    \o \l {06-qdoc-commands-includecodeinline.html#badcode-command} {\\badcode}
-    \o \l {04-qdoc-commands-textmarkup.html#bold-command} {\\bold}
-    \o \l {11-qdoc-commands-specialcontent.html#brief-command} {\\brief}
-    \o \l {04-qdoc-commands-textmarkup.html#c-command} {\\c}
-    \o \l {09-qdoc-commands-includingimages.html#caption-command} {\\caption}
-    \o \l {05-qdoc-commands-documentstructure.html#chapter-command} {\\chapter}
-    \o \l {13-qdoc-commands-topics.html#class-command} {\\class}
-    \o \l {06-qdoc-commands-includecodeinline.html#code-command} {\\code}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#codeline-command} {\\codeline},
-    \o \l {16-qdoc-commands-status.html#compat-command} {\\compat}
-    \o \l {15-qdoc-commands-navigation.html#contentspage-command} {\\contentspage}
-    \o \l {16-qdoc-commands-status.html#default-command} {\\default}
-    \o \l {04-qdoc-commands-textmarkup.html#div-command} {\\div}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#dots-command} {\\dots}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#else-command} {\\else}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#endif-command} {\\endif}
-    \o \l {13-qdoc-commands-topics.html#enum-command} {\\enum}
-    \o \l {13-qdoc-commands-topics.html#example-command} {\\example}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#expire-command} {\\expire}
-    \o \l {13-qdoc-commands-topics.html#externalpage-command} {\\externalpage}
-    \o \l {13-qdoc-commands-topics.html#fn-command} {\\fn}
-    \o \l {11-qdoc-commands-specialcontent.html#footnote-command} {\\footnote}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#generatelist-command} {\\generatelist}
-    \o \l {13-qdoc-commands-topics.html#group-command} {\\group}
-    \o \l {10-qdoc-commands-tablesandlists.html#header-command} {\\header}
-    \o \l {13-qdoc-commands-topics.html#headerfile-command} {\\headerfile}
-    \o \l {04-qdoc-commands-textmarkup.html#i-command} {\\i}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#if-command} {\\if}
-    \o \l {09-qdoc-commands-includingimages.html#image-command} {\\image}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#include-command} {\\include}
-    \o \l {15-qdoc-commands-navigation.html#indexpage-command} {\\indexpage}
-    \o \l {19-qdoc-commands-grouping.html#ingroup-command} {\\ingroup}
-    \o \l {18-qdoc-commands-relating.html#inherits-command}{\\inherits}
-    \o \l {19-qdoc-commands-grouping.html#inmodule-command} {\\inmodule}
-    \o \l {09-qdoc-commands-includingimages.html#inlineimage-command} {\\inlineimage}
-    \o \l {16-qdoc-commands-status.html#internal-command} {\\internal}
-    \o \l {08-qdoc-commands-creatinglinks.html#keyword-command} {\\keyword}
-    \o \l {08-qdoc-commands-creatinglinks.html#l-command} {\\l}
-    \o \l {11-qdoc-commands-specialcontent.html#legalese-command} {\\legalese}
-    \o \l {10-qdoc-commands-tablesandlists.html#list-command} {\\list}
-    \o \l {13-qdoc-commands-topics.html#macro-command} {\\macro}
-    \o \l {19-qdoc-commands-grouping.html#mainclass-command} {\\mainclass}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#meta-command} {\\meta}
-    \o \l {13-qdoc-commands-topics.html#module-command} {\\module}
-    \o \l {13-qdoc-commands-topics.html#namespace-command} {\\namespace}
-    \o \l {15-qdoc-commands-navigation.html#nextpage-command} {\\nextpage}
-    \o \l {06-qdoc-commands-includecodeinline.html#newcode-command} {\\newcode}
-    \o \l {17-qdoc-commands-thread.html#nonreentrant-command} {\\nonreentrant}
-    \o \l {10-qdoc-commands-tablesandlists.html#o-command} {\\o}
-    \o \l {16-qdoc-commands-status.html#obsolete-command} {\\obsolete}
-    \o \l {06-qdoc-commands-includecodeinline.html#oldcode-command} {\\oldcode}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#omit-command} {\\omit}
-    \o \l {10-qdoc-commands-tablesandlists.html#omitvalue-command} {\\omitvalue}
-    \o \l {18-qdoc-commands-relating.html#overload-command} {\\overload}
-    \o \l {13-qdoc-commands-topics.html#page-command} {\\page}
-    \o \l {05-qdoc-commands-documentstructure.html#part-command} {\\part}
-    \o \l {16-qdoc-commands-status.html#preliminary-command} {\\preliminary}
-    \o \l {15-qdoc-commands-navigation.html#previouspage-command} {\\previouspage}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#printline-command} {\\printline}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#printto-command} {\\printto}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#printuntil-command} {\\printuntil}
-    \o \l {13-qdoc-commands-topics.html#property-command} {\\property}
-    \o \l {13-qdoc-commands-topics.html#qmlattachedproperty-command} {\\qmlattachedproperty}
-    \o \l {13-qdoc-commands-topics.html#qmlattachedsignal-command} {\\qmlattachedsignal}
-    \o \l {13-qdoc-commands-topics.html#qmlbasictype-command} {\\qmlbasictype}
-    \o \l {13-qdoc-commands-topics.html#qmlclass-command} {\\qmlclass}
-    \o \l {13-qdoc-commands-topics.html#qmlmethod-command} {\\qmlmethod}
-    \o \l {13-qdoc-commands-topics.html#qmlproperty-command} {\\qmlproperty}
-    \o \l {13-qdoc-commands-topics.html#qmlsignal-command} {\\qmlsignal}
-    \o \l {13-qdoc-commands-topics.html#qmlmodule-command} {\\qmlmodule}
-    \o \l {13-qdoc-commands-topics.html#inqmlmodule-command} {\\inqmlmodule}
-    \o \l {11-qdoc-commands-specialcontent.html#quotation-command} {\\quotation}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#quotefile-command} {\\quotefile}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#quotefromfile-command} {\\quotefromfile}
-    \o \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\raw} \span {class="newStuff"} {(avoid)}
-    \o \l {17-qdoc-commands-thread.html#reentrant-command} {\\reentrant}
-    \o \l {18-qdoc-commands-relating.html#reimp-command} {\\reimp}
-    \o \l {18-qdoc-commands-relating.html#relates-command} {\\relates}
-    \o \l {10-qdoc-commands-tablesandlists.html#row-command} {\\row}
-    \o \l {08-qdoc-commands-creatinglinks.html#sa-command} {\\sa}
-    \o \l {05-qdoc-commands-documentstructure.html#sectionOne-command} {\\section1}
-    \o \l {05-qdoc-commands-documentstructure.html#sectionTwo-command} {\\section2}
-    \o \l {05-qdoc-commands-documentstructure.html#sectionThree-command} {\\section3}
-    \o \l {05-qdoc-commands-documentstructure.html#sectionFour-command} {\\section4}
-    \o \l {13-qdoc-commands-topics.html#service-command} {\\service}
-    \o \l {16-qdoc-commands-status.html#since-command} {\\since}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#skipline-command} {\\skipline}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#skipto-command} {\\skipto}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#skipuntil-command} {\\skipuntil}
-    \o \l {07-0-qdoc-commands-includingexternalcode.html#snippet-command} {\\snippet},
-    \o \l {04-qdoc-commands-textmarkup.html#span-command} {\\span}
-    \o \l {15-qdoc-commands-navigation.html#startpage-command} {\\startpage}
-    \o \l {04-qdoc-commands-textmarkup.html#sub-command} {\\sub}
-    \o \l {20-qdoc-commands-namingthings.html#subtitle-command} {\\subtitle}
-    \o \l {04-qdoc-commands-textmarkup.html#sup-command} {\\sup}
-    \o \l {10-qdoc-commands-tablesandlists.html#table-command} {\\table}
-    \o \l {11-qdoc-commands-specialcontent.html#tableofcontents-command} {\\tableofcontents}
-    \o \l {08-qdoc-commands-creatinglinks.html#target-command} {\\target}
-    \o \l {17-qdoc-commands-thread.html#threadsafe-command} {\\threadsafe}
-    \o \l {20-qdoc-commands-namingthings.html#title-command} {\\title}
-    \o \l {04-qdoc-commands-textmarkup.html#tt-command} {\\tt}
-    \o \l {13-qdoc-commands-topics.html#typedef-command} {\\typedef}
-    \o \l {04-qdoc-commands-textmarkup.html#underline-command} {\\underline}
-    \o \l {13-qdoc-commands-topics.html#variable-command} {\\variable}
-    \o \l {10-qdoc-commands-tablesandlists.html#value-command} {\\value}
-    \o \l {11-qdoc-commands-specialcontent.html#warning-command} {\\warning}
+    \li \l {04-qdoc-commands-textmarkup.html#a-command} {\\a}
+    \li \l {11-qdoc-commands-specialcontent.html#abstract-command} {\\abstract}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#annotatedlist-command} {\\annotatedlist}
+    \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\b} \span {class="newStuff"} {(new 5/3/2012)}
+    \li \l { 22-qdoc-configuration-generalvariables.html#basedir-variable} {basedir} \span {class="newStuff"} {(experimental)}
+    \li \l {06-qdoc-commands-includecodeinline.html#badcode-command} {\\badcode}
+    \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\bold} \span {class="newStuff"} {(deprecated, use \\b)}
+    \li \l {11-qdoc-commands-specialcontent.html#brief-command} {\\brief}
+    \li \l {04-qdoc-commands-textmarkup.html#c-command} {\\c}
+    \li \l {09-qdoc-commands-includingimages.html#caption-command} {\\caption}
+    \li \l {05-qdoc-commands-documentstructure.html#chapter-command} {\\chapter}
+    \li \l {13-qdoc-commands-topics.html#class-command} {\\class}
+    \li \l {06-qdoc-commands-includecodeinline.html#code-command} {\\code}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#codeline-command} {\\codeline},
+    \li \l {16-qdoc-commands-status.html#compat-command} {\\compat}
+    \li \l {15-qdoc-commands-navigation.html#contentspage-command} {\\contentspage}
+    \li \l {16-qdoc-commands-status.html#default-command} {\\default}
+    \li \l {21-0-qdoc-creating-dita-maps.html#ditamap-command} {\\ditamap} \span {class="newStuff"} {(new 05/03/12)}
+    \li \l {04-qdoc-commands-textmarkup.html#div-command} {\\div}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#dots-command} {\\dots}
+    \li \l {04-qdoc-commands-textmarkup.html#e-command} {\\e} \span {class="newStuff"} {(new 5/3/2012)}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#else-command} {\\else}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#endif-command} {\\endif}
+    \li \l {13-qdoc-commands-topics.html#enum-command} {\\enum}
+    \li \l {13-qdoc-commands-topics.html#example-command} {\\example}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#expire-command} {\\expire}
+    \li \l {13-qdoc-commands-topics.html#externalpage-command} {\\externalpage}
+    \li \l {13-qdoc-commands-topics.html#fn-command} {\\fn}
+    \li \l {11-qdoc-commands-specialcontent.html#footnote-command} {\\footnote}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#generatelist-command} {\\generatelist}
+    \li \l {13-qdoc-commands-topics.html#group-command} {\\group}
+    \li \l {10-qdoc-commands-tablesandlists.html#header-command} {\\header}
+    \li \l {13-qdoc-commands-topics.html#headerfile-command} {\\headerfile}
+    \li \l {04-qdoc-commands-textmarkup.html#e-command} {\\i} \span {class="newStuff"} {(deprecated, use \\e)}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#if-command} {\\if}
+    \li \l {09-qdoc-commands-includingimages.html#image-command} {\\image}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#include-command} {\\include}
+    \li \l {15-qdoc-commands-navigation.html#indexpage-command} {\\indexpage}
+    \li \l {19-qdoc-commands-grouping.html#ingroup-command} {\\ingroup}
+    \li \l {18-qdoc-commands-relating.html#inherits-command}{\\inherits}
+    \li \l {19-qdoc-commands-grouping.html#inmodule-command} {\\inmodule}
+    \li \l {09-qdoc-commands-includingimages.html#inlineimage-command} {\\inlineimage}
+    \li \l {16-qdoc-commands-status.html#internal-command} {\\internal}
+    \li \l {08-qdoc-commands-creatinglinks.html#keyword-command} {\\keyword}
+    \li \l {08-qdoc-commands-creatinglinks.html#l-command} {\\l}
+    \li \l {11-qdoc-commands-specialcontent.html#legalese-command} {\\legalese}
+    \li \l {10-qdoc-commands-tablesandlists.html#li-command} {\\li} \span {class="newStuff"} {(new 5/3/2012)}
+    \li \l {10-qdoc-commands-tablesandlists.html#list-command} {\\list}
+    \li \l {13-qdoc-commands-topics.html#macro-command} {\\macro}
+    \li \l {19-qdoc-commands-grouping.html#mainclass-command} {\\mainclass}
+    \li \l {21-0-qdoc-creating-dita-maps.html#mapref-command} {\\mapref} \span {class="newStuff"} {(new 05/03/12)}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#meta-command} {\\meta}
+    \li \l {13-qdoc-commands-topics.html#module-command} {\\module}
+    \li \l {13-qdoc-commands-topics.html#namespace-command} {\\namespace}
+    \li \l {15-qdoc-commands-navigation.html#nextpage-command} {\\nextpage}
+    \li \l {06-qdoc-commands-includecodeinline.html#newcode-command} {\\newcode}
+    \li \l {17-qdoc-commands-thread.html#nonreentrant-command} {\\nonreentrant}
+    \li \l {10-qdoc-commands-tablesandlists.html#li-command} {\\o} \span {class="newStuff"} {(deprecated, use \\li)}
+
+    \li \l {16-qdoc-commands-status.html#obsolete-command} {\\obsolete}
+    \li \l {06-qdoc-commands-includecodeinline.html#oldcode-command} {\\oldcode}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#omit-command} {\\omit}
+    \li \l {10-qdoc-commands-tablesandlists.html#omitvalue-command} {\\omitvalue}
+    \li \l {18-qdoc-commands-relating.html#overload-command} {\\overload}
+    \li \l {13-qdoc-commands-topics.html#page-command} {\\page}
+    \li \l {05-qdoc-commands-documentstructure.html#part-command} {\\part}
+    \li \l {16-qdoc-commands-status.html#preliminary-command} {\\preliminary}
+    \li \l {15-qdoc-commands-navigation.html#previouspage-command} {\\previouspage}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#printline-command} {\\printline}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#printto-command} {\\printto}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#printuntil-command} {\\printuntil}
+    \li \l {13-qdoc-commands-topics.html#property-command} {\\property}
+    \li \l {13-qdoc-commands-topics.html#qmlattachedproperty-command} {\\qmlattachedproperty}
+    \li \l {13-qdoc-commands-topics.html#qmlattachedsignal-command} {\\qmlattachedsignal}
+    \li \l {13-qdoc-commands-topics.html#qmlbasictype-command} {\\qmlbasictype}
+    \li \l {13-qdoc-commands-topics.html#qmlclass-command} {\\qmlclass}
+    \li \l {13-qdoc-commands-topics.html#qmlmethod-command} {\\qmlmethod}
+    \li \l {13-qdoc-commands-topics.html#qmlproperty-command} {\\qmlproperty}
+    \li \l {13-qdoc-commands-topics.html#qmlsignal-command} {\\qmlsignal}
+    \li \l {13-qdoc-commands-topics.html#qmlmodule-command} {\\qmlmodule}
+    \li \l {13-qdoc-commands-topics.html#inqmlmodule-command} {\\inqmlmodule}
+    \li \l {11-qdoc-commands-specialcontent.html#quotation-command} {\\quotation}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#quotefile-command} {\\quotefile}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#quotefromfile-command} {\\quotefromfile}
+    \li \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\raw} \span {class="newStuff"} {(avoid)}
+    \li \l {17-qdoc-commands-thread.html#reentrant-command} {\\reentrant}
+    \li \l {18-qdoc-commands-relating.html#reimp-command} {\\reimp}
+    \li \l {18-qdoc-commands-relating.html#relates-command} {\\relates}
+    \li \l {10-qdoc-commands-tablesandlists.html#row-command} {\\row}
+    \li \l {08-qdoc-commands-creatinglinks.html#sa-command} {\\sa}
+    \li \l {05-qdoc-commands-documentstructure.html#sectionOne-command} {\\section1}
+    \li \l {05-qdoc-commands-documentstructure.html#sectionTwo-command} {\\section2}
+    \li \l {05-qdoc-commands-documentstructure.html#sectionThree-command} {\\section3}
+    \li \l {05-qdoc-commands-documentstructure.html#sectionFour-command} {\\section4}
+    \li \l {13-qdoc-commands-topics.html#service-command} {\\service}
+    \li \l {16-qdoc-commands-status.html#since-command} {\\since}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#skipline-command} {\\skipline}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#skipto-command} {\\skipto}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#skipuntil-command} {\\skipuntil}
+    \li \l {07-0-qdoc-commands-includingexternalcode.html#snippet-command} {\\snippet},
+    \li \l {04-qdoc-commands-textmarkup.html#span-command} {\\span}
+    \li \l {15-qdoc-commands-navigation.html#startpage-command} {\\startpage}
+    \li \l {04-qdoc-commands-textmarkup.html#sub-command} {\\sub}
+    \li \l {20-qdoc-commands-namingthings.html#subtitle-command} {\\subtitle}
+    \li \l {04-qdoc-commands-textmarkup.html#sup-command} {\\sup}
+    \li \l {10-qdoc-commands-tablesandlists.html#table-command} {\\table}
+    \li \l {11-qdoc-commands-specialcontent.html#tableofcontents-command} {\\tableofcontents}
+    \li \l {08-qdoc-commands-creatinglinks.html#target-command} {\\target}
+    \li \l {17-qdoc-commands-thread.html#threadsafe-command} {\\threadsafe}
+    \li \l {20-qdoc-commands-namingthings.html#title-command} {\\title}
+    \li \l {21-0-qdoc-creating-dita-maps.html#topicref-command} {\\topicref} \span {class="newStuff"} {(new 05/03/12)}
+    \li \l {04-qdoc-commands-textmarkup.html#tt-command} {\\tt}
+    \li \l {13-qdoc-commands-topics.html#typedef-command} {\\typedef}
+    \li \l {04-qdoc-commands-textmarkup.html#underline-command} {\\underline}
+    \li \l {13-qdoc-commands-topics.html#variable-command} {\\variable}
+    \li \l {10-qdoc-commands-tablesandlists.html#value-command} {\\value}
+    \li \l {11-qdoc-commands-specialcontent.html#warning-command} {\\warning}
     \endlist
 */
 

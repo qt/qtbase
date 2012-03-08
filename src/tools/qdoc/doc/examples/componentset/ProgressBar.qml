@@ -83,12 +83,12 @@ Item {
            QDoc will not publish the documentation within omit and endomit.
        \endomit
 
-       \sa secondcolor
+       \sa secondColor
     */
     property alias color: gradient1.color
 
     /*!
-       \qmlproperty color ProgressBar::secondcolor
+       \qmlproperty color ProgressBar::secondColor
        The second color of the ProgressBar's gradient.
        Must bind to a color type.
 
