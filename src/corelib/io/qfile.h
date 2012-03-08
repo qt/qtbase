@@ -42,7 +42,7 @@
 #ifndef QFILE_H
 #define QFILE_H
 
-#include <QtCore/qiodevice.h>
+#include <QtCore/qfiledevice.h>
 #include <QtCore/qstring.h>
 #include <stdio.h>
 
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 class QTemporaryFile;
 class QFilePrivate;
 
-class Q_CORE_EXPORT QFile : public QIODevice
+class Q_CORE_EXPORT QFile : public QFileDevice
 {
 #ifndef QT_NO_QOBJECT
     Q_OBJECT
@@ -65,39 +65,6 @@ class Q_CORE_EXPORT QFile : public QIODevice
     Q_DECLARE_PRIVATE(QFile)
 
 public:
-
-    enum FileError {
-        NoError = 0,
-        ReadError = 1,
-        WriteError = 2,
-        FatalError = 3,
-        ResourceError = 4,
-        OpenError = 5,
-        AbortError = 6,
-        TimeOutError = 7,
-        UnspecifiedError = 8,
-        RemoveError = 9,
-        RenameError = 10,
-        PositionError = 11,
-        ResizeError = 12,
-        PermissionsError = 13,
-        CopyError = 14
-    };
-
-    enum Permission {
-        ReadOwner = 0x4000, WriteOwner = 0x2000, ExeOwner = 0x1000,
-        ReadUser  = 0x0400, WriteUser  = 0x0200, ExeUser  = 0x0100,
-        ReadGroup = 0x0040, WriteGroup = 0x0020, ExeGroup = 0x0010,
-        ReadOther = 0x0004, WriteOther = 0x0002, ExeOther = 0x0001
-    };
-    Q_DECLARE_FLAGS(Permissions, Permission)
-
-    enum FileHandleFlag {
-        AutoCloseHandle = 0x0001,
-        DontCloseHandle = 0
-    };
-    Q_DECLARE_FLAGS(FileHandleFlags, FileHandleFlag)
-
     QFile();
     QFile(const QString &name);
 #ifndef QT_NO_QOBJECT
@@ -105,9 +72,6 @@ public:
     QFile(const QString &name, QObject *parent);
 #endif
     ~QFile();
-
-    FileError error() const;
-    void unsetError();
 
     QString fileName() const;
     void setFileName(const QString &name);
@@ -141,18 +105,11 @@ public:
     bool copy(const QString &newName);
     static bool copy(const QString &fileName, const QString &newName);
 
-    bool isSequential() const;
-
     bool open(OpenMode flags);
     bool open(FILE *f, OpenMode ioFlags, FileHandleFlags handleFlags=DontCloseHandle);
     bool open(int fd, OpenMode ioFlags, FileHandleFlags handleFlags=DontCloseHandle);
-    virtual void close();
 
     qint64 size() const;
-    qint64 pos() const;
-    bool seek(qint64 offset);
-    bool atEnd() const;
-    bool flush();
 
     bool resize(qint64 sz);
     static bool resize(const QString &filename, qint64 sz);
@@ -162,15 +119,6 @@ public:
     bool setPermissions(Permissions permissionSpec);
     static bool setPermissions(const QString &filename, Permissions permissionSpec);
 
-    int handle() const;
-
-    enum MemoryMapFlags {
-        NoOptions = 0
-    };
-
-    uchar *map(qint64 offset, qint64 size, MemoryMapFlags flags = NoOptions);
-    bool unmap(uchar *address);
-
 protected:
 #ifdef QT_NO_QOBJECT
     QFile(QFilePrivate &dd);
@@ -178,16 +126,10 @@ protected:
     QFile(QFilePrivate &dd, QObject *parent = 0);
 #endif
 
-    qint64 readData(char *data, qint64 maxlen);
-    qint64 writeData(const char *data, qint64 len);
-    qint64 readLineData(char *data, qint64 maxlen);
-
 private:
     friend class QTemporaryFile;
     Q_DISABLE_COPY(QFile)
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QFile::Permissions)
 
 QT_END_NAMESPACE
 

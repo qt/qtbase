@@ -57,9 +57,9 @@
     We repeat the process:
 
     \list
-        \o create a new \c LayoutItem,
-        \o add the item \c linear, and
-        \o provide a stretch factor.
+        \li create a new \c LayoutItem,
+        \li add the item \c linear, and
+        \li provide a stretch factor.
     \endlist
 
     \snippet examples/graphicsview/basicgraphicslayouts/window.cpp 1

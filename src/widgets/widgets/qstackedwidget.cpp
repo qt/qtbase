@@ -49,54 +49,12 @@
 
 QT_BEGIN_NAMESPACE
 
-/**
-   QStackedLayout does not support height for width (simply because it does not reimplement
-   heightForWidth() and hasHeightForWidth()). That is not possible to fix without breaking
-   binary compatibility. (QLayout is subject to multiple inheritance).
-   However, we can fix QStackedWidget by simply using a modified version of QStackedLayout
-   that reimplements the hfw-related functions:
- */
-class QStackedLayoutHFW : public QStackedLayout 
-{ 
-public: 
-    QStackedLayoutHFW(QWidget *parent = 0) : QStackedLayout(parent) {} 
-    bool hasHeightForWidth() const; 
-    int heightForWidth(int width) const; 
-}; 
- 
-bool QStackedLayoutHFW::hasHeightForWidth() const 
-{ 
-    const int n = count(); 
- 
-    for (int i = 0; i < n; ++i) { 
-        if (QLayoutItem *item = itemAt(i)) { 
-            if (item->hasHeightForWidth()) 
-                return true; 
-        } 
-    } 
-    return false; 
-} 
- 
-int QStackedLayoutHFW::heightForWidth(int width) const 
-{ 
-    const int n = count(); 
- 
-    int hfw = 0; 
-    for (int i = 0; i < n; ++i) { 
-        if (QLayoutItem *item = itemAt(i)) { 
-            hfw = qMax(hfw, item->heightForWidth(width)); 
-        } 
-    } 
-    return hfw; 
-} 
- 
-
 class QStackedWidgetPrivate : public QFramePrivate
 {
     Q_DECLARE_PUBLIC(QStackedWidget)
 public:
     QStackedWidgetPrivate():layout(0){}
-    QStackedLayoutHFW *layout;
+    QStackedLayout *layout;
     bool blockChildAdd;
 };
 
@@ -180,7 +138,7 @@ QStackedWidget::QStackedWidget(QWidget *parent)
     : QFrame(*new QStackedWidgetPrivate, parent)
 {
     Q_D(QStackedWidget);
-    d->layout = new QStackedLayoutHFW(this);
+    d->layout = new QStackedLayout(this);
     connect(d->layout, SIGNAL(widgetRemoved(int)), this, SIGNAL(widgetRemoved(int)));
     connect(d->layout, SIGNAL(currentChanged(int)), this, SIGNAL(currentChanged(int)));
 }
@@ -232,7 +190,7 @@ int QStackedWidget::insertWidget(int index, QWidget *widget)
     not deleted but simply removed from the stacked layout, causing it
     to be hidden.
 
-    \bold{Note:} Ownership of \a widget reverts to the application.
+    \b{Note:} Ownership of \a widget reverts to the application.
 
     \sa addWidget(), insertWidget(), currentWidget()
 */

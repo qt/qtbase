@@ -63,11 +63,11 @@ QT_BEGIN_NAMESPACE
    The following methods are NOT supported for data transfer using the
    clipboard or drag-drop:
    \list
-   \o IDataObject::SetData    -- return E_NOTIMPL
-   \o IDataObject::DAdvise    -- return OLE_E_ADVISENOTSUPPORTED
-   \o ::DUnadvise
-   \o ::EnumDAdvise
-   \o IDataObject::GetCanonicalFormatEtc -- return E_NOTIMPL
+   \li IDataObject::SetData    -- return E_NOTIMPL
+   \li IDataObject::DAdvise    -- return OLE_E_ADVISENOTSUPPORTED
+   \li ::DUnadvise
+   \li ::EnumDAdvise
+   \li IDataObject::GetCanonicalFormatEtc -- return E_NOTIMPL
        (NOTE: must set pformatetcOut->ptd = NULL)
    \endlist
 

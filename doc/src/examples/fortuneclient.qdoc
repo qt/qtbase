@@ -47,14 +47,14 @@
 
     \list
 
-    \o \e{The asynchronous (non-blocking) approach.} Operations are scheduled
+    \li \e{The asynchronous (non-blocking) approach.} Operations are scheduled
     and performed when control returns to Qt's event loop. When the operation
     is finished, QTcpSocket emits a signal. For example,
     QTcpSocket::connectToHost() returns immediately, and when the connection
     has been established, QTcpSocket emits
     \l{QTcpSocket::connected()}{connected()}.
 
-    \o \e{The synchronous (blocking) approach.} In non-GUI and multithreaded
+    \li \e{The synchronous (blocking) approach.} In non-GUI and multithreaded
     applications, you can call the \c waitFor...() functions (e.g.,
     QTcpSocket::waitForConnected()) to suspend the calling thread until the
     operation has completed, instead of connecting to signals.
@@ -107,11 +107,11 @@
     one of two things can happen:
 
     \list
-    \o \e{The connection is established.} In this case, the server will send us a
+    \li \e{The connection is established.} In this case, the server will send us a
     fortune. QTcpSocket will emit \l{QTcpSocket::readyRead()}{readyRead()}
     every time it receives a block of data.
 
-    \o \e{An error occurs.} We need to inform the user if the connection
+    \li \e{An error occurs.} We need to inform the user if the connection
     failed or was broken. In this case, QTcpSocket will emit
     \l{QTcpSocket::error()}{error()}, and \c Client::displayError() will be
     called.

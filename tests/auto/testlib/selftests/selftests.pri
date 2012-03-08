@@ -39,5 +39,7 @@ SUBPROGRAMS = \
      sleep \
      strcmp \
      subtest \
+     verbose1 \
+     verbose2 \
      warnings \
      xunit

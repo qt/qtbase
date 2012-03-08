@@ -542,6 +542,13 @@ void tst_QSqlRelationalTableModel::setRecord()
     model.setSort(0, Qt::AscendingOrder);
     QVERIFY_SQL(model, submit());
 
+    if (model.editStrategy() != QSqlTableModel::OnManualSubmit) {
+        QCOMPARE(model.data(model.index(1, 0)).toInt(), 7);
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("tester"));
+        QCOMPARE(model.data(model.index(1, 2)).toString(), QString("herr"));
+        QVERIFY_SQL(model, select());
+    }
+
     QCOMPARE(model.data(model.index(3, 0)).toInt(), 7);
     QCOMPARE(model.data(model.index(3, 1)).toString(), QString("tester"));
     QCOMPARE(model.data(model.index(3, 2)).toString(), QString("herr"));
@@ -599,6 +606,8 @@ void tst_QSqlRelationalTableModel::insertWithStrategies()
     QVERIFY_SQL(model, submitAll());
 
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    // The changes were submitted, but there was no automatic select to resort
+    QVERIFY_SQL(model, select());
 
     QCOMPARE(model.data(model.index(0,0)).toInt(), 1);
     QCOMPARE(model.data(model.index(0,1)).toString(), QString("harry"));
@@ -1401,6 +1410,8 @@ void tst_QSqlRelationalTableModel::whiteSpaceInIdentifiers()
 
     QVERIFY_SQL(model, insertRecord(-1, rec));
     model.submitAll();
+    if (model.editStrategy() != QSqlTableModel::OnManualSubmit)
+        QVERIFY_SQL(model, select());
 
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 3);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("Washington"));

@@ -167,7 +167,7 @@ QAbstractEventDispatcher::~QAbstractEventDispatcher()
     event dispatcher exists for the specified thread, this function
     returns 0.
 
-    \bold{Note:} If Qt is built without thread support, the \a thread
+    \b{Note:} If Qt is built without thread support, the \a thread
     argument is ignored.
  */
 QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
@@ -192,10 +192,10 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
 
     \list
 
-    \i If events are available, this function returns after processing
+    \li If events are available, this function returns after processing
     them.
 
-    \i If no events are available, this function will wait until more
+    \li If no events are available, this function will wait until more
     are available and return after processing newly available events.
 
     \endlist
@@ -204,7 +204,7 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
     and no events are available, this function will return
     immediately.
 
-    \bold{Note:} This function does not process events continuously; it
+    \b{Note:} This function does not process events continuously; it
     returns after all available events are processed.
 
     \sa hasPendingEvents()
@@ -349,17 +349,17 @@ void QAbstractEventDispatcher::closingDown()
 
     \table
         \header
-            \o Platform
-            \o type
+            \li Platform
+            \li type
         \row
-            \o Windows
-            \o MSG
+            \li Windows
+            \li MSG
         \row
-            \o X11
-            \o XEvent
+            \li X11
+            \li XEvent
         \row
-            \o Mac
-            \o NSEvent
+            \li Mac
+            \li NSEvent
     \endtable
 
     

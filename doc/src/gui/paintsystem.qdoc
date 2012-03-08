@@ -74,13 +74,13 @@
     
     \section1 Topics
     \list
-        \o \l{Classes for Painting}
-        \o \l{Paint Devices and Backends}
-        \o \l{Drawing and Filling}
-        \o \l{Coordinate System}
-        \o \l{Reading and Writing Image Files}
-        \o \l{Styling}
-        \o \l{Printing with Qt}
+        \li \l{Classes for Painting}
+        \li \l{Paint Devices and Backends}
+        \li \l{Drawing and Filling}
+        \li \l{Coordinate System}
+        \li \l{Reading and Writing Image Files}
+        \li \l{Styling}
+        \li \l{Printing with Qt}
     \endlist
 
     \section1 Classes for Painting
@@ -115,14 +115,14 @@
     \image paintsystem-devices.png
 
     \table 100%
-    \row \o \bold Widget
+    \row \li \b Widget
 
     The QWidget class is the base class of all user interface
     objects. The widget is the atom of the user interface: it receives
     mouse, keyboard and other events from the window system, and
     paints a representation of itself on the screen.
 
-    \row \o \bold Image
+    \row \li \b Image
 
     The QImage class provides a hardware-independent image
     representation which is designed and optimized for I/O, and for
@@ -136,7 +136,7 @@
     painting can be performed in another thread than the current GUI
     thread.
     
-    \row \o \bold Pixmap
+    \row \li \b Pixmap
 
     The QPixmap class is an off-screen image representation which is
     designed and optimized for showing images on screen. Unlike
@@ -156,7 +156,7 @@
     constructing QRegion objects, and for setting masks for pixmaps
     and widgets.
 
-    \row \o \bold {OpenGL Widget}
+    \row \li \b {OpenGL Widget}
 
     As mentioned previously, Qt provides the QtOpenGL module offering
     classes that makes it easy to use OpenGL in Qt applications. For
@@ -169,7 +169,7 @@
     most drawing operations, such as transformations and pixmap
     drawing.
 
-    \row \o \bold {Pixel Buffer}
+    \row \li \b {Pixel Buffer}
 
     The QtOpenGL module also provides the QGLPixelBuffer class which
     inherits QPaintDevice directly.
@@ -178,7 +178,7 @@
     pbuffer is normally done using full hardware acceleration which
     can be significantly faster than rendering into a QPixmap.
 
-    \row \o \bold {Framebuffer Object}
+    \row \li \b {Framebuffer Object}
 
     The QtOpenGL module also provides the QGLFramebufferObject class
     which inherits QPaintDevice directly.
@@ -188,7 +188,7 @@
     offer several advantages over pixel buffers for this purpose.
     These are described in the QGLFramebufferObject class documentation.
 
-    \row \o \bold {Picture}
+    \row \li \b {Picture}
 
     The QPicture class is a paint device that records and replays
     QPainter commands. A picture serializes painter commands to an IO
@@ -200,7 +200,7 @@
     Qt provides the QPicture::load() and QPicture::save() functions
     as well as streaming operators for loading and saving pictures.
 
-    \row \o \bold {Printer}
+    \row \li \b {Printer}
 
     The QPrinter class is a paint device that paints on a printer. On
     Windows or Mac OS X, QPrinter uses the built-in printer
@@ -218,7 +218,7 @@
     to QPrinter::PdfFormat, QPrinter will generate its output as a PDF
     file.
 
-    \row \o \bold {Custom Backends}
+    \row \li \b {Custom Backends}
 
     Support for a new backend can be implemented by deriving from the
     QPaintDevice class and reimplementing the virtual
@@ -238,17 +238,17 @@
 
     \table
         \row
-            \o Windows
-            \o Software Rasterizer
+            \li Windows
+            \li Software Rasterizer
         \row
-            \o X11
-            \o X11
+            \li X11
+            \li X11
         \row
-            \o Mac OS X
-            \o CoreGraphics
+            \li Mac OS X
+            \li CoreGraphics
         \row
-            \o Embedded
-            \o Software Rasterizer
+            \li Embedded
+            \li Software Rasterizer
     \endtable
 
     Passing a command line parameter to the application, such as,
@@ -289,8 +289,8 @@
 
     \table 100%
     \row
-    \o \image paintsystem-painterpath.png
-    \o \bold QPainterPath
+    \li \image paintsystem-painterpath.png
+    \li \b QPainterPath
 
     A painter path is an object composed of lines and curves. For
     example, a rectangle is composed by lines and an ellipse is
@@ -333,8 +333,8 @@
     pixels, and the benefits of anti-aliased painting.
 
     \table 100%
-    \row \o
-    \bold {Anti-Aliased Painting}
+    \row \li
+    \b {Anti-Aliased Painting}
 
     When drawing, the pixel rendering is controlled by the
     QPainter::Antialiasing render hint. The QPainter::RenderHint enum
@@ -345,7 +345,7 @@
     antialias edges of primitives if possible, i.e. smoothing the
     edges by using different color intensities.
 
-    \o \image paintsystem-antialiasing.png
+    \li \image paintsystem-antialiasing.png
 
     \endtable
 
@@ -376,8 +376,8 @@
 
     \table 100%
     \row
-    \o \image paintsystem-fancygradient.png
-    \o \bold QGradient
+    \li \image paintsystem-fancygradient.png
+    \li \b QGradient
 
     The QGradient class is used in combination with QBrush to specify
     gradient fills.
@@ -416,14 +416,14 @@
 
     \table 100%
     \row
-    \o \bold QMovie
+    \li \b QMovie
 
     QMovie is a convenience class for displaying animations, using the
     QImageReader class internally.  Once created, the QMovie class
     provides various functions for both running and controlling the
     given animation.
 
-    \o \image paintsystem-movie.png
+    \li \image paintsystem-movie.png
     \endtable
 
     The QImageReader and QImageWriter classes rely on the
@@ -450,8 +450,8 @@
 
     \table 100%
     \row
-    \o \image paintsystem-svg.png
-    \o \bold {SVG Rendering}
+    \li \image paintsystem-svg.png
+    \li \b {SVG Rendering}
 
 	Scalable Vector Graphics (SVG) is a language for describing two-dimensional
 	graphics and graphical applications in XML. SVG 1.1 is a W3C Recommendation
@@ -513,10 +513,10 @@
     Most functions for drawing style elements take four arguments:
 
     \list
-    \o an enum value specifying which graphical element to draw
-    \o a QStyleOption object specifying how and where to render that element
-    \o a QPainter object that should be used to draw the element
-    \o a QWidget object on which the drawing is performed (optional)
+    \li an enum value specifying which graphical element to draw
+    \li a QStyleOption object specifying how and where to render that element
+    \li a QPainter object that should be used to draw the element
+    \li a QWidget object on which the drawing is performed (optional)
     \endlist
 
     The style gets all the information it needs to render the
@@ -538,8 +538,8 @@
 
     \table 100%
     \row
-    \o \inlineimage paintsystem-icon.png
-    \o \bold QIcon
+    \li \inlineimage paintsystem-icon.png
+    \li \b QIcon
 
     The QIcon class provides scalable icons in different modes and states.
 

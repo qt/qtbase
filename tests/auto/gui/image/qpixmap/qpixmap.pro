@@ -10,5 +10,3 @@ SOURCES  += tst_qpixmap.cpp
 
 RESOURCES += qpixmap.qrc
 TESTDATA += convertFromImage/* convertFromToHICON/* loadFromData/* images/*
-
-win32:CONFIG += insignificant_test # QTBUG-24183

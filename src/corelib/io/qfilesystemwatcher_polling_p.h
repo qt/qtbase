@@ -58,6 +58,7 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qtimer.h>
+#include <QtCore/qhash.h>
 
 #include "qfilesystemwatcher_p.h"
 

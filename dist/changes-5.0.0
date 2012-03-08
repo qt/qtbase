@@ -1,7 +1,7 @@
 Some of the changes listed in this file include issue tracking numbers
 corresponding to tasks in the Qt Bug Tracker:
 
-  http://bugreports.qt.nokia.com/
+  http://bugreports.qt-project.org/
 
 Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
@@ -51,6 +51,8 @@ information about a particular change.
   "if (a.contains() == 2)" wouldn't compile anymore. Such code cannot exist
   in Qt4, so these methods return a bool now. If your code used the undocumented
   QBool, simply replace it with bool.
+
+- qIsDetached<> has been removed without replacement.
 
 - QMetaType:
   * QMetaType::construct() has been renamed to QMetaType::create().
@@ -212,7 +214,14 @@ information about a particular change.
 
 - qmake
   * Projects which explicitly set an empty TARGET are considered broken now.
-  * several functions and built-in variables were modified to return normalized paths.
+  * The makespec and .qmake.cache do not see build pass specific variables any more.
+  * load()/include() with a target namespace and infile()/$$fromfile() now start with
+    an entirely pristine context.
+  * Configure's -sysroot and -hostprefix are now handled slightly differently.
+    The QT_INSTALL_... properties are now automatically prefixed with the sysroot;
+    the raw values are available as QT_RAW_INSTALL_... and the sysroot as QT_SYSROOT.
+    The new QT_HOST_... properties can be used to refer to the Qt host tools.
+  * Several functions and built-in variables were modified to return normalized paths.
 
 - QTextCodecPlugin has been removed since it is no longer used. All text codecs
   are now built into QtCore.
@@ -313,8 +322,17 @@ QtCore
   libraries, creating uncertainty/bugs in using QString easily, and (to a lesser
   extent) performance issues.
 
+* QTextCodec::codecForTr() and QTextCodec::setCodecForTr() have been removed,
+  QCoreApplication::Encoding value CodecForTr is now obsolete, use
+  DefaultCodec instead. For reasoning, see the codecForCStrings() removal above.
+
 * QIntValidator and QDoubleValidator no longer fall back to using the C locale if
   the requested locale fails to validate the input.
+
+* A new set of classes for doing pattern matching with Perl-compatible regular
+  expressions has been added: QRegularExpression, QRegularExpressionMatch and
+  QRegularExpressionMatchIterator. They aim to replace QRegExp with a more
+  powerful and flexible regular expression engine.
 
 QtGui
 -----
@@ -399,6 +417,17 @@ ignore the rest of the range.
 * QSqlQueryModel::indexInQuery() is now virtual. See
 QSqlTableModel::indexInQuery() as example of how to implement in a
 subclass.
+
+* QSqlTableModel::selectRow(): This is a new method that refreshes a single
+row in the model from the database.
+
+* QSqlTableModel edit strategies OnFieldChange/OnRowChange QTBUG-2875
+Previously, after changes were submitted in these edit strategies, select()
+was called which removed and inserted all rows. This ruined navigation
+in QTableView. Now, with these edit strategies, there is no implicit select()
+done after committing. This includes deleted rows which remain in
+the model as blank rows until the application calls select(). Instead,
+selectRow() is called to refresh only the affected row.
 
 ****************************************************************************
 *                          Database Drivers                                *

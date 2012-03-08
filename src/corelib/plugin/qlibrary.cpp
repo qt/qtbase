@@ -596,12 +596,12 @@ bool QLibraryPrivate::loadPlugin()
     library; otherwise returns false.
 
     \table
-    \header \i Platform \i Valid suffixes
-    \row \i Windows     \i \c .dll, \c .DLL
-    \row \i Unix/Linux  \i \c .so
-    \row \i AIX  \i \c .a
-    \row \i HP-UX       \i \c .sl, \c .so (HP-UXi)
-    \row \i Mac OS X    \i \c .dylib, \c .bundle, \c .so
+    \header \li Platform \li Valid suffixes
+    \row \li Windows     \li \c .dll, \c .DLL
+    \row \li Unix/Linux  \li \c .so
+    \row \li AIX  \li \c .a
+    \row \li HP-UX       \li \c .sl, \c .so (HP-UXi)
+    \row \li Mac OS X    \li \c .dylib, \c .bundle, \c .so
     \endtable
 
     Trailing versioning numbers on Unix are ignored.

@@ -58,20 +58,20 @@
 
     \list 
 
-    \o A \c READ accessor function is required. It is for reading the
+    \li A \c READ accessor function is required. It is for reading the
     property value. Ideally, a const function is used for this purpose,
     and it must return either the property's type or a pointer or
     reference to that type. e.g., QWidget::focus is a read-only property
     with \c READ function, QWidget::hasFocus().
 
-    \o A \c WRITE accessor function is optional. It is for setting the
+    \li A \c WRITE accessor function is optional. It is for setting the
     property value. It must return void and must take exactly one
     argument, either of the property's type or a pointer or reference
     to that type. e.g., QWidget::enabled has the \c WRITE function
     QWidget::setEnabled().  Read-only properties do not need \c WRITE
     functions. e.g., QWidget::focus has no \c WRITE function.
 
-    \o A \c RESET function is optional. It is for setting the property
+    \li A \c RESET function is optional. It is for setting the property
     back to its context specific default value. e.g., QWidget::cursor
     has the typical \c READ and \c WRITE functions, QWidget::cursor()
     and QWidget::setCursor(), and it also has a \c RESET function,
@@ -79,26 +79,26 @@
     mean \e {reset to the context specific cursor}. The \c RESET
     function must return void and take no parameters.
 
-    \o A \c NOTIFY signal is optional. If defined, it should specify one
+    \li A \c NOTIFY signal is optional. If defined, it should specify one
     existing signal in that class that is emitted whenever the value
     of the property changes.
 
-    \o A \c REVISION number is optional. If included, it defines the
+    \li A \c REVISION number is optional. If included, it defines the
     the property and its notifier signal to be used in a particular
     revision of the API that is exposed to QML.
 
-    \o The \c DESIGNABLE attribute indicates whether the property
+    \li The \c DESIGNABLE attribute indicates whether the property
     should be visible in the property editor of GUI design tool (e.g.,
     \l {Qt Designer}). Most properties are \c DESIGNABLE (default
     true). Instead of true or false, you can specify a boolean
     member function.
 
-    \o The \c SCRIPTABLE attribute indicates whether this property
+    \li The \c SCRIPTABLE attribute indicates whether this property
     should be accessible by a scripting engine (default true).
     Instead of true or false, you can specify a boolean member
     function.
 
-    \o The \c STORED attribute indicates whether the property should
+    \li The \c STORED attribute indicates whether the property should
     be thought of as existing on its own or as depending on other
     values. It also indicates whether the property value must be saved
     when storing the object's state. Most properties are \c STORED
@@ -106,20 +106,20 @@
     false, because its value is just taken from the width component
     of property QWidget::minimumSize(), which is a QSize.
 
-    \o The \c USER attribute indicates whether the property is
+    \li The \c USER attribute indicates whether the property is
     designated as the user-facing or user-editable property for the
     class. Normally, there is only one \c USER property per class
     (default false). e.g., QAbstractButton::checked is the user
     editable property for (checkable) buttons. Note that QItemDelegate
     gets and sets a widget's \c USER property.
 
-    \o The presence of the \c CONSTANT attibute indicates that the property 
+    \li The presence of the \c CONSTANT attibute indicates that the property
     value is constant.  For a given object instance, the READ method of a 
     constant property must return the same value every time it is called.  This
     constant value may be different for different instances of the object.  A
     constant property cannot have a WRITE method or a NOTIFY signal.
 
-    \o The presence of the \c FINAL attribute indicates that the property
+    \li The presence of the \c FINAL attribute indicates that the property
     will not be overridden by a derived class.  This can be used for performance
     optimizations in some cases, but is not enforced by moc.  Care must be taken
     never to override a \c FINAL property.

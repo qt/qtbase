@@ -261,7 +261,7 @@ static const char * const cursorNames[] = {
 };
 
 QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
-    : QXcbObject(conn), QPlatformCursor(screen), m_screen(screen)
+    : QXcbObject(conn), m_screen(screen)
 {
     if (cursorCount++)
         return;

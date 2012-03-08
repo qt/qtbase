@@ -111,8 +111,8 @@ QT_BEGIN_NAMESPACE
 
     \table 100%
     \row
-    \o \inlineimage qmatrix-simpletransformation.png
-    \o
+    \li \inlineimage qmatrix-simpletransformation.png
+    \li
     \snippet doc/src/snippets/matrix/matrix.cpp 0
     \endtable
 
@@ -123,8 +123,8 @@ QT_BEGIN_NAMESPACE
 
     \table 100%
     \row
-    \o \inlineimage qmatrix-combinedtransformation.png
-    \o
+    \li \inlineimage qmatrix-combinedtransformation.png
+    \li
     \snippet doc/src/snippets/matrix/matrix.cpp 1
     \endtable
 
@@ -171,8 +171,8 @@ QT_BEGIN_NAMESPACE
 
     \table 100%
     \row
-    \o \inlineimage qmatrix-combinedtransformation.png
-    \o
+    \li \inlineimage qmatrix-combinedtransformation.png
+    \li
     \snippet doc/src/snippets/matrix/matrix.cpp 2
     \endtable
 

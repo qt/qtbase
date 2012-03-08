@@ -61,7 +61,8 @@
 #    define FE_FONTSMOOTHINGCLEARTYPE 0x0002
 #    define CLEARTYPE_QUALITY       5
 #    define SPI_GETDROPSHADOW 0x1024
-
+#    define COLOR_MENUHILIGHT 29
+#    define COLOR_MENUBAR     30
 #    define CF_DIBV5 17
 
 #define CO_E_NOT_SUPPORTED               _HRESULT_TYPEDEF_(0x80004021L)

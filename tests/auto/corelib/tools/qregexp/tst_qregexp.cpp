@@ -81,6 +81,7 @@ private slots:
     void interval();
     void validityCheck_data();
     void validityCheck();
+    void escapeSequences();
 };
 
 // Testing get/set functions
@@ -118,43 +119,43 @@ void tst_QRegExp::indexIn_data()
             stri.setNum(i);
 
         // anchors
-        QTest::newRow( stri + "anc00" ) << QString("a(?=)z") << QString("az") << 0 << 2 << QStringList();
-        QTest::newRow( stri + "anc01" ) << QString("a(?!)z") << QString("az") << -1 << -1 << QStringList();
-        QTest::newRow( stri + "anc02" ) << QString("a(?:(?=)|(?=))z") << QString("az") << 0 << 2
+        QTest::newRow(qPrintable(stri + "anc00")) << QString("a(?=)z") << QString("az") << 0 << 2 << QStringList();
+        QTest::newRow(qPrintable(stri + "anc01")) << QString("a(?!)z") << QString("az") << -1 << -1 << QStringList();
+        QTest::newRow(qPrintable(stri + "anc02")) << QString("a(?:(?=)|(?=))z") << QString("az") << 0 << 2
                                << QStringList();
-        QTest::newRow( stri + "anc03" ) << QString("a(?:(?=)|(?!))z") << QString("az") << 0 << 2
+        QTest::newRow(qPrintable(stri + "anc03")) << QString("a(?:(?=)|(?!))z") << QString("az") << 0 << 2
                                << QStringList();
-        QTest::newRow( stri + "anc04" ) << QString("a(?:(?!)|(?=))z") << QString("az") << 0 << 2
+        QTest::newRow(qPrintable(stri + "anc04")) << QString("a(?:(?!)|(?=))z") << QString("az") << 0 << 2
                                << QStringList();
-        QTest::newRow( stri + "anc05" ) << QString("a(?:(?!)|(?!))z") << QString("az") << -1 << -1
+        QTest::newRow(qPrintable(stri + "anc05")) << QString("a(?:(?!)|(?!))z") << QString("az") << -1 << -1
                                << QStringList();
-        QTest::newRow( stri + "anc06" ) << QString("a(?:(?=)|b)z") << QString("az") << 0 << 2
+        QTest::newRow(qPrintable(stri + "anc06")) << QString("a(?:(?=)|b)z") << QString("az") << 0 << 2
                                << QStringList();
-        QTest::newRow( stri + "anc07" ) << QString("a(?:(?=)|b)z") << QString("abz") << 0 << 3
+        QTest::newRow(qPrintable(stri + "anc07")) << QString("a(?:(?=)|b)z") << QString("abz") << 0 << 3
                                << QStringList();
-        QTest::newRow( stri + "anc08" ) << QString("a(?:(?!)|b)z") << QString("az") << -1 << -1
+        QTest::newRow(qPrintable(stri + "anc08")) << QString("a(?:(?!)|b)z") << QString("az") << -1 << -1
                                << QStringList();
-        QTest::newRow( stri + "anc09" ) << QString("a(?:(?!)|b)z") << QString("abz") << 0 << 3
+        QTest::newRow(qPrintable(stri + "anc09")) << QString("a(?:(?!)|b)z") << QString("abz") << 0 << 3
                                << QStringList();
 #if 0
-        QTest::newRow( stri + "anc10" ) << QString("a?(?=^b$)") << QString("ab") << 0 << 1
+        QTest::newRow(qPrintable(stri + "anc10")) << QString("a?(?=^b$)") << QString("ab") << 0 << 1
                                << QStringList();
-        QTest::newRow( stri + "anc11" ) << QString("a?(?=^b$)") << QString("b") << 0 << 0
+        QTest::newRow(qPrintable(stri + "anc11")) << QString("a?(?=^b$)") << QString("b") << 0 << 0
                                << QStringList();
 #endif
 
         // back-references
-        QTest::newRow( stri + "bref00" ) << QString("(a*)(\\1)") << QString("aaaaa") << 0 << 4
+        QTest::newRow(qPrintable(stri + "bref00")) << QString("(a*)(\\1)") << QString("aaaaa") << 0 << 4
                                << QStringList( QStringList() << "aa" << "aa" );
-        QTest::newRow( stri + "bref01" ) << QString("<(\\w*)>.+</\\1>") << QString("<b>blabla</b>bla</>")
+        QTest::newRow(qPrintable(stri + "bref01")) << QString("<(\\w*)>.+</\\1>") << QString("<b>blabla</b>bla</>")
                                << 0 << 13 << QStringList( QStringList() << "b" );
-        QTest::newRow( stri + "bref02" ) << QString("<(\\w*)>.+</\\1>") << QString("<>blabla</b>bla</>")
+        QTest::newRow(qPrintable(stri + "bref02")) << QString("<(\\w*)>.+</\\1>") << QString("<>blabla</b>bla</>")
                                << 0 << 18 << QStringList( QStringList() << "" );
-        QTest::newRow( stri + "bref03" ) << QString("((a*\\2)\\2)") << QString("aaaa") << 0 << 4
+        QTest::newRow(qPrintable(stri + "bref03")) << QString("((a*\\2)\\2)") << QString("aaaa") << 0 << 4
                                << QStringList( QStringList() << QString("aaaa") << "aa" );
-        QTest::newRow( stri + "bref04" ) << QString("^(aa+)\\1+$") << QString("aaaaaa") << 0 << 6
+        QTest::newRow(qPrintable(stri + "bref04")) << QString("^(aa+)\\1+$") << QString("aaaaaa") << 0 << 6
                                << QStringList( QStringList() << QString("aa") );
-        QTest::newRow( stri + "bref05" ) << QString("^(1)(2)(3)(4)(5)(6)(7)(8)(9)(10)(11)(12)(13)(14)"
+        QTest::newRow(qPrintable(stri + "bref05")) << QString("^(1)(2)(3)(4)(5)(6)(7)(8)(9)(10)(11)(12)(13)(14)"
                                           "\\14\\13\\12\\11\\10\\9\\8\\7\\6\\5\\4\\3\\2\\1")
                                << QString("12345678910111213141413121110987654321") << 0 << 38
                                << QStringList( QStringList() << "1" << "2" << "3" << "4" << "5" << "6"
@@ -162,49 +163,49 @@ void tst_QRegExp::indexIn_data()
                                                              << "12" << "13" << "14");
 
         // captures
-        QTest::newRow( stri + "cap00" ) << QString("(a*)") << QString("") << 0 << 0
+        QTest::newRow(qPrintable(stri + "cap00")) << QString("(a*)") << QString("") << 0 << 0
                                << QStringList( QStringList() << QString("") );
-        QTest::newRow( stri + "cap01" ) << QString("(a*)") << QString("aaa") << 0 << 3
+        QTest::newRow(qPrintable(stri + "cap01")) << QString("(a*)") << QString("aaa") << 0 << 3
                                << QStringList( QStringList() << "aaa" );
-        QTest::newRow( stri + "cap02" ) << QString("(a*)") << QString("baaa") << 0 << 0
+        QTest::newRow(qPrintable(stri + "cap02")) << QString("(a*)") << QString("baaa") << 0 << 0
                                << QStringList( QStringList() << QString("") );
-        QTest::newRow( stri + "cap03" ) << QString("(a*)(a*)") << QString("aaa") << 0 << 3
+        QTest::newRow(qPrintable(stri + "cap03")) << QString("(a*)(a*)") << QString("aaa") << 0 << 3
                                << QStringList( QStringList() << QString("aaa") << QString("") );
-        QTest::newRow( stri + "cap04" ) << QString("(a*)(b*)") << QString("aaabbb") << 0 << 6
+        QTest::newRow(qPrintable(stri + "cap04")) << QString("(a*)(b*)") << QString("aaabbb") << 0 << 6
                                << QStringList( QStringList() << QString("aaa") << QString("bbb") );
-        QTest::newRow( stri + "cap06" ) << QString("(a*)a*") << QString("aaa") << 0 << 3
+        QTest::newRow(qPrintable(stri + "cap06")) << QString("(a*)a*") << QString("aaa") << 0 << 3
                                << QStringList( QStringList() << QString("aaa") );
-        QTest::newRow( stri + "cap07" ) << QString("((a*a*)*)") << QString("aaa") << 0 << 3
+        QTest::newRow(qPrintable(stri + "cap07")) << QString("((a*a*)*)") << QString("aaa") << 0 << 3
                                << QStringList( QStringList() << "aaa" << QString("aaa") );
-        QTest::newRow( stri + "cap08" ) << QString("(((a)*(b)*)*)") << QString("ababa") << 0 << 5
+        QTest::newRow(qPrintable(stri + "cap08")) << QString("(((a)*(b)*)*)") << QString("ababa") << 0 << 5
                                << QStringList( QStringList() << QString("ababa") << QString("a") << QString("a")
                                << "" );
-        QTest::newRow( stri + "cap09" ) << QString("(((a)*(b)*)c)*") << QString("") << 0 << 0
+        QTest::newRow(qPrintable(stri + "cap09")) << QString("(((a)*(b)*)c)*") << QString("") << 0 << 0
                                << QStringList( QStringList() << QString("") << QString("") << QString("") << QString("") );
-        QTest::newRow( stri + "cap10" ) << QString("(((a)*(b)*)c)*") << QString("abc") << 0 << 3
+        QTest::newRow(qPrintable(stri + "cap10")) << QString("(((a)*(b)*)c)*") << QString("abc") << 0 << 3
                                << QStringList( QStringList() << "abc" << "ab" << "a"
                                << "b" );
-        QTest::newRow( stri + "cap11" ) << QString("(((a)*(b)*)c)*") << QString("abcc") << 0 << 4
+        QTest::newRow(qPrintable(stri + "cap11")) << QString("(((a)*(b)*)c)*") << QString("abcc") << 0 << 4
                                << QStringList( QStringList() << "c" << "" << "" << "" );
-        QTest::newRow( stri + "cap12" ) << QString("(((a)*(b)*)c)*") << QString("abcac") << 0 << 5
+        QTest::newRow(qPrintable(stri + "cap12")) << QString("(((a)*(b)*)c)*") << QString("abcac") << 0 << 5
                                << QStringList( QStringList() << "ac" << "a" << "a" << "" );
-        QTest::newRow( stri + "cap13" ) << QString("(to|top)?(o|polo)?(gical|o?logical)")
+        QTest::newRow(qPrintable(stri + "cap13")) << QString("(to|top)?(o|polo)?(gical|o?logical)")
                                << QString("topological") << 0 << 11
                                << QStringList( QStringList() << "top" << "o"
                                                   << "logical" );
-        QTest::newRow( stri + "cap14" ) << QString("(a)+") << QString("aaaa") << 0 << 4
+        QTest::newRow(qPrintable(stri + "cap14")) << QString("(a)+") << QString("aaaa") << 0 << 4
                                << QStringList( QStringList() << "a" );
 
         // concatenation
-        QTest::newRow( stri + "cat00" ) << QString("") << QString("") << 0 << 0 << QStringList();
-        QTest::newRow( stri + "cat01" ) << QString("") << QString("a") << 0 << 0 << QStringList();
-        QTest::newRow( stri + "cat02" ) << QString("a") << QString("") << -1 << -1 << QStringList();
-        QTest::newRow( stri + "cat03" ) << QString("a") << QString("a") << 0 << 1 << QStringList();
-        QTest::newRow( stri + "cat04" ) << QString("a") << QString("b") << -1 << -1 << QStringList();
-        QTest::newRow( stri + "cat05" ) << QString("b") << QString("a") << -1 << -1 << QStringList();
-        QTest::newRow( stri + "cat06" ) << QString("ab") << QString("ab") << 0 << 2 << QStringList();
-        QTest::newRow( stri + "cat07" ) << QString("ab") << QString("ba") << -1 << -1 << QStringList();
-        QTest::newRow( stri + "cat08" ) << QString("abab") << QString("abbaababab") << 4 << 4 << QStringList();
+        QTest::newRow(qPrintable(stri + "cat00")) << QString("") << QString("") << 0 << 0 << QStringList();
+        QTest::newRow(qPrintable(stri + "cat01")) << QString("") << QString("a") << 0 << 0 << QStringList();
+        QTest::newRow(qPrintable(stri + "cat02")) << QString("a") << QString("") << -1 << -1 << QStringList();
+        QTest::newRow(qPrintable(stri + "cat03")) << QString("a") << QString("a") << 0 << 1 << QStringList();
+        QTest::newRow(qPrintable(stri + "cat04")) << QString("a") << QString("b") << -1 << -1 << QStringList();
+        QTest::newRow(qPrintable(stri + "cat05")) << QString("b") << QString("a") << -1 << -1 << QStringList();
+        QTest::newRow(qPrintable(stri + "cat06")) << QString("ab") << QString("ab") << 0 << 2 << QStringList();
+        QTest::newRow(qPrintable(stri + "cat07")) << QString("ab") << QString("ba") << -1 << -1 << QStringList();
+        QTest::newRow(qPrintable(stri + "cat08")) << QString("abab") << QString("abbaababab") << 4 << 4 << QStringList();
 
         indexIn_addMoreRows(stri);
     }
@@ -213,96 +214,96 @@ void tst_QRegExp::indexIn_data()
 void tst_QRegExp::indexIn_addMoreRows(const QByteArray &stri)
 {
         // from Perl Cookbook
-        QTest::newRow( stri + "cook00" ) << QString("^(m*)(d?c{0,3}|c[dm])(1?x{0,3}|x[lc])(v?i{0,3}|i[vx])$")
+        QTest::newRow(qPrintable(stri + "cook00")) << QString("^(m*)(d?c{0,3}|c[dm])(1?x{0,3}|x[lc])(v?i{0,3}|i[vx])$")
                                 << QString("mmxl") << 0 << 4
                                 << QStringList( QStringList() << "mm" << "" << "xl"
                                 << "" );
-        QTest::newRow( stri + "cook01" ) << QString("(\\S+)(\\s+)(\\S+)") << QString(" a   b") << 1 << 5
+        QTest::newRow(qPrintable(stri + "cook01")) << QString("(\\S+)(\\s+)(\\S+)") << QString(" a   b") << 1 << 5
                                 << QStringList( QStringList() << "a" << "   " << "b" );
-        QTest::newRow( stri + "cook02" ) << QString("(\\w+)\\s*=\\s*(.*)\\s*$") << QString(" PATH=. ") << 1
+        QTest::newRow(qPrintable(stri + "cook02")) << QString("(\\w+)\\s*=\\s*(.*)\\s*$") << QString(" PATH=. ") << 1
                                 << 7 << QStringList( QStringList() << "PATH" << ". " );
-        QTest::newRow( stri + "cook03" ) << QString(".{80,}")
+        QTest::newRow(qPrintable(stri + "cook03")) << QString(".{80,}")
                                 << QString("0000000011111111222222223333333344444444555"
                                    "5555566666666777777778888888899999999000000"
                                    "00aaaaaaaa")
                                 << 0 << 96 << QStringList();
-        QTest::newRow( stri + "cook04" ) << QString("(\\d+)/(\\d+)/(\\d+) (\\d+):(\\d+):(\\d+)")
+        QTest::newRow(qPrintable(stri + "cook04")) << QString("(\\d+)/(\\d+)/(\\d+) (\\d+):(\\d+):(\\d+)")
                                 << QString("1978/05/24 07:30:00") << 0 << 19
                                 << QStringList( QStringList() << "1978" << "05" << "24"
                                 << "07" << "30" << "00" );
-        QTest::newRow( stri + "cook05" ) << QString("/usr/bin") << QString("/usr/local/bin:/usr/bin")
+        QTest::newRow(qPrintable(stri + "cook05")) << QString("/usr/bin") << QString("/usr/local/bin:/usr/bin")
                                 << 15 << 8 << QStringList();
-        QTest::newRow( stri + "cook06" ) << QString("%([0-9A-Fa-f]{2})") << QString("http://%7f") << 7 << 3
+        QTest::newRow(qPrintable(stri + "cook06")) << QString("%([0-9A-Fa-f]{2})") << QString("http://%7f") << 7 << 3
                                 << QStringList( QStringList() << "7f" );
-        QTest::newRow( stri + "cook07" ) << QString("/\\*.*\\*/") << QString("i++; /* increment i */") << 5
+        QTest::newRow(qPrintable(stri + "cook07")) << QString("/\\*.*\\*/") << QString("i++; /* increment i */") << 5
                                 << 17 << QStringList();
-        QTest::newRow( stri + "cook08" ) << QString("^\\s+") << QString("   aaa   ") <<  0 << 3
+        QTest::newRow(qPrintable(stri + "cook08")) << QString("^\\s+") << QString("   aaa   ") <<  0 << 3
                                 << QStringList();
-        QTest::newRow( stri + "cook09" ) << QString("\\s+$") << QString("   aaa   ") <<  6 << 3
+        QTest::newRow(qPrintable(stri + "cook09")) << QString("\\s+$") << QString("   aaa   ") <<  6 << 3
                                 << QStringList();
-        QTest::newRow( stri + "cook10" ) << QString("^.*::") << QString("Box::cat") << 0 << 5
+        QTest::newRow(qPrintable(stri + "cook10")) << QString("^.*::") << QString("Box::cat") << 0 << 5
                                 << QStringList();
-        QTest::newRow( stri + "cook11" ) << QString("^([01]?\\d\\d|2[0-4]\\d|25[0-5])\\.([01]?\\"
+        QTest::newRow(qPrintable(stri + "cook11")) << QString("^([01]?\\d\\d|2[0-4]\\d|25[0-5])\\.([01]?\\"
                                    "d\\d|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d|2[0-"
                                    "4]\\d|25[0-5])\\.([01]?\\d\\d|2[0-4]\\d|25["
                                    "0-5])$")
                                 << QString("255.00.40.30") << 0 << 12
                                 << QStringList( QStringList() << "255" << "00" << "40"
                                 << "30" );
-        QTest::newRow( stri + "cook12" ) << QString("^.*/") << QString(" /usr/local/bin/moc") << 0 << 16
+        QTest::newRow(qPrintable(stri + "cook12")) << QString("^.*/") << QString(" /usr/local/bin/moc") << 0 << 16
                                 << QStringList();
-        QTest::newRow( stri + "cook13" ) << QString(":co#(\\d+):") << QString("bla:co#55:") << 3 << 7
+        QTest::newRow(qPrintable(stri + "cook13")) << QString(":co#(\\d+):") << QString("bla:co#55:") << 3 << 7
                                 << QStringList( QStringList() << "55" );
-        QTest::newRow( stri + "cook14" ) << QString("linux") << QString("alphalinuxinunix") << 5 << 5
+        QTest::newRow(qPrintable(stri + "cook14")) << QString("linux") << QString("alphalinuxinunix") << 5 << 5
                                 << QStringList();
-        QTest::newRow( stri + "cook15" ) << QString("(\\d+\\.?\\d*|\\.\\d+)") << QString("0.0.5") << 0 << 3
+        QTest::newRow(qPrintable(stri + "cook15")) << QString("(\\d+\\.?\\d*|\\.\\d+)") << QString("0.0.5") << 0 << 3
                                 << QStringList( QStringList() << "0.0" );
 
         // mathematical trivia
-        QTest::newRow( stri + "math00" ) << QString("^(a\\1*)$") << QString("a") << 0 << 1
+        QTest::newRow(qPrintable(stri + "math00")) << QString("^(a\\1*)$") << QString("a") << 0 << 1
                                 << QStringList( QStringList() << "a" );
-        QTest::newRow( stri + "math01" ) << QString("^(a\\1*)$") << QString("aa") << 0 << 2
+        QTest::newRow(qPrintable(stri + "math01")) << QString("^(a\\1*)$") << QString("aa") << 0 << 2
                                 << QStringList( QStringList() << "aa" );
-        QTest::newRow( stri + "math02" ) << QString("^(a\\1*)$") << QString("aaa") << -1 << -1
+        QTest::newRow(qPrintable(stri + "math02")) << QString("^(a\\1*)$") << QString("aaa") << -1 << -1
                                 << QStringList( QStringList() << QString() );
-        QTest::newRow( stri + "math03" ) << QString("^(a\\1*)$") << QString("aaaa") << 0 << 4
+        QTest::newRow(qPrintable(stri + "math03")) << QString("^(a\\1*)$") << QString("aaaa") << 0 << 4
                                 << QStringList( QStringList() << "aaaa" );
-        QTest::newRow( stri + "math04" ) << QString("^(a\\1*)$") << QString("aaaaa") << -1 << -1
+        QTest::newRow(qPrintable(stri + "math04")) << QString("^(a\\1*)$") << QString("aaaaa") << -1 << -1
                                 << QStringList( QStringList() << QString() );
-        QTest::newRow( stri + "math05" ) << QString("^(a\\1*)$") << QString("aaaaaa") << -1 << -1
+        QTest::newRow(qPrintable(stri + "math05")) << QString("^(a\\1*)$") << QString("aaaaaa") << -1 << -1
                                 << QStringList( QStringList() << QString() );
-        QTest::newRow( stri + "math06" ) << QString("^(a\\1*)$") << QString("aaaaaaa") << -1 << -1
+        QTest::newRow(qPrintable(stri + "math06")) << QString("^(a\\1*)$") << QString("aaaaaaa") << -1 << -1
                                 << QStringList( QStringList() << QString() );
-        QTest::newRow( stri + "math07" ) << QString("^(a\\1*)$") << QString("aaaaaaaa") << 0 << 8
+        QTest::newRow(qPrintable(stri + "math07")) << QString("^(a\\1*)$") << QString("aaaaaaaa") << 0 << 8
                                 << QStringList( QStringList() << "aaaaaaaa" );
-        QTest::newRow( stri + "math08" ) << QString("^(a\\1*)$") << QString("aaaaaaaaa") << -1 << -1
+        QTest::newRow(qPrintable(stri + "math08")) << QString("^(a\\1*)$") << QString("aaaaaaaaa") << -1 << -1
                                 << QStringList( QStringList() << QString() );
-        QTest::newRow( stri + "math09" ) << QString("^a(?:a(\\1a))*$") << QString("a") << 0 << 1
+        QTest::newRow(qPrintable(stri + "math09")) << QString("^a(?:a(\\1a))*$") << QString("a") << 0 << 1
                                 << QStringList( QStringList() << "" );
-        QTest::newRow( stri + "math10" ) << QString("^a(?:a(\\1a))*$") << QString("aaa") << 0 << 3
+        QTest::newRow(qPrintable(stri + "math10")) << QString("^a(?:a(\\1a))*$") << QString("aaa") << 0 << 3
                                 << QStringList( QStringList() << "a" );
 
-        QTest::newRow( stri + "math13" ) << QString("^(?:((?:^a)?\\2\\3)(\\3\\1|(?=a$))(\\1\\2|("
+        QTest::newRow(qPrintable(stri + "math13")) << QString("^(?:((?:^a)?\\2\\3)(\\3\\1|(?=a$))(\\1\\2|("
                                    "?=a$)))*a$")
                                 << QString("aaa") << 0 << 3
                                 << QStringList( QStringList() << "a" << "a" << "" );
-        QTest::newRow( stri + "math14" ) << QString("^(?:((?:^a)?\\2\\3)(\\3\\1|(?=a$))(\\1\\2|("
+        QTest::newRow(qPrintable(stri + "math14")) << QString("^(?:((?:^a)?\\2\\3)(\\3\\1|(?=a$))(\\1\\2|("
                                    "?=a$)))*a$")
                                 << QString("aaaaa") << 0 << 5
                                 << QStringList( QStringList() << "a" << "a" << "aa" );
-        QTest::newRow( stri + "math17" ) << QString("^(?:(a(?:(\\1\\3)(\\1\\2))*(?:\\1\\3)?)|((?"
+        QTest::newRow(qPrintable(stri + "math17")) << QString("^(?:(a(?:(\\1\\3)(\\1\\2))*(?:\\1\\3)?)|((?"
                                    ":(\\4(?:^a)?\\6)(\\4\\5))*(?:\\4\\6)?))$")
                                 << QString("aaa") << 0 << 3
                                 << QStringList( QStringList() << "" << "" << "" << "aaa" << "a" << "aa" );
-        QTest::newRow( stri + "math18" ) << QString("^(?:(a(?:(\\1\\3)(\\1\\2))*(?:\\1\\3)?)|((?"
+        QTest::newRow(qPrintable(stri + "math18")) << QString("^(?:(a(?:(\\1\\3)(\\1\\2))*(?:\\1\\3)?)|((?"
                                    ":(\\4(?:^a)?\\6)(\\4\\5))*(?:\\4\\6)?))$")
                                 << QString("aaaaa") << 0 << 5
                                 << QStringList( QStringList() << "aaaaa" << "a" << "aaa" << "" << "" << "" );
-        QTest::newRow( stri + "math19" ) << QString("^(?:(a(?:(\\1\\3)(\\1\\2))*(?:\\1\\3)?)|((?"
+        QTest::newRow(qPrintable(stri + "math19")) << QString("^(?:(a(?:(\\1\\3)(\\1\\2))*(?:\\1\\3)?)|((?"
                                    ":(\\4(?:^a)?\\6)(\\4\\5))*(?:\\4\\6)?))$")
                                 << QString("aaaaaaaa") << 0 << 8
                                 << QStringList( QStringList() << "" << "" << "" << "aaaaaaaa" << "a" << "aa" );
-        QTest::newRow( stri + "math20" ) << QString("^(?:(a(?:(\\1\\3)(\\1\\2))*(?:\\1\\3)?)|((?"
+        QTest::newRow(qPrintable(stri + "math20")) << QString("^(?:(a(?:(\\1\\3)(\\1\\2))*(?:\\1\\3)?)|((?"
                                    ":(\\4(?:^a)?\\6)(\\4\\5))*(?:\\4\\6)?))$")
                                 << QString("aaaaaaaaa") << -1 << -1
                                 << QStringList( QStringList() << QString()
@@ -311,7 +312,7 @@ void tst_QRegExp::indexIn_addMoreRows(const QByteArray &stri)
                                    << QString()
                                    << QString()
                                    << QString() );
-        QTest::newRow( stri + "math21" ) << QString("^(aa+)\\1+$") << QString("aaaaaaaaaaaa") << 0 << 12
+        QTest::newRow(qPrintable(stri + "math21")) << QString("^(aa+)\\1+$") << QString("aaaaaaaaaaaa") << 0 << 12
                                 << QStringList( QStringList() << "aa" );
 
         static const char * const squareRegExp[] = {
@@ -349,129 +350,129 @@ void tst_QRegExp::indexIn_addMoreRows(const QByteArray &stri)
         }
 
         // miscellaneous
-        QTest::newRow( stri + "misc00" ) << QString(email)
+        QTest::newRow(qPrintable(stri + "misc00")) << QString(email)
                                 << QString("email123@example.com") << 0 << 20
                                 << QStringList();
-        QTest::newRow( stri + "misc01" ) << QString("[0-9]*\\.[0-9]+") << QString("pi = 3.14") << 5 << 4
+        QTest::newRow(qPrintable(stri + "misc01")) << QString("[0-9]*\\.[0-9]+") << QString("pi = 3.14") << 5 << 4
                                 << QStringList();
 
         // or operator
-        QTest::newRow( stri + "or00" ) << QString("(?:|b)") << QString("xxx") << 0 << 0 << QStringList();
-        QTest::newRow( stri + "or01" ) << QString("(?:|b)") << QString("b") << 0 << 1 << QStringList();
-        QTest::newRow( stri + "or02" ) << QString("(?:b|)") << QString("") << 0 << 0 << QStringList();
-        QTest::newRow( stri + "or03" ) << QString("(?:b|)") << QString("b") << 0 << 1 << QStringList();
-        QTest::newRow( stri + "or04" ) << QString("(?:||b||)") << QString("") << 0 << 0 << QStringList();
-        QTest::newRow( stri + "or05" ) << QString("(?:||b||)") << QString("b") << 0 << 1 << QStringList();
-        QTest::newRow( stri + "or06" ) << QString("(?:a|b)") << QString("") << -1 << -1 << QStringList();
-        QTest::newRow( stri + "or07" ) << QString("(?:a|b)") << QString("cc") << -1 << -1 << QStringList();
-        QTest::newRow( stri + "or08" ) << QString("(?:a|b)") << QString("abc") << 0 << 1 << QStringList();
-        QTest::newRow( stri + "or09" ) << QString("(?:a|b)") << QString("cba") << 1 << 1 << QStringList();
-        QTest::newRow( stri + "or10" ) << QString("(?:ab|ba)") << QString("aba") << 0 << 2
+        QTest::newRow(qPrintable(stri + "or00")) << QString("(?:|b)") << QString("xxx") << 0 << 0 << QStringList();
+        QTest::newRow(qPrintable(stri + "or01")) << QString("(?:|b)") << QString("b") << 0 << 1 << QStringList();
+        QTest::newRow(qPrintable(stri + "or02")) << QString("(?:b|)") << QString("") << 0 << 0 << QStringList();
+        QTest::newRow(qPrintable(stri + "or03")) << QString("(?:b|)") << QString("b") << 0 << 1 << QStringList();
+        QTest::newRow(qPrintable(stri + "or04")) << QString("(?:||b||)") << QString("") << 0 << 0 << QStringList();
+        QTest::newRow(qPrintable(stri + "or05")) << QString("(?:||b||)") << QString("b") << 0 << 1 << QStringList();
+        QTest::newRow(qPrintable(stri + "or06")) << QString("(?:a|b)") << QString("") << -1 << -1 << QStringList();
+        QTest::newRow(qPrintable(stri + "or07")) << QString("(?:a|b)") << QString("cc") << -1 << -1 << QStringList();
+        QTest::newRow(qPrintable(stri + "or08")) << QString("(?:a|b)") << QString("abc") << 0 << 1 << QStringList();
+        QTest::newRow(qPrintable(stri + "or09")) << QString("(?:a|b)") << QString("cba") << 1 << 1 << QStringList();
+        QTest::newRow(qPrintable(stri + "or10")) << QString("(?:ab|ba)") << QString("aba") << 0 << 2
                               << QStringList();
-        QTest::newRow( stri + "or11" ) << QString("(?:ab|ba)") << QString("bab") << 0 << 2
+        QTest::newRow(qPrintable(stri + "or11")) << QString("(?:ab|ba)") << QString("bab") << 0 << 2
                               << QStringList();
-        QTest::newRow( stri + "or12" ) << QString("(?:ab|ba)") << QString("caba") << 1 << 2
+        QTest::newRow(qPrintable(stri + "or12")) << QString("(?:ab|ba)") << QString("caba") << 1 << 2
                               << QStringList();
-        QTest::newRow( stri + "or13" ) << QString("(?:ab|ba)") << QString("cbab") << 1 << 2
+        QTest::newRow(qPrintable(stri + "or13")) << QString("(?:ab|ba)") << QString("cbab") << 1 << 2
                               << QStringList();
 
         // quantifiers
-        QTest::newRow( stri + "qua00" ) << QString("((([a-j])){0,0})") << QString("") << 0 << 0
+        QTest::newRow(qPrintable(stri + "qua00")) << QString("((([a-j])){0,0})") << QString("") << 0 << 0
                                << QStringList( QStringList() << "" << "" << "" );
-        QTest::newRow( stri + "qua01" ) << QString("((([a-j])){0,0})") << QString("a") << 0 << 0
+        QTest::newRow(qPrintable(stri + "qua01")) << QString("((([a-j])){0,0})") << QString("a") << 0 << 0
                                << QStringList( QStringList() << "" << "" << "" );
-        QTest::newRow( stri + "qua02" ) << QString("((([a-j])){0,0})") << QString("xyz") << 0 << 0
+        QTest::newRow(qPrintable(stri + "qua02")) << QString("((([a-j])){0,0})") << QString("xyz") << 0 << 0
                                << QStringList( QStringList() << "" << "" << "" );
-        QTest::newRow( stri + "qua03" ) << QString("((([a-j]))?)") << QString("") << 0 << 0
+        QTest::newRow(qPrintable(stri + "qua03")) << QString("((([a-j]))?)") << QString("") << 0 << 0
                                << QStringList( QStringList() << "" << "" << "" );
-        QTest::newRow( stri + "qua04" ) << QString("((([a-j]))?)") << QString("a") << 0 << 1
+        QTest::newRow(qPrintable(stri + "qua04")) << QString("((([a-j]))?)") << QString("a") << 0 << 1
                                << QStringList( QStringList() << "a" << "a" << "a" );
-        QTest::newRow( stri + "qua05" ) << QString("((([a-j]))?)") << QString("x") << 0 << 0
+        QTest::newRow(qPrintable(stri + "qua05")) << QString("((([a-j]))?)") << QString("x") << 0 << 0
                                << QStringList( QStringList() << "" << "" << "" );
-        QTest::newRow( stri + "qua06" ) << QString("((([a-j]))?)") << QString("ab") << 0 << 1
+        QTest::newRow(qPrintable(stri + "qua06")) << QString("((([a-j]))?)") << QString("ab") << 0 << 1
                                << QStringList( QStringList() << "a" << "a" << "a" );
-        QTest::newRow( stri + "qua07" ) << QString("((([a-j]))?)") << QString("xa") << 0 << 0
+        QTest::newRow(qPrintable(stri + "qua07")) << QString("((([a-j]))?)") << QString("xa") << 0 << 0
                                << QStringList( QStringList() << "" << "" << "" );
-        QTest::newRow( stri + "qua08" ) << QString("((([a-j])){0,3})") << QString("") << 0 << 0
+        QTest::newRow(qPrintable(stri + "qua08")) << QString("((([a-j])){0,3})") << QString("") << 0 << 0
                                << QStringList( QStringList() << "" << "" << "" );
-        QTest::newRow( stri + "qua09" ) << QString("((([a-j])){0,3})") << QString("a") << 0 << 1
+        QTest::newRow(qPrintable(stri + "qua09")) << QString("((([a-j])){0,3})") << QString("a") << 0 << 1
                                << QStringList( QStringList() << "a" << "a" << "a" );
-        QTest::newRow( stri + "qua10" ) << QString("((([a-j])){0,3})") << QString("abcd") << 0 << 3
+        QTest::newRow(qPrintable(stri + "qua10")) << QString("((([a-j])){0,3})") << QString("abcd") << 0 << 3
                                << QStringList( QStringList() << "abc" << "c" << "c" );
-        QTest::newRow( stri + "qua11" ) << QString("((([a-j])){0,3})") << QString("abcde") << 0 << 3
+        QTest::newRow(qPrintable(stri + "qua11")) << QString("((([a-j])){0,3})") << QString("abcde") << 0 << 3
                                << QStringList( QStringList() << "abc" << "c" << "c" );
-        QTest::newRow( stri + "qua12" ) << QString("((([a-j])){2,4})") << QString("a") << -1 << -1
+        QTest::newRow(qPrintable(stri + "qua12")) << QString("((([a-j])){2,4})") << QString("a") << -1 << -1
                                << QStringList( QStringList() << QString()
                                                   << QString()
                                                   << QString() );
-        QTest::newRow( stri + "qua13" ) << QString("((([a-j])){2,4})") << QString("ab") << 0 << 2
+        QTest::newRow(qPrintable(stri + "qua13")) << QString("((([a-j])){2,4})") << QString("ab") << 0 << 2
                                << QStringList( QStringList() << "ab" << "b" << "b" );
-        QTest::newRow( stri + "qua14" ) << QString("((([a-j])){2,4})") << QString("abcd") << 0 << 4
+        QTest::newRow(qPrintable(stri + "qua14")) << QString("((([a-j])){2,4})") << QString("abcd") << 0 << 4
                                << QStringList( QStringList() << "abcd" << "d" << "d" );
-        QTest::newRow( stri + "qua15" ) << QString("((([a-j])){2,4})") << QString("abcdef") << 0 << 4
+        QTest::newRow(qPrintable(stri + "qua15")) << QString("((([a-j])){2,4})") << QString("abcdef") << 0 << 4
                                << QStringList( QStringList() << "abcd" << "d" << "d" );
-        QTest::newRow( stri + "qua16" ) << QString("((([a-j])){2,4})") << QString("xaybcd") << 3 << 3
+        QTest::newRow(qPrintable(stri + "qua16")) << QString("((([a-j])){2,4})") << QString("xaybcd") << 3 << 3
                                << QStringList( QStringList() << "bcd" << "d" << "d" );
-        QTest::newRow( stri + "qua17" ) << QString("((([a-j])){0,})") << QString("abcdefgh") << 0 << 8
+        QTest::newRow(qPrintable(stri + "qua17")) << QString("((([a-j])){0,})") << QString("abcdefgh") << 0 << 8
                                << QStringList( QStringList() << "abcdefgh" << "h" << "h" );
-        QTest::newRow( stri + "qua18" ) << QString("((([a-j])){,0})") << QString("abcdefgh") << 0 << 0
+        QTest::newRow(qPrintable(stri + "qua18")) << QString("((([a-j])){,0})") << QString("abcdefgh") << 0 << 0
                                << QStringList( QStringList() << "" << "" << "" );
-        QTest::newRow( stri + "qua19" ) << QString("(1(2(3){3,4}){2,3}){1,2}") << QString("123332333") << 0
+        QTest::newRow(qPrintable(stri + "qua19")) << QString("(1(2(3){3,4}){2,3}){1,2}") << QString("123332333") << 0
                                << 9
                                << QStringList( QStringList() << "123332333" << "2333"
                                                   << "3" );
-        QTest::newRow( stri + "qua20" ) << QString("(1(2(3){3,4}){2,3}){1,2}")
+        QTest::newRow(qPrintable(stri + "qua20")) << QString("(1(2(3){3,4}){2,3}){1,2}")
                                << QString("12333323333233331233332333323333") << 0 << 32
                                << QStringList( QStringList() << "1233332333323333"
                                                   << "23333" << "3" );
-        QTest::newRow( stri + "qua21" ) << QString("(1(2(3){3,4}){2,3}){1,2}") << QString("") << -1 << -1
+        QTest::newRow(qPrintable(stri + "qua21")) << QString("(1(2(3){3,4}){2,3}){1,2}") << QString("") << -1 << -1
                                << QStringList( QStringList() << QString()
                                                   << QString()
                                                   << QString() );
-        QTest::newRow( stri + "qua22" ) << QString("(1(2(3){3,4}){2,3}){1,2}") << QString("12333") << -1
+        QTest::newRow(qPrintable(stri + "qua22")) << QString("(1(2(3){3,4}){2,3}){1,2}") << QString("12333") << -1
                                << -1
                                << QStringList( QStringList() << QString()
                                                   << QString()
                                                   << QString() );
-        QTest::newRow( stri + "qua23" ) << QString("(1(2(3){3,4}){2,3}){1,2}") << QString("12333233") << -1
+        QTest::newRow(qPrintable(stri + "qua23")) << QString("(1(2(3){3,4}){2,3}){1,2}") << QString("12333233") << -1
                                << -1
                                << QStringList( QStringList() << QString()
                                                   << QString()
                                                   << QString() );
-        QTest::newRow( stri + "qua24" ) << QString("(1(2(3){3,4}){2,3}){1,2}") << QString("122333") << -1
+        QTest::newRow(qPrintable(stri + "qua24")) << QString("(1(2(3){3,4}){2,3}){1,2}") << QString("122333") << -1
                                << -1
                                << QStringList( QStringList() << QString()
                                                   << QString()
                                                   << QString() );
 
         // star operator
-        QTest::newRow( stri + "star00" ) << QString("(?:)*") << QString("") << 0 << 0 << QStringList();
-        QTest::newRow( stri + "star01" ) << QString("(?:)*") << QString("abc") << 0 << 0 << QStringList();
-        QTest::newRow( stri + "star02" ) << QString("(?:a)*") << QString("") << 0 << 0 << QStringList();
-        QTest::newRow( stri + "star03" ) << QString("(?:a)*") << QString("a") << 0 << 1 << QStringList();
-        QTest::newRow( stri + "star04" ) << QString("(?:a)*") << QString("aaa") << 0 << 3 << QStringList();
-        QTest::newRow( stri + "star05" ) << QString("(?:a)*") << QString("bbbbaaa") << 0 << 0
+        QTest::newRow(qPrintable(stri + "star00")) << QString("(?:)*") << QString("") << 0 << 0 << QStringList();
+        QTest::newRow(qPrintable(stri + "star01")) << QString("(?:)*") << QString("abc") << 0 << 0 << QStringList();
+        QTest::newRow(qPrintable(stri + "star02")) << QString("(?:a)*") << QString("") << 0 << 0 << QStringList();
+        QTest::newRow(qPrintable(stri + "star03")) << QString("(?:a)*") << QString("a") << 0 << 1 << QStringList();
+        QTest::newRow(qPrintable(stri + "star04")) << QString("(?:a)*") << QString("aaa") << 0 << 3 << QStringList();
+        QTest::newRow(qPrintable(stri + "star05")) << QString("(?:a)*") << QString("bbbbaaa") << 0 << 0
                                 << QStringList();
-        QTest::newRow( stri + "star06" ) << QString("(?:a)*") << QString("bbbbaaabbaaaaa") << 0 << 0
+        QTest::newRow(qPrintable(stri + "star06")) << QString("(?:a)*") << QString("bbbbaaabbaaaaa") << 0 << 0
                                 << QStringList();
-        QTest::newRow( stri + "star07" ) << QString("(?:b)*(?:a)*") << QString("") << 0 << 0
+        QTest::newRow(qPrintable(stri + "star07")) << QString("(?:b)*(?:a)*") << QString("") << 0 << 0
                                 << QStringList();
-        QTest::newRow( stri + "star08" ) << QString("(?:b)*(?:a)*") << QString("a") << 0 << 1
+        QTest::newRow(qPrintable(stri + "star08")) << QString("(?:b)*(?:a)*") << QString("a") << 0 << 1
                                 << QStringList();
-        QTest::newRow( stri + "star09" ) << QString("(?:b)*(?:a)*") << QString("aaa") << 0 << 3
+        QTest::newRow(qPrintable(stri + "star09")) << QString("(?:b)*(?:a)*") << QString("aaa") << 0 << 3
                                 << QStringList();
-        QTest::newRow( stri + "star10" ) << QString("(?:b)*(?:a)*") << QString("bbbbaaa") << 0 << 7
+        QTest::newRow(qPrintable(stri + "star10")) << QString("(?:b)*(?:a)*") << QString("bbbbaaa") << 0 << 7
                                 << QStringList();
-        QTest::newRow( stri + "star11" ) << QString("(?:b)*(?:a)*") << QString("bbbbaaabbaaaaa") << 0 << 7
+        QTest::newRow(qPrintable(stri + "star11")) << QString("(?:b)*(?:a)*") << QString("bbbbaaabbaaaaa") << 0 << 7
                                 << QStringList();
-        QTest::newRow( stri + "star12" ) << QString("(?:a|b)*") << QString("c") << 0 << 0 << QStringList();
-        QTest::newRow( stri + "star13" ) << QString("(?:a|b)*") << QString("abac") << 0 << 3
+        QTest::newRow(qPrintable(stri + "star12")) << QString("(?:a|b)*") << QString("c") << 0 << 0 << QStringList();
+        QTest::newRow(qPrintable(stri + "star13")) << QString("(?:a|b)*") << QString("abac") << 0 << 3
                                 << QStringList();
-        QTest::newRow( stri + "star14" ) << QString("(?:a|b|)*") << QString("c") << 0 << 0
+        QTest::newRow(qPrintable(stri + "star14")) << QString("(?:a|b|)*") << QString("c") << 0 << 0
                                 << QStringList();
-        QTest::newRow( stri + "star15" ) << QString("(?:a|b|)*") << QString("abac") << 0 << 3
+        QTest::newRow(qPrintable(stri + "star15")) << QString("(?:a|b|)*") << QString("abac") << 0 << 3
                                 << QStringList();
-        QTest::newRow( stri + "star16" ) << QString("(?:ab|ba|b)*") << QString("abbbababbbaaab") << 0 << 11
+        QTest::newRow(qPrintable(stri + "star16")) << QString("(?:ab|ba|b)*") << QString("abbbababbbaaab") << 0 << 11
                                 << QStringList();
 }
 
@@ -1371,6 +1372,29 @@ void tst_QRegExp::validityCheck()
     QCOMPARE(rx2.matchedLength(), -1);
     QCOMPARE(rx2.pos(), -1);
     QCOMPARE(rx2.cap(), QString(""));
+}
+
+void tst_QRegExp::escapeSequences()
+{
+    QString perlSyntaxSpecialChars("0123456789afnrtvbBdDwWsSx\\|[]{}()^$?+*");
+    QString w3cXmlSchema11SyntaxSpecialChars("cCiIpP"); // as well as the perl ones
+    for (int i = ' '; i <= 127; ++i) {
+        QLatin1Char c(i);
+        if (perlSyntaxSpecialChars.indexOf(c) == -1) {
+            QRegExp rx(QString("\\%1").arg(c), Qt::CaseSensitive, QRegExp::RegExp);
+            // we'll never have c == 'a' since it's a special character
+            QString s = QString("aaa%1aaa").arg(c);
+            QCOMPARE(rx.indexIn(s), 3);
+
+            rx.setPatternSyntax(QRegExp::RegExp2);
+            QCOMPARE(rx.indexIn(s), 3);
+
+            if (w3cXmlSchema11SyntaxSpecialChars.indexOf(c) == -1) {
+                rx.setPatternSyntax(QRegExp::W3CXmlSchema11);
+                QCOMPARE(rx.indexIn(s), 3);
+            }
+        }
+    }
 }
 
 

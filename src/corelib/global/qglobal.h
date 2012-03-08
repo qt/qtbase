@@ -578,16 +578,6 @@ class QDataStream;
 #    else
 #      define Q_SVG_EXPORT Q_DECL_IMPORT
 #    endif
-#    if defined(QT_BUILD_QTQUICK1_LIB)
-#      define Q_QTQUICK1_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_QTQUICK1_EXPORT Q_DECL_IMPORT
-#    endif
-#    if defined(QT_BUILD_DECLARATIVE_LIB)
-#      define Q_DECLARATIVE_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_DECLARATIVE_EXPORT Q_DECL_IMPORT
-#    endif
 #    if defined(QT_BUILD_OPENGL_LIB)
 #      define Q_OPENGL_EXPORT Q_DECL_EXPORT
 #    else
@@ -648,8 +638,6 @@ class QDataStream;
 #    define Q_SQL_EXPORT Q_DECL_IMPORT
 #    define Q_NETWORK_EXPORT Q_DECL_IMPORT
 #    define Q_SVG_EXPORT Q_DECL_IMPORT
-#    define Q_DECLARATIVE_EXPORT Q_DECL_IMPORT
-#    define Q_QTQUICK1_EXPORT Q_DECL_IMPORT
 #    define Q_CANVAS_EXPORT Q_DECL_IMPORT
 #    define Q_OPENGL_EXPORT Q_DECL_IMPORT
 #    define Q_MULTIMEDIA_EXPORT Q_DECL_IMPORT
@@ -682,8 +670,6 @@ class QDataStream;
 #    define Q_SQL_EXPORT Q_DECL_EXPORT
 #    define Q_NETWORK_EXPORT Q_DECL_EXPORT
 #    define Q_SVG_EXPORT Q_DECL_EXPORT
-#    define Q_DECLARATIVE_EXPORT Q_DECL_EXPORT
-#    define Q_QTQUICK1_EXPORT Q_DECL_EXPORT
 #    define Q_OPENGL_EXPORT Q_DECL_EXPORT
 #    define Q_MULTIMEDIA_EXPORT Q_DECL_EXPORT
 #    define Q_OPENVG_EXPORT Q_DECL_EXPORT
@@ -702,8 +688,6 @@ class QDataStream;
 #    define Q_SQL_EXPORT
 #    define Q_NETWORK_EXPORT
 #    define Q_SVG_EXPORT
-#    define Q_DECLARATIVE_EXPORT
-#    define Q_QTQUICK1_EXPORT
 #    define Q_OPENGL_EXPORT
 #    define Q_MULTIMEDIA_EXPORT
 #    define Q_OPENVG_EXPORT

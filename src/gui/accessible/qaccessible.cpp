@@ -77,10 +77,10 @@ QT_BEGIN_NAMESPACE
     braille displays. Clients and servers communicate in the following way:
 
     \list
-    \o  \e{AT Servers} notify the clients about events through calls to the
+    \li  \e{AT Servers} notify the clients about events through calls to the
         updateAccessibility() function.
 
-    \o  \e{AT Clients} request information about the objects in the server.
+    \li  \e{AT Clients} request information about the objects in the server.
         The QAccessibleInterface class is the core interface, and encapsulates
         this information in a pure virtual API. Implementations of the interface
         are provided by Qt through the queryAccessibleInterface() API.
@@ -571,10 +571,6 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
     if (!object)
         return 0;
 
-    QEvent e(QEvent::AccessibilityPrepare);
-
-    QCoreApplication::sendEvent(object, &e);
-
     const QMetaObject *mo = object->metaObject();
     while (mo) {
         const QLatin1String cn(mo->className());
@@ -649,8 +645,6 @@ void QAccessible::setRootObject(QObject *object)
 void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
 {
     Q_ASSERT(object);
-
-    qWarning("QAccessible::updateAccessibility is deprecated.");
 
     QAccessibleEvent event = QAccessibleEvent(reason, object, child);
     updateAccessibility(event);
@@ -750,12 +744,12 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
     The AT client uses three basic concepts to acquire information
     about any accessible object in an application:
     \list
-    \i \e Properties The client can read information about
+    \li \e Properties The client can read information about
     accessible objects. In some cases the client can also modify these
     properties; such as text in a line edit.
-    \i \e Actions The client can invoke actions like pressing a button
+    \li \e Actions The client can invoke actions like pressing a button
     or .
-    \i \e{Relationships and Navigation} The client can traverse from one
+    \li \e{Relationships and Navigation} The client can traverse from one
     accessible object to another, using the relationships between objects.
     \endlist
 
@@ -1198,11 +1192,23 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
         if (iface->object()) {
             d << "obj=" << iface->object();
         }
-        if (iface->state().invisible) {
-            d << "invisible";
-        } else {
+        QStringList stateStrings;
+        QAccessible::State st = iface->state();
+        if (st.focusable)
+            stateStrings << QLatin1String("focusable");
+        if (st.focused)
+            stateStrings << QLatin1String("focused");
+        if (st.selected)
+            stateStrings << QLatin1String("selected");
+        if (st.invisible)
+            stateStrings << QLatin1String("invisible");
+
+        if (!stateStrings.isEmpty())
+            d << stateStrings.join(QLatin1String("|"));
+
+        if (!st.invisible)
             d << "rect=" << iface->rect();
-        }
+
     } else {
         d << " invalid";
     }

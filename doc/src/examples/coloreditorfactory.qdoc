@@ -134,16 +134,16 @@
     Possible suggestions are:
 
     \list
-	\o If the editor widget has no user property defined, the delegate
+    \li If the editor widget has no user property defined, the delegate
 	   asks the factory for the property name, which it in turn
 	   asks the item editor creator for. In this case, you can use 
 	   the QItemEditorCreator class, which takes the property 
 	   name to use for editing as a constructor argument.
-	\o If the editor requires other constructors or other
+    \li If the editor requires other constructors or other
 	   initialization than provided by QItemEditorCreatorBase, you
 	   must reimplement
 	   QItemEditorCreatorBase::createWidget().
-	\o You could also subclass QItemEditorFactory if you only want
+    \li You could also subclass QItemEditorFactory if you only want
 	   to provide editors for certain kinds of data or use another
 	   method of creating the editors than using creator bases.
     \endlist

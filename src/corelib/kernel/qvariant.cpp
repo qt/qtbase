@@ -1696,7 +1696,7 @@ void QVariant::load(QDataStream &s)
     if (typeId == QVariant::UserType) {
         QByteArray name;
         s >> name;
-        typeId = QMetaType::type(name);
+        typeId = QMetaType::type(name.constData());
         if (typeId == QMetaType::UnknownType) {
             s.setStatus(QDataStream::ReadCorruptData);
             return;
@@ -2174,7 +2174,7 @@ inline T qNumVariantToHelper(const QVariant::Private &d,
     If \a ok is non-null: \c{*}\a{ok} is set to true if the value could be
     converted to an int; otherwise \c{*}\a{ok} is set to false.
 
-    \bold{Warning:} If the value is convertible to a \l LongLong but is too
+    \b{Warning:} If the value is convertible to a \l LongLong but is too
     large to be represented in an int, the resulting arithmetic overflow will
     not be reflected in \a ok. A simple workaround is to use QString::toInt().
     Fixing this bug has been postponed to Qt 5 in order to avoid breaking existing code.
@@ -2194,7 +2194,7 @@ int QVariant::toInt(bool *ok) const
     If \a ok is non-null: \c{*}\a{ok} is set to true if the value could be
     converted to an unsigned int; otherwise \c{*}\a{ok} is set to false.
 
-    \bold{Warning:} If the value is convertible to a \l ULongLong but is too
+    \b{Warning:} If the value is convertible to a \l ULongLong but is too
     large to be represented in an unsigned int, the resulting arithmetic overflow will
     not be reflected in \a ok. A simple workaround is to use QString::toUInt().
     Fixing this bug has been postponed to Qt 5 in order to avoid breaking existing code.
@@ -2411,28 +2411,28 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
     The following casts are done automatically:
 
     \table
-    \header \o Type \o Automatically Cast To
-    \row \o \l Bool \o \l Char, \l Double, \l Int, \l LongLong, \l String, \l UInt, \l ULongLong
-    \row \o \l ByteArray \o \l Double, \l Int, \l LongLong, \l String, \l UInt, \l ULongLong
-    \row \o \l Char \o \l Bool, \l Int, \l UInt, \l LongLong, \l ULongLong
-    \row \o \l Color \o \l String
-    \row \o \l Date \o \l DateTime, \l String
-    \row \o \l DateTime \o \l Date, \l String, \l Time
-    \row \o \l Double \o \l Bool, \l Int, \l LongLong, \l String, \l UInt, \l ULongLong
-    \row \o \l Font \o \l String
-    \row \o \l Int \o \l Bool, \l Char, \l Double, \l LongLong, \l String, \l UInt, \l ULongLong
-    \row \o \l KeySequence \o \l Int, \l String
-    \row \o \l List \o \l StringList (if the list's items can be converted to strings)
-    \row \o \l LongLong \o \l Bool, \l ByteArray, \l Char, \l Double, \l Int, \l String, \l UInt, \l ULongLong
-    \row \o \l Point \o PointF
-    \row \o \l Rect \o RectF
-    \row \o \l String \o \l Bool, \l ByteArray, \l Char, \l Color, \l Date, \l DateTime, \l Double,
+    \header \li Type \li Automatically Cast To
+    \row \li \l Bool \li \l Char, \l Double, \l Int, \l LongLong, \l String, \l UInt, \l ULongLong
+    \row \li \l ByteArray \li \l Double, \l Int, \l LongLong, \l String, \l UInt, \l ULongLong
+    \row \li \l Char \li \l Bool, \l Int, \l UInt, \l LongLong, \l ULongLong
+    \row \li \l Color \li \l String
+    \row \li \l Date \li \l DateTime, \l String
+    \row \li \l DateTime \li \l Date, \l String, \l Time
+    \row \li \l Double \li \l Bool, \l Int, \l LongLong, \l String, \l UInt, \l ULongLong
+    \row \li \l Font \li \l String
+    \row \li \l Int \li \l Bool, \l Char, \l Double, \l LongLong, \l String, \l UInt, \l ULongLong
+    \row \li \l KeySequence \li \l Int, \l String
+    \row \li \l List \li \l StringList (if the list's items can be converted to strings)
+    \row \li \l LongLong \li \l Bool, \l ByteArray, \l Char, \l Double, \l Int, \l String, \l UInt, \l ULongLong
+    \row \li \l Point \li PointF
+    \row \li \l Rect \li RectF
+    \row \li \l String \li \l Bool, \l ByteArray, \l Char, \l Color, \l Date, \l DateTime, \l Double,
                          \l Font, \l Int, \l KeySequence, \l LongLong, \l StringList, \l Time, \l UInt,
                          \l ULongLong
-    \row \o \l StringList \o \l List, \l String (if the list contains exactly one item)
-    \row \o \l Time \o \l String
-    \row \o \l UInt \o \l Bool, \l Char, \l Double, \l Int, \l LongLong, \l String, \l ULongLong
-    \row \o \l ULongLong \o \l Bool, \l Char, \l Double, \l Int, \l LongLong, \l String, \l UInt
+    \row \li \l StringList \li \l List, \l String (if the list contains exactly one item)
+    \row \li \l Time \li \l String
+    \row \li \l UInt \li \l Bool, \l Char, \l Double, \l Int, \l LongLong, \l String, \l ULongLong
+    \row \li \l ULongLong \li \l Bool, \l Char, \l Double, \l Int, \l LongLong, \l String, \l UInt
     \endtable
 
     \sa convert()

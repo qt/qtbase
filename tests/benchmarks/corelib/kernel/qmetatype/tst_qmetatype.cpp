@@ -77,6 +77,9 @@ private slots:
     void constructCoreTypeCopy_data();
     void constructCoreTypeCopy();
 
+    void constructCustomType_data();
+    void constructCustomType();
+
     void constructInPlace_data();
     void constructInPlace();
     void constructInPlaceCopy_data();
@@ -304,6 +307,24 @@ void tst_QMetaType::constructCoreTypeCopy()
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i) {
             void *data = QMetaType::create(typeId, copy);
+            QMetaType::destroy(typeId, data);
+        }
+    }
+}
+
+void tst_QMetaType::constructCustomType_data()
+{
+    QTest::addColumn<int>("typeId");
+
+    QTest::newRow("BigClass") << qMetaTypeId<BigClass>();
+}
+
+void tst_QMetaType::constructCustomType()
+{
+    QFETCH(int, typeId);
+    QBENCHMARK {
+        for (int i = 0; i < 100000; ++i) {
+            void *data = QMetaType::create(typeId, (void *)0);
             QMetaType::destroy(typeId, data);
         }
     }

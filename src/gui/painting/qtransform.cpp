@@ -156,8 +156,8 @@ QT_BEGIN_NAMESPACE
 
     \table 100%
     \row
-    \o \inlineimage qtransform-simpletransformation.png
-    \o
+    \li \inlineimage qtransform-simpletransformation.png
+    \li
     \snippet doc/src/snippets/transform/main.cpp 0
     \endtable
 
@@ -168,8 +168,8 @@ QT_BEGIN_NAMESPACE
 
     \table 100%
     \row
-    \o \inlineimage qtransform-combinedtransformation.png
-    \o
+    \li \inlineimage qtransform-combinedtransformation.png
+    \li
     \snippet doc/src/snippets/transform/main.cpp 1
     \endtable
 
@@ -218,8 +218,8 @@ QT_BEGIN_NAMESPACE
 
     \table 100%
     \row
-    \o \inlineimage qtransform-combinedtransformation2.png
-    \o
+    \li \inlineimage qtransform-combinedtransformation2.png
+    \li
     \snippet doc/src/snippets/transform/main.cpp 2
     \endtable
 

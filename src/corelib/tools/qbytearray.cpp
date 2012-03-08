@@ -344,7 +344,7 @@ int qstrcmp(const QByteArray &str1, const QByteArray &str2)
 {
     int l1 = str1.length();
     int l2 = str2.length();
-    int ret = memcmp(str1, str2, qMin(l1, l2));
+    int ret = memcmp(str1.constData(), str2.constData(), qMin(l1, l2));
     if (ret != 0)
         return ret;
 
@@ -506,7 +506,7 @@ QByteArray qCompress(const uchar* data, int nbytes, int compressionLevel)
     from this and any earlier Qt version, back to Qt 3.1 when this
     feature was added.
 
-    \bold{Note:} If you want to use this function to uncompress external
+    \b{Note:} If you want to use this function to uncompress external
     data that was compressed using zlib, you first need to prepend a four
     byte header to the byte array containing the data. The header must
     contain the expected length (in bytes) of the uncompressed data,
@@ -995,6 +995,8 @@ QByteArray &QByteArray::operator=(const char *str)
 
 /*! \fn QByteArray::operator const char *() const
     \fn QByteArray::operator const void *() const
+
+    \obsolete Use constData() instead.
 
     Returns a pointer to the data stored in the byte array. The
     pointer can be used to access the bytes that compose the array.
@@ -2734,7 +2736,7 @@ QDataStream &operator<<(QDataStream &out, const QByteArray &ba)
         out << (quint32)0xffffffff;
         return out;
     }
-    return out.writeBytes(ba, ba.size());
+    return out.writeBytes(ba.constData(), ba.size());
 }
 
 /*! \relates QByteArray
@@ -3670,12 +3672,12 @@ QByteArray &QByteArray::setNum(qulonglong n, int base)
     The format \a f can be any of the following:
 
     \table
-    \header \i Format \i Meaning
-    \row \i \c e \i format as [-]9.9e[+|-]999
-    \row \i \c E \i format as [-]9.9E[+|-]999
-    \row \i \c f \i format as [-]9.9
-    \row \i \c g \i use \c e or \c f format, whichever is the most concise
-    \row \i \c G \i use \c E or \c f format, whichever is the most concise
+    \header \li Format \li Meaning
+    \row \li \c e \li format as [-]9.9e[+|-]999
+    \row \li \c E \li format as [-]9.9E[+|-]999
+    \row \li \c f \li format as [-]9.9
+    \row \li \c g \li use \c e or \c f format, whichever is the most concise
+    \row \li \c G \li use \c E or \c f format, whichever is the most concise
     \endtable
 
     With 'e', 'E', and 'f', \a prec is the number of digits after the
@@ -3799,12 +3801,12 @@ QByteArray QByteArray::number(qulonglong n, int base)
     which is \c g by default, and can be any of the following:
 
     \table
-    \header \i Format \i Meaning
-    \row \i \c e \i format as [-]9.9e[+|-]999
-    \row \i \c E \i format as [-]9.9E[+|-]999
-    \row \i \c f \i format as [-]9.9
-    \row \i \c g \i use \c e or \c f format, whichever is the most concise
-    \row \i \c G \i use \c E or \c f format, whichever is the most concise
+    \header \li Format \li Meaning
+    \row \li \c e \li format as [-]9.9e[+|-]999
+    \row \li \c E \li format as [-]9.9E[+|-]999
+    \row \li \c f \li format as [-]9.9
+    \row \li \c g \li use \c e or \c f format, whichever is the most concise
+    \row \li \c G \li use \c E or \c f format, whichever is the most concise
     \endtable
 
     With 'e', 'E', and 'f', \a prec is the number of digits after the

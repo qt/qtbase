@@ -36,6 +36,7 @@ OBJECTS = \
     qdatastream.o \
     qdir.o \
     qdiriterator.o \
+    qfiledevice.o \
     qfile.o \
     qfileinfo.o \
     qabstractfileengine.o \

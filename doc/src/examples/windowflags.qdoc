@@ -46,10 +46,10 @@
     The example consists of two classes:
 
     \list
-    \o \c ControllerWindow is the main application widget that allows
+    \li \c ControllerWindow is the main application widget that allows
        the user to choose among the available window flags, and displays
        the effect on a separate preview window.
-    \o \c PreviewWindow is a custom widget displaying the name of
+    \li \c PreviewWindow is a custom widget displaying the name of
        its currently set window flags in a read-only text editor.
     \endlist
 

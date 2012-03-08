@@ -100,13 +100,13 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
 
   \list
 
-  \o Windows: QSharedMemory does not "own" the shared memory segment.
+  \li Windows: QSharedMemory does not "own" the shared memory segment.
   When all threads or processes that have an instance of QSharedMemory
   attached to a particular shared memory segment have either destroyed
   their instance of QSharedMemory or exited, the Windows kernel
   releases the shared memory segment automatically.
 
-  \o Unix: QSharedMemory "owns" the shared memory segment. When the
+  \li Unix: QSharedMemory "owns" the shared memory segment. When the
   last thread or process that has an instance of QSharedMemory
   attached to a particular shared memory segment detaches from the
   segment by destroying its instance of QSharedMemory, the Unix kernel
@@ -114,7 +114,7 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
   process crashes without running the QSharedMemory destructor, the
   shared memory segment survives the crash.
 
-  \o HP-UX: Only one attach to a shared memory segment is allowed per
+  \li HP-UX: Only one attach to a shared memory segment is allowed per
   process. This means that QSharedMemory should not be used across
   multiple threads in the same process in HP-UX.
 

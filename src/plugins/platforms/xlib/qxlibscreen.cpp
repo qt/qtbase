@@ -241,6 +241,11 @@ QXlibScreen::~QXlibScreen()
     delete mDisplay;
 }
 
+QPlatformCursor *QXlibScreen::cursor() const
+{
+    return mCursor;
+}
+
 Window QXlibScreen::rootWindow()
 {
     return RootWindow(mDisplay->nativeDisplay(), mScreen);

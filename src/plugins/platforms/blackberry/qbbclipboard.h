@@ -44,7 +44,6 @@
 
 #ifndef QT_NO_CLIPBOARD
 #include <QtGui/QPlatformClipboard>
-#include <QMimeData>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,8 +56,8 @@ public:
     virtual void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
 
 private:
-    QMimeData *m_mimeData;
-    void readClipboardBuff(const char *type);
+    class MimeData;
+    MimeData *m_mimeData;
 };
 
 QT_END_NAMESPACE

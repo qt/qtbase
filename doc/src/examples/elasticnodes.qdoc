@@ -54,9 +54,9 @@
     The \c Node class serves three purposes:
 
     \list
-    \o Painting a yellow gradient "ball" in two states: sunken and raised.
-    \o Managing connections to other nodes.
-    \o Calculating forces pulling and pushing the nodes in the grid.
+    \li Painting a yellow gradient "ball" in two states: sunken and raised.
+    \li Managing connections to other nodes.
+    \li Calculating forces pulling and pushing the nodes in the grid.
     \endlist
 
     Let's start by looking at the \c Node class declaration.

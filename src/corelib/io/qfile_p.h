@@ -53,15 +53,13 @@
 // We mean it.
 //
 
-#include "private/qabstractfileengine_p.h"
-#include "private/qiodevice_p.h"
-#include "private/qringbuffer_p.h"
+#include "private/qfiledevice_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QTemporaryFile;
 
-class QFilePrivate : public QIODevicePrivate
+class QFilePrivate : public QFileDevicePrivate
 {
     Q_DECLARE_PUBLIC(QFile)
     friend class QTemporaryFile;
@@ -76,20 +74,6 @@ protected:
     virtual QAbstractFileEngine *engine() const;
 
     QString fileName;
-    mutable QAbstractFileEngine *fileEngine;
-
-    bool lastWasWrite;
-    QRingBuffer writeBuffer;
-    inline bool ensureFlushed() const;
-
-    bool putCharHelper(char c);
-    
-    QFile::FileError error;
-    void setError(QFile::FileError err);
-    void setError(QFile::FileError err, const QString &errorString);
-    void setError(QFile::FileError err, int errNum);
-
-    mutable qint64 cachedSize;
 
 private:
     static QFile::EncoderFn encoder;

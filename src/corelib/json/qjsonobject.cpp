@@ -44,6 +44,7 @@
 #include <qjsonarray.h>
 #include <qstringlist.h>
 #include <qdebug.h>
+#include <qvariant.h>
 #include "qjson_p.h"
 #include "qjsonwriter_p.h"
 
@@ -568,7 +569,7 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 
 /*! \typedef QJsonObject::iterator::iterator_category
 
-  A synonym for \i {std::bidirectional_iterator_tag} indicating
+  A synonym for \e {std::bidirectional_iterator_tag} indicating
   this iterator is a bidirectional iterator.
 */
 
@@ -757,7 +758,7 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 
 /*! \typedef QJsonObject::const_iterator::iterator_category
 
-  A synonym for \i {std::bidirectional_iterator_tag} indicating
+  A synonym for \e {std::bidirectional_iterator_tag} indicating
   this iterator is a bidirectional iterator.
 */
 

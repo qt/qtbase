@@ -60,7 +60,6 @@
 #include "QtCore/qlist.h"
 #include "QtCore/qvector.h"
 #include "QtCore/qreadwritelock.h"
-#include "QtCore/qvariant.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -98,16 +97,8 @@ class Q_CORE_EXPORT QObjectPrivate : public QObjectData
 {
     Q_DECLARE_PUBLIC(QObject)
 
+    struct ExtraData;
 public:
-    struct ExtraData
-    {
-        ExtraData() {}
-#ifndef QT_NO_USERDATA
-        QVector<QObjectUserData *> userData;
-#endif
-        QList<QByteArray> propertyNames;
-        QList<QVariant> propertyValues;
-    };
 
     typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
     struct Connection
@@ -284,8 +275,9 @@ private:
 
 class QBoolBlocker
 {
+    Q_DISABLE_COPY(QBoolBlocker)
 public:
-    inline QBoolBlocker(bool &b, bool value=true):block(b), reset(b){block = value;}
+    explicit inline QBoolBlocker(bool &b, bool value=true):block(b), reset(b){block = value;}
     inline ~QBoolBlocker(){block = reset; }
 private:
     bool &block;

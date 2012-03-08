@@ -359,7 +359,6 @@ earlyArgParse()
             if [ "$PLATFORM_QPA" != "no" ]; then
                 if [ "$PLATFORM_QPA" = "maybe" ]; then
                     PLATFORM_X11=no
-                    PLATFORM_MAC=no
                     PLATFORM_QPA=yes
                 fi
             else
@@ -764,10 +763,6 @@ CFG_AVX=auto
 CFG_REDUCE_RELOCATIONS=auto
 CFG_NAS=no
 CFG_ACCESSIBILITY=auto
-CFG_ENDIAN=auto
-CFG_HOST_ENDIAN=auto
-CFG_DOUBLEFORMAT=auto
-CFG_ARMFPA=auto
 CFG_IWMMXT=no
 CFG_NEON=auto
 CFG_CLOCK_GETTIME=auto
@@ -825,7 +820,10 @@ QT_INSTALL_TRANSLATIONS=
 QT_INSTALL_SETTINGS=
 QT_INSTALL_EXAMPLES=
 QT_INSTALL_TESTS=
+CFG_SYSROOT=
 QT_HOST_PREFIX=
+QT_HOST_BINS=
+QT_HOST_DATA=
 
 #flags for SQL drivers
 QT_CFLAGS_PSQL=
@@ -962,7 +960,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -978,7 +976,7 @@ while [ "$#" -gt 0 ]; do
         shift
         VAL=$1
         ;;
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-sdk|-arch|-host-arch|-mysql_config|-sysroot)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1037,14 +1035,6 @@ while [ "$#" -gt 0 ]; do
             shift;
             VAL=$1
         fi
-        ;;
-    -host-*-endian)
-        VAR=host_endian
-        VAL=`echo $1 | sed "s,^-.*-\(.*\)-.*,\1,"`
-        ;;
-    -*-endian)
-        VAR=endian
-        VAL=`echo $1 | sed "s,^-\(.*\)-.*,\1,"`
         ;;
     -qtnamespace)
         VAR="qtnamespace"
@@ -1169,6 +1159,12 @@ while [ "$#" -gt 0 ]; do
     hostprefix)
 	QT_HOST_PREFIX="$VAL"
 	;;
+    hostdatadir)
+        QT_HOST_DATA="$VAL"
+        ;;
+    hostbindir)
+        QT_HOST_BINS="$VAL"
+        ;;
     force-pkg-config)
         QT_FORCE_PKGCONFIG=yes
         ;;
@@ -1222,7 +1218,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     embedded-lite|qpa)
         PLATFORM_X11=no
-        PLATFORM_MAC=no
         PLATFORM_QPA=yes
         ;;
     sse)
@@ -1232,31 +1227,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
 	;;
-    endian)
-        if [ "$VAL" = "little" ]; then
-            CFG_ENDIAN="Q_LITTLE_ENDIAN"
-        elif [ "$VAL" = "big" ]; then
-            CFG_ENDIAN="Q_BIG_ENDIAN"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    host_endian)
-        if [ "$VAL" = "little" ]; then
-            CFG_HOST_ENDIAN="Q_LITTLE_ENDIAN"
-        elif [ "$VAL" = "big" ]; then
-            CFG_HOST_ENDIAN="Q_BIG_ENDIAN"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    armfpa)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_ARMFPA="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     opengl)
         if  [ "$VAL" = "auto" ] || [ "$VAL" = "desktop" ] ||
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
@@ -3116,6 +3086,40 @@ if [ -z "$QT_INSTALL_TESTS" ]; then #default
 fi
 QT_INSTALL_TESTS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_TESTS"`
 
+#------- host paths --------
+
+if [ -z "$QT_HOST_PREFIX" ]; then
+    QT_HOST_PREFIX=$QT_INSTALL_PREFIX
+    haveHpx=false
+else
+    QT_HOST_PREFIX=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_PREFIX"`
+    haveHpx=true
+fi
+
+if [ -z "$QT_HOST_BINS" ]; then #default
+    if $haveHpx; then
+        if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
+            if [ "$BUILD_ON_MAC" = "yes" ]; then
+                QT_HOST_BINS="/Developer/Applications/Qt"
+            fi
+        fi
+        [ -z "$QT_HOST_BINS" ] && QT_HOST_BINS="$QT_HOST_PREFIX/bin" #fallback
+    else
+        QT_HOST_BINS="$QT_INSTALL_BINS"
+    fi
+fi
+QT_HOST_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_BINS"`
+
+if [ -z "$QT_HOST_DATA" ]; then #default
+    if $haveHpx; then
+        QT_HOST_DATA="$QT_HOST_PREFIX"
+    else
+        QT_HOST_DATA="$QT_INSTALL_DATA"
+    fi
+else
+    QT_HOST_DATA=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_DATA"`
+fi
+
 #-------------------------------------------------------------------------------
 # help - interactive parts of the script _after_ this section please
 #-------------------------------------------------------------------------------
@@ -3206,7 +3210,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked] [-no-gui]
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
         [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx] [-no-neon]
-        [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
+        [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info]
         [-no-phonon-backend] [-phonon-backend] [-no-media-backend] [-media-backend]
         [-no-audio-backend] [-audio-backend]
         [-no-javascript-jit] [-javascript-jit] [-no-declarative-debug] [-declarative-debug]
@@ -3233,6 +3237,7 @@ cat <<EOF
     -hostprefix [dir] .. Tools and libraries needed when developing
                          applications are installed in [dir]. If [dir] is
                          not given, the current build directory will be used.
+                         (default PREFIX)
 EOF
 fi
 cat <<EOF
@@ -3269,6 +3274,17 @@ cat <<EOF
                             (default PREFIX/examples)
     -testsdir <dir> ....... Tests will be installed to <dir>
                             (default PREFIX/tests)
+EOF
+if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+cat <<EOF
+
+    -hostbindir <dir> .. Host executables will be installed to <dir>
+                         (default HOSTPREFIX/bin)
+    -hostdatadir <dir> . Data used by qmake will be installed to <dir>
+                         (default HOSTPREFIX)
+EOF
+fi
+cat <<EOF
 
 Configure options:
 
@@ -3738,22 +3754,6 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     -feature-<feature> .. Compile in <feature>. The available features
                           are described in src/corelib/global/qfeatures.txt
 
-    -armfpa ............. Target platform uses the ARM-FPA floating point format.
-    -no-armfpa .......... Target platform does not use the ARM-FPA floating point format.
-
-                          The floating point format is usually autodetected by configure. Use this
-                          to override the detected value.
-
-    -little-endian ...... Target platform is little endian (LSB first).
-    -big-endian ......... Target platform is big endian (MSB first).
-
-    -host-little-endian . Host platform is little endian (LSB first).
-    -host-big-endian .... Host platform is big endian (MSB first).
-
-                          You only need to specify the endianness when
-                          cross-compiling, otherwise the host
-                          endianness will be used.
-
     -no-freetype ........ Do not compile in Freetype2 support.
     -qt-freetype ........ Use the libfreetype bundled with Qt.
  *  -system-freetype .... Use libfreetype from the operating system.
@@ -3980,105 +3980,44 @@ esac
 #-------------------------------------------------------------------------------
 [ -d "$outpath/src/corelib/global" ] || mkdir -p "$outpath/src/corelib/global"
 
-LICENSE_USER_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_lcnsuser=$Licensee"`
-LICENSE_PRODUCTS_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_lcnsprod=$Edition"`
-PREFIX_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_prfxpath=$QT_INSTALL_PREFIX"`
-DOCUMENTATION_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_docspath=$QT_INSTALL_DOCS"`
-HEADERS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_hdrspath=$QT_INSTALL_HEADERS"`
-LIBRARIES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_libspath=$QT_INSTALL_LIBS"`
-BINARIES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_binspath=$QT_INSTALL_BINS"`
-PLUGINS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_plugpath=$QT_INSTALL_PLUGINS"`
-IMPORTS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_impspath=$QT_INSTALL_IMPORTS"`
-DATA_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_datapath=$QT_INSTALL_DATA"`
-TRANSLATIONS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_trnspath=$QT_INSTALL_TRANSLATIONS"`
-SETTINGS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_stngpath=$QT_INSTALL_SETTINGS"`
-EXAMPLES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_xmplpath=$QT_INSTALL_EXAMPLES"`
-TESTS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_tstspath=$QT_INSTALL_TESTS"`
-
-TODAY=`date +%Y-%m-%d`
 cat > "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 /* License Info */
-static const char qt_configure_licensee_str          [256 + 12] = "$LICENSE_USER_STR";
-static const char qt_configure_licensed_products_str [256 + 12] = "$LICENSE_PRODUCTS_STR";
+static const char qt_configure_licensee_str          [256 + 12] = "qt_lcnsuser=$Licensee";
+static const char qt_configure_licensed_products_str [256 + 12] = "qt_lcnsprod=$Edition";
 
 /* Installation date */
-static const char qt_configure_installation          [12+11]    = "qt_instdate=$TODAY";
-EOF
+static const char qt_configure_installation          [12+11]    = "qt_instdate=`date +%Y-%m-%d`";
 
-
-if [ ! -z "$QT_HOST_PREFIX" ]; then
-    HOSTPREFIX_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_prfxpath=$QT_HOST_PREFIX"`
-    HOSTDOCUMENTATION_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_docspath=$QT_HOST_PREFIX/doc"`
-    HOSTHEADERS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_hdrspath=$QT_HOST_PREFIX/include"`
-    HOSTLIBRARIES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_libspath=$QT_HOST_PREFIX/lib"`
-    HOSTBINARIES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_binspath=$QT_HOST_PREFIX/bin"`
-    HOSTPLUGINS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_plugpath=$QT_HOST_PREFIX/plugins"`
-    HOSTIMPORTS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_impspath=$QT_HOST_PREFIX/IMPORTS"`
-    HOSTDATA_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_datapath=$QT_HOST_PREFIX"`
-    HOSTTRANSLATIONS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_trnspath=$QT_HOST_PREFIX/translations"`
-    HOSTSETTINGS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_stngpath=$QT_INSTALL_SETTINGS"`
-    HOSTEXAMPLES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_xmplpath=$QT_INSTALL_EXAMPLES"`
-    HOSTTESTS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_tstspath=$QT_INSTALL_TESTS"`
-
-    cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
-
-#if defined(QT_BOOTSTRAPPED) || defined(QT_BUILD_QMAKE)
 /* Installation Info */
-static const char qt_configure_prefix_path_str       [256 + 12] = "$HOSTPREFIX_PATH_STR";
-static const char qt_configure_documentation_path_str[256 + 12] = "$HOSTDOCUMENTATION_PATH_STR";
-static const char qt_configure_headers_path_str      [256 + 12] = "$HOSTHEADERS_PATH_STR";
-static const char qt_configure_libraries_path_str    [256 + 12] = "$HOSTLIBRARIES_PATH_STR";
-static const char qt_configure_binaries_path_str     [256 + 12] = "$HOSTBINARIES_PATH_STR";
-static const char qt_configure_plugins_path_str      [256 + 12] = "$HOSTPLUGINS_PATH_STR";
-static const char qt_configure_imports_path_str      [256 + 12] = "$HOSTIMPORTS_PATH_STR";
-static const char qt_configure_data_path_str         [256 + 12] = "$HOSTDATA_PATH_STR";
-static const char qt_configure_translations_path_str [256 + 12] = "$HOSTTRANSLATIONS_PATH_STR";
-static const char qt_configure_settings_path_str     [256 + 12] = "$HOSTSETTINGS_PATH_STR";
-static const char qt_configure_examples_path_str     [256 + 12] = "$HOSTEXAMPLES_PATH_STR";
-static const char qt_configure_tests_path_str        [256 + 12] = "$HOSTTESTS_PATH_STR";
-#else // QT_BOOTSTRAPPED
+static const char qt_configure_prefix_path_strs[][256 + 12] = {
+    "qt_prfxpath=$QT_INSTALL_PREFIX",
+    "qt_docspath=$QT_INSTALL_DOCS",
+    "qt_hdrspath=$QT_INSTALL_HEADERS",
+    "qt_libspath=$QT_INSTALL_LIBS",
+    "qt_binspath=$QT_INSTALL_BINS",
+    "qt_plugpath=$QT_INSTALL_PLUGINS",
+    "qt_impspath=$QT_INSTALL_IMPORTS",
+    "qt_datapath=$QT_INSTALL_DATA",
+    "qt_trnspath=$QT_INSTALL_TRANSLATIONS",
+    "qt_xmplpath=$QT_INSTALL_EXAMPLES",
+    "qt_tstspath=$QT_INSTALL_TESTS",
+#ifdef QT_BUILD_QMAKE
+    "qt_ssrtpath=$CFG_SYSROOT",
+    "qt_hpfxpath=$QT_HOST_PREFIX",
+    "qt_hbinpath=$QT_HOST_BINS",
+    "qt_hdatpath=$QT_HOST_DATA",
+#endif
+};
+static const char qt_configure_settings_path_str[256 + 12] = "qt_stngpath=$QT_INSTALL_SETTINGS";
 EOF
-fi
 
 cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
-/* Installation Info */
-static const char qt_configure_prefix_path_str       [256 + 12] = "$PREFIX_PATH_STR";
-static const char qt_configure_documentation_path_str[256 + 12] = "$DOCUMENTATION_PATH_STR";
-static const char qt_configure_headers_path_str      [256 + 12] = "$HEADERS_PATH_STR";
-static const char qt_configure_libraries_path_str    [256 + 12] = "$LIBRARIES_PATH_STR";
-static const char qt_configure_binaries_path_str     [256 + 12] = "$BINARIES_PATH_STR";
-static const char qt_configure_plugins_path_str      [256 + 12] = "$PLUGINS_PATH_STR";
-static const char qt_configure_imports_path_str      [256 + 12] = "$IMPORTS_PATH_STR";
-static const char qt_configure_data_path_str         [256 + 12] = "$DATA_PATH_STR";
-static const char qt_configure_translations_path_str [256 + 12] = "$TRANSLATIONS_PATH_STR";
-static const char qt_configure_settings_path_str     [256 + 12] = "$SETTINGS_PATH_STR";
-static const char qt_configure_examples_path_str     [256 + 12] = "$EXAMPLES_PATH_STR";
-static const char qt_configure_tests_path_str        [256 + 12] = "$TESTS_PATH_STR";
-EOF
 
-if [ ! -z "$QT_HOST_PREFIX" ]; then
-    cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
-#endif // QT_BOOTSTRAPPED
-
-EOF
-fi
-
-cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 /* strlen( "qt_lcnsxxxx" ) == 12 */
 #define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12;
 #define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12;
-#define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12;
-#define QT_CONFIGURE_DOCUMENTATION_PATH qt_configure_documentation_path_str + 12;
-#define QT_CONFIGURE_HEADERS_PATH qt_configure_headers_path_str + 12;
-#define QT_CONFIGURE_LIBRARIES_PATH qt_configure_libraries_path_str + 12;
-#define QT_CONFIGURE_BINARIES_PATH qt_configure_binaries_path_str + 12;
-#define QT_CONFIGURE_PLUGINS_PATH qt_configure_plugins_path_str + 12;
-#define QT_CONFIGURE_IMPORTS_PATH qt_configure_imports_path_str + 12;
-#define QT_CONFIGURE_DATA_PATH qt_configure_data_path_str + 12;
-#define QT_CONFIGURE_TRANSLATIONS_PATH qt_configure_translations_path_str + 12;
+
 #define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;
-#define QT_CONFIGURE_EXAMPLES_PATH qt_configure_examples_path_str + 12;
-#define QT_CONFIGURE_TESTS_PATH qt_configure_tests_path_str + 12;
 EOF
 
 # avoid unecessary rebuilds by copying only if qconfig.cpp has changed
@@ -4092,9 +4031,9 @@ fi
 
 # -----------------------------------------------------------------------------
 if [ "$LicenseType" = "Evaluation" ]; then
-    EVALKEY=`"$relpath/config.tests/unix/padstring" 524 "qt_qevalkey=$LicenseKeyExt"`
+    EVALKEY=qt_qevalkey=$LicenseKeyExt
 elif echo "$D_FLAGS" | grep QT_EVAL >/dev/null 2>&1; then
-    EVALKEY=`"$relpath/config.tests/unix/padstring" 524 "qt_qevalkey="`
+    EVALKEY=qt_qevalkey=
 fi
 
 if [ -n "$EVALKEY" ]; then
@@ -5355,7 +5294,13 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     fi
 
     if [ "$CFG_LIBUDEV" != "no" ]; then
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libudev "libudev" $L_FLAGS $I_FLAGS $l_FLAGS; then
+       if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libudev 2>/dev/null; then
+           QMAKE_INCDIR_LIBUDEV=`$PKG_CONFIG --cflags-only-I libudev 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
+           QMAKE_LIBS_LIBUDEV=`$PKG_CONFIG --libs libudev 2>/dev/null`
+           QMakeVar set QMAKE_INCDIR_LIBUDEV "$QMAKE_INCDIR_LIBUDEV"
+           QMakeVar set QMAKE_LIBS_LIBUDEV "$QMAKE_LIBS_LIBUDEV"
+       fi
+       if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libudev "libudev" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_INCDIR_LIBUDEV $QMAKE_LIBS_LIBUDEV; then
             CFG_LIBUDEV=yes
             QT_CONFIG="$QT_CONFIG libudev"
         elif [ "$CFG_LIBUDEV" = "yes" ]; then
@@ -5499,6 +5444,8 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
                 echo " If you really want to build without a QPA platform plugin you must pass"
                 echo " -no-xcb and -no-wayland to configure. Doing this will produce a Qt that"
                 echo " cannot run GUI applications."
+                echo " The dependencies needed for xcb to build are listed in"
+                echo " src/plugins/platforms/xcb/README"
                 exit 1
             fi
         fi
@@ -5544,93 +5491,6 @@ if [ "$CFG_LIBFREETYPE" = "auto" ]; then
         CFG_LIBFREETYPE=system
     else
         CFG_LIBFREETYPE=yes
-    fi
-fi
-
-if [ "$CFG_ENDIAN" = "auto" ]; then
-    if [ "$XPLATFORM_MINGW" = "yes" ]; then
-        CFG_ENDIAN="Q_LITTLE_ENDIAN"
-    else
-        "$unixtests/endian.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "QMAKE_LFLAGS+=$SYSROOT_FLAG"
-	F="$?"
-        if [ "$F" -eq 0 ]; then
-            CFG_ENDIAN="Q_LITTLE_ENDIAN"
-        elif [ "$F" -eq 1 ]; then
-            CFG_ENDIAN="Q_BIG_ENDIAN"
-        else
-            echo
-	    echo "The target system byte order could not be detected!"
-	    echo "Turn on verbose messaging (-v) to see the final report."
-	    echo "You can use the -little-endian or -big-endian switch to"
-	    echo "$0 to continue."
-            exit 101
-        fi
-    fi
-fi
-
-if [ "$CFG_HOST_ENDIAN" = "auto" ]; then
-    if [ "$BUILD_ON_MAC" = "yes" ]; then
-	true #leave as auto
-    else
-        "$unixtests/endian.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
-	F="$?"
-        if [ "$F" -eq 0 ]; then
-            CFG_HOST_ENDIAN="Q_LITTLE_ENDIAN"
-        elif [ "$F" -eq 1 ]; then
-            CFG_HOST_ENDIAN="Q_BIG_ENDIAN"
-        else
-            echo
-	    echo "The host system byte order could not be detected!"
-	    echo "Turn on verbose messaging (-v) to see the final report."
-	    echo "You can use the -host-little-endian or -host-big-endian switch to"
-	    echo "$0 to continue."
-            exit 101
-        fi
-    fi
-fi
-
-if [ "$CFG_ARMFPA" != "auto" ]; then
-    if [ "$CFG_ARMFPA" = "yes" ]; then
-        if [ "$CFG_ENDIAN" = "Q_LITTLE_ENDIAN" ]; then
-            CFG_DOUBLEFORMAT="Q_DOUBLE_LITTLE_SWAPPED"
-        else
-            CFG_DOUBLEFORMAT="Q_DOUBLE_BIG_SWAPPED"
-        fi
-    else
-        CFG_DOUBLEFORMAT="normal"
-    fi
-fi
-
-
-if [ "$CFG_DOUBLEFORMAT" = "auto" ]; then
-    if [ "$PLATFORM_QPA" = "yes" ]; then
-        CFG_DOUBLEFORMAT=normal
-    else
-        "$unixtests/doubleformat.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
-	F="$?"
-        if [ "$F" -eq 10 ] && [ "$CFG_ENDIAN" = "Q_LITTLE_ENDIAN" ]; then
-            CFG_DOUBLEFORMAT=normal
-        elif [ "$F" -eq 11 ] && [ "$CFG_ENDIAN" = "Q_BIG_ENDIAN" ]; then
-            CFG_DOUBLEFORMAT=normal
-        elif [ "$F" -eq 10 ]; then
-            CFG_DOUBLEFORMAT="Q_DOUBLE_LITTLE"
-        elif [ "$F" -eq 11 ]; then
-            CFG_DOUBLEFORMAT="Q_DOUBLE_BIG"
-        elif [ "$F" -eq 12 ]; then
-            CFG_DOUBLEFORMAT="Q_DOUBLE_LITTLE_SWAPPED"
-            CFG_ARMFPA="yes"
-        elif [ "$F" -eq 13 ]; then
-            CFG_DOUBLEFORMAT="Q_DOUBLE_BIG_SWAPPED"
-            CFG_ARMFPA="yes"
-        else
-            echo
-	    echo "The system floating point format could not be detected."
-	    echo "This may cause data to be generated in a wrong format"
-	    echo "Turn on verbose messaging (-v) to see the final report."
-	    # we do not fail on this since this is a new test, and if it fails,
-	    # the old behavior should be correct in most cases
-            CFG_DOUBLEFORMAT=normal
-        fi
     fi
 fi
 
@@ -6507,63 +6367,7 @@ cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
 #ifndef QT_EDITION
 #  define QT_EDITION $QT_EDITION
 #endif
-
-/* Machine byte-order */
-#define Q_BIG_ENDIAN 4321
-#define Q_LITTLE_ENDIAN 1234
 EOF
-
-echo "#ifdef QT_BOOTSTRAPPED" >>"$outpath/src/corelib/global/qconfig.h.new"
-if [ "$CFG_HOST_ENDIAN" = "auto" ]; then
-    cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
-#if defined(__BIG_ENDIAN__)
-# define Q_BYTE_ORDER Q_BIG_ENDIAN
-#elif defined(__LITTLE_ENDIAN__)
-# define Q_BYTE_ORDER Q_LITTLE_ENDIAN
-#else
-# error "Unable to determine byte order!"
-#endif
-EOF
-else
-    echo "#define Q_BYTE_ORDER $CFG_HOST_ENDIAN" >>"$outpath/src/corelib/global/qconfig.h.new"
-fi
-echo "#else" >>"$outpath/src/corelib/global/qconfig.h.new"
-if [ "$CFG_ENDIAN" = "auto" ]; then
-    cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
-#if defined(__BIG_ENDIAN__)
-# define Q_BYTE_ORDER Q_BIG_ENDIAN
-#elif defined(__LITTLE_ENDIAN__)
-# define Q_BYTE_ORDER Q_LITTLE_ENDIAN
-#else
-# error "Unable to determine byte order!"
-#endif
-EOF
-else
-    echo "#define Q_BYTE_ORDER $CFG_ENDIAN" >>"$outpath/src/corelib/global/qconfig.h.new"
-fi
-echo "#endif" >>"$outpath/src/corelib/global/qconfig.h.new"
-
-if [ "$CFG_DOUBLEFORMAT" != "normal" ]; then
-    cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
-/* Non-IEEE double format */
-#define Q_DOUBLE_LITTLE "01234567"
-#define Q_DOUBLE_BIG "76543210"
-#define Q_DOUBLE_LITTLE_SWAPPED "45670123"
-#define Q_DOUBLE_BIG_SWAPPED "32107654"
-#define Q_DOUBLE_FORMAT $CFG_DOUBLEFORMAT
-EOF
-fi
-if [ "$CFG_ARMFPA" = "yes" ]; then
-    if [ "$CFG_ARCH" != "$CFG_HOST_ARCH" ]; then
-	cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
-#ifndef QT_BOOTSTRAPPED
-# define QT_ARMFPA
-#endif
-EOF
-    else
-	echo "#define QT_ARMFPA" >>"$outpath/src/corelib/global/qconfig.h.new"
-    fi
-fi
 
 CFG_ARCH_STR=`echo $CFG_ARCH | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 CFG_HOST_ARCH_STR=`echo $CFG_HOST_ARCH | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
@@ -6815,10 +6619,9 @@ EOF
 if [ -n "$CFG_SYSROOT" ]; then
     echo "# sysroot" >>"$QTCONFIG.tmp"
     echo `basename "$XQMAKESPEC"` \{ >>"$QTCONFIG.tmp"
-    echo "  QT_SYSROOT      += \$\$quote($CFG_SYSROOT)" >>"$QTCONFIG.tmp"
-    echo "  QMAKE_CFLAGS    += --sysroot=\$\$QT_SYSROOT" >>"$QTCONFIG.tmp"
-    echo "  QMAKE_CXXFLAGS  += --sysroot=\$\$QT_SYSROOT" >>"$QTCONFIG.tmp"
-    echo "  QMAKE_LFLAGS    += --sysroot=\$\$QT_SYSROOT" >>"$QTCONFIG.tmp"
+    echo "    QMAKE_CFLAGS    += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
+    echo "    QMAKE_CXXFLAGS  += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
+    echo "    QMAKE_LFLAGS    += --sysroot=\$\$[QT_SYSROOT]" >>"$QTCONFIG.tmp"
     echo "}" >> "$QTCONFIG.tmp"
     echo >> "$QTCONFIG.tmp"
 fi
@@ -7093,6 +6896,7 @@ else
 fi
 echo "zlib support ........... $CFG_ZLIB"
 echo "Session management ..... $CFG_SM"
+echo "libudev support ........ $CFG_LIBUDEV"
 
 if [ "$CFG_OPENGL" = "desktop" ]; then
     echo "OpenGL support ......... yes (Desktop OpenGL)"

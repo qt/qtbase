@@ -139,7 +139,7 @@ void tst_QDnsLookup::lookup()
     lookup.lookup();
     QVERIFY(waitForDone(&lookup));
     QVERIFY(lookup.isFinished());
-    QCOMPARE(int(lookup.error()), error);
+    QVERIFY2(int(lookup.error()) == error, qPrintable(lookup.errorString()));
     if (error == QDnsLookup::NoError)
         QVERIFY(lookup.errorString().isEmpty());
     QCOMPARE(int(lookup.type()), type);

@@ -253,7 +253,9 @@ public:
     inline static QImage fromData(const QByteArray &data, const char *format = 0)
         { return fromData(reinterpret_cast<const uchar *>(data.constData()), data.size(), format); }
 
-    int serialNumber() const;
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline int serialNumber() const { return cacheKey() >> 32; }
+#endif
     qint64 cacheKey() const;
 
     QPaintEngine *paintEngine() const;

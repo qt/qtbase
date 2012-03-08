@@ -1537,12 +1537,12 @@ QTableWidgetItem &QTableWidgetItem::operator=(const QTableWidgetItem &other)
     clear() function.
 
     \table 100%
-    \row \o \inlineimage windowsxp-tableview.png Screenshot of a Windows XP style table widget
-         \o \inlineimage macintosh-tableview.png Screenshot of a Macintosh style table widget
-         \o \inlineimage plastique-tableview.png Screenshot of a Plastique style table widget
-    \row \o A \l{Windows XP Style Widget Gallery}{Windows XP style} table widget.
-         \o A \l{Macintosh Style Widget Gallery}{Macintosh style} table widget.
-         \o A \l{Plastique Style Widget Gallery}{Plastique style} table widget.
+    \row \li \inlineimage windowsxp-tableview.png Screenshot of a Windows XP style table widget
+         \li \inlineimage macintosh-tableview.png Screenshot of a Macintosh style table widget
+         \li \inlineimage plastique-tableview.png Screenshot of a Plastique style table widget
+    \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} table widget.
+         \li A \l{Macintosh Style Widget Gallery}{Macintosh style} table widget.
+         \li A \l{Plastique Style Widget Gallery}{Plastique style} table widget.
     \endtable
 
     \sa QTableWidgetItem, QTableView, {Model/View Programming}

@@ -69,7 +69,7 @@ template <class T>
 class QItemEditorCreator : public QItemEditorCreatorBase
 {
 public:
-    inline QItemEditorCreator(const QByteArray &valuePropertyName);
+    inline explicit QItemEditorCreator(const QByteArray &valuePropertyName);
     inline QWidget *createWidget(QWidget *parent) const { return new T(parent); }
     inline QByteArray valuePropertyName() const { return propertyName; }
 

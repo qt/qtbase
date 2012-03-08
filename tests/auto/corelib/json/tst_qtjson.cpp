@@ -115,6 +115,8 @@ private Q_SLOTS:
     void testCompaction();
     void testDebugStream();
     void testCompactionError();
+
+    void parseUnicodeEscapes();
 private:
     QString testDataDir;
 };
@@ -1756,6 +1758,20 @@ void TestQtJson::testCompactionError()
         QByteArray hash = QCryptographicHash::hash(doc.toBinaryData(), QCryptographicHash::Md5).toHex();
         schemaObject.insert("_Version", QString::fromLatin1(hash.constData(), hash.size()));
     }
+}
+
+void TestQtJson::parseUnicodeEscapes()
+{
+    const QByteArray json = "[ \"A\\u00e4\\u00C4\" ]";
+
+    QJsonDocument doc = QJsonDocument::fromJson(json);
+    QJsonArray array = doc.array();
+
+    QString result = QLatin1String("A");
+    result += QChar(0xe4);
+    result += QChar(0xc4);
+
+    QCOMPARE(array.first().toString(), result);
 }
 
 QTEST_MAIN(TestQtJson)

@@ -45,7 +45,6 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qline.h>
 #include <QtCore/qmutex.h>
-#include <private/qmutexpool_p.h>
 
 #ifndef QT_NO_ANIMATION
 
@@ -98,18 +97,18 @@ QT_BEGIN_NAMESPACE
     supported QVariant types:
 
     \list
-        \o \l{QMetaType::}{Int}
-        \o \l{QMetaType::}{Double}
-        \o \l{QMetaType::}{Float}
-        \o \l{QMetaType::}{QLine}
-        \o \l{QMetaType::}{QLineF}
-        \o \l{QMetaType::}{QPoint}
-        \o \l{QMetaType::}{QPointF}
-        \o \l{QMetaType::}{QSize}
-        \o \l{QMetaType::}{QSizeF}
-        \o \l{QMetaType::}{QRect}
-        \o \l{QMetaType::}{QRectF}
-        \o \l{QMetaType::}{QColor}
+        \li \l{QMetaType::}{Int}
+        \li \l{QMetaType::}{Double}
+        \li \l{QMetaType::}{Float}
+        \li \l{QMetaType::}{QLine}
+        \li \l{QMetaType::}{QLineF}
+        \li \l{QMetaType::}{QPoint}
+        \li \l{QMetaType::}{QPointF}
+        \li \l{QMetaType::}{QSize}
+        \li \l{QMetaType::}{QSizeF}
+        \li \l{QMetaType::}{QRect}
+        \li \l{QMetaType::}{QRectF}
+        \li \l{QMetaType::}{QColor}
     \endlist
 
     If you need to interpolate other variant types, including custom
@@ -399,6 +398,7 @@ void QVariantAnimation::setEasingCurve(const QEasingCurve &easing)
 
 typedef QVector<QVariantAnimation::Interpolator> QInterpolatorVector;
 Q_GLOBAL_STATIC(QInterpolatorVector, registeredInterpolators)
+static QBasicMutex registeredInterpolatorsMutex;
 
 /*!
     \fn void qRegisterAnimationInterpolator(QVariant (*func)(const T &from, const T &to, qreal progress))
@@ -435,9 +435,7 @@ void QVariantAnimation::registerInterpolator(QVariantAnimation::Interpolator fun
     // in such an order that we get here with interpolators == NULL,
     // to continue causes the app to crash on exit with a SEGV
     if (interpolators) {
-#ifndef QT_NO_THREAD
-        QMutexLocker locker(QMutexPool::globalInstanceGet(interpolators));
-#endif
+        QMutexLocker locker(&registeredInterpolatorsMutex);
         if (int(interpolationType) >= interpolators->count())
             interpolators->resize(int(interpolationType) + 1);
         interpolators->replace(interpolationType, func);
@@ -452,14 +450,14 @@ template<typename T> static inline QVariantAnimation::Interpolator castToInterpo
 
 QVariantAnimation::Interpolator QVariantAnimationPrivate::getInterpolator(int interpolationType)
 {
-    QInterpolatorVector *interpolators = registeredInterpolators();
-#ifndef QT_NO_THREAD
-    QMutexLocker locker(QMutexPool::globalInstanceGet(interpolators));
-#endif
-    QVariantAnimation::Interpolator ret = 0;
-    if (interpolationType < interpolators->count()) {
-        ret = interpolators->at(interpolationType);
-        if (ret) return ret;
+    {
+        QInterpolatorVector *interpolators = registeredInterpolators();
+        QMutexLocker locker(&registeredInterpolatorsMutex);
+        QVariantAnimation::Interpolator ret = 0;
+        if (interpolationType < interpolators->count()) {
+            ret = interpolators->at(interpolationType);
+            if (ret) return ret;
+        }
     }
 
     switch(interpolationType)

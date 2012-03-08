@@ -543,10 +543,6 @@ void QCoreApplication::init()
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = this;
 
-#ifndef QT_NO_THREAD
-    QThread::initialize();
-#endif
-
     // use the event dispatcher created by the app programmer (if any)
     if (!QCoreApplicationPrivate::eventDispatcher)
         QCoreApplicationPrivate::eventDispatcher = d->threadData->eventDispatcher;
@@ -602,7 +598,6 @@ QCoreApplication::~QCoreApplication()
     }
     if (globalThreadPool)
         globalThreadPool->waitForDone();
-    QThread::cleanup();
 #endif
 
     d_func()->threadData->eventDispatcher = 0;
@@ -715,13 +710,13 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
   reimplementing this virtual function is just one of them. All five
   approaches are listed below:
   \list 1
-  \i Reimplementing paintEvent(), mousePressEvent() and so
+  \li Reimplementing paintEvent(), mousePressEvent() and so
   on. This is the commonest, easiest and least powerful way.
 
-  \i Reimplementing this function. This is very powerful, providing
+  \li Reimplementing this function. This is very powerful, providing
   complete control; but only one subclass can be active at a time.
 
-  \i Installing an event filter on QCoreApplication::instance(). Such
+  \li Installing an event filter on QCoreApplication::instance(). Such
   an event filter is able to process all events for all widgets, so
   it's just as powerful as reimplementing notify(); furthermore, it's
   possible to have more than one application-global event filter.
@@ -730,11 +725,11 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
   event filters are only called for objects that live in the main
   thread.
 
-  \i Reimplementing QObject::event() (as QWidget does). If you do
+  \li Reimplementing QObject::event() (as QWidget does). If you do
   this you get Tab key presses, and you get to see the events before
   any widget-specific event filters.
 
-  \i Installing an event filter on the object. Such an event filter gets all
+  \li Installing an event filter on the object. Such an event filter gets all
   the events, including Tab and Shift+Tab key press events, as long as they
   do not change the focus widget.
   \endlist
@@ -1438,11 +1433,9 @@ bool QCoreApplication::event(QEvent *e)
     This enum type defines the 8-bit encoding of character string
     arguments to translate():
 
-    \value CodecForTr  The encoding specified by
-                       QTextCodec::codecForTr() (Latin-1 if none has
-                       been set).
-    \value UnicodeUTF8  UTF-8.
-    \value DefaultCodec  (Obsolete) Use CodecForTr instead.
+    \value UnicodeUTF8   UTF-8.
+    \value Latin1        Latin-1.
+    \value DefaultCodec  Latin-1.
 
     \sa QObject::tr(), QObject::trUtf8(), QString::fromUtf8()
 */
@@ -1617,7 +1610,7 @@ static void replacePercentN(QString *result, int n)
     If none of the translation files contain a translation for \a
     sourceText in \a context, this function returns a QString
     equivalent of \a sourceText. The encoding of \a sourceText is
-    specified by \e encoding; it defaults to CodecForTr.
+    specified by \e encoding; it defaults to DefaultCodec.
 
     This function is not virtual. You can use alternative translation
     techniques by subclassing \l QTranslator.
@@ -1628,7 +1621,7 @@ static void replacePercentN(QString *result, int n)
     so will most likely result in crashes or other undesirable
     behavior.
 
-    \sa QObject::tr() installTranslator() QTextCodec::codecForTr()
+    \sa QObject::tr() installTranslator()
 */
 
 
@@ -1657,8 +1650,6 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
 #else
         if (encoding == UnicodeUTF8)
             result = QString::fromUtf8(sourceText);
-        else if (QTextCodec::codecForTr() != 0)
-            result = QTextCodec::codecForTr()->toUnicode(sourceText);
         else
 #endif
             result = QString::fromLatin1(sourceText);

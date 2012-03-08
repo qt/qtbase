@@ -64,12 +64,12 @@ QT_BEGIN_NAMESPACE
     JSON is a format to store structured data. It has 6 basic data types:
 
     \list
-    \o bool QJsonValue::Bool
-    \o double QJsonValue::Double
-    \o string QJsonValue::String
-    \o array QJsonValue::Array
-    \o object QJsonValue::Object
-    \o null QJsonValue::Null
+    \li bool QJsonValue::Bool
+    \li double QJsonValue::Double
+    \li string QJsonValue::String
+    \li array QJsonValue::Array
+    \li object QJsonValue::Object
+    \li null QJsonValue::Null
     \endlist
 
     A value can represent any of the above data types. In addition, QJsonValue has one special
@@ -260,16 +260,16 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
     The conversion will convert QVariant types as follows:
 
     \list
-    \o QVariant::Bool to Bool
-    \o QVariant::Int
-    \o QVariant::Double
-    \o QVariant::LongLong
-    \o QVariant::ULongLong
-    \o QVariant::UInt to Double
-    \o QVariant::String to String
-    \o QVariant::StringList
-    \o QVariant::VariantList to Array
-    \o QVariant::VariantMap to Object
+    \li QVariant::Bool to Bool
+    \li QVariant::Int
+    \li QVariant::Double
+    \li QVariant::LongLong
+    \li QVariant::ULongLong
+    \li QVariant::UInt to Double
+    \li QVariant::String to String
+    \li QVariant::StringList
+    \li QVariant::VariantList to Array
+    \li QVariant::VariantMap to Object
     \endlist
 
     For all other QVariant types a conversion to a QString will be attempted. If the returned string

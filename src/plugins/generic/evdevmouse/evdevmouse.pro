@@ -14,3 +14,5 @@ SOURCES = main.cpp \
 
 OTHER_FILES += \
     evdevmouse.json
+
+LIBS += $$QMAKE_LIBS_LIBUDEV

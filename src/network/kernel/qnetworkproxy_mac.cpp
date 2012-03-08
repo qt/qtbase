@@ -58,14 +58,14 @@
  * proxy settings for:
  *
  * \list
- *   \o FTP proxy
- *   \o Web Proxy (HTTP)
- *   \o Secure Web Proxy (HTTPS)
- *   \o Streaming Proxy (RTSP)
- *   \o SOCKS Proxy
- *   \o Gopher Proxy
- *   \o URL for Automatic Proxy Configuration (PAC scripts)
- *   \o Bypass list (by default: *.local, 169.254/16)
+ *   \li FTP proxy
+ *   \li Web Proxy (HTTP)
+ *   \li Secure Web Proxy (HTTPS)
+ *   \li Streaming Proxy (RTSP)
+ *   \li SOCKS Proxy
+ *   \li Gopher Proxy
+ *   \li URL for Automatic Proxy Configuration (PAC scripts)
+ *   \li Bypass list (by default: *.local, 169.254/16)
  * \endlist
  *
  * The matching configuration can be obtained by calling SCDynamicStoreCopyProxies

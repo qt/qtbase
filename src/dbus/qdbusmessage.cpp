@@ -331,10 +331,10 @@ QDBusMessage QDBusMessagePrivate::makeLocalReply(const QDBusConnectionPrivate &c
     messages (MessageType) that can occur on the bus:
 
     \list
-      \o Method calls
-      \o Method return values
-      \o Signal emissions
-      \o Error codes
+      \li Method calls
+      \li Method return values
+      \li Signal emissions
+      \li Error codes
     \endlist
 
     Objects of this type are created with the static createError(),

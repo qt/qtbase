@@ -279,9 +279,9 @@ public:
     up to three parameters:
 
     \list
-    \o The \e context - usually the class name for the tr() caller.
-    \o The \e {source text} - usually the argument to tr().
-    \o The \e disambiguation - an optional string that helps disambiguate
+    \li The \e context - usually the class name for the tr() caller.
+    \li The \e {source text} - usually the argument to tr().
+    \li The \e disambiguation - an optional string that helps disambiguate
        different uses of the same text in the same context.
     \endlist
 
@@ -361,12 +361,12 @@ QTranslator::~QTranslator()
     in the following order:
 
     \list 1
-    \o File name without \a suffix appended.
-    \o File name with text after a character in \a search_delimiters
+    \li File name without \a suffix appended.
+    \li File name with text after a character in \a search_delimiters
        stripped ("_." is the default for \a search_delimiters if it is
        an empty string) and \a suffix.
-    \o File name stripped without \a suffix appended.
-    \o File name stripped further, etc.
+    \li File name stripped without \a suffix appended.
+    \li File name stripped further, etc.
     \endlist
 
     For example, an application running in the fr_CA locale
@@ -375,12 +375,12 @@ QTranslator::~QTranslator()
     readable file from this list:
 
     \list 1
-    \o \c /opt/foolib/foo.fr_ca.qm
-    \o \c /opt/foolib/foo.fr_ca
-    \o \c /opt/foolib/foo.fr.qm
-    \o \c /opt/foolib/foo.fr
-    \o \c /opt/foolib/foo.qm
-    \o \c /opt/foolib/foo
+    \li \c /opt/foolib/foo.fr_ca.qm
+    \li \c /opt/foolib/foo.fr_ca
+    \li \c /opt/foolib/foo.fr.qm
+    \li \c /opt/foolib/foo.fr
+    \li \c /opt/foolib/foo.qm
+    \li \c /opt/foolib/foo
     \endlist
 */
 
@@ -599,10 +599,10 @@ static QString find_translation(const QLocale & locale,
     in the following order:
 
     \list 1
-    \o File name without \a suffix appended.
-    \o File name with ui language part after a "_" character stripped and \a suffix.
-    \o File name with ui language part stripped without \a suffix appended.
-    \o File name with ui language part stripped further, etc.
+    \li File name without \a suffix appended.
+    \li File name with ui language part after a "_" character stripped and \a suffix.
+    \li File name with ui language part stripped without \a suffix appended.
+    \li File name with ui language part stripped further, etc.
     \endlist
 
     For example, an application running in the locale with the following
@@ -612,17 +612,17 @@ static QString find_translation(const QLocale & locale,
     open the first existing readable file from this list:
 
     \list 1
-    \o \c /opt/foolib/foo.es.qm
-    \o \c /opt/foolib/foo.es
-    \o \c /opt/foolib/foo.fr_CA.qm
-    \o \c /opt/foolib/foo.fr_CA
-    \o \c /opt/foolib/foo.de.qm
-    \o \c /opt/foolib/foo.de
-    \o \c /opt/foolib/foo.fr.qm
-    \o \c /opt/foolib/foo.fr
-    \o \c /opt/foolib/foo.qm
-    \o \c /opt/foolib/foo.
-    \o \c /opt/foolib/foo
+    \li \c /opt/foolib/foo.es.qm
+    \li \c /opt/foolib/foo.es
+    \li \c /opt/foolib/foo.fr_CA.qm
+    \li \c /opt/foolib/foo.fr_CA
+    \li \c /opt/foolib/foo.de.qm
+    \li \c /opt/foolib/foo.de
+    \li \c /opt/foolib/foo.fr.qm
+    \li \c /opt/foolib/foo.fr
+    \li \c /opt/foolib/foo.qm
+    \li \c /opt/foolib/foo.
+    \li \c /opt/foolib/foo
     \endlist
 
     On operating systems where file system is case sensitive, QTranslator also

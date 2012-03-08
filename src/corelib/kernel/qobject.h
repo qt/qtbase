@@ -198,6 +198,10 @@ public:
     inline QMetaObject::Connection connect(const QObject *sender, const char *signal,
                         const char *member, Qt::ConnectionType type = Qt::AutoConnection) const;
 
+#ifdef Q_QDOC
+    QMetaObject::Connection QObject::connect(const QObject *sender, (T::*signal)(...), const QObject *receiver, (T::*method)(...), Qt::ConnectionType type)
+    QMetaObject::Connection QObject::connect(const QObject *sender, (T::*signal)(...), Functor functor)
+#else
     //Connect a signal to a pointer to qobject member function
     template <typename Func1, typename Func2>
     static inline QMetaObject::Connection connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
@@ -261,6 +265,7 @@ public:
                            new QFunctorSlotObject<Func2, SignalType::ArgumentCount, typename SignalType::Arguments, typename SignalType::ReturnType>(slot),
                            Qt::DirectConnection, 0, &SignalType::Object::staticMetaObject);
     }
+#endif //Q_QDOC
 
     static bool disconnect(const QObject *sender, const char *signal,
                            const QObject *receiver, const char *member);
@@ -273,6 +278,9 @@ public:
         { return disconnect(this, 0, receiver, member); }
     static bool disconnect(const QMetaObject::Connection &);
 
+#ifdef Q_QDOC
+    bool QObject::disconnect(const QObject *sender, (T::*signal)(...), const Qbject *receiver, (T::*method)(...))
+#else
     template <typename Func1, typename Func2>
     static inline bool disconnect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
                                   const typename QtPrivate::FunctionPointer<Func2>::Object *receiver, Func2 slot)
@@ -300,6 +308,7 @@ public:
         return disconnectImpl(sender, reinterpret_cast<void **>(&signal), receiver, zero,
                               &SignalType::Object::staticMetaObject);
     }
+#endif //Q_QDOC
 
 
     void dumpObjectTree();

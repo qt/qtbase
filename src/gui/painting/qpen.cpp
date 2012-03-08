@@ -104,21 +104,21 @@ typedef QPenPrivate QPenData;
 
     \table
     \row
-    \o \inlineimage qpen-solid.png
-    \o \inlineimage qpen-dash.png
-    \o \inlineimage qpen-dot.png
+    \li \inlineimage qpen-solid.png
+    \li \inlineimage qpen-dash.png
+    \li \inlineimage qpen-dot.png
     \row
-    \o Qt::SolidLine
-    \o Qt::DashLine
-    \o Qt::DotLine
+    \li Qt::SolidLine
+    \li Qt::DashLine
+    \li Qt::DotLine
     \row
-    \o \inlineimage qpen-dashdot.png
-    \o \inlineimage qpen-dashdotdot.png
-    \o \inlineimage qpen-custom.png
+    \li \inlineimage qpen-dashdot.png
+    \li \inlineimage qpen-dashdotdot.png
+    \li \inlineimage qpen-custom.png
     \row
-    \o Qt::DashDotLine
-    \o Qt::DashDotDotLine
-    \o Qt::CustomDashLine
+    \li Qt::DashDotLine
+    \li Qt::DashDotDotLine
+    \li Qt::CustomDashLine
     \endtable
 
     Simply use the setStyle() function to convert the pen style to
@@ -153,13 +153,13 @@ typedef QPenPrivate QPenData;
 
     \table
     \row
-    \o \inlineimage qpen-square.png
-    \o \inlineimage qpen-flat.png
-    \o \inlineimage qpen-roundcap.png
+    \li \inlineimage qpen-square.png
+    \li \inlineimage qpen-flat.png
+    \li \inlineimage qpen-roundcap.png
     \row
-    \o Qt::SquareCap
-    \o Qt::FlatCap
-    \o Qt::RoundCap
+    \li Qt::SquareCap
+    \li Qt::FlatCap
+    \li Qt::RoundCap
     \endtable
 
     The Qt::SquareCap style is a square line end that covers the end
@@ -183,13 +183,13 @@ typedef QPenPrivate QPenData;
 
     \table
     \row
-    \o \inlineimage qpen-bevel.png
-    \o \inlineimage qpen-miter.png
-    \o \inlineimage qpen-roundjoin.png
+    \li \inlineimage qpen-bevel.png
+    \li \inlineimage qpen-miter.png
+    \li \inlineimage qpen-roundjoin.png
     \row
-    \o Qt::BevelJoin
-    \o Qt::MiterJoin
-    \o Qt::RoundJoin
+    \li Qt::BevelJoin
+    \li Qt::MiterJoin
+    \li Qt::RoundJoin
     \endtable
 
     The Qt::BevelJoin style fills the triangular notch between the two
@@ -213,8 +213,8 @@ typedef QPenPrivate QPenData;
 
     \table 100%
     \row
-    \o \inlineimage qpen-demo.png
-    \o \bold {\l {painting/pathstroke}{The Path Stroking Example}}
+    \li \inlineimage qpen-demo.png
+    \li \b {\l {painting/pathstroke}{The Path Stroking Example}}
 
     The Path Stroking example shows Qt's built-in dash patterns and shows
     how custom patterns can be used to extend the range of available
@@ -474,8 +474,8 @@ QVector<qreal> QPen::dashPattern() const
 
     \table 100%
     \row
-    \o \inlineimage qpen-custom.png
-    \o
+    \li \inlineimage qpen-custom.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpen.cpp 3
     \endtable
 
@@ -527,8 +527,8 @@ qreal QPen::dashOffset() const
     to specify the dash pattern.
 
     \table
-    \row \o \inlineimage qpen-dashpattern.png
-    \o For example, a pattern where each stroke is four units long, followed by a gap
+    \row \li \inlineimage qpen-dashpattern.png
+    \li For example, a pattern where each stroke is four units long, followed by a gap
     of two units, will begin with the stroke when drawn as a line.
 
     However, if the dash offset is set to 4.0, any line drawn will begin with the gap.

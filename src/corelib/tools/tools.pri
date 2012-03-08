@@ -33,6 +33,7 @@ HEADERS +=  \
         tools/qqueue.h \
         tools/qrect.h \
         tools/qregexp.h \
+        tools/qregularexpression.h \
         tools/qringbuffer_p.h \
         tools/qrefcount.h \
         tools/qscopedpointer.h \
@@ -79,6 +80,7 @@ SOURCES += \
         tools/qcontiguouscache.cpp \
         tools/qrect.cpp \
         tools/qregexp.cpp \
+        tools/qregularexpression.cpp \
         tools/qrefcount.cpp \
         tools/qshareddata.cpp \
         tools/qsharedpointer.cpp \
@@ -107,6 +109,12 @@ else:include($$PWD/../../3rdparty/zlib_dependency.pri)
 contains(QT_CONFIG,icu) {
     SOURCES += tools/qlocale_icu.cpp
     DEFINES += QT_USE_ICU
+}
+
+pcre {
+    include($$PWD/../../3rdparty/pcre.pri)
+} else {
+    LIBS_PRIVATE += -lpcre16
 }
 
 DEFINES += HB_EXPORT=Q_CORE_EXPORT

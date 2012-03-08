@@ -63,21 +63,13 @@ class QPlatformBackingStore;
 class QPlatformOpenGLContext;
 class QPlatformScreenPrivate;
 class QPlatformWindow;
+class QPlatformCursor;
+class QPlatformScreenPageFlipper;
 class QScreen;
 class QSurfaceFormat;
 
 typedef QPair<qreal, qreal> QDpi;
 
-class Q_GUI_EXPORT QPlatformScreenPageFlipper : public QObject
-{
-    Q_OBJECT
-public:
-    virtual bool displayBuffer(void *bufferHandle) = 0;
-
-    signals:
-    void bufferDisplayed(void *bufferHandle);
-    void bufferReleased(void *bufferHandle);
-};
 
 class Q_GUI_EXPORT QPlatformScreen
 {
@@ -112,6 +104,7 @@ public:
     virtual QString name() const { return QString(); }
 
     virtual QPlatformScreenPageFlipper *pageFlipper() const;
+    virtual QPlatformCursor *cursor() const;
 
 protected:
     QScopedPointer<QPlatformScreenPrivate> d_ptr;

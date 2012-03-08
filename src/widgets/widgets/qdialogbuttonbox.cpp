@@ -76,9 +76,9 @@ QT_BEGIN_NAMESPACE
     Most buttons for a dialog follow certain roles. Such roles include:
 
     \list
-    \o Accepting or rejecting the dialog.
-    \o Asking for help.
-    \o Performing actions on the dialog itself (such as resetting fields or
+    \li Accepting or rejecting the dialog.
+    \li Asking for help.
+    \li Performing actions on the dialog itself (such as resetting fields or
        applying changes).
     \endlist
 
@@ -104,35 +104,35 @@ QT_BEGIN_NAMESPACE
 
     Currently the buttons are laid out in the following way if the button box is horizontal:
     \table
-    \row \o \inlineimage buttonbox-gnomelayout-horizontal.png GnomeLayout Horizontal
-         \o Button box laid out in horizontal GnomeLayout
-    \row \o \inlineimage buttonbox-kdelayout-horizontal.png KdeLayout Horizontal
-         \o Button box laid out in horizontal KdeLayout
-    \row \o \inlineimage buttonbox-maclayout-horizontal.png MacLayout Horizontal
-         \o Button box laid out in horizontal MacLayout
-    \row \o \inlineimage buttonbox-winlayout-horizontal.png  WinLayout Horizontal
-         \o Button box laid out in horizontal WinLayout
+    \row \li \inlineimage buttonbox-gnomelayout-horizontal.png GnomeLayout Horizontal
+         \li Button box laid out in horizontal GnomeLayout
+    \row \li \inlineimage buttonbox-kdelayout-horizontal.png KdeLayout Horizontal
+         \li Button box laid out in horizontal KdeLayout
+    \row \li \inlineimage buttonbox-maclayout-horizontal.png MacLayout Horizontal
+         \li Button box laid out in horizontal MacLayout
+    \row \li \inlineimage buttonbox-winlayout-horizontal.png  WinLayout Horizontal
+         \li Button box laid out in horizontal WinLayout
     \endtable
 
     The buttons are laid out the following way if the button box is vertical:
 
     \table
-    \row \o GnomeLayout
-         \o KdeLayout
-         \o MacLayout
-         \o WinLayout
-    \row \o \inlineimage buttonbox-gnomelayout-vertical.png GnomeLayout Vertical
-         \o \inlineimage buttonbox-kdelayout-vertical.png KdeLayout Vertical
-         \o \inlineimage buttonbox-maclayout-vertical.png MacLayout Vertical
-         \o \inlineimage buttonbox-winlayout-vertical.png WinLayout Vertical
+    \row \li GnomeLayout
+         \li KdeLayout
+         \li MacLayout
+         \li WinLayout
+    \row \li \inlineimage buttonbox-gnomelayout-vertical.png GnomeLayout Vertical
+         \li \inlineimage buttonbox-kdelayout-vertical.png KdeLayout Vertical
+         \li \inlineimage buttonbox-maclayout-vertical.png MacLayout Vertical
+         \li \inlineimage buttonbox-winlayout-vertical.png WinLayout Vertical
     \endtable
 
     Additionally, button boxes that contain only buttons with ActionRole or
     HelpRole can be considered modeless and have an alternate look on Mac OS X:
 
     \table
-    \row \o modeless horizontal MacLayout
-         \o \inlineimage buttonbox-mac-modeless-horizontal.png Screenshot of modeless horizontal MacLayout
+    \row \li modeless horizontal MacLayout
+         \li \inlineimage buttonbox-mac-modeless-horizontal.png Screenshot of modeless horizontal MacLayout
     \endtable
 
     When a button is clicked in the button box, the clicked() signal is emitted

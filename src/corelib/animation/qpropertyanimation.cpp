@@ -92,7 +92,7 @@
 #include "qanimationgroup.h"
 #include "qpropertyanimation_p.h"
 
-#include <private/qmutexpool_p.h>
+#include <QtCore/QMutex>
 
 #ifndef QT_NO_ANIMATION
 
@@ -268,7 +268,8 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
     QPropertyAnimation *animToStop = 0;
     {
 #ifndef QT_NO_THREAD
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&staticMetaObject));
+        static QBasicMutex mutex;
+        QMutexLocker locker(&mutex);
 #endif
         typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
         typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
@@ -280,6 +281,7 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
             d->updateMetaProperty();
             animToStop = hash.value(key, 0);
             hash.insert(key, this);
+            locker.unlock();
             // update the default start value
             if (oldState == Stopped) {
                 d->setDefaultStartEndValue(d->targetValue->property(d->propertyName.constData()));

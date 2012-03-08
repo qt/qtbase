@@ -51,6 +51,10 @@
 #include <QTime>
 #include <QStyle>
 #include <QtGlobal>
+#include <QTemporaryDir>
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+# include <qt_windows.h> // for SetFileAttributes
+#endif
 
 #define WAITTIME 1000
 
@@ -69,13 +73,13 @@ class tst_QFileSystemModel : public QObject {
 
 public:
     tst_QFileSystemModel();
-    virtual ~tst_QFileSystemModel();
 
 public Q_SLOTS:
     void init();
     void cleanup();
 
 private slots:
+    void initTestCase();
     void indexPath();
 
     void rootPath();
@@ -122,29 +126,17 @@ private slots:
     void roleNames();
 
 protected:
-    bool createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount = 0, const QStringList &intial_dirs = QStringList(), const QString &baseDir = QDir::temp().absolutePath());
+    bool createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount = 0, const QStringList &intial_dirs = QStringList());
 
 private:
     QFileSystemModel *model;
     QString flatDirTestPath;
+    QTemporaryDir m_tempDir;
 };
 
 tst_QFileSystemModel::tst_QFileSystemModel() : model(0)
 {
     qRegisterMetaType<QModelIndex>("QModelIndex");
-
-    QTime midnight(0, 0, 0);
-    qsrand(midnight.secsTo(QTime::currentTime()));
-    // generating unique temporary directory name
-    flatDirTestPath = QDir::temp().path() + '/' + QString("flatdirtest.") + QString::number(qrand());
-}
-
-tst_QFileSystemModel::~tst_QFileSystemModel()
-{
-    QString tmp = flatDirTestPath;
-    QDir dir(tmp);
-    if (dir.exists() && !dir.rmdir(tmp))
-        qWarning("failed to remove tmp dir %s", dir.dirName().toAscii().data());
 }
 
 void tst_QFileSystemModel::init()
@@ -176,6 +168,12 @@ void tst_QFileSystemModel::cleanup()
         list = dir.entryList(QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot);
         QVERIFY(list.count() == 0);
     }
+}
+
+void tst_QFileSystemModel::initTestCase()
+{
+    QVERIFY(m_tempDir.isValid());
+    flatDirTestPath = m_tempDir.path();
 }
 
 void tst_QFileSystemModel::indexPath()
@@ -367,15 +365,8 @@ void tst_QFileSystemModel::iconProvider()
     delete custom;
 }
 
-bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount, const QStringList &initial_dirs, const QString &dir)
+bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount, const QStringList &initial_dirs)
 {
-    QDir baseDir(dir);
-    if (!baseDir.exists(test_path)) {
-        if (!baseDir.mkdir(test_path) && false) {
-            qDebug() << "failed to create dir" << test_path;
-            return false;
-        }
-    }
     //qDebug() << (model->rowCount(model->index(test_path))) << existingFileCount << initial_files;
     TRY_WAIT((model->rowCount(model->index(test_path)) == existingFileCount));
     for (int i = 0; i < initial_dirs.count(); ++i) {
@@ -406,8 +397,21 @@ bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringLi
         }
         file.close();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-        if (initial_files.at(i)[0] == '.')
-            QProcess::execute(QString("attrib +h %1").arg(file.fileName()));
+        if (initial_files.at(i)[0] == '.') {
+            QString hiddenFile = QDir::toNativeSeparators(file.fileName());
+            wchar_t nativeHiddenFile[MAX_PATH];
+            qMemSet(nativeHiddenFile, 0, sizeof(nativeHiddenFile));
+            hiddenFile.toWCharArray(nativeHiddenFile);
+            DWORD currentAttributes = ::GetFileAttributes(nativeHiddenFile);
+            if (currentAttributes == 0xFFFFFFFF) {
+                qErrnoWarning("failed to get file attributes: %s", qPrintable(hiddenFile));
+                return false;
+            }
+            if (!::SetFileAttributes(nativeHiddenFile, currentAttributes | FILE_ATTRIBUTE_HIDDEN)) {
+                qErrnoWarning("failed to set file hidden: %s", qPrintable(hiddenFile));
+                return false;
+            }
+        }
 #endif
         //qDebug() << test_path + '/' + initial_files.at(i) << (QFile::exists(test_path + '/' + initial_files.at(i)));
     }
@@ -818,16 +822,8 @@ void tst_QFileSystemModel::sort()
         myModel->d_func()->disableRecursiveSort = true;
 #endif
 
-    QDir dir(QDir::tempPath());
-    //initialize the randomness
-    qsrand(QDateTime::currentDateTime().toTime_t());
-    QString tempName = QLatin1String("sortTemp.") + QString::number(qrand());
-    dir.mkdir(tempName);
-    dir.cd(tempName);
-    QTRY_VERIFY(dir.exists());
-
+    QDir dir(flatDirTestPath);
     const QString dirPath = dir.absolutePath();
-    QVERIFY(dir.exists());
 
     //Create a file that will be at the end when sorting by name (For Mac, the default)
     //but if we sort by size descending it will be the first
@@ -889,14 +885,6 @@ void tst_QFileSystemModel::sort()
 
     delete tree;
     delete myModel;
-
-    dir.setPath(QDir::tempPath());
-    dir.cd(tempName);
-    tempFile.remove();
-    tempFile2.remove();
-    dir.cdUp();
-    dir.rmdir(tempName);
-
 }
 
 void tst_QFileSystemModel::mkdir()
@@ -978,29 +966,17 @@ void tst_QFileSystemModel::drives()
 
 void tst_QFileSystemModel::dirsBeforeFiles()
 {
-    const QString dirPath = QString("%1/task221717_sortedOrder_test_dir").arg(QDir::tempPath());
-    QDir dir(dirPath);
-    // clean up from last time
-    if (dir.exists()) {
-        for (int i = 0; i < 3; ++i) {
-            QLatin1Char c('a' + i);
-            dir.rmdir(QString("%1-dir").arg(c));
-            QFile::remove(dirPath + QString("/%1-file").arg(c));
-        }
-        dir.rmdir(dirPath);
-    }
-    QVERIFY(dir.mkpath(dirPath));
-    QVERIFY(QDir(dirPath).exists());
+    QDir dir(flatDirTestPath);
 
     for (int i = 0; i < 3; ++i) {
         QLatin1Char c('a' + i);
         dir.mkdir(QString("%1-dir").arg(c));
-        QFile file(dirPath + QString("/%1-file").arg(c));
+        QFile file(flatDirTestPath + QString("/%1-file").arg(c));
         file.open(QIODevice::ReadWrite);
         file.close();
     }
 
-    QModelIndex root = model->setRootPath(dirPath);
+    QModelIndex root = model->setRootPath(flatDirTestPath);
     QTest::qWait(1000); // allow model to be notified by the file system watcher
 
     // ensure that no file occurs before a directory

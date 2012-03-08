@@ -109,6 +109,7 @@ private slots:
     void subjectAndIssuerAttributes();
     void verify();
     void extensions();
+    void threadSafeConstMethods();
 
     // helper for verbose test failure messages
     QString toString(const QList<QSslError>&);
@@ -1059,6 +1060,77 @@ void tst_QSslCertificate::extensions()
 
 }
 
+class TestThread : public QThread
+{
+public:
+    void run()
+    {
+        effectiveDate = cert.effectiveDate();
+        expiryDate = cert.expiryDate();
+        extensions = cert.extensions();
+        isBlacklisted = cert.isBlacklisted();
+        issuerInfo = cert.issuerInfo(QSslCertificate::CommonName);
+        issuerInfoAttributes = cert.issuerInfoAttributes();
+        publicKey = cert.publicKey();
+        serialNumber = cert.serialNumber();
+        subjectInfo = cert.subjectInfo(QSslCertificate::CommonName);
+        subjectInfoAttributes = cert.subjectInfoAttributes();
+        toDer = cert.toDer();
+        toPem = cert.toPem();
+        toText = cert.toText();
+        version = cert.version();
+    }
+    QSslCertificate cert;
+    QDateTime effectiveDate;
+    QDateTime expiryDate;
+    QList<QSslCertificateExtension> extensions;
+    bool isBlacklisted;
+    QStringList issuerInfo;
+    QList<QByteArray> issuerInfoAttributes;
+    QSslKey publicKey;
+    QByteArray serialNumber;
+    QStringList subjectInfo;
+    QList<QByteArray> subjectInfoAttributes;
+    QByteArray toDer;
+    QByteArray toPem;
+    QByteArray toText;
+    QByteArray version;
+};
+
+void tst_QSslCertificate::threadSafeConstMethods()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QByteArray encoded = readFile(testDataDir + "/certificates/cert.pem");
+    QSslCertificate certificate(encoded);
+    QVERIFY(!certificate.isNull());
+
+    TestThread t1;
+    t1.cert = certificate; //shallow copy
+    TestThread t2;
+    t2.cert = certificate; //shallow copy
+    t1.start();
+    t2.start();
+    QVERIFY(t1.wait(5000));
+    QVERIFY(t2.wait(5000));
+    QVERIFY(t1.cert == t2.cert);
+    QVERIFY(t1.effectiveDate == t2.effectiveDate);
+    QVERIFY(t1.expiryDate == t2.expiryDate);
+    //QVERIFY(t1.extensions == t2.extensions); // no equality operator, so not tested
+    QVERIFY(t1.isBlacklisted == t2.isBlacklisted);
+    QVERIFY(t1.issuerInfo == t2.issuerInfo);
+    QVERIFY(t1.issuerInfoAttributes == t2.issuerInfoAttributes);
+    QVERIFY(t1.publicKey == t2.publicKey);
+    QVERIFY(t1.serialNumber == t2.serialNumber);
+    QVERIFY(t1.subjectInfo == t2.subjectInfo);
+    QVERIFY(t1.subjectInfoAttributes == t2.subjectInfoAttributes);
+    QVERIFY(t1.toDer == t2.toDer);
+    QVERIFY(t1.toPem == t2.toPem);
+    QVERIFY(t1.toText == t2.toText);
+    QVERIFY(t1.version == t2.version);
+
+}
 
 #endif // QT_NO_SSL
 

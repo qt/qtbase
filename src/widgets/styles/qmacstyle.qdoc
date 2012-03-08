@@ -49,21 +49,21 @@
 
     \list
 
-    \i Layout - The restrictions on window layout are such that some
+    \li Layout - The restrictions on window layout are such that some
     aspects of layout that are style-dependent cannot be achieved
     using QLayout. Changes are being considered (and feedback would be
     appreciated) to make layouts QStyle-able. Some of the restrictions
     involve horizontal and vertical widget alignment and widget size
     (covered below).
 
-    \i Widget size - Mac OS X allows widgets to have specific fixed sizes.  Qt
+    \li Widget size - Mac OS X allows widgets to have specific fixed sizes.  Qt
     does not fully implement this behavior so as to maintain cross-platform
     compatibility. As a result some widgets sizes may be inappropriate (and
     subsequently not rendered correctly by the HITheme APIs).The
     QWidget::sizeHint() will return the appropriate size for many
     managed widgets (widgets enumerated in \l QStyle::ContentsType).
 
-    \i Effects - QMacStyle uses HITheme for performing most of the drawing, but
+    \li Effects - QMacStyle uses HITheme for performing most of the drawing, but
     also uses emulation in a few cases where HITheme does not provide the
     required functionality (for example, tab bars on Panther, the toolbar
     separator, etc). We tried to make the emulation as close to the original as

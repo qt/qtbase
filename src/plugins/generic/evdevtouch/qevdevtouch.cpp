@@ -49,7 +49,17 @@
 #include <QtPlatformSupport/private/qudevhelper_p.h>
 #include <linux/input.h>
 
+#ifdef USE_MTDEV
+extern "C" {
+#include <mtdev.h>
+}
+#endif
+
 QT_BEGIN_NAMESPACE
+
+#ifndef ABS_MT_SLOT
+#define ABS_MT_SLOT 0x2f
+#endif
 
 class QTouchScreenData
 {
@@ -75,8 +85,10 @@ public:
             x(0), y(0), maj(1), pressure(0),
             state(Qt::TouchPointPressed), flags(0) { }
     };
-    QHash<int, Contact> m_contacts, m_lastContacts;
+    QHash<int, Contact> m_contacts; // The key is a tracking id for type A, slot number for type B.
+    QHash<int, Contact> m_lastContacts;
     Contact m_currentData;
+    int m_currentSlot;
 
     int findClosestContact(const QHash<int, Contact> &contacts, int x, int y, int *dist);
     void reportPoints();
@@ -91,11 +103,13 @@ public:
     QString hw_name;
     bool m_forceToActiveWindow;
     QTouchDevice *m_device;
+    bool m_typeB;
 };
 
 QTouchScreenData::QTouchScreenData(QTouchScreenHandler *q_ptr, const QStringList &args)
     : q(q_ptr),
       m_lastEventType(-1),
+      m_currentSlot(0),
       hw_range_x_min(0), hw_range_x_max(0),
       hw_range_y_min(0), hw_range_y_max(0),
       hw_pressure_min(0), hw_pressure_max(0)
@@ -115,8 +129,19 @@ void QTouchScreenData::registerDevice()
     QWindowSystemInterface::registerTouchDevice(m_device);
 }
 
+#define LONG_BITS (sizeof(long) << 3)
+#define NUM_LONGS(bits) (((bits) + LONG_BITS - 1) / LONG_BITS)
+
+static inline bool testBit(long bit, const long *array)
+{
+    return (array[bit / LONG_BITS] >> bit % LONG_BITS) & 1;
+}
+
 QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
     : m_notify(0), m_fd(-1), d(0)
+#ifdef USE_MTDEV
+      , m_mtdev(0)
+#endif
 {
     setObjectName(QLatin1String("Evdev Touch Handler"));
 
@@ -140,6 +165,16 @@ QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
         qWarning("Cannot open input device '%s': %s", qPrintable(dev), strerror(errno));
         return;
     }
+
+#ifdef USE_MTDEV
+    m_mtdev = static_cast<mtdev *>(calloc(1, sizeof(mtdev)));
+    int mtdeverr = mtdev_open(m_mtdev, m_fd);
+    if (mtdeverr) {
+        qWarning("mtdev_open failed: %d", mtdeverr);
+        QT_CLOSE(m_fd);
+        return;
+    }
+#endif
 
     d = new QTouchScreenData(this, args);
 
@@ -168,11 +203,30 @@ QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
         qDebug("device name: %s", name);
     }
 
+#ifdef USE_MTDEV
+    const char *mtdevStr = "(mtdev)";
+    d->m_typeB = true;
+#else
+    const char *mtdevStr = "";
+    d->m_typeB = false;
+    long absbits[NUM_LONGS(ABS_CNT)];
+    if (ioctl(m_fd, EVIOCGBIT(EV_ABS, sizeof(absbits)), absbits) >= 0)
+        d->m_typeB = testBit(ABS_MT_SLOT, absbits);
+#endif
+    qDebug("Protocol type %c %s", d->m_typeB ? 'B' : 'A', mtdevStr);
+
     d->registerDevice();
 }
 
 QTouchScreenHandler::~QTouchScreenHandler()
 {
+#ifdef USE_MTDEV
+    if (m_mtdev) {
+        mtdev_close(m_mtdev);
+        free(m_mtdev);
+    }
+#endif
+
     if (m_fd >= 0)
         QT_CLOSE(m_fd);
 
@@ -184,8 +238,13 @@ void QTouchScreenHandler::readData()
     ::input_event buffer[32];
     int n = 0;
     for (; ;) {
+#ifdef USE_MTDEV
+        n = mtdev_get(m_mtdev, m_fd, buffer, sizeof(buffer) / sizeof(::input_event));
+        if (n > 0)
+            n *= sizeof(::input_event);
+#else
         n = QT_READ(m_fd, reinterpret_cast<char*>(buffer) + n, sizeof(buffer) - n);
-
+#endif
         if (!n) {
             qWarning("Got EOF from input device");
             return;
@@ -215,16 +274,32 @@ void QTouchScreenData::processInputEvent(input_event *data)
 
         if (data->code == ABS_MT_POSITION_X) {
             m_currentData.x = qBound(hw_range_x_min, data->value, hw_range_x_max);
+            if (m_typeB)
+                m_contacts[m_currentSlot].x = m_currentData.x;
         } else if (data->code == ABS_MT_POSITION_Y) {
             m_currentData.y = qBound(hw_range_y_min, data->value, hw_range_y_max);
+            if (m_typeB)
+                m_contacts[m_currentSlot].y = m_currentData.y;
         } else if (data->code == ABS_MT_TRACKING_ID) {
             m_currentData.trackingId = data->value;
+            if (m_typeB) {
+                if (m_currentData.trackingId == -1)
+                    m_contacts[m_currentSlot].state = Qt::TouchPointReleased;
+                else
+                    m_contacts[m_currentSlot].trackingId = m_currentData.trackingId;
+            }
         } else if (data->code == ABS_MT_TOUCH_MAJOR) {
             m_currentData.maj = data->value;
             if (data->value == 0)
                 m_currentData.state = Qt::TouchPointReleased;
+            if (m_typeB)
+                m_contacts[m_currentSlot].maj = m_currentData.maj;
         } else if (data->code == ABS_PRESSURE) {
             m_currentData.pressure = qBound(hw_pressure_min, data->value, hw_pressure_max);
+            if (m_typeB)
+                m_contacts[m_currentSlot].pressure = m_currentData.pressure;
+        } else if (data->code == ABS_MT_SLOT) {
+            m_currentSlot = data->value;
         }
 
     } else if (data->type == EV_SYN && data->code == SYN_MT_REPORT && m_lastEventType != EV_SYN) {
@@ -254,8 +329,9 @@ void QTouchScreenData::processInputEvent(input_event *data)
             tp.id = contact.trackingId;
             tp.flags = contact.flags;
 
-            if (m_lastContacts.contains(contact.trackingId)) {
-                const Contact &prev(m_lastContacts.value(contact.trackingId));
+            int key = m_typeB ? it.key() : contact.trackingId;
+            if (m_lastContacts.contains(key)) {
+                const Contact &prev(m_lastContacts.value(key));
                 if (contact.state == Qt::TouchPointReleased) {
                     // Copy over the previous values for released points, just in case.
                     contact.x = prev.x;
@@ -269,7 +345,7 @@ void QTouchScreenData::processInputEvent(input_event *data)
 
             // Avoid reporting a contact in released state more than once.
             if (contact.state == Qt::TouchPointReleased
-                    && !m_lastContacts.contains(contact.trackingId)) {
+                    && !m_lastContacts.contains(key)) {
                 it.remove();
                 continue;
             }
@@ -293,7 +369,8 @@ void QTouchScreenData::processInputEvent(input_event *data)
         }
 
         m_lastContacts = m_contacts;
-        m_contacts.clear();
+        if (!m_typeB)
+            m_contacts.clear();
 
         if (!m_touchPoints.isEmpty() && combinedStates != Qt::TouchPointStationary)
             reportPoints();

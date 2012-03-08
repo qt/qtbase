@@ -1,8 +1,14 @@
-Generic plug-in for evdev touch events. (protocol type A)
+Generic plug-in for evdev touch (ABS_MT) events.
+Supports protocol type A & B.
+Type B is supported both directly and via libmtdev.
 
-Tested with the following drivers: bcm5974, hid_magicmouse.
+The protocol type will be detected automatically.
+To enable libmtdev support uncomment the USE_MTDEV define in
+evdevtouch.pro.
 
-To use it, pass -plugin EvdevTouch on the command line.
+Tested with the following kernel drivers: bcm5974, hid_magicmouse.
+
+To use this "driver", pass -plugin EvdevTouch on the command line.
 
 If automatic detection does not work, use -plugin
 EvdevTouch:/dev/input/eventN to explicitly set the device file

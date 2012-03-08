@@ -26,10 +26,10 @@ CONFIG = lex yacc warn_on debug uic resources $$CONFIG
         # can we tell syncqt to do a -developer-build
         win32 {
             CMP_QDIR = $$upper($$QTDIR)
-            CMP_INSTALL_PREFIX = $$upper($$[QT_INSTALL_PREFIX])
+            CMP_INSTALL_PREFIX = $$upper($$[QT_HOST_PREFIX])
         } else {
             CMP_QDIR = $$QTDIR
-            CMP_INSTALL_PREFIX = $$[QT_INSTALL_PREFIX]
+            CMP_INSTALL_PREFIX = $$[QT_HOST_PREFIX]
         }
         contains(CMP_QDIR, $$CMP_INSTALL_PREFIX):QTFWD = -qtdir $$QTDIR -module-fwd $$QTDIR/mkspecs/modules -developer-build
         unset(CMP_QDIR)
@@ -46,6 +46,10 @@ CONFIG = lex yacc warn_on debug uic resources $$CONFIG
     } else {
         error("Failed to run: $$MSG")
     }
+
+    # Let qmake know about the unexpectedly appearing cache file.
+    contains(QTFWD, -cache-module-fwd):_QMAKE_CACHE_ = $$QMAKE_SYNCQT_OUTDIR/.qmake.cache
+
     unset(QTFWD)
     unset(PRO_BASENAME)
 }

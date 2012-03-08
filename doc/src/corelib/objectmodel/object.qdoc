@@ -41,20 +41,20 @@
     Qt adds these features to C++:
 
     \list
-    \o a very powerful mechanism for seamless object
+    \li a very powerful mechanism for seamless object
        communication called \l{signals and slots}
-    \o queryable and designable \l{Qt's Property System}{object
+    \li queryable and designable \l{Qt's Property System}{object
        properties}
-    \o powerful \l{The Event System}{events and event filters}
-    \o contextual \l{i18n}{string translation for internationalization}
-    \o sophisticated interval driven \l timers that make it possible
+    \li powerful \l{The Event System}{events and event filters}
+    \li contextual \l{i18n}{string translation for internationalization}
+    \li sophisticated interval driven \l timers that make it possible
        to elegantly integrate many tasks in an event-driven GUI
-    \o hierarchical and queryable \l{Object Trees & Ownership}{object
+    \li hierarchical and queryable \l{Object Trees & Ownership}{object
        trees} that organize object ownership in a natural way
-    \o guarded pointers (QPointer) that are automatically
+    \li guarded pointers (QPointer) that are automatically
        set to 0 when the referenced object is destroyed, unlike normal C++
        pointers which become dangling pointers when their objects are destroyed
-    \o a \l{metaobjects.html#qobjectcast}{dynamic cast} that works across
+    \li a \l{metaobjects.html#qobjectcast}{dynamic cast} that works across
        library boundaries.
     \endlist
 
@@ -92,22 +92,22 @@
     or assigning a value. We can see what this means in the Qt Object
     Model.
 
-    \bold{A Qt Object...}
+    \b{A Qt Object...}
 
     \list
 
-    \o might have a unique \l{QObject::objectName()}.  If we copy a Qt
+    \li might have a unique \l{QObject::objectName()}.  If we copy a Qt
     Object, what name should we give the copy?
 
-    \o has a location in an \l{Object Trees & Ownership}
+    \li has a location in an \l{Object Trees & Ownership}
     {object hierarchy}. If we copy a Qt Object, where should the copy
     be located?
 
-    \o can be connected to other Qt Objects to emit signals to them or
+    \li can be connected to other Qt Objects to emit signals to them or
     to receive signals emitted by them. If we copy a Qt Object, how
     should we transfer these connections to the copy?
 
-    \o can have \l{Qt's Property System} {new properties} added to it
+    \li can have \l{Qt's Property System} {new properties} added to it
     at runtime that are not declared in the C++ class. If we copy a Qt
     Object, should the copy include the properties that were added to
     the original?

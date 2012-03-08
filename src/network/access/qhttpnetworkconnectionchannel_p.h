@@ -72,6 +72,7 @@
 #ifndef QT_NO_SSL
 #    include <QtNetwork/qsslsocket.h>
 #    include <QtNetwork/qsslerror.h>
+#    include <QtNetwork/qsslconfiguration.h>
 #else
 #   include <QtNetwork/qtcpsocket.h>
 #endif
@@ -100,6 +101,7 @@ public:
     };
     QAbstractSocket *socket;
     bool ssl;
+    bool isInitialized;
     ChannelState state;
     QHttpNetworkRequest request; // current request
     QHttpNetworkReply *reply; // current reply for this request
@@ -118,6 +120,10 @@ public:
 #ifndef QT_NO_SSL
     bool ignoreAllSslErrors;
     QList<QSslError> ignoreSslErrorsList;
+    QSslConfiguration sslConfiguration;
+    void ignoreSslErrors();
+    void ignoreSslErrors(const QList<QSslError> &errors);
+    void setSslConfiguration(const QSslConfiguration &config);
 #endif
 #ifndef QT_NO_BEARERMANAGEMENT
     QSharedPointer<QNetworkSession> networkSession;
@@ -143,6 +149,11 @@ public:
     
     void setConnection(QHttpNetworkConnection *c);
     QPointer<QHttpNetworkConnection> connection;
+
+#ifndef QT_NO_NETWORKPROXY
+    QNetworkProxy proxy;
+    void setProxy(const QNetworkProxy &networkProxy);
+#endif
 
     void init();
     void close();

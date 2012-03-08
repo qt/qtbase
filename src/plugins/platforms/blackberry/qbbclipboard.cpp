@@ -46,6 +46,7 @@
 #include <QtGui/QColor>
 
 #include <QtCore/QDebug>
+#include <QtCore/QMimeData>
 #include <QtCore/QStringList>
 #include <QtCore/QUrl>
 
@@ -53,11 +54,131 @@
 #include <errno.h>
 
 QT_BEGIN_NAMESPACE
-static const char *typeList[] = {"text/html", "text/plain", "application/x-color"};
+
+// null terminated array
+static const char *typeList[] = {"text/html", "text/plain", "image/png", "image/jpeg", "application/x-color", 0};
+
+static QByteArray readClipboardBuff(const char *type)
+{
+    char *pbuffer;
+    if (is_clipboard_format_present(type) == 0) {
+        int size = get_clipboard_data(type, &pbuffer);
+        if (size != -1 && pbuffer) {
+            const QByteArray result = QByteArray(pbuffer, size);
+            free(pbuffer);
+            return result;
+        }
+    }
+
+    return QByteArray();
+}
+
+class QBBClipboard::MimeData : public QMimeData
+{
+    Q_OBJECT
+public:
+    MimeData(QBBClipboard *clipboard)
+        : QMimeData(),
+          m_clipboard(clipboard),
+          m_userMimeData(0)
+    {
+        Q_ASSERT(clipboard);
+
+        for (int i = 0; typeList[i] != 0; ++i) {
+            m_formatsToCheck << QString::fromUtf8(typeList[i]);
+        }
+    }
+
+    ~MimeData()
+    {
+        delete m_userMimeData;
+    }
+
+    void addFormatToCheck(const QString &format) {
+        m_formatsToCheck << format;
+
+#if defined(QBBCLIPBOARD_DEBUG)
+        qDebug() << Q_FUNC_INFO << "formats=" << m_formatsToCheck;
+#endif
+    }
+
+    bool hasFormat(const QString &mimetype) const
+    {
+        const bool result = is_clipboard_format_present(mimetype.toUtf8().constData()) == 0;
+#if defined(QBBCLIPBOARD_DEBUG)
+        qDebug() << Q_FUNC_INFO << "mimetype=" << mimetype << "result=" << result;
+#endif
+        return result;
+    }
+
+    QStringList formats() const
+    {
+        QStringList result;
+
+        Q_FOREACH (const QString &format, m_formatsToCheck) {
+            if (is_clipboard_format_present(format.toUtf8().constData()) == 0)
+                result << format;
+        }
+
+#if defined(QBBCLIPBOARD_DEBUG)
+        qDebug() << Q_FUNC_INFO << "result=" << result;
+#endif
+        return result;
+    }
+
+    void setUserMimeData(QMimeData *userMimeData)
+    {
+        delete m_userMimeData;
+        m_userMimeData = userMimeData;
+
+        // system clipboard API doesn't allow detection of changes by other applications
+        // simulate an owner change through delayed invocation
+        // basically transfer ownership of data to the system clipboard once event processing resumes
+        if (m_userMimeData)
+            QMetaObject::invokeMethod(this, "releaseOwnership", Qt::QueuedConnection);
+    }
+
+    QMimeData *userMimeData()
+    {
+        return m_userMimeData;
+    }
+
+protected:
+    QVariant retrieveData(const QString &mimetype, QVariant::Type preferredType) const
+    {
+#if defined(QBBCLIPBOARD_DEBUG)
+        qDebug() << Q_FUNC_INFO << "mimetype=" << mimetype << "preferredType=" << preferredType;
+#endif
+        if (is_clipboard_format_present(mimetype.toUtf8().constData()) != 0)
+            return QMimeData::retrieveData(mimetype, preferredType);
+
+        const QByteArray data = readClipboardBuff(mimetype.toUtf8().constData());
+        return qVariantFromValue(data);
+    }
+
+private Q_SLOTS:
+    void releaseOwnership()
+    {
+        if (m_userMimeData) {
+#if defined(QBBCLIPBOARD_DEBUG)
+            qDebug() << Q_FUNC_INFO << "user data formats=" << m_userMimeData->formats() << "system formats=" << formats();
+#endif
+            delete m_userMimeData;
+            m_userMimeData = 0;
+            m_clipboard->emitChanged(QClipboard::Clipboard);
+        }
+    }
+
+private:
+    QBBClipboard * const m_clipboard;
+
+    QSet<QString> m_formatsToCheck;
+    QMimeData *m_userMimeData;
+};
 
 QBBClipboard::QBBClipboard()
+    : m_mimeData(new MimeData(this))
 {
-    m_mimeData = 0;
 }
 
 QBBClipboard::~QBBClipboard()
@@ -70,46 +191,37 @@ void QBBClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
     if (mode != QClipboard::Clipboard)
         return;
 
-    if (m_mimeData != data) {
-        delete m_mimeData;
-        m_mimeData = data;
-    }
+    if (data == m_mimeData || data == m_mimeData->userMimeData())
+        return;
 
     empty_clipboard();
+
+    m_mimeData->clear();
+    m_mimeData->setUserMimeData(data);
 
     if (data == 0)
         return;
 
-    QStringList format = data->formats();
-    for (int i = 0; i < format.size(); ++i) {
-        QString type = format.at(i);
-        QByteArray buf = data->data(type);
-        if (!buf.size())
+    const QStringList formats = data->formats();
+#if defined(QBBCLIPBOARD_DEBUG)
+    qDebug() << Q_FUNC_INFO << "formats=" << formats;
+#endif
+
+    Q_FOREACH (const QString &format, formats) {
+        const QByteArray buf = data->data(format);
+
+        if (buf.isEmpty())
             continue;
 
-        int ret = set_clipboard_data(type.toUtf8().data(), buf.size(), buf.data());
+        int ret = set_clipboard_data(format.toUtf8().data(), buf.size(), buf.data());
 #if defined(QBBCLIPBOARD_DEBUG)
-        qDebug() << "QBB: set " << type.toUtf8().data() << "to clipboard, size=" << buf.size() << ";ret=" << ret;
-#else
-        Q_UNUSED(ret);
+        qDebug() << "QBB: set " << format << "to clipboard, size=" << buf.size() << ";ret=" << ret;
 #endif
+        if (ret)
+            m_mimeData->addFormatToCheck(format);
     }
-}
 
-void QBBClipboard::readClipboardBuff(const char *type)
-{
-    char *pbuffer;
-    if (is_clipboard_format_present(type) == 0) {
-        int size = get_clipboard_data(type, &pbuffer);
-        if (size != -1 && pbuffer) {
-            QString qtype = type;
-#if defined(QBBCLIPBOARD_DEBUG)
-            qDebug() << "QBB: clipboard has " << qtype;
-#endif
-            m_mimeData->setData(qtype, QByteArray(pbuffer, size));
-            delete pbuffer;
-        }
-    }
+    emitChanged(QClipboard::Clipboard);
 }
 
 QMimeData *QBBClipboard::mimeData(QClipboard::Mode mode)
@@ -117,16 +229,16 @@ QMimeData *QBBClipboard::mimeData(QClipboard::Mode mode)
     if (mode != QClipboard::Clipboard)
         return 0;
 
-    if (!m_mimeData)
-        m_mimeData = new QMimeData();
+    if (m_mimeData->userMimeData())
+        return m_mimeData->userMimeData();
 
     m_mimeData->clear();
-
-    for (int i = 0; i < 3; i++)
-        readClipboardBuff(typeList[i]);
 
     return m_mimeData;
 }
 
 QT_END_NAMESPACE
-#endif //QT_NO_CLIPBOAR
+
+#include "qbbclipboard.moc"
+
+#endif //QT_NO_CLIPBOARD

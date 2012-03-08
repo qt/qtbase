@@ -89,10 +89,10 @@ QT_BEGIN_NAMESPACE
     The following custom cleanup handlers exist:
 
     \list
-    \i QScopedPointerDeleter - the default, deletes the pointer using \c delete
-    \i QScopedPointerArrayDeleter - deletes the pointer using \c{delete []}. Use
+    \li QScopedPointerDeleter - the default, deletes the pointer using \c delete
+    \li QScopedPointerArrayDeleter - deletes the pointer using \c{delete []}. Use
        this handler for pointers that were allocated with \c{new []}.
-    \i QScopedPointerPodDeleter - deletes the pointer using \c{free()}. Use this
+    \li QScopedPointerPodDeleter - deletes the pointer using \c{free()}. Use this
        handler for pointers that were allocated with \c{malloc()}.
     \endlist
 

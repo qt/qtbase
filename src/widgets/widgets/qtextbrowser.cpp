@@ -902,10 +902,10 @@ void QTextBrowser::home()
 /*!
     The event \a ev is used to provide the following keyboard shortcuts:
     \table
-    \header \i Keypress            \i Action
-    \row \i Alt+Left Arrow  \i \l backward()
-    \row \i Alt+Right Arrow \i \l forward()
-    \row \i Alt+Up Arrow    \i \l home()
+    \header \li Keypress            \li Action
+    \row \li Alt+Left Arrow  \li \l backward()
+    \row \li Alt+Right Arrow \li \l forward()
+    \row \li Alt+Up Arrow    \li \l home()
     \endtable
 */
 void QTextBrowser::keyPressEvent(QKeyEvent *ev)
@@ -1068,10 +1068,10 @@ void QTextBrowser::paintEvent(QPaintEvent *e)
     depending on the resource type:
 
     \table
-    \header \i ResourceType  \i QVariant::Type
-    \row    \i QTextDocument::HtmlResource  \i QString or QByteArray
-    \row    \i QTextDocument::ImageResource \i QImage, QPixmap or QByteArray
-    \row    \i QTextDocument::StyleSheetResource \i QString or QByteArray
+    \header \li ResourceType  \li QVariant::Type
+    \row    \li QTextDocument::HtmlResource  \li QString or QByteArray
+    \row    \li QTextDocument::ImageResource \li QImage, QPixmap or QByteArray
+    \row    \li QTextDocument::StyleSheetResource \li QString or QByteArray
     \endtable
 */
 QVariant QTextBrowser::loadResource(int /*type*/, const QUrl &name)
@@ -1146,10 +1146,10 @@ void QTextBrowser::clearHistory()
    Returns the url of the HistoryItem.
 
     \table
-    \header \i Input            \i Return
-    \row \i \a{i} < 0  \i \l backward() history
-    \row \i\a{i} == 0 \i current, see QTextBrowser::source()
-    \row \i \a{i} > 0  \i \l forward() history
+    \header \li Input            \li Return
+    \row \li \a{i} < 0  \li \l backward() history
+    \row \li\a{i} == 0 \li current, see QTextBrowser::source()
+    \row \li \a{i} > 0  \li \l forward() history
     \endtable
 
     \since 4.4
@@ -1164,10 +1164,10 @@ QUrl QTextBrowser::historyUrl(int i) const
     Returns the documentTitle() of the HistoryItem.
 
     \table
-    \header \i Input            \i Return
-    \row \i \a{i} < 0  \i \l backward() history
-    \row \i \a{i} == 0 \i current, see QTextBrowser::source()
-    \row \i \a{i} > 0  \i \l forward() history
+    \header \li Input            \li Return
+    \row \li \a{i} < 0  \li \l backward() history
+    \row \li \a{i} == 0 \li current, see QTextBrowser::source()
+    \row \li \a{i} > 0  \li \l forward() history
     \endtable
 
     \snippet doc/src/snippets/code/src_gui_widgets_qtextbrowser.cpp 0

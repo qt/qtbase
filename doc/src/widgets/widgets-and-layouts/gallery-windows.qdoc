@@ -38,18 +38,18 @@
 
 \table 100%
 \row
-\o \image windows-pushbutton.png 
+\li \image windows-pushbutton.png
    \caption The QPushButton widget provides a command button.
-\o \image windows-toolbutton.png
+\li \image windows-toolbutton.png
    \caption The QToolButton class provides a quick-access button to commands
     or options, usually used inside a QToolBar.
 \endtable
 
 \table 100%
 \row
-\o \image windows-checkbox.png
+\li \image windows-checkbox.png
    \caption The QCheckBox widget provides a checkbox with a text label.
-\o \image windows-radiobutton.png
+\li \image windows-radiobutton.png
    \caption The QRadioButton widget provides a radio button with a text or pixmap label.
 \endtable
 
@@ -57,13 +57,13 @@
 
 \table 100%
 \row
-\o \image windows-groupbox.png
+\li \image windows-groupbox.png
    The The QGroupBox widget provides a group box frame with a title.
-\o \image windows-tabwidget.png
+\li \image windows-tabwidget.png
    The QTabWidget class provides a stack of tabbed widgets.
-\o \image windows-frame.png
+\li \image windows-frame.png
    The QFrame widget provides a simple decorated container for other widgets.
-\o \image windows-toolbox.png
+\li \image windows-toolbox.png
    The QToolBox class provides a column of tabbed widget items.
 \endtable
 
@@ -71,24 +71,24 @@
 
 \table 100%
 \row
-\o \image windows-listview.png
+\li \image windows-listview.png
    The QListView class provides a default model/view implementation of a list/icon view. The QListWidget class provides a classic item-based list/icon view.
-\o \image windows-treeview.png
+\li \image windows-treeview.png
    The QTreeView class provides a default model/view implementation of a tree view. The QTreeWidget class provides a classic item-based tree view.
-\o \image windows-tableview.png
-   The QTableView class provides a default model/view implementation of a table view. The QTableWidget class provides a classic item-based table view.\o 
-\o 
+\li \image windows-tableview.png
+   The QTableView class provides a default model/view implementation of a table view. The QTableWidget class provides a classic item-based table view.\li
+\li
 \endtable
 
 \section2 Display Widgets
 
 \table 100%
 \row
-\o \image windows-progressbar.png
+\li \image windows-progressbar.png
    The QProgressBar widget provides a horizontal progress bar.
-\o \image windows-label.png
+\li \image windows-label.png
    The QLabel widget provides a text or image display.
-\o \image windows-lcdnumber.png
+\li \image windows-lcdnumber.png
    The QLCDNumber widget displays a number with LCD-like digits.
 \endtable
 
@@ -96,43 +96,43 @@
 
 \table 100%
 \row
-\o \image windows-lineedit.png
+\li \image windows-lineedit.png
    The QLineEdit widget is a one-line text editor.
-\o \image windows-dateedit.png
+\li \image windows-dateedit.png
    The QDateEdit class provides a widget for editing dates.
-\o \image windows-timeedit.png
+\li \image windows-timeedit.png
    The QTimeEdit class provides a widget for editing times.
-\o \image windows-datetimeedit.png
+\li \image windows-datetimeedit.png
    The QDateTimeEdit class provides a widget for editing dates and times.
 \endtable
 
 \table 100%
 \row
-\o \image windows-slider.png
+\li \image windows-slider.png
    The QSlider widget provides a vertical or horizontal slider.
-\o \image windows-combobox.png
+\li \image windows-combobox.png
    The QComboBox widget is a combined button and pop-up list.
-\o \image windows-spinbox.png
+\li \image windows-spinbox.png
    The QSpinBox class provides a spin box widget.
 \endtable
 
 \table 100%
 \row
-\o \image windows-fontcombobox.png
+\li \image windows-fontcombobox.png
    The QFontComboBox widget is a specialized combobox that enables fonts to be selected from a pop-up list containing previews of available fonts.
-\o \image windows-doublespinbox.png
+\li \image windows-doublespinbox.png
    The QDoubleSpinBox class provides a spin box widget that allows double precision floating point numbers to be entered.
-\o \image windows-horizontalscrollbar.png
+\li \image windows-horizontalscrollbar.png
    The QScrollBar widget provides a vertical or horizontal scroll bar. Here, we show a scroll bar with horizontal orientation.
 \endtable
 
 \table 100%
 \row
-\o \image windows-dial.png
+\li \image windows-dial.png
    The QDial class provides a rounded range control (like a speedometer or potentiometer).
-\o \image windows-textedit.png
+\li \image windows-textedit.png
    The QTextEdit class provides a widget that is used to edit and display both plain and rich text.
-\o \image windows-calendarwidget.png
+\li \image windows-calendarwidget.png
    The QCalendarWidget class provides a monthly calendar widget that can be used to select dates.
 \endtable
 */

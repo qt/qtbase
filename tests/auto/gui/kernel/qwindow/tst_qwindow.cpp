@@ -64,6 +64,8 @@ private slots:
     void touchCancelWithTouchToMouse();
     void orientation();
     void close();
+    void activateAndClose();
+
     void initTestCase()
     {
         touchDevice = new QTouchDevice;
@@ -630,6 +632,17 @@ void tst_QWindow::close()
     QVERIFY(!c.close());
     QVERIFY(a.close());
     QVERIFY(b.close());
+}
+
+void tst_QWindow::activateAndClose()
+{
+    for (int i = 0; i < 10; ++i)  {
+       QWindow window;
+       window.show();
+       QTest::qWaitForWindowShown(&window);
+       window.requestActivateWindow();
+       QTRY_COMPARE(qGuiApp->focusWindow(), &window);
+    }
 }
 
 #include <tst_qwindow.moc>

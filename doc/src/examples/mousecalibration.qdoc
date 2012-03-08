@@ -39,8 +39,8 @@
     The example consists of two classes in addition to the main program:
 
     \list
-        \o \c Calibration is a dialog widget that retrieves the device coordinates.
-        \o \c ScribbleWidget is a minimal drawing program used to let the user
+        \li \c Calibration is a dialog widget that retrieves the device coordinates.
+        \li \c ScribbleWidget is a minimal drawing program used to let the user
             test the new mouse settings.
     \endlist
 

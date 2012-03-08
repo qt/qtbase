@@ -107,7 +107,7 @@ public:
 
     Returns true if the list has no items; otherwise returns false.
 
-    \bold{Note:} Empty lists are automatically deleted by the QTextDocument that owns
+    \b{Note:} Empty lists are automatically deleted by the QTextDocument that owns
     them.
 
     \sa count()

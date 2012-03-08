@@ -970,8 +970,8 @@ QDomImplementation::~QDomImplementation()
 
     The currently supported features and their versions:
     \table
-    \header \i Feature \i Version
-    \row \i XML \i 1.0
+    \header \li Feature \li Version
+    \row \li XML \li 1.0
     \endtable
 */
 bool QDomImplementation::hasFeature(const QString& feature, const QString& version) const
@@ -2098,22 +2098,22 @@ QDomNode::~QDomNode()
     The meaning of the name depends on the subclass:
 
     \table
-    \header \i Name \i Meaning
-    \row \i QDomAttr \i The name of the attribute
-    \row \i QDomCDATASection \i The string "#cdata-section"
-    \row \i QDomComment \i The string "#comment"
-    \row \i QDomDocument \i The string "#document"
-    \row \i QDomDocumentFragment \i The string "#document-fragment"
-    \row \i QDomDocumentType \i The name of the document type
-    \row \i QDomElement \i The tag name
-    \row \i QDomEntity \i The name of the entity
-    \row \i QDomEntityReference \i The name of the referenced entity
-    \row \i QDomNotation \i The name of the notation
-    \row \i QDomProcessingInstruction \i The target of the processing instruction
-    \row \i QDomText \i The string "#text"
+    \header \li Name \li Meaning
+    \row \li QDomAttr \li The name of the attribute
+    \row \li QDomCDATASection \li The string "#cdata-section"
+    \row \li QDomComment \li The string "#comment"
+    \row \li QDomDocument \li The string "#document"
+    \row \li QDomDocumentFragment \li The string "#document-fragment"
+    \row \li QDomDocumentType \li The name of the document type
+    \row \li QDomElement \li The tag name
+    \row \li QDomEntity \li The name of the entity
+    \row \li QDomEntityReference \li The name of the referenced entity
+    \row \li QDomNotation \li The name of the notation
+    \row \li QDomProcessingInstruction \li The target of the processing instruction
+    \row \li QDomText \li The string "#text"
     \endtable
 
-    \bold{Note:} This function does not take the presence of namespaces into account
+    \b{Note:} This function does not take the presence of namespaces into account
     when processing the names of element and attribute nodes. As a result, the
     returned name can contain any namespace prefix that may be present.
     To obtain the node name of an element or attribute, use localName(); to
@@ -2136,12 +2136,12 @@ QString QDomNode::nodeName() const
 
     The meaning of the value depends on the subclass:
     \table
-    \header \i Name \i Meaning
-    \row \i QDomAttr \i The attribute value
-    \row \i QDomCDATASection \i The content of the CDATA section
-    \row \i QDomComment \i The comment
-    \row \i QDomProcessingInstruction \i The data of the processing instruction
-    \row \i QDomText \i The text
+    \header \li Name \li Meaning
+    \row \li QDomAttr \li The attribute value
+    \row \li QDomCDATASection \li The content of the CDATA section
+    \row \li QDomComment \li The comment
+    \row \li QDomProcessingInstruction \li The data of the processing instruction
+    \row \li QDomText \li The text
     \endtable
 
     All the other subclasses do not have a node value and will return
@@ -3191,11 +3191,11 @@ bool QDomNamedNodeMapPrivate::containsNS(const QString& nsURI, const QString & l
 
     The QDomNamedNodeMap is used in three places:
     \list 1
-    \i QDomDocumentType::entities() returns a map of all entities
+    \li QDomDocumentType::entities() returns a map of all entities
         described in the DTD.
-    \i QDomDocumentType::notations() returns a map of all notations
+    \li QDomDocumentType::notations() returns a map of all notations
         described in the DTD.
-    \i QDomNode::attributes() returns a map of all attributes of an
+    \li QDomNode::attributes() returns a map of all attributes of an
         element.
     \endlist
 
@@ -3427,7 +3427,7 @@ int QDomNamedNodeMap::length() const
     Returns true if the map contains a node called \a name; otherwise
     returns false.
 
-    \bold{Note:} This function does not take the presence of namespaces into account.
+    \b{Note:} This function does not take the presence of namespaces into account.
     Use namedItemNS() to test whether the map contains a node with a specific namespace
     URI and name.
 */
@@ -4950,7 +4950,7 @@ QDomNodeList QDomElement::elementsByTagName(const QString& tagname) const
   Returns true if this element has an attribute called \a name;
   otherwise returns false.
 
-  \bold{Note:} This function does not take the presence of namespaces
+  \b{Note:} This function does not take the presence of namespaces
   into account.  As a result, the specified name will be tested
   against fully-qualified attribute names that include any namespace
   prefixes that may be present.
@@ -5684,24 +5684,24 @@ static QByteArray encodeEntity(const QByteArray& str)
     QByteArray tmp(str);
     int len = tmp.size();
     int i = 0;
-    const char* d = tmp.data();
+    const char* d = tmp.constData();
     while (i < len) {
         if (d[i] == '%'){
             tmp.replace(i, 1, "&#60;");
-            d = tmp;
+            d = tmp.constData();
             len += 4;
             i += 5;
         }
         else if (d[i] == '"') {
             tmp.replace(i, 1, "&#34;");
-            d = tmp;
+            d = tmp.constData();
             len += 4;
             i += 5;
         } else if (d[i] == '&' && i + 1 < len && d[i+1] == '#') {
             // Dont encode &lt; or &quot; or &custom;.
             // Only encode character references
             tmp.replace(i, 1, "&#38;");
-            d = tmp;
+            d = tmp.constData();
             len += 4;
             i += 5;
         } else {
@@ -6692,17 +6692,17 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing, QSt
 
     Entity references are handled as follows:
     \list
-    \o References to internal general entities and character entities occurring in the
+    \li References to internal general entities and character entities occurring in the
         content are included. The result is a QDomText node with the references replaced
         by their corresponding entity values.
-    \o References to parameter entities occurring in the internal subset are included.
+    \li References to parameter entities occurring in the internal subset are included.
         The result is a QDomDocumentType node which contains entity and notation declarations
         with the references replaced by their corresponding entity values.
-    \o Any general parsed entity reference which is not defined in the internal subset and
+    \li Any general parsed entity reference which is not defined in the internal subset and
         which occurs in the content is represented as a QDomEntityReference node.
-    \o Any parsed entity reference which is not defined in the internal subset and which
+    \li Any parsed entity reference which is not defined in the internal subset and which
         occurs outside of the content is replaced with an empty string.
-    \o Any unparsed entity reference is replaced with an empty string.
+    \li Any unparsed entity reference is replaced with an empty string.
     \endlist
 
     \sa QDomNode::namespaceURI() QDomNode::localName()
@@ -7039,46 +7039,46 @@ QDomNodeList QDomDocument::elementsByTagName(const QString& tagname) const
     The behavior of this function is slightly different depending on
     the node types:
     \table
-    \header \i Node Type \i Behavior
-    \row \i QDomAttr
-         \i The owner element is set to 0 and the specified flag is
+    \header \li Node Type \li Behavior
+    \row \li QDomAttr
+         \li The owner element is set to 0 and the specified flag is
             set to true in the generated attribute. The whole subtree
             of \a importedNode is always imported for attribute nodes:
             \a deep has no effect.
-    \row \i QDomDocument
-         \i Document nodes cannot be imported.
-    \row \i QDomDocumentFragment
-         \i If \a deep is true, this function imports the whole
+    \row \li QDomDocument
+         \li Document nodes cannot be imported.
+    \row \li QDomDocumentFragment
+         \li If \a deep is true, this function imports the whole
             document fragment; otherwise it only generates an empty
             document fragment.
-    \row \i QDomDocumentType
-         \i Document type nodes cannot be imported.
-    \row \i QDomElement
-         \i Attributes for which QDomAttr::specified() is true are
+    \row \li QDomDocumentType
+         \li Document type nodes cannot be imported.
+    \row \li QDomElement
+         \li Attributes for which QDomAttr::specified() is true are
             also imported, other attributes are not imported. If \a
             deep is true, this function also imports the subtree of \a
             importedNode; otherwise it imports only the element node
             (and some attributes, see above).
-    \row \i QDomEntity
-         \i Entity nodes can be imported, but at the moment there is
+    \row \li QDomEntity
+         \li Entity nodes can be imported, but at the moment there is
             no way to use them since the document type is read-only in
             DOM level 2.
-    \row \i QDomEntityReference
-         \i Descendants of entity reference nodes are never imported:
+    \row \li QDomEntityReference
+         \li Descendants of entity reference nodes are never imported:
             \a deep has no effect.
-    \row \i QDomNotation
-         \i Notation nodes can be imported, but at the moment there is
+    \row \li QDomNotation
+         \li Notation nodes can be imported, but at the moment there is
             no way to use them since the document type is read-only in
             DOM level 2.
-    \row \i QDomProcessingInstruction
-         \i The target and value of the processing instruction is
+    \row \li QDomProcessingInstruction
+         \li The target and value of the processing instruction is
             copied to the new node.
-    \row \i QDomText
-         \i The text is copied to the new node.
-    \row \i QDomCDATASection
-         \i The text is copied to the new node.
-    \row \i QDomComment
-         \i The text is copied to the new node.
+    \row \li QDomText
+         \li The text is copied to the new node.
+    \row \li QDomCDATASection
+         \li The text is copied to the new node.
+    \row \li QDomComment
+         \li The text is copied to the new node.
     \endtable
 
     \sa QDomElement::setAttribute() QDomNode::insertBefore()

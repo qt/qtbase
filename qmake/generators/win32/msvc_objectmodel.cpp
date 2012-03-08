@@ -1615,7 +1615,7 @@ bool VCLinkerTool::parseOption(const char* option)
         {
             // Split up in subsystem, and version number
             QStringList both = QString(option+11).split(",");
-            switch (elfHash(both[0].toLatin1())) {
+            switch (elfHash(both[0].toLatin1().constData())) {
             case 0x8438445: // CONSOLE
                 SubSystem = subSystemConsole;
                 break;

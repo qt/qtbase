@@ -76,6 +76,7 @@ public:
         RemoveQuery = 0x40,
         RemoveFragment = 0x80,
         // 0x100: private: normalized
+        PreferLocalFile = 0x200,
 
         StripTrailingSlash = 0x10000
     };

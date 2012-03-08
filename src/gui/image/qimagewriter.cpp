@@ -653,14 +653,14 @@ bool QImageWriter::supportsOption(QImageIOHandler::ImageOption option) const
     By default, Qt can write the following formats:
 
     \table
-    \header \o Format \o Description
-    \row    \o BMP    \o Windows Bitmap
-    \row    \o JPG    \o Joint Photographic Experts Group
-    \row    \o JPEG   \o Joint Photographic Experts Group
-    \row    \o PNG    \o Portable Network Graphics
-    \row    \o PPM    \o Portable Pixmap
-    \row    \o XBM    \o X11 Bitmap
-    \row    \o XPM    \o X11 Pixmap
+    \header \li Format \li Description
+    \row    \li BMP    \li Windows Bitmap
+    \row    \li JPG    \li Joint Photographic Experts Group
+    \row    \li JPEG   \li Joint Photographic Experts Group
+    \row    \li PNG    \li Portable Network Graphics
+    \row    \li PPM    \li Portable Pixmap
+    \row    \li XBM    \li X11 Bitmap
+    \row    \li XPM    \li X11 Pixmap
     \endtable
 
     Reading and writing SVG files is supported through Qt's

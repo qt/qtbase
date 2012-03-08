@@ -344,7 +344,7 @@ public:
     static void setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *parent,
             const QString &dir, const QString &filter, QString *selectedFilter,
             QFileDialog::Options options, bool isSaveDialog = false,
-            QMap<GtkFileFilter *, QString> *filterMap = 0);
+            QHash<GtkFileFilter *, QString> *filterMap = 0);
 
     static QString openFilename(QWidget *parent, const QString &caption, const QString &dir, const QString &filter,
                                 QString *selectedFilter, QFileDialog::Options options);

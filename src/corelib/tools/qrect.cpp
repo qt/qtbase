@@ -99,11 +99,11 @@ QT_BEGIN_NAMESPACE
 
     \table
     \row
-    \o \inlineimage qrect-intersect.png
-    \o \inlineimage qrect-unite.png
+    \li \inlineimage qrect-intersect.png
+    \li \inlineimage qrect-unite.png
     \row
-    \o intersected()
-    \o united()
+    \li intersected()
+    \li united()
     \endtable
 
     The isEmpty() function returns true if left() > right() or top() >
@@ -139,17 +139,17 @@ QT_BEGIN_NAMESPACE
 
     \table
     \row
-        \o \inlineimage qrect-diagram-zero.png
-        \o \inlineimage qrect-diagram-one.png
+        \li \inlineimage qrect-diagram-zero.png
+        \li \inlineimage qrect-diagram-one.png
     \row
-        \o Logical representation
-        \o One pixel wide pen
+        \li Logical representation
+        \li One pixel wide pen
     \row
-        \o \inlineimage qrect-diagram-two.png
-        \o \inlineimage qrect-diagram-three.png
+        \li \inlineimage qrect-diagram-two.png
+        \li \inlineimage qrect-diagram-three.png
     \row
-        \o Two pixel wide pen
-        \o Three pixel wide pen
+        \li Two pixel wide pen
+        \li Three pixel wide pen
     \endtable
 
     \section1 Coordinates
@@ -1278,11 +1278,11 @@ QDebug operator<<(QDebug dbg, const QRect &r) {
 
     \table
     \row
-    \o \inlineimage qrect-intersect.png
-    \o \inlineimage qrect-unite.png
+    \li \inlineimage qrect-intersect.png
+    \li \inlineimage qrect-unite.png
     \row
-    \o intersected()
-    \o united()
+    \li intersected()
+    \li united()
     \endtable
 
     The isEmpty() function returns true if the rectangle's width or
@@ -1318,17 +1318,17 @@ QDebug operator<<(QDebug dbg, const QRect &r) {
 
     \table
     \row
-        \o \inlineimage qrect-diagram-zero.png
-        \o \inlineimage qrectf-diagram-one.png
+        \li \inlineimage qrect-diagram-zero.png
+        \li \inlineimage qrectf-diagram-one.png
     \row
-        \o Logical representation
-        \o One pixel wide pen
+        \li Logical representation
+        \li One pixel wide pen
     \row
-        \o \inlineimage qrectf-diagram-two.png
-        \o \inlineimage qrectf-diagram-three.png
+        \li \inlineimage qrectf-diagram-two.png
+        \li \inlineimage qrectf-diagram-three.png
     \row
-        \o Two pixel wide pen
-        \o Three pixel wide pen
+        \li Two pixel wide pen
+        \li Three pixel wide pen
     \endtable
 
     \section1 Coordinates

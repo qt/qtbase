@@ -81,10 +81,11 @@ class QMakeProject
     bool recursive;
     bool own_prop;
     bool backslashWarned;
-    QString pfile, cfile;
+    QString pfile;
     QMakeProperty *prop;
     void reset();
-    QHash<QString, QStringList> vars, base_vars;
+    QStringList extra_configs;
+    QHash<QString, QStringList> vars, base_vars, extra_vars;
     bool parse(const QString &text, QHash<QString, QStringList> &place, int line_count=1);
 
     enum IncludeStatus {
@@ -105,18 +106,18 @@ class QMakeProject
     bool doProjectCheckReqs(const QStringList &deps, QHash<QString, QStringList> &place);
     bool doVariableReplace(QString &str, QHash<QString, QStringList> &place);
     QStringList doVariableReplaceExpand(const QString &str, QHash<QString, QStringList> &place, bool *ok=0);
-    void init(QMakeProperty *, const QHash<QString, QStringList> *);
+    void init(QMakeProperty *);
     QStringList &values(const QString &v, QHash<QString, QStringList> &place);
     void validateModes();
     void resolveSpec(QString *spec, const QString &qmakespec);
 
 public:
-    QMakeProject() { init(0, 0); }
-    QMakeProject(QMakeProperty *p) { init(p, 0); }
+    QMakeProject(QMakeProperty *p = 0) { init(p); }
     QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *nvars=0);
-    QMakeProject(const QHash<QString, QStringList> &nvars) { init(0, &nvars); }
-    QMakeProject(QMakeProperty *p, const QHash<QString, QStringList> &nvars) { init(p, &nvars); }
     ~QMakeProject();
+
+    void setExtraVars(const QHash<QString, QStringList> &_vars) { extra_vars = _vars; }
+    void setExtraConfigs(const QStringList &_cfgs) { extra_configs = _cfgs; }
 
     enum { ReadProFile=0x01, ReadSetup=0x02, ReadFeatures=0x04, ReadAll=0xFF };
     inline bool parse(const QString &text) { return parse(text, vars); }

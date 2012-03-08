@@ -64,10 +64,10 @@
     The example consists of two classes:
 
     \list
-        \o \c Window draws the text display of the game and sets
+        \li \c Window draws the text display of the game and sets
             up the state machine. The window also has a status bar
             above the area in which the rouge moves.
-        \o \c MovementTransition is a transition that carries out
+        \li \c MovementTransition is a transition that carries out
             a single move of the rogue.
     \endlist
 

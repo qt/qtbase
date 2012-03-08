@@ -43,6 +43,7 @@
 #include "../../services/genericunix/qgenericunixservices_p.h"
 
 #include <QtGui/QPalette>
+#include <QtGui/QFont>
 #include <QtGui/QGuiApplication>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
@@ -53,6 +54,20 @@
 #include <QtCore/QStringList>
 
 QT_BEGIN_NAMESPACE
+
+ResourceHelper::ResourceHelper()
+{
+    qFill(palettes, palettes + QPlatformTheme::NPalettes, static_cast<QPalette *>(0));
+    qFill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(0));
+}
+
+void ResourceHelper::clear()
+{
+    qDeleteAll(palettes, palettes + QPlatformTheme::NPalettes);
+    qDeleteAll(fonts, fonts + QPlatformTheme::NFonts);
+    qFill(palettes, palettes + QPlatformTheme::NPalettes, static_cast<QPalette *>(0));
+    qFill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(0));
+}
 
 /*!
     \class QGenericX11ThemeQKdeTheme
@@ -148,19 +163,40 @@ QKdeTheme::QKdeTheme(const QString &kdeHome, int kdeVersion) :
     m_kdeHome(kdeHome), m_kdeVersion(kdeVersion),
     m_toolButtonStyle(Qt::ToolButtonTextBesideIcon), m_toolBarIconSize(0)
 {
-    qFill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
     refresh();
 }
 
-void QKdeTheme::clearPalettes()
+static inline QFont *readKdeFontSetting(const QSettings &settings, const QString &key)
 {
-     qDeleteAll(m_palettes, m_palettes + NPalettes);
-     qFill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
+    const QVariant fontValue = settings.value(key);
+    if (fontValue.isValid()) {
+        // Read font value: Might be a QStringList as KDE stores fonts without quotes.
+        // Also retrieve the family for the constructor since we cannot use the
+        // default constructor of QFont, which accesses QGuiApplication::systemFont()
+        // causing recursion.
+        QString fontDescription;
+        QString fontFamily;
+        if (fontValue.type() == QVariant::StringList) {
+            const QStringList list = fontValue.toStringList();
+            if (!list.isEmpty()) {
+                fontFamily = list.first();
+                fontDescription = list.join(QStringLiteral(","));
+            }
+        } else {
+            fontDescription = fontFamily = fontValue.toString();
+        }
+        if (!fontDescription.isEmpty()) {
+            QFont font(fontFamily);
+            if (font.fromString(fontDescription))
+                return new QFont(font);
+        }
+    }
+    return 0;
 }
 
 void QKdeTheme::refresh()
 {
-    clearPalettes();
+    m_resources.clear();
 
     m_toolButtonStyle = Qt::ToolButtonTextBesideIcon;
     m_toolBarIconSize = 0;
@@ -177,7 +213,7 @@ void QKdeTheme::refresh()
 
     QPalette systemPalette;
     if (readKdeSystemPalette(kdeSettings, &systemPalette))
-        m_palettes[SystemPalette] = new QPalette(systemPalette);
+        m_resources.palettes[SystemPalette] = new QPalette(systemPalette);
     //## TODO tooltip color
 
     const QVariant styleValue = kdeSettings.value(QStringLiteral("widgetStyle"));
@@ -205,6 +241,9 @@ void QKdeTheme::refresh()
         else if (toolBarStyle == QStringLiteral("TextUnderIcon"))
             m_toolButtonStyle = Qt::ToolButtonTextUnderIcon;
     }
+
+    // Read system font, ignore 'fixed' 'smallestReadableFont'
+    m_resources.fonts[SystemFont] = readKdeFontSetting(kdeSettings, QStringLiteral("font"));
 }
 
 QString QKdeTheme::globalSettingsFile() const

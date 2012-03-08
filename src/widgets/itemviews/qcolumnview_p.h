@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 class QColumnViewPreviewColumn : public QAbstractItemView {
 
 public:
-    QColumnViewPreviewColumn(QWidget *parent) : QAbstractItemView(parent), previewWidget(0) {
+    explicit QColumnViewPreviewColumn(QWidget *parent) : QAbstractItemView(parent), previewWidget(0) {
     }
 
     void setPreviewWidget(QWidget *widget) {

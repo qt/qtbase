@@ -176,8 +176,8 @@ void tst_vector_vs_std::insert_int_data()
 
     for (int size = 10; size < 20000; size += 100) {
         const QByteArray sizeString = QByteArray::number(size);
-        QTest::newRow(("std::vector-int--" + sizeString).constData()) << true << size;
-        QTest::newRow(("QVector-int--" + sizeString).constData()) << false << size;
+        QTest::newRow(QByteArray("std::vector-int--" + sizeString).constData()) << true << size;
+        QTest::newRow(QByteArray("QVector-int--" + sizeString).constData()) << false << size;
     }
 }
 
@@ -199,8 +199,8 @@ void tst_vector_vs_std::insert_Large_data()
 
     for (int size = 10; size < LARGE_MAX_SIZE; size += 100) {
         const QByteArray sizeString = QByteArray::number(size);
-        QTest::newRow(("std::vector-Large--" + sizeString).constData()) << true << size;
-        QTest::newRow(("QVector-Large--" + sizeString).constData()) << false << size;
+        QTest::newRow(QByteArray("std::vector-Large--" + sizeString).constData()) << true << size;
+        QTest::newRow(QByteArray("QVector-Large--" + sizeString).constData()) << false << size;
     }
 }
 
@@ -222,8 +222,8 @@ void tst_vector_vs_std::lookup_int_data()
 
     for (int size = 10; size < 20000; size += 100) {
         const QByteArray sizeString = QByteArray::number(size);
-        QTest::newRow(("std::vector-int--" + sizeString).constData()) << true << size;
-        QTest::newRow(("QVector-int--" + sizeString).constData()) << false << size;
+        QTest::newRow(QByteArray("std::vector-int--" + sizeString).constData()) << true << size;
+        QTest::newRow(QByteArray("QVector-int--" + sizeString).constData()) << false << size;
     }
 }
 
@@ -245,8 +245,8 @@ void tst_vector_vs_std::lookup_Large_data()
 
     for (int size = 10; size < LARGE_MAX_SIZE; size += 100) {
         const QByteArray sizeString = QByteArray::number(size);
-        QTest::newRow(("std::vector-Large--" + sizeString).constData()) << true << size;
-        QTest::newRow(("QVector-Large--" + sizeString).constData()) << false << size;
+        QTest::newRow(QByteArray("std::vector-Large--" + sizeString).constData()) << true << size;
+        QTest::newRow(QByteArray("QVector-Large--" + sizeString).constData()) << false << size;
     }
 }
 

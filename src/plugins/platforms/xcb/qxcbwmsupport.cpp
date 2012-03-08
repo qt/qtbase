@@ -89,11 +89,6 @@ void QXcbWMSupport::updateNetWMAtoms()
 
         free(reply);
     } while (remaining > 0);
-
-//    qDebug() << "======== updateNetWMAtoms";
-//    for (int i = 0; i < net_wm_atoms.size(); ++i)
-//        qDebug() << atomName(net_wm_atoms.at(i));
-//    qDebug() << "======== updateNetWMAtoms";
 }
 
 // update the virtual roots array
@@ -130,10 +125,12 @@ void QXcbWMSupport::updateVirtualRoots()
         free(reply);
     } while (remaining > 0);
 
+#ifdef Q_XCB_DEBUG
     qDebug() << "======== updateVirtualRoots";
     for (int i = 0; i < net_virtual_roots.size(); ++i)
         qDebug() << connection()->atomName(net_virtual_roots.at(i));
     qDebug() << "======== updateVirtualRoots";
+#endif
 }
 
 QT_END_NAMESPACE

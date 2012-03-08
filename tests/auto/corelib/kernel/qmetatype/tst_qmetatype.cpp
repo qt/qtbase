@@ -100,12 +100,29 @@ private slots:
 
 struct Foo { int i; };
 
+
+class CustomQObject : public QObject
+{
+    Q_OBJECT
+public:
+    CustomQObject(QObject *parent = 0)
+      : QObject(parent)
+    {
+    }
+};
+
+class CustomNonQObject {};
+
 void tst_QMetaType::defined()
 {
     QCOMPARE(int(QMetaTypeId2<QString>::Defined), 1);
     QCOMPARE(int(QMetaTypeId2<Foo>::Defined), 0);
     QCOMPARE(int(QMetaTypeId2<void*>::Defined), 1);
     QCOMPARE(int(QMetaTypeId2<int*>::Defined), 0);
+    QVERIFY(QMetaTypeId2<CustomQObject*>::Defined);
+    QVERIFY(!QMetaTypeId2<CustomQObject>::Defined);
+    QVERIFY(!QMetaTypeId2<CustomNonQObject>::Defined);
+    QVERIFY(!QMetaTypeId2<CustomNonQObject*>::Defined);
 }
 
 struct Bar
@@ -685,6 +702,36 @@ public:
 };
 Q_DECLARE_METATYPE(CustomMultiInheritanceObject*);
 
+class C { char _[4]; };
+class M { char _[4]; };
+class P { char _[4]; };
+
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(M, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(P, Q_PRIMITIVE_TYPE);
+QT_END_NAMESPACE
+
+// avoid the comma:
+typedef QPair<C,C> QPairCC;
+typedef QPair<C,M> QPairCM;
+typedef QPair<C,P> QPairCP;
+typedef QPair<M,C> QPairMC;
+typedef QPair<M,M> QPairMM;
+typedef QPair<M,P> QPairMP;
+typedef QPair<P,C> QPairPC;
+typedef QPair<P,M> QPairPM;
+typedef QPair<P,P> QPairPP;
+
+Q_DECLARE_METATYPE(QPairCC)
+Q_DECLARE_METATYPE(QPairCM)
+Q_DECLARE_METATYPE(QPairCP)
+Q_DECLARE_METATYPE(QPairMC)
+Q_DECLARE_METATYPE(QPairMM)
+Q_DECLARE_METATYPE(QPairMP)
+Q_DECLARE_METATYPE(QPairPC)
+Q_DECLARE_METATYPE(QPairPM)
+Q_DECLARE_METATYPE(QPairPP)
+
 void tst_QMetaType::flags_data()
 {
     QTest::addColumn<int>("type");
@@ -703,6 +750,15 @@ QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
     QTest::newRow("CustomMovable") << ::qMetaTypeId<CustomMovable>() << true << true << false;
     QTest::newRow("CustomObject*") << ::qMetaTypeId<CustomObject*>() << true << false << true;
     QTest::newRow("CustomMultiInheritanceObject*") << ::qMetaTypeId<CustomMultiInheritanceObject*>() << true << false << true;
+    QTest::newRow("QPair<C,C>") << ::qMetaTypeId<QPair<C,C> >() << false << true  << false;
+    QTest::newRow("QPair<C,M>") << ::qMetaTypeId<QPair<C,M> >() << false << true  << false;
+    QTest::newRow("QPair<C,P>") << ::qMetaTypeId<QPair<C,P> >() << false << true  << false;
+    QTest::newRow("QPair<M,C>") << ::qMetaTypeId<QPair<M,C> >() << false << true  << false;
+    QTest::newRow("QPair<M,M>") << ::qMetaTypeId<QPair<M,M> >() << true  << true  << false;
+    QTest::newRow("QPair<M,P>") << ::qMetaTypeId<QPair<M,P> >() << true  << true  << false;
+    QTest::newRow("QPair<P,C>") << ::qMetaTypeId<QPair<P,C> >() << false << true  << false;
+    QTest::newRow("QPair<P,M>") << ::qMetaTypeId<QPair<P,M> >() << true  << true  << false;
+    QTest::newRow("QPair<P,P>") << ::qMetaTypeId<QPair<P,P> >() << true  << false << false;
 }
 
 void tst_QMetaType::flags()
@@ -1018,6 +1074,61 @@ void tst_QMetaType::registerStreamBuiltin()
 
 Q_DECLARE_METATYPE(QSharedPointer<QObject>)
 
+typedef QHash<int, uint> IntUIntHash;
+Q_DECLARE_METATYPE(IntUIntHash)
+typedef QMap<int, uint> IntUIntMap;
+Q_DECLARE_METATYPE(IntUIntMap)
+typedef QPair<int, uint> IntUIntPair;
+Q_DECLARE_METATYPE(IntUIntPair)
+
+struct CustomComparable
+{
+  CustomComparable(int i_ = 0) :i(i_) { }
+  bool operator==(const CustomComparable &other) const
+  {
+      return i == other.i;
+  }
+  int i;
+};
+
+struct UnregisteredType {};
+
+typedef QHash<int, CustomComparable> IntComparableHash;
+Q_DECLARE_METATYPE(IntComparableHash)
+typedef QMap<int, CustomComparable> IntComparableMap;
+Q_DECLARE_METATYPE(IntComparableMap)
+typedef QPair<int, CustomComparable> IntComparablePair;
+Q_DECLARE_METATYPE(IntComparablePair)
+
+typedef QHash<int, int> IntIntHash;
+typedef int NaturalNumber;
+class AutoMetaTypeObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(IntIntHash someHash READ someHash CONSTANT)
+    Q_PROPERTY(NaturalNumber someInt READ someInt CONSTANT)
+public:
+    AutoMetaTypeObject(QObject *parent = 0)
+      : QObject(parent), m_int(42)
+    {
+        m_hash.insert(4, 2);
+    }
+
+    QHash<int,int> someHash() const
+    {
+        return m_hash;
+    }
+
+    int someInt() const
+    {
+        return m_int;
+    }
+
+private:
+    QHash<int,int> m_hash;
+    int m_int;
+};
+
 void tst_QMetaType::automaticTemplateRegistration()
 {
   {
@@ -1058,6 +1169,84 @@ void tst_QMetaType::automaticTemplateRegistration()
     QVector<QList<QSharedPointer<QObject> > > vectorList;
     vectorList << sharedPointerList;
     QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<QSharedPointer<QObject> > > >().first().first() == testObject);
+  }
+  {
+    IntIntHash intIntHash;
+    intIntHash.insert(4, 2);
+    QCOMPARE(QVariant::fromValue(intIntHash).value<IntIntHash>().value(4), 2);
+
+    AutoMetaTypeObject amto;
+
+    qRegisterMetaType<QHash<int, int> >("IntIntHash");
+    QVariant hashVariant = amto.property("someHash");
+    QCOMPARE(hashVariant.value<IntIntHash>().value(4), 2);
+
+    qRegisterMetaType<int>("NaturalNumber");
+    QVariant intVariant = amto.property("someInt");
+    QCOMPARE(intVariant.value<NaturalNumber>(), 42);
+  }
+  {
+    IntUIntHash intUIntHash;
+    intUIntHash.insert(4, 2);
+    QCOMPARE(QVariant::fromValue(intUIntHash).value<IntUIntHash>().value(4), (uint)2);
+  }
+  {
+    IntComparableHash intComparableHash;
+    CustomComparable m;
+    intComparableHash.insert(4, m);
+    QCOMPARE(QVariant::fromValue(intComparableHash).value<IntComparableHash>().value(4), m);
+  }
+  {
+    QVariantHash variantHash;
+    variantHash.insert(QStringLiteral("4"), 2);
+    QCOMPARE(QVariant::fromValue(variantHash).value<QVariantHash>().value(QStringLiteral("4")), QVariant(2));
+  }
+  {
+    typedef QMap<int, int> IntIntMap;
+    IntIntMap intIntMap;
+    intIntMap.insert(4, 2);
+    QCOMPARE(QVariant::fromValue(intIntMap).value<IntIntMap>().value(4), 2);
+  }
+  {
+    IntUIntMap intUIntMap;
+    intUIntMap.insert(4, 2);
+    QCOMPARE(QVariant::fromValue(intUIntMap).value<IntUIntMap>().value(4), (uint)2);
+  }
+  {
+    IntComparableMap intComparableMap;
+    CustomComparable m;
+    intComparableMap.insert(4, m);
+    QCOMPARE(QVariant::fromValue(intComparableMap).value<IntComparableMap>().value(4), m);
+  }
+  {
+    QVariantMap variantMap;
+    variantMap.insert(QStringLiteral("4"), 2);
+    QCOMPARE(QVariant::fromValue(variantMap).value<QVariantMap>().value(QStringLiteral("4")), QVariant(2));
+  }
+  {
+    typedef QPair<int, int> IntIntPair;
+    IntIntPair intIntPair = qMakePair(4, 2);
+    QCOMPARE(QVariant::fromValue(intIntPair).value<IntIntPair>().first, 4);
+    QCOMPARE(QVariant::fromValue(intIntPair).value<IntIntPair>().second, 2);
+  }
+  {
+    IntUIntPair intUIntPair = qMakePair<int, uint>(4, 2);
+    QCOMPARE(QVariant::fromValue(intUIntPair).value<IntUIntPair>().first, 4);
+    QCOMPARE(QVariant::fromValue(intUIntPair).value<IntUIntPair>().second, (uint)2);
+  }
+  {
+    CustomComparable m;
+    IntComparablePair intComparablePair = qMakePair(4, m);
+    QCOMPARE(QVariant::fromValue(intComparablePair).value<IntComparablePair>().first, 4);
+    QCOMPARE(QVariant::fromValue(intComparablePair).value<IntComparablePair>().second, m);
+  }
+  {
+    typedef QHash<int, UnregisteredType> IntUnregisteredTypeHash;
+    QVERIFY(qRegisterMetaType<IntUnregisteredTypeHash>("IntUnregisteredTypeHash") > 0);
+  }
+  {
+    typedef QList<UnregisteredType> UnregisteredTypeList;
+    QVERIFY(qRegisterMetaType<UnregisteredTypeList>("UnregisteredTypeList") > 0);
   }
 }
 

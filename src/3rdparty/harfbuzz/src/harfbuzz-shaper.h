@@ -201,6 +201,8 @@ typedef struct {
     hb_bitfield combiningClass  :8;
 } HB_GlyphAttributes;
 
+typedef HB_Error (*HB_GetFontTableFunc)(void *font, HB_Tag tag, HB_Byte *buffer, HB_UInt *length);
+
 typedef struct HB_FaceRec_ {
     HB_Bool isSymbolFont;
 
@@ -217,11 +219,15 @@ typedef struct HB_FaceRec_ {
     unsigned int *tmpLogClusters;
     int length;
     int orig_nglyphs;
+    void *font_for_init;
+    HB_GetFontTableFunc get_font_table_func;
 } HB_FaceRec;
 
-typedef HB_Error (*HB_GetFontTableFunc)(void *font, HB_Tag tag, HB_Byte *buffer, HB_UInt *length);
+
 
 HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc);
+HB_Face HB_AllocFace(void *font, HB_GetFontTableFunc tableFunc);
+HB_Face HB_LoadFace(HB_Face face);
 void HB_FreeFace(HB_Face face);
 
 typedef struct {

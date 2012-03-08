@@ -2244,7 +2244,7 @@ int QFontDatabase::addApplicationFont(const QString &fileName)
 
     Currently only TrueType fonts and TrueType font collections are supported.
 
-    \bold{Note:} Adding application fonts on Unix/X11 platforms without fontconfig is
+    \b{Note:} Adding application fonts on Unix/X11 platforms without fontconfig is
     currently not supported.
 
     \sa addApplicationFont(), applicationFontFamilies(), removeApplicationFont()

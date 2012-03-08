@@ -84,7 +84,7 @@ template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
     typedef T Type;
 
 #ifndef __ia64__
-    static T loadAcquire(T &_q_value)
+    static T loadAcquire(const T &_q_value)
     {
         T tmp = _q_value;
         __sync_synchronize();

@@ -45,17 +45,19 @@
 #include "qcocoacolordialoghelper.h"
 #include "qcocoafiledialoghelper.h"
 #include "qcocoafontdialoghelper.h"
+#include "qcocoasystemsettings.h"
 
 QT_BEGIN_NAMESPACE
 
 QCocoaTheme::QCocoaTheme()
+    :m_systemPalette(0)
 {
 
 }
 
 QCocoaTheme::~QCocoaTheme()
 {
-
+    delete m_systemPalette;
 }
 
 QPlatformMenu *QCocoaTheme::createPlatformMenu(QMenu *menu) const
@@ -100,6 +102,28 @@ QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(DialogType dialo
     default:
         return 0;
     }
+}
+
+const QPalette *QCocoaTheme::palette(Palette type) const
+{
+    if (type == SystemPalette) {
+        if (!m_systemPalette)
+            m_systemPalette = qt_mac_createSystemPalette();
+        return m_systemPalette;
+    } else {
+        if (m_palettes.isEmpty())
+            m_palettes = qt_mac_createRolePalettes();
+        return m_palettes.value(type, 0);
+    }
+    return 0;
+}
+
+const QFont *QCocoaTheme::font(Font type) const
+{
+    if (m_fonts.isEmpty()) {
+        m_fonts = qt_mac_createRoleFonts();
+    }
+    return m_fonts.value(type, 0);
 }
 
 QVariant QCocoaTheme::themeHint(ThemeHint hint) const

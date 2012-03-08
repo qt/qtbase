@@ -285,12 +285,12 @@
     by reimplementing the following functions:
 
     \list
-    \o QGLWidget::initializeGL() sets up resources needed by the OpenGL implementation
+    \li QGLWidget::initializeGL() sets up resources needed by the OpenGL implementation
        to render the scene.
-    \o QGLWidget::resizeGL() resizes the viewport so that the rendered scene fits onto
+    \li QGLWidget::resizeGL() resizes the viewport so that the rendered scene fits onto
        the widget, and sets up a projection matrix to map 3D coordinates to 2D viewport
        coordinates.
-    \o QGLWidget::paintGL() performs painting operations using OpenGL calls.
+    \li QGLWidget::paintGL() performs painting operations using OpenGL calls.
     \endlist
 
     Since QGLWidget is a subclass of QWidget, it can also be used

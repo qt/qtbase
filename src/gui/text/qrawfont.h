@@ -138,6 +138,7 @@ public:
 private:
     friend class QRawFontPrivate;
     friend class QTextLayout;
+    friend class QTextEngine;
 
     QExplicitlySharedDataPointer<QRawFontPrivate> d;
 };

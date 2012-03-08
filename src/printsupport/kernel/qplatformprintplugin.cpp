@@ -58,15 +58,27 @@ QPlatformPrinterSupportPlugin::~QPlatformPrinterSupportPlugin()
 {
 }
 
+/*!
+    \internal
+
+    Returns a lazily-initialized singleton. Ownership is granted to the
+    QPlatformPrinterSupportPlugin, which is never unloaded or destroyed until
+    application exit, i.e. you can expect this pointer to always be valid and
+    multiple calls to this function will always return the same pointer.
+*/
 QPlatformPrinterSupport *QPlatformPrinterSupportPlugin::get()
 {
-    QStringList k = loader()->keys();
-    if (k.isEmpty())
-        return 0;
-    QPlatformPrinterSupportPlugin *plugin = qobject_cast<QPlatformPrinterSupportPlugin *>(loader()->instance(k.first()));
-    if (!plugin)
-        return 0;
-    return plugin->create(k.first());
+    static QPlatformPrinterSupport *singleton = 0;
+    if (!singleton) {
+        QStringList k = loader()->keys();
+        if (k.isEmpty())
+            return 0;
+        QPlatformPrinterSupportPlugin *plugin = qobject_cast<QPlatformPrinterSupportPlugin *>(loader()->instance(k.first()));
+        if (!plugin)
+            return 0;
+        singleton = plugin->create(k.first());
+    }
+    return singleton;
 }
 
 QT_END_NAMESPACE

@@ -126,13 +126,13 @@ QT_BEGIN_NAMESPACE
 
     The most important modes or states are:
     \list
-    \i Available or not (grayed out, disabled).
-    \i Standard push button, toggling push button or menu button.
-    \i On or off (only for toggling push buttons).
-    \i Default or normal. The default button in a dialog can generally
+    \li Available or not (grayed out, disabled).
+    \li Standard push button, toggling push button or menu button.
+    \li On or off (only for toggling push buttons).
+    \li Default or normal. The default button in a dialog can generally
        be "clicked" using the Enter or Return key.
-    \i Auto-repeat or not.
-    \i Pressed down or not.
+    \li Auto-repeat or not.
+    \li Pressed down or not.
     \endlist
 
     As a general rule, use a push button when the application or
@@ -160,18 +160,18 @@ QT_BEGIN_NAMESPACE
     check boxes (see QCheckBox).
 
     \table 100%
-    \row \o \inlineimage macintosh-pushbutton.png Screenshot of a Macintosh style push button
-         \o A push button shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
+    \row \li \inlineimage macintosh-pushbutton.png Screenshot of a Macintosh style push button
+         \li A push button shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
 
          Note that when a button's width becomes smaller than 50 or
          its height becomes smaller than 30, the button's corners are
          changed from round to square. Use the setMinimumSize()
          function to prevent this behavior.
 
-    \row \o \inlineimage windowsxp-pushbutton.png Screenshot of a Windows XP style push button
-         \o A push button shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
-    \row \o \inlineimage plastique-pushbutton.png Screenshot of a Plastique style push button
-         \o A push button shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \row \li \inlineimage windowsxp-pushbutton.png Screenshot of a Windows XP style push button
+         \li A push button shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+    \row \li \inlineimage plastique-pushbutton.png Screenshot of a Plastique style push button
+         \li A push button shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
     \endtable
 
     In Qt, the QAbstractButton base class provides most of the modes
@@ -518,9 +518,9 @@ void QPushButton::focusOutEvent(QFocusEvent *e)
 
     \table 100%
     \row
-    \o \inlineimage plastique-pushbutton-menu.png Screenshot of a Plastique style push button with popup menu.
-    \o \inlineimage cleanlooks-pushbutton-menu.png Screenshot of a Cleanlooks style push button with popup menu.
-    \o Push buttons with popup menus shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}
+    \li \inlineimage plastique-pushbutton-menu.png Screenshot of a Plastique style push button with popup menu.
+    \li \inlineimage cleanlooks-pushbutton-menu.png Screenshot of a Cleanlooks style push button with popup menu.
+    \li Push buttons with popup menus shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}
     (left) and \l{Cleanlooks Style Widget Gallery}{Cleanlooks widget style} (right).
     \endtable
 

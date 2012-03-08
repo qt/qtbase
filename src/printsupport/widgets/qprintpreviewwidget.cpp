@@ -152,7 +152,7 @@ public:
     GraphicsView(QWidget* parent = 0)
         : QGraphicsView(parent)
     {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         setFrameStyle(QFrame::NoFrame);
 #endif
     }
@@ -467,13 +467,13 @@ void QPrintPreviewWidgetPrivate::setZoomFactor(qreal _zoomFactor)
     Using QPrintPreviewWidget is straightforward:
 
     \list 1
-    \o Create the QPrintPreviewWidget
+    \li Create the QPrintPreviewWidget
 
     Construct the QPrintPreviewWidget either by passing in an
     existing QPrinter object, or have QPrintPreviewWidget create a
     default constructed QPrinter object for you.
 
-    \o Connect the paintRequested() signal to a slot.
+    \li Connect the paintRequested() signal to a slot.
 
     When the widget needs to generate a set of preview pages, a
     paintRequested() signal will be emitted from the widget. Connect a

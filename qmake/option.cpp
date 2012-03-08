@@ -91,8 +91,6 @@ QString Option::output_dir;
 Option::QMAKE_RECURSIVE Option::recursive = Option::QMAKE_RECURSIVE_DEFAULT;
 QStringList Option::before_user_vars;
 QStringList Option::after_user_vars;
-QStringList Option::user_configs;
-QStringList Option::after_user_configs;
 QString Option::user_template;
 QString Option::user_template_prefix;
 QStringList Option::shellPath;
@@ -116,6 +114,7 @@ bool Option::mkfile::do_dep_heuristics = true;
 bool Option::mkfile::do_preprocess = false;
 bool Option::mkfile::do_stub_makefile = false;
 bool Option::mkfile::do_cache = true;
+QString Option::mkfile::project_root;
 QString Option::mkfile::project_build_root;
 QString Option::mkfile::cachefile;
 QStringList Option::mkfile::project_files;
@@ -150,8 +149,11 @@ static QString detectProjectFile(const QString &path)
 static QString cleanSpec(const QString &spec)
 {
     QString ret = QDir::cleanPath(spec);
-    if (ret.contains('/'))
-        ret = QDir::cleanPath(QFileInfo(ret).absoluteFilePath());
+    if (ret.contains('/')) {
+        const QFileInfo specDirInfo(ret);
+        if (specDirInfo.exists() && specDirInfo.isDir())
+            ret = QDir::cleanPath(specDirInfo.absoluteFilePath());
+    }
     return ret;
 }
 
@@ -219,6 +221,8 @@ bool usage(const char *a0)
 int
 Option::parseCommandLine(int argc, char **argv, int skip)
 {
+    QStringList user_configs;
+
     bool before = true;
     for(int x = skip; x < argc; x++) {
         if(*argv[x] == '-' && strlen(argv[x]) > 1) { /* options */
@@ -303,7 +307,7 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             } else if(opt == "nr" || opt == "norecursive") {
                 Option::recursive = Option::QMAKE_RECURSIVE_NO;
             } else if(opt == "config") {
-                Option::user_configs += argv[++x];
+                user_configs += argv[++x];
             } else {
                 if(Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
                    Option::qmake_mode == Option::QMAKE_GENERATE_PRL) {
@@ -375,6 +379,9 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             }
         }
     }
+
+    if (!user_configs.isEmpty())
+        Option::before_user_vars += "CONFIG += " + user_configs.join(" ");
 
     return Option::QMAKE_CMDLINE_SUCCESS;
 }
@@ -576,7 +583,50 @@ void Option::applyHostMode()
    }
 }
 
-bool Option::prepareProject()
+QStringList Option::mkspecPaths()
+{
+    QStringList ret;
+    const QString concat = QLatin1String("/mkspecs");
+
+    QByteArray qmakepath = qgetenv("QMAKEPATH");
+    if (!qmakepath.isEmpty()) {
+        const QStringList lst = splitPathList(QString::fromLocal8Bit(qmakepath));
+        for (QStringList::ConstIterator it = lst.begin(); it != lst.end(); ++it)
+            ret << ((*it) + concat);
+    }
+    if (!Option::mkfile::project_build_root.isEmpty())
+        ret << Option::mkfile::project_build_root + concat;
+    if (!Option::mkfile::project_root.isEmpty())
+        ret << Option::mkfile::project_root + concat;
+    ret << QLibraryInfo::location(QLibraryInfo::HostDataPath) + concat;
+    ret.removeDuplicates();
+    return ret;
+}
+
+bool Option::resolveSpec(QString *spec)
+{
+    QString qmakespec = fixEnvVariables(*spec);
+    if (qmakespec.isEmpty())
+        qmakespec = "default";
+    if (QDir::isRelativePath(qmakespec)) {
+        QStringList mkspec_roots = mkspecPaths();
+        debug_msg(2, "Looking for mkspec %s in (%s)", qmakespec.toLatin1().constData(),
+                  mkspec_roots.join("::").toLatin1().constData());
+        for (QStringList::ConstIterator it = mkspec_roots.begin(); it != mkspec_roots.end(); ++it) {
+            QString mkspec = (*it) + QLatin1Char('/') + qmakespec;
+            if (QFile::exists(mkspec)) {
+                *spec = mkspec;
+                return true;
+            }
+        }
+        fprintf(stderr, "Could not find mkspecs for your QMAKESPEC(%s) after trying:\n\t%s\n",
+                qmakespec.toLatin1().constData(), mkspec_roots.join("\n\t").toLatin1().constData());
+            return false;
+    }
+    return true;
+}
+
+bool Option::prepareProject(const QString &pfile)
 {
     mkfile::project_build_root.clear();
     if (mkfile::do_cache) {
@@ -601,6 +651,37 @@ bool Option::prepareProject()
         }
     }
   no_cache:
+
+    QString srcpath = (pfile != "-")
+            ? QDir::cleanPath(QFileInfo(pfile).absolutePath()) : qmake_getpwd();
+    if (srcpath != output_dir || mkfile::project_build_root.isEmpty()) {
+        QDir srcdir(srcpath);
+        QDir dstdir(output_dir);
+        do {
+            if (!mkfile::project_build_root.isEmpty()) {
+                // If we already know the build root, just match up the source root with it.
+                if (dstdir.path() == mkfile::project_build_root) {
+                    mkfile::project_root = srcdir.path();
+                    break;
+                }
+            } else {
+                // Look for mkspecs/ in source and build. First to win determines the root.
+                if (dstdir.exists("mkspecs") || srcdir.exists("mkspecs")) {
+                    mkfile::project_build_root = dstdir.path();
+                    mkfile::project_root = srcdir.path();
+                    if (mkfile::project_root == mkfile::project_build_root)
+                        mkfile::project_root.clear();
+                    break;
+                }
+            }
+        } while (!srcdir.isRoot() && srcdir.cdUp() && !dstdir.isRoot() && dstdir.cdUp());
+    } else {
+        mkfile::project_root.clear();
+    }
+
+    if (!resolveSpec(&Option::mkfile::qmakespec))
+        return false;
+
     return true;
 }
 

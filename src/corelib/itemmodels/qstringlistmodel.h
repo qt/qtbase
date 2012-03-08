@@ -57,7 +57,7 @@ class Q_CORE_EXPORT QStringListModel : public QAbstractListModel
     Q_OBJECT
 public:
     explicit QStringListModel(QObject *parent = 0);
-    QStringListModel(const QStringList &strings, QObject *parent = 0);
+    explicit QStringListModel(const QStringList &strings, QObject *parent = 0);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
 

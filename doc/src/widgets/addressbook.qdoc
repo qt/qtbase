@@ -47,10 +47,10 @@
     components of Qt, including:
 
     \list
-    \o Widgets and layout managers
-    \o Container classes
-    \o Signals and slots
-    \o Input and output devices
+    \li Widgets and layout managers
+    \li Container classes
+    \li Signals and slots
+    \li Input and output devices
     \endlist
 
     If you are new to Qt, we recommend reading \l{How to Learn Qt} first.
@@ -58,13 +58,13 @@
     Tutorial contents:
 
     \list 1
-    \o \l{tutorials/addressbook/part1}{Designing the User Interface}
-    \o \l{tutorials/addressbook/part2}{Adding Addresses}
-    \o \l{tutorials/addressbook/part3}{Navigating between Entries}
-    \o \l{tutorials/addressbook/part4}{Editing and Removing Addresses}
-    \o \l{tutorials/addressbook/part5}{Adding a Find Function}
-    \o \l{tutorials/addressbook/part6}{Loading and Saving}
-    \o \l{tutorials/addressbook/part7}{Additional Features}
+    \li \l{tutorials/addressbook/part1}{Designing the User Interface}
+    \li \l{tutorials/addressbook/part2}{Adding Addresses}
+    \li \l{tutorials/addressbook/part3}{Navigating between Entries}
+    \li \l{tutorials/addressbook/part4}{Editing and Removing Addresses}
+    \li \l{tutorials/addressbook/part5}{Adding a Find Function}
+    \li \l{tutorials/addressbook/part6}{Loading and Saving}
+    \li \l{tutorials/addressbook/part7}{Additional Features}
     \endlist
 
     The tutorial source code is located in \c{examples/tutorials/addressbook}.
@@ -105,11 +105,11 @@
     There are three files used to implement this address book:
 
     \list
-        \o \c{addressbook.h} - the definition file for the \c AddressBook
+        \li \c{addressbook.h} - the definition file for the \c AddressBook
             class,
-        \o \c{addressbook.cpp} - the implementation file for the
+        \li \c{addressbook.cpp} - the implementation file for the
             \c AddressBook class, and
-        \o \c{main.cpp} - the file containing a \c main() function, with
+        \li \c{main.cpp} - the file containing a \c main() function, with
             an instance of \c AddressBook.
     \endlist
 
@@ -121,13 +121,13 @@
     extend or change the behavior of a widget has the following advantages:
 
     \list
-    \o We can write implementations of virtual or pure virtual functions to
+    \li We can write implementations of virtual or pure virtual functions to
     obtain exactly what we need, falling back on the base class's implementation
     when necessary.
-    \o It allows us to encapsulate parts of the user interface within a class,
+    \li It allows us to encapsulate parts of the user interface within a class,
     so that the other parts of the application don't need to know about the
     individual widgets in the user interface.
-    \o The subclass can be used to create multiple custom widgets in the same
+    \li The subclass can be used to create multiple custom widgets in the same
     application or library, and the code for the subclass can be reused in other
     projects.
     \endlist
@@ -340,14 +340,14 @@
     The \c submitContact() function can be divided into three parts:
 
     \list 1
-    \o We extract the contact's details from \c nameLine and \c addressText
+    \li We extract the contact's details from \c nameLine and \c addressText
     and store them in QString objects. We also validate to make sure that the
     user did not click \gui Submit with empty input fields; otherwise, a
     QMessageBox is displayed to remind the user for a name and address.
 
     \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part1
 
-    \o We then proceed to check if the contact already exists. If it does not
+    \li We then proceed to check if the contact already exists. If it does not
     exist, we add the contact to \c contacts and we display a QMessageBox to
     inform the user that the contact has been added.
 
@@ -358,7 +358,7 @@
     Our \c contacts object is based on key-value pairs of name and address,
     hence, we want to ensure that \e key is unique.
 
-    \o Once we have handled both cases mentioned above, we restore the push
+    \li Once we have handled both cases mentioned above, we restore the push
     buttons to their normal state with the following code:
 
     \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part3
@@ -471,9 +471,9 @@
     for \c contacts and then:
 
     \list
-        \o If the iterator is not at the end of \c contacts, we increment it
+        \li If the iterator is not at the end of \c contacts, we increment it
         by one.
-        \o If the iterator is at the end of \c contacts, we move it to the
+        \li If the iterator is at the end of \c contacts, we move it to the
         beginning of \c contacts. This gives us the illusion that our QMap is
         working like a circularly-linked list.
     \endlist
@@ -487,11 +487,11 @@
     \c contacts and then:
 
     \list
-        \o If the iterator is at the end of \c contacts, we clear the
+        \li If the iterator is at the end of \c contacts, we clear the
         display and return.
-        \o If the iterator is at the beginning of \c contacts, we move it to
+        \li If the iterator is at the beginning of \c contacts, we move it to
         the end.
-        \o We then decrement the iterator by one.
+        \li We then decrement the iterator by one.
     \endlist
 
     \snippet tutorials/addressbook/part3/addressbook.cpp previous() function
@@ -524,9 +524,9 @@
     Here we define the \c Mode enum with three different values:
 
     \list
-        \o \c{NavigationMode},
-        \o \c{AddingMode}, and
-        \o \c{EditingMode}.
+        \li \c{NavigationMode},
+        \li \c{AddingMode}, and
+        \li \c{EditingMode}.
     \endlist
 
     \section1 Defining the AddressBook Class

@@ -29,6 +29,7 @@ unix:SOURCES += kernel/qdnslookup_unix.cpp kernel/qhostinfo_unix.cpp kernel/qnet
 win32: {
     HEADERS += kernel/qnetworkinterface_win_p.h
     SOURCES += kernel/qdnslookup_win.cpp kernel/qhostinfo_win.cpp kernel/qnetworkinterface_win.cpp
+    LIBS += -ldnsapi
 }
 integrity:SOURCES += kernel/qdnslookup_unix.cpp kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
 

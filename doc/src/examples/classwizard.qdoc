@@ -44,10 +44,10 @@
     The Class Wizard example consists of the following classes:
 
     \list
-    \o \c ClassWizard inherits QWizard and provides a
+    \li \c ClassWizard inherits QWizard and provides a
        three-step wizard that generates the skeleton of a C++ class
        based on the user's input.
-    \o \c IntroPage, \c ClassInfoPage, \c CodeStylePage, \c
+    \li \c IntroPage, \c ClassInfoPage, \c CodeStylePage, \c
        OutputFilesPage, and \c ConclusionPage are QWizardPage
        subclasses that implement the wizard pages.
     \endlist
@@ -61,17 +61,17 @@
     five pages:
 
     \list
-    \o The first page is an introduction page, telling the user what
+    \li The first page is an introduction page, telling the user what
        the wizard is going to do.
-    \o The second page asks for a class name and a base class, and
+    \li The second page asks for a class name and a base class, and
        allows the user to specify whether the class should have a \c
        Q_OBJECT macro and what constructors it should provide.
-    \o The third page allows the user to set some options related to the code
+    \li The third page allows the user to set some options related to the code
        style, such as the macro used to protect the header file from
        multiple inclusion (e.g., \c MYDIALOG_H).
-    \o The fourth page allows the user to specify the names of the
+    \li The fourth page allows the user to specify the names of the
        output files.
-    \o The fifth page is a conclusion page.
+    \li The fifth page is a conclusion page.
     \endlist
 
     Although the program is just an example, if you press \gui Finish

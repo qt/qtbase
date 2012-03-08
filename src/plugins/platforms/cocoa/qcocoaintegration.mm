@@ -52,6 +52,7 @@
 #include "qmenu_mac.h"
 #include "qcocoafiledialoghelper.h"
 #include "qcocoatheme.h"
+#include "qmacmime.h"
 
 #include <QtGui/qplatformaccessibility_qpa.h>
 #include <QtCore/qcoreapplication.h>
@@ -78,7 +79,7 @@ QCocoaScreen::QCocoaScreen(int screenIndex)
     const qreal inch = 25.4;
     m_physicalSize = QSizeF(m_geometry.size()) * inch / dpi;
 
-    m_cursor = new QCocoaCursor(this);
+    m_cursor = new QCocoaCursor;
 };
 
 QCocoaScreen::~QCocoaScreen()
@@ -91,7 +92,7 @@ QCocoaIntegration::QCocoaIntegration()
     , mEventDispatcher(new QCocoaEventDispatcher())
     , mAccessibility(new QPlatformAccessibility)
     , mPlatformTheme(new QCocoaTheme)
-
+    , mCocoaDrag(new QCocoaDrag)
 {
     QCocoaAutoReleasePool pool;
 
@@ -134,14 +135,21 @@ QCocoaIntegration::QCocoaIntegration()
     NSArray *screens = [NSScreen screens];
     for (uint i = 0; i < [screens count]; i++) {
         QCocoaScreen *screen = new QCocoaScreen(i);
+        mScreens.append(screen);
         screenAdded(screen);
     }
 
+    QMacPasteboardMime::initialize();
 }
 
 QCocoaIntegration::~QCocoaIntegration()
 {
     [[NSApplication sharedApplication] setDelegate: 0];
+
+    // Delete screens in reverse order to avoid crash in case of multiple screens
+    while (!mScreens.isEmpty()) {
+        delete mScreens.takeLast();
+    }
 }
 
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -190,6 +198,11 @@ QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
 QPlatformAccessibility *QCocoaIntegration::accessibility() const
 {
     return mAccessibility.data();
+}
+
+QPlatformDrag *QCocoaIntegration::drag() const
+{
+    return mCocoaDrag.data();
 }
 
 QPlatformTheme *QCocoaIntegration::platformTheme() const

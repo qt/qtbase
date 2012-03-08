@@ -306,18 +306,18 @@ int QDate::year() const
     the following convention:
 
     \list
-    \i 1 = "January"
-    \i 2 = "February"
-    \i 3 = "March"
-    \i 4 = "April"
-    \i 5 = "May"
-    \i 6 = "June"
-    \i 7 = "July"
-    \i 8 = "August"
-    \i 9 = "September"
-    \i 10 = "October"
-    \i 11 = "November"
-    \i 12 = "December"
+    \li 1 = "January"
+    \li 2 = "February"
+    \li 3 = "March"
+    \li 4 = "April"
+    \li 5 = "May"
+    \li 6 = "June"
+    \li 7 = "July"
+    \li 8 = "August"
+    \li 9 = "September"
+    \li 10 = "October"
+    \li 11 = "November"
+    \li 12 = "December"
     \endlist
 
     Returns 0 if the date is invalid.
@@ -521,18 +521,18 @@ int QDate::weekNumber(int *yearNumber) const
     The months are enumerated using the following convention:
 
     \list
-    \i 1 = "Jan"
-    \i 2 = "Feb"
-    \i 3 = "Mar"
-    \i 4 = "Apr"
-    \i 5 = "May"
-    \i 6 = "Jun"
-    \i 7 = "Jul"
-    \i 8 = "Aug"
-    \i 9 = "Sep"
-    \i 10 = "Oct"
-    \i 11 = "Nov"
-    \i 12 = "Dec"
+    \li 1 = "Jan"
+    \li 2 = "Feb"
+    \li 3 = "Mar"
+    \li 4 = "Apr"
+    \li 5 = "May"
+    \li 6 = "Jun"
+    \li 7 = "Jul"
+    \li 8 = "Aug"
+    \li 9 = "Sep"
+    \li 10 = "Oct"
+    \li 11 = "Nov"
+    \li 12 = "Dec"
     \endlist
 
     The month names will be localized according to the system's locale
@@ -568,18 +568,18 @@ QString QDate::shortMonthName(int month, QDate::MonthNameType type)
     The months are enumerated using the following convention:
 
     \list
-    \i 1 = "January"
-    \i 2 = "February"
-    \i 3 = "March"
-    \i 4 = "April"
-    \i 5 = "May"
-    \i 6 = "June"
-    \i 7 = "July"
-    \i 8 = "August"
-    \i 9 = "September"
-    \i 10 = "October"
-    \i 11 = "November"
-    \i 12 = "December"
+    \li 1 = "January"
+    \li 2 = "February"
+    \li 3 = "March"
+    \li 4 = "April"
+    \li 5 = "May"
+    \li 6 = "June"
+    \li 7 = "July"
+    \li 8 = "August"
+    \li 9 = "September"
+    \li 10 = "October"
+    \li 11 = "November"
+    \li 12 = "December"
     \endlist
 
     The month names will be localized according to the system's locale
@@ -615,13 +615,13 @@ QString QDate::longMonthName(int month, MonthNameType type)
     The days are enumerated using the following convention:
 
     \list
-    \i 1 = "Mon"
-    \i 2 = "Tue"
-    \i 3 = "Wed"
-    \i 4 = "Thu"
-    \i 5 = "Fri"
-    \i 6 = "Sat"
-    \i 7 = "Sun"
+    \li 1 = "Mon"
+    \li 2 = "Tue"
+    \li 3 = "Wed"
+    \li 4 = "Thu"
+    \li 5 = "Fri"
+    \li 6 = "Sat"
+    \li 7 = "Sun"
     \endlist
 
     The day names will be localized according to the system's locale
@@ -657,13 +657,13 @@ QString QDate::shortDayName(int weekday, MonthNameType type)
     The days are enumerated using the following convention:
 
     \list
-    \i 1 = "Monday"
-    \i 2 = "Tuesday"
-    \i 3 = "Wednesday"
-    \i 4 = "Thursday"
-    \i 5 = "Friday"
-    \i 6 = "Saturday"
-    \i 7 = "Sunday"
+    \li 1 = "Monday"
+    \li 2 = "Tuesday"
+    \li 3 = "Wednesday"
+    \li 4 = "Thursday"
+    \li 5 = "Friday"
+    \li 6 = "Saturday"
+    \li 7 = "Sunday"
     \endlist
 
     The day names will be localized according to the system's locale
@@ -781,25 +781,25 @@ QString QDate::toString(Qt::DateFormat f) const
     These expressions may be used:
 
     \table
-    \header \i Expression \i Output
-    \row \i d \i the day as number without a leading zero (1 to 31)
-    \row \i dd \i the day as number with a leading zero (01 to 31)
-    \row \i ddd
-         \i the abbreviated localized day name (e.g. 'Mon' to 'Sun').
+    \header \li Expression \li Output
+    \row \li d \li the day as number without a leading zero (1 to 31)
+    \row \li dd \li the day as number with a leading zero (01 to 31)
+    \row \li ddd
+         \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
             Uses QDate::shortDayName().
-    \row \i dddd
-         \i the long localized day name (e.g. 'Monday' to 'Sunday').
+    \row \li dddd
+         \li the long localized day name (e.g. 'Monday' to 'Sunday').
             Uses QDate::longDayName().
-    \row \i M \i the month as number without a leading zero (1 to 12)
-    \row \i MM \i the month as number with a leading zero (01 to 12)
-    \row \i MMM
-         \i the abbreviated localized month name (e.g. 'Jan' to 'Dec').
+    \row \li M \li the month as number without a leading zero (1 to 12)
+    \row \li MM \li the month as number with a leading zero (01 to 12)
+    \row \li MMM
+         \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
             Uses QDate::shortMonthName().
-    \row \i MMMM
-         \i the long localized month name (e.g. 'January' to 'December').
+    \row \li MMMM
+         \li the long localized month name (e.g. 'January' to 'December').
             Uses QDate::longMonthName().
-    \row \i yy \i the year as two digit number (00 to 99)
-    \row \i yyyy \i the year as four digit number. If the year is negative,
+    \row \li yy \li the year as two digit number (00 to 99)
+    \row \li yyyy \li the year as four digit number. If the year is negative,
             a minus sign is prepended in addition.
     \endtable
 
@@ -812,10 +812,10 @@ QString QDate::toString(Qt::DateFormat f) const
     1969):
 
     \table
-    \header \o Format            \o Result
-    \row    \o dd.MM.yyyy        \o 20.07.1969
-    \row    \o ddd MMMM d yy     \o Sun July 20 69
-    \row    \o 'The day is' dddd \o The day is Sunday
+    \header \li Format            \li Result
+    \row    \li dd.MM.yyyy        \li 20.07.1969
+    \row    \li ddd MMMM d yy     \li Sun July 20 69
+    \row    \li 'The day is' dddd \li The day is Sunday
     \endtable
 
     If the datetime is invalid, an empty string will be returned.
@@ -1191,25 +1191,25 @@ QDate QDate::fromString(const QString& s, Qt::DateFormat f)
     These expressions may be used for the format:
 
     \table
-    \header \i Expression \i Output
-    \row \i d \i The day as a number without a leading zero (1 to 31)
-    \row \i dd \i The day as a number with a leading zero (01 to 31)
-    \row \i ddd
-         \i The abbreviated localized day name (e.g. 'Mon' to 'Sun').
+    \header \li Expression \li Output
+    \row \li d \li The day as a number without a leading zero (1 to 31)
+    \row \li dd \li The day as a number with a leading zero (01 to 31)
+    \row \li ddd
+         \li The abbreviated localized day name (e.g. 'Mon' to 'Sun').
             Uses QDate::shortDayName().
-    \row \i dddd
-         \i The long localized day name (e.g. 'Monday' to 'Sunday').
+    \row \li dddd
+         \li The long localized day name (e.g. 'Monday' to 'Sunday').
             Uses QDate::longDayName().
-    \row \i M \i The month as a number without a leading zero (1 to 12)
-    \row \i MM \i The month as a number with a leading zero (01 to 12)
-    \row \i MMM
-         \i The abbreviated localized month name (e.g. 'Jan' to 'Dec').
+    \row \li M \li The month as a number without a leading zero (1 to 12)
+    \row \li MM \li The month as a number with a leading zero (01 to 12)
+    \row \li MMM
+         \li The abbreviated localized month name (e.g. 'Jan' to 'Dec').
             Uses QDate::shortMonthName().
-    \row \i MMMM
-         \i The long localized month name (e.g. 'January' to 'December').
+    \row \li MMMM
+         \li The long localized month name (e.g. 'January' to 'December').
             Uses QDate::longMonthName().
-    \row \i yy \i The year as two digit number (00 to 99)
-    \row \i yyyy \i The year as four digit number. If the year is negative,
+    \row \li yy \li The year as two digit number (00 to 99)
+    \row \li yyyy \li The year as four digit number. If the year is negative,
             a minus sign is prepended in addition.
     \endtable
 
@@ -1233,10 +1233,10 @@ QDate QDate::fromString(const QString& s, Qt::DateFormat f)
     defaults are used:
 
     \table
-    \header \i Field  \i Default value
-    \row    \i Year   \i 1900
-    \row    \i Month  \i 1
-    \row    \i Day    \i 1
+    \header \li Field  \li Default value
+    \row    \li Year   \li 1900
+    \row    \li Month  \li 1
+    \row    \li Day    \li 1
     \endtable
 
     The following examples demonstrate the default values:
@@ -1543,26 +1543,26 @@ QString QTime::toString(Qt::DateFormat format) const
     These expressions may be used:
 
     \table
-    \header \i Expression \i Output
-    \row \i h
-         \i the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
-    \row \i hh
-         \i the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
-    \row \i H
-         \i the hour without a leading zero (0 to 23, even with AM/PM display)
-    \row \i HH
-         \i the hour with a leading zero (00 to 23, even with AM/PM display)
-    \row \i m \i the minute without a leading zero (0 to 59)
-    \row \i mm \i the minute with a leading zero (00 to 59)
-    \row \i s \i the second without a leading zero (0 to 59)
-    \row \i ss \i the second with a leading zero (00 to 59)
-    \row \i z \i the milliseconds without leading zeroes (0 to 999)
-    \row \i zzz \i the milliseconds with leading zeroes (000 to 999)
-    \row \i AP or A
-         \i use AM/PM display. \e AP will be replaced by either "AM" or "PM".
-    \row \i ap or a
-         \i use am/pm display. \e ap will be replaced by either "am" or "pm".
-    \row \i t \i the timezone (for example "CEST")
+    \header \li Expression \li Output
+    \row \li h
+         \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
+    \row \li hh
+         \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
+    \row \li H
+         \li the hour without a leading zero (0 to 23, even with AM/PM display)
+    \row \li HH
+         \li the hour with a leading zero (00 to 23, even with AM/PM display)
+    \row \li m \li the minute without a leading zero (0 to 59)
+    \row \li mm \li the minute with a leading zero (00 to 59)
+    \row \li s \li the second without a leading zero (0 to 59)
+    \row \li ss \li the second with a leading zero (00 to 59)
+    \row \li z \li the milliseconds without leading zeroes (0 to 999)
+    \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
+    \row \li AP or A
+         \li use AM/PM display. \e AP will be replaced by either "AM" or "PM".
+    \row \li ap or a
+         \li use am/pm display. \e ap will be replaced by either "am" or "pm".
+    \row \li t \li the timezone (for example "CEST")
     \endtable
 
     All other input characters will be ignored. Any sequence of characters that
@@ -1573,10 +1573,10 @@ QString QTime::toString(Qt::DateFormat format) const
     Example format strings (assuming that the QTime is 14:13:09.042)
 
     \table
-    \header \i Format \i Result
-    \row \i hh:mm:ss.zzz \i 14:13:09.042
-    \row \i h:m:s ap     \i 2:13:9 pm
-    \row \i H:m:s a      \i 14:13:9 pm
+    \header \li Format \li Result
+    \row \li hh:mm:ss.zzz \li 14:13:09.042
+    \row \li h:m:s ap     \li 2:13:9 pm
+    \row \li H:m:s a      \li 14:13:9 pm
     \endtable
 
     If the datetime is invalid, an empty string will be returned.
@@ -1824,21 +1824,21 @@ QTime QTime::fromString(const QString& s, Qt::DateFormat f)
     These expressions may be used for the format:
 
     \table
-    \header \i Expression \i Output
-    \row \i h
-         \i the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
-    \row \i hh
-         \i the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
-    \row \i m \i the minute without a leading zero (0 to 59)
-    \row \i mm \i the minute with a leading zero (00 to 59)
-    \row \i s \i the second without a leading zero (0 to 59)
-    \row \i ss \i the second with a leading zero (00 to 59)
-    \row \i z \i the milliseconds without leading zeroes (0 to 999)
-    \row \i zzz \i the milliseconds with leading zeroes (000 to 999)
-    \row \i AP
-         \i interpret as an AM/PM time. \e AP must be either "AM" or "PM".
-    \row \i ap
-         \i Interpret as an AM/PM time. \e ap must be either "am" or "pm".
+    \header \li Expression \li Output
+    \row \li h
+         \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
+    \row \li hh
+         \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
+    \row \li m \li the minute without a leading zero (0 to 59)
+    \row \li mm \li the minute with a leading zero (00 to 59)
+    \row \li s \li the second without a leading zero (0 to 59)
+    \row \li ss \li the second with a leading zero (00 to 59)
+    \row \li z \li the milliseconds without leading zeroes (0 to 999)
+    \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
+    \row \li AP
+         \li interpret as an AM/PM time. \e AP must be either "AM" or "PM".
+    \row \li ap
+         \li Interpret as an AM/PM time. \e ap must be either "am" or "pm".
     \endtable
 
     All other input characters will be treated as text. Any sequence
@@ -2515,45 +2515,45 @@ QString QDateTime::toString(Qt::DateFormat f) const
     These expressions may be used for the date:
 
     \table
-    \header \i Expression \i Output
-    \row \i d \i the day as number without a leading zero (1 to 31)
-    \row \i dd \i the day as number with a leading zero (01 to 31)
-    \row \i ddd
-            \i the abbreviated localized day name (e.g. 'Mon' to 'Sun').
+    \header \li Expression \li Output
+    \row \li d \li the day as number without a leading zero (1 to 31)
+    \row \li dd \li the day as number with a leading zero (01 to 31)
+    \row \li ddd
+            \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
             Uses QDate::shortDayName().
-    \row \i dddd
-            \i the long localized day name (e.g. 'Monday' to 'Qt::Sunday').
+    \row \li dddd
+            \li the long localized day name (e.g. 'Monday' to 'Qt::Sunday').
             Uses QDate::longDayName().
-    \row \i M \i the month as number without a leading zero (1-12)
-    \row \i MM \i the month as number with a leading zero (01-12)
-    \row \i MMM
-            \i the abbreviated localized month name (e.g. 'Jan' to 'Dec').
+    \row \li M \li the month as number without a leading zero (1-12)
+    \row \li MM \li the month as number with a leading zero (01-12)
+    \row \li MMM
+            \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
             Uses QDate::shortMonthName().
-    \row \i MMMM
-            \i the long localized month name (e.g. 'January' to 'December').
+    \row \li MMMM
+            \li the long localized month name (e.g. 'January' to 'December').
             Uses QDate::longMonthName().
-    \row \i yy \i the year as two digit number (00-99)
-    \row \i yyyy \i the year as four digit number
+    \row \li yy \li the year as two digit number (00-99)
+    \row \li yyyy \li the year as four digit number
     \endtable
 
     These expressions may be used for the time:
 
     \table
-    \header \i Expression \i Output
-    \row \i h
-         \i the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
-    \row \i hh
-         \i the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
-    \row \i m \i the minute without a leading zero (0 to 59)
-    \row \i mm \i the minute with a leading zero (00 to 59)
-    \row \i s \i the second without a leading zero (0 to 59)
-    \row \i ss \i the second with a leading zero (00 to 59)
-    \row \i z \i the milliseconds without leading zeroes (0 to 999)
-    \row \i zzz \i the milliseconds with leading zeroes (000 to 999)
-    \row \i AP
-            \i use AM/PM display. \e AP will be replaced by either "AM" or "PM".
-    \row \i ap
-            \i use am/pm display. \e ap will be replaced by either "am" or "pm".
+    \header \li Expression \li Output
+    \row \li h
+         \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
+    \row \li hh
+         \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
+    \row \li m \li the minute without a leading zero (0 to 59)
+    \row \li mm \li the minute with a leading zero (00 to 59)
+    \row \li s \li the second without a leading zero (0 to 59)
+    \row \li ss \li the second with a leading zero (00 to 59)
+    \row \li z \li the milliseconds without leading zeroes (0 to 999)
+    \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
+    \row \li AP
+            \li use AM/PM display. \e AP will be replaced by either "AM" or "PM".
+    \row \li ap
+            \li use am/pm display. \e ap will be replaced by either "am" or "pm".
     \endtable
 
     All other input characters will be ignored. Any sequence of characters that
@@ -2565,11 +2565,11 @@ QString QDateTime::toString(Qt::DateFormat f) const
     14:13:09):
 
     \table
-    \header \i Format       \i Result
-    \row \i dd.MM.yyyy      \i 21.05.2001
-    \row \i ddd MMMM d yy   \i Tue May 21 01
-    \row \i hh:mm:ss.zzz    \i 14:13:09.042
-    \row \i h:m:s ap        \i 2:13:9 pm
+    \header \li Format       \li Result
+    \row \li dd.MM.yyyy      \li 21.05.2001
+    \row \li ddd MMMM d yy   \li Tue May 21 01
+    \row \li hh:mm:ss.zzz    \li 14:13:09.042
+    \row \li h:m:s ap        \li 2:13:9 pm
     \endtable
 
     If the datetime is invalid, an empty string will be returned.
@@ -3367,25 +3367,25 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
     These expressions may be used for the date part of the format string:
 
     \table
-    \header \i Expression \i Output
-    \row \i d \i the day as number without a leading zero (1 to 31)
-    \row \i dd \i the day as number with a leading zero (01 to 31)
-    \row \i ddd
-            \i the abbreviated localized day name (e.g. 'Mon' to 'Sun').
+    \header \li Expression \li Output
+    \row \li d \li the day as number without a leading zero (1 to 31)
+    \row \li dd \li the day as number with a leading zero (01 to 31)
+    \row \li ddd
+            \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
             Uses QDate::shortDayName().
-    \row \i dddd
-            \i the long localized day name (e.g. 'Monday' to 'Sunday').
+    \row \li dddd
+            \li the long localized day name (e.g. 'Monday' to 'Sunday').
             Uses QDate::longDayName().
-    \row \i M \i the month as number without a leading zero (1-12)
-    \row \i MM \i the month as number with a leading zero (01-12)
-    \row \i MMM
-            \i the abbreviated localized month name (e.g. 'Jan' to 'Dec').
+    \row \li M \li the month as number without a leading zero (1-12)
+    \row \li MM \li the month as number with a leading zero (01-12)
+    \row \li MMM
+            \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
             Uses QDate::shortMonthName().
-    \row \i MMMM
-            \i the long localized month name (e.g. 'January' to 'December').
+    \row \li MMMM
+            \li the long localized month name (e.g. 'January' to 'December').
             Uses QDate::longMonthName().
-    \row \i yy \i the year as two digit number (00-99)
-    \row \i yyyy \i the year as four digit number
+    \row \li yy \li the year as two digit number (00-99)
+    \row \li yyyy \li the year as four digit number
     \endtable
 
     \note Unlike the other version of this function, day and month names must
@@ -3395,25 +3395,25 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
     These expressions may be used for the time part of the format string:
 
     \table
-    \header \i Expression \i Output
-    \row \i h
-            \i the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
-    \row \i hh
-            \i the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
-    \row \i H
-            \i the hour without a leading zero (0 to 23, even with AM/PM display)
-    \row \i HH
-            \i the hour with a leading zero (00 to 23, even with AM/PM display)
-    \row \i m \i the minute without a leading zero (0 to 59)
-    \row \i mm \i the minute with a leading zero (00 to 59)
-    \row \i s \i the second without a leading zero (0 to 59)
-    \row \i ss \i the second with a leading zero (00 to 59)
-    \row \i z \i the milliseconds without leading zeroes (0 to 999)
-    \row \i zzz \i the milliseconds with leading zeroes (000 to 999)
-    \row \i AP or A
-         \i interpret as an AM/PM time. \e AP must be either "AM" or "PM".
-    \row \i ap or a
-         \i Interpret as an AM/PM time. \e ap must be either "am" or "pm".
+    \header \li Expression \li Output
+    \row \li h
+            \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
+    \row \li hh
+            \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
+    \row \li H
+            \li the hour without a leading zero (0 to 23, even with AM/PM display)
+    \row \li HH
+            \li the hour with a leading zero (00 to 23, even with AM/PM display)
+    \row \li m \li the minute without a leading zero (0 to 59)
+    \row \li mm \li the minute with a leading zero (00 to 59)
+    \row \li s \li the second without a leading zero (0 to 59)
+    \row \li ss \li the second with a leading zero (00 to 59)
+    \row \li z \li the milliseconds without leading zeroes (0 to 999)
+    \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
+    \row \li AP or A
+         \li interpret as an AM/PM time. \e AP must be either "AM" or "PM".
+    \row \li ap or a
+         \li Interpret as an AM/PM time. \e ap must be either "am" or "pm".
     \endtable
 
     All other input characters will be treated as text. Any sequence
@@ -3437,13 +3437,13 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
     defaults are used:
 
     \table
-    \header \i Field  \i Default value
-    \row    \i Year   \i 1900
-    \row    \i Month  \i 1 (January)
-    \row    \i Day    \i 1
-    \row    \i Hour   \i 0
-    \row    \i Minute \i 0
-    \row    \i Second \i 0
+    \header \li Field  \li Default value
+    \row    \li Year   \li 1900
+    \row    \li Month  \li 1 (January)
+    \row    \li Day    \li 1
+    \row    \li Hour   \li 0
+    \row    \li Minute \li 0
+    \row    \li Second \li 0
     \endtable
 
     For example:
@@ -3511,7 +3511,10 @@ void QDateTime::detach()
 
 QDataStream &operator<<(QDataStream &out, const QDate &date)
 {
-    return out << (qint64)(date.jd);
+    if (out.version() < QDataStream::Qt_5_0)
+        return out << quint32(date.jd);
+    else
+        return out << qint64(date.jd);
 }
 
 /*!
@@ -3524,9 +3527,16 @@ QDataStream &operator<<(QDataStream &out, const QDate &date)
 
 QDataStream &operator>>(QDataStream &in, QDate &date)
 {
-    qint64 jd;
-    in >> jd;
-    date.jd = jd;
+    if (in.version() < QDataStream::Qt_5_0) {
+        quint32 jd;
+        in >> jd;
+        date.jd = jd;
+    } else {
+        qint64 jd;
+        in >> jd;
+        date.jd = jd;
+    }
+
     return in;
 }
 

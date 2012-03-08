@@ -54,14 +54,14 @@
     \section1 Topics:
 
     \list
-    \o \l{Recommended Reading}
-    \o \l{The Threading Classes}
-    \o \l{Starting Threads with QThread}
-    \o \l{Synchronizing Threads}
-    \o \l{Reentrancy and Thread-Safety}
-    \o \l{Threads and QObjects}
-    \o \l{Concurrent Programming}
-    \o \l{Thread-Support in Qt Modules}
+    \li \l{Recommended Reading}
+    \li \l{The Threading Classes}
+    \li \l{Starting Threads with QThread}
+    \li \l{Synchronizing Threads}
+    \li \l{Reentrancy and Thread-Safety}
+    \li \l{Threads and QObjects}
+    \li \l{Concurrent Programming}
+    \li \l{Thread-Support in Qt Modules}
     \endlist
 
     \section1 Recommended Reading
@@ -71,10 +71,10 @@
     to threading see our Recommended Reading list:
 
     \list
-    \o \l{Threads Primer: A Guide to Multithreaded Programming}
-    \o \l{Thread Time: The Multithreaded Programming Guide}
-    \o \l{Pthreads Programming: A POSIX Standard for Better Multiprocessing}
-    \o \l{Win32 Multithreaded Programming}
+    \li \l{Threads Primer: A Guide to Multithreaded Programming}
+    \li \l{Thread Time: The Multithreaded Programming Guide}
+    \li \l{Pthreads Programming: A POSIX Standard for Better Multiprocessing}
+    \li \l{Win32 Multithreaded Programming}
     \endlist
 
     \section1 The Threading Classes
@@ -85,21 +85,21 @@
 
 \omit
     \list
-    \o QThread provides the means to start a new thread.
-    \o QThreadStorage provides per-thread data storage.
-    \o QThreadPool manages a pool of threads that run QRunnable objects.
-    \o QRunnable is an abstract class representing a runnable object.
-    \o QMutex provides a mutual exclusion lock, or mutex.
-    \o QMutexLocker is a convenience class that automatically locks
+    \li QThread provides the means to start a new thread.
+    \li QThreadStorage provides per-thread data storage.
+    \li QThreadPool manages a pool of threads that run QRunnable objects.
+    \li QRunnable is an abstract class representing a runnable object.
+    \li QMutex provides a mutual exclusion lock, or mutex.
+    \li QMutexLocker is a convenience class that automatically locks
        and unlocks a QMutex.
-    \o QReadWriteLock provides a lock that allows simultaneous read access.
-    \o QReadLocker and QWriteLocker are convenience classes that automatically
+    \li QReadWriteLock provides a lock that allows simultaneous read access.
+    \li QReadLocker and QWriteLocker are convenience classes that automatically
        lock and unlock a QReadWriteLock.
-    \o QSemaphore provides an integer semaphore (a generalization of a mutex).
-    \o QWaitCondition provides a way for threads to go to sleep until
+    \li QSemaphore provides an integer semaphore (a generalization of a mutex).
+    \li QWaitCondition provides a way for threads to go to sleep until
        woken up by another thread.
-    \o QAtomicInt provides atomic operations on integers.
-    \o QAtomicPointer provides atomic operations on pointers.
+    \li QAtomicInt provides atomic operations on integers.
+    \li QAtomicPointer provides atomic operations on pointers.
     \endlist
 \endomit
 
@@ -226,10 +226,10 @@
     how they can be used in multithread applications:
 
     \list
-    \o A \e thread-safe function can be called simultaneously from
+    \li A \e thread-safe function can be called simultaneously from
        multiple threads, even when the invocations use shared data, 
        because all references to the shared data are serialized.
-    \o A \e reentrant function can also be called simultaneously from
+    \li A \e reentrant function can also be called simultaneously from
        multiple threads, but only if each invocation uses its own data.
     \endlist
 
@@ -267,9 +267,9 @@
     Indeed, they usually expand to three machine instructions:
 
     \list 1
-    \o Load the variable's value in a register.
-    \o Increment or decrement the register's value.
-    \o Store the register's value back into main memory.
+    \li Load the variable's value in a register.
+    \li Increment or decrement the register's value.
+    \li Store the register's value back into main memory.
     \endlist
 
     If thread A and thread B load the variable's old value
@@ -346,19 +346,19 @@
     guaranteed to work. There are three constraints to be aware of:
 
     \list
-    \o \e{The child of a QObject must always be created in the thread
+    \li \e{The child of a QObject must always be created in the thread
        where the parent was created.} This implies, among other
        things, that you should never pass the QThread object (\c
        this) as the parent of an object created in the thread (since
        the QThread object itself was created in another thread).
 
-    \o \e{Event driven objects may only be used in a single thread.}
+    \li \e{Event driven objects may only be used in a single thread.}
        Specifically, this applies to the \l{timers.html}{timer
        mechanism} and the \l{QtNetwork}{network module}. For example,
        you cannot start a timer or connect a socket in a thread that
        is not the \l{QObject::thread()}{object's thread}.
 
-    \o \e{You must ensure that all objects created in a thread are
+    \li \e{You must ensure that all objects created in a thread are
        deleted before you delete the QThread.} This can be done
        easily by creating the objects on the stack in your
        \l{QThread::run()}{run()} implementation.
@@ -469,26 +469,26 @@
 
     \list
 
-    \o \l{Qt::AutoConnection}{Auto Connection} (default) If the signal is
+    \li \l{Qt::AutoConnection}{Auto Connection} (default) If the signal is
        emitted in the thread which the receiving object has affinity then
        the behavior is the same as the Direct Connection. Otherwise,
        the behavior is the same as the Queued Connection."
 
-    \o \l{Qt::DirectConnection}{Direct Connection} The slot is invoked
+    \li \l{Qt::DirectConnection}{Direct Connection} The slot is invoked
        immediately, when the signal is emitted. The slot is executed
        in the emitter's thread, which is not necessarily the
        receiver's thread.
 
-    \o \l{Qt::QueuedConnection}{Queued Connection} The slot is invoked
+    \li \l{Qt::QueuedConnection}{Queued Connection} The slot is invoked
        when control returns to the event loop of the receiver's
        thread. The slot is executed in the receiver's thread.
 
-    \o \l{Qt::BlockingQueuedConnection}{Blocking Queued Connection}
+    \li \l{Qt::BlockingQueuedConnection}{Blocking Queued Connection}
        The slot is invoked as for the Queued Connection, except the
        current thread blocks until the slot returns. \note Using this
        type to connect objects in the same thread will cause deadlock.
 
-    \o \l{Qt::UniqueConnection}{Unique Connection} The behavior is the
+    \li \l{Qt::UniqueConnection}{Unique Connection} The behavior is the
        same as the Auto Connection, but the connection is made only if
        it does not duplicate an existing connection. i.e., if the same
        signal is already connected to the same slot for the same pair
@@ -546,33 +546,33 @@
 
     \list
 
-    \o QtConcurrent::map() applies a function to every item in a container,
+    \li QtConcurrent::map() applies a function to every item in a container,
     modifying the items in-place.
 
-    \o QtConcurrent::mapped() is like map(), except that it returns a new
+    \li QtConcurrent::mapped() is like map(), except that it returns a new
     container with the modifications.
 
-    \o QtConcurrent::mappedReduced() is like mapped(), except that the
+    \li QtConcurrent::mappedReduced() is like mapped(), except that the
     modified results are reduced or folded into a single result.
 
-    \o QtConcurrent::filter() removes all items from a container based on the
+    \li QtConcurrent::filter() removes all items from a container based on the
     result of a filter function.
 
-    \o QtConcurrent::filtered() is like filter(), except that it returns a new
+    \li QtConcurrent::filtered() is like filter(), except that it returns a new
     container with the filtered results.
 
-    \o QtConcurrent::filteredReduced() is like filtered(), except that the
+    \li QtConcurrent::filteredReduced() is like filtered(), except that the
     filtered results are reduced or folded into a single result.
 
-    \o QtConcurrent::run() runs a function in another thread.
+    \li QtConcurrent::run() runs a function in another thread.
 
-    \o QFuture represents the result of an asynchronous computation.
+    \li QFuture represents the result of an asynchronous computation.
 
-    \o QFutureIterator allows iterating through results available via QFuture.
+    \li QFutureIterator allows iterating through results available via QFuture.
 
-    \o QFutureWatcher allows monitoring a QFuture using signals-and-slots.
+    \li QFutureWatcher allows monitoring a QFuture using signals-and-slots.
 
-    \o QFutureSynchronizer is a convenience class that automatically
+    \li QFutureSynchronizer is a convenience class that automatically
     synchronizes several QFutures.
 
     \endlist
@@ -585,29 +585,29 @@
 
     \table
     \header
-        \o Iterator Type
-        \o Example classes
-        \o Support status
+        \li Iterator Type
+        \li Example classes
+        \li Support status
     \row
-        \o Input Iterator
-        \o 
-        \o Not Supported
+        \li Input Iterator
+        \li
+        \li Not Supported
     \row
-        \o Output Iterator
-        \o 
-        \o Not Supported
+        \li Output Iterator
+        \li
+        \li Not Supported
     \row
-        \o Forward Iterator
-        \o std::slist
-        \o Supported
+        \li Forward Iterator
+        \li std::slist
+        \li Supported
     \row
-        \o Bidirectional Iterator
-        \o QLinkedList, std::list
-        \o Supported
+        \li Bidirectional Iterator
+        \li QLinkedList, std::list
+        \li Supported
     \row
-        \o Random Access Iterator
-        \o QList, QVector, std::vector
-        \o Supported and Recommended
+        \li Random Access Iterator
+        \li QList, QVector, std::vector
+        \li Supported and Recommended
     \endtable
     
     Random access iterators can be faster in cases where Qt Concurrent is iterating

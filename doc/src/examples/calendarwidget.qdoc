@@ -51,28 +51,28 @@
     below.
 
     \table
-    \header \o Property
-            \o Description
-    \row \o \l{QCalendarWidget::}{selectedDate}
-         \o The currently selected date.
-    \row \o \l{QCalendarWidget::}{minimumDate}
-         \o The earliest date that can be selected.
-    \row \o \l{QCalendarWidget::}{maximumDate}
-         \o The latest date that can be selected.
-    \row \o \l{QCalendarWidget::}{firstDayOfWeek}
-         \o The day that is displayed as the first day of the week
+    \header \li Property
+            \li Description
+    \row \li \l{QCalendarWidget::}{selectedDate}
+         \li The currently selected date.
+    \row \li \l{QCalendarWidget::}{minimumDate}
+         \li The earliest date that can be selected.
+    \row \li \l{QCalendarWidget::}{maximumDate}
+         \li The latest date that can be selected.
+    \row \li \l{QCalendarWidget::}{firstDayOfWeek}
+         \li The day that is displayed as the first day of the week
             (usually Sunday or Monday).
-    \row \o \l{QCalendarWidget::}{gridVisible}
-         \o Whether the grid should be shown.
-    \row \o \l{QCalendarWidget::}{selectionMode}
-         \o Whether the user can select a date or not.
-    \row \o \l{QCalendarWidget::}{horizontalHeaderFormat}
-         \o The format of the day names in the horizontal header
+    \row \li \l{QCalendarWidget::}{gridVisible}
+         \li Whether the grid should be shown.
+    \row \li \l{QCalendarWidget::}{selectionMode}
+         \li Whether the user can select a date or not.
+    \row \li \l{QCalendarWidget::}{horizontalHeaderFormat}
+         \li The format of the day names in the horizontal header
             (e.g., "M", "Mon", or "Monday").
-    \row \o \l{QCalendarWidget::}{verticalHeaderFormat}
-         \o The format of the vertical header.
-    \row \o \l{QCalendarWidget::}{navigationBarVisible}
-         \o Whether the navigation bar at the top of the calendar
+    \row \li \l{QCalendarWidget::}{verticalHeaderFormat}
+         \li The format of the vertical header.
+    \row \li \l{QCalendarWidget::}{navigationBarVisible}
+         \li Whether the navigation bar at the top of the calendar
             widget is shown.
     \endtable
 

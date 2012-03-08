@@ -2235,10 +2235,6 @@ QString MakefileGenerator::buildArgs(const QString &outdir)
             ret += " -win32";
     }
 
-    //configs
-    for(QStringList::Iterator it = Option::user_configs.begin();
-        it != Option::user_configs.end(); ++it)
-        ret += " -config " + (*it);
     //arguments
     for(QStringList::Iterator it = Option::before_user_vars.begin();
         it != Option::before_user_vars.end(); ++it) {
@@ -3178,7 +3174,7 @@ MakefileGenerator::pkgConfigPrefix() const
 {
     if(!project->isEmpty("QMAKE_PKGCONFIG_PREFIX"))
         return project->first("QMAKE_PKGCONFIG_PREFIX");
-    return QLibraryInfo::location(QLibraryInfo::PrefixPath);
+    return QLibraryInfo::rawLocation(QLibraryInfo::PrefixPath);
 }
 
 QString

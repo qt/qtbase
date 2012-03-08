@@ -136,45 +136,45 @@ QT_BEGIN_NAMESPACE
     QGraphicsProxyWidget maintains symmetry for the following states:
 
     \table
-    \header \o QWidget state       \o QGraphicsProxyWidget state      \o Notes
-    \row     \o QWidget::enabled
-                    \o QGraphicsProxyWidget::enabled
-                        \o
-    \row    \o QWidget::visible
-                    \o QGraphicsProxyWidget::visible
-                        \o The explicit state is also symmetric.
-    \row    \o QWidget::geometry
-                    \o QGraphicsProxyWidget::geometry
-                        \o Geometry is only guaranteed to be symmetric while
+    \header \li QWidget state       \li QGraphicsProxyWidget state      \li Notes
+    \row     \li QWidget::enabled
+                    \li QGraphicsProxyWidget::enabled
+                        \li
+    \row    \li QWidget::visible
+                    \li QGraphicsProxyWidget::visible
+                        \li The explicit state is also symmetric.
+    \row    \li QWidget::geometry
+                    \li QGraphicsProxyWidget::geometry
+                        \li Geometry is only guaranteed to be symmetric while
                             the embedded widget is visible.
-    \row    \o QWidget::layoutDirection
-                    \o QGraphicsProxyWidget::layoutDirection
-                        \o
-    \row    \o QWidget::style
-                    \o QGraphicsProxyWidget::style
-                        \o
-    \row    \o QWidget::palette
-                    \o QGraphicsProxyWidget::palette
-                        \o
-    \row    \o QWidget::font
-                    \o QGraphicsProxyWidget::font
-                        \o
-    \row    \o QWidget::cursor
-                    \o QGraphicsProxyWidget::cursor
-                        \o The embedded widget overrides the proxy widget
+    \row    \li QWidget::layoutDirection
+                    \li QGraphicsProxyWidget::layoutDirection
+                        \li
+    \row    \li QWidget::style
+                    \li QGraphicsProxyWidget::style
+                        \li
+    \row    \li QWidget::palette
+                    \li QGraphicsProxyWidget::palette
+                        \li
+    \row    \li QWidget::font
+                    \li QGraphicsProxyWidget::font
+                        \li
+    \row    \li QWidget::cursor
+                    \li QGraphicsProxyWidget::cursor
+                        \li The embedded widget overrides the proxy widget
                             cursor. The proxy cursor changes depending on
                             which embedded subwidget is currently under the
                             mouse.
-    \row    \o QWidget::sizeHint()
-                    \o QGraphicsProxyWidget::sizeHint()
-                        \o All size hint functionality from the embedded
+    \row    \li QWidget::sizeHint()
+                    \li QGraphicsProxyWidget::sizeHint()
+                        \li All size hint functionality from the embedded
                             widget is forwarded by the proxy.
-    \row    \o QWidget::getContentsMargins()
-                    \o QGraphicsProxyWidget::getContentsMargins()
-                        \o Updated once by setWidget().
-    \row    \o QWidget::windowTitle
-                    \o QGraphicsProxyWidget::windowTitle
-                        \o Updated once by setWidget().
+    \row    \li QWidget::getContentsMargins()
+                    \li QGraphicsProxyWidget::getContentsMargins()
+                        \li Updated once by setWidget().
+    \row    \li QWidget::windowTitle
+                    \li QGraphicsProxyWidget::windowTitle
+                        \li Updated once by setWidget().
     \endtable
 
     \note QGraphicsScene keeps the embedded widget in a special state that

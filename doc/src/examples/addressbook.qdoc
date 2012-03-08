@@ -107,15 +107,15 @@
     dimensions of the model. Whereas, \c rowCount()'s value will vary
     depending on the number of contacts added to the address book,
     \c columnCount()'s value is always 2 because we only need space
-    for the \bold Name and \bold Address columns.
+    for the \b Name and \b Address columns.
 
     \note The \c Q_UNUSED() macro prevents the compiler from
     generating warnings regarding unused parameters.
 
     \snippet itemviews/addressbook/tablemodel.cpp 1
 
-    The \c data() function returns either a \bold Name or
-    \bold {Address}, based on the contents of the model index
+    The \c data() function returns either a \b Name or
+    \b {Address}, based on the contents of the model index
     supplied. The row number stored in the model index is used to
     reference an item in the list of pairs. Selection is handled
     by the QItemSelectionModel, which will be explained with
@@ -124,7 +124,7 @@
     \snippet itemviews/addressbook/tablemodel.cpp 2
 
     The \c headerData() function displays the table's header,
-    \bold Name and \bold Address. If you require numbered entries
+    \b Name and \b Address. If you require numbered entries
     for your address book, you can use a vertical header which we
     have hidden in this example (see the \c AddressWidget
     implementation).
@@ -372,8 +372,8 @@
     menus and actions necessary to manipulate the address book.
 
     \table
-    \row \o \inlineimage addressbook-filemenu.png
-         \o \inlineimage addressbook-toolsmenu.png
+    \row \li \inlineimage addressbook-filemenu.png
+         \li \inlineimage addressbook-toolsmenu.png
     \endtable
 
     \snippet itemviews/addressbook/mainwindow.h 0

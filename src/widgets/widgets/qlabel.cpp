@@ -76,20 +76,20 @@ QT_BEGIN_NAMESPACE
     A QLabel can contain any of the following content types:
 
     \table
-    \header \o Content \o Setting
-    \row \o Plain text
-         \o Pass a QString to setText().
-    \row \o Rich text
-         \o Pass a QString that contains rich text to setText().
-    \row \o A pixmap
-         \o Pass a QPixmap to setPixmap().
-    \row \o A movie
-         \o Pass a QMovie to setMovie().
-    \row \o A number
-         \o Pass an \e int or a \e double to setNum(), which converts
+    \header \li Content \li Setting
+    \row \li Plain text
+         \li Pass a QString to setText().
+    \row \li Rich text
+         \li Pass a QString that contains rich text to setText().
+    \row \li A pixmap
+         \li Pass a QPixmap to setPixmap().
+    \row \li A movie
+         \li Pass a QMovie to setMovie().
+    \row \li A number
+         \li Pass an \e int or a \e double to setNum(), which converts
             the number to plain text.
-    \row \o Nothing
-         \o The same as an empty plain text. This is the default. Set
+    \row \li Nothing
+         \li The same as an empty plain text. This is the default. Set
             by clear().
     \endtable
 
@@ -134,14 +134,14 @@ QT_BEGIN_NAMESPACE
 
     \table 100%
     \row
-    \o \inlineimage macintosh-label.png Screenshot of a Macintosh style label
-    \o A label shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
+    \li \inlineimage macintosh-label.png Screenshot of a Macintosh style label
+    \li A label shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
     \row
-    \o \inlineimage plastique-label.png Screenshot of a Plastique style label
-    \o A label shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \li \inlineimage plastique-label.png Screenshot of a Plastique style label
+    \li A label shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
     \row
-    \o \inlineimage windowsxp-label.png Screenshot of a Windows XP style label
-    \o A label shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+    \li \inlineimage windowsxp-label.png Screenshot of a Windows XP style label
+    \li A label shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
     \endtable
 
     \sa QLineEdit, QTextEdit, QPixmap, QMovie,
@@ -655,7 +655,7 @@ int QLabel::heightForWidth(int w) const
     QDesktopServices::openUrl() instead of emitting the
     linkActivated() signal.
 
-    \bold{Note:} The textInteractionFlags set on the label need to include
+    \b{Note:} The textInteractionFlags set on the label need to include
     either LinksAccessibleByMouse or LinksAccessibleByKeyboard.
 
     The default value is false.
@@ -723,7 +723,7 @@ Qt::TextInteractionFlags QLabel::textInteractionFlags() const
 
     \sa selectedText()
 
-    \bold{Note:} The textInteractionFlags set on the label need to include
+    \b{Note:} The textInteractionFlags set on the label need to include
     either TextSelectableByMouse or TextSelectableByKeyboard.
 
     \since 4.7
@@ -751,7 +751,7 @@ void QLabel::setSelection(int start, int length)
 
     \sa selectedText()
 
-    \bold{Note:} The textInteractionFlags set on the label need to include
+    \b{Note:} The textInteractionFlags set on the label need to include
     either TextSelectableByMouse or TextSelectableByKeyboard.
 
     \since 4.7
@@ -775,7 +775,7 @@ bool QLabel::hasSelectedText() const
 
     \sa hasSelectedText()
 
-    \bold{Note:} The textInteractionFlags set on the label need to include
+    \b{Note:} The textInteractionFlags set on the label need to include
     either TextSelectableByMouse or TextSelectableByKeyboard.
 
     \since 4.7
@@ -794,7 +794,7 @@ QString QLabel::selectedText() const
 
     \sa selectedText()
 
-    \bold{Note:} The textInteractionFlags set on the label need to include
+    \b{Note:} The textInteractionFlags set on the label need to include
     either TextSelectableByMouse or TextSelectableByKeyboard.
 
     \since 4.7

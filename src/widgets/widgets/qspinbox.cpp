@@ -152,12 +152,12 @@ public:
     setSpecialValueText() for how to do this with QSpinBox.
 
     \table 100%
-    \row \o \inlineimage windowsxp-spinbox.png Screenshot of a Windows XP spin box
-         \o A spin box shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
-    \row \o \inlineimage plastique-spinbox.png Screenshot of a Plastique spin box
-         \o A spin box shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
-    \row \o \inlineimage macintosh-spinbox.png Screenshot of a Macintosh spin box
-         \o A spin box shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
+    \row \li \inlineimage windowsxp-spinbox.png Screenshot of a Windows XP spin box
+         \li A spin box shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+    \row \li \inlineimage plastique-spinbox.png Screenshot of a Plastique spin box
+         \li A spin box shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \row \li \inlineimage macintosh-spinbox.png Screenshot of a Macintosh spin box
+         \li A spin box shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
     \endtable
 
     \section1 Subclassing QSpinBox

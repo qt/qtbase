@@ -11,10 +11,10 @@ TARGET_BASENAME = $$basename(QMAKE_RESOLVED_TARGET)
 # --cs-output defines the name to give to the execution report (.csexe).
 TESTCOCOON_COVERAGE_OPTIONS = \
     --cs-qt4 \
-    --cs-exclude-file-regex=\'(^|[/\\\\])ui_.*\\.h\$\$\' \
     --cs-exclude-file-regex=\'(^|[/\\\\])(qrc|moc)_.*\\.cpp\$\$\' \
     --cs-exclude-file-regex=\'.*\\.moc\$\$\' \
     --cs-exclude-file-regex=\'.*\\.g\$\$\' \
+    --cs-exclude-file-regex=\'.*\\.h\$\$\' \
     --cs-output=\'$$TARGET_BASENAME\' # name of the csexe file (execution report)
 
 # The .csmes file should be placed alongside the .so or binary.

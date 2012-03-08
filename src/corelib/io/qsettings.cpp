@@ -1752,10 +1752,10 @@ bool QConfFileSettingsPrivate::readIniFile(const QByteArray &data,
 
             iniSection = iniSection.trimmed();
 
-            if (qstricmp(iniSection, "general") == 0) {
+            if (qstricmp(iniSection.constData(), "general") == 0) {
                 currentSection.clear();
             } else {
-                if (qstricmp(iniSection, "%general") == 0) {
+                if (qstricmp(iniSection.constData(), "%general") == 0) {
                     currentSection = QLatin1String(iniSection.constData() + 1);
                 } else {
                     currentSection.clear();
@@ -1912,7 +1912,7 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
 
         if (realSection.isEmpty()) {
             realSection = "[General]";
-        } else if (qstricmp(realSection, "general") == 0) {
+        } else if (qstricmp(realSection.constData(), "general") == 0) {
             realSection = "[%General]";
         } else {
             realSection.prepend('[');
@@ -2112,15 +2112,15 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     avoid portability problems, follow these simple rules:
 
     \list 1
-    \o Always refer to the same key using the same case. For example,
+    \li Always refer to the same key using the same case. For example,
        if you refer to a key as "text fonts" in one place in your
        code, don't refer to it as "Text Fonts" somewhere else.
 
-    \o Avoid key names that are identical except for the case. For
+    \li Avoid key names that are identical except for the case. For
        example, if you have a key called "MainWindow", don't try to
        save another key as "mainwindow".
 
-    \o Do not use slashes ('/' and '\\') in section or key names; the
+    \li Do not use slashes ('/' and '\\') in section or key names; the
        backslash character is used to separate sub keys (see below). On
        windows '\\' are converted by QSettings to '/', which makes
        them identical.
@@ -2156,10 +2156,10 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     that order:
 
     \list 1
-    \o a user-specific location for the Star Runner application
-    \o a user-specific location for all applications by MySoft
-    \o a system-wide location for the Star Runner application
-    \o a system-wide location for all applications by MySoft
+    \li a user-specific location for the Star Runner application
+    \li a user-specific location for all applications by MySoft
+    \li a system-wide location for the Star Runner application
+    \li a system-wide location for all applications by MySoft
     \endlist
 
     (See \l{Platform-Specific Notes} below for information on what
@@ -2184,17 +2184,17 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \snippet doc/src/snippets/settings/settings.cpp 14
 
     The table below summarizes which QSettings objects access
-    which location. "\bold{X}" means that the location is the main
+    which location. "\b{X}" means that the location is the main
     location associated to the QSettings object and is used both
     for reading and for writing; "o" means that the location is used
     as a fallback when reading.
 
     \table
-    \header \o Locations               \o \c{obj1} \o \c{obj2} \o \c{obj3} \o \c{obj4}
-    \row    \o 1. User, Application    \o \bold{X} \o          \o          \o
-    \row    \o 2. User, Organization   \o o        \o \bold{X} \o          \o
-    \row    \o 3. System, Application  \o o        \o          \o \bold{X} \o
-    \row    \o 4. System, Organization \o o        \o o        \o o        \o \bold{X}
+    \header \li Locations               \li \c{obj1} \li \c{obj2} \li \c{obj3} \li \c{obj4}
+    \row    \li 1. User, Application    \li \b{X} \li          \li          \li
+    \row    \li 2. User, Organization   \li o        \li \b{X} \li          \li
+    \row    \li 3. System, Application  \li o        \li          \li \b{X} \li
+    \row    \li 4. System, Organization \li o        \li o        \li o        \li \b{X}
     \endtable
 
     The beauty of this mechanism is that it works on all platforms
@@ -2276,30 +2276,30 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     following files are used by default:
 
     \list 1
-    \o \c{$HOME/.config/MySoft/Star Runner.conf} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft/Star Runner.conf})
-    \o \c{$HOME/.config/MySoft.conf} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft.conf})
-    \o \c{/etc/xdg/MySoft/Star Runner.conf}
-    \o \c{/etc/xdg/MySoft.conf}
+    \li \c{$HOME/.config/MySoft/Star Runner.conf} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft/Star Runner.conf})
+    \li \c{$HOME/.config/MySoft.conf} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft.conf})
+    \li \c{/etc/xdg/MySoft/Star Runner.conf}
+    \li \c{/etc/xdg/MySoft.conf}
     \endlist
 
     On Mac OS X versions 10.2 and 10.3, these files are used by
     default:
 
     \list 1
-    \o \c{$HOME/Library/Preferences/com.MySoft.Star Runner.plist}
-    \o \c{$HOME/Library/Preferences/com.MySoft.plist}
-    \o \c{/Library/Preferences/com.MySoft.Star Runner.plist}
-    \o \c{/Library/Preferences/com.MySoft.plist}
+    \li \c{$HOME/Library/Preferences/com.MySoft.Star Runner.plist}
+    \li \c{$HOME/Library/Preferences/com.MySoft.plist}
+    \li \c{/Library/Preferences/com.MySoft.Star Runner.plist}
+    \li \c{/Library/Preferences/com.MySoft.plist}
     \endlist
 
     On Windows, NativeFormat settings are stored in the following
     registry paths:
 
     \list 1
-    \o \c{HKEY_CURRENT_USER\Software\MySoft\Star Runner}
-    \o \c{HKEY_CURRENT_USER\Software\MySoft}
-    \o \c{HKEY_LOCAL_MACHINE\Software\MySoft\Star Runner}
-    \o \c{HKEY_LOCAL_MACHINE\Software\MySoft}
+    \li \c{HKEY_CURRENT_USER\Software\MySoft\Star Runner}
+    \li \c{HKEY_CURRENT_USER\Software\MySoft}
+    \li \c{HKEY_LOCAL_MACHINE\Software\MySoft\Star Runner}
+    \li \c{HKEY_LOCAL_MACHINE\Software\MySoft}
     \endlist
 
     \note On Windows, for 32-bit programs running in WOW64 mode, settings are
@@ -2310,19 +2310,19 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     used on Unix and Mac OS X:
 
     \list 1
-    \o \c{$HOME/.config/MySoft/Star Runner.ini} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft/Star Runner.ini})
-    \o \c{$HOME/.config/MySoft.ini} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft.ini})
-    \o \c{/etc/xdg/MySoft/Star Runner.ini}
-    \o \c{/etc/xdg/MySoft.ini}
+    \li \c{$HOME/.config/MySoft/Star Runner.ini} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft/Star Runner.ini})
+    \li \c{$HOME/.config/MySoft.ini} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft.ini})
+    \li \c{/etc/xdg/MySoft/Star Runner.ini}
+    \li \c{/etc/xdg/MySoft.ini}
     \endlist
 
     On Windows, the following files are used:
 
     \list 1
-    \o \c{%APPDATA%\MySoft\Star Runner.ini}
-    \o \c{%APPDATA%\MySoft.ini}
-    \o \c{%COMMON_APPDATA%\MySoft\Star Runner.ini}
-    \o \c{%COMMON_APPDATA%\MySoft.ini}
+    \li \c{%APPDATA%\MySoft\Star Runner.ini}
+    \li \c{%APPDATA%\MySoft.ini}
+    \li \c{%COMMON_APPDATA%\MySoft\Star Runner.ini}
+    \li \c{%COMMON_APPDATA%\MySoft.ini}
     \endlist
 
     The \c %APPDATA% path is usually \tt{C:\\Documents and
@@ -2395,20 +2395,20 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     application:
 
     \list
-    \o  The Windows system registry has the following limitations: A
+    \li  The Windows system registry has the following limitations: A
         subkey may not exceed 255 characters, an entry's value may
         not exceed 16,383 characters, and all the values of a key may
         not exceed 65,535 characters. One way to work around these
         limitations is to store the settings using the IniFormat
         instead of the NativeFormat.
 
-    \o  On Mac OS X, allKeys() will return some extra keys for global
+    \li  On Mac OS X, allKeys() will return some extra keys for global
         settings that apply to all applications. These keys can be
         read using value() but cannot be changed, only shadowed.
         Calling setFallbacksEnabled(false) will hide these global
         settings.
 
-    \o  On Mac OS X, the CFPreferences API used by QSettings expects
+    \li  On Mac OS X, the CFPreferences API used by QSettings expects
         Internet domain names rather than organization names. To
         provide a uniform API, QSettings derives a fake domain name
         from the organization name (unless the organization name
@@ -2425,7 +2425,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
         \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 7
 
-    \o On Unix and Mac OS X systems, the advisory file locking is disabled
+    \li On Unix and Mac OS X systems, the advisory file locking is disabled
        if NFS (or AutoFS or CacheFS) is detected to work around a bug in the
        NFS fcntl() implementation, which hangs forever if statd or lockd aren't
        running. Also, the locking isn't performed when accessing \c .plist
@@ -2485,7 +2485,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     follow what Microsoft does, with the following exceptions:
 
     \list
-    \o  If you store types that QVariant can't convert to QString
+    \li  If you store types that QVariant can't convert to QString
         (e.g., QPoint, QRect, and QSize), Qt uses an \c{@}-based
         syntax to encode the type. For example:
 
@@ -2496,7 +2496,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
         followed by a Qt type (\c Point, \c Rect, \c Size, etc.) is
         treated as a normal character.
 
-    \o  Although backslash is a special character in INI files, most
+    \li  Although backslash is a special character in INI files, most
         Windows applications don't escape backslashes (\c{\}) in file
         paths:
 
@@ -2505,7 +2505,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
         QSettings always treats backslash as a special character and
         provides no API for reading or writing such entries.
 
-    \o  The INI file format has severe restrictions on the syntax of
+    \li  The INI file format has severe restrictions on the syntax of
         a key. Qt works around this by using \c % as an escape
         character in keys. In addition, if you save a top-level
         setting (a key with no slashes in it, e.g., "someKey"), it
@@ -2514,7 +2514,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
         such as "General/someKey", the key will be located in the
         "%General" section, \e not in the "General" section.
 
-    \o  Following the philosophy that we should be liberal in what
+    \li  Following the philosophy that we should be liberal in what
         we accept and conservative in what we generate, QSettings
         will accept Latin-1 encoded INI files, but generate pure
         ASCII files, where non-ASCII values are encoded using standard
@@ -2632,10 +2632,10 @@ QSettings::QSettings(Format format, Scope scope, const QString &organization,
     be aware of the following limitations:
 
     \list
-    \o QSettings provides no way of reading INI "path" entries, i.e., entries
+    \li QSettings provides no way of reading INI "path" entries, i.e., entries
        with unescaped slash characters. (This is because these entries are
        ambiguous and cannot be resolved automatically.)
-    \o In INI files, QSettings uses the \c @ character as a metacharacter in some
+    \li In INI files, QSettings uses the \c @ character as a metacharacter in some
        contexts, to encode Qt-specific data types (e.g., \c @Rect), and might
        therefore misinterpret it when it occurs in pure INI files.
     \endlist
@@ -2933,9 +2933,9 @@ QSettings::Status QSettings::status() const
     This will set the value of three settings:
 
     \list
-    \o \c mainwindow/size
-    \o \c mainwindow/fullScreen
-    \o \c outputpanel/visible
+    \li \c mainwindow/size
+    \li \c mainwindow/fullScreen
+    \li \c outputpanel/visible
     \endlist
 
     Call endGroup() to reset the current group to what it was before
@@ -3021,14 +3021,14 @@ int QSettings::beginReadArray(const QString &prefix)
     The generated keys will have the form
 
     \list
-    \o \c logins/size
-    \o \c logins/1/userName
-    \o \c logins/1/password
-    \o \c logins/2/userName
-    \o \c logins/2/password
-    \o \c logins/3/userName
-    \o \c logins/3/password
-    \o ...
+    \li \c logins/size
+    \li \c logins/1/userName
+    \li \c logins/1/password
+    \li \c logins/2/userName
+    \li \c logins/2/password
+    \li \c logins/3/userName
+    \li \c logins/3/password
+    \li ...
     \endlist
 
     To read back an array, use beginReadArray().
@@ -3412,15 +3412,15 @@ void QSettings::setUserIniPath(const QString &dir)
     The table below summarizes the default values:
 
     \table
-    \header \o Platform         \o Format                       \o Scope       \o Path
-    \row    \o{1,2} Windows     \o{1,2} IniFormat               \o UserScope   \o \c %APPDATA%
-    \row                                                        \o SystemScope \o \c %COMMON_APPDATA%
-    \row    \o{1,2} Unix        \o{1,2} NativeFormat, IniFormat \o UserScope   \o \c $HOME/.config
-    \row                                                        \o SystemScope \o \c /etc/xdg
-    \row    \o{1,2} Qt for Embedded Linux \o{1,2} NativeFormat, IniFormat \o UserScope   \o \c $HOME/Settings
-    \row                                                        \o SystemScope \o \c /etc/xdg
-    \row    \o{1,2} Mac OS X    \o{1,2} IniFormat               \o UserScope   \o \c $HOME/.config
-    \row                                                        \o SystemScope \o \c /etc/xdg
+    \header \li Platform         \li Format                       \li Scope       \li Path
+    \row    \li{1,2} Windows     \li{1,2} IniFormat               \li UserScope   \li \c %APPDATA%
+    \row                                                        \li SystemScope \li \c %COMMON_APPDATA%
+    \row    \li{1,2} Unix        \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/.config
+    \row                                                        \li SystemScope \li \c /etc/xdg
+    \row    \li{1,2} Qt for Embedded Linux \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/Settings
+    \row                                                        \li SystemScope \li \c /etc/xdg
+    \row    \li{1,2} Mac OS X    \li{1,2} IniFormat               \li UserScope   \li \c $HOME/.config
+    \row                                                        \li SystemScope \li \c /etc/xdg
     \endtable
 
     The default UserScope paths on Unix and Mac OS X (\c

@@ -139,35 +139,35 @@
 
     \table
     \header
-        \o Proxy type
-        \o Description
-        \o Default capabilities
+        \li Proxy type
+        \li Description
+        \li Default capabilities
 
     \row
-        \o SOCKS 5
-        \o Generic proxy for any kind of connection. Supports TCP,
+        \li SOCKS 5
+        \li Generic proxy for any kind of connection. Supports TCP,
            UDP, binding to a port (incoming connections) and
            authentication.
-        \o TunnelingCapability, ListeningCapability,
+        \li TunnelingCapability, ListeningCapability,
            UdpTunnelingCapability, HostNameLookupCapability
 
     \row
-        \o HTTP
-        \o Implemented using the "CONNECT" command, supports only
+        \li HTTP
+        \li Implemented using the "CONNECT" command, supports only
            outgoing TCP connections; supports authentication.
-        \o TunnelingCapability, CachingCapability, HostNameLookupCapability
+        \li TunnelingCapability, CachingCapability, HostNameLookupCapability
 
     \row
-        \o Caching-only HTTP
-        \o Implemented using normal HTTP commands, it is useful only
+        \li Caching-only HTTP
+        \li Implemented using normal HTTP commands, it is useful only
            in the context of HTTP requests (see QNetworkAccessManager)
-        \o CachingCapability, HostNameLookupCapability
+        \li CachingCapability, HostNameLookupCapability
 
     \row
-        \o Caching FTP
-        \o Implemented using an FTP proxy, it is useful only in the
+        \li Caching FTP
+        \li Implemented using an FTP proxy, it is useful only in the
            context of FTP requests (see QNetworkAccessManager)
-        \o CachingCapability, HostNameLookupCapability
+        \li CachingCapability, HostNameLookupCapability
 
     \endtable
 
@@ -856,12 +856,12 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
     the proxy:
 
     \list
-      \o the type of query
-      \o the local port number to use
-      \o the destination host name
-      \o the destination port number
-      \o the protocol name, such as "http" or "ftp"
-      \o the URL being requested
+      \li the type of query
+      \li the local port number to use
+      \li the destination host name
+      \li the destination port number
+      \li the protocol name, such as "http" or "ftp"
+      \li the URL being requested
     \endlist
 
     The destination host name is the host in the connection in the
@@ -895,35 +895,35 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
 
     \table
     \header
-      \o Query type
-      \o Description
+      \li Query type
+      \li Description
 
     \row
-      \o TcpSocket
-      \o Normal sockets requesting a connection to a remote server,
+      \li TcpSocket
+      \li Normal sockets requesting a connection to a remote server,
          like QTcpSocket. The peer hostname and peer port match the
          values passed to QTcpSocket::connectToHost(). The local port
          is usually -1, indicating the socket has no preference in
          which port should be used. The URL component is not used.
 
     \row
-      \o UdpSocket
-      \o Datagram-based sockets, which can both send and
+      \li UdpSocket
+      \li Datagram-based sockets, which can both send and
          receive. The local port, remote host or remote port fields
          can all be used or be left unused, depending on the
          characteristics of the socket. The URL component is not used.
 
     \row
-      \o TcpServer
-      \o Passive server sockets that listen on a port and await
+      \li TcpServer
+      \li Passive server sockets that listen on a port and await
          incoming connections from the network. Normally, only the
          local port is used, but the remote address could be used in
          specific circumstances, for example to indicate which remote
          host a connection is expected from. The URL component is not used.
 
     \row
-      \o UrlRequest
-      \o A more high-level request, such as those coming from
+      \li UrlRequest
+      \li A more high-level request, such as those coming from
          QNetworkAccessManager. These requests will inevitably use an
          outgoing TCP socket, but the this query type is provided to
          indicate that more detailed information is present in the URL
@@ -1487,10 +1487,10 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
     listed here.
 
     \list
-    \o On MacOS X, this function will ignore the Proxy Auto Configuration
+    \li On MacOS X, this function will ignore the Proxy Auto Configuration
     settings, since it cannot execute the associated ECMAScript code.
 
-    \o On Windows platforms, this function may take several seconds to
+    \li On Windows platforms, this function may take several seconds to
     execute depending on the configuration of the user's system.
     \endlist
 */

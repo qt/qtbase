@@ -227,6 +227,15 @@ HB_Face QFontEngine::harfbuzzFace() const
     return hbFace;
 }
 
+HB_Face QFontEngine::initializedHarfbuzzFace() const
+{
+    HB_Face face = harfbuzzFace();
+    if (face != 0 && face->font_for_init != 0)
+        face = qHBLoadFace(face);
+
+    return face;
+}
+
 glyph_metrics_t QFontEngine::boundingBox(glyph_t glyph, const QTransform &matrix)
 {
     glyph_metrics_t metrics = boundingBox(glyph);
@@ -1148,25 +1157,6 @@ QByteArray QFontEngine::convertToPostscriptFontFamilyName(const QByteArray &fami
     return f;
 }
 
-class QRgbGreyPalette: public QVector<QRgb>
-{
-public:
-    QRgbGreyPalette()
-    {
-        resize(256);
-        QRgb *it = data();
-        for (int i = 0; i < size(); ++i, ++it)
-            *it = 0xff000000 | i | (i<<8) | (i<<16);
-    }
-};
-
-Q_GLOBAL_STATIC(QVector<QRgb>, qt_grayPalette)
-
-const QVector<QRgb> &QFontEngine::grayPalette()
-{
-    return *qt_grayPalette();
-}
-
 QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs, bool round)
 {
     if (glyphs.numGlyphs >= 1) {
@@ -1383,15 +1373,13 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
         if (glyphs->glyphs[glyph_pos] == 0 && str[i].category() != QChar::Separator_Line) {
             QGlyphLayoutInstance tmp = glyphs->instance(glyph_pos);
             for (int x=1; x < engines.size(); ++x) {
-                if (!shouldLoadFontEngineForCharacter(x, ucs4))
+                if (engines.at(x) == 0 && !shouldLoadFontEngineForCharacter(x, ucs4))
                     continue;
 
                 QFontEngine *engine = engines.at(x);
-                bool deleteThisEngine = false;
                 if (!engine) {
                     const_cast<QFontEngineMulti *>(this)->loadEngine(x);
                     engine = engines.at(x);
-                    deleteThisEngine = true;
                 }
                 Q_ASSERT(engine != 0);
                 if (engine->type() == Box)
@@ -1407,8 +1395,6 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                     // set the high byte to indicate which engine the glyph came from
                     glyphs->glyphs[glyph_pos] |= (x << 24);
                     break;
-                } else if (deleteThisEngine) {
-                    const_cast<QFontEngineMulti *>(this)->unloadEngine(x);
                 }
             }
 

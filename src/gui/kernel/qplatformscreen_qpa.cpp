@@ -41,6 +41,7 @@
 
 #include "qplatformscreen_qpa.h"
 #include <QtGui/qguiapplication.h>
+#include <QtGui/qplatformcursor_qpa.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qplatformscreen_qpa_p.h>
 #include <QtGui/qplatformintegration_qpa.h>
@@ -246,6 +247,16 @@ This function is allowed to block.
   hardware does not support page flipping. The default implementation returns 0.
  */
 QPlatformScreenPageFlipper *QPlatformScreen::pageFlipper() const
+{
+    return 0;
+}
+
+/*!
+    Reimplement this function in subclass to return the cursor of the screen.
+
+    The default implementation returns 0.
+*/
+QPlatformCursor *QPlatformScreen::cursor() const
 {
     return 0;
 }

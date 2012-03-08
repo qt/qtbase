@@ -65,23 +65,23 @@ QT_BEGIN_NAMESPACE
 
     \list 1
 
-    \i \l value: The bounded integer that QAbstractSlider maintains.
+    \li \l value: The bounded integer that QAbstractSlider maintains.
 
-    \i \l minimum: The lowest possible value.
+    \li \l minimum: The lowest possible value.
 
-    \i \l maximum: The highest possible value.
+    \li \l maximum: The highest possible value.
 
-    \i \l singleStep: The smaller of two natural steps that an
+    \li \l singleStep: The smaller of two natural steps that an
     abstract sliders provides and typically corresponds to the user
     pressing an arrow key.
 
-    \i \l pageStep: The larger of two natural steps that an abstract
+    \li \l pageStep: The larger of two natural steps that an abstract
     slider provides and typically corresponds to the user pressing
     PageUp or PageDown.
 
-    \i \l tracking: Whether slider tracking is enabled.
+    \li \l tracking: Whether slider tracking is enabled.
 
-    \i \l sliderPosition: The current position of the slider. If \l
+    \li \l sliderPosition: The current position of the slider. If \l
     tracking is enabled (the default), this is identical to \l value.
 
     \endlist
@@ -95,21 +95,21 @@ QT_BEGIN_NAMESPACE
     QAbstractSlider emits a comprehensive set of signals:
 
     \table
-    \header \i Signal \i Emitted when
-    \row \i \l valueChanged()
-         \i the value has changed. The \l tracking
+    \header \li Signal \li Emitted when
+    \row \li \l valueChanged()
+         \li the value has changed. The \l tracking
             determines whether this signal is emitted during user
             interaction.
-    \row \i \l sliderPressed()
-         \i the user starts to drag the slider.
-    \row \i \l sliderMoved()
-         \i the user drags the slider.
-    \row \i \l sliderReleased()
-         \i the user releases the slider.
-    \row \i \l actionTriggered()
-         \i a slider action was triggerd.
-    \row \i \l rangeChanged()
-         \i a the range has changed.
+    \row \li \l sliderPressed()
+         \li the user starts to drag the slider.
+    \row \li \l sliderMoved()
+         \li the user drags the slider.
+    \row \li \l sliderReleased()
+         \li the user releases the slider.
+    \row \li \l actionTriggered()
+         \li a slider action was triggerd.
+    \row \li \l rangeChanged()
+         \li a the range has changed.
     \endtable
 
     QAbstractSlider provides a virtual sliderChange() function that is

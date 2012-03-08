@@ -92,8 +92,8 @@
     slots and are easily connected to menu entries.
 
     \table
-    \row \o \inlineimage mdi-cascade.png
-         \o \inlineimage mdi-tile.png
+    \row \li \inlineimage mdi-cascade.png
+         \li \inlineimage mdi-tile.png
     \endtable
 
     \note The default scroll bar property for QMdiArea is Qt::ScrollBarAlwaysOff.

@@ -143,9 +143,9 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
     static void orderedMemoryFence();
 
     template <typename T> static inline
-    T loadAcquire(T &_q_value)
+    T loadAcquire(const T &_q_value)
     {
-        return *static_cast<volatile T *>(&_q_value);
+        return *static_cast<const volatile T *>(&_q_value);
     }
 
     template <typename T> static inline

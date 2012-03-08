@@ -59,15 +59,15 @@ QT_BEGIN_NAMESPACE
     of QGuiApplication:
 
     \list
-    \o \c fontengine=native Indicates that the freetype font
+    \li \c fontengine=native Indicates that the freetype font
        engine should not be used.
-    \o \c gl=gdi Indicates that ARB Open GL functionality should not be used
+    \li \c gl=gdi Indicates that ARB Open GL functionality should not be used
     \endlist
 
     \section1 Tips
 
     \list
-    \o The environment variable \c QT_LIGHTHOUSE_WINDOWS_VERBOSE controls
+    \li The environment variable \c QT_LIGHTHOUSE_WINDOWS_VERBOSE controls
        the debug level. It takes the form
        \c{<keyword1>:<level1>,<keyword2>:<level2>}, where
        keyword is one of \c integration, \c windows, \c backingstore and

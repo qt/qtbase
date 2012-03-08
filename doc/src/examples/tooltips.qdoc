@@ -53,8 +53,8 @@
     The Tooltips example consists of two classes:
 
     \list
-    \o \c ShapeItem is a custom widget representing one single shape item.
-    \o \c SortingBox inherits from QWidget and is the application's main
+    \li \c ShapeItem is a custom widget representing one single shape item.
+    \li \c SortingBox inherits from QWidget and is the application's main
         widget.
     \endlist
 

@@ -112,7 +112,7 @@
   too small for the higher resolutions of typical printers.
 
   \table
-  \row \o \bold{Printer and Painter Coordinate Systems}
+  \row \li \b{Printer and Painter Coordinate Systems}
 
   The \l{QPrinter::}{paperRect()} and \l{QPrinter::}{pageRect()} functions
   provide information about the size of the paper used for printing and the
@@ -126,7 +126,7 @@
   rectangle, and painting operations will be clipped to the bounds of the
   drawable part of the page.
 
-  \o \inlineimage printer-rects.png
+  \li \inlineimage printer-rects.png
   \endtable
 
   The paint system automatically uses the correct device metrics when painting
@@ -164,12 +164,12 @@
   functionality can be obtained via a function in the corresponding widget's API.
 
   \table
-  \header \o Widget         \o Printing function        \o Accepts
-  \row    \o QGraphicsView  \o QGraphicsView::render()  \o QPainter
-  \row    \o QSvgWidget     \o QSvgRenderer::render()   \o QPainter
-  \row    \o QTextEdit      \o QTextDocument::print()   \o QPrinter
-  \row    \o QTextLayout    \o QTextLayout::draw()      \o QPainter
-  \row    \o QTextLine      \o QTextLine::draw()        \o QPainter
+  \header \li Widget         \li Printing function        \li Accepts
+  \row    \li QGraphicsView  \li QGraphicsView::render()  \li QPainter
+  \row    \li QSvgWidget     \li QSvgRenderer::render()   \li QPainter
+  \row    \li QTextEdit      \li QTextDocument::print()   \li QPrinter
+  \row    \li QTextLayout    \li QTextLayout::draw()      \li QPainter
+  \row    \li QTextLine      \li QTextLine::draw()        \li QPainter
   \endtable
 
   QTextEdit requires a QPrinter rather than a QPainter because it uses information

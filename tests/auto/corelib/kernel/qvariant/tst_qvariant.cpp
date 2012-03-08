@@ -2541,8 +2541,23 @@ public:
 };
 Q_DECLARE_METATYPE(CustomQObjectDerived*)
 
+class CustomQObjectDerivedNoMetaType : public CustomQObject {
+    Q_OBJECT
+public:
+    CustomQObjectDerivedNoMetaType(QObject *parent = 0) : CustomQObject(parent) {}
+};
+
 void tst_QVariant::qvariant_cast_QObject_derived()
 {
+    {
+        CustomQObjectDerivedNoMetaType *object = new CustomQObjectDerivedNoMetaType(this);
+        QVariant data = QVariant::fromValue(object);
+        QVERIFY(data.userType() == qMetaTypeId<CustomQObjectDerivedNoMetaType*>());
+        QCOMPARE(data.value<QObject *>(), object);
+        QCOMPARE(data.value<CustomQObjectDerivedNoMetaType *>(), object);
+        QCOMPARE(data.value<CustomQObject *>(), object);
+        QVERIFY(data.value<CustomQWidget*>() == 0);
+    }
     {
         CustomQObjectDerived *object = new CustomQObjectDerived(this);
         QVariant data = QVariant::fromValue(object);

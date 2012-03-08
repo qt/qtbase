@@ -42,6 +42,7 @@ bootstrap { #Qt code
         qdatetime.cpp \
         qdir.cpp \
         qdiriterator.cpp \
+        qfiledevice.cpp \
         qfile.cpp \
         qabstractfileengine.cpp \
         qfileinfo.cpp \

@@ -56,147 +56,283 @@
 #include "qimagereader.h"
 #include "qimagewriter.h"
 
+#include <QtCore/QEventLoop>
+#include <QtCore/QDebug>
+
 #include <private/qguiapplication_p.h>
 #include <private/qdnd_p.h>
 
+#include <QtPlatformSupport/private/qshapedpixmapdndwindow_p.h>
+
 QT_BEGIN_NAMESPACE
 
-class QDropData : public QInternalMimeData
-{
-public:
-    QDropData();
-    ~QDropData();
+/*!
+    \class QBasicDrag
+    \brief QBasicDrag is a base class for implementing platform drag and drop.
+    \since 5.0
+    \internal
+    \ingroup qpa
 
-protected:
-    bool hasFormat_sys(const QString &mimeType) const;
-    QStringList formats_sys() const;
-    QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const;
-};
+    QBasicDrag implements QPlatformDrag::drag() by running a local event loop in which
+    it tracks mouse movements and moves the drag icon (QShapedPixmapWindow) accordingly.
+    It provides new virtuals allowing for querying whether the receiving window
+    (within the Qt application or outside) accepts the drag and sets the state accordingly.
+*/
 
-QSimpleDrag::QSimpleDrag()
+QBasicDrag::QBasicDrag() :
+    m_restoreCursor(false), m_eventLoop(0),
+    m_executed_drop_action(Qt::IgnoreAction), m_can_drop(false),
+    m_drag(0), m_drag_icon_window(0), m_cursor_drop_action(Qt::IgnoreAction)
 {
-    m_dropData = new QDropData();
-    currentWindow = 0;
 }
 
-QSimpleDrag::~QSimpleDrag()
+QBasicDrag::~QBasicDrag()
 {
-    delete m_dropData;
+    delete m_drag_icon_window;
+}
+
+void QBasicDrag::enableEventFilter()
+{
+    qApp->installEventFilter(this);
+}
+
+void QBasicDrag::disableEventFilter()
+{
+    qApp->removeEventFilter(this);
+}
+
+bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
+{
+    if (!m_drag) {
+        if (e->type() == QEvent::KeyRelease && static_cast<QKeyEvent*>(e)->key() == Qt::Key_Escape) {
+            disableEventFilter();
+            exitDndEventLoop();
+            return true; // block the key release
+        }
+        return false;
+    }
+
+    if (!qobject_cast<QWindow *>(o))
+        return false;
+
+    switch (e->type()) {
+        case QEvent::ShortcutOverride:
+            // prevent accelerators from firing while dragging
+            e->accept();
+            return true;
+
+        case QEvent::KeyPress:
+        case QEvent::KeyRelease:
+        {
+            QKeyEvent *ke = static_cast<QKeyEvent *>(e);
+            if (ke->key() == Qt::Key_Escape && e->type() == QEvent::KeyPress) {
+                cancel();
+                resetDndState(true);
+                disableEventFilter();
+                exitDndEventLoop();
+
+            }
+            return true; // Eat all key events
+        }
+
+        case QEvent::MouseMove:
+            move(static_cast<QMouseEvent *>(e));
+            return true; // Eat all mouse events
+
+        case QEvent::MouseButtonRelease:
+            disableEventFilter();
+
+            if (canDrop()) {
+                drop(static_cast<QMouseEvent *>(e));
+                resetDndState(false);
+            } else {
+                cancel();
+                resetDndState(true);
+            }
+            exitDndEventLoop();
+            return true; // Eat all mouse events
+
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonDblClick:
+        case QEvent::Wheel:
+            return true;
+        default:
+             break;
+    }
+    return false;
+}
+
+Qt::DropAction QBasicDrag::drag(QDrag *o)
+{
+    m_drag = o;
+    m_executed_drop_action = Qt::IgnoreAction;
+    m_can_drop = false;
+    m_restoreCursor = true;
+#ifndef QT_NO_CURSOR
+    qApp->setOverrideCursor(Qt::DragCopyCursor);
+    updateCursor(m_executed_drop_action);
+#endif
+    startDrag();
+    m_eventLoop = new QEventLoop;
+    m_eventLoop->exec();
+    delete m_eventLoop;
+    m_eventLoop = 0;
+    m_drag = 0;
+    endDrag();
+    return m_executed_drop_action;
+}
+
+void QBasicDrag::resetDndState(bool /* deleteSource */)
+{
+    if (m_restoreCursor) {
+#ifndef QT_NO_CURSOR
+        QGuiApplication::restoreOverrideCursor();
+#endif
+        m_restoreCursor = false;
+    }
+}
+
+void QBasicDrag::startDrag()
+{
+    if (!m_drag_icon_window)
+        m_drag_icon_window = new QShapedPixmapWindow();
+
+    m_drag_icon_window->setPixmap(m_drag->pixmap());
+    m_drag_icon_window->setHotspot(m_drag->hotSpot());
+    m_drag_icon_window->updateGeometry();
+    m_drag_icon_window->setVisible(true);
+
+    enableEventFilter();
+}
+
+void QBasicDrag::endDrag()
+{
+}
+
+void QBasicDrag::cancel()
+{
+    disableEventFilter();
+    m_drag_icon_window->setVisible(false);
+}
+
+void QBasicDrag::move(const QMouseEvent *)
+{
+    if (m_drag)
+        m_drag_icon_window->updateGeometry();
+}
+
+void QBasicDrag::drop(const QMouseEvent *)
+{
+    disableEventFilter();
+    m_drag_icon_window->setVisible(false);
+}
+
+void  QBasicDrag::exitDndEventLoop()
+{
+    if (m_eventLoop && m_eventLoop->isRunning())
+        m_eventLoop->exit();
+}
+
+void QBasicDrag::updateCursor(Qt::DropAction action)
+{
+    Qt::CursorShape cursorShape = Qt::ForbiddenCursor;
+    if (canDrop()) {
+        switch (action) {
+        case Qt::CopyAction:
+            cursorShape = Qt::DragCopyCursor;
+            break;
+        case Qt::LinkAction:
+            cursorShape = Qt::DragLinkCursor;
+            break;
+        default:
+            cursorShape = Qt::DragMoveCursor;
+            break;
+        }
+    }
+
+    QCursor *cursor = qApp->overrideCursor();
+    if (cursor && cursorShape != cursor->shape()) {
+        qApp->changeOverrideCursor(QCursor(cursorShape));
+    }
+    updateAction(action);
+}
+
+/*!
+    \class QSimpleDrag
+    \brief QSimpleDrag implements QBasicDrag for Drag and Drop operations within the Qt Application itself.
+    \since 5.0
+    \internal
+    \ingroup qpa
+
+    The class checks whether the receiving window is a window of the Qt application
+    and sets the state accordingly. It does not take windows of other applications
+    into account.
+*/
+
+QSimpleDrag::QSimpleDrag() : m_current_window(0)
+{
 }
 
 QMimeData *QSimpleDrag::platformDropData()
 {
-    return m_dropData;
+    if (drag())
+        return drag()->mimeData();
+    return 0;
+}
+
+void QSimpleDrag::startDrag()
+{
+    QBasicDrag::startDrag();
+    m_current_window = QGuiApplication::topLevelAt(QCursor::pos());
+    if (m_current_window) {
+        QPlatformDragQtResponse response = QWindowSystemInterface::handleDrag(m_current_window, drag()->mimeData(), QCursor::pos(), drag()->supportedActions());
+        setCanDrop(response.isAccepted());
+        updateCursor(response.acceptedAction());
+    } else {
+        setCanDrop(false);
+        updateCursor(Qt::IgnoreAction);
+    }
+    setExecutedDropAction(Qt::IgnoreAction);
 }
 
 void QSimpleDrag::cancel()
 {
-    QDragManager *m = QDragManager::self();
-//    qDebug("QDragManager::cancel");
-    if (m->object->target()) {
-        QDragLeaveEvent dle;
-        QCoreApplication::sendEvent(m->object->target(), &dle);
-    }
-
+    QBasicDrag::cancel();
+    if (drag())
+        QWindowSystemInterface::handleDrag(m_current_window, 0, QPoint(), Qt::IgnoreAction);
+    m_current_window = 0;
 }
 
 void QSimpleDrag::move(const QMouseEvent *me)
 {
+    QBasicDrag::move(me);
     QWindow *window = QGuiApplication::topLevelAt(me->globalPos());
-    QPoint pos;
-    if (window)
-        pos = me->globalPos() - window->geometry().topLeft();
+    if (!window)
+        return;
 
-    QDragManager *m = QDragManager::self();
+    const QPoint pos = me->globalPos() - window->geometry().topLeft();
+    const QPlatformDragQtResponse qt_response =
+        QWindowSystemInterface::handleDrag(window, drag()->mimeData(), pos, drag()->supportedActions());
 
-    if (me->buttons()) {
-        Qt::DropAction prevAction = m->global_accepted_action;
-
-        if (currentWindow != window) {
-            if (currentWindow) {
-                QDragLeaveEvent dle;
-                QCoreApplication::sendEvent(currentWindow, &dle);
-                m->willDrop = false;
-                m->global_accepted_action = Qt::IgnoreAction;
-            }
-            currentWindow = window;
-            if (currentWindow) {
-                QDragEnterEvent dee(pos, m->possible_actions, m->dropData(), me->buttons(), me->modifiers());
-                QCoreApplication::sendEvent(currentWindow, &dee);
-                m->willDrop = dee.isAccepted() && dee.dropAction() != Qt::IgnoreAction;
-                m->global_accepted_action = m->willDrop ? dee.dropAction() : Qt::IgnoreAction;
-            }
-            m->updateCursor();
-        } else if (window) {
-            Q_ASSERT(currentWindow);
-            QDragMoveEvent dme(pos, m->possible_actions, m->dropData(), me->buttons(), me->modifiers());
-            if (m->global_accepted_action != Qt::IgnoreAction) {
-                dme.setDropAction(m->global_accepted_action);
-                dme.accept();
-            }
-            QCoreApplication::sendEvent(currentWindow, &dme);
-            m->willDrop = dme.isAccepted();
-            m->global_accepted_action = m->willDrop ? dme.dropAction() : Qt::IgnoreAction;
-            m->updatePixmap();
-            m->updateCursor();
-        }
-        if (m->global_accepted_action != prevAction)
-            m->emitActionChanged(m->global_accepted_action);
-    }
+    updateCursor(qt_response.acceptedAction());
+    setCanDrop(qt_response.isAccepted());
 }
 
 void QSimpleDrag::drop(const QMouseEvent *me)
 {
-    QDragManager *m = QDragManager::self();
-
+    QBasicDrag::drop(me);
     QWindow *window = QGuiApplication::topLevelAt(me->globalPos());
+    if (!window)
+        return;
 
-    if (window) {
-        QPoint pos = me->globalPos() - window->geometry().topLeft();
-
-        QDropEvent de(pos, m->possible_actions, m->dropData(), me->buttons(), me->modifiers());
-        QCoreApplication::sendEvent(window, &de);
-        if (de.isAccepted())
-            m->global_accepted_action = de.dropAction();
-        else
-            m->global_accepted_action = Qt::IgnoreAction;
+    const QPoint pos = me->globalPos() - window->geometry().topLeft();
+    const QPlatformDropQtResponse response =
+            QWindowSystemInterface::handleDrop(window, drag()->mimeData(),pos, drag()->supportedActions());
+    if (response.isAccepted()) {
+        setExecutedDropAction(response.acceptedAction());
+    } else {
+        setExecutedDropAction(Qt::IgnoreAction);
     }
-    currentWindow = 0;
-}
-
-
-
-QDropData::QDropData()
-    : QInternalMimeData()
-{
-}
-
-QDropData::~QDropData()
-{
-}
-
-QVariant QDropData::retrieveData_sys(const QString &mimetype, QVariant::Type type) const
-{
-    QDrag *object = QDragManager::self()->object;
-    if (!object)
-        return QVariant();
-    QByteArray data =  object->mimeData()->data(mimetype);
-    if (type == QVariant::String)
-        return QString::fromUtf8(data);
-    return data;
-}
-
-bool QDropData::hasFormat_sys(const QString &format) const
-{
-    return formats().contains(format);
-}
-
-QStringList QDropData::formats_sys() const
-{
-    QDrag *object = QDragManager::self()->object;
-    if (object)
-        return object->mimeData()->formats();
-    return QStringList();
 }
 
 QT_END_NAMESPACE

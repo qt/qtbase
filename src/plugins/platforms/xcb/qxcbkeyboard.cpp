@@ -935,7 +935,7 @@ void QXcbKeyboard::setupModifiers()
     xcb_get_modifier_mapping_reply_t *modMapReply =
         xcb_get_modifier_mapping_reply(conn, modMapCookie, &error);
     if (error) {
-        qWarning("xcb keyboard: failed to get modifier mapping");
+        qWarning("QXcbKeyboard: failed to get modifier mapping");
         free(error);
         return;
     }

@@ -2376,12 +2376,12 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
   whether sorting is enabled.
 
   \table 100%
-  \row \o \inlineimage windowsxp-treeview.png Screenshot of a Windows XP style tree widget
-       \o \inlineimage macintosh-treeview.png Screenshot of a Macintosh style tree widget
-       \o \inlineimage plastique-treeview.png Screenshot of a Plastique style tree widget
-  \row \o A \l{Windows XP Style Widget Gallery}{Windows XP style} tree widget.
-       \o A \l{Macintosh Style Widget Gallery}{Macintosh style} tree widget.
-       \o A \l{Plastique Style Widget Gallery}{Plastique style} tree widget.
+  \row \li \inlineimage windowsxp-treeview.png Screenshot of a Windows XP style tree widget
+       \li \inlineimage macintosh-treeview.png Screenshot of a Macintosh style tree widget
+       \li \inlineimage plastique-treeview.png Screenshot of a Plastique style tree widget
+  \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} tree widget.
+       \li A \l{Macintosh Style Widget Gallery}{Macintosh style} tree widget.
+       \li A \l{Plastique Style Widget Gallery}{Plastique style} tree widget.
   \endtable
 
   \sa QTreeWidgetItem, QTreeWidgetItemIterator, QTreeView,
@@ -3263,7 +3263,7 @@ void QTreeWidget::collapseItem(const QTreeWidgetItem *item)
 /*!
     Clears the tree widget by removing all of its items and selections.
 
-    \bold{Note:} Since each item is removed from the tree widget before being
+    \b{Note:} Since each item is removed from the tree widget before being
     deleted, the return value of QTreeWidgetItem::treeWidget() will be invalid
     when called from an item's destructor.
 

@@ -21,10 +21,12 @@ SUBDIRS=\
     qlocale \
     qmap \
     qmargins \
+    qpair \
     qpoint \
     qqueue \
     qrect \
     qregexp \
+    qregularexpression \
     qringbuffer \
     qscopedpointer \
     qscopedvaluerollback \

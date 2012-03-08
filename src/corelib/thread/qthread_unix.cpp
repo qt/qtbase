@@ -287,7 +287,7 @@ void *QThreadPrivate::start(void *arg)
     else
         createEventDispatcher(data);
 
-#if !defined(QT_NO_DEBUG)  && (defined(Q_OS_LINUX) || defined(Q_OS_MAC))
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MAC))
     // sets the name of the current thread.
     QByteArray objectName = thr->objectName().toLocal8Bit();
 

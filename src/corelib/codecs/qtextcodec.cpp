@@ -111,7 +111,7 @@ static bool qisalnum(register char c)
 static bool nameMatch(const QByteArray &name, const QByteArray &test)
 {
     // if they're the same, return a perfect score
-    if (qstricmp(name, test) == 0)
+    if (qstricmp(name.constData(), test.constData()) == 0)
         return true;
 
     const char *n = name.constData();
@@ -145,8 +145,6 @@ static bool destroying_is_ok = false;
 #endif
 
 static QTextCodec *localeMapper = 0;
-QTextCodec *QTextCodec::cftr = 0;
-
 
 class QTextCodecCleanup
 {
@@ -510,7 +508,7 @@ static QTextCodec * ru_RU_hack(const char * i) {
                   koi8r, latin5, i);
     }
 #if !defined(QT_NO_SETLOCALE)
-    setlocale(LC_CTYPE, origlocale);
+    setlocale(LC_CTYPE, origlocale.constData());
 #endif
 
     return ru_RU_codec;
@@ -648,7 +646,7 @@ static void setupLocaleMapper()
             else if (try_locale_list(pt_154locales, lang))
                 localeMapper = QTextCodec::codecForName("PT 154");
             else if (try_locale_list(probably_koi8_rlocales, lang))
-                localeMapper = ru_RU_hack(lang);
+                localeMapper = ru_RU_hack(lang.constData());
         }
 
     }
@@ -789,38 +787,38 @@ QTextCodec::ConverterState::~ConverterState()
     The supported encodings are:
 
     \list
-    \o Apple Roman
-    \o \l{Big5 Text Codec}{Big5}
-    \o \l{Big5-HKSCS Text Codec}{Big5-HKSCS}
-    \o CP949
-    \o \l{EUC-JP Text Codec}{EUC-JP}
-    \o \l{EUC-KR Text Codec}{EUC-KR}
-    \o \l{GBK Text Codec}{GB18030-0}
-    \o IBM 850
-    \o IBM 866
-    \o IBM 874
-    \o \l{ISO 2022-JP (JIS) Text Codec}{ISO 2022-JP}
-    \o ISO 8859-1 to 10
-    \o ISO 8859-13 to 16
-    \o Iscii-Bng, Dev, Gjr, Knd, Mlm, Ori, Pnj, Tlg, and Tml
-    \o JIS X 0201
-    \o JIS X 0208
-    \o KOI8-R
-    \o KOI8-U
-    \o MuleLao-1
-    \o ROMAN8
-    \o \l{Shift-JIS Text Codec}{Shift-JIS}
-    \o TIS-620
-    \o \l{TSCII Text Codec}{TSCII}
-    \o UTF-8
-    \o UTF-16
-    \o UTF-16BE
-    \o UTF-16LE
-    \o UTF-32
-    \o UTF-32BE
-    \o UTF-32LE
-    \o Windows-1250 to 1258
-    \o WINSAMI2
+    \li Apple Roman
+    \li \l{Big5 Text Codec}{Big5}
+    \li \l{Big5-HKSCS Text Codec}{Big5-HKSCS}
+    \li CP949
+    \li \l{EUC-JP Text Codec}{EUC-JP}
+    \li \l{EUC-KR Text Codec}{EUC-KR}
+    \li \l{GBK Text Codec}{GB18030-0}
+    \li IBM 850
+    \li IBM 866
+    \li IBM 874
+    \li \l{ISO 2022-JP (JIS) Text Codec}{ISO 2022-JP}
+    \li ISO 8859-1 to 10
+    \li ISO 8859-13 to 16
+    \li Iscii-Bng, Dev, Gjr, Knd, Mlm, Ori, Pnj, Tlg, and Tml
+    \li JIS X 0201
+    \li JIS X 0208
+    \li KOI8-R
+    \li KOI8-U
+    \li MuleLao-1
+    \li ROMAN8
+    \li \l{Shift-JIS Text Codec}{Shift-JIS}
+    \li TIS-620
+    \li \l{TSCII Text Codec}{TSCII}
+    \li UTF-8
+    \li UTF-16
+    \li UTF-16BE
+    \li UTF-16LE
+    \li UTF-32
+    \li UTF-32BE
+    \li UTF-32LE
+    \li Windows-1250 to 1258
+    \li WINSAMI2
     \endlist
 
     QTextCodecs can be used as follows to convert some locally encoded
@@ -871,29 +869,29 @@ QTextCodec::ConverterState::~ConverterState()
     QTextCodec and implement the functions listed in the table below.
 
     \table
-    \header \o Function \o Description
+    \header \li Function \li Description
 
-    \row \o name()
-         \o Returns the official name for the encoding. If the
+    \row \li name()
+         \li Returns the official name for the encoding. If the
             encoding is listed in the
             \l{IANA character-sets encoding file}, the name
             should be the preferred MIME name for the encoding.
 
-    \row \o aliases()
-         \o Returns a list of alternative names for the encoding.
+    \row \li aliases()
+         \li Returns a list of alternative names for the encoding.
             QTextCodec provides a default implementation that returns
             an empty list. For example, "ISO-8859-1" has "latin1",
             "CP819", "IBM819", and "iso-ir-100" as aliases.
 
-    \row \o mibEnum()
-         \o Return the MIB enum for the encoding if it is listed in
+    \row \li mibEnum()
+         \li Return the MIB enum for the encoding if it is listed in
             the \l{IANA character-sets encoding file}.
 
-    \row \o convertToUnicode()
-         \o Converts an 8-bit character string to Unicode.
+    \row \li convertToUnicode()
+         \li Converts an 8-bit character string to Unicode.
 
-    \row \o convertFromUnicode()
-         \o Converts a Unicode string to an 8-bit character string.
+    \row \li convertFromUnicode()
+         \li Converts a Unicode string to an 8-bit character string.
     \endtable
 
     \sa QTextStream, QTextDecoder, QTextEncoder, {Codecs Example}
@@ -1462,41 +1460,6 @@ QString QTextDecoder::toUnicode(const QByteArray &ba)
 {
     return c->toUnicode(ba.constData(), ba.length(), &state);
 }
-
-
-/*!
-    \fn QTextCodec* QTextCodec::codecForTr()
-
-    Returns the codec used by QObject::tr() on its argument. If this
-    function returns 0 (the default), tr() assumes Latin-1.
-
-    \sa setCodecForTr()
-*/
-
-/*!
-    \fn void QTextCodec::setCodecForTr(QTextCodec *c)
-    \nonreentrant
-
-    Sets the codec used by QObject::tr() on its argument to \a c. If
-    \a c is 0 (the default), tr() assumes Latin-1.
-
-    If the literal quoted text in the program is not in the Latin-1
-    encoding, this function can be used to set the appropriate
-    encoding. For example, software developed by Korean programmers
-    might use eucKR for all the text in the program, in which case the
-    main() function might look like this:
-
-    \snippet doc/src/snippets/code/src_corelib_codecs_qtextcodec.cpp 3
-
-    Note that this is not the way to select the encoding that the \e
-    user has chosen. For example, to convert an application containing
-    literal English strings to Korean, all that is needed is for the
-    English strings to be passed through tr() and for translation
-    files to be loaded. For details of internationalization, see
-    \l{Internationalization with Qt}.
-
-    \sa codecForTr()
-*/
 
 /*!
     \since 4.4

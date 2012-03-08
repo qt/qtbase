@@ -85,7 +85,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     static void orderedMemoryFence() { }
 
     template <typename T> static inline always_inline
-    T load(T &_q_value)
+    T load(const T &_q_value)
     {
         return _q_value;
     }
@@ -97,9 +97,9 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T> static inline always_inline
-    T loadAcquire(T &_q_value)
+    T loadAcquire(const T &_q_value)
     {
-        T tmp = *static_cast<volatile T *>(&_q_value);
+        T tmp = *static_cast<const volatile T *>(&_q_value);
         BaseClass::acquireMemoryFence();
         return tmp;
     }

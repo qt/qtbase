@@ -23,8 +23,6 @@ HEADERS += \
         image/qpixmapcache_p.h \
         image/qplatformpixmap_qpa.h \
         image/qimagepixmapcleanuphooks_p.h \
-        image/qvolatileimage_p.h \
-        image/qvolatileimagedata_p.h
 
 SOURCES += \
         image/qbitmap.cpp \
@@ -42,12 +40,9 @@ SOURCES += \
         image/qpixmap_raster.cpp \
         image/qpixmap_blitter.cpp \
         image/qnativeimage.cpp \
-        image/qimagepixmapcleanuphooks.cpp \
-        image/qvolatileimage.cpp
+        image/qimagepixmapcleanuphooks.cpp
 
 win32: SOURCES += image/qpixmap_win.cpp
-
-SOURCES += image/qvolatileimagedata.cpp
 
 # Built-in image format support
 HEADERS += \

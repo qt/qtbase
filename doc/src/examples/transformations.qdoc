@@ -42,9 +42,9 @@
     The example consists of two classes and a global enum:
 
     \list
-    \o The \c RenderArea class controls the rendering of a given shape.
-    \o The \c Window class is the application's main window.
-    \o The \c Operation enum describes the various transformation
+    \li The \c RenderArea class controls the rendering of a given shape.
+    \li The \c Window class is the application's main window.
+    \li The \c Operation enum describes the various transformation
        operations available in the application.
     \endlist
 

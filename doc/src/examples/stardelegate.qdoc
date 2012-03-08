@@ -58,15 +58,15 @@
     The example consists of the following classes:
 
     \list
-    \o \c StarRating is the custom data type. It stores a rating
+    \li \c StarRating is the custom data type. It stores a rating
        expressed as stars, such as "2 out of 5 stars" or "5 out of
        6 stars".
 
-    \o \c StarDelegate inherits QItemDelegate and provides support
+    \li \c StarDelegate inherits QItemDelegate and provides support
        for \c StarRating (in addition to the data types already
        handled by QItemDelegate).
 
-    \o \c StarEditor inherits QWidget and is used by \c StarDelegate
+    \li \c StarEditor inherits QWidget and is used by \c StarDelegate
        to let the user edit a star rating using the mouse.
     \endlist
 
@@ -281,7 +281,7 @@
     editor are:
 
     \list
-    \o It is possible to open editors programmatically by calling
+    \li It is possible to open editors programmatically by calling
        QAbstractItemView::edit(), instead of relying on edit
        triggers. This could be use to support other edit triggers
        than those offered by the QAbstractItemView::EditTrigger enum.
@@ -289,7 +289,7 @@
        item with the mouse might make sense as a way to pop up an
        editor.
 
-    \o By reimplementing QAbstractItemDelegate::editorEvent(), it is
+    \li By reimplementing QAbstractItemDelegate::editorEvent(), it is
        possible to implement the editor directly in the delegate,
        instead of creating a separate QWidget subclass.
     \endlist

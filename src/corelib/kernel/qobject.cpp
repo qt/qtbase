@@ -69,6 +69,16 @@
 
 QT_BEGIN_NAMESPACE
 
+struct QObjectPrivate::ExtraData
+{
+    ExtraData() {}
+#ifndef QT_NO_USERDATA
+    QVector<QObjectUserData *> userData;
+#endif
+    QList<QByteArray> propertyNames;
+    QList<QVariant> propertyValues;
+};
+
 static int DIRECT_CONNECTION_ONLY = 0;
 
 static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)
@@ -1829,7 +1839,7 @@ void QObject::removeEventFilter(QObject *obj)
     deleted, the control must return to the event loop from which
     deleteLater() was called.
 
-    \bold{Note:} It is safe to call this function more than once; when the
+    \b{Note:} It is safe to call this function more than once; when the
     first deferred deletion event is delivered, any pending events for the
     object are removed from the event queue.
 
@@ -1873,7 +1883,7 @@ void QObject::deleteLater()
     translators while performing translations is not supported. Doing
     so will probably result in crashes or other undesirable behavior.
 
-    \sa trUtf8(), QApplication::translate(), QTextCodec::setCodecForTr(), {Internationalization with Qt}
+    \sa trUtf8(), QApplication::translate(), {Internationalization with Qt}
 */
 
 /*!
@@ -1884,11 +1894,6 @@ void QObject::deleteLater()
     QString::fromUtf8(\a sourceText) if there is no appropriate
     version. It is otherwise identical to tr(\a sourceText, \a
     disambiguation, \a n).
-
-    Note that using the Utf8 variants of the translation functions
-    is not required if \c CODECFORTR is already set to UTF-8 in the
-    qmake project file and QTextCodec::setCodecForTr("UTF-8") is
-    used.
 
     \warning This method is reentrant only if all translators are
     installed \e before calling this method. Installing or removing
@@ -2147,9 +2152,9 @@ int QObject::receivers(const char *signal) const
     member in the specified class.
 
     \list
-    \o If member.mobj is 0 then both signalIndex and methodIndex are set to -1.
+    \li If member.mobj is 0 then both signalIndex and methodIndex are set to -1.
 
-    \o If specified member is not a member of obj instance class (or one of
+    \li If specified member is not a member of obj instance class (or one of
     its parent classes) then both signalIndex and methodIndex are set to -1.
     \endlist
 
@@ -2598,7 +2603,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
     disconnect() is typically used in three ways, as the following
     examples demonstrate.
     \list 1
-    \i Disconnect everything connected to an object's signals:
+    \li Disconnect everything connected to an object's signals:
 
        \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 26
 
@@ -2606,7 +2611,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
 
        \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 27
 
-    \i Disconnect everything connected to a specific signal:
+    \li Disconnect everything connected to a specific signal:
 
        \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 28
 
@@ -2614,7 +2619,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
 
        \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 29
 
-    \i Disconnect a specific receiver:
+    \li Disconnect a specific receiver:
 
        \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 30
 
@@ -2775,11 +2780,11 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     if:
     \list 1
 
-        \i \a signal is not a member of sender class or one of its parent classes.
+        \li \a signal is not a member of sender class or one of its parent classes.
 
-        \i \a method is not a member of receiver class or one of its parent classes.
+        \li \a method is not a member of receiver class or one of its parent classes.
 
-        \i \a signal instance represents not a signal.
+        \li \a signal instance represents not a signal.
 
     \endlist
 
@@ -3460,7 +3465,7 @@ int QObjectPrivate::signalIndex(const char *signalName) const
   Changing the value of a dynamic property causes a QDynamicPropertyChangeEvent
   to be sent to the object.
 
-  \bold{Note:} Dynamic properties starting with "_q_" are reserved for internal
+  \b{Note:} Dynamic properties starting with "_q_" are reserved for internal
   purposes.
 
   \sa property(), metaObject(), dynamicPropertyNames()
@@ -4219,19 +4224,19 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     disconnect() is typically used in three ways, as the following
     examples demonstrate.
     \list 1
-    \i Disconnect everything connected to an object's signals:
+    \li Disconnect everything connected to an object's signals:
 
        \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 26
 
-    \i Disconnect everything connected to a specific signal:
+    \li Disconnect everything connected to a specific signal:
 
        \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 47
 
-    \i Disconnect a specific receiver:
+    \li Disconnect a specific receiver:
 
        \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 30
 
-    \i Disconnect a connection from one specific signal to a specific slot:
+    \li Disconnect a connection from one specific signal to a specific slot:
 
        \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 48
 

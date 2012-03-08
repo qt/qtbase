@@ -331,8 +331,8 @@ void QSqlRelationalTableModelPrivate::clearCache()
     columns to be set as foreign keys into other database tables.
 
     \table
-    \row \o \inlineimage noforeignkeys.png
-         \o \inlineimage foreignkeys.png
+    \row \li \inlineimage noforeignkeys.png
+         \li \inlineimage foreignkeys.png
     \endtable
 
     The screenshot on the left shows a plain QSqlTableModel in a
@@ -375,14 +375,14 @@ void QSqlRelationalTableModelPrivate::clearCache()
     Notes:
 
     \list
-    \o The table must have a primary key declared.
-    \o The table's primary key may not contain a relation to
+    \li The table must have a primary key declared.
+    \li The table's primary key may not contain a relation to
        another table.
-    \o If a relational table contains keys that refer to non-existent
+    \li If a relational table contains keys that refer to non-existent
        rows in the referenced table, the rows containing the invalid
        keys will not be exposed through the model. The user or the
        database is responsible for keeping referential integrity.
-    \o If a relation's display column name is also used as a column
+    \li If a relation's display column name is also used as a column
        name in the main table, or if it is used as display column
        name in more than one relation it will be aliased. The alias is
        is the relation's table name and display column name joined
@@ -393,7 +393,7 @@ void QSqlRelationalTableModelPrivate::clearCache()
        QSqlRelation, so QSqlRelation::displayColumn() will return the
        original display column name, but QSqlRecord::fieldName() will
        return aliases.
-    \o When using setData() the role should always be Qt::EditRole,
+    \li When using setData() the role should always be Qt::EditRole,
        and when using data() the role should always be Qt::DisplayRole.
     \endlist
 

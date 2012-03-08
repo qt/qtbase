@@ -580,7 +580,9 @@ void tst_QChar::normalization_data()
     int linenum = 0;
     int part = 0;
 
-    QFile f(QFINDTESTDATA("NormalizationTest.txt"));
+    QString testFile = QFINDTESTDATA("NormalizationTest.txt");
+    QVERIFY2(!testFile.isEmpty(), "NormalizationTest.txt not found!");
+    QFile f(testFile);
     QVERIFY(f.exists());
 
     f.open(QIODevice::ReadOnly);

@@ -530,8 +530,6 @@ void QProcessPrivate::startProcess()
         notifier->start(NOTIFYTIMEOUT);
     }
 
-    // give the process a chance to start ...
-    Sleep(SLEEPMIN * 2);
     _q_startupNotification();
 }
 

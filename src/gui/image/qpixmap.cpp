@@ -885,7 +885,8 @@ void QPixmap::fill(const QColor &color)
     data->fill(color);
 }
 
-/*! \obsolete
+/*! \fn int QPixmap::serialNumber() const
+    \obsolete
     Returns a number that identifies the contents of this QPixmap
     object. Distinct QPixmap objects can only have the same serial
     number if they refer to the same contents (but they don't have
@@ -898,12 +899,6 @@ void QPixmap::fill(const QColor &color)
     it as a cache key. For caching pixmaps, we recommend using the
     QPixmapCache class whenever possible.
 */
-int QPixmap::serialNumber() const
-{
-    if (isNull())
-        return 0;
-    return data->serialNumber();
-}
 
 /*!
     Returns a number that identifies this QPixmap. Distinct QPixmap
@@ -1052,11 +1047,11 @@ bool QPixmap::convertFromImage(const QImage &image, Qt::ImageConversionFlags fla
     \image qimage-scaling.png
 
     \list
-    \i If \a aspectRatioMode is Qt::IgnoreAspectRatio, the pixmap
+    \li If \a aspectRatioMode is Qt::IgnoreAspectRatio, the pixmap
        is scaled to \a size.
-    \i If \a aspectRatioMode is Qt::KeepAspectRatio, the pixmap is
+    \li If \a aspectRatioMode is Qt::KeepAspectRatio, the pixmap is
        scaled to a rectangle as large as possible inside \a size, preserving the aspect ratio.
-    \i If \a aspectRatioMode is Qt::KeepAspectRatioByExpanding,
+    \li If \a aspectRatioMode is Qt::KeepAspectRatioByExpanding,
        the pixmap is scaled to a rectangle as small as possible
        outside \a size, preserving the aspect ratio.
     \endlist
@@ -1273,17 +1268,17 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     formats:
 
     \table
-    \header \o Format \o Description                      \o Qt's support
-    \row    \o BMP    \o Windows Bitmap                   \o Read/write
-    \row    \o GIF    \o Graphic Interchange Format (optional) \o Read
-    \row    \o JPG    \o Joint Photographic Experts Group \o Read/write
-    \row    \o JPEG   \o Joint Photographic Experts Group \o Read/write
-    \row    \o PNG    \o Portable Network Graphics        \o Read/write
-    \row    \o PBM    \o Portable Bitmap                  \o Read
-    \row    \o PGM    \o Portable Graymap                 \o Read
-    \row    \o PPM    \o Portable Pixmap                  \o Read/write
-    \row    \o XBM    \o X11 Bitmap                       \o Read/write
-    \row    \o XPM    \o X11 Pixmap                       \o Read/write
+    \header \li Format \li Description                      \li Qt's support
+    \row    \li BMP    \li Windows Bitmap                   \li Read/write
+    \row    \li GIF    \li Graphic Interchange Format (optional) \li Read
+    \row    \li JPG    \li Joint Photographic Experts Group \li Read/write
+    \row    \li JPEG   \li Joint Photographic Experts Group \li Read/write
+    \row    \li PNG    \li Portable Network Graphics        \li Read/write
+    \row    \li PBM    \li Portable Bitmap                  \li Read
+    \row    \li PGM    \li Portable Graymap                 \li Read
+    \row    \li PPM    \li Portable Pixmap                  \li Read/write
+    \row    \li XBM    \li X11 Bitmap                       \li Read/write
+    \row    \li XPM    \li X11 Pixmap                       \li Read/write
     \endtable
 
     \section1 Pixmap Information
@@ -1293,17 +1288,17 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
 
     \table
     \header
-    \o \o Available Functions
+    \li \li Available Functions
     \row
-    \o Geometry
-    \o
+    \li Geometry
+    \li
     The size(), width() and height() functions provide information
     about the pixmap's size. The rect() function returns the image's
     enclosing rectangle.
 
     \row
-    \o Alpha component
-    \o
+    \li Alpha component
+    \li
 
     The hasAlphaChannel() returns true if the pixmap has a format that
     respects the alpha channel, otherwise returns false. The hasAlpha(),
@@ -1318,8 +1313,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     QBitmap) for the pixmap based on a given color.
 
     \row
-    \o Low-level information
-    \o
+    \li Low-level information
+    \li
 
     The depth() function returns the depth of the pixmap. The
     defaultDepth() function returns the default depth, i.e. the depth

@@ -531,7 +531,6 @@ void QMenuBarPrivate::_q_actionHovered()
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
             int actionIndex = actions.indexOf(action);
-            ++actionIndex;
             QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, q, actionIndex));
             QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, q, actionIndex));
         }
@@ -621,17 +620,17 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
 
     \table
 
-    \row \o \inlineimage plastique-menubar.png A menu bar shown in the
+    \row \li \inlineimage plastique-menubar.png A menu bar shown in the
     Plastique widget style.
 
-    \o The \l{QPlastiqueStyle}{Plastique widget style}, like most
+    \li The \l{QPlastiqueStyle}{Plastique widget style}, like most
     other styles, handles the \gui{Help} menu in the same way as it
     handles any other menu.
 
-    \row \o \inlineimage motif-menubar.png A menu bar shown in the
+    \row \li \inlineimage motif-menubar.png A menu bar shown in the
     Motif widget style.
 
-    \o The \l{QMotifStyle}{Motif widget style} treats \gui{Help} menus
+    \li The \l{QMotifStyle}{Motif widget style} treats \gui{Help} menus
     in a special way, placing them at right-hand end of the menu bar.
 
     \endtable
@@ -652,18 +651,18 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     the strings looked for and where the entry is placed if matched:
 
     \table
-    \header \i String matches \i Placement \i Notes
-    \row \i about.*
-         \i Application Menu | About <application name>
-         \i The application name is fetched from the \c {Info.plist} file
+    \header \li String matches \li Placement \li Notes
+    \row \li about.*
+         \li Application Menu | About <application name>
+         \li The application name is fetched from the \c {Info.plist} file
             (see note below). If this entry is not found no About item
             will appear in the Application Menu.
-    \row \i config, options, setup, settings or preferences
-         \i Application Menu | Preferences
-         \i If this entry is not found the Settings item will be disabled
-    \row \i quit or exit
-         \i Application Menu | Quit <application name>
-         \i If this entry is not found a default Quit item will be
+    \row \li config, options, setup, settings or preferences
+         \li Application Menu | Preferences
+         \li If this entry is not found the Settings item will be disabled
+    \row \li quit or exit
+         \li Application Menu | Quit <application name>
+         \li If this entry is not found a default Quit item will be
             created to call QApplication::quit()
     \endtable
 
@@ -676,12 +675,12 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
 
     \snippet doc/src/snippets/code/src_gui_widgets_qmenubar.cpp 1
 
-    \bold{Note:} Do \e{not} call QMainWindow::menuBar() to create the
+    \b{Note:} Do \e{not} call QMainWindow::menuBar() to create the
     shared menu bar, because that menu bar will have the QMainWindow
     as its parent. That menu bar would only be displayed for the
     parent QMainWindow.
 
-    \bold{Note:} The text used for the application name in the menu
+    \b{Note:} The text used for the application name in the menu
     bar is obtained from the value set in the \c{Info.plist} file in
     the application's bundle. See \l{Deploying an Application on
     Mac OS X} for more information.

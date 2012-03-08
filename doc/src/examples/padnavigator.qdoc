@@ -81,11 +81,11 @@
     The private data members are:
 
     \list
-    \o \c pix: The optional pixmap that is drawn on top of the rectangle.
-    \o \c fillRect: Corresponds to the \c fill property.
-    \o \c color: The configurable gradient color fill of the rectangle.
-    \o \c bounds: The bounds of the rectangle.
-    \o \c gradient: A precalculated gradient used to fill the rectangle.
+    \li \c pix: The optional pixmap that is drawn on top of the rectangle.
+    \li \c fillRect: Corresponds to the \c fill property.
+    \li \c color: The configurable gradient color fill of the rectangle.
+    \li \c bounds: The bounds of the rectangle.
+    \li \c gradient: A precalculated gradient used to fill the rectangle.
     \endlist
 
     We will now review the \c RoundRectItem implementation. Let's start by
@@ -320,13 +320,13 @@
     QGraphicsRotation object for each of these.
 
     \list
-    \o \c flipRotation: Rotates the grid around its Qt::YAxis. This rotation is
+    \li \c flipRotation: Rotates the grid around its Qt::YAxis. This rotation is
     animated from 0 to 180, and eventually back, when enter is pressed on the
     keyboard, flipping the pad around.
-    \o \c xRotation: Rotates the grid around its Qt::XAxis. This is used to
+    \li \c xRotation: Rotates the grid around its Qt::XAxis. This is used to
     tilt the pad vertically corresponding to which item is currently selected.
     This way, the selected item is always kept in front.
-    \o \c yRotation: Rotates the grid around its Qt::YAxis. This is used to
+    \li \c yRotation: Rotates the grid around its Qt::YAxis. This is used to
     tilt the pad horizontally corresponding to which item is selected. This
     way, the selected item is always kept in front.
     \endlist
@@ -391,11 +391,11 @@
     values when flipped back:
 
     \list
-    \o \c smoothFlipRotation: Animates the main 180 degree rotation of the pad.
-    \o \c smoothFlipScale: Scales the pad out and then in again while the pad is rotating.
-    \o \c smoothFlipXRotation: Animates the selection item's X-tilt to 0 and back.
-    \o \c smoothFlipYRotation: Animates the selection item's Y-tilt to 0 and back.
-    \o \c flipAnimation: A parallel animation group that ensures all the above animations are run in parallel.
+    \li \c smoothFlipRotation: Animates the main 180 degree rotation of the pad.
+    \li \c smoothFlipScale: Scales the pad out and then in again while the pad is rotating.
+    \li \c smoothFlipXRotation: Animates the selection item's X-tilt to 0 and back.
+    \li \c smoothFlipYRotation: Animates the selection item's Y-tilt to 0 and back.
+    \li \c flipAnimation: A parallel animation group that ensures all the above animations are run in parallel.
     \endlist
 
     All animations are given a 500 millisecond duration and an
@@ -433,10 +433,10 @@
     states:
 
     \list
-    \o \c splashState: The initial state where the splash item is visible.
-    \o \c frontState: The base state where the splash is gone and we can see
+    \li \c splashState: The initial state where the splash item is visible.
+    \li \c frontState: The base state where the splash is gone and we can see
     the front side of the pad, and navigate the selection item.
-    \o \c backState: The flipped state where the \c backItem is visible, and we
+    \li \c backState: The flipped state where the \c backItem is visible, and we
     can interact with the QGraphicsProxyWidget-embedded form.
     \endlist
 
@@ -531,18 +531,18 @@
     The view toggles a few necessary properties:
 
     \list
-    \o It disables its scroll bars - this application has no use for scroll bars.
-    \o It assigns a minimum size. This is necessary to avoid numerical errors
+    \li It disables its scroll bars - this application has no use for scroll bars.
+    \li It assigns a minimum size. This is necessary to avoid numerical errors
     in our fit-in-view \c resizeEvent() implementation.
-    \o It sets \l{QGraphicsView::FullViewportUpdate}{FullViewportUpdate}, to
+    \li It sets \l{QGraphicsView::FullViewportUpdate}{FullViewportUpdate}, to
     ensure QGraphicsView doesn't spend time figuring out precisely what needs
     to be redrawn. This application is very simple - if anything changes,
     everything is updated.
-    \o It enables background caching - this makes no performance difference
+    \li It enables background caching - this makes no performance difference
     with OpenGL, but without OpenGL it avoids unnecessary re-scaling of the
     background pixmap.
-    \o It sets render hints that increase rendering quality.
-    \o If OpenGL is supported, a QGLWidget viewport is assigned to the view.
+    \li It sets render hints that increase rendering quality.
+    \li If OpenGL is supported, a QGLWidget viewport is assigned to the view.
     \endlist
 
     Finally, we start the state engine.

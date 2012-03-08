@@ -86,10 +86,10 @@ QT_BEGIN_NAMESPACE
 
     \list
 
-    \o Define the class \c Employee to have a single data member of
+    \li Define the class \c Employee to have a single data member of
      type \c {QSharedDataPointer<EmployeeData>}.
 
-    \o Define the \c EmployeeData class derived from \l QSharedData to
+    \li Define the \c EmployeeData class derived from \l QSharedData to
      contain all the data members you would normally have put in the
      \c Employee class.
 

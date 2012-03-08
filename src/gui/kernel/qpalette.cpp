@@ -342,9 +342,9 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     The color groups:
     \list
-    \i The Active group is used for the window that has keyboard focus.
-    \i The Inactive group is used for other windows.
-    \i The Disabled group is used for widgets (not windows) that are
+    \li The Active group is used for the window that has keyboard focus.
+    \li The Inactive group is used for other windows.
+    \li The Disabled group is used for widgets (not windows) that are
     disabled for some reason.
     \endlist
 
@@ -844,7 +844,8 @@ bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2)
     return true;
 }
 
-/*! \obsolete
+/*! \fn int QPalette::serialNumber() const
+    \obsolete
 
     Returns a number that identifies the contents of this QPalette
     object. Distinct QPalette objects can only have the same serial
@@ -860,10 +861,6 @@ bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2)
 
     \sa operator==()
 */
-int QPalette::serialNumber() const
-{
-    return d->ser_no;
-}
 
 /*!
     Returns a number that identifies the contents of this QPalette

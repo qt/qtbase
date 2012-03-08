@@ -271,7 +271,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     QWidget *pageEdit = new QWidget(toolbar);
     QVBoxLayout *vboxLayout = new QVBoxLayout;
     vboxLayout->setContentsMargins(0, 0, 0, 0);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // We query the widgets about their size and then we fix the size.
     // This should do the trick for the laying out part...
     QSize pageNumEditSize, pageNumLabelSize;
@@ -281,7 +281,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     pageNumLabel->resize(pageNumLabelSize);
 #endif
     QFormLayout *formLayout = new QFormLayout;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // We have to change the growth policy in Mac.
     formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
 #endif
@@ -560,7 +560,7 @@ void QPrintPreviewDialogPrivate::_q_print()
 {
     Q_Q(QPrintPreviewDialog);
 
-#if defined(Q_OS_WIN) || defined(Q_WS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
     if (printer->outputFormat() != QPrinter::NativeFormat) {
         QString title;
         QString suffix;
@@ -647,13 +647,13 @@ void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
     straightforward:
 
     \list 1
-    \o Create the QPrintPreviewDialog.
+    \li Create the QPrintPreviewDialog.
 
     You can construct a QPrintPreviewDialog with an existing QPrinter
     object, or you can have QPrintPreviewDialog create one for you,
     which will be the system default printer.
 
-    \o Connect the paintRequested() signal to a slot.
+    \li Connect the paintRequested() signal to a slot.
 
     When the dialog needs to generate a set of preview pages, the
     paintRequested() signal will be emitted. You can use the exact
@@ -663,7 +663,7 @@ void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
     signal, where you draw onto the QPrinter object that is passed
     into the slot.
 
-    \o Call exec().
+    \li Call exec().
 
     Call QPrintPreviewDialog::exec() to show the preview dialog.
     \endlist

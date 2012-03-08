@@ -1082,7 +1082,7 @@ void QGraphicsScenePrivate::enableMouseTrackingOnViews()
 /*!
     Returns all items for the screen position in \a event.
 */
-QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &/*screenPos*/,
+QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &screenPos,
                                                               const QPointF &scenePos,
                                                               QWidget *widget) const
 {
@@ -1091,12 +1091,16 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &/*sc
     if (!view)
         return q->items(scenePos, Qt::IntersectsItemShape, Qt::DescendingOrder, QTransform());
 
-    const QRectF pointRect(scenePos, QSizeF(1, 1));
+    const QRectF pointRect(QPointF(widget->mapFromGlobal(screenPos)), QSizeF(1, 1));
     if (!view->isTransformed())
         return q->items(pointRect, Qt::IntersectsItemShape, Qt::DescendingOrder);
 
     const QTransform viewTransform = view->viewportTransform();
-    return q->items(pointRect, Qt::IntersectsItemShape,
+    if (viewTransform.type() <= QTransform::TxScale) {
+        return q->items(viewTransform.inverted().mapRect(pointRect), Qt::IntersectsItemShape,
+                        Qt::DescendingOrder, viewTransform);
+    }
+    return q->items(viewTransform.inverted().map(pointRect), Qt::IntersectsItemShape,
                     Qt::DescendingOrder, viewTransform);
 }
 
@@ -3114,12 +3118,12 @@ bool QGraphicsScene::stickyFocus() const
     the following events occur:
 
     \list
-    \o If the item receives a mouse release event when there are no other
+    \li If the item receives a mouse release event when there are no other
     buttons pressed, it loses the mouse grab.
-    \o If the item becomes invisible (i.e., someone calls \c {item->setVisible(false)}),
+    \li If the item becomes invisible (i.e., someone calls \c {item->setVisible(false)}),
     or if it becomes disabled (i.e., someone calls \c {item->setEnabled(false)}),
     it loses the mouse grab.
-    \o If the item is removed from the scene, it loses the mouse grab.
+    \li If the item is removed from the scene, it loses the mouse grab.
     \endlist
 
     If the item loses its mouse grab, the scene will ignore all mouse events

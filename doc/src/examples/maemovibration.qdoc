@@ -47,11 +47,11 @@
     The code makes use of two classes:
 
     \list
-    \o \c MceVibrator connects to the MCE service and can start a certain
+    \li \c MceVibrator connects to the MCE service and can start a certain
        vibrator pattern. It also is responsible to parse the configuration
        file.
 
-    \o \c ButtonWidget provides a button for each pattern. Pressing the button
+    \li \c ButtonWidget provides a button for each pattern. Pressing the button
        activates the pattern in question.
     \endlist
 
@@ -68,10 +68,10 @@
     are available to us.
 
     \list
-    \o \c mceInterface is our D-Bus handle to the MCE service. We use it to
+    \li \c mceInterface is our D-Bus handle to the MCE service. We use it to
        invoke methods on the MCE request object.
 
-    \o \c lastPatternName contains the pattern that was activated last time. We
+    \li \c lastPatternName contains the pattern that was activated last time. We
        have to keep track of this, because the last pattern has to be
        deactivated before activating a new pattern.
     \endlist

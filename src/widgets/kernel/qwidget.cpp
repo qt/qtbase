@@ -484,11 +484,11 @@ void QWidget::setAutoFillBackground(bool enabled)
     Every widget's constructor accepts one or two standard arguments:
 
     \list 1
-        \i  \c{QWidget *parent = 0} is the parent of the new widget. If it is 0
+        \li  \c{QWidget *parent = 0} is the parent of the new widget. If it is 0
             (the default), the new widget will be a window. If not, it will be
             a child of \e parent, and be constrained by \e parent's geometry
             (unless you specify Qt::Window as window flag).
-        \i  \c{Qt::WindowFlags f = 0} (where available) sets the window flags;
+        \li  \c{Qt::WindowFlags f = 0} (where available) sets the window flags;
             the default is suitable for almost all widgets, but to get, for
             example, a window without a window system frame, you must use
             special flags.
@@ -593,16 +593,16 @@ void QWidget::setAutoFillBackground(bool enabled)
     starting with the most common ones:
 
     \list
-        \i  paintEvent() is called whenever the widget needs to be repainted.
+        \li  paintEvent() is called whenever the widget needs to be repainted.
             Every widget displaying custom content must implement it. Painting
             using a QPainter can only take place in a paintEvent() or a
             function called by a paintEvent().
-        \i  resizeEvent() is called when the widget has been resized.
-        \i  mousePressEvent() is called when a mouse button is pressed while
+        \li  resizeEvent() is called when the widget has been resized.
+        \li  mousePressEvent() is called when a mouse button is pressed while
             the mouse cursor is inside the widget, or when the widget has
             grabbed the mouse using grabMouse(). Pressing the mouse without
             releasing it is effectively the same as calling grabMouse().
-        \i  mouseReleaseEvent() is called when a mouse button is released. A
+        \li  mouseReleaseEvent() is called when a mouse button is released. A
             widget receives mouse release events when it has received the
             corresponding mouse press event. This means that if the user
             presses the mouse inside \e your widget, then drags the mouse
@@ -610,7 +610,7 @@ void QWidget::setAutoFillBackground(bool enabled)
             receives the release event. There is one exception: if a popup menu
             appears while the mouse button is held down, this popup immediately
             steals the mouse events.
-        \i  mouseDoubleClickEvent() is called when the user double-clicks in
+        \li  mouseDoubleClickEvent() is called when the user double-clicks in
             the widget. If the user double-clicks, the widget receives a mouse
             press event, a mouse release event and finally this event instead
             of a second mouse press event. (Some mouse move events may also be
@@ -625,46 +625,46 @@ void QWidget::setAutoFillBackground(bool enabled)
     handlers:
 
     \list
-        \i  keyPressEvent() is called whenever a key is pressed, and again when
+        \li  keyPressEvent() is called whenever a key is pressed, and again when
             a key has been held down long enough for it to auto-repeat. The
             \key Tab and \key Shift+Tab keys are only passed to the widget if
             they are not used by the focus-change mechanisms. To force those
             keys to be processed by your widget, you must reimplement
             QWidget::event().
-        \i  focusInEvent() is called when the widget gains keyboard focus
+        \li  focusInEvent() is called when the widget gains keyboard focus
             (assuming you have called setFocusPolicy()). Well-behaved widgets
             indicate that they own the keyboard focus in a clear but discreet
             way.
-        \i  focusOutEvent() is called when the widget loses keyboard focus.
+        \li  focusOutEvent() is called when the widget loses keyboard focus.
     \endlist
 
     You may be required to also reimplement some of the less common event
     handlers:
 
     \list
-        \i  mouseMoveEvent() is called whenever the mouse moves while a mouse
+        \li  mouseMoveEvent() is called whenever the mouse moves while a mouse
             button is held down. This can be useful during drag and drop
             operations. If you call \l{setMouseTracking()}{setMouseTracking}(true),
             you get mouse move events even when no buttons are held down.
             (See also the \l{Drag and Drop} guide.)
-        \i  keyReleaseEvent() is called whenever a key is released and while it
+        \li  keyReleaseEvent() is called whenever a key is released and while it
             is held down (if the key is auto-repeating). In that case, the
             widget will receive a pair of key release and key press event for
             every repeat. The \key Tab and \key Shift+Tab keys are only passed
             to the widget if they are not used by the focus-change mechanisms.
             To force those keys to be processed by your widget, you must
             reimplement QWidget::event().
-        \i  wheelEvent() is called whenever the user turns the mouse wheel
+        \li  wheelEvent() is called whenever the user turns the mouse wheel
             while the widget has the focus.
-        \i  enterEvent() is called when the mouse enters the widget's screen
+        \li  enterEvent() is called when the mouse enters the widget's screen
             space. (This excludes screen space owned by any of the widget's
             children.)
-        \i  leaveEvent() is called when the mouse leaves the widget's screen
+        \li  leaveEvent() is called when the mouse leaves the widget's screen
             space. If the mouse enters a child widget it will not cause a
             leaveEvent().
-        \i  moveEvent() is called when the widget has been moved relative to
+        \li  moveEvent() is called when the widget has been moved relative to
             its parent.
-        \i  closeEvent() is called when the user closes the widget (or when
+        \li  closeEvent() is called when the user closes the widget (or when
             close() is called).
     \endlist
 
@@ -682,27 +682,27 @@ void QWidget::setAutoFillBackground(bool enabled)
     \section1 Groups of Functions and Properties
 
     \table
-    \header \i Context \i Functions and Properties
+    \header \li Context \li Functions and Properties
 
-    \row \i Window functions \i
+    \row \li Window functions \li
         show(),
         hide(),
         raise(),
         lower(),
         close().
 
-    \row \i Top-level windows \i
+    \row \li Top-level windows \li
         \l windowModified, \l windowTitle, \l windowIcon, \l windowIconText,
         \l isActiveWindow, activateWindow(), \l minimized, showMinimized(),
         \l maximized, showMaximized(), \l fullScreen, showFullScreen(),
         showNormal().
 
-    \row \i Window contents \i
+    \row \li Window contents \li
         update(),
         repaint(),
         scroll().
 
-    \row \i Geometry \i
+    \row \li Geometry \li
         \l pos, x(), y(), \l rect, \l size, width(), height(), move(), resize(),
         \l sizePolicy, sizeHint(), minimumSizeHint(),
         updateGeometry(), layout(),
@@ -713,7 +713,7 @@ void QWidget::setAutoFillBackground(bool enabled)
         \l maximumSize, \l minimumSize, \l sizeIncrement,
         \l baseSize, setFixedSize()
 
-    \row \i Mode \i
+    \row \li Mode \li
         \l visible, isVisibleTo(),
         \l enabled, isEnabledTo(),
         \l modal,
@@ -722,7 +722,7 @@ void QWidget::setAutoFillBackground(bool enabled)
         \l updatesEnabled,
         visibleRegion().
 
-    \row \i Look and feel \i
+    \row \li Look and feel \li
         style(),
         setStyle(),
         \l styleSheet,
@@ -732,17 +732,17 @@ void QWidget::setAutoFillBackground(bool enabled)
         backgroundRole(), setBackgroundRole(),
         fontInfo(), fontMetrics().
 
-    \row \i Keyboard focus functions \i
+    \row \li Keyboard focus functions \li
         \l focus, \l focusPolicy,
         setFocus(), clearFocus(), setTabOrder(), setFocusProxy(),
         focusNextChild(), focusPreviousChild().
 
-    \row \i Mouse and keyboard grabbing \i
+    \row \li Mouse and keyboard grabbing \li
         grabMouse(), releaseMouse(),
         grabKeyboard(), releaseKeyboard(),
         mouseGrabber(), keyboardGrabber().
 
-    \row \i Event handlers \i
+    \row \li Event handlers \li
         event(),
         mousePressEvent(),
         mouseReleaseEvent(),
@@ -769,11 +769,11 @@ void QWidget::setAutoFillBackground(bool enabled)
         customEvent().
         changeEvent(),
 
-    \row \i System functions \i
+    \row \li System functions \li
         parentWidget(), window(), setParent(), winId(),
         find(), metric().
 
-    \row \i Interactive help \i
+    \row \li Interactive help \li
         setToolTip(), setWhatsThis()
 
     \endtable
@@ -815,15 +815,15 @@ void QWidget::setAutoFillBackground(bool enabled)
     achieve different effects:
 
     \list
-        \i  The left widget has no additional properties or widget attributes
+        \li  The left widget has no additional properties or widget attributes
             set. This default state suits most custom widgets using
             transparency, are irregularly-shaped, or do not paint over their
             entire area with an opaque brush.
-        \i  The center widget has the \l autoFillBackground property set. This
+        \li  The center widget has the \l autoFillBackground property set. This
             property is used with custom widgets that rely on the widget to
             supply a default background, and do not paint over their entire
             area with an opaque brush.
-        \i  The right widget has the Qt::WA_OpaquePaintEvent widget attribute
+        \li  The right widget has the Qt::WA_OpaquePaintEvent widget attribute
             set. This indicates that the widget will paint over its entire area
             with opaque colors. The widget's area will initially be
             \e{uninitialized}, represented in the diagram with a red diagonal
@@ -874,9 +874,9 @@ void QWidget::setAutoFillBackground(bool enabled)
     Platform notes:
 
     \list
-    \o X11: This feature relies on the use of an X server that supports ARGB visuals
+    \li X11: This feature relies on the use of an X server that supports ARGB visuals
     and a compositing window manager.
-    \o Windows: The widget needs to have the Qt::FramelessWindowHint window flag set
+    \li Windows: The widget needs to have the Qt::FramelessWindowHint window flag set
     for the translucency to work.
     \endlist
 
@@ -891,14 +891,14 @@ void QWidget::setAutoFillBackground(bool enabled)
     one of the following options:
 
     \list 1
-        \i  Use the \c{QT_USE_NATIVE_WINDOWS=1} in your environment.
-        \i  Set the Qt::AA_NativeWindows attribute on your application. All
+        \li  Use the \c{QT_USE_NATIVE_WINDOWS=1} in your environment.
+        \li  Set the Qt::AA_NativeWindows attribute on your application. All
             widgets will be native widgets.
-        \i  Set the Qt::WA_NativeWindow attribute on widgets: The widget itself
+        \li  Set the Qt::WA_NativeWindow attribute on widgets: The widget itself
             and all of its ancestors will become native (unless
             Qt::WA_DontCreateNativeAncestors is set).
-        \i  Call QWidget::winId to enforce a native window (this implies 3).
-        \i  Set the Qt::WA_PaintOnScreen attribute to enforce a native window
+        \li  Call QWidget::winId to enforce a native window (this implies 3).
+        \li  Set the Qt::WA_PaintOnScreen attribute to enforce a native window
             (this implies 3).
     \endlist
 
@@ -957,17 +957,17 @@ QRegion qt_dirtyRegion(QWidget *widget)
 /*
     Widget state flags:
   \list
-  \i Qt::WA_WState_Created The widget has a valid winId().
-  \i Qt::WA_WState_Visible The widget is currently visible.
-  \i Qt::WA_WState_Hidden The widget is hidden, i.e. it won't
+  \li Qt::WA_WState_Created The widget has a valid winId().
+  \li Qt::WA_WState_Visible The widget is currently visible.
+  \li Qt::WA_WState_Hidden The widget is hidden, i.e. it won't
   become visible unless you call show() on it. Qt::WA_WState_Hidden
   implies !Qt::WA_WState_Visible.
-  \i Qt::WA_WState_CompressKeys Compress keyboard events.
-  \i Qt::WA_WState_BlockUpdates Repaints and updates are disabled.
-  \i Qt::WA_WState_InPaintEvent Currently processing a paint event.
-  \i Qt::WA_WState_Reparented The widget has been reparented.
-  \i Qt::WA_WState_ConfigPending A configuration (resize/move) event is pending.
-  \i Qt::WA_WState_DND (Deprecated) The widget supports drag and drop, see setAcceptDrops().
+  \li Qt::WA_WState_CompressKeys Compress keyboard events.
+  \li Qt::WA_WState_BlockUpdates Repaints and updates are disabled.
+  \li Qt::WA_WState_InPaintEvent Currently processing a paint event.
+  \li Qt::WA_WState_Reparented The widget has been reparented.
+  \li Qt::WA_WState_ConfigPending A configuration (resize/move) event is pending.
+  \li Qt::WA_WState_DND (Deprecated) The widget supports drag and drop, see setAcceptDrops().
   \endlist
 */
 
@@ -5689,16 +5689,16 @@ QString QWidget::windowIconText() const
     On Mac OS X:
 
     \list
-    \o The file name of the specified path, obtained using QFileInfo::fileName().
+    \li The file name of the specified path, obtained using QFileInfo::fileName().
     \endlist
 
     On Windows and X11:
 
     \list
-    \o The file name of the specified path, obtained using QFileInfo::fileName().
-    \o An optional \c{*} character, if the \l windowModified property is set.
-    \o The \c{0x2014} unicode character, padded either side by spaces.
-    \o The application name, obtained from the application's
+    \li The file name of the specified path, obtained using QFileInfo::fileName().
+    \li An optional \c{*} character, if the \l windowModified property is set.
+    \li The \c{0x2014} unicode character, padded either side by spaces.
+    \li The application name, obtained from the application's
     \l{QCoreApplication::}{applicationName} property.
     \endlist
 
@@ -7164,9 +7164,9 @@ void QWidgetPrivate::hide_helper()
 
     Widgets are hidden if:
     \list
-        \o they were created as independent windows,
-        \o they were created as children of visible widgets,
-        \o hide() or setVisible(false) was called.
+        \li they were created as independent windows,
+        \li they were created as children of visible widgets,
+        \li hide() or setVisible(false) was called.
     \endlist
 */
 
@@ -8390,7 +8390,6 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void QWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    mousePressEvent(event);                        // try mouse press event
 }
 
 #ifndef QT_NO_WHEELEVENT
@@ -8587,9 +8586,9 @@ void QWidget::leaveEvent(QEvent *)
     happen for one of the following reasons:
 
     \list
-        \o repaint() or update() was invoked,
-        \o the widget was obscured and has now been uncovered, or
-        \o many other reasons.
+        \li repaint() or update() was invoked,
+        \li the widget was obscured and has now been uncovered, or
+        \li many other reasons.
     \endlist
 
     Many widgets can simply repaint their entire surface when asked to, but
@@ -8612,13 +8611,13 @@ void QWidget::leaveEvent(QEvent *)
     Since Qt 4.0, QWidget automatically double-buffers its painting, so there
     is no need to write double-buffering code in paintEvent() to avoid flicker.
 
-    \bold{Note for the X11 platform}: It is possible to toggle global double
+    \b{Note for the X11 platform}: It is possible to toggle global double
     buffering by calling \c qt_x11_set_global_double_buffer(). For example,
 
     \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 14
 
     \note Generally, you should refrain from calling update() or repaint()
-    \bold{inside} a paintEvent(). For example, calling update() or repaint() on
+    \b{inside} a paintEvent(). For example, calling update() or repaint() on
     children inside a paintevent() results in undefined behavior; the child may
     or may not get a paint event.
 
@@ -8960,8 +8959,8 @@ void QWidget::hideEvent(QHideEvent *)
     x11Event(), winEvent() and macEvent() of Qt 4.
 
     \table
-    \header \i Platform \i Event Type Identifier \i Message Type \i Result Type
-    \row \i Windows \i "windows_generic_MSG" \i MSG * \i LRESULT
+    \header \li Platform \li Event Type Identifier \li Message Type \li Result Type
+    \row \li Windows \li "windows_generic_MSG" \li MSG * \li LRESULT
     \endtable
 */
 
@@ -8991,7 +8990,7 @@ bool QWidget::nativeEvent(const QByteArray &eventType, void *message, long *resu
     If you need to change some settings when a widget is polished,
     reimplement event() and handle the QEvent::Polish event type.
 
-    \bold{Note:} The function is declared const so that it can be called from
+    \b{Note:} The function is declared const so that it can be called from
     other const functions (e.g., sizeHint()).
 
     \sa event()
@@ -11081,7 +11080,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     \note Only visible widgets can grab mouse input. If isVisible()
     returns false for a widget, that widget cannot call grabMouse().
 
-    \note \bold{(Mac OS X developers)} For \e Cocoa, calling
+    \note \b{(Mac OS X developers)} For \e Cocoa, calling
     grabMouse() on a widget only works when the mouse is inside the
     frame of that widget.  For \e Carbon, it works outside the widget's
     frame as well, like for Windows and X11.
@@ -11101,7 +11100,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
 
     \warning Grabbing the mouse might lock the terminal.
 
-    \note \bold{(Mac OS X developers)} See the note in QWidget::grabMouse().
+    \note \b{(Mac OS X developers)} See the note in QWidget::grabMouse().
 
     \sa releaseMouse(), grabKeyboard(), releaseKeyboard(), setCursor()
 */

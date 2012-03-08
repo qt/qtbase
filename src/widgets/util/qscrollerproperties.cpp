@@ -329,7 +329,7 @@ void QScrollerProperties::setScrollMetric(ScrollMetric metric, const QVariant &v
     around the axis. The threshold must be in the range \c 0 to \c 1.
 
     \value ScrollingCurve The QEasingCurve used when decelerating the scrolling velocity after an
-    user initiated flick. Please note that this is the easing curve for the positions, \bold{not}
+    user initiated flick. Please note that this is the easing curve for the positions, \b{not}
     the velocity: the default is QEasingCurve::OutQuad, which results in a linear decrease in
     velocity (1st derivative) and a constant deceleration (2nd derivative).
 

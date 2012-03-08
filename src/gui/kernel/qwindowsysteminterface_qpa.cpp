@@ -43,6 +43,7 @@
 #include "private/qguiapplication_p.h"
 #include "private/qtouchdevice_p.h"
 #include <QAbstractEventDispatcher>
+#include <QPlatformDrag>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -447,14 +448,14 @@ int QWindowSystemInterface::windowSystemEventsQueued()
     return QWindowSystemInterfacePrivate::windowSystemEventsQueued();
 }
 
-Qt::DropAction QWindowSystemInterface::handleDrag(QWindow *w, QMimeData *dropData, const QPoint &p)
+QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
-    return QGuiApplicationPrivate::processDrag(w, dropData, p);
+    return QGuiApplicationPrivate::processDrag(w, dropData, p,supportedActions);
 }
 
-Qt::DropAction QWindowSystemInterface::handleDrop(QWindow *w, QMimeData *dropData, const QPoint &p)
+QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
-    return QGuiApplicationPrivate::processDrop(w, dropData, p);
+    return QGuiApplicationPrivate::processDrop(w, dropData, p,supportedActions);
 }
 
 /*!

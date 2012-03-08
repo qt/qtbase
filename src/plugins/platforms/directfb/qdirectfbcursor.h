@@ -60,6 +60,7 @@ public:
 
 private:
     QScopedPointer<QPlatformCursorImage> m_image;
+    QPlatformScreen *m_screen;
 };
 
 QT_END_NAMESPACE

@@ -66,9 +66,9 @@
     in additon to the model and the editor's buttons.
 
     \table 100%
-    \header \o Connecting to a Database
+    \header \li Connecting to a Database
     \row
-    \o
+    \li
 
     Before we can use the \c TableEditor class, we must create a
     connection to the database containing the table we want to edit:
@@ -187,8 +187,8 @@
 
     \table 100%
     \row
-    \o
-    \bold {See also:}
+    \li
+    \b {See also:}
 
     A complete list of Qt's SQL \l {Database Classes}, and the \l
     {Model/View Programming} documentation.

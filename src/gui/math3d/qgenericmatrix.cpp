@@ -53,9 +53,9 @@ QT_BEGIN_NAMESPACE
     The QGenericMatrix template has three parameters:
 
     \table
-    \row \i N \i Number of columns.
-    \row \i M \i Number of rows.
-    \row \i T \i Element type that is visible to users of the class.
+    \row \li N \li Number of columns.
+    \row \li M \li Number of rows.
+    \row \li T \li Element type that is visible to users of the class.
     \endtable
 
     \sa QMatrix4x4

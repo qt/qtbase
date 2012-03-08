@@ -1214,7 +1214,8 @@ void tst_QDir::remove()
     f.close();
     QDir dir;
     QVERIFY(dir.remove("remove-test"));
-    QVERIFY(!dir.remove("/remove-test"));
+    // Test that the file just removed is gone
+    QVERIFY(!dir.remove("remove-test"));
     QTest::ignoreMessage(QtWarningMsg, "QDir::remove: Empty or null file name");
     QVERIFY(!dir.remove(""));
 }
@@ -1231,7 +1232,13 @@ void tst_QDir::rename()
     QVERIFY(!dir.rename("rename-test", "/etc/rename-test-renamed"));
 #elif !defined(Q_OS_WIN)
     // on windows this is possible - maybe make the test a bit better
+#ifdef Q_OS_UNIX
+    // not valid if run as root so skip if needed
+    if (::getuid() != 0)
+        QVERIFY(!dir.rename("rename-test", "/rename-test-renamed"));
+#else
     QVERIFY(!dir.rename("rename-test", "/rename-test-renamed"));
+#endif
 #endif
     QTest::ignoreMessage(QtWarningMsg, "QDir::rename: Empty or null file name(s)");
     QVERIFY(!dir.rename("rename-test", ""));

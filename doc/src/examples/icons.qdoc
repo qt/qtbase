@@ -47,24 +47,24 @@
     of the icon. Qt currently defines four modes:
 
     \table
-    \header \o Mode \o Description
+    \header \li Mode \li Description
     \row
-    \o QIcon::Normal
-    \o Display the pixmap when the user is not interacting with the
+    \li QIcon::Normal
+    \li Display the pixmap when the user is not interacting with the
        icon, but the functionality represented by the icon is
        available.
     \row
-    \o QIcon::Active
-    \o Display the pixmap when the functionality represented by the
+    \li QIcon::Active
+    \li Display the pixmap when the functionality represented by the
        icon is available and the user is interacting with the icon,
        for example, moving the mouse over it or clicking it.
     \row
-    \o QIcon::Disabled
-    \o Display the pixmap when the functionality represented by
+    \li QIcon::Disabled
+    \li Display the pixmap when the functionality represented by
        the icon is not available.
     \row
-    \o QIcon::Selected
-    \o Display the pixmap when the icon is selected.
+    \li QIcon::Selected
+    \li Display the pixmap when the icon is selected.
     \endtable
 
     QIcon's states are QIcon::On and QIcon::Off, which will display
@@ -148,16 +148,16 @@
     search algorithm described in the table below:
 
     \table 100%
-    \header \o{2,1} Requested Pixmap \o {8,1} Preferred Alternatives (mode/state)
-    \header \o Mode \o State \o 1  \o 2 \o 3 \o 4 \o 5 \o 6 \o 7 \o 8
-    \row \o{1,2} Normal \o Off \o \bold N0 \o A0 \o N1 \o A1 \o D0 \o S0 \o D1 \o S1
-    \row \o On \o N1 \o \bold A1 \o N0 \o A0 \o D1 \o S1 \o D0 \o S0
-    \row \o{1,2} Active \o Off \o A0 \o \bold N0 \o A1 \o N1 \o D0 \o S0 \o D1 \o S1
-    \row \o On \o \bold A1 \o N1 \o A0 \o N0 \o D1 \o S1 \o D0 \o S0
-    \row \o{1,2} Disabled \o Off \o D0 \o \bold {N0'} \o A0' \o D1 \o N1' \o A1' \o S0' \o S1'
-    \row \o On \o D1 \o N1' \o \bold {A1'} \o D0 \o N0' \o A0' \o S1' \o S0'
-    \row \o{1,2} Selected \o Off \o S0 \o \bold {N0''} \o A0'' \o S1 \o N1'' \o A1'' \o D0'' \o D1''
-    \row \o On \o S1 \o N1'' \o \bold {A1''} \o S0 \o N0'' \o A0'' \o D1'' \o D0''
+    \header \li{2,1} Requested Pixmap \li {8,1} Preferred Alternatives (mode/state)
+    \header \li Mode \li State \li 1  \li 2 \li 3 \li 4 \li 5 \li 6 \li 7 \li 8
+    \row \li{1,2} Normal \li Off \li \b N0 \li A0 \li N1 \li A1 \li D0 \li S0 \li D1 \li S1
+    \row \li On \li N1 \li \b A1 \li N0 \li A0 \li D1 \li S1 \li D0 \li S0
+    \row \li{1,2} Active \li Off \li A0 \li \b N0 \li A1 \li N1 \li D0 \li S0 \li D1 \li S1
+    \row \li On \li \b A1 \li N1 \li A0 \li N0 \li D1 \li S1 \li D0 \li S0
+    \row \li{1,2} Disabled \li Off \li D0 \li \b {N0'} \li A0' \li D1 \li N1' \li A1' \li S0' \li S1'
+    \row \li On \li D1 \li N1' \li \b {A1'} \li D0 \li N0' \li A0' \li S1' \li S0'
+    \row \li{1,2} Selected \li Off \li S0 \li \b {N0''} \li A0'' \li S1 \li N1'' \li A1'' \li D0'' \li D1''
+    \row \li On \li S1 \li N1'' \li \b {A1''} \li S0 \li N0'' \li A0'' \li D1'' \li D0''
     \endtable
 
     In the table, "0" and "1" stand for Off" and "On", respectively.
@@ -176,8 +176,8 @@
 
     \table
     \row
-    \o \inlineimage icons_monkey.png Screenshot of the Monkey Files
-    \o \inlineimage icons_monkey_mess.png Screenshot of the Monkey Files
+    \li \inlineimage icons_monkey.png Screenshot of the Monkey Files
+    \li \inlineimage icons_monkey_mess.png Screenshot of the Monkey Files
     \endtable
 
     For any given mode/state combination, it is possible to specify
@@ -193,25 +193,25 @@
 
     \table
     \row
-    \o
-    \o \inlineimage icons_qt_extended_8x8.png Qt Extended icon at 8 x 8
-    \o \inlineimage icons_qt_extended_16x16.png Qt Extended icon at 16 x 16
-    \o \inlineimage icons_qt_extended_17x17.png Qt Extended icon at 17 x 17
+    \li
+    \li \inlineimage icons_qt_extended_8x8.png Qt Extended icon at 8 x 8
+    \li \inlineimage icons_qt_extended_16x16.png Qt Extended icon at 16 x 16
+    \li \inlineimage icons_qt_extended_17x17.png Qt Extended icon at 17 x 17
     \row
-    \o
-    \o 8 x 8
-    \o \bold {16 x 16}
-    \o 17 x 17
+    \li
+    \li 8 x 8
+    \li \b {16 x 16}
+    \li 17 x 17
     \row
-    \o \inlineimage icons_qt_extended_32x32.png Qt Extended icon at 32 x 32
-    \o \inlineimage icons_qt_extended_33x33.png Qt Extended icon at 33 x 33
-    \o \inlineimage icons_qt_extended_48x48.png Qt Extended icon at 48 x 48
-    \o \inlineimage icons_qt_extended_64x64.png Qt Extended icon at 64 x 64
+    \li \inlineimage icons_qt_extended_32x32.png Qt Extended icon at 32 x 32
+    \li \inlineimage icons_qt_extended_33x33.png Qt Extended icon at 33 x 33
+    \li \inlineimage icons_qt_extended_48x48.png Qt Extended icon at 48 x 48
+    \li \inlineimage icons_qt_extended_64x64.png Qt Extended icon at 64 x 64
     \row
-    \o \bold {32 x 32}
-    \o 33 x 33
-    \o \bold {48 x 48}
-    \o 64 x 64
+    \li \b {32 x 32}
+    \li 33 x 33
+    \li \b {48 x 48}
+    \li 64 x 64
     \endtable
 
     For sizes up to 16 x 16, QIcon uses \c qt_extended_16x16.png and
@@ -224,13 +224,13 @@
     The Icons example consists of four classes:
 
     \list
-    \o \c MainWindow inherits QMainWindow and is the main application
+    \li \c MainWindow inherits QMainWindow and is the main application
        window.
-    \o \c IconPreviewArea is a custom widget that displays all
+    \li \c IconPreviewArea is a custom widget that displays all
        combinations of states and modes for a given icon.
-    \o \c IconSizeSpinBox is a subclass of QSpinBox that lets the
+    \li \c IconSizeSpinBox is a subclass of QSpinBox that lets the
        user enter icon sizes (e.g., "48 x 48").
-    \o \c ImageDelegate is a subclass of QItemDelegate that provides
+    \li \c ImageDelegate is a subclass of QItemDelegate that provides
        comboboxes for letting the user set the mode and state
        associated with an image.
     \endlist
@@ -332,13 +332,13 @@
     constructor, and declare several private slots:
 
     \list
-    \o The \c about() slot simply provides information about the example.
-    \o The \c changeStyle() slot changes the application's GUI style and
+    \li The \c about() slot simply provides information about the example.
+    \li The \c changeStyle() slot changes the application's GUI style and
        adjust the style dependent size options.
-    \o The \c changeSize() slot changes the size of the preview area's icon.
-    \o The \c changeIcon() slot updates the set of pixmaps available to the
+    \li The \c changeSize() slot changes the size of the preview area's icon.
+    \li The \c changeIcon() slot updates the set of pixmaps available to the
        icon displayed in the preview area.
-    \o The \c addImage() slot allows the user to load a new image into the
+    \li The \c addImage() slot allows the user to load a new image into the
        application.
     \endlist
 

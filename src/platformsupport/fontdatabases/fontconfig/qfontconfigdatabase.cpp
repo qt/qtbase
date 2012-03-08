@@ -575,7 +575,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
         delete engine;
         engine = 0;
     } else if (scriptRequiresOpenType(script)) {
-        HB_Face hbFace = engine->harfbuzzFace();
+        HB_Face hbFace = engine->initializedHarfbuzzFace();
         if (!hbFace || !hbFace->supported_scripts[script]) {
             delete engine;
             engine = 0;

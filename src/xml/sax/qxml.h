@@ -158,7 +158,7 @@ class Q_XML_EXPORT QXmlInputSource
 {
 public:
     QXmlInputSource();
-    QXmlInputSource(QIODevice *dev);
+    explicit QXmlInputSource(QIODevice *dev);
     virtual ~QXmlInputSource();
 
     virtual void setData(const QString& dat);

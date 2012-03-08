@@ -123,6 +123,7 @@ private slots:
     void deletedInUpdateCurrentTime();
     void totalDuration();
     void zeroLoopCount();
+    void recursiveAnimations();
 };
 
 void tst_QPropertyAnimation::initTestCase()
@@ -1236,6 +1237,50 @@ void tst_QPropertyAnimation::zeroLoopCount()
     QCOMPARE(runningSpy.count(), 0);
     QCOMPARE(finishedSpy.count(), 0);
 }
+
+
+class RecursiveObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(qreal x READ x WRITE setX)
+    Q_PROPERTY(qreal y READ y WRITE setY)
+public:
+    RecursiveObject() : m_x(0), m_y(0) {
+        animation.setTargetObject(this);
+        animation.setPropertyName("y");
+        animation.setDuration(30);
+    }
+    qreal x() const { return m_x; }
+    void setX(qreal x) {
+        m_x = x;
+        animation.setEndValue(x);
+        animation.start();
+    }
+    qreal y() const { return m_y; }
+    void setY(qreal y) { m_y = y; }
+
+    qreal m_x;
+    qreal m_y;
+    QPropertyAnimation animation;
+};
+
+
+void tst_QPropertyAnimation::recursiveAnimations()
+{
+    RecursiveObject o;
+    QPropertyAnimation anim;
+    anim.setTargetObject(&o);
+    anim.setPropertyName("x");
+    anim.setDuration(30);
+
+    anim.setEndValue(4000);
+    anim.start();
+    QTest::qWait(anim.duration() + o.animation.duration());
+    QTRY_COMPARE(anim.state(), QAbstractAnimation::Stopped);
+    QTRY_COMPARE(o.animation.state(), QAbstractAnimation::Stopped);
+    QCOMPARE(o.y(), qreal(4000));
+}
+
 
 QTEST_MAIN(tst_QPropertyAnimation)
 #include "tst_qpropertyanimation.moc"

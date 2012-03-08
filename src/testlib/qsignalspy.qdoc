@@ -48,7 +48,7 @@
 
     \snippet doc/src/snippets/code/doc_src_qsignalspy.cpp 1
 
-    \bold {Note:} Non-standard data types need to be registered, using
+    \b {Note:} Non-standard data types need to be registered, using
     the qRegisterMetaType() function, before you can create a
     QSignalSpy. For example:
 

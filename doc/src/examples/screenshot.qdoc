@@ -41,9 +41,9 @@
     desktop. They are provided with a couple of options:
 
     \list
-    \o Delaying the screenshot, giving them time to rearrange
+    \li Delaying the screenshot, giving them time to rearrange
        their desktop.
-    \o Hiding the application's window while the screenshot is taken.
+    \li Hiding the application's window while the screenshot is taken.
     \endlist
 
     In addition the application allows the users to save their
@@ -63,10 +63,10 @@
     to facilitate the options:
 
     \list
-    \o The \c newScreenshot() slot prepares a new screenshot.
-    \o The \c saveScreenshot() slot saves the last screenshot.
-    \o The \c shootScreen() slot takes the screenshot.
-    \o The \c updateCheckBox() slot enables or disables the
+    \li The \c newScreenshot() slot prepares a new screenshot.
+    \li The \c saveScreenshot() slot saves the last screenshot.
+    \li The \c shootScreen() slot takes the screenshot.
+    \li The \c updateCheckBox() slot enables or disables the
        \gui {Hide This Window} option.
     \endlist
 

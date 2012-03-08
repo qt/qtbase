@@ -112,7 +112,7 @@
     dealing with URLs and strings:
 
     \list
-    \o When creating an QString to contain a URL from a QByteArray or a
+    \li When creating an QString to contain a URL from a QByteArray or a
        char*, always use QString::fromUtf8().
     \endlist
 
@@ -135,15 +135,15 @@
 
     \list
 
-    \o Spaces and "%20": If an encoded URL contains a space, this will be
+    \li Spaces and "%20": If an encoded URL contains a space, this will be
     replaced with "%20". If a decoded URL contains "%20", this will be
     replaced with a single space before the URL is parsed.
 
-    \o Single "%" characters: Any occurrences of a percent character "%" not
+    \li Single "%" characters: Any occurrences of a percent character "%" not
     followed by exactly two hexadecimal characters (e.g., "13% coverage.html")
     will be replaced by "%25".
 
-    \o Reserved and unreserved characters: An encoded URL should only
+    \li Reserved and unreserved characters: An encoded URL should only
     contain a few characters as literals; all other characters should
     be percent-encoded. In TolerantMode, these characters will be
     automatically percent-encoded where they are not allowed:
@@ -170,6 +170,8 @@
     \value RemoveQuery  The query part of the URL (following a '?' character)
                         is removed.
     \value RemoveFragment
+    \value PreferLocalFile If the URL is a local file according to isLocalFile()
+     and contains no query or fragment, a local file path is returned.
     \value StripTrailingSlash  The trailing slash is removed if one is present.
 
     Note that the case folding rules in \l{RFC 3491}{Nameprep}, which QUrl
@@ -331,6 +333,7 @@ public:
     void clear();
 
     QByteArray toEncoded(QUrl::FormattingOptions options = QUrl::None) const;
+    bool isLocalFile() const;
 
     QAtomicInt ref;
 
@@ -3953,6 +3956,9 @@ QByteArray QUrlPrivate::toEncoded(QUrl::FormattingOptions options) const
     if (options==0x100) // private - see qHash(QUrl)
         return normalized();
 
+    if ((options & QUrl::PreferLocalFile) && isLocalFile() && !hasQuery && !hasFragment)
+        return encodedPath;
+
     QByteArray url;
 
     if (!(options & QUrl::RemoveScheme) && !scheme.isEmpty()) {
@@ -5695,9 +5701,12 @@ QString QUrl::toString(FormattingOptions options) const
 
     QString url;
 
+    const QString ourPath = path();
+    if ((options & QUrl::PreferLocalFile) && isLocalFile() && !d->hasQuery && !d->hasFragment)
+        return ourPath;
+
     if (!(options & QUrl::RemoveScheme) && !d->scheme.isEmpty())
         url += d->scheme + QLatin1Char(':');
-    QString ourPath = path();
     if ((options & QUrl::RemoveAuthority) != QUrl::RemoveAuthority) {
         bool doFileScheme = d->scheme == QLatin1String("file") && ourPath.startsWith(QLatin1Char('/'));
         QString tmp = d->authority(options);
@@ -5733,6 +5742,7 @@ QString QUrl::toString(FormattingOptions options) const
 }
 
 /*!
+    \since 5.0
     Returns a string representation of the URL.
     The output can be customized by passing flags with \a options.
 
@@ -5748,13 +5758,16 @@ QString QUrl::url(FormattingOptions options) const
 }
 
 /*!
+    \since 5.0
+
     Returns a human-displayable string representation of the URL.
     The output can be customized by passing flags with \a options.
     The option RemovePassword is always enabled, since passwords
     should never be shown back to users.
 
-    The resulting QString can be passed back to a QUrl later on,
-    but any password that was present initially will be lost.
+    With the default options, the resulting QString can be passed back
+    to a QUrl later on, but any password that was present initially will
+    be lost.
 
     \sa FormattingOptions, toEncoded(), toString()
 */
@@ -6171,6 +6184,13 @@ QString QUrl::toLocalFile() const
     return tmp;
 }
 
+bool QUrlPrivate::isLocalFile() const
+{
+    if (scheme.compare(QLatin1String("file"), Qt::CaseInsensitive) != 0)
+        return false;   // not file
+    return true;
+}
+
 /*!
     \since 4.7
     Returns true if this URL is pointing to a local file path. A URL is a
@@ -6186,10 +6206,7 @@ bool QUrl::isLocalFile() const
 {
     if (!d) return false;
     if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Parsed)) d->parse();
-
-    if (d->scheme.compare(QLatin1String("file"), Qt::CaseInsensitive) != 0)
-        return false;   // not file
-    return true;
+    return d->isLocalFile();
 }
 
 /*!
@@ -6335,10 +6352,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     \section1 Examples:
 
     \list
-    \o qt.nokia.com becomes http://qt.nokia.com
-    \o ftp.qt.nokia.com becomes ftp://ftp.qt.nokia.com
-    \o hostname becomes http://hostname
-    \o /home/user/test.html becomes file:///home/user/test.html
+    \li qt.nokia.com becomes http://qt.nokia.com
+    \li ftp.qt.nokia.com becomes ftp://ftp.qt.nokia.com
+    \li hostname becomes http://hostname
+    \li /home/user/test.html becomes file:///home/user/test.html
     \endlist
 */
 QUrl QUrl::fromUserInput(const QString &userInput)

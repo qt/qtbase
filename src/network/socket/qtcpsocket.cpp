@@ -58,7 +58,7 @@
     allows you to establish a TCP connection and transfer streams of
     data. See the QAbstractSocket documentation for details.
 
-    \bold{Note:} TCP sockets cannot be opened in QIODevice::Unbuffered mode.
+    \b{Note:} TCP sockets cannot be opened in QIODevice::Unbuffered mode.
 
     \sa QTcpServer, QUdpSocket, QNetworkAccessManager,
     {Fortune Server Example}, {Fortune Client Example},

@@ -73,8 +73,11 @@
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "private/qwindow_p.h"
 #include "private/qcursor_p.h"
+
 #include "private/qdnd_p.h"
 #include <private/qplatformthemefactory_qpa_p.h>
+#include "qplatformdrag_qpa.h"
+
 #ifndef QT_NO_CURSOR
 #include "qplatformcursor_qpa.h"
 #endif
@@ -169,6 +172,11 @@ static inline void clearPalette()
 
 static void initFontUnlocked()
 {
+    if (!QGuiApplicationPrivate::app_font) {
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+            if (const QFont *font = theme->font(QPlatformTheme::SystemFont))
+                QGuiApplicationPrivate::app_font = new QFont(*font);
+    }
     if (!QGuiApplicationPrivate::app_font)
         QGuiApplicationPrivate::app_font =
             new QFont(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont());
@@ -192,7 +200,7 @@ static inline void clearFontUnlocked()
     application's initialization and finalization. In addition, QGuiApplication handles
     most of the system-wide and application-wide settings.
 
-    For any GUI application using Qt, there is precisely \bold one QGuiApplication
+    For any GUI application using Qt, there is precisely \b one QGuiApplication
     object no matter whether the application has 0, 1, 2 or more windows at
     any given time. For non-GUI Qt applications, use QCoreApplication instead,
     as it does not depend on the \l QtGui library.
@@ -202,30 +210,30 @@ static inline void clearFontUnlocked()
 
     QGuiApplication's main areas of responsibility are:
         \list
-            \o  It initializes the application with the user's desktop settings,
+            \li  It initializes the application with the user's desktop settings,
                 such as palette(), font() and styleHints(). It keeps
                 track of these properties in case the user changes the desktop
                 globally, for example, through some kind of control panel.
 
-            \o  It performs event handling, meaning that it receives events
+            \li  It performs event handling, meaning that it receives events
                 from the underlying window system and dispatches them to the
                 relevant widgets. You can send your own events to windows by
                 using sendEvent() and postEvent().
 
-            \o  It parses common command line arguments and sets its internal
+            \li  It parses common command line arguments and sets its internal
                 state accordingly. See the \l{QGuiApplication::QGuiApplication()}
                 {constructor documentation} below for more details.
 
-            \o  It provides localization of strings that are visible to the
+            \li  It provides localization of strings that are visible to the
                 user via translate().
 
-            \o  It provides some magical objects like the clipboard().
+            \li  It provides some magical objects like the clipboard().
 
-            \o  It knows about the application's windows. You can ask which
+            \li  It knows about the application's windows. You can ask which
                 window is at a certain position using topLevelAt(), get a list of
                 topLevelWindows(), etc.
 
-            \o  It manages the application's mouse cursor handling, see
+            \li  It manages the application's mouse cursor handling, see
                 setOverrideCursor()
         \endlist
 
@@ -237,11 +245,11 @@ static inline void clearFontUnlocked()
 
     \table
     \header
-        \o{2,1} Groups of functions
+        \li{2,1} Groups of functions
 
         \row
-        \o  System settings
-        \o  desktopSettingsAware(),
+        \li  System settings
+        \li  desktopSettingsAware(),
             setDesktopSettingsAware(),
             styleHints(),
             palette(),
@@ -250,8 +258,8 @@ static inline void clearFontUnlocked()
             setFont().
 
         \row
-        \o  Event handling
-        \o  exec(),
+        \li  Event handling
+        \li  exec(),
             processEvents(),
             exit(),
             quit().
@@ -263,22 +271,22 @@ static inline void clearFontUnlocked()
             notify().
 
         \row
-        \o  Windows
-        \o  allWindows(),
+        \li  Windows
+        \li  allWindows(),
             topLevelWindows(),
             focusWindow(),
             clipboard(),
             topLevelAt().
 
         \row
-        \o  Advanced cursor handling
-        \o  overrideCursor(),
+        \li  Advanced cursor handling
+        \li  overrideCursor(),
             setOverrideCursor(),
             restoreOverrideCursor().
 
         \row
-        \o  Miscellaneous
-        \o  startingUp(),
+        \li  Miscellaneous
+        \li  startingUp(),
             closingDown(),
             type().
     \endtable
@@ -306,9 +314,9 @@ static inline void clearFontUnlocked()
 
     All Qt programs automatically support the following command line options:
     \list
-        \o  -reverse, sets the application's layout direction to
+        \li  -reverse, sets the application's layout direction to
             Qt::RightToLeft
-        \o  -qmljsdebugger=, activates the QML/JS debugger with a specified port.
+        \li  -qmljsdebugger=, activates the QML/JS debugger with a specified port.
             The value must be of format port:1234[,block], where block is optional
             and will make the application wait until a debugger connects to it.
     \endlist
@@ -326,8 +334,7 @@ QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
 QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
     : QCoreApplication(p)
 {
-    d_func()->init();
-}
+    d_func()->init(); }
 
 /*!
     Destructs the application.
@@ -931,6 +938,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     QPointF globalPoint = e->globalPos;
 
     Qt::MouseButton button = Qt::NoButton;
+    bool doubleClick = false;
 
     if (QGuiApplicationPrivate::lastCursorPosition != globalPoint) {
         type = QEvent::MouseMove;
@@ -938,8 +946,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         if (qAbs(globalPoint.x() - mousePressX) > mouse_double_click_distance||
             qAbs(globalPoint.y() - mousePressY) > mouse_double_click_distance)
             mousePressButton = Qt::NoButton;
-    }
-    else { // Check to see if a new button has been pressed/released.
+    } else { // Check to see if a new button has been pressed/released.
         for (int check = Qt::LeftButton;
             check <= int(Qt::MaxMouseButton);
              check = check << 1) {
@@ -954,33 +961,26 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         }
         buttons = e->buttons;
         if (button & e->buttons) {
-            if ((e->timestamp - mousePressTime) < static_cast<ulong>(qApp->styleHints()->mouseDoubleClickInterval()) &&
-                    button == mousePressButton) {
-                type = QEvent::MouseButtonDblClick;
-                mousePressButton = Qt::NoButton;
-            }
-            else {
-                type = QEvent::MouseButtonPress;
-                mousePressTime = e->timestamp;
-                mousePressButton = button;
-                const QPoint point = QGuiApplicationPrivate::lastCursorPosition.toPoint();
-                mousePressX = point.x();
-                mousePressY = point.y();
-            }
-        }
-        else
+            ulong doubleClickInterval = static_cast<ulong>(qApp->styleHints()->mouseDoubleClickInterval());
+            doubleClick = e->timestamp - mousePressTime < doubleClickInterval && button == mousePressButton;
+            type = QEvent::MouseButtonPress;
+            mousePressTime = e->timestamp;
+            mousePressButton = button;
+            const QPoint point = QGuiApplicationPrivate::lastCursorPosition.toPoint();
+            mousePressX = point.x();
+            mousePressY = point.y();
+        } else {
             type = QEvent::MouseButtonRelease;
+        }
     }
-
 
     if (window) {
         QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers);
         ev.setTimestamp(e->timestamp);
 #ifndef QT_NO_CURSOR
-        QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
-        for (int i = 0; i < cursors.count(); ++i)
-            if (cursors.at(i))
-                cursors.at(i).data()->pointerEvent(ev);
+        if (const QScreen *screen = window->screen())
+            if (QPlatformCursor *cursor = screen->handle()->cursor())
+                cursor->pointerEvent(ev);
 #endif
         QGuiApplication::sendSpontaneousEvent(window, &ev);
         if (!e->synthetic && !ev.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {
@@ -1015,11 +1015,15 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
             fake.synthetic = true;
             processTouchEvent(&fake);
         }
+        if (doubleClick) {
+            mousePressButton = Qt::NoButton;
+            QMouseEvent dblClickEvent(QEvent::MouseButtonDblClick, localPoint, localPoint, globalPoint,
+                                      button, buttons, e->modifiers);
+            dblClickEvent.setTimestamp(e->timestamp);
+            QGuiApplication::sendSpontaneousEvent(window, &dblClickEvent);
+        }
     }
 }
-
-
-//### there's a lot of duplicated logic here -- refactoring required!
 
 void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::WheelEvent *e)
 {
@@ -1038,8 +1042,6 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
          return;
      }
 }
-
-
 
 // Remember, Qt convention is:  keyboard state is state *before*
 
@@ -1547,49 +1549,62 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
     QCoreApplication::sendSpontaneousEvent(window, &exposeEvent);
 }
 
-Qt::DropAction QGuiApplicationPrivate::processDrag(QWindow *w, QMimeData *dropData, const QPoint &p)
+QPlatformDragQtResponse QGuiApplicationPrivate::processDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
     static QPointer<QWindow> currentDragWindow;
-    QDragManager *manager = QDragManager::self();
+    static Qt::DropAction lastAcceptedDropAction = Qt::IgnoreAction;
+    QPlatformDrag *platformDrag = platformIntegration()->drag();
+    if (!platformDrag) {
+        lastAcceptedDropAction = Qt::IgnoreAction;
+        return QPlatformDragQtResponse(false, lastAcceptedDropAction, QRect());
+    }
+
     if (!dropData) {
         if (currentDragWindow.data() == w)
             currentDragWindow = 0;
         QDragLeaveEvent e;
         QGuiApplication::sendEvent(w, &e);
-        manager->global_accepted_action = Qt::IgnoreAction;
-        return Qt::IgnoreAction;
+        lastAcceptedDropAction = Qt::IgnoreAction;
+        return QPlatformDragQtResponse(false, lastAcceptedDropAction, QRect());
     }
-    QDragMoveEvent me(p, manager->possible_actions, dropData,
+    QDragMoveEvent me(p, supportedActions, dropData,
                       QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
+
     if (w != currentDragWindow) {
+        lastAcceptedDropAction = Qt::IgnoreAction;
         if (currentDragWindow) {
             QDragLeaveEvent e;
             QGuiApplication::sendEvent(currentDragWindow, &e);
-            manager->global_accepted_action = Qt::IgnoreAction;
         }
         currentDragWindow = w;
-        QDragEnterEvent e(p, manager->possible_actions, dropData,
+        QDragEnterEvent e(p, supportedActions, dropData,
                           QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
         QGuiApplication::sendEvent(w, &e);
-        manager->global_accepted_action = e.isAccepted() ? e.dropAction() : Qt::IgnoreAction;
-        if (manager->global_accepted_action != Qt::IgnoreAction) {
-            me.setDropAction(manager->global_accepted_action);
-            me.accept();
-        }
+        if (e.isAccepted() && e.dropAction() != Qt::IgnoreAction)
+            lastAcceptedDropAction = e.dropAction();
+    }
+
+    // Handling 'DragEnter' should suffice for the application.
+    if (lastAcceptedDropAction != Qt::IgnoreAction
+        && (supportedActions & lastAcceptedDropAction)) {
+        me.setDropAction(lastAcceptedDropAction);
+        me.accept();
     }
     QGuiApplication::sendEvent(w, &me);
-    manager->global_accepted_action = me.isAccepted() ? me.dropAction() : Qt::IgnoreAction;
-    return manager->global_accepted_action;
+    lastAcceptedDropAction = me.isAccepted() ?
+                             me.dropAction() :  Qt::IgnoreAction;
+    return QPlatformDragQtResponse(me.isAccepted(), lastAcceptedDropAction, me.answerRect());
 }
 
-Qt::DropAction QGuiApplicationPrivate::processDrop(QWindow *w, QMimeData *dropData, const QPoint &p)
+QPlatformDropQtResponse QGuiApplicationPrivate::processDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
-    QDragManager *manager = QDragManager::self();
-    QDropEvent de(p, manager->possible_actions, dropData,
+    QDropEvent de(p, supportedActions, dropData,
                   QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
     QGuiApplication::sendEvent(w, &de);
-    manager->global_accepted_action = de.isAccepted() ? de.dropAction() : Qt::IgnoreAction;
-    return manager->global_accepted_action;
+
+    Qt::DropAction acceptedAction = de.isAccepted() ? de.dropAction() : Qt::IgnoreAction;
+    QPlatformDropQtResponse response(de.isAccepted(),acceptedAction);
+    return response;
 }
 
 #ifndef QT_NO_CLIPBOARD
@@ -1798,16 +1813,11 @@ void QGuiApplication::changeOverrideCursor(const QCursor &cursor)
 
 
 #ifndef QT_NO_CURSOR
-static void applyCursor(QWindow *w, const QCursor &c)
+static inline void applyCursor(QWindow *w, QCursor c)
 {
-    QCursor cc = c;
-    QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
-    int cursorCount = cursors.count();
-    for (int i = 0; i < cursorCount; ++i) {
-        const QWeakPointer<QPlatformCursor> &cursor(cursors.at(i));
-        if (cursor)
-            cursor.data()->changeCursor(&cc, w);
-    }
+    if (const QScreen *screen = w->screen())
+        if (QPlatformCursor *cursor = screen->handle()->cursor())
+            cursor->changeCursor(&c, w);
 }
 
 static inline void applyCursor(const QList<QWindow *> &l, const QCursor &c)

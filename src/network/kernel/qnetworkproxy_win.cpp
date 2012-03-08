@@ -256,7 +256,7 @@ public:
 Q_GLOBAL_STATIC(QWindowsSystemProxy, systemProxy)
 
 QWindowsSystemProxy::QWindowsSystemProxy()
-    : initialized(false), functional(false), isAutoConfig(false)
+    : hHttpSession(0), initialized(false), functional(false), isAutoConfig(false)
 {
     defaultResult << QNetworkProxy::NoProxy;
 }

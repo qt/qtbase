@@ -201,7 +201,7 @@ xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
                                                                                               formatsCookie,
                                                                                               &error);
     if (!formatsReply || error) {
-        qWarning("createCursorXRender: query_pict_formats failed");
+        qWarning("qt_xcb_createCursorXRender: query_pict_formats failed");
         free(formatsReply);
         free(error);
         return XCB_NONE;
@@ -209,7 +209,7 @@ xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
     xcb_render_pictforminfo_t *fmt = xcb_render_util_find_standard_format(formatsReply,
                                                                           XCB_PICT_STANDARD_ARGB_32);
     if (!fmt) {
-        qWarning("createCursorXRender: Failed to find format PICT_STANDARD_ARGB_32");
+        qWarning("qt_xcb_createCursorXRender: Failed to find format PICT_STANDARD_ARGB_32");
         free(formatsReply);
         return XCB_NONE;
     }
@@ -221,13 +221,13 @@ xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
                                        XCB_IMAGE_ORDER_MSB_FIRST,
                                        0, 0, 0);
     if (!xi) {
-        qWarning("createCursorXRender: xcb_image_create failed");
+        qWarning("qt_xcb_createCursorXRender: xcb_image_create failed");
         free(formatsReply);
         return XCB_NONE;
     }
     xi->data = (uint8_t *) malloc(xi->stride * h);
     if (!xi->data) {
-        qWarning("createCursorXRender: Failed to malloc() image data");
+        qWarning("qt_xcb_createCursorXRender: Failed to malloc() image data");
         xcb_image_destroy(xi);
         free(formatsReply);
         return XCB_NONE;

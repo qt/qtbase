@@ -281,10 +281,10 @@ void QProgressDialogPrivate::_q_disconnectOnClose()
 
   Default settings:
   \list
-  \i The label text is empty.
-  \i The cancel button text is (translated) "Cancel".
-  \i minimum is 0;
-  \i maximum is 100
+  \li The label text is empty.
+  \li The cancel button text is (translated) "Cancel".
+  \li minimum is 0;
+  \li maximum is 100
   \endlist
 
   The \a parent argument is dialog's parent widget. The widget flags, \a f, are

@@ -43,6 +43,7 @@
 #define QXCBDRAG_H
 
 #include <qplatformdrag_qpa.h>
+#include <QtPlatformSupport/private/qsimpledrag_p.h>
 #include <qxcbobject.h>
 #include <xcb/xcb.h>
 #include <qlist.h>
@@ -51,17 +52,23 @@
 #include <qsharedpointer.h>
 #include <qvector.h>
 
+#include <qpixmap.h>
+#include <qbackingstore.h>
+
+#include <QtCore/QDebug>
+
 QT_BEGIN_NAMESPACE
 
 class QMouseEvent;
 class QWindow;
 class QXcbConnection;
 class QXcbWindow;
-class QDropData;
+class QXcbDropData;
 class QXcbScreen;
 class QDrag;
+class QShapedPixmapWindow;
 
-class QXcbDrag : public QObject, public QXcbObject, public QPlatformDrag
+class QXcbDrag : public QXcbObject, public QBasicDrag
 {
 public:
     QXcbDrag(QXcbConnection *c);
@@ -69,35 +76,36 @@ public:
 
     virtual QMimeData *platformDropData();
 
-//    virtual Qt::DropAction drag(QDrag *);
 
-    virtual void startDrag();
-    virtual void cancel();
-    virtual void move(const QMouseEvent *me);
-    virtual void drop(const QMouseEvent *me);
+    void startDrag();
+    void cancel();
+    void move(const QMouseEvent *me);
+    void drop(const QMouseEvent *me);
     void endDrag();
 
     void handleEnter(QWindow *window, const xcb_client_message_event_t *event);
-    void handlePosition(QWindow *w, const xcb_client_message_event_t *event, bool passive);
-    void handleLeave(QWindow *w, const xcb_client_message_event_t *event, bool /*passive*/);
-    void handleDrop(QWindow *, const xcb_client_message_event_t *event, bool passive);
+    void handlePosition(QWindow *w, const xcb_client_message_event_t *event);
+    void handleLeave(QWindow *w, const xcb_client_message_event_t *event);
+    void handleDrop(QWindow *, const xcb_client_message_event_t *event);
 
-    void handleStatus(const xcb_client_message_event_t *event, bool passive);
+    void handleStatus(const xcb_client_message_event_t *event);
     void handleSelectionRequest(const xcb_selection_request_event_t *event);
-    void handleFinished(const xcb_client_message_event_t *event, bool passive);
+    void handleFinished(const xcb_client_message_event_t *event);
 
     bool dndEnable(QXcbWindow *win, bool on);
+
+    void updatePixmap();
 
 protected:
     void timerEvent(QTimerEvent* e);
 
 private:
-    friend class QDropData;
+    friend class QXcbDropData;
 
     void init();
 
-    void handle_xdnd_position(QWindow *w, const xcb_client_message_event_t *event, bool passive);
-    void handle_xdnd_status(const xcb_client_message_event_t *event, bool);
+    void handle_xdnd_position(QWindow *w, const xcb_client_message_event_t *event);
+    void handle_xdnd_status(const xcb_client_message_event_t *event);
     void send_leave();
 
     Qt::DropAction toDropAction(xcb_atom_t atom) const;
@@ -106,7 +114,8 @@ private:
     QWeakPointer<QWindow> currentWindow;
     QPoint currentPosition;
 
-    QDropData *dropData;
+    QXcbDropData *dropData;
+    Qt::DropAction accepted_drop_action;
 
     QWindow *desktop_proxy;
 
@@ -118,7 +127,6 @@ private:
 
     xcb_timestamp_t target_time;
     xcb_timestamp_t source_time;
-    Qt::DropAction last_target_accepted_action;
 
     // rectangle in which the answer will be the same
     QRect source_sameanswer;
@@ -132,7 +140,6 @@ private:
     QXcbScreen *current_screen;
 
     int heartbeat;
-    bool xdnd_dragging;
 
     QVector<xcb_atom_t> drag_types;
 
@@ -143,7 +150,7 @@ private:
         xcb_window_t proxy_target;
         QWindow *targetWindow;
 //        QWidget *embedding_widget;
-        QDrag *object;
+        QDrag *drag;
     };
     QList<Transaction> transactions;
 

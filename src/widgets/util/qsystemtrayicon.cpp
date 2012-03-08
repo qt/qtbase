@@ -77,10 +77,10 @@ QT_BEGIN_NAMESPACE
     The QSystemTrayIcon class can be used on the following platforms:
 
     \list
-    \o All supported versions of Windows.
-    \o All window managers for X11 that implement the \l{freedesktop.org} system
+    \li All supported versions of Windows.
+    \li All window managers for X11 that implement the \l{freedesktop.org} system
        tray specification, including recent versions of KDE and GNOME.
-    \o All supported versions of Mac OS X. Note that the Growl
+    \li All supported versions of Mac OS X. Note that the Growl
        notification system must be installed for
        QSystemTrayIcon::showMessage() to display messages.
     \endlist

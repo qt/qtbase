@@ -261,14 +261,14 @@ QTextCodec *Qt::codecForHtml(const QByteArray &ba)
     system. The following are the undo/redo operations of a QTextDocument:
 
     \list
-        \o Insertion or removal of characters. A sequence of insertions or removals
+        \li Insertion or removal of characters. A sequence of insertions or removals
            within the same text block are regarded as a single undo/redo operation.
-        \o Insertion or removal of text blocks. Sequences of insertion or removals
+        \li Insertion or removal of text blocks. Sequences of insertion or removals
            in a single operation (e.g., by selecting and then deleting text) are
            regarded as a single undo/redo operation.
-        \o Text character format changes.
-        \o Text block format changes.
-        \o Text block group format changes.
+        \li Text character format changes.
+        \li Text block format changes.
+        \li Text block group format changes.
     \endlist
 
     \sa QTextCursor, QTextEdit, \link richtext.html Rich Text Processing\endlink , {Text Object Example}
@@ -887,7 +887,7 @@ QChar QTextDocument::characterAt(int pos) const
 
     The style sheet needs to be compliant to CSS 2.1 syntax.
 
-    \bold{Note:} Changing the default style sheet does not have any effect to the existing content
+    \b{Note:} Changing the default style sheet does not have any effect to the existing content
     of the document.
 
     \sa {Supported HTML Subset}
@@ -1169,7 +1169,7 @@ void QTextDocument::setPlainText(const QString &text)
 
     The HTML formatting is respected as much as possible; for example,
     "<b>bold</b> text" will produce text where the first word has a font
-    weight that gives it a bold appearance: "\bold{bold} text".
+    weight that gives it a bold appearance: "\b{bold} text".
 
     \note It is the responsibility of the caller to make sure that the
     text is correctly decoded when a QString containing HTML is created

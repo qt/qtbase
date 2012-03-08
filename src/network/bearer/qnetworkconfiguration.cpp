@@ -424,37 +424,37 @@ QNetworkConfiguration::BearerType QNetworkConfiguration::bearerType() const
 
     \table
         \header
-            \o BearerType
-            \o Value
+            \li BearerType
+            \li Value
         \row
-            \o BearerUnknown
-            \o
-            \o The session is based on an unknown or unspecified bearer type. The value of the
+            \li BearerUnknown
+            \li
+            \li The session is based on an unknown or unspecified bearer type. The value of the
                string returned describes the bearer type.
         \row
-            \o BearerEthernet
-            \o Ethernet
+            \li BearerEthernet
+            \li Ethernet
         \row
-            \o BearerWLAN
-            \o WLAN
+            \li BearerWLAN
+            \li WLAN
         \row
-            \o Bearer2G
-            \o 2G
+            \li Bearer2G
+            \li 2G
         \row
-            \o BearerCDMA2000
-            \o CDMA2000
+            \li BearerCDMA2000
+            \li CDMA2000
         \row
-            \o BearerWCDMA
-            \o WCDMA
+            \li BearerWCDMA
+            \li WCDMA
         \row
-            \o BearerHSPA
-            \o HSPA
+            \li BearerHSPA
+            \li HSPA
         \row
-            \o BearerBluetooth
-            \o Bluetooth
+            \li BearerBluetooth
+            \li Bluetooth
         \row
-            \o BearerWiMAX
-            \o WiMAX
+            \li BearerWiMAX
+            \li WiMAX
     \endtable
 
     This function returns an empty string if this is an invalid configuration, a network

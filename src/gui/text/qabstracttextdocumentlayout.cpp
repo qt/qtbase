@@ -100,14 +100,14 @@ QT_BEGIN_NAMESPACE
     custom text object into a document:
 
     \list
-        \o Choose an \a objectType. The \a objectType is an integer with a
+        \li Choose an \a objectType. The \a objectType is an integer with a
             value greater or equal to QTextFormat::UserObject.
-         \o Create a QTextCharFormat object and set the object type to the
+         \li Create a QTextCharFormat object and set the object type to the
             chosen type using the setObjectType() function.
-         \o Implement the QTextObjectInterface class.
-         \o Call QAbstractTextDocumentLayout::registerHandler() with an instance of your
+         \li Implement the QTextObjectInterface class.
+         \li Call QAbstractTextDocumentLayout::registerHandler() with an instance of your
             QTextObjectInterface subclass to register your object type.
-         \o Insert QChar::ObjectReplacementCharacter with the aforementioned
+         \li Insert QChar::ObjectReplacementCharacter with the aforementioned
             QTextCharFormat of the chosen object type into the document.
             As mentioned, the functions of QTextObjectInterface
             \l{QTextObjectInterface::}{intrinsicSize()} and
@@ -269,17 +269,17 @@ QT_BEGIN_NAMESPACE
     implementation of this function would have to do the following:
 
     \list
-        \o Determine the list of changed \l{QTextBlock}(s) using the parameters
+        \li Determine the list of changed \l{QTextBlock}(s) using the parameters
             provided.
-        \o Each QTextBlock object's corresponding QTextLayout object needs to
+        \li Each QTextBlock object's corresponding QTextLayout object needs to
             be processed. You can access the \l{QTextBlock}'s layout using the
             QTextBlock::layout() function. This processing should take the
             document's page size into consideration.
-        \o If the total number of pages changed, the pageCountChanged() signal
+        \li If the total number of pages changed, the pageCountChanged() signal
             should be emitted.
-        \o If the total size changed, the documentSizeChanged() signal should
+        \li If the total size changed, the documentSizeChanged() signal should
             be emitted.
-        \o The update() signal should be emitted to schedule a repaint of areas
+        \li The update() signal should be emitted to schedule a repaint of areas
             in the layout that require repainting.
     \endlist
 

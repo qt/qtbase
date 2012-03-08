@@ -409,7 +409,7 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
         // quoted-pair    = "\" CHAR
 
         // If it is NAME=VALUE, retain the value as is
-        // refer to http://bugreports.qt.nokia.com/browse/QTBUG-17746
+        // refer to http://bugreports.qt-project.org/browse/QTBUG-17746
         if (isNameValue)
             second += '"';
         ++i;
@@ -1060,7 +1060,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
 */
 void QNetworkCookie::normalize(const QUrl &url)
 {
-    // don't do path checking. See http://bugreports.qt.nokia.com/browse/QTBUG-5815
+    // don't do path checking. See http://bugreports.qt-project.org/browse/QTBUG-5815
     if (d->path.isEmpty()) {
         QString pathAndFileName = url.path();
         QString defaultPath = pathAndFileName.left(pathAndFileName.lastIndexOf(QLatin1Char('/'))+1);

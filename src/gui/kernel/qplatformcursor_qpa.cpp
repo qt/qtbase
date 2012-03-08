@@ -43,13 +43,22 @@
 #include <QPainter>
 #include <QBitmap>
 #include <QGuiApplication>
+#include <QScreen>
+#include <QPlatformScreen>
 #include <private/qguiapplication_p.h>
 
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
-QList <QWeakPointer<QPlatformCursor> > QPlatformCursorPrivate::instances;
+QList<QPlatformCursor *> QPlatformCursorPrivate::getInstances()
+{
+    QList<QPlatformCursor *> result;
+    foreach (const QScreen *screen, QGuiApplicationPrivate::screen_list)
+        if (QPlatformCursor *cursor = screen->handle()->cursor())
+            result.push_back(cursor);
+    return result;
+}
 
 /*!
     \class QPlatformCursor
@@ -93,10 +102,8 @@ QList <QWeakPointer<QPlatformCursor> > QPlatformCursorPrivate::instances;
 
     Constructs a QPlatformCursor for the given \a screen.
 */
-QPlatformCursor::QPlatformCursor(QPlatformScreen *scr )
-        : screen(scr)
+QPlatformCursor::QPlatformCursor()
 {
-    QPlatformCursorPrivate::instances.append(this);
 }
 
 QPoint QPlatformCursor::pos() const

@@ -386,8 +386,8 @@ void QAbstractPrintDialogPrivate::setPrinter(QPrinter *newPrinter)
 
     \table
     \row
-    \o \inlineimage plastique-printdialog.png
-    \o \inlineimage plastique-printdialog-properties.png
+    \li \inlineimage plastique-printdialog.png
+    \li \inlineimage plastique-printdialog-properties.png
     \endtable
 
     The printer dialog (shown above in Plastique style) enables access to common

@@ -43,9 +43,9 @@ that may be unavailable or difficult to locate on their keyboards.
 The example consists of the following classes:
 
 \list
-\i \c CharacterWidget displays the available characters in the current
+\li \c CharacterWidget displays the available characters in the current
    font and style.
-\i \c MainWindow provides a standard main window that contains font and
+\li \c MainWindow provides a standard main window that contains font and
    style information, a view onto the characters, a line edit, and a push
    button for submitting text to the clipboard.
 \endlist

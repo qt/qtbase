@@ -42,7 +42,6 @@
 #include "qthread.h"
 #include "qthreadstorage.h"
 #include "qmutex.h"
-#include "qmutexpool_p.h"
 #include "qreadwritelock.h"
 #include "qabstracteventdispatcher.h"
 
@@ -537,33 +536,6 @@ void QThread::run()
     (void) exec();
 }
 
-/*! \internal
-    Initializes the QThread system.
-*/
-#if defined (Q_OS_WIN)
-void qt_create_tls();
-#endif
-
-void QThread::initialize()
-{
-    if (qt_global_mutexpool)
-        return;
-    qt_global_mutexpool = QMutexPool::instance();
-
-#if defined (Q_OS_WIN)
-    qt_create_tls();
-#endif
-}
-
-
-/*! \internal
-    Cleans up the QThread system.
-*/
-void QThread::cleanup()
-{
-    qt_global_mutexpool = 0;
-}
-
 /*! \fn void QThread::setPriority(Priority priority)
     \since 4.1
 
@@ -658,11 +630,11 @@ QThread::Priority QThread::priority() const
     Blocks the thread until either of these conditions is met:
 
     \list
-    \o The thread associated with this QThread object has finished
+    \li The thread associated with this QThread object has finished
        execution (i.e. when it returns from \l{run()}). This function
        will return true if the thread has finished. It also returns
        true if the thread has not been started yet.
-    \o \a time milliseconds has elapsed. If \a time is ULONG_MAX (the
+    \li \a time milliseconds has elapsed. If \a time is ULONG_MAX (the
         default), then the wait will never timeout (the thread must
         return from \l{run()}). This function will return false if the
         wait timed out.

@@ -1,5 +1,32 @@
 CONFIG *= moc thread
 
+# Temporary fixes to avoid QDeclarative -> QQml breakage:
+
+# Projects depending on declarative will now get the full set of
+# -DOldSymbol=NewSymbol definitions added to their configuration
+# so that the old symbol names still compile.  All code previously
+# in the declarative library is now in the qml library.
+contains(QT, qmldevtools):!contains(QT, declarative) {
+    QT += declarative
+}
+contains(QT, qmldevtools-private):!contains(QT, declarative-private) {
+    QT += declarative-private
+}
+
+contains(QT, quick):!contains(QT, declarative) {
+    QT += declarative
+}
+contains(QT, quick-private):!contains(QT, declarative-private) {
+    QT += declarative-private
+}
+
+contains(QT, declarative):!contains(QT, qml) {
+    QT += qml
+}
+contains(QT, declarative-private):!contains(QT, qml-private) {
+    QT += qml-private
+}
+
 #handle defines
 win32 {
    qt_static:DEFINES += QT_NODLL
@@ -125,21 +152,22 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
 !isEmpty(QT_BUILD_TREE):QMAKE_LIBDIR = $$QT_BUILD_TREE/lib $$QMAKE_LIBDIR #as above, prepending prevents us from picking up "stale" libs
 QMAKE_LIBDIR += $$QMAKE_LIBDIR_QT
 
-# Topological ordering of modules based on their QT.<module>.depends variable
-QT = $$sort_depends(QT, "QT.")
-
-QT_DEPENDS=
-
+# Figure out from which modules we're wanting to use the private headers
 unset(using_privates)
+NEWQT =
 for(QTLIB, QT) {
-    # Figure out if we're wanting to use the private headers of a module
-    contains(QTLIB, .*-private) {
-        QTLIB ~= s/-private//
-        use_private = UsePrivate
-    } else {
-        use_private = NoPrivate
+    QTLIBRAW = $$replace(QTLIB, -private$, )
+    !isEqual(QTLIBRAW, $$QTLIB) {
+        want_var = QT.$${QTLIBRAW}.want_private
+        $$want_var = UsePrivate
+        using_privates = true
     }
-
+    NEWQT += $$QTLIBRAW
+}
+# Topological resolution of modules based on their QT.<module>.depends variable
+QT = $$resolve_depends(NEWQT, "QT.")
+# Finally actually add the modules
+for(QTLIB, QT) {
     isEmpty(QT.$${QTLIB}.name) {
         message("Warning: unknown QT module: $$QTLIB")
         next()
@@ -149,14 +177,9 @@ for(QTLIB, QT) {
         warning($$TARGET cannot have a QT of $$QTLIB)
         next()
     }
-    qtAddModule($$QTLIB, $$use_private)
-    QT_DEPENDS += $$eval(QT.$${QTLIB}.depends)
-    isEqual(use_private, UsePrivate):using_privates = true
-}
 
-# add include paths for all .depends, since module/application might need f.ex. template specializations etc.
-QT_DEPENDS -= $$QT
-for(QTLIB, $$list($$lower($$unique(QT_DEPENDS)))):INCLUDEPATH *= $$INCLUDEPATH $$eval(QT.$${QTLIB}.includes)
+    qtAddModule($$QTLIB, $$eval(QT.$${QTLIB}.want_private))
+}
 
 !isEmpty(using_privates):!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
     message("This project is using private headers and will therefore be tied to this specific Qt module build version.")

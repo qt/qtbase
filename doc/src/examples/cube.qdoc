@@ -61,9 +61,9 @@
 	The example consist of two classes:
 
 	\list
-	\o \c MainWidget extends QGLWidget and contains OpenGL ES 2.0
+    \li \c MainWidget extends QGLWidget and contains OpenGL ES 2.0
 		initialization and drawing and mouse and timer event handling
-	\o \c GeometryEngine handles polygon geometries. Transfers polygon geometry
+    \li \c GeometryEngine handles polygon geometries. Transfers polygon geometry
 		to vertex buffer objects and draws geometries from vertex buffer objects.
 	\endlist
 

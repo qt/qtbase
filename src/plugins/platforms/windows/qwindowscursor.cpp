@@ -72,11 +72,6 @@ Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap);
     \sa QWindowsWindowCursor
 */
 
-QWindowsCursor::QWindowsCursor(QPlatformScreen *s) :
-    QPlatformCursor(s)
-{
-}
-
 HCURSOR QWindowsCursor::createPixmapCursor(const QPixmap &pixmap, int hotX, int hotY)
 {
     HCURSOR cur = 0;

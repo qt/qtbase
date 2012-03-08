@@ -201,6 +201,8 @@ private slots:
 
     void qtbug14268_peek();
 
+    void setSocketOption();
+
 
 protected slots:
     void nonBlockingIMAP_hostFound();
@@ -2240,7 +2242,7 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
         QString::fromLatin1("Could not start %1: %2").arg(processExe, serverProcess.errorString())));
     while (!serverProcess.canReadLine())
         QVERIFY(serverProcess.waitForReadyRead(10000));
-    QCOMPARE(serverProcess.readLine().data(), (server.toLatin1() + "\n").data());
+    QCOMPARE(serverProcess.readLine().data(), QByteArray(server.toLatin1() + "\n").data());
 
     // Start client
     QProcess clientProcess;
@@ -2250,7 +2252,7 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
         QString::fromLatin1("Could not start %1: %2").arg(processExe, clientProcess.errorString())));
     while (!clientProcess.canReadLine())
         QVERIFY(clientProcess.waitForReadyRead(10000));
-    QCOMPARE(clientProcess.readLine().data(), (client.toLatin1() + "\n").data());
+    QCOMPARE(clientProcess.readLine().data(), QByteArray(client.toLatin1() + "\n").data());
 
     // Let them play for a while
     qDebug("Running stress test for 5 seconds");
@@ -2699,7 +2701,41 @@ void tst_QTcpSocket::qtbug14268_peek()
     QVERIFY(incoming->read(128*1024) == QByteArray("abc\ndef\nghi\n"));
 }
 
+void tst_QTcpSocket::setSocketOption()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
 
+    SocketPair socketPair;
+    QVERIFY(socketPair.create());
+    QTcpSocket *outgoing = socketPair.endPoints[0];
+    QTcpSocket *incoming = socketPair.endPoints[1];
+
+    QVERIFY(incoming->state() == QTcpSocket::ConnectedState);
+    QVERIFY(outgoing->state() == QTcpSocket::ConnectedState);
+
+    outgoing->setSocketOption(QAbstractSocket::LowDelayOption, true);
+    QVariant v = outgoing->socketOption(QAbstractSocket::LowDelayOption);
+    QVERIFY(v.isValid() && v.toBool());
+    outgoing->setSocketOption(QAbstractSocket::KeepAliveOption, true);
+    v = outgoing->socketOption(QAbstractSocket::KeepAliveOption);
+    QVERIFY(v.isValid() && v.toBool());
+
+    outgoing->setSocketOption(QAbstractSocket::LowDelayOption, false);
+    v = outgoing->socketOption(QAbstractSocket::LowDelayOption);
+    QVERIFY(v.isValid() && !v.toBool());
+    outgoing->setSocketOption(QAbstractSocket::KeepAliveOption, false);
+    v = outgoing->socketOption(QAbstractSocket::KeepAliveOption);
+    QVERIFY(v.isValid() && !v.toBool());
+
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("", "QTBUG-23323", Abort);
+#endif
+    outgoing->setSocketOption(QAbstractSocket::TypeOfServiceOption, 32); //high priority
+    v = outgoing->socketOption(QAbstractSocket::TypeOfServiceOption);
+    QVERIFY(v.isValid() && v.toInt() == 32);
+}
 
 QTEST_MAIN(tst_QTcpSocket)
 #include "tst_qtcpsocket.moc"

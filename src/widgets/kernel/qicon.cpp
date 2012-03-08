@@ -616,7 +616,8 @@ QIcon::operator QVariant() const
     return QVariant(QVariant::Icon, this);
 }
 
-/*! \obsolete
+/*! \fn int QIcon::serialNumber() const
+    \obsolete
 
     Returns a number that identifies the contents of this
     QIcon object. Distinct QIcon objects can have
@@ -632,11 +633,6 @@ QIcon::operator QVariant() const
 
     \sa QPixmap::serialNumber()
 */
-
-int QIcon::serialNumber() const
-{
-    return d ? d->serialNum : 0;
-}
 
 /*!
     Returns a number that identifies the contents of this QIcon
@@ -945,8 +941,8 @@ QString QIcon::themeName()
     specification can be obtained here:
 
     \list
-    \o \l{http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html}
-    \o \l{http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html}
+    \li \l{http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html}
+    \li \l{http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html}
     \endlist
 
     To fetch an icon from the current icon theme:

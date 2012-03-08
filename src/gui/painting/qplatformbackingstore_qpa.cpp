@@ -114,6 +114,9 @@ QWindow* QPlatformBackingStore::window() const
     This function is called before painting onto the surface begins,
     with the \a region in which the painting will occur.
 
+    \note A platform providing a backing store with an alpha channel
+    needs to properly initialize the region to be painted.
+
     \sa endPaint(), paintDevice()
 */
 

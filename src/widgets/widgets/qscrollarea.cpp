@@ -77,9 +77,9 @@ QT_BEGIN_NAMESPACE
 
     \table
     \row
-    \o \inlineimage qscrollarea-noscrollbars.png
-    \o \inlineimage qscrollarea-onescrollbar.png
-    \o \inlineimage qscrollarea-twoscrollbars.png
+    \li \inlineimage qscrollarea-noscrollbars.png
+    \li \inlineimage qscrollarea-onescrollbar.png
+    \li \inlineimage qscrollarea-twoscrollbars.png
     \endtable
 
     The scroll bars appearance depends on the currently set \l

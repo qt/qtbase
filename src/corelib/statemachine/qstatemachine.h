@@ -119,7 +119,7 @@ public:
         NoCommonAncestorForTransitionError
     };
 
-    QStateMachine(QObject *parent = 0);
+    explicit QStateMachine(QObject *parent = 0);
     ~QStateMachine();
 
     void addState(QAbstractState *state);

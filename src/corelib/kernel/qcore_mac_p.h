@@ -57,17 +57,6 @@
 #  define __IMAGECAPTURE__
 #endif
 
-#undef OLD_DEBUG
-#ifdef DEBUG
-# define OLD_DEBUG DEBUG
-# undef DEBUG
-#endif
-#define DEBUG 0
-#ifdef qDebug
-#  define old_qDebug qDebug
-#  undef qDebug
-#endif
-
 #if defined(QT_BUILD_QMAKE) || defined(QT_BOOTSTRAPPED)
 #include <ApplicationServices/ApplicationServices.h>
 #else
@@ -80,18 +69,6 @@
 
 #ifdef __OBJC__
 #include <Foundation/Foundation.h>
-#endif
-
-#undef DEBUG
-#ifdef OLD_DEBUG
-#  define DEBUG OLD_DEBUG
-#  undef OLD_DEBUG
-#endif
-
-#ifdef old_qDebug
-#  undef qDebug
-#  define qDebug QT_NO_QDEBUG_MACRO
-#  undef old_qDebug
 #endif
 
 #include "qstring.h"

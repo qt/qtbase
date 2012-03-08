@@ -101,7 +101,9 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     m_connections << new QXcbConnection(m_nativeInterface.data());
 
     for (int i = 0; i < parameters.size() - 1; i += 2) {
-        qDebug() << parameters.at(i) << parameters.at(i+1);
+#ifdef Q_XCB_DEBUG
+        qDebug() << "QXcbIntegration: Connecting to additional display: " << parameters.at(i) << parameters.at(i+1);
+#endif
         QString display = parameters.at(i) + ':' + parameters.at(i+1);
         m_connections << new QXcbConnection(m_nativeInterface.data(), display.toAscii().constData());
     }
@@ -185,7 +187,7 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
 #elif defined(XCB_USE_DRI2)
     return new QDri2Context(context->format(), context->shareHandle());
 #endif
-    qWarning("Cannot create platform GL context, none of GLX, EGL, DRI2 is enabled");
+    qWarning("QXcbIntegration: Cannot create platform OpenGL context, none of GLX, EGL, or DRI2 are enabled");
     return 0;
 }
 #endif

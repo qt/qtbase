@@ -487,17 +487,17 @@ void QBoxLayoutPrivate::calcHfw(int w)
     one of four functions:
 
     \list
-    \o addWidget() to add a widget to the QBoxLayout and set the
+    \li addWidget() to add a widget to the QBoxLayout and set the
     widget's stretch factor. (The stretch factor is along the row of
     boxes.)
 
-    \o addSpacing() to create an empty box; this is one of the
+    \li addSpacing() to create an empty box; this is one of the
     functions you use to create nice and spacious dialogs. See below
     for ways to set margins.
 
-    \o addStretch() to create an empty, stretchable box.
+    \li addStretch() to create an empty, stretchable box.
 
-    \o addLayout() to add a box containing another QLayout to the row
+    \li addLayout() to add a box containing another QLayout to the row
     and set that layout's stretch factor.
     \endlist
 
@@ -508,10 +508,10 @@ void QBoxLayoutPrivate::calcHfw(int w)
     QBoxLayout also includes two margin widths:
 
     \list
-    \o setContentsMargins() sets the width of the outer border on 
+    \li setContentsMargins() sets the width of the outer border on
        each side of the widget. This is the width of the reserved space 
        along each of the QBoxLayout's four sides.
-    \o setSpacing() sets the width between neighboring boxes. (You
+    \li setSpacing() sets the width between neighboring boxes. (You
        can use addSpacing() to get more space at a particular spot.)
     \endlist
 

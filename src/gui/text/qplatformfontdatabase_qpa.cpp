@@ -375,18 +375,6 @@ QFont QPlatformFontDatabase::defaultFont() const
 }
 
 /*!
-    Returns fonts for class names.
-
-    \sa QGuiApplication::font()
-    \since 5.0
-*/
-
-QHash<QByteArray, QFont> QPlatformFontDatabase::defaultFonts() const
-{
-    return QHash<QByteArray, QFont>();
-}
-
-/*!
     Resolve alias to actual font family names.
 
     \since 5.0

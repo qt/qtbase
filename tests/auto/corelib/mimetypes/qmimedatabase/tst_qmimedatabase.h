@@ -43,6 +43,7 @@
 #define TST_QMIMEDATABASE_H
 
 #include <QtCore/QObject>
+#include <QtCore/QTemporaryDir>
 
 class tst_QMimeDatabase : public QObject
 {
@@ -53,7 +54,6 @@ public:
 
 private slots:
     void initTestCase();
-    void cleanupTestCase();
 
     void mimeTypeForName();
     void mimeTypeForFileName_data();
@@ -93,7 +93,13 @@ private slots:
     void installNewLocalMimeType();
 
 private:
-    QString m_dataHome;
+    void init(); // test-specific
+
+    QString m_globalXdgDir;
+    QString m_localXdgDir;
+    QString m_yastMimeTypes;
+    QTemporaryDir m_temporaryDir;
+    QString m_testSuite;
 };
 
 #endif   // TST_QMIMEDATABASE_H

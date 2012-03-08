@@ -227,8 +227,8 @@ static void qt_debug_path(const QPainterPath &path)
 
     \table 100%
     \row
-    \o \inlineimage qpainterpath-construction.png
-    \o
+    \li \inlineimage qpainterpath-construction.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainterpath.cpp 0
     \endtable
 
@@ -241,11 +241,11 @@ static void qt_debug_path(const QPainterPath &path)
 
     \table
     \header
-    \o Qt::OddEvenFill
-    \o Qt::WindingFill
+    \li Qt::OddEvenFill
+    \li Qt::WindingFill
     \row
-    \o \inlineimage qt-fillrule-oddeven.png
-    \o \inlineimage qt-fillrule-winding.png
+    \li \inlineimage qt-fillrule-oddeven.png
+    \li \inlineimage qt-fillrule-winding.png
     \endtable
 
     See the Qt::FillRule documentation for the definition of the
@@ -316,11 +316,11 @@ static void qt_debug_path(const QPainterPath &path)
 
     \table
     \header
-    \o \l {painting/painterpaths}{Painter Paths Example}
-    \o \l {painting/deform}{Vector Deformation Example}
+    \li \l {painting/painterpaths}{Painter Paths Example}
+    \li \l {painting/deform}{Vector Deformation Example}
     \row
-    \o \inlineimage qpainterpath-example.png
-    \o \inlineimage qpainterpath-demo.png
+    \li \inlineimage qpainterpath-example.png
+    \li \inlineimage qpainterpath-demo.png
     \endtable
 
     \sa QPainterPathStroker, QPainter, QRegion, {Painter Paths Example}
@@ -731,8 +731,8 @@ void QPainterPath::lineTo(const QPointF &p)
 
     \table 100%
     \row
-    \o \inlineimage qpainterpath-cubicto.png
-    \o
+    \li \inlineimage qpainterpath-cubicto.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainterpath.cpp 1
     \endtable
 
@@ -858,8 +858,8 @@ void QPainterPath::quadTo(const QPointF &c, const QPointF &e)
 
     \table 100%
     \row
-    \o \inlineimage qpainterpath-arcto.png
-    \o
+    \li \inlineimage qpainterpath-arcto.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainterpath.cpp 2
     \endtable
 
@@ -970,8 +970,8 @@ QPointF QPainterPath::currentPosition() const
 
     \table 100%
     \row
-    \o \inlineimage qpainterpath-addrectangle.png
-    \o
+    \li \inlineimage qpainterpath-addrectangle.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainterpath.cpp 3
     \endtable
 
@@ -1017,8 +1017,8 @@ void QPainterPath::addRect(const QRectF &r)
 
     \table 100%
     \row
-    \o \inlineimage qpainterpath-addpolygon.png
-    \o
+    \li \inlineimage qpainterpath-addpolygon.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainterpath.cpp 4
     \endtable
 
@@ -1053,8 +1053,8 @@ void QPainterPath::addPolygon(const QPolygonF &polygon)
 
     \table 100%
     \row
-    \o \inlineimage qpainterpath-addellipse.png
-    \o
+    \li \inlineimage qpainterpath-addellipse.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainterpath.cpp 5
     \endtable
 
@@ -1105,8 +1105,8 @@ void QPainterPath::addEllipse(const QRectF &boundingRect)
 
     \table 100%
     \row
-    \o \inlineimage qpainterpath-addtext.png
-    \o
+    \li \inlineimage qpainterpath-addtext.png
+    \li
     \snippet doc/src/snippets/code/src_gui_painting_qpainterpath.cpp 6
     \endtable
 
@@ -1281,11 +1281,11 @@ Qt::FillRule QPainterPath::fillRule() const
 
     \table
     \header
-    \o Qt::OddEvenFill (default)
-    \o Qt::WindingFill
+    \li Qt::OddEvenFill (default)
+    \li Qt::WindingFill
     \row
-    \o \inlineimage qt-fillrule-oddeven.png
-    \o \inlineimage qt-fillrule-winding.png
+    \li \inlineimage qt-fillrule-oddeven.png
+    \li \inlineimage qt-fillrule-winding.png
     \endtable
 
     \sa fillRule()
@@ -2457,10 +2457,10 @@ void qt_path_stroke_cubic_to(qfixed c1x, qfixed c1y,
     functions:
 
     \list
-    \o setWidth()
-    \o setCapStyle()
-    \o setJoinStyle()
-    \o setDashPattern()
+    \li setWidth()
+    \li setCapStyle()
+    \li setJoinStyle()
+    \li setDashPattern()
     \endlist
 
     The setDashPattern() function accepts both a Qt::PenStyle object

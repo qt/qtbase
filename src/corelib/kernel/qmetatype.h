@@ -256,7 +256,7 @@ public:
     static bool load(QDataStream &stream, int type, void *data);
 #endif
 
-    QMetaType(const int type);
+    explicit QMetaType(const int type);
     inline ~QMetaType();
 
     inline bool isValid() const;
@@ -365,33 +365,11 @@ void qMetaTypeLoadHelper(QDataStream &stream, void *t)
 template <> inline void qMetaTypeLoadHelper<void>(QDataStream &, void *) {}
 #endif // QT_NO_DATASTREAM
 
-template <typename T>
-struct QMetaTypeId
-{
-    enum { Defined = 0 };
-};
-
-template <typename T>
-struct QMetaTypeId2
-{
-    enum { Defined = QMetaTypeId<T>::Defined };
-    static inline int qt_metatype_id() { return QMetaTypeId<T>::qt_metatype_id(); }
-};
-
 class QObject;
 class QWidget;
 
-namespace QtPrivate {
-    template <typename T, bool Defined = QMetaTypeId2<T>::Defined>
-    struct QMetaTypeIdHelper {
-        static inline int qt_metatype_id()
-        { return QMetaTypeId2<T>::qt_metatype_id(); }
-    };
-    template <typename T> struct QMetaTypeIdHelper<T, false> {
-        static inline int qt_metatype_id()
-        { return -1; }
-    };
-
+namespace QtPrivate
+{
     template<typename T>
     struct IsPointerToTypeDerivedFromQObject
     {
@@ -427,6 +405,38 @@ namespace QtPrivate {
         static no_type checkType(...);
         Q_STATIC_ASSERT_X(sizeof(T), "Type argument of Q_DECLARE_METATYPE(T*) must be fully defined");
         enum { Value = sizeof(checkType(static_cast<T*>(0))) == sizeof(yes_type) };
+    };
+}
+
+template <typename T, bool = QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value>
+struct QMetaTypeIdQObject
+{
+    enum {
+        Defined = 0
+    };
+};
+
+template <typename T>
+struct QMetaTypeId : public QMetaTypeIdQObject<T>
+{
+};
+
+template <typename T>
+struct QMetaTypeId2
+{
+    enum { Defined = QMetaTypeId<T>::Defined };
+    static inline int qt_metatype_id() { return QMetaTypeId<T>::qt_metatype_id(); }
+};
+
+namespace QtPrivate {
+    template <typename T, bool Defined = QMetaTypeId2<T>::Defined>
+    struct QMetaTypeIdHelper {
+        static inline int qt_metatype_id()
+        { return QMetaTypeId2<T>::qt_metatype_id(); }
+    };
+    template <typename T> struct QMetaTypeIdHelper<T, false> {
+        static inline int qt_metatype_id()
+        { return -1; }
     };
 
     // Function pointers don't derive from QObject
@@ -485,6 +495,7 @@ inline int qMetaTypeId(
 #endif
 )
 {
+    Q_STATIC_ASSERT_X(QMetaTypeId2<T>::Defined, "Type is not registered, please use Q_DECLARE_METATYPE macro to make it know to Qt's meta-object system");
     return QMetaTypeId2<T>::qt_metatype_id();
 }
 
@@ -501,6 +512,23 @@ inline int qRegisterMetaType(
     return qMetaTypeId(dummy);
 #endif
 }
+
+template <typename T>
+struct QMetaTypeIdQObject<T*, /* isPointerToTypeDerivedFromQObject */ true>
+{
+    enum {
+        Defined = 1
+    };
+
+    static int qt_metatype_id()
+    {
+        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
+        if (!metatype_id.load())
+            metatype_id.storeRelease(qRegisterMetaType<T*>(QByteArray(T::staticMetaObject.className() + QByteArrayLiteral("*")).constData(),
+                        reinterpret_cast<T**>(quintptr(-1))));
+        return metatype_id.loadAcquire();
+    }
+};
 
 #ifndef QT_NO_DATASTREAM
 template <typename T>
@@ -566,6 +594,7 @@ template <class T> class QSet;
 template <class T> class QSharedPointer;
 template <class T1, class T2> class QMap;
 template <class T1, class T2> class QHash;
+template <class T1, class T2> struct QPair;
 typedef QList<QVariant> QVariantList;
 typedef QMap<QString, QVariant> QVariantMap;
 typedef QHash<QString, QVariant> QVariantHash;
@@ -587,6 +616,23 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
     } \
 };
 
+#define Q_DECLARE_METATYPE_TEMPLATE_2ARG(DOUBLE_ARG_TEMPLATE) \
+template<typename T, typename U> \
+struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
+{ \
+    enum { \
+        Defined = QMetaTypeId2<T>::Defined && QMetaTypeId2<U>::Defined \
+    }; \
+    static int qt_metatype_id() \
+    { \
+        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
+        if (!metatype_id.load()) \
+            metatype_id.storeRelease(qRegisterMetaType< DOUBLE_ARG_TEMPLATE<T, U> >( QByteArray(QByteArray(#DOUBLE_ARG_TEMPLATE "<") + QMetaType::typeName(qMetaTypeId<T>()) + ", " + QMetaType::typeName(qMetaTypeId<U>()) + ">").constData(), \
+                        reinterpret_cast< DOUBLE_ARG_TEMPLATE<T, U> *>(quintptr(-1)))); \
+        return metatype_id.loadAcquire(); \
+    } \
+};
+
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QList)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QVector)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QQueue)
@@ -594,6 +640,10 @@ Q_DECLARE_METATYPE_TEMPLATE_1ARG(QStack)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSet)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSharedPointer)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QLinkedList)
+
+Q_DECLARE_METATYPE_TEMPLATE_2ARG(QHash)
+Q_DECLARE_METATYPE_TEMPLATE_2ARG(QMap)
+Q_DECLARE_METATYPE_TEMPLATE_2ARG(QPair)
 
 inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeInterface *info,
                             Creator creator,

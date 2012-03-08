@@ -1075,7 +1075,7 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
     if (action_e == QAction::Hover) {
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
-            int actionIndex = indexOf(action) + 1;
+            int actionIndex = indexOf(action);
             QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, q, actionIndex));
             QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, q, actionIndex));
         }
@@ -1218,9 +1218,9 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
 
     \table 100%
     \row
-    \o \inlineimage plastique-menu.png
-    \o \inlineimage windowsxp-menu.png
-    \o \inlineimage macintosh-menu.png
+    \li \inlineimage plastique-menu.png
+    \li \inlineimage windowsxp-menu.png
+    \li \inlineimage macintosh-menu.png
     \endtable
     \caption Fig. A menu shown in \l{Plastique Style Widget Gallery}{Plastique widget style},
            \l{Windows XP Style Widget Gallery}{Windows XP widget style},
@@ -1284,7 +1284,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     See the \l{mainwindows/menus}{Menus} example for an example of how
     to use QMenuBar and QMenu in your application.
 
-    \bold{Important inherited functions:} addAction(), removeAction(), clear(),
+    \b{Important inherited functions:} addAction(), removeAction(), clear(),
     addSeparator(), and addMenu().
 
     \sa QMenuBar, {fowler}{GUI Design Handbook: Menu, Drop-Down and Pop-Up},

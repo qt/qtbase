@@ -532,15 +532,15 @@ void QProcessPrivate::Channel::clear()
     certain signals are emitted:
 
     \list
-    \o waitForStarted() blocks until the process has started.
+    \li waitForStarted() blocks until the process has started.
 
-    \o waitForReadyRead() blocks until new data is
+    \li waitForReadyRead() blocks until new data is
     available for reading on the current read channel.
 
-    \o waitForBytesWritten() blocks until one payload of
+    \li waitForBytesWritten() blocks until one payload of
     data has been written to the process.
 
-    \o waitForFinished() blocks until the process has finished.
+    \li waitForFinished() blocks until the process has finished.
     \endlist
 
     Calling these functions from the main thread (the thread that
@@ -1910,7 +1910,7 @@ QByteArray QProcess::readAllStandardError()
 
     \note No further splitting of the arguments is performed.
 
-    \bold{Windows:} Arguments that contain spaces are wrapped in quotes.
+    \b{Windows:} Arguments that contain spaces are wrapped in quotes.
 
     \sa pid(), started(), waitForStarted()
 */
@@ -2149,10 +2149,10 @@ int QProcess::execute(const QString &program)
     Note that arguments that contain spaces are not passed to the
     process as separate arguments.
 
-    \bold{Unix:} The started process will run in its own session and act
+    \b{Unix:} The started process will run in its own session and act
     like a daemon.
 
-    \bold{Windows:} Arguments that contain spaces are wrapped in quotes.
+    \b{Windows:} Arguments that contain spaces are wrapped in quotes.
     The started process will run as a regular standalone process.
 
     The process will be started in the directory \a workingDirectory.
@@ -2183,10 +2183,10 @@ bool QProcess::startDetached(const QString &program,
     \note Arguments that contain spaces are not passed to the
     process as separate arguments.
 
-    \bold{Unix:} The started process will run in its own session and act
+    \b{Unix:} The started process will run in its own session and act
     like a daemon.
 
-    \bold{Windows:} Arguments that contain spaces are wrapped in quotes.
+    \b{Windows:} Arguments that contain spaces are wrapped in quotes.
     The started process will run as a regular standalone process.
 */
 bool QProcess::startDetached(const QString &program,

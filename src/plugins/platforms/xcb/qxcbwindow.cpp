@@ -369,6 +369,14 @@ void QXcbWindow::destroy()
     if (m_syncCounter && m_screen->syncRequestSupported())
         Q_XCB_CALL(xcb_sync_destroy_counter(xcb_connection(), m_syncCounter));
     if (m_window) {
+        if (m_netWmUserTimeWindow) {
+            xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW));
+            // Some window managers, like metacity, do XSelectInput on the _NET_WM_USER_TIME_WINDOW window,
+            // without trapping BadWindow (which crashes when the user time window is destroyed).
+            connection()->sync();
+            xcb_destroy_window(xcb_connection(), m_netWmUserTimeWindow);
+            m_netWmUserTimeWindow = XCB_NONE;
+        }
         connection()->removeWindow(m_window);
         Q_XCB_CALL(xcb_destroy_window(xcb_connection(), m_window));
     }
@@ -539,6 +547,8 @@ void QXcbWindow::show()
         // update _NET_WM_STATE
         updateNetWmStateBeforeMap();
     }
+
+    updateNetWmUserTime(connection()->time());
 
     Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
     xcb_flush(xcb_connection());
@@ -1168,10 +1178,31 @@ void QXcbWindow::propagateSizeHints()
 
 void QXcbWindow::requestActivateWindow()
 {
-    if (m_mapped){
-        updateNetWmUserTime(connection()->time());
+    if (!m_mapped)
+        return;
+
+    updateNetWmUserTime(connection()->time());
+
+    if (window()->isTopLevel()
+        && connection()->wmSupport()->isSupportedByWM(atom(QXcbAtom::_NET_ACTIVE_WINDOW))) {
+        xcb_client_message_event_t event;
+
+        event.response_type = XCB_CLIENT_MESSAGE;
+        event.format = 32;
+        event.window = m_window;
+        event.type = atom(QXcbAtom::_NET_ACTIVE_WINDOW);
+        event.data.data32[0] = 1;
+        event.data.data32[1] = connection()->time();
+        QWindow *focusWindow = QGuiApplication::focusWindow();
+        event.data.data32[2] = focusWindow ? focusWindow->winId() : XCB_NONE;
+        event.data.data32[3] = 0;
+        event.data.data32[4] = 0;
+
+        Q_XCB_CALL(xcb_send_event(xcb_connection(), 0, m_screen->root(), XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
+    } else {
         Q_XCB_CALL(xcb_set_input_focus(xcb_connection(), XCB_INPUT_FOCUS_PARENT, m_window, connection()->time()));
     }
+
     connection()->sync();
 }
 
@@ -1252,18 +1283,18 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             m_syncValue.lo = event->data.data32[2];
             m_syncValue.hi = event->data.data32[3];
         } else {
-            qWarning() << "unhandled WM_PROTOCOLS message:" << connection()->atomName(event->data.data32[0]);
+            qWarning() << "QXcbWindow: Unhandled WM_PROTOCOLS message:" << connection()->atomName(event->data.data32[0]);
         }
     } else if (event->type == atom(QXcbAtom::XdndEnter)) {
         connection()->drag()->handleEnter(window(), event);
     } else if (event->type == atom(QXcbAtom::XdndPosition)) {
-        connection()->drag()->handlePosition(window(), event, false);
+        connection()->drag()->handlePosition(window(), event);
     } else if (event->type == atom(QXcbAtom::XdndLeave)) {
-        connection()->drag()->handleLeave(window(), event, false);
+        connection()->drag()->handleLeave(window(), event);
     } else if (event->type == atom(QXcbAtom::XdndDrop)) {
-        connection()->drag()->handleDrop(window(), event, false);
+        connection()->drag()->handleDrop(window(), event);
     } else {
-        qWarning() << "unhandled client message:" << connection()->atomName(event->type);
+        qWarning() << "QXcbWindow: Unhandled client message:" << connection()->atomName(event->type);
     }
 }
 

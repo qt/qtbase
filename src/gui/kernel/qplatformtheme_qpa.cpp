@@ -102,6 +102,11 @@ QT_BEGIN_NAMESPACE
     \sa themeHint(), QStyle::pixelMetric()
 */
 
+QPlatformTheme::~QPlatformTheme()
+{
+
+}
+
 QPlatformMenu *QPlatformTheme::createPlatformMenu(QMenu *menu) const
 {
     Q_UNUSED(menu);
@@ -127,6 +132,12 @@ QPlatformDialogHelper *QPlatformTheme::createPlatformDialogHelper(DialogType typ
 }
 
 const QPalette *QPlatformTheme::palette(Palette type) const
+{
+    Q_UNUSED(type)
+    return 0;
+}
+
+const QFont *QPlatformTheme::font(Font type) const
 {
     Q_UNUSED(type)
     return 0;

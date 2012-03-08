@@ -34,6 +34,7 @@ OBJECTS = \
     qdatastream.obj \
     qdir.obj \
     qdiriterator.obj \
+    qfiledevice.obj \
     qfile.obj \
     qfileinfo.obj \
     qabstractfileengine.obj \
@@ -65,7 +66,8 @@ OBJECTS = \
     qxmlutils.obj \
     quuid.obj \
     qcryptographichash.obj \
-    registry.obj
+    registry.obj \
+    configure_pch.obj
 
 $(TARGET): $(OBJECTS)
 	$(LINK) $(LFLAGS) /OUT:$(TARGET) @<<
@@ -102,6 +104,7 @@ qbuffer.obj: $(CORESRC)\io\qbuffer.cpp $(PCH)
 qdatastream.obj: $(CORESRC)\io\qdatastream.cpp $(PCH)
 qdir.obj: $(CORESRC)\io\qdir.cpp $(PCH)
 qdiriterator.obj: $(CORESRC)\io\qdiriterator.cpp $(PCH)
+qfiledevice.obj: $(CORESRC)\io\qfiledevice.cpp $(PCH)
 qfile.obj: $(CORESRC)\io\qfile.cpp $(PCH)
 qfileinfo.obj: $(CORESRC)\io\qfileinfo.cpp $(PCH)
 qabstractfileengine.obj: $(CORESRC)\io\qabstractfileengine.cpp $(PCH)

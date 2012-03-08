@@ -61,6 +61,7 @@ public:
     int depth() const { return m_depth; }
     QImage::Format format() const { return m_format; }
     QSizeF physicalSize() const { return m_physicalSize; }
+    QPlatformCursor *cursor() const { return m_cursor.data(); }
 
     // DirectFb helpers
     IDirectFBDisplayLayer *dfbLayer() const;

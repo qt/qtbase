@@ -238,25 +238,21 @@ MakefileGenerator
 
         //initialize the base
         QHash<QString, QStringList> basevars;
+        QStringList basecfgs;
         if(!project->isEmpty(build + ".CONFIG"))
-            basevars["CONFIG"] += project->values(build + ".CONFIG");
-        basevars["CONFIG"] += build;
-        basevars["CONFIG"] += "build_pass";
+            basecfgs = project->values(build + ".CONFIG");
+        basecfgs += build;
+        basecfgs += "build_pass";
         basevars["BUILD_PASS"] = QStringList(build);
         QStringList buildname = project->values(build + ".name");
         basevars["BUILD_NAME"] = (buildname.isEmpty() ? QStringList(build) : buildname);
 
         //create project
-        QMakeProject *build_proj = new QMakeProject(project->properties(), basevars);
+        QMakeProject *build_proj = new QMakeProject(project->properties());
+        build_proj->setExtraVars(basevars);
+        build_proj->setExtraConfigs(basecfgs);
 
-        //all the user configs must be set again afterwards (for .pro tests and for .prf tests)
-        const QStringList old_after_user_config = Option::after_user_configs;
-        const QStringList old_user_config = Option::user_configs;
-        Option::after_user_configs += basevars["CONFIG"];
-        Option::user_configs += basevars["CONFIG"];
         build_proj->read(project->projectFile());
-        Option::after_user_configs = old_after_user_config;
-        Option::user_configs = old_user_config;
 
         //done
         return createMakefileGenerator(build_proj);
@@ -451,6 +447,8 @@ QT_END_INCLUDE_NAMESPACE
 MakefileGenerator *
 MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
 {
+    Option::postProcessProject(proj);
+
     MakefileGenerator *mkfile = NULL;
     if(Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT) {
         mkfile = new ProjectGenerator;
@@ -496,6 +494,8 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
 MetaMakefileGenerator *
 MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &name, bool op, bool *success)
 {
+    Option::postProcessProject(proj);
+
     MetaMakefileGenerator *ret = 0;
     if ((Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
          Option::qmake_mode == Option::QMAKE_GENERATE_PRL)) {

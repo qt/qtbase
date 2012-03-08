@@ -897,7 +897,7 @@ extern QStringList qt_make_filter_list(const QString &filter);
 void QGtkStylePrivate::setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *parent,
                                 const QString &dir, const QString &filter, QString *selectedFilter,
                                 QFileDialog::Options options, bool isSaveDialog,
-                                QMap<GtkFileFilter *, QString> *filterMap)
+                                QHash<GtkFileFilter *, QString> *filterMap)
 {
     g_object_set(gtkFileChooser, "do-overwrite-confirmation", gboolean(!(options & QFileDialog::DontConfirmOverwrite)), NULL);
     g_object_set(gtkFileChooser, "local_only", gboolean(true), NULL);
@@ -969,7 +969,7 @@ void QGtkStylePrivate::setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *p
 QString QGtkStylePrivate::openFilename(QWidget *parent, const QString &caption, const QString &dir, const QString &filter,
                             QString *selectedFilter, QFileDialog::Options options)
 {
-    QMap<GtkFileFilter *, QString> filterMap;
+    QHash<GtkFileFilter *, QString> filterMap;
     GtkWidget *gtkFileChooser = QGtkStylePrivate::gtk_file_chooser_dialog_new (qPrintable(caption),
                                                              NULL,
                                                              GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -1003,7 +1003,7 @@ QString QGtkStylePrivate::openFilename(QWidget *parent, const QString &caption, 
 
 QString QGtkStylePrivate::openDirectory(QWidget *parent, const QString &caption, const QString &dir, QFileDialog::Options options)
 {
-    QMap<GtkFileFilter *, QString> filterMap;
+    QHash<GtkFileFilter *, QString> filterMap;
     GtkWidget *gtkFileChooser = QGtkStylePrivate::gtk_file_chooser_dialog_new (qPrintable(caption),
                                                              NULL,
                                                              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -1033,7 +1033,7 @@ QStringList QGtkStylePrivate::openFilenames(QWidget *parent, const QString &capt
                                  QString *selectedFilter, QFileDialog::Options options)
 {
     QStringList filenames;
-    QMap<GtkFileFilter *, QString> filterMap;
+    QHash<GtkFileFilter *, QString> filterMap;
     GtkWidget *gtkFileChooser = QGtkStylePrivate::gtk_file_chooser_dialog_new (qPrintable(caption),
                                                              NULL,
                                                              GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -1068,7 +1068,7 @@ QStringList QGtkStylePrivate::openFilenames(QWidget *parent, const QString &capt
 QString QGtkStylePrivate::saveFilename(QWidget *parent, const QString &caption, const QString &dir, const QString &filter,
                            QString *selectedFilter, QFileDialog::Options options)
 {
-    QMap<GtkFileFilter *, QString> filterMap;
+    QHash<GtkFileFilter *, QString> filterMap;
     GtkWidget *gtkFileChooser = QGtkStylePrivate::gtk_file_chooser_dialog_new (qPrintable(caption),
                                                              NULL,
                                                              GTK_FILE_CHOOSER_ACTION_SAVE,

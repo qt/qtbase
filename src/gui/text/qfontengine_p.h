@@ -85,6 +85,7 @@ struct QGlyphLayout;
 
 class Q_GUI_EXPORT QFontEngine : public QObject
 {
+    Q_OBJECT
 public:
     enum Type {
         Box,
@@ -234,6 +235,7 @@ public:
 
     HB_Font harfbuzzFont() const;
     HB_Face harfbuzzFace() const;
+    HB_Face initializedHarfbuzzFace() const;
 
     virtual HB_Error getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints);
 
@@ -278,7 +280,6 @@ public:
     int m_subPixelPositionCount; // Number of positions within a single pixel for this cache
 
 protected:
-    static const QVector<QRgb> &grayPalette();
     QFixed lastRightBearing(const QGlyphLayout &glyphs, bool round = false);
 
 private:
@@ -344,6 +345,7 @@ private:
 
 class Q_GUI_EXPORT QFontEngineMulti : public QFontEngine
 {
+    Q_OBJECT
 public:
     explicit QFontEngineMulti(int engineCount);
     ~QFontEngineMulti();

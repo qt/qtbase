@@ -61,13 +61,13 @@
 
     \list
 
-    \i When using QPointer on a QWidget (or a subclass of QWidget), previously
+    \li When using QPointer on a QWidget (or a subclass of QWidget), previously
     the QPointer would be cleared by the QWidget destructor. Now, the QPointer
     is cleared by the QObject destructor (since this is when QWeakPointers are
     cleared). Any QPointers tracking a widget will \b NOT be cleared before the
     QWidget destructor destroys the children for the widget being tracked.
 
-    \i When constructing a QSharedPointer to take ownership of an object after a
+    \li When constructing a QSharedPointer to take ownership of an object after a
     QPointer is already tracking the object. Previously, the shared pointer
     construction would not be affected by the QPointer, but now that QPointer
     is implemented using QWeakPoiner, constructing the QSharedPointer will

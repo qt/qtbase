@@ -286,7 +286,7 @@ void QBBScreen::updateHierarchy()
 #endif
 
     QList<QBBWindow*>::iterator it;
-    int topZorder = 0;
+    int topZorder = 1; // root window is z-order 0, all "top" level windows are "above" it
 
     for (it = ms_childWindows.begin(); it != ms_childWindows.end(); it++)
         (*it)->updateZorder(topZorder);

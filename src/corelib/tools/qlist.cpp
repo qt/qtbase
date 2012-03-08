@@ -338,15 +338,15 @@ void **QListData::erase(void **xi)
     functionality. Here's an overview:
 
     \list
-    \i For most purposes, QList is the right class to use. Its
+    \li For most purposes, QList is the right class to use. Its
        index-based API is more convenient than QLinkedList's
        iterator-based API, and it is usually faster than
        QVector because of the way it stores its items in
        memory. It also expands to less code in your executable.
-    \i If you need a real linked list, with guarantees of \l{constant
+    \li If you need a real linked list, with guarantees of \l{constant
        time} insertions in the middle of the list and iterators to
        items rather than indexes, use QLinkedList.
-    \i If you want the items to occupy adjacent memory positions,
+    \li If you want the items to occupy adjacent memory positions,
        use QVector.
     \endlist
 

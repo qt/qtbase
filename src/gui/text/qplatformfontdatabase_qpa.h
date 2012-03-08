@@ -100,7 +100,7 @@ public:
     virtual QString fontDir() const;
 
     virtual QFont defaultFont() const;
-    virtual QHash<QByteArray, QFont> defaultFonts() const;
+
     virtual QString resolveFontFamilyAlias(const QString &family) const;
 
     //callback

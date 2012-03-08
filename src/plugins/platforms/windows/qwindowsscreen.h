@@ -46,6 +46,7 @@
 
 #include <QtCore/QList>
 #include <QtCore/QPair>
+#include <QtCore/QSharedPointer>
 #include <QtGui/QPlatformScreen>
 
 QT_BEGIN_NAMESPACE
@@ -74,6 +75,8 @@ struct QWindowsScreenData
 class QWindowsScreen : public QPlatformScreen
 {
 public:
+    typedef QSharedPointer<QWindowsCursor> WindowsCursorPtr;
+
     explicit QWindowsScreen(const QWindowsScreenData &data);
 
     static QWindowsScreen *screenOf(const QWindow *w = 0);
@@ -98,14 +101,14 @@ public:
 
     inline void handleChanges(const QWindowsScreenData &newData);
 
-    const QWindowsCursor &cursor() const    { return m_cursor; }
-    QWindowsCursor &cursor()                { return m_cursor; }
+    QPlatformCursor *cursor() const               { return m_cursor.data(); }
+    const WindowsCursorPtr &windowsCursor() const { return m_cursor; }
 
     const QWindowsScreenData &data() const  { return m_data; }
 
 private:
     QWindowsScreenData m_data;
-    QWindowsCursor m_cursor;
+    const WindowsCursorPtr m_cursor;
 };
 
 class QWindowsScreenManager
@@ -115,7 +118,11 @@ public:
 
     QWindowsScreenManager();
 
-    inline void clearScreens() { qDeleteAll(m_screens); m_screens.clear(); }
+    inline void clearScreens() {
+        // Delete screens in reverse order to avoid crash in case of multiple screens
+        while (!m_screens.isEmpty())
+            delete m_screens.takeLast();
+    }
 
     void handleScreenChanges();
     bool handleDisplayChange(WPARAM wParam, LPARAM lParam);
