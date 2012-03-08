@@ -515,24 +515,37 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
     FcCharSet *charset;
     if (match) {
         QFontEngineFT::HintStyle default_hint_style;
-
-        //hinting
-        int hint_style = 0;
-        if (FcPatternGetInteger (match, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
-            hint_style = QFontEngineFT::HintFull;
-        switch (hint_style) {
-        case FC_HINT_NONE:
-            default_hint_style = QFontEngineFT::HintNone;
-            break;
-        case FC_HINT_SLIGHT:
-            default_hint_style = QFontEngineFT::HintLight;
-            break;
-        case FC_HINT_MEDIUM:
-            default_hint_style = QFontEngineFT::HintMedium;
-            break;
-        default:
-            default_hint_style = QFontEngineFT::HintFull;
-            break;
+        if (f.hintingPreference != QFont::PreferDefaultHinting) {
+            switch (f.hintingPreference) {
+            case QFont::PreferNoHinting:
+                default_hint_style = QFontEngineFT::HintNone;
+                break;
+            case QFont::PreferVerticalHinting:
+                default_hint_style = QFontEngineFT::HintLight;
+                break;
+            case QFont::PreferFullHinting:
+            default:
+                default_hint_style = QFontEngineFT::HintFull;
+                break;
+            }
+        } else {
+            int hint_style = 0;
+            if (FcPatternGetInteger (match, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
+                hint_style = QFontEngineFT::HintFull;
+            switch (hint_style) {
+            case FC_HINT_NONE:
+                default_hint_style = QFontEngineFT::HintNone;
+                break;
+            case FC_HINT_SLIGHT:
+                default_hint_style = QFontEngineFT::HintLight;
+                break;
+            case FC_HINT_MEDIUM:
+                default_hint_style = QFontEngineFT::HintMedium;
+                break;
+            default:
+                default_hint_style = QFontEngineFT::HintFull;
+                break;
+            }
         }
         engine->setDefaultHintStyle(default_hint_style);
 
