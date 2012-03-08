@@ -56,6 +56,11 @@
 #include "../platformdefs_win.h"
 #endif
 
+#ifdef Q_OS_WINCE
+typedef ULONG NDIS_OID, *PNDIS_OID;
+#include <nuiouser.h>
+#endif
+
 #ifdef Q_OS_LINUX
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -71,31 +76,60 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_NETWORKINTERFACE
 static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interface)
 {
-#ifdef Q_OS_WIN32
-    unsigned long oid;
+#if defined(Q_OS_WIN)
     DWORD bytesWritten;
-
     NDIS_MEDIUM medium;
     NDIS_PHYSICAL_MEDIUM physicalMedium;
 
+#ifdef Q_OS_WINCE
+    NDISUIO_QUERY_OID nicGetOid;
+    HANDLE handle = CreateFile((PTCHAR)NDISUIO_DEVICE_NAME, 0,
+                               FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+#else
+    unsigned long oid;
     HANDLE handle = CreateFile((TCHAR *)QString::fromLatin1("\\\\.\\%1").arg(interface).utf16(), 0,
                                FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+#endif
     if (handle == INVALID_HANDLE_VALUE)
         return QNetworkConfiguration::BearerUnknown;
 
-    oid = OID_GEN_MEDIA_SUPPORTED;
     bytesWritten = 0;
+
+#ifdef Q_OS_WINCE
+    ZeroMemory(&nicGetOid, sizeof(NDISUIO_QUERY_OID));
+    nicGetOid.Oid = OID_GEN_MEDIA_SUPPORTED;
+    nicGetOid.ptcDeviceName = (PTCHAR)interface.utf16();
+    bool result = DeviceIoControl(handle, IOCTL_NDISUIO_QUERY_OID_VALUE, &nicGetOid, sizeof(nicGetOid),
+                                  &nicGetOid, sizeof(nicGetOid), &bytesWritten, 0);
+#else
+    oid = OID_GEN_MEDIA_SUPPORTED;
     bool result = DeviceIoControl(handle, IOCTL_NDIS_QUERY_GLOBAL_STATS, &oid, sizeof(oid),
                                   &medium, sizeof(medium), &bytesWritten, 0);
+#endif
     if (!result) {
         CloseHandle(handle);
         return QNetworkConfiguration::BearerUnknown;
     }
 
-    oid = OID_GEN_PHYSICAL_MEDIUM;
     bytesWritten = 0;
+
+#ifdef Q_OS_WINCE
+    medium = NDIS_MEDIUM( *(LPDWORD)nicGetOid.Data );
+
+    ZeroMemory(&nicGetOid, sizeof(NDISUIO_QUERY_OID));
+    nicGetOid.Oid = OID_GEN_PHYSICAL_MEDIUM;
+    nicGetOid.ptcDeviceName = (PTCHAR)interface.utf16();
+
+    result = DeviceIoControl(handle, IOCTL_NDISUIO_QUERY_OID_VALUE, &nicGetOid, sizeof(nicGetOid),
+                             &nicGetOid, sizeof(nicGetOid), &bytesWritten, 0);
+
+    physicalMedium = NDIS_PHYSICAL_MEDIUM( *(LPDWORD)nicGetOid.Data );
+#else
+    oid = OID_GEN_PHYSICAL_MEDIUM;
     result = DeviceIoControl(handle, IOCTL_NDIS_QUERY_GLOBAL_STATS, &oid, sizeof(oid),
                              &physicalMedium, sizeof(physicalMedium), &bytesWritten, 0);
+#endif
+
     if (!result) {
         CloseHandle(handle);
 
