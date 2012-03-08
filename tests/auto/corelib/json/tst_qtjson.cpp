@@ -117,6 +117,9 @@ private Q_SLOTS:
     void testCompactionError();
 
     void parseUnicodeEscapes();
+
+    void assignObjects();
+    void assignArrays();
 private:
     QString testDataDir;
 };
@@ -1772,6 +1775,36 @@ void TestQtJson::parseUnicodeEscapes()
     result += QChar(0xc4);
 
     QCOMPARE(array.first().toString(), result);
+}
+
+void TestQtJson::assignObjects()
+{
+    const char *json =
+            "[ { \"Key\": 1 }, { \"Key\": 2 } ]";
+
+    QJsonDocument doc = QJsonDocument::fromJson(json);
+    QJsonArray array = doc.array();
+
+    QJsonObject object = array.at(0).toObject();
+    QCOMPARE(object.value("Key").toDouble(), 1.);
+
+    object = array.at(1).toObject();
+    QCOMPARE(object.value("Key").toDouble(), 2.);
+}
+
+void TestQtJson::assignArrays()
+{
+    const char *json =
+            "[ [ 1 ], [ 2 ] ]";
+
+    QJsonDocument doc = QJsonDocument::fromJson(json);
+    QJsonArray array = doc.array();
+
+    QJsonArray inner = array.at(0).toArray()  ;
+    QCOMPARE(inner.at(0).toDouble(), 1.);
+
+    inner= array.at(1).toArray();
+    QCOMPARE(inner.at(0).toDouble(), 2.);
 }
 
 QTEST_MAIN(TestQtJson)
