@@ -157,10 +157,7 @@ QMacTabletHash *qt_mac_tablet_hash();
 # endif
 #endif
 
-struct FontHash : public QHash<QByteArray, QFont>
-{
-    FontHash();
-};
+typedef QHash<QByteArray, QFont> FontHash;
 FontHash *qt_app_fonts_hash();
 
 typedef QHash<QByteArray, QPalette> PaletteHash;
@@ -292,6 +289,7 @@ public:
     static void setSystemPalette(const QPalette &pal);
     static void setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash);
     static void initializeWidgetPaletteHash();
+    static void initializeWidgetFontHash();
     static void setSystemFont(const QFont &font);
 
 #if defined(Q_WS_X11)

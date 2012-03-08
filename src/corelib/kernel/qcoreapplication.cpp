@@ -543,10 +543,6 @@ void QCoreApplication::init()
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = this;
 
-#ifndef QT_NO_THREAD
-    QThread::initialize();
-#endif
-
     // use the event dispatcher created by the app programmer (if any)
     if (!QCoreApplicationPrivate::eventDispatcher)
         QCoreApplicationPrivate::eventDispatcher = d->threadData->eventDispatcher;
@@ -602,7 +598,6 @@ QCoreApplication::~QCoreApplication()
     }
     if (globalThreadPool)
         globalThreadPool->waitForDone();
-    QThread::cleanup();
 #endif
 
     d_func()->threadData->eventDispatcher = 0;
@@ -1438,11 +1433,9 @@ bool QCoreApplication::event(QEvent *e)
     This enum type defines the 8-bit encoding of character string
     arguments to translate():
 
-    \value CodecForTr  The encoding specified by
-                       QTextCodec::codecForTr() (Latin-1 if none has
-                       been set).
-    \value UnicodeUTF8  UTF-8.
-    \value DefaultCodec  (Obsolete) Use CodecForTr instead.
+    \value UnicodeUTF8   UTF-8.
+    \value Latin1        Latin-1.
+    \value DefaultCodec  Latin-1.
 
     \sa QObject::tr(), QObject::trUtf8(), QString::fromUtf8()
 */
@@ -1617,7 +1610,7 @@ static void replacePercentN(QString *result, int n)
     If none of the translation files contain a translation for \a
     sourceText in \a context, this function returns a QString
     equivalent of \a sourceText. The encoding of \a sourceText is
-    specified by \e encoding; it defaults to CodecForTr.
+    specified by \e encoding; it defaults to DefaultCodec.
 
     This function is not virtual. You can use alternative translation
     techniques by subclassing \l QTranslator.
@@ -1628,7 +1621,7 @@ static void replacePercentN(QString *result, int n)
     so will most likely result in crashes or other undesirable
     behavior.
 
-    \sa QObject::tr() installTranslator() QTextCodec::codecForTr()
+    \sa QObject::tr() installTranslator()
 */
 
 
@@ -1657,8 +1650,6 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
 #else
         if (encoding == UnicodeUTF8)
             result = QString::fromUtf8(sourceText);
-        else if (QTextCodec::codecForTr() != 0)
-            result = QTextCodec::codecForTr()->toUnicode(sourceText);
         else
 #endif
             result = QString::fromLatin1(sourceText);

@@ -30,8 +30,7 @@ testcocoon: SUBDIRS -= headersclean
 
 cross_compile: SUBDIRS -= \
    atwrapper \
-   compiler \
-   headersclean \
+   compiler
 
 wince*|!contains(QT_CONFIG, accessibility):SUBDIRS -= qaccessibility
 

@@ -47,8 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QCocoaCursor::QCocoaCursor(QPlatformScreen *s) :
-    QPlatformCursor(s)
+QCocoaCursor::QCocoaCursor()
 {
     // release cursors
     QHash<Qt::CursorShape, NSCursor *>::const_iterator i = m_cursors.constBegin();

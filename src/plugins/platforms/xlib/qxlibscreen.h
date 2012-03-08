@@ -63,6 +63,7 @@ public:
     int depth() const { return mDepth; }
     QImage::Format format() const { return mFormat; }
     QSizeF physicalSize() const { return mPhysicalSize; }
+    QPlatformCursor *cursor() const;
 
     Window rootWindow();
     unsigned long blackPixel();

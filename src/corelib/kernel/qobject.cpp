@@ -1859,7 +1859,7 @@ void QObject::deleteLater()
     translators while performing translations is not supported. Doing
     so will probably result in crashes or other undesirable behavior.
 
-    \sa trUtf8(), QApplication::translate(), QTextCodec::setCodecForTr(), {Internationalization with Qt}
+    \sa trUtf8(), QApplication::translate(), {Internationalization with Qt}
 */
 
 /*!
@@ -1870,11 +1870,6 @@ void QObject::deleteLater()
     QString::fromUtf8(\a sourceText) if there is no appropriate
     version. It is otherwise identical to tr(\a sourceText, \a
     disambiguation, \a n).
-
-    Note that using the Utf8 variants of the translation functions
-    is not required if \c CODECFORTR is already set to UTF-8 in the
-    qmake project file and QTextCodec::setCodecForTr("UTF-8") is
-    used.
 
     \warning This method is reentrant only if all translators are
     installed \e before calling this method. Installing or removing

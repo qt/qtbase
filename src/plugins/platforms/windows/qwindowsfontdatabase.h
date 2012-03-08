@@ -86,7 +86,6 @@ public:
     virtual QString fontDir() const;
 
     virtual QFont defaultFont() const;
-    virtual QHash<QByteArray, QFont> defaultFonts() const;
 
     static QFontEngine *createEngine(int script, const QFontDef &request,
                                      HDC fontHdc, int dpi, bool rawMode,

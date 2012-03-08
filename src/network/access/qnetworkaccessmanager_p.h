@@ -98,7 +98,8 @@ public:
                                 QNetworkReply *reply,
                                 bool synchronous,
                                 QUrl &url,
-                                QUrl *urlForLastAuthentication);
+                                QUrl *urlForLastAuthentication,
+                                bool allowAuthenticationReuse = true);
     void cacheCredentials(const QUrl &url, const QAuthenticator *auth);
     QNetworkAuthenticationCredential *fetchCachedCredentials(const QUrl &url,
                                                              const QAuthenticator *auth = 0);

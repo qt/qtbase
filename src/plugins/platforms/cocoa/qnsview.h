@@ -57,6 +57,7 @@ QT_END_NAMESPACE
     QCocoaWindow *m_platformWindow;
     Qt::MouseButtons m_buttons;
     QAccessibleInterface *m_accessibleRoot;
+    QStringList *currentCustomDragTypes;
 }
 
 - (id)init;
@@ -90,6 +91,9 @@ QT_END_NAMESPACE
 - (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
 - (void)keyDown:(NSEvent *)theEvent;
 - (void)keyUp:(NSEvent *)theEvent;
+
+- (void)registerDragTypes;
+- (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender;
 
 @end
 

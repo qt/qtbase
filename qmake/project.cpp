@@ -593,6 +593,7 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         concat_it != concat.end(); ++concat_it)
         feature_roots << (QLibraryInfo::location(QLibraryInfo::HostDataPath) +
                           mkspecs_concat + (*concat_it));
+    feature_roots.removeDuplicates();
     return feature_roots;
 }
 
@@ -627,10 +628,11 @@ QMakeProject::init(QMakeProperty *p)
     reset();
 }
 
-QMakeProject::QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *vars)
+// Duplicate project. It is *not* allowed to call the complex read() functions on the copy.
+QMakeProject::QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *_vars)
 {
     init(p->properties());
-    base_vars = vars ? *vars : p->variables();
+    vars = _vars ? *_vars : p->variables();
     for(QHash<QString, FunctionBlock*>::iterator it = p->replaceFunctions.begin(); it != p->replaceFunctions.end(); ++it) {
         it.value()->ref();
         replaceFunctions.insert(it.key(), it.value());
@@ -1256,7 +1258,7 @@ QMakeProject::read(const QString &project, uchar cmd)
 bool
 QMakeProject::read(uchar cmd)
 {
-    if(cfile.isEmpty()) {
+    if ((cmd & ReadSetup) && base_vars.isEmpty()) {
         // hack to get the Option stuff in there
         base_vars["QMAKE_EXT_CPP"] = Option::cpp_ext;
         base_vars["QMAKE_EXT_C"] = Option::c_ext;
@@ -1265,12 +1267,12 @@ QMakeProject::read(uchar cmd)
         if(!Option::user_template_prefix.isEmpty())
             base_vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
 
-        if ((cmd & ReadSetup) && Option::mkfile::do_cache) {        // parse the cache
+        if (Option::mkfile::do_cache) {        // parse the cache
             if (Option::output_dir.startsWith(Option::mkfile::project_build_root))
                 Option::mkfile::cachefile_depth =
                         Option::output_dir.mid(Option::mkfile::project_build_root.length()).count('/');
         }
-        if (cmd & ReadSetup) {             // parse mkspec
+        {             // parse mkspec
             QString qmakespec = Option::mkfile::qmakespec;
             while(qmakespec.endsWith(QLatin1Char('/')))
                 qmakespec.truncate(qmakespec.length()-1);
@@ -1306,7 +1308,6 @@ QMakeProject::read(uchar cmd)
 
     //before commandline
     if (cmd & ReadSetup) {
-        cfile = pfile;
         parser.file = "(internal)";
         parser.from_file = false;
         parser.line_no = 1; //really arg count now.. duh
@@ -1385,7 +1386,6 @@ QMakeProject::read(uchar cmd)
                 break;
         }
     }
-    Option::postProcessProject(this);   // let Option post-process
     return true;
 }
 
@@ -1633,12 +1633,8 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
         if(flags & (IncludeFlagNewProject|IncludeFlagNewParser)) {
             // The "project's variables" are used in other places (eg. export()) so it's not
             // possible to use "place" everywhere. Instead just set variables and grab them later
-            QMakeProject proj(this, &place);
+            QMakeProject proj(prop);
             if(flags & IncludeFlagNewParser) {
-#if 1
-                if(proj.doProjectInclude("default_pre", IncludeFlagFeature, proj.variables()) == IncludeNoExist)
-                    proj.doProjectInclude("default", IncludeFlagFeature, proj.variables());
-#endif
                 parsed = proj.read(file, proj.variables()); // parse just that file (fromfile, infile)
             } else {
                 parsed = proj.read(file); // parse all aux files (load/include into)

@@ -84,8 +84,6 @@ private:
     QMutex::RecursionMode recursionMode;
 };
 
-extern Q_CORE_EXPORT QMutexPool *qt_global_mutexpool;
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_THREAD

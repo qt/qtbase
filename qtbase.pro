@@ -39,9 +39,6 @@ confclean.depends += clean
 confclean.commands =
 unix {
   confclean.commands += (cd config.tests/unix/stl && $(MAKE) distclean); \
-			(cd config.tests/unix/endian && $(MAKE) distclean); \
-			(cd config.tests/unix/ipv6 && $(MAKE) distclean); \
-			(cd config.tests/unix/largefile && $(MAKE) distclean); \
 			(cd config.tests/unix/ptrsize && $(MAKE) distclean); \
 			(cd config.tests/x11/notype && $(MAKE) distclean); \
 			(cd config.tests/unix/getaddrinfo && $(MAKE) distclean); \
@@ -50,7 +47,6 @@ unix {
 			(cd config.tests/unix/mysql && $(MAKE) distclean); \
  	 		(cd config.tests/unix/mysql_r && $(MAKE) distclean); \
 			(cd config.tests/unix/nis && $(MAKE) distclean); \
-			(cd config.tests/unix/nix && $(MAKE) distclean); \
 			(cd config.tests/unix/iodbc && $(MAKE) distclean); \
 			(cd config.tests/unix/odbc && $(MAKE) distclean); \
 			(cd config.tests/unix/oci && $(MAKE) distclean); \

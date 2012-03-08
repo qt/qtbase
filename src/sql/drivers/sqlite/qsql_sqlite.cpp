@@ -174,12 +174,37 @@ void QSQLiteResultPrivate::initColumns(bool emptyResultset)
         // must use typeName for resolving the type to match QSqliteDriver::record
         QString typeName = QString(reinterpret_cast<const QChar *>(
                     sqlite3_column_decltype16(stmt, i)));
-
-        int dotIdx = colName.lastIndexOf(QLatin1Char('.'));
-        QSqlField fld(colName.mid(dotIdx == -1 ? 0 : dotIdx + 1), qGetColumnType(typeName));
-
         // sqlite3_column_type is documented to have undefined behavior if the result set is empty
         int stp = emptyResultset ? -1 : sqlite3_column_type(stmt, i);
+
+        QVariant::Type fieldType;
+
+        if (!typeName.isEmpty()) {
+            fieldType = qGetColumnType(typeName);
+        } else {
+            // Get the proper type for the field based on stp value
+            switch (stp) {
+            case SQLITE_INTEGER:
+                fieldType = QVariant::Int;
+                break;
+            case SQLITE_FLOAT:
+                fieldType = QVariant::Double;
+                break;
+            case SQLITE_BLOB:
+                fieldType = QVariant::ByteArray;
+                break;
+            case SQLITE_TEXT:
+                fieldType = QVariant::String;
+                break;
+            case SQLITE_NULL:
+            default:
+                fieldType = QVariant::Invalid;
+                break;
+            }
+        }
+
+        int dotIdx = colName.lastIndexOf(QLatin1Char('.'));
+        QSqlField fld(colName.mid(dotIdx == -1 ? 0 : dotIdx + 1), fieldType);
         fld.setSqlType(stp);
         rInf.append(fld);
     }

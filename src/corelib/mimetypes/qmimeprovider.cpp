@@ -283,6 +283,8 @@ QMimeType QMimeBinaryProvider::mimeTypeForName(const QString &name)
 QStringList QMimeBinaryProvider::findByFileName(const QString &fileName, QString *foundSuffix)
 {
     checkCache();
+    if (fileName.isEmpty())
+        return QStringList();
     const QString lowerFileName = fileName.toLower();
     QMimeGlobMatchResult result;
     // TODO this parses in the order (local, global). Check that it handles "NOGLOBS" correctly.

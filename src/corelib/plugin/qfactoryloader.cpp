@@ -128,6 +128,7 @@ void QFactoryLoader::update()
         QLibraryPrivate *library = 0;
         for (int j = 0; j < plugins.count(); ++j) {
             QString fileName = QDir::cleanPath(path + QLatin1Char('/') + plugins.at(j));
+
             if (qt_debug_component()) {
                 qDebug() << "QFactoryLoader::QFactoryLoader() looking at" << fileName;
             }
@@ -140,7 +141,9 @@ void QFactoryLoader::update()
                 library->release();
                 continue;
             }
+
             QStringList keys;
+            bool metaDataOk = false;
             if (library->compatPlugin) {
                 qWarning("Qt plugin loader: Compatibility plugin '%s', need to load for accessing meta data.",
                          qPrintable(QDir::toNativeSeparators(fileName)));
@@ -164,10 +167,17 @@ void QFactoryLoader::update()
                 QFactoryInterface *factory = qobject_cast<QFactoryInterface*>(instance);
                 if (instance && factory && instance->qt_metacast(d->iid))
                     keys = factory->keys();
+
+                if (!keys.isEmpty())
+                    metaDataOk = true;
+
             } else {
                 QString iid = library->metaData.value(QLatin1String("IID")).toString();
                 if (iid == QLatin1String(d->iid.constData(), d->iid.size())) {
                     QJsonObject object = library->metaData.value(QLatin1String("MetaData")).toObject();
+                    if (!object.isEmpty())
+                        metaDataOk = true;
+
                     QJsonArray k = object.value(QLatin1String("Keys")).toArray();
                     for (int i = 0; i < k.size(); ++i) {
                         QString s = k.at(i).toString();
@@ -178,11 +188,12 @@ void QFactoryLoader::update()
                     qDebug() << "Got keys from plugin meta data" << keys;
             }
 
-            if (keys.isEmpty()) {
+            if (!metaDataOk) {
                 library->unload();
                 library->release();
                 continue;
             }
+
             d->libraryList += library;
             for (int k = 0; k < keys.count(); ++k) {
                 // first come first serve, unless the first

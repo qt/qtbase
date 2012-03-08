@@ -59,8 +59,9 @@ public:
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
 
     virtual QString fontDir() const;
-    virtual QFont defaultFont() const;
-    virtual QHash<QByteArray, QFont> defaultFonts() const;
+    virtual QFont defaultFont() const { return systemDefaultFont(); }
+    static QFont systemDefaultFont();
+
     static HFONT systemFont();
     static QFont LOGFONT_to_QFont(const LOGFONT& lf, int verticalDPI = 0);
 

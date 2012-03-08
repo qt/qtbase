@@ -149,8 +149,11 @@ static QString detectProjectFile(const QString &path)
 static QString cleanSpec(const QString &spec)
 {
     QString ret = QDir::cleanPath(spec);
-    if (ret.contains('/'))
-        ret = QDir::cleanPath(QFileInfo(ret).absoluteFilePath());
+    if (ret.contains('/')) {
+        const QFileInfo specDirInfo(ret);
+        if (specDirInfo.exists() && specDirInfo.isDir())
+            ret = QDir::cleanPath(specDirInfo.absoluteFilePath());
+    }
     return ret;
 }
 
@@ -591,10 +594,12 @@ QStringList Option::mkspecPaths()
         for (QStringList::ConstIterator it = lst.begin(); it != lst.end(); ++it)
             ret << ((*it) + concat);
     }
-    ret << Option::mkfile::project_build_root + concat;
+    if (!Option::mkfile::project_build_root.isEmpty())
+        ret << Option::mkfile::project_build_root + concat;
     if (!Option::mkfile::project_root.isEmpty())
         ret << Option::mkfile::project_root + concat;
     ret << QLibraryInfo::location(QLibraryInfo::HostDataPath) + concat;
+    ret.removeDuplicates();
     return ret;
 }
 

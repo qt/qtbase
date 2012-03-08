@@ -46,9 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// qt_global_mutexpool is here for backwards compatibility only,
-// use QMutexpool::instance() in new clode.
-Q_CORE_EXPORT QMutexPool *qt_global_mutexpool = 0;
 Q_GLOBAL_STATIC_WITH_ARGS(QMutexPool, globalMutexPool, (QMutex::Recursive))
 
 /*!

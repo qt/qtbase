@@ -96,6 +96,11 @@ QSizeF QKmsScreen::physicalSize() const
     return m_physicalSize;
 }
 
+QPlatformCursor *QKmsScreen::cursor() const
+{
+    return m_cursor;
+}
+
 GLuint QKmsScreen::framebufferObject() const
 {
     return m_bufferManager.framebufferObject();

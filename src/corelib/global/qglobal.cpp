@@ -2233,9 +2233,7 @@ int qrand()
 
     The macro QT_TR_NOOP_UTF8() is identical except that it tells lupdate
     that the source string is encoded in UTF-8. Corresponding variants
-    exist in the QT_TRANSLATE_NOOP() family of macros, too. Note that
-    using these macros is not required if \c CODECFORTR is already set to
-    UTF-8 in the qmake project file.
+    exist in the QT_TRANSLATE_NOOP() family of macros, too.
 
     \sa QT_TRANSLATE_NOOP(), {Internationalization with Qt}
 */

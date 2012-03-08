@@ -1179,10 +1179,10 @@ void QNetworkReplyHttpImplPrivate::replyDownloadProgressSlot(qint64 bytesReceive
     emit q->downloadProgress(bytesDownloaded, bytesTotal);
 }
 
-void QNetworkReplyHttpImplPrivate::httpAuthenticationRequired(const QHttpNetworkRequest &,
+void QNetworkReplyHttpImplPrivate::httpAuthenticationRequired(const QHttpNetworkRequest &request,
                                                            QAuthenticator *auth)
 {
-    managerPrivate->authenticationRequired(auth, q_func(), synchronous, url, &urlForLastAuthentication);
+    managerPrivate->authenticationRequired(auth, q_func(), synchronous, url, &urlForLastAuthentication, request.withCredentials());
 }
 
 #ifndef QT_NO_NETWORKPROXY

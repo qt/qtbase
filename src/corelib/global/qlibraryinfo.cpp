@@ -226,7 +226,7 @@ static const struct {
     { "Imports", "imports" },
     { "Data", "" },
     { "Translations", "translations" },
-    { "Examples", "" },
+    { "Examples", "examples" },
     { "Tests", "tests" },
 #ifdef QT_BUILD_QMAKE
     { "Sysroot", "" },

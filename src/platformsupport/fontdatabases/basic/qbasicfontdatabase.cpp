@@ -229,7 +229,7 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, QUnicodeTab
         delete engine;
         engine = 0;
     } else if (scriptRequiresOpenType(script)) {
-        HB_Face hbFace = engine->harfbuzzFace();
+        HB_Face hbFace = engine->initializedHarfbuzzFace();
         if (!hbFace || !hbFace->supported_scripts[script]) {
             delete engine;
             engine = 0;

@@ -127,7 +127,6 @@ public:
         DeactivateControl = 81,                 // ActiveX deactivation
         ContextMenu = 82,                       // context popup menu
         InputMethod = 83,                       // input method
-        AccessibilityPrepare = 86,              // accessibility information is requested
         TabletMove = 87,                        // Wacom tablet event
         LocaleChange = 88,                      // the system locale changed
         LanguageChange = 89,                    // the application language changed

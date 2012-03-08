@@ -45,7 +45,7 @@
 QT_BEGIN_NAMESPACE
 
 QDirectFBCursor::QDirectFBCursor(QPlatformScreen *screen)
-    : QPlatformCursor(screen)
+    : m_screen(screen)
 {
     m_image.reset(new QPlatformCursorImage(0, 0, 0, 0, 0, 0));
 }
@@ -70,7 +70,7 @@ void QDirectFBCursor::changeCursor(QCursor *cursor, QWindow *)
     }
 
     DFBResult res;
-    IDirectFBDisplayLayer *layer = toDfbLayer(screen);
+    IDirectFBDisplayLayer *layer = toDfbLayer(m_screen);
     IDirectFBSurface* surface(QDirectFbConvenience::dfbSurfaceForPlatformPixmap(map.handle()));
 
     res = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);

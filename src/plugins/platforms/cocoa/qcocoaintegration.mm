@@ -52,6 +52,7 @@
 #include "qmenu_mac.h"
 #include "qcocoafiledialoghelper.h"
 #include "qcocoatheme.h"
+#include "qmacmime.h"
 
 #include <QtGui/qplatformaccessibility_qpa.h>
 #include <QtCore/qcoreapplication.h>
@@ -78,7 +79,7 @@ QCocoaScreen::QCocoaScreen(int screenIndex)
     const qreal inch = 25.4;
     m_physicalSize = QSizeF(m_geometry.size()) * inch / dpi;
 
-    m_cursor = new QCocoaCursor(this);
+    m_cursor = new QCocoaCursor;
 };
 
 QCocoaScreen::~QCocoaScreen()
@@ -91,7 +92,7 @@ QCocoaIntegration::QCocoaIntegration()
     , mEventDispatcher(new QCocoaEventDispatcher())
     , mAccessibility(new QPlatformAccessibility)
     , mPlatformTheme(new QCocoaTheme)
-
+    , mCocoaDrag(new QCocoaDrag)
 {
     QCocoaAutoReleasePool pool;
 
@@ -138,6 +139,7 @@ QCocoaIntegration::QCocoaIntegration()
         screenAdded(screen);
     }
 
+    QMacPasteboardMime::initialize();
 }
 
 QCocoaIntegration::~QCocoaIntegration()
@@ -196,6 +198,11 @@ QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
 QPlatformAccessibility *QCocoaIntegration::accessibility() const
 {
     return mAccessibility.data();
+}
+
+QPlatformDrag *QCocoaIntegration::drag() const
+{
+    return mCocoaDrag.data();
 }
 
 QPlatformTheme *QCocoaIntegration::platformTheme() const

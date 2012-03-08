@@ -77,6 +77,11 @@ NSSize qt_mac_toNSSize(const QSize &qtSize);
 QChar qt_mac_qtKey2CocoaKey(Qt::Key key);
 Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode);
 
+NSDragOperation qt_mac_mapDropAction(Qt::DropAction action);
+NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions);
+Qt::DropAction qt_mac_mapNSDragOperation(NSDragOperation nsActions);
+Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions);
+
 // Misc
 void qt_mac_transformProccessToForegroundApplication();
 QString qt_mac_removeMnemonics(const QString &original);

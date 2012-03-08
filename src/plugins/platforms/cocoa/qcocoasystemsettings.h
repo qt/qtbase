@@ -42,12 +42,15 @@
 #ifndef QCOCOASYSTEMSETTINGS_H
 #define QCOCOASYSTEMSETTINGS_H
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qhash.h>
 #include <QtGui/qpalette.h>
+#include <QtGui/qplatformtheme_qpa.h>
 
 QT_BEGIN_NAMESPACE
 
 QPalette * qt_mac_createSystemPalette();
+QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes();
+QHash<QPlatformTheme::Font, QFont *>  qt_mac_createRoleFonts();
 
 QT_END_NAMESPACE
 

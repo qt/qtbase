@@ -66,6 +66,9 @@ public:
     virtual QList<QPrinterInfo> availablePrinters();
     virtual QPrinterInfo defaultPrinter();
 
+    static QPrinter::PaperSize convertQSizeFToPaperSize(const QSizeF &sizef);
+    static QSizeF convertPaperSizeToQSizeF(QPrinter::PaperSize paperSize);
+
 protected:
      static QPrinterInfo printerInfo(const QString &printerName, bool isDefault = false);
      static void setPrinterInfoDefault(QPrinterInfo *p, bool isDefault);

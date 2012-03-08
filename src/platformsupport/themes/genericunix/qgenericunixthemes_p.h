@@ -50,6 +50,18 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+class ResourceHelper
+{
+public:
+    ResourceHelper();
+    ~ResourceHelper() { clear(); }
+
+    void clear();
+
+    QPalette *palettes[QPlatformTheme::NPalettes];
+    QFont *fonts[QPlatformTheme::NFonts];
+};
+
 class QGenericUnixTheme : public QPlatformTheme
 {
 public:
@@ -66,21 +78,24 @@ class QKdeTheme : public QPlatformTheme
 {
     QKdeTheme(const QString &kdeHome, int kdeVersion);
 public:
-    ~QKdeTheme() { clearPalettes(); }
 
     static QPlatformTheme *createKdeTheme();
     virtual QVariant themeHint(ThemeHint hint) const;
+
     virtual const QPalette *palette(Palette type = SystemPalette) const
-        { return m_palettes[type]; }
+        { return m_resources.palettes[type]; }
+
+    virtual const QFont *font(Font type) const
+        { return m_resources.fonts[type]; }
 
 private:
     QString globalSettingsFile() const;
-    void clearPalettes();
     void refresh();
 
     const QString m_kdeHome;
     const int m_kdeVersion;
-    QPalette *m_palettes[NPalettes];
+
+    ResourceHelper m_resources;
     QString m_iconThemeName;
     QString m_iconFallbackThemeName;
     QStringList m_styleNames;

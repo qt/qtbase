@@ -12,11 +12,11 @@ HEADERS = \
 
 QT += core-private platformsupport-private
 
-LIBS += -ludev
-
 SOURCES = main.cpp \
     qevdevkeyboardhandler.cpp \
     qevdevkeyboardmanager.cpp
 
 OTHER_FILES += \
     evdevkeyboard.json
+
+LIBS += $$QMAKE_LIBS_LIBUDEV

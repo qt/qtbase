@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
 
 class QVariant;
+class QScreen;
 
 /*
   ### The fake cursor has to go first with old qdoc.
@@ -101,8 +102,11 @@ public:
     QPoint hotSpot() const;
 
     static QPoint pos();
+    static QPoint pos(const QScreen *screen);
     static void setPos(int x, int y);
+    static void setPos(QScreen *screen, int x, int y);
     inline static void setPos(const QPoint &p) { setPos(p.x(), p.y()); }
+    inline static void setPos(QScreen *screen, const QPoint &p) { setPos(screen, p.x(), p.y()); }
     
 #ifdef qdoc
     HCURSOR_or_HANDLE handle() const;

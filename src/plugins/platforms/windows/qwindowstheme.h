@@ -64,14 +64,20 @@ public:
     virtual QVariant themeHint(ThemeHint) const;
     virtual const QPalette *palette(Palette type = SystemPalette) const
         { return m_palettes[type]; }
+    virtual const QFont *font(Font type = SystemFont) const
+        { return m_fonts[type]; }
 
     void windowsThemeChanged(QWindow *window);
 
 private:
-    void refresh();
+    void refresh() { refreshPalettes(); refreshFonts(); }
     void clearPalettes();
+    void refreshPalettes();
+    void clearFonts();
+    void refreshFonts();
 
     QPalette *m_palettes[NPalettes];
+    QFont *m_fonts[NFonts];
 };
 
 static inline COLORREF qColorToCOLORREF(const QColor &color)

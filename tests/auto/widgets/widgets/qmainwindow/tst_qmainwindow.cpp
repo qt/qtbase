@@ -1435,6 +1435,11 @@ void MoveSeparator::apply(QMainWindow *mw) const
     }
     QVERIFY(!path.isEmpty());
 
+    // For QTBUG-15689:
+    // Following commands is used to simulate user move action. A better way should
+    // use QMainWindowLayout::startSeparatorMove/separatorMove/endSeparatorMove,
+    // but then we will need real start/end position coordinates.
+    l->layoutState.dockAreaLayout.fallbackToSizeHints = false;
     l->layoutState.dockAreaLayout.separatorMove(path, QPoint(0, 0), QPoint(delta, delta));
 }
 #endif

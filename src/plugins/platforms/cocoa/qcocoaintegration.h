@@ -46,6 +46,7 @@
 
 #include "qcocoaautoreleasepool.h"
 #include "qcocoacursor.h"
+#include "qcocoadrag.h"
 
 #include <QtCore/QScopedPointer>
 #include <QtGui/QPlatformIntegration>
@@ -62,6 +63,7 @@ public:
     int depth() const { return m_depth; }
     QImage::Format format() const { return m_format; }
     QSizeF physicalSize() const { return m_physicalSize; }
+    QPlatformCursor *cursor() const  { return m_cursor; }
 
 public:
     NSScreen *m_screen;
@@ -88,6 +90,7 @@ public:
 
     QPlatformNativeInterface *nativeInterface() const;
     QPlatformAccessibility *accessibility() const;
+    QPlatformDrag *drag() const;
 
     QPlatformTheme *platformTheme() const;
 private:
@@ -98,6 +101,7 @@ private:
     QScopedPointer<QPlatformAccessibility> mAccessibility;
     QScopedPointer<QPlatformTheme> mPlatformTheme;
     QList<QCocoaScreen *> mScreens;
+    QScopedPointer<QCocoaDrag> mCocoaDrag;
 };
 
 QT_END_NAMESPACE

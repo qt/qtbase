@@ -618,7 +618,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     m_windowState(aWindow->windowState()),
     m_opacity(1.0),
     m_mouseGrab(false),
-    m_cursor(QWindowsScreen::screenOf(aWindow)->cursor().standardWindowCursor()),
+    m_cursor(QWindowsScreen::screenOf(aWindow)->windowsCursor()->standardWindowCursor()),
     m_dropTarget(0),
     m_savedStyle(0)
 {
@@ -1309,16 +1309,14 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 }
 
 /*!
-    \brief Applies to cursor property set on the window to the global cursor
-    unless there is an override cursor.
+    \brief Applies to cursor property set on the window to the global cursor.
 
     \sa QWindowsCursor
 */
 
 void QWindowsWindow::applyCursor()
 {
-    if (!QGuiApplication::overrideCursor())
-        SetCursor(m_cursor.handle());
+    SetCursor(m_cursor.handle());
 }
 
 void QWindowsWindow::setCursor(const QWindowsWindowCursor &c)

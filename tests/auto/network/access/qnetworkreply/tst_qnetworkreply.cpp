@@ -3385,6 +3385,7 @@ void tst_QNetworkReply::ioGetFromHttpWithCache_data()
             << QNetworkCacheMetaData::RawHeader("Cache-control", "max-age=0"); // isn't used in cache loading
     content.first.setRawHeaders(rawHeaders);
     content.first.setLastModified(past);
+    content.first.setExpirationDate(past);
 
     QTest::newRow("expired,200,prefer-network")
             << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferNetwork) << QStringList() << false << true;
@@ -6334,29 +6335,52 @@ void tst_QNetworkReply::qtbug13431replyThrottling()
 
 void tst_QNetworkReply::httpWithNoCredentialUsage()
 {
-    QNetworkRequest request(QUrl("http://httptest:httptest@" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi"));
-    // Do not use credentials
-    request.setAttribute(QNetworkRequest::AuthenticationReuseAttribute, QNetworkRequest::Manual);
     QNetworkAccessManager manager;
-    QNetworkReplyPtr reply = manager.get(request);
 
-    qRegisterMetaType<QNetworkReply*>("QNetworkReply*");
-    qRegisterMetaType<QAuthenticator*>("QAuthenticator*");
     QSignalSpy authSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     QSignalSpy finishedSpy(&manager, SIGNAL(finished(QNetworkReply*)));
-    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
-    QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
 
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
+    // Get with credentials, to preload authentication cache
+    {
+        QNetworkRequest request(QUrl("http://httptest:httptest@" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi"));
+        QNetworkReplyPtr reply = manager.get(request);
+        QVERIFY(waitForFinish(reply) == Success);
+        // credentials in URL, so don't expect authentication signal
+        QCOMPARE(authSpy.count(), 0);
+        QCOMPARE(finishedSpy.count(), 1);
+        finishedSpy.clear();
+    }
 
-    // We check if authenticationRequired was emitted, however we do not anything in it so it should be 401
-    QCOMPARE(authSpy.count(), 1);
-    QCOMPARE(finishedSpy.count(), 1);
-    QCOMPARE(errorSpy.count(), 1);
+    // Get with cached credentials (normal usage)
+    {
+        QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi"));
+        QNetworkReplyPtr reply = manager.get(request);
+        QVERIFY(waitForFinish(reply) == Success);
+        // credentials in cache, so don't expect authentication signal
+        QCOMPARE(authSpy.count(), 0);
+        QCOMPARE(finishedSpy.count(), 1);
+        finishedSpy.clear();
+    }
 
-    QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+    // Do not use cached credentials (webkit cross origin usage)
+    {
+        QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi"));
+        request.setAttribute(QNetworkRequest::AuthenticationReuseAttribute, QNetworkRequest::Manual);
+        QNetworkReplyPtr reply = manager.get(request);
+
+        QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
+
+        connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+        QTestEventLoop::instance().enterLoop(10);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+
+        // We check if authenticationRequired was emitted, however we do not anything in it so it should be 401
+        QCOMPARE(authSpy.count(), 1);
+        QCOMPARE(finishedSpy.count(), 1);
+        QCOMPARE(errorSpy.count(), 1);
+
+        QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+    }
 }
 
 void tst_QNetworkReply::qtbug15311doubleContentLength()

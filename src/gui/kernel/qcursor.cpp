@@ -185,10 +185,10 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QPoint QCursor::pos()
+    \fn QPoint QCursor::pos(const QScreen *screen)
 
-    Returns the position of the cursor (hot spot) in global screen
-    coordinates.
+    Returns the position of the cursor (hot spot) of the \a screen
+    in global screen coordinates.
 
     You can call QWidget::mapFromGlobal() to translate it to widget
     coordinates.
@@ -197,15 +197,40 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QCursor::setPos(int x, int y)
+    \fn QPoint QCursor::pos()
 
-    Moves the cursor (hot spot) to the global screen position (\a x,
-    \a y).
+    Returns the position of the cursor (hot spot) of
+    the primary screen in global screen coordinates.
+
+    You can call QWidget::mapFromGlobal() to translate it to widget
+    coordinates.
+
+    \sa setPos(), QWidget::mapFromGlobal(), QWidget::mapToGlobal(), QGuiApplication::primaryScreen()
+*/
+
+
+/*!
+    \fn void QCursor::setPos(QScreen *screen, int x, int y)
+
+    Moves the cursor (hot spot) of the \a screen to the global
+    screen position (\a x, \a y).
 
     You can call QWidget::mapToGlobal() to translate widget
     coordinates to global screen coordinates.
 
     \sa pos(), QWidget::mapFromGlobal(), QWidget::mapToGlobal()
+*/
+
+/*!
+    \fn void QCursor::setPos(int x, int y)
+
+    Moves the cursor (hot spot) of the primary screen
+    to the global screen position (\a x, \a y).
+
+    You can call QWidget::mapToGlobal() to translate widget
+    coordinates to global screen coordinates.
+
+    \sa pos(), QWidget::mapFromGlobal(), QWidget::mapToGlobal(), QGuiApplication::primaryScreen()
 */
 
 /*!
@@ -215,6 +240,15 @@ QT_BEGIN_NAMESPACE
 
     Moves the cursor (hot spot) to the global screen position at point
     \a p.
+*/
+
+/*!
+    \fn void QCursor::setPos (QScreen *screen,const QPoint &p)
+
+    \overload
+
+    Moves the cursor (hot spot) to the global screen position of the
+    \a screen at point \a p.
 */
 
 /*****************************************************************************

@@ -222,6 +222,8 @@ private slots:
     void sqlite_real_data() { generic_data("QSQLITE"); }
     void sqlite_real();
 
+    void aggregateFunctionTypes_data() { generic_data(); }
+    void aggregateFunctionTypes();
 private:
     // returns all database connections
     void generic_data(const QString &engine=QString());
@@ -3337,6 +3339,122 @@ void tst_QSqlQuery::sqlite_real()
     QVERIFY_SQL(q, exec("SELECT realVal FROM " + tableName + " WHERE ID=4"));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toDouble(), 5.6);
+}
+
+void tst_QSqlQuery::aggregateFunctionTypes()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    {
+        const QString tableName(qTableName("numericFunctionsWithIntValues", __FILE__));
+        tst_Databases::safeDropTable( db, tableName );
+
+        QSqlQuery q(db);
+        QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INTEGER)"));
+
+        // First test without any entries
+        QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+
+        QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (1)"));
+        QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (2)"));
+
+        QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 3);
+        QCOMPARE(q.record().field(0).type(), QVariant::Int);
+
+        QVERIFY_SQL(q, exec("SELECT AVG(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 1.5);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 2);
+        QCOMPARE(q.record().field(0).type(), QVariant::Int);
+
+        QVERIFY_SQL(q, exec("SELECT MIN(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 1);
+        QCOMPARE(q.record().field(0).type(), QVariant::Int);
+
+        QVERIFY_SQL(q, exec("SELECT MAX(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 2);
+        QCOMPARE(q.record().field(0).type(), QVariant::Int);
+    }
+    {
+        const QString tableName(qTableName("numericFunctionsWithDoubleValues", __FILE__));
+        tst_Databases::safeDropTable( db, tableName );
+
+        QSqlQuery q(db);
+        QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id DOUBLE)"));
+
+        // First test without any entries
+        QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+
+        QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (1.5)"));
+        QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (2.5)"));
+
+        QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 4.0);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT AVG(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 2.0);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 2);
+        QCOMPARE(q.record().field(0).type(), QVariant::Int);
+
+        QVERIFY_SQL(q, exec("SELECT MIN(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 1.5);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT MAX(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 2.5);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT ROUND(id, 1) FROM " + tableName + " WHERE id=1.5"));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 1.5);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT ROUND(id, 0) FROM " + tableName + " WHERE id=2.5"));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 3.0);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+    }
+    {
+        const QString tableName(qTableName("stringFunctions", __FILE__));
+        tst_Databases::safeDropTable( db, tableName );
+
+        QSqlQuery q(db);
+        QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INTEGER, txt VARCHAR(50))"));
+
+        QVERIFY_SQL(q, exec("SELECT MAX(txt) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+
+        QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, txt) VALUES (1, 'lower')"));
+        QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, txt) VALUES (2, 'upper')"));
+
+        QVERIFY_SQL(q, exec("SELECT MAX(txt) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toString(), QLatin1String("upper"));
+        QCOMPARE(q.record().field(0).type(), QVariant::String);
+    }
 }
 
 QTEST_MAIN( tst_QSqlQuery )

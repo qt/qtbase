@@ -456,7 +456,7 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
 int QMetaType::registerType(const char *typeName, Deleter deleter,
                             Creator creator)
 {
-    return registerType(typeName, deleter, creator, 0, 0, 0, TypeFlags());
+    return registerType(typeName, deleter, creator, qMetaTypeDestructHelper<void>, qMetaTypeConstructHelper<void>, 0, TypeFlags());
 }
 
 /*! \internal
@@ -474,7 +474,7 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
                             int size, TypeFlags flags)
 {
     QVector<QCustomTypeInfo> *ct = customTypes();
-    if (!ct || !typeName || !deleter || !creator)
+    if (!ct || !typeName || !deleter || !creator || !destructor || !constructor)
         return -1;
 
 #ifdef QT_NO_QOBJECT
@@ -1331,6 +1331,7 @@ private:
                 return;
             deleter = ct->at(type - QMetaType::User).deleter;
         }
+        Q_ASSERT_X(deleter, "void QMetaType::destroy(int type, void *data)", "The type was not properly registered");
         deleter(where);
     }
 
@@ -1393,6 +1394,7 @@ private:
                 return 0;
             ctor = ct->at(type - QMetaType::User).constructor;
         }
+        Q_ASSERT_X(ctor, "void *QMetaType::construct(int type, void *where, const void *copy)", "The type was not properly registered");
         return ctor(where, copy);
     }
 
@@ -1481,6 +1483,7 @@ private:
                 return;
             dtor = ct->at(type - QMetaType::User).destructor;
         }
+        Q_ASSERT_X(dtor, "void QMetaType::destruct(int type, void *where)", "The type was not properly registered");
         dtor(where);
     }
 

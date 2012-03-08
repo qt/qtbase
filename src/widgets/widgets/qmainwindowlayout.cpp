@@ -1351,6 +1351,8 @@ bool QMainWindowLayout::startSeparatorMove(const QPoint &pos)
     if (movingSeparator.isEmpty())
         return false;
 
+    layoutState.dockAreaLayout.fallbackToSizeHints = false;
+
     savedState = layoutState;
     movingSeparatorPos = movingSeparatorOrigin = pos;
 

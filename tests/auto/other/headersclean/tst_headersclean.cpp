@@ -39,38 +39,12 @@
 **
 ****************************************************************************/
 
-#define signals int
-#define slots int
-#define emit public:;
-#define foreach public:;
-#define forever public:;
+#include "tst_headersclean.h"
+#include <QTest>
 
-#include <QtCore/QtCore>
-#include <QtConcurrent/QtConcurrent>
-#include <QtTest/QtTest>
-
-#include <QtNetwork/QtNetwork>
-#include <QtXml/QtXml>
-#include <QtSql/QtSql>
-#include <QtGui/QtGui>
-#include <QtWidgets/QtWidgets>
-#include <QtPrintSupport/QtPrintSupport>
-#include <QtPlatformSupport/QtPlatformSupport>
-
-#ifndef QT_NO_OPENGL
-#include <QtOpenGL/QtOpenGL>
-#endif
-
-#if !defined(QT_NO_DBUS) && defined(Q_OS_UNIX)
-#include <QtDBus/QtDBus>
-#endif
-
-class tst_HeadersClean: public QObject
+void tst_HeadersClean::initTestCase()
 {
-    Q_OBJECT
-public:
-    tst_HeadersClean() {}
-};
+    QWARN("This is a compile test only");
+}
 
 QTEST_MAIN(tst_HeadersClean)
-#include "tst_headersclean.moc"

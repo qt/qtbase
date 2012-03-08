@@ -67,6 +67,7 @@ public:
     virtual ~QSqlTableModel();
 
     virtual bool select();
+    virtual bool selectRow(int row);
 
     virtual void setTable(const QString &tableName);
     QString tableName() const;

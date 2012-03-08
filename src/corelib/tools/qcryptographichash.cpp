@@ -48,23 +48,16 @@
 #include "../../3rdparty/sha1/sha1.cpp"
 
 /*
-    These typedefs are needed by the RFC6234 code. Normally they would come
-    from from stdint.h, but since this header is not available on all platforms
-    (MSVC 2008, for example), we need to define them ourselves.
+    These #defines replace the typedefs needed by the RFC6234 code. Normally
+    the typedefs would come from from stdint.h, but since this header is not
+    available on all platforms (MSVC 2008, for example), we #define them to the
+    Qt equivalents.
 */
-#ifndef _UINT64_T_DECLARED
-typedef QT_PREPEND_NAMESPACE(quint64) uint64_t;
-#endif
+#define uint64_t QT_PREPEND_NAMESPACE(quint64)
+#define uint32_t QT_PREPEND_NAMESPACE(quint32)
+#define uint8_t QT_PREPEND_NAMESPACE(quint8)
+#define int_least16_t QT_PREPEND_NAMESPACE(qint16)
 
-#ifndef _UINT32_T_DECLARED
-typedef QT_PREPEND_NAMESPACE(quint32) uint32_t;
-#endif
-
-#ifndef _UINT8_T_DECLARED
-typedef QT_PREPEND_NAMESPACE(quint8) uint8_t;
-#endif
-
-typedef QT_PREPEND_NAMESPACE(qint16) int_least16_t;
 // Header from rfc6234 with 1 modification:
 // sha1.h - commented out '#include <stdint.h>' on line 74
 #include "../../3rdparty/rfc6234/sha.h"
@@ -90,16 +83,21 @@ static int SHA384_512AddLength(SHA512Context *context, unsigned int length);
 // sha384-512.c - appended 'M' to the SHA224_256AddLength macro on line 304
 #include "../../3rdparty/rfc6234/sha384-512.c"
 
+#undef uint64_t
+#undef uint32_t
+#undef uint68_t
+#undef int_least16_t
+
 #include <qiodevice.h>
 
 static inline int SHA224_256AddLength(SHA256Context *context, unsigned int length)
 {
-  uint32_t addTemp;
+  QT_PREPEND_NAMESPACE(quint32) addTemp;
   return SHA224_256AddLengthM(context, length);
 }
 static inline int SHA384_512AddLength(SHA512Context *context, unsigned int length)
 {
-  uint64_t addTemp;
+  QT_PREPEND_NAMESPACE(quint64) addTemp;
   return SHA384_512AddLengthM(context, length);
 }
 

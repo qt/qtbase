@@ -307,7 +307,7 @@ const QObject *QMetaObject::cast(const QObject *obj) const
 */
 QString QMetaObject::tr(const char *s, const char *c, int n) const
 {
-    return QCoreApplication::translate(d.stringdata, s, c, QCoreApplication::CodecForTr, n);
+    return QCoreApplication::translate(d.stringdata, s, c, QCoreApplication::DefaultCodec, n);
 }
 
 /*!

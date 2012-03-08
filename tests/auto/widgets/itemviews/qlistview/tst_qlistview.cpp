@@ -1830,10 +1830,11 @@ void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
     QStringListModel model(&view);
     QStringList list;
     for (int i = 0; i < rowCount; ++i)
-        list << QString::fromAscii("Item %1").arg(i);
+        list << QString::number(i);
 
     model.setStringList(list);
     view.setModel(&model);
+    view.setUniformItemSizes(true);
     view.setViewMode(QListView::ListMode);
     for (int i = 0; i < rowCount / 2; ++i)
         view.setRowHidden(2 * i, true);

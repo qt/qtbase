@@ -43,6 +43,7 @@
 #define BROWSER_H
 
 #include <QWidget>
+#include <QSqlTableModel>
 #include "ui_browserwidget.h"
 
 class ConnectionWidget;
@@ -77,6 +78,12 @@ public slots:
     { insertRow(); }
     void on_deleteRowAction_triggered()
     { deleteRow(); }
+    void on_fieldStrategyAction_triggered();
+    void on_rowStrategyAction_triggered();
+    void on_manualStrategyAction_triggered();
+    void on_submitAction_triggered();
+    void on_revertAction_triggered();
+    void on_selectAction_triggered();
     void on_connectionWidget_tableActivated(const QString &table)
     { showTable(table); }
     void on_connectionWidget_metaDataRequested(const QString &table)
@@ -94,6 +101,19 @@ public slots:
 
 signals:
     void statusMessage(const QString &message);
+};
+
+class CustomModel: public QSqlTableModel
+{
+    Q_OBJECT
+public:
+    CustomModel(QObject *parent = 0, QSqlDatabase db = QSqlDatabase()):QSqlTableModel(parent, db) {}
+    QVariant data(const QModelIndex &idx, int role) const
+    {
+        if (role == Qt::BackgroundRole && isDirty(idx))
+            return QBrush(QColor(Qt::yellow));
+        return QSqlTableModel::data(idx, role);
+    }
 };
 
 #endif

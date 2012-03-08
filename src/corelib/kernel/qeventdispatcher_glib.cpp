@@ -42,7 +42,6 @@
 #include "qeventdispatcher_glib_p.h"
 #include "qeventdispatcher_unix_p.h"
 
-#include <private/qmutexpool_p.h>
 #include <private/qthread_p.h>
 
 #include "qcoreapplication.h"
@@ -295,8 +294,8 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     : mainContext(context)
 {
     if (qgetenv("QT_NO_THREADED_GLIB").isEmpty()) {
-        static int dummyValue = 0; // only used for its address
-        QMutexLocker locker(QMutexPool::instance()->get(&dummyValue));
+        static QBasicMutex mutex;
+        QMutexLocker locker(&mutex);
         if (!g_thread_supported())
             g_thread_init(NULL);
     }

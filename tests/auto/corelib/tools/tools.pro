@@ -25,6 +25,7 @@ SUBDIRS=\
     qqueue \
     qrect \
     qregexp \
+    qregularexpression \
     qringbuffer \
     qscopedpointer \
     qscopedvaluerollback \

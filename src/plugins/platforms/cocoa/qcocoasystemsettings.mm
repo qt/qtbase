@@ -41,8 +41,12 @@
 
 #include "qcocoasystemsettings.h"
 
-#include <Carbon/Carbon.h>
 #include <QtCore/private/qcore_mac_p.h>
+#include <QtGui/qfont.h>
+
+#include <Carbon/Carbon.h>
+
+QT_BEGIN_NAMESPACE
 
 QColor qt_mac_colorFromCGColor(CGColorRef cgcolor)
 {
@@ -143,3 +147,126 @@ QPalette * qt_mac_createSystemPalette()
     return palette;
 }
 
+struct QMacPaletteMap {
+    inline QMacPaletteMap(QPlatformTheme::Palette p, ThemeBrush a, ThemeBrush i) :
+        paletteRole(p), active(a), inactive(i) { }
+
+    QPlatformTheme::Palette paletteRole;
+    ThemeBrush active, inactive;
+};
+
+static QMacPaletteMap mac_widget_colors[] = {
+//    TODO (msorvig): Fix/match palette behavior with Qt 4 and enable.
+//
+//    QMacPaletteMap(QPlatformTheme::ToolButtonPalette, kThemeTextColorBevelButtonActive, kThemeTextColorBevelButtonInactive),
+//    QMacPaletteMap(QPlatformTheme::ButtonPalette, kThemeTextColorPushButtonActive, kThemeTextColorPushButtonInactive),
+//    QMacPaletteMap(QPlatformTheme::HeaderPalette, kThemeTextColorPushButtonActive, kThemeTextColorPushButtonInactive),
+//    QMacPaletteMap(QPlatformTheme::ComboBoxPalette, kThemeTextColorPopupButtonActive, kThemeTextColorPopupButtonInactive),
+//    QMacPaletteMap(QPlatformTheme::ItemViewPalette, kThemeTextColorListView, kThemeTextColorDialogInactive),
+//    QMacPaletteMap(QPlatformTheme::MessageBoxLabelPelette, kThemeTextColorAlertActive, kThemeTextColorAlertInactive),
+//    QMacPaletteMap(QPlatformTheme::TabBarPalette, kThemeTextColorTabFrontActive, kThemeTextColorTabFrontInactive),
+//    QMacPaletteMap(QPlatformTheme::LabelPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
+//    QMacPaletteMap(QPlatformTheme::GroupBoxPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
+//    QMacPaletteMap(QPlatformTheme::MenuPalette, kThemeTextColorPopupLabelActive, kThemeTextColorPopupLabelInactive),
+//    ### TODO: The zeros below gives white-on-black text.
+//    QMacPaletteMap(QPlatformTheme::TextEditPalette, 0, 0),
+//    QMacPaletteMap(QPlatformTheme::TextLineEditPalette, 0, 0),
+    QMacPaletteMap(QPlatformTheme::NPalettes, 0, 0) };
+
+QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
+{
+    QHash<QPlatformTheme::Palette, QPalette*> palettes;
+    QColor qc;
+    for (int i = 0; mac_widget_colors[i].paletteRole != QPlatformTheme::NPalettes; i++) {
+        QPalette pal;
+        if (mac_widget_colors[i].active != 0) {
+            qc = qt_mac_colorForThemeTextColor(mac_widget_colors[i].active);
+            pal.setColor(QPalette::Active, QPalette::Text, qc);
+            pal.setColor(QPalette::Active, QPalette::WindowText, qc);
+            pal.setColor(QPalette::Active, QPalette::HighlightedText, qc);
+            qc = qt_mac_colorForThemeTextColor(mac_widget_colors[i].inactive);
+            pal.setColor(QPalette::Inactive, QPalette::Text, qc);
+            pal.setColor(QPalette::Disabled, QPalette::Text, qc);
+            pal.setColor(QPalette::Inactive, QPalette::WindowText, qc);
+            pal.setColor(QPalette::Disabled, QPalette::WindowText, qc);
+            pal.setColor(QPalette::Inactive, QPalette::HighlightedText, qc);
+            pal.setColor(QPalette::Disabled, QPalette::HighlightedText, qc);
+        }
+        if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette) {
+            qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemActive);
+            pal.setBrush(QPalette::ButtonText, qc);
+            qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemSelected);
+            pal.setBrush(QPalette::HighlightedText, qc);
+            qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemDisabled);
+            pal.setBrush(QPalette::Disabled, QPalette::Text, qc);
+        } else if ((mac_widget_colors[i].paletteRole == QPlatformTheme::ButtonPalette)
+                || (mac_widget_colors[i].paletteRole == QPlatformTheme::HeaderPalette)) {
+            pal.setColor(QPalette::Disabled, QPalette::ButtonText,
+                         pal.color(QPalette::Disabled, QPalette::Text));
+            pal.setColor(QPalette::Inactive, QPalette::ButtonText,
+                         pal.color(QPalette::Inactive, QPalette::Text));
+            pal.setColor(QPalette::Active, QPalette::ButtonText,
+                         pal.color(QPalette::Active, QPalette::Text));
+        } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::ItemViewPalette) {
+            pal.setBrush(QPalette::Active, QPalette::Highlight,
+                         qt_mac_colorForTheme(kThemeBrushAlternatePrimaryHighlightColor));
+            qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemSelected);
+            pal.setBrush(QPalette::Active, QPalette::HighlightedText, qc);
+            pal.setBrush(QPalette::Inactive, QPalette::Text,
+                          pal.brush(QPalette::Active, QPalette::Text));
+            pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
+                          pal.brush(QPalette::Active, QPalette::Text));
+        } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::TextEditPalette) {
+            pal.setBrush(QPalette::Inactive, QPalette::Text,
+                          pal.brush(QPalette::Active, QPalette::Text));
+            pal.setBrush(QPalette::Inactive, QPalette::HighlightedText,
+                          pal.brush(QPalette::Active, QPalette::Text));
+        } else if (mac_widget_colors[i].paletteRole == QPlatformTheme::TextLineEditPalette) {
+            pal.setBrush(QPalette::Disabled, QPalette::Base,
+                         pal.brush(QPalette::Active, QPalette::Base));
+        }
+        palettes.insert(mac_widget_colors[i].paletteRole, new QPalette(pal));
+    }
+    return palettes;
+}
+
+QFont *qt_mac_qfontForThemeFont(ThemeFontID themeID)
+{
+    CTFontUIFontType ctID = HIThemeGetUIFontType(themeID);
+    QCFType<CTFontRef> ctfont = CTFontCreateUIFontForLanguage(ctID, 0, 0);
+    QString familyName = QCFString(CTFontCopyFamilyName(ctfont));
+    QCFType<CFDictionaryRef> dict = CTFontCopyTraits(ctfont);
+    CFNumberRef num = static_cast<CFNumberRef>(CFDictionaryGetValue(dict, kCTFontWeightTrait));
+    float fW;
+    CFNumberGetValue(num, kCFNumberFloat32Type, &fW);
+    QFont::Weight wght = fW > 0. ? QFont::Bold : QFont::Normal;
+    num = static_cast<CFNumberRef>(CFDictionaryGetValue(dict, kCTFontSlantTrait));
+    CFNumberGetValue(num, kCFNumberFloatType, &fW);
+    bool italic = (fW != 0.0);
+    return new QFont(familyName, CTFontGetSize(ctfont), wght, italic);
+}
+
+QHash<QPlatformTheme::Font, QFont *> qt_mac_createRoleFonts()
+{
+    QHash<QPlatformTheme::Font, QFont *> fonts;
+
+    fonts.insert(QPlatformTheme::SystemFont, qt_mac_qfontForThemeFont(kThemeApplicationFont));
+    fonts.insert(QPlatformTheme::PushButtonFont, qt_mac_qfontForThemeFont(kThemePushButtonFont));
+    fonts.insert(QPlatformTheme::ListViewFont, qt_mac_qfontForThemeFont(kThemeViewsFont));
+    fonts.insert(QPlatformTheme::ListBoxFont, qt_mac_qfontForThemeFont(kThemeViewsFont));
+    fonts.insert(QPlatformTheme::TitleBarFont, qt_mac_qfontForThemeFont(kThemeWindowTitleFont));
+    fonts.insert(QPlatformTheme::MenuFont, qt_mac_qfontForThemeFont(kThemeMenuItemFont));
+    fonts.insert(QPlatformTheme::ComboMenuItemFont, qt_mac_qfontForThemeFont(kThemeSystemFont));
+    fonts.insert(QPlatformTheme::HeaderViewFont, qt_mac_qfontForThemeFont(kThemeSmallSystemFont));
+    fonts.insert(QPlatformTheme::TipLabelFont, qt_mac_qfontForThemeFont(kThemeSmallSystemFont));
+    fonts.insert(QPlatformTheme::LabelFont, qt_mac_qfontForThemeFont(kThemeSystemFont));
+    fonts.insert(QPlatformTheme::ToolButtonFont, qt_mac_qfontForThemeFont(kThemeSmallSystemFont));
+    fonts.insert(QPlatformTheme::MenuItemFont, qt_mac_qfontForThemeFont(kThemeMenuItemFont));
+    fonts.insert(QPlatformTheme::ComboLineEditFont, qt_mac_qfontForThemeFont(kThemeViewsFont));
+    fonts.insert(QPlatformTheme::SmallFont, qt_mac_qfontForThemeFont(kThemeSmallSystemFont));
+    fonts.insert(QPlatformTheme::MiniFont, qt_mac_qfontForThemeFont(kThemeMiniSystemFont));
+
+    return fonts;
+}
+
+QT_END_NAMESPACE

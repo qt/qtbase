@@ -181,8 +181,6 @@ static QEvent *cloneEvent(QEvent *e)
 #endif
     case QEvent::InputMethod:
         return new QInputMethodEvent(*static_cast<QInputMethodEvent*>(e));
-    case QEvent::AccessibilityPrepare:
-        return new QEvent(*e);
     case QEvent::LocaleChange:
         return new QEvent(*e);
     case QEvent::LanguageChange:

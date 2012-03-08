@@ -63,6 +63,7 @@ class QPlatformBackingStore;
 class QPlatformOpenGLContext;
 class QPlatformScreenPrivate;
 class QPlatformWindow;
+class QPlatformCursor;
 class QPlatformScreenPageFlipper;
 class QScreen;
 class QSurfaceFormat;
@@ -103,6 +104,7 @@ public:
     virtual QString name() const { return QString(); }
 
     virtual QPlatformScreenPageFlipper *pageFlipper() const;
+    virtual QPlatformCursor *cursor() const;
 
 protected:
     QScopedPointer<QPlatformScreenPrivate> d_ptr;

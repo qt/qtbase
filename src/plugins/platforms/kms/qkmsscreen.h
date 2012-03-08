@@ -61,6 +61,7 @@ public:
     int depth() const;
     QImage::Format format() const;
     QSizeF physicalSize() const;
+    QPlatformCursor *cursor() const;
 
     GLuint framebufferObject() const;
     quint32 crtcId() const { return m_crtcId; }

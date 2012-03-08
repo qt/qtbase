@@ -237,6 +237,11 @@ QSizeF QXcbScreen::physicalSize() const
     return QSizeF(m_screen->width_in_millimeters, m_screen->height_in_millimeters);
 }
 
+QPlatformCursor *QXcbScreen::cursor() const
+{
+    return m_cursor;
+}
+
 int QXcbScreen::screenNumber() const
 {
     return m_number;

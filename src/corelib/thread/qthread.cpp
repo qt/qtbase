@@ -42,7 +42,6 @@
 #include "qthread.h"
 #include "qthreadstorage.h"
 #include "qmutex.h"
-#include "qmutexpool_p.h"
 #include "qreadwritelock.h"
 #include "qabstracteventdispatcher.h"
 
@@ -535,33 +534,6 @@ void QThread::quit()
 void QThread::run()
 {
     (void) exec();
-}
-
-/*! \internal
-    Initializes the QThread system.
-*/
-#if defined (Q_OS_WIN)
-void qt_create_tls();
-#endif
-
-void QThread::initialize()
-{
-    if (qt_global_mutexpool)
-        return;
-    qt_global_mutexpool = QMutexPool::instance();
-
-#if defined (Q_OS_WIN)
-    qt_create_tls();
-#endif
-}
-
-
-/*! \internal
-    Cleans up the QThread system.
-*/
-void QThread::cleanup()
-{
-    qt_global_mutexpool = 0;
 }
 
 /*! \fn void QThread::setPriority(Priority priority)

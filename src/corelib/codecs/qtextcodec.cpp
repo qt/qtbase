@@ -145,8 +145,6 @@ static bool destroying_is_ok = false;
 #endif
 
 static QTextCodec *localeMapper = 0;
-QTextCodec *QTextCodec::cftr = 0;
-
 
 class QTextCodecCleanup
 {
@@ -1462,41 +1460,6 @@ QString QTextDecoder::toUnicode(const QByteArray &ba)
 {
     return c->toUnicode(ba.constData(), ba.length(), &state);
 }
-
-
-/*!
-    \fn QTextCodec* QTextCodec::codecForTr()
-
-    Returns the codec used by QObject::tr() on its argument. If this
-    function returns 0 (the default), tr() assumes Latin-1.
-
-    \sa setCodecForTr()
-*/
-
-/*!
-    \fn void QTextCodec::setCodecForTr(QTextCodec *c)
-    \nonreentrant
-
-    Sets the codec used by QObject::tr() on its argument to \a c. If
-    \a c is 0 (the default), tr() assumes Latin-1.
-
-    If the literal quoted text in the program is not in the Latin-1
-    encoding, this function can be used to set the appropriate
-    encoding. For example, software developed by Korean programmers
-    might use eucKR for all the text in the program, in which case the
-    main() function might look like this:
-
-    \snippet doc/src/snippets/code/src_corelib_codecs_qtextcodec.cpp 3
-
-    Note that this is not the way to select the encoding that the \e
-    user has chosen. For example, to convert an application containing
-    literal English strings to Korean, all that is needed is for the
-    English strings to be passed through tr() and for translation
-    files to be loaded. For details of internationalization, see
-    \l{Internationalization with Qt}.
-
-    \sa codecForTr()
-*/
 
 /*!
     \since 4.4

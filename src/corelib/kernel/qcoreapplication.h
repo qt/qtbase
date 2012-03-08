@@ -137,11 +137,11 @@ public:
     static void installTranslator(QTranslator * messageFile);
     static void removeTranslator(QTranslator * messageFile);
 #endif
-    enum Encoding { CodecForTr, UnicodeUTF8, DefaultCodec = CodecForTr };
+    enum Encoding { UnicodeUTF8, Latin1, DefaultCodec = Latin1 };
     static QString translate(const char * context,
                              const char * key,
                              const char * disambiguation = 0,
-                             Encoding encoding = CodecForTr,
+                             Encoding encoding = DefaultCodec,
                              int n = -1);
 
     static void flush();
@@ -240,7 +240,7 @@ inline QString QCoreApplication::translate(const char *, const char *sourceText,
 public: \
     static inline QString tr(const char *sourceText, const char *disambiguation = 0, int n = -1) \
         { return QCoreApplication::translate(#context, sourceText, disambiguation, \
-                                             QCoreApplication::CodecForTr, n); } \
+                                             QCoreApplication::DefaultCodec, n); } \
     static inline QString trUtf8(const char *sourceText, const char *disambiguation = 0, int n = -1) \
         { return QCoreApplication::translate(#context, sourceText, disambiguation, \
                                              QCoreApplication::UnicodeUTF8, n); } \

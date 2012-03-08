@@ -2260,7 +2260,7 @@ QMdiSubWindow::QMdiSubWindow(QWidget *parent, Qt::WindowFlags flags)
     d->updateGeometryConstraints();
     setAttribute(Qt::WA_Resized, false);
     d->titleBarPalette = d->desktopPalette();
-    d->font = QApplication::font("QWorkspaceTitleBar");
+    d->font = QApplication::font("QMdiSubWindowTitleBar");
     // We don't want the menu icon by default on mac.
 #ifndef Q_WS_MAC
     if (windowIcon().isNull())

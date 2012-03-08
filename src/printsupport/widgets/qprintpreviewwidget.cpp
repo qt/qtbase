@@ -152,7 +152,7 @@ public:
     GraphicsView(QWidget* parent = 0)
         : QGraphicsView(parent)
     {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         setFrameStyle(QFrame::NoFrame);
 #endif
     }
