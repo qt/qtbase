@@ -1527,9 +1527,9 @@ void tst_QAccessibility::textEditTest()
     QCOMPARE(endOffset, 30);
     QCOMPARE(iface->textInterface()->characterCount(), 31);
     QFontMetrics fm(edit.font());
-    QCOMPARE(iface->textInterface()->characterRect(0, QAccessible2::RelativeToParent).size(), QSize(fm.width("h"), fm.height()));
-    QCOMPARE(iface->textInterface()->characterRect(5, QAccessible2::RelativeToParent).size(), QSize(fm.width(" "), fm.height()));
-    QCOMPARE(iface->textInterface()->characterRect(6, QAccessible2::RelativeToParent).size(), QSize(fm.width("w"), fm.height()));
+    QCOMPARE(iface->textInterface()->characterRect(0).size(), QSize(fm.width("h"), fm.height()));
+    QCOMPARE(iface->textInterface()->characterRect(5).size(), QSize(fm.width(" "), fm.height()));
+    QCOMPARE(iface->textInterface()->characterRect(6).size(), QSize(fm.width("w"), fm.height()));
 
     iface->editableTextInterface()->copyText(6, 11);
     QCOMPARE(QApplication::clipboard()->text(), QLatin1String("world"));
@@ -2760,7 +2760,8 @@ void tst_QAccessibility::labelTest()
 
     QCOMPARE(imageInterface->imageSize(), testPixmap.size());
     QCOMPARE(imageInterface->imageDescription(), QString::fromLatin1("Test Description"));
-    QCOMPARE(imageInterface->imagePosition(QAccessible2::RelativeToParent), imageLabel.geometry());
+    const QPoint labelPos = imageLabel.mapToGlobal(QPoint(0,0));
+    QCOMPARE(imageInterface->imagePosition().topLeft(), labelPos);
 
     delete acc_label;
 

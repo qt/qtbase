@@ -229,6 +229,40 @@ private:
         return accessible->tableCellInterface();
     }
 
+    /*!
+      \internal
+      \a screenPos is in screen relative position
+      \a x and \y (out) is in parent relative position if coordType == IA2_COORDTYPE_PARENT_RELATIVE
+    */
+    void mapFromScreenPos(enum IA2CoordinateType coordType, const QPoint &screenPos, long *x, long *y) const {
+        if (coordType == IA2_COORDTYPE_PARENT_RELATIVE) {
+            // caller wants relative to parent
+            if (QAccessibleInterface *parent = accessible->parent()) {
+                const QRect parentScreenRect = parent->rect();
+                *x = parentScreenRect.x() - screenPos.x();
+                *y = parentScreenRect.y() - screenPos.y();
+                return;
+            }
+        }
+        *x = screenPos.x();
+        *y = screenPos.y();
+    }
+
+    /*!
+      \internal
+      \a x and \y is in parent relative position if coordType == IA2_COORDTYPE_PARENT_RELATIVE
+      \return a screen relative position
+    */
+    QPoint mapToScreenPos(enum IA2CoordinateType coordType, long x, long y) const {
+        if (coordType == IA2_COORDTYPE_PARENT_RELATIVE) {
+            if (QAccessibleInterface *parent = accessible->parent()) {
+                const QRect parentScreenRect = parent->rect();
+                return QPoint(parentScreenRect.x() + x, parentScreenRect.y() + y);
+            }
+        }
+        return QPoint(x,y);
+    }
+
     HRESULT getRelationsHelper(IAccessibleRelation **relations, int startIndex, long maxRelations, long *nRelations = 0);
     HRESULT wrapListOfCells(const QList<QAccessibleInterface*> &inputCells, IUnknown ***outputAccessibles, long *nCellCount);
     uint uniqueID() const;

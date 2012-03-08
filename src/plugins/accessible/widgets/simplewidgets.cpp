@@ -490,7 +490,7 @@ QSize QAccessibleDisplay::imageSize() const
 }
 
 /*! \internal */
-QRect QAccessibleDisplay::imagePosition(QAccessible2::CoordinateType coordType) const
+QRect QAccessibleDisplay::imagePosition() const
 {
     QLabel *label = qobject_cast<QLabel *>(widget());
     if (!label)
@@ -499,14 +499,7 @@ QRect QAccessibleDisplay::imagePosition(QAccessible2::CoordinateType coordType) 
     if (!pixmap)
         return QRect();
 
-    switch (coordType) {
-    case QAccessible2::RelativeToScreen:
-        return QRect(label->mapToGlobal(label->pos()), label->size());
-    case QAccessible2::RelativeToParent:
-        return label->geometry();
-    }
-
-    return QRect();
+    return QRect(label->mapToGlobal(label->pos()), label->size());
 }
 
 #ifndef QT_NO_LINEEDIT
@@ -613,7 +606,7 @@ int QAccessibleLineEdit::cursorPosition() const
     return lineEdit()->cursorPosition();
 }
 
-QRect QAccessibleLineEdit::characterRect(int /*offset*/, CoordinateType /*coordType*/) const
+QRect QAccessibleLineEdit::characterRect(int /*offset*/) const
 {
     // QLineEdit doesn't hand out character rects
     return QRect();
@@ -624,11 +617,9 @@ int QAccessibleLineEdit::selectionCount() const
     return lineEdit()->hasSelectedText() ? 1 : 0;
 }
 
-int QAccessibleLineEdit::offsetAtPoint(const QPoint &point, CoordinateType coordType) const
+int QAccessibleLineEdit::offsetAtPoint(const QPoint &point) const
 {
-    QPoint p = point;
-    if (coordType == RelativeToScreen)
-        p = lineEdit()->mapFromGlobal(p);
+    QPoint p = lineEdit()->mapFromGlobal(point);
 
     return lineEdit()->cursorPositionAt(p);
 }

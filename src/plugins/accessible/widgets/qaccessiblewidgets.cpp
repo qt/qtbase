@@ -272,7 +272,7 @@ int QAccessibleTextEdit::cursorPosition() const
     return textEdit()->textCursor().position();
 }
 
-QRect QAccessibleTextEdit::characterRect(int offset, CoordinateType coordType) const
+QRect QAccessibleTextEdit::characterRect(int offset) const
 {
     QTextEdit *edit = textEdit();
     QTextCursor cursor(edit->document());
@@ -293,14 +293,7 @@ QRect QAccessibleTextEdit::characterRect(int offset, CoordinateType coordType) c
         r.setWidth(averageCharWidth);
     }
 
-    switch (coordType) {
-    case RelativeToScreen:
-        r.moveTo(edit->viewport()->mapToGlobal(r.topLeft()));
-        break;
-    case RelativeToParent:
-        break;
-    }
-
+    r.moveTo(edit->viewport()->mapToGlobal(r.topLeft()));
     return r;
 }
 
@@ -309,13 +302,11 @@ int QAccessibleTextEdit::selectionCount() const
     return textEdit()->textCursor().hasSelection() ? 1 : 0;
 }
 
-int QAccessibleTextEdit::offsetAtPoint(const QPoint &point, CoordinateType coordType) const
+int QAccessibleTextEdit::offsetAtPoint(const QPoint &point) const
 {
     QTextEdit *edit = textEdit();
 
-    QPoint p = point;
-    if (coordType == RelativeToScreen)
-        p = edit->viewport()->mapFromGlobal(p);
+    QPoint p = edit->viewport()->mapFromGlobal(point);
     // convert to document coordinates
     p += QPoint(edit->horizontalScrollBar()->value(), edit->verticalScrollBar()->value());
 

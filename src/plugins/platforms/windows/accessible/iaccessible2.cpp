@@ -1028,6 +1028,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_caretOffset(long *offset)
     return E_FAIL;
 }
 
+
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_characterExtents(long offset,
                                                                    enum IA2CoordinateType coordType,
                                                                    long *x,
@@ -1037,9 +1038,8 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_characterExtents(long offse
 {
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
-        const QRect rect = text->characterRect(offset, (QAccessible2::CoordinateType)coordType);
-        *x = rect.x();
-        *y = rect.y();
+        QRect rect = text->characterRect(offset);
+        mapFromScreenPos(coordType, rect.topLeft(), x, y);
         *width = rect.width();
         *height = rect.height();
         return S_OK;
@@ -1064,7 +1064,8 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_offsetAtPoint(long x,
 {
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
-        *offset = text->offsetAtPoint(QPoint(x,y), (QAccessible2::CoordinateType)coordType);
+        QPoint screenPos = mapToScreenPos(coordType, x, y);
+        *offset = text->offsetAtPoint(screenPos);
         return (*offset >=0 ? S_OK : S_FALSE);
     }
     return E_FAIL;
