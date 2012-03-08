@@ -78,7 +78,7 @@ void PuzzleWidget::dragLeaveEvent(QDragLeaveEvent *event)
 
 void PuzzleWidget::dragMoveEvent(QDragMoveEvent *event)
 {
-    QRect updateRect = highlightedRect.unite(targetSquare(event->pos()));
+    QRect updateRect = highlightedRect.united(targetSquare(event->pos()));
 
     if (event->mimeData()->hasFormat("image/x-puzzle-piece")
         && findPiece(targetSquare(event->pos())) == -1) {
