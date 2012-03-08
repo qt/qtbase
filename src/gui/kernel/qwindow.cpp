@@ -597,6 +597,11 @@ bool QWindow::isActive() const
         return false;
 
     QWindow *focus = QGuiApplication::focusWindow();
+
+    // Means the whole application lost the focus
+    if (!focus)
+        return false;
+
     if (focus == this)
         return true;
 
