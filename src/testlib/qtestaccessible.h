@@ -140,17 +140,16 @@ private:
         }
     }
 
-    static void updateHandler(const QAccessibleEvent &event)
+    static void updateHandler(QAccessibleEvent *event)
     {
         eventList().append(copyEvent(event));
     }
-
-    static QAccessibleEvent *copyEvent(const QAccessibleEvent &event)
+    static QAccessibleEvent *copyEvent(QAccessibleEvent *event)
     {
-        if (event.type() == QAccessible::StateChanged)
-            return new QAccessibleStateChangeEvent(static_cast<const QAccessibleStateChangeEvent*>(&event)->changedStates(),
-                                               event.object(), event.child());
-        return new QAccessibleEvent(event.type(), event.object(), event.child());
+        if (event->type() == QAccessible::StateChanged)
+            return new QAccessibleStateChangeEvent(static_cast<const QAccessibleStateChangeEvent*>(event)->changedStates(),
+                                                   event->object(), event->child());
+        return new QAccessibleEvent(event->type(), event->object(), event->child());
     }
 
     static EventList &eventList()

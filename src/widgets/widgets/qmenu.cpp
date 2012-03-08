@@ -1076,8 +1076,10 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
             int actionIndex = indexOf(action);
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, q, actionIndex));
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, q, actionIndex));
+            QAccessibleEvent focusEvent(QAccessible::Focus, q, actionIndex);
+            QAccessible::updateAccessibility(&focusEvent);
+            QAccessibleEvent selectionEvent(QAccessible::Selection, q, actionIndex);
+            QAccessible::updateAccessibility(&selectionEvent);
         }
 #endif
         action->showStatusText(topCausedWidget());
@@ -1970,7 +1972,8 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     }
 
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::PopupMenuStart, this ,0));
+    QAccessibleEvent event(QAccessible::PopupMenuStart, this ,0);
+    QAccessible::updateAccessibility(&event);
 #endif
 }
 
@@ -2091,7 +2094,8 @@ void QMenu::hideEvent(QHideEvent *)
         d->eventLoop->exit();
     d->setCurrentAction(0);
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::PopupMenuEnd, this));
+    QAccessibleEvent event(QAccessible::PopupMenuEnd, this);
+    QAccessible::updateAccessibility(&event);
 #endif
 #ifndef QT_NO_MENUBAR
     if (QMenuBar *mb = qobject_cast<QMenuBar*>(d->causedPopup.widget))

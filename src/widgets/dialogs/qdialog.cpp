@@ -754,7 +754,8 @@ void QDialog::setVisible(bool visible)
         }
 
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::DialogStart, this));
+        QAccessibleEvent event(QAccessible::DialogStart, this);
+        QAccessible::updateAccessibility(&event);
 #endif
 
     } else {
@@ -762,8 +763,10 @@ void QDialog::setVisible(bool visible)
             return;
 
 #ifndef QT_NO_ACCESSIBILITY
-        if (isVisible())
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::DialogEnd, this));
+        if (isVisible()) {
+            QAccessibleEvent event(QAccessible::DialogEnd, this);
+            QAccessible::updateAccessibility(&event);
+        }
 #endif
 
         // Reimplemented to exit a modal event loop when the dialog is hidden.

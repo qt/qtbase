@@ -3180,16 +3180,10 @@ void QTableView::currentChanged(const QModelIndex &current, const QModelIndex &p
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive()) {
         if (current.isValid()) {
-#ifdef Q_OS_UNIX
             Q_D(QTableView);
             int entry = d->accessibleTable2Index(current);
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, this, entry));
-#else
-            int entry = visualIndex(current) + 1;
-            if (horizontalHeader())
-                ++entry;
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, viewport(), entry));
-#endif
+            QAccessibleEvent event(QAccessible::Focus, this, entry);
+            QAccessible::updateAccessibility(&event);
         }
     }
 #endif
@@ -3209,27 +3203,15 @@ void QTableView::selectionChanged(const QItemSelection &selected,
         // ### does not work properly for selection ranges.
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
-#ifdef Q_OS_UNIX
             int entry = d->accessibleTable2Index(sel);
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, this, entry));
-#else
-            int entry = visualIndex(sel);
-            if (horizontalHeader())
-                ++entry;
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, viewport(), entry));
-#endif
+            QAccessibleEvent event(QAccessible::Selection, this, entry);
+            QAccessible::updateAccessibility(&event);
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
-#ifdef Q_OS_UNIX
             int entry = d->accessibleTable2Index(desel);
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::SelectionRemove, this, entry));
-#else
-            int entry = visualIndex(sel);
-            if (horizontalHeader())
-                ++entry;
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::SelectionRemove, viewport(), entry));
-#endif
+            QAccessibleEvent event(QAccessible::SelectionRemove, this, entry);
+            QAccessible::updateAccessibility(&event);
         }
     }
 #endif

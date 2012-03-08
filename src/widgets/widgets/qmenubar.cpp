@@ -531,8 +531,10 @@ void QMenuBarPrivate::_q_actionHovered()
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
             int actionIndex = actions.indexOf(action);
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, q, actionIndex));
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, q, actionIndex));
+            QAccessibleEvent focusEvent(QAccessible::Focus, q, actionIndex);
+            QAccessible::updateAccessibility(&focusEvent);
+            QAccessibleEvent selectionEvent(QAccessible::Selection, q, actionIndex);
+            QAccessible::updateAccessibility(&selectionEvent);
         }
 #endif //QT_NO_ACCESSIBILITY
     }

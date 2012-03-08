@@ -843,7 +843,8 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
 #ifndef QT_NO_ACCESSIBILITY
     if (focusItem) {
         if (QGraphicsObject *focusObj = focusItem->toGraphicsObject()) {
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, focusObj));
+            QAccessibleEvent event(QAccessible::Focus, focusObj);
+            QAccessible::updateAccessibility(&event);
         }
     }
 #endif

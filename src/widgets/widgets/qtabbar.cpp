@@ -1183,8 +1183,10 @@ void QTabBar::setCurrentIndex(int index)
         d->layoutTab(index);
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, this, index));
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, this, index));
+            QAccessibleEvent focusEvent(QAccessible::Focus, this, index);
+            QAccessible::updateAccessibility(&focusEvent);
+            QAccessibleEvent selectionEvent(QAccessible::Selection, this, index);
+            QAccessible::updateAccessibility(&selectionEvent);
         }
 #endif
         emit currentChanged(index);
