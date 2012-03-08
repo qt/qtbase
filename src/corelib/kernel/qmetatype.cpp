@@ -377,8 +377,9 @@ void QMetaType::registerStreamOperators(int idx, SaveOperator saveOp,
 
     \sa type(), isRegistered(), Type
 */
-const char *QMetaType::typeName(int type)
+const char *QMetaType::typeName(int typeId)
 {
+    const uint type = typeId;
     // In theory it can be filled during compilation time, but for some reason template code
     // that is able to do it causes GCC 4.6 to generate additional 3K of executable code. Probably
     // it is not worth of it.
@@ -400,7 +401,7 @@ const char *QMetaType::typeName(int type)
         } else {
             const QVector<QCustomTypeInfo> * const ct = customTypes();
             QReadLocker locker(customTypesLock());
-            return ct && ct->count() > type - QMetaType::User && !ct->at(type - QMetaType::User).typeName.isEmpty()
+            return ct && uint(ct->count()) > type - QMetaType::User && !ct->at(type - QMetaType::User).typeName.isEmpty()
                     ? ct->at(type - QMetaType::User).typeName.constData()
                     : 0;
         }

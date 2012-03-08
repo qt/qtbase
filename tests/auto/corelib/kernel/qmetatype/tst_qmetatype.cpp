@@ -305,16 +305,20 @@ void tst_QMetaType::normalizedTypes()
 #define TYPENAME_DATA(MetaTypeName, MetaTypeId, RealType)\
     QTest::newRow(#RealType) << QMetaType::MetaTypeName << #RealType;
 
-#define TYPENAME_DATA_ALIAS(MetaTypeName, MetaTypeId, AliasType, RealTypeString)\
-    QTest::newRow(RealTypeString) << QMetaType::MetaTypeName << #AliasType;
-
 void tst_QMetaType::typeName_data()
 {
     QTest::addColumn<QMetaType::Type>("aType");
     QTest::addColumn<QString>("aTypeName");
 
     QT_FOR_EACH_STATIC_TYPE(TYPENAME_DATA)
-    QT_FOR_EACH_STATIC_ALIAS_TYPE(TYPENAME_DATA_ALIAS)
+
+    QTest::newRow("Whity<double>") << static_cast<QMetaType::Type>(::qMetaTypeId<Whity<double> >()) << QString::fromLatin1("Whity<double>");
+    QTest::newRow("Whity<int>") << static_cast<QMetaType::Type>(::qMetaTypeId<Whity<int> >()) << QString::fromLatin1("Whity<int>");
+    QTest::newRow("Testspace::Foo") << static_cast<QMetaType::Type>(::qMetaTypeId<TestSpace::Foo>()) << QString::fromLatin1("TestSpace::Foo");
+
+    QTest::newRow("-1") << QMetaType::Type(-1) << QString();
+    QTest::newRow("-124125534") << QMetaType::Type(-124125534) << QString();
+    QTest::newRow("124125534") << QMetaType::Type(124125534) << QString();
 }
 
 void tst_QMetaType::typeName()
