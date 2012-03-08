@@ -1442,7 +1442,7 @@ void tst_QArrayData::grow()
     size_t previousCapacity = vector.capacity();
     size_t allocations = 0;
     for (size_t i = 1; i <=  (1 << 20); ++i) {
-        int source[1] = { i };
+        int source[1] = { int(i) };
         vector.append(source, source + 1);
         QCOMPARE(vector.size(), i);
         if (vector.capacity() != previousCapacity) {
