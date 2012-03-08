@@ -230,6 +230,8 @@ static bool checkStatement(bool statement, const char *msg, const char *file, in
 bool QTestResult::verify(bool statement, const char *statementStr,
                          const char *description, const char *file, int line)
 {
+    QTEST_ASSERT(statementStr);
+
     char msg[1024];
 
     if (QTestLog::verboseLevel() >= 2) {
@@ -240,7 +242,7 @@ bool QTestResult::verify(bool statement, const char *statementStr,
     const char * format = QTest::expectFailMode
         ? "'%s' returned TRUE unexpectedly. (%s)"
         : "'%s' returned FALSE. (%s)";
-    qsnprintf(msg, 1024, format, statementStr, description);
+    qsnprintf(msg, 1024, format, statementStr, description ? description : "");
 
     return checkStatement(statement, msg, file, line);
 }
