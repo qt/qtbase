@@ -1356,11 +1356,54 @@ typename RemoveReference<T>::Type &&cxx11Move(T &&t)
 {
     return static_cast<typename RemoveReference<T>::Type &&>(t);
 }
+
+struct CompilerHasCxx11ImplicitMoves
+{
+    static bool value()
+    {
+        DetectImplicitMove d(cxx11Move(DetectImplicitMove()));
+        return d.constructor == DetectConstructor::MoveConstructor;
+    }
+
+    struct DetectConstructor
+    {
+        Q_DECL_CONSTEXPR DetectConstructor()
+            : constructor(DefaultConstructor)
+        {
+        }
+
+        Q_DECL_CONSTEXPR DetectConstructor(const DetectConstructor &)
+            : constructor(CopyConstructor)
+        {
+        }
+
+        Q_DECL_CONSTEXPR DetectConstructor(DetectConstructor &&)
+            : constructor(MoveConstructor)
+        {
+        }
+
+        enum Constructor {
+            DefaultConstructor,
+            CopyConstructor,
+            MoveConstructor
+        };
+
+        Constructor constructor;
+    };
+
+    struct DetectImplicitMove
+        : DetectConstructor
+    {
+    };
+};
 #endif
 
 void tst_QArrayData::rValueReferences()
 {
 #ifdef Q_COMPILER_RVALUE_REFS
+    if (!CompilerHasCxx11ImplicitMoves::value())
+        QSKIP("Implicit move ctor not supported in current configuration");
+
     SimpleVector<int> v1(1, 42);
     SimpleVector<int> v2;
 
