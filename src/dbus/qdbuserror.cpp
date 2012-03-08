@@ -44,9 +44,11 @@
 #include <qdebug.h>
 #include <qvarlengtharray.h>
 
+#ifndef QT_BOOTSTRAPPED
 #include "qdbus_symbols_p.h"
 #include "qdbusmessage.h"
 #include "qdbusmessage_p.h"
+#endif
 
 #ifndef QT_NO_DBUS
 
@@ -239,6 +241,7 @@ static inline QDBusError::ErrorType get(const char *name)
     \value UnknownObject        The remote object could not be found.
 */
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     \internal
     Constructs a QDBusError from a DBusError structure.
@@ -268,6 +271,7 @@ QDBusError::QDBusError(const QDBusMessage &qdmsg)
     nm = qdmsg.errorName();
     msg = qdmsg.errorMessage();
 }
+#endif
 
 /*!
     \internal
@@ -302,6 +306,7 @@ QDBusError &QDBusError::operator=(const QDBusError &other)
     return *this;
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
   \internal
   Assignment operator from a QDBusMessage
@@ -319,6 +324,7 @@ QDBusError &QDBusError::operator=(const QDBusMessage &qdmsg)
     }
     return *this;
 }
+#endif
 
 /*!
     Returns this error's ErrorType.

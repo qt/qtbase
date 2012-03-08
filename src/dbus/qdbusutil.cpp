@@ -76,6 +76,7 @@ static inline bool isValidNumber(QChar c)
     return (u >= '0' && u <= '9');
 }
 
+#ifndef QT_BOOTSTRAPPED
 static bool argToString(const QDBusArgument &arg, QString &out);
 
 static bool variantToString(const QVariant &arg, QString &out)
@@ -237,6 +238,7 @@ bool argToString(const QDBusArgument &busArg, QString &out)
 
     return true;
 }
+#endif
 
 //------- D-Bus Types --------
 static const char oneLetterTypes[] = "vsogybnqiuxtdh";
@@ -319,7 +321,11 @@ namespace QDBusUtil
     {
         QString out;
 
+#ifndef QT_BOOTSTRAPPED
         variantToString(arg, out);
+#else
+        Q_UNUSED(arg);
+#endif
 
         return out;
     }

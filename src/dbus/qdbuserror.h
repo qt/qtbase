@@ -93,12 +93,16 @@ public:
 #endif
     };
 
+#ifndef QT_BOOTSTRAPPED
     explicit QDBusError(const DBusError *error = 0);
     /*implicit*/ QDBusError(const QDBusMessage& msg);
+#endif
     QDBusError(ErrorType error, const QString &message);
     QDBusError(const QDBusError &other);
     QDBusError &operator=(const QDBusError &other);
+#ifndef QT_BOOTSTRAPPED
     QDBusError &operator=(const QDBusMessage &msg);
+#endif
 
     ErrorType type() const;
     QString name() const;

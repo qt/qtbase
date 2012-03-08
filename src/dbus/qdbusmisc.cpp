@@ -41,14 +41,16 @@
 
 #include <string.h>
 
+#ifndef QT_BOOTSTRAPPED
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qmetaobject.h>
 
 #include "qdbusutil_p.h"
 #include "qdbusconnection_p.h"
-#include "qdbusmetatype_p.h"
 #include "qdbusabstractadaptor_p.h" // for QCLASSINFO_DBUS_*
+#endif
+#include "qdbusmetatype_p.h"
 
 #ifndef QT_NO_DBUS
 
@@ -68,6 +70,8 @@ bool qDBusCheckAsyncTag(const char *tag)
 
     return false;
 }
+
+#ifndef QT_BOOTSTRAPPED
 
 QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
 {
@@ -129,8 +133,13 @@ bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name)
 int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes)
 {
     QDBusMetaTypeId::init();
+    return qDBusParametersForMethod(mm.parameterTypes(), metaTypes);
+}
 
-    QList<QByteArray> parameterTypes = mm.parameterTypes();
+#endif // QT_BOOTSTRAPPED
+
+int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<int>& metaTypes)
+{
     metaTypes.clear();
 
     metaTypes.append(0);        // return type

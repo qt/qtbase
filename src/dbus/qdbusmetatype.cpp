@@ -49,11 +49,13 @@
 #include <qreadwritelock.h>
 #include <qvector.h>
 
+#include "qdbusmetatype_p.h"
+#ifndef QT_BOOTSTRAPPED
 #include "qdbusmessage.h"
 #include "qdbusunixfiledescriptor.h"
 #include "qdbusutil_p.h"
-#include "qdbusmetatype_p.h"
 #include "qdbusargument_p.h"
+#endif
 
 #ifndef QT_NO_DBUS
 
@@ -73,6 +75,20 @@ Q_DECLARE_METATYPE(QList<double>)
 
 QT_BEGIN_NAMESPACE
 
+#ifdef QT_BOOTSTRAPPED
+int QDBusMetaTypeId::message = QMetaType::User + 1;
+int QDBusMetaTypeId::argument = QMetaType::User + 2;
+int QDBusMetaTypeId::variant = QMetaType::User + 3;
+int QDBusMetaTypeId::objectpath = QMetaType::User + 4;
+int QDBusMetaTypeId::signature = QMetaType::User + 5;
+int QDBusMetaTypeId::error = QMetaType::User + 6;
+int QDBusMetaTypeId::unixfd = QMetaType::User + 7;
+
+void QDBusMetaTypeId::init()
+{
+
+}
+#else
 class QDBusCustomTypeInfo
 {
 public:
@@ -295,6 +311,7 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, int id, void *data)
     df(copy, data);
     return true;
 }
+#endif
 
 /*!
     \fn QDBusMetaType::signatureToType(const char *signature)
@@ -447,6 +464,7 @@ const char *QDBusMetaType::typeToSignature(int type)
     else if (type == QDBusMetaTypeId::unixfd)
         return DBUS_TYPE_UNIX_FD_AS_STRING;
 
+#ifndef QT_BOOTSTRAPPED
     // try the database
     QVector<QDBusCustomTypeInfo> *ct = customTypes();
     {
@@ -476,6 +494,9 @@ const char *QDBusMetaType::typeToSignature(int type)
         info->signature = signature;
     }
     return info->signature;
+#else
+    return 0;
+#endif
 }
 
 QT_END_NAMESPACE
