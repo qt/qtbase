@@ -75,7 +75,7 @@
 /*
     Alpha family, no revisions or variants
 
-    Alpha is bi-endian, use endianness auto-detection described above.
+    Alpha is bi-endian, use endianness auto-detection implemented below.
 */
 // #elif defined(__alpha__) || defined(_M_ALPHA)
 // #  define Q_PROCESSOR_ALPHA
@@ -85,7 +85,7 @@
     ARM family, known revisions: V5, V6, and V7
 
     ARM is bi-endian, detect using __ARMEL__ or __ARMEB__, falling back to
-    auto-detection described above.
+    auto-detection implemented below.
 */
 #if defined(__arm__) || defined(__TARGET_ARCH_ARM)
 #  define Q_PROCESSOR_ARM
@@ -154,7 +154,7 @@
 /*
     Itanium (IA-64) family, no revisions or variants
 
-    Itanium is bi-endian, use endianness auto-detection described above.
+    Itanium is bi-endian, use endianness auto-detection implemented below.
 */
 #elif defined(__ia64) || defined(__ia64__) || defined(_M_IA64)
 #  define Q_PROCESSOR_IA64
@@ -163,7 +163,7 @@
 /*
     MIPS family, known revisions: I, II, III, IV, 32, 64
 
-    MIPS is bi-endian, use endianness auto-detection described above.
+    MIPS is bi-endian, use endianness auto-detection implemented below.
 */
 #elif defined(__mips) || defined(__mips__) || defined(_M_MRX000)
 #  define Q_PROCESSOR_MIPS
@@ -197,7 +197,7 @@
     See http://en.wikipedia.org/wiki/Power_Architecture
     and http://en.wikipedia.org/wiki/File:PowerISA-evolution.svg
 
-    Power is bi-endian, use endianness auto-detection described above.
+    Power is bi-endian, use endianness auto-detection implemented below.
 */
 #elif defined(__ppc__) || defined(__ppc) || defined(__powerpc__) \
       || defined(_ARCH_COM) || defined(_ARCH_PWR) || defined(_ARCH_PPC)  \
@@ -225,7 +225,7 @@
 /*
     SuperH family, optional revision: SH-4A
 
-    SuperH is bi-endian, use endianness auto-detection described above.
+    SuperH is bi-endian, use endianness auto-detection implemented below.
 */
 // #elif defined(__sh__)
 // #  define Q_PROCESSOR_SH
@@ -249,6 +249,14 @@
 
 #endif
 
+/*
+  NOTE:
+  GCC 4.6 added __BYTE_ORDER__, __ORDER_BIG_ENDIAN__, __ORDER_LITTLE_ENDIAN__
+  and __ORDER_PDP_ENDIAN__ in SVN r165881. If you are using GCC 4.6 or newer,
+  this code will properly detect your target byte order; if you are not, and
+  the __LITTLE_ENDIAN__ or __BIG_ENDIAN__ macros are not defined, then this
+  code will fail to detect the target byte order.
+*/
 // Some processors support either endian format, try to detect which we are using.
 #if !defined(Q_BYTE_ORDER)
 #  if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == Q_BIG_ENDIAN || __BYTE_ORDER__ == Q_LITTLE_ENDIAN)
