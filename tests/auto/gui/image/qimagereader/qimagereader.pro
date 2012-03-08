@@ -2,7 +2,7 @@ CONFIG += testcase
 TARGET = tst_qimagereader
 SOURCES += tst_qimagereader.cpp
 MOC_DIR=tmp
-QT += widgets widgets-private core-private gui-private network testlib
+QT += core-private gui-private network testlib
 RESOURCES += qimagereader.qrc
 
 win32-msvc:QMAKE_CXXFLAGS -= -Zm200

@@ -48,7 +48,6 @@
 #include <QImage>
 #include <QImageReader>
 #include <QImageWriter>
-#include <QLabel>
 #include <QPainter>
 #include <QSet>
 
