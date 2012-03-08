@@ -264,6 +264,8 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "PCRE" ]            = "auto";
 
+    dictionary[ "ICU" ]             = "auto";
+
     dictionary[ "GIF" ]             = "auto";
     dictionary[ "JPEG" ]            = "auto";
     dictionary[ "PNG" ]             = "auto";
@@ -502,6 +504,12 @@ void Configure::parseCmdLine()
             dictionary[ "PCRE" ] = "qt";
         } else if (configCmdLine.at(i) == "-system-pcre") {
             dictionary[ "PCRE" ] = "system";
+        }
+
+        else if (configCmdLine.at(i) == "-icu") {
+            dictionary[ "ICU" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-icu") {
+            dictionary[ "ICU" ] = "no";
         }
 
         // Image formats --------------------------------------------
@@ -1468,7 +1476,7 @@ bool Configure::displayHelp()
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
                     "[-no-webkit] [-webkit] [-webkit-debug]\n"
-                    "[-no-directwrite] [-directwrite] [-qpa] [-no-widgets] \n\n", 0, 7);
+                    "[-no-directwrite] [-directwrite] [-qpa] [-no-widgets] [-icu]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1564,6 +1572,9 @@ bool Configure::displayHelp()
 
         desc("PCRE", "qt",       "-qt-pcre",            "Use the PCRE library bundled with Qt.");
         desc("PCRE", "qt",       "-system-pcre",        "Use the PCRE library from the operating system.\nSee http://pcre.org/\n");
+
+        desc("ICU", "yes",       "-icu",                "Use the ICU library.");
+        desc("ICU", "no",        "-no-icu",             "Do not use the ICU library.\nSee http://site.icu-project.org/\n");
 
         desc("GIF", "no",       "-no-gif",              "Do not compile GIF reading support.");
 
@@ -1811,6 +1822,9 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "PCRE")
         available = findFile("pcre.h");
 
+    else if (part == "ICU")
+        available = findFile("unicode/utypes.h") && findFile("unicode/ucol.h") && findFile("unicode/ustring.h") && findFile("icuin.lib");
+
     else if (part == "LIBJPEG")
         available = findFile("jpeglib.h");
     else if (part == "LIBPNG")
@@ -1923,6 +1937,10 @@ void Configure::autoDetection()
     // PCRE detection
     if (dictionary["PCRE"] == "auto")
         dictionary["PCRE"] = checkAvailability("PCRE") ? defaultTo("PCRE") : "qt";
+
+    // ICU detection
+    if (dictionary["ICU"] == "auto")
+        dictionary["ICU"] = checkAvailability("ICU") ? "yes" : "no";
 
     // Image format detection
     if (dictionary["GIF"] == "auto")
@@ -2117,6 +2135,10 @@ void Configure::generateOutputVars()
     // PCRE ---------------------------------------------------------
     if (dictionary[ "PCRE" ] == "qt")
         qmakeConfig += "pcre";
+
+    // ICU ---------------------------------------------------------
+    if (dictionary[ "ICU" ] == "yes")
+        qtConfig  += "icu";
 
     // Image formates -----------------------------------------------
     if (dictionary[ "GIF" ] == "no")
@@ -3060,6 +3082,8 @@ void Configure::displayConfig()
     cout << "    JPEG support............" << dictionary[ "JPEG" ] << endl;
     cout << "    PNG support............." << dictionary[ "PNG" ] << endl;
     cout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl << endl;
+    cout << "    PCRE support............" << dictionary[ "PCRE" ] << endl;
+    cout << "    ICU support............." << dictionary[ "ICU" ] << endl;
 
     cout << "Styles:" << endl;
     cout << "    Windows................." << dictionary[ "STYLE_WINDOWS" ] << endl;
