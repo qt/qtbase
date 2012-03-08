@@ -197,15 +197,15 @@ inline bool qCompare(QStringList const &t1, QStringList const &t2,
     const int expectedSize = t2.count();
     if (actualSize != expectedSize) {
         qsnprintf(msg, sizeof(msg), "Compared QStringLists have different sizes.\n"
-                  "   Actual (%s) size  : '%d'\n"
+                  "   Actual   (%s) size: '%d'\n"
                   "   Expected (%s) size: '%d'", actual, actualSize, expected, expectedSize);
         isOk = false;
     }
     for (int i = 0; isOk && i < actualSize; ++i) {
         if (t1.at(i) != t2.at(i)) {
             qsnprintf(msg, sizeof(msg), "Compared QStringLists differ at index %d.\n"
-                      "   Actual (%s) : '%s'\n"
-                      "   Expected (%s) : '%s'", i, actual, t1.at(i).toLatin1().constData(),
+                      "   Actual   (%s): '%s'\n"
+                      "   Expected (%s): '%s'", i, actual, t1.at(i).toLatin1().constData(),
                       expected, t2.at(i).toLatin1().constData());
             isOk = false;
         }

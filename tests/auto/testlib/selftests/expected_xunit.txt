@@ -6,7 +6,7 @@ WARNING: tst_Xunit::testFunc1() just a QWARN() !
 PASS   : tst_Xunit::testFunc1()
 QDEBUG : tst_Xunit::testFunc2() a qDebug() call with comment-ending stuff -->
 FAIL!  : tst_Xunit::testFunc2() Compared values are not the same
-   Actual (2): 2
+   Actual   (2): 2
    Expected (3): 3
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp(74)]
 SKIP   : tst_Xunit::testFunc3() skipping this function!

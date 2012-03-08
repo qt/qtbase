@@ -100,7 +100,7 @@ inline bool qCompare(QImage const &t1, QImage const &t2,
     const bool t2Null = t2.isNull();
     if (t1Null != t2Null) {
         qsnprintf(msg, 1024, "Compared QImages differ.\n"
-                  "   Actual (%s).isNull()  : %d\n"
+                  "   Actual   (%s).isNull(): %d\n"
                   "   Expected (%s).isNull(): %d", actual, t1Null, expected, t2Null);
         return compare_helper(false, msg, 0, 0, actual, expected, file, line);
     }
@@ -108,7 +108,7 @@ inline bool qCompare(QImage const &t1, QImage const &t2,
         return compare_helper(true, 0, 0, 0, actual, expected, file, line);
     if (t1.width() != t2.width() || t2.height() != t2.height()) {
         qsnprintf(msg, 1024, "Compared QImages differ in size.\n"
-                  "   Actual (%s)  : %dx%d\n"
+                  "   Actual   (%s): %dx%d\n"
                   "   Expected (%s): %dx%d",
                   actual, t1.width(), t1.height(),
                   expected, t2.width(), t2.height());
@@ -116,7 +116,7 @@ inline bool qCompare(QImage const &t1, QImage const &t2,
     }
     if (t1.format() != t2.format()) {
         qsnprintf(msg, 1024, "Compared QImages differ in format.\n"
-                  "   Actual (%s)  : %d\n"
+                  "   Actual   (%s): %d\n"
                   "   Expected (%s): %d",
                   actual, t1.format(), expected, t2.format());
         return compare_helper(false, msg, 0, 0, actual, expected, file, line);
@@ -137,7 +137,7 @@ inline bool qCompare(QPixmap const &t1, QPixmap const &t2, const char *actual, c
     const bool t2Null = t2.isNull();
     if (t1Null != t2Null) {
         qsnprintf(msg, 1024, "Compared QPixmaps differ.\n"
-                  "   Actual (%s).isNull()  : %d\n"
+                  "   Actual   (%s).isNull(): %d\n"
                   "   Expected (%s).isNull(): %d", actual, t1Null, expected, t2Null);
         return compare_helper(false, msg, 0, 0, actual, expected, file, line);
     }
@@ -145,7 +145,7 @@ inline bool qCompare(QPixmap const &t1, QPixmap const &t2, const char *actual, c
         return compare_helper(true, 0, 0, 0, actual, expected, file, line);
     if (t1.width() != t2.width() || t2.height() != t2.height()) {
         qsnprintf(msg, 1024, "Compared QPixmaps differ in size.\n"
-                  "   Actual (%s)  : %dx%d\n"
+                  "   Actual   (%s): %dx%d\n"
                   "   Expected (%s): %dx%d",
                   actual, t1.width(), t1.height(),
                   expected, t2.width(), t2.height());

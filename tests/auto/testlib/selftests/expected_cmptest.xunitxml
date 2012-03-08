@@ -9,59 +9,59 @@
   <testcase result="pass" name="compare_pointerfuncs"/>
   <testcase result="fail" name="compare_tostring">
     <failure tag="int, string" message="Compared values are not the same
-   Actual (actual): QVariant(int,123)
+   Actual   (actual): QVariant(int,123)
    Expected (expected): QVariant(QString,hi)" result="fail"/>
     <failure tag="null hash, invalid" message="Compared values are not the same
-   Actual (actual): QVariant(QVariantHash)
+   Actual   (actual): QVariant(QVariantHash)
    Expected (expected): QVariant()" result="fail"/>
     <failure tag="string, null user type" message="Compared values are not the same
-   Actual (actual): QVariant(QString,A simple string)
+   Actual   (actual): QVariant(QString,A simple string)
    Expected (expected): QVariant(PhonyClass)" result="fail"/>
     <failure tag="both non&#x002D;null user type" message="Compared values are not the same
-   Actual (actual): QVariant(PhonyClass,&lt;value not representable as string&gt;)
+   Actual   (actual): QVariant(PhonyClass,&lt;value not representable as string&gt;)
    Expected (expected): QVariant(PhonyClass,&lt;value not representable as string&gt;)" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQStringLists">
     <failure tag="last item different" message="Compared QStringLists differ at index 2.
-   Actual (opA) : &apos;string3&apos;
-   Expected (opB) : &apos;DIFFERS&apos;" result="fail"/>
+   Actual   (opA): &apos;string3&apos;
+   Expected (opB): &apos;DIFFERS&apos;" result="fail"/>
     <failure tag="second&#x002D;last item different" message="Compared QStringLists differ at index 2.
-   Actual (opA) : &apos;string3&apos;
-   Expected (opB) : &apos;DIFFERS&apos;" result="fail"/>
+   Actual   (opA): &apos;string3&apos;
+   Expected (opB): &apos;DIFFERS&apos;" result="fail"/>
     <failure tag="prefix" message="Compared QStringLists have different sizes.
-   Actual (opA) size  : &apos;2&apos;
+   Actual   (opA) size: &apos;2&apos;
    Expected (opB) size: &apos;1&apos;" result="fail"/>
     <failure tag="short list second" message="Compared QStringLists have different sizes.
-   Actual (opA) size  : &apos;12&apos;
+   Actual   (opA) size: &apos;12&apos;
    Expected (opB) size: &apos;1&apos;" result="fail"/>
     <failure tag="short list first" message="Compared QStringLists have different sizes.
-   Actual (opA) size  : &apos;1&apos;
+   Actual   (opA) size: &apos;1&apos;
    Expected (opB) size: &apos;12&apos;" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQPixmaps">
     <failure tag="one null" message="Compared QPixmaps differ.
-   Actual (opA).isNull()  : 1
+   Actual   (opA).isNull(): 1
    Expected (opB).isNull(): 0" result="fail"/>
     <failure tag="other null" message="Compared QPixmaps differ.
-   Actual (opA).isNull()  : 0
+   Actual   (opA).isNull(): 0
    Expected (opB).isNull(): 1" result="fail"/>
     <failure tag="different size" message="Compared QPixmaps differ in size.
-   Actual (opA)  : 11x20
+   Actual   (opA): 11x20
    Expected (opB): 20x20" result="fail"/>
     <failure tag="different pixels" message="Compared values are not the same" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQImages">
     <failure tag="one null" message="Compared QImages differ.
-   Actual (opA).isNull()  : 1
+   Actual   (opA).isNull(): 1
    Expected (opB).isNull(): 0" result="fail"/>
     <failure tag="other null" message="Compared QImages differ.
-   Actual (opA).isNull()  : 0
+   Actual   (opA).isNull(): 0
    Expected (opB).isNull(): 1" result="fail"/>
     <failure tag="different size" message="Compared QImages differ in size.
-   Actual (opA)  : 11x20
+   Actual   (opA): 11x20
    Expected (opB): 20x20" result="fail"/>
     <failure tag="different format" message="Compared QImages differ in format.
-   Actual (opA)  : 6
+   Actual   (opA): 6
    Expected (opB): 3" result="fail"/>
     <failure tag="different pixels" message="Compared values are not the same" result="fail"/>
   </testcase>

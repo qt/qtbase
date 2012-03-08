@@ -11,7 +11,7 @@
   <testcase result="fail" name="testFunc2">
     <!-- message="a qDebug() call with comment&#x002D;ending stuff &#x002D;&#x002D;&gt;" type="qdebug" -->
     <failure message="Compared values are not the same
-   Actual (2): 2
+   Actual   (2): 2
    Expected (3): 3" result="fail"/>
   </testcase>
   <testcase name="testFunc3">
