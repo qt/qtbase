@@ -743,6 +743,12 @@ QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
     QTest::newRow("QPair<P,C>") << ::qMetaTypeId<QPair<P,C> >() << false << true  << false;
     QTest::newRow("QPair<P,M>") << ::qMetaTypeId<QPair<P,M> >() << true  << true  << false;
     QTest::newRow("QPair<P,P>") << ::qMetaTypeId<QPair<P,P> >() << true  << false << false;
+
+    // invalid ids.
+    QTest::newRow("-1") << -1 << false << false << false;
+    QTest::newRow("-124125534") << -124125534 << false << false << false;
+    QTest::newRow("124125534") << 124125534 << false << false << false;
+
 }
 
 void tst_QMetaType::flags()

@@ -1616,7 +1616,7 @@ private:
     static quint32 customTypeFlags(const int type)
     {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
-        if (Q_UNLIKELY(!ct))
+        if (Q_UNLIKELY(!ct || type < QMetaType::User))
             return 0;
         QReadLocker locker(customTypesLock());
         if (Q_UNLIKELY(ct->count() <= type - QMetaType::User))
