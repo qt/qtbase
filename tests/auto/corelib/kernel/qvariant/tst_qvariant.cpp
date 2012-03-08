@@ -228,7 +228,7 @@ private slots:
 
     void podUserType();
 
-    void data_(); // data is virtual function in QtTestCase
+    void data();
     void constData();
 
     void saveLoadCustomTypes();
@@ -2221,7 +2221,7 @@ void tst_QVariant::basicUserType()
     QCOMPARE(v.toByteArray(), QByteArray("bar"));
 }
 
-void tst_QVariant::data_()
+void tst_QVariant::data()
 {
     QVariant v;
 
