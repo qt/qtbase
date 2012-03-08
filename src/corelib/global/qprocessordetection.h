@@ -188,7 +188,13 @@
 #  if defined(_MIPS_ARCH_MIPS64) || defined(__mips64)
 #    define Q_PROCESSOR_MIPS_64
 #  endif
+#  if defined(__MIPSEL__)
+#    define Q_BYTE_ORDER Q_LITTLE_ENDIAN
+#  elif defined(__MIPSEB__)
+#    define Q_BYTE_ORDER Q_BIG_ENDIAN
+#  else
 // Q_BYTE_ORDER not defined, use endianness auto-detection
+#  endif
 
 /*
     Power family, known variants: 32- and 64-bit
