@@ -154,6 +154,7 @@ private:
 
     bool m_mapped;
     bool m_transparent;
+    bool m_deferredActivation;
     xcb_window_t m_netWmUserTimeWindow;
 
     QSurfaceFormat m_format;
