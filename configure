@@ -779,6 +779,7 @@ CFG_NOPROCESS=no
 CFG_ICU=auto
 CFG_FORCE_ASSERTS=no
 CFG_PCRE=auto
+QPA_PLATFORM_GUARD=yes
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -1718,6 +1719,13 @@ while [ "$#" -gt 0 ]; do
             CFG_WIDGETS="yes"
         elif [ "$VAL" = "no" ]; then
             CFG_WIDGETS="no"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    qpa-platform-guard)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            QPA_PLATFORM_GUARD="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -4051,6 +4059,10 @@ if [ "$CFG_LARGEFILE" = "auto" ]; then
     CFG_LARGEFILE=yes
 fi
 
+if [ "$CFG_GUI" = "no" ]; then
+    QPA_PLATFORM_GUARD=no
+fi
+
 # detect how jpeg should be built
 if [ "$CFG_JPEG" = "auto" ]; then
     if [ "$CFG_SHARED" = "yes" ]; then
@@ -5105,7 +5117,8 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
 
     if [ "$PLATFORM_QPA" = "yes" ] && [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ]; then
         if [ "$CFG_XCB" = "no" ]; then
-            if [ "$ORIG_CFG_XCB" = "auto" ]; then
+            if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
+                 ( [ "$ORIG_CFG_XCB" = "auto" ] ); then
                 echo "No QPA platform plugin enabled!"
                 echo " If you really want to build without a QPA platform plugin you must pass"
                 echo " -no-xcb. Doing this will produce a Qt that"
