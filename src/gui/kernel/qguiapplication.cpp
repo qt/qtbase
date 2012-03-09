@@ -696,6 +696,8 @@ void QGuiApplicationPrivate::init()
     // trigger registering of QVariant's GUI types
     qRegisterGuiVariant();
 
+    QWindowSystemInterfacePrivate::eventTime.start();
+
     is_app_running = true;
     init_plugins(pluginList);
     QWindowSystemInterface::sendWindowSystemEvents(QCoreApplicationPrivate::eventDispatcher, QEventLoop::AllEvents);

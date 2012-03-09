@@ -42,6 +42,7 @@
 #define QWINDOWSYSTEMINTERFACE_QPA_P_H
 
 #include "qwindowsysteminterface_qpa.h"
+#include <QElapsedTimer>
 
 QT_BEGIN_HEADER
 
@@ -272,7 +273,7 @@ public:
     static WindowSystemEvent * getWindowSystemEvent();
     static void queueWindowSystemEvent(WindowSystemEvent *ev);
 
-    static QTime eventTime;
+    static QElapsedTimer eventTime;
 
     static QList<QTouchEvent::TouchPoint> convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type);
 };

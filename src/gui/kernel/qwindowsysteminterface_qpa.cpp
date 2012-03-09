@@ -49,7 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 
-QTime QWindowSystemInterfacePrivate::eventTime;
+QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 
 //------------------------------------------------------------
 //
@@ -265,10 +265,6 @@ void QWindowSystemInterfacePrivate::queueWindowSystemEvent(QWindowSystemInterfac
     queueMutex.lock();
     windowSystemEventQueue.append(ev);
     queueMutex.unlock();
-
-    // Make sure the event timer is started.
-    if (!QWindowSystemInterfacePrivate::eventTime.isValid())
-      QWindowSystemInterfacePrivate::eventTime.start();
 
     QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::qt_qpa_core_dispatcher();
     if (dispatcher)
