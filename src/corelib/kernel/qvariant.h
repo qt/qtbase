@@ -126,7 +126,7 @@ class Q_CORE_EXPORT QVariant
 {
  public:
     enum Type {
-        Invalid = QMetaType::Void,
+        Invalid = QMetaType::UnknownType,
         Bool = QMetaType::Bool,
         Int = QMetaType::Int,
         UInt = QMetaType::UInt,

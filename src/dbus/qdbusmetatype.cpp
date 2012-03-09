@@ -311,7 +311,7 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, int id, void *data)
 int QDBusMetaType::signatureToType(const char *signature)
 {
     if (!signature)
-        return QVariant::Invalid;
+        return QMetaType::UnknownType;
 
     QDBusMetaTypeId::init();
     switch (signature[0])
@@ -378,7 +378,7 @@ int QDBusMetaType::signatureToType(const char *signature)
         }
         // fall through
     default:
-        return QVariant::Invalid;
+        return QMetaType::UnknownType;
     }
 }
 

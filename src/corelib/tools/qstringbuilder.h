@@ -219,9 +219,9 @@ template <> struct QConcatenable<QString> : private QAbstractConcatenable
     }
 };
 
-template <int N> struct QConcatenable<QConstStringDataPtr<N> > : private QAbstractConcatenable
+template <int N> struct QConcatenable<QStaticStringDataPtr<N> > : private QAbstractConcatenable
 {
-    typedef QConstStringDataPtr<N> type;
+    typedef QStaticStringDataPtr<N> type;
     typedef QString ConvertTo;
     enum { ExactSize = true };
     static int size(const type &) { return N; }
@@ -324,9 +324,9 @@ template <> struct QConcatenable<QByteArray> : private QAbstractConcatenable
     }
 };
 
-template <int N> struct QConcatenable<QConstByteArrayDataPtr<N> > : private QAbstractConcatenable
+template <int N> struct QConcatenable<QStaticByteArrayDataPtr<N> > : private QAbstractConcatenable
 {
-    typedef QConstByteArrayDataPtr<N> type;
+    typedef QStaticByteArrayDataPtr<N> type;
     typedef QByteArray ConvertTo;
     enum { ExactSize = false };
     static int size(const type &) { return N; }
@@ -338,9 +338,8 @@ template <int N> struct QConcatenable<QConstByteArrayDataPtr<N> > : private QAbs
 #endif
     static inline void appendTo(const type &ba, char *&out)
     {
-        const char *a = ba.ptr->data;
-        while (*a)
-            *out++ = *a++;
+        ::memcpy(out, ba.ptr->data, N);
+        out += N;
     }
 };
 

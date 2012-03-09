@@ -107,7 +107,7 @@ for(int i = metaObject->propertyOffset(); i < metaObject->propertyCount(); ++i)
 const QMetaObject* metaObject = obj->metaObject();
 QStringList methods;
 for(int i = metaObject->methodOffset(); i < metaObject->methodCount(); ++i)
-    methods << QString::fromLatin1(metaObject->method(i).signature());
+    methods << QString::fromLatin1(metaObject->method(i).methodSignature());
 //! [methodCount]
 
 //! [6]

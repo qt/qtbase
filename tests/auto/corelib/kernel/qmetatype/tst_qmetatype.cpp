@@ -332,6 +332,7 @@ void tst_QMetaType::typeName_data()
 
     QT_FOR_EACH_STATIC_TYPE(TYPENAME_DATA)
     QT_FOR_EACH_STATIC_ALIAS_TYPE(TYPENAME_DATA_ALIAS)
+    QTest::newRow("QMetaType::UnknownType") << QMetaType::UnknownType << static_cast<const char*>(0);
 }
 
 void tst_QMetaType::typeName()
@@ -642,6 +643,8 @@ void tst_QMetaType::sizeOf_data()
 {
     QTest::addColumn<QMetaType::Type>("type");
     QTest::addColumn<int>("size");
+
+    QTest::newRow("QMetaType::UnknownType") << QMetaType::UnknownType << 0;
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
     QTest::newRow(#RealType) << QMetaType::MetaTypeName << int(QTypeInfo<RealType>::sizeOf);
 FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
@@ -1040,6 +1043,7 @@ void tst_QMetaType::isRegistered_data()
     QTest::newRow("-1") << -1 << false;
     QTest::newRow("-42") << -42 << false;
     QTest::newRow("IsRegisteredDummyType + 1") << (dummyTypeId + 1) << false;
+    QTest::newRow("QMetaType::UnknownType") << int(QMetaType::UnknownType) << false;
 }
 
 void tst_QMetaType::isRegistered()

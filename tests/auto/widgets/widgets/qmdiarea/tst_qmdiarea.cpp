@@ -1275,7 +1275,7 @@ static int numberOfConnectedSignals(MySubWindow *subWindow)
         QMetaMethod method = subWindow->metaObject()->method(i);
         if (method.methodType() == QMetaMethod::Signal) {
             QString signature(QLatin1String("2"));
-            signature += QLatin1String(method.signature());
+            signature += QLatin1String(method.methodSignature().constData());
             numConnectedSignals += subWindow->receivers(signature.toLatin1());
         }
     }

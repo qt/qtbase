@@ -187,7 +187,11 @@ public:
         return FilteredComparator<T>::compare(m_a, m_b);
     }
 
-    bool delegate(const void*) { return true; }
+    bool delegate(const void*) { Q_ASSERT(false); return true; }
+    bool delegate(const QMetaTypeSwitcher::UnknownType*)
+    {
+        return true; // for historical reason invalid variant == invalid variant
+    }
     bool delegate(const QMetaTypeSwitcher::NotBuiltinType*) { return false; }
 protected:
     const QVariant::Private *m_a;
@@ -301,7 +305,8 @@ public:
         return CallIsNull<T>::isNull(m_d);
     }
     // we need that as sizof(void) is undefined and it is needed in HasIsNullMethod
-    bool delegate(const void *) { return m_d->is_null; }
+    bool delegate(const void *) { Q_ASSERT(false); return m_d->is_null; }
+    bool delegate(const QMetaTypeSwitcher::UnknownType *) { return m_d->is_null; }
     bool delegate(const QMetaTypeSwitcher::NotBuiltinType *) { return m_d->is_null; }
 protected:
     const QVariant::Private *m_d;
@@ -374,8 +379,18 @@ public:
 
     void delegate(const void*)
     {
-        // QMetaType::Void == QVariant::Invalid, creating an invalid value creates invalid QVariant
-        // TODO it might go away, check is needed
+        qWarning("Trying to create a QVariant instance of QMetaType::Void type, an invalid QVariant will be constructed instead");
+        m_x->type = QMetaType::UnknownType;
+        m_x->is_shared = false;
+        m_x->is_null = !m_copy;
+    }
+
+    void delegate(const QMetaTypeSwitcher::UnknownType*)
+    {
+        if (m_x->type != QMetaType::UnknownType) {
+            qWarning("Trying to construct an instance of an invalid type, type id: %i", m_x->type);
+            m_x->type = QMetaType::UnknownType;
+        }
         m_x->is_shared = false;
         m_x->is_null = !m_copy;
     }
@@ -421,7 +436,8 @@ public:
         qWarning("Trying to destruct an instance of an invalid type, type id: %i", m_d->type);
     }
     // Ignore nonconstructible type
-    void delegate(const void*) {}
+    void delegate(const QMetaTypeSwitcher::UnknownType*) {}
+    void delegate(const void*) { Q_ASSERT(false); }
 private:
     QVariant::Private *m_d;
 };
@@ -466,10 +482,11 @@ public:
     {
         qWarning("Trying to stream an instance of an invalid type, type id: %i", m_d->type);
     }
-    void delegate(const void*)
+    void delegate(const QMetaTypeSwitcher::UnknownType*)
     {
         m_debugStream.nospace() << "QVariant::Invalid";
     }
+    void delegate(const void*) { Q_ASSERT(false); }
 private:
     QDebug m_debugStream;
     QVariant::Private *m_d;

@@ -54,15 +54,7 @@ static inline int alignmentThreshold()
     return 2 * sizeof(void*);
 }
 
-const QVectorData QVectorData::shared_null = { Q_REFCOUNT_INITIALIZER(-1), 0, 0, true, false, 0 };
-
-QVectorData *QVectorData::malloc(int sizeofTypedData, int size, int sizeofT, QVectorData *init)
-{
-    QVectorData* p = (QVectorData *)::malloc(sizeofTypedData + (size - 1) * sizeofT);
-    Q_CHECK_PTR(p);
-    ::memcpy(p, init, sizeofTypedData + (qMin(size, init->alloc) - 1) * sizeofT);
-    return p;
-}
+const QVectorData QVectorData::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, false, 0 };
 
 QVectorData *QVectorData::allocate(int size, int alignment)
 {
@@ -84,11 +76,9 @@ void QVectorData::free(QVectorData *x, int alignment)
         ::free(x);
 }
 
-int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive)
+int QVectorData::grow(int sizeOfHeader, int size, int sizeOfT)
 {
-    if (excessive)
-        return size + size / 2;
-    return qAllocMore(size * sizeofT, sizeofTypedData - sizeofT) / sizeofT;
+    return qAllocMore(size * sizeOfT, sizeOfHeader) / sizeOfT;
 }
 
 /*!

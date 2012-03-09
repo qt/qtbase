@@ -105,6 +105,30 @@ static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)
     return types;
 }
 
+static int *queuedConnectionTypes(const QArgumentType *argumentTypes, int argc)
+{
+    QScopedArrayPointer<int> types(new int [argc + 1]);
+    for (int i = 0; i < argc; ++i) {
+        const QArgumentType &type = argumentTypes[i];
+        if (type.type())
+            types[i] = type.type();
+        else if (type.name().endsWith('*'))
+            types[i] = QMetaType::VoidStar;
+        else
+            types[i] = QMetaType::type(type.name());
+
+        if (!types[i]) {
+            qWarning("QObject::connect: Cannot queue arguments of type '%s'\n"
+                     "(Make sure '%s' is registered using qRegisterMetaType().)",
+                     type.name().constData(), type.name().constData());
+            return 0;
+        }
+    }
+    types[argc] = 0;
+
+    return types.take();
+}
+
 static QBasicMutex _q_ObjectMutexPool[131];
 
 /** \internal
@@ -2179,12 +2203,12 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
     if (signal.attributes() & QMetaMethod::Compatibility) {
         if (!(method.attributes() & QMetaMethod::Compatibility))
             qWarning("QObject::connect: Connecting from COMPAT signal (%s::%s)",
-                     sender->className(), signal.signature());
+                     sender->className(), signal.methodSignature().constData());
     } else if ((method.attributes() & QMetaMethod::Compatibility) &&
                method.methodType() == QMetaMethod::Signal) {
         qWarning("QObject::connect: Connecting from %s::%s to COMPAT slot (%s::%s)",
-                 sender->className(), signal.signature(),
-                 receiver->className(), method.signature());
+                 sender->className(), signal.methodSignature().constData(),
+                 receiver->className(), method.methodSignature().constData());
     }
 }
 
@@ -2283,20 +2307,40 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     const QMetaObject *smeta = sender->metaObject();
     const char *signal_arg = signal;
     ++signal; //skip code
-    int signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, false);
-    if (signal_index < 0) {
-        // check for normalized signatures
-        tmp_signal_name = QMetaObject::normalizedSignature(signal - 1);
-        signal = tmp_signal_name.constData() + 1;
+    QByteArray signalName;
+    QArgumentTypeArray signalTypes;
+    int signal_index;
+    if (QMetaObjectPrivate::get(smeta)->revision >= 7) {
+        signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
+        signal_index = QMetaObjectPrivate::indexOfSignalRelative(
+                &smeta, signalName, signalTypes.size(), signalTypes.constData());
+        if (signal_index < 0) {
+            // check for normalized signatures
+            tmp_signal_name = QMetaObject::normalizedSignature(signal - 1);
+            signal = tmp_signal_name.constData() + 1;
 
-        smeta = sender->metaObject();
+            signalTypes.clear();
+            signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
+            smeta = sender->metaObject();
+            signal_index = QMetaObjectPrivate::indexOfSignalRelative(
+                    &smeta, signalName, signalTypes.size(), signalTypes.constData());
+        }
+    } else {
         signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, false);
-    }
-    if (signal_index < 0) {
-        // re-use tmp_signal_name and signal from above
+        if (signal_index < 0) {
+            // check for normalized signatures
+            tmp_signal_name = QMetaObject::normalizedSignature(signal - 1);
+            signal = tmp_signal_name.constData() + 1;
 
-        smeta = sender->metaObject();
-        signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, true);
+            smeta = sender->metaObject();
+            signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, false);
+            if (signal_index < 0) {
+                // re-use tmp_signal_name and signal from above
+
+                smeta = sender->metaObject();
+                signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, true);
+            }
+        }
     }
     if (signal_index < 0) {
         err_method_notfound(sender, signal_arg, "connect");
@@ -2317,35 +2361,70 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     const char *method_arg = method;
     ++method; // skip code
 
+    QByteArray methodName;
+    QArgumentTypeArray methodTypes;
     const QMetaObject *rmeta = receiver->metaObject();
     int method_index_relative = -1;
-    switch (membcode) {
-    case QSLOT_CODE:
-        method_index_relative = QMetaObjectPrivate::indexOfSlotRelative(&rmeta, method, false);
-        break;
-    case QSIGNAL_CODE:
-        method_index_relative = QMetaObjectPrivate::indexOfSignalRelative(&rmeta, method, false);
-        break;
-    }
+    if (QMetaObjectPrivate::get(rmeta)->revision >= 7) {
+        switch (membcode) {
+        case QSLOT_CODE:
+            method_index_relative = QMetaObjectPrivate::indexOfSlotRelative(
+                    &rmeta, methodName, methodTypes.size(), methodTypes.constData());
+            break;
+        case QSIGNAL_CODE:
+            method_index_relative = QMetaObjectPrivate::indexOfSignalRelative(
+                    &rmeta, methodName, methodTypes.size(), methodTypes.constData());
+            break;
+        }
+        if (method_index_relative < 0) {
+            // check for normalized methods
+            tmp_method_name = QMetaObject::normalizedSignature(method);
+            method = tmp_method_name.constData();
 
-    if (method_index_relative < 0) {
-        // check for normalized methods
-        tmp_method_name = QMetaObject::normalizedSignature(method);
-        method = tmp_method_name.constData();
-
-        // rmeta may have been modified above
-        rmeta = receiver->metaObject();
+            methodTypes.clear();
+            methodName = QMetaObjectPrivate::decodeMethodSignature(method, methodTypes);
+            // rmeta may have been modified above
+            rmeta = receiver->metaObject();
+            switch (membcode) {
+            case QSLOT_CODE:
+                method_index_relative = QMetaObjectPrivate::indexOfSlotRelative(
+                        &rmeta, methodName, methodTypes.size(), methodTypes.constData());
+                break;
+            case QSIGNAL_CODE:
+                method_index_relative = QMetaObjectPrivate::indexOfSignalRelative(
+                        &rmeta, methodName, methodTypes.size(), methodTypes.constData());
+                break;
+            }
+        }
+    } else {
         switch (membcode) {
         case QSLOT_CODE:
             method_index_relative = QMetaObjectPrivate::indexOfSlotRelative(&rmeta, method, false);
-            if (method_index_relative < 0)
-                method_index_relative = QMetaObjectPrivate::indexOfSlotRelative(&rmeta, method, true);
             break;
         case QSIGNAL_CODE:
             method_index_relative = QMetaObjectPrivate::indexOfSignalRelative(&rmeta, method, false);
-            if (method_index_relative < 0)
-                method_index_relative = QMetaObjectPrivate::indexOfSignalRelative(&rmeta, method, true);
             break;
+        }
+
+        if (method_index_relative < 0) {
+            // check for normalized methods
+            tmp_method_name = QMetaObject::normalizedSignature(method);
+            method = tmp_method_name.constData();
+
+            // rmeta may have been modified above
+            rmeta = receiver->metaObject();
+            switch (membcode) {
+            case QSLOT_CODE:
+                method_index_relative = QMetaObjectPrivate::indexOfSlotRelative(&rmeta, method, false);
+                if (method_index_relative < 0)
+                    method_index_relative = QMetaObjectPrivate::indexOfSlotRelative(&rmeta, method, true);
+                break;
+            case QSIGNAL_CODE:
+                method_index_relative = QMetaObjectPrivate::indexOfSignalRelative(&rmeta, method, false);
+                if (method_index_relative < 0)
+                    method_index_relative = QMetaObjectPrivate::indexOfSignalRelative(&rmeta, method, true);
+                break;
+            }
         }
     }
 
@@ -2355,7 +2434,18 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
         return QMetaObject::Connection(0);
     }
 
-    if (!QMetaObject::checkConnectArgs(signal, method)) {
+    bool compatibleArgs = true;
+    if ((QMetaObjectPrivate::get(smeta)->revision < 7) && (QMetaObjectPrivate::get(rmeta)->revision < 7)) {
+        compatibleArgs = QMetaObject::checkConnectArgs(signal, method);
+    } else {
+        if (signalName.isEmpty())
+            signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
+        if (methodName.isEmpty())
+            methodName = QMetaObjectPrivate::decodeMethodSignature(method, methodTypes);
+        compatibleArgs = QMetaObjectPrivate::checkConnectArgs(signalTypes.size(), signalTypes.constData(),
+                                                              methodTypes.size(), methodTypes.constData());
+    }
+    if (!compatibleArgs) {
         qWarning("QObject::connect: Incompatible sender/receiver arguments"
                  "\n        %s::%s --> %s::%s",
                  sender->metaObject()->className(), signal,
@@ -2365,8 +2455,11 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
 
     int *types = 0;
     if ((type == Qt::QueuedConnection)
-            && !(types = queuedConnectionTypes(smeta->method(signal_absolute_index).parameterTypes())))
+        && ((QMetaObjectPrivate::get(smeta)->revision >= 7)
+        ? !(types = queuedConnectionTypes(signalTypes.constData(), signalTypes.size()))
+            : !(types = queuedConnectionTypes(smeta->method(signal_absolute_index).parameterTypes())))) {
         return QMetaObject::Connection(0);
+    }
 
 #ifndef QT_NO_DEBUG
     if (warnCompat) {
@@ -2424,17 +2517,17 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
             || method.methodType() == QMetaMethod::Constructor) {
         qWarning("QObject::connect: Cannot connect %s::%s to %s::%s",
                  sender ? sender->metaObject()->className() : "(null)",
-                 signal.signature(),
+                 signal.methodSignature().constData(),
                  receiver ? receiver->metaObject()->className() : "(null)",
-                 method.signature() );
+                 method.methodSignature().constData() );
         return QMetaObject::Connection(0);
     }
 
-    // Reconstructing SIGNAL() macro result for signal.signature() string
+    // Reconstructing SIGNAL() macro result for signal.methodSignature() string
     QByteArray signalSignature;
-    signalSignature.reserve(qstrlen(signal.signature())+1);
+    signalSignature.reserve(signal.methodSignature().size()+1);
     signalSignature.append((char)(QSIGNAL_CODE + '0'));
-    signalSignature.append(signal.signature());
+    signalSignature.append(signal.methodSignature());
 
     int signal_index;
     int method_index;
@@ -2448,20 +2541,20 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
     const QMetaObject *rmeta = receiver->metaObject();
     if (signal_index == -1) {
         qWarning("QObject::connect: Can't find signal %s on instance of class %s",
-                 signal.signature(), smeta->className());
+                 signal.methodSignature().constData(), smeta->className());
         return QMetaObject::Connection(0);
     }
     if (method_index == -1) {
         qWarning("QObject::connect: Can't find method %s on instance of class %s",
-                 method.signature(), rmeta->className());
+                 method.methodSignature().constData(), rmeta->className());
         return QMetaObject::Connection(0);
     }
 
-    if (!QMetaObject::checkConnectArgs(signal.signature(), method.signature())) {
+    if (!QMetaObject::checkConnectArgs(signal.methodSignature().constData(), method.methodSignature().constData())) {
         qWarning("QObject::connect: Incompatible sender/receiver arguments"
                  "\n        %s::%s --> %s::%s",
-                 smeta->className(), signal.signature(),
-                 rmeta->className(), method.signature());
+                 smeta->className(), signal.methodSignature().constData(),
+                 rmeta->className(), method.methodSignature().constData());
         return QMetaObject::Connection(0);
     }
 
@@ -2609,12 +2702,25 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     */
     bool res = false;
     const QMetaObject *smeta = sender->metaObject();
+    QByteArray signalName;
+    QArgumentTypeArray signalTypes;
+    if (signal && (QMetaObjectPrivate::get(smeta)->revision >= 7))
+        signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
+    QByteArray methodName;
+    QArgumentTypeArray methodTypes;
+    if (method && (QMetaObjectPrivate::get(receiver->metaObject())->revision >= 7))
+        methodName = QMetaObjectPrivate::decodeMethodSignature(method, methodTypes);
     do {
         int signal_index = -1;
         if (signal) {
-            signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, false);
-            if (signal_index < 0)
-                signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, true);
+            if (QMetaObjectPrivate::get(smeta)->revision >= 7) {
+                signal_index = QMetaObjectPrivate::indexOfSignalRelative(
+                            &smeta, signalName, signalTypes.size(), signalTypes.constData());
+            } else {
+                signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, false);
+                if (signal_index < 0)
+                    signal_index = QMetaObjectPrivate::indexOfSignalRelative(&smeta, signal, true);
+            }
             if (signal_index < 0)
                 break;
             signal_index = QMetaObjectPrivate::originalClone(smeta, signal_index);
@@ -2629,7 +2735,13 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
         } else {
             const QMetaObject *rmeta = receiver->metaObject();
             do {
-                int method_index = rmeta->indexOfMethod(method);
+                int method_index;
+                if (QMetaObjectPrivate::get(rmeta)->revision >= 7) {
+                    method_index = QMetaObjectPrivate::indexOfMethod(
+                            rmeta, methodName, methodTypes.size(), methodTypes.constData());
+                } else {
+                    method_index = rmeta->indexOfMethod(method);
+                }
                 if (method_index >= 0)
                     while (method_index < rmeta->methodOffset())
                             rmeta = rmeta->superClass();
@@ -2693,24 +2805,24 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
         if(signal.methodType() != QMetaMethod::Signal) {
             qWarning("QObject::%s: Attempt to %s non-signal %s::%s",
                      "disconnect","unbind",
-                     sender->metaObject()->className(), signal.signature());
+                     sender->metaObject()->className(), signal.methodSignature().constData());
             return false;
         }
     }
     if (method.mobj) {
         if(method.methodType() == QMetaMethod::Constructor) {
             qWarning("QObject::disconect: cannot use constructor as argument %s::%s",
-                     receiver->metaObject()->className(), method.signature());
+                     receiver->metaObject()->className(), method.methodSignature().constData());
             return false;
         }
     }
 
-    // Reconstructing SIGNAL() macro result for signal.signature() string
+    // Reconstructing SIGNAL() macro result for signal.methodSignature() string
     QByteArray signalSignature;
     if (signal.mobj) {
-        signalSignature.reserve(qstrlen(signal.signature())+1);
+        signalSignature.reserve(signal.methodSignature().size()+1);
         signalSignature.append((char)(QSIGNAL_CODE + '0'));
-        signalSignature.append(signal.signature());
+        signalSignature.append(signal.methodSignature());
     }
 
     int signal_index;
@@ -2724,13 +2836,13 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     // is -1 then this signal is not a member of sender.
     if (signal.mobj && signal_index == -1) {
         qWarning("QObject::disconect: signal %s not found on class %s",
-                 signal.signature(), sender->metaObject()->className());
+                 signal.methodSignature().constData(), sender->metaObject()->className());
         return false;
     }
     // If this condition is true then method is not a member of receeiver.
     if (receiver && method.mobj && method_index == -1) {
         qWarning("QObject::disconect: method %s not found on class %s",
-                 method.signature(), receiver->metaObject()->className());
+                 method.methodSignature().constData(), receiver->metaObject()->className());
         return false;
     }
 
@@ -3045,7 +3157,8 @@ void QMetaObject::connectSlotsByName(QObject *o)
     Q_ASSERT(mo);
     const QObjectList list = o->findChildren<QObject *>(QString());
     for (int i = 0; i < mo->methodCount(); ++i) {
-        const char *slot = mo->method(i).signature();
+        QByteArray slotSignature = mo->method(i).methodSignature();
+        const char *slot = slotSignature.constData();
         Q_ASSERT(slot);
         if (slot[0] != 'o' || slot[1] != 'n' || slot[2] != '_')
             continue;
@@ -3065,7 +3178,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
                     if (method.methodType() != QMetaMethod::Signal)
                         continue;
 
-                    if (!qstrncmp(method.signature(), slot + len + 4, slotlen)) {
+                    if (!qstrncmp(method.methodSignature().constData(), slot + len + 4, slotlen)) {
                         int signalOffset, methodOffset;
                         computeOffsets(method.enclosingMetaObject(), &signalOffset, &methodOffset);
                         sigIndex = k + - methodOffset + signalOffset;
@@ -3311,9 +3424,17 @@ int QObjectPrivate::signalIndex(const char *signalName) const
 {
     Q_Q(const QObject);
     const QMetaObject *base = q->metaObject();
-    int relative_index = QMetaObjectPrivate::indexOfSignalRelative(&base, signalName, false);
-    if (relative_index < 0)
-        relative_index = QMetaObjectPrivate::indexOfSignalRelative(&base, signalName, true);
+    int relative_index;
+    if (QMetaObjectPrivate::get(base)->revision >= 7) {
+        QArgumentTypeArray types;
+        QByteArray name = QMetaObjectPrivate::decodeMethodSignature(signalName, types);
+        relative_index = QMetaObjectPrivate::indexOfSignalRelative(
+                &base, name, types.size(), types.constData());
+    } else {
+        relative_index = QMetaObjectPrivate::indexOfSignalRelative(&base, signalName, false);
+        if (relative_index < 0)
+            relative_index = QMetaObjectPrivate::indexOfSignalRelative(&base, signalName, true);
+    }
     if (relative_index < 0)
         return relative_index;
     relative_index = QMetaObjectPrivate::originalClone(base, relative_index);
@@ -3536,7 +3657,7 @@ void QObject::dumpObjectInfo()
                 offset = methodOffset - signalOffset;
             }
             const QMetaMethod signal = metaObject()->method(signal_index + offset);
-            qDebug("        signal: %s", signal.signature());
+            qDebug("        signal: %s", signal.methodSignature().constData());
 
             // receivers
             const QObjectPrivate::Connection *c =
@@ -3552,7 +3673,7 @@ void QObject::dumpObjectInfo()
                 qDebug("          --> %s::%s %s",
                        receiverMetaObject->className(),
                        c->receiver->objectName().isEmpty() ? "unnamed" : qPrintable(c->receiver->objectName()),
-                       method.signature());
+                       method.methodSignature().constData());
                 c = c->nextConnectionList;
             }
         }
@@ -3569,7 +3690,7 @@ void QObject::dumpObjectInfo()
             qDebug("          <-- %s::%s  %s",
                    s->sender->metaObject()->className(),
                    s->sender->objectName().isEmpty() ? "unnamed" : qPrintable(s->sender->objectName()),
-                   slot.signature());
+                   slot.methodSignature().constData());
         }
     } else {
         qDebug("        <None>");
@@ -4041,9 +4162,16 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
     locker.unlock();
 
     // reconstruct the signature to call connectNotify
-    const char *sig = senderMetaObject->d.stringdata + senderMetaObject->d.data[
-        reinterpret_cast<const QMetaObjectPrivate*>(senderMetaObject->d.data)->methodData
-            + 5 * (signal_index - signalOffset)];
+    QByteArray tmp_sig;
+    const char *sig;
+    if (QMetaObjectPrivate::get(senderMetaObject)->revision >= 7) {
+        tmp_sig = senderMetaObject->method(signal_index - signalOffset + methodOffset).methodSignature();
+        sig = tmp_sig.constData();
+    } else {
+        sig = reinterpret_cast<const char *>(senderMetaObject->d.stringdata)
+              + senderMetaObject->d.data[QMetaObjectPrivate::get(senderMetaObject)->methodData
+                                         + 5 * (signal_index - signalOffset)];
+    }
     QVarLengthArray<char> signalSignature(qstrlen(sig) + 2);
     signalSignature.data()[0] = char(QSIGNAL_CODE + '0');
     strcpy(signalSignature.data() + 1 , sig);

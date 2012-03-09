@@ -1061,7 +1061,8 @@ static bool isValidSlot(const QMetaMethod &sl)
     if (sl.access() != QMetaMethod::Private || !sl.parameterTypes().isEmpty()
         || qstrlen(sl.typeName()) || sl.methodType() != QMetaMethod::Slot)
         return false;
-    const char *sig = sl.signature();
+    QByteArray signature = sl.methodSignature();
+    const char *sig = signature.constData();
     int len = qstrlen(sig);
     if (len < 2)
         return false;
@@ -1084,7 +1085,7 @@ static void qPrintTestSlots(FILE *stream)
     for (int i = 0; i < QTest::currentTestObject->metaObject()->methodCount(); ++i) {
         QMetaMethod sl = QTest::currentTestObject->metaObject()->method(i);
         if (isValidSlot(sl))
-            fprintf(stream, "%s\n", sl.signature());
+            fprintf(stream, "%s\n", sl.methodSignature().constData());
     }
 }
 
@@ -1109,7 +1110,7 @@ static void qPrintDataTags(FILE *stream)
             // Retrieve local tags:
             QStringList localTags;
             QTestTable table;
-            char *slot = qstrdup(tf.signature());
+            char *slot = qstrdup(tf.methodSignature().constData());
             slot[strlen(slot) - 2] = '\0';
             QByteArray member;
             member.resize(qstrlen(slot) + qstrlen("_data()") + 1);
@@ -1781,7 +1782,7 @@ static void qInvokeTestMethods(QObject *testObject)
 
             if (QTest::testFuncs) {
                 for (int i = 0; i != QTest::testFuncCount; i++) {
-                    if (!qInvokeTestMethod(metaObject->method(QTest::testFuncs[i].function()).signature(),
+                    if (!qInvokeTestMethod(metaObject->method(QTest::testFuncs[i].function()).methodSignature().constData(),
                                                               QTest::testFuncs[i].data())) {
                         break;
                     }
@@ -1795,7 +1796,7 @@ static void qInvokeTestMethods(QObject *testObject)
                 for (int i = 0; i != methodCount; i++) {
                     if (!isValidSlot(testMethods[i]))
                         continue;
-                    if (!qInvokeTestMethod(testMethods[i].signature()))
+                    if (!qInvokeTestMethod(testMethods[i].methodSignature().constData()))
                         break;
                 }
                 delete[] testMethods;

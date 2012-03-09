@@ -1078,18 +1078,25 @@ void tst_QByteArray::toULongLong()
 // global function defined in qbytearray.cpp
 void tst_QByteArray::qAllocMore()
 {
-    static const int t[] = {
-        INT_MIN, INT_MIN + 1, -1234567, -66000, -1025,
-        -3, -1, 0, +1, +3, +1025, +66000, +1234567, INT_MAX - 1, INT_MAX,
-        INT_MAX/3
-    };
-    static const int N = sizeof(t)/sizeof(t[0]);
+    using QT_PREPEND_NAMESPACE(qAllocMore);
 
-    // make sure qAllocMore() doesn't loop infinitely on any input
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            ::qAllocMore(t[i], t[j]);
-        }
+    // Not very important, but please behave :-)
+    QVERIFY(qAllocMore(0, 0) >= 0);
+
+    for (int i = 1; i < 1 << 8; i <<= 1)
+        QVERIFY(qAllocMore(i, 0) >= i);
+
+    for (int i = 1 << 8; i < 1 << 30; i <<= 1) {
+        const int alloc = qAllocMore(i, 0);
+
+        QVERIFY(alloc >= i);
+        QCOMPARE(qAllocMore(i - 8, 8), alloc - 8);
+        QCOMPARE(qAllocMore(i - 16, 16), alloc - 16);
+        QCOMPARE(qAllocMore(i - 24, 24), alloc - 24);
+        QCOMPARE(qAllocMore(i - 32, 32), alloc - 32);
+
+        QVERIFY(qAllocMore(i - 1, 0) >= i - 1);
+        QVERIFY(qAllocMore(i + 1, 0) >= i + 1);
     }
 }
 
@@ -1587,8 +1594,8 @@ void tst_QByteArray::literals()
 
     QVERIFY(str.length() == 4);
     QVERIFY(str == "abcd");
-    QVERIFY(str.data_ptr()->ref == -1);
-    QVERIFY(str.data_ptr()->offset == 0);
+    QVERIFY(str.data_ptr()->ref.isStatic());
+    QVERIFY(str.data_ptr()->offset == sizeof(QByteArrayData));
 
     const char *s = str.constData();
     QByteArray str2 = str;

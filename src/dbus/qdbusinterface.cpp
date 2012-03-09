@@ -280,7 +280,7 @@ int QDBusInterfacePrivate::metacall(QMetaObject::Call c, int id, void **argv)
         } else if (mm.methodType() == QMetaMethod::Slot || mm.methodType() == QMetaMethod::Method) {
             // method call relay from Qt world to D-Bus world
             // get D-Bus equivalent signature
-            QString methodName = QLatin1String(metaObject->dbusNameForMethod(id));
+            QString methodName = QString::fromLatin1(mm.name());
             const int *inputTypes = metaObject->inputTypesForMethod(id);
             int inputTypesCount = *inputTypes;
 
