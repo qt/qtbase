@@ -142,46 +142,6 @@ Configure::Configure(int& argc, char** argv)
         cout << "Preparing build tree..." << endl;
         QDir(buildPath).mkpath("bin");
 
-        { //duplicate qmake
-            QStack<QString> qmake_dirs;
-            qmake_dirs.push("qmake");
-            while (!qmake_dirs.isEmpty()) {
-                QString dir = qmake_dirs.pop();
-                QString od(buildPath + "/" + dir);
-                QString id(sourcePath + "/" + dir);
-                QFileInfoList entries = QDir(id).entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
-                for (int i = 0; i < entries.size(); ++i) {
-                    QFileInfo fi(entries.at(i));
-                    if (fi.isDir()) {
-                        qmake_dirs.push(dir + "/" + fi.fileName());
-                        QDir().mkpath(od + "/" + fi.fileName());
-                    } else {
-                        QDir().mkpath(od);
-                        bool justCopy = true;
-                        const QString fname = fi.fileName();
-                        const QString outFile(od + "/" + fname), inFile(id + "/" + fname);
-                        if (fi.fileName() == "Makefile") { //ignore
-                        } else if (fi.suffix() == "h" || fi.suffix() == "cpp") {
-                            QTemporaryFile tmpFile;
-                            if (tmpFile.open()) {
-                                QTextStream stream(&tmpFile);
-                                stream << "#include \"" << inFile << "\"" << endl;
-                                justCopy = false;
-                                stream.flush();
-                                tmpFile.flush();
-                                if (filesDiffer(tmpFile.fileName(), outFile)) {
-                                    QFile::remove(outFile);
-                                    tmpFile.copy(outFile);
-                                }
-                            }
-                        }
-                        if (justCopy && filesDiffer(inFile, outFile))
-                            QFile::copy(inFile, outFile);
-                    }
-                }
-            }
-        }
-
         { //make a syncqt script(s) that can be used in the shadow
             QFile syncqt(buildPath + "/bin/syncqt");
             if (syncqt.open(QFile::WriteOnly)) {
@@ -3145,7 +3105,16 @@ void Configure::buildQmake()
 
         // Build qmake
         QString pwd = QDir::currentPath();
-        QDir::setCurrent(buildPath + "/qmake");
+        if (!QDir(buildPath).mkpath("qmake")) {
+            cout << "Cannot create qmake build dir." << endl;
+            dictionary[ "DONE" ] = "error";
+            return;
+        }
+        if (!QDir::setCurrent(buildPath + "/qmake")) {
+            cout << "Cannot enter qmake build dir." << endl;
+            dictionary[ "DONE" ] = "error";
+            return;
+        }
 
         QString makefile = "Makefile";
         {

@@ -6,6 +6,8 @@ QTSRCS = @QMAKE_QTSRCS@
 QMAKESPEC = @QMAKESPEC@
 LFLAGS = @QMAKE_LFLAGS@
 
+QMKSRC = $(SOURCE_PATH)/qmake
+
 #qmake code
 OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
      mingw_make.o option.o winmakefile.o projectgenerator.o \
@@ -69,8 +71,8 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/global/qlogging.cpp \
 	   $(QTSRCS)
 
-CPPFLAGS = -g -I. -Igenerators -Igenerators/unix -Igenerators/win32 \
-           -Igenerators/mac -Igenerators/integrity \
+CPPFLAGS = -g -I$(QMKSRC) -I$(QMKSRC)/generators -I$(QMKSRC)/generators/unix -I$(QMKSRC)/generators/win32 \
+           -I$(QMKSRC)/generators/mac -I$(QMKSRC)/generators/integrity \
 	   -I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
 	   -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION) -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION)/QtCore \
 	   -I$(BUILD_PATH)/src/corelib/global \
@@ -97,7 +99,74 @@ distclean:: clean
 depend:
 	makedepend -D__MAKEDEPEND__ $(CPPFLAGS) $(DEPEND_SRC)
 
-# don't use optimization for these
+
+project.o: $(QMKSRC)/project.cpp $(QMKSRC)/project.h $(QMKSRC)/option.h
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+property.o: $(QMKSRC)/property.cpp $(QMKSRC)/project.h $(QMKSRC)/option.h
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+meta.o: $(QMKSRC)/meta.cpp $(QMKSRC)/project.h $(QMKSRC)/option.h
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+main.o: $(QMKSRC)/main.cpp $(QMKSRC)/project.h
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+option.o: $(QMKSRC)/option.cpp $(QMKSRC)/option.h
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+metamakefile.o: $(QMKSRC)/generators/metamakefile.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+xmloutput.o: $(QMKSRC)/generators/xmloutput.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+makefiledeps.o: $(QMKSRC)/generators/makefiledeps.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+makefile.o: $(QMKSRC)/generators/makefile.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+unixmake.o: $(QMKSRC)/generators/unix/unixmake.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+unixmake2.o: $(QMKSRC)/generators/unix/unixmake2.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+winmakefile.o: $(QMKSRC)/generators/win32/winmakefile.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+borland_bmake.o: $(QMKSRC)/generators/win32/borland_bmake.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+mingw_make.o: $(QMKSRC)/generators/win32/mingw_make.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+msvc_objectmodel.o: $(QMKSRC)/generators/win32/msvc_objectmodel.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+msvc_vcproj.o: $(QMKSRC)/generators/win32/msvc_vcproj.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+msbuild_objectmodel.o: $(QMKSRC)/generators/win32/msbuild_objectmodel.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+msvc_vcxproj.o: $(QMKSRC)/generators/win32/msvc_vcxproj.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+msvc_nmake.o: $(QMKSRC)/generators/win32/msvc_nmake.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+pbuilder_pbx.o: $(QMKSRC)/generators/mac/pbuilder_pbx.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+gbuild.o: $(QMKSRC)/generators/integrity/gbuild.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+projectgenerator.o: $(QMKSRC)/generators/projectgenerator.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+
 qtextstream.o: $(SOURCE_PATH)/src/corelib/io/qtextstream.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qtextstream.cpp
 
@@ -242,74 +311,8 @@ qhash.o: $(SOURCE_PATH)/src/corelib/tools/qhash.cpp
 qlinkedlist.o: $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp
 
-winmakefile.o: generators/win32/winmakefile.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/winmakefile.cpp
-
-project.o: project.cpp project.h option.h
-	$(CXX) -c -o $@ $(CXXFLAGS) project.cpp
-
-property.o: property.cpp project.h option.h
-	$(CXX) -c -o $@ $(CXXFLAGS) property.cpp
-
-meta.o: meta.cpp project.h option.h
-	$(CXX) -c -o $@ $(CXXFLAGS) meta.cpp
-
-main.o: main.cpp project.h
-	$(CXX) -c -o $@ $(CXXFLAGS) main.cpp
-
-option.o: option.cpp option.h $(BUILD_PATH)/src/corelib/global/qconfig.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) option.cpp
-
 qcryptographichash.o:  $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp
-
-metamakefile.o: generators/metamakefile.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/metamakefile.cpp
-
-xmloutput.o: generators/xmloutput.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/xmloutput.cpp
-
-makefiledeps.o: generators/makefiledeps.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/makefiledeps.cpp
-
-makefile.o: generators/makefile.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/makefile.cpp
-
-unixmake.o: generators/unix/unixmake.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/unix/unixmake.cpp
-
-unixmake2.o: generators/unix/unixmake2.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/unix/unixmake2.cpp
-
-borland_bmake.o: generators/win32/borland_bmake.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/borland_bmake.cpp
-
-mingw_make.o: generators/win32/mingw_make.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/mingw_make.cpp
-
-msvc_objectmodel.o: generators/win32/msvc_objectmodel.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/msvc_objectmodel.cpp
-
-msvc_vcproj.o: generators/win32/msvc_vcproj.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/msvc_vcproj.cpp
-
-msbuild_objectmodel.o: generators/win32/msbuild_objectmodel.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/msbuild_objectmodel.cpp
-
-msvc_vcxproj.o: generators/win32/msvc_vcxproj.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/msvc_vcxproj.cpp
-
-msvc_nmake.o: generators/win32/msvc_nmake.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/msvc_nmake.cpp
-
-pbuilder_pbx.o: generators/mac/pbuilder_pbx.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/mac/pbuilder_pbx.cpp
-
-gbuild.o: generators/integrity/gbuild.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/integrity/gbuild.cpp
-
-projectgenerator.o: generators/projectgenerator.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/projectgenerator.cpp
 
 qxmlstream.o: $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp
@@ -319,9 +322,5 @@ qxmlutils.o: $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
 
 qlogging.o: $(SOURCE_PATH)/src/corelib/global/qlogging.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qlogging.cpp
-
-#default rules
-.cpp.o:
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 # DO NOT DELETE THIS LINE -- make depend depends on it

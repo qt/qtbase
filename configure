@@ -2221,29 +2221,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
 
     [ -d "$outpath/bin" ] || mkdir -p "$outpath/bin"
 
-    # symlink the qmake directory
-    find "$relpath/qmake" | while read a; do
-        my_a=`echo "$a" | sed "s,^${relpath}/,${outpath}/,"`
-        if [ '!' -f "$my_a" ]; then
-            if [ -d "$a" ]; then
-                # directories are created...
-                mkdir -p "$my_a"
-            else
-                a_dir=`dirname "$my_a"`
-                [ -d "$a_dir" ] || mkdir -p "$a_dir"
-                # ... and files are symlinked
-                case `basename "$a"` in
-                *.o|*.d|GNUmakefile*|qmake)
-                    ;;
-                *)
-                    rm -f "$my_a"
-                    ln -s "$a" "$my_a"
-                    ;;
-                esac
-            fi
-        fi
-    done
-
     # make a syncqt script that can be used in the shadow
     rm -f "$outpath/bin/syncqt"
     if [ -x "$relpath/bin/syncqt" ]; then
@@ -4098,6 +4075,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     #mkspecs/default is used as a (gasp!) default mkspec so QMAKESPEC needn't be set once configured
     rm -rf mkspecs/default
     ln -s `echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default
+    mkdir -p "$outpath/qmake" || exit
     # fix makefiles
     for mkfile in GNUmakefile Makefile; do
         EXTRA_LFLAGS=
