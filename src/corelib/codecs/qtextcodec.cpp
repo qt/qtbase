@@ -351,7 +351,7 @@ QString QWindowsLocalCodec::convertToUnicodeCharByChar(const char *chars, int le
         s.append(QChar(ws[i]));
     delete [] ws;
 #endif
-    delete mbcs;
+    delete [] mbcs;
     return s;
 }
 
