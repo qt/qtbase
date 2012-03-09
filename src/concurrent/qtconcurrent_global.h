@@ -68,10 +68,4 @@
 #  endif
 #endif
 
-#if defined (Q_CC_MSVC) && (_MSC_VER < 1300)
-#  define QT_TYPENAME
-#else
-#  define QT_TYPENAME typename
-#endif
-
 #endif // include guard
