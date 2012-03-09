@@ -48,7 +48,7 @@ CONFIG = lex yacc warn_on debug uic resources $$CONFIG
     }
 
     # Let qmake know about the unexpectedly appearing cache file.
-    contains(QTFWD, -cache-module-fwd):_QMAKE_CACHE_ = $$QMAKE_SYNCQT_OUTDIR/.qmake.cache
+    exists($$QMAKE_SYNCQT_OUTDIR/.qmake.cache):_QMAKE_CACHE_ = $$QMAKE_SYNCQT_OUTDIR/.qmake.cache
 
     unset(QTFWD)
     unset(PRO_BASENAME)
