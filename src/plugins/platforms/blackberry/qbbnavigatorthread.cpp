@@ -50,6 +50,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QList>
 #include <QtCore/QSocketNotifier>
+#include <QtCore/private/qcore_unix_p.h>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -257,7 +258,7 @@ void QBBNavigatorThread::readData()
 
     // attempt to read pps data
     errno = 0;
-    int bytes = read(m_fd, buffer, ppsBufferSize - 1);
+    int bytes = qt_safe_read(m_fd, buffer, ppsBufferSize - 1);
     if (bytes == -1) {
         qFatal("QBB: failed to read navigator pps, errno=%d", errno);
     }
