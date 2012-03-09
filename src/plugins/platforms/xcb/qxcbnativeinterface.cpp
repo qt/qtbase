@@ -76,7 +76,9 @@ public:
 
 Q_GLOBAL_STATIC(QXcbResourceMap, qXcbResourceMap)
 
-QXcbNativeInterface::QXcbNativeInterface()
+QXcbNativeInterface::QXcbNativeInterface() :
+    m_genericEventFilterType(QByteArrayLiteral("xcb_generic_event_t"))
+
 {
     qFill(m_eventFilters, m_eventFilters + EventFilterCount, EventFilter(0));
 }
@@ -134,7 +136,7 @@ void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
 QPlatformNativeInterface::EventFilter QXcbNativeInterface::setEventFilter(const QByteArray &eventType, QPlatformNativeInterface::EventFilter filter)
 {
     int type = -1;
-    if (eventType == QByteArrayLiteral("xcb_generic_event_t"))
+    if (eventType == m_genericEventFilterType)
         type = GenericEventFilter;
     if (type == -1) {
         qWarning("QXcbNativeInterface: %s: Attempt to set invalid event filter type '%s'.",
