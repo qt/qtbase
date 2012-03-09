@@ -39,9 +39,7 @@
 **
 ****************************************************************************/
 
-#include "private/qt_x11_p.h"
 #include "qlabel.h"
-#include "qx11info_x11.h"
 #include "qpainter.h"
 #include "qpixmap.h"
 #include "qbitmap.h"
@@ -52,236 +50,165 @@
 #include "qtimer.h"
 #include "qsystemtrayicon_p.h"
 #include "qpaintengine.h"
+#include <qwindow.h>
+#include <qguiapplication.h>
+#include <qscreen.h>
+#include <qbackingstore.h>
+#include <qplatformnativeinterface_qpa.h>
+#include <qdebug.h>
+
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
+#include <X11/Xatom.h>
 
 #ifndef QT_NO_SYSTEMTRAYICON
 QT_BEGIN_NAMESPACE
 
-Window QSystemTrayIconSys::sysTrayWindow = XNone;
-QList<QSystemTrayIconSys *> QSystemTrayIconSys::trayIcons;
-QCoreApplication::EventFilter QSystemTrayIconSys::oldEventFilter = 0;
-Atom QSystemTrayIconSys::sysTraySelection = XNone;
-XVisualInfo QSystemTrayIconSys::sysTrayVisual = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+enum {
+    SYSTEM_TRAY_REQUEST_DOCK = 0,
+    SYSTEM_TRAY_BEGIN_MESSAGE = 1,
+    SYSTEM_TRAY_CANCEL_MESSAGE =2
+};
 
-// Locate the system tray
-Window QSystemTrayIconSys::locateSystemTray()
+// ### fixme (15.3.2012): The following issues need to be resolved:
+// - Tracking of the actual tray window for DestroyNotify and re-creation
+//   of the icons on the new window should it change (see Qt 4.X).
+
+// Global context for the X11 system tray containing a display for the primary
+// screen and a selection atom from which the tray window can be determined.
+class QX11SystemTrayContext
 {
-    Display *display = QX11Info::display();
-    if (sysTraySelection == XNone) {
-        int screen = QX11Info::appScreen();
-        QString net_sys_tray = QString::fromLatin1("_NET_SYSTEM_TRAY_S%1").arg(screen);
-        sysTraySelection = XInternAtom(display, net_sys_tray.toLatin1(), False);
+public:
+    QX11SystemTrayContext();
+    ~QX11SystemTrayContext();
+
+    bool isValid() const { return m_systemTraySelection != 0; }
+
+    inline Display *display() const  { return m_display; }
+    inline int screenNumber() const { return m_screenNumber; }
+    Window locateSystemTray() const;
+
+private:
+    Display *m_display;
+    int m_screenNumber;
+    Atom m_systemTraySelection;
+};
+
+QX11SystemTrayContext::QX11SystemTrayContext() : m_display(0), m_screenNumber(0), m_systemTraySelection(0)
+{
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (!screen) {
+        qWarning("%s: No screen.", Q_FUNC_INFO);
+        return;
+    }
+    // Open display using screen name and retrieve screen number from "hostname:0.0"
+    const QByteArray name = screen->name().toLocal8Bit();
+    const int dotPos = name.lastIndexOf('.');
+    if (dotPos != -1) {
+        bool ok;
+        const int n = name.mid(dotPos + 1).toInt(&ok);
+        if (ok)
+            m_screenNumber = n;
+    }
+    m_display = XOpenDisplay(name.constData());
+    if (!m_display) {
+        qWarning("%s: Cannot open display '%s'.", Q_FUNC_INFO, name.constData());
+        return;
     }
 
-    return XGetSelectionOwner(QX11Info::display(), sysTraySelection);
+    const QByteArray netSysTray = "_NET_SYSTEM_TRAY_S" + QByteArray::number(m_screenNumber);
+    m_systemTraySelection = XInternAtom(m_display, netSysTray.constData(), False);
+    if (!m_systemTraySelection) {
+        qWarning("%s: Unable to retrieve atom '%s'.", Q_FUNC_INFO, netSysTray.constData());
+        return;
+    }
 }
 
-XVisualInfo* QSystemTrayIconSys::getSysTrayVisualInfo()
+Window QX11SystemTrayContext::locateSystemTray() const
 {
-    Display *display = QX11Info::display();
-
-    if (!sysTrayVisual.visual) {
-        Window win = locateSystemTray();
-        if (win != XNone) {
-            Atom actual_type;
-            int actual_format;
-            ulong nitems, bytes_remaining;
-            uchar *data = 0;
-            int result = XGetWindowProperty(display, win, ATOM(_NET_SYSTEM_TRAY_VISUAL), 0, 1,
-                                            False, XA_VISUALID, &actual_type,
-                                            &actual_format, &nitems, &bytes_remaining, &data);
-            VisualID vid = 0;
-            if (result == Success && data && actual_type == XA_VISUALID && actual_format == 32 &&
-                nitems == 1 && bytes_remaining == 0)
-                vid = *(VisualID*)data;
-            if (data)
-                XFree(data);
-            if (vid == 0)
-                return 0;
-
-            uint mask = VisualIDMask;
-            XVisualInfo *vi, rvi;
-            int count;
-            rvi.visualid = vid;
-            vi = XGetVisualInfo(display, mask, &rvi, &count);
-            if (vi) {
-                sysTrayVisual = vi[0];
-                XFree((char*)vi);
-            }
-            if (sysTrayVisual.depth != 32)
-                memset(&sysTrayVisual, 0, sizeof(sysTrayVisual));
-        }
-    }
-
-    return sysTrayVisual.visual ? &sysTrayVisual : 0;
+    if (isValid())
+        return XGetSelectionOwner(m_display, m_systemTraySelection);
+    return 0;
 }
 
-bool QSystemTrayIconSys::sysTrayTracker(void *message, long *result)
+QX11SystemTrayContext::~QX11SystemTrayContext()
 {
-    bool retval = false;
-    if (QSystemTrayIconSys::oldEventFilter)
-        retval = QSystemTrayIconSys::oldEventFilter(message, result);
-
-    if (trayIcons.isEmpty())
-        return retval;
-
-    Display *display = QX11Info::display();
-    XEvent *ev = (XEvent *)message;
-    if  (ev->type == DestroyNotify && ev->xany.window == sysTrayWindow) {
-	sysTrayWindow = locateSystemTray();
-        memset(&sysTrayVisual, 0, sizeof(sysTrayVisual));
-        for (int i = 0; i < trayIcons.count(); i++) {
-            if (sysTrayWindow == XNone) {
-	        QBalloonTip::hideBalloon();
-                trayIcons[i]->hide(); // still no luck
-                trayIcons[i]->destroy();
-                trayIcons[i]->create();
-	    } else
-                trayIcons[i]->addToTray(); // add it to the new tray
-        }
-        retval = true;
-    } else if (ev->type == ClientMessage && sysTrayWindow == XNone) {
-        static Atom manager_atom = XInternAtom(display, "MANAGER", False);
-        XClientMessageEvent *cm = (XClientMessageEvent *)message;
-        if ((cm->message_type == manager_atom) && ((Atom)cm->data.l[1] == sysTraySelection)) {
-	    sysTrayWindow = cm->data.l[2];
-            memset(&sysTrayVisual, 0, sizeof(sysTrayVisual));
-	    XSelectInput(display, sysTrayWindow, StructureNotifyMask);
-            for (int i = 0; i < trayIcons.count(); i++) {
-                trayIcons[i]->addToTray();
-            }
-            retval = true;
-        }
-    } else if (ev->type == PropertyNotify && ev->xproperty.atom == ATOM(_NET_SYSTEM_TRAY_VISUAL) &&
-               ev->xproperty.window == sysTrayWindow) {
-        memset(&sysTrayVisual, 0, sizeof(sysTrayVisual));
-        for (int i = 0; i < trayIcons.count(); i++) {
-            trayIcons[i]->addToTray();
-        }
-    }
-
-    return retval;
+    if (m_display)
+        XCloseDisplay(m_display);
 }
 
-QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *q)
-    : QWidget(0, Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint),
-      q(q), colormap(0)
-{
-    setAttribute(Qt::WA_AlwaysShowToolTips);
-    setAttribute(Qt::WA_QuitOnClose, false);
-    setAttribute(Qt::WA_NoSystemBackground, true);
-    setAttribute(Qt::WA_PaintOnScreen);
+Q_GLOBAL_STATIC(QX11SystemTrayContext, qX11SystemTrayContext)
 
-    static bool eventFilterAdded = false;
-    Display *display = QX11Info::display();
-    if (!eventFilterAdded) {
-        oldEventFilter = qApp->setEventFilter(sysTrayTracker);
-	eventFilterAdded = true;
-	Window root = QX11Info::appRootWindow();
-        XWindowAttributes attr;
-        XGetWindowAttributes(display, root, &attr);
-        if ((attr.your_event_mask & StructureNotifyMask) != StructureNotifyMask) {
-            (void) QApplication::desktop(); // lame trick to ensure our event mask is not overridden
-            XSelectInput(display, root, attr.your_event_mask | StructureNotifyMask); // for MANAGER selection
-        }
-    }
-    if (trayIcons.isEmpty()) {
-        sysTrayWindow = locateSystemTray();
-	if (sysTrayWindow != XNone)
-	    XSelectInput(display, sysTrayWindow, StructureNotifyMask); // track tray events
-    }
-    trayIcons.append(this);
-    setMouseTracking(true);
-#ifndef QT_NO_TOOLTIP
+// System tray widget. Could be replaced by a QWindow with
+// a backing store if it did not need tooltip handling.
+class QSystemTrayIconSys : public QWidget
+{
+public:
+    explicit QSystemTrayIconSys(QSystemTrayIcon *q);
+
+    inline void updateIcon() { update(); }
+    inline QSystemTrayIcon *systemTrayIcon() const { return q; }
+
+    QRect globalGeometry() const;
+
+protected:
+    virtual void mousePressEvent(QMouseEvent *ev);
+    virtual void mouseDoubleClickEvent(QMouseEvent *ev);
+    virtual bool event(QEvent *);
+    virtual void paintEvent(QPaintEvent *);
+
+private:
+    QSystemTrayIcon *q;
+};
+
+QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *qIn) :
+    q(qIn)
+{
     setToolTip(q->toolTip());
-#endif
-    if (sysTrayWindow != XNone)
-        addToTray();
-}
+    QX11SystemTrayContext *context = qX11SystemTrayContext();
+    Q_ASSERT(context->isValid());
+    setAttribute(Qt::WA_AlwaysShowToolTips, true);
+    setAttribute(Qt::WA_TranslucentBackground, true);
+    setAttribute(Qt::WA_QuitOnClose, false);
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    const QSize size(22, 22); // Gnome, standard size
+    setGeometry(QRect(QPoint(0, 0), size));
+    setMinimumSize(size);
+    createWinId();
+    setMouseTracking(true);
 
-QSystemTrayIconSys::~QSystemTrayIconSys()
-{
-    trayIcons.removeAt(trayIcons.indexOf(this));
-    Display *display = QX11Info::display();
-    if (trayIcons.isEmpty()) {
-        if (sysTrayWindow == XNone)
-            return;
-        if (display)
-            XSelectInput(display, sysTrayWindow, 0); // stop tracking the tray
-        sysTrayWindow = XNone;
-    }
-    if (colormap)
-        XFreeColormap(display, colormap);
-}
+    Display *display = context->display();
 
-void QSystemTrayIconSys::addToTray()
-{
-    Q_ASSERT(sysTrayWindow != XNone);
-    Display *display = QX11Info::display();
-
-    XVisualInfo *vi = getSysTrayVisualInfo();
-    if (vi && vi->visual) {
-        Window root = RootWindow(display, vi->screen);
-        Window p = root;
-        if (QWidget *pw = parentWidget())
-            p = pw->effectiveWinId();
-        colormap = XCreateColormap(display, root, vi->visual, AllocNone);
-        XSetWindowAttributes wsa;
-        wsa.background_pixmap = 0;
-        wsa.colormap = colormap;
-        wsa.background_pixel = 0;
-        wsa.border_pixel = 0;
-        Window wid = XCreateWindow(display, p, -1, -1, 1, 1,
-                                   0, vi->depth, InputOutput, vi->visual,
-                                   CWBackPixmap|CWBackPixel|CWBorderPixel|CWColormap, &wsa);
-        create(wid);
-    } else {
-        XSetWindowBackgroundPixmap(display, winId(), ParentRelative);
-    }
-
-    // GNOME, NET WM Specification
+    // Request to be a tray window according to GNOME, NET WM Specification
     static Atom netwm_tray_atom = XInternAtom(display, "_NET_SYSTEM_TRAY_OPCODE", False);
     long l[5] = { CurrentTime, SYSTEM_TRAY_REQUEST_DOCK, winId(), 0, 0 };
     XEvent ev;
     memset(&ev, 0, sizeof(ev));
     ev.xclient.type = ClientMessage;
-    ev.xclient.window = sysTrayWindow;
+    ev.xclient.window = context->locateSystemTray();
     ev.xclient.message_type = netwm_tray_atom;
     ev.xclient.format = 32;
     memcpy((char *)&ev.xclient.data, (const char *) l, sizeof(l));
-    XSendEvent(display, sysTrayWindow, False, 0, &ev);
-    setMinimumSize(22, 22); // required at least on GNOME
+    XSendEvent(display, ev.xclient.window, False, 0, &ev);
+    XSync(display, False);
+    show();
 }
 
-void QSystemTrayIconSys::updateIcon()
+QRect QSystemTrayIconSys::globalGeometry() const
 {
-    update();
+    QX11SystemTrayContext *context = qX11SystemTrayContext();
+    ::Window dummy;
+    int x, y, rootX, rootY;
+    unsigned int width, height, border, depth;
+    // Use X11 API since we are parented on the tray, about which the QWindow does not know.
+    XGetGeometry(context->display(), winId(), &dummy, &x, &y, &width, &height, &border, &depth);
+    XTranslateCoordinates(context->display(), winId(),
+                          XRootWindow(context->display(), context->screenNumber()),
+                          x, y, &rootX, &rootY, &dummy);
+    return QRect(QPoint(rootX, rootY), QSize(width, height));
 }
 
-void QSystemTrayIconSys::resizeEvent(QResizeEvent *re)
-{
-     QWidget::resizeEvent(re);
-     updateIcon();
-}
-
-void QSystemTrayIconSys::paintEvent(QPaintEvent*)
-{
-    QPainter p(this);
-    if (!getSysTrayVisualInfo()) {
-        const QRegion oldSystemClip = p.paintEngine()->systemClip();
-        const QRect clearedRect = oldSystemClip.boundingRect();
-        XClearArea(QX11Info::display(), winId(), clearedRect.x(), clearedRect.y(),
-                   clearedRect.width(), clearedRect.height(), False);
-        QPaintEngine *pe = p.paintEngine();
-        pe->setSystemClip(clearedRect);
-        q->icon().paint(&p, rect());
-        pe->setSystemClip(oldSystemClip);
-    } else {
-        p.setCompositionMode(QPainter::CompositionMode_Source);
-        p.fillRect(rect(), Qt::transparent);
-        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        q->icon().paint(&p, rect());
-    }
-}
 
 void QSystemTrayIconSys::mousePressEvent(QMouseEvent *ev)
 {
@@ -308,41 +235,45 @@ void QSystemTrayIconSys::mouseDoubleClickEvent(QMouseEvent *ev)
         emit q->activated(QSystemTrayIcon::DoubleClick);
 }
 
-#ifndef QT_NO_WHEELEVENT
-void QSystemTrayIconSys::wheelEvent(QWheelEvent *e)
-{
-    QApplication::sendEvent(q, e);
-}
-#endif
-
 bool QSystemTrayIconSys::event(QEvent *e)
 {
-    if (e->type() == QEvent::ToolTip) {
+    switch (e->type()) {
+#ifndef QT_NO_WHEELEVENT
+    case QEvent::Wheel:
         return QApplication::sendEvent(q, e);
+#endif
+    default:
+        break;
     }
     return QWidget::event(e);
 }
 
-bool QSystemTrayIconSys::x11Event(XEvent *event)
+void QSystemTrayIconSys::paintEvent(QPaintEvent *)
 {
-    if (event->type == ReparentNotify)
-        show();
-    return QWidget::x11Event(event);
+    // Note: Transparent pixels require a particular Visual which XCB
+    // currently does not support yet.
+    const QRect rect(QPoint(0, 0), geometry().size());
+    QPainter painter(this);
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.fillRect(rect, Qt::transparent);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    q->icon().paint(&painter, rect);
 }
 
 ////////////////////////////////////////////////////////////////////////////
+
 void QSystemTrayIconPrivate::install_sys()
 {
     Q_Q(QSystemTrayIcon);
-    if (!sys)
+    if (!sys && qX11SystemTrayContext()->isValid())
         sys = new QSystemTrayIconSys(q);
 }
 
 QRect QSystemTrayIconPrivate::geometry_sys() const
 {
     if (!sys)
-	return QRect();
-    return QRect(sys->mapToGlobal(QPoint(0, 0)), sys->size());
+        return QRect();
+    return sys->globalGeometry();
 }
 
 void QSystemTrayIconPrivate::remove_sys()
@@ -357,9 +288,8 @@ void QSystemTrayIconPrivate::remove_sys()
 
 void QSystemTrayIconPrivate::updateIcon_sys()
 {
-    if (!sys)
-        return;
-    sys->updateIcon();
+    if (sys)
+        sys->updateIcon();
 }
 
 void QSystemTrayIconPrivate::updateMenu_sys()
@@ -378,7 +308,10 @@ void QSystemTrayIconPrivate::updateToolTip_sys()
 
 bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
 {
-    return QSystemTrayIconSys::locateSystemTray() != XNone;
+    const QString platform = QGuiApplication::platformName();
+    if (platform.compare(QStringLiteral("xcb"), Qt::CaseInsensitive) == 0)
+       return qX11SystemTrayContext()->locateSystemTray() != None;
+    return false;
 }
 
 bool QSystemTrayIconPrivate::supportsMessages_sys()
@@ -391,8 +324,8 @@ void QSystemTrayIconPrivate::showMessage_sys(const QString &message, const QStri
 {
     if (!sys)
         return;
-    QPoint g = sys->mapToGlobal(QPoint(0, 0));
-    QBalloonTip::showBalloon(icon, message, title, sys->q,
+    const QPoint g = sys->globalGeometry().topLeft();
+    QBalloonTip::showBalloon(icon, message, title, sys->systemTrayIcon(),
                              QPoint(g.x() + sys->width()/2, g.y() + sys->height()/2),
                              msecs);
 }

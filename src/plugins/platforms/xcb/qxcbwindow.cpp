@@ -1298,6 +1298,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
         connection()->drag()->handleLeave(window(), event);
     } else if (event->type == atom(QXcbAtom::XdndDrop)) {
         connection()->drag()->handleDrop(window(), event);
+    } else if (event->type == atom(QXcbAtom::_XEMBED)) { // QSystemTrayIcon
     } else {
         qWarning() << "QXcbWindow: Unhandled client message:" << connection()->atomName(event->type);
     }

@@ -122,62 +122,6 @@ private:
     int timerId;
 };
 
-#if defined(Q_WS_X11)
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <QtCore/qcoreapplication.h>
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#include <X11/Xutil.h>
-QT_END_INCLUDE_NAMESPACE
-
-class QSystemTrayIconSys : public QWidget
-{
-    friend class QSystemTrayIconPrivate;
-
-public:
-    QSystemTrayIconSys(QSystemTrayIcon *q);
-    ~QSystemTrayIconSys();
-    enum {
-        SYSTEM_TRAY_REQUEST_DOCK = 0,
-        SYSTEM_TRAY_BEGIN_MESSAGE = 1,
-        SYSTEM_TRAY_CANCEL_MESSAGE =2
-    };
-
-    void addToTray();
-    void updateIcon();
-    XVisualInfo* getSysTrayVisualInfo();
-
-    // QObject::event is public but QWidget's ::event() re-implementation
-    // is protected ;(
-    inline bool deliverToolTipEvent(QEvent *e)
-    { return QWidget::event(e); }
-
-    static Window sysTrayWindow;
-    static QList<QSystemTrayIconSys *> trayIcons;
-    static QCoreApplication::EventFilter oldEventFilter;
-    static bool sysTrayTracker(void *message, long *result);
-    static Window locateSystemTray();
-    static Atom sysTraySelection;
-    static XVisualInfo sysTrayVisual;
-
-protected:
-    void paintEvent(QPaintEvent *pe);
-    void resizeEvent(QResizeEvent *re);
-    bool x11Event(XEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-    void mouseDoubleClickEvent(QMouseEvent *event);
-#ifndef QT_NO_WHEELEVENT
-    void wheelEvent(QWheelEvent *event);
-#endif
-    bool event(QEvent *e);
-
-private:
-    QPixmap background;
-    QSystemTrayIcon *q;
-    Colormap colormap;
-};
-#endif // Q_WS_X11
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_SYSTEMTRAYICON

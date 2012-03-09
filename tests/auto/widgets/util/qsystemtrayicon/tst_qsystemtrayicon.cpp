@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 
-#include <qcoreapplication.h>
+#include <qguiapplication.h>
 #include <qdebug.h>
 #include <qsystemtrayicon.h>
 #include <qmenu.h>
@@ -125,7 +125,10 @@ void tst_QSystemTrayIcon::supportsMessages()
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QCOMPARE(QSystemTrayIcon::supportsMessages(), true);
 #else
-    QEXPECT_FAIL("", "QTBUG-20978 QSystemTrayIcon is unimplemented for qpa", Abort);
+    const QString platform = QGuiApplication::platformName();
+    if (platform.compare(QStringLiteral("xcb"), Qt::CaseInsensitive)) {
+        QEXPECT_FAIL("", "QTBUG-20978 QSystemTrayIcon is unimplemented for qpa", Abort);
+    }
     QCOMPARE(QSystemTrayIcon::supportsMessages(), true);
 #endif
 }
