@@ -639,17 +639,6 @@ rm -f "$outpath/config.tests/.qmake.cache"
 cp "$QMAKE_VARS_FILE" "$outpath/config.tests/.qmake.cache"
 
 QMakeVar add styles "cde mac motif plastique cleanlooks windows"
-QMakeVar add decorations "default windows styled"
-QMakeVar add mouse-drivers "pc"
-if [ "$UNAME_SYSTEM" = "Linux" ] ; then
-    QMakeVar add gfx-drivers "linuxfb"
-    QMakeVar add mouse-drivers "linuxtp"
-fi
-QMakeVar add kbd-drivers "tty"
-
-if [ "$CFG_DEV" = "yes" ]; then
-    QMakeVar add kbd-drivers "um"
-fi
 
 # QTDIR may be set and point to an old or system-wide Qt installation
 unset QTDIR
@@ -705,30 +694,10 @@ CFG_V8SNAPSHOT=auto
 CFG_DECLARATIVE_DEBUG=yes
 CFG_JAVASCRIPTCORE_JIT=auto
 
-CFG_GFX_AVAILABLE="linuxfb transformed qvfb vnc multiscreen directfb"
-CFG_GFX_ON="linuxfb multiscreen"
-CFG_GFX_PLUGIN_AVAILABLE=
-CFG_GFX_PLUGIN=
-CFG_GFX_OFF=
-CFG_KBD_AVAILABLE="tty linuxinput qvfb"
-CFG_KBD_ON="tty"    #default, see QMakeVar above
-CFG_MOUSE_AVAILABLE="pc linuxtp linuxinput tslib qvfb"
-CFG_MOUSE_ON="pc linuxtp"   #default, see QMakeVar above
-
 CFG_ARCH=
 CFG_HOST_ARCH=
-CFG_KBD_PLUGIN_AVAILABLE=
-CFG_KBD_PLUGIN=
-CFG_KBD_OFF=
-CFG_MOUSE_PLUGIN_AVAILABLE=
-CFG_MOUSE_PLUGIN=
-CFG_MOUSE_OFF=
 CFG_USE_GNUMAKE=no
 CFG_IM=yes
-CFG_DECORATION_AVAILABLE="styled windows default"
-CFG_DECORATION_ON="${CFG_DECORATION_AVAILABLE}" # all on by default
-CFG_DECORATION_PLUGIN_AVAILABLE=
-CFG_DECORATION_PLUGIN=
 CFG_XINPUT2=auto
 CFG_XINPUT=runtime
 CFG_XKB=auto
@@ -849,7 +818,7 @@ QT_CFLAGS_GSTREAMER=
 QT_LIBS_GSTREAMER=
 
 #-------------------------------------------------------------------------------
-# check SQL drivers, mouse drivers and decorations available in this package
+# check SQL drivers available in this package
 #-------------------------------------------------------------------------------
 
 # opensource version removes some drivers, so force them to be off
@@ -866,47 +835,6 @@ if [ -d "$relpath/src/plugins/sqldrivers" ]; then
 	 eval "CFG_SQL_${base_a}=auto"
      fi
   done
-fi
-
-CFG_DECORATION_PLUGIN_AVAILABLE=
-if [ -d "$relpath/src/plugins/decorations" ]; then
-  for a in "$relpath/src/plugins/decorations/"*; do
-     if [ -d "$a" ]; then
-	 base_a=`basename "$a"`
-  	 CFG_DECORATION_PLUGIN_AVAILABLE="${CFG_DECORATION_PLUGIN_AVAILABLE} ${base_a}"
-     fi
-  done
-fi
-
-CFG_KBD_PLUGIN_AVAILABLE=
-if [ -d "$relpath/src/plugins/kbddrivers" ]; then
-  for a in "$relpath/src/plugins/kbddrivers/"*; do
-     if [ -d "$a" ]; then
-	 base_a=`basename "$a"`
-  	 CFG_KBD_PLUGIN_AVAILABLE="${CFG_KBD_PLUGIN_AVAILABLE} ${base_a}"
-     fi
-  done
-fi
-
-CFG_MOUSE_PLUGIN_AVAILABLE=
-if [ -d "$relpath/src/plugins/mousedrivers" ]; then
-  for a in "$relpath/src/plugins/mousedrivers/"*; do
-     if [ -d "$a" ]; then
-	 base_a=`basename "$a"`
-  	 CFG_MOUSE_PLUGIN_AVAILABLE="${CFG_MOUSE_PLUGIN_AVAILABLE} ${base_a}"
-     fi
-  done
-fi
-
-CFG_GFX_PLUGIN_AVAILABLE=
-if [ -d "$relpath/src/plugins/gfxdrivers" ]; then
-  for a in "$relpath/src/plugins/gfxdrivers/"*; do
-     if [ -d "$a" ]; then
-	 base_a=`basename "$a"`
-  	 CFG_GFX_PLUGIN_AVAILABLE="${CFG_GFX_PLUGIN_AVAILABLE} ${base_a}"
-     fi
-  done
-  CFG_GFX_OFF="$CFG_GFX_AVAILABLE" # assume all off
 fi
 
 CFG_IMAGEFORMAT_PLUGIN_AVAILABLE=
@@ -960,7 +888,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -incremental|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1244,20 +1172,6 @@ while [ "$#" -gt 0 ]; do
             CFG_OPENVG="$VAL"
             if [ "$CFG_EGL" = "no" ] && [ "$VAL" != "no" ]; then
                 CFG_EGL=auto
-            fi
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    qvfb) # left for commandline compatibility, not documented
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            if [ "$VAL" = "yes" ]; then
-		QMakeVar add gfx-drivers qvfb
-		QMakeVar add kbd-drivers qvfb
-		QMakeVar add mouse-drivers qvfb
-                CFG_GFX_ON="$CFG_GFX_ON qvfb"
-                CFG_KBD_ON="$CFG_KBD_ON qvfb"
-                CFG_MOUSE_ON="$CFG_MOUSE_ON qvfb"
             fi
         else
             UNKNOWN_OPT=yes
@@ -1891,7 +1805,7 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    sql-*|gfx-*|decoration-*|kbd-*|mouse-*|imageformat-*)
+    sql-*|imageformat-*)
         # if Qt style options were used, $VAL can be "no", "qt", or "plugin"
         # if autoconf style options were used, $VAL can be "yes" or "no"
         [ "$VAL" = "yes" ] && VAL=qt
@@ -1908,30 +1822,6 @@ while [ "$#" -gt 0 ]; do
         case "$VAR" in
         sql)
             avail="$CFG_SQL_AVAILABLE"
-            ;;
-        gfx)
-            avail="$CFG_GFX_AVAILABLE"
-	    if [ "$OPT" = "plugin" ]; then
-		avail="$CFG_GFX_PLUGIN_AVAILABLE"
-	    fi
-            ;;
-        decoration)
-            avail="$CFG_DECORATION_AVAILABLE"
-	    if [ "$OPT" = "plugin" ]; then
-		avail="$CFG_DECORATION_PLUGIN_AVAILABLE"
-	    fi
-            ;;
-        kbd)
-            avail="$CFG_KBD_AVAILABLE"
-	    if [ "$OPT" = "plugin" ]; then
-		avail="$CFG_KBD_PLUGIN_AVAILABLE"
-	    fi
-            ;;
-        mouse)
-            avail="$CFG_MOUSE_AVAILABLE"
-	    if [ "$OPT" = "plugin" ]; then
-		avail="$CFG_MOUSE_PLUGIN_AVAILABLE"
-	    fi
             ;;
         imageformat)
             avail="$CFG_IMAGEFORMAT_PLUGIN_AVAILABLE"
@@ -1969,36 +1859,12 @@ while [ "$#" -gt 0 ]; do
 
         if [ "$OPT" = "plugin" ] || [ "$OPT" = "qt" ]; then
             if [ "$OPT" = "plugin" ]; then
-                [ "$VAR" = "decoration" ] && QMakeVar del "${VAR}s" "$VAL"
-                [ "$VAR" = "decoration" ] && CFG_DECORATION_ON=`echo "${CFG_DECORATION_ON} " | sed "s,${VAL} ,,g"` && CFG_DECORATION_PLUGIN="$CFG_DECORATION_PLUGIN ${VAL}"
-                [ "$VAR" = "kbd" ] && QMakeVar del "${VAR}s" "$VAL"
-                [ "$VAR" = "kbd" ] && CFG_KBD_ON=`echo "${CFG_KBD_ON} " | sed "s,${VAL} ,,g"` && CFG_KBD_PLUGIN="$CFG_KBD_PLUGIN ${VAL}"
-                [ "$VAR" = "mouse" ] && QMakeVar del "${VAR}s" "$VAL"
-                [ "$VAR" = "mouse" ] && CFG_MOUSE_ON=`echo "${CFG_MOUSE_ON} " | sed "s,${VAL} ,,g"` && CFG_MOUSE_PLUGIN="$CFG_MOUSE_PLUGIN ${VAL}"
-                [ "$VAR" = "gfx" ] && QMakeVar del "${VAR}s" "$VAL"
-                [ "$VAR" = "gfx" ] && CFG_GFX_ON=`echo "${CFG_GFX_ON} " | sed "s,${VAL} ,,g"` && CFG_GFX_PLUGIN="${CFG_GFX_PLUGIN} ${VAL}"
                 VAR="${VAR}-${OPT}"
-            else
-                if [ "$VAR" = "gfx" ] || [ "$VAR" = "kbd" ] || [ "$VAR" = "decoration" ] || [ "$VAR" = "mouse" ]; then
-                    [ "$VAR" = "gfx" ] && CFG_GFX_ON="$CFG_GFX_ON $VAL"
-                    [ "$VAR" = "kbd" ] && CFG_KBD_ON="$CFG_KBD_ON $VAL"
-		    [ "$VAR" = "decoration" ] && CFG_DECORATION_ON="$CFG_DECORATION_ON $VAL"
-                    [ "$VAR" = "mouse" ] && CFG_MOUSE_ON="$CFG_MOUSE_ON $VAL"
-                    VAR="${VAR}-driver"
-                fi
             fi
 	    QMakeVar add "${VAR}s" "${VAL}"
         elif [ "$OPT" = "no" ]; then
             PLUG_VAR="${VAR}-plugin"
-            if [ "$VAR" = "gfx" ] || [ "$VAR" = "kbd" ] || [ "$VAR" = "mouse" ]; then
-                IN_VAR="${VAR}-driver"
-            else
-                IN_VAR="${VAR}"
-            fi
-            [ "$VAR" = "decoration" ] && CFG_DECORATION_ON=`echo "${CFG_DECORATION_ON} " | sed "s,${VAL} ,,g"`
-            [ "$VAR" = "gfx" ] && CFG_GFX_ON=`echo "${CFG_GFX_ON} " | sed "s,${VAL} ,,g"`
-            [ "$VAR" = "kbd" ] && CFG_KBD_ON=`echo "${CFG_KBD_ON} " | sed "s,${VAL} ,,g"`
-            [ "$VAR" = "mouse" ] && CFG_MOUSE_ON=`echo "${CFG_MOUSE_ON} " | sed "s,${VAL} ,,g"`
+            IN_VAR="${VAR}"
 	    QMakeVar del "${IN_VAR}s" "$VAL"
 	    QMakeVar del "${PLUG_VAR}s" "$VAL"
         fi
