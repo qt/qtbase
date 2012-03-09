@@ -13,6 +13,7 @@ SUBDIRS=\
    qwidget \
    qwidget_window \
    qwidgetaction \
+   qicon \
 
 SUBDIRS -= qsound
 
