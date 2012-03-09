@@ -1,4 +1,4 @@
 CONFIG += testcase
 TARGET = tst_qmouseevent
-QT += widgets testlib
+QT += testlib
 SOURCES += tst_qmouseevent.cpp

@@ -41,21 +41,14 @@
 
 
 #include <QtTest/QtTest>
-#include <qapplication.h>
-#include <qlineedit.h>
-#include <qlabel.h>
-#include <qdialog.h>
-
-
 #include <qevent.h>
-#include <qwidget.h>
+#include <qwindow.h>
 
-class MouseEventWidget : public QWidget
+class MouseEventWidget : public QWindow
 {
 public:
-    MouseEventWidget(QWidget *parent = 0) : QWidget(parent)
+    MouseEventWidget(QWindow *parent = 0) : QWindow(parent)
     {
-	setFocusPolicy(Qt::StrongFocus);
     }
     bool mousePressEventRecieved;
     bool mouseReleaseEventRecieved;
@@ -68,7 +61,7 @@ public:
 protected:
     void mousePressEvent(QMouseEvent *e)
     {
-	QWidget::mousePressEvent(e);
+    QWindow::mousePressEvent(e);
 	mousePressButton = e->button();
 	mousePressButtons = e->buttons();
 	mousePressModifiers = e->modifiers();
@@ -77,7 +70,7 @@ protected:
     }
     void mouseReleaseEvent(QMouseEvent *e)
     {
-	QWidget::mouseReleaseEvent(e);
+    QWindow::mouseReleaseEvent(e);
 	mouseReleaseButton = e->button();
 	mouseReleaseButtons = e->buttons();
 	mouseReleaseModifiers = e->modifiers();
@@ -179,12 +172,14 @@ void tst_QMouseEvent::checkMousePressEvent()
     int modifiers = keyPressed;
 
     QTest::mousePress(testMouseWidget, Qt::MouseButton(buttonPressed), Qt::KeyboardModifiers(keyPressed));
+    qApp->processEvents();
     QVERIFY(testMouseWidget->mousePressEventRecieved);
     QCOMPARE(testMouseWidget->mousePressButton, button);
     QCOMPARE(testMouseWidget->mousePressButtons, buttons);
     QCOMPARE(testMouseWidget->mousePressModifiers, modifiers);
 
     QTest::mouseRelease(testMouseWidget, Qt::MouseButton(buttonPressed), Qt::KeyboardModifiers(keyPressed));
+    qApp->processEvents();
 }
 
 void tst_QMouseEvent::checkMouseReleaseEvent_data()
@@ -218,6 +213,7 @@ void tst_QMouseEvent::checkMouseReleaseEvent()
     int modifiers = keyPressed;
 
     QTest::mouseClick(testMouseWidget, Qt::MouseButton(buttonReleased), Qt::KeyboardModifiers(keyPressed));
+    qApp->processEvents();
     QVERIFY(testMouseWidget->mouseReleaseEventRecieved);
     QCOMPARE(testMouseWidget->mouseReleaseButton, button);
     QCOMPARE(testMouseWidget->mouseReleaseButtons, buttons);
