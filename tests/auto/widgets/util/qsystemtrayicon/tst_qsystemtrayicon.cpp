@@ -120,14 +120,14 @@ void tst_QSystemTrayIcon::getSetCheck()
 void tst_QSystemTrayIcon::supportsMessages()
 {
     // ### fixme: Check platforms.
-    QEXPECT_FAIL("", "QTBUG-20978 QSystemTrayIcon is unimplemented for qpa", Abort);
-
-#if !defined(Q_WS_QWS)
-    QCOMPARE(QSystemTrayIcon::supportsMessages(), true );
+#if defined(Q_WS_QWS)
+    QCOMPARE(QSystemTrayIcon::supportsMessages(), false);
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    QCOMPARE(QSystemTrayIcon::supportsMessages(), true);
 #else
-    QCOMPARE(QSystemTrayIcon::supportsMessages(), false );
+    QEXPECT_FAIL("", "QTBUG-20978 QSystemTrayIcon is unimplemented for qpa", Abort);
+    QCOMPARE(QSystemTrayIcon::supportsMessages(), true);
 #endif
-
 }
 
 void tst_QSystemTrayIcon::lastWindowClosed()
