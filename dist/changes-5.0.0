@@ -207,7 +207,7 @@ information about a particular change.
     an entirely pristine context.
   * Configure's -sysroot and -hostprefix are now handled slightly differently.
     The QT_INSTALL_... properties are now automatically prefixed with the sysroot;
-    the raw values are available as QT_RAW_INSTALL_... and the sysroot as QT_SYSROOT.
+    the raw values are available as QT_INSTALL_.../raw and the sysroot as QT_SYSROOT.
     The new QT_HOST_... properties can be used to refer to the Qt host tools.
   * Several functions and built-in variables were modified to return normalized paths.
 

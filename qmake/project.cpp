@@ -2782,7 +2782,7 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QHash<QString, QString
                        unicode != DOT && unicode != UNDERSCORE &&
                        //unicode != SINGLEQUOTE && unicode != DOUBLEQUOTE &&
                        (unicode < 'a' || unicode > 'z') && (unicode < 'A' || unicode > 'Z') &&
-                       (unicode < '0' || unicode > '9'))
+                       (unicode < '0' || unicode > '9') && (!term || unicode != '/'))
                         break;
                     var.append(QChar(unicode));
                     if(++i == str_len)
