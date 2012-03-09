@@ -1,7 +1,7 @@
 CONFIG += testcase
 TARGET = tst_qkeysequence
 
-QT += widgets testlib
+QT += testlib
 QT += core-private gui-private
 
 SOURCES  += tst_qkeysequence.cpp
