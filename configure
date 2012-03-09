@@ -2625,11 +2625,11 @@ if [ "$QT_CROSS_COMPILE" = "yes" ]; then
         echo >&2 "Please make sure you have a correctly set-up pkg-config"
         echo >&2 "environment!"
         echo >&2 ""
-        if [ -z "$PKG_CONFIG_PATH" ]; then
+        if [ -z "$PKG_CONFIG_LIBDIR" ]; then
             echo >&2 ""
-            echo >&2 "Warning: PKG_CONFIG_PATH has not been set.  This could mean"
-            echo >&2 "the host compiler's .pc files will be used. This is probably"
-            echo >&2 "not what you want."
+            echo >&2 "Warning: PKG_CONFIG_LIBDIR has not been set.  This could mean"
+            echo >&2 "the host's .pc files will be used (even if you set PKG_CONFIG_PATH)."
+            echo >&2 "This is probably not what you want."
             echo >&2 ""
         elif [ -z "$PKG_CONFIG_SYSROOT" ] && [ -z "$PKG_CONFIG_SYSROOT_DIR" ]; then
             echo >&2 ""
