@@ -9228,6 +9228,8 @@ int QWidget::heightForWidth(int w) const
 
 
 /*!
+    \Since 5.0
+
     Returns true if the widget's preferred height depends on its width; otherwise returns false.
 */ 
 bool QWidget::hasHeightForWidth() const
