@@ -60,7 +60,6 @@ QT_BEGIN_NAMESPACE
 class QQnxGLContext;
 class QQnxScreen;
 
-class QPlatformGLContext;
 class QSurfaceFormat;
 
 class QQnxWindow : public QPlatformWindow
