@@ -3339,8 +3339,7 @@ void QHeaderViewPrivate::setDefaultSectionSize(int size)
     defaultSectionSize = size;
     for (int i = 0; i < sectionSpans.count(); ++i) {
         QHeaderViewPrivate::SectionSpan &span = sectionSpans[i];
-        if (span.size > 0) {
-            //we resize it if it is not hidden (ie size > 0)
+        if (sectionHidden.isEmpty() || !sectionHidden.testBit(i)) { // resize on not hidden.
             const int newSize = size;
             if (newSize != span.size) {
                 length += newSize - span.size; //the whole length is changed

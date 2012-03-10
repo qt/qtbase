@@ -170,6 +170,7 @@ private slots:
     void moveSectionAndReset();
     void moveSectionAndRemove();
     void saveRestore();
+    void defaultSectionSizeTest();
 
     void defaultAlignment_data();
     void defaultAlignment();
@@ -1624,6 +1625,32 @@ void tst_QHeaderView::saveRestore()
 
     QVERIFY(s1 == s2);
 }
+
+void tst_QHeaderView::defaultSectionSizeTest()
+{
+    // Setup
+    QTableView qtv;
+    QStandardItemModel amodel(4, 4);
+    qtv.setModel(&amodel);
+    QHeaderView *hv = qtv.verticalHeader();
+    const int defaultSize = 26;
+    hv->setDefaultSectionSize(defaultSize + 1); // Set it to a value different from defaultSize.
+
+    // no hidden Sections
+    hv->resizeSection(1, 0);
+    hv->setDefaultSectionSize(defaultSize);
+    QVERIFY(hv->sectionSize(1) == defaultSize);
+
+    // with hidden sections
+    hv->resizeSection(1, 0);
+    hv->hideSection(2);
+    hv->setDefaultSectionSize(defaultSize);
+
+    QVERIFY(hv->sectionSize(0) == defaultSize); // trivial case.
+    QVERIFY(hv->sectionSize(1) == defaultSize); // just sized 0. Now it should be 10
+    QVERIFY(hv->sectionSize(2) == 0); // section is hidden. It should not be resized.
+}
+
 
 void tst_QHeaderView::defaultAlignment_data()
 {
