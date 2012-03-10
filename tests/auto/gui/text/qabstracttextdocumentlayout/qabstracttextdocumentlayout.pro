@@ -4,7 +4,7 @@
 
 CONFIG += testcase
 TARGET = tst_qabstracttextdocumentlayout
-QT += widgets testlib
+QT += testlib
 SOURCES += tst_qabstracttextdocumentlayout.cpp
 
 

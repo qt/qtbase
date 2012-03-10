@@ -47,7 +47,6 @@
 #include <math.h>
 
 #include <qpainter.h>
-#include <qdialog.h>
 
 class tst_QPolygon : public QObject
 {
