@@ -152,7 +152,7 @@ void tst_QSql::basicDriverTest()
 }
 
 // make sure that the static stuff will be deleted
-// when using multiple QApplication objects
+// when using multiple QGuiApplication objects
 void tst_QSql::open()
 {
     int i;
@@ -160,7 +160,7 @@ void tst_QSql::open()
     const char *argv[] = {"test"};
     int count = -1;
     for ( i = 0; i < 10; ++i ) {
-        QApplication app(argc, const_cast<char **>(argv), false);
+        QGuiApplication app(argc, const_cast<char **>(argv), false);
 	tst_Databases dbs;
 
 	dbs.open();
