@@ -46,6 +46,8 @@ QT_BEGIN_NAMESPACE
 
 class QXlibIntegrationPlugin : public QPlatformIntegrationPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface" FILE "xlib.json")
 public:
     QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&);
@@ -67,6 +69,6 @@ QPlatformIntegration* QXlibIntegrationPlugin::create(const QString& system, cons
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(xlib, QXlibIntegrationPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"
