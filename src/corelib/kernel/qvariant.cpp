@@ -48,6 +48,7 @@
 #include "qdatetime.h"
 #include "qeasingcurve.h"
 #include "qlist.h"
+#include "qregularexpression.h"
 #include "qstring.h"
 #include "qstringlist.h"
 #include "qurl.h"
@@ -106,6 +107,7 @@ struct TypeDefinition {
 #ifdef QT_BOOTSTRAPPED
 template<> struct TypeDefinition<QEasingCurve> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QRegularExpression> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_GEOM_VARIANT
 template<> struct TypeDefinition<QRect> { static const bool IsAvailable = false; };
@@ -1028,6 +1030,7 @@ Q_CORE_EXPORT void QVariantPrivate::unregisterHandler(const int /* Modules::Name
     \value Rect  a QRect
     \value RectF  a QRectF
     \value RegExp  a QRegExp
+    \value RegularExpression  a QRegularExpression
     \value Region  a QRegion
     \value Size  a QSize
     \value SizeF  a QSizeF
@@ -1358,6 +1361,14 @@ QVariant::QVariant(const char *val)
   Constructs a new variant with the regexp value \a regExp.
 */
 
+/*!
+  \fn QVariant::QVariant(const QRegularExpression &re)
+
+  \since 5.0
+
+  Constructs a new variant with the regular expression value \a re.
+*/
+
 /*! \since 4.2
   \fn QVariant::QVariant(Qt::GlobalColor color)
 
@@ -1446,7 +1457,10 @@ QVariant::QVariant(const QUrl &u) { d.is_null = false; d.type = Url; v_construct
 QVariant::QVariant(const QLocale &l) { d.is_null = false; d.type = Locale; v_construct<QLocale>(&d, l); }
 #ifndef QT_NO_REGEXP
 QVariant::QVariant(const QRegExp &regExp) { d.is_null = false; d.type = RegExp; v_construct<QRegExp>(&d, regExp); }
-#endif
+#ifndef QT_BOOTSTRAPPED
+QVariant::QVariant(const QRegularExpression &re) { d.is_null = false; d.type = QMetaType::QRegularExpression; v_construct<QRegularExpression>(&d, re); }
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
 QVariant::QVariant(Qt::GlobalColor color) { create(62, &color); }
 
 /*!
@@ -2124,6 +2138,24 @@ QRegExp QVariant::toRegExp() const
 {
     return qVariantToHelper<QRegExp>(d, handlerManager);
 }
+#endif
+
+/*!
+    \fn QRegularExpression QVariant::toRegularExpression() const
+    \since 5.0
+
+    Returns the variant as a QRegularExpression if the variant has type() \l
+    QRegularExpression; otherwise returns an empty QRegularExpression.
+
+    \sa canConvert(), convert()
+*/
+#ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGEXP
+QRegularExpression QVariant::toRegularExpression() const
+{
+    return qVariantToHelper<QRegularExpression>(d, handlerManager);
+}
+#endif
 #endif
 
 /*!

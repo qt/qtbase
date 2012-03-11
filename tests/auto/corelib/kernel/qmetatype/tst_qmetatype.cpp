@@ -528,6 +528,16 @@ template<> struct TestValueFactory<QMetaType::QRegExp> {
 #endif
     }
 };
+template<> struct TestValueFactory<QMetaType::QRegularExpression> {
+    static QRegularExpression *create()
+    {
+#ifndef QT_NO_REGEXP
+        return new QRegularExpression("abc.*def");
+#else
+        return 0;
+#endif
+    }
+};
 template<> struct TestValueFactory<QMetaType::QVariant> {
     static QVariant *create() { return new QVariant(QStringList(QStringList() << "Q" << "t")); }
 };

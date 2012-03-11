@@ -192,6 +192,7 @@ private slots:
     void toLocale();
 
     void toRegExp();
+    void toRegularExpression();
 
     void matrix();
 
@@ -1319,6 +1320,21 @@ void tst_QVariant::toRegExp()
     rx = variant.toRegExp();
 }
 
+void tst_QVariant::toRegularExpression()
+{
+    QVariant variant;
+    QRegularExpression re = variant.toRegularExpression();
+    QCOMPARE(re, QRegularExpression());
+
+    variant = QRegularExpression("abc.*def");
+    re = variant.toRegularExpression();
+    QCOMPARE(re, QRegularExpression("abc.*def"));
+
+    variant = QVariant::fromValue(QRegularExpression("[ab]\\w+"));
+    re = variant.value<QRegularExpression>();
+    QCOMPARE(re, QRegularExpression("[ab]\\w+"));
+}
+
 void tst_QVariant::matrix()
 {
     QVariant variant;
@@ -1519,6 +1535,8 @@ void tst_QVariant::writeToReadFromDataStream_data()
     QTest::newRow( "qchar_null" ) << QVariant(QChar(0)) << true;
     QTest::newRow( "regexp" ) << QVariant(QRegExp("foo", Qt::CaseInsensitive)) << false;
     QTest::newRow( "regexp_empty" ) << QVariant(QRegExp()) << false;
+    QTest::newRow( "regularexpression" ) << QVariant(QRegularExpression("abc.*def")) << false;
+    QTest::newRow( "regularexpression_empty" ) << QVariant(QRegularExpression()) << false;
 
     // types known to QMetaType, but not part of QVariant::Type
     QTest::newRow("QMetaType::Long invalid") << QVariant(QMetaType::Long, (void *) 0) << false;
@@ -1944,6 +1962,7 @@ void tst_QVariant::typeName_data()
     QTest::newRow("48") << int(QVariant::Vector3D) << QByteArray("QVector3D");
     QTest::newRow("49") << int(QVariant::Vector4D) << QByteArray("QVector4D");
     QTest::newRow("50") << int(QVariant::Quaternion) << QByteArray("QQuaternion");
+    QTest::newRow("51") << int(QVariant::RegularExpression) << QByteArray("QRegularExpression");
 }
 
 void tst_QVariant::typeName()

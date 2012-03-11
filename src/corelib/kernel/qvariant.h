@@ -76,7 +76,8 @@ class QRect;
 class QRectF;
 #ifndef QT_NO_REGEXP
 class QRegExp;
-#endif
+class QRegularExpression;
+#endif // QT_NO_REGEXP
 class QTextFormat;
 class QTextLength;
 class QUrl;
@@ -154,6 +155,7 @@ class Q_CORE_EXPORT QVariant
         Point = QMetaType::QPoint,
         PointF = QMetaType::QPointF,
         RegExp = QMetaType::QRegExp,
+        RegularExpression = QMetaType::QRegularExpression,
         Hash = QMetaType::QVariantHash,
         EasingCurve = QMetaType::QEasingCurve,
         Uuid = QMetaType::QUuid,
@@ -239,7 +241,10 @@ class Q_CORE_EXPORT QVariant
     QVariant(const QLocale &locale);
 #ifndef QT_NO_REGEXP
     QVariant(const QRegExp &regExp);
-#endif
+#ifndef QT_BOOTSRAPPED
+    QVariant(const QRegularExpression &re);
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
 #ifndef QT_BOOTSTRAPPED
     QVariant(const QEasingCurve &easing);
 #endif
@@ -302,7 +307,10 @@ class Q_CORE_EXPORT QVariant
     QLocale toLocale() const;
 #ifndef QT_NO_REGEXP
     QRegExp toRegExp() const;
-#endif
+#ifndef QT_BOOTSTRAPPED
+    QRegularExpression toRegularExpression() const;
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
 #ifndef QT_BOOTSTRAPPED
     QEasingCurve toEasingCurve() const;
 #endif

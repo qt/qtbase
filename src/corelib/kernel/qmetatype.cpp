@@ -63,6 +63,7 @@
 #  include "qurl.h"
 #  include "qvariant.h"
 #  include "qabstractitemmodel.h"
+#  include "qregularexpression.h"
 #endif
 
 #ifndef QT_NO_GEOM_VARIANT
@@ -113,6 +114,9 @@ template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = 
 #endif
 #ifdef QT_NO_REGEXP
 template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = false; };
+#endif
+#if defined(QT_BOOTSTRAPPED) || defined(QT_NO_REGEXP)
+template<> struct TypeDefinition<QRegularExpression> { static const bool IsAvailable = false; };
 #endif
 } // namespace
 
@@ -219,6 +223,7 @@ template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = fals
     \value QPoint QPoint
     \value QUrl QUrl
     \value QRegExp QRegExp
+    \value QRegularExpression QRegularExpression
     \value QDateTime QDateTime
     \value QPointF QPointF
     \value QPalette QPalette
@@ -781,10 +786,15 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
         break;
 #endif
 #ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGEXP
+    case QMetaType::QRegularExpression:
+        stream << *static_cast<const NS(QRegularExpression)*>(data);
+        break;
+#endif // QT_NO_REGEXP
     case QMetaType::QEasingCurve:
         stream << *static_cast<const NS(QEasingCurve)*>(data);
         break;
-#endif
+#endif // QT_BOOTSTRAPPED
     case QMetaType::QFont:
     case QMetaType::QPixmap:
     case QMetaType::QBrush:
@@ -993,10 +1003,15 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
         break;
 #endif
 #ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGEXP
+    case QMetaType::QRegularExpression:
+        stream >> *static_cast< NS(QRegularExpression)*>(data);
+        break;
+#endif // QT_NO_REGEXP
     case QMetaType::QEasingCurve:
         stream >> *static_cast< NS(QEasingCurve)*>(data);
         break;
-#endif
+#endif // QT_BOOTSTRAPPED
     case QMetaType::QFont:
     case QMetaType::QPixmap:
     case QMetaType::QBrush:
@@ -1149,9 +1164,13 @@ void *QMetaType::create(int type, const void *copy)
             return new NS(QRegExp)(*static_cast<const NS(QRegExp)*>(copy));
 #endif
 #ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGEXP
+        case QMetaType::QRegularExpression:
+            return new NS(QRegularExpression)(*static_cast<const NS(QRegularExpression)*>(copy));
+#endif // QT_NO_REGEXP
         case QMetaType::QEasingCurve:
             return new NS(QEasingCurve)(*static_cast<const NS(QEasingCurve)*>(copy));
-#endif
+#endif // QT_BOOTSTRAPPED
         case QMetaType::QUuid:
             return new NS(QUuid)(*static_cast<const NS(QUuid)*>(copy));
 #ifndef QT_BOOTSTRAPPED
@@ -1253,9 +1272,13 @@ void *QMetaType::create(int type, const void *copy)
             return new NS(QRegExp);
 #endif
 #ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGEXP
+        case QMetaType::QRegularExpression:
+            return new NS(QRegularExpression);
+#endif // QT_NO_REGEXP
         case QMetaType::QEasingCurve:
             return new NS(QEasingCurve);
-#endif
+#endif // QT_BOOTSTRAPPED
         case QMetaType::QUuid:
             return new NS(QUuid);
 #ifndef QT_BOOTSTRAPPED

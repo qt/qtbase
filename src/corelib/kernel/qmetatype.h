@@ -102,6 +102,7 @@ QT_BEGIN_NAMESPACE
     F(QUuid, 30, QUuid) \
     F(QVariant, 41, QVariant) \
     F(QModelIndex, 42, QModelIndex) \
+    F(QRegularExpression, 44, QRegularExpression)
 
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
     F(QObjectStar, 39, QObject*) \
@@ -194,7 +195,7 @@ public:
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
         FirstCoreType = Bool,
-        LastCoreType = Void,
+        LastCoreType = QRegularExpression,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,
         FirstWidgetsType = QIcon,
