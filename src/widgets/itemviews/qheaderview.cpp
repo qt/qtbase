@@ -866,9 +866,11 @@ void QHeaderView::swapSections(int first, int second)
     \fn void QHeaderView::resizeSection(int logicalIndex, int size)
 
     Resizes the section specified by \a logicalIndex to \a size measured in
-    pixels.
+    pixels. The size parameter must be a value larger or equal to zero. A
+    size equal to zero is however not recommended. In that situation hideSection
+    should be used instead.
 
-    \sa sectionResized(), resizeMode(), sectionSize()
+    \sa sectionResized(), resizeMode(), sectionSize(), hideSection()
 */
 
 void QHeaderView::resizeSection(int logical, int size)
