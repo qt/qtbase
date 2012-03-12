@@ -1326,12 +1326,12 @@ QMakeProject::read(uchar cmd)
   again:
     if ((cmd & ReadSetup) && base_vars.isEmpty()) {
         // hack to get the Option stuff in there
-        base_vars["QMAKE_EXT_CPP"] = Option::cpp_ext;
-        base_vars["QMAKE_EXT_C"] = Option::c_ext;
-        base_vars["QMAKE_EXT_H"] = Option::h_ext;
-        base_vars["QMAKE_SH"] = Option::shellPath;
+        vars["QMAKE_EXT_CPP"] = Option::cpp_ext;
+        vars["QMAKE_EXT_C"] = Option::c_ext;
+        vars["QMAKE_EXT_H"] = Option::h_ext;
+        vars["QMAKE_SH"] = Option::shellPath;
         if(!Option::user_template_prefix.isEmpty())
-            base_vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
+            vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
 
         QString superdir;
         QString project_root;
@@ -1470,7 +1470,7 @@ QMakeProject::read(uchar cmd)
             // here without resorting to tricks. This is the only planned use case anyway.
             if (!superfile.isEmpty()) {
                 debug_msg(1, "Project super cache file: reading %s", superfile.toLatin1().constData());
-                read(superfile, base_vars);
+                read(superfile, vars);
             }
 
             // parse qmake configuration
@@ -1478,7 +1478,7 @@ QMakeProject::read(uchar cmd)
                 qmakespec.truncate(qmakespec.length()-1);
             QString spec = qmakespec + QLatin1String("/qmake.conf");
             debug_msg(1, "QMAKESPEC conf: reading %s", spec.toLatin1().constData());
-            if(!read(spec, base_vars)) {
+            if (!read(spec, vars)) {
                 fprintf(stderr, "Failure to read QMAKESPEC conf file %s.\n", spec.toLatin1().constData());
                 return false;
             }
@@ -1486,16 +1486,18 @@ QMakeProject::read(uchar cmd)
 
             if (!conffile.isEmpty()) {
                 debug_msg(1, "Project config file: reading %s", conffile.toLatin1().constData());
-                read(conffile, base_vars);
+                read(conffile, vars);
             }
             if (!cachefile.isEmpty()) {
                 debug_msg(1, "QMAKECACHE file: reading %s", cachefile.toLatin1().constData());
-                read(cachefile, base_vars);
+                read(cachefile, vars);
             }
         }
-    }
 
-    vars = base_vars; // start with the base
+        base_vars = vars;
+    } else {
+        vars = base_vars; // start with the base
+    }
 
     for (QHash<QString, QStringList>::ConstIterator it = extra_vars.constBegin();
          it != extra_vars.constEnd(); ++it)
@@ -1602,12 +1604,12 @@ void QMakeProject::validateModes()
 {
     if (Option::target_mode == Option::TARG_UNKNOWN_MODE) {
         Option::TARG_MODE target_mode;
-        const QStringList &gen = base_vars.value("MAKEFILE_GENERATOR");
+        const QStringList &gen = vars.value("MAKEFILE_GENERATOR");
         if (gen.isEmpty()) {
             fprintf(stderr, "%s:%d: Using OS scope before setting MAKEFILE_GENERATOR\n",
                             parser.file.toLatin1().constData(), parser.line_no);
         } else if (MetaMakefileGenerator::modeForGenerator(gen.first(), &target_mode)) {
-            const QStringList &tgt = base_vars.value("TARGET_PLATFORM");
+            const QStringList &tgt = vars.value("TARGET_PLATFORM");
             if (!tgt.isEmpty()) {
                 const QString &os = tgt.first();
                 if (os == "unix")
@@ -1641,7 +1643,7 @@ QMakeProject::resolveSpec(QString *spec, const QString &qmakespec)
 #else
             // We can't resolve symlinks as they do on Unix, so configure.exe puts the source of the
             // qmake.conf at the end of the default/qmake.conf in the QMAKESPEC_ORG variable.
-            const QStringList &spec_org = base_vars["QMAKESPEC_ORIGINAL"];
+            const QStringList &spec_org = vars["QMAKESPEC_ORIGINAL"];
             if (spec_org.isEmpty()) {
                 // try again the next time around
                 *spec = QString();
