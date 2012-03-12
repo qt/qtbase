@@ -586,10 +586,7 @@ QStringList qmake_feature_paths(QMakeProperty *prop, bool host_build)
         concat << base_concat;
     }
 
-    QStringList feature_roots;
-    QByteArray mkspec_path = qgetenv("QMAKEFEATURES");
-    if(!mkspec_path.isNull())
-        feature_roots += splitPathList(QString::fromLocal8Bit(mkspec_path));
+    QStringList feature_roots = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEFEATURES")));
     if(prop)
         feature_roots += splitPathList(prop->value("QMAKEFEATURES"));
     if(!Option::mkfile::cachefile.isEmpty()) {
@@ -601,15 +598,10 @@ QStringList qmake_feature_paths(QMakeProperty *prop, bool host_build)
             concat_it != concat.end(); ++concat_it)
             feature_roots << (path + (*concat_it));
     }
-    QByteArray qmakepath = qgetenv("QMAKEPATH");
-    if (!qmakepath.isNull()) {
-        const QStringList lst = splitPathList(QString::fromLocal8Bit(qmakepath));
-        for(QStringList::ConstIterator it = lst.begin(); it != lst.end(); ++it) {
-            for(QStringList::Iterator concat_it = concat.begin();
-                concat_it != concat.end(); ++concat_it)
-                    feature_roots << ((*it) + mkspecs_concat + (*concat_it));
-        }
-    }
+    QStringList qmakepath = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEPATH")));
+    foreach (const QString &path, qmakepath)
+        foreach (const QString &cat, concat)
+            feature_roots << (path + mkspecs_concat + cat);
     QString *specp = host_build ? &Option::mkfile::qmakespec : &Option::mkfile::xqmakespec;
     if (!specp->isEmpty()) {
         // The spec is already platform-dependent, so no subdirs here.
@@ -643,12 +635,10 @@ QStringList qmake_mkspec_paths()
 {
     QStringList ret;
     const QString concat = QLatin1String("/mkspecs");
-    QByteArray qmakepath = qgetenv("QMAKEPATH");
-    if (!qmakepath.isEmpty()) {
-        const QStringList lst = splitPathList(QString::fromLocal8Bit(qmakepath));
-        for (QStringList::ConstIterator it = lst.begin(); it != lst.end(); ++it)
-            ret << ((*it) + concat);
-    }
+
+    QStringList qmakepath = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEPATH")));
+    foreach (const QString &path, qmakepath)
+        ret << (path + concat);
     if (!project_build_root.isEmpty())
         ret << project_build_root + concat;
     if (!project_root.isEmpty())

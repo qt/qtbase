@@ -218,7 +218,7 @@ private:
 };
 
 inline QString fixEnvVariables(const QString &x) { return Option::fixString(x, Option::FixEnvVars); }
-inline QStringList splitPathList(const QString &paths) { return paths.split(Option::dirlist_sep); }
+inline QStringList splitPathList(const QString &paths) { return paths.isEmpty() ? QStringList() : paths.split(Option::dirlist_sep); }
 
 QT_END_NAMESPACE
 
