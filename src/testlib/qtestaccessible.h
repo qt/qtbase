@@ -98,18 +98,18 @@ public:
     }
     static void clearEvents() { eventList().clear(); }
     static EventList events() { return eventList(); }
-    static bool verifyEvent(const QAccessibleEvent& ev)
+    static bool verifyEvent(QAccessibleEvent *ev)
     {
         if (eventList().isEmpty())
             return false;
         QAccessibleEvent *first = eventList().takeFirst();
-        bool res = *first == ev;
+        bool res = *first == *ev;
         delete first;
         return res;
     }
-    static bool containsEvent(const QAccessibleEvent &event) {
+    static bool containsEvent(QAccessibleEvent *event) {
         Q_FOREACH (QAccessibleEvent *ev, eventList()) {
-            if (*ev == event)
+            if (*ev == *event)
                 return true;
         }
         return false;
