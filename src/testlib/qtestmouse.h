@@ -70,6 +70,15 @@ namespace QTest
 {
     enum MouseAction { MousePress, MouseRelease, MouseClick, MouseDClick, MouseMove };
 
+    static void waitForEvents()
+    {
+#ifdef Q_OS_MAC
+        QTest::qWait(20);
+#else
+        qApp->processEvents();
+#endif
+    }
+
     static void mouseEvent(MouseAction action, QWindow *window, Qt::MouseButton button,
                            Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
     {
@@ -119,15 +128,11 @@ namespace QTest
             case MouseMove:
                 QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),lastButton,stateKey);
                 //QCursor::setPos(window->mapToGlobal(pos));
-#ifdef Q_OS_MAC
-                QTest::qWait(20);
-#else
-                qApp->processEvents();
-#endif
-                return;
+                break;
             default:
                 QTEST_ASSERT(false);
         }
+        waitForEvents();
     }
 
     inline void mousePress(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
