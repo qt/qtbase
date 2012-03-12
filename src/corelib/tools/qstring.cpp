@@ -3375,9 +3375,15 @@ QString QString::mid(int position, int n) const
 {
     if (position > d->size)
         return QString();
-    if (position < 0)
+    if (position < 0) {
+        if (n < 0 || n + position >= d->size)
+            return *this;
+        if (n + position <= 0)
+            return QString();
+
+        n += position;
         position = 0;
-    if (n < 0 || n > d->size - position)
+    } else if (n < 0 || n > d->size - position)
         n = d->size - position;
     if (position == 0 && n == d->size)
         return *this;
@@ -8040,9 +8046,15 @@ QStringRef QString::midRef(int position, int n) const
 {
     if (position > d->size)
         return QStringRef();
-    if (position < 0)
+    if (position < 0) {
+        if (n < 0 || n + position >= d->size)
+            return QStringRef(this, 0, d->size);
+        if (n + position <= 0)
+            return QStringRef();
+
+        n += position;
         position = 0;
-    if (n < 0 || n > d->size - position)
+    } else if (n < 0 || n > d->size - position)
         n = d->size - position;
     return QStringRef(this, position, n);
 }
