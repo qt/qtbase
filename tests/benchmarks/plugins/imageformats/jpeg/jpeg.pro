@@ -3,10 +3,6 @@ TARGET = jpeg
 QT += testlib
 CONFIG += release
 
-wince*: {
-   DEFINES += SRCDIR=\\\"\\\"
-} else {
-   DEFINES += SRCDIR=\\\"$$PWD/\\\"
-}
-
 SOURCES += jpeg.cpp
+
+TESTDATA = n900.jpeg

@@ -1,6 +1,6 @@
 QT = core testlib
 TEMPLATE = app
-TARGET = tst_qmetatype
+TARGET = tst_bench_qmetatype
 
 SOURCES += tst_qmetatype.cpp
 

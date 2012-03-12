@@ -3,11 +3,7 @@ QT -= gui
 QT += core-private testlib
 SOURCES += main.cpp data.cpp fromlatin1.cpp fromutf8.cpp
 
-wince*:{
-   DEFINES += SRCDIR=\\\"\\\"
-} else {
-   DEFINES += SRCDIR=\\\"$$PWD/\\\"
-}
+TESTDATA = utf-8.txt
 
 sse4:QMAKE_CXXFLAGS += -msse4
 else:ssse3:QMAKE_FLAGS += -mssse3

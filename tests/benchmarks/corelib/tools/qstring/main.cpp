@@ -1408,7 +1408,9 @@ void tst_QString::ucstrncmp() const
 
 void tst_QString::fromUtf8() const
 {
-    QFile file(SRCDIR "utf-8.txt");
+    QString testFile = QFINDTESTDATA("utf-8.txt");
+    QVERIFY2(!testFile.isEmpty(), "cannot find test file utf-8.txt!");
+    QFile file(testFile);
     if (!file.open(QFile::ReadOnly)) {
         qFatal("Cannot open input file");
         return;
