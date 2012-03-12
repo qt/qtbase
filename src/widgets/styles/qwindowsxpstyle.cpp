@@ -1583,10 +1583,12 @@ case PE_Frame:
             uint resolve_mask = panel->palette.resolve();
 
 #ifndef QT_NO_SPINBOX
-            //Since spin box includes a line edit we need to resolve the palette on the spin box instead
+            // Since spin box includes a line edit we need to resolve the palette mask also from
+            // the parent, as while the color is always correct on the palette supplied by panel,
+            // the mask can still be empty. If either mask specifies custom base color, use that.
             if (widget) {
                 if (QAbstractSpinBox *spinbox = qobject_cast<QAbstractSpinBox*>(widget->parentWidget()))
-                    resolve_mask = spinbox->palette().resolve();
+                    resolve_mask |= spinbox->palette().resolve();
             }
 #endif // QT_NO_SPINBOX
             if (resolve_mask & (1 << QPalette::Base)) {
