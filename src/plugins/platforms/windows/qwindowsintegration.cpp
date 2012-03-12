@@ -56,6 +56,7 @@
 #include "qwindowsdrag.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowsaccessibility.h"
+#include "qwindowskeymapper.h"
 
 #include <QtGui/QPlatformNativeInterface>
 #include <QtGui/QWindowSystemInterface>
@@ -319,6 +320,11 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
         break; // Not implemented
     }
     return QPlatformIntegration::styleHint(hint);
+}
+
+Qt::KeyboardModifiers QWindowsIntegration::queryKeyboardModifiers() const
+{
+    return QWindowsKeyMapper::queryKeyboardModifiers();
 }
 
 QPlatformNativeInterface *QWindowsIntegration::nativeInterface() const

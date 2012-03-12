@@ -69,6 +69,8 @@ public:
     QWindow *keyGrabber() const      { return m_keyGrabber; }
     void setKeyGrabber(QWindow *w)   { m_keyGrabber = w; }
 
+    static Qt::KeyboardModifiers queryKeyboardModifiers();
+
 private:
     bool translateKeyEventInternal(QWindow *receiver, const MSG &msg, bool grab);
     void updateKeyMap(const MSG &msg);
