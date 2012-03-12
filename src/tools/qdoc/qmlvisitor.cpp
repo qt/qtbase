@@ -439,31 +439,6 @@ void QmlDocVisitor::endVisit(QQmlJS::AST::UiImportList *definition)
     lastEndOffset = definition->lastSourceLocation().end();
 }
 
-typedef QQmlJS::AST::ExpressionNode EN;
-typedef QQmlJS::AST::IdentifierExpression IE;
-typedef QQmlJS::AST::FieldMemberExpression FME;
-
-static QString reconstituteFieldMemberExpression(EN* en)
-{
-    QString s;
-    if (en) {
-        qDebug() << "  There is an expression" << en->kind;
-        if (en->kind == QQmlJS::AST::Node::Kind_FieldMemberExpression) {
-            FME* fme = (FME*) en;
-            s = reconstituteFieldMemberExpression(fme->base);
-            s += QLatin1Char('.') + fme->name.toString();
-        }
-        else if (en->kind == QQmlJS::AST::Node::Kind_IdentifierExpression) {
-            IE* ie = (IE*) en;
-            s = ie->name.toString();
-        }
-        else {
-            qDebug() << "    But it wasn't a recognized expression kind";
-        }
-    }
-    return s;
-}
-
 /*!
     Visits the public \a member declaration, which can be a
     signal or a property. It is a custom signal or property.
