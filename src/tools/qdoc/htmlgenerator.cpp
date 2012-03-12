@@ -1055,8 +1055,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         out() << "<table class=\"" << attr << "\"";
         if (!width.isEmpty())
-            out() << " width=\"" << width << "\">";
-        out() << "\n ";
+            out() << " width=\"" << width << "\"";
+        out() << ">\n ";
         numTableRows = 0;
     }
         break;
