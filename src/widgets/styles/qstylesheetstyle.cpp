@@ -2505,7 +2505,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
     // properties in the order they are specified.
     QHash<QString, QVariant> propertyHash;
     QVector<QString> properties;
-    QVector<Declaration> decls = declarations(styleRules(w), QString());
+    const QVector<Declaration> decls = declarations(styleRules(w), QString());
 
     // run through the declarations in order
     for (int i = 0; i < decls.count(); i++) {
@@ -2521,7 +2521,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
             qWarning() << w << " does not have a property named " << property;
             continue;
         }
-        QMetaProperty metaProperty = metaObject->property(index);
+        const QMetaProperty metaProperty = metaObject->property(index);
         if (!metaProperty.isWritable() || !metaProperty.isDesignable()) {
             qWarning() << w << " cannot design property named " << property;
             continue;
