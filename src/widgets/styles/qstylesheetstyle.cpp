@@ -2514,7 +2514,6 @@ void QStyleSheetStyle::setProperties(QWidget *w)
         if (!property.startsWith(QStringLiteral("qproperty-"), Qt::CaseInsensitive))
             continue;
         property.remove(0, 10); // strip "qproperty-"
-        const QVariant value = w->property(property.toLatin1());
         const QMetaObject *metaObject = w->metaObject();
         int index = metaObject->indexOfProperty(property.toLatin1());
         if (index == -1) {
@@ -2527,6 +2526,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
             continue;
         }
         QVariant v;
+        const QVariant value = w->property(property.toLatin1());
         switch (value.type()) {
             // ### Qt 5
 //        case QVariant::Icon: v = decl.iconValue(); break;
