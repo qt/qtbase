@@ -39,40 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef QMACMIME_H
-#define QMACMIME_H
+#ifndef QCOCOACLIPBOARD_H
+#define QCOCOACLIPBOARD_H
 
-#include <QtCore>
+#include <qplatformclipboard_qpa.h>
+#include "qmacclipboard.h"
+#include <QtCore/QScopedPointer>
 
-#include <CoreFoundation/CoreFoundation.h>
+QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QMacPasteboardMime {
-    char type;
+class QCocoaClipboard : public QPlatformClipboard
+{
 public:
-    enum QMacPasteboardMimeType { MIME_DND=0x01,
-        MIME_CLIP=0x02,
-        MIME_QT_CONVERTOR=0x04,
-        MIME_QT3_CONVERTOR=0x08,
-        MIME_ALL=MIME_DND|MIME_CLIP
-    };
-    explicit QMacPasteboardMime(char);
-    virtual ~QMacPasteboardMime();
+    QCocoaClipboard();
 
-    static void initializeMimeTypes();
-    static void destroyMimeTypes();
+    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard);
+    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
+    bool supportsMode(QClipboard::Mode mode) const;
+    bool ownsMode(QClipboard::Mode mode) const;
+protected:
+    QMacPasteboard *pasteboardForMode(QClipboard::Mode mode) const;
 
-    static QList<QMacPasteboardMime*> all(uchar);
-    static QMacPasteboardMime *convertor(uchar, const QString &mime, QString flav);
-    static QString flavorToMime(uchar, QString flav);
-
-    virtual QString convertorName() = 0;
-
-    virtual bool canConvert(const QString &mime, QString flav) = 0;
-    virtual QString mimeFor(QString flav) = 0;
-    virtual QString flavorFor(const QString &mime) = 0;
-    virtual QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav) = 0;
-    virtual QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav) = 0;
+private:
+    QScopedPointer<QMacPasteboard> m_clipboard;
+    QScopedPointer<QMacPasteboard> m_find;
 };
 
-#endif
+QT_END_NAMESPACE
 
+#endif

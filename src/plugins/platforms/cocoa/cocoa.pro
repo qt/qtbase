@@ -27,6 +27,7 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoafiledialoghelper.mm \
     qcocoafontdialoghelper.mm \
     qcocoacursor.mm \
+    qcocoaclipboard.mm \
     qcocoadrag.mm \
     qmacclipboard.mm \
     qmacmime.mm \
@@ -59,6 +60,7 @@ HEADERS += qcocoaintegration.h \
     qcocoafiledialoghelper.h \
     qcocoafontdialoghelper.h \
     qcocoacursor.h \
+    qcocoaclipboard.h \
     qcocoadrag.h \
     qmacclipboard.h \
     qmacmime.h \

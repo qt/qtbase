@@ -64,14 +64,6 @@ extern CGImageRef qt_mac_createCGImageFromQImage(const QImage &img, const QImage
 
 typedef QList<QMacPasteboardMime*> MimeList;
 Q_GLOBAL_STATIC(MimeList, globalMimeList)
-
-static void cleanup_mimes()
-{
-    MimeList *mimes = globalMimeList();
-    while (!mimes->isEmpty())
-        delete mimes->takeFirst();
-}
-
 Q_GLOBAL_STATIC(QStringList, globalDraggedTypesList)
 
 /*!
@@ -791,11 +783,9 @@ QList<QByteArray> QMacPasteboardMimeVCard::convertFromMime(const QString &mime, 
 
   This is an internal function.
 */
-void QMacPasteboardMime::initialize()
+void QMacPasteboardMime::initializeMimeTypes()
 {
     if (globalMimeList()->isEmpty()) {
-        qAddPostRoutine(cleanup_mimes);
-
         //standard types that we wrap
         new QMacPasteboardMimeTiff;
         new QMacPasteboardMimeUnicodeText;
@@ -808,6 +798,16 @@ void QMacPasteboardMime::initialize()
         //make sure our "non-standard" types are always last! --Sam
         new QMacPasteboardMimeAny;
     }
+}
+
+/*!
+  \internal
+*/
+void QMacPasteboardMime::destroyMimeTypes()
+{
+    MimeList *mimes = globalMimeList();
+    while (!mimes->isEmpty())
+        delete mimes->takeFirst();
 }
 
 /*!

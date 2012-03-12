@@ -39,40 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef QMACMIME_H
-#define QMACMIME_H
+#include "QCocoaclipboard.h"
+#include "qmacmime.h"
+#include "qmacclipboard.h"
 
-#include <QtCore>
+QT_BEGIN_NAMESPACE
 
-#include <CoreFoundation/CoreFoundation.h>
+QCocoaClipboard::QCocoaClipboard()
+    :m_clipboard(new QMacPasteboard(kPasteboardClipboard, QMacPasteboardMime::MIME_CLIP))
+    ,m_find(new QMacPasteboard(kPasteboardFind, QMacPasteboardMime::MIME_CLIP))
+{
 
-class Q_GUI_EXPORT QMacPasteboardMime {
-    char type;
-public:
-    enum QMacPasteboardMimeType { MIME_DND=0x01,
-        MIME_CLIP=0x02,
-        MIME_QT_CONVERTOR=0x04,
-        MIME_QT3_CONVERTOR=0x08,
-        MIME_ALL=MIME_DND|MIME_CLIP
-    };
-    explicit QMacPasteboardMime(char);
-    virtual ~QMacPasteboardMime();
+}
 
-    static void initializeMimeTypes();
-    static void destroyMimeTypes();
+QMimeData *QCocoaClipboard::mimeData(QClipboard::Mode mode)
+{
+    if (QMacPasteboard *pasteBoard = pasteboardForMode(mode)) {
+        pasteBoard->sync();
+        return pasteBoard->mimeData();
+    }
+    return 0;
+}
 
-    static QList<QMacPasteboardMime*> all(uchar);
-    static QMacPasteboardMime *convertor(uchar, const QString &mime, QString flav);
-    static QString flavorToMime(uchar, QString flav);
+void QCocoaClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
+{
+    if (QMacPasteboard *pasteBoard = pasteboardForMode(mode)) {
+        pasteBoard->sync();
+        pasteBoard->setMimeData(data);
+        emitChanged(mode);
+    }
+}
 
-    virtual QString convertorName() = 0;
+bool QCocoaClipboard::supportsMode(QClipboard::Mode mode) const
+{
+    return (mode == QClipboard::Clipboard || mode == QClipboard::FindBuffer);
+}
 
-    virtual bool canConvert(const QString &mime, QString flav) = 0;
-    virtual QString mimeFor(QString flav) = 0;
-    virtual QString flavorFor(const QString &mime) = 0;
-    virtual QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav) = 0;
-    virtual QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav) = 0;
-};
+bool QCocoaClipboard::ownsMode(QClipboard::Mode mode) const
+{
+    return false;
+}
 
-#endif
+QMacPasteboard *QCocoaClipboard::pasteboardForMode(QClipboard::Mode mode) const
+{
+    if (mode == QClipboard::Clipboard)
+        return m_clipboard.data();
+    else if (mode == QClipboard::FindBuffer)
+        return m_find.data();
+    else
+        return 0;
+}
 
+QT_END_NAMESPACE

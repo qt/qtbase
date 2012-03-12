@@ -93,6 +93,7 @@ QCocoaIntegration::QCocoaIntegration()
     , mEventDispatcher(new QCocoaEventDispatcher())
     , mInputContext(new QCocoaInputContext)
     , mAccessibility(new QPlatformAccessibility)
+    , mCocoaClipboard(new QCocoaClipboard)
     , mCocoaDrag(new QCocoaDrag)
 {
     QCocoaAutoReleasePool pool;
@@ -140,12 +141,18 @@ QCocoaIntegration::QCocoaIntegration()
         screenAdded(screen);
     }
 
-    QMacPasteboardMime::initialize();
+    QMacPasteboardMime::initializeMimeTypes();
 }
 
 QCocoaIntegration::~QCocoaIntegration()
 {
     [[NSApplication sharedApplication] setDelegate: 0];
+
+    // Delete the clipboard integration and destroy mime type converters.
+    // Deleting the clipboard integration flushes promised pastes using
+    // the mime converters - the ordering here is important.
+    delete mCocoaClipboard;
+    QMacPasteboardMime::destroyMimeTypes();
 
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!mScreens.isEmpty()) {
@@ -204,6 +211,11 @@ QPlatformInputContext *QCocoaIntegration::inputContext() const
 QPlatformAccessibility *QCocoaIntegration::accessibility() const
 {
     return mAccessibility.data();
+}
+
+QPlatformClipboard *QCocoaIntegration::clipboard() const
+{
+    return mCocoaClipboard;
 }
 
 QPlatformDrag *QCocoaIntegration::drag() const
