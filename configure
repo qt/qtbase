@@ -5268,10 +5268,12 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         QMakeVar set QMAKE_DEFINES_XCB "$QMAKE_DEFINES_XCB"
     fi
 
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
-        QT_CONFIG="$QT_CONFIG coreservices"
-    else
-        QMakeVar add DEFINES QT_NO_CORESERVICES
+    if [ "$BUILD_ON_MAC" = "yes" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+            QT_CONFIG="$QT_CONFIG coreservices"
+        else
+            QMakeVar add DEFINES QT_NO_CORESERVICES
+        fi
     fi
 
     if [ "$PLATFORM_QPA" = "yes" ] && [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ]; then
