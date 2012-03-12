@@ -67,7 +67,8 @@ struct Q_CORE_EXPORT QJsonParseError
         IllegalNumber,
         StringEscapeSequence,
         StringUTF8Scan,
-        EndOfString
+        EndOfString,
+        MissingObject
     };
 
     int        offset;

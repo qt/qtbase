@@ -244,6 +244,10 @@ bool Parser::parseObject()
         if (token != ValueSeparator)
             break;
         token = nextToken();
+        if (token == EndObject) {
+            lastError = QJsonParseError::MissingObject;
+            return false;
+        }
     }
 
     DEBUG << "end token=" << token;
@@ -449,6 +453,9 @@ bool Parser::parseValue(QJsonPrivate::Value *val, int baseOffset)
         DEBUG << "value: object";
         END;
         return true;
+    case EndArray:
+        lastError = QJsonParseError::MissingObject;
+        return false;
     default:
         --json;
         if (!parseNumber(val, baseOffset))
