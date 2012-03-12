@@ -702,8 +702,8 @@ CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XCB=auto
 CFG_XCB_LIMITED=yes
-CFG_WAYLAND=auto
 CFG_LIBUDEV=auto
+CFG_OBSOLETE_WAYLAND=no
 CFG_EVDEV=auto
 CFG_NIS=auto
 CFG_CUPS=auto
@@ -887,7 +887,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1655,11 +1655,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     wayland)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_WAYLAND="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
+        CFG_OBSOLETE_WAYLAND=yes
         ;;
     libudev)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -3014,13 +3010,6 @@ if [ "$OPT_HELP" = "yes" ]; then
         XCBN=" "
     fi
 
-    if [ "$CFG_WAYLAND" = "no" ]; then
-        XWY=" "
-        XWN="*"
-    else
-        XWY="*"
-        XWN=" "
-    fi
     if [ "$CFG_XINPUT2" = "no" ]; then
         X2Y=" "
         X2N="*"
@@ -3342,9 +3331,6 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 
  $XCBN  -no-xcb ............ Do not compile Xcb (X protocol C-language Binding) support.
  $XCBY  -xcb ............... Compile Xcb support.
-
- $XWN  -no-wayland......... Do not compile Wayland support.
- $XWY  -wayland  .......... Compile Wayland support.
 
 EOF
 
@@ -5108,27 +5094,7 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     fi
 
     # Save these for a check later
-    ORIG_CFG_WAYLAND="$CFG_WAYLAND"
     ORIG_CFG_XCB="$CFG_XCB"
-
-    if [ "$CFG_WAYLAND" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists wayland-client 2>/dev/null; then
-            QMAKE_CFLAGS_WAYLAND=`$PKG_CONFIG --cflags wayland-client 2>/dev/null`
-            QMAKE_LIBS_WAYLAND=`$PKG_CONFIG --libs wayland-client 2>/dev/null`
-            QMAKE_INCDIR_WAYLAND=`$PKG_CONFIG --cflags-only-I wayland-client 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
-            QMAKE_LIBDIR_WAYLAND=`$PKG_CONFIG --libs-only-L wayland-client 2>/dev/null | sed -e 's,^-L,,g' -e 's, -L, ,g'`
-        fi
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/wayland "Wayland" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_WAYLAND $QMAKE_LIBS_WAYLAND; then
-            CFG_WAYLAND=yes
-            QT_CONFIG="$QT_CONFIG wayland"
-        elif [ "$CFG_WAYLAND" = "yes" ]; then
-            echo "The Wayland functionality test failed!"
-            exit 1
-        else
-            CFG_WAYLAND=no
-            QMakeVar add DEFINES QT_NO_WAYLAND
-        fi
-    fi
 
     if [ "$CFG_LIBUDEV" != "no" ]; then
        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libudev 2>/dev/null; then
@@ -5240,26 +5206,10 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
         QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
         QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
-        if [ "$CFG_WAYLAND" = "yes" ]; then
-            QMAKE_CFLAGS_WAYLAND="$QMAKE_CFLAGS_WAYLAND $QMAKE_CFLAGS_XKBCOMMON"
-            QMAKE_LIBS_WAYLAND="$QMAKE_LIBS_WAYLAND $QMAKE_LIBS_XKBCOMMON"
-        fi
         QMAKE_CFLAGS_XCB="$QMAKE_CFLAGS_XCB $QMAKE_CFLAGS_XKBCOMMON"
         QMAKE_LIBS_XCB="$QMAKE_LIBS_XCB $QMAKE_LIBS_XKBCOMMON"
     else
-        if [ "$CFG_WAYLAND" = "yes" ]; then
-            QMAKE_DEFINES_WAYLAND=QT_NO_WAYLAND_XKB
-        fi
         QMAKE_DEFINES_XCB=QT_NO_XCB_XKB
-    fi
-
-    # QMake variables set here override those in the mkspec. Therefore we only set the variables here if they are not zero.
-    if [ -n "$QMAKE_CFLAGS_WAYLAND" ] || [ -n "$QMAKE_LIBS_WAYLAND" ]; then
-        QMakeVar set QMAKE_CFLAGS_WAYLAND "$QMAKE_CFLAGS_WAYLAND"
-        QMakeVar set QMAKE_INCDIR_WAYLAND "$QMAKE_INCDIR_WAYLAND"
-        QMakeVar set QMAKE_LIBS_WAYLAND "$QMAKE_LIBS_WAYLAND"
-        QMakeVar set QMAKE_LIBDIR_WAYLAND "$QMAKE_LIBDIR_WAYLAND"
-        QMakeVar set QMAKE_DEFINES_WAYLAND " $QMAKE_DEFINES_WAYLAND"
     fi
 
     if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
@@ -5277,11 +5227,11 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     fi
 
     if [ "$PLATFORM_QPA" = "yes" ] && [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ]; then
-        if [ "$CFG_XCB" = "no" ] && [ "$CFG_WAYLAND" = "no" ]; then
-            if [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_WAYLAND" = "auto" ]; then
+        if [ "$CFG_XCB" = "no" ]; then
+            if [ "$ORIG_CFG_XCB" = "auto" ]; then
                 echo "No QPA platform plugin enabled!"
                 echo " If you really want to build without a QPA platform plugin you must pass"
-                echo " -no-xcb and -no-wayland to configure. Doing this will produce a Qt that"
+                echo " -no-xcb. Doing this will produce a Qt that"
                 echo " cannot run GUI applications."
                 echo " The dependencies needed for xcb to build are listed in"
                 echo " src/plugins/platforms/xcb/README"
@@ -7077,6 +7027,18 @@ cat <<EOF
         Qt now requires zlib support in all builds, so the -no-zlib
         option was ignored. Qt will be built using the $which_zlib
         zlib.
+EOF
+fi
+
+#-------------------------------------------------------------------------------
+# check if the user passed the obsoleted -wayland or -no-wayland flag
+#-------------------------------------------------------------------------------
+if [ "$CFG_OBSOLETE_WAYLAND" = "yes" ]; then
+cat <<EOF
+
+        NOTICE: The -wayland and -no-wayland flags are now obsolete
+
+        All configuring of QtWayland plugin and QtCompositor happens in the module
 EOF
 fi
 
