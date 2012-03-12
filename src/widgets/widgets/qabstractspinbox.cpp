@@ -976,7 +976,7 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
             }
         }
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessibleValueChangeEvent event(d->value, this);
+        QAccessibleValueChangeEvent event(this, d->value);
         QAccessible::updateAccessibility(&event);
 #endif
         return;
@@ -1596,7 +1596,7 @@ void QAbstractSpinBoxPrivate::updateState(bool up, bool fromKeyboard /* = false 
         buttonState = (up ? Up : Down) | (fromKeyboard ? Keyboard : Mouse);
         q->stepBy(up ? 1 : -1);
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessibleValueChangeEvent event(value, q);
+        QAccessibleValueChangeEvent event(q, value);
         QAccessible::updateAccessibility(&event);
 #endif
     }

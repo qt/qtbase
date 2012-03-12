@@ -1076,9 +1076,11 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
             int actionIndex = indexOf(action);
-            QAccessibleEvent focusEvent(QAccessible::Focus, q, actionIndex);
+            QAccessibleEvent focusEvent(q, QAccessible::Focus);
+            focusEvent.setChild(actionIndex);
             QAccessible::updateAccessibility(&focusEvent);
-            QAccessibleEvent selectionEvent(QAccessible::Selection, q, actionIndex);
+            QAccessibleEvent selectionEvent(q, QAccessible::Selection);
+            focusEvent.setChild(actionIndex);
             QAccessible::updateAccessibility(&selectionEvent);
         }
 #endif
@@ -1972,7 +1974,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     }
 
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessibleEvent event(QAccessible::PopupMenuStart, this ,0);
+    QAccessibleEvent event(this, QAccessible::PopupMenuStart);
     QAccessible::updateAccessibility(&event);
 #endif
 }
@@ -2094,7 +2096,7 @@ void QMenu::hideEvent(QHideEvent *)
         d->eventLoop->exit();
     d->setCurrentAction(0);
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessibleEvent event(QAccessible::PopupMenuEnd, this);
+    QAccessibleEvent event(this, QAccessible::PopupMenuEnd);
     QAccessible::updateAccessibility(&event);
 #endif
 #ifndef QT_NO_MENUBAR

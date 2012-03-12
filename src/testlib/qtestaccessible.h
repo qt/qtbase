@@ -183,35 +183,39 @@ private:
     }
     static QAccessibleEvent *copyEvent(QAccessibleEvent *event)
     {
+        QAccessibleEvent *ev;
         if (event->type() == QAccessible::StateChanged) {
-            return new QAccessibleStateChangeEvent(static_cast<QAccessibleStateChangeEvent*>(event)->changedStates(),
-                                                   event->object(), event->child());
+            ev = new QAccessibleStateChangeEvent(event->object(),
+                        static_cast<QAccessibleStateChangeEvent*>(event)->changedStates());
         } else if (event->type() == QAccessible::TextCaretMoved) {
-            return new QAccessibleTextCursorEvent(static_cast<QAccessibleTextCursorEvent*>(event)->cursorPosition(), event->object(), event->child());
+            ev =  new QAccessibleTextCursorEvent(event->object(), static_cast<QAccessibleTextCursorEvent*>(event)->cursorPosition());
         } else if (event->type() == QAccessible::TextSelectionChanged) {
             const QAccessibleTextSelectionEvent *original = static_cast<QAccessibleTextSelectionEvent*>(event);
-            QAccessibleTextSelectionEvent *ev = new QAccessibleTextSelectionEvent(original->selectionStart(), original->selectionEnd(), event->object(), event->child());
-            ev->setCursorPosition(original->cursorPosition());
-            return ev;
+            QAccessibleTextSelectionEvent *sel = new QAccessibleTextSelectionEvent(event->object(), original->selectionStart(), original->selectionEnd());
+            sel->setCursorPosition(original->cursorPosition());
+            ev = sel;
         } else if (event->type() == QAccessible::TextInserted) {
             const QAccessibleTextInsertEvent *original = static_cast<QAccessibleTextInsertEvent*>(event);
-            QAccessibleTextInsertEvent *ev = new QAccessibleTextInsertEvent(original->changePosition(), original->textInserted(), event->object(), event->child());
-            ev->setCursorPosition(original->cursorPosition());
-            return ev;
+            QAccessibleTextInsertEvent *ins = new QAccessibleTextInsertEvent(event->object(), original->changePosition(), original->textInserted());
+            ins->setCursorPosition(original->cursorPosition());
+            ev = ins;
         } else if (event->type() == QAccessible::TextRemoved) {
             const QAccessibleTextRemoveEvent *original = static_cast<QAccessibleTextRemoveEvent*>(event);
-            QAccessibleTextRemoveEvent *ev = new QAccessibleTextRemoveEvent(original->changePosition(), original->textRemoved(), event->object(), event->child());
-            ev->setCursorPosition(original->cursorPosition());
-            return ev;
+            QAccessibleTextRemoveEvent *rem = new QAccessibleTextRemoveEvent(event->object(), original->changePosition(), original->textRemoved());
+            rem->setCursorPosition(original->cursorPosition());
+            ev = rem;
         } else if (event->type() == QAccessible::TextUpdated) {
             const QAccessibleTextUpdateEvent *original = static_cast<QAccessibleTextUpdateEvent*>(event);
-            QAccessibleTextUpdateEvent *ev = new QAccessibleTextUpdateEvent(original->changePosition(), original->textRemoved(), original->textInserted(), event->object(), event->child());
-            ev->setCursorPosition(original->cursorPosition());
-            return ev;
+            QAccessibleTextUpdateEvent *upd = new QAccessibleTextUpdateEvent(event->object(), original->changePosition(), original->textRemoved(), original->textInserted());
+            upd->setCursorPosition(original->cursorPosition());
+            ev = upd;
         } else if (event->type() == QAccessible::ValueChanged) {
-            return new QAccessibleValueChangeEvent(static_cast<QAccessibleValueChangeEvent*>(event)->value(), event->object(), event->child());
+            ev = new QAccessibleValueChangeEvent(event->object(), static_cast<QAccessibleValueChangeEvent*>(event)->value());
+        } else {
+            ev = new QAccessibleEvent(event->object(), event->type());
         }
-        return new QAccessibleEvent(event->type(), event->object(), event->child());
+        ev->setChild(event->child());
+        return ev;
     }
 
     static EventList &eventList()

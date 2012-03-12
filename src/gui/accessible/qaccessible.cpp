@@ -648,7 +648,8 @@ void QAccessible::setRootObject(QObject *object)
 void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
 {
     Q_ASSERT(object);
-    QAccessibleEvent ev(reason, object, child);
+
+    QAccessibleEvent ev(object, reason);
     updateAccessibility(&ev);
 }
 

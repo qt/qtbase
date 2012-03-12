@@ -1112,7 +1112,7 @@ void QAbstractItemView::reset()
 #ifdef Q_WS_X11
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(this)->table2Interface()->modelReset();
-        QAccessibleEvent event(QAccessible::TableModelChanged, this, 0);
+        QAccessibleEvent event(this, QAccessible::TableModelChanged);
         QAccessible::updateAccessibility(&event);
     }
 #endif

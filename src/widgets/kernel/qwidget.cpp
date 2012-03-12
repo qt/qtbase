@@ -5967,7 +5967,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
         if (!(f->inherits("QMenuBar") || f->inherits("QMenu") || f->inherits("QMenuItem")))
 # endif
         {
-            QAccessibleEvent event(QAccessible::Focus, f);
+            QAccessibleEvent event(f, QAccessible::Focus);
             QAccessible::updateAccessibility(&event);
         }
 #endif
@@ -6049,7 +6049,7 @@ void QWidget::clearFocus()
 #endif
         {
 #ifndef QT_NO_ACCESSIBILITY
-            QAccessibleEvent event(QAccessible::Focus, this);
+            QAccessibleEvent event(this, QAccessible::Focus);
             QAccessible::updateAccessibility(&event);
 #endif
         }
@@ -7057,7 +7057,7 @@ void QWidgetPrivate::show_helper()
 
 #ifndef QT_NO_ACCESSIBILITY
     if (q->windowType() != Qt::ToolTip) {    // Tooltips are read aloud twice in MS narrator.
-        QAccessibleEvent event(QAccessible::ObjectShow, q);
+        QAccessibleEvent event(q, QAccessible::ObjectShow);
         QAccessible::updateAccessibility(&event);
     }
 #endif
@@ -7150,7 +7150,7 @@ void QWidgetPrivate::hide_helper()
 
 #ifndef QT_NO_ACCESSIBILITY
     if (wasVisible) {
-        QAccessibleEvent event(QAccessible::ObjectHide, q);
+        QAccessibleEvent event(q, QAccessible::ObjectHide);
         QAccessible::updateAccessibility(&event);
     }
 #endif
@@ -7384,7 +7384,7 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
         qApp->d_func()->sendSyntheticEnterLeave(widget);
 #ifndef QT_NO_ACCESSIBILITY
         if (!spontaneous) {
-            QAccessibleEvent event(QAccessible::ObjectHide, widget);
+            QAccessibleEvent event(widget, QAccessible::ObjectHide);
             QAccessible::updateAccessibility(&event);
         }
 #endif
@@ -8261,7 +8261,7 @@ void QWidget::changeEvent(QEvent * event)
 #ifndef QT_NO_ACCESSIBILITY
         QAccessible::State s;
         s.disabled = true;
-        QAccessibleStateChangeEvent event(s, this);
+        QAccessibleStateChangeEvent event(this, s);
         QAccessible::updateAccessibility(&event);
 #endif
         break;
@@ -10403,7 +10403,7 @@ void QWidget::setAccessibleName(const QString &name)
 {
     Q_D(QWidget);
     d->accessibleName = name;
-    QAccessibleEvent event(QAccessible::NameChanged, this);
+    QAccessibleEvent event(this, QAccessible::NameChanged);
     QAccessible::updateAccessibility(&event);
 }
 
@@ -10426,7 +10426,7 @@ void QWidget::setAccessibleDescription(const QString &description)
 {
     Q_D(QWidget);
     d->accessibleDescription = description;
-    QAccessibleEvent event(QAccessible::DescriptionChanged, this);
+    QAccessibleEvent event(this, QAccessible::DescriptionChanged);
     QAccessible::updateAccessibility(&event);
 }
 

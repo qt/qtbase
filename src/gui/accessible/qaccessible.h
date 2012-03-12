@@ -434,8 +434,8 @@ class Q_GUI_EXPORT QAccessibleEvent
 {
     Q_DISABLE_COPY(QAccessibleEvent)
 public:
-    inline QAccessibleEvent(QAccessible::Event typ, QObject *obj, int chld = -1)
-        : m_type(typ), m_object(obj), m_child(chld)
+    inline QAccessibleEvent(QObject *obj, QAccessible::Event typ)
+        : m_type(typ), m_object(obj), m_child(-1)
     {
         Q_ASSERT(obj);
         // All events below have a subclass of QAccessibleEvent.
@@ -454,6 +454,8 @@ public:
 
     QAccessible::Event type() const { return m_type; }
     QObject *object() const { return m_object; }
+
+    void setChild(int chld) { m_child = chld; }
     int child() const { return m_child; }
 
     QAccessibleInterface *accessibleInterface() const;
@@ -467,8 +469,8 @@ protected:
 class Q_GUI_EXPORT QAccessibleStateChangeEvent :public QAccessibleEvent
 {
 public:
-    inline QAccessibleStateChangeEvent(QAccessible::State state, QObject *obj, int chld = -1)
-        : QAccessibleEvent(QAccessible::InvalidEvent, obj, chld), m_changedStates(state)
+    inline QAccessibleStateChangeEvent(QObject *obj, QAccessible::State state)
+        : QAccessibleEvent(obj, QAccessible::InvalidEvent), m_changedStates(state)
     {
         m_type = QAccessible::StateChanged;
     }
@@ -485,8 +487,8 @@ protected:
 class Q_GUI_EXPORT QAccessibleTextCursorEvent : public QAccessibleEvent
 {
 public:
-    inline QAccessibleTextCursorEvent(int cursorPos, QObject *obj, int chld = -1)
-        : QAccessibleEvent(QAccessible::InvalidEvent, obj, chld)
+    inline QAccessibleTextCursorEvent(QObject *obj, int cursorPos)
+        : QAccessibleEvent(obj, QAccessible::InvalidEvent)
       , m_cursorPosition(cursorPos)
     {
         m_type = QAccessible::TextCaretMoved;
@@ -503,8 +505,8 @@ protected:
 class Q_GUI_EXPORT QAccessibleTextSelectionEvent : public QAccessibleTextCursorEvent
 {
 public:
-    inline QAccessibleTextSelectionEvent(int start, int end, QObject *obj, int chld = -1)
-        : QAccessibleTextCursorEvent((start == -1) ? 0 : end, obj, chld)
+    inline QAccessibleTextSelectionEvent(QObject *obj, int start, int end)
+        : QAccessibleTextCursorEvent(obj, (start == -1) ? 0 : end)
         , m_selectionStart(start), m_selectionEnd(end)
     {
         m_type = QAccessible::TextSelectionChanged;
@@ -526,8 +528,8 @@ protected:
 class Q_GUI_EXPORT QAccessibleTextInsertEvent : public QAccessibleTextCursorEvent
 {
 public:
-    inline QAccessibleTextInsertEvent(int position, const QString &text, QObject *obj, int chld = -1)
-        : QAccessibleTextCursorEvent(position + text.length(), obj, chld)
+    inline QAccessibleTextInsertEvent(QObject *obj, int position, const QString &text)
+        : QAccessibleTextCursorEvent(obj, position + text.length())
         , m_position(position), m_text(text)
     {
         m_type = QAccessible::TextInserted;
@@ -548,8 +550,8 @@ protected:
 class Q_GUI_EXPORT QAccessibleTextRemoveEvent : public QAccessibleTextCursorEvent
 {
 public:
-    inline QAccessibleTextRemoveEvent(int position, const QString &text, QObject *obj, int chld = -1)
-        : QAccessibleTextCursorEvent(position, obj, chld)
+    inline QAccessibleTextRemoveEvent(QObject *obj, int position, const QString &text)
+        : QAccessibleTextCursorEvent(obj, position)
         , m_position(position), m_text(text)
     {
         m_type = QAccessible::TextRemoved;
@@ -570,8 +572,8 @@ protected:
 class Q_GUI_EXPORT QAccessibleTextUpdateEvent : public QAccessibleTextCursorEvent
 {
 public:
-    inline QAccessibleTextUpdateEvent(int position, const QString &oldText, const QString &text, QObject *obj, int chld = -1)
-        : QAccessibleTextCursorEvent(position + text.length(), obj, chld)
+    inline QAccessibleTextUpdateEvent(QObject *obj, int position, const QString &oldText, const QString &text)
+        : QAccessibleTextCursorEvent(obj, position + text.length())
         , m_position(position), m_oldText(oldText), m_text(text)
     {
         m_type = QAccessible::TextUpdated;
@@ -595,8 +597,8 @@ protected:
 class Q_GUI_EXPORT QAccessibleValueChangeEvent : public QAccessibleEvent
 {
 public:
-    inline QAccessibleValueChangeEvent(const QVariant &val, QObject *obj, int chld = -1)
-        : QAccessibleEvent(QAccessible::InvalidEvent, obj, chld)
+    inline QAccessibleValueChangeEvent(QObject *obj, const QVariant &val)
+        : QAccessibleEvent(obj, QAccessible::InvalidEvent)
       , m_value(val)
     {
         m_type = QAccessible::ValueChanged;
