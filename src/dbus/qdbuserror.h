@@ -98,6 +98,7 @@ public:
     QDBusError(ErrorType error, const QString &message);
     QDBusError(const QDBusError &other);
     QDBusError &operator=(const QDBusError &other);
+    QDBusError &operator=(const QDBusMessage &msg);
 
     ErrorType type() const;
     QString name() const;

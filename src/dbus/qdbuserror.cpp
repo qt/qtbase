@@ -303,6 +303,24 @@ QDBusError &QDBusError::operator=(const QDBusError &other)
 }
 
 /*!
+  \internal
+  Assignment operator from a QDBusMessage
+*/
+QDBusError &QDBusError::operator=(const QDBusMessage &qdmsg)
+{
+    if (qdmsg.type() == QDBusMessage::ErrorMessage) {
+        code = ::get(qdmsg.errorName().toUtf8().constData());
+        nm = qdmsg.errorName();
+        msg = qdmsg.errorMessage();
+    } else {
+        code =NoError;
+        nm.clear();
+        msg.clear();
+    }
+    return *this;
+}
+
+/*!
     Returns this error's ErrorType.
 
     \sa ErrorType
