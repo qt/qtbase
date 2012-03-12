@@ -39,46 +39,40 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVMOUSE_H
-#define QEVDEVMOUSE_H
+#ifndef QEVDEVMOUSEMANAGER_H
+#define QEVDEVMOUSEMANAGER_H
+
+#include "qevdevmousehandler.h"
+
+#include <QtPlatformSupport/private/qudevicehelper_p.h>
 
 #include <QObject>
-#include <QString>
+#include <QHash>
+#include <QSocketNotifier>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QSocketNotifier;
-
-class QEvdevMouseHandler : public QObject
+class QEvdevMouseManager : public QObject
 {
     Q_OBJECT
 public:
-    QEvdevMouseHandler(const QString &key, const QString &specification);
-    ~QEvdevMouseHandler();
+    explicit QEvdevMouseManager(const QString &key, const QString &specification);
+    ~QEvdevMouseManager();
 
 private slots:
-    void readMouseData();
+    void addMouse(const QString &deviceNode = QString());
+    void removeMouse(const QString &deviceNode);
 
 private:
-    void sendMouseEvent();
-    void pathFromUdev(QString *path);
-
-    QSocketNotifier *m_notify;
-    int m_fd;
-    int m_x, m_y;
-    int m_prevx, m_prevy;
-    int m_xoffset, m_yoffset;
-    int m_smoothx, m_smoothy;
-    Qt::MouseButtons m_buttons;
-    bool m_compression;
-    bool m_smooth;
-    int m_jitterLimitSquared;
+    QString m_spec;
+    QHash<QString,QEvdevMouseHandler*> m_mice;
+    QUDeviceHelper *m_udeviceHelper;
 };
-
-QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QEVDEVMOUSE_H
+QT_END_NAMESPACE
+
+#endif // QEVDEVMOUSEMANAGER_H

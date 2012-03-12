@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,22 +39,47 @@
 **
 ****************************************************************************/
 
-#ifndef QUDEVHELPER_P_H
-#define QUDEVHELPER_P_H
+#ifndef QEVDEVMOUSEHANDLER_H
+#define QEVDEVMOUSEHANDLER_H
 
-#include <QString>
 #include <QObject>
+#include <QString>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-enum QUDeviceType {
-    UDev_Mouse = 0x01,
-    UDev_Touchpad = 0x02,
-    UDev_Touchscreen = 0x04
-};
+class QSocketNotifier;
 
-void q_udev_devicePath(int type, QString *path);
+class QEvdevMouseHandler : public QObject
+{
+    Q_OBJECT
+public:
+    static QEvdevMouseHandler *createLinuxInputMouseHandler(const QString &key, const QString &specification);
+    ~QEvdevMouseHandler();
+
+private slots:
+    void readMouseData();
+
+private:
+    QEvdevMouseHandler(int deviceDescriptor, bool compression, bool smooth, int jitterLimit, int xoffset, int yoffset);
+
+    void sendMouseEvent();
+
+    QSocketNotifier *m_notify;
+    int m_x, m_y;
+    int m_prevx, m_prevy;
+    int m_fd;
+    bool m_compression;
+    bool m_smooth;
+    int m_xoffset, m_yoffset;
+    Qt::MouseButtons m_buttons;
+    int m_smoothx, m_smoothy;
+    int m_jitterLimitSquared;
+};
 
 QT_END_NAMESPACE
 
-#endif // QUDEVHELPER_P_H
+QT_END_HEADER
+
+#endif // QEVDEVMOUSEHANDLER_H

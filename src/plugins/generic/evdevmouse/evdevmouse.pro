@@ -5,12 +5,14 @@ DESTDIR = $$QT.gui.plugins/generic
 target.path = $$[QT_INSTALL_PLUGINS]/generic
 INSTALLS += target
 
-HEADERS = qevdevmouse.h
+HEADERS = qevdevmousehandler.h \
+    qevdevmousemanager.h
 
 QT += core-private platformsupport-private
 
 SOURCES = main.cpp \
-          qevdevmouse.cpp
+          qevdevmousehandler.cpp \
+    qevdevmousemanager.cpp
 
 OTHER_FILES += \
     evdevmouse.json
