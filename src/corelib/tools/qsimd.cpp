@@ -108,12 +108,12 @@ static inline uint detectProcessorFeatures()
     uint features = 0;
 
 #if defined(Q_OS_LINUX)
-    int auxv = ::qt_safe_open("/proc/self/auxv", O_RDONLY);
+    int auxv = qt_safe_open("/proc/self/auxv", O_RDONLY);
     if (auxv != -1) {
         unsigned long vector[64];
         int nread;
         while (features == 0) {
-            nread = ::qt_safe_read(auxv, (char *)vector, sizeof vector);
+            nread = qt_safe_read(auxv, (char *)vector, sizeof vector);
             if (nread <= 0) {
                 // EOF or error
                 break;
@@ -130,7 +130,7 @@ static inline uint detectProcessorFeatures()
                 }
         }
 
-        ::qt_safe_close(auxv);
+        qt_safe_close(auxv);
         return features;
     }
     // fall back if /proc/self/auxv wasn't found
