@@ -43,7 +43,6 @@
 #include <QtTest/QtTest>
 
 #include "qpalette.h"
-#include <qapplication.h>
 
 class tst_QPalette : public QObject
 {

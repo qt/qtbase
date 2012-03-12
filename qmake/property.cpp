@@ -68,18 +68,6 @@ static const struct {
     { "QT_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath, false },
     { "QT_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath, false },
     { "QT_INSTALL_DEMOS", QLibraryInfo::ExamplesPath, false }, // Just backwards compat
-    { "QT_RAW_INSTALL_PREFIX", QLibraryInfo::PrefixPath, true },
-    { "QT_RAW_INSTALL_DATA", QLibraryInfo::DataPath, true },
-    { "QT_RAW_INSTALL_DOCS", QLibraryInfo::DocumentationPath, true },
-    { "QT_RAW_INSTALL_HEADERS", QLibraryInfo::HeadersPath, true },
-    { "QT_RAW_INSTALL_LIBS", QLibraryInfo::LibrariesPath, true },
-    { "QT_RAW_INSTALL_BINS", QLibraryInfo::BinariesPath, true },
-    { "QT_RAW_INSTALL_TESTS", QLibraryInfo::TestsPath, true },
-    { "QT_RAW_INSTALL_PLUGINS", QLibraryInfo::PluginsPath, true },
-    { "QT_RAW_INSTALL_IMPORTS", QLibraryInfo::ImportsPath, true },
-    { "QT_RAW_INSTALL_TRANSLATIONS", QLibraryInfo::TranslationsPath, true },
-    { "QT_RAW_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath, true },
-    { "QT_RAW_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath, true },
     { "QT_HOST_PREFIX", QLibraryInfo::HostPrefixPath, true },
     { "QT_HOST_DATA", QLibraryInfo::HostDataPath, true },
     { "QT_HOST_BINS", QLibraryInfo::HostBinariesPath, true },
@@ -87,10 +75,15 @@ static const struct {
 
 QMakeProperty::QMakeProperty() : settings(0)
 {
-    for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++)
-        m_values[QString::fromLatin1(propList[i].name)] = propList[i].raw
-                ? QLibraryInfo::rawLocation(propList[i].loc)
-                : QLibraryInfo::location(propList[i].loc);
+    for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++) {
+        QString name = QString::fromLatin1(propList[i].name);
+        QString val = QLibraryInfo::rawLocation(propList[i].loc);
+        if (!propList[i].raw) {
+            m_values[name] = QLibraryInfo::location(propList[i].loc);
+            name += "/raw";
+        }
+        m_values[name] = val;
+    }
 }
 
 QMakeProperty::~QMakeProperty()
@@ -216,8 +209,13 @@ QMakeProperty::exec()
 #ifdef QT_VERSION_STR
             specialProps.append("QT_VERSION");
 #endif
-            foreach (QString prop, specialProps)
-                fprintf(stdout, "%s:%s\n", prop.toLatin1().constData(), value(prop).toLatin1().constData());
+            foreach (QString prop, specialProps) {
+                QString val = value(prop);
+                QString pval = value(prop + "/raw");
+                fprintf(stdout, "%s:%s\n", prop.toLatin1().constData(), val.toLatin1().constData());
+                if (!pval.isEmpty() && pval != val)
+                    fprintf(stdout, "%s/raw:%s\n", prop.toLatin1().constData(), pval.toLatin1().constData());
+            }
             return true;
         }
         for(QStringList::ConstIterator it = Option::prop::properties.begin();

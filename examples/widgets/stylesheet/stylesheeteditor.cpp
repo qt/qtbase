@@ -85,7 +85,7 @@ void StyleSheetEditor::loadStyleSheet(const QString &sheetName)
 {
     QFile file(":/qss/" + sheetName.toLower() + ".qss");
     file.open(QFile::ReadOnly);
-    QString styleSheet = QLatin1String(file.readAll());
+    QString styleSheet = QString::fromLatin1(file.readAll());
 
     ui.styleTextEdit->setPlainText(styleSheet);
     qApp->setStyleSheet(styleSheet);

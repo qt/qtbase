@@ -94,6 +94,7 @@ void tst_ExceptionSafety_Objects::initTestCase()
 // helper structs to create an arbitrary widget
 struct AbstractTester
 {
+    virtual ~AbstractTester() {}
     virtual void operator()(QObject *parent) = 0;
 };
 Q_DECLARE_METATYPE(AbstractTester *)

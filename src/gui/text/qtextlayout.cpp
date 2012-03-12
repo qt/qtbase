@@ -60,6 +60,7 @@
 #include <qdebug.h>
 
 #include "qfontengine_p.h"
+#include <private/qpainter_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -2062,7 +2063,7 @@ static void drawMenuText(QPainter *p, QFixed x, QFixed y, const QScriptItem &si,
         if (rtl)
             x -= w;
         if (gf.num_chars)
-            p->drawTextItem(QPointF(x.toReal(), y.toReal()), gf);
+            QPainterPrivate::get(p)->drawTextItem(QPointF(x.toReal(), y.toReal()), gf, eng);
         if (!rtl)
             x += w;
         if (ul && *ul != -1 && *ul < end) {
@@ -2083,7 +2084,7 @@ static void drawMenuText(QPainter *p, QFixed x, QFixed y, const QScriptItem &si,
             gf.underlineStyle = QTextCharFormat::SingleUnderline;
             if (rtl)
                 x -= w;
-            p->drawTextItem(QPointF(x.toReal(), y.toReal()), gf);
+            QPainterPrivate::get(p)->drawTextItem(QPointF(x.toReal(), y.toReal()), gf, eng);
             if (!rtl)
                 x += w;
             gf.underlineStyle = QTextCharFormat::NoUnderline;
@@ -2379,6 +2380,8 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
 
     QTextLineItemIterator iterator(eng, index, pos, selection);
     QFixed lineBase = line.base();
+    eng->clearDecorations();
+    eng->enableDelayDecorations();
 
     const QFixed y = QFixed::fromReal(pos.y()) + line.y + lineBase;
 
@@ -2451,7 +2454,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
                     gf.chars = 0;
                     gf.num_chars = 0;
                     gf.width = iterator.itemWidth;
-                    p->drawTextItem(QPointF(iterator.x.toReal(), y.toReal()), gf);
+                    QPainterPrivate::get(p)->drawTextItem(QPointF(iterator.x.toReal(), y.toReal()), gf, eng);
                     if (eng->option.flags() & QTextOption::ShowTabsAndSpaces) {
                         QChar visualTab(0x2192);
                         int w = QFontMetrics(f).width(visualTab);
@@ -2529,7 +2532,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
             } else {
                 if (noText)
                     gf.glyphs.numGlyphs = 0; // slightly less elegant than it should be
-                p->drawTextItem(pos, gf);
+                QPainterPrivate::get(p)->drawTextItem(pos, gf, eng);
             }
         }
         if (si.analysis.flags == QScriptAnalysis::Space
@@ -2542,7 +2545,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
             p->setPen(pen);
         }
     }
-
+    eng->drawDecorations(p);
 
     if (eng->hasFormats())
         p->setPen(pen);

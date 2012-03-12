@@ -90,7 +90,7 @@ void qt_format_text(const QFont &font,
                     const QRectF &_r, int tf, const QTextOption *option, const QString& str, QRectF *brect,
                     int tabstops, int* tabarray, int tabarraylen,
                     QPainter *painter);
-static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const QFontEngine *fe,
+static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const QFontEngine *fe, QTextEngine *textEngine,
                                    QTextCharFormat::UnderlineStyle underlineStyle,
                                    QTextItem::RenderFlags flags, qreal width,
                                    const QTextCharFormat &charFormat);
@@ -5551,14 +5551,9 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
 
     QRawFontPrivate *fontD = QRawFontPrivate::get(font);
-    bool supportsTransformations;
-    if (d->extended != 0) {
-        supportsTransformations = d->extended->supportsTransformations(fontD->fontEngine->fontDef.pixelSize,
-                                                                       d->state->matrix);
-    } else {
-        supportsTransformations = d->engine->type() == QPaintEngine::CoreGraphics
-                                  || d->state->matrix.isAffine();
-    }
+    bool supportsTransformations = d->extended
+        ? d->extended->supportsTransformations(fontD->fontEngine, d->state->matrix)
+        : d->engine->type() == QPaintEngine::CoreGraphics || d->state->matrix.isAffine();
 
     for (int i=0; i<count; ++i) {
         QPointF processedPosition = position + glyphPositions[i];
@@ -5646,6 +5641,7 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positio
 
     drawTextItemDecoration(q, QPointF(leftMost.toReal(), baseLine.toReal()),
                            fontEngine,
+                           0, // textEngine
                            (underline
                               ? QTextCharFormat::SingleUnderline
                               : QTextCharFormat::NoUnderline),
@@ -5739,7 +5735,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    bool supportsTransformations = d->extended->supportsTransformations(staticText_d->font.pixelSize(),
+    bool supportsTransformations = d->extended->supportsTransformations(staticText_d->font.d->engineForScript(QUnicodeTables::Common),
                                                                         d->state->matrix);
     if (supportsTransformations && !staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = true;
@@ -6182,7 +6178,7 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
     return pixmap;
 }
 
-static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const QFontEngine *fe,
+static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const QFontEngine *fe, QTextEngine *textEngine,
                                    QTextCharFormat::UnderlineStyle underlineStyle,
                                    QTextItem::RenderFlags flags, qreal width,
                                    const QTextCharFormat &charFormat)
@@ -6227,15 +6223,17 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
         painter->fillRect(pos.x(), 0, qCeil(width), qMin(wave.height(), descent), wave);
         painter->restore();
     } else if (underlineStyle != QTextCharFormat::NoUnderline) {
-        QLineF underLine(line.x1(), underlinePos, line.x2(), underlinePos);
-
         QColor uc = charFormat.underlineColor();
         if (uc.isValid())
             pen.setColor(uc);
 
         pen.setStyle((Qt::PenStyle)(underlineStyle));
         painter->setPen(pen);
-        painter->drawLine(underLine);
+        QLineF underline(line.x1(), underlinePos, line.x2(), underlinePos);
+        if (textEngine)
+            textEngine->addUnderline(painter, underline);
+        else
+            painter->drawLine(underline);
     }
 
     pen.setStyle(Qt::SolidLine);
@@ -6245,14 +6243,20 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
         QLineF strikeOutLine = line;
         strikeOutLine.translate(0., - fe->ascent().toReal() / 3.);
         painter->setPen(pen);
-        painter->drawLine(strikeOutLine);
+        if (textEngine)
+            textEngine->addStrikeOut(painter, strikeOutLine);
+        else
+            painter->drawLine(strikeOutLine);
     }
 
     if (flags & QTextItem::Overline) {
-        QLineF overLine = line;
-        overLine.translate(0., - fe->ascent().toReal());
+        QLineF overline = line;
+        overline.translate(0., - fe->ascent().toReal());
         painter->setPen(pen);
-        painter->drawLine(overLine);
+        if (textEngine)
+            textEngine->addOverline(painter, overline);
+        else
+            painter->drawLine(overline);
     }
 
     painter->setPen(oldPen);
@@ -6277,7 +6281,7 @@ Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t
 
         // We don't support glyphs that do not share a common baseline. If this turns out to
         // be a relevant use case, then we need to find clusters of glyphs that share a baseline
-        // and do a drawTextItemDecorations call per cluster.
+        // and do a drawTextItemDecoration call per cluster.
         if (i == 0 || baseLine < positions[i].y)
             baseLine = positions[i].y;
 
@@ -6298,12 +6302,20 @@ Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t
 
     drawTextItemDecoration(painter, QPointF(leftMost.toReal(), baseLine.toReal()),
                            fontEngine,
+                           0, // textEngine
                            font.underline() ? QTextCharFormat::SingleUnderline
                                             : QTextCharFormat::NoUnderline, flags,
                            width.toReal(), charFormat);
 }
 
-void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
+void QPainter::drawTextItem(const QPointF &p, const QTextItem &ti)
+{
+    Q_D(QPainter);
+
+    d->drawTextItem(p, ti, static_cast<QTextEngine *>(0));
+}
+
+void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QTextEngine *textEngine)
 {
 #ifdef QT_DEBUG_DRAW
     if (qt_show_painter_debug_output)
@@ -6311,35 +6323,35 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
                p.x(), p.y(), qPrintable(_ti.text()));
 #endif
 
-    Q_D(QPainter);
+    Q_Q(QPainter);
 
-    if (!d->engine)
+    if (!engine)
         return;
 
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(),
+    qt_painter_thread_test(device->devType(),
                            "text and fonts",
                            QFontDatabase::supportsThreadedFontRendering());
 #endif
 
     QTextItemInt &ti = const_cast<QTextItemInt &>(static_cast<const QTextItemInt &>(_ti));
 
-    if (!d->extended && d->state->bgMode == Qt::OpaqueMode) {
+    if (!extended && state->bgMode == Qt::OpaqueMode) {
         QRectF rect(p.x(), p.y() - ti.ascent.toReal(), ti.width.toReal(), (ti.ascent + ti.descent + 1).toReal());
-        fillRect(rect, d->state->bgBrush);
+        q->fillRect(rect, state->bgBrush);
     }
 
-    if (pen().style() == Qt::NoPen)
+    if (q->pen().style() == Qt::NoPen)
         return;
 
-    const RenderHints oldRenderHints = d->state->renderHints;
-    if (!d->state->renderHints & QPainter::Antialiasing && d->state->matrix.type() >= QTransform::TxScale) {
+    const QPainter::RenderHints oldRenderHints = state->renderHints;
+    if (!state->renderHints & QPainter::Antialiasing && state->matrix.type() >= QTransform::TxScale) {
         // draw antialias decoration (underline/overline/strikeout) with
         // transformed text
 
         bool aa = true;
-        const QTransform &m = d->state->matrix;
-        if (d->state->matrix.type() < QTransform::TxShear) {
+        const QTransform &m = state->matrix;
+        if (state->matrix.type() < QTransform::TxShear) {
             bool isPlain90DegreeRotation =
                 (qFuzzyIsNull(m.m11())
                  && qFuzzyIsNull(m.m12() - qreal(1))
@@ -6362,11 +6374,11 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
             aa = !isPlain90DegreeRotation;
         }
         if (aa)
-            setRenderHint(QPainter::Antialiasing, true);
+            q->setRenderHint(QPainter::Antialiasing, true);
     }
 
-    if (!d->extended)
-        d->updateState(d->state);
+    if (!extended)
+        updateState(state);
 
     if (!ti.glyphs.numGlyphs) {
         // nothing to do
@@ -6402,7 +6414,7 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
             if (rtl)
                 x -= ti2.width.toReal();
 
-            d->engine->drawTextItem(QPointF(x, y), ti2);
+            engine->drawTextItem(QPointF(x, y), ti2);
 
             if (!rtl)
                 x += ti2.width.toReal();
@@ -6429,10 +6441,10 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
         if (rtl)
             x -= ti2.width.toReal();
 
-        if (d->extended)
-            d->extended->drawTextItem(QPointF(x, y), ti2);
+        if (extended)
+            extended->drawTextItem(QPointF(x, y), ti2);
         else
-            d->engine->drawTextItem(QPointF(x,y), ti2);
+            engine->drawTextItem(QPointF(x,y), ti2);
 
         // reset the high byte for all glyphs
         const int hi = which << 24;
@@ -6440,20 +6452,20 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
             glyphs.glyphs[i] = hi | glyphs.glyphs[i];
 
     } else {
-        if (d->extended)
-            d->extended->drawTextItem(p, ti);
+        if (extended)
+            extended->drawTextItem(p, ti);
         else
-            d->engine->drawTextItem(p, ti);
+            engine->drawTextItem(p, ti);
     }
-    drawTextItemDecoration(this, p, ti.fontEngine, ti.underlineStyle, ti.flags, ti.width.toReal(),
-                           ti.charFormat);
+    drawTextItemDecoration(q, p, ti.fontEngine, textEngine, ti.underlineStyle,
+                           ti.flags, ti.width.toReal(), ti.charFormat);
 
-    if (d->state->renderHints != oldRenderHints) {
-        d->state->renderHints = oldRenderHints;
-        if (d->extended)
-            d->extended->renderHintsChanged();
+    if (state->renderHints != oldRenderHints) {
+        state->renderHints = oldRenderHints;
+        if (extended)
+            extended->renderHintsChanged();
         else
-            d->state->dirtyFlags |= QPaintEngine::DirtyHints;
+            state->dirtyFlags |= QPaintEngine::DirtyHints;
     }
 }
 
@@ -7550,11 +7562,12 @@ start_lengthVariant:
 
         for (int i = 0; i < textLayout.lineCount(); i++) {
             QTextLine line = textLayout.lineAt(i);
+            QTextEngine *eng = textLayout.engine();
+            eng->enableDelayDecorations();
 
             qreal advance = line.horizontalAdvance();
             xoff = 0;
             if (tf & Qt::AlignRight) {
-                QTextEngine *eng = textLayout.engine();
                 xoff = r.width() - advance -
                     eng->leadingSpaceWidth(eng->lines[line.lineNumber()]).toReal();
             }
@@ -7562,6 +7575,7 @@ start_lengthVariant:
                 xoff = (r.width() - advance) / 2;
 
             line.draw(painter, QPointF(r.x() + xoff, r.y() + yoff));
+            eng->drawDecorations(painter);
         }
 
         if (restore) {

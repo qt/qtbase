@@ -13,6 +13,7 @@ SUBDIRS += \
     concurrent \
     other \
     widgets \
+    printsupport \
 
 cross_compile:                              SUBDIRS -= tools
 !contains(QT_CONFIG, opengl):               SUBDIRS -= opengl

@@ -4,7 +4,7 @@
 
 CONFIG += testcase
 TARGET = tst_qdrag
-QT += widgets testlib
+QT += testlib
 SOURCES += tst_qdrag.cpp
 
 

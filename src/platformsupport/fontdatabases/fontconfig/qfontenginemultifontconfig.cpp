@@ -42,7 +42,6 @@
 #include "qfontenginemultifontconfig_p.h"
 
 #include <QtGui/private/qfontengine_ft_p.h>
-#include <fontconfig/fontconfig.h>
 #include <QtGui/private/qfontengine_ft_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -53,6 +52,14 @@ QFontEngineMultiFontConfig::QFontEngineMultiFontConfig(QFontEngine *fe, int scri
 {
 }
 
+QFontEngineMultiFontConfig::~QFontEngineMultiFontConfig()
+{
+    Q_FOREACH (FcPattern *pattern, cachedMatchPatterns) {
+        if (pattern)
+            FcPatternDestroy(pattern);
+    }
+}
+
 bool QFontEngineMultiFontConfig::shouldLoadFontEngineForCharacter(int at, uint ucs4) const
 {
     QFontEngineFT *fontEngine = static_cast<QFontEngineFT *>(engines.at(at));
@@ -61,27 +68,37 @@ bool QFontEngineMultiFontConfig::shouldLoadFontEngineForCharacter(int at, uint u
         FcCharSet *charSet = fontEngine->freetype->charset;
         charSetHasChar = FcCharSetHasChar(charSet, ucs4);
     } else {
-        FcPattern *requestPattern = FcPatternCreate();
-
-        FcValue value;
-        value.type = FcTypeString;
-        QByteArray cs = fallbackFamilyAt(at-1).toUtf8();
-        value.u.s = reinterpret_cast<const FcChar8 *>(cs.data());
-        FcPatternAdd(requestPattern, FC_FAMILY, value, true);
-
-        FcResult result;
-        FcPattern *matchPattern = FcFontMatch(0, requestPattern, &result);
+        FcPattern *matchPattern = getMatchPatternForFallback(at - 1);
         if (matchPattern != 0) {
             FcCharSet *charSet;
             FcPatternGetCharSet(matchPattern, FC_CHARSET, 0, &charSet);
             charSetHasChar = FcCharSetHasChar(charSet, ucs4);
-            FcPatternDestroy(matchPattern);
         }
-
-        FcPatternDestroy(requestPattern);
     }
 
     return charSetHasChar;
+}
+
+
+FcPattern * QFontEngineMultiFontConfig::getMatchPatternForFallback(int fallBackIndex) const
+{
+    Q_ASSERT(fallBackIndex < fallbackFamilyCount());
+    if (engines.size() - 1 > cachedMatchPatterns.size())
+        cachedMatchPatterns.resize(engines.size() - 1);
+    FcPattern *ret = cachedMatchPatterns.at(fallBackIndex);
+    if (ret)
+        return ret;
+    FcPattern *requestPattern = FcPatternCreate();
+    FcValue value;
+    value.type = FcTypeString;
+    QByteArray cs = fallbackFamilyAt(fallBackIndex).toUtf8();
+    value.u.s = reinterpret_cast<const FcChar8 *>(cs.data());
+    FcPatternAdd(requestPattern, FC_FAMILY, value, true);
+    FcResult result;
+    ret = FcFontMatch(0, requestPattern, &result);
+    cachedMatchPatterns.insert(fallBackIndex, ret);
+    FcPatternDestroy(requestPattern);
+    return ret;
 }
 
 QT_END_NAMESPACE

@@ -768,7 +768,7 @@ void QWidgetLineControl::internalSetText(const QString &txt, int pos, bool edite
 
 #ifndef QT_NO_ACCESSIBILITY
     if (changed)
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TextUpdated, parent(), 0));
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TextUpdated, parent()));
 #endif
 }
 
@@ -1367,7 +1367,7 @@ void QWidgetLineControl::emitCursorPositionChanged()
         m_lastCursorPos = m_cursor;
         cursorPositionChanged(oldLast, m_cursor);
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TextCaretMoved, parent(), 0));
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TextCaretMoved, parent()));
 #endif
     }
 }

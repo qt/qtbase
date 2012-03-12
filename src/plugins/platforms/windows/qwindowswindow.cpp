@@ -441,17 +441,17 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange) const
 {
     if (desktop || !hwnd)
         return;
-    UINT flags = SWP_NOMOVE | SWP_NOSIZE;
+    UINT swpFlags = SWP_NOMOVE | SWP_NOSIZE;
     if (frameChange)
-        flags |= SWP_FRAMECHANGED;
+        swpFlags |= SWP_FRAMECHANGED;
     if (topLevel) {
-        flags |= SWP_NOACTIVATE;
+        swpFlags |= SWP_NOACTIVATE;
         if ((flags & Qt::WindowStaysOnTopHint) || (type == Qt::ToolTip)) {
-            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, flags);
+            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, swpFlags);
             if (flags & Qt::WindowStaysOnBottomHint)
                 qWarning() << "QWidget: Incompatible window flags: the window can't be on top and on bottom at the same time";
         } else if (flags & Qt::WindowStaysOnBottomHint) {
-            SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, flags);
+            SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, swpFlags);
         }
         if (flags & (Qt::CustomizeWindowHint|Qt::WindowTitleHint)) {
             HMENU systemMenu = GetSystemMenu(hwnd, FALSE);
@@ -461,7 +461,7 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange) const
                 EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
         }
     } else { // child.
-        SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, flags);
+        SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, swpFlags);
     }
 }
 

@@ -235,16 +235,24 @@ QXcbWindow *QXcbConnection::platformWindowFromId(xcb_window_t id)
 #define HANDLE_PLATFORM_WINDOW_EVENT(event_t, windowMember, handler) \
 { \
     event_t *e = (event_t *)event; \
-    if (QXcbWindow *platformWindow = platformWindowFromId(e->windowMember)) \
-        platformWindow->handler(e); \
+    if (QXcbWindow *platformWindow = platformWindowFromId(e->windowMember))  { \
+        long result = 0; \
+        handled = QWindowSystemInterface::handleNativeEvent(platformWindow->window(), m_nativeInterface->genericEventFilterType(), event, &result); \
+        if (!handled) \
+            platformWindow->handler(e); \
+    } \
 } \
 break;
 
 #define HANDLE_KEYBOARD_EVENT(event_t, handler) \
 { \
     event_t *e = (event_t *)event; \
-    if (QXcbWindow *platformWindow = platformWindowFromId(e->event)) \
-        m_keyboard->handler(platformWindow, e); \
+    if (QXcbWindow *platformWindow = platformWindowFromId(e->event)) { \
+        long result = 0; \
+        handled = QWindowSystemInterface::handleNativeEvent(platformWindow->window(), m_nativeInterface->genericEventFilterType(), event, &result); \
+        if (!handled) \
+            m_keyboard->handler(platformWindow, e); \
+    } \
 } \
 break;
 

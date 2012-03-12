@@ -1,0 +1,6 @@
+currentdir.txt blahblah.txt
+currentdir2.txt currentdir2.txt
+search_file.txt search_file.txt
+/root/test/testdir.txt test/testdir.txt
+test/testdir2.txt test/testdir2.txt
+parentdir.txt ../parentdir.txt

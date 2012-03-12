@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource>
+    <file>currentdir.txt</file>
+    <file alias="alias.txt">currentdir2.txt</file>
+    <file alias="otheralias.txt">blahblah.txt</file>
+    </qresource>
+    <qresource>
+    <file alias="alias3">../parentdir.txt</file>
+    </qresource>
+</RCC>

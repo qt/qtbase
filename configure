@@ -639,17 +639,6 @@ rm -f "$outpath/config.tests/.qmake.cache"
 cp "$QMAKE_VARS_FILE" "$outpath/config.tests/.qmake.cache"
 
 QMakeVar add styles "cde mac motif plastique cleanlooks windows"
-QMakeVar add decorations "default windows styled"
-QMakeVar add mouse-drivers "pc"
-if [ "$UNAME_SYSTEM" = "Linux" ] ; then
-    QMakeVar add gfx-drivers "linuxfb"
-    QMakeVar add mouse-drivers "linuxtp"
-fi
-QMakeVar add kbd-drivers "tty"
-
-if [ "$CFG_DEV" = "yes" ]; then
-    QMakeVar add kbd-drivers "um"
-fi
 
 # QTDIR may be set and point to an old or system-wide Qt installation
 unset QTDIR
@@ -662,7 +651,6 @@ CFG_CONFIGURE_EXIT_ON_ERROR=yes
 CFG_PROFILE=no
 CFG_EXCEPTIONS=unspecified
 CFG_GUI=auto # (yes|no|auto)
-CFG_INCREMENTAL=auto
 CFG_QCONFIG=full
 CFG_DEBUG=auto
 CFG_MYSQL_CONFIG=
@@ -705,37 +693,17 @@ CFG_V8SNAPSHOT=auto
 CFG_DECLARATIVE_DEBUG=yes
 CFG_JAVASCRIPTCORE_JIT=auto
 
-CFG_GFX_AVAILABLE="linuxfb transformed qvfb vnc multiscreen directfb"
-CFG_GFX_ON="linuxfb multiscreen"
-CFG_GFX_PLUGIN_AVAILABLE=
-CFG_GFX_PLUGIN=
-CFG_GFX_OFF=
-CFG_KBD_AVAILABLE="tty linuxinput qvfb"
-CFG_KBD_ON="tty"    #default, see QMakeVar above
-CFG_MOUSE_AVAILABLE="pc linuxtp linuxinput tslib qvfb"
-CFG_MOUSE_ON="pc linuxtp"   #default, see QMakeVar above
-
 CFG_ARCH=
 CFG_HOST_ARCH=
-CFG_KBD_PLUGIN_AVAILABLE=
-CFG_KBD_PLUGIN=
-CFG_KBD_OFF=
-CFG_MOUSE_PLUGIN_AVAILABLE=
-CFG_MOUSE_PLUGIN=
-CFG_MOUSE_OFF=
 CFG_USE_GNUMAKE=no
 CFG_IM=yes
-CFG_DECORATION_AVAILABLE="styled windows default"
-CFG_DECORATION_ON="${CFG_DECORATION_AVAILABLE}" # all on by default
-CFG_DECORATION_PLUGIN_AVAILABLE=
-CFG_DECORATION_PLUGIN=
 CFG_XINPUT2=auto
 CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XCB=auto
 CFG_XCB_LIMITED=yes
-CFG_WAYLAND=auto
 CFG_LIBUDEV=auto
+CFG_OBSOLETE_WAYLAND=no
 CFG_EVDEV=auto
 CFG_NIS=auto
 CFG_CUPS=auto
@@ -849,7 +817,7 @@ QT_CFLAGS_GSTREAMER=
 QT_LIBS_GSTREAMER=
 
 #-------------------------------------------------------------------------------
-# check SQL drivers, mouse drivers and decorations available in this package
+# check SQL drivers available in this package
 #-------------------------------------------------------------------------------
 
 # opensource version removes some drivers, so force them to be off
@@ -866,47 +834,6 @@ if [ -d "$relpath/src/plugins/sqldrivers" ]; then
 	 eval "CFG_SQL_${base_a}=auto"
      fi
   done
-fi
-
-CFG_DECORATION_PLUGIN_AVAILABLE=
-if [ -d "$relpath/src/plugins/decorations" ]; then
-  for a in "$relpath/src/plugins/decorations/"*; do
-     if [ -d "$a" ]; then
-	 base_a=`basename "$a"`
-  	 CFG_DECORATION_PLUGIN_AVAILABLE="${CFG_DECORATION_PLUGIN_AVAILABLE} ${base_a}"
-     fi
-  done
-fi
-
-CFG_KBD_PLUGIN_AVAILABLE=
-if [ -d "$relpath/src/plugins/kbddrivers" ]; then
-  for a in "$relpath/src/plugins/kbddrivers/"*; do
-     if [ -d "$a" ]; then
-	 base_a=`basename "$a"`
-  	 CFG_KBD_PLUGIN_AVAILABLE="${CFG_KBD_PLUGIN_AVAILABLE} ${base_a}"
-     fi
-  done
-fi
-
-CFG_MOUSE_PLUGIN_AVAILABLE=
-if [ -d "$relpath/src/plugins/mousedrivers" ]; then
-  for a in "$relpath/src/plugins/mousedrivers/"*; do
-     if [ -d "$a" ]; then
-	 base_a=`basename "$a"`
-  	 CFG_MOUSE_PLUGIN_AVAILABLE="${CFG_MOUSE_PLUGIN_AVAILABLE} ${base_a}"
-     fi
-  done
-fi
-
-CFG_GFX_PLUGIN_AVAILABLE=
-if [ -d "$relpath/src/plugins/gfxdrivers" ]; then
-  for a in "$relpath/src/plugins/gfxdrivers/"*; do
-     if [ -d "$a" ]; then
-	 base_a=`basename "$a"`
-  	 CFG_GFX_PLUGIN_AVAILABLE="${CFG_GFX_PLUGIN_AVAILABLE} ${base_a}"
-     fi
-  done
-  CFG_GFX_OFF="$CFG_GFX_AVAILABLE" # assume all off
 fi
 
 CFG_IMAGEFORMAT_PLUGIN_AVAILABLE=
@@ -960,7 +887,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1249,20 +1176,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    qvfb) # left for commandline compatibility, not documented
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            if [ "$VAL" = "yes" ]; then
-		QMakeVar add gfx-drivers qvfb
-		QMakeVar add kbd-drivers qvfb
-		QMakeVar add mouse-drivers qvfb
-                CFG_GFX_ON="$CFG_GFX_ON qvfb"
-                CFG_KBD_ON="$CFG_KBD_ON qvfb"
-                CFG_MOUSE_ON="$CFG_MOUSE_ON qvfb"
-            fi
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     nomake)
 	CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS $VAL"
         ;;
@@ -1442,13 +1355,6 @@ while [ "$#" -gt 0 ]; do
             CFG_SHARED=no
         elif [ "$VAL" = "no" ]; then
             CFG_SHARED=yes
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    incremental)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_INCREMENTAL="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -1749,11 +1655,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     wayland)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_WAYLAND="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
+        CFG_OBSOLETE_WAYLAND=yes
         ;;
     libudev)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -1891,7 +1793,7 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    sql-*|gfx-*|decoration-*|kbd-*|mouse-*|imageformat-*)
+    sql-*|imageformat-*)
         # if Qt style options were used, $VAL can be "no", "qt", or "plugin"
         # if autoconf style options were used, $VAL can be "yes" or "no"
         [ "$VAL" = "yes" ] && VAL=qt
@@ -1908,30 +1810,6 @@ while [ "$#" -gt 0 ]; do
         case "$VAR" in
         sql)
             avail="$CFG_SQL_AVAILABLE"
-            ;;
-        gfx)
-            avail="$CFG_GFX_AVAILABLE"
-	    if [ "$OPT" = "plugin" ]; then
-		avail="$CFG_GFX_PLUGIN_AVAILABLE"
-	    fi
-            ;;
-        decoration)
-            avail="$CFG_DECORATION_AVAILABLE"
-	    if [ "$OPT" = "plugin" ]; then
-		avail="$CFG_DECORATION_PLUGIN_AVAILABLE"
-	    fi
-            ;;
-        kbd)
-            avail="$CFG_KBD_AVAILABLE"
-	    if [ "$OPT" = "plugin" ]; then
-		avail="$CFG_KBD_PLUGIN_AVAILABLE"
-	    fi
-            ;;
-        mouse)
-            avail="$CFG_MOUSE_AVAILABLE"
-	    if [ "$OPT" = "plugin" ]; then
-		avail="$CFG_MOUSE_PLUGIN_AVAILABLE"
-	    fi
             ;;
         imageformat)
             avail="$CFG_IMAGEFORMAT_PLUGIN_AVAILABLE"
@@ -1969,36 +1847,12 @@ while [ "$#" -gt 0 ]; do
 
         if [ "$OPT" = "plugin" ] || [ "$OPT" = "qt" ]; then
             if [ "$OPT" = "plugin" ]; then
-                [ "$VAR" = "decoration" ] && QMakeVar del "${VAR}s" "$VAL"
-                [ "$VAR" = "decoration" ] && CFG_DECORATION_ON=`echo "${CFG_DECORATION_ON} " | sed "s,${VAL} ,,g"` && CFG_DECORATION_PLUGIN="$CFG_DECORATION_PLUGIN ${VAL}"
-                [ "$VAR" = "kbd" ] && QMakeVar del "${VAR}s" "$VAL"
-                [ "$VAR" = "kbd" ] && CFG_KBD_ON=`echo "${CFG_KBD_ON} " | sed "s,${VAL} ,,g"` && CFG_KBD_PLUGIN="$CFG_KBD_PLUGIN ${VAL}"
-                [ "$VAR" = "mouse" ] && QMakeVar del "${VAR}s" "$VAL"
-                [ "$VAR" = "mouse" ] && CFG_MOUSE_ON=`echo "${CFG_MOUSE_ON} " | sed "s,${VAL} ,,g"` && CFG_MOUSE_PLUGIN="$CFG_MOUSE_PLUGIN ${VAL}"
-                [ "$VAR" = "gfx" ] && QMakeVar del "${VAR}s" "$VAL"
-                [ "$VAR" = "gfx" ] && CFG_GFX_ON=`echo "${CFG_GFX_ON} " | sed "s,${VAL} ,,g"` && CFG_GFX_PLUGIN="${CFG_GFX_PLUGIN} ${VAL}"
                 VAR="${VAR}-${OPT}"
-            else
-                if [ "$VAR" = "gfx" ] || [ "$VAR" = "kbd" ] || [ "$VAR" = "decoration" ] || [ "$VAR" = "mouse" ]; then
-                    [ "$VAR" = "gfx" ] && CFG_GFX_ON="$CFG_GFX_ON $VAL"
-                    [ "$VAR" = "kbd" ] && CFG_KBD_ON="$CFG_KBD_ON $VAL"
-		    [ "$VAR" = "decoration" ] && CFG_DECORATION_ON="$CFG_DECORATION_ON $VAL"
-                    [ "$VAR" = "mouse" ] && CFG_MOUSE_ON="$CFG_MOUSE_ON $VAL"
-                    VAR="${VAR}-driver"
-                fi
             fi
 	    QMakeVar add "${VAR}s" "${VAL}"
         elif [ "$OPT" = "no" ]; then
             PLUG_VAR="${VAR}-plugin"
-            if [ "$VAR" = "gfx" ] || [ "$VAR" = "kbd" ] || [ "$VAR" = "mouse" ]; then
-                IN_VAR="${VAR}-driver"
-            else
-                IN_VAR="${VAR}"
-            fi
-            [ "$VAR" = "decoration" ] && CFG_DECORATION_ON=`echo "${CFG_DECORATION_ON} " | sed "s,${VAL} ,,g"`
-            [ "$VAR" = "gfx" ] && CFG_GFX_ON=`echo "${CFG_GFX_ON} " | sed "s,${VAL} ,,g"`
-            [ "$VAR" = "kbd" ] && CFG_KBD_ON=`echo "${CFG_KBD_ON} " | sed "s,${VAL} ,,g"`
-            [ "$VAR" = "mouse" ] && CFG_MOUSE_ON=`echo "${CFG_MOUSE_ON} " | sed "s,${VAL} ,,g"`
+            IN_VAR="${VAR}"
 	    QMakeVar del "${IN_VAR}s" "$VAL"
 	    QMakeVar del "${PLUG_VAR}s" "$VAL"
         fi
@@ -2220,29 +2074,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     fi
 
     [ -d "$outpath/bin" ] || mkdir -p "$outpath/bin"
-
-    # symlink the qmake directory
-    find "$relpath/qmake" | while read a; do
-        my_a=`echo "$a" | sed "s,^${relpath}/,${outpath}/,"`
-        if [ '!' -f "$my_a" ]; then
-            if [ -d "$a" ]; then
-                # directories are created...
-                mkdir -p "$my_a"
-            else
-                a_dir=`dirname "$my_a"`
-                [ -d "$a_dir" ] || mkdir -p "$a_dir"
-                # ... and files are symlinked
-                case `basename "$a"` in
-                *.o|*.d|GNUmakefile*|qmake)
-                    ;;
-                *)
-                    rm -f "$my_a"
-                    ln -s "$a" "$my_a"
-                    ;;
-                esac
-            fi
-        fi
-    done
 
     # make a syncqt script that can be used in the shadow
     rm -f "$outpath/bin/syncqt"
@@ -2528,6 +2359,7 @@ fi
 if [ "$PLATFORM" != "$XPLATFORM" ]; then
     QT_CROSS_COMPILE=yes
     QMAKE_CONFIG="$QMAKE_CONFIG cross_compile"
+    QTCONFIG_CONFIG="$QTCONFIG_CONFIG cross_compile"
 fi
 
 if [ "$BUILD_ON_MAC" = "yes" ]; then
@@ -3178,13 +3010,6 @@ if [ "$OPT_HELP" = "yes" ]; then
         XCBN=" "
     fi
 
-    if [ "$CFG_WAYLAND" = "no" ]; then
-        XWY=" "
-        XWN="*"
-    else
-        XWY="*"
-        XWN=" "
-    fi
     if [ "$CFG_XINPUT2" = "no" ]; then
         X2Y=" "
         X2N="*"
@@ -3506,9 +3331,6 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 
  $XCBN  -no-xcb ............ Do not compile Xcb (X protocol C-language Binding) support.
  $XCBY  -xcb ............... Compile Xcb support.
-
- $XWN  -no-wayland......... Do not compile Wayland support.
- $XWY  -wayland  .......... Compile Wayland support.
 
 EOF
 
@@ -4097,6 +3919,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     #mkspecs/default is used as a (gasp!) default mkspec so QMAKESPEC needn't be set once configured
     rm -rf mkspecs/default
     ln -s `echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default
+    mkdir -p "$outpath/qmake" || exit
     # fix makefiles
     for mkfile in GNUmakefile Makefile; do
         EXTRA_LFLAGS=
@@ -5271,27 +5094,7 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     fi
 
     # Save these for a check later
-    ORIG_CFG_WAYLAND="$CFG_WAYLAND"
     ORIG_CFG_XCB="$CFG_XCB"
-
-    if [ "$CFG_WAYLAND" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists wayland-client 2>/dev/null; then
-            QMAKE_CFLAGS_WAYLAND=`$PKG_CONFIG --cflags wayland-client 2>/dev/null`
-            QMAKE_LIBS_WAYLAND=`$PKG_CONFIG --libs wayland-client 2>/dev/null`
-            QMAKE_INCDIR_WAYLAND=`$PKG_CONFIG --cflags-only-I wayland-client 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
-            QMAKE_LIBDIR_WAYLAND=`$PKG_CONFIG --libs-only-L wayland-client 2>/dev/null | sed -e 's,^-L,,g' -e 's, -L, ,g'`
-        fi
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/wayland "Wayland" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_WAYLAND $QMAKE_LIBS_WAYLAND; then
-            CFG_WAYLAND=yes
-            QT_CONFIG="$QT_CONFIG wayland"
-        elif [ "$CFG_WAYLAND" = "yes" ]; then
-            echo "The Wayland functionality test failed!"
-            exit 1
-        else
-            CFG_WAYLAND=no
-            QMakeVar add DEFINES QT_NO_WAYLAND
-        fi
-    fi
 
     if [ "$CFG_LIBUDEV" != "no" ]; then
        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libudev 2>/dev/null; then
@@ -5403,26 +5206,10 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
         QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
         QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
-        if [ "$CFG_WAYLAND" = "yes" ]; then
-            QMAKE_CFLAGS_WAYLAND="$QMAKE_CFLAGS_WAYLAND $QMAKE_CFLAGS_XKBCOMMON"
-            QMAKE_LIBS_WAYLAND="$QMAKE_LIBS_WAYLAND $QMAKE_LIBS_XKBCOMMON"
-        fi
         QMAKE_CFLAGS_XCB="$QMAKE_CFLAGS_XCB $QMAKE_CFLAGS_XKBCOMMON"
         QMAKE_LIBS_XCB="$QMAKE_LIBS_XCB $QMAKE_LIBS_XKBCOMMON"
     else
-        if [ "$CFG_WAYLAND" = "yes" ]; then
-            QMAKE_DEFINES_WAYLAND=QT_NO_WAYLAND_XKB
-        fi
         QMAKE_DEFINES_XCB=QT_NO_XCB_XKB
-    fi
-
-    # QMake variables set here override those in the mkspec. Therefore we only set the variables here if they are not zero.
-    if [ -n "$QMAKE_CFLAGS_WAYLAND" ] || [ -n "$QMAKE_LIBS_WAYLAND" ]; then
-        QMakeVar set QMAKE_CFLAGS_WAYLAND "$QMAKE_CFLAGS_WAYLAND"
-        QMakeVar set QMAKE_INCDIR_WAYLAND "$QMAKE_INCDIR_WAYLAND"
-        QMakeVar set QMAKE_LIBS_WAYLAND "$QMAKE_LIBS_WAYLAND"
-        QMakeVar set QMAKE_LIBDIR_WAYLAND "$QMAKE_LIBDIR_WAYLAND"
-        QMakeVar set QMAKE_DEFINES_WAYLAND " $QMAKE_DEFINES_WAYLAND"
     fi
 
     if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
@@ -5431,18 +5218,20 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         QMakeVar set QMAKE_DEFINES_XCB "$QMAKE_DEFINES_XCB"
     fi
 
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
-        QT_CONFIG="$QT_CONFIG coreservices"
-    else
-        QMakeVar add DEFINES QT_NO_CORESERVICES
+    if [ "$BUILD_ON_MAC" = "yes" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+            QT_CONFIG="$QT_CONFIG coreservices"
+        else
+            QMakeVar add DEFINES QT_NO_CORESERVICES
+        fi
     fi
 
     if [ "$PLATFORM_QPA" = "yes" ] && [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ]; then
-        if [ "$CFG_XCB" = "no" ] && [ "$CFG_WAYLAND" = "no" ]; then
-            if [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_WAYLAND" = "auto" ]; then
+        if [ "$CFG_XCB" = "no" ]; then
+            if [ "$ORIG_CFG_XCB" = "auto" ]; then
                 echo "No QPA platform plugin enabled!"
                 echo " If you really want to build without a QPA platform plugin you must pass"
-                echo " -no-xcb and -no-wayland to configure. Doing this will produce a Qt that"
+                echo " -no-xcb. Doing this will produce a Qt that"
                 echo " cannot run GUI applications."
                 echo " The dependencies needed for xcb to build are listed in"
                 echo " src/plugins/platforms/xcb/README"
@@ -5948,8 +5737,6 @@ if [ "$CFG_GUI" = "auto" ]; then
 fi
 if [ "$CFG_GUI" = "no" ]; then
     QT_CONFIG="$QT_CONFIG no-gui"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GUI"
 fi
 
 
@@ -6722,16 +6509,11 @@ QT_BUILD_TREE = \$\$quote($outpath)
 QT_BUILD_PARTS = $CFG_BUILD_PARTS
 
 #local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR
-QMAKE_MOC        = \$\$QT_BUILD_TREE/bin/moc
-QMAKE_UIC        = \$\$QT_BUILD_TREE/bin/uic
-QMAKE_RCC        = \$\$QT_BUILD_TREE/bin/rcc
 QMAKE_INCDIR_QT  = \$\$QT_BUILD_TREE/include
 QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
 
 include(\$\$PWD/mkspecs/qmodule.pri)
 CONFIG += $QMAKE_CONFIG dylib depend_includepath fix_output_dirs no_private_qt_headers_warning QTDIR_build
-QMAKE_ABSOLUTE_SOURCE_ROOT = \$\$QT_SOURCE_TREE
-QMAKE_MOC_SRC    = \$\$QT_BUILD_TREE/src/moc
 
 EOF
 
@@ -6740,21 +6522,6 @@ if [ -d "$outpath/mkspecs/$XPLATFORM" ]; then
    echo "QMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$XPLATFORM" >> "$CACHEFILE.tmp"
 else
    echo "QMAKESPEC = $XPLATFORM" >> "$CACHEFILE.tmp"
-fi
-
-# incrementals
-INCREMENTAL=""
-[ "$CFG_INCREMENTAL" = "auto" ] && "$WHICH" p4 >/dev/null 2>&1 && [ "$CFG_DEV" = "yes" ] && CFG_INCREMENTAL="yes"
-if [ "$CFG_INCREMENTAL" = "yes" ]; then
-    find "$relpath" -perm u+w -mtime -3 | grep 'cpp$' | while read f; do
-        # don't need to worry about generated files
-        [ -r `echo $f | sed "s,cpp$,ui,"` ] && continue
-        basename "$f" | grep '^moc_' >/dev/null 2>&1 && continue
-        # done
-        INCREMENTAL="$INCREMENTAL `basename \"$f\" | sed 's,.cpp,.o,'`"
-    done
-    [ '!' -z "$INCREMENTAL" ] && echo "QMAKE_INCREMENTAL += $INCREMENTAL" >> "$CACHEFILE.tmp"
-    [ -r "$outpath/.qmake.incremental" ] && echo "include($outpath/.qmake.incremental)" >> "$CACHEFILE.tmp"
 fi
 
 # replace .qmake.cache if it differs from the newly created temp file
@@ -6839,7 +6606,6 @@ if [ "$OPT_VERBOSE" = "yes" ]; then
     echo "qmake switches ......... $QMAKE_SWITCHES"
 fi
 
-[ "$CFG_INCREMENTAL" = "yes" ] && [ '!' -z "$INCREMENTAL" ] && echo "Incremental ............ $INCREMENTAL"
 echo "Build .................. $CFG_BUILD_PARTS"
 echo "Configuration .......... $QMAKE_CONFIG $QT_CONFIG"
 if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
@@ -7169,7 +6935,7 @@ for file in .projects .projects.3; do
             fi
             SPEC=$XQMAKESPEC ;;
         */qmake/qmake.pro) continue ;;
-        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*) SPEC=$QMAKESPEC ;;
+        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*tools/qdoc*) SPEC=$QMAKESPEC ;;
         *) if [ "$CFG_NOPROCESS" = "yes" ]; then
               continue
            else
@@ -7261,6 +7027,18 @@ cat <<EOF
         Qt now requires zlib support in all builds, so the -no-zlib
         option was ignored. Qt will be built using the $which_zlib
         zlib.
+EOF
+fi
+
+#-------------------------------------------------------------------------------
+# check if the user passed the obsoleted -wayland or -no-wayland flag
+#-------------------------------------------------------------------------------
+if [ "$CFG_OBSOLETE_WAYLAND" = "yes" ]; then
+cat <<EOF
+
+        NOTICE: The -wayland and -no-wayland flags are now obsolete
+
+        All configuring of QtWayland plugin and QtCompositor happens in the module
 EOF
 fi
 

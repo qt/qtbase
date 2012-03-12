@@ -47,7 +47,7 @@ XPASS  : tst_ExpectFail::xpass() 'true' returned TRUE unexpectedly. ()
 XPASS  : tst_ExpectFail::xpassDataDrivenWithQVerify(XPass) 'true' returned TRUE unexpectedly. ()
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(250)]
 PASS   : tst_ExpectFail::xpassDataDrivenWithQVerify(Pass)
-XPASS  : tst_ExpectFail::xpassDataDrivenWithQCompare(XPass) COMPARE()
+XPASS  : tst_ExpectFail::xpassDataDrivenWithQCompare(XPass) QCOMPARE(1, 1) returned TRUE unexpectedly.
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(271)]
 PASS   : tst_ExpectFail::xpassDataDrivenWithQCompare(Pass)
 PASS   : tst_ExpectFail::cleanupTestCase()

@@ -1072,4 +1072,16 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
     return result;
 }
 
+Qt::KeyboardModifiers QWindowsKeyMapper::queryKeyboardModifiers()
+{
+    Qt::KeyboardModifiers modifiers = Qt::NoModifier;
+    if (GetKeyState(VK_SHIFT) < 0)
+        modifiers |= Qt::ShiftModifier;
+    if (GetKeyState(VK_CONTROL) < 0)
+        modifiers |= Qt::ControlModifier;
+    if (GetKeyState(VK_MENU) < 0)
+        modifiers |= Qt::AltModifier;
+    return modifiers;
+}
+
 QT_END_NAMESPACE

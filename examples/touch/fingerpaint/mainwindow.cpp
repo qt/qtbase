@@ -206,12 +206,12 @@ bool MainWindow::saveFile(const QByteArray &fileFormat)
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"),
                                initialPath,
                                tr("%1 Files (*.%2);;All Files (*)")
-                               .arg(QString(fileFormat.toUpper()))
-                               .arg(QString(fileFormat)));
+                               .arg(QString::fromLatin1(fileFormat.toUpper()))
+                               .arg(QString::fromLatin1(fileFormat)));
     if (fileName.isEmpty()) {
         return false;
     } else {
-        return scribbleArea->saveImage(fileName, fileFormat);
+        return scribbleArea->saveImage(fileName, fileFormat.constData());
     }
 }
 //! [20]

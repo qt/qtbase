@@ -41,7 +41,6 @@
 
 
 #include <QtTest/QtTest>
-#include <QStandardItemModel>
 #include <qdebug.h>
 #include <qdesktopservices.h>
 

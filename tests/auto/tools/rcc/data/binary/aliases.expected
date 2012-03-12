@@ -1,0 +1,4 @@
+currentdir.txt currentdir.txt
+alias.txt currentdir2.txt
+otheralias.txt blahblah.txt
+alias3 ../parentdir.txt

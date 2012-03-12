@@ -72,6 +72,10 @@ public:
     static QTextCodec* codecForLocale();
     static void setCodecForLocale(QTextCodec *c);
 
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED static QTextCodec *codecForTr() { return codecForMib(4); /* Latin1 */ }
+#endif
+
     static QTextCodec *codecForHtml(const QByteArray &ba);
     static QTextCodec *codecForHtml(const QByteArray &ba, QTextCodec *defaultCodec);
 

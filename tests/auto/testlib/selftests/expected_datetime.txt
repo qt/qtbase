@@ -2,16 +2,16 @@
 Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_DateTime::initTestCase()
 FAIL!  : tst_DateTime::dateTime() Compared values are not the same
-   Actual (local): 2000/05/03 04:03:04.000[local time]
+   Actual   (local): 2000/05/03 04:03:04.000[local time]
    Expected (utc): 2000/05/03 04:03:04.000[UTC]
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp(33)]
 PASS   : tst_DateTime::qurl(empty urls)
 FAIL!  : tst_DateTime::qurl(empty rhs) Compared values are not the same
-   Actual (operandA): http://example.com
+   Actual   (operandA): http://example.com
    Expected (operandB): 
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp(41)]
 FAIL!  : tst_DateTime::qurl(empty lhs) Compared values are not the same
-   Actual (operandA): 
+   Actual   (operandA): 
    Expected (operandB): http://example.com
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp(41)]
 PASS   : tst_DateTime::qurl(same urls)

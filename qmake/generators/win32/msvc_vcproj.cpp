@@ -247,7 +247,6 @@ bool VcprojGenerator::writeMakefile(QTextStream &t)
 
 bool VcprojGenerator::writeProjectMakefile()
 {
-    usePlatformDir();
     QTextStream t(&Option::output);
 
     // Check if all requirements are fulfilled

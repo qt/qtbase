@@ -728,22 +728,27 @@ void tst_QStyleSheetStyle::focusColors()
     // is reached if at least ten pixels of the right color can be found in
     // the image.
     // For this reason, we use unusual and extremely ugly colors! :-)
+    // Note that in case of anti-aliased text, ensuring that we have at least
+    // ten pixels of the right color requires quite a many characters, as the
+    // majority of the pixels will have slightly different colors due to the
+    // anti-aliasing effect.
 #if !defined(Q_OS_WIN32) && !defined(Q_OS_MAC) && !(defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL))
     QSKIP("This is a fragile test which fails on many esoteric platforms because of focus problems. "
           "That doesn't mean that the feature doesn't work in practice.");
 #endif
     QList<QWidget *> widgets;
-    widgets << new QPushButton("TESTING");
-    widgets << new QLineEdit("TESTING");
-    widgets << new QLabel("TESTING");
+    widgets << new QPushButton("TESTING TESTING");
+    widgets << new QLineEdit("TESTING TESTING");
+    widgets << new QLabel("TESTING TESTING");
     QSpinBox *spinbox = new QSpinBox;
-    spinbox->setValue(8888);
+    spinbox->setMaximum(1000000000);
+    spinbox->setValue(123456789);
     widgets << spinbox;
     QComboBox *combobox = new QComboBox;
     combobox->setEditable(true);
-    combobox->addItems(QStringList() << "TESTING");
+    combobox->addItems(QStringList() << "TESTING TESTING");
     widgets << combobox;
-    widgets << new QLabel("TESTING");
+    widgets << new QLabel("TESTING TESTING");
 
 #ifdef Q_WS_QWS
     // QWS has its own special focus logic which is slightly different
@@ -794,17 +799,18 @@ void tst_QStyleSheetStyle::hoverColors()
     if (!PlatformQuirks::haveMouseCursor())
         QSKIP("No mouse Cursor on this platform");
     QList<QWidget *> widgets;
-    widgets << new QPushButton("TESTING");
-    widgets << new QLineEdit("TESTING");
-    widgets << new QLabel("TESTING");
+    widgets << new QPushButton("TESTING TESTING");
+    widgets << new QLineEdit("TESTING TESTING");
+    widgets << new QLabel("TESTING TESTING");
     QSpinBox *spinbox = new QSpinBox;
-    spinbox->setValue(8888);
+    spinbox->setMaximum(1000000000);
+    spinbox->setValue(123456789);
     widgets << spinbox;
     QComboBox *combobox = new QComboBox;
     combobox->setEditable(true);
-    combobox->addItems(QStringList() << "TESTING");
+    combobox->addItems(QStringList() << "TESTING TESTING");
     widgets << combobox;
-    widgets << new QLabel("<b>TESTING</b>");
+    widgets << new QLabel("<b>TESTING TESTING</b>");
 
     foreach (QWidget *widget, widgets) {
         //without Qt::X11BypassWindowManagerHint the window manager may move the window after we moved the cursor

@@ -268,17 +268,19 @@ sub executeTest {
     unlink $testOutFile1, $testOutFile2;
 
     # Run qmake && make
-    executeLoggedCommand($QMAKE, @QMAKEARGS);
-    my ($makeExitCode, $makeOutput) = executeLoggedCommand($MAKE);
+    my ($qmakeExitCode, $qmakeOutput) = executeLoggedCommand($QMAKE, @QMAKEARGS);
+    if ($qmakeExitCode == 0) {
+        my ($makeExitCode, $makeOutput) = executeLoggedCommand($MAKE);
 
-    # If make prints "blah blah blah\nSkipped." we consider this a skipped test
-    if ($makeOutput !~ qr(^Skipped\.$)ms) {
-        # Check the test exists (can't reliably execute, especially for cross compilation)
-        if (-e $testOutFile1 or -e $testOutFile2) {
-            $ret = 1;
+        # If make prints "blah blah blah\nSkipped." we consider this a skipped test
+        if ($makeOutput !~ qr(^Skipped\.$)ms) {
+            # Check the test exists (can't reliably execute, especially for cross compilation)
+            if ($makeExitCode == 0 and (-e $testOutFile1 or -e $testOutFile2)) {
+                $ret = 1;
+            }
+        } else {
+            $ret = 2;
         }
-    } else {
-        $ret = 2;
     }
 
     my $fh;

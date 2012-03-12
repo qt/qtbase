@@ -88,6 +88,7 @@ QPlatformDrag::QPlatformDrag() : d_ptr(new QPlatformDragPrivate)
 
 QPlatformDrag::~QPlatformDrag()
 {
+    delete d_ptr;
 }
 
 QDrag *QPlatformDrag::currentDrag() const

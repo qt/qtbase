@@ -49,8 +49,8 @@
 
 #ifndef QT_NO_ACCESSIBILITY
 
-#define QVERIFY_EVENT(object, child, event) \
-    QVERIFY(QTestAccessibility::verifyEvent(object, child, (int)event))
+#define QVERIFY_EVENT(event) \
+    QVERIFY(QTestAccessibility::verifyEvent(event))
 
 #include <QtCore/qlist.h>
 #include <QtGui/qaccessible.h>
@@ -63,22 +63,21 @@ QT_BEGIN_NAMESPACE
 
 class QObject;
 
-struct QTestAccessibilityEvent
+typedef QList<QAccessibleEvent> EventList;
+
+bool operator==(const QAccessibleEvent &l, const QAccessibleEvent &r)
 {
-    QTestAccessibilityEvent(QObject* o = 0, int c = 0, int e = 0)
-        : object(o), child(c), event(e) {}
+    if (l.type() != r.type() ||
+            l.object() != r.object() ||
+            l.child() != r.child())
+        return false;
 
-    bool operator==(const QTestAccessibilityEvent &o) const
-    {
-        return o.object == object && o.child == child && o.event == event;
+    if (l.type() == QAccessible::StateChanged) {
+        return static_cast<const QAccessibleStateChangeEvent*>(&l)->changedStates()
+                == static_cast<const QAccessibleStateChangeEvent*>(&r)->changedStates();
     }
-
-    QObject* object;
-    int child;
-    int event;
-};
-
-typedef QList<QTestAccessibilityEvent> EventList;
+    return true;
+}
 
 class QTestAccessibility
 {
@@ -90,6 +89,7 @@ public:
             qAddPostRoutine(cleanup);
         }
     }
+
     static void cleanup()
     {
         delete instance();
@@ -97,16 +97,11 @@ public:
     }
     static void clearEvents() { eventList().clear(); }
     static EventList events() { return eventList(); }
-    static bool verifyEvent(const QTestAccessibilityEvent& ev)
+    static bool verifyEvent(const QAccessibleEvent& ev)
     {
         if (eventList().isEmpty())
             return FALSE;
         return eventList().takeFirst() == ev;
-    }
-
-    static bool verifyEvent(QObject *o, int c, int e)
-    {
-        return verifyEvent(QTestAccessibilityEvent(o, c, e));
     }
 
 private:
@@ -136,8 +131,15 @@ private:
 
     static void updateHandler(const QAccessibleEvent &event)
     {
-        //    qDebug("updateHandler called: %p %d %d", o, c, (int)e);
-        eventList().append(QTestAccessibilityEvent(event.object(), event.child(), (int)event.type()));
+        eventList().append(copyEvent(event));
+    }
+
+    static QAccessibleEvent copyEvent(const QAccessibleEvent &event)
+    {
+        if (event.type() == QAccessible::StateChanged)
+            return QAccessibleStateChangeEvent(static_cast<const QAccessibleStateChangeEvent*>(&event)->changedStates(),
+                                               event.object(), event.child());
+        return QAccessibleEvent(event.type(), event.object(), event.child());
     }
 
     static EventList &eventList()

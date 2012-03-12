@@ -7,25 +7,25 @@
   <testcase result="pass" name="initTestCase"/>
   <testcase result="pass" name="testPassPass">
     <!-- tag="row 1" message="QVERIFY(true)" type="info" -->
-    <!-- tag="row 1" message="COMPARE()" type="info" -->
+    <!-- tag="row 1" message="QCOMPARE(2 + 1, 3)" type="info" -->
     <!-- tag="row 2" message="QVERIFY(true)" type="info" -->
-    <!-- tag="row 2" message="COMPARE()" type="info" -->
+    <!-- tag="row 2" message="QCOMPARE(2 + 1, 3)" type="info" -->
   </testcase>
   <testcase result="pass" name="testPassSkip">
     <!-- tag="row 1" message="QVERIFY(true)" type="info" -->
-    <!-- tag="row 1" message="COMPARE()" type="info" -->
+    <!-- tag="row 1" message="QCOMPARE(2 + 1, 3)" type="info" -->
     <!-- tag="row 2" message="Skipping" type="skip" -->
   </testcase>
   <testcase result="fail" name="testPassFail">
     <!-- tag="row 1" message="QVERIFY(true)" type="info" -->
-    <!-- tag="row 1" message="COMPARE()" type="info" -->
+    <!-- tag="row 1" message="QCOMPARE(2 + 1, 3)" type="info" -->
     <!-- tag="row 2" message="QVERIFY(false)" type="info" -->
     <failure tag="row 2" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
   </testcase>
   <testcase result="pass" name="testSkipPass">
     <!-- tag="row 1" message="Skipping" type="skip" -->
     <!-- tag="row 2" message="QVERIFY(true)" type="info" -->
-    <!-- tag="row 2" message="COMPARE()" type="info" -->
+    <!-- tag="row 2" message="QCOMPARE(2 + 1, 3)" type="info" -->
   </testcase>
   <testcase name="testSkipSkip">
     <!-- tag="row 1" message="Skipping" type="skip" -->
@@ -40,7 +40,7 @@
     <!-- tag="row 1" message="QVERIFY(false)" type="info" -->
     <failure tag="row 1" message="&apos;false&apos; returned FALSE. ()" result="fail"/>
     <!-- tag="row 2" message="QVERIFY(true)" type="info" -->
-    <!-- tag="row 2" message="COMPARE()" type="info" -->
+    <!-- tag="row 2" message="QCOMPARE(2 + 1, 3)" type="info" -->
   </testcase>
   <testcase result="fail" name="testFailSkip">
     <!-- tag="row 1" message="QVERIFY(false)" type="info" -->
@@ -70,25 +70,25 @@
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err>
 <![CDATA[QVERIFY(true)]]>
-<![CDATA[COMPARE()]]>
+<![CDATA[QCOMPARE(2 + 1, 3)]]>
 <![CDATA[QVERIFY(true)]]>
-<![CDATA[COMPARE()]]>
+<![CDATA[QCOMPARE(2 + 1, 3)]]>
 <![CDATA[QVERIFY(true)]]>
-<![CDATA[COMPARE()]]>
+<![CDATA[QCOMPARE(2 + 1, 3)]]>
 <![CDATA[Skipping]]>
 <![CDATA[QVERIFY(true)]]>
-<![CDATA[COMPARE()]]>
+<![CDATA[QCOMPARE(2 + 1, 3)]]>
 <![CDATA[QVERIFY(false)]]>
 <![CDATA[Skipping]]>
 <![CDATA[QVERIFY(true)]]>
-<![CDATA[COMPARE()]]>
+<![CDATA[QCOMPARE(2 + 1, 3)]]>
 <![CDATA[Skipping]]>
 <![CDATA[Skipping]]>
 <![CDATA[Skipping]]>
 <![CDATA[QVERIFY(false)]]>
 <![CDATA[QVERIFY(false)]]>
 <![CDATA[QVERIFY(true)]]>
-<![CDATA[COMPARE()]]>
+<![CDATA[QCOMPARE(2 + 1, 3)]]>
 <![CDATA[QVERIFY(false)]]>
 <![CDATA[Skipping]]>
 <![CDATA[QVERIFY(false)]]>

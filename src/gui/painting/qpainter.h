@@ -74,6 +74,7 @@ class QPainterPrivate;
 class QPen;
 class QPolygon;
 class QTextItem;
+class QTextEngine;
 class QMatrix;
 class QTransform;
 class QStaticText;
@@ -487,6 +488,7 @@ private:
     friend class QRasterPaintEngine;
     friend class QAlphaPaintEngine;
     friend class QPreviewPaintEngine;
+    friend class QTextEngine;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QPainter::RenderHints)

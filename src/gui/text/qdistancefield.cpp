@@ -692,17 +692,8 @@ static QImage makeDistanceField(int imgSize, const QPainterPath &path, int dfSca
     return image;
 }
 
-bool qt_fontHasNarrowOutlines(const QRawFont &f)
+static bool imageHasNarrowOutlines(const QImage &im)
 {
-    QRawFont font = f;
-    font.setPixelSize(QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE);
-    Q_ASSERT(font.isValid());
-
-    QVector<quint32> glyphIndices = font.glyphIndexesForString(QLatin1String("O"));
-    if (glyphIndices.size() < 1)
-        return false;
-
-    QImage im = font.alphaMapForGlyph(glyphIndices.at(0), QRawFont::PixelAntialiasing);
     if (im.isNull())
         return false;
 
@@ -742,6 +733,56 @@ bool qt_fontHasNarrowOutlines(const QRawFont &f)
     return minHThick == 1 || minVThick == 1;
 }
 
+bool qt_fontHasNarrowOutlines(QFontEngine *fontEngine)
+{
+    QFontEngine *fe = fontEngine->cloneWithSize(QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE);
+
+    QGlyphLayout glyphs;
+    glyph_t glyph;
+    glyphs.glyphs = &glyph;
+    int numGlyphs;
+    QChar *chars = QString(QLatin1String("O")).data();
+    fe->stringToCMap(chars, 1, &glyphs, &numGlyphs, QTextEngine::GlyphIndicesOnly);
+    QImage im = fe->alphaMapForGlyph(glyph, QFixed(), QTransform());
+    delete fe;
+
+    return imageHasNarrowOutlines(im);
+}
+
+bool qt_fontHasNarrowOutlines(const QRawFont &f)
+{
+    QRawFont font = f;
+    font.setPixelSize(QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE);
+    Q_ASSERT(font.isValid());
+
+    QVector<quint32> glyphIndices = font.glyphIndexesForString(QLatin1String("O"));
+    if (glyphIndices.size() < 1)
+        return false;
+
+    return imageHasNarrowOutlines(font.alphaMapForGlyph(glyphIndices.at(0),
+                                                        QRawFont::PixelAntialiasing));
+}
+
+static QImage renderDistanceFieldPath(const QPainterPath &path, bool doubleResolution)
+{
+    QImage im = makeDistanceField(QT_DISTANCEFIELD_TILESIZE(doubleResolution),
+                                  path,
+                                  QT_DISTANCEFIELD_SCALE(doubleResolution),
+                                  QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution));
+    return im;
+}
+
+QImage qt_renderDistanceFieldGlyph(QFontEngine *fe, glyph_t glyph, bool doubleResolution)
+{
+    QFixedPoint position;
+    QPainterPath path;
+    fe->addGlyphsToPath(&glyph, &position, 1, &path, 0);
+    path.translate(-path.boundingRect().topLeft());
+    path.setFillRule(Qt::WindingFill);
+
+    return renderDistanceFieldPath(path, doubleResolution);
+}
+
 QImage qt_renderDistanceFieldGlyph(const QRawFont &font, glyph_t glyph, bool doubleResolution)
 {
     QRawFont renderFont = font;
@@ -751,11 +792,7 @@ QImage qt_renderDistanceFieldGlyph(const QRawFont &font, glyph_t glyph, bool dou
     path.translate(-path.boundingRect().topLeft());
     path.setFillRule(Qt::WindingFill);
 
-    QImage im = makeDistanceField(QT_DISTANCEFIELD_TILESIZE(doubleResolution),
-                                  path,
-                                  QT_DISTANCEFIELD_SCALE(doubleResolution),
-                                  QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution));
-    return im;
+    return renderDistanceFieldPath(path, doubleResolution);
 }
 
 QT_END_NAMESPACE

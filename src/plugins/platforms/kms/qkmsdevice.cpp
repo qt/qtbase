@@ -127,7 +127,7 @@ void QKmsDevice::createScreens()
 
 void QKmsDevice::handlePageFlipCompleted()
 {
-    //qDebug() << "Display signal recieved";
+    //qDebug() << "Display signal received";
     drmEventContext eventContext;
 
     memset(&eventContext, 0, sizeof eventContext);

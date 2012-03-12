@@ -68,17 +68,4 @@
 #  endif
 #endif
 
-// gcc 3 version has problems with some of the
-// map/filter overloads.
-#if defined(Q_CC_GNU) && (__GNUC__ < 4)
-#  define QT_NO_CONCURRENT_MAP
-#  define QT_NO_CONCURRENT_FILTER
-#endif
-
-#if defined (Q_CC_MSVC) && (_MSC_VER < 1300)
-#  define QT_TYPENAME
-#else
-#  define QT_TYPENAME typename
-#endif
-
 #endif // include guard

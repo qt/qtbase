@@ -51,6 +51,8 @@
 #include <QtCore/QDebug>
 #include <QtCore/QLocale>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 bool qt_isQMimeTypeDebuggingActivated (false);
@@ -62,27 +64,19 @@ bool qt_isQMimeTypeDebuggingActivated (false);
 #endif
 
 QMimeTypePrivate::QMimeTypePrivate()
-        : name()
-        //, comment()
-        , localeComments()
-        , genericIconName()
-        , iconName()
-        , globPatterns()
 {}
 
 QMimeTypePrivate::QMimeTypePrivate(const QMimeType &other)
-        : name(other.d->name)
-        //, comment(other.d->comment)
-        , localeComments(other.d->localeComments)
-        , genericIconName(other.d->genericIconName)
-        , iconName(other.d->iconName)
-        , globPatterns(other.d->globPatterns)
+        : name(other.d->name),
+        localeComments(other.d->localeComments),
+        genericIconName(other.d->genericIconName),
+        iconName(other.d->iconName),
+        globPatterns(other.d->globPatterns)
 {}
 
 void QMimeTypePrivate::clear()
 {
     name.clear();
-    //comment.clear();
     localeComments.clear();
     genericIconName.clear();
     iconName.clear();
@@ -97,7 +91,6 @@ bool QMimeTypePrivate::operator==(const QMimeTypePrivate &other) const
 {
     DBG();
     if (name == other.name &&
-            //comment == other.comment &&
             localeComments == other.localeComments &&
             genericIconName == other.genericIconName &&
             iconName == other.iconName &&

@@ -338,6 +338,13 @@ init_context:
     long options = setupOpenSslOptions(configuration.protocol, configuration.sslOptions);
     q_SSL_CTX_set_options(ctx, options);
 
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+    // Tell OpenSSL to release memory early
+    // http://www.openssl.org/docs/ssl/SSL_CTX_set_mode.html
+    if (q_SSLeay() >= 0x10000000L)
+        q_SSL_CTX_set_mode(ctx, SSL_MODE_RELEASE_BUFFERS);
+#endif
+
     // Initialize ciphers
     QByteArray cipherString;
     int first = true;

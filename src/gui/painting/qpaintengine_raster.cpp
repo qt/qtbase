@@ -2467,6 +2467,15 @@ static inline bool monoVal(const uchar* s, int x)
 
 /*!
     \internal
+ */
+QRasterBuffer *QRasterPaintEngine::rasterBuffer()
+{
+    Q_D(QRasterPaintEngine);
+    return d->rasterBuffer.data();
+}
+
+/*!
+    \internal
 */
 void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx,int ry,int w,int h)
 {
@@ -2923,7 +2932,7 @@ void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     ensureRasterState();
 
     QFontEngine *fontEngine = textItem->fontEngine();
-    if (shouldDrawCachedGlyphs(fontEngine->fontDef.pixelSize, state()->matrix)) {
+    if (shouldDrawCachedGlyphs(fontEngine, state()->matrix)) {
         drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
                          fontEngine);
     } else if (state()->matrix.type() < QTransform::TxProject) {
@@ -3207,18 +3216,18 @@ void QRasterPaintEngine::releaseDC(HDC) const
 
 #endif
 
-bool QRasterPaintEngine::supportsTransformations(const QFontEngine *fontEngine) const
+bool QRasterPaintEngine::supportsTransformations(QFontEngine *fontEngine) const
 {
     const QTransform &m = state()->matrix;
-    return supportsTransformations(fontEngine->fontDef.pixelSize, m);
+    return supportsTransformations(fontEngine, m);
 }
 
-bool QRasterPaintEngine::supportsTransformations(qreal pixelSize, const QTransform &m) const
+bool QRasterPaintEngine::supportsTransformations(QFontEngine *fontEngine, const QTransform &m) const
 {
     if (m.type() >= QTransform::TxProject)
         return true;
 
-    return !shouldDrawCachedGlyphs(pixelSize, m);
+    return !shouldDrawCachedGlyphs(fontEngine, m);
 }
 
 /*!

@@ -1081,9 +1081,9 @@ void QPaintEngineEx::drawStaticTextItem(QStaticTextItem *staticTextItem)
     }
 }
 
-bool QPaintEngineEx::supportsTransformations(qreal pixelSize, const QTransform &m) const
+bool QPaintEngineEx::supportsTransformations(QFontEngine *fontEngine, const QTransform &m) const
 {
-    Q_UNUSED(pixelSize);
+    Q_UNUSED(fontEngine);
 
     if (!m.isAffine())
         return true;
@@ -1091,8 +1091,9 @@ bool QPaintEngineEx::supportsTransformations(qreal pixelSize, const QTransform &
     return false;
 }
 
-bool QPaintEngineEx::shouldDrawCachedGlyphs(qreal pixelSize, const QTransform &m) const
+bool QPaintEngineEx::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &m) const
 {
+    qreal pixelSize = fontEngine->fontDef.pixelSize;
     return (pixelSize * pixelSize * qAbs(m.determinant())) <
             QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE;
 }

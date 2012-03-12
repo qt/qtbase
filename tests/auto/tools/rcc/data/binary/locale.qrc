@@ -1,0 +1,30 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource>
+    <file>currentdir.txt</file>
+    </qresource>
+
+    <qresource lang="de">    <file>currentdir2.txt</file>    </qresource>
+    <qresource lang="de_CH"> <file>../parentdir.txt</file>
+    <file alias="currentdir.txt">blahblah.txt</file>
+    </qresource>
+
+    <qresource><file>search_file.txt</file></qresource>
+
+    <qresource prefix="/root/">
+
+    <file>test/testdir.txt</file>
+
+    </qresource>
+
+    <qresource>
+    <file>test/testdir2.txt</file>
+    </qresource>
+
+    <qresource prefix="/root/" lang="it">
+    <file>otherdir/otherdir.txt</file>
+    <file alias="currentdir.txt">subdir/subdir.txt</file>
+
+    </qresource>
+
+
+</RCC>

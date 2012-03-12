@@ -1,6 +1,6 @@
 TEMPLATE      = subdirs
 CONFIG       += ordered
-SUBDIRS       = screenshot
+SUBDIRS       = screenshot systray
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/desktop

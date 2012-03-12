@@ -200,7 +200,8 @@ namespace QTest
 
     Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *msg, const char *file,
                                           int line);
-    Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *msg, char *val1, char *val2,
+    Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *failureMsg,
+                                         char *val1, char *val2,
                                          const char *actual, const char *expected,
                                          const char *file, int line);
     Q_TESTLIB_EXPORT void qSleep(int ms);
@@ -217,12 +218,9 @@ namespace QTest
     inline bool qCompare(T const &t1, T const &t2, const char *actual, const char *expected,
                         const char *file, int line)
     {
-        return (t1 == t2)
-            ? compare_helper(true, "COMPARE()", file, line)
-            : compare_helper(false, "Compared values are not the same",
-                             toString<T>(t1), toString<T>(t2), actual, expected, file, line);
+        return compare_helper(t1 == t2, "Compared values are not the same",
+                              toString<T>(t1), toString<T>(t2), actual, expected, file, line);
     }
-
 
     template <>
     Q_TESTLIB_EXPORT bool qCompare<float>(float const &t1, float const &t2,
@@ -235,10 +233,8 @@ namespace QTest
     inline bool compare_ptr_helper(const void *t1, const void *t2, const char *actual,
                                    const char *expected, const char *file, int line)
     {
-        return (t1 == t2)
-            ? compare_helper(true, "COMPARE()", file, line)
-            : compare_helper(false, "Compared pointers are not the same",
-                             toString(t1), toString(t2), actual, expected, file, line);
+        return compare_helper(t1 == t2, "Compared pointers are not the same",
+                              toString(t1), toString(t2), actual, expected, file, line);
     }
 
     Q_TESTLIB_EXPORT bool compare_string_helper(const char *t1, const char *t2, const char *actual,

@@ -1174,6 +1174,7 @@ static void init(QTextEngine *e)
     e->cacheGlyphs = false;
     e->forceJustification = false;
     e->visualMovement = false;
+    e->delayDecorations = false;
 
     e->layoutData = 0;
 
@@ -2911,6 +2912,104 @@ int QTextEngine::positionAfterVisualMovement(int pos, QTextCursor::MoveOperation
         }
 
     return pos;
+}
+
+void QTextEngine::addItemDecoration(QPainter *painter, const QLineF &line, ItemDecorationList *decorationList)
+{
+    if (delayDecorations) {
+        decorationList->append(ItemDecoration(line.x1(), line.x2(), line.y1(), painter->pen()));
+    } else {
+        painter->drawLine(line);
+    }
+}
+
+void QTextEngine::addUnderline(QPainter *painter, const QLineF &line)
+{
+    // qDebug() << "Adding underline:" << line;
+    addItemDecoration(painter, line, &underlineList);
+}
+
+void QTextEngine::addStrikeOut(QPainter *painter, const QLineF &line)
+{
+    addItemDecoration(painter, line, &strikeOutList);
+}
+
+void QTextEngine::addOverline(QPainter *painter, const QLineF &line)
+{
+    addItemDecoration(painter, line, &overlineList);
+}
+
+void QTextEngine::drawItemDecorationList(QPainter *painter, const ItemDecorationList &decorationList)
+{
+    // qDebug() << "Drawing" << decorationList.size() << "decorations";
+    if (decorationList.isEmpty())
+        return;
+
+    foreach (const ItemDecoration decoration, decorationList) {
+        painter->setPen(decoration.pen);
+        QLineF line(decoration.x1, decoration.y, decoration.x2, decoration.y);
+        painter->drawLine(line);
+    }
+}
+
+void QTextEngine::drawDecorations(QPainter *painter)
+{
+    QPen oldPen = painter->pen();
+
+    adjustUnderlines();
+    drawItemDecorationList(painter, underlineList);
+    drawItemDecorationList(painter, strikeOutList);
+    drawItemDecorationList(painter, overlineList);
+
+    painter->setPen(oldPen);
+    clearDecorations();
+}
+
+void QTextEngine::clearDecorations()
+{
+    underlineList.clear();
+    strikeOutList.clear();
+    overlineList.clear();
+}
+
+void QTextEngine::adjustUnderlines()
+{
+    // qDebug() << __PRETTY_FUNCTION__ << underlineList.count() << "underlines";
+    if (underlineList.isEmpty())
+        return;
+
+    ItemDecorationList::iterator start = underlineList.begin();
+    ItemDecorationList::iterator end   = underlineList.end();
+    ItemDecorationList::iterator it = start;
+    qreal underlinePos = start->y;
+    qreal penWidth = start->pen.widthF();
+    qreal lastLineEnd = start->x1;
+
+    while (it != end) {
+        if (qFuzzyCompare(lastLineEnd, it->x1)) { // no gap between underlines
+            underlinePos = qMax(underlinePos, it->y);
+            penWidth = qMax(penWidth, it->pen.widthF());
+        } else { // gap between this and the last underline
+            adjustUnderlines(start, it, underlinePos, penWidth);
+            start = it;
+            underlinePos = start->y;
+            penWidth = start->pen.widthF();
+        }
+        lastLineEnd = it->x2;
+        ++it;
+    }
+
+    adjustUnderlines(start, end, underlinePos, penWidth);
+}
+
+void QTextEngine::adjustUnderlines(ItemDecorationList::iterator start,
+                                   ItemDecorationList::iterator end,
+                                   qreal underlinePos, qreal penWidth)
+{
+    for (ItemDecorationList::iterator it = start; it != end; ++it) {
+        it->y = underlinePos;
+        it->pen.setWidth(penWidth);
+    }
 }
 
 QStackTextEngine::QStackTextEngine(const QString &string, const QFont &f)

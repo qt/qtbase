@@ -245,7 +245,6 @@ public:
 
     void updateHitCountAndTimeStamp(Engine &value);
     void insertEngine(const Key &key, QFontEngine *engine, bool insertMulti = false);
-    void removeEngine(QFontEngine *engine);
 
     private:
     void increaseCost(uint cost);

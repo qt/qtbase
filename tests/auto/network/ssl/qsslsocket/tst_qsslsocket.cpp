@@ -1157,6 +1157,9 @@ void tst_QSslSocket::waitForEncrypted()
 
 void tst_QSslSocket::waitForEncryptedMinusOne()
 {
+#ifdef Q_OS_WIN
+    QSKIP("QTBUG-24451 - indefinite wait may hang");
+#endif
     if (!QSslSocket::supportsSsl())
         return;
 
@@ -1663,6 +1666,9 @@ protected:
 
 void tst_QSslSocket::waitForMinusOne()
 {
+#ifdef Q_OS_WIN
+    QSKIP("QTBUG-24451 - indefinite wait may hang");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;

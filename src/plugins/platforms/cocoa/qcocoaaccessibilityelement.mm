@@ -204,8 +204,7 @@ static QAccessibleInterface *acast(void *ptr)
 - (void)accessibilityPerformAction:(NSString *)action {
     QAccessibleActionInterface *actionInterface = acast(accessibleInterface)->actionInterface();
     if (actionInterface) {
-        QString qtAction = QCocoaAccessible::translateAction(action);
-        actionInterface->doAction(QAccessibleActionInterface::pressAction());
+        actionInterface->doAction(QCocoaAccessible::translateAction(action));
     }
 }
 

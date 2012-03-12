@@ -14,11 +14,11 @@ wince*: {
    addFiles.path = .
 
    CONFIG(debug, debug|release):{
-   imageFormatsPlugins.files = $$(QTDIR)/plugins/imageformats/*d4.dll
+   imageFormatsPlugins.files = $$QT_BUILD_TREE/plugins/imageformats/*d4.dll
    }
 
    CONFIG(release, debug|release):{
-   imageFormatsPlugins.files = $$(QTDIR)/plugins/imageformats/*[^d]4.dll
+   imageFormatsPlugins.files = $$QT_BUILD_TREE/plugins/imageformats/*[^d]4.dll
    }
    imageFormatsPlugins.path = imageformats
    DEPLOYMENT += addFiles imageFormatsPlugins

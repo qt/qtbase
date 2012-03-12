@@ -94,6 +94,7 @@ private slots:
     void isRegistered();
     void isRegisteredStaticLess_data();
     void isRegisteredStaticLess();
+    void isEnum();
     void registerStreamBuiltin();
     void automaticTemplateRegistration();
 };
@@ -322,17 +323,21 @@ void tst_QMetaType::normalizedTypes()
 #define TYPENAME_DATA(MetaTypeName, MetaTypeId, RealType)\
     QTest::newRow(#RealType) << QMetaType::MetaTypeName << #RealType;
 
-#define TYPENAME_DATA_ALIAS(MetaTypeName, MetaTypeId, AliasType, RealTypeString)\
-    QTest::newRow(RealTypeString) << QMetaType::MetaTypeName << #AliasType;
-
 void tst_QMetaType::typeName_data()
 {
     QTest::addColumn<QMetaType::Type>("aType");
     QTest::addColumn<QString>("aTypeName");
 
     QT_FOR_EACH_STATIC_TYPE(TYPENAME_DATA)
-    QT_FOR_EACH_STATIC_ALIAS_TYPE(TYPENAME_DATA_ALIAS)
     QTest::newRow("QMetaType::UnknownType") << QMetaType::UnknownType << static_cast<const char*>(0);
+
+    QTest::newRow("Whity<double>") << static_cast<QMetaType::Type>(::qMetaTypeId<Whity<double> >()) << QString::fromLatin1("Whity<double>");
+    QTest::newRow("Whity<int>") << static_cast<QMetaType::Type>(::qMetaTypeId<Whity<int> >()) << QString::fromLatin1("Whity<int>");
+    QTest::newRow("Testspace::Foo") << static_cast<QMetaType::Type>(::qMetaTypeId<TestSpace::Foo>()) << QString::fromLatin1("TestSpace::Foo");
+
+    QTest::newRow("-1") << QMetaType::Type(-1) << QString();
+    QTest::newRow("-124125534") << QMetaType::Type(-124125534) << QString();
+    QTest::newRow("124125534") << QMetaType::Type(124125534) << QString();
 }
 
 void tst_QMetaType::typeName()
@@ -759,6 +764,12 @@ QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
     QTest::newRow("QPair<P,C>") << ::qMetaTypeId<QPair<P,C> >() << false << true  << false;
     QTest::newRow("QPair<P,M>") << ::qMetaTypeId<QPair<P,M> >() << true  << true  << false;
     QTest::newRow("QPair<P,P>") << ::qMetaTypeId<QPair<P,P> >() << true  << false << false;
+
+    // invalid ids.
+    QTest::newRow("-1") << -1 << false << false << false;
+    QTest::newRow("-124125534") << -124125534 << false << false << false;
+    QTest::newRow("124125534") << 124125534 << false << false << false;
+
 }
 
 void tst_QMetaType::flags()
@@ -1051,6 +1062,39 @@ void tst_QMetaType::isRegistered()
     QFETCH(int, typeId);
     QFETCH(bool, registered);
     QCOMPARE(QMetaType::isRegistered(typeId), registered);
+}
+
+enum isEnumTest_Enum0 {};
+struct isEnumTest_Struct0 { enum A{}; };
+
+enum isEnumTest_Enum1 {};
+struct isEnumTest_Struct1 {};
+
+Q_DECLARE_METATYPE(isEnumTest_Struct1)
+Q_DECLARE_METATYPE(isEnumTest_Enum1)
+
+void tst_QMetaType::isEnum()
+{
+    int type0 = qRegisterMetaType<int>("int");
+    QVERIFY((QMetaType::typeFlags(type0) & QMetaType::IsEnumeration) == 0);
+
+    int type1 = qRegisterMetaType<isEnumTest_Enum0>("isEnumTest_Enum0");
+    QVERIFY((QMetaType::typeFlags(type1) & QMetaType::IsEnumeration) == QMetaType::IsEnumeration);
+
+    int type2 = qRegisterMetaType<isEnumTest_Struct0>("isEnumTest_Struct0");
+    QVERIFY((QMetaType::typeFlags(type2) & QMetaType::IsEnumeration) == 0);
+
+    int type3 = qRegisterMetaType<isEnumTest_Enum0 *>("isEnumTest_Enum0 *");
+    QVERIFY((QMetaType::typeFlags(type3) & QMetaType::IsEnumeration) == 0);
+
+    int type4 = qRegisterMetaType<isEnumTest_Struct0::A>("isEnumTest_Struct0::A");
+    QVERIFY((QMetaType::typeFlags(type4) & QMetaType::IsEnumeration) == QMetaType::IsEnumeration);
+
+    int type5 = ::qMetaTypeId<isEnumTest_Struct1>();
+    QVERIFY((QMetaType::typeFlags(type5) & QMetaType::IsEnumeration) == 0);
+
+    int type6 = ::qMetaTypeId<isEnumTest_Enum1>();
+    QVERIFY((QMetaType::typeFlags(type6) & QMetaType::IsEnumeration) == QMetaType::IsEnumeration);
 }
 
 void tst_QMetaType::isRegisteredStaticLess_data()

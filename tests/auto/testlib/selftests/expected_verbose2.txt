@@ -5,18 +5,18 @@ PASS   : tst_Counting::initTestCase()
 INFO   : tst_Counting::testPassPass() entering
 INFO   : tst_Counting::testPassPass(row 1) QVERIFY(true)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(111)]
-INFO   : tst_Counting::testPassPass(row 1) COMPARE()
+INFO   : tst_Counting::testPassPass(row 1) QCOMPARE(2 + 1, 3)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(112)]
 PASS   : tst_Counting::testPassPass(row 1)
 INFO   : tst_Counting::testPassPass(row 2) QVERIFY(true)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(111)]
-INFO   : tst_Counting::testPassPass(row 2) COMPARE()
+INFO   : tst_Counting::testPassPass(row 2) QCOMPARE(2 + 1, 3)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(112)]
 PASS   : tst_Counting::testPassPass(row 2)
 INFO   : tst_Counting::testPassSkip() entering
 INFO   : tst_Counting::testPassSkip(row 1) QVERIFY(true)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(111)]
-INFO   : tst_Counting::testPassSkip(row 1) COMPARE()
+INFO   : tst_Counting::testPassSkip(row 1) QCOMPARE(2 + 1, 3)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(112)]
 PASS   : tst_Counting::testPassSkip(row 1)
 SKIP   : tst_Counting::testPassSkip(row 2) Skipping
@@ -24,7 +24,7 @@ SKIP   : tst_Counting::testPassSkip(row 2) Skipping
 INFO   : tst_Counting::testPassFail() entering
 INFO   : tst_Counting::testPassFail(row 1) QVERIFY(true)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(111)]
-INFO   : tst_Counting::testPassFail(row 1) COMPARE()
+INFO   : tst_Counting::testPassFail(row 1) QCOMPARE(2 + 1, 3)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(112)]
 PASS   : tst_Counting::testPassFail(row 1)
 INFO   : tst_Counting::testPassFail(row 2) QVERIFY(false)
@@ -36,7 +36,7 @@ SKIP   : tst_Counting::testSkipPass(row 1) Skipping
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(118)]
 INFO   : tst_Counting::testSkipPass(row 2) QVERIFY(true)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(111)]
-INFO   : tst_Counting::testSkipPass(row 2) COMPARE()
+INFO   : tst_Counting::testSkipPass(row 2) QCOMPARE(2 + 1, 3)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(112)]
 PASS   : tst_Counting::testSkipPass(row 2)
 INFO   : tst_Counting::testSkipSkip() entering
@@ -58,7 +58,7 @@ FAIL!  : tst_Counting::testFailPass(row 1) 'false' returned FALSE. ()
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(115)]
 INFO   : tst_Counting::testFailPass(row 2) QVERIFY(true)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(111)]
-INFO   : tst_Counting::testFailPass(row 2) COMPARE()
+INFO   : tst_Counting::testFailPass(row 2) QCOMPARE(2 + 1, 3)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp(112)]
 PASS   : tst_Counting::testFailPass(row 2)
 INFO   : tst_Counting::testFailSkip() entering

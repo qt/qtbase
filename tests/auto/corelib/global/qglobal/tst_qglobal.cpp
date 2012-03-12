@@ -41,10 +41,12 @@
 
 
 #include <QtTest/QtTest>
+#include <QtCore/qtypetraits.h>
 
 class tst_QGlobal: public QObject
 {
     Q_OBJECT
+
 private slots:
     void qIsNull();
     void for_each();
@@ -53,6 +55,7 @@ private slots:
     void checkptr();
     void qstaticassert();
     void qConstructorFunction();
+    void isEnum();
 };
 
 void tst_QGlobal::qIsNull()
@@ -291,6 +294,125 @@ Q_CONSTRUCTOR_FUNCTION(qConstructorFunctionCtor);
 void tst_QGlobal::qConstructorFunction()
 {
     QCOMPARE(qConstructorFunctionValue, 123);
+}
+
+struct isEnum_A {
+    int n_;
+};
+
+enum isEnum_B_Byte { isEnum_B_Byte_x = 63 };
+enum isEnum_B_Short { isEnum_B_Short_x = 1024 };
+enum isEnum_B_Int { isEnum_B_Int_x = 1 << 20 };
+
+union isEnum_C {};
+
+class isEnum_D {
+public:
+    operator int() const;
+};
+
+class isEnum_E {
+private:
+    operator int() const;
+};
+
+class isEnum_F {
+public:
+    enum AnEnum {};
+};
+
+#if defined (Q_COMPILER_CLASS_ENUM)
+enum class isEnum_G : qint64 {};
+#endif
+
+void tst_QGlobal::isEnum()
+{
+#if defined (Q_CC_MSVC)
+#define IS_ENUM_TRUE(x)     (Q_IS_ENUM(x) == true)
+#define IS_ENUM_FALSE(x)    (Q_IS_ENUM(x) == false)
+#else
+#define IS_ENUM_TRUE(x)     (Q_IS_ENUM(x) == true && QtPrivate::is_enum<x>::value == true)
+#define IS_ENUM_FALSE(x)    (Q_IS_ENUM(x) == false && QtPrivate::is_enum<x>::value == false)
+#endif
+
+    QVERIFY(IS_ENUM_TRUE(isEnum_B_Byte));
+    QVERIFY(IS_ENUM_TRUE(const isEnum_B_Byte));
+    QVERIFY(IS_ENUM_TRUE(volatile isEnum_B_Byte));
+    QVERIFY(IS_ENUM_TRUE(const volatile isEnum_B_Byte));
+
+    QVERIFY(IS_ENUM_TRUE(isEnum_B_Short));
+    QVERIFY(IS_ENUM_TRUE(const isEnum_B_Short));
+    QVERIFY(IS_ENUM_TRUE(volatile isEnum_B_Short));
+    QVERIFY(IS_ENUM_TRUE(const volatile isEnum_B_Short));
+
+    QVERIFY(IS_ENUM_TRUE(isEnum_B_Int));
+    QVERIFY(IS_ENUM_TRUE(const isEnum_B_Int));
+    QVERIFY(IS_ENUM_TRUE(volatile isEnum_B_Int));
+    QVERIFY(IS_ENUM_TRUE(const volatile isEnum_B_Int));
+
+    QVERIFY(IS_ENUM_TRUE(isEnum_F::AnEnum));
+    QVERIFY(IS_ENUM_TRUE(const isEnum_F::AnEnum));
+    QVERIFY(IS_ENUM_TRUE(volatile isEnum_F::AnEnum));
+    QVERIFY(IS_ENUM_TRUE(const volatile isEnum_F::AnEnum));
+
+    QVERIFY(IS_ENUM_FALSE(void));
+    QVERIFY(IS_ENUM_FALSE(isEnum_B_Byte &));
+    QVERIFY(IS_ENUM_FALSE(isEnum_B_Byte[1]));
+    QVERIFY(IS_ENUM_FALSE(const isEnum_B_Byte[1]));
+    QVERIFY(IS_ENUM_FALSE(isEnum_B_Byte[]));
+    QVERIFY(IS_ENUM_FALSE(int));
+    QVERIFY(IS_ENUM_FALSE(float));
+    QVERIFY(IS_ENUM_FALSE(isEnum_A));
+    QVERIFY(IS_ENUM_FALSE(isEnum_A *));
+    QVERIFY(IS_ENUM_FALSE(const isEnum_A));
+    QVERIFY(IS_ENUM_FALSE(isEnum_C));
+    QVERIFY(IS_ENUM_FALSE(isEnum_D));
+    QVERIFY(IS_ENUM_FALSE(isEnum_E));
+    QVERIFY(IS_ENUM_FALSE(void()));
+    QVERIFY(IS_ENUM_FALSE(void(*)()));
+    QVERIFY(IS_ENUM_FALSE(int isEnum_A::*));
+    QVERIFY(IS_ENUM_FALSE(void (isEnum_A::*)()));
+
+    QVERIFY(IS_ENUM_FALSE(size_t));
+    QVERIFY(IS_ENUM_FALSE(bool));
+    QVERIFY(IS_ENUM_FALSE(wchar_t));
+
+    QVERIFY(IS_ENUM_FALSE(char));
+    QVERIFY(IS_ENUM_FALSE(unsigned char));
+    QVERIFY(IS_ENUM_FALSE(short));
+    QVERIFY(IS_ENUM_FALSE(unsigned short));
+    QVERIFY(IS_ENUM_FALSE(int));
+    QVERIFY(IS_ENUM_FALSE(unsigned int));
+    QVERIFY(IS_ENUM_FALSE(long));
+    QVERIFY(IS_ENUM_FALSE(unsigned long));
+
+    QVERIFY(IS_ENUM_FALSE(qint8));
+    QVERIFY(IS_ENUM_FALSE(quint8));
+    QVERIFY(IS_ENUM_FALSE(qint16));
+    QVERIFY(IS_ENUM_FALSE(quint16));
+    QVERIFY(IS_ENUM_FALSE(qint32));
+    QVERIFY(IS_ENUM_FALSE(quint32));
+    QVERIFY(IS_ENUM_FALSE(qint64));
+    QVERIFY(IS_ENUM_FALSE(quint64));
+
+    QVERIFY(IS_ENUM_FALSE(void *));
+    QVERIFY(IS_ENUM_FALSE(int *));
+
+#if defined (Q_COMPILER_UNICODE_STRINGS)
+    QVERIFY(IS_ENUM_FALSE(char16_t));
+    QVERIFY(IS_ENUM_FALSE(char32_t));
+#endif
+
+#if defined (Q_COMPILER_CLASS_ENUM)
+    // Strongly type class enums are not handled by the
+    // fallback type traits implementation. Any compiler
+    // supported by Qt that supports C++0x class enums
+    // should also support the __is_enum intrinsic.
+    QVERIFY(Q_IS_ENUM(isEnum_G) == true);
+#endif
+
+#undef IS_ENUM_TRUE
+#undef IS_ENUM_FALSE
 }
 
 QTEST_MAIN(tst_QGlobal)

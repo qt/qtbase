@@ -230,6 +230,8 @@ static bool checkStatement(bool statement, const char *msg, const char *file, in
 bool QTestResult::verify(bool statement, const char *statementStr,
                          const char *description, const char *file, int line)
 {
+    QTEST_ASSERT(statementStr);
+
     char msg[1024];
 
     if (QTestLog::verboseLevel() >= 2) {
@@ -240,7 +242,7 @@ bool QTestResult::verify(bool statement, const char *statementStr,
     const char * format = QTest::expectFailMode
         ? "'%s' returned TRUE unexpectedly. (%s)"
         : "'%s' returned FALSE. (%s)";
-    qsnprintf(msg, 1024, format, statementStr, description);
+    qsnprintf(msg, 1024, format, statementStr, description ? description : "");
 
     return checkStatement(statement, msg, file, line);
 }
@@ -254,22 +256,38 @@ bool QTestResult::compare(bool success, const char *msg, const char *file, int l
     return checkStatement(success, msg, file, line);
 }
 
-bool QTestResult::compare(bool success, const char *msg, char *val1, char *val2,
-                          const char *actual, const char *expected, const char *file, int line)
+bool QTestResult::compare(bool success, const char *failureMsg,
+                          char *val1, char *val2,
+                          const char *actual, const char *expected,
+                          const char *file, int line)
 {
     QTEST_ASSERT(expected);
     QTEST_ASSERT(actual);
 
-    if (!val1 && !val2)
-        return compare(success, msg, file, line);
+    char msg[1024];
 
-    char buf[1024];
-    qsnprintf(buf, 1024, "%s\n   Actual (%s): %s\n   Expected (%s): %s", msg,
-              actual, val1 ? val1 : "<null>",
-              expected, val2 ? val2 : "<null>");
+    if (QTestLog::verboseLevel() >= 2) {
+        qsnprintf(msg, 1024, "QCOMPARE(%s, %s)", actual, expected);
+        QTestLog::info(msg, file, line);
+    }
+
+    if (!failureMsg)
+        failureMsg = "Compared values are not the same";
+
+    if (success && QTest::expectFailMode) {
+        qsnprintf(msg, 1024, "QCOMPARE(%s, %s) returned TRUE unexpectedly.", actual, expected);
+    } else if (val1 || val2) {
+        qsnprintf(msg, 1024, "%s\n   Actual   (%s): %s\n   Expected (%s): %s",
+                  failureMsg,
+                  actual, val1 ? val1 : "<null>",
+                  expected, val2 ? val2 : "<null>");
+    } else
+        qsnprintf(msg, 1024, "%s", failureMsg);
+
     delete [] val1;
     delete [] val2;
-    return compare(success, buf, file, line);
+
+    return checkStatement(success, msg, file, line);
 }
 
 void QTestResult::addFailure(const char *message, const char *file, int line)

@@ -58,8 +58,6 @@
 
 #if defined (Q_WS_WIN)
 #include <private/qprintengine_win_p.h>
-#elif defined (QTOPIA_PRINTENGINE)
-#include <private/qprintengine_qws_p.h>
 #endif
 
 #if defined(Q_WS_X11)

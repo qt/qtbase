@@ -49,7 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 
-QTime QWindowSystemInterfacePrivate::eventTime;
+QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 
 //------------------------------------------------------------
 //

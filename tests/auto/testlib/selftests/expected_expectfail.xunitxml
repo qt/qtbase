@@ -45,7 +45,7 @@
     <failure tag="XPass" message="&apos;true&apos; returned TRUE unexpectedly. ()" result="xpass"/>
   </testcase>
   <testcase result="xpass" name="xpassDataDrivenWithQCompare">
-    <failure tag="XPass" message="COMPARE()" result="xpass"/>
+    <failure tag="XPass" message="QCOMPARE(1, 1) returned TRUE unexpectedly." result="xpass"/>
   </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err>

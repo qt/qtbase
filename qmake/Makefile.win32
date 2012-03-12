@@ -7,6 +7,8 @@ SOURCE_PATH = ..
 BUILD_PATH = ..
 !endif
 
+QMKSRC = $(SOURCE_PATH)\qmake
+
 #
 # specific stuff for NMake and ICC
 #
@@ -31,7 +33,7 @@ CFLAGS_EXTRA      = /MP
 CFLAGS_BARE = -c -Fo./ \
               -W3 -nologo -O1 \
               $(CFLAGS_EXTRA) \
-              -I. -Igenerators -Igenerators\unix -Igenerators\win32 -Igenerators\mac -Igenerators\integrity \
+              -I$(QMKSRC) -I$(QMKSRC)\generators -I$(QMKSRC)\generators\unix -I$(QMKSRC)\generators\win32 -I$(QMKSRC)\generators\mac -I$(QMKSRC)\generators\integrity \
               -I$(BUILD_PATH)\include -I$(BUILD_PATH)\include\QtCore -I$(BUILD_PATH)\include\QtCore\$(QT_VERSION) -I$(BUILD_PATH)\include\QtCore\$(QT_VERSION)\QtCore \
               -I$(BUILD_PATH)\src\corelib\global \
               -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \

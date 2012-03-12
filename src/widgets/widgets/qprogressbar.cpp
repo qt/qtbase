@@ -314,7 +314,7 @@ void QProgressBar::setValue(int value)
     d->value = value;
     emit valueChanged(value);
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ValueChanged, this, 0));
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ValueChanged, this));
 #endif
     if (d->repaintRequired())
         repaint();

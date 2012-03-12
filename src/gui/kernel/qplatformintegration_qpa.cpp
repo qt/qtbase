@@ -241,6 +241,15 @@ QPlatformSharedGraphicsCache *QPlatformIntegration::createPlatformSharedGraphics
 }
 
 /*!
+   Factory function for QPaintEngine. This function will return 0 if the platform
+   integration does not support creating any paint engine the given \a paintDevice.
+*/
+QPaintEngine *QPlatformIntegration::createImagePaintEngine(QPaintDevice *paintDevice) const
+{
+    return 0;
+}
+
+/*!
   Returns the platforms input context.
 
   The default implementation returns 0, implying no input method support.
@@ -280,6 +289,11 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
     }
 
     return 0;
+}
+
+Qt::KeyboardModifiers QPlatformIntegration::queryKeyboardModifiers() const
+{
+    return QGuiApplication::keyboardModifiers();
 }
 
 /*!

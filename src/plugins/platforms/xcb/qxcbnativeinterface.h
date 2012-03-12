@@ -71,6 +71,7 @@ public:
     void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context);
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 
+    inline const QByteArray &genericEventFilterType() const { return m_genericEventFilterType; }
     EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter);
     EventFilter eventFilter(EventFilterType type) const { return m_eventFilters[type]; }
 
@@ -83,6 +84,7 @@ public:
     void *eglContextForContext(QOpenGLContext *context);
 
 private:
+    const QByteArray m_genericEventFilterType;
     EventFilter m_eventFilters[EventFilterCount];
 
     static QXcbScreen *qPlatformScreenForWindow(QWindow *window);

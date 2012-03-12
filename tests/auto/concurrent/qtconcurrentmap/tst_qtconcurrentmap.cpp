@@ -59,9 +59,6 @@ class tst_QtConcurrentMap: public QObject
 {
     Q_OBJECT
 private slots:
-#ifdef QT_NO_CONCURRENT_MAP
-    void initTestCase()
-#else
     void map();
     void blocking_map();
     void mapped();
@@ -82,16 +79,7 @@ private slots:
     void stressTest();
 public slots:
     void throttling();
-#endif
 };
-
-#ifdef QT_NO_CONCURRENT_FILTER
-void tst_QtConcurrentFilter::initTestCase()
-{
-    QSKIP("This test is skipped for gcc 3.x");
-}
-
-#else
 
 using namespace QtConcurrent;
 
@@ -2419,8 +2407,6 @@ void tst_QtConcurrentMap::stressTest()
             QCOMPARE(list.at(j), i + j + 1);
     }
 }
-
-#endif
 
 QTEST_MAIN(tst_QtConcurrentMap)
 #include "tst_qtconcurrentmap.moc"

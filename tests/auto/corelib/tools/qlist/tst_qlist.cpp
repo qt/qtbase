@@ -43,12 +43,6 @@
 #include <QtTest/QtTest>
 #include <QList>
 
-/*!
-  \class tst_QVector
-  \internal
-  \since 4.5
-  \brief Test Qt's class QList.
- */
 class tst_QList : public QObject
 {
     Q_OBJECT

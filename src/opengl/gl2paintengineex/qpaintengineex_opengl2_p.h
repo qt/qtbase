@@ -155,7 +155,7 @@ public:
     void setRenderTextActive(bool);
 
     bool isNativePaintingActive() const;
-    bool supportsTransformations(qreal, const QTransform &) const { return true; }
+    bool supportsTransformations(QFontEngine *, const QTransform &) const { return true; }
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };

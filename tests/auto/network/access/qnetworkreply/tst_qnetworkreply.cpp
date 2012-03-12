@@ -2971,9 +2971,6 @@ void tst_QNetworkReply::ioGetFromHttpWithAuthSynchronous()
 
 void tst_QNetworkReply::ioGetFromHttpWithProxyAuth()
 {
-    qRegisterMetaType<QNetworkProxy>(); // for QSignalSpy
-    qRegisterMetaType<QAuthenticator *>();
-
     // This test sends three requests
     // The first two in parallel
     // The third after the first two finished
@@ -3081,9 +3078,6 @@ void tst_QNetworkReply::ioGetFromHttpWithSocksProxy()
     // HTTP caching proxies are tested by the above function
     // test SOCKSv5 proxies too
 
-    qRegisterMetaType<QNetworkProxy>(); // for QSignalSpy
-    qRegisterMetaType<QAuthenticator *>();
-
     QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
@@ -3141,9 +3135,6 @@ void tst_QNetworkReply::ioGetFromHttpWithSocksProxy()
 #ifndef QT_NO_SSL
 void tst_QNetworkReply::ioGetFromHttpsWithSslErrors()
 {
-    qRegisterMetaType<QNetworkReply*>(); // for QSignalSpy
-    qRegisterMetaType<QList<QSslError> >();
-
     QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
@@ -3175,9 +3166,6 @@ void tst_QNetworkReply::ioGetFromHttpsWithIgnoreSslErrors()
     // same as above, except that we call ignoreSslErrors and don't connect
     // to the sslErrors() signal (which is *still* emitted)
 
-    qRegisterMetaType<QNetworkReply*>(); // for QSignalSpy
-    qRegisterMetaType<QList<QSslError> >();
-
     QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
@@ -3203,9 +3191,6 @@ void tst_QNetworkReply::ioGetFromHttpsWithIgnoreSslErrors()
 
 void tst_QNetworkReply::ioGetFromHttpsWithSslHandshakeError()
 {
-    qRegisterMetaType<QNetworkReply*>(); // for QSignalSpy
-    qRegisterMetaType<QList<QSslError> >();
-
     QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
@@ -3709,9 +3694,6 @@ void tst_QNetworkReply::ioGetWithManyProxies()
 {
     // Test proxy factories
 
-    qRegisterMetaType<QNetworkProxy>(); // for QSignalSpy
-    qRegisterMetaType<QAuthenticator *>();
-
     QFile reference(testDataDir + "/rfc3252.txt");
     QVERIFY(reference.open(QIODevice::ReadOnly));
 
@@ -3874,6 +3856,10 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
     QNetworkReplyPtr reply = manager.put(QNetworkRequest(url), passive);
     passive->setParent(reply);
 
+#ifdef Q_OS_WIN
+    if (!data.isEmpty())
+        QEXPECT_FAIL("", "QTBUG-18385", Abort);
+#endif
     QVERIFY(waitForFinish(reply) == Success);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 
@@ -4104,10 +4090,6 @@ void tst_QNetworkReply::ioPostToHttpFromSocket_data()
 
 void tst_QNetworkReply::ioPostToHttpFromSocket()
 {
-    qRegisterMetaType<QNetworkProxy>(); // for QSignalSpy
-    qRegisterMetaType<QAuthenticator *>();
-    qRegisterMetaType<QNetworkReply *>();
-
     QFETCH(QByteArray, data);
     QFETCH(QUrl, url);
     QFETCH(QNetworkProxy, proxy);
@@ -4707,7 +4689,6 @@ void tst_QNetworkReply::rateControl()
     QNetworkRequest request("debugpipe://localhost:" + QString::number(sender.serverPort()));
     QNetworkReplyPtr reply = manager.get(request);
     reply->setReadBufferSize(32768);
-    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
     QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
 
     RateControlledReader reader(sender, reply, rate, 20);
@@ -5100,7 +5081,6 @@ void tst_QNetworkReply::nestedEventLoops()
     // seconds. (see above)
 
     qDebug("Takes 16 seconds to run, please wait");
-    qRegisterMetaType<QNetworkReply::NetworkError>();
 
     QUrl url("http://" + QtNetworkSettings::serverName());
     QNetworkRequest request(url);
@@ -5321,7 +5301,6 @@ void tst_QNetworkReply::authorizationError()
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 
-    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
     QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
     QSignalSpy finishedSpy(reply, SIGNAL(finished()));
     // now run the request:
@@ -5653,6 +5632,7 @@ void tst_QNetworkReply::getAndThenDeleteObject_data()
 
 void tst_QNetworkReply::getAndThenDeleteObject()
 {
+    QSKIP("unstable test - reply may be finished too early");
     // yes, this will leak if the testcase fails. I don't care. It must not fail then :P
     QNetworkAccessManager *manager = new QNetworkAccessManager();
     QNetworkRequest request("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile");
@@ -6050,11 +6030,8 @@ void tst_QNetworkReply::qtbug4121unknownAuthentication()
     QNetworkAccessManager manager;
     QNetworkReplyPtr reply = manager.get(request);
 
-    qRegisterMetaType<QNetworkReply*>("QNetworkReply*");
-    qRegisterMetaType<QAuthenticator*>("QAuthenticator*");
     QSignalSpy authSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     QSignalSpy finishedSpy(&manager, SIGNAL(finished(QNetworkReply*)));
-    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
     QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);

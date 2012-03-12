@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QtWidgets/QApplication>
+#include <QtGui/QGuiApplication>
 #include <QtGui/QPainter>
 #include <QtGui/QImage>
 
@@ -48,7 +48,6 @@
 #include <qpaintengine.h>
 
 #include <private/qstatictext_p.h>
-#include <private/qapplication_p.h>
 
 // #define DEBUG_SAVE_IMAGE
 
@@ -296,7 +295,7 @@ void tst_QStaticText::prepareToWrongData()
 
 void tst_QStaticText::setFont()
 {
-    QFont font = QApplication::font();
+    QFont font = QGuiApplication::font();
     font.setBold(true);
     font.setPointSize(28);
 
@@ -618,7 +617,7 @@ void tst_QStaticText::plainTextVsRichText()
 
 void tst_QStaticText::setPenPlainText()
 {
-    QFont font = QApplication::font();
+    QFont font = QGuiApplication::font();
     font.setStyleStrategy(QFont::NoAntialias);
 
     QFontMetricsF fm(font);
@@ -646,7 +645,7 @@ void tst_QStaticText::setPenPlainText()
 
 void tst_QStaticText::setPenRichText()
 {
-    QFont font = QApplication::font();
+    QFont font = QGuiApplication::font();
     font.setStyleStrategy(QFont::NoAntialias);
 
     QFontMetricsF fm(font);
@@ -675,7 +674,7 @@ void tst_QStaticText::setPenRichText()
 
 void tst_QStaticText::richTextOverridesPen()
 {
-    QFont font = QApplication::font();
+    QFont font = QGuiApplication::font();
     font.setStyleStrategy(QFont::NoAntialias);
 
     QFontMetricsF fm(font);

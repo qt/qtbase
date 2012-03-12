@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qtextpiecetable
-QT += widgets widgets-private testlib
+QT += testlib
 QT += core-private gui-private
 SOURCES  += tst_qtextpiecetable.cpp
 HEADERS += ../qtextdocument/common.h

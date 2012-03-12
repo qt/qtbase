@@ -16,35 +16,35 @@ contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
 SRC_SUBDIRS += src_plugins
 
-src_winmain.subdir = $$QT_SOURCE_TREE/src/winmain
+src_winmain.subdir = $$PWD/winmain
 src_winmain.target = sub-winmain
-src_corelib.subdir = $$QT_SOURCE_TREE/src/corelib
+src_corelib.subdir = $$PWD/corelib
 src_corelib.target = sub-corelib
-src_xml.subdir = $$QT_SOURCE_TREE/src/xml
+src_xml.subdir = $$PWD/xml
 src_xml.target = sub-xml
-src_dbus.subdir = $$QT_SOURCE_TREE/src/dbus
+src_dbus.subdir = $$PWD/dbus
 src_dbus.target = sub-dbus
-src_gui.subdir = $$QT_SOURCE_TREE/src/gui
+src_gui.subdir = $$PWD/gui
 src_gui.target = sub-gui
-src_sql.subdir = $$QT_SOURCE_TREE/src/sql
+src_sql.subdir = $$PWD/sql
 src_sql.target = sub-sql
-src_network.subdir = $$QT_SOURCE_TREE/src/network
+src_network.subdir = $$PWD/network
 src_network.target = sub-network
-src_opengl.subdir = $$QT_SOURCE_TREE/src/opengl
+src_opengl.subdir = $$PWD/opengl
 src_opengl.target = sub-opengl
-src_plugins.subdir = $$QT_SOURCE_TREE/src/plugins
+src_plugins.subdir = $$PWD/plugins
 src_plugins.target = sub-plugins
-src_widgets.subdir = $$QT_SOURCE_TREE/src/widgets
+src_widgets.subdir = $$PWD/widgets
 src_widgets.target = sub-widgets
 !wince*: {
-    src_printsupport.subdir = $$QT_SOURCE_TREE/src/printsupport
+    src_printsupport.subdir = $$PWD/printsupport
     src_printsupport.target = sub-printsupport
 }
-src_testlib.subdir = $$QT_SOURCE_TREE/src/testlib
+src_testlib.subdir = $$PWD/testlib
 src_testlib.target = sub-testlib
-src_platformsupport.subdir = $$QT_SOURCE_TREE/src/platformsupport
+src_platformsupport.subdir = $$PWD/platformsupport
 src_platformsupport.target = sub-platformsupport
-src_concurrent.subdir = $$QT_SOURCE_TREE/src/concurrent
+src_concurrent.subdir = $$PWD/concurrent
 src_concurrent.target = sub-concurrent
 
 
