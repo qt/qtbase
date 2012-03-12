@@ -170,11 +170,7 @@ private:
     }
     int alignOfTypedData() const
     {
-#ifdef Q_ALIGNOF
         return qMax<int>(sizeof(void*), Q_ALIGNOF(Data));
-#else
-        return 0;
-#endif
     }
 };
 

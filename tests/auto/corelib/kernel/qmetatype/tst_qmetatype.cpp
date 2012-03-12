@@ -868,41 +868,15 @@ void tst_QMetaType::construct_data()
     create_data();
 }
 
-#ifndef Q_ALIGNOF
-template<uint N>
-struct RoundToNextHighestPowerOfTwo
-{
-private:
-    enum { V1 = N-1 };
-    enum { V2 = V1 | (V1 >> 1) };
-    enum { V3 = V2 | (V2 >> 2) };
-    enum { V4 = V3 | (V3 >> 4) };
-    enum { V5 = V4 | (V4 >> 8) };
-    enum { V6 = V5 | (V5 >> 16) };
-public:
-    enum { Value = V6 + 1 };
-};
-#endif
-
-template<class T>
-struct TypeAlignment
-{
-#ifdef Q_ALIGNOF
-    enum { Value = Q_ALIGNOF(T) };
-#else
-    enum { Value = RoundToNextHighestPowerOfTwo<sizeof(T)>::Value };
-#endif
-};
-
 template<int ID>
 static void testConstructHelper()
 {
     typedef typename MetaEnumToType<ID>::Type Type;
     QMetaType info(ID);
     int size = info.sizeOf();
-    void *storage1 = qMallocAligned(size, TypeAlignment<Type>::Value);
+    void *storage1 = qMallocAligned(size, Q_ALIGNOF(Type));
     void *actual1 = QMetaType::construct(ID, storage1, /*copy=*/0);
-    void *storage2 = qMallocAligned(size, TypeAlignment<Type>::Value);
+    void *storage2 = qMallocAligned(size, Q_ALIGNOF(Type));
     void *actual2 = info.construct(storage2, /*copy=*/0);
     QCOMPARE(actual1, storage1);
     QCOMPARE(actual2, storage2);
@@ -971,9 +945,9 @@ static void testConstructCopyHelper()
     QMetaType info(ID);
     int size = QMetaType::sizeOf(ID);
     QCOMPARE(info.sizeOf(), size);
-    void *storage1 = qMallocAligned(size, TypeAlignment<Type>::Value);
+    void *storage1 = qMallocAligned(size, Q_ALIGNOF(Type));
     void *actual1 = QMetaType::construct(ID, storage1, expected);
-    void *storage2 = qMallocAligned(size, TypeAlignment<Type>::Value);
+    void *storage2 = qMallocAligned(size, Q_ALIGNOF(Type));
     void *actual2 = info.construct(storage2, expected);
     QCOMPARE(actual1, storage1);
     QCOMPARE(actual2, storage2);

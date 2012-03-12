@@ -248,6 +248,56 @@ typedef quint64 qulonglong;
 
 #if defined(__cplusplus)
 
+namespace QtPrivate {
+    template <class T>
+    struct AlignOfHelper
+    {
+        char c;
+        T type;
+
+        AlignOfHelper();
+        ~AlignOfHelper();
+    };
+
+    template <class T>
+    struct AlignOf_Default
+    {
+        enum { Value = sizeof(AlignOfHelper<T>) - sizeof(T) };
+    };
+
+    template <class T> struct AlignOf : AlignOf_Default<T> { };
+    template <class T> struct AlignOf<T &> : AlignOf<T> {};
+    template <size_t N, class T> struct AlignOf<T[N]> : AlignOf<T> {};
+
+#ifdef Q_COMPILER_RVALUE_REFS
+    template <class T> struct AlignOf<T &&> : AlignOf<T> {};
+#endif
+
+#if defined(Q_PROCESSOR_X86_32) && !defined(Q_OS_WIN)
+    template <class T> struct AlignOf_WorkaroundForI386Abi { enum { Value = sizeof(T) }; };
+
+    // x86 ABI weirdness
+    // Alignment of naked type is 8, but inside struct has alignment 4.
+    template <> struct AlignOf<double>  : AlignOf_WorkaroundForI386Abi<double> {};
+    template <> struct AlignOf<qint64>  : AlignOf_WorkaroundForI386Abi<qint64> {};
+    template <> struct AlignOf<quint64> : AlignOf_WorkaroundForI386Abi<quint64> {};
+#ifdef Q_CC_CLANG
+    // GCC and Clang seem to disagree wrt to alignment of arrays
+    template <size_t N> struct AlignOf<double[N]>   : AlignOf_Default<double> {};
+    template <size_t N> struct AlignOf<qint64[N]>   : AlignOf_Default<qint64> {};
+    template <size_t N> struct AlignOf<quint64[N]>  : AlignOf_Default<quint64> {};
+#endif
+#endif
+} // namespace QtPrivate
+
+#define QT_EMULATED_ALIGNOF(T) \
+    (size_t(QT_PREPEND_NAMESPACE(QtPrivate)::AlignOf<T>::Value))
+
+#ifndef Q_ALIGNOF
+#define Q_ALIGNOF(T) QT_EMULATED_ALIGNOF(T)
+#endif
+
+
 /*
   quintptr and qptrdiff is guaranteed to be the same size as a pointer, i.e.
 

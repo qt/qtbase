@@ -257,13 +257,8 @@ class QHash
         return reinterpret_cast<Node *>(node);
     }
 
-#ifdef Q_ALIGNOF
     static inline int alignOfNode() { return qMax<int>(sizeof(void*), Q_ALIGNOF(Node)); }
     static inline int alignOfDummyNode() { return qMax<int>(sizeof(void*), Q_ALIGNOF(DummyNode)); }
-#else
-    static inline int alignOfNode() { return 0; }
-    static inline int alignOfDummyNode() { return 0; }
-#endif
 
 public:
     inline QHash() : d(const_cast<QHashData *>(&QHashData::shared_null)) { }
