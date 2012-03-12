@@ -171,7 +171,6 @@ private:
 #define CONFIG_SHOWINTERNAL             "showinternal"
 #define CONFIG_SOURCEDIRS               "sourcedirs"
 #define CONFIG_SOURCEENCODING           "sourceencoding"
-#define CONFIG_SOURCEMODULES            "sourcemodules"
 #define CONFIG_SOURCES                  "sources"
 #define CONFIG_SPURIOUS                 "spurious"
 #define CONFIG_STYLEDIRS                "styledirs"
