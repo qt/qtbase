@@ -142,46 +142,6 @@ Configure::Configure(int& argc, char** argv)
         cout << "Preparing build tree..." << endl;
         QDir(buildPath).mkpath("bin");
 
-        { //duplicate qmake
-            QStack<QString> qmake_dirs;
-            qmake_dirs.push("qmake");
-            while (!qmake_dirs.isEmpty()) {
-                QString dir = qmake_dirs.pop();
-                QString od(buildPath + "/" + dir);
-                QString id(sourcePath + "/" + dir);
-                QFileInfoList entries = QDir(id).entryInfoList(QDir::NoDotAndDotDot|QDir::AllEntries);
-                for (int i = 0; i < entries.size(); ++i) {
-                    QFileInfo fi(entries.at(i));
-                    if (fi.isDir()) {
-                        qmake_dirs.push(dir + "/" + fi.fileName());
-                        QDir().mkpath(od + "/" + fi.fileName());
-                    } else {
-                        QDir().mkpath(od);
-                        bool justCopy = true;
-                        const QString fname = fi.fileName();
-                        const QString outFile(od + "/" + fname), inFile(id + "/" + fname);
-                        if (fi.fileName() == "Makefile") { //ignore
-                        } else if (fi.suffix() == "h" || fi.suffix() == "cpp") {
-                            QTemporaryFile tmpFile;
-                            if (tmpFile.open()) {
-                                QTextStream stream(&tmpFile);
-                                stream << "#include \"" << inFile << "\"" << endl;
-                                justCopy = false;
-                                stream.flush();
-                                tmpFile.flush();
-                                if (filesDiffer(tmpFile.fileName(), outFile)) {
-                                    QFile::remove(outFile);
-                                    tmpFile.copy(outFile);
-                                }
-                            }
-                        }
-                        if (justCopy && filesDiffer(inFile, outFile))
-                            QFile::copy(inFile, outFile);
-                    }
-                }
-            }
-        }
-
         { //make a syncqt script(s) that can be used in the shadow
             QFile syncqt(buildPath + "/bin/syncqt");
             if (syncqt.open(QFile::WriteOnly)) {
@@ -2367,8 +2327,10 @@ void Configure::generateOutputVars()
         }
     }
 
-    if (dictionary.contains("XQMAKESPEC") && (dictionary["QMAKESPEC"] != dictionary["XQMAKESPEC"]))
+    if (dictionary.contains("XQMAKESPEC") && (dictionary["QMAKESPEC"] != dictionary["XQMAKESPEC"])) {
             qmakeConfig += "cross_compile";
+            dictionary["CROSS_COMPILE"] = "yes";
+    }
 
     // Directories and settings for .qmake.cache --------------------
 
@@ -2489,7 +2451,7 @@ void Configure::generateCachefile()
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
             cacheStream << (*var) << endl;
         }
-        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << " incremental depend_includepath no_private_qt_headers_warning QTDIR_build" << endl;
+        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << "depend_includepath no_private_qt_headers_warning QTDIR_build" << endl;
 
         cacheStream.flush();
         cacheFile.close();
@@ -2512,10 +2474,6 @@ void Configure::generateCachefile()
 
         //so that we can build without an install first (which would be impossible)
         moduleStream << "#local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR" << endl;
-        moduleStream << "QMAKE_MOC       = $$QT_BUILD_TREE" << fixSeparators("/bin/moc.exe", true) << endl;
-        moduleStream << "QMAKE_UIC       = $$QT_BUILD_TREE" << fixSeparators("/bin/uic.exe", true) << endl;
-        moduleStream << "QMAKE_RCC       = $$QT_BUILD_TREE" << fixSeparators("/bin/rcc.exe", true) << endl;
-        moduleStream << "QMAKE_DUMPCPP   = $$QT_BUILD_TREE" << fixSeparators("/bin/dumpcpp.exe", true) << endl;
         moduleStream << "QMAKE_INCDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/include", true) << endl;
         moduleStream << "QMAKE_LIBDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/lib", true) << endl;
 
@@ -2609,6 +2567,8 @@ void Configure::generateCachefile()
             configStream << " no_plugin_manifest";
         if (dictionary["QPA"] == "yes")
             configStream << " qpa";
+        if (dictionary["CROSS_COMPILE"] == "yes")
+            configStream << " cross_compile";
 
         if (dictionary["DIRECTWRITE"] == "yes")
             configStream << "directwrite";
@@ -3145,7 +3105,16 @@ void Configure::buildQmake()
 
         // Build qmake
         QString pwd = QDir::currentPath();
-        QDir::setCurrent(buildPath + "/qmake");
+        if (!QDir(buildPath).mkpath("qmake")) {
+            cout << "Cannot create qmake build dir." << endl;
+            dictionary[ "DONE" ] = "error";
+            return;
+        }
+        if (!QDir::setCurrent(buildPath + "/qmake")) {
+            cout << "Cannot enter qmake build dir." << endl;
+            dictionary[ "DONE" ] = "error";
+            return;
+        }
 
         QString makefile = "Makefile";
         {

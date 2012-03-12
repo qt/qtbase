@@ -143,6 +143,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_syncCounter(0)
     , m_mapped(false)
     , m_transparent(false)
+    , m_deferredActivation(false)
     , m_netWmUserTimeWindow(XCB_NONE)
 #if defined(XCB_USE_EGL)
     , m_eglSurface(0)
@@ -1178,8 +1179,11 @@ void QXcbWindow::propagateSizeHints()
 
 void QXcbWindow::requestActivateWindow()
 {
-    if (!m_mapped)
+    if (!m_mapped) {
+        m_deferredActivation = true;
         return;
+    }
+    m_deferredActivation = false;
 
     updateNetWmUserTime(connection()->time());
 
@@ -1334,6 +1338,8 @@ void QXcbWindow::handleMapNotifyEvent(const xcb_map_notify_event_t *event)
 {
     if (event->window == m_window) {
         m_mapped = true;
+        if (m_deferredActivation)
+            requestActivateWindow();
         QWindowSystemInterface::handleMapEvent(window());
     }
 }

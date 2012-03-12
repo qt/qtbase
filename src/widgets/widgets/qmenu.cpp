@@ -2091,7 +2091,7 @@ void QMenu::hideEvent(QHideEvent *)
         d->eventLoop->exit();
     d->setCurrentAction(0);
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::PopupMenuEnd, this, 0));
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::PopupMenuEnd, this));
 #endif
 #ifndef QT_NO_MENUBAR
     if (QMenuBar *mb = qobject_cast<QMenuBar*>(d->causedPopup.widget))

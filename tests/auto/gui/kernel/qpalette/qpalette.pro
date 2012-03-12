@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qpalette
-QT += widgets testlib
+QT += testlib
 SOURCES  += tst_qpalette.cpp
 
 

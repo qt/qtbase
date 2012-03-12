@@ -1463,7 +1463,7 @@ void QMessageBox::showEvent(QShowEvent *e)
     d->updateSize();
 
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Alert, this, 0));
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Alert, this));
 #endif
 #ifdef Q_OS_WIN
     if (const HMENU systemMenu = qt_getWindowsSystemMenu(this)) {

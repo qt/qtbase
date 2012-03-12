@@ -168,12 +168,13 @@ for(QTLIB, QT) {
 QT = $$resolve_depends(NEWQT, "QT.")
 # Finally actually add the modules
 for(QTLIB, QT) {
-    isEmpty(QT.$${QTLIB}.name) {
+    QTLIBNAME = $$eval(QT.$${QTLIB}.name)
+    isEmpty(QTLIBNAME) {
         message("Warning: unknown QT module: $$QTLIB")
         next()
     }
 
-    target_qt:isEqual(TARGET, QTLIB) {
+    target_qt:isEqual(TARGET, $$QTLIBNAME) {
         warning($$TARGET cannot have a QT of $$QTLIB)
         next()
     }
@@ -189,7 +190,7 @@ for(QTLIB, QT) {
 
 qt_compat {
    !qt_compat_no_warning:QTDIR_build:warning(***USE of COMPAT inside of QTDIR!**) #just for us
-   INCLUDEPATH *= $$QMAKE_INCDIR_QT/Qt
+   INCLUDEPATH *= $$QT.core.includes
    DEFINES *= QT_COMPAT
 }
 

@@ -73,6 +73,8 @@ public:
     QPlatformServices *services() const;
     virtual QVariant styleHint(StyleHint hint) const;
 
+    virtual Qt::KeyboardModifiers queryKeyboardModifiers() const;
+
     static QWindowsIntegration *instance();
 
     inline void emitScreenAdded(QPlatformScreen *s) { screenAdded(s); }

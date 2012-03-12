@@ -1,0 +1,6 @@
+blahblah.txt blahblah.txt
+/myroot/currentdir.txt currentdir.txt
+/myroot/currentdir2.txt currentdir2.txt
+/anotherroot/aliased.txt search_file.txt
+/anotherroot/parentdir.txt ../parentdir.txt
+/myroot/subdir/subdir.txt subdir/subdir.txt

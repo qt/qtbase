@@ -97,7 +97,11 @@ contains(INSTALLS, target) {
     #   ...
     #
     for(file, TESTDATA) {
-        tdi = testdata_install_$${file}
+        tnam = $$file
+        tnam ~= s,\\.\\.,dotdot,
+        tnam ~= s,[?*],wildcard,
+        tnam ~= s,[^A-Za-z0-9],_,
+        tdi = testdata_$$tnam
         tdif = $${tdi}.files
         tdip = $${tdi}.path
 

@@ -12,8 +12,3 @@ MOC_DIR	= tmp
 OBJECTS_DIR = tmp
 TARGET	= simple_dll
 DESTDIR	= ./
-
-infile($(QTDIR)/.qmake.cache, CONFIG, debug):CONFIG += debug
-infile($(QTDIR)/.qmake.cache, CONFIG, release):CONFIG += release
-
-

@@ -5,11 +5,9 @@ SUBDIRS=\
    qpixmap \
    qpixmapcache \
    qimage \
-   qpixmapfilter \
    qimageiohandler \
    qimagewriter \
    qmovie \
-   qicon \
    qpicture \
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \

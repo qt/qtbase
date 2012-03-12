@@ -56,6 +56,7 @@
 #include "qwindowsdrag.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowsaccessibility.h"
+#include "qwindowskeymapper.h"
 
 #include <QtGui/QPlatformNativeInterface>
 #include <QtGui/QWindowSystemInterface>
@@ -84,12 +85,17 @@ QT_BEGIN_NAMESPACE
 
 class QWindowsNativeInterface : public QPlatformNativeInterface
 {
+    Q_OBJECT
 public:
     virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
     virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
     virtual void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *bs);
     virtual EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter)
         { return QWindowsContext::instance()->setEventFilter(eventType, filter); }
+
+    Q_INVOKABLE void *createMessageWindow(const QString &classNameTemplate,
+                                          const QString &windowName,
+                                          void *eventProc) const;
 };
 
 void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
@@ -138,6 +144,21 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
 
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
     return 0;
+}
+
+/*!
+    \brief Creates a non-visible window handle for filtering messages.
+*/
+
+void *QWindowsNativeInterface::createMessageWindow(const QString &classNameTemplate,
+                                                   const QString &windowName,
+                                                   void *eventProc) const
+{
+    QWindowsContext *ctx = QWindowsContext::instance();
+    const HWND hwnd = ctx->createDummyWindow(classNameTemplate,
+                                             (wchar_t*)windowName.utf16(),
+                                             (WNDPROC)eventProc);
+    return hwnd;
 }
 
 /*!
@@ -301,6 +322,11 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
     return QPlatformIntegration::styleHint(hint);
 }
 
+Qt::KeyboardModifiers QWindowsIntegration::queryKeyboardModifiers() const
+{
+    return QWindowsKeyMapper::queryKeyboardModifiers();
+}
+
 QPlatformNativeInterface *QWindowsIntegration::nativeInterface() const
 {
     return &d->m_nativeInterface;
@@ -347,3 +373,5 @@ QPlatformServices *QWindowsIntegration::services() const
 }
 
 QT_END_NAMESPACE
+
+#include "qwindowsintegration.moc"

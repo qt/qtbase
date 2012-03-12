@@ -95,8 +95,13 @@ bool operator==(const QRegularExpressionMatch &rem, const Match &m)
         }
 
         Q_FOREACH (const QString &name, m.namedCaptured.keys()) {
-            if (rem.captured(name) != m.namedCaptured.value(name))
+            QString remCaptured = rem.captured(name);
+            QString mCaptured = m.namedCaptured.value(name);
+            if (remCaptured != mCaptured
+                || remCaptured.isNull() != mCaptured.isNull()
+                || remCaptured.isEmpty() != mCaptured.isEmpty()) {
                 return false;
+            }
         }
     }
 
@@ -567,6 +572,32 @@ void tst_QRegularExpression::normalMatch_data()
     m.captured << QString("a string") << QString("") << QString("a string");
     QTest::newRow("match09") << QRegularExpression("(.*?)(.*)")
                              << "a string"
+                             << 0
+                             << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
+                             << m;
+
+    // non existing names for capturing groups
+    m.clear();
+    m.isValid = true; m.hasMatch = true;
+    m.captured << "a string" << "a" << "string";
+    m.namedCaptured["article"] = "a";
+    m.namedCaptured["noun"] = "string";
+    m.namedCaptured["nonexisting1"] = QString();
+    m.namedCaptured["nonexisting2"] = QString();
+    m.namedCaptured["nonexisting3"] = QString();
+    QTest::newRow("match10") << QRegularExpression("(?<article>\\w+) (?<noun>\\w+)")
+                             << "a string"
+                             << 0
+                             << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
+                             << m;
+
+    m.clear();
+    m.isValid = true; m.hasMatch = true;
+    m.captured << "" << "";
+    m.namedCaptured["digits"] = ""; // empty VS null
+    m.namedCaptured["nonexisting"] = QString();
+    QTest::newRow("match11") << QRegularExpression("(?<digits>\\d*)")
+                             << "abcde"
                              << 0
                              << QRegularExpression::MatchOptions(QRegularExpression::NoMatchOption)
                              << m;
@@ -1195,4 +1226,56 @@ void tst_QRegularExpression::captureCount()
     QTEST(re.captureCount(), "captureCount");
     if (!re.isValid())
         QCOMPARE(re.captureCount(), -1);
+}
+
+void tst_QRegularExpression::pcreJitStackUsage_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<QString>("subject");
+    // these patterns cause enough backtrack (or even infinite recursion)
+    // in the regexp engine, so that JIT requests more memory.
+    QTest::newRow("jitstack01") << "(?(R)a*(?1)|((?R))b)" << "aaaabcde";
+    QTest::newRow("jitstack02") << "(?(R)a*(?1)|((?R))b)" << "aaaaaaabcde";
+}
+
+void tst_QRegularExpression::pcreJitStackUsage()
+{
+    QFETCH(QString, pattern);
+    QFETCH(QString, subject);
+
+    QRegularExpression re(pattern);
+    QVERIFY(re.isValid());
+    QRegularExpressionMatch match = re.match(subject);
+    consistencyCheck(match);
+    QRegularExpressionMatchIterator iterator = re.globalMatch(subject);
+    consistencyCheck(iterator);
+    while (iterator.hasNext()) {
+        match = iterator.next();
+        consistencyCheck(match);
+    }
+}
+
+void tst_QRegularExpression::regularExpressionMatch_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<QString>("subject");
+
+    QTest::newRow("validity01") << "(?<digits>\\d+)" << "1234 abcd";
+    QTest::newRow("validity02") << "(?<digits>\\d+) (?<alpha>\\w+)" << "1234 abcd";
+}
+
+void tst_QRegularExpression::regularExpressionMatch()
+{
+    QFETCH(QString, pattern);
+    QFETCH(QString, subject);
+
+    QRegularExpression re(pattern);
+    QVERIFY(re.isValid());
+    QRegularExpressionMatch match = re.match(subject);
+    consistencyCheck(match);
+    QCOMPARE(match.captured("non-existing").isNull(), true);
+    QTest::ignoreMessage(QtWarningMsg, "QRegularExpressionMatch::captured: empty capturing group name passed");
+    QCOMPARE(match.captured("").isNull(), true);
+    QTest::ignoreMessage(QtWarningMsg, "QRegularExpressionMatch::captured: empty capturing group name passed");
+    QCOMPARE(match.captured(QString()).isNull(), true);
 }

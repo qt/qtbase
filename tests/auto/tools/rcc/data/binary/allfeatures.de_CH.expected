@@ -1,0 +1,13 @@
+/test/abc/123/+++/currentdir.txt currentdir.txt
+/test/abc/123/+++/currentdir2.txt ./currentdir2.txt
+/test/abc/123/+++/parentdir.txt ../parentdir.txt
+/test/abc/123/+++/subdir/subdir.txt subdir/subdir.txt
+/search_file.txt search_file.txt
+/searchpath1/search_file.txt searchpath1/search_file.txt
+/searchpath2/search_file.txt searchpath2/search_file.txt
+test/testdir.txt test/testdir.txt
+otherdir/otherdir.txt otherdir/otherdir.txt
+aliasdir/aliasdir.txt aliasdir/compressme.txt
+test/test/test1.txt test/test/test1.txt
+test/test/test2.txt test/test/test2.txt
+withoutslashes/blahblah.txt blahblah.txt

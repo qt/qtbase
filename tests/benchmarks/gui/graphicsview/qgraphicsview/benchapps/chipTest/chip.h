@@ -62,7 +62,7 @@ protected:
 private:
     int x, y;
     QColor color;
-    QList<QPointF> stuff;
+    QVector<QPointF> stuff;
 };
 
 #endif

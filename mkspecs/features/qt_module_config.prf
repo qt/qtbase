@@ -118,24 +118,24 @@ load(qt_installs)
 
 unix|win32-g++* {
    CONFIG += create_pc
-   QMAKE_PKGCONFIG_LIBDIR = $$[QT_RAW_INSTALL_LIBS]
-   QMAKE_PKGCONFIG_INCDIR = $$[QT_RAW_INSTALL_HEADERS]/$$TARGET
-   QMAKE_PKGCONFIG_CFLAGS = -I$$[QT_RAW_INSTALL_HEADERS]
+   QMAKE_PKGCONFIG_LIBDIR = $$[QT_INSTALL_LIBS/raw]
+   QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]/$$TARGET
+   QMAKE_PKGCONFIG_CFLAGS = -I$$[QT_INSTALL_HEADERS/raw]
    QMAKE_PKGCONFIG_DESTDIR = pkgconfig
    include_replace.match = $$QMAKE_INCDIR_QT
-   include_replace.replace = $$[QT_RAW_INSTALL_HEADERS]
+   include_replace.replace = $$[QT_INSTALL_HEADERS/raw]
    lib_replace.match = $$QMAKE_LIBDIR_QT
-   lib_replace.replace = $$[QT_RAW_INSTALL_LIBS]
+   lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
    prefix_replace.match = $$QT_BUILD_TREE
-   prefix_replace.replace = $$[QT_RAW_INSTALL_PREFIX]
+   prefix_replace.replace = $$[QT_INSTALL_PREFIX/raw]
    QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace prefix_replace
 }
 
 unix {
    CONFIG += create_libtool explicitlib
-   QMAKE_PRL_LIBDIR = $$[QT_RAW_INSTALL_LIBS] ### XXX
+   QMAKE_PRL_LIBDIR = $$[QT_INSTALL_LIBS/raw] ### XXX
    QMAKE_PRL_INSTALL_REPLACE += include_replace lib_replace
-   QMAKE_LIBTOOL_LIBDIR = $$[QT_RAW_INSTALL_LIBS]
+   QMAKE_LIBTOOL_LIBDIR = $$[QT_INSTALL_LIBS/raw]
    QMAKE_LIBTOOL_INSTALL_REPLACE += include_replace lib_replace
 }
 

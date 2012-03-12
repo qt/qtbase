@@ -410,6 +410,12 @@ QT_BEGIN_NAMESPACE
    point to the working directory from which the compiler is invoked, or only
    absolute paths to the source files are passed to the compiler. Otherwise, the
    absolute path of the source directory cannot be determined.
+
+   \bold {Note:} For tests that use the \l QTEST_APPLESS_MAIN() macro to generate a
+   \c{main()} function, \c{QFINDTESTDATA} will not attempt to find test data
+   relative to QCoreApplication::applicationDirPath().  In practice, this means that
+   tests using \c{QTEST_APPLESS_MAIN()} will fail to find their test data
+   if run from a shadow build tree.
 */
 
 /*! \macro QTEST_MAIN(TestClass)
@@ -2407,15 +2413,34 @@ QObject *QTest::testObject()
  */
 bool QTest::compare_helper(bool success, const char *msg, const char *file, int line)
 {
+    static bool warned = false;
+    if (!warned) {
+        warned = true;
+        QTest::qWarn("QTest::compare_helper(bool, const char *, const char *, int) is obsolete "
+                     "and will soon be removed. Please update your code to use the other "
+                     "version of this function.");
+    }
+
     return QTestResult::compare(success, msg, file, line);
 }
 
 /*! \internal
+    This function is called by various specializations of QTest::qCompare
+    to decide whether to report a failure and to produce verbose test output.
+
+    The failureMsg parameter can be null, in which case a default message
+    will be output if the compare fails.  If the compare succeeds, failureMsg
+    will not be output.
+
+    If the caller has already passed a failure message showing the compared
+    values, or if those values cannot be stringified, val1 and val2 can be null.
  */
-bool QTest::compare_helper(bool success, const char *msg, char *val1, char *val2,
-                    const char *actual, const char *expected, const char *file, int line)
+bool QTest::compare_helper(bool success, const char *failureMsg,
+                           char *val1, char *val2,
+                           const char *actual, const char *expected,
+                           const char *file, int line)
 {
-    return QTestResult::compare(success, msg, val1, val2, actual, expected, file, line);
+    return QTestResult::compare(success, failureMsg, val1, val2, actual, expected, file, line);
 }
 
 /*! \fn bool QTest::qCompare<float>(float const &t1, float const &t2, const char *actual, const char *expected, const char *file, int line)
@@ -2425,10 +2450,8 @@ template <>
 Q_TESTLIB_EXPORT bool QTest::qCompare<float>(float const &t1, float const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
-    return qFuzzyCompare(t1, t2)
-            ? compare_helper(true, "COMPARE()", file, line)
-            : compare_helper(false, "Compared floats are not the same (fuzzy compare)",
-                             toString(t1), toString(t2), actual, expected, file, line);
+    return compare_helper(qFuzzyCompare(t1, t2), "Compared floats are not the same (fuzzy compare)",
+                          toString(t1), toString(t2), actual, expected, file, line);
 }
 
 /*! \fn bool QTest::qCompare<double>(double const &t1, double const &t2, const char *actual, const char *expected, const char *file, int line)
@@ -2438,10 +2461,8 @@ template <>
 Q_TESTLIB_EXPORT bool QTest::qCompare<double>(double const &t1, double const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
-    return qFuzzyCompare(t1, t2)
-            ? compare_helper(true, "COMPARE()", file, line)
-            : compare_helper(false, "Compared doubles are not the same (fuzzy compare)",
-                             toString(t1), toString(t2), actual, expected, file, line);
+    return compare_helper(qFuzzyCompare(t1, t2), "Compared doubles are not the same (fuzzy compare)",
+                          toString(t1), toString(t2), actual, expected, file, line);
 }
 
 #define TO_STRING_IMPL(TYPE, FORMAT) \
@@ -2494,10 +2515,8 @@ char *QTest::toString(const void *p)
 bool QTest::compare_string_helper(const char *t1, const char *t2, const char *actual,
                                   const char *expected, const char *file, int line)
 {
-    return (qstrcmp(t1, t2) == 0)
-            ? compare_helper(true, "COMPARE()", file, line)
-            : compare_helper(false, "Compared strings are not the same",
-                             toString(t1), toString(t2), actual, expected, file, line);
+    return compare_helper(qstrcmp(t1, t2) == 0, "Compared strings are not the same",
+                          toString(t1), toString(t2), actual, expected, file, line);
 }
 
 /*! \fn bool QTest::compare_ptr_helper(const void *t1, const void *t2, const char *actual, const char *expected, const char *file, int line);

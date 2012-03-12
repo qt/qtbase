@@ -40,13 +40,12 @@
 ****************************************************************************/
 
 #include <QtGui>
-#include <QApplication>
 #include <QEvent>
 
-struct MyApplication : public QApplication
+struct MyApplication : public QGuiApplication
 {
     MyApplication(int& argc, char** argv)
-    : QApplication(argc, argv)
+    : QGuiApplication(argc, argv)
     {}
 
     bool event(QEvent * event)
@@ -59,7 +58,7 @@ struct MyApplication : public QApplication
                 file.write(QByteArray("+external"));
             return true;
         } else {
-            return QApplication::event(event);
+            return QGuiApplication::event(event);
         }
     }
 };

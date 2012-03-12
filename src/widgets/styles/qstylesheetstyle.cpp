@@ -2498,7 +2498,13 @@ void QStyleSheetStyle::setGeometry(QWidget *w)
 
 void QStyleSheetStyle::setProperties(QWidget *w)
 {
+    // we have two data structures here: a hash of property -> value for lookup,
+    // and a vector giving properties in the order they are specified.
+    //
+    // this means we only set a property once (thanks to the hash) but we set
+    // properties in the order they are specified.
     QHash<QString, QVariant> propertyHash;
+    QVector<QString> properties;
     QVector<Declaration> decls = declarations(styleRules(w), QString());
 
     // run through the declarations in order
@@ -2535,10 +2541,17 @@ void QStyleSheetStyle::setProperties(QWidget *w)
 #endif
         default: v = decl.d->values.at(0).variant; break;
         }
+
+        if (propertyHash.contains(property)) {
+            // we're ignoring the original appearance of this property
+            properties.remove(properties.indexOf(property));
+        }
+
         propertyHash[property] = v;
+        properties.append(property);
     }
-    // apply the values
-    const QList<QString> properties = propertyHash.keys();
+
+    // apply the values from left to right order
     for (int i = 0; i < properties.count(); i++) {
         const QString &property = properties.at(i);
         w->setProperty(property.toLatin1(), propertyHash[property]);

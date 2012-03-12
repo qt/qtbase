@@ -122,10 +122,10 @@ QJsonArray &QJsonArray::operator =(const QJsonArray &other)
         if (d && !d->ref.deref())
             delete d;
         d = other.d;
-        a = other.a;
         if (d)
             d->ref.ref();
     }
+    a = other.a;
 
     return *this;
 }

@@ -1475,6 +1475,9 @@ void tst_QTcpSocket::waitForBytesWritten()
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::waitForBytesWrittenMinusOne()
 {
+#ifdef Q_OS_WIN
+    QSKIP("QTBUG-24451 - indefinite wait may hang");
+#endif
     QTcpSocket *socket = newSocket();
     socket->connectToHost(QtNetworkSettings::serverName(), 80);
     QVERIFY(socket->waitForConnected(10000));
@@ -1500,6 +1503,9 @@ void tst_QTcpSocket::waitForReadyRead()
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::waitForReadyReadMinusOne()
 {
+#ifdef Q_OS_WIN
+    QSKIP("QTBUG-24451 - indefinite wait may hang");
+#endif
     QTcpSocket *socket = newSocket();
     socket->connectToHost(QtNetworkSettings::serverName(), 80);
     socket->write("GET / HTTP/1.0\r\n\r\n");
@@ -2102,6 +2108,9 @@ void tst_QTcpSocket::abortiveClose_abortSlot()
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::localAddressEmptyOnBSD()
 {
+#ifdef Q_OS_WIN
+    QSKIP("QTBUG-24451 - indefinite wait may hang");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return; //proxy not useful for localhost test case

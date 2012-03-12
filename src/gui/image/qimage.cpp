@@ -50,6 +50,7 @@
 #include "qstringlist.h"
 #include "qvariant.h"
 #include "qimagepixmapcleanuphooks_p.h"
+#include "qplatformintegration_qpa.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -62,6 +63,7 @@
 
 #include <qhash.h>
 
+#include <private/qguiapplication_p.h>
 #include <private/qpaintengine_raster_p.h>
 
 #include <private/qimage_p.h>
@@ -4900,7 +4902,9 @@ QPaintEngine *QImage::paintEngine() const
         return 0;
 
     if (!d->paintEngine) {
-        d->paintEngine = new QRasterPaintEngine(const_cast<QImage *>(this));
+        QPaintDevice *paintDevice = const_cast<QImage *>(this);
+        QPaintEngine *paintEngine = QGuiApplicationPrivate::platformIntegration()->createImagePaintEngine(paintDevice);
+        d->paintEngine = paintEngine ? paintEngine : new QRasterPaintEngine(paintDevice);
     }
 
     return d->paintEngine;

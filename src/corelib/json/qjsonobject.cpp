@@ -125,10 +125,10 @@ QJsonObject &QJsonObject::operator =(const QJsonObject &other)
         if (d && !d->ref.deref())
             delete d;
         d = other.d;
-        o = other.o;
         if (d)
             d->ref.ref();
     }
+    o = other.o;
 
     return *this;
 }

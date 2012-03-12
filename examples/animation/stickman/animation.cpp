@@ -41,6 +41,7 @@
 #include "animation.h"
 
 #include <QPointF>
+#include <QVector>
 #include <QIODevice>
 #include <QDataStream>
 
@@ -57,11 +58,7 @@ public:
 
     void setNodeCount(int nodeCount)
     {
-        while (nodeCount > m_nodePositions.size())
-            m_nodePositions.append(QPointF());            
-        
-        while (nodeCount < m_nodePositions.size())
-            m_nodePositions.removeLast();
+        m_nodePositions.resize(nodeCount);
     }
 
     QPointF nodePos(int idx) const
@@ -75,7 +72,7 @@ public:
     }
     
 private:
-    QList<QPointF> m_nodePositions;
+    QVector<QPointF> m_nodePositions;
 };
 
 Animation::Animation()

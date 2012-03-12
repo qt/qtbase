@@ -81,6 +81,7 @@ public:
 
 private slots:
     void systemProxyForQueryCalledFromThread();
+    void systemProxyForQuery_data();
     void systemProxyForQuery() const;
 #ifndef QT_NO_BEARERMANAGEMENT
     void fromConfigurations();
@@ -110,34 +111,88 @@ QString tst_QNetworkProxyFactory::formatProxyName(const QNetworkProxy & proxy) c
     return proxyName;
 }
 
+void tst_QNetworkProxyFactory::systemProxyForQuery_data()
+{
+    QTest::addColumn<int>("type");
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QString>("tag");
+    QTest::addColumn<QString>("hostName");
+    QTest::addColumn<int>("port");
+    QTest::addColumn<int>("requiredCapabilities");
+
+    //URLs
+    QTest::newRow("http") << (int)QNetworkProxyQuery::UrlRequest << QUrl("http://qt-project.org") << QString() << QString() << 0 << 0;
+    //windows: "intranet" should be bypassed if "bypass proxy server for local addresses" is ticked
+    QTest::newRow("intranet") << (int)QNetworkProxyQuery::UrlRequest << QUrl("http://qt-test-server") << QString() << QString() << 0 << 0;
+    //windows: "intranet2" should be bypassed if "*.local" is in the exceptions list (advanced settings)
+    QTest::newRow("intranet2") << (int)QNetworkProxyQuery::UrlRequest << QUrl("http://qt-test-server.local") << QString() << QString() << 0 << 0;
+    QTest::newRow("https") << (int)QNetworkProxyQuery::UrlRequest << QUrl("https://qt-project.org") << QString() << QString() << 0 << (int)QNetworkProxy::TunnelingCapability;
+    QTest::newRow("ftp") << (int)QNetworkProxyQuery::UrlRequest << QUrl("ftp://qt-project.org") << QString() << QString() << 0 << 0;
+
+    //TCP
+    QTest::newRow("imap") << (int)QNetworkProxyQuery::TcpSocket << QUrl() << QString() << QString("qt-project.org") << 0 << (int)QNetworkProxy::TunnelingCapability;
+    QTest::newRow("autobind-server") << (int)QNetworkProxyQuery::TcpServer << QUrl() << QString() << QString() << 0 << (int)QNetworkProxy::ListeningCapability;
+    QTest::newRow("web-server") << (int)QNetworkProxyQuery::TcpServer << QUrl() << QString() << QString() << 80 << (int)QNetworkProxy::ListeningCapability;
+
+    //UDP
+    QTest::newRow("udp") << (int)QNetworkProxyQuery::UdpSocket << QUrl() << QString() << QString() << 0 << (int)QNetworkProxy::UdpTunnelingCapability;
+
+    //Protocol tags
+    QTest::newRow("http-tag") << (int)QNetworkProxyQuery::TcpSocket << QUrl() << QString("http") << QString("qt-project.org") << 80 << (int)QNetworkProxy::TunnelingCapability;
+    QTest::newRow("ftp-tag") << (int)QNetworkProxyQuery::TcpSocket << QUrl() << QString("ftp") << QString("qt-project.org") << 21 << (int)QNetworkProxy::TunnelingCapability;
+    QTest::newRow("https-tag") << (int)QNetworkProxyQuery::TcpSocket << QUrl() << QString("https") << QString("qt-project.org") << 443 << (int)QNetworkProxy::TunnelingCapability;
+#ifdef Q_OS_WIN
+    //in Qt 4.8, "socks" would get the socks proxy, but we dont want to enforce that for all platforms
+    QTest::newRow("socks-tag") << (int)QNetworkProxyQuery::TcpSocket << QUrl() << QString("socks") << QString("qt-project.org") << 21 <<  (int)(QNetworkProxy::TunnelingCapability | QNetworkProxy::ListeningCapability);
+#endif
+    //windows: ssh is not a tag provided by the os, but any tunneling proxy is acceptable
+    QTest::newRow("ssh-tag") << (int)QNetworkProxyQuery::TcpSocket << QUrl() << QString("ssh") << QString("qt-project.org") << 22 << (int)QNetworkProxy::TunnelingCapability;
+
+    //Server protocol tags (ftp/http proxies are no good, we need socks or nothing)
+    QTest::newRow("http-server-tag") << (int)QNetworkProxyQuery::TcpServer << QUrl() << QString("http") << QString() << 80 << (int)QNetworkProxy::ListeningCapability;
+    QTest::newRow("ftp-server-tag") << (int)QNetworkProxyQuery::TcpServer << QUrl() << QString("ftp") << QString() << 21 << (int)QNetworkProxy::ListeningCapability;
+    QTest::newRow("imap-server-tag") << (int)QNetworkProxyQuery::TcpServer << QUrl() << QString("imap") << QString() << 143 << (int)QNetworkProxy::ListeningCapability;
+
+    //UDP protocol tag
+    QTest::newRow("sip-udp-tag") << (int)QNetworkProxyQuery::UdpSocket << QUrl() << QString("sip") << QString("qt-project.org") << 5061 << (int)QNetworkProxy::UdpTunnelingCapability;
+}
+
 void tst_QNetworkProxyFactory::systemProxyForQuery() const
 {
-    QNetworkProxyQuery query(QUrl(QString("http://www.abc.com")), QNetworkProxyQuery::UrlRequest);
+    QFETCH(int, type);
+    QFETCH(QUrl, url);
+    QFETCH(QString, tag);
+    QFETCH(QString, hostName);
+    QFETCH(int, port);
+    QFETCH(int, requiredCapabilities);
+
+    QNetworkProxyQuery query;
+
+    switch (type) {
+    case QNetworkProxyQuery::UrlRequest:
+        query = QNetworkProxyQuery(url);
+        break;
+    case QNetworkProxyQuery::TcpSocket:
+    case QNetworkProxyQuery::UdpSocket:
+        query = QNetworkProxyQuery(hostName, port, tag, QNetworkProxyQuery::QueryType(type));
+        break;
+    case QNetworkProxyQuery::TcpServer:
+        query = QNetworkProxyQuery(quint16(port), tag);
+        break;
+    }
+
+    QElapsedTimer sw;
+    sw.start();
     QList<QNetworkProxy> systemProxyList = QNetworkProxyFactory::systemProxyForQuery(query);
-    bool pass = true;
-    QNetworkProxy proxy;
+    qDebug() << sw.elapsed() << "ms";
+    QVERIFY(!systemProxyList.isEmpty());
 
-    QList<QNetworkProxy> nativeProxyList;
-    nativeProxyList << QNetworkProxy(QNetworkProxy::HttpProxy, QString("test.proxy.com"), 8080) << QNetworkProxy::NoProxy;
+    // for manual comparison with system
+    qDebug() << systemProxyList;
 
-    foreach (proxy, systemProxyList) {
-        if (!nativeProxyList.contains(proxy)) {
-            qWarning() << "System proxy not found in native proxy list: " <<
-                  formatProxyName(proxy);
-            pass = false;
-        }
+    foreach (const QNetworkProxy &proxy, systemProxyList) {
+        QVERIFY((requiredCapabilities == 0) || (proxy.capabilities() & requiredCapabilities));
     }
-
-    foreach (proxy, nativeProxyList) {
-        if (!systemProxyList.contains(proxy)) {
-            qWarning() << "Native proxy not found in system proxy list: " <<
-                  formatProxyName(proxy);
-            pass = false;
-        }
-    }
-
-    if (!pass)
-        QFAIL("One or more system proxy lookup failures occurred.");
 }
 
 #ifndef QT_NO_BEARERMANAGEMENT

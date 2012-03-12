@@ -2160,7 +2160,9 @@ void tst_QApplication::abortQuitOnShow()
 Q_GLOBAL_STATIC(QLocale, tst_qapp_locale);
 Q_GLOBAL_STATIC(QProcess, tst_qapp_process);
 Q_GLOBAL_STATIC(QFileSystemWatcher, tst_qapp_fileSystemWatcher);
+#ifndef QT_NO_SHAREDMEMORY
 Q_GLOBAL_STATIC(QSharedMemory, tst_qapp_sharedMemory);
+#endif
 Q_GLOBAL_STATIC(QElapsedTimer, tst_qapp_elapsedTimer);
 Q_GLOBAL_STATIC(QMutex, tst_qapp_mutex);
 Q_GLOBAL_STATIC(QWidget, tst_qapp_widget);
@@ -2177,7 +2179,9 @@ void tst_QApplication::globalStaticObjectDestruction()
     QVERIFY(tst_qapp_locale());
     QVERIFY(tst_qapp_process());
     QVERIFY(tst_qapp_fileSystemWatcher());
+#ifndef QT_NO_SHAREDMEMORY
     QVERIFY(tst_qapp_sharedMemory());
+#endif
     QVERIFY(tst_qapp_elapsedTimer());
     QVERIFY(tst_qapp_mutex());
     QVERIFY(tst_qapp_widget());

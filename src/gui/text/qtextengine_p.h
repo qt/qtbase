@@ -446,6 +446,18 @@ public:
         bool reallocate(int totalGlyphs);
     };
 
+    struct ItemDecoration {
+        ItemDecoration(qreal x1, qreal x2, qreal y, const QPen &pen):
+            x1(x1), x2(x2), y(y), pen(pen) {}
+
+        qreal x1;
+        qreal x2;
+        qreal y;
+        QPen pen;
+    };
+
+    typedef QList<ItemDecoration> ItemDecorationList;
+
     QTextEngine(LayoutData *data);
     QTextEngine();
     QTextEngine(const QString &str, const QFont &f);
@@ -597,6 +609,7 @@ public:
     uint stackEngine : 1;
     uint forceJustification : 1;
     uint visualMovement : 1;
+    uint delayDecorations: 1;
 #ifndef QT_NO_RAWFONT
     uint useRawFont : 1;
 #endif
@@ -604,6 +617,10 @@ public:
     int *underlinePositions;
 
     mutable LayoutData *layoutData;
+
+    ItemDecorationList underlineList;
+    ItemDecorationList strikeOutList;
+    ItemDecorationList overlineList;
 
     inline bool hasFormats() const { return (block.docHandle() || specialData); }
     inline bool visualCursorMovement() const
@@ -639,7 +656,22 @@ public:
     void insertionPointsForLine(int lineNum, QVector<int> &insertionPoints);
     void resetFontEngineCache();
 
+    void enableDelayDecorations(bool enable = true) { delayDecorations = enable; }
+
+    void addUnderline(QPainter *painter, const QLineF &line);
+    void addStrikeOut(QPainter *painter, const QLineF &line);
+    void addOverline(QPainter *painter, const QLineF &line);
+
+    void drawDecorations(QPainter *painter);
+    void clearDecorations();
+    void adjustUnderlines();
+
 private:
+    void addItemDecoration(QPainter *painter, const QLineF &line, ItemDecorationList *decorationList);
+    void adjustUnderlines(ItemDecorationList::iterator start,
+                          ItemDecorationList::iterator end,
+                          qreal underlinePos, qreal penWidth);
+    void drawItemDecorationList(QPainter *painter, const ItemDecorationList &decorationList);
     void setBoundary(int strPos) const;
     void addRequiredBoundaries() const;
     void shapeText(int item) const;

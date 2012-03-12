@@ -198,9 +198,6 @@ protected:
         filterIncludedFiles("GENERATED_SOURCES");
     }
 
-    //for cross-platform dependent directories
-    virtual void usePlatformDir();
-
     //for installs
     virtual QString defaultInstall(const QString &);
 

@@ -504,9 +504,6 @@ void QAbstractButtonPrivate::refresh()
     if (blockRefresh)
         return;
     q->update();
-#ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::StateChanged, q, 0));
-#endif
 }
 
 void QAbstractButtonPrivate::click()
@@ -647,7 +644,7 @@ void QAbstractButton::setText(const QString &text)
     update();
     updateGeometry();
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this, 0));
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this));
 #endif
 }
 
@@ -767,6 +764,13 @@ void QAbstractButton::setChecked(bool checked)
         d->notifyChecked();
     if (guard)
         emit toggled(checked);
+
+
+#ifndef QT_NO_ACCESSIBILITY
+    QAccessible::State s;
+    s.checked = true;
+    QAccessible::updateAccessibility(QAccessibleStateChangeEvent(s, this));
+#endif
 }
 
 bool QAbstractButton::isChecked() const

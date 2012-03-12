@@ -775,7 +775,7 @@ QByteArray QFontEngine::getSfntTable(uint tag) const
     return table;
 }
 
-void QFontEngine::setGlyphCache(void *key, QFontEngineGlyphCache *data)
+void QFontEngine::setGlyphCache(const void *key, QFontEngineGlyphCache *data)
 {
     Q_ASSERT(data);
 
@@ -794,7 +794,7 @@ void QFontEngine::setGlyphCache(void *key, QFontEngineGlyphCache *data)
 
 }
 
-QFontEngineGlyphCache *QFontEngine::glyphCache(void *key, QFontEngineGlyphCache::Type type, const QTransform &transform) const
+QFontEngineGlyphCache *QFontEngine::glyphCache(const void *key, QFontEngineGlyphCache::Type type, const QTransform &transform) const
 {
     for (QLinkedList<GlyphCacheEntry>::const_iterator it = m_glyphCaches.constBegin(), end = m_glyphCaches.constEnd(); it != end; ++it) {
         QFontEngineGlyphCache *c = it->cache.data();
@@ -1419,22 +1419,6 @@ bool QFontEngineMulti::shouldLoadFontEngineForCharacter(int at, uint ucs4) const
     Q_UNUSED(at);
     Q_UNUSED(ucs4);
     return true;
-}
-
-void QFontEngineMulti::unloadEngine(int at)
-{
-    QFontEngine *fontEngine = engines.at(at);
-    if (fontEngine == 0)
-        return;
-
-    // If there are other references to the engine, keep it around and keep the reference
-    if (fontEngine->ref.load() == 1) {
-        QFontCache::instance()->removeEngine(fontEngine);
-        if (fontEngine->cache_count == 0) {
-            delete fontEngine;
-            engines[at] = 0;
-        }
-    }
 }
 
 glyph_metrics_t QFontEngineMulti::boundingBox(const QGlyphLayout &glyphs)

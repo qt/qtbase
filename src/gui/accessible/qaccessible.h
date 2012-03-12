@@ -292,6 +292,7 @@ public:
         // Additional Qt roles where enum value does not map directly to MSAA:
         LayeredPane    = 0x0000003F,
         Terminal       = 0x00000040,
+        Desktop        = 0x00000041,
         UserRole       = 0x0000ffff
     };
 
@@ -436,6 +437,9 @@ public:
         Q_ASSERT(obj);
     }
 
+    virtual ~QAccessibleEvent()
+    {}
+
     QAccessible::Event type() const { return m_type; }
     QObject *object() const { return m_object; }
     int child() const { return m_child; }
@@ -446,6 +450,21 @@ private:
     QAccessible::Event m_type;
     QObject *m_object;
     int m_child;
+};
+
+class Q_GUI_EXPORT QAccessibleStateChangeEvent :public QAccessibleEvent
+{
+public:
+    inline QAccessibleStateChangeEvent(QAccessible::State state, QObject *obj, int chld = -1)
+        : QAccessibleEvent(QAccessible::StateChanged, obj, chld), m_changedStates(state)
+    {}
+
+    QAccessible::State changedStates() const {
+        return m_changedStates;
+    }
+
+private:
+    QAccessible::State m_changedStates;
 };
 
 

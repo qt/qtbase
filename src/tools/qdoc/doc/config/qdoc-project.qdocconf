@@ -1,0 +1,48 @@
+include(compat.qdocconf)
+include(macros.qdocconf)
+include(qt-cpp-ignore.qdocconf)
+include(qt-defines.qdocconf)
+
+indexes = $$MODULE_BUILD_TREE/doc/html/qt.index
+
+sourceencoding = UTF-8
+outputencoding = UTF-8
+naturallanguage = en_US
+
+project          = QDoc
+description      = QDoc3 Manual
+url = http://doc.qt.nokia.com/qdoc
+
+sources.fileextensions = "*.cpp *.qdoc *.mm *.qml"
+headers.fileextensions = "*.h *.ch *.h++ *.hh *.hpp *.hxx"
+examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml *.qdoc *.qdocconf *.qdocinc"
+examples.imageextensions = "*.png *.jpeg *.jpg *.gif *.mng"
+
+sourcedirs = ..
+
+exampledirs = .. \
+              ../examples \
+              ../../../../examples \
+              config
+
+imagedirs = ../../../doc/src/templates/images \
+            images
+
+outputdir = $$MODULE_BUILD_TREE/tools/qdoc3/doc/html
+tagfile = $$MODULE_BUILD_TREE/tools/qdoc3/doc/html/qdoc.tags
+
+qhp.projects            = QDoc
+
+qhp.QDoc.file                = qdoc.qhp
+qhp.QDoc.namespace           = com.trolltech.qdoc
+qhp.QDoc.virtualFolder       = qdoc
+qhp.QDoc.indexTitle          = QDoc Manual - Table of Contents
+qhp.QDoc.indexRoot           =
+
+qhp.QDoc.filterAttributes    = qdoc qtrefdoc
+qhp.QDoc.customFilters.QDoc.name = QDoc
+qhp.QDoc.customFilters.QDoc.filterAttributes = qdoc
+qhp.QDoc.subprojects         = overviews
+qhp.QDoc.subprojects.overviews.title = Overviews
+qhp.QDoc.subprojects.overviews.indexTitle = All Overviews and HOWTOs
+qhp.QDoc.subprojects.overviews.selectors = fake:page,group,module

@@ -137,7 +137,11 @@ public:
     static void installTranslator(QTranslator * messageFile);
     static void removeTranslator(QTranslator * messageFile);
 #endif
-    enum Encoding { UnicodeUTF8, Latin1, DefaultCodec = Latin1 };
+    enum Encoding { UnicodeUTF8, Latin1, DefaultCodec = Latin1
+#if QT_DEPRECATED_SINCE(5, 0)
+                    , CodecForTr = Latin1
+#endif
+                  };
     static QString translate(const char * context,
                              const char * key,
                              const char * disambiguation = 0,

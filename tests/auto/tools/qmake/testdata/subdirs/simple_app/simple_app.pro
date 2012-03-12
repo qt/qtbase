@@ -5,8 +5,3 @@ SOURCES		= test_file.cpp \
 		  	main.cpp
 TARGET		= simple_app
 DESTDIR		= ./
-
-infile($(QTDIR)/.qmake.cache, CONFIG, debug):CONFIG += debug
-infile($(QTDIR)/.qmake.cache, CONFIG, release):CONFIG += release
-
-

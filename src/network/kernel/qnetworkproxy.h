@@ -203,6 +203,10 @@ public:
     static QList<QNetworkProxy> systemProxyForQuery(const QNetworkProxyQuery &query = QNetworkProxyQuery());
 };
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QNetworkProxy &proxy);
+#endif
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

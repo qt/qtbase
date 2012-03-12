@@ -194,8 +194,11 @@ public:
     void clip(const QVectorPath &path, Qt::ClipOperation op);
     void clip(const QRect &rect, Qt::ClipOperation op);
     void clip(const QRegion &region, Qt::ClipOperation op);
+    inline const QClipData *clip() const;
 
     void drawStaticTextItem(QStaticTextItem *textItem);
+    virtual bool drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions,
+                                  QFontEngine *fontEngine);
 
     enum ClipType {
         RectClip,
@@ -227,14 +230,15 @@ public:
     static bool clearTypeFontsEnabled();
 #endif
 
+    QRasterBuffer *rasterBuffer();
     void alphaPenBlt(const void* src, int bpl, int depth, int rx,int ry,int w,int h);
 
     Type type() const { return Raster; }
 
     QPoint coordinateOffset() const;
 
-    bool supportsTransformations(const QFontEngine *fontEngine) const;
-    bool supportsTransformations(qreal pixelSize, const QTransform &m) const;
+    bool supportsTransformations(QFontEngine *fontEngine) const;
+    bool supportsTransformations(QFontEngine *fontEngine, const QTransform &m) const;
 
 protected:
     QRasterPaintEngine(QRasterPaintEnginePrivate &d, QPaintDevice *);
@@ -246,10 +250,6 @@ private:
 
     void fillRect(const QRectF &rect, QSpanData *data);
     void drawBitmap(const QPointF &pos, const QImage &image, QSpanData *fill);
-
-    bool drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions,
-                          QFontEngine *fontEngine);
-
 
     bool setClipRectInDeviceCoords(const QRect &r, Qt::ClipOperation op);
 
@@ -492,6 +492,12 @@ inline const QClipData *QRasterPaintEnginePrivate::clip() const {
     return baseClip.data();
 }
 
+inline const QClipData *QRasterPaintEngine::clip() const {
+    Q_D(const QRasterPaintEngine);
+    if (state() && state()->clip && state()->clip->enabled)
+        return state()->clip;
+    return d->baseClip.data();
+}
 
 QT_END_NAMESPACE
 #endif // QPAINTENGINE_RASTER_P_H

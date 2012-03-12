@@ -43,6 +43,7 @@
 #define QFONTENGINEMULTIFONTCONFIG_H
 
 #include <QtGui/private/qfontengine_qpa_p.h>
+#include <fontconfig/fontconfig.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -52,7 +53,13 @@ class QFontEngineMultiFontConfig : public QFontEngineMultiQPA
 public:
     explicit QFontEngineMultiFontConfig(QFontEngine *fe, int script, const QStringList &fallbacks);
 
+    ~QFontEngineMultiFontConfig();
+
     bool shouldLoadFontEngineForCharacter(int at, uint ucs4) const;
+private:
+    FcPattern* getMatchPatternForFallback(int at) const;
+
+    mutable QVector<FcPattern*> cachedMatchPatterns;
 };
 
 QT_END_NAMESPACE

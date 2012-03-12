@@ -85,7 +85,7 @@ public:
 void tst_QCoreApplication::sendEventsOnProcessEvents()
 {
     int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
+    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
     QCoreApplication app(argc, argv);
 
     EventSpy spy;
@@ -107,7 +107,7 @@ void tst_QCoreApplication::getSetCheck()
     // Test the property
     {
         int argc = 1;
-        char *argv[] = { "tst_qcoreapplication" };
+        char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
         QCoreApplication app(argc, argv);
         QCOMPARE(app.property("applicationVersion").toString(), v);
     }
@@ -119,7 +119,7 @@ void tst_QCoreApplication::getSetCheck()
 void tst_QCoreApplication::qAppName()
 {
     int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
+    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
     QCoreApplication app(argc, argv);
     QVERIFY(!::qAppName().isEmpty());
 }
@@ -131,7 +131,7 @@ void tst_QCoreApplication::argc()
 #endif
     {
         int argc = 1;
-        char *argv[] = { "tst_qcoreapplication" };
+        char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
         QCoreApplication app(argc, argv);
         QCOMPARE(argc, 1);
         QCOMPARE(app.arguments().count(), 1);
@@ -139,7 +139,10 @@ void tst_QCoreApplication::argc()
 
     {
         int argc = 4;
-        char *argv[] = { "tst_qcoreapplication", "arg1", "arg2", "arg3" };
+        char *argv[] = { const_cast<char*>("tst_qcoreapplication"),
+                         const_cast<char*>("arg1"),
+                         const_cast<char*>("arg2"),
+                         const_cast<char*>("arg3") };
         QCoreApplication app(argc, argv);
         QCOMPARE(argc, 4);
         QCOMPARE(app.arguments().count(), 4);
@@ -155,7 +158,8 @@ void tst_QCoreApplication::argc()
 
     {
         int argc = 2;
-        char *argv[] = { "tst_qcoreapplication", "-qmljsdebugger=port:3768,block" };
+        char *argv[] = { const_cast<char*>("tst_qcoreapplication"),
+                         const_cast<char*>("-qmljsdebugger=port:3768,block") };
         QCoreApplication app(argc, argv);
         QCOMPARE(argc, 1);
         QCOMPARE(app.arguments().count(), 1);
@@ -187,7 +191,7 @@ public:
 void tst_QCoreApplication::postEvent()
 {
     int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
+    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
     QCoreApplication app(argc, argv);
 
     EventSpy spy;
@@ -272,7 +276,7 @@ void tst_QCoreApplication::postEvent()
 void tst_QCoreApplication::removePostedEvents()
 {
     int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
+    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
     QCoreApplication app(argc, argv);
 
     EventSpy spy;
@@ -451,7 +455,7 @@ public:
 void tst_QCoreApplication::deliverInDefinedOrder()
 {
     int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
+    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
     QCoreApplication app(argc, argv);
 
     DeliverInDefinedOrderObject obj(&app);
@@ -491,7 +495,7 @@ public:
 void tst_QCoreApplication::globalPostedEventsCount()
 {
     int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
+    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
     QCoreApplication app(argc, argv);
 
     QCoreApplication::sendPostedEvents();
@@ -537,7 +541,7 @@ public:
 void tst_QCoreApplication::processEventsAlwaysSendsPostedEvents()
 {
     int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
+    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
     QCoreApplication app(argc, argv);
 
     ProcessEventsAlwaysSendsPostedEventsObject object;
@@ -555,7 +559,7 @@ void tst_QCoreApplication::processEventsAlwaysSendsPostedEvents()
 void tst_QCoreApplication::reexec()
 {
     int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
+    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
     QCoreApplication app(argc, argv);
 
     // exec once
@@ -570,7 +574,7 @@ void tst_QCoreApplication::reexec()
 void tst_QCoreApplication::execAfterExit()
 {
     int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
+    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
     QCoreApplication app(argc, argv);
 
     app.exit(1);
@@ -581,7 +585,7 @@ void tst_QCoreApplication::execAfterExit()
 void tst_QCoreApplication::eventLoopExecAfterExit()
 {
     int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
+    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
     QCoreApplication app(argc, argv);
 
     // exec once and exit
@@ -633,8 +637,7 @@ void tst_QCoreApplication::customEventDispatcher()
     QVERIFY(!weak_ed.isNull());
     {
         int argc = 1;
-        char *arg0 = "tst_qcoreapplication";
-        char *argv[] = { arg0 };
+        char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
         QCoreApplication app(argc, argv);
         // instantiating app should not overwrite the ED
         QCOMPARE(QCoreApplication::eventDispatcher(), ed);
@@ -728,10 +731,12 @@ private slots:
             QCOMPARE(privateClass->quitLockRef.load(), 2);
 
             JobObject *job3 = new JobObject(job2);
+            Q_UNUSED(job3);
 
             QCOMPARE(privateClass->quitLockRef.load(), 3);
 
             JobObject *job4 = new JobObject(job2);
+            Q_UNUSED(job4);
 
             QCOMPARE(privateClass->quitLockRef.load(), 4);
 
@@ -747,7 +752,7 @@ private slots:
 void tst_QCoreApplication::testQuitLock()
 {
     int argc = 1;
-    char *argv[] = { "tst_qcoreapplication" };
+    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
     QCoreApplication app(argc, argv);
 
     QuitTester tester;

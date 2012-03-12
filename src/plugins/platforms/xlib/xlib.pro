@@ -32,6 +32,8 @@ HEADERS = \
         qxlibdisplay.h \
         qxlibnativeinterface.h
 
+OTHER_FILES += xlib.json
+
 LIBS += -lX11 -lXext
 
 mac {

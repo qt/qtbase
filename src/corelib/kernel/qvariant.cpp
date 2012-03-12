@@ -1676,12 +1676,12 @@ void QVariant::load(QDataStream &s)
             // by moving all ids down by 97.
             typeId -= 97;
         } else if (typeId == 69 /* QIcon */) {
-            // In Qt5 after modularization project this types where moved to a separate module (and ids were downgraded)
+            // In Qt5 after modularization project these types where moved to a separate module (and ids were downgraded)
             typeId = QMetaType::QIcon;
         } else if (typeId == 75 /* QSizePolicy */) {
             typeId = QMetaType::QSizePolicy;
         } else if (typeId >= 70) {
-            // and as a result this types recieved lower ids too
+            // and as a result these types received lower ids too
             if (typeId <= 74) { // QImage QPolygon QRegion QBitmap QCursor
                 typeId -=1;
             } else if (typeId <= 86) { // QKeySequence QPen QTextLength QTextFormat QMatrix QTransform QMatrix4x4 QVector2D QVector3D QVector4D QQuaternion
@@ -1749,12 +1749,12 @@ void QVariant::save(QDataStream &s) const
             // by moving all ids down by 97.
             typeId += 97;
         } else if (typeId == QMetaType::QIcon) {
-            // In Qt5 after modularization project this types where moved to a separate module (and ids were downgraded)
+            // In Qt5 after modularization project these types where moved to a separate module (and ids were downgraded)
             typeId = 69;
         } else if (typeId == QMetaType::QSizePolicy) {
             typeId = 75;
         } else if (typeId >= QMetaType::QImage) {
-            // and as a result this types recieved lower ids too
+            // and as a result these types received lower ids too
             if (typeId <= QMetaType::QCursor) {
                 typeId +=1;
             } else if (typeId <= QMetaType::QQuaternion) {
@@ -2445,6 +2445,8 @@ bool QVariant::canConvert(int targetTypeId) const
 
     if (currentType == uint(targetTypeId))
         return true;
+    if (targetTypeId < 0 || targetTypeId >= QMetaType::User)
+        return false;
 
     // FIXME It should be LastCoreType intead of Uuid
     if (currentType > int(QMetaType::QUuid) || targetTypeId > int(QMetaType::QUuid)) {

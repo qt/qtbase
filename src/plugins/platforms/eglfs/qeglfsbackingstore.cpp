@@ -39,17 +39,19 @@
 **
 ****************************************************************************/
 
-#include <QtOpenGL/private/qgl_p.h>
-
 #include "qeglfsbackingstore.h"
+
+#ifndef QT_NO_WIDGETS
+#include <QtOpenGL/private/qgl_p.h>
+#include <QtOpenGL/private/qglpaintdevice_p.h>
+#endif //QT_NO_WIDGETS
 
 #include <QtGui/QPlatformOpenGLContext>
 #include <QtGui/QScreen>
 
-#include <QtOpenGL/private/qglpaintdevice_p.h>
-
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_WIDGETS
 class QEglFSPaintDevice : public QGLPaintDevice
 {
 public:
@@ -73,15 +75,20 @@ private:
     QEglFSScreen *m_screen;
     QGLContext *m_context;
 };
-
+#endif //QT_NO_WIDGETS
 
 QEglFSBackingStore::QEglFSBackingStore(QWindow *window)
-    : QPlatformBackingStore(window)
+    : QPlatformBackingStore(window),
+      m_paintDevice(0)
 {
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglBackingStore %p, %p", window, window->screen());
 #endif
+#ifdef QT_NO_WIDGETS
+    m_paintDevice = new QImage(0,0);
+#else
     m_paintDevice = new QEglFSPaintDevice(static_cast<QEglFSScreen *>(window->screen()->handle()));
+#endif //QT_NO_WIDGETS
 }
 
 void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
@@ -92,7 +99,9 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglBackingStore::flush %p", window);
 #endif
+#ifndef QT_NO_WIDGETS
     static_cast<QEglFSPaintDevice *>(m_paintDevice)->context()->swapBuffers();
+#endif //QT_NO_WIDGETS
 }
 
 void QEglFSBackingStore::resize(const QSize &size, const QRegion &staticContents)

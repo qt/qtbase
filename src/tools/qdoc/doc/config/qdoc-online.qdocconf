@@ -1,0 +1,2 @@
+include(qdoc-project.qdocconf)
+include(qt-html-templates-online.qdocconf)

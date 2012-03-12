@@ -260,7 +260,11 @@ void QSystemTrayIconPrivate::showMessage_sys(const QString &title, const QString
                 notificationIcon = QLatin1String("image from location \"file://") + notificationIconFile.fileName() + QLatin1String("\"");
         }
         const QString script(QLatin1String(
-            "tell application \"GrowlHelperApp\"\n"
+            "tell application \"System Events\"\n"
+            "set isRunning to (count of (every process whose bundle identifier is \"com.Growl.GrowlHelperApp\")) > 0\n"
+            "end tell\n"
+            "if isRunning\n"
+            "tell application id \"com.Growl.GrowlHelperApp\"\n"
             "-- Make a list of all the notification types (all)\n"
             "set the allNotificationsList to {\"") + notificationType + QLatin1String("\"}\n"
 
@@ -276,7 +280,7 @@ void QSystemTrayIconPrivate::showMessage_sys(const QString &title, const QString
             QLatin1String("\" description \"") + message +
             QLatin1String("\" application name \"") + notificationApp +
             QLatin1String("\" ")  + notificationIcon +
-            QLatin1String("\nend tell"));
+            QLatin1String("\nend tell\nend if"));
         qt_mac_execute_apple_script(script, 0);
 #elif 0
         Q_Q(QSystemTrayIcon);

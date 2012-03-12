@@ -6,3 +6,7 @@ SUBDIRS=\
    ssl \
    socket \
 
+win32 {
+    socket.CONFIG += no_check_target      # QTBUG-24451 - all socket tests require waitForX
+    bearer.CONFIG += no_check_target      # QTBUG-24503 - these tests fail if machine has a WLAN adaptor
+}

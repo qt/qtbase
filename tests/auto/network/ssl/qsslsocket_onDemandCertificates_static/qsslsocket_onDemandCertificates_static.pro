@@ -22,3 +22,5 @@ wince* {
 }
 
 requires(contains(QT_CONFIG,private_tests))
+
+win32:CONFIG+=insignificant_test      # QTBUG-24451 - all

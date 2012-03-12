@@ -2733,20 +2733,6 @@ void QFontCache::updateHitCountAndTimeStamp(Engine &value)
              value.data->name());
 }
 
-void QFontCache::removeEngine(QFontEngine *engine)
-{
-    EngineCache::iterator it = engineCache.begin();
-    while (it != engineCache.end()) {
-        if (it.value().data == engine) {
-            it = engineCache.erase(it);
-            if (--engine->cache_count == 0)
-                decreaseCost(engine->cache_cost);
-        } else {
-            ++it;
-        }
-    }
-}
-
 void QFontCache::insertEngine(const Key &key, QFontEngine *engine, bool insertMulti)
 {
     FC_DEBUG("QFontCache: inserting new engine %p", engine);

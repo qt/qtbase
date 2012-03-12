@@ -103,6 +103,7 @@ typedef struct {
 
 #define WINHTTP_ERROR_BASE                      12000
 #define ERROR_WINHTTP_LOGIN_FAILURE             (WINHTTP_ERROR_BASE + 15)
+#define ERROR_WINHTTP_UNABLE_TO_DOWNLOAD_SCRIPT (WINHTTP_ERROR_BASE + 167)
 #define ERROR_WINHTTP_AUTODETECTION_FAILED      (WINHTTP_ERROR_BASE + 180)
 
 QT_BEGIN_NAMESPACE
@@ -146,7 +147,7 @@ static QStringList splitSpaceSemicolon(const QString &source)
 static bool isBypassed(const QString &host, const QStringList &bypassList)
 {
     if (host.isEmpty())
-        return true;
+        return false;
 
     bool isSimple = !host.contains(QLatin1Char('.')) && !host.contains(QLatin1Char(':'));
 
@@ -171,6 +172,51 @@ static bool isBypassed(const QString &host, const QStringList &bypassList)
     return false;
 }
 
+static QList<QNetworkProxy> filterProxyListByCapabilities(const QList<QNetworkProxy> &proxyList, const QNetworkProxyQuery &query)
+{
+    QNetworkProxy::Capabilities requiredCaps;
+    switch (query.queryType()) {
+    case QNetworkProxyQuery::TcpSocket:
+        requiredCaps = QNetworkProxy::TunnelingCapability;
+        break;
+    case QNetworkProxyQuery::UdpSocket:
+        requiredCaps = QNetworkProxy::UdpTunnelingCapability;
+        break;
+    case QNetworkProxyQuery::TcpServer:
+        requiredCaps = QNetworkProxy::ListeningCapability;
+        break;
+    default:
+        return proxyList;
+        break;
+    }
+    QList<QNetworkProxy> result;
+    foreach (const QNetworkProxy& proxy, proxyList) {
+        if (proxy.capabilities() & requiredCaps)
+            result.append(proxy);
+    }
+    return result;
+}
+
+static QList<QNetworkProxy> removeDuplicateProxies(const QList<QNetworkProxy> &proxyList)
+{
+    QList<QNetworkProxy> result;
+     foreach (QNetworkProxy proxy, proxyList) {
+         bool append = true;
+         for (int i=0; i < result.count(); i++) {
+             if (proxy.hostName() == result.at(i).hostName()
+                 && proxy.port() == result.at(i).port()) {
+                     append = false;
+                     // HttpProxy trumps FtpCachingProxy or HttpCachingProxy on the same host/port
+                     if (proxy.type() == QNetworkProxy::HttpProxy)
+                         result[i] = proxy;
+             }
+         }
+         if (append)
+             result.append(proxy);
+     }
+     return result;
+}
+
 static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, const QStringList &proxyList)
 {
     // Reference documentation from Microsoft:
@@ -179,38 +225,46 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
     // According to the website, the proxy server list is
     // one or more of the space- or semicolon-separated strings in the format:
     //   ([<scheme>=][<scheme>"://"]<server>[":"<port>])
+    // The first scheme relates to the protocol tag
+    // The second scheme, if present, overrides the proxy type
 
     QList<QNetworkProxy> result;
+    QHash<QString, QNetworkProxy> taggedProxies;
+    const QString requiredTag = query.protocolTag();
+    bool checkTags = !requiredTag.isEmpty() && query.queryType() != QNetworkProxyQuery::TcpServer; //windows tags are only for clients
     foreach (const QString &entry, proxyList) {
         int server = 0;
-
-        int pos = entry.indexOf(QLatin1Char('='));
-        if (pos != -1) {
-            QStringRef scheme = entry.leftRef(pos);
-            if (scheme != query.protocolTag())
-                continue;
-
-            server = pos + 1;
-        }
 
         QNetworkProxy::ProxyType proxyType = QNetworkProxy::HttpProxy;
         quint16 port = 8080;
 
+        int pos = entry.indexOf(QLatin1Char('='));
+        QStringRef scheme;
+        QStringRef protocolTag;
+        if (pos != -1) {
+            scheme = protocolTag = entry.leftRef(pos);
+            server = pos + 1;
+        }
         pos = entry.indexOf(QLatin1String("://"), server);
         if (pos != -1) {
-            QStringRef scheme = entry.midRef(server, pos - server);
+            scheme = entry.midRef(server, pos - server);
+            server = pos + 3;
+        }
+
+        if (!scheme.isEmpty()) {
             if (scheme == QLatin1String("http") || scheme == QLatin1String("https")) {
                 // no-op
                 // defaults are above
             } else if (scheme == QLatin1String("socks") || scheme == QLatin1String("socks5")) {
                 proxyType = QNetworkProxy::Socks5Proxy;
                 port = 1080;
+            } else if (scheme == QLatin1String("ftp")) {
+                proxyType = QNetworkProxy::FtpCachingProxy;
+                port = 2121;
             } else {
                 // unknown proxy type
                 continue;
             }
-
-            server = pos + 3;
         }
 
         pos = entry.indexOf(QLatin1Char(':'), server);
@@ -226,9 +280,32 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
         }
 
         result << QNetworkProxy(proxyType, entry.mid(server, pos - server), port);
+        if (!protocolTag.isEmpty())
+            taggedProxies.insert(protocolTag.toString(), result.last());
     }
 
-    return result;
+    if (checkTags && taggedProxies.contains(requiredTag)) {
+        if (query.queryType() == QNetworkProxyQuery::UrlRequest) {
+            result.clear();
+            result.append(taggedProxies.value(requiredTag));
+            return result;
+        } else {
+            result.prepend(taggedProxies.value(requiredTag));
+        }
+    }
+    if (!checkTags || requiredTag != QLatin1String("http")) {
+        // if there are different http proxies for http and https, prefer the https one (more likely to be capable of CONNECT)
+        QNetworkProxy httpProxy = taggedProxies.value(QLatin1String("http"));
+        QNetworkProxy httpsProxy = taggedProxies.value(QLatin1String("http"));
+        if (httpProxy != httpsProxy && httpProxy.type() == QNetworkProxy::HttpProxy && httpsProxy.type() == QNetworkProxy::HttpProxy) {
+            for (int i = 0; i < result.count(); i++) {
+                if (httpProxy == result.at(i))
+                    result[i].setType(QNetworkProxy::HttpCachingProxy);
+            }
+        }
+    }
+    result = filterProxyListByCapabilities(result, query);
+    return removeDuplicateProxies(result);
 }
 
 class QWindowsSystemProxy
@@ -306,37 +383,9 @@ void QWindowsSystemProxy::init()
             proxyBypass = splitSpaceSemicolon(QString::fromWCharArray(ieProxyConfig.lpszProxyBypass));
             GlobalFree(ieProxyConfig.lpszProxyBypass);
         }
-    }
-
-    hHttpSession = NULL;
-    if (ieProxyConfig.fAutoDetect || !autoConfigUrl.isEmpty()) {
-        // using proxy autoconfiguration
-        proxyServerList.clear();
-        proxyBypass.clear();
-
-        // open the handle and obtain the options
-        hHttpSession = ptrWinHttpOpen(L"Qt System Proxy access/1.0",
-                                      WINHTTP_ACCESS_TYPE_NO_PROXY,
-                                      WINHTTP_NO_PROXY_NAME,
-                                      WINHTTP_NO_PROXY_BYPASS,
-                                      0);
-        if (!hHttpSession)
-            return;
-
-        isAutoConfig = true;
-        memset(&autoProxyOptions, 0, sizeof autoProxyOptions);
-        autoProxyOptions.fAutoLogonIfChallenged = false;
-        if (ieProxyConfig.fAutoDetect) {
-            autoProxyOptions.dwFlags = WINHTTP_AUTOPROXY_AUTO_DETECT;
-            autoProxyOptions.dwAutoDetectFlags = WINHTTP_AUTO_DETECT_TYPE_DHCP |
-                                                 WINHTTP_AUTO_DETECT_TYPE_DNS_A;
-        } else {
-            autoProxyOptions.dwFlags = WINHTTP_AUTOPROXY_CONFIG_URL;
-            autoProxyOptions.lpszAutoConfigUrl = (LPCWSTR)autoConfigUrl.utf16();
-        }
     } else {
-        // not auto-detected
-        // attempt to get the static configuration instead
+        // no user configuration
+        // attempt to get the default configuration instead
         WINHTTP_PROXY_INFO proxyInfo;
         if (ptrWinHttpGetDefaultProxyConfiguration(&proxyInfo) &&
             proxyInfo.dwAccessType == WINHTTP_ACCESS_TYPE_NAMED_PROXY) {
@@ -351,6 +400,33 @@ void QWindowsSystemProxy::init()
             GlobalFree(proxyInfo.lpszProxy);
         if (proxyInfo.lpszProxyBypass)
             GlobalFree(proxyInfo.lpszProxyBypass);
+    }
+
+    hHttpSession = NULL;
+    if (ieProxyConfig.fAutoDetect || !autoConfigUrl.isEmpty()) {
+        // open the handle and obtain the options
+        hHttpSession = ptrWinHttpOpen(L"Qt System Proxy access/1.0",
+                                      WINHTTP_ACCESS_TYPE_NO_PROXY,
+                                      WINHTTP_NO_PROXY_NAME,
+                                      WINHTTP_NO_PROXY_BYPASS,
+                                      0);
+        if (!hHttpSession)
+            return;
+
+        isAutoConfig = true;
+        memset(&autoProxyOptions, 0, sizeof autoProxyOptions);
+        autoProxyOptions.fAutoLogonIfChallenged = false;
+        //Although it is possible to specify dwFlags = WINHTTP_AUTOPROXY_AUTO_DETECT | WINHTTP_AUTOPROXY_CONFIG_URL
+        //this has poor performance (WPAD is attempted for every url, taking 2.5 seconds per interface,
+        //before the configured pac file is used)
+        if (ieProxyConfig.fAutoDetect) {
+            autoProxyOptions.dwFlags = WINHTTP_AUTOPROXY_AUTO_DETECT;
+            autoProxyOptions.dwAutoDetectFlags = WINHTTP_AUTO_DETECT_TYPE_DHCP |
+                                                 WINHTTP_AUTO_DETECT_TYPE_DNS_A;
+        } else {
+            autoProxyOptions.dwFlags = WINHTTP_AUTOPROXY_CONFIG_URL;
+            autoProxyOptions.lpszAutoConfigUrl = (LPCWSTR)autoConfigUrl.utf16();
+        }
     }
 
     functional = isAutoConfig || !proxyServerList.isEmpty();
@@ -390,6 +466,25 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
         DWORD getProxyError = GetLastError();
 
         if (!getProxySucceeded
+            && (ERROR_WINHTTP_AUTODETECTION_FAILED == getProxyError)) {
+            // WPAD failed
+            if (sp->autoConfigUrl.isEmpty()) {
+                //No config file could be retrieved on the network.
+                //Don't search for it next time again.
+                sp->isAutoConfig = false;
+            } else {
+                //pac file URL is specified as well, try using that
+                sp->autoProxyOptions.dwFlags = WINHTTP_AUTOPROXY_CONFIG_URL;
+                sp->autoProxyOptions.lpszAutoConfigUrl = (LPCWSTR)sp->autoConfigUrl.utf16();
+                getProxySucceeded = ptrWinHttpGetProxyForUrl(sp->hHttpSession,
+                                                (LPCWSTR)url.toString().utf16(),
+                                                &sp->autoProxyOptions,
+                                                &proxyInfo);
+                getProxyError = GetLastError();
+            }
+        }
+
+        if (!getProxySucceeded
             && (ERROR_WINHTTP_LOGIN_FAILURE == getProxyError)) {
             // We first tried without AutoLogon, because this might prevent caching the result.
             // But now we've to enable it (http://msdn.microsoft.com/en-us/library/aa383153%28v=VS.85%29.aspx)
@@ -401,6 +496,13 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
             getProxyError = GetLastError();
         }
 
+        if (!getProxySucceeded
+            && (ERROR_WINHTTP_UNABLE_TO_DOWNLOAD_SCRIPT == getProxyError)) {
+            // PAC file url is not connectable, or server returned error (e.g. http 404)
+            //Don't search for it next time again.
+            sp->isAutoConfig = false;
+        }
+
         if (getProxySucceeded) {
             // yes, we got a config for this URL
             QString proxyBypass = QString::fromWCharArray(proxyInfo.lpszProxyBypass);
@@ -410,20 +512,14 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
             if (proxyInfo.lpszProxyBypass)
                 GlobalFree(proxyInfo.lpszProxyBypass);
 
+            if (proxyInfo.dwAccessType == WINHTTP_ACCESS_TYPE_NO_PROXY)
+                return sp->defaultResult; //i.e. the PAC file result was "DIRECT"
             if (isBypassed(query.peerHostName(), splitSpaceSemicolon(proxyBypass)))
                 return sp->defaultResult;
             return parseServerList(query, proxyServerList);
         }
 
-        // GetProxyForUrl failed
-
-        if (ERROR_WINHTTP_AUTODETECTION_FAILED == getProxyError) {
-            //No config file could be retrieved on the network.
-            //Don't search for it next time again.
-            sp->isAutoConfig = false;
-        }
-
-        return sp->defaultResult;
+        // GetProxyForUrl failed, fall back to static configuration
     }
 
     // static configuration

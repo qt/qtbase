@@ -100,6 +100,8 @@ public:
 
 private:
     QPlatformDragPrivate *d_ptr;
+
+    Q_DISABLE_COPY(QPlatformDrag)
 };
 
 QT_END_NAMESPACE

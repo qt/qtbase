@@ -68,6 +68,7 @@
 #include <QtGui/qguiapplication.h>
 #include <qmenubar.h>
 #include <qtableview.h>
+#include <qtreewidget.h>
 
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsProxyWidget>
@@ -412,6 +413,7 @@ private slots:
     void taskQTBUG_17333_ResizeInfiniteRecursion();
 
     void nativeChildFocus();
+    void grab();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -9286,6 +9288,79 @@ void tst_QWidget::nativeChildFocus()
     QCOMPARE(QApplication::focusWidget(), static_cast<QWidget*>(p1));
 
     QTest::qWait(1000);
+}
+
+static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
+{
+    QImage expectedImage = expected.toImage().convertToFormat(QImage::Format_RGB32);
+    QImage actualImage = actual.toImage().convertToFormat(QImage::Format_RGB32);
+
+    if (expectedImage.size() != actualImage.size()) {
+        qWarning("Image size comparison failed: expected: %dx%d, got %dx%d",
+                 expectedImage.size().width(), expectedImage.size().height(),
+                 actualImage.size().width(), actualImage.size().height());
+        return false;
+    }
+
+    const int size = actual.width() * actual.height();
+    const int threshold = QPixmap::defaultDepth() == 16 ? 10 : 2;
+
+    QRgb *a = (QRgb *)actualImage.bits();
+    QRgb *e = (QRgb *)expectedImage.bits();
+    for (int i = 0; i < size; ++i) {
+        const QColor ca(a[i]);
+        const QColor ce(e[i]);
+        if (qAbs(ca.red() - ce.red()) > threshold
+            || qAbs(ca.green() - ce.green()) > threshold
+            || qAbs(ca.blue() - ce.blue()) > threshold) {
+            qWarning("Color mismatch at pixel #%d: Expected: %d,%d,%d, got %d,%d,%d",
+                     i, ce.red(), ce.green(), ce.blue(), ca.red(), ca.green(), ca.blue());
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void tst_QWidget::grab()
+{
+    for (int opaque = 0; opaque < 2; ++opaque) {
+        QWidget widget;
+        QImage image(128, 128, opaque ? QImage::Format_RGB32 : QImage::Format_ARGB32_Premultiplied);
+        for (int row = 0; row < image.height(); ++row) {
+            QRgb *line = reinterpret_cast<QRgb *>(image.scanLine(row));
+            for (int col = 0; col < image.width(); ++col)
+                line[col] = qRgba(rand() & 255, row, col, opaque ? 255 : 127);
+        }
+
+        QPalette pal = widget.palette();
+        pal.setBrush(QPalette::Window, QBrush(image));
+        widget.setPalette(pal);
+        widget.resize(128, 128);
+
+        QPixmap expected(64, 64);
+        if (!opaque)
+            expected.fill(Qt::transparent);
+
+        QPainter p(&expected);
+        p.translate(-64, -64);
+        p.drawTiledPixmap(0, 0, 128, 128, pal.brush(QPalette::Window).texture(), 0, 0);
+        p.end();
+
+        QPixmap actual = widget.grab(QRect(64, 64, 64, 64));
+        QVERIFY(lenientCompare(actual, expected));
+
+        actual = widget.grab(QRect(64, 64, -1, -1));
+        QVERIFY(lenientCompare(actual, expected));
+
+        // Make sure a widget that is not yet shown is grabbed correctly.
+        QTreeWidget widget2;
+        actual = widget2.grab(QRect());
+        widget2.show();
+        expected = widget2.grab(QRect());
+
+        QVERIFY(lenientCompare(actual, expected));
+    }
 }
 
 QTEST_MAIN(tst_QWidget)

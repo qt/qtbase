@@ -228,7 +228,7 @@ private slots:
 
     void podUserType();
 
-    void data_(); // data is virtual function in QtTestCase
+    void data();
     void constData();
 
     void saveLoadCustomTypes();
@@ -612,6 +612,12 @@ void tst_QVariant::canConvert()
     QCOMPARE(val.canConvert(QVariant::Time), TimeCast);
     QCOMPARE(val.canConvert(QVariant::UInt), UIntCast);
     QCOMPARE(val.canConvert(QVariant::ULongLong), ULongLongCast);
+
+    // Invalid type ids
+    QCOMPARE(val.canConvert(-1), false);
+    QCOMPARE(val.canConvert(-23), false);
+    QCOMPARE(val.canConvert(-23876), false);
+    QCOMPARE(val.canConvert(23876), false);
 }
 
 void tst_QVariant::toInt_data()
@@ -2215,7 +2221,7 @@ void tst_QVariant::basicUserType()
     QCOMPARE(v.toByteArray(), QByteArray("bar"));
 }
 
-void tst_QVariant::data_()
+void tst_QVariant::data()
 {
     QVariant v;
 

@@ -257,7 +257,8 @@ QT_BEGIN_NAMESPACE
     \value SelectionWithin                  Several changes to a selection has occurred in an item
                                             view.
     \value SoundPlayed                      A sound has been played by an object
-    \value StateChanged                     The QAccessible::State of an object has changed.
+    \omitvalue StateChanged                 The QAccessible::State of an object has changed.
+                                            This value is used internally for the QAccessibleStateChangeEvent.
     \value TableCaptionChanged              A table caption has been changed.
     \value TableColumnDescriptionChanged    The description of a table column, typically found in
                                             the column's header, has been changed.
@@ -308,6 +309,7 @@ QT_BEGIN_NAMESPACE
     \value ColumnHeader     A header for a column of data.
     \value ComboBox         A list of choices that the user can select from.
     \value Cursor           An object that represents the mouse cursor.
+    \value Desktop          The object represents the desktop or workspace.
     \value Dial             An object that represents a dial or knob.
     \value Dialog           A dialog box.
     \value Document         A document window, usually in an MDI environment.
@@ -345,6 +347,7 @@ QT_BEGIN_NAMESPACE
     \value StaticText       Static text, such as labels for other widgets.
     \value StatusBar        A status bar.
     \value Table            A table representing data in a grid of rows and columns.
+    \value Terminal         A terminal or command line interface.
     \value TitleBar         The title bar caption of a window.
     \value ToolBar          A tool bar, which groups widgets that the user accesses frequently.
     \value ToolTip          A tool tip which provides information about other objects.
@@ -694,7 +697,30 @@ void QAccessible::updateAccessibility(const QAccessibleEvent &event)
 
     This class should be created on the stack and used as parameter for
     \l QAccessible::updateAccessibility().
+    \sa QAccessibleStateChangedEvent
 */
+
+/*!
+    \class QAccessibleStateChangedEvent
+    \brief This subclass of QAccessibleEvent is used to inform about state changes.
+    \internal
+
+    \ingroup accessibility
+    \inmodule QtGui
+
+    This class should be created on the stack and used as parameter for
+    \l QAccessible::updateAccessibility().
+    In addition to the regular \l QAccessibleEvent it contains details about which states
+    changed.
+    \sa QAccessibleEvent
+*/
+
+/*!
+    \fn QAccessibleStateChangeEvent::changedStates() const
+    All states that have changed are set to true. This does not reflect the state of the object,
+    but indicates which states are changed.
+    Use the \l QAccessibleInterface::state() function to get the current state.
+ */
 
 /*!
     Returns the QAccessibleInterface associated with the event.

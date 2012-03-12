@@ -117,11 +117,6 @@ public:
     QPrinter *printer();
 #endif
 
-#ifdef QTOPIA_PRINTDIALOG
-public:
-    bool eventFilter(QObject *, QEvent *);
-#endif
-
 #ifdef Q_NO_USING_KEYWORD
 #ifndef Q_QDOC
     void accepted() { QDialog::accepted(); }
@@ -134,7 +129,6 @@ Q_SIGNALS:
     void accepted(QPrinter *printer);
 
 private:
-#ifndef QTOPIA_PRINTDIALOG
     Q_PRIVATE_SLOT(d_func(), void _q_chbPrintLastFirstToggled(bool))
 #if defined (Q_OS_UNIX)
     Q_PRIVATE_SLOT(d_func(), void _q_collapseOrExpandDialog())
@@ -142,19 +136,6 @@ private:
 # if defined(Q_OS_UNIX) && !defined(QT_NO_MESSAGEBOX)
     Q_PRIVATE_SLOT(d_func(), void _q_checkFields())
 # endif
-#else // QTOPIA_PRINTDIALOG
-    Q_PRIVATE_SLOT(d_func(), void _q_okClicked())
-    Q_PRIVATE_SLOT(d_func(),void _q_printerOrFileSelected(QAbstractButton *b))
-    Q_PRIVATE_SLOT(d_func(),void _q_paperSizeSelected(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_orientSelected(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_pageOrderSelected(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_colorModeSelected(QAbstractButton *))
-    Q_PRIVATE_SLOT(d_func(), void _q_setNumCopies(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_printRangeSelected(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_setFirstPage(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_setLastPage(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_fileNameEditChanged(const QString &text))
-#endif // QTOPIA_PRINTDIALOG
     friend class QUnixPrintWidget;
 };
 

@@ -247,9 +247,6 @@ public:
     QPoint toolTipPos, toolTipGlobalPos, hoverGlobalPos;
     QPointer<QWidget> toolTipWidget;
 
-    static Qt::MouseButtons mouse_buttons;
-    static Qt::KeyboardModifiers modifier_buttons;
-
     static QSize app_strut;
     static QWidgetList *popupWidgets;
     static QStyle *app_style;
