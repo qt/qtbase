@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 
-#include <qdebug.h>
 #include <QtTest/QtTest>
 
 #include <QtCore/QSettings>
@@ -48,11 +47,13 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QtGlobal>
 #include <QtCore/QMetaType>
-#include <QtCore/QtDebug>
 #include <QtCore/QString>
+#include <QtCore/QDir>
+#include <QtCore/QThread>
 #include <QtGui/QKeySequence>
 
 #include <cctype>
+#include <stdlib.h>
 #if defined(Q_OS_WIN) && defined(Q_CC_GNU)
 // need for unlink on mingw
 #include <io.h>
@@ -60,13 +61,16 @@
 
 #if defined(Q_OS_WIN)
 #include <QtCore/qt_windows.h>
+#else
+#include <unistd.h>
 #endif
+
+Q_DECLARE_METATYPE(QSettings::Format)
 
 #ifndef QSETTINGS_P_H_VERSION
 #define QSETTINGS_P_H_VERSION 1
 #endif
 
-QT_FORWARD_DECLARE_CLASS(QSettings)
 QT_FORWARD_DECLARE_CLASS(QSettings)
 
 class tst_QSettings : public QObject
@@ -136,12 +140,6 @@ private slots:
 
     void testByteArray_data();
     void testByteArray();
-
-private:
-    void oldWriteEntry_data();
-    void oldReadEntry_data();
-    void oldWriteEntryHelper(QSettings &settings);
-    void oldReadEntryHelper(QSettings &settings);
 };
 
 // Testing get/set functions
@@ -155,20 +153,6 @@ void tst_QSettings::getSetCheck()
     obj1.setFallbacksEnabled(true);
     QCOMPARE(true, obj1.fallbacksEnabled());
 }
-
-//using namespace std;
-
-//#include <qapplication.h>
-#include <qcoreapplication.h>
-#include <qdir.h>
-#include <qregexp.h>
-#include <qthread.h>
-#include <stdlib.h>
-#ifndef Q_OS_WIN
-#include <unistd.h>
-#endif
-
-Q_DECLARE_METATYPE(QSettings::Format)
 
 #if defined(Q_OS_WINCE)
 static void removePath(const QString& _path)
@@ -194,7 +178,7 @@ static void removePath(const QString& _path)
 
 static QString settingsPath(const char *path = "")
 {
-    // Temporary path for files that are specified explictly in the constructor.
+    // Temporary path for files that are specified explicitly in the constructor.
     QString tempPath = QDir::tempPath();
     if (tempPath.endsWith("/"))
         tempPath.truncate(tempPath.size() - 1);
@@ -971,6 +955,8 @@ void tst_QSettings::setValue()
     QCOMPARE(settings.value("key 2").toBool(), true);
     settings.setValue("key 2", QString("false"));
     QCOMPARE(settings.value("key 2", true).toBool(), false);
+
+    // The following block should not compile.
 /*
     settings.setValue("key 2", "true");
     QCOMPARE(settings.value("key 2").toBool(), true);
@@ -984,8 +970,8 @@ void tst_QSettings::setValue()
     QCOMPARE(settings.value("key 2", true).toBool(), true);
     settings.setValue("key 2", "0.000e-00");
     QCOMPARE(settings.value("key 2", false).toBool(), false);
-
 */
+
     settings.setValue("key 2", QStringList());
     QCOMPARE(settings.value("key 2").toStringList(), QStringList());
     settings.setValue("key 2", QStringList(""));
@@ -1963,43 +1949,43 @@ void tst_QSettings::setIniCodec()
     QByteArray actualContents4, actualContents5;
 
     {
-    QFile inFile(":/resourcefile4.ini");
-    inFile.open(QIODevice::ReadOnly);
-    expeContents4 = inFile.readAll();
-    inFile.close();
+        QFile inFile(":/resourcefile4.ini");
+        inFile.open(QIODevice::ReadOnly);
+        expeContents4 = inFile.readAll();
+        inFile.close();
     }
 
     {
-    QFile inFile(":/resourcefile5.ini");
-    inFile.open(QIODevice::ReadOnly);
-    expeContents5 = inFile.readAll();
-    inFile.close();
+        QFile inFile(":/resourcefile5.ini");
+        inFile.open(QIODevice::ReadOnly);
+        expeContents5 = inFile.readAll();
+        inFile.close();
     }
 
     {
-    QSettings settings4(QSettings::IniFormat, QSettings::UserScope, "software.org", "KillerAPP");
-    settings4.setIniCodec("UTF-8");
-    settings4.setValue(QLatin1String("Fa\xe7" "ade/QU\xc9" "BEC"), QLatin1String("Fa\xe7" "ade/QU\xc9" "BEC"));
-    settings4.sync();
+        QSettings settings4(QSettings::IniFormat, QSettings::UserScope, "software.org", "KillerAPP");
+        settings4.setIniCodec("UTF-8");
+        settings4.setValue(QLatin1String("Fa\xe7" "ade/QU\xc9" "BEC"), QLatin1String("Fa\xe7" "ade/QU\xc9" "BEC"));
+        settings4.sync();
 
-    QSettings settings5(QSettings::IniFormat, QSettings::UserScope, "other.software.org", "KillerAPP");
-    settings5.setIniCodec("ISO 8859-1");
-    settings5.setValue(QLatin1String("Fa\xe7" "ade/QU\xc9" "BEC"), QLatin1String("Fa\xe7" "ade/QU\xc9" "BEC"));
-    settings5.sync();
+        QSettings settings5(QSettings::IniFormat, QSettings::UserScope, "other.software.org", "KillerAPP");
+        settings5.setIniCodec("ISO 8859-1");
+        settings5.setValue(QLatin1String("Fa\xe7" "ade/QU\xc9" "BEC"), QLatin1String("Fa\xe7" "ade/QU\xc9" "BEC"));
+        settings5.sync();
 
-    {
-    QFile inFile(settings4.fileName());
-    inFile.open(QIODevice::ReadOnly);
-    actualContents4 = inFile.readAll();
-    inFile.close();
-    }
+        {
+            QFile inFile(settings4.fileName());
+            inFile.open(QIODevice::ReadOnly);
+            actualContents4 = inFile.readAll();
+            inFile.close();
+        }
 
-    {
-    QFile inFile(settings5.fileName());
-    inFile.open(QIODevice::ReadOnly);
-    actualContents5 = inFile.readAll();
-    inFile.close();
-    }
+        {
+            QFile inFile(settings5.fileName());
+            inFile.open(QIODevice::ReadOnly);
+            actualContents5 = inFile.readAll();
+            inFile.close();
+        }
     }
 
     QConfFile::clearCache();
@@ -2901,10 +2887,10 @@ void tst_QSettings::registerFormat()
     f.close();
 
     {
-    QSettings settings(settingsPath("someDir/someSettings.custom3"), QSettings::CustomFormat3);
-    QCOMPARE(settings.status(), QSettings::NoError);
-    QCOMPARE(settings.value("retval").toString(), QString("OK"));
-    QVERIFY(settings.isWritable());
+        QSettings settings(settingsPath("someDir/someSettings.custom3"), QSettings::CustomFormat3);
+        QCOMPARE(settings.status(), QSettings::NoError);
+        QCOMPARE(settings.value("retval").toString(), QString("OK"));
+        QVERIFY(settings.isWritable());
     }
 
     QVERIFY(f.open(QFile::WriteOnly));
@@ -2912,10 +2898,10 @@ void tst_QSettings::registerFormat()
     f.close();
 
     {
-    QSettings settings(settingsPath("someDir/someSettings.custom3"), QSettings::CustomFormat3);
-    QCOMPARE(settings.status(), QSettings::FormatError);
-    QCOMPARE(settings.value("retval").toString(), QString());
-    QVERIFY(settings.isWritable());
+        QSettings settings(settingsPath("someDir/someSettings.custom3"), QSettings::CustomFormat3);
+        QCOMPARE(settings.status(), QSettings::FormatError);
+        QCOMPARE(settings.value("retval").toString(), QString());
+        QVERIFY(settings.isWritable());
     }
 
     QVERIFY(f.open(QFile::WriteOnly));
@@ -2923,24 +2909,24 @@ void tst_QSettings::registerFormat()
     f.close();
 
     {
-    QSettings settings(settingsPath("someDir/someSettings.custom3"), QSettings::CustomFormat3);
-    QCOMPARE(settings.status(), QSettings::NoError);
-    settings.setValue("zzz", "bar");
-    settings.sync();
-    QCOMPARE(settings.status(), QSettings::NoError);
+        QSettings settings(settingsPath("someDir/someSettings.custom3"), QSettings::CustomFormat3);
+        QCOMPARE(settings.status(), QSettings::NoError);
+        settings.setValue("zzz", "bar");
+        settings.sync();
+        QCOMPARE(settings.status(), QSettings::NoError);
 
-    settings.setValue("retval", "NotOK");
-    settings.sync();
-    QCOMPARE(settings.status(), QSettings::AccessError);
+        settings.setValue("retval", "NotOK");
+        settings.sync();
+        QCOMPARE(settings.status(), QSettings::AccessError);
 
-    QCOMPARE(settings.value("retval").toString(), QString("NotOK"));
-    QVERIFY(settings.isWritable());
+        QCOMPARE(settings.value("retval").toString(), QString("NotOK"));
+        QVERIFY(settings.isWritable());
     }
 
     {
-    QSettings settings(settingsPath("someDir/someSettings.custom3"), QSettings::CustomFormat4);
-    QCOMPARE(settings.status(), QSettings::AccessError);
-    QVERIFY(!settings.isWritable());
+        QSettings settings(settingsPath("someDir/someSettings.custom3"), QSettings::CustomFormat4);
+        QCOMPARE(settings.status(), QSettings::AccessError);
+        QVERIFY(!settings.isWritable());
     }
 }
 
@@ -3168,16 +3154,6 @@ void tst_QSettings::consistentRegistryStorage()
     }
 }
 #endif
-/*
-// Not tested at the moment.
-void tst_QSettings::oldSubkeyList()
-{
-    QVERIFY( true );
-}
-*/
 
 QTEST_MAIN(tst_QSettings)
 #include "tst_qsettings.moc"
-
-
-// foo
