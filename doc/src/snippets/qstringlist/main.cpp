@@ -144,6 +144,21 @@ Widget::Widget(QWidget *parent)
     list.replaceInStrings(QRegExp("^(.*), (.*)$"), "\\2 \\1");
     // list == ["Bill Clinton", "Bill Murray"]
 //! [15]
+
+    list.clear();
+//! [16]
+    list << "alpha" << "beta" << "gamma" << "epsilon";
+    list.replaceInStrings(QRegularExpression("^a"), "o");
+    // list == ["olpha", "beta", "gamma", "epsilon"]
+//! [16]
+
+    list.clear();
+//! [17]
+    list << "Bill Clinton" << "Murray, Bill";
+    list.replaceInStrings(QRegularExpression("^(.*), (.*)$"), "\\2 \\1");
+    // list == ["Bill Clinton", "Bill Murray"]
+//! [17]
+
 }
 
 int main(int argc, char *argv[])

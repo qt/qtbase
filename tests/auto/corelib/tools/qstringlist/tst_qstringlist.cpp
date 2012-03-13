@@ -41,6 +41,7 @@
 
 #include <QtTest/QtTest>
 #include <qregexp.h>
+#include <qregularexpression.h>
 #include <qstringlist.h>
 
 class tst_QStringList : public QObject
@@ -72,18 +73,37 @@ void tst_QStringList::indexOf_regExp()
 {
     QStringList list;
     list << "harald" << "trond" << "vohi" << "harald";
+    {
+        QRegExp re(".*o.*");
 
-    QRegExp re(".*o.*");
+        QCOMPARE(list.indexOf(re), 1);
+        QCOMPARE(list.indexOf(re, 2), 2);
+        QCOMPARE(list.indexOf(re, 3), -1);
 
-    QCOMPARE(list.indexOf(re), 1);
-    QCOMPARE(list.indexOf(re, 2), 2);
-    QCOMPARE(list.indexOf(re, 3), -1);
+        QCOMPARE(list.indexOf(QRegExp(".*x.*")), -1);
+        QCOMPARE(list.indexOf(re, -1), -1);
+        QCOMPARE(list.indexOf(re, -3), 1);
+        QCOMPARE(list.indexOf(re, -9999), 1);
+        QCOMPARE(list.indexOf(re, 9999), -1);
 
-    QCOMPARE(list.indexOf(QRegExp(".*x.*")), -1);
-    QCOMPARE(list.indexOf(re, -1), -1);
-    QCOMPARE(list.indexOf(re, -3), 1);
-    QCOMPARE(list.indexOf(re, -9999), 1);
-    QCOMPARE(list.indexOf(re, 9999), -1);
+        QCOMPARE(list.indexOf(QRegExp("[aeiou]")), -1);
+    }
+
+    {
+        QRegularExpression re(".*o.*");
+
+        QCOMPARE(list.indexOf(re), 1);
+        QCOMPARE(list.indexOf(re, 2), 2);
+        QCOMPARE(list.indexOf(re, 3), -1);
+
+        QCOMPARE(list.indexOf(QRegularExpression(".*x.*")), -1);
+        QCOMPARE(list.indexOf(re, -1), -1);
+        QCOMPARE(list.indexOf(re, -3), 1);
+        QCOMPARE(list.indexOf(re, -9999), 1);
+        QCOMPARE(list.indexOf(re, 9999), -1);
+
+        QCOMPARE(list.indexOf(QRegularExpression("[aeiou]")), -1);
+    }
 }
 
 void tst_QStringList::lastIndexOf_regExp()
@@ -91,17 +111,39 @@ void tst_QStringList::lastIndexOf_regExp()
     QStringList list;
     list << "harald" << "trond" << "vohi" << "harald";
 
-    QRegExp re(".*o.*");
+    {
+        QRegExp re(".*o.*");
 
-    QCOMPARE(list.lastIndexOf(re), 2);
-    QCOMPARE(list.lastIndexOf(re, 2), 2);
-    QCOMPARE(list.lastIndexOf(re, 1), 1);
+        QCOMPARE(list.lastIndexOf(re), 2);
+        QCOMPARE(list.lastIndexOf(re, 2), 2);
+        QCOMPARE(list.lastIndexOf(re, 1), 1);
 
-    QCOMPARE(list.lastIndexOf(QRegExp(".*x.*")), -1);
-    QCOMPARE(list.lastIndexOf(re, -1), 2);
-    QCOMPARE(list.lastIndexOf(re, -3), 1);
-    QCOMPARE(list.lastIndexOf(re, -9999), -1);
-    QCOMPARE(list.lastIndexOf(re, 9999), 2);
+        QCOMPARE(list.lastIndexOf(QRegExp(".*x.*")), -1);
+        QCOMPARE(list.lastIndexOf(re, -1), 2);
+        QCOMPARE(list.lastIndexOf(re, -3), 1);
+        QCOMPARE(list.lastIndexOf(re, -9999), -1);
+        QCOMPARE(list.lastIndexOf(re, 9999), 2);
+
+        QCOMPARE(list.lastIndexOf(QRegExp("[aeiou]")), -1);
+    }
+
+    {
+        QRegularExpression re(".*o.*");
+
+        QCOMPARE(list.lastIndexOf(re), 2);
+        QCOMPARE(list.lastIndexOf(re, 2), 2);
+        QCOMPARE(list.lastIndexOf(re, 1), 1);
+
+        QCOMPARE(list.lastIndexOf(QRegularExpression(".*x.*")), -1);
+        QCOMPARE(list.lastIndexOf(re, -1), 2);
+        QCOMPARE(list.lastIndexOf(re, -3), 1);
+        QCOMPARE(list.lastIndexOf(re, -9999), -1);
+        QCOMPARE(list.lastIndexOf(re, 9999), 2);
+
+        QCOMPARE(list.lastIndexOf(QRegularExpression("[aeiou]")), -1);
+    }
+
+
 }
 
 void tst_QStringList::indexOf()
@@ -149,6 +191,12 @@ void tst_QStringList::filter()
     list3 = list3.filter( QRegExp("[i]ll") );
     list4 << "Bill Gates" << "Bill Clinton";
     QCOMPARE( list3, list4 );
+
+    QStringList list5, list6;
+    list5 << "Bill Gates" << "Joe Blow" << "Bill Clinton";
+    list5 = list5.filter( QRegularExpression("[i]ll") );
+    list6 << "Bill Gates" << "Bill Clinton";
+    QCOMPARE( list5, list6 );
 }
 
 void tst_QStringList::replaceInStrings()
@@ -170,6 +218,18 @@ void tst_QStringList::replaceInStrings()
     list6 << "Bill Clinton" << "Bill Gates";
     list5.replaceInStrings( QRegExp("^(.*), (.*)$"), "\\2 \\1" );
     QCOMPARE( list5, list6 );
+
+    QStringList list7, list8;
+    list7 << "alpha" << "beta" << "gamma" << "epsilon";
+    list7.replaceInStrings( QRegularExpression("^a"), "o" );
+    list8 << "olpha" << "beta" << "gamma" << "epsilon";
+    QCOMPARE( list7, list8 );
+
+    QStringList list9, list10;
+    list9 << "Bill Clinton" << "Gates, Bill";
+    list10 << "Bill Clinton" << "Bill Gates";
+    list9.replaceInStrings( QRegularExpression("^(.*), (.*)$"), "\\2 \\1" );
+    QCOMPARE( list9, list10 );
 }
 
 void tst_QStringList::contains()

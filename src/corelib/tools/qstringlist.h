@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 
 
 class QRegExp;
+class QRegularExpression;
 
 typedef QListIterator<QString> QStringListIterator;
 typedef QMutableListIterator<QString> QMutableStringListIterator;
@@ -95,6 +96,16 @@ public:
     inline int indexOf(QRegExp &rx, int from = 0) const;
     inline int lastIndexOf(QRegExp &rx, int from = -1) const;
 #endif
+
+#ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGEXP
+    inline QStringList filter(const QRegularExpression &re) const;
+    inline QStringList &replaceInStrings(const QRegularExpression &re, const QString &after);
+    inline int indexOf(const QRegularExpression &re, int from = 0) const;
+    inline int lastIndexOf(const QRegularExpression &re, int from = -1) const;
+#endif // QT_NO_REGEXP
+#endif // QT_BOOTSTRAPPED
+
 #if !defined(Q_NO_USING_KEYWORD)
     using QList<QString>::indexOf;
     using QList<QString>::lastIndexOf;
@@ -127,6 +138,15 @@ namespace QtPrivate {
     int Q_CORE_EXPORT QStringList_indexOf(const QStringList *that, QRegExp &rx, int from);
     int Q_CORE_EXPORT QStringList_lastIndexOf(const QStringList *that, QRegExp &rx, int from);
 #endif
+
+#ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGEXP
+    void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QRegularExpression &rx, const QString &after);
+    QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, const QRegularExpression &re);
+    int Q_CORE_EXPORT QStringList_indexOf(const QStringList *that, const QRegularExpression &re, int from);
+    int Q_CORE_EXPORT QStringList_lastIndexOf(const QStringList *that, const QRegularExpression &re, int from);
+#endif // QT_NO_REGEXP
+#endif // QT_BOOTSTRAPPED
 }
 
 inline void QStringList::sort()
@@ -193,6 +213,30 @@ inline int QStringList::lastIndexOf(QRegExp &rx, int from) const
 }
 #endif
 
+#ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGEXP
+inline QStringList &QStringList::replaceInStrings(const QRegularExpression &rx, const QString &after)
+{
+    QtPrivate::QStringList_replaceInStrings(this, rx, after);
+    return *this;
+}
+
+inline QStringList QStringList::filter(const QRegularExpression &rx) const
+{
+    return QtPrivate::QStringList_filter(this, rx);
+}
+
+inline int QStringList::indexOf(const QRegularExpression &rx, int from) const
+{
+    return QtPrivate::QStringList_indexOf(this, rx, from);
+}
+
+inline int QStringList::lastIndexOf(const QRegularExpression &rx, int from) const
+{
+    return QtPrivate::QStringList_lastIndexOf(this, rx, from);
+}
+#endif // QT_NO_REGEXP
+#endif // QT_BOOTSTRAPPED
 
 #ifndef QT_NO_DATASTREAM
 inline QDataStream &operator>>(QDataStream &in, QStringList &list)
