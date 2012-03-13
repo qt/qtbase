@@ -1,6 +1,5 @@
 TARGET = qeglfs
-TEMPLATE = lib
-CONFIG += plugin
+load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private
 
@@ -29,3 +28,6 @@ CONFIG += qpa/genericunixfontdatabase
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
+
+OTHER_FILES += \
+    eglfs.json
