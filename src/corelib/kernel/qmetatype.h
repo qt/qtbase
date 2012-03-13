@@ -435,6 +435,17 @@ namespace QtPrivate {
     template <class Result, class Arg0> struct IsPointerToTypeDerivedFromQObject<Result(*)(Arg0)> { enum { Value = false }; };
     template <class Result, class Arg0, class Arg1> struct IsPointerToTypeDerivedFromQObject<Result(*)(Arg0, Arg1)> { enum { Value = false }; };
     template <class Result, class Arg0, class Arg1, class Arg2> struct IsPointerToTypeDerivedFromQObject<Result(*)(Arg0, Arg1, Arg2)> { enum { Value = false }; };
+
+    template<typename T>
+    struct QMetaTypeTypeFlags
+    {
+        enum { Flags = (!QTypeInfo<T>::isStatic ? QMetaType::MovableType : 0)
+                     | (QTypeInfo<T>::isComplex ? QMetaType::NeedsConstruction : 0)
+                     | (QTypeInfo<T>::isComplex ? QMetaType::NeedsDestruction : 0)
+                     | (IsPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::PointerToQObject : 0)
+                     | (Q_IS_ENUM(T) ? QMetaType::IsEnumeration : 0)
+             };
+    };
 }
 
 template <typename T>
@@ -448,18 +459,7 @@ int qRegisterMetaType(const char *typeName
     if (typedefOf != -1)
         return QMetaType::registerTypedef(typeName, typedefOf);
 
-    QMetaType::TypeFlags flags;
-    if (!QTypeInfo<T>::isStatic)
-        flags |= QMetaType::MovableType;
-    if (QTypeInfo<T>::isComplex) {
-        flags |= QMetaType::NeedsConstruction;
-        flags |= QMetaType::NeedsDestruction;
-    }
-    if (QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value)
-        flags |= QMetaType::PointerToQObject;
-    if (Q_IS_ENUM(T))
-        flags |= QMetaType::IsEnumeration;
-
+    QMetaType::TypeFlags flags(QtPrivate::QMetaTypeTypeFlags<T>::Flags);
     return QMetaType::registerType(typeName, qMetaTypeDeleteHelper<T>,
                                    qMetaTypeCreateHelper<T>,
                                    qMetaTypeDestructHelper<T>,
