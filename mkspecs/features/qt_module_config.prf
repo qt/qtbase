@@ -106,15 +106,6 @@ aix-g++* {
      QMAKE_CXXFLAGS += -mminimal-toc
 }
 
-embedded {
-     EMBEDDED_H = $$EMBEDDED_CPP
-}
-
-DEPENDPATH += ;$$NETWORK_H;$$KERNEL_H;$$WIDGETS_H;$$SQL_H;$$TABLE_H;$$DIALOGS_H;
-DEPENDPATH += $$ICONVIEW_H;$$OPENGL_H;$$THREAD_H;$$TOOLS_H;$$CODECS_H;
-DEPENDPATH += $$WORKSPACE_H;$$XML_H;$$STYLES_H;$$COMPAT_H
-embedded:DEPENDPATH += ;$$EMBEDDED_H
-
 !static:PRL_EXPORT_DEFINES += QT_SHARED
 
 #install directives
