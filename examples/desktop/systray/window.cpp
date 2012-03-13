@@ -167,9 +167,9 @@ void Window::createIconGroupBox()
     iconLabel = new QLabel("Icon:");
 
     iconComboBox = new QComboBox;
-    iconComboBox->addItem(QIcon(":/images/bad.svg"), tr("Bad"));
-    iconComboBox->addItem(QIcon(":/images/heart.svg"), tr("Heart"));
-    iconComboBox->addItem(QIcon(":/images/trash.svg"), tr("Trash"));
+    iconComboBox->addItem(QIcon(":/images/bad.png"), tr("Bad"));
+    iconComboBox->addItem(QIcon(":/images/heart.png"), tr("Heart"));
+    iconComboBox->addItem(QIcon(":/images/trash.png"), tr("Trash"));
 
     showIconCheckBox = new QCheckBox(tr("Show icon"));
     showIconCheckBox->setChecked(true);
