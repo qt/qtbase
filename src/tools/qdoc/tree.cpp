@@ -1050,6 +1050,8 @@ void Tree::readIndexFile(const QString& path)
 }
 
 /*!
+  Read a <section> element from the index file and create the
+  appropriate node(s).
  */
 void Tree::readIndexSection(const QDomElement& element,
                             InnerNode* parent,
@@ -1364,6 +1366,7 @@ void Tree::readIndexSection(const QDomElement& element,
 
     Doc doc(location, location, " ", emptySet); // placeholder
     section->setDoc(doc);
+    section->setIndexNodeFlag();
 
     if (section->isInnerNode()) {
         InnerNode* inner = static_cast<InnerNode*>(section);

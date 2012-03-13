@@ -445,7 +445,7 @@ private:
     void writeDitaMap(const Tree* tree);
     void writeDitaMap(const DitaMapNode* node);
     void writeStartTag(DitaTag t);
-    void writeEndTag(DitaTag t=DT_NONE);
+    bool writeEndTag(DitaTag t=DT_NONE);
     DitaTag currentTag();
     void clearSectionNesting() { sectionNestingLevel = 0; }
     int enterApiDesc(const QString& outputclass, const QString& title);

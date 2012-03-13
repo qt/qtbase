@@ -288,12 +288,17 @@ QString CodeMarker::taggedNode(const Node* node)
         }
         tag = QLatin1String("@property");
         break;
+    case Node::QmlMethod:
+    case Node::QmlSignal:
+    case Node::QmlSignalHandler:
+        tag = QLatin1String("@function");
+        break;
     default:
         tag = QLatin1String("@unknown");
         break;
     }
-    return QLatin1Char('<') + tag + QLatin1Char('>') + protect(name)
-            + QLatin1String("</") + tag + QLatin1Char('>');
+    return (QLatin1Char('<') + tag + QLatin1Char('>') + protect(name)
+            + QLatin1String("</") + tag + QLatin1Char('>'));
 }
 
 QString CodeMarker::taggedQmlNode(const Node* node)
@@ -372,6 +377,13 @@ QString CodeMarker::sortName(const Node *node, const QString* name)
 
     if (node->type() == Node::Property || node->type() == Node::Variable)
         return QLatin1Char('E') + nodeName;
+
+    if ((node->type() == Node::QmlMethod) ||
+        (node->type() == Node::QmlSignal) ||
+        (node->type() == Node::QmlSignalHandler)) {
+        const FunctionNode* func = static_cast<const FunctionNode *>(node);
+        return QLatin1String("E") + func->signature();
+    }
 
     return QLatin1Char('B') + nodeName;
 }

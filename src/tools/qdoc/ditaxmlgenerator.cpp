@@ -297,14 +297,23 @@ void DitaXmlGenerator::writeStartTag(DitaTag t)
 
 /*!
   Pop the current DITA tag off the stack, and write the
-  appropriate end tag to the DITA XML file.
+  appropriate end tag to the DITA XML file. If \a t is
+  not \e DT_NONE (default), then \a t contains the enum
+  value of the tag that should be on top of the stack.
+
+  If the stack is empty, no end tag is written and false
+  is returned. Otherwise, an end tag is written and true
+  is returned.
  */
-void DitaXmlGenerator::writeEndTag(DitaTag t)
+bool DitaXmlGenerator::writeEndTag(DitaTag t)
 {
+    if (tagStack.isEmpty())
+        return false;
     DitaTag top = tagStack.pop();
     if (t > DT_NONE && top != t)
         qDebug() << "Expected:" << t << "ACTUAL:" << top;
     xmlWriter().writeEndElement();
+    return true;
 }
 
 /*!
@@ -2316,7 +2325,10 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode* fake, CodeMarker* marker
         }
     }
     leaveSection(); // </section>
-    writeEndTag(); // </body>
+    if (!writeEndTag()) { // </body>
+        fake->doc().location().warning(tr("Pop of empty XML tag stack; generating DITA for '%1'").arg(fake->name()));
+        return;
+    }
     writeRelatedLinks(fake, marker);
     writeEndTag(); // </topic>
 }
@@ -3215,16 +3227,19 @@ void DitaXmlGenerator::generateQmlItem(const Node* node,
     }
     marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"),
                    "<i>\\1<sub>\\2</sub></i>");
+#if 0
     marked.replace("<@param>", "<i>");
     marked.replace("</@param>", "</i>");
 
     marked.replace("<@extra>", "<tt>");
     marked.replace("</@extra>", "</tt>");
-
+#endif
     if (summary) {
         marked.remove("<@type>");
         marked.remove("</@type>");
     }
+    if (marked.contains("setAudioAlertEnabled"))
+        qDebug() << "MARKED:" << marked;
     writeText(marked, marker, relative);
 }
 
@@ -3572,7 +3587,8 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                             html.clear();
                         }
                         writeStartTag(DT_i);
-                        writeCharacters(" " + arg.toString());
+                        //writeCharacters(" " + arg.toString());
+                        writeCharacters(arg.toString());
                         writeEndTag(); // </i>
                     }
                     else if (k == 5) { // <@extra>

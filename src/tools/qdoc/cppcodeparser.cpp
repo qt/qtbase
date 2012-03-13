@@ -797,8 +797,9 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                     return makeFunctionNode(doc,arg,qmlClass,Node::QmlSignal,false,COMMAND_QMLSIGNAL);
                 else if (command == COMMAND_QMLATTACHEDSIGNAL)
                     return makeFunctionNode(doc,arg,qmlClass,Node::QmlSignal,true,COMMAND_QMLATTACHEDSIGNAL);
-                else if (command == COMMAND_QMLMETHOD)
+                else if (command == COMMAND_QMLMETHOD) {
                     return makeFunctionNode(doc,arg,qmlClass,Node::QmlMethod,false,COMMAND_QMLMETHOD);
+                }
                 else if (command == COMMAND_QMLATTACHEDMETHOD)
                     return makeFunctionNode(doc,arg,qmlClass,Node::QmlMethod,true,COMMAND_QMLATTACHEDMETHOD);
                 else
