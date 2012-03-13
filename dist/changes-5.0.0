@@ -446,6 +446,8 @@ Instead, pending (failed) changes cause new changes inappropriate to the
 edit strategy to be refused. The application should resolve or revert pending
 changes. insertRows() and insertRecord() also respect the edit strategy.
 
+* QSqlTableModel::setData() and setRecord() in OnRowChange no longer have the
+side effect of submitting the cached row when invoked on a different row.
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************

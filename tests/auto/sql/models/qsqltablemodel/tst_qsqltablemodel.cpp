@@ -1067,6 +1067,26 @@ void tst_QSqlTableModel::isDirty()
         QFAIL_SQL(model, isDirty(model.index(0, 1)));
     }
 
+    if (submitpolicy == QSqlTableModel::OnRowChange) {
+        // dirty row must block change on other rows
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QVERIFY(model.rowCount() > 1);
+        QVERIFY_SQL(model, setData(model.index(0, 1), QString("sam i am")));
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
+        QVERIFY_SQL(model, isDirty());
+        QVERIFY_SQL(model, isDirty(model.index(0, 1)));
+        QVERIFY(!(model.flags(model.index(1, 1)) & Qt::ItemIsEditable));
+        QFAIL_SQL(model, setData(model.index(1, 1), QString("sam i am")));
+        QFAIL_SQL(model, setRecord(1, model.record(1)));
+        QFAIL_SQL(model, insertRow(1));
+        QFAIL_SQL(model, isDirty(model.index(1, 1)));
+
+        model.revertAll();
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QFAIL_SQL(model, isDirty());
+        QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    }
+
     // setData() followed by submitAll()
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QVERIFY_SQL(model, setData(model.index(0, 1), QString("sam i am")));

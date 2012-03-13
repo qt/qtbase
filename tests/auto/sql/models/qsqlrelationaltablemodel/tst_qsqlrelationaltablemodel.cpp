@@ -1537,7 +1537,9 @@ void tst_QSqlRelationalTableModel::relationOnFirstColumn()
 
     //modify the model data
     QVERIFY_SQL(model, setData(model.index(0, 0), 40));
+    QVERIFY_SQL(model, submit());
     QVERIFY_SQL(model, setData(model.index(1, 0), 50));
+    QVERIFY_SQL(model, submit());
     QVERIFY_SQL(model, setData(model.index(2, 0), 30));
 
     //verify the data after modificaiton

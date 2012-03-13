@@ -516,14 +516,12 @@ bool QSqlTableModel::isDirty(const QModelIndex &index) const
     For edit strategy OnFieldChange, an index may receive a change
     only if no other index has a cached change. Changes are
     submitted immediately. However, rows that have not yet been
-    inserted in the database may be freely changed and and are not
-    submitted automatically.
+    inserted in the database may be freely changed and are not
+    submitted automatically. Submitted changes are not reverted upon
+    failure.
 
-    For OnRowChange, the first change to a row will cause cached
-    operations on other rows to be submitted. If submitting fails,
-    the new change is rejected.
-
-    Submitted changes are not reverted upon failure.
+    For OnRowChange, an index may receive a change only if no other
+    row has a cached change. Changes are not submitted automatically.
 
     Returns true if the value could be set or false on error, for
     example if \a index is out of bounds.
@@ -542,20 +540,8 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     if (!index.isValid() || index.column() >= d->rec.count() || index.row() >= rowCount())
         return false;
 
-    if (d->cache.value(index.row()).op() == QSqlTableModelPrivate::Delete)
+    if (!(flags(index) & Qt::ItemIsEditable))
         return false;
-
-    if (d->strategy == OnFieldChange) {
-        if (d->cache.value(index.row()).op() != QSqlTableModelPrivate::Insert
-            && !isDirty(index) && isDirty())
-            return false;
-    }
-    else if (d->strategy == OnRowChange) {
-        if (d->cache.value(index.row()).submitted()) {
-            if (!submit())
-                return false;
-        }
-    }
 
     QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];
 
@@ -1249,16 +1235,32 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
     if (index.internalPointer() || index.column() < 0 || index.column() >= d->rec.count()
         || index.row() < 0)
         return 0;
-    if (d->rec.field(index.column()).isReadOnly())
-        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-    if (d->cache.value(index.row()).op() == QSqlTableModelPrivate::Delete)
-        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-    if (d->strategy == OnFieldChange
-        && d->cache.value(index.row()).op() != QSqlTableModelPrivate::Insert
-        && !isDirty(index) && isDirty())
-        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 
-    return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
+    bool editable = true;
+
+    if (d->rec.field(index.column()).isReadOnly()) {
+        editable = false;
+    }
+    else {
+        const QSqlTableModelPrivate::ModifiedRow mrow = d->cache.value(index.row());
+        if (mrow.op() == QSqlTableModelPrivate::Delete) {
+            editable = false;
+        }
+        else if (d->strategy == OnFieldChange) {
+            if (mrow.op() != QSqlTableModelPrivate::Insert)
+                if (!isDirty(index) && isDirty())
+                    editable = false;
+        }
+        else if (d->strategy == OnRowChange) {
+            if (mrow.submitted() && isDirty())
+                editable = false;
+        }
+    }
+
+    if (!editable)
+        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    else
+        return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
 }
 
 /*!
