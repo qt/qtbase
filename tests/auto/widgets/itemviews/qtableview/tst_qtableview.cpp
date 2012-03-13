@@ -175,6 +175,7 @@ private slots:
     void tabFocus();
     void bigModel();
     void selectionSignal();
+    void setCurrentIndex();
 
     // task-specific tests:
     void task173773_updateVerticalHeader();
@@ -254,11 +255,15 @@ class QtTestTableModel: public QAbstractTableModel
 signals:
     void invalidIndexEncountered() const;
 
+public slots:
+    bool submit() { ++submit_count; return QAbstractTableModel::submit(); }
+
 public:
     QtTestTableModel(int rows = 0, int columns = 0, QObject *parent = 0)
         : QAbstractTableModel(parent),
           row_count(rows),
           column_count(columns),
+          submit_count(0),
           can_fetch_more(false),
           fetch_more_count(0),
           disabled_rows(),
@@ -400,6 +405,7 @@ public:
 
     int row_count;
     int column_count;
+    int submit_count;
     bool can_fetch_more;
     int fetch_more_count;
     QSet<int> disabled_rows;
@@ -3478,6 +3484,27 @@ void tst_QTableView::selectionSignal()
     view.show();
     QTest::qWaitForWindowShown(&view);
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(model.index(2, 0)).center());
+}
+
+void tst_QTableView::setCurrentIndex()
+{
+    QtTestTableModel model(4, 4);
+    QtTestTableView view;
+    view.setModel(&model);
+
+    // submit() slot should be called in model when current row changes
+    view.setCurrentIndex(model.index(0,0));
+    QCOMPARE(model.submit_count, 1);
+    view.setCurrentIndex(model.index(0,2));
+    QCOMPARE(model.submit_count, 1);
+    view.setCurrentIndex(model.index(1,0));
+    QCOMPARE(model.submit_count, 2);
+    view.setCurrentIndex(model.index(3,3));
+    QCOMPARE(model.submit_count, 3);
+    view.setCurrentIndex(model.index(0,1));
+    QCOMPARE(model.submit_count, 4);
+    view.setCurrentIndex(model.index(0,0));
+    QCOMPARE(model.submit_count, 4);
 }
 
 class task173773_EventFilter : public QObject

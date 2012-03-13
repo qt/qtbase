@@ -1071,6 +1071,10 @@ void QTableView::setModel(QAbstractItemModel *model)
         disconnect(d->model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
                 this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
     }
+    if (d->selectionModel) { // support row editing
+        disconnect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+                   d->model, SLOT(submit()));
+    }
     if (model) { //and connect to the new one
         connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                 this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
@@ -1123,9 +1127,21 @@ void QTableView::setSelectionModel(QItemSelectionModel *selectionModel)
 {
     Q_D(QTableView);
     Q_ASSERT(selectionModel);
+    if (d->selectionModel) {
+        // support row editing
+        disconnect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+                   d->model, SLOT(submit()));
+    }
+
     d->verticalHeader->setSelectionModel(selectionModel);
     d->horizontalHeader->setSelectionModel(selectionModel);
     QAbstractItemView::setSelectionModel(selectionModel);
+
+    if (d->selectionModel) {
+        // support row editing
+        connect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+                d->model, SLOT(submit()));
+    }
 }
 
 /*!
