@@ -18,7 +18,7 @@ HEADERS += $$QT_SOURCE_TREE/src/widgets/qtwidgetsversion.h
 QMAKE_DOCS = $$PWD/doc/qtwidgets.qdocconf
 QMAKE_DOCS_INDEX = ../../doc
 
-include(../qbase.pri)
+load(qt_module_config)
 
 #platforms
 mac:include(kernel/mac.pri)
