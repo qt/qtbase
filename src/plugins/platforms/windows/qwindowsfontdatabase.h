@@ -85,7 +85,8 @@ public:
     virtual void releaseHandle(void *handle);
     virtual QString fontDir() const;
 
-    virtual QFont defaultFont() const;
+    virtual QFont defaultFont() const { return systemDefaultFont(); }
+    static QFont systemDefaultFont();
 
     static QFontEngine *createEngine(int script, const QFontDef &request,
                                      HDC fontHdc, int dpi, bool rawMode,
