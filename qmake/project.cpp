@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
 enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST,
                   E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
-                  E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_REPLACE,
+                  E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_VAL_ESCAPE, E_REPLACE,
                   E_SIZE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS, E_ENUMERATE_VARS };
 QHash<QString, ExpandFunc> qmake_expandFunctions()
 {
@@ -109,6 +109,7 @@ QHash<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("upper", E_UPPER);
         qmake_expand_functions->insert("lower", E_LOWER);
         qmake_expand_functions->insert("re_escape", E_RE_ESCAPE);
+        qmake_expand_functions->insert("val_escape", E_VAL_ESCAPE);
         qmake_expand_functions->insert("files", E_FILES);
         qmake_expand_functions->insert("prompt", E_PROMPT);
         qmake_expand_functions->insert("replace", E_REPLACE);
@@ -2361,6 +2362,17 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         for(int i = 0; i < args.size(); ++i)
             ret += QRegExp::escape(args[i]);
         break; }
+    case E_VAL_ESCAPE:
+        if (args.count() != 1) {
+            fprintf(stderr, "%s:%d val_escape(var) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        } else {
+            QStringList vals = values(args.at(0), place);
+            ret.reserve(vals.length());
+            foreach (const QString &str, vals)
+                ret += quoteValue(str);
+        }
+        break;
     case E_UPPER:
     case E_LOWER: {
         for(int i = 0; i < args.size(); ++i) {

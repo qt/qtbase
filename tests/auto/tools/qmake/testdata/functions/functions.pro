@@ -1,5 +1,9 @@
 CONFIG = qt thread
 
+defineTest(testReplace) {
+    !isEqual(1, $$2):message("FAILED: $$3: got $$1, expected $${2}.")
+}
+
 #count
 !count( CONFIG, 2 ) {
    message( "FAILED: count function: $$CONFIG" )
@@ -103,3 +107,8 @@ equals(moo, $$mooout)|message("FAILED: write_file() wrote something wrong when a
 pn = $$OUT_PWD/testpath/subdir
 mkpath($$pn)|message("FAILED: mkpath() failed")
 exists($$pn)|message("FAILED: mkpath() didn't create anything")
+
+in = easy "less easy" sca$${LITERAL_HASH}ry crazy$$escape_expand(\\t\\r\\n) $$escape_expand(\\t)shit \'no\"way\\here
+out = "easy \"less easy\" sca\$\${LITERAL_HASH}ry crazy\$\$escape_expand(\\\\t\\\\r\\\\n) \$\$escape_expand(\\\\t)shit \\\'no\\\"way\\\\here"
+testReplace($$val_escape(in), $$out, "val_escape")
+
