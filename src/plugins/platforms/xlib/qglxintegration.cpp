@@ -41,7 +41,6 @@
 
 #include <QDebug>
 #include <QLibrary>
-#include <QGLFormat>
 
 #include "qxlibwindow.h"
 #include "qxlibscreen.h"
