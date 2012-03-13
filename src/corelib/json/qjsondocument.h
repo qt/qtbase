@@ -63,13 +63,15 @@ struct Q_CORE_EXPORT QJsonParseError
         UnterminatedArray,
         MissingValueSeparator,
         IllegalValue,
-        EndOfNumber,
+        TerminationByNumber,
         IllegalNumber,
-        StringEscapeSequence,
-        StringUTF8Scan,
-        EndOfString,
+        IllegalEscapeSequence,
+        IllegalUTF8String,
+        UnterminatedString,
         MissingObject
     };
+
+    QString    errorString() const;
 
     int        offset;
     ParseError error;

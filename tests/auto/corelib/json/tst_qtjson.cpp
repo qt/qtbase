@@ -1186,7 +1186,7 @@ void TestQtJson::fromJsonErrors()
         QByteArray json = "[\n    11111";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
-        QCOMPARE(error.error, QJsonParseError::EndOfNumber);
+        QCOMPARE(error.error, QJsonParseError::TerminationByNumber);
         QCOMPARE(error.offset, 11);
     }
     {
@@ -1210,7 +1210,7 @@ void TestQtJson::fromJsonErrors()
         QByteArray json = "[\n    \"\\u12\"]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
-        QCOMPARE(error.error, QJsonParseError::StringEscapeSequence);
+        QCOMPARE(error.error, QJsonParseError::IllegalEscapeSequence);
         QCOMPARE(error.offset, 11);
     }
     {
@@ -1218,7 +1218,7 @@ void TestQtJson::fromJsonErrors()
         QByteArray json = "[\n    \"foo" INVALID_UNICODE "bar\"]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
-        QCOMPARE(error.error, QJsonParseError::StringUTF8Scan);
+        QCOMPARE(error.error, QJsonParseError::IllegalUTF8String);
         QCOMPARE(error.offset, 13);
     }
     {
@@ -1226,7 +1226,7 @@ void TestQtJson::fromJsonErrors()
         QByteArray json = "[\n    \"";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
-        QCOMPARE(error.error, QJsonParseError::EndOfString);
+        QCOMPARE(error.error, QJsonParseError::UnterminatedString);
         QCOMPARE(error.offset, 8);
     }
     {
@@ -1234,7 +1234,7 @@ void TestQtJson::fromJsonErrors()
         QByteArray json = "[\n    \"c" UNICODE_DJE "a\\u12\"]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
-        QCOMPARE(error.error, QJsonParseError::StringEscapeSequence);
+        QCOMPARE(error.error, QJsonParseError::IllegalEscapeSequence);
         QCOMPARE(error.offset, 15);
     }
     {
@@ -1242,7 +1242,7 @@ void TestQtJson::fromJsonErrors()
         QByteArray json = "[\n    \"c" UNICODE_DJE "a" INVALID_UNICODE "bar\"]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
-        QCOMPARE(error.error, QJsonParseError::StringUTF8Scan);
+        QCOMPARE(error.error, QJsonParseError::IllegalUTF8String);
         QCOMPARE(error.offset, 14);
     }
     {
@@ -1250,7 +1250,7 @@ void TestQtJson::fromJsonErrors()
         QByteArray json = "[\n    \"c" UNICODE_DJE "a ]";
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
-        QCOMPARE(error.error, QJsonParseError::EndOfString);
+        QCOMPARE(error.error, QJsonParseError::UnterminatedString);
         QCOMPARE(error.offset, 14);
     }
 }

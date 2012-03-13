@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef QT_BOOTSTRAPPED
+#include <qcoreapplication.h>
+#endif
 #include <qdebug.h>
 #include "qjsonparser_p.h"
 #include "qjson_p.h"
@@ -56,6 +59,80 @@ static int indent = 0;
 #endif
 
 QT_BEGIN_NAMESPACE
+
+// error strings for the JSON parser
+#define JSONERR_OK          QT_TRANSLATE_NOOP("QJsonParseError", "no error occurred")
+#define JSONERR_UNTERM_OBJ  QT_TRANSLATE_NOOP("QJsonParseError", "unterminated object")
+#define JSONERR_MISS_NSEP   QT_TRANSLATE_NOOP("QJsonParseError", "missing name separator")
+#define JSONERR_UNTERM_AR   QT_TRANSLATE_NOOP("QJsonParseError", "unterminated array")
+#define JSONERR_MISS_VSEP   QT_TRANSLATE_NOOP("QJsonParseError", "missing value separator")
+#define JSONERR_ILLEGAL_VAL QT_TRANSLATE_NOOP("QJsonParseError", "illegal value")
+#define JSONERR_END_OF_NUM  QT_TRANSLATE_NOOP("QJsonParseError", "invalid termination by number")
+#define JSONERR_ILLEGAL_NUM QT_TRANSLATE_NOOP("QJsonParseError", "illegal number")
+#define JSONERR_STR_ESC_SEQ QT_TRANSLATE_NOOP("QJsonParseError", "invalid escape sequence")
+#define JSONERR_STR_UTF8    QT_TRANSLATE_NOOP("QJsonParseError", "invalid UTF8 string")
+#define JSONERR_UTERM_STR   QT_TRANSLATE_NOOP("QJsonParseError", "unterminated string")
+#define JSONERR_MISS_OBJ    QT_TRANSLATE_NOOP("QJsonParseError", "object is missing after a comma")
+
+/*!
+    \class QJsonParseError
+    \ingroup json
+    \reentrant
+    \since 5.0
+
+    \brief The QJsonParseError class is used to report errors during JSON parsing.
+*/
+
+/*!
+  Returns the human-readable message appropriate to the reported JSON parsing error.
+ */
+QString QJsonParseError::errorString() const
+{
+    const char *sz = "";
+    switch (error) {
+    case NoError:
+        sz = JSONERR_OK;
+        break;
+    case UnterminatedObject:
+        sz = JSONERR_UNTERM_OBJ;
+        break;
+    case MissingNameSeparator:
+        sz = JSONERR_MISS_NSEP;
+        break;
+    case UnterminatedArray:
+        sz = JSONERR_UNTERM_AR;
+        break;
+    case MissingValueSeparator:
+        sz = JSONERR_MISS_VSEP;
+        break;
+    case IllegalValue:
+        sz = JSONERR_ILLEGAL_VAL;
+        break;
+    case TerminationByNumber:
+        sz = JSONERR_END_OF_NUM;
+        break;
+    case IllegalNumber:
+        sz = JSONERR_ILLEGAL_NUM;
+        break;
+    case IllegalEscapeSequence:
+        sz = JSONERR_STR_ESC_SEQ;
+        break;
+    case IllegalUTF8String:
+        sz = JSONERR_STR_UTF8;
+        break;
+    case UnterminatedString:
+        sz = JSONERR_UTERM_STR;
+        break;
+    case MissingObject:
+        sz = JSONERR_MISS_OBJ;
+        break;
+    }
+#ifndef QT_BOOTSTRAPPED
+    return QCoreApplication::translate("QJsonParseError", sz);
+#else
+    return QLatin1String(sz);
+#endif
+}
 
 using namespace QJsonPrivate;
 
@@ -524,7 +601,7 @@ bool Parser::parseNumber(QJsonPrivate::Value *val, int baseOffset)
     }
 
     if (json >= end) {
-        lastError = QJsonParseError::EndOfNumber;
+        lastError = QJsonParseError::TerminationByNumber;
         return false;
     }
 
@@ -717,12 +794,12 @@ bool Parser::parseString(bool *latin1)
             break;
         else if (*json == '\\') {
             if (!scanEscapeSequence(json, end, &ch)) {
-                lastError = QJsonParseError::StringEscapeSequence;
+                lastError = QJsonParseError::IllegalEscapeSequence;
                 return false;
             }
         } else {
             if (!scanUtf8Char(json, end, &ch)) {
-                lastError = QJsonParseError::StringUTF8Scan;
+                lastError = QJsonParseError::IllegalUTF8String;
                 return false;
             }
         }
@@ -737,7 +814,7 @@ bool Parser::parseString(bool *latin1)
     ++json;
     DEBUG << "end of string";
     if (json >= end) {
-        lastError = QJsonParseError::EndOfString;
+        lastError = QJsonParseError::UnterminatedString;
         return false;
     }
 
@@ -764,12 +841,12 @@ bool Parser::parseString(bool *latin1)
             break;
         else if (*json == '\\') {
             if (!scanEscapeSequence(json, end, &ch)) {
-                lastError = QJsonParseError::StringEscapeSequence;
+                lastError = QJsonParseError::IllegalEscapeSequence;
                 return false;
             }
         } else {
             if (!scanUtf8Char(json, end, &ch)) {
-                lastError = QJsonParseError::StringUTF8Scan;
+                lastError = QJsonParseError::IllegalUTF8String;
                 return false;
             }
         }
@@ -785,7 +862,7 @@ bool Parser::parseString(bool *latin1)
     ++json;
 
     if (json >= end) {
-        lastError = QJsonParseError::EndOfString;
+        lastError = QJsonParseError::UnterminatedString;
         return false;
     }
 
