@@ -777,6 +777,7 @@ void tst_QAccessibility::applicationTest()
 
 void tst_QAccessibility::mainWindowTest()
 {
+    {
     QMainWindow *mw = new QMainWindow;
     mw->resize(300, 200);
     mw->show(); // triggers layout
@@ -787,12 +788,51 @@ void tst_QAccessibility::mainWindowTest()
     QAccessibleEvent show(mw, QAccessible::ObjectShow);
     QVERIFY_EVENT(&show);
 
-    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(mw);
-    QCOMPARE(interface->text(QAccessible::Name), name);
-    QCOMPARE(interface->role(), QAccessible::Window);
-    delete interface;
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(mw);
+    QCOMPARE(iface->text(QAccessible::Name), name);
+    QCOMPARE(iface->role(), QAccessible::Window);
+    QVERIFY(iface->state().active);
+
+    QAccessible::State activeState;
+    activeState.active = true;
+    QAccessibleStateChangeEvent active(mw, activeState);
+    QVERIFY_EVENT(&active);
+
+    delete iface;
     delete mw;
+    }
     QTestAccessibility::clearEvents();
+
+    {
+    QWindow window;
+    window.setGeometry(80, 80, 40, 40);
+    window.show();
+    QTRY_VERIFY(QGuiApplication::focusWindow() == &window);
+
+//    We currently don't have an accessible interface for QWindow
+//    the active state is either in the QMainWindow or QQuickView
+//    QAIPtr windowIface(QAccessible::queryAccessibleInterface(&window));
+//    QVERIFY(windowIface->state().active);
+
+    QAccessible::State activeState;
+    activeState.active = true;
+    QAccessibleStateChangeEvent active(&window, activeState);
+    QVERIFY_EVENT(&active);
+
+    QWindow child;
+    child.setParent(&window);
+    child.setGeometry(10, 10, 20, 20);
+    child.show();
+
+    child.requestActivateWindow();
+    QTRY_VERIFY(QGuiApplication::focusWindow() == &child);
+
+    QAccessibleStateChangeEvent deactivate(&window, activeState);
+    QVERIFY_EVENT(&deactivate); // deactivation of parent
+
+    QAccessibleStateChangeEvent activeChild(&child, activeState);
+    QVERIFY_EVENT(&activeChild);
+    }
 }
 
 class CounterButton : public QPushButton {
