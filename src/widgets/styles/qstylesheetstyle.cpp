@@ -2511,7 +2511,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
     for (int i = 0; i < decls.count(); i++) {
         const Declaration &decl = decls.at(i);
         QString property = decl.d->property;
-        if (!property.startsWith(QLatin1String("qproperty-"), Qt::CaseInsensitive))
+        if (!property.startsWith(QStringLiteral("qproperty-"), Qt::CaseInsensitive))
             continue;
         property.remove(0, 10); // strip "qproperty-"
         const QVariant value = w->property(property.toLatin1());
