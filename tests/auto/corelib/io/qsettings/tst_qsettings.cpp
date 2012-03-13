@@ -880,8 +880,10 @@ void tst_QSettings::beginGroup()
     QCOMPARE(settings1.value("geometry").toInt(), 777);
 
     // endGroup() should do nothing if group() is empty
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 10; ++i) {
+        QTest::ignoreMessage(QtWarningMsg, "QSettings::endGroup: No matching beginGroup()");
         settings2.endGroup();
+    }
     QCOMPARE(settings2.value("geometry").toInt(), 5);
     QCOMPARE(settings2.value("alpha/geometry").toInt(), 66);
     QCOMPARE(settings2.value("alpha/beta/geometry").toInt(), 777);
@@ -2167,6 +2169,16 @@ void tst_QSettings::testArrays()
         endArray() and vice versa. This is not documented, but this
         is the behavior that we have chosen.
     */
+    QTest::ignoreMessage(QtWarningMsg, "QSettings::setArrayIndex: Missing beginArray()");
+    QTest::ignoreMessage(QtWarningMsg, "QSettings::setArrayIndex: Missing beginArray()");
+    QTest::ignoreMessage(QtWarningMsg, "QSettings::setArrayIndex: Missing beginArray()");
+    QTest::ignoreMessage(QtWarningMsg, "QSettings::setArrayIndex: Missing beginArray()");
+    QTest::ignoreMessage(QtWarningMsg, "QSettings::setArrayIndex: Missing beginArray()");
+    QTest::ignoreMessage(QtWarningMsg, "QSettings::endArray: Expected endGroup() instead");
+    QTest::ignoreMessage(QtWarningMsg, "QSettings::endGroup: Expected endArray() instead");
+    QTest::ignoreMessage(QtWarningMsg, "QSettings::endArray: Expected endGroup() instead");
+    QTest::ignoreMessage(QtWarningMsg, "QSettings::endGroup: No matching beginGroup()");
+
     QSettings settings1(format, QSettings::UserScope, "software.org", "KillerAPP");
     settings1.clear();
     settings1.beginGroup("/alpha");
@@ -2217,7 +2229,6 @@ void tst_QSettings::testArrays()
     QCOMPARE(settings1.group(), QString());
     settings1.endGroup();
     QCOMPARE(settings1.group(), QString());
-
     /*
         Now, let's make sure that things work well if an array
         is spread across multiple files.
