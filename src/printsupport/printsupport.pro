@@ -4,7 +4,6 @@ TARGET     = QtPrintSupport
 QPRO_PWD   = $$PWD
 QT = core-private gui-private widgets-private
 
-CONFIG += module
 MODULE_PRI = ../modules/qt_printsupport.pri
 
 DEFINES   += QT_BUILD_PRINTSUPPORT_LIB QT_NO_USING_NAMESPACE

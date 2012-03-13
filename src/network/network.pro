@@ -4,7 +4,6 @@ load(qt_module)
 TARGET   = QtNetwork
 QPRO_PWD = $$PWD
 
-CONFIG += module
 MODULE_PRI = ../modules/qt_network.pri
 
 DEFINES += QT_BUILD_NETWORK_LIB QT_NO_USING_NAMESPACE

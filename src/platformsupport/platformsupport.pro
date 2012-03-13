@@ -5,7 +5,6 @@ QT         += core-private gui-private
 TEMPLATE   = lib
 DESTDIR    = $$QT.gui.libs
 
-CONFIG += module
 CONFIG += staticlib
 mac:LIBS += -lz -framework CoreFoundation -framework Carbon
 

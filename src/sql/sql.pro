@@ -4,7 +4,6 @@ TARGET	   = QtSql
 QPRO_PWD   = $$PWD
 QT         = core-private
 
-CONFIG += module
 MODULE_PRI = ../modules/qt_sql.pri
 
 DEFINES += QT_BUILD_SQL_LIB

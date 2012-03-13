@@ -3,8 +3,8 @@ load(qt_module)
 TARGET     = QtWidgets
 QPRO_PWD   = $$PWD
 QT = core core-private gui gui-private platformsupport-private
+CONFIG += uic
 
-CONFIG += module uic
 MODULE_PRI = ../modules/qt_widgets.pri
 
 DEFINES   += QT_BUILD_WIDGETS_LIB QT_NO_USING_NAMESPACE

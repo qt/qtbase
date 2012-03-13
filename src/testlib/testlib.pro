@@ -3,8 +3,8 @@ load(qt_module)
 TARGET = QtTest
 QPRO_PWD = $$PWD
 QT = core-private
+CONFIG += exceptions
 
-CONFIG += module exceptions
 MODULE_PRI = ../modules/qt_testlib.pri
 
 INCLUDEPATH += .

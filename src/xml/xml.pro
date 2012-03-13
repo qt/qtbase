@@ -4,7 +4,6 @@ TARGET     = QtXml
 QPRO_PWD   = $$PWD
 QT         = core-private
 
-CONFIG += module
 MODULE_PRI = ../modules/qt_xml.pri
 
 DEFINES   += QT_BUILD_XML_LIB QT_NO_USING_NAMESPACE

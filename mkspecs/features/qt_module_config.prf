@@ -109,6 +109,7 @@ aix-g++* {
 !static:PRL_EXPORT_DEFINES += QT_SHARED
 
 #install directives
+CONFIG += qt_install_module
 load(qt_installs)
 
 unix|win32-g++* {

@@ -4,7 +4,6 @@ TARGET     = QtGui
 QPRO_PWD   = $$PWD
 QT = core-private
 
-CONFIG += module
 MODULE_PRI = ../modules/qt_gui.pri
 
 DEFINES   += QT_BUILD_GUI_LIB QT_NO_USING_NAMESPACE

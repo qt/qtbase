@@ -4,7 +4,6 @@ TARGET     = QtOpenGL
 QPRO_PWD   = $$PWD
 QT         = core-private gui-private widgets-private
 
-CONFIG += module
 MODULE_PRI = ../modules/qt_opengl.pri
 
 DEFINES   += QT_BUILD_OPENGL_LIB

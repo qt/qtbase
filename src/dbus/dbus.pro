@@ -3,8 +3,8 @@ load(qt_module)
 TARGET = QtDBus
 QPRO_PWD = $$PWD
 QT = core-private
+CONFIG += link_pkgconfig
 
-CONFIG += link_pkgconfig module
 MODULE_PRI = ../modules/qt_dbus.pri
 
 DEFINES += QT_BUILD_DBUS_LIB \

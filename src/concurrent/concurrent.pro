@@ -3,8 +3,8 @@ load(qt_module)
 TARGET     = QtConcurrent
 QPRO_PWD   = $$PWD
 QT         = core-private
+CONFIG    += exceptions
 
-CONFIG += module exceptions
 MODULE_PRI = ../modules/qt_concurrent.pri
 
 DEFINES   += QT_BUILD_CONCURRENT_LIB QT_NO_USING_NAMESPACE
