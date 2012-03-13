@@ -278,52 +278,6 @@ private:
 
 const double Q_PI = 3.14159265358979323846;
 
-QString eventName(const int ev)
-{
-    switch(ev) {
-    case 0x0001: return "SoundPlayed";
-    case 0x0002: return "Alert";
-    case 0x0003: return "ForegroundChanged";
-    case 0x0004: return "MenuStart";
-    case 0x0005: return "MenuEnd";
-    case 0x0006: return "PopupMenuStart";
-    case 0x0007: return "PopupMenuEnd";
-    case 0x000C: return "ContextHelpStart";
-    case 0x000D: return "ContextHelpEnd";
-    case 0x000E: return "DragDropStart";
-    case 0x000F: return "DragDropEnd";
-    case 0x0010: return "DialogStart";
-    case 0x0011: return "DialogEnd";
-    case 0x0012: return "ScrollingStart";
-    case 0x0013: return "ScrollingEnd";
-    case 0x0018: return "MenuCommand";
-
-    case 0x0116: return "TableModelChanged";
-    case 0x011B: return "TextCaretMoved";
-
-    case 0x8000: return "ObjectCreated";
-    case 0x8001: return "ObjectDestroyed";
-    case 0x8002: return "ObjectShow";
-    case 0x8003: return "ObjectHide";
-    case 0x8004: return "ObjectReorder";
-    case 0x8005: return "Focus";
-    case 0x8006: return "Selection";
-    case 0x8007: return "SelectionAdd";
-    case 0x8008: return "SelectionRemove";
-    case 0x8009: return "SelectionWithin";
-    case 0x800A: return "StateChanged";
-    case 0x800B: return "LocationChanged";
-    case 0x800C: return "NameChanged";
-    case 0x800D: return "DescriptionChanged";
-    case 0x800E: return "ValueChanged";
-    case 0x800F: return "ParentChanged";
-    case 0x80A0: return "HelpChanged";
-    case 0x80B0: return "DefaultActionChanged";
-    case 0x80C0: return "AcceleratorChanged";
-    default: return "Unknown Event";
-    }
-}
-
 QAccessible::State state(QWidget * const widget)
 {
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
@@ -404,7 +358,7 @@ void tst_QAccessibility::cleanup()
                  QString(QTest::currentTestFunction()).toAscii().constData());
         for (int i = 0; i < list.count(); ++i)
             qWarning(" %d: Object: %p Event: '%s' Child: %d", i + 1, list.at(i)->object(),
-                     eventName(list.at(i)->type()).toAscii().constData(), list.at(i)->child());
+                     qAccessibleEventString(list.at(i)->type()), list.at(i)->child());
     }
     QTestAccessibility::clearEvents();
 }
