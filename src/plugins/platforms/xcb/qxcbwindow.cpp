@@ -549,7 +549,8 @@ void QXcbWindow::show()
         updateNetWmStateBeforeMap();
     }
 
-    updateNetWmUserTime(connection()->time());
+    if (connection()->time() != CurrentTime)
+        updateNetWmUserTime(connection()->time());
 
     Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
     xcb_flush(xcb_connection());
