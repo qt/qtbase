@@ -50,6 +50,7 @@
 #include "qvariant.h"
 #include "qmetaobject.h"
 #include <qregexp.h>
+#include <qregularexpression.h>
 #include <qthread.h>
 #include <private/qthread_p.h>
 #include <qdebug.h>
@@ -1558,7 +1559,21 @@ void QObject::killTimer(int id)
     Returns the children of this object that can be cast to type T
     and that have names matching the regular expression \a regExp,
     or an empty list if there are no such objects.
-    The search is performed recursively.
+    The search is performed recursively, unless \a options specifies the
+    option FindDirectChildrenOnly.
+*/
+
+/*!
+    \fn QList<T> QObject::findChildren(const QRegularExpression &re, Qt::FindChildOptions options) const
+    \overload findChildren()
+
+    \since 5.0
+
+    Returns the children of this object that can be cast to type T
+    and that have names matching the regular expression \a re,
+    or an empty list if there are no such objects.
+    The search is performed recursively, unless \a options specifies the
+    option FindDirectChildrenOnly.
 */
 
 /*!
@@ -1611,7 +1626,7 @@ void QObject::killTimer(int id)
 /*!
     \internal
 */
-void qt_qFindChildren_helper(const QObject *parent, const QString &name, const QRegExp *re,
+void qt_qFindChildren_helper(const QObject *parent, const QString &name,
                              const QMetaObject &mo, QList<void*> *list, Qt::FindChildOptions options)
 {
     if (!parent || !list)
@@ -1621,18 +1636,59 @@ void qt_qFindChildren_helper(const QObject *parent, const QString &name, const Q
     for (int i = 0; i < children.size(); ++i) {
         obj = children.at(i);
         if (mo.cast(obj)) {
-            if (re) {
-                if (re->indexIn(obj->objectName()) != -1)
-                    list->append(obj);
-            } else {
-                if (name.isNull() || obj->objectName() == name)
-                    list->append(obj);
-            }
+            if (name.isNull() || obj->objectName() == name)
+                list->append(obj);
         }
         if (options & Qt::FindChildrenRecursively)
-            qt_qFindChildren_helper(obj, name, re, mo, list, options);
+            qt_qFindChildren_helper(obj, name, mo, list, options);
     }
 }
+
+#ifndef QT_NO_REGEXP
+/*!
+    \internal
+*/
+void qt_qFindChildren_helper(const QObject *parent, const QRegExp &re,
+                             const QMetaObject &mo, QList<void*> *list, Qt::FindChildOptions options)
+{
+    if (!parent || !list)
+        return;
+    const QObjectList &children = parent->children();
+    QObject *obj;
+    for (int i = 0; i < children.size(); ++i) {
+        obj = children.at(i);
+        if (mo.cast(obj) && re.indexIn(obj->objectName()) != -1)
+            list->append(obj);
+
+        if (options & Qt::FindChildrenRecursively)
+            qt_qFindChildren_helper(obj, re, mo, list, options);
+    }
+}
+#endif // QT_NO_REGEXP
+
+#ifndef QT_NO_REGEXP
+/*!
+    \internal
+*/
+void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re,
+                             const QMetaObject &mo, QList<void*> *list, Qt::FindChildOptions options)
+{
+    if (!parent || !list)
+        return;
+    const QObjectList &children = parent->children();
+    QObject *obj;
+    for (int i = 0; i < children.size(); ++i) {
+        obj = children.at(i);
+        if (mo.cast(obj)) {
+            QRegularExpressionMatch m = re.match(obj->objectName());
+            if (m.hasMatch())
+                list->append(obj);
+        }
+        if (options & Qt::FindChildrenRecursively)
+            qt_qFindChildren_helper(obj, re, mo, list, options);
+    }
+}
+#endif // QT_NO_REGEXP
 
 /*! \internal
  */

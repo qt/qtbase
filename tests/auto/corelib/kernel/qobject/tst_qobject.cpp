@@ -45,6 +45,7 @@
 #include <qpointer.h>
 #include <qtimer.h>
 #include <qregexp.h>
+#include <qregularexpression.h>
 #include <qmetaobject.h>
 #include <qvariant.h>
 #include <QTcpServer>
@@ -654,6 +655,26 @@ void tst_QObject::findChildren()
     tl = qFindChildren<QTimer*>(&o, QRegExp("o.*"));
     QCOMPARE(tl.size(), 0);
     l = qFindChildren<QObject*>(&o, QRegExp("harry"));
+    QCOMPARE(l.size(), 0);
+
+    l = o.findChildren<QObject*>(QRegularExpression("o.*"));
+    QCOMPARE(l.size(), 5);
+    QVERIFY(l.contains(&o1));
+    QVERIFY(l.contains(&o2));
+    QVERIFY(l.contains(&o11));
+    QVERIFY(l.contains(&o12));
+    QVERIFY(l.contains(&o111));
+    l = o.findChildren<QObject*>(QRegularExpression("t.*"));
+    QCOMPARE(l.size(), 2);
+    QVERIFY(l.contains(&t1));
+    QVERIFY(l.contains(&t121));
+    tl = o.findChildren<QTimer*>(QRegularExpression(".*"));
+    QCOMPARE(tl.size(), 3);
+    QVERIFY(tl.contains(&t1));
+    QVERIFY(tl.contains(&t121));
+    tl = o.findChildren<QTimer*>(QRegularExpression("o.*"));
+    QCOMPARE(tl.size(), 0);
+    l = o.findChildren<QObject*>(QRegularExpression("harry"));
     QCOMPARE(l.size(), 0);
 
     // empty and null string check

@@ -73,13 +73,20 @@ class QWidget;
 #ifndef QT_NO_REGEXP
 class QRegExp;
 #endif
+#ifndef QT_NO_REGEXP
+class QRegularExpression;
+#endif
 #ifndef QT_NO_USERDATA
 class QObjectUserData;
 #endif
 
 typedef QList<QObject*> QObjectList;
 
-Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QString &name, const QRegExp *re,
+Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QString &name,
+                                           const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
+Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegExp &re,
+                                           const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
+Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re,
                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
 Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options);
 
@@ -163,7 +170,7 @@ public:
             QList<void *> *voidList;
         } u;
         u.typedList = &list;
-        qt_qFindChildren_helper(this, aName, 0, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
+        qt_qFindChildren_helper(this, aName, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
         return list;
     }
 
@@ -177,7 +184,22 @@ public:
             QList<void *> *voidList;
         } u;
         u.typedList = &list;
-        qt_qFindChildren_helper(this, QString(), &re, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
+        qt_qFindChildren_helper(this, re, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
+        return list;
+    }
+#endif
+
+#ifndef QT_NO_REGEXP
+    template<typename T>
+    inline QList<T> findChildren(const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
+    {
+        QList<T> list;
+        union {
+            QList<T> *typedList;
+            QList<void *> *voidList;
+        } u;
+        u.typedList = &list;
+        qt_qFindChildren_helper(this, re, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
         return list;
     }
 #endif
