@@ -207,13 +207,13 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
     if (idx < 0)
         return 0;
 
-    QVariant ret(QMetaType::QObjectStar, (void*)0);
-    void *param[] = {ret.data(), val0.data(), val1.data(), val2.data(), val3.data(), val4.data(),
+    QObject *returnValue = 0;
+    void *param[] = {&returnValue, val0.data(), val1.data(), val2.data(), val3.data(), val4.data(),
                      val5.data(), val6.data(), val7.data(), val8.data(), val9.data()};
 
     if (static_metacall(CreateInstance, idx, param) >= 0)
         return 0;
-    return *reinterpret_cast<QObject**>(param[0]);
+    return returnValue;
 }
 
 /*!
