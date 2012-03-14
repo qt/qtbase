@@ -3991,6 +3991,8 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
 {
     if (!sender || !signal || !slotObj || !senderMetaObject) {
         qWarning("QObject::connect: invalid null parametter");
+        if (slotObj && !slotObj->ref.deref())
+            delete slotObj;
         return QMetaObject::Connection();
     }
     int signal_index = -1;
@@ -3998,6 +4000,8 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
     senderMetaObject->static_metacall(QMetaObject::IndexOfMethod, 0, args);
     if (signal_index < 0 || signal_index >= QMetaObjectPrivate::get(senderMetaObject)->signalCount) {
         qWarning("QObject::connect: signal not found in %s", senderMetaObject->className());
+        if (!slotObj->ref.deref())
+            delete slotObj;
         return QMetaObject::Connection(0);
     }
     int signalOffset, methodOffset;
@@ -4017,8 +4021,11 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
                 (*connectionLists)[signal_index].first;
 
             while (c2) {
-                if (c2->receiver == receiver && c2->isSlotObject && c2->slotObj->compare(slot))
+                if (c2->receiver == receiver && c2->isSlotObject && c2->slotObj->compare(slot)) {
+                    if (!slotObj->ref.deref())
+                        delete slotObj;
                     return QMetaObject::Connection();
+                }
                 c2 = c2->nextConnectionList;
             }
         }
