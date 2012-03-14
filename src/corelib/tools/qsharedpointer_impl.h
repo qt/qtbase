@@ -105,8 +105,8 @@ namespace QtSharedPointer {
     template <class X, class Y> QSharedPointer<X> copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
 
     // used in debug mode to verify the reuse of pointers
-    Q_CORE_EXPORT void internalSafetyCheckAdd2(const void *, const volatile void *);
-    Q_CORE_EXPORT void internalSafetyCheckRemove2(const void *);
+    Q_CORE_EXPORT void internalSafetyCheckAdd(const void *, const volatile void *);
+    Q_CORE_EXPORT void internalSafetyCheckRemove(const void *);
 
     template <class T, typename Klass, typename RetVal>
     inline void executeDeleter(T *t, RetVal (Klass:: *memberDeleter)())
@@ -247,7 +247,7 @@ namespace QtSharedPointer {
         }
         static void safetyCheckDeleter(ExternalRefCountData *self)
         {
-            internalSafetyCheckRemove2(self);
+            internalSafetyCheckRemove(self);
             deleter(self);
         }
 
@@ -290,7 +290,7 @@ namespace QtSharedPointer {
         }
         static void safetyCheckDeleter(ExternalRefCountData *self)
         {
-            internalSafetyCheckRemove2(self);
+            internalSafetyCheckRemove(self);
             deleter(self);
         }
 
@@ -374,7 +374,7 @@ namespace QtSharedPointer {
             Basic<T>::internalConstruct(ptr);
             if (ptr) d->setQObjectShared(ptr, true);
 #ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-            if (ptr) internalSafetyCheckAdd2(d, ptr);
+            if (ptr) internalSafetyCheckAdd(d, ptr);
 #endif
         }
 
