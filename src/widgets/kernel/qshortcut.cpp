@@ -46,6 +46,7 @@
 #include <qevent.h>
 #include <qwhatsthis.h>
 #include <qmenu.h>
+#include <qmenubar.h>
 #include <qapplication.h>
 #include <private/qapplication_p.h>
 #include <private/qshortcutmap_p.h>
@@ -114,7 +115,7 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
 static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidget *active_window)
 {
     bool visible = w->isVisible();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (!qApp->testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
         visible = true;
 #endif
@@ -177,7 +178,7 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
 static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsWidget *w, QWidget *active_window)
 {
     bool visible = w->isVisible();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (!qApp->testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
         visible = true;
 #endif
