@@ -146,6 +146,7 @@ public:
 
     static QGuiApplicationPrivate *instance() { return self; }
 
+    static QString *platform_name;
     static bool app_do_modal;
 
     static Qt::MouseButtons buttons;

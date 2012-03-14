@@ -110,6 +110,7 @@ enum ApplicationResourceFlags
 
 static unsigned applicationResourceFlags = 0;
 
+QString *QGuiApplicationPrivate::platform_name = 0;
 bool QGuiApplicationPrivate::app_do_modal = false;
 
 QPalette *QGuiApplicationPrivate::app_pal = 0;        // default application palette
@@ -361,6 +362,9 @@ QGuiApplication::~QGuiApplication()
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();
 #endif
+
+    delete QGuiApplicationPrivate::platform_name;
+    QGuiApplicationPrivate::platform_name = 0;
 }
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
@@ -470,6 +474,17 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
     return 0;
 }
 
+/*!
+    \property QGuiApplication::platformName
+    \brief The name of the underlying platform plugin.
+    \since 5.0
+*/
+
+QString QGuiApplication::platformName()
+{
+    return QGuiApplicationPrivate::platform_name ?
+           *QGuiApplicationPrivate::platform_name : QString();
+}
 
 static void init_platform(const QString &pluginArgument, const QString &platformPluginPath)
 {
@@ -509,7 +524,9 @@ static void init_platform(const QString &pluginArgument, const QString &platform
 
    // Create the platform integration.
     QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, platformPluginPath);
-    if (!QGuiApplicationPrivate::platform_integration) {
+    if (QGuiApplicationPrivate::platform_integration) {
+        QGuiApplicationPrivate::platform_name = new QString(name);
+    } else {
         QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
         QString fatalMessage =
             QString::fromLatin1("Failed to load platform plugin \"%1\". Available platforms are: \n").arg(name);
