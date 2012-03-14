@@ -44,6 +44,7 @@
 #include <QtCore/QtConfig>
 #ifndef QT_NO_ACCESSIBILITY
 
+#include "../qtwindows_additional.h"
 #include <oleacc.h>
 #include "Accessible2.h"
 #include <QtCore/qsharedpointer.h>
@@ -55,7 +56,7 @@ QT_BEGIN_NAMESPACE
 bool debug_accessibility();
 # define accessibleDebug !debug_accessibility() ? (void)0 : qDebug
 #else
-# define accessibleDebug()
+# define accessibleDebug
 #endif
 
 #define DEBUG_SHOW_ATCLIENT_COMMANDS

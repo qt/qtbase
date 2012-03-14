@@ -63,6 +63,7 @@ public:
     virtual void cleanup();
     */
     static IAccessible *wrap(QAccessibleInterface *acc);
+    static QWindow *windowHelper(const QAccessibleInterface *iface);
 
     static QPair<QObject*, int> getCachedObject(int entryId);
 };

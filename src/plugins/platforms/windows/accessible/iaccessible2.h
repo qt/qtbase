@@ -66,6 +66,10 @@
 #include "AccessibleRole.h"
 #include "AccessibleStates.h"
 
+#ifdef Q_CC_MINGW
+#    include <servprov.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QWindowsIA2Accessible : public QWindowsMsaaAccessible,

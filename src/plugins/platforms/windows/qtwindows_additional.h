@@ -71,6 +71,16 @@
 #define IFACEMETHODIMP STDMETHODIMP
 #define IFACEMETHODIMP_(type) STDMETHODIMP_(type)
 
+// For accessibility:
+#ifdef __cplusplus
+    #define EXTERN_C extern "C"
+#else
+    #define EXTERN_C extern
+#endif
+
+#define CHILDID_SELF 0
+#define WM_GETOBJECT 0x003D
+
 #if !defined(__MINGW64_VERSION_MAJOR)
 
 #define STATE_SYSTEM_HASPOPUP 0x40000000

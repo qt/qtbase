@@ -1180,21 +1180,6 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accSelection(VARIANT *pvar
     return S_OK;
 }
 
-QWindow *window_helper(const QAccessibleInterface *iface)
-{
-    QWindow *window = iface->window();
-    if (!window) {
-        QAccessibleInterface *acc = iface->parent();
-        while (acc && !window) {
-            window = acc->window();
-            QAccessibleInterface *par = acc->parent();
-            delete acc;
-            acc = par;
-        }
-    }
-    return window;
-}
-
 /**************************************************************\
  *                         IOleWindow                          *
  **************************************************************/
@@ -1207,7 +1192,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::GetWindow(HWND *phwnd)
     if (!accessible->isValid())
         return E_UNEXPECTED;
 
-    QWindow *window = window_helper(accessible);
+    QWindow *window = QWindowsAccessibility::windowHelper(accessible);
     if (!window)
         return E_FAIL;
 

@@ -54,13 +54,13 @@
 #include <QtGui/qplatformnativeinterface_qpa.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qguiapplication.h>
-#include <QtWidgets/qapplication.h>
-#include <QtWidgets/qgraphicsitem.h>
-#include <QtWidgets/qgraphicsview.h>
-#include <QtWidgets/qmessagebox.h>
 
 #include "qwindowsaccessibility.h"
-#include "iaccessible2.h"
+
+#ifndef Q_CC_MINGW
+#    include "iaccessible2.h"
+#endif // !Q_CC_MINGW
+
 #include "comutils.h"
 
 #include <oleacc.h>
@@ -185,7 +185,7 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(const QAccessibleEvent &ev
     // An event has to be associated with a window,
     // so find the first parent that is a widget and that has a WId
     QAccessibleInterface *iface = event.accessibleInterface();
-    QWindow *window = iface ? window_helper(iface) : 0;
+    QWindow *window = iface ? QWindowsAccessibility::windowHelper(iface) : 0;
     delete iface;
 
     if (!window) {
@@ -211,6 +211,20 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(const QAccessibleEvent &ev
 #endif // Q_OS_WINCE
 }
 
+QWindow *QWindowsAccessibility::windowHelper(const QAccessibleInterface *iface)
+{
+    QWindow *window = iface->window();
+    if (!window) {
+        QAccessibleInterface *acc = iface->parent();
+        while (acc && !window) {
+            window = acc->window();
+            QAccessibleInterface *par = acc->parent();
+            delete acc;
+            acc = par;
+        }
+    }
+    return window;
+}
 
 /*!
   \internal
@@ -218,12 +232,16 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(const QAccessibleEvent &ev
 */
 IAccessible *QWindowsAccessibility::wrap(QAccessibleInterface *acc)
 {
+#ifdef Q_CC_MINGW
+    return 0;
+#else
     if (!acc)
         return 0;
     QWindowsIA2Accessible *wacc = new QWindowsIA2Accessible(acc);
     IAccessible *iacc = 0;
     wacc->QueryInterface(IID_IAccessible, (void**)&iacc);
     return iacc;
+#endif
 }
 
 /*!
@@ -260,7 +278,7 @@ bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, W
 #if 1
         // Ignoring all requests while starting up
         // ### Maybe QPA takes care of this???
-        if (QApplication::startingUp() || QApplication::closingDown())
+        if (QCoreApplication::startingUp() || QCoreApplication::closingDown())
             return false;
 #endif
 
