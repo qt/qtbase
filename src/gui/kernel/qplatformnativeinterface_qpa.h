@@ -60,6 +60,7 @@ class Q_GUI_EXPORT QPlatformNativeInterface : public QObject
 {
     Q_OBJECT
 public:
+    virtual void *nativeResourceForIntegration(const QByteArray &resource);
     virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
     virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
     virtual void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *backingStore);
