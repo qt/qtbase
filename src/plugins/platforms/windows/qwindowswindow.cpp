@@ -708,7 +708,6 @@ void QWindowsWindow::setVisible(bool visible)
             hide_sys();
         }
     }
-    QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
 }
 
 bool QWindowsWindow::isVisible() const
@@ -804,12 +803,12 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent) const
 
 void QWindowsWindow::handleShown()
 {
-    QWindowSystemInterface::handleMapEvent(window());
+    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), geometry().size()));
 }
 
 void QWindowsWindow::handleHidden()
 {
-    QWindowSystemInterface::handleUnmapEvent(window());
+    QWindowSystemInterface::handleExposeEvent(window(), QRegion());
 }
 
 void QWindowsWindow::setGeometry(const QRect &rectIn)

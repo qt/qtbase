@@ -130,9 +130,7 @@ public:
     static void handleWindowActivated(QWindow *w);
     static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
 
-    static void handleMapEvent(QWindow *w);
-    static void handleUnmapEvent(QWindow *w);
-
+    static void handleExposeEvent(QWindow *tlw, const QRegion &region);
     static void handleSynchronousExposeEvent(QWindow *tlw, const QRegion &region);
 
     // Drag and drop. These events are sent immediately.

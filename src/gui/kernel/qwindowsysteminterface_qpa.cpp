@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include "qwindowsysteminterface_qpa.h"
+#include "qplatformwindow_qpa.h"
 #include "qwindowsysteminterface_qpa_p.h"
 #include "private/qguiapplication_p.h"
 #include "private/qevent_p.h"
@@ -274,6 +275,15 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, con
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+
+QWindowSystemInterfacePrivate::ExposeEvent::ExposeEvent(QWindow *exposed, const QRegion &region)
+    : WindowSystemEvent(Expose)
+    , exposed(exposed)
+    , isExposed(exposed && exposed->handle() ? exposed->handle()->isExposed() : false)
+    , region(region)
+{
+}
+
 int QWindowSystemInterfacePrivate::windowSystemEventsQueued()
 {
     queueMutex.lock();
@@ -426,15 +436,9 @@ void QWindowSystemInterface::handleThemeChange(QWindow *tlw)
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleMapEvent(QWindow *tlw)
+void QWindowSystemInterface::handleExposeEvent(QWindow *tlw, const QRegion &region)
 {
-    QWindowSystemInterfacePrivate::MapEvent *e = new QWindowSystemInterfacePrivate::MapEvent(tlw);
-    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
-}
-
-void QWindowSystemInterface::handleUnmapEvent(QWindow *tlw)
-{
-    QWindowSystemInterfacePrivate::UnmapEvent *e = new QWindowSystemInterfacePrivate::UnmapEvent(tlw);
+    QWindowSystemInterfacePrivate::ExposeEvent *e = new QWindowSystemInterfacePrivate::ExposeEvent(tlw, region);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 

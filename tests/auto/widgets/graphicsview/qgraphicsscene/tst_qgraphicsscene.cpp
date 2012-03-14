@@ -1078,19 +1078,14 @@ void tst_QGraphicsScene::addItem()
         CustomView view;
         view.setScene(&scene);
         view.show();
-#ifdef Q_WS_X11
-        qt_x11_wait_for_window_manager(&view);
-#endif
+        QTest::qWaitForWindowShown(view.windowHandle());
         qApp->processEvents();
         view.repaints = 0;
 
         scene.addItem(path);
 
         // Adding an item should always issue a repaint.
-        qApp->processEvents(); // <- delayed update is called
-        qApp->processEvents(); // <- scene schedules pending update
-        qApp->processEvents(); // <- pending update is sent to view
-        QVERIFY(view.repaints > 0);
+        QTRY_VERIFY(view.repaints > 0);
         view.repaints = 0;
 
         QCOMPARE(scene.itemAt(0, 0), path);
@@ -1103,10 +1098,7 @@ void tst_QGraphicsScene::addItem()
         scene.addItem(path2);
 
         // Adding an item should always issue a repaint.
-        qApp->processEvents(); // <- delayed update is called
-        qApp->processEvents(); // <- scene schedules pending update
-        qApp->processEvents(); // <- pending update is sent to view
-        QVERIFY(view.repaints > 0);
+        QTRY_VERIFY(view.repaints > 0);
 
         QCOMPARE(scene.itemAt(100, 100), path2);
     }
@@ -1285,9 +1277,7 @@ void tst_QGraphicsScene::removeItem()
     QGraphicsView view(&scene);
     view.setFixedSize(150, 150);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(view.windowHandle());
     QTest::mouseMove(view.viewport(), QPoint(-1, -1));
     {
         QMouseEvent moveEvent(QEvent::MouseMove, view.mapFromScene(hoverItem->scenePos() + QPointF(20, 20)), Qt::NoButton, 0, 0);
@@ -1615,9 +1605,7 @@ void tst_QGraphicsScene::hoverEvents_siblings()
     view.rotate(10);
     view.scale(1.7, 1.7);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(view.windowHandle());
     qApp->setActiveWindow(&view);
     view.activateWindow();
     QTest::qWait(70);
@@ -2748,11 +2736,8 @@ void tst_QGraphicsScene::contextMenuEvent()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWaitForWindowShown(&view);
+    QTest::qWaitForWindowShown(view.windowHandle());
     view.activateWindow();
-#ifdef Q_WS_X11
-        qt_x11_wait_for_window_manager(&view);
-#endif
     view.centerOn(item);
 
     {
@@ -2785,10 +2770,7 @@ void tst_QGraphicsScene::contextMenuEvent_ItemIgnoresTransformations()
     QGraphicsView view(&scene, &topLevel);
     view.resize(200, 200);
     topLevel.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWaitForWindowShown(&topLevel);
+    QTest::qWaitForWindowShown(topLevel.windowHandle());
 
     {
         QPoint pos(50, 50);

@@ -137,15 +137,6 @@ bool QWidgetWindow::event(QEvent *event)
         handleDragEvent(event);
         break;
 
-    case QEvent::Map:
-        m_widget->setAttribute(Qt::WA_Mapped);
-        m_widget->d_func()->syncBackingStore();
-        return true;
-
-    case QEvent::Unmap:
-        m_widget->setAttribute(Qt::WA_Mapped, false);
-        return true;
-
     case QEvent::Expose:
         handleExposeEvent(static_cast<QExposeEvent *>(event));
         return true;
@@ -432,7 +423,13 @@ void QWidgetWindow::handleDragEvent(QEvent *event)
 
 void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
 {
-    m_widget->d_func()->syncBackingStore(event->region());
+    if (isExposed()) {
+        m_widget->setAttribute(Qt::WA_Mapped);
+        if (!event->region().isNull())
+            m_widget->d_func()->syncBackingStore(event->region());
+    } else {
+        m_widget->setAttribute(Qt::WA_Mapped, false);
+    }
 }
 
 void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event)

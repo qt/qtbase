@@ -49,6 +49,7 @@
 #include <QtCore/QThread>
 
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qwindow_p.h>
 #include <QtGui/QScreen>
 
 #include <private/qopenglextensions_p.h>
@@ -502,7 +503,13 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
     if (surface->surfaceType() != QSurface::OpenGLSurface) {
          qWarning() << "QOpenGLContext::swapBuffers() called with non-opengl surface";
          return;
-     }
+    }
+
+    if (surface->surfaceClass() == QSurface::Window
+        && !qt_window_private(static_cast<QWindow *>(surface))->receivedExpose)
+    {
+        qWarning() << "QOpenGLContext::swapBuffers() called with non-exposed window, behavior is undefined";
+    }
 
     QPlatformSurface *surfaceHandle = surface->surfaceHandle();
     if (!surfaceHandle)

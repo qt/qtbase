@@ -440,9 +440,9 @@ static inline QRect positionTopLevelWindow(QRect geometry, const QScreen *screen
 void QWidgetPrivate::show_sys()
 {
     Q_Q(QWidget);
-    q->setAttribute(Qt::WA_Mapped);
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         invalidateBuffer(q->rect());
+        q->setAttribute(Qt::WA_Mapped);
         return;
     }
 
@@ -483,8 +483,8 @@ void QWidgetPrivate::show_sys()
 void QWidgetPrivate::hide_sys()
 {
     Q_Q(QWidget);
-    q->setAttribute(Qt::WA_Mapped, false);
     deactivateWidgetCleanup();
+
     if (!q->isWindow()) {
         QWidget *p = q->parentWidget();
         if (p &&p->isVisible()) {
@@ -492,7 +492,12 @@ void QWidgetPrivate::hide_sys()
         }
         return;
     }
-    if (QWindow *window = q->windowHandle()) {
+
+    invalidateBuffer(q->rect());
+
+    if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
+        q->setAttribute(Qt::WA_Mapped, false);
+    } else if (QWindow *window = q->windowHandle()) {
          window->setVisible(false);
     }
 }

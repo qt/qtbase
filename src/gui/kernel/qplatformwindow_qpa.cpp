@@ -142,11 +142,13 @@ QMargins QPlatformWindow::frameMargins() const
 /*!
     Reimplemented in subclasses to show the surface
     if \a visible is \c true, and hide it if \a visible is \c false.
+
+    The default implementation sends a synchronous expose event.
 */
 void QPlatformWindow::setVisible(bool visible)
 {
-    Q_UNUSED(visible);
-    QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
+    QRect rect(QPoint(), geometry().size());
+    QWindowSystemInterface::handleSynchronousExposeEvent(window(), rect);
 }
 /*!
     Requests setting the window flags of this surface

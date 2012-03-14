@@ -11116,20 +11116,23 @@ void tst_QGraphicsItem::doNotMarkFullUpdateIfNotInScene()
         view.showFullScreen();
     else
         view.show();
-    QTest::qWaitForWindowShown(&view);
-    QEXPECT_FAIL("", "QTBUG-22434", Abort);
-    QTRY_COMPARE(view.repaints, 1);
-    QTRY_COMPARE(item->painted, 1);
+    QTest::qWaitForWindowShown(view.windowHandle());
+    view.activateWindow();
+    QTRY_VERIFY(view.isActiveWindow());
+    QTRY_VERIFY(view.repaints >= 1);
+    int count = view.repaints;
+    QTRY_COMPARE(item->painted, count);
+    // cached as graphics effects, not painted multiple times
     QTRY_COMPARE(item2->painted, 1);
     QTRY_COMPARE(item3->painted, 1);
     item2->update();
     QApplication::processEvents();
-    QTRY_COMPARE(item->painted, 2);
+    QTRY_COMPARE(item->painted, count + 1);
     QTRY_COMPARE(item2->painted, 2);
     QTRY_COMPARE(item3->painted, 2);
     item2->update();
     QApplication::processEvents();
-    QTRY_COMPARE(item->painted, 3);
+    QTRY_COMPARE(item->painted, count + 2);
     QTRY_COMPARE(item2->painted, 3);
     QTRY_COMPARE(item3->painted, 3);
 }
