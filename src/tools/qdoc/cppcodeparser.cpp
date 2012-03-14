@@ -207,7 +207,7 @@ void CppCodeParser::initializeParser(const Config &config)
     if (!exampleFilePatterns.isEmpty())
         exampleNameFilter = exampleFilePatterns.join(" ");
     else
-        exampleNameFilter = "*.cpp *.h *.js *.xq *.svg *.xml *.ui";
+        exampleNameFilter = "*.cpp *.h *.js *.xq *.svg *.xml *.dita *.ui";
 
     QStringList exampleImagePatterns = config.getStringList(
                 CONFIG_EXAMPLES + Config::dot + CONFIG_IMAGEEXTENSIONS);

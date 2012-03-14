@@ -125,7 +125,7 @@ Quoter::Quoter()
           //! [<id>]
         * .pro, .py files:
           #! [<id>]
-        * .html, .qrc, .ui, .xq, .xml files:
+        * .html, .qrc, .ui, .xq, .xml .dita files:
           <!-- [<id>] -->
     */
     commentHash["pro"] = "#!";
@@ -134,6 +134,7 @@ Quoter::Quoter()
     commentHash["qrc"] = "<!--";
     commentHash["ui"] = "<!--";
     commentHash["xml"] = "<!--";
+    commentHash["dita"] = "<!--";
     commentHash["xq"] = "<!--";
 }
 

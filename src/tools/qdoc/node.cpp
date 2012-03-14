@@ -514,8 +514,8 @@ QString Node::ditaXmlHref()
     else {
         href = fileBase();
     }
-    if (!href.endsWith(".xml"))
-        href += ".xml";
+    if (!href.endsWith(".xml") && !href.endsWith(".dita"))
+        href += ".dita";
     return href + QLatin1Char('#') + guid();
 }
 

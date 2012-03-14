@@ -2390,11 +2390,11 @@ void DitaXmlGenerator::writeRelatedLinks(const FakeNode* node, CodeMarker* marke
 }
 
 /*!
-  Returns "xml" for this subclass of class Generator.
+  Returns "dita" for this subclass of class Generator.
  */
 QString DitaXmlGenerator::fileExtension(const Node * /* node */) const
 {
-    return "xml";
+    return "dita";
 }
 
 /*!
@@ -3238,8 +3238,6 @@ void DitaXmlGenerator::generateQmlItem(const Node* node,
         marked.remove("<@type>");
         marked.remove("</@type>");
     }
-    if (marked.contains("setAudioAlertEnabled"))
-        qDebug() << "MARKED:" << marked;
     writeText(marked, marker, relative);
 }
 
@@ -4267,7 +4265,8 @@ QString DitaXmlGenerator::getLink(const Atom* atom,
                 QString guid = lookupGuid(link,refForAtom(targetAtom,*node));
                 link += QLatin1Char('#') + guid;
             }
-            else if (!link.isEmpty() && *node && link.endsWith(".xml")) {
+            else if (!link.isEmpty() && *node &&
+                     (link.endsWith(".xml") || link.endsWith(".dita"))) {
                 link += QLatin1Char('#') + (*node)->guid();
             }
         }
@@ -5669,7 +5668,8 @@ DitaXmlGenerator::generateInnerNode(const InnerNode* node)
     CodeMarker *marker = CodeMarker::markerForFileName(node->location().filePath());
 
     if (node->parent() != 0) {
-        beginSubPage(node, fileName(node));
+        if (!node->name().endsWith(".ditamap"))
+            beginSubPage(node, fileName(node));
         if (node->type() == Node::Namespace || node->type() == Node::Class) {
             generateClassLikeNode(node, marker);
         }
@@ -5681,7 +5681,8 @@ DitaXmlGenerator::generateInnerNode(const InnerNode* node)
             else
                 generateFakeNode(static_cast<const FakeNode*>(node), marker);
         }
-        endSubPage();
+        if (!node->name().endsWith(".ditamap"))
+            endSubPage();
     }
 
     NodeList::ConstIterator c = node->childNodes().begin();
