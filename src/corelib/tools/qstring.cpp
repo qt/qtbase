@@ -7164,6 +7164,17 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \sa latin1()
 */
 
+/*! \fn QLatin1String::QLatin1String(const QByteArray &str)
+
+    Constructs a QLatin1String object that stores \a str.
+
+    The string data is \e not copied. The caller must be able to
+    guarantee that \a str will not be deleted or modified as long as
+    the QLatin1String object exists.
+
+    \sa latin1()
+*/
+
 /*! \fn const char *QLatin1String::latin1() const
 
     Returns the Latin-1 string stored in this object.
