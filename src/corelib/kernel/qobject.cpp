@@ -3075,7 +3075,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
             }
             if (sigIndex < 0)
                 continue;
-            if (QMetaObjectPrivate::connect(co, sigIndex, o, i)) {
+            if (Connection(QMetaObjectPrivate::connect(co, sigIndex, o, i))) {
                 foundIt = true;
                 break;
             }
