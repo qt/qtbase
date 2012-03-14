@@ -2528,8 +2528,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
         QVariant v;
         const QVariant value = w->property(property.toLatin1());
         switch (value.type()) {
-            // ### Qt 5
-//        case QVariant::Icon: v = decl.iconValue(); break;
+        case QVariant::Icon: v = cssIconValueToIcon(decl.iconValue()); break;
         case QVariant::Image: v = QImage(decl.uriValue()); break;
         case QVariant::Pixmap: v = QPixmap(decl.uriValue()); break;
         case QVariant::Rect: v = decl.rectValue(); break;
