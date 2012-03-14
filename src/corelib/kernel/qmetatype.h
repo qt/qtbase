@@ -210,7 +210,7 @@ public:
         QReal = sizeof(qreal) == sizeof(double) ? Double : Float,
 
         UnknownType = 0,
-        User = 256
+        User = 1024
     };
 
     enum TypeFlag {

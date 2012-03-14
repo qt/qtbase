@@ -2827,7 +2827,7 @@ Q_DECLARE_METATYPE( MyClass )
 void tst_QVariant::loadUnknownUserType()
 {
     qRegisterMetaType<MyClass>("MyClass");
-    char data[] = {0, 0, 1, 0, 0, 0, 0, 0, 8, 77, 121, 67, 108, 97, 115, 115, 0};
+    char data[] = {0, 0, QMetaType::User >> 8 , char(QMetaType::User), 0, 0, 0, 0, 8, 'M', 'y', 'C', 'l', 'a', 's', 's', 0};
 
     QByteArray ba(data, sizeof(data));
     QDataStream ds(&ba, QIODevice::ReadOnly);
