@@ -18,8 +18,10 @@
 # Enable pedantic mode, but accept variadic macros and 'long long' usage.
 *-g++*: QMAKE_CXXFLAGS += -Wno-long-long -Wno-variadic-macros -pedantic-errors
 
-# There are outstanding alignment issues on ARM in some container classes.
-contains(QT_ARCH,arm):*-g++*:QMAKE_CXXFLAGS -= -Wcast-align
+contains(QT_ARCH,arm)|contains(QT_ARCH,mips) {
+    # There are outstanding alignment issues in some container classes.
+    *-g++*:QMAKE_CXXFLAGS -= -Wcast-align
+}
 
 QMAKE_CXXFLAGS += -DQT_NO_CAST_TO_ASCII \
                   -DQT_NO_CAST_FROM_ASCII \
