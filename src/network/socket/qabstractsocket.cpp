@@ -1457,6 +1457,7 @@ bool QAbstractSocket::bind(const QHostAddress &address, quint16 port, BindMode m
             return false;
     }
 
+    if (mode != DefaultForPlatform) {
 #ifdef Q_OS_UNIX
     if ((mode & ShareAddress) || (mode & ReuseAddressHint))
         d->socketEngine->setOption(QAbstractSocketEngine::AddressReusable, 1);
@@ -1473,6 +1474,7 @@ bool QAbstractSocket::bind(const QHostAddress &address, quint16 port, BindMode m
     else
         d->socketEngine->setOption(QAbstractSocketEngine::BindExclusively, 0);
 #endif
+    }
     bool result = d->socketEngine->bind(address, port);
     d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();
 
