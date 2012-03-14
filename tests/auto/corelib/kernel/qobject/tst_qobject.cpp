@@ -2315,8 +2315,6 @@ public slots:
     void constTemplateSlot3(const Template< const int >) {}
 };
 
-#include "oldnormalizeobject.h"
-
 void tst_QObject::normalize()
 {
     NormalizeObject object;
@@ -2626,82 +2624,6 @@ void tst_QObject::normalize()
     QVERIFY(object.connect(&object,
                            SIGNAL(typeConstRefSignal(Template<Class const &> const &)),
                            SLOT(typeConstRefSlot(Template<Class const &> const &))));
-
-    // same test again, this time with an object compiled with old moc output... we know that
-    // it is not possible to connect everything, whic is the purpose for this test
-    OldNormalizeObject oldobject;
-
-    QVERIFY(oldobject.connect(&oldobject,
-                              SIGNAL(constTypeRefSignal(const Template<const Class &> &)),
-                              SLOT(constTypeRefSlot(const Template<const Class &> &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                              SIGNAL(constTypeRefSignal(const Template<const Class &> &)),
-                              SLOT(constTypeRefSlot(const Template<Class const &> &))));
-    // this fails in older versions, but passes now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(const Template<const Class &> &)),
-                               SLOT(constTypeRefSlot(Template<Class const &> const &))));
-    // this fails in older versions, but passes now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(Template<const Class &> const &)),
-                               SLOT(constTypeRefSlot(Template<Class const &> const &))));
-    // this fails in older versions, but passes now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(Template<Class const &> const &)),
-                               SLOT(constTypeRefSlot(Template<Class const &> const &))));
-
-    // these fail in older Qt versions, but pass now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(const Template<const Class &> &)),
-                               SLOT(typeConstRefSlot(const Template<const Class &> &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(const Template<const Class &> &)),
-                               SLOT(typeConstRefSlot(const Template<Class const &> &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(const Template<const Class &> &)),
-                               SLOT(typeConstRefSlot(Template<Class const &> const &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(Template<const Class &> const &)),
-                               SLOT(typeConstRefSlot(Template<Class const &> const &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(Template<Class const &> const &)),
-                               SLOT(typeConstRefSlot(Template<Class const &> const &))));
-
-    // these also fail in older Qt versions, but pass now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(const Template<const Class &> &)),
-                               SLOT(constTypeRefSlot(const Template<const Class &> &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(const Template<const Class &> &)),
-                               SLOT(constTypeRefSlot(const Template<Class const &> &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(const Template<const Class &> &)),
-                               SLOT(constTypeRefSlot(Template<Class const &> const &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(Template<const Class &> const &)),
-                               SLOT(constTypeRefSlot(Template<Class const &> const &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(Template<Class const &> const &)),
-                               SLOT(constTypeRefSlot(Template<Class const &> const &))));
-
-    // this fails in older versions, but passes now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(const Template<const Class &> &)),
-                               SLOT(typeConstRefSlot(const Template<const Class &> &))));
-    // this fails in older versions, but passes now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(const Template<const Class &> &)),
-                               SLOT(typeConstRefSlot(const Template<Class const &> &))));
-    // this fails in older versions, but passes now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(const Template<const Class &> &)),
-                               SLOT(typeConstRefSlot(Template<Class const &> const &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(Template<const Class &> const &)),
-                               SLOT(typeConstRefSlot(Template<Class const &> const &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(Template<Class const &> const &)),
-                               SLOT(typeConstRefSlot(Template<Class const &> const &))));
 
     QVERIFY(object.connect(&object,
                            SIGNAL(typePointerConstRefSignal(Class*const&)),

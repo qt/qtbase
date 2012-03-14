@@ -162,26 +162,14 @@ static inline QByteArray toByteArray(const QByteArrayData &d)
     return QByteArray(reinterpret_cast<const QStaticByteArrayData<0> &>(d));
 }
 
-static inline const char *legacyString(const QMetaObject *mo, int index)
-{
-    Q_ASSERT(priv(mo->d.data)->revision <= 6);
-    return reinterpret_cast<const char *>(mo->d.stringdata) + index;
-}
-
 static inline const char *rawStringData(const QMetaObject *mo, int index)
 {
-    if (priv(mo->d.data)->revision >= 7)
-        return stringData(mo, index).data();
-    else
-        return legacyString(mo, index);
+    return stringData(mo, index).data();
 }
 
 static inline int stringSize(const QMetaObject *mo, int index)
 {
-    if (priv(mo->d.data)->revision >= 7)
-        return stringData(mo, index).size;
-    else
-        return qstrlen(legacyString(mo, index));
+    return stringData(mo, index).size;
 }
 
 static inline QByteArray typeNameFromTypeInfo(const QMetaObject *mo, uint typeInfo)
@@ -306,19 +294,11 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
 int QMetaObject::static_metacall(Call cl, int idx, void **argv) const
 {
     const QMetaObjectExtraData *extra = reinterpret_cast<const QMetaObjectExtraData *>(d.extradata);
-    if (priv(d.data)->revision >= 6) {
-        if (!extra || !extra->static_metacall)
-            return 0;
-        extra->static_metacall(0, cl, idx, argv);
-        return -1;
-    } else if (priv(d.data)->revision >= 2) {
-        if (!extra || !extra->static_metacall)
-            return 0;
-        typedef int (*OldMetacall)(QMetaObject::Call, int, void **);
-        OldMetacall o = reinterpret_cast<OldMetacall>(extra->static_metacall);
-        return o(cl, idx, argv);
-    }
-    return 0;
+    Q_ASSERT(priv(d.data)->revision >= 6);
+    if (!extra || !extra->static_metacall)
+        return 0;
+    extra->static_metacall(0, cl, idx, argv);
+    return -1;
 }
 
 /*!
@@ -499,8 +479,7 @@ int QMetaObject::classInfoOffset() const
 */
 int QMetaObject::constructorCount() const
 {
-    if (priv(d.data)->revision < 2)
-        return 0;
+    Q_ASSERT(priv(d.data)->revision >= 2);
     return priv(d.data)->constructorCount;
 }
 
@@ -611,58 +590,6 @@ static bool methodMatch(const QMetaObject *m, int handle,
 }
 
 /** \internal
-* \obsolete
-* helper function for indexOf{Method,Slot,Signal}, returns the relative index of the method within
-* the baseObject
-* \a MethodType might be MethodSignal or MethodSlot, or 0 to match everything.
-* \a normalizeStringData set to true if we should do a second pass for old moc generated files normalizing all the symbols.
-*/
-template<int MethodType>
-static inline int indexOfMethodRelative(const QMetaObject **baseObject,
-                                        const char *method,
-                                        bool normalizeStringData)
-{
-    QByteArray methodName;
-    QArgumentTypeArray methodArgumentTypes;
-    for (const QMetaObject *m = *baseObject; m; m = m->d.superdata) {
-        int i = (MethodType == MethodSignal && priv(m->d.data)->revision >= 4)
-                ? (priv(m->d.data)->signalCount - 1) : (priv(m->d.data)->methodCount - 1);
-        const int end = (MethodType == MethodSlot && priv(m->d.data)->revision >= 4)
-                        ? (priv(m->d.data)->signalCount) : 0;
-        if (!normalizeStringData) {
-            for (; i >= end; --i) {
-                if (priv(m->d.data)->revision >= 7) {
-                    if (methodName.isEmpty())
-                        methodName = QMetaObjectPrivate::decodeMethodSignature(method, methodArgumentTypes);
-                    int handle = priv(m->d.data)->methodData + 5*i;
-                    if (methodMatch(m, handle, methodName, methodArgumentTypes.size(),
-                                    methodArgumentTypes.constData())) {
-                        *baseObject = m;
-                        return i;
-                    }
-                } else {
-                    const char *stringdata = legacyString(m, m->d.data[priv(m->d.data)->methodData + 5*i]);
-                    if (method[0] == stringdata[0] && strcmp(method + 1, stringdata + 1) == 0) {
-                        *baseObject = m;
-                        return i;
-                    }
-                }
-            }
-        } else if (priv(m->d.data)->revision < 5) {
-            for (; i >= end; --i) {
-                const char *stringdata = legacyString(m, m->d.data[priv(m->d.data)->methodData + 5 * i]);
-                const QByteArray normalizedSignature = QMetaObject::normalizedSignature(stringdata);
-                if (normalizedSignature == method) {
-                    *baseObject = m;
-                    return i;
-                }
-            }
-        }
-    }
-    return -1;
-}
-
-/** \internal
 * helper function for indexOf{Method,Slot,Signal}, returns the relative index of the method within
 * the baseObject
 * \a MethodType might be MethodSignal or MethodSlot, or 0 to match everything.
@@ -703,21 +630,10 @@ static inline int indexOfMethodRelative(const QMetaObject **baseObject,
 */
 int QMetaObject::indexOfConstructor(const char *constructor) const
 {
-    if (priv(d.data)->revision < 2)
-        return -1;
-    else if (priv(d.data)->revision >= 7) {
-        QArgumentTypeArray types;
-        QByteArray name = QMetaObjectPrivate::decodeMethodSignature(constructor, types);
-        return QMetaObjectPrivate::indexOfConstructor(this, name, types.size(), types.constData());
-    } else {
-        for (int i = priv(d.data)->constructorCount-1; i >= 0; --i) {
-            const char *data = legacyString(this, d.data[priv(d.data)->constructorData + 5*i]);
-            if (data[0] == constructor[0] && strcmp(constructor + 1, data + 1) == 0) {
-                return i;
-            }
-        }
-    }
-    return -1;
+    Q_ASSERT(priv(d.data)->revision >= 7);
+    QArgumentTypeArray types;
+    QByteArray name = QMetaObjectPrivate::decodeMethodSignature(constructor, types);
+    return QMetaObjectPrivate::indexOfConstructor(this, name, types.size(), types.constData());
 }
 
 /*!
@@ -732,17 +648,10 @@ int QMetaObject::indexOfMethod(const char *method) const
 {
     const QMetaObject *m = this;
     int i;
-    if (priv(m->d.data)->revision >= 7) {
-        QArgumentTypeArray types;
-        QByteArray name = QMetaObjectPrivate::decodeMethodSignature(method, types);
-        i = indexOfMethodRelative<0>(&m, name, types.size(), types.constData());
-    } else {
-        i = indexOfMethodRelative<0>(&m, method, false);
-        if (i < 0) {
-            m = this;
-            i = indexOfMethodRelative<0>(&m, method, true);
-        }
-    }
+    Q_ASSERT(priv(m->d.data)->revision >= 7);
+    QArgumentTypeArray types;
+    QByteArray name = QMetaObjectPrivate::decodeMethodSignature(method, types);
+    i = indexOfMethodRelative<0>(&m, name, types.size(), types.constData());
     if (i >= 0)
         i += m->methodOffset();
     return i;
@@ -774,6 +683,7 @@ static void argumentTypesFromString(const char *str, const char *end,
 QByteArray QMetaObjectPrivate::decodeMethodSignature(
         const char *signature, QArgumentTypeArray &types)
 {
+    Q_ASSERT(signature != 0);
     const char *lparens = strchr(signature, '(');
     if (!lparens)
         return QByteArray();
@@ -800,42 +710,12 @@ int QMetaObject::indexOfSignal(const char *signal) const
 {
     const QMetaObject *m = this;
     int i;
-    if (priv(m->d.data)->revision >= 7) {
-        QArgumentTypeArray types;
-        QByteArray name = QMetaObjectPrivate::decodeMethodSignature(signal, types);
-        i = QMetaObjectPrivate::indexOfSignalRelative(&m, name, types.size(), types.constData());
-    } else {
-        i = QMetaObjectPrivate::indexOfSignalRelative(&m, signal, false);
-        if (i < 0) {
-            m = this;
-            i = QMetaObjectPrivate::indexOfSignalRelative(&m, signal, true);
-        }
-    }
+    Q_ASSERT(priv(m->d.data)->revision >= 7);
+    QArgumentTypeArray types;
+    QByteArray name = QMetaObjectPrivate::decodeMethodSignature(signal, types);
+    i = QMetaObjectPrivate::indexOfSignalRelative(&m, name, types.size(), types.constData());
     if (i >= 0)
         i += m->methodOffset();
-    return i;
-}
-
-/*! \internal
-    \obsolete
-    Same as QMetaObject::indexOfSignal, but the result is the local offset to the base object.
-
-    \a baseObject will be adjusted to the enclosing QMetaObject, or 0 if the signal is not found
-*/
-int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
-                                              const char *signal,
-                                              bool normalizeStringData)
-{
-    int i = indexOfMethodRelative<MethodSignal>(baseObject, signal, normalizeStringData);
-#ifndef QT_NO_DEBUG
-    const QMetaObject *m = *baseObject;
-    if (i >= 0 && m && m->d.superdata) {
-        int conflict = m->d.superdata->indexOfMethod(signal);
-        if (conflict >= 0)
-            qWarning("QMetaObject::indexOfSignal: signal %s from %s redefined in %s",
-                     signal, rawStringData(m->d.superdata, 0), rawStringData(m, 0));
-    }
-#endif
     return i;
 }
 
@@ -876,26 +756,13 @@ int QMetaObject::indexOfSlot(const char *slot) const
 {
     const QMetaObject *m = this;
     int i;
-    if (priv(m->d.data)->revision >= 7) {
-        QArgumentTypeArray types;
-        QByteArray name = QMetaObjectPrivate::decodeMethodSignature(slot, types);
-        i = QMetaObjectPrivate::indexOfSlotRelative(&m, name, types.size(), types.constData());
-    } else {
-        i = QMetaObjectPrivate::indexOfSlotRelative(&m, slot, false);
-        if (i < 0)
-            i = QMetaObjectPrivate::indexOfSlotRelative(&m, slot, true);
-    }
+    Q_ASSERT(priv(m->d.data)->revision >= 7);
+    QArgumentTypeArray types;
+    QByteArray name = QMetaObjectPrivate::decodeMethodSignature(slot, types);
+    i = QMetaObjectPrivate::indexOfSlotRelative(&m, name, types.size(), types.constData());
     if (i >= 0)
         i += m->methodOffset();
     return i;
-}
-
-// same as indexOfSignalRelative but for slots.
-int QMetaObjectPrivate::indexOfSlotRelative(const QMetaObject **m,
-                                    const char *slot,
-                                    bool normalizeStringData)
-{
-    return indexOfMethodRelative<MethodSlot>(m, slot, normalizeStringData);
 }
 
 // same as indexOfSignalRelative but for slots.
@@ -1003,13 +870,9 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, co
             return self;
         if (self->d.extradata) {
             const QMetaObject **e;
-            if (priv(self->d.data)->revision < 2) {
-                e = (const QMetaObject**)(self->d.extradata);
-            } else
-            {
-                const QMetaObjectExtraData *extra = (const QMetaObjectExtraData*)(self->d.extradata);
-                e = extra->objects;
-            }
+            Q_ASSERT(priv(self->d.data)->revision >= 2);
+            const QMetaObjectExtraData *extra = (const QMetaObjectExtraData*)(self->d.extradata);
+            e = extra->objects;
             if (e) {
                 while (*e) {
                     if (const QMetaObject *m =QMetaObject_findMetaObject((*e), name))
@@ -1067,7 +930,8 @@ int QMetaObject::indexOfProperty(const char *name) const
         m = m->d.superdata;
     }
 
-    if (priv(this->d.data)->revision >= 3 && (priv(this->d.data)->flags & DynamicMetaObject)) {
+    Q_ASSERT(priv(this->d.data)->revision >= 3);
+    if (priv(this->d.data)->flags & DynamicMetaObject) {
         QAbstractDynamicMetaObject *me = 
             const_cast<QAbstractDynamicMetaObject *>(static_cast<const QAbstractDynamicMetaObject *>(this));
 
@@ -1109,7 +973,8 @@ QMetaMethod QMetaObject::constructor(int index) const
 {
     int i = index;
     QMetaMethod result;
-    if (priv(d.data)->revision >= 2 && i >= 0 && i < priv(d.data)->constructorCount) {
+    Q_ASSERT(priv(d.data)->revision >= 2);
+    if (i >= 0 && i < priv(d.data)->constructorCount) {
         result.mobj = this;
         result.handle = priv(d.data)->constructorData + 5*i;
     }
@@ -1178,11 +1043,7 @@ QMetaProperty QMetaObject::property(int index) const
         result.idx = i;
 
         if (flags & EnumOrFlag) {
-            const char *type;
-            if (priv(d.data)->revision >= 7)
-                type = rawTypeNameFromTypeInfo(this, d.data[handle + 1]);
-            else
-                type = legacyString(this, d.data[handle + 1]);
+            const char *type = rawTypeNameFromTypeInfo(this, d.data[handle + 1]);
             result.menum = enumerator(indexOfEnumerator(type));
             if (!result.menum.isValid()) {
                 const char *enum_name = type;
@@ -1759,12 +1620,7 @@ QByteArray QMetaMethod::methodSignature() const
 {
     if (!mobj)
         return QByteArray();
-    if (priv(mobj->d.data)->revision >= 7) {
-        return QMetaMethodPrivate::get(this)->signature();
-    } else {
-        const char *sig = rawStringData(mobj, mobj->d.data[handle]);
-        return QByteArray::fromRawData(sig, qstrlen(sig));
-    }
+    return QMetaMethodPrivate::get(this)->signature();
 }
 
 /*!
@@ -1856,12 +1712,7 @@ QList<QByteArray> QMetaMethod::parameterTypes() const
 {
     if (!mobj)
         return QList<QByteArray>();
-    if (priv(mobj->d.data)->revision >= 7) {
-        return QMetaMethodPrivate::get(this)->parameterTypes();
-    } else {
-        return QMetaObjectPrivate::parameterTypeNamesFromSignature(
-                    legacyString(mobj, mobj->d.data[handle]));
-    }
+    return QMetaMethodPrivate::get(this)->parameterTypes();
 }
 
 /*!
@@ -1874,28 +1725,7 @@ QList<QByteArray> QMetaMethod::parameterNames() const
     QList<QByteArray> list;
     if (!mobj)
         return list;
-    if (priv(mobj->d.data)->revision >= 7) {
-        return QMetaMethodPrivate::get(this)->parameterNames();
-    } else {
-        const char *names =  rawStringData(mobj, mobj->d.data[handle + 1]);
-        if (*names == 0) {
-            // do we have one or zero arguments?
-            const char *signature = rawStringData(mobj, mobj->d.data[handle]);
-            while (*signature && *signature != '(')
-                ++signature;
-            if (*++signature != ')')
-                list += QByteArray();
-        } else {
-            --names;
-            do {
-                const char *begin = ++names;
-                while (*names && *names != ',')
-                    ++names;
-                list += QByteArray(begin, names - begin);
-            } while (*names);
-        }
-        return list;
-    }
+    return QMetaMethodPrivate::get(this)->parameterNames();
 }
 
 
@@ -1908,10 +1738,7 @@ const char *QMetaMethod::typeName() const
 {
     if (!mobj)
         return 0;
-    if (priv(mobj->d.data)->revision >= 7)
-        return QMetaMethodPrivate::get(this)->rawReturnTypeName();
-    else
-        return legacyString(mobj, mobj->d.data[handle + 2]);
+    return QMetaMethodPrivate::get(this)->rawReturnTypeName();
 }
 
 /*!
@@ -1948,10 +1775,7 @@ const char *QMetaMethod::tag() const
 {
     if (!mobj)
         return 0;
-    if (priv(mobj->d.data)->revision >= 7)
-        return QMetaMethodPrivate::get(this)->tag().constData();
-    else
-        return legacyString(mobj, mobj->d.data[handle + 3]);
+    return QMetaMethodPrivate::get(this)->tag().constData();
 }
 
 
@@ -2151,30 +1975,7 @@ bool QMetaMethod::invoke(QObject *object,
         if (qstrlen(typeNames[paramCount]) <= 0)
             break;
     }
-    int metaMethodArgumentCount = 0;
-    if (priv(mobj->d.data)->revision >= 7) {
-        metaMethodArgumentCount = QMetaMethodPrivate::get(this)->parameterCount();
-    } else {
-        // based on QMetaObject::parameterNames()
-        const char *names = rawStringData(mobj, mobj->d.data[handle + 1]);
-        if (*names == 0) {
-            // do we have one or zero arguments?
-            const char *signature = rawStringData(mobj, mobj->d.data[handle]);
-            while (*signature && *signature != '(')
-                ++signature;
-            if (*++signature != ')')
-                ++metaMethodArgumentCount;
-        } else {
-            --names;
-            do {
-                ++names;
-                while (*names && *names != ',')
-                    ++names;
-                ++metaMethodArgumentCount;
-            } while (*names);
-        }
-    }
-    if (paramCount <= metaMethodArgumentCount)
+    if (paramCount <= QMetaMethodPrivate::get(this)->parameterCount())
         return false;
 
     // check connection type
@@ -2209,8 +2010,8 @@ bool QMetaMethod::invoke(QObject *object,
     // recompute the methodIndex by reversing the arithmetic in QMetaObject::property()
     int idx_relative = ((handle - priv(mobj->d.data)->methodData) / 5);
     int idx_offset =  mobj->methodOffset();
-    QObjectPrivate::StaticMetaCallFunction callFunction =
-        (QMetaObjectPrivate::get(mobj)->revision >= 6 && mobj->d.extradata)
+    Q_ASSERT(QMetaObjectPrivate::get(mobj)->revision >= 6);
+    QObjectPrivate::StaticMetaCallFunction callFunction = mobj->d.extradata
         ? reinterpret_cast<const QMetaObjectExtraData *>(mobj->d.extradata)->static_metacall : 0;
 
     if (connectionType == Qt::DirectConnection) {
@@ -2589,10 +2390,7 @@ QByteArray QMetaEnum::valueToKeys(int value) const
             v = v & ~k;
             if (!keys.isEmpty())
                 keys += '|';
-            if (priv(mobj->d.data)->revision >= 7)
-                keys += toByteArray(stringData(mobj, mobj->d.data[data + 2*i]));
-            else
-                keys += legacyString(mobj, mobj->d.data[data + 2*i]);
+            keys += toByteArray(stringData(mobj, mobj->d.data[data + 2*i]));
         }
     }
     return keys;
@@ -2684,10 +2482,7 @@ const char *QMetaProperty::typeName() const
     if (!mobj)
         return 0;
     int handle = priv(mobj->d.data)->propertyData + 3*idx;
-    if (priv(mobj->d.data)->revision >= 7)
-        return rawTypeNameFromTypeInfo(mobj, mobj->d.data[handle + 1]);
-    else
-        return legacyString(mobj, mobj->d.data[handle + 1]);
+    return rawTypeNameFromTypeInfo(mobj, mobj->d.data[handle + 1]);
 }
 
 /*!
@@ -2702,15 +2497,10 @@ QVariant::Type QMetaProperty::type() const
         return QVariant::Invalid;
     int handle = priv(mobj->d.data)->propertyData + 3*idx;
 
-    uint type;
-    if (priv(mobj->d.data)->revision >= 7) {
-        type = typeFromTypeInfo(mobj, mobj->d.data[handle + 1]);
-        if (type >= QMetaType::User)
-            return QVariant::UserType;
-    } else {
-        uint flags = mobj->d.data[handle + 2];
-        type = flags >> 24;
-    }
+    Q_ASSERT(priv(mobj->d.data)->revision >= 7);
+    uint type = typeFromTypeInfo(mobj, mobj->d.data[handle + 1]);
+    if (type >= QMetaType::User)
+        return QVariant::UserType;
     if (type != QMetaType::UnknownType)
         return QVariant::Type(type);
     if (isEnumType()) {
@@ -2740,16 +2530,11 @@ int QMetaProperty::userType() const
 {
     if (!mobj)
         return QMetaType::UnknownType;
-    if (priv(mobj->d.data)->revision >= 7) {
-        int handle = priv(mobj->d.data)->propertyData + 3*idx;
-        int type = typeFromTypeInfo(mobj, mobj->d.data[handle + 1]);
-        if (type != QMetaType::UnknownType)
-            return type;
-    } else {
-        QVariant::Type tp = type();
-        if (tp != QVariant::UserType)
-            return tp;
-    }
+    Q_ASSERT(priv(mobj->d.data)->revision >= 7);
+    int handle = priv(mobj->d.data)->propertyData + 3*idx;
+    int type = typeFromTypeInfo(mobj, mobj->d.data[handle + 1]);
+    if (type != QMetaType::UnknownType)
+        return type;
     if (isEnumType()) {
         int enumMetaTypeId = QMetaType::type(qualifiedName(menum));
         if (enumMetaTypeId == QMetaType::UnknownType)
@@ -2854,23 +2639,13 @@ QVariant QMetaProperty::read(const QObject *object) const
     } else {
         int handle = priv(mobj->d.data)->propertyData + 3*idx;
         const char *typeName = 0;
-        if (priv(mobj->d.data)->revision >= 7) {
-            uint typeInfo = mobj->d.data[handle + 1];
-            if (!(typeInfo & IsUnresolvedType))
-                t = typeInfo;
-            else {
-                typeName = rawStringData(mobj, typeInfo & TypeNameIndexMask);
-                t = QMetaType::type(typeName);
-            }
-        } else {
-            uint flags = mobj->d.data[handle + 2];
-            t = (flags >> 24);
-            if (t == QMetaType::UnknownType) {
-                typeName = legacyString(mobj, mobj->d.data[handle + 1]);
-                t = QMetaType::type(typeName);
-                if (t == QMetaType::UnknownType)
-                    t = QVariant::nameToType(typeName);
-            }
+        Q_ASSERT(priv(mobj->d.data)->revision >= 7);
+        uint typeInfo = mobj->d.data[handle + 1];
+        if (!(typeInfo & IsUnresolvedType))
+            t = typeInfo;
+        else {
+            typeName = rawStringData(mobj, typeInfo & TypeNameIndexMask);
+            t = QMetaType::type(typeName);
         }
         if (t == QMetaType::UnknownType) {
             qWarning("QMetaProperty::read: Unable to handle unregistered datatype '%s' for property '%s::%s'", typeName, mobj->className(), name());
@@ -2935,21 +2710,16 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
     } else {
         int handle = priv(mobj->d.data)->propertyData + 3*idx;
         const char *typeName = 0;
-        if (priv(mobj->d.data)->revision >= 7) {
-            uint typeInfo = mobj->d.data[handle + 1];
-            if (!(typeInfo & IsUnresolvedType))
-                t = typeInfo;
-            else {
-                typeName = rawStringData(mobj, typeInfo & TypeNameIndexMask);
-                t = QMetaType::type(typeName);
-            }
-        } else {
-            uint flags = mobj->d.data[handle + 2];
-            t = flags >> 24;
-            typeName = legacyString(mobj, mobj->d.data[handle + 1]);
+        Q_ASSERT(priv(mobj->d.data)->revision >= 7);
+        uint typeInfo = mobj->d.data[handle + 1];
+        if (!(typeInfo & IsUnresolvedType))
+            t = typeInfo;
+        else {
+            typeName = rawStringData(mobj, typeInfo & TypeNameIndexMask);
+            t = QMetaType::type(typeName);
         }
         if (t == QMetaType::UnknownType) {
-            const char *typeName = rawStringData(mobj, mobj->d.data[handle + 1]);
+            Q_ASSERT(typeName != 0);
             const char *vtypeName = value.typeName();
             if (vtypeName && strcmp(typeName, vtypeName) == 0)
                 t = value.userType();

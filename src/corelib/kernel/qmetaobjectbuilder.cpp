@@ -737,16 +737,12 @@ void QMetaObjectBuilder::addMetaObject
 
     if ((members & RelatedMetaObjects) != 0) {
         const QMetaObject **objects;
-        if (priv(prototype->d.data)->revision < 2) {
-            objects = (const QMetaObject **)(prototype->d.extradata);
-        } else
-        {
-            const QMetaObjectExtraData *extra = (const QMetaObjectExtraData *)(prototype->d.extradata);
-            if (extra)
-                objects = extra->objects;
-            else
-                objects = 0;
-        }
+        Q_ASSERT(priv(prototype->d.data)->revision >= 2);
+        const QMetaObjectExtraData *extra = (const QMetaObjectExtraData *)(prototype->d.extradata);
+        if (extra)
+            objects = extra->objects;
+        else
+            objects = 0;
         if (objects) {
             while (*objects != 0) {
                 addRelatedMetaObject(*objects);
@@ -756,12 +752,11 @@ void QMetaObjectBuilder::addMetaObject
     }
 
     if ((members & StaticMetacall) != 0) {
-        if (priv(prototype->d.data)->revision >= 6) {
-            const QMetaObjectExtraData *extra =
-                (const QMetaObjectExtraData *)(prototype->d.extradata);
-            if (extra && extra->static_metacall)
-                setStaticMetacallFunction(extra->static_metacall);
-        }
+        Q_ASSERT(priv(prototype->d.data)->revision >= 6);
+        const QMetaObjectExtraData *extra =
+            (const QMetaObjectExtraData *)(prototype->d.extradata);
+        if (extra && extra->static_metacall)
+            setStaticMetacallFunction(extra->static_metacall);
     }
 }
 
