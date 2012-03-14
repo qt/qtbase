@@ -78,24 +78,12 @@ public:
 
     static bool compareReplyIMAP(QByteArray const& actual)
     {
-        QList<QByteArray> expected;
-
-        // Mandriva; old test server
-        expected << QByteArray( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " )
-            .append(QtNetworkSettings::serverName().toAscii())
-            .append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
-
-        // Ubuntu 10.04; new test server
-        expected << QByteArray( "* OK " )
-            .append(QtNetworkSettings::serverLocalName().toAscii())
-            .append(" Cyrus IMAP4 v2.2.13-Debian-2.2.13-19 server ready\r\n");
-
-        // Feel free to add more as needed
-
-        Q_FOREACH (QByteArray const& ba, expected) {
-            if (ba == actual) {
-                return true;
-            }
+        // Server greeting may contain capability, version and server name
+        // But spec only requires "* OK" and "\r\n"
+        // Match against a prefix and postfix that covers all Cyrus versions
+        if (actual.startsWith("* OK ")
+            && actual.endsWith("server ready\r\n")) {
+            return true;
         }
 
         return false;
@@ -103,27 +91,7 @@ public:
 
     static bool compareReplyIMAPSSL(QByteArray const& actual)
     {
-        QList<QByteArray> expected;
-
-        // Mandriva; old test server
-        expected << QByteArray( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " )
-            .append(QtNetworkSettings::serverName().toAscii())
-            .append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
-
-        // Ubuntu 10.04; new test server
-        expected << QByteArray( "* OK " )
-            .append(QtNetworkSettings::serverLocalName().toAscii())
-            .append(" Cyrus IMAP4 v2.2.13-Debian-2.2.13-19 server ready\r\n");
-
-        // Feel free to add more as needed
-
-        Q_FOREACH (QByteArray const& ba, expected) {
-            if (ba == actual) {
-                return true;
-            }
-        }
-
-        return false;
+        return compareReplyIMAP(actual);
     }
 
     static bool compareReplyFtp(QByteArray const& actual)
