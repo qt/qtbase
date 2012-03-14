@@ -357,9 +357,9 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
     Q_ASSERT(socket);
 
     if (!reply) {
-        // heh, how should that happen!
-        qWarning() << "QHttpNetworkConnectionChannel::_q_receiveReply() called without QHttpNetworkReply,"
-                << socket->bytesAvailable() << "bytes on socket.";
+        if (socket->bytesAvailable() > 0)
+            qWarning() << "QHttpNetworkConnectionChannel::_q_receiveReply() called without QHttpNetworkReply,"
+                       << socket->bytesAvailable() << "bytes on socket.";
         close();
         return;
     }
