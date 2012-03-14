@@ -43,6 +43,11 @@
 
 QT_BEGIN_NAMESPACE
 
+QPlatformSurface::~QPlatformSurface()
+{
+
+}
+
 QSurface::SurfaceClass QPlatformSurface::surfaceClass() const
 {
     return m_type;
