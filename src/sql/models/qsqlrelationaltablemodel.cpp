@@ -57,6 +57,14 @@
 
 QT_BEGIN_NAMESPACE
 
+class QSqlRelationalTableModelSql: public QSqlTableModelSql
+{
+public:
+    inline const static QString relTablePrefix(int i) { return QString::number(i).prepend(QLatin1String("relTblAl_")); }
+};
+
+typedef QSqlRelationalTableModelSql Sql;
+
 /*!
     \class QSqlRelation
     \brief The QSqlRelation class stores information about an SQL foreign key.
@@ -271,18 +279,6 @@ public:
     void translateFieldNames(QSqlRecord &values) const;
     QSqlRelationalTableModel::JoinMode joinMode;
 };
-
-static void qAppendWhereClause(QString &query, const QString &clause1, const QString &clause2)
-{
-    if (clause1.isEmpty() && clause2.isEmpty())
-        return;
-    if (clause1.isEmpty() || clause2.isEmpty())
-        query.append(QLatin1String(" WHERE (")).append(clause1).append(clause2);
-    else
-        query.append(QLatin1String(" WHERE (")).append(clause1).append(
-                        QLatin1String(") AND (")).append(clause2);
-    query.append(QLatin1String(") "));
-}
 
 void QSqlRelationalTableModelPrivate::clearChanges()
 {
@@ -571,12 +567,12 @@ QString QSqlRelationalTableModel::selectStatement() const
 
     QString fList;
     QString conditions;
-    QString from = tableName();
+    QString from = Sql::from(tableName());
     for (int i = 0; i < d->baseRec.count(); ++i) {
         QSqlRelation relation = d->relations.value(i).rel;
         const QString tableField = d->fullyQualifiedFieldName(tableName(), d->db.driver()->escapeIdentifier(d->baseRec.fieldName(i), QSqlDriver::FieldName));
         if (relation.isValid()) {
-            const QString relTableAlias = QString::fromLatin1("relTblAl_%1").arg(i);
+            const QString relTableAlias = Sql::relTablePrefix(i);
             QString displayTableField = d->fullyQualifiedFieldName(relTableAlias, relation.displayColumn());
 
             // Duplicate field names must be aliased
@@ -587,55 +583,37 @@ QString QSqlRelationalTableModel::selectStatement() const
                 QString displayColumn = relation.displayColumn();
                 if (d->db.driver()->isIdentifierEscaped(displayColumn, QSqlDriver::FieldName))
                     displayColumn = d->db.driver()->stripDelimiters(displayColumn, QSqlDriver::FieldName);
-                displayTableField.append(QString::fromLatin1(" AS %1_%2_%3").arg(relTableName).arg(displayColumn).arg(fieldNames.value(fieldList[i])));
+                const QString alias = QString::fromLatin1("%1_%2_%3").arg(relTableName).arg(displayColumn).arg(fieldNames.value(fieldList[i]));
+                displayTableField = Sql::as(displayTableField, alias);
                 --fieldNames[fieldList[i]];
             }
 
-            if (!fList.isEmpty())
-                fList.append(QLatin1String(", "));
-            fList.append(displayTableField);
+            fList = Sql::comma(fList, displayTableField);
 
             // Join related table
-            const QString tblexpr = relation.tableName().append(QLatin1Char(' ')).append(relTableAlias);
+            const QString tblexpr = Sql::concat(relation.tableName(), relTableAlias);
             const QString relTableField = d->fullyQualifiedFieldName(relTableAlias, relation.indexColumn());
-            const QString cond = tableField + QLatin1String(" = ") + relTableField;
+            const QString cond = Sql::eq(tableField, relTableField);
             if (d->joinMode == QSqlRelationalTableModel::InnerJoin) {
                 // FIXME: InnerJoin code is known to be broken.
                 // Use LeftJoin mode if you want correct behavior.
-                from.append(QLatin1String(", ")).append(tblexpr);
-                if (!conditions.isEmpty())
-                    conditions.append(QLatin1String(" AND "));
-                conditions.append(cond);
+                from = Sql::comma(from, tblexpr);
+                conditions = Sql::et(conditions, cond);
             } else {
-                from.append(QLatin1String(" LEFT JOIN ")).append(tblexpr);
-                from.append(QLatin1String(" ON ")).append(cond);
+                from = Sql::concat(from, Sql::leftJoin(tblexpr));
+                from = Sql::concat(from, Sql::on(cond));
             }
         } else {
-            if (!fList.isEmpty())
-                fList.append(QLatin1String(", "));
-            fList.append(tableField);
+            fList = Sql::comma(fList, tableField);
         }
     }
 
     if (fList.isEmpty())
         return QString();
 
-    QString query = query.append(QLatin1String("SELECT "));
-    query.append(fList).append(QLatin1String(" FROM ")).append(from);
-
-    if (d->joinMode == QSqlRelationalTableModel::InnerJoin) {
-        qAppendWhereClause(query, conditions, filter());
-    } else if (!filter().isEmpty()) {
-        query.append(QLatin1String(" WHERE ("));
-        query.append(filter());
-        query.append(QLatin1String(")"));
-    }
-
-    QString orderBy = orderByClause();
-    if (!orderBy.isEmpty())
-        query.append(QLatin1Char(' ')).append(orderBy);
-
-    return query;
+    const QString stmt = Sql::concat(Sql::select(fList), from);
+    const QString where = Sql::where(Sql::et(Sql::paren(conditions), Sql::paren(filter())));
+    return Sql::concat(Sql::concat(stmt, where), orderByClause());
 }
 
 /*!
@@ -777,11 +755,9 @@ QString QSqlRelationalTableModel::orderByClause() const
     if (!rel.isValid())
         return QSqlTableModel::orderByClause();
 
-    QString s = QLatin1String("ORDER BY ");
-    s.append(d->fullyQualifiedFieldName(QLatin1String("relTblAl_") + QString::number(d->sortColumn),
-                                        rel.displayColumn()));
-    s += d->sortOrder == Qt::AscendingOrder ? QLatin1String(" ASC") : QLatin1String(" DESC");
-    return s;
+    QString f = d->fullyQualifiedFieldName(Sql::relTablePrefix(d->sortColumn), rel.displayColumn());
+    f = d->sortOrder == Qt::AscendingOrder ? Sql::asc(f) : Sql::desc(f);
+    return Sql::orderBy(f);
 }
 
 /*!
