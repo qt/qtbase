@@ -183,7 +183,6 @@ struct QWindowsIntegrationPrivate
     QOpenGLStaticContextPtr m_staticOpenGLContext;
     QWindowsInputContext m_inputContext;
     QWindowsAccessibility m_accessibility;
-    QWindowsTheme m_theme;
     QWindowsServices m_services;
 };
 
@@ -362,9 +361,16 @@ QAbstractEventDispatcher * QWindowsIntegration::guiThreadEventDispatcher() const
     return d->m_eventDispatcher;
 }
 
-QPlatformTheme *QWindowsIntegration::platformTheme() const
+QStringList QWindowsIntegration::themeNames() const
 {
-    return &d->m_theme;
+    return QStringList(QLatin1String(QWindowsTheme::name));
+}
+
+QPlatformTheme *QWindowsIntegration::createPlatformTheme(const QString &name) const
+{
+    if (name == QLatin1String(QWindowsTheme::name))
+        return new QWindowsTheme;
+    return QPlatformIntegration::createPlatformTheme(name);
 }
 
 QPlatformServices *QWindowsIntegration::services() const

@@ -126,7 +126,8 @@ public:
 
     virtual Qt::KeyboardModifiers queryKeyboardModifiers() const;
 
-    virtual QPlatformTheme *platformTheme() const;
+    virtual QStringList themeNames() const;
+    virtual QPlatformTheme *createPlatformTheme(const QString &name) const;
 
 protected:
     void screenAdded(QPlatformScreen *screen);

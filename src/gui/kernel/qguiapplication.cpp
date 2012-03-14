@@ -538,13 +538,22 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     }
 
     // Create the platform theme:
-    // 1) Ask the platform integration to create a platform theme
-    QGuiApplicationPrivate::platform_theme = QGuiApplicationPrivate::platform_integration->platformTheme();
+    // 1) Ask the platform integration for a list of names.
+    const QStringList themeNames = QGuiApplicationPrivate::platform_integration->themeNames();
+    foreach (const QString &themeName, themeNames) {
+        QGuiApplicationPrivate::platform_theme = QPlatformThemeFactory::create(themeName, platformPluginPath);
+        if (QGuiApplicationPrivate::platform_theme)
+            break;
+    }
 
     // 2) If none found, look for a theme plugin. Theme plugins are located in the
     // same directory as platform plugins.
     if (!QGuiApplicationPrivate::platform_theme) {
-        QGuiApplicationPrivate::platform_theme = QPlatformThemeFactory::create(name, platformPluginPath);
+        foreach (const QString &themeName, themeNames) {
+            QGuiApplicationPrivate::platform_theme = QGuiApplicationPrivate::platform_integration->createPlatformTheme(themeName);
+            if (QGuiApplicationPrivate::platform_theme)
+                break;
+        }
         // No error message; not having a theme plugin is allowed.
     }
 
@@ -748,6 +757,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 
     qt_cleanupFontDatabase();
 
+    delete  platform_theme;
     delete platform_integration;
     platform_integration = 0;
 }

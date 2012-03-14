@@ -44,6 +44,7 @@
 #include <QtGui/QPlatformFontDatabase>
 #include <QtGui/QPlatformClipboard>
 #include <QtGui/QPlatformAccessibility>
+#include <QtGui/QPlatformTheme>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qplatformscreen_qpa_p.h>
@@ -315,9 +316,15 @@ void QPlatformIntegration::screenAdded(QPlatformScreen *ps)
     emit qGuiApp->screenAdded(screen);
 }
 
-class QPlatformTheme *QPlatformIntegration::platformTheme() const
+QStringList QPlatformIntegration::themeNames() const
 {
-    return 0;
+    return QStringList();
+}
+
+class QPlatformTheme *QPlatformIntegration::createPlatformTheme(const QString &name) const
+{
+    Q_UNUSED(name)
+    return new QPlatformTheme;
 }
 
 QT_END_NAMESPACE

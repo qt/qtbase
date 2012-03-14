@@ -88,8 +88,7 @@ QT_BEGIN_NAMESPACE
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     : m_eventDispatcher(createUnixEventDispatcher()),
-      m_services(new QGenericUnixServices),
-      m_theme(QGenericUnixTheme::createUnixTheme())
+      m_services(new QGenericUnixServices)
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
 
@@ -277,9 +276,14 @@ QPlatformServices *QXcbIntegration::services() const
     return m_services.data();
 }
 
-QPlatformTheme *QXcbIntegration::platformTheme() const
+QStringList QXcbIntegration::themeNames() const
 {
-    return m_theme.data();
+    return QGenericUnixTheme::themeNames();
+}
+
+QPlatformTheme *QXcbIntegration::createPlatformTheme(const QString &name) const
+{
+    return QGenericUnixTheme::createUnixTheme(name);
 }
 
 QT_END_NAMESPACE

@@ -85,7 +85,8 @@ public:
 
     QPlatformServices *services() const;
 
-    QPlatformTheme *platformTheme() const;
+    QStringList themeNames() const;
+    QPlatformTheme *createPlatformTheme(const QString &name) const;
 
 private:
     QList<QXcbConnection *> m_connections;
@@ -103,7 +104,6 @@ private:
 #endif
 
     QScopedPointer<QPlatformServices> m_services;
-    QScopedPointer<QPlatformTheme> m_theme;
 };
 
 QT_END_NAMESPACE

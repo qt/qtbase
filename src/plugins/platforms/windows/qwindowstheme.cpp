@@ -229,8 +229,12 @@ static inline QPalette *menuBarPalette(const QPalette &menuPalette)
     return result;
 }
 
+const char *QWindowsTheme::name = "windows";
+QWindowsTheme *QWindowsTheme::m_instance = 0;
+
 QWindowsTheme::QWindowsTheme()
 {
+    m_instance = this;
     qFill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
     qFill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
     refresh();
@@ -240,11 +244,7 @@ QWindowsTheme::~QWindowsTheme()
 {
     clearPalettes();
     clearFonts();
-}
-
-QWindowsTheme *QWindowsTheme::instance()
-{
-    return static_cast<QWindowsTheme *>(QWindowsIntegration::instance()->platformTheme());
+    m_instance = 0;
 }
 
 static inline QStringList iconThemeSearchPaths()

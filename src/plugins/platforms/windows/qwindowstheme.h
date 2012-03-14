@@ -57,7 +57,7 @@ public:
     QWindowsTheme();
     ~QWindowsTheme();
 
-    static QWindowsTheme *instance();
+    static QWindowsTheme *instance() { return m_instance; }
 
     virtual bool usePlatformNativeDialog(DialogType type) const;
     virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
@@ -69,6 +69,8 @@ public:
 
     void windowsThemeChanged(QWindow *window);
 
+    static const char *name;
+
 private:
     void refresh() { refreshPalettes(); refreshFonts(); }
     void clearPalettes();
@@ -76,6 +78,7 @@ private:
     void clearFonts();
     void refreshFonts();
 
+    static QWindowsTheme *m_instance;
     QPalette *m_palettes[NPalettes];
     QFont *m_fonts[NFonts];
 };

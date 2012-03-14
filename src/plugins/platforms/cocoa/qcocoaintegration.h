@@ -93,7 +93,9 @@ public:
     QPlatformAccessibility *accessibility() const;
     QPlatformDrag *drag() const;
 
-    QPlatformTheme *platformTheme() const;
+    QStringList themeNames() const;
+    QPlatformTheme *createPlatformTheme(const QString &name) const;
+
 private:
 
     QScopedPointer<QPlatformFontDatabase> mFontDb;

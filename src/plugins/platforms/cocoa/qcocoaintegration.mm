@@ -93,7 +93,6 @@ QCocoaIntegration::QCocoaIntegration()
     , mEventDispatcher(new QCocoaEventDispatcher())
     , mInputContext(new QCocoaInputContext)
     , mAccessibility(new QPlatformAccessibility)
-    , mPlatformTheme(new QCocoaTheme)
     , mCocoaDrag(new QCocoaDrag)
 {
     QCocoaAutoReleasePool pool;
@@ -212,9 +211,16 @@ QPlatformDrag *QCocoaIntegration::drag() const
     return mCocoaDrag.data();
 }
 
-QPlatformTheme *QCocoaIntegration::platformTheme() const
+QStringList QCocoaIntegration::themeNames() const
 {
-    return mPlatformTheme.data();
+    return QStringList(QLatin1String(QCocoaTheme::name));
+}
+
+QPlatformTheme *QCocoaIntegration::createPlatformTheme(const QString &name) const
+{
+    if (name == QLatin1String(QCocoaTheme::name))
+        return new QCocoaTheme;
+    return QPlatformIntegration::createPlatformTheme(name);
 }
 
 QT_END_NAMESPACE

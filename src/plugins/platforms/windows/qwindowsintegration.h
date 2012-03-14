@@ -69,7 +69,8 @@ public:
     virtual QPlatformAccessibility *accessibility() const;
     virtual QPlatformNativeInterface *nativeInterface() const;
     virtual QPlatformFontDatabase *fontDatabase() const;
-    virtual QPlatformTheme *platformTheme() const;
+    virtual QStringList themeNames() const;
+    virtual QPlatformTheme *createPlatformTheme(const QString &name) const;
     QPlatformServices *services() const;
     virtual QVariant styleHint(StyleHint hint) const;
 
