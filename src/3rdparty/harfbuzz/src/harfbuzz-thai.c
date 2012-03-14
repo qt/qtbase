@@ -263,8 +263,13 @@ static HB_Bool HB_ThaiConvertStringToGlyphIndices (HB_ShaperItem *item)
                 // The only glyphs that should be passed to this function that cannot be mapped to
                 // tis620 are the ones of type Inherited class.  Pass these glyphs untouched.
                 glyphString[slen++] = string[i];
-                if (string[i] == 0x200D || string[i] == 0x200C)
-                    item->attributes[slen-1].dontPrint = true; // Hide ZWJ and ZWNJ characters
+                if (string[i] == 0x200D || string[i] == 0x200C) {
+                    // Check that we do not run out of bounds when setting item->attributes.  If we do
+                    // run out of bounds then this function will return false, the necessary amount of
+                    // memory is reallocated, and this function will then be called again.
+                    if (slen <= item->num_glyphs)
+                        item->attributes[slen-1].dontPrint = true; // Hide ZWJ and ZWNJ characters
+                }
             } else {
                 glyphString[slen++] = (HB_UChar16) thai_get_glyph_index (font_type, rglyphs[lgi]);
             }

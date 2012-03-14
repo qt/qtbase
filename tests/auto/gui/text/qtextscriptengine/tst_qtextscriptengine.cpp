@@ -105,7 +105,7 @@ private slots:
 
     void thaiIsolatedSaraAm();
     void thaiWithZWJ();
-
+    void thaiMultipleVowels();
 private:
     bool haveTestFonts;
 };
@@ -1323,6 +1323,28 @@ void tst_QTextScriptEngine::thaiWithZWJ()
     // and 3.
     for (int i = 0; i < 18; i++)
         QCOMPARE((bool)e->layoutData->glyphLayout.attributes[i].dontPrint, (i == 1 || i == 3));
+}
+
+void tst_QTextScriptEngine::thaiMultipleVowels()
+{
+    QString s(QString::fromUtf8("ส"));
+    for (int i = 0; i < 100; i++)
+        s += QChar(0x0E47); // Add lots of "VOWEL SIGN MAI TAI KHU N/S-T"  stacked on top of the character
+    s += QChar(0x200D); // Now add a zero width joiner (which adds a circle which is hidden)
+    for (int i = 0; i < 100; i++)
+        s += QChar(0x0E47); //Add lots of "VOWEL SIGN MAI TAI KHU N/S-T"  stacked on top of the ZWJ
+
+    for (int i = 0; i < 10; i++)
+        s += s; //Repeat the string to make it more likely to crash if we have a buffer overflow
+    QTextLayout layout(s);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QTextEngine *e = layout.engine();
+    e->width(0, s.length()); //force itemize and shape
+
+    // If we haven't crashed at this point, then the test has passed.
 }
 
 QTEST_MAIN(tst_QTextScriptEngine)
