@@ -1921,15 +1921,42 @@ void tst_QAccessibility::lineEditTest()
     QAccessibleTextUpdateEvent update(lineEdit, 0, "foo", "bar");
     QVERIFY(QTestAccessibility::containsEvent(&update));
 
-//    QTestEventList keys;
-//    keys.addKeyClick('D');
-//    keys.addKeyClick('E');
-//    keys.addKeyClick(Qt::Key_Left);
-//    keys.addKeyClick(Qt::Key_Left);
-//    keys.addKeyClick('C');
-//    keys.addKeyClick('O');
-//    keys.simulate(lineEdit);
-//    FIXME: Test key press events...
+    // FIXME check what extra events are around and get rid of them
+    QTestAccessibility::clearEvents();
+
+    QTestEventList keys;
+    keys.addKeyClick('D');
+    keys.simulate(lineEdit);
+
+    QAccessibleTextInsertEvent insertD(lineEdit, 3, "D");
+    QVERIFY_EVENT(&insertD);
+    keys.clear();
+    keys.addKeyClick('E');
+    keys.simulate(lineEdit);
+
+    QAccessibleTextInsertEvent insertE(lineEdit, 4, "E");
+    QVERIFY(QTestAccessibility::containsEvent(&insertE));
+    keys.clear();
+    keys.addKeyClick(Qt::Key_Left);
+    keys.addKeyClick(Qt::Key_Left);
+    keys.simulate(lineEdit);
+    cursorEvent.setCursorPosition(4);
+    QVERIFY(QTestAccessibility::containsEvent(&cursorEvent));
+    cursorEvent.setCursorPosition(3);
+    QVERIFY(QTestAccessibility::containsEvent(&cursorEvent));
+
+    keys.clear();
+    keys.addKeyClick('C');
+    keys.simulate(lineEdit);
+
+    QAccessibleTextInsertEvent insertC(lineEdit, 3, "C");
+    QVERIFY(QTestAccessibility::containsEvent(&insertC));
+
+    keys.clear();
+    keys.addKeyClick('O');
+    keys.simulate(lineEdit);
+    QAccessibleTextInsertEvent insertO(lineEdit, 4, "O");
+    QVERIFY(QTestAccessibility::containsEvent(&insertO));
     }
     delete toplevel;
     QTestAccessibility::clearEvents();
