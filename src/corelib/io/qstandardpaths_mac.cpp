@@ -97,7 +97,7 @@ static QString getFullPath(const FSRef &ref)
 {
     QByteArray ba(2048, 0);
     if (FSRefMakePath(&ref, reinterpret_cast<UInt8 *>(ba.data()), ba.size()) == noErr)
-        return QString::fromUtf8(ba).normalized(QString::NormalizationForm_C);
+        return QString::fromUtf8(ba.constData()).normalized(QString::NormalizationForm_C);
     return QString();
 }
 
