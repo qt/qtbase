@@ -58,7 +58,6 @@ QT_BEGIN_NAMESPACE
 
 
 class QDBusUnixFileDescriptorPrivate;
-template<> QExplicitlySharedDataPointer<QDBusUnixFileDescriptorPrivate>::~QExplicitlySharedDataPointer();
 
 class Q_DBUS_EXPORT QDBusUnixFileDescriptor
 {
@@ -80,8 +79,6 @@ public:
     static bool isSupported();
 
 #if defined(Q_COMPILER_RVALUE_REFS)
-    QDBusUnixFileDescriptor(QDBusUnixFileDescriptor &&other) : d(static_cast<Data &&>(other.d))
-    { }
     inline QDBusUnixFileDescriptor &operator=(QDBusUnixFileDescriptor &&other)
     { d.swap(other.d); return *this; }
 #endif
