@@ -1146,12 +1146,13 @@ QMoveEvent::~QMoveEvent()
 
 /*!
     \class QExposeEvent
+    \since 5.0
     \brief The QExposeEvent class contains event parameters for expose events.
 
     \ingroup events
 
-    Expose events are sent to widgets when an area of the widget is invalidated
-    and needs to be flushed from the backing store.
+    Expose events are sent to windows when an area of the window is invalidated
+    or window visibility in the windowing system changes.
 
     The event handler QWindow::exposeEvent() receives expose events.
 */
@@ -1761,9 +1762,11 @@ void QInputMethodEvent::setTentativeCommitString(const QString &tentativeCommitS
     \sa setTentativeCommitString()
 */
 
-/*! \class QInputMethodQueryEvent
+/*!
+    \class QInputMethodQueryEvent
+    \since 5.0
 
-    This event is sent by the input context to input objects.
+    \brief This event is sent by the input context to input objects.
 
     It is used by the
     input method to query a set of properties of the object to be

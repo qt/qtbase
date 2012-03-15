@@ -195,6 +195,7 @@ static inline void clearFontUnlocked()
     flow and main settings.
 
     \inmodule QtGui
+    \since 5.0
 
     QGuiApplication contains the main event loop, where all events from the window
     system and other sources are processed and dispatched. It also handles the

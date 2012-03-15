@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QScreen
+    \since 5.0
     \brief The QScreen class is used to query screen properties.
 
     A note on logical vs physical dots per inch: physical DPI is based on the
