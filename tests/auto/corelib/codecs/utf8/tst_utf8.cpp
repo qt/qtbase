@@ -322,7 +322,7 @@ void tst_Utf8::nonCharacters_data()
 
     // U+FDD0 through U+FDEF
     for (int i = 0; i < 16; ++i) {
-        char utf8[] = { 0357, 0267, 0220 + i, 0 };
+        char utf8[] = { char(0357), char(0267), char(0220 + i), 0 };
         QString utf16 = QChar(0xfdd0 + i);
         QTest::newRow(qPrintable(QString::number(0xfdd0 + i, 16))) << QByteArray(utf8) << utf16;
     }
@@ -331,10 +331,10 @@ void tst_Utf8::nonCharacters_data()
     for (uint plane = 1; plane <= 16; ++plane) {
         for (uint lower = 0xfffe; lower < 0x10000; ++lower) {
             uint ucs4 = (plane << 16) | lower;
-            char utf8[] = { 0xf0 | uchar(ucs4 >> 18),
-                            0x80 | (uchar(ucs4 >> 12) & 0x3f),
-                            0x80 | (uchar(ucs4 >> 6) & 0x3f),
-                            0x80 | (uchar(ucs4) & 0x3f),
+            char utf8[] = { char(0xf0 | uchar(ucs4 >> 18)),
+                            char(0x80 | (uchar(ucs4 >> 12) & 0x3f)),
+                            char(0x80 | (uchar(ucs4 >> 6) & 0x3f)),
+                            char(0x80 | (uchar(ucs4) & 0x3f)),
                             0 };
             ushort utf16[] = { QChar::highSurrogate(ucs4), QChar::lowSurrogate(ucs4), 0 };
 
