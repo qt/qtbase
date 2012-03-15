@@ -174,6 +174,7 @@ public:
     void setPageType(const QString& t);
     void setParent(InnerNode* n) { parent_ = n; }
     void setIndexNodeFlag() { indexNodeFlag_ = true; }
+    virtual void setOutputFileName(const QString& ) { }
 
     virtual bool isInnerNode() const = 0;
     virtual bool isReimp() const { return false; }
@@ -194,6 +195,7 @@ public:
     QString moduleName() const;
     QString url() const;
     virtual QString nameForLists() const { return name_; }
+    virtual QString outputFileName() const { return QString(); }
 
     Access access() const { return access_; }
     QString accessString() const;
@@ -324,6 +326,8 @@ public:
     virtual void addPageKeywords(const QString& t) { pageKeywds << t; }
     virtual void setCurrentChild() { }
     virtual void setCurrentChild(InnerNode* ) { }
+    virtual void setOutputFileName(const QString& f) { outputFileName_ = f; }
+    virtual QString outputFileName() const { return outputFileName_; }
 
 protected:
     InnerNode(Type type, InnerNode* parent, const QString& name);
@@ -337,6 +341,7 @@ private:
     void removeRelated(Node* pseudoChild);
     void removeChild(Node* child);
 
+    QString outputFileName_;
     QStringList pageKeywds;
     QStringList inc;
     NodeList children;

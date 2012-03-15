@@ -455,7 +455,7 @@ private:
     int currentSectionNestingLevel() const { return sectionNestingLevel; }
     QString metadataDefault(DitaTag t) const;
     QString stripMarkup(const QString& src) const;
-    void collectNodesByTypeAndSubtype(const InnerNode* parent);
+    Node* collectNodesByTypeAndSubtype(const InnerNode* parent);
     void writeDitaRefs(const DitaRefList& ditarefs);
     void writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle);
     bool isDuplicate(NodeMultiMap* nmm, const QString& key, Node* node);
