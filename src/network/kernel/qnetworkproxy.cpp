@@ -426,6 +426,10 @@ template<> void QSharedDataPointer<QNetworkProxyPrivate>::detach()
 QNetworkProxy::QNetworkProxy()
     : d(0)
 {
+    // make sure we have QGlobalNetworkProxy singleton created, otherwise
+    // you don't have any socket engine handler created when directly setting
+    // a proxy to a socket
+    globalNetworkProxy();
 }
 
 /*!
@@ -440,6 +444,10 @@ QNetworkProxy::QNetworkProxy(ProxyType type, const QString &hostName, quint16 po
                   const QString &user, const QString &password)
     : d(new QNetworkProxyPrivate(type, hostName, port, user, password))
 {
+    // make sure we have QGlobalNetworkProxy singleton created, otherwise
+    // you don't have any socket engine handler created when directly setting
+    // a proxy to a socket
+    globalNetworkProxy();
 }
 
 /*!
