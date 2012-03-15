@@ -280,12 +280,6 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
     return dirs;
 }
 
-QString QStandardPaths::displayName(StandardLocation type)
-{
-    Q_UNUSED(type);
-    return QString();
-}
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_STANDARDPATHS
