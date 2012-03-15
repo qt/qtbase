@@ -64,6 +64,10 @@
 #  include "qvariant.h"
 #  include "qabstractitemmodel.h"
 #  include "qregularexpression.h"
+#  include "qjsonvalue.h"
+#  include "qjsonobject.h"
+#  include "qjsonarray.h"
+#  include "qjsondocument.h"
 #endif
 
 #ifndef QT_NO_GEOM_VARIANT
@@ -111,6 +115,10 @@ template<> struct TypeDefinition<QBitArray> { static const bool IsAvailable = fa
 template<> struct TypeDefinition<QUrl> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QEasingCurve> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QJsonValue> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QJsonObject> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QJsonArray> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QJsonDocument> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_REGEXP
 template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = false; };
@@ -245,6 +253,10 @@ template<> struct TypeDefinition<QRegularExpression> { static const bool IsAvail
     \value QVector4D QVector4D
     \value QQuaternion QQuaternion
     \value QEasingCurve QEasingCurve
+    \value QJsonValue QJsonValue
+    \value QJsonObject QJsonObject
+    \value QJsonArray QJsonArray
+    \value QJsonDocument QJsonDocument
 
     \value User  Base value for user types
     \value UnknownType This is an invalid type id. It is returned from QMetaType for types that are not registered
@@ -665,6 +677,10 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QObjectStar:
     case QMetaType::QWidgetStar:
     case QMetaType::QModelIndex:
+    case QMetaType::QJsonValue:
+    case QMetaType::QJsonObject:
+    case QMetaType::QJsonArray:
+    case QMetaType::QJsonDocument:
         return false;
     case QMetaType::Long:
         stream << qlonglong(*static_cast<const long *>(data));
@@ -876,6 +892,10 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::QObjectStar:
     case QMetaType::QWidgetStar:
     case QMetaType::QModelIndex:
+    case QMetaType::QJsonValue:
+    case QMetaType::QJsonObject:
+    case QMetaType::QJsonArray:
+    case QMetaType::QJsonDocument:
         return false;
     case QMetaType::Long: {
         qlonglong l;

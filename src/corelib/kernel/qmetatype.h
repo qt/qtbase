@@ -102,7 +102,11 @@ QT_BEGIN_NAMESPACE
     F(QUuid, 30, QUuid) \
     F(QVariant, 41, QVariant) \
     F(QModelIndex, 42, QModelIndex) \
-    F(QRegularExpression, 44, QRegularExpression)
+    F(QRegularExpression, 44, QRegularExpression) \
+    F(QJsonValue, 45, QJsonValue) \
+    F(QJsonObject, 46, QJsonObject) \
+    F(QJsonArray, 47, QJsonArray) \
+    F(QJsonDocument, 48, QJsonDocument) \
 
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
     F(QObjectStar, 39, QObject*) \
@@ -196,7 +200,7 @@ public:
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
         FirstCoreType = Bool,
-        LastCoreType = QRegularExpression,
+        LastCoreType = QJsonDocument,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,
         FirstWidgetsType = QIcon,

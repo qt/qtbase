@@ -1643,8 +1643,8 @@ void tst_QVariant::writeToReadFromOldDataStream()
 
 void tst_QVariant::checkDataStream()
 {
-    QTest::ignoreMessage(QtWarningMsg, "Trying to construct an instance of an invalid type, type id: 46");
-    const QByteArray settingsHex("0000002effffffffff");
+    QTest::ignoreMessage(QtWarningMsg, "Trying to construct an instance of an invalid type, type id: 49");
+    const QByteArray settingsHex("00000031ffffffffff");
     const QByteArray settings = QByteArray::fromHex(settingsHex);
     QDataStream in(settings);
     QVariant v;

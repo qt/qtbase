@@ -541,6 +541,36 @@ template<> struct TestValueFactory<QMetaType::QRegularExpression> {
 #endif
     }
 };
+template<> struct TestValueFactory<QMetaType::QJsonValue> {
+    static QJsonValue *create() { return new QJsonValue(123.); }
+};
+template<> struct TestValueFactory<QMetaType::QJsonObject> {
+    static QJsonObject *create() {
+        QJsonObject *o = new QJsonObject();
+        o->insert("a", 123.);
+        o->insert("b", true);
+        o->insert("c", QJsonValue::Null);
+        o->insert("d", QLatin1String("ciao"));
+        return o;
+    }
+};
+template<> struct TestValueFactory<QMetaType::QJsonArray> {
+    static QJsonArray *create() {
+        QJsonArray *a = new QJsonArray();
+        a->append(123.);
+        a->append(true);
+        a->append(QJsonValue::Null);
+        a->append(QLatin1String("ciao"));
+        return a;
+    }
+};
+template<> struct TestValueFactory<QMetaType::QJsonDocument> {
+    static QJsonDocument *create() {
+        return new QJsonDocument(
+            QJsonDocument::fromJson("{ 'foo': 123, 'bar': [true, null, 'ciao'] }")
+        );
+    }
+};
 template<> struct TestValueFactory<QMetaType::QVariant> {
     static QVariant *create() { return new QVariant(QStringList(QStringList() << "Q" << "t")); }
 };
@@ -1339,6 +1369,10 @@ struct StreamingTraits
 DECLARE_NONSTREAMABLE(void)
 DECLARE_NONSTREAMABLE(void*)
 DECLARE_NONSTREAMABLE(QModelIndex)
+DECLARE_NONSTREAMABLE(QJsonValue)
+DECLARE_NONSTREAMABLE(QJsonObject)
+DECLARE_NONSTREAMABLE(QJsonArray)
+DECLARE_NONSTREAMABLE(QJsonDocument)
 DECLARE_NONSTREAMABLE(QObject*)
 DECLARE_NONSTREAMABLE(QWidget*)
 

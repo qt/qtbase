@@ -56,6 +56,10 @@
 #include "quuid.h"
 #ifndef QT_BOOTSTRAPPED
 #include "qabstractitemmodel.h"
+#include "qjsonvalue.h"
+#include "qjsonobject.h"
+#include "qjsonarray.h"
+#include "qjsondocument.h"
 #endif
 #include "private/qvariant_p.h"
 #include "qmetatype_p.h"
@@ -108,6 +112,10 @@ struct TypeDefinition {
 template<> struct TypeDefinition<QEasingCurve> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QRegularExpression> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QJsonValue> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QJsonObject> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QJsonArray> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QJsonDocument> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_GEOM_VARIANT
 template<> struct TypeDefinition<QRect> { static const bool IsAvailable = false; };
