@@ -97,6 +97,9 @@ private slots:
     void isEnum();
     void registerStreamBuiltin();
     void automaticTemplateRegistration();
+    void saveAndLoadBuiltin_data();
+    void saveAndLoadBuiltin();
+    void saveAndLoadCustom();
 };
 
 struct Foo { int i; };
@@ -1312,6 +1315,129 @@ void tst_QMetaType::automaticTemplateRegistration()
     typedef QList<UnregisteredType> UnregisteredTypeList;
     QVERIFY(qRegisterMetaType<UnregisteredTypeList>("UnregisteredTypeList") > 0);
   }
+}
+
+template <typename T>
+struct StreamingTraits
+{
+    enum { isStreamable = 1 }; // Streamable by default
+};
+
+// Non-streamable types
+
+#define DECLARE_NONSTREAMABLE(Type) \
+    template<> struct StreamingTraits<Type> { enum { isStreamable = 0 }; };
+
+DECLARE_NONSTREAMABLE(void)
+DECLARE_NONSTREAMABLE(void*)
+DECLARE_NONSTREAMABLE(QModelIndex)
+DECLARE_NONSTREAMABLE(QObject*)
+DECLARE_NONSTREAMABLE(QWidget*)
+
+#define DECLARE_GUI_CLASS_NONSTREAMABLE(MetaTypeName, MetaTypeId, RealType) \
+    DECLARE_NONSTREAMABLE(RealType)
+QT_FOR_EACH_STATIC_GUI_CLASS(DECLARE_GUI_CLASS_NONSTREAMABLE)
+#undef DECLARE_GUI_CLASS_NONSTREAMABLE
+
+#define DECLARE_WIDGETS_CLASS_NONSTREAMABLE(MetaTypeName, MetaTypeId, RealType) \
+    DECLARE_NONSTREAMABLE(RealType)
+QT_FOR_EACH_STATIC_WIDGETS_CLASS(DECLARE_WIDGETS_CLASS_NONSTREAMABLE)
+#undef DECLARE_WIDGETS_CLASS_NONSTREAMABLE
+
+#undef DECLARE_NONSTREAMABLE
+
+void tst_QMetaType::saveAndLoadBuiltin_data()
+{
+    QTest::addColumn<int>("type");
+    QTest::addColumn<bool>("isStreamable");
+
+#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
+    QTest::newRow(#RealType) << MetaTypeId << bool(StreamingTraits<RealType>::isStreamable);
+    QT_FOR_EACH_STATIC_TYPE(ADD_METATYPE_TEST_ROW)
+#undef ADD_METATYPE_TEST_ROW
+}
+
+void tst_QMetaType::saveAndLoadBuiltin()
+{
+    QFETCH(int, type);
+    QFETCH(bool, isStreamable);
+
+    void *value = QMetaType::create(type);
+
+    QByteArray ba;
+    QDataStream stream(&ba, QIODevice::ReadWrite);
+    QCOMPARE(QMetaType::save(stream, type, value), isStreamable);
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    if (isStreamable) {
+        QVERIFY(QMetaType::load(stream, type, value)); // Hmmm, shouldn't it return false?
+        QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
+    }
+
+    stream.device()->seek(0);
+    stream.resetStatus();
+    QCOMPARE(QMetaType::load(stream, type, value), isStreamable);
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    if (isStreamable) {
+        QVERIFY(QMetaType::load(stream, type, value)); // Hmmm, shouldn't it return false?
+        QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
+    }
+
+    QMetaType::destroy(type, value);
+}
+
+struct CustomStreamableType
+{
+    int a;
+};
+Q_DECLARE_METATYPE(CustomStreamableType)
+
+QDataStream &operator<<(QDataStream &out, const CustomStreamableType &t)
+{
+    out << t.a; return out;
+}
+
+QDataStream &operator>>(QDataStream &in, CustomStreamableType &t)
+{
+    int a;
+    in >> a;
+    if (in.status() == QDataStream::Ok)
+        t.a = a;
+    return in;
+}
+
+void tst_QMetaType::saveAndLoadCustom()
+{
+    CustomStreamableType t;
+    t.a = 123;
+
+    int id = ::qMetaTypeId<CustomStreamableType>();
+    QByteArray ba;
+    QDataStream stream(&ba, QIODevice::ReadWrite);
+    QVERIFY(!QMetaType::save(stream, id, &t));
+    QCOMPARE(stream.status(), QDataStream::Ok);
+    QVERIFY(!QMetaType::load(stream, id, &t));
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    qRegisterMetaTypeStreamOperators<CustomStreamableType>("CustomStreamableType");
+    QVERIFY(QMetaType::save(stream, id, &t));
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    CustomStreamableType t2;
+    t2.a = -1;
+    QVERIFY(QMetaType::load(stream, id, &t2)); // Hmmm, shouldn't it return false?
+    QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
+    QCOMPARE(t2.a, -1);
+
+    stream.device()->seek(0);
+    stream.resetStatus();
+    QVERIFY(QMetaType::load(stream, id, &t2));
+    QCOMPARE(stream.status(), QDataStream::Ok);
+    QCOMPARE(t2.a, t.a);
+
+    QVERIFY(QMetaType::load(stream, id, &t2)); // Hmmm, shouldn't it return false?
+    QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
 }
 
 // Compile-time test, it should be possible to register function pointer types
