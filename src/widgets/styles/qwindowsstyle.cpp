@@ -69,12 +69,6 @@
 #include <private/qmath_p.h>
 #include <qmath.h>
 
-#ifdef Q_WS_X11
-#include "qfileinfo.h"
-#include "qdir.h"
-#include <private/qt_x11_p.h>
-#endif
-
 #include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
