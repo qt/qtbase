@@ -5,7 +5,7 @@ unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
 !wince*:include(tools/tools.pro)
 SRC_SUBDIRS += src_corelib
-SRC_SUBDIRS += src_network src_sql src_gui src_xml src_widgets src_testlib src_platformsupport
+SRC_SUBDIRS += src_network src_sql src_gui src_xml src_testlib src_platformsupport src_widgets
 !wince*:SRC_SUBDIRS += src_printsupport
 nacl: SRC_SUBDIRS -= src_network src_testlib
 contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
@@ -54,7 +54,7 @@ src_concurrent.target = sub-concurrent
    src_gui.depends = src_corelib
    src_printsupport.depends = src_corelib src_gui src_widgets
    src_platformsupport.depends = src_corelib src_gui src_network
-   src_widgets.depends = src_corelib src_gui src_tools_uic
+   src_widgets.depends = src_corelib src_gui src_tools_uic src_platformsupport
    src_xml.depends = src_corelib
    src_concurrent.depends = src_corelib
    src_dbus.depends = src_corelib

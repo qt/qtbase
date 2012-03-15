@@ -58,9 +58,9 @@
 #  include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
-#if defined(Q_WS_X11) && !defined(Q_NO_STYLE_GTK)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_STYLE_GTK)
 #  include <private/qgtkstyle_p.h>
-#  include <private/qt_x11_p.h>
+#  include <QtPlatformSupport/private/qgenericunixservices_p.h>
 #endif
 
 #ifndef SHGFI_ADDOVERLAYS
@@ -399,8 +399,8 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
 {
     Q_D(const QFileIconProvider);
 
-#if defined(Q_WS_X11) && !defined(QT_NO_STYLE_GTK)
-    if (X11->desktopEnvironment == DE_GNOME) {
+#if defined(Q_OS_UNIX) && !defined(QT_NO_STYLE_GTK)
+    if (QGenericUnixServices::desktopEnvironment() == QGenericUnixServices::DE_GNOME) {
         QIcon gtkIcon = QGtkStylePrivate::getFilesystemIcon(info);
         if (!gtkIcon.isNull())
             return gtkIcon;
