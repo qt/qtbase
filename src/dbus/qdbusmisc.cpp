@@ -132,7 +132,6 @@ bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name)
 // sig must be the normalised signature for the method
 int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes)
 {
-    QDBusMetaTypeId::init();
     return qDBusParametersForMethod(mm.parameterTypes(), metaTypes);
 }
 
@@ -140,6 +139,7 @@ int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes)
 
 int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<int>& metaTypes)
 {
+    QDBusMetaTypeId::init();
     metaTypes.clear();
 
     metaTypes.append(0);        // return type
