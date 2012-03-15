@@ -3378,9 +3378,10 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     gestures. Whenever such a decision is made (the gesture is recognized), the clients will be
     notified with a QEvent::TouchCancel event so they can update their state accordingly.
 
-    The touchPoints() function returns a list of all touch points contained in the event.
-    Information about each touch point can be retrieved using the QTouchEvent::TouchPoint class.
-    The Qt::TouchPointState enum describes the different states that a touch point may have.
+    The touchPoints() function returns a list of all touch points contained in the event. Note that
+    this list may be empty, for example in case of a QEvent::TouchCancel event. Information about
+    each touch point can be retrieved using the QTouchEvent::TouchPoint class. The
+    Qt::TouchPointState enum describes the different states that a touch point may have.
 
     \section1 Event Delivery and Propagation
 
