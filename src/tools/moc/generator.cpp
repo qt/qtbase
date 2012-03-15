@@ -60,7 +60,7 @@ uint nameToBuiltinType(const QByteArray &name)
         return 0;
 
     uint tp = QMetaType::type(name.constData());
-    return tp < uint(QMetaType::User) ? tp : QMetaType::UnknownType;
+    return tp < uint(QMetaType::User) ? tp : uint(QMetaType::UnknownType);
 }
 
 /*
