@@ -53,6 +53,16 @@
 
 QT_BEGIN_NAMESPACE
 
+static void appendOrganizationAndApp(QString &path)
+{
+    const QString org = QCoreApplication::organizationName();
+    if (!org.isEmpty())
+        path += QLatin1Char('/') + org;
+    const QString appName = QCoreApplication::applicationName();
+    if (!appName.isEmpty())
+        path += QLatin1Char('/') + appName;
+}
+
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
     switch (type) {
@@ -67,12 +77,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         QString xdgCacheHome = QFile::decodeName(qgetenv("XDG_CACHE_HOME"));
         if (xdgCacheHome.isEmpty())
             xdgCacheHome = QDir::homePath() + QLatin1String("/.cache");
-        if (type == QStandardPaths::CacheLocation) {
-            if (!QCoreApplication::organizationName().isEmpty())
-                xdgCacheHome += QLatin1Char('/') + QCoreApplication::organizationName();
-            if (!QCoreApplication::applicationName().isEmpty())
-                xdgCacheHome += QLatin1Char('/') + QCoreApplication::applicationName();
-        }
+        if (type == QStandardPaths::CacheLocation)
+            appendOrganizationAndApp(xdgCacheHome);
         return xdgCacheHome;
     }
     case DataLocation:
@@ -81,12 +87,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         QString xdgDataHome = QFile::decodeName(qgetenv("XDG_DATA_HOME"));
         if (xdgDataHome.isEmpty())
             xdgDataHome = QDir::homePath() + QLatin1String("/.local/share");
-        if (type == QStandardPaths::DataLocation) {
-            if (!QCoreApplication::organizationName().isEmpty())
-                xdgDataHome += QLatin1Char('/') + QCoreApplication::organizationName();
-            if (!QCoreApplication::applicationName().isEmpty())
-                xdgDataHome += QLatin1Char('/') + QCoreApplication::applicationName();
-        }
+        if (type == QStandardPaths::DataLocation)
+            appendOrganizationAndApp(xdgDataHome);
         return xdgDataHome;
     }
     case ConfigLocation:
@@ -229,24 +231,49 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     return path;
 }
 
+static QStringList xdgDataDirs()
+{
+    QStringList dirs;
+    // http://standards.freedesktop.org/basedir-spec/latest/
+    QString xdgDataDirsEnv = QFile::decodeName(qgetenv("XDG_DATA_DIRS"));
+    if (xdgDataDirsEnv.isEmpty()) {
+        dirs.append(QString::fromLatin1("/usr/local/share"));
+        dirs.append(QString::fromLatin1("/usr/share"));
+    } else {
+        dirs = xdgDataDirsEnv.split(QLatin1Char(':'));
+    }
+    return dirs;
+}
+
 QStringList QStandardPaths::standardLocations(StandardLocation type)
 {
     QStringList dirs;
-    if (type == ConfigLocation) {
+    switch (type) {
+    case ConfigLocation:
+    {
         // http://standards.freedesktop.org/basedir-spec/latest/
-        QString xdgConfigDirs = QFile::decodeName(qgetenv("XDG_CONFIG_DIRS"));
+        const QString xdgConfigDirs = QFile::decodeName(qgetenv("XDG_CONFIG_DIRS"));
         if (xdgConfigDirs.isEmpty())
             dirs.append(QString::fromLatin1("/etc/xdg"));
         else
             dirs = xdgConfigDirs.split(QLatin1Char(':'));
-    } else if (type == GenericDataLocation) {
-        // http://standards.freedesktop.org/basedir-spec/latest/
-        QString xdgConfigDirs = QFile::decodeName(qgetenv("XDG_DATA_DIRS"));
-        if (xdgConfigDirs.isEmpty()) {
-            dirs.append(QString::fromLatin1("/usr/local/share"));
-            dirs.append(QString::fromLatin1("/usr/share"));
-        } else
-            dirs = xdgConfigDirs.split(QLatin1Char(':'));
+    }
+    break;
+    case GenericDataLocation:
+        dirs = xdgDataDirs();
+        break;
+    case ApplicationsLocation:
+        dirs = xdgDataDirs();
+        for (int i = 0; i < dirs.count(); ++i)
+            dirs[i].append(QLatin1String("/applications"));
+        break;
+    case DataLocation:
+        dirs = xdgDataDirs();
+        for (int i = 0; i < dirs.count(); ++i)
+            appendOrganizationAndApp(dirs[i]);
+        break;
+    default:
+        break;
     }
     const QString localDir = writableLocation(type);
     dirs.prepend(localDir);
