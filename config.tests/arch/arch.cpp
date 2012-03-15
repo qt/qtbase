@@ -41,6 +41,19 @@
 
 // NOTE: This file is not meant to be compiled, only preprocessed.
 #include "../../src/corelib/global/qprocessordetection.h"
+#undef alpha
+#undef arm
+#undef avr32
+#undef bfin
+#undef i386
+#undef x86_64
+#undef ia64
+#undef mips
+#undef power
+#undef s390
+#undef sh
+#undef sparc
+#undef unknown
 #if defined(Q_PROCESSOR_ALPHA)
 alpha
 #elif defined(Q_PROCESSOR_ARM)
