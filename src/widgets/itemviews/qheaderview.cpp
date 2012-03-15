@@ -3172,8 +3172,10 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
 void QHeaderViewPrivate::createSectionSpan(int start, int end, int size, QHeaderView::ResizeMode mode)
 {
     int sizePerSection = size / (end - start + 1);
-    if (end >= sectionSpans.count())
+    if (end >= sectionSpans.count()) {
         sectionSpans.resize(end + 1);
+        sectionStartposRecalc = true;
+    }
     SectionSpan *sectiondata = sectionSpans.data();
     for (int i = start; i <= end; ++i) {
         length += (sizePerSection - sectiondata[i].size);
