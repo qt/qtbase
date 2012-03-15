@@ -197,8 +197,9 @@ protected:
     void changeEvent(QEvent *);
     void initStyleOption(QStyleOptionTab *option, int tabIndex) const;
 
-
+#ifndef QT_NO_ACCESSIBILITY
     friend class QAccessibleTabBar;
+#endif
 private:
     Q_DISABLE_COPY(QTabBar)
     Q_DECLARE_PRIVATE(QTabBar)

@@ -105,7 +105,9 @@ public:
     virtual QPlatformDrag *drag() const;
 #endif
     virtual QPlatformInputContext *inputContext() const;
+#ifndef QT_NO_ACCESSIBILITY
     virtual QPlatformAccessibility *accessibility() const;
+#endif
 
     // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;

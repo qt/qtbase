@@ -43,7 +43,9 @@
 
 #include "private/qwidget_p.h"
 #include "private/qapplication_p.h"
+#ifndef QT_NO_ACCESSIBILITY
 #include <QtGui/qaccessible.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -60,12 +62,14 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
 {
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 QAccessibleInterface *QWidgetWindow::accessibleRoot() const
 {
     if (m_widget)
         return QAccessible::queryAccessibleInterface(m_widget);
     return 0;
 }
+#endif
 
 QObject *QWidgetWindow::focusObject() const
 {

@@ -62,7 +62,9 @@ public:
     QWidgetWindow(QWidget *widget);
 
     QWidget *widget() const { return m_widget; }
+#ifndef QT_NO_ACCESSIBILITY
     QAccessibleInterface *accessibleRoot() const;
+#endif
 
     QObject *focusObject() const;
 protected:

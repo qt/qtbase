@@ -260,6 +260,8 @@ QPlatformInputContext *QPlatformIntegration::inputContext() const
     return 0;
 }
 
+#ifndef QT_NO_ACCESSIBILITY
+
 /*!
   Returns the platforms accessibility.
 
@@ -269,6 +271,8 @@ QPlatformAccessibility *QPlatformIntegration::accessibility() const
 {
     return 0;
 }
+
+#endif
 
 QVariant QPlatformIntegration::styleHint(StyleHint hint) const
 {
