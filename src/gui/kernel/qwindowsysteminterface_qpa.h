@@ -69,6 +69,18 @@ public:
     static void handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier);
     static void handleMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
+    static bool tryHandleSynchronousShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
+                                                  const QString & text = QString(), bool autorep = false, ushort count = 1);
+    static bool tryHandleSynchronousShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
+                                                  const QString & text = QString(), bool autorep = false, ushort count = 1);
+
+    static bool tryHandleSynchronousExtendedShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
+                                                          quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
+                                                          const QString & text = QString(), bool autorep = false, ushort count = 1);
+    static bool tryHandleSynchronousExtendedShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
+                                                          quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
+                                                          const QString & text = QString(), bool autorep = false, ushort count = 1);
+
     static void handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
     static void handleKeyEvent(QWindow *w, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
 
