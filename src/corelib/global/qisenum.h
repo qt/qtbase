@@ -52,10 +52,16 @@ QT_BEGIN_NAMESPACE
 #    define Q_IS_ENUM(x) __is_enum(x)
 #  elif defined(Q_CC_MSVC) && defined(_MSC_FULL_VER) && (_MSC_FULL_VER >=140050215)
 #    define Q_IS_ENUM(x) __is_enum(x)
-#  else
-#    include <QtCore/qtypetraits.h>
-#    define Q_IS_ENUM(x) QtPrivate::is_enum<x>::value
+#  elif defined(Q_CC_CLANG)
+#    if __has_extension(is_enum)
+#      define Q_IS_ENUM(x) __is_enum(x)
+#    endif
 #  endif
+#endif
+
+#ifndef Q_IS_ENUM
+#  include <QtCore/qtypetraits.h>
+#  define Q_IS_ENUM(x) QtPrivate::is_enum<x>::value
 #endif
 
 QT_END_HEADER
