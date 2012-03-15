@@ -1021,11 +1021,18 @@ bool QSqlTableModel::removeColumns(int column, int count, const QModelIndex &par
     an invalid model index.
 
     When the edit strategy is OnManualSubmit, deletion of rows from
-    the database is delayed until submitAll() is called; otherwise,
-    deletions are immediate.
+    the database is delayed until submitAll() is called.
 
-    Inserted but not yet submitted rows in the range to be removed
-    are immediately removed from the model.
+    For OnFieldChange and OnRowChange, only one row may be deleted
+    at a time and only if no other row has a cached change. Deletions
+    are submitted immediately to the database. The model retains a
+    blank row for successfully deleted row until refreshed with select().
+
+    After failed deletion, the operation is not reverted in the model.
+    The application may resubmit or revert.
+
+    Inserted but not yet successfully submitted rows in the range to be
+    removed are immediately removed from the model.
 
     Before a row is deleted from the database, the beforeDelete()
     signal is emitted.
@@ -1046,6 +1053,10 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
         return false;
     else if (!count)
         return true;
+
+    if (d->strategy != OnManualSubmit)
+        if (count > 1 || (d->cache.value(row).submitted() && isDirty()))
+            return false;
 
     // Iterate backwards so we don't have to worry about removed rows causing
     // higher cache entries to shift downwards.

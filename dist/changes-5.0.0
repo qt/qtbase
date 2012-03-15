@@ -413,6 +413,9 @@ model methods setData() or setRecord().
 before doing anything. Previously, it would remove what it could and
 ignore the rest of the range.
 
+* removeRows(), for OnFieldChange and OnRowChange, allows only 1 row to be
+removed and only if there are no other changed rows.
+
 * setRecord() and insertRecord()
   -Only use fields where generated flag is set to true. This is
   is consistent with the meaning of the flag.

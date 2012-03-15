@@ -592,12 +592,16 @@ void tst_QSqlTableModel::insertRowFailure()
         QCOMPARE(model.data(model.index(1, 1)).toString(), QString("blah"));
         QFAIL_SQL(model, insertRow(2));
         QCOMPARE(model.rowCount(), 2);
+        QFAIL_SQL(model, removeRow(1));
+        QCOMPARE(model.rowCount(), 2);
     } else {
         QVERIFY_SQL(model, setData(model.index(1, 1), QString("eggs")));
         QCOMPARE(model.data(model.index(1, 1)).toString(), QString("eggs"));
         QVERIFY_SQL(model, setRecord(1, values));
         QCOMPARE(model.data(model.index(1, 1)).toString(), QString("spam"));
         QVERIFY_SQL(model, insertRow(2));
+        QCOMPARE(model.rowCount(), 3);
+        QVERIFY_SQL(model, removeRow(1));
         QCOMPARE(model.rowCount(), 3);
     }
 
@@ -795,8 +799,10 @@ void tst_QSqlTableModel::removeRows()
     QVERIFY(!model.removeRows(1, 0)); // zero count
     QVERIFY(!model.removeRows(5, 1)); // past end (DOESN'T causes a beforeDelete to be emitted)
     QVERIFY(!model.removeRows(1, 0, model.index(2, 0))); // can't pass a valid modelindex
+    QFAIL_SQL(model, removeRows(0, 2)); // more than 1 row on OnFieldChange
 
-    QVERIFY_SQL(model, removeRows(0, 2));
+    QVERIFY_SQL(model, removeRows(0, 1));
+    QVERIFY_SQL(model, removeRows(1, 1));
     QCOMPARE(beforeDeleteSpy.count(), 2);
     QVERIFY(beforeDeleteSpy.at(0).at(0).toInt() == 0);
     QVERIFY(beforeDeleteSpy.at(1).at(0).toInt() == 1);
@@ -1079,6 +1085,7 @@ void tst_QSqlTableModel::isDirty()
         QFAIL_SQL(model, setData(model.index(1, 1), QString("sam i am")));
         QFAIL_SQL(model, setRecord(1, model.record(1)));
         QFAIL_SQL(model, insertRow(1));
+        QFAIL_SQL(model, removeRow(1));
         QFAIL_SQL(model, isDirty(model.index(1, 1)));
 
         model.revertAll();
