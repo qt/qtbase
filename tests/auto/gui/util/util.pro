@@ -4,4 +4,5 @@ SUBDIRS= \
     qdoublevalidator \
     qintvalidator \
     qregexpvalidator \
+    qregularexpressionvalidator \
 

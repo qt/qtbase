@@ -133,3 +133,46 @@ s = "README.1ST";  v.validate(s, pos); // Returns Acceptable
 s = "read me.txt"; v.validate(s, pos); // Returns Invalid
 s = "readm";       v.validate(s, pos); // Returns Intermediate
 //! [4]
+
+//! [5]
+// regexp: optional '-' followed by between 1 and 3 digits
+QRegularExpression rx("-?\\d{1,3}");
+QValidator *validator = new QRegularExpressionValidator(rx, this);
+
+QLineEdit *edit = new QLineEdit(this);
+edit->setValidator(validator);
+//! [5]
+
+//! [6]
+// integers 1 to 9999
+QRegularExpression re("[1-9]\\d{0,3}");
+// the validator treats the regexp as "^[1-9]\\d{0,3}$"
+QRegularExpressionValidator v(re, 0);
+QString s;
+int pos = 0;
+
+s = "0";     v.validate(s, pos);    // returns Invalid
+s = "12345"; v.validate(s, pos);    // returns Invalid
+s = "1";     v.validate(s, pos);    // returns Acceptable
+
+re.setPattern("\\S+");            // one or more non-whitespace characters
+v.setRegularExpression(re);
+s = "myfile.txt";  v.validate(s, pos); // Returns Acceptable
+s = "my file.txt"; v.validate(s, pos); // Returns Invalid
+
+// A, B or C followed by exactly five digits followed by W, X, Y or Z
+re.setPattern("[A-C]\\d{5}[W-Z]");
+v.setRegularExpression(re);
+s = "a12345Z"; v.validate(s, pos);        // Returns Invalid
+s = "A12345Z"; v.validate(s, pos);        // Returns Acceptable
+s = "B12";     v.validate(s, pos);        // Returns Intermediate
+
+// match most 'readme' files
+re.setPattern("read\\S?me(\.(txt|asc|1st))?");
+re.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+v.setRegularExpression(re);
+s = "readme";      v.validate(s, pos); // Returns Acceptable
+s = "README.1ST";  v.validate(s, pos); // Returns Acceptable
+s = "read me.txt"; v.validate(s, pos); // Returns Invalid
+s = "readm";       v.validate(s, pos); // Returns Intermediate
+//! [6]
