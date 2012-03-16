@@ -785,6 +785,11 @@ void QWidgetLineControl::internalInsert(const QString &s)
         if (m_passwordEchoTimer != 0)
             killTimer(m_passwordEchoTimer);
         int delay = qGuiApp->styleHints()->passwordMaskDelay();
+#ifdef QT_BUILD_INTERNAL
+        if (m_passwordMaskDelayOverride >= 0)
+            delay = m_passwordMaskDelayOverride;
+#endif
+
         if (delay > 0)
             m_passwordEchoTimer = startTimer(delay);
     }

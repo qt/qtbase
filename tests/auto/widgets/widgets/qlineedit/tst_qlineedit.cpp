@@ -62,6 +62,8 @@
 #endif
 
 #include <qlineedit.h>
+#include <private/qlineedit_p.h>
+#include <private/qwidgetlinecontrol_p.h>
 #include <qmenu.h>
 #include <qlayout.h>
 #include <qspinbox.h>
@@ -1670,8 +1672,16 @@ void tst_QLineEdit::passwordEchoOnEdit()
 
 void tst_QLineEdit::passwordEchoDelay()
 {
-    if (qGuiApp->styleHints()->passwordMaskDelay() <= 0)
-        QSKIP("No mask delay in use");
+    int delay = qGuiApp->styleHints()->passwordMaskDelay();
+#if defined QT_BUILD_INTERNAL
+    QLineEditPrivate *priv = QLineEditPrivate::get(testWidget);
+    QWidgetLineControl *control = priv->control;
+    control->m_passwordMaskDelayOverride = 200;
+    delay = 200;
+#endif
+    if (delay <= 0)
+        QSKIP("Platform not defining echo delay and overriding only possible in internal build");
+
     QStyleOptionFrameV2 opt;
     QChar fillChar = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
 
@@ -1691,7 +1701,7 @@ void tst_QLineEdit::passwordEchoDelay()
     QCOMPARE(testWidget->displayText(), QString(4, fillChar));
     QTest::keyPress(testWidget, '4');
     QCOMPARE(testWidget->displayText(), QString(4, fillChar) + QLatin1Char('4'));
-    QTest::qWait(qGuiApp->styleHints()->passwordMaskDelay());
+    QTest::qWait(delay);
     QTRY_COMPARE(testWidget->displayText(), QString(5, fillChar));
     QTest::keyPress(testWidget, '5');
     QCOMPARE(testWidget->displayText(), QString(5, fillChar) + QLatin1Char('5'));

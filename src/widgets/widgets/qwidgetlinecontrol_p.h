@@ -98,6 +98,9 @@ public:
         , m_threadChecks(false)
         , m_textLayoutThread(0)
  #endif
+#if defined(QT_BUILD_INTERNAL)
+        , m_passwordMaskDelayOverride(-1)
+#endif
         , m_keyboardScheme(0)
     {
         init(txt);
@@ -494,6 +497,11 @@ private:
 #if defined(Q_WS_MAC)
     bool m_threadChecks;
     mutable QThread *m_textLayoutThread;
+#endif
+
+public:
+#if defined(QT_BUILD_INTERNAL)
+    int m_passwordMaskDelayOverride;
 #endif
 
 Q_SIGNALS:

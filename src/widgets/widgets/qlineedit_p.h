@@ -70,7 +70,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QLineEditPrivate : public QWidgetPrivate
+class Q_AUTOTEST_EXPORT QLineEditPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QLineEdit)
 public:
@@ -107,6 +107,10 @@ public:
     inline bool shouldEnableInputMethod() const
     {
         return !control->isReadOnly();
+    }
+
+    static inline QLineEditPrivate *get(QLineEdit *lineEdit) {
+        return lineEdit->d_func();
     }
 
     QPoint tripleClick;
