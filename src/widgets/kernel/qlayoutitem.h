@@ -83,7 +83,7 @@ public:
 
     Qt::Alignment alignment() const { return align; }
     void setAlignment(Qt::Alignment a);
-    QSizePolicy::ControlTypes controlTypes() const;
+    virtual QSizePolicy::ControlTypes controlTypes() const;
 
 protected:
     Qt::Alignment align;
@@ -135,7 +135,7 @@ public:
 
     bool hasHeightForWidth() const;
     int heightForWidth(int) const;
-
+    QSizePolicy::ControlTypes controlTypes() const;
 protected:
     QWidget *wid;
 };

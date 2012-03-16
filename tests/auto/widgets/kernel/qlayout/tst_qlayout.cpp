@@ -52,6 +52,7 @@
 #include <QtWidgets/QFrame>
 #include <QtWidgets/QWindowsStyle>
 #include <QtWidgets/QSizePolicy>
+#include <QtWidgets/QComboBox>
 #include <QPushButton>
 #include <QRadioButton>
 #include <private/qlayoutengine_p.h>
@@ -77,6 +78,7 @@ private slots:
     void layoutItemRect();
     void warnIfWrongParent();
     void controlTypes();
+    void controlTypes2();
     void adjustSizeShouldMakeSureLayoutIsActivated();
 };
 
@@ -310,7 +312,16 @@ void tst_QLayout::controlTypes()
     QCOMPARE(layout.controlTypes(), QSizePolicy::DefaultType);
     QSizePolicy p;
     QCOMPARE(p.controlType(),QSizePolicy::DefaultType);
+}
 
+void tst_QLayout::controlTypes2()
+{
+    QWidget main;
+    QVBoxLayout *const layout = new QVBoxLayout(&main);
+    layout->setMargin(0);
+    QComboBox *combo = new QComboBox(&main);
+    layout->addWidget(combo);
+    QCOMPARE(layout->controlTypes(), QSizePolicy::ComboBox);
 }
 
 void tst_QLayout::adjustSizeShouldMakeSureLayoutIsActivated()
