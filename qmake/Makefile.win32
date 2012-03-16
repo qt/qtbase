@@ -159,7 +159,7 @@ $(OBJS): qmake_pch.obj
 $(QTOBJS): qmake_pch.obj
 
 qmake_pch.obj:
-	$(CXX) $(CXXFLAGS_BARE) -c -Yc -Fpqmake_pch.pch -TP qmake_pch.h
+	$(CXX) $(CXXFLAGS_BARE) -c -Yc -Fpqmake_pch.pch -TP $(QMKSRC)\qmake_pch.h
 
 {$(SOURCE_PATH)\qmake\generators\mac}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
