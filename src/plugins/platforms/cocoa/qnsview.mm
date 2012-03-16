@@ -545,7 +545,31 @@ static QTouchDevice *touchDevice = 0;
     NSTimeInterval timestamp = [theEvent timestamp];
     ulong qt_timestamp = timestamp * 1000;
 
-    QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, pixelDelta, angleDelta);
+    // Set keyboard modifiers depending on event phase. A two-finger trackpad flick
+    // generates a stream of scroll events. We want the keyboard modifier state to
+    // be the state at the beginning of the flick in order to avoid changing the
+    // interpretation of the events mid-stream. One example of this happening would
+    // be when pressing cmd after scrolling in Qt Creator: not taking the phase into
+    // account causes the end of the event stream to be interpreted as font size changes.
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
+        NSEventPhase phase = [theEvent phase];
+        if (phase == NSEventPhaseBegan) {
+            currentWheelModifiers = [self convertKeyModifiers:[theEvent modifierFlags]];
+        }
+
+        QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, pixelDelta, angleDelta, currentWheelModifiers);
+
+        if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled) {
+            currentWheelModifiers = Qt::NoModifier;
+        }
+    }
+#else
+    QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, pixelDelta, angleDelta,
+                                             [self convertKeyModifiers:[theEvent modifierFlags]]);
+#endif
+
 }
 #endif //QT_NO_WHEELEVENT
 

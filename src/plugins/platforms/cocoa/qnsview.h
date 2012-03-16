@@ -61,6 +61,7 @@ QT_END_NAMESPACE
     QString m_composingText;
     bool m_keyEventsAccepted;
     QStringList *currentCustomDragTypes;
+    Qt::KeyboardModifiers currentWheelModifiers;
 }
 
 - (id)init;
