@@ -96,4 +96,9 @@ bool QStyleHints::showIsFullScreen() const
     return hint(QPlatformIntegration::ShowIsFullScreen).toBool();
 }
 
+int QStyleHints::passwordMaskDelay() const
+{
+    return hint(QPlatformIntegration::PasswordMaskDelay).toInt();
+}
+
 QT_END_NAMESPACE

@@ -291,6 +291,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return 500;
     case ShowIsFullScreen:
         return false;
+    case PasswordMaskDelay:
+        return 0;
     }
 
     return 0;

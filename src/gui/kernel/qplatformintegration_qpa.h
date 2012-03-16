@@ -121,7 +121,8 @@ public:
         StartDragDistance,
         StartDragTime,
         KeyboardAutoRepeatRate,
-        ShowIsFullScreen
+        ShowIsFullScreen,
+        PasswordMaskDelay
     };
 
     virtual QVariant styleHint(StyleHint hint) const;
