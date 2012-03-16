@@ -61,6 +61,7 @@ public:
     ~QCocoaScreen();
 
     QRect geometry() const { return m_geometry; }
+    QRect availableGeometry() const { return m_availableGeometry; }
     int depth() const { return m_depth; }
     QImage::Format format() const { return m_format; }
     QSizeF physicalSize() const { return m_physicalSize; }
@@ -69,6 +70,7 @@ public:
 public:
     NSScreen *m_screen;
     QRect m_geometry;
+    QRect m_availableGeometry;
     int m_depth;
     QImage::Format m_format;
     QSizeF m_physicalSize;
