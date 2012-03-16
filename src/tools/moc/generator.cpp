@@ -624,17 +624,7 @@ void Generator::generateFunctionParameters(const QList<FunctionDef>& list, const
             if (j > -1)
                 fputc(' ', out);
             const QByteArray &typeName = (j < 0) ? f.normalizedType : f.arguments.at(j).normalizedType;
-            if (isBuiltinType(typeName)) {
-                int type = nameToBuiltinType(typeName);
-                const char *valueString = metaTypeEnumValueString(type);
-                if (valueString)
-                    fprintf(out, "QMetaType::%s", valueString);
-                else
-                    fprintf(out, "%4d", type);
-            } else {
-                Q_ASSERT(!typeName.isEmpty() || f.isConstructor);
-                fprintf(out, "0x%.8x | %d", IsUnresolvedType, stridx(typeName));
-            }
+            generateTypeInfo(typeName, /*allowEmptyName=*/f.isConstructor);
             fputc(',', out);
         }
 
@@ -645,6 +635,31 @@ void Generator::generateFunctionParameters(const QList<FunctionDef>& list, const
         }
 
         fprintf(out, "\n");
+    }
+}
+
+void Generator::generateTypeInfo(const QByteArray &typeName, bool allowEmptyName)
+{
+    Q_UNUSED(allowEmptyName);
+    if (isBuiltinType(typeName)) {
+        int type;
+        const char *valueString;
+        if (typeName == "qreal") {
+            type = QMetaType::UnknownType;
+            valueString = "QReal";
+        } else {
+            type = nameToBuiltinType(typeName);
+            valueString = metaTypeEnumValueString(type);
+        }
+        if (valueString) {
+            fprintf(out, "QMetaType::%s", valueString);
+        } else {
+            Q_ASSERT(type != QMetaType::UnknownType);
+            fprintf(out, "%4d", type);
+        }
+    } else {
+        Q_ASSERT(!typeName.isEmpty() || allowEmptyName);
+        fprintf(out, "0x%.8x | %d", IsUnresolvedType, stridx(typeName));
     }
 }
 
@@ -721,18 +736,7 @@ void Generator::generateProperties()
             flags |= Final;
 
         fprintf(out, "    %4d, ", stridx(p.name));
-
-        if (isBuiltinType(p.type)) {
-            int type = nameToBuiltinType(p.type);
-            const char *valueString = metaTypeEnumValueString(type);
-            if (valueString)
-                fprintf(out, "QMetaType::%s", valueString);
-            else
-                fprintf(out, "%4d", type);
-        } else {
-            fprintf(out, "0x%.8x | %d", IsUnresolvedType, stridx(p.type));
-        }
-
+        generateTypeInfo(p.type);
         fprintf(out, ", 0x%.8x,\n", flags);
     }
 

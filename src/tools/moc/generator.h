@@ -61,6 +61,7 @@ private:
     void generateFunctions(const QList<FunctionDef> &list, const char *functype, int type, int &paramsIndex);
     void generateFunctionRevisions(const QList<FunctionDef>& list, const char *functype);
     void generateFunctionParameters(const QList<FunctionDef> &list, const char *functype);
+    void generateTypeInfo(const QByteArray &typeName, bool allowEmptyName = false);
     void registerEnumStrings();
     void generateEnums(int index);
     void registerPropertyStrings();
