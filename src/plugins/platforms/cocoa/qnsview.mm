@@ -572,16 +572,21 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)handleKeyEvent:(NSEvent *)nsevent eventType:(int)eventType
 {
-    NSTimeInterval timestamp = [nsevent timestamp];
-    ulong qt_timestamp = timestamp * 1000;
-    QString characters = QString::fromUtf8([[nsevent characters] UTF8String]);
+    ulong timestamp = [nsevent timestamp] * 1000;
     Qt::KeyboardModifiers modifiers = [self convertKeyModifiers:[nsevent modifierFlags]];
-    QChar ch([[nsevent charactersIgnoringModifiers] characterAtIndex:0]);
+    NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
+    QChar ch([charactersIgnoringModifiers characterAtIndex:0]);
     int keyCode = [self convertKeyCode:ch];
 
+    QString text;
     if (eventType == QEvent::KeyPress) {
+        // ignore text for the U+F700-U+F8FF range. This is used by Cocoa when
+        // delivering function keys (e.g. arrow keys, backspace, F1-F35, etc.)
+        if ([charactersIgnoringModifiers length] == 1 && (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff))
+            text = QString::fromUtf8([[nsevent characters] UTF8String]);
+
         if (!m_keyEventsAccepted && m_composingText.isEmpty())
-            m_keyEventsAccepted = QWindowSystemInterface::tryHandleSynchronousShortcutEvent(m_window, qt_timestamp, keyCode, modifiers, characters);
+            m_keyEventsAccepted = QWindowSystemInterface::tryHandleSynchronousShortcutEvent(m_window, timestamp, keyCode, modifiers, text);
 
         QObject *fo = QGuiApplication::focusObject();
         if (!m_keyEventsAccepted && fo) {
@@ -593,9 +598,8 @@ static QTouchDevice *touchDevice = 0;
             }
         }
     }
-
     if (!m_keyEventsAccepted && m_composingText.isEmpty())
-        QWindowSystemInterface::handleKeyEvent(m_window, qt_timestamp, QEvent::Type(eventType), keyCode, modifiers, characters);
+        QWindowSystemInterface::handleKeyEvent(m_window, timestamp, QEvent::Type(eventType), keyCode, modifiers, text);
 }
 
 - (void)keyDown:(NSEvent *)nsevent
