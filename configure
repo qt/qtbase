@@ -6294,8 +6294,8 @@ if [ -n "$CFG_SYSROOT" ]; then
     echo "}" >> "$QTCONFIG.tmp"
     echo >> "$QTCONFIG.tmp"
 fi
-if [ "$CFG_RPATH" = "yes" ]; then
-    echo "QMAKE_RPATHDIR += \"$QT_INSTALL_LIBS\"" >> "$QTCONFIG.tmp"
+if [ -n "$RPATH_FLAGS" ]; then
+    echo "QMAKE_RPATHDIR += $RPATH_FLAGS" >> "$QTCONFIG.tmp"
 fi
 if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
     echo "QT_GCC_MAJOR_VERSION = $QT_GCC_MAJOR_VERSION" >> "$QTCONFIG.tmp"
