@@ -46,7 +46,7 @@
 #include <QGuiApplication>
 #include <QDebug>
 #include <QtCore/private/qcore_unix_p.h>
-#include <QtPlatformSupport/private/qudevhelper_p.h>
+#include <QtPlatformSupport/private/qudevicehelper_p.h>
 #include <linux/input.h>
 
 #ifdef USE_MTDEV
@@ -146,7 +146,17 @@ QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
     setObjectName(QLatin1String("Evdev Touch Handler"));
 
     QString dev;
-    q_udev_devicePath(UDev_Touchpad | UDev_Touchscreen, &dev);
+
+    // try to let udev scan for already connected devices
+    QScopedPointer<QUDeviceHelper> udeviceHelper(QUDeviceHelper::createUDeviceHelper(QUDeviceHelper::UDev_Touchpad | QUDeviceHelper::UDev_Touchscreen, this));
+    if (udeviceHelper) {
+        QStringList devices = udeviceHelper->scanConnectedDevices();
+
+        // only the first device found is used for now
+        if (devices.size() > 0)
+            dev = devices[0];
+    }
+
     if (dev.isEmpty())
         dev = QLatin1String("/dev/input/event0");
 

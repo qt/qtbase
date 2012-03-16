@@ -188,7 +188,6 @@ Configure::Configure(int& argc, char** argv)
         dictionary[ "QMAKESPEC_FROM" ] = "env";
     }
 
-    dictionary[ "ARCHITECTURE" ]    = "windows";
     dictionary[ "QCONFIG" ]         = "full";
     dictionary[ "EMBEDDED" ]        = "no";
     dictionary[ "BUILD_QMAKE" ]     = "yes";
@@ -199,6 +198,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "NOPROCESS" ]       = "no";
     dictionary[ "STL" ]             = "yes";
     dictionary[ "EXCEPTIONS" ]      = "yes";
+    dictionary[ "WIDGETS" ]         = "yes";
     dictionary[ "RTTI" ]            = "yes";
     dictionary[ "MMX" ]             = "auto";
     dictionary[ "3DNOW" ]           = "auto";
@@ -470,11 +470,7 @@ void Configure::parseCmdLine()
             ++i;
             if (i == argCount)
                 break;
-            dictionary[ "ARCHITECTURE" ] = configCmdLine.at(i);
-            if (configCmdLine.at(i) == "boundschecker") {
-                dictionary[ "ARCHITECTURE" ] = "generic";   // Boundschecker uses the generic arch,
-                qtConfig += "boundschecker";                // but also needs this CONFIG option
-            }
+            dictionary["OBSOLETE_ARCH_ARG"] = "yes";
         } else if (configCmdLine.at(i) == "-embedded") {
             dictionary[ "EMBEDDED" ] = "yes";
         } else if (configCmdLine.at(i) == "-xplatform") {
@@ -775,6 +771,11 @@ void Configure::parseCmdLine()
             dictionary[ "EXCEPTIONS" ] = "yes";
         else if (configCmdLine.at(i) == "-no-exceptions")
             dictionary[ "EXCEPTIONS" ] = "no";
+
+        else if (configCmdLine.at(i) == "-widgets")
+            dictionary[ "WIDGETS" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-widgets")
+            dictionary[ "WIDGETS" ] = "no";
 
         else if (configCmdLine.at(i) == "-rtti")
             dictionary[ "RTTI" ] = "yes";
@@ -1365,7 +1366,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "STL" ]                 = "no";
         dictionary[ "EXCEPTIONS" ]          = "no";
         dictionary[ "RTTI" ]                = "no";
-        dictionary[ "ARCHITECTURE" ]        = "windowsce";
         dictionary[ "3DNOW" ]               = "no";
         dictionary[ "SSE" ]                 = "no";
         dictionary[ "SSE2" ]                = "no";
@@ -1387,7 +1387,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
         dictionary[ "KBD_DRIVERS" ]         = "tty";
-        dictionary[ "GFX_DRIVERS" ]         = "linuxfb vnc";
+        dictionary[ "GFX_DRIVERS" ]         = "linuxfb";
         dictionary[ "MOUSE_DRIVERS" ]       = "pc linuxtp";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "EXCEPTIONS" ]          = "no";
@@ -1451,7 +1451,7 @@ bool Configure::displayHelp()
                     "[-no-fast] [-fast] [-no-exceptions] [-exceptions]\n"
                     "[-no-accessibility] [-accessibility] [-no-rtti] [-rtti]\n"
                     "[-no-stl] [-stl] [-no-sql-<driver>] [-qt-sql-<driver>]\n"
-                    "[-plugin-sql-<driver>] [-system-sqlite] [-arch <arch>]\n"
+                    "[-plugin-sql-<driver>] [-system-sqlite]\n"
                     "[-D <define>] [-I <includepath>] [-L <librarypath>]\n"
                     "[-help] [-no-dsp] [-dsp] [-no-vcproj] [-vcproj]\n"
                     "[-no-qmake] [-qmake] [-dont-process] [-process]\n"
@@ -1468,7 +1468,7 @@ bool Configure::displayHelp()
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
                     "[-no-webkit] [-webkit] [-webkit-debug]\n"
-                    "[-no-directwrite] [-directwrite] [-qpa]\n\n", 0, 7);
+                    "[-no-directwrite] [-directwrite] [-qpa] [-no-widgets] \n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1501,6 +1501,8 @@ bool Configure::displayHelp()
 
         desc("EXCEPTIONS", "no", "-no-exceptions",      "Disable exceptions on platforms that support it.");
         desc("EXCEPTIONS", "yes","-exceptions",         "Enable exceptions on platforms that support it.\n");
+
+        desc("WIDGETS", "no", "-no-widgets",            "Disable QtWidgets module\n");
 
         desc("ACCESSIBILITY", "no",  "-no-accessibility", "Do not compile Windows Active Accessibility support.");
         desc("ACCESSIBILITY", "yes", "-accessibility",    "Compile Windows Active Accessibility support.\n");
@@ -1622,13 +1624,6 @@ bool Configure::displayHelp()
         desc("DECLARATIVE_DEBUG", "yes",   "-declarative-debug",    "Build the declarative debugging support");
         desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering");
         desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (experimental, requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)");
-
-        desc(                   "-arch <arch>",         "Specify an architecture.\n"
-                                                        "Available values for <arch>:");
-        desc("ARCHITECTURE","windows",       "",        "  windows", ' ');
-        desc("ARCHITECTURE","windowsce",     "",        "  windowsce", ' ');
-        desc("ARCHITECTURE","boundschecker",     "",    "  boundschecker", ' ');
-        desc("ARCHITECTURE","generic", "",              "  generic\n", ' ');
 
         desc(                   "-no-style-<style>",    "Disable <style> entirely.");
         desc(                   "-qt-style-<style>",    "Enable <style> in the Qt Library.\nAvailable styles: ");
@@ -1846,13 +1841,13 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "SQL_IBASE")
         available = findFile("ibase.h") && (findFile("gds32_ms.lib") || findFile("gds32.lib"));
     else if (part == "IWMMXT")
-        available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
+        available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "OPENGL_ES_CM")
-        available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
+        available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "OPENGL_ES_2")
-        available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
+        available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "DIRECTSHOW")
-        available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
+        available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "SSE2")
         available = (dictionary.value("QMAKESPEC") != "win32-msvc");
     else if (part == "3DNOW")
@@ -1866,7 +1861,7 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "CETEST") {
         QString rapiHeader = locateFile("rapi.h");
         QString rapiLib = locateFile("rapi.lib");
-        available = (dictionary[ "ARCHITECTURE" ]  == "windowsce") && !rapiHeader.isEmpty() && !rapiLib.isEmpty();
+        available = (dictionary.value("XQMAKESPEC").startsWith("wince")) && !rapiHeader.isEmpty() && !rapiLib.isEmpty();
         if (available) {
             dictionary[ "QT_CE_RAPI_INC" ] += QLatin1String("\"") + rapiHeader + QLatin1String("\"");
             dictionary[ "QT_CE_RAPI_LIB" ] += QLatin1String("\"") + rapiLib + QLatin1String("\"");
@@ -2109,6 +2104,9 @@ void Configure::generateOutputVars()
             qtConfig += "debug";
         qtConfig += "release";
     }
+
+    if (dictionary[ "WIDGETS" ] == "no")
+        qtConfig += "no-widgets";
 
     // Compression --------------------------------------------------
     if (dictionary[ "ZLIB" ] == "qt")
@@ -2484,7 +2482,6 @@ void Configure::generateCachefile()
             moduleStream << "QMAKESPEC       = " << escapeSeparators(mkspec_path) << endl;
         else
             moduleStream << "QMAKESPEC       = " << fixSeparators(targetSpec, true) << endl;
-        moduleStream << "ARCH            = " << dictionary[ "ARCHITECTURE" ] << endl;
 
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
             moduleStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;
@@ -2528,7 +2525,83 @@ void Configure::generateCachefile()
         moduleStream.flush();
         moduleFile.close();
     }
+}
 
+/*
+    Runs qmake on config.tests/arch/arch.pro, which will detect the target arch
+    for the compiler we are using
+*/
+void Configure::detectArch()
+{
+    QString oldpwd = QDir::currentPath();
+
+    QString newpwd = fixSeparators(QString("%1/config.tests/arch").arg(buildPath));
+    if (!QDir().exists(newpwd) && !QDir().mkpath(newpwd)) {
+        cout << "Failed to create directory " << qPrintable(newpwd) << endl;
+        dictionary["DONE"] = "error";
+        return;
+    }
+    if (!QDir::setCurrent(newpwd)) {
+        cout << "Failed to change working directory to " << qPrintable(newpwd) << endl;
+        dictionary["DONE"] = "error";
+        return;
+    }
+
+    QList<QPair<QString, QString> > qmakespecs;
+    if (dictionary.contains("XQMAKESPEC"))
+        qmakespecs << qMakePair(QString("XQMAKESPEC"), QString("QT_ARCH"));
+    qmakespecs << qMakePair(QString("QMAKESPEC"), QString("QT_HOST_ARCH"));
+
+    for (int i = 0; i < qmakespecs.count(); ++i) {
+        const QPair<QString, QString> &pair = qmakespecs.at(i);
+        QString qmakespec = dictionary.value(pair.first);
+        QString key = pair.second;
+
+        QString command =
+                fixSeparators(QString("%1/bin/qmake.exe -spec %2 %3/config.tests/arch/arch.pro -o %4/Makefile.unused 2>&1")
+                              .arg(buildPath, qmakespec, sourcePath, newpwd));
+        QString output = Environment::execute(command);
+        if (output.isEmpty())
+            continue;
+
+        // strip everything up to and including 'Project MESSAGE: '
+        QString ProjectMESSAGE = QStringLiteral("Project MESSAGE: ");
+        int at = output.indexOf(ProjectMESSAGE);
+        if (at != -1)
+            output = output.mid(at + ProjectMESSAGE.length());
+
+        // strip lines beginning with a #
+        at = 0;
+        while ((at = output.indexOf('#', at)) != -1) {
+            if (at > 0 && output.at(at - 1) != '\n') {
+                // # isnt' at the beginning of a line, skip it
+                ++at;
+                continue;
+            }
+
+            int eol = output.indexOf('\n', at);
+            if (eol == -1) {
+                // end of string
+                output.remove(at, output.length() - at);
+                break;
+            }
+
+            output.remove(at, eol - at + 1);
+        }
+
+        dictionary[key] = output.simplified();
+    }
+
+    if (!dictionary.contains("QT_HOST_ARCH"))
+        dictionary["QT_HOST_ARCH"] = "unknown";
+    if (!dictionary.contains("QT_ARCH"))
+        dictionary["QT_ARCH"] = dictionary["QT_HOST_ARCH"];
+
+    QDir::setCurrent(oldpwd);
+}
+
+void Configure::generateQConfigPri()
+{
     // Generate qconfig.pri
     QFile configFile(dictionary[ "QT_BUILD_TREE" ] + "/mkspecs/qconfig.pri");
     if (configFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
@@ -2574,7 +2647,8 @@ void Configure::generateCachefile()
             configStream << "directwrite";
 
         configStream << endl;
-        configStream << "QT_ARCH = " << dictionary[ "ARCHITECTURE" ] << endl;
+        configStream << "QT_ARCH = " << dictionary["QT_ARCH"] << endl;
+        configStream << "QT_HOST_ARCH = " << dictionary["QT_HOST_ARCH"] << endl;
         if (dictionary["QT_EDITION"].contains("OPENSOURCE"))
             configStream << "QT_EDITION = " << QLatin1String("OpenSource") << endl;
         else
@@ -2712,7 +2786,6 @@ void Configure::generateConfigfiles()
             tmpStream << endl << "#define Q_WS_QPA" << endl;
 
         tmpStream << endl << "// Compile time features" << endl;
-        tmpStream << "#define QT_ARCH_" << dictionary["ARCHITECTURE"].toUpper() << endl;
 
         QStringList qconfigList;
         if (dictionary["STL"] == "no")                qconfigList += "QT_NO_STL";
@@ -2742,6 +2815,7 @@ void Configure::generateConfigfiles()
 
         if (dictionary["ACCESSIBILITY"] == "no")     qconfigList += "QT_NO_ACCESSIBILITY";
         if (dictionary["EXCEPTIONS"] == "no")        qconfigList += "QT_NO_EXCEPTIONS";
+        if (dictionary["WIDGETS"] == "no")           qconfigList += "QT_NO_WIDGETS";
         if (dictionary["OPENGL"] == "no")            qconfigList += "QT_NO_OPENGL";
         if (dictionary["OPENVG"] == "no")            qconfigList += "QT_NO_OPENVG";
         if (dictionary["OPENSSL"] == "no") {
@@ -2798,7 +2872,7 @@ void Configure::generateConfigfiles()
 
             QStringList gfxDrivers = dictionary["GFX_DRIVERS"].split(" ");
             QStringList allGfxDrivers;
-            allGfxDrivers<<"linuxfb"<<"transformed"<<"qvfb"<<"vnc"<<"multiscreen"<<"ahi";
+            allGfxDrivers<<"linuxfb"<<"transformed"<<"qvfb"<<"multiscreen"<<"ahi";
             foreach (const QString &gfx, allGfxDrivers) {
                 if (!gfxDrivers.contains(gfx))
                     tmpStream<<"#define QT_NO_QWS_"<<gfx.toUpper()<<endl;
@@ -2958,7 +3032,8 @@ void Configure::displayConfig()
         cout << "QMAKESPEC..................." << dictionary[ "XQMAKESPEC" ] << " (" << dictionary["QMAKESPEC_FROM"] << ")" << endl;
     else
         cout << "QMAKESPEC..................." << dictionary[ "QMAKESPEC" ] << " (" << dictionary["QMAKESPEC_FROM"] << ")" << endl;
-    cout << "Architecture................" << dictionary[ "ARCHITECTURE" ] << endl;
+    cout << "Architecture................" << dictionary["QT_ARCH"] << endl;
+    cout << "Host Architecture..........." << dictionary["QT_HOST_ARCH"] << endl;
     cout << "Maketool...................." << dictionary[ "MAKE" ] << endl;
     cout << "Debug symbols..............." << (dictionary[ "BUILD" ] == "debug" ? "yes" : "no") << endl;
     cout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
@@ -2975,6 +3050,7 @@ void Configure::displayConfig()
     cout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
     cout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
     cout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
+    cout << "QtWidgets module support...." << dictionary[ "WIDGETS" ] << endl;
     cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
     cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
 
@@ -3070,6 +3146,16 @@ void Configure::displayConfig()
              << "Qt now requires zlib support in all builds, so the -no-zlib" << endl
              << "option was ignored. Qt will be built using the " << which_zlib
              << "zlib" << endl;
+    }
+    if (dictionary["OBSOLETE_ARCH_ARG"] == "yes") {
+        cout << endl
+             << "NOTE: The -arch option is obsolete." << endl
+             << endl
+             << "Qt now detects the target and host architectures based on compiler" << endl
+             << "output. Qt will be built using " << dictionary["QT_ARCH"] << " for the target architecture" << endl
+             << "and " << dictionary["QT_HOST_ARCH"] << " for the host architecture (note that these two" << endl
+             << "will be the same unless you are cross-compiling)." << endl
+             << endl;
     }
 }
 #endif

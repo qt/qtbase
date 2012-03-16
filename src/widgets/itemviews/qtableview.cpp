@@ -616,12 +616,12 @@ void QTableViewPrivate::init()
     q->setEditTriggers(editTriggers|QAbstractItemView::AnyKeyPressed);
 
     QHeaderView *vertical = new QHeaderView(Qt::Vertical, q);
-    vertical->setClickable(true);
+    vertical->setSectionsClickable(true);
     vertical->setHighlightSections(true);
     q->setVerticalHeader(vertical);
 
     QHeaderView *horizontal = new QHeaderView(Qt::Horizontal, q);
-    horizontal->setClickable(true);
+    horizontal->setSectionsClickable(true);
     horizontal->setHighlightSections(true);
     q->setHorizontalHeader(horizontal);
 
@@ -1071,6 +1071,10 @@ void QTableView::setModel(QAbstractItemModel *model)
         disconnect(d->model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
                 this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
     }
+    if (d->selectionModel) { // support row editing
+        disconnect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+                   d->model, SLOT(submit()));
+    }
     if (model) { //and connect to the new one
         connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                 this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
@@ -1123,9 +1127,21 @@ void QTableView::setSelectionModel(QItemSelectionModel *selectionModel)
 {
     Q_D(QTableView);
     Q_ASSERT(selectionModel);
+    if (d->selectionModel) {
+        // support row editing
+        disconnect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+                   d->model, SLOT(submit()));
+    }
+
     d->verticalHeader->setSelectionModel(selectionModel);
     d->horizontalHeader->setSelectionModel(selectionModel);
     QAbstractItemView::setSelectionModel(selectionModel);
+
+    if (d->selectionModel) {
+        // support row editing
+        connect(d->selectionModel, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+                d->model, SLOT(submit()));
+    }
 }
 
 /*!
@@ -3164,16 +3180,10 @@ void QTableView::currentChanged(const QModelIndex &current, const QModelIndex &p
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive()) {
         if (current.isValid()) {
-#ifdef Q_OS_UNIX
             Q_D(QTableView);
             int entry = d->accessibleTable2Index(current);
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, this, entry));
-#else
-            int entry = visualIndex(current) + 1;
-            if (horizontalHeader())
-                ++entry;
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, viewport(), entry));
-#endif
+            QAccessibleEvent event(QAccessible::Focus, this, entry);
+            QAccessible::updateAccessibility(&event);
         }
     }
 #endif
@@ -3193,27 +3203,15 @@ void QTableView::selectionChanged(const QItemSelection &selected,
         // ### does not work properly for selection ranges.
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
-#ifdef Q_OS_UNIX
             int entry = d->accessibleTable2Index(sel);
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, this, entry));
-#else
-            int entry = visualIndex(sel);
-            if (horizontalHeader())
-                ++entry;
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, viewport(), entry));
-#endif
+            QAccessibleEvent event(QAccessible::Selection, this, entry);
+            QAccessible::updateAccessibility(&event);
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
-#ifdef Q_OS_UNIX
             int entry = d->accessibleTable2Index(desel);
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::SelectionRemove, this, entry));
-#else
-            int entry = visualIndex(sel);
-            if (horizontalHeader())
-                ++entry;
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::SelectionRemove, viewport(), entry));
-#endif
+            QAccessibleEvent event(QAccessible::SelectionRemove, this, entry);
+            QAccessible::updateAccessibility(&event);
         }
     }
 #endif

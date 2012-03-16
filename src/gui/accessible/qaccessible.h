@@ -327,7 +327,7 @@ public:
     };
 
     typedef QAccessibleInterface*(*InterfaceFactory)(const QString &key, QObject*);
-    typedef void(*UpdateHandler)(const QAccessibleEvent &event);
+    typedef void(*UpdateHandler)(QAccessibleEvent *event);
     typedef void(*RootObjectHandler)(QObject*);
 
     static void installFactory(InterfaceFactory);
@@ -338,7 +338,7 @@ public:
     static QAccessibleInterface *queryAccessibleInterface(QObject *);
 
     QT_DEPRECATED static void updateAccessibility(QObject *object, int child, Event reason);
-    static void updateAccessibility(const QAccessibleEvent &event);
+    static void updateAccessibility(QAccessibleEvent *event);
 
     static bool isActive();
     static void setRootObject(QObject *object);

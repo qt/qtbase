@@ -445,7 +445,7 @@ private:
     void writeDitaMap(const Tree* tree);
     void writeDitaMap(const DitaMapNode* node);
     void writeStartTag(DitaTag t);
-    void writeEndTag(DitaTag t=DT_NONE);
+    bool writeEndTag(DitaTag t=DT_NONE);
     DitaTag currentTag();
     void clearSectionNesting() { sectionNestingLevel = 0; }
     int enterApiDesc(const QString& outputclass, const QString& title);
@@ -455,7 +455,7 @@ private:
     int currentSectionNestingLevel() const { return sectionNestingLevel; }
     QString metadataDefault(DitaTag t) const;
     QString stripMarkup(const QString& src) const;
-    void collectNodesByTypeAndSubtype(const InnerNode* parent);
+    Node* collectNodesByTypeAndSubtype(const InnerNode* parent);
     void writeDitaRefs(const DitaRefList& ditarefs);
     void writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle);
     bool isDuplicate(NodeMultiMap* nmm, const QString& key, Node* node);

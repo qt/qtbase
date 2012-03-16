@@ -89,7 +89,7 @@
 
     To run qdoc, the project configuration file is supplied as an argument.
     \code
-    qdoc3 project.qdocconf
+    qdoc project.qdocconf
     \endcode
 
     The project configuration contains information that qdoc uses to create the

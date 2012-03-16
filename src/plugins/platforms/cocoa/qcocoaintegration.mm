@@ -52,6 +52,7 @@
 #include "qmenu_mac.h"
 #include "qcocoafiledialoghelper.h"
 #include "qcocoatheme.h"
+#include "qcocoainputcontext.h"
 #include "qmacmime.h"
 
 #include <QtGui/qplatformaccessibility_qpa.h>
@@ -90,8 +91,9 @@ QCocoaScreen::~QCocoaScreen()
 QCocoaIntegration::QCocoaIntegration()
     : mFontDb(new QCoreTextFontDatabase())
     , mEventDispatcher(new QCocoaEventDispatcher())
+    , mInputContext(new QCocoaInputContext)
     , mAccessibility(new QPlatformAccessibility)
-    , mPlatformTheme(new QCocoaTheme)
+    , mCocoaClipboard(new QCocoaClipboard)
     , mCocoaDrag(new QCocoaDrag)
 {
     QCocoaAutoReleasePool pool;
@@ -139,12 +141,18 @@ QCocoaIntegration::QCocoaIntegration()
         screenAdded(screen);
     }
 
-    QMacPasteboardMime::initialize();
+    QMacPasteboardMime::initializeMimeTypes();
 }
 
 QCocoaIntegration::~QCocoaIntegration()
 {
     [[NSApplication sharedApplication] setDelegate: 0];
+
+    // Delete the clipboard integration and destroy mime type converters.
+    // Deleting the clipboard integration flushes promised pastes using
+    // the mime converters - the ordering here is important.
+    delete mCocoaClipboard;
+    QMacPasteboardMime::destroyMimeTypes();
 
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!mScreens.isEmpty()) {
@@ -195,9 +203,19 @@ QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
     return new QCocoaNativeInterface();
 }
 
+QPlatformInputContext *QCocoaIntegration::inputContext() const
+{
+    return mInputContext.data();
+}
+
 QPlatformAccessibility *QCocoaIntegration::accessibility() const
 {
     return mAccessibility.data();
+}
+
+QPlatformClipboard *QCocoaIntegration::clipboard() const
+{
+    return mCocoaClipboard;
 }
 
 QPlatformDrag *QCocoaIntegration::drag() const
@@ -205,9 +223,16 @@ QPlatformDrag *QCocoaIntegration::drag() const
     return mCocoaDrag.data();
 }
 
-QPlatformTheme *QCocoaIntegration::platformTheme() const
+QStringList QCocoaIntegration::themeNames() const
 {
-    return mPlatformTheme.data();
+    return QStringList(QLatin1String(QCocoaTheme::name));
+}
+
+QPlatformTheme *QCocoaIntegration::createPlatformTheme(const QString &name) const
+{
+    if (name == QLatin1String(QCocoaTheme::name))
+        return new QCocoaTheme;
+    return QPlatformIntegration::createPlatformTheme(name);
 }
 
 QT_END_NAMESPACE

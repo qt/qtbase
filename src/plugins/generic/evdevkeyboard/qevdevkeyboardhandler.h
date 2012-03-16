@@ -125,7 +125,7 @@ class QEvdevKeyboardHandler : public QObject
 {
     Q_OBJECT
 public:
-    QEvdevKeyboardHandler(int deviceDescriptor, const QString &device, bool disableZap, bool enableCompose, const QString &keymapFile);
+    QEvdevKeyboardHandler(int deviceDescriptor, bool disableZap, bool enableCompose, const QString &keymapFile);
     ~QEvdevKeyboardHandler();
 
     enum KeycodeAction {
@@ -174,7 +174,6 @@ private:
     void switchLed(int, bool);
 
     int m_fd;
-    QString m_device;
 
     // keymap handling
     quint8 m_modifiers;

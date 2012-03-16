@@ -61,10 +61,6 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
-#ifdef Q_WS_X11
-#include <private/qt_x11_p.h>
-#endif
-
 #include <private/qhexstring_p.h>
 
 QT_BEGIN_NAMESPACE

@@ -342,19 +342,47 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
 QString CppCodeMarker::markedUpQmlItem(const Node* node, bool summary)
 {
     QString name = taggedQmlNode(node);
-    if (summary) {
+    if (summary)
         name = linkTag(node,name);
-    } else if (node->type() == Node::QmlProperty) {
+    else if (node->type() == Node::QmlProperty) {
         const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(node);
         if (pn->isAttached())
             name.prepend(pn->element() + QLatin1Char('.'));
     }
     name = "<@name>" + name + "</@name>";
-    QString synopsis = name;
+    QString synopsis;
     if (node->type() == Node::QmlProperty) {
         const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(node);
-        synopsis += " : " + typified(pn->dataType());
+        synopsis = name + " : " + typified(pn->dataType());
     }
+    else if ((node->type() == Node::QmlMethod) ||
+             (node->type() == Node::QmlSignal) ||
+             (node->type() == Node::QmlSignalHandler)) {
+        const FunctionNode* func = static_cast<const FunctionNode*>(node);
+        if (!func->returnType().isEmpty())
+            synopsis = typified(func->returnType()) + QLatin1Char(' ') + name;
+        else
+            synopsis = name;
+        synopsis += "(";
+        if (!func->parameters().isEmpty()) {
+            QList<Parameter>::ConstIterator p = func->parameters().begin();
+            while (p != func->parameters().end()) {
+                if (p != func->parameters().begin())
+                    synopsis += ", ";
+                synopsis += typified((*p).leftType());
+                if (!(*p).name().isEmpty()) {
+                    if (!synopsis.endsWith("("))
+                        synopsis += " ";
+                    synopsis += "<@param>" + protect((*p).name()) + "</@param>";
+                }
+                synopsis += protect((*p).rightType());
+                ++p;
+            }
+        }
+        synopsis += QLatin1Char(')');
+    }
+    else
+        synopsis = name;
 
     QString extra;
     if (summary) {

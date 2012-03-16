@@ -60,7 +60,7 @@ class QAccessibleBridge
 public:
     virtual ~QAccessibleBridge() {}
     virtual void setRootObject(QAccessibleInterface *) = 0;
-    virtual void notifyAccessibilityUpdate(const QAccessibleEvent &event) = 0;
+    virtual void notifyAccessibilityUpdate(QAccessibleEvent *event) = 0;
 };
 
 struct Q_GUI_EXPORT QAccessibleBridgeFactoryInterface : public QFactoryInterface

@@ -63,6 +63,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QWindow
+    \since 5.0
     \brief The QWindow class represents a window in the underlying windowing system.
 
     A window that is supplied a parent becomes a native child window of
@@ -597,6 +598,11 @@ bool QWindow::isActive() const
         return false;
 
     QWindow *focus = QGuiApplication::focusWindow();
+
+    // Means the whole application lost the focus
+    if (!focus)
+        return false;
+
     if (focus == this)
         return true;
 

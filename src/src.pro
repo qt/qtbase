@@ -62,15 +62,10 @@ src_concurrent.target = sub-concurrent
    src_opengl.depends = src_gui src_widgets
    src_sql.depends = src_corelib
    src_testlib.depends = src_corelib src_gui src_widgets
-   src_plugins.depends = src_gui src_sql src_xml
-   qpa: src_plugins.depends = src_platformsupport
-   contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2) {
-      src_plugins.depends += src_opengl
-      src_declarative.depends += src_opengl
-      src_webkit.depends += src_opengl
-   }
+   src_plugins.depends = src_gui src_sql src_xml src_platformsupport
 }
 
+contains(QT_CONFIG, no-widgets): SRC_SUBDIRS -= src_opengl src_widgets src_printsupport src_testlib
 
 # This creates a sub-src rule
 sub_src_target.CONFIG = recursive

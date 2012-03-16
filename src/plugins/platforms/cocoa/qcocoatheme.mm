@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+const char *QCocoaTheme::name = "cocoa";
+
 QCocoaTheme::QCocoaTheme()
     :m_systemPalette(0)
 {

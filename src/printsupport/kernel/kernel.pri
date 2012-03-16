@@ -18,7 +18,7 @@ SOURCES += \
         $$PWD/qplatformprintplugin.cpp \
         $$PWD/qplatformprintersupport_qpa.cpp
 
-unix {
+unix:!mac {
         HEADERS += \
                 $$PWD/qprinterinfo_unix_p.h
         SOURCES += \
@@ -33,7 +33,7 @@ win32 {
         LIBS += -lWinspool -lComdlg32
 }
 
-win32 {
+mac|win32 {
         DEFINES += QT_NO_CUPS QT_NO_LPR
 } else {
         SOURCES += $$PWD/qcups.cpp

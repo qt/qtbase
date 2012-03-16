@@ -359,8 +359,10 @@ void QTabBarPrivate::init()
 #endif
         q->setFocusPolicy(Qt::TabFocus);
 
+#ifndef QT_NO_ACCESSIBILITY
     leftB->setAccessibleName(QTabBar::tr("Scroll Left"));
     rightB->setAccessibleName(QTabBar::tr("Scroll Right"));
+#endif
     q->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     elideMode = Qt::TextElideMode(q->style()->styleHint(QStyle::SH_TabBar_ElideMode, 0, q));
     useScrollButtons = !q->style()->styleHint(QStyle::SH_TabBar_PreferNoArrows, 0, q);
@@ -1183,8 +1185,10 @@ void QTabBar::setCurrentIndex(int index)
         d->layoutTab(index);
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, this, index));
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, this, index));
+            QAccessibleEvent focusEvent(QAccessible::Focus, this, index);
+            QAccessible::updateAccessibility(&focusEvent);
+            QAccessibleEvent selectionEvent(QAccessible::Selection, this, index);
+            QAccessible::updateAccessibility(&selectionEvent);
         }
 #endif
         emit currentChanged(index);
@@ -1739,7 +1743,7 @@ void QTabBar::mouseMoveEvent(QMouseEvent *event)
         if (d->pressedIndex != -1
             && event->buttons() == Qt::NoButton)
             d->moveTabFinished(d->pressedIndex);
-        
+
         // Start drag
         if (!d->dragInProgress && d->pressedIndex != -1) {
             if ((event->pos() - d->dragStartPosition).manhattanLength() > QApplication::startDragDistance()) {

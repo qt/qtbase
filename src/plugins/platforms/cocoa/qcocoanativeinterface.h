@@ -43,13 +43,34 @@
 #define QCOCOANATIVEINTERFACE_H
 
 #include <QtGui/QPlatformNativeInterface>
+#include <QtPrintSupport/QPlatformPrinterSupport>
 
 class QWidget;
 
 class QCocoaNativeInterface : public QPlatformNativeInterface
 {
+    Q_OBJECT
 public:
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
+
+private:
+    /*
+        "Virtual" function to create the platform printer support
+        implementation.
+
+        We use an invokable function instead of a virtual one, we do not want
+        this in the QPlatform* API yet.
+
+        This was added here only because QPlatformNativeInterface is a QObject
+        and allow us to use QMetaObject::indexOfMethod() from the printsupport
+        plugin.
+    */
+    Q_INVOKABLE QPlatformPrinterSupport *createPlatformPrinterSupport();
+    /*
+        Function to return the NSPrintInfo * from QMacPaintEnginePrivate.
+        Needed by the native print dialog in the QtPrintSupport library.
+    */
+    Q_INVOKABLE void *NSPrintInfoForPrintEngine(QPrintEngine *printEngine);
 };
 
 #endif // QCOCOANATIVEINTERFACE_H

@@ -502,20 +502,20 @@ void tst_QHeaderView::removeCols()
 
 void tst_QHeaderView::movable()
 {
-    QCOMPARE(view->isMovable(), false);
-    view->setMovable(false);
-    QCOMPARE(view->isMovable(), false);
-    view->setMovable(true);
-    QCOMPARE(view->isMovable(), true);
+    QCOMPARE(view->sectionsMovable(), false);
+    view->setSectionsMovable(false);
+    QCOMPARE(view->sectionsMovable(), false);
+    view->setSectionsMovable(true);
+    QCOMPARE(view->sectionsMovable(), true);
 }
 
 void tst_QHeaderView::clickable()
 {
-    QCOMPARE(view->isClickable(), false);
-    view->setClickable(false);
-    QCOMPARE(view->isClickable(), false);
-    view->setClickable(true);
-    QCOMPARE(view->isClickable(), true);
+    QCOMPARE(view->sectionsClickable(), false);
+    view->setSectionsClickable(false);
+    QCOMPARE(view->sectionsClickable(), false);
+    view->setSectionsClickable(true);
+    QCOMPARE(view->sectionsClickable(), true);
 }
 
 void tst_QHeaderView::hidden()
@@ -1108,7 +1108,7 @@ void  tst_QHeaderView::resizeWithResizeModes()
     view->setStretchLastSection(false);
     for (int i = 0; i < sections.count(); ++i) {
         view->resizeSection(i, sections.at(i));
-        view->setResizeMode(i, (QHeaderView::ResizeMode)modes.at(i));
+        view->setSectionResizeMode(i, (QHeaderView::ResizeMode)modes.at(i));
     }
     topLevel->show();
     view->resize(size, size);
@@ -1150,27 +1150,27 @@ void tst_QHeaderView::resizeMode()
     // resizeMode must not be called with an invalid index
     int last = view->count() - 1;
     view->setResizeMode(QHeaderView::Interactive);
-    QCOMPARE(view->resizeMode(last), QHeaderView::Interactive);
-    QCOMPARE(view->resizeMode(1), QHeaderView::Interactive);
+    QCOMPARE(view->sectionResizeMode(last), QHeaderView::Interactive);
+    QCOMPARE(view->sectionResizeMode(1), QHeaderView::Interactive);
     view->setResizeMode(QHeaderView::Stretch);
-    QCOMPARE(view->resizeMode(last), QHeaderView::Stretch);
-    QCOMPARE(view->resizeMode(1), QHeaderView::Stretch);
+    QCOMPARE(view->sectionResizeMode(last), QHeaderView::Stretch);
+    QCOMPARE(view->sectionResizeMode(1), QHeaderView::Stretch);
     view->setResizeMode(QHeaderView::Custom);
-    QCOMPARE(view->resizeMode(last), QHeaderView::Custom);
-    QCOMPARE(view->resizeMode(1), QHeaderView::Custom);
+    QCOMPARE(view->sectionResizeMode(last), QHeaderView::Custom);
+    QCOMPARE(view->sectionResizeMode(1), QHeaderView::Custom);
 
     // test when sections have been moved
     view->setStretchLastSection(false);
     for (int i=0; i < (view->count() - 1); ++i)
-        view->setResizeMode(i, QHeaderView::Interactive);
+        view->setSectionResizeMode(i, QHeaderView::Interactive);
     int logicalIndex = view->count() / 2;
-    view->setResizeMode(logicalIndex, QHeaderView::Stretch);
+    view->setSectionResizeMode(logicalIndex, QHeaderView::Stretch);
     view->moveSection(view->visualIndex(logicalIndex), 0);
     for (int i=0; i < (view->count() - 1); ++i) {
         if (i == logicalIndex)
-            QCOMPARE(view->resizeMode(i), QHeaderView::Stretch);
+            QCOMPARE(view->sectionResizeMode(i), QHeaderView::Stretch);
         else
-            QCOMPARE(view->resizeMode(i), QHeaderView::Interactive);
+            QCOMPARE(view->sectionResizeMode(i), QHeaderView::Interactive);
     }
 }
 
@@ -1209,12 +1209,12 @@ void tst_QHeaderView::resizeSection()
     view->resize(400, 400);
 
     topLevel->show();
-    view->setMovable(true);
+    view->setSectionsMovable(true);
     view->setStretchLastSection(false);
 
     for (int i = 0; i < logical.count(); ++i)
         if (logical.at(i) > -1 && logical.at(i) < view->count()) // for now
-            view->setResizeMode(logical.at(i), (QHeaderView::ResizeMode)mode.at(i));
+            view->setSectionResizeMode(logical.at(i), (QHeaderView::ResizeMode)mode.at(i));
 
     for (int j = 0; j < logical.count(); ++j)
         view->resizeSection(logical.at(j), initial);
@@ -1447,7 +1447,7 @@ void tst_QHeaderView::stretchSectionCount()
     view->setStretchLastSection(true);
     QCOMPARE(view->stretchSectionCount(), 0);
 
-    view->setResizeMode(0, QHeaderView::Stretch);
+    view->setSectionResizeMode(0, QHeaderView::Stretch);
     QCOMPARE(view->stretchSectionCount(), 1);
 }
 
@@ -1693,7 +1693,7 @@ void tst_QHeaderView::globalResizeMode()
     h.setResizeMode((QHeaderView::ResizeMode)mode);
     m.insertRow(insert);
     for (int i = 0; i < h.count(); ++i)
-        QCOMPARE(h.resizeMode(i), (QHeaderView::ResizeMode)mode);
+        QCOMPARE(h.sectionResizeMode(i), (QHeaderView::ResizeMode)mode);
 }
 
 
@@ -1725,7 +1725,7 @@ void tst_QHeaderView::sectionPressedSignal()
 
     h.setModel(&m);
     h.show();
-    h.setClickable(clickable);
+    h.setSectionsClickable(clickable);
 
     QSignalSpy spy(&h, SIGNAL(sectionPressed(int)));
 
@@ -1745,7 +1745,7 @@ void tst_QHeaderView::sectionClickedSignal()
 
     h.setModel(&m);
     h.show();
-    h.setClickable(clickable);
+    h.setSectionsClickable(clickable);
     h.setSortIndicatorShown(true);
 
     QSignalSpy spy(&h, SIGNAL(sectionClicked(int)));
@@ -1869,7 +1869,7 @@ void tst_QHeaderView::preserveHiddenSectionWidth()
     view.resizeSection(0, 100);
     view.resizeSection(1, 10);
     view.resizeSection(2, 50);
-    view.setResizeMode(3, QHeaderView::Stretch);
+    view.setSectionResizeMode(3, QHeaderView::Stretch);
     view.show();
 
     view.hideSection(2);
@@ -2066,7 +2066,7 @@ void tst_QHeaderView::QTBUG7833_sectionClicked()
 
     tv.setSortingEnabled(true);
     tv.horizontalHeader()->setSortIndicatorShown(true);
-    tv.horizontalHeader()->setClickable(true);
+    tv.horizontalHeader()->setSectionsClickable(true);
     tv.horizontalHeader()->setStretchLastSection(true);
     tv.horizontalHeader()->setResizeMode(QHeaderView::Interactive);
 
@@ -2126,7 +2126,7 @@ void tst_QHeaderView::QTBUG12268_hiddenMovedSectionSorting()
         for (int j = 0; j< model->columnCount(); ++j)
             model->setData(model->index(i,j), QString("item [%1,%2]").arg(i).arg(j));
     view.setModel(model);
-    view.horizontalHeader()->setMovable(true);
+    view.horizontalHeader()->setSectionsMovable(true);
     view.setSortingEnabled(true);
     view.sortByColumn(1, Qt::AscendingOrder);
     view.horizontalHeader()->moveSection(0,2);

@@ -173,6 +173,8 @@ public:
     void setPageType(PageType t) { pageType_ = t; }
     void setPageType(const QString& t);
     void setParent(InnerNode* n) { parent_ = n; }
+    void setIndexNodeFlag() { indexNodeFlag_ = true; }
+    virtual void setOutputFileName(const QString& ) { }
 
     virtual bool isInnerNode() const = 0;
     virtual bool isReimp() const { return false; }
@@ -183,6 +185,7 @@ public:
     virtual bool isAbstract() const { return false; }
     virtual void setAbstract(bool ) { }
     virtual QString title() const { return QString(); }
+    bool isIndexNode() const { return indexNodeFlag_; }
     Type type() const { return nodeType_; }
     virtual SubType subType() const { return NoSubType; }
     InnerNode* parent() const { return parent_; }
@@ -192,6 +195,7 @@ public:
     QString moduleName() const;
     QString url() const;
     virtual QString nameForLists() const { return name_; }
+    virtual QString outputFileName() const { return QString(); }
 
     Access access() const { return access_; }
     QString accessString() const;
@@ -240,13 +244,16 @@ protected:
 
 private:
 
-#ifdef Q_WS_WIN
     Type nodeType_;
     Access access_;
     ThreadSafeness safeness_;
     PageType pageType_;
     Status status_;
-#else
+    bool indexNodeFlag_;
+
+#if 0
+    //ifdef Q_WS_WIN
+    //else
     Type nodeType_ : 4;
     Access access_ : 2;
     ThreadSafeness safeness_ : 2;
@@ -319,6 +326,8 @@ public:
     virtual void addPageKeywords(const QString& t) { pageKeywds << t; }
     virtual void setCurrentChild() { }
     virtual void setCurrentChild(InnerNode* ) { }
+    virtual void setOutputFileName(const QString& f) { outputFileName_ = f; }
+    virtual QString outputFileName() const { return outputFileName_; }
 
 protected:
     InnerNode(Type type, InnerNode* parent, const QString& name);
@@ -332,6 +341,7 @@ private:
     void removeRelated(Node* pseudoChild);
     void removeChild(Node* child);
 
+    QString outputFileName_;
     QStringList pageKeywds;
     QStringList inc;
     NodeList children;

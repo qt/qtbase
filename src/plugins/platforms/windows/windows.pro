@@ -45,7 +45,6 @@ SOURCES += \
     qwindowsdrag.cpp \
     qwindowscursor.cpp \
     qwindowsinputcontext.cpp \
-    qwindowsaccessibility.cpp \
     qwindowstheme.cpp \
     qwindowsdialoghelpers.cpp \
     qwindowsservices.cpp
@@ -73,7 +72,6 @@ HEADERS += \
     qwindowscursor.h \
     array.h \
     qwindowsinputcontext.h \
-    qwindowsaccessibility.h \
     qwindowstheme.h \
     qwindowsdialoghelpers.h \
     qwindowsservices.h
@@ -151,5 +149,6 @@ contains(QT_CONFIG, freetype) {
 
 OTHER_FILES += windows.json
 
+include(accessible/accessible.pri)
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

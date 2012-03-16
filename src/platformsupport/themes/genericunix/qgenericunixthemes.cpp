@@ -77,6 +77,8 @@ void ResourceHelper::clear()
     \ingroup qpa
 */
 
+const char *QGenericUnixTheme::name = "generic";
+
 // Helper to return the icon theme paths from XDG.
 QStringList QGenericUnixTheme::xdgIconThemePaths()
 {
@@ -158,6 +160,8 @@ static inline bool readKdeSystemPalette(const QSettings &kdeSettings, QPalette *
     \internal
     \ingroup qpa
 */
+
+const char *QKdeTheme::name = "kde";
 
 QKdeTheme::QKdeTheme(const QString &kdeHome, int kdeVersion) :
     m_kdeHome(kdeHome), m_kdeVersion(kdeVersion),
@@ -329,6 +333,8 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
     \ingroup qpa
 */
 
+const char *QGnomeTheme::name = "gnome";
+
 QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
@@ -358,23 +364,38 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     \brief Creates a UNIX theme according to the detected desktop environment.
 */
 
-QPlatformTheme *QGenericUnixTheme::createUnixTheme()
+QPlatformTheme *QGenericUnixTheme::createUnixTheme(const QString &name)
 {
-    QPlatformTheme *result = 0;
+    if (name == QLatin1String(QGenericUnixTheme::name))
+        return new QGenericUnixTheme;
+    if (name == QLatin1String(QKdeTheme::name))
+        if (QPlatformTheme *kdeTheme = QKdeTheme::createKdeTheme())
+            return kdeTheme;
+    if (name == QLatin1String(QGnomeTheme::name))
+        return new QGnomeTheme;
+    return new QGenericUnixTheme;
+}
+
+QStringList QGenericUnixTheme::themeNames()
+{
+    QStringList result;
     if (QGuiApplication::desktopSettingsAware()) {
         switch (QGenericUnixServices::desktopEnvironment()) {
-        case QGenericUnixServices::DE_UNKNOWN:
-            break;
         case QGenericUnixServices::DE_KDE:
-            result = QKdeTheme::createKdeTheme();
+            result.push_back(QLatin1String(QKdeTheme::name));
             break;
         case QGenericUnixServices::DE_GNOME:
-            result = new QGnomeTheme;
+            result.push_back(QLatin1String(QGnomeTheme::name));
+            break;
+        case QGenericUnixServices::DE_UNKNOWN:
             break;
         }
-    }
-    if (!result)
-        result = new QGenericUnixTheme;
+        const QByteArray session = qgetenv("DESKTOP_SESSION");
+        if (!session.isEmpty() && session != "default")
+            result.push_back(QString::fromLocal8Bit(session));
+    } // desktopSettingsAware
+    if (result.isEmpty())
+        result.push_back(QLatin1String(QGenericUnixTheme::name));
     return result;
 }
 

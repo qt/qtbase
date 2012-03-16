@@ -50,6 +50,11 @@ static inline QVariant hint(QPlatformIntegration::StyleHint h)
     return QGuiApplicationPrivate::platformIntegration()->styleHint(h);
 }
 
+/*!
+    \class QStyleHints
+    \since 5.0
+    \brief The QStyleHints contains platform specific hints and settings.
+ */
 QStyleHints::QStyleHints()
     : QObject()
 {

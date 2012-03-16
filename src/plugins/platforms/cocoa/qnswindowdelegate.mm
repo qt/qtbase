@@ -64,6 +64,14 @@
     }
 }
 
+- (void)windowWillMove:(NSNotification *)notification
+{
+    Q_UNUSED(notification);
+    if (m_cocoaWindow) {
+        m_cocoaWindow->windowWillMove();
+    }
+}
+
 - (void)windowDidMove:(NSNotification *)notification
 {
     Q_UNUSED(notification);

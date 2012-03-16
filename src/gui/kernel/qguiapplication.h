@@ -75,7 +75,7 @@ class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
 {
     Q_OBJECT
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection)
-
+    Q_PROPERTY(QString platformName READ platformName STORED false)
     Q_PROPERTY(bool quitOnLastWindowClosed  READ quitOnLastWindowClosed WRITE setQuitOnLastWindowClosed)
 
 public:
@@ -85,6 +85,8 @@ public:
     static QWindowList allWindows();
     static QWindowList topLevelWindows();
     static QWindow *topLevelAt(const QPoint &pos);
+
+    static QString platformName();
 
 #ifdef QT_DEPRECATED
     static QT_DEPRECATED QWindow *activeWindow() { return focusWindow(); }

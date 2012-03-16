@@ -57,7 +57,7 @@ public:
     QPlatformAccessibility();
 
     virtual ~QPlatformAccessibility();
-    virtual void notifyAccessibilityUpdate(const QAccessibleEvent &event);
+    virtual void notifyAccessibilityUpdate(QAccessibleEvent *event);
     virtual void setRootObject(QObject *o);
     virtual void initialize();
     virtual void cleanup();

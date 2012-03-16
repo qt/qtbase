@@ -62,7 +62,8 @@
 
 #include <QtGui/QWindowSystemInterface>
 #include <QSocketNotifier>
-#include <QApplication>
+#include <QGuiApplication>
+#include <QStyleHints>
 #include <QDebug>
 
 //#define MYX11_DEBUG
@@ -379,10 +380,11 @@ void QXlibWindow::mousePressEvent(XButtonEvent *e)
 
     QEvent::Type type = QEvent::MouseButtonPress;
 
-    if (e->window == prevWindow && long(e->time) - prevTime < QApplication::doubleClickInterval()
+    const int doubleClickInterval = qApp->styleHints()->mouseDoubleClickInterval();
+    if (e->window == prevWindow && long(e->time) - prevTime < doubleClickInterval
         && qAbs(e->x - prevX) < 5 && qAbs(e->y - prevY) < 5) {
         type = QEvent::MouseButtonDblClick;
-        prevTime = e->time - QApplication::doubleClickInterval(); //no double click next time
+        prevTime = e->time - doubleClickInterval; //no double click next time
     } else {
         prevTime = e->time;
     }
@@ -724,7 +726,7 @@ void QXlibWindow::doSizeHints()
     s.flags |= USSize;
     s.flags |= PSize;
     s.flags |= PWinGravity;
-    s.win_gravity = QApplication::isRightToLeft() ? NorthEastGravity : NorthWestGravity;
+    s.win_gravity = QGuiApplication::isRightToLeft() ? NorthEastGravity : NorthWestGravity;
     XSetWMNormalHints(mScreen->display()->nativeDisplay(), x_window, &s);
 }
 

@@ -69,7 +69,7 @@ bin/moc*
 bin/makeqpf*
 bin/pixeltool*
 bin/qmake*
-bin/qdoc3*
+bin/qdoc*
 bin/qt3to4*
 bin/qtdemo*
 bin/qttracereplay*

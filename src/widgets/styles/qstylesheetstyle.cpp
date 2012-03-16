@@ -2498,38 +2498,48 @@ void QStyleSheetStyle::setGeometry(QWidget *w)
 
 void QStyleSheetStyle::setProperties(QWidget *w)
 {
-    // we have two data structures here: a hash of property -> value for lookup,
-    // and a vector giving properties in the order they are specified.
-    //
-    // this means we only set a property once (thanks to the hash) but we set
-    // properties in the order they are specified.
-    QHash<QString, QVariant> propertyHash;
-    QVector<QString> properties;
-    QVector<Declaration> decls = declarations(styleRules(w), QString());
+    // The final occurrence of each property is authoritative.
+    // Set value for each property in the order of property final occurrence
+    // since properties interact.
 
-    // run through the declarations in order
-    for (int i = 0; i < decls.count(); i++) {
-        const Declaration &decl = decls.at(i);
+    const QVector<Declaration> decls = declarations(styleRules(w), QString());
+    QVector<int> finals; // indices in reverse order of each property's final occurrence
+
+    {
+        // scan decls for final occurence of each "qproperty"
+        QSet<const QString> propertySet;
+        for (int i = decls.count() - 1; i >= 0; --i) {
+            const QString property = decls.at(i).d->property;
+            if (!property.startsWith(QStringLiteral("qproperty-"), Qt::CaseInsensitive))
+                continue;
+            if (!propertySet.contains(property)) {
+                propertySet.insert(property);
+                finals.append(i);
+            }
+        }
+    }
+
+    for (int i = finals.count() - 1; i >= 0; --i) {
+        const Declaration &decl = decls.at(finals[i]);
         QString property = decl.d->property;
-        if (!property.startsWith(QLatin1String("qproperty-"), Qt::CaseInsensitive))
-            continue;
         property.remove(0, 10); // strip "qproperty-"
-        const QVariant value = w->property(property.toLatin1());
+
         const QMetaObject *metaObject = w->metaObject();
         int index = metaObject->indexOfProperty(property.toLatin1());
         if (index == -1) {
             qWarning() << w << " does not have a property named " << property;
             continue;
         }
-        QMetaProperty metaProperty = metaObject->property(index);
+        const QMetaProperty metaProperty = metaObject->property(index);
         if (!metaProperty.isWritable() || !metaProperty.isDesignable()) {
             qWarning() << w << " cannot design property named " << property;
             continue;
         }
+
         QVariant v;
+        const QVariant value = w->property(property.toLatin1());
         switch (value.type()) {
-            // ### Qt 5
-//        case QVariant::Icon: v = decl.iconValue(); break;
+        case QVariant::Icon: v = cssIconValueToIcon(decl.iconValue()); break;
         case QVariant::Image: v = QImage(decl.uriValue()); break;
         case QVariant::Pixmap: v = QPixmap(decl.uriValue()); break;
         case QVariant::Rect: v = decl.rectValue(); break;
@@ -2542,19 +2552,7 @@ void QStyleSheetStyle::setProperties(QWidget *w)
         default: v = decl.d->values.at(0).variant; break;
         }
 
-        if (propertyHash.contains(property)) {
-            // we're ignoring the original appearance of this property
-            properties.remove(properties.indexOf(property));
-        }
-
-        propertyHash[property] = v;
-        properties.append(property);
-    }
-
-    // apply the values from left to right order
-    for (int i = 0; i < properties.count(); i++) {
-        const QString &property = properties.at(i);
-        w->setProperty(property.toLatin1(), propertyHash[property]);
+        w->setProperty(property.toLatin1(), v);
     }
 }
 

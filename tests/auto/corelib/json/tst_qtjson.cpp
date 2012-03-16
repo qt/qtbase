@@ -120,6 +120,8 @@ private Q_SLOTS:
 
     void assignObjects();
     void assignArrays();
+
+    void testTrailingComma();
 private:
     QString testDataDir;
 };
@@ -1805,6 +1807,17 @@ void TestQtJson::assignArrays()
 
     inner= array.at(1).toArray();
     QCOMPARE(inner.at(0).toDouble(), 2.);
+}
+
+void TestQtJson::testTrailingComma()
+{
+    const char *jsons[] = { "{ \"Key\": 1, }", "[ { \"Key\": 1 }, ]" };
+
+    for (unsigned i = 0; i < sizeof(jsons)/sizeof(jsons[0]); ++i) {
+        QJsonParseError error;
+        QJsonDocument doc = QJsonDocument::fromJson(jsons[i], &error);
+        QCOMPARE(error.error, QJsonParseError::MissingObject);
+    }
 }
 
 QTEST_MAIN(TestQtJson)

@@ -159,8 +159,9 @@ void tst_QDnsLookup::lookup()
     const QString hostName = cname.isEmpty() ? domain : cname;
     QStringList addresses;
     foreach (const QDnsHostAddressRecord &record, lookup.hostAddressRecords()) {
-        QCOMPARE(record.name(), hostName);
-        addresses << record.value().toString().toLower();
+        //reply may include A & AAAA records for nameservers, ignore them and only look at records matching the query
+        if (record.name() == hostName)
+            addresses << record.value().toString().toLower();
     }
     addresses.sort();
     QCOMPARE(addresses.join(" "), host);
@@ -176,8 +177,9 @@ void tst_QDnsLookup::lookup()
     // name servers
     QStringList nameServers;
     foreach (const QDnsDomainNameRecord &record, lookup.nameServerRecords()) {
-        QCOMPARE(record.name(), domain);
-        nameServers << record.value();
+        //reply may include NS records for authoritative nameservers, ignore them and only look at records matching the query
+        if (record.name() == domain)
+            nameServers << record.value();
     }
     nameServers.sort();
     QCOMPARE(nameServers.join(" "), ns);

@@ -651,6 +651,7 @@ CFG_CONFIGURE_EXIT_ON_ERROR=yes
 CFG_PROFILE=no
 CFG_EXCEPTIONS=unspecified
 CFG_GUI=auto # (yes|no|auto)
+CFG_WIDGETS=yes
 CFG_QCONFIG=full
 CFG_DEBUG=auto
 CFG_MYSQL_CONFIG=
@@ -693,8 +694,13 @@ CFG_V8SNAPSHOT=auto
 CFG_DECLARATIVE_DEBUG=yes
 CFG_JAVASCRIPTCORE_JIT=auto
 
+# Target architecture
 CFG_ARCH=
+# Host architecture, same as CFG_ARCH when not cross-compiling
 CFG_HOST_ARCH=
+# Set when the -arch or -host-arch arguments are used
+OPT_OBSOLETE_HOST_ARG=no
+
 CFG_USE_GNUMAKE=no
 CFG_IM=yes
 CFG_XINPUT2=auto
@@ -742,7 +748,6 @@ CFG_GETIFADDRS=auto
 CFG_INOTIFY=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
-CFG_MAC_ARCHS=
 MAC_CONFIG_TEST_COMMANDLINE=  # used to make the configure tests run with the correct arch's and SDK settings
 CFG_MAC_DWARF2=auto
 CFG_MAC_HARFBUZZ=no
@@ -774,6 +779,7 @@ CFG_NOPROCESS=no
 CFG_ICU=auto
 CFG_FORCE_ASSERTS=no
 CFG_PCRE=auto
+QPA_PLATFORM_GUARD=yes
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -1201,17 +1207,8 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
 	;;
-    arch)
-        # if this is a Mac then "windows" probably means
-        # we are cross-compiling for MinGW
-        if [ "$BUILD_ON_MAC" = "yes" ] && [ "$VAL" != "windows" ]; then
-            CFG_MAC_ARCHS="$CFG_MAC_ARCHS $VAL"
-        else
-            CFG_ARCH=$VAL
-        fi
-        ;;
-    host-arch)
-        CFG_HOST_ARCH=$VAL
+    arch|host-arch)
+        OPT_OBSOLETE_HOST_ARG=yes
         ;;
     harfbuzz)
         if [ "$BUILD_ON_MAC" = "yes" ] && [ "$VAL" = "yes" ]; then
@@ -1715,6 +1712,22 @@ while [ "$#" -gt 0 ]; do
             else
                 UNKNOWN_OPT=yes
             fi
+        fi
+        ;;
+    widgets)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
+            CFG_WIDGETS="yes"
+        elif [ "$VAL" = "no" ]; then
+            CFG_WIDGETS="no"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    qpa-platform-guard)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            QPA_PLATFORM_GUARD="$VAL"
+        else
+            UNKNOWN_OPT=yes
         fi
         ;;
     dbus)
@@ -2420,13 +2433,6 @@ if [ "$UNAME_SYSTEM" = "SunOS" ]; then
     fi
 fi
 
-#-------------------------------------------------------------------------------
-# determine the system architecture
-#-------------------------------------------------------------------------------
-if [ "$OPT_VERBOSE" = "yes" ]; then
-    echo "Determining system architecture... ($UNAME_SYSTEM:$UNAME_RELEASE:$UNAME_MACHINE)"
-fi
-
 if [ "$CFG_RTOS_ENABLED" = "no" ]; then
     case `basename "$XPLATFORM"` in
 	qnx-* | vxworks-*)
@@ -2439,153 +2445,6 @@ if [ "$CFG_RTOS_ENABLED" = "no" ]; then
             exit 1
 	    ;;
     esac
-fi
-
-if [ -z "${CFG_HOST_ARCH}" ]; then
-    case "$UNAME_SYSTEM:$UNAME_RELEASE:$UNAME_MACHINE" in
-    GNU:*:*)
-        CFG_HOST_ARCH=`echo ${UNAME_MACHINE} | sed -e 's,[-/].*$,,'`
-        case "$CFG_HOST_ARCH" in
-            i?86)
-                CFG_HOST_ARCH=i386
-                ;;
-        esac
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "    GNU/Hurd ($CFG_HOST_ARCH)"
-        fi
-        ;;
-    IRIX*:*:*)
-        CFG_HOST_ARCH=`uname -p`
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "    SGI ($CFG_HOST_ARCH)"
-        fi
-        ;;
-    SunOS:5*:*)
-        case "$UNAME_MACHINE" in
-	sun4u*|sun4v*)
-            if [ "$OPT_VERBOSE" = "yes" ]; then
-                echo "    Sun SPARC (sparc)"
-            fi
-            CFG_HOST_ARCH=sparc
-            ;;
-        i86pc)
-	    case "$PLATFORM" in
-	    *-64*)
-                if [ "$OPT_VERBOSE" = "yes" ]; then
-	            echo "    64-bit AMD 80x86 (x86_64)"
-                fi
-                CFG_HOST_ARCH=x86_64
-                ;;
-	    *)
-                if [ "$OPT_VERBOSE" = "yes" ]; then
-	            echo "    32-bit Intel 80x86 (i386)"
-                fi
-                CFG_HOST_ARCH=i386
-                ;;
-            esac
-        esac
-        ;;
-    AIX:*:00????????00)
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-        echo "    64-bit IBM PowerPC (powerpc)"
-        fi
-        CFG_HOST_ARCH=powerpc
-        ;;
-    HP-UX:*:9000*)
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "    HP PA-RISC (parisc)"
-        fi
-        CFG_HOST_ARCH=parisc
-        ;;
-    *:*:i?86)
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "    32-bit Intel 80x86 (i386)"
-        fi
-        CFG_HOST_ARCH=i386
-        ;;
-    *:*:x86_64|*:*:amd64)
-        if [ "$PLATFORM" = "linux-g++-32" -o "$PLATFORM" = "linux-icc-32" ]; then
-            if [ "$OPT_VERBOSE" = "yes" ]; then
-                echo "    32 bit on 64-bit AMD 80x86 (i386)"
-            fi
-            CFG_HOST_ARCH=i386
-        else
-            if [ "$OPT_VERBOSE" = "yes" ]; then
-                echo "    64-bit AMD 80x86 (x86_64)"
-            fi
-            CFG_HOST_ARCH=x86_64
-        fi
-        ;;
-    *:*:ppc)
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "    32-bit PowerPC (powerpc)"
-        fi
-        CFG_HOST_ARCH=powerpc
-        ;;
-    *:*:ppc64)
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "    64-bit PowerPC (powerpc)"
-        fi
-        CFG_HOST_ARCH=powerpc
-        ;;
-    *:*:s390*)
-    	if [ "$OPT_VERBOSE" = "yes" ]; then
-    	    echo "    IBM S/390 (s390)"
-    	fi
-    	CFG_HOST_ARCH=s390
-    	;;
-    *:*:arm*)
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "    ARM (arm)"
-        fi
-        CFG_HOST_ARCH=arm
-        ;;
-    Linux:*:sparc*)
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "    Linux on SPARC"
-        fi
-        CFG_HOST_ARCH=sparc
-        ;;
-    QNX:*:*)
-        case "$UNAME_MACHINE" in
-        x86pc)
-            if [ "$OPT_VERBOSE" = "yes" ]; then
-                echo "    QNX on Intel 80x86 (i386)"
-            fi
-            CFG_HOST_ARCH=i386
-            ;;
-        esac
-        ;;
-    *:*:*)
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "    Trying '$UNAME_MACHINE'..."
-        fi
-        CFG_HOST_ARCH="$UNAME_MACHINE"
-        ;;
-    esac
-fi
-
-if [ "$XPLATFORM_MINGW" = "yes" ]; then
-    [ -z "$CFG_ARCH" ] && CFG_ARCH="windows"
-elif [ "$PLATFORM_MAC" = "yes" ] || [ -z "$CFG_ARCH" ]; then
-    CFG_ARCH=$CFG_HOST_ARCH
-fi
-
-# for compatibility
-COMPAT_ARCH=
-case "$CFG_ARCH" in
-arm*)
-    # previously, armv6 was a different arch
-    CFG_ARCH=arm
-    COMPAT_ARCH=armv6
-    ;;
-esac
-
-if [ "$OPT_VERBOSE" = "yes" ]; then
-    echo "System architecture: '$CFG_ARCH'"
-    if [ "$PLATFORM_QPA" = "yes" ]; then
-	echo "Host architecture: '$CFG_HOST_ARCH'"
-    fi
 fi
 
 #-------------------------------------------------------------------------------
@@ -2625,11 +2484,11 @@ if [ "$QT_CROSS_COMPILE" = "yes" ]; then
         echo >&2 "Please make sure you have a correctly set-up pkg-config"
         echo >&2 "environment!"
         echo >&2 ""
-        if [ -z "$PKG_CONFIG_PATH" ]; then
+        if [ -z "$PKG_CONFIG_LIBDIR" ]; then
             echo >&2 ""
-            echo >&2 "Warning: PKG_CONFIG_PATH has not been set.  This could mean"
-            echo >&2 "the host compiler's .pc files will be used. This is probably"
-            echo >&2 "not what you want."
+            echo >&2 "Warning: PKG_CONFIG_LIBDIR has not been set.  This could mean"
+            echo >&2 "the host's .pc files will be used (even if you set PKG_CONFIG_PATH)."
+            echo >&2 "This is probably not what you want."
             echo >&2 ""
         elif [ -z "$PKG_CONFIG_SYSROOT" ] && [ -z "$PKG_CONFIG_SYSROOT_DIR" ]; then
             echo >&2 ""
@@ -3548,9 +3407,6 @@ Qt/Mac only:
  *  -dwarf2 ............ Enable dwarf2 debugging symbols.
     -no-dwarf2 ......... Disable dwarf2 debugging symbols.
 
-    -arch <arch> ....... Build Qt for <arch>. Supported arch values: x86 x86_64.
-                         Only one arch value can be specified.
-
     -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. This option requires gcc 4.
                          To use a different SDK with gcc 3.3, set the SDKROOT environment variable.
 
@@ -4038,6 +3894,33 @@ fi # Build qmake
 # tests that need qmake
 #-------------------------------------------------------------------------------
 
+#-------------------------------------------------------------------------------
+# determine the target and host architectures
+#-------------------------------------------------------------------------------
+
+# Use config.tests/arch/arch.pro to has the compiler tell us what the target architecture is
+CFG_ARCH=`"$outpath/bin/qmake" -spec "$XQMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -e "s,^Project MESSAGE: ,," -e "s,^#.*$,,g" | grep -v "^$"`
+[ -z "$CFG_ARCH" ] && CFG_ARCH="unknown"
+if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
+    # Do the same test again, using the host compiler
+    CFG_HOST_ARCH=`"$outpath/bin/qmake" -spec "$QMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -e "s,^Project MESSAGE: ,," -e "s,^#.*$,,g" | grep -v "^$"`
+    [ -z "$CFG_HOST_ARCH" ] && CFG_HOST_ARCH="unknown"
+else
+    # not cross compiling, host == target
+    CFG_HOST_ARCH="$CFG_ARCH"
+fi
+
+if [ "$OPT_VERBOSE" = "yes" ]; then
+    echo "System architecture: '$CFG_ARCH'"
+    if [ "$PLATFORM_QPA" = "yes" ]; then
+        echo "Host architecture: '$CFG_HOST_ARCH'"
+    fi
+fi
+
+#-------------------------------------------------------------------------------
+# functionality tests
+#-------------------------------------------------------------------------------
+
 # detect availability of float math.h functions
 if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/floatmath "floatmath" $L_FLAGS $I_FLAGS $l_FLAGS; then
     CFG_USE_FLOATMATH=yes
@@ -4143,6 +4026,8 @@ if [ "$CFG_ARCH" = "arm" ] && [ "${CFG_NEON}" = "auto" ]; then
     else
 	CFG_NEON=no
     fi
+elif [ "$CFG_ARCH" != "arm" ]; then
+    CFG_NEON=no
 fi
 
 [ "$XPLATFORM_MINGW" = "yes" ] && QMakeVar add styles "windowsxp windowsvista"
@@ -4172,6 +4057,10 @@ fi
 if [ "$CFG_LARGEFILE" = "auto" ]; then
     #Large files should be enabled for all Linux systems
     CFG_LARGEFILE=yes
+fi
+
+if [ "$CFG_GUI" = "no" ]; then
+    QPA_PLATFORM_GUARD=no
 fi
 
 # detect how jpeg should be built
@@ -5228,7 +5117,8 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
 
     if [ "$PLATFORM_QPA" = "yes" ] && [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ]; then
         if [ "$CFG_XCB" = "no" ]; then
-            if [ "$ORIG_CFG_XCB" = "auto" ]; then
+            if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
+                 ( [ "$ORIG_CFG_XCB" = "auto" ] ); then
                 echo "No QPA platform plugin enabled!"
                 echo " If you really want to build without a QPA platform plugin you must pass"
                 echo " -no-xcb. Doing this will produce a Qt that"
@@ -5522,29 +5412,27 @@ if [ "$CFG_MAC_DWARF2" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG dwarf2"
 fi
 
-# Set the default Mac OS X arch if there are no "-arch" arguments on the configure line
+# Detect the default arch (x86 or x86_64) on Mac OS X
 if [ "$BUILD_ON_MAC" = "yes" ]; then
-    DEFAULT_ARCH="$CFG_MAC_ARCHS"
-    if [ -z "$DEFAULT_ARCH" ]; then
-        case `file "${outpath}/bin/qmake"` in
-        *i?86)
-            DEFAULT_ARCH=x86
-            ;;
-        *x86_64)
-            DEFAULT_ARCH=x86_64
-            ;;
-        *ppc|*ppc64|*)
-            # unsupported/unknown
-            ;;
-        esac
-    fi
+    DEFAULT_ARCH=
+    case `file "${outpath}/bin/qmake"` in
+    *i?86)
+        DEFAULT_ARCH=x86
+        ;;
+    *x86_64)
+        DEFAULT_ARCH=x86_64
+        ;;
+    *ppc|*ppc64|*)
+        # unsupported/unknown
+        ;;
+    esac
+
     if [ -n "$DEFAULT_ARCH" ]; then
         [ "$OPT_VERBOSE" = "yes" ] && echo "Setting default Mac OS X architechture to $DEFAULT_ARCH."
         QT_CONFIG="$QT_CONFIG $DEFAULT_ARCH"
         QMAKE_CONFIG="$QMAKE_CONFIG $DEFAULT_ARCH"
-        # Make the application arch follow the Qt arch for single arch builds.
-        # (for multiple-arch builds, set CONFIG manually in the application .pro file)
-        [ `echo "$DEFAULT_ARCH" | wc -w` -eq 1 ] && QTCONFIG_CONFIG="$QTCONFIG_CONFIG $DEFAULT_ARCH"
+        # Make the application arch follow the Qt arch
+        QTCONFIG_CONFIG="$QTCONFIG_CONFIG $DEFAULT_ARCH"
     fi
 fi
 
@@ -5737,8 +5625,12 @@ if [ "$CFG_GUI" = "auto" ]; then
 fi
 if [ "$CFG_GUI" = "no" ]; then
     QT_CONFIG="$QT_CONFIG no-gui"
+    CFG_WIDGETS="no"
 fi
-
+if [ "$CFG_WIDGETS" = "no" ]; then
+    QT_CONFIG="$QT_CONFIG no-widgets"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WIDGETS"
+fi
 
 if [ "x$BUILD_ON_MAC" = "xyes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     #On Mac we implicitly link against libz, so we
@@ -6156,17 +6048,6 @@ cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
 #endif
 EOF
 
-CFG_ARCH_STR=`echo $CFG_ARCH | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-CFG_HOST_ARCH_STR=`echo $CFG_HOST_ARCH | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
-/* Machine Architecture */
-#ifndef QT_BOOTSTRAPPED
-# define QT_ARCH_${CFG_ARCH_STR}
-#else
-# define QT_ARCH_${CFG_HOST_ARCH_STR}
-#endif
-EOF
-
 echo '/* Compile time features */' >>"$outpath/src/corelib/global/qconfig.h.new"
 [ '!' -z "$LicenseKeyExt" ] && echo "#define QT_PRODUCT_LICENSEKEY \"$LicenseKeyExt\"" >>"$outpath/src/corelib/global/qconfig.h.new"
 
@@ -6389,6 +6270,7 @@ cat >>"$QTCONFIG.tmp" <<EOF
 #configuration
 CONFIG += $QTCONFIG_CONFIG
 QT_ARCH = $CFG_ARCH
+QT_HOST_ARCH = $CFG_HOST_ARCH
 QT_EDITION = $Edition
 QT_CONFIG += $QT_CONFIG
 
@@ -6583,12 +6465,7 @@ else
     echo "Building for:  $XPLATFORM"
 fi
 
-if [ ! -z "$CFG_MAC_ARCHS" ]; then
-    echo "Architecture:  $CFG_ARCH ($CFG_MAC_ARCHS )"
-else
-    echo "Architecture:  $CFG_ARCH"
-fi
-
+echo "Architecture:  $CFG_ARCH"
 if [ "$PLATFORM_QPA" = "yes" ]; then
     echo "Host architecture: $CFG_HOST_ARCH"
 fi
@@ -6623,6 +6500,7 @@ fi
 [ "$CFG_DBUS" = "linked" ] && echo "QtDBus module .......... yes (linked)"
 echo "QtConcurrent code ...... $CFG_CONCURRENT"
 echo "QtGui module ........... $CFG_GUI"
+echo "QtWidgets module ....... $CFG_WIDGETS"
 if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
     echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
 else
@@ -6631,10 +6509,11 @@ fi
 echo "Declarative debugging ...$CFG_DECLARATIVE_DEBUG"
 echo "STL support ............ $CFG_STL"
 echo "PCH support ............ $CFG_PRECOMPILE"
-echo "MMX/3DNOW/SSE/SSE2/SSE3. ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}/${CFG_SSE3}"
-echo "SSSE3/SSE4.1/SSE4.2..... ${CFG_SSSE3}/${CFG_SSE4_1}/${CFG_SSE4_2}"
-echo "AVX..................... ${CFG_AVX}"
-if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
+if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
+    echo "MMX/3DNOW/SSE/SSE2/SSE3. ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}/${CFG_SSE3}"
+    echo "SSSE3/SSE4.1/SSE4.2..... ${CFG_SSSE3}/${CFG_SSE4_1}/${CFG_SSE4_2}"
+    echo "AVX..................... ${CFG_AVX}"
+elif [ "$CFG_ARCH" = "arm" ]; then
     echo "iWMMXt support ......... ${CFG_IWMMXT}"
     echo "NEON support ........... ${CFG_NEON}"
 fi
@@ -6997,14 +6876,21 @@ rm -f .projects .projects.3
 #-------------------------------------------------------------------------------
 # check for platforms that we don't yet know about
 #-------------------------------------------------------------------------------
-if [ "$CFG_ARCH" = "generic" ]; then
+if [ "$CFG_ARCH" = "unknown" ]; then
 cat <<EOF
 
-        NOTICE: Atomic operations are not yet supported for this
-        architecture.
+        NOTICE: configure was unable to determine the architecture
+        for the $XQMAKESPEC target.
 
-        Qt will use the 'generic' architecture instead, which uses a
-        single pthread_mutex_t to protect all atomic operations. This
+        Qt will not use a specialized implementation for any atomic
+        operations. Instead a generic implemention based on either GCC
+        intrinsics or C++11 std::atomic<T> will be used (when
+        available). The generic implementations are generally as fast
+        as and always as safe as a specialized implementation.
+
+        If no generic implementation is available, Qt will use a
+        fallback UNIX implementation which uses a single
+        pthread_mutex_t to protect all atomic operations. This
         implementation is the slow (but safe) fallback implementation
         for architectures Qt does not yet support.
 EOF
@@ -7039,6 +6925,21 @@ cat <<EOF
         NOTICE: The -wayland and -no-wayland flags are now obsolete
 
         All configuring of QtWayland plugin and QtCompositor happens in the module
+EOF
+fi
+
+#-------------------------------------------------------------------------------
+# check if the user passed the obsoleted -arch or -host-arch options
+#-------------------------------------------------------------------------------
+if [ "$OPT_OBSOLETE_HOST_ARG" = "yes" ]; then
+cat <<EOF
+
+        NOTICE: The -arch and -host-arch options are obsolete.
+
+        Qt now detects the target and host architectures based on compiler
+        output. Qt will be built using $CFG_ARCH for the target architecture
+        and $CFG_HOST_ARCH for the host architecture (note that these two
+        will be the same unless you are cross-compiling).
 EOF
 fi
 

@@ -42,6 +42,8 @@
 #include "qfilesystemwatcher_polling_p.h"
 #include <QtCore/qtimer.h>
 
+#ifndef QT_NO_FILESYSTEMWATCHER
+
 QT_BEGIN_NAMESPACE
 
 QPollingFileSystemWatcherEngine::QPollingFileSystemWatcherEngine(QObject *parent)
@@ -149,3 +151,4 @@ void QPollingFileSystemWatcherEngine::timeout()
 }
 
 QT_END_NAMESPACE
+#endif // !QT_NO_FILESYSTEMWATCHER

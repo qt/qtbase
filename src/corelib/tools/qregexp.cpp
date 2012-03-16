@@ -3918,8 +3918,8 @@ static void invalidateEngine(QRegExpPrivate *priv)
     \value RegExp A rich Perl-like pattern matching syntax. This is
     the default.
 
-    \value RegExp2 Like RegExp, but with \l{greedy quantifiers}. This
-    will be the default in Qt 5. (Introduced in Qt 4.2.)
+    \value RegExp2 Like RegExp, but with \l{greedy quantifiers}.
+    (Introduced in Qt 4.2.)
 
     \value Wildcard This provides a simple pattern matching syntax
     similar to that used by shells (command interpreters) for "file

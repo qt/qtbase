@@ -27,7 +27,7 @@
 
 /*!
     \module QtSql
-    \title QtSql Module
+    \title Qt SQL Module
     \ingroup modules
 
     To include the definitions of the module's classes, use the

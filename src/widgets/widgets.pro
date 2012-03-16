@@ -25,7 +25,6 @@ mac:include(kernel/mac.pri)
 win32:include(kernel/win.pri)
 
 #modules
-include(animation/animation.pri)
 include(kernel/kernel.pri)
 include(styles/styles.pri)
 include(widgets/widgets.pri)

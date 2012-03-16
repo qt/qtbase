@@ -105,7 +105,9 @@ public:
     virtual QPlatformDrag *drag() const;
 #endif
     virtual QPlatformInputContext *inputContext() const;
+#ifndef QT_NO_ACCESSIBILITY
     virtual QPlatformAccessibility *accessibility() const;
+#endif
 
     // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;
@@ -126,7 +128,8 @@ public:
 
     virtual Qt::KeyboardModifiers queryKeyboardModifiers() const;
 
-    virtual QPlatformTheme *platformTheme() const;
+    virtual QStringList themeNames() const;
+    virtual QPlatformTheme *createPlatformTheme(const QString &name) const;
 
 protected:
     void screenAdded(QPlatformScreen *screen);

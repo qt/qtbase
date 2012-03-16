@@ -64,6 +64,9 @@ public:
     const QFont *font(Font type = SystemFont) const;
 
     QVariant themeHint(ThemeHint hint) const;
+
+    static const char *name;
+
 private:
     mutable QPalette *m_systemPalette;
     mutable QHash<QPlatformTheme::Palette, QPalette*> m_palettes;

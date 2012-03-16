@@ -764,6 +764,9 @@ void tst_QDockWidget::task169808_setFloating()
     qt_x11_wait_for_window_manager(&mw);
 #endif
 
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Window handling: QTBUG-24774", Abort);
+#endif
     QCOMPARE(dw->widget()->size(), dw->widget()->sizeHint());
 
     //and now we try to test if the contents margin is taken into account

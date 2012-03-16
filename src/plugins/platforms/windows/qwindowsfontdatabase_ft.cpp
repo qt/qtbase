@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qwindowsfontdatabase_ft.h"
+#include "qwindowsfontdatabase.h"
 #include "qwindowscontext.h"
 
 #include <ft2build.h>
@@ -460,17 +461,9 @@ static inline int verticalDPI()
     return GetDeviceCaps(QWindowsContext::instance()->displayContext(), LOGPIXELSY);
 }
 
-QFont QWindowsFontDatabaseFT::systemDefaultFont()
+QFont QWindowsFontDatabaseFT::defaultFont() const
 {
-    LOGFONT lf;
-    GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
-    QFont systemFont =  QWindowsFontDatabaseFT::LOGFONT_to_QFont(lf);
-    // "MS Shell Dlg 2" is the correct system font >= Win2k
-    if (systemFont.family() == QStringLiteral("MS Shell Dlg"))
-        systemFont.setFamily(QStringLiteral("MS Shell Dlg 2"));
-    if (QWindowsContext::verboseFonts)
-        qDebug() << __FUNCTION__ << systemFont;
-    return systemFont;
+    return QWindowsFontDatabase::systemDefaultFont();
 }
 
 QFont QWindowsFontDatabaseFT::LOGFONT_to_QFont(const LOGFONT& logFont, int verticalDPI_In)

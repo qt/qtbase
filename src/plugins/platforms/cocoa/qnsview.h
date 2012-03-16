@@ -44,6 +44,7 @@
 
 #include <Cocoa/Cocoa.h>
 
+#include <QtCore/QPointer>
 #include <QtGui/QImage>
 #include <QtGui/QAccessible>
 
@@ -51,12 +52,14 @@ QT_BEGIN_NAMESPACE
 class QCocoaWindow;
 QT_END_NAMESPACE
 
-@interface QNSView : NSView {
+@interface QNSView : NSView <NSTextInput> {
     CGImageRef m_cgImage;
     QWindow *m_window;
     QCocoaWindow *m_platformWindow;
     Qt::MouseButtons m_buttons;
     QAccessibleInterface *m_accessibleRoot;
+    QString m_composingText;
+    bool m_keyEventsAccepted;
     QStringList *currentCustomDragTypes;
 }
 

@@ -75,7 +75,7 @@ QPlatformAccessibility::~QPlatformAccessibility()
 {
 }
 
-void QPlatformAccessibility::notifyAccessibilityUpdate(const QAccessibleEvent &event)
+void QPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
     initialize();
 

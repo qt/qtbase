@@ -43,6 +43,11 @@
 
 QT_BEGIN_NAMESPACE
 
+void *QPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
+{
+    Q_UNUSED(resource);
+    return 0;
+}
 void *QPlatformNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
 {
     Q_UNUSED(resource);

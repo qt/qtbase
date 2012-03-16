@@ -51,7 +51,7 @@ class QFontEngineMultiFontConfig : public QFontEngineMultiQPA
 {
     Q_OBJECT
 public:
-    explicit QFontEngineMultiFontConfig(QFontEngine *fe, int script, const QStringList &fallbacks);
+    explicit QFontEngineMultiFontConfig(QFontEngine *fe, int script);
 
     ~QFontEngineMultiFontConfig();
 

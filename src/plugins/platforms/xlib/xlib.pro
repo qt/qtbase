@@ -43,7 +43,6 @@ mac {
 CONFIG += qpa/genericunixfontdatabase
 
 contains(QT_CONFIG, opengl) {
-    QT += opengl
     !contains(QT_CONFIG, opengles2) {
 #        load(qpa/glx/convenience)
         HEADERS += qglxintegration.h

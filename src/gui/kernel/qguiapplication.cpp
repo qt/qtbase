@@ -110,6 +110,7 @@ enum ApplicationResourceFlags
 
 static unsigned applicationResourceFlags = 0;
 
+QString *QGuiApplicationPrivate::platform_name = 0;
 bool QGuiApplicationPrivate::app_do_modal = false;
 
 QPalette *QGuiApplicationPrivate::app_pal = 0;        // default application palette
@@ -194,6 +195,7 @@ static inline void clearFontUnlocked()
     flow and main settings.
 
     \inmodule QtGui
+    \since 5.0
 
     QGuiApplication contains the main event loop, where all events from the window
     system and other sources are processed and dispatched. It also handles the
@@ -361,6 +363,9 @@ QGuiApplication::~QGuiApplication()
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();
 #endif
+
+    delete QGuiApplicationPrivate::platform_name;
+    QGuiApplicationPrivate::platform_name = 0;
 }
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
@@ -470,6 +475,17 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
     return 0;
 }
 
+/*!
+    \property QGuiApplication::platformName
+    \brief The name of the underlying platform plugin.
+    \since 5.0
+*/
+
+QString QGuiApplication::platformName()
+{
+    return QGuiApplicationPrivate::platform_name ?
+           *QGuiApplicationPrivate::platform_name : QString();
+}
 
 static void init_platform(const QString &pluginArgument, const QString &platformPluginPath)
 {
@@ -509,7 +525,9 @@ static void init_platform(const QString &pluginArgument, const QString &platform
 
    // Create the platform integration.
     QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, platformPluginPath);
-    if (!QGuiApplicationPrivate::platform_integration) {
+    if (QGuiApplicationPrivate::platform_integration) {
+        QGuiApplicationPrivate::platform_name = new QString(name);
+    } else {
         QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
         QString fatalMessage =
             QString::fromLatin1("Failed to load platform plugin \"%1\". Available platforms are: \n").arg(name);
@@ -521,13 +539,22 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     }
 
     // Create the platform theme:
-    // 1) Ask the platform integration to create a platform theme
-    QGuiApplicationPrivate::platform_theme = QGuiApplicationPrivate::platform_integration->platformTheme();
+    // 1) Ask the platform integration for a list of names.
+    const QStringList themeNames = QGuiApplicationPrivate::platform_integration->themeNames();
+    foreach (const QString &themeName, themeNames) {
+        QGuiApplicationPrivate::platform_theme = QPlatformThemeFactory::create(themeName, platformPluginPath);
+        if (QGuiApplicationPrivate::platform_theme)
+            break;
+    }
 
     // 2) If none found, look for a theme plugin. Theme plugins are located in the
     // same directory as platform plugins.
     if (!QGuiApplicationPrivate::platform_theme) {
-        QGuiApplicationPrivate::platform_theme = QPlatformThemeFactory::create(name, platformPluginPath);
+        foreach (const QString &themeName, themeNames) {
+            QGuiApplicationPrivate::platform_theme = QGuiApplicationPrivate::platform_integration->createPlatformTheme(themeName);
+            if (QGuiApplicationPrivate::platform_theme)
+                break;
+        }
         // No error message; not having a theme plugin is allowed.
     }
 
@@ -731,6 +758,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 
     qt_cleanupFontDatabase();
 
+    delete  platform_theme;
     delete platform_integration;
     platform_integration = 0;
 }

@@ -42,6 +42,8 @@
 #include "qcocoanativeinterface.h"
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
+#include "qcocoaprintersupport.h"
+
 #include <qbytearray.h>
 #include <qwindow.h>
 #include "qplatformwindow_qpa.h"
@@ -49,6 +51,8 @@
 #include "qplatformopenglcontext_qpa.h"
 #include "qopenglcontext.h"
 #include <qdebug.h>
+
+#include "qprintengine_mac_p.h"
 
 void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
@@ -65,4 +69,15 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
         return static_cast<QCocoaWindow *>(window->handle())->m_nsWindow;
     }
     return 0;
+}
+
+QPlatformPrinterSupport *QCocoaNativeInterface::createPlatformPrinterSupport()
+{
+    return new QCocoaPrinterSupport();
+}
+
+void *QCocoaNativeInterface::NSPrintInfoForPrintEngine(QPrintEngine *printEngine)
+{
+    QMacPrintEngine *macPrintEngine = static_cast<QMacPrintEngine *>(printEngine);
+    return macPrintEngine->d_func()->printInfo;
 }

@@ -79,7 +79,9 @@ public:
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
+    bool isDirty() const;
     bool isDirty(const QModelIndex &index) const;
+
     void clear();
 
     virtual void setEditStrategy(EditStrategy strategy);

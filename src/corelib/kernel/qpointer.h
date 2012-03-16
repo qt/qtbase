@@ -49,10 +49,8 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
-#if QT_DEPRECATED_SINCE(5,0)
-
 template <class T>
-class QT_DEPRECATED QPointer
+class QPointer
 {
     QWeakPointer<T> wp;
 
@@ -160,8 +158,6 @@ template<class T>
 inline bool operator!= (int i, const QPointer<T> &p)
 { Q_ASSERT(i == 0); return !i && !p.isNull(); }
 #endif
-
-#endif // QT_DEPRECATED_SINCE(5,0)
 
 QT_END_NAMESPACE
 

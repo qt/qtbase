@@ -47,7 +47,7 @@
 #include "qtwindowsglobal.h"
 #include "qwindowsmime.h"
 #include "qwindowsinputcontext.h"
-#include "qwindowsaccessibility.h"
+#include "accessible/qwindowsaccessibility.h"
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
 
@@ -788,7 +788,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         QWindowSystemInterface::handleCloseEvent(platformWindow->window());
         return true;
     case QtWindows::ThemeChanged: // ### fixme: Compress these events?
-        QWindowsTheme::instance()->windowsThemeChanged(platformWindow->window());
+        if (QWindowsTheme *theme = QWindowsTheme::instance())
+            theme->windowsThemeChanged(platformWindow->window());
         return true;
     default:
         break;

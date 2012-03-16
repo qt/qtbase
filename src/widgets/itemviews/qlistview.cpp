@@ -3169,7 +3169,8 @@ void QListView::currentChanged(const QModelIndex &current, const QModelIndex &pr
     if (QAccessible::isActive()) {
         if (current.isValid()) {
             int entry = visualIndex(current) + 1;
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, this, entry));
+            QAccessibleEvent event(QAccessible::Focus, this, entry);
+            QAccessible::updateAccessibility(&event);
         }
     }
 #endif
@@ -3188,12 +3189,14 @@ void QListView::selectionChanged(const QItemSelection &selected,
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
             int entry = visualIndex(sel) + 1;
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, this, entry));
+            QAccessibleEvent event(QAccessible::Selection, this, entry);
+            QAccessible::updateAccessibility(&event);
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
             int entry = visualIndex(desel) + 1;
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::SelectionRemove, this, entry));
+            QAccessibleEvent event(QAccessible::SelectionRemove, this, entry);
+            QAccessible::updateAccessibility(&event);
         }
     }
 #endif

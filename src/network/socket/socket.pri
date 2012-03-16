@@ -8,6 +8,7 @@ HEADERS += socket/qabstractsocketengine_p.h \
            socket/qtcpsocket.h \
            socket/qudpsocket.h \
            socket/qtcpserver.h \
+           socket/qtcpsocket_p.h \
            socket/qlocalserver.h \
            socket/qlocalserver_p.h \
            socket/qlocalsocket.h \

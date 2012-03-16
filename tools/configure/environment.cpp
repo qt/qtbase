@@ -422,6 +422,28 @@ int Environment::execute(QStringList arguments, const QStringList &additionalEnv
 }
 
 /*!
+    Executes \a command with _popen() and returns the stdout of the command.
+
+    Taken from qmake's system() command.
+*/
+QString Environment::execute(const QString &command)
+{
+    QString output;
+    FILE *proc = _popen(command.toLatin1().constData(), "r");
+    char buff[256];
+    while (proc && !feof(proc)) {
+        int read_in = int(fread(buff, 1, 255, proc));
+        if (!read_in)
+            break;
+        buff[read_in] = '\0';
+        output += buff;
+    }
+    if (proc)
+        _pclose(proc);
+    return output;
+}
+
+/*!
     Copies the \a srcDir contents into \a destDir.
 
     If \a includeSrcDir is not empty, any files with 'h', 'prf', or 'conf' suffixes

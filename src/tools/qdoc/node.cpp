@@ -98,6 +98,7 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
       safeness_(UnspecifiedSafeness),
       pageType_(NoPageType),
       status_(Commendable),
+      indexNodeFlag_(false),
       parent_(parent),
       relatesTo_(0),
       name_(name)
@@ -513,8 +514,8 @@ QString Node::ditaXmlHref()
     else {
         href = fileBase();
     }
-    if (!href.endsWith(".xml"))
-        href += ".xml";
+    if (!href.endsWith(".xml") && !href.endsWith(".dita"))
+        href += ".dita";
     return href + QLatin1Char('#') + guid();
 }
 

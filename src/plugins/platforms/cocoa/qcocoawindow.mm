@@ -58,12 +58,24 @@
 
 - (BOOL)canBecomeKeyWindow
 {
-
     // The default implementation returns NO for title-bar less windows,
     // override and return yes here to make sure popup windows such as
     // the combobox popup can become the key window.
     return YES;
 }
+
+- (BOOL)canBecomeMainWindow
+{
+    BOOL canBecomeMain = YES; // By default, windows can become the main window
+
+    // Windows with a transient parent (such as combobox popup windows)
+    // cannot become the main window:
+    if (m_cocoaPlatformWindow->window()->transientParent())
+        canBecomeMain = NO;
+
+    return canBecomeMain;
+}
+
 
 @end
 
@@ -71,60 +83,31 @@
 
 - (BOOL)canBecomeKeyWindow
 {
-    return YES;
+    return NO;
 }
 
 @end
 
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
-    , m_windowAttributes(0)
-    , m_windowClass(0)
     , m_glContext(0)
     , m_inConstructor(true)
 {
     QCocoaAutoReleasePool pool;
 
-    determineWindowClass();
-    m_nsWindow = createWindow();
-
-    QNSWindowDelegate *delegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:this];
-    [m_nsWindow setDelegate:delegate];
-    [m_nsWindow setAcceptsMouseMovedEvents:YES];
-
-    // Prevent Cocoa from releasing the window on close. Qt
-    // handles the close event asynchronously and we want to
-    // make sure that m_nsWindow stays valid until the
-    // QCocoaWindow is deleted by Qt.
-    [m_nsWindow setReleasedWhenClosed : NO];
-
     m_contentView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
-
-    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
-                                          selector:@selector(windowDidBecomeKey)
-                                          name:NSWindowDidBecomeKeyNotification
-                                          object:m_nsWindow];
-
-    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
-                                          selector:@selector(windowDidResignKey)
-                                          name:NSWindowDidResignKeyNotification
-                                          object:m_nsWindow];
-
-    // ### Accept touch events by default.
-    // Beware that enabling touch events has a negative impact on the overall performance.
-    // We probably need a QWindowSystemInterface API to enable/disable touch events.
-    [m_contentView setAcceptsTouchEvents:YES];
-
     setGeometry(tlw->geometry());
 
-    [m_nsWindow setContentView:m_contentView];
+    m_nsWindow = createNSWindow();
+    setNSWindow(m_nsWindow);
+
     m_inConstructor = false;
 }
 
 QCocoaWindow::~QCocoaWindow()
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:m_contentView];
     [m_contentView release];
+    clearNSWindow(m_nsWindow);
     [m_nsWindow release];
 }
 
@@ -146,21 +129,42 @@ void QCocoaWindow::setVisible(bool visible)
 {
     QCocoaAutoReleasePool pool;
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << "QCocoaWindow::setVisible" << this << visible;
+    qDebug() << "QCocoaWindow::setVisible" << window() << visible;
 #endif
     if (visible) {
-        // The parent window might have moved while this window was hidden,
-        // update the window geometry if there is a parent.
-        if (window()->transientParent())
+        if (window()->transientParent()) {
+            // The parent window might have moved while this window was hidden,
+            // update the window geometry if there is a parent.
             setGeometry(window()->geometry());
+
+            // Register popup windows so that the parent window can
+            // close them when needed.
+            if (window()->windowType() == Qt::Popup) {
+                // qDebug() << "transientParent and popup" << window()->windowType() << Qt::Popup << (window()->windowType() & Qt::Popup);
+
+                QCocoaWindow *parentCocoaWindow = static_cast<QCocoaWindow *>(window()->transientParent()->handle());
+                parentCocoaWindow->m_activePopupWindow = window();
+            }
+
+        }
 
         // Make sure the QWindow has a frame ready before we show the NSWindow.
         QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
 
-        [m_nsWindow makeKeyAndOrderFront:nil];
+        if ([m_nsWindow canBecomeKeyWindow])
+            [m_nsWindow makeKeyAndOrderFront:nil];
+        else
+            [m_nsWindow orderFront: nil];
     } else {
-        [m_nsWindow orderOut:nil];
+        // qDebug() << "close" << this;
+        [m_nsWindow orderOut:m_nsWindow];
     }
+}
+
+Qt::WindowFlags QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
+{
+    m_windowFlags = flags;
+    return m_windowFlags;
 }
 
 void QCocoaWindow::setWindowTitle(const QString &title)
@@ -174,13 +178,14 @@ void QCocoaWindow::setWindowTitle(const QString &title)
 
 void QCocoaWindow::raise()
 {
+    //qDebug() << "raise" << this;
     // ### handle spaces (see Qt 4 raise_sys in qwidget_mac.mm)
     [m_nsWindow orderFront: m_nsWindow];
 }
 
 void QCocoaWindow::lower()
 {
-    [m_nsWindow orderFront: m_nsWindow];
+    [m_nsWindow orderBack: m_nsWindow];
 }
 
 void QCocoaWindow::propagateSizeHints()
@@ -229,9 +234,29 @@ WId QCocoaWindow::winId() const
     return WId(m_nsWindow);
 }
 
+void QCocoaWindow::setParent(const QPlatformWindow *window)
+{
+    // recreate the window for compatibility
+    clearNSWindow(m_nsWindow);
+    [m_nsWindow close];
+    [m_nsWindow release];
+
+    m_nsWindow = createNSWindow();
+    setNSWindow(m_nsWindow);
+}
+
 NSView *QCocoaWindow::contentView() const
 {
     return [m_nsWindow contentView];
+}
+
+void QCocoaWindow::windowWillMove()
+{
+    // Close any open popups on window move
+    if (m_activePopupWindow) {
+        QWindowSystemInterface::handleSynchronousCloseEvent(m_activePopupWindow);
+        m_activePopupWindow = 0;
+    }
 }
 
 void QCocoaWindow::windowDidMove()
@@ -261,156 +286,95 @@ QCocoaGLContext *QCocoaWindow::currentContext() const
     return m_glContext;
 }
 
-/*
-    Determine the window class based on the window type and
-    window flags, and widget attr Sets m_windowAttributes
-    and m_windowClass.
-*/
-void QCocoaWindow::determineWindowClass()
+NSWindow * QCocoaWindow::createNSWindow()
 {
+    QCocoaAutoReleasePool pool;
+
+    NSRect frame = qt_mac_flipRect(window()->geometry(), window());
+
     Qt::WindowType type = window()->windowType();
     Qt::WindowFlags flags = window()->windowFlags();
 
-    const bool popup = (type == Qt::Popup);
+    NSUInteger styleMask;
+    NSWindow *createdWindow = 0;
 
-    if (type == Qt::ToolTip || type == Qt::SplashScreen || popup)
-        flags |= Qt::FramelessWindowHint;
-
-    m_windowClass = kSheetWindowClass;
-
-    if (popup || type == Qt::SplashScreen)
-        m_windowClass = kModalWindowClass;
-    else if (type == Qt::ToolTip)
-        m_windowClass = kHelpWindowClass;
-    else if (type == Qt::Tool)
-        m_windowClass = kFloatingWindowClass;
-    else
-        m_windowClass = kDocumentWindowClass;
-
-    m_windowAttributes = (kWindowCompositingAttribute | kWindowStandardHandlerAttribute);
-
-//    if(qt_mac_is_macsheet(window())) {
-//        m_windowClass = kSheetWindowClass;
-//    } else
-
-    {
-        // Shift things around a bit to get the correct window class based on the presence
-        // (or lack) of the border.
-
-        bool customize = flags & Qt::CustomizeWindowHint;
-        bool framelessWindow = (flags & Qt::FramelessWindowHint || (customize && !(flags & Qt::WindowTitleHint)));
-        if (framelessWindow) {
-            if (m_windowClass == kDocumentWindowClass) {
-                m_windowAttributes |= kWindowNoTitleBarAttribute;
-            } else if (m_windowClass == kFloatingWindowClass) {
-                m_windowAttributes |= kWindowNoTitleBarAttribute;
-            } else if (m_windowClass  == kMovableModalWindowClass) {
-                m_windowClass = kModalWindowClass;
-            }
+    // Use NSPanel for popup-type windows. (Popup, Tool, ToolTip, SplashScreen)
+    if ((type & Qt::Popup) == Qt::Popup) {
+        if (type == Qt::Popup || type == Qt::ToolTip || type == Qt::SplashScreen) {
+            styleMask = NSBorderlessWindowMask;
         } else {
-            m_windowAttributes |= NSTitledWindowMask;
-            if (m_windowClass != kModalWindowClass)
-                m_windowAttributes |= NSResizableWindowMask;
+            styleMask = (NSUtilityWindowMask | NSResizableWindowMask | NSClosableWindowMask |
+                         NSMiniaturizableWindowMask | NSTitledWindowMask);
         }
 
-        // Only add extra decorations (well, buttons) for widgets that can have them
-        // and have an actual border we can put them on.
-
-        if(m_windowClass != kModalWindowClass && m_windowClass != kMovableModalWindowClass
-                && m_windowClass != kSheetWindowClass && m_windowClass != kPlainWindowClass
-                && !framelessWindow && m_windowClass != kDrawerWindowClass
-                && m_windowClass != kHelpWindowClass) {
-            if (flags & Qt::WindowMinimizeButtonHint)
-                m_windowAttributes |= NSMiniaturizableWindowMask;
-            if (flags & Qt::WindowSystemMenuHint || flags & Qt::WindowCloseButtonHint)
-                m_windowAttributes |= NSClosableWindowMask;
-        } else {
-            // Clear these hints so that we aren't call them on invalid windows
-            flags &= ~(Qt::WindowMaximizeButtonHint | Qt::WindowMinimizeButtonHint
-                       | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint);
-        }
-
-    }
-
-    if((popup || type == Qt::Tool) && !window()->isModal())
-        m_windowAttributes |= kWindowHideOnSuspendAttribute;
-    m_windowAttributes |= kWindowLiveResizeAttribute;
-}
-
-/*
-
-*/
-NSWindow * QCocoaWindow::createWindow()
-{
-    // Determine if we need to add in our "custom window" attribute. Cocoa is rather clever
-    // in deciding if we need the maximize button or not (i.e., it's resizable, so you
-    // must need a maximize button). So, the only buttons we have control over are the
-    // close and minimize buttons. If someone wants to customize and NOT have the maximize
-    // button, then we have to do our hack. We only do it for these cases because otherwise
-    // the window looks different when activated. This "QtMacCustomizeWindow" attribute is
-    // intruding on a public space and WILL BREAK in the future.
-    // One can hope that there is a more public API available by that time.
-/*
-    Qt::WindowFlags flags = widget ? widget->windowFlags() : Qt::WindowFlags(0);
-    if ((flags & Qt::CustomizeWindowHint)) {
-        if ((flags & (Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint
-                      | Qt::WindowMinimizeButtonHint | Qt::WindowTitleHint))
-            && !(flags & Qt::WindowMaximizeButtonHint))
-            wattr |= QtMacCustomizeWindow;
-    }
-*/
-    NSRect frame = qt_mac_flipRect(window()->geometry(), window());
-    QCocoaAutoReleasePool pool;
-    NSWindow *window;
-
-    switch (m_windowClass) {
-    case kMovableModalWindowClass:
-    case kModalWindowClass:
-    case kSheetWindowClass:
-    case kFloatingWindowClass:
-    case kOverlayWindowClass:
-    case kHelpWindowClass: {
-        NSPanel *panel;
-
-        BOOL needFloating = NO;
-        //BOOL worksWhenModal = (this->window()->windowType() == Qt::Popup);
-
-        // Add in the extra flags if necessary.
-        switch (m_windowClass) {
-        case kSheetWindowClass:
-            m_windowAttributes |= NSDocModalWindowMask;
-            break;
-        case kFloatingWindowClass:
-        case kHelpWindowClass:
-            needFloating = YES;
-            m_windowAttributes |= NSUtilityWindowMask;
-            break;
-        default:
-            break;
-        }
-
-        panel = [[QNSPanel alloc] initWithContentRect:frame
-                                   styleMask:m_windowAttributes
-                                   backing:NSBackingStoreBuffered
-                                   defer:NO]; // see window case below
-//  ### crashes
-//        [panel setFloatingPanel:needFloating];
-//        [panel setWorksWhenModal:worksWhenModal];
-        window = static_cast<NSWindow *>(panel);
-        break;
-    }
-    default:
+        QNSPanel *window;
+        window  = [[QNSPanel alloc] initWithContentRect:frame
+                                         styleMask: styleMask
+                                         backing:NSBackingStoreBuffered
+                                         defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up
+                                                    // before the window is shown and needs a proper window.).
+        [window setHasShadow:YES];
+        createdWindow = window;
+    } else {
+        styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
+        QNSWindow *window;
         window  = [[QNSWindow alloc] initWithContentRect:frame
-                                            styleMask:(NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask)
-                                            backing:NSBackingStoreBuffered
-                                            defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up
-                                                       // before the window is shown and needs a proper window.).
-        break;
+                                         styleMask: styleMask
+                                         backing:NSBackingStoreBuffered
+                                         defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up
+                                                    // before the window is shown and needs a proper window.).
+        window->m_cocoaPlatformWindow = this;
+        createdWindow = window;
     }
-
-    //qt_syncCocoaTitleBarButtons(window, widget);
-    return window;
+    return createdWindow;
 }
+
+void QCocoaWindow::setNSWindow(NSWindow *window)
+{
+    QNSWindowDelegate *delegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:this];
+    [window setDelegate:delegate];
+    [window setAcceptsMouseMovedEvents:YES];
+
+    // Prevent Cocoa from releasing the window on close. Qt
+    // handles the close event asynchronously and we want to
+    // make sure that m_nsWindow stays valid until the
+    // QCocoaWindow is deleted by Qt.
+    [window setReleasedWhenClosed : NO];
+
+    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
+                                          selector:@selector(windowDidBecomeKey)
+                                          name:NSWindowDidBecomeKeyNotification
+                                          object:m_nsWindow];
+
+    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
+                                          selector:@selector(windowDidResignKey)
+                                          name:NSWindowDidResignKeyNotification
+                                          object:m_nsWindow];
+
+    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
+                                          selector:@selector(windowDidBecomeMain)
+                                          name:NSWindowDidBecomeMainNotification
+                                          object:m_nsWindow];
+
+    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
+                                          selector:@selector(windowDidResignMain)
+                                          name:NSWindowDidResignMainNotification
+                                          object:m_nsWindow];
+
+
+    // ### Accept touch events by default.
+    // Beware that enabling touch events has a negative impact on the overall performance.
+    // We probably need a QWindowSystemInterface API to enable/disable touch events.
+    [m_contentView setAcceptsTouchEvents:YES];
+
+    [window setContentView:m_contentView];
+}
+
+void QCocoaWindow::clearNSWindow(NSWindow *window)
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:m_contentView];
+}
+
 // Returns the current global screen geometry for the nswindow associated with this window.
 QRect QCocoaWindow::windowGeometry() const
 {

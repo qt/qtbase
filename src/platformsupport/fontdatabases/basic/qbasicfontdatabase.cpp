@@ -55,6 +55,7 @@
 
 #include <ft2build.h>
 #include FT_TRUETYPE_TABLES_H
+#include FT_ERRORS_H
 
 QT_BEGIN_NAMESPACE
 
@@ -362,8 +363,8 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
         // detect symbol fonts
         for (int i = 0; i < face->num_charmaps; ++i) {
             FT_CharMap cm = face->charmaps[i];
-            if (cm->encoding == ft_encoding_adobe_custom
-                    || cm->encoding == ft_encoding_symbol) {
+            if (cm->encoding == FT_ENCODING_ADOBE_CUSTOM
+                    || cm->encoding == FT_ENCODING_MS_SYMBOL) {
                 writingSystems.setSupported(QFontDatabase::Symbol);
                 break;
             }

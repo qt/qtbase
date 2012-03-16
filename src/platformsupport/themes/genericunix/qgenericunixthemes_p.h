@@ -67,11 +67,14 @@ class QGenericUnixTheme : public QPlatformTheme
 public:
     QGenericUnixTheme() {}
 
-    static QPlatformTheme *createUnixTheme();
+    static QPlatformTheme *createUnixTheme(const QString &name);
+    static QStringList themeNames();
 
     virtual QVariant themeHint(ThemeHint hint) const;
 
     static QStringList xdgIconThemePaths();
+
+    static const char *name;
 };
 
 class QKdeTheme : public QPlatformTheme
@@ -87,6 +90,8 @@ public:
 
     virtual const QFont *font(Font type) const
         { return m_resources.fonts[type]; }
+
+    static const char *name;
 
 private:
     QString globalSettingsFile() const;
@@ -108,6 +113,8 @@ class QGnomeTheme : public QPlatformTheme
 public:
     QGnomeTheme() {}
     virtual QVariant themeHint(ThemeHint hint) const;
+
+    static const char *name;
 
 private:
 };

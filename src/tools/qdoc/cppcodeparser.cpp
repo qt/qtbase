@@ -207,7 +207,7 @@ void CppCodeParser::initializeParser(const Config &config)
     if (!exampleFilePatterns.isEmpty())
         exampleNameFilter = exampleFilePatterns.join(" ");
     else
-        exampleNameFilter = "*.cpp *.h *.js *.xq *.svg *.xml *.ui";
+        exampleNameFilter = "*.cpp *.h *.js *.xq *.svg *.xml *.dita *.ui";
 
     QStringList exampleImagePatterns = config.getStringList(
                 CONFIG_EXAMPLES + Config::dot + CONFIG_IMAGEEXTENSIONS);
@@ -797,8 +797,9 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                     return makeFunctionNode(doc,arg,qmlClass,Node::QmlSignal,false,COMMAND_QMLSIGNAL);
                 else if (command == COMMAND_QMLATTACHEDSIGNAL)
                     return makeFunctionNode(doc,arg,qmlClass,Node::QmlSignal,true,COMMAND_QMLATTACHEDSIGNAL);
-                else if (command == COMMAND_QMLMETHOD)
+                else if (command == COMMAND_QMLMETHOD) {
                     return makeFunctionNode(doc,arg,qmlClass,Node::QmlMethod,false,COMMAND_QMLMETHOD);
+                }
                 else if (command == COMMAND_QMLATTACHEDMETHOD)
                     return makeFunctionNode(doc,arg,qmlClass,Node::QmlMethod,true,COMMAND_QMLATTACHEDMETHOD);
                 else

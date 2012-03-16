@@ -155,9 +155,7 @@ public:
     /*constructor*/(qMetaTypeConstructHelper<Type>), \
     /*destructor*/(qMetaTypeDestructHelper<Type>), \
     /*size*/(QTypeInfo<Type>::sizeOf), \
-    /*flags*/(!QTypeInfo<Type>::isStatic * QMetaType::MovableType) \
-            | (QTypeInfo<Type>::isComplex * QMetaType::NeedsConstruction) \
-            | (QTypeInfo<Type>::isComplex * QMetaType::NeedsDestruction) \
+    /*flags*/QtPrivate::QMetaTypeTypeFlags<Type>::Flags \
 }
 
 

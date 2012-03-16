@@ -106,6 +106,8 @@ public:
         inline Op op() const { return m_op; }
         inline void setOp(Op o)
         {
+            if (o == None)
+                m_submitted = true;
             if (o == m_op)
                 return;
             m_submitted = (o != Insert && o != Delete);

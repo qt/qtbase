@@ -28,8 +28,8 @@ exampledirs = .. \
 imagedirs = ../../../doc/src/templates/images \
             images
 
-outputdir = $$MODULE_BUILD_TREE/tools/qdoc3/doc/html
-tagfile = $$MODULE_BUILD_TREE/tools/qdoc3/doc/html/qdoc.tags
+outputdir = $$MODULE_BUILD_TREE/tools/qdoc/doc/html
+tagfile = $$MODULE_BUILD_TREE/tools/qdoc/doc/html/qdoc.tags
 
 qhp.projects            = QDoc
 

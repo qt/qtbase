@@ -108,6 +108,7 @@ public:
 
 /*!
     \class QSurfaceFormat
+    \since 5.0
     \brief The QSurfaceFormat class represents the format of a QSurface.
 
     The format includes the size of the color buffers, red, green, and blue;

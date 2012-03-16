@@ -53,9 +53,6 @@ QT_BEGIN_NAMESPACE
 
 
 class QWidget;
-#ifdef Q_WS_X11
-extern void qt_x11_wait_for_window_manager(QWidget *w);
-#endif
 
 namespace QTest
 {
@@ -74,22 +71,25 @@ namespace QTest
 
     inline static bool qWaitForWindowShown(QWidget *window)
     {
-#if defined(Q_WS_X11)
-        qt_x11_wait_for_window_manager(window);
-        QCoreApplication::processEvents();
-#else
-        Q_UNUSED(window);
-        qWait(200);
-#endif
-        return true;
-    }
-    inline static bool qWaitForWindowShown(QWindow *window)
-    {
         Q_UNUSED(window);
         qWait(200);
         return true;
     }
 
+    inline static bool qWaitForWindowShown(QWindow *window)
+    {
+        QElapsedTimer timer;
+        timer.start();
+        while (!window->isExposed()) {
+            int remaining = int(timer.elapsed()) - 1000;
+            if (remaining <= 0)
+                break;
+            QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
+            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+            QTest::qSleep(10);
+        }
+        return true;
+    }
 }
 
 QT_END_NAMESPACE

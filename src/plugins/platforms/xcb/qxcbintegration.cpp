@@ -82,14 +82,15 @@
 
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
+#ifndef QT_NO_ACCESSIBILITY
 #include <QtGui/QPlatformAccessibility>
+#endif
 
 QT_BEGIN_NAMESPACE
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     : m_eventDispatcher(createUnixEventDispatcher()),
-      m_services(new QGenericUnixServices),
-      m_theme(QGenericUnixTheme::createUnixTheme())
+      m_services(new QGenericUnixServices)
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
 
@@ -114,7 +115,9 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
     m_inputContext.reset(QPlatformInputContextFactory::create());
+#ifndef QT_NO_ACCESSIBILITY
     m_accessibility.reset(new QPlatformAccessibility());
+#endif
 
 #if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
     m_sharedGraphicsCache.reset(new QXcbSharedGraphicsCache);
@@ -247,10 +250,12 @@ QPlatformInputContext *QXcbIntegration::inputContext() const
     return m_inputContext.data();
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 QPlatformAccessibility *QXcbIntegration::accessibility() const
 {
     return m_accessibility.data();
 }
+#endif
 
 #if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
 static bool sharedGraphicsCacheDisabled()
@@ -277,9 +282,14 @@ QPlatformServices *QXcbIntegration::services() const
     return m_services.data();
 }
 
-QPlatformTheme *QXcbIntegration::platformTheme() const
+QStringList QXcbIntegration::themeNames() const
 {
-    return m_theme.data();
+    return QGenericUnixTheme::themeNames();
+}
+
+QPlatformTheme *QXcbIntegration::createPlatformTheme(const QString &name) const
+{
+    return QGenericUnixTheme::createUnixTheme(name);
 }
 
 QT_END_NAMESPACE

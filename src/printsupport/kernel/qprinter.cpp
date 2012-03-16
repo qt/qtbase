@@ -155,7 +155,7 @@ Q_PRINTSUPPORT_EXPORT QSizeF qt_printerPaperSize(QPrinter::Orientation orientati
 void QPrinterPrivate::createDefaultEngines()
 {
     QPrinter::OutputFormat realOutputFormat = outputFormat;
-#if defined (Q_OS_UNIX)
+#if defined (Q_OS_UNIX) && !defined(Q_OS_MAC)
     if(outputFormat == QPrinter::NativeFormat) {
         realOutputFormat = QPrinter::PdfFormat;
     }

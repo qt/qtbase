@@ -5965,7 +5965,10 @@ void QWidget::setFocus(Qt::FocusReason reason)
         // menus update the focus manually and this would create bogus events
         if (!(f->inherits("QMenuBar") || f->inherits("QMenu") || f->inherits("QMenuItem")))
 # endif
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, f));
+        {
+            QAccessibleEvent event(QAccessible::Focus, f);
+            QAccessible::updateAccessibility(&event);
+        }
 #endif
 #ifndef QT_NO_GRAPHICSVIEW
         if (QWExtra *topData = window()->d_func()->extra) {
@@ -6045,7 +6048,8 @@ void QWidget::clearFocus()
 #endif
         {
 #ifndef QT_NO_ACCESSIBILITY
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, this));
+            QAccessibleEvent event(QAccessible::Focus, this);
+            QAccessible::updateAccessibility(&event);
 #endif
         }
     }
@@ -7051,8 +7055,10 @@ void QWidgetPrivate::show_helper()
         qApp->d_func()->openPopup(q);
 
 #ifndef QT_NO_ACCESSIBILITY
-    if (q->windowType() != Qt::ToolTip)     // Tooltips are read aloud twice in MS narrator.
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ObjectShow, q));
+    if (q->windowType() != Qt::ToolTip) {    // Tooltips are read aloud twice in MS narrator.
+        QAccessibleEvent event(QAccessible::ObjectShow, q);
+        QAccessible::updateAccessibility(&event);
+    }
 #endif
 
     if (QApplicationPrivate::hidden_focus_widget == q) {
@@ -7142,8 +7148,10 @@ void QWidgetPrivate::hide_helper()
         bs->removeDirtyWidget(q);
 
 #ifndef QT_NO_ACCESSIBILITY
-    if (wasVisible)
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ObjectHide, q));
+    if (wasVisible) {
+        QAccessibleEvent event(QAccessible::ObjectHide, q);
+        QAccessible::updateAccessibility(&event);
+    }
 #endif
 }
 
@@ -7374,8 +7382,10 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
         }
         qApp->d_func()->sendSyntheticEnterLeave(widget);
 #ifndef QT_NO_ACCESSIBILITY
-        if (!spontaneous)
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ObjectHide, widget));
+        if (!spontaneous) {
+            QAccessibleEvent event(QAccessible::ObjectHide, widget);
+            QAccessible::updateAccessibility(&event);
+        }
 #endif
     }
 }
@@ -8250,7 +8260,8 @@ void QWidget::changeEvent(QEvent * event)
 #ifndef QT_NO_ACCESSIBILITY
         QAccessible::State s;
         s.disabled = true;
-        QAccessible::updateAccessibility(QAccessibleStateChangeEvent(s, this));
+        QAccessibleStateChangeEvent event(s, this);
+        QAccessible::updateAccessibility(&event);
 #endif
         break;
     }
@@ -9229,6 +9240,8 @@ int QWidget::heightForWidth(int w) const
 
 
 /*!
+    \Since 5.0
+
     Returns true if the widget's preferred height depends on its width; otherwise returns false.
 */ 
 bool QWidget::hasHeightForWidth() const
@@ -10390,7 +10403,8 @@ void QWidget::setAccessibleName(const QString &name)
 {
     Q_D(QWidget);
     d->accessibleName = name;
-    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this));
+    QAccessibleEvent event(QAccessible::NameChanged, this);
+    QAccessible::updateAccessibility(&event);
 }
 
 QString QWidget::accessibleName() const
@@ -10412,7 +10426,8 @@ void QWidget::setAccessibleDescription(const QString &description)
 {
     Q_D(QWidget);
     d->accessibleDescription = description;
-    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::DescriptionChanged, this));
+    QAccessibleEvent event(QAccessible::DescriptionChanged, this);
+    QAccessible::updateAccessibility(&event);
 }
 
 QString QWidget::accessibleDescription() const

@@ -58,7 +58,8 @@ public:
     explicit QMacPasteboardMime(char);
     virtual ~QMacPasteboardMime();
 
-    static void initialize();
+    static void initializeMimeTypes();
+    static void destroyMimeTypes();
 
     static QList<QMacPasteboardMime*> all(uchar);
     static QMacPasteboardMime *convertor(uchar, const QString &mime, QString flav);

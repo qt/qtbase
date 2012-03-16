@@ -298,6 +298,7 @@ void PageGenerator::beginSubPage(const InnerNode* node, const QString& fileName)
     if (outputCodec)
         out->setCodec(outputCodec);
     outStreamStack.push(out);
+    const_cast<InnerNode*>(node)->setOutputFileName(fileName);
 }
 
 /*!

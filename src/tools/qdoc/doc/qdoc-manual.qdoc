@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \page index.html
+    \page qdoc-index.html
     \nextpage Introduction to QDoc
 
     \title Table of Contents
@@ -138,11 +138,11 @@
 
     \section1 Running QDoc
 
-    The current name of the QDoc program is \c {qdoc3}. To run qdoc3
+    The current name of the QDoc program is \c {qdoc}. To run qdoc
     from the command line, give it the name of a configuration file:
 
     \quotation
-        \c {$ ../../bin/qdoc3 ./config.qdocconf}
+        \c {$ ../../bin/qdoc ./config.qdocconf}
     \endquotation
 
     QDoc recognizes the \c {.qdocconf} suffix as a \l{The QDoc
@@ -2907,7 +2907,7 @@
                \li Tutorial and Examples
            \endlist
 
-    \warning There appears to be a bug in qdoc3 here. If you include
+    \warning There appears to be a bug in qdoc here. If you include
     any of the argument types, you get a numeric list. We're looking
     into it.
 
@@ -7062,7 +7062,7 @@
     QDoc on the command line:
 
     \quotation
-        \c {/current/dir$ ../../bin/qdoc3 ./config.qdocconf}
+        \c {/current/dir$ ../../bin/qdoc ./config.qdocconf}
     \endquotation
 
     \section1 General Description
@@ -7307,7 +7307,7 @@
     looking for \e qt5. For example, this file would be:
 
     \code
-        ~/depot/qt5/qtdoc/tools/qdoc3/doc/qdoc-manual.qdoc
+        ~/depot/qt5/qtdoc/tools/qdoc/doc/qdoc-manual.qdoc
     \endcode
 
     QDoc scans the path for the basedir \e{qt5} and the next subdirectory
@@ -7365,7 +7365,7 @@
     line using the -D option. For example:
 
     \code
-        currentdirectory$ qdoc3 -Dconsoleedition qt.qdocconf
+        currentdirectory$ qdoc -Dconsoleedition qt.qdocconf
     \endcode
 
     In this case the -D option ensures that the \c consoleedition

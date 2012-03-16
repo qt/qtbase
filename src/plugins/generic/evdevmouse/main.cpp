@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <qgenericplugin_qpa.h>
-#include "qevdevmouse.h"
+#include "qevdevmousemanager.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -71,7 +71,7 @@ QObject* QEvdevMousePlugin::create(const QString &key,
                                    const QString &specification)
 {
     if (!key.compare(QLatin1String("EvdevMouse"), Qt::CaseInsensitive))
-        return new QEvdevMouseHandler(key, specification);
+        return new QEvdevMouseManager(key, specification);
     return 0;
 }
 

@@ -2535,7 +2535,7 @@ QTreeWidget::QTreeWidget(QWidget *parent)
             this, SLOT(_q_sort()));
     connect(selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
             this, SLOT(_q_selectionChanged(QItemSelection,QItemSelection)));
-    header()->setClickable(false);
+    header()->setSectionsClickable(false);
 }
 
 /*!

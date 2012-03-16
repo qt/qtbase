@@ -364,6 +364,22 @@ QtWidgets
   the proper Qt API: due to the version bump, QStyle will try to use the additional
   QStyleOption members, which are left default-initialized.
 
+* QHeaderView - The following functions have been obsoleted.
+
+  * void setMovable(bool movable) - use void setSectionsMovable(bool movable) instead.
+
+  * bool isMovable() const - use bool sectionsMovable() const instead.
+
+  * void setClickable(bool clickable) - use void setSectionsClickable(bool clickable) instead.
+
+  * bool isClickable() const - use bool sectionsClickable() instead.
+
+  * void setResizeMode(int logicalindex, ResizeMode mode) -
+    use setSectionResizeMode(logicalindex, mode) instead.
+
+  * ResizeMode resizeMode(int logicalindex) const -
+    use sectionResizeMode(int logicalindex) instead.
+
 QtNetwork
 ---------
 * QHostAddress::isLoopback() API added. Returns true if the address is
@@ -409,6 +425,9 @@ model methods setData() or setRecord().
 before doing anything. Previously, it would remove what it could and
 ignore the rest of the range.
 
+* removeRows(), for OnFieldChange and OnRowChange, allows only 1 row to be
+removed and only if there are no other changed rows.
+
 * setRecord() and insertRecord()
   -Only use fields where generated flag is set to true. This is
   is consistent with the meaning of the flag.
@@ -416,6 +435,7 @@ ignore the rest of the range.
   map were simply ignored.
   -For OnManualSubmit, insertRecord() no longer leaves behind an empty
   row if setRecord() fails.
+  -setRecord() now automatically submits for OnRowChange.
 
 * QSqlQueryModel::indexInQuery() is now virtual. See
 QSqlTableModel::indexInQuery() as example of how to implement in a
@@ -432,6 +452,17 @@ done after committing. This includes deleted rows which remain in
 the model as blank rows until the application calls select(). Instead,
 selectRow() is called to refresh only the affected row.
 
+* QSqlTableModel::isDirty(): New overloaded method to check whether model
+has any changes to submit. QTBUG-3108
+
+* QSqlTableModel::setData() and setRecord() no longer revert pending changes
+that fail upon resubmitting for edit strategies OnFieldChange and OnRowChange.
+Instead, pending (failed) changes cause new changes inappropriate to the
+edit strategy to be refused. The application should resolve or revert pending
+changes. insertRows() and insertRecord() also respect the edit strategy.
+
+* QSqlTableModel::setData() and setRecord() in OnRowChange no longer have the
+side effect of submitting the cached row when invoked on a different row.
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************

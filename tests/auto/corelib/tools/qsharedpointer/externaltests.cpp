@@ -353,15 +353,25 @@ namespace QTest {
             "\n"
             "#ifdef Q_OS_WIN\n"
             "#include <windows.h>\n"
+            "#if defined(Q_CC_MSVC) && !defined(Q_OS_WINCE)\n"
+            "#include <crtdbg.h>\n"
+            "#endif\n"
             "static void q_test_setup()\n"
             "{\n"
             "    SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);\n"
+            "}\n"
+            "static int __cdecl CrtDbgHook(int /*reportType*/, char * /*message*/, int * /*returnValue*/)\n"
+            "{\n"
+            "    return TRUE;\n"
             "}\n"
             "#else\n"
             "static void q_test_setup() { }\n"
             "#endif\n"
             "int main(int argc, char **argv)\n"
-            "{\n";
+            "{\n"
+            "#if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR) && !defined(Q_OS_WINCE)\n"
+            "    _CrtSetReportHook2(_CRT_RPTHOOK_INSTALL, CrtDbgHook);\n"
+            "#endif\n";
 
         switch (appType) {
         applicationless:
@@ -456,6 +466,7 @@ namespace QTest {
             "TARGET   = externaltest\n"
             "CONFIG   -= app_bundle\n"        // for the Mac
             "CONFIG   -= debug_and_release\n"
+            "CONFIG   += console\n"
             "DESTDIR  = .\n"
             "OBJECTS_DIR = .\n"
             "UI_DIR   = .\n"

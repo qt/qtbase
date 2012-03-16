@@ -2115,15 +2115,6 @@ void tst_QtConcurrentMap::functionOverloads()
     QtConcurrent::blockingMapped<QList<QString> >(constIntList, changeTypeConst);
     QtConcurrent::blockingMapped<QList<QString> >(classList, &MemFnTester::changeTypeConst);
     QtConcurrent::blockingMapped<QList<QString> >(constMemFnTesterList, &MemFnTester::changeTypeConst);
-
-    QStringList stringList;
-    const QStringList constStringList;
-    // QtConcurrent::map(stringList, changeTypeQStringListConst);
-    // QtConcurrent::map(intList, changeTypeNonConst);
-    // QList<QString>(QtConcurrent::map(constStringList, changeTypeQStringList));
-    // QtConcurrent::map(classList, &MemFnTester::changeType);
-    // QtConcurrent::map(classList, &MemFnTester::changeTypeConst);
-    // QtConcurrent::map(constMemFnTesterList, &MemFnTester::changeTypeConst);
 }
 
 QAtomicInt currentInstanceCount;

@@ -219,8 +219,12 @@ struct  HB_PairSet_
 {
   HB_UShort             PairValueCount;
 				      /* number of PairValueRecord tables */
+#ifndef HB_USE_FLEXIBLE_VALUE_RECORD
   HB_PairValueRecord*  PairValueRecord;
 				      /* array of PairValueRecord tables  */
+#else
+  HB_Short* ValueRecords;
+#endif
 };
 
 typedef struct HB_PairSet_  HB_PairSet;

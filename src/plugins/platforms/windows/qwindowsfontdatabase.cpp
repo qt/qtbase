@@ -1065,9 +1065,17 @@ static inline int verticalDPI()
     return GetDeviceCaps(QWindowsContext::instance()->displayContext(), LOGPIXELSY);
 }
 
-QFont QWindowsFontDatabase::defaultFont() const
+QFont QWindowsFontDatabase::systemDefaultFont()
 {
-    return QWindowsFontDatabaseFT::systemDefaultFont();
+    LOGFONT lf;
+    GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
+    QFont systemFont =  QWindowsFontDatabase::LOGFONT_to_QFont(lf);
+    // "MS Shell Dlg 2" is the correct system font >= Win2k
+    if (systemFont.family() == QStringLiteral("MS Shell Dlg"))
+        systemFont.setFamily(QStringLiteral("MS Shell Dlg 2"));
+    if (QWindowsContext::verboseFonts)
+        qDebug() << __FUNCTION__ << systemFont;
+    return systemFont;
 }
 
 QFont QWindowsFontDatabase::LOGFONT_to_QFont(const LOGFONT& logFont, int verticalDPI_In)

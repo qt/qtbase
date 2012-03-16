@@ -65,6 +65,7 @@ public:
     static bool detectExecutable(const QString &executable);
 
     static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
+    static QString execute(const QString &command);
     static bool cpdir(const QString &srcDir,
                       const QString &destDir,
                       const QString &includeSrcDir = QString());

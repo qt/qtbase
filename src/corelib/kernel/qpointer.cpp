@@ -44,7 +44,6 @@
     \brief The QPointer class is a template class that provides guarded pointers to QObject.
 
     \ingroup objectmodel
-    \obsolete Use QWeakPointer instead.
 
     A guarded pointer, QPointer<T>, behaves like a normal C++
     pointer \c{T *}, except that it is automatically set to 0 when the

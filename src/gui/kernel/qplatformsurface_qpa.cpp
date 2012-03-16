@@ -43,7 +43,10 @@
 
 QT_BEGIN_NAMESPACE
 
-QPlatformSurface::~QPlatformSurface() {}
+QPlatformSurface::~QPlatformSurface()
+{
+
+}
 
 QSurface::SurfaceClass QPlatformSurface::surfaceClass() const
 {

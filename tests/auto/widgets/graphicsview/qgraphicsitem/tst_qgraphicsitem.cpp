@@ -1069,9 +1069,6 @@ void tst_QGraphicsItem::toolTip()
                 foundTipLabel = true;
         }
         QVERIFY(foundView);
-#ifdef Q_OS_MAC
-        QEXPECT_FAIL("", "QTBUG-23707", Continue);
-#endif
         QVERIFY(foundTipLabel);
     }
 

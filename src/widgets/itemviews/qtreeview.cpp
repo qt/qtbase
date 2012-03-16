@@ -848,7 +848,7 @@ void QTreeView::setSortingEnabled(bool enable)
 {
     Q_D(QTreeView);
     header()->setSortIndicatorShown(enable);
-    header()->setClickable(enable);
+    header()->setSectionsClickable(enable);
     if (enable) {
         //sortByColumn has to be called before we connect or set the sortingEnabled flag
         // because otherwise it will not call sort on the model.
@@ -2886,7 +2886,7 @@ void QTreeViewPrivate::initialize()
     q->setAttribute(Qt::WA_MacShowFocusRect);
 
     QHeaderView *header = new QHeaderView(Qt::Horizontal, q);
-    header->setMovable(true);
+    header->setSectionsMovable(true);
     header->setStretchLastSection(true);
     header->setDefaultAlignment(Qt::AlignLeft|Qt::AlignVCenter);
     q->setHeader(header);
@@ -2937,7 +2937,8 @@ void QTreeViewPrivate::insertViewItems(int pos, int count, const QTreeViewItem &
 #ifndef QT_NO_ACCESSIBILITY
 #ifdef Q_OS_UNIX
     if (QAccessible::isActive()) {
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
+        QAccessibleEvent event(QAccessible::TableModelChanged, q, 0);
+        QAccessible::updateAccessibility(&event);
     }
 #endif
 #endif
@@ -2955,7 +2956,8 @@ void QTreeViewPrivate::removeViewItems(int pos, int count)
 #ifndef QT_NO_ACCESSIBILITY
 #ifdef Q_OS_UNIX
     if (QAccessible::isActive()) {
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
+        QAccessibleEvent event(QAccessible::TableModelChanged, q, 0);
+        QAccessible::updateAccessibility(&event);
     }
 #endif
 #endif
@@ -3769,7 +3771,8 @@ void QTreeView::currentChanged(const QModelIndex &current, const QModelIndex &pr
     if (QAccessible::isActive() && current.isValid()) {
 #ifdef Q_OS_UNIX
         int entry = (visualIndex(current) + (header()?1:0))*current.model()->columnCount()+current.column() + 1;
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, this, entry));
+        QAccessibleEvent event(QAccessible::Focus, this, entry);
+        QAccessible::updateAccessibility(&event);
 #else
         int entry = visualIndex(current) + 1;
         if (header())
@@ -3794,13 +3797,15 @@ void QTreeView::selectionChanged(const QItemSelection &selected,
         if (sel.isValid()) {
             int entry = (visualIndex(sel) + (header()?1:0))*sel.model()->columnCount()+sel.column() + 1;
             Q_ASSERT(entry > 0);
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, this, entry));
+            QAccessibleEvent event(QAccessible::Selection, this, entry);
+            QAccessible::updateAccessibility(&event);
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
             int entry = (visualIndex(desel) + (header()?1:0))*desel.model()->columnCount()+desel.column() + 1;
             Q_ASSERT(entry > 0);
-            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::SelectionRemove, this, entry));
+            QAccessibleEvent event(QAccessible::SelectionRemove, this, entry);
+            QAccessible::updateAccessibility(&event);
         }
     }
 #endif

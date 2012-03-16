@@ -62,8 +62,8 @@ QT_BEGIN_NAMESPACE
 // simple builtin US keymap
 #include "qevdevkeyboard_defaultmap.h"
 
-QEvdevKeyboardHandler::QEvdevKeyboardHandler(int deviceDescriptor, const QString &device, bool disableZap, bool enableCompose, const QString &keymapFile)
-    : m_fd(deviceDescriptor), m_device(device),
+QEvdevKeyboardHandler::QEvdevKeyboardHandler(int deviceDescriptor, bool disableZap, bool enableCompose, const QString &keymapFile)
+    : m_fd(deviceDescriptor),
       m_modifiers(0), m_composing(0), m_dead_unicode(0xffff),
       m_no_zap(disableZap), m_do_compose(enableCompose),
       m_keymap(0), m_keymap_size(0), m_keycompose(0), m_keycompose_size(0)
@@ -136,7 +136,7 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::createLinuxInputKeyboardHandler(co
             ::ioctl(fd, EVIOCSREP, kbdrep);
         }
 
-        return new QEvdevKeyboardHandler(fd, device, disableZap, enableCompose, keymapFile);
+        return new QEvdevKeyboardHandler(fd, disableZap, enableCompose, keymapFile);
     } else {
         qWarning("Cannot open keyboard input device '%s': %s", qPrintable(device), strerror(errno));
         return 0;

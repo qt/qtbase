@@ -48,6 +48,10 @@
 
 #include <QtCore/QTextCodec>
 
+#if defined(QT_LINUXBASE)
+#  include <X11/keysymdef.h>
+#endif
+
 #ifndef XK_ISO_Left_Tab
 #define XK_ISO_Left_Tab         0xFE20
 #endif

@@ -44,7 +44,7 @@
 #include "qwindowscontext.h"
 #include "qwindowsintegration.h"
 #include "qt_windows.h"
-#include "qwindowsfontdatabase_ft.h"
+#include "qwindowsfontdatabase.h"
 
 #include <QtCore/QVariant>
 #include <QtCore/QCoreApplication>
@@ -229,8 +229,12 @@ static inline QPalette *menuBarPalette(const QPalette &menuPalette)
     return result;
 }
 
+const char *QWindowsTheme::name = "windows";
+QWindowsTheme *QWindowsTheme::m_instance = 0;
+
 QWindowsTheme::QWindowsTheme()
 {
+    m_instance = this;
     qFill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
     qFill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
     refresh();
@@ -240,11 +244,7 @@ QWindowsTheme::~QWindowsTheme()
 {
     clearPalettes();
     clearFonts();
-}
-
-QWindowsTheme *QWindowsTheme::instance()
-{
-    return static_cast<QWindowsTheme *>(QWindowsIntegration::instance()->platformTheme());
+    m_instance = 0;
 }
 
 static inline QStringList iconThemeSearchPaths()
@@ -325,16 +325,16 @@ void QWindowsTheme::refreshFonts()
     ncm.cbSize = FIELD_OFFSET(NONCLIENTMETRICS, lfMessageFont) + sizeof(LOGFONT);
     SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize , &ncm, 0);
 
-    const QFont menuFont = QWindowsFontDatabaseFT::LOGFONT_to_QFont(ncm.lfMenuFont);
-    const QFont messageBoxFont = QWindowsFontDatabaseFT::LOGFONT_to_QFont(ncm.lfMessageFont);
-    const QFont statusFont = QWindowsFontDatabaseFT::LOGFONT_to_QFont(ncm.lfStatusFont);
-    const QFont titleFont = QWindowsFontDatabaseFT::LOGFONT_to_QFont(ncm.lfCaptionFont);
+    const QFont menuFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfMenuFont);
+    const QFont messageBoxFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfMessageFont);
+    const QFont statusFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfStatusFont);
+    const QFont titleFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfCaptionFont);
 
     LOGFONT lfIconTitleFont;
     SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIconTitleFont), &lfIconTitleFont, 0);
-    const QFont iconTitleFont = QWindowsFontDatabaseFT::LOGFONT_to_QFont(lfIconTitleFont);
+    const QFont iconTitleFont = QWindowsFontDatabase::LOGFONT_to_QFont(lfIconTitleFont);
 
-    m_fonts[SystemFont] = new QFont(QWindowsFontDatabaseFT::systemDefaultFont());
+    m_fonts[SystemFont] = new QFont(QWindowsFontDatabase::systemDefaultFont());
     m_fonts[MenuFont] = new QFont(menuFont);
     m_fonts[MenuBarFont] = new QFont(menuFont);
     m_fonts[MessageBoxFont] = new QFont(messageBoxFont);

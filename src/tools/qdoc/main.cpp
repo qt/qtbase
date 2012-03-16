@@ -76,6 +76,7 @@ QT_BEGIN_NAMESPACE
 /*
   The default indent for code is 4.
   The default value for false is 0.
+  The default supported file extensions are cpp, h, qdoc and qml.
   The default language is c++.
   The default output format is html.
   The default tab size is 8.
@@ -87,6 +88,7 @@ static const struct {
 } defaults[] = {
     { CONFIG_CODEINDENT, "4" },
     { CONFIG_FALSEHOODS, "0" },
+    { CONFIG_FILEEXTENSIONS, "*.cpp *.h *.qdoc *.qml"},
     { CONFIG_LANGUAGE, "Cpp" },
     { CONFIG_OUTPUTFORMATS, "HTML" },
     { CONFIG_TABSIZE, "8" },
@@ -172,27 +174,6 @@ static void processQdocconfFile(const QString &fileName)
      */
     Location::initialize(config);
     config.load(fileName);
-
-    QStringList sourceModules;
-    sourceModules = config.getStringList(CONFIG_SOURCEMODULES);
-    Location sourceModulesLocation = config.lastLocation();
-
-    if (!sourceModules.isEmpty()) {
-        Location::information(tr("qdoc will generate documentation for the modules found in the sourcemodules variable."));
-        foreach (const QString& sourceModule, sourceModules) {
-            QString qdocconf = sourceModule;
-            if (!qdocconf.endsWith(".qdocconf"))
-                qdocconf += "/doc/config/module.qdocconf";
-            QFile f(qdocconf);
-            if (!f.exists()) {
-                sourceModulesLocation.warning(tr("Can't find module's qdoc config file '%1'").arg(qdocconf));
-            }
-            else {
-                Location::information(tr("  Including: %1").arg(qdocconf));
-                config.load(qdocconf);
-            }
-        }
-    }
 
     /*
       Add the defines to the configuration variables.

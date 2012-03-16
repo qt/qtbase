@@ -29,18 +29,13 @@ win32:DEFINES += QT_NODLL
 INCLUDEPATH	+= $$QT_BUILD_TREE/include \
                    $$QT_BUILD_TREE/include/QtCore \
                    $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION \
-                   $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION/QtCore \
-                   $$QT_BUILD_TREE/include/QtXml \
-                   $$QT_BUILD_TREE/include/QtXml/$$QT.xml.VERSION \
-                   $$QT_BUILD_TREE/include/QtXml/$$QT.xml.VERSION/QtXml \
-                   $$QT_SOURCE_TREE/src/xml
+                   $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION/QtCore
 DEPENDPATH	+= $$INCLUDEPATH \
                    $$QT_SOURCE_TREE/src/corelib/global \
                    $$QT_SOURCE_TREE/src/corelib/kernel \
                    $$QT_SOURCE_TREE/src/corelib/tools \
                    $$QT_SOURCE_TREE/src/corelib/io \
-                   $$QT_SOURCE_TREE/src/corelib/codecs \
-                   $$QT_SOURCE_TREE/src/xml
+                   $$QT_SOURCE_TREE/src/corelib/codecs
 
 hpux-acc*|hpuxi-acc* {
     LIBS += $$QT_BUILD_TREE/src/tools/bootstrap/libbootstrap.a

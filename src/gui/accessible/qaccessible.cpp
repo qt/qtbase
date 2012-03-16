@@ -648,9 +648,8 @@ void QAccessible::setRootObject(QObject *object)
 void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
 {
     Q_ASSERT(object);
-
-    QAccessibleEvent event = QAccessibleEvent(reason, object, child);
-    updateAccessibility(event);
+    QAccessibleEvent ev(reason, object, child);
+    updateAccessibility(&ev);
 }
 
 /*!
@@ -672,7 +671,7 @@ void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
   the parameters of the call is expensive you can test isActive() to
   avoid unnecessary computations.
 */
-void QAccessible::updateAccessibility(const QAccessibleEvent &event)
+void QAccessible::updateAccessibility(QAccessibleEvent *event)
 {
     if (updateHandler) {
         updateHandler(event);

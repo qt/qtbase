@@ -46,6 +46,7 @@
 
 #include "qcocoaautoreleasepool.h"
 #include "qcocoacursor.h"
+#include "qcocoaclipboard.h"
 #include "qcocoadrag.h"
 
 #include <QtCore/QScopedPointer>
@@ -89,18 +90,24 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
 
     QPlatformNativeInterface *nativeInterface() const;
+    QPlatformInputContext *inputContext() const;
     QPlatformAccessibility *accessibility() const;
+    QPlatformClipboard *clipboard() const;
     QPlatformDrag *drag() const;
 
-    QPlatformTheme *platformTheme() const;
+    QStringList themeNames() const;
+    QPlatformTheme *createPlatformTheme(const QString &name) const;
+
 private:
 
     QScopedPointer<QPlatformFontDatabase> mFontDb;
     QAbstractEventDispatcher *mEventDispatcher;
 
+    QScopedPointer<QPlatformInputContext> mInputContext;
     QScopedPointer<QPlatformAccessibility> mAccessibility;
     QScopedPointer<QPlatformTheme> mPlatformTheme;
     QList<QCocoaScreen *> mScreens;
+    QCocoaClipboard  *mCocoaClipboard;
     QScopedPointer<QCocoaDrag> mCocoaDrag;
 };
 

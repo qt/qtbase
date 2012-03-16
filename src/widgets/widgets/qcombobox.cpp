@@ -58,6 +58,7 @@
 #include <qtreeview.h>
 #include <qheaderview.h>
 #include <qmath.h>
+#include <qmetaobject.h>
 #include <private/qguiapplication_p.h>
 #include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
@@ -982,7 +983,8 @@ void QComboBoxPrivate::_q_dataChanged(const QModelIndex &topLeft, const QModelIn
         q->update();
     }
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, q, 0));
+        QAccessibleEvent event(QAccessible::NameChanged, q, 0);
+        QAccessible::updateAccessibility(&event);
 #endif
 }
 
@@ -1238,7 +1240,8 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
     emit q->currentIndexChanged(index.row());
     emit q->currentIndexChanged(itemText(index));
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, q, 0));
+        QAccessibleEvent event(QAccessible::NameChanged, q, 0);
+        QAccessible::updateAccessibility(&event);
 #endif
 }
 
@@ -2545,17 +2548,25 @@ void QComboBox::hidePopup()
 
         // Fade out.
         bool needFade = style()->styleHint(QStyle::SH_Menu_FadeOutOnHide);
+        bool didFade = false;
         if (needFade) {
-#if defined(Q_WS_MAC)
-            macWindowFade(qt_mac_window_for(d->container));
-#endif // Q_WS_MAC
+#if defined(Q_OS_MAC)
+            QPlatformNativeInterface *platformNativeInterface = qApp->platformNativeInterface();
+            int at = platformNativeInterface->metaObject()->indexOfMethod("fadeWindow()");
+            if (at != -1) {
+                QMetaMethod windowFade = platformNativeInterface->metaObject()->method(at);
+                windowFade.invoke(platformNativeInterface, Q_ARG(QWindow *, d->container->windowHandle()));
+                didFade = true;
+            }
+
+#endif // Q_OS_MAC
             // Other platform implementations welcome :-)
         }
         d->model->blockSignals(false);
         d->container->itemView()->blockSignals(false);
         d->container->blockSignals(false);
 
-        if (!needFade)
+        if (!didFade)
 #endif // QT_NO_EFFECTS
             // Fade should implicitly hide as well ;-)
             d->container->hide();
@@ -2578,7 +2589,8 @@ void QComboBox::clear()
     Q_D(QComboBox);
     d->model->removeRows(0, d->model->rowCount(d->root), d->root);
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this, 0));
+        QAccessibleEvent event(QAccessible::NameChanged, this, 0);
+        QAccessible::updateAccessibility(&event);
 #endif
 }
 
@@ -2597,7 +2609,8 @@ void QComboBox::clearEditText()
     if (d->lineEdit)
         d->lineEdit->clear();
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this, 0));
+        QAccessibleEvent event(QAccessible::NameChanged, this, 0);
+        QAccessible::updateAccessibility(&event);
 #endif
 }
 
@@ -2610,7 +2623,8 @@ void QComboBox::setEditText(const QString &text)
     if (d->lineEdit)
         d->lineEdit->setText(text);
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this, 0));
+        QAccessibleEvent event(QAccessible::NameChanged, this, 0);
+        QAccessible::updateAccessibility(&event);
 #endif
 }
 

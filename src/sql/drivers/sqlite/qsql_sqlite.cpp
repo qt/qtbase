@@ -577,6 +577,11 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
         setOpenError(false);
         return true;
     } else {
+        if (d->access) {
+            sqlite3_close(d->access);
+            d->access = 0;
+        }
+
         setLastError(qMakeError(d->access, tr("Error opening database"),
                      QSqlError::ConnectionError));
         setOpenError(true);

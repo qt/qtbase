@@ -83,6 +83,8 @@ private slots:
     void setRecord();
     void insertRow_data() { generic_data_with_strategies(); }
     void insertRow();
+    void insertRowFailure_data() { generic_data_with_strategies(); }
+    void insertRowFailure();
     void insertRecord_data() { generic_data(); }
     void insertRecord();
     void insertMultiRecords_data() { generic_data(); }
@@ -95,6 +97,8 @@ private slots:
     void removeInsertedRow();
     void removeInsertedRows_data() { generic_data(); }
     void removeInsertedRows();
+    void isDirty_data() { generic_data_with_strategies(); }
+    void isDirty();
     void setFilter_data() { generic_data(); }
     void setFilter();
     void setInvalidFilter_data() { generic_data(); }
@@ -159,7 +163,8 @@ void tst_QSqlTableModel::dropTestTables()
                    << qTableName("test4", __FILE__)
                    << qTableName("emptytable", __FILE__)
                    << qTableName("bigtable", __FILE__)
-                   << qTableName("foo", __FILE__);
+                   << qTableName("foo", __FILE__)
+                   << qTableName("pktest", __FILE__);
         if (testWhiteSpaceNames(db.driverName()))
             tableNames << qTableName("qtestw hitespace", db.driver());
 
@@ -195,6 +200,8 @@ void tst_QSqlTableModel::createTestTables()
             QString qry = "create table " + qTableName("qtestw hitespace", db.driver()) + " ("+ db.driver()->escapeIdentifier("a field", QSqlDriver::FieldName) + " int)";
             QVERIFY_SQL( q, exec(qry));
         }
+
+        QVERIFY_SQL( q, exec("create table "+qTableName("pktest", __FILE__)+"(id int not null primary key, a varchar(20))"));
     }
 }
 
@@ -412,7 +419,7 @@ void tst_QSqlTableModel::setRecord()
                 model.submit();
             else {
                 // dataChanged() emitted by selectRow() as well as setRecord()
-                if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnFieldChange)
+                if ((QSqlTableModel::EditStrategy)submitpolicy != QSqlTableModel::OnManualSubmit)
                     QCOMPARE(spy.count(), 2);
                 else
                     QCOMPARE(spy.count(), 1);
@@ -537,6 +544,73 @@ void tst_QSqlTableModel::insertRow()
     QCOMPARE(model.data(model.index(3, 0)).toInt(), 42);
     QCOMPARE(model.data(model.index(3, 1)).toString(), QString("francis"));
     QCOMPARE(model.data(model.index(3, 2)).toInt(), 2);
+}
+
+void tst_QSqlTableModel::insertRowFailure()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    QFETCH(int, submitpolicy_i);
+    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    CHECK_DATABASE(db);
+
+    QSqlTableModel model(0, db);
+    model.setTable(qTableName("pktest", __FILE__));
+    model.setEditStrategy(submitpolicy);
+
+    QSqlRecord values = model.record();
+    values.setValue(0, 42);
+    values.setGenerated(0, true);
+    values.setValue(1, QString("blah"));
+    values.setGenerated(1, true);
+
+    // populate 1 row
+    QVERIFY_SQL(model, insertRecord(0, values));
+    QVERIFY_SQL(model, submitAll());
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 1);
+    QCOMPARE(model.data(model.index(0, 0)).toInt(), 42);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("blah"));
+
+    // primary key conflict will succeed in model but fail in database
+    QVERIFY_SQL(model, insertRow(0));
+    QVERIFY_SQL(model, setData(model.index(0, 0), 42));
+    QVERIFY_SQL(model, setData(model.index(0, 1), "conflict"));
+    QFAIL_SQL(model, submitAll());
+
+    // failed insert is still cached
+    QCOMPARE(model.rowCount(), 2);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("conflict"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString("blah"));
+
+    // cached insert affects subsequent operations
+    values.setValue(1, QString("spam"));
+    if (submitpolicy != QSqlTableModel::OnManualSubmit) {
+        QFAIL_SQL(model, setData(model.index(1, 1), QString("eggs")));
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("blah"));
+        QFAIL_SQL(model, setRecord(1, values));
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("blah"));
+        QFAIL_SQL(model, insertRow(2));
+        QCOMPARE(model.rowCount(), 2);
+        QFAIL_SQL(model, removeRow(1));
+        QCOMPARE(model.rowCount(), 2);
+    } else {
+        QVERIFY_SQL(model, setData(model.index(1, 1), QString("eggs")));
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("eggs"));
+        QVERIFY_SQL(model, setRecord(1, values));
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("spam"));
+        QVERIFY_SQL(model, insertRow(2));
+        QCOMPARE(model.rowCount(), 3);
+        QVERIFY_SQL(model, removeRow(1));
+        QCOMPARE(model.rowCount(), 3);
+    }
+
+    // restore empty table
+    model.revertAll();
+    QVERIFY_SQL(model, removeRow(0));
+    QVERIFY_SQL(model, submitAll());
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 0);
 }
 
 void tst_QSqlTableModel::insertRecord()
@@ -725,8 +799,10 @@ void tst_QSqlTableModel::removeRows()
     QVERIFY(!model.removeRows(1, 0)); // zero count
     QVERIFY(!model.removeRows(5, 1)); // past end (DOESN'T causes a beforeDelete to be emitted)
     QVERIFY(!model.removeRows(1, 0, model.index(2, 0))); // can't pass a valid modelindex
+    QFAIL_SQL(model, removeRows(0, 2)); // more than 1 row on OnFieldChange
 
-    QVERIFY_SQL(model, removeRows(0, 2));
+    QVERIFY_SQL(model, removeRows(0, 1));
+    QVERIFY_SQL(model, removeRows(1, 1));
     QCOMPARE(beforeDeleteSpy.count(), 2);
     QVERIFY(beforeDeleteSpy.at(0).at(0).toInt() == 0);
     QVERIFY(beforeDeleteSpy.at(1).at(0).toInt() == 1);
@@ -954,6 +1030,187 @@ void tst_QSqlTableModel::removeInsertedRows()
     QCOMPARE(model.rowCount(), 2);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(1, 1)).toString(), QString("vohi"));
+}
+
+void tst_QSqlTableModel::isDirty()
+{
+    QFETCH(QString, dbName);
+    QFETCH(int, submitpolicy_i);
+    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlTableModel model(0, db);
+    model.setEditStrategy(submitpolicy);
+    model.setTable(test);
+    QFAIL_SQL(model, isDirty());
+
+    model.setSort(0, Qt::AscendingOrder);
+    QVERIFY_SQL(model, select());
+    QFAIL_SQL(model, isDirty());
+
+    if (submitpolicy != QSqlTableModel::OnFieldChange) {
+        // setData() followed by revertAll()
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QVERIFY_SQL(model, setData(model.index(0, 1), QString("sam i am")));
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
+        QVERIFY_SQL(model, isDirty());
+        QVERIFY_SQL(model, isDirty(model.index(0, 1)));
+        model.revertAll();
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QFAIL_SQL(model, isDirty());
+        QFAIL_SQL(model, isDirty(model.index(0, 1)));
+
+        // setData() followed by select(), which clears changes
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QVERIFY_SQL(model, setData(model.index(0, 1), QString("sam i am")));
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
+        QVERIFY_SQL(model, isDirty());
+        QVERIFY_SQL(model, isDirty(model.index(0, 1)));
+        QVERIFY_SQL(model, select());
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QFAIL_SQL(model, isDirty());
+        QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    }
+
+    if (submitpolicy == QSqlTableModel::OnRowChange) {
+        // dirty row must block change on other rows
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QVERIFY(model.rowCount() > 1);
+        QVERIFY_SQL(model, setData(model.index(0, 1), QString("sam i am")));
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
+        QVERIFY_SQL(model, isDirty());
+        QVERIFY_SQL(model, isDirty(model.index(0, 1)));
+        QVERIFY(!(model.flags(model.index(1, 1)) & Qt::ItemIsEditable));
+        QFAIL_SQL(model, setData(model.index(1, 1), QString("sam i am")));
+        QFAIL_SQL(model, setRecord(1, model.record(1)));
+        QFAIL_SQL(model, insertRow(1));
+        QFAIL_SQL(model, removeRow(1));
+        QFAIL_SQL(model, isDirty(model.index(1, 1)));
+
+        model.revertAll();
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QFAIL_SQL(model, isDirty());
+        QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    }
+
+    // setData() followed by submitAll()
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QVERIFY_SQL(model, setData(model.index(0, 1), QString("sam i am")));
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
+    if (submitpolicy != QSqlTableModel::OnFieldChange) {
+        QVERIFY_SQL(model, isDirty());
+        QVERIFY_SQL(model, isDirty(model.index(0, 1)));
+    }
+    QVERIFY_SQL(model, submitAll());
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
+    QFAIL_SQL(model, isDirty());
+    QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    // check status after refreshing underlying query
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
+    QFAIL_SQL(model, isDirty());
+    QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    //restore original state
+    QVERIFY_SQL(model, setData(model.index(0, 1), QString("harry")));
+    QVERIFY_SQL(model, submitAll());
+    QVERIFY_SQL(model, select());
+    QFAIL_SQL(model, isDirty());
+    QFAIL_SQL(model, isDirty(model.index(0, 1)));
+
+    QSqlRecord newvals = model.record(0);
+    newvals.setValue(1, QString("sam i am"));
+    newvals.setGenerated(1, true);
+    if (submitpolicy == QSqlTableModel::OnManualSubmit) {
+        // setRecord() followed by revertAll()
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QVERIFY_SQL(model, setRecord(0, newvals));
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
+        QVERIFY_SQL(model, isDirty());
+        QVERIFY_SQL(model, isDirty(model.index(0, 1)));
+        model.revertAll();
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QFAIL_SQL(model, isDirty());
+        QFAIL_SQL(model, isDirty(model.index(0, 1)));
+
+        // setRecord() followed by select(), which clears changes
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QVERIFY_SQL(model, setRecord(0, newvals));
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
+        QVERIFY_SQL(model, isDirty());
+        QVERIFY_SQL(model, isDirty(model.index(0, 1)));
+        QVERIFY_SQL(model, select());
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QFAIL_SQL(model, isDirty());
+        QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    }
+
+    // setRecord() followed by submitAll()
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QVERIFY_SQL(model, setRecord(0, newvals));
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
+    if (submitpolicy == QSqlTableModel::OnManualSubmit) {
+        QVERIFY_SQL(model, isDirty());
+        QVERIFY_SQL(model, isDirty(model.index(0, 1)));
+    }
+    QVERIFY_SQL(model, submitAll());
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
+    QFAIL_SQL(model, isDirty());
+    QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    // check status after refreshing underlying query
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("sam i am"));
+    QFAIL_SQL(model, isDirty());
+    QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    //restore original state
+    QVERIFY_SQL(model, setData(model.index(0, 1), QString("harry")));
+    QVERIFY_SQL(model, submitAll());
+    QVERIFY_SQL(model, select());
+    QFAIL_SQL(model, isDirty());
+    QFAIL_SQL(model, isDirty(model.index(0, 1)));
+
+    // insertRow()
+    QVERIFY_SQL(model, insertRow(0));
+    QVERIFY_SQL(model, isDirty());
+    QVERIFY_SQL(model, isDirty(model.index(0, 1)));
+    model.revertAll();
+    QFAIL_SQL(model, isDirty());
+    QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QFAIL_SQL(model, isDirty());
+    QFAIL_SQL(model, isDirty(model.index(0, 1)));
+
+    // removeRow()
+    QSqlRecord saved_rec = model.record(0);
+    QVERIFY_SQL(model, removeRow(0));
+    if (submitpolicy == QSqlTableModel::OnManualSubmit) {
+        QVERIFY_SQL(model, isDirty());
+        QVERIFY_SQL(model, isDirty(model.index(0, 1)));
+    }
+    QVERIFY_SQL(model, submitAll());
+    QFAIL_SQL(model, isDirty());
+    QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    QVERIFY_SQL(model, select());
+    QFAIL_SQL(model, isDirty());
+    QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("trond"));
+
+    // insertRecord(), put back the removed row
+    for (int i = saved_rec.count() - 1; i >= 0; --i)
+        saved_rec.setGenerated(i, true);
+    QVERIFY_SQL(model, insertRecord(0, saved_rec));
+    if (submitpolicy == QSqlTableModel::OnManualSubmit) {
+        QVERIFY_SQL(model, isDirty());
+        QVERIFY_SQL(model, isDirty(model.index(0, 1)));
+    }
+    QVERIFY_SQL(model, submitAll());
+    QFAIL_SQL(model, isDirty());
+    QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    QVERIFY_SQL(model, select());
+    QFAIL_SQL(model, isDirty());
+    QFAIL_SQL(model, isDirty(model.index(0, 1)));
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
 }
 
 void tst_QSqlTableModel::emptyTable()

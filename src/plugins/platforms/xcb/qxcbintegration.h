@@ -77,7 +77,9 @@ public:
 
     QPlatformInputContext *inputContext() const;
 
+#ifndef QT_NO_ACCESSIBILITY
     QPlatformAccessibility *accessibility() const;
+#endif
 
 #if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
     QPlatformSharedGraphicsCache *createPlatformSharedGraphicsCache(const char *cacheId) const;
@@ -85,7 +87,8 @@ public:
 
     QPlatformServices *services() const;
 
-    QPlatformTheme *platformTheme() const;
+    QStringList themeNames() const;
+    QPlatformTheme *createPlatformTheme(const QString &name) const;
 
 private:
     QList<QXcbConnection *> m_connections;
@@ -96,14 +99,15 @@ private:
     QScopedPointer<QPlatformInputContext> m_inputContext;
     QAbstractEventDispatcher *m_eventDispatcher;
 
+#ifndef QT_NO_ACCESSIBILITY
     QScopedPointer<QPlatformAccessibility> m_accessibility;
+#endif
 
 #if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
     QScopedPointer<QPlatformSharedGraphicsCache> m_sharedGraphicsCache;
 #endif
 
     QScopedPointer<QPlatformServices> m_services;
-    QScopedPointer<QPlatformTheme> m_theme;
 };
 
 QT_END_NAMESPACE

@@ -311,7 +311,7 @@ void tst_QResourceEngine::checkStructure()
     QVERIFY(fileInfo.exists());
     QCOMPARE(fileInfo.isDir(), directory);
     QCOMPARE(fileInfo.size(), contentsSize);
-    //QVERIFY(fileInfo.isReadable());
+    QVERIFY(fileInfo.isReadable());
     QVERIFY(!fileInfo.isWritable());
     QVERIFY(!fileInfo.isExecutable());
 
