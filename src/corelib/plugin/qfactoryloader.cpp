@@ -175,8 +175,7 @@ void QFactoryLoader::update()
                 QString iid = library->metaData.value(QLatin1String("IID")).toString();
                 if (iid == QLatin1String(d->iid.constData(), d->iid.size())) {
                     QJsonObject object = library->metaData.value(QLatin1String("MetaData")).toObject();
-                    if (!object.isEmpty())
-                        metaDataOk = true;
+                    metaDataOk = true;
 
                     QJsonArray k = object.value(QLatin1String("Keys")).toArray();
                     for (int i = 0; i < k.size(); ++i) {
