@@ -39,45 +39,23 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSSCREEN_H
-#define QEGLFSSCREEN_H
+#ifndef QEGLFS_HOOKS_H
+#define QEGLFS_HOOKS_H
 
-#include <QPlatformScreen>
-
-#include <QtCore/QTextStream>
-
+#include "qplatformintegration_qpa.h"
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPlatformOpenGLContext;
-
-class QEglFSScreen : public QPlatformScreen //huh: FullScreenScreen ;) just to follow namespace
-{
-public:
-    QEglFSScreen();
-    ~QEglFSScreen();
-
-    QRect geometry() const;
-    int depth() const;
-    QImage::Format format() const;
-
-    QPlatformOpenGLContext *platformContext() const;
-
-    EGLSurface surface() const { return m_surface; }
-
-private:
-    void createAndSetPlatformContext() const;
-    void createAndSetPlatformContext();
-
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
-    QPlatformOpenGLContext *m_platformContext;
-    EGLDisplay m_dpy;
-    EGLSurface m_surface;
-    EGLNativeWindowType m_window;
+struct QEglFSHooks {
+    void platformInit();
+    void platformDestroy();
+    EGLNativeDisplayType platformDisplay() const;
+    QSize screenSize() const;
+    EGLNativeWindowType createNativeWindow(const QSize &size);
+    void destroyNativeWindow(EGLNativeWindowType window);
 };
 
 QT_END_NAMESPACE
-#endif // QEGLFSSCREEN_H
+
+#endif
