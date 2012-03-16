@@ -76,19 +76,39 @@ namespace QTest
         return true;
     }
 
-    inline static bool qWaitForWindowShown(QWindow *window)
+    inline static bool qWaitForWindowActive(QWindow *window, int timeout = 1000)
     {
         QElapsedTimer timer;
         timer.start();
-        while (!window->isExposed()) {
-            int remaining = int(timer.elapsed()) - 1000;
+        while (!window->isActive()) {
+            int remaining = timeout - int(timer.elapsed());
             if (remaining <= 0)
                 break;
             QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
             QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
             QTest::qSleep(10);
         }
-        return true;
+        return window->isActive();
+    }
+
+    inline static bool qWaitForWindowExposed(QWindow *window, int timeout = 1000)
+    {
+        QElapsedTimer timer;
+        timer.start();
+        while (!window->isExposed()) {
+            int remaining = timeout - int(timer.elapsed());
+            if (remaining <= 0)
+                break;
+            QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
+            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+            QTest::qSleep(10);
+        }
+        return window->isExposed();
+    }
+
+    inline static bool qWaitForWindowShown(QWindow *window, int timeout = 1000)
+    {
+        return qWaitForWindowActive(window, timeout);
     }
 }
 

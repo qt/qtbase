@@ -862,12 +862,43 @@ QT_BEGIN_NAMESPACE
 /*! \fn bool QTest::qWaitForWindowShown(QWidget *window)
     \since 4.6
 
-    Waits until the \a window is shown in the screen. This is mainly useful for
+    Waits until the \a window is shown on the screen. This is mainly useful for
     asynchronous systems like X11, where a window will be mapped to screen some
     time after being asked to show itself on the screen. Returns true.
 
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 24
+*/
+
+/*! \fn bool QTest::qWaitForWindowShown(QWindow *window, int timeout)
+    \since 5.0
+
+    Waits for \a timeout milliseconds or until the \a window is shown on the screen.
+    This is mainly useful for asynchronous systems like X11, where a window will be mapped to screen some
+    time after being asked to show itself on the screen.
+
+    Returns true if \c window is show in \a timout milliseconds, otherwise returns false.
+
+    \sa QTest::qWaitForWindowActive(), QTest::qWaitForWindowExposed()
+*/
+
+/*! \fn bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
+    \since 5.0
+
+    Waits for \a timeout milliseconds or until the \a window is active.
+
+    Returns true if \c window is active in \a timout milliseconds, otherwise returns false.
+
+    \sa QTest::qWaitForWindowActive(), QTest::qWaitForWindowShown(), QWindow::isActive()
+*/
+
+/*! \fn bool QTest::qWaitForWindowExposed(QWindow *window, int timeout)
+    \since 5.0
+
+    Waits for \a timeout milliseconds or until the \a window is exposed.
+    Returns true if \c window is exposed in \a timout milliseconds, otherwise returns false.
+
+    \sa QTest::qWaitForWindowShown(), QTest::qWaitForWindowExposed(), QWindow::isExposed()
 */
 
 /*!
