@@ -143,7 +143,6 @@ QFont *QGuiApplicationPrivate::app_font = 0;
 bool QGuiApplicationPrivate::obey_desktop_settings = true;
 
 extern void qRegisterGuiVariant();
-extern void qUnregisterGuiVariant();
 extern void qInitDrawhelperAsm();
 extern void qInitImageConversions();
 
@@ -357,8 +356,6 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::qt_clipboard = 0;
 
     clearPalette();
-
-    qUnregisterGuiVariant();
 
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();

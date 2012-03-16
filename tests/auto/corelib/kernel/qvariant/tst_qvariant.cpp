@@ -58,6 +58,7 @@
 #include <qmatrix4x4.h>
 #include <qpen.h>
 #include <qpolygon.h>
+#include <qpalette.h>
 #include <qtransform.h>
 #include <qvector2d.h>
 #include <qvector3d.h>
@@ -286,6 +287,9 @@ private slots:
     void loadQt5Stream();
     void saveQt5Stream_data();
     void saveQt5Stream();
+
+    void guiVariantAtExit();
+    void widgetsVariantAtExit();
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -3733,6 +3737,30 @@ void tst_QVariant::debugStreamType()
     MessageHandlerType msgHandler(typeId);
     qDebug() << QVariant::Type(typeId);
     QVERIFY(msgHandler.testPassed());
+}
+
+void tst_QVariant::guiVariantAtExit()
+{
+    // crash test, it should not crash at QGuiApplication exit
+    static QVariant cursor = QCursor();
+    static QVariant point = QPoint();
+    static QVariant image = QImage();
+    static QVariant pallete = QPalette();
+    Q_UNUSED(cursor);
+    Q_UNUSED(point);
+    Q_UNUSED(image);
+    Q_UNUSED(pallete);
+    QVERIFY(true);
+}
+
+void tst_QVariant::widgetsVariantAtExit()
+{
+    // crash test, it should not crash at QGuiApplication exit
+    static QVariant icon= QIcon();
+    static QVariant sizePolicy = QSizePolicy();
+    Q_UNUSED(icon);
+    Q_UNUSED(sizePolicy);
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_QVariant)

@@ -459,7 +459,6 @@ private:
 
 namespace QVariantPrivate {
 Q_CORE_EXPORT void registerHandler(const int /* Modules::Names */ name, const QVariant::Handler *handler);
-Q_CORE_EXPORT void unregisterHandler(const int /* Modules::Names */ name);
 }
 
 #if !defined(QT_NO_DEBUG_STREAM)

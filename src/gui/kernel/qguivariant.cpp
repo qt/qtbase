@@ -389,12 +389,4 @@ void qRegisterGuiVariant()
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterGuiVariant)
 
-void qUnregisterGuiVariant()
-{
-    QVariantPrivate::unregisterHandler(QModulesPrivate::Gui);
-    qMetaTypeGuiHelper = 0;
-}
-Q_DESTRUCTOR_FUNCTION(qUnregisterGuiVariant)
-
-
 QT_END_NAMESPACE

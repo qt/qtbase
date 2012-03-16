@@ -96,8 +96,6 @@ public:
     {
         Handlers[name] = handler;
     }
-
-    inline void unregisterHandler(const QModulesPrivate::Names name);
 };
 }  // namespace
 
@@ -892,19 +890,9 @@ Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler()
     return &qt_kernel_variant_handler;
 }
 
-inline void HandlersManager::unregisterHandler(const QModulesPrivate::Names name)
-{
-    Handlers[name] = &qt_dummy_variant_handler;
-}
-
 Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names */name, const QVariant::Handler *handler)
 {
     handlerManager.registerHandler(static_cast<QModulesPrivate::Names>(name), handler);
-}
-
-Q_CORE_EXPORT void QVariantPrivate::unregisterHandler(const int /* Modules::Names */ name)
-{
-    handlerManager.unregisterHandler(static_cast<QModulesPrivate::Names>(name));
 }
 
 /*!
