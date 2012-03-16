@@ -275,6 +275,8 @@ private slots:
     void forwardDeclare();
     void debugStream_data();
     void debugStream();
+    void debugStreamType_data();
+    void debugStreamType();
 
     void loadQt4Stream_data();
     void loadQt4Stream();
@@ -3630,8 +3632,8 @@ void tst_QVariant::saveQVariantFromDataStream(QDataStream::Version version)
 
 class MessageHandler {
 public:
-    MessageHandler(const int typeId)
-        : oldMsgHandler(qInstallMsgHandler(handler))
+    MessageHandler(const int typeId, QtMsgHandler msgHandler = handler)
+        : oldMsgHandler(qInstallMsgHandler(msgHandler))
     {
         currentId = typeId;
     }
@@ -3645,13 +3647,24 @@ public:
     {
         return ok;
     }
-private:
+protected:
     static void handler(QtMsgType, const char *txt)
     {
         QString msg = QString::fromLatin1(txt);
         // Format itself is not important, but basic data as a type name should be included in the output
-        ok = msg.startsWith("QVariant(") + QMetaType::typeName(currentId);
-        QVERIFY2(ok, (QString::fromLatin1("Message is not valid: '") + msg + '\'').toLatin1().constData());
+        ok = msg.startsWith("QVariant(");
+        QVERIFY2(ok, (QString::fromLatin1("Message is not started correctly: '") + msg + '\'').toLatin1().constData());
+        ok &= (currentId == QMetaType::UnknownType
+             ? msg.contains("Invalid")
+             : msg.contains(QMetaType::typeName(currentId)));
+        QVERIFY2(ok, (QString::fromLatin1("Message doesn't contain type name: '") + msg + '\'').toLatin1().constData());
+        if (currentId == QMetaType::Char || currentId == QMetaType::QChar) {
+            // Chars insert '\0' into the qdebug stream, it is not possible to find a real string length
+            return;
+        }
+        ok &= msg.endsWith(") ");
+        QVERIFY2(ok, (QString::fromLatin1("Message is not correctly finished: '") + msg + '\'').toLatin1().constData());
+
     }
 
     QtMsgHandler oldMsgHandler;
@@ -3676,6 +3689,7 @@ void tst_QVariant::debugStream_data()
     QTest::newRow("QBitArray(111)") << QVariant(QBitArray(3, true)) << qMetaTypeId<QBitArray>();
     QTest::newRow("CustomStreamableClass") << QVariant(qMetaTypeId<CustomStreamableClass>(), 0) << qMetaTypeId<CustomStreamableClass>();
     QTest::newRow("MyClass") << QVariant(qMetaTypeId<MyClass>(), 0) << qMetaTypeId<MyClass>();
+    QTest::newRow("InvalidVariant") << QVariant() << int(QMetaType::UnknownType);
 }
 
 void tst_QVariant::debugStream()
@@ -3685,6 +3699,39 @@ void tst_QVariant::debugStream()
 
     MessageHandler msgHandler(typeId);
     qDebug() << variant;
+    QVERIFY(msgHandler.testPassed());
+}
+
+struct MessageHandlerType : public MessageHandler
+{
+    MessageHandlerType(const int typeId)
+        : MessageHandler(typeId, handler)
+    {}
+    static void handler(QtMsgType, const char *txt)
+    {
+        QString msg = QString::fromLatin1(txt);
+        // Format itself is not important, but basic data as a type name should be included in the output
+        ok = msg.startsWith("QVariant::");
+        QVERIFY2(ok, (QString::fromLatin1("Message is not started correctly: '") + msg + '\'').toLatin1().constData());
+        ok &= (currentId == QMetaType::UnknownType
+                ? msg.contains("Invalid")
+                : msg.contains(QMetaType::typeName(currentId)));
+        QVERIFY2(ok, (QString::fromLatin1("Message doesn't contain type name: '") + msg + '\'').toLatin1().constData());
+    }
+};
+
+void tst_QVariant::debugStreamType_data()
+{
+    debugStream_data();
+}
+
+void tst_QVariant::debugStreamType()
+{
+    QFETCH(QVariant, variant);
+    QFETCH(int, typeId);
+
+    MessageHandlerType msgHandler(typeId);
+    qDebug() << QVariant::Type(typeId);
     QVERIFY(msgHandler.testPassed());
 }
 

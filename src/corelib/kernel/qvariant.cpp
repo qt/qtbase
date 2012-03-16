@@ -2686,15 +2686,24 @@ bool QVariant::isNull() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QVariant &v)
 {
-    dbg.nospace() << "QVariant(" << QMetaType::typeName(v.userType()) << ", ";
-    handlerManager[v.d.type]->debugStream(dbg, v);
+    const uint typeId = v.d.type;
+    dbg.nospace() << "QVariant(";
+    if (typeId != QMetaType::UnknownType) {
+        dbg.nospace() << QMetaType::typeName(typeId) << ", ";
+        handlerManager[typeId]->debugStream(dbg, v);
+    } else {
+        dbg.nospace() << "Invalid";
+    }
     dbg.nospace() << ')';
     return dbg.space();
 }
 
 QDebug operator<<(QDebug dbg, const QVariant::Type p)
 {
-    dbg.nospace() << "QVariant::" << QMetaType::typeName(p);
+    dbg.nospace() << "QVariant::"
+                  << (int(p) != int(QMetaType::UnknownType)
+                     ? QMetaType::typeName(p)
+                     : "Invalid");
     return dbg.space();
 }
 #endif
