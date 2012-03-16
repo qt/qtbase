@@ -39,27 +39,19 @@
 **
 ****************************************************************************/
 
-#ifndef QDIRECTFB_EGL_H
-#define QDIRECTFB_EGL_H
+#ifndef QDIRECTFBEGL_HOOKS_H
+#define QDIRECTFBEGL_HOOKS_H
 
-#include "qdirectfbintegration.h"
-
-#ifdef DIRECTFB_GL_EGL
+#include "qplatformintegration_qpa.h"
 
 QT_BEGIN_NAMESPACE
 
-class QDirectFbIntegrationEGL : public QDirectFbIntegration {
-public:
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-
-protected:
-    void initializeScreen();
+struct QDirectFBEGLHooks {
+    void platformInit();
+    void platformDestroy();
+    bool hasCapability(QPlatformIntegration::Capability) const;
 };
 
 QT_END_NAMESPACE
 
-#endif
 #endif

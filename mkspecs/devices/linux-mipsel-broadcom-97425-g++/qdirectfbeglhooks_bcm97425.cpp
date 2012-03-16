@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,27 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QDIRECTFB_EGL_H
-#define QDIRECTFB_EGL_H
+#include "qdirectfbeglhooks.h"
+#include "qdirectfbconvenience.h"
 
-#include "qdirectfbintegration.h"
+#include "default_directfb.h"
 
-#ifdef DIRECTFB_GL_EGL
+// Exported to the directfb plugin
+QDirectFBEGLHooks platform_hook;
+static void *dbpl_handle;
 
-QT_BEGIN_NAMESPACE
+void QDirectFBEGLHooks::platformInit()
+{
+    DBPL_RegisterDirectFBDisplayPlatform(&dbpl_handle, QDirectFbConvenience::dfbInterface());
+}
 
-class QDirectFbIntegrationEGL : public QDirectFbIntegration {
-public:
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+void QDirectFBEGLHooks::platformDestroy()
+{
+    DBPL_UnregisterDirectFBDisplayPlatform(&dbpl_handle);
+    dbpl_handle = 0;
+}
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+bool QDirectFBEGLHooks::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case QPlatformIntegration::ThreadedOpenGL:
+        return true;
+    default:
+        return false;
+    }
+}
 
-protected:
-    void initializeScreen();
-};
-
-QT_END_NAMESPACE
-
-#endif
-#endif

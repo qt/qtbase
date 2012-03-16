@@ -39,27 +39,23 @@
 **
 ****************************************************************************/
 
-#ifndef QDIRECTFB_EGL_H
-#define QDIRECTFB_EGL_H
+#include "qdirectfbeglhooks.h"
 
-#include "qdirectfbintegration.h"
+/**
+ * This file is compiled in case there is no platform specific hook. On an
+ * optimizing compiler these functions should never be called.
+ */
 
-#ifdef DIRECTFB_GL_EGL
+void QDirectFBEGLHooks::platformInit()
+{
+}
 
-QT_BEGIN_NAMESPACE
+void QDirectFBEGLHooks::platformDestroy()
+{
+}
 
-class QDirectFbIntegrationEGL : public QDirectFbIntegration {
-public:
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+bool QDirectFBEGLHooks::hasCapability(QPlatformIntegration::Capability) const
+{
+    return false;
+}
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-
-protected:
-    void initializeScreen();
-};
-
-QT_END_NAMESPACE
-
-#endif
-#endif

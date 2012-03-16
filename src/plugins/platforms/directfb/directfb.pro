@@ -30,13 +30,22 @@ HEADERS = qdirectfbintegration.h \
     qdirectfbinput.h \
     qdirectfbcursor.h \
     qdirectfbwindow.h \
-    qdirectfbscreen.h
+    qdirectfbscreen.h \
+    qdirectfbeglhooks.h
 
 # ### port the GL context
-directfbegl: {
+directfb_egl {
     HEADERS += qdirectfb_egl.h
     SOURCES += qdirectfb_egl.cpp
     DEFINES += DIRECTFB_GL_EGL
+}
+
+!isEmpty(DIRECTFB_PLATFORM_HOOKS_SOURCES) {
+    HEADERS += $$DIRECTFB_PLATFORM_HOOKS_HEADERS
+    SOURCES += $$DIRECTFB_PLATFORM_HOOKS_SOURCES
+    DEFINES += DIRECTFB_PLATFORM_HOOKS
+} else {
+    SOURCES += qdirectfbeglhooks_stub.cpp
 }
 
 
