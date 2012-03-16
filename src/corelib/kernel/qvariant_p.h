@@ -172,7 +172,12 @@ class QVariantComparator {
     };
     template<typename T>
     struct FilteredComparator<T, /* IsAcceptedType = */ false> {
-        static bool compare(const QVariant::Private *, const QVariant::Private *) { return false; }
+        static bool compare(const QVariant::Private *, const QVariant::Private *)
+        {
+            // It is not possible to construct a QVariant containing not fully defined type
+            Q_ASSERT(false);
+            return false;
+        }
     };
 public:
     QVariantComparator(const QVariant::Private *a, const QVariant::Private *b)
@@ -307,7 +312,12 @@ public:
     // we need that as sizof(void) is undefined and it is needed in HasIsNullMethod
     bool delegate(const void *) { Q_ASSERT(false); return m_d->is_null; }
     bool delegate(const QMetaTypeSwitcher::UnknownType *) { return m_d->is_null; }
-    bool delegate(const QMetaTypeSwitcher::NotBuiltinType *) { return m_d->is_null; }
+    bool delegate(const QMetaTypeSwitcher::NotBuiltinType *)
+    {
+        // QVariantIsNull is used only for built-in types
+        Q_ASSERT(false);
+        return m_d->is_null;
+    }
 protected:
     const QVariant::Private *m_d;
 };
@@ -373,8 +383,8 @@ public:
 
     void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
     {
-        qWarning("Trying to construct an instance of an invalid type, type id: %i", m_x->type);
-        m_x->type = QVariant::Invalid;
+        // QVariantConstructor is used only for built-in types.
+        Q_ASSERT(false);
     }
 
     void delegate(const void*)
@@ -411,7 +421,11 @@ class QVariantDestructor
     };
     template<typename T>
     struct FilteredDestructor<T, /* IsAcceptedType = */ false> {
-        FilteredDestructor(QVariant::Private *) {} // ignore non accessible types
+        FilteredDestructor(QVariant::Private *)
+        {
+            // It is not possible to create not accepted type
+            Q_ASSERT(false);
+        }
     };
 
 public:
@@ -433,7 +447,8 @@ public:
 
     void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
     {
-        qWarning("Trying to destruct an instance of an invalid type, type id: %i", m_d->type);
+        // QVariantDestructor class is used only for a built-in type
+        Q_ASSERT(false);
     }
     // Ignore nonconstructible type
     void delegate(const QMetaTypeSwitcher::UnknownType*) {}
@@ -460,9 +475,10 @@ class QVariantDebugStream
     };
     template<typename T>
     struct Filtered<T, /* IsAcceptedType = */ false> {
-        Filtered(QDebug dbg, QVariant::Private *d)
+        Filtered(QDebug /* dbg */, QVariant::Private *)
         {
-            dbg.nospace() << "QVariant::Type(" << d->type << ")";
+            // It is not possible to construct not acccepted type, QVariantConstructor creates an invalid variant for them
+            Q_ASSERT(false);
         }
     };
 
@@ -480,7 +496,8 @@ public:
 
     void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
     {
-        qWarning("Trying to stream an instance of an invalid type, type id: %i", m_d->type);
+        // QVariantDebugStream class is used only for a built-in type
+        Q_ASSERT(false);
     }
     void delegate(const QMetaTypeSwitcher::UnknownType*)
     {
