@@ -14,7 +14,6 @@ DEFINES	       += \
         QT_NO_CAST_TO_ASCII \
         QT_NO_CODECS \
         QT_NO_DATASTREAM \
-        QT_NO_GEOM_VARIANT \
         QT_NO_LIBRARY \
         QT_NO_QOBJECT \
         QT_NO_STL \
