@@ -273,7 +273,7 @@ void HtmlGenerator::generateTree(const Tree *tree)
     findAllNamespaces(tree->root());
     findAllSince(tree->root());
 
-    PageGenerator::generateTree(tree);
+    Generator::generateTree(tree);
     reportOrphans(tree->root());
     generateDisambiguationPages();
 
@@ -1375,7 +1375,7 @@ void HtmlGenerator::generateDisambiguationPages()
     for (int i=0; i<collisionNodes.size(); ++i) {
         NameCollisionNode* ncn = collisionNodes.at(i);
         ncn->clearCurrentChild();
-        beginSubPage(ncn, PageGenerator::fileName(ncn));
+        beginSubPage(ncn, Generator::fileName(ncn));
         QString fullTitle = "Name Collision: " + ncn->fullTitle();
         QString htmlTitle = fullTitle;
         CodeMarker* marker = CodeMarker::markerForFileName(ncn->location().filePath());
@@ -3270,7 +3270,7 @@ QString HtmlGenerator::fileBase(const Node *node) const
 {
     QString result;
 
-    result = PageGenerator::fileBase(node);
+    result = Generator::fileBase(node);
 
     if (!node->isInnerNode()) {
         switch (node->status()) {
@@ -3295,7 +3295,7 @@ QString HtmlGenerator::fileName(const Node *node)
         if (static_cast<const FakeNode *>(node)->subType() == Node::Image)
             return node->name();
     }
-    return PageGenerator::fileName(node);
+    return Generator::fileName(node);
 }
 
 QString HtmlGenerator::refForNode(const Node *node)
@@ -3719,7 +3719,7 @@ const QPair<QString,QString> HtmlGenerator::anchorForNode(const Node *node)
 {
     QPair<QString,QString> anchorPair;
 
-    anchorPair.first = PageGenerator::fileName(node);
+    anchorPair.first = Generator::fileName(node);
     if (node->type() == Node::Fake) {
         const FakeNode *fakeNode = static_cast<const FakeNode*>(node);
         anchorPair.second = fakeNode->title();
@@ -4228,25 +4228,6 @@ void HtmlGenerator::generateQmlInherits(const QmlClassNode* qcn, CodeMarker* mar
 }
 
 /*!
-  Output the "Inherit by" list for the QML element,
-  if it is inherited by any other elements.
- */
-void HtmlGenerator::generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarker* marker)
-{
-    if (qcn) {
-        NodeList subs;
-        QmlClassNode::subclasses(qcn->name(),subs);
-        if (!subs.isEmpty()) {
-            Text text;
-            text << Atom::ParaLeft << "Inherited by ";
-            appendSortedQmlNames(text,qcn,subs,marker);
-            text << Atom::ParaRight;
-            generateText(text, qcn, marker);
-        }
-    }
-}
-
-/*!
   Output the "[Xxx instantiates the C++ class QmlGraphicsXxx]"
   line for the QML element, if there should be one.
 
@@ -4332,7 +4313,7 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
     QString url = node->outputSubdirectory();
     if (!url.isEmpty())
         url.append(QLatin1Char('/'));
-    url.append(PageGenerator::fileName(node));
+    url.append(Generator::fileName(node));
 
     writer.writeStartElement("page");
 
@@ -5042,7 +5023,7 @@ QXmlStreamWriter& HtmlGenerator::xmlWriter()
  */
 void HtmlGenerator::beginDitamapPage(const InnerNode* node, const QString& fileName)
 {
-    PageGenerator::beginSubPage(node,fileName);
+    Generator::beginSubPage(node,fileName);
     QXmlStreamWriter* writer = new QXmlStreamWriter(out().device());
     xmlWriterStack.push(writer);
     writer->setAutoFormatting(true);
@@ -5061,7 +5042,7 @@ void HtmlGenerator::endDitamapPage()
 {
     xmlWriter().writeEndDocument();
     delete xmlWriterStack.pop();
-    PageGenerator::endSubPage();
+    Generator::endSubPage();
 }
 
 /*!

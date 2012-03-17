@@ -43,6 +43,11 @@
   ditaxmlgenerator.cpp
 */
 
+#include <QDebug>
+#include <QList>
+#include <qiterator.h>
+#include <QTextCodec>
+#include <QUuid>
 #include "codemarker.h"
 #include "codeparser.h"
 #include "ditaxmlgenerator.h"
@@ -51,11 +56,6 @@
 #include "separator.h"
 #include "tree.h"
 #include <ctype.h>
-#include <qdebug.h>
-#include <qlist.h>
-#include <qiterator.h>
-#include <qtextcodec.h>
-#include <QUuid>
 
 QT_BEGIN_NAMESPACE
 
@@ -636,7 +636,7 @@ void DitaXmlGenerator::generateTree(const Tree *tree)
     findAllNamespaces(tree->root());
     findAllSince(tree->root());
 
-    PageGenerator::generateTree(tree);
+    Generator::generateTree(tree);
     writeDitaMap(tree);
 }
 
@@ -3816,7 +3816,7 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& ) //outp
 QString DitaXmlGenerator::fileBase(const Node* node) const
 {
     QString result;
-    result = PageGenerator::fileBase(node);
+    result = Generator::fileBase(node);
 #if 0
     if (!node->isInnerNode()) {
         switch (node->status()) {
@@ -3898,7 +3898,7 @@ QString DitaXmlGenerator::fileName(const Node* node)
         if (static_cast<const FakeNode*>(node)->subType() == Node::Image)
             return node->name();
     }
-    return PageGenerator::fileName(node);
+    return Generator::fileName(node);
 }
 
 QString DitaXmlGenerator::linkForNode(const Node* node, const Node* relative)
@@ -4162,7 +4162,7 @@ const Node* DitaXmlGenerator::findNodeForTarget(const QString& target,
 const QPair<QString,QString> DitaXmlGenerator::anchorForNode(const Node* node)
 {
     QPair<QString,QString> anchorPair;
-    anchorPair.first = PageGenerator::fileName(node);
+    anchorPair.first = Generator::fileName(node);
     if (node->type() == Node::Fake) {
         const FakeNode *fakeNode = static_cast<const FakeNode*>(node);
         anchorPair.second = fakeNode->title();
@@ -4590,26 +4590,6 @@ void DitaXmlGenerator::generateQmlInherits(const QmlClassNode* qcn, CodeMarker* 
         text << "]";
         generateText(text, qcn, marker);
         writeEndTag(); // </p>
-    }
-}
-
-/*!
-  Output the "Inherit by" list for the QML element,
-  if it is inherited by any other elements.
- */
-void DitaXmlGenerator::generateQmlInheritedBy(const QmlClassNode* qcn,
-                                              CodeMarker* marker)
-{
-    if (qcn) {
-        NodeList subs;
-        QmlClassNode::subclasses(qcn->name(),subs);
-        if (!subs.isEmpty()) {
-            Text text;
-            text << Atom::ParaLeft << "Inherited by ";
-            appendSortedQmlNames(text,qcn,subs,marker);
-            text << Atom::ParaRight;
-            generateText(text, qcn, marker);
-        }
     }
 }
 
@@ -5559,7 +5539,7 @@ void DitaXmlGenerator::writePropertyParameter(const QString& tag, const NodeList
 void DitaXmlGenerator::beginSubPage(const InnerNode* node,
                                     const QString& fileName)
 {
-    PageGenerator::beginSubPage(node,fileName);
+    Generator::beginSubPage(node,fileName);
     (void) lookupGuidMap(fileName);
     QXmlStreamWriter* writer = new QXmlStreamWriter(out().device());
     xmlWriterStack.push(writer);
@@ -5580,7 +5560,7 @@ void DitaXmlGenerator::endSubPage()
         qDebug() << "Missing </section> in" << outFileName() << sectionNestingLevel;
     xmlWriter().writeEndDocument();
     delete xmlWriterStack.pop();
-    PageGenerator::endSubPage();
+    Generator::endSubPage();
 }
 
 /*!

@@ -39,7 +39,6 @@ HEADERS += atom.h \
            location.h \
            node.h \
            openedlist.h \
-           pagegenerator.h \
            plaincodemarker.h \
            puredocparser.h \
            quoter.h \
@@ -65,7 +64,6 @@ SOURCES += atom.cpp \
            main.cpp \
            node.cpp \
            openedlist.cpp \
-           pagegenerator.cpp \
            plaincodemarker.cpp \
            puredocparser.cpp \
            quoter.cpp \

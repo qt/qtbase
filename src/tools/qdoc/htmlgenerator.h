@@ -46,18 +46,18 @@
 #ifndef HTMLGENERATOR_H
 #define HTMLGENERATOR_H
 
-#include <qmap.h>
-#include <qregexp.h>
+#include <QMap>
+#include <QRegExp>
 #include <QXmlStreamWriter>
 #include "codemarker.h"
 #include "config.h"
-#include "pagegenerator.h"
+#include "generator.h"
 
 QT_BEGIN_NAMESPACE
 
 class HelpProjectWriter;
 
-class HtmlGenerator : public PageGenerator
+class HtmlGenerator : public Generator
 {
 public:
     enum SinceType {
@@ -180,7 +180,6 @@ private:
                                    const InnerNode *relative,
                                    CodeMarker *marker);
     void generateQmlInherits(const QmlClassNode* qcn, CodeMarker* marker);
-    void generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarker* marker);
     void generateQmlInstantiates(const QmlClassNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(const ClassNode* cn, CodeMarker* marker);
 
