@@ -24,7 +24,7 @@ HEADERS =   qeglfsintegration.h \
             qeglfsbackingstore.h \
             qeglfsscreen.h
 
-CONFIG += qpa/genericunixfontdatabase
+CONFIG += egl qpa/genericunixfontdatabase
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
