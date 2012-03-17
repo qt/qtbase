@@ -130,14 +130,17 @@ QApplicationPrivate *QApplicationPrivate::self = 0;
 
 static void initSystemPalette()
 {
-    if (!QApplicationPrivate::sys_pal)
+    if (!QApplicationPrivate::sys_pal) {
+        QPalette defaultPlatte;
+        if (QApplicationPrivate::app_style)
+            defaultPlatte = QApplicationPrivate::app_style->standardPalette();
         if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette()) {
-            QApplicationPrivate::setSystemPalette(*themePalette);
+            QApplicationPrivate::setSystemPalette(themePalette->resolve(defaultPlatte));
             QApplicationPrivate::initializeWidgetPaletteHash();
+        } else {
+            QApplicationPrivate::setSystemPalette(defaultPlatte);
         }
-
-    if (!QApplicationPrivate::sys_pal && QApplicationPrivate::app_style)
-        QApplicationPrivate::setSystemPalette(QApplicationPrivate::app_style->standardPalette());
+    }
 }
 
 static void clearSystemPalette()

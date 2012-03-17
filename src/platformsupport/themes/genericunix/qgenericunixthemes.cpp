@@ -136,21 +136,19 @@ static inline bool kdeColor(QPalette *pal, QPalette::ColorRole role,
     return true;
 }
 
-// Reads the KDE system palette
-static inline bool readKdeSystemPalette(const QSettings &kdeSettings, QPalette *pal)
+static inline void readKdeSystemPalette(const QSettings &kdeSettings, QPalette *pal)
 {
-    // Setup KDE palette
-    return kdeColor(pal, QPalette::Button, kdeSettings, QStringLiteral("Colors:Button/BackgroundNormal"))
-        || kdeColor(pal, QPalette::Window, kdeSettings, QStringLiteral("Colors:Window/BackgroundNormal"))
-        || kdeColor(pal, QPalette::Text, kdeSettings, QStringLiteral("Colors:View/ForegroundNormal"))
-        || kdeColor(pal, QPalette::WindowText, kdeSettings, QStringLiteral("Colors:Window/ForegroundNormal"))
-        || kdeColor(pal, QPalette::Base, kdeSettings, QStringLiteral("Colors:View/BackgroundNormal"))
-        || kdeColor(pal, QPalette::Highlight, kdeSettings, QStringLiteral("Colors:Selection/BackgroundNormal"))
-        || kdeColor(pal, QPalette::HighlightedText, kdeSettings, QStringLiteral("Colors:Selection/ForegroundNormal"))
-        || kdeColor(pal, QPalette::AlternateBase, kdeSettings, QStringLiteral("Colors:View/BackgroundAlternate"))
-        || kdeColor(pal, QPalette::ButtonText, kdeSettings, QStringLiteral("Colors:Button/ForegroundNormal"))
-        || kdeColor(pal, QPalette::Link, kdeSettings, QStringLiteral("Colors:View/ForegroundLink"))
-        || kdeColor(pal, QPalette::LinkVisited, kdeSettings, QStringLiteral("Colors:View/ForegroundVisited"));
+    kdeColor(pal, QPalette::Button, kdeSettings, QStringLiteral("Colors:Button/BackgroundNormal"));
+    kdeColor(pal, QPalette::Window, kdeSettings, QStringLiteral("Colors:Window/BackgroundNormal"));
+    kdeColor(pal, QPalette::Text, kdeSettings, QStringLiteral("Colors:View/ForegroundNormal"));
+    kdeColor(pal, QPalette::WindowText, kdeSettings, QStringLiteral("Colors:Window/ForegroundNormal"));
+    kdeColor(pal, QPalette::Base, kdeSettings, QStringLiteral("Colors:View/BackgroundNormal"));
+    kdeColor(pal, QPalette::Highlight, kdeSettings, QStringLiteral("Colors:Selection/BackgroundNormal"));
+    kdeColor(pal, QPalette::HighlightedText, kdeSettings, QStringLiteral("Colors:Selection/ForegroundNormal"));
+    kdeColor(pal, QPalette::AlternateBase, kdeSettings, QStringLiteral("Colors:View/BackgroundAlternate"));
+    kdeColor(pal, QPalette::ButtonText, kdeSettings, QStringLiteral("Colors:Button/ForegroundNormal"));
+    kdeColor(pal, QPalette::Link, kdeSettings, QStringLiteral("Colors:View/ForegroundLink"));
+    kdeColor(pal, QPalette::LinkVisited, kdeSettings, QStringLiteral("Colors:View/ForegroundVisited"));
 }
 
 /*!
@@ -215,9 +213,9 @@ void QKdeTheme::refresh()
 
     const QSettings kdeSettings(settingsFile, QSettings::IniFormat);
 
-    QPalette systemPalette;
-    if (readKdeSystemPalette(kdeSettings, &systemPalette))
-        m_resources.palettes[SystemPalette] = new QPalette(systemPalette);
+    QPalette systemPalette = QPalette();
+    readKdeSystemPalette(kdeSettings, &systemPalette);
+    m_resources.palettes[SystemPalette] = new QPalette(systemPalette);
     //## TODO tooltip color
 
     const QVariant styleValue = kdeSettings.value(QStringLiteral("widgetStyle"));

@@ -524,6 +524,7 @@ QPalette::QPalette()
     } else {
         init();
         qt_palette_from_color(*this, Qt::black);
+        resolve_mask = 0;
     }
 }
 
