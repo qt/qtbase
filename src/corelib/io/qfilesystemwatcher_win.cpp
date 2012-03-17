@@ -361,8 +361,18 @@ void QWindowsFileSystemWatcherEngineThread::run()
                 if (handles.contains(handle)) {
                     // qDebug()<<"thread"<<this<<"Acknowledged handle:"<<at<<handle;
                     QHash<QString, QWindowsFileSystemWatcherEngine::PathInfo> &h = pathInfoForHandle[handle];
+                    bool fakeRemove = false;
+
                     if (!FindNextChangeNotification(handle)) {
                         const DWORD error = GetLastError();
+
+                        if (error == ERROR_ACCESS_DENIED) {
+                            // for directories, our object's handle appears to be woken up when the target of a
+                            // watch is deleted, before the watched thing is actually deleted...
+                            // anyway.. we're given an error code of ERROR_ACCESS_DENIED in that case.
+                            fakeRemove = true;
+                        }
+
                         qErrnoWarning(error, "%s", qPrintable(msgFindNextFailed(h)));
                     }
                     QMutableHashIterator<QString, QWindowsFileSystemWatcherEngine::PathInfo> it(h);
@@ -371,7 +381,10 @@ void QWindowsFileSystemWatcherEngineThread::run()
                         QString absolutePath = x.value().absolutePath;
                         QFileInfo fileInfo(x.value().path);
                         // qDebug() << "checking" << x.key();
-                        if (!fileInfo.exists()) {
+
+                        // i'm not completely sure the fileInfo.exist() check will ever work... see QTBUG-2331
+                        // ..however, I'm not completely sure enough to remove it.
+                        if (fakeRemove || !fileInfo.exists()) {
                             // qDebug() << x.key() << "removed!";
                             if (x.value().isDir)
                                 emit directoryChanged(x.value().path, true);
