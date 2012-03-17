@@ -68,12 +68,12 @@ class Q_WIDGETS_EXPORT QStyleOption
 public:
     enum OptionType {
                       SO_Default, SO_FocusRect, SO_Button, SO_Tab, SO_MenuItem,
-                      SO_Frame, SO_ProgressBar, SO_ToolBox, SO_Header, SO_Q3DockWindow,
-                      SO_DockWidget, SO_Q3ListViewItem, SO_ViewItem, SO_TabWidgetFrame,
+                      SO_Frame, SO_ProgressBar, SO_ToolBox, SO_Header,
+                      SO_DockWidget, SO_ViewItem, SO_TabWidgetFrame,
                       SO_TabBarBase, SO_RubberBand, SO_ToolBar, SO_GraphicsItem,
 
                       SO_Complex = 0xf0000, SO_Slider, SO_SpinBox, SO_ToolButton, SO_ComboBox,
-                      SO_Q3ListView, SO_TitleBar, SO_GroupBox, SO_SizeGrip,
+                      SO_TitleBar, SO_GroupBox, SO_SizeGrip,
 
                       SO_CustomBase = 0xf00,
                       SO_ComplexCustomBase = 0xf000000
@@ -363,47 +363,6 @@ protected:
     QStyleOptionMenuItem(int version);
 };
 
-class Q_WIDGETS_EXPORT QStyleOptionQ3ListViewItem : public QStyleOption
-{
-public:
-    enum StyleOptionType { Type = SO_Q3ListViewItem };
-    enum StyleOptionVersion { Version = 1 };
-
-    enum Q3ListViewItemFeature { None = 0x00, Expandable = 0x01, MultiLine = 0x02, Visible = 0x04,
-                                 ParentControl = 0x08 };
-    Q_DECLARE_FLAGS(Q3ListViewItemFeatures, Q3ListViewItemFeature)
-
-    Q3ListViewItemFeatures features;
-    int height;
-    int totalHeight;
-    int itemY;
-    int childCount;
-
-    QStyleOptionQ3ListViewItem();
-    QStyleOptionQ3ListViewItem(const QStyleOptionQ3ListViewItem &other) : QStyleOption(Version, Type) { *this = other; }
-
-protected:
-    QStyleOptionQ3ListViewItem(int version);
-};
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionQ3ListViewItem::Q3ListViewItemFeatures)
-
-class Q_WIDGETS_EXPORT QStyleOptionQ3DockWindow : public QStyleOption
-{
-public:
-    enum StyleOptionType { Type = SO_Q3DockWindow };
-    enum StyleOptionVersion { Version = 1 };
-
-    bool docked;
-    bool closeEnabled;
-
-    QStyleOptionQ3DockWindow();
-    QStyleOptionQ3DockWindow(const QStyleOptionQ3DockWindow &other) : QStyleOption(Version, Type) { *this = other; }
-
-protected:
-    QStyleOptionQ3DockWindow(int version);
-};
-
 class Q_WIDGETS_EXPORT QStyleOptionDockWidget : public QStyleOption
 {
 public:
@@ -584,27 +543,6 @@ protected:
     QStyleOptionSpinBox(int version);
 };
 #endif // QT_NO_SPINBOX
-
-class Q_WIDGETS_EXPORT QStyleOptionQ3ListView : public QStyleOptionComplex
-{
-public:
-    enum StyleOptionType { Type = SO_Q3ListView };
-    enum StyleOptionVersion { Version = 1 };
-
-    QList<QStyleOptionQ3ListViewItem> items;
-    QPalette viewportPalette;
-    QPalette::ColorRole viewportBGRole;
-    int sortColumn;
-    int itemMargin;
-    int treeStepSize;
-    bool rootIsDecorated;
-
-    QStyleOptionQ3ListView();
-    QStyleOptionQ3ListView(const QStyleOptionQ3ListView &other) : QStyleOptionComplex(Version, Type) { *this = other; }
-
-protected:
-    QStyleOptionQ3ListView(int version);
-};
 
 class Q_WIDGETS_EXPORT QStyleOptionToolButton : public QStyleOptionComplex
 {

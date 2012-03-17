@@ -1178,8 +1178,7 @@ void QWindowsXPStyle::polish(QWidget *widget)
         || qobject_cast<QAbstractSpinBox*>(widget)
         || qobject_cast<QSpinBox*>(widget)
 #endif // QT_NO_SPINBOX
-        || widget->inherits("QWorkspaceChild")
-        || widget->inherits("Q3TitleBar"))
+        || widget->inherits("QWorkspaceChild"))
         widget->setAttribute(Qt::WA_Hover);
 
 #ifndef QT_NO_RUBBERBAND
@@ -1250,8 +1249,7 @@ void QWindowsXPStyle::unpolish(QWidget *widget)
         || qobject_cast<QAbstractSpinBox*>(widget)
         || qobject_cast<QSpinBox*>(widget)
 #endif // QT_NO_SPINBOX
-        || widget->inherits("QWorkspaceChild")
-        || widget->inherits("Q3TitleBar"))
+        || widget->inherits("QWorkspaceChild"))
         widget->setAttribute(Qt::WA_Hover, false);
     QWindowsStyle::unpolish(widget);
 }
@@ -1820,14 +1818,6 @@ case PE_Frame:
         name = QLatin1String("PROGRESS");
         stateId = 1;
         }
-        break;
-
-    case PE_Q3DockWindowSeparator:
-        name = QLatin1String("TOOLBAR");
-        if (flags & State_Horizontal)
-            partId = TP_SEPARATOR;
-        else
-            partId = TP_SEPARATORVERT;
         break;
 
     case PE_FrameWindow:

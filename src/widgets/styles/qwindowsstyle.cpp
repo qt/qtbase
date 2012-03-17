@@ -1467,12 +1467,11 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             p->setPen(opt->palette.text().color());
         } // Fall through!
     case PE_IndicatorViewItemCheck:
-    case PE_Q3CheckListIndicator:
         if (!doRestore) {
             p->save();
             doRestore = true;
         }
-        if (pe == PE_Q3CheckListIndicator || pe == PE_IndicatorViewItemCheck) {
+        if (pe == PE_IndicatorViewItemCheck) {
             const QStyleOptionViewItem *itemViewOpt = qstyleoption_cast<const QStyleOptionViewItem *>(opt);
             p->setPen(itemViewOpt
                       && itemViewOpt->showDecorationSelected

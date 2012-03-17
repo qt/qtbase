@@ -175,7 +175,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_removeTab(int))
     Q_PRIVATE_SLOT(d_func(), void _q_tabMoved(int, int))
     void setUpLayout(bool = false);
-    friend class Q3TabDialog;
 };
 
 #endif // QT_NO_TABWIDGET
