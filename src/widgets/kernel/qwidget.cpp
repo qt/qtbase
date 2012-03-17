@@ -612,8 +612,9 @@ void QWidget::setAutoFillBackground(bool enabled)
             steals the mouse events.
         \li  mouseDoubleClickEvent() is called when the user double-clicks in
             the widget. If the user double-clicks, the widget receives a mouse
-            press event, a mouse release event and finally this event instead
-            of a second mouse press event. (Some mouse move events may also be
+            press event, a mouse release event, (a mouse click event,) a second
+            mouse press, this event and finally a second mouse release event.
+            (Some mouse move events may also be
             received if the mouse is not held steady during this operation.) It
             is \e{not possible} to distinguish a click from a double-click
             until the second click arrives. (This is one reason why most GUI
