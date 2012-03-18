@@ -487,11 +487,6 @@
 #define QT_NO_STYLE_STYLESHEET
 #endif
 
-// Q3TabDialog
-#if !defined(QT_NO_TABDIALOG) && (defined(QT_NO_TABBAR))
-#define QT_NO_TABDIALOG
-#endif
-
 // QColorDialog
 #if !defined(QT_NO_COLORDIALOG) && (defined(QT_NO_SPINBOX))
 #define QT_NO_COLORDIALOG

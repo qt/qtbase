@@ -1101,20 +1101,13 @@ public:
     enum TextFormat {
         PlainText,
         RichText,
-        AutoText,
-        LogText
+        AutoText
     };
 
     enum AspectRatioMode {
         IgnoreAspectRatio,
         KeepAspectRatio,
         KeepAspectRatioByExpanding
-    };
-
-    // This is for Q3TextEdit only, actually.
-    enum AnchorAttribute {
-        AnchorName,
-        AnchorHref
     };
 
     enum DockWidgetArea {

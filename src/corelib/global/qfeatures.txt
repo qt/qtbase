@@ -644,13 +644,6 @@ Requires: COMBOBOX SPINBOX STACKEDWIDGET
 Name: QInputDialog
 SeeAlso: ???
 
-Feature: TABDIALOG
-Description: Supports a stack of tabbed widgets.
-Section: Dialogs
-Requires: TABBAR
-Name: Q3TabDialog
-SeeAlso: ???
-
 Feature: ERRORMESSAGE
 Description:  Supports an error message display dialog.
 Section: Dialogs

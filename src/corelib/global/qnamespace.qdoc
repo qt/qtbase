@@ -2309,9 +2309,6 @@
     \value AutoText The text string is interpreted as for
         Qt::RichText if Qt::mightBeRichText() returns true, otherwise
         as Qt::PlainText.
-
-    \value LogText A special, limited text format which is only used
-    by Q3TextEdit in an optimized mode.
 */
 
 /*!

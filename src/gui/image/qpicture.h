@@ -109,7 +109,6 @@ private:
 
     QExplicitlySharedDataPointer<QPicturePrivate> d_ptr;
     friend class QPicturePaintEngine;
-    friend class Q3Picture;
     friend class QAlphaPaintEngine;
     friend class QPreviewPaintEngine;
 

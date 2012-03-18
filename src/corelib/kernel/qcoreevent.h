@@ -191,9 +191,6 @@ public:
 #endif
         AcceptDropsChange = 152,
 
-        MenubarUpdated = 153,                    // Support event for Q3MainWindow, which needs to
-                                                 // knwow when QMenubar is updated.
-
         ZeroTimerEvent = 154,                   // Used for Windows Zero timer events
 
         GraphicsSceneMouseMove = 155,           // GraphicsView
