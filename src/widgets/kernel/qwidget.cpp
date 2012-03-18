@@ -2708,7 +2708,7 @@ Qt::WindowStates QWidget::windowState() const
    The function sets the window state on child widgets similar to
    setWindowState(). The difference is that the window state changed
    event has the isOverride() flag set. It exists mainly to keep
-   Q3Workspace working.
+   QWorkspace working.
  */
 void QWidget::overrideWindowState(Qt::WindowStates newstate)
 {
