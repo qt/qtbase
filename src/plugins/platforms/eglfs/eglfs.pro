@@ -13,6 +13,9 @@ DESTDIR = $$QT.gui.plugins/platforms
 
 #DEFINES += Q_OPENKODE
 
+#Avoid X11 header collision
+DEFINES += MESA_EGL_NO_X11_HEADERS
+
 SOURCES =   main.cpp \
             qeglfsintegration.cpp \
             qeglfswindow.cpp \
