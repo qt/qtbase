@@ -124,7 +124,7 @@ class QRelatedTableModel;
 struct QRelation
 {
     public:
-        QRelation(): model(0),m_parent(0),m_dictInitialized(false){}
+        QRelation(): model(0), m_parent(0), m_dictInitialized(false) {}
         void init(QSqlRelationalTableModel *parent, const QSqlRelation &relation);
 
         void populateModel();
@@ -584,7 +584,7 @@ QString QSqlRelationalTableModel::selectStatement() const
             QString relTableAlias = QString::fromLatin1("relTblAl_%1").arg(i);
             if (!fList.isEmpty())
                 fList.append(QLatin1String(", "));
-            fList.append(d->relationField(relTableAlias,relation.displayColumn()));
+            fList.append(d->relationField(relTableAlias, relation.displayColumn()));
 
             // If there are duplicate field names they must be aliased
             if (fieldNames.value(fieldList[i]) > 1) {
@@ -602,7 +602,7 @@ QString QSqlRelationalTableModel::selectStatement() const
                 // this needs fixing!! the below if is borken.
                 // Use LeftJoin mode if you want correct behavior
                 tables.append(relation.tableName().append(QLatin1Char(' ')).append(relTableAlias));
-                if(!where.isEmpty())
+                if (!where.isEmpty())
                     where.append(QLatin1String(" AND "));
                 where.append(d->relationField(tableName(), d->db.driver()->escapeIdentifier(rec.fieldName(i), QSqlDriver::FieldName)));
                 where.append(QLatin1String(" = "));
