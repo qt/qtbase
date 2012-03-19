@@ -58,6 +58,8 @@ private Q_SLOTS:
     void parseNumbers();
     void parseJson();
     void parseJsonToVariant();
+    void toByteArray();
+    void fromByteArray();
 };
 
 BenchmarkQtBinaryJson::BenchmarkQtBinaryJson(QObject *parent) : QObject(parent)
@@ -124,6 +126,36 @@ void BenchmarkQtBinaryJson::parseJsonToVariant()
     QBENCHMARK {
         QJsonDocument doc = QJsonDocument::fromJson(testJson);
         QVariant v = doc.toVariant();
+    }
+}
+
+void BenchmarkQtBinaryJson::toByteArray()
+{
+    // Example: send information over a datastream to another process
+    // Measure performance of creating and processing data into bytearray
+    QBENCHMARK {
+        QVariantMap message;
+        message.insert("command", 1);
+        message.insert("key", "some information");
+        message.insert("env", "some environment variables");
+        QByteArray msg = QJsonDocument(QJsonObject::fromVariantMap(message)).toBinaryData();
+    }
+}
+
+void BenchmarkQtBinaryJson::fromByteArray()
+{
+    // Example: receive information over a datastream from another process
+    // Measure performance of converting content back to QVariantMap
+    // We need to recreate the bytearray but here we only want to measure the latter
+    QVariantMap message;
+    message.insert("command", 1);
+    message.insert("key", "some information");
+    message.insert("env", "some environment variables");
+    QByteArray msg = QJsonDocument(QJsonObject::fromVariantMap(message)).toBinaryData();
+
+    QBENCHMARK {
+        QVariantMap message;
+        message = QJsonDocument::fromBinaryData(msg, QJsonDocument::Validate).object().toVariantMap();
     }
 }
 
