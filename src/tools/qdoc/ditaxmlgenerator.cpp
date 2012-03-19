@@ -1776,7 +1776,6 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
             generateText(brief, nsn, marker);
             writeEndTag(); // </p>
         }
-        generateIncludes(nsn, marker);
         generateStatus(nsn, marker);
         generateThreadSafeness(nsn, marker);
         generateSince(nsn, marker);
@@ -1910,7 +1909,6 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
             generateText(brief, cn, marker);
             writeEndTag(); // </p>
         }
-        generateIncludes(cn, marker);
         generateStatus(cn, marker);
         generateInherits(cn, marker);
         generateInheritedBy(cn, marker);
@@ -2034,7 +2032,6 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
             generateText(brief, fn, marker);
             writeEndTag(); // </p>
         }
-        generateIncludes(fn, marker);
         generateStatus(fn, marker);
         generateThreadSafeness(fn, marker);
         generateSince(fn, marker);
@@ -2513,19 +2510,6 @@ void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
     Text brief = node->doc().briefText(true); // zzz
     if (!brief.isEmpty()) {
         generateText(brief, node, marker);
-    }
-}
-
-/*!
-  Writes the \c {#include ...} required to include the class
-  or namespace in a compilation.
- */
-void DitaXmlGenerator::generateIncludes(const InnerNode* inner, CodeMarker* marker)
-{
-    if (!inner->includes().isEmpty()) {
-        writeStartTag(DT_codeblock);
-        writeText(marker->markedUpIncludes(inner->includes()), marker, inner);
-        writeEndTag(); // </codeblock>
     }
 }
 
@@ -3487,15 +3471,16 @@ QString DitaXmlGenerator::getMarkedUpSynopsis(const Node* node,
 }
 
 /*!
-  Renamed from highlightedCode() in the html generator. Writes
-  the \a markedCode to the current XML stream.
+  Renamed from highlightedCode() in the html generator. Gets the text
+  from \a markedCode , and then the text is written to the current XML
+  stream.
  */
 void DitaXmlGenerator::writeText(const QString& markedCode,
                                  CodeMarker* marker,
                                  const Node* relative)
 {
     QString src = markedCode;
-    QString html;
+    QString text;
     QStringRef arg;
     QStringRef par1;
 
@@ -3528,7 +3513,7 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
             for (int k = 0; k != 13; ++k) {
                 const QString & tag = spanTags[2 * k];
                 if (tag == QStringRef(&src, i, tag.length())) {
-                    html += spanTags[2 * k + 1];
+                    text += spanTags[2 * k + 1];
                     i += tag.length();
                     handled = true;
                     break;
@@ -3545,20 +3530,20 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                 }
                 else {
                     // retain all others
-                    html += charLangle;
+                    text += charLangle;
                 }
             }
         }
         else {
-            html += src.at(i);
+            text += src.at(i);
             ++i;
         }
     }
 
     // replace all <@link> tags: "(<@link node=\"([^\"]+)\">).*(</@link>)"
     // replace all "(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)" tags
-    src = html;
-    html = QString();
+    src = text;
+    text = QString();
     static const QString markTags[] = {
         // 0       1         2           3       4        5
         "link", "type", "headerfile", "func", "param", "extra"
@@ -3571,18 +3556,18 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                 if (parseArg(src, markTags[k], &i, n, &arg, &par1)) {
                     const Node* n = 0;
                     if (k == 0) { // <@link>
-                        if (!html.isEmpty()) {
-                            writeCharacters(html);
-                            html.clear();
+                        if (!text.isEmpty()) {
+                            writeCharacters(text);
+                            text.clear();
                         }
                         n = CodeMarker::nodeForString(par1.toString());
                         QString link = linkForNode(n, relative);
                         addLink(link, arg);
                     }
                     else if (k == 4) { // <@param>
-                        if (!html.isEmpty()) {
-                            writeCharacters(html);
-                            html.clear();
+                        if (!text.isEmpty()) {
+                            writeCharacters(text);
+                            text.clear();
                         }
                         writeStartTag(DT_i);
                         //writeCharacters(" " + arg.toString());
@@ -3590,18 +3575,18 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                         writeEndTag(); // </i>
                     }
                     else if (k == 5) { // <@extra>
-                        if (!html.isEmpty()) {
-                            writeCharacters(html);
-                            html.clear();
+                        if (!text.isEmpty()) {
+                            writeCharacters(text);
+                            text.clear();
                         }
                         writeStartTag(DT_tt);
                         writeCharacters(arg.toString());
                         writeEndTag(); // </tt>
                     }
                     else {
-                        if (!html.isEmpty()) {
-                            writeCharacters(html);
-                            html.clear();
+                        if (!text.isEmpty()) {
+                            writeCharacters(text);
+                            text.clear();
                         }
                         par1 = QStringRef();
                         QString link;
@@ -3626,12 +3611,11 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
             }
         }
         else {
-            html += src.at(i++);
+            text += src.at(i++);
         }
     }
-
-    if (!html.isEmpty()) {
-        writeCharacters(html);
+    if (!text.isEmpty()) {
+        writeCharacters(text);
     }
 }
 
@@ -6331,6 +6315,24 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner)
         writeStartTag(DT_othermeta);
         xmlWriter().writeAttribute("name",i.key());
         xmlWriter().writeAttribute("content",i.value());
+        writeEndTag(); // </othermeta>
+    }
+    if ((tagStack.first() == DT_cxxClass && !inner->includes().isEmpty()) ||
+        (inner->type() == Node::Fake && inner->subType() == Node::HeaderFile)) {
+        writeStartTag(DT_othermeta);
+        xmlWriter().writeAttribute("name","includeFile");
+        QString text;
+        QStringList::ConstIterator i = inner->includes().begin();
+        while (i != inner->includes().end()) {
+            if ((*i).startsWith("<") && (*i).endsWith(">"))
+                text += *i;
+            else
+                text += "<" + *i + ">";
+            ++i;
+            if (i != inner->includes().end())
+                text += "\n";
+        }
+        xmlWriter().writeAttribute("content",text);
         writeEndTag(); // </othermeta>
     }
     writeEndTag(); // </metadata>

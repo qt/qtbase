@@ -340,7 +340,6 @@ private:
                         const QString& name,
                         bool subpage = false);
     void generateBrief(const Node* node, CodeMarker* marker);
-    void generateIncludes(const InnerNode* inner, CodeMarker* marker);
     void generateTableOfContents(const Node* node,
                                  CodeMarker* marker,
                                  Doc::Sections sectioningUnit,
