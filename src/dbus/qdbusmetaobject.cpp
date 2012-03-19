@@ -189,7 +189,8 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
                                            QDBusRawTypeHandler::destruct,
                                            QDBusRawTypeHandler::construct,
                                            sizeof(void *),
-                                           QMetaType::MovableType);
+                                           QMetaType::MovableType,
+                                           0);
         }
 
         result.name = typeName;

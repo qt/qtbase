@@ -460,7 +460,7 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
 int QMetaType::registerType(const char *typeName, Deleter deleter,
                             Creator creator)
 {
-    return registerType(typeName, deleter, creator, qMetaTypeDestructHelper<void>, qMetaTypeConstructHelper<void>, 0, TypeFlags());
+    return registerType(typeName, deleter, creator, qMetaTypeDestructHelper<void>, qMetaTypeConstructHelper<void>, 0, TypeFlags(), 0);
 }
 
 /*! \internal
@@ -475,7 +475,7 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
                             Creator creator,
                             Destructor destructor,
                             Constructor constructor,
-                            int size, TypeFlags flags)
+                            int size, TypeFlags flags, const QMetaObject *metaObject)
 {
     QVector<QCustomTypeInfo> *ct = customTypes();
     if (!ct || !typeName || !deleter || !creator || !destructor || !constructor)
@@ -1675,7 +1675,8 @@ QMetaType QMetaType::typeInfo(const int type)
                                  , typeInfo.info.destructor
                                  , typeInfo.info.size
                                  , typeInfo.info.flags
-                                 , type)
+                                 , type
+                                 , 0)
                 : QMetaType(UnknownType);
 }
 
@@ -1708,6 +1709,7 @@ QMetaType::QMetaType(const QMetaType &other)
     , m_typeFlags(other.m_typeFlags)
     , m_extensionFlags(other.m_extensionFlags)
     , m_typeId(other.m_typeId)
+    , m_metaObject(other.m_metaObject)
 {}
 
 QMetaType &QMetaType::operator =(const QMetaType &other)
@@ -1723,6 +1725,7 @@ QMetaType &QMetaType::operator =(const QMetaType &other)
     m_extensionFlags = other.m_extensionFlags;
     m_extension = other.m_extension; // space reserved for future use
     m_typeId = other.m_typeId;
+    m_metaObject = other.m_metaObject;
     return *this;
 }
 

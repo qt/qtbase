@@ -180,6 +180,7 @@ QT_BEGIN_NAMESPACE
 
 class QDataStream;
 class QMetaTypeInterface;
+class QMetaObject;
 
 class Q_CORE_EXPORT QMetaType {
     enum ExtensionFlag { NoExtensionFlags,
@@ -238,7 +239,8 @@ public:
                             Destructor destructor,
                             Constructor constructor,
                             int size,
-                            QMetaType::TypeFlags flags);
+                            QMetaType::TypeFlags flags,
+                            const QMetaObject *metaObject);
     static int registerTypedef(const char *typeName, int aliasId);
     static int type(const char *typeName);
     static const char *typeName(int type);
@@ -282,7 +284,8 @@ private:
                      Destructor destructor,
                      uint sizeOf,
                      uint theTypeFlags,
-                     int typeId);
+                     int typeId,
+                     const QMetaObject *metaObject);
     QMetaType(const QMetaType &other);
     QMetaType &operator =(const QMetaType &);
     inline bool isExtended(const ExtensionFlag flag) const { return m_extensionFlags & flag; }
@@ -308,6 +311,7 @@ private:
     uint m_typeFlags;
     uint m_extensionFlags;
     int m_typeId;
+    const QMetaObject *m_metaObject; // Placeholder for Qt 5.1 feature.
 };
 
 #undef QT_DEFINE_METATYPE_ID
@@ -409,6 +413,17 @@ namespace QtPrivate
         Q_STATIC_ASSERT_X(sizeof(T), "Type argument of Q_DECLARE_METATYPE(T*) must be fully defined");
         enum { Value = sizeof(checkType(static_cast<T*>(0))) == sizeof(yes_type) };
     };
+
+    template<typename T, bool = IsPointerToTypeDerivedFromQObject<T>::Value>
+    struct MetaObjectForType
+    {
+        static inline const QMetaObject *value() { return 0; }
+    };
+    template<typename T>
+    struct MetaObjectForType<T*, /* isPointerToTypeDerivedFromQObject = */ true>
+    {
+        static inline const QMetaObject *value() { return &T::staticMetaObject; }
+    };
 }
 
 template <typename T, bool = QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value>
@@ -477,7 +492,8 @@ int qRegisterMetaType(const char *typeName
                                    qMetaTypeDestructHelper<T>,
                                    qMetaTypeConstructHelper<T>,
                                    sizeof(T),
-                                   flags);
+                                   flags,
+                                   QtPrivate::MetaObjectForType<T>::value());
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -659,7 +675,8 @@ inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeI
                             Destructor destructor,
                             uint size,
                             uint theTypeFlags,
-                            int typeId)
+                            int typeId,
+                            const QMetaObject *metaObject)
     : m_creator(creator)
     , m_deleter(deleter)
     , m_saveOp(saveOp)
@@ -670,6 +687,7 @@ inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeI
     , m_typeFlags(theTypeFlags)
     , m_extensionFlags(extensionFlags)
     , m_typeId(typeId)
+    , m_metaObject(metaObject)
 {
     if (Q_UNLIKELY(isExtended(CtorEx) || typeId == QMetaType::Void))
         ctor(info);
