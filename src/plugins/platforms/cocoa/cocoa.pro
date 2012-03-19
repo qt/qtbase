@@ -73,7 +73,7 @@ HEADERS += qcocoaintegration.h \
 FORMS += $$PWD/../../../widgets/dialogs/qfiledialog.ui
 RESOURCES += qcocoaresources.qrc
 
-LIBS += -framework Cocoa
+LIBS += -framework Cocoa -framework IOKit
 
 QT += core-private gui-private widgets-private platformsupport-private printsupport
 

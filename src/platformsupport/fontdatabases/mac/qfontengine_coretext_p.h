@@ -100,6 +100,9 @@ public:
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
     virtual int glyphMargin(QFontEngineGlyphCache::Type type) { return 0; }
 
+    static int antialiasingThreshold;
+    static QFontEngineGlyphCache::Type defaultGlyphFormat;
+
 private:
     friend class QRawFontPrivate;
 
