@@ -660,20 +660,28 @@ FOR_EACH_CORE_METATYPE(RETURN_CREATE_COPY_FUNCTION)
 void tst_QMetaType::sizeOf_data()
 {
     QTest::addColumn<QMetaType::Type>("type");
-    QTest::addColumn<int>("size");
+    QTest::addColumn<size_t>("size");
 
-    QTest::newRow("QMetaType::UnknownType") << QMetaType::UnknownType << 0;
+    QTest::newRow("QMetaType::UnknownType") << QMetaType::UnknownType << size_t(0);
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
-    QTest::newRow(#RealType) << QMetaType::MetaTypeName << int(QTypeInfo<RealType>::sizeOf);
+    QTest::newRow(#RealType) << QMetaType::MetaTypeName << size_t(QTypeInfo<RealType>::sizeOf);
 FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
+
+    QTest::newRow("Whity<double>") << static_cast<QMetaType::Type>(::qMetaTypeId<Whity<double> >()) << sizeof(Whity<double>);
+QTest::newRow("Whity<int>") << static_cast<QMetaType::Type>(::qMetaTypeId<Whity<int> >()) << sizeof(Whity<int>);
+    QTest::newRow("Testspace::Foo") << static_cast<QMetaType::Type>(::qMetaTypeId<TestSpace::Foo>()) << sizeof(TestSpace::Foo);
+
+    QTest::newRow("-1") << QMetaType::Type(-1) << size_t(0);
+    QTest::newRow("-124125534") << QMetaType::Type(-124125534) << size_t(0);
+    QTest::newRow("124125534") << QMetaType::Type(124125534) << size_t(0);
 }
 
 void tst_QMetaType::sizeOf()
 {
     QFETCH(QMetaType::Type, type);
-    QFETCH(int, size);
-    QCOMPARE(QMetaType::sizeOf(type), size);
+    QFETCH(size_t, size);
+    QCOMPARE(size_t(QMetaType::sizeOf(type)), size);
 }
 
 void tst_QMetaType::sizeOfStaticLess_data()
@@ -684,8 +692,8 @@ void tst_QMetaType::sizeOfStaticLess_data()
 void tst_QMetaType::sizeOfStaticLess()
 {
     QFETCH(QMetaType::Type, type);
-    QFETCH(int, size);
-    QCOMPARE(QMetaType(type).sizeOf(), size);
+    QFETCH(size_t, size);
+    QCOMPARE(size_t(QMetaType(type).sizeOf()), size);
 }
 
 struct CustomMovable {};

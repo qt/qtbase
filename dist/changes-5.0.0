@@ -347,6 +347,16 @@ QtGui
   information like capability flags, point-specific flags, velocity,
   and raw positions.
 
+* A new set of enabler classes have been added, most importantly QWindow, QScreen,
+  QSurfaceFormat, and QOpenGLContext.
+
+* Most of the useful QtOpenGL classes have been polished and moved into
+  QtGui. See QOpenGLFramebufferObject, QOpenGLShaderProgram,
+  QOpenGLFunctions, etc.
+
+* QOpenGLPaintDevice has been added to be able to use QPainter to render into
+  the currently bound context.
+
 QtWidgets
 ---------
 * QInputContext removed as well as related getters and setters on QWidget and QApplication.
@@ -394,6 +404,11 @@ QtNetwork
 
 QtOpenGL
 --------
+
+* Most of the classes in this module (with the notable exception of QGLWidget)
+  now have equivalents in QtGui, along with the naming change QGL -> QOpenGL.
+  The classes in QtOpenGL that have equivalents in QtGui can now be considered
+  deprecated.
 
 QtScript
 --------
@@ -555,22 +570,15 @@ Qt for Windows CE
 
 - QPointer
 
-   * QPointer itself is now deprecated, and the implementation of QPointer
-     has been changed to use QWeakPointer. The old guard mechanism has been
-     removed. This causes two slight changes in behavior when using
-     QPointer:
+   * The implementation of QPointer has been changed to use QWeakPointer. The
+     old guard mechanism has been removed. This causes a slight change
+     in behavior when using QPointer:
 
      * When using QPointer on a QWidget (or a subclass of QWidget), previously
      the QPointer would be cleared by the QWidget destructor. Now, the QPointer
      is cleared by the QObject destructor (since this is when QWeakPointers are
      cleared). Any QPointers tracking a widget will NOT be cleared before the
      QWidget destructor destroys the children for the widget being tracked.
-
-     * When constructing a QSharedPointer to take ownership of an object after a
-     QPointer is already tracking the object. Previously, the shared pointer
-     construction would not be affected by the QPointer, but now that QPointer
-     is implemented using QWeakPoiner, constructing the QSharedPointer will
-     cause an abort().
 
 
 - QVariant

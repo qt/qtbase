@@ -87,7 +87,9 @@ void BenchmarkQtBinaryJson::cleanup()
 
 void BenchmarkQtBinaryJson::parseNumbers()
 {
-    QFile file(QLatin1String("numbers.json"));
+    QString testFile = QFINDTESTDATA("numbers.json");
+    QVERIFY2(!testFile.isEmpty(), "cannot find test file numbers.json!");
+    QFile file(testFile);
     file.open(QFile::ReadOnly);
     QByteArray testJson = file.readAll();
 
@@ -99,7 +101,9 @@ void BenchmarkQtBinaryJson::parseNumbers()
 
 void BenchmarkQtBinaryJson::parseJson()
 {
-    QFile file(QLatin1String("../../../auto/corelib/json/test.json"));
+    QString testFile = QFINDTESTDATA("test.json");
+    QVERIFY2(!testFile.isEmpty(), "cannot find test file test.json!");
+    QFile file(testFile);
     file.open(QFile::ReadOnly);
     QByteArray testJson = file.readAll();
 
@@ -111,7 +115,9 @@ void BenchmarkQtBinaryJson::parseJson()
 
 void BenchmarkQtBinaryJson::parseJsonToVariant()
 {
-    QFile file(QLatin1String("../../../auto/corelib/json/test.json"));
+    QString testFile = QFINDTESTDATA("test.json");
+    QVERIFY2(!testFile.isEmpty(), "cannot find test file test.json!");
+    QFile file(testFile);
     file.open(QFile::ReadOnly);
     QByteArray testJson = file.readAll();
 

@@ -354,7 +354,7 @@ static void cleanupCocoaApplicationDelegate()
 - (void)qtDispatcherToQAction:(id)sender
 {
     Q_UNUSED(sender);
-    //[[NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)] qtDispatcherToQAction:sender];
+    [qtMenuLoader qtDispatcherToQAction:sender];
 }
 
 @end

@@ -160,9 +160,11 @@ public:
 
     inline iterator begin() { return ptr; }
     inline const_iterator begin() const { return ptr; }
+    inline const_iterator cbegin() const { return ptr; }
     inline const_iterator constBegin() const { return ptr; }
     inline iterator end() { return ptr + s; }
     inline const_iterator end() const { return ptr + s; }
+    inline const_iterator cend() const { return ptr + s; }
     inline const_iterator constEnd() const { return ptr + s; }
     iterator insert(iterator before, int n, const T &x);
     inline iterator insert(iterator before, const T &x) { return insert(before, 1, x); }

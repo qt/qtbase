@@ -59,8 +59,6 @@ public:
     QMimeType(const QMimeType &other);
     QMimeType &operator=(const QMimeType &other);
 #ifdef Q_COMPILER_RVALUE_REFS
-    QMimeType(QMimeType &&other);
-
     QMimeType &operator=(QMimeType &&other)
     {
         qSwap(d, other.d);

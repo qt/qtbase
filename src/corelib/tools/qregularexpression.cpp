@@ -135,7 +135,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet doc/src/snippets/code/src_corelib_tools_qregularexpression.cpp 2
 
-    The pattern() function returns the pattern that it's currently set for a
+    The pattern() function returns the pattern that is currently set for a
     QRegularExpression object:
 
     \snippet doc/src/snippets/code/src_corelib_tools_qregularexpression.cpp 3
@@ -342,9 +342,9 @@ QT_BEGIN_NAMESPACE
     string; however, the subpattern \c{def} matches the subject string
     completely, and therefore a complete match is reported.
 
-    In case multiple partial matches are found when matching (but no complete
-    match), then the QRegularExpressionMatch will report the first one that it
-    is found. For instance:
+    If multiple partial matches are found when matching (but no complete
+    match), then the QRegularExpressionMatch object will report the first one
+    that is found. For instance:
 
     \snippet doc/src/snippets/code/src_corelib_tools_qregularexpression.cpp 18
 
@@ -440,7 +440,7 @@ QT_BEGIN_NAMESPACE
 
     \section2 Exact matching
 
-    QRegExp::exactMatch in Qt 4 served for two purposes: it exactly matched
+    QRegExp::exactMatch() in Qt 4 served two purposes: it exactly matched
     a regular expression against a subject string, and it implemented partial
     matching. In fact, if an exact match was not found, one could still find
     out how much of the subject string was matched by the regular expression
@@ -478,8 +478,19 @@ QT_BEGIN_NAMESPACE
     matching correctly (that is, like Perl does). In particular, patterns that
     can match 0 characters (like \c{"a*"}) are problematic.
 
-    QRegularExpression::globalMatch implements Perl global match correctly, and
+    QRegularExpression::globalMatch() implements Perl global match correctly, and
     the returned iterator can be used to examine each result.
+
+    \section2 Unicode properties support
+
+    When using QRegExp, character classes such as \c{\w}, \c{\d}, etc. match
+    characters with the corresponding Unicode property: for instance, \c{\d}
+    matches any character with the Unicode Nd (decimal digit) property.
+
+    Those character classes only match ASCII characters by default when using
+    QRegularExpression: for instance, \c{\d} matches exactly a character in the
+    \c{0-9} ASCII range. It is possible to change this behaviour by using the
+    UseUnicodePropertiesOption pattern option.
 
     \section2 Wildcard matching
 
@@ -494,11 +505,11 @@ QT_BEGIN_NAMESPACE
 
     \section2 Minimal matching
 
-    QRegExp::setMinimal implemented minimal matching by simply reversing the
+    QRegExp::setMinimal() implemented minimal matching by simply reversing the
     greediness of the quantifiers (QRegExp did not support lazy quantifiers,
     like \c{*?}, \c{+?}, etc.). QRegularExpression instead does support greedy,
     lazy and possessive quantifiers. The InvertedGreedinessOption
-    pattern option can be useful to emulate the effects of QRegExp::setMinimal:
+    pattern option can be useful to emulate the effects of QRegExp::setMinimal():
     if enabled, it inverts the greediness of quantifiers (greedy ones become
     lazy and vice versa).
 
@@ -675,7 +686,7 @@ QT_BEGIN_NAMESPACE
         equivalent for this option in Perl regular expressions.
 
     \value UseUnicodePropertiesOption
-        The meaning of the \c{\w}, \c{\d}, etc., character types, as well as
+        The meaning of the \c{\w}, \c{\d}, etc., character classes, as well as
         the meaning of their counterparts (\c{\W}, \c{\D}, etc.), is changed
         from matching ASCII charaters only to matching any character with the
         corresponding Unicode property. For instance, \c{\d} is changed to
@@ -1004,12 +1015,18 @@ class QPcreJitStackPointer
     Q_DISABLE_COPY(QPcreJitStackPointer);
 
 public:
+    /*!
+        \internal
+    */
     QPcreJitStackPointer()
     {
         // The default JIT stack size in PCRE is 32K,
         // we allocate from 32K up to 512K.
         stack = pcre16_jit_stack_alloc(32*1024, 512*1024);
     }
+    /*!
+        \internal
+    */
     ~QPcreJitStackPointer()
     {
         if (stack)
@@ -1572,8 +1589,8 @@ bool QRegularExpression::operator==(const QRegularExpression &re) const
     a backslash all characters in \a str, except for the characters in the
     \c{[A-Z]}, \c{[a-z]} and \c{[0-9]} ranges, as well as the underscore
     (\c{_}) character. The only difference with Perl is that a literal NUL
-    inside \a str is escaped with the sequence \c{"\\\\0"} (backslash +
-    \c{'0'}), instead of \c{"\\\\\\0"} (backslash + \c{NUL}).
+    inside \a str is escaped with the sequence \c{"\\0"} (backslash +
+    \c{'0'}), instead of \c{"\\\0"} (backslash + \c{NUL}).
 */
 QString QRegularExpression::escape(const QString &str)
 {

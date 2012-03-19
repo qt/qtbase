@@ -269,9 +269,11 @@ public:
     // stl style
     inline iterator begin() { detach(); return reinterpret_cast<Node *>(p.begin()); }
     inline const_iterator begin() const { return reinterpret_cast<Node *>(p.begin()); }
+    inline const_iterator cbegin() const { return reinterpret_cast<Node *>(p.begin()); }
     inline const_iterator constBegin() const { return reinterpret_cast<Node *>(p.begin()); }
     inline iterator end() { detach(); return reinterpret_cast<Node *>(p.end()); }
     inline const_iterator end() const { return reinterpret_cast<Node *>(p.end()); }
+    inline const_iterator cend() const { return reinterpret_cast<Node *>(p.end()); }
     inline const_iterator constEnd() const { return reinterpret_cast<Node *>(p.end()); }
     iterator insert(iterator before, const T &t);
     iterator erase(iterator pos);

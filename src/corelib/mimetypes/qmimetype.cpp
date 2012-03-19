@@ -181,25 +181,6 @@ QMimeType &QMimeType::operator=(const QMimeType &other)
     return *this;
 }
 
-#ifdef Q_COMPILER_RVALUE_REFS
-/*!
-    \fn QMimeType::QMimeType(QMimeType &&other);
-    Constructs this QMimeType object by moving the data of the rvalue reference \a other.
- */
-QMimeType::QMimeType(QMimeType &&other) :
-        d(std::move(other.d))
-{
-    DBG() << "name():" << name();
-    //DBG() << "aliases():" << aliases();
-    //DBG() << "comment():" << comment();
-    DBG() << "genericIconName():" << genericIconName();
-    DBG() << "iconName():" << iconName();
-    DBG() << "globPatterns():" << globPatterns();
-    DBG() << "suffixes():" << suffixes();
-    DBG() << "preferredSuffix():" << preferredSuffix();
-}
-#endif
-
 /*!
     \fn QMimeType::QMimeType(const QMimeTypePrivate &dd);
     Assigns the data of the QMimeTypePrivate \a dd to this QMimeType object, and returns a reference to this object.

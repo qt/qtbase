@@ -41,6 +41,7 @@
 #include "qwindowsysteminterface_qpa.h"
 #include "qwindowsysteminterface_qpa_p.h"
 #include "private/qguiapplication_p.h"
+#include "private/qevent_p.h"
 #include "private/qtouchdevice_p.h"
 #include <QAbstractEventDispatcher>
 #include <QPlatformDrag>
@@ -146,6 +147,39 @@ void QWindowSystemInterface::handleMouseEvent(QWindow *tlw, ulong timestamp, con
             new QWindowSystemInterfacePrivate::MouseEvent(tlw, timestamp, local, global, b, mods);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
+
+bool QWindowSystemInterface::tryHandleSynchronousShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
+                                                               const QString & text, bool autorep, ushort count)
+{
+    unsigned long timestamp = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    return tryHandleSynchronousShortcutEvent(w, timestamp, k, mods, text, autorep, count);
+}
+
+bool QWindowSystemInterface::tryHandleSynchronousShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
+                                                               const QString & text, bool autorep, ushort count)
+{
+    QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, text, autorep, count);
+    qevent.setTimestamp(timestamp);
+    return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(w, &qevent);
+}
+
+bool QWindowSystemInterface::tryHandleSynchronousExtendedShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
+                                                                       quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
+                                                                       const QString &text, bool autorep, ushort count)
+{
+    unsigned long timestamp = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    return tryHandleSynchronousExtendedShortcutEvent(w, timestamp, k, mods, nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
+}
+
+bool QWindowSystemInterface::tryHandleSynchronousExtendedShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
+                                                                       quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
+                                                                       const QString &text, bool autorep, ushort count)
+{
+    QKeyEventEx qevent(QEvent::ShortcutOverride, k, mods, text, autorep, count, nativeScanCode, nativeVirtualKey, nativeModifiers);
+    qevent.setTimestamp(timestamp);
+    return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(w, &qevent);
+}
+
 
 void QWindowSystemInterface::handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();

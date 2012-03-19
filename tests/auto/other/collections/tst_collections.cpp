@@ -550,6 +550,10 @@ void tst_Collections::list()
         QList<QString>::const_iterator cit = list.constBegin();
         QVERIFY((*cit).toLower() == "xello");
         QVERIFY(cit->toUpper() == "XELLO");
+
+        cit = list.cbegin();
+        QVERIFY((*cit).toLower() == "xello");
+        QVERIFY(cit->toUpper() == "XELLO");
     }
 
     {
@@ -965,6 +969,10 @@ void tst_Collections::linkedList()
         QVERIFY(list.first() == "Xello");
 
         QLinkedList<QString>::const_iterator cit = list.constBegin();
+        QVERIFY((*cit).toLower() == "xello");
+        QVERIFY(cit->toUpper() == "XELLO");
+
+        cit = list.cbegin();
         QVERIFY((*cit).toLower() == "xello");
         QVERIFY(cit->toUpper() == "XELLO");
     }
@@ -1607,6 +1615,10 @@ void tst_Collections::hash()
         QHash<int, QString>::const_iterator cit = hash.constBegin();
         QVERIFY((*cit).toLower() == "xello");
         QVERIFY(cit->toUpper() == "XELLO");
+
+        cit = hash.cbegin();
+        QVERIFY((*cit).toLower() == "xello");
+        QVERIFY(cit->toUpper() == "XELLO");
     }
 
     {
@@ -1922,6 +1934,10 @@ void tst_Collections::map()
         QVERIFY(*map.begin() == "Xello");
 
         QMap<int, QString>::const_iterator cit = map.constBegin();
+        QVERIFY((*cit).toLower() == "xello");
+        QVERIFY(cit->toUpper() == "XELLO");
+
+        cit = map.cbegin();
         QVERIFY((*cit).toLower() == "xello");
         QVERIFY(cit->toUpper() == "XELLO");
     }
@@ -2902,7 +2918,7 @@ void tst_Collections::linkedlist_stl()
     QCOMPARE(int(stdList.size()), elements.size());
 
     std::list<QString>::const_iterator it = stdList.begin();
-    QLinkedList<QString>::const_iterator it2 = list.constBegin();
+    QLinkedList<QString>::const_iterator it2 = list.cbegin();
     for (uint j = 0; j < stdList.size(); ++j, ++it, ++it2)
         QCOMPARE(*it, *it2);
 
@@ -3001,9 +3017,11 @@ void instantiateContainer()
 #ifndef QT_NO_STL
     typename ContainerType::const_iterator constIt;
     constIt = constContainer.begin();
+    constIt = container.cbegin();
     container.constBegin();
 
     constIt = constContainer.end();
+    constIt = constContainer.cend();
     container.constEnd();
     Q_UNUSED(constIt)
 #endif

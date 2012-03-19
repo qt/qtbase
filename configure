@@ -4389,7 +4389,7 @@ fi
 
 # auto-detect iconv(3) support
 if [ "$CFG_ICONV" != "no" ]; then
-    if [ "$XPLATFORM_MINGW" = "yes" ] || [ "$PLATFORM_QPA" = "yes" -a "$CFG_ICONV" = "auto" ]; then
+    if [ "$XPLATFORM_MINGW" = "yes" ]; then
         CFG_ICONV=no
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/iconv" "POSIX iconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_ICONV=yes
@@ -5722,6 +5722,8 @@ fi
 if [ "$PLATFORM_MAC" = "yes" ]; then
     if [ "$CFG_RPATH" = "yes" ]; then
        QMAKE_CONFIG="$QMAKE_CONFIG absolute_library_soname"
+       # set the default rpath to the library installation directory
+       RPATH_FLAGS="\"$QT_INSTALL_LIBS\" $RPATH_FLAGS"
     fi
 elif [ -z "`getXQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
     if [ -n "$RPATH_FLAGS" ]; then
@@ -6294,8 +6296,8 @@ if [ -n "$CFG_SYSROOT" ]; then
     echo "}" >> "$QTCONFIG.tmp"
     echo >> "$QTCONFIG.tmp"
 fi
-if [ "$CFG_RPATH" = "yes" ]; then
-    echo "QMAKE_RPATHDIR += \"$QT_INSTALL_LIBS\"" >> "$QTCONFIG.tmp"
+if [ -n "$RPATH_FLAGS" ]; then
+    echo "QMAKE_RPATHDIR += $RPATH_FLAGS" >> "$QTCONFIG.tmp"
 fi
 if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
     echo "QT_GCC_MAJOR_VERSION = $QT_GCC_MAJOR_VERSION" >> "$QTCONFIG.tmp"

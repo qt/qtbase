@@ -570,42 +570,47 @@ static QTouchDevice *touchDevice = 0;
     return qtMods;
 }
 
-- (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType
+- (void)handleKeyEvent:(NSEvent *)nsevent eventType:(int)eventType
 {
-    NSTimeInterval timestamp = [theEvent timestamp];
-    ulong qt_timestamp = timestamp * 1000;
-    QString characters = QString::fromUtf8([[theEvent characters] UTF8String]);
-    Qt::KeyboardModifiers modifiers = [self convertKeyModifiers : [theEvent modifierFlags]];
-    QChar ch([[theEvent charactersIgnoringModifiers] characterAtIndex:0]);
-    int keyCode = [self convertKeyCode : ch];
+    ulong timestamp = [nsevent timestamp] * 1000;
+    Qt::KeyboardModifiers modifiers = [self convertKeyModifiers:[nsevent modifierFlags]];
+    NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
+    QChar ch([charactersIgnoringModifiers characterAtIndex:0]);
+    int keyCode = [self convertKeyCode:ch];
 
-    QWindowSystemInterface::handleKeyEvent(m_window, qt_timestamp, QEvent::Type(eventType), keyCode, modifiers, characters);
-}
+    QString text;
+    if (eventType == QEvent::KeyPress) {
+        // ignore text for the U+F700-U+F8FF range. This is used by Cocoa when
+        // delivering function keys (e.g. arrow keys, backspace, F1-F35, etc.)
+        if ([charactersIgnoringModifiers length] == 1 && (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff))
+            text = QString::fromUtf8([[nsevent characters] UTF8String]);
 
-- (void)keyDown:(NSEvent *)theEvent
-{
-    QObject *fo = QGuiApplication::focusObject();
-    m_keyEventsAccepted = false;
-    if (fo) {
-        QInputMethodQueryEvent queryEvent(Qt::ImHints);
-        if (QCoreApplication::sendEvent(fo, &queryEvent)) {
-            Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(queryEvent.value(Qt::ImHints).toUInt());
-            if (!(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText)) {
-                [self interpretKeyEvents:[NSArray arrayWithObject: theEvent]];
+        if (!m_keyEventsAccepted && m_composingText.isEmpty())
+            m_keyEventsAccepted = QWindowSystemInterface::tryHandleSynchronousShortcutEvent(m_window, timestamp, keyCode, modifiers, text);
+
+        QObject *fo = QGuiApplication::focusObject();
+        if (!m_keyEventsAccepted && fo) {
+            QInputMethodQueryEvent queryEvent(Qt::ImHints);
+            if (QCoreApplication::sendEvent(fo, &queryEvent)) {
+                Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(queryEvent.value(Qt::ImHints).toUInt());
+                if (!(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText))
+                    [self interpretKeyEvents:[NSArray arrayWithObject:nsevent]];
             }
         }
     }
-
-    if (!m_keyEventsAccepted && m_composingText.isEmpty()) {
-        [self handleKeyEvent : theEvent eventType :int(QEvent::KeyPress)];
-    }
+    if (!m_keyEventsAccepted && m_composingText.isEmpty())
+        QWindowSystemInterface::handleKeyEvent(m_window, timestamp, QEvent::Type(eventType), keyCode, modifiers, text);
 }
 
-- (void)keyUp:(NSEvent *)theEvent
+- (void)keyDown:(NSEvent *)nsevent
 {
-    if (!m_keyEventsAccepted && m_composingText.isEmpty()) {
-        [self handleKeyEvent : theEvent eventType :int(QEvent::KeyRelease)];
-    }
+    m_keyEventsAccepted = false;
+    [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
+}
+
+- (void)keyUp:(NSEvent *)nsevent
+{
+    [self handleKeyEvent:nsevent eventType:int(QEvent::KeyRelease)];
 }
 
 - (void) doCommandBySelector:(SEL)aSelector

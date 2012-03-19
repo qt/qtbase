@@ -376,15 +376,16 @@ QIcon QFileIconProviderPrivate::getMacIcon(const QFileInfo &fi) const
     qt_mac_constructQIconFromIconRef(iconRef, 0, &retIcon);
     ReleaseIconRef(iconRef);
 
-    pixmap = retIcon.pixmap(16);
-    QPixmapCache::insert(keyBase + QLatin1String("16"), pixmap);
-    pixmap = retIcon.pixmap(32);
-    QPixmapCache::insert(keyBase + QLatin1String("32"), pixmap);
-    pixmap = retIcon.pixmap(64);
-    QPixmapCache::insert(keyBase + QLatin1String("64"), pixmap);
-    pixmap = retIcon.pixmap(128);
-    QPixmapCache::insert(keyBase + QLatin1String("128"), pixmap);
-
+    if (fi.isFile() && !fi.isExecutable() && !fi.isSymLink()) {
+        pixmap = retIcon.pixmap(16);
+        QPixmapCache::insert(keyBase + QLatin1String("16"), pixmap);
+        pixmap = retIcon.pixmap(32);
+        QPixmapCache::insert(keyBase + QLatin1String("32"), pixmap);
+        pixmap = retIcon.pixmap(64);
+        QPixmapCache::insert(keyBase + QLatin1String("64"), pixmap);
+        pixmap = retIcon.pixmap(128);
+        QPixmapCache::insert(keyBase + QLatin1String("128"), pixmap);
+    }
     return retIcon;
 }
 #endif

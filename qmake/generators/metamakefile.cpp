@@ -520,6 +520,9 @@ MetaMakefileGenerator::modesForGenerator(const QString &gen,
 #ifdef Q_OS_MAC
         *host_mode = Option::HOST_MACX_MODE;
         *target_mode = Option::TARG_MACX_MODE;
+#elif defined(Q_OS_WIN)
+        *host_mode = Option::HOST_WIN_MODE;
+        *target_mode = Option::TARG_UNIX_MODE;
 #else
         *host_mode = Option::HOST_UNIX_MODE;
         *target_mode = Option::TARG_UNIX_MODE;

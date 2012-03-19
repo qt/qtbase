@@ -64,6 +64,10 @@ QMimeData *QCocoaClipboard::mimeData(QClipboard::Mode mode)
 void QCocoaClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
 {
     if (QMacPasteboard *pasteBoard = pasteboardForMode(mode)) {
+        if (data == 0) {
+            pasteBoard->clear();
+        }
+
         pasteBoard->sync();
         pasteBoard->setMimeData(data);
         emitChanged(mode);

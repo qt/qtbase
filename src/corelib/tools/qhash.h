@@ -440,9 +440,11 @@ public:
     // STL style
     inline iterator begin() { detach(); return iterator(d->firstNode()); }
     inline const_iterator begin() const { return const_iterator(d->firstNode()); }
+    inline const_iterator cbegin() const { return const_iterator(d->firstNode()); }
     inline const_iterator constBegin() const { return const_iterator(d->firstNode()); }
     inline iterator end() { detach(); return iterator(e); }
     inline const_iterator end() const { return const_iterator(e); }
+    inline const_iterator cend() const { return const_iterator(e); }
     inline const_iterator constEnd() const { return const_iterator(e); }
     iterator erase(iterator it);
 

@@ -800,6 +800,12 @@ const QStaticByteArrayData<1> QByteArray::shared_empty = { { Q_REFCOUNT_INITIALI
     \internal
 */
 
+/*! \fn QByteArray::const_iterator QByteArray::cbegin() const
+    \since 5.0
+
+    \internal
+*/
+
 /*! \fn QByteArray::const_iterator QByteArray::constBegin() const
 
     \internal
@@ -811,6 +817,12 @@ const QStaticByteArrayData<1> QByteArray::shared_empty = { { Q_REFCOUNT_INITIALI
 */
 
 /*! \fn QByteArray::const_iterator QByteArray::end() const
+
+    \internal
+*/
+
+/*! \fn QByteArray::const_iterator QByteArray::cend() const
+    \since 5.0
 
     \internal
 */

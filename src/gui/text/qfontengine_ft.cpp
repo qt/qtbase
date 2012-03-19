@@ -1564,7 +1564,9 @@ void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlag
                    (flags & HB_ShaperFlag_UseDesignMetrics)) && FT_IS_SCALABLE(freetype->face);
     for (int i = 0; i < glyphs->numGlyphs; i++) {
         Glyph *g = cacheEnabled ? defaultGlyphSet.getGlyph(glyphs->glyphs[i]) : 0;
-        if (g) {
+        // Since we are passing Format_None to loadGlyph, use same default format logic as loadGlyph
+        GlyphFormat acceptableFormat = (defaultFormat != Format_None) ? defaultFormat : Format_Mono;
+        if (g && g->format == acceptableFormat) {
             glyphs->advances_x[i] = design ? QFixed::fromFixed(g->linearAdvance) : QFixed(g->advance);
         } else {
             if (!face)

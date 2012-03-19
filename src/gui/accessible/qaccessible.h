@@ -430,6 +430,7 @@ private:
 
 class Q_GUI_EXPORT QAccessibleEvent
 {
+    Q_DISABLE_COPY(QAccessibleEvent)
 public:
     inline QAccessibleEvent(QAccessible::Event typ, QObject *obj, int chld = -1)
         : m_type(typ), m_object(obj), m_child(chld)
@@ -446,7 +447,8 @@ public:
 
     QAccessibleInterface *accessibleInterface() const;
 
-private:
+protected:
+
     QAccessible::Event m_type;
     QObject *m_object;
     int m_child;
@@ -463,7 +465,7 @@ public:
         return m_changedStates;
     }
 
-private:
+protected:
     QAccessible::State m_changedStates;
 };
 

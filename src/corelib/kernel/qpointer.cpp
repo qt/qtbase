@@ -56,7 +56,7 @@
     destroyed while you still hold a reference to it. You can safely
     test the pointer for validity.
 
-    Note that Qt 5 introduces two slight changes in behavior when using QPointer.
+    Note that Qt 5 introduces a slight change in behavior when using QPointer.
 
     \list
 
@@ -65,12 +65,6 @@
     is cleared by the QObject destructor (since this is when QWeakPointers are
     cleared). Any QPointers tracking a widget will \b NOT be cleared before the
     QWidget destructor destroys the children for the widget being tracked.
-
-    \li When constructing a QSharedPointer to take ownership of an object after a
-    QPointer is already tracking the object. Previously, the shared pointer
-    construction would not be affected by the QPointer, but now that QPointer
-    is implemented using QWeakPoiner, constructing the QSharedPointer will
-    cause an \c abort().
 
     \endlist
 

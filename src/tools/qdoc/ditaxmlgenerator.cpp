@@ -5900,9 +5900,15 @@ void DitaXmlGenerator::writeDitaMap(const Tree *tree)
     writeEndTag(); // </topicmeta>
 
     writeStartTag(DT_topicref);
-    xmlWriter().writeAttribute("navtitle",project);
-    if (rootPageNode)
+    if (rootPageNode) {
+        if (!rootPageNode->title().isEmpty())
+            xmlWriter().writeAttribute("navtitle",rootPageNode->title());
+        else
+            xmlWriter().writeAttribute("navtitle",project);
         xmlWriter().writeAttribute("href",fileName(rootPageNode));
+    }
+    else
+        xmlWriter().writeAttribute("navtitle",project);
 
     writeTopicrefs(pageTypeMaps[Node::OverviewPage], "overviews");
     writeTopicrefs(pageTypeMaps[Node::HowToPage], "howtos");

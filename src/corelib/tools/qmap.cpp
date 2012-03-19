@@ -682,6 +682,15 @@ void QMapData::dump()
     \overload
 */
 
+/*! \fn QMap::const_iterator QMap::cbegin() const
+    \since 5.0
+
+    Returns a const \l{STL-style iterator} pointing to the first item
+    in the map.
+
+    \sa begin(), cend()
+*/
+
 /*! \fn QMap::const_iterator QMap::constBegin() const
 
     Returns a const \l{STL-style iterator} pointing to the first item
@@ -701,6 +710,15 @@ void QMapData::dump()
 /*! \fn QMap::const_iterator QMap::end() const
 
     \overload
+*/
+
+/*! \fn QMap::const_iterator QMap::cend() const
+    \since 5.0
+
+    Returns a const \l{STL-style iterator} pointing to the imaginary
+    item after the last item in the map.
+
+    \sa cbegin(), end()
 */
 
 /*! \fn QMap::const_iterator QMap::constEnd() const
@@ -744,7 +762,7 @@ void QMapData::dump()
     \overload
 */
 
-/*! \fn QMap::iterator QMap::constFind(const Key &key) const
+/*! \fn QMap::const_iterator QMap::constFind(const Key &key) const
     \since 4.1
 
     Returns an const iterator pointing to the item with key \a key in the

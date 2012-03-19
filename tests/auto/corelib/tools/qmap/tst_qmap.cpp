@@ -285,6 +285,8 @@ void tst_QMap::beginEnd()
     QVERIFY( map.constBegin() == map.constEnd() );
     map.insert( "0", "a" );
     map.insert( "1", "b" );
+    QVERIFY( map.constBegin() == map.cbegin() );
+    QVERIFY( map.constEnd()   == map.cend() );
 
     // make a copy. const function shouldn't detach
     StringMap map2 = map;

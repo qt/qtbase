@@ -129,7 +129,9 @@ void tst_QText::shaping_data()
     QTest::newRow("lorem") << m_lorem;
     QTest::newRow("short") << QString::fromLatin1("Lorem ipsum dolor sit amet");
 
-    QFile file(QString::fromLatin1(SRCDIR) + QLatin1String("/bidi.txt"));
+    QString testFile = QFINDTESTDATA("bidi.txt");
+    QVERIFY2(!testFile.isEmpty(), "cannot find test file bidi.txt!");
+    QFile file(testFile);
     QVERIFY(file.open(QFile::ReadOnly));
     QByteArray data = file.readAll();
     QVERIFY(data.count() > 1000);
