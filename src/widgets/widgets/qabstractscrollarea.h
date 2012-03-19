@@ -122,6 +122,8 @@ protected:
 
     virtual void scrollContentsBy(int dx, int dy);
 
+    virtual QSize viewportSizeHint() const;
+
 private:
     Q_DECLARE_PRIVATE(QAbstractScrollArea)
     Q_DISABLE_COPY(QAbstractScrollArea)
