@@ -1331,6 +1331,8 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
                         names << prop->setters().first()->name();
                     if (!prop->resetters().isEmpty())
                         names << prop->resetters().first()->name();
+                    if (!prop->notifiers().isEmpty())
+                        names << prop->notifiers().first()->name();
                 }
                 else if ((*m)->type() == Node::Enum) {
                     const EnumNode *enume = reinterpret_cast<const EnumNode*>(*m);
