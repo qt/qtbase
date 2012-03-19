@@ -385,7 +385,6 @@ Q_OUTOFLINE_TEMPLATE QDataStream &operator>>(QDataStream &in, QMap<aKey, aT> &ma
     in >> n;
 
     map.detach();
-    map.setInsertInOrder(true);
     for (quint32 i = 0; i < n; ++i) {
         if (in.status() != QDataStream::Ok)
             break;
@@ -395,7 +394,6 @@ Q_OUTOFLINE_TEMPLATE QDataStream &operator>>(QDataStream &in, QMap<aKey, aT> &ma
         in >> key >> value;
         map.insertMulti(key, value);
     }
-    map.setInsertInOrder(false);
     if (in.status() != QDataStream::Ok)
         map.clear();
     if (oldStatus != QDataStream::Ok)

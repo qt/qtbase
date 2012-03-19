@@ -41,10 +41,10 @@
 
 #define QT_STRICT_ITERATORS
 
+#include <qmap.h>
 #include <QtTest/QtTest>
 #include <QDebug>
 
-#include <qmap.h>
 
 class tst_QMap : public QObject
 {
@@ -74,6 +74,11 @@ private slots:
     void qmultimap_specific();
 
     void const_shared_null();
+
+    void equal_range();
+    void setSharable();
+
+    void insert();
 };
 
 typedef QMap<QString, QString> StringMap;
@@ -104,6 +109,11 @@ public:
 int MyClass::count = 0;
 
 typedef QMap<QString, MyClass> MyMap;
+
+QDebug operator << (QDebug d, const MyClass &c) {
+    d << c.str;
+    return d;
+}
 
 void tst_QMap::init()
 {
@@ -152,6 +162,7 @@ void tst_QMap::count()
         map.insert( "Paul", MyClass("Tvete 6") );
 
         QCOMPARE( map.count(), 9 );
+        QCOMPARE( map.count("Paul"), 1 );
 #ifndef Q_CC_SUN
         QCOMPARE( MyClass::count, 9 );
 #endif
@@ -519,6 +530,7 @@ void tst_QMap::find()
     for(i = 3; i < 10; ++i) {
         compareString = testString.arg(i);
         map1.insertMulti(4, compareString);
+        QCOMPARE(map1.count(4), i - 2);
     }
 
     QMap<int, QString>::const_iterator it=map1.constFind(4);
@@ -588,6 +600,33 @@ void tst_QMap::lowerUpperBound()
     QCOMPARE(map1.lowerBound(2).key(), 5);      // returns iterator to (5, "five")
     QCOMPARE(map1.lowerBound(10).key(), 10);     // returns iterator to (10, "ten")
     QVERIFY(map1.lowerBound(999) == map1.end());    // returns end()
+
+    map1.insert(3, "three");
+    map1.insert(7, "seven");
+    map1.insertMulti(7, "seven_2");
+
+    QCOMPARE(map1.upperBound(0).key(), 1);
+    QCOMPARE(map1.upperBound(1).key(), 3);
+    QCOMPARE(map1.upperBound(2).key(), 3);
+    QCOMPARE(map1.upperBound(3).key(), 5);
+    QCOMPARE(map1.upperBound(7).key(), 10);
+    QVERIFY(map1.upperBound(10) == map1.end());
+    QVERIFY(map1.upperBound(999) == map1.end());
+
+    QCOMPARE(map1.lowerBound(0).key(), 1);
+    QCOMPARE(map1.lowerBound(1).key(), 1);
+    QCOMPARE(map1.lowerBound(2).key(), 3);
+    QCOMPARE(map1.lowerBound(3).key(), 3);
+    QCOMPARE(map1.lowerBound(4).key(), 5);
+    QCOMPARE(map1.lowerBound(5).key(), 5);
+    QCOMPARE(map1.lowerBound(6).key(), 7);
+    QCOMPARE(map1.lowerBound(7).key(), 7);
+    QCOMPARE(map1.lowerBound(6).value(), QString("seven_2"));
+    QCOMPARE(map1.lowerBound(7).value(), QString("seven_2"));
+    QCOMPARE((++map1.lowerBound(6)).value(), QString("seven"));
+    QCOMPARE((++map1.lowerBound(7)).value(), QString("seven"));
+    QCOMPARE(map1.lowerBound(10).key(), 10);
+    QVERIFY(map1.lowerBound(999) == map1.end());
 }
 
 void tst_QMap::mergeCompare()
@@ -846,10 +885,129 @@ void tst_QMap::const_shared_null()
     QMap<int, QString> map2;
     map2.setSharable(true);
     QVERIFY(!map2.isDetached());
+}
 
-    QMap<int, QString> map3;
-    map3.setInsertInOrder(true);
-    map3.setInsertInOrder(false);
+void tst_QMap::equal_range()
+{
+    QMap<int, QString> map;
+
+    QPair<QMap<int, QString>::iterator, QMap<int, QString>::iterator> result = map.equal_range(0);
+    QCOMPARE(result.first, map.end());
+    QCOMPARE(result.second, map.end());
+
+    map.insert(1, "one");
+
+    result = map.equal_range(0);
+    QCOMPARE(result.first, map.find(1));
+    QCOMPARE(result.second, map.find(1));
+
+    result = map.equal_range(1);
+    QCOMPARE(result.first, map.find(1));
+    QCOMPARE(result.second, map.end());
+
+    result = map.equal_range(2);
+    QCOMPARE(result.first, map.end());
+    QCOMPARE(result.second, map.end());
+
+    for (int i = -10; i < 10; i += 2)
+        map.insert(i, QString("%1").arg(i));
+
+    result = map.equal_range(0);
+    QCOMPARE(result.first, map.find(0));
+    QCOMPARE(result.second, map.find(1));
+
+    result = map.equal_range(1);
+    QCOMPARE(result.first, map.find(1));
+    QCOMPARE(result.second, map.find(2));
+
+    result = map.equal_range(2);
+    QCOMPARE(result.first, map.find(2));
+    QCOMPARE(result.second, map.find(4));
+
+    map.insertMulti(1, "another one");
+    result = map.equal_range(1);
+    QCOMPARE(result.first, map.find(1));
+    QCOMPARE(result.second, map.find(2));
+
+    QCOMPARE(map.count(1), 2);
+}
+
+template <class T>
+const T &const_(const T &t)
+{
+    return t;
+}
+
+void tst_QMap::setSharable()
+{
+    QMap<int, QString> map;
+
+    map.insert(1, "um");
+    map.insert(2, "dois");
+    map.insert(4, "quatro");
+    map.insert(5, "cinco");
+
+    map.setSharable(true);
+    QCOMPARE(map.size(), 4);
+    QCOMPARE(const_(map)[4], QString("quatro"));
+
+    {
+        QMap<int, QString> copy(map);
+
+        QVERIFY(!map.isDetached());
+        QVERIFY(copy.isSharedWith(map));
+    }
+
+    map.setSharable(false);
+    QVERIFY(map.isDetached());
+    QCOMPARE(map.size(), 4);
+    QCOMPARE(const_(map)[4], QString("quatro"));
+
+    {
+        QMap<int, QString> copy(map);
+
+        QVERIFY(map.isDetached());
+        QVERIFY(copy.isDetached());
+
+        QCOMPARE(copy.size(), 4);
+        QCOMPARE(const_(copy)[4], QString("quatro"));
+
+        QCOMPARE(map, copy);
+    }
+
+    map.setSharable(true);
+    QCOMPARE(map.size(), 4);
+    QCOMPARE(const_(map)[4], QString("quatro"));
+
+    {
+        QMap<int, QString> copy(map);
+
+        QVERIFY(!map.isDetached());
+        QVERIFY(copy.isSharedWith(map));
+    }
+}
+
+void tst_QMap::insert()
+{
+    QMap<QString, float> map;
+    map.insert("cs/key1", 1);
+    map.insert("cs/key2", 2);
+    map.insert("cs/key1", 3);
+    QCOMPARE(map.count(), 2);
+
+    QMap<int, int> intMap;
+    for (int i = 0; i < 1000; ++i) {
+        intMap.insert(i, i);
+    }
+
+    QCOMPARE(intMap.size(), 1000);
+
+    for (int i = 0; i < 1000; ++i) {
+        QCOMPARE(intMap.value(i), i);
+        intMap.insert(i, -1);
+        QCOMPARE(intMap.size(), 1000);
+        QCOMPARE(intMap.value(i), -1);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QMap)
