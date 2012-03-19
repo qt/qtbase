@@ -402,6 +402,16 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
     return false;
 }
 
+/*!
+    \internal
+
+    This virtual method is reserved and will be used in Qt 5.1.
+*/
+QSet<int> QAbstractItemDelegate::paintingRoles() const
+{
+    return QSet<int>();
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_ITEMVIEWS

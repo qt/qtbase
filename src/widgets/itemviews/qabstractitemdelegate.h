@@ -114,6 +114,8 @@ public:
                            const QStyleOptionViewItem &option,
                            const QModelIndex &index);
 
+    virtual QSet<int> paintingRoles() const;
+
 Q_SIGNALS:
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint = NoHint);
