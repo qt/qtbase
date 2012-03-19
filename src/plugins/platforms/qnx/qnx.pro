@@ -37,6 +37,7 @@ SOURCES =   main.cpp \
             qqnxclipboard.cpp \
             qqnxrootwindow.cpp
 
+
 HEADERS =   qqnxbuffer.h \
             qqnxeventthread.h \
             qqnxkeytranslator.h \
@@ -51,6 +52,11 @@ HEADERS =   qqnxbuffer.h \
             qqnxclipboard.h \
             qqnxrootwindow.h
 
+CONFIG(blackberry) {
+    SOURCES += qqnxservices.cpp
+    HEADERS += qqnxservices.h
+}
+
 CONFIG(qqnx_imf) {
     DEFINES += QQNX_IMF
     HEADERS += qqnxinputcontext_imf.h
@@ -63,6 +69,10 @@ CONFIG(qqnx_imf) {
 QMAKE_CXXFLAGS += -I./private
 
 LIBS += -lpps -lscreen -lEGL -lclipboard
+
+CONFIG(blackberry) {
+    LIBS += -lbps
+}
 
 include (../../../platformsupport/eglconvenience/eglconvenience.pri)
 include (../../../platformsupport/fontdatabases/fontdatabases.pri)

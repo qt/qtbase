@@ -54,6 +54,7 @@ class QQnxEventThread;
 class QQnxInputContext;
 class QQnxNavigatorEventHandler;
 class QQnxWindow;
+class QQnxServices;
 
 #ifndef QT_NO_CLIPBOARD
 class QQnxClipboard;
@@ -91,6 +92,8 @@ public:
 
     bool paintUsingOpenGL() const { return m_paintUsingOpenGL; }
 
+    virtual QPlatformServices *services() const;
+
     static QWindow *window(screen_window_t qnxWindow);
 
 private:
@@ -104,6 +107,7 @@ private:
     QPlatformFontDatabase *m_fontDatabase;
     bool m_paintUsingOpenGL;
     QAbstractEventDispatcher *m_eventDispatcher;
+    QQnxServices *m_services;
 #ifndef QT_NO_CLIPBOARD
     mutable QQnxClipboard* m_clipboard;
 #endif
