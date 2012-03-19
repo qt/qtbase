@@ -614,10 +614,11 @@ static QTouchDevice *touchDevice = 0;
 
         QObject *fo = QGuiApplication::focusObject();
         if (!m_keyEventsAccepted && fo) {
-            QInputMethodQueryEvent queryEvent(Qt::ImHints);
+            QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImHints);
             if (QCoreApplication::sendEvent(fo, &queryEvent)) {
+                bool imEnabled = queryEvent.value(Qt::ImEnabled).toBool();
                 Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(queryEvent.value(Qt::ImHints).toUInt());
-                if (!(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText))
+                if (imEnabled && !(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText))
                     [self interpretKeyEvents:[NSArray arrayWithObject:nsevent]];
             }
         }
@@ -654,10 +655,15 @@ static QTouchDevice *touchDevice = 0;
     }
     QObject *fo = QGuiApplication::focusObject();
     if (fo) {
-        QInputMethodEvent e;
-        e.setCommitString(commitString);
-        QCoreApplication::sendEvent(fo, &e);
-        m_keyEventsAccepted = true;
+        QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+        if (QCoreApplication::sendEvent(fo, &queryEvent)) {
+            if (queryEvent.value(Qt::ImEnabled).toBool()) {
+                QInputMethodEvent e;
+                e.setCommitString(commitString);
+                QCoreApplication::sendEvent(fo, &e);
+                m_keyEventsAccepted = true;
+            }
+        }
     }
 
     m_composingText.clear();
@@ -715,9 +721,14 @@ static QTouchDevice *touchDevice = 0;
 
     QObject *fo = QGuiApplication::focusObject();
     if (fo) {
-        QInputMethodEvent e(preeditString, attrs);
-        QCoreApplication::sendEvent(fo, &e);
-        m_keyEventsAccepted = true;
+        QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+        if (QCoreApplication::sendEvent(fo, &queryEvent)) {
+            if (queryEvent.value(Qt::ImEnabled).toBool()) {
+                QInputMethodEvent e(preeditString, attrs);
+                QCoreApplication::sendEvent(fo, &e);
+                m_keyEventsAccepted = true;
+            }
+        }
     }
 }
 
@@ -726,9 +737,14 @@ static QTouchDevice *touchDevice = 0;
     if (!m_composingText.isEmpty()) {
         QObject *fo = QGuiApplication::focusObject();
         if (fo) {
-            QInputMethodEvent e;
-            e.setCommitString(m_composingText);
-            QCoreApplication::sendEvent(fo, &e);
+            QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+            if (QCoreApplication::sendEvent(fo, &queryEvent)) {
+                if (queryEvent.value(Qt::ImEnabled).toBool()) {
+                    QInputMethodEvent e;
+                    e.setCommitString(m_composingText);
+                    QCoreApplication::sendEvent(fo, &e);
+                }
+            }
         }
     }
     m_composingText.clear();
@@ -749,8 +765,10 @@ static QTouchDevice *touchDevice = 0;
     QObject *fo = QGuiApplication::focusObject();
     if (!fo)
         return nil;
-    QInputMethodQueryEvent queryEvent(Qt::ImCurrentSelection);
+    QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImCurrentSelection);
     if (!QCoreApplication::sendEvent(fo, &queryEvent))
+        return nil;
+    if (!queryEvent.value(Qt::ImEnabled).toBool())
         return nil;
 
     QString selectedText = queryEvent.value(Qt::ImCurrentSelection).toString();
@@ -785,9 +803,12 @@ static QTouchDevice *touchDevice = 0;
     QObject *fo = QGuiApplication::focusObject();
     if (!fo)
         return selRange;
-    QInputMethodQueryEvent queryEvent(Qt::ImCurrentSelection);
+    QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImCurrentSelection);
     if (!QCoreApplication::sendEvent(fo, &queryEvent))
         return selRange;
+    if (!queryEvent.value(Qt::ImEnabled).toBool())
+        return selRange;
+
     QString selectedText = queryEvent.value(Qt::ImCurrentSelection).toString();
 
     if (!selectedText.isEmpty()) {
@@ -802,6 +823,12 @@ static QTouchDevice *touchDevice = 0;
     Q_UNUSED(theRange);
     QObject *fo = QGuiApplication::focusObject();
     if (!fo)
+        return NSZeroRect;
+
+    QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+    if (!QCoreApplication::sendEvent(fo, &queryEvent))
+        return NSZeroRect;
+    if (!queryEvent.value(Qt::ImEnabled).toBool())
         return NSZeroRect;
 
     if (!m_window)
@@ -828,8 +855,17 @@ static QTouchDevice *touchDevice = 0;
 
 - (NSArray*) validAttributesForMarkedText
 {
+    if (m_window != QGuiApplication::focusWindow())
+        return nil;
+
     QObject *fo = QGuiApplication::focusObject();
     if (!fo)
+        return nil;
+
+    QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+    if (!QCoreApplication::sendEvent(fo, &queryEvent))
+        return nil;
+    if (!queryEvent.value(Qt::ImEnabled).toBool())
         return nil;
 
     // Support only underline color/style.
