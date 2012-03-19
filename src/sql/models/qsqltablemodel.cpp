@@ -84,12 +84,9 @@ int QSqlTableModelPrivate::insertCount(int maxRow) const
     int cnt = 0;
     CacheMap::ConstIterator i = cache.constBegin();
     const CacheMap::ConstIterator e = cache.constEnd();
-    for (;
-         i != e && (maxRow < 0 || i.key() <= maxRow);
-         ++i) {
+    for ( ; i != e && (maxRow < 0 || i.key() <= maxRow); ++i)
         if (i.value().insert())
             ++cnt;
-    }
 
     return cnt;
 }
@@ -175,14 +172,12 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
             }
         }
         int i;
-        for (i = 0; i < rec.count(); ++i) {
+        for (i = 0; i < rec.count(); ++i)
             if (rec.isGenerated(i))
                 editQuery.addBindValue(rec.value(i));
-        }
-        for (i = 0; i < whereValues.count(); ++i) {
+        for (i = 0; i < whereValues.count(); ++i)
             if (whereValues.isGenerated(i) && !whereValues.isNull(i))
                 editQuery.addBindValue(whereValues.value(i));
-        }
 
         if (!editQuery.exec()) {
             error = editQuery.lastError();
@@ -363,7 +358,7 @@ QString QSqlTableModel::tableName() const
 bool QSqlTableModel::select()
 {
     Q_D(QSqlTableModel);
-    QString query = selectStatement();
+    const QString query = selectStatement();
     if (query.isEmpty())
         return false;
 
@@ -593,11 +588,11 @@ bool QSqlTableModel::updateRowInTable(int row, const QSqlRecord &values)
     emit beforeUpdate(row, rec);
 
     const QSqlRecord whereValues = d->primaryValues(row);
-    bool prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
+    const bool prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
     QString stmt = d->db.driver()->sqlStatement(QSqlDriver::UpdateStatement, d->tableName,
                                                 rec, prepStatement);
-    QString where = d->db.driver()->sqlStatement(QSqlDriver::WhereStatement, d->tableName,
-                                                 whereValues, prepStatement);
+    const QString where = d->db.driver()->sqlStatement(QSqlDriver::WhereStatement, d->tableName,
+                                                       whereValues, prepStatement);
 
     if (stmt.isEmpty() || where.isEmpty() || row < 0 || row >= rowCount()) {
         d->error = QSqlError(QLatin1String("No Fields to update"), QString(),
@@ -629,9 +624,9 @@ bool QSqlTableModel::insertRowIntoTable(const QSqlRecord &values)
     QSqlRecord rec = values;
     emit beforeInsert(rec);
 
-    bool prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
-    QString stmt = d->db.driver()->sqlStatement(QSqlDriver::InsertStatement, d->tableName,
-                                                rec, prepStatement);
+    const bool prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
+    const QString stmt = d->db.driver()->sqlStatement(QSqlDriver::InsertStatement, d->tableName,
+                                                      rec, prepStatement);
 
     if (stmt.isEmpty()) {
         d->error = QSqlError(QLatin1String("No Fields to update"), QString(),
@@ -660,15 +655,15 @@ bool QSqlTableModel::deleteRowFromTable(int row)
     emit beforeDelete(row);
 
     const QSqlRecord whereValues = d->primaryValues(row);
-    bool prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
+    const bool prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
     QString stmt = d->db.driver()->sqlStatement(QSqlDriver::DeleteStatement,
                                                 d->tableName,
                                                 QSqlRecord(),
                                                 prepStatement);
-    QString where = d->db.driver()->sqlStatement(QSqlDriver::WhereStatement,
-                                                 d->tableName,
-                                                 whereValues,
-                                                 prepStatement);
+    const QString where = d->db.driver()->sqlStatement(QSqlDriver::WhereStatement,
+                                                       d->tableName,
+                                                       whereValues,
+                                                       prepStatement);
 
     if (stmt.isEmpty() || where.isEmpty()) {
         d->error = QSqlError(QLatin1String("Unable to delete row"), QString(),
@@ -838,9 +833,8 @@ void QSqlTableModel::revertAll()
     Q_D(QSqlTableModel);
 
     const QList<int> rows(d->cache.keys());
-    for (int i = rows.size() - 1; i >= 0; --i) {
+    for (int i = rows.size() - 1; i >= 0; --i)
         revertRow(rows.value(i));
-    }
 }
 
 /*!
