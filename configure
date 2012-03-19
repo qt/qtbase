@@ -5041,7 +5041,7 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     fi
 
     if [ "$CFG_XCB" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xcb 2>/dev/null; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
             QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
             QMAKE_LIBS_XCB="`$PKG_CONFIG --libs xcb 2>/dev/null`"
         fi
