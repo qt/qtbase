@@ -1770,12 +1770,15 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         writeEndTag(); // <cxxClassDefinition>
 
         enterApiDesc(QString(),title);
+#if 0
+        // To be removed, if really not needed.
         Text brief = nsn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
             writeStartTag(DT_p);
             generateText(brief, nsn, marker);
             writeEndTag(); // </p>
         }
+#endif
         generateStatus(nsn, marker);
         generateThreadSafeness(nsn, marker);
         generateSince(nsn, marker);
@@ -1903,12 +1906,15 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         writeEndTag(); // <cxxClassDefinition>
 
         enterApiDesc(QString(),title);
+#if 0
+        // To be removed, if really not needed.
         Text brief = cn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
             writeStartTag(DT_p);
             generateText(brief, cn, marker);
             writeEndTag(); // </p>
         }
+#endif
         generateStatus(cn, marker);
         generateInherits(cn, marker);
         generateInheritedBy(cn, marker);
@@ -2026,12 +2032,15 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         writeStartTag(DT_cxxClassDetail);
         enterApiDesc(QString(),title);
+#if 0
+        // To be removed, if really not needed.
         Text brief = fn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
             writeStartTag(DT_p);
             generateText(brief, fn, marker);
             writeEndTag(); // </p>
         }
+#endif
         generateStatus(fn, marker);
         generateThreadSafeness(fn, marker);
         generateSince(fn, marker);
@@ -2145,12 +2154,15 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         writeStartTag(DT_cxxClassDetail);
         enterApiDesc(QString(),title);
+#if 0
+        // To be removed, if really not needed.
         Text brief = qcn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
             writeStartTag(DT_p);
             generateText(brief, qcn, marker);
             writeEndTag(); // </p>
         }
+#endif
         generateQmlInstantiates(qcn, marker);
         generateQmlInherits(qcn, marker);
         generateQmlInheritedBy(qcn, marker);
