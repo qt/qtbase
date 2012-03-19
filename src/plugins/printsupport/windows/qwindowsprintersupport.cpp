@@ -87,15 +87,9 @@ QPaintEngine *QWindowsPrinterSupport::createPaintEngine(QPrintEngine *engine, QP
     return static_cast<QWin32PrintEngine *>(engine);
 }
 
-QList<QPrinter::PaperSize> QWindowsPrinterSupport::supportedPaperSizes(const QPrinterInfo &) const
+QList<QPrinter::PaperSize> QWindowsPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
 {
-    QList<QPrinter::PaperSize> returnList;
-    foreach (const QPrinterInfo &info, mPrinterList) {
-        foreach (const QPrinter::PaperSize supportedSize, info.supportedPaperSizes())
-            if (!returnList.contains(supportedSize))
-                returnList.append(supportedSize);
-    }
-    return returnList;
+    return QWin32PrintEngine::supportedPaperSizes(printerInfo);
 }
 
 QList<QPrinterInfo> QWindowsPrinterSupport::availablePrinters()

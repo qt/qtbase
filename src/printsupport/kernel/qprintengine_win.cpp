@@ -1581,6 +1581,26 @@ void QWin32PrintEngine::releaseDC(HDC) const
 
 }
 
+QList<QPrinter::PaperSize> QWin32PrintEngine::supportedPaperSizes(const QPrinterInfo &printerInfo)
+{
+    QList<QPrinter::PaperSize> returnList;
+
+    if (printerInfo.isNull())
+        return returnList;
+
+    DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t *>(printerInfo.printerName().utf16()),
+                                    NULL, DC_PAPERS, NULL, NULL);
+    if ((int)size != -1) {
+        wchar_t *papers = new wchar_t[size];
+        size = DeviceCapabilities(reinterpret_cast<const wchar_t *>(printerInfo.printerName().utf16()),
+                                  NULL, DC_PAPERS, papers, NULL);
+        for (int c = 0; c < (int)size; ++c)
+            returnList.append(mapDevmodePaperSize(papers[c]));
+        delete [] papers;
+    }
+    return returnList;
+}
+
 HGLOBAL *QWin32PrintEnginePrivate::createDevNames()
 {
     int size = sizeof(DEVNAMES)

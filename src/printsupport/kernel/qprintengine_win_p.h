@@ -58,6 +58,7 @@
 #include <QtGui/qpaintengine.h>
 #include <QtPrintSupport/QPrintEngine>
 #include <QtPrintSupport/QPrinter>
+#include <QtPrintSupport/QPrinterInfo>
 #include <private/qpaintengine_alpha_p.h>
 #include <QtCore/qt_windows.h>
 
@@ -104,6 +105,8 @@ public:
 
     HDC getPrinterDC() const { return getDC(); }
     void releasePrinterDC(HDC dc) const { releaseDC(dc); }
+
+    static QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &printerInfo);
 
 private:
     friend class QPrintDialog;
