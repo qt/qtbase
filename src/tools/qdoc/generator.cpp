@@ -1066,13 +1066,10 @@ void Generator::generateStatus(const Node *node, CodeMarker *marker)
                  << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
                  << "This "
                  << typeString(node)
-                 << " is part of the Qt 3 compatibility layer."
+                 << " is part of the Qt compatibility layer."
                  << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD)
                  << " It is provided to keep old source code working. "
-                 << "We strongly advise against "
-                 << "using it in new code. See "
-                 << Atom(Atom::AutoLink, "Porting to Qt 4")
-                 << " for more information."
+                 << "We strongly advise against using it in new code."
                  << Atom::ParaRight;
         }
         break;

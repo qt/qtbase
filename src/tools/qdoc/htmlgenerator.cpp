@@ -1223,7 +1223,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
                                                      CodeMarker::Compat);
     if (!compatLink.isEmpty())
         out() << "<li><a href=\"" << compatLink << "\">"
-              << "Qt 3 support members</a></li>\n";
+              << "Compatibility members</a></li>\n";
 
     out() << "</ul>\n";
 
@@ -1531,7 +1531,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
                                                          CodeMarker::Compat);
         if (!compatLink.isEmpty())
             out() << "<li><a href=\"" << compatLink << "\">"
-                  << "Qt 3 support members</a></li>\n";
+                  << "Compatibility members</a></li>\n";
 
         out() << "</ul>\n";
     }
@@ -2140,8 +2140,8 @@ QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner,
     QString fileName;
 
     if (status == CodeMarker::Compat) {
-        title = "Qt 3 Support Members for " + inner->name();
-        fileName = fileBase(inner) + "-qt3." + fileExtension(inner);
+        title = "Compatibility Members for " + inner->name();
+        fileName = fileBase(inner) + "-compat." + fileExtension(inner);
     }
     else {
         title = "Obsolete Members for " + inner->name();
@@ -2154,8 +2154,7 @@ QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner,
 
     if (status == CodeMarker::Compat) {
         out() << "<p><b>The following class members are part of the "
-                 "<a href=\"qt3support.html\">Qt 3 support layer</a>.</b> "
-                 "They are provided to help you port old code to Qt 4. We advise against "
+                 "Qt compatibility layer.</b> We advise against "
                  "using them in new code.</p>\n";
     }
     else {
@@ -3277,7 +3276,7 @@ QString HtmlGenerator::fileBase(const Node *node) const
     if (!node->isInnerNode()) {
         switch (node->status()) {
         case Node::Compat:
-            result += "-qt3";
+            result += "-compat";
             break;
         case Node::Obsolete:
             result += "-obsolete";
@@ -4702,7 +4701,7 @@ QString HtmlGenerator::fullDocumentLocation(const Node *node, bool subdir)
     if (node->type() != Node::Class && node->type() != Node::Namespace) {
         switch (node->status()) {
         case Node::Compat:
-            parentName.replace(".html", "-qt3.html");
+            parentName.replace(".html", "-compat.html");
             break;
         case Node::Obsolete:
             parentName.replace(".html", "-obsolete.html");
