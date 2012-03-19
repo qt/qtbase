@@ -328,8 +328,7 @@ DitaXmlGenerator::DitaTag DitaXmlGenerator::currentTag()
 /*!
   Write the start tag \c{<apiDesc>}. if \a title is not
   empty, generate a GUID from it and write the GUID as the
-  value of the \e{id} attribute. Then write \a title as
-  the value of the \e {spectitle} attribute.
+  value of the \e{id} attribute.
 
   Then if \a outputclass is not empty, write it as the value
   of the \a outputclass attribute.
@@ -341,7 +340,8 @@ int DitaXmlGenerator::enterApiDesc(const QString& outputclass, const QString& ti
     writeStartTag(DT_apiDesc);
     if (!title.isEmpty()) {
         writeGuidAttribute(title);
-        xmlWriter().writeAttribute("spectitle",title);
+        //Are there cases where the spectitle is required?
+        //xmlWriter().writeAttribute("spectitle",title);
     }
     if (!outputclass.isEmpty())
         xmlWriter().writeAttribute("outputclass",outputclass);
