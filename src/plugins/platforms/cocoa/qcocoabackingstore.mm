@@ -97,4 +97,16 @@ void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
     [static_cast<QNSView *>(m_cocoaWindow->m_contentView) setImage:m_image];
 }
 
+bool QCocoaBackingStore::scroll(const QRegion &area, int dx, int dy)
+{
+    extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
+    QPoint qpoint(dx, dy);
+    const QVector<QRect> qrects = area.rects();
+    for (int i = 0; i < qrects.count(); ++i) {
+        const QRect &qrect = qrects.at(i);
+        qt_scrollRectInImage(*m_image, qrect, qpoint);
+    }
+    return true;
+}
+
 QT_END_NAMESPACE
