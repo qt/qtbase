@@ -1829,7 +1829,7 @@ bool QWidgetTextControlPrivate::sendMouseEventToInputContext(
 #if !defined(QT_NO_IM)
     Q_Q(QWidgetTextControl);
 
-    if (contextWidget && isPreediting()) {
+    if (isPreediting()) {
         QTextLayout *layout = cursor.block().layout();
         int cursorPos = q->hitTest(pos, Qt::FuzzyHit) - cursor.position();
 
@@ -1837,7 +1837,7 @@ bool QWidgetTextControlPrivate::sendMouseEventToInputContext(
             cursorPos = -1;
 
         if (cursorPos >= 0) {
-            if (e->type() == QEvent::MouseButtonRelease)
+            if (eventType == QEvent::MouseButtonRelease)
                 qApp->inputMethod()->invokeAction(QInputMethod::Click, cursorPos);
 
             e->setAccepted(true);
