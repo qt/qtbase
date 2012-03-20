@@ -217,14 +217,14 @@ QLibraryInfo::isDebugBuild()
 static const struct {
     char key[14], value[13];
 } qtConfEntries[] = {
-    { "Prefix", "" },
+    { "Prefix", "." },
     { "Documentation", "doc" },
     { "Headers", "include" },
     { "Libraries", "lib" },
     { "Binaries", "bin" },
     { "Plugins", "plugins" },
     { "Imports", "imports" },
-    { "Data", "" },
+    { "Data", "." },
     { "Translations", "translations" },
     { "Examples", "examples" },
     { "Tests", "tests" },
@@ -232,7 +232,7 @@ static const struct {
     { "Sysroot", "" },
     { "HostPrefix", "" },
     { "HostBinaries", "bin" },
-    { "HostData", "" },
+    { "HostData", "." },
 #endif
 };
 
@@ -309,7 +309,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc)
         }
     }
 
-    if (QDir::isRelativePath(ret)) {
+    if (!ret.isEmpty() && QDir::isRelativePath(ret)) {
         QString baseDir;
 #ifdef QT_BUILD_QMAKE
         if (loc == HostPrefixPath || loc == PrefixPath) {
