@@ -58,8 +58,12 @@ private Q_SLOTS:
     void parseNumbers();
     void parseJson();
     void parseJsonToVariant();
+
     void toByteArray();
     void fromByteArray();
+
+    void jsonObjectInsert();
+    void variantMapInsert();
 };
 
 BenchmarkQtBinaryJson::BenchmarkQtBinaryJson(QObject *parent) : QObject(parent)
@@ -156,6 +160,30 @@ void BenchmarkQtBinaryJson::fromByteArray()
     QBENCHMARK {
         QVariantMap message;
         message = QJsonDocument::fromBinaryData(msg, QJsonDocument::Validate).object().toVariantMap();
+    }
+}
+
+void BenchmarkQtBinaryJson::jsonObjectInsert()
+{
+    QJsonObject object;
+    QString test(QStringLiteral("testString"));
+    QJsonValue value(1.5);
+
+    QBENCHMARK {
+        for (int i = 0; i < 1000; i++)
+            object.insert("testkey_" + i, value);
+    }
+}
+
+void BenchmarkQtBinaryJson::variantMapInsert()
+{
+    QVariantMap object;
+    QString test(QStringLiteral("testString"));
+    QVariant variantValue(1.5);
+
+    QBENCHMARK {
+        for (int i = 0; i < 1000; i++)
+            object.insert("testkey_" + i, variantValue);
     }
 }
 
