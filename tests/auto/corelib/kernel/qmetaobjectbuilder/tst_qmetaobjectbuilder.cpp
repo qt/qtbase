@@ -229,7 +229,7 @@ void tst_QMetaObjectBuilder::method()
     QMetaMethodBuilder method1 = builder.addMethod("foo(const QString&, int)");
     QCOMPARE(method1.signature(), QByteArray("foo(QString,int)"));
     QVERIFY(method1.methodType() == QMetaMethod::Method);
-    QVERIFY(method1.returnType().isEmpty());
+    QCOMPARE(method1.returnType(), QByteArray("void"));
     QCOMPARE(method1.parameterTypes(), QList<QByteArray>() << "QString" << "int");
     QVERIFY(method1.parameterNames().isEmpty());
     QVERIFY(method1.tag().isEmpty());
@@ -354,7 +354,7 @@ void tst_QMetaObjectBuilder::slot()
     QMetaMethodBuilder method1 = builder.addSlot("foo(const QString&, int)");
     QCOMPARE(method1.signature(), QByteArray("foo(QString,int)"));
     QVERIFY(method1.methodType() == QMetaMethod::Slot);
-    QVERIFY(method1.returnType().isEmpty());
+    QCOMPARE(method1.returnType(), QByteArray("void"));
     QCOMPARE(method1.parameterTypes(), QList<QByteArray>() << "QString" << "int");
     QVERIFY(method1.parameterNames().isEmpty());
     QVERIFY(method1.tag().isEmpty());
@@ -367,7 +367,7 @@ void tst_QMetaObjectBuilder::slot()
     QMetaMethodBuilder method2 = builder.addSlot("bar(QString)");
     QCOMPARE(method2.signature(), QByteArray("bar(QString)"));
     QVERIFY(method2.methodType() == QMetaMethod::Slot);
-    QVERIFY(method2.returnType().isEmpty());
+    QCOMPARE(method2.returnType(), QByteArray("void"));
     QCOMPARE(method2.parameterTypes(), QList<QByteArray>() << "QString");
     QVERIFY(method2.parameterNames().isEmpty());
     QVERIFY(method2.tag().isEmpty());
@@ -393,7 +393,7 @@ void tst_QMetaObjectBuilder::signal()
     QMetaMethodBuilder method1 = builder.addSignal("foo(const QString&, int)");
     QCOMPARE(method1.signature(), QByteArray("foo(QString,int)"));
     QVERIFY(method1.methodType() == QMetaMethod::Signal);
-    QVERIFY(method1.returnType().isEmpty());
+    QCOMPARE(method1.returnType(), QByteArray("void"));
     QCOMPARE(method1.parameterTypes(), QList<QByteArray>() << "QString" << "int");
     QVERIFY(method1.parameterNames().isEmpty());
     QVERIFY(method1.tag().isEmpty());
@@ -406,7 +406,7 @@ void tst_QMetaObjectBuilder::signal()
     QMetaMethodBuilder method2 = builder.addSignal("bar(QString)");
     QCOMPARE(method2.signature(), QByteArray("bar(QString)"));
     QVERIFY(method2.methodType() == QMetaMethod::Signal);
-    QVERIFY(method2.returnType().isEmpty());
+    QCOMPARE(method2.returnType(), QByteArray("void"));
     QCOMPARE(method2.parameterTypes(), QList<QByteArray>() << "QString");
     QVERIFY(method2.parameterNames().isEmpty());
     QVERIFY(method2.tag().isEmpty());

@@ -58,10 +58,15 @@ information about a particular change.
   * QMetaType::construct() has been renamed to QMetaType::create().
   * QMetaType::unregisterType() has been removed.
 
-- QMetaMethod::signature() has been renamed to QMetaMethod::methodSignature(),
-  and the return type has been changed to QByteArray. This was done to be able
-  to generate the signature string on demand, rather than always storing it in
-  the meta-data.
+- QMetaMethod:
+  * QMetaMethod::signature() has been renamed to QMetaMethod::methodSignature(),
+    and the return type has been changed to QByteArray. This was done to be able
+    to generate the signature string on demand, rather than always storing it in
+    the meta-data.
+  * QMetaMethod::typeName() no longer returns an empty string when the return
+    type is void; it returns "void". The recommended way of checking whether a
+    method returns void is to compare the return value of QMetaMethod::returnType()
+    to QMetaType::Void.
 
 - QTestLib:
   * The plain-text, xml and lightxml test output formats have been changed to

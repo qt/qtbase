@@ -96,7 +96,7 @@ public:
     QMetaMethodBuilderPrivate
             (QMetaMethod::MethodType _methodType,
              const QByteArray& _signature,
-             const QByteArray& _returnType = QByteArray(),
+             const QByteArray& _returnType = QByteArray("void"),
              QMetaMethod::Access _access = QMetaMethod::Public,
              int _revision = 0)
         : signature(QMetaObject::normalizedSignature(_signature.constData())),
@@ -435,8 +435,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QByteArray& signature)
     \a signature and \a returnType.  Returns an object that can be
     used to adjust the other attributes of the method.  The \a signature
     and \a returnType will be normalized before they are added to
-    the class.  If \a returnType is empty, then it indicates that
-    the method has \c{void} as its return type.
+    the class.
 
     \sa method(), methodCount(), removeMethod(), indexOfMethod()
 */
@@ -507,7 +506,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addSignal(const QByteArray& signature)
 {
     int index = d->methods.size();
     d->methods.append(QMetaMethodBuilderPrivate
-        (QMetaMethod::Signal, signature, QByteArray(), QMetaMethod::Protected));
+        (QMetaMethod::Signal, signature, QByteArray("void"), QMetaMethod::Protected));
     return QMetaMethodBuilder(this, index);
 }
 
@@ -523,7 +522,8 @@ QMetaMethodBuilder QMetaObjectBuilder::addSignal(const QByteArray& signature)
 QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QByteArray& signature)
 {
     int index = d->constructors.size();
-    d->constructors.append(QMetaMethodBuilderPrivate(QMetaMethod::Constructor, signature));
+    d->constructors.append(QMetaMethodBuilderPrivate(QMetaMethod::Constructor, signature,
+                                                     /*returnType=*/QByteArray()));
     return QMetaMethodBuilder(this, -(index + 1));
 }
 

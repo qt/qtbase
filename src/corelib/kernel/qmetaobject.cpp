@@ -1675,15 +1675,8 @@ const char *QMetaMethodPrivate::rawReturnTypeName() const
     uint typeInfo = mobj->d.data[typesDataIndex()];
     if (typeInfo & IsUnresolvedType)
         return rawStringData(mobj, typeInfo & TypeNameIndexMask);
-    else {
-        if (typeInfo == QMetaType::Void) {
-            // QMetaMethod::typeName() is documented to return an empty string
-            // if the return type is void, but QMetaType::typeName() returns
-            // "void".
-            return "";
-        }
+    else
         return QMetaType::typeName(typeInfo);
-    }
 }
 
 int QMetaMethodPrivate::returnType() const
@@ -1907,8 +1900,9 @@ QList<QByteArray> QMetaMethod::parameterNames() const
 
 
 /*!
-    Returns the return type name of this method, or an empty string if the
-    return type is \e void.
+    Returns the return type name of this method.
+
+    \sa returnType(), QMetaType::type()
 */
 const char *QMetaMethod::typeName() const
 {
