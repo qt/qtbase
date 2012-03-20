@@ -186,18 +186,12 @@ void tst_qstandardpaths::testDataLocation()
 {
     // On all platforms, DataLocation should be GenericDataLocation / organization name / app name
     // This allows one app to access the data of another app.
-    {
-        const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-        const QString app = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-        QCOMPARE(base, app);
-    }
+    const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::DataLocation), base + "/tst_qstandardpaths");
     QCoreApplication::instance()->setOrganizationName("Qt");
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::DataLocation), base + "/Qt/tst_qstandardpaths");
     QCoreApplication::instance()->setApplicationName("QtTest");
-    {
-        const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-        const QString app = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-        QCOMPARE(app, base + "/Qt/QtTest");
-    }
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::DataLocation), base + "/Qt/QtTest");
 
 #ifdef Q_XDG_PLATFORM
     setDefaultLocations();

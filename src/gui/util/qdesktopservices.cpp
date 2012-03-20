@@ -287,17 +287,26 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
 
 QString QDesktopServices::storageLocationImpl(StandardLocation type)
 {
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     if (type == DataLocation) {
-        QString xdgDataHome = QLatin1String(qgetenv("XDG_DATA_HOME"));
-        if (xdgDataHome.isEmpty())
-            xdgDataHome = QDir::homePath() + QLatin1String("/.local/share");
-        xdgDataHome += QLatin1String("/data/")
-                    + QCoreApplication::organizationName() + QLatin1Char('/')
-                    + QCoreApplication::applicationName();
-        return xdgDataHome;
-    }
+        // Preserve Qt 4 compatibility:
+        // * QCoreApplication::applicationName() must default to empty
+        // * Unix data location is under the "data/" subdirectory
+        extern Q_CORE_EXPORT QString qt_applicationName_noFallback();
+        const QString compatAppName = qt_applicationName_noFallback();
+        const QString baseDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+        QString result = baseDir;
+        if (!QCoreApplication::organizationName().isEmpty())
+            result += QLatin1Char('/') + QCoreApplication::organizationName();
+        if (!compatAppName.isEmpty())
+            result += QLatin1Char('/') + compatAppName;
+        return result;
+#elif defined(Q_OS_UNIX)
+        return baseDir + QLatin1String("/data/")
+            + QCoreApplication::organizationName() + QLatin1Char('/')
+            + compatAppName;
 #endif
+    }
     return QStandardPaths::writableLocation(static_cast<QStandardPaths::StandardLocation>(type));
 }
 

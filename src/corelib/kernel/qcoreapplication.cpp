@@ -1943,7 +1943,9 @@ QString QCoreApplication::organizationDomain()
     using the empty constructor. This saves having to repeat this
     information each time a QSettings object is created.
 
-    \sa organizationName organizationDomain applicationVersion
+    If not set, the application name defaults to the executable name (since 5.0).
+
+    \sa organizationName organizationDomain applicationVersion applicationFilePath
 */
 void QCoreApplication::setApplicationName(const QString &application)
 {
@@ -1951,6 +1953,15 @@ void QCoreApplication::setApplicationName(const QString &application)
 }
 
 QString QCoreApplication::applicationName()
+{
+    QString appname = coreappdata()->application;
+    if (appname.isEmpty() && QCoreApplication::self)
+        appname = QCoreApplication::self->d_func()->appName();
+    return appname;
+}
+
+// Exported for QDesktopServices (Qt4 behavior compatibility)
+Q_CORE_EXPORT QString qt_applicationName_noFallback()
 {
     return coreappdata()->application;
 }
