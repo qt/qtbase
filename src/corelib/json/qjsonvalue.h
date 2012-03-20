@@ -103,11 +103,13 @@ public:
     inline bool isObject() const { return type() == Object; }
     inline bool isUndefined() const { return type() == Undefined; }
 
-    bool toBool() const;
-    double toDouble() const;
-    QString toString() const;
+    bool toBool(bool defaultValue = false) const;
+    double toDouble(double defaultValue = 0) const;
+    QString toString(const QString &defaultValue = QString()) const;
     QJsonArray toArray() const;
+    QJsonArray toArray(const QJsonArray &defaultValue) const;
     QJsonObject toObject() const;
+    QJsonObject toObject(const QJsonObject &defaultValue) const;
 
     bool operator==(const QJsonValue &other) const;
     bool operator!=(const QJsonValue &other) const;

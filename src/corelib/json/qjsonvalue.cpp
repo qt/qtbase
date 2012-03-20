@@ -369,36 +369,36 @@ QJsonValue::Type QJsonValue::type() const
 /*!
     Converts the value to a bool and returns it.
 
-    If type() is not bool, false will be returned.
+    If type() is not bool, the defaultValue will be returned.
  */
-bool QJsonValue::toBool() const
+bool QJsonValue::toBool(bool defaultValue) const
 {
     if (t != Bool)
-        return false;
+        return defaultValue;
     return b;
 }
 
 /*!
     Converts the value to a double and returns it.
 
-    If type() is not Double, 0. will be returned.
+    If type() is not Double, the defaultValue will be returned.
  */
-double QJsonValue::toDouble() const
+double QJsonValue::toDouble(double defaultValue) const
 {
     if (t != Double)
-        return 0;
+        return defaultValue;
     return dbl;
 }
 
 /*!
     Converts the value to a QString and returns it.
 
-    If type() is not String, a QString() will be returned.
+    If type() is not String, the defaultValue will be returned.
  */
-QString QJsonValue::toString() const
+QString QJsonValue::toString(const QString &defaultValue) const
 {
     if (t != String)
-        return QString();
+        return defaultValue;
     stringData->ref.ref(); // the constructor below doesn't add a ref.
     QStringDataPtr holder = { stringData };
     return QString(holder);
@@ -407,27 +407,51 @@ QString QJsonValue::toString() const
 /*!
     Converts the value to an array and returns it.
 
-    If type() is not Array, a QJsonArray() will be returned.
+    If type() is not Array, the defaultValue will be returned.
  */
-QJsonArray QJsonValue::toArray() const
+QJsonArray QJsonValue::toArray(const QJsonArray &defaultValue) const
 {
     if (!d || t != Array)
-        return QJsonArray();
+        return defaultValue;
 
     return QJsonArray(d, static_cast<QJsonPrivate::Array *>(base));
 }
 
 /*!
+    \overload
+
+    Converts the value to an array and returns it.
+
+    If type() is not Array, a QJsonArray() will be returned.
+ */
+QJsonArray QJsonValue::toArray() const
+{
+    return toArray(QJsonArray());
+}
+
+/*!
     Converts the value to an object and returns it.
 
-    If type() is not Object, a QJsonObject() will be returned.
+    If type() is not Object, the defaultValue will be returned.
+ */
+QJsonObject QJsonValue::toObject(const QJsonObject &defaultValue) const
+{
+    if (!d || t != Object)
+        return defaultValue;
+
+    return QJsonObject(d, static_cast<QJsonPrivate::Object *>(base));
+}
+
+/*!
+    \overload
+
+    Converts the value to an object and returns it.
+
+    If type() is not Object, the QJsonObject() will be returned.
  */
 QJsonObject QJsonValue::toObject() const
 {
-    if (!d || t != Object)
-        return QJsonObject();
-
-    return QJsonObject(d, static_cast<QJsonPrivate::Object *>(base));
+    return toObject(QJsonObject());
 }
 
 /*!
