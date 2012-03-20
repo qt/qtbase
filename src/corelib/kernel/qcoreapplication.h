@@ -134,8 +134,8 @@ public:
 #endif // QT_NO_LIBRARY
 
 #ifndef QT_NO_TRANSLATION
-    static void installTranslator(QTranslator * messageFile);
-    static void removeTranslator(QTranslator * messageFile);
+    static bool installTranslator(QTranslator * messageFile);
+    static bool removeTranslator(QTranslator * messageFile);
 #endif
     enum Encoding { UnicodeUTF8, Latin1, DefaultCodec = Latin1
 #if QT_DEPRECATED_SINCE(5, 0)
