@@ -1,4 +1,4 @@
-QT += xml uilib
+QT += xml
 !isEmpty(QT.script.name): QT += script
 !isEmpty(QT.designer.name): QT += designer
 qt:load(qt)
