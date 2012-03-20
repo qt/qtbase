@@ -1,0 +1,27 @@
+# Load generated qdevice.pri
+exists($$_QMAKE_CACHE_) {
+    # set in default_pre, so it's the first place to check for qdevice.pri
+    DIR = $$fromfile($$_QMAKE_CACHE_, QT_BUILD_TREE)
+    !isEmpty(DIR):DEVICE_PRI = $$DIR/mkspecs/qdevice.pri
+}
+
+isEmpty(DEVICE_PRI) {
+    # OUTDIR environ is set by configure (arch detection) and compile.test
+    DIR = $$(OUTDIR)
+    !isEmpty(DIR):DEVICE_PRI = $$DIR/mkspecs/qdevice.pri
+}
+
+isEmpty(DEVICE_PRI) {
+    DIR = $$[QT_HOST_DATA]
+    !isEmpty(DIR):DEVICE_PRI = $$DIR/mkspecs/qdevice.pri
+}
+
+isEmpty(DEVICE_PRI) {
+    error(Could not locate qdevice.pri)
+}
+
+exists($$DEVICE_PRI):include($$DEVICE_PRI)
+
+unset(DEVICE_PRI)
+unset(DIR)
+
