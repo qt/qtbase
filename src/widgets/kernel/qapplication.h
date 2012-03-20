@@ -111,8 +111,9 @@ public:
     enum ColorSpec { NormalColor=0, CustomColor=1, ManyColor=2 };
     static int colorSpec();
     static void setColorSpec(int);
-    // ### Qt4 compatibility, remove?
-    static inline void setGraphicsSystem(const QString &) {}
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED static inline void setGraphicsSystem(const QString &) {}
+#endif
 
     using QGuiApplication::palette;
     static QPalette palette(const QWidget *);
