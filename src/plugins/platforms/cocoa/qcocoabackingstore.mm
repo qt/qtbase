@@ -47,23 +47,10 @@
 
 QT_BEGIN_NAMESPACE
 
-QRect flipedRect(const QRect &sourceRect,int height)
-{
-    if (!sourceRect.isValid())
-        return QRect();
-    QRect flippedRect = sourceRect;
-    flippedRect.moveTop(height - sourceRect.y());
-    return flippedRect;
-}
-
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
 {
     m_cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
-
-    const QRect geo = window->geometry();
-    NSRect rect = NSMakeRect(geo.x(),geo.y(),geo.width(),geo.height());
-
     m_image = new QImage(window->geometry().size(),QImage::Format_ARGB32_Premultiplied);
 }
 
@@ -84,7 +71,6 @@ void QCocoaBackingStore::flush(QWindow *widget, const QRegion &region, const QPo
     QCocoaAutoReleasePool pool;
 
     QRect geo = region.boundingRect();
-
     NSRect rect = NSMakeRect(geo.x(), geo.y(), geo.width(), geo.height());
     [m_cocoaWindow->m_contentView displayRect:rect];
 }
@@ -92,8 +78,7 @@ void QCocoaBackingStore::flush(QWindow *widget, const QRegion &region, const QPo
 void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
 {
     delete m_image;
-    m_image = new QImage(size,QImage::Format_ARGB32_Premultiplied);
-    NSSize newSize = NSMakeSize(size.width(),size.height());
+    m_image = new QImage(size, QImage::Format_ARGB32_Premultiplied);
     [static_cast<QNSView *>(m_cocoaWindow->m_contentView) setImage:m_image];
 }
 
