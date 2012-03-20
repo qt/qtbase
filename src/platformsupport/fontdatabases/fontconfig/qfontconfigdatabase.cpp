@@ -453,9 +453,8 @@ void QFontconfigDatabase::populateFontDatabase()
     QSupportedWritingSystems ws;
     ws.setSupported(QFontDatabase::Latin);
 
-
-    QString familyQtName = QString::fromLatin1(f->qtname);
     while (f->qtname) {
+        QString familyQtName = QString::fromLatin1(f->qtname);
         registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleNormal,QFont::Unstretched,true,true,0,f->fixed,ws,0);
         registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleItalic,QFont::Unstretched,true,true,0,f->fixed,ws,0);
         registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleOblique,QFont::Unstretched,true,true,0,f->fixed,ws,0);
