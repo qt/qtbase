@@ -506,6 +506,8 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         const QString defaultPlatform = QLatin1String("cocoa");
 #elif defined (Q_OS_WIN)
         const QString defaultPlatform = QLatin1String("windows");
+#elif defined (Q_OS_QNX)
+        const QString defaultPlatform = QLatin1String("qnx");
 #elif !defined (QT_NO_XCB)
         const QString defaultPlatform = QLatin1String("xcb");
 #elif !defined (QT_NO_WAYLAND)
