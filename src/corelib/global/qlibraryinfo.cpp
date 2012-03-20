@@ -295,6 +295,12 @@ QLibraryInfo::rawLocation(LibraryLocation loc)
 
             ret = config->value(key, defaultValue).toString();
 
+#ifdef QT_BUILD_QMAKE
+            if (ret.isEmpty() && loc == HostPrefixPath)
+                ret = config->value(QLatin1String(qtConfEntries[PrefixPath].key),
+                                    QLatin1String(qtConfEntries[PrefixPath].value)).toString();
+#endif
+
             // expand environment variables in the form $(ENVVAR)
             int rep;
             QRegExp reg_var(QLatin1String("\\$\\(.*\\)"));
