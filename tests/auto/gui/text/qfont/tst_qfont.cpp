@@ -630,13 +630,12 @@ void tst_QFont::defaultFamily_data()
     QTest::addColumn<QFont::StyleHint>("styleHint");
     QTest::addColumn<QString>("defaultFamily");
 
-    QTest::newRow("serif") << QFont::Times << "Times";
-    QTest::newRow("courier") << QFont::Courier << "Courier";
-    QTest::newRow("monospace") << QFont::Monospace << "Courier New";
-    QTest::newRow("cursive") << QFont::Cursive << "Comic Sans MS";
-    QTest::newRow("fantasy") << QFont::Fantasy << "Impact";
-    QTest::newRow("old english") << QFont::OldEnglish<< "Old English";
-    QTest::newRow("sans-serif") << QFont::Helvetica << "Helvetica";
+    QTest::newRow("serif") << QFont::Times << "serif";
+    QTest::newRow("monospace") << QFont::Monospace << "monospace";
+    QTest::newRow("sans-serif") << QFont::SansSerif << "sans-serif";
+    QTest::newRow("cursive") << QFont::Cursive << "cursive";
+    QTest::newRow("fantasy") << QFont::Fantasy << "fantasy";
+    QTest::newRow("old english") << QFont::OldEnglish << "Old English";
 }
 
 void tst_QFont::defaultFamily()

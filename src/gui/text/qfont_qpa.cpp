@@ -77,28 +77,29 @@ QString QFont::defaultFamily() const
 {
     QString familyName;
     switch(d->request.styleHint) {
-        case QFont::Times:
-            familyName = QString::fromLatin1("Times");
+        case QFont::SansSerif:
+            familyName = QString::fromLatin1("sans-serif");
             break;
-        case QFont::Courier:
-            familyName = QString::fromLatin1("Courier");
+        case QFont::Serif:
+            familyName = QString::fromLatin1("serif");
             break;
+        case QFont::TypeWriter:
         case QFont::Monospace:
-            familyName = QString::fromLatin1("Courier New");
+            familyName = QString::fromLatin1("monospace");
             break;
         case QFont::Cursive:
-            familyName = QString::fromLatin1("Comic Sans MS");
+            familyName = QString::fromLatin1("cursive");
             break;
         case QFont::Fantasy:
-            familyName = QString::fromLatin1("Impact");
+            familyName = QString::fromLatin1("fantasy");
             break;
         case QFont::Decorative:
-            familyName = QString::fromLatin1("Old English");
+            familyName = QString::fromLatin1("decorative");
             break;
-        case QFont::Helvetica:
         case QFont::System:
         default:
-            familyName = QString::fromLatin1("Helvetica");
+            familyName = QString();
+            break;
     }
 
     return QGuiApplicationPrivate::platformIntegration()->fontDatabase()->resolveFontFamilyAlias(familyName);
