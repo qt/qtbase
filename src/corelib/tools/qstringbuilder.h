@@ -45,6 +45,7 @@
 #if 0
 // syncqt can not handle the templates in this file, and it doesn't need to
 // process them anyway because they are internal.
+#pragma qt_class(QStringBuilder)
 #pragma qt_sync_stop_processing
 #endif
 
