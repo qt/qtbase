@@ -640,12 +640,10 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
             continue;
 
         // check name:
-        QByteArray slotname = mm.methodSignature();
-        int paren = slotname.indexOf('(');
-        if (paren != name.length() || !slotname.startsWith(name))
+        if (mm.name() != name)
             continue;
 
-        int returnType = QMetaType::type(mm.typeName());
+        int returnType = mm.returnType();
         bool isAsync = qDBusCheckAsyncTag(mm.tag());
         bool isScriptable = mm.attributes() & QMetaMethod::Scriptable;
 
@@ -1188,8 +1186,7 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
     QString interface = qDBusInterfaceFromMetaObject(mo);
 
     QMetaMethod mm = mo->method(signalId);
-    QByteArray memberName = mm.methodSignature();
-    memberName.truncate(memberName.indexOf('('));
+    QByteArray memberName = mm.name();
 
     // check if it's scriptable
     bool isScriptable = mm.attributes() & QMetaMethod::Scriptable;

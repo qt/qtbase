@@ -442,11 +442,11 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
         // determine if this a sync or async call
         mode = QDBus::Block;
         const QMetaObject *mo = metaObject();
-        QByteArray match = m.toLatin1() + '(';
+        QByteArray match = m.toLatin1();
 
         for (int i = staticMetaObject.methodCount(); i < mo->methodCount(); ++i) {
             QMetaMethod mm = mo->method(i);
-            if (mm.methodSignature().startsWith(match)) {
+            if (mm.name() == match) {
                 // found a method with the same name as what we're looking for
                 // hopefully, nobody is overloading asynchronous and synchronous methods with
                 // the same name

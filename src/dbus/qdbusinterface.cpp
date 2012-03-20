@@ -300,7 +300,7 @@ int QDBusInterfacePrivate::metacall(QMetaObject::Call c, int id, void **argv)
                 const int *outputTypes = metaObject->outputTypesForMethod(id);
                 int outputTypesCount = *outputTypes++;
 
-                if (*mm.typeName()) {
+                if (mm.returnType() != QMetaType::UnknownType && mm.returnType() != QMetaType::Void) {
                     // this method has a return type
                     if (argv[0] && it != args.constEnd())
                         copyArgument(argv[0], *outputTypes++, *it);

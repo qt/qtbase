@@ -126,8 +126,6 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
     // now add methods:
     for (int i = methodOffset; i < mo->methodCount(); ++i) {
         QMetaMethod mm = mo->method(i);
-        QByteArray signature = mm.methodSignature();
-        int paren = signature.indexOf('(');
 
         bool isSignal;
         if (mm.methodType() == QMetaMethod::Signal)
@@ -147,11 +145,11 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
 
         QString xml = QString::fromLatin1("    <%1 name=\"%2\">\n")
                       .arg(isSignal ? QLatin1String("signal") : QLatin1String("method"))
-                      .arg(QLatin1String(signature.left(paren)));
+                      .arg(QString::fromLatin1(mm.name()));
 
         // check the return type first
-        int typeId = QMetaType::type(mm.typeName());
-        if (typeId) {
+        int typeId = mm.returnType();
+        if (typeId != QMetaType::UnknownType && typeId != QMetaType::Void) {
             const char *typeName = QDBusMetaType::typeToSignature(typeId);
             if (typeName) {
                 xml += QString::fromLatin1("      <arg type=\"%1\" direction=\"out\"/>\n")
@@ -164,7 +162,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
             } else
                 continue;
         }
-        else if (*mm.typeName())
+        else if (typeId == QMetaType::UnknownType)
             continue;           // wasn't a valid type
 
         QList<QByteArray> names = mm.parameterNames();
