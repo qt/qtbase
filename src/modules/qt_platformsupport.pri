@@ -11,6 +11,6 @@ QT.platformsupport.sources = $$QT_MODULE_BASE/src/platformsupport
 QT.platformsupport.libs = $$QT_MODULE_LIB_BASE
 QT.platformsupport.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.platformsupport.imports = $$QT_MODULE_IMPORT_BASE
-QT.platformsupport.depends = core gui
+QT.platformsupport.depends = core gui printsupport
 QT.platformsupport.module_config = staticlib
 QT.platformsupport.DEFINES =
