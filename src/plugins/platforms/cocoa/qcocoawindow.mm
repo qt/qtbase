@@ -83,7 +83,12 @@
 
 - (BOOL)canBecomeKeyWindow
 {
-    return NO;
+    // Most panels can be come the key window. Exceptions are:
+    if (m_cocoaPlatformWindow->window()->windowType() == Qt::ToolTip)
+        return NO;
+    if (m_cocoaPlatformWindow->window()->windowType() == Qt::SplashScreen)
+        return NO;
+    return YES;
 }
 
 @end
@@ -357,6 +362,7 @@ NSWindow * QCocoaWindow::createNSWindow()
                                          defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up
                                                     // before the window is shown and needs a proper window.).
         [window setHasShadow:YES];
+        window->m_cocoaPlatformWindow = this;
         createdWindow = window;
     } else {
         styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
