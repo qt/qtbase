@@ -824,7 +824,7 @@ QString QDate::toString(Qt::DateFormat f) const
     range 0 to 9999. This restriction may apply to locale-aware
     formats as well, depending on the locale settings.
 
-    \sa QDateTime::toString() QTime::toString()
+    \sa QDateTime::toString(), QTime::toString()
 
 */
 QString QDate::toString(const QString& format) const
@@ -836,7 +836,7 @@ QString QDate::toString(const QString& format) const
 #endif //QT_NO_DATESTRING
 
 /*!
-    \fn bool setYMD(int y, int m, int d)
+    \fn bool QDate::setYMD(int y, int m, int d)
 
     \deprecated in 5.0, use setDate() instead.
 
@@ -906,7 +906,7 @@ void QDate::getDate(int *year, int *month, int *day)
     Returns a null date if the current date is invalid or the new date is
     out-of-range.
 
-    \sa addMonths() addYears() daysTo()
+    \sa addMonths(), addYears(), daysTo()
 */
 
 QDate QDate::addDays(qint64 ndays) const
@@ -938,7 +938,7 @@ QDate QDate::addDays(qint64 ndays) const
     resulting month/year, this function will return a date that is the
     latest valid date.
 
-    \sa addDays() addYears()
+    \sa addDays(), addYears()
 */
 
 QDate QDate::addMonths(int nmonths) const
@@ -1029,7 +1029,7 @@ QDate QDate::addYears(int nyears) const
     Returns 0 if either date is invalid.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 0
+    \snippet code/src_corelib_tools_qdatetime.cpp 0
 
     \sa addDays()
 */
@@ -1217,7 +1217,7 @@ QDate QDate::fromString(const QString& s, Qt::DateFormat f)
     of characters that are enclosed in single quotes will also be
     treated as text and will not be used as an expression. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 1
+    \snippet code/src_corelib_tools_qdatetime.cpp 1
 
     If the format is not satisfied, an invalid QDate is returned. The
     expressions that don't expect leading zeroes (d, M) will be
@@ -1227,7 +1227,7 @@ QDate QDate::fromString(const QString& s, Qt::DateFormat f)
     string could have meant January 30 but the M will grab two
     digits, resulting in an invalid date:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 2
+    \snippet code/src_corelib_tools_qdatetime.cpp 2
 
     For any field that is not represented in the format the following
     defaults are used:
@@ -1241,7 +1241,7 @@ QDate QDate::fromString(const QString& s, Qt::DateFormat f)
 
     The following examples demonstrate the default values:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 3
+    \snippet code/src_corelib_tools_qdatetime.cpp 3
 
     \sa QDateTime::fromString(), QTime::fromString(), QDate::toString(),
         QDateTime::toString(), QTime::toString()
@@ -1269,7 +1269,7 @@ QDate QDate::fromString(const QString &string, const QString &format)
     day) is valid; otherwise returns false.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 4
+    \snippet code/src_corelib_tools_qdatetime.cpp 4
 
     \sa isNull(), setDate()
 */
@@ -1300,7 +1300,7 @@ bool QDate::isLeapYear(int y)
     return (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
 }
 
-/*! \fn static QDate QDate::fromJulianDay(int jd)
+/*! \fn static QDate QDate::fromJulianDay(qint64 jd)
 
     Converts the Julian day \a jd to a QDate.
 
@@ -1582,7 +1582,7 @@ QString QTime::toString(Qt::DateFormat format) const
     If the datetime is invalid, an empty string will be returned.
     If \a format is empty, the default format "hh:mm:ss" is used.
 
-    \sa QDate::toString() QDateTime::toString()
+    \sa QDate::toString(), QDateTime::toString()
 */
 QString QTime::toString(const QString& format) const
 {
@@ -1623,7 +1623,7 @@ bool QTime::setHMS(int h, int m, int s, int ms)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 5
+    \snippet code/src_corelib_tools_qdatetime.cpp 5
 
     \sa addMSecs(), secsTo(), QDateTime::addSecs()
 */
@@ -1845,7 +1845,7 @@ QTime QTime::fromString(const QString& s, Qt::DateFormat f)
     of characters that are enclosed in single quotes will also be
     treated as text and not be used as an expression.
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 6
+    \snippet code/src_corelib_tools_qdatetime.cpp 6
 
     If the format is not satisfied an invalid QTime is returned.
     Expressions that do not expect leading zeroes to be given (h, m, s
@@ -1855,15 +1855,15 @@ QTime QTime::fromString(const QString& s, Qt::DateFormat f)
     could have meant 00:07:10, but the m will grab two digits, resulting
     in an invalid time:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 7
+    \snippet code/src_corelib_tools_qdatetime.cpp 7
 
     Any field that is not represented in the format will be set to zero.
     For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 8
+    \snippet code/src_corelib_tools_qdatetime.cpp 8
 
-    \sa QDateTime::fromString() QDate::fromString() QDate::toString()
-    QDateTime::toString() QTime::toString()
+    \sa QDateTime::fromString(), QDate::fromString(), QDate::toString(),
+    QDateTime::toString(), QTime::toString()
 */
 
 QTime QTime::fromString(const QString &string, const QString &format)
@@ -1894,7 +1894,7 @@ QTime QTime::fromString(const QString &string, const QString &format)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 9
+    \snippet code/src_corelib_tools_qdatetime.cpp 9
 */
 
 bool QTime::isValid(int h, int m, int s, int ms)
@@ -1906,7 +1906,7 @@ bool QTime::isValid(int h, int m, int s, int ms)
 /*!
     Sets this time to the current time. This is practical for timing:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 10
+    \snippet code/src_corelib_tools_qdatetime.cpp 10
 
     \sa restart(), elapsed(), currentTime()
 */
@@ -2077,7 +2077,7 @@ int QTime::elapsed() const
     time zone before 1970, even if the system's time zone database
     supports that information.
 
-    \sa QDate QTime QDateTimeEdit
+    \sa QDate, QTime, QDateTimeEdit
 */
 
 /*!
@@ -2432,7 +2432,7 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
     range 0 to 9999. This restriction may apply to locale-aware
     formats as well, depending on the locale settings.
 
-    \sa QDate::toString() QTime::toString() Qt::DateFormat
+    \sa QDate::toString(), QTime::toString(), Qt::DateFormat
 */
 
 QString QDateTime::toString(Qt::DateFormat f) const
@@ -2574,7 +2574,7 @@ QString QDateTime::toString(Qt::DateFormat f) const
 
     If the datetime is invalid, an empty string will be returned.
 
-    \sa QDate::toString() QTime::toString()
+    \sa QDate::toString(), QTime::toString()
 */
 QString QDateTime::toString(const QString& format) const
 {
@@ -2718,7 +2718,7 @@ qint64 QDateTime::daysTo(const QDateTime &other) const
     Returns 0 if either time is invalid.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 11
+    \snippet code/src_corelib_tools_qdatetime.cpp 11
 
     \sa addSecs(), daysTo(), QTime::secsTo()
 */
@@ -3420,7 +3420,7 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
     of characters that are enclosed in singlequotes will also be
     treated as text and not be used as an expression.
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 12
+    \snippet code/src_corelib_tools_qdatetime.cpp 12
 
     If the format is not satisfied an invalid QDateTime is returned.
     The expressions that don't have leading zeroes (d, M, h, m, s, z) will be
@@ -3428,7 +3428,7 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
     put them outside the range and/or leave too few digits for other
     sections.
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 13
+    \snippet code/src_corelib_tools_qdatetime.cpp 13
 
     This could have meant 1 January 00:30.00 but the M will grab
     two digits.
@@ -3448,10 +3448,10 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
 
     For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qdatetime.cpp 14
+    \snippet code/src_corelib_tools_qdatetime.cpp 14
 
-    \sa QDate::fromString() QTime::fromString() QDate::toString()
-    QDateTime::toString() QTime::toString()
+    \sa QDate::fromString(), QTime::fromString(), QDate::toString(),
+    QDateTime::toString(), QTime::toString()
 */
 
 QDateTime QDateTime::fromString(const QString &string, const QString &format)

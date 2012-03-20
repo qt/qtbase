@@ -1511,14 +1511,14 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     model. The code to set up the model and the view, \e without sorting and
     filtering, would look like this:
 
-    \snippet doc/src/snippets/qsortfilterproxymodel-details/main.cpp 1
+    \snippet qsortfilterproxymodel-details/main.cpp 1
 
     To add sorting and filtering support to \c MyItemModel, we need to create
     a QSortFilterProxyModel, call setSourceModel() with the \c MyItemModel as
     argument, and install the QSortFilterProxyModel on the view:
 
-    \snippet doc/src/snippets/qsortfilterproxymodel-details/main.cpp 0
-    \snippet doc/src/snippets/qsortfilterproxymodel-details/main.cpp 2
+    \snippet qsortfilterproxymodel-details/main.cpp 0
+    \snippet qsortfilterproxymodel-details/main.cpp 2
 
     At this point, neither sorting nor filtering is enabled; the original data
     is displayed in the view. Any changes made through the
@@ -1546,7 +1546,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     whether the user can sort the view by clicking the view's horizontal
     header. For example:
 
-    \snippet doc/src/snippets/qsortfilterproxymodel-details/main.cpp 3
+    \snippet qsortfilterproxymodel-details/main.cpp 3
 
     When this feature is on (the default is off), clicking on a header section
     sorts the items according to that column. By clicking repeatedly, the user
@@ -1569,7 +1569,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     QSortFilterProxyModel and reimplementing lessThan(), which is
     used to compare items. For example:
 
-    \snippet examples/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 5
+    \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 5
 
     (This code snippet comes from the
     \l{itemviews/customsortfiltermodel}{Custom Sort/Filter Model}
@@ -1581,7 +1581,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     QSortFilterProxyModel (or on the original model if it implements sort()).
     For example:
 
-    \snippet doc/src/snippets/qsortfilterproxymodel-details/main.cpp 4
+    \snippet qsortfilterproxymodel-details/main.cpp 4
 
     QSortFilterProxyModel can be sorted by column -1, in which case it returns
     to the sort order of the underlying source model.
@@ -1594,7 +1594,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     each item, for a given column. The QRegExp object can be used to match a
     regular expression, a wildcard pattern, or a fixed string. For example:
 
-    \snippet doc/src/snippets/qsortfilterproxymodel-details/main.cpp 5
+    \snippet qsortfilterproxymodel-details/main.cpp 5
 
     For hierarchical models, the filter is applied recursively to all children.
     If a parent item doesn't match the filter, none of its children will be
@@ -1612,7 +1612,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     the \l{QSortFilterProxyModel::filterKeyColumn}{filterKeyColumn} property
     and performs filtering on columns 0, 1, and 2:
 
-    \snippet examples/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 3
+    \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 3
 
     (This code snippet comes from the
     \l{itemviews/customsortfiltermodel}{Custom Sort/Filter Model}

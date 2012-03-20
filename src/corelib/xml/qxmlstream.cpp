@@ -291,7 +291,7 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
 
   A typical loop with QXmlStreamReader looks like this:
 
-  \snippet doc/src/snippets/code/src_corelib_xml_qxmlstream.cpp 0
+  \snippet code/src_corelib_xml_qxmlstream.cpp 0
 
 
   QXmlStreamReader is a well-formed XML 1.0 parser that does \e not
@@ -2900,11 +2900,11 @@ QStringRef QXmlStreamReader::documentEncoding() const
   The following abridged code snippet shows the basic use of the class
   to write formatted XML with indentation:
 
-  \snippet doc/src/snippets/qxmlstreamwriter/main.cpp start stream
+  \snippet qxmlstreamwriter/main.cpp start stream
   \dots
-  \snippet doc/src/snippets/qxmlstreamwriter/main.cpp write element
+  \snippet qxmlstreamwriter/main.cpp write element
   \dots
-  \snippet doc/src/snippets/qxmlstreamwriter/main.cpp finish stream
+  \snippet qxmlstreamwriter/main.cpp finish stream
 
   QXmlStreamWriter takes care of prefixing namespaces, all you have to
   do is specify the \c namespaceUri when writing elements or
@@ -3561,7 +3561,7 @@ void QXmlStreamWriter::writeEmptyElement(const QString &namespaceUri, const QStr
 
 
   This is a convenience function equivalent to:
-  \snippet doc/src/snippets/code/src_corelib_xml_qxmlstream.cpp 1
+  \snippet code/src_corelib_xml_qxmlstream.cpp 1
 
 */
 void QXmlStreamWriter::writeTextElement(const QString &qualifiedName, const QString &text)
@@ -3578,7 +3578,7 @@ void QXmlStreamWriter::writeTextElement(const QString &qualifiedName, const QStr
 
 
   This is a convenience function equivalent to:
-  \snippet doc/src/snippets/code/src_corelib_xml_qxmlstream.cpp 2
+  \snippet code/src_corelib_xml_qxmlstream.cpp 2
 
 */
 void QXmlStreamWriter::writeTextElement(const QString &namespaceUri, const QString &name, const QString &text)

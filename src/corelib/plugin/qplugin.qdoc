@@ -42,7 +42,7 @@
     to the interface class called \a ClassName. The \a Identifier must
     be unique. For example:
 
-    \snippet examples/tools/plugandpaint/interfaces.h 3
+    \snippet tools/plugandpaint/interfaces.h 3
 
     This macro is normally used right after the class definition for
     \a ClassName, in a header file. See the
@@ -51,7 +51,7 @@
     If you want to use Q_DECLARE_INTERFACE with interface classes
     declared in a namespace then you have to make sure the Q_DECLARE_INTERFACE
     is not inside a namespace though. For example:
-    \snippet doc/src/snippets/code/doc_src_qplugin.cpp 0
+    \snippet code/doc_src_qplugin.cpp 0
 
     \sa Q_INTERFACES(), Q_EXPORT_PLUGIN2(), {How to Create Qt Plugins}
 */
@@ -82,7 +82,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qplugin.cpp 1
+    \snippet code/doc_src_qplugin.cpp 1
 
     See the \l{tools/plugandpaint}{Plug & Paint} example for details.
 
@@ -102,14 +102,14 @@
 
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qplugin.cpp 2
+    \snippet code/doc_src_qplugin.cpp 2
 
     Static plugins must also be included by the linker when your
     application is built. For Qt's predefined plugins,
     you can use the \c QTPLUGIN to add
     the required plugins to your build. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qplugin.pro 3
+    \snippet code/doc_src_qplugin.pro 3
 
     \sa {Static Plugins}, {How to Create Qt Plugins}, {Using qmake}
 */

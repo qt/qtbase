@@ -375,7 +375,7 @@ void **QListData::erase(void **xi)
     Here's an example of a QList that stores integers and
     a QList that stores QDate values:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 0
+    \snippet code/src_corelib_tools_qlistdata.cpp 0
 
     Qt includes a QStringList class that inherits QList\<QString\>
     and adds a few convenience functions, such as QStringList::join()
@@ -386,7 +386,7 @@ void **QListData::erase(void **xi)
     empty list. To insert items into the list, you can use
     operator<<():
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 1
+    \snippet code/src_corelib_tools_qlistdata.cpp 1
 
     QList provides these basic functions to add, move, and remove
     items: insert(), replace(), removeAt(), move(), and swap(). In
@@ -398,13 +398,13 @@ void **QListData::erase(void **xi)
     non-const lists, operator[]() returns a reference to the item and
     can be used on the left side of an assignment:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 2
+    \snippet code/src_corelib_tools_qlistdata.cpp 2
 
     Because QList is implemented as an array of pointers, this
     operation is very fast (\l{constant time}). For read-only access,
     an alternative syntax is to use at():
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 3
+    \snippet code/src_corelib_tools_qlistdata.cpp 3
 
     at() can be faster than operator[](), because it never causes a
     \l{deep copy} to occur.
@@ -414,7 +414,7 @@ void **QListData::erase(void **xi)
     and takeLast(). Here's a loop that removes the items from a list
     one at a time and calls \c delete on them:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 4
+    \snippet code/src_corelib_tools_qlistdata.cpp 4
 
     Inserting and removing items at either ends of the list is very
     fast (\l{constant time} in most cases), because QList
@@ -427,7 +427,7 @@ void **QListData::erase(void **xi)
     backward. Both return the index of a matching item if they find
     it; otherwise, they return -1. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 5
+    \snippet code/src_corelib_tools_qlistdata.cpp 5
 
     If you simply want to check whether a list contains a particular
     value, use contains(). If you want to find out how many times a
@@ -652,7 +652,7 @@ void **QListData::erase(void **xi)
     Inserts \a value at the end of the list.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 6
+    \snippet code/src_corelib_tools_qlistdata.cpp 6
 
     This is the same as list.insert(size(), \a value).
 
@@ -680,7 +680,7 @@ void **QListData::erase(void **xi)
     Inserts \a value at the beginning of the list.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 7
+    \snippet code/src_corelib_tools_qlistdata.cpp 7
 
     This is the same as list.insert(0, \a value).
 
@@ -698,7 +698,7 @@ void **QListData::erase(void **xi)
     value is appended to the list.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 8
+    \snippet code/src_corelib_tools_qlistdata.cpp 8
 
     \sa append(), prepend(), replace(), removeAt()
 */
@@ -729,7 +729,7 @@ void **QListData::erase(void **xi)
     number of entries removed.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 9
+    \snippet code/src_corelib_tools_qlistdata.cpp 9
 
     This function requires the value type to have an implementation of
     \c operator==().
@@ -745,7 +745,7 @@ void **QListData::erase(void **xi)
     true on success; otherwise returns false.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 10
+    \snippet code/src_corelib_tools_qlistdata.cpp 10
 
     This function requires the value type to have an implementation of
     \c operator==().
@@ -805,7 +805,7 @@ void **QListData::erase(void **xi)
     Moves the item at index position \a from to index position \a to.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 11
+    \snippet code/src_corelib_tools_qlistdata.cpp 11
 
     This is the same as insert(\a{to}, takeAt(\a{from})).This function
     assumes that both \a from and \a to are at least 0 but less than
@@ -823,7 +823,7 @@ void **QListData::erase(void **xi)
     \a i and \a j are at least 0 and less than size().
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 12
+    \snippet code/src_corelib_tools_qlistdata.cpp 12
 
     \sa move()
 */
@@ -835,7 +835,7 @@ void **QListData::erase(void **xi)
     -1 if no item matched.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 13
+    \snippet code/src_corelib_tools_qlistdata.cpp 13
 
     This function requires the value type to have an implementation of
     \c operator==().
@@ -855,7 +855,7 @@ void **QListData::erase(void **xi)
     Returns -1 if no item matched.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 14
+    \snippet code/src_corelib_tools_qlistdata.cpp 14
 
     This function requires the value type to have an implementation of
     \c operator==().
@@ -1237,14 +1237,14 @@ void **QListData::erase(void **xi)
     start iterating. Here's a typical loop that prints all the items
     stored in a list:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 15
+    \snippet code/src_corelib_tools_qlistdata.cpp 15
 
     Let's see a few examples of things we can do with a
     QList::iterator that we cannot do with a QList::const_iterator.
     Here's an example that increments every value stored in a
     QList\<int\> by 2:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 16
+    \snippet code/src_corelib_tools_qlistdata.cpp 16
 
     Most QList functions accept an integer index rather than an
     iterator. For that reason, iterators are rarely useful in
@@ -1254,7 +1254,7 @@ void **QListData::erase(void **xi)
     For example, here's how to delete all the widgets stored in a
     QList\<QWidget *\>:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 17
+    \snippet code/src_corelib_tools_qlistdata.cpp 17
 
     Multiple iterators can be used on the same list. However, be
     aware that any non-const function call performed on the QList
@@ -1299,7 +1299,7 @@ void **QListData::erase(void **xi)
     on an uninitialized iterator. Use operator=() to assign a value
     to it before using it.
 
-    \sa QList::begin() QList::end()
+    \sa QList::begin(), QList::end()
 */
 
 /*! \fn QList::iterator::iterator(Node *node)
@@ -1319,7 +1319,7 @@ void **QListData::erase(void **xi)
     You can change the value of an item by using operator*() on the
     left side of an assignment, for example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 18
+    \snippet code/src_corelib_tools_qlistdata.cpp 18
 
     \sa operator->()
 */
@@ -1493,7 +1493,7 @@ void **QListData::erase(void **xi)
     QList::insert() before you can start iterating. Here's a typical
     loop that prints all the items stored in a list:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 19
+    \snippet code/src_corelib_tools_qlistdata.cpp 19
 
     Most QList functions accept an integer index rather than an
     iterator. For that reason, iterators are rarely useful in
@@ -1503,7 +1503,7 @@ void **QListData::erase(void **xi)
     For example, here's how to delete all the widgets stored in a
     QList\<QWidget *\>:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 20
+    \snippet code/src_corelib_tools_qlistdata.cpp 20
 
     Multiple iterators can be used on the same list. However, be
     aware that any non-const function call performed on the QList
@@ -1522,7 +1522,7 @@ void **QListData::erase(void **xi)
     on an uninitialized iterator. Use operator=() to assign a value
     to it before using it.
 
-    \sa QList::constBegin() QList::constEnd()
+    \sa QList::constBegin(), QList::constEnd()
 */
 
 /*! \typedef QList::const_iterator::iterator_category
@@ -1738,7 +1738,7 @@ void **QListData::erase(void **xi)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 21
+    \snippet code/src_corelib_tools_qlistdata.cpp 21
 
     \sa fromSet(), toVector(), QVector::toList()
 */
@@ -1749,7 +1749,7 @@ void **QListData::erase(void **xi)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 22
+    \snippet code/src_corelib_tools_qlistdata.cpp 22
 
     \sa toSet(), fromVector(), QVector::fromList()
 */
@@ -1761,7 +1761,7 @@ void **QListData::erase(void **xi)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 23
+    \snippet code/src_corelib_tools_qlistdata.cpp 23
 
     \sa fromVector(), toSet(), QSet::toList(), qSort()
 */
@@ -1774,7 +1774,7 @@ void **QListData::erase(void **xi)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 24
+    \snippet code/src_corelib_tools_qlistdata.cpp 24
 
     \sa toVector(), fromSet(), QSet::fromList()
 */
@@ -1786,7 +1786,7 @@ void **QListData::erase(void **xi)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 25
+    \snippet code/src_corelib_tools_qlistdata.cpp 25
 
     \sa toStdList(), QVector::fromStdVector()
 */
@@ -1796,7 +1796,7 @@ void **QListData::erase(void **xi)
     Returns a std::list object with the data contained in this QList.
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlistdata.cpp 26
+    \snippet code/src_corelib_tools_qlistdata.cpp 26
 
     \sa fromStdList(), QVector::toStdVector()
 */

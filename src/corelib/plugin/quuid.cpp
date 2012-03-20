@@ -337,7 +337,7 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
     b8.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_plugin_quuid.cpp 0
+    \snippet code/src_corelib_plugin_quuid.cpp 0
 */
 
 #ifndef QT_NO_QUUID_STRING
@@ -425,7 +425,7 @@ QUuid::QUuid(const QByteArray &text)
 
 /*!
   \since 5.0
-  \fn QUuid::createUuidV3()
+  \fn QUuid QUuid::createUuidV3(const QUuid &ns, const QByteArray &baseData);
 
   This functions returns a new UUID with variant QUuid::DCE and version QUuid::MD5.
   \a ns is the namespace and \a name is the name as described by RFC 4122.
@@ -435,7 +435,7 @@ QUuid::QUuid(const QByteArray &text)
 
 /*!
   \since 5.0
-  \fn QUuid::createUuidV5()
+  \fn QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData);
 
   This functions returns a new UUID with variant QUuid::DCE and version QUuid::SHA1.
   \a ns is the namespace and \a name is the name as described by RFC 4122.

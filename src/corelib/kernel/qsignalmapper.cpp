@@ -91,14 +91,14 @@ public:
     signal, \c clicked(), which is emitted with the text of the button
     that was clicked:
 
-    \snippet doc/src/snippets/qsignalmapper/buttonwidget.h 0
-    \snippet doc/src/snippets/qsignalmapper/buttonwidget.h 1
+    \snippet qsignalmapper/buttonwidget.h 0
+    \snippet qsignalmapper/buttonwidget.h 1
 
     The only function that we need to implement is the constructor:
 
-    \snippet doc/src/snippets/qsignalmapper/buttonwidget.cpp 0
-    \snippet doc/src/snippets/qsignalmapper/buttonwidget.cpp 1
-    \snippet doc/src/snippets/qsignalmapper/buttonwidget.cpp 2
+    \snippet qsignalmapper/buttonwidget.cpp 0
+    \snippet qsignalmapper/buttonwidget.cpp 1
+    \snippet qsignalmapper/buttonwidget.cpp 2
 
     A list of texts is passed to the constructor. A signal mapper is
     constructed and for each text in the list a QPushButton is

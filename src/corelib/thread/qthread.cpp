@@ -184,7 +184,7 @@ QThreadPrivate::~QThreadPrivate()
     below). To create your own threads, subclass QThread and
     reimplement run(). For example:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qthread.cpp 0
+    \snippet code/src_corelib_thread_qthread.cpp 0
 
     This will create a QTcpSocket in the thread and then execute the
     thread's event loop. Use the start() method to begin execution.
@@ -493,7 +493,7 @@ int QThread::exec()
     is not running then the next call to QThread::exec() will also return
     immediately.
 
-    \sa quit() QEventLoop
+    \sa quit(), QEventLoop
 */
 void QThread::exit(int returnCode)
 {
@@ -515,7 +515,7 @@ void QThread::exit(int returnCode)
     This function does nothing if the thread does not have an event
     loop.
 
-    \sa exit() QEventLoop
+    \sa exit(), QEventLoop
 */
 void QThread::quit()
 { exit(); }
@@ -529,7 +529,7 @@ void QThread::quit()
     work. Returning from this method will end the execution of the
     thread.
 
-    \sa start() wait()
+    \sa start(), wait()
 */
 void QThread::run()
 {
@@ -553,7 +553,7 @@ void QThread::run()
     (such as on Linux, see http://linux.die.net/man/2/sched_setscheduler
     for more details).
 
-    \sa Priority priority() start()
+    \sa Priority, priority(), start()
 */
 
 /*!
@@ -562,7 +562,7 @@ void QThread::run()
     Returns the priority for a running thread.  If the thread is not
     running, this function returns \c InheritPriority.
 
-    \sa Priority setPriority() start()
+    \sa Priority, setPriority(), start()
 */
 QThread::Priority QThread::priority() const
 {

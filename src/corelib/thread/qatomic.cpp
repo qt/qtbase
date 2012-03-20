@@ -68,7 +68,7 @@
     functions allow you to implement your own implicitly shared
     classes.
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qatomic.cpp 0
+    \snippet code/src_corelib_thread_qatomic.cpp 0
 
     \section2 Memory ordering
 
@@ -104,7 +104,7 @@
     nothing and return false. This operation equates to the following
     code:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qatomic.cpp 1
+    \snippet code/src_corelib_thread_qatomic.cpp 1
 
     There are 4 test-and-set functions: testAndSetRelaxed(),
     testAndSetAcquire(), testAndSetRelease(), and
@@ -117,7 +117,7 @@
     QAtomicInt and then assign a new value, returning the original
     value. This operation equates to the following code:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qatomic.cpp 2
+    \snippet code/src_corelib_thread_qatomic.cpp 2
 
     There are 4 fetch-and-store functions: fetchAndStoreRelaxed(),
     fetchAndStoreAcquire(), fetchAndStoreRelease(), and
@@ -131,7 +131,7 @@
     returning the original value. This operation equates to the
     following code:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qatomic.cpp 3
+    \snippet code/src_corelib_thread_qatomic.cpp 3
 
     There are 4 fetch-and-add functions: fetchAndAddRelaxed(),
     fetchAndAddAcquire(), fetchAndAddRelease(), and
@@ -215,39 +215,10 @@
     Constructs a copy of \a other.
 */
 
-/*! \fn QAtomicInt &QAtomicInt::operator=(int value)
-
-    Assigns the \a value to this QAtomicInt and returns a reference to
-    this QAtomicInt.
-*/
-
 /*! \fn QAtomicInt &QAtomicInt::operator=(const QAtomicInt &other)
 
     Assigns \a other to this QAtomicInt and returns a reference to
     this QAtomicInt.
-*/
-
-/*! \fn bool QAtomicInt::operator==(int value) const
-
-    Returns true if the \a value is equal to the value in this
-    QAtomicInt; otherwise returns false.
-*/
-
-/*! \fn bool QAtomicInt::operator!=(int value) const
-
-    Returns true if the value of this QAtomicInt is not equal to \a
-    value; otherwise returns false.
-*/
-
-/*! \fn bool QAtomicInt::operator!() const
-
-    Returns true is the value of this QAtomicInt is zero; otherwise
-    returns false.
-*/
-
-/*! \fn QAtomicInt::operator int() const
-
-    Returns the value stored by the QAtomicInt object as an integer.
 */
 
 /*! \fn bool QAtomicInt::isReferenceCountingNative()
@@ -679,7 +650,7 @@
     these functions do nothing and return false. This operation
     equates to the following code:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qatomic.cpp 4
+    \snippet code/src_corelib_thread_qatomic.cpp 4
 
     There are 4 test-and-set functions: testAndSetRelaxed(),
     testAndSetAcquire(), testAndSetRelease(), and
@@ -692,7 +663,7 @@
     QAtomicPointer and then assign a new value, returning the original
     value. This operation equates to the following code:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qatomic.cpp 5
+    \snippet code/src_corelib_thread_qatomic.cpp 5
 
     There are 4 fetch-and-store functions: fetchAndStoreRelaxed(),
     fetchAndStoreAcquire(), fetchAndStoreRelease(), and
@@ -706,7 +677,7 @@
     returning the original value. This operation equates to the
     following code:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qatomic.cpp 6
+    \snippet code/src_corelib_thread_qatomic.cpp 6
 
     There are 4 fetch-and-add functions: fetchAndAddRelaxed(),
     fetchAndAddAcquire(), fetchAndAddRelease(), and
@@ -783,44 +754,10 @@
     Constructs a copy of \a other.
 */
 
-/*! \fn QAtomicPointer<T> &QAtomicPointer::operator=(T *value)
-
-    Assigns the \a value to this QAtomicPointer and returns a
-    reference to this QAtomicPointer.
-*/
-
 /*! \fn QAtomicPointer<T> &QAtomicPointer::operator=(const QAtomicPointer<T> &other)
 
     Assigns \a other to this QAtomicPointer and returns a reference to
     this QAtomicPointer.
-*/
-
-/*! \fn bool QAtomicPointer::operator==(T *value) const
-
-    Returns true if the \a value is equal to the value in this
-    QAtomicPointer; otherwise returns false.
-*/
-
-/*! \fn bool QAtomicPointer::operator!=(T *value) const
-
-    Returns true if the value of this QAtomicPointer is not equal to
-    \a value; otherwise returns false.
-*/
-
-/*! \fn bool QAtomicPointer::operator!() const
-
-    Returns true is the current value of this QAtomicPointer is zero;
-    otherwise returns false.
-*/
-
-/*! \fn QAtomicPointer::operator T *() const
-
-    Returns the current pointer value stored by this QAtomicPointer
-    object.
-*/
-
-/*! \fn T *QAtomicPointer::operator->() const
-
 */
 
 /*! \fn bool QAtomicPointer::isTestAndSetNative()

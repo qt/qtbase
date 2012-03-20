@@ -58,13 +58,13 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     generating text, QTextStream supports formatting options for field
     padding and alignment, and formatting of numbers. Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 0
+    \snippet code/src_corelib_io_qtextstream.cpp 0
 
     It's also common to use QTextStream to read console input and write
     console output. QTextStream is locale aware, and will automatically decode
     standard input using the correct codec. Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 1
+    \snippet code/src_corelib_io_qtextstream.cpp 1
 
     Besides using QTextStream's constructors, you can also set the
     device or string QTextStream operates on by calling setDevice() or
@@ -117,7 +117,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     the integer base, thereby disabling the automatic detection, by
     calling setIntegerBase(). Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 2
+    \snippet code/src_corelib_io_qtextstream.cpp 2
 
     QTextStream supports many formatting options for generating text.
     You can set the field width and pad character by calling
@@ -154,7 +154,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     \row    \li \c left            \li Same as setFieldAlignment(AlignLeft).
     \row    \li \c right           \li Same as setFieldAlignment(AlignRight).
     \row    \li \c center          \li Same as setFieldAlignment(AlignCenter).
-    \row    \li \c endl            \li Same as operator<<('\n') and flush().
+    \row    \li \c endl            \li Same as operator<<('\\n') and flush().
     \row    \li \c flush           \li Same as flush().
     \row    \li \c reset           \li Same as reset().
     \row    \li \c ws              \li Same as skipWhiteSpace().
@@ -1081,7 +1081,7 @@ QTextStream::QTextStream(QByteArray *array, QIODevice::OpenMode openMode)
     This constructor is convenient for working on constant
     strings. Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 3
+    \snippet code/src_corelib_io_qtextstream.cpp 3
 */
 QTextStream::QTextStream(const QByteArray &array, QIODevice::OpenMode openMode)
     : d_ptr(new QTextStreamPrivate(this))
@@ -1111,7 +1111,7 @@ QTextStream::QTextStream(const QByteArray &array, QIODevice::OpenMode openMode)
     This constructor is useful for working directly with the common
     FILE based input and output streams: stdin, stdout and stderr. Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 4
+    \snippet code/src_corelib_io_qtextstream.cpp 4
 */
 
 QTextStream::QTextStream(FILE *fileHandle, QIODevice::OpenMode openMode)
@@ -1404,11 +1404,11 @@ QTextStream::FieldAlignment QTextStream::fieldAlignment() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 5
+    \snippet code/src_corelib_io_qtextstream.cpp 5
 
     The string \c s contains:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 6
+    \snippet code/src_corelib_io_qtextstream.cpp 6
 
     \sa padChar(), setFieldWidth()
 */
@@ -1601,7 +1601,7 @@ void QTextStream::resetStatus()
     Subsequent calls to setStatus() are ignored until resetStatus()
     is called.
 
-    \sa Status status() resetStatus()
+    \sa Status, status(), resetStatus()
 */
 void QTextStream::setStatus(Status status)
 {
@@ -2023,7 +2023,7 @@ bool QTextStreamPrivate::getReal(double *f)
     reference to the QTextStream, so several operators can be
     nested. Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 7
+    \snippet code/src_corelib_io_qtextstream.cpp 7
 
     Whitespace is \e not skipped.
 */
@@ -2241,8 +2241,8 @@ QTextStream &QTextStream::operator>>(QByteArray &array)
 /*!
     \overload
 
-    Stores the word in \a c, terminated by a '\0' character. If no word is
-    available, only the '\0' character is stored.
+    Stores the word in \a c, terminated by a '\\0' character. If no word is
+    available, only the '\\0' character is stored.
 
     Warning: Although convenient, this operator is dangerous and must
     be used with care. QTextStream assumes that \a c points to a
@@ -2561,11 +2561,11 @@ QTextStream &QTextStream::operator<<(const QByteArray &array)
     string is assumed to be in ISO-8859-1 encoding. This operator
     is convenient when working with constant string data. Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 8
+    \snippet code/src_corelib_io_qtextstream.cpp 8
 
     Warning: QTextStream assumes that \a string points to a string of
-    text, terminated by a '\0' character. If there is no terminating
-    '\0' character, your application may crash.
+    text, terminated by a '\\0' character. If there is no terminating
+    '\\0' character, your application may crash.
 */
 QTextStream &QTextStream::operator<<(const char *string)
 {
@@ -2865,13 +2865,13 @@ QTextStream &center(QTextStream &stream)
 /*!
     \relates QTextStream
 
-    Writes '\n' to the \a stream and flushes the stream.
+    Writes '\\n' to the \a stream and flushes the stream.
 
     Equivalent to
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 9
+    \snippet code/src_corelib_io_qtextstream.cpp 9
 
-    Note: On Windows, all '\n' characters are written as '\r\n' if
+    Note: On Windows, all '\\n' characters are written as '\\r\\n' if
     QTextStream's device or string is opened using the QIODevice::Text flag.
 
     \sa flush(), reset(), {QTextStream manipulators}
@@ -2993,7 +2993,7 @@ void QTextStream::setCodec(QTextCodec *codec)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 10
+    \snippet code/src_corelib_io_qtextstream.cpp 10
 
     \sa QTextCodec::codecForName(), setLocale()
 */

@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 /*!
     Constructs an empty JSON object
 
-    \sa isEmpty
+    \sa isEmpty()
  */
 QJsonObject::QJsonObject()
     : d(0), o(0)
@@ -139,7 +139,7 @@ QJsonObject &QJsonObject::operator =(const QJsonObject &other)
     The keys in \a map will be used as the keys in the JSON object,
     and the QVariant values will be converted to JSON values.
 
-    \sa toVariantMap, QJsonValue::fromVariant
+    \sa toVariantMap(), QJsonValue::fromVariant()
  */
 QJsonObject QJsonObject::fromVariantMap(const QVariantMap &map)
 {
@@ -200,7 +200,7 @@ int QJsonObject::size() const
 /*!
     Returns \c true if the object is empty. This is the same as size() == 0.
 
-    \sa size
+    \sa size()
  */
 bool QJsonObject::isEmpty() const
 {
@@ -215,7 +215,7 @@ bool QJsonObject::isEmpty() const
 
     The returned QJsonValue is \c Undefined, if the key does not exist.
 
-    \sa setValue, QJsonValue, QJsonValue::isUndefined
+    \sa QJsonValue, QJsonValue::isUndefined()
  */
 QJsonValue QJsonObject::value(const QString &key) const
 {
@@ -236,7 +236,7 @@ QJsonValue QJsonObject::value(const QString &key) const
 
     The returned QJsonValue is \c Undefined, if the key does not exist.
 
-    \sa value, setValue, QJsonValue, QJsonValue::isUndefined
+    \sa value(), QJsonValue, QJsonValue::isUndefined()
  */
 QJsonValue QJsonObject::operator [](const QString &key) const
 {
@@ -252,7 +252,7 @@ QJsonValue QJsonObject::operator [](const QString &key) const
     the assignment will apply to the character in the QJsonArray of QJsonObject
     from which you got the reference.
 
-    \sa setValue, value
+    \sa value()
  */
 QJsonValueRef QJsonObject::operator [](const QString &key)
 {
@@ -277,7 +277,7 @@ QJsonValueRef QJsonObject::operator [](const QString &key)
     If the value is QJsonValue::Undefined, it will cause the key to get removed
     from the object. The returned iterator will then point to end()
 
-    \sa remove, take, QJsonObject::iterator, end
+    \sa remove(), take(), QJsonObject::iterator, end()
  */
 QJsonObject::iterator QJsonObject::insert(const QString &key, const QJsonValue &value)
 {
@@ -320,7 +320,7 @@ QJsonObject::iterator QJsonObject::insert(const QString &key, const QJsonValue &
 /*!
     Removes \a key from the object.
 
-    \sa insert, take
+    \sa insert(), take()
  */
 void QJsonObject::remove(const QString &key)
 {
@@ -346,7 +346,7 @@ void QJsonObject::remove(const QString &key)
     If \a key was not contained in the object, the returned QJsonValue
     is Undefined.
 
-    \sa insert, remove, QJsonValue
+    \sa insert(), remove(), QJsonValue
  */
 QJsonValue QJsonObject::take(const QString &key)
 {
@@ -370,7 +370,7 @@ QJsonValue QJsonObject::take(const QString &key)
 /*!
     Returns \c true if the object contains key \a key.
 
-    \sa insert, remove, take
+    \sa insert(), remove(), take()
  */
 bool QJsonObject::contains(const QString &key) const
 {
@@ -455,7 +455,7 @@ QJsonObject::iterator QJsonObject::find(const QString &key)
     return iterator(this, index);
 }
 
-/*! \fn QJsonObject::const_iterator QJsonObject::find(const Key &key) const
+/*! \fn QJsonObject::const_iterator QJsonObject::find(const QString &key) const
 
     \overload
 */
@@ -541,6 +541,10 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 */
 
 /*! \class QJsonObject::iterator
+    \ingroup json
+    \reentrant
+    \since 5.0
+
     \brief The QJsonObject::iterator class provides an STL-style non-const iterator for QJsonObject.
 
     QJsonObject::iterator allows you to iterate over a QJsonObject
@@ -591,7 +595,7 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
     called on an uninitialized iterator. Use operator=() to assign a
     value to it before using it.
 
-    \sa QJsonObject::begin() QJsonObject::end()
+    \sa QJsonObject::begin(), QJsonObject::end()
 */
 
 /*! \fn QString QJsonObject::iterator::key() const
@@ -729,7 +733,8 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
     \sa operator+=(), operator-()
 */
 
-/*! \class QJsonObject::const_iterator
+/*!
+    \class QJsonObject::const_iterator
     \brief The QJsonObject::const_iterator class provides an STL-style const iterator for QJsonObject.
 
     QJsonObject::const_iterator allows you to iterate over a QJsonObject.
@@ -780,7 +785,7 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
     called on an uninitialized iterator. Use operator=() to assign a
     value to it before using it.
 
-    \sa QJsonObject::constBegin() QJsonObject::constEnd()
+    \sa QJsonObject::constBegin(), QJsonObject::constEnd()
 */
 
 /*! \fn QJsonObject::const_iterator::const_iterator(const iterator &other)
@@ -986,17 +991,6 @@ void QJsonObject::setValueAt(int i, const QJsonValue &val)
 
     Qt-style synonym for QJsonObject::const_iterator.
 */
-
-
-/*! \class QJsonObject::iterator
-    \ingroup json
-    \reentrant
-    \since 5.0
-
-    \brief The QJsonDocument::iterator class provides a way to iterate over q QJsonObject
-
-
- */
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QJsonObject &o)

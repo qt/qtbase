@@ -61,12 +61,12 @@ QT_BEGIN_NAMESPACE
 
     Consider this function which does heap allocations, and have various exit points:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qscopedpointer.cpp 0
+    \snippet code/src_corelib_tools_qscopedpointer.cpp 0
 
     It's encumbered by the manual delete calls. With QScopedPointer, the code
     can be simplified to:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qscopedpointer.cpp 1
+    \snippet code/src_corelib_tools_qscopedpointer.cpp 1
 
     The code the compiler generates for QScopedPointer is the same as when
     writing it manually. Code that makes use of \a delete are candidates for
@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
     The const qualification on a regular C++ pointer can also be expressed with
     a QScopedPointer:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qscopedpointer.cpp 2
+    \snippet code/src_corelib_tools_qscopedpointer.cpp 2
 
     \section1 Custom cleanup handlers
 
@@ -99,7 +99,7 @@ QT_BEGIN_NAMESPACE
     You can pass your own classes as handlers, provided that they have a public
     static function \c{void cleanup(T *pointer)}.
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qscopedpointer.cpp 5
+    \snippet code/src_corelib_tools_qscopedpointer.cpp 5
 
     \section1 Forward Declared Pointers
 
@@ -111,7 +111,7 @@ QT_BEGIN_NAMESPACE
     points to a forward declared class must have non-inline constructors,
     destructors and assignment operators:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qscopedpointer.cpp 4
+    \snippet code/src_corelib_tools_qscopedpointer.cpp 4
 
     Otherwise, the compiler output a warning about not being able to destruct
     \c MyPrivateClass.
@@ -168,7 +168,7 @@ QT_BEGIN_NAMESPACE
     Returns \c true if this object is not \c null. This function is suitable
     for use in \tt if-constructs, like:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qscopedpointer.cpp 3
+    \snippet code/src_corelib_tools_qscopedpointer.cpp 3
 
     \sa isNull()
 */

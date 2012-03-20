@@ -257,7 +257,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     For example, if your write a widget that accepts URL drags, you
     would end up writing code like this:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmimedata.cpp 0
+    \snippet code/src_corelib_kernel_qmimedata.cpp 0
 
     There are three approaches for storing custom data in a QMimeData
     object:
@@ -266,7 +266,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     \li  Custom data can be stored directly in a QMimeData object as a
         QByteArray using setData(). For example:
 
-        \snippet doc/src/snippets/code/src_corelib_kernel_qmimedata.cpp 1
+        \snippet code/src_corelib_kernel_qmimedata.cpp 1
 
     \li  We can subclass QMimeData and reimplement hasFormat(),
         formats(), and retrieveData().
@@ -276,7 +276,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
         it, and use a qobject_cast() in the receiver's drop event
         handler. For example:
 
-        \snippet doc/src/snippets/code/src_corelib_kernel_qmimedata.cpp 2
+        \snippet code/src_corelib_kernel_qmimedata.cpp 2
     \endlist
 
     \section1 Platform-Specific MIME Types
@@ -286,11 +286,11 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     indicate that they represent data in non-standard formats.
     The formats will take the following form:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmimedata.cpp 3
+    \snippet code/src_corelib_kernel_qmimedata.cpp 3
 
     The following are examples of custom MIME types:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmimedata.cpp 4
+    \snippet code/src_corelib_kernel_qmimedata.cpp 4
 
     The \c value declaration of each format describes the way in which the
     data is encoded.
@@ -458,7 +458,7 @@ bool QMimeData::hasHtml() const
     library, whereas QImage belongs to \l QtGui. To convert the
     QVariant to a QImage, simply use qvariant_cast(). For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmimedata.cpp 5
+    \snippet code/src_corelib_kernel_qmimedata.cpp 5
 
     \sa hasImage()
 */
@@ -475,7 +475,7 @@ QVariant QMimeData::imageData() const
     library, whereas QImage belongs to \l QtGui. The conversion
     from QImage to QVariant is implicit. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmimedata.cpp 6
+    \snippet code/src_corelib_kernel_qmimedata.cpp 6
 
     \sa hasImage(), setData()
 */
@@ -505,7 +505,7 @@ bool QMimeData::hasImage() const
     library, whereas QColor belongs to \l QtGui. To convert the
     QVariant to a QColor, simply use qvariant_cast(). For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmimedata.cpp 7
+    \snippet code/src_corelib_kernel_qmimedata.cpp 7
 
     \sa hasColor(), setColorData(), data()
 */

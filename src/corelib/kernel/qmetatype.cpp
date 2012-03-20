@@ -125,16 +125,16 @@ struct DefinedTypesFilter {
 
     This example shows a typical use case of Q_DECLARE_METATYPE():
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 0
+    \snippet code/src_corelib_kernel_qmetatype.cpp 0
 
     If \c MyStruct is in a namespace, the Q_DECLARE_METATYPE() macro
     has to be outside the namespace:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 1
+    \snippet code/src_corelib_kernel_qmetatype.cpp 1
 
     Since \c{MyStruct} is now known to QMetaType, it can be used in QVariant:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 2
+    \snippet code/src_corelib_kernel_qmetatype.cpp 2
 
     \sa qRegisterMetaType()
 */
@@ -220,21 +220,13 @@ struct DefinedTypesFilter {
     \value User  Base value for user types
     \value UnknownType This is an invalid type id. It is returned from QMetaType for types that are not registered
 
-    \omitvalue FirstGuiType
-    \omitvalue FirstWidgetsType
-    \omitvalue LastCoreType
-    \omitvalue LastGuiType
-    \omitvalue LastWidgetsType
-    \omitvalue QReal
-    \omitvalue HighestInternalId
-
     Additional types can be registered using Q_DECLARE_METATYPE().
 
     \sa type(), typeName()
 */
 
 /*!
-    \enum QMetaType::TypeFlags
+    \enum QMetaType::TypeFlag
 
     The enum describes attributes of a type supported by QMetaType.
 
@@ -265,7 +257,7 @@ struct DefinedTypesFilter {
     The following code allocates and destructs an instance of
     \c{MyClass}:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 3
+    \snippet code/src_corelib_kernel_qmetatype.cpp 3
 
     If we want the stream operators \c operator<<() and \c
     operator>>() to work on QVariant objects that store custom types,
@@ -1486,12 +1478,12 @@ QMetaType::TypeFlags QMetaType::typeFlags(int type)
 
     This example registers the class \c{MyClass}:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 4
+    \snippet code/src_corelib_kernel_qmetatype.cpp 4
 
     This function is useful to register typedefs so they can be used
     by QMetaProperty, or in QueuedConnections
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 9
+    \snippet code/src_corelib_kernel_qmetatype.cpp 9
 
     \sa qRegisterMetaTypeStreamOperators(), QMetaType::isRegistered(),
         Q_DECLARE_METATYPE()
@@ -1509,11 +1501,11 @@ QMetaType::TypeFlags QMetaType::typeFlags(int type)
     QMetaType::save(). These functions are used when streaming a
     QVariant.
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 5
+    \snippet code/src_corelib_kernel_qmetatype.cpp 5
 
     The stream operators should have the following signatures:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 6
+    \snippet code/src_corelib_kernel_qmetatype.cpp 6
 
     \sa qRegisterMetaType(), QMetaType::isRegistered(), Q_DECLARE_METATYPE()
 */
@@ -1548,7 +1540,7 @@ QMetaType::TypeFlags QMetaType::typeFlags(int type)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 7
+    \snippet code/src_corelib_kernel_qmetatype.cpp 7
 
     To use the type \c T in QVariant, using Q_DECLARE_METATYPE() is
     sufficient. To use the type \c T in queued signal and slot connections,
@@ -1574,7 +1566,7 @@ QMetaType::TypeFlags QMetaType::typeFlags(int type)
 
     Typical usage:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 8
+    \snippet code/src_corelib_kernel_qmetatype.cpp 8
 
     QMetaType::type() returns the same ID as qMetaTypeId(), but does
     a lookup at runtime based on the name of the type.

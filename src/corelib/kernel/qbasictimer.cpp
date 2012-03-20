@@ -92,7 +92,7 @@ QT_BEGIN_NAMESPACE
     Returns true if the timer is running and has not been stopped; otherwise
     returns false.
 
-    \sa start() stop()
+    \sa start(), stop()
 */
 
 /*!
@@ -112,7 +112,7 @@ QT_BEGIN_NAMESPACE
 
     The given \a object will receive timer events.
 
-    \sa stop() isActive() QObject::timerEvent() Qt::CoarseTimer
+    \sa stop(), isActive(), QObject::timerEvent(), Qt::CoarseTimer
  */
 void QBasicTimer::start(int msec, QObject *obj)
 {
@@ -139,7 +139,7 @@ void QBasicTimer::start(int msec, QObject *obj)
 
     The given \a object will receive timer events.
 
-    \sa stop() isActive() QObject::timerEvent() Qt::TimerType
+    \sa stop(), isActive(), QObject::timerEvent(), Qt::TimerType
  */
 void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
 {
@@ -160,7 +160,7 @@ void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
 /*!
     Stops the timer.
 
-    \sa start() isActive()
+    \sa start(), isActive()
 */
 void QBasicTimer::stop()
 {

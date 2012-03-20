@@ -176,7 +176,7 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
 
  Returns a QJsonDocument representing the data.
 
- \sa rawData fromBinaryData isNull DataValidation
+ \sa rawData, fromBinaryData, isNull, DataValidation
  */
 QJsonDocument QJsonDocument::fromRawData(const char *data, int size, DataValidation validation)
 {
@@ -220,7 +220,7 @@ const char *QJsonDocument::rawData(int *size) const
  By default the data is validated. If the \a data is not valid, the method returns
  a null document.
 
- \sa toBinaryData fromRawData isNull DataValidation
+ \sa toBinaryData, fromRawData, isNull, DataValidation
  */
 QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidation validation)
 {
@@ -361,7 +361,7 @@ QByteArray QJsonDocument::toBinaryData() const
 /*!
     Returns true if the document contains an array.
 
-    \sa array() isObject()
+    \sa array(), isObject()
  */
 bool QJsonDocument::isArray() const
 {
@@ -375,7 +375,7 @@ bool QJsonDocument::isArray() const
 /*!
     Returns true if the document contains an object.
 
-    \sa object() isArray()
+    \sa object(), isArray()
  */
 bool QJsonDocument::isObject() const
 {
@@ -392,7 +392,7 @@ bool QJsonDocument::isObject() const
     Returns an empty object if the document contains an
     array.
 
-    \sa isObject array setObject
+    \sa isObject, array, setObject
  */
 QJsonObject QJsonDocument::object() const
 {
@@ -410,7 +410,7 @@ QJsonObject QJsonDocument::object() const
     Returns an empty array if the document contains an
     object.
 
-    \sa isArray object setArray
+    \sa isArray, object, setArray
  */
 QJsonArray QJsonDocument::array() const
 {
@@ -425,7 +425,7 @@ QJsonArray QJsonDocument::array() const
 /*!
     Sets \a object as the main object of this document.
 
-    \sa setArray object
+    \sa setArray, object
  */
 void QJsonDocument::setObject(const QJsonObject &object)
 {
@@ -452,7 +452,7 @@ void QJsonDocument::setObject(const QJsonObject &object)
 /*!
     Sets \a array as the main object of this document.
 
-    \sa setObject array
+    \sa setObject, array
  */
 void QJsonDocument::setArray(const QJsonArray &array)
 {

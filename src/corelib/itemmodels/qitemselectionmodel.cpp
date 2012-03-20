@@ -347,13 +347,13 @@ QModelIndexList QItemSelectionRange::indexes() const
     a selection that contains a range of items from the given \c model,
     beginning at the \c topLeft, and ending at the \c bottomRight.
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qitemselectionmodel.cpp 0
+    \snippet code/src_gui_itemviews_qitemselectionmodel.cpp 0
 
     An empty item selection can be constructed, and later populated as
     required. So, if the model is going to be unavailable when we construct
     the item selection, we can rewrite the above code in the following way:
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qitemselectionmodel.cpp 1
+    \snippet code/src_gui_itemviews_qitemselectionmodel.cpp 1
 
     QItemSelection saves memory, and avoids unnecessary work, by working with
     selection ranges rather than recording the model item index for each
@@ -1005,7 +1005,7 @@ void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::
 
     Note that this signal will not be emitted when the item model is reset.
 
-    \sa currentIndex() setCurrentIndex() selectionChanged()
+    \sa currentIndex(), setCurrentIndex(), selectionChanged()
 */
 
 /*!
@@ -1016,7 +1016,7 @@ void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::
 
     Note that this signal will not be emitted when the item model is reset.
 
-    \sa currentChanged() currentRowChanged() currentIndex() setCurrentIndex()
+    \sa currentChanged(), currentRowChanged(), currentIndex(), setCurrentIndex()
 */
 
 /*!
@@ -1027,7 +1027,7 @@ void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::
 
     Note that this signal will not be emitted when the item model is reset.
 
-    \sa currentChanged() currentColumnChanged() currentIndex() setCurrentIndex()
+    \sa currentChanged(), currentColumnChanged(), currentIndex(), setCurrentIndex()
 */
 
 /*!
@@ -1040,7 +1040,7 @@ void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::
     Note the that the current index changes independently from the selection.
     Also note that this signal will not be emitted when the item model is reset.
 
-    \sa select() currentChanged()
+    \sa select(), currentChanged()
 */
 
 /*!

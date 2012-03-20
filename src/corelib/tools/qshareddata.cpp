@@ -99,7 +99,7 @@ QT_BEGIN_NAMESPACE
     implicitly shared \c Employee class. In the header file we define the
     two classes \c Employee and \c EmployeeData.
 
-    \snippet doc/src/snippets/sharedemployee/employee.h 0
+    \snippet sharedemployee/employee.h 0
 
     In class \c Employee, note the single data member, a \e {d pointer}
     of type \c {QSharedDataPointer<EmployeeData>}. All accesses of
@@ -121,14 +121,14 @@ QT_BEGIN_NAMESPACE
     straightforward. Both create a new instance of \c EmployeeData
     and assign it to the \e{d pointer} .
 
-    \snippet doc/src/snippets/sharedemployee/employee.h 1
+    \snippet sharedemployee/employee.h 1
     \codeline
-    \snippet doc/src/snippets/sharedemployee/employee.h 2
+    \snippet sharedemployee/employee.h 2
 
     Note that class \c Employee also has a trivial copy constructor
     defined, which is not strictly required in this case.
 
-    \snippet doc/src/snippets/sharedemployee/employee.h 7
+    \snippet sharedemployee/employee.h 7
 
     The copy constructor is not strictly required here, because class \c
     EmployeeData is included in the same file as class \c Employee
@@ -162,9 +162,9 @@ QT_BEGIN_NAMESPACE
     detach() to ensure that the function operates on its own copy of the
     data.
 
-    \snippet doc/src/snippets/sharedemployee/employee.h 3
+    \snippet sharedemployee/employee.h 3
     \codeline
-    \snippet doc/src/snippets/sharedemployee/employee.h 4
+    \snippet sharedemployee/employee.h 4
 
     Note that if detach() is called more than once in a member function
     due to multiple dereferences of the \e {d pointer}, detach() will
@@ -180,9 +180,9 @@ QT_BEGIN_NAMESPACE
     In \c Employee's \e const member functions, dereferencing the \e {d
     pointer} does \e not cause detach() to be called.
 
-    \snippet doc/src/snippets/sharedemployee/employee.h 5
+    \snippet sharedemployee/employee.h 5
     \codeline
-    \snippet doc/src/snippets/sharedemployee/employee.h 6
+    \snippet sharedemployee/employee.h 6
 
     Notice that there is no need to implement a copy constructor or an
     assignment operator for the \c Employee class, because the copy
@@ -199,7 +199,7 @@ QT_BEGIN_NAMESPACE
     Consider a simple example that creates two instances of the
     implicitly shared \c Employee class.
 
-    \snippet doc/src/snippets/sharedemployee/main.cpp 0
+    \snippet sharedemployee/main.cpp 0
 
     After the second employee e2 is created and e1 is assigned to it,
     both \c e1 and \c e2 refer to Albrecht Durer, employee 1001. Both \c

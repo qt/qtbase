@@ -70,7 +70,7 @@ bool QElapsedTimer::isMonotonic()
     Starts this timer. Once started, a timer value can be checked with elapsed() or msecsSinceReference().
 
     Normally, a timer is started just before a lengthy operation, such as:
-    \snippet doc/src/snippets/qelapsedtimer/main.cpp 0
+    \snippet qelapsedtimer/main.cpp 0
 
     Also, starting a timer makes it valid again.
 
@@ -91,7 +91,7 @@ void QElapsedTimer::start()
     parameter to a slow operation (for example, an iteration count) so that
     this operation takes at least 250 milliseconds:
 
-    \snippet doc/src/snippets/qelapsedtimer/main.cpp 3
+    \snippet qelapsedtimer/main.cpp 3
 
     \sa start(), invalidate(), elapsed()
 */

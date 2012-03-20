@@ -60,14 +60,14 @@
     a particular value. If you need that functionality, you can use
     qFill():
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 0
+    \snippet code/doc_src_qalgorithms.cpp 0
 
     qFill() takes a begin iterator, an end iterator, and a value.
     In the example above, we pass \c list.begin() and \c list.end()
     as the begin and end iterators, but this doesn't have to be
     the case:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 1
+    \snippet code/doc_src_qalgorithms.cpp 1
 
     Different algorithms can have different requirements for the
     iterators they accept. For example, qFill() accepts two 
@@ -98,13 +98,13 @@
     name_table array and return the corresponding Unicode value from
     the \c value_table if the entity is recognized:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 2
+    \snippet code/doc_src_qalgorithms.cpp 2
 
     This kind of code is for advanced users only; for most
     applications, a QMap- or QHash-based approach would work just as
     well:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 3
+    \snippet code/doc_src_qalgorithms.cpp 3
 
     \section1 Types of Iterators
 
@@ -185,7 +185,7 @@
     position \a begin2 + 1; and so on.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 4
+    \snippet code/doc_src_qalgorithms.cpp 4
 
     \sa qCopyBackward(), {input iterators}, {output iterators}
 */
@@ -201,7 +201,7 @@
     at position \a end2 - 2; and so on.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 5
+    \snippet code/doc_src_qalgorithms.cpp 5
 
     \sa qCopy(), {bidirectional iterators}
 */
@@ -214,7 +214,7 @@
     items compare equal; otherwise returns false.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 6
+    \snippet code/doc_src_qalgorithms.cpp 6
 
     This function requires the item type (in the example above,
     QString) to implement \c operator==().
@@ -228,7 +228,7 @@
     Fills the range [\a begin, \a end) with \a value.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 7
+    \snippet code/doc_src_qalgorithms.cpp 7
 
     \sa qCopy(), {forward iterators}
 */
@@ -249,7 +249,7 @@
     value isn't found.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 8
+    \snippet code/doc_src_qalgorithms.cpp 8
 
     This function requires the item type (in the example above,
     QString) to implement \c operator==().
@@ -278,7 +278,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 9
+    \snippet code/doc_src_qalgorithms.cpp 9
 
     This function requires the item type (in the example above,
     \c int) to implement \c operator==().
@@ -302,7 +302,7 @@ of \a value in the variable passed as a reference in argument \a n.
     Exchanges the values of variables \a var1 and \a var2.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 10
+    \snippet code/doc_src_qalgorithms.cpp 10
 */
 
 /*! \fn void qSort(RandomAccessIterator begin, RandomAccessIterator end)
@@ -312,7 +312,7 @@ of \a value in the variable passed as a reference in argument \a n.
     using the quicksort algorithm.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 11
+    \snippet code/doc_src_qalgorithms.cpp 11
 
     The sort algorithm is efficient on large data sets. It operates
     in \l {linear-logarithmic time}, O(\e{n} log \e{n}).
@@ -338,13 +338,13 @@ of \a value in the variable passed as a reference in argument \a n.
     For example, here's how to sort the strings in a QStringList
     in case-insensitive alphabetical order:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 12
+    \snippet code/doc_src_qalgorithms.cpp 12
 
     To sort values in reverse order, pass
     \l{qGreater()}{qGreater<T>()} as the \a lessThan parameter. For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 13
+    \snippet code/doc_src_qalgorithms.cpp 13
 
     If neither of the two items is "less than" the other, the items are
     taken to be equal. It is then undefined which one of the two
@@ -356,7 +356,7 @@ of \a value in the variable passed as a reference in argument \a n.
     following code shows how to sort a list of strings case
     insensitively using QMap:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 14
+    \snippet code/doc_src_qalgorithms.cpp 14
 
     \sa QMap
 */
@@ -382,7 +382,7 @@ of \a value in the variable passed as a reference in argument \a n.
     property is often useful when sorting user-visible data.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 15
+    \snippet code/doc_src_qalgorithms.cpp 15
 
     The sort algorithm is efficient on large data sets. It operates
     in \l {linear-logarithmic time}, O(\e{n} log \e{n}).
@@ -405,7 +405,7 @@ of \a value in the variable passed as a reference in argument \a n.
     For example, here's how to sort the strings in a QStringList
     in case-insensitive alphabetical order:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 16
+    \snippet code/doc_src_qalgorithms.cpp 16
     
     Note that earlier versions of Qt allowed using a lessThan function that took its
     arguments by non-const reference. From 4.3 and on this is no longer possible,
@@ -415,7 +415,7 @@ of \a value in the variable passed as a reference in argument \a n.
     \l{qGreater()}{qGreater<T>()} as the \a lessThan parameter. For
     example:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 17
+    \snippet code/doc_src_qalgorithms.cpp 17
 
     If neither of the two items is "less than" the other, the items are
     taken to be equal. The item that appeared before the other in the
@@ -444,7 +444,7 @@ of \a value in the variable passed as a reference in argument \a n.
     ascending order; see qSort().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 18
+    \snippet code/doc_src_qalgorithms.cpp 18
 
     This function requires the item type (in the example above,
     \c{int}) to implement \c operator<().
@@ -452,7 +452,7 @@ of \a value in the variable passed as a reference in argument \a n.
     qLowerBound() can be used in conjunction with qUpperBound() to
     iterate over all occurrences of the same value:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 19
+    \snippet code/doc_src_qalgorithms.cpp 19
 
     \sa qUpperBound(), qBinaryFind()
 */
@@ -494,7 +494,7 @@ of \a value in the variable passed as a reference in argument \a n.
     ascending order; see qSort().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 20
+    \snippet code/doc_src_qalgorithms.cpp 20
 
     This function requires the item type (in the example above,
     \c{int}) to implement \c operator<().
@@ -502,7 +502,7 @@ of \a value in the variable passed as a reference in argument \a n.
     qUpperBound() can be used in conjunction with qLowerBound() to
     iterate over all occurrences of the same value:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 21
+    \snippet code/doc_src_qalgorithms.cpp 21
 
     \sa qLowerBound(), qBinaryFind()
 */
@@ -545,7 +545,7 @@ of \a value in the variable passed as a reference in argument \a n.
     finer control.
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 22
+    \snippet code/doc_src_qalgorithms.cpp 22
 
     This function requires the item type (in the example above,
     QString) to implement \c operator<().
@@ -587,7 +587,7 @@ of \a value in the variable passed as a reference in argument \a n.
     example, \c{QWidget *}).
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 23
+    \snippet code/doc_src_qalgorithms.cpp 23
 
     Notice that qDeleteAll() doesn't remove the items from the
     container; it merely calls \c delete on them. In the example
@@ -618,7 +618,7 @@ of \a value in the variable passed as a reference in argument \a n.
 
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 24
+    \snippet code/doc_src_qalgorithms.cpp 24
 
     \sa {qGreater()}{qGreater<T>()}
 */
@@ -631,7 +631,7 @@ of \a value in the variable passed as a reference in argument \a n.
 
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qalgorithms.cpp 25
+    \snippet code/doc_src_qalgorithms.cpp 25
 
     \sa {qLess()}{qLess<T>()}
 */

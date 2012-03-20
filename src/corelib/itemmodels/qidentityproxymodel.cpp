@@ -102,7 +102,7 @@ class QIdentityProxyModelPrivate : public QAbstractProxyModelPrivate
 
     This also provides a way to change the data in the case where a source model is supplied by a third party which can not be modified.
 
-    \snippet doc/src/snippets/code/src_gui_itemviews_qidentityproxymodel.cpp 0
+    \snippet code/src_gui_itemviews_qidentityproxymodel.cpp 0
 
     \sa QAbstractProxyModel, {Model/View Programming}, QAbstractItemModel
 

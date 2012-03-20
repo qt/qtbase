@@ -500,13 +500,13 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     \sa constBegin(), end()
 */
 
-/*! \fn void QJsonArray::push_back(const T &value)
+/*! \fn void QJsonArray::push_back(const QJsonValue &value)
 
     This function is provided for STL compatibility. It is equivalent
     to \l{QJsonArray::append()}{append(\a value)}.
 */
 
-/*! \fn void QJsonArray::push_front(const T &value)
+/*! \fn void QJsonArray::push_front(const QJsonValue &value)
 
     This function is provided for STL compatibility. It is equivalent
     to \l{QJsonArray::prepend()}{prepend(\a value)}.
@@ -589,12 +589,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     on an uninitialized iterator. Use operator=() to assign a value
     to it before using it.
 
-    \sa QJsonArray::begin() QJsonArray::end()
-*/
-
-/*! \fn QJsonArray::iterator::iterator(const iterator &other)
-
-    Constructs a copy of \a other.
+    \sa QJsonArray::begin(), QJsonArray::end()
 */
 
 /*! \fn QJsonValueRef QJsonArray::iterator::operator*() const
@@ -791,7 +786,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     on an uninitialized iterator. Use operator=() to assign a value
     to it before using it.
 
-    \sa QJsonArray::constBegin() QJsonArray::constEnd()
+    \sa QJsonArray::constBegin(), QJsonArray::constEnd()
 */
 
 /*! \typedef QJsonArray::const_iterator::iterator_category

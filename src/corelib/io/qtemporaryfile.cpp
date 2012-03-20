@@ -466,7 +466,7 @@ static QString defaultTemplateName()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtemporaryfile.cpp 0
+    \snippet code/src_corelib_io_qtemporaryfile.cpp 0
 
     Reopening a QTemporaryFile after calling close() is safe. For as long as
     the QTemporaryFile object itself is not destroyed, the unique temporary

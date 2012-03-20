@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
     height integers, or from a QPoint and a QSize.  The following code
     creates two identical rectangles.
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qrect.cpp 0
+    \snippet code/src_corelib_tools_qrect.cpp 0
 
     There is a third constructor that creates a QRect using the
     top-left and bottom-right coordinates, but we recommend that you
@@ -1243,7 +1243,7 @@ QDebug operator<<(QDebug dbg, const QRect &r) {
     height integers, or from a QPoint and a QSize.  The following code
     creates two identical rectangles.
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qrect.cpp 1
+    \snippet code/src_corelib_tools_qrect.cpp 1
 
     There is also a third constructor creating a QRectF from a QRect,
     and a corresponding toRect() function that returns a QRect object
@@ -1791,7 +1791,7 @@ QRectF QRectF::normalized() const
     \a y1), and the coordinates of its bottom-right corner to (\a x2,
     \a y2).
 
-    \sa getCoords() setRect()
+    \sa getCoords(), setRect()
 */
 
 /*!

@@ -165,7 +165,7 @@ public:
     This is a helper for the assignment operators of implicitly
     shared classes. Your assignment operator should look like this:
 
-    \snippet doc/src/snippets/code/src.corelib.thread.qatomic.h 0
+    \snippet code/src.corelib.thread.qatomic.h 0
 */
 template <typename T>
 inline void qAtomicAssign(T *&d, T *x)
@@ -184,7 +184,7 @@ inline void qAtomicAssign(T *&d, T *x)
     the members and sets the refcount to 1. After that, your detach
     function should look like this:
 
-    \snippet doc/src/snippets/code/src.corelib.thread.qatomic.h 1
+    \snippet code/src.corelib.thread.qatomic.h 1
 */
 template <typename T>
 inline void qAtomicDetach(T *&d)

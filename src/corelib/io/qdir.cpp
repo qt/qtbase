@@ -358,14 +358,14 @@ inline void QDirPrivate::initFileEngine()
 
     Examples of absolute paths:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 0
+    \snippet code/src_corelib_io_qdir.cpp 0
 
     On Windows, the second example above will be translated to
     \c{C:\Documents and Settings} when used to access files.
 
     Examples of relative paths:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 1
+    \snippet code/src_corelib_io_qdir.cpp 1
 
     You can use the isRelative() or isAbsolute() functions to check if
     a QDir is using a relative or an absolute file path. Call
@@ -382,7 +382,7 @@ inline void QDirPrivate::initFileEngine()
     the location of the directory. However, it can also return "." if
     the QDir represents the current directory.
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 2
+    \snippet code/src_corelib_io_qdir.cpp 2
 
     The path for a directory can also be changed with the cd() and cdUp()
     functions, both of which operate like familiar shell commands.
@@ -418,7 +418,7 @@ inline void QDirPrivate::initFileEngine()
     file or directory. Neither of these functions checks for the
     existence of files or directory; they only construct paths.
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 3
+    \snippet code/src_corelib_io_qdir.cpp 3
 
     Files can be removed by using the remove() function. Directories
     cannot be removed in the same way as files; use rmdir() to remove
@@ -490,19 +490,19 @@ inline void QDirPrivate::initFileEngine()
 
     Check if a directory exists:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 4
+    \snippet code/src_corelib_io_qdir.cpp 4
 
     (We could also use the static convenience function
     QFile::exists().)
 
     Traversing directories and reading a file:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 5
+    \snippet code/src_corelib_io_qdir.cpp 5
 
     A program that lists all the files in the current directory
     (excluding symbolic links), sorted by size, smallest first:
 
-    \snippet doc/src/snippets/qdir-listfiles/main.cpp 0
+    \snippet qdir-listfiles/main.cpp 0
 
     \sa QFileInfo, QFile, QFileDialog, QApplication::applicationDirPath(), {Find Files Example}
 */
@@ -630,7 +630,7 @@ QString QDir::absolutePath() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 6
+    \snippet code/src_corelib_io_qdir.cpp 6
 
     \sa path(), absolutePath(), exists(), cleanPath(), dirName(),
         absoluteFilePath()
@@ -669,7 +669,7 @@ QString QDir::dirName() const
     be relative. Redundant multiple separators or "." and ".."
     directories in \a fileName are not removed (see cleanPath()).
 
-    \sa dirName() absoluteFilePath(), isRelative(), canonicalPath()
+    \sa dirName(), absoluteFilePath(), isRelative(), canonicalPath()
 */
 QString QDir::filePath(const QString &fileName) const
 {
@@ -692,7 +692,7 @@ QString QDir::filePath(const QString &fileName) const
     exists(). Redundant multiple separators or "." and ".."
     directories in \a fileName are not removed (see cleanPath()).
 
-    \sa relativeFilePath() filePath() canonicalPath()
+    \sa relativeFilePath(), filePath(), canonicalPath()
 */
 QString QDir::absoluteFilePath(const QString &fileName) const
 {
@@ -711,9 +711,9 @@ QString QDir::absoluteFilePath(const QString &fileName) const
 /*!
     Returns the path to \a fileName relative to the directory.
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 7
+    \snippet code/src_corelib_io_qdir.cpp 7
 
-    \sa absoluteFilePath() filePath() canonicalPath()
+    \sa absoluteFilePath(), filePath(), canonicalPath()
 */
 QString QDir::relativeFilePath(const QString &fileName) const
 {
@@ -941,7 +941,7 @@ QStringList QDir::nameFilters() const
     to ensure that only files with extensions typically used for C++
     source files are listed:
 
-    \snippet doc/src/snippets/qdir-namefilters/main.cpp 0
+    \snippet qdir-namefilters/main.cpp 0
 
     \sa nameFilters(), setFilter()
 */
@@ -988,7 +988,7 @@ void QDir::addResourceSearchPath(const QString &path)
     Qt uses this search path to locate files with a known prefix. The search
     path entries are tested in order, starting with the first entry.
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 8
+    \snippet code/src_corelib_io_qdir.cpp 8
 
     File name prefix must be at least 2 characters long to avoid conflicts with
     Windows drive letters.
@@ -1146,7 +1146,7 @@ void QDir::setFilter(Filters filters)
 /*!
     Returns the value set by setSorting()
 
-    \sa setSorting() SortFlag
+    \sa setSorting(), SortFlag
 */
 QDir::SortFlags QDir::sorting() const
 {
@@ -1190,7 +1190,7 @@ QDir::SortFlags QDir::sorting() const
     The \a sort is specified by OR-ing values from the enum
     \l{QDir::SortFlag}.
 
-    \sa sorting() SortFlag
+    \sa sorting(), SortFlag
 */
 void QDir::setSorting(SortFlags sort)
 {
@@ -1561,7 +1561,7 @@ bool QDir::exists() const
     this function returns false. If you want to test for this use
     canonicalPath(), e.g.
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 9
+    \snippet code/src_corelib_io_qdir.cpp 9
 
     \sa root(), rootPath()
 */
@@ -1578,7 +1578,7 @@ bool QDir::isRoot() const
     Returns true if the directory's path is absolute; otherwise
     returns false. See isAbsolutePath().
 
-    \sa isRelative() makeAbsolute() cleanPath()
+    \sa isRelative(), makeAbsolute(), cleanPath()
 */
 
 /*!
@@ -1587,7 +1587,7 @@ bool QDir::isRoot() const
     Returns true if \a path is absolute; returns false if it is
     relative.
 
-    \sa isAbsolute() isRelativePath() makeAbsolute() cleanPath()
+    \sa isAbsolute(), isRelativePath(), makeAbsolute(), cleanPath()
 */
 
 /*!
@@ -1595,7 +1595,7 @@ bool QDir::isRoot() const
     false. (Under Unix a path is relative if it does not start with a
     "/").
 
-    \sa makeAbsolute() isAbsolute() isAbsolutePath() cleanPath()
+    \sa makeAbsolute(), isAbsolute(), isAbsolutePath(), cleanPath()
 */
 bool QDir::isRelative() const
 {
@@ -1610,7 +1610,7 @@ bool QDir::isRelative() const
     absolute nothing happens. Returns true if the conversion
     succeeded; otherwise returns false.
 
-    \sa isAbsolute() isAbsolutePath() isRelative() cleanPath()
+    \sa isAbsolute(), isAbsolutePath(), isRelative(), cleanPath()
 */
 bool QDir::makeAbsolute()
 {
@@ -1639,7 +1639,7 @@ bool QDir::makeAbsolute()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 10
+    \snippet code/src_corelib_io_qdir.cpp 10
 */
 bool QDir::operator==(const QDir &dir) const
 {
@@ -1718,7 +1718,7 @@ QDir &QDir::operator=(const QString &path)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 11
+    \snippet code/src_corelib_io_qdir.cpp 11
 */
 
 /*!
@@ -1873,7 +1873,7 @@ QString QDir::currentPath()
     Under Windows this function will return the directory of the
     current user's profile. Typically, this is:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 12
+    \snippet code/src_corelib_io_qdir.cpp 12
 
     Use the toNativeSeparators() function to convert the separators to
     the ones that are appropriate for the underlying operating system.
@@ -1966,7 +1966,7 @@ QString QDir::rootPath()
     patterns in the list of \a filters; otherwise returns false. The
     matching is case insensitive.
 
-    \sa {QRegExp wildcard matching}, QRegExp::exactMatch() entryList() entryInfoList()
+    \sa {QRegExp wildcard matching}, QRegExp::exactMatch(), entryList(), entryInfoList()
 */
 bool QDir::match(const QStringList &filters, const QString &fileName)
 {
@@ -1984,7 +1984,7 @@ bool QDir::match(const QStringList &filters, const QString &fileName)
     contain multiple patterns separated by spaces or semicolons.
     The matching is case insensitive.
 
-    \sa {QRegExp wildcard matching}, QRegExp::exactMatch() entryList() entryInfoList()
+    \sa {QRegExp wildcard matching}, QRegExp::exactMatch(), entryList(), entryInfoList()
 */
 bool QDir::match(const QString &filter, const QString &fileName)
 {
@@ -2001,7 +2001,7 @@ bool QDir::match(const QString &filter, const QString &fileName)
     For example, "./local" becomes "local", "local/../bin" becomes
     "bin" and "/local/usr/../bin" becomes "/local/bin".
 
-    \sa absolutePath() canonicalPath()
+    \sa absolutePath(), canonicalPath()
 */
 QString QDir::cleanPath(const QString &path)
 {
@@ -2129,7 +2129,7 @@ QString QDir::cleanPath(const QString &path)
     Returns true if \a path is relative; returns false if it is
     absolute.
 
-    \sa isRelative() isAbsolutePath() makeAbsolute()
+    \sa isRelative(), isAbsolutePath(), makeAbsolute()
 */
 bool QDir::isRelativePath(const QString &path)
 {
@@ -2181,7 +2181,7 @@ QStringList QDir::nameFiltersFromString(const QString &nameFilter)
     initialized at startup by adding this line to your \c main()
     function:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 13
+    \snippet code/src_corelib_io_qdir.cpp 13
 
     If the file name contains characters that cannot be part of a valid C++ function name
     (such as '-'), they have to be replaced by the underscore character ('_').
@@ -2190,7 +2190,7 @@ QStringList QDir::nameFiltersFromString(const QString &nameFilter)
     main(). If that is not possible, the following workaround can be used
     to init the resource \c myapp from the function \c{MyNamespace::myFunction}:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 14
+    \snippet code/src_corelib_io_qdir.cpp 14
 
     \sa Q_CLEANUP_RESOURCE(), {The Qt Resource System}
 */
@@ -2213,7 +2213,7 @@ QStringList QDir::nameFiltersFromString(const QString &nameFilter)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdir.cpp 15
+    \snippet code/src_corelib_io_qdir.cpp 15
 
     \sa Q_INIT_RESOURCE(), {The Qt Resource System}
 */

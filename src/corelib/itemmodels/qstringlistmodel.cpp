@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
 
     An example usage of QStringListModel:
 
-    \snippet doc/src/snippets/qstringlistmodel/main.cpp 0
+    \snippet qstringlistmodel/main.cpp 0
 
     \sa QAbstractListModel, QAbstractItemModel, {Model Classes}
 */

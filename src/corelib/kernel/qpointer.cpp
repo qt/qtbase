@@ -74,10 +74,10 @@
 
     Example:
 
-    \snippet doc/src/snippets/pointer/pointer.cpp 0
+    \snippet pointer/pointer.cpp 0
     \dots
-    \snippet doc/src/snippets/pointer/pointer.cpp 1
-    \snippet doc/src/snippets/pointer/pointer.cpp 2
+    \snippet pointer/pointer.cpp 1
+    \snippet pointer/pointer.cpp 2
 
     If the QLabel is deleted in the meantime, the \c label variable
     will hold 0 instead of an invalid address, and the last line will

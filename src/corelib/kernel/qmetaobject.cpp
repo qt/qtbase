@@ -492,7 +492,7 @@ int QMetaObject::constructorCount() const
     Use code like the following to obtain a QStringList containing the methods
     specific to a given class:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetaobject.cpp methodCount
+    \snippet code/src_corelib_kernel_qmetaobject.cpp methodCount
 
     \sa method(), methodOffset(), indexOfMethod()
 */
@@ -530,7 +530,7 @@ int QMetaObject::enumeratorCount() const
     Use code like the following to obtain a QStringList containing the properties
     specific to a given class:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetaobject.cpp propertyCount
+    \snippet code/src_corelib_kernel_qmetaobject.cpp propertyCount
 
     \sa property(), propertyOffset(), indexOfProperty()
 */
@@ -1102,7 +1102,7 @@ QMetaProperty QMetaObject::userProperty() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetaobject.cpp 0
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 0
 
     \sa classInfoCount(), classInfoOffset(), indexOfClassInfo()
  */
@@ -1207,7 +1207,7 @@ static char *qNormalizeType(char *d, int &templdepth, QByteArray &result)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetaobject.cpp 1
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 1
 
     \sa normalizedSignature()
  */
@@ -1312,7 +1312,7 @@ enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
     the \l{QPushButton::animateClick()}{animateClick()} slot on a
     QPushButton, use the following code:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetaobject.cpp 2
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 2
 
     With asynchronous method invocations, the parameters must be of
     types that are known to Qt's meta-object system, because Qt needs
@@ -1320,7 +1320,7 @@ enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
     scenes. If you try to use a queued connection and get the error
     message
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetaobject.cpp 3
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 3
 
     call qRegisterMetaType() to register the data type before you
     call invokeMethod().
@@ -1328,7 +1328,7 @@ enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
     To synchronously invoke the \c compute(QString, int, double) slot on
     some arbitrary object \c obj retrieve its return value:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetaobject.cpp 4
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 4
 
     If the "compute" slot does not take exactly one QString, one int
     and one double in the specified order, the call will fail.
@@ -1883,7 +1883,7 @@ QMetaMethod::MethodType QMetaMethod::methodType() const
     \l{QPushButton::animateClick()}{animateClick()} slot on a
     QPushButton:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetaobject.cpp 6
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 6
 
     With asynchronous method invocations, the parameters must be of
     types that are known to Qt's meta-object system, because Qt needs
@@ -1891,7 +1891,7 @@ QMetaMethod::MethodType QMetaMethod::methodType() const
     scenes. If you try to use a queued connection and get the error
     message
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetaobject.cpp 7
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 7
 
     call qRegisterMetaType() to register the data type before you
     call QMetaMethod::invoke().
@@ -1899,7 +1899,7 @@ QMetaMethod::MethodType QMetaMethod::methodType() const
     To synchronously invoke the \c compute(QString, int, double) slot on
     some arbitrary object \c obj retrieve its return value:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetaobject.cpp 8
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 8
 
     QMetaObject::normalizedSignature() is used here to ensure that the format 
     of the signature is what invoke() expects.  E.g. extra whitespace is 
@@ -3058,7 +3058,7 @@ bool QMetaProperty::isEditable(const QObject *object) const
     are specified using Q_CLASSINFO() in the source code. The
     information can be retrieved using name() and value(). For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qmetaobject.cpp 5
+    \snippet code/src_corelib_kernel_qmetaobject.cpp 5
 
     This mechanism is free for you to use in your Qt applications. Qt
     doesn't use it for any of its classes.

@@ -195,6 +195,8 @@ class Q_CORE_EXPORT QMetaType {
                          FlagsEx = 0x100
                        };
 public:
+#ifndef Q_QDOC
+    // The code that actually gets compiled.
     enum Type {
         // these are merged with QVariant
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
@@ -212,6 +214,29 @@ public:
         UnknownType = 0,
         User = 1024
     };
+#else
+    // If we are using QDoc it fakes the Type enum looks like this.
+    enum Type {
+        Void = 0, Bool = 1, Int = 2, UInt = 3, LongLong = 4, ULongLong = 5,
+        Double = 6, Long = 32, Short = 33, Char = 34, ULong = 35, UShort = 36,
+        UChar = 37, Float = 38,
+        VoidStar = 31,
+        QChar = 7, QString = 10, QStringList = 11, QByteArray = 12,
+        QBitArray = 13, QDate = 14, QTime = 15, QDateTime = 16, QUrl = 17,
+        QLocale = 18, QRect = 19, QRectF = 20, QSize = 21, QSizeF = 22,
+        QLine = 23, QLineF = 24, QPoint = 25, QPointF = 26, QRegExp = 27,
+        QEasingCurve = 29, QUuid = 30, QVariant = 41, QModelIndex = 42,
+        QObjectStar = 39, QWidgetStar = 40,
+        QVariantMap = 8, QVariantList = 9, QVariantHash = 28,
+        QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,
+        QImage = 69, QPolygon = 70, QRegion = 71, QBitmap = 72, QCursor = 73,
+        QKeySequence = 74, QPen = 75, QTextLength = 76, QTextFormat = 77,
+        QMatrix = 78, QTransform = 79, QMatrix4x4 = 80, QVector2D = 81,
+        QVector3D = 82, QVector4D = 83, QQuaternion = 84, QPolygonF = 85,
+        QIcon = 120, QSizePolicy = 121,
+        User = 256
+    };
+#endif
 
     enum TypeFlag {
         NeedsConstruction = 0x1,

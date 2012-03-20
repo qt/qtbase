@@ -230,7 +230,7 @@
     actual 'Mouse Buttons', the device must be re-configured (using
     the vendor's configuration tool).
 
-    \sa KeyboardModifier Modifier
+    \sa KeyboardModifier, Modifier
 */
 
 /*!
@@ -257,7 +257,7 @@
     \note On Windows Keyboards, Qt::MetaModifier and Qt::Key_Meta are mapped
     to the Windows key.
 
-    \sa MouseButton Modifier
+    \sa MouseButton, Modifier
 */
 
 /*!
@@ -278,7 +278,7 @@
     point, not as a Qt Key.
     \omitvalue MODIFIER_MASK
 
-    \sa KeyboardModifier MouseButton
+    \sa KeyboardModifier, MouseButton
 */
 
 /*!
@@ -542,7 +542,7 @@
     arguments to store them in an event behind the scenes. If you try
     to use a queued connection and get the error message:
 
-    \snippet doc/src/snippets/code/doc_src_qnamespace.qdoc 0
+    \snippet code/doc_src_qnamespace.qdoc 0
 
     Call qRegisterMetaType() to register the data type before you
     establish the connection.
@@ -1981,8 +1981,6 @@
                    system supports it, a tool window can be decorated
                    with a somewhat lighter frame. It can also be
                    combined with Qt::FramelessWindowHint.
-                   \br
-                   \br
                    On Mac OS X, tool windows correspond to the
                    \l{http://developer.apple.com/documentation/Carbon/Conceptual/HandlingWindowsControls/hitb-wind_cont_concept/chapter_2_section_2.html}{Floating}
                    class of windows. This means that the window lives on a
@@ -2174,9 +2172,7 @@
                             should be taken over by the target application,
                             i.e., the source application should not delete
                             the data.
-                            \br
                             On X11 this value is used to do a move.
-                            \br
                             TargetMoveAction is not used on the Mac.
 */
 
@@ -2643,7 +2639,7 @@
     for other strings (e.g.,
     "\l{http://qt.nokia.com/doc/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
 
-    \sa QAbstractItemView::textElideMode, QFontMetrics::elidedText(), AlignmentFlag QTabBar::elideMode
+    \sa QAbstractItemView::textElideMode, QFontMetrics::elidedText(), AlignmentFlag, QTabBar::elideMode
 */
 
 /*!
@@ -2721,7 +2717,7 @@
     INT_MIN, inclusive. For example, you can define custom priorities
     as being relative to each other:
 
-    \snippet doc/src/snippets/code/doc_src_qnamespace.cpp 1
+    \snippet code/doc_src_qnamespace.cpp 1
 
     \sa QCoreApplication::postEvent()
 */

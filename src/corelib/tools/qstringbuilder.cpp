@@ -95,7 +95,7 @@ QT_BEGIN_NAMESPACE
     \c QChar, \c QCharRef, \c QLatin1Char, and \c char.
 */
 
-/*! \fn QByteArray QStringBuilder::toLatin1() const
+/* \fn QByteArray QStringBuilder::toLatin1() const
   Returns a Latin-1 representation of the string as a QByteArray.  The
   returned byte array is undefined if the string contains non-Latin1
   characters.

@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
     spent in a slow operation. The simplest example of such a case is for
     debugging purposes, as in the following example:
 
-    \snippet doc/src/snippets/qelapsedtimer/main.cpp 0
+    \snippet qelapsedtimer/main.cpp 0
 
     In this example, the timer is started by a call to start() and the
     elapsed timer is calculated by the elapsed() function.
@@ -76,14 +76,14 @@ QT_BEGIN_NAMESPACE
     subclasses are good examples of such need. In that case, the code could
     be as follows:
 
-    \snippet doc/src/snippets/qelapsedtimer/main.cpp 1
+    \snippet qelapsedtimer/main.cpp 1
 
     Another use-case is to execute a certain operation for a specific
     timeslice. For this, QElapsedTimer provides the hasExpired() convenience
     function, which can be used to determine if a certain number of
     milliseconds has already elapsed:
 
-    \snippet doc/src/snippets/qelapsedtimer/main.cpp 2
+    \snippet qelapsedtimer/main.cpp 2
 
     \section1 Reference clocks
 

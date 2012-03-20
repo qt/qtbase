@@ -913,7 +913,7 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
 
     Here is some example code to demonstrate the use of QVariant:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 0
+    \snippet code/src_corelib_kernel_qvariant.cpp 0
 
     You can even store QList<QVariant> and QMap<QString, QVariant>
     values in a variant, so you can easily construct arbitrarily
@@ -925,7 +925,7 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
     have a defined type with no value set. However, note that QVariant
     types can only be cast when they have had a value set.
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 1
+    \snippet code/src_corelib_kernel_qvariant.cpp 1
 
     QVariant can be extended to support other types than those
     mentioned in the \l Type enum. See the \l QMetaType documentation
@@ -939,13 +939,13 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
     toColor() function. Instead, you can use the QVariant::value() or
     the qvariant_cast() template function. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 2
+    \snippet code/src_corelib_kernel_qvariant.cpp 2
 
     The inverse conversion (e.g., from QColor to QVariant) is
     automatic for all data types supported by QVariant, including
     GUI-related types:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 3
+    \snippet code/src_corelib_kernel_qvariant.cpp 3
 
     \section1 Using canConvert() and convert() Consecutively
 
@@ -2551,7 +2551,7 @@ bool QVariant::convert(int targetTypeId)
 }
 
 /*!
-  \fn convert(const int type, void *ptr) const
+  \fn bool QVariant::convert(const int type, void *ptr) const
   \internal
   Created for qvariant_cast() usage
 */
@@ -2695,7 +2695,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 4
+    \snippet code/src_corelib_kernel_qvariant.cpp 4
 
     \sa value(), fromValue(), canConvert()
  */
@@ -2712,7 +2712,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 5
+    \snippet code/src_corelib_kernel_qvariant.cpp 5
 
     \sa setValue(), fromValue(), canConvert()
 */
@@ -2724,7 +2724,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 6
+    \snippet code/src_corelib_kernel_qvariant.cpp 6
 
     \sa convert()
 */
@@ -2736,7 +2736,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 7
+    \snippet code/src_corelib_kernel_qvariant.cpp 7
 
     \note If you are working with custom types, you should use
     the Q_DECLARE_METATYPE() macro to register your custom type.
@@ -2761,7 +2761,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     For example, a QObject pointer can be stored in a variant with the
     following code:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 8
+    \snippet code/src_corelib_kernel_qvariant.cpp 8
 
     \sa QVariant::fromValue()
 */

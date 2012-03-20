@@ -129,12 +129,12 @@
     To create a thread, subclass QThread and reimplement its
     \l{QThread::run()}{run()} function. For example:
 
-    \snippet doc/src/snippets/threads/threads.h 0
+    \snippet threads/threads.h 0
     \codeline
-    \snippet doc/src/snippets/threads/threads.cpp 0
-    \snippet doc/src/snippets/threads/threads.cpp 1
+    \snippet threads/threads.cpp 0
+    \snippet threads/threads.cpp 1
     \dots
-    \snippet doc/src/snippets/threads/threads.cpp 2
+    \snippet threads/threads.cpp 2
 
     \section1 Starting a Thread
 
@@ -258,8 +258,8 @@
     a member function on the \e{same} instance of the class at the
     same time. For example, the \c Counter class below is reentrant:
 
-    \snippet doc/src/snippets/threads/threads.cpp 3
-    \snippet doc/src/snippets/threads/threads.cpp 4
+    \snippet threads/threads.cpp 3
+    \snippet threads/threads.cpp 4
 
     The class isn't thread-safe, because if multiple threads try to
     modify the data member \c n, the result is undefined. This is
@@ -285,8 +285,8 @@
     the class thread-safe is to protect all access to the data
     members with a QMutex:
 
-    \snippet doc/src/snippets/threads/threads.cpp 5
-    \snippet doc/src/snippets/threads/threads.cpp 6
+    \snippet threads/threads.cpp 5
+    \snippet threads/threads.cpp 6
 
     The QMutexLocker class automatically locks the mutex in its
     constructor and unlocks it when the destructor is invoked, at the

@@ -39,11 +39,11 @@
     definition of a cache that stores objects of type Employee
     associated with an integer key:
 
-    \snippet doc/src/snippets/code/doc_src_qcache.cpp 0
+    \snippet code/doc_src_qcache.cpp 0
 
     Here's how to insert an object in the cache:
 
-    \snippet doc/src/snippets/code/doc_src_qcache.cpp 1
+    \snippet code/doc_src_qcache.cpp 1
 
     The advantage of using QCache over some other key-based data
     structure (such as QMap or QHash) is that QCache automatically
@@ -59,7 +59,7 @@
     By default, QCache's maxCost() is 100. You can specify a
     different value in the QCache constructor:
 
-    \snippet doc/src/snippets/code/doc_src_qcache.cpp 2
+    \snippet code/doc_src_qcache.cpp 2
 
     Each time you call insert(), you can specify a cost as third
     argument (after the key and a pointer to the object to insert).

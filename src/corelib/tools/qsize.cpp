@@ -194,7 +194,7 @@ void QSize::transpose()
     \endlist
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qsize.cpp 0
+    \snippet code/src_corelib_tools_qsize.cpp 0
 
     \sa setWidth(), setHeight(), scaled()
 */
@@ -252,7 +252,7 @@ QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const
     Using a reference makes it possible to manipulate the width
     directly. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qsize.cpp 1
+    \snippet code/src_corelib_tools_qsize.cpp 1
 
     \sa rheight(), setWidth()
 */
@@ -265,7 +265,7 @@ QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const
     Using a reference makes it possible to manipulate the height
     directly. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qsize.cpp 2
+    \snippet code/src_corelib_tools_qsize.cpp 2
 
     \sa rwidth(), setHeight()
 */
@@ -276,7 +276,7 @@ QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const
     Adds the given \a size to \e this size, and returns a reference to
     this size. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qsize.cpp 3
+    \snippet code/src_corelib_tools_qsize.cpp 3
 */
 
 /*!
@@ -285,7 +285,7 @@ QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const
     Subtracts the given \a size from \e this size, and returns a
     reference to this size. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qsize.cpp 4
+    \snippet code/src_corelib_tools_qsize.cpp 4
 */
 
 /*!
@@ -622,7 +622,7 @@ void QSizeF::transpose()
     \endlist
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qsize.cpp 5
+    \snippet code/src_corelib_tools_qsize.cpp 5
 
     \sa setWidth(), setHeight(), scaled()
 */
@@ -636,11 +636,11 @@ void QSizeF::transpose()
 */
 
 /*!
-    \fn QSizeF QSizeF::scaled(int width, int height, Qt::AspectRatioMode mode) const
+    \fn QSizeF QSizeF::scaled(qreal width, qreal height, Qt::AspectRatioMode mode) const
     \since 5.0
 
     Returns a size scaled to a rectangle with the given \a width and
-    \a height, according to the specified \mode.
+    \a height, according to the specified \a mode.
 
     \sa scale()
 */
@@ -679,7 +679,7 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const
     Using a reference makes it possible to manipulate the width
     directly. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qsize.cpp 6
+    \snippet code/src_corelib_tools_qsize.cpp 6
 
     \sa rheight(), setWidth()
 */
@@ -692,7 +692,7 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const
     Using a reference makes it possible to manipulate the height
     directly. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qsize.cpp 7
+    \snippet code/src_corelib_tools_qsize.cpp 7
 
     \sa rwidth(), setHeight()
 */
@@ -703,7 +703,7 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const
     Adds the given \a size to this size and returns a reference to
     this size. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qsize.cpp 8
+    \snippet code/src_corelib_tools_qsize.cpp 8
 */
 
 /*!
@@ -712,7 +712,7 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const
     Subtracts the given \a size from this size and returns a reference
     to this size. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qsize.cpp 9
+    \snippet code/src_corelib_tools_qsize.cpp 9
 */
 
 /*!

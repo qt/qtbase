@@ -158,7 +158,6 @@ private:
 
 #else // QT_NO_THREAD or qdoc
 
-
 class Q_CORE_EXPORT QMutex
 {
 public:

@@ -87,7 +87,7 @@ QT_BEGIN_NAMESPACE
 
     For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qabstractfileengine.cpp 0
+    \snippet code/src_corelib_io_qabstractfileengine.cpp 0
 
     When the handler is destroyed, it is automatically removed from Qt.
 
@@ -184,7 +184,7 @@ QAbstractFileEngine *qt_custom_file_engine_handler_create(const QString &path)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qabstractfileengine.cpp 1
+    \snippet code/src_corelib_io_qabstractfileengine.cpp 1
 
     \sa QAbstractFileEngine::create()
 */
@@ -461,7 +461,7 @@ bool QAbstractFileEngine::isSequential() const
 
     This virtual function must be reimplemented by all subclasses.
 
-    \sa setFileName() rmdir()
+    \sa setFileName(), rmdir()
  */
 bool QAbstractFileEngine::remove()
 {
@@ -515,7 +515,7 @@ bool QAbstractFileEngine::link(const QString &newName)
 
     This virtual function must be reimplemented by all subclasses.
 
-    \sa setFileName() rmdir() isRelativePath()
+    \sa setFileName(), rmdir(), isRelativePath()
  */
 bool QAbstractFileEngine::mkdir(const QString &dirName, bool createParentDirectories) const
 {
@@ -535,7 +535,7 @@ bool QAbstractFileEngine::mkdir(const QString &dirName, bool createParentDirecto
 
     This virtual function must be reimplemented by all subclasses.
 
-    \sa setFileName() remove() mkdir() isRelativePath()
+    \sa setFileName(), remove(), mkdir(), isRelativePath()
  */
 bool QAbstractFileEngine::rmdir(const QString &dirName, bool recurseParentDirectories) const
 {
@@ -671,7 +671,7 @@ QString QAbstractFileEngine::fileName(FileName file) const
 
     This virtual function must be reimplemented by all subclasses.
 
-    \sa owner() setFileName(), FileOwner
+    \sa owner(), setFileName(), FileOwner
  */
 uint QAbstractFileEngine::ownerId(FileOwner owner) const
 {
@@ -687,7 +687,7 @@ uint QAbstractFileEngine::ownerId(FileOwner owner) const
 
     This virtual function must be reimplemented by all subclasses.
 
-    \sa ownerId() setFileName(), FileOwner
+    \sa ownerId(), setFileName(), FileOwner
  */
 QString QAbstractFileEngine::owner(FileOwner owner) const
 {
@@ -821,7 +821,7 @@ bool QAbstractFileEngine::unmap(uchar *address)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qabstractfileengine.cpp 2
+    \snippet code/src_corelib_io_qabstractfileengine.cpp 2
 
     QAbstractFileEngineIterator is associated with a path, name filters, and
     entry filters. The path is the directory that the iterator lists entries
@@ -846,7 +846,7 @@ bool QAbstractFileEngine::unmap(uchar *address)
     Here is an example of how to implement an iterator that returns each of
     three fixed entries in sequence.
 
-    \snippet doc/src/snippets/code/src_corelib_io_qabstractfileengine.cpp 3
+    \snippet code/src_corelib_io_qabstractfileengine.cpp 3
 
     Note: QAbstractFileEngineIterator does not deal with QDir::IteratorFlags;
     it simply returns entries for a single directory.
@@ -1080,7 +1080,7 @@ qint64 QAbstractFileEngine::write(const char *data, qint64 len)
 }
 
 /*!
-    This function reads one line, terminated by a '\n' character, from the
+    This function reads one line, terminated by a '\\n' character, from the
     file info \a data. At most \a maxlen characters will be read. The
     end-of-line character is included.
 */

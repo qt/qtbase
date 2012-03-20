@@ -437,7 +437,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     When the number of matches cannot be determined in advance, a
     common idiom is to use cap() in a loop. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 0
+    \snippet code/src_corelib_tools_qregexp.cpp 0
 
     \target assertions
     \section1 Assertions
@@ -532,7 +532,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     To test a string against a wildcard expression, use exactMatch().
     For example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 1
+    \snippet code/src_corelib_tools_qregexp.cpp 1
 
     \target perl-users
     \section1 Notes for Perl Users
@@ -555,7 +555,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     applied to all the quantifiers in the pattern. For example, to
     match the Perl regexp \b{ro+?m} requires:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 2
+    \snippet code/src_corelib_tools_qregexp.cpp 2
 
     The equivalent of Perl's \c{/i} option is
     setCaseSensitivity(Qt::CaseInsensitive).
@@ -584,7 +584,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     the other hand, C++'s rules for literal strings can be used to
     achieve the same:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 3
+    \snippet code/src_corelib_tools_qregexp.cpp 3
 
     Both zero-width positive and zero-width negative lookahead
     assertions (?=pattern) and (?!pattern) are supported with the same
@@ -603,12 +603,12 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     \target code-examples
     \section1 Code Examples
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 4
+    \snippet code/src_corelib_tools_qregexp.cpp 4
 
     The third string matches '\underline{6}'. This is a simple validation
     regexp for integers in the range 0 to 99.
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 5
+    \snippet code/src_corelib_tools_qregexp.cpp 5
 
     The second string matches '\underline{This_is-OK}'. We've used the
     character set abbreviation '\\S' (non-whitespace) and the anchors
@@ -618,25 +618,25 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     'letter' or 'correspondence' but only match whole words i.e. not
     'email'
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 6
+    \snippet code/src_corelib_tools_qregexp.cpp 6
 
     The second string matches "Please write the \underline{letter}". The
     word 'letter' is also captured (because of the parentheses). We
     can see what text we've captured like this:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 7
+    \snippet code/src_corelib_tools_qregexp.cpp 7
 
     This will capture the text from the first set of capturing
     parentheses (counting capturing left parentheses from left to
     right). The parentheses are counted from 1 since cap(0) is the
     whole matched regexp (equivalent to '&' in most regexp engines).
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 8
+    \snippet code/src_corelib_tools_qregexp.cpp 8
 
     Here we've passed the QRegExp to QString's replace() function to
     replace the matched text with new text.
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 9
+    \snippet code/src_corelib_tools_qregexp.cpp 9
 
     We've used the indexIn() function to repeatedly match the regexp in
     the string. Note that instead of moving forward by one character
@@ -650,7 +650,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     One common use of regexps is to split lines of delimited data into
     their component fields.
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 10
+    \snippet code/src_corelib_tools_qregexp.cpp 10
 
     In this example our input lines have the format company name, web
     address and country. Unfortunately the regexp is rather long and
@@ -660,13 +660,13 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     QString::split() function can take a separator string or regexp
     as an argument and split a string accordingly.
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 11
+    \snippet code/src_corelib_tools_qregexp.cpp 11
 
     Here field[0] is the company, field[1] the web address and so on.
 
     To imitate the matching of a shell we can use wildcard mode.
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 12
+    \snippet code/src_corelib_tools_qregexp.cpp 12
 
     Wildcard matching can be convenient because of its simplicity, but
     any wildcard regexp can be defined using full regexps, e.g.
@@ -4255,7 +4255,7 @@ bool QRegExp::exactMatch(const QString &str) const
     QString::replace().
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 13
+    \snippet code/src_corelib_tools_qregexp.cpp 13
 
     Although const, this function sets matchedLength(),
     capturedTexts() and pos().
@@ -4332,14 +4332,6 @@ int QRegExp::matchedLength() const
 #ifndef QT_NO_REGEXP_CAPTURE
 
 /*!
-  \fn int QRegExp::numCaptures() const
-  \obsolete
-  Returns the number of captures contained in the regular expression.
-
-  \sa captureCount()
- */
-
-/*!
   \since 4.6
   Returns the number of captures contained in the regular expression.
  */
@@ -4357,17 +4349,17 @@ int QRegExp::captureCount() const
     (capturing) subexpression of the regexp.
 
     For example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 14
+    \snippet code/src_corelib_tools_qregexp.cpp 14
 
     The above example also captures elements that may be present but
     which we have no interest in. This problem can be solved by using
     non-capturing parentheses:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 15
+    \snippet code/src_corelib_tools_qregexp.cpp 15
 
     Note that if you want to iterate over the list, you should iterate
     over a copy, e.g.
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 16
+    \snippet code/src_corelib_tools_qregexp.cpp 16
 
     Some regexps can match an indeterminate number of times. For
     example if the input string is "Offsets: 12 14 99 231 7" and the
@@ -4420,7 +4412,7 @@ QStringList QRegExp::capturedTexts()
     match has index 0 and the parenthesized subexpressions have
     indexes starting from 1 (excluding non-capturing parentheses).
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 17
+    \snippet code/src_corelib_tools_qregexp.cpp 17
 
     The order of elements matched by cap() is as follows. The first
     element, cap(0), is the entire matching string. Each subsequent
@@ -4449,7 +4441,7 @@ QString QRegExp::cap(int nth)
     of the whole match.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 18
+    \snippet code/src_corelib_tools_qregexp.cpp 18
 
     For zero-length matches, pos() always returns -1. (For example, if
     cap(4) would return an empty string, pos(4) returns -1.) This is
@@ -4504,11 +4496,11 @@ QString QRegExp::errorString()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 19
+    \snippet code/src_corelib_tools_qregexp.cpp 19
 
     This function is useful to construct regexp patterns dynamically:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qregexp.cpp 20
+    \snippet code/src_corelib_tools_qregexp.cpp 20
 
     \sa setPatternSyntax()
 */

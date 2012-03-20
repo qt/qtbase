@@ -94,7 +94,7 @@ QT_BEGIN_NAMESPACE
     \value DownloadLocation Returns a directory for user's downloaded files.
 
 
-    \sa writableLocation() standardLocations() displayName() locate() locateAll()
+    \sa writableLocation(), standardLocations(), displayName(), locate(), locateAll()
 */
 
 /*!

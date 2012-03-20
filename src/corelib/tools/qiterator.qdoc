@@ -50,7 +50,7 @@
     the list (before the first item). Here's how to iterate over all
     the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 0
+    \snippet code/doc_src_qiterator.cpp 0
 
     The next() function returns the next item in the list and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -61,11 +61,11 @@
     position between the second and third item, and returns the second
     item; and so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 1
+    \snippet code/doc_src_qiterator.cpp 1
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -98,7 +98,7 @@
     beginning of the list (before the first item). Here's how to
     iterate over all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 2
+    \snippet code/doc_src_qiterator.cpp 2
 
     The next() function returns the next item in the list and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -109,11 +109,11 @@
     position between the second and third item, and returns the second
     item; and so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 3
+    \snippet code/doc_src_qiterator.cpp 3
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -150,7 +150,7 @@
     of the vector (before the first item). Here's how to iterate over
     all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 4
+    \snippet code/doc_src_qiterator.cpp 4
 
     The next() function returns the next item in the vector and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -161,11 +161,11 @@
     position between the second and third item, returning the second
     item; and so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 5
+    \snippet code/doc_src_qiterator.cpp 5
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -197,7 +197,7 @@
     the first item). Here's how to iterate over all the elements
     sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 6
+    \snippet code/doc_src_qiterator.cpp 6
 
     The next() function returns the next item in the set and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -208,11 +208,11 @@
     position between the second and third item, returning the second
     item; and so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 7
+    \snippet code/doc_src_qiterator.cpp 7
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -251,7 +251,7 @@
     of the list (before the first item). Here's how to iterate over
     all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 8
+    \snippet code/doc_src_qiterator.cpp 8
 
     The next() function returns the next item in the list and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -262,11 +262,11 @@
     position between the second and third item, returning the second
     item; and so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 9
+    \snippet code/doc_src_qiterator.cpp 9
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -277,7 +277,7 @@
     insert().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 10
+    \snippet code/doc_src_qiterator.cpp 10
 
     The example traverses a list, replacing negative numbers with
     their absolute values, and eliminating zeroes.
@@ -312,7 +312,7 @@
     beginning of the list (before the first item). Here's how to
     iterate over all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 11
+    \snippet code/doc_src_qiterator.cpp 11
 
     The next() function returns the next item in the list and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -323,11 +323,11 @@
     position between the second and third item, returning the second
     item; and so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 12
+    \snippet code/doc_src_qiterator.cpp 12
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -338,7 +338,7 @@
     insert().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 13
+    \snippet code/doc_src_qiterator.cpp 13
 
     The example traverses a list, replacing negative numbers with
     their absolute values, and eliminating zeroes.
@@ -378,7 +378,7 @@
     beginning of the list (before the first item). Here's how to
     iterate over all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 14
+    \snippet code/doc_src_qiterator.cpp 14
 
     The next() function returns the next item in the vector and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -389,11 +389,11 @@
     position between the second and third item, returning the second
     item; and so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 15
+    \snippet code/doc_src_qiterator.cpp 15
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop.
@@ -404,7 +404,7 @@
     insert().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 16
+    \snippet code/doc_src_qiterator.cpp 16
 
     The example traverses a vector, replacing negative numbers with
     their absolute values, and eliminating zeroes.
@@ -440,7 +440,7 @@
     of the set (before the first item). Here's how to iterate over
     all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 17
+    \snippet code/doc_src_qiterator.cpp 17
 
     The next() function returns the next item in the set and
     advances the iterator. Unlike STL-style iterators, Java-style
@@ -451,11 +451,11 @@
     position between the second and third item, returning the second
     item; and so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 18
+    \snippet code/doc_src_qiterator.cpp 18
 
     If you want to remove items as you iterate over the set, use
     remove().
@@ -755,7 +755,7 @@
     traversal functions (next(), previous(), findNext(), findPrevious()).
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 19
+    \snippet code/doc_src_qiterator.cpp 19
 
     \sa insert(), setValue()
 */
@@ -766,7 +766,7 @@
     traversal functions (next(), previous(), findNext(), findPrevious()).
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 20
+    \snippet code/doc_src_qiterator.cpp 20
 
     \sa insert(), setValue()
 */
@@ -777,7 +777,7 @@
     traversal functions (next(), previous(), findNext(), findPrevious()).
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 21
+    \snippet code/doc_src_qiterator.cpp 21
 
     \sa insert(), setValue()
 */
@@ -788,7 +788,7 @@
     traversal functions (next(), previous(), findNext(), findPrevious()).
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 22
+    \snippet code/doc_src_qiterator.cpp 22
 
     \sa value()
 */
@@ -802,7 +802,7 @@
     findPrevious().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 23
+    \snippet code/doc_src_qiterator.cpp 23
 
     \sa value(), remove(), insert()
 */
@@ -816,7 +816,7 @@
     findPrevious().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 24
+    \snippet code/doc_src_qiterator.cpp 24
 
     \sa value(), remove(), insert()
 */
@@ -830,7 +830,7 @@
     findPrevious().
 
     Example:
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 25
+    \snippet code/doc_src_qiterator.cpp 25
 
     \sa value(), remove(), insert()
 */
@@ -889,7 +889,7 @@
     the map (before the first item). Here's how to iterate over all
     the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 26
+    \snippet code/doc_src_qiterator.cpp 26
 
     The next() function returns the next item in the map and
     advances the iterator. The key() and value() functions return the
@@ -902,16 +902,16 @@
     next() advances the iterator to the position between the second
     and third item; and so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 27
+    \snippet code/doc_src_qiterator.cpp 27
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 28
+    \snippet code/doc_src_qiterator.cpp 28
 
     Multiple iterators can be used on the same map. If the map is
     modified while a QMapIterator is active, the QMapIterator will
@@ -941,7 +941,7 @@
     the hash (before the first item). Here's how to iterate over all
     the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 29
+    \snippet code/doc_src_qiterator.cpp 29
 
     The next() function returns the next item in the hash and
     advances the iterator. The key() and value() functions return the
@@ -954,16 +954,16 @@
     next() advances the iterator to the position between the second
     and third item; and so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 30
+    \snippet code/doc_src_qiterator.cpp 30
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 31
+    \snippet code/doc_src_qiterator.cpp 31
 
     Multiple iterators can be used on the same hash. If the hash is
     modified while a QHashIterator is active, the QHashIterator will
@@ -994,7 +994,7 @@
     of the map (before the first item). Here's how to iterate over
     all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 32
+    \snippet code/doc_src_qiterator.cpp 32
 
     The next() function returns the next item in the map and
     advances the iterator. The key() and value() functions return the
@@ -1007,16 +1007,16 @@
     next() advances the iterator to the position between the second
     and third item; and so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 33
+    \snippet code/doc_src_qiterator.cpp 33
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 34
+    \snippet code/doc_src_qiterator.cpp 34
 
     If you want to remove items as you iterate over the map, use
     remove(). If you want to modify the value of an item, use
@@ -1024,7 +1024,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 35
+    \snippet code/doc_src_qiterator.cpp 35
 
     The example removes all (key, value) pairs where the key and the
     value are the same.
@@ -1059,7 +1059,7 @@
     of the hash (before the first item). Here's how to iterate over
     all the elements sequentially:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 36
+    \snippet code/doc_src_qiterator.cpp 36
 
     The next() function returns the next item in the hash and
     advances the iterator. The key() and value() functions return the
@@ -1072,16 +1072,16 @@
     next() advances the iterator to the position between the second
     and third item; and so on.
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's how to iterate over the elements in reverse order:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 37
+    \snippet code/doc_src_qiterator.cpp 37
 
     If you want to find all occurrences of a particular value, use
     findNext() or findPrevious() in a loop. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 38
+    \snippet code/doc_src_qiterator.cpp 38
 
     If you want to remove items as you iterate over the hash, use
     remove(). If you want to modify the value of an item, use
@@ -1089,7 +1089,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qiterator.cpp 39
+    \snippet code/doc_src_qiterator.cpp 39
 
     The example removes all (key, value) pairs where the key and the
     value are the same.

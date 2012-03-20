@@ -55,7 +55,7 @@
     argument. After construction, the iterator is located before the first
     directory entry. Here's how to iterate over all the entries sequentially:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdiriterator.cpp 0
+    \snippet code/src_corelib_io_qdiriterator.cpp 0
 
     The next() function returns the path to the next directory entry and
     advances the iterator. You can also call filePath() to get the current

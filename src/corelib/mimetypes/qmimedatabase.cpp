@@ -289,7 +289,7 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
 
     \threadsafe
 
-    \snippet doc/src/snippets/code/src_corelib_mimetype_qmimedatabase.cpp 0
+    \snippet code/src_corelib_mimetype_qmimedatabase.cpp 0
 
     \sa QMimeType
  */

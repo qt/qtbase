@@ -818,13 +818,13 @@ QTextCodec::ConverterState::~ConverterState()
     KOI8-R encoding, and want to convert it to Unicode. The simple way
     to do it is like this:
 
-    \snippet doc/src/snippets/code/src_corelib_codecs_qtextcodec.cpp 0
+    \snippet code/src_corelib_codecs_qtextcodec.cpp 0
 
     After this, \c string holds the text converted to Unicode.
     Converting a string from Unicode to the local encoding is just as
     easy:
 
-    \snippet doc/src/snippets/code/src_corelib_codecs_qtextcodec.cpp 1
+    \snippet code/src_corelib_codecs_qtextcodec.cpp 1
 
     To read or write files in various encodings, use QTextStream and
     its \l{QTextStream::setCodec()}{setCodec()} function. See the
@@ -841,7 +841,7 @@ QTextCodec::ConverterState::~ConverterState()
     object for the codec and use this QTextDecoder for the whole
     decoding process, as shown below:
 
-    \snippet doc/src/snippets/code/src_corelib_codecs_qtextcodec.cpp 2
+    \snippet code/src_corelib_codecs_qtextcodec.cpp 2
 
     The QTextDecoder object maintains state between chunks and therefore
     works correctly even if a multi-byte character is split between

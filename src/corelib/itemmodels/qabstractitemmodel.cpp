@@ -339,7 +339,7 @@ qint64 QPersistentModelIndex::internalId() const
     Returns the parent QModelIndex for this persistent index, or an invalid
     QModelIndex if it has no parent.
 
-    \sa child() sibling() model()
+    \sa child(), sibling(), model()
 */
 QModelIndex QPersistentModelIndex::parent() const
 {
@@ -352,7 +352,7 @@ QModelIndex QPersistentModelIndex::parent() const
     Returns the sibling at \a row and \a column or an invalid QModelIndex if
     there is no sibling at this position.
 
-    \sa parent() child()
+    \sa parent(), child()
 */
 
 QModelIndex QPersistentModelIndex::sibling(int row, int column) const
@@ -366,7 +366,7 @@ QModelIndex QPersistentModelIndex::sibling(int row, int column) const
     Returns the child of the model index that is stored in the given \a row
     and \a column.
 
-    \sa parent() sibling()
+    \sa parent(), sibling()
 */
 
 QModelIndex QPersistentModelIndex::child(int row, int column) const
@@ -906,7 +906,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     Creates a new empty model index. This type of model index is used to
     indicate that the position in the model is invalid.
 
-    \sa isValid() QAbstractItemModel
+    \sa isValid(), QAbstractItemModel
 */
 
 /*!
@@ -1217,7 +1217,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 
     Returns true if the column is inserted; otherwise returns false.
 
-    \sa insertColumns() insertRow() removeColumn()
+    \sa insertColumns(), insertRow(), removeColumn()
 */
 
 /*!
@@ -1230,7 +1230,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 
     Returns true if the row is inserted; otherwise returns false.
 
-    \sa insertRows() insertColumn() removeRow()
+    \sa insertRows(), insertColumn(), removeRow()
 */
 
 /*!
@@ -1407,7 +1407,7 @@ QAbstractItemModel::~QAbstractItemModel()
 
     For example:
 
-    \snippet examples/itemviews/simpledommodel/dommodel.cpp 2
+    \snippet itemviews/simpledommodel/dommodel.cpp 2
 
     \note When implementing a table based model, columnCount() should return 0
     when the parent is valid.
@@ -1627,7 +1627,7 @@ bool QAbstractItemModel::hasIndex(int row, int column, const QModelIndex &parent
 
     Use rowCount() on the parent to find out the number of children.
 
-    \sa parent() index()
+    \sa parent(), index()
 */
 bool QAbstractItemModel::hasChildren(const QModelIndex &parent) const
 {
@@ -1696,7 +1696,7 @@ bool QAbstractItemModel::setData(const QModelIndex &index, const QVariant &value
 
     Roles that are not in \a roles will not be modified.
 
-    \sa setData() data() itemData()
+    \sa setData(), data(), itemData()
 */
 bool QAbstractItemModel::setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles)
 {
@@ -2195,6 +2195,7 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
 }
 
 /*!
+    \fn void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &theRoleNames)
     \since 4.6
     \obsolete
 
@@ -2445,7 +2446,7 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
             For example, as shown in the diagram, we insert three rows before
             row 2, so \a first is 2 and \a last is 4:
 
-            \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 0
+            \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 0
 
             This inserts the three new rows as rows 2, 3, and 4.
     \row
@@ -2456,7 +2457,7 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
             collection of 4 existing rows (ending in row 3), so \a first is 4
             and \a last is 5:
 
-            \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 1
+            \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 1
 
             This appends the two new rows as rows 4 and 5.
     \endtable
@@ -2511,7 +2512,7 @@ void QAbstractItemModel::endInsertRows()
             For example, as shown in the diagram, we remove the two rows from
             row 2 to row 3, so \a first is 2 and \a last is 3:
 
-            \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 2
+            \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 2
     \endtable
 
     \note This function emits the rowsAboutToBeRemoved() signal which connected
@@ -2626,7 +2627,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
             row 2 to 4 in the source, so \a sourceFirst is 2 and \a sourceLast is 4.
             We move those items to above row 2 in the destination, so \a destinationChild is 2.
 
-            \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 6
+            \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 6
 
             This moves the three rows rows 2, 3, and 4 in the source to become 2, 3 and 4 in
             the destination. Other affected siblings are displaced accordingly.
@@ -2637,7 +2638,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
             For example, as shown in the diagram, we move three rows to a
             collection of 6 existing rows (ending in row 5), so \a destinationChild is 6:
 
-            \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 7
+            \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 7
 
             This moves the target rows to the end of the target parent as 6, 7 and 8.
     \row
@@ -2647,7 +2648,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
             For example, as shown in the diagram, we move one item from row 2 to row 0,
             so \a sourceFirst and \a sourceLast are 2 and \a destinationChild is 0.
 
-            \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 8
+            \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 8
 
             Note that other rows may be displaced accordingly. Note also that when moving
             items within the same parent you should not attempt invalid or no-op moves. In
@@ -2662,7 +2663,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
             For example, as shown in the diagram, we move one item from row 2 to row 4,
             so \a sourceFirst and \a sourceLast are 2 and \a destinationChild is 4.
 
-            \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 9
+            \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 9
 
             Note that other rows may be displaced accordingly.
     \endtable
@@ -2745,7 +2746,7 @@ void QAbstractItemModel::endMoveRows()
             For example, as shown in the diagram, we insert three columns
             before column 4, so \a first is 4 and \a last is 6:
 
-            \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 3
+            \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 3
 
             This inserts the three new columns as columns 4, 5, and 6.
     \row
@@ -2756,7 +2757,7 @@ void QAbstractItemModel::endMoveRows()
             collection of six existing columns (ending in column 5), so
             \a first is 6 and \a last is 8:
 
-            \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 4
+            \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 4
 
             This appends the two new columns as columns 6, 7, and 8.
     \endtable
@@ -2813,7 +2814,7 @@ void QAbstractItemModel::endInsertColumns()
             For example, as shown in the diagram, we remove the three columns
             from column 4 to column 6, so \a first is 4 and \a last is 6:
 
-            \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 5
+            \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 5
     \endtable
 
     \note This function emits the columnsAboutToBeRemoved() signal which
@@ -2945,6 +2946,7 @@ void QAbstractItemModel::endMoveColumns()
 }
 
 /*!
+    \fn void QAbstractItemModel::reset()
     \obsolete
 
     Resets the model to its original state in any attached views.
@@ -2958,11 +2960,11 @@ void QAbstractItemModel::endMoveColumns()
     For example, in this code both signals modelAboutToBeReset() and modelReset()
     are emitted \e after the data changes:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 10
+    \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 10
 
     Instead you should use:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 11
+    \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 11
 */
 
 /*!
@@ -3208,7 +3210,7 @@ QModelIndex QAbstractTableModel::index(int row, int column, const QModelIndex &p
 
     Returns the parent of the model item with the given \a index.
 
-    \sa index() hasChildren()
+    \sa index(), hasChildren()
 */
 
 QModelIndex QAbstractTableModel::parent(const QModelIndex &) const
@@ -3334,7 +3336,7 @@ QModelIndex QAbstractListModel::index(int row, int column, const QModelIndex &pa
 /*!
     Returns the parent of the model item with the given \a index.
 
-    \sa index() hasChildren()
+    \sa index(), hasChildren()
 */
 
 QModelIndex QAbstractListModel::parent(const QModelIndex & /* index */) const

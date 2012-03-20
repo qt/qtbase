@@ -2028,7 +2028,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     company is called MySoft, you would construct the QSettings
     object as follows:
 
-    \snippet doc/src/snippets/settings/settings.cpp 0
+    \snippet settings/settings.cpp 0
 
     QSettings objects can be created either on the stack or on
     the heap (i.e. using \c new). Constructing and destroying a
@@ -2040,11 +2040,11 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     QCoreApplication::setApplicationName(), and then use the default
     QSettings constructor:
 
-    \snippet doc/src/snippets/settings/settings.cpp 1
-    \snippet doc/src/snippets/settings/settings.cpp 2
-    \snippet doc/src/snippets/settings/settings.cpp 3
+    \snippet settings/settings.cpp 1
+    \snippet settings/settings.cpp 2
+    \snippet settings/settings.cpp 3
     \dots
-    \snippet doc/src/snippets/settings/settings.cpp 4
+    \snippet settings/settings.cpp 4
 
     (Here, we also specify the organization's Internet domain. When
     the Internet domain is set, it is used on Mac OS X instead of the
@@ -2058,7 +2058,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     that stores the data associated with the key. To write a setting,
     use setValue(). For example:
 
-    \snippet doc/src/snippets/settings/settings.cpp 5
+    \snippet settings/settings.cpp 5
 
     If there already exists a setting with the same key, the existing
     value is overwritten by the new value. For efficiency, the
@@ -2067,14 +2067,14 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     You can get a setting's value back using value():
 
-    \snippet doc/src/snippets/settings/settings.cpp 6
+    \snippet settings/settings.cpp 6
 
     If there is no setting with the specified name, QSettings
     returns a null QVariant (which can be converted to the integer 0).
     You can specify another default value by passing a second
     argument to value():
 
-    \snippet doc/src/snippets/settings/settings.cpp 7
+    \snippet settings/settings.cpp 7
 
     To test whether a given key exists, call contains(). To remove
     the setting associated with a key, call remove(). To obtain the
@@ -2091,13 +2091,13 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     Instead, you can use the QVariant::value() or the qVariantValue()
     template function. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 0
+    \snippet code/src_corelib_io_qsettings.cpp 0
 
     The inverse conversion (e.g., from QColor to QVariant) is
     automatic for all data types supported by QVariant, including
     GUI-related types:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 1
+    \snippet code/src_corelib_io_qsettings.cpp 1
 
     Custom types registered using qRegisterMetaType() and
     qRegisterMetaTypeStreamOperators() can be stored using QSettings.
@@ -2127,18 +2127,18 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     You can form hierarchical keys using the '/' character as a
     separator, similar to Unix file paths. For example:
 
-    \snippet doc/src/snippets/settings/settings.cpp 8
-    \snippet doc/src/snippets/settings/settings.cpp 9
-    \snippet doc/src/snippets/settings/settings.cpp 10
+    \snippet settings/settings.cpp 8
+    \snippet settings/settings.cpp 9
+    \snippet settings/settings.cpp 10
 
     If you want to save or restore many settings with the same
     prefix, you can specify the prefix using beginGroup() and call
     endGroup() at the end. Here's the same example again, but this
     time using the group mechanism:
 
-    \snippet doc/src/snippets/settings/settings.cpp 11
+    \snippet settings/settings.cpp 11
     \codeline
-    \snippet doc/src/snippets/settings/settings.cpp 12
+    \snippet settings/settings.cpp 12
 
     If a group is set using beginGroup(), the behavior of most
     functions changes consequently. Groups can be set recursively.
@@ -2178,8 +2178,8 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     Let's see with an example:
 
-    \snippet doc/src/snippets/settings/settings.cpp 13
-    \snippet doc/src/snippets/settings/settings.cpp 14
+    \snippet settings/settings.cpp 13
+    \snippet settings/settings.cpp 14
 
     The table below summarizes which QSettings objects access
     which location. "\b{X}" means that the location is the main
@@ -2205,7 +2205,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     argument to the QSettings constructor, followed by the scope, the
     organization name, and the application name:
 
-    \snippet doc/src/snippets/settings/settings.cpp 15
+    \snippet settings/settings.cpp 15
 
     The \l{tools/settingseditor}{Settings Editor} example lets you
     experiment with different settings location and with fallbacks
@@ -2217,9 +2217,9 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     application. The following example illustrates how to use QSettings
     to save and restore the geometry of an application's main window.
 
-    \snippet doc/src/snippets/settings/settings.cpp 16
+    \snippet settings/settings.cpp 16
     \codeline
-    \snippet doc/src/snippets/settings/settings.cpp 17
+    \snippet settings/settings.cpp 17
 
     See \l{Window Geometry} for a discussion on why it is better to
     call QWidget::resize() and QWidget::move() rather than QWidget::setGeometry()
@@ -2229,12 +2229,12 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     called from the main window's constructor and close event handler
     as follows:
 
-    \snippet doc/src/snippets/settings/settings.cpp 18
+    \snippet settings/settings.cpp 18
     \dots
-    \snippet doc/src/snippets/settings/settings.cpp 19
-    \snippet doc/src/snippets/settings/settings.cpp 20
+    \snippet settings/settings.cpp 19
+    \snippet settings/settings.cpp 20
     \codeline
-    \snippet doc/src/snippets/settings/settings.cpp 21
+    \snippet settings/settings.cpp 21
 
     See the \l{mainwindows/application}{Application} example for a
     self-contained example that uses QSettings.
@@ -2341,7 +2341,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     takes a file name as first argument and pass QSettings::IniFormat
     as second argument. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 2
+    \snippet code/src_corelib_io_qsettings.cpp 2
 
     You can then use the QSettings object to read and write settings
     in the file.
@@ -2349,7 +2349,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     On Mac OS X, you can access XML-based \c .plist files by passing
     QSettings::NativeFormat as second argument. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 3
+    \snippet code/src_corelib_io_qsettings.cpp 3
 
     \section2 Accessing the Windows Registry Directly
 
@@ -2360,13 +2360,13 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 4
+    \snippet code/src_corelib_io_qsettings.cpp 4
 
     All the registry entries that appear under the specified path can
     be read or written through the QSettings object as usual (using
     forward slashes instead of backslashes). For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 5
+    \snippet code/src_corelib_io_qsettings.cpp 5
 
     Note that the backslash character is, as mentioned, used by
     QSettings to separate subkeys. As a result, you cannot read or
@@ -2380,7 +2380,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     Its default value is accessed by using "Default" or "." in
     place of a subkey:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 6
+    \snippet code/src_corelib_io_qsettings.cpp 6
 
     On other platforms than Windows, "Default" and "." would be
     treated as regular subkeys.
@@ -2421,7 +2421,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
         Another solution is to use preprocessor directives, for
         example:
 
-        \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 7
+        \snippet code/src_corelib_io_qsettings.cpp 7
 
     \li On Unix and Mac OS X systems, the advisory file locking is disabled
        if NFS (or AutoFS or CacheFS) is detected to work around a bug in the
@@ -2487,7 +2487,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
         (e.g., QPoint, QRect, and QSize), Qt uses an \c{@}-based
         syntax to encode the type. For example:
 
-        \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 8
+        \snippet code/src_corelib_io_qsettings.cpp 8
 
         To minimize compatibility issues, any \c @ that doesn't
         appear at the first position in the value or that isn't
@@ -2498,7 +2498,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
         Windows applications don't escape backslashes (\c{\}) in file
         paths:
 
-        \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 9
+        \snippet code/src_corelib_io_qsettings.cpp 9
 
         QSettings always treats backslash as a special character and
         provides no API for reading or writing such entries.
@@ -2547,7 +2547,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     organization, and with parent \a parent.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 10
+    \snippet code/src_corelib_io_qsettings.cpp 10
 
     The scope is set to QSettings::UserScope, and the format is
     set to QSettings::NativeFormat (i.e. calling setDefaultFormat()
@@ -2659,11 +2659,11 @@ QSettings::QSettings(const QString &fileName, Format format, QObject *parent)
 
     The code
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 11
+    \snippet code/src_corelib_io_qsettings.cpp 11
 
     is equivalent to
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 12
+    \snippet code/src_corelib_io_qsettings.cpp 12
 
     If QCoreApplication::setOrganizationName() and
     QCoreApplication::setApplicationName() has not been previously
@@ -2926,7 +2926,7 @@ QSettings::Status QSettings::status() const
     Groups are useful to avoid typing in the same setting paths over
     and over. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 13
+    \snippet code/src_corelib_io_qsettings.cpp 13
 
     This will set the value of three settings:
 
@@ -2953,7 +2953,7 @@ void QSettings::beginGroup(const QString &prefix)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 14
+    \snippet code/src_corelib_io_qsettings.cpp 14
 
     \sa beginGroup(), group()
 */
@@ -2991,7 +2991,7 @@ QString QSettings::group() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 15
+    \snippet code/src_corelib_io_qsettings.cpp 15
 
     Use beginWriteArray() to write the array in the first place.
 
@@ -3014,7 +3014,7 @@ int QSettings::beginReadArray(const QString &prefix)
     that you want to save a variable-length list of user names and
     passwords. You could then write:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 16
+    \snippet code/src_corelib_io_qsettings.cpp 16
 
     The generated keys will have the form
 
@@ -3099,12 +3099,12 @@ void QSettings::setArrayIndex(int i)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 17
+    \snippet code/src_corelib_io_qsettings.cpp 17
 
     If a group is set using beginGroup(), only the keys in the group
     are returned, without the group prefix:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 18
+    \snippet code/src_corelib_io_qsettings.cpp 18
 
     \sa childGroups(), childKeys()
 */
@@ -3120,12 +3120,12 @@ QStringList QSettings::allKeys() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 19
+    \snippet code/src_corelib_io_qsettings.cpp 19
 
     If a group is set using beginGroup(), the top-level keys in that
     group are returned, without the group prefix:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 20
+    \snippet code/src_corelib_io_qsettings.cpp 20
 
     You can navigate through the entire setting hierarchy using
     childKeys() and childGroups() recursively.
@@ -3144,12 +3144,12 @@ QStringList QSettings::childKeys() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 21
+    \snippet code/src_corelib_io_qsettings.cpp 21
 
     If a group is set using beginGroup(), the first-level keys in
     that group are returned, without the group prefix.
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 22
+    \snippet code/src_corelib_io_qsettings.cpp 22
 
     You can navigate through the entire setting hierarchy using
     childKeys() and childGroups() recursively.
@@ -3192,7 +3192,7 @@ bool QSettings::isWritable() const
 
   Example:
 
-  \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 23
+  \snippet code/src_corelib_io_qsettings.cpp 23
 
   \sa value(), remove(), contains()
 */
@@ -3209,7 +3209,7 @@ void QSettings::setValue(const QString &key, const QVariant &value)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 24
+    \snippet code/src_corelib_io_qsettings.cpp 24
 
     Be aware that if one of the fallback locations contains a setting
     with the same key, that setting will be visible after calling
@@ -3218,7 +3218,7 @@ void QSettings::setValue(const QString &key, const QVariant &value)
     If \a key is an empty string, all keys in the current group() are
     removed. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 25
+    \snippet code/src_corelib_io_qsettings.cpp 25
 
     Note that the Windows registry and INI files use case-insensitive
     keys, whereas the Carbon Preferences API on Mac OS X uses
@@ -3324,7 +3324,7 @@ bool QSettings::event(QEvent *event)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 26
+    \snippet code/src_corelib_io_qsettings.cpp 26
 
     \sa setValue(), contains(), remove()
 */
@@ -3457,7 +3457,7 @@ void QSettings::setPath(Format format, Scope scope, const QString &path)
 
     Typedef for a pointer to a function with the following signature:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 27
+    \snippet code/src_corelib_io_qsettings.cpp 27
 
     \c ReadFunc is used in \c registerFormat() as a pointer to a function
     that reads a set of key/value pairs. \c ReadFunc should read all the 
@@ -3472,7 +3472,7 @@ void QSettings::setPath(Format format, Scope scope, const QString &path)
 
     Typedef for a pointer to a function with the following signature:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 28
+    \snippet code/src_corelib_io_qsettings.cpp 28
 
     \c WriteFunc is used in \c registerFormat() as a pointer to a function 
     that writes a set of key/value pairs. \c WriteFunc is only called once,
@@ -3508,7 +3508,7 @@ void QSettings::setPath(Format format, Scope scope, const QString &path)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 29
+    \snippet code/src_corelib_io_qsettings.cpp 29
 
     \sa setPath()
 */

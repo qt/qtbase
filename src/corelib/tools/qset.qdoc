@@ -40,19 +40,19 @@
 
     Here's an example QSet with QString values:
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 0
+    \snippet code/doc_src_qset.cpp 0
 
     To insert a value into the set, use insert():
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 1
+    \snippet code/doc_src_qset.cpp 1
 
     Another way to insert items into the set is to use operator<<():
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 2
+    \snippet code/doc_src_qset.cpp 2
 
     To test whether an item belongs to the set or not, use contains():
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 3
+    \snippet code/doc_src_qset.cpp 3
 
     If you want to navigate through all the values stored in a QSet,
     you can use an iterator. QSet supports both \l{Java-style
@@ -60,18 +60,18 @@
     iterators} (QSet::iterator and QSet::const_iterator). Here's how
     to iterate over a QSet<QWidget *> using a Java-style iterator:
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 4
+    \snippet code/doc_src_qset.cpp 4
 
     Here's the same code, but using an STL-style iterator:
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 5
+    \snippet code/doc_src_qset.cpp 5
 
     QSet is unordered, so an iterator's sequence cannot be assumed to
     be predictable. If ordering by key is required, use a QMap.
 
     To navigate through a QSet, you can also use \l{foreach}:
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 6
+    \snippet code/doc_src_qset.cpp 6
 
     Items can be removed from the set using remove(). There is also a
     clear() function that removes all items.
@@ -194,7 +194,7 @@
     This function is useful for code that needs to build a huge set
     and wants to avoid repeated reallocation. For example:
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 7
+    \snippet code/doc_src_qset.cpp 7
 
     Ideally, \a size should be slightly more than the maximum number
     of elements expected in the set. \a size doesn't have to be prime,
@@ -618,18 +618,18 @@
     start iterating. Here's a typical loop that prints all the items
     stored in a set:
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 8
+    \snippet code/doc_src_qset.cpp 8
 
     Here's a loop that removes certain items (all those that start
     with 'J') from a set while iterating:
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 9
+    \snippet code/doc_src_qset.cpp 9
 
     STL-style iterators can be used as arguments to \l{generic
     algorithms}. For example, here's how to find an item in the set
     using the qFind() algorithm:
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 10
+    \snippet code/doc_src_qset.cpp 10
 
     Multiple iterators can be used on the same set. However, you may
     not attempt to modify the container while iterating on it.
@@ -661,13 +661,13 @@
     start iterating. Here's a typical loop that prints all the items
     stored in a set:
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 11
+    \snippet code/doc_src_qset.cpp 11
 
     STL-style iterators can be used as arguments to \l{generic
     algorithms}. For example, here's how to find an item in the set
     using the qFind() algorithm:
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 12
+    \snippet code/doc_src_qset.cpp 12
 
     Multiple iterators can be used on the same set. However, you may
     not attempt to modify the container while iterating on it.
@@ -901,7 +901,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 13
+    \snippet code/doc_src_qset.cpp 13
 
     \sa fromList(), QList::fromSet(), qSort()
 */
@@ -926,7 +926,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/code/doc_src_qset.cpp 14
+    \snippet code/doc_src_qset.cpp 14
 
     \sa toList(), QList::toSet()
 */

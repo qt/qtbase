@@ -421,7 +421,7 @@ const QString::Null QString::null = { };
     Most of the QChar member functions also exist in QCharRef.
     However, they are not explicitly documented here.
 
-    \sa QString::operator[]() QString::at() QChar
+    \sa QString::operator[](), QString::at(), QChar
 */
 
 /*!
@@ -467,7 +467,7 @@ const QString::Null QString::null = { };
     *} to its constructor. For example, the following code creates a
     QString of size 5 containing the data "Hello":
 
-    \snippet doc/src/snippets/qstring/main.cpp 0
+    \snippet qstring/main.cpp 0
 
     QString converts the \c{const char *} data into Unicode using the
     fromAscii() function. fromAscii() treats ordinals above 128 as Latin-1
@@ -480,7 +480,7 @@ const QString::Null QString::null = { };
 
     You can also provide string data as an array of \l{QChar}s:
 
-    \snippet doc/src/snippets/qstring/main.cpp 1
+    \snippet qstring/main.cpp 1
 
     QString makes a deep copy of the QChar data, so you can modify it
     later without experiencing side effects. (If for performance
@@ -495,12 +495,12 @@ const QString::Null QString::null = { };
     character that can be used on the left side of an assignment. For
     example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 2
+    \snippet qstring/main.cpp 2
 
     For read-only access, an alternative syntax is to use the at()
     function:
 
-    \snippet doc/src/snippets/qstring/main.cpp 3
+    \snippet qstring/main.cpp 3
 
     The at() function can be faster than \l operator[](), because it
     never causes a \l{deep copy} to occur. Alternatively, use the
@@ -519,7 +519,7 @@ const QString::Null QString::null = { };
     usage. For example, if you want to compare a QString with a string
     literal, you can write code like this and it will work as expected:
 
-    \snippet doc/src/snippets/qstring/main.cpp 4
+    \snippet qstring/main.cpp 4
 
     You can also pass string literals to functions that take QStrings
     as arguments, invoking the QString(const char *)
@@ -534,7 +534,7 @@ const QString::Null QString::null = { };
     character data: append(), prepend(), insert(), replace(), and
     remove(). For example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 5
+    \snippet qstring/main.cpp 5
 
     If you are building a QString gradually and know in advance
     approximately how many characters the QString will contain, you
@@ -563,7 +563,7 @@ const QString::Null QString::null = { };
     they return -1.  For example, here's a typical loop that finds all
     occurrences of a particular substring:
 
-    \snippet doc/src/snippets/qstring/main.cpp 6
+    \snippet qstring/main.cpp 6
 
     QString provides many functions for converting numbers into
     strings and strings into numbers. See the arg() functions, the
@@ -642,14 +642,14 @@ const QString::Null QString::null = { };
     application is to add the following entry to your
     \l{qmake Project Files}{qmake project file}:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qstring.cpp 0
+    \snippet code/src_corelib_tools_qstring.cpp 0
 
     You then need to explicitly call fromAscii(), fromLatin1(),
     fromUtf8(), or fromLocal8Bit() to construct a QString from an
     8-bit string, or use the lightweight QLatin1String class, for
     example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qstring.cpp 1
+    \snippet code/src_corelib_tools_qstring.cpp 1
 
     Similarly, you must call toAscii(), toLatin1(), toUtf8(), or
     toLocal8Bit() explicitly to convert the QString to an 8-bit
@@ -666,7 +666,7 @@ const QString::Null QString::null = { };
     \l{implicitly shared}, QStrings may be treated like \c{int}s or
     other basic types. For example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 7
+    \snippet qstring/main.cpp 7
 
     The \c result variable, is a normal variable allocated on the
     stack. When \c return is called, and because we're returning by
@@ -685,7 +685,7 @@ const QString::Null QString::null = { };
     string with size 0. A null string is always empty, but an empty
     string isn't necessarily null:
 
-    \snippet doc/src/snippets/qstring/main.cpp 8
+    \snippet qstring/main.cpp 8
 
     All functions except isNull() treat null strings the same as empty
     strings. For example, toAscii().constData() returns a pointer to a
@@ -732,7 +732,7 @@ const QString::Null QString::null = { };
     complex string from multiple substrings. You will often write code
     like this:
 
-    \snippet doc/src/snippets/qstring/stringbuilder.cpp 0
+    \snippet qstring/stringbuilder.cpp 0
 
     There is nothing wrong with either of these string constructions,
     but there are a few hidden inefficiencies. Beginning with Qt 4.6,
@@ -770,13 +770,13 @@ const QString::Null QString::null = { };
     \c{QStringBuilder} wherever you want to use it, and use the
     \c{'%'} operator instead of \c{'+'} when concatenating strings:
 
-    \snippet doc/src/snippets/qstring/stringbuilder.cpp 5
+    \snippet qstring/stringbuilder.cpp 5
 
     A more global approach which is the most convenient but
     not entirely source compatible, is to this define in your
     .pro file:
 
-    \snippet doc/src/snippets/qstring/stringbuilder.cpp 3
+    \snippet qstring/stringbuilder.cpp 3
 
     and the \c{'+'} will automatically be performed as the
     \c{QStringBuilder} \c{'%'} everywhere.
@@ -1200,12 +1200,12 @@ void QString::free(Data *d)
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 45
+    \snippet qstring/main.cpp 45
 
     If you want to append a certain number of identical characters to
     the string, use \l operator+=() as follows rather than resize():
 
-    \snippet doc/src/snippets/qstring/main.cpp 46
+    \snippet qstring/main.cpp 46
 
     If you want to expand the string so that it reaches a certain
     width and fill the new positions with a particular character, use
@@ -1213,7 +1213,7 @@ void QString::free(Data *d)
 
     If \a size is negative, it is equivalent to passing zero.
 
-    \snippet doc/src/snippets/qstring/main.cpp 47
+    \snippet qstring/main.cpp 47
 
     \sa truncate(), reserve()
 */
@@ -1278,7 +1278,7 @@ void QString::resize(int size)
     we're fairly sure that size is large enough to make a call to
     reserve() worthwhile:
 
-    \snippet doc/src/snippets/qstring/main.cpp 44
+    \snippet qstring/main.cpp 44
 
     \sa squeeze(), capacity()
 */
@@ -1422,7 +1422,7 @@ QString &QString::operator=(QChar ch)
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 26
+    \snippet qstring/main.cpp 26
 
     If the given \a position is greater than size(), the array is
     first extended using resize().
@@ -1506,11 +1506,11 @@ QString& QString::insert(int i, QChar ch)
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 9
+    \snippet qstring/main.cpp 9
 
     This is the same as using the insert() function:
 
-    \snippet doc/src/snippets/qstring/main.cpp 10
+    \snippet qstring/main.cpp 10
 
     The append() function is typically very fast (\l{constant time}),
     because QString preallocates extra space at the end of the string
@@ -1602,7 +1602,7 @@ QString &QString::append(QChar ch)
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 36
+    \snippet qstring/main.cpp 36
 
     \sa append(), insert()
 */
@@ -1657,7 +1657,7 @@ QString &QString::append(QChar ch)
   position + \a n is beyond the end of the string, the string is
   truncated at the specified \a position.
 
-  \snippet doc/src/snippets/qstring/main.cpp 37
+  \snippet qstring/main.cpp 37
 
   \sa insert(), replace()
 */
@@ -1708,7 +1708,7 @@ QString &QString::remove(const QString &str, Qt::CaseSensitivity cs)
 
   Example:
 
-  \snippet doc/src/snippets/qstring/main.cpp 38
+  \snippet qstring/main.cpp 38
 
   This is the same as \c replace(ch, "", cs).
 
@@ -1741,7 +1741,7 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
   Removes every occurrence of the regular expression \a rx in the
   string, and returns a reference to the string. For example:
 
-  \snippet doc/src/snippets/qstring/main.cpp 39
+  \snippet qstring/main.cpp 39
 
   \sa indexOf(), lastIndexOf(), replace()
 */
@@ -1753,7 +1753,7 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
   Removes every occurrence of the regular expression \a re in the
   string, and returns a reference to the string. For example:
 
-  \snippet doc/src/snippets/qstring/main.cpp 96
+  \snippet qstring/main.cpp 96
 
   \sa indexOf(), lastIndexOf(), replace()
 */
@@ -1766,7 +1766,7 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
 
   Example:
 
-  \snippet doc/src/snippets/qstring/main.cpp 40
+  \snippet qstring/main.cpp 40
 
   \sa insert(), remove()
 */
@@ -1817,13 +1817,13 @@ QString &QString::replace(int pos, int len, QChar after)
 
   Example:
 
-  \snippet doc/src/snippets/qstring/main.cpp 41
+  \snippet qstring/main.cpp 41
 
   \note The replacement text is not rescanned after it is inserted.
 
   Example:
 
-  \snippet doc/src/snippets/qstring/main.cpp 86
+  \snippet qstring/main.cpp 86
 */
 QString &QString::replace(const QString &before, const QString &after, Qt::CaseSensitivity cs)
 {
@@ -2242,7 +2242,7 @@ bool QString::operator<(const QLatin1String &other) const
     \overload operator<()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function. If any NUL characters ('\0') are embedded
+    fromAscii() function. If any NUL characters ('\\0') are embedded
     in the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c
@@ -2264,8 +2264,7 @@ bool QString::operator<(const QLatin1String &other) const
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool operator<=(const QString &s1, const QString &s2)
-    \relates QString
+/*! \fn bool QString::operator<=(const QString &s1, const QString &s2)
 
     Returns true if string \a s1 is lexically less than or equal to
     string \a s2; otherwise returns false.
@@ -2286,7 +2285,7 @@ bool QString::operator<(const QLatin1String &other) const
     \overload operator<=()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function. If any NUL characters ('\0') are embedded
+    fromAscii() function. If any NUL characters ('\\0') are embedded
     in the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c
@@ -2308,8 +2307,7 @@ bool QString::operator<(const QLatin1String &other) const
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool operator>(const QString &s1, const QString &s2)
-    \relates QString
+/*! \fn bool QString::operator>(const QString &s1, const QString &s2)
 
     Returns true if string \a s1 is lexically greater than string \a
     s2; otherwise returns false.
@@ -2346,7 +2344,7 @@ bool QString::operator>(const QLatin1String &other) const
     \overload operator>()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function. If any NUL characters ('\0') are embedded
+    fromAscii() function. If any NUL characters ('\\0') are embedded
     in the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c
@@ -2390,7 +2388,7 @@ bool QString::operator>(const QLatin1String &other) const
     \overload operator>=()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function. If any NUL characters ('\0') are embedded in
+    fromAscii() function. If any NUL characters ('\\0') are embedded in
     the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
@@ -2434,7 +2432,7 @@ bool QString::operator>(const QLatin1String &other) const
     \overload operator!=()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function. If any NUL characters ('\0') are embedded
+    fromAscii() function. If any NUL characters ('\\0') are embedded
     in the byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
@@ -2466,7 +2464,7 @@ bool QString::operator>(const QLatin1String &other) const
 
   Example:
 
-  \snippet doc/src/snippets/qstring/main.cpp 24
+  \snippet qstring/main.cpp 24
 
   If \a from is -1, the search starts at the last character; if it is
   -2, at the next to last character and so on.
@@ -2489,7 +2487,7 @@ int QString::indexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 
   Example:
 
-  \snippet doc/src/snippets/qstring/main.cpp 24
+  \snippet qstring/main.cpp 24
 
   If \a from is -1, the search starts at the last character; if it is
   -2, at the next to last character and so on.
@@ -2664,7 +2662,7 @@ static int lastIndexOfHelper(const ushort *haystack, int from, const ushort *nee
 
   Example:
 
-  \snippet doc/src/snippets/qstring/main.cpp 29
+  \snippet qstring/main.cpp 29
 
   \sa indexOf(), contains(), count()
 */
@@ -2703,7 +2701,7 @@ int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) c
 
   Example:
 
-  \snippet doc/src/snippets/qstring/main.cpp 29
+  \snippet qstring/main.cpp 29
 
   \sa indexOf(), contains(), count()
 */
@@ -2793,13 +2791,13 @@ struct QStringCapture
   string with \a after. Returns a reference to the string. For
   example:
 
-  \snippet doc/src/snippets/qstring/main.cpp 42
+  \snippet qstring/main.cpp 42
 
   For regular expressions containing \l{capturing parentheses},
   occurrences of \b{\\1}, \b{\\2}, ..., in \a after are replaced
   with \a{rx}.cap(1), cap(2), ...
 
-  \snippet doc/src/snippets/qstring/main.cpp 43
+  \snippet qstring/main.cpp 43
 
   \sa indexOf(), lastIndexOf(), remove(), QRegExp::cap()
 */
@@ -2951,13 +2949,13 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
   string with \a after. Returns a reference to the string. For
   example:
 
-  \snippet doc/src/snippets/qstring/main.cpp 87
+  \snippet qstring/main.cpp 87
 
   For regular expressions containing capturing groups,
-  occurrences of \bold{\\1}, \bold{\\2}, ..., in \a after are replaced
+  occurrences of \b{\\1}, \b{\\2}, ..., in \a after are replaced
   with the string captured by the corresponding capturing group.
 
-  \snippet doc/src/snippets/qstring/main.cpp 88
+  \snippet qstring/main.cpp 88
 
   \sa indexOf(), lastIndexOf(), remove(), QRegularExpression, QRegularExpressionMatch
 */
@@ -3125,7 +3123,7 @@ int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
     case sensitive; otherwise the search is case insensitive.
 
     Example:
-    \snippet doc/src/snippets/qstring/main.cpp 17
+    \snippet qstring/main.cpp 17
 
     \sa indexOf(), count()
 */
@@ -3179,7 +3177,7 @@ int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 25
+    \snippet qstring/main.cpp 25
 */
 int QString::indexOf(const QRegExp& rx, int from) const
 {
@@ -3200,7 +3198,7 @@ int QString::indexOf(const QRegExp& rx, int from) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 25
+    \snippet qstring/main.cpp 25
 */
 int QString::indexOf(QRegExp& rx, int from) const
 {
@@ -3216,7 +3214,7 @@ int QString::indexOf(QRegExp& rx, int from) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 30
+    \snippet qstring/main.cpp 30
 */
 int QString::lastIndexOf(const QRegExp& rx, int from) const
 {
@@ -3237,7 +3235,7 @@ int QString::lastIndexOf(const QRegExp& rx, int from) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 30
+    \snippet qstring/main.cpp 30
 */
 int QString::lastIndexOf(QRegExp& rx, int from) const
 {
@@ -3253,7 +3251,7 @@ int QString::lastIndexOf(QRegExp& rx, int from) const
     This function counts overlapping matches, so in the example
     below, there are four instances of "ana" or "ama":
 
-    \snippet doc/src/snippets/qstring/main.cpp 18
+    \snippet qstring/main.cpp 18
 
 */
 int QString::count(const QRegExp& rx) const
@@ -3284,7 +3282,7 @@ int QString::count(const QRegExp& rx) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 93
+    \snippet qstring/main.cpp 93
 */
 int QString::indexOf(const QRegularExpression& re, int from) const
 {
@@ -3310,7 +3308,7 @@ int QString::indexOf(const QRegularExpression& re, int from) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 94
+    \snippet qstring/main.cpp 94
 */
 int QString::lastIndexOf(const QRegularExpression &re, int from) const
 {
@@ -3361,7 +3359,7 @@ bool QString::contains(const QRegularExpression &re) const
     This function counts overlapping matches, so in the example
     below, there are four instances of "ana" or "ama":
 
-    \snippet doc/src/snippets/qstring/main.cpp 95
+    \snippet qstring/main.cpp 95
 */
 int QString::count(const QRegularExpression &re) const
 {
@@ -3436,13 +3434,13 @@ int QString::count(const QRegularExpression &re) const
     to skip empty fields and how to deal with leading and trailing
     separators; see \l{SectionFlags}.
 
-    \snippet doc/src/snippets/qstring/main.cpp 52
+    \snippet qstring/main.cpp 52
 
     If \a start or \a end is negative, we count fields from the right
     of the string, the right-most field being -1, the one from
     right-most field being -2, and so on.
 
-    \snippet doc/src/snippets/qstring/main.cpp 53
+    \snippet qstring/main.cpp 53
 
     \sa split()
 */
@@ -3450,8 +3448,8 @@ int QString::count(const QRegularExpression &re) const
 /*!
     \overload section()
 
-    \snippet doc/src/snippets/qstring/main.cpp 51
-    \snippet doc/src/snippets/qstring/main.cpp 54
+    \snippet qstring/main.cpp 51
+    \snippet qstring/main.cpp 54
 
     \sa split()
 */
@@ -3560,12 +3558,12 @@ static QString extractSections(const QList<qt_section_chunk> &sections,
     This string is treated as a sequence of fields separated by the
     regular expression, \a reg.
 
-    \snippet doc/src/snippets/qstring/main.cpp 55
+    \snippet qstring/main.cpp 55
 
     \warning Using this QRegExp version is much more expensive than
     the overloaded string and character versions.
 
-    \sa split() simplified()
+    \sa split(), simplified()
 */
 QString QString::section(const QRegExp &reg, int start, int end, SectionFlags flags) const
 {
@@ -3600,12 +3598,12 @@ QString QString::section(const QRegExp &reg, int start, int end, SectionFlags fl
     This string is treated as a sequence of fields separated by the
     regular expression, \a re.
 
-    \snippet doc/src/snippets/qstring/main.cpp 89
+    \snippet qstring/main.cpp 89
 
     \warning Using this QRegularExpression version is much more expensive than
     the overloaded string and character versions.
 
-    \sa split() simplified()
+    \sa split(), simplified()
 */
 QString QString::section(const QRegularExpression &re, int start, int end, SectionFlags flags) const
 {
@@ -3646,7 +3644,7 @@ QString QString::section(const QRegularExpression &re, int start, int end, Secti
     The entire string is returned if \a n is greater than size() or
     less than zero.
 
-    \snippet doc/src/snippets/qstring/main.cpp 31
+    \snippet qstring/main.cpp 31
 
     \sa right(), mid(), startsWith()
 */
@@ -3664,7 +3662,7 @@ QString QString::left(int n)  const
     The entire string is returned if \a n is greater than size() or
     less than zero.
 
-    \snippet doc/src/snippets/qstring/main.cpp 48
+    \snippet qstring/main.cpp 48
 
     \sa left(), mid(), endsWith()
 */
@@ -3687,7 +3685,7 @@ QString QString::right(int n) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 34
+    \snippet qstring/main.cpp 34
 
     \sa left(), right()
 */
@@ -3718,7 +3716,7 @@ QString QString::mid(int position, int n) const
     If \a cs is Qt::CaseSensitive (default), the search is
     case sensitive; otherwise the search is case insensitive.
 
-    \snippet doc/src/snippets/qstring/main.cpp 65
+    \snippet qstring/main.cpp 65
 
     \sa endsWith()
 */
@@ -3774,7 +3772,7 @@ bool QString::startsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
     If \a cs is Qt::CaseSensitive (default), the search is case
     sensitive; otherwise the search is case insensitive.
 
-    \snippet doc/src/snippets/qstring/main.cpp 20
+    \snippet qstring/main.cpp 20
 
     \sa startsWith()
 */
@@ -4280,7 +4278,7 @@ QString& QString::setUnicode(const QChar *unicode, int size)
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 57
+    \snippet qstring/main.cpp 57
 
     \sa trimmed()
 */
@@ -4370,7 +4368,7 @@ QString QString::simplified() const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 82
+    \snippet qstring/main.cpp 82
 
     Unlike simplified(), trimmed() leaves internal whitespace alone.
 
@@ -4418,7 +4416,7 @@ QString QString::trimmed() const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 85
+    \snippet qstring/main.cpp 85
 
     The return value is of type QCharRef, a helper class for QString.
     When you get an object of type QCharRef, you can use it as if it
@@ -4457,7 +4455,7 @@ modifiable reference. Equivalent to \c at(position).
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 83
+    \snippet qstring/main.cpp 83
 
     If \a position is negative, it is equivalent to passing zero.
 
@@ -4477,7 +4475,7 @@ void QString::truncate(int pos)
     If \a n is greater than size(), the result is an empty string.
 
     Example:
-    \snippet doc/src/snippets/qstring/main.cpp 15
+    \snippet qstring/main.cpp 15
 
     If you want to remove characters from the \e beginning of the
     string, use remove() instead.
@@ -4497,7 +4495,7 @@ void QString::chop(int n)
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 21
+    \snippet qstring/main.cpp 21
 
     \sa resize()
 */
@@ -4536,7 +4534,7 @@ QString& QString::fill(QChar ch, int size)
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 58
+    \snippet qstring/main.cpp 58
 
     \sa isEmpty(), resize()
 */
@@ -4547,7 +4545,7 @@ QString& QString::fill(QChar ch, int size)
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 28
+    \snippet qstring/main.cpp 28
 
     Qt makes a distinction between null strings and empty strings for
     historical reasons. For most applications, what matters is
@@ -4564,7 +4562,7 @@ QString& QString::fill(QChar ch, int size)
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 27
+    \snippet qstring/main.cpp 27
 
     \sa size()
 */
@@ -4576,7 +4574,7 @@ QString& QString::fill(QChar ch, int size)
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 84
+    \snippet qstring/main.cpp 84
 
     This operation is typically very fast (\l{constant time}),
     because QString preallocates extra space at the end of the string
@@ -4598,7 +4596,7 @@ QString& QString::fill(QChar ch, int size)
     \overload operator+=()
 
     Appends the byte array \a ba to this string. The byte array is converted
-    to Unicode using the fromAscii() function. If any NUL characters ('\0')
+    to Unicode using the fromAscii() function. If any NUL characters ('\\0')
     are embedded in the \a ba byte array, they will be included in the
     transformation.
 
@@ -4805,7 +4803,7 @@ QString& QString::fill(QChar ch, int size)
     a human would expect.  Consider sorting user-visible strings with
     localeAwareCompare().
 
-    \snippet doc/src/snippets/qstring/main.cpp 16
+    \snippet qstring/main.cpp 16
 
     \sa operator==(), operator<(), operator>()
 */
@@ -5089,13 +5087,13 @@ const ushort *QString::utf16() const
     If \a truncate is false and the size() of the string is more than
     \a width, then the returned string is a copy of the string.
 
-    \snippet doc/src/snippets/qstring/main.cpp 32
+    \snippet qstring/main.cpp 32
 
     If \a truncate is true and the size() of the string is more than
     \a width, then any characters in a copy of the string after
     position \a width are removed, and the copy is returned.
 
-    \snippet doc/src/snippets/qstring/main.cpp 33
+    \snippet qstring/main.cpp 33
 
     \sa rightJustified()
 */
@@ -5125,7 +5123,7 @@ QString QString::leftJustified(int width, QChar fill, bool truncate) const
     Returns a string of size() \a width that contains the \a fill
     character followed by the string. For example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 49
+    \snippet qstring/main.cpp 49
 
     If \a truncate is false and the size() of the string is more than
     \a width, then the returned string is a copy of the string.
@@ -5134,7 +5132,7 @@ QString QString::leftJustified(int width, QChar fill, bool truncate) const
     \a width, then the resulting string is truncated at position \a
     width.
 
-    \snippet doc/src/snippets/qstring/main.cpp 50
+    \snippet qstring/main.cpp 50
 
     \sa leftJustified()
 */
@@ -5163,7 +5161,7 @@ QString QString::rightJustified(int width, QChar fill, bool truncate) const
 /*!
     Returns a lowercase copy of the string.
 
-    \snippet doc/src/snippets/qstring/main.cpp 75
+    \snippet qstring/main.cpp 75
 
     The case conversion will always happen in the 'C' locale. For locale dependent
     case folding use QLocale::toLower()
@@ -5286,7 +5284,7 @@ QString QString::toCaseFolded() const
 /*!
     Returns an uppercase copy of the string.
 
-    \snippet doc/src/snippets/qstring/main.cpp 81
+    \snippet qstring/main.cpp 81
 
     The case conversion will always happen in the 'C' locale. For locale dependent
     case folding use QLocale::toUpper()
@@ -5369,14 +5367,14 @@ QString QString::toUpper() const
     \c{long long}). If you need those, use the standard snprintf()
     function instead:
 
-    \snippet doc/src/snippets/qstring/main.cpp 63
+    \snippet qstring/main.cpp 63
 
     \warning We do not recommend using QString::sprintf() in new Qt
     code. Instead, consider using QTextStream or arg(), both of
     which support Unicode strings seamlessly and are type-safe.
     Here's an example that uses QTextStream:
 
-    \snippet doc/src/snippets/qstring/main.cpp 64
+    \snippet qstring/main.cpp 64
 
     For \l {QObject::tr()}{translations}, especially if the strings
     contains more than one escape sequence, you should consider using
@@ -5749,7 +5747,7 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 74
+    \snippet qstring/main.cpp 74
 
     \sa number(), toULongLong(), toInt(), QLocale::toLongLong()
 */
@@ -5784,7 +5782,7 @@ qint64 QString::toLongLong(bool *ok, int base) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 79
+    \snippet qstring/main.cpp 79
 
     \sa number(), toLongLong(), QLocale::toULongLong()
 */
@@ -5821,7 +5819,7 @@ quint64 QString::toULongLong(bool *ok, int base) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 73
+    \snippet qstring/main.cpp 73
 
     \sa number(), toULong(), toInt(), QLocale::toLong()
 */
@@ -5856,7 +5854,7 @@ long QString::toLong(bool *ok, int base) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 78
+    \snippet qstring/main.cpp 78
 
     \sa number(), QLocale::toULong()
 */
@@ -5890,7 +5888,7 @@ ulong QString::toULong(bool *ok, int base) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 72
+    \snippet qstring/main.cpp 72
 
     \sa number(), toUInt(), toDouble(), QLocale::toInt()
 */
@@ -5923,7 +5921,7 @@ int QString::toInt(bool *ok, int base) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 77
+    \snippet qstring/main.cpp 77
 
     \sa number(), toInt(), QLocale::toUInt()
 */
@@ -5956,7 +5954,7 @@ uint QString::toUInt(bool *ok, int base) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 76
+    \snippet qstring/main.cpp 76
 
     \sa number(), toUShort(), toInt(), QLocale::toShort()
 */
@@ -5989,7 +5987,7 @@ short QString::toShort(bool *ok, int base) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 80
+    \snippet qstring/main.cpp 80
 
     \sa number(), toShort(), QLocale::toUShort()
 */
@@ -6014,25 +6012,25 @@ ushort QString::toUShort(bool *ok, int base) const
     If a conversion error occurs, \c{*}\a{ok} is set to false;
     otherwise \c{*}\a{ok} is set to true.
 
-    \snippet doc/src/snippets/qstring/main.cpp 66
+    \snippet qstring/main.cpp 66
 
     Various string formats for floating point numbers can be converted
     to double values:
 
-    \snippet doc/src/snippets/qstring/main.cpp 67
+    \snippet qstring/main.cpp 67
 
     The string conversion will always happen in the 'C' locale. For locale
     dependent conversion use QLocale::toDouble()
 
-    \snippet doc/src/snippets/qstring/main.cpp 68
+    \snippet qstring/main.cpp 68
 
     For historic reasons, this function does not handle
     thousands group separators. If you need to convert such numbers,
     use QLocale::toDouble().
 
-    \snippet doc/src/snippets/qstring/main.cpp 69
+    \snippet qstring/main.cpp 69
 
-    \sa number() QLocale::setDefault() QLocale::toDouble() trimmed()
+    \sa number(), QLocale::setDefault(), QLocale::toDouble(), trimmed()
 */
 
 double QString::toDouble(bool *ok) const
@@ -6052,7 +6050,7 @@ double QString::toDouble(bool *ok) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 71
+    \snippet qstring/main.cpp 71
 
     \sa number(), toDouble(), toInt(), QLocale::toFloat()
 */
@@ -6081,7 +6079,7 @@ float QString::toFloat(bool *ok) const
     The base is 10 by default and must be between 2 and 36. For bases
     other than 10, \a n is treated as an unsigned integer.
 
-    \snippet doc/src/snippets/qstring/main.cpp 56
+    \snippet qstring/main.cpp 56
 
    The formatting always uses QLocale::C, i.e., English/UnitedStates.
    To get a localized string representation of a number, use
@@ -6220,7 +6218,7 @@ QString &QString::setNum(double n, char f, int prec)
     To get a localized string representation of a number, use
     QLocale::toString() with the appropriate locale.
 
-    \snippet doc/src/snippets/qstring/main.cpp 35
+    \snippet qstring/main.cpp 35
 
     \sa setNum()
 */
@@ -6318,7 +6316,7 @@ QString QString::number(double n, char f, int prec)
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 62
+    \snippet qstring/main.cpp 62
 
     \sa QStringList::join(), section()
 */
@@ -6369,18 +6367,18 @@ QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivit
     Here's an example where we extract the words in a sentence
     using one or more whitespace characters as the separator:
 
-    \snippet doc/src/snippets/qstring/main.cpp 59
+    \snippet qstring/main.cpp 59
 
     Here's a similar example, but this time we use any sequence of
     non-word characters as the separator:
 
-    \snippet doc/src/snippets/qstring/main.cpp 60
+    \snippet qstring/main.cpp 60
 
     Here's a third example where we use a zero-length assertion,
     \b{\\b} (word boundary), to split the string into an
     alternating sequence of non-word and word tokens:
 
-    \snippet doc/src/snippets/qstring/main.cpp 61
+    \snippet qstring/main.cpp 61
 
     \sa QStringList::join(), section()
 */
@@ -6418,18 +6416,18 @@ QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
     Here's an example where we extract the words in a sentence
     using one or more whitespace characters as the separator:
 
-    \snippet doc/src/snippets/qstring/main.cpp 90
+    \snippet qstring/main.cpp 90
 
     Here's a similar example, but this time we use any sequence of
     non-word characters as the separator:
 
-    \snippet doc/src/snippets/qstring/main.cpp 91
+    \snippet qstring/main.cpp 91
 
     Here's a third example where we use a zero-length assertion,
-    \bold{\\b} (word boundary), to split the string into an
+    \b{\\b} (word boundary), to split the string into an
     alternating sequence of non-word and word tokens:
 
-    \snippet doc/src/snippets/qstring/main.cpp 92
+    \snippet qstring/main.cpp 92
 
     \sa QStringList::join(), section()
 */
@@ -6770,7 +6768,7 @@ static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int f
   This example shows how we might create a \c status string for
   reporting progress while processing a list of files:
 
-  \snippet doc/src/snippets/qstring/main.cpp 11
+  \snippet qstring/main.cpp 11
 
   First, \c arg(i) replaces \c %1. Then \c arg(total) replaces \c
   %2. Finally, \c arg(fileName) replaces \c %3.
@@ -6806,7 +6804,7 @@ QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
   strings \a a1 and \a a2 are replaced in one pass. This can make a
   difference if \a a1 contains e.g. \c{%1}:
 
-  \snippet doc/src/snippets/qstring/main.cpp 13
+  \snippet qstring/main.cpp 13
 */
 
 /*!
@@ -6893,8 +6891,8 @@ QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
   locale was specified, the "C" locale is used. The 'L' flag is
   ignored if \a base is not 10.
 
-  \snippet doc/src/snippets/qstring/main.cpp 12
-  \snippet doc/src/snippets/qstring/main.cpp 14
+  \snippet qstring/main.cpp 12
+  \snippet qstring/main.cpp 14
 
   If \a fillChar is '0' (the number 0, ASCII 48), the locale's zero is
   used. For negative numbers, zero padding might appear before the
@@ -6930,8 +6928,8 @@ QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
   using QLocale::setDefault(). The 'L' flag is ignored if \a base is
   not 10.
 
-  \snippet doc/src/snippets/qstring/main.cpp 12
-  \snippet doc/src/snippets/qstring/main.cpp 14
+  \snippet qstring/main.cpp 12
+  \snippet qstring/main.cpp 14
 
   If \a fillChar is '0' (the number 0, ASCII 48), the locale's zero is
   used. For negative numbers, zero padding might appear before the
@@ -7114,7 +7112,7 @@ QString QString::arg(char a, int fieldWidth, QChar fillChar) const
   value produces right-aligned text; a negative value produces
   left-aligned text.
 
-  \snippet doc/src/snippets/code/src_corelib_tools_qstring.cpp 2
+  \snippet code/src_corelib_tools_qstring.cpp 2
 
   The '%' can be followed by an 'L', in which case the sequence is
   replaced with a localized representation of \a a. The conversion
@@ -7310,7 +7308,7 @@ bool QString::isRightToLeft() const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp 19
+    \snippet qstring/main.cpp 19
 
     Note that the pointer remains valid only as long as the string is
     not modified by other means. For read-only access, constData() is
@@ -7398,8 +7396,8 @@ bool QString::isRightToLeft() const
     Here's an example of how we can use a QRegExp on raw data in
     memory without requiring to copy the data into a QString:
 
-    \snippet doc/src/snippets/qstring/main.cpp 22
-    \snippet doc/src/snippets/qstring/main.cpp 23
+    \snippet qstring/main.cpp 22
+    \snippet qstring/main.cpp 23
 
     \warning A string created with fromRawData() is \e not
     '\\0'-terminated, unless the raw data contains a '\\0' character
@@ -7475,11 +7473,11 @@ QString &QString::setRawData(const QChar *unicode, int size)
     the \c{const char *} data. For example, assuming \c str is a
     QString,
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qstring.cpp 3
+    \snippet code/src_corelib_tools_qstring.cpp 3
 
     is much faster than
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qstring.cpp 4
+    \snippet code/src_corelib_tools_qstring.cpp 4
 
     because it doesn't construct four temporary QString objects and
     make a deep copy of the character data.
@@ -7491,7 +7489,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     just a very thin wrapper around a \c{const char *}. Using
     QLatin1String, the example code above becomes
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qstring.cpp 5
+    \snippet code/src_corelib_tools_qstring.cpp 5
 
     This is a bit longer to type, but it provides exactly the same
     benefits as the first version of the code, and is faster than
@@ -7501,7 +7499,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     QLatin1String can be used everywhere a QString is expected. For
     example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qstring.cpp 6
+    \snippet code/src_corelib_tools_qstring.cpp 6
 
     \sa QString, QLatin1Char, QStringLiteral
 */
@@ -8369,7 +8367,7 @@ QString &QString::append(const QStringRef &str)
     If \a n is greater than size() or less than zero, a reference to the entire
     string is returned.
 
-    \snippet doc/src/snippets/qstring/main.cpp leftRef
+    \snippet qstring/main.cpp leftRef
 
     \sa left(), rightRef(), midRef(), startsWith()
 */
@@ -8389,7 +8387,7 @@ QStringRef QString::leftRef(int n)  const
     If \a n is greater than size() or less than zero, a reference to the entire
     string is returned.
 
-    \snippet doc/src/snippets/qstring/main.cpp rightRef
+    \snippet qstring/main.cpp rightRef
 
     \sa right(), leftRef(), midRef(), endsWith()
 */
@@ -8416,7 +8414,7 @@ QStringRef QString::rightRef(int n) const
 
     Example:
 
-    \snippet doc/src/snippets/qstring/main.cpp midRef
+    \snippet qstring/main.cpp midRef
 
     \sa mid(), leftRef(), rightRef()
 */
@@ -9160,7 +9158,7 @@ QVector<uint> QStringRef::toUcs4() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qstring.cpp 7
+    \snippet code/src_corelib_tools_qstring.cpp 7
 */
 QString QString::toHtmlEscaped() const
 {

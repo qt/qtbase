@@ -112,7 +112,7 @@ QByteArray QBufferPrivate::peek(qint64 maxSize)
     interface. The QByteArray is treated just as a standard random-accessed
     file. Example:
 
-    \snippet doc/src/snippets/buffer/buffer.cpp 0
+    \snippet buffer/buffer.cpp 0
 
     By default, an internal QByteArray buffer is created for you when
     you create a QBuffer. You can access this buffer directly by
@@ -130,12 +130,12 @@ QByteArray QBufferPrivate::peek(qint64 maxSize)
     The following code snippet shows how to write data to a
     QByteArray using QDataStream and QBuffer:
 
-    \snippet doc/src/snippets/buffer/buffer.cpp 1
+    \snippet buffer/buffer.cpp 1
 
     Effectively, we convert the application's QPalette into a byte
     array. Here's how to read the data from the QByteArray:
 
-    \snippet doc/src/snippets/buffer/buffer.cpp 2
+    \snippet buffer/buffer.cpp 2
 
     QTextStream and QDataStream also provide convenience constructors
     that take a QByteArray and that create a QBuffer behind the
@@ -194,7 +194,7 @@ QBuffer::QBuffer(QObject *parent)
 
     Example:
 
-    \snippet doc/src/snippets/buffer/buffer.cpp 3
+    \snippet buffer/buffer.cpp 3
 
     \sa open(), setBuffer(), setData()
 */
@@ -230,7 +230,7 @@ QBuffer::~QBuffer()
 
     Example:
 
-    \snippet doc/src/snippets/buffer/buffer.cpp 4
+    \snippet buffer/buffer.cpp 4
 
     If \a byteArray is 0, the buffer creates its own internal
     QByteArray to work on. This byte array is initially empty.

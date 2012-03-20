@@ -121,7 +121,7 @@ void QObjectCleanupHandler::remove(QObject *object)
     Returns true if this cleanup handler is empty or if all objects in
     this cleanup handler have been destroyed; otherwise return false.
 
-    \sa add() remove() clear()
+    \sa add(), remove(), clear()
 */
 bool QObjectCleanupHandler::isEmpty() const
 {

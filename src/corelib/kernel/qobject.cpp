@@ -568,9 +568,9 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
 
     \l uic generates code that invokes this function to enable
     auto-connection to be performed between widgets on forms created
-    with \QD. More information about using auto-connection with \QD is
+    with \e{Qt Designer}. More information about using auto-connection with \e{Qt Designer} is
     given in the \l{Using a Designer UI File in Your Application} section of
-    the \QD manual.
+    the \e{Qt Designer} manual.
 
     \section1 Dynamic Properties
 
@@ -606,7 +606,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
 
     Returns 0 if there is no such child.
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 0
+    \snippet code/src_corelib_kernel_qobject.cpp 0
 */
 
 void *qt_find_obj_child(QObject *parent, const char *type, const QString &name)
@@ -651,8 +651,8 @@ static bool check_parent_thread(QObject *parent,
     Constructs an object with parent object \a parent.
 
     The parent of an object may be viewed as the object's owner. For
-    instance, a \l{QDialog}{dialog box} is the parent of the \gui OK
-    and \gui Cancel buttons it contains.
+    instance, a \l{QDialog}{dialog box} is the parent of the \uicontrol{OK}
+    and \uicontrol{Cancel} buttons it contains.
 
     The destructor of a parent object destroys all child objects.
 
@@ -881,7 +881,7 @@ QObjectPrivate::Connection::~Connection()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 1
+    \snippet code/src_corelib_kernel_qobject.cpp 1
 
     \sa staticMetaObject
 */
@@ -905,7 +905,7 @@ QObjectPrivate::Connection::~Connection()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 2
+    \snippet code/src_corelib_kernel_qobject.cpp 2
 
     \sa metaObject()
 */
@@ -924,7 +924,7 @@ QObjectPrivate::Connection::~Connection()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 3
+    \snippet code/src_corelib_kernel_qobject.cpp 3
 
     The qobject_cast() function behaves similarly to the standard C++
     \c dynamic_cast(), with the advantages that it doesn't require
@@ -950,7 +950,7 @@ QObjectPrivate::Connection::~Connection()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 4
+    \snippet code/src_corelib_kernel_qobject.cpp 4
 
     If you need to determine whether an object is an instance of a particular
     class for the purpose of casting it, consider using qobject_cast<Type *>(object)
@@ -967,7 +967,7 @@ QObjectPrivate::Connection::~Connection()
     You can find an object by name (and type) using findChild().
     You can find a set of objects with findChildren().
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 5
+    \snippet code/src_corelib_kernel_qobject.cpp 5
 
     By default, this property contains an empty string.
 
@@ -1155,7 +1155,7 @@ void QObject::customEvent(QEvent * /* event */)
     true; otherwise return false.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 6
+    \snippet code/src_corelib_kernel_qobject.cpp 6
 
     Notice in the example above that unhandled events are passed to
     the base class's eventFilter() function, since the base class
@@ -1225,7 +1225,7 @@ QThread *QObject::thread() const
     QApplication::thread() to retrieve the thread in which the
     application lives. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 7
+    \snippet code/src_corelib_kernel_qobject.cpp 7
 
     If \a targetThread is zero, all event processing for this object
     and its children stops.
@@ -1390,7 +1390,7 @@ void QObjectPrivate::_q_reregisterTimers(void *pointer)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 8
+    \snippet code/src_corelib_kernel_qobject.cpp 8
 
     Note that QTimer's accuracy depends on the underlying operating system and
     hardware. The \a timerType argument allows you to customize the accuracy of
@@ -1472,7 +1472,7 @@ void QObject::killTimer(int id)
     The QObjectList class is defined in the \c{<QObject>} header
     file as the following:
 
-    \quotefromfile src/corelib/kernel/qobject.h
+    \quotefromfile kernel/qobject.h
     \skipto /typedef .*QObjectList/
     \printuntil QObjectList
 
@@ -1507,21 +1507,21 @@ void QObject::killTimer(int id)
     named \c{"button1"}, even if the button isn't a direct child of
     the parent:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 10
+    \snippet code/src_corelib_kernel_qobject.cpp 10
 
     This example returns a \l{QListWidget} child of \c{parentWidget}:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 11
+    \snippet code/src_corelib_kernel_qobject.cpp 11
 
     This example returns a child \l{QPushButton} of \c{parentWidget}
     (its direct parent) named \c{"button1"}:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 41
+    \snippet code/src_corelib_kernel_qobject.cpp 41
 
     This example returns a \l{QListWidget} child of \c{parentWidget},
     its direct parent:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 42
+    \snippet code/src_corelib_kernel_qobject.cpp 42
 
     \sa findChildren()
 */
@@ -1538,15 +1538,15 @@ void QObject::killTimer(int id)
     The following example shows how to find a list of child \l{QWidget}s of
     the specified \c{parentWidget} named \c{widgetname}:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 12
+    \snippet code/src_corelib_kernel_qobject.cpp 12
 
     This example returns all \c{QPushButton}s that are children of \c{parentWidget}:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 13
+    \snippet code/src_corelib_kernel_qobject.cpp 13
 
     This example returns all \c{QPushButton}s that are immediate children of \c{parentWidget}:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 43
+    \snippet code/src_corelib_kernel_qobject.cpp 43
 
     \sa findChild()
 */
@@ -1791,7 +1791,7 @@ void QObjectPrivate::setParent_helper(QObject *o)
     \fn void QObject::installEventFilter(QObject *filterObj)
 
     Installs an event filter \a filterObj on this object. For example:
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 14
+    \snippet code/src_corelib_kernel_qobject.cpp 14
 
     An event filter is an object that receives all events that are
     sent to this object. The filter can either stop the event or
@@ -1806,11 +1806,11 @@ void QObjectPrivate::setParent_helper(QObject *o)
     Here's a \c KeyPressEater class that eats the key presses of its
     monitored objects:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 15
+    \snippet code/src_corelib_kernel_qobject.cpp 15
 
     And here's how to install it on two widgets:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 16
+    \snippet code/src_corelib_kernel_qobject.cpp 16
 
     The QShortcut class, for example, uses this technique to intercept
     shortcut key presses.
@@ -1925,7 +1925,7 @@ void QObject::deleteLater()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 17
+    \snippet code/src_corelib_kernel_qobject.cpp 17
     \dots
 
     See \l{Writing Source Code for Translation} for a detailed description of
@@ -1959,7 +1959,7 @@ void QObject::deleteLater()
     escape sequences for specifying non-ASCII characters in string
     literals to trUtf8(). For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 20
+    \snippet code/src_corelib_kernel_qobject.cpp 20
 
     \sa tr(), QApplication::translate(), {Internationalization with Qt}
 */
@@ -2153,7 +2153,7 @@ int QObject::senderSignalIndex() const
     When calling this function, you can use the \c SIGNAL() macro to
     pass a specific signal:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 21
+    \snippet code/src_corelib_kernel_qobject.cpp 21
 
     As the code snippet above illustrates, you can use this function
     to avoid emitting a signal that nobody listens to.
@@ -2278,18 +2278,18 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
     You must use the \c SIGNAL() and \c SLOT() macros when specifying
     the \a signal and the \a method, for example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 22
+    \snippet code/src_corelib_kernel_qobject.cpp 22
 
     This example ensures that the label always displays the current
     scroll bar value. Note that the signal and slots parameters must not
     contain any variable names, only the type. E.g. the following would
     not work and return false:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 23
+    \snippet code/src_corelib_kernel_qobject.cpp 23
 
     A signal can also be connected to another signal:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 24
+    \snippet code/src_corelib_kernel_qobject.cpp 24
 
     In this example, the \c MyWidget constructor relays a signal from
     a private member variable, and makes it available under a name
@@ -2326,7 +2326,7 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
     scenes. If you try to use a queued connection and get the error
     message
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 25
+    \snippet code/src_corelib_kernel_qobject.cpp 25
 
     call qRegisterMetaType() to register the data type before you
     establish the connection.
@@ -2575,27 +2575,27 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
     \list 1
     \li Disconnect everything connected to an object's signals:
 
-       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 26
+       \snippet code/src_corelib_kernel_qobject.cpp 26
 
        equivalent to the non-static overloaded function
 
-       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 27
+       \snippet code/src_corelib_kernel_qobject.cpp 27
 
     \li Disconnect everything connected to a specific signal:
 
-       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 28
+       \snippet code/src_corelib_kernel_qobject.cpp 28
 
        equivalent to the non-static overloaded function
 
-       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 29
+       \snippet code/src_corelib_kernel_qobject.cpp 29
 
     \li Disconnect a specific receiver:
 
-       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 30
+       \snippet code/src_corelib_kernel_qobject.cpp 30
 
        equivalent to the non-static overloaded function
 
-       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 31
+       \snippet code/src_corelib_kernel_qobject.cpp 31
 
     \endlist
 
@@ -2847,7 +2847,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     If you want to compare \a signal with a specific signal, use
     QLatin1String and the \c SIGNAL() macro as follows:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 32
+    \snippet code/src_corelib_kernel_qobject.cpp 32
 
     If the signal contains multiple parameters or parameters that
     contain spaces, call QMetaObject::normalizedSignature() on
@@ -3101,13 +3101,13 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
     Searches recursively for all child objects of the given \a object, and connects
     matching signals from them to slots of \a object that follow the following form:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 33
+    \snippet code/src_corelib_kernel_qobject.cpp 33
 
     Let's assume our object has a child object of type QPushButton with
     the \l{QObject::objectName}{object name} \c{button1}. The slot to catch the
     button's \c{clicked()} signal would be:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 34
+    \snippet code/src_corelib_kernel_qobject.cpp 34
 
     \sa QObject::setObjectName()
  */
@@ -3722,7 +3722,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 35
+    \snippet code/src_corelib_kernel_qobject.cpp 35
 
     \sa QMetaObject::classInfo()
 */
@@ -3736,9 +3736,9 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 
     Example:
 
-    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.h 1
+    \snippet tools/plugandpaintplugins/basictools/basictoolsplugin.h 1
     \dots
-    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.h 3
+    \snippet tools/plugandpaintplugins/basictools/basictoolsplugin.h 3
 
     See the \l{tools/plugandpaintplugins/basictools}{Plug & Paint
     Basic Tools} example for details.
@@ -3755,7 +3755,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
     they have additional features accessible through the \l
     {Meta-Object System}.
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 36
+    \snippet code/src_corelib_kernel_qobject.cpp 36
 
     The property name and type and the \c READ function are required.
     The type can be any type supported by QVariant, or it can be a
@@ -3765,7 +3765,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 
     For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 37
+    \snippet code/src_corelib_kernel_qobject.cpp 37
 
     For more details about how to use this macro, and a more detailed
     example of its use, see the discussion on \l {Qt's Property System}.
@@ -3782,7 +3782,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 
     For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 38
+    \snippet code/src_corelib_kernel_qobject.cpp 38
 
     If you want to register an enum that is declared in another class,
     the enum must be fully qualified with the name of the class
@@ -3804,12 +3804,12 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
     For example, in QLibrary, the \l{QLibrary::LoadHints}{LoadHints} flag is
     declared in the following way:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 39a
+    \snippet code/src_corelib_kernel_qobject.cpp 39a
 
     The declaration of the flags themselves is performed in the public section
     of the QLibrary class itself, using the \l Q_DECLARE_FLAGS() macro:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 39b
+    \snippet code/src_corelib_kernel_qobject.cpp 39b
 
     \note This macro takes care of registering individual flag values
     with the meta-object system, so it is unnecessary to use Q_ENUMS()
@@ -3828,10 +3828,10 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 
     For example:
 
-    \snippet doc/src/snippets/signalsandslots/signalsandslots.h 1
+    \snippet signalsandslots/signalsandslots.h 1
     \codeline
-    \snippet doc/src/snippets/signalsandslots/signalsandslots.h 2
-    \snippet doc/src/snippets/signalsandslots/signalsandslots.h 3
+    \snippet signalsandslots/signalsandslots.h 2
+    \snippet signalsandslots/signalsandslots.h 3
 
     \note This macro requires the class to be a subclass of QObject. Use
     Q_GADGET instead of Q_OBJECT to enable the meta object system's support
@@ -3927,7 +3927,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
     be invoked via the meta-object system. The macro is written before
     the return type, as shown in the following example:
 
-    \snippet snippets/qmetaobject-invokable/window.h Window class with invokable method
+    \snippet qmetaobject-invokable/window.h Window class with invokable method
 
     The \c invokableMethod() function is marked up using Q_INVOKABLE, causing
     it to be registered with the meta-object system and enabling it to be
@@ -3968,7 +3968,7 @@ void qDeleteInEventHandler(QObject *o)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 44
+    \snippet code/src_corelib_kernel_qobject.cpp 44
 
     This example ensures that the label always displays the current
     line edit text.
@@ -4003,7 +4003,7 @@ void qDeleteInEventHandler(QObject *o)
     scenes. If you try to use a queued connection and get the error
     message
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 25
+    \snippet code/src_corelib_kernel_qobject.cpp 25
 
     make sure to declare the argument type with Q_DECLARE_METATYPE
  */
@@ -4029,11 +4029,11 @@ void qDeleteInEventHandler(QObject *o)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 45
+    \snippet code/src_corelib_kernel_qobject.cpp 45
 
     If your compiler support C++11 lambda expressions, you can use them:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 46
+    \snippet code/src_corelib_kernel_qobject.cpp 46
 
     The connection will automatically disconnect if the sender is destroyed.
  */
@@ -4178,19 +4178,19 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     \list 1
     \li Disconnect everything connected to an object's signals:
 
-       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 26
+       \snippet code/src_corelib_kernel_qobject.cpp 26
 
     \li Disconnect everything connected to a specific signal:
 
-       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 47
+       \snippet code/src_corelib_kernel_qobject.cpp 47
 
     \li Disconnect a specific receiver:
 
-       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 30
+       \snippet code/src_corelib_kernel_qobject.cpp 30
 
     \li Disconnect a connection from one specific signal to a specific slot:
 
-       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 48
+       \snippet code/src_corelib_kernel_qobject.cpp 48
 
 
     \endlist

@@ -205,7 +205,7 @@
     Here's an example custom data type that meets the requirement of
     an assignable data type:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 0
+    \snippet code/doc_src_containers.cpp 0
 
     If we don't provide a copy constructor or an assignment operator,
     C++ provides a default implementation that performs a
@@ -216,7 +216,7 @@
     explicit constructors or assignment operator, the following data
     type can be stored in a container:
 
-    \snippet doc/src/snippets/streaming/main.cpp 0
+    \snippet streaming/main.cpp 0
 
     Some containers have additional requirements for the data types
     they can store. For example, the Key type of a QMap<Key, T> must
@@ -233,9 +233,9 @@
     straightforward; here's how we could do it for the Movie struct
     above:
 
-    \snippet doc/src/snippets/streaming/main.cpp 1
+    \snippet streaming/main.cpp 1
     \codeline
-    \snippet doc/src/snippets/streaming/main.cpp 2
+    \snippet streaming/main.cpp 2
 
     \keyword default-constructed values
 
@@ -301,12 +301,12 @@
     iterator positions as red arrows for a list containing four
     items:
 
-    \img javaiterators1.png
+    \image javaiterators1.png
 
     Here's a typical loop for iterating through all the elements of a
     QList<QString> in order and printing them to the console:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 1
+    \snippet code/doc_src_containers.cpp 1
 
     It works as follows: The QList to iterate over is passed to the
     QListIterator constructor. At that point, the iterator is located
@@ -319,7 +319,7 @@
 
     Here's how to iterate backward in a QList:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 2
+    \snippet code/doc_src_containers.cpp 2
 
     The code is symmetric with iterating forward, except that we
     start by calling \l{QListIterator::toBack()}{toBack()}
@@ -329,7 +329,7 @@
     \l{QListIterator::next()}{next()} and
     \l{QListIterator::previous()}{previous()} on an iterator:
 
-    \img javaiterators2.png
+    \image javaiterators2.png
 
     The following table summarizes the QListIterator API:
 
@@ -358,7 +358,7 @@
     QMutableListIterator. Here's an example where we remove all
     odd numbers from a QList<int> using QMutableListIterator:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 3
+    \snippet code/doc_src_containers.cpp 3
 
     The next() call in the loop is made every time. It jumps over the
     next item in the list. The
@@ -368,13 +368,13 @@
     the iterator, so it is safe to continue using it. This works just
     as well when iterating backward:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 4
+    \snippet code/doc_src_containers.cpp 4
 
     If we just want to modify the value of an existing item, we can
     use \l{QMutableListIterator::setValue()}{setValue()}. In the code
     below, we replace any value larger than 128 with 128:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 5
+    \snippet code/doc_src_containers.cpp 5
 
     Just like \l{QMutableListIterator::remove()}{remove()},
     \l{QMutableListIterator::setValue()}{setValue()} operates on the
@@ -387,7 +387,7 @@
     operations, we don't even need
     \l{QMutableListIterator::setValue()}{setValue()}:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 6
+    \snippet code/doc_src_containers.cpp 6
 
     As mentioned above, QLinkedList's, QVector's, and QSet's iterator
     classes have exactly the same API as QList's. We will now turn to
@@ -410,7 +410,7 @@
     The following example removes all (capital, country) pairs where
     the capital's name ends with "City":
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 7
+    \snippet code/doc_src_containers.cpp 7
 
     QMapIterator also provides a key() and a value() function that
     operate directly on the iterator and that return the key and
@@ -418,7 +418,7 @@
     example, the following code copies the contents of a QMap into a
     QHash:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 8
+    \snippet code/doc_src_containers.cpp 8
 
     If we want to iterate through all the items with the same
     value, we can use \l{QMapIterator::findNext()}{findNext()}
@@ -426,7 +426,7 @@
     Here's an example where we remove all the items with a particular
     value:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 9
+    \snippet code/doc_src_containers.cpp 9
 
     \section2 STL-Style Iterators
 
@@ -473,7 +473,7 @@
     Here's a typical loop for iterating through all the elements of a
     QList<QString> in order and converting them to lowercase:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 10
+    \snippet code/doc_src_containers.cpp 10
 
     Unlike \l{Java-style iterators}, STL-style iterators point
     directly at items. The begin() function of a container returns an
@@ -487,13 +487,13 @@
     The diagram below shows the valid iterator positions as red
     arrows for a vector containing four items:
 
-    \img stliterators1.png
+    \image stliterators1.png
 
     Iterating backward with an STL-style iterator requires us to
     decrement the iterator \e before we access the item. This
     requires a \c while loop:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 11
+    \snippet code/doc_src_containers.cpp 11
 
     In the code snippets so far, we used the unary \c * operator to
     retrieve the item (of type QString) stored at a certain iterator
@@ -504,7 +504,7 @@
     For read-only access, you can use const_iterator, constBegin(),
     and constEnd(). For example:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 12
+    \snippet code/doc_src_containers.cpp 12
 
     The following table summarizes the STL-style iterators' API:
 
@@ -536,7 +536,7 @@
     value() function to retrieve the value. For example, here's how
     we would print all items in a QMap to the console:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 13
+    \snippet code/doc_src_containers.cpp 13
 
     Thanks to \l{implicit sharing}, it is very inexpensive for a
     function to return a container per value. The Qt API contains
@@ -545,7 +545,7 @@
     using an STL iterator, you should always take a copy of the
     container and iterate over the copy. For example:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 14
+    \snippet code/doc_src_containers.cpp 14
 
     This problem doesn't occur with functions that return a const or
     non-const reference to a container.
@@ -567,35 +567,35 @@
     statement. For example, here's how to use \c foreach to iterate
     over a QLinkedList<QString>:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 15
+    \snippet code/doc_src_containers.cpp 15
 
     The \c foreach code is significantly shorter than the equivalent
     code that uses iterators:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 16
+    \snippet code/doc_src_containers.cpp 16
 
     Unless the data type contains a comma (e.g., \c{QPair<int,
     int>}), the variable used for iteration can be defined within the
     \c foreach statement:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 17
+    \snippet code/doc_src_containers.cpp 17
 
     And like any other C++ loop construct, you can use braces around
     the body of a \c foreach loop, and you can use \c break to leave
     the loop:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 18
+    \snippet code/doc_src_containers.cpp 18
 
     With QMap and QHash, \c foreach accesses the value component of
     the (key, value) pairs. If you want to iterate over both the keys
     and the values, you can use iterators (which are fastest), or you
     can write code like this:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 19
+    \snippet code/doc_src_containers.cpp 19
 
     For a multi-valued map:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 20
+    \snippet code/doc_src_containers.cpp 20
 
     Qt automatically takes a copy of the container when it enters a
     \c foreach loop. If you modify the container as you are
@@ -611,12 +611,12 @@
     In addition to \c foreach, Qt also provides a \c forever
     pseudo-keyword for infinite loops:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 21
+    \snippet code/doc_src_containers.cpp 21
 
     If you're worried about namespace pollution, you can disable
     these macros by adding the following line to your \c .pro file:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 22
+    \snippet code/doc_src_containers.cpp 22
 
     \section1 Other Container-Like Classes
 
@@ -736,7 +736,7 @@
     Consider the following code, which builds a QString from another
     QString:
 
-    \snippet doc/src/snippets/code/doc_src_containers.cpp 23
+    \snippet code/doc_src_containers.cpp 23
 
     We build the string \c out dynamically by appending one character
     to it at a time. Let's assume that we append 15000 characters to

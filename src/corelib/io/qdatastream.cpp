@@ -81,11 +81,11 @@ QT_BEGIN_NAMESPACE
 
     Example (write binary data to a stream):
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdatastream.cpp 0
+    \snippet code/src_corelib_io_qdatastream.cpp 0
 
     Example (read binary data from a stream):
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdatastream.cpp 1
+    \snippet code/src_corelib_io_qdatastream.cpp 1
 
     Each item written to the stream is written in a predefined binary
     format that varies depending on the item's type. Supported Qt
@@ -119,7 +119,7 @@ QT_BEGIN_NAMESPACE
     compatibility, you can hardcode the version number in the
     application:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdatastream.cpp 2
+    \snippet code/src_corelib_io_qdatastream.cpp 2
 
     If you are producing a new binary data format, such as a file
     format for documents created by your application, you could use a
@@ -127,11 +127,11 @@ QT_BEGIN_NAMESPACE
     would write a brief header containing a magic string and a version
     number to give yourself room for future expansion. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdatastream.cpp 3
+    \snippet code/src_corelib_io_qdatastream.cpp 3
 
     Then read it in with:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdatastream.cpp 4
+    \snippet code/src_corelib_io_qdatastream.cpp 4
 
     You can select which byte order to use when serializing data. The
     default setting is big endian (MSB first). Changing it to little
@@ -187,7 +187,7 @@ QT_BEGIN_NAMESPACE
     defined, check the \b {Related Non-Members} section of the
     class's documentation page.
 
-    \sa QTextStream QVariant
+    \sa QTextStream, QVariant
 */
 
 /*!
@@ -421,7 +421,7 @@ bool QDataStream::atEnd() const
 
     \since 4.6
 
-    \sa FloatingPointPrecision setFloatingPointPrecision()
+    \sa FloatingPointPrecision, setFloatingPointPrecision()
 */
 QDataStream::FloatingPointPrecision QDataStream::floatingPointPrecision() const
 {
@@ -455,7 +455,7 @@ void QDataStream::setFloatingPointPrecision(QDataStream::FloatingPointPrecision 
 /*!
     Returns the status of the data stream.
 
-    \sa Status setStatus() resetStatus()
+    \sa Status, setStatus(), resetStatus()
 */
 
 QDataStream::Status QDataStream::status() const
@@ -466,7 +466,7 @@ QDataStream::Status QDataStream::status() const
 /*!
     Resets the status of the data stream.
 
-    \sa Status status() setStatus()
+    \sa Status, status(), setStatus()
 */
 void QDataStream::resetStatus()
 {
@@ -479,7 +479,7 @@ void QDataStream::resetStatus()
     Subsequent calls to setStatus() are ignored until resetStatus()
     is called.
 
-    \sa Status status() resetStatus()
+    \sa Status, status(), resetStatus()
 */
 void QDataStream::setStatus(Status status)
 {
@@ -589,7 +589,7 @@ void QDataStream::setByteOrder(ByteOrder bo)
     The \l Version enum provides symbolic constants for the different
     versions of Qt. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qdatastream.cpp 5
+    \snippet code/src_corelib_io_qdatastream.cpp 5
 
     \sa version(), Version
 */
@@ -813,7 +813,7 @@ QDataStream &QDataStream::operator>>(double &f)
 /*!
     \overload
 
-    Reads the '\0'-terminated string \a s from the stream and returns
+    Reads the '\\0'-terminated string \a s from the stream and returns
     a reference to the stream.
 
     Space for the string is allocated using \c new -- the caller must
@@ -1094,7 +1094,7 @@ QDataStream &QDataStream::operator<<(double f)
 /*!
     \overload
 
-    Writes the '\0'-terminated string \a s to the stream and returns a
+    Writes the '\\0'-terminated string \a s to the stream and returns a
     reference to the stream.
 
     The string is serialized using writeBytes().

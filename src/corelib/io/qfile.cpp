@@ -170,7 +170,7 @@ QAbstractFileEngine *QFilePrivate::engine() const
 
     The following example reads a text file line by line:
 
-    \snippet doc/src/snippets/file/file.cpp 0
+    \snippet file/file.cpp 0
 
     The QIODevice::Text flag passed to open() tells Qt to convert
     Windows-style line terminators ("\\r\\n") into C++-style
@@ -182,7 +182,7 @@ QAbstractFileEngine *QFilePrivate::engine() const
     The next example uses QTextStream to read a text file
     line by line:
 
-    \snippet doc/src/snippets/file/file.cpp 1
+    \snippet file/file.cpp 1
 
     QTextStream takes care of converting the 8-bit data stored on
     disk into a 16-bit Unicode QString. By default, it assumes that
@@ -194,7 +194,7 @@ QAbstractFileEngine *QFilePrivate::engine() const
     take a QTextStream on the left and various data types (including
     QString) on the right:
 
-    \snippet doc/src/snippets/file/file.cpp 2
+    \snippet file/file.cpp 2
 
     QDataStream is similar, in that you can use operator<<() to write
     data and operator>>() to read it back. See the class
@@ -217,7 +217,7 @@ QAbstractFileEngine *QFilePrivate::engine() const
     read() or readLine() repeatedly until no more data can be read. The next
     example uses QTextStream to read \c /proc/modules line by line:
 
-    \snippet doc/src/snippets/file/file.cpp 3
+    \snippet file/file.cpp 3
 
     \section1 Signals
 
@@ -325,7 +325,7 @@ QString QFile::fileName() const
     \e{at the time of the open()} call.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_io_qfile.cpp 0
+    \snippet code/src_corelib_io_qfile.cpp 0
 
     Note that the directory separator "/" works for all operating
     systems supported by Qt.
@@ -363,7 +363,7 @@ QFile::setFileName(const QString &name)
     file names that the user chooses. File names hard-coded into the
     application should only use 7-bit ASCII filename characters.
 
-    \sa decodeName() setEncodingFunction()
+    \sa decodeName(), setEncodingFunction()
 */
 
 QByteArray
@@ -378,7 +378,7 @@ QFile::encodeName(const QString &fileName)
     This is a typedef for a pointer to a function with the following
     signature:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qfile.cpp 1
+    \snippet code/src_corelib_io_qfile.cpp 1
 
     \sa setEncodingFunction(), encodeName()
 */
@@ -420,7 +420,7 @@ QFile::setEncodingFunction(EncoderFn f)
     This is a typedef for a pointer to a function with the following
     signature:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qfile.cpp 2
+    \snippet code/src_corelib_io_qfile.cpp 2
 
     \sa setDecodingFunction()
 */
@@ -485,7 +485,7 @@ QFile::exists(const QString &fileName)
     This name may not represent an existing file; it is only a string.
     QFile::exists() returns true if the symlink points to an existing file.
 
-    \sa fileName() setFileName()
+    \sa fileName(), setFileName()
 */
 
 /*!
@@ -896,7 +896,7 @@ bool QFile::open(OpenMode mode)
     Returns true if successful; otherwise returns false.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_io_qfile.cpp 3
+    \snippet code/src_corelib_io_qfile.cpp 3
 
     When a QFile is opened using this function, behaviour of close() is
     controlled by the AutoCloseHandle flag.
@@ -930,7 +930,7 @@ bool QFile::open(OpenMode mode)
     stdin, stdout and stderr streams at the console. To do this, add the
     following declaration to your application's project file:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qfile.cpp 4
+    \snippet code/src_corelib_io_qfile.cpp 4
 */
 bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
 {

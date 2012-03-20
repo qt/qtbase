@@ -227,7 +227,7 @@ bool QXmlUtils::isBaseChar(const QChar c)
    Determines whether \a encName is a valid instance of production [81]EncName in the XML 1.0
    specification. If it is, true is returned, otherwise false.
 
-    \sa \l {http://www.w3.org/TR/REC-xml/#NT-EncName}
+    \sa {http://www.w3.org/TR/REC-xml/#NT-EncName},
            {Extensible Markup Language (XML) 1.0 (Fourth Edition), [81] EncName}
  */
 bool QXmlUtils::isEncName(const QString &encName)
@@ -248,7 +248,7 @@ bool QXmlUtils::isEncName(const QString &encName)
    Determines whether \a c is a valid instance of production [84]Letter in the XML 1.0
    specification. If it is, true is returned, otherwise false.
 
-    \sa \l {http://www.w3.org/TR/REC-xml/#NT-Letter}
+    \sa {http://www.w3.org/TR/REC-xml/#NT-Letter},
            {Extensible Markup Language (XML) 1.0 (Fourth Edition), [84] Letter}
  */
 bool QXmlUtils::isLetter(const QChar c)
@@ -262,7 +262,7 @@ bool QXmlUtils::isLetter(const QChar c)
    Determines whether \a c is a valid instance of production [2]Char in the XML 1.0
    specification. If it is, true is returned, otherwise false.
 
-    \sa \l {http://www.w3.org/TR/REC-xml/#NT-Char}
+    \sa {http://www.w3.org/TR/REC-xml/#NT-Char},
            {Extensible Markup Language (XML) 1.0 (Fourth Edition), [2] Char}
  */
 bool QXmlUtils::isChar(const QChar c)
@@ -281,7 +281,7 @@ bool QXmlUtils::isChar(const QChar c)
    production [4]NameChar in the XML 1.0 specification. If it
    is, true is returned, otherwise false.
 
-    \sa \l {http://www.w3.org/TR/REC-xml/#NT-NameChar}
+    \sa {http://www.w3.org/TR/REC-xml/#NT-NameChar},
            {Extensible Markup Language (XML) 1.0 (Fourth Edition), [4] NameChar}
  */
 bool QXmlUtils::isNameChar(const QChar c)
@@ -304,7 +304,7 @@ bool QXmlUtils::isNameChar(const QChar c)
    production [12] PubidLiteral in the XML 1.0 specification. If it
    is, true is returned, otherwise false.
 
-    \sa \l {http://www.w3.org/TR/REC-xml/#NT-PubidLiteral}
+    \sa {http://www.w3.org/TR/REC-xml/#NT-PubidLiteral},
            {Extensible Markup Language (XML) 1.0 (Fourth Edition), [12] PubidLiteral}
  */
 bool QXmlUtils::isPublicID(const QString &candidate)
@@ -363,7 +363,7 @@ bool QXmlUtils::isPublicID(const QString &candidate)
    production [4]NCName in the XML 1.0 Namespaces specification. If it
    is, true is returned, otherwise false.
 
-    \sa \l {http://www.w3.org/TR/REC-xml-names/#NT-NCName}
+    \sa {http://www.w3.org/TR/REC-xml-names/#NT-NCName},
            {W3CNamespaces in XML 1.0 (Second Edition), [4] NCName}
  */
 bool QXmlUtils::isNCName(const QStringRef &ncName)

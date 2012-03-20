@@ -79,7 +79,7 @@ QT_BEGIN_NAMESPACE
   can use to use the same semaphore.
 
   Example: Create a system semaphore
-  \snippet doc/src/snippets/code/src_corelib_kernel_qsystemsemaphore.cpp 0
+  \snippet code/src_corelib_kernel_qsystemsemaphore.cpp 0
 
   A typical application of system semaphores is for controlling access
   to a circular buffer shared by a producer process and a consumer
@@ -283,13 +283,13 @@ bool QSystemSemaphore::acquire()
   Example: Create a system semaphore having five resources; acquire
   them all and then release them all.
 
-  \snippet doc/src/snippets/code/src_corelib_kernel_qsystemsemaphore.cpp 1
+  \snippet code/src_corelib_kernel_qsystemsemaphore.cpp 1
 
   This function can also "create" resources. For example, immediately
   following the sequence of statements above, suppose we add the
   statement:
 
-  \snippet doc/src/snippets/code/src_corelib_kernel_qsystemsemaphore.cpp 2
+  \snippet code/src_corelib_kernel_qsystemsemaphore.cpp 2
 
   Ten new resources are now guarded by the semaphore, in addition to
   the five that already existed. You would not normally use this

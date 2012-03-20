@@ -681,7 +681,7 @@ QLocale::QLocale()
     The language and country that are actually used can be queried
     using language() and country().
 
-    \sa setDefault() language() country()
+    \sa setDefault(), language(), country()
 */
 
 QLocale::QLocale(Language language, Country country)
@@ -720,7 +720,7 @@ QLocale::QLocale(Language language, Country country)
     The language, script and country that are actually used can be queried
     using language(), script() and country().
 
-    \sa setDefault() language() script() country()
+    \sa setDefault(), language(), script(), country()
 */
 
 QLocale::QLocale(Language language, Script script, Country country)
@@ -883,7 +883,7 @@ QString QLocale::createSeparatedList(const QStringList &list) const
     should be set at application startup, before any non-GUI threads
     are created.
 
-    \sa system() c()
+    \sa system(), c()
 */
 
 void QLocale::setDefault(const QLocale &locale)
@@ -1202,7 +1202,7 @@ float QLocale::toFloat(const QString &s, bool *ok) const
     the "C" locale if the string cannot be interpreted in this
     locale.
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qlocale.cpp 3
+    \snippet code/src_corelib_tools_qlocale.cpp 3
 
     Notice that the last conversion returns 1234.0, because '.' is the
     thousands group separator in the German locale.

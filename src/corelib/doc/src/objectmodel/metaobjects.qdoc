@@ -92,32 +92,32 @@
     For example, let's assume \c MyWidget inherits from QWidget and
     is declared with the Q_OBJECT macro:
 
-    \snippet doc/src/snippets/qtcast/qtcast.cpp 0
+    \snippet qtcast/qtcast.cpp 0
 
     The \c obj variable, of type \c{QObject *}, actually refers to a
     \c MyWidget object, so we can cast it appropriately:
 
-    \snippet doc/src/snippets/qtcast/qtcast.cpp 1
+    \snippet qtcast/qtcast.cpp 1
 
     The cast from QObject to QWidget is successful, because the
     object is actually a \c MyWidget, which is a subclass of QWidget.
     Since we know that \c obj is a \c MyWidget, we can also cast it to
     \c{MyWidget *}:
 
-    \snippet doc/src/snippets/qtcast/qtcast.cpp 2
+    \snippet qtcast/qtcast.cpp 2
 
     The cast to \c MyWidget is successful because qobject_cast()
     makes no distinction between built-in Qt types and custom types.
 
-    \snippet doc/src/snippets/qtcast/qtcast.cpp 3
-    \snippet doc/src/snippets/qtcast/qtcast.cpp 4
+    \snippet qtcast/qtcast.cpp 3
+    \snippet qtcast/qtcast.cpp 4
 
     The cast to QLabel, on the other hand, fails. The pointer is then
     set to 0. This makes it possible to handle objects of different
     types differently at run-time, based on the type:
 
-    \snippet doc/src/snippets/qtcast/qtcast.cpp 5
-    \snippet doc/src/snippets/qtcast/qtcast.cpp 6
+    \snippet qtcast/qtcast.cpp 5
+    \snippet qtcast/qtcast.cpp 6
 
     While it is possible to use QObject as a base class without the
     Q_OBJECT macro and without meta-object code, neither signals

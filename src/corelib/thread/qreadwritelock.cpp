@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qreadwritelock.cpp 0
+    \snippet code/src_corelib_thread_qreadwritelock.cpp 0
 
     To ensure that writers aren't blocked forever by readers, readers
     attempting to obtain a lock will not succeed if there is a blocked
@@ -135,7 +135,7 @@ QReadWriteLock::~QReadWriteLock()
     thread if any thread (including the current) has locked for
     writing.
 
-    \sa unlock() lockForWrite() tryLockForRead()
+    \sa unlock(), lockForWrite(), tryLockForRead()
 */
 void QReadWriteLock::lockForRead()
 {
@@ -178,7 +178,7 @@ void QReadWriteLock::lockForRead()
     If the lock was obtained, the lock must be unlocked with unlock()
     before another thread can successfully lock it.
 
-    \sa unlock() lockForRead()
+    \sa unlock(), lockForRead()
 */
 bool QReadWriteLock::tryLockForRead()
 {
@@ -223,7 +223,7 @@ bool QReadWriteLock::tryLockForRead()
     If the lock was obtained, the lock must be unlocked with unlock()
     before another thread can successfully lock it.
 
-    \sa unlock() lockForRead()
+    \sa unlock(), lockForRead()
 */
 bool QReadWriteLock::tryLockForRead(int timeout)
 {
@@ -263,7 +263,7 @@ bool QReadWriteLock::tryLockForRead(int timeout)
     Locks the lock for writing. This function will block the current
     thread if another thread has locked for reading or writing.
 
-    \sa unlock() lockForRead() tryLockForWrite()
+    \sa unlock(), lockForRead(), tryLockForWrite()
 */
 void QReadWriteLock::lockForWrite()
 {
@@ -303,7 +303,7 @@ void QReadWriteLock::lockForWrite()
     If the lock was obtained, the lock must be unlocked with unlock()
     before another thread can successfully lock it.
 
-    \sa unlock() lockForWrite()
+    \sa unlock(), lockForWrite()
 */
 bool QReadWriteLock::tryLockForWrite()
 {
@@ -347,7 +347,7 @@ bool QReadWriteLock::tryLockForWrite()
     If the lock was obtained, the lock must be unlocked with unlock()
     before another thread can successfully lock it.
 
-    \sa unlock() lockForWrite()
+    \sa unlock(), lockForWrite()
 */
 bool QReadWriteLock::tryLockForWrite(int timeout)
 {
@@ -389,7 +389,7 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
     Attempting to unlock a lock that is not locked is an error, and will result
     in program termination.
 
-    \sa lockForRead() lockForWrite() tryLockForRead() tryLockForWrite()
+    \sa lockForRead(), lockForWrite(), tryLockForRead(), tryLockForWrite()
 */
 void QReadWriteLock::unlock()
 {
@@ -443,11 +443,11 @@ void QReadWriteLock::unlock()
     Here's an example that uses QReadLocker to lock and unlock a
     read-write lock for reading:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qreadwritelock.cpp 1
+    \snippet code/src_corelib_thread_qreadwritelock.cpp 1
 
     It is equivalent to the following code:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qreadwritelock.cpp 2
+    \snippet code/src_corelib_thread_qreadwritelock.cpp 2
 
     The QMutexLocker documentation shows examples where the use of a
     locker object greatly simplifies programming.
@@ -515,11 +515,11 @@ void QReadWriteLock::unlock()
     Here's an example that uses QWriteLocker to lock and unlock a
     read-write lock for writing:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qreadwritelock.cpp 3
+    \snippet code/src_corelib_thread_qreadwritelock.cpp 3
 
     It is equivalent to the following code:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qreadwritelock.cpp 4
+    \snippet code/src_corelib_thread_qreadwritelock.cpp 4
 
     The QMutexLocker documentation shows examples where the use of a
     locker object greatly simplifies programming.

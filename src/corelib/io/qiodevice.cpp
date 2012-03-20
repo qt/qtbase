@@ -215,7 +215,7 @@ QIODevicePrivate::~QIODevicePrivate()
     Calling these functions from the main, GUI thread, may cause your
     user interface to freeze. Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qiodevice.cpp 0
+    \snippet code/src_corelib_io_qiodevice.cpp 0
 
     By subclassing QIODevice, you can provide the same interface to
     your own I/O devices. Subclasses of QIODevice are only required to
@@ -239,7 +239,7 @@ QIODevicePrivate::~QIODevicePrivate()
     subclassing QIODevice, remember to bypass any buffer you may use
     when the device is open in Unbuffered mode.
 
-    \sa QBuffer QFile QTcpSocket
+    \sa QBuffer, QFile, QTcpSocket
 */
 
 /*!
@@ -257,9 +257,9 @@ QIODevicePrivate::~QIODevicePrivate()
     \value Truncate  If possible, the device is truncated before it is opened.
                      All earlier contents of the device are lost.
     \value Text      When reading, the end-of-line terminators are
-                     translated to '\n'. When writing, the end-of-line
+                     translated to '\\n'. When writing, the end-of-line
                      terminators are translated to the local encoding, for
-                     example '\r\n' for Win32.
+                     example '\\r\\n' for Win32.
     \value Unbuffered Any buffer in the device is bypassed.
 
     Certain flags, such as \c Unbuffered and \c Truncate, are
@@ -431,7 +431,7 @@ QIODevice::OpenMode QIODevice::openMode() const
     function to set the open mode if the flags change after the device
     has been opened.
 
-    \sa openMode() OpenMode
+    \sa openMode(), OpenMode
 */
 void QIODevice::setOpenMode(OpenMode openMode)
 {
@@ -484,7 +484,7 @@ bool QIODevice::isTextModeEnabled() const
     default, this function returns false if openMode() returns
     \c NotOpen.
 
-    \sa openMode() OpenMode
+    \sa openMode(), OpenMode
 */
 bool QIODevice::isOpen() const
 {
@@ -498,7 +498,7 @@ bool QIODevice::isOpen() const
     This is a convenience function which checks if the OpenMode of the
     device contains the ReadOnly flag.
 
-    \sa openMode() OpenMode
+    \sa openMode(), OpenMode
 */
 bool QIODevice::isReadable() const
 {
@@ -512,7 +512,7 @@ bool QIODevice::isReadable() const
     This is a convenience function which checks if the OpenMode of the
     device contains the WriteOnly flag.
 
-    \sa openMode() OpenMode
+    \sa openMode(), OpenMode
 */
 bool QIODevice::isWritable() const
 {
@@ -524,7 +524,7 @@ bool QIODevice::isWritable() const
     otherwise returns false. This function should be called from any
     reimplementations of open() or other functions that open the device.
 
-    \sa openMode() OpenMode
+    \sa openMode(), OpenMode
 */
 bool QIODevice::open(OpenMode mode)
 {
@@ -544,7 +544,7 @@ bool QIODevice::open(OpenMode mode)
     First emits aboutToClose(), then closes the device and sets its
     OpenMode to NotOpen. The error string is also reset.
 
-    \sa setOpenMode() OpenMode
+    \sa setOpenMode(), OpenMode
 */
 void QIODevice::close()
 {
@@ -704,7 +704,7 @@ bool QIODevice::reset()
     Subclasses that reimplement this function must call the base
     implementation in order to include the size of QIODevices' buffer. Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qiodevice.cpp 1
+    \snippet code/src_corelib_io_qiodevice.cpp 1
 
     \sa bytesToWrite(), readyRead(), isSequential()
 */
@@ -745,7 +745,7 @@ qint64 QIODevice::bytesToWrite() const
     function returns -1 in those cases (that is, reading on a closed
     socket or after a process has died).
 
-    \sa readData() readLine() write()
+    \sa readData(), readLine(), write()
 */
 qint64 QIODevice::read(char *data, qint64 maxSize)
 {
@@ -1032,13 +1032,13 @@ QByteArray QIODevice::readAll()
     occurs, this function returns the length of what could be read, or
     -1 if nothing was read.
 
-    A terminating '\0' byte is always appended to \a data, so \a
+    A terminating '\\0' byte is always appended to \a data, so \a
     maxSize must be larger than 1.
 
     Data is read until either of the following conditions are met:
 
     \list
-    \li The first '\n' character is read.
+    \li The first '\\n' character is read.
     \li \a maxSize - 1 bytes are read.
     \li The end of the device data is detected.
     \endlist
@@ -1046,12 +1046,12 @@ QByteArray QIODevice::readAll()
     For example, the following code reads a line of characters from a
     file:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qiodevice.cpp 2
+    \snippet code/src_corelib_io_qiodevice.cpp 2
 
-    The newline character ('\n') is included in the buffer. If a
+    The newline character ('\\n') is included in the buffer. If a
     newline is not encountered before maxSize - 1 bytes are read, a
     newline will not be inserted into the buffer. On windows newline
-    characters are replaced with '\n'.
+    characters are replaced with '\\n'.
 
     This function calls readLineData(), which is implemented using
     repeated calls to getChar(). You can provide a more efficient
@@ -1208,7 +1208,7 @@ QByteArray QIODevice::readLine(qint64 maxSize)
     implementation, using getChar(). Buffered devices can improve the
     performance of readLine() by reimplementing this function.
 
-    readLine() appends a '\0' byte to \a data; readLineData() does not
+    readLine() appends a '\\0' byte to \a data; readLineData() does not
     need to do this.
 
     If you reimplement this function, be careful to return the correct
@@ -1258,7 +1258,7 @@ qint64 QIODevice::readLineData(char *data, qint64 maxSize)
     Subclasses that reimplement this function must call the base
     implementation in order to include the contents of the QIODevice's buffer. Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qiodevice.cpp 3
+    \snippet code/src_corelib_io_qiodevice.cpp 3
 
     \sa readyRead(), readLine()
 */
@@ -1272,7 +1272,7 @@ bool QIODevice::canReadLine() const
     device. Returns the number of bytes that were actually written, or
     -1 if an error occurred.
 
-    \sa read() writeData()
+    \sa read(), writeData()
 */
 qint64 QIODevice::write(const char *data, qint64 maxSize)
 {
@@ -1362,7 +1362,7 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
     ...
     \endcode
 
-    \sa read() writeData()
+    \sa read(), writeData()
 */
 qint64 QIODevice::write(const char *data)
 {
@@ -1376,7 +1376,7 @@ qint64 QIODevice::write(const char *data)
     Writes the content of \a byteArray to the device. Returns the number of
     bytes that were actually written, or -1 if an error occurred.
 
-    \sa read() writeData()
+    \sa read(), writeData()
 */
 
 /*!
@@ -1407,7 +1407,7 @@ void QIODevice::ungetChar(char c)
     Writes the character \a c to the device. Returns true on success;
     otherwise returns false.
 
-    \sa write() getChar() ungetChar()
+    \sa write(), getChar(), ungetChar()
 */
 bool QIODevice::putChar(char c)
 {
@@ -1457,7 +1457,7 @@ QByteArray QIODevicePrivate::peek(qint64 maxSize)
     is 0, the character is discarded. Returns true on success;
     otherwise returns false.
 
-    \sa read() putChar() ungetChar()
+    \sa read(), putChar(), ungetChar()
 */
 bool QIODevice::getChar(char *c)
 {
@@ -1479,7 +1479,7 @@ bool QIODevice::getChar(char *c)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qiodevice.cpp 4
+    \snippet code/src_corelib_io_qiodevice.cpp 4
 
     \sa read()
 */
@@ -1497,7 +1497,7 @@ qint64 QIODevice::peek(char *data, qint64 maxSize)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qiodevice.cpp 5
+    \snippet code/src_corelib_io_qiodevice.cpp 5
 
     This function has no way of reporting errors; returning an empty
     QByteArray() can mean either that no data was currently available
@@ -1620,7 +1620,7 @@ QString QIODevice::errorString() const
     all the requested information was read and therefore does not retry reading
     if there was a problem.
 
-    \sa read() readLine() writeData()
+    \sa read(), readLine(), writeData()
 */
 
 /*!
@@ -1638,7 +1638,7 @@ QString QIODevice::errorString() const
     all the information was written and therefore does not retry writing if
     there was a problem.
 
-    \sa read() write()
+    \sa read(), write()
 */
 
 

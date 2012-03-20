@@ -1000,7 +1000,7 @@ void QCoreApplication::exit(int returnCode)
     The event is \e not deleted when the event has been sent. The normal
     approach is to create the event on the stack, for example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 0
+    \snippet code/src_corelib_kernel_qcoreapplication.cpp 0
 
     \sa postEvent(), notify()
 */
@@ -1467,7 +1467,7 @@ void QCoreApplicationPrivate::maybeQuit()
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 1
+    \snippet code/src_corelib_kernel_qcoreapplication.cpp 1
 
     \sa exit(), aboutToQuit(), QApplication::lastWindowClosed()
 */
@@ -1515,7 +1515,7 @@ void QCoreApplication::quit()
 
     The function returns true on success and false on failure.
 
-    \sa removeTranslator() translate() QTranslator::load() {Dynamic Translation}
+    \sa removeTranslator(), translate(), QTranslator::load(), {Dynamic Translation}
 */
 
 bool QCoreApplication::installTranslator(QTranslator *translationFile)
@@ -1628,7 +1628,7 @@ static void replacePercentN(QString *result, int n)
     so will most likely result in crashes or other undesirable
     behavior.
 
-    \sa QObject::tr() installTranslator()
+    \sa QObject::tr(), installTranslator()
 */
 
 
@@ -1904,7 +1904,7 @@ QStringList QCoreApplication::arguments()
     organizationName(). On all other platforms, QSettings uses
     organizationName() as the organization.
 
-    \sa organizationDomain applicationName
+    \sa organizationDomain, applicationName
 */
 
 void QCoreApplication::setOrganizationName(const QString &orgName)
@@ -1930,7 +1930,7 @@ QString QCoreApplication::organizationName()
     On all other platforms, QSettings uses organizationName() as the
     organization.
 
-    \sa organizationName applicationName applicationVersion
+    \sa organizationName, applicationName, applicationVersion
 */
 void QCoreApplication::setOrganizationDomain(const QString &orgDomain)
 {
@@ -1952,7 +1952,7 @@ QString QCoreApplication::organizationDomain()
 
     If not set, the application name defaults to the executable name (since 5.0).
 
-    \sa organizationName organizationDomain applicationVersion applicationFilePath
+    \sa organizationName, organizationDomain, applicationVersion, applicationFilePath
 */
 void QCoreApplication::setApplicationName(const QString &application)
 {
@@ -1978,7 +1978,7 @@ Q_CORE_EXPORT QString qt_applicationName_noFallback()
     \since 4.4
     \brief the version of this application
 
-    \sa applicationName organizationName organizationDomain
+    \sa applicationName, organizationName, organizationDomain
 */
 void QCoreApplication::setApplicationVersion(const QString &version)
 {
@@ -2012,7 +2012,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
     If you want to iterate over the list, you can use the \l foreach
     pseudo-keyword:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 2
+    \snippet code/src_corelib_kernel_qcoreapplication.cpp 2
 
     \sa setLibraryPaths(), addLibraryPath(), removeLibraryPath(), QLibrary,
         {How to Create Qt Plugins}
@@ -2134,7 +2134,7 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     A function with the following signature that can be used as an
     event filter:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 3
+    \snippet code/src_corelib_kernel_qcoreapplication.cpp 3
 
     \sa setEventFilter()
 */
@@ -2269,7 +2269,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     The function specified by \a ptr should take no arguments and should
     return nothing. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 4
+    \snippet code/src_corelib_kernel_qcoreapplication.cpp 4
 
     Note that for an application- or module-wide cleanup,
     qAddPostRoutine() is often not suitable. For example, if the
@@ -2283,7 +2283,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     parent-child mechanism to call a cleanup function at the right
     time:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 5
+    \snippet code/src_corelib_kernel_qcoreapplication.cpp 5
 
     By selecting the right parent object, this can often be made to
     clean up the module's data at the right moment.
@@ -2297,7 +2297,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     translation functions, \c tr() and \c trUtf8(), with these
     signatures:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 6
+    \snippet code/src_corelib_kernel_qcoreapplication.cpp 6
 
     This macro is useful if you want to use QObject::tr() or
     QObject::trUtf8() in classes that don't inherit from QObject.
@@ -2306,7 +2306,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     class definition (before the first \c{public:} or \c{protected:}).
     For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 7
+    \snippet code/src_corelib_kernel_qcoreapplication.cpp 7
 
     The \a context parameter is normally the class name, but it can
     be any string.

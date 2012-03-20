@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qsemaphore.cpp 0
+    \snippet code/src_corelib_thread_qsemaphore.cpp 0
 
     A typical application of semaphores is for controlling access to
     a circular buffer shared by a producer thread and a consumer
@@ -151,7 +151,7 @@ void QSemaphore::acquire(int n)
     This function can be used to "create" resources as well. For
     example:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qsemaphore.cpp 1
+    \snippet code/src_corelib_thread_qsemaphore.cpp 1
 
     \sa acquire(), available()
 */
@@ -182,7 +182,7 @@ int QSemaphore::available() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qsemaphore.cpp 2
+    \snippet code/src_corelib_thread_qsemaphore.cpp 2
 
     \sa acquire()
 */
@@ -208,7 +208,7 @@ bool QSemaphore::tryAcquire(int n)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qsemaphore.cpp 3
+    \snippet code/src_corelib_thread_qsemaphore.cpp 3
 
     \sa acquire()
 */

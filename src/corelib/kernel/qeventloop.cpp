@@ -275,7 +275,7 @@ void QEventLoop::exit(int returnCode)
     false. The event loop is considered running from the time when
     exec() is called until exit() is called.
 
-    \sa exec() exit()
+    \sa exec(), exit()
  */
 bool QEventLoop::isRunning() const
 {

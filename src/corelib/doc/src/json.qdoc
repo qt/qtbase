@@ -49,7 +49,7 @@
     data in a binary format that is directly mmap'able and very fast to
     access.
 
-    More details about the JSON data format can be found at \link json.org
+    More details about the JSON data format can be found at \l{http://json.org}{json.org}
     and in \l{http://tools.ietf.org/html/rfc4627}{RFC-4627}.
 
     \tableofcontents

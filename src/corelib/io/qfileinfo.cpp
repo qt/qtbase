@@ -244,14 +244,14 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     transparently; similarly, opening a symlink using QFile
     effectively opens the link's target. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qfileinfo.cpp 0
+    \snippet code/src_corelib_io_qfileinfo.cpp 0
 
     On Windows, symlinks (shortcuts) are \c .lnk files. The reported
     size() is that of the symlink (not the link's target), and
     opening a symlink using QFile opens the \c .lnk file. For
     example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qfileinfo.cpp 1
+    \snippet code/src_corelib_io_qfileinfo.cpp 1
 
     Elements of the file's name can be extracted with path() and
     fileName(). The fileName()'s parts can be extracted with
@@ -442,7 +442,7 @@ QFileInfo &QFileInfo::operator=(const QFileInfo &fileinfo)
     path relative to the current directory.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_io_qfileinfo.cpp 2
+    \snippet code/src_corelib_io_qfileinfo.cpp 2
 
     \sa isRelative(), QDir::setCurrent(), QDir::isRelativePath()
 */
@@ -496,7 +496,7 @@ void QFileInfo::setFile(const QDir &dir, const QString &file)
     QFileInfo will uppercase drive letters. Note that QDir does not do
     this. The code snippet below shows this.
 
-    \snippet doc/src/snippets/code/src_corelib_io_qfileinfo.cpp newstuff
+    \snippet code/src_corelib_io_qfileinfo.cpp newstuff
 
     This function returns the same as filePath(), unless isRelative()
     is true. In contrast to canonicalFilePath(), symbolic links or
@@ -688,7 +688,7 @@ QString QFileInfo::filePath() const
     Returns the name of the file, excluding the path.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_io_qfileinfo.cpp 3
+    \snippet code/src_corelib_io_qfileinfo.cpp 3
 
     Note that, if this QFileInfo object is given a path ending in a
     slash, the name of the file is considered empty.
@@ -711,7 +711,7 @@ QString QFileInfo::fileName() const
     path isBundle(). On all other platforms an empty QString is returned.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_io_qfileinfo.cpp 4
+    \snippet code/src_corelib_io_qfileinfo.cpp 4
 
     \sa isBundle(), filePath(), baseName(), extension()
 */
@@ -730,7 +730,7 @@ QString QFileInfo::bundleName() const
     not including) the \e first '.' character.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_io_qfileinfo.cpp 5
+    \snippet code/src_corelib_io_qfileinfo.cpp 5
 
 
     The base name of a file is computed equally on all platforms, independent
@@ -754,7 +754,7 @@ QString QFileInfo::baseName() const
     to (but not including) the \e last '.' character.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_io_qfileinfo.cpp 6
+    \snippet code/src_corelib_io_qfileinfo.cpp 6
 
     \sa fileName(), suffix(), completeSuffix(), baseName()
 */
@@ -773,7 +773,7 @@ QString QFileInfo::completeBaseName() const
     (but not including) the first '.'.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_io_qfileinfo.cpp 7
+    \snippet code/src_corelib_io_qfileinfo.cpp 7
 
     \sa fileName(), suffix(), baseName(), completeBaseName()
 */
@@ -792,7 +792,7 @@ QString QFileInfo::completeSuffix() const
     including) the last '.'.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_io_qfileinfo.cpp 8
+    \snippet code/src_corelib_io_qfileinfo.cpp 8
 
     The suffix of a file is computed equally on all platforms, independent of
     file naming conventions (e.g., ".bashrc" on Unix has an empty base name,
@@ -818,12 +818,12 @@ QString QFileInfo::suffix() const
     For each of the following, dir() returns a QDir for
     \c{"~/examples/191697"}.
 
-    \snippet doc/src/snippets/fileinfo/main.cpp 0
+    \snippet fileinfo/main.cpp 0
 
     For each of the following, dir() returns a QDir for
     \c{"."}.
 
-    \snippet doc/src/snippets/fileinfo/main.cpp 1
+    \snippet fileinfo/main.cpp 1
 
     \sa absolutePath(), filePath(), fileName(), isRelative(), absoluteDir()
 */
@@ -1010,7 +1010,7 @@ bool QFileInfo::isBundle() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qfileinfo.cpp 9
+    \snippet code/src_corelib_io_qfileinfo.cpp 9
 
     \note If the symlink points to a non existing file, exists() returns
      false.
@@ -1172,7 +1172,7 @@ uint QFileInfo::groupId() const
     always returns true.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_io_qfileinfo.cpp 10
+    \snippet code/src_corelib_io_qfileinfo.cpp 10
 
     \sa isReadable(), isWritable(), isExecutable()
 */
@@ -1243,7 +1243,7 @@ qint64 QFileInfo::size() const
     If neither creation time nor "last status change" time are not
     available, returns the same as lastModified().
 
-    \sa lastModified() lastRead()
+    \sa lastModified(), lastRead()
 */
 QDateTime QFileInfo::created() const
 {
@@ -1261,7 +1261,7 @@ QDateTime QFileInfo::created() const
 /*!
     Returns the date and time when the file was last modified.
 
-    \sa created() lastRead()
+    \sa created(), lastRead()
 */
 QDateTime QFileInfo::lastModified() const
 {
@@ -1282,7 +1282,7 @@ QDateTime QFileInfo::lastModified() const
     On platforms where this information is not available, returns the
     same as lastModified().
 
-    \sa created() lastModified()
+    \sa created(), lastModified()
 */
 QDateTime QFileInfo::lastRead() const
 {

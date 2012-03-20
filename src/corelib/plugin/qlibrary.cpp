@@ -127,7 +127,7 @@ static QBasicMutex qt_library_mutex;
     symbol is not defined, the function pointer will be 0 and won't be
     called.
 
-    \snippet doc/src/snippets/code/src_corelib_plugin_qlibrary.cpp 0
+    \snippet code/src_corelib_plugin_qlibrary.cpp 0
 
     The symbol must be exported as a C function from the library for
     resolve() to work. This means that the function must be wrapped in
@@ -138,7 +138,7 @@ static QBasicMutex qt_library_mutex;
     use if you just want to call a function in a library without
     explicitly loading the library first:
 
-    \snippet doc/src/snippets/code/src_corelib_plugin_qlibrary.cpp 1
+    \snippet code/src_corelib_plugin_qlibrary.cpp 1
 
     \sa QPluginLoader
 */
@@ -1118,7 +1118,7 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, const QString &ver
     not be resolved or if the library could not be loaded.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_plugin_qlibrary.cpp 2
+    \snippet code/src_corelib_plugin_qlibrary.cpp 2
 
     The symbol must be exported as a C function from the library. This
     means that the function must be wrapped in an \c{extern "C"} if
@@ -1126,11 +1126,11 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, const QString &ver
     also explicitly export the function from the DLL using the
     \c{__declspec(dllexport)} compiler directive, for example:
 
-    \snippet doc/src/snippets/code/src_corelib_plugin_qlibrary.cpp 3
+    \snippet code/src_corelib_plugin_qlibrary.cpp 3
 
     with \c MY_EXPORT defined as
 
-    \snippet doc/src/snippets/code/src_corelib_plugin_qlibrary.cpp 4
+    \snippet code/src_corelib_plugin_qlibrary.cpp 4
 */
 QFunctionPointer QLibrary::resolve(const char *symbol)
 {

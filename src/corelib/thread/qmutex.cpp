@@ -55,7 +55,7 @@
 
 QT_BEGIN_NAMESPACE
 
-/*!
+/*
     \class QBasicMutex
     \brief QMutex POD
     \internal
@@ -86,20 +86,20 @@ QT_BEGIN_NAMESPACE
     For example, say there is a method that prints a message to the
     user on two lines:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qmutex.cpp 0
+    \snippet code/src_corelib_thread_qmutex.cpp 0
 
     If these two methods are called in succession, the following happens:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qmutex.cpp 1
+    \snippet code/src_corelib_thread_qmutex.cpp 1
 
     If these two methods are called simultaneously from two threads then the
     following sequence could result:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qmutex.cpp 2
+    \snippet code/src_corelib_thread_qmutex.cpp 2
 
     If we add a mutex, we should get the result we want:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qmutex.cpp 3
+    \snippet code/src_corelib_thread_qmutex.cpp 3
 
     Then only one thread can modify \c number at any given time and
     the result is correct. This is a trivial example, of course, but
@@ -178,26 +178,7 @@ QMutex::~QMutex()
     \sa unlock()
 */
 
-/*!\fn bool QMutex::trylock()
-    Attempts to lock the mutex. If the lock was obtained, this function
-    returns true. If another thread has locked the mutex, this
-    function returns false immediately.
-
-    If the lock was obtained, the mutex must be unlocked with unlock()
-    before another thread can successfully lock it.
-
-    Calling this function multiple times on the same mutex from the
-    same thread is allowed if this mutex is a
-    \l{QMutex::Recursive}{recursive mutex}. If this mutex is a
-    \l{QMutex::NonRecursive}{non-recursive mutex}, this function will
-    \e always return false when attempting to lock the mutex
-    recursively.
-
-    \sa lock(), unlock()
-*/
-
 /*! \fn bool QMutex::tryLock(int timeout)
-     \overload
 
     Attempts to lock the mutex. This function returns true if the lock
     was obtained; otherwise it returns false. If another thread has
@@ -268,7 +249,7 @@ bool QBasicMutex::isRecursive() {
     For example, this complex function locks a QMutex upon entering
     the function and unlocks the mutex at all the exit points:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qmutex.cpp 4
+    \snippet code/src_corelib_thread_qmutex.cpp 4
 
     This example function will get more complicated as it is
     developed, which increases the likelihood that errors will occur.
@@ -276,7 +257,7 @@ bool QBasicMutex::isRecursive() {
     Using QMutexLocker greatly simplifies the code, and makes it more
     readable:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qmutex.cpp 5
+    \snippet code/src_corelib_thread_qmutex.cpp 5
 
     Now, the mutex will always be unlocked when the QMutexLocker
     object is destroyed (when the function returns since \c locker is
@@ -292,7 +273,7 @@ bool QBasicMutex::isRecursive() {
     for code that needs access to the mutex, such as
     QWaitCondition::wait(). For example:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qmutex.cpp 6
+    \snippet code/src_corelib_thread_qmutex.cpp 6
 
     \sa QReadLocker, QWriteLocker, QMutex
 */
@@ -314,13 +295,6 @@ bool QBasicMutex::isRecursive() {
     in the constructor.
 
     \sa QMutex::unlock()
-*/
-
-/*!
-    \fn QMutex *QMutexLocker::mutex() const
-
-    Returns a pointer to the mutex that was locked in the
-    constructor.
 */
 
 /*!

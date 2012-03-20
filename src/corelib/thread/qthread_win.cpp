@@ -182,7 +182,7 @@ void qt_watch_adopted_thread(const HANDLE adoptedThreadHandle, QThread *qthread)
     }
 }
 
-/*! \internal
+/*
     This function loops and waits for native adopted threads to finish.
     When this happens it derefs the QThreadData for the adopted thread
     to make sure it gets cleaned up properly.

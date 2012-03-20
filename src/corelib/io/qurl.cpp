@@ -64,7 +64,7 @@
     unencoded representation is suitable for showing to users, but
     the encoded representation is typically what you would send to
     a web server. For example, the unencoded URL
-    "http://b\uuml\c{}hler.example.com" would be sent to the server as
+    "http://b\\uuml\c{}hler.example.com" would be sent to the server as
     "http://xn--bhler-kva.example.com/List%20of%20applicants.xml".
 
     A URL can also be constructed piece by piece by calling
@@ -155,7 +155,7 @@
 */
 
 /*!
-    \enum QUrl::FormattingOption
+    \enum QUrl::FormattingOptions
 
     The formatting options define how the URL is formatted when written out
     as text.
@@ -1400,11 +1400,11 @@ const QByteArray &QUrlPrivate::normalized() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qurl.cpp 0
+    \snippet code/src_corelib_io_qurl.cpp 0
 
     To construct a URL from an encoded string, call fromEncoded():
 
-    \snippet doc/src/snippets/code/src_corelib_io_qurl.cpp 1
+    \snippet code/src_corelib_io_qurl.cpp 1
 
     \sa setUrl(), setEncodedUrl(), fromEncoded(), TolerantMode
 */
@@ -1445,7 +1445,7 @@ QUrl::~QUrl()
     must conform to the standard encoding rules of the URI standard
     for the URL to be reported as valid.
 
-    \snippet doc/src/snippets/code/src_corelib_io_qurl.cpp 2
+    \snippet code/src_corelib_io_qurl.cpp 2
 */
 bool QUrl::isValid() const
 {
@@ -1501,7 +1501,7 @@ void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
     and is followed by a ':'. The following example shows a URL where
     the scheme is "ftp":
 
-    \img qurl-authority2.png
+    \image qurl-authority2.png
 
     The scheme can also be empty, in which case the URL is interpreted
     as relative.
@@ -1548,7 +1548,7 @@ QString QUrl::scheme() const
 
     The following example shows a valid authority string:
 
-    \img qurl-authority.png
+    \image qurl-authority.png
 */
 void QUrl::setAuthority(const QString &authority)
 {
@@ -1585,7 +1585,7 @@ QString QUrl::authority(ComponentFormattingOptions options) const
     separated by a ':'. If the password is empty, the colon must be
     omitted. The following example shows a valid user info string:
 
-    \img qurl-authority3.png
+    \image qurl-authority3.png
 
     \sa userInfo(), setUserName(), setPassword(), setAuthority()
 */
@@ -1746,7 +1746,7 @@ void QUrl::setPort(int port)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qurl.cpp 3
+    \snippet code/src_corelib_io_qurl.cpp 3
 */
 int QUrl::port(int defaultPort) const
 {
@@ -1758,12 +1758,12 @@ int QUrl::port(int defaultPort) const
     Sets the path of the URL to \a path. The path is the part of the
     URL that comes after the authority but before the query string.
 
-    \img qurl-ftppath.png
+    \image qurl-ftppath.png
 
     For non-hierarchical schemes, the path will be everything
     following the scheme declaration, as in the following example:
 
-    \img qurl-mailtopath.png
+    \image qurl-mailtopath.png
 
     \sa path()
 */
@@ -1862,7 +1862,7 @@ QString QUrl::query(ComponentFormattingOptions options) const
     characters. It is typically used in HTTP for referring to a
     certain link or point on a page:
 
-    \img qurl-fragment.png
+    \image qurl-fragment.png
 
     The fragment is sometimes also referred to as the URL "reference".
 
@@ -1938,7 +1938,7 @@ QString QUrl::topLevelDomain(ComponentFormattingOptions options) const
     the base URL, but with the merged path, as in the following
     example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qurl.cpp 5
+    \snippet code/src_corelib_io_qurl.cpp 5
 
     Calling resolved() with ".." returns a QUrl whose directory is
     one level higher than the original. Similarly, calling resolved()
@@ -2173,7 +2173,7 @@ QString QUrl::fromPercentEncoding(const QByteArray &input)
     Unreserved is defined as:
        ALPHA / DIGIT / "-" / "." / "_" / "~"
 
-    \snippet doc/src/snippets/code/src_corelib_io_qurl.cpp 6
+    \snippet code/src_corelib_io_qurl.cpp 6
 */
 QByteArray QUrl::toPercentEncoding(const QString &input, const QByteArray &exclude, const QByteArray &include)
 {

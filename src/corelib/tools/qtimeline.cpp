@@ -182,7 +182,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_tools_qtimeline.cpp 0
+    \snippet code/src_corelib_tools_qtimeline.cpp 0
 
     You can also use QTimeLine with the
     \l{Graphics View}{Graphics View framework} for

@@ -102,7 +102,7 @@ QT_BEGIN_NAMESPACE
     {QList::operator+=()}{operator+=()} and \l
     {QStringList::operator<<()}{operator<<()} functions. For example:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 0
+    \snippet qstringlist/main.cpp 0
 
     \section1 Iterating over the strings
 
@@ -111,15 +111,15 @@ QT_BEGIN_NAMESPACE
 
     Indexing:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 1
+    \snippet qstringlist/main.cpp 1
 
     Java-style iterator:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 2
+    \snippet qstringlist/main.cpp 2
 
     STL-style iterator:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 3
+    \snippet qstringlist/main.cpp 3
 
     The QStringListIterator class is simply a type definition for
     QListIterator<QString>. QStringList also provide the
@@ -133,12 +133,12 @@ QT_BEGIN_NAMESPACE
     string list into a single string (with an optional separator)
     using the join() function. For example:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 4
+    \snippet qstringlist/main.cpp 4
 
     To break up a string into a string list, use the QString::split()
     function:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 6
+    \snippet qstringlist/main.cpp 6
 
     The argument to split can be a single character, a string, or a
     QRegExp.
@@ -152,7 +152,7 @@ QT_BEGIN_NAMESPACE
     contain a particular substring (or match a particular regular
     expression):
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 7
+    \snippet qstringlist/main.cpp 7
 
     The contains() function tells you whether the list contains a
     given string, while the indexOf() function returns the index of
@@ -163,7 +163,7 @@ QT_BEGIN_NAMESPACE
     Finally, the replaceInStrings() function calls QString::replace()
     on each string in the string list in turn. For example:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 8
+    \snippet qstringlist/main.cpp 8
 
     \sa QString
 */
@@ -180,7 +180,7 @@ QT_BEGIN_NAMESPACE
     Constructs a string list that contains the given string, \a
     str. Longer lists are easily created like this:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 9
+    \snippet qstringlist/main.cpp 9
 
     \sa append()
 */
@@ -255,13 +255,13 @@ void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
     comparison is case sensitive; otherwise the comparison is case
     insensitive.
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 5
-    \snippet doc/src/snippets/qstringlist/main.cpp 10
+    \snippet qstringlist/main.cpp 5
+    \snippet qstringlist/main.cpp 10
 
     This is equivalent to
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 11
-    \snippet doc/src/snippets/qstringlist/main.cpp 12
+    \snippet qstringlist/main.cpp 11
+    \snippet qstringlist/main.cpp 12
 
     \sa contains()
 */
@@ -348,8 +348,8 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegula
 
     For example:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 5
-    \snippet doc/src/snippets/qstringlist/main.cpp 13
+    \snippet qstringlist/main.cpp 5
+    \snippet qstringlist/main.cpp 13
 
     \sa QString::replace()
 */
@@ -372,8 +372,8 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QString &b
 
     For example:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 5
-    \snippet doc/src/snippets/qstringlist/main.cpp 14
+    \snippet qstringlist/main.cpp 5
+    \snippet qstringlist/main.cpp 14
 
     For regular expressions that contain \l{capturing parentheses},
     occurrences of \b{\\1}, \b{\\2}, ..., in \a after are
@@ -381,8 +381,8 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QString &b
 
     For example:
 
-    \snippet doc/src/snippets/qstringlist/main.cpp 5
-    \snippet doc/src/snippets/qstringlist/main.cpp 15
+    \snippet qstringlist/main.cpp 5
+    \snippet qstringlist/main.cpp 15
 */
 void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegExp &rx, const QString &after)
 {

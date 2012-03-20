@@ -63,7 +63,7 @@
     In the common case, it is useful to call the qDebug() function to obtain a
     default QDebug object to use for writing debugging information.
 
-    \snippet doc/src/snippets/qdebug/qdebugsnippet.cpp 1
+    \snippet qdebug/qdebugsnippet.cpp 1
 
     This constructs a QDebug object using the constructor that accepts a QtMsgType
     value of QtDebugMsg. Similarly, the qWarning(), qCritical() and qFatal()
@@ -80,7 +80,7 @@
     most Qt value types. To add support for custom types, you need to implement a
     streaming operator, as in the following example:
 
-    \snippet doc/src/snippets/qdebug/qdebugsnippet.cpp 0
+    \snippet qdebug/qdebugsnippet.cpp 0
 
     This is described in the \l{Debugging Techniques} and
     \l{Creating Custom Qt Types#Making the Type Printable}{Creating Custom Qt Types}
@@ -251,7 +251,7 @@
 /*!
     \fn QDebug &QDebug::operator<<(const char *s)
 
-    Writes the '\0'-terminated string, \a s, to the stream and returns a
+    Writes the '\\0'-terminated string, \a s, to the stream and returns a
     reference to the stream.
 */
 

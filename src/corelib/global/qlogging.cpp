@@ -82,7 +82,7 @@ QT_BEGIN_NAMESPACE
 
     One example of direct use is to forward errors that stem from a scripting language, e.g. QML:
 
-    \snippet doc/src/snippets/code/qlogging/qloggingsnippet.cpp 1
+    \snippet code/qlogging/qlogging.cpp 1
 
     \sa QMessageLogContext, qDebug(), qWarning(), qCritical(), qFatal()
 */
@@ -132,7 +132,6 @@ static void qt_message(QtMsgType msgType, const QMessageLogContext &context, con
 }
 
 #undef qDebug
-
 void QMessageLogger::debug(const char *msg, ...)
 {
     va_list ap;
@@ -178,7 +177,6 @@ QDebug QMessageLogger::warning()
 #endif
 
 #undef qCritical
-
 void QMessageLogger::critical(const char *msg, ...)
 {
     va_list ap;
@@ -198,7 +196,6 @@ QDebug QMessageLogger::critical()
 #endif
 
 #undef qFatal
-
 void QMessageLogger::fatal(const char *msg, ...)
 {
     va_list ap;
@@ -651,6 +648,79 @@ extern Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char *str);
 extern Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogContext &context,
                                              const char *str);
 #endif
+
+/*!
+    \typedef QtMsgHandler
+    \relates <QtGlobal>
+    \deprecated
+
+    This is a typedef for a pointer to a function with the following
+    signature:
+
+    \snippet code/src_corelib_global_qglobal.cpp 7
+
+    This typedef is deprecated, you should use QMessageHandler instead.
+    \sa QtMsgType, QMessageHandler, qInstallMsgHandler(), qInstallMessageHandler()
+*/
+
+/*!
+    \fn QtMsgHandler qInstallMsgHandler(QtMsgHandler handler)
+    \relates <QtGlobal>
+    \deprecated
+
+    Installs a Qt message \a handler which has been defined
+    previously. This method is deprecated, use qInstallMessageHandler
+    instead.
+    \sa QtMsgHandler, qInstallMessageHandler
+*/
+
+/*!
+    \typedef QMessageHandler
+    \relates <QtGlobal>
+    \since 5.0
+
+    This is a typedef for a pointer to a function with the following
+    signature:
+
+    \snippet code/src_corelib_global_qglobal.cpp 49
+
+    \sa QtMsgType, qInstallMessageHandler()
+*/
+
+/*!
+    \fn QMessageHandler qInstallMessageHandler(QMessageHandler handler)
+    \relates <QtGlobal>
+    \since 5.0
+
+    Installs a Qt message \a handler which has been defined
+    previously. Returns a pointer to the previous message handler
+    (which may be 0).
+
+    The message handler is a function that prints out debug messages,
+    warnings, critical and fatal error messages. The Qt library (debug
+    mode) contains hundreds of warning messages that are printed
+    when internal errors (usually invalid function arguments)
+    occur. Qt built in release mode also contains such warnings unless
+    QT_NO_WARNING_OUTPUT and/or QT_NO_DEBUG_OUTPUT have been set during
+    compilation. If you implement your own message handler, you get total
+    control of these messages.
+
+    The default message handler prints the message to the standard
+    output under X11 or to the debugger under Windows. If it is a
+    fatal message, the application aborts immediately.
+
+    Only one message handler can be defined, since this is usually
+    done on an application-wide basis to control debug output.
+
+    To restore the message handler, call \c qInstallMessageHandler(0).
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp 23
+
+    \sa qDebug(), qWarning(), qCritical(), qFatal(), QtMsgType,
+    {Debugging Techniques}
+*/
 
 QMessageHandler qInstallMessageHandler(QMessageHandler h)
 {

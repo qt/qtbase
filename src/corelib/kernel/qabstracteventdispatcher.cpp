@@ -374,7 +374,7 @@ void QAbstractEventDispatcher::closingDown()
 
     Typedef for a function with the signature
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qabstracteventdispatcher.cpp 0
+    \snippet code/src_corelib_kernel_qabstracteventdispatcher.cpp 0
 
     Note that the type of the \a message is platform dependent. The
     following table shows the \a {message}'s type on Windows, Mac, and
@@ -460,7 +460,7 @@ bool QAbstractEventDispatcher::filterEvent(void *message)
     This signal is emitted after the event loop returns from a
     function that could block.
 
-    \sa wakeUp() aboutToBlock()
+    \sa wakeUp(), aboutToBlock()
 */
 
 /*! \fn void QAbstractEventDispatcher::aboutToBlock()

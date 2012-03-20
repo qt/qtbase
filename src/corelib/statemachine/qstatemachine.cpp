@@ -126,7 +126,7 @@ QT_BEGIN_NAMESPACE
     The following snippet shows a state machine that will finish when a button
     is clicked:
 
-    \snippet doc/src/snippets/code/src_corelib_statemachine_qstatemachine.cpp simple state machine
+    \snippet code/src_corelib_statemachine_qstatemachine.cpp simple state machine
 
     This code example uses QState, which inherits QAbstractState. The
     QState class provides a state that you can use to set properties
@@ -1747,7 +1747,7 @@ QStateMachine::~QStateMachine()
    \value RestoreProperties The state machine should save the initial values of properties 
           and restore them later.
 
-   \sa QStateMachine::globalRestorePolicy QState::assignProperty()
+   \sa QStateMachine::globalRestorePolicy, QState::assignProperty()
 */
 
 

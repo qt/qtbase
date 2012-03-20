@@ -451,10 +451,10 @@ void QProcessPrivate::Channel::clear()
     containing "-style" and "motif" as two items in the list of
     arguments:
 
-    \snippet doc/src/snippets/qprocess/qprocess-simpleexecution.cpp 0
+    \snippet qprocess/qprocess-simpleexecution.cpp 0
     \dots
-    \snippet doc/src/snippets/qprocess/qprocess-simpleexecution.cpp 1
-    \snippet doc/src/snippets/qprocess/qprocess-simpleexecution.cpp 2
+    \snippet qprocess/qprocess-simpleexecution.cpp 1
+    \snippet qprocess/qprocess-simpleexecution.cpp 2
 
     QProcess then enters the \l Starting state, and when the program
     has started, QProcess enters the \l Running state and emits
@@ -550,7 +550,7 @@ void QProcessPrivate::Channel::clear()
     The following example runs \c gzip to compress the string "Qt
     rocks!", without an event loop:
 
-    \snippet doc/src/snippets/process/process.cpp 0
+    \snippet process/process.cpp 0
 
     \section1 Notes for Windows Users
 
@@ -1184,7 +1184,7 @@ QProcess::ProcessChannelMode QProcess::processChannelMode() const
     error channels to the \a mode specified.
     This mode will be used the next time start() is called. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 0
+    \snippet code/src_corelib_io_qprocess.cpp 0
 
     \sa processChannelMode(), ProcessChannelMode, setReadChannel()
 */
@@ -1261,7 +1261,7 @@ void QProcess::closeReadChannel(ProcessChannel channel)
     Unix and Windows. But it will not display the text data until
     QProcess's write channel has been closed. Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 1
+    \snippet code/src_corelib_io_qprocess.cpp 1
 
     The write channel is implicitly opened when start() is called.
 
@@ -1363,10 +1363,10 @@ void QProcess::setStandardErrorFile(const QString &fileName, OpenMode mode)
     destination process' standard input.
 
     The following shell command:
-    \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 2
+    \snippet code/src_corelib_io_qprocess.cpp 2
 
     Can be accomplished with QProcesses with the following code:
-    \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 3
+    \snippet code/src_corelib_io_qprocess.cpp 3
 */
 void QProcess::setStandardOutputProcess(QProcess *destination)
 {
@@ -1567,7 +1567,7 @@ QProcess::ProcessState QProcess::state() const
     For example, the following code adds the \c{C:\\BIN} directory to the list of
     executable paths (\c{PATHS}) on Windows:
 
-    \snippet doc/src/snippets/qprocess-environment/main.cpp 0
+    \snippet qprocess-environment/main.cpp 0
 
     \note This function is less efficient than the setProcessEnvironment()
     function.
@@ -1605,7 +1605,7 @@ QStringList QProcess::environment() const
     For example, the following code adds the \c{C:\\BIN} directory to the list of
     executable paths (\c{PATHS}) on Windows and sets \c{TMPDIR}:
 
-    \snippet doc/src/snippets/qprocess-environment/main.cpp 1
+    \snippet qprocess-environment/main.cpp 1
 
     Note how, on Windows, environment variable names are case-insensitive.
 
@@ -1755,7 +1755,7 @@ void QProcess::setProcessState(ProcessState state)
     \e execve()). Reimplement this function to do last minute initialization
     of the child process. Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 4
+    \snippet code/src_corelib_io_qprocess.cpp 4
 
     You cannot exit the process (by calling exit(), for instance) from
     this function. If you need to stop the program before it starts
@@ -2002,12 +2002,12 @@ static QStringList parseCombinedArgString(const QString &program)
     program name and its arguments. The arguments are separated by one or
     more spaces. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 5
+    \snippet code/src_corelib_io_qprocess.cpp 5
 
     The \a program string can also contain quotes, to ensure that arguments
     containing spaces are correctly supplied to the new process. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 6
+    \snippet code/src_corelib_io_qprocess.cpp 6
 
     If the QProcess object is already running a process, a warning may be
     printed at the console, and the existing process will continue running.
@@ -2017,7 +2017,7 @@ static QStringList parseCombinedArgString(const QString &program)
     way to ensure that \c{"My Documents"} is used as the argument to
     the \c dir executable:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 7
+    \snippet code/src_corelib_io_qprocess.cpp 7
 
     The OpenMode is set to \a mode.
 */
@@ -2235,7 +2235,7 @@ QT_END_INCLUDE_NAMESPACE
     Returns the environment of the calling process as a list of
     key=value pairs. Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qprocess.cpp 8
+    \snippet code/src_corelib_io_qprocess.cpp 8
 
     This function does not cache the system environment. Therefore, it's
     possible to obtain an updated version of the environment if low-level C

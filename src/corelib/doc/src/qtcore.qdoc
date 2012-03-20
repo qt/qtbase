@@ -37,6 +37,6 @@
     All other Qt modules rely on this module. To include the
     definitions of the module's classes, use the following directive:
 
-    \snippet doc/src/snippets/code/doc_src_qtcore.cpp 0
+    \snippet code/doc_src_qtcore.cpp 0
 */
 

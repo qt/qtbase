@@ -58,7 +58,7 @@
 
     Example:
 
-    \snippet doc/src/snippets/qstack/main.cpp 0
+    \snippet qstack/main.cpp 0
 
     The example will output 3, 2, 1 in that order.
 

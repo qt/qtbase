@@ -338,7 +338,7 @@ public:
     it via QObject::tr(). Here's the \c main() function from the
     \l{linguist/hellotr}{Hello tr()} example:
 
-    \snippet examples/linguist/hellotr/main.cpp 2
+    \snippet linguist/hellotr/main.cpp 2
 
     Note that the translator must be created \e before the
     application's widgets.

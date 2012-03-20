@@ -61,9 +61,9 @@ QT_BEGIN_NAMESPACE
     Example for a one second (1000 millisecond) timer (from the
     \l{widgets/analogclock}{Analog Clock} example):
 
-    \snippet examples/widgets/analogclock/analogclock.cpp 4
-    \snippet examples/widgets/analogclock/analogclock.cpp 5
-    \snippet examples/widgets/analogclock/analogclock.cpp 6
+    \snippet widgets/analogclock/analogclock.cpp 4
+    \snippet widgets/analogclock/analogclock.cpp 5
+    \snippet widgets/analogclock/analogclock.cpp 6
 
     From then on, the \c update() slot is called every second.
 
@@ -72,7 +72,7 @@ QT_BEGIN_NAMESPACE
     QTimer::singleShot() function to call a slot after a specified
     interval:
 
-    \snippet doc/src/snippets/timers/timers.cpp 3
+    \snippet timers/timers.cpp 3
 
     In multithreaded applications, you can use QTimer in any thread
     that has an event loop. To start an event loop from a non-GUI
@@ -87,9 +87,9 @@ QT_BEGIN_NAMESPACE
     been processed. This can be used to do heavy work while providing
     a snappy user interface:
 
-    \snippet doc/src/snippets/timers/timers.cpp 4
-    \snippet doc/src/snippets/timers/timers.cpp 5
-    \snippet doc/src/snippets/timers/timers.cpp 6
+    \snippet timers/timers.cpp 4
+    \snippet timers/timers.cpp 5
+    \snippet timers/timers.cpp 6
 
     \c processOneThing() will from then on be called repeatedly. It
     should be written in such a way that it always returns quickly
@@ -304,7 +304,7 @@ QT_END_INCLUDE_NAMESPACE
     create a local QTimer object.
 
     Example:
-    \snippet doc/src/snippets/code/src_corelib_kernel_qtimer.cpp 0
+    \snippet code/src_corelib_kernel_qtimer.cpp 0
 
     This sample program automatically terminates after 10 minutes
     (600,000 milliseconds).

@@ -45,7 +45,7 @@
     split into a thread, each of which would have a
     \l{QThread::run()}{run()} body like this:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qwaitcondition_unix.cpp 0
+    \snippet code/src_corelib_thread_qwaitcondition_unix.cpp 0
 
     Here, the \c keyPressed variable is a global variable of type
     QWaitCondition.
@@ -53,7 +53,7 @@
     A fourth thread would read key presses and wake the other three
     threads up every time it receives one, like this:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qwaitcondition_unix.cpp 1
+    \snippet code/src_corelib_thread_qwaitcondition_unix.cpp 1
 
     The order in which the three threads are woken up is undefined.
     Also, if some of the threads are still in \c do_something() when
@@ -63,11 +63,11 @@
     counter and a QMutex to guard it. For example, here's the new
     code for the worker threads:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qwaitcondition_unix.cpp 2
+    \snippet code/src_corelib_thread_qwaitcondition_unix.cpp 2
 
     Here's the code for the fourth thread:
 
-    \snippet doc/src/snippets/code/src_corelib_thread_qwaitcondition_unix.cpp 3
+    \snippet code/src_corelib_thread_qwaitcondition_unix.cpp 3
 
     The mutex is necessary because the results of two threads
     attempting to change the value of the same variable

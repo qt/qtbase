@@ -609,7 +609,7 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty& protot
     \a name.  Returns an object that can be used to adjust
     the other attributes of the enumerator.
 
-    \sa enumerator(), enumeratorCount(), removeEnumerator(),
+    \sa enumerator(), enumeratorCount(), removeEnumerator()
     \sa indexOfEnumerator()
 */
 QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QByteArray& name)
@@ -625,7 +625,7 @@ QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QByteArray& name)
     QMetaObject.  Returns an object that can be used to adjust the
     attributes of the enumerator.
 
-    \sa enumerator(), enumeratorCount(), removeEnumerator(),
+    \sa enumerator(), enumeratorCount(), removeEnumerator()
     \sa indexOfEnumerator()
 */
 QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QMetaEnum& prototype)

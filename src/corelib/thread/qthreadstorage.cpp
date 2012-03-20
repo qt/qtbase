@@ -238,9 +238,9 @@ void QThreadStorageData::finish(void **p)
     removeFromCache() functions. The cache is automatically
     deleted when the calling thread exits.
 
-    \snippet doc/src/snippets/threads/threads.cpp 7
-    \snippet doc/src/snippets/threads/threads.cpp 8
-    \snippet doc/src/snippets/threads/threads.cpp 9
+    \snippet threads/threads.cpp 7
+    \snippet threads/threads.cpp 8
+    \snippet threads/threads.cpp 9
 
     \section1 Caveats
 

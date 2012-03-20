@@ -174,7 +174,7 @@ QSharedMemory::QSharedMemory(const QString &key, QObject *parent)
   the shared memory segment, the detach() operation destroys the
   shared memory segment.
 
-  \sa detach() isAttached()
+  \sa detach(), isAttached()
  */
 QSharedMemory::~QSharedMemory()
 {
@@ -193,7 +193,7 @@ QSharedMemory::~QSharedMemory()
   segment, it will \l {detach()} {detach} from it before setting the new key.
   This function does not do an attach().
 
-  \sa key() nativeKey() isAttached()
+  \sa key(), nativeKey(), isAttached()
 */
 void QSharedMemory::setKey(const QString &key)
 {
@@ -225,7 +225,7 @@ void QSharedMemory::setKey(const QString &key)
 
   The application will not be portable if you set a native key.
 
-  \sa nativeKey() key() isAttached()
+  \sa nativeKey(), key(), isAttached()
 */
 void QSharedMemory::setNativeKey(const QString &key)
 {
@@ -288,7 +288,7 @@ bool QSharedMemoryPrivate::initKey()
   You can find the native, platform specific, key used by the operating system
   by calling nativeKey().
 
-  \sa setKey() setNativeKey()
+  \sa setKey(), setNativeKey()
  */
 QString QSharedMemory::key() const
 {
@@ -306,7 +306,7 @@ QString QSharedMemory::key() const
   You can use the native key to access shared memory segments that have not
   been created by Qt, or to grant shared memory access to non-Qt applications.
 
-  \sa setKey() setNativeKey()
+  \sa setKey(), setNativeKey()
 */
 QString QSharedMemory::nativeKey() const
 {
@@ -363,7 +363,7 @@ bool QSharedMemory::create(int size, AccessMode mode)
   Returns the size of the attached shared memory segment. If no shared
   memory segment is attached, 0 is returned.
 
-  \sa create() attach()
+  \sa create(), attach()
  */
 int QSharedMemory::size() const
 {
@@ -472,7 +472,7 @@ void *QSharedMemory::data()
   the shared memory, and remember to release the lock with unlock()
   after you are done.
 
-  \sa attach() create()
+  \sa attach(), create()
  */
 const void* QSharedMemory::constData() const
 {

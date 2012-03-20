@@ -171,7 +171,7 @@ void QTemporaryDirPrivate::create(const QString &templateName)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_io_qtemporarydir.cpp 0
+    \snippet code/src_corelib_io_qtemporarydir.cpp 0
 
     It is very important to test that the temporary directory could be
     created, using isValid(). Do not use exists(), since a default-constructed
