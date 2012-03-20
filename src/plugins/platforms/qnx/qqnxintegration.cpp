@@ -43,7 +43,7 @@
 #include "qqnxeventthread.h"
 #include "qqnxglbackingstore.h"
 #include "qqnxglcontext.h"
-#include "qqnxnavigatorthread.h"
+#include "qqnxnavigatoreventhandler.h"
 #include "qqnxrasterbackingstore.h"
 #include "qqnxscreen.h"
 #include "qqnxwindow.h"
@@ -77,7 +77,7 @@ QMutex QQnxIntegration::ms_windowMapperMutex;
 QQnxIntegration::QQnxIntegration()
     : QPlatformIntegration()
     , m_eventThread(0)
-    , m_navigatorThread(0)
+    , m_navigatorEventHandler(0)
     , m_inputContext(0)
     , m_fontDatabase(new QGenericUnixFontDatabase())
     , m_paintUsingOpenGL(false)
@@ -109,9 +109,15 @@ QQnxIntegration::QQnxIntegration()
     m_eventThread = new QQnxEventThread(m_screenContext, *QQnxScreen::primaryDisplay());
     m_eventThread->start();
 
-    // Create/start navigator thread
-    m_navigatorThread = new QQnxNavigatorThread(*QQnxScreen::primaryDisplay());
-    m_navigatorThread->start();
+    // Create/start navigator event handler
+    // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
+#ifndef Q_OS_BLACKBERRY
+    m_navigatorEventHandler = new QQnxNavigatorEventHandler(*QQnxScreen::primaryDisplay());
+
+    // delay invocation of start() to the time the event loop is up and running
+    // needed to have the QThread internals of the main thread properly initialized
+    QMetaObject::invokeMethod(m_navigatorEventHandler, "start", Qt::QueuedConnection);
+#endif
 
     // Create/start the keyboard class.
     QQnxVirtualKeyboard::instance();
@@ -137,7 +143,7 @@ QQnxIntegration::~QQnxIntegration()
     delete m_eventThread;
 
     // Stop/destroy navigator thread
-    delete m_navigatorThread;
+    delete m_navigatorEventHandler;
 
     // Destroy all displays
     QQnxScreen::destroyDisplays();

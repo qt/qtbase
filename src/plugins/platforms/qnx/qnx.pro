@@ -16,7 +16,7 @@ QT += opengl opengl-private platformsupport platformsupport-private widgets-priv
 #DEFINES += QQNXINPUTCONTEXT_DEBUG
 #DEFINES += QQNXINPUTCONTEXT_IMF_EVENT_DEBUG
 #DEFINES += QQNXINTEGRATION_DEBUG
-#DEFINES += QQNXNAVIGATORTHREAD_DEBUG
+#DEFINES += QQNXNAVIGATOREVENTHANDLER_DEBUG
 #DEFINES += QQNXRASTERBACKINGSTORE_DEBUG
 #DEFINES += QQNXROOTWINDOW_DEBUG
 #DEFINES += QQNXSCREEN_DEBUG
@@ -29,7 +29,7 @@ SOURCES =   main.cpp \
             qqnxglcontext.cpp \
             qqnxglbackingstore.cpp \
             qqnxintegration.cpp \
-            qqnxnavigatorthread.cpp \
+            qqnxnavigatoreventhandler.cpp \
             qqnxscreen.cpp \
             qqnxwindow.cpp \
             qqnxrasterbackingstore.cpp \
@@ -41,7 +41,7 @@ HEADERS =   qqnxbuffer.h \
             qqnxeventthread.h \
             qqnxkeytranslator.h \
             qqnxintegration.h \
-            qqnxnavigatorthread.h \
+            qqnxnavigatoreventhandler.h \
             qqnxglcontext.h \
             qqnxglbackingstore.h \
             qqnxscreen.h \

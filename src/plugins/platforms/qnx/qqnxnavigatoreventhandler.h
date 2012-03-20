@@ -39,31 +39,30 @@
 **
 ****************************************************************************/
 
-#ifndef QQNXNAVIGATORTHREAD_H
-#define QQNXNAVIGATORTHREAD_H
+#ifndef QQNXNAVIGATOREVENTHANDLER_H
+#define QQNXNAVIGATOREVENTHANDLER_H
 
-#include <QThread>
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 
 class QQnxScreen;
 class QSocketNotifier;
 
-class QQnxNavigatorThread : public QThread
+class QQnxNavigatorEventHandler : public QObject
 {
     Q_OBJECT
 public:
-    QQnxNavigatorThread(QQnxScreen &primaryScreen);
-    virtual ~QQnxNavigatorThread();
+    QQnxNavigatorEventHandler(QQnxScreen &primaryScreen);
+    virtual ~QQnxNavigatorEventHandler();
 
-protected:
-    virtual void run();
+public Q_SLOTS:
+    void start();
 
 private Q_SLOTS:
     void readData();
 
 private:
-    void shutdown();
     void parsePPS(const QByteArray &ppsData, QByteArray &msg, QByteArray &dat, QByteArray &id);
     void replyPPS(const QByteArray &res, const QByteArray &id, const QByteArray &dat);
     void handleMessage(const QByteArray &msg, const QByteArray &dat, const QByteArray &id);
@@ -75,4 +74,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QQNXNAVIGATORTHREAD_H
+#endif // QQNXNAVIGATOREVENTHANDLER_H

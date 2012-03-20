@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qqnxnavigatorthread.h"
+#include "qqnxnavigatoreventhandler.h"
 #include "qqnxscreen.h"
 
 #include <QtGui/QGuiApplication>
@@ -61,25 +61,30 @@
 static const char *navigatorControlPath = "/pps/services/navigator/control";
 static const int ppsBufferSize = 4096;
 
-QQnxNavigatorThread::QQnxNavigatorThread(QQnxScreen& primaryScreen)
+QQnxNavigatorEventHandler::QQnxNavigatorEventHandler(QQnxScreen& primaryScreen)
     : m_primaryScreen(primaryScreen),
       m_fd(-1),
       m_readNotifier(0)
 {
 }
 
-QQnxNavigatorThread::~QQnxNavigatorThread()
+QQnxNavigatorEventHandler::~QQnxNavigatorEventHandler()
 {
-    // block until thread terminates
-    shutdown();
-
     delete m_readNotifier;
+
+    // close connection to navigator
+    if (m_fd != -1)
+        close(m_fd);
+
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
+    qDebug() << "QQNX: navigator event handler stopped";
+#endif
 }
 
-void QQnxNavigatorThread::run()
+void QQnxNavigatorEventHandler::start()
 {
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
-    qDebug() << "QQNX: navigator thread started";
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
+    qDebug() << "QQNX: navigator event handler started";
 #endif
 
     // open connection to navigator
@@ -91,39 +96,12 @@ void QQnxNavigatorThread::run()
     }
 
     m_readNotifier = new QSocketNotifier(m_fd, QSocketNotifier::Read);
-    // using direct connection to get the slot called in this thread's context
-    connect(m_readNotifier, SIGNAL(activated(int)), this, SLOT(readData()), Qt::DirectConnection);
-
-    exec();
-
-    // close connection to navigator
-    close(m_fd);
-
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
-    qDebug() << "QQNX: navigator thread stopped";
-#endif
+    connect(m_readNotifier, SIGNAL(activated(int)), this, SLOT(readData()));
 }
 
-void QQnxNavigatorThread::shutdown()
+void QQnxNavigatorEventHandler::parsePPS(const QByteArray &ppsData, QByteArray &msg, QByteArray &dat, QByteArray &id)
 {
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
-    qDebug() << "QQNX: navigator thread shutdown begin";
-#endif
-
-    // signal thread to terminate
-    quit();
-
-    // block until thread terminates
-    wait();
-
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
-    qDebug() << "QQNX: navigator thread shutdown end";
-#endif
-}
-
-void QQnxNavigatorThread::parsePPS(const QByteArray &ppsData, QByteArray &msg, QByteArray &dat, QByteArray &id)
-{
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
     qDebug() << "PPS: data=" << ppsData;
 #endif
 
@@ -141,7 +119,7 @@ void QQnxNavigatorThread::parsePPS(const QByteArray &ppsData, QByteArray &msg, Q
         // tokenize current attribute
         const QByteArray &attr = lines.at(i);
 
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
         qDebug() << "PPS: attr=" << attr;
 #endif
 
@@ -160,7 +138,7 @@ void QQnxNavigatorThread::parsePPS(const QByteArray &ppsData, QByteArray &msg, Q
         QByteArray key = attr.left(firstColon);
         QByteArray value = attr.mid(secondColon + 1);
 
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
         qDebug() << "PPS: key=" << key;
         qDebug() << "PPS: val=" << value;
 #endif
@@ -178,7 +156,7 @@ void QQnxNavigatorThread::parsePPS(const QByteArray &ppsData, QByteArray &msg, Q
     }
 }
 
-void QQnxNavigatorThread::replyPPS(const QByteArray &res, const QByteArray &id, const QByteArray &dat)
+void QQnxNavigatorEventHandler::replyPPS(const QByteArray &res, const QByteArray &id, const QByteArray &dat)
 {
     // construct pps message
     QByteArray ppsData = "res::";
@@ -191,7 +169,7 @@ void QQnxNavigatorThread::replyPPS(const QByteArray &res, const QByteArray &id, 
     }
     ppsData += "\n";
 
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
     qDebug() << "PPS reply=" << ppsData;
 #endif
 
@@ -203,9 +181,9 @@ void QQnxNavigatorThread::replyPPS(const QByteArray &res, const QByteArray &id, 
     }
 }
 
-void QQnxNavigatorThread::handleMessage(const QByteArray &msg, const QByteArray &dat, const QByteArray &id)
+void QQnxNavigatorEventHandler::handleMessage(const QByteArray &msg, const QByteArray &dat, const QByteArray &id)
 {
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
     qDebug() << "PPS: msg=" << msg << ", dat=" << dat << ", id=" << id;
 #endif
 
@@ -213,7 +191,7 @@ void QQnxNavigatorThread::handleMessage(const QByteArray &msg, const QByteArray 
     if (msg == "orientationCheck") {
 
         // reply to navigator that (any) orientation is acceptable
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
         qDebug() << "PPS: orientation check, o=" << dat;
 #endif
         replyPPS(msg, id, "true");
@@ -221,7 +199,7 @@ void QQnxNavigatorThread::handleMessage(const QByteArray &msg, const QByteArray 
     } else if (msg == "orientation") {
 
         // update screen geometry and reply to navigator that we're ready
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
         qDebug() << "PPS: orientation, o=" << dat;
 #endif
         m_primaryScreen.setRotation( dat.toInt() );
@@ -231,7 +209,7 @@ void QQnxNavigatorThread::handleMessage(const QByteArray &msg, const QByteArray 
     } else if (msg == "SWIPE_DOWN") {
 
         // simulate menu key press
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
         qDebug() << "PPS: menu";
 #endif
         QWindow *w = QGuiApplication::focusWindow();
@@ -241,16 +219,16 @@ void QQnxNavigatorThread::handleMessage(const QByteArray &msg, const QByteArray 
     } else if (msg == "exit") {
 
         // shutdown everything
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
         qDebug() << "PPS: exit";
 #endif
         QCoreApplication::quit();
     }
 }
 
-void QQnxNavigatorThread::readData()
+void QQnxNavigatorEventHandler::readData()
 {
-#if defined(QQNXNAVIGATORTHREAD_DEBUG)
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
     qDebug() << "QQNX: reading navigator data";
 #endif
     // allocate buffer for pps data
