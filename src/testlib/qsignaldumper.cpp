@@ -64,12 +64,6 @@ static int iLevel = 0;
 static int ignoreLevel = 0;
 enum { IndentSpacesCount = 4 };
 
-static QByteArray memberName(const QMetaMethod &member)
-{
-    QByteArray ba = member.methodSignature();
-    return ba.left(ba.indexOf('('));
-}
-
 static void qSignalDumperCallback(QObject *caller, int method_index, void **argv)
 {
     Q_ASSERT(caller); Q_ASSERT(argv); Q_UNUSED(argv);
@@ -96,7 +90,7 @@ static void qSignalDumperCallback(QObject *caller, int method_index, void **argv
     str += QByteArray::number(quintptr(caller), 16);
 
     str += ") ";
-    str += QTest::memberName(member);
+    str += member.name();
     str += " (";
 
     QList<QByteArray> args = member.parameterTypes();

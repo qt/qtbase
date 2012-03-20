@@ -1095,20 +1095,16 @@ int Q_TESTLIB_EXPORT defaultKeyDelay()
 
 static bool isValidSlot(const QMetaMethod &sl)
 {
-    if (sl.access() != QMetaMethod::Private || !sl.parameterTypes().isEmpty()
-        || qstrlen(sl.typeName()) || sl.methodType() != QMetaMethod::Slot)
+    if (sl.access() != QMetaMethod::Private || sl.parameterCount() != 0
+        || sl.returnType() != QMetaType::Void || sl.methodType() != QMetaMethod::Slot)
         return false;
-    QByteArray signature = sl.methodSignature();
-    const char *sig = signature.constData();
-    int len = qstrlen(sig);
-    if (len < 2)
+    QByteArray name = sl.name();
+    if (name.isEmpty())
         return false;
-    if (sig[len - 2] != '(' || sig[len - 1] != ')')
+    if (name.endsWith("_data"))
         return false;
-    if (len > 7 && strcmp(sig + (len - 7), "_data()") == 0)
-        return false;
-    if (strcmp(sig, "initTestCase()") == 0 || strcmp(sig, "cleanupTestCase()") == 0
-        || strcmp(sig, "cleanup()") == 0 || strcmp(sig, "init()") == 0)
+    if (name == "initTestCase" || name == "cleanupTestCase"
+        || name == "cleanup" || name == "init")
         return false;
     return true;
 }
