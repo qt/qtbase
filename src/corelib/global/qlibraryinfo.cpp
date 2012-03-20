@@ -318,13 +318,11 @@ QLibraryInfo::rawLocation(LibraryLocation loc)
     if (!ret.isEmpty() && QDir::isRelativePath(ret)) {
         QString baseDir;
 #ifdef QT_BUILD_QMAKE
-        if (loc == HostPrefixPath || loc == PrefixPath) {
-            // We make the prefix path absolute to the executable's directory.
+        if (loc == HostPrefixPath || loc == PrefixPath || loc == SysrootPath) {
+            // We make the prefix/sysroot path absolute to the executable's directory.
             // loc == PrefixPath while a sysroot is set would make no sense here.
+            // loc == SysrootPath only makes sense if qmake lives inside the sysroot itself.
             baseDir = QFileInfo(qmake_libraryInfoFile()).absolutePath();
-        } else if (loc == SysrootPath) {
-            // The sysroot is bare
-            return ret;
         } else if (loc > SysrootPath && loc <= LastHostPath) {
             // We make any other host path absolute to the host prefix directory.
             baseDir = rawLocation(HostPrefixPath);
