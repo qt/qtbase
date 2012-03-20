@@ -180,7 +180,7 @@ QT_BEGIN_NAMESPACE
 
 class QDataStream;
 class QMetaTypeInterface;
-class QMetaObject;
+struct QMetaObject;
 
 class Q_CORE_EXPORT QMetaType {
     enum ExtensionFlag { NoExtensionFlags,
