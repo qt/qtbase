@@ -168,8 +168,8 @@ public:
 
     bool event(QEvent *event);
 Q_SIGNALS:
-    void dateTimeChanged(const QDateTime &date);
-    void timeChanged(const QTime &date);
+    void dateTimeChanged(const QDateTime &dateTime);
+    void timeChanged(const QTime &time);
     void dateChanged(const QDate &date);
 
 public Q_SLOTS:
