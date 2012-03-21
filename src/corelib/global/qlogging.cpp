@@ -717,10 +717,10 @@ void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, con
         int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
         _CrtSetReportMode(_CRT_ERROR, reportMode);
 #if !defined(Q_OS_WINCE)
-        int ret = _CrtDbgReport(_CRT_ERROR, __FILE__, __LINE__, QT_VERSION_STR, buf);
+        int ret = _CrtDbgReport(_CRT_ERROR, context.file, context.line, QT_VERSION_STR, buf);
 #else
-        int ret = _CrtDbgReportW(_CRT_ERROR, _CRT_WIDE(__FILE__),
-                                 __LINE__, _CRT_WIDE(QT_VERSION_STR),
+        int ret = _CrtDbgReportW(_CRT_ERROR, _CRT_WIDE(context.file),
+                                 context.line, _CRT_WIDE(QT_VERSION_STR),
                                  reinterpret_cast<const wchar_t *> (
                                      QString::fromLatin1(buf).utf16()));
 #endif
