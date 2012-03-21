@@ -207,7 +207,7 @@ void QQnxScreen::setRotation(int rotation)
             m_rootWindow->setRotation(rotation);
 
         // Swap dimensions if we've rotated 90 or 270 from initial orientation
-        if (isOrthogonal(m_currentRotation, rotation)) {
+        if (isOrthogonal(m_initialRotation, rotation)) {
             m_currentGeometry = QRect(0, 0, m_initialGeometry.height(), m_initialGeometry.width());
             m_currentPhysicalSize = QSize(m_initialPhysicalSize.height(), m_initialPhysicalSize.width());
         } else {
