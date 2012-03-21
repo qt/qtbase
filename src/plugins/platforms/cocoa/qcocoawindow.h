@@ -133,7 +133,7 @@ public: // for QNSView
     friend class QCocoaNativeInterface;
 
     QNSView *m_contentView;
-    QNSWindow *m_nsWindow;
+    NSWindow *m_nsWindow;
     Qt::WindowFlags m_windowFlags;
     QPointer<QWindow> m_activePopupWindow;
 
