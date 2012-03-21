@@ -488,13 +488,9 @@ void QStyledItemDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
     Q_UNUSED(editor);
     Q_UNUSED(index);
 #else
-    Q_D(const QStyledItemDelegate);
     QVariant v = index.data(Qt::EditRole);
     QByteArray n = editor->metaObject()->userProperty().name();
 
-    // ### Qt 5: give QComboBox a USER property
-    if (n.isEmpty() && editor->inherits("QComboBox"))
-        n = d->editorFactory()->valuePropertyName(v.userType());
     if (!n.isEmpty()) {
         if (!v.isValid())
             v = QVariant(editor->property(n).userType(), (const void *)0);

@@ -58,6 +58,7 @@
 #include <qtreewidget.h>
 
 #include <QItemDelegate>
+#include <QComboBox>
 #include <QAbstractItemDelegate>
 #include <QTextEdit>
 #include <QPlainTextEdit>
@@ -228,6 +229,7 @@ private slots:
     void editorEvent();
     void enterKey_data();
     void enterKey();
+    void comboBox();
 
     void task257859_finalizeEdit();
     void QTBUG4435_keepSelectionOnCheck();
@@ -1203,6 +1205,35 @@ void tst_QItemDelegate::QTBUG4435_keepSelectionOnCheck()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, pos);
     QTRY_VERIFY(view.selectionModel()->isColumnSelected(0, QModelIndex()));
     QCOMPARE(model.item(0)->checkState(), Qt::Checked);
+}
+
+void tst_QItemDelegate::comboBox()
+{
+    QTableWidgetItem *item1 = new QTableWidgetItem;
+    item1->setData(Qt::DisplayRole, true);
+
+    QTableWidget widget(1, 1);
+    widget.setItem(0, 0, item1);
+    widget.show();
+
+    widget.editItem(item1);
+
+    QTestEventLoop::instance().enterLoop(1);
+
+    QComboBox *boolEditor = qFindChild<QComboBox*>(widget.viewport());
+    QVERIFY(boolEditor);
+    QCOMPARE(boolEditor->currentIndex(), 1); // True is selected initially.
+    // The data must actually be different in order for the model
+    // to be updated.
+    boolEditor->setCurrentIndex(0);
+    QCOMPARE(boolEditor->currentIndex(), 0); // Changed to false.
+
+    widget.clearFocus();
+    widget.setFocus();
+
+    QVariant data = item1->data(Qt::EditRole);
+    QCOMPARE(data.userType(), (int)QMetaType::Bool);
+    QCOMPARE(data.toBool(), false);
 }
 
 
