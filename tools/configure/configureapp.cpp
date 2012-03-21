@@ -2584,32 +2584,9 @@ void Configure::detectArch()
         if (output.isEmpty())
             continue;
 
-        // strip everything up to and including 'Project MESSAGE: '
-        QString ProjectMESSAGE = QStringLiteral("Project MESSAGE: ");
-        int at = output.indexOf(ProjectMESSAGE);
-        if (at != -1)
-            output = output.mid(at + ProjectMESSAGE.length());
-
-        // strip lines beginning with a #
-        at = 0;
-        while ((at = output.indexOf('#', at)) != -1) {
-            if (at > 0 && output.at(at - 1) != '\n') {
-                // # isnt' at the beginning of a line, skip it
-                ++at;
-                continue;
-            }
-
-            int eol = output.indexOf('\n', at);
-            if (eol == -1) {
-                // end of string
-                output.remove(at, output.length() - at);
-                break;
-            }
-
-            output.remove(at, eol - at + 1);
-        }
-
-        dictionary[key] = output.simplified();
+        QRegExp re("Project MESSAGE:.*Architecture: ([a-zA-Z0-9]*)");
+        if (re.indexIn(output) != -1)
+            dictionary[key] = re.cap(1);
     }
 
     if (!dictionary.contains("QT_HOST_ARCH"))

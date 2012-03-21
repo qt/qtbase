@@ -55,29 +55,29 @@
 #undef sparc
 #undef unknown
 #if defined(Q_PROCESSOR_ALPHA)
-alpha
+Architecture: alpha
 #elif defined(Q_PROCESSOR_ARM)
-arm
+Architecture: arm
 #elif defined(Q_PROCESSOR_AVR32)
-avr32
+Architecture: avr32
 #elif defined(Q_PROCESSOR_BLACKFIN)
-bfin
+Architecture: bfin
 #elif defined(Q_PROCESSOR_X86_32)
-i386
+Architecture: i386
 #elif defined(Q_PROCESSOR_X86_64)
-x86_64
+Architecture: x86_64
 #elif defined(Q_PROCESSOR_IA64)
-ia64
+Architecture: ia64
 #elif defined(Q_PROCESSOR_MIPS)
-mips
+Architecture: mips
 #elif defined(Q_PROCESSOR_POWER)
-power
+Architecture: power
 #elif defined(Q_PROCESSOR_S390)
-s390
+Architecture: s390
 #elif defined(Q_PROCESSOR_SH)
-sh
+Architecture: sh
 #elif defined(Q_PROCESSOR_SPARC)
-sparc
+Architecture: sparc
 #else
-unknown
+Architecture: unknown
 #endif
