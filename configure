@@ -5420,7 +5420,7 @@ if [ "$CFG_MAC_DWARF2" = "yes" ]; then
 fi
 
 # Detect the default arch (x86 or x86_64) on Mac OS X
-if [ "$BUILD_ON_MAC" = "yes" ]; then
+if [ "$BUILD_ON_MAC" = "yes" ] && [ "$QT_CROSS_COMPILE" = "no" ]; then
     DEFAULT_ARCH=
     case `file "${outpath}/bin/qmake"` in
     *i?86)
