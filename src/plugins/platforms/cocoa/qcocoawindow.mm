@@ -231,9 +231,10 @@ void QCocoaWindow::propagateSizeHints()
     if (!window()->sizeIncrement().isNull())
         [m_nsWindow setResizeIncrements : qt_mac_toNSSize(window()->sizeIncrement())];
 
+    QRect rect = geometry();
     QSize baseSize = window()->baseSize();
     if (!baseSize.isNull() && baseSize.isValid()) {
-        [m_nsWindow setFrameSize : NSMakeSize(baseSize.width(), baseSize.height()) display : YES];
+        [m_nsWindow setFrame:NSMakeRect(rect.x(), rect.y(), baseSize.width(), baseSize.height()) display:YES];
     }
 }
 
