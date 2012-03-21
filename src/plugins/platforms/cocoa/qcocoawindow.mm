@@ -96,8 +96,8 @@
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
     , m_nsWindow(0)
-    , m_glContext(0)
     , m_inConstructor(true)
+    , m_glContext(0)
 {
     QCocoaAutoReleasePool pool;
 
