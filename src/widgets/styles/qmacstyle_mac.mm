@@ -2184,8 +2184,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         if (widget && (widget->isWindow() || !widget->parentWidget()
                 || (qobject_cast<const QMainWindow*>(widget->parentWidget())
                    && static_cast<QMainWindow *>(widget->parentWidget())->centralWidget() == widget))
-                && (qobject_cast<const QAbstractScrollArea *>(widget)
-                    || widget->inherits("QWorkspaceChild")))
+                && qobject_cast<const QAbstractScrollArea *>(widget))
             ret = 0;
         else
 #endif
@@ -2547,12 +2546,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = Qt::AlignTop;
         break;
     case SH_ScrollView_FrameOnlyAroundContents:
-        if (w && (w->isWindow() || !w->parentWidget() || w->parentWidget()->isWindow())
-                && (w->inherits("QWorkspaceChild")
-                ))
-            ret = true;
-        else
-            ret = QWindowsStyle::styleHint(sh, opt, w, hret);
+        ret = QWindowsStyle::styleHint(sh, opt, w, hret);
         break;
     case SH_Menu_FillScreenWithScroll:
         ret = false;

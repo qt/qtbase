@@ -339,10 +339,8 @@ void QApplicationPrivate::initializeWidgetFontHash()
         fontHash->insert(QByteArrayLiteral("QTitleBar"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::StatusBarFont))
         fontHash->insert(QByteArrayLiteral("QStatusBar"), *font);
-    if (const QFont *font = theme->font(QPlatformTheme::MdiSubWindowTitleFont)) {
-        fontHash->insert(QByteArrayLiteral("QWorkspaceTitleBar"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::MdiSubWindowTitleFont))
         fontHash->insert(QByteArrayLiteral("QMdiSubWindowTitleBar"), *font);
-    }
     if (const QFont *font = theme->font(QPlatformTheme::DockWidgetTitleFont))
         fontHash->insert(QByteArrayLiteral("QDockWidgetTitle"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::PushButtonFont))

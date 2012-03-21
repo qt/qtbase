@@ -325,7 +325,7 @@ void QGraphicsWidgetPrivate::initStyleOptionTitleBar(QStyleOptionTitleBar *optio
         option->state &= ~QStyle::State_Active;
         option->titleBarState = Qt::WindowNoState;
     }
-    QFont windowTitleFont = QApplication::font("QWorkspaceTitleBar");
+    QFont windowTitleFont = QApplication::font("QMdiSubWindowTitleBar");
     QRect textRect = q->style()->subControlRect(QStyle::CC_TitleBar, option, QStyle::SC_TitleBarLabel, 0);
     option->text = QFontMetrics(windowTitleFont).elidedText(
         windowData->windowTitle, Qt::ElideRight, textRect.width());

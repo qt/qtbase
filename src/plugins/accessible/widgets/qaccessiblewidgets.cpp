@@ -54,7 +54,6 @@
 #include <QToolBox>
 #include <QMdiArea>
 #include <QMdiSubWindow>
-#include <QWorkspace>
 #include <QDialogButtonBox>
 #include <limits.h>
 #include <QRubberBand>
@@ -739,44 +738,6 @@ QMdiSubWindow *QAccessibleMdiSubWindow::mdiSubWindow() const
     return static_cast<QMdiSubWindow *>(object());
 }
 #endif // QT_NO_MDIAREA
-
-// ======================= QAccessibleWorkspace ======================
-#ifndef QT_NO_WORKSPACE
-QAccessibleWorkspace::QAccessibleWorkspace(QWidget *widget)
-    : QAccessibleWidget(widget, QAccessible::LayeredPane)
-{
-    Q_ASSERT(qobject_cast<QWorkspace *>(widget));
-}
-
-int QAccessibleWorkspace::childCount() const
-{
-    return workspace()->windowList().count();
-}
-
-QAccessibleInterface *QAccessibleWorkspace::child(int index) const
-{
-    QWidgetList subWindows = workspace()->windowList();
-    if (index < 0 || subWindows.isEmpty() || index >= subWindows.count())
-        return 0;
-    QObject *targetObject = subWindows.at(index);
-    return QAccessible::queryAccessibleInterface(targetObject);
-}
-
-int QAccessibleWorkspace::indexOfChild(const QAccessibleInterface *child) const
-{
-    if (!child || !child->object() || workspace()->windowList().isEmpty())
-        return -1;
-    if (QWidget *window = qobject_cast<QWidget *>(child->object())) {
-        return workspace()->windowList().indexOf(window);
-    }
-    return -1;
-}
-
-QWorkspace *QAccessibleWorkspace::workspace() const
-{
-    return static_cast<QWorkspace *>(object());
-}
-#endif
 
 #ifndef QT_NO_DIALOGBUTTONBOX
 // ======================= QAccessibleDialogButtonBox ======================

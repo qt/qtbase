@@ -652,11 +652,6 @@
 #define QT_NO_PRINTPREVIEWWIDGET
 #endif
 
-// QWorkSpace
-#if !defined(QT_NO_WORKSPACE) && (defined(QT_NO_SCROLLBAR) || defined(QT_NO_MAINWINDOW) || defined(QT_NO_MENUBAR))
-#define QT_NO_WORKSPACE
-#endif
-
 // QCalendarWidget
 #if !defined(QT_NO_CALENDARWIDGET) && (defined(QT_NO_TABLEVIEW) || defined(QT_NO_MENU) || defined(QT_NO_TEXTDATE) || defined(QT_NO_SPINBOX) || defined(QT_NO_TOOLBUTTON))
 #define QT_NO_CALENDARWIDGET

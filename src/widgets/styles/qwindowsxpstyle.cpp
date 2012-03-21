@@ -1178,8 +1178,9 @@ void QWindowsXPStyle::polish(QWidget *widget)
         || qobject_cast<QAbstractSpinBox*>(widget)
         || qobject_cast<QSpinBox*>(widget)
 #endif // QT_NO_SPINBOX
-        || widget->inherits("QWorkspaceChild"))
+        ) {
         widget->setAttribute(Qt::WA_Hover);
+    }
 
 #ifndef QT_NO_RUBBERBAND
     if (qobject_cast<QRubberBand*>(widget)) {
@@ -1249,8 +1250,9 @@ void QWindowsXPStyle::unpolish(QWidget *widget)
         || qobject_cast<QAbstractSpinBox*>(widget)
         || qobject_cast<QSpinBox*>(widget)
 #endif // QT_NO_SPINBOX
-        || widget->inherits("QWorkspaceChild"))
+        ) {
         widget->setAttribute(Qt::WA_Hover, false);
+    }
     QWindowsStyle::unpolish(widget);
 }
 
@@ -3225,63 +3227,6 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         }
         break;
 
-#ifndef QT_NO_WORKSPACE
-    case CC_MdiControls:
-        {
-            QRect buttonRect;
-            XPThemeData theme(widget, p, QLatin1String("WINDOW"), WP_MDICLOSEBUTTON, CBS_NORMAL);
-
-            if (option->subControls & SC_MdiCloseButton) {
-                buttonRect = proxy()->subControlRect(CC_MdiControls, option, SC_MdiCloseButton, widget);
-                if (theme.isValid()) {
-                    theme.partId = WP_MDICLOSEBUTTON;
-                    theme.rect = buttonRect;
-                    if (!(flags & State_Enabled))
-                        theme.stateId = CBS_INACTIVE;
-                    else if (flags & State_Sunken && (option->activeSubControls & SC_MdiCloseButton))
-                        theme.stateId = CBS_PUSHED;
-                    else if (flags & State_MouseOver && (option->activeSubControls & SC_MdiCloseButton))
-                        theme.stateId = CBS_HOT;
-                    else
-                        theme.stateId = CBS_NORMAL;
-                    d->drawBackground(theme);
-                }
-            }
-            if (option->subControls & SC_MdiNormalButton) {
-                buttonRect = proxy()->subControlRect(CC_MdiControls, option, SC_MdiNormalButton, widget);
-                if (theme.isValid()) {
-                    theme.partId = WP_MDIRESTOREBUTTON;
-                    theme.rect = buttonRect;
-                    if (!(flags & State_Enabled))
-                        theme.stateId = CBS_INACTIVE;
-                    else if (flags & State_Sunken && (option->activeSubControls & SC_MdiNormalButton))
-                        theme.stateId = CBS_PUSHED;
-                    else if (flags & State_MouseOver && (option->activeSubControls & SC_MdiNormalButton))
-                        theme.stateId = CBS_HOT;
-                    else
-                        theme.stateId = CBS_NORMAL;
-                    d->drawBackground(theme);
-                }
-            }
-            if (option->subControls & QStyle::SC_MdiMinButton) {
-                buttonRect = proxy()->subControlRect(CC_MdiControls, option, SC_MdiMinButton, widget);
-                if (theme.isValid()) {
-                    theme.partId = WP_MDIMINBUTTON;
-                    theme.rect = buttonRect;
-                    if (!(flags & State_Enabled))
-                        theme.stateId = CBS_INACTIVE;
-                    else if (flags & State_Sunken && (option->activeSubControls & SC_MdiMinButton))
-                        theme.stateId = CBS_PUSHED;
-                    else if (flags & State_MouseOver && (option->activeSubControls & SC_MdiMinButton))
-                        theme.stateId = CBS_HOT;
-                    else
-                        theme.stateId = CBS_NORMAL;
-                    d->drawBackground(theme);
-                }
-            }
-        }
-        break;
-#endif //QT_NO_WORKSPACE
 #ifndef QT_NO_DIAL
     case CC_Dial:
         if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(option))
@@ -3667,44 +3612,6 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
             }
         }
         break;
-#ifndef QT_NO_WORKSPACE
-    case CC_MdiControls:
-    {
-        int numSubControls = 0;
-        if (option->subControls & SC_MdiCloseButton)
-            ++numSubControls;
-        if (option->subControls & SC_MdiMinButton)
-            ++numSubControls;
-        if (option->subControls & SC_MdiNormalButton)
-            ++numSubControls;
-        if (numSubControls == 0)
-            break;
-
-        int buttonWidth = option->rect.width()/ numSubControls;
-        int offset = 0;
-        switch (subControl) {
-        case SC_MdiCloseButton:
-            // Only one sub control, no offset needed.
-            if (numSubControls == 1)
-                break;
-            offset += buttonWidth;
-            //FALL THROUGH
-        case SC_MdiNormalButton:
-            // No offset needed if
-            // 1) There's only one sub control
-            // 2) We have a close button and a normal button (offset already added in SC_MdiClose)
-            if (numSubControls == 1 || (numSubControls == 2 && !(option->subControls & SC_MdiMinButton)))
-                break;
-            if (option->subControls & SC_MdiNormalButton)
-                offset += buttonWidth;
-            break;
-        default:
-            break;
-        }
-        rect = QRect(offset, 0, buttonWidth, option->rect.height());
-        break;
-    }
-#endif // QT_NO_WORKSPACE
 
     default:
         rect = visualRect(option->direction, option->rect,

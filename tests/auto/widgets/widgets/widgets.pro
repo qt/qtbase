@@ -47,7 +47,6 @@ SUBDIRS=\
    qtoolbar \
    qtoolbox \
    qtoolbutton \
-   qworkspace \
 
 # The following tests depend on private API:
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \

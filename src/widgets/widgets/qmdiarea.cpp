@@ -357,7 +357,7 @@ void SimpleCascader::rearrange(QList<QWidget *> &widgets, const QRect &domain) c
     if (qobject_cast<QMacStyle *>(widgets.at(0)->style()))
         titleBarHeight -= 4;
 #endif
-    const QFontMetrics fontMetrics = QFontMetrics(QApplication::font("QWorkspaceTitleBar"));
+    const QFontMetrics fontMetrics = QFontMetrics(QApplication::font("QMdiSubWindowTitleBar"));
     const int dy = qMax(titleBarHeight - (titleBarHeight - fontMetrics.height()) / 2, 1);
 
     const int n = widgets.size();

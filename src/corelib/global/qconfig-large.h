@@ -159,9 +159,6 @@
 #ifndef QT_NO_DATETIMEEDIT
 #  define QT_NO_DATETIMEEDIT
 #endif
-#ifndef QT_NO_WORKSPACE
-#  define QT_NO_WORKSPACE
-#endif
 #ifndef QT_NO_DIAL
 #  define QT_NO_DIAL
 #endif

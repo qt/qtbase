@@ -282,9 +282,6 @@
 #ifndef QT_NO_MENUBAR
 #  define QT_NO_MENUBAR
 #endif
-#ifndef QT_NO_WORKSPACE
-#  define QT_NO_WORKSPACE
-#endif
 #ifndef QT_NO_PROGRESSBAR
 #  define QT_NO_PROGRESSBAR
 #endif
