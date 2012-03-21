@@ -144,6 +144,8 @@ public: // for QNSView
 
     bool m_inConstructor;
     QCocoaGLContext *m_glContext;
+
+    bool m_hasModalSession;
 };
 
 QT_END_NAMESPACE

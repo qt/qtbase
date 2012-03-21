@@ -41,6 +41,7 @@
 #include "qcocoawindow.h"
 #include "qnswindowdelegate.h"
 #include "qcocoaautoreleasepool.h"
+#include "qcocoaeventdispatcher.h"
 #include "qcocoaglcontext.h"
 #include "qcocoahelpers.h"
 #include "qnsview.h"
@@ -98,6 +99,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_nsWindow(0)
     , m_inConstructor(true)
     , m_glContext(0)
+    , m_hasModalSession(false)
 {
     QCocoaAutoReleasePool pool;
 
@@ -145,7 +147,10 @@ void QCocoaWindow::setVisible(bool visible)
     qDebug() << "QCocoaWindow::setVisible" << window() << visible;
 #endif
     if (visible) {
+        QCocoaWindow *parentCocoaWindow = 0;
         if (window()->transientParent()) {
+            parentCocoaWindow = static_cast<QCocoaWindow *>(window()->transientParent()->handle());
+
             // The parent window might have moved while this window was hidden,
             // update the window geometry if there is a parent.
             setGeometry(window()->geometry());
@@ -154,8 +159,6 @@ void QCocoaWindow::setVisible(bool visible)
             // close them when needed.
             if (window()->windowType() == Qt::Popup) {
                 // qDebug() << "transientParent and popup" << window()->windowType() << Qt::Popup << (window()->windowType() & Qt::Popup);
-
-                QCocoaWindow *parentCocoaWindow = static_cast<QCocoaWindow *>(window()->transientParent()->handle());
                 parentCocoaWindow->m_activePopupWindow = window();
             }
 
@@ -170,16 +173,40 @@ void QCocoaWindow::setVisible(bool visible)
             syncWindowState(window()->windowState());
 
             if (window()->windowState() != Qt::WindowMinimized) {
-                if ([m_nsWindow canBecomeKeyWindow])
+                if ((window()->windowModality() == Qt::WindowModal
+                     || window()->windowType() == Qt::Sheet)
+                        && parentCocoaWindow) {
+                    // show the window as a sheet
+                    [NSApp beginSheet:m_nsWindow modalForWindow:parentCocoaWindow->m_nsWindow modalDelegate:nil didEndSelector:nil contextInfo:nil];
+                } else if (window()->windowModality() != Qt::NonModal) {
+                    // show the window as application modal
+                    QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
+                    Q_ASSERT(cocoaEventDispatcher != 0);
+                    QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
+                    cocoaEventDispatcherPrivate->beginModalSession(window());
+                    m_hasModalSession = true;
+                } else if ([m_nsWindow canBecomeKeyWindow]) {
                     [m_nsWindow makeKeyAndOrderFront:nil];
-                else
+                } else {
                     [m_nsWindow orderFront: nil];
+                }
             }
         }
     } else {
         // qDebug() << "close" << this;
-        if (m_nsWindow)
+        if (m_nsWindow) {
+            if (m_hasModalSession) {
+                QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
+                Q_ASSERT(cocoaEventDispatcher != 0);
+                QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
+                cocoaEventDispatcherPrivate->endModalSession(window());
+                m_hasModalSession = false;
+            } else {
+                if ([m_nsWindow isSheet])
+                    [NSApp endSheet:m_nsWindow];
+            }
             [m_nsWindow orderOut:m_nsWindow];
+        }
         if (!QCoreApplication::closingDown())
             QWindowSystemInterface::handleExposeEvent(window(), QRegion());
     }
@@ -363,6 +390,12 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         // Create a new NSWindow if this is a top-level window.
         m_nsWindow = createNSWindow();
         setNSWindow(m_nsWindow);
+
+        if (window()->transientParent()) {
+            // keep this window on the same level as its transient parent (which may be a modal dialog, for example)
+            QCocoaWindow *parentCocoaWindow = static_cast<QCocoaWindow *>(window()->transientParent()->handle());
+            [m_nsWindow setLevel:[parentCocoaWindow->m_nsWindow level]];
+        }
     } else {
         // Child windows have no NSWindow, link the NSViews instead.
         const QCocoaWindow *parentCococaWindow = static_cast<const QCocoaWindow *>(parentWindow);

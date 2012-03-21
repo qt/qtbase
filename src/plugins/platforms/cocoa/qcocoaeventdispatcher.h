@@ -177,9 +177,10 @@ public:
     void temporarilyStopAllModalSessions();
     void beginModalSession(QWindow *widget);
     void endModalSession(QWindow *widget);
+    void cleanupModalSessions();
+
     void cancelWaitForMoreEvents();
     void maybeCancelWaitForMoreEvents();
-    void cleanupModalSessions();
     void ensureNSAppInitialized();
 
     MacSocketHash macSockets;
