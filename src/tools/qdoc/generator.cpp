@@ -1786,7 +1786,7 @@ QString Generator::typeString(const Node *node)
     {
         switch (node->subType()) {
         case Node::QmlClass:
-            return "element";
+            return "type";
         case Node::QmlPropertyGroup:
             return "property group";
         case Node::QmlBasicType:
