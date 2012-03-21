@@ -395,6 +395,11 @@ QtWidgets
   * ResizeMode resizeMode(int logicalindex) const -
     use sectionResizeMode(int logicalindex) instead.
 
+* QDateEdit and QTimeEdit have re-gained a USER property. These were originally removed
+    before Qt 4.7.0, and are re-added for 5.0. This means that the userProperty for
+    those classes are now QDate and QTime respectively, not QDateTime as they have been
+    for the 4.7 and 4.8 releases.
+
 QtNetwork
 ---------
 * QHostAddress::isLoopback() API added. Returns true if the address is

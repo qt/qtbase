@@ -780,6 +780,9 @@ void tst_QItemDelegate::dateTimeEditor()
     QTimeEdit *timeEditor = qFindChild<QTimeEdit *>(widget.viewport());
     QVERIFY(timeEditor);
     QCOMPARE(timeEditor->time(), time);
+    // The data must actually be different in order for the model
+    // to be updated.
+    timeEditor->setTime(time.addSecs(60));
 
     widget.clearFocus();
     qApp->setActiveWindow(&widget);
@@ -791,6 +794,7 @@ void tst_QItemDelegate::dateTimeEditor()
     QDateEdit *dateEditor = qFindChild<QDateEdit *>(widget.viewport());
     QVERIFY(dateEditor);
     QCOMPARE(dateEditor->date(), date);
+    dateEditor->setDate(date.addDays(60));
 
     widget.clearFocus();
     widget.setFocus();
@@ -806,6 +810,12 @@ void tst_QItemDelegate::dateTimeEditor()
     QVERIFY(dateTimeEditor);
     QCOMPARE(dateTimeEditor->date(), date);
     QCOMPARE(dateTimeEditor->time(), time);
+    dateTimeEditor->setTime(time.addSecs(600));
+    widget.clearFocus();
+
+    QVERIFY(item1->data(Qt::EditRole).userType() == QMetaType::QTime);
+    QVERIFY(item2->data(Qt::EditRole).userType() == QMetaType::QDate);
+    QVERIFY(item3->data(Qt::EditRole).userType() == QMetaType::QDateTime);
 }
 
 void tst_QItemDelegate::decoration_data()
