@@ -233,6 +233,12 @@ void QCocoaWindow::propagateSizeHints()
     }
 }
 
+void QCocoaWindow::setOpacity(qreal level)
+{
+    if (m_nsWindow)
+        [m_nsWindow setAlphaValue:level];
+}
+
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
 {
     if (!m_nsWindow)

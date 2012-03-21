@@ -99,6 +99,7 @@ public:
     void raise();
     void lower();
     void propagateSizeHints();
+    void setOpacity(qreal level);
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
 
