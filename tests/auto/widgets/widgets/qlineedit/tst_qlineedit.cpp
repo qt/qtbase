@@ -3846,13 +3846,26 @@ void tst_QLineEdit::inputMethodSelection()
     QCOMPARE(selectionSpy.count(), 1);
     QCOMPARE(testWidget->selectionStart(), 0);
 
-    QList<QInputMethodEvent::Attribute> attributes;
-    attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 12, 5, QVariant());
-    QInputMethodEvent event("", attributes);
-    QApplication::sendEvent(testWidget, &event);
+    // selection gained
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 12, 5, QVariant());
+        QInputMethodEvent event("", attributes);
+        QApplication::sendEvent(testWidget, &event);
+    }
 
     QCOMPARE(selectionSpy.count(), 2);
     QCOMPARE(testWidget->selectionStart(), 12);
+
+    // selection removed
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 0, 0, QVariant());
+        QInputMethodEvent event("", attributes);
+        QApplication::sendEvent(testWidget, &event);
+    }
+
+    QCOMPARE(selectionSpy.count(), 3);
 }
 
 void tst_QLineEdit::inputMethodTentativeCommit()

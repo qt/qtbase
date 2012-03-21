@@ -552,6 +552,8 @@ void QWidgetLineControl::processInputMethodEvent(QInputMethodEvent *event)
                 }
                 selectionChange = true;
             } else {
+                if (m_selstart != m_selend)
+                    selectionChange = true;
                 m_selstart = m_selend = 0;
             }
             cursorPositionChanged = true;
