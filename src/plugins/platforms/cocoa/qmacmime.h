@@ -46,6 +46,8 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
+QT_BEGIN_NAMESPACE
+
 class Q_GUI_EXPORT QMacPasteboardMime {
     char type;
 public:
@@ -73,6 +75,8 @@ public:
     virtual QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav) = 0;
     virtual QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav) = 0;
 };
+
+QT_END_NAMESPACE
 
 #endif
 

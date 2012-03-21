@@ -49,6 +49,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+QT_BEGIN_NAMESPACE
+
 class QMacPasteboard
 {
     struct Promise {
@@ -89,5 +91,7 @@ public:
 };
 
 QString qt_mac_get_pasteboardString(PasteboardRef paste);
+
+QT_END_NAMESPACE
 
 #endif

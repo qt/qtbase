@@ -56,8 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QT_USE_NAMESPACE
-
 /*****************************************************************************
   QClipboard debug facilities
  *****************************************************************************/
@@ -547,7 +545,5 @@ QString qt_mac_get_pasteboardString(PasteboardRef paste)
     }
     return QString();
 }
-
-
 
 QT_END_NAMESPACE
