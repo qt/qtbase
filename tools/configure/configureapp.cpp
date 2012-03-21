@@ -176,7 +176,7 @@ Configure::Configure(int& argc, char** argv)
         }
     }
 
-    defaultBuildParts << QStringLiteral("libs") << QStringLiteral("examples") << QStringLiteral("tests");
+    defaultBuildParts << QStringLiteral("libs") << QStringLiteral("examples");
     dictionary[ "QT_SOURCE_TREE" ]    = fixSeparators(sourcePath);
     dictionary[ "QT_BUILD_TREE" ]     = fixSeparators(buildPath);
     dictionary[ "QT_INSTALL_PREFIX" ] = fixSeparators(installPath);
@@ -2260,8 +2260,12 @@ void Configure::generateOutputVars()
     qmakeConfig += dictionary[ "BUILD" ];
     dictionary[ "QMAKE_OUTDIR" ] = dictionary[ "BUILD" ];
 
-    if (buildParts.isEmpty())
+    if (buildParts.isEmpty()) {
         buildParts = defaultBuildParts;
+
+        if (dictionary["BUILDDEV"] == "yes")
+            buildParts += "tests";
+    }
     while (!nobuildParts.isEmpty())
         buildParts.removeAll(nobuildParts.takeFirst());
     if (!buildParts.contains("libs"))

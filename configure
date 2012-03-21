@@ -703,7 +703,7 @@ CFG_SSE=auto
 CFG_FONTCONFIG=auto
 CFG_LIBFREETYPE=auto
 CFG_SQL_AVAILABLE=
-QT_DEFAULT_BUILD_PARTS="libs examples tests"
+QT_DEFAULT_BUILD_PARTS="libs examples"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
 CFG_RELEASE_QMAKE=no
@@ -2697,6 +2697,11 @@ fi
 #setup the build parts
 if [ -z "$CFG_BUILD_PARTS" ]; then
     CFG_BUILD_PARTS="$QT_DEFAULT_BUILD_PARTS"
+
+    # build tests by default, if a developer build
+    if [ "$CFG_DEV" = "yes" ]; then
+        CFG_BUILD_PARTS="$CFG_BUILD_PARTS tests"
+    fi
 
     # don't build tools by default when cross-compiling
     if [ "$PLATFORM" != "$XPLATFORM" ]; then
