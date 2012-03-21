@@ -172,8 +172,8 @@ static void cleanupCocoaApplicationDelegate()
 // QApplicationPrivate::globalAppleEventProcessor in qapplication_mac.mm
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-/*
     Q_UNUSED(sender);
+/*
     // The reflection delegate gets precedence
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationShouldTerminate:)]) {

@@ -238,6 +238,7 @@ static QTouchDevice *touchDevice = 0;
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
+    Q_UNUSED(theEvent);
     return YES;
 }
 

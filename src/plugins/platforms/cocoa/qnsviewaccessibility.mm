@@ -87,7 +87,6 @@
 - (id)accessibilityHitTest:(NSPoint)point {
     if (!m_accessibleRoot)
         return [super accessibilityHitTest:point];
-    NSPoint windowPoint = [[self window] convertScreenToBase:point];
 
     QAccessibleInterface *childInterface = m_accessibleRoot->childAt(point.x, qt_mac_flipYCoordinate(point.y));
     // No child found, meaning we hit the NSView

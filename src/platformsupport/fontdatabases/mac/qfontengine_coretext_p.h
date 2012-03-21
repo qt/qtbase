@@ -98,7 +98,7 @@ public:
     virtual QFixed emSquareSize() const;
 
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
-    virtual int glyphMargin(QFontEngineGlyphCache::Type type) { return 0; }
+    virtual int glyphMargin(QFontEngineGlyphCache::Type type) { Q_UNUSED(type); return 0; }
 
     static int antialiasingThreshold;
     static QFontEngineGlyphCache::Type defaultGlyphFormat;

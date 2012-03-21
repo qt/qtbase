@@ -81,6 +81,7 @@ bool QCocoaClipboard::supportsMode(QClipboard::Mode mode) const
 
 bool QCocoaClipboard::ownsMode(QClipboard::Mode mode) const
 {
+    Q_UNUSED(mode);
     return false;
 }
 

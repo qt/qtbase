@@ -59,6 +59,8 @@ QCocoaCursor::QCocoaCursor()
 
 void QCocoaCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
+    Q_UNUSED(window);
+
     // Check for a suitable built-in NSCursor first:
     switch (cursor->shape()) {
     case Qt::ArrowCursor:
