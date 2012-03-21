@@ -2655,16 +2655,6 @@ QTreeWidgetItem *QTreeWidget::takeTopLevelItem(int index)
 }
 
 /*!
-    \internal
-*/
-int QTreeWidget::indexOfTopLevelItem(QTreeWidgetItem *item)
-{
-    Q_D(QTreeWidget);
-    d->treeModel()->executePendingSort();
-    return d->treeModel()->rootItem->children.indexOf(item);
-}
-
-/*!
   Returns the index of the given top-level \a item, or -1 if the item
   cannot be found.
 
