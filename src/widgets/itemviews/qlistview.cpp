@@ -894,30 +894,6 @@ void QListView::startDrag(Qt::DropActions supportedActions)
         QAbstractItemView::startDrag(supportedActions);
 }
 
-/*!
-    \internal
-
-    Called whenever items from the view is dropped on the viewport.
-    The \a event provides additional information.
-*/
-void QListView::internalDrop(QDropEvent *event)
-{
-    // ### Qt5: remove that function
-    Q_UNUSED(event);
-}
-
-/*!
-    \internal
-
-    Called whenever the user starts dragging items and the items are movable,
-    enabling internal dragging and dropping of items.
-*/
-void QListView::internalDrag(Qt::DropActions supportedActions)
-{
-    // ### Qt5: remove that function
-    Q_UNUSED(supportedActions);
-}
-
 #endif // QT_NO_DRAGANDDROP
 
 /*!
