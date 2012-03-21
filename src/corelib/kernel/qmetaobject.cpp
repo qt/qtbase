@@ -1326,7 +1326,9 @@ static char *qNormalizeType(char *d, int &templdepth, QByteArray &result)
             --templdepth;
         ++d;
     }
-    if (strncmp("void", t, d - t) != 0)
+    // "void" should only be removed if this is part of a signature that has
+    // an explicit void argument; e.g., "void foo(void)" --> "void foo()"
+    if (strncmp("void)", t, d - t + 1) != 0)
         result += normalizeTypeInternal(t, d);
 
     return d;

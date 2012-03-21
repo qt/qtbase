@@ -165,6 +165,7 @@ signals:
     void signal3();
     void signal4();
     QT_MOC_COMPAT void signal5();
+    void signal6(void);
 
 public slots:
     void aPublicSlot() { aPublicSlotCalled++; }
@@ -824,6 +825,8 @@ void tst_QObject::connectDisconnectNotify_data()
     QTest::newRow("combo2") << SIGNAL( signal2(void) )    << SLOT( slot2(  ) );
     QTest::newRow("combo3") << SIGNAL( signal3(  ) )      << SLOT( slot3(void) );
     QTest::newRow("combo4") << SIGNAL(  signal4( void )  )<< SLOT(  slot4( void )  );
+    QTest::newRow("combo5") << SIGNAL( signal6( void ) )  << SLOT( slot4() );
+    QTest::newRow("combo6") << SIGNAL( signal6() )        << SLOT( slot4() );
 }
 
 void tst_QObject::connectDisconnectNotify()

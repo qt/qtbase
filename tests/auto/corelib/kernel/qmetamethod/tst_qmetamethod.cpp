@@ -114,6 +114,7 @@ public slots:
     void voidSlotNoParameterNames(bool, int);
 signals:
     void voidSignal();
+    void voidSignalVoid(void);
     void voidSignalInt(int voidSignalIntArg);
     void voidSignalQReal(qreal voidSignalQRealArg);
     void voidSignalQString(const QString &voidSignalQStringArg);
@@ -229,6 +230,15 @@ void tst_QMetaMethod::method_data()
             << (QList<QByteArray>())
             << QMetaMethod::Public
             << QMetaMethod::Constructor;
+
+    QTest::newRow("voidSignalVoid")
+            << QByteArray("voidSignalVoid()")
+            << int(QMetaType::Void) << QByteArray("")
+            << QList<int>()
+            << QList<QByteArray>()
+            << QList<QByteArray>()
+            << QMetaMethod::Protected
+            << QMetaMethod::Signal;
 
     QTest::newRow("voidSignalInt")
             << QByteArray("voidSignalInt(int)")
