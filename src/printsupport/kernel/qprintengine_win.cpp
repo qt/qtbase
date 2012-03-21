@@ -966,28 +966,7 @@ void QWin32PrintEngine::drawPolygon(const QPointF *points, int pointCount, Polyg
 
 void QWin32PrintEnginePrivate::queryDefault()
 {
-    /* Read the default printer name, driver and port with the intuitive function
-     * Strings "windows" and "device" are specified in the MSDN under EnumPrinters()
-     */
-    QString noPrinters(QLatin1String("qt_no_printers"));
-    wchar_t buffer[256];
-    GetProfileString(L"windows", L"device",
-                     reinterpret_cast<const wchar_t *>(noPrinters.utf16()),
-                     buffer, 256);
-    QString output = QString::fromWCharArray(buffer);
-    if (output.isEmpty() || output == noPrinters) // no printers
-        return;
-
-    QStringList info = output.split(QLatin1Char(','));
-    int infoSize = info.size();
-    if (infoSize > 0) {
-        if (name.isEmpty())
-            name = info.at(0);
-        if (program.isEmpty() && infoSize > 1)
-            program = info.at(1);
-        if (port.isEmpty() && infoSize > 2)
-            port = info.at(2);
-    }
+    QWin32PrintEngine::queryDefaultPrinter(name, program, port);
 }
 
 QWin32PrintEnginePrivate::~QWin32PrintEnginePrivate()
@@ -1599,6 +1578,32 @@ QList<QPrinter::PaperSize> QWin32PrintEngine::supportedPaperSizes(const QPrinter
         delete [] papers;
     }
     return returnList;
+}
+
+void QWin32PrintEngine::queryDefaultPrinter(QString &name, QString &program, QString &port)
+{
+    /* Read the default printer name, driver and port with the intuitive function
+     * Strings "windows" and "device" are specified in the MSDN under EnumPrinters()
+     */
+    QString noPrinters(QLatin1String("qt_no_printers"));
+    wchar_t buffer[256];
+    GetProfileString(L"windows", L"device",
+                     reinterpret_cast<const wchar_t *>(noPrinters.utf16()),
+                     buffer, 256);
+    QString output = QString::fromWCharArray(buffer);
+    if (output.isEmpty() || output == noPrinters) // no printers
+        return;
+
+    QStringList info = output.split(QLatin1Char(','));
+    int infoSize = info.size();
+    if (infoSize > 0) {
+        if (name.isEmpty())
+            name = info.at(0);
+        if (program.isEmpty() && infoSize > 1)
+            program = info.at(1);
+        if (port.isEmpty() && infoSize > 2)
+            port = info.at(2);
+    }
 }
 
 HGLOBAL *QWin32PrintEnginePrivate::createDevNames()

@@ -103,10 +103,8 @@ public:
     HDC getDC() const;
     void releaseDC(HDC) const;
 
-    HDC getPrinterDC() const { return getDC(); }
-    void releasePrinterDC(HDC dc) const { releaseDC(dc); }
-
     static QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &printerInfo);
+    static void queryDefaultPrinter(QString &name, QString &program, QString &port);
 
 private:
     friend class QPrintDialog;

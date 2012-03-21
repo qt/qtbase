@@ -58,12 +58,13 @@ QWindowsPrinterSupport::QWindowsPrinterSupport()
         LPBYTE buffer = new BYTE[needed];
         if (EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, NULL, 4, buffer, needed, &needed, &returned)) {
             PPRINTER_INFO_4 infoList = reinterpret_cast<PPRINTER_INFO_4>(buffer);
-            QPrinterInfo defPrn = defaultPrinter();
+            QString defaultPrinterName;
+            QWin32PrintEngine::queryDefaultPrinter(defaultPrinterName, QString(), QString());
             for (uint i = 0; i < returned; ++i) {
                 QString printerName(QString::fromWCharArray(infoList[i].pPrinterName));
 
                 QPrinterInfo printerInfo(printerName);
-                if (printerInfo.printerName() == defPrn.printerName())
+                if (printerInfo.printerName() == defaultPrinterName)
                     printerInfo.d_ptr->isDefault = true;
                 mPrinterList.append(printerInfo);
             }
