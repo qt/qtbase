@@ -382,6 +382,15 @@ NSWindow * QCocoaWindow::createNSWindow()
                                          defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up
                                                     // before the window is shown and needs a proper window.).
         window->m_cocoaPlatformWindow = this;
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+        // All windows with the WindowMaximizeButtonHint set also get a full-screen button.
+        if (flags & Qt::WindowMaximizeButtonHint)
+            [window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+    }
+#endif
+
         createdWindow = window;
     }
     return createdWindow;
