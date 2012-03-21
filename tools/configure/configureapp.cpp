@@ -176,6 +176,7 @@ Configure::Configure(int& argc, char** argv)
         }
     }
 
+    defaultBuildParts << QStringLiteral("libs") << QStringLiteral("examples") << QStringLiteral("tests");
     dictionary[ "QT_SOURCE_TREE" ]    = fixSeparators(sourcePath);
     dictionary[ "QT_BUILD_TREE" ]     = fixSeparators(buildPath);
     dictionary[ "QT_INSTALL_PREFIX" ] = fixSeparators(installPath);
@@ -948,11 +949,16 @@ void Configure::parseCmdLine()
             dictionary["LICENSE_CONFIRMED"] = "yes";
         }
 
-        else if (configCmdLine.at(i) == "-nomake") {
+        else if (configCmdLine.at(i) == "-make") {
             ++i;
             if (i == argCount)
                 break;
-            disabledBuildParts += configCmdLine.at(i);
+            buildParts += configCmdLine.at(i);
+        } else if (configCmdLine.at(i) == "-nomake") {
+            ++i;
+            if (i == argCount)
+                break;
+            nobuildParts.removeAll(configCmdLine.at(i));
         }
 
         // Directories ----------------------------------------------
@@ -1061,7 +1067,7 @@ void Configure::parseCmdLine()
             dictionary[ "QT_HOST_DATA" ] = configCmdLine.at(i);
         }
 
-        else if (configCmdLine.at(i) == "-make") {
+        else if (configCmdLine.at(i) == "-make-tool") {
             ++i;
             if (i == argCount)
                 break;
@@ -1506,6 +1512,11 @@ bool Configure::displayHelp()
         desc("FAST", "yes",     "-fast",                "Configure Qt quickly by generating Makefiles only for library and "
                                                         "subdirectory targets.  All other Makefiles are created as wrappers "
                                                         "which will in turn run qmake\n");
+
+        desc(                   "-make <part>",         "Add part to the list of parts to be built at make time.");
+        for (int i=0; i<defaultBuildParts.size(); ++i)
+            desc(               "",                     qPrintable(QString("  %1").arg(defaultBuildParts.at(i))), false, ' ');
+        desc(                   "-nomake <part>",       "Exclude part from the list of parts to be built.\n");
 
         desc("EXCEPTIONS", "no", "-no-exceptions",      "Disable exceptions on platforms that support it.");
         desc("EXCEPTIONS", "yes","-exceptions",         "Enable exceptions on platforms that support it.\n");
@@ -2249,6 +2260,14 @@ void Configure::generateOutputVars()
     qmakeConfig += dictionary[ "BUILD" ];
     dictionary[ "QMAKE_OUTDIR" ] = dictionary[ "BUILD" ];
 
+    if (buildParts.isEmpty())
+        buildParts = defaultBuildParts;
+    while (!nobuildParts.isEmpty())
+        buildParts.removeAll(nobuildParts.takeFirst());
+    if (!buildParts.contains("libs"))
+        buildParts += "libs";
+    buildParts.removeDuplicates();
+
     if (dictionary["MSVC_MP"] == "yes")
         qmakeConfig += "msvc_mp";
 
@@ -2483,11 +2502,6 @@ void Configure::generateCachefile()
         moduleStream << "#paths" << endl;
         moduleStream << "QT_BUILD_TREE   = " << fixSeparators(dictionary[ "QT_BUILD_TREE" ], true) << endl;
         moduleStream << "QT_SOURCE_TREE  = " << fixSeparators(dictionary[ "QT_SOURCE_TREE" ], true) << endl;
-        QStringList buildParts;
-        buildParts << QStringLiteral("libs") << QStringLiteral("examples") << QStringLiteral("tests");
-        foreach (const QString &item, disabledBuildParts) {
-            buildParts.removeAll(item);
-        }
         moduleStream << "QT_BUILD_PARTS  = " << buildParts.join(" ") << endl << endl;
 
         //so that we can build without an install first (which would be impossible)

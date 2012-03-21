@@ -107,13 +107,15 @@ public:
 private:
     // Our variable dictionaries
     QMap<QString,QString> dictionary;
+    QStringList defaultBuildParts;
+    QStringList buildParts;
+    QStringList nobuildParts;
     QStringList licensedModules;
     QStringList allSqlDrivers;
     QStringList allConfigs;
     QStringList disabledModules;
     QStringList enabledModules;
     QStringList modules;
-    QStringList disabledBuildParts;
 //    QStringList sqlDrivers;
     QStringList configCmdLine;
     QStringList qmakeConfig;
