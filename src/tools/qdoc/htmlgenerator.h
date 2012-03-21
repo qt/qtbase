@@ -239,13 +239,6 @@ private:
                    const Node *relative,
                    CodeMarker *marker);
     void endLink();
-    bool generatePageElement(QXmlStreamWriter& writer,
-                             const Node* node,
-                             CodeMarker* marker) const;
-    void generatePageElements(QXmlStreamWriter& writer,
-                              const Node* node,
-                              CodeMarker* marker) const;
-    void generatePageIndex(const QString& fileName) const;
     void generateExtractionMark(const Node *node, ExtractionMarkType markType);
     void reportOrphans(const InnerNode* parent);
 
