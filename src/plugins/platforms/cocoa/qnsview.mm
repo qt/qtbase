@@ -304,7 +304,7 @@ static QTouchDevice *touchDevice = 0;
 - (void)mouseDragged:(NSEvent *)theEvent
 {
     if (!(m_buttons & Qt::LeftButton))
-        qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
+        qWarning("QNSView mouseDragged: Internal mouse button tracking invalid (missing Qt::LeftButton)");
     [self handleMouseEvent:theEvent];
 }
 
@@ -339,8 +339,8 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)rightMouseDragged:(NSEvent *)theEvent
 {
-    if (!(m_buttons & Qt::LeftButton))
-        qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
+    if (!(m_buttons & Qt::RightButton))
+        qWarning("QNSView rightMouseDragged: Internal mouse button tracking invalid (missing Qt::RightButton)");
     [self handleMouseEvent:theEvent];
 }
 
@@ -404,8 +404,8 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)otherMouseDragged:(NSEvent *)theEvent
 {
-    if (!(m_buttons & Qt::LeftButton))
-        qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
+    if (!(m_buttons & ~(Qt::LeftButton | Qt::RightButton)))
+        qWarning("QNSView otherMouseDragged: Internal mouse button tracking invalid (missing Qt::MiddleButton or Qt::ExtraButton*)");
     [self handleMouseEvent:theEvent];
 }
 
