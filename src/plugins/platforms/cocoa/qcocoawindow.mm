@@ -198,13 +198,17 @@ void QCocoaWindow::raise()
 {
     //qDebug() << "raise" << this;
     // ### handle spaces (see Qt 4 raise_sys in qwidget_mac.mm)
-    if (m_nsWindow)
+    if (!m_nsWindow)
+        return;
+    if ([m_nsWindow isVisible])
         [m_nsWindow orderFront: m_nsWindow];
 }
 
 void QCocoaWindow::lower()
 {
-    if (m_nsWindow)
+    if (!m_nsWindow)
+        return;
+    if ([m_nsWindow isVisible])
         [m_nsWindow orderBack: m_nsWindow];
 }
 
