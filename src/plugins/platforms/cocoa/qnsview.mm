@@ -146,24 +146,24 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)windowDidBecomeKey
 {
-//    QWindowSystemInterface::handleWindowActivated(m_window);
+    if (!m_platformWindow->windowIsPopupType())
+        QWindowSystemInterface::handleWindowActivated(m_window);
 }
 
 - (void)windowDidResignKey
 {
-//    QWindowSystemInterface::handleWindowActivated(0);
+    if (!m_platformWindow->windowIsPopupType())
+        QWindowSystemInterface::handleWindowActivated(0);
 }
 
 - (void)windowDidBecomeMain
 {
 //    qDebug() << "window did become main" << m_window;
-    QWindowSystemInterface::handleWindowActivated(m_window);
 }
 
 - (void)windowDidResignMain
 {
 //    qDebug() << "window did resign main" << m_window;
-    QWindowSystemInterface::handleWindowActivated(0);
 }
 
 

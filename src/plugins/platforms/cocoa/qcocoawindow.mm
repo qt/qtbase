@@ -303,6 +303,15 @@ void QCocoaWindow::windowWillClose()
     QWindowSystemInterface::handleSynchronousCloseEvent(window());
 }
 
+bool QCocoaWindow::windowIsPopupType() const
+{
+    Qt::WindowType type = window()->windowType();
+    if (type == Qt::Tool)
+        return false; // Qt::Tool has the Popup bit set but isn't, at least on Mac.
+
+    return ((type & Qt::Popup) == Qt::Popup);
+}
+
 void QCocoaWindow::setCurrentContext(QCocoaGLContext *context)
 {
     m_glContext = context;
@@ -348,7 +357,7 @@ NSWindow * QCocoaWindow::createNSWindow()
 
     // Use NSPanel for popup-type windows. (Popup, Tool, ToolTip, SplashScreen)
     if ((type & Qt::Popup) == Qt::Popup) {
-        if (type == Qt::Popup || type == Qt::ToolTip || type == Qt::SplashScreen) {
+        if (windowIsPopupType()) {
             styleMask = NSBorderlessWindowMask;
         } else {
             styleMask = (NSUtilityWindowMask | NSResizableWindowMask | NSClosableWindowMask |

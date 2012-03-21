@@ -111,6 +111,7 @@ public:
     void windowDidMove();
     void windowDidResize();
     void windowWillClose();
+    bool windowIsPopupType() const;
 
     void setCurrentContext(QCocoaGLContext *context);
     QCocoaGLContext *currentContext() const;
