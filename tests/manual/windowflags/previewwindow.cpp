@@ -107,6 +107,8 @@ PreviewWindow::PreviewWindow(QWidget *parent)
 
     showNormalButton = new QPushButton(tr("Show normal"));
     connect(showNormalButton, SIGNAL(clicked()), this, SLOT(showNormal()));
+    showMinimizedButton = new QPushButton(tr("Show minimized"));
+    connect(showMinimizedButton, SIGNAL(clicked()), this, SLOT(showMinimized()));
     showMaximizedButton = new QPushButton(tr("Show maximized"));
     connect(showMaximizedButton, SIGNAL(clicked()), this, SLOT(showMaximized()));
     showFullScreenButton = new QPushButton(tr("Show fullscreen"));
@@ -115,6 +117,7 @@ PreviewWindow::PreviewWindow(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(textEdit);
     layout->addWidget(showNormalButton);
+    layout->addWidget(showMinimizedButton);
     layout->addWidget(showMaximizedButton);
     layout->addWidget(showFullScreenButton);
     layout->addWidget(closeButton);
@@ -143,6 +146,8 @@ PreviewDialog::PreviewDialog(QWidget *parent)
 
     showNormalButton = new QPushButton(tr("Show normal"));
     connect(showNormalButton, SIGNAL(clicked()), this, SLOT(showNormal()));
+    showMinimizedButton = new QPushButton(tr("Show minimized"));
+    connect(showMinimizedButton, SIGNAL(clicked()), this, SLOT(showMinimized()));
     showMaximizedButton = new QPushButton(tr("Show maximized"));
     connect(showMaximizedButton, SIGNAL(clicked()), this, SLOT(showMaximized()));
     showFullScreenButton = new QPushButton(tr("Show fullscreen"));
@@ -151,6 +156,7 @@ PreviewDialog::PreviewDialog(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(textEdit);
     layout->addWidget(showNormalButton);
+    layout->addWidget(showMinimizedButton);
     layout->addWidget(showMaximizedButton);
     layout->addWidget(showFullScreenButton);
     layout->addWidget(closeButton);

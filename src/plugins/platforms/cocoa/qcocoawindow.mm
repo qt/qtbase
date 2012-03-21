@@ -165,15 +165,23 @@ void QCocoaWindow::setVisible(bool visible)
         QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
 
         if (m_nsWindow) {
-            if ([m_nsWindow canBecomeKeyWindow])
-                [m_nsWindow makeKeyAndOrderFront:nil];
-            else
-                [m_nsWindow orderFront: nil];
+            // setWindowState might have been called while the window was hidden and
+            // will not change the NSWindow state in that case. Sync up here:
+            syncWindowState(window()->windowState());
+
+            if (window()->windowState() != Qt::WindowMinimized) {
+                if ([m_nsWindow canBecomeKeyWindow])
+                    [m_nsWindow makeKeyAndOrderFront:nil];
+                else
+                    [m_nsWindow orderFront: nil];
+            }
         }
     } else {
         // qDebug() << "close" << this;
         if (m_nsWindow)
             [m_nsWindow orderOut:m_nsWindow];
+        if (!QCoreApplication::closingDown())
+            QWindowSystemInterface::handleExposeEvent(window(), QRegion());
     }
 }
 
@@ -181,6 +189,14 @@ Qt::WindowFlags QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     m_windowFlags = flags;
     return m_windowFlags;
+}
+
+Qt::WindowState QCocoaWindow::setWindowState(Qt::WindowState state)
+{
+    if ([m_nsWindow isVisible])
+        syncWindowState(state);  // Window state set for hidden windows take effect when show() is called.
+
+    return state;
 }
 
 void QCocoaWindow::setWindowTitle(const QString &title)
@@ -446,26 +462,11 @@ void QCocoaWindow::setNSWindow(NSWindow *window)
     // QCocoaWindow is deleted by Qt.
     [window setReleasedWhenClosed : NO];
 
-    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
-                                          selector:@selector(windowDidBecomeKey)
-                                          name:NSWindowDidBecomeKeyNotification
-                                          object:m_nsWindow];
 
     [[NSNotificationCenter defaultCenter] addObserver:m_contentView
-                                          selector:@selector(windowDidResignKey)
-                                          name:NSWindowDidResignKeyNotification
+                                          selector:@selector(windowNotification:)
+                                          name:nil // Get all notifications
                                           object:m_nsWindow];
-
-    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
-                                          selector:@selector(windowDidBecomeMain)
-                                          name:NSWindowDidBecomeMainNotification
-                                          object:m_nsWindow];
-
-    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
-                                          selector:@selector(windowDidResignMain)
-                                          name:NSWindowDidResignMainNotification
-                                          object:m_nsWindow];
-
 
     // ### Accept touch events by default.
     // Beware that enabling touch events has a negative impact on the overall performance.
@@ -501,6 +502,49 @@ QCocoaWindow *QCocoaWindow::parentCocoaWindow() const
         return static_cast<QCocoaWindow*>(window()->transientParent()->handle());
     }
     return 0;
+}
+
+// Syncs the NSWindow minimize/maximize/fullscreen state with the current QWindow state
+void QCocoaWindow::syncWindowState(Qt::WindowState newState)
+{
+    if (!m_nsWindow)
+        return;
+
+    switch (newState) {
+        case Qt::WindowMinimized:
+            [m_nsWindow performMiniaturize : m_nsWindow];
+        break;
+        case Qt::WindowMaximized:
+            [m_nsWindow performZoom : m_nsWindow];
+        break;
+        case Qt::WindowFullScreen:
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+            if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+                [m_nsWindow toggleFullScreen : m_nsWindow];
+            } else {
+                qWarning("Not implemented: setWindowState WindowFullScreen");
+            }
+#endif
+        break;
+
+        default:
+            // Undo current states
+            if ([m_nsWindow isMiniaturized])
+                [m_nsWindow deminiaturize : m_nsWindow];
+
+            if ([m_nsWindow isZoomed])
+                [m_nsWindow performZoom : m_nsWindow]; // toggles
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+            if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+                if (window()->windowState() & Qt::WindowFullScreen)
+                    [m_nsWindow toggleFullScreen : m_nsWindow];
+            } else {
+                qWarning("Not implemented: setWindowState WindowFullScreen");
+            }
+#endif
+        break;
+    }
 }
 
 bool QCocoaWindow::setWindowModified(bool modified)

@@ -95,6 +95,7 @@ public:
     void setCocoaGeometry(const QRect &rect);
     void setVisible(bool visible);
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
+    Qt::WindowState setWindowState(Qt::WindowState state);
     void setWindowTitle(const QString &title);
     void raise();
     void lower();
@@ -129,6 +130,7 @@ protected:
 
     QRect windowGeometry() const;
     QCocoaWindow *parentCocoaWindow() const;
+    void syncWindowState(Qt::WindowState newState);
 
 // private:
 public: // for QNSView

@@ -199,7 +199,9 @@ void tst_QStatusBar::setSizeGripEnabled()
     QVERIFY(!sizeGrip);
 
     qApp->processEvents();
+#ifndef Q_OS_MAC // Work around Lion fullscreen issues on CI system - QTQAINFRA-506
     mainWindow.showFullScreen();
+#endif
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&mainWindow);
 #endif
@@ -220,7 +222,9 @@ void tst_QStatusBar::setSizeGripEnabled()
     QVERIFY(!sizeGrip->isVisible());
 
     qApp->processEvents();
+#ifndef Q_OS_MAC
     mainWindow.showNormal();
+#endif
     qApp->processEvents();
     QTRY_VERIFY(sizeGrip->isVisible());
 }

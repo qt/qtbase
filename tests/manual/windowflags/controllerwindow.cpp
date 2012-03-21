@@ -62,6 +62,7 @@ ControllerWindow::ControllerWindow()
     previewDialog = new PreviewDialog;
 
     createTypeGroupBox();
+    createStateGroupBox();
     createHintsGroupBox();
 
     quitButton = new QPushButton(tr("&Quit"));
@@ -73,6 +74,7 @@ ControllerWindow::ControllerWindow()
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(widgetTypeGroupBox);
+    mainLayout->addWidget(windowStateGroupBox);
     mainLayout->addWidget(additionalOptionsGroupBox);
     mainLayout->addWidget(typeGroupBox);
     mainLayout->addWidget(hintsGroupBox);
@@ -165,7 +167,17 @@ void ControllerWindow::updatePreview()
     if (pos.y() < 0)
         pos.setY(0);
     widget->move(pos);
-    widget->show();
+
+    Qt::WindowState windowState = Qt::WindowNoState;
+    if (minimizeButton->isChecked())
+        windowState = Qt::WindowMinimized;
+    else if (maximizeButton->isChecked())
+        windowState = Qt::WindowMaximized;
+    else if (fullscreenButton->isChecked())
+        windowState = Qt::WindowFullScreen;
+
+    widget->setWindowState(windowState);
+    widget->setVisible(visibleCheckBox->isChecked());
 }
 
 void ControllerWindow::createTypeGroupBox()
@@ -211,6 +223,27 @@ void ControllerWindow::createTypeGroupBox()
     typeGroupBox->setLayout(layout);
 }
 //! [5]
+
+void ControllerWindow::createStateGroupBox()
+{
+    windowStateGroupBox = new QGroupBox(tr("Window State"));
+    visibleCheckBox = createCheckBox(tr("Visible"));
+    visibleCheckBox->setChecked(true);
+
+    restoreButton = createRadioButton(tr("Normal"));
+    restoreButton->setChecked(true);
+    minimizeButton = createRadioButton(tr("Minimized"));
+    maximizeButton = createRadioButton(tr("Maximized"));
+    fullscreenButton = createRadioButton(tr("Fullscreen"));;
+
+    QHBoxLayout *l = new QHBoxLayout;
+    l->addWidget(visibleCheckBox);
+    l->addWidget(restoreButton);
+    l->addWidget(minimizeButton);
+    l->addWidget(maximizeButton);
+    l->addWidget(fullscreenButton);
+    windowStateGroupBox->setLayout(l);
+}
 
 //! [6]
 void ControllerWindow::createHintsGroupBox()

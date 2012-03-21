@@ -42,7 +42,7 @@
 #ifndef CONTROLLERWINDOW_H
 #define CONTROLLERWINDOW_H
 
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 #include "previewwindow.h"
 
@@ -68,6 +68,7 @@ private slots:
 
 private:
     void createTypeGroupBox();
+    void createStateGroupBox();
     void createHintsGroupBox();
     QCheckBox *createCheckBox(const QString &text);
     QRadioButton *createRadioButton(const QString &text);
@@ -77,6 +78,7 @@ private:
     PreviewDialog *previewDialog;
 
     QGroupBox *widgetTypeGroupBox;
+    QGroupBox *windowStateGroupBox;
     QGroupBox *additionalOptionsGroupBox;
     QGroupBox *typeGroupBox;
     QGroupBox *hintsGroupBox;
@@ -86,6 +88,12 @@ private:
     QRadioButton *previewDialogButton;
     QCheckBox *modalWindowCheckBox;
     QCheckBox *fixedSizeWindowCheckBox;
+
+    QCheckBox *visibleCheckBox;
+    QRadioButton *restoreButton;
+    QRadioButton *minimizeButton;
+    QRadioButton *maximizeButton;
+    QRadioButton *fullscreenButton;
 
     QRadioButton *windowRadioButton;
     QRadioButton *dialogRadioButton;

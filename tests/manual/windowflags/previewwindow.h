@@ -42,8 +42,8 @@
 #ifndef PREVIEWWINDOW_H
 #define PREVIEWWINDOW_H
 
-#include <QWidget>
-#include <QDialog>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QDialog>
 
 QT_BEGIN_NAMESPACE
 class QPushButton;
@@ -63,6 +63,7 @@ private:
     QTextEdit *textEdit;
     QPushButton *closeButton;
     QPushButton *showNormalButton;
+    QPushButton *showMinimizedButton;
     QPushButton *showMaximizedButton;
     QPushButton *showFullScreenButton;
 };
@@ -80,6 +81,7 @@ private:
     QTextEdit *textEdit;
     QPushButton *closeButton;
     QPushButton *showNormalButton;
+    QPushButton *showMinimizedButton;
     QPushButton *showMaximizedButton;
     QPushButton *showFullScreenButton;
 };

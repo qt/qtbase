@@ -70,8 +70,7 @@ QT_END_NAMESPACE
 - (void)setImage:(QImage *)image;
 - (void)drawRect:(NSRect)dirtyRect;
 - (void)updateGeometry;
-- (void)windowDidBecomeKey;
-- (void)windowDidResignKey;
+- (void)windowNotification : (NSNotification *) windowNotification;
 
 - (BOOL)isFlipped;
 - (BOOL)acceptsFirstResponder;

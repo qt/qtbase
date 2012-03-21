@@ -144,28 +144,39 @@ static QTouchDevice *touchDevice = 0;
         QWindowSystemInterface::handleSynchronousGeometryChange(m_window, geo);
 }
 
-- (void)windowDidBecomeKey
+- (void)windowNotification : (NSNotification *) windowNotification
 {
-    if (!m_platformWindow->windowIsPopupType())
-        QWindowSystemInterface::handleWindowActivated(m_window);
-}
+    //qDebug() << "windowNotification" << QCFString::toQString([windowNotification name]);
 
-- (void)windowDidResignKey
-{
-    if (!m_platformWindow->windowIsPopupType())
-        QWindowSystemInterface::handleWindowActivated(0);
-}
+    NSString *notificationName = [windowNotification name];
+    if (notificationName == NSWindowDidBecomeKeyNotification) {
+        if (!m_platformWindow->windowIsPopupType())
+            QWindowSystemInterface::handleWindowActivated(m_window);
+    } else if (notificationName == NSWindowDidResignKeyNotification) {
+        if (!m_platformWindow->windowIsPopupType())
+            QWindowSystemInterface::handleWindowActivated(0);
+    } else if (notificationName == NSWindowDidMiniaturizeNotification) {
+        QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowMinimized);
+    } else if (notificationName == NSWindowDidDeminiaturizeNotification) {
+        QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowNoState);
+        // Qt expects an expose event after restore/deminiaturize. This also needs
+        // to be a non-synchronous event to make sure it gets processed after
+        // the state change event sent above.
+        QWindowSystemInterface::handleExposeEvent(m_window, QRegion(m_window->geometry()));
+    } else {
 
-- (void)windowDidBecomeMain
-{
-//    qDebug() << "window did become main" << m_window;
-}
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+        if (notificationName == NSWindowDidEnterFullScreenNotification) {
+            QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowFullScreen);
+        } else if (notificationName == NSWindowDidExitFullScreenNotification) {
+            QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowNoState);
+        }
+    }
+#endif
 
-- (void)windowDidResignMain
-{
-//    qDebug() << "window did resign main" << m_window;
+    }
 }
-
 
 - (void) setImage:(QImage *)image
 {

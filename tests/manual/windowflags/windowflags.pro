@@ -5,3 +5,4 @@ HEADERS       = controllerwindow.h \
 SOURCES       = controllerwindow.cpp \
                 previewwindow.cpp \
                 main.cpp
+QT += widgets
