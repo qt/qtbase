@@ -848,8 +848,7 @@ void PaintCommands::command_import(QRegExp re)
 
     QFileInfo fileinfo(*file);
     m_commands[m_currentCommandIndex] = QString("# import file (%1) start").arg(fileinfo.fileName());
-    QTextStream textFile(file);
-    QString rawContent = textFile.readAll();
+    QString rawContent = QString::fromUtf8(file->readAll());
     QStringList importedData = rawContent.split('\n', QString::SkipEmptyParts);
     importedData.append(QString("# import file (%1) end ---").arg(fileinfo.fileName()));
     insertAt(m_currentCommandIndex, importedData);
