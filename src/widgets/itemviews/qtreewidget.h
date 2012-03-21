@@ -299,8 +299,6 @@ public:
 
     int sortColumn() const;
     void sortItems(int column, Qt::SortOrder order);
-    void setSortingEnabled(bool enable);
-    bool isSortingEnabled() const;
 
     void editItem(QTreeWidgetItem *item, int column = 0);
     void openPersistentEditor(QTreeWidgetItem *item, int column = 0);

@@ -2890,26 +2890,6 @@ void QTreeWidget::sortItems(int column, Qt::SortOrder order)
 }
 
 /*!
-    \internal
-
-    ### Qt 5: remove
-*/
-void QTreeWidget::setSortingEnabled(bool enable)
-{
-    QTreeView::setSortingEnabled(enable);
-}
-
-/*!
-    \internal
-
-    ### Qt 5: remove
-*/
-bool QTreeWidget::isSortingEnabled() const
-{
-    return QTreeView::isSortingEnabled();
-}
-
-/*!
   Starts editing the \a item in the given \a column if it is editable.
 */
 
