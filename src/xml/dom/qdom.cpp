@@ -892,7 +892,7 @@ QDomImplementationPrivate* QDomImplementationPrivate::clone()
 
     The QDom classes have a few issues of nonconformance with the XML
     specifications that cannot be fixed in Qt 4 without breaking backward
-    compatibility. The QtXmlPatterns module and the QXmlStreamReader and
+    compatibility. The Qt XML Patterns module and the QXmlStreamReader and
     QXmlStreamWriter classes have a higher degree of a conformance.
 
     \sa hasFeature()
