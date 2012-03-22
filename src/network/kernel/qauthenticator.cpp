@@ -380,6 +380,8 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
         break;
     case Ntlm:
         // #### extract from header
+        if (user.isEmpty() && password.isEmpty())
+            phase = Done;
         break;
     case DigestMd5: {
         this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
