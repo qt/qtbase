@@ -41,9 +41,7 @@
 
 #include "qget.h"
 
-#include <QSslError>
 #include <QNetworkProxy>
-#include <QAuthenticator>
 #include <QDebug>
 #include <QCoreApplication>
 #include <QList>
@@ -51,156 +49,6 @@
 #include <QNetworkConfiguration>
 #include <QNetworkConfigurationManager>
 #include <QNetworkSession>
-
-DownloadManager::DownloadManager()
-{
-    connect(&nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(finished(QNetworkReply*)));
-    connect(&nam, SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)), this, SLOT(authenticationRequired(QNetworkReply*, QAuthenticator*)));
-    connect(&nam, SIGNAL(proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*)), this, SLOT(proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*)));
-#ifndef QT_NO_SSL
-    connect(&nam, SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)), this, SLOT(sslErrors(QNetworkReply*, const QList<QSslError>&)));
-#endif
-}
-
-DownloadManager::~DownloadManager()
-{
-
-}
-
-void DownloadManager::get(const QUrl& url)
-{
-    //currently multiple downloads are processed in parallel.
-    //could add an option for serial using the downloads list as a queue
-    //which would require DownloadItem to hold a request rather than a reply
-    QNetworkReply* reply = nam.get(QNetworkRequest(url));
-    DownloadItem *dl = new DownloadItem(reply, nam);
-    downloads.append(dl);
-    connect(dl, SIGNAL(downloadFinished(DownloadItem*)), SLOT(downloadFinished(DownloadItem*)));
-}
-
-void DownloadManager::finished(QNetworkReply* reply)
-{
-}
-
-void DownloadManager::downloadFinished(DownloadItem *item)
-{
-    downloads.removeOne(item);
-    item->deleteLater();
-    checkForAllDone();
-}
-
-void DownloadManager::checkForAllDone()
-{
-    if (downloads.isEmpty()) {
-        qDebug() << "All Done.";
-        QCoreApplication::quit();
-    }
-}
-
-void DownloadManager::authenticationRequired(QNetworkReply* reply, QAuthenticator* auth)
-{
-    //provide the credentials exactly once, so that it fails if credentials are incorrect.
-    if (!httpUser.isEmpty() || !httpPassword.isEmpty()) {
-        auth->setUser(httpUser);
-        auth->setPassword(httpPassword);
-        httpUser.clear();
-        httpPassword.clear();
-    }
-}
-
-void DownloadManager::proxyAuthenticationRequired(const QNetworkProxy& proxy, QAuthenticator* auth)
-{
-    //provide the credentials exactly once, so that it fails if credentials are incorrect.
-    if (!proxyUser.isEmpty() || !proxyPassword.isEmpty()) {
-        auth->setUser(proxyUser);
-        auth->setPassword(proxyPassword);
-        proxyUser.clear();
-        proxyPassword.clear();
-    }
-}
-
-#ifndef QT_NO_SSL
-void DownloadManager::sslErrors(QNetworkReply* reply, const QList<QSslError>& errors)
-{
-    qDebug() << "sslErrors";
-    foreach (const QSslError& error, errors) {
-        qDebug() << error.errorString();
-        qDebug() << error.certificate().toPem();
-    }
-}
-#endif
-
-DownloadItem::DownloadItem(QNetworkReply* r, QNetworkAccessManager& manager) : reply(r), nam(manager)
-{
-    reply->setParent(this);
-    connect(reply, SIGNAL(readyRead()), this, SLOT(readyRead()));
-    connect(reply, SIGNAL(finished()), this, SLOT(finished()));
-}
-
-DownloadItem::~DownloadItem()
-{
-}
-
-void DownloadItem::readyRead()
-{
-    if (!file.isOpen()) {
-        qDebug() << reply->header(QNetworkRequest::ContentTypeHeader) << reply->header(QNetworkRequest::ContentLengthHeader);
-        QString path = reply->url().path();
-        path = path.mid(path.lastIndexOf('/') + 1);
-        if (path.isEmpty())
-            path = QLatin1String("index.html");
-        file.setFileName(path);
-        for (int i=1;i<1000;i++) {
-            if (!file.exists() && file.open(QIODevice::WriteOnly | QIODevice::Truncate))
-                break;
-            file.setFileName(QString(QLatin1String("%1.%2")).arg(path).arg(i));
-        }
-        if (!file.isOpen()) {
-            qDebug() << "couldn't open output file";
-            reply->abort();
-            return;
-        }
-        qDebug() << reply->url() << " -> " << file.fileName();
-    }
-    file.write(reply->readAll());
-}
-
-void DownloadItem::finished()
-{
-    if (reply->attribute(QNetworkRequest::RedirectionTargetAttribute).isValid()) {
-        QUrl url = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
-        url = reply->url().resolved(url);
-        qDebug() << reply->url() << "redirected to " << url;
-        if (redirects.contains(url)) {
-            qDebug() << "redirect loop detected";
-        } else if (redirects.count() > 10) {
-            qDebug() << "too many redirects";
-        } else {
-            //follow redirect
-            if (file.isOpen()) {
-                if (!file.seek(0) || !file.resize(0)) {
-                    file.close();
-                    file.remove();
-                }
-            }
-            reply->deleteLater();
-            reply = nam.get(QNetworkRequest(url));
-            reply->setParent(this);
-            connect(reply, SIGNAL(readyRead()), this, SLOT(readyRead()));
-            connect(reply, SIGNAL(finished()), this, SLOT(finished()));
-            redirects.append(url);
-            return;
-        }
-    }
-    if (file.isOpen()) {
-        file.write(reply->readAll());
-        file.close();
-    }
-    qDebug() << "finished " << reply->url() << " with http status: " << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    if (reply->error() != QNetworkReply::NoError)
-        qDebug() << "and error: " << reply->error() << reply->errorString();
-    emit downloadFinished(this);
-}
 
 void printShortUsage()
 {
@@ -215,8 +63,8 @@ void printUsage()
              << "Get one or more urls using QNetworkAccessManager" << endl
              << "Options:"
              << "--help                             This message" << endl
-             << "--http-user=<username>             Set username to use for http 401 challenges" << endl
-             << "--http-password=<password>         Set password to use for http 401 challenges" << endl
+             << "--user=<username>                  Set username to use for authentication" << endl
+             << "--password=<password>              Set password to use for authentication" << endl
              << "--proxy-user=<username>            Set username to use for proxy authentication" << endl
              << "--proxy-password=<password>        Set password to use for proxy authentication" << endl
              << "--proxy=on                         Use system proxy (default)" << endl
@@ -225,7 +73,11 @@ void printUsage()
              << "                   ,http           HTTP proxy (default)" << endl
              << "                   ,socks          SOCKS5 proxy" << endl
              << "                   ,ftp            FTP proxy" << endl
-             << "                   ,httpcaching    HTTP caching proxy (no CONNECT method)" << endl;
+             << "                   ,httpcaching    HTTP caching proxy (no CONNECT method)" << endl
+             << "--post=filename                    upload the file to the next url using HTTP POST" << endl
+             << "--put=filename                     upload the file to the next url using HTTP PUT" << endl
+             << "--content-type=<MIME>              set content-type header for upload" << endl
+             << "--serial                           don't run requests in parallel" << endl;
 }
 
 int main(int argc, char *argv[])
@@ -240,18 +92,23 @@ int main(int argc, char *argv[])
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 
     DownloadManager dl;
+    QString uploadFileName;
+    QString contentType;
+    QString httpUser;
+    QString httpPassword;
+    TransferItem::Method method = TransferItem::Get;
     //arguments match wget where possible
     foreach (QString str, app.arguments().mid(1)) {
         if (str == "--help")
             printUsage();
-        else if (str.startsWith("--http-user="))
-            dl.setHttpUser(str.mid(12));
-        else if (str.startsWith("--http-passwd="))
-            dl.setHttpPassword(str.mid(14));
+        else if (str.startsWith("--user="))
+            httpUser = str.mid(7);
+        else if (str.startsWith("--password="))
+            httpPassword = str.mid(11);
         else if (str.startsWith("--proxy-user="))
             dl.setProxyUser(str.mid(13));
-        else if (str.startsWith("--proxy-passwd="))
-            dl.setProxyPassword(str.mid(15));
+        else if (str.startsWith("--proxy-password="))
+            dl.setProxyPassword(str.mid(17));
         else if (str == "--proxy=off")
             QNetworkProxyFactory::setUseSystemConfiguration(false);
         else if (str == "--proxy=on")
@@ -294,10 +151,33 @@ int main(int argc, char *argv[])
             qDebug() << "proxy:" << proxy.hostName() << proxy.port() << proxy.type();
             dl.setProxy(proxy);
         }
+        else if (str.startsWith("--put=")) {
+            method = TransferItem::Put;
+            uploadFileName = str.mid(6);
+        }
+        else if (str.startsWith("--post=")) {
+            method = TransferItem::Post;
+            uploadFileName = str.mid(7);
+        }
+        else if (str.startsWith("--content-type="))
+            contentType=str.mid(15);
+        else if (str == "--serial")
+            dl.setQueueMode(DownloadManager::Serial);
         else if (str.startsWith("-"))
             qDebug() << "unsupported option" << str;
-        else
-            dl.get(QUrl::fromUserInput(str));
+        else {
+            QUrl url(QUrl::fromUserInput(str));
+            switch (method) {
+            case TransferItem::Put:
+            case TransferItem::Post:
+                dl.upload(url, httpUser, httpPassword, uploadFileName, contentType, method);
+                break;
+            case TransferItem::Get:
+                dl.get(url, httpUser, httpPassword);
+                break;
+            }
+            method = TransferItem::Get; //default for urls without a request type before it
+        }
     }
     QMetaObject::invokeMethod(&dl, "checkForAllDone", Qt::QueuedConnection);
     return app.exec();
