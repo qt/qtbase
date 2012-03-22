@@ -396,12 +396,14 @@ void QXcbWindow::setGeometry(const QRect &rect)
     propagateSizeHints();
 
     const quint32 mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
-    const quint32 values[] = { rect.x(),
-                               rect.y(),
-                               qBound(1, rect.width(), XCOORD_MAX),
-                               qBound(1, rect.height(), XCOORD_MAX) };
+    const qint32 values[] = {
+        qBound<qint32>(-XCOORD_MAX, rect.x(),      XCOORD_MAX),
+        qBound<qint32>(-XCOORD_MAX, rect.y(),      XCOORD_MAX),
+        qBound<qint32>(1,           rect.width(),  XCOORD_MAX),
+        qBound<qint32>(1,           rect.height(), XCOORD_MAX),
+    };
 
-    Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, values));
+    Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, reinterpret_cast<const quint32*>(values)));
 
     xcb_flush(xcb_connection());
 }
