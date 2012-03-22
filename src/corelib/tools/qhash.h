@@ -89,6 +89,7 @@ Q_CORE_EXPORT uint qHash(const QString &key, uint seed = 0);
 Q_CORE_EXPORT uint qHash(const QStringRef &key, uint seed = 0);
 Q_CORE_EXPORT uint qHash(const QBitArray &key, uint seed = 0);
 Q_CORE_EXPORT uint qHash(const QLatin1String &key, uint seed = 0);
+Q_CORE_EXPORT uint qt_hash(const QString &key);
 
 #if defined(Q_CC_MSVC)
 #pragma warning( push )

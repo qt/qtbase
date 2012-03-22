@@ -222,6 +222,31 @@ static void qt_initialize_qhash_seed()
     }
 }
 
+/*!
+    \internal
+
+    Private copy of the implementation of the Qt 4 qHash algorithm for strings,
+    to be used wherever the result is somehow stored or reused across multiple
+    Qt versions. The public qHash implementation can change at any time,
+    therefore one must not rely on the fact that it will always give the same
+    results.
+
+    This function must *never* change its results.
+*/
+uint qt_hash(const QString &key)
+{
+    const QChar *p = key.unicode();
+    int n = key.size();
+    uint h = 0;
+
+    while (n--) {
+        h = (h << 4) + (*p++).unicode();
+        h ^= (h & 0xf0000000) >> 23;
+        h &= 0x0fffffff;
+    }
+    return h;
+}
+
 /*
     The prime_deltas array is a table of selected prime values, even
     though it doesn't look like one. The primes we are using are 1,
@@ -816,6 +841,11 @@ void QHashData::checkSanity()
     QString &, uint) to give us a hash value for the employee's name, and
     XOR'ed this with the day they were born to help produce unique
     hashes for people with the same name.
+
+    Note that the implementation of the qHash() overloads offered by Qt
+    may change at any time. You \b{must not} rely on the fact that qHash()
+    will give the same results (for the same inputs) across different Qt
+    versions.
 
     \section2 Algorithmic complexity attacks
 

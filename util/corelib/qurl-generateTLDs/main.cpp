@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
     while (!file.atEnd()) {
         QString s = QString::fromUtf8(file.readLine());
         QString st = s.trimmed();
-        int num = qHash(st) % lineCount;
+        int num = qt_hash(st) % lineCount;
 
         QString utf8String = utf8encode(st.toUtf8());
 
