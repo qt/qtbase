@@ -91,8 +91,14 @@ private slots:
     void chop_data();
     void chop();
     void prepend();
+    void prependExtended_data();
+    void prependExtended();
     void append();
+    void appendExtended_data();
+    void appendExtended();
     void insert();
+    void insertExtended_data();
+    void insertExtended();
     void remove_data();
     void remove();
     void replace_data();
@@ -130,10 +136,43 @@ private slots:
     void byteRefDetaching() const;
 
     void reserve();
+    void reserveExtended_data();
+    void reserveExtended();
     void movablity_data();
     void movablity();
     void literals();
 };
+
+struct StaticByteArrays {
+    struct Standard {
+        QByteArrayData data;
+        const char string[8];
+    } standard;
+    struct NotNullTerminated {
+        QByteArrayData data;
+        const char string[8];
+    } notNullTerminated;
+    struct Shifted {
+        QByteArrayData data;
+        const char dummy;  // added to change offset of string
+        const char string[8];
+    } shifted;
+    struct ShiftedNotNullTerminated {
+        QByteArrayData data;
+        const char dummy;  // added to change offset of string
+        const char string[8];
+    } shiftedNotNullTerminated;
+
+} statics = {{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) }, "data"}
+            ,{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) }, "dataBAD"}
+            ,{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) + sizeof(char) }, 0, "data"}
+            ,{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) + sizeof(char) }, 0, "dataBAD"}
+            };
+
+static const QStaticByteArrayData<1> &staticStandard = reinterpret_cast<QStaticByteArrayData<1> &>(statics.standard);
+static const QStaticByteArrayData<1> &staticNotNullTerminated = reinterpret_cast<QStaticByteArrayData<1> &>(statics.notNullTerminated);
+static const QStaticByteArrayData<1> &staticShifted = reinterpret_cast<QStaticByteArrayData<1> &>(statics.shifted);
+static const QStaticByteArrayData<1> &staticShiftedNotNullTerminated = reinterpret_cast<QStaticByteArrayData<1> &>(statics.shiftedNotNullTerminated);
 
 tst_QByteArray::tst_QByteArray()
 {
@@ -701,6 +740,35 @@ void tst_QByteArray::prepend()
     QCOMPARE(ba.prepend("\0 ", 2), QByteArray::fromRawData("\0 321foo", 8));
 }
 
+void tst_QByteArray::prependExtended_data()
+{
+    QTest::addColumn<QByteArray>("array");
+    QTest::newRow("literal") << QByteArray(QByteArrayLiteral("data"));
+    QTest::newRow("standard") << QByteArray(staticStandard);
+    QTest::newRow("shifted") << QByteArray(staticShifted);
+    QTest::newRow("notNullTerminated") << QByteArray(staticNotNullTerminated);
+    QTest::newRow("shiftedNotNullTerminated") << QByteArray(staticShiftedNotNullTerminated);
+    QTest::newRow("non static data") << QByteArray("data");
+    QTest::newRow("from raw data") << QByteArray::fromRawData("data", 4);
+    QTest::newRow("from raw data not terminated") << QByteArray::fromRawData("dataBAD", 4);
+}
+
+void tst_QByteArray::prependExtended()
+{
+    QFETCH(QByteArray, array);
+
+    QCOMPARE(QByteArray().prepend(array), QByteArray("data"));
+    QCOMPARE(QByteArray("").prepend(array), QByteArray("data"));
+
+    QCOMPARE(array.prepend((char*)0), QByteArray("data"));
+    QCOMPARE(array.prepend(QByteArray()), QByteArray("data"));
+    QCOMPARE(array.prepend("1"), QByteArray("1data"));
+    QCOMPARE(array.prepend(QByteArray("2")), QByteArray("21data"));
+    QCOMPARE(array.prepend('3'), QByteArray("321data"));
+    QCOMPARE(array.prepend("\0 ", 2), QByteArray::fromRawData("\0 321data", 9));
+    QCOMPARE(array.size(), 9);
+}
+
 void tst_QByteArray::append()
 {
     QByteArray ba("foo");
@@ -712,6 +780,28 @@ void tst_QByteArray::append()
     QCOMPARE(ba.append("\0"), QByteArray("foo123"));
     QCOMPARE(ba.append("\0", 1), QByteArray::fromRawData("foo123\0", 7));
     QCOMPARE(ba.size(), 7);
+}
+
+void tst_QByteArray::appendExtended_data()
+{
+    prependExtended_data();
+}
+
+void tst_QByteArray::appendExtended()
+{
+    QFETCH(QByteArray, array);
+
+    QCOMPARE(QByteArray().append(array), QByteArray("data"));
+    QCOMPARE(QByteArray("").append(array), QByteArray("data"));
+
+    QCOMPARE(array.append((char*)0), QByteArray("data"));
+    QCOMPARE(array.append(QByteArray()), QByteArray("data"));
+    QCOMPARE(array.append("1"), QByteArray("data1"));
+    QCOMPARE(array.append(QByteArray("2")), QByteArray("data12"));
+    QCOMPARE(array.append('3'), QByteArray("data123"));
+    QCOMPARE(array.append("\0"), QByteArray("data123"));
+    QCOMPARE(array.append("\0", 1), QByteArray::fromRawData("data123\0", 8));
+    QCOMPARE(array.size(), 8);
 }
 
 void tst_QByteArray::insert()
@@ -734,6 +824,18 @@ void tst_QByteArray::insert()
     ba = "ab";
     QCOMPARE(ba.insert(1, "\0X\0", 3), QByteArray::fromRawData("a\0X\0b", 5));
     QCOMPARE(ba.size(), 5);
+}
+
+void tst_QByteArray::insertExtended_data()
+{
+    prependExtended_data();
+}
+
+void tst_QByteArray::insertExtended()
+{
+    QFETCH(QByteArray, array);
+    QCOMPARE(array.insert(1, "i"), QByteArray("diata"));
+    QCOMPARE(array.size(), 5);
 }
 
 void tst_QByteArray::remove_data()
@@ -1456,6 +1558,23 @@ void tst_QByteArray::repeated_data() const
         << QByteArray(("abc"))
         << QByteArray(("abcabcabcabc"))
         << 4;
+
+    QTest::newRow("static not null terminated")
+        << QByteArray(staticNotNullTerminated)
+        << QByteArray("datadatadatadata")
+        << 4;
+    QTest::newRow("static standard")
+        << QByteArray(staticStandard)
+        << QByteArray("datadatadatadata")
+        << 4;
+    QTest::newRow("static shifted not null terminated")
+        << QByteArray(staticShiftedNotNullTerminated)
+        << QByteArray("datadatadatadata")
+        << 4;
+    QTest::newRow("static shifted")
+        << QByteArray(staticShifted)
+        << QByteArray("datadatadatadata")
+        << 4;
 }
 
 void tst_QByteArray::byteRefDetaching() const
@@ -1508,6 +1627,22 @@ void tst_QByteArray::reserve()
     nil2.reserve(0);
 }
 
+void tst_QByteArray::reserveExtended_data()
+{
+    prependExtended_data();
+}
+
+void tst_QByteArray::reserveExtended()
+{
+    QFETCH(QByteArray, array);
+    array.reserve(1024);
+    QVERIFY(array.capacity() == 1024);
+    QCOMPARE(array, QByteArray("data"));
+    array.squeeze();
+    QCOMPARE(array, QByteArray("data"));
+    QCOMPARE(array.capacity(), array.size());
+}
+
 void tst_QByteArray::movablity_data()
 {
     QTest::addColumn<QByteArray>("array");
@@ -1518,6 +1653,8 @@ void tst_QByteArray::movablity_data()
     QTest::newRow("empty") << QByteArray("");
     QTest::newRow("null") << QByteArray();
     QTest::newRow("sss") << QByteArray(3, 's');
+
+    prependExtended_data();
 }
 
 void tst_QByteArray::movablity()
