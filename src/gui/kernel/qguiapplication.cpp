@@ -1005,6 +1005,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     }
 
     QWindow *window = e->window.data();
+    modifier_buttons = e->modifiers;
 
     if (!window)
         window = QGuiApplication::topLevelAt(e->globalPos.toPoint());
@@ -1107,6 +1108,7 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
 
     QPointF globalPoint = e->globalPos;
     QGuiApplicationPrivate::lastCursorPosition = globalPoint;
+    modifier_buttons = e->modifiers;
 
     QWindow *window = e->window.data();
 
@@ -1123,6 +1125,7 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
 void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyEvent *e)
 {
     QWindow *window = e->window.data();
+    modifier_buttons = e->modifiers;
     if (e->nullWindow)
         window = QGuiApplication::activeWindow();
     if (!window)
@@ -1280,6 +1283,7 @@ Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey 
 void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *e)
 {
     QGuiApplicationPrivate *d = self;
+    modifier_buttons = e->modifiers;
 
     if (e->touchType == QEvent::TouchCancel) {
         // The touch sequence has been canceled (e.g. by the compositor).

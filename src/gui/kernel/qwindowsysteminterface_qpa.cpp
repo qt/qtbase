@@ -158,6 +158,8 @@ bool QWindowSystemInterface::tryHandleSynchronousShortcutEvent(QWindow *w, int k
 bool QWindowSystemInterface::tryHandleSynchronousShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
                                                                const QString & text, bool autorep, ushort count)
 {
+    QGuiApplicationPrivate::modifier_buttons = mods;
+
     QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, text, autorep, count);
     qevent.setTimestamp(timestamp);
     return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(w, &qevent);
@@ -175,6 +177,8 @@ bool QWindowSystemInterface::tryHandleSynchronousExtendedShortcutEvent(QWindow *
                                                                        quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
                                                                        const QString &text, bool autorep, ushort count)
 {
+    QGuiApplicationPrivate::modifier_buttons = mods;
+
     QKeyEventEx qevent(QEvent::ShortcutOverride, k, mods, text, autorep, count, nativeScanCode, nativeVirtualKey, nativeModifiers);
     qevent.setTimestamp(timestamp);
     return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(w, &qevent);

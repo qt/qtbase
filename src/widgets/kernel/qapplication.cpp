@@ -3014,34 +3014,14 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
     // capture the current mouse/keyboard state
     if(e->spontaneous()) {
-        if (e->type() == QEvent::KeyPress
-            || e->type() == QEvent::KeyRelease) {
-            QKeyEvent *ke = static_cast<QKeyEvent*>(e);
-            QApplicationPrivate::modifier_buttons = ke->modifiers();
-        } else if(e->type() == QEvent::MouseButtonPress
+        if (e->type() == QEvent::MouseButtonPress
             || e->type() == QEvent::MouseButtonRelease) {
                 QMouseEvent *me = static_cast<QMouseEvent*>(e);
-                QApplicationPrivate::modifier_buttons = me->modifiers();
                 if(me->type() == QEvent::MouseButtonPress)
                     QApplicationPrivate::mouse_buttons |= me->button();
                 else
                     QApplicationPrivate::mouse_buttons &= ~me->button();
             }
-#if !defined(QT_NO_WHEELEVENT) || !defined(QT_NO_TABLETEVENT)
-            else if (false
-#  ifndef QT_NO_WHEELEVENT
-                     || e->type() == QEvent::Wheel
-#  endif
-#  ifndef QT_NO_TABLETEVENT
-                     || e->type() == QEvent::TabletMove
-                     || e->type() == QEvent::TabletPress
-                     || e->type() == QEvent::TabletRelease
-#  endif
-                     ) {
-            QInputEvent *ie = static_cast<QInputEvent*>(e);
-            QApplicationPrivate::modifier_buttons = ie->modifiers();
-        }
-#endif // !QT_NO_WHEELEVENT || !QT_NO_TABLETEVENT
     }
 
 #ifndef QT_NO_GESTURES
