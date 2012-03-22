@@ -212,7 +212,6 @@ QWindow::SurfaceType QWindow::surfaceType() const
 /*!
     \property QWindow::visible
     \brief whether the window is visible or not
-    \since 5.0
 
     This property controls the visibility of the window in the windowing system.
 
@@ -484,7 +483,6 @@ Qt::WindowType QWindow::windowType() const
 /*!
     \property QWindow::windowTitle
     \brief the window's title in the windowing system
-    \since 5.0
 
     The window title might appear in the title area of the window decorations,
     depending on the windowing system and the window flags. It might also
@@ -615,7 +613,6 @@ bool QWindow::isActive() const
 
 /*!
     \property QWindow::contentOrientation
-    \since 5.0
     \brief the orientation of the window's contents
 
     This is a hint to the window manager in case it needs to display
@@ -935,25 +932,21 @@ void QWindow::setGeometry(const QRect &rect)
 
 /*!
     \property QWindow::x
-    \since 5.0
     \brief the x position of the window's geometry
 */
 
 /*!
     \property QWindow::y
-    \since 5.0
     \brief the y position of the window's geometry
 */
 
 /*!
     \property QWindow::width
-    \since 5.0
     \brief the width of the window's geometry
 */
 
 /*!
     \property QWindow::height
-    \since 5.0
     \brief the height of the window's geometry
 */
 

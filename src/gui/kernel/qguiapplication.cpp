@@ -478,7 +478,6 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 /*!
     \property QGuiApplication::platformName
     \brief The name of the underlying platform plugin.
-    \since 5.0
 */
 
 QString QGuiApplication::platformName()
@@ -1959,8 +1958,6 @@ void QGuiApplication::restoreOverrideCursor()
 #endif// QT_NO_CURSOR
 
 /*!
-  \since 5.0
-
   Returns the application's style hints.
 
   The style hints encapsulate a set of platform dependent properties
@@ -2014,8 +2011,6 @@ QInputMethod *QGuiApplication::inputMethod() const
 }
 
 /*!
-  \since 5.0
-
   returns the input panel.
 
   The input panel returns properties about the state and position of
@@ -2030,7 +2025,6 @@ QInputPanel *QGuiApplication::inputPanel() const
 }
 
 /*!
-    \since 4.5
     \fn void QGuiApplication::fontDatabaseChanged()
 
     This signal is emitted when application fonts are loaded or removed.
