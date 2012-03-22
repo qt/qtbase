@@ -122,7 +122,7 @@ public:
 
 Q_SIGNALS:
     void notification(const QString &name);
-    void notification(const QString &name, NotificationSource source);
+    void notification(const QString &name, QSqlDriver::NotificationSource source);
 
 protected:
     virtual void setOpen(bool o);

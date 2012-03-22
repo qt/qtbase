@@ -54,6 +54,8 @@
 
 #include "tst_databases.h"
 
+Q_DECLARE_METATYPE(QSqlDriver::NotificationSource)
+
 QT_FORWARD_DECLARE_CLASS(QSqlDatabase)
 struct FieldDef;
 
@@ -385,6 +387,7 @@ void tst_QSqlDatabase::populateTestTables(QSqlDatabase db)
 
 void tst_QSqlDatabase::initTestCase()
 {
+    qRegisterMetaType<QSqlDriver::NotificationSource>("QSqlDriver::NotificationSource");
     dbs.open();
 
     for (QStringList::ConstIterator it = dbs.dbNames.begin(); it != dbs.dbNames.end(); ++it) {
@@ -2064,21 +2067,17 @@ void tst_QSqlDatabase::eventNotificationPSQL()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-#if defined(Q_OS_LINUX)
-    QSKIP( "Event support doesn't work on linux");
-#endif
-
     QSqlQuery query(db);
     QString procedureName = qTableName("posteventProc", __FILE__);
-
     QSqlDriver &driver=*(db.driver());
     QVERIFY_SQL(driver, subscribeToNotification(procedureName));
-    QSignalSpy spy(db.driver(), SIGNAL(notification(const QString&)));
+    QSignalSpy spy(db.driver(), SIGNAL(notification(const QString&,QSqlDriver::NotificationSource)));
     query.exec(QString("NOTIFY \"%1\"").arg(procedureName));
     QCoreApplication::processEvents();
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
     QVERIFY(arguments.at(0).toString() == procedureName);
+    QVERIFY(qVariantValue<QSqlDriver::NotificationSource>(arguments.at(1)) == QSqlDriver::SelfSource);
     QVERIFY_SQL(driver, unsubscribeFromNotification(procedureName));
 }
 
