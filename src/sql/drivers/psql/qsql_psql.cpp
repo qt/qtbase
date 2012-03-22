@@ -1377,9 +1377,14 @@ void QPSQLDriver::_q_handleNotification(int)
     while((notify = PQnotifies(d->connection)) != 0) {
         QString name(QLatin1String(notify->relname));
         if (d->seid.contains(name)) {
+            QString payload;
+#if defined PG_VERSION_NUM && PG_VERSION_NUM-0 >= 70400
+            if (notify->extra)
+                payload = d->isUtf8 ? QString::fromUtf8(notify->extra) : QString::fromAscii(notify->extra);
+#endif
             emit notification(name);
             QSqlDriver::NotificationSource source = (notify->be_pid == PQbackendPID(d->connection)) ? QSqlDriver::SelfSource : QSqlDriver::OtherSource;
-            emit notification(name, source);
+            emit notification(name, source, payload);
         }
         else
             qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.",

@@ -1847,7 +1847,7 @@ void QIBaseDriver::qHandleEventNotification(void *updatedResultBuffer)
 
             if (eBuffer->subscriptionState == QIBaseEventBuffer::Subscribed) {
                 emit notification(i.key());
-                emit notification(i.key(), QSqlDriver::UnknownSource);
+                emit notification(i.key(), QSqlDriver::UnknownSource, QVariant());
             }
             else if (eBuffer->subscriptionState == QIBaseEventBuffer::Starting)
                 eBuffer->subscriptionState = QIBaseEventBuffer::Subscribed;

@@ -2069,15 +2069,17 @@ void tst_QSqlDatabase::eventNotificationPSQL()
 
     QSqlQuery query(db);
     QString procedureName = qTableName("posteventProc", __FILE__);
+    QString payload = "payload";
     QSqlDriver &driver=*(db.driver());
     QVERIFY_SQL(driver, subscribeToNotification(procedureName));
-    QSignalSpy spy(db.driver(), SIGNAL(notification(const QString&,QSqlDriver::NotificationSource)));
-    query.exec(QString("NOTIFY \"%1\"").arg(procedureName));
+    QSignalSpy spy(db.driver(), SIGNAL(notification(const QString&,QSqlDriver::NotificationSource,const QVariant&)));
+    query.exec(QString("NOTIFY \"%1\", '%2'").arg(procedureName).arg(payload));
     QCoreApplication::processEvents();
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
-    QVERIFY(arguments.at(0).toString() == procedureName);
-    QVERIFY(qVariantValue<QSqlDriver::NotificationSource>(arguments.at(1)) == QSqlDriver::SelfSource);
+    QCOMPARE(arguments.at(0).toString(), procedureName);
+    QCOMPARE(qVariantValue<QSqlDriver::NotificationSource>(arguments.at(1)), QSqlDriver::SelfSource);
+    QCOMPARE(qvariant_cast<QVariant>(arguments.at(2)).toString(), payload);
     QVERIFY_SQL(driver, unsubscribeFromNotification(procedureName));
 }
 
