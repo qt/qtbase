@@ -101,7 +101,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
 
         # Only link against plugin in static builds
         isEqual(QT_CURRENT_VERIFY, QTPLUGIN): {
-            !isEmpty(QT_PLUGINPATH): LIBS *= -L$$[QT_INSTALL_PLUGINS]/$$QT_PLUGINPATH
+            !isEmpty(QT_PLUGINPATH): LIBS *= -L$$[QT_INSTALL_PLUGINS/get]/$$QT_PLUGINPATH
                 LIBS += $$QT_LINKAGE
             # if the plugin is linked statically there is no need to deploy it
             DEPLOYMENT_PLUGIN -= $$QT_CURRENT_VERIFY
@@ -111,7 +111,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
             CONFIG(debug, debug|release): QT_ITEM = $${QTPLUG}d4.dll
             else: QT_ITEM = $${QTPLUG}4.dll
 
-            eval(qt_additional_plugin_$${QTPLUG}.files = $$[QT_INSTALL_PLUGINS]/$${QT_PLUGINPATH}/$${QT_ITEM})
+            eval(qt_additional_plugin_$${QTPLUG}.files = $$[QT_INSTALL_PLUGINS/get]/$${QT_PLUGINPATH}/$${QT_ITEM})
             eval(qt_additional_plugin_$${QTPLUG}.path = $${QT_PLUGINPATH})
 
             DEPLOYMENT *= qt_additional_plugin_$${QTPLUG}

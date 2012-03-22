@@ -166,8 +166,7 @@ defineTest(qtAddModule) {
 
 # variable, default
 defineTest(qtPrepareTool) {
-    MODBASE = $$[QT_HOST_BINS]
-    !isEmpty(QT_BUILD_TREE):MODBASE = $$QT_BUILD_TREE/bin
+    MODBASE = $$[QT_HOST_BINS/get]
     count(ARGS, 2, greaterThan) {
         isEmpty(QT.$${3}.bins):warning("No QT.$${3}.bins, module path ignored for qtPrepareTool($$1, $$2, $$3)")
         else:MODBASE = $$eval(QT.$${3}.bins)

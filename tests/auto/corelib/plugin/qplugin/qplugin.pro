@@ -1,10 +1,10 @@
 QT = core
 TEMPLATE = subdirs
 win32 {
-    exists($$[QT_INSTALL_LIBS]/QtCore4.dll) {
+    exists($$[QT_INSTALL_LIBS/get]/QtCore4.dll) {
         SUBDIRS = releaseplugin
     }
-    exists($$[QT_INSTALL_LIBS]/QtCored4.dll) {
+    exists($$[QT_INSTALL_LIBS/get]/QtCored4.dll) {
         SUBDIRS += debugplugin
     }
 }
