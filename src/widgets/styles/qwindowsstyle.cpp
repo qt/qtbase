@@ -121,7 +121,7 @@ QWindowsStylePrivate::QWindowsStylePrivate()
 {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-        && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)) {
+        && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))) {
         QSystemLibrary shellLib(QLatin1String("shell32"));
         pSHGetStockIconInfo = (PtrSHGetStockIconInfo)shellLib.resolve("SHGetStockIconInfo");
     }
@@ -1045,7 +1045,7 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
     case SP_VistaShield:
         {
             if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-                && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based
+                && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
                 && pSHGetStockIconInfo)
             {
                 QPixmap pixmap;
@@ -1187,7 +1187,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
     case SH_LineEdit_PasswordCharacter:
         {
 #ifdef Q_OS_WIN
-            if (widget && (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)) {
+            if (widget && (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))) {
                 const QFontMetrics &fm = widget->fontMetrics();
                 if (fm.inFont(QChar(0x25CF)))
                     ret = 0x25CF;
@@ -3190,7 +3190,7 @@ QIcon QWindowsStyle::standardIconImplementation(StandardPixmap standardIcon, con
     case SP_VistaShield:
         {
             if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-                && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based
+                && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
                 && pSHGetStockIconInfo)
             {
                 icon.addPixmap(proxy()->standardPixmap(SP_VistaShield, option, widget)); //fetches small icon

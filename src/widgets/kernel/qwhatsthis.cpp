@@ -291,7 +291,7 @@ void QWhatsThat::paintEvent(QPaintEvent*)
     bool drawShadow = true;
 #if defined(Q_WS_WIN)
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-        && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+        && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
     {
         BOOL shadow;
         SystemParametersInfo(SPI_GETDROPSHADOW, 0, &shadow, 0);
