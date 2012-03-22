@@ -6,6 +6,7 @@ SUBDIRS=\
    qfileopenevent \
    qguieventdispatcher \
    qguimetatype \
+   qguitimer \
    qguivariant \
    qinputmethod \
    qkeysequence \

@@ -39,6 +39,12 @@
 **
 ****************************************************************************/
 
+#ifdef QT_GUI_LIB
+#  include <QtGui/QGuiApplication>
+#else
+#  include <QtCore/QCoreApplication>
+#endif
+
 #include <QtTest/QtTest>
 
 #include <qtimer.h>
