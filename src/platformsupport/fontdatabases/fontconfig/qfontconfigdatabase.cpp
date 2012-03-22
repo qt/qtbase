@@ -291,7 +291,14 @@ static const char *getFcFamilyForStyleHint(const QFont::StyleHint style)
         stylehint = "serif";
         break;
     case QFont::TypeWriter:
+    case QFont::Monospace:
         stylehint = "monospace";
+        break;
+    case QFont::Cursive:
+        stylehint = "cursive";
+        break;
+    case QFont::Fantasy:
+        stylehint = "fantasy";
         break;
     default:
         break;
