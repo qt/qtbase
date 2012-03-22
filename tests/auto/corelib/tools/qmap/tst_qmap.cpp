@@ -694,8 +694,9 @@ void tst_QMap::iterators()
     stlIt--;
     QVERIFY(stlIt.value() == "Teststring 3");
 
-    for(stlIt = map.begin(), i = 1; stlIt != map.end(), i < 100; ++stlIt, ++i)
+    for(stlIt = map.begin(), i = 1; stlIt != map.end(); ++stlIt, ++i)
             QVERIFY(stlIt.value() == testString.arg(i));
+    QCOMPARE(i, 100);
 
     //STL-Style const-iterators
 
@@ -714,8 +715,9 @@ void tst_QMap::iterators()
     cstlIt--;
     QVERIFY(cstlIt.value() == "Teststring 3");
 
-    for(cstlIt = map.constBegin(), i = 1; cstlIt != map.constEnd(), i < 100; ++cstlIt, ++i)
+    for(cstlIt = map.constBegin(), i = 1; cstlIt != map.constEnd(); ++cstlIt, ++i)
             QVERIFY(cstlIt.value() == testString.arg(i));
+    QCOMPARE(i, 100);
 
     //Java-Style iterators
 
