@@ -3318,30 +3318,28 @@ class Q_DECL_ALIGN(4) Aligned4
     char i;
 public:
     Aligned4(int i = 0) : i(i) {}
-    bool checkAligned() const
-    {
-        return (quintptr(this) & 3) == 0;
-    }
+
+    enum { PreferredAlignment = 4 };
 
     inline bool operator==(const Aligned4 &other) const { return i == other.i; }
     inline bool operator<(const Aligned4 &other) const { return i < other.i; }
     friend inline int qHash(const Aligned4 &a) { return qHash(a.i); }
 };
+Q_STATIC_ASSERT(Q_ALIGNOF(Aligned4) % 4 == 0);
 
 class Q_DECL_ALIGN(128) Aligned128
 {
     char i;
 public:
     Aligned128(int i = 0) : i(i) {}
-    bool checkAligned() const
-    {
-        return (quintptr(this) & 127) == 0;
-    }
+
+    enum { PreferredAlignment = 128 };
 
     inline bool operator==(const Aligned128 &other) const { return i == other.i; }
     inline bool operator<(const Aligned128 &other) const { return i < other.i; }
     friend inline int qHash(const Aligned128 &a) { return qHash(a.i); }
 };
+Q_STATIC_ASSERT(Q_ALIGNOF(Aligned128) % 128 == 0);
 
 template<typename C>
 void testVectorAlignment()
@@ -3349,13 +3347,13 @@ void testVectorAlignment()
     typedef typename C::value_type Aligned;
     C container;
     container.append(Aligned());
-    QVERIFY(container[0].checkAligned());
+    QCOMPARE(quintptr(&container[0]) % Aligned::PreferredAlignment, quintptr(0));
 
     for (int i = 0; i < 200; ++i)
         container.append(Aligned());
     
     for (int i = 0; i < container.size(); ++i)
-        QVERIFY(container.at(i).checkAligned());
+        QCOMPARE(quintptr(&container.at(i)) % Aligned::PreferredAlignment, quintptr(0));
 }
 
 template<typename C>
@@ -3364,13 +3362,13 @@ void testContiguousCacheAlignment()
     typedef typename C::value_type Aligned;
     C container(150);
     container.append(Aligned());
-    QVERIFY(container[container.firstIndex()].checkAligned());
+    QCOMPARE(quintptr(&container[container.firstIndex()]) % Aligned::PreferredAlignment, quintptr(0));
 
     for (int i = 0; i < 200; ++i)
         container.append(Aligned());
 
     for (int i = container.firstIndex(); i < container.lastIndex(); ++i)
-        QVERIFY(container.at(i).checkAligned());
+        QCOMPARE(quintptr(&container.at(i)) % Aligned::PreferredAlignment, quintptr(0));
 }
 
 template<typename C>
@@ -3382,8 +3380,8 @@ void testAssociativeContainerAlignment()
     container.insert(Key(), Value());
 
     typename C::const_iterator it = container.constBegin();
-    QVERIFY(it.key().checkAligned());
-    QVERIFY(it.value().checkAligned());
+    QCOMPARE(quintptr(&it.key()) % Key::PreferredAlignment, quintptr(0));
+    QCOMPARE(quintptr(&it.value()) % Value::PreferredAlignment, quintptr(0));
 
     // add some more elements
     for (int i = 0; i < 200; ++i)
@@ -3391,8 +3389,8 @@ void testAssociativeContainerAlignment()
 
     it = container.constBegin();
     for ( ; it != container.constEnd(); ++it) {
-        QVERIFY(it.key().checkAligned());
-        QVERIFY(it.value().checkAligned());
+        QCOMPARE(quintptr(&it.key()) % Key::PreferredAlignment, quintptr(0));
+        QCOMPARE(quintptr(&it.value()) % Value::PreferredAlignment, quintptr(0));
     }
 }
 
