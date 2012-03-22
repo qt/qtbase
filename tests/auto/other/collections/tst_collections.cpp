@@ -3032,8 +3032,8 @@ void instantiateContainer()
     container.isEmpty();
     container.size();
 
-    container != constContainer;
-    container == constContainer;
+    Q_UNUSED((container != constContainer));
+    Q_UNUSED((container == constContainer));
     container = constContainer;
 }
 
@@ -3097,8 +3097,8 @@ void instantiateAssociative()
     container.intersect(constContainer);
     container.subtract(constContainer);
 
-    container != constContainer;
-    container == constContainer;
+    Q_UNUSED((container != constContainer));
+    Q_UNUSED((container == constContainer));
     container & constContainer;
     container &= constContainer;
     container &= value;
