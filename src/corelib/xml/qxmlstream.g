@@ -152,12 +152,12 @@ template <typename T> class QXmlStreamSimpleStack {
     int tos, cap;
 public:
     inline QXmlStreamSimpleStack():data(0), tos(-1), cap(0){}
-    inline ~QXmlStreamSimpleStack(){ if (data) qFree(data); }
+    inline ~QXmlStreamSimpleStack(){ if (data) free(data); }
 
     inline void reserve(int extraCapacity) {
         if (tos + extraCapacity + 1 > cap) {
             cap = qMax(tos + extraCapacity + 1, cap << 1 );
-            data = reinterpret_cast<T *>(qRealloc(data, cap * sizeof(T)));
+            data = reinterpret_cast<T *>(realloc(data, cap * sizeof(T)));
             Q_CHECK_PTR(data);
         }
     }

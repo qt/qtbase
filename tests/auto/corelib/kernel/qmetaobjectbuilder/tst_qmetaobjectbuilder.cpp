@@ -774,7 +774,7 @@ void tst_QMetaObjectBuilder::variantProperty()
     QCOMPARE(QMetaType::Type(prop.userType()), QMetaType::QVariant);
     QCOMPARE(QByteArray(prop.typeName()), QByteArray("QVariant"));
 
-    qFree(meta);
+    free(meta);
 }
 
 void tst_QMetaObjectBuilder::notifySignal()
@@ -1414,7 +1414,7 @@ TestObject::TestObject(QObject *parent)
 
 TestObject::~TestObject()
 {
-    qFree(m_metaObject);
+    free(m_metaObject);
 }
 
 QMetaObject *TestObject::buildMetaObject()

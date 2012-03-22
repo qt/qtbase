@@ -45,6 +45,7 @@
 #include <QtCore/qrefcount.h>
 #include <QtCore/qnamespace.h>
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 
@@ -402,7 +403,7 @@ public:
 };
 
 inline QByteArray::QByteArray(): d(const_cast<Data *>(&shared_null.ba)) { }
-inline QByteArray::~QByteArray() { if (!d->ref.deref()) qFree(d); }
+inline QByteArray::~QByteArray() { if (!d->ref.deref()) free(d); }
 inline int QByteArray::size() const
 { return d->size; }
 

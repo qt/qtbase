@@ -102,7 +102,7 @@ public:
         bufferCompleteSize += bd.size();
     }
 
-    // return the first QByteData. User of this function has to qFree() its .data!
+    // return the first QByteData. User of this function has to free() its .data!
     // preferably use this function to read data.
     inline QByteArray read()
     {
@@ -110,14 +110,14 @@ public:
         return buffers.takeFirst();
     }
 
-    // return everything. User of this function has to qFree() its .data!
+    // return everything. User of this function has to free() its .data!
     // avoid to use this, it might malloc and memcpy.
     inline QByteArray readAll()
     {
         return read(byteAmount());
     }
 
-    // return amount. User of this function has to qFree() its .data!
+    // return amount. User of this function has to free() its .data!
     // avoid to use this, it might malloc and memcpy.
     inline QByteArray read(qint64 amount)
     {
@@ -128,7 +128,7 @@ public:
         return byteData;
     }
 
-    // return amount bytes. User of this function has to qFree() its .data!
+    // return amount bytes. User of this function has to free() its .data!
     // avoid to use this, it will memcpy.
     qint64 read(char* dst, qint64 amount)
     {
