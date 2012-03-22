@@ -88,6 +88,10 @@ static inline uint detectProcessorFeatures()
     }
 #elif defined(_X86_)
     features = 0;
+    if (IsProcessorFeaturePresent(PF_XMMI64_INSTRUCTIONS_AVAILABLE))
+        features |= SSE2;
+    if (IsProcessorFeaturePresent(PF_SSE3_INSTRUCTIONS_AVAILABLE))
+        features |= SSE3;
     return features;
 #endif
     features = 0;
