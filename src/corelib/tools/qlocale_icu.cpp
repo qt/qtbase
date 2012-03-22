@@ -81,9 +81,19 @@ bool qt_initIcu(const QString &localeString)
     if (status == NotLoaded) {
 
         // resolve libicui18n
-        QLibrary lib(QLatin1String("icui18n"), QLatin1String(U_ICU_VERSION_SHORT));
+        const QString version = QString::fromLatin1(U_ICU_VERSION_SHORT);
+#ifdef Q_OS_WIN
+        // QLibrary on Windows does not use the version number, the libraries
+        // are named "icuin<version>.dll", though.
+        QString libName = QStringLiteral("icuin") + version;
+#else
+        QString libName = QStringLiteral("icui18n");
+#endif
+        QLibrary lib(libName, version);
         if (!lib.load()) {
-            qWarning() << "Unable to load library icui18n" << lib.errorString();
+            qWarning("Unable to load library '%s' version %s: %s",
+                     qPrintable(libName), qPrintable(version),
+                     qPrintable(lib.errorString()));
             status = ErrorLoading;
             return false;
         }
@@ -104,15 +114,22 @@ bool qt_initIcu(const QString &localeString)
             ptr_ucol_close = 0;
             ptr_ucol_strcoll = 0;
 
-            qWarning("Unable to find symbols in icui18n");
+            qWarning("Unable to find symbols in '%s'.", qPrintable(libName));
             status = ErrorLoading;
             return false;
         }
 
         // resolve libicuuc
-        QLibrary ucLib(QLatin1String("icuuc"), QLatin1String(U_ICU_VERSION_SHORT));
+#ifdef Q_OS_WIN
+        libName = QStringLiteral("icuuc") + version;
+#else
+        libName = QStringLiteral("icuuc");
+#endif
+        QLibrary ucLib(libName, version);
         if (!ucLib.load()) {
-            qWarning() << "Unable to load library icuuc" << ucLib.errorString();
+            qWarning("Unable to load library '%s' version %s: %s",
+                     qPrintable(libName), qPrintable(version),
+                     qPrintable(ucLib.errorString()));
             status = ErrorLoading;
             return false;
         }
@@ -129,7 +146,7 @@ bool qt_initIcu(const QString &localeString)
             ptr_u_strToUpper = 0;
             ptr_u_strToLower = 0;
 
-            qWarning("Unable to find symbols in icuuc");
+            qWarning("Unable to find symbols in '%s'", qPrintable(libName));
             status = ErrorLoading;
             return false;
         }
