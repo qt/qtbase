@@ -565,7 +565,12 @@ public:
     };
 // GENERATED PART ENDS HERE
 
-    enum MeasurementSystem { MetricSystem, ImperialSystem };
+    enum MeasurementSystem {
+        MetricSystem,
+        ImperialUSSystem,
+        ImperialUKSystem,
+        ImperialSystem = ImperialUSSystem // Qt 4 compatibility
+    };
 
     enum FormatType { LongFormat, ShortFormat, NarrowFormat };
     enum NumberOption {

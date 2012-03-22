@@ -672,9 +672,11 @@
 
     \value MetricSystem This value indicates metric units, such as meters,
             centimeters and millimeters.
-    \value ImperialSystem This value indicates imperial units, such as inches and
-            miles. There are several distinct imperial systems in the world; this
-            value stands for the official United States imperial units.
+    \value ImperialUSSystem This value indicates imperial units, such as inches and
+            miles as they are used in the United States.
+    \value ImperialUKSystem This value indicates imperial units, such as inches and
+            miles as they are used in the United Kingdom.
+    \value ImperialSystem Provided for compatibility. Same as ImperialUSSystem
 
     \since 4.4
 */

@@ -133,6 +133,8 @@ private slots:
     void weekendDays();
     void listPatterns();
 
+    void measurementSystems();
+
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
     QString m_sysapp;
@@ -2032,6 +2034,21 @@ void tst_QLocale::listPatterns()
     QCOMPARE(zh_CN.createSeparatedList(sl3), QString::fromUtf8("aaa" "\xe5\x92\x8c" "bbb"));
     QCOMPARE(zh_CN.createSeparatedList(sl4), QString::fromUtf8("aaa" "\xe3\x80\x81" "bbb" "\xe5\x92\x8c" "ccc"));
     QCOMPARE(zh_CN.createSeparatedList(sl5), QString::fromUtf8("aaa" "\xe3\x80\x81" "bbb" "\xe3\x80\x81" "ccc" "\xe5\x92\x8c" "ddd"));
+}
+
+void tst_QLocale::measurementSystems()
+{
+    QLocale locale(QLocale::English, QLocale::UnitedStates);
+    QCOMPARE(locale.measurementSystem(), QLocale::ImperialUSSystem);
+
+    locale = QLocale(QLocale::English, QLocale::UnitedKingdom);
+    QCOMPARE(locale.measurementSystem(), QLocale::ImperialUKSystem);
+
+    locale = QLocale(QLocale::English, QLocale::Australia);
+    QCOMPARE(locale.measurementSystem(), QLocale::MetricSystem);
+
+    locale = QLocale(QLocale::German);
+    QCOMPARE(locale.measurementSystem(), QLocale::MetricSystem);
 }
 
 QTEST_MAIN(tst_QLocale)
