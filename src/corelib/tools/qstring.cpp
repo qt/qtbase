@@ -2757,7 +2757,7 @@ int QString::lastIndexOf(const QLatin1String &str, int from, Qt::CaseSensitivity
 int QString::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
     return qt_last_index_of(unicode(), size(), ch, from, cs);
-    }
+}
 
 /*!
   \since 4.8
