@@ -248,6 +248,10 @@ information about a particular change.
 
 - QSqlQueryModel::indexInQuery() is now virtual. See note below under QSql.
 
+- QSqlDriver::subscribeToNotification, unsubscribeFromNotification,
+  subscribedToNotifications, isIdentifierEscaped, and stripDelimiters
+  are now virtual. See note below under QtSql.
+
 - qMacVersion() has been removed. Use QSysInfo::macVersion() or
   QSysInfo::MacintoshVersion instead.
 
@@ -488,6 +492,12 @@ changes. insertRows() and insertRecord() also respect the edit strategy.
 
 * QSqlTableModel::setData() and setRecord() in OnRowChange no longer have the
 side effect of submitting the cached row when invoked on a different row.
+
+* QSqlDriver::subscribeToNotification, unsubscribeFromNotification,
+subscribedToNotifications, isIdentifierEscaped, and stripDelimiters
+are now virtual. Their xxxImplemenation counterparts have been removed
+now that QSqlDriver subclasses can reimplement these directly.
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************

@@ -124,8 +124,7 @@ public:
     QVariant handle() const;
     QString escapeIdentifier(const QString &identifier, IdentifierType type) const;
 
-protected Q_SLOTS:
-    bool isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const;
+    bool isIdentifierEscaped(const QString &identifier, IdentifierType type) const;
 
 protected:
     bool beginTransaction();

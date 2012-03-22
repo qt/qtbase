@@ -110,12 +110,12 @@ public:
                       const QString& host = QString(),
                       int port = -1,
                       const QString& connOpts = QString()) = 0;
-    bool subscribeToNotification(const QString &name);	    // ### Qt 5: make virtual
-    bool unsubscribeFromNotification(const QString &name);  // ### Qt 5: make virtual
-    QStringList subscribedToNotifications() const;          // ### Qt 5: make virtual
+    virtual bool subscribeToNotification(const QString &name);
+    virtual bool unsubscribeFromNotification(const QString &name);
+    virtual QStringList subscribedToNotifications() const;
 
-    bool isIdentifierEscaped(const QString &identifier, IdentifierType type) const; // ### Qt 5: make virtual
-    QString stripDelimiters(const QString &identifier, IdentifierType type) const;  // ### Qt 5: make virtual
+    virtual bool isIdentifierEscaped(const QString &identifier, IdentifierType type) const;
+    virtual QString stripDelimiters(const QString &identifier, IdentifierType type) const;
 
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
@@ -129,13 +129,6 @@ protected:
     virtual void setOpenError(bool e);
     virtual void setLastError(const QSqlError& e);
 
-protected Q_SLOTS:
-    bool subscribeToNotificationImplementation(const QString &name);        // ### Qt 5: eliminate, see subscribeToNotification()
-    bool unsubscribeFromNotificationImplementation(const QString &name);    // ### Qt 5: eliminate, see unsubscribeFromNotification()
-    QStringList subscribedToNotificationsImplementation() const;            // ### Qt 5: eliminate, see subscribedNotifications()
-
-    bool isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const;   // ### Qt 5: eliminate, see isIdentifierEscaped()
-    QString stripDelimitersImplementation(const QString &identifier, IdentifierType type) const;    // ### Qt 5: eliminate, see stripDelimiters()
 
 private:
     Q_DISABLE_COPY(QSqlDriver)

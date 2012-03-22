@@ -417,22 +417,17 @@ QString QSqlDriver::escapeIdentifier(const QString &identifier, IdentifierType) 
     \a identifier can either be a table name or field name, dependent
     on \a type.
 
-    \warning Because of binary compatibility constraints, this function is not virtual.
-    If you want to provide your own implementation in your QSqlDriver subclass,
-    reimplement the isIdentifierEscapedImplementation() slot in your subclass instead.
-    The isIdentifierEscapedFunction() will dynamically detect the slot and call it.
+    Reimplement this function if you want to provide your own implementation in your
+    QSqlDriver subclass,
 
     \sa stripDelimiters(), escapeIdentifier()
  */
 bool QSqlDriver::isIdentifierEscaped(const QString &identifier, IdentifierType type) const
 {
-    bool result;
-    QMetaObject::invokeMethod(const_cast<QSqlDriver*>(this),
-                            "isIdentifierEscapedImplementation", Qt::DirectConnection,
-                            Q_RETURN_ARG(bool, result),
-                            Q_ARG(QString, identifier),
-                            Q_ARG(IdentifierType, type));
-    return result;
+    Q_UNUSED(type);
+    return identifier.size() > 2
+        && identifier.startsWith(QLatin1Char('"')) //left delimited
+        && identifier.endsWith(QLatin1Char('"')); //right delimited
 }
 
 /*!
@@ -442,23 +437,22 @@ bool QSqlDriver::isIdentifierEscaped(const QString &identifier, IdentifierType t
     and trailing delimiter characters, \a identifier is returned without
     modification.
 
-    \warning Because of binary compatibility constraints, this function is not virtual,
-    If you want to provide your own implementation in your QSqlDriver subclass,
-    reimplement the stripDelimitersImplementation() slot in your subclass instead.
-    The stripDelimiters() function will dynamically detect the slot and call it.
+    Reimplement this function if you want to provide your own implementation in your
+    QSqlDriver subclass,
 
     \since 4.5
     \sa isIdentifierEscaped()
  */
 QString QSqlDriver::stripDelimiters(const QString &identifier, IdentifierType type) const
 {
-    QString result;
-    QMetaObject::invokeMethod(const_cast<QSqlDriver*>(this),
-                            "stripDelimitersImplementation", Qt::DirectConnection,
-                            Q_RETURN_ARG(QString, result),
-                            Q_ARG(QString, identifier),
-                            Q_ARG(IdentifierType, type));
-    return result;
+    QString ret;
+    if (isIdentifierEscaped(identifier, type)) {
+        ret = identifier.mid(1);
+        ret.chop(1);
+    } else {
+        ret = identifier;
+    }
+    return ret;
 }
 
 /*!
@@ -744,22 +738,16 @@ QVariant QSqlDriver::handle() const
     When an event notification identified by \a name is posted by the database the
     notification() signal is emitted.
 
-    \warning Because of binary compatibility constraints, this function is not virtual.
-    If you want to provide event notification support in your own QSqlDriver subclass,
-    reimplement the subscribeToNotificationImplementation() slot in your subclass instead.
-    The subscribeToNotification() function will dynamically detect the slot and call it.
+    Reimplement this function if you want to provide event notification support in your
+    own QSqlDriver subclass,
 
     \since 4.4
     \sa unsubscribeFromNotification() subscribedToNotifications() QSqlDriver::hasFeature()
 */
 bool QSqlDriver::subscribeToNotification(const QString &name)
 {
-    bool result;
-    QMetaObject::invokeMethod(const_cast<QSqlDriver *>(this),
-			      "subscribeToNotificationImplementation", Qt::DirectConnection,
-			      Q_RETURN_ARG(bool, result),
-			      Q_ARG(QString, name));
-    return result;
+    Q_UNUSED(name);
+    return false;
 }
 
 /*!
@@ -774,166 +762,30 @@ bool QSqlDriver::subscribeToNotification(const QString &name)
     After calling \e this function the notification() signal will no longer be emitted
     when an event notification identified by \a name is posted by the database.
 
-    \warning Because of binary compatibility constraints, this function is not virtual.
-    If you want to provide event notification support in your own QSqlDriver subclass,
-    reimplement the unsubscribeFromNotificationImplementation() slot in your subclass instead.
-    The unsubscribeFromNotification() function will dynamically detect the slot and call it.
+    Reimplement this function if you want to provide event notification support in your
+    own QSqlDriver subclass,
 
     \since 4.4
     \sa subscribeToNotification() subscribedToNotifications()
 */
 bool QSqlDriver::unsubscribeFromNotification(const QString &name)
 {
-    bool result;
-    QMetaObject::invokeMethod(const_cast<QSqlDriver *>(this),
-			      "unsubscribeFromNotificationImplementation", Qt::DirectConnection,
-			      Q_RETURN_ARG(bool, result),
-			      Q_ARG(QString, name));
-    return result;
+    Q_UNUSED(name);
+    return false;
 }
 
 /*!
     Returns a list of the names of the event notifications that are currently subscribed to.
 
-    \warning Because of binary compatibility constraints, this function is not virtual.
-    If you want to provide event notification support in your own QSqlDriver subclass,
-    reimplement the subscribedToNotificationsImplementation() slot in your subclass instead.
-    The subscribedToNotifications() function will dynamically detect the slot and call it.
+    Reimplement this function if you want to provide event notification support in your
+    own QSqlDriver subclass,
 
     \since 4.4
     \sa subscribeToNotification() unsubscribeFromNotification()
 */
 QStringList QSqlDriver::subscribedToNotifications() const
 {
-    QStringList result;
-    QMetaObject::invokeMethod(const_cast<QSqlDriver *>(this),
-			      "subscribedToNotificationsImplementation", Qt::DirectConnection,
-			      Q_RETURN_ARG(QStringList, result));
-    return result;
-}
-
-/*!
-    This slot is called to subscribe to event notifications from the database.
-    \a name identifies the event notification.
-
-    If successful, return true, otherwise return false.
-
-    The database must be open when this \e slot is called. When the database is closed
-    by calling close() all subscribed event notifications are automatically unsubscribed.
-    Note that calling open() on an already open database may implicitly cause close() to
-    be called, which will cause the driver to unsubscribe from all event notifications.
-
-    When an event notification identified by \a name is posted by the database the
-    notification() signal is emitted.
-
-    Reimplement this slot to provide your own QSqlDriver subclass with event notification
-    support; because of binary compatibility constraints, the subscribeToNotification()
-    function (introduced in Qt 4.4) is not virtual. Instead, subscribeToNotification()
-    will dynamically detect and call \e this slot. The default implementation does nothing
-    and returns false.
-
-    \since 4.4
-    \sa subscribeToNotification()
-*/
-bool QSqlDriver::subscribeToNotificationImplementation(const QString &name)
-{
-    Q_UNUSED(name);
-    return false;
-}
-
-/*!
-    This slot is called to unsubscribe from event notifications from the database.
-    \a name identifies the event notification.
-
-    If successful, return true, otherwise return false.
-
-    The database must be open when \e this slot is called. All subscribed event
-    notifications are automatically unsubscribed from when the close() function is called.
-
-    After calling \e this slot the notification() signal will no longer be emitted
-    when an event notification identified by \a name is posted by the database.
-
-    Reimplement this slot to provide your own QSqlDriver subclass with event notification
-    support; because of binary compatibility constraints, the unsubscribeFromNotification()
-    function (introduced in Qt 4.4) is not virtual. Instead, unsubscribeFromNotification()
-    will dynamically detect and call \e this slot. The default implementation does nothing
-    and returns false.
-
-    \since 4.4
-    \sa unsubscribeFromNotification()
-*/
-bool QSqlDriver::unsubscribeFromNotificationImplementation(const QString &name)
-{
-    Q_UNUSED(name);
-    return false;
-}
-
-/*!
-    Returns a list of the names of the event notifications that are currently subscribed to.
-
-    Reimplement this slot to provide your own QSqlDriver subclass with event notification
-    support; because of binary compatibility constraints, the subscribedToNotifications()
-    function (introduced in Qt 4.4) is not virtual. Instead, subscribedToNotifications()
-    will dynamically detect and call \e this slot. The default implementation simply
-    returns an empty QStringList.
-
-    \since 4.4
-    \sa subscribedToNotifications()
-*/
-QStringList QSqlDriver::subscribedToNotificationsImplementation() const
-{
     return QStringList();
-}
-
-/*!
-    \since 4.6
-
-    This slot returns whether \a identifier is escaped according to the database rules.
-    \a identifier can either be a table name or field name, dependent
-    on \a type.
-
-    Because of binary compatibility constraints, isIdentifierEscaped() function
-    (introduced in Qt 4.5) is not virtual.  Instead, isIdentifierEscaped() will
-    dynamically detect and call \e this slot.  The default implementation
-    assumes the escape/delimiter character is a double quote.  Reimplement this
-    slot in your own QSqlDriver if your database engine uses a different
-    delimiter character.
-
-    \sa isIdentifierEscaped()
- */
-bool QSqlDriver::isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const
-{
-    Q_UNUSED(type);
-    return identifier.size() > 2
-        && identifier.startsWith(QLatin1Char('"')) //left delimited
-        && identifier.endsWith(QLatin1Char('"')); //right delimited
-}
-
-/*!
-    \since 4.6
-
-    This slot returns \a identifier with the leading and trailing delimiters removed,
-    \a identifier can either be a tablename or field name, dependent on \a type.
-    If \a identifier does not have leading and trailing delimiter characters, \a
-    identifier is returned without modification.
-
-    Because of binary compatibility constraints, the stripDelimiters() function
-    (introduced in Qt 4.5) is not virtual.  Instead, stripDelimiters() will
-    dynamically detect and call \e this slot.  It generally unnecessary
-    to reimplement this slot.
-
-    \sa stripDelimiters()
- */
-QString QSqlDriver::stripDelimitersImplementation(const QString &identifier, IdentifierType type) const
-{
-    QString ret;
-    if (this->isIdentifierEscaped(identifier, type)) {
-        ret = identifier.mid(1);
-        ret.chop(1);
-    } else {
-        ret = identifier;
-    }
-    return ret;
 }
 
 /*!

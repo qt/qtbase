@@ -1283,7 +1283,7 @@ QPSQLDriver::Protocol QPSQLDriver::protocol() const
     return d->pro;
 }
 
-bool QPSQLDriver::subscribeToNotificationImplementation(const QString &name)
+bool QPSQLDriver::subscribeToNotification(const QString &name)
 {
     if (!isOpen()) {
         qWarning("QPSQLDriver::subscribeToNotificationImplementation: database not open.");
@@ -1317,7 +1317,7 @@ bool QPSQLDriver::subscribeToNotificationImplementation(const QString &name)
     return true;
 }
 
-bool QPSQLDriver::unsubscribeFromNotificationImplementation(const QString &name)
+bool QPSQLDriver::unsubscribeFromNotification(const QString &name)
 {
     if (!isOpen()) {
         qWarning("QPSQLDriver::unsubscribeFromNotificationImplementation: database not open.");
@@ -1350,7 +1350,7 @@ bool QPSQLDriver::unsubscribeFromNotificationImplementation(const QString &name)
     return true;
 }
 
-QStringList QPSQLDriver::subscribedToNotificationsImplementation() const
+QStringList QPSQLDriver::subscribedToNotifications() const
 {
     return d->seid;
 }

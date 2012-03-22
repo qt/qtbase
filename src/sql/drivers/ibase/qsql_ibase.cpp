@@ -1749,7 +1749,7 @@ static isc_callback qEventCallback(char *result, short length, char *updated)
     return 0;
 }
 
-bool QIBaseDriver::subscribeToNotificationImplementation(const QString &name)
+bool QIBaseDriver::subscribeToNotification(const QString &name)
 {
     if (!isOpen()) {
         qWarning("QIBaseDriver::subscribeFromNotificationImplementation: database not open.");
@@ -1798,7 +1798,7 @@ bool QIBaseDriver::subscribeToNotificationImplementation(const QString &name)
     return true;
 }
 
-bool QIBaseDriver::unsubscribeFromNotificationImplementation(const QString &name)
+bool QIBaseDriver::unsubscribeFromNotification(const QString &name)
 {
     if (!isOpen()) {
         qWarning("QIBaseDriver::unsubscribeFromNotificationImplementation: database not open.");
@@ -1827,7 +1827,7 @@ bool QIBaseDriver::unsubscribeFromNotificationImplementation(const QString &name
     return true;
 }
 
-QStringList QIBaseDriver::subscribedToNotificationsImplementation() const
+QStringList QIBaseDriver::subscribedToNotifications() const
 {
     return QStringList(d->eventBuffers.keys());
 }
