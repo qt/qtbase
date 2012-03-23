@@ -1193,7 +1193,6 @@ public:
         AutoConnection,
         DirectConnection,
         QueuedConnection,
-        AutoCompatConnection,
         BlockingQueuedConnection,
         UniqueConnection =  0x80
     };

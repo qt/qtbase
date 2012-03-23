@@ -2337,16 +2337,6 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
                                      const QObject *receiver, const char *method,
                                      Qt::ConnectionType type)
 {
-#ifndef QT_NO_DEBUG
-    bool warnCompat = true;
-#endif
-    if (type == Qt::AutoCompatConnection) {
-        type = Qt::AutoConnection;
-#ifndef QT_NO_DEBUG
-        warnCompat = false;
-#endif
-    }
-
     if (sender == 0 || receiver == 0 || signal == 0 || method == 0) {
         qWarning("QObject::connect: Cannot connect %s::%s to %s::%s",
                  sender ? sender->metaObject()->className() : "(null)",
@@ -2455,11 +2445,9 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
     }
 
 #ifndef QT_NO_DEBUG
-    if (warnCompat) {
-        QMetaMethod smethod = smeta->method(signal_absolute_index);
-        QMetaMethod rmethod = rmeta->method(method_index_relative + rmeta->methodOffset());
-        check_and_warn_compat(smeta, smethod, rmeta, rmethod);
-    }
+    QMetaMethod smethod = smeta->method(signal_absolute_index);
+    QMetaMethod rmethod = rmeta->method(method_index_relative + rmeta->methodOffset());
+    check_and_warn_compat(smeta, smethod, rmeta, rmethod);
 #endif
     QMetaObject::Connection handle = QMetaObject::Connection(QMetaObjectPrivate::connect(
         sender, signal_index, receiver, method_index_relative, rmeta ,type, types));
@@ -2494,16 +2482,6 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
                                      const QObject *receiver, const QMetaMethod &method,
                                      Qt::ConnectionType type)
 {
-#ifndef QT_NO_DEBUG
-    bool warnCompat = true;
-#endif
-    if (type == Qt::AutoCompatConnection) {
-        type = Qt::AutoConnection;
-#ifndef QT_NO_DEBUG
-        warnCompat = false;
-#endif
-    }
-
     if (sender == 0
             || receiver == 0
             || signal.methodType() != QMetaMethod::Signal
@@ -2557,8 +2535,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
         return QMetaObject::Connection(0);
 
 #ifndef QT_NO_DEBUG
-    if (warnCompat)
-        check_and_warn_compat(smeta, signal, rmeta, method);
+    check_and_warn_compat(smeta, signal, rmeta, method);
 #endif
     QMetaObject::Connection handle = QMetaObject::Connection(QMetaObjectPrivate::connect(
         sender, signal_index, receiver, method_index, 0, type, types));

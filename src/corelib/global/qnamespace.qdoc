@@ -537,13 +537,6 @@
            same pair of objects, then the connection will fail. This
            connection type was introduced in Qt 4.6.
 
-    \value AutoCompatConnection
-           The default type when Qt 3 support is enabled. Same as
-           AutoConnection but will also cause warnings to be output in
-           certain situations. See \l{Porting to Qt 4#Compatibility
-           Signals and Slots}{Compatibility Signals and Slots} for
-           further information.
-
     With queued connections, the parameters must be of types that are
     known to Qt's meta-object system, because Qt needs to copy the
     arguments to store them in an event behind the scenes. If you try
