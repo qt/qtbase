@@ -266,6 +266,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
         if (!topic.isEmpty()) {
             args = doc.metaCommandArgs(topic);
             if (topic == COMMAND_QMLCLASS) {
+                // do nothing.
             }
             else if (topic == COMMAND_QMLPROPERTY) {
                 if (node->type() == Node::QmlProperty) {
@@ -320,7 +321,6 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                 if (node->name() == args[0])
                     doc.location().warning(tr("%1 tries to inherit itself").arg(args[0]));
                 else {
-                    qDebug() << "QML Component:" << node->name() << "inherits:" << args[0];
                     CodeParser::setLink(node, Node::InheritsLink, args[0]);
                     if (node->subType() == Node::QmlClass) {
                         QmlClassNode::addInheritedBy(args[0],node);
@@ -339,8 +339,12 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                     qpn->setReadOnly(1);
                 }
             }
-            else if (command == COMMAND_INGROUP) {
-                tree->addToGroup(node, args[0]);
+            else if ((command == COMMAND_INGROUP) && !args.isEmpty()) {
+                QStringList::ConstIterator arg = args.begin();
+                while (arg != args.end()) {
+                    tree->addToGroup(node, *arg);
+                    ++arg;
+                }
             }
             else if (command == COMMAND_INTERNAL) {
                 node->setAccess(Node::Private);

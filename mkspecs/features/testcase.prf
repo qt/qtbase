@@ -144,7 +144,7 @@ defineTest(installTestHelperApp) {
     subPath = $${subInstall}.path
     win32: extension = .exe
     $$subTarget = $${2}/$${3}$${extension}
-    $$subFiles = $${1}$${extension}
+    $$subFiles = $${OUT_PWD}/$${1}$${extension}
     $$subPath = $${target.path}/$${2}
     $$subConfig += no_check_exist executable
     INSTALLS += $${subInstall}

@@ -72,6 +72,4 @@ SOURCES +=  qglshaderprogram.cpp \
 SOURCES +=  qgl_qpa.cpp \
             qglpixelbuffer_stub.cpp
 
-DEFINES += QT_NO_EGL
-
 INCLUDEPATH += ../3rdparty/harfbuzz/src

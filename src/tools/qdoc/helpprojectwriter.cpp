@@ -506,10 +506,10 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
             project.files.insert(membersPath);
         }
         if (project.memberStatus[node].contains(Node::Compat)) {
-            QString compatPath = href.left(href.size()-5) + "-qt3.html";
+            QString compatPath = href.left(href.size()-5) + "-compat.html";
             writer.writeStartElement("section");
             writer.writeAttribute("ref", compatPath);
-            writer.writeAttribute("title", tr("Qt 3 support members"));
+            writer.writeAttribute("title", tr("Compatibility members"));
             writer.writeEndElement(); // section
             project.files.insert(compatPath);
         }
@@ -553,10 +553,10 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
                 project.files.insert(membersPath);
             }
             if (project.memberStatus[node].contains(Node::Compat)) {
-                QString compatPath = href.left(href.size()-5) + "-qt3.html";
+                QString compatPath = href.left(href.size()-5) + "-compat.html";
                 writer.writeStartElement("section");
                 writer.writeAttribute("ref", compatPath);
-                writer.writeAttribute("title", tr("Qt 3 support members"));
+                writer.writeAttribute("title", tr("Compatibility members"));
                 writer.writeEndElement(); // section
                 project.files.insert(compatPath);
             }

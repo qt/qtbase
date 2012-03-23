@@ -45,6 +45,7 @@
 #include "qdatetime.h"
 #include "qstringlist.h"
 #include "qvariant.h"
+#include "qreadwritelock.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -57,28 +58,12 @@ struct QSystemLocaleData
          ,lc_monetary(QLocale::C)
          ,lc_messages(QLocale::C)
     {
-        QByteArray all = qgetenv("LC_ALL");
-        QByteArray numeric  = all.isEmpty() ? qgetenv("LC_NUMERIC") : all;
-        QByteArray time     = all.isEmpty() ? qgetenv("LC_TIME") : all;
-        QByteArray monetary = all.isEmpty() ? qgetenv("LC_MONETARY") : all;
-        lc_messages_var     = all.isEmpty() ? qgetenv("LC_MESSAGES") : all;
-        lc_measurement_var  = all.isEmpty() ? qgetenv("LC_MEASUREMENT") : all;
-        QByteArray lang = qgetenv("LANG");
-        if (lang.isEmpty())
-            lang = QByteArray("C");
-        if (numeric.isEmpty())
-            numeric = lang;
-        if (monetary.isEmpty())
-            monetary = lang;
-        if (lc_messages_var.isEmpty())
-            lc_messages_var = lang;
-        if (lc_measurement_var.isEmpty())
-            lc_measurement_var = lang;
-        lc_numeric = QLocale(QString::fromLatin1(numeric));
-        lc_time = QLocale(QString::fromLatin1(time));
-        lc_monetary = QLocale(QString::fromLatin1(monetary));
-        lc_messages = QLocale(QString::fromLatin1(lc_messages_var));
+        readEnvironment();
     }
+
+    void readEnvironment();
+
+    QReadWriteLock lock;
 
     QLocale lc_numeric;
     QLocale lc_time;
@@ -87,10 +72,43 @@ struct QSystemLocaleData
     QByteArray lc_messages_var;
     QByteArray lc_measurement_var;
 };
+
+void QSystemLocaleData::readEnvironment()
+{
+    QWriteLocker locker(&lock);
+
+    QByteArray all = qgetenv("LC_ALL");
+    QByteArray numeric  = all.isEmpty() ? qgetenv("LC_NUMERIC") : all;
+    QByteArray time     = all.isEmpty() ? qgetenv("LC_TIME") : all;
+    QByteArray monetary = all.isEmpty() ? qgetenv("LC_MONETARY") : all;
+    lc_messages_var     = all.isEmpty() ? qgetenv("LC_MESSAGES") : all;
+    lc_measurement_var  = all.isEmpty() ? qgetenv("LC_MEASUREMENT") : all;
+    QByteArray lang = qgetenv("LANG");
+    if (lang.isEmpty())
+        lang = QByteArray("C");
+    if (numeric.isEmpty())
+        numeric = lang;
+    if (time.isEmpty())
+        time = lang;
+    if (monetary.isEmpty())
+        monetary = lang;
+    if (lc_messages_var.isEmpty())
+        lc_messages_var = lang;
+    if (lc_measurement_var.isEmpty())
+        lc_measurement_var = lang;
+    lc_numeric = QLocale(QString::fromLatin1(numeric));
+    lc_time = QLocale(QString::fromLatin1(time));
+    lc_monetary = QLocale(QString::fromLatin1(monetary));
+    lc_messages = QLocale(QString::fromLatin1(lc_messages_var));
+}
+
+
 Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
+
 #endif
 
 #ifndef QT_NO_SYSTEMLOCALE
+
 QLocale QSystemLocale::fallbackLocale() const
 {
     QByteArray lang = qgetenv("LC_ALL");
@@ -104,6 +122,14 @@ QLocale QSystemLocale::fallbackLocale() const
 QVariant QSystemLocale::query(QueryType type, QVariant in) const
 {
     QSystemLocaleData *d = qSystemLocaleData();
+
+    if (type == LocaleChanged) {
+        d->readEnvironment();
+        return QVariant();
+    }
+
+    QReadLocker locker(&d->lock);
+
     const QLocale &lc_numeric = d->lc_numeric;
     const QLocale &lc_time = d->lc_time;
     const QLocale &lc_monetary = d->lc_monetary;
@@ -216,6 +242,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return lc_messages.quoteString(in.value<QStringRef>(), QLocale::AlternateQuotation);
     case ListToSeparatedString:
         return lc_messages.createSeparatedList(in.value<QStringList>());
+    case LocaleChanged:
+        Q_ASSERT(false);
     default:
         break;
     }

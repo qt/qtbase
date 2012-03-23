@@ -679,8 +679,7 @@ CFG_OPENVG=auto
 CFG_OPENVG_LC_INCLUDES=no
 CFG_OPENVG_SHIVA=auto
 CFG_OPENVG_ON_OPENGL=auto
-CFG_EGL=no
-CFG_EGL_GLES_INCLUDES=no
+CFG_EGL=auto
 CFG_SSE=auto
 CFG_FONTCONFIG=auto
 CFG_LIBFREETYPE=auto
@@ -708,6 +707,7 @@ CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XCB=auto
 CFG_XCB_LIMITED=yes
+CFG_EGLFS=auto
 CFG_LIBUDEV=auto
 CFG_OBSOLETE_WAYLAND=no
 CFG_EVDEV=auto
@@ -739,6 +739,8 @@ CFG_NAS=no
 CFG_ACCESSIBILITY=auto
 CFG_IWMMXT=no
 CFG_NEON=auto
+CFG_MIPS_DSP=yes
+CFG_MIPS_DSPR2=yes
 CFG_CLOCK_GETTIME=auto
 CFG_CLOCK_MONOTONIC=auto
 CFG_MREMAP=auto
@@ -893,7 +895,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1165,9 +1167,6 @@ while [ "$#" -gt 0 ]; do
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
             [ "$VAL" = "es2" ]; then
             CFG_OPENGL="$VAL"
-            if  [ "$VAL" = "es2" ]; then
-                CFG_EGL="yes"
-            fi
         else
             UNKNOWN_OPT=yes
         fi
@@ -1175,9 +1174,6 @@ while [ "$#" -gt 0 ]; do
     openvg)
         if [ "$VAL" = "auto" ] || [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_OPENVG="$VAL"
-            if [ "$CFG_EGL" = "no" ] && [ "$VAL" != "no" ]; then
-                CFG_EGL=auto
-            fi
         else
             UNKNOWN_OPT=yes
         fi
@@ -1548,6 +1544,20 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    mips_dsp)
+        if [ "$VAL" = "no" ]; then
+            CFG_MIPS_DSP="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    mips_dspr2)
+        if [ "$VAL" = "no" ]; then
+            CFG_MIPS_DSPR2="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     reduce-relocations)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_REDUCE_RELOCATIONS="$VAL"
@@ -1653,6 +1663,13 @@ while [ "$#" -gt 0 ]; do
         ;;
     wayland)
         CFG_OBSOLETE_WAYLAND=yes
+        ;;
+    eglfs)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_EGLFS="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
         ;;
     libudev)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -2600,8 +2617,13 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" != "no" ] && [ "$CFG_SHARED" = "yes" ]; then
 fi
 
 # auto-detect -fvisibility support
-if [ "$CFG_REDUCE_EXPORTS" = "auto" ]; then
+if [ "$CFG_REDUCE_EXPORTS" != "no" ]; then
     if "$unixtests/fvisibility.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
+       if [ "$CFG_REDUCE_EXPORTS" = "yes" ]; then
+           echo "-reduce-exports was requested but this compiler does not support it"
+           echo "Re-run configure with -v for more information"
+           exit 1
+       fi
        CFG_REDUCE_EXPORTS=no
     else
        CFG_REDUCE_EXPORTS=yes
@@ -2611,6 +2633,11 @@ fi
 # detect the availability of the -Bsymbolic-functions linker optimization
 if [ "$CFG_REDUCE_RELOCATIONS" != "no" ]; then
     if "$unixtests/bsymbolic_functions.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
+       if [ "$CFG_REDUCE_RELOCATIONS" = "yes" ]; then
+           echo "-reduce-relocations was requested but this compiler does not support it"
+           echo "Re-run configure with -v for more information"
+           exit 1
+       fi
         CFG_REDUCE_RELOCATIONS=no
     else
         CFG_REDUCE_RELOCATIONS=yes
@@ -2869,6 +2896,14 @@ if [ "$OPT_HELP" = "yes" ]; then
         XCBN=" "
     fi
 
+    if [ "$CFG_EGLFS" = "no" ]; then
+        EGLFSY=" "
+        EGLFSN="*"
+    else
+        EGLFSY="*"
+        EGLFSN=" "
+    fi
+
     if [ "$CFG_XINPUT2" = "no" ]; then
         X2Y=" "
         X2N="*"
@@ -3074,6 +3109,8 @@ cat << EOF
     -no-sse4.2.......... Do not compile with use of SSE4.2 instructions.
     -no-avx ............ Do not compile with use of AVX instructions.
     -no-neon ........... Do not compile with use of NEON instructions.
+    -no-mips_dsp ....... Do not compile with use of MIPS DSP instructions.
+    -no-mips_dspr2 ..... Do not compile with use of MIPS DSP rev2 instructions.
 
     -qtnamespace <name>  Wraps all Qt library code in 'namespace <name> {...}'.
     -qtlibinfix <infix>  Renames all libQt*.so to libQt*<infix>.so.
@@ -3190,6 +3227,9 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 
  $XCBN  -no-xcb ............ Do not compile Xcb (X protocol C-language Binding) support.
  $XCBY  -xcb ............... Compile Xcb support.
+
+ $EGLFSN  -no-eglfs .......... Do not compile EGLFS (EGL Full Screen/Single Surface) support.
+ $EGLFSY  -eglfs ............. Compile EGLFS support.
 
 EOF
 
@@ -3308,12 +3348,6 @@ Qt/X11 only:
  *  -no-nas-sound ...... Do not compile in NAS sound support.
     -system-nas-sound .. Use NAS libaudio from the operating system.
                          See http://radscan.com/nas.html
-
-    -egl ............... Use EGL instead of GLX to manage contexts.
-                         When building for desktop OpenGL, this option will
-                         make Qt use EGL to manage contexts rather than the
-                         GLX, which is the default. Note: For OpenGL ES, EGL
-                         is always used.
 
     -no-opengl ......... Do not support OpenGL.
  +  -opengl <api> ...... Enable OpenGL support.
@@ -3899,11 +3933,12 @@ fi # Build qmake
 #-------------------------------------------------------------------------------
 
 # Use config.tests/arch/arch.pro to has the compiler tell us what the target architecture is
-CFG_ARCH=`"$outpath/bin/qmake" -spec "$XQMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -e "s,^Project MESSAGE: ,," -e "s,^#.*$,,g" | grep -v "^$"`
+CFG_ARCH=`"$outpath/bin/qmake" -spec "$XQMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -n -e 's,^Project MESSAGE:.*Architecture: \([a-zA-Z0-9_]*\).*,\1,p'`
+
 [ -z "$CFG_ARCH" ] && CFG_ARCH="unknown"
 if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
     # Do the same test again, using the host compiler
-    CFG_HOST_ARCH=`"$outpath/bin/qmake" -spec "$QMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -e "s,^Project MESSAGE: ,," -e "s,^#.*$,,g" | grep -v "^$"`
+    CFG_HOST_ARCH=`"$outpath/bin/qmake" -spec "$QMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -n -e 's,^Project MESSAGE:.*Architecture: \([a-zA-Z0-9]*\).*,\1,p'`
     [ -z "$CFG_HOST_ARCH" ] && CFG_HOST_ARCH="unknown"
 else
     # not cross compiling, host == target
@@ -4030,6 +4065,20 @@ elif [ "$CFG_ARCH" != "arm" ]; then
     CFG_NEON=no
 fi
 
+# detect mips_dsp support
+if [ "${CFG_ARCH}" = "mips" ] && [ "${CFG_MIPS_DSP}" = "yes" ]; then
+  CFG_MIPS_DSP=yes
+    else
+  CFG_MIPS_DSP=no
+fi
+
+# detect mips_dspr2 support
+if [ "${CFG_ARCH}" = "mips" ] && [ "${CFG_MIPS_DSPR2}" = "yes" ]; then
+  CFG_MIPS_DSPR2=yes
+    else
+  CFG_MIPS_DSPR2=no
+fi
+
 [ "$XPLATFORM_MINGW" = "yes" ] && QMakeVar add styles "windowsxp windowsvista"
 
 # detect zlib
@@ -4101,6 +4150,14 @@ fi
 # detect accessibility
 if [ "$CFG_ACCESSIBILITY" = "auto" ]; then
     CFG_ACCESSIBILITY=yes
+fi
+
+if [ "$CFG_EGLFS" = "yes" ]; then
+    if [ "$CFG_EGL" = "no" ]; then
+        echo "The EGLFS plugin requires EGL support and cannot be built"
+        exit 101
+    fi
+    CFG_EGL=yes
 fi
 
 # auto-detect SQL-modules support
@@ -4570,9 +4627,6 @@ if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
             CFG_OPENGL=desktop
         elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es2
-            if [ "$CFG_EGL" = "no" ]; then
-                CFG_EGL=auto
-            fi
         else
             if [ "$CFG_OPENGL" = "yes" ]; then
                 echo "All the OpenGL functionality tests failed!"
@@ -4719,33 +4773,6 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 		exit 101
 	    else
 		CFG_MITSHM=no
-	    fi
-	fi
-    fi
-
-    # auto-detect FontConfig support
-    if [ "$CFG_FONTCONFIG" != "no" ]; then
-    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
-        QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
-        QT_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig --libs freetype2 2>/dev/null`
-    else
-        QT_CFLAGS_FONTCONFIG=
-        QT_LIBS_FONTCONFIG="-lfreetype -lfontconfig"
-    fi
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/fontconfig "FontConfig" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS $QT_CFLAGS_FONTCONFIG $QT_LIBS_FONTCONFIG; then
-	    CFG_FONTCONFIG=yes
-        QMakeVar set QMAKE_CFLAGS_X11 "$QT_CFLAGS_FONTCONFIG \$\$QMAKE_CFLAGS_X11"
-        QMakeVar set QMAKE_LIBS_X11 "$QT_LIBS_FONTCONFIG \$\$QMAKE_LIBS_X11"
-	    CFG_LIBFREETYPE=system
-	else
-	    if [ "$CFG_FONTCONFIG" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-		echo "FontConfig support cannot be enabled due to functionality tests!"
-		echo " Turn on verbose messaging (-v) to $0 to see the final report."
-		echo " If you believe this message is in error you may use the continue"
-		echo " switch (-continue) to $0 to continue."
-		exit 101
-	    else
-		CFG_FONTCONFIG=no
 	    fi
 	fi
     fi
@@ -4898,6 +4925,33 @@ if [ "$PLATFORM_X11" = "yes" ]; then
     fi
 fi # X11
 
+# auto-detect FontConfig support
+if [ "$CFG_FONTCONFIG" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
+        QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
+        QT_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig --libs freetype2 2>/dev/null`
+    else
+        QT_CFLAGS_FONTCONFIG=
+        QT_LIBS_FONTCONFIG="-lfreetype -lfontconfig"
+    fi
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/fontconfig "FontConfig" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS $QT_CFLAGS_FONTCONFIG $QT_LIBS_FONTCONFIG; then
+        CFG_FONTCONFIG=yes
+        QMakeVar set QMAKE_CFLAGS_X11 "$QT_CFLAGS_FONTCONFIG \$\$QMAKE_CFLAGS_X11"
+        QMakeVar set QMAKE_LIBS_X11 "$QT_LIBS_FONTCONFIG \$\$QMAKE_LIBS_X11"
+        CFG_LIBFREETYPE=system
+    else
+        if [ "$CFG_FONTCONFIG" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "FontConfig support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        else
+            CFG_FONTCONFIG=no
+        fi
+    fi
+fi
+
 
 if [ "$BUILD_ON_MAC" = "yes" ]; then
     if [ "$CFG_PHONON" != "no" ]; then
@@ -4913,7 +4967,6 @@ if [ "$BUILD_ON_MAC" = "yes" ]; then
         fi
     fi
 fi
-
 
 if [ "$PLATFORM_QPA" = "yes" ]; then
     # auto-detect OpenGL support (es2 = OpenGL ES 2.x)
@@ -4984,6 +5037,7 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
 
     # Save these for a check later
     ORIG_CFG_XCB="$CFG_XCB"
+    ORIG_CFG_EGLFS="$CFG_EGLFS"
 
     if [ "$CFG_LIBUDEV" != "no" ]; then
        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libudev 2>/dev/null; then
@@ -5041,7 +5095,7 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     fi
 
     if [ "$CFG_XCB" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xcb 2>/dev/null; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
             QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
             QMAKE_LIBS_XCB="`$PKG_CONFIG --libs xcb 2>/dev/null`"
         fi
@@ -5101,6 +5155,31 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         QMAKE_DEFINES_XCB=QT_NO_XCB_XKB
     fi
 
+    # EGL Support
+    if [ "$CFG_EGL" != "no" ]; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists egl 2>/dev/null; then
+            QMAKE_INCDIR_EGL=`$PKG_CONFIG --cflags-only-I egl 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
+            QMAKE_LIBS_EGL=`$PKG_CONFIG --libs egl 2>/dev/null`
+            QMAKE_CFLAGS_EGL=`$PKG_CONFIG --cflags egl 2>/dev/null`
+            QMakeVar set QMAKE_INCDIR_EGL "$QMAKE_INCDIR_EGL"
+            QMakeVar set QMAKE_LIBS_EGL "$QMAKE_LIBS_EGL"
+        fi       # detect EGL support
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/qpa/egl" "EGL" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL; then
+            CFG_EGL=yes
+        elif [ "$CFG_EGL" = "yes" ]; then
+            echo " The EGL functionality test failed; EGL is required by some QPA plugins to manage contexts & surfaces."
+            echo " You might need to modify the include and library search paths by editing"
+            echo " QMAKE_INCDIR_EGL, QMAKE_LIBDIR_EGL and QMAKE_LIBS_EGL in ${XQMAKESPEC}."
+            exit 1
+        else
+            CFG_EGL=no
+        fi
+    fi
+
+    if [ "$CFG_EGLFS" != "no" ]; then
+        CFG_EGLFS="$CFG_EGL"
+    fi
+
     if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
         QMakeVar set QMAKE_CFLAGS_XCB "$QMAKE_CFLAGS_XCB"
         QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
@@ -5116,13 +5195,13 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     fi
 
     if [ "$PLATFORM_QPA" = "yes" ] && [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ]; then
-        if [ "$CFG_XCB" = "no" ]; then
+        if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ]; then
             if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
-                 ( [ "$ORIG_CFG_XCB" = "auto" ] ); then
+                 ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] ); then
                 echo "No QPA platform plugin enabled!"
                 echo " If you really want to build without a QPA platform plugin you must pass"
-                echo " -no-xcb. Doing this will produce a Qt that"
-                echo " cannot run GUI applications."
+                echo " -no-xcb and -no-eglfs to configure. Doing this will"
+                echo " produce a Qt that cannot run GUI applications."
                 echo " The dependencies needed for xcb to build are listed in"
                 echo " src/plugins/platforms/xcb/README"
                 exit 1
@@ -5130,35 +5209,6 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         fi
     fi
 
-fi
-
-EGL_VARIANT=none
-# EGL Support
-if [ "$PLATFORM_X11" = "yes" ]; then
-    if [ "$CFG_EGL" != "no" ]; then
-        # detect EGL support
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl" "EGL (EGL/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            # EGL specified by QMAKE_*_EGL, included with <EGL/egl.h>
-            EGL_VARIANT=regular
-            CFG_EGL=yes
-        fi
-
-        if [ "$EGL_VARIANT" = "none" ]; then
-            if [ "$CFG_EGL" = "yes" ]; then
-                echo "The EGL functionality test failed!"
-                echo " EGL is required for OpenGL ES to manage contexts & surfaces."
-                echo " You might need to modify the include and library search paths by editing"
-                echo " QMAKE_INCDIR_EGL, QMAKE_LIBDIR_EGL and QMAKE_LIBS_EGL in"
-                echo " ${XQMAKESPEC}."
-                exit 1
-            fi
-            CFG_EGL=no
-            # If QtOpenGL would be built against OpenGL ES, disable it as we can't to that if EGL is missing
-            if [ "$CFG_OPENGL" = "es2" ]; then
-                CFG_OPENGL=no
-            fi
-        fi
-    fi
 fi
 
 [ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_PHONON" != "no" ] && CFG_PHONON="yes"
@@ -5413,7 +5463,7 @@ if [ "$CFG_MAC_DWARF2" = "yes" ]; then
 fi
 
 # Detect the default arch (x86 or x86_64) on Mac OS X
-if [ "$BUILD_ON_MAC" = "yes" ]; then
+if [ "$BUILD_ON_MAC" = "yes" ] && [ "$QT_CROSS_COMPILE" = "no" ]; then
     DEFAULT_ARCH=
     case `file "${outpath}/bin/qmake"` in
     *i?86)
@@ -5448,19 +5498,18 @@ else
     QT_CONFIG="$QT_CONFIG accessibility"
 fi
 
-# egl stuff does not belong in lighthouse, but rather in plugins
-if [ "$PLATFORM_QPA" = "yes" ]; then
-    CFG_EGL="no"
+# enable egl
+if [ "$CFG_EGL" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG egl"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGL"
 fi
 
-# enable egl
-if [ "$CFG_EGL" = "no" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGL"
+# enable eglfs
+if [ "$CFG_EGLFS" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG eglfs"
 else
-    QT_CONFIG="$QT_CONFIG egl"
-    if [ "$CFG_EGL_GLES_INCLUDES" = "yes" ]; then
-        QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GLES_EGL"
-    fi
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGLFS"
 fi
 
 # enable openvg
@@ -5565,6 +5614,10 @@ fi
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
+if [ "$CFG_ARCH" = "mips" ]; then
+    [ "$CFG_MIPS_DSP" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mips_dsp"
+    [ "$CFG_MIPS_DSPR2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mips_dspr2"
+fi
 if [ "$CFG_CLOCK_GETTIME" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG clock-gettime"
 fi
@@ -5719,7 +5772,7 @@ fi
 [ '!' -z "$L_FLAGS" ] && QMakeVar add QMAKE_LIBDIR_FLAGS "$L_FLAGS"
 [ '!' -z "$l_FLAGS" ] && QMakeVar add LIBS "$l_FLAGS"
 
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$PLATFORM_MAC" = "yes" ] && [ "$QT_CROSS_COMPILE" = "no" ]; then
     if [ "$CFG_RPATH" = "yes" ]; then
        QMAKE_CONFIG="$QMAKE_CONFIG absolute_library_soname"
        # set the default rpath to the library installation directory
@@ -6519,6 +6572,9 @@ elif [ "$CFG_ARCH" = "arm" ]; then
     echo "iWMMXt support ......... ${CFG_IWMMXT}"
     echo "NEON support ........... ${CFG_NEON}"
 fi
+if [ "$CFG_ARCH" = "mips" ]; then
+    echo "MIPS_DSP/MIPS_DSPR2..... ${CFG_MIPS_DSP}/${CFG_MIPS_DSPR2}"
+fi
 echo "IPv6 ifname support .... $CFG_IPV6IFNAME"
 echo "getaddrinfo support .... $CFG_GETADDRINFO"
 echo "getifaddrs support ..... $CFG_GETIFADDRS"
@@ -6552,13 +6608,7 @@ elif [ "$CFG_OPENGL" = "es2" ]; then
 else
     echo "OpenGL support ......... no"
 fi
-if [ "$CFG_EGL" != "no" ]; then
-    if [ "$CFG_EGL_GLES_INCLUDES" = "yes" ]; then
-        echo "EGL support ............ yes <GLES/egl.h>"
-    else
-        echo "EGL support ............ yes <EGL/egl.h>"
-    fi
-fi
+
 if [ "$CFG_OPENVG" ]; then
     if [ "$CFG_OPENVG_SHIVA" = "yes" ]; then
         echo "OpenVG support ......... ShivaVG"
@@ -6614,6 +6664,7 @@ echo "Xrender support ........ $CFG_XRENDER"
 if [ "$XPLATFORM_MAEMO" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
     echo "XInput2 support ........ $CFG_XINPUT2"
 fi
+echo "EGLFS support .......... $CFG_EGLFS"
 echo
 
 # complain about not being able to use dynamic plugins if we are using a static build
@@ -6964,6 +7015,10 @@ fi'`
 
     [ -f "$outpath/config.status" ] && rm -f "$outpath/config.status"
     echo "#!/bin/sh" > "$outpath/config.status"
+    [ -n "$PKG_CONFIG_SYSROOT_DIR" ] && \
+        echo "export PKG_CONFIG_SYSROOT_DIR=$PKG_CONFIG_SYSROOT_DIR" >> "$outpath/config.status"
+    [ -n "$PKG_CONFIG_LIBDIR" ] && \
+        echo "export PKG_CONFIG_LIBDIR=$PKG_CONFIG_LIBDIR" >> "$outpath/config.status"
     echo "if [ \"\$#\" -gt 0 ]; then" >> "$outpath/config.status"
     echo "  $CONFIG_STATUS \"\$@\"" >> "$outpath/config.status"
     echo "else" >> "$outpath/config.status"

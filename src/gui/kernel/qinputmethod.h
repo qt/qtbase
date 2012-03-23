@@ -62,7 +62,7 @@ class Q_GUI_EXPORT QInputMethod : public QObject
     Q_PROPERTY(QObject *inputItem READ inputItem WRITE setInputItem NOTIFY inputItemChanged)
     Q_PROPERTY(QRectF cursorRectangle READ cursorRectangle NOTIFY cursorRectangleChanged)
     Q_PROPERTY(QRectF keyboardRectangle READ keyboardRectangle NOTIFY keyboardRectangleChanged)
-    Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
+    Q_PROPERTY(bool visible READ isVisible NOTIFY visibleChanged)
     Q_PROPERTY(bool animating READ isAnimating NOTIFY animatingChanged)
     Q_PROPERTY(QLocale locale READ locale NOTIFY localeChanged)
     Q_PROPERTY(Qt::LayoutDirection inputDirection READ inputDirection NOTIFY inputDirectionChanged)
@@ -89,7 +89,11 @@ public:
         ContextMenu
     };
 
-    bool visible() const;
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED bool visible() const { return isVisible(); }
+#endif
+
+    bool isVisible() const;
     void setVisible(bool visible);
 
     bool isAnimating() const;

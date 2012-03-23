@@ -84,6 +84,9 @@ private slots:
 
     void destroyAfterQCoreApplication();
 
+    void QTBUG2331();
+    void QTBUG2331_data() { basicTest_data(); }
+
 private:
     QString m_tempDirPattern;
 };
@@ -554,6 +557,30 @@ void tst_QFileSystemWatcher::destroyAfterQCoreApplication()
 {
     someSingleton()->bla();
     QTest::qWait(30);
+}
+
+// regression test for QTBUG2331.
+// essentially, on windows, directories were not unwatched after being deleted
+// from the disk, causing all sorts of interesting problems.
+void tst_QFileSystemWatcher::QTBUG2331()
+{
+    QFETCH(QString, backend);
+
+    QTemporaryDir temporaryDirectory(m_tempDirPattern);
+    QVERIFY(temporaryDirectory.isValid());
+    QFileSystemWatcher watcher;
+    watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
+    QVERIFY(watcher.addPath(temporaryDirectory.path()));
+
+    // watch signal
+    QSignalSpy changedSpy(&watcher, SIGNAL(directoryChanged(QString)));
+    QVERIFY(changedSpy.isValid());
+
+    // remove directory, we should get one change signal, and we should no longer
+    // be watching the directory.
+    QVERIFY(temporaryDirectory.remove());
+    QTRY_COMPARE(changedSpy.count(), 1);
+    QCOMPARE(watcher.directories(), QStringList());
 }
 
 QTEST_MAIN(tst_QFileSystemWatcher)

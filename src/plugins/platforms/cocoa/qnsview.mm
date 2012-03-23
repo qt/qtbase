@@ -146,24 +146,24 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)windowDidBecomeKey
 {
-//    QWindowSystemInterface::handleWindowActivated(m_window);
+    if (!m_platformWindow->windowIsPopupType())
+        QWindowSystemInterface::handleWindowActivated(m_window);
 }
 
 - (void)windowDidResignKey
 {
-//    QWindowSystemInterface::handleWindowActivated(0);
+    if (!m_platformWindow->windowIsPopupType())
+        QWindowSystemInterface::handleWindowActivated(0);
 }
 
 - (void)windowDidBecomeMain
 {
 //    qDebug() << "window did become main" << m_window;
-    QWindowSystemInterface::handleWindowActivated(m_window);
 }
 
 - (void)windowDidResignMain
 {
 //    qDebug() << "window did resign main" << m_window;
-    QWindowSystemInterface::handleWindowActivated(0);
 }
 
 
@@ -304,7 +304,7 @@ static QTouchDevice *touchDevice = 0;
 - (void)mouseDragged:(NSEvent *)theEvent
 {
     if (!(m_buttons & Qt::LeftButton))
-        qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
+        qWarning("QNSView mouseDragged: Internal mouse button tracking invalid (missing Qt::LeftButton)");
     [self handleMouseEvent:theEvent];
 }
 
@@ -339,8 +339,8 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)rightMouseDragged:(NSEvent *)theEvent
 {
-    if (!(m_buttons & Qt::LeftButton))
-        qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
+    if (!(m_buttons & Qt::RightButton))
+        qWarning("QNSView rightMouseDragged: Internal mouse button tracking invalid (missing Qt::RightButton)");
     [self handleMouseEvent:theEvent];
 }
 
@@ -404,8 +404,8 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)otherMouseDragged:(NSEvent *)theEvent
 {
-    if (!(m_buttons & Qt::LeftButton))
-        qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
+    if (!(m_buttons & ~(Qt::LeftButton | Qt::RightButton)))
+        qWarning("QNSView otherMouseDragged: Internal mouse button tracking invalid (missing Qt::MiddleButton or Qt::ExtraButton*)");
     [self handleMouseEvent:theEvent];
 }
 
@@ -545,7 +545,31 @@ static QTouchDevice *touchDevice = 0;
     NSTimeInterval timestamp = [theEvent timestamp];
     ulong qt_timestamp = timestamp * 1000;
 
-    QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, pixelDelta, angleDelta);
+    // Set keyboard modifiers depending on event phase. A two-finger trackpad flick
+    // generates a stream of scroll events. We want the keyboard modifier state to
+    // be the state at the beginning of the flick in order to avoid changing the
+    // interpretation of the events mid-stream. One example of this happening would
+    // be when pressing cmd after scrolling in Qt Creator: not taking the phase into
+    // account causes the end of the event stream to be interpreted as font size changes.
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
+        NSEventPhase phase = [theEvent phase];
+        if (phase == NSEventPhaseBegan) {
+            currentWheelModifiers = [self convertKeyModifiers:[theEvent modifierFlags]];
+        }
+
+        QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, pixelDelta, angleDelta, currentWheelModifiers);
+
+        if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled) {
+            currentWheelModifiers = Qt::NoModifier;
+        }
+    }
+#else
+    QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, pixelDelta, angleDelta,
+                                             [self convertKeyModifiers:[theEvent modifierFlags]]);
+#endif
+
 }
 #endif //QT_NO_WHEELEVENT
 
@@ -590,10 +614,11 @@ static QTouchDevice *touchDevice = 0;
 
         QObject *fo = QGuiApplication::focusObject();
         if (!m_keyEventsAccepted && fo) {
-            QInputMethodQueryEvent queryEvent(Qt::ImHints);
+            QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImHints);
             if (QCoreApplication::sendEvent(fo, &queryEvent)) {
+                bool imEnabled = queryEvent.value(Qt::ImEnabled).toBool();
                 Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(queryEvent.value(Qt::ImHints).toUInt());
-                if (!(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText))
+                if (imEnabled && !(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText))
                     [self interpretKeyEvents:[NSArray arrayWithObject:nsevent]];
             }
         }
@@ -630,10 +655,15 @@ static QTouchDevice *touchDevice = 0;
     }
     QObject *fo = QGuiApplication::focusObject();
     if (fo) {
-        QInputMethodEvent e;
-        e.setCommitString(commitString);
-        QCoreApplication::sendEvent(fo, &e);
-        m_keyEventsAccepted = true;
+        QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+        if (QCoreApplication::sendEvent(fo, &queryEvent)) {
+            if (queryEvent.value(Qt::ImEnabled).toBool()) {
+                QInputMethodEvent e;
+                e.setCommitString(commitString);
+                QCoreApplication::sendEvent(fo, &e);
+                m_keyEventsAccepted = true;
+            }
+        }
     }
 
     m_composingText.clear();
@@ -691,9 +721,14 @@ static QTouchDevice *touchDevice = 0;
 
     QObject *fo = QGuiApplication::focusObject();
     if (fo) {
-        QInputMethodEvent e(preeditString, attrs);
-        QCoreApplication::sendEvent(fo, &e);
-        m_keyEventsAccepted = true;
+        QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+        if (QCoreApplication::sendEvent(fo, &queryEvent)) {
+            if (queryEvent.value(Qt::ImEnabled).toBool()) {
+                QInputMethodEvent e(preeditString, attrs);
+                QCoreApplication::sendEvent(fo, &e);
+                m_keyEventsAccepted = true;
+            }
+        }
     }
 }
 
@@ -702,9 +737,14 @@ static QTouchDevice *touchDevice = 0;
     if (!m_composingText.isEmpty()) {
         QObject *fo = QGuiApplication::focusObject();
         if (fo) {
-            QInputMethodEvent e;
-            e.setCommitString(m_composingText);
-            QCoreApplication::sendEvent(fo, &e);
+            QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+            if (QCoreApplication::sendEvent(fo, &queryEvent)) {
+                if (queryEvent.value(Qt::ImEnabled).toBool()) {
+                    QInputMethodEvent e;
+                    e.setCommitString(m_composingText);
+                    QCoreApplication::sendEvent(fo, &e);
+                }
+            }
         }
     }
     m_composingText.clear();
@@ -725,8 +765,10 @@ static QTouchDevice *touchDevice = 0;
     QObject *fo = QGuiApplication::focusObject();
     if (!fo)
         return nil;
-    QInputMethodQueryEvent queryEvent(Qt::ImCurrentSelection);
+    QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImCurrentSelection);
     if (!QCoreApplication::sendEvent(fo, &queryEvent))
+        return nil;
+    if (!queryEvent.value(Qt::ImEnabled).toBool())
         return nil;
 
     QString selectedText = queryEvent.value(Qt::ImCurrentSelection).toString();
@@ -761,9 +803,12 @@ static QTouchDevice *touchDevice = 0;
     QObject *fo = QGuiApplication::focusObject();
     if (!fo)
         return selRange;
-    QInputMethodQueryEvent queryEvent(Qt::ImCurrentSelection);
+    QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImCurrentSelection);
     if (!QCoreApplication::sendEvent(fo, &queryEvent))
         return selRange;
+    if (!queryEvent.value(Qt::ImEnabled).toBool())
+        return selRange;
+
     QString selectedText = queryEvent.value(Qt::ImCurrentSelection).toString();
 
     if (!selectedText.isEmpty()) {
@@ -778,6 +823,12 @@ static QTouchDevice *touchDevice = 0;
     Q_UNUSED(theRange);
     QObject *fo = QGuiApplication::focusObject();
     if (!fo)
+        return NSZeroRect;
+
+    QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+    if (!QCoreApplication::sendEvent(fo, &queryEvent))
+        return NSZeroRect;
+    if (!queryEvent.value(Qt::ImEnabled).toBool())
         return NSZeroRect;
 
     if (!m_window)
@@ -804,8 +855,17 @@ static QTouchDevice *touchDevice = 0;
 
 - (NSArray*) validAttributesForMarkedText
 {
+    if (m_window != QGuiApplication::focusWindow())
+        return nil;
+
     QObject *fo = QGuiApplication::focusObject();
     if (!fo)
+        return nil;
+
+    QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+    if (!QCoreApplication::sendEvent(fo, &queryEvent))
+        return nil;
+    if (!queryEvent.value(Qt::ImEnabled).toBool())
         return nil;
 
     // Support only underline color/style.

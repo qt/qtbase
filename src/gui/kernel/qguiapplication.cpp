@@ -475,7 +475,6 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 /*!
     \property QGuiApplication::platformName
     \brief The name of the underlying platform plugin.
-    \since 5.0
 */
 
 QString QGuiApplication::platformName()
@@ -503,10 +502,14 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         const QString defaultPlatform = QLatin1String("cocoa");
 #elif defined (Q_OS_WIN)
         const QString defaultPlatform = QLatin1String("windows");
+#elif defined (Q_OS_QNX)
+        const QString defaultPlatform = QLatin1String("qnx");
 #elif !defined (QT_NO_XCB)
         const QString defaultPlatform = QLatin1String("xcb");
 #elif !defined (QT_NO_WAYLAND)
         const QString defaultPlatform = QLatin1String("wayland");
+#elif !defined (QT_NO_EGLFS)
+        const QString defaultPlatform = QLatin1String("eglfs");
 #else
         const QString defaultPlatform = QLatin1String("minimal");
 #endif
@@ -1143,12 +1146,19 @@ void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Le
 void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
 {
     QWindow *previous = QGuiApplicationPrivate::focus_window;
-    QGuiApplicationPrivate::focus_window = e->activated.data();
+    QWindow *newFocus = e->activated.data();
 
-    if (previous == QGuiApplicationPrivate::focus_window)
+    if (previous == newFocus)
         return;
 
     QObject *previousFocusObject = previous ? previous->focusObject() : 0;
+
+    if (previous) {
+        QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange);
+        QCoreApplication::sendSpontaneousEvent(previous, &focusAboutToChange);
+    }
+
+    QGuiApplicationPrivate::focus_window = newFocus;
 
     if (previous) {
         QFocusEvent focusOut(QEvent::FocusOut);
@@ -1944,8 +1954,6 @@ void QGuiApplication::restoreOverrideCursor()
 #endif// QT_NO_CURSOR
 
 /*!
-  \since 5.0
-
   Returns the application's style hints.
 
   The style hints encapsulate a set of platform dependent properties
@@ -1999,8 +2007,6 @@ QInputMethod *QGuiApplication::inputMethod() const
 }
 
 /*!
-  \since 5.0
-
   returns the input panel.
 
   The input panel returns properties about the state and position of
@@ -2015,7 +2021,6 @@ QInputPanel *QGuiApplication::inputPanel() const
 }
 
 /*!
-    \since 4.5
     \fn void QGuiApplication::fontDatabaseChanged()
 
     This signal is emitted when application fonts are loaded or removed.

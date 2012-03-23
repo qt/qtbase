@@ -378,7 +378,7 @@ void QPushButton::setDefault(bool enable)
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::State s;
     s.defaultButton = true;
-    QAccessibleStateChangeEvent event(s, this);
+    QAccessibleStateChangeEvent event(this, s);
     QAccessible::updateAccessibility(&event);
 #endif
 }

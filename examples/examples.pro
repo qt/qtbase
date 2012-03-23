@@ -15,7 +15,6 @@ SUBDIRS       = \
                 effects \
                 graphicsview \
                 ipc \
-                itemviews \
                 layouts \
                 linguist \
                 mainwindows \
@@ -25,9 +24,13 @@ SUBDIRS       = \
                 sql \
                 tools \
                 tutorials \
-                widgets \
                 touch \
                 gestures
+
+    !contains(QT_CONFIG, no-widgets) {
+        SUBDIRS +=  widgets \
+                    itemviews
+    }
 }
 wince*|embedded|x11:!contains(QT_CONFIG, no-gui): SUBDIRS += embedded
 

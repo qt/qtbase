@@ -3172,8 +3172,10 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
 void QHeaderViewPrivate::createSectionSpan(int start, int end, int size, QHeaderView::ResizeMode mode)
 {
     int sizePerSection = size / (end - start + 1);
-    if (end >= sectionSpans.count())
+    if (end >= sectionSpans.count()) {
         sectionSpans.resize(end + 1);
+        sectionStartposRecalc = true;
+    }
     SectionSpan *sectiondata = sectionSpans.data();
     for (int i = start; i <= end; ++i) {
         length += (sizePerSection - sectiondata[i].size);
@@ -3337,8 +3339,7 @@ void QHeaderViewPrivate::setDefaultSectionSize(int size)
     defaultSectionSize = size;
     for (int i = 0; i < sectionSpans.count(); ++i) {
         QHeaderViewPrivate::SectionSpan &span = sectionSpans[i];
-        if (span.size > 0) {
-            //we resize it if it is not hidden (ie size > 0)
+        if (sectionHidden.isEmpty() || !sectionHidden.testBit(i)) { // resize on not hidden.
             const int newSize = size;
             if (newSize != span.size) {
                 length += newSize - span.size; //the whole length is changed

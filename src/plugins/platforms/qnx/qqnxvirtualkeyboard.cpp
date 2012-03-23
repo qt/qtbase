@@ -46,6 +46,8 @@
 #include <QtGui/QPlatformWindow>
 
 #include <QtCore/QDebug>
+#include <QtCore/QSocketNotifier>
+#include <QtCore/private/qcore_unix_p.h>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -65,17 +67,17 @@ static QQnxVirtualKeyboard *s_instance = 0;
 // Huge hack for keyboard shadow (see QNX PR 88400). Should be removed ASAP.
 #define KEYBOARD_SHADOW_HEIGHT 8
 
-QQnxVirtualKeyboard::QQnxVirtualKeyboard() :
-        m_encoder(NULL),
-        m_decoder(NULL),
-        m_buffer(NULL),
-        m_height(0),
-        m_fd(-1),
-        m_keyboardMode(Default),
-        m_visible(false),
-        m_locale(QLatin1String("en_US"))
+QQnxVirtualKeyboard::QQnxVirtualKeyboard()
+    : m_encoder(0),
+      m_decoder(0),
+      m_buffer(0),
+      m_height(0),
+      m_fd(-1),
+      m_keyboardMode(Default),
+      m_visible(false),
+      m_locale(QLatin1String("en_US")),
+      m_readNotifier(0)
 {
-    connect();
 }
 
 QQnxVirtualKeyboard::~QQnxVirtualKeyboard()
@@ -88,10 +90,22 @@ QQnxVirtualKeyboard& QQnxVirtualKeyboard::instance()
 {
     if (!s_instance) {
         s_instance = new QQnxVirtualKeyboard();
-        s_instance->start();
+
+        // delay invocation of start() to the time the event loop is up and running
+        // needed to have the QThread internals of the main thread properly initialized
+        QMetaObject::invokeMethod(s_instance, "start", Qt::QueuedConnection);
     }
 
     return *s_instance;
+}
+
+void QQnxVirtualKeyboard::start()
+{
+#ifdef QQNXVIRTUALKEYBOARD_DEBUG
+    qDebug() << "QQNX: starting keyboard event processing";
+#endif
+    if (!connect())
+        return;
 }
 
 /* static */
@@ -105,35 +119,28 @@ void QQnxVirtualKeyboard::destroy()
 
 void QQnxVirtualKeyboard::close()
 {
-    if (m_fd) {
-        // any reads will fail after we close the fd, which is basically what we want.
+    delete m_readNotifier;
+    m_readNotifier = 0;
+
+    if (m_fd != -1) {
         ::close(m_fd);
-    }
-
-    // Wait for the thread to die (should be immediate), then continue the cleanup.
-    wait();
-
-    if (m_fd) {
         m_fd = -1;
     }
 
-
-    if (m_decoder)
-    {
+    if (m_decoder) {
         pps_decoder_cleanup(m_decoder);
         delete m_decoder;
-        m_decoder = NULL;
+        m_decoder = 0;
     }
 
-    if (m_encoder)
-    {
+    if (m_encoder) {
         pps_encoder_cleanup(m_encoder);
         delete m_encoder;
-        m_encoder = NULL;
+        m_encoder = 0;
     }
 
     delete [] m_buffer;
-    m_buffer = NULL;
+    m_buffer = 0;
 }
 
 bool QQnxVirtualKeyboard::connect()
@@ -165,7 +172,8 @@ bool QQnxVirtualKeyboard::connect()
     if (!queryPPSInfo())
         return false;
 
-    start();
+    m_readNotifier = new QSocketNotifier(m_fd, QSocketNotifier::Read);
+    QObject::connect(m_readNotifier, SIGNAL(activated(int)), this, SLOT(ppsDataReady()));
 
     return true;
 }
@@ -192,74 +200,63 @@ void QQnxVirtualKeyboard::notifyClientActiveStateChange(bool active)
         hideKeyboard();
 }
 
-void QQnxVirtualKeyboard::run()
-{
-    ppsDataReady();
-}
-
 void QQnxVirtualKeyboard::ppsDataReady()
 {
-    while (1) {
-        ssize_t nread = read(m_fd, m_buffer, ms_bufferSize - 1);
+    ssize_t nread = qt_safe_read(m_fd, m_buffer, ms_bufferSize - 1);
 
 #ifdef QQNXVIRTUALKEYBOARD_DEBUG
-        qDebug() << "QQNX: keyboardMessage size: " << nread;
+    qDebug() << "QQNX: keyboardMessage size: " << nread;
 #endif
-        if (nread < 0)
-            break;
-
-        // nread is the real space necessary, not the amount read.
-        if (static_cast<size_t>(nread) > ms_bufferSize - 1) {
-            qCritical("QQnxVirtualKeyboard: Keyboard buffer size too short; need %u.", nread + 1);
-            break;
-        }
-
-        m_buffer[nread] = 0;
-        pps_decoder_parse_pps_str(m_decoder, m_buffer);
-        pps_decoder_push(m_decoder, NULL);
-#ifdef QQNXVIRTUALKEYBOARD_DEBUG
-        pps_decoder_dump_tree(m_decoder, stderr);
-#endif
-
-        const char *value;
-        if (pps_decoder_get_string(m_decoder, "error", &value) == PPS_DECODER_OK) {
-            qCritical("QQnxVirtualKeyboard: Keyboard PPS decoder error: %s", value ? value : "[null]");
-            continue;
-        }
-
-        if (pps_decoder_get_string(m_decoder, "msg", &value) == PPS_DECODER_OK) {
-            if (strcmp(value, "show") == 0) {
-                const bool oldVisible = m_visible;
-                m_visible = true;
-                handleKeyboardStateChangeMessage(true);
-                if (oldVisible != m_visible)
-                    emit visibilityChanged(m_visible);
-            } else if (strcmp(value, "hide") == 0) {
-                const bool oldVisible = m_visible;
-                m_visible = false;
-                handleKeyboardStateChangeMessage(false);
-                if (oldVisible != m_visible)
-                    emit visibilityChanged(m_visible);
-            } else if (strcmp(value, "info") == 0)
-                handleKeyboardInfoMessage();
-            else if (strcmp(value, "connect") == 0) { }
-            else
-                qCritical("QQnxVirtualKeyboard: Unexpected keyboard PPS msg value: %s", value ? value : "[null]");
-        } else if (pps_decoder_get_string(m_decoder, "res", &value) == PPS_DECODER_OK) {
-            if (strcmp(value, "info") == 0)
-                handleKeyboardInfoMessage();
-            else
-                qCritical("QQnxVirtualKeyboard: Unexpected keyboard PPS res value: %s", value ? value : "[null]");
-        } else
-            qCritical("QQnxVirtualKeyboard: Unexpected keyboard PPS message type");
+    if (nread < 0){
+        connect(); // reconnect
+        return;
     }
 
+    // nread is the real space necessary, not the amount read.
+    if (static_cast<size_t>(nread) > ms_bufferSize - 1) {
+        qCritical("QQnxVirtualKeyboard: Keyboard buffer size too short; need %u.", nread + 1);
+        connect(); // reconnect
+        return;
+    }
+
+    m_buffer[nread] = 0;
+    pps_decoder_parse_pps_str(m_decoder, m_buffer);
+    pps_decoder_push(m_decoder, NULL);
 #ifdef QQNXVIRTUALKEYBOARD_DEBUG
-    qDebug() << "QQNX: exiting keyboard thread";
+    pps_decoder_dump_tree(m_decoder, stderr);
 #endif
 
-    if (m_decoder)
-        pps_decoder_cleanup(m_decoder);
+    const char *value;
+    if (pps_decoder_get_string(m_decoder, "error", &value) == PPS_DECODER_OK) {
+        qCritical("QQnxVirtualKeyboard: Keyboard PPS decoder error: %s", value ? value : "[null]");
+        return;
+    }
+
+    if (pps_decoder_get_string(m_decoder, "msg", &value) == PPS_DECODER_OK) {
+        if (strcmp(value, "show") == 0) {
+            const bool oldVisible = m_visible;
+            m_visible = true;
+            handleKeyboardStateChangeMessage(true);
+            if (oldVisible != m_visible)
+                emit visibilityChanged(m_visible);
+        } else if (strcmp(value, "hide") == 0) {
+            const bool oldVisible = m_visible;
+            m_visible = false;
+            handleKeyboardStateChangeMessage(false);
+            if (oldVisible != m_visible)
+                emit visibilityChanged(m_visible);
+        } else if (strcmp(value, "info") == 0)
+            handleKeyboardInfoMessage();
+        else if (strcmp(value, "connect") == 0) { }
+        else
+            qCritical("QQnxVirtualKeyboard: Unexpected keyboard PPS msg value: %s", value ? value : "[null]");
+    } else if (pps_decoder_get_string(m_decoder, "res", &value) == PPS_DECODER_OK) {
+        if (strcmp(value, "info") == 0)
+            handleKeyboardInfoMessage();
+        else
+            qCritical("QQnxVirtualKeyboard: Unexpected keyboard PPS res value: %s", value ? value : "[null]");
+    } else
+        qCritical("QQnxVirtualKeyboard: Unexpected keyboard PPS message type");
 }
 
 void QQnxVirtualKeyboard::handleKeyboardInfoMessage()

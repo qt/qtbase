@@ -2399,7 +2399,7 @@ QDataStream &operator>>(QDataStream &s, QPainterPath &p)
 #endif
             continue;
         }
-        QPainterPath::Element elm = { x, y, QPainterPath::ElementType(type) };
+        QPainterPath::Element elm = { qreal(x), qreal(y), QPainterPath::ElementType(type) };
         p.d_func()->elements.append(elm);
     }
     s >> p.d_func()->cStart;

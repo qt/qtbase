@@ -362,7 +362,7 @@ QString QWindowsContext::registerWindowClass(const QWindow *w, bool isGL)
         style = CS_DBLCLKS;
         if (w->inherits("QTipLabel") || w->inherits("QAlphaWidget")) {
             if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-                && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)) {
+                && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))) {
                 style |= CS_DROPSHADOW;
             }
             cname += QStringLiteral("QToolTip");
@@ -375,7 +375,7 @@ QString QWindowsContext::registerWindowClass(const QWindow *w, bool isGL)
         cname += QStringLiteral("QPopup");
         style = CS_DBLCLKS|CS_SAVEBITS;
         if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-            && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+            && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
             style |= CS_DROPSHADOW;
         icon = false;
     } else {

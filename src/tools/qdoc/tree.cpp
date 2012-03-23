@@ -1739,7 +1739,7 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
                 const FunctionNode* functionNode = static_cast<const FunctionNode*>(fnNode);
                 writer.writeStartElement("setter");
                 writer.writeAttribute("name", functionNode->name());
-                writer.writeEndElement(); // getter
+                writer.writeEndElement(); // setter
             }
         }
         foreach (const Node* fnNode, propertyNode->resetters()) {
@@ -1747,7 +1747,15 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
                 const FunctionNode* functionNode = static_cast<const FunctionNode*>(fnNode);
                 writer.writeStartElement("resetter");
                 writer.writeAttribute("name", functionNode->name());
-                writer.writeEndElement(); // getter
+                writer.writeEndElement(); // resetter
+            }
+        }
+        foreach (const Node* fnNode, propertyNode->notifiers()) {
+            if (fnNode) {
+                const FunctionNode* functionNode = static_cast<const FunctionNode*>(fnNode);
+                writer.writeStartElement("notifier");
+                writer.writeAttribute("name", functionNode->name());
+                writer.writeEndElement(); // notifier
             }
         }
     }

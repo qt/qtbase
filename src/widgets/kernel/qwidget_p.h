@@ -336,6 +336,7 @@ public:
     void stackUnder_sys(QWidget *);
 
     void setFocus_sys();
+    void updateFocusChild();
 
     void updateFont(const QFont &);
     inline void setFont_helper(const QFont &font) {

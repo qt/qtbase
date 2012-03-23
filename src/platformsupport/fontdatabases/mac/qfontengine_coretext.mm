@@ -77,7 +77,9 @@ static void loadAdvancesForGlyphs(CTFontRef ctfont,
     }
 }
 
-extern int qt_antialiasing_threshold, qt_enable_font_smoothing;
+
+int QCoreTextFontEngine::antialiasingThreshold = 0;
+QFontEngineGlyphCache::Type QCoreTextFontEngine::defaultGlyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
 
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
 {
@@ -147,8 +149,7 @@ void QCoreTextFontEngine::init()
     Q_ASSERT(ctfont != NULL);
     Q_ASSERT(cgFont != NULL);
 
-    glyphFormat = qt_enable_font_smoothing ? QFontEngineGlyphCache::Raster_RGBMask
-                                           : QFontEngineGlyphCache::Raster_A8;
+    glyphFormat = defaultGlyphFormat;
 
     QCFString family = CTFontCopyFamilyName(ctfont);
     fontDef.family = family;
@@ -421,7 +422,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
                                              8, im.bytesPerLine(), colorspace,
                                              cgflags);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    CGContextSetShouldAntialias(ctx, (aa || fontDef.pointSize > qt_antialiasing_threshold)
+    CGContextSetShouldAntialias(ctx, (aa || fontDef.pointSize > antialiasingThreshold)
                                  && !(fontDef.styleStrategy & QFont::NoAntialias));
     CGContextSetShouldSmoothFonts(ctx, aa);
     CGAffineTransform oldTextMatrix = CGContextGetTextMatrix(ctx);

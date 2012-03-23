@@ -1171,8 +1171,6 @@ QString Node::moduleName() const
         return "QtNetwork";
     else if (moduleName == "opengl")
         return "QtOpenGL";
-    else if (moduleName == "qt3support")
-        return "Qt3Support";
     else if (moduleName == "svg")
         return "QtSvg";
     else if (moduleName == "sql")

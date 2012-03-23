@@ -152,3 +152,23 @@ win32:!contains(QT_CONFIG, directwrite) {
         ssse3: SOURCES += $$SSSE3_SOURCES
         iwmmxt: SOURCES += $$IWMMXT_SOURCES
     }
+
+mips_dsp:*-g++* {
+    DEFINES += QT_HAVE_MIPS_DSP
+    HEADERS += $$MIPS_DSP_HEADERS
+
+    DRAWHELPER_MIPS_DSP_ASM_FILES = $$MIPS_DSP_ASM
+        mips_dspr2 {
+            DEFINES += QT_HAVE_MIPS_DSPR2
+            DRAWHELPER_MIPS_DSP_ASM_FILES += $$MIPS_DSPR2_ASM
+        }
+    mips_dsp_compiler.commands = $$QMAKE_CXX -c
+    mips_dsp_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+    mips_dsp_compiler.dependency_type = TYPE_C
+    mips_dsp_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+    mips_dsp_compiler.input = DRAWHELPER_MIPS_DSP_ASM_FILES MIPS_DSP_SOURCES
+    mips_dsp_compiler.variable_out = OBJECTS
+    mips_dsp_compiler.name = compiling[mips_dsp] ${QMAKE_FILE_IN}
+    silent:mips_dsp_compiler.commands = @echo compiling[mips_dsp] ${QMAKE_FILE_IN} && $$mips_dsp_compiler.commands
+    QMAKE_EXTRA_COMPILERS += mips_dsp_compiler
+}

@@ -249,7 +249,7 @@ void QGroupBox::setTitle(const QString &title)
     update();
     updateGeometry();
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessibleEvent event(QAccessible::NameChanged, this, 0);
+    QAccessibleEvent event(this, QAccessible::NameChanged);
     QAccessible::updateAccessibility(&event);
 #endif
 }

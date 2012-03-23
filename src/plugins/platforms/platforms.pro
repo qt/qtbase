@@ -15,3 +15,7 @@ win32: SUBDIRS += windows
 qnx-*-qcc {
     SUBDIRS += qnx
 }
+
+contains(QT_CONFIG, eglfs) {
+    SUBDIRS += eglfs
+}

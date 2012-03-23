@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "../linux-g++/qplatformdefs.h"
+#include "../linux-arm-gnueabi-g++/qplatformdefs.h"
 
 #define QT_GUI_DOUBLE_CLICK_RADIUS 20
 #define QT_GUI_DRAG_DISTANCE 16

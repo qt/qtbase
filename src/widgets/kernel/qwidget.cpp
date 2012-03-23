@@ -612,8 +612,9 @@ void QWidget::setAutoFillBackground(bool enabled)
             steals the mouse events.
         \li  mouseDoubleClickEvent() is called when the user double-clicks in
             the widget. If the user double-clicks, the widget receives a mouse
-            press event, a mouse release event and finally this event instead
-            of a second mouse press event. (Some mouse move events may also be
+            press event, a mouse release event, (a mouse click event,) a second
+            mouse press, this event and finally a second mouse release event.
+            (Some mouse move events may also be
             received if the mouse is not held steady during this operation.) It
             is \e{not possible} to distinguish a click from a double-click
             until the second click arrives. (This is one reason why most GUI
@@ -2707,7 +2708,7 @@ Qt::WindowStates QWidget::windowState() const
    The function sets the window state on child widgets similar to
    setWindowState(). The difference is that the window state changed
    event has the isOverride() flag set. It exists mainly to keep
-   Q3Workspace working.
+   QWorkspace working.
  */
 void QWidget::overrideWindowState(Qt::WindowStates newstate)
 {
@@ -5874,9 +5875,10 @@ bool QWidget::hasFocus() const
     If the window is not active, the widget will be given the focus when
     the window becomes active.
 
-    First, a focus out event is sent to the focus widget (if any) to
-    tell it that it is about to lose the focus. Then a focus in event
-    is sent to this widget to tell it that it just received the focus.
+    First, a focus about to change event is sent to the focus widget (if any) to
+    tell it that it is about to lose the focus. Then focus is changed, a
+    focus out event is sent to the previous focus item and a focus in event is sent
+    to the new item to tell it that it just received the focus.
     (Nothing happens if the focus in and focus out widgets are the
     same.)
 
@@ -5929,23 +5931,11 @@ void QWidget::setFocus(Qt::FocusReason reason)
     }
 #endif
 
-    QWidget *w = f;
-    if (isHidden()) {
-        while (w && w->isHidden()) {
-            w->d_func()->focus_child = f;
-            w = w->isWindow() ? 0 : w->parentWidget();
-        }
-    } else {
-        while (w) {
-            w->d_func()->focus_child = f;
-            w = w->isWindow() ? 0 : w->parentWidget();
-        }
-    }
-
 #ifndef QT_NO_GRAPHICSVIEW
     // Update proxy state
     if (QWExtra *topData = window()->d_func()->extra) {
         if (topData->proxyWidget && !topData->proxyWidget->hasFocus()) {
+            f->d_func()->updateFocusChild();
             topData->proxyWidget->d_func()->focusFromWidgetToProxy = 1;
             topData->proxyWidget->setFocus(reason);
             topData->proxyWidget->d_func()->focusFromWidgetToProxy = 0;
@@ -5954,6 +5944,21 @@ void QWidget::setFocus(Qt::FocusReason reason)
 #endif
 
     if (f->isActiveWindow()) {
+        QWidget *prev = QApplicationPrivate::focus_widget;
+        if (prev) {
+            if (reason != Qt::PopupFocusReason && reason != Qt::MenuBarFocusReason
+                && prev->testAttribute(Qt::WA_InputMethodEnabled)) {
+                qApp->inputMethod()->reset();
+            }
+
+            if (reason != Qt::NoFocusReason) {
+                QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange, reason);
+                QApplication::sendEvent(prev, &focusAboutToChange);
+            }
+        }
+
+        f->d_func()->updateFocusChild();
+
         QApplicationPrivate::setFocusWidget(f, reason);
 #ifndef QT_NO_ACCESSIBILITY
 # ifdef Q_OS_WIN
@@ -5966,7 +5971,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
         if (!(f->inherits("QMenuBar") || f->inherits("QMenu") || f->inherits("QMenuItem")))
 # endif
         {
-            QAccessibleEvent event(QAccessible::Focus, f);
+            QAccessibleEvent event(f, QAccessible::Focus);
             QAccessible::updateAccessibility(&event);
         }
 #endif
@@ -5998,6 +6003,30 @@ void QWidget::setFocus(Qt::FocusReason reason)
             }
         }
 #endif
+    } else {
+        f->d_func()->updateFocusChild();
+    }
+
+    if (QTLWExtra *extra = f->window()->d_func()->maybeTopData())
+        emit extra->window->focusObjectChanged(f);
+}
+
+// updates focus_child on parent widgets to point into this widget
+void QWidgetPrivate::updateFocusChild()
+{
+    Q_Q(QWidget);
+
+    QWidget *w = q;
+    if (q->isHidden()) {
+        while (w && w->isHidden()) {
+            w->d_func()->focus_child = q;
+            w = w->isWindow() ? 0 : w->parentWidget();
+        }
+    } else {
+        while (w) {
+            w->d_func()->focus_child = q;
+            w = w->isWindow() ? 0 : w->parentWidget();
+        }
     }
 }
 
@@ -6014,8 +6043,8 @@ void QWidget::setFocus(Qt::FocusReason reason)
     Takes keyboard input focus from the widget.
 
     If the widget has active focus, a \link focusOutEvent() focus out
-    event\endlink is sent to this widget to tell it that it is about
-    to lose the focus.
+    event\endlink is sent to this widget to tell it that it has
+    lost the focus.
 
     This widget must enable focus setting in order to get the keyboard
     input focus, i.e. it must call setFocusPolicy().
@@ -6026,6 +6055,14 @@ void QWidget::setFocus(Qt::FocusReason reason)
 
 void QWidget::clearFocus()
 {
+    if (hasFocus()) {
+        if (testAttribute(Qt::WA_InputMethodEnabled))
+            qApp->inputMethod()->reset();
+
+        QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange);
+        QApplication::sendEvent(this, &focusAboutToChange);
+    }
+
     QWidget *w = this;
     while (w) {
         if (w->d_func()->focus_child == this)
@@ -6048,7 +6085,7 @@ void QWidget::clearFocus()
 #endif
         {
 #ifndef QT_NO_ACCESSIBILITY
-            QAccessibleEvent event(QAccessible::Focus, this);
+            QAccessibleEvent event(this, QAccessible::Focus);
             QAccessible::updateAccessibility(&event);
 #endif
         }
@@ -7056,7 +7093,7 @@ void QWidgetPrivate::show_helper()
 
 #ifndef QT_NO_ACCESSIBILITY
     if (q->windowType() != Qt::ToolTip) {    // Tooltips are read aloud twice in MS narrator.
-        QAccessibleEvent event(QAccessible::ObjectShow, q);
+        QAccessibleEvent event(q, QAccessible::ObjectShow);
         QAccessible::updateAccessibility(&event);
     }
 #endif
@@ -7149,7 +7186,7 @@ void QWidgetPrivate::hide_helper()
 
 #ifndef QT_NO_ACCESSIBILITY
     if (wasVisible) {
-        QAccessibleEvent event(QAccessible::ObjectHide, q);
+        QAccessibleEvent event(q, QAccessible::ObjectHide);
         QAccessible::updateAccessibility(&event);
     }
 #endif
@@ -7383,7 +7420,7 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
         qApp->d_func()->sendSyntheticEnterLeave(widget);
 #ifndef QT_NO_ACCESSIBILITY
         if (!spontaneous) {
-            QAccessibleEvent event(QAccessible::ObjectHide, widget);
+            QAccessibleEvent event(widget, QAccessible::ObjectHide);
             QAccessible::updateAccessibility(&event);
         }
 #endif
@@ -8260,7 +8297,7 @@ void QWidget::changeEvent(QEvent * event)
 #ifndef QT_NO_ACCESSIBILITY
         QAccessible::State s;
         s.disabled = true;
-        QAccessibleStateChangeEvent event(s, this);
+        QAccessibleStateChangeEvent event(this, s);
         QAccessible::updateAccessibility(&event);
 #endif
         break;
@@ -10403,7 +10440,7 @@ void QWidget::setAccessibleName(const QString &name)
 {
     Q_D(QWidget);
     d->accessibleName = name;
-    QAccessibleEvent event(QAccessible::NameChanged, this);
+    QAccessibleEvent event(this, QAccessible::NameChanged);
     QAccessible::updateAccessibility(&event);
 }
 
@@ -10426,7 +10463,7 @@ void QWidget::setAccessibleDescription(const QString &description)
 {
     Q_D(QWidget);
     d->accessibleDescription = description;
-    QAccessibleEvent event(QAccessible::DescriptionChanged, this);
+    QAccessibleEvent event(this, QAccessible::DescriptionChanged);
     QAccessible::updateAccessibility(&event);
 }
 

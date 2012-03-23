@@ -278,6 +278,8 @@ public:
     void setApplicationProxyFactory(QNetworkProxyFactory *factory)
     {
         QMutexLocker lock(&mutex);
+        if (factory == applicationLevelProxyFactory)
+            return;
         if (applicationLevelProxy)
             *applicationLevelProxy = QNetworkProxy();
         delete applicationLevelProxyFactory;

@@ -241,14 +241,6 @@ bool Entry::operator ==(const QString &key) const
         return (shallowKey() == key);
 }
 
-bool Entry::operator >=(const QString &key) const
-{
-    if (value.latinKey)
-        return (shallowLatin1Key() >= key);
-    else
-        return (shallowKey() >= key);
-}
-
 bool Entry::operator ==(const Entry &other) const
 {
     if (value.latinKey) {

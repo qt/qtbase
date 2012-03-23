@@ -46,22 +46,23 @@
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
-#include <qlist.h>
-#include <qmap.h>
-#include <qregexp.h>
-#include <qstring.h>
-#include <qstringlist.h>
+#include <QList>
+#include <QMap>
+#include <QRegExp>
+#include <QString>
+#include <QStringList>
+#include <QTextStream>
 
 #include "node.h"
 #include "text.h"
 
 QT_BEGIN_NAMESPACE
 
+typedef QMap<QString, NodeMap> NewClassMaps;
+typedef QMap<QString, NodeMultiMap> NewSinceMaps;
 typedef QMap<QString, const Node*> NodeMap;
 typedef QMultiMap<QString, Node*> NodeMultiMap;
-typedef QMap<QString, NodeMultiMap> NewSinceMaps;
 typedef QMap<Node*, NodeMultiMap> ParentMaps;
-typedef QMap<QString, NodeMap> NewClassMaps;
 
 class ClassNode;
 class Config;
@@ -80,87 +81,124 @@ public:
     Generator();
     virtual ~Generator();
 
+    virtual bool canHandleFormat(const QString &format) { return format == this->format(); }
+    virtual QString format() = 0;
+    virtual void generateTree(const Tree *tree);
     virtual void initializeGenerator(const Config &config);
     virtual void terminateGenerator();
-    virtual QString format() = 0;
-    virtual bool canHandleFormat(const QString &format) { return format == this->format(); }
-    virtual void generateTree(const Tree *tree) = 0;
 
-    static void initialize(const Config& config);
-    static void terminate();
-    static Generator *generatorForFormat(const QString& format);
-    static const QString& outputDir() { return outDir_; }
     static const QString& baseDir() { return baseDir_; }
+    static Generator *generatorForFormat(const QString& format);
+    static void initialize(const Config& config);
+    static const QString& outputDir() { return outDir_; }
+    static void terminate();
 
 protected:
-    virtual void startText(const Node *relative, CodeMarker *marker);
+    virtual void beginSubPage(const InnerNode* node, const QString& fileName);
+    virtual void endSubPage();
     virtual void endText(const Node *relative, CodeMarker *marker);
+    virtual QString fileBase(const Node* node) const;
+    virtual QString fileExtension(const Node* node) const = 0;
+    virtual QString fullName(const Node *node,
+                             const Node *relative,
+                             CodeMarker *marker) const;
+    virtual void generateAlsoList(const Node *node, CodeMarker *marker);
     virtual int generateAtom(const Atom *atom,
                              const Node *relative,
                              CodeMarker *marker);
+    virtual void generateBody(const Node *node, CodeMarker *marker);
     virtual void generateClassLikeNode(const InnerNode *inner, CodeMarker *marker);
     virtual void generateFakeNode(const FakeNode *fake, CodeMarker *marker);
-
-    virtual bool generateText(const Text& text,
-                              const Node *relative,
-                              CodeMarker *marker);
+    virtual void generateInheritedBy(const ClassNode *classe,
+                                     CodeMarker *marker);
+    virtual void generateInherits(const ClassNode *classe,
+                                  CodeMarker *marker);
+    virtual void generateInnerNode(const InnerNode *node);
+    virtual void generateMaintainerList(const InnerNode* node, CodeMarker* marker);
+    virtual void generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarker* marker);
+    virtual void generateQmlInherits(const QmlClassNode* qcn, CodeMarker* marker);
     virtual bool generateQmlText(const Text& text,
                                  const Node *relative,
                                  CodeMarker *marker,
                                  const QString& qmlName);
-    virtual void generateQmlInherits(const QmlClassNode* qcn, CodeMarker* marker);
-    virtual void generateBody(const Node *node, CodeMarker *marker);
-    virtual void generateAlsoList(const Node *node, CodeMarker *marker);
-    virtual void generateMaintainerList(const InnerNode* node, CodeMarker* marker);
-    virtual void generateInherits(const ClassNode *classe,
-                                  CodeMarker *marker);
-    virtual void generateInheritedBy(const ClassNode *classe,
-                                     CodeMarker *marker);
+    virtual bool generateText(const Text& text,
+                              const Node *relative,
+                              CodeMarker *marker);
+    virtual QString imageFileName(const Node *relative, const QString& fileBase);
+    virtual QString outFileName() { return QString(); }
+    virtual int skipAtoms(const Atom *atom, Atom::Type type) const;
+    virtual void startText(const Node *relative, CodeMarker *marker);
+    virtual QString typeString(const Node *node);
 
-    void generateThreadSafeness(const Node *node, CodeMarker *marker);
-    void generateSince(const Node *node, CodeMarker *marker);
-    void generateStatus(const Node *node, CodeMarker *marker);
+    static bool matchAhead(const Atom *atom, Atom::Type expectedAtomType);
+    static QString outputPrefix(const QString &nodeType);
+    static void singularPlural(Text& text, const NodeList& nodes);
+    static void supplementAlsoList(const Node *node, QList<Text> &alsoList);
+    static QString trimmedTrailing(const QString &string);
+    static QString sinceTitles[];
+
+    QString fileName(const Node* node) const;
+    void findAllSince(const InnerNode *node);
+    QMap<QString, QString> &formattingLeftMap();
+    QMap<QString, QString> &formattingRightMap();
     const Atom* generateAtomList(const Atom *atom,
                                  const Node *relative,
                                  CodeMarker *marker,
                                  bool generate,
                                  int& numGeneratedAtoms);
+    void generateExampleFiles(const FakeNode *fake, CodeMarker *marker);
     void generateFileList(const FakeNode* fake,
                           CodeMarker* marker,
                           Node::SubType subtype,
                           const QString& tag);
-    void generateExampleFiles(const FakeNode *fake, CodeMarker *marker);
-
-    virtual int skipAtoms(const Atom *atom, Atom::Type type) const;
-    virtual QString fullName(const Node *node,
-                             const Node *relative,
-                             CodeMarker *marker) const;
-
-    virtual QString outFileName() { return QString(); }
-
-    QString indent(int level, const QString& markedCode);
-    QString plainCode(const QString& markedCode);
-    virtual QString typeString(const Node *node);
-    virtual QString imageFileName(const Node *relative, const QString& fileBase);
-    void setImageFileExtensions(const QStringList& extensions);
-    void unknownAtom(const Atom *atom);
-    QMap<QString, QString> &formattingLeftMap();
-    QMap<QString, QString> &formattingRightMap();
-    QMap<QString, QStringList> editionModuleMap;
-    QMap<QString, QStringList> editionGroupMap;
-
-    static QString trimmedTrailing(const QString &string);
-    static bool matchAhead(const Atom *atom, Atom::Type expectedAtomType);
-    static void supplementAlsoList(const Node *node, QList<Text> &alsoList);
-    static QString outputPrefix(const QString &nodeType);
-
+    void generateSince(const Node *node, CodeMarker *marker);
+    void generateStatus(const Node *node, CodeMarker *marker);
+    void generateThreadSafeness(const Node *node, CodeMarker *marker);
     QString getMetadataElement(const InnerNode* inner, const QString& t);
     QStringList getMetadataElements(const InnerNode* inner, const QString& t);
-    void findAllSince(const InnerNode *node);
+    QString indent(int level, const QString& markedCode);
+    QTextStream& out();
+    bool parseArg(const QString& src,
+                  const QString& tag,
+                  int* pos,
+                  int n,
+                  QStringRef* contents,
+                  QStringRef* par1 = 0,
+                  bool debug = false);
+    QString plainCode(const QString& markedCode);
+    void setImageFileExtensions(const QStringList& extensions);
+    void unknownAtom(const Atom *atom);
+
+    QList<NameCollisionNode*> collisionNodes;
+    QMap<QString, QStringList> editionGroupMap;
+    QMap<QString, QStringList> editionModuleMap;
+    QString naturalLanguage;
+    QTextCodec* outputCodec;
+    QString outputEncoding;
+    QStack<QTextStream*> outStreamStack;
+    NewClassMaps newClassMaps;
+    NewClassMaps newQmlClassMaps;
+    NewSinceMaps newSinceMaps;
 
 private:
-    void generateReimplementedFrom(const FunctionNode *func,
-                                   CodeMarker *marker);
+    static QString baseDir_;
+    static QStringList exampleDirs;
+    static QStringList exampleImgExts;
+    static QMap<QString, QMap<QString, QString> > fmtLeftMaps;
+    static QMap<QString, QMap<QString, QString> > fmtRightMaps;
+    static QList<Generator *> generators;
+    static QStringList imageDirs;
+    static QStringList imageFiles;
+    static QMap<QString, QStringList> imgFileExts;
+    static QString project;
+    static QString outDir_;
+    static QSet<QString> outputFormats;
+    static QHash<QString, QString> outputPrefixes;
+    static QStringList scriptDirs;
+    static QStringList scriptFiles;
+    static QStringList styleDirs;
+    static QStringList styleFiles;
+
     void appendFullName(Text& text,
                         const Node *apparentNode,
                         const Node *relative,
@@ -178,42 +216,18 @@ private:
                            const ClassNode *classe,
                            const QList<RelatedClass> &classes,
                            CodeMarker *marker);
-
-protected:
     void appendSortedQmlNames(Text& text,
                               const Node* base,
                               const NodeList& subs,
                               CodeMarker *marker);
+    void generateReimplementedFrom(const FunctionNode *func,
+                                   CodeMarker *marker);
 
-    static QString sinceTitles[];
-    NewSinceMaps newSinceMaps;
-    NewClassMaps newClassMaps;
-    NewClassMaps newQmlClassMaps;
-
-private:
     QString amp;
-    QString lt;
     QString gt;
+    QString lt;
     QString quot;
     QRegExp tag;
-
-    static QList<Generator *> generators;
-    static QMap<QString, QMap<QString, QString> > fmtLeftMaps;
-    static QMap<QString, QMap<QString, QString> > fmtRightMaps;
-    static QMap<QString, QStringList> imgFileExts;
-    static QSet<QString> outputFormats;
-    static QStringList imageFiles;
-    static QStringList imageDirs;
-    static QStringList exampleDirs;
-    static QStringList exampleImgExts;
-    static QStringList scriptFiles;
-    static QStringList scriptDirs;
-    static QStringList styleFiles;
-    static QStringList styleDirs;
-    static QString outDir_;
-    static QString baseDir_;
-    static QString project;
-    static QHash<QString, QString> outputPrefixes;
 };
 
 QT_END_NAMESPACE

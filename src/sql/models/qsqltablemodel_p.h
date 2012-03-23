@@ -191,6 +191,11 @@ public:
     CacheMap cache;
 };
 
+class QSqlTableModelSql: public QSqlQueryModelSql
+{
+public:
+};
+
 QT_END_NAMESPACE
 
 #endif // QSQLTABLEMODEL_P_H

@@ -367,7 +367,11 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
 
 QString QXcbScreen::name() const
 {
-    return connection()->displayName() + QLatin1String(".") + QString::number(screenNumber());
+    QByteArray displayName = connection()->displayName();
+    int dotPos = displayName.lastIndexOf('.');
+    if (dotPos != -1)
+        displayName.truncate(dotPos);
+    return displayName + QLatin1Char('.') + QString::number(screenNumber());
 }
 
 QT_END_NAMESPACE

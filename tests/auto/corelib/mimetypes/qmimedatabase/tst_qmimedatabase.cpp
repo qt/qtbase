@@ -56,7 +56,7 @@ static const char yastFileName[] ="yast2-metapackage-handler-mimetypes.xml";
 void initializeLang()
 {
     qputenv("LC_ALL", "");
-    qputenv("LANG", "en_US");
+    qputenv("LANG", "C");
     QCoreApplication::setApplicationName("tst_qmimedatabase"); // temporary directory pattern
 }
 

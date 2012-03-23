@@ -332,8 +332,10 @@ qint64 QUdpSocket::writeDatagram(const char *data, qint64 size, const QHostAddre
     qDebug("QUdpSocket::writeDatagram(%p, %llu, \"%s\", %i)", data, size,
            address.toString().toLatin1().constData(), port);
 #endif
-    if (!d->ensureInitialized(address))
+    if (!d->doEnsureInitialized(QHostAddress::Any, 0, address))
         return -1;
+    if (state() == UnconnectedState)
+        bind();
 
     qint64 sent = d->socketEngine->writeDatagram(data, size, address, port);
     d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();

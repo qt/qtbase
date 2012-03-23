@@ -215,7 +215,7 @@ void QInputMethod::hide()
 
     \sa show(), hide()
 */
-bool QInputMethod::visible() const
+bool QInputMethod::isVisible() const
 {
     Q_D(const QInputMethod);
     QPlatformInputContext *ic = d->platformInputContext();

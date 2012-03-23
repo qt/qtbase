@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QQnxEventThread;
 class QQnxInputContext;
-class QQnxNavigatorThread;
+class QQnxNavigatorEventHandler;
 class QQnxWindow;
 
 #ifndef QT_NO_CLIPBOARD
@@ -99,7 +99,7 @@ private:
 
     screen_context_t m_screenContext;
     QQnxEventThread *m_eventThread;
-    QQnxNavigatorThread *m_navigatorThread;
+    QQnxNavigatorEventHandler *m_navigatorEventHandler;
     QQnxInputContext *m_inputContext;
     QPlatformFontDatabase *m_fontDatabase;
     bool m_paintUsingOpenGL;

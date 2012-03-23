@@ -54,6 +54,7 @@ private slots:
     void allWindows();
     void topLevelWindows();
     void abortQuitOnShow();
+    void changeFocusWindow();
 };
 
 class DummyWindow : public QWindow
@@ -194,6 +195,50 @@ void tst_QGuiApplication::abortQuitOnShow()
     window2->show();
     QCOMPARE(app.exec(), 1);
 }
+
+
+class FocusChangeWindow: public QWindow
+{
+protected:
+    virtual bool event(QEvent *ev)
+    {
+        if (ev->type() == QEvent::FocusAboutToChange)
+            windowDuringFocusAboutToChange = qGuiApp->focusWindow();
+        return QWindow::event(ev);
+    }
+
+    virtual void focusOutEvent(QFocusEvent *)
+    {
+        windowDuringFocusOut = qGuiApp->focusWindow();
+    }
+
+public:
+    FocusChangeWindow() : QWindow(), windowDuringFocusAboutToChange(0), windowDuringFocusOut(0) {}
+
+    QWindow *windowDuringFocusAboutToChange;
+    QWindow *windowDuringFocusOut;
+};
+
+void tst_QGuiApplication::changeFocusWindow()
+{
+    int argc = 0;
+    QGuiApplication app(argc, 0);
+
+    // focus is changed between FocusAboutToChange and FocusChanged
+    FocusChangeWindow window1, window2;
+    window1.show();
+    window2.show();
+    QTest::qWaitForWindowShown(&window1);
+    QTest::qWaitForWindowShown(&window2);
+    window1.requestActivateWindow();
+    QTRY_COMPARE(app.focusWindow(), &window1);
+
+    window2.requestActivateWindow();
+    QTRY_COMPARE(app.focusWindow(), &window2);
+    QCOMPARE(window1.windowDuringFocusAboutToChange, &window1);
+    QCOMPARE(window1.windowDuringFocusOut, &window2);
+}
+
 
 QTEST_APPLESS_MAIN(tst_QGuiApplication)
 #include "tst_qguiapplication.moc"

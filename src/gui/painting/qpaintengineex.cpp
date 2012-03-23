@@ -870,7 +870,7 @@ void QPaintEngineEx::drawPoints(const QPointF *points, int pointCount)
         }
     } else {
         for (int i=0; i<pointCount; ++i) {
-            qreal pts[] = { points[i].x(), points[i].y(), points[i].x() + 1/63., points[i].y() };
+            qreal pts[] = { points[i].x(), points[i].y(), points[i].x() + qreal(1/63.), points[i].y() };
             QVectorPath path(pts, 2, 0);
             stroke(path, pen);
         }

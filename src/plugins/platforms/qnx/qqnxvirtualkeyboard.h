@@ -42,7 +42,7 @@
 #ifndef VIRTUALKEYBOARD_H_
 #define VIRTUALKEYBOARD_H_
 
-#include <QtCore/QThread>
+#include <QtCore/QObject>
 #include <QtCore/QLocale>
 #include <QtGui/QPlatformScreen>
 #include <QtGui/QWindowSystemInterface>
@@ -52,10 +52,12 @@
 #include <string>
 #include <sys/pps.h>
 
+class QSocketNotifier;
+
 QT_BEGIN_NAMESPACE
 
 /* Shamelessly copied from the browser - this should be rewritten once we have a proper PPS wrapper class */
-class QQnxVirtualKeyboard : public QThread
+class QQnxVirtualKeyboard : public QObject
 {
     Q_OBJECT
 public:
@@ -83,9 +85,15 @@ public:
     bool isVisible() const { return m_visible; }
     QLocale locale() const { return m_locale; }
 
+public Q_SLOTS:
+    void start();
+
 Q_SIGNALS:
     void localeChanged(const QLocale &locale);
     void visibilityChanged(bool visible);
+
+private Q_SLOTS:
+    void ppsDataReady();
 
 private:
     QQnxVirtualKeyboard();
@@ -94,7 +102,6 @@ private:
     // Will be called internally if needed.
     bool connect();
     void close();
-    void ppsDataReady();
     bool queryPPSInfo();
     void handleKeyboardInfoMessage();
     void handleKeyboardStateChangeMessage(bool visible);
@@ -110,9 +117,6 @@ private:
     void addPhoneModeOptions();
     void addPinModeOptions();
 
-    // QThread overrides
-    virtual void run();
-
     pps_encoder_t  *m_encoder;
     pps_decoder_t  *m_decoder;
     char           *m_buffer;
@@ -121,6 +125,7 @@ private:
     KeyboardMode    m_keyboardMode;
     bool            m_visible;
     QLocale         m_locale;
+    QSocketNotifier *m_readNotifier;
 
     // Path to keyboardManager in PPS.
     static const char *ms_PPSPath;

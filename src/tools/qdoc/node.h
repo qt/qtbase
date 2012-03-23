@@ -907,6 +907,7 @@ inline void PropertyNode::addFunction(FunctionNode* function, FunctionRole role)
 inline void PropertyNode::addSignal(FunctionNode* function, FunctionRole role)
 {
     funcs[(int)role].append(function);
+    function->setAssociatedProperty(this);
 }
 
 inline NodeList PropertyNode::functions() const

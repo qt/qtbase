@@ -206,7 +206,7 @@ void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
     QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) alloc] init];
     if (modality == Qt::ApplicationModal) {
         int rval = [printPanel runModalWithPrintInfo:printInfo];
-        [delegate printPanelDidEnd:printPanel returnCode:rval contextInfo:this];
+        [delegate printPanelDidEnd:printPanel returnCode:rval contextInfo:q];
     } else {
         Q_ASSERT(q->parentWidget());
         QWindow *parentWindow = q->parentWidget()->windowHandle();
@@ -215,7 +215,7 @@ void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
                              modalForWindow:window
                                    delegate:delegate
                              didEndSelector:@selector(printPanelDidEnd:returnCode:contextInfo:)
-                                contextInfo:this];
+                                contextInfo:q];
     }
 }
 

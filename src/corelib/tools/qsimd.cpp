@@ -320,12 +320,6 @@ static inline uint detectProcessorFeatures()
     return features;
 }
 
-#elif defined(__ia64__)
-static inline uint detectProcessorFeatures()
-{
-    return MMX|SSE|SSE2;
-}
-
 #else
 static inline uint detectProcessorFeatures()
 {

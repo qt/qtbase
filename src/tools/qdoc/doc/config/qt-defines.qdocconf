@@ -3,7 +3,6 @@ defines                 = Q_QDOC \
                           QT_.*_LIB \
                           QT_COMPAT \
                           QT_KEYPAD_NAVIGATION \
-                          QT_NO_EGL \
                           QT3_SUPPORT \
                           Q_WS_.* \
                           Q_OS_.* \

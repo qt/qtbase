@@ -122,24 +122,25 @@ QPalette * qt_mac_createSystemPalette()
     palette->setColor(QPalette::Inactive, QPalette::Dark, QColor(191, 191, 191));
 
     // System palette initialization:
-    palette->setBrush( QPalette::Active, QPalette::Highlight, qt_mac_colorForTheme(kThemeBrushPrimaryHighlightColor) );
-    palette->setBrush( QPalette::Inactive, QPalette::Highlight, qt_mac_colorForTheme(kThemeBrushSecondaryHighlightColor) );
+    palette->setBrush(QPalette::Active, QPalette::Highlight, qt_mac_colorForTheme(kThemeBrushPrimaryHighlightColor));
+    qc = qt_mac_colorForTheme(kThemeBrushSecondaryHighlightColor);
+    palette->setBrush(QPalette::Inactive, QPalette::Highlight, qc);
+    palette->setBrush(QPalette::Disabled, QPalette::Highlight, qc);
 
-    palette->setBrush( QPalette::Disabled, QPalette::Highlight, qt_mac_colorForTheme(kThemeBrushSecondaryHighlightColor) );
-    palette->setBrush( QPalette::Active, QPalette::Shadow, qt_mac_colorForTheme(kThemeBrushButtonActiveDarkShadow) );
-
-    palette->setBrush( QPalette::Inactive, QPalette::Shadow, qt_mac_colorForTheme(kThemeBrushButtonInactiveDarkShadow) );
-    palette->setBrush( QPalette::Disabled, QPalette::Shadow, qt_mac_colorForTheme(kThemeBrushButtonInactiveDarkShadow) );
+    palette->setBrush(QPalette::Active, QPalette::Shadow, qt_mac_colorForTheme(kThemeBrushButtonActiveDarkShadow));
+    qc = qt_mac_colorForTheme(kThemeBrushButtonInactiveDarkShadow);
+    palette->setBrush(QPalette::Inactive, QPalette::Shadow, qc);
+    palette->setBrush(QPalette::Disabled, QPalette::Shadow, qc);
 
     qc = qt_mac_colorForThemeTextColor(kThemeTextColorDialogActive);
     palette->setColor(QPalette::Active, QPalette::Text, qc);
     palette->setColor(QPalette::Active, QPalette::WindowText, qc);
     palette->setColor(QPalette::Active, QPalette::HighlightedText, qc);
-
-    qc = qt_mac_colorForThemeTextColor(kThemeTextColorDialogInactive);
     palette->setColor(QPalette::Inactive, QPalette::Text, qc);
     palette->setColor(QPalette::Inactive, QPalette::WindowText, qc);
     palette->setColor(QPalette::Inactive, QPalette::HighlightedText, qc);
+
+    qc = qt_mac_colorForThemeTextColor(kThemeTextColorDialogInactive);
     palette->setColor(QPalette::Disabled, QPalette::Text, qc);
     palette->setColor(QPalette::Disabled, QPalette::WindowText, qc);
     palette->setColor(QPalette::Disabled, QPalette::HighlightedText, qc);

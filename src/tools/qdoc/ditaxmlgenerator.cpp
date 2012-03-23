@@ -43,6 +43,11 @@
   ditaxmlgenerator.cpp
 */
 
+#include <QDebug>
+#include <QList>
+#include <qiterator.h>
+#include <QTextCodec>
+#include <QUuid>
 #include "codemarker.h"
 #include "codeparser.h"
 #include "ditaxmlgenerator.h"
@@ -51,11 +56,6 @@
 #include "separator.h"
 #include "tree.h"
 #include <ctype.h>
-#include <qdebug.h>
-#include <qlist.h>
-#include <qiterator.h>
-#include <qtextcodec.h>
-#include <QUuid>
 
 QT_BEGIN_NAMESPACE
 
@@ -328,8 +328,7 @@ DitaXmlGenerator::DitaTag DitaXmlGenerator::currentTag()
 /*!
   Write the start tag \c{<apiDesc>}. if \a title is not
   empty, generate a GUID from it and write the GUID as the
-  value of the \e{id} attribute. Then write \a title as
-  the value of the \e {spectitle} attribute.
+  value of the \e{id} attribute.
 
   Then if \a outputclass is not empty, write it as the value
   of the \a outputclass attribute.
@@ -341,7 +340,8 @@ int DitaXmlGenerator::enterApiDesc(const QString& outputclass, const QString& ti
     writeStartTag(DT_apiDesc);
     if (!title.isEmpty()) {
         writeGuidAttribute(title);
-        xmlWriter().writeAttribute("spectitle",title);
+        //Are there cases where the spectitle is required?
+        //xmlWriter().writeAttribute("spectitle",title);
     }
     if (!outputclass.isEmpty())
         xmlWriter().writeAttribute("outputclass",outputclass);
@@ -636,7 +636,7 @@ void DitaXmlGenerator::generateTree(const Tree *tree)
     findAllNamespaces(tree->root());
     findAllSince(tree->root());
 
-    PageGenerator::generateTree(tree);
+    Generator::generateTree(tree);
     writeDitaMap(tree);
 }
 
@@ -1770,13 +1770,15 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         writeEndTag(); // <cxxClassDefinition>
 
         enterApiDesc(QString(),title);
+#if 0
+        // To be removed, if really not needed.
         Text brief = nsn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
             writeStartTag(DT_p);
             generateText(brief, nsn, marker);
             writeEndTag(); // </p>
         }
-        generateIncludes(nsn, marker);
+#endif
         generateStatus(nsn, marker);
         generateThreadSafeness(nsn, marker);
         generateSince(nsn, marker);
@@ -1904,13 +1906,15 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         writeEndTag(); // <cxxClassDefinition>
 
         enterApiDesc(QString(),title);
+#if 0
+        // To be removed, if really not needed.
         Text brief = cn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
             writeStartTag(DT_p);
             generateText(brief, cn, marker);
             writeEndTag(); // </p>
         }
-        generateIncludes(cn, marker);
+#endif
         generateStatus(cn, marker);
         generateInherits(cn, marker);
         generateInheritedBy(cn, marker);
@@ -2028,13 +2032,15 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         writeStartTag(DT_cxxClassDetail);
         enterApiDesc(QString(),title);
+#if 0
+        // To be removed, if really not needed.
         Text brief = fn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
             writeStartTag(DT_p);
             generateText(brief, fn, marker);
             writeEndTag(); // </p>
         }
-        generateIncludes(fn, marker);
+#endif
         generateStatus(fn, marker);
         generateThreadSafeness(fn, marker);
         generateSince(fn, marker);
@@ -2148,12 +2154,15 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         writeStartTag(DT_cxxClassDetail);
         enterApiDesc(QString(),title);
+#if 0
+        // To be removed, if really not needed.
         Text brief = qcn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
             writeStartTag(DT_p);
             generateText(brief, qcn, marker);
             writeEndTag(); // </p>
         }
+#endif
         generateQmlInstantiates(qcn, marker);
         generateQmlInherits(qcn, marker);
         generateQmlInheritedBy(qcn, marker);
@@ -2513,19 +2522,6 @@ void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
     Text brief = node->doc().briefText(true); // zzz
     if (!brief.isEmpty()) {
         generateText(brief, node, marker);
-    }
-}
-
-/*!
-  Writes the \c {#include ...} required to include the class
-  or namespace in a compilation.
- */
-void DitaXmlGenerator::generateIncludes(const InnerNode* inner, CodeMarker* marker)
-{
-    if (!inner->includes().isEmpty()) {
-        writeStartTag(DT_codeblock);
-        writeText(marker->markedUpIncludes(inner->includes()), marker, inner);
-        writeEndTag(); // </codeblock>
     }
 }
 
@@ -3487,15 +3483,16 @@ QString DitaXmlGenerator::getMarkedUpSynopsis(const Node* node,
 }
 
 /*!
-  Renamed from highlightedCode() in the html generator. Writes
-  the \a markedCode to the current XML stream.
+  Renamed from highlightedCode() in the html generator. Gets the text
+  from \a markedCode , and then the text is written to the current XML
+  stream.
  */
 void DitaXmlGenerator::writeText(const QString& markedCode,
                                  CodeMarker* marker,
                                  const Node* relative)
 {
     QString src = markedCode;
-    QString html;
+    QString text;
     QStringRef arg;
     QStringRef par1;
 
@@ -3528,7 +3525,7 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
             for (int k = 0; k != 13; ++k) {
                 const QString & tag = spanTags[2 * k];
                 if (tag == QStringRef(&src, i, tag.length())) {
-                    html += spanTags[2 * k + 1];
+                    text += spanTags[2 * k + 1];
                     i += tag.length();
                     handled = true;
                     break;
@@ -3545,20 +3542,20 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                 }
                 else {
                     // retain all others
-                    html += charLangle;
+                    text += charLangle;
                 }
             }
         }
         else {
-            html += src.at(i);
+            text += src.at(i);
             ++i;
         }
     }
 
     // replace all <@link> tags: "(<@link node=\"([^\"]+)\">).*(</@link>)"
     // replace all "(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)" tags
-    src = html;
-    html = QString();
+    src = text;
+    text = QString();
     static const QString markTags[] = {
         // 0       1         2           3       4        5
         "link", "type", "headerfile", "func", "param", "extra"
@@ -3571,18 +3568,18 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                 if (parseArg(src, markTags[k], &i, n, &arg, &par1)) {
                     const Node* n = 0;
                     if (k == 0) { // <@link>
-                        if (!html.isEmpty()) {
-                            writeCharacters(html);
-                            html.clear();
+                        if (!text.isEmpty()) {
+                            writeCharacters(text);
+                            text.clear();
                         }
                         n = CodeMarker::nodeForString(par1.toString());
                         QString link = linkForNode(n, relative);
                         addLink(link, arg);
                     }
                     else if (k == 4) { // <@param>
-                        if (!html.isEmpty()) {
-                            writeCharacters(html);
-                            html.clear();
+                        if (!text.isEmpty()) {
+                            writeCharacters(text);
+                            text.clear();
                         }
                         writeStartTag(DT_i);
                         //writeCharacters(" " + arg.toString());
@@ -3590,18 +3587,18 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                         writeEndTag(); // </i>
                     }
                     else if (k == 5) { // <@extra>
-                        if (!html.isEmpty()) {
-                            writeCharacters(html);
-                            html.clear();
+                        if (!text.isEmpty()) {
+                            writeCharacters(text);
+                            text.clear();
                         }
                         writeStartTag(DT_tt);
                         writeCharacters(arg.toString());
                         writeEndTag(); // </tt>
                     }
                     else {
-                        if (!html.isEmpty()) {
-                            writeCharacters(html);
-                            html.clear();
+                        if (!text.isEmpty()) {
+                            writeCharacters(text);
+                            text.clear();
                         }
                         par1 = QStringRef();
                         QString link;
@@ -3626,12 +3623,11 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
             }
         }
         else {
-            html += src.at(i++);
+            text += src.at(i++);
         }
     }
-
-    if (!html.isEmpty()) {
-        writeCharacters(html);
+    if (!text.isEmpty()) {
+        writeCharacters(text);
     }
 }
 
@@ -3816,7 +3812,7 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& ) //outp
 QString DitaXmlGenerator::fileBase(const Node* node) const
 {
     QString result;
-    result = PageGenerator::fileBase(node);
+    result = Generator::fileBase(node);
 #if 0
     if (!node->isInnerNode()) {
         switch (node->status()) {
@@ -3898,7 +3894,7 @@ QString DitaXmlGenerator::fileName(const Node* node)
         if (static_cast<const FakeNode*>(node)->subType() == Node::Image)
             return node->name();
     }
-    return PageGenerator::fileName(node);
+    return Generator::fileName(node);
 }
 
 QString DitaXmlGenerator::linkForNode(const Node* node, const Node* relative)
@@ -4162,7 +4158,7 @@ const Node* DitaXmlGenerator::findNodeForTarget(const QString& target,
 const QPair<QString,QString> DitaXmlGenerator::anchorForNode(const Node* node)
 {
     QPair<QString,QString> anchorPair;
-    anchorPair.first = PageGenerator::fileName(node);
+    anchorPair.first = Generator::fileName(node);
     if (node->type() == Node::Fake) {
         const FakeNode *fakeNode = static_cast<const FakeNode*>(node);
         anchorPair.second = fakeNode->title();
@@ -4590,26 +4586,6 @@ void DitaXmlGenerator::generateQmlInherits(const QmlClassNode* qcn, CodeMarker* 
         text << "]";
         generateText(text, qcn, marker);
         writeEndTag(); // </p>
-    }
-}
-
-/*!
-  Output the "Inherit by" list for the QML element,
-  if it is inherited by any other elements.
- */
-void DitaXmlGenerator::generateQmlInheritedBy(const QmlClassNode* qcn,
-                                              CodeMarker* marker)
-{
-    if (qcn) {
-        NodeList subs;
-        QmlClassNode::subclasses(qcn->name(),subs);
-        if (!subs.isEmpty()) {
-            Text text;
-            text << Atom::ParaLeft << "Inherited by ";
-            appendSortedQmlNames(text,qcn,subs,marker);
-            text << Atom::ParaRight;
-            generateText(text, qcn, marker);
-        }
     }
 }
 
@@ -5559,7 +5535,7 @@ void DitaXmlGenerator::writePropertyParameter(const QString& tag, const NodeList
 void DitaXmlGenerator::beginSubPage(const InnerNode* node,
                                     const QString& fileName)
 {
-    PageGenerator::beginSubPage(node,fileName);
+    Generator::beginSubPage(node,fileName);
     (void) lookupGuidMap(fileName);
     QXmlStreamWriter* writer = new QXmlStreamWriter(out().device());
     xmlWriterStack.push(writer);
@@ -5580,7 +5556,7 @@ void DitaXmlGenerator::endSubPage()
         qDebug() << "Missing </section> in" << outFileName() << sectionNestingLevel;
     xmlWriter().writeEndDocument();
     delete xmlWriterStack.pop();
-    PageGenerator::endSubPage();
+    Generator::endSubPage();
 }
 
 /*!
@@ -6351,6 +6327,24 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner)
         writeStartTag(DT_othermeta);
         xmlWriter().writeAttribute("name",i.key());
         xmlWriter().writeAttribute("content",i.value());
+        writeEndTag(); // </othermeta>
+    }
+    if ((tagStack.first() == DT_cxxClass && !inner->includes().isEmpty()) ||
+        (inner->type() == Node::Fake && inner->subType() == Node::HeaderFile)) {
+        writeStartTag(DT_othermeta);
+        xmlWriter().writeAttribute("name","includeFile");
+        QString text;
+        QStringList::ConstIterator i = inner->includes().begin();
+        while (i != inner->includes().end()) {
+            if ((*i).startsWith("<") && (*i).endsWith(">"))
+                text += *i;
+            else
+                text += "<" + *i + ">";
+            ++i;
+            if (i != inner->includes().end())
+                text += "\n";
+        }
+        xmlWriter().writeAttribute("content",text);
         writeEndTag(); // </othermeta>
     }
     writeEndTag(); // </metadata>

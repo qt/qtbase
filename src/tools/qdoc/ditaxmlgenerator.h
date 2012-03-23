@@ -47,14 +47,14 @@
 #include <QXmlStreamWriter>
 #include "codemarker.h"
 #include "config.h"
-#include "pagegenerator.h"
+#include "generator.h"
 
 QT_BEGIN_NAMESPACE
 
 typedef QMap<QString, QString> GuidMap;
 typedef QMap<QString, GuidMap*> GuidMaps;
 
-class DitaXmlGenerator : public PageGenerator
+class DitaXmlGenerator : public Generator
 {
 public:
     enum SinceType {
@@ -340,7 +340,6 @@ private:
                         const QString& name,
                         bool subpage = false);
     void generateBrief(const Node* node, CodeMarker* marker);
-    void generateIncludes(const InnerNode* inner, CodeMarker* marker);
     void generateTableOfContents(const Node* node,
                                  CodeMarker* marker,
                                  Doc::Sections sectioningUnit,
@@ -381,7 +380,6 @@ private:
                                    const InnerNode* relative,
                                    CodeMarker* marker);
     void generateQmlInherits(const QmlClassNode* qcn, CodeMarker* marker);
-    void generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarker* marker);
     void generateQmlInstantiates(const QmlClassNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(const ClassNode* cn, CodeMarker* marker);
 

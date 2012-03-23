@@ -226,7 +226,7 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local,
 void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods)
 {
     QPoint point = (o == Qt::Vertical) ? QPoint(0, d) : QPoint(d, 0);
-    handleWheelEvent(tlw, timestamp, local, global, point, point, mods);
+    handleWheelEvent(tlw, timestamp, local, global, QPoint(), point, mods);
 }
 
 void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods)
