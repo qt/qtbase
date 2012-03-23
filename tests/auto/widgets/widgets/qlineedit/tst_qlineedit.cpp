@@ -665,14 +665,14 @@ void tst_QLineEdit::inputMask_data()
     QTest::newRow("nul 2") << QString() << QString();
 
     // try different masks
-    QTest::newRow("mask 1") << QString("000.000.000.000") << QString("000.000.000.000; ");
+    QTest::newRow("mask 1") << QString("000.000.000.000") << QString("000.000.000.000");
     QTest::newRow("mask 2") << QString("000.000.000.000;#") << QString("000.000.000.000;#");
-    QTest::newRow("mask 3") << QString("AAA.aa.999.###;") << QString("AAA.aa.999.###; ");
-    QTest::newRow("mask 4") << QString(">abcdef<GHIJK") << QString(">abcdef<GHIJK; ");
+    QTest::newRow("mask 3") << QString("AAA.aa.999.###;") << QString("AAA.aa.999.###");
+    QTest::newRow("mask 4") << QString(">abcdef<GHIJK") << QString(">abcdef<GHIJK");
 
     // set an invalid input mask...
     // the current behaviour is that this exact (faulty) string is returned.
-    QTest::newRow("invalid") << QString("ABCDEFGHIKLMNOP;") << QString("ABCDEFGHIKLMNOP; ");
+    QTest::newRow("invalid") << QString("ABCDEFGHIKLMNOP;") << QString("ABCDEFGHIKLMNOP");
 
     // verify that we can unset the mask again
     QTest::newRow("unset") << QString("") << QString();

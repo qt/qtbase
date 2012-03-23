@@ -277,7 +277,18 @@ public:
     bool hasAcceptableInput() const { return hasAcceptableInput(m_text); }
     bool fixup();
 
-    QString inputMask() const { return m_maskData ? m_inputMask + QLatin1Char(';') + m_blank : QString(); }
+    QString inputMask() const
+    {
+        QString mask;
+        if (m_maskData) {
+            mask = m_inputMask;
+            if (m_blank != QLatin1Char(' ')) {
+                mask += QLatin1Char(';');
+                mask += m_blank;
+            }
+        }
+        return mask;
+    }
     void setInputMask(const QString &mask)
     {
         parseInputMask(mask);
