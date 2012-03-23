@@ -5898,7 +5898,7 @@ void DitaXmlGenerator::writeDitaMap(const Tree *tree)
     writeTopicrefs(pageTypeMaps[Node::FAQPage], "faqs");
     writeTopicrefs(pageTypeMaps[Node::ArticlePage], "articles");
     writeTopicrefs(nodeSubtypeMaps[Node::Example], "examples");
-    writeTopicrefs(nodeSubtypeMaps[Node::QmlClass], "QML classes");
+    writeTopicrefs(nodeSubtypeMaps[Node::QmlClass], "QML types");
     writeTopicrefs(nodeTypeMaps[Node::Class], "C++ classes");
     writeTopicrefs(nodeTypeMaps[Node::Namespace], "C++ namespaces");
     writeTopicrefs(nodeSubtypeMaps[Node::HeaderFile], "header files");
