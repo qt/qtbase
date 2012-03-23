@@ -201,6 +201,9 @@ void QMessageLogger::fatal(const char *msg, ...)
     va_list ap;
     va_start(ap, msg); // use variable arg list
     qt_message(QtFatalMsg, context, msg, ap);
+#ifndef Q_CC_MSVC
+    Q_UNREACHABLE();
+#endif
     va_end(ap);
 }
 

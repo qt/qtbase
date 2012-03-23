@@ -896,6 +896,10 @@ inline void qUnused(T &x) { (void)x; }
 
 class QString;
 Q_CORE_EXPORT QString qt_error_string(int errorCode = -1);
+
+#ifndef Q_CC_MSVC
+Q_NORETURN
+#endif
 Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line);
 
 #if !defined(Q_ASSERT)
@@ -910,6 +914,9 @@ Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line);
 #define QT_NO_PAINT_DEBUG
 #endif
 
+#ifndef Q_CC_MSVC
+Q_NORETURN
+#endif
 Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *file, int line);
 
 #if !defined(Q_ASSERT_X)

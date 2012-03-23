@@ -113,6 +113,10 @@ public:
     __attribute__ ((format (printf, 2, 3)))
 #endif
     ;
+
+#ifndef Q_CC_MSVC
+    Q_NORETURN
+#endif
     void fatal(const char *msg, ...)
 #if defined(Q_CC_GNU) && !defined(__INSURE__)
     __attribute__ ((format (printf, 2, 3)))
