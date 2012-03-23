@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 class QQnxEventThread;
 class QQnxInputContext;
 class QQnxNavigatorEventHandler;
+class QQnxVirtualKeyboard;
 class QQnxWindow;
 class QQnxServices;
 
@@ -103,6 +104,7 @@ private:
     screen_context_t m_screenContext;
     QQnxEventThread *m_eventThread;
     QQnxNavigatorEventHandler *m_navigatorEventHandler;
+    QQnxVirtualKeyboard *m_virtualKeyboard;
     QQnxInputContext *m_inputContext;
     QPlatformFontDatabase *m_fontDatabase;
     bool m_paintUsingOpenGL;

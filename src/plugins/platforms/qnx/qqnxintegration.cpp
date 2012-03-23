@@ -79,6 +79,7 @@ QQnxIntegration::QQnxIntegration()
     : QPlatformIntegration()
     , m_eventThread(0)
     , m_navigatorEventHandler(0)
+    , m_virtualKeyboard(0)
     , m_inputContext(0)
     , m_fontDatabase(new QGenericUnixFontDatabase())
     , m_paintUsingOpenGL(false)
@@ -122,10 +123,18 @@ QQnxIntegration::QQnxIntegration()
 #endif
 
     // Create/start the keyboard class.
-    QQnxVirtualKeyboard::instance();
+    m_virtualKeyboard = new QQnxVirtualKeyboard();
+
+    // delay invocation of start() to the time the event loop is up and running
+    // needed to have the QThread internals of the main thread properly initialized
+    QMetaObject::invokeMethod(m_virtualKeyboard, "start", Qt::QueuedConnection);
+
+    // TODO check if we need to do this for all screens or only the primary one
+    QObject::connect(m_virtualKeyboard, SIGNAL(heightChanged(int)),
+                     QQnxScreen::primaryDisplay(), SLOT(keyboardHeightChanged(int)));
 
     // Set up the input context
-    m_inputContext = new QQnxInputContext;
+    m_inputContext = new QQnxInputContext(*m_virtualKeyboard);
 
     // Create services handling class
 #ifdef Q_OS_BLACKBERRY
@@ -138,8 +147,12 @@ QQnxIntegration::~QQnxIntegration()
 #if defined(QQNXINTEGRATION_DEBUG)
     qDebug() << "QQnx: platform plugin shutdown begin";
 #endif
+
+    // Destroy input context
+    delete m_inputContext;
+
     // Destroy the keyboard class.
-    QQnxVirtualKeyboard::destroy();
+    delete m_virtualKeyboard;
 
 #ifndef QT_NO_CLIPBOARD
     // Delete the clipboard

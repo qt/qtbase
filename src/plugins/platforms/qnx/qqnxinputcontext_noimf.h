@@ -48,11 +48,13 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQnxVirtualKeyboard;
+
 class QQnxInputContext : public QPlatformInputContext
 {
     Q_OBJECT
 public:
-    explicit QQnxInputContext();
+    explicit QQnxInputContext(QQnxVirtualKeyboard &keyboard);
     ~QQnxInputContext();
 
     virtual bool isValid() const;
@@ -77,6 +79,7 @@ private:
 
     bool m_inputPanelVisible;
     QLocale m_inputPanelLocale;
+    QQnxVirtualKeyboard &m_virtualKeyboard;
 };
 
 QT_END_NAMESPACE

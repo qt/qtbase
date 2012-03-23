@@ -45,16 +45,15 @@
 #include <QtCore/QObject>
 #include <QtCore/QLocale>
 #include <QtGui/QPlatformScreen>
-#include <QtGui/QWindowSystemInterface>
 
 #include <stddef.h>
 #include <vector>
 #include <string>
 #include <sys/pps.h>
 
-class QSocketNotifier;
-
 QT_BEGIN_NAMESPACE
+
+class QSocketNotifier;
 
 /* Shamelessly copied from the browser - this should be rewritten once we have a proper PPS wrapper class */
 class QQnxVirtualKeyboard : public QObject
@@ -74,8 +73,8 @@ public:
     //
     enum KeyboardMode { Default, Url, Email, Web, NumPunc, Symbol, Phone, Pin };
 
-    static QQnxVirtualKeyboard& instance();
-    static void destroy();
+    QQnxVirtualKeyboard();
+    ~QQnxVirtualKeyboard();
 
     bool showKeyboard();
     bool hideKeyboard();
@@ -91,21 +90,18 @@ public Q_SLOTS:
 Q_SIGNALS:
     void localeChanged(const QLocale &locale);
     void visibilityChanged(bool visible);
+    void heightChanged(int height);
 
 private Q_SLOTS:
     void ppsDataReady();
 
 private:
-    QQnxVirtualKeyboard();
-    virtual ~QQnxVirtualKeyboard();
-
     // Will be called internally if needed.
     bool connect();
     void close();
     bool queryPPSInfo();
     void handleKeyboardInfoMessage();
     void handleKeyboardStateChangeMessage(bool visible);
-    void updateAvailableScreenGeometry();
 
     void applyKeyboardModeOptions();
     void addDefaultModeOptions();

@@ -47,6 +47,7 @@
 #include "qqnxrootwindow.h"
 
 #include <QtCore/QByteArray>
+#include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
 
 #include <screen/screen.h>
@@ -55,8 +56,9 @@ QT_BEGIN_NAMESPACE
 
 class QQnxWindow;
 
-class QQnxScreen : public QPlatformScreen
+class QQnxScreen : public QObject, public QPlatformScreen
 {
+    Q_OBJECT
 public:
     static QList<QPlatformScreen *> screens() { return ms_screens; }
     static void createDisplays(screen_context_t context);
@@ -91,6 +93,9 @@ public:
 
     QSharedPointer<QQnxRootWindow> rootWindow() const { return m_rootWindow; }
 
+private Q_SLOTS:
+    void keyboardHeightChanged(int height);
+
 private:
     QQnxScreen(screen_context_t context, screen_display_t display, bool primaryScreen);
     virtual ~QQnxScreen();
@@ -102,10 +107,10 @@ private:
     QSharedPointer<QQnxRootWindow> m_rootWindow;
     bool m_primaryScreen;
     bool m_posted;
-    bool m_usingOpenGL;
 
     int m_initialRotation;
     int m_currentRotation;
+    int m_keyboardHeight;
     QSize m_initialPhysicalSize;
     QSize m_currentPhysicalSize;
     QRect m_initialGeometry;
