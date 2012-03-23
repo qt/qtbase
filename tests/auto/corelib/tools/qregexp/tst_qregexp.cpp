@@ -137,12 +137,10 @@ void tst_QRegExp::indexIn_data()
                                << QStringList();
         QTest::newRow(qPrintable(stri + "anc09")) << QString("a(?:(?!)|b)z") << QString("abz") << 0 << 3
                                << QStringList();
-#if 0
-        QTest::newRow(qPrintable(stri + "anc10")) << QString("a?(?=^b$)") << QString("ab") << 0 << 1
+        QTest::newRow(qPrintable(stri + "anc10")) << QString("a?(?=^b$)") << QString("ab") << -1 << -1
                                << QStringList();
         QTest::newRow(qPrintable(stri + "anc11")) << QString("a?(?=^b$)") << QString("b") << 0 << 0
                                << QStringList();
-#endif
 
         // back-references
         QTest::newRow(qPrintable(stri + "bref00")) << QString("(a*)(\\1)") << QString("aaaaa") << 0 << 4
@@ -573,6 +571,7 @@ void tst_QRegExp::indexIn()
         int mylen = rx.matchedLength();
         QStringList mycaps = rx.capturedTexts();
 
+        QEXPECT_FAIL("anc11", "QRegExp has bugs with anchors inside lookaheads", Abort);
         QCOMPARE( mypos, pos );
         QCOMPARE( mylen, len );
         if ( caps.size() > 1 && caps[1] != "IGNORE ME" ) {
@@ -626,6 +625,7 @@ void tst_QRegExp::lastIndexIn()
         QStringList mycaps = rx.capturedTexts();
 
         if ( mypos <= pos || pos == -1 ) {
+            QEXPECT_FAIL("anc11", "QRegExp has bugs with anchors inside lookaheads", Abort);
             QCOMPARE( mypos, pos );
             QCOMPARE( mylen, len );
 
