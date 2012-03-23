@@ -2584,7 +2584,7 @@ void Configure::detectArch()
         if (output.isEmpty())
             continue;
 
-        QRegExp re("Project MESSAGE:.*Architecture: ([a-zA-Z0-9]*)");
+        QRegExp re("Project MESSAGE:.*Architecture: ([a-zA-Z0-9_]*)");
         if (re.indexIn(output) != -1)
             dictionary[key] = re.cap(1);
     }
