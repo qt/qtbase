@@ -2153,30 +2153,30 @@ QDebug operator<<(QDebug debug, const QRegularExpression &re)
 */
 QDebug operator<<(QDebug debug, QRegularExpression::PatternOptions patternOptions)
 {
-    QStringList flags;
+    QByteArray flags;
 
     if (patternOptions == QRegularExpression::NoPatternOption) {
-        flags << QLatin1String("NoPatternOption");
+        flags = "NoPatternOption";
     } else {
+        flags.reserve(200); // worst case...
         if (patternOptions & QRegularExpression::CaseInsensitiveOption)
-            flags << QLatin1String("CaseInsensitiveOption");
+            flags.append("CaseInsensitiveOption|");
         if (patternOptions & QRegularExpression::DotMatchesEverythingOption)
-            flags << QLatin1String("DotMatchesEverythingOption");
+            flags.append("DotMatchesEverythingOption|");
         if (patternOptions & QRegularExpression::MultilineOption)
-            flags << QLatin1String("MultilineOption");
+            flags.append("MultilineOption|");
         if (patternOptions & QRegularExpression::ExtendedPatternSyntaxOption)
-            flags << QLatin1String("ExtendedPatternSyntaxOption");
+            flags.append("ExtendedPatternSyntaxOption|");
         if (patternOptions & QRegularExpression::InvertedGreedinessOption)
-            flags << QLatin1String("InvertedGreedinessOption");
+            flags.append("InvertedGreedinessOption|");
         if (patternOptions & QRegularExpression::DontCaptureOption)
-            flags << QLatin1String("DontCaptureOption");
+            flags.append("DontCaptureOption|");
         if (patternOptions & QRegularExpression::UseUnicodePropertiesOption)
-            flags << QLatin1String("UseUnicodePropertiesOption");
+            flags.append("UseUnicodePropertiesOption|");
+        flags.chop(1);
     }
 
-    debug.nospace() << "QRegularExpression::PatternOptions("
-                    << qPrintable(flags.join(QLatin1String("|")))
-                    << ")";
+    debug.nospace() << "QRegularExpression::PatternOptions(" << flags << ")";
 
     return debug.space();
 }
