@@ -28,4 +28,6 @@ contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
 
     # Add optional SSL libs
     LIBS_PRIVATE += $$OPENSSL_LIBS
+
+    windows:LIBS += -lcrypt32
 }

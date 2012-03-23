@@ -160,6 +160,9 @@ public:
     void _q_flushWriteBuffer();
     void _q_flushReadBuffer();
     void _q_resumeImplementation();
+#ifdef Q_OS_WIN
+    virtual void _q_caRootLoaded(QSslCertificate,QSslCertificate) = 0;
+#endif
 
     // Platform specific functions
     virtual void startClientEncryption() = 0;

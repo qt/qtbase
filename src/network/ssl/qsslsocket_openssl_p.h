@@ -117,6 +117,11 @@ public:
     void disconnected();
     QSslCipher sessionCipher() const;
     void continueHandshake();
+    bool checkSslErrors();
+#ifdef Q_OS_WIN
+    void fetchCaRootForCert(const QSslCertificate &cert);
+    void _q_caRootLoaded(QSslCertificate,QSslCertificate);
+#endif
 
     Q_AUTOTEST_EXPORT static long setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions);
     static QSslCipher QSslCipher_from_SSL_CIPHER(SSL_CIPHER *cipher);
@@ -126,6 +131,23 @@ public:
     static QList<QSslError> verify(QList<QSslCertificate> certificateChain, const QString &hostName);
     static QString getErrorsFromOpenSsl();
 };
+
+#ifdef Q_OS_WIN
+class QWindowsCaRootFetcher : public QObject
+{
+    Q_OBJECT;
+public:
+    QWindowsCaRootFetcher(const QSslCertificate &certificate, QSslSocket::SslMode sslMode);
+    ~QWindowsCaRootFetcher();
+public slots:
+    void start();
+signals:
+    void finished(QSslCertificate brokenChain, QSslCertificate caroot);
+private:
+    QSslCertificate cert;
+    QSslSocket::SslMode mode;
+};
+#endif
 
 QT_END_NAMESPACE
 
