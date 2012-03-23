@@ -489,6 +489,7 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
                             Constructor constructor,
                             int size, TypeFlags flags, const QMetaObject *metaObject)
 {
+    Q_UNUSED(metaObject);
     QVector<QCustomTypeInfo> *ct = customTypes();
     if (!ct || !typeName || !deleter || !creator || !destructor || !constructor)
         return -1;
