@@ -736,9 +736,6 @@ void QWindow::setWindowState(Qt::WindowState state)
 void QWindow::setTransientParent(QWindow *parent)
 {
     Q_D(QWindow);
-
-    QWindow *previousParent = d->transientParent;
-
     d->transientParent = parent;
 }
 
