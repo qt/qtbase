@@ -1309,20 +1309,7 @@ template <typename T>
 inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase *base, const T *)
 { return static_cast<const QForeachContainer<T> *>(base); }
 
-#if defined(Q_CC_MIPS)
-/*
-   Proper for-scoping in MIPSpro CC
-*/
-#  define Q_FOREACH(variable,container)                                                             \
-    if(0){}else                                                                                     \
-    for (const QForeachContainerBase &_container_ = qForeachContainerNew(container);                \
-         qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->condition();       \
-         ++qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->i)               \
-        for (variable = *qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->i; \
-             qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->brk;           \
-             --qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->brk)
-
-#elif defined(Q_CC_DIAB)
+#if defined(Q_CC_DIAB)
 // VxWorks DIAB generates unresolvable symbols, if container is a function call
 #  define Q_FOREACH(variable,container)                                                             \
     if(0){}else                                                                                     \
