@@ -66,9 +66,7 @@
 #include "AccessibleRole.h"
 #include "AccessibleStates.h"
 
-#ifdef Q_CC_MINGW
-#    include <servprov.h>
-#endif
+#include <servprov.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -267,9 +265,6 @@ private:
     HRESULT wrapListOfCells(const QList<QAccessibleInterface*> &inputCells, IUnknown ***outputAccessibles, long *nCellCount);
     uint uniqueID() const;
     QByteArray IIDToString(REFIID id);
-
-private:
-    ULONG ref;
 
 };
 

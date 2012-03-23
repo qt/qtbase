@@ -224,6 +224,53 @@ void accessibleDebugClientCalls_helper(const char* funcName, const QAccessibleIn
 }
 #endif
 
+/**************************************************************\
+ *                                                             *
+ *                        IUnknown                             *
+ *                                                             *
+ **************************************************************/
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::QueryInterface(REFIID id, LPVOID *iface)
+{
+    *iface = 0;
+
+    QByteArray strIID = IIDToString(id);
+    if (!strIID.isEmpty()) {
+        QString ss; QDebug dbg(&ss); dbg << accessible;
+        accessibleDebug("QWindowsIA2Accessible::QI() - IID:%s, iface:%s ", strIID.constData(), qPrintable(ss));
+    }
+    if (id == IID_IUnknown) {
+        *iface = (IUnknown*)(IDispatch*)this;
+    } else if (id == IID_IDispatch) {
+        *iface = (IDispatch*)this;
+    } else if (id == IID_IAccessible) {
+        *iface = (IAccessible*)this;
+    } else if (id == IID_IOleWindow) {
+        *iface = (IOleWindow*)this;
+    }
+
+    if (*iface) {
+        AddRef();
+        return S_OK;
+    }
+
+    return E_NOINTERFACE;
+}
+
+ULONG STDMETHODCALLTYPE QWindowsMsaaAccessible::AddRef()
+{
+    return ++ref;
+}
+
+ULONG STDMETHODCALLTYPE QWindowsMsaaAccessible::Release()
+{
+    if (!--ref) {
+        delete this;
+        return 0;
+    }
+    return ref;
+}
+
+
 /*
   IDispatch
 */
@@ -1206,6 +1253,17 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::GetWindow(HWND *phwnd)
 HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::ContextSensitiveHelp(BOOL)
 {
     return S_OK;
+}
+
+#define IF_EQUAL_RETURN_IIDSTRING(id, iid) if (id == iid) return QByteArray(#iid)
+QByteArray QWindowsMsaaAccessible::IIDToString(REFIID id)
+{
+    IF_EQUAL_RETURN_IIDSTRING(id, IID_IUnknown);
+    IF_EQUAL_RETURN_IIDSTRING(id, IID_IDispatch);
+    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessible);
+    IF_EQUAL_RETURN_IIDSTRING(id, IID_IOleWindow);
+
+    return QByteArray();
 }
 
 QT_END_NAMESPACE

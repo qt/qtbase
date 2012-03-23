@@ -43,12 +43,19 @@
 
 #include <QtCore/QtConfig>
 #ifndef QT_NO_ACCESSIBILITY
+#include <QtCore/qglobal.h>
 
 #include "../qtwindows_additional.h"
-#include <oleacc.h>
-#include "Accessible2.h"
 #include <QtCore/qsharedpointer.h>
 #include <QtGui/qaccessible.h>
+#ifndef Q_CC_MINGW
+# include <oleacc.h>
+# include "Accessible2.h"   // IAccessible2 inherits from IAccessible
+#else
+    // MinGW
+# include <basetyps.h>
+# include <oleacc.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -74,7 +81,13 @@ QWindow *window_helper(const QAccessibleInterface *iface);
 /**************************************************************\
  *                     QWindowsAccessible                     *
  **************************************************************/
-class QWindowsMsaaAccessible : public IAccessible2, public IOleWindow
+class QWindowsMsaaAccessible : public
+#ifdef Q_CC_MINGW
+        IAccessible
+#else
+        IAccessible2
+#endif
+        , public IOleWindow
 {
 public:
     QWindowsMsaaAccessible(QAccessibleInterface *a)
@@ -87,6 +100,10 @@ public:
         delete accessible;
     }
 
+    /* IUnknown */
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID, LPVOID *);
+    ULONG STDMETHODCALLTYPE AddRef();
+    ULONG STDMETHODCALLTYPE Release();
 
     /* IDispatch */
     HRESULT STDMETHODCALLTYPE GetTypeInfoCount(unsigned int *);
@@ -124,12 +141,18 @@ public:
     HRESULT STDMETHODCALLTYPE ContextSensitiveHelp(BOOL fEnterMode);
 
 protected:
+    virtual QByteArray IIDToString(REFIID id);
+
     QAccessibleInterface *accessible;
 
     QAIPointer childPointer(VARIANT varID)
     {
         return QAIPointer(accessible->child(varID.lVal - 1));
     }
+
+private:
+    ULONG ref;
+
 };
 
 QT_END_NAMESPACE

@@ -56,11 +56,11 @@
 #include <QtGui/qguiapplication.h>
 
 #include "qwindowsaccessibility.h"
-
-#ifndef Q_CC_MINGW
-#    include "iaccessible2.h"
-#endif // !Q_CC_MINGW
-
+#ifdef Q_CC_MINGW
+# include "qwindowsmsaaaccessible.h"
+#else
+# include "iaccessible2.h"
+#endif
 #include "comutils.h"
 
 #include <oleacc.h>
@@ -237,7 +237,11 @@ IAccessible *QWindowsAccessibility::wrap(QAccessibleInterface *acc)
 #else
     if (!acc)
         return 0;
+#ifdef Q_CC_MINGW
+    QWindowsMsaaAccessible *wacc = new QWindowsMsaaAccessible(acc);
+#else
     QWindowsIA2Accessible *wacc = new QWindowsIA2Accessible(acc);
+#endif
     IAccessible *iacc = 0;
     wacc->QueryInterface(IID_IAccessible, (void**)&iacc);
     return iacc;
