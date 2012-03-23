@@ -3938,7 +3938,7 @@ CFG_ARCH=`"$outpath/bin/qmake" -spec "$XQMAKESPEC" -o /dev/null "$relpath/config
 [ -z "$CFG_ARCH" ] && CFG_ARCH="unknown"
 if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
     # Do the same test again, using the host compiler
-    CFG_HOST_ARCH=`"$outpath/bin/qmake" -spec "$QMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -n -e 's,^Project MESSAGE:.*Architecture: \([a-zA-Z0-9]*\).*,\1,p'`
+    CFG_HOST_ARCH=`"$outpath/bin/qmake" -spec "$QMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -n -e 's,^Project MESSAGE:.*Architecture: \([a-zA-Z0-9_]*\).*,\1,p'`
     [ -z "$CFG_HOST_ARCH" ] && CFG_HOST_ARCH="unknown"
 else
     # not cross compiling, host == target
