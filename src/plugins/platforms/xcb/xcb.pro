@@ -20,9 +20,7 @@ SOURCES = \
         main.cpp \
         qxcbnativeinterface.cpp \
         qxcbcursor.cpp \
-        qxcbimage.cpp \
-        qxcbsharedbuffermanager.cpp \
-        qxcbsharedgraphicscache.cpp
+        qxcbimage.cpp
 
 HEADERS = \
         qxcbclipboard.h \
@@ -38,9 +36,7 @@ HEADERS = \
         qxcbwmsupport.h \
         qxcbnativeinterface.h \
         qxcbcursor.h \
-        qxcbimage.h \
-        qxcbsharedbuffermanager.h \
-        qxcbsharedgraphicscache.h
+        qxcbimage.h
 
 contains(QT_CONFIG, xcb-poll-for-queued-event) {
     DEFINES += XCB_POLL_FOR_QUEUED_EVENT
