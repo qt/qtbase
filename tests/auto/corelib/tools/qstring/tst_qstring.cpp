@@ -718,6 +718,11 @@ void tst_QString::acc_01()
     }
 }
 
+#ifdef Q_CC_GNU
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wformat-security"
+#endif
+
 void tst_QString::isNull()
 {
     QString a;
@@ -727,6 +732,10 @@ void tst_QString::isNull()
     a.sprintf( zero );
     QVERIFY(!a.isNull());
 }
+
+#ifdef Q_CC_GNU
+#    pragma GCC diagnostic pop
+#endif
 
 void tst_QString::isEmpty()
 {

@@ -118,9 +118,9 @@ class ServerAndClient : public QObject
 public:
     ServerAndClient(QEventLoop &ev) : success(false)
                                     , eventLoop(ev)
-                                    , isBody(false)
                                     , bodyBytesRead(0)
                                     , bodyLength(-1)
+                                    , isBody(false)
     {
         setObjectName("serverAndClient");
         tcpServer = new QTcpServer(this);

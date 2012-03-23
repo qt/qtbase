@@ -76,7 +76,7 @@ private slots:
 
 int main()
 {
-    char *argv[] = {"appName", "slotName"};
+    char *argv[] = { const_cast<char *>("appName"), const_cast<char *>("slotName") };
     int argc = 2;
 
     tst_TestA testA;
