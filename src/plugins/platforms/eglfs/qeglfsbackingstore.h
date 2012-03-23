@@ -42,25 +42,30 @@
 #ifndef QEGLWINDOWSURFACE_H
 #define QEGLWINDOWSURFACE_H
 
-#include "qeglfsintegration.h"
-#include "qeglfswindow.h"
-
 #include <QtGui/qplatformbackingstore_qpa.h>
 
 QT_BEGIN_NAMESPACE
+
+class QOpenGLContext;
+class QOpenGLPaintDevice;
 
 class QEglFSBackingStore : public QPlatformBackingStore
 {
 public:
     QEglFSBackingStore(QWindow *window);
-    ~QEglFSBackingStore() { delete m_paintDevice; }
+    ~QEglFSBackingStore();
 
-    QPaintDevice *paintDevice() { return m_paintDevice; }
+    QPaintDevice *paintDevice();
+
+    void beginPaint(const QRegion &);
+    void endPaint();
+
     void flush(QWindow *window, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size, const QRegion &staticContents);
 
 private:
-    QPaintDevice *m_paintDevice;
+    QOpenGLContext *m_context;
+    QOpenGLPaintDevice *m_device;
 };
 
 QT_END_NAMESPACE
