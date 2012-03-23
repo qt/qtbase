@@ -136,3 +136,10 @@ vxworks {
                 kernel/qfunctions_vxworks.h
 }
 
+blackberry {
+        SOURCES += \
+                kernel/qeventdispatcher_blackberry.cpp
+        HEADERS += \
+                kernel/qeventdispatcher_blackberry_p.h
+}
+

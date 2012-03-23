@@ -67,10 +67,14 @@
 #include <private/qlocale_p.h>
 
 #if defined(Q_OS_UNIX)
-#  if !defined(QT_NO_GLIB)
-#    include "qeventdispatcher_glib_p.h"
+#  if defined(Q_OS_BLACKBERRY)
+#    include "qeventdispatcher_blackberry_p.h"
+#  else
+#    if !defined(QT_NO_GLIB)
+#      include "qeventdispatcher_glib_p.h"
+#    endif
+#    include "qeventdispatcher_unix_p.h"
 #  endif
-#  include "qeventdispatcher_unix_p.h"
 #endif
 
 #ifdef Q_OS_WIN
@@ -328,12 +332,16 @@ void QCoreApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QCoreApplication);
 #if defined(Q_OS_UNIX)
+#  if defined(Q_OS_BLACKBERRY)
+    eventDispatcher = new QEventDispatcherBlackberry(q);
+#  else
 #  if !defined(QT_NO_GLIB)
     if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
         eventDispatcher = new QEventDispatcherGlib(q);
     else
 #  endif
         eventDispatcher = new QEventDispatcherUNIX(q);
+#  endif
 #elif defined(Q_OS_WIN)
     eventDispatcher = new QEventDispatcherWin32(q);
 #else
