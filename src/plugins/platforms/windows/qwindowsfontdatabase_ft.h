@@ -56,7 +56,6 @@ public:
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
 
     QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const;
-    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
 
     virtual QString fontDir() const;
     virtual QFont defaultFont() const;
