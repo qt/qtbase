@@ -71,9 +71,6 @@ QDBusServer::QDBusServer(const QString &address, QObject *parent)
     }
     d = new QDBusConnectionPrivate(this);
 
-    QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
-    QDBusConnectionManager::instance()->setConnection(QLatin1String("QDBusServer-") + QString::number(reinterpret_cast<qulonglong>(d)), d);
-
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnection)),
                      this, SIGNAL(newConnection(QDBusConnection)));
 
@@ -96,9 +93,6 @@ QDBusServer::QDBusServer(QObject *parent)
     }
     d = new QDBusConnectionPrivate(this);
 
-    QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
-    QDBusConnectionManager::instance()->setConnection(QLatin1String("QDBusServer-") + QString::number(reinterpret_cast<qulonglong>(d)), d);
-
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnection)),
                      this, SIGNAL(newConnection(QDBusConnection)));
 
@@ -113,7 +107,10 @@ QDBusServer::~QDBusServer()
 {
     if (QDBusConnectionManager::instance()) {
         QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
-        QDBusConnectionManager::instance()->removeConnection(d->name);
+        Q_FOREACH (const QString &name, d->serverConnectionNames) {
+            QDBusConnectionManager::instance()->removeConnection(name);
+        }
+        d->serverConnectionNames.clear();
     }
 }
 

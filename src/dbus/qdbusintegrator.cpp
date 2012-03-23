@@ -50,6 +50,7 @@
 
 #include "qdbusargument.h"
 #include "qdbusconnection_p.h"
+#include "qdbusconnectionmanager_p.h"
 #include "qdbusinterface_p.h"
 #include "qdbusmessage.h"
 #include "qdbusmetatype.h"
@@ -385,16 +386,21 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
 
     // keep the connection alive
     q_dbus_connection_ref(connection);
-    QDBusConnectionPrivate *d = static_cast<QDBusConnectionPrivate *>(data);
+    QDBusConnectionPrivate *serverConnection = static_cast<QDBusConnectionPrivate *>(data);
+
+    QDBusConnectionPrivate *newConnection = new QDBusConnectionPrivate(serverConnection->parent());
+    QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
+    QDBusConnectionManager::instance()->setConnection(QLatin1String("QDBusServer-") + QString::number(reinterpret_cast<qulonglong>(newConnection)), newConnection);
+    serverConnection->serverConnectionNames << newConnection->name;
 
     // setPeer does the error handling for us
     QDBusErrorInternal error;
-    d->setPeer(connection, error);
+    newConnection->setPeer(connection, error);
 
-    QDBusConnection retval = QDBusConnectionPrivate::q(d);
+    QDBusConnection retval = QDBusConnectionPrivate::q(newConnection);
 
     // make QDBusServer emit the newConnection signal
-    d->serverConnection(retval);
+    serverConnection->serverConnection(retval);
 }
 
 } // extern "C"

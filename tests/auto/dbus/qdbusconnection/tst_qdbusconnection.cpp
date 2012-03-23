@@ -391,38 +391,51 @@ class MyServer : public QDBusServer
 public:
     MyServer(QString path, QString addr, QObject* parent) : QDBusServer(addr, parent),
                                                             m_path(path),
-                                                            m_conn("none")
+                                                            m_connections()
     {
         connect(this, SIGNAL(newConnection(const QDBusConnection&)), SLOT(handleConnection(const QDBusConnection&)));
     }
 
+    bool registerObject(const QDBusConnection& c)
+    {
+        QDBusConnection conn(c);
+        if (!conn.registerObject(m_path, &m_obj, QDBusConnection::ExportAllSlots))
+            return false;
+        if (!(conn.objectRegisteredAt(m_path) == &m_obj))
+            return false;
+        return true;
+    }
+
     bool registerObject()
     {
-        if( !m_conn.registerObject(m_path, &m_obj, QDBusConnection::ExportAllSlots) )
-            return false;
-        if(! (m_conn.objectRegisteredAt(m_path) == &m_obj))
-            return false;
+        Q_FOREACH (const QString &name, m_connections) {
+            if (!registerObject(QDBusConnection(name)))
+                return false;
+        }
         return true;
     }
 
     void unregisterObject()
     {
-        m_conn.unregisterObject(m_path);
+        Q_FOREACH (const QString &name, m_connections) {
+            QDBusConnection c(name);
+            c.unregisterObject(m_path);
+        }
     }
 
 public slots:
     void handleConnection(const QDBusConnection& c)
     {
-        m_conn = c;
+        m_connections << c.name();
         QVERIFY(isConnected());
-        QVERIFY(m_conn.isConnected());
-        QVERIFY(registerObject());
+        QVERIFY(c.isConnected());
+        QVERIFY(registerObject(c));
     }
 
 private:
     MyObject m_obj;
     QString m_path;
-    QDBusConnection m_conn;
+    QStringList m_connections;
 };
 
 
@@ -443,6 +456,8 @@ void tst_QDBusConnection::registerObjectPeer()
 
     MyServer server(path, "unix:tmpdir=/tmp", 0);
 
+    QDBusConnection::connectToPeer(server.address(), "beforeFoo");
+
     {
         QDBusConnection con = QDBusConnection::connectToPeer(server.address(), "foo");
 
@@ -453,6 +468,8 @@ void tst_QDBusConnection::registerObjectPeer()
         QVERIFY(callMethodPeer(con, path));
         QCOMPARE(obj.path, path);
     }
+
+    QDBusConnection::connectToPeer(server.address(), "afterFoo");
 
     {
         QDBusConnection con("foo");
@@ -483,6 +500,9 @@ void tst_QDBusConnection::registerObjectPeer()
         QVERIFY(!con.isConnected());
         QVERIFY(!callMethodPeer(con, path));
     }
+
+    QDBusConnection::disconnectFromPeer("beforeFoo");
+    QDBusConnection::disconnectFromPeer("afterFoo");
 }
 
 void tst_QDBusConnection::registerObject2()
