@@ -735,7 +735,6 @@ CFG_SSE4_1=auto
 CFG_SSE4_2=auto
 CFG_AVX=auto
 CFG_REDUCE_RELOCATIONS=auto
-CFG_NAS=no
 CFG_ACCESSIBILITY=auto
 CFG_IWMMXT=no
 CFG_NEON=auto
@@ -1594,13 +1593,6 @@ while [ "$#" -gt 0 ]; do
         [ "$VAL" = "yes" ] && VAL=qt
         if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
             CFG_LIBJPEG="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    nas-sound)
-        if [ "$VAL" = "system" ] || [ "$VAL" = "no" ]; then
-            CFG_NAS="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -5705,7 +5697,6 @@ fi
 [ "$CFG_GSTREAMER" = "yes" ] && QT_CONFIG="$QT_CONFIG gstreamer"
 [ "$CFG_DBUS" = "yes" ] && QT_CONFIG="$QT_CONFIG dbus"
 [ "$CFG_DBUS" = "linked" ] && QT_CONFIG="$QT_CONFIG dbus dbus-linked"
-[ "$CFG_NAS" = "system" ] && QT_CONFIG="$QT_CONFIG nas"
 [ "$CFG_OPENSSL" = "yes" ] && QT_CONFIG="$QT_CONFIG openssl"
 [ "$CFG_OPENSSL" = "linked" ] && QT_CONFIG="$QT_CONFIG openssl-linked"
 [ "$CFG_MAC_HARFBUZZ" = "yes" ] && QT_CONFIG="$QT_CONFIG harfbuzz"
@@ -6188,7 +6179,6 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_IPV6IFNAME" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IPV6IFNAME"
 [ "$CFG_GETIFADDRS" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GETIFADDRS"
 [ "$CFG_INOTIFY" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_INOTIFY"
-[ "$CFG_NAS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NAS"
 [ "$CFG_NIS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NIS"
 [ "$CFG_OPENSSL" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENSSL QT_NO_SSL"
 [ "$CFG_OPENSSL" = "linked" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LINKED_OPENSSL"
