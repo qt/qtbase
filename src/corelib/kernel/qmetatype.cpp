@@ -54,11 +54,7 @@
 #include "qvariant.h"
 #include "qmetatypeswitcher_p.h"
 
-#ifdef QT_BOOTSTRAPPED
-# ifndef QT_NO_GEOM_VARIANT
-#  define QT_NO_GEOM_VARIANT
-# endif
-#else
+#ifndef QT_BOOTSTRAPPED
 #  include "qbitarray.h"
 #  include "qurl.h"
 #  include "qvariant.h"
@@ -83,49 +79,12 @@ QT_BEGIN_NAMESPACE
 
 
 namespace {
-template<typename T>
-struct TypeDefinition {
-    static const bool IsAvailable = true;
-};
-
 struct DefinedTypesFilter {
     template<typename T>
     struct Acceptor {
-        static const bool IsAccepted = TypeDefinition<T>::IsAvailable && QTypeModuleInfo<T>::IsCore;
+        static const bool IsAccepted = QtMetaTypePrivate::TypeDefinition<T>::IsAvailable && QTypeModuleInfo<T>::IsCore;
     };
 };
-
-// Ignore these types, as incomplete
-#ifdef QT_NO_GEOM_VARIANT
-template<> struct TypeDefinition<QRect> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QRectF> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QSize> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QSizeF> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QLine> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QLineF> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QPoint> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QPointF> { static const bool IsAvailable = false; };
-#endif
-#ifdef QT_BOOTSTRAPPED
-template<> struct TypeDefinition<QVariantMap> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QVariantHash> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QVariantList> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QVariant> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QBitArray> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QUrl> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QEasingCurve> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QJsonValue> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QJsonObject> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QJsonArray> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QJsonDocument> { static const bool IsAvailable = false; };
-#endif
-#ifdef QT_NO_REGEXP
-template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = false; };
-#endif
-#if defined(QT_BOOTSTRAPPED) || defined(QT_NO_REGEXP)
-template<> struct TypeDefinition<QRegularExpression> { static const bool IsAvailable = false; };
-#endif
 } // namespace
 
 /*!

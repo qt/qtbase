@@ -100,40 +100,13 @@ public:
 }  // namespace
 
 namespace {
-template<typename T>
-struct TypeDefinition {
-    static const bool IsAvailable = true;
-};
-
-// Ignore these types, as incomplete
-#ifdef QT_BOOTSTRAPPED
-template<> struct TypeDefinition<QEasingCurve> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QUrl> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QRegularExpression> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QJsonValue> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QJsonObject> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QJsonArray> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QJsonDocument> { static const bool IsAvailable = false; };
-#endif
-#ifdef QT_NO_GEOM_VARIANT
-template<> struct TypeDefinition<QRect> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QRectF> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QSize> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QSizeF> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QLine> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QLineF> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QPoint> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QPointF> { static const bool IsAvailable = false; };
-#endif
-
 struct CoreTypesFilter {
     template<typename T>
     struct Acceptor {
-        static const bool IsAccepted = QTypeModuleInfo<T>::IsCore && TypeDefinition<T>::IsAvailable;
+        static const bool IsAccepted = QTypeModuleInfo<T>::IsCore && QtMetaTypePrivate::TypeDefinition<T>::IsAvailable;
     };
 };
-} // annonymous used to hide TypeDefinition
+} // annonymous
 
 namespace { // annonymous used to hide QVariant handlers
 

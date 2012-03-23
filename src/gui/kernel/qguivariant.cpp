@@ -98,52 +98,13 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler();
 
 namespace {
-template<typename T>
-struct TypeDefinition {
-    static const bool IsAvailable = true;
-};
-// Ignore these types, as incomplete
-#ifdef QT_NO_GEOM_VARIANT
-template<> struct TypeDefinition<QRect> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QRectF> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QSize> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QSizeF> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QLine> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QLineF> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QPoint> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QPointF> { static const bool IsAvailable = false; };
-#endif
-#ifdef QT_NO_SHORTCUT
-template<> struct TypeDefinition<QKeySequence> { static const bool IsAvailable = false; };
-#endif
-#ifdef QT_NO_CURSOR
-template<> struct TypeDefinition<QCursor> { static const bool IsAvailable = false; };
-#endif
-#ifdef QT_NO_MATRIX4X4
-template<> struct TypeDefinition<QMatrix4x4> { static const bool IsAvailable = false; };
-#endif
-#ifdef QT_NO_VECTOR2D
-template<> struct TypeDefinition<QVector2D> { static const bool IsAvailable = false; };
-#endif
-#ifdef QT_NO_VECTOR3D
-template<> struct TypeDefinition<QVector3D> { static const bool IsAvailable = false; };
-#endif
-#ifdef QT_NO_VECTOR4D
-template<> struct TypeDefinition<QVector4D> { static const bool IsAvailable = false; };
-#endif
-#ifdef QT_NO_QUATERNION
-template<> struct TypeDefinition<QQuaternion> { static const bool IsAvailable = false; };
-#endif
-
 struct GuiTypesFilter {
     template<typename T>
     struct Acceptor {
-        static const bool IsAccepted = QTypeModuleInfo<T>::IsGui && TypeDefinition<T>::IsAvailable;
+        static const bool IsAccepted = QTypeModuleInfo<T>::IsGui && QtMetaTypePrivate::TypeDefinition<T>::IsAvailable;
     };
 };
-} // namespace used to hide TypeDefinition
 
-namespace {
 static void construct(QVariant::Private *x, const void *copy)
 {
     const int type = x->type;
