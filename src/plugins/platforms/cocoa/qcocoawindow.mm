@@ -83,13 +83,19 @@
 
 - (BOOL)canBecomeKeyWindow
 {
-    return NO;
+    // Most panels can be come the key window. Exceptions are:
+    if (m_cocoaPlatformWindow->window()->windowType() == Qt::ToolTip)
+        return NO;
+    if (m_cocoaPlatformWindow->window()->windowType() == Qt::SplashScreen)
+        return NO;
+    return YES;
 }
 
 @end
 
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
+    , m_nsWindow(0)
     , m_glContext(0)
     , m_inConstructor(true)
 {
@@ -98,8 +104,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     m_contentView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
     setGeometry(tlw->geometry());
 
-    m_nsWindow = createNSWindow();
-    setNSWindow(m_nsWindow);
+    recreateWindow(parent());
 
     m_inConstructor = false;
 }
@@ -119,10 +124,18 @@ void QCocoaWindow::setGeometry(const QRect &rect)
     qDebug() << "QCocoaWindow::setGeometry" << this << rect;
 #endif
     QPlatformWindow::setGeometry(rect);
+    setCocoaGeometry(rect);
+}
 
-    NSRect bounds = qt_mac_flipRect(rect, window());
-    [m_nsWindow setContentSize : bounds.size];
-    [m_nsWindow setFrameOrigin : bounds.origin];
+void QCocoaWindow::setCocoaGeometry(const QRect &rect)
+{
+    if (m_nsWindow) {
+        NSRect bounds = qt_mac_flipRect(rect, window());
+        [m_nsWindow setContentSize : bounds.size];
+        [m_nsWindow setFrameOrigin : bounds.origin];
+    } else {
+        [m_contentView setFrame : NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
+    }
 }
 
 void QCocoaWindow::setVisible(bool visible)
@@ -151,13 +164,16 @@ void QCocoaWindow::setVisible(bool visible)
         // Make sure the QWindow has a frame ready before we show the NSWindow.
         QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
 
-        if ([m_nsWindow canBecomeKeyWindow])
-            [m_nsWindow makeKeyAndOrderFront:nil];
-        else
-            [m_nsWindow orderFront: nil];
+        if (m_nsWindow) {
+            if ([m_nsWindow canBecomeKeyWindow])
+                [m_nsWindow makeKeyAndOrderFront:nil];
+            else
+                [m_nsWindow orderFront: nil];
+        }
     } else {
         // qDebug() << "close" << this;
-        [m_nsWindow orderOut:m_nsWindow];
+        if (m_nsWindow)
+            [m_nsWindow orderOut:m_nsWindow];
     }
 }
 
@@ -170,6 +186,8 @@ Qt::WindowFlags QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 void QCocoaWindow::setWindowTitle(const QString &title)
 {
     QCocoaAutoReleasePool pool;
+    if (!m_nsWindow)
+        return;
 
     CFStringRef windowTitle = QCFString::toCFStringRef(title);
     [m_nsWindow setTitle: const_cast<NSString *>(reinterpret_cast<const NSString *>(windowTitle))];
@@ -180,17 +198,21 @@ void QCocoaWindow::raise()
 {
     //qDebug() << "raise" << this;
     // ### handle spaces (see Qt 4 raise_sys in qwidget_mac.mm)
-    [m_nsWindow orderFront: m_nsWindow];
+    if (m_nsWindow)
+        [m_nsWindow orderFront: m_nsWindow];
 }
 
 void QCocoaWindow::lower()
 {
-    [m_nsWindow orderBack: m_nsWindow];
+    if (m_nsWindow)
+        [m_nsWindow orderBack: m_nsWindow];
 }
 
 void QCocoaWindow::propagateSizeHints()
 {
     QCocoaAutoReleasePool pool;
+    if (!m_nsWindow)
+        return;
 
     [m_nsWindow setMinSize : qt_mac_toNSSize(window()->minimumSize())];
     [m_nsWindow setMaxSize : qt_mac_toNSSize(window()->maximumSize())];
@@ -213,6 +235,9 @@ void QCocoaWindow::propagateSizeHints()
 
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
 {
+    if (!m_nsWindow)
+        return false;
+
     if (grab && ![m_nsWindow isKeyWindow])
         [m_nsWindow makeKeyWindow];
     else if (!grab && [m_nsWindow isKeyWindow])
@@ -222,6 +247,9 @@ bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
 
 bool QCocoaWindow::setMouseGrabEnabled(bool grab)
 {
+    if (!m_nsWindow)
+        return false;
+
     if (grab && ![m_nsWindow isKeyWindow])
         [m_nsWindow makeKeyWindow];
     else if (!grab && [m_nsWindow isKeyWindow])
@@ -231,23 +259,19 @@ bool QCocoaWindow::setMouseGrabEnabled(bool grab)
 
 WId QCocoaWindow::winId() const
 {
-    return WId(m_nsWindow);
+    return WId(m_contentView);
 }
 
-void QCocoaWindow::setParent(const QPlatformWindow *window)
+void QCocoaWindow::setParent(const QPlatformWindow *parentWindow)
 {
     // recreate the window for compatibility
-    clearNSWindow(m_nsWindow);
-    [m_nsWindow close];
-    [m_nsWindow release];
-
-    m_nsWindow = createNSWindow();
-    setNSWindow(m_nsWindow);
+    recreateWindow(parentWindow);
+    setCocoaGeometry(geometry());
 }
 
 NSView *QCocoaWindow::contentView() const
 {
-    return [m_nsWindow contentView];
+    return m_contentView;
 }
 
 void QCocoaWindow::windowWillMove()
@@ -266,6 +290,9 @@ void QCocoaWindow::windowDidMove()
 
 void QCocoaWindow::windowDidResize()
 {
+    if (!m_nsWindow)
+        return;
+
     NSRect rect = [[m_nsWindow contentView]frame];
     // Call setFrameSize which will trigger a frameDidChangeNotification on QNSView.
     [[m_nsWindow contentView] setFrameSize:rect.size];
@@ -276,6 +303,15 @@ void QCocoaWindow::windowWillClose()
     QWindowSystemInterface::handleSynchronousCloseEvent(window());
 }
 
+bool QCocoaWindow::windowIsPopupType() const
+{
+    Qt::WindowType type = window()->windowType();
+    if (type == Qt::Tool)
+        return false; // Qt::Tool has the Popup bit set but isn't, at least on Mac.
+
+    return ((type & Qt::Popup) == Qt::Popup);
+}
+
 void QCocoaWindow::setCurrentContext(QCocoaGLContext *context)
 {
     m_glContext = context;
@@ -284,6 +320,27 @@ void QCocoaWindow::setCurrentContext(QCocoaGLContext *context)
 QCocoaGLContext *QCocoaWindow::currentContext() const
 {
     return m_glContext;
+}
+
+void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
+{
+    // Remove current window (if any)
+    if (m_nsWindow) {
+        clearNSWindow(m_nsWindow);
+        [m_nsWindow close];
+        [m_nsWindow release];
+        m_nsWindow = 0;
+    }
+
+    if (!parentWindow) {
+        // Create a new NSWindow if this is a top-level window.
+        m_nsWindow = createNSWindow();
+        setNSWindow(m_nsWindow);
+    } else {
+        // Child windows have no NSWindow, link the NSViews instead.
+        const QCocoaWindow *parentCococaWindow = static_cast<const QCocoaWindow *>(parentWindow);
+        [parentCococaWindow->m_contentView addSubview : m_contentView];
+    }
 }
 
 NSWindow * QCocoaWindow::createNSWindow()
@@ -300,7 +357,7 @@ NSWindow * QCocoaWindow::createNSWindow()
 
     // Use NSPanel for popup-type windows. (Popup, Tool, ToolTip, SplashScreen)
     if ((type & Qt::Popup) == Qt::Popup) {
-        if (type == Qt::Popup || type == Qt::ToolTip || type == Qt::SplashScreen) {
+        if (windowIsPopupType()) {
             styleMask = NSBorderlessWindowMask;
         } else {
             styleMask = (NSUtilityWindowMask | NSResizableWindowMask | NSClosableWindowMask |
@@ -314,6 +371,7 @@ NSWindow * QCocoaWindow::createNSWindow()
                                          defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up
                                                     // before the window is shown and needs a proper window.).
         [window setHasShadow:YES];
+        window->m_cocoaPlatformWindow = this;
         createdWindow = window;
     } else {
         styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
@@ -324,6 +382,15 @@ NSWindow * QCocoaWindow::createNSWindow()
                                          defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up
                                                     // before the window is shown and needs a proper window.).
         window->m_cocoaPlatformWindow = this;
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+        // All windows with the WindowMaximizeButtonHint set also get a full-screen button.
+        if (flags & Qt::WindowMaximizeButtonHint)
+            [window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+    }
+#endif
+
         createdWindow = window;
     }
     return createdWindow;
@@ -378,6 +445,9 @@ void QCocoaWindow::clearNSWindow(NSWindow *window)
 // Returns the current global screen geometry for the nswindow associated with this window.
 QRect QCocoaWindow::windowGeometry() const
 {
+    if (!m_nsWindow)
+        return geometry();
+
     NSRect rect = [m_nsWindow frame];
     QPlatformScreen *onScreen = QPlatformScreen::platformScreenForWindow(window());
     int flippedY = onScreen->geometry().height() - rect.origin.y - rect.size.height;  // account for nswindow inverted y.

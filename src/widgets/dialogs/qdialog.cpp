@@ -754,7 +754,7 @@ void QDialog::setVisible(bool visible)
         }
 
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessibleEvent event(QAccessible::DialogStart, this);
+        QAccessibleEvent event(this, QAccessible::DialogStart);
         QAccessible::updateAccessibility(&event);
 #endif
 
@@ -764,7 +764,7 @@ void QDialog::setVisible(bool visible)
 
 #ifndef QT_NO_ACCESSIBILITY
         if (isVisible()) {
-            QAccessibleEvent event(QAccessible::DialogEnd, this);
+            QAccessibleEvent event(this, QAccessible::DialogEnd);
             QAccessible::updateAccessibility(&event);
         }
 #endif

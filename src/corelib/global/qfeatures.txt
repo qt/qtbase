@@ -690,6 +690,13 @@ Requires: PROXYMODEL
 Name: QSortFilterProxyModel
 SeeAlso: ???
 
+Feature: IDENTITYPROXYMODEL
+Description: Supports proxying a source model unmodified.
+Section: ItemViews
+Requires: PROXYMODEL
+Name: QIdentityProxyModel
+SeeAlso: ???
+
 Feature: STRINGLISTMODEL
 Description: Supports a model that supplies strings to views.
 Section: ItemViews

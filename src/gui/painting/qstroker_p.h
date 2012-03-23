@@ -254,6 +254,7 @@ class Q_GUI_EXPORT QDashStroker : public QStrokerOps
 {
 public:
     QDashStroker(QStroker *stroker);
+    ~QDashStroker();
 
     QStroker *stroker() const { return m_stroker; }
 

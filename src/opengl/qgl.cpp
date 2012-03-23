@@ -4665,7 +4665,7 @@ void QGLWidget::drawTexture(const QPointF &point, GLuint textureId, GLenum textu
 
 Q_GLOBAL_STATIC(QGLEngineThreadStorage<QGL2PaintEngineEx>, qt_gl_2_engine)
 
-QPaintEngine* qt_qgl_paint_engine()
+Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
 {
     return qt_gl_2_engine()->engine();
 }

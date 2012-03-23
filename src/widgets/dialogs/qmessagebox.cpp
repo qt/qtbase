@@ -1463,7 +1463,7 @@ void QMessageBox::showEvent(QShowEvent *e)
     d->updateSize();
 
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessibleEvent event(QAccessible::Alert, this);
+    QAccessibleEvent event(this, QAccessible::Alert);
     QAccessible::updateAccessibility(&event);
 #endif
 #ifdef Q_OS_WIN

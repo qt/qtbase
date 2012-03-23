@@ -125,7 +125,7 @@ void tst_Lancelot::initTestCase()
         QFile file(scriptsDir + fileName);
         file.open(QFile::ReadOnly);
         QByteArray cont = file.readAll();
-        scripts.insert(fileName, QString::fromLatin1(cont).split(QLatin1Char('\n'), QString::SkipEmptyParts));
+        scripts.insert(fileName, QString::fromUtf8(cont).split(QLatin1Char('\n'), QString::SkipEmptyParts));
         it->itemName = fileName;
         it->itemChecksum = qChecksum(cont.constData(), cont.size());
         it++;

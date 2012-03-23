@@ -291,7 +291,7 @@ void QWhatsThat::paintEvent(QPaintEvent*)
     bool drawShadow = true;
 #if defined(Q_WS_WIN)
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-        && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+        && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
     {
         BOOL shadow;
         SystemParametersInfo(SPI_GETDROPSHADOW, 0, &shadow, 0);
@@ -412,7 +412,7 @@ QWhatsThisPrivate::QWhatsThisPrivate()
 #endif
     }
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessibleEvent event(QAccessible::ContextHelpStart, this);
+    QAccessibleEvent event(this, QAccessible::ContextHelpStart);
     QAccessible::updateAccessibility(&event);
 #endif
 }
@@ -425,7 +425,7 @@ QWhatsThisPrivate::~QWhatsThisPrivate()
     QApplication::restoreOverrideCursor();
 #endif
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessibleEvent event(QAccessible::ContextHelpEnd, this);
+    QAccessibleEvent event(this, QAccessible::ContextHelpEnd);
     QAccessible::updateAccessibility(&event);
 #endif
     instance = 0;

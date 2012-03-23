@@ -83,7 +83,7 @@ QCocoaInputContext::QCocoaInputContext()
     : QPlatformInputContext()
     , mWindow(QGuiApplication::focusWindow())
 {
-    connect(qApp->inputMethod(), SIGNAL(inputItemChanged()), this, SLOT(inputItemChanged()));
+    QMetaObject::invokeMethod(this, "connectSignals", Qt::QueuedConnection);
 }
 
 QCocoaInputContext::~QCocoaInputContext()
@@ -114,7 +114,13 @@ void QCocoaInputContext::reset()
     }
 }
 
-void QCocoaInputContext::inputItemChanged()
+void QCocoaInputContext::connectSignals()
+{
+    connect(qApp, SIGNAL(focusObjectChanged(QObject*)), this, SLOT(focusObjectChanged(QObject*)));
+    focusObjectChanged(qApp->focusObject());
+}
+
+void QCocoaInputContext::focusObjectChanged(QObject *focusObject)
 {
     mWindow = QGuiApplication::focusWindow();
 }

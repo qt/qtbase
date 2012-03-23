@@ -46,13 +46,6 @@
 
 #include "qglobal.h"
 
-#ifndef QT_NO_SYSTEMLOCALE
-QT_BEGIN_NAMESPACE
-class QSystemLocale;
-static QSystemLocale *QSystemLocale_globalSystemLocale();
-QT_END_NAMESPACE
-#endif
-
 #include "qplatformdefs.h"
 
 #include "qdatastream.h"
@@ -78,7 +71,13 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SYSTEMLOCALE
 static QSystemLocale *_systemLocale = 0;
-Q_GLOBAL_STATIC_WITH_ARGS(QSystemLocale, QSystemLocale_globalSystemLocale, (true))
+class QSystemLocaleSingleton: public QSystemLocale
+{
+public:
+    QSystemLocaleSingleton() : QSystemLocale(true) {}
+};
+
+Q_GLOBAL_STATIC(QSystemLocaleSingleton, QSystemLocale_globalSystemLocale)
 static QLocalePrivate *system_lp = 0;
 Q_GLOBAL_STATIC(QLocalePrivate, globalLocalePrivate)
 #endif

@@ -3182,7 +3182,8 @@ void QTableView::currentChanged(const QModelIndex &current, const QModelIndex &p
         if (current.isValid()) {
             Q_D(QTableView);
             int entry = d->accessibleTable2Index(current);
-            QAccessibleEvent event(QAccessible::Focus, this, entry);
+            QAccessibleEvent event(this, QAccessible::Focus);
+            event.setChild(entry);
             QAccessible::updateAccessibility(&event);
         }
     }
@@ -3204,13 +3205,15 @@ void QTableView::selectionChanged(const QItemSelection &selected,
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
             int entry = d->accessibleTable2Index(sel);
-            QAccessibleEvent event(QAccessible::Selection, this, entry);
+            QAccessibleEvent event(this, QAccessible::Selection);
+            event.setChild(entry);
             QAccessible::updateAccessibility(&event);
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
             int entry = d->accessibleTable2Index(desel);
-            QAccessibleEvent event(QAccessible::SelectionRemove, this, entry);
+            QAccessibleEvent event(this, QAccessible::SelectionRemove);
+            event.setChild(entry);
             QAccessible::updateAccessibility(&event);
         }
     }

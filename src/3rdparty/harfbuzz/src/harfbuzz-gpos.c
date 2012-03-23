@@ -1187,13 +1187,14 @@ static HB_Error  Load_PairSet ( HB_PairSet*  ps,
 
   for ( n = 0; n < count; n++ )
   {
-      if ( ACCESS_Frame( 2L ) )
-          goto Fail;
+      for ( m = 0; m < record_size; m++ ) {
+          if ( ACCESS_Frame( 2L ) )
+              goto Fail;
 
-      for ( m = 0; m < record_size; m++ )
           *(vr++) = GET_Short();
 
-      FORGET_Frame();
+          FORGET_Frame();
+      }
   }
 #endif
 

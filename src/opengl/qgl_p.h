@@ -513,7 +513,7 @@ QGLTexture* QGLTextureCache::getTexture(QGLContext *ctx, qint64 key)
     return m_cache.object(cacheKey);
 }
 
-extern QPaintEngine* qt_qgl_paint_engine();
+Q_OPENGL_EXPORT extern QPaintEngine* qt_qgl_paint_engine();
 
 // Put a guard around a GL object identifier and its context.
 // When the context goes away, a shared context will be used

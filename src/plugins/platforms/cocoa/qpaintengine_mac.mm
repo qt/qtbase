@@ -73,8 +73,6 @@
 
 QT_BEGIN_NAMESPACE
 
-extern int qt_antialiasing_threshold; // from qcoretextfontdatabase.mm
-
 /*****************************************************************************
   QCoreGraphicsPaintEngine utility functions
  *****************************************************************************/
@@ -1182,7 +1180,9 @@ void QCoreGraphicsPaintEngine::drawTextItem(const QPointF &pos, const QTextItem 
 
     QFontEngine *fe = ti.fontEngine;
 
-    const bool textAA = state->renderHints() & QPainter::TextAntialiasing && fe->fontDef.pointSize > qt_antialiasing_threshold && !(fe->fontDef.styleStrategy & QFont::NoAntialias);
+    const bool textAA = ((state->renderHints() & QPainter::TextAntialiasing)
+                         && (fe->fontDef.pointSize > QCoreTextFontEngine::antialiasingThreshold)
+                         && !(fe->fontDef.styleStrategy & QFont::NoAntialias));
     const bool lineAA = state->renderHints() & QPainter::Antialiasing;
     if (textAA != lineAA)
         CGContextSetShouldAntialias(d->hd, textAA);

@@ -59,7 +59,8 @@ public:
     virtual void reset();
 
 private Q_SLOTS:
-    void inputItemChanged();
+    void connectSignals();
+    void focusObjectChanged(QObject *focusObject);
 
 private:
     QPointer<QWindow> mWindow;

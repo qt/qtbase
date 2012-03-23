@@ -39,10 +39,12 @@
 **
 ****************************************************************************/
 
+#import <Cocoa/Cocoa.h>
+#import <IOKit/graphics/IOGraphicsLib.h>
+
 #include "qcoretextfontdatabase_p.h"
 #include "qfontengine_coretext_p.h"
 #include <QtCore/QSettings>
-#import <Foundation/Foundation.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,9 +88,6 @@ static const char *languageForWritingSystem[] = {
 };
 enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) };
 
-int qt_antialiasing_threshold = 0;
-bool qt_enable_font_smoothing = true;
-
 QFont::StyleHint styleHintFromNSString(NSString *style)
 {
     if ([style isEqual: @"sans-serif"])
@@ -122,13 +121,37 @@ QCoreTextFontDatabase::QCoreTextFontDatabase()
     QSettings appleSettings(QLatin1String("apple.com"));
     QVariant appleValue = appleSettings.value(QLatin1String("AppleAntiAliasingThreshold"));
     if (appleValue.isValid())
-        qt_antialiasing_threshold = appleValue.toInt();
+        QCoreTextFontEngine::antialiasingThreshold = appleValue.toInt();
 
+    /*
+        font_smoothing = 0 means no smoothing, while 1-3 means subpixel
+        antialiasing with different hinting styles (but we don't care about the
+        exact value, only if subpixel rendering is available or not)
+    */
+    int font_smoothing = 0;
     appleValue = appleSettings.value(QLatin1String("AppleFontSmoothing"));
-    // Only disable font smoothing when AppleFontSmoothing is set to 0,
-    // empty or non-zero means enabled
-    if (appleValue.isValid() && appleValue.toInt() == 0)
-        qt_enable_font_smoothing = false;
+    if (appleValue.isValid()) {
+        font_smoothing = appleValue.toInt();
+    } else {
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+        // find the primary display (which is always the first NSScreen
+        // according to the documentation)
+        NSScreen *defaultScreen = [[NSScreen screens] objectAtIndex:0];
+        CGDirectDisplayID displayId = [[[defaultScreen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
+        io_service_t iodisplay = CGDisplayIOServicePort(displayId);
+
+        // determine if font smoothing is available based on the subpixel
+        // layout of the primary display
+        NSDictionary *d = (NSDictionary *) IODisplayCreateInfoDictionary(iodisplay, kIODisplayOnlyPreferredName);
+        uint displaySubpixelLayout = [[d objectForKey:@kDisplaySubPixelLayout] unsignedIntValue];
+        font_smoothing = (displaySubpixelLayout == kDisplaySubPixelLayoutUndefined ? 0 : 1);
+
+        [pool release];
+    }
+    QCoreTextFontEngine::defaultGlyphFormat = (font_smoothing > 0
+                                               ? QFontEngineGlyphCache::Raster_RGBMask
+                                               : QFontEngineGlyphCache::Raster_A8);
 }
 
 QCoreTextFontDatabase::~QCoreTextFontDatabase()

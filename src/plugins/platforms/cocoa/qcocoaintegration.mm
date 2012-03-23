@@ -69,8 +69,12 @@ QCocoaScreen::QCocoaScreen(int screenIndex)
     :QPlatformScreen()
 {
     m_screen = [[NSScreen screens] objectAtIndex:screenIndex];
-    NSRect rect = [m_screen frame];
-    m_geometry = QRect(rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
+    NSRect frameRect = [m_screen frame];
+    m_geometry = QRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width, frameRect.size.height);
+    NSRect visibleRect = [m_screen visibleFrame];
+    m_availableGeometry = QRect(visibleRect.origin.x,
+                                frameRect.size.height - (visibleRect.origin.y + visibleRect.size.height), // invert y
+                                visibleRect.size.width, visibleRect.size.height);
 
     m_format = QImage::Format_RGB32;
 

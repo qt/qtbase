@@ -235,8 +235,8 @@ void tst_QPrinter::testPageSetupDialog()
 
 void tst_QPrinter::testPageSize()
 {
-#if 1
-    QSKIP("QPrinter::winPageSize(): Windows only and currently not implemented / QTBUG-22927");
+#ifndef Q_OS_WIN
+    QSKIP("QPrinter::winPageSize(): Windows only.");
 #else
     QPrinter prn;
 
@@ -255,7 +255,7 @@ void tst_QPrinter::testPageSize()
     prn.setWinPageSize(DMPAPER_A4);
     MYCOMPARE(prn.winPageSize(), DMPAPER_A4);
     MYCOMPARE(prn.pageSize(), QPrinter::A4);
-#endif
+#endif // Q_OS_WIN
 }
 
 void tst_QPrinter::testPageRectAndPaperRect_data()
@@ -625,7 +625,25 @@ void tst_QPrinter::valuePreservation()
     QPrinter::OutputFormat oldFormat = QPrinter::PdfFormat;
     QPrinter::OutputFormat newFormat = QPrinter::NativeFormat; // TODO: Correct?
 
-    {
+    // Some properties are documented to only be supported by NativeFormat in X11 environment
+    bool doX11Tests = QGuiApplication::platformName().compare(QLatin1String("xcb"), Qt::CaseInsensitive) == 0;
+    bool windowsPlatform = QGuiApplication::platformName().compare(QLatin1String("windows"), Qt::CaseInsensitive) == 0;
+    bool manualSourceSupported = true;
+
+#ifdef Q_OS_WIN
+    // QPrinter::supportedPaperSources() is only available on Windows, so just assuming manual is supported on others.
+    QPrinter printer;
+    printer.setOutputFormat(newFormat);
+    QList<QPrinter::PaperSource> sources = printer.supportedPaperSources();
+    if (!sources.contains(QPrinter::Manual)) {
+        manualSourceSupported = false;
+        qWarning() << "Manual paper source not supported by native printer, skipping related test.";
+    }
+#endif // Q_OS_WIN
+
+    // Querying PPK_CollateCopies is hardcoded to return false with Windows native print engine,
+    // so skip testing that in Windows.
+    if (!windowsPlatform) {
         QPrinter printer;
         printer.setOutputFormat(oldFormat);
         bool status = printer.collateCopies();
@@ -653,7 +671,7 @@ void tst_QPrinter::valuePreservation()
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.colorMode(), QPrinter::ColorMode(!status));
     }
-    {
+    if (doX11Tests) {
         QPrinter printer;
         printer.setOutputFormat(oldFormat);
         QString status = printer.creator();
@@ -683,7 +701,7 @@ void tst_QPrinter::valuePreservation()
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.docName(), status);
     }
-    {
+    if (doX11Tests) {
         QPrinter printer;
         printer.setOutputFormat(oldFormat);
         bool status = printer.doubleSidedPrinting();
@@ -697,7 +715,7 @@ void tst_QPrinter::valuePreservation()
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.doubleSidedPrinting(), !status);
     }
-    {
+    if (doX11Tests) {
         QPrinter printer;
         printer.setOutputFormat(oldFormat);
         bool status = printer.fontEmbeddingEnabled();
@@ -754,7 +772,7 @@ void tst_QPrinter::valuePreservation()
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.outputFileName(), status);
     }
-    {
+    if (doX11Tests) {
         QPrinter printer;
         printer.setOutputFormat(oldFormat);
         QPrinter::PageOrder status = printer.pageOrder();
@@ -782,7 +800,7 @@ void tst_QPrinter::valuePreservation()
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.pageSize(), QPrinter::B5);
     }
-    {
+    if (manualSourceSupported) {
         QPrinter printer;
         printer.setOutputFormat(oldFormat);
         QPrinter::PaperSource status = printer.paperSource();
@@ -796,7 +814,7 @@ void tst_QPrinter::valuePreservation()
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.paperSource(), QPrinter::Manual);
     }
-    {
+    if (doX11Tests) {
         QPrinter printer;
         printer.setOutputFormat(oldFormat);
         QString status = printer.printProgram();
@@ -840,6 +858,7 @@ void tst_QPrinter::valuePreservation()
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.printerName(), status);
     }
+    // QPrinter::printerSelectionOption is explicitly documented not to be available on Windows.
 #ifndef Q_OS_WIN
     {
         QPrinter printer;
@@ -856,7 +875,7 @@ void tst_QPrinter::valuePreservation()
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.printerSelectionOption(), status);
     }
-#endif
+#endif // Q_OS_WIN
     {
         QPrinter printer;
         printer.setOutputFormat(oldFormat);

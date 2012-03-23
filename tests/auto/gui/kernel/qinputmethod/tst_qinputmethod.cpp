@@ -110,7 +110,7 @@ public:
     virtual ~tst_qinputmethod() {}
 private slots:
     void initTestCase();
-    void visible();
+    void isVisible();
     void animating();
     void keyboarRectangle();
     void inputItem();
@@ -133,20 +133,20 @@ void tst_qinputmethod::initTestCase()
     inputMethodPrivate->testContext = &m_platformInputContext;
 }
 
-void tst_qinputmethod::visible()
+void tst_qinputmethod::isVisible()
 {
-    QCOMPARE(qApp->inputMethod()->visible(), false);
+    QCOMPARE(qApp->inputMethod()->isVisible(), false);
     qApp->inputMethod()->show();
-    QCOMPARE(qApp->inputMethod()->visible(), true);
+    QCOMPARE(qApp->inputMethod()->isVisible(), true);
 
     qApp->inputMethod()->hide();
-    QCOMPARE(qApp->inputMethod()->visible(), false);
+    QCOMPARE(qApp->inputMethod()->isVisible(), false);
 
     qApp->inputMethod()->setVisible(true);
-    QCOMPARE(qApp->inputMethod()->visible(), true);
+    QCOMPARE(qApp->inputMethod()->isVisible(), true);
 
     qApp->inputMethod()->setVisible(false);
-    QCOMPARE(qApp->inputMethod()->visible(), false);
+    QCOMPARE(qApp->inputMethod()->isVisible(), false);
 }
 
 void tst_qinputmethod::animating()

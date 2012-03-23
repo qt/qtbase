@@ -196,10 +196,10 @@ void tst_QMovie::jumpToFrame()
 
 void tst_QMovie::changeMovieFile()
 {
-    QMovie movie("animations/comicsecard.gif");
+    QMovie movie(QFINDTESTDATA("animations/comicsecard.gif"));
     movie.start();
     movie.stop();
-    movie.setFileName("animations/trolltech.gif");
+    movie.setFileName(QFINDTESTDATA("animations/trolltech.gif"));
     QVERIFY(movie.currentFrameNumber() == -1);
 }
 

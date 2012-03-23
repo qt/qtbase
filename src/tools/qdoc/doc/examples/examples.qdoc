@@ -29,11 +29,11 @@
     \example componentset
     \title QML Documentation Example
 
-    This example demonstrates one of the ways to document QML components.
+    This example demonstrates one of the ways to document QML types.
 
-    In particular, there are sample components that are documented with QDoc
-    commands comments. There are documentation comments for the QML components
-    and their public interfaces. The components are grouped into a module, the
+    In particular, there are sample types that are documented with QDoc
+    commands comments. There are documentation comments for the QML types
+    and their public interfaces. The types are grouped into a module, the
     \l{UI Components} module.
 
     The \l{componentset/uicomponents.qdoc}{uicomponents.qdoc} file generates
@@ -43,18 +43,18 @@
 
     \section1 QML Class
 
-    The components use the \l{qmlclass-command}{\\qmlclass} to document the
-    component. In addition, they have the \l{inmodule-command}{\\inmodule}
+    The QML types use the \l{qmlclass-command}{\\qmlclass} to document the
+    type. In addition, they have the \l{inmodule-command}{\\inmodule}
     command in order for QDoc to associate them to the \c UIComponents module.
 
     QDoc uses the \l{brief-command}{\\brief} command to place a basic
-    description when listing the component.
+    description when listing the types.
 
     \section1 Properties, Signals, Handlers, and Methods
 
-    The components have their properties, signals, handlers, and methods
+    The types have their properties, signals, handlers, and methods
     defined in their respective QML files. QDoc associates the properties and
-    methods to the components, therefore, you only need to place the
+    methods to the types, therefore, you only need to place the
     documentation above the property, method, or signal.
 
     To document the type of a \e {property alias}, you must use the
@@ -75,10 +75,10 @@
     If you wish to omit certain parts of the documentation, you may use the
     \l{omit-command}{\\omit} and \l{omit-command}{\\endomit} command.
 
-    \section1 Components with C++ Implementation
+    \section1 QML Types with C++ Implementation
 
-    This example only demonstrates the documentation for components in QML
+    This example only demonstrates the documentation for types in QML
     files, but the regular \l{qml-documentation}{QML commands} may be placed
-    inside C++ classes to define the public API of the component.
+    inside C++ classes to define the public API of the QML type.
 
 */

@@ -213,10 +213,10 @@ void tst_QStyle::testStyleFactory()
 #endif
 #ifdef Q_WS_WIN
     if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP &&
-        QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+        (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
         QVERIFY(keys.contains("WindowsXP"));
     if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA &&
-        QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+        (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
         QVERIFY(keys.contains("WindowsVista"));
 #endif
 

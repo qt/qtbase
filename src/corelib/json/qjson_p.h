@@ -620,14 +620,23 @@ public:
 
     bool operator ==(const QString &key) const;
     inline bool operator !=(const QString &key) const { return !operator ==(key); }
-    bool operator >=(const QString &key) const;
+    inline bool operator >=(const QString &key) const;
 
     bool operator ==(const Entry &other) const;
     bool operator >=(const Entry &other) const;
 };
 
+inline bool Entry::operator >=(const QString &key) const
+{
+    if (value.latinKey)
+        return (shallowLatin1Key() >= key);
+    else
+        return (shallowKey() >= key);
+}
+
 inline bool operator <(const QString &key, const Entry &e)
 { return e >= key; }
+
 
 class Header {
 public:
@@ -735,7 +744,15 @@ public:
 
     Data *clone(Base *b, int reserve = 0)
     {
-        int size = sizeof(Header) + b->size + reserve;
+        int size = sizeof(Header) + b->size;
+        if (ref.load() == 1 && alloc >= size + reserve)
+            return this;
+
+        if (reserve) {
+            if (reserve < 128)
+                reserve = 128;
+            size = qMax(size + reserve, size *2);
+        }
         char *raw = (char *)malloc(size);
         Q_CHECK_PTR(raw);
         memcpy(raw + sizeof(Header), b, b->size);

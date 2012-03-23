@@ -282,7 +282,8 @@ QString QMimeType::comment() const
     QStringList languageList;
     languageList << QLocale::system().name();
     languageList << QLocale::system().uiLanguages();
-    Q_FOREACH (const QString &lang, languageList) {
+    Q_FOREACH (const QString &language, languageList) {
+        const QString lang = language == QLatin1String("C") ? QLatin1String("en_US") : language;
         const QString comm = d->localeComments.value(lang);
         if (!comm.isEmpty())
             return comm;

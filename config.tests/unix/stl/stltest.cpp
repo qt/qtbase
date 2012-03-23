@@ -49,6 +49,7 @@ templates for common STL container classes.
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <cstddef>
 
 // something mean to see if the compiler and C++ standard lib are good enough
 template<class K, class T>

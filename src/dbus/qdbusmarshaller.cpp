@@ -124,19 +124,23 @@ void QDBusMarshaller::append(const QString &arg)
 inline void QDBusMarshaller::append(const QDBusObjectPath &arg)
 {
     QByteArray data = arg.path().toUtf8();
-    if (!ba && data.isEmpty())
+    if (!ba && data.isEmpty()) {
         error(QLatin1String("Invalid object path passed in arguments"));
-    const char *cdata = data.constData();
-    qIterAppend(&iterator, ba, DBUS_TYPE_OBJECT_PATH, &cdata);
+    } else {
+        const char *cdata = data.constData();
+        qIterAppend(&iterator, ba, DBUS_TYPE_OBJECT_PATH, &cdata);
+    }
 }
 
 inline void QDBusMarshaller::append(const QDBusSignature &arg)
 {
     QByteArray data = arg.signature().toUtf8();
-    if (!ba && data.isEmpty())
+    if (!ba && data.isEmpty()) {
         error(QLatin1String("Invalid signature passed in arguments"));
-    const char *cdata = data.constData();
-    qIterAppend(&iterator, ba, DBUS_TYPE_SIGNATURE, &cdata);
+    } else {
+        const char *cdata = data.constData();
+        qIterAppend(&iterator, ba, DBUS_TYPE_SIGNATURE, &cdata);
+    }
 }
 
 inline void QDBusMarshaller::append(const QDBusUnixFileDescriptor &arg)

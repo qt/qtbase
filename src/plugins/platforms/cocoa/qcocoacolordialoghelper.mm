@@ -404,6 +404,11 @@ void QCocoaColorDialogHelper::setCurrentColor_sys(const QColor &color)
     if (!mDelegate)
         createNSColorPanelDelegate();
     QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate);
+
+    // make sure that if ShowAlphaChannel option is set then also setShowsAlpha
+    // needs to be set, otherwise alpha value is omitted
+    [delegate->mColorPanel setShowsAlpha:options()->testOption(QColorDialogOptions::ShowAlphaChannel)];
+
     NSColor *nsColor;
     const QColor::Spec spec = color.spec();
     if (spec == QColor::Cmyk) {

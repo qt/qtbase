@@ -101,12 +101,6 @@ public:
     virtual int metric(QPaintDevice::PaintDeviceMetric) const = 0;
 
     virtual QPrinter::PrinterState printerState() const = 0;
-
-#ifdef Q_WS_WIN
-    virtual HDC getPrinterDC() const { return 0; }
-    virtual void releasePrinterDC(HDC) const { }
-#endif
-
 };
 
 #endif // QT_NO_PRINTER

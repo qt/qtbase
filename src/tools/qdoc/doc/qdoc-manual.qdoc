@@ -5202,7 +5202,7 @@
     \li tutorial - For text pages that are part of a tutorial.
 
     \li api - This is the type of page used for C++ class references
-    and QML element references, etc. You should never use this one for
+    and QML type references, etc. You should never use this one for
     the pages you write, because this one is reserved for qdoc.
 
     \endlist
@@ -5351,13 +5351,13 @@
     \section1 \\qmlattachedproperty
 
     The \\qmlattachedproperty command is for documenting a QML
-    property that will be attached to some QML element type. See
+    property that will be attached to some QML type. See
     \l{http://doc.qt.nokia.com/4.7/qdeclarativeintroduction.html#attached-properties}
     {Attached Properties}. The argument is the rest of the line. The
     argument text should be the property type, followed by the QML
     element name where the property is being declared, the \c{::}
     qualifier, and finally the property name. If we have a QML
-    attached property named \c isCurrentItem in QML element \c ListView,
+    attached property named \c isCurrentItem in QML \c ListView,
     and the property has type \c {bool}, the \\qmlattachedproperty for
     it would look like this:
 
@@ -5389,7 +5389,7 @@
     the \l{qmlsignal-command} {\\qmlsignal} command.
 
     The argument is the rest of the line. It should be the name of the
-    QML element where the signal handler is declared, the \c{::}
+    QML type where the signal handler is declared, the \c{::}
     qualifier, and finally the signal handler name. If we have a QML
     attached signal handler named \c onAdd() in the \c GridView
     element, the \\qmlattachedsignal for it would look like this:
@@ -5447,10 +5447,10 @@
     \target qmlclass-command
     \section1 \\qmlclass
 
-    The \\qmlclass command is for documenting a QML element that is
+    The \\qmlclass command is for documenting a QML type that is
     instantiated by a C++ class. The command has two arguments. The
-    first argument is the name of the QML element. The second argument
-    is the name of the C++ class that instantiates the QML element.
+    first argument is the name of the QML type. The second argument
+    is the name of the C++ class that instantiates the QML type.
 
     \code
     / *!
@@ -5481,12 +5481,12 @@
     \endcode
 
     This example generates the
-    \l {http://doc.qt.nokia.com/4.7/qml-transform.html} {QML Transform
-    Element} page. The \\qmlclass comment should include the \l
-    {since-command} {\\since} command, because all QML elements are
+    \l {http://doc.qt.nokia.com/4.7/qml-transform.html} {QML Transform}
+    page. The \\qmlclass comment should include the \l
+    {since-command} {\\since} command, because all QML types are
     new. It should also include the \l{brief-command} {\\brief}
-    command. And since every QML element is a member of a group of QML
-    elements, it should also include one or more \l{ingroup-command}
+    command. And if a type is a member of a group of QML
+    types, it should also include one or more \l{ingroup-command}
     {\\ingroup} commands.
 
     \target qmlmethod-command
@@ -5521,9 +5521,9 @@
 
     The \\qmlproperty command is for documenting a QML property. The
     argument is the rest of the line. The argument text should be the
-    property type, followed by the QML element name, the \c{::}
+    property type, followed by the QML type name, the \c{::}
     qualifier, and finally the property name. If we have a QML
-    property named \c x in QML element \c Translate, and the property
+    property named \c x in QML type \c Translate, and the property
     has type \c {real}, the \\qmlproperty for it would look like this:
 
     \code
@@ -5544,7 +5544,7 @@
     The \\qmlsignal command is for documenting a
     \l{http://doc.qt.nokia.com/4.7/qdeclarativeintroduction.html#signal-handlers}
     {signal handler}.
-    The argument is the rest of the line. It should be the QML element where the
+    The argument is the rest of the line. It should be the QML type where the
     signal handler is declared, the \c{::} qualifier, and finally the signal
     handler name. If we have a QML signal handler named \c onAdd() in QML
     element \c MouseArea, the \\qmlsignal for it would look like this:
@@ -5571,7 +5571,7 @@
     \section1 \\qmlmodule
 
     Insert the \c{\\qmlmodule} command to create a \c QML module page. A QML
-    module is a collection of QML components or any related material. This
+    module is a collection of QML types or any related material. This
     command is similar to the \l{group-command}.
 
     A QML class may belong to a module by inserting the
@@ -5594,7 +5594,7 @@
     \endcode
 
     The \l{componentset}{UIComponents} example demonstrates proper usage of
-    QDoc commands to document QML components and QML modules.
+    QDoc commands to document QML types and QML modules.
 
     \target inqmlmodule-command
     \section1 \\inqmlmodule
@@ -5615,7 +5615,7 @@
     \c{\l ClickableComponents::ClickableButton} format.
 
     The \l{componentset}{UIComponents} example demonstrates proper usage of
-    QDoc commands to document QML components and QML modules.
+    QDoc commands to document QML types and QML modules.
 
     \target typedef-command
     \section1 \\typedef
@@ -6154,7 +6154,7 @@
 
     See how QDoc renders this property on the reference page for the
     \l {http://doc.qt.nokia.com/4.7/qml-state.html#changes-prop} {State}
-    element.
+    type.
 
     \target obsolete-command
     \section1 \\obsolete
@@ -6538,18 +6538,18 @@
     is an overload of another function, or this function is a
     reimplementation of another function, or this typedef is \e
     related to some class or header file. There is also a command
-    for documenting that a QML element inherits some other QML
-    element.
+    for documenting that a QML type inherits some other QML
+    type.
 
     \section1 Commands
 
     \target inherits-command
     \section2 \\inherits
 
-    The \\inherits command is for documenting that one QML element
-    inherits some other QML element. It must be included in the
+    The \\inherits command is for documenting that one QML type
+    inherits some other QML type. It must be included in the
     inheriting element's \l{qmlclass-command}{\\qmlclass} comment.
-    The argument is the name of the inherited QML element.
+    The argument is the name of the inherited QML type.
 
     \code
     / *!
@@ -7957,12 +7957,12 @@
 
     \code
         outputprefixes = QML
-        outputprefixes.QML = qt-components-
+        outputprefixes.QML = uicomponents-
     \endcode
 
-    By default, files containing the API documentation for QML elements
-    or components are prefixed with "qml-". In the above example, the
-    prefix "qt-components-" is used instead.
+    By default, files containing the API documentation for QML types
+    are prefixed with "qml-". In the above example, the
+    prefix \c "uicomponents" is used instead.
 
     \target qhp-variable
     \section1 qhp

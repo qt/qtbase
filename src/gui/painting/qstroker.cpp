@@ -1028,6 +1028,10 @@ QDashStroker::QDashStroker(QStroker *stroker)
     }
 }
 
+QDashStroker::~QDashStroker()
+{
+}
+
 QVector<qfixed> QDashStroker::patternForStyle(Qt::PenStyle style)
 {
     const qfixed space = 2;

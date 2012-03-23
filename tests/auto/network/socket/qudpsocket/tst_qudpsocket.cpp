@@ -92,6 +92,8 @@ private slots:
     void ipv6Loop_data();
     void ipv6Loop();
     void dualStack();
+    void dualStackAutoBinding();
+    void dualStackNoIPv4onV6only();
     void readLine();
     void pendingDatagramSize();
     void writeDatagram();
@@ -488,6 +490,83 @@ void tst_QUdpSocket::dualStack()
     buffer.resize(size);
     QCOMPARE(buffer, dualData);
 
+}
+
+void tst_QUdpSocket::dualStackAutoBinding()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("test server SOCKS proxy doesn't support IPv6");
+    QUdpSocket v4Sock;
+    QVERIFY(v4Sock.bind(QHostAddress(QHostAddress::AnyIPv4), 0));
+
+    QUdpSocket v6Sock;
+    QVERIFY(v6Sock.bind(QHostAddress(QHostAddress::AnyIPv6), 0));
+
+    QByteArray dualData("dual");
+    QHostAddress from;
+    quint16 port;
+    QByteArray buffer;
+    int size;
+
+    {
+        //test an autobound socket can send to both v4 and v6 addresses (v4 first)
+        QUdpSocket dualSock;
+
+        QCOMPARE((int)dualSock.writeDatagram(dualData.constData(), dualData.length(), QHostAddress(QHostAddress::LocalHost), v4Sock.localPort()), dualData.length());
+        QVERIFY(v4Sock.waitForReadyRead(5000));
+        buffer.reserve(100);
+        size = v4Sock.readDatagram(buffer.data(), 100, &from, &port);
+        QCOMPARE((int)size, dualData.length());
+        buffer.resize(size);
+        QCOMPARE(buffer, dualData);
+
+        QCOMPARE((int)dualSock.writeDatagram(dualData.constData(), dualData.length(), QHostAddress(QHostAddress::LocalHostIPv6), v6Sock.localPort()), dualData.length());
+        QVERIFY(v6Sock.waitForReadyRead(5000));
+        buffer.reserve(100);
+        size = v6Sock.readDatagram(buffer.data(), 100, &from, &port);
+        QCOMPARE((int)size, dualData.length());
+        buffer.resize(size);
+        QCOMPARE(buffer, dualData);
+    }
+
+    {
+        //test an autobound socket can send to both v4 and v6 addresses (v6 first)
+        QUdpSocket dualSock;
+
+        QCOMPARE((int)dualSock.writeDatagram(dualData.constData(), dualData.length(), QHostAddress(QHostAddress::LocalHostIPv6), v6Sock.localPort()), dualData.length());
+        QVERIFY(v6Sock.waitForReadyRead(5000));
+        buffer.reserve(100);
+        size = v6Sock.readDatagram(buffer.data(), 100, &from, &port);
+        QCOMPARE((int)size, dualData.length());
+        buffer.resize(size);
+        QCOMPARE(buffer, dualData);
+
+        QCOMPARE((int)dualSock.writeDatagram(dualData.constData(), dualData.length(), QHostAddress(QHostAddress::LocalHost), v4Sock.localPort()), dualData.length());
+        QVERIFY(v4Sock.waitForReadyRead(5000));
+        buffer.reserve(100);
+        size = v4Sock.readDatagram(buffer.data(), 100, &from, &port);
+        QCOMPARE((int)size, dualData.length());
+        buffer.resize(size);
+        QCOMPARE(buffer, dualData);
+    }
+}
+
+void tst_QUdpSocket::dualStackNoIPv4onV6only()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("test server SOCKS proxy doesn't support IPv6");
+    QUdpSocket v4Sock;
+    QVERIFY(v4Sock.bind(QHostAddress(QHostAddress::AnyIPv4), 0));
+    QByteArray v4Data("v4");
+
+    QUdpSocket v6Sock;
+    QVERIFY(v6Sock.bind(QHostAddress(QHostAddress::AnyIPv6), 0));
+
+    //test v4 -> v6 (should not be received as this is a v6 only socket)
+    QCOMPARE((int)v4Sock.writeDatagram(v4Data.constData(), v4Data.length(), QHostAddress(QHostAddress::LocalHost), v6Sock.localPort()), v4Data.length());
+    QVERIFY(!v6Sock.waitForReadyRead(1000));
 }
 
 void tst_QUdpSocket::empty_readyReadSlot()

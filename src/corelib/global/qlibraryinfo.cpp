@@ -217,14 +217,14 @@ QLibraryInfo::isDebugBuild()
 static const struct {
     char key[14], value[13];
 } qtConfEntries[] = {
-    { "Prefix", "" },
+    { "Prefix", "." },
     { "Documentation", "doc" },
     { "Headers", "include" },
     { "Libraries", "lib" },
     { "Binaries", "bin" },
     { "Plugins", "plugins" },
     { "Imports", "imports" },
-    { "Data", "" },
+    { "Data", "." },
     { "Translations", "translations" },
     { "Examples", "examples" },
     { "Tests", "tests" },
@@ -232,7 +232,7 @@ static const struct {
     { "Sysroot", "" },
     { "HostPrefix", "" },
     { "HostBinaries", "bin" },
-    { "HostData", "" },
+    { "HostData", "." },
 #endif
 };
 
@@ -295,6 +295,12 @@ QLibraryInfo::rawLocation(LibraryLocation loc)
 
             ret = config->value(key, defaultValue).toString();
 
+#ifdef QT_BUILD_QMAKE
+            if (ret.isEmpty() && loc == HostPrefixPath)
+                ret = config->value(QLatin1String(qtConfEntries[PrefixPath].key),
+                                    QLatin1String(qtConfEntries[PrefixPath].value)).toString();
+#endif
+
             // expand environment variables in the form $(ENVVAR)
             int rep;
             QRegExp reg_var(QLatin1String("\\$\\(.*\\)"));
@@ -309,16 +315,14 @@ QLibraryInfo::rawLocation(LibraryLocation loc)
         }
     }
 
-    if (QDir::isRelativePath(ret)) {
+    if (!ret.isEmpty() && QDir::isRelativePath(ret)) {
         QString baseDir;
 #ifdef QT_BUILD_QMAKE
-        if (loc == HostPrefixPath || loc == PrefixPath) {
-            // We make the prefix path absolute to the executable's directory.
+        if (loc == HostPrefixPath || loc == PrefixPath || loc == SysrootPath) {
+            // We make the prefix/sysroot path absolute to the executable's directory.
             // loc == PrefixPath while a sysroot is set would make no sense here.
+            // loc == SysrootPath only makes sense if qmake lives inside the sysroot itself.
             baseDir = QFileInfo(qmake_libraryInfoFile()).absolutePath();
-        } else if (loc == SysrootPath) {
-            // The sysroot is bare
-            return ret;
         } else if (loc > SysrootPath && loc <= LastHostPath) {
             // We make any other host path absolute to the host prefix directory.
             baseDir = rawLocation(HostPrefixPath);

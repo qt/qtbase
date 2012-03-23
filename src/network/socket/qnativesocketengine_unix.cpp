@@ -854,7 +854,8 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 
     struct sockaddr_in6 sockAddrIPv6;
     if (host.protocol() == QAbstractSocket::IPv6Protocol
-        || socketProtocol == QAbstractSocket::IPv6Protocol) {
+        || socketProtocol == QAbstractSocket::IPv6Protocol
+        || socketProtocol == QAbstractSocket::AnyIPProtocol) {
     memset(&sockAddrIPv6, 0, sizeof(sockAddrIPv6));
     sockAddrIPv6.sin6_family = AF_INET6;
     sockAddrIPv6.sin6_port = htons(port);

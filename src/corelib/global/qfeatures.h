@@ -597,6 +597,11 @@
 #define QT_NO_DATAWIDGETMAPPER
 #endif
 
+// QIdentityProxyModel
+#if !defined(QT_NO_IDENTITYPROXYMODEL) && (defined(QT_NO_PROXYMODEL))
+#define QT_NO_IDENTITYPROXYMODEL
+#endif
+
 // QListWidget
 #if !defined(QT_NO_LISTWIDGET) && (defined(QT_NO_LISTVIEW))
 #define QT_NO_LISTWIDGET

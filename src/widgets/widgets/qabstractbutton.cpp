@@ -644,7 +644,7 @@ void QAbstractButton::setText(const QString &text)
     update();
     updateGeometry();
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessibleEvent event(QAccessible::NameChanged, this);
+    QAccessibleEvent event(this, QAccessible::NameChanged);
     QAccessible::updateAccessibility(&event);
 #endif
 }
@@ -770,7 +770,7 @@ void QAbstractButton::setChecked(bool checked)
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::State s;
     s.checked = true;
-    QAccessibleStateChangeEvent event(s, this);
+    QAccessibleStateChangeEvent event(this, s);
     QAccessible::updateAccessibility(&event);
 #endif
 }

@@ -122,11 +122,11 @@ static inline int qt_find_latin1_string(const QChar *hay, int size, const QLatin
 static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
                                   const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
 static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
-                                  const QLatin1String &needle, Qt::CaseSensitivity cs);
+                                  QLatin1String needle, Qt::CaseSensitivity cs);
 static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
                                 const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
 static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
-                                const QLatin1String &needle, Qt::CaseSensitivity cs);
+                                QLatin1String needle, Qt::CaseSensitivity cs);
 
 // Unicode case-insensitive comparison
 static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const ushort *be)
@@ -2753,7 +2753,7 @@ int QString::lastIndexOf(const QLatin1String &str, int from, Qt::CaseSensitivity
 int QString::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
     return qt_last_index_of(unicode(), size(), ch, from, cs);
-    }
+}
 
 /*!
   \since 4.8
@@ -8988,7 +8988,7 @@ static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
 }
 
 static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
-                                  const QLatin1String &needle, Qt::CaseSensitivity cs)
+                                  QLatin1String needle, Qt::CaseSensitivity cs)
 {
     if (!haystack)
         return !needle.latin1();
@@ -9039,7 +9039,7 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
 
 
 static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
-                                const QLatin1String &needle, Qt::CaseSensitivity cs)
+                                QLatin1String needle, Qt::CaseSensitivity cs)
 {
     if (!haystack)
         return !needle.latin1();

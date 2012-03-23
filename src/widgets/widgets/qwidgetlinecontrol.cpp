@@ -552,6 +552,8 @@ void QWidgetLineControl::processInputMethodEvent(QInputMethodEvent *event)
                 }
                 selectionChange = true;
             } else {
+                if (m_selstart != m_selend)
+                    selectionChange = true;
                 m_selstart = m_selend = 0;
             }
             cursorPositionChanged = true;
@@ -768,8 +770,19 @@ void QWidgetLineControl::internalSetText(const QString &txt, int pos, bool edite
 
 #ifndef QT_NO_ACCESSIBILITY
     if (changed) {
-        QAccessibleEvent event(QAccessible::TextUpdated, parent());
-        QAccessible::updateAccessibility(&event);
+        if (oldText.isEmpty()) {
+            QAccessibleTextInsertEvent event(parent(), 0, txt);
+            event.setCursorPosition(m_cursor);
+            QAccessible::updateAccessibility(&event);
+        } else if (txt.isEmpty()) {
+            QAccessibleTextRemoveEvent event(parent(), 0, oldText);
+            event.setCursorPosition(m_cursor);
+            QAccessible::updateAccessibility(&event);
+        } else {
+            QAccessibleTextUpdateEvent event(parent(), 0, oldText, txt);
+            event.setCursorPosition(m_cursor);
+            QAccessible::updateAccessibility(&event);
+        }
     }
 #endif
 }
@@ -816,6 +829,10 @@ void QWidgetLineControl::internalInsert(const QString &s)
         addCommand(Command(SetSelection, m_cursor, 0, m_selstart, m_selend));
     if (m_maskData) {
         QString ms = maskString(m_cursor, s);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessibleTextInsertEvent insertEvent(parent(), m_cursor, ms);
+        QAccessible::updateAccessibility(&insertEvent);
+#endif
         for (int i = 0; i < (int) ms.length(); ++i) {
             addCommand (Command(DeleteSelection, m_cursor + i, m_text.at(m_cursor + i), -1, -1));
             addCommand(Command(Insert, m_cursor + i, ms.at(i), -1, -1));
@@ -824,9 +841,17 @@ void QWidgetLineControl::internalInsert(const QString &s)
         m_cursor += ms.length();
         m_cursor = nextMaskBlank(m_cursor);
         m_textDirty = true;
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessibleTextCursorEvent event(parent(), m_cursor);
+        QAccessible::updateAccessibility(&event);
+#endif
     } else {
         int remaining = m_maxLength - m_text.length();
         if (remaining != 0) {
+#ifndef QT_NO_ACCESSIBILITY
+            QAccessibleTextInsertEvent insertEvent(parent(), m_cursor, s);
+            QAccessible::updateAccessibility(&insertEvent);
+#endif
             m_text.insert(m_cursor, s.left(remaining));
             for (int i = 0; i < (int) s.left(remaining).length(); ++i)
                addCommand(Command(Insert, m_cursor++, s.at(i), -1, -1));
@@ -854,6 +879,10 @@ void QWidgetLineControl::internalDelete(bool wasBackspace)
             addCommand(Command(SetSelection, m_cursor, 0, m_selstart, m_selend));
         addCommand(Command((CommandType)((m_maskData ? 2 : 0) + (wasBackspace ? Remove : Delete)),
                    m_cursor, m_text.at(m_cursor), -1, -1));
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessibleTextRemoveEvent event(parent(), m_cursor, m_text.at(m_cursor));
+        QAccessible::updateAccessibility(&event);
+#endif
         if (m_maskData) {
             m_text.replace(m_cursor, 1, clearString(m_cursor, 1));
             addCommand(Command(Insert, m_cursor, m_text.at(m_cursor), -1, -1));
@@ -891,6 +920,10 @@ void QWidgetLineControl::removeSelectedText()
             for (i = m_selend-1; i >= m_selstart; --i)
                 addCommand (Command(RemoveSelection, i, m_text.at(i), -1, -1));
         }
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessibleTextRemoveEvent event(parent(), m_selstart, m_text.mid(m_selstart, m_selend - m_selstart));
+        QAccessible::updateAccessibility(&event);
+#endif
         if (m_maskData) {
             m_text.replace(m_selstart, m_selend - m_selstart,  clearString(m_selstart, m_selend - m_selstart));
             for (int i = 0; i < m_selend - m_selstart; ++i)
@@ -1369,8 +1402,11 @@ void QWidgetLineControl::emitCursorPositionChanged()
         m_lastCursorPos = m_cursor;
         cursorPositionChanged(oldLast, m_cursor);
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessibleEvent event(QAccessible::TextCaretMoved, parent());
-        QAccessible::updateAccessibility(&event);
+        // otherwise we send a selection update which includes the cursor
+        if (!hasSelectedText()) {
+            QAccessibleTextCursorEvent event(parent(), m_cursor);
+            QAccessible::updateAccessibility(&event);
+        }
 #endif
     }
 }

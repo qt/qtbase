@@ -56,10 +56,6 @@
 #include <QtPrintSupport/QPlatformPrinterSupport>
 #include <private/qpagedpaintdevice_p.h>
 
-#if defined (Q_WS_WIN)
-#include <private/qprintengine_win_p.h>
-#endif
-
 #if defined(Q_WS_X11)
 #include <private/qt_x11_p.h>
 #endif
@@ -1722,7 +1718,7 @@ QPrintEngine *QPrinter::printEngine() const
     return d->printEngine;
 }
 
-#if defined (Q_WS_WIN)
+#if defined (Q_OS_WIN)
 /*!
     Sets the page size to be used by the printer under Windows to \a
     pageSize.
@@ -1753,7 +1749,7 @@ int QPrinter::winPageSize() const
     Q_D(const QPrinter);
     return d->printEngine->property(QPrintEngine::PPK_WindowsPageSize).toInt();
 }
-#endif // Q_WS_WIN
+#endif // Q_OS_WIN
 
 /*!
     Returns a list of the resolutions (a list of dots-per-inch
@@ -1864,25 +1860,7 @@ QPrinter::PrinterState QPrinter::printerState() const
     Use printerState() == QPrinter::Aborted instead.
 */
 
-#ifdef Q_WS_WIN
-/*!
-    \internal
-*/
-HDC QPrinter::getDC() const
-{
-    Q_D(const QPrinter);
-    return d->printEngine->getPrinterDC();
-}
-
-/*!
-    \internal
-*/
-void QPrinter::releaseDC(HDC hdc) const
-{
-    Q_D(const QPrinter);
-    d->printEngine->releasePrinterDC(hdc);
-}
-
+#ifdef Q_OS_WIN
 /*!
     Returns the supported paper sizes for this printer.
 
@@ -1907,7 +1885,7 @@ QList<QPrinter::PaperSource> QPrinter::supportedPaperSources() const
     return int_list;
 }
 
-#endif
+#endif // Q_OS_WIN
 
 /*!
     \fn QString QPrinter::printerSelectionOption() const
@@ -1941,7 +1919,7 @@ QList<QPrinter::PaperSource> QPrinter::supportedPaperSources() const
     \sa printerSelectionOption()
 */
 
-#ifndef Q_WS_WIN
+#ifndef Q_OS_WIN
 QString QPrinter::printerSelectionOption() const
 {
     Q_D(const QPrinter);
@@ -2205,16 +2183,6 @@ QPrinter::PrintRange QPrinter::printRange() const
     \fn QPrinter::PrinterState QPrintEngine::printerState() const
 
     Returns the current state of the printer being used by the print engine.
-*/
-
-/*!
-    \fn HDC QPrintEngine::getPrinterDC() const
-    \internal
-*/
-
-/*!
-    \fn void QPrintEngine::releasePrinterDC(HDC) const
-    \internal
 */
 
 /*

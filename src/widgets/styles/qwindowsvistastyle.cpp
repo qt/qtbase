@@ -138,7 +138,7 @@ bool QWindowsVistaStylePrivate::useVista()
 {
     return (QWindowsVistaStylePrivate::useXP() &&
             (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA &&
-             QSysInfo::WindowsVersion < QSysInfo::WV_NT_based));
+             (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)));
 }
 
 /*!

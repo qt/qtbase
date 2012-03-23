@@ -578,7 +578,6 @@ void QScreenPrivate::updatePrimaryOrientation()
 
     \warning In general, grabbing an area outside the screen is not
     safe. This depends on the underlying window system.
-    \since 5.0
 */
 
 QPixmap QScreen::grabWindow(WId window, int x, int y, int w, int h) const

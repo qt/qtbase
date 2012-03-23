@@ -453,9 +453,8 @@ void QFontconfigDatabase::populateFontDatabase()
     QSupportedWritingSystems ws;
     ws.setSupported(QFontDatabase::Latin);
 
-
-    QString familyQtName = QString::fromLatin1(f->qtname);
     while (f->qtname) {
+        QString familyQtName = QString::fromLatin1(f->qtname);
         registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleNormal,QFont::Unstretched,true,true,0,f->fixed,ws,0);
         registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleItalic,QFont::Unstretched,true,true,0,f->fixed,ws,0);
         registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleOblique,QFont::Unstretched,true,true,0,f->fixed,ws,0);
@@ -671,7 +670,6 @@ static FcPattern *queryFont(const FcChar8 *file, const QByteArray &data, int id,
     if (data.isEmpty())
         return FcFreeTypeQuery(file, id, blanks, count);
 
-    extern FT_Library qt_getFreetype();
     FT_Library lib = qt_getFreetype();
 
     FcPattern *pattern = 0;

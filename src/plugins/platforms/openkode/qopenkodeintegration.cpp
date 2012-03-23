@@ -149,7 +149,7 @@ QOpenKODEIntegration::QOpenKODEIntegration()
             return;
         }
         if (displayNameLength)
-            delete displayName;
+            delete[] displayName;
 
         KDchar *desktopName = 0;
         KDsize desktopNameLength = 0;

@@ -268,16 +268,16 @@ QT_BEGIN_NAMESPACE
                                             row's header, has been changed.
     \value TableRowHeaderChanged            A table row header has been changed.
     \value TableSummaryChanged              The summary of a table has been changed.
-    \value TextAttributeChanged
-    \value TextCaretMoved                   The caret has moved in an editable widget.
+    \omitvalue TextAttributeChanged
+    \omitvalue TextCaretMoved                   The caret has moved in an editable widget.
                                             The caret represents the cursor position in an editable
                                             widget with the input focus.
     \value TextColumnChanged                A text column has been changed.
-    \value TextInserted                     Text has been inserted into an editable widget.
-    \value TextRemoved                      Text has been removed from an editable widget.
-    \value TextSelectionChanged             The selected text has changed in an editable widget.
-    \value TextUpdated                      The text has been update in an editable widget.
-    \value ValueChanged                     The QAccessible::Value of an object has changed.
+    \omitvalue TextInserted                     Text has been inserted into an editable widget.
+    \omitvalue TextRemoved                      Text has been removed from an editable widget.
+    \omitvalue TextSelectionChanged             The selected text has changed in an editable widget.
+    \omitvalue TextUpdated                      The text has been update in an editable widget.
+    \omitvalue ValueChanged                     The QAccessible::Value of an object has changed.
     \value VisibleDataChanged
 
     The values for this enum are defined to be the same as those defined in the
@@ -648,7 +648,8 @@ void QAccessible::setRootObject(QObject *object)
 void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
 {
     Q_ASSERT(object);
-    QAccessibleEvent ev(reason, object, child);
+
+    QAccessibleEvent ev(object, reason);
     updateAccessibility(&ev);
 }
 

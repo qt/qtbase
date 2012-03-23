@@ -66,10 +66,9 @@
 #include <QtCore/qiodevice.h>
 #ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
-
-QT_BEGIN_NAMESPACE
 #endif
 
+QT_BEGIN_NAMESPACE
 
 /*!
     \internal

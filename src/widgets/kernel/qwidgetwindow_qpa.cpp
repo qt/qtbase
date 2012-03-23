@@ -99,6 +99,15 @@ bool QWidgetWindow::event(QEvent *event)
     case QEvent::FocusOut:
         return false;
 
+    case QEvent::FocusAboutToChange:
+        if (QApplicationPrivate::focus_widget) {
+            if (QApplicationPrivate::focus_widget->testAttribute(Qt::WA_InputMethodEnabled))
+                qApp->inputMethod()->commit();
+
+            QGuiApplication::sendSpontaneousEvent(QApplicationPrivate::focus_widget, event);
+        }
+        return true;
+
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
         handleKeyEvent(static_cast<QKeyEvent *>(event));

@@ -48,7 +48,7 @@
     documentation set. Additionally, the guide presents special considerations
     and options to documenting non-C++ API documentation as well as QML
     documentation. Finally, the guide will provide a sample project
-    documentation and a QML component documentation.
+    documentation and an example of a QML type documentation.
 
     For specific QDoc information, consult the
     \l{Table of Contents}{QDoc Manual}.
@@ -246,13 +246,13 @@
     configuration file.
     \code
     outputprefixes = QML
-    outputprefixes.QML = qml-components-
+    outputprefixes.QML = uicomponents-
     \endcode
-    The outputprefixes will, for example, prefix QML components HTML filenames.
+    The outputprefixes will, for example, prefix QML type HTML filenames.
     \code
     files:
-        qml-components-button.html
-        qml-components-scrollbar.html
+        uicomponents-button.html
+        uicomponents-scrollbar.html
     \endcode
 
 */
@@ -295,7 +295,7 @@
     \list
         \li \l{enum-command}{\\enum} - for enumeration documentation
         \li \l{class-command}{\\class} - for C++ class documentation
-        \li \l{qmlclass-command}{\\qmlclass} - for QML component documentation
+        \li \l{qmlclass-command}{\\qmlclass} - for QML type documentation
         \li \l{page-command}{\\page} - for creating a page.
     \endlist
 
@@ -411,7 +411,7 @@
     \li Article
     \li FAQ (Frequently Asked Questions)
     \li C++ API Documentation
-    \li QML Component Documentation
+    \li QML Type Documentation
     \li Code Example
     \endlist
 
@@ -440,7 +440,7 @@
     not properly process QDoc comments in header files.
 
     \keyword qml-documentation
-    \section2 Documenting QML Components
+    \section2 Documenting QML Types
 
     In the world of \l{Qt Quick}{QML}, there are additional entities we need to
     document such as QML signals, attached properties, and QML methods.
@@ -453,7 +453,7 @@
     \li \l{qmlattachedproperty-command}{\\qmlattachedproperty}
     \li \l{qmlattachedsignal-command}{\\qmlattachedsignal}
     \li \l{qmlbasictype-command}{\\qmlbasictype}
-    \li \l{qmlclass-command}{\\qmlclass} - creates a QML component documentation
+    \li \l{qmlclass-command}{\\qmlclass} - creates a QML type documentation
     \li \l{qmlmethod-command}{\\qmlmethod}
     \li \l{qmlproperty-command}{\\qmlproperty}
     \li \l{qmlsignal-command}{\\qmlsignal}
@@ -511,25 +511,25 @@
 
     \section3 QML Modules
 
-    A component belongs to a component \e set or a \e module. The module
-    may include all the related components for a platform or contain a certain
+    A QML type belongs to a \e module. The module
+    may include all the related types for a platform or contain a certain
     version of \l{Qt Quick}. For example, the Qt Quick 2 \l{QML Elements} belong
     to the QtQuick2 module while there is also a QtQuick1 module for the older
-    elements introduced in Qt 4.
+    types introduced in Qt 4.
 
-    Modules affect the way Qdoc link and relate the components. The
+    Modules affect the way Qdoc link and relate the types. The
     \l{qmlclass-command}{\\qmlclass} topic command must have an
     \l{inqmlmodule-command}{\\inqmlmodule} context command to relate the
-    component to a module. Similarly, a \l{qmlmodule-command}{\\qmlmodule} topic
+    type to a module. Similarly, a \l{qmlmodule-command}{\\qmlmodule} topic
     command must exist in a separate \c .qdoc file to create the overview page
-    for the module. The overview page will list the related components.
+    for the module. The overview page will list the related types.
 
-    The links to the components, must therefore, also contain the module name.
-    For example, if a component called \c TabWidget is in the \c UIComponents
+    The links to the QML types, must therefore, also contain the module name.
+    For example, if a type called \c TabWidget is in the \c UIComponents
     module, it must be linked as \c {UIComponents::TabWidget}.
 
     The \l{componentset}{UIComponents} example demonstrates proper usage of
-    QDoc commands to document QML components and QML modules.
+    QDoc commands to document QML types and QML modules.
 
     \section3 Read-only and Internal QML Properties
 
@@ -539,7 +539,7 @@
     \code
         readonly property int sampleReadOnlyProperty: 0
     \endcode
-    For example, the example \l{TabWidget} component has a fictitious read-only
+    For example, the example \l{TabWidget} type has a fictitious read-only
     property \c sampleReadOnlyProperty. Its declaration has the \c readonly
     identifier and it has an initial value.
 

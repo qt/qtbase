@@ -53,7 +53,6 @@
 // We mean it.
 //
 
-#ifndef QMAC_Q3MENUBAR_CPP_FILE
 #include "QtWidgets/qstyleoption.h"
 #include <private/qmenu_p.h> // Mac needs what in this file!
 
@@ -190,7 +189,6 @@ public:
     QAction *menuBarAction;
 #endif
 };
-#endif
 
 #endif // QT_NO_MENUBAR
 

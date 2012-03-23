@@ -92,6 +92,7 @@ public:
     ~QCocoaWindow();
 
     void setGeometry(const QRect &rect);
+    void setCocoaGeometry(const QRect &rect);
     void setVisible(bool visible);
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
     void setWindowTitle(const QString &title);
@@ -110,6 +111,7 @@ public:
     void windowDidMove();
     void windowDidResize();
     void windowWillClose();
+    bool windowIsPopupType() const;
 
     void setCurrentContext(QCocoaGLContext *context);
     QCocoaGLContext *currentContext() const;
@@ -117,6 +119,7 @@ public:
 protected:
     // NSWindow handling. The QCocoaWindow/QNSView can either be displayed
     // in an existing NSWindow or in one created by Qt.
+    void recreateWindow(const QPlatformWindow *parentWindow);
     NSWindow *createNSWindow();
     void setNSWindow(NSWindow *window);
     void clearNSWindow(NSWindow *window);
