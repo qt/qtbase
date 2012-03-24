@@ -79,12 +79,14 @@ public:
     };
 
     QT_DEPRECATED static QString storageLocation(StandardLocation type) {
-        return QStandardPaths::writableLocation(static_cast<QStandardPaths::StandardLocation>(type));
+        return storageLocationImpl(type);
     }
     QT_DEPRECATED static QString displayName(StandardLocation type) {
         return QStandardPaths::displayName(static_cast<QStandardPaths::StandardLocation>(type));
     }
 #endif
+private:
+    static QString storageLocationImpl(StandardLocation type);
 };
 
 #endif // QT_NO_DESKTOPSERVICES

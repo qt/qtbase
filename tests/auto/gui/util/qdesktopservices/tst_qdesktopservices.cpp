@@ -57,12 +57,11 @@ private slots:
     void cleanup();
     void openUrl();
     void handlers();
+    void testDataLocation();
 };
 
 tst_qdesktopservices::tst_qdesktopservices()
 {
-    QCoreApplication::setOrganizationName("Nokia");
-    QCoreApplication::setApplicationName("tst_qdesktopservices");
 }
 
 tst_qdesktopservices::~tst_qdesktopservices()
@@ -117,5 +116,37 @@ void tst_qdesktopservices::handlers()
     QCOMPARE(barHandler.lastHandledUrl.toString(), barUrl.toString());
 }
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+#define Q_XDG_PLATFORM
+#endif
+
+void tst_qdesktopservices::testDataLocation()
+{
+    // This is the one point where QDesktopServices and QStandardPaths differ.
+    // QDesktopServices on unix returns "data"/orgname/appname for DataLocation, for Qt4 compat.
+    // And the appname in qt4 defaulted to empty, not to argv[0].
+    {
+        const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+        const QString app = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
+#ifdef Q_XDG_PLATFORM
+        QCOMPARE(app, base + "/data//"); // as ugly as in Qt4
+#else
+        QCOMPARE(app, base);
+#endif
+    }
+    QCoreApplication::instance()->setOrganizationName("Qt");
+    QCoreApplication::instance()->setApplicationName("QtTest");
+    {
+        const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+        const QString app = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
+#ifdef Q_XDG_PLATFORM
+        QCOMPARE(app, base + "/data/Qt/QtTest");
+#else
+        QCOMPARE(app, base + "/Qt/QtTest");
+#endif
+    }
+}
+
 QTEST_MAIN(tst_qdesktopservices)
+
 #include "tst_qdesktopservices.moc"

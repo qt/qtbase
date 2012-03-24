@@ -54,6 +54,7 @@
 #include <qmutex.h>
 #include <qplatformservices_qpa.h>
 #include <qplatformintegration_qpa.h>
+#include <qdir.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -282,6 +283,23 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
     \obsolete
     Use QStandardPaths::displayName()
 */
+
+
+QString QDesktopServices::storageLocationImpl(StandardLocation type)
+{
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+    if (type == DataLocation) {
+        QString xdgDataHome = QLatin1String(qgetenv("XDG_DATA_HOME"));
+        if (xdgDataHome.isEmpty())
+            xdgDataHome = QDir::homePath() + QLatin1String("/.local/share");
+        xdgDataHome += QLatin1String("/data/")
+                    + QCoreApplication::organizationName() + QLatin1Char('/')
+                    + QCoreApplication::applicationName();
+        return xdgDataHome;
+    }
+#endif
+    return QStandardPaths::writableLocation(static_cast<QStandardPaths::StandardLocation>(type));
+}
 
 QT_END_NAMESPACE
 
