@@ -192,7 +192,12 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
         }
     }
 # else
+#  if _POSIX_VERSION >= 200801L
     ret = realpath(entry.nativeFilePath().constData(), (char*)0);
+#  else
+    ret = (char*)malloc(PATH_MAX);
+    realpath(entry.nativeFilePath().constData(), (char*)ret);
+#  endif
 # endif
     if (ret) {
         data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
