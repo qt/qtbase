@@ -1,4 +1,4 @@
-mac {
+mac:contains(QT_CONFIG, coreservices) {
     INCLUDEPATH += $$PWD
 
     HEADERS += \
