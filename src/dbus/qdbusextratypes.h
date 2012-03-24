@@ -99,8 +99,8 @@ inline bool operator!=(const QDBusObjectPath &lhs, const QDBusObjectPath &rhs)
 inline bool operator<(const QDBusObjectPath &lhs, const QDBusObjectPath &rhs)
 { return lhs.path() < rhs.path(); }
 
-inline uint qHash(const QDBusObjectPath &objectPath)
-{ return qHash(objectPath.path()); }
+inline uint qHash(const QDBusObjectPath &objectPath, uint seed)
+{ return qHash(objectPath.path(), seed); }
 
 
 class Q_DBUS_EXPORT QDBusSignature
@@ -146,8 +146,8 @@ inline bool operator!=(const QDBusSignature &lhs, const QDBusSignature &rhs)
 inline bool operator<(const QDBusSignature &lhs, const QDBusSignature &rhs)
 { return lhs.signature() < rhs.signature(); }
 
-inline uint qHash(const QDBusSignature &signature)
-{ return qHash(signature.signature()); }
+inline uint qHash(const QDBusSignature &signature, uint seed)
+{ return qHash(signature.signature(), seed); }
 
 class QDBusVariant
 {
