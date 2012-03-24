@@ -59,24 +59,25 @@ QT_BEGIN_HEADER
 #endif
 
 #if defined(Q_OS_MAC)
+# if !defined(QT_NO_CORESERVICES)
 # include <OpenGL/gl.h>
-#elif defined(QT_OPENGL_ES_2)
-# if defined(Q_OS_MAC)
-#  include <OpenGLES/ES2/gl.h>
 # else
-#  include <GLES2/gl2.h>
+#  if defined(QT_OPENGL_ES_2)
+#   include <OpenGLES/ES2/gl.h>
+#  endif
 # endif
+#elif defined(QT_OPENGL_ES_2)
+# include <GLES2/gl2.h>
+# else
+# include <GL/gl.h>
+# endif
+
+#if defined(QT_OPENGL_ES_2)
 # ifndef GL_DOUBLE
 #  define GL_DOUBLE GL_FLOAT
 # endif
 # ifndef GLdouble
 typedef GLfloat GLdouble;
-# endif
-#else
-# if defined(Q_OS_MAC)
-#  include <OpenGL/gl.h>
-# else
-#  include <GL/gl.h>
 # endif
 #endif
 
