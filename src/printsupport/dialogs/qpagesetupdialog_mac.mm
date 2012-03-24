@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#ifndef QT_NO_PRINTDIALOG
+
 #include <Cocoa/Cocoa.h>
 
 #include "qpagesetupdialog.h"
@@ -46,8 +48,6 @@
 
 #include <QtGui/qplatformnativeinterface_qpa.h>
 #include <QtPrintSupport/qprintengine.h>
-
-#ifndef QT_NO_PRINTDIALOG
 
 QT_USE_NAMESPACE
 

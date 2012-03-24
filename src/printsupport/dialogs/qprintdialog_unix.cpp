@@ -178,7 +178,6 @@ private:
     const ppd_file_t* cupsPPD;
 #endif
 };
-#endif
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
 class QOptionTreeItem
@@ -1245,7 +1244,8 @@ void QPPDOptionsEditor::cbChanged(int)
 */
 }
 
-#endif
+#endif // !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+#endif // defined (Q_OS_UNIX)
 
 QT_END_NAMESPACE
 
