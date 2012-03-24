@@ -993,11 +993,6 @@
     require native painting primitives, you need to reimplement
     QWidget::paintEngine() to return 0 and set this flag.
 
-    \value WA_PaintOutsidePaintEvent Makes it possible to use QPainter to
-    paint on the widget outside \l{QWidget::paintEvent()}{paintEvent()}. This
-    flag is not supported on Windows, Mac OS X or Embedded Linux. We recommend
-    that you use it only when porting Qt 3 code to Qt 4.
-
     \value WA_PaintUnclipped Makes all painters operating on this widget
     unclipped. Children of this widget or other widgets in front of it do not
     clip the area the painter can paint on. This flag is only supported for

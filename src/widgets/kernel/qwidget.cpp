@@ -5128,7 +5128,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 paintEngine->d_func()->systemClip = QRegion();
             }
             q->setAttribute(Qt::WA_WState_InPaintEvent, false);
-            if (q->paintingActive() && !q->testAttribute(Qt::WA_PaintOutsidePaintEvent))
+            if (q->paintingActive())
                 qWarning("QWidget::repaint: It is dangerous to leave painters active on a widget outside of the PaintEvent");
 
             if (paintEngine && paintEngine->autoDestruct()) {

@@ -970,10 +970,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \warning When the paintdevice is a widget, QPainter can only be
     used inside a paintEvent() function or in a function called by
-    paintEvent(); that is unless the Qt::WA_PaintOutsidePaintEvent
-    widget attribute is set. On Mac OS X and Windows, you can only
-    paint in a paintEvent() function regardless of this attribute's
-    setting.
+    paintEvent().
 
     \tableofcontents
 
@@ -1760,25 +1757,6 @@ bool QPainter::begin(QPaintDevice *pd)
         d->engine->state = d->state;
 
     switch (pd->devType()) {
-#if 0
-        // is this needed any more??
-        case QInternal::Widget:
-        {
-            const QWidget *widget = static_cast<const QWidget *>(pd);
-            Q_ASSERT(widget);
-
-            const bool paintOutsidePaintEvent = widget->testAttribute(Qt::WA_PaintOutsidePaintEvent);
-            const bool inPaintEvent = widget->testAttribute(Qt::WA_WState_InPaintEvent);
-
-            // Adjust offset for alien widgets painting outside the paint event.
-            if (!inPaintEvent && paintOutsidePaintEvent && !widget->internalWinId()
-                && widget->testAttribute(Qt::WA_WState_Created)) {
-                const QPoint offset = widget->mapTo(widget->nativeParentWidget(), QPoint());
-                d->state->redirectionMatrix.translate(offset.x(), offset.y());
-            }
-            break;
-        }
-#endif
         case QInternal::Pixmap:
         {
             QPixmap *pm = static_cast<QPixmap *>(pd);

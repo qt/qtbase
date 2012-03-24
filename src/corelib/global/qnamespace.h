@@ -342,7 +342,6 @@ public:
         WA_UpdatesDisabled = 10,
         WA_Mapped = 11,
         WA_MacNoClickThrough = 12, // Mac only
-        WA_PaintOutsidePaintEvent = 13,
         WA_InputMethodEnabled = 14,
         WA_WState_Visible = 15,
         WA_WState_Hidden = 16,
