@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -39,6 +40,13 @@
 **
 ****************************************************************************/
 
+// for rand_s, _CRT_RAND_S must be #defined before #including stdlib.h.
+// put it at the beginning so some indirect inclusion doesn't break it
+#ifndef _CRT_RAND_S
+#define _CRT_RAND_S
+#endif
+#include <stdlib.h>
+
 #include "qhash.h"
 
 #ifdef truncate
@@ -47,10 +55,21 @@
 
 #include <qbitarray.h>
 #include <qstring.h>
-#include <stdlib.h>
-#ifdef QT_QHASH_DEBUG
-#include <qstring.h>
-#endif
+#include <qglobal.h>
+#include <qbytearray.h>
+#include <qdatetime.h>
+#include <qbasicatomic.h>
+
+#ifndef QT_BOOTSTRAPPED
+#include <qcoreapplication.h>
+#endif // QT_BOOTSTRAPPED
+
+#ifdef Q_OS_UNIX
+#include <stdio.h>
+#include "private/qcore_unix_p.h"
+#endif // Q_OS_UNIX
+
+#include <limits.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -117,6 +136,87 @@ uint qHash(const QBitArray &bitArray)
     return result;
 }
 
+/*!
+    \internal
+
+    Creates the QHash random seed from various sources.
+    In order of decreasing precedence:
+    - under Unix, it attemps to read from /dev/urandom;
+    - under Unix, it attemps to read from /dev/random;
+    - under Windows, it attempts to use rand_s;
+    - as a general fallback, the application's PID, a timestamp and the
+      address of a stack-local variable are used.
+*/
+static uint qt_create_qhash_seed()
+{
+    uint seed = 0;
+
+#ifdef Q_OS_UNIX
+    int randomfd = qt_safe_open("/dev/urandom", O_RDONLY);
+    if (randomfd == -1)
+        randomfd = qt_safe_open("/dev/random", O_RDONLY | O_NONBLOCK);
+    if (randomfd != -1) {
+        if (qt_safe_read(randomfd, reinterpret_cast<char *>(&seed), sizeof(seed)) == sizeof(seed)) {
+            qt_safe_close(randomfd);
+            return seed;
+        }
+        qt_safe_close(randomfd);
+    }
+#endif // Q_OS_UNIX
+
+#ifdef Q_OS_WIN32
+    errno_t err;
+    err = rand_s(&seed);
+    if (err == 0)
+        return seed;
+#endif // Q_OS_WIN32
+
+    // general fallback: initialize from the current timestamp, pid,
+    // and address of a stack-local variable
+    quint64 timestamp = QDateTime::currentMSecsSinceEpoch();
+    seed ^= timestamp;
+    seed ^= (timestamp >> 32);
+
+#ifndef QT_BOOTSTRAPPED
+    quint64 pid = QCoreApplication::applicationPid();
+    seed ^= pid;
+    seed ^= (pid >> 32);
+#endif // QT_BOOTSTRAPPED
+
+    quintptr seedPtr = reinterpret_cast<quintptr>(&seed);
+    seed ^= seedPtr;
+#if QT_POINTER_SIZE == 8
+    seed ^= (seedPtr >> 32);
+#endif
+
+    return seed;
+}
+
+/*
+    The QHash seed itself.
+*/
+Q_CORE_EXPORT QBasicAtomicInt qt_qhash_seed = Q_BASIC_ATOMIC_INITIALIZER(-1);
+
+/*!
+    \internal
+
+    Seed == -1 means it that it was not initialized yet.
+
+    We let qt_create_qhash_seed return any unsigned integer,
+    but convert it to signed in order to initialize the seed.
+
+    We don't actually care about the fact that different calls to
+    qt_create_qhash_seed() might return different values,
+    as long as in the end everyone uses the very same value.
+*/
+static void qt_initialize_qhash_seed()
+{
+    if (qt_qhash_seed.load() == -1) {
+        int x(qt_create_qhash_seed() & INT_MAX);
+        qt_qhash_seed.testAndSetRelaxed(-1, x);
+    }
+}
+
 /*
     The prime_deltas array is a table of selected prime values, even
     though it doesn't look like one. The primes we are using are 1,
@@ -166,7 +266,7 @@ static int countBits(int hint)
 const int MinNumBits = 4;
 
 const QHashData QHashData::shared_null = {
-    0, 0, Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, MinNumBits, 0, 0, true, false, 0
+    0, 0, Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, MinNumBits, 0, 0, 0, true, false, 0
 };
 
 void *QHashData::allocateNode(int nodeAlign)
@@ -193,6 +293,8 @@ QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
         QHashData *d;
         Node *e;
     };
+    if (this == &shared_null)
+        qt_initialize_qhash_seed();
     d = new QHashData;
     d->fakeNext = 0;
     d->buckets = 0;
@@ -202,6 +304,7 @@ QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
     d->userNumBits = userNumBits;
     d->numBits = numBits;
     d->numBuckets = numBuckets;
+    d->seed = uint(qt_qhash_seed.load());
     d->sharable = true;
     d->strictAlignment = nodeAlign > 8;
     d->reserved = 0;

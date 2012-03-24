@@ -49,6 +49,12 @@
 
 
 #if defined __cplusplus
+// for rand_s, _CRT_RAND_S must be #defined before #including stdlib.h.
+// put it at the beginning so some indirect inclusion doesn't break it
+#ifndef _CRT_RAND_S
+#define _CRT_RAND_S
+#endif
+#include <stdlib.h>
 #include <qglobal.h>
 #ifdef Q_OS_WIN
 # define _POSIX_
@@ -63,5 +69,4 @@
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qtextcodec.h>
-#include <stdlib.h>
 #endif

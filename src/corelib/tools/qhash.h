@@ -123,6 +123,7 @@ struct Q_CORE_EXPORT QHashData
     short userNumBits;
     short numBits;
     int numBuckets;
+    uint seed;
     uint sharable : 1;
     uint strictAlignment : 1;
     uint reserved : 30;
