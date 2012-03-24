@@ -47,6 +47,7 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qstring.h>
 #include <QtDBus/qdbusmacros.h>
+#include <QtCore/qhash.h>
 
 #ifndef QT_NO_DBUS
 
@@ -54,9 +55,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
-// defined in qhash.cpp
-Q_CORE_EXPORT uint qHash(const QString &key);
 
 class Q_DBUS_EXPORT QDBusObjectPath
 {

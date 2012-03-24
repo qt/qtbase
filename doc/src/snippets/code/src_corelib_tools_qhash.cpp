@@ -155,9 +155,9 @@ inline bool operator==(const Employee &e1, const Employee &e2)
            && e1.dateOfBirth() == e2.dateOfBirth();
 }
 
-inline uint qHash(const Employee &key)
+inline uint qHash(const Employee &key, uint seed)
 {
-    return qHash(key.name()) ^ key.dateOfBirth().day();
+    return qHash(key.name(), seed) ^ key.dateOfBirth().day();
 }
 
 #endif // EMPLOYEE_H

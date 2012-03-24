@@ -84,9 +84,9 @@ QT_BEGIN_NAMESPACE
     "a", "aa", "aaa", "aaaa", ...
 */
 
-static uint hash(const uchar *p, int n)
+static uint hash(const uchar *p, int n, uint seed)
 {
-    uint h = 0;
+    uint h = seed;
 
     while (n--) {
         h = (h << 4) + *p++;
@@ -96,9 +96,9 @@ static uint hash(const uchar *p, int n)
     return h;
 }
 
-static uint hash(const QChar *p, int n)
+static uint hash(const QChar *p, int n, uint seed)
 {
-    uint h = 0;
+    uint h = seed;
 
     while (n--) {
         h = (h << 4) + (*p++).unicode();
@@ -108,25 +108,25 @@ static uint hash(const QChar *p, int n)
     return h;
 }
 
-uint qHash(const QByteArray &key)
+uint qHash(const QByteArray &key, uint seed)
 {
-    return hash(reinterpret_cast<const uchar *>(key.constData()), key.size());
+    return hash(reinterpret_cast<const uchar *>(key.constData()), key.size(), seed);
 }
 
-uint qHash(const QString &key)
+uint qHash(const QString &key, uint seed)
 {
-    return hash(key.unicode(), key.size());
+    return hash(key.unicode(), key.size(), seed);
 }
 
-uint qHash(const QStringRef &key)
+uint qHash(const QStringRef &key, uint seed)
 {
-    return hash(key.unicode(), key.size());
+    return hash(key.unicode(), key.size(), seed);
 }
 
-uint qHash(const QBitArray &bitArray)
+uint qHash(const QBitArray &bitArray, uint seed)
 {
     int m = bitArray.d.size() - 1;
-    uint result = hash(reinterpret_cast<const uchar *>(bitArray.d.constData()), qMax(0, m));
+    uint result = hash(reinterpret_cast<const uchar *>(bitArray.d.constData()), qMax(0, m), seed);
 
     // deal with the last 0 to 7 bits manually, because we can't trust that
     // the padding is initialized to 0 in bitArray.d
@@ -614,17 +614,16 @@ void QHashData::checkSanity()
     Returns the hash value for the \a key.
 */
 
-/*! \fn uint qHash(const QByteArray &key)
-    \fn uint qHash(const QBitArray &key)
+/*! \fn uint qHash(const QByteArray &key, uint seed = 0)
+    \fn uint qHash(const QBitArray &key, uint seed = 0)
+    \fn uint qHash(const QString &key, uint seed = 0)
+    \fn uint qHash(const QStringRef &key, uint seed = 0)
+
     \relates QHash
+    \since 5.0
 
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(const QString &key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
+    Returns the hash value for the \a key, using \a seed to
+    seed the calculation.
 */
 
 /*! \fn uint qHash(const T *key)
@@ -656,8 +655,7 @@ void QHashData::checkSanity()
        key. With QHash, the items are arbitrarily ordered.
     \li The key type of a QMap must provide operator<(). The key
        type of a QHash must provide operator==() and a global
-       hash function called qHash() (see the related non-member
-       functions).
+       hash function called qHash() (see \l{qHash}).
     \endlist
 
     Here's an example QHash with QString keys and \c int values:
@@ -701,6 +699,15 @@ void QHashData::checkSanity()
 
     To avoid this problem, replace \c hash[i] with \c hash.value(i)
     in the code above.
+
+    Internally, QHash uses a hash table to perform lookups. Unlike Qt
+    3's \c QDict class, which needed to be initialized with a prime
+    number, QHash's hash table automatically grows and shrinks to
+    provide fast lookups without wasting too much memory. You can
+    still control the size of the hash table by calling reserve() if
+    you already know approximately how many items the QHash will
+    contain, but this isn't necessary to obtain good performance. You
+    can also call capacity() to retrieve the hash table's size.
 
     If you want to navigate through all the (key, value) pairs stored
     in a QHash, you can use an iterator. QHash provides both
@@ -751,21 +758,15 @@ void QHashData::checkSanity()
 
     QHash's key and value data types must be \l{assignable data
     types}. You cannot, for example, store a QWidget as a value;
-    instead, store a QWidget *. In addition, QHash's key type must
-    provide operator==(), and there must also be a global qHash()
-    function that returns a hash value for an argument of the key's
-    type.
+    instead, store a QWidget *.
 
-    Here's a list of the C++ and Qt types that can serve as keys in a
-    QHash: any integer type (char, unsigned long, etc.), any pointer
-    type, QChar, QString, and QByteArray. For all of these, the \c
-    <QHash> header defines a qHash() function that computes an
-    adequate hash value. If you want to use other types as the key,
-    make sure that you provide operator==() and a qHash()
-    implementation.
+    \target qHash
+    \section2 The qHash() hashing function
 
-    Example:
-    \snippet doc/src/snippets/code/src_corelib_tools_qhash.cpp 13
+    A QHash's key type has additional requirements other than being an
+    assignable data type: it must provide operator==(), and there must also be
+    a global qHash() function that returns a hash value for an argument of the
+    key's type.
 
     The qHash() function computes a numeric value based on a key. It
     can use any algorithm imaginable, as long as it always returns
@@ -775,19 +776,56 @@ void QHashData::checkSanity()
     attempt to return different hash values for different keys to the
     largest extent possible.
 
+    For a key type \c{K}, the qHash function must have one of these signatures:
+
+    \code
+    uint qHash(K key);
+    uint qHash(const K &key);
+
+    uint qHash(K key, uint seed);
+    uint qHash(const K &key, uint seed);
+    \endcode
+
+    The two-arguments overloads take an unsigned integer that should be used to
+    seed the calculation of the hash function. This seed is provided by QHash
+    in order to prevent a family of \l{algorithmic complexity attacks}. If both
+    a one-argument and a two-arguments overload are defined for a key type,
+    the latter is used by QHash (note that you can simply define a
+    two-arguments version, and use a default value for the seed parameter).
+
+    Here's a partial list of the C++ and Qt types that can serve as keys in a
+    QHash: any integer type (char, unsigned long, etc.), any pointer type,
+    QChar, QString, and QByteArray. For all of these, the \c <QHash> header
+    defines a qHash() function that computes an adequate hash value. Many other
+    Qt classes also declare a qHash overload for their type; please refer to
+    the documentation of each class.
+
+    If you want to use other types as the key, make sure that you provide
+    operator==() and a qHash() implementation.
+
+    Example:
+    \snippet doc/src/snippets/code/src_corelib_tools_qhash.cpp 13
+
     In the example above, we've relied on Qt's global qHash(const
-    QString &) to give us a hash value for the employee's name, and
+    QString &, uint) to give us a hash value for the employee's name, and
     XOR'ed this with the day they were born to help produce unique
     hashes for people with the same name.
 
-    Internally, QHash uses a hash table to perform lookups. Unlike Qt
-    3's \c QDict class, which needed to be initialized with a prime
-    number, QHash's hash table automatically grows and shrinks to
-    provide fast lookups without wasting too much memory. You can
-    still control the size of the hash table by calling reserve() if
-    you already know approximately how many items the QHash will
-    contain, but this isn't necessary to obtain good performance. You
-    can also call capacity() to retrieve the hash table's size.
+    \section2 Algorithmic complexity attacks
+
+    All hash tables are vulnerable to a particular class of denial of service
+    attacks, in which the attacker carefully pre-computes a set of different
+    keys that are going to be hashed in the same bucket of a hash table (or
+    even have the very same hash value). The attack aims at getting the
+    worst-case algorithmic behavior (O(n) instead of amortized O(1), see
+    \l{Algorithmic Complexity} for the details) when the data is fed into the
+    table.
+
+    In order to avoid this worst-case behavior, the calculation of the hash
+    value done by qHash() can be salted by a random seed, that nullifies the
+    attack's extent. This seed is automatically generated by QHash once per
+    process, and then passed by QHash as the second argument of the
+    two-arguments overload of the qHash() function.
 
     \sa QHashIterator, QMutableHashIterator, QMap, QSet
 */

@@ -346,6 +346,10 @@ QtCore
 * QEvent::AccessibilityPrepare, AccessibilityHelp and AccessibilityDescription removed:
   * The enum values simply didn't make sense in the first place and should simply be dropped.
 
+* [QTBUG-23529] QHash is now more resilient to a family of denial of service
+  attacks exploiting algorithmic complexity, by supporting two-arguments overloads
+  of the qHash() hashing function.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via
