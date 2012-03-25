@@ -128,6 +128,7 @@ void HtmlGenerator::initializeGenerator(const Config &config)
         { ATOM_FORMATTING_SUBSCRIPT, "<sub>", "</sub>" },
         { ATOM_FORMATTING_SUPERSCRIPT, "<sup>", "</sup>" },
         { ATOM_FORMATTING_TELETYPE, "<tt>", "</tt>" },
+        { ATOM_FORMATTING_UICONTROL, "<b>", "</b>" },
         { ATOM_FORMATTING_UNDERLINE, "<u>", "</u>" },
         { 0, 0, 0 }
     };

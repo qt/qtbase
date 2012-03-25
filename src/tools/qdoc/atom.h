@@ -195,6 +195,7 @@ public:
     static QLatin1String SUBSCRIPT_;
     static QLatin1String SUPERSCRIPT_;
     static QLatin1String TELETYPE_;
+    static QLatin1String UICONTROL_;
     static QLatin1String UNDERLINE_;
 
     static QLatin1String BULLET_;
@@ -221,6 +222,7 @@ private:
 #define ATOM_FORMATTING_SUBSCRIPT       "subscript"
 #define ATOM_FORMATTING_SUPERSCRIPT     "superscript"
 #define ATOM_FORMATTING_TELETYPE        "teletype"
+#define ATOM_FORMATTING_UICONTROL       "uicontrol"
 #define ATOM_FORMATTING_UNDERLINE       "underline"
 
 #define ATOM_LIST_BULLET                "bullet"

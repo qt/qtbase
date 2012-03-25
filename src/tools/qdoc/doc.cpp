@@ -169,6 +169,7 @@ enum {
     CMD_TARGET,
     CMD_TOPICREF,
     CMD_TT,
+    CMD_UICONTROL,
     CMD_UNDERLINE,
     CMD_UNICODE,
     CMD_VALUE,
@@ -285,6 +286,7 @@ static struct {
     { "target", CMD_TARGET, 0 },
     { "topicref", CMD_TOPICREF, 0 },
     { "tt", CMD_TT, 0 },
+    { "uicontrol", CMD_UICONTROL, 0 },
     { "underline", CMD_UNDERLINE, 0 },
     { "unicode", CMD_UNICODE, 0 },
     { "value", CMD_VALUE, 0 },
@@ -1312,6 +1314,9 @@ void DocParser::parse(const QString& source,
                     break;
                 case CMD_TT:
                     startFormat(ATOM_FORMATTING_TELETYPE, cmd);
+                    break;
+                case CMD_UICONTROL:
+                    startFormat(ATOM_FORMATTING_UICONTROL, cmd);
                     break;
                 case CMD_UNDERLINE:
                     startFormat(ATOM_FORMATTING_UNDERLINE, cmd);

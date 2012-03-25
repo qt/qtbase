@@ -240,6 +240,7 @@ QString DitaXmlGenerator::ditaTags[] =
     "topicref",
     "tt",
     "u",
+    "uicontrol",
     "ul",
     "unknown",
     "vrm",
@@ -879,6 +880,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         else if (atom->string().startsWith("span ")) {
             t = DT_keyword;
         }
+        else if (atom->string() == ATOM_FORMATTING_UICONTROL)
+            t = DT_uicontrol;
         else if (atom->string() == ATOM_FORMATTING_UNDERLINE)
             t = DT_u;
         else if (atom->string() == ATOM_FORMATTING_INDEX)

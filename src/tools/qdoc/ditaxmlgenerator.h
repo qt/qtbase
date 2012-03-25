@@ -249,6 +249,7 @@ public:
         DT_topicref,
         DT_tt,
         DT_u,
+        DT_uicontrol,
         DT_ul,
         DT_unknown,
         DT_vrm,

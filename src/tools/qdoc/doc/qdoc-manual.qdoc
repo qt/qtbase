@@ -301,6 +301,7 @@
     \li \l {11-qdoc-commands-specialcontent.html#tableofcontents-command} {\\tableofcontents}
     \li \l {08-qdoc-commands-creatinglinks.html#target-command} {\\target}
     \li \l {04-qdoc-commands-textmarkup.html#tt-command} {\\tt}
+    \li \l {04-qdoc-commands-textmarkup.html#uicontrol-command} {\\uicontrol} {(new 25/3/2012)}
     \li \l {04-qdoc-commands-textmarkup.html#underline-command} {\\underline}
     \li \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\unicode}
     \li \l {11-qdoc-commands-specialcontent.html#warning-command} {\\warning}
@@ -836,6 +837,15 @@
 
     If the argument contains spaces or other punctuation, enclose the
     argument in curly brackets.
+
+    \target uicontrol-command
+    \section1 \\uicontrol
+
+    The \\uicontrol command is used to mark content as being used for UI
+    control elements. When using HTML the output is rendered in bold.
+    When using DITA XML the content is enclosed in a \c{uicontrol} tag.
+
+    \sa \\b
 
     \target underline-command
     \section1 \\underline
@@ -8751,6 +8761,7 @@
     \li \l {21-0-qdoc-creating-dita-maps.html#topicref-command} {\\topicref} \span {class="newStuff"} {(new 05/03/12)}
     \li \l {04-qdoc-commands-textmarkup.html#tt-command} {\\tt}
     \li \l {13-qdoc-commands-topics.html#typedef-command} {\\typedef}
+    \li \l {04-qdoc-commands-textmarkup.html#uicontrol-command} {\\uicontrol} {(new 25/3/2012)}
     \li \l {04-qdoc-commands-textmarkup.html#underline-command} {\\underline}
     \li \l {13-qdoc-commands-topics.html#variable-command} {\\variable}
     \li \l {10-qdoc-commands-tablesandlists.html#value-command} {\\value}
