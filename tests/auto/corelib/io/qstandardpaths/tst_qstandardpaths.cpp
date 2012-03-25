@@ -60,6 +60,7 @@ class tst_qstandardpaths : public QObject
 private slots:
     void testDefaultLocations();
     void testCustomLocations();
+    void enableTestMode();
     void testLocateAll();
     void testDataLocation();
     void testFindExecutable();
@@ -69,6 +70,7 @@ private slots:
     void testAllWritableLocations();
 
 private:
+#ifdef Q_XDG_PLATFORM
     void setCustomLocations() {
         m_localConfigDir = m_localConfigTempDir.path();
         m_globalConfigDir = m_globalConfigTempDir.path();
@@ -80,13 +82,12 @@ private:
         qputenv("XDG_DATA_DIRS", QFile::encodeName(m_globalAppDir));
     }
     void setDefaultLocations() {
-#ifdef Q_XDG_PLATFORM
         qputenv("XDG_CONFIG_HOME", QByteArray());
         qputenv("XDG_CONFIG_DIRS", QByteArray());
         qputenv("XDG_DATA_HOME", QByteArray());
         qputenv("XDG_DATA_DIRS", QByteArray());
-#endif
     }
+#endif
 
     // Config dirs
     QString m_localConfigDir;
@@ -153,6 +154,58 @@ void tst_qstandardpaths::testCustomLocations()
 
     const QStringList dirs = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
     QCOMPARE(dirs, QStringList() << m_localConfigDir << m_globalConfigDir);
+#endif
+}
+
+void tst_qstandardpaths::enableTestMode()
+{
+    QStandardPaths::enableTestMode(true);
+
+#ifdef Q_XDG_PLATFORM
+    setCustomLocations(); // for the global config dir
+    const QString qttestDir = QDir::homePath() + QLatin1String("/.qttest");
+
+    // ConfigLocation
+    const QString configDir = qttestDir + QLatin1String("/config");
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation), configDir);
+    const QStringList confDirs = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
+    QCOMPARE(confDirs, QStringList() << configDir << m_globalConfigDir);
+
+    // GenericDataLocation
+    const QString dataDir = qttestDir + QLatin1String("/share");
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::DataLocation), dataDir);
+    const QStringList gdDirs = QStandardPaths::standardLocations(QStandardPaths::DataLocation);
+    QCOMPARE(gdDirs, QStringList() << dataDir << m_globalAppDir);
+
+    // CacheLocation
+    const QString cacheDir = qttestDir + QLatin1String("/cache");
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::CacheLocation), cacheDir);
+    const QStringList cacheDirs = QStandardPaths::standardLocations(QStandardPaths::CacheLocation);
+    QCOMPARE(cacheDirs, QStringList() << cacheDir);
+#endif
+
+    // On all platforms, we want to ensure that the writableLocation is different in test mode and real mode.
+    // Check this for locations where test programs typically write. Not desktop, download, music etc...
+    typedef QHash<QStandardPaths::StandardLocation, QString> LocationHash;
+    LocationHash testLocations;
+    testLocations.insert(QStandardPaths::DataLocation, QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+    testLocations.insert(QStandardPaths::GenericDataLocation, QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation));
+    testLocations.insert(QStandardPaths::ConfigLocation, QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
+    testLocations.insert(QStandardPaths::CacheLocation, QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    testLocations.insert(QStandardPaths::GenericCacheLocation, QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation));
+    // On Windows, what should "Program Files" become, in test mode?
+    //testLocations.insert(QStandardPaths::ApplicationsLocation, QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation));
+
+    QStandardPaths::enableTestMode(false);
+
+    for (LocationHash::const_iterator it = testLocations.constBegin(); it != testLocations.constEnd(); ++it)
+        QVERIFY2(QStandardPaths::writableLocation(it.key()) != it.value(), qPrintable(it.value()));
+
+    // Check that this is also true with no env vars set
+#ifdef Q_XDG_PLATFORM
+    setDefaultLocations();
+    for (LocationHash::const_iterator it = testLocations.constBegin(); it != testLocations.constEnd(); ++it)
+        QVERIFY2(QStandardPaths::writableLocation(it.key()) != it.value(), qPrintable(it.value()));
 #endif
 }
 

@@ -90,6 +90,13 @@ OSType translateLocation(QStandardPaths::StandardLocation type)
     }
 }
 
+static bool qsp_testMode = false;
+
+void QStandardPaths::enableTestMode(bool testMode)
+{
+    qsp_testMode = testMode;
+}
+
 /*
     Constructs a full unicode path from a FSRef.
 */
@@ -99,6 +106,16 @@ static QString getFullPath(const FSRef &ref)
     if (FSRefMakePath(&ref, reinterpret_cast<UInt8 *>(ba.data()), ba.size()) == noErr)
         return QString::fromUtf8(ba.constData()).normalized(QString::NormalizationForm_C);
     return QString();
+}
+
+static void appendOrganizationAndApp(QString &path)
+{
+    const QString org = QCoreApplication::organizationName();
+    if (!org.isEmpty())
+        path += QLatin1Char('/') + org;
+    const QString appName = QCoreApplication::applicationName();
+    if (!appName.isEmpty())
+        path += QLatin1Char('/') + appName;
 }
 
 static QString macLocation(QStandardPaths::StandardLocation type, short domain)
@@ -111,17 +128,36 @@ static QString macLocation(QStandardPaths::StandardLocation type, short domain)
 
    QString path = getFullPath(ref);
 
-   if (type == QStandardPaths::DataLocation || type == QStandardPaths::CacheLocation) {
-       if (!QCoreApplication::organizationName().isEmpty())
-           path += QLatin1Char('/') + QCoreApplication::organizationName();
-       if (!QCoreApplication::applicationName().isEmpty())
-           path += QLatin1Char('/') + QCoreApplication::applicationName();
-   }
-   return path;
+    if (type == QStandardPaths::DataLocation || type == QStandardPaths::CacheLocation)
+        appendOrganizationAndApp(path);
+    return path;
 }
 
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
+    if (qsp_testMode) {
+        const QString qttestDir = QDir::homePath() + QLatin1String("/.qttest");
+        QString path;
+        switch (type) {
+        case GenericDataLocation:
+        case DataLocation:
+            path = qttestDir + QLatin1String("/Application Support");
+            if (type == DataLocation)
+                appendOrganizationAndApp(path);
+            return path;
+        case GenericCacheLocation:
+        case CacheLocation:
+            path = qttestDir + QLatin1String("/Cache");
+            if (type == CacheLocation)
+                appendOrganizationAndApp(path);
+            return path;
+        case ConfigLocation:
+            return qttestDir + QLatin1String("/Preferences");
+        default:
+            break;
+        }
+    }
+
     switch (type) {
     case HomeLocation:
         return QDir::homePath();

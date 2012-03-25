@@ -63,6 +63,13 @@ static void appendOrganizationAndApp(QString &path)
         path += QLatin1Char('/') + appName;
 }
 
+static bool qsp_testMode = false;
+
+void QStandardPaths::enableTestMode(bool testMode)
+{
+    qsp_testMode = testMode;
+}
+
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
     switch (type) {
@@ -75,6 +82,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     {
         // http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html
         QString xdgCacheHome = QFile::decodeName(qgetenv("XDG_CACHE_HOME"));
+        if (qsp_testMode)
+            xdgCacheHome = QDir::homePath() + QLatin1String("/.qttest/cache");
         if (xdgCacheHome.isEmpty())
             xdgCacheHome = QDir::homePath() + QLatin1String("/.cache");
         if (type == QStandardPaths::CacheLocation)
@@ -85,6 +94,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case GenericDataLocation:
     {
         QString xdgDataHome = QFile::decodeName(qgetenv("XDG_DATA_HOME"));
+        if (qsp_testMode)
+            xdgDataHome = QDir::homePath() + QLatin1String("/.qttest/share");
         if (xdgDataHome.isEmpty())
             xdgDataHome = QDir::homePath() + QLatin1String("/.local/share");
         if (type == QStandardPaths::DataLocation)
@@ -95,6 +106,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     {
         // http://standards.freedesktop.org/basedir-spec/latest/
         QString xdgConfigHome = QFile::decodeName(qgetenv("XDG_CONFIG_HOME"));
+        if (qsp_testMode)
+            xdgConfigHome = QDir::homePath() + QLatin1String("/.qttest/config");
         if (xdgConfigHome.isEmpty())
             xdgConfigHome = QDir::homePath() + QLatin1String("/.config");
         return xdgConfigHome;
@@ -140,7 +153,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     if (xdgConfigHome.isEmpty())
         xdgConfigHome = QDir::homePath() + QLatin1String("/.config");
     QFile file(xdgConfigHome + QLatin1String("/user-dirs.dirs"));
-    if (file.open(QIODevice::ReadOnly)) {
+    if (!qsp_testMode && file.open(QIODevice::ReadOnly)) {
         QHash<QString, QString> lines;
         QTextStream stream(&file);
         // Only look for lines like: XDG_DESKTOP_DIR="$HOME/Desktop"

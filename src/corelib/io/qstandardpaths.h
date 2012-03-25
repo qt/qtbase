@@ -91,6 +91,8 @@ public:
 
     static QString findExecutable(const QString &executableName, const QStringList &paths = QStringList());
 
+    static void enableTestMode(bool testMode);
+
 private:
     // prevent construction
     QStandardPaths();
