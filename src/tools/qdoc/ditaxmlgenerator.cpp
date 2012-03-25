@@ -5838,6 +5838,9 @@ void DitaXmlGenerator::writeDitaMap(const Tree *tree)
 {
     QString doctype;
 
+/*
+    Remove #if 0 to get a flat ditamap.
+*/
 #if 0
     beginSubPage(tree->root(),"qt.ditamap");
     doctype = "<!DOCTYPE map PUBLIC \"-//OASIS//DTD DITA Map//EN\" \"map.dtd\">";
@@ -5969,6 +5972,12 @@ void DitaXmlGenerator::writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle
     xmlWriter().writeAttribute("navtitle",navtitle);
     NodeMultiMap::iterator i = nmm->begin();
     while (i != nmm->end()) {
+        // Hardcode not writing index.dita multiple times in the tree.
+        // index.dita should only appear at the top of the ditamap.
+        if (fileName(i.value()) == "index.dita") {
+            i++;
+            continue;
+        }
         writeStartTag(DT_topicref);
         xmlWriter().writeAttribute("navtitle",i.key());
         xmlWriter().writeAttribute("href",fileName(i.value()));
