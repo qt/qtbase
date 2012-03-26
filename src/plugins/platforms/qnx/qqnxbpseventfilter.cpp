@@ -40,18 +40,22 @@
 ****************************************************************************/
 
 #include "qqnxbpseventfilter.h"
+#include "qqnxscreen.h"
+#include "qqnxscreeneventhandler.h"
 
 #include <QAbstractEventDispatcher>
 #include <QDebug>
 
 #include <bps/event.h>
+#include <bps/screen.h>
 
 QT_BEGIN_NAMESPACE
 
 static QQnxBpsEventFilter *s_instance = 0;
 
-QQnxBpsEventFilter::QQnxBpsEventFilter(QObject *parent)
+QQnxBpsEventFilter::QQnxBpsEventFilter(QQnxScreenEventHandler *screenEventHandler, QObject *parent)
     : QObject(parent)
+    , m_screenEventHandler(screenEventHandler)
 {
     Q_ASSERT(s_instance == 0);
 
@@ -80,6 +84,18 @@ void QQnxBpsEventFilter::installOnEventDispatcher(QAbstractEventDispatcher *disp
     Q_UNUSED(previousEventFilter);
 }
 
+void QQnxBpsEventFilter::registerForScreenEvents(QQnxScreen *screen)
+{
+    if (screen_request_events(screen->nativeContext()) != BPS_SUCCESS)
+        qWarning("QQNX: failed to register for screen events on screen %p", screen->nativeContext());
+}
+
+void QQnxBpsEventFilter::unregisterForScreenEvents(QQnxScreen *screen)
+{
+    if (screen_stop_events(screen->nativeContext()) != BPS_SUCCESS)
+        qWarning("QQNX: failed to unregister for screen events on screen %p", screen->nativeContext());
+}
+
 bool QQnxBpsEventFilter::dispatcherEventFilter(void *message)
 {
 #if defined(QQNXBPSEVENTFILTER_DEBUG)
@@ -95,11 +111,16 @@ bool QQnxBpsEventFilter::dispatcherEventFilter(void *message)
 
 bool QQnxBpsEventFilter::bpsEventFilter(bps_event_t *event)
 {
+    const int eventDomain = bps_event_get_domain(event);
+
 #if defined(QQNXBPSEVENTFILTER_DEBUG)
-    qDebug() << Q_FUNC_INFO << "event=" << event << "domain=" << bps_event_get_domain(event);
-#else
-    Q_UNUSED(event);
+    qDebug() << Q_FUNC_INFO << "event=" << event << "domain=" << eventDomain;
 #endif
+
+    if (eventDomain == screen_get_domain()) {
+        screen_event_t screenEvent = screen_event_get_event(event);
+        return m_screenEventHandler->handleEvent(screenEvent);
+    }
 
     return false;
 }

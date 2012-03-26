@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQNXEVENTTHREAD_H
-#define QQNXEVENTTHREAD_H
+#ifndef QQNXSCREENEVENTTHREAD_H
+#define QQNXSCREENEVENTTHREAD_H
 
 #include <QtCore/QThread>
 
@@ -50,11 +50,11 @@ QT_BEGIN_NAMESPACE
 
 class QQnxScreenEventHandler;
 
-class QQnxEventThread : public QThread
+class QQnxScreenEventThread : public QThread
 {
 public:
-    QQnxEventThread(screen_context_t context, QQnxScreenEventHandler *screenEventHandler);
-    virtual ~QQnxEventThread();
+    QQnxScreenEventThread(screen_context_t context, QQnxScreenEventHandler *screenEventHandler);
+    ~QQnxScreenEventThread();
 
     static void injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
 
@@ -71,4 +71,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QQNXEVENTTHREAD_H
+#endif // QQNXSCREENEVENTTHREAD_H

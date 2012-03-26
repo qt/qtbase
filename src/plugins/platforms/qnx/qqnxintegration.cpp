@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qqnxintegration.h"
-#include "qqnxeventthread.h"
+#include "qqnxscreeneventthread.h"
 #include "qqnxnativeinterface.h"
 #include "qqnxrasterbackingstore.h"
 #include "qqnxscreen.h"
@@ -100,7 +100,7 @@ QMutex QQnxIntegration::ms_windowMapperMutex;
 
 QQnxIntegration::QQnxIntegration()
     : QPlatformIntegration()
-    , m_eventThread(0)
+    , m_screenEventThread(0)
     , m_navigatorEventHandler(new QQnxNavigatorEventHandler())
     , m_virtualKeyboard(0)
 #if defined(QQNX_PPS)
@@ -152,8 +152,11 @@ QQnxIntegration::QQnxIntegration()
 #endif
 
     // Create/start event thread
-    m_eventThread = new QQnxEventThread(m_screenContext, m_screenEventHandler);
-    m_eventThread->start();
+    // Not on BlackBerry, it has specialised event dispatcher which also handles screen events
+#if !defined(Q_OS_BLACKBERRY)
+    m_screenEventThread = new QQnxScreenEventThread(m_screenContext, m_screenEventHandler);
+    m_screenEventThread->start();
+#endif
 
 #if defined(QQNX_PPS)
     // Create/start the keyboard class.
@@ -182,7 +185,10 @@ QQnxIntegration::QQnxIntegration()
         m_services = new QQnxServices(m_navigator);
 
 #if defined(Q_OS_BLACKBERRY)
-    m_bpsEventFilter = new QQnxBpsEventFilter;
+    m_bpsEventFilter = new QQnxBpsEventFilter(m_screenEventHandler);
+    Q_FOREACH (QQnxScreen *screen, m_screens)
+        m_bpsEventFilter->registerForScreenEvents(screen);
+
     m_bpsEventFilter->installOnEventDispatcher(m_eventDispatcher);
 #endif
 
@@ -216,8 +222,16 @@ QQnxIntegration::~QQnxIntegration()
 #endif
     delete m_navigatorEventHandler;
 
-    // Stop/destroy event thread
-    delete m_eventThread;
+#if !defined(Q_OS_BLACKBERRY)
+    // Stop/destroy screen event thread
+    delete m_screenEventThread;
+#else
+    Q_FOREACH (QQnxScreen *screen, m_screens)
+        m_bpsEventFilter->unregisterForScreenEvents(screen);
+
+    delete m_bpsEventFilter;
+#endif
+
     delete m_screenEventHandler;
 
     // Destroy all displays
@@ -236,10 +250,6 @@ QQnxIntegration::~QQnxIntegration()
 
     // Destroy navigator interface
     delete m_navigator;
-
-#if defined(Q_OS_BLACKBERRY)
-    delete m_bpsEventFilter;
-#endif
 
 #if defined(QQNXINTEGRATION_DEBUG)
     qDebug() << "QQnx: platform plugin shutdown end";

@@ -22,7 +22,7 @@ CONFIG(blackberry) {
 #DEFINES += QQNXBUFFER_DEBUG
 #DEFINES += QQNXBPSEVENTFILTER_DEBUG
 #DEFINES += QQNXCLIPBOARD_DEBUG
-#DEFINES += QQNXEVENTTHREAD_DEBUG
+#DEFINES += QQNXSCREENEVENTTHREAD_DEBUG
 #DEFINES += QQNXGLBACKINGSTORE_DEBUG
 #DEFINES += QQNXGLCONTEXT_DEBUG
 #DEFINES += QQNXINPUTCONTEXT_DEBUG
@@ -40,7 +40,7 @@ CONFIG(blackberry) {
 
 SOURCES =   main.cpp \
             qqnxbuffer.cpp \
-            qqnxeventthread.cpp \
+            qqnxscreeneventthread.cpp \
             qqnxintegration.cpp \
             qqnxscreen.cpp \
             qqnxwindow.cpp \
@@ -55,7 +55,7 @@ SOURCES =   main.cpp \
 
 HEADERS =   main.h \
             qqnxbuffer.h \
-            qqnxeventthread.h \
+            qqnxscreeneventthread.h \
             qqnxkeytranslator.h \
             qqnxintegration.h \
             qqnxscreen.h \

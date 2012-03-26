@@ -49,19 +49,27 @@ struct bps_event_t;
 QT_BEGIN_NAMESPACE
 
 class QAbstractEventDispatcher;
+class QQnxScreen;
+class QQnxScreenEventHandler;
 
 class QQnxBpsEventFilter : public QObject
 {
     Q_OBJECT
 public:
-    explicit QQnxBpsEventFilter(QObject *parent = 0);
+    explicit QQnxBpsEventFilter(QQnxScreenEventHandler *screenEventHandler, QObject *parent = 0);
     ~QQnxBpsEventFilter();
 
     void installOnEventDispatcher(QAbstractEventDispatcher *dispatcher);
 
+    void registerForScreenEvents(QQnxScreen *screen);
+    void unregisterForScreenEvents(QQnxScreen *screen);
+
 private:
     static bool dispatcherEventFilter(void *message);
     bool bpsEventFilter(bps_event_t *event);
+
+private:
+    QQnxScreenEventHandler *m_screenEventHandler;
 };
 
 QT_END_NAMESPACE
