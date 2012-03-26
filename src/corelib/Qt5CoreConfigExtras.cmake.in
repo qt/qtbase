@@ -41,7 +41,7 @@ if (NOT _Qt5WinMain_target)
     add_library(Qt5::WinMain STATIC IMPORTED)
 endif()
 
-!!IF !isEmpty(debug_type)
+!!IF !isEmpty(CMAKE_DEBUG_TYPE)
 set_property(TARGET Qt5::WinMain APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 set_target_properties(Qt5::WinMain PROPERTIES
 !!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
@@ -52,7 +52,7 @@ set_target_properties(Qt5::WinMain PROPERTIES
 )
 !!ENDIF
 
-!!IF !isEmpty(release_type)
+!!IF !isEmpty(CMAKE_RELEASE_TYPE)
 set_property(TARGET Qt5::WinMain APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(Qt5::WinMain PROPERTIES
 !!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)

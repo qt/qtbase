@@ -114,11 +114,11 @@ macx {
     }
 }
 
-debug_type =
-release_type =
+CMAKE_DEBUG_TYPE =
+CMAKE_RELEASE_TYPE =
 
-debug_and_release|debug:debug_type = debug
-debug_and_release|release:release_type = release
+debug_and_release|debug:CMAKE_DEBUG_TYPE = debug
+debug_and_release|release:CMAKE_RELEASE_TYPE = release
 
 INSTALLS += cmake_qt5_module_files
 
