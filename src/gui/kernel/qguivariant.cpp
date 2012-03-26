@@ -101,7 +101,7 @@ namespace {
 struct GuiTypesFilter {
     template<typename T>
     struct Acceptor {
-        static const bool IsAccepted = QTypeModuleInfo<T>::IsGui && QtMetaTypePrivate::TypeDefinition<T>::IsAvailable;
+        static const bool IsAccepted = QModulesPrivate::QTypeModuleInfo<T>::IsGui && QtMetaTypePrivate::TypeDefinition<T>::IsAvailable;
     };
 };
 

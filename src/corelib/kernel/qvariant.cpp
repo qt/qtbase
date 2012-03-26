@@ -103,7 +103,7 @@ namespace {
 struct CoreTypesFilter {
     template<typename T>
     struct Acceptor {
-        static const bool IsAccepted = QTypeModuleInfo<T>::IsCore && QtMetaTypePrivate::TypeDefinition<T>::IsAvailable;
+        static const bool IsAccepted = QModulesPrivate::QTypeModuleInfo<T>::IsCore && QtMetaTypePrivate::TypeDefinition<T>::IsAvailable;
     };
 };
 } // annonymous
