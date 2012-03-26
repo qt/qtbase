@@ -650,6 +650,7 @@ void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
     Q_ASSERT(object);
 
     QAccessibleEvent ev(object, reason);
+    ev.setChild(child);
     updateAccessibility(&ev);
 }
 
