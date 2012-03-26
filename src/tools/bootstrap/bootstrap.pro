@@ -19,7 +19,6 @@ DEFINES += \
         QT_NO_DATASTREAM \
         QT_NO_LIBRARY \
         QT_NO_QOBJECT \
-        QT_NO_STL \
         QT_NO_SYSTEMLOCALE \
         QT_NO_THREAD \
         QT_NO_UNICODETABLES \
