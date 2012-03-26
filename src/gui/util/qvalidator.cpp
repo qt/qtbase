@@ -400,7 +400,7 @@ static qlonglong pow10(int exp)
 QValidator::State QIntValidator::validate(QString & input, int&) const
 {
     QByteArray buff;
-    if (!locale().d()->validateChars(input, QLocalePrivate::IntegerMode, &buff)) {
+    if (!locale().d->validateChars(input, QLocalePrivate::IntegerMode, &buff)) {
         return Invalid;
     }
 
@@ -439,7 +439,7 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
 void QIntValidator::fixup(QString &input) const
 {
     QByteArray buff;
-    if (!locale().d()->validateChars(input, QLocalePrivate::IntegerMode, &buff)) {
+    if (!locale().d->validateChars(input, QLocalePrivate::IntegerMode, &buff)) {
         return;
     }
     bool ok, overflow;
@@ -655,7 +655,7 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
 {
     Q_Q(const QDoubleValidator);
     QByteArray buff;
-    if (!locale.d()->validateChars(input, numMode, &buff, q->dec))
+    if (!locale.d->validateChars(input, numMode, &buff, q->dec))
         return QValidator::Invalid;
 
     if (buff.isEmpty())

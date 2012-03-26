@@ -2294,7 +2294,7 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
     if (locale != QLocale::c())
         flags |= QLocalePrivate::ThousandsGroup;
 
-    const QLocalePrivate *dd = locale.d();
+    const QLocalePrivate *dd = locale.d;
     int base = integerBase ? integerBase : 10;
     if (negative && base == 10) {
         result = dd->longLongToString(-static_cast<qlonglong>(number), -1,
@@ -2503,7 +2503,7 @@ QTextStream &QTextStream::operator<<(double f)
     if (numberFlags() & ForcePoint)
         flags |= QLocalePrivate::Alternate;
 
-    const QLocalePrivate *dd = d->locale.d();
+    const QLocalePrivate *dd = d->locale.d;
     QString num = dd->doubleToString(f, d->realNumberPrecision, form, -1, flags);
     d->putString(num, true);
     return *this;

@@ -126,20 +126,71 @@ private:
 };
 #endif
 
-struct Q_CORE_EXPORT QLocalePrivate
+struct QLocaleData
 {
 public:
-    QChar decimal() const { return QChar(m_decimal); }
-    QChar group() const { return QChar(m_group); }
-    QChar list() const { return QChar(m_list); }
-    QChar percent() const { return QChar(m_percent); }
-    QChar zero() const { return QChar(m_zero); }
-    QChar plus() const { return QChar(m_plus); }
-    QChar minus() const { return QChar(m_minus); }
-    QChar exponential() const { return QChar(m_exponential); }
+    static const QLocaleData *findLocaleData(QLocale::Language language,
+                                             QLocale::Script script,
+                                             QLocale::Country country);
 
-    quint16 languageId() const { return m_language_id; }
-    quint16 countryId() const { return m_country_id; }
+    quint16 m_language_id, m_script_id, m_country_id;
+
+    quint16 m_decimal, m_group, m_list, m_percent, m_zero, m_minus, m_plus, m_exponential;
+    quint16 m_quotation_start, m_quotation_end;
+    quint16 m_alternate_quotation_start, m_alternate_quotation_end;
+
+    quint16 m_list_pattern_part_start_idx, m_list_pattern_part_start_size;
+    quint16 m_list_pattern_part_mid_idx, m_list_pattern_part_mid_size;
+    quint16 m_list_pattern_part_end_idx, m_list_pattern_part_end_size;
+    quint16 m_list_pattern_part_two_idx, m_list_pattern_part_two_size;
+    quint16 m_short_date_format_idx, m_short_date_format_size;
+    quint16 m_long_date_format_idx, m_long_date_format_size;
+    quint16 m_short_time_format_idx, m_short_time_format_size;
+    quint16 m_long_time_format_idx, m_long_time_format_size;
+    quint16 m_standalone_short_month_names_idx, m_standalone_short_month_names_size;
+    quint16 m_standalone_long_month_names_idx, m_standalone_long_month_names_size;
+    quint16 m_standalone_narrow_month_names_idx, m_standalone_narrow_month_names_size;
+    quint16 m_short_month_names_idx, m_short_month_names_size;
+    quint16 m_long_month_names_idx, m_long_month_names_size;
+    quint16 m_narrow_month_names_idx, m_narrow_month_names_size;
+    quint16 m_standalone_short_day_names_idx, m_standalone_short_day_names_size;
+    quint16 m_standalone_long_day_names_idx, m_standalone_long_day_names_size;
+    quint16 m_standalone_narrow_day_names_idx, m_standalone_narrow_day_names_size;
+    quint16 m_short_day_names_idx, m_short_day_names_size;
+    quint16 m_long_day_names_idx, m_long_day_names_size;
+    quint16 m_narrow_day_names_idx, m_narrow_day_names_size;
+    quint16 m_am_idx, m_am_size;
+    quint16 m_pm_idx, m_pm_size;
+    char    m_currency_iso_code[3];
+    quint16 m_currency_symbol_idx, m_currency_symbol_size;
+    quint16 m_currency_display_name_idx, m_currency_display_name_size;
+    quint8  m_currency_format_idx, m_currency_format_size;
+    quint8  m_currency_negative_format_idx, m_currency_negative_format_size;
+    quint16 m_language_endonym_idx, m_language_endonym_size;
+    quint16 m_country_endonym_idx, m_country_endonym_size;
+    quint16 m_currency_digits : 2;
+    quint16 m_currency_rounding : 3;
+    quint16 m_first_day_of_week : 3;
+    quint16 m_weekend_start : 3;
+    quint16 m_weekend_end : 3;
+};
+
+class Q_CORE_EXPORT QLocalePrivate : public QSharedData
+{
+public:
+    QLocalePrivate() : m_index(0), m_numberOptions(0), m_data(0) {}
+
+    QChar decimal() const { return QChar(m_data->m_decimal); }
+    QChar group() const { return QChar(m_data->m_group); }
+    QChar list() const { return QChar(m_data->m_list); }
+    QChar percent() const { return QChar(m_data->m_percent); }
+    QChar zero() const { return QChar(m_data->m_zero); }
+    QChar plus() const { return QChar(m_data->m_plus); }
+    QChar minus() const { return QChar(m_data->m_minus); }
+    QChar exponential() const { return QChar(m_data->m_exponential); }
+
+    quint16 languageId() const { return m_data->m_language_id; }
+    quint16 countryId() const { return m_data->m_country_id; }
 
     QString bcp47Name() const;
 
@@ -152,10 +203,6 @@ public:
     static QLocale::Country codeToCountry(const QString &code);
     static void getLangAndCountry(const QString &name, QLocale::Language &lang,
                                   QLocale::Script &script, QLocale::Country &cntry);
-    static const QLocalePrivate *findLocale(QLocale::Language language,
-                                            QLocale::Script script,
-                                            QLocale::Country country);
-
 
     QLocale::MeasurementSystem measurementSystem() const;
 
@@ -238,48 +285,11 @@ public:
     QString dateTimeToString(const QString &format, const QDate *date, const QTime *time,
                              const QLocale *q) const;
 
-    quint16 m_language_id, m_script_id, m_country_id;
-
-    quint16 m_decimal, m_group, m_list, m_percent,
-        m_zero, m_minus, m_plus, m_exponential;
-    quint16 m_quotation_start, m_quotation_end;
-    quint16 m_alternate_quotation_start, m_alternate_quotation_end;
-
-    quint16 m_list_pattern_part_start_idx, m_list_pattern_part_start_size;
-    quint16 m_list_pattern_part_mid_idx, m_list_pattern_part_mid_size;
-    quint16 m_list_pattern_part_end_idx, m_list_pattern_part_end_size;
-    quint16 m_list_pattern_part_two_idx, m_list_pattern_part_two_size;
-    quint16 m_short_date_format_idx, m_short_date_format_size;
-    quint16 m_long_date_format_idx, m_long_date_format_size;
-    quint16 m_short_time_format_idx, m_short_time_format_size;
-    quint16 m_long_time_format_idx, m_long_time_format_size;
-    quint16 m_standalone_short_month_names_idx, m_standalone_short_month_names_size;
-    quint16 m_standalone_long_month_names_idx, m_standalone_long_month_names_size;
-    quint16 m_standalone_narrow_month_names_idx, m_standalone_narrow_month_names_size;
-    quint16 m_short_month_names_idx, m_short_month_names_size;
-    quint16 m_long_month_names_idx, m_long_month_names_size;
-    quint16 m_narrow_month_names_idx, m_narrow_month_names_size;
-    quint16 m_standalone_short_day_names_idx, m_standalone_short_day_names_size;
-    quint16 m_standalone_long_day_names_idx, m_standalone_long_day_names_size;
-    quint16 m_standalone_narrow_day_names_idx, m_standalone_narrow_day_names_size;
-    quint16 m_short_day_names_idx, m_short_day_names_size;
-    quint16 m_long_day_names_idx, m_long_day_names_size;
-    quint16 m_narrow_day_names_idx, m_narrow_day_names_size;
-    quint16 m_am_idx, m_am_size;
-    quint16 m_pm_idx, m_pm_size;
-    char m_currency_iso_code[3];
-    quint16 m_currency_symbol_idx, m_currency_symbol_size;
-    quint16 m_currency_display_name_idx, m_currency_display_name_size;
-    quint8 m_currency_format_idx, m_currency_format_size;
-    quint8 m_currency_negative_format_idx, m_currency_negative_format_size;
-    quint16 m_language_endonym_idx, m_language_endonym_size;
-    quint16 m_country_endonym_idx, m_country_endonym_size;
-    quint16 m_currency_digits : 2;
-    quint16 m_currency_rounding : 3;
-    quint16 m_first_day_of_week : 3;
-    quint16 m_weekend_start : 3;
-    quint16 m_weekend_end : 3;
-
+private:
+    friend class QLocale;
+    quint16 m_index;
+    quint16 m_numberOptions;
+    const QLocaleData *m_data;
 };
 
 inline char QLocalePrivate::digitToCLocale(QChar in) const

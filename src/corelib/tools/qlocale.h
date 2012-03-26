@@ -45,6 +45,7 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qobjectdefs.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_HEADER
 
@@ -59,9 +60,8 @@ class QVariant;
 class QTextStream;
 class QTextStreamPrivate;
 
-class QLocale;
+class QLocalePrivate;
 
-struct QLocalePrivate;
 class Q_CORE_EXPORT QLocale
 {
     Q_GADGET
@@ -590,6 +590,7 @@ public:
     QLocale(Language language, Country country = AnyCountry);
     QLocale(Language language, Script script, Country country);
     QLocale(const QLocale &other);
+    ~QLocale();
 
     QLocale &operator=(const QLocale &other);
 
@@ -700,20 +701,10 @@ public:
     QString quoteString(const QStringRef &str, QuotationStyle style = StandardQuotation) const;
 
     QString createSeparatedList(const QStringList &strl) const;
-//private:                        // this should be private, but can't be
-    struct Data {
-        quint16 index;
-        quint16 numberOptions;
-    };
+
 private:
-    friend struct QLocalePrivate;
-    // ### We now use this field to pack an index into locale_data and NumberOptions.
-    // ### Qt 5: change to a QLocaleData *d; uint numberOptions.
-    union {
-        void *v;
-        Data p;
-    };
-    const QLocalePrivate *d() const;
+    friend class QLocalePrivate;
+    QSharedDataPointer<QLocalePrivate> d;
 };
 Q_DECLARE_TYPEINFO(QLocale, Q_MOVABLE_TYPE);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLocale::NumberOptions)

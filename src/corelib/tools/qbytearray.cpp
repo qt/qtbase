@@ -3633,7 +3633,7 @@ QByteArray &QByteArray::setNum(qlonglong n, int base)
     }
 #endif
     QLocale locale(QLocale::C);
-    *this = locale.d()->longLongToString(n, -1, base).toLatin1();
+    *this = locale.d->longLongToString(n, -1, base).toLatin1();
     return *this;
 }
 
@@ -3652,7 +3652,7 @@ QByteArray &QByteArray::setNum(qulonglong n, int base)
     }
 #endif
     QLocale locale(QLocale::C);
-    *this = locale.d()->unsLongLongToString(n, -1, base).toLatin1();
+    *this = locale.d->unsLongLongToString(n, -1, base).toLatin1();
     return *this;
 }
 
@@ -3711,7 +3711,7 @@ QByteArray &QByteArray::setNum(double n, char f, int prec)
     }
 
     QLocale locale(QLocale::C);
-    *this = locale.d()->doubleToString(n, prec, form, -1, flags).toLatin1();
+    *this = locale.d->doubleToString(n, prec, form, -1, flags).toLatin1();
     return *this;
 }
 

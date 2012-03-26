@@ -513,7 +513,7 @@ def main():
     endonyms_data = StringData()
 
     # Locale data
-    data_temp_file.write("static const QLocalePrivate locale_data[] = {\n")
+    data_temp_file.write("static const QLocaleData locale_data[] = {\n")
     data_temp_file.write("//      lang   script terr    dec  group   list  prcnt   zero  minus  plus    exp quotStart quotEnd altQuotStart altQuotEnd lpStart lpMid lpEnd lpTwo sDtFmt lDtFmt sTmFmt lTmFmt ssMonth slMonth  sMonth lMonth  sDays  lDays  am,len      pm,len\n")
 
     locale_keys = locale_map.keys()

@@ -306,7 +306,7 @@ static const quint16 locale_index[] = {
      0 // trailing 0
 };
 
-static const QLocalePrivate locale_data[] = {
+static const QLocaleData locale_data[] = {
 //      lang   script terr    dec  group   list  prcnt   zero  minus  plus    exp quotStart quotEnd altQuotStart altQuotEnd lpStart lpMid lpEnd lpTwo sDtFmt lDtFmt sTmFmt lTmFmt ssMonth slMonth  sMonth lMonth  sDays  lDays  am,len      pm,len
     {      1,     0,     0,    46,    44,    59,    37,    48,    45,    43,   101,    34,    34,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 0,10 , 10,17 , 0,8 , 8,10 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 158,27 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 99,14 , 0,2 , 0,2 , {0,0,0},  0,0 , 0,7 , 0,4 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // C/AnyScript/AnyCountry
     {      3,     0,    69,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 35,18 , 18,7 , 25,12 , 185,48 , 233,111 , 134,24 , 185,48 , 233,111 , 134,24 , 113,28 , 141,55 , 85,14 , 113,28 , 141,55 , 85,14 , 2,2 , 2,2 , {69,84,66},  0,2 , 7,24 , 4,4 , 4,0 , 0,6 , 6,10 ,     2,     1,     6,     6,     7 }, // Afan/AnyScript/Ethiopia
