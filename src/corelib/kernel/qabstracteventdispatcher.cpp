@@ -327,13 +327,36 @@ void QAbstractEventDispatcher::closingDown()
 { }
 
 /*!
-    \typedef QAbstractEventDispatcher::TimerInfo
+    \class QAbstractEventDispatcher::TimerInfo
 
-    Typedef for QPair<int, int>. The first component of
-    the pair is the timer ID; the second component is
-    the interval.
+    This struct represents information about a timer:
+    \l{QAbstractEventDispatcher::TimerInfo::timerId}{timerId},
+    \l{QAbstractEventDispatcher::TimerInfo::interval}{interval}, and
+    \l{QAbstractEventDispatcher::TimerInfo::timerType}{timerType}.
 
     \sa registeredTimers()
+*/
+/*! \fn QAbstractEventDispatcher::TimerInfo::TimerInfo(int timerId, int interval, Qt::TimerType timerType)
+
+    Constructs a TimerInfo struct with the given \a timerId, \a interval, and
+    \a timerType.
+*/
+/*!
+    \variable QAbstractEventDispatcher::TimerInfo::timerId
+
+    The timer's unique id.
+*/
+/*!
+    \variable QAbstractEventDispatcher::TimerInfo::interval
+
+    The timer's interval.
+*/
+/*!
+    \variable QAbstractEventDispatcher::TimerInfo::timerType
+
+    The timer's type
+
+    \sa Qt::TimerType
 */
 
 /*!
