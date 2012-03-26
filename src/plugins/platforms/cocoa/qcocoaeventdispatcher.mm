@@ -895,6 +895,7 @@ QCocoaEventDispatcherPrivate::QCocoaEventDispatcherPrivate()
       nsAppRunCalledByQt(false),
       cleanupModalSessionsNeeded(false),
       currentModalSessionCached(0),
+      lastSerial(-1),
       interrupt(false)
 {
 }
