@@ -2884,7 +2884,7 @@ void QWidget::showNormal()
     \sa setEnabled() enabled
 */
 
-bool QWidget::isEnabledTo(QWidget* ancestor) const
+bool QWidget::isEnabledTo(const QWidget *ancestor) const
 {
     const QWidget * w = this;
     while (!w->testAttribute(Qt::WA_ForceDisabled)
@@ -7574,7 +7574,7 @@ bool QWidget::close()
     \sa show() hide() isVisible()
 */
 
-bool QWidget::isVisibleTo(QWidget* ancestor) const
+bool QWidget::isVisibleTo(const QWidget *ancestor) const
 {
     if (!ancestor)
         return isVisible();
