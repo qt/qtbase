@@ -733,14 +733,8 @@ void QHttpNetworkConnectionChannel::allDone()
         }
     } else if (alreadyPipelinedRequests.isEmpty() && socket->bytesAvailable() > 0) {
         // this is weird. we had nothing pipelined but still bytes available. better close it.
-        //if (socket->bytesAvailable() > 0)
-        //    close();
-        //
-        // FIXME
-        // We do not close it anymore now, but should introduce this again after having fixed
-        // the chunked decoder in QHttpNetworkReply to read the whitespace after the last chunk.
-        // (Currently this is worked around by readStatus in the QHttpNetworkReply ignoring
-        // leading whitespace.
+        close();
+
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     } else if (alreadyPipelinedRequests.isEmpty()) {
         if (connectionCloseEnabled)
