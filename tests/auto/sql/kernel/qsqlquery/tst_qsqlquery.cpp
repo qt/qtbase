@@ -1683,11 +1683,11 @@ void tst_QSqlQuery::prepare_bind_exec()
             QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
         if ( tst_Databases::isSqlServer( db ) || db.driverName().startsWith( "QTDS" ) )
-            createQuery = "create table " + qtest_prepare + " (id int primary key, name nvarchar(200) null)";
+            createQuery = "create table " + qtest_prepare + " (id int primary key, name nvarchar(200) null, name2 nvarchar(200) null)";
         else if ( tst_Databases::isMySQL(db) && useUnicode )
-            createQuery = "create table " + qtest_prepare + " (id int not null primary key, name varchar(200) character set utf8)";
+            createQuery = "create table " + qtest_prepare + " (id int not null primary key, name varchar(200) character set utf8, name2 varchar(200) character set utf8)";
         else
-            createQuery = "create table " + qtest_prepare + " (id int not null primary key, name varchar(200))";
+            createQuery = "create table " + qtest_prepare + " (id int not null primary key, name varchar(200), name2 varchar(200))";
 
         QVERIFY_SQL( q, exec( createQuery ) );
 
@@ -1756,7 +1756,7 @@ void tst_QSqlQuery::prepare_bind_exec()
             QCOMPARE( q.value( 0 ).toInt(), i );
             QCOMPARE( q.value( 1 ).toString().trimmed(), values[ i ] );
             QSqlRecord rInf = q.record();
-            QCOMPARE(( int )rInf.count(), 2 );
+            QCOMPARE(( int )rInf.count(), 3 );
             QCOMPARE( rInf.field( 0 ).name().toUpper(), QString( "ID" ) );
             QCOMPARE( rInf.field( 1 ).name().toUpper(), QString( "NAME" ) );
             QVERIFY( !q.next() );
@@ -1838,6 +1838,20 @@ void tst_QSqlQuery::prepare_bind_exec()
         QVERIFY( q.lastError().isValid() );
 
         QVERIFY( !q.isActive() );
+
+        QVERIFY( q.prepare( "insert into " + qtest_prepare + " (id, name, name2) values (:id, :name, :name)" ) );
+        for ( i = 101; i < 103; ++i ) {
+            q.bindValue( ":id", i );
+            q.bindValue( ":name", "name" );
+            QVERIFY( q.exec() );
+        }
+
+        // Test for QTBUG-6420
+        QVERIFY( q.exec( "select * from " + qtest_prepare + " where id > 100 order by id" ) );
+        QVERIFY( q.next() );
+        QCOMPARE( q.value(0).toInt(), 101 );
+        QCOMPARE( q.value(1).toString(), QString("name") );
+        QCOMPARE( q.value(2).toString(), QString("name") );
 
     } // end of SQLite scope
 }
