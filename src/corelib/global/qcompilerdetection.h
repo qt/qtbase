@@ -90,6 +90,7 @@
 #  define Q_DECL_ALIGN(n) __declspec(align(n))
 #  define Q_ASSUME(expr) __assume(expr)
 #  define Q_UNREACHABLE() __assume(0)
+#  define Q_NORETURN __declspec(noreturn)
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #  if defined(__INTEL_COMPILER)
 #    define Q_CC_INTEL
@@ -161,6 +162,7 @@
 #  define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
 #  define Q_LIKELY(expr)    __builtin_expect(!!(expr), true)
 #  define Q_UNLIKELY(expr)  __builtin_expect(!!(expr), false)
+#  define Q_NORETURN        __attribute__((__noreturn__))
 #  if !defined(QT_MOC_CPP)
 #    define Q_PACKED __attribute__ ((__packed__))
 #    define Q_NO_PACKED_REFERENCE
@@ -393,6 +395,10 @@
 
 #else
 #  error "Qt has not been tested with this compiler - see http://www.qt-project.org/"
+#endif
+
+#ifndef Q_NORETURN
+# define Q_NORETURN
 #endif
 
 /*
