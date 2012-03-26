@@ -501,7 +501,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
 	    ;;
     esac
     ### EMBEDDED_QPA logic missing ###
-    case "$PlatformCode,$PLATFORM_MAC,$PLATFORM_QWS" in
+    case "$PlatformCode,$PLATFORM_MAC" in
         X9,* | XC,* | XU,* | XW,* | XM,*)
             # Qt All-OS
             LICENSE_EXTENSION="-ALLOS"
@@ -510,11 +510,11 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             # Qt for Embedded Linux
             LICENSE_EXTENSION="-EMBEDDED"
             ;;
-        6M,*,no | N7,*,no | N9,*,no | NX,*,no)
+        6M,* | N7,* | N9,* | NX,*)
             # Embedded no-deploy
             LICENSE_EXTENSION="-EMBEDDED"
             ;;
-        FM,*,no | LM,yes,* | ZM,no,no)
+        FM,* | LM,yes | ZM,no)
             # Desktop
             LICENSE_EXTENSION="-DESKTOP"
             ;;
