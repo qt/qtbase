@@ -876,7 +876,6 @@ void tst_QString::constructorQByteArray()
 
 void tst_QString::STL()
 {
-#ifndef QT_NO_STL
 #ifndef QT_NO_CAST_TO_ASCII
     QString qt( "QString" );
 
@@ -920,9 +919,6 @@ void tst_QString::STL()
 
     QCOMPARE(s, QString::fromLatin1("hello"));
     QCOMPARE(stlStr, s.toStdWString());
-#else
-    QSKIP( "Not tested without STL support");
-#endif
 }
 
 void tst_QString::truncate()
@@ -3360,7 +3356,6 @@ void tst_QString::fromStdString()
 #ifdef Q_CC_HPACC
     QSKIP("This test crashes on HP-UX with aCC");
 #endif
-#if !defined(QT_NO_STL)
     std::string stroustrup = "foo";
     QString eng = QString::fromStdString( stroustrup );
     QCOMPARE( eng, QString("foo") );
@@ -3368,7 +3363,6 @@ void tst_QString::fromStdString()
     std::string stdnull( cnull, sizeof(cnull)-1 );
     QString qtnull = QString::fromStdString( stdnull );
     QCOMPARE( qtnull.size(), int(stdnull.size()) );
-#endif
 }
 
 void tst_QString::toStdString()
@@ -3376,7 +3370,6 @@ void tst_QString::toStdString()
 #ifdef Q_CC_HPACC
     QSKIP("This test crashes on HP-UX with aCC");
 #endif
-#if !defined(QT_NO_STL)
     QString nord = "foo";
     std::string stroustrup1 = nord.toStdString();
     QVERIFY( qstrcmp(stroustrup1.c_str(), "foo") == 0 );
@@ -3390,7 +3383,6 @@ void tst_QString::toStdString()
     QString qtnull( qcnull, sizeof(qcnull)/sizeof(QChar) );
     std::string stdnull = qtnull.toStdString();
     QCOMPARE( int(stdnull.size()), qtnull.size() );
-#endif
 }
 
 void tst_QString::utf8()

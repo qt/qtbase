@@ -48,10 +48,8 @@
 #include <QtCore/qalgorithms.h>
 #include <QtCore/qlist.h>
 
-#ifndef QT_NO_STL
 #include <iterator>
 #include <vector>
-#endif
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -253,12 +251,10 @@ public:
 
     //static QRawVector<T> fromList(const QList<T> &list);
 
-#ifndef QT_NO_STL
     static inline QRawVector<T> fromStdVector(const std::vector<T> &vector)
     { QRawVector<T> tmp; qCopy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
     inline std::vector<T> toStdVector() const
     { std::vector<T> tmp; qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
-#endif
 
 private:
     T *allocate(int alloc);

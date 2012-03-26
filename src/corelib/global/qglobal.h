@@ -69,9 +69,7 @@
 
 #ifdef __cplusplus
 
-#ifndef QT_NO_STL
 #include <algorithm>
-#endif
 
 #ifndef QT_NAMESPACE /* user namespace */
 
@@ -1183,14 +1181,8 @@ static inline bool qIsNull(float f)
 template <typename T>
 inline void qSwap(T &value1, T &value2)
 {
-#ifdef QT_NO_STL
-    const T t = value1;
-    value1 = value2;
-    value2 = t;
-#else
     using std::swap;
     swap(value1, value2);
-#endif
 }
 
 #if QT_DEPRECATED_SINCE(5, 0)

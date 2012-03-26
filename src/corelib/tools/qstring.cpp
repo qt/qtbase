@@ -944,9 +944,6 @@ const QStaticStringData<1> QString::shared_empty = { Q_STATIC_STRING_DATA_HEADER
     windows) and ucs4 if the size of wchar_t is 4 bytes (most Unix
     systems).
 
-    This method is only available if Qt is configured with STL
-    compatibility enabled and if QT_NO_STL is not defined.
-
     \sa fromUtf16(), fromLatin1(), fromLocal8Bit(), fromUtf8(), fromUcs4()
 */
 
@@ -971,9 +968,6 @@ const QStaticStringData<1> QString::shared_empty = { Q_STATIC_STRING_DATA_HEADER
 
     This operator is mostly useful to pass a QString to a function
     that accepts a std::wstring object.
-
-    This operator is only available if Qt is configured with STL
-    compatibility enabled and if QT_NO_STL is not defined.
 
     \sa utf16(), toAscii(), toLatin1(), toUtf8(), toLocal8Bit()
 */
@@ -7398,9 +7392,6 @@ bool QString::isRightToLeft() const
 
     If the QString contains non-Latin1 Unicode characters, using this
     can lead to loss of information.
-
-    This operator is only available if Qt is configured with STL
-    compatibility enabled and if QT_NO_STL is not defined.
 
     \sa toAscii(), toLatin1(), toUtf8(), toLocal8Bit()
 */

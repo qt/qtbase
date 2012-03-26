@@ -47,9 +47,7 @@
 #include <QtCore/qrefcount.h>
 #include <QtCore/qnamespace.h>
 
-#ifndef QT_NO_STL
-#  include <string>
-#endif // QT_NO_STL
+#include <string>
 
 #include <stdarg.h>
 
@@ -614,12 +612,10 @@ public:
     inline void push_front(QChar c) { prepend(c); }
     inline void push_front(const QString &s) { prepend(s); }
 
-#ifndef QT_NO_STL
     static inline QString fromStdString(const std::string &s);
     inline std::string toStdString() const;
     static inline QString fromStdWString(const std::wstring &s);
     inline std::wstring toStdWString() const;
-#endif
 
     // compatibility
     struct Null { };
@@ -1092,7 +1088,6 @@ inline QT_ASCII_CAST_WARN const QString operator+(const QString &s, const QByteA
 #  endif // QT_NO_CAST_FROM_ASCII
 #endif // QT_USE_QSTRINGBUILDER
 
-#ifndef QT_NO_STL
 inline std::string QString::toStdString() const
 { const QByteArray asc = toAscii(); return std::string(asc.constData(), asc.length()); }
 
@@ -1113,9 +1108,9 @@ inline std::wstring QString::toStdWString() const
     str.resize(toWCharArray(&(*str.begin())));
     return str;
 }
+
 inline QString QString::fromStdWString(const std::wstring &s)
 { return fromWCharArray(s.data(), int(s.size())); }
-#endif
 
 #if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QString &);

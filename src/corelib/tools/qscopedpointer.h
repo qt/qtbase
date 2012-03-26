@@ -185,7 +185,6 @@ template <class T, class Cleanup>
 Q_INLINE_TEMPLATE void qSwap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2)
 { p1.swap(p2); }
 
-#ifndef QT_NO_STL
 QT_END_NAMESPACE
 namespace std {
     template <class T, class Cleanup>
@@ -193,7 +192,6 @@ namespace std {
     { p1.swap(p2); }
 }
 QT_BEGIN_NAMESPACE
-#endif
 
 
 

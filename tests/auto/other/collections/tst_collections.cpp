@@ -78,9 +78,7 @@ void foo()
 
 #include <QtTest/QtTest>
 
-#ifndef QT_NO_STL
-#  include <algorithm>
-#endif
+#include <algorithm>
 
 #include "qalgorithms.h"
 #include "qbitarray.h"
@@ -136,14 +134,12 @@ private slots:
     void conversions();
     void javaStyleIterators();
     void constAndNonConstStlIterators();
-#ifndef QT_NO_STL
     void vector_stl_data();
     void vector_stl();
     void list_stl_data();
     void list_stl();
     void linkedlist_stl_data();
     void linkedlist_stl();
-#endif
     void q_init();
     void pointersize();
     void containerInstantiation();
@@ -228,7 +224,7 @@ void tst_Collections::list()
 	QVERIFY(list.size() == 6);
 	QVERIFY(list.end() - list.begin() == list.size());
 
-#if !defined(QT_NO_STL) && !defined(Q_CC_MSVC) && !defined(Q_CC_SUN)
+#if !defined(Q_CC_MSVC) && !defined(Q_CC_SUN)
 	QVERIFY(std::binary_search(list.begin(), list.end(), 2) == true);
 	QVERIFY(std::binary_search(list.begin(), list.end(), 9) == false);
 #endif
@@ -1038,10 +1034,8 @@ void tst_Collections::vector()
     v.prepend(1);
 
     v << 3 << 4 << 5 << 6;
-#if !defined(QT_NO_STL)
     QVERIFY(std::binary_search(v.begin(), v.end(), 2) == true);
     QVERIFY(std::binary_search(v.begin(), v.end(), 9) == false);
-#endif
     QVERIFY(qBinaryFind(v.begin(), v.end(), 2) == v.begin() + 1);
     QVERIFY(qLowerBound(v.begin(), v.end(), 2) == v.begin() + 1);
     QVERIFY(qUpperBound(v.begin(), v.end(), 2) == v.begin() + 2);
@@ -2870,7 +2864,6 @@ void tst_Collections::constAndNonConstStlIterators()
     testMapLikeStlIterators<QMultiHash<QString, QString> >();
 }
 
-#ifndef QT_NO_STL
 void tst_Collections::vector_stl_data()
 {
     QTest::addColumn<QStringList>("elements");
@@ -2953,7 +2946,6 @@ void tst_Collections::list_stl()
 
     QCOMPARE(QList<QString>::fromStdList(stdList), list);
 }
-#endif
 
 template <typename T>
 T qtInit(T * = 0)
@@ -3014,7 +3006,6 @@ void instantiateContainer()
     ContainerType container;
     const ContainerType constContainer(container);
 
-#ifndef QT_NO_STL
     typename ContainerType::const_iterator constIt;
     constIt = constContainer.begin();
     constIt = container.cbegin();
@@ -3024,7 +3015,7 @@ void instantiateContainer()
     constIt = constContainer.cend();
     container.constEnd();
     Q_UNUSED(constIt)
-#endif
+
     container.clear();
     container.contains(value);
     container.count();
@@ -3043,12 +3034,10 @@ void instantiateMutableIterationContainer()
     instantiateContainer<ContainerType, ValueType>();
     ContainerType container;
 
-#ifndef QT_NO_STL
     typename ContainerType::iterator it;
     it = container.begin();
     it = container.end();
     Q_UNUSED(it)
-#endif
 
     // QSet lacks count(T).
     const ValueType value = ValueType();
@@ -3622,10 +3611,8 @@ struct IntOrString
     IntOrString(const QString &v) : val(v.toInt()) { }
     operator int() { return val; }
     operator QString() { return QString::number(val); }
-#ifndef QT_NO_STL
     operator std::string() { return QString::number(val).toStdString(); }
     IntOrString(const std::string &v) : val(QString::fromStdString(v).toInt()) { }
-#endif
 };
 
 template<class Container> void insert_remove_loop_impl()
@@ -3742,14 +3729,12 @@ void tst_Collections::insert_remove_loop()
     insert_remove_loop_impl<QVarLengthArray<int, 15> >();
     insert_remove_loop_impl<QVarLengthArray<QString, 15> >();
 
-#ifndef QT_NO_STL
     insert_remove_loop_impl<ExtList<std::string> >();
     insert_remove_loop_impl<QVector<std::string> >();
     insert_remove_loop_impl<QVarLengthArray<std::string> >();
     insert_remove_loop_impl<QVarLengthArray<std::string, 10> >();
     insert_remove_loop_impl<QVarLengthArray<std::string, 3> >();
     insert_remove_loop_impl<QVarLengthArray<std::string, 15> >();
-#endif
 }
 
 

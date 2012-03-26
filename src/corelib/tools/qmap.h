@@ -51,10 +51,7 @@
 #include <QtCore/qdebug.h>
 #endif
 
-#ifndef QT_NO_STL
 #include <map>
-#endif
-
 #include <new>
 
 QT_BEGIN_HEADER
@@ -349,10 +346,8 @@ public:
     { qSwap(d, other.d); return *this; }
 #endif
     inline void swap(QMap<Key, T> &other) { qSwap(d, other.d); }
-#ifndef QT_NO_STL
     explicit QMap(const typename std::map<Key, T> &other);
     std::map<Key, T> toStdMap() const;
-#endif
 
     bool operator==(const QMap<Key, T> &other) const;
     inline bool operator!=(const QMap<Key, T> &other) const { return !(*this == other); }
@@ -939,7 +934,6 @@ Q_OUTOFLINE_TEMPLATE bool QMap<Key, T>::operator==(const QMap<Key, T> &other) co
     return true;
 }
 
-#ifndef QT_NO_STL
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE QMap<Key, T>::QMap(const std::map<Key, T> &other)
 {
@@ -962,8 +956,6 @@ Q_OUTOFLINE_TEMPLATE std::map<Key, T> QMap<Key, T>::toStdMap() const
     }
     return map;
 }
-
-#endif // QT_NO_STL
 
 template <class Key, class T>
 class QMultiMap : public QMap<Key, T>
