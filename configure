@@ -739,7 +739,6 @@ CFG_GSTREAMER=auto
 CFG_QGTKSTYLE=auto
 CFG_LARGEFILE=auto
 CFG_OPENSSL=auto
-CFG_STL=auto
 CFG_PRECOMPILE=auto
 CFG_SEPARATE_DEBUG_INFO=no
 CFG_SEPARATE_DEBUG_INFO_NOCOPY=no
@@ -911,7 +910,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1460,13 +1459,6 @@ while [ "$#" -gt 0 ]; do
     egl)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_EGL="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    stl)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_STL="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2885,13 +2877,6 @@ if [ "$OPT_HELP" = "yes" ]; then
         LFSY="*"
         LFSN=" "
     fi
-    if [ "$CFG_STL" = "auto" ] || [ "$CFG_STL" = "yes" ]; then
-        SHY="*"
-        SHN=" "
-    else
-        SHY=" "
-        SHN="*"
-    fi
     if [ "$CFG_PRECOMPILE" = "auto" ] || [ "$CFG_PRECOMPILE" = "no" ]; then
         PHY=" "
         PHN="*"
@@ -2931,7 +2916,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-release] [-debug] [-debug-and-release]
         [-developer-build] [-shared] [-static] [-no-fast] [-fast] [-no-largefile]
         [-largefile] [-no-exceptions] [-exceptions] [-no-accessibility]
-        [-accessibility] [-no-stl] [-stl] [-no-sql-<driver>] [-sql-<driver>]
+        [-accessibility] [-no-sql-<driver>] [-sql-<driver>]
         [-plugin-sql-<driver>] [-system-sqlite]
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
         [-qt-zlib] [-system-zlib] [-no-gif] [-no-libpng] [-qt-libpng] [-system-libpng]
@@ -3069,9 +3054,6 @@ fi
 
     -no-accessibility .. Do not compile Accessibility support.
  *  -accessibility ..... Compile Accessibility support.
-
- $SHN  -no-stl ............ Do not compile STL support.
- $SHY  -stl ............... Compile STL support.
 
     -no-sql-<driver> ... Disable SQL <driver> entirely.
     -qt-sql-<driver> ... Enable a SQL <driver> in the QtSql library, by default
@@ -5220,26 +5202,13 @@ if [ "$CFG_LIBFREETYPE" = "auto" ]; then
     fi
 fi
 
-HAVE_STL=no
-if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS; then
-    HAVE_STL=yes
+if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS &&
+    [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+    echo "STL functionality check failed! Cannot build Qt with this STL library."
+    echo " Turn on verbose messaging (-v) to $0 to see the final report."
+    exit 101
 fi
 
-if [ "$CFG_STL" != "no" ]; then
-    if [ "$HAVE_STL" = "yes" ]; then
-        CFG_STL=yes
-    else
-        if [ "$CFG_STL" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-            echo "STL support cannot be enabled due to functionality tests!"
-            echo " Turn on verbose messaging (-v) to $0 to see the final report."
-            echo " If you believe this message is in error you may use the continue"
-            echo " switch (-continue) to $0 to continue."
-            exit 101
-        else
-            CFG_STL=no
-        fi
-    fi
-fi
 
 # detect POSIX clock_gettime()
 if [ "$CFG_CLOCK_GETTIME" = "auto" ]; then
@@ -5580,11 +5549,6 @@ QMakeVar set RCC_DIR ".rcc/$QMAKE_OUTDIR"
 QMakeVar set UI_DIR ".uic/$QMAKE_OUTDIR"
 if [ "$CFG_LARGEFILE" = "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG largefile"
-fi
-if [ "$CFG_STL" = "no" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STL"
-else
-    QMAKE_CONFIG="$QMAKE_CONFIG stl"
 fi
 if [ "$CFG_USE_GNUMAKE" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG GNUmake"
@@ -6301,9 +6265,6 @@ elif [ "$CFG_DEBUG" = "no" ]; then
     fi
     QT_CONFIG="$QT_CONFIG release"
 fi
-if [ "$CFG_STL" = "yes" ]; then
-    QTCONFIG_CONFIG="$QTCONFIG_CONFIG stl"
-fi
 if [ "$CFG_FRAMEWORK" = "no" ]; then
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG qt_no_framework"
 else
@@ -6555,7 +6516,6 @@ else
     echo "JavaScriptCore JIT ..... $CFG_JAVASCRIPTCORE_JIT"
 fi
 echo "Declarative debugging ...$CFG_DECLARATIVE_DEBUG"
-echo "STL support ............ $CFG_STL"
 echo "PCH support ............ $CFG_PRECOMPILE"
 if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
     echo "SSE2/SSE3/SSSE3......... ${CFG_SSE2}/${CFG_SSE3}/${CFG_SSSE3}"

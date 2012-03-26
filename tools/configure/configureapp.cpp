@@ -197,7 +197,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QMAKE_INTERNAL" ]  = "no";
     dictionary[ "FAST" ]            = "no";
     dictionary[ "NOPROCESS" ]       = "no";
-    dictionary[ "STL" ]             = "yes";
     dictionary[ "EXCEPTIONS" ]      = "yes";
     dictionary[ "WIDGETS" ]         = "yes";
     dictionary[ "RTTI" ]            = "yes";
@@ -767,11 +766,6 @@ void Configure::parseCmdLine()
             dictionary[ "FAST" ] = "yes";
         else if (configCmdLine.at(i) == "-no-fast")
             dictionary[ "FAST" ] = "no";
-
-        else if (configCmdLine.at(i) == "-stl")
-            dictionary[ "STL" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-stl")
-            dictionary[ "STL" ] = "no";
 
         else if (configCmdLine.at(i) == "-exceptions")
             dictionary[ "EXCEPTIONS" ] = "yes";
@@ -1362,7 +1356,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "FREETYPE" ]            = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "no";
-        dictionary[ "STL" ]                 = "no";
         dictionary[ "EXCEPTIONS" ]          = "no";
         dictionary[ "RTTI" ]                = "no";
         dictionary[ "SSE2" ]                = "no";
@@ -1446,7 +1439,7 @@ bool Configure::displayHelp()
                     "[-release] [-debug] [-debug-and-release] [-shared] [-static]\n"
                     "[-no-fast] [-fast] [-no-exceptions] [-exceptions]\n"
                     "[-no-accessibility] [-accessibility] [-no-rtti] [-rtti]\n"
-                    "[-no-stl] [-stl] [-no-sql-<driver>] [-qt-sql-<driver>]\n"
+                    "[-no-sql-<driver>] [-qt-sql-<driver>]\n"
                     "[-plugin-sql-<driver>] [-system-sqlite]\n"
                     "[-D <define>] [-I <includepath>] [-L <librarypath>]\n"
                     "[-help] [-no-dsp] [-dsp] [-no-vcproj] [-vcproj]\n"
@@ -1507,9 +1500,6 @@ bool Configure::displayHelp()
 
         desc("ACCESSIBILITY", "no",  "-no-accessibility", "Do not compile Windows Active Accessibility support.");
         desc("ACCESSIBILITY", "yes", "-accessibility",    "Compile Windows Active Accessibility support.\n");
-
-        desc("STL", "no",       "-no-stl",              "Do not compile STL support.");
-        desc("STL", "yes",      "-stl",                 "Compile STL support.\n");
 
         desc(                   "-no-sql-<driver>",     "Disable SQL <driver> entirely, by default none are turned on.");
         desc(                   "-qt-sql-<driver>",     "Enable a SQL <driver> in the Qt Library.");
@@ -2043,7 +2033,6 @@ bool Configure::verifyConfiguration()
 
    Options:
      debug release
-     stl
 
  Things that do not affect the Qt API/ABI:
      system-jpeg no-jpeg jpeg
@@ -2593,8 +2582,6 @@ void Configure::generateQConfigPri()
 
         if (dictionary[ "LTCG" ] == "yes")
             configStream << " ltcg";
-        if (dictionary[ "STL" ] == "yes")
-            configStream << " stl";
         if (dictionary[ "EXCEPTIONS" ] == "yes")
             configStream << " exceptions";
         if (dictionary[ "EXCEPTIONS" ] == "no")
@@ -2759,7 +2746,6 @@ void Configure::generateConfigfiles()
         tmpStream << endl << "// Compile time features" << endl;
 
         QStringList qconfigList;
-        if (dictionary["STL"] == "no")                qconfigList += "QT_NO_STL";
         if (dictionary["STYLE_WINDOWS"] != "yes")     qconfigList += "QT_NO_STYLE_WINDOWS";
         if (dictionary["STYLE_PLASTIQUE"] != "yes")   qconfigList += "QT_NO_STYLE_PLASTIQUE";
         if (dictionary["STYLE_CLEANLOOKS"] != "yes")   qconfigList += "QT_NO_STYLE_CLEANLOOKS";
@@ -3005,7 +2991,6 @@ void Configure::displayConfig()
     cout << "Debug symbols..............." << (dictionary[ "BUILD" ] == "debug" ? "yes" : "no") << endl;
     cout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
     cout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
-    cout << "STL support................." << dictionary[ "STL" ] << endl;
     cout << "Exception support..........." << dictionary[ "EXCEPTIONS" ] << endl;
     cout << "RTTI support................" << dictionary[ "RTTI" ] << endl;
     cout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;

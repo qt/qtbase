@@ -43,9 +43,6 @@
 #ifndef QT_NO_QUUID_STRING
 #  define QT_NO_QUUID_STRING
 #endif
-#ifndef QT_NO_STL
-#  define QT_NO_STL
-#endif
 
 /* Dialogs */
 #ifndef QT_NO_COLORDIALOG

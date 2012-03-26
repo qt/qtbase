@@ -208,9 +208,6 @@
 // Status Tip
 //#define QT_NO_STATUSTIP
 
-// Standard Template Library
-//#define QT_NO_STL
-
 // QMotifStyle
 //#define QT_NO_STYLE_MOTIF
 
