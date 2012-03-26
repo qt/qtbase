@@ -306,8 +306,8 @@ public:
     QPoint mapFromGlobal(const QPoint &) const;
     QPoint mapToParent(const QPoint &) const;
     QPoint mapFromParent(const QPoint &) const;
-    QPoint mapTo(QWidget *, const QPoint &) const;
-    QPoint mapFrom(QWidget *, const QPoint &) const;
+    QPoint mapTo(const QWidget *, const QPoint &) const;
+    QPoint mapFrom(const QWidget *, const QPoint &) const;
 
     QWidget *window() const;
     QWidget *nativeParentWidget() const;

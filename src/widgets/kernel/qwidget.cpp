@@ -3860,13 +3860,13 @@ void QWidget::setFixedHeight(int h)
     \sa mapFrom() mapToParent() mapToGlobal() underMouse()
 */
 
-QPoint QWidget::mapTo(QWidget * parent, const QPoint & pos) const
+QPoint QWidget::mapTo(const QWidget * parent, const QPoint & pos) const
 {
     QPoint p = pos;
     if (parent) {
         const QWidget * w = this;
         while (w != parent) {
-            Q_ASSERT_X(w, "QWidget::mapTo(QWidget *parent, const QPoint &pos)",
+            Q_ASSERT_X(w, "QWidget::mapTo(const QWidget *parent, const QPoint &pos)",
                        "parent must be in parent hierarchy");
             p = w->mapToParent(p);
             w = w->parentWidget();
@@ -3884,13 +3884,13 @@ QPoint QWidget::mapTo(QWidget * parent, const QPoint & pos) const
     \sa mapTo() mapFromParent() mapFromGlobal() underMouse()
 */
 
-QPoint QWidget::mapFrom(QWidget * parent, const QPoint & pos) const
+QPoint QWidget::mapFrom(const QWidget * parent, const QPoint & pos) const
 {
     QPoint p(pos);
     if (parent) {
         const QWidget * w = this;
         while (w != parent) {
-            Q_ASSERT_X(w, "QWidget::mapFrom(QWidget *parent, const QPoint &pos)",
+            Q_ASSERT_X(w, "QWidget::mapFrom(const QWidget *parent, const QPoint &pos)",
                        "parent must be in parent hierarchy");
 
             p = w->mapFromParent(p);
