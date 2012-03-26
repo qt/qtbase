@@ -68,10 +68,9 @@ void QXcbWMSupport::updateNetWMAtoms()
     int offset = 0;
     int remaining = 0;
     do {
-        xcb_generic_error_t *error = 0;
         xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_SUPPORTED), XCB_ATOM_ATOM, offset, 1024);
-        xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, &error);
-        if (!reply || error)
+        xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, NULL);
+        if (!reply)
             break;
 
         remaining = 0;
@@ -103,10 +102,9 @@ void QXcbWMSupport::updateVirtualRoots()
     int offset = 0;
     int remaining = 0;
     do {
-        xcb_generic_error_t *error = 0;
         xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_VIRTUAL_ROOTS), XCB_ATOM_ATOM, offset, 1024);
-        xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, &error);
-        if (!reply || error)
+        xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, NULL);
+        if (!reply)
             break;
 
         remaining = 0;

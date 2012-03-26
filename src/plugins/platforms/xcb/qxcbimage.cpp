@@ -84,20 +84,15 @@ QPixmap qt_xcb_pixmapFromXPixmap(QXcbConnection *connection, xcb_pixmap_t pixmap
                                  const xcb_visualtype_t *visual)
 {
     xcb_connection_t *conn = connection->xcb_connection();
-    xcb_generic_error_t *error = 0;
 
     xcb_get_image_cookie_t get_image_cookie =
-        xcb_get_image(conn, XCB_IMAGE_FORMAT_Z_PIXMAP, pixmap,
+        xcb_get_image_unchecked(conn, XCB_IMAGE_FORMAT_Z_PIXMAP, pixmap,
                       0, 0, width, height, 0xffffffff);
 
     xcb_get_image_reply_t *image_reply =
-        xcb_get_image_reply(conn, get_image_cookie, &error);
+        xcb_get_image_reply(conn, get_image_cookie, NULL);
 
     if (!image_reply) {
-        if (error) {
-            connection->handleXcbError(error);
-            free(error);
-        }
         return QPixmap();
     }
 

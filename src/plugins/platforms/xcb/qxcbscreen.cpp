@@ -76,13 +76,11 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
 
     xcb_change_window_attributes(xcb_connection(), screen->root, mask, values);
 
-    xcb_generic_error_t *error;
-
     xcb_get_property_reply_t *reply =
         xcb_get_property_reply(xcb_connection(),
-            xcb_get_property(xcb_connection(), false, screen->root,
+            xcb_get_property_unchecked(xcb_connection(), false, screen->root,
                              atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK),
-                             XCB_ATOM_WINDOW, 0, 1024), &error);
+                             XCB_ATOM_WINDOW, 0, 1024), NULL);
 
     if (reply && reply->format == 32 && reply->type == XCB_ATOM_WINDOW) {
         xcb_window_t windowManager = *((xcb_window_t *)xcb_get_property_value(reply));
@@ -90,24 +88,18 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
         if (windowManager != XCB_WINDOW_NONE) {
             xcb_get_property_reply_t *windowManagerReply =
                 xcb_get_property_reply(xcb_connection(),
-                    xcb_get_property(xcb_connection(), false, windowManager,
+                    xcb_get_property_unchecked(xcb_connection(), false, windowManager,
                                      atom(QXcbAtom::_NET_WM_NAME),
-                                     atom(QXcbAtom::UTF8_STRING), 0, 1024), &error);
+                                     atom(QXcbAtom::UTF8_STRING), 0, 1024), NULL);
             if (windowManagerReply && windowManagerReply->format == 8 && windowManagerReply->type == atom(QXcbAtom::UTF8_STRING)) {
                 m_windowManagerName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply), xcb_get_property_value_length(windowManagerReply));
 #ifdef Q_XCB_DEBUG
                 qDebug("Running window manager: %s", qPrintable(m_windowManagerName));
 #endif
-            } else if (error) {
-                connection->handleXcbError(error);
-                free(error);
             }
 
             free(windowManagerReply);
         }
-    } else if (error) {
-        connection->handleXcbError(error);
-        free(error);
     }
 
     free(reply);
@@ -171,23 +163,17 @@ QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
     int x = p.x();
     int y = p.y();
 
-    xcb_generic_error_t *error;
-
     xcb_window_t parent = root;
     xcb_window_t child = root;
 
     do {
         xcb_translate_coordinates_cookie_t translate_cookie =
-            xcb_translate_coordinates(xcb_connection(), parent, child, x, y);
+            xcb_translate_coordinates_unchecked(xcb_connection(), parent, child, x, y);
 
         xcb_translate_coordinates_reply_t *translate_reply =
-            xcb_translate_coordinates_reply(xcb_connection(), translate_cookie, &error);
+            xcb_translate_coordinates_reply(xcb_connection(), translate_cookie, NULL);
 
         if (!translate_reply) {
-            if (error) {
-                connection()->handleXcbError(error);
-                free(error);
-            }
             return 0;
         }
 
@@ -252,17 +238,12 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
     if (width == 0 || height == 0)
         return QPixmap();
 
-    xcb_get_geometry_cookie_t geometry_cookie = xcb_get_geometry(xcb_connection(), window);
+    xcb_get_geometry_cookie_t geometry_cookie = xcb_get_geometry_unchecked(xcb_connection(), window);
 
-    xcb_generic_error_t *error;
     xcb_get_geometry_reply_t *reply =
-        xcb_get_geometry_reply(xcb_connection(), geometry_cookie, &error);
+        xcb_get_geometry_reply(xcb_connection(), geometry_cookie, NULL);
 
     if (!reply) {
-        if (error) {
-            connection()->handleXcbError(error);
-            free(error);
-        }
         return QPixmap();
     }
 
@@ -274,15 +255,11 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
     // TODO: handle multiple screens
     QXcbScreen *screen = const_cast<QXcbScreen *>(this);
     xcb_window_t root = screen->root();
-    geometry_cookie = xcb_get_geometry(xcb_connection(), root);
+    geometry_cookie = xcb_get_geometry_unchecked(xcb_connection(), root);
     xcb_get_geometry_reply_t *root_reply =
-        xcb_get_geometry_reply(xcb_connection(), geometry_cookie, &error);
+        xcb_get_geometry_reply(xcb_connection(), geometry_cookie, NULL);
 
     if (!root_reply) {
-        if (error) {
-            connection()->handleXcbError(error);
-            free(error);
-        }
         free(reply);
         return QPixmap();
     }
@@ -294,16 +271,12 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
 
         // map x and y to the root window
         xcb_translate_coordinates_cookie_t translate_cookie =
-            xcb_translate_coordinates(xcb_connection(), window, root, x, y);
+            xcb_translate_coordinates_unchecked(xcb_connection(), window, root, x, y);
 
         xcb_translate_coordinates_reply_t *translate_reply =
-            xcb_translate_coordinates_reply(xcb_connection(), translate_cookie, &error);
+            xcb_translate_coordinates_reply(xcb_connection(), translate_cookie, NULL);
 
         if (!translate_reply) {
-            if (error) {
-                connection()->handleXcbError(error);
-                free(error);
-            }
             free(reply);
             free(root_reply);
             return QPixmap();
@@ -323,13 +296,9 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
     }
 
     xcb_get_window_attributes_reply_t *attributes_reply =
-        xcb_get_window_attributes_reply(xcb_connection(), xcb_get_window_attributes(xcb_connection(), window), &error);
+        xcb_get_window_attributes_reply(xcb_connection(), xcb_get_window_attributes_unchecked(xcb_connection(), window), NULL);
 
     if (!attributes_reply) {
-        if (error) {
-            connection()->handleXcbError(error);
-            free(error);
-        }
         free(reply);
         return QPixmap();
     }
@@ -338,11 +307,7 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
     free(attributes_reply);
 
     xcb_pixmap_t pixmap = xcb_generate_id(xcb_connection());
-    error = xcb_request_check(xcb_connection(), xcb_create_pixmap_checked(xcb_connection(), reply->depth, pixmap, window, width, height));
-    if (error) {
-        connection()->handleXcbError(error);
-        free(error);
-    }
+    xcb_create_pixmap(xcb_connection(), reply->depth, pixmap, window, width, height);
 
     uint32_t gc_value_mask = XCB_GC_SUBWINDOW_MODE;
     uint32_t gc_value_list[] = { XCB_SUBWINDOW_MODE_INCLUDE_INFERIORS };
@@ -350,11 +315,7 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
     xcb_gcontext_t gc = xcb_generate_id(xcb_connection());
     xcb_create_gc(xcb_connection(), gc, pixmap, gc_value_mask, gc_value_list);
 
-    error = xcb_request_check(xcb_connection(), xcb_copy_area_checked(xcb_connection(), window, pixmap, gc, x, y, 0, 0, width, height));
-    if (error) {
-        connection()->handleXcbError(error);
-        free(error);
-    }
+    xcb_copy_area(xcb_connection(), window, pixmap, gc, x, y, 0, 0, width, height);
 
     QPixmap result = qt_xcb_pixmapFromXPixmap(connection(), pixmap, width, height, reply->depth, visual);
 
