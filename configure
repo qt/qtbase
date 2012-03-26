@@ -263,8 +263,6 @@ fi
 # window system detection
 #-------------------------------------------------------------------------------
 
-PLATFORM_X11=no
-PLATFORM_QPA=yes
 BUILD_ON_MAC=no
 PLATFORM_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
@@ -335,16 +333,6 @@ earlyArgParse()
             VAR=`echo $1 | sed "s,^--no-\(.*\),\1,"`
             VAL=no
             ;;
-        -embedded-lite|-qpa)
-            VAR=qpa
-            # this option may or may not be followed by an argument
-            if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
-                VAL=auto
-            else
-                shift;
-                VAL=$1
-            fi
-            ;;
         -h|help|--help|-help)
             if [ "$VAL" = "yes" ]; then
                 OPT_HELP="$VAL"
@@ -374,16 +362,6 @@ earlyArgParse()
 
         UNKNOWN_OPT=no
         case "$VAR" in
-        qpa)
-            if [ "$PLATFORM_QPA" != "no" ]; then
-                if [ "$PLATFORM_QPA" = "maybe" ]; then
-                    PLATFORM_X11=no
-                    PLATFORM_QPA=yes
-                fi
-            else
-                echo "No license exists to enable Qt QPA. Disabling."
-            fi
-            ;;
         developer-build)
             CFG_DEV="yes"
             ;;
@@ -431,7 +409,6 @@ if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ];
 elif [ $COMMERCIAL_USER = "yes" ]; then
     # one of commercial editions
     [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
-    [ "$PLATFORM_QPA" = "maybe" ] && PLATFORM_QPA=no
 
     # read in the license file
     if [ -f "$LICENSE_FILE" ]; then
@@ -919,11 +896,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     #Qt style options that pass an argument
     -qconfig)
-        if [ "$PLATFORM_QPA" != "yes" ]; then
-            echo
-            echo "WARNING: -qconfig is only tested and supported on Qt for Embedded Linux."
-            echo
-        fi
         CFG_QCONFIG="$VAL"
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
@@ -949,16 +921,6 @@ while [ "$#" -gt 0 ]; do
         VAR=fatal_error
         VAL=no
         ;;
-    -embedded-lite|-qpa)
-        VAR=qpa
-        # this option may or may not be followed by an argument
-        if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
-            VAL=auto
-        else
-            shift;
-            VAL=$1
-        fi
-	;;
     -opengl)
         VAR=opengl
         # this option may or may not be followed by an argument
@@ -1169,10 +1131,6 @@ while [ "$#" -gt 0 ]; do
     sxe)
 	CFG_SXE="$VAL"
         ;;
-    embedded-lite|qpa)
-        PLATFORM_X11=no
-        PLATFORM_QPA=yes
-        ;;
     sse)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_SSE="$VAL"
@@ -1201,11 +1159,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     make)
 	CFG_BUILD_PARTS="$CFG_BUILD_PARTS $VAL"
-        ;;
-    x11)
-        PLATFORM_QPA=no
-        PLATFORM_MAC=no
-        PLATFORM_X11=yes
         ;;
     sdk)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
@@ -2098,9 +2051,9 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     [ "$OPT_VERBOSE" = "yes" ] && echo "Performing shadow build..."
 fi
 
-if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QPA" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
+if [ "$PLATFORM_MAC" = "no" -a "$CFG_DEBUG_RELEASE" = "yes" ]; then
     echo
-    echo "WARNING: -debug-and-release is not supported anymore on Qt/X11 and Qt for Embedded Linux"
+    echo "WARNING: -debug-and-release is not supported outside of Mac OS X."
     echo "Qt can be built in release mode with separate debug information, so"
     echo "-debug-and-release is not necessary anymore"
     echo
@@ -2171,7 +2124,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
 fi
 
 # symlink fonts to be able to run application from build directory
-if [ "$PLATFORM_QPA" = "yes" ] && [ ! -d "${outpath}/lib/fonts" ]; then
+if [ ! -d "${outpath}/lib/fonts" ]; then
     if [ "$PLATFORM" = "$XPLATFORM" ]; then
         mkdir -p "${outpath}/lib"
         ln -s "${relpath}/lib/fonts" "${outpath}/lib/fonts"
@@ -2214,26 +2167,22 @@ if [ -z "$PLATFORM" ]; then
     PLATFORM_NOTES=
     case "$UNAME_SYSTEM:$UNAME_RELEASE" in
      Darwin:*)
-        if [ "$PLATFORM_QPA" = "yes" ]; then
-          OSX_VERSION=`uname -r | cut -d. -f1`
-          if [ "$OSX_VERSION" -ge 11 ]; then
-              # We're on Lion or above. Check if we have a supported Clang version
-              case "$(clang -v 2>&1 | grep -Po '(?<=version )\d[\d.]+')" in
-                  3.*)
-                      PLATFORM=macx-clang
-                      PLATFORM_NOTES="\n    - Also available for Mac OS X: macx-g++\n"
-                      ;;
-                  *)
-                      PLATFORM=macx-g++
-                      ;;
-              esac
-          else
-              PLATFORM=macx-g++
-          fi
-        else
-          PLATFORM=darwin-g++
-        fi
-        ;;
+         OSX_VERSION=`uname -r | cut -d. -f1`
+         if [ "$OSX_VERSION" -ge 11 ]; then
+             # We're on Lion or above. Check if we have a supported Clang version
+             case "$(clang -v 2>&1 | grep -Po '(?<=version )\d[\d.]+')" in
+                 3.*)
+                     PLATFORM=macx-clang
+                     PLATFORM_NOTES="\n    - Also available for Mac OS X: macx-g++\n"
+                     ;;
+                 *)
+                     PLATFORM=macx-g++
+                     ;;
+             esac
+         else
+             PLATFORM=macx-g++
+         fi
+         ;;
      AIX:*)
         #PLATFORM=aix-g++
         #PLATFORM=aix-g++-64
@@ -2454,12 +2403,6 @@ if [ '!' -f "${XQMAKESPEC}/qplatformdefs.h" ]; then
     echo
     exit 2
 fi
-
-# now look at the configs and figure out what platform we are config'd for
-[ "$PLATFORM_QPA" != "yes" ] \
-  && [ -n "`getXQMakeConf QMAKE_LIBS_X11`" ] \
-  && PLATFORM_X11=yes
-### echo "$XQMAKESPEC" | grep mkspecs/qws >/dev/null 2>&1 && PLATFORM_QWS=yes
 
 if [ "$UNAME_SYSTEM" = "SunOS" ]; then
     # Solaris 2.5 and 2.6 have libposix4, which was renamed to librt for Solaris 7 and up
@@ -2690,9 +2633,6 @@ if [ "$BUILD_ON_MAC" = "yes" ]; then
 else
     CFG_FRAMEWORK=no
 fi
-
-# x11 tests are done after qmake is built
-
 
 #setup the build parts
 if [ -z "$CFG_BUILD_PARTS" ]; then
@@ -2945,6 +2885,38 @@ if [ "$OPT_HELP" = "yes" ]; then
         X2N=" "
     fi
 
+    if [ "$CFG_DBUS" = "no" ]; then
+        DBY=" "
+        DBN="+"
+    else
+        DBY="+"
+        DBN=" "
+    fi
+
+    if [ "$CFG_SEPARATE_DEBUG_INFO" = "auto" ]; then
+        if [ "$QT_CROSS_COMPILE" = "yes" ]; then
+            SBY=""
+            SBN="*"
+        else
+            SBY="*"
+            SBN=" "
+        fi
+    elif [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
+        SBY="*"
+        SBN=" "
+    else
+        SBY=" "
+        SBN="*"
+    fi
+
+    if [ "$CFG_GLIB" = "no" ]; then
+        GBY=" "
+        GBN="+"
+    else
+        GBY="+"
+        GBN=" "
+    fi
+
     cat <<EOF
 Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir <dir>]
         [-docdir <dir>] [-headerdir <dir>] [-plugindir <dir> ] [-importdir <dir>] [-datadir <dir>]
@@ -2976,24 +2948,15 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
 
 Installation options:
 
-    -qpa ................ This will enable the QPA build.
-                          QPA is a window system agnostic implementation of Qt.
-
  These are optional, but you may specify install directories.
 
     -prefix <dir> ...... This will install everything relative to <dir>
                          (default $QT_INSTALL_PREFIX)
-EOF
-if [ "$PLATFORM_QPA" = "yes" ]; then
-cat <<EOF
 
     -hostprefix [dir] .. Tools and libraries needed when developing
                          applications are installed in [dir]. If [dir] is
                          not given, the current build directory will be used.
                          (default PREFIX)
-EOF
-fi
-cat <<EOF
 
   * -prefix-install .... Force a sandboxed "local" installation of
                          Qt. This will install into
@@ -3027,17 +2990,11 @@ cat <<EOF
                             (default PREFIX/examples)
     -testsdir <dir> ....... Tests will be installed to <dir>
                             (default PREFIX/tests)
-EOF
-if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
-cat <<EOF
 
     -hostbindir <dir> .. Host executables will be installed to <dir>
                          (default HOSTPREFIX/bin)
     -hostdatadir <dir> . Data used by qmake will be installed to <dir>
                          (default HOSTPREFIX)
-EOF
-fi
-cat <<EOF
 
 Configure options:
 
@@ -3068,25 +3025,8 @@ Configure options:
     -no-largefile ...... Disables large file support.
  +  -largefile ......... Enables Qt to access files larger than 4 GB.
 
-EOF
-if [ "$PLATFORM_QPA" = "yes" ]; then
-    EXCN="*"
-    EXCY=" "
-else
-    EXCN=" "
-    EXCY="*"
-fi
-if [ "$CFG_DBUS" = "no" ]; then
-    DBY=" "
-    DBN="+"
-else
-    DBY="+"
-    DBN=" "
-fi
-
-    cat << EOF
- $EXCN  -no-exceptions ..... Disable exceptions on compilers that support it.
- $EXCY  -exceptions ........ Enable exceptions on compilers that support it.
+    -no-exceptions ..... Disable exceptions on compilers that support it.
+ *  -exceptions ........ Enable exceptions on compilers that support it.
 
     -no-accessibility .. Do not compile Accessibility support.
  *  -accessibility ..... Compile Accessibility support.
@@ -3119,19 +3059,6 @@ fi
 
                          See the README file for a list of supported
                          operating systems and compilers.
-EOF
-
-if [ "${PLATFORM_QPA}" != "yes" ]; then
-cat << EOF
-    -graphicssystem <sys> Sets an alternate graphics system. Available options are:
-                           raster - Software rasterizer
-                           opengl - Rendering via OpenGL, Experimental!
-                           openvg - Rendering via OpenVG, Experimental!
-
-EOF
-fi
-
-cat << EOF
 
     -no-mmx ............ Do not compile with use of MMX instructions.
     -no-3dnow .......... Do not compile with use of 3DNOW instructions.
@@ -3238,28 +3165,6 @@ Additional options:
     -device-option <key=value> ... Add device specific options for the device mkspec
                                    (experimental)
 
-EOF
-
-if [ "$CFG_SEPARATE_DEBUG_INFO" = "auto" ]; then
-    if [ "$QT_CROSS_COMPILE" = "yes" ]; then
-        SBY=""
-        SBN="*"
-    else
-        SBY="*"
-        SBN=" "
-    fi
-elif [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
-    SBY="*"
-    SBN=" "
-else
-    SBY=" "
-    SBN="*"
-fi
-
-if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
-
-    cat << EOF
-
  $SBN  -no-separate-debug-info . Do not store debug information in a separate file.
  $SBY  -separate-debug-info .... Strip debug information into a separate .debug file.
 
@@ -3269,12 +3174,31 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
  $EGLFSN  -no-eglfs .......... Do not compile EGLFS (EGL Full Screen/Single Surface) support.
  $EGLFSY  -eglfs ............. Compile EGLFS support.
 
+    -xplatform target ... The target platform when cross-compiling.
+
+    -no-feature-<feature> Do not compile in <feature>.
+    -feature-<feature> .. Compile in <feature>. The available features
+                          are described in src/corelib/global/qfeatures.txt
+
+    -no-freetype ........ Do not compile in Freetype2 support.
+    -qt-freetype ........ Use the libfreetype bundled with Qt.
+ *  -system-freetype .... Use libfreetype from the operating system.
+                          See http://www.freetype.org/
+
+    -qconfig local ...... Use src/corelib/global/qconfig-local.h rather than the
+                          default ($CFG_QCONFIG).
+
+    -no-opengl .......... Do not support OpenGL.
+    -opengl <api> ....... Enable OpenGL support
+                          With no parameter, this will attempt to auto-detect
+                          OpenGL ES 2, or regular desktop OpenGL.
+                          Use es2 for <api> to override auto-detection.
+
+ $GBN  -no-glib ........... Do not compile Glib support.
+ $GBY  -glib .............. Compile Glib support.
 EOF
 
-fi # X11
-
 if [ "$XPLATFORM_MAEMO" = "yes" ]; then
-
     cat << EOF
 
  $X2N  -no-xinput2......... Do not compile XInput2 support.
@@ -3282,186 +3206,6 @@ if [ "$XPLATFORM_MAEMO" = "yes" ]; then
 
 EOF
 
-fi
-
-if [ "$PLATFORM_X11" = "yes" ]; then
-    if [ "$CFG_SM" = "no" ]; then
-        SMY=" "
-        SMN="*"
-    else
-        SMY="*"
-        SMN=" "
-    fi
-    if [ "$CFG_XSHAPE" = "no" ]; then
-        SHY=" "
-        SHN="*"
-    else
-        SHY="*"
-        SHN=" "
-    fi
-    if [ "$CFG_XVIDEO" = "no" ]; then
-        XVY=" "
-        XVN="*"
-    else
-        XVY="*"
-        XVN=" "
-    fi
-    if [ "$CFG_XINERAMA" = "no" ]; then
-        XAY=" "
-        XAN="*"
-    else
-        XAY="*"
-        XAN=" "
-    fi
-    if [ "$CFG_FONTCONFIG" = "no" ]; then
-        FCGY=" "
-        FCGN="*"
-    else
-        FCGY="*"
-        FCGN=" "
-    fi
-    if [ "$CFG_XCURSOR" = "no" ]; then
-        XCY=" "
-        XCN="*"
-    else
-        XCY="*"
-        XCN=" "
-    fi
-    if [ "$CFG_XFIXES" = "no" ]; then
-        XFY=" "
-        XFN="*"
-    else
-        XFY="*"
-        XFN=" "
-    fi
-    if [ "$CFG_XRANDR" = "no" ]; then
-        XZY=" "
-        XZN="*"
-    else
-        XZY="*"
-        XZN=" "
-    fi
-    if [ "$CFG_XRENDER" = "no" ]; then
-        XRY=" "
-        XRN="*"
-    else
-        XRY="*"
-        XRN=" "
-    fi
-    if [ "$CFG_MITSHM" = "no" ]; then
-        XMY=" "
-        XMN="*"
-    else
-        XMY="*"
-        XMN=" "
-    fi
-    if [ "$CFG_XINPUT" = "no" ]; then
-        XIY=" "
-        XIN="*"
-    else
-        XIY="*"
-        XIN=" "
-    fi
-    if [ "$CFG_XKB" = "no" ]; then
-        XKY=" "
-        XKN="*"
-    else
-        XKY="*"
-        XKN=" "
-    fi
-    if [ "$CFG_IM" = "no" ]; then
-        IMY=" "
-        IMN="*"
-    else
-        IMY="*"
-        IMN=" "
-    fi
-    cat << EOF
-
-Qt/X11 only:
-
-    -no-gtkstyle ....... Do not build the GTK theme integration.
- +  -gtkstyle .......... Build the GTK theme integration.
-
- *  -no-nas-sound ...... Do not compile in NAS sound support.
-    -system-nas-sound .. Use NAS libaudio from the operating system.
-                         See http://radscan.com/nas.html
-
-    -no-opengl ......... Do not support OpenGL.
- +  -opengl <api> ...... Enable OpenGL support.
-                         With no parameter, this will auto-detect the "best"
-                         OpenGL API to use. If desktop OpenGL is available, it
-                         will be used. Use desktop or es2 for <api>
-                         to force the use of the Desktop OpenGL or
-                         OpenGL ES 2 APIs instead.
-
-     -no-openvg ........ Do not support OpenVG.
- +   -openvg ........... Enable OpenVG support.
-                         Requires EGL support, typically supplied by an OpenGL
-                         or other graphics implementation.
-
- $SMN  -no-sm ............. Do not support X Session Management.
- $SMY  -sm ................ Support X Session Management, links in -lSM -lICE.
-
- $SHN  -no-xshape ......... Do not compile XShape support.
- $SHY  -xshape ............ Compile XShape support.
-                         Requires X11/extensions/shape.h.
-
- $XVN  -no-xvideo ......... Do not compile XVideo support.
- $XVY  -xvideo ............ Compile XVideo support.
-                         Requires X11/extensions/Xv.h & Xvlib.h.
-
- $SHN  -no-xsync .......... Do not compile XSync support.
- $SHY  -xsync ............. Compile XSync support.
-                         Requires X11/extensions/sync.h.
-
- $XAN  -no-xinerama ....... Do not compile Xinerama (multihead) support.
- $XAY  -xinerama .......... Compile Xinerama support.
-                         Requires X11/extensions/Xinerama.h and libXinerama.
-			 By default, Xinerama support will be compiled if
-                         available and the shared libraries are dynamically
-                         loaded at runtime.
-
- $XCN  -no-xcursor ........ Do not compile Xcursor support.
- $XCY  -xcursor ........... Compile Xcursor support.
-                         Requires X11/Xcursor/Xcursor.h and libXcursor.
-			 By default, Xcursor support will be compiled if
-                         available and the shared libraries are dynamically
-                         loaded at runtime.
-
- $XFN  -no-xfixes ......... Do not compile Xfixes support.
- $XFY  -xfixes ............ Compile Xfixes support.
-                         Requires X11/extensions/Xfixes.h and libXfixes.
-			 By default, Xfixes support will be compiled if
-                         available and the shared libraries are dynamically
-                         loaded at runtime.
-
- $XZN  -no-xrandr ......... Do not compile Xrandr (resize and rotate) support.
- $XZY  -xrandr ............ Compile Xrandr support.
-                         Requires X11/extensions/Xrandr.h and libXrandr.
-
- $XRN  -no-xrender ........ Do not compile Xrender support.
- $XRY  -xrender ........... Compile Xrender support.
-                         Requires X11/extensions/Xrender.h and libXrender.
-
- $XMN  -no-mitshm ......... Do not compile MIT-SHM support.
- $XMY  -mitshm ............ Compile MIT-SHM support.
-                         Requires sys/ipc.h, sys/shm.h and X11/extensions/XShm.h
-
- $FCGN  -no-fontconfig ..... Do not compile FontConfig (anti-aliased font) support.
- $FCGY  -fontconfig ........ Compile FontConfig support.
-                         Requires fontconfig/fontconfig.h, libfontconfig,
-                         freetype.h and libfreetype.
-
- $XIN  -no-xinput ......... Do not compile Xinput support.
- $XIY  -xinput ............ Compile Xinput support. This also enabled tablet support
-                         which requires IRIX with wacom.h and libXi or
-                         XFree86 with X11/extensions/XInput.h and libXi.
-
- $XKN  -no-xkb ............ Do not compile XKB (X KeyBoard extension) support.
- $XKY  -xkb ............... Compile XKB support.
-
-EOF
 fi
 
 if [ "$BUILD_ON_MAC" = "yes" ]; then
@@ -3489,52 +3233,6 @@ Qt/Mac only:
 EOF
 fi
 
-if [ "$PLATFORM_QPA" = "yes" ]; then
-    cat << EOF
-Qt for QPA only:
-EOF
-fi
-
-if [ "$PLATFORM_QPA" = "yes" ]; then
-    cat << EOF
-
-    -xplatform target ... The target platform when cross-compiling.
-
-    -no-feature-<feature> Do not compile in <feature>.
-    -feature-<feature> .. Compile in <feature>. The available features
-                          are described in src/corelib/global/qfeatures.txt
-
-    -no-freetype ........ Do not compile in Freetype2 support.
-    -qt-freetype ........ Use the libfreetype bundled with Qt.
- *  -system-freetype .... Use libfreetype from the operating system.
-                          See http://www.freetype.org/
-
-    -qconfig local ...... Use src/corelib/global/qconfig-local.h rather than the
-                          default ($CFG_QCONFIG).
-
-    -no-opengl .......... Do not support OpenGL.
-    -opengl <api> ....... Enable OpenGL ES support
-                          With no parameter, this will attempt to auto-detect
-                          OpenGL ES 2, or regular desktop OpenGL.
-                          Use es2 for <api> to override auto-detection.
-EOF
-fi
-
-if [ "$PLATFORM_QPA" = "yes" -o "$PLATFORM_X11" = "yes" ]; then
-    if [ "$CFG_GLIB" = "no" ]; then
-        GBY=" "
-        GBN="+"
-    else
-        GBY="+"
-        GBN=" "
-    fi
-    cat << EOF
- $GBN  -no-glib ........... Do not compile Glib support.
- $GBY  -glib .............. Compile Glib support.
-
-EOF
-fi
-
    [ "x$ERROR" = "xyes" ] && exit 1
    exit 0
 fi # Help
@@ -3544,17 +3242,8 @@ fi # Help
 # LICENSING, INTERACTIVE PART
 # -----------------------------------------------------------------------------
 
-if [ "$PLATFORM_QPA" = "yes" ]; then
-    Platform="Qt Lighthouse"
-elif [ "$XPLATFORM_MINGW" = "yes" ]; then
-    Platform="Qt for Windows"
-elif [ -n "`getXQMakeConf grep QMAKE_LIBS_X11`" ]; then
-    PLATFORM_X11=yes
-    Platform="Qt for Linux/X11"
-fi
-
 echo
-echo "This is the $Platform ${EditionString} Edition."
+echo "This is the Qt ${EditionString} Edition."
 echo
 
 if [ "$Edition" = "OpenSource" ]; then
@@ -3985,9 +3674,7 @@ fi
 
 if [ "$OPT_VERBOSE" = "yes" ]; then
     echo "System architecture: '$CFG_ARCH'"
-    if [ "$PLATFORM_QPA" = "yes" ]; then
-        echo "Host architecture: '$CFG_HOST_ARCH'"
-    fi
+    echo "Host architecture: '$CFG_HOST_ARCH'"
 fi
 
 #-------------------------------------------------------------------------------
@@ -4530,125 +4217,98 @@ if [ "$CFG_DBUS" != "no" ]; then
     fi
 fi
 
-# X11/Lighthouse
-if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
-
-    # auto-detect Glib support
-    if [ "$CFG_GLIB" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ]; then
-            QT_CFLAGS_GLIB=`$PKG_CONFIG --cflags glib-2.0 gthread-2.0 2>/dev/null`
-            QT_LIBS_GLIB=`$PKG_CONFIG --libs glib-2.0 gthread-2.0 2>/dev/null`
-        fi
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/glib "Glib" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GLIB $QT_LIBS_GLIB $X11TESTS_FLAGS ; then
-            CFG_GLIB=yes
-            QMakeVar set QT_CFLAGS_GLIB "$QT_CFLAGS_GLIB"
-            QMakeVar set QT_LIBS_GLIB "$QT_LIBS_GLIB"
+# auto-detect Glib support
+if [ "$CFG_GLIB" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ]; then
+        QT_CFLAGS_GLIB=`$PKG_CONFIG --cflags glib-2.0 gthread-2.0 2>/dev/null`
+        QT_LIBS_GLIB=`$PKG_CONFIG --libs glib-2.0 gthread-2.0 2>/dev/null`
+    fi
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/glib "Glib" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GLIB $QT_LIBS_GLIB; then
+        CFG_GLIB=yes
+        QMakeVar set QT_CFLAGS_GLIB "$QT_CFLAGS_GLIB"
+        QMakeVar set QT_LIBS_GLIB "$QT_LIBS_GLIB"
+    else
+        if [ "$CFG_GLIB" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "Glib support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
         else
-            if [ "$CFG_GLIB" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                echo "Glib support cannot be enabled due to functionality tests!"
-                echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                echo " If you believe this message is in error you may use the continue"
-                echo " switch (-continue) to $0 to continue."
-                exit 101
-            else
-                CFG_GLIB=no
-            fi
+            CFG_GLIB=no
         fi
     fi
+fi
 
-    # ### Vestige
-    if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ]; then
-            QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-            QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-        fi
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/gstreamer "GStreamer" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER $X11TESTS_FLAGS; then
-            CFG_GSTREAMER=yes
-            QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
-            QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
+# ### Vestige
+if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ]; then
+        QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
+        QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
+    fi
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/gstreamer "GStreamer" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER; then
+        CFG_GSTREAMER=yes
+        QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
+        QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
+    else
+        if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "Gstreamer support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
         else
-            if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                echo "Gstreamer support cannot be enabled due to functionality tests!"
-                echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                echo " If you believe this message is in error you may use the continue"
-                echo " switch (-continue) to $0 to continue."
-                exit 101
-            else
-                CFG_GSTREAMER=no
-            fi
+            CFG_GSTREAMER=no
         fi
-    elif [ "$CFG_GLIB" = "no" ]; then
-        CFG_GSTREAMER=no
     fi
+elif [ "$CFG_GLIB" = "no" ]; then
+    CFG_GSTREAMER=no
+fi
 
-    # auto-detect libicu support
-    if [ "$CFG_ICU" != "no" ]; then
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icu "ICU" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            [ "$CFG_ICU" = "auto" ] && CFG_ICU=yes
+# auto-detect libicu support
+if [ "$CFG_ICU" != "no" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icu "ICU" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        [ "$CFG_ICU" = "auto" ] && CFG_ICU=yes
+    else
+        if [ "$CFG_ICU" = "auto" ]; then
+            CFG_ICU=no
+        elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            # CFG_ICU is "yes"
+
+            echo "The ICU library support cannot be enabled."
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        fi
+    fi
+fi
+
+# Auto-detect PulseAudio support
+if [ "$CFG_PULSEAUDIO" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ]; then
+        QT_CFLAGS_PULSEAUDIO=`$PKG_CONFIG --cflags libpulse '>=' 0.9.10 libpulse-mainloop-glib 2>/dev/null`
+        QT_LIBS_PULSEAUDIO=`$PKG_CONFIG --libs libpulse '>=' 0.9.10 libpulse-mainloop-glib 2>/dev/null`
+    fi
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/pulseaudio "PulseAudio" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_PULSEAUDIO $QT_LIBS_PULSEAUDIO; then
+        CFG_PULSEAUDIO=yes
+        QMakeVar set QT_CFLAGS_PULSEAUDIO "$QT_CFLAGS_PULSEAUDIO"
+        QMakeVar set QT_LIBS_PULSEAUDIO "$QT_LIBS_PULSEAUDIO"
+    else
+        if [ "$CFG_PULSEAUDIO" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "PulseAudio support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
         else
-            if [ "$CFG_ICU" = "auto" ]; then
-                CFG_ICU=no
-            elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                # CFG_ICU is "yes"
-
-                echo "The ICU library support cannot be enabled."
-                echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                echo " If you believe this message is in error you may use the continue"
-                echo " switch (-continue) to $0 to continue."
-                exit 101
-            fi
+            CFG_PULSEAUDIO=no
         fi
-    fi
-
-    # Auto-detect PulseAudio support
-    if [ "$CFG_PULSEAUDIO" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ]; then
-            QT_CFLAGS_PULSEAUDIO=`$PKG_CONFIG --cflags libpulse '>=' 0.9.10 libpulse-mainloop-glib 2>/dev/null`
-            QT_LIBS_PULSEAUDIO=`$PKG_CONFIG --libs libpulse '>=' 0.9.10 libpulse-mainloop-glib 2>/dev/null`
-        fi
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/pulseaudio "PulseAudio" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_PULSEAUDIO $QT_LIBS_PULSEAUDIO $X11TESTS_FLAGS; then
-            CFG_PULSEAUDIO=yes
-            QMakeVar set QT_CFLAGS_PULSEAUDIO "$QT_CFLAGS_PULSEAUDIO"
-            QMakeVar set QT_LIBS_PULSEAUDIO "$QT_LIBS_PULSEAUDIO"
-        else
-            if [ "$CFG_PULSEAUDIO" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                echo "PulseAudio support cannot be enabled due to functionality tests!"
-                echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                echo " If you believe this message is in error you may use the continue"
-                echo " switch (-continue) to $0 to continue."
-                exit 101
-            else
-		CFG_PULSEAUDIO=no
-            fi
-        fi
-    fi
-fi # X11/Lighthouse
-
-# X11
-if [ "$PLATFORM_X11" = "yes" -a "$CFG_GUI" != "no" ]; then
-    x11tests="$relpath/config.tests/x11"
-    X11TESTS_FLAGS=
-
-    # work around broken X11 headers when using GCC 2.95 or later
-    NOTYPE=no
-    "$x11tests/notype.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" && NOTYPE=yes
-    if [ $NOTYPE = "yes" ]; then
-	QMakeVar add QMAKE_CXXFLAGS -fpermissive
-        X11TESTS_FLAGS="$X11TESTS_FLAGS -fpermissive"
-    fi
-
-    # Check we actually have X11 :-)
-    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xlib "XLib" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
-    if [ $? != "0" ]; then
-        echo "Basic XLib functionality test failed!"
-        echo " You might need to modify the include and library search paths by editing"
-        echo " QMAKE_INCDIR_X11 and QMAKE_LIBDIR_X11 in ${XQMAKESPEC}."
-        exit 1
     fi
 fi
 
 # X11/MINGW OpenGL
-if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
+if [ "$XPLATFORM_MINGW" = "yes" ]; then
     # auto-detect OpenGL support (es2 = OpenGL ES 2.x)
     if [ "$CFG_GUI" = "no" ]; then
         if [ "$CFG_OPENGL" = "auto" ]; then
@@ -4661,7 +4321,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
         fi
     fi
     if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=desktop
         elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es2
@@ -4679,7 +4339,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
         hpux*)
             # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
             if [ "$CFG_OPENGL" = "desktop" ]; then
-                "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+                "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS
                 if [ $? != "0" ]; then
                     QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
                 fi
@@ -4700,7 +4360,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "desktop" ]; then
         # Desktop OpenGL support
-        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS
         if [ $? != "0" ]; then
             echo "The OpenGL functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
@@ -4711,7 +4371,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
         case "$PLATFORM" in
         hpux*)
             # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
-            "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+            "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS
             if [ $? != "0" ]; then
                 QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
             fi
@@ -4721,275 +4381,6 @@ if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
         esac
     fi
 fi # X11/MINGW OpenGL
-
-# X11
-if [ "$PLATFORM_X11" = "yes" ]; then
-    # auto-detect Xcursor support
-    if [ "$CFG_XCURSOR" != "no" ]; then
-	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xcursor "Xcursor" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-	    if [ "$CFG_XCURSOR" != "runtime" ]; then
-		CFG_XCURSOR=yes;
-	    fi
-	else
-	    if [ "$CFG_XCURSOR" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-		echo "Xcursor support cannot be enabled due to functionality tests!"
-		echo " Turn on verbose messaging (-v) to $0 to see the final report."
-		echo " If you believe this message is in error you may use the continue"
-		echo " switch (-continue) to $0 to continue."
-		exit 101
-	    else
-		CFG_XCURSOR=no
-	    fi
-	fi
-    fi
-
-    # auto-detect Xfixes support
-    if [ "$CFG_XFIXES" != "no" ]; then
-	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xfixes "Xfixes" $L_FLAGS $I_FLAGS $X11TESTS_FLAGS; then
-	    if [ "$CFG_XFIXES" != "runtime" ]; then
-		CFG_XFIXES=yes;
-	    fi
-	else
-	    if [ "$CFG_XFIXES" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-		echo "Xfixes support cannot be enabled due to functionality tests!"
-		echo " Turn on verbose messaging (-v) to $0 to see the final report."
-		echo " If you believe this message is in error you may use the continue"
-		echo " switch (-continue) to $0 to continue."
-		exit 101
-	    else
-		CFG_XFIXES=no
-	    fi
-	fi
-    fi
-
-    # auto-detect Xrandr support (resize and rotate extension)
-    if [ "$CFG_XRANDR" != "no" ]; then
-	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xrandr "Xrandr" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-            if [ "$CFG_XRANDR" != "runtime" ]; then
-	    CFG_XRANDR=yes
-            fi
-	else
-	    if [ "$CFG_XRANDR" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-		echo "Xrandr support cannot be enabled due to functionality tests!"
-		echo " Turn on verbose messaging (-v) to $0 to see the final report."
-		echo " If you believe this message is in error you may use the continue"
-		echo " switch (-continue) to $0 to continue."
-		exit 101
-	    else
-		CFG_XRANDR=no
-	    fi
-	fi
-    fi
-
-    # auto-detect Xrender support
-    if [ "$CFG_XRENDER" != "no" ]; then
-	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xrender "Xrender" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-	    CFG_XRENDER=yes
-	else
-	    if [ "$CFG_XRENDER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-		echo "Xrender support cannot be enabled due to functionality tests!"
-		echo " Turn on verbose messaging (-v) to $0 to see the final report."
-		echo " If you believe this message is in error you may use the continue"
-		echo " switch (-continue) to $0 to continue."
-		exit 101
-	    else
-		CFG_XRENDER=no
-	    fi
-	fi
-    fi
-
-    # auto-detect MIT-SHM support
-    if [ "$CFG_MITSHM" != "no" ]; then
-	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/mitshm "mitshm" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-	    CFG_MITSHM=yes
-	else
-	    if [ "$CFG_MITSHM" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-		echo "MITSHM support cannot be enabled due to functionality tests!"
-		echo " Turn on verbose messaging (-v) to $0 to see the final report."
-		echo " If you believe this message is in error you may use the continue"
-		echo " switch (-continue) to $0 to continue."
-		exit 101
-	    else
-		CFG_MITSHM=no
-	    fi
-	fi
-    fi
-
-    # auto-detect Session Management support
-    if [ "$CFG_SM" = "auto" ]; then
-	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/sm "Session Management" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-	    CFG_SM=yes
-	else
-	    if [ "$CFG_SM" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-		echo "Session Management support cannot be enabled due to functionality tests!"
-		echo " Turn on verbose messaging (-v) to $0 to see the final report."
-		echo " If you believe this message is in error you may use the continue"
-		echo " switch (-continue) to $0 to continue."
-		exit 101
-	    else
-		CFG_SM=no
-	    fi
-	fi
-    fi
-
-    # auto-detect SHAPE support
-    if [ "$CFG_XSHAPE" != "no" ]; then
-	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xshape "XShape" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-	    CFG_XSHAPE=yes
-	else
-	    if [ "$CFG_XSHAPE" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-		echo "XShape support cannot be enabled due to functionality tests!"
-		echo " Turn on verbose messaging (-v) to $0 to see the final report."
-		echo " If you believe this message is in error you may use the continue"
-		echo " switch (-continue) to $0 to continue."
-		exit 101
-	    else
-		CFG_XSHAPE=no
-	    fi
-	fi
-    fi
-
-    # auto-detect XVideo support
-    if [ "$CFG_XVIDEO" != "no" ]; then
-	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xvideo "XVideo" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-	    CFG_XVIDEO=yes
-	else
-	    if [ "$CFG_XVIDEO" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-		echo "XVideo support cannot be enabled due to functionality tests!"
-		echo " Turn on verbose messaging (-v) to $0 to see the final report."
-		echo " If you believe this message is in error you may use the continue"
-		echo " switch (-continue) to $0 to continue."
-		exit 101
-	    else
-		CFG_XVIDEO=no
-	    fi
-	fi
-    fi
-
-    # auto-detect XSync support
-    if [ "$CFG_XSYNC" != "no" ]; then
-	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xsync "XSync" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-	    CFG_XSYNC=yes
-	else
-	    if [ "$CFG_XSYNC" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-		echo "XSync support cannot be enabled due to functionality tests!"
-		echo " Turn on verbose messaging (-v) to $0 to see the final report."
-		echo " If you believe this message is in error you may use the continue"
-		echo " switch (-continue) to $0 to continue."
-		exit 101
-	    else
-		CFG_XSYNC=no
-	    fi
-	fi
-    fi
-
-    # auto-detect Xinerama support
-    if [ "$CFG_XINERAMA" != "no" ]; then
-	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xinerama "Xinerama" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-	    if [ "$CFG_XINERAMA" != "runtime" ]; then
-		CFG_XINERAMA=yes
-	    fi
-	else
-	    if [ "$CFG_XINERAMA" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-		echo "Xinerama support cannot be enabled due to functionality tests!"
-		echo " Turn on verbose messaging (-v) to $0 to see the final report."
-		echo " If you believe this message is in error you may use the continue"
-		echo " switch (-continue) to $0 to continue."
-		exit 101
-	    else
-		CFG_XINERAMA=no
-	    fi
-	fi
-    fi
-
-    # auto-detect Xinput support
-    if [ "$CFG_XINPUT" != "no" ]; then
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xinput "XInput" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-	    if [ "$CFG_XINPUT" != "runtime" ]; then
-		CFG_XINPUT=yes
-	    fi
-        else
-            if [ "$CFG_XINPUT" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                echo "Tablet and Xinput support cannot be enabled due to functionality tests!"
-                echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                echo " If you believe this message is in error you may use the continue"
-                echo " switch (-continue) to $0 to continue."
-                exit 101
-            else
-                CFG_XINPUT=no
-            fi
-        fi
-    fi
-
-    # auto-detect XKB support
-    if [ "$CFG_XKB" != "no" ]; then
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xkb "XKB" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-            CFG_XKB=yes
-        else
-            if [ "$CFG_XKB" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                echo "XKB support cannot be enabled due to functionality tests!"
-                echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                echo " If you believe this message is in error you may use the continue"
-                echo " switch (-continue) to $0 to continue."
-                exit 101
-            else
-                CFG_XKB=no
-            fi
-        fi
-    fi
-
-    if [ "$CFG_GLIB" = "yes" -a "$CFG_QGTKSTYLE" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ]; then
-            QT_CFLAGS_QGTKSTYLE=`$PKG_CONFIG --cflags gtk+-2.0 ">=" 2.10 atk 2>/dev/null`
-            QT_LIBS_QGTKSTYLE=`$PKG_CONFIG --libs gobject-2.0 2>/dev/null`
-        fi
-        if [ -n "$QT_CFLAGS_QGTKSTYLE" ] ; then
-            CFG_QGTKSTYLE=yes
-            QMakeVar set QT_CFLAGS_QGTKSTYLE "$QT_CFLAGS_QGTKSTYLE"
-            QMakeVar set QT_LIBS_QGTKSTYLE "$QT_LIBS_QGTKSTYLE"
-        else
-            if [ "$CFG_QGTKSTYLE" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                echo "Gtk theme support cannot be enabled due to functionality tests!"
-                echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                echo " If you believe this message is in error you may use the continue"
-                echo " switch (-continue) to $0 to continue."
-                exit 101
-            else
-                CFG_QGTKSTYLE=no
-            fi
-        fi
-    elif [ "$CFG_GLIB" = "no" ]; then
-        CFG_QGTKSTYLE=no
-    fi
-fi # X11
-
-# auto-detect FontConfig support
-if [ "$CFG_FONTCONFIG" != "no" ]; then
-    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
-        QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
-        QT_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig --libs freetype2 2>/dev/null`
-    else
-        QT_CFLAGS_FONTCONFIG=
-        QT_LIBS_FONTCONFIG="-lfreetype -lfontconfig"
-    fi
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/fontconfig "FontConfig" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS $QT_CFLAGS_FONTCONFIG $QT_LIBS_FONTCONFIG; then
-        CFG_FONTCONFIG=yes
-        QMakeVar set QMAKE_CFLAGS_X11 "$QT_CFLAGS_FONTCONFIG \$\$QMAKE_CFLAGS_X11"
-        QMakeVar set QMAKE_LIBS_X11 "$QT_LIBS_FONTCONFIG \$\$QMAKE_LIBS_X11"
-        CFG_LIBFREETYPE=system
-    else
-        if [ "$CFG_FONTCONFIG" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-            echo "FontConfig support cannot be enabled due to functionality tests!"
-            echo " Turn on verbose messaging (-v) to $0 to see the final report."
-            echo " If you believe this message is in error you may use the continue"
-            echo " switch (-continue) to $0 to continue."
-            exit 101
-        else
-            CFG_FONTCONFIG=no
-        fi
-    fi
-fi
-
 
 if [ "$BUILD_ON_MAC" = "yes" ]; then
     if [ "$CFG_PHONON" != "no" ]; then
@@ -5006,248 +4397,245 @@ if [ "$BUILD_ON_MAC" = "yes" ]; then
     fi
 fi
 
-if [ "$PLATFORM_QPA" = "yes" ]; then
-    # auto-detect OpenGL support (es2 = OpenGL ES 2.x)
-    if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengldesktop "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-            CFG_OPENGL=desktop
-        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            CFG_OPENGL=es2
-        else
-            if [ "$CFG_OPENGL" = "yes" ]; then
-                echo "All the OpenGL functionality tests failed!"
-                echo " You might need to modify the include and library search paths by editing"
-                echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
-                echo " ${XQMAKESPEC}."
-                exit 1
-            fi
-            CFG_OPENGL=no
-        fi
-    elif [ "$CFG_OPENGL" = "es2" ]; then
-        #OpenGL ES 2.x
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists glesv2 2>/dev/null; then
-            QMAKE_INCDIR_OPENGL_ES2=`$PKG_CONFIG --cflags-only-I glesv2 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
-            QMAKE_LIBDIR_OPENGL_ES2=`$PKG_CONFIG --libs-only-L glesv2 2>/dev/null | sed -e 's,^-L,,g' -e 's, -L, ,g'`
-            QMAKE_LIBS_OPENGL_ES2=`$PKG_CONFIG --libs glesv2 2>/dev/null`
-            QMAKE_CFLAGS_OPENGL_ES2=`$PKG_CONFIG --cflags glesv2 2>/dev/null`
-            QMakeVar set QMAKE_INCDIR_OPENGL_ES2 "$QMAKE_INCDIR_OPENGL_ES2"
-            QMakeVar set QMAKE_LIBDIR_OPENGL_ES2 "$QMAKE_LIBDIR_OPENGL_ES2"
-            QMakeVar set QMAKE_LIBS_OPENGL_ES2 "$QMAKE_LIBS_OPENGL_ES2"
-        fi
-
-        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_LIBS_OPENGL_ES2 $QMAKE_CFLAGS_OPENGL_ES2
-        if [ $? != "0" ]; then
-            echo "The OpenGL ES 2.0 functionality test failed!"
-            echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL_ES2, QMAKE_LIBDIR_OPENGL_ES2 and QMAKE_LIBS_OPENGL_ES2 in"
-            echo " ${XQMAKESPEC}."
-            exit 1
-        fi
-    elif [ "$CFG_OPENGL" = "desktop" ]; then
-        # Desktop OpenGL support
-        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengldesktop "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
-        if [ $? != "0" ]; then
-            echo "The OpenGL functionality test failed!"
+# auto-detect OpenGL support (es2 = OpenGL ES 2.x)
+if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengldesktop "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        CFG_OPENGL=desktop
+    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        CFG_OPENGL=es2
+    else
+        if [ "$CFG_OPENGL" = "yes" ]; then
+            echo "All the OpenGL functionality tests failed!"
             echo " You might need to modify the include and library search paths by editing"
             echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
             echo " ${XQMAKESPEC}."
             exit 1
         fi
+        CFG_OPENGL=no
+    fi
+elif [ "$CFG_OPENGL" = "es2" ]; then
+    #OpenGL ES 2.x
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists glesv2 2>/dev/null; then
+        QMAKE_INCDIR_OPENGL_ES2=`$PKG_CONFIG --cflags-only-I glesv2 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
+        QMAKE_LIBDIR_OPENGL_ES2=`$PKG_CONFIG --libs-only-L glesv2 2>/dev/null | sed -e 's,^-L,,g' -e 's, -L, ,g'`
+        QMAKE_LIBS_OPENGL_ES2=`$PKG_CONFIG --libs glesv2 2>/dev/null`
+        QMAKE_CFLAGS_OPENGL_ES2=`$PKG_CONFIG --cflags glesv2 2>/dev/null`
+        QMakeVar set QMAKE_INCDIR_OPENGL_ES2 "$QMAKE_INCDIR_OPENGL_ES2"
+        QMakeVar set QMAKE_LIBDIR_OPENGL_ES2 "$QMAKE_LIBDIR_OPENGL_ES2"
+        QMakeVar set QMAKE_LIBS_OPENGL_ES2 "$QMAKE_LIBS_OPENGL_ES2"
     fi
 
-    # auto-detect FontConfig support
-    if [ "$CFG_FONTCONFIG" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
-            QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
-            QT_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig --libs freetype2 2>/dev/null`
-        else
-            QT_CFLAGS_FONTCONFIG=
-            QT_LIBS_FONTCONFIG="-lfreetype -lfontconfig"
-        fi
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/fontconfig "FontConfig" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS $QT_CFLAGS_FONTCONFIG $QT_LIBS_FONTCONFIG; then
-                QT_CONFIG="$QT_CONFIG fontconfig"
-                QMakeVar set QMAKE_CFLAGS_FONTCONFIG "$QT_CFLAGS_FONTCONFIG"
-                QMakeVar set QMAKE_LIBS_FONTCONFIG "$QT_LIBS_FONTCONFIG"
-                CFG_LIBFREETYPE=system
-        fi
-
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_LIBS_OPENGL_ES2 $QMAKE_CFLAGS_OPENGL_ES2
+    if [ $? != "0" ]; then
+        echo "The OpenGL ES 2.0 functionality test failed!"
+        echo " You might need to modify the include and library search paths by editing"
+        echo " QMAKE_INCDIR_OPENGL_ES2, QMAKE_LIBDIR_OPENGL_ES2 and QMAKE_LIBS_OPENGL_ES2 in"
+        echo " ${XQMAKESPEC}."
+        exit 1
     fi
-
-    # Save these for a check later
-    ORIG_CFG_XCB="$CFG_XCB"
-    ORIG_CFG_EGLFS="$CFG_EGLFS"
-
-    if [ "$CFG_LIBUDEV" != "no" ]; then
-       if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libudev 2>/dev/null; then
-           QMAKE_INCDIR_LIBUDEV=`$PKG_CONFIG --cflags-only-I libudev 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
-           QMAKE_LIBS_LIBUDEV=`$PKG_CONFIG --libs libudev 2>/dev/null`
-           QMakeVar set QMAKE_INCDIR_LIBUDEV "$QMAKE_INCDIR_LIBUDEV"
-           QMakeVar set QMAKE_LIBS_LIBUDEV "$QMAKE_LIBS_LIBUDEV"
-       fi
-       if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libudev "libudev" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_INCDIR_LIBUDEV $QMAKE_LIBS_LIBUDEV; then
-            CFG_LIBUDEV=yes
-            QT_CONFIG="$QT_CONFIG libudev"
-        elif [ "$CFG_LIBUDEV" = "yes" ]; then
-            echo "The libudev functionality test failed!"
-            exit 1
-        else
-            CFG_LIBUDEV=no
-            QMakeVar add DEFINES QT_NO_LIBUDEV
-        fi
+elif [ "$CFG_OPENGL" = "desktop" ]; then
+    # Desktop OpenGL support
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengldesktop "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS
+    if [ $? != "0" ]; then
+        echo "The OpenGL functionality test failed!"
+        echo " You might need to modify the include and library search paths by editing"
+        echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
+        echo " ${XQMAKESPEC}."
+        exit 1
     fi
+fi
 
-    if [ "$CFG_EVDEV" != "no" ]; then
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/evdev "evdev" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            CFG_EVDEV=yes
-            QT_CONFIG="$QT_CONFIG evdev"
-        elif [ "$CFG_EVDEV" = "yes" ]; then
-            echo "The evdev functionality test failed!"
-            exit 1
-        else
-            CFG_EVDEV=no
-            QMakeVar add DEFINES QT_NO_EVDEV
-        fi
-    fi
-
-    # Check we actually have X11 :-)
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xlib "XLib" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-        QT_CONFIG="$QT_CONFIG xlib"
-    fi
-
-    # auto-detect Xrender support
-    if [ "$CFG_XRENDER" != "no" ]; then
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xrender "Xrender" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-            CFG_XRENDER=yes
-            QT_CONFIG="$QT_CONFIG xrender"
-        else
-            if [ "$CFG_XRENDER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                echo "Xrender support cannot be enabled due to functionality tests!"
-                echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                echo " If you believe this message is in error you may use the continue"
-                echo " switch (-continue) to $0 to continue."
-                exit 101
-            else
-                CFG_XRENDER=no
-            fi
-        fi
-    fi
-
-    if [ "$CFG_XCB" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
-            QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
-            QMAKE_LIBS_XCB="`$PKG_CONFIG --libs xcb 2>/dev/null`"
-        fi
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb "xcb" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
-            CFG_XCB=yes
-            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-render "xcb-render" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
-                QT_CONFIG="$QT_CONFIG xcb-render"
-            fi
-
-            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-poll-for-queued-event "xcb-poll-for-queued-event" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
-                CFG_XCB_LIMITED=no
-                QT_CONFIG="$QT_CONFIG xcb-poll-for-queued-event"
-            fi
-
-            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-xlib "xcb-xlib" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
-                QT_CONFIG="$QT_CONFIG xcb-xlib"
-            fi
-
-            if [ "$XPLATFORM_MAEMO" = "yes" ]; then
-                # auto-detect XInput2/Xinput support
-                if [ "$CFG_XINPUT2" != "no" ]; then
-                    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xinput2 "XInput2" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-                    CFG_XINPUT2=yes
-                    CFG_XINPUT=no
-                    else
-                        if [ "$CFG_XINPUT2" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                            echo "XInput2 support cannot be enabled due to functionality tests!"
-                            echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                            echo " If you believe this message is in error you may use the continue"
-                            echo " switch (-continue) to $0 to continue."
-                            exit 101
-                        else
-                            CFG_XINPUT2=no
-                        fi
-                    fi
-                fi
-            fi
-        else
-            if [ "$CFG_XCB" = "yes" ]; then
-                echo "The XCB test failed!"
-                echo " You might need to install dependency packages."
-                echo " See src/plugins/platforms/xcb/README."
-                exit 1
-            fi
-            CFG_XCB=no
-            QMakeVar add DEFINES QT_NO_XCB
-        fi
-    fi
-
-    # Detect libxkbcommon
-    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
-        QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
-        QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
-        QMAKE_CFLAGS_XCB="$QMAKE_CFLAGS_XCB $QMAKE_CFLAGS_XKBCOMMON"
-        QMAKE_LIBS_XCB="$QMAKE_LIBS_XCB $QMAKE_LIBS_XKBCOMMON"
+# auto-detect FontConfig support
+if [ "$CFG_FONTCONFIG" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
+        QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
+        QT_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig --libs freetype2 2>/dev/null`
     else
-        QMAKE_DEFINES_XCB=QT_NO_XCB_XKB
+        QT_CFLAGS_FONTCONFIG=
+        QT_LIBS_FONTCONFIG="-lfreetype -lfontconfig"
     fi
-
-    # EGL Support
-    if [ "$CFG_EGL" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists egl 2>/dev/null; then
-            QMAKE_INCDIR_EGL=`$PKG_CONFIG --cflags-only-I egl 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
-            QMAKE_LIBS_EGL=`$PKG_CONFIG --libs egl 2>/dev/null`
-            QMAKE_CFLAGS_EGL=`$PKG_CONFIG --cflags egl 2>/dev/null`
-            QMakeVar set QMAKE_INCDIR_EGL "$QMAKE_INCDIR_EGL"
-            QMakeVar set QMAKE_LIBS_EGL "$QMAKE_LIBS_EGL"
-        fi       # detect EGL support
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/qpa/egl" "EGL" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL; then
-            CFG_EGL=yes
-        elif [ "$CFG_EGL" = "yes" ]; then
-            echo " The EGL functionality test failed; EGL is required by some QPA plugins to manage contexts & surfaces."
-            echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_EGL, QMAKE_LIBDIR_EGL and QMAKE_LIBS_EGL in ${XQMAKESPEC}."
-            exit 1
-        else
-            CFG_EGL=no
-        fi
-    fi
-
-    if [ "$CFG_EGLFS" != "no" ]; then
-        CFG_EGLFS="$CFG_EGL"
-    fi
-
-    if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
-        QMakeVar set QMAKE_CFLAGS_XCB "$QMAKE_CFLAGS_XCB"
-        QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
-        QMakeVar set QMAKE_DEFINES_XCB "$QMAKE_DEFINES_XCB"
-    fi
-
-    if [ "$BUILD_ON_MAC" = "yes" ]; then
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
-            QT_CONFIG="$QT_CONFIG coreservices"
-        else
-            QMakeVar add DEFINES QT_NO_CORESERVICES
-        fi
-    fi
-
-    if [ "$PLATFORM_QPA" = "yes" ] && [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ]; then
-        if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ]; then
-            if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
-                 ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] ); then
-                echo "No QPA platform plugin enabled!"
-                echo " If you really want to build without a QPA platform plugin you must pass"
-                echo " -no-xcb and -no-eglfs to configure. Doing this will"
-                echo " produce a Qt that cannot run GUI applications."
-                echo " The dependencies needed for xcb to build are listed in"
-                echo " src/plugins/platforms/xcb/README"
-                exit 1
-            fi
-        fi
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/fontconfig "FontConfig" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_FONTCONFIG $QT_LIBS_FONTCONFIG; then
+        QT_CONFIG="$QT_CONFIG fontconfig"
+        QMakeVar set QMAKE_CFLAGS_FONTCONFIG "$QT_CFLAGS_FONTCONFIG"
+        QMakeVar set QMAKE_LIBS_FONTCONFIG "$QT_LIBS_FONTCONFIG"
+        CFG_LIBFREETYPE=system
     fi
 
 fi
+
+# Save these for a check later
+ORIG_CFG_XCB="$CFG_XCB"
+ORIG_CFG_EGLFS="$CFG_EGLFS"
+
+if [ "$CFG_LIBUDEV" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libudev 2>/dev/null; then
+        QMAKE_INCDIR_LIBUDEV=`$PKG_CONFIG --cflags-only-I libudev 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
+        QMAKE_LIBS_LIBUDEV=`$PKG_CONFIG --libs libudev 2>/dev/null`
+        QMakeVar set QMAKE_INCDIR_LIBUDEV "$QMAKE_INCDIR_LIBUDEV"
+        QMakeVar set QMAKE_LIBS_LIBUDEV "$QMAKE_LIBS_LIBUDEV"
+    fi
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libudev "libudev" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_INCDIR_LIBUDEV $QMAKE_LIBS_LIBUDEV; then
+        CFG_LIBUDEV=yes
+        QT_CONFIG="$QT_CONFIG libudev"
+    elif [ "$CFG_LIBUDEV" = "yes" ]; then
+        echo "The libudev functionality test failed!"
+        exit 1
+    else
+        CFG_LIBUDEV=no
+        QMakeVar add DEFINES QT_NO_LIBUDEV
+    fi
+fi
+
+if [ "$CFG_EVDEV" != "no" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/evdev "evdev" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        CFG_EVDEV=yes
+        QT_CONFIG="$QT_CONFIG evdev"
+    elif [ "$CFG_EVDEV" = "yes" ]; then
+        echo "The evdev functionality test failed!"
+        exit 1
+    else
+        CFG_EVDEV=no
+        QMakeVar add DEFINES QT_NO_EVDEV
+    fi
+fi
+
+# Check we actually have X11 :-)
+if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xlib "XLib" $L_FLAGS $I_FLAGS $l_FLAGS; then
+    QT_CONFIG="$QT_CONFIG xlib"
+fi
+
+# auto-detect Xrender support
+if [ "$CFG_XRENDER" != "no" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xrender "Xrender" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        CFG_XRENDER=yes
+        QT_CONFIG="$QT_CONFIG xrender"
+    else
+        if [ "$CFG_XRENDER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "Xrender support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        else
+            CFG_XRENDER=no
+        fi
+    fi
+fi
+
+if [ "$CFG_XCB" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
+        QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
+        QMAKE_LIBS_XCB="`$PKG_CONFIG --libs xcb 2>/dev/null`"
+    fi
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb "xcb" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+        CFG_XCB=yes
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-render "xcb-render" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+            QT_CONFIG="$QT_CONFIG xcb-render"
+        fi
+
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-poll-for-queued-event "xcb-poll-for-queued-event" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+            CFG_XCB_LIMITED=no
+            QT_CONFIG="$QT_CONFIG xcb-poll-for-queued-event"
+        fi
+
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-xlib "xcb-xlib" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+            QT_CONFIG="$QT_CONFIG xcb-xlib"
+        fi
+
+        if [ "$XPLATFORM_MAEMO" = "yes" ]; then
+            # auto-detect XInput2/Xinput support
+            if [ "$CFG_XINPUT2" != "no" ]; then
+                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xinput2 "XInput2" $L_FLAGS $I_FLAGS $l_FLAGS; then
+                    CFG_XINPUT2=yes
+                    CFG_XINPUT=no
+                else
+                    if [ "$CFG_XINPUT2" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                        echo "XInput2 support cannot be enabled due to functionality tests!"
+                        echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                        echo " If you believe this message is in error you may use the continue"
+                        echo " switch (-continue) to $0 to continue."
+                        exit 101
+                    else
+                        CFG_XINPUT2=no
+                    fi
+                fi
+            fi
+        fi
+    else
+        if [ "$CFG_XCB" = "yes" ]; then
+            echo "The XCB test failed!"
+            echo " You might need to install dependency packages."
+            echo " See src/plugins/platforms/xcb/README."
+            exit 1
+        fi
+        CFG_XCB=no
+        QMakeVar add DEFINES QT_NO_XCB
+    fi
+fi
+
+# Detect libxkbcommon
+if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
+    QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
+    QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
+    QMAKE_CFLAGS_XCB="$QMAKE_CFLAGS_XCB $QMAKE_CFLAGS_XKBCOMMON"
+    QMAKE_LIBS_XCB="$QMAKE_LIBS_XCB $QMAKE_LIBS_XKBCOMMON"
+else
+    QMAKE_DEFINES_XCB=QT_NO_XCB_XKB
+fi
+
+# EGL Support
+if [ "$CFG_EGL" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists egl 2>/dev/null; then
+        QMAKE_INCDIR_EGL=`$PKG_CONFIG --cflags-only-I egl 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
+        QMAKE_LIBS_EGL=`$PKG_CONFIG --libs egl 2>/dev/null`
+        QMAKE_CFLAGS_EGL=`$PKG_CONFIG --cflags egl 2>/dev/null`
+        QMakeVar set QMAKE_INCDIR_EGL "$QMAKE_INCDIR_EGL"
+        QMakeVar set QMAKE_LIBS_EGL "$QMAKE_LIBS_EGL"
+    fi       # detect EGL support
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/qpa/egl" "EGL" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL; then
+        CFG_EGL=yes
+    elif [ "$CFG_EGL" = "yes" ]; then
+        echo " The EGL functionality test failed; EGL is required by some QPA plugins to manage contexts & surfaces."
+        echo " You might need to modify the include and library search paths by editing"
+        echo " QMAKE_INCDIR_EGL, QMAKE_LIBDIR_EGL and QMAKE_LIBS_EGL in ${XQMAKESPEC}."
+        exit 1
+    else
+        CFG_EGL=no
+    fi
+fi
+
+if [ "$CFG_EGLFS" != "no" ]; then
+    CFG_EGLFS="$CFG_EGL"
+fi
+
+if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
+    QMakeVar set QMAKE_CFLAGS_XCB "$QMAKE_CFLAGS_XCB"
+    QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
+    QMakeVar set QMAKE_DEFINES_XCB "$QMAKE_DEFINES_XCB"
+fi
+
+if [ "$BUILD_ON_MAC" = "yes" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+        QT_CONFIG="$QT_CONFIG coreservices"
+    else
+        QMakeVar add DEFINES QT_NO_CORESERVICES
+    fi
+fi
+
+if [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ]; then
+    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ]; then
+        if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
+            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] ); then
+        echo "No QPA platform plugin enabled!"
+        echo " If you really want to build without a QPA platform plugin you must pass"
+        echo " -no-xcb and -no-eglfs to configure. Doing this will"
+        echo " produce a Qt that cannot run GUI applications."
+        echo " The dependencies needed for xcb to build are listed in"
+        echo " src/plugins/platforms/xcb/README"
+        exit 1
+    fi
+fi
+    fi
 
 [ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_PHONON" != "no" ] && CFG_PHONON="yes"
 
@@ -5603,12 +4991,12 @@ elif [ "$CFG_SHARED" = "no" ]; then
     QMAKE_OUTDIR="${QMAKE_OUTDIR}-static"
     QMAKE_CONFIG="$QMAKE_CONFIG static"
 fi
-if [ "$PLATFORM_QPA" = "yes" ]; then
-    QMAKE_CONFIG="$QMAKE_CONFIG qpa"
-    QT_CONFIG="$QT_CONFIG qpa"
-    QTCONFIG_CONFIG="$QTCONFIG_CONFIG qpa"
-    rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
-fi
+
+#FIXME: qpa is implicit this should all be removed
+QMAKE_CONFIG="$QMAKE_CONFIG qpa"
+QT_CONFIG="$QT_CONFIG qpa"
+QTCONFIG_CONFIG="$QTCONFIG_CONFIG qpa"
+rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
 
 if [ "$XPLATFORM_MINGW" != "yes" ]; then
     # Do not set this here for Windows. Let qmake do it so
@@ -5748,62 +5136,6 @@ fi
 [ "$CFG_MAC_HARFBUZZ" = "yes" ] && QT_CONFIG="$QT_CONFIG harfbuzz"
 [ "$CFG_XCB" = "yes" ] && QT_CONFIG="$QT_CONFIG xcb"
 [ "$CFG_XINPUT2" = "yes" ] && QT_CONFIG="$QT_CONFIG xinput2"
-
-if [ "$PLATFORM_X11" = "yes" ]; then
-    [ "$CFG_SM" = "yes" ] && QT_CONFIG="$QT_CONFIG x11sm"
-
-    # for some reason, the following libraries are not always built shared,
-    # so *every* program/lib (including Qt) has to link against them
-    if [ "$CFG_XSHAPE" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG xshape"
-    fi
-    if [ "$CFG_XVIDEO" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG xvideo"
-    fi
-    if [ "$CFG_XSYNC" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG xsync"
-    fi
-    if [ "$CFG_XINERAMA" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG xinerama"
-	QMakeVar set QMAKE_LIBS_X11 '-lXinerama $$QMAKE_LIBS_X11'
-    fi
-    if [ "$CFG_XCURSOR" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG xcursor"
-	QMakeVar set QMAKE_LIBS_X11 '-lXcursor $$QMAKE_LIBS_X11'
-    fi
-    if [ "$CFG_XFIXES" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG xfixes"
-	QMakeVar set QMAKE_LIBS_X11 '-lXfixes $$QMAKE_LIBS_X11'
-    fi
-    if [ "$CFG_XRANDR" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG xrandr"
-        if [ "$CFG_XRENDER" != "yes" ]; then
-            # libXrandr uses 1 function from libXrender, so we always have to have it :/
-	    QMakeVar set QMAKE_LIBS_X11 '-lXrandr -lXrender $$QMAKE_LIBS_X11'
-        else
-	    QMakeVar set QMAKE_LIBS_X11 '-lXrandr $$QMAKE_LIBS_X11'
-        fi
-    fi
-    if [ "$CFG_XRENDER" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG xrender"
-	QMakeVar set QMAKE_LIBS_X11 '-lXrender $$QMAKE_LIBS_X11'
-    fi
-    if [ "$CFG_MITSHM" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG mitshm"
-    fi
-    if [ "$CFG_FONTCONFIG" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG fontconfig"
-    fi
-    if [ "$CFG_XINPUT" = "yes" ]; then
-	QMakeVar set QMAKE_LIBS_X11 '-lXi $$QMAKE_LIBS_X11'
-    fi
-    if [ "$CFG_XINPUT" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG xinput tablet"
-    fi
-    if [ "$CFG_XKB" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG xkb"
-    fi
-fi
 
 [ '!' -z "$D_FLAGS" ] && QMakeVar add DEFINES "$D_FLAGS"
 [ '!' -z "$L_FLAGS" ] && QMakeVar add QMAKE_LIBDIR_FLAGS "$L_FLAGS"
@@ -6176,10 +5508,8 @@ if [ "$CFG_DEV" = "yes" ]; then
     echo "#define QT_BUILD_INTERNAL" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
-if [ "$PLATFORM_QPA" = "yes" ]; then
-    # Add QPA to config.h
-    QCONFIG_FLAGS="$QCONFIG_FLAGS Q_WS_QPA QT_NO_QWS_QPF QT_NO_QWS_QPF2"
-fi
+# Add QPA to config.h
+QCONFIG_FLAGS="$QCONFIG_FLAGS Q_WS_QPA QT_NO_QWS_QPF QT_NO_QWS_QPF2"
 
 if [ "${CFG_USE_FLOATMATH}" = "yes" ]; then
     QCONFIG_FLAGS="${QCONFIG_FLAGS} QT_USE_MATH_H_FLOATS"
@@ -6557,9 +5887,7 @@ else
 fi
 
 echo "Architecture:  $CFG_ARCH"
-if [ "$PLATFORM_QPA" = "yes" ]; then
-    echo "Host architecture: $CFG_HOST_ARCH"
-fi
+echo "Host architecture: $CFG_HOST_ARCH"
 
 if [ -n "$PLATFORM_NOTES" ]; then
     echo "Platform notes:"
@@ -6652,22 +5980,21 @@ if [ "$CFG_OPENVG" ]; then
         echo "OpenVG support ......... $CFG_OPENVG"
     fi
 fi
-if [ "$PLATFORM_X11" = "yes" ]; then
-    echo "NAS sound support ...... $CFG_NAS"
-    echo "XShape support ......... $CFG_XSHAPE"
-    echo "XVideo support ......... $CFG_XVIDEO"
-    echo "XSync support .......... $CFG_XSYNC"
-    echo "Xinerama support ....... $CFG_XINERAMA"
-    echo "Xcursor support ........ $CFG_XCURSOR"
-    echo "Xfixes support ......... $CFG_XFIXES"
-    echo "Xrandr support ......... $CFG_XRANDR"
-    echo "Xi support ............. $CFG_XINPUT"
-    echo "MIT-SHM support ........ $CFG_MITSHM"
-    echo "FontConfig support ..... $CFG_FONTCONFIG"
-    echo "XKB Support ............ $CFG_XKB"
-    echo "immodule support ....... $CFG_IM"
-    echo "GTK theme support ...... $CFG_QGTKSTYLE"
-fi
+
+echo "XShape support ......... $CFG_XSHAPE"
+echo "XVideo support ......... $CFG_XVIDEO"
+echo "XSync support .......... $CFG_XSYNC"
+echo "Xinerama support ....... $CFG_XINERAMA"
+echo "Xcursor support ........ $CFG_XCURSOR"
+echo "Xfixes support ......... $CFG_XFIXES"
+echo "Xrandr support ......... $CFG_XRANDR"
+echo "Xi support ............. $CFG_XINPUT"
+echo "MIT-SHM support ........ $CFG_MITSHM"
+echo "FontConfig support ..... $CFG_FONTCONFIG"
+echo "XKB Support ............ $CFG_XKB"
+echo "immodule support ....... $CFG_IM"
+echo "GTK theme support ...... $CFG_QGTKSTYLE"
+
 [ "$CFG_SQL_mysql" != "no" ] && echo "MySQL support .......... $CFG_SQL_mysql"
 [ "$CFG_SQL_psql" != "no" ] && echo "PostgreSQL support ..... $CFG_SQL_psql"
 [ "$CFG_SQL_odbc" != "no" ] && echo "ODBC support ........... $CFG_SQL_odbc"
