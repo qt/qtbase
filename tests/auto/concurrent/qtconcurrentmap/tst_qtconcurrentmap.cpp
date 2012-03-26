@@ -72,9 +72,7 @@ private slots:
 #endif
     void incrementalResults();
     void noDetach();
-#ifndef QT_NO_STL
     void stlContainers();
-#endif
     void qFutureAssignmentLeak();
     void stressTest();
 public slots:
@@ -2301,7 +2299,6 @@ void tst_QtConcurrentMap::noDetach()
 
 }
 
-#ifndef QT_NO_STL
 void tst_QtConcurrentMap::stlContainers()
 {
     std::vector<int> vector;
@@ -2322,7 +2319,6 @@ void tst_QtConcurrentMap::stlContainers()
     
     QtConcurrent::blockingMap(list, multiplyBy2Immutable);
 }
-#endif
 
 InstanceCounter ic_fn(const InstanceCounter & ic)
 {
