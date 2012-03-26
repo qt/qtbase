@@ -5209,7 +5209,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 }
                 if (tb->state & State_On) {
                     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
-                        static QPixmap pm(QLatin1String(":/trolltech/mac/style/images/leopard-unified-toolbar-on.png"));
+                        static QPixmap pm(QLatin1String(":/qt-project.org/mac/style/images/leopard-unified-toolbar-on.png"));
                         p->setRenderHint(QPainter::SmoothPixmapTransform);
                         QStyleHelper::drawBorderPixmap(pm, p, tb->rect, 2, 2, 2, 2);
                     } else {

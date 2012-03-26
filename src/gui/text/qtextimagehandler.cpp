@@ -79,7 +79,7 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format)
         if (img.isNull()) { // try direct loading
             name = format.name(); // remove qrc:/ prefix again
             if (name.isEmpty() || !img.load(name))
-                return QPixmap(QLatin1String(":/trolltech/styles/commonstyle/images/file-16.png"));
+                return QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-16.png"));
         }
         pm = QPixmap::fromImage(img);
         doc->addResource(QTextDocument::ImageResource, url, pm);
@@ -154,7 +154,7 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format)
         if (image.isNull()) { // try direct loading
             name = format.name(); // remove qrc:/ prefix again
             if (name.isEmpty() || !image.load(name))
-                return QImage(QLatin1String(":/trolltech/styles/commonstyle/images/file-16.png"));
+                return QImage(QLatin1String(":/qt-project.org/styles/commonstyle/images/file-16.png"));
         }
         doc->addResource(QTextDocument::ImageResource, url, image);
     }

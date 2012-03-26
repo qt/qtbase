@@ -204,19 +204,19 @@ NSCursor *QCocoaCursor::createCursorData(QCursor *cursor)
         return createCursorFromPixmap(pixmap);
         break; }
     case Qt::WaitCursor: {
-        QPixmap pixmap = QPixmap(QLatin1String(":/trolltech/mac/cursors/images/spincursor.png"));
+        QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/spincursor.png"));
         return createCursorFromPixmap(pixmap);
         break; }
     case Qt::SizeAllCursor: {
-        QPixmap pixmap = QPixmap(QLatin1String(":/trolltech/mac/cursors/images/pluscursor.png"));
+        QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/pluscursor.png"));
         return createCursorFromPixmap(pixmap);
         break; }
     case Qt::BusyCursor: {
-        QPixmap pixmap = QPixmap(QLatin1String(":/trolltech/mac/cursors/images/waitcursor.png"));
+        QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/waitcursor.png"));
         return createCursorFromPixmap(pixmap);
         break; }
     case Qt::ForbiddenCursor: {
-        QPixmap pixmap = QPixmap(QLatin1String(":/trolltech/mac/cursors/images/forbiddencursor.png"));
+        QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/forbiddencursor.png"));
         return createCursorFromPixmap(pixmap);
         break; }
 #define QT_USE_APPROXIMATE_CURSORS

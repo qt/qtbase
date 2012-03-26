@@ -341,7 +341,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
 
 static inline void qt_setupActionIcon(QAction *action, const QLatin1String &name)
 {
-    QLatin1String imagePrefix(":/trolltech/dialogs/qprintpreviewdialog/images/");
+    QLatin1String imagePrefix(":/qt-project.org/dialogs/qprintpreviewdialog/images/");
     QIcon icon;
     icon.addFile(imagePrefix + name + QLatin1String("-24.png"), QSize(24, 24));
     icon.addFile(imagePrefix + name + QLatin1String("-32.png"), QSize(32, 32));
