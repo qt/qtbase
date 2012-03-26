@@ -57,7 +57,7 @@ public:
     static void injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
 
 protected:
-    virtual void run();
+    void run();
 
 private:
     void shutdown();

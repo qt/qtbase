@@ -62,18 +62,18 @@ public:
     QQnxInputContext(QQnxVirtualKeyboard &keyboard);
     ~QQnxInputContext();
 
-    virtual bool isValid() const;
+    bool isValid() const;
 
-    virtual bool filterEvent(const QEvent *event);
-    virtual void reset();
-    virtual void update(Qt::InputMethodQueries);
+    bool filterEvent(const QEvent *event);
+    void reset();
+    void update(Qt::InputMethodQueries);
     bool handleKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
 
-    virtual void showInputPanel();
-    virtual void hideInputPanel();
-    virtual bool isInputPanelVisible() const;
+    void showInputPanel();
+    void hideInputPanel();
+    bool isInputPanelVisible() const;
 
-    virtual QLocale locale() const;
+    QLocale locale() const;
 
 protected:
     // Filters only for IMF events.

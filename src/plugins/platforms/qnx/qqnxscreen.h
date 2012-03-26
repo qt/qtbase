@@ -66,11 +66,11 @@ public:
     static QQnxScreen *primaryDisplay() { return static_cast<QQnxScreen*>(ms_screens.at(0)); }
     static int defaultDepth();
 
-    virtual QRect geometry() const { return m_currentGeometry; }
-    virtual QRect availableGeometry() const;
-    virtual int depth() const { return defaultDepth(); }
-    virtual QImage::Format format() const { return (depth() == 32) ? QImage::Format_RGB32 : QImage::Format_RGB16; }
-    virtual QSizeF physicalSize() const { return m_currentPhysicalSize; }
+   QRect geometry() const { return m_currentGeometry; }
+   QRect availableGeometry() const;
+   int depth() const { return defaultDepth(); }
+   QImage::Format format() const { return (depth() == 32) ? QImage::Format_RGB32 : QImage::Format_RGB16; }
+   QSizeF physicalSize() const { return m_currentPhysicalSize; }
 
     bool isPrimaryScreen() const { return m_primaryScreen; }
 
@@ -98,7 +98,7 @@ private Q_SLOTS:
 
 private:
     QQnxScreen(screen_context_t context, screen_display_t display, bool primaryScreen);
-    virtual ~QQnxScreen();
+    ~QQnxScreen();
 
     static bool orthogonal(int rotation1, int rotation2);
 

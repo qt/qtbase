@@ -68,32 +68,32 @@ class QQnxIntegration : public QPlatformIntegration
 {
 public:
     QQnxIntegration();
-    virtual ~QQnxIntegration();
+    ~QQnxIntegration();
 
-    virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
+    bool hasCapability(QPlatformIntegration::Capability cap) const;
 
-    virtual QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    virtual QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 
-    virtual QPlatformInputContext *inputContext() const;
+    QPlatformInputContext *inputContext() const;
 
-    virtual QList<QPlatformScreen *> screens() const;
-    virtual void moveToScreen(QWindow *window, int screen);
+    QList<QPlatformScreen *> screens() const;
+    void moveToScreen(QWindow *window, int screen);
 
-    virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
-    virtual QPlatformFontDatabase *fontDatabase() const { return m_fontDatabase; }
+    QPlatformFontDatabase *fontDatabase() const { return m_fontDatabase; }
 
 #ifndef QT_NO_CLIPBOARD
-    virtual QPlatformClipboard *clipboard() const;
+    QPlatformClipboard *clipboard() const;
 #endif
 
-    virtual QVariant styleHint(StyleHint hint) const;
+    QVariant styleHint(StyleHint hint) const;
 
     bool paintUsingOpenGL() const { return m_paintUsingOpenGL; }
 
-    virtual QPlatformServices *services() const;
+    QPlatformServices *services() const;
 
     static QWindow *window(screen_window_t qnxWindow);
 

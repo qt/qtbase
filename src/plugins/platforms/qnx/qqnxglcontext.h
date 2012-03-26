@@ -61,10 +61,10 @@ public:
     static void initialize();
     static void shutdown();
 
-    virtual bool makeCurrent(QPlatformSurface *surface);
-    virtual void doneCurrent();
-    virtual void swapBuffers(QPlatformSurface *surface);
-    virtual QFunctionPointer getProcAddress(const QByteArray &procName);
+    bool makeCurrent(QPlatformSurface *surface);
+    void doneCurrent();
+    void swapBuffers(QPlatformSurface *surface);
+    QFunctionPointer getProcAddress(const QByteArray &procName);
 
     virtual QSurfaceFormat format() const { return m_windowFormat; }
 
