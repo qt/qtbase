@@ -2583,11 +2583,6 @@ void Configure::generateCachefile()
         moduleStream << "QT_SOURCE_TREE  = " << formatPath(dictionary["QT_SOURCE_TREE"]) << endl;
         moduleStream << "QT_BUILD_PARTS  = " << buildParts.join(" ") << endl << endl;
 
-        //so that we can build without an install first (which would be impossible)
-        moduleStream << "#local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR" << endl;
-        moduleStream << "QMAKE_INCDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/include", true) << endl;
-        moduleStream << "QMAKE_LIBDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/lib", true) << endl;
-
         QString hostSpec = dictionary[ "QMAKESPEC" ];
         QString targetSpec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : hostSpec;
         QString xmkspec_path = sourcePath + "/mkspecs/" + targetSpec;

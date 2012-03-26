@@ -117,9 +117,9 @@ unix|win32-g++* {
    QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]/$$TARGET
    QMAKE_PKGCONFIG_CFLAGS = -I$$[QT_INSTALL_HEADERS/raw]
    QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-   include_replace.match = $$QMAKE_INCDIR_QT
+   include_replace.match = $$[QT_INSTALL_HEADERS/get]
    include_replace.replace = $$[QT_INSTALL_HEADERS/raw]
-   lib_replace.match = $$QMAKE_LIBDIR_QT
+   lib_replace.match = $$[QT_INSTALL_LIBS/get]
    lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
    prefix_replace.match = $$QT_BUILD_TREE
    prefix_replace.replace = $$[QT_INSTALL_PREFIX/raw]

@@ -38,7 +38,7 @@ plugin { #Qt plugins
 }
 
 #handle includes
-INCLUDEPATH = $$QMAKE_INCDIR_QT $$INCLUDEPATH #prepending prevents us from picking up "stale" includes
+INCLUDEPATH = $$[QT_INSTALL_HEADERS/get] $$INCLUDEPATH #prepending prevents us from picking up "stale" includes
 
 QT_PLUGIN_VERIFY = QTPLUGIN DEPLOYMENT_PLUGIN
 for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
@@ -119,11 +119,8 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
     }
 }
 
-
-
 #specific module settings
-!isEmpty(QT_BUILD_TREE):QMAKE_LIBDIR = $$QT_BUILD_TREE/lib $$QMAKE_LIBDIR #as above, prepending prevents us from picking up "stale" libs
-QMAKE_LIBDIR += $$QMAKE_LIBDIR_QT
+QMAKE_LIBDIR = $$[QT_INSTALL_LIBS/get] $$QMAKE_LIBDIR #as above, prepending prevents us from picking up "stale" libs
 
 qtestlib {
     warning("CONFIG+=qtestlib is deprecated. Use QT+=testlib instead.")
