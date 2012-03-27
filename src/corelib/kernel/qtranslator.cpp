@@ -227,15 +227,20 @@ class QTranslatorPrivate : public QObjectPrivate
 public:
     enum { Contexts = 0x2f, Hashes = 0x42, Messages = 0x69, NumerusRules = 0x88 };
 
-    QTranslatorPrivate()
-        : used_mmap(0), unmapPointer(0), unmapLength(0),
+    QTranslatorPrivate() :
+#if defined(QT_USE_MMAP)
+          used_mmap(0),
+#endif
+          unmapPointer(0), unmapLength(0),
           messageArray(0), offsetArray(0), contextArray(0), numerusRulesArray(0),
           messageLength(0), offsetLength(0), contextLength(0), numerusRulesLength(0) {}
 
     // for mmap'ed files, this is what needs to be unmapped.
+#if defined(QT_USE_MMAP)
     bool used_mmap : 1;
+#endif
     char *unmapPointer;
-    unsigned int unmapLength;
+    quint32 unmapLength;
 
     // for squeezed but non-file data, this is what needs to be deleted
     const uchar *messageArray;
@@ -448,6 +453,15 @@ bool QTranslatorPrivate::do_load(const QString &realname)
     QTranslatorPrivate *d = this;
     bool ok = false;
 
+    QFile file(realname);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+
+    qint64 fileSize = file.size();
+    if (!fileSize || quint32(-1) <= fileSize)
+        return false;
+    d->unmapLength = quint32(fileSize);
+
 #ifdef QT_USE_MMAP
 
 #ifndef MAP_FILE
@@ -457,48 +471,47 @@ bool QTranslatorPrivate::do_load(const QString &realname)
 #define MAP_FAILED -1
 #endif
 
-    int fd = -1;
-    if (!realname.startsWith(QLatin1Char(':')))
-        fd = QT_OPEN(QFile::encodeName(realname), O_RDONLY);
+    int fd = file.handle();
     if (fd >= 0) {
-        QT_STATBUF st;
-        if (!QT_FSTAT(fd, &st)) {
-            char *ptr;
-            ptr = reinterpret_cast<char *>(
-                mmap(0, st.st_size,             // any address, whole file
-                     PROT_READ,                 // read-only memory
-                     MAP_FILE | MAP_PRIVATE,    // swap-backed map from file
-                     fd, 0));                   // from offset 0 of fd
-            if (ptr && ptr != reinterpret_cast<char *>(MAP_FAILED)) {
-                d->used_mmap = true;
-                d->unmapPointer = ptr;
-                d->unmapLength = st.st_size;
-                ok = true;
-            }
+        char *ptr;
+        ptr = reinterpret_cast<char *>(
+            mmap(0, d->unmapLength,         // any address, whole file
+                 PROT_READ,                 // read-only memory
+                 MAP_FILE | MAP_PRIVATE,    // swap-backed map from file
+                 fd, 0));                   // from offset 0 of fd
+        if (ptr && ptr != reinterpret_cast<char *>(MAP_FAILED)) {
+            file.close();
+            d->used_mmap = true;
+            d->unmapPointer = ptr;
+            ok = true;
         }
-        ::close(fd);
     }
 #endif // QT_USE_MMAP
 
     if (!ok) {
-        QFile file(realname);
-        d->unmapLength = file.size();
-        if (!d->unmapLength)
-            return false;
         d->unmapPointer = new char[d->unmapLength];
-
-        if (file.open(QIODevice::ReadOnly))
-            ok = (d->unmapLength == (uint)file.read(d->unmapPointer, d->unmapLength));
-
-        if (!ok) {
-            delete [] d->unmapPointer;
-            d->unmapPointer = 0;
-            d->unmapLength = 0;
-            return false;
+        if (d->unmapPointer) {
+            qint64 readResult = file.read(d->unmapPointer, d->unmapLength);
+            if (readResult == qint64(unmapLength))
+                ok = true;
         }
     }
 
-    return d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength);
+    if (ok && d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength))
+        return true;
+
+#if defined(QT_USE_MMAP)
+    if (used_mmap) {
+        used_mmap = false;
+        munmap(unmapPointer, unmapLength);
+    } else
+#endif
+        delete [] unmapPointer;
+
+    d->unmapPointer = 0;
+    d->unmapLength = 0;
+
+    return false;
 }
 
 static QString find_translation(const QLocale & locale,
@@ -900,9 +913,10 @@ void QTranslatorPrivate::clear()
     Q_Q(QTranslator);
     if (unmapPointer && unmapLength) {
 #if defined(QT_USE_MMAP)
-        if (used_mmap)
+        if (used_mmap) {
+            used_mmap = false;
             munmap(unmapPointer, unmapLength);
-        else
+        } else
 #endif
             delete [] unmapPointer;
     }
