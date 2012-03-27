@@ -73,38 +73,42 @@
 
 QT_BEGIN_NAMESPACE
 
-
-// ### Qt 5: see tests/benchmarks/corelib/tools/qhash/qhash_string.cpp
-// Hashing of the whole string is a waste of cycles.
-
 /*
-    These functions are based on Peter J. Weinberger's hash function
-    (from the Dragon Book). The constant 24 in the original function
-    was replaced with 23 to produce fewer collisions on input such as
-    "a", "aa", "aaa", "aaaa", ...
+    The Java's hashing algorithm for strings is a variation of D. J. Bernstein
+    hashing algorithm appeared here http://cr.yp.to/cdb/cdb.txt
+    and informally known as DJB33XX - DJB's 33 Times Xor.
+    Java uses DJB31XA, that is, 31 Times Add.
+
+    The original algorithm was a loop around
+        (h << 5) + h ^ c
+    (which is indeed h*33 ^ c); it was then changed to
+        (h << 5) - h ^ c
+    (so h*31^c: DJB31XX), and the XOR changed to a sum:
+        (h << 5) - h + c
+    (DJB31XA), which can save some assembly instructions.
+
+    Still, we can avoid writing the multiplication as "(h << 5) - h"
+    -- the compiler will turn it into a shift and an addition anyway
+    (for instance, gcc 4.4 does that even at -O0).
 */
 
-static uint hash(const uchar *p, int n, uint seed)
+static inline uint hash(const uchar *p, int len, uint seed)
 {
     uint h = seed;
 
-    while (n--) {
-        h = (h << 4) + *p++;
-        h ^= (h & 0xf0000000) >> 23;
-        h &= 0x0fffffff;
-    }
+    for (int i = 0; i < len; ++i)
+        h = 31 * h + p[i];
+
     return h;
 }
 
-static uint hash(const QChar *p, int n, uint seed)
+static inline uint hash(const QChar *p, int len, uint seed)
 {
     uint h = seed;
 
-    while (n--) {
-        h = (h << 4) + (*p++).unicode();
-        h ^= (h & 0xf0000000) >> 23;
-        h &= 0x0fffffff;
-    }
+    for (int i = 0; i < len; ++i)
+        h = 31 * h + p[i].unicode();
+
     return h;
 }
 
