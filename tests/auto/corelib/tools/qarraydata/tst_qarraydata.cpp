@@ -50,9 +50,9 @@ struct SharedNullVerifier
 {
     SharedNullVerifier()
     {
-        Q_ASSERT(QArrayData::shared_null.ref.isStatic());
-        Q_ASSERT(QArrayData::shared_null.ref.isShared());
-        Q_ASSERT(QArrayData::shared_null.ref.isSharable());
+        Q_ASSERT(QArrayData::shared_null[0].ref.isStatic());
+        Q_ASSERT(QArrayData::shared_null[0].ref.isShared());
+        Q_ASSERT(QArrayData::shared_null[0].ref.isSharable());
     }
 };
 
@@ -159,7 +159,7 @@ void tst_QArrayData::referenceCounting()
 
 void tst_QArrayData::sharedNullEmpty()
 {
-    QArrayData *null = const_cast<QArrayData *>(&QArrayData::shared_null);
+    QArrayData *null = const_cast<QArrayData *>(QArrayData::shared_null);
     QArrayData *empty = QArrayData::allocate(1, Q_ALIGNOF(QArrayData), 0);
 
     QVERIFY(null->ref.isStatic());
