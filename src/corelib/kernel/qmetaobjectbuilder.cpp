@@ -104,6 +104,7 @@ public:
           attributes(((int)_access) | (((int)_methodType) << 2)),
           revision(_revision)
     {
+        Q_ASSERT((_methodType == QMetaMethod::Constructor) == returnType.isNull());
     }
 
     QByteArray signature;
