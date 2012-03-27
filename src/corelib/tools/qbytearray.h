@@ -44,6 +44,7 @@
 
 #include <QtCore/qrefcount.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qarraydata.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -121,6 +122,8 @@ template <typename T> class QList;
 
 struct QByteArrayData
 {
+    // Keep in sync with QArrayData
+
     QtPrivate::RefCount ref;
     int size;
     uint alloc : 31;
@@ -131,6 +134,12 @@ struct QByteArrayData
     inline char *data() { return reinterpret_cast<char *>(this) + offset; }
     inline const char *data() const { return reinterpret_cast<const char *>(this) + offset; }
 };
+
+Q_STATIC_ASSERT(sizeof(QArrayData) == sizeof(QByteArrayData));
+Q_STATIC_ASSERT(offsetof(QArrayData, ref) == offsetof(QByteArrayData, ref));
+Q_STATIC_ASSERT(offsetof(QArrayData, size) == offsetof(QByteArrayData, size));
+//  Can't use offsetof on bitfield members alloc, capacityReserved
+Q_STATIC_ASSERT(offsetof(QArrayData, offset) == offsetof(QByteArrayData, offset));
 
 template<int N> struct QStaticByteArrayData
 {
@@ -194,11 +203,10 @@ struct QByteArrayDataPtr
 # define QByteArrayLiteral(str) (str)
 #endif
 
-
 class Q_CORE_EXPORT QByteArray
 {
 private:
-    typedef QByteArrayData Data;
+    typedef QTypedArrayData<char> Data;
 
 public:
     inline QByteArray();
@@ -399,12 +407,13 @@ public:
     int length() const { return d->size; }
     bool isNull() const;
 
-    Q_DECL_CONSTEXPR inline QByteArray(QByteArrayDataPtr dd) : d(dd.ptr) {}
+    Q_DECL_CONSTEXPR inline QByteArray(QByteArrayDataPtr dd)
+        : d(reinterpret_cast<Data *>(dd.ptr))
+    {
+    }
 
 private:
     operator QNoImplicitBoolCast() const;
-    static const QStaticByteArrayData<1> shared_null;
-    static const QStaticByteArrayData<1> shared_empty;
     Data *d;
     void reallocData(uint alloc, bool grow = false);
     void expand(int i);
@@ -418,8 +427,8 @@ public:
     inline DataPtr &data_ptr() { return d; }
 };
 
-inline QByteArray::QByteArray(): d(shared_null.data_ptr()) { }
-inline QByteArray::~QByteArray() { if (!d->ref.deref()) free(d); }
+inline QByteArray::QByteArray(): d(Data::sharedNull()) { }
+inline QByteArray::~QByteArray() { if (!d->ref.deref()) Data::deallocate(d); }
 inline int QByteArray::size() const
 { return d->size; }
 

@@ -585,7 +585,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
             d->data()[len] = 0;
 
             {
-                QByteArrayDataPtr dataPtr = { d.take() };
+                QByteArrayDataPtr dataPtr = { reinterpret_cast<QByteArrayData *>(d.take()) };
                 return QByteArray(dataPtr);
             }
 
@@ -617,9 +617,6 @@ static inline char qToLower(char c)
     else
         return c;
 }
-
-const QStaticByteArrayData<1> QByteArray::shared_null = { Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(0), { 0 } };
-const QStaticByteArrayData<1> QByteArray::shared_empty = { Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(0), { 0 } };
 
 /*!
     \class QByteArray
@@ -897,7 +894,7 @@ QByteArray &QByteArray::operator=(const QByteArray & other)
 {
     other.d->ref.ref();
     if (!d->ref.deref())
-        free(d);
+        Data::deallocate(d);
     d = other.d;
     return *this;
 }
@@ -913,9 +910,9 @@ QByteArray &QByteArray::operator=(const char *str)
 {
     Data *x;
     if (!str) {
-        x = shared_null.data_ptr();
+        x = Data::sharedNull();
     } else if (!*str) {
-        x = shared_empty.data_ptr();
+        x = Data::allocate(0);
     } else {
         int len = strlen(str);
         if (d->ref.isShared() || uint(len) + 1u > d->alloc
@@ -927,7 +924,7 @@ QByteArray &QByteArray::operator=(const char *str)
     }
     x->ref.ref();
     if (!d->ref.deref())
-         free(d);
+         Data::deallocate(d);
     d = x;
     return *this;
 }
@@ -1322,20 +1319,16 @@ void QByteArray::chop(int n)
 QByteArray::QByteArray(const char *data, int size)
 {
     if (!data) {
-        d = shared_null.data_ptr();
+        d = Data::sharedNull();
     } else {
         if (size < 0)
             size = strlen(data);
         if (!size) {
-            d = shared_empty.data_ptr();
+            d = Data::allocate(0);
         } else {
-            d = static_cast<Data *>(::malloc(sizeof(Data) + uint(size) + 1u));
+            d = Data::allocate(uint(size) + 1u);
             Q_CHECK_PTR(d);
-            d->ref.initializeOwned();
             d->size = size;
-            d->alloc = uint(size) + 1u;
-            d->capacityReserved = false;
-            d->offset = sizeof(QByteArrayData);
             memcpy(d->data(), data, size);
             d->data()[size] = '\0';
         }
@@ -1352,15 +1345,11 @@ QByteArray::QByteArray(const char *data, int size)
 QByteArray::QByteArray(int size, char ch)
 {
     if (size <= 0) {
-        d = shared_empty.data_ptr();
+        d = Data::allocate(0);
     } else {
-        d = static_cast<Data *>(::malloc(sizeof(Data) + uint(size) + 1u));
+        d = Data::allocate(uint(size) + 1u);
         Q_CHECK_PTR(d);
-        d->ref.initializeOwned();
         d->size = size;
-        d->alloc = uint(size) + 1u;
-        d->capacityReserved = false;
-        d->offset = sizeof(QByteArrayData);
         memset(d->data(), ch, size);
         d->data()[size] = '\0';
     }
@@ -1374,13 +1363,9 @@ QByteArray::QByteArray(int size, char ch)
 
 QByteArray::QByteArray(int size, Qt::Initialization)
 {
-    d = static_cast<Data *>(::malloc(sizeof(Data) + uint(size) + 1u));
+    d = Data::allocate(uint(size) + 1u);
     Q_CHECK_PTR(d);
-    d->ref.initializeOwned();
     d->size = size;
-    d->alloc = uint(size) + 1u;
-    d->capacityReserved = false;
-    d->offset = sizeof(QByteArrayData);
     d->data()[size] = '\0';
 }
 
@@ -1396,7 +1381,6 @@ QByteArray::QByteArray(int size, Qt::Initialization)
 
     \sa size(), truncate()
 */
-
 void QByteArray::resize(int size)
 {
     if (size < 0)
@@ -1408,9 +1392,9 @@ void QByteArray::resize(int size)
     }
 
     if (size == 0 && !d->capacityReserved) {
-        Data *x = shared_empty.data_ptr();
+        Data *x = Data::allocate(0);
         if (!d->ref.deref())
-            free(d);
+            Data::deallocate(d);
         d = x;
     } else if (d->size == 0 && d->ref.isStatic()) {
         //
@@ -1421,13 +1405,9 @@ void QByteArray::resize(int size)
         // which is used in place of the Qt 3 idiom:
         //    QByteArray a(sz);
         //
-        Data *x = static_cast<Data *>(::malloc(sizeof(Data) + uint(size) + 1u));
+        Data *x = Data::allocate(uint(size) + 1u);
         Q_CHECK_PTR(x);
-        x->ref.initializeOwned();
         x->size = size;
-        x->alloc = uint(size) + 1u;
-        x->capacityReserved = false;
-        x->offset = sizeof(QByteArrayData);
         x->data()[size] = '\0';
         d = x;
     } else {
@@ -1467,17 +1447,13 @@ void QByteArray::reallocData(uint alloc, bool grow)
         alloc = qAllocMore(alloc, sizeof(Data));
 
     if (d->ref.isShared() || IS_RAW_DATA(d)) {
-        Data *x = static_cast<Data *>(malloc(sizeof(Data) + alloc));
+        Data *x = Data::allocate(alloc);
         Q_CHECK_PTR(x);
-        x->ref.initializeOwned();
         x->size = qMin(int(alloc) - 1, d->size);
-        x->alloc = alloc;
-        x->capacityReserved = d->capacityReserved;
-        x->offset = sizeof(QByteArrayData);
         ::memcpy(x->data(), d->data(), x->size);
         x->data()[x->size] = '\0';
         if (!d->ref.deref())
-            free(d);
+            Data::deallocate(d);
         d = x;
     } else {
         Data *x = static_cast<Data *>(::realloc(d, sizeof(Data) + alloc));
@@ -2733,8 +2709,8 @@ QByteArray QByteArray::toUpper() const
 void QByteArray::clear()
 {
     if (!d->ref.deref())
-        free(d);
-    d = shared_null.data_ptr();
+        Data::deallocate(d);
+    d = Data::sharedNull();
 }
 
 #if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
@@ -3176,7 +3152,7 @@ QByteArray QByteArray::trimmed() const
     }
     int l = end - start + 1;
     if (l <= 0) {
-        QByteArrayDataPtr empty = { shared_empty.data_ptr() };
+        QByteArrayDataPtr empty = { reinterpret_cast<QByteArrayData *>(Data::allocate(0)) };
         return QByteArray(empty);
     }
     return QByteArray(s+start, l);
@@ -3256,7 +3232,7 @@ QByteArray QByteArray::rightJustified(int width, char fill, bool truncate) const
     return result;
 }
 
-bool QByteArray::isNull() const { return d == &shared_null.ba; }
+bool QByteArray::isNull() const { return d == QArrayData::sharedNull(); }
 
 
 /*!
@@ -3884,19 +3860,14 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
 {
     Data *x;
     if (!data) {
-        x = shared_null.data_ptr();
+        x = Data::sharedNull();
     } else if (!size) {
-        x = shared_empty.data_ptr();
+        x = Data::allocate(0);
     } else {
-        x = static_cast<Data *>(malloc(sizeof(Data)));
+        x = Data::fromRawData(data, size);
         Q_CHECK_PTR(x);
-        x->ref.initializeOwned();
-        x->size = size;
-        x->alloc = 0;
-        x->capacityReserved = false;
-        x->offset = data - reinterpret_cast<char *>(x);
     }
-    QByteArrayDataPtr dataPtr = { x };
+    QByteArrayDataPtr dataPtr = { reinterpret_cast<QByteArrayData *>(x) };
     return QByteArray(dataPtr);
 }
 
