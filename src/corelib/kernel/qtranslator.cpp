@@ -235,14 +235,14 @@ public:
           messageArray(0), offsetArray(0), contextArray(0), numerusRulesArray(0),
           messageLength(0), offsetLength(0), contextLength(0), numerusRulesLength(0) {}
 
-    // for mmap'ed files, this is what needs to be unmapped.
 #if defined(QT_USE_MMAP)
     bool used_mmap : 1;
 #endif
-    char *unmapPointer;
+    char *unmapPointer;     // owned memory (mmap or new)
     quint32 unmapLength;
 
-    // for squeezed but non-file data, this is what needs to be deleted
+    // Pointers and offsets into unmapPointer[unmapLength] array, or user
+    // provided data array
     const uchar *messageArray;
     const uchar *offsetArray;
     const uchar *contextArray;
