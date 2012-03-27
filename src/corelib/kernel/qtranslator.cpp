@@ -57,6 +57,7 @@
 #include "qhash.h"
 #include "qtranslator_p.h"
 #include "qlocale.h"
+#include "qendian.h"
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
 #define QT_USE_MMAP
@@ -661,20 +662,17 @@ bool QTranslator::load(const uchar *data, int len)
 
 static quint8 read8(const uchar *data)
 {
-    return *data;
+    return qFromBigEndian<quint8>(data);
 }
 
 static quint16 read16(const uchar *data)
 {
-    return (data[0] << 8) | (data[1]);
+    return qFromBigEndian<quint16>(data);
 }
 
 static quint32 read32(const uchar *data)
 {
-    return (data[0] << 24)
-        | (data[1] << 16)
-        | (data[2] << 8)
-        | (data[3]);
+    return qFromBigEndian<quint32>(data);
 }
 
 bool QTranslatorPrivate::do_load(const uchar *data, int len)
