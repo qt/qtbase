@@ -45,6 +45,8 @@
 #include <QtGui/QPlatformNativeInterface>
 #include <QtPrintSupport/QPlatformPrinterSupport>
 
+QT_BEGIN_NAMESPACE
+
 class QWidget;
 
 class QCocoaNativeInterface : public QPlatformNativeInterface
@@ -74,3 +76,5 @@ private:
 };
 
 #endif // QCOCOANATIVEINTERFACE_H
+
+QT_END_NAMESPACE

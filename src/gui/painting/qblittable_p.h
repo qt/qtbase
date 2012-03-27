@@ -64,7 +64,7 @@ public:
         SourceOverScaledPixmapCapability = 0x0008,
 
         // Internal ones
-        OutlineCapability               = 0x0001000,
+        OutlineCapability               = 0x0001000
     };
     Q_DECLARE_FLAGS (Capabilities, Capability);
 

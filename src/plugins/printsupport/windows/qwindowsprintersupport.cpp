@@ -59,7 +59,9 @@ QWindowsPrinterSupport::QWindowsPrinterSupport()
         if (EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, NULL, 4, buffer, needed, &needed, &returned)) {
             PPRINTER_INFO_4 infoList = reinterpret_cast<PPRINTER_INFO_4>(buffer);
             QString defaultPrinterName;
-            QWin32PrintEngine::queryDefaultPrinter(defaultPrinterName, QString(), QString());
+            QString program;
+            QString port;
+            QWin32PrintEngine::queryDefaultPrinter(defaultPrinterName, program, port);
             for (uint i = 0; i < returned; ++i) {
                 QString printerName(QString::fromWCharArray(infoList[i].pPrinterName));
 

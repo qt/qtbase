@@ -72,6 +72,7 @@ unix {
 			$(DEL_FILE) src/corelib/global/qconfig.h; \
 			$(DEL_FILE) src/corelib/global/qconfig.cpp; \
 			$(DEL_FILE) mkspecs/qconfig.pri; \
+			$(DEL_FILE) mkspecs/qdevice.pri; \
 			$(DEL_FILE) mkspecs/qmodule.pri; \
 			$(DEL_FILE) .qmake.cache; \
  			(cd qmake && $(MAKE) distclean);
@@ -80,6 +81,7 @@ win32 {
   confclean.commands += -$(DEL_FILE) src\\corelib\\global\\qconfig.h $$escape_expand(\\n\\t) \
 			-$(DEL_FILE) src\\corelib\\global\\qconfig.cpp $$escape_expand(\\n\\t) \
 			-$(DEL_FILE) mkspecs\\qconfig.pri $$escape_expand(\\n\\t) \
+			-$(DEL_FILE) mkspecs\\qdevice.pri $$escape_expand(\\n\\t) \
 			-$(DEL_FILE) mkspecs\\qmodule.pri $$escape_expand(\\n\\t) \
 			-$(DEL_FILE) .qmake.cache $$escape_expand(\\n\\t) \
 			(cd qmake && $(MAKE) distclean)
@@ -115,7 +117,7 @@ INSTALLS += configtests
 
 #mkspecs
 mkspecs.path = $$[QT_HOST_DATA]/mkspecs
-mkspecs.files = $$OUT_PWD/mkspecs/qconfig.pri $$OUT_PWD/mkspecs/qmodule.pri $$files($$PWD/mkspecs/*)
+mkspecs.files = $$OUT_PWD/mkspecs/qconfig.pri $$OUT_PWD/mkspecs/qmodule.pri $$OUT_PWD/mkspecs/qdevice.pri $$files($$PWD/mkspecs/*)
 mkspecs.files -= $$PWD/mkspecs/modules
 unix { 
    DEFAULT_QMAKESPEC = $$QMAKESPEC

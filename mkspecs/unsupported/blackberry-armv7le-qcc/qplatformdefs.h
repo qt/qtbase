@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Research In Motion Limited. <blackberry-qt@qnx.com>
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,44 +39,4 @@
 **
 ****************************************************************************/
 
-#ifndef QMACMIME_H
-#define QMACMIME_H
-
-#include <QtCore>
-
-#include <CoreFoundation/CoreFoundation.h>
-
-QT_BEGIN_NAMESPACE
-
-class Q_GUI_EXPORT QMacPasteboardMime {
-    char type;
-public:
-    enum QMacPasteboardMimeType { MIME_DND=0x01,
-        MIME_CLIP=0x02,
-        MIME_QT_CONVERTOR=0x04,
-        MIME_QT3_CONVERTOR=0x08,
-        MIME_ALL=MIME_DND|MIME_CLIP
-    };
-    explicit QMacPasteboardMime(char);
-    virtual ~QMacPasteboardMime();
-
-    static void initializeMimeTypes();
-    static void destroyMimeTypes();
-
-    static QList<QMacPasteboardMime*> all(uchar);
-    static QMacPasteboardMime *convertor(uchar, const QString &mime, QString flav);
-    static QString flavorToMime(uchar, QString flav);
-
-    virtual QString convertorName() = 0;
-
-    virtual bool canConvert(const QString &mime, QString flav) = 0;
-    virtual QString mimeFor(QString flav) = 0;
-    virtual QString flavorFor(const QString &mime) = 0;
-    virtual QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav) = 0;
-    virtual QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav) = 0;
-};
-
-QT_END_NAMESPACE
-
-#endif
-
+#include "../qnx-armv7le-qcc/qplatformdefs.h"

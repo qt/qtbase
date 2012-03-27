@@ -1,6 +1,6 @@
-/****************************************************************************
+/***************************************************************************
 **
-** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 - 2012 Research In Motion
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,44 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef QMACMIME_H
-#define QMACMIME_H
+#include "qqnxservices.h"
 
-#include <QtCore>
-
-#include <CoreFoundation/CoreFoundation.h>
+#include <bps/navigator.h>
+#include <stdbool.h>
+#include <sys/platform.h>
+#include <QUrl>
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QMacPasteboardMime {
-    char type;
-public:
-    enum QMacPasteboardMimeType { MIME_DND=0x01,
-        MIME_CLIP=0x02,
-        MIME_QT_CONVERTOR=0x04,
-        MIME_QT3_CONVERTOR=0x08,
-        MIME_ALL=MIME_DND|MIME_CLIP
-    };
-    explicit QMacPasteboardMime(char);
-    virtual ~QMacPasteboardMime();
+QQnxServices::QQnxServices()
+{
+    bps_initialize();
+}
 
-    static void initializeMimeTypes();
-    static void destroyMimeTypes();
+QQnxServices::~QQnxServices()
+{
+    bps_shutdown();
+}
 
-    static QList<QMacPasteboardMime*> all(uchar);
-    static QMacPasteboardMime *convertor(uchar, const QString &mime, QString flav);
-    static QString flavorToMime(uchar, QString flav);
+bool QQnxServices::openUrl(const QUrl &url)
+{
+    return navigatorInvoke(url);
+}
 
-    virtual QString convertorName() = 0;
+bool QQnxServices::openDocument(const QUrl &url)
+{
+    return navigatorInvoke(url);
+}
 
-    virtual bool canConvert(const QString &mime, QString flav) = 0;
-    virtual QString mimeFor(QString flav) = 0;
-    virtual QString flavorFor(const QString &mime) = 0;
-    virtual QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav) = 0;
-    virtual QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav) = 0;
-};
+bool QQnxServices::navigatorInvoke(const QUrl &url)
+{
+    if (!url.isValid() || url.isRelative())
+        return false;
+
+    int ret = navigator_invoke(url.toString().toUtf8(), 0);
+
+    return (ret == BPS_SUCCESS);
+}
 
 QT_END_NAMESPACE
-
-#endif
-

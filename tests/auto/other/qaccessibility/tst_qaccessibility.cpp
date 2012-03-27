@@ -252,6 +252,7 @@ private slots:
     void mdiAreaTest();
     void mdiSubWindowTest();
     void lineEditTest();
+    void groupBoxTest();
     void dialogButtonBoxTest();
     void dialTest();
     void rubberBandTest();
@@ -775,6 +776,7 @@ void tst_QAccessibility::applicationTest()
 
 void tst_QAccessibility::mainWindowTest()
 {
+    {
     QMainWindow *mw = new QMainWindow;
     mw->resize(300, 200);
     mw->show(); // triggers layout
@@ -785,12 +787,51 @@ void tst_QAccessibility::mainWindowTest()
     QAccessibleEvent show(mw, QAccessible::ObjectShow);
     QVERIFY_EVENT(&show);
 
-    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(mw);
-    QCOMPARE(interface->text(QAccessible::Name), name);
-    QCOMPARE(interface->role(), QAccessible::Window);
-    delete interface;
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(mw);
+    QCOMPARE(iface->text(QAccessible::Name), name);
+    QCOMPARE(iface->role(), QAccessible::Window);
+    QVERIFY(iface->state().active);
+
+    QAccessible::State activeState;
+    activeState.active = true;
+    QAccessibleStateChangeEvent active(mw, activeState);
+    QVERIFY_EVENT(&active);
+
+    delete iface;
     delete mw;
+    }
     QTestAccessibility::clearEvents();
+
+    {
+    QWindow window;
+    window.setGeometry(80, 80, 40, 40);
+    window.show();
+    QTRY_VERIFY(QGuiApplication::focusWindow() == &window);
+
+//    We currently don't have an accessible interface for QWindow
+//    the active state is either in the QMainWindow or QQuickView
+//    QAIPtr windowIface(QAccessible::queryAccessibleInterface(&window));
+//    QVERIFY(windowIface->state().active);
+
+    QAccessible::State activeState;
+    activeState.active = true;
+    QAccessibleStateChangeEvent active(&window, activeState);
+    QVERIFY_EVENT(&active);
+
+    QWindow child;
+    child.setParent(&window);
+    child.setGeometry(10, 10, 20, 20);
+    child.show();
+
+    child.requestActivateWindow();
+    QTRY_VERIFY(QGuiApplication::focusWindow() == &child);
+
+    QAccessibleStateChangeEvent deactivate(&window, activeState);
+    QVERIFY_EVENT(&deactivate); // deactivation of parent
+
+    QAccessibleStateChangeEvent activeChild(&child, activeState);
+    QVERIFY_EVENT(&activeChild);
+    }
 }
 
 class CounterButton : public QPushButton {
@@ -1526,9 +1567,9 @@ void tst_QAccessibility::textEditTest()
     QCOMPARE(endOffset, 30);
     QCOMPARE(iface->textInterface()->characterCount(), 31);
     QFontMetrics fm(edit.font());
-    QCOMPARE(iface->textInterface()->characterRect(0, QAccessible2::RelativeToParent).size(), QSize(fm.width("h"), fm.height()));
-    QCOMPARE(iface->textInterface()->characterRect(5, QAccessible2::RelativeToParent).size(), QSize(fm.width(" "), fm.height()));
-    QCOMPARE(iface->textInterface()->characterRect(6, QAccessible2::RelativeToParent).size(), QSize(fm.width("w"), fm.height()));
+    QCOMPARE(iface->textInterface()->characterRect(0).size(), QSize(fm.width("h"), fm.height()));
+    QCOMPARE(iface->textInterface()->characterRect(5).size(), QSize(fm.width(" "), fm.height()));
+    QCOMPARE(iface->textInterface()->characterRect(6).size(), QSize(fm.width("w"), fm.height()));
 
     iface->editableTextInterface()->copyText(6, 11);
     QCOMPARE(QApplication::clipboard()->text(), QLatin1String("world"));
@@ -1879,18 +1920,111 @@ void tst_QAccessibility::lineEditTest()
     QAccessibleTextUpdateEvent update(lineEdit, 0, "foo", "bar");
     QVERIFY(QTestAccessibility::containsEvent(&update));
 
-//    QTestEventList keys;
-//    keys.addKeyClick('D');
-//    keys.addKeyClick('E');
-//    keys.addKeyClick(Qt::Key_Left);
-//    keys.addKeyClick(Qt::Key_Left);
-//    keys.addKeyClick('C');
-//    keys.addKeyClick('O');
-//    keys.simulate(lineEdit);
-//    FIXME: Test key press events...
+    // FIXME check what extra events are around and get rid of them
+    QTestAccessibility::clearEvents();
+
+    QTestEventList keys;
+    keys.addKeyClick('D');
+    keys.simulate(lineEdit);
+
+    QAccessibleTextInsertEvent insertD(lineEdit, 3, "D");
+    QVERIFY_EVENT(&insertD);
+    keys.clear();
+    keys.addKeyClick('E');
+    keys.simulate(lineEdit);
+
+    QAccessibleTextInsertEvent insertE(lineEdit, 4, "E");
+    QVERIFY(QTestAccessibility::containsEvent(&insertE));
+    keys.clear();
+    keys.addKeyClick(Qt::Key_Left);
+    keys.addKeyClick(Qt::Key_Left);
+    keys.simulate(lineEdit);
+    cursorEvent.setCursorPosition(4);
+    QVERIFY(QTestAccessibility::containsEvent(&cursorEvent));
+    cursorEvent.setCursorPosition(3);
+    QVERIFY(QTestAccessibility::containsEvent(&cursorEvent));
+
+    keys.clear();
+    keys.addKeyClick('C');
+    keys.simulate(lineEdit);
+
+    QAccessibleTextInsertEvent insertC(lineEdit, 3, "C");
+    QVERIFY(QTestAccessibility::containsEvent(&insertC));
+
+    keys.clear();
+    keys.addKeyClick('O');
+    keys.simulate(lineEdit);
+    QAccessibleTextInsertEvent insertO(lineEdit, 4, "O");
+    QVERIFY(QTestAccessibility::containsEvent(&insertO));
     }
     delete toplevel;
     QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::groupBoxTest()
+{
+    {
+    QGroupBox *groupBox = new QGroupBox();
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(groupBox);
+
+    groupBox->setTitle(QLatin1String("Test QGroupBox"));
+
+    QAccessibleEvent ev(groupBox, QAccessible::NameChanged);
+    QVERIFY_EVENT(&ev);
+
+    groupBox->setToolTip(QLatin1String("This group box will be used to test accessibility"));
+    QVBoxLayout *layout = new QVBoxLayout();
+    QRadioButton *rbutton = new QRadioButton();
+    layout->addWidget(rbutton);
+    groupBox->setLayout(layout);
+    QAccessibleInterface *rButtonIface = QAccessible::queryAccessibleInterface(rbutton);
+
+    QCOMPARE(iface->childCount(), 1);
+    QCOMPARE(iface->role(), QAccessible::Grouping);
+    QCOMPARE(iface->text(QAccessible::Name), QLatin1String("Test QGroupBox"));
+    QCOMPARE(iface->text(QAccessible::Description), QLatin1String("This group box will be used to test accessibility"));
+    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations = rButtonIface->relations();
+    QVERIFY(relations.size() == 1);
+    QPair<QAccessibleInterface*, QAccessible::Relation> relation = relations.first();
+    QCOMPARE(relation.first->object(), groupBox);
+    QCOMPARE(relation.second, QAccessible::Label);
+
+    delete relation.first;
+
+    delete rButtonIface;
+    delete iface;
+    delete groupBox;
+    }
+
+    {
+    QGroupBox *groupBox = new QGroupBox();
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(groupBox);
+    QVERIFY(!iface->state().checkable);
+    groupBox->setCheckable(true);
+
+    groupBox->setChecked(false);
+    QAccessible::State st;
+    st.checked = true;
+    QAccessibleStateChangeEvent ev(groupBox, st);
+    QVERIFY_EVENT(&ev);
+
+    QCOMPARE(iface->role(), QAccessible::CheckBox);
+    QAccessibleActionInterface *actionIface = iface->actionInterface();
+    QVERIFY(actionIface);
+    QAccessible::State state = iface->state();
+    QVERIFY(state.checkable);
+    QVERIFY(!state.checked);
+    QVERIFY(actionIface->actionNames().contains(QAccessibleActionInterface::checkAction()));
+    actionIface->doAction(QAccessibleActionInterface::checkAction());
+    QVERIFY(groupBox->isChecked());
+    state = iface->state();
+    QVERIFY(state.checked);
+    QAccessibleStateChangeEvent ev2(groupBox, st);
+    QVERIFY_EVENT(&ev2);
+
+    delete iface;
+    delete groupBox;
+    }
 }
 
 bool accessibleInterfaceLeftOf(const QAccessibleInterface *a1, const QAccessibleInterface *a2)
@@ -2733,7 +2867,8 @@ void tst_QAccessibility::labelTest()
 
     QCOMPARE(imageInterface->imageSize(), testPixmap.size());
     QCOMPARE(imageInterface->imageDescription(), QString::fromLatin1("Test Description"));
-    QCOMPARE(imageInterface->imagePosition(QAccessible2::RelativeToParent), imageLabel.geometry());
+    const QPoint labelPos = imageLabel.mapToGlobal(QPoint(0,0));
+    QCOMPARE(imageInterface->imagePosition().topLeft(), labelPos);
 
     delete acc_label;
 

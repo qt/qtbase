@@ -55,6 +55,7 @@ private slots:
     void topLevelWindows();
     void abortQuitOnShow();
     void changeFocusWindow();
+    void keyboardModifiers();
 };
 
 class DummyWindow : public QWindow
@@ -239,6 +240,80 @@ void tst_QGuiApplication::changeFocusWindow()
     QCOMPARE(window1.windowDuringFocusOut, &window2);
 }
 
+void tst_QGuiApplication::keyboardModifiers()
+{
+    int argc = 0;
+    QGuiApplication app(argc, 0);
+
+    QWindow *window = new QWindow;
+    window->show();
+    QTest::qWaitForWindowShown(window);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
+
+    // mouse events
+    QPoint center = window->geometry().center();
+    QTest::mouseEvent(QTest::MousePress, window, Qt::LeftButton, Qt::NoModifier, center);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
+    QTest::mouseEvent(QTest::MouseRelease, window, Qt::LeftButton, Qt::NoModifier, center);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
+    QTest::mouseEvent(QTest::MousePress, window, Qt::RightButton, Qt::ControlModifier, center);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
+    QTest::mouseEvent(QTest::MouseRelease, window, Qt::RightButton, Qt::ControlModifier, center);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
+
+    // shortcut events
+    QWindowSystemInterface::tryHandleSynchronousShortcutEvent(window, Qt::Key_5, Qt::MetaModifier);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::MetaModifier);
+    QWindowSystemInterface::tryHandleSynchronousShortcutEvent(window, Qt::Key_Period, Qt::NoModifier);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
+    QWindowSystemInterface::tryHandleSynchronousShortcutEvent(window, Qt::Key_0, Qt::ControlModifier);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
+
+    // key events
+    QTest::keyEvent(QTest::Press, window, Qt::Key_C);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
+    QTest::keyEvent(QTest::Release, window, Qt::Key_C);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
+
+    QTest::keyEvent(QTest::Press, window, Qt::Key_U, Qt::ControlModifier);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
+    QTest::keyEvent(QTest::Release, window, Qt::Key_U, Qt::ControlModifier);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
+
+    QTest::keyEvent(QTest::Press, window, Qt::Key_T);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
+    QTest::keyEvent(QTest::Release, window, Qt::Key_T);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
+
+    QTest::keyEvent(QTest::Press, window, Qt::Key_E, Qt::ControlModifier);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
+    QTest::keyEvent(QTest::Release, window, Qt::Key_E, Qt::ControlModifier);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
+
+    // wheel events
+    QPoint global = window->mapToGlobal(center);
+    QPoint delta(0, 1);
+    QWindowSystemInterface::handleWheelEvent(window, center, global, delta, delta, Qt::NoModifier);
+    QWindowSystemInterface::sendWindowSystemEvents(app.eventDispatcher(), QEventLoop::AllEvents);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
+    QWindowSystemInterface::handleWheelEvent(window, center, global, delta, delta, Qt::AltModifier);
+    QWindowSystemInterface::sendWindowSystemEvents(app.eventDispatcher(), QEventLoop::AllEvents);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::AltModifier);
+    QWindowSystemInterface::handleWheelEvent(window, center, global, delta, delta, Qt::ControlModifier);
+    QWindowSystemInterface::sendWindowSystemEvents(app.eventDispatcher(), QEventLoop::AllEvents);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
+
+    // touch events
+    QList<const QTouchDevice *> touchDevices = QTouchDevice::devices();
+    if (!touchDevices.isEmpty()) {
+        QTouchDevice *touchDevice = const_cast<QTouchDevice *>(touchDevices.first());
+        QTest::touchEvent(window, touchDevice).press(1, center).release(1, center);
+        QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
+    }
+
+    window->close();
+    delete window;
+}
 
 QTEST_APPLESS_MAIN(tst_QGuiApplication)
 #include "tst_qguiapplication.moc"

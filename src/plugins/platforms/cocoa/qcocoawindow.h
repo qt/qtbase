@@ -49,7 +49,7 @@
 
 #include "qcocoaglcontext.h"
 #include "qnsview.h"
-class QCocoaWindow;
+class QT_PREPEND_NAMESPACE(QCocoaWindow);
 
 @interface QNSWindow : NSWindow {
     @public QCocoaWindow *m_cocoaPlatformWindow;
@@ -59,7 +59,7 @@ class QCocoaWindow;
 @end
 
 @interface QNSPanel : NSPanel {
-    @public QCocoaWindow *m_cocoaPlatformWindow;
+    @public QT_PREPEND_NAMESPACE(QCocoaWindow) *m_cocoaPlatformWindow;
 }
 - (BOOL)canBecomeKeyWindow;
 @end
@@ -99,6 +99,7 @@ public:
     void raise();
     void lower();
     void propagateSizeHints();
+    void setOpacity(qreal level);
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
 
@@ -133,7 +134,7 @@ public: // for QNSView
     friend class QCocoaNativeInterface;
 
     QNSView *m_contentView;
-    QNSWindow *m_nsWindow;
+    NSWindow *m_nsWindow;
     Qt::WindowFlags m_windowFlags;
     QPointer<QWindow> m_activePopupWindow;
 

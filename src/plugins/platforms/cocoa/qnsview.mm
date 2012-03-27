@@ -238,6 +238,7 @@ static QTouchDevice *touchDevice = 0;
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
+    Q_UNUSED(theEvent);
     return YES;
 }
 
@@ -636,6 +637,43 @@ static QTouchDevice *touchDevice = 0;
 - (void)keyUp:(NSEvent *)nsevent
 {
     [self handleKeyEvent:nsevent eventType:int(QEvent::KeyRelease)];
+}
+
+- (void)flagsChanged:(NSEvent *)nsevent
+{
+    ulong timestamp = [nsevent timestamp] * 1000;
+    ulong modifiers = [nsevent modifierFlags];
+    Qt::KeyboardModifiers qmodifiers = [self convertKeyModifiers:modifiers];
+
+    // calculate the delta and remember the current modifiers for next time
+    static ulong m_lastKnownModifiers;
+    ulong lastKnownModifiers = m_lastKnownModifiers;
+    ulong delta = lastKnownModifiers ^ modifiers;
+    m_lastKnownModifiers = modifiers;
+
+    struct qt_mac_enum_mapper
+    {
+        ulong mac_mask;
+        Qt::Key qt_code;
+    };
+    static qt_mac_enum_mapper modifier_key_symbols[] = {
+        { NSShiftKeyMask, Qt::Key_Shift },
+        { NSControlKeyMask, Qt::Key_Meta },
+        { NSCommandKeyMask, Qt::Key_Control },
+        { NSAlternateKeyMask, Qt::Key_Alt },
+        { NSAlphaShiftKeyMask, Qt::Key_CapsLock },
+        { 0ul, Qt::Key_unknown } };
+    for (int i = 0; modifier_key_symbols[i].mac_mask != 0u; ++i) {
+        uint mac_mask = modifier_key_symbols[i].mac_mask;
+        if ((delta & mac_mask) == 0u)
+            continue;
+
+        QWindowSystemInterface::handleKeyEvent(m_window,
+                                               timestamp,
+                                               (lastKnownModifiers & mac_mask) ? QEvent::KeyRelease : QEvent::KeyPress,
+                                               modifier_key_symbols[i].qt_code,
+                                               qmodifiers);
+    }
 }
 
 - (void) doCommandBySelector:(SEL)aSelector

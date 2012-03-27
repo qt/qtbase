@@ -52,6 +52,7 @@
 
 #include "qwindow_p.h"
 #include "qguiapplication_p.h"
+#include "qaccessible.h"
 
 #include <private/qevent_p.h>
 
@@ -746,9 +747,6 @@ void QWindow::setWindowState(Qt::WindowState state)
 void QWindow::setTransientParent(QWindow *parent)
 {
     Q_D(QWindow);
-
-    QWindow *previousParent = d->transientParent;
-
     d->transientParent = parent;
 }
 
@@ -1454,13 +1452,25 @@ bool QWindow::event(QEvent *ev)
         keyReleaseEvent(static_cast<QKeyEvent *>(ev));
         break;
 
-    case QEvent::FocusIn:
+    case QEvent::FocusIn: {
         focusInEvent(static_cast<QFocusEvent *>(ev));
-        break;
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::State state;
+        state.active = true;
+        QAccessibleStateChangeEvent event(this, state);
+        QAccessible::updateAccessibility(&event);
+#endif
+        break; }
 
-    case QEvent::FocusOut:
+    case QEvent::FocusOut: {
         focusOutEvent(static_cast<QFocusEvent *>(ev));
-        break;
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::State state;
+        state.active = true;
+        QAccessibleStateChangeEvent event(this, state);
+        QAccessible::updateAccessibility(&event);
+#endif
+        break; }
 
 #ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel:

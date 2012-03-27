@@ -67,12 +67,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_CC_MSVC) && _MSCVER <= 1300 && !defined(Q_CC_INTEL)
-#define Q_STATIC_TEMPLATE_SPECIALIZATION static
-#else
-#define Q_STATIC_TEMPLATE_SPECIALIZATION
-#endif
-
 #if defined(Q_CC_RVCT)
 // RVCT doesn't like static template functions
 #  define Q_STATIC_TEMPLATE_FUNCTION

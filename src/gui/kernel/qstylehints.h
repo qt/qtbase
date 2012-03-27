@@ -62,6 +62,8 @@ public:
     int keyboardAutoRepeatRate() const;
     int cursorFlashTime() const;
     bool showIsFullScreen() const;
+    int passwordMaskDelay() const;
+
 private:
     friend class QGuiApplication;
     QStyleHints();

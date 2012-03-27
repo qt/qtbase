@@ -54,6 +54,8 @@
 
 #include "qprintengine_mac_p.h"
 
+QT_BEGIN_NAMESPACE
+
 void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     if (!window->handle()) {
@@ -81,3 +83,5 @@ void *QCocoaNativeInterface::NSPrintInfoForPrintEngine(QPrintEngine *printEngine
     QMacPrintEngine *macPrintEngine = static_cast<QMacPrintEngine *>(printEngine);
     return macPrintEngine->d_func()->printInfo;
 }
+
+QT_END_NAMESPACE

@@ -56,12 +56,6 @@ class QModelIndex;
 
 namespace QAccessible2
 {
-    enum CoordinateType
-    {
-        RelativeToScreen = 0,
-        RelativeToParent = 1
-    };
-
     enum BoundaryType {
         CharBoundary,
         WordBoundary,
@@ -80,9 +74,9 @@ public:
     virtual void addSelection(int startOffset, int endOffset) = 0;
     virtual QString attributes(int offset, int *startOffset, int *endOffset) const = 0;
     virtual int cursorPosition() const = 0;
-    virtual QRect characterRect(int offset, QAccessible2::CoordinateType coordType) const = 0;
+    virtual QRect characterRect(int offset) const = 0;
     virtual int selectionCount() const = 0;
-    virtual int offsetAtPoint(const QPoint &point, QAccessible2::CoordinateType coordType) const = 0;
+    virtual int offsetAtPoint(const QPoint &point) const = 0;
     virtual void selection(int selectionIndex, int *startOffset, int *endOffset) const = 0;
     virtual QString text(int startOffset, int endOffset) const = 0;
     virtual QString textBeforeOffset (int offset, QAccessible2::BoundaryType boundaryType,
@@ -249,7 +243,7 @@ public:
 
     virtual QString imageDescription() const = 0;
     virtual QSize imageSize() const = 0;
-    virtual QRect imagePosition(QAccessible2::CoordinateType coordType) const = 0;
+    virtual QRect imagePosition() const = 0;
 };
 
 #endif // QT_NO_ACCESSIBILITY

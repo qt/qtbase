@@ -44,9 +44,6 @@
 #ifndef QISENUM_H
 #define QISENUM_H
 
-QT_BEGIN_HEADER
-QT_BEGIN_NAMESPACE
-
 #ifndef Q_IS_ENUM
 #  if defined(Q_CC_GNU) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
 #    define Q_IS_ENUM(x) __is_enum(x)
@@ -63,8 +60,5 @@ QT_BEGIN_NAMESPACE
 #  include <QtCore/qtypetraits.h>
 #  define Q_IS_ENUM(x) QtPrivate::is_enum<x>::value
 #endif
-
-QT_END_HEADER
-QT_END_NAMESPACE
 
 #endif // QISENUM_H

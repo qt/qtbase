@@ -3,10 +3,6 @@ load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private
 
-!contains(QT_CONFIG, no-widgets) {
-    QT += opengl opengl-private widgets-private
-}
-
 DESTDIR = $$QT.gui.plugins/platforms
 
 #DEFINES += QEGL_EXTRA_DEBUG

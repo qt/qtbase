@@ -50,6 +50,7 @@
 #include "qqnxvirtualkeyboard.h"
 #include "qqnxclipboard.h"
 #include "qqnxglcontext.h"
+#include "qqnxservices.h"
 
 #if defined(QQnx_IMF)
 #include "qqnxinputcontext_imf.h"
@@ -82,6 +83,7 @@ QQnxIntegration::QQnxIntegration()
     , m_fontDatabase(new QGenericUnixFontDatabase())
     , m_paintUsingOpenGL(false)
     , m_eventDispatcher(createUnixEventDispatcher())
+    , m_services(0)
 #ifndef QT_NO_CLIPBOARD
     , m_clipboard(0)
 #endif
@@ -124,6 +126,11 @@ QQnxIntegration::QQnxIntegration()
 
     // Set up the input context
     m_inputContext = new QQnxInputContext;
+
+    // Create services handling class
+#ifdef Q_OS_BLACKBERRY
+    m_services = new QQnxServices;
+#endif
 }
 
 QQnxIntegration::~QQnxIntegration()
@@ -153,6 +160,11 @@ QQnxIntegration::~QQnxIntegration()
 
     // Cleanup global OpenGL resources
     QQnxGLContext::shutdown();
+
+    // Destroy services class
+#ifdef Q_OS_BLACKBERRY
+    delete m_services;
+#endif
 
 #if defined(QQNXINTEGRATION_DEBUG)
     qDebug() << "QQnx: platform plugin shutdown end";
@@ -264,6 +276,11 @@ QVariant QQnxIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
         return true;
 
     return QPlatformIntegration::styleHint(hint);
+}
+
+QPlatformServices * QQnxIntegration::services() const
+{
+    return m_services;
 }
 
 QWindow *QQnxIntegration::window(screen_window_t qnxWindow)

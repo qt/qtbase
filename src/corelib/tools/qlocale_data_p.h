@@ -62,12 +62,14 @@ struct CountryLanguage
 {
     quint16 languageId;
     quint16 countryId;
+    QLocale::MeasurementSystem system;
 };
 static const CountryLanguage ImperialMeasurementSystems[] = {
-    { 31, 225 },
-    { 31, 226 },
-    { 111, 225 },
-    { 163, 225 }
+    { QLocale::English, QLocale::UnitedStates, QLocale::ImperialUSSystem },
+    { QLocale::English, QLocale::UnitedStatesMinorOutlyingIslands, QLocale::ImperialUSSystem },
+    { QLocale::Spanish, QLocale::UnitedStates, QLocale::ImperialUSSystem },
+    { QLocale::Hawaiian, QLocale::UnitedStates, QLocale::ImperialUSSystem },
+    { QLocale::English, QLocale::UnitedKingdom, QLocale::ImperialUKSystem }
 };
 static const int ImperialMeasurementSystemsCount =
     sizeof(ImperialMeasurementSystems)/sizeof(ImperialMeasurementSystems[0]);

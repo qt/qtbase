@@ -56,7 +56,7 @@
 
 #include <qshareddata.h>
 #include <qpointer.h>
-#include <qlist.h>
+#include <qvector.h>
 #include <qmutex.h>
 #include <qwaitcondition.h>
 
@@ -82,7 +82,7 @@ public:
 
     // for the callback mechanism (see setReplyCallback and QDBusConnectionPrivate::sendWithReplyAsync)
     QPointer<QObject> receiver;
-    QList<int> metaTypes;
+    QVector<int> metaTypes;
     int methodIdx;
 
     bool autoDelete;

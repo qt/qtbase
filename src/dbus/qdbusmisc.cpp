@@ -50,6 +50,7 @@
 #include "qdbusconnection_p.h"
 #include "qdbusabstractadaptor_p.h" // for QCLASSINFO_DBUS_*
 #endif
+#include <QtCore/qvector.h>
 #include "qdbusmetatype_p.h"
 
 #ifndef QT_NO_DBUS
@@ -130,14 +131,14 @@ bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name)
 // metaTypes.count() >= retval + 1 in all cases
 //
 // sig must be the normalised signature for the method
-int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes)
+int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes)
 {
     return qDBusParametersForMethod(mm.parameterTypes(), metaTypes);
 }
 
 #endif // QT_BOOTSTRAPPED
 
-int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QList<int>& metaTypes)
+int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<int>& metaTypes)
 {
     QDBusMetaTypeId::init();
     metaTypes.clear();

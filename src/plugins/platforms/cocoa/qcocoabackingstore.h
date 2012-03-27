@@ -60,6 +60,7 @@ public:
     QPaintDevice *paintDevice();
     void flush(QWindow *widget, const QRegion &region, const QPoint &offset);
     void resize (const QSize &size, const QRegion &);
+    bool scroll(const QRegion &area, int dx, int dy);
 
 private:
     QCocoaWindow *m_cocoaWindow;

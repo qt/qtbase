@@ -643,6 +643,12 @@ void QGroupBox::setChecked(bool b)
         update();
         d->checked = b;
         d->_q_setChildrenEnabled(b);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::State st;
+        st.checked = true;
+        QAccessibleStateChangeEvent *ev = new QAccessibleStateChangeEvent(this, st);
+        QAccessible::updateAccessibility(ev);
+#endif
         emit toggled(b);
     }
 }

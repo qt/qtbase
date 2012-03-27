@@ -41,67 +41,54 @@
 
 #include "qeglfsbackingstore.h"
 
-#ifndef QT_NO_WIDGETS
-#include <QtOpenGL/private/qgl_p.h>
-#include <QtOpenGL/private/qglpaintdevice_p.h>
-#endif //QT_NO_WIDGETS
-
-#include <QtGui/QPlatformOpenGLContext>
-#include <QtGui/QScreen>
+#include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLPaintDevice>
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_WIDGETS
-class QEglFSPaintDevice : public QGLPaintDevice
-{
-public:
-    QEglFSPaintDevice(QEglFSScreen *screen)
-        :QGLPaintDevice(), m_screen(screen)
-    {
-    #ifdef QEGL_EXTRA_DEBUG
-        qWarning("QEglPaintDevice %p, %p",this, screen);
-    #endif
-    }
-
-    QSize size() const { return m_screen->geometry().size(); }
-    QGLContext* context() const { return QGLContext::fromOpenGLContext(m_screen->platformContext()->context()); }
-
-    QPaintEngine *paintEngine() const { return qt_qgl_paint_engine(); }
-
-    void  beginPaint(){
-        QGLPaintDevice::beginPaint();
-    }
-private:
-    QEglFSScreen *m_screen;
-    QGLContext *m_context;
-};
-#endif //QT_NO_WIDGETS
-
 QEglFSBackingStore::QEglFSBackingStore(QWindow *window)
-    : QPlatformBackingStore(window),
-      m_paintDevice(0)
+    : QPlatformBackingStore(window)
+    , m_context(new QOpenGLContext)
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglBackingStore %p, %p", window, window->screen());
-#endif
-#ifdef QT_NO_WIDGETS
-    m_paintDevice = new QImage(0,0);
-#else
-    m_paintDevice = new QEglFSPaintDevice(static_cast<QEglFSScreen *>(window->screen()->handle()));
-#endif //QT_NO_WIDGETS
+    m_context->setFormat(window->requestedFormat());
+    m_context->setScreen(window->screen());
+    m_context->create();
+}
+
+QEglFSBackingStore::~QEglFSBackingStore()
+{
+    delete m_context;
+}
+
+QPaintDevice *QEglFSBackingStore::paintDevice()
+{
+    return m_device;
 }
 
 void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(window);
     Q_UNUSED(region);
     Q_UNUSED(offset);
+
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglBackingStore::flush %p", window);
 #endif
-#ifndef QT_NO_WIDGETS
-    static_cast<QEglFSPaintDevice *>(m_paintDevice)->context()->swapBuffers();
-#endif //QT_NO_WIDGETS
+
+    m_context->swapBuffers(window);
+}
+
+void QEglFSBackingStore::beginPaint(const QRegion &)
+{
+    // needed to prevent QOpenGLContext::makeCurrent() from failing
+    window()->setSurfaceType(QSurface::OpenGLSurface);
+
+    m_context->makeCurrent(window());
+    m_device = new QOpenGLPaintDevice(window()->size());
+}
+
+void QEglFSBackingStore::endPaint()
+{
+    delete m_device;
 }
 
 void QEglFSBackingStore::resize(const QSize &size, const QRegion &staticContents)

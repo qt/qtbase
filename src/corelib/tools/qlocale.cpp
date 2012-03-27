@@ -2080,7 +2080,7 @@ QLocale::MeasurementSystem QLocalePrivate::measurementSystem() const
     for (int i = 0; i < ImperialMeasurementSystemsCount; ++i) {
         if (ImperialMeasurementSystems[i].languageId == m_language_id
             && ImperialMeasurementSystems[i].countryId == m_country_id) {
-            return QLocale::ImperialSystem;
+            return ImperialMeasurementSystems[i].system;
         }
     }
     return QLocale::MetricSystem;

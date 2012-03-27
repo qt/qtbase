@@ -423,7 +423,6 @@ inline void qt_memrotate270_template(const T *src, int srcWidth, int srcHeight, 
 }
 
 template <>
-Q_STATIC_TEMPLATE_SPECIALIZATION
 inline void qt_memrotate90_template<quint24>(const quint24 *src, int srcWidth, int srcHeight,
                                              int srcStride, quint24 *dest, int dstStride)
 {

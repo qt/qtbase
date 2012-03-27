@@ -180,7 +180,13 @@ defineTest(qtPrepareTool) {
         } else {
             $$1 = $$eval($$1).exe
         }
+    } else:contains(QMAKE_HOST.os, Darwin) {
+        BUNDLENAME = $$eval($$1).app/Contents/MacOS/$$2
+        exists($$BUNDLENAME) {
+            $$1 = $$BUNDLENAME
+        }
     }
+
     export($$1)
 }
 

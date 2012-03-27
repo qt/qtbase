@@ -46,6 +46,7 @@
 #include <QList>
 #include <QBuffer>
 #include <QRegExp>
+#include <QVector>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -94,7 +95,7 @@ static const char help[] =
     "\n";
 
 
-int qDBusParametersForMethod(const FunctionDef &mm, QList<int>& metaTypes)
+int qDBusParametersForMethod(const FunctionDef &mm, QVector<int>& metaTypes)
 {
     QList<QByteArray> parameterTypes;
 
@@ -138,7 +139,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
         }
     }
     QList<ArgumentDef> names = mm.arguments;
-    QList<int> types;
+    QVector<int> types;
     int inputCount = qDBusParametersForMethod(mm, types);
     if (inputCount == -1)
         return QString();           // invalid form

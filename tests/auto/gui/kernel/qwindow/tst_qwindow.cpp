@@ -44,6 +44,7 @@
 #include <QtTest/QtTest>
 
 #include <QEvent>
+#include <QStyleHints>
 
 // For QSignalSpy slot connections.
 Q_DECLARE_METATYPE(Qt::ScreenOrientation)
@@ -67,6 +68,7 @@ private slots:
     void orientation();
     void close();
     void activateAndClose();
+    void mouseEventSequence();
 
     void initTestCase()
     {
@@ -304,15 +306,20 @@ public:
         if (ignoreMouse) {
             event->ignore();
         } else {
+            ++mousePressedCount;
+            mouseSequenceSignature += 'p';
             mousePressButton = event->button();
             mousePressScreenPos = event->screenPos();
         }
     }
     void mouseReleaseEvent(QMouseEvent *event) {
-        if (ignoreMouse)
+        if (ignoreMouse) {
             event->ignore();
-        else
+        } else {
+            ++mouseReleasedCount;
+            mouseSequenceSignature += 'r';
             mouseReleaseButton = event->button();
+        }
     }
     void mouseMoveEvent(QMouseEvent *event) {
         if (ignoreMouse) {
@@ -320,6 +327,14 @@ public:
         } else {
             mouseMoveButton = event->button();
             mouseMoveScreenPos = event->screenPos();
+        }
+    }
+    void mouseDoubleClickEvent(QMouseEvent *event) {
+        if (ignoreMouse) {
+            event->ignore();
+        } else {
+            ++mouseDoubleClickedCount;
+            mouseSequenceSignature += 'd';
         }
     }
     void touchEvent(QTouchEvent *event) {
@@ -345,16 +360,23 @@ public:
             }
         }
     }
+    void resetCounters() {
+        mousePressedCount = mouseReleasedCount = mouseDoubleClickedCount = 0;
+        mouseSequenceSignature = QString();
+        touchPressedCount = touchReleasedCount = touchMovedCount = 0;
+    }
 
     InputTestWindow() {
         keyPressCode = keyReleaseCode = 0;
-        mousePressButton = mouseReleaseButton = 0;
-        touchPressedCount = touchReleasedCount = touchMovedCount = 0;
+        mousePressButton = mouseReleaseButton = mouseMoveButton = 0;
         ignoreMouse = ignoreTouch = false;
+        resetCounters();
     }
 
     int keyPressCode, keyReleaseCode;
     int mousePressButton, mouseReleaseButton, mouseMoveButton;
+    int mousePressedCount, mouseReleasedCount, mouseDoubleClickedCount;
+    QString mouseSequenceSignature;
     QPointF mousePressScreenPos, mouseMoveScreenPos;
     int touchPressedCount, touchReleasedCount, touchMovedCount;
     QEvent::Type touchEventType;
@@ -691,5 +713,96 @@ void tst_QWindow::activateAndClose()
     }
 }
 
+void tst_QWindow::mouseEventSequence()
+{
+    int doubleClickInterval = qGuiApp->styleHints()->mouseDoubleClickInterval();
+
+    InputTestWindow window;
+    window.setGeometry(80, 80, 40, 40);
+    window.show();
+    QTest::qWaitForWindowShown(&window);
+
+    ulong timestamp = 0;
+    QPointF local(12, 34);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    QCoreApplication::processEvents();
+    QCOMPARE(window.mousePressedCount, 1);
+    QCOMPARE(window.mouseReleasedCount, 1);
+    QCOMPARE(window.mouseDoubleClickedCount, 0);
+    QCOMPARE(window.mouseSequenceSignature, QLatin1String("pr"));
+
+    window.resetCounters();
+    timestamp += doubleClickInterval;
+
+    // A double click must result in press, release, press, doubleclick, release.
+    // Check that no unexpected event suppression occurs and that the order is correct.
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    QCoreApplication::processEvents();
+    QCOMPARE(window.mousePressedCount, 2);
+    QCOMPARE(window.mouseReleasedCount, 2);
+    QCOMPARE(window.mouseDoubleClickedCount, 1);
+    QCOMPARE(window.mouseSequenceSignature, QLatin1String("prpdr"));
+
+    timestamp += doubleClickInterval;
+    window.resetCounters();
+
+    // Triple click = double + single click
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    QCoreApplication::processEvents();
+    QCOMPARE(window.mousePressedCount, 3);
+    QCOMPARE(window.mouseReleasedCount, 3);
+    QCOMPARE(window.mouseDoubleClickedCount, 1);
+    QCOMPARE(window.mouseSequenceSignature, QLatin1String("prpdrpr"));
+
+    timestamp += doubleClickInterval;
+    window.resetCounters();
+
+    // Two double clicks.
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    QCoreApplication::processEvents();
+    QCOMPARE(window.mousePressedCount, 4);
+    QCOMPARE(window.mouseReleasedCount, 4);
+    QCOMPARE(window.mouseDoubleClickedCount, 2);
+    QCOMPARE(window.mouseSequenceSignature, QLatin1String("prpdrprpdr"));
+
+    timestamp += doubleClickInterval;
+    window.resetCounters();
+
+    // Four clicks, none of which qualifies as a double click.
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    timestamp += doubleClickInterval;
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    timestamp += doubleClickInterval;
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    timestamp += doubleClickInterval;
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    timestamp += doubleClickInterval;
+    QCoreApplication::processEvents();
+    QCOMPARE(window.mousePressedCount, 4);
+    QCOMPARE(window.mouseReleasedCount, 4);
+    QCOMPARE(window.mouseDoubleClickedCount, 0);
+    QCOMPARE(window.mouseSequenceSignature, QLatin1String("prprprpr"));
+}
+
 #include <tst_qwindow.moc>
-QTEST_MAIN(tst_QWindow);
+QTEST_MAIN(tst_QWindow)

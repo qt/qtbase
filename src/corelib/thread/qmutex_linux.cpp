@@ -45,14 +45,46 @@
 #ifndef QT_NO_THREAD
 #include "qatomic.h"
 #include "qmutex_p.h"
-# include "qelapsedtimer.h"
+#include "qelapsedtimer.h"
 
 #include <linux/futex.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <errno.h>
 
+#ifndef QT_LINUX_FUTEX
+# error "Qt build is broken: qmutex_linux.cpp is being built but futex support is not wanted"
+#endif
+
 QT_BEGIN_NAMESPACE
+
+static inline int futexFlags()
+{
+    int value = 0;
+#if defined(FUTEX_PRIVATE_FLAG)
+    // check if the kernel supports extra futex flags
+    // FUTEX_PRIVATE_FLAG appeared in v2.6.22
+    static QBasicAtomicInt futexFlagSupport = Q_BASIC_ATOMIC_INITIALIZER(-1);
+
+    value = futexFlagSupport.load();
+    if (value == -1) {
+        // try an operation that has no side-effects: wake up 42 threads
+        // futex will return -1 (errno==ENOSYS) if the flag isn't supported
+        // there should be no other error conditions
+        value = syscall(SYS_futex, &futexFlagSupport,
+                        FUTEX_WAKE | FUTEX_PRIVATE_FLAG,
+                        42, 0, 0, 0);
+        if (value != -1) {
+            value = FUTEX_PRIVATE_FLAG;
+            futexFlagSupport.store(value);
+            return value;
+        }
+        value = 0;
+        futexFlagSupport.store(value);
+    }
+#endif
+    return value;
+}
 
 static inline int _q_futex(void *addr, int op, int val, const struct timespec *timeout)
 {
@@ -62,7 +94,8 @@ static inline int _q_futex(void *addr, int op, int val, const struct timespec *t
 #endif
     int *addr2 = 0;
     int val2 = 0;
-    return syscall(SYS_futex, int_addr, op, val, timeout, addr2, val2);
+
+    return syscall(SYS_futex, int_addr, op | futexFlags(), val, timeout, addr2, val2);
 }
 
 static inline QMutexData *dummyFutexValue()

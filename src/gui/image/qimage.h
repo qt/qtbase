@@ -70,10 +70,10 @@ struct QImageData;
 class QImageDataMisc; // internal
 #ifndef QT_NO_IMAGE_TEXT
 #if QT_DEPRECATED_SINCE(5, 0)
-class QT_DEPRECATED QImageTextKeyLang {
+class QImageTextKeyLang {
 public:
-    QImageTextKeyLang(const char* k, const char* l) : key(k), lang(l) { }
-    QImageTextKeyLang() { }
+    QT_DEPRECATED QImageTextKeyLang(const char* k, const char* l) : key(k), lang(l) { }
+    QT_DEPRECATED QImageTextKeyLang() { }
 
     QByteArray key;
     QByteArray lang;
@@ -315,6 +315,14 @@ Q_GUI_EXPORT_INLINE void QImage::setPixel(const QPoint &pt, uint index_or_rgb) {
 
 #if QT_DEPRECATED_SINCE(5, 0)
 #ifndef QT_NO_IMAGE_TEXT
+
+#if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(Q_CC_MSVC)
+# pragma warning(disable: 4996)
+#endif
+
 inline QString QImage::text(const char* key, const char* lang) const
 {
     if (!d)
@@ -384,6 +392,13 @@ inline void QImage::setText(const char* key, const char* lang, const QString &s)
         k += QLatin1Char('/') + QString::fromAscii(lang);
     setText(k, s);
 }
+
+#if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
+# pragma GCC diagnostic pop
+#elif defined(Q_CC_MSVC)
+# pragma warning(default: 4996)
+#endif
+
 #endif
 
 inline int QImage::numColors() const

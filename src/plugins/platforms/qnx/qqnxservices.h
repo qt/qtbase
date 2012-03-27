@@ -1,6 +1,6 @@
-/****************************************************************************
+/***************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 - 2012 Research In Motion
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,53 +39,26 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBSHAREDGRAPHICSCACHE
-#define QXCBSHAREDGRAPHICSCACHE
+#ifndef QQNXSERVICES_H
+#define QQNXSERVICES_H
 
-#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
-
-#include <QtGui/qplatformsharedgraphicscache_qpa.h>
-
-QT_BEGIN_HEADER
+#include <QtGui/QPlatformServices>
 
 QT_BEGIN_NAMESPACE
 
-class QXcbSharedBufferManager;
-class QXcbSharedGraphicsCache : public QPlatformSharedGraphicsCache
+class QQnxServices : public QPlatformServices
 {
-    Q_OBJECT
 public:
-    explicit QXcbSharedGraphicsCache(QObject *parent = 0);
+    QQnxServices();
+    ~QQnxServices();
 
-    virtual void ensureCacheInitialized(const QByteArray &cacheId, BufferType bufferType,
-                                        PixelFormat pixelFormat);
-
-    virtual void requestItems(const QByteArray &cacheId, const QVector<quint32> &itemIds);
-    virtual void insertItems(const QByteArray &cacheId,
-                             const QVector<quint32> &itemIds,
-                             const QVector<QImage> &items);
-    virtual void releaseItems(const QByteArray &cacheId, const QVector<quint32> &itemIds);
-
-    virtual void serializeBuffer(void *bufferId, QByteArray *serializedData, int *fileDescriptor) const;
-    virtual uint textureIdForBuffer(void *bufferId);
-    virtual void referenceBuffer(void *bufferId);
-    virtual bool dereferenceBuffer(void *bufferId);
+    bool openUrl(const QUrl &url);
+    bool openDocument(const QUrl &url);
 
 private:
-    struct ReadyItem {
-        QVector<quint32> itemIds;
-        QVector<QPoint> positions;
-    };
-
-    void processPendingItems();
-
-    QXcbSharedBufferManager *m_bufferManager;
+    bool navigatorInvoke(const QUrl &url);
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QT_USE_XCB_SHARED_GRAPHICS_CACHE
-
-#endif // QXCBSHAREDGRAPHICSCACHE
+#endif // QQNXSERVICES_H

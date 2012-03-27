@@ -560,3 +560,26 @@ bool readConfiguration(const QFile &file)
     return true;
 }
 //! [qunlikely]
+
+//! [qunreachable-enum]
+   enum Shapes {
+       Rectangle,
+       Triangle,
+       Circle,
+       NumShapes
+   };
+//! [qunreachable-enum]
+
+//! [qunreachable-switch]
+   switch (shape) {
+       case Rectangle:
+           return rectangle();
+       case Triangle:
+           return triangle();
+       case Circle:
+           return circle();
+       case NumShapes:
+           Q_UNREACHABLE();
+           break;
+   }
+//! [qunreachable-switch]

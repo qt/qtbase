@@ -557,6 +557,8 @@ QAccessible::State QAccessibleWidget::state() const
             state.movable = true;
         if (w->minimumSize() != w->maximumSize())
             state.sizeable = true;
+        if (w->isActiveWindow())
+            state.active = true;
     }
 
     return state;

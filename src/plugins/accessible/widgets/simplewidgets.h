@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 class QAbstractButton;
 class QLineEdit;
 class QToolButton;
+class QGroupBox;
 class QProgressBar;
 
 class QAccessibleButton : public QAccessibleWidget
@@ -110,8 +111,30 @@ public:
     // QAccessibleImageInterface
     QString imageDescription() const;
     QSize imageSize() const;
-    QRect imagePosition(QAccessible2::CoordinateType coordType) const;
+    QRect imagePosition() const;
 };
+
+#ifndef QT_NO_GROUPBOX
+class QAccessibleGroupBox : public QAccessibleWidget
+{
+public:
+    explicit QAccessibleGroupBox(QWidget *w);
+
+    QAccessible::State state() const;
+    QAccessible::Role role() const;
+    QString text(QAccessible::Text t) const;
+
+    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >relations(QAccessible::Relation match = QAccessible::AllRelations) const;
+
+    //QAccessibleActionInterface
+    QStringList actionNames() const;
+    void doAction(const QString &actionName);
+    QStringList keyBindingsForAction(const QString &) const;
+
+private:
+    QGroupBox *groupBox() const;
+};
+#endif
 
 #ifndef QT_NO_LINEEDIT
 class QAccessibleLineEdit : public QAccessibleWidget, public QAccessibleTextInterface,
@@ -129,9 +152,9 @@ public:
     void addSelection(int startOffset, int endOffset);
     QString attributes(int offset, int *startOffset, int *endOffset) const;
     int cursorPosition() const;
-    QRect characterRect(int offset, QAccessible2::CoordinateType coordType) const;
+    QRect characterRect(int offset) const;
     int selectionCount() const;
-    int offsetAtPoint(const QPoint &point, QAccessible2::CoordinateType coordType) const;
+    int offsetAtPoint(const QPoint &point) const;
     void selection(int selectionIndex, int *startOffset, int *endOffset) const;
     QString text(int startOffset, int endOffset) const;
     QString textBeforeOffset (int offset, QAccessible2::BoundaryType boundaryType,

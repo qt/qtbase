@@ -504,17 +504,6 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
 QT_BEGIN_NAMESPACE
 
-static bool qt_mac_is_macsheet(const QWidget *w)
-{
-    if (!w)
-        return false;
-
-    Qt::WindowModality modality = w->windowModality();
-    if (modality == Qt::ApplicationModal)
-        return false;
-    return w->parentWidget() && (modality == Qt::WindowModal || w->windowType() == Qt::Sheet);
-}
-
 QCocoaFileDialogHelper::QCocoaFileDialogHelper()
     :mDelegate(0)
 {

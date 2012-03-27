@@ -71,8 +71,10 @@ QTCONFIG_CONFIG=
 QT_CONFIG=
 SUPPORTED=
 QMAKE_VARS_FILE=.qmake.vars
+DEVICE_VARS_FILE=.device.vars
 
 :> "$QMAKE_VARS_FILE"
+:> "$DEVICE_VARS_FILE"
 
 #-------------------------------------------------------------------------------
 # utility functions
@@ -221,6 +223,23 @@ linkerSupportsFlag()
 	lflags=$lflags,$safe_flag
     done
     compilerSupportsFlag "$lflags" >/dev/null 2>&1
+}
+
+#-------------------------------------------------------------------------------
+# device options
+#-------------------------------------------------------------------------------
+DeviceVar()
+{
+    case "$1" in
+        set)
+            eq="="
+            ;;
+        *)
+            echo >&2 "BUG: wrong command to QMakeVar: $1"
+            ;;
+    esac
+
+    echo "$2" "$eq" "$3" >> "$DEVICE_VARS_FILE"
 }
 
 #-------------------------------------------------------------------------------
@@ -733,7 +752,6 @@ CFG_SSE4_2=auto
 CFG_AVX=auto
 CFG_AVX2=auto
 CFG_REDUCE_RELOCATIONS=auto
-CFG_NAS=no
 CFG_ACCESSIBILITY=auto
 CFG_IWMMXT=no
 CFG_NEON=auto
@@ -909,7 +927,7 @@ while [ "$#" -gt 0 ]; do
         shift
         VAL=$1
         ;;
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1305,6 +1323,14 @@ while [ "$#" -gt 0 ]; do
         XPLATFORM="$VAL"
         case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
         ;;
+    device)
+        XPLATFORM="devices/$VAL"
+        ;;
+    device-option)
+        DEV_VAR=`echo $VAL | sed "s,^\(.*\)=.*,\1,"`
+        DEV_VAL=`echo $VAL | sed "s,^.*=\(.*\),\1,"`
+        DeviceVar set $DEV_VAR $DEV_VAL
+        ;;
     debug-and-release)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_DEBUG_RELEASE="$VAL"
@@ -1578,13 +1604,6 @@ while [ "$#" -gt 0 ]; do
         [ "$VAL" = "yes" ] && VAL=qt
         if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
             CFG_LIBJPEG="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    nas-sound)
-        if [ "$VAL" = "system" ] || [ "$VAL" = "no" ]; then
-            CFG_NAS="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2449,6 +2468,15 @@ if [ "$CFG_RTOS_ENABLED" = "no" ]; then
 fi
 
 #-------------------------------------------------------------------------------
+# write out device config before we run the test.
+#-------------------------------------------------------------------------------
+if cmp -s "$DEVICE_VARS_FILE" "$outpath/mkspecs/qdevice.pri"; then
+    rm -f "$DEVICE_VARS_FILE"
+else
+    mv -f $DEVICE_VARS_FILE "$outpath/mkspecs/qdevice.pri"
+fi
+
+#-------------------------------------------------------------------------------
 # tests that don't need qmake (must be run before displaying help)
 #-------------------------------------------------------------------------------
 
@@ -2921,6 +2949,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle]
         [-qt-pcre] [-system-pcre]
+        [-device <name>] [-device-option <key=value>]
         [additional platform specific options (see below)]
 
 
@@ -3181,6 +3210,10 @@ Additional options:
                               experimental; needs GNU ld >= 2.18).
 
     -force-asserts ........ Force Q_ASSERT to be enabled even in release builds.
+
+    -device <name> ............... Cross-compile for device <name> (experimental)
+    -device-option <key=value> ... Add device specific options for the device mkspec
+                                   (experimental)
 
 EOF
 
@@ -3915,12 +3948,12 @@ fi # Build qmake
 #-------------------------------------------------------------------------------
 
 # Use config.tests/arch/arch.pro to has the compiler tell us what the target architecture is
-CFG_ARCH=`"$outpath/bin/qmake" -spec "$XQMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -n -e 's,^Project MESSAGE:.*Architecture: \([a-zA-Z0-9_]*\).*,\1,p'`
+CFG_ARCH=`OUTDIR="$outpath" "$outpath/bin/qmake" -spec "$XQMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -n -e 's,^Project MESSAGE:.*Architecture: \([a-zA-Z0-9_]*\).*,\1,p'`
 
 [ -z "$CFG_ARCH" ] && CFG_ARCH="unknown"
 if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
     # Do the same test again, using the host compiler
-    CFG_HOST_ARCH=`"$outpath/bin/qmake" -spec "$QMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -n -e 's,^Project MESSAGE:.*Architecture: \([a-zA-Z0-9]*\).*,\1,p'`
+    CFG_HOST_ARCH=`OUTDIR="$outpath" "$outpath/bin/qmake" -spec "$QMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -n -e 's,^Project MESSAGE:.*Architecture: \([a-zA-Z0-9_]*\).*,\1,p'`
     [ -z "$CFG_HOST_ARCH" ] && CFG_HOST_ARCH="unknown"
 else
     # not cross compiling, host == target
@@ -5667,7 +5700,6 @@ fi
 [ "$CFG_GSTREAMER" = "yes" ] && QT_CONFIG="$QT_CONFIG gstreamer"
 [ "$CFG_DBUS" = "yes" ] && QT_CONFIG="$QT_CONFIG dbus"
 [ "$CFG_DBUS" = "linked" ] && QT_CONFIG="$QT_CONFIG dbus dbus-linked"
-[ "$CFG_NAS" = "system" ] && QT_CONFIG="$QT_CONFIG nas"
 [ "$CFG_OPENSSL" = "yes" ] && QT_CONFIG="$QT_CONFIG openssl"
 [ "$CFG_OPENSSL" = "linked" ] && QT_CONFIG="$QT_CONFIG openssl-linked"
 [ "$CFG_MAC_HARFBUZZ" = "yes" ] && QT_CONFIG="$QT_CONFIG harfbuzz"
@@ -6150,7 +6182,6 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_IPV6IFNAME" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IPV6IFNAME"
 [ "$CFG_GETIFADDRS" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GETIFADDRS"
 [ "$CFG_INOTIFY" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_INOTIFY"
-[ "$CFG_NAS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NAS"
 [ "$CFG_NIS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NIS"
 [ "$CFG_OPENSSL" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENSSL QT_NO_SSL"
 [ "$CFG_OPENSSL" = "linked" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LINKED_OPENSSL"

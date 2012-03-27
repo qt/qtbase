@@ -96,8 +96,14 @@ bool QWidgetWindow::event(QEvent *event)
     // these should not be sent to QWidget, the corresponding events
     // are sent by QApplicationPrivate::notifyActiveWindowChange()
     case QEvent::FocusIn:
-    case QEvent::FocusOut:
-        return false;
+    case QEvent::FocusOut: {
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::State state;
+        state.active = true;
+        QAccessibleStateChangeEvent ev(widget(), state);
+        QAccessible::updateAccessibility(&ev);
+#endif
+        return false; }
 
     case QEvent::FocusAboutToChange:
         if (QApplicationPrivate::focus_widget) {

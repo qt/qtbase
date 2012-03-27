@@ -1799,6 +1799,63 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 */
 
 /*!
+    \macro void Q_ASSUME(bool expr)
+    \relates <QtGlobal>
+    \since 5.0
+
+    Causes the compiler to assume that \a expr is true. This macro is useful
+    for improving code generation, by providing the compiler with hints about
+    conditions that it would not otherwise know about. However, there is no
+    guarantee that the compiler will actually use those hints.
+
+    This macro could be considered a "lighter" version of \ref Q_ASSERT. While
+    Q_ASSERT will abort the program's execution if the condition is false,
+    Q_ASSUME will tell the compiler not to generate code for those conditions.
+    Therefore, it is important that the assumptions always hold, otherwise
+    undefined behaviour may occur.
+
+    If \a expr is a constantly false condition, Q_ASSUME will tell the compiler
+    that the current code execution cannot be reached. That is, Q_ASSUME(false)
+    is equivalent to Q_UNREACHABLE().
+
+    \note Q_LIKELY() tells the compiler that the expression is likely, but not
+    the only possibility. Q_ASSUME tells the compiler that it is the only
+    possibility.
+
+    \sa Q_ASSERT(), Q_UNREACHABLE(), Q_LIKELY()
+*/
+
+/*!
+    \macro void Q_UNREACHABLE()
+    \relates <QtGlobal>
+    \since 5.0
+
+    Tells the compiler that the current point cannot be reached by any
+    execution, so it may optimise any code paths leading here as dead code, as
+    well as code continuing from here.
+
+    This macro is useful to mark impossible conditions. For example, given the
+    following enum:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qunreachable-enum
+
+    One can write a switch table like so:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp qunreachable-switch
+
+    The advantage of inserting Q_UNREACHABLE() at that point is that the
+    compiler is told not to generate code for a shape variable containing that
+    value. If the macro is missing, the compiler will still generate the
+    necessary comparisons for that value. If the case label were removed, some
+    compilers could produce a warning that some enum values were not checked.
+
+    By using this macro in impossible conditions, code coverage may be improved
+    as dead code paths may be eliminated.
+
+    \sa Q_ASSERT(), Q_ASSUME(), qFatal()
+*/
+
+/*!
     \macro void Q_CHECK_PTR(void *pointer)
     \relates <QtGlobal>
 

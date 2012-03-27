@@ -81,10 +81,6 @@ public:
     QPlatformAccessibility *accessibility() const;
 #endif
 
-#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
-    QPlatformSharedGraphicsCache *createPlatformSharedGraphicsCache(const char *cacheId) const;
-#endif
-
     QPlatformServices *services() const;
 
     QStringList themeNames() const;
@@ -101,10 +97,6 @@ private:
 
 #ifndef QT_NO_ACCESSIBILITY
     QScopedPointer<QPlatformAccessibility> m_accessibility;
-#endif
-
-#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
-    QScopedPointer<QPlatformSharedGraphicsCache> m_sharedGraphicsCache;
 #endif
 
     QScopedPointer<QPlatformServices> m_services;

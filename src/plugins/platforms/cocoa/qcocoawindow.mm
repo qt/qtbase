@@ -111,8 +111,8 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 
 QCocoaWindow::~QCocoaWindow()
 {
-    [m_contentView release];
     clearNSWindow(m_nsWindow);
+    [m_contentView release];
     [m_nsWindow release];
 }
 
@@ -198,13 +198,17 @@ void QCocoaWindow::raise()
 {
     //qDebug() << "raise" << this;
     // ### handle spaces (see Qt 4 raise_sys in qwidget_mac.mm)
-    if (m_nsWindow)
+    if (!m_nsWindow)
+        return;
+    if ([m_nsWindow isVisible])
         [m_nsWindow orderFront: m_nsWindow];
 }
 
 void QCocoaWindow::lower()
 {
-    if (m_nsWindow)
+    if (!m_nsWindow)
+        return;
+    if ([m_nsWindow isVisible])
         [m_nsWindow orderBack: m_nsWindow];
 }
 
@@ -231,6 +235,12 @@ void QCocoaWindow::propagateSizeHints()
     if (!baseSize.isNull() && baseSize.isValid()) {
         [m_nsWindow setFrameSize : NSMakeSize(baseSize.width(), baseSize.height()) display : YES];
     }
+}
+
+void QCocoaWindow::setOpacity(qreal level)
+{
+    if (m_nsWindow)
+        [m_nsWindow setAlphaValue:level];
 }
 
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
@@ -439,7 +449,9 @@ void QCocoaWindow::setNSWindow(NSWindow *window)
 
 void QCocoaWindow::clearNSWindow(NSWindow *window)
 {
+    [window setDelegate:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:m_contentView];
+    [m_contentView removeFromSuperviewWithoutNeedingDisplay];
 }
 
 // Returns the current global screen geometry for the nswindow associated with this window.

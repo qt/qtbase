@@ -167,80 +167,61 @@ HRESULT STDMETHODCALLTYPE AccessibleRelation::get_targets(
  **************************************************************/
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryInterface(REFIID id, LPVOID *iface)
 {
-    *iface = 0;
-
-    QByteArray strIID = IIDToString(id);
-    if (!strIID.isEmpty()) {
-        QString ss; QDebug dbg(&ss); dbg << accessible;
-        accessibleDebug("QWindowsIA2Accessible::QI() - IID:%s, iface:%s ", strIID.constData(), qPrintable(ss));
+    HRESULT hr = QWindowsMsaaAccessible::QueryInterface(id, iface);
+    if (!SUCCEEDED(hr)) {
+        if (id == IID_IAccessible2) {
+            *iface = (IAccessible2*)this;
+        } else if (id == IID_IAccessibleAction) {
+            if (accessible->actionInterface())
+                *iface = (IAccessibleAction*)this;
+        } else if (id == IID_IAccessibleComponent) {
+            *iface = (IAccessibleComponent*)this;
+        } else if (id == IID_IAccessibleEditableText) {
+            //if (accessible->editableTextInterface()) {
+                //*iface = (IAccessibleEditableText*)this;
+            //}
+        } else if (id == IID_IAccessibleHyperlink) {
+            //*iface = (IAccessibleHyperlink*)this;
+        } else if (id == IID_IAccessibleHypertext) {
+            //*iface = (IAccessibleHypertext*)this;
+        } else if (id == IID_IAccessibleImage) {
+            //*iface = (IAccessibleImage*)this;
+        } else if (id == IID_IAccessibleRelation) {
+            *iface = (IAccessibleRelation*)this;
+        } else if (id == IID_IAccessibleTable) {
+            //*iface = (IAccessibleTable*)this; // not supported
+        } else if (id == IID_IAccessibleTable2) {
+            if (accessible->tableInterface())
+                *iface = (IAccessibleTable2*)this;
+        } else if (id == IID_IAccessibleTableCell) {
+            if (accessible->tableCellInterface())
+                *iface = (IAccessibleTableCell*)this;
+        } else if (id == IID_IAccessibleText) {
+            if (accessible->textInterface())
+                *iface = (IAccessibleText*)this;
+        } else if (id == IID_IAccessibleValue) {
+            if (accessible->valueInterface())
+                *iface = (IAccessibleValue*)this;
+        }
+        if (*iface) {
+            AddRef();
+            hr = S_OK;
+        } else {
+            hr = E_NOINTERFACE;
+        }
     }
-    if (id == IID_IUnknown) {
-        *iface = (IUnknown*)(IDispatch*)this;
-    } else if (id == IID_IDispatch) {
-        *iface = (IDispatch*)this;
-    } else if (id == IID_IAccessible) {
-        *iface = (IAccessible*)this;
-    } else if (id == IID_IOleWindow) {
-        *iface = (IOleWindow*)this;
-    } else if (id == IID_IServiceProvider) {
-        *iface = (IServiceProvider*)this;
-    } else if (id == IID_IAccessible2) {
-        *iface = (IAccessible2*)this;
-    } else if (id == IID_IAccessibleAction) {
-        if (accessible->actionInterface())
-            *iface = (IAccessibleAction*)this;
-    } else if (id == IID_IAccessibleComponent) {
-        *iface = (IAccessibleComponent*)this;
-    } else if (id == IID_IAccessibleEditableText) {
-        //if (accessible->editableTextInterface()) {
-            //*iface = (IAccessibleEditableText*)this;
-        //}
-    } else if (id == IID_IAccessibleHyperlink) {
-        //*iface = (IAccessibleHyperlink*)this;
-    } else if (id == IID_IAccessibleHypertext) {
-        //*iface = (IAccessibleHypertext*)this;
-    } else if (id == IID_IAccessibleImage) {
-        //*iface = (IAccessibleImage*)this;
-    } else if (id == IID_IAccessibleRelation) {
-        *iface = (IAccessibleRelation*)this;
-    } else if (id == IID_IAccessibleTable) {
-        //*iface = (IAccessibleTable*)this; // not supported
-    } else if (id == IID_IAccessibleTable2) {
-        if (accessible->tableInterface())
-            *iface = (IAccessibleTable2*)this;
-    } else if (id == IID_IAccessibleTableCell) {
-        if (accessible->tableCellInterface())
-            *iface = (IAccessibleTableCell*)this;
-    } else if (id == IID_IAccessibleText) {
-        if (accessible->textInterface())
-            *iface = (IAccessibleText*)this;
-    } else if (id == IID_IAccessibleValue) {
-        if (accessible->valueInterface())
-            *iface = (IAccessibleValue*)this;
-    }
-    if (*iface) {
-        AddRef();
-        return S_OK;
-    }
-
-    return E_NOINTERFACE;
+    return hr;
 }
 
 ULONG STDMETHODCALLTYPE QWindowsIA2Accessible::AddRef()
 {
-    return ++ref;
+    return QWindowsMsaaAccessible::AddRef();
 }
 
 ULONG STDMETHODCALLTYPE QWindowsIA2Accessible::Release()
 {
-    if (!--ref) {
-        delete this;
-        return 0;
-    }
-    return ref;
+    return QWindowsMsaaAccessible::Release();
 }
-
-
 
 /**************************************************************\
  *                                                             *
@@ -1028,6 +1009,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_caretOffset(long *offset)
     return E_FAIL;
 }
 
+
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_characterExtents(long offset,
                                                                    enum IA2CoordinateType coordType,
                                                                    long *x,
@@ -1037,9 +1019,8 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_characterExtents(long offse
 {
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
-        const QRect rect = text->characterRect(offset, (QAccessible2::CoordinateType)coordType);
-        *x = rect.x();
-        *y = rect.y();
+        QRect rect = text->characterRect(offset);
+        mapFromScreenPos(coordType, rect.topLeft(), x, y);
         *width = rect.width();
         *height = rect.height();
         return S_OK;
@@ -1064,7 +1045,8 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_offsetAtPoint(long x,
 {
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
-        *offset = text->offsetAtPoint(QPoint(x,y), (QAccessible2::CoordinateType)coordType);
+        QPoint screenPos = mapToScreenPos(coordType, x, y);
+        *offset = text->offsetAtPoint(screenPos);
         return (*offset >=0 ? S_OK : S_FALSE);
     }
     return E_FAIL;
@@ -1429,6 +1411,10 @@ uint QWindowsIA2Accessible::uniqueID() const
 
 QByteArray QWindowsIA2Accessible::IIDToString(REFIID id)
 {
+    QByteArray strGuid = QWindowsMsaaAccessible::IIDToString(id);
+    if (!strGuid.isEmpty())
+        return strGuid;
+
     IF_EQUAL_RETURN_IIDSTRING(id, IID_IUnknown);
     IF_EQUAL_RETURN_IIDSTRING(id, IID_IDispatch);
     IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessible);
@@ -1450,7 +1436,6 @@ QByteArray QWindowsIA2Accessible::IIDToString(REFIID id)
     IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleValue);
 
     // else...
-    QByteArray strGuid;
 #if 0   // Can be useful for debugging, but normally we'd like to reduce the noise a bit...
     OLECHAR szGuid[39]={0};
     ::StringFromGUID2(id, szGuid, 39);

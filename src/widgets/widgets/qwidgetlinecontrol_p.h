@@ -93,9 +93,7 @@ public:
         m_ascent(0), m_maxLength(32767), m_lastCursorPos(-1),
         m_tripleClickTimer(0), m_maskData(0), m_modifiedState(0), m_undoState(0),
         m_selstart(0), m_selend(0), m_passwordEchoEditing(false)
-#ifdef QT_GUI_PASSWORD_ECHO_DELAY
         , m_passwordEchoTimer(0)
-#endif
 #if defined(Q_WS_MAC)
         , m_threadChecks(false)
         , m_textLayoutThread(0)
@@ -306,10 +304,8 @@ public:
 
     void updatePasswordEchoEditing(bool editing);
     bool passwordEchoEditing() const {
-#ifdef QT_GUI_PASSWORD_ECHO_DELAY
         if (m_passwordEchoTimer != 0)
             return true;
-#endif
         return m_passwordEchoEditing ;
     }
 
@@ -484,17 +480,13 @@ private:
 
     bool m_passwordEchoEditing;
     QChar m_passwordCharacter;
-#ifdef QT_GUI_PASSWORD_ECHO_DELAY
     int m_passwordEchoTimer;
-#endif
     void cancelPasswordEchoTimer()
     {
-#ifdef QT_GUI_PASSWORD_ECHO_DELAY
         if (m_passwordEchoTimer != 0) {
             killTimer(m_passwordEchoTimer);
             m_passwordEchoTimer = 0;
         }
-#endif
     }
 
     int redoTextLayout() const;

@@ -814,7 +814,6 @@ template<TextureBlendType blendType>
 void fetchTransformedBilinear_pixelBounds(int max, int l1, int l2, int &v1, int &v2);
 
 template<>
-Q_STATIC_TEMPLATE_SPECIALIZATION
 inline void fetchTransformedBilinear_pixelBounds<BlendTransformedBilinearTiled>(int max, int, int, int &v1, int &v2)
 {
     v1 %= max;
@@ -828,7 +827,6 @@ inline void fetchTransformedBilinear_pixelBounds<BlendTransformedBilinearTiled>(
 }
 
 template<>
-Q_STATIC_TEMPLATE_SPECIALIZATION
 inline void fetchTransformedBilinear_pixelBounds<BlendTransformedBilinear>(int, int l1, int l2, int &v1, int &v2)
 {
     if (v1 < l1)

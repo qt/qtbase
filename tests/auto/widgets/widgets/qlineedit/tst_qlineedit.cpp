@@ -49,6 +49,7 @@
 #include "qcompleter.h"
 #include "qstandarditemmodel.h"
 #include "qplatformtheme_qpa.h"
+#include "qstylehints.h"
 #include <private/qguiapplication_p.h>
 
 #ifndef QT_NO_CLIPBOARD
@@ -174,10 +175,7 @@ private slots:
     void displayText_data();
     void displayText();
     void passwordEchoOnEdit();
-
-#ifdef QT_GUI_PASSWORD_ECHO_DELAY
     void passwordEchoDelay();
-#endif
 
     void maxLength_mask_data();
     void maxLength_mask();
@@ -1664,9 +1662,10 @@ void tst_QLineEdit::passwordEchoOnEdit()
     testWidget->setEchoMode(QLineEdit::Normal);
 }
 
-#ifdef QT_GUI_PASSWORD_ECHO_DELAY
 void tst_QLineEdit::passwordEchoDelay()
 {
+    if (qGuiApp->styleHints()->passwordMaskDelay() <= 0)
+        QSKIP("No mask delay in use");
     QStyleOptionFrameV2 opt;
     QChar fillChar = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
 
@@ -1686,7 +1685,7 @@ void tst_QLineEdit::passwordEchoDelay()
     QCOMPARE(testWidget->displayText(), QString(4, fillChar));
     QTest::keyPress(testWidget, '4');
     QCOMPARE(testWidget->displayText(), QString(4, fillChar) + QLatin1Char('4'));
-    QTest::qWait(QT_GUI_PASSWORD_ECHO_DELAY);
+    QTest::qWait(qGuiApp->styleHints()->passwordMaskDelay());
     QTRY_COMPARE(testWidget->displayText(), QString(5, fillChar));
     QTest::keyPress(testWidget, '5');
     QCOMPARE(testWidget->displayText(), QString(5, fillChar) + QLatin1Char('5'));
@@ -1714,7 +1713,6 @@ void tst_QLineEdit::passwordEchoDelay()
     // restore clean state
     testWidget->setEchoMode(QLineEdit::Normal);
 }
-#endif
 
 void tst_QLineEdit::maxLength_mask_data()
 {

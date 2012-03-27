@@ -163,6 +163,12 @@ namespace QT_NAMESPACE {}
 #ifndef Q_UNLIKELY
 #  define Q_UNLIKELY(x) (x)
 #endif
+#ifndef Q_ASSUME
+#  define Q_ASSUME(expr)
+#endif
+#ifndef Q_UNREACHABLE
+#  define Q_UNREACHABLE()
+#endif
 
 #ifndef Q_ALLOC_SIZE
 #  define Q_ALLOC_SIZE(x)
@@ -474,6 +480,10 @@ QT_END_INCLUDE_NAMESPACE
 # define Q_DECL_OVERRIDE
 # define Q_DECL_FINAL
 # define Q_DECL_FINAL_CLASS
+#endif
+
+#if defined(Q_COMPILER_ALIGNOF) && !defined(Q_ALIGNOF)
+#  define Q_ALIGNOF(x)  alignof(x)
 #endif
 
 //defines the type for the WNDPROC on windows
@@ -866,7 +876,7 @@ Q_CORE_EXPORT bool qSharedBuild();
    Avoid "unused parameter" warnings
 */
 
-#if defined(Q_CC_INTEL) && !defined(Q_OS_WIN) || defined(Q_CC_RVCT)
+#if defined(Q_CC_RVCT)
 template <typename T>
 inline void qUnused(T &x) { (void)x; }
 #  define Q_UNUSED(x) qUnused(x);
@@ -1355,20 +1365,7 @@ template <typename T>
 inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase *base, const T *)
 { return static_cast<const QForeachContainer<T> *>(base); }
 
-#if defined(Q_CC_MIPS)
-/*
-   Proper for-scoping in MIPSpro CC
-*/
-#  define Q_FOREACH(variable,container)                                                             \
-    if(0){}else                                                                                     \
-    for (const QForeachContainerBase &_container_ = qForeachContainerNew(container);                \
-         qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->condition();       \
-         ++qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->i)               \
-        for (variable = *qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->i; \
-             qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->brk;           \
-             --qForeachContainer(&_container_, true ? 0 : qForeachPointer(container))->brk)
-
-#elif defined(Q_CC_DIAB)
+#if defined(Q_CC_DIAB)
 // VxWorks DIAB generates unresolvable symbols, if container is a function call
 #  define Q_FOREACH(variable,container)                                                             \
     if(0){}else                                                                                     \

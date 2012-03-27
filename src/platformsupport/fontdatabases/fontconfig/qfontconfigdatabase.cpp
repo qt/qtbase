@@ -641,17 +641,15 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString family, const 
     FcPatternDestroy(pattern);
 
     if (fontSet) {
-        if (result == FcResultMatch) {
-            for (int i = 0; i < fontSet->nfont; i++) {
-                FcChar8 *value = 0;
-                if (FcPatternGetString(fontSet->fonts[i], FC_FAMILY, 0, &value) != FcResultMatch)
-                    continue;
-                //         capitalize(value);
-                QString familyName = QString::fromUtf8((const char *)value);
-                if (!fallbackFamilies.contains(familyName,Qt::CaseInsensitive) &&
-                    familyName.compare(family, Qt::CaseInsensitive)) {
-                    fallbackFamilies << familyName;
-                }
+        for (int i = 0; i < fontSet->nfont; i++) {
+            FcChar8 *value = 0;
+            if (FcPatternGetString(fontSet->fonts[i], FC_FAMILY, 0, &value) != FcResultMatch)
+                continue;
+            //         capitalize(value);
+            QString familyName = QString::fromUtf8((const char *)value);
+            if (!fallbackFamilies.contains(familyName,Qt::CaseInsensitive) &&
+                familyName.compare(family, Qt::CaseInsensitive)) {
+                fallbackFamilies << familyName;
             }
         }
         FcFontSetDestroy(fontSet);

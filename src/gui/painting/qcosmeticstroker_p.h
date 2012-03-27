@@ -72,7 +72,7 @@ public:
     enum Caps {
         NoCaps = 0,
         CapBegin = 0x1,
-        CapEnd = 0x2,
+        CapEnd = 0x2
     };
 
     // used to avoid drop outs or duplicated points
