@@ -140,18 +140,21 @@ struct QTypedArrayData
     static QTypedArrayData *allocate(size_t capacity,
             AllocationOptions options = Default) Q_REQUIRED_RESULT
     {
+        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return static_cast<QTypedArrayData *>(QArrayData::allocate(sizeof(T),
                     Q_ALIGNOF(AlignmentDummy), capacity, options));
     }
 
     static void deallocate(QArrayData *data)
     {
+        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QArrayData::deallocate(data, sizeof(T), Q_ALIGNOF(AlignmentDummy));
     }
 
     static QTypedArrayData *fromRawData(const T *data, size_t n,
             AllocationOptions options = Default)
     {
+        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QTypedArrayData *result = allocate(0, options | RawData);
         if (result) {
             Q_ASSERT(!result->ref.isShared()); // No shared empty, please!
@@ -165,6 +168,7 @@ struct QTypedArrayData
 
     static QTypedArrayData *sharedNull()
     {
+        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return static_cast<QTypedArrayData *>(
                 const_cast<QArrayData *>(&QArrayData::shared_null));
     }
