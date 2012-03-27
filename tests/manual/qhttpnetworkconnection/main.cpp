@@ -72,7 +72,7 @@ void tst_qhttpnetworkconnection::bigRemoteFile()
     qDebug() << "Finished!" << endl;
     qDebug() << "Time:" << t.elapsed() << "msec";
     qDebug() << "Bytes:" << size;
-    qDebug() << "Speed:" <<  (size / 1024) / (t.elapsed() / 1000) << "KB/sec";
+    qDebug() << "Speed:" <<  (size / qreal(1024)) / (t.elapsed() / qreal(1000)) << "KB/sec";
 }
 
 QTEST_MAIN(tst_qhttpnetworkconnection)
