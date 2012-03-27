@@ -101,4 +101,9 @@ int QStyleHints::passwordMaskDelay() const
     return hint(QPlatformIntegration::PasswordMaskDelay).toInt();
 }
 
+qreal QStyleHints::fontSmoothingGamma() const
+{
+    return hint(QPlatformIntegration::FontSmoothingGamma).toReal();
+}
+
 QT_END_NAMESPACE

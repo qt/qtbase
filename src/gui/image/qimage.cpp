@@ -51,6 +51,7 @@
 #include "qvariant.h"
 #include "qimagepixmapcleanuphooks_p.h"
 #include "qplatformintegration_qpa.h"
+#include <private/qguiapplication_p.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -3303,10 +3304,10 @@ extern const uchar *qt_pow_rgb_gamma();
 
 void qGamma_correct_back_to_linear_cs(QImage *image)
 {
-    const uchar *gamma = qt_pow_rgb_gamma();
-    if (!gamma)
+    const QDrawHelperGammaTables *tables = QGuiApplicationPrivate::instance()->gammaTables();
+    if (!tables)
         return;
-
+    const uchar *gamma = tables->qt_pow_rgb_gamma;
     // gamma correct the pixels back to linear color space...
     int h = image->height();
     int w = image->width();

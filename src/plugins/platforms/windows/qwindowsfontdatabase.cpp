@@ -68,8 +68,10 @@ QT_BEGIN_NAMESPACE
 */
 
 QWindowsFontEngineData::QWindowsFontEngineData()
+    : clearTypeEnabled(false)
+    , fontSmoothingGamma(QWindowsFontDatabase::fontSmoothingGamma())
 #if !defined(QT_NO_DIRECTWRITE)
-    : directWriteFactory(0)
+    , directWriteFactory(0)
     , directWriteGdiInterop(0)
 #endif
 {
@@ -77,17 +79,6 @@ QWindowsFontEngineData::QWindowsFontEngineData()
     UINT result = 0;
     if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &result, 0))
         clearTypeEnabled = (result == FE_FONTSMOOTHINGCLEARTYPE);
-
-    int winSmooth;
-    if (SystemParametersInfo(0x200C /* SPI_GETFONTSMOOTHINGCONTRAST */, 0, &winSmooth, 0)) {
-        fontSmoothingGamma = winSmooth / qreal(1000.0);
-    } else {
-        fontSmoothingGamma = 1.0;
-    }
-
-    // Safeguard ourselves against corrupt registry values...
-    if (fontSmoothingGamma > 5 || fontSmoothingGamma < 1)
-        fontSmoothingGamma = qreal(1.4);
 
     const qreal gray_gamma = 2.31;
     for (int i=0; i<256; ++i)
@@ -108,6 +99,19 @@ QWindowsFontEngineData::~QWindowsFontEngineData()
     if (directWriteFactory)
         directWriteFactory->Release();
 #endif
+}
+
+qreal QWindowsFontDatabase::fontSmoothingGamma()
+{
+    int winSmooth;
+    qreal result = 1;
+    if (SystemParametersInfo(0x200C /* SPI_GETFONTSMOOTHINGCONTRAST */, 0, &winSmooth, 0))
+        result = qreal(winSmooth) / qreal(1000.0);
+
+    // Safeguard ourselves against corrupt registry values...
+    if (result > 5 || result < 1)
+        result = qreal(1.4);
+    return result;
 }
 
 #if !defined(QT_NO_DIRECTWRITE)

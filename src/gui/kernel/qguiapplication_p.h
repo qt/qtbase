@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformIntegration;
 class QPlatformTheme;
+struct QDrawHelperGammaTables;
 
 class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
 {
@@ -203,6 +204,8 @@ public:
     };
     QHash<QWindow *, SynthesizedMouseData> synthesizedMousePoints;
 
+    const QDrawHelperGammaTables *gammaTables();
+
 protected:
     virtual void notifyThemeChanged();
 
@@ -212,6 +215,7 @@ private:
     static QGuiApplicationPrivate *self;
     static QTouchDevice *m_fakeTouchDevice;
     static int m_fakeMouseSourcePointId;
+    QAtomicPointer<QDrawHelperGammaTables> m_gammaTables;
 };
 
 Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k);

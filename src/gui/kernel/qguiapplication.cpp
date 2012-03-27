@@ -61,6 +61,7 @@
 #include <qpalette.h>
 #include <qscreen.h>
 #include <private/qscreen_p.h>
+#include <private/qdrawhelper_p.h>
 
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QGenericPluginFactory>
@@ -764,6 +765,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     delete  platform_theme;
     delete platform_integration;
     platform_integration = 0;
+    delete m_gammaTables.load();
 }
 
 #if 0
@@ -2168,6 +2170,19 @@ void QGuiApplicationPrivate::notifyThemeChanged()
         clearFontUnlocked();
         initFontUnlocked();
     }
+}
+
+const QDrawHelperGammaTables *QGuiApplicationPrivate::gammaTables()
+{
+    QDrawHelperGammaTables *result = m_gammaTables.load();
+    if (!result){
+        const qreal smoothing = qApp->styleHints()->fontSmoothingGamma();
+        QDrawHelperGammaTables *tables = new QDrawHelperGammaTables(smoothing);
+        if (!m_gammaTables.testAndSetRelease(0, tables))
+            delete tables;
+        result = m_gammaTables.load();
+    }
+    return result;
 }
 
 QT_END_NAMESPACE

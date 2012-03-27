@@ -328,6 +328,18 @@ struct QSpanData
     void adjustSpanMethods();
 };
 
+struct QDrawHelperGammaTables
+{
+    explicit QDrawHelperGammaTables(qreal smoothing);
+
+    void refresh(qreal smoothing);
+
+    uchar qt_pow_rgb_gamma[256];
+    uchar qt_pow_rgb_invgamma[256];
+    uint qt_pow_gamma[256];
+    uchar qt_pow_invgamma[2048];
+};
+
 static inline uint qt_gradient_clamp(const QGradientData *data, int ipos)
 {
     if (ipos < 0 || ipos >= GRADIENT_STOPTABLE_SIZE) {

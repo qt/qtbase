@@ -317,6 +317,8 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
     case QPlatformIntegration::KeyboardInputInterval:
     case QPlatformIntegration::ShowIsFullScreen:
         break; // Not implemented
+    case QPlatformIntegration::FontSmoothingGamma:
+        return QVariant(QWindowsFontDatabase::fontSmoothingGamma());
     }
     return QPlatformIntegration::styleHint(hint);
 }

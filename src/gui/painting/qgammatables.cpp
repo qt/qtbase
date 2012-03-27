@@ -39,39 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QSTYLEHINTS_H
-#define QSTYLEHINTS_H
-
-#include <QtCore/qobject.h>
-
-QT_BEGIN_HEADER
+#include <private/qdrawhelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
 
-class QPlatformIntegration;
-
-class Q_GUI_EXPORT QStyleHints : public QObject
+QDrawHelperGammaTables::QDrawHelperGammaTables(qreal smoothing)
 {
-    Q_OBJECT
-public:
-    int mouseDoubleClickInterval() const;
-    int startDragDistance() const;
-    int startDragTime() const;
-    int keyboardInputInterval() const;
-    int keyboardAutoRepeatRate() const;
-    int cursorFlashTime() const;
-    bool showIsFullScreen() const;
-    int passwordMaskDelay() const;
-    qreal fontSmoothingGamma() const;
+    const qreal gray_gamma = 2.31;
+    for (int i=0; i<256; ++i)
+        qt_pow_gamma[i] = uint(qRound(qPow(i / qreal(255.), gray_gamma) * 2047));
+    for (int i=0; i<2048; ++i)
+        qt_pow_invgamma[i] = uchar(qRound(qPow(i / qreal(2047.0), 1 / gray_gamma) * 255));
 
-private:
-    friend class QGuiApplication;
-    QStyleHints();
-};
+    refresh(smoothing);
+}
+
+void QDrawHelperGammaTables::refresh(qreal smoothing)
+{
+    for (int i=0; i<256; ++i) {
+        qt_pow_rgb_gamma[i] = uchar(qRound(qPow(i / qreal(255.0), smoothing) * 255));
+        qt_pow_rgb_invgamma[i] = uchar(qRound(qPow(i / qreal(255.), 1 / smoothing) * 255));
+    }
+}
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif

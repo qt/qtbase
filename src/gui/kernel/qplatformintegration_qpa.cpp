@@ -293,6 +293,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return false;
     case PasswordMaskDelay:
         return 0;
+    case FontSmoothingGamma:
+        return qreal(1.7);
     }
 
     return 0;
