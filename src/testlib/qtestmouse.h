@@ -127,7 +127,8 @@ namespace QTest
                 break;
             case MouseMove:
                 QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),lastButton,stateKey);
-                //QCursor::setPos(window->mapToGlobal(pos));
+                // No QCursor::setPos() call here. That could potentially result in mouse events sent by the windowing system
+                // which is highly undesired here. Tests must avoid relying on QCursor.
                 break;
             default:
                 QTEST_ASSERT(false);
