@@ -101,10 +101,9 @@ static bool match(const uchar* found, const char* target, uint len)
     return (memcmp(found, target, len) == 0 && target[len] == '\0');
 }
 
-static uint elfHash(const char *name)
+static void elfHash_continue(const char *name, uint &h)
 {
     const uchar *k;
-    uint h = 0;
     uint g;
 
     if (name) {
@@ -116,9 +115,20 @@ static uint elfHash(const char *name)
             h &= ~g;
         }
     }
+}
+
+static void elfHash_finish(uint &h)
+{
     if (!h)
         h = 1;
-    return h;
+}
+
+static uint elfHash(const char *name)
+{
+    uint hash = 0;
+    elfHash_continue(name, hash);
+    elfHash_finish(hash);
+    return hash;
 }
 
 static int numerusHelper(int n, const uchar *rules, int rulesSize)
@@ -830,7 +840,10 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
         numerus = numerusHelper(n, numerusRulesArray, numerusRulesLength);
 
     for (;;) {
-        quint32 h = elfHash(QByteArray(QByteArray(sourceText) + comment).constData());
+        quint32 h = 0;
+        elfHash_continue(sourceText, h);
+        elfHash_continue(comment, h);
+        elfHash_finish(h);
 
         const uchar *start = offsetArray;
         const uchar *end = start + ((numItems-1) << 3);
