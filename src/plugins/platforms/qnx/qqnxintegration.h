@@ -50,6 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQnxBpsEventFilter;
 class QQnxEventThread;
 class QQnxNativeInterface;
 class QQnxWindow;
@@ -135,6 +136,9 @@ private:
     bool m_paintUsingOpenGL;
 #endif
     QAbstractEventDispatcher *m_eventDispatcher;
+#if defined(Q_OS_BLACKBERRY)
+    QQnxBpsEventFilter *m_bpsEventFilter;
+#endif
     QQnxNativeInterface *m_nativeInterface;
     QList<QQnxScreen*> m_screens;
     QQnxScreenEventHandler *m_screenEventHandler;

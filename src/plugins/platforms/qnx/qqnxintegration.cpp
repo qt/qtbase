@@ -52,6 +52,7 @@
 #include "qqnxservices.h"
 
 #if defined(Q_OS_BLACKBERRY)
+#include "qqnxbpseventfilter.h"
 #include "qqnxnavigatorbps.h"
 #elif defined(QQNX_PPS)
 #include "qqnxnavigatorpps.h"
@@ -70,7 +71,12 @@
 #endif
 
 #include "private/qgenericunixfontdatabase_p.h"
+
+#if defined(Q_OS_BLACKBERRY)
+#include "qqnxeventdispatcher_blackberry.h"
+#else
 #include "private/qgenericunixeventdispatcher_p.h"
+#endif
 
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QWindowSystemInterface>
@@ -106,7 +112,12 @@ QQnxIntegration::QQnxIntegration()
 #if !defined(QT_NO_OPENGL)
     , m_paintUsingOpenGL(false)
 #endif
+#if defined(Q_OS_BLACKBERRY)
+    , m_eventDispatcher(new QQnxEventDispatcherBlackberry())
+    , m_bpsEventFilter(0)
+#else
     , m_eventDispatcher(createUnixEventDispatcher())
+#endif
     , m_nativeInterface(new QQnxNativeInterface())
     , m_screenEventHandler(new QQnxScreenEventHandler())
 #if !defined(QT_NO_CLIPBOARD)
@@ -169,6 +180,12 @@ QQnxIntegration::QQnxIntegration()
     // Create services handling class
     if (m_navigator)
         m_services = new QQnxServices(m_navigator);
+
+#if defined(Q_OS_BLACKBERRY)
+    m_bpsEventFilter = new QQnxBpsEventFilter;
+    m_bpsEventFilter->installOnEventDispatcher(m_eventDispatcher);
+#endif
+
 }
 
 QQnxIntegration::~QQnxIntegration()
@@ -219,6 +236,10 @@ QQnxIntegration::~QQnxIntegration()
 
     // Destroy navigator interface
     delete m_navigator;
+
+#if defined(Q_OS_BLACKBERRY)
+    delete m_bpsEventFilter;
+#endif
 
 #if defined(QQNXINTEGRATION_DEBUG)
     qDebug() << "QQnx: platform plugin shutdown end";

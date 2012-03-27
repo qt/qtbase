@@ -20,6 +20,7 @@ CONFIG(blackberry) {
 
 # Uncomment these to enable debugging output for various aspects of the plugin
 #DEFINES += QQNXBUFFER_DEBUG
+#DEFINES += QQNXBPSEVENTFILTER_DEBUG
 #DEFINES += QQNXCLIPBOARD_DEBUG
 #DEFINES += QQNXEVENTTHREAD_DEBUG
 #DEFINES += QQNXGLBACKINGSTORE_DEBUG
@@ -81,9 +82,13 @@ contains(QT_CONFIG, opengles2) {
 }
 
 CONFIG(blackberry) {
-    SOURCES += qqnxnavigatorbps.cpp
+    SOURCES += qqnxnavigatorbps.cpp \
+               qqnxeventdispatcher_blackberry.cpp \
+               qqnxbpseventfilter.cpp
 
-    HEADERS += qqnxnavigatorbps.h
+    HEADERS += qqnxnavigatorbps.h \
+               qqnxeventdispatcher_blackberry.h \
+               qqnxbpseventfilter.h
 
     LIBS += -lbps
 }
