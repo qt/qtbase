@@ -713,6 +713,20 @@ bool QTranslatorPrivate::do_load(const uchar *data, int len)
         data += blockLen;
     }
 
+    if (!offsetArray || !messageArray)
+        ok = false;
+
+    if (!ok) {
+        messageArray = 0;
+        contextArray = 0;
+        offsetArray = 0;
+        numerusRulesArray = 0;
+        messageLength = 0;
+        contextLength = 0;
+        offsetLength = 0;
+        numerusRulesLength = 0;
+    }
+
     return ok;
 }
 
