@@ -17,7 +17,7 @@ OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
 
 #qt code
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qstringbuilder.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
-      qbytearray.o qbytearraymatcher.o qdatastream.o qbuffer.o qlist.o qfiledevice.o qfile.o \
+      qarraydata.o qbytearray.o qbytearraymatcher.o qdatastream.o qbuffer.o qlist.o qfiledevice.o qfile.o \
       qfilesystementry.o qfilesystemengine_unix.o qfilesystemengine.o qfilesystemiterator_unix.o \
       qfsfileengine_unix.o qfsfileengine.o \
       qfsfileengine_iterator.o qregexp.o qvector.o qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o \
@@ -43,7 +43,8 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/io/qtextstream.cpp $(SOURCE_PATH)/src/corelib/io/qiodevice.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qmalloc.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qglobal.cpp $(SOURCE_PATH)/src/corelib/tools/qregexp.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp\
+	   $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_mac.cpp \
@@ -198,6 +199,9 @@ qmalloc.o: $(SOURCE_PATH)/src/corelib/global/qmalloc.cpp
 
 qglobal.o: $(SOURCE_PATH)/src/corelib/global/qglobal.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qglobal.cpp
+
+qarraydata.o: $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp
 
 qbytearray.o: $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp

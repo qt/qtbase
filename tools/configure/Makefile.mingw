@@ -20,6 +20,7 @@ OBJECTS = \
     configureapp.o \
     environment.o \
     tools.o \
+    qarraydata.o \
     qbytearray.o \
     qbytearraymatcher.o \
     qhash.o \

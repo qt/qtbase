@@ -74,6 +74,7 @@ endif
 QTOBJS= \
 	qbitarray.o \
 	qbuffer.o \
+	qarraydata.o \
 	qbytearray.o \
 	qcryptographichash.o \
 	qvsnprintf.o \

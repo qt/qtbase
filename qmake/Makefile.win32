@@ -78,6 +78,7 @@ QTOBJS= \
 	qfilesystemiterator_win.obj \
 	qfsfileengine.obj \
 	qfsfileengine_iterator.obj \
+	qarraydata.obj \
 	qbytearray.obj \
 	qvsnprintf.obj \
 	qbytearraymatcher.obj \

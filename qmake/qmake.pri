@@ -35,6 +35,7 @@ bootstrap { #Qt code
    SOURCES+= \
         qbitarray.cpp \
         qbuffer.cpp \
+        qarraydata.cpp \
         qbytearray.cpp \
         qbytearraymatcher.cpp \
         qcryptographichash.cpp \
@@ -81,7 +82,10 @@ bootstrap { #Qt code
    HEADERS+= \
         qbitarray.h \
         qbuffer.h \
+        qarraydata.h \
         qbytearray.h \
+        qarraydataops.h \
+        qarraydatapointer.h \
         qbytearraymatcher.h \
         qchar.h \
         qcryptographichash.h \

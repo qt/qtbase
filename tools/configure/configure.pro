@@ -32,7 +32,10 @@ INCLUDEPATH += \
            $$QT_SOURCE_TREE/tools/shared
 
 HEADERS  = configureapp.h environment.h tools.h\
+           $$QT_SOURCE_TREE/src/corelib/tools/qarraydata.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearray.h \
+           $$QT_SOURCE_TREE/src/corelib/tools/qarraydatapointer.h \
+           $$QT_SOURCE_TREE/src/corelib/tools/qarraydataops.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearraymatcher.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qchar.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qhash.h \
@@ -76,6 +79,7 @@ HEADERS  = configureapp.h environment.h tools.h\
 
 SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearray.cpp \
+           $$QT_SOURCE_TREE/src/corelib/tools/qarraydata.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearraymatcher.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qchar.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qhash.cpp \

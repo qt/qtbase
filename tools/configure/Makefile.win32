@@ -18,6 +18,7 @@ OBJECTS = \
     configureapp.obj \
     environment.obj \
     tools.obj \
+    qarraydata.obj \
     qbytearray.obj \
     qbytearraymatcher.obj \
     qhash.obj \
@@ -87,6 +88,7 @@ configureapp.obj: $(CONFSRC)\configureapp.cpp $(CONFSRC)\configureapp.h $(CONFSR
 environment.obj: $(CONFSRC)\environment.cpp $(CONFSRC)\environment.h $(PCH)
 tools.obj: $(CONFSRC)\tools.cpp $(CONFSRC)\tools.h $(PCH)
 registry.obj: $(TOOLSRC)\shared\windows\registry.cpp $(PCH)
+qarraydata.obj: $(CORESRC)\tools\qarraydata.cpp $(PCH)
 qbytearray.obj: $(CORESRC)\tools\qbytearray.cpp $(PCH)
 qbytearraymatcher.obj: $(CORESRC)\tools\qbytearraymatcher.cpp $(PCH)
 qhash.obj: $(CORESRC)\tools\qhash.cpp $(PCH)
