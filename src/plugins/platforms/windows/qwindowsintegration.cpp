@@ -283,10 +283,11 @@ QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
 {
     if (!d->m_fontDatabase) {
 #ifndef QT_NO_FREETYPE
-        if (d->m_nativeInterface.property("fontengine").toString() == QLatin1String("native"))
-            d->m_fontDatabase = new QWindowsFontDatabase();
-        else
+        const QVariant argument = d->m_nativeInterface.property("fontengine");
+        if (argument.isValid() && argument.toString() == QLatin1String("freetype"))
             d->m_fontDatabase = new QWindowsFontDatabaseFT();
+        else
+            d->m_fontDatabase = new QWindowsFontDatabase();
 #else
         d->m_fontDatabase = new QWindowsFontDatabase();
 #endif
