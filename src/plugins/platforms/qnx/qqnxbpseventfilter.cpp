@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qqnxbpseventfilter.h"
+#include "qqnxnavigatoreventhandler.h"
 #include "qqnxscreen.h"
 #include "qqnxscreeneventhandler.h"
 
@@ -47,14 +48,17 @@
 #include <QDebug>
 
 #include <bps/event.h>
+#include <bps/navigator.h>
 #include <bps/screen.h>
 
 QT_BEGIN_NAMESPACE
 
 static QQnxBpsEventFilter *s_instance = 0;
 
-QQnxBpsEventFilter::QQnxBpsEventFilter(QQnxScreenEventHandler *screenEventHandler, QObject *parent)
+QQnxBpsEventFilter::QQnxBpsEventFilter(QQnxNavigatorEventHandler *navigatorEventHandler,
+                                       QQnxScreenEventHandler *screenEventHandler, QObject *parent)
     : QObject(parent)
+    , m_navigatorEventHandler(navigatorEventHandler)
     , m_screenEventHandler(screenEventHandler)
 {
     Q_ASSERT(s_instance == 0);
@@ -74,6 +78,9 @@ void QQnxBpsEventFilter::installOnEventDispatcher(QAbstractEventDispatcher *disp
 #if defined(QQNXBPSEVENTFILTER_DEBUG)
     qDebug() << Q_FUNC_INFO << "dispatcher=" << dispatcher;
 #endif
+
+    if (navigator_request_events(0) != BPS_SUCCESS)
+        qWarning("QQNX: failed to register for navigator events");
 
     QAbstractEventDispatcher::EventFilter previousEventFilter = dispatcher->setEventFilter(dispatcherEventFilter);
 
@@ -122,7 +129,70 @@ bool QQnxBpsEventFilter::bpsEventFilter(bps_event_t *event)
         return m_screenEventHandler->handleEvent(screenEvent);
     }
 
+    if (eventDomain == navigator_get_domain())
+        return handleNavigatorEvent(event);
+
     return false;
+}
+
+bool QQnxBpsEventFilter::handleNavigatorEvent(bps_event_t *event)
+{
+    switch (bps_event_get_code(event)) {
+    case NAVIGATOR_ORIENTATION_CHECK: {
+        const int angle = navigator_event_get_orientation_angle(event);
+
+        #if defined(QQNXBPSEVENTFILTER_DEBUG)
+        qDebug() << "QQNX: Navigator ORIENTATION CHECK event. angle=" << angle;
+        #endif
+
+        const bool result = m_navigatorEventHandler->handleOrientationCheck(angle);
+
+        #if defined(QQNXBPSEVENTFILTER_DEBUG)
+        qDebug() << "QQNX: Navigator ORIENTATION CHECK event. result=" << result;
+        #endif
+
+        // reply to navigator whether orientation is acceptable
+        navigator_orientation_check_response(event, result);
+        break;
+    }
+
+    case NAVIGATOR_ORIENTATION: {
+        const int angle = navigator_event_get_orientation_angle(event);
+
+        #if defined(QQNXBPSEVENTFILTER_DEBUG)
+        qDebug() << "QQNX: Navigator ORIENTATION event. angle=" << angle;
+        #endif
+
+        m_navigatorEventHandler->handleOrientationChange(angle);
+
+        navigator_done_orientation(event);
+        break;
+    }
+
+    case NAVIGATOR_SWIPE_DOWN:
+        #if defined(QQNXBPSEVENTFILTER_DEBUG)
+        qDebug() << "QQNX: Navigator SWIPE DOWN event";
+        #endif
+
+        m_navigatorEventHandler->handleSwipeDown();
+        break;
+
+    case NAVIGATOR_EXIT:
+        #if defined(QQNXBPSEVENTFILTER_DEBUG)
+        qDebug() << "QQNX: Navigator EXIT event";
+        #endif
+
+        m_navigatorEventHandler->handleExit();
+        break;
+
+    default:
+        #if defined(QQNXBPSEVENTFILTER_DEBUG)
+        qDebug() << "QQNX: Unhandled navigator event. code=" << bps_event_get_code(event);
+        #endif
+        return false;
+    }
+
+    return true;
 }
 
 QT_END_NAMESPACE

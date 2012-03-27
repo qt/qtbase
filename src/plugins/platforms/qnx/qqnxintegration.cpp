@@ -134,7 +134,8 @@ QQnxIntegration::QQnxIntegration()
         qFatal("QQnx: failed to connect to composition manager, errno=%d", errno);
     }
 
-#if defined(QQNX_PPS)
+    // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
+#if !defined(Q_OS_BLACKBERRY) && defined(QQNX_PPS)
     // Create/start navigator event notifier
     m_navigatorEventNotifier = new QQnxNavigatorEventNotifier(m_navigatorEventHandler);
 
@@ -185,7 +186,7 @@ QQnxIntegration::QQnxIntegration()
         m_services = new QQnxServices(m_navigator);
 
 #if defined(Q_OS_BLACKBERRY)
-    m_bpsEventFilter = new QQnxBpsEventFilter(m_screenEventHandler);
+    m_bpsEventFilter = new QQnxBpsEventFilter(m_navigatorEventHandler, m_screenEventHandler);
     Q_FOREACH (QQnxScreen *screen, m_screens)
         m_bpsEventFilter->registerForScreenEvents(screen);
 
