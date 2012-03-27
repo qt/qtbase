@@ -502,7 +502,7 @@ void tst_QDBusMarshall::sendMaps_data()
     QTest::newRow("os-map") << qVariantFromValue(osmap) << "a{os}"
             << "[Argument: a{os} {[ObjectPath: /] = \"root\", [ObjectPath: /bar/baz] = \"bar and baz\", [ObjectPath: /foo] = \"foo\"}]";
 
-    QHash<QDBusSignature, QString> gsmap;
+    QMap<QDBusSignature, QString> gsmap;
     QTest::newRow("empty-gs-map") << qVariantFromValue(gsmap) << "a{gs}"
             << "[Argument: a{gs} {}]";
     gsmap[QDBusSignature("i")] = "int32";
@@ -601,7 +601,7 @@ void tst_QDBusMarshall::sendComplex_data()
     QTest::newRow("datetimelist") << qVariantFromValue(dtlist) << "a((iii)(iiii)i)"
             << "[Argument: a((iii)(iiii)i) {[Argument: ((iii)(iiii)i) [Argument: (iii) 0, 0, 0], [Argument: (iiii) -1, -1, -1, -1], 0], [Argument: ((iii)(iiii)i) [Argument: (iii) 1977, 9, 13], [Argument: (iiii) 0, 0, 0, 0], 0], [Argument: ((iii)(iiii)i) [Argument: (iii) 2006, 6, 18], [Argument: (iiii) 13, 14, 0, 0], 0]}]";
 
-    QHash<qlonglong, QDateTime> lldtmap;
+    QMap<qlonglong, QDateTime> lldtmap;
     QTest::newRow("empty-lldtmap") << qVariantFromValue(lldtmap) << "a{x((iii)(iiii)i)}"
             << "[Argument: a{x((iii)(iiii)i)} {}]";
     lldtmap[0] = QDateTime();
@@ -621,7 +621,7 @@ void tst_QDBusMarshall::sendComplex_data()
     ssmap["c"] = "b";
     ssmap["b"] = "c";
 
-    QHash<QDBusSignature, QString> gsmap;
+    QMap<QDBusSignature, QString> gsmap;
     gsmap[QDBusSignature("i")] = "int32";
     gsmap[QDBusSignature("s")] = "string";
     gsmap[QDBusSignature("a{gs}")] = "array of dict_entry of (signature, string)";
