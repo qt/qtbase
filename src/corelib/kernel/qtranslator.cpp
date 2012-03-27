@@ -458,13 +458,7 @@ bool QTranslatorPrivate::do_load(const QString &realname)
 
     int fd = -1;
     if (!realname.startsWith(QLatin1Char(':')))
-        fd = QT_OPEN(QFile::encodeName(realname), O_RDONLY,
-#if defined(Q_OS_WIN)
-                     _S_IREAD | _S_IWRITE
-#else
-                     0666
-#endif
-            );
+        fd = QT_OPEN(QFile::encodeName(realname), O_RDONLY);
     if (fd >= 0) {
         QT_STATBUF st;
         if (!QT_FSTAT(fd, &st)) {
