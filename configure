@@ -3667,17 +3667,35 @@ fi
 #-------------------------------------------------------------------------------
 
 # Use config.tests/arch/arch.pro to has the compiler tell us what the target architecture is
-CFG_ARCH=`OUTDIR="$outpath" "$outpath/bin/qmake" -spec "$XQMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -n -e 's,^Project MESSAGE:.*Architecture: \([a-zA-Z0-9_]*\).*,\1,p'`
-
+OUTFILE=$outpath/arch.result
+"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE"
+if [ $? -eq 0 ]; then
+    CFG_ARCH=`cat "$OUTFILE"`
+else
+    echo
+    echo "Could not determine the target architecture!"
+    echo "Turn on verbose messaging (-v) to see the final report."
+fi
+rm -f "$OUTFILE" 2>/dev/null
 [ -z "$CFG_ARCH" ] && CFG_ARCH="unknown"
+
 if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
     # Do the same test again, using the host compiler
-    CFG_HOST_ARCH=`OUTDIR="$outpath" "$outpath/bin/qmake" -spec "$QMAKESPEC" -o /dev/null "$relpath/config.tests/arch/arch.pro" 2>&1 | sed -n -e 's,^Project MESSAGE:.*Architecture: \([a-zA-Z0-9_]*\).*,\1,p'`
+    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE"
+    if [ $? -eq 0 ]; then
+        CFG_HOST_ARCH=`cat "$OUTFILE"`
+    else
+        echo
+        echo "Could not determine the host architecture!"
+        echo "Turn on verbose messaging (-v) to see the final report."
+    fi
+    rm -f "$OUTFILE" 2>/dev/null
     [ -z "$CFG_HOST_ARCH" ] && CFG_HOST_ARCH="unknown"
 else
     # not cross compiling, host == target
     CFG_HOST_ARCH="$CFG_ARCH"
 fi
+unset OUTFILE
 
 if [ "$OPT_VERBOSE" = "yes" ]; then
     echo "System architecture: '$CFG_ARCH'"

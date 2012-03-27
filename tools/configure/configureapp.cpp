@@ -2561,16 +2561,47 @@ void Configure::detectArch()
         QString qmakespec = dictionary.value(pair.first);
         QString key = pair.second;
 
+        // run qmake
         QString command =
-                fixSeparators(QString("%1/bin/qmake.exe -spec %2 %3/config.tests/arch/arch.pro -o %4/Makefile.unused 2>&1")
-                              .arg(buildPath, qmakespec, sourcePath, newpwd));
-        QString output = Environment::execute(command);
-        if (output.isEmpty())
-            continue;
+                fixSeparators(QString("%1/bin/qmake.exe -spec %2 %3/config.tests/arch/arch.pro 2>&1")
+                              .arg(buildPath, qmakespec, sourcePath));
+        Environment::execute(command);
 
-        QRegExp re("Project MESSAGE:.*Architecture: ([a-zA-Z0-9_]*)");
-        if (re.indexIn(output) != -1)
-            dictionary[key] = re.cap(1);
+        // compile
+        command = dictionary[ "MAKE" ];
+        if (command.contains("nmake"))
+            command += " /NOLOGO";
+        command += " -s";
+        Environment::execute(command);
+
+        // find the executable that was generated
+        QFile exe("arch.exe");
+        if (!exe.open(QFile::ReadOnly)) { // no Text, this is binary
+            cout << "Could not find output file: " << qPrintable(exe.errorString()) << endl;
+            dictionary["DONE"] = "error";
+            return;
+        }
+        QByteArray exeContents = exe.readAll();
+        exe.close();
+
+        static const char magic[] = "==Qt=magic=Qt== Architecture:";
+        int magicPos = exeContents.indexOf(magic);
+        if (magicPos == -1) {
+            cout << "Internal error, could not find the architecture of the executable" << endl;
+            dictionary["DONE"] = "error";
+            return;
+        }
+        //cout << "Found magic at offset 0x" << hex << magicPos << endl;
+
+        // the conversion from QByteArray will stop at the ending NUL anyway
+        QString arch = QString::fromLatin1(exeContents.constData() + magicPos
+                                           + sizeof(magic) - 1);
+        dictionary[key] = arch;
+
+        //cout << "Detected arch '" << qPrintable(arch) << "'\n";
+
+        // clean up
+        Environment::execute(command + " distclean");
     }
 
     if (!dictionary.contains("QT_HOST_ARCH"))

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the FOO module of the Qt Toolkit.
@@ -39,46 +40,43 @@
 **
 ****************************************************************************/
 
-// NOTE: This file is not meant to be compiled, only preprocessed.
 #define QGLOBAL_H
 #include "../../src/corelib/global/qprocessordetection.h"
-#undef alpha
-#undef arm
-#undef avr32
-#undef bfin
-#undef i386
-#undef x86_64
-#undef ia64
-#undef mips
-#undef power
-#undef s390
-#undef sh
-#undef sparc
-#undef unknown
+#include <stdio.h>
+
+extern const char msg[];
+const char msg[] = "==Qt=magic=Qt== Architecture:"
+
 #if defined(Q_PROCESSOR_ALPHA)
-Architecture: alpha
+"alpha"
 #elif defined(Q_PROCESSOR_ARM)
-Architecture: arm
+"arm"
 #elif defined(Q_PROCESSOR_AVR32)
-Architecture: avr32
+"avr32"
 #elif defined(Q_PROCESSOR_BLACKFIN)
-Architecture: bfin
+"bfin"
 #elif defined(Q_PROCESSOR_X86_32)
-Architecture: i386
+"i386"
 #elif defined(Q_PROCESSOR_X86_64)
-Architecture: x86_64
+"x86_64"
 #elif defined(Q_PROCESSOR_IA64)
-Architecture: ia64
+"ia64"
 #elif defined(Q_PROCESSOR_MIPS)
-Architecture: mips
+"mips"
 #elif defined(Q_PROCESSOR_POWER)
-Architecture: power
+"power"
 #elif defined(Q_PROCESSOR_S390)
-Architecture: s390
+"s390"
 #elif defined(Q_PROCESSOR_SH)
-Architecture: sh
+"sh"
 #elif defined(Q_PROCESSOR_SPARC)
-Architecture: sparc
+"sparc"
 #else
-Architecture: unknown
+"unknown"
 #endif
+                   ;
+
+int main()
+{
+    puts(msg);
+}
