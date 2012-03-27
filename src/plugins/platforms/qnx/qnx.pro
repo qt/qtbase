@@ -37,7 +37,8 @@ SOURCES =   main.cpp \
             qqnxvirtualkeyboard.cpp \
             qqnxclipboard.cpp \
             qqnxrootwindow.cpp \
-            qqnxscreeneventhandler.cpp
+            qqnxscreeneventhandler.cpp \
+            qqnxabstractvirtualkeyboard.cpp
 
 
 HEADERS =   qqnxbuffer.h \
@@ -53,7 +54,8 @@ HEADERS =   qqnxbuffer.h \
             qqnxvirtualkeyboard.h \
             qqnxclipboard.h \
             qqnxrootwindow.h \
-            qqnxscreeneventhandler.h
+            qqnxscreeneventhandler.h \
+            qqnxabstractvirtualkeyboard.h
 
 CONFIG(blackberry) {
     SOURCES += qqnxservices.cpp

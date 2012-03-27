@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qqnxinputcontext_noimf.h"
-#include "qqnxvirtualkeyboard.h"
+#include "qqnxabstractvirtualkeyboard.h"
 
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>
@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QQnxInputContext::QQnxInputContext(QQnxVirtualKeyboard &keyboard) :
+QQnxInputContext::QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard) :
     QPlatformInputContext(),
     m_inputPanelVisible(false),
     m_inputPanelLocale(QLocale::c()),
@@ -179,9 +179,9 @@ void QQnxInputContext::inputItemChanged()
             hideInputPanel();
     } else {
         if (qobject_cast<QAbstractSpinBox*>(inputItem))
-            m_virtualKeyboard.setKeyboardMode(QQnxVirtualKeyboard::Phone);
+            m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
         else
-            m_virtualKeyboard.setKeyboardMode(QQnxVirtualKeyboard::Default);
+            m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);
 
         if (!m_inputPanelVisible)
             showInputPanel();

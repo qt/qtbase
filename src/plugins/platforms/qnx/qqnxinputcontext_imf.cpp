@@ -41,7 +41,7 @@
 
 #include "qqnxinputcontext_imf.h"
 #include "qqnxeventthread.h"
-#include "qqnxvirtualkeyboard.h"
+#include "qqnxabstractvirtualkeyboard.h"
 
 #include <QtWidgets/QAbstractSpinBox>
 #include <QtWidgets/QAction>
@@ -676,7 +676,7 @@ static bool imfAvailable()
 
 QT_BEGIN_NAMESPACE
 
-QQnxInputContext::QQnxInputContext(QQnxVirtualKeyboard &keyboard):
+QQnxInputContext::QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard):
          QPlatformInputContext(),
          m_lastCaretPos(0),
          m_isComposing(false),
@@ -1688,9 +1688,9 @@ void QQnxInputContext::inputItemChanged()
             hideInputPanel();
     } else {
         if (qobject_cast<QAbstractSpinBox*>(inputItem))
-            m_virtualKeyboard.setKeyboardMode(QQnxVirtualKeyboard::Phone);
+            m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
         else
-            m_virtualKeyboard.setKeyboardMode(QQnxVirtualKeyboard::Default);
+            m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);
 
         if (!m_inputPanelVisible)
             showInputPanel();

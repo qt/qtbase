@@ -53,13 +53,13 @@
 
 QT_BEGIN_NAMESPACE
 
-class QQnxVirtualKeyboard;
+class QQnxAbstractVirtualKeyboard;
 
 class QQnxInputContext : public QPlatformInputContext
 {
     Q_OBJECT
 public:
-    QQnxInputContext(QQnxVirtualKeyboard &keyboard);
+    explicit QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard);
     ~QQnxInputContext();
 
     bool isValid() const;
@@ -125,7 +125,7 @@ private:
     QString m_composingText;
     bool m_inputPanelVisible;
     QLocale m_inputPanelLocale;
-    QQnxVirtualKeyboard &m_virtualKeyboad;
+    QQnxAbstractVirtualKeyboard &m_virtualKeyboad;
 };
 
 Q_DECLARE_METATYPE(extracted_text_t*)

@@ -39,49 +39,65 @@
 **
 ****************************************************************************/
 
-#ifndef QQNXINPUTCONTEXT_H
-#define QQNXINPUTCONTEXT_H
-
-#include <QtCore/QLocale>
-#include <QtGui/QPlatformInputContext>
-#include <QtGui/QPlatformIntegration>
+#include "qqnxabstractvirtualkeyboard.h"
 
 QT_BEGIN_NAMESPACE
 
-class QQnxAbstractVirtualKeyboard;
-
-class QQnxInputContext : public QPlatformInputContext
+QQnxAbstractVirtualKeyboard::QQnxAbstractVirtualKeyboard(QObject *parent)
+    : QObject(parent)
+    , m_height(0)
+    , m_visible(false)
+    , m_locale(QLocale::system())
+    , m_keyboardMode(Default)
 {
-    Q_OBJECT
-public:
-    explicit QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard);
-    ~QQnxInputContext();
+}
 
-    bool isValid() const;
+void QQnxAbstractVirtualKeyboard::setKeyboardMode(KeyboardMode mode)
+{
+    if (mode == m_keyboardMode)
+        return;
 
-    void reset();
-    bool filterEvent( const QEvent *event );
-    bool handleKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
+    m_keyboardMode = mode;
 
-    void showInputPanel();
-    void hideInputPanel();
-    bool isInputPanelVisible() const;
+    applyKeyboardMode(mode);
+}
 
-    QLocale locale() const;
+void QQnxAbstractVirtualKeyboard::setHeight(int height)
+{
+    if (height == m_height)
+        return;
 
-private Q_SLOTS:
-    void keyboardVisibilityChanged(bool visible);
-    void keyboardLocaleChanged(const QLocale &locale);
-    void inputItemChanged();
+    const int effectiveHeight = this->height();
 
-private:
-    bool hasPhysicalKeyboard();
+    m_height = height;
 
-    bool m_inputPanelVisible;
-    QLocale m_inputPanelLocale;
-    QQnxAbstractVirtualKeyboard &m_virtualKeyboard;
-};
+    if (effectiveHeight != this->height())
+        emit heightChanged(this->height());
+}
+
+void QQnxAbstractVirtualKeyboard::setVisible(bool visible)
+{
+    if (visible == m_visible)
+        return;
+
+    const int effectiveHeight = height();
+
+    m_visible = visible;
+
+    emit visibilityChanged(visible);
+
+    if (effectiveHeight != height())
+        emit heightChanged(height());
+}
+
+void QQnxAbstractVirtualKeyboard::setLocale(const QLocale &locale)
+{
+    if (locale == m_locale)
+        return;
+
+    m_locale = locale;
+
+    emit localeChanged(locale);
+}
 
 QT_END_NAMESPACE
-
-#endif // QQNXINPUTCONTEXT_H
