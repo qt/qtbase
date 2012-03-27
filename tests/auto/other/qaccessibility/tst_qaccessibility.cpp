@@ -40,6 +40,18 @@
 ****************************************************************************/
 
 
+#include <QtCore/qglobal.h>
+#ifdef Q_OS_WIN
+# include <QtCore/qt_windows.h>
+# include <oleacc.h>
+# include <servprov.h>
+# include <winuser.h>
+# ifndef Q_CC_MINGW
+#  include <Accessible2.h>
+#  include <AccessibleAction.h>
+#  include <AccessibleComponent.h>
+# endif
+#endif
 #include <QtTest/QtTest>
 #include <QtGui>
 #include <QtWidgets>
@@ -270,6 +282,7 @@ private slots:
     void accessibleName();
     void labelTest();
     void accelerators();
+    void bridgeTest();
 
 protected slots:
     void onClicked();
@@ -2940,6 +2953,101 @@ void tst_QAccessibility::accelerators()
     QTest::qWait(100);
     delete window;
     QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::bridgeTest()
+{
+    // For now this is a simple test to see if the bridge is working at all.
+    // Ideally it should be extended to test all aspects of the bridge.
+#ifdef Q_OS_WIN
+    // First, test MSAA part of bridge
+    QWidget *window = new QWidget;
+    QVBoxLayout *lay = new QVBoxLayout(window);
+    QPushButton *button = new QPushButton(tr("Push me"), window);
+    QLineEdit *le = new QLineEdit(window);
+    lay->addWidget(button);
+    lay->addWidget(le);
+
+    window->show();
+    QTest::qWaitForWindowShown(window);
+
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(button);
+    QPoint buttonPos = button->mapToGlobal(QPoint(0,0));
+    QRect buttonRect = iface->rect();
+    QCOMPARE(buttonRect.topLeft(), buttonPos);
+
+
+    // All set, now test the bridge.
+    POINT pt;
+    pt.x = buttonRect.center().x();
+    pt.y = buttonRect.center().y();
+    IAccessible *iacc;
+
+    VARIANT varChild;
+    HRESULT hr = ::AccessibleObjectFromPoint(pt, &iacc, &varChild);
+    QVERIFY(SUCCEEDED(hr));
+    VARIANT varSELF;
+    varSELF.vt = VT_I4;
+    varSELF.lVal = 0;
+
+    // **** Test get_accRole ****
+    VARIANT varRole;
+    hr = iacc->get_accRole(varSELF, &varRole);
+    QVERIFY(SUCCEEDED(hr));
+
+    QCOMPARE(varRole.vt, (VARTYPE)VT_I4);
+    QCOMPARE(varRole.lVal, (LONG)ROLE_SYSTEM_PUSHBUTTON);
+
+    // **** Test accLocation ****
+    long x, y, w, h;
+    hr = iacc->accLocation(&x, &y, &w, &h, varSELF);
+    QCOMPARE(buttonRect, QRect(x, y, w, h));
+
+#ifndef Q_CC_MINGW
+    // Test IAccessible2 part of bridge
+    IServiceProvider *pService = 0;
+    hr = iacc->QueryInterface(IID_IServiceProvider, (void **)&pService);
+    if (SUCCEEDED(hr)) {
+        IAccessible2 *pIA2 = 0;
+        hr = pService->QueryService(IID_IAccessible, IID_IAccessible2, (void**)&pIA2);
+        if (SUCCEEDED(hr) && pIA2) {
+            // The control supports IAccessible2.
+            // pIA2 is the reference to the accessible object's IAccessible2 interface.
+
+            /***** Test IAccessibleComponent *****/
+            IAccessibleComponent *ia2Component = 0;
+            hr = pIA2->QueryInterface(IID_IAccessibleComponent, (void**)&ia2Component);
+            QVERIFY(SUCCEEDED(hr));
+            long x, y;
+            hr = ia2Component->get_locationInParent(&x, &y);
+            QVERIFY(SUCCEEDED(hr));
+            QCOMPARE(button->pos(), QPoint(x, y));
+            ia2Component->Release();
+
+            /***** Test IAccessibleAction *****/
+            IAccessibleAction *ia2Action = 0;
+            hr = pIA2->QueryInterface(IID_IAccessibleAction, (void**)&ia2Action);
+            QVERIFY(SUCCEEDED(hr));
+            QVERIFY(ia2Action);
+            long nActions;
+            ia2Action->nActions(&nActions);
+            QVERIFY(nActions >= 1); // "Press" and "SetFocus"
+            BSTR actionName;
+            ia2Action->get_name(0, &actionName);
+            QString name((QChar*)actionName);
+            QCOMPARE(name, QAccessibleActionInterface::pressAction());
+            ia2Action->Release();
+
+            // Done testing
+            pIA2->Release();
+        }
+        pService->Release();
+    }
+#endif
+    iacc->Release();
+
+    QTestAccessibility::clearEvents();
+#endif
 }
 
 QTEST_MAIN(tst_QAccessibility)
