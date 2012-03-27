@@ -691,7 +691,7 @@ bool QTranslatorPrivate::do_load(const uchar *data, int len)
         data += 4;
         if (!tag || !blockLen)
             break;
-        if (data + blockLen > end) {
+        if (end - data < blockLen) {
             ok = false;
             break;
         }
