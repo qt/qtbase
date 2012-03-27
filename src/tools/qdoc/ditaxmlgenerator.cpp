@@ -5737,7 +5737,7 @@ Node* DitaXmlGenerator::collectNodesByTypeAndSubtype(const InnerNode* parent)
         if (!child || child->isInternal() || child->doc().isEmpty())
             continue;
 
-        if (child->name() == "index.html") {
+        if (child->name() == "index.html" || child->name() == "index") {
             rootPageNode = child;
         }
 
