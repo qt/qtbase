@@ -106,14 +106,12 @@ static void elfHash_continue(const char *name, uint &h)
     const uchar *k;
     uint g;
 
-    if (name) {
-        k = (const uchar *) name;
-        while (*k) {
-            h = (h << 4) + *k++;
-            if ((g = (h & 0xf0000000)) != 0)
-                h ^= g >> 24;
-            h &= ~g;
-        }
+    k = (const uchar *) name;
+    while (*k) {
+        h = (h << 4) + *k++;
+        if ((g = (h & 0xf0000000)) != 0)
+            h ^= g >> 24;
+        h &= ~g;
     }
 }
 
