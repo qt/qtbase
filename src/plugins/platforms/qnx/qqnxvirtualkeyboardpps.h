@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2012 Research In Motion
+** Copyright (C) 2011 - 2012 Research In Motion
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,47 +39,62 @@
 **
 ****************************************************************************/
 
-#ifndef QQNXBPSEVENTFILTER_H
-#define QQNXBPSEVENTFILTER_H
+#ifndef VIRTUALKEYBOARDPPS_H_
+#define VIRTUALKEYBOARDPPS_H_
 
-#include <QObject>
+#include "qqnxabstractvirtualkeyboard.h"
 
-struct bps_event_t;
+#include <sys/pps.h>
 
 QT_BEGIN_NAMESPACE
 
-class QAbstractEventDispatcher;
-class QQnxNavigatorEventHandler;
-class QQnxScreen;
-class QQnxScreenEventHandler;
-class QQnxVirtualKeyboardBps;
+class QSocketNotifier;
 
-class QQnxBpsEventFilter : public QObject
+class QQnxVirtualKeyboardPps : public QQnxAbstractVirtualKeyboard
 {
     Q_OBJECT
 public:
-    QQnxBpsEventFilter(QQnxNavigatorEventHandler *navigatorEventHandler,
-                       QQnxScreenEventHandler *screenEventHandler,
-                       QQnxVirtualKeyboardBps *virtualKeyboard, QObject *parent = 0);
-    ~QQnxBpsEventFilter();
+    QQnxVirtualKeyboardPps();
+    ~QQnxVirtualKeyboardPps();
 
-    void installOnEventDispatcher(QAbstractEventDispatcher *dispatcher);
+    bool showKeyboard();
+    bool hideKeyboard();
 
-    void registerForScreenEvents(QQnxScreen *screen);
-    void unregisterForScreenEvents(QQnxScreen *screen);
+public Q_SLOTS:
+    void start();
+
+protected:
+    void applyKeyboardMode(KeyboardMode mode);
+
+private Q_SLOTS:
+    void ppsDataReady();
 
 private:
-    static bool dispatcherEventFilter(void *message);
-    bool bpsEventFilter(bps_event_t *event);
+    // Will be called internally if needed.
+    bool connect();
+    void close();
+    bool queryPPSInfo();
+    void handleKeyboardInfoMessage();
 
-    bool handleNavigatorEvent(bps_event_t *event);
+    void applyKeyboardModeOptions(KeyboardMode mode);
+    void addDefaultModeOptions();
+    void addUrlModeOptions();
+    void addEmailModeOptions();
+    void addWebModeOptions();
+    void addNumPuncModeOptions();
+    void addSymbolModeOptions();
+    void addPhoneModeOptions();
+    void addPinModeOptions();
 
-private:
-    QQnxNavigatorEventHandler *m_navigatorEventHandler;
-    QQnxScreenEventHandler *m_screenEventHandler;
-    QQnxVirtualKeyboardBps *m_virtualKeyboard;
+    pps_encoder_t  *m_encoder;
+    pps_decoder_t  *m_decoder;
+    char           *m_buffer;
+    int             m_fd;
+    QSocketNotifier *m_readNotifier;
+
+    // Path to keyboardManager in PPS.
+    static const char *ms_PPSPath;
+    static const size_t ms_bufferSize;
 };
 
-QT_END_NAMESPACE
-
-#endif // QQNXBPSEVENTFILTER_H
+#endif /* VIRTUALKEYBOARDPPS_H_ */

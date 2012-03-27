@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qqnxvirtualkeyboard.h"
+#include "qqnxvirtualkeyboardpps.h"
 #include "qqnxscreen.h"
 
 #include <QtCore/QDebug>
@@ -58,13 +58,13 @@
 
 QT_BEGIN_NAMESPACE
 
-const char  *QQnxVirtualKeyboard::ms_PPSPath = "/pps/services/input/control";
-const size_t QQnxVirtualKeyboard::ms_bufferSize = 2048;
+const char  *QQnxVirtualKeyboardPps::ms_PPSPath = "/pps/services/input/control";
+const size_t QQnxVirtualKeyboardPps::ms_bufferSize = 2048;
 
 // Huge hack for keyboard shadow (see QNX PR 88400). Should be removed ASAP.
 #define KEYBOARD_SHADOW_HEIGHT 8
 
-QQnxVirtualKeyboard::QQnxVirtualKeyboard()
+QQnxVirtualKeyboardPps::QQnxVirtualKeyboardPps()
     : m_encoder(0),
       m_decoder(0),
       m_buffer(0),
@@ -73,26 +73,26 @@ QQnxVirtualKeyboard::QQnxVirtualKeyboard()
 {
 }
 
-QQnxVirtualKeyboard::~QQnxVirtualKeyboard()
+QQnxVirtualKeyboardPps::~QQnxVirtualKeyboardPps()
 {
     close();
 }
 
-void QQnxVirtualKeyboard::start()
+void QQnxVirtualKeyboardPps::start()
 {
-#ifdef QQNXVIRTUALKEYBOARD_DEBUG
+#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
     qDebug() << "QQNX: starting keyboard event processing";
 #endif
     if (!connect())
         return;
 }
 
-void QQnxVirtualKeyboard::applyKeyboardMode(KeyboardMode mode)
+void QQnxVirtualKeyboardPps::applyKeyboardMode(KeyboardMode mode)
 {
     applyKeyboardModeOptions(mode);
 }
 
-void QQnxVirtualKeyboard::close()
+void QQnxVirtualKeyboardPps::close()
 {
     delete m_readNotifier;
     m_readNotifier = 0;
@@ -118,7 +118,7 @@ void QQnxVirtualKeyboard::close()
     m_buffer = 0;
 }
 
-bool QQnxVirtualKeyboard::connect()
+bool QQnxVirtualKeyboardPps::connect()
 {
     close();
 
@@ -153,7 +153,7 @@ bool QQnxVirtualKeyboard::connect()
     return true;
 }
 
-bool QQnxVirtualKeyboard::queryPPSInfo()
+bool QQnxVirtualKeyboardPps::queryPPSInfo()
 {
     // Request info, requires id to regenerate res message.
     pps_encoder_add_string(m_encoder, "msg", "info");
@@ -169,11 +169,11 @@ bool QQnxVirtualKeyboard::queryPPSInfo()
     return true;
 }
 
-void QQnxVirtualKeyboard::ppsDataReady()
+void QQnxVirtualKeyboardPps::ppsDataReady()
 {
     ssize_t nread = qt_safe_read(m_fd, m_buffer, ms_bufferSize - 1);
 
-#ifdef QQNXVIRTUALKEYBOARD_DEBUG
+#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
     qDebug() << "QQNX: keyboardMessage size: " << nread;
 #endif
     if (nread < 0){
@@ -196,7 +196,7 @@ void QQnxVirtualKeyboard::ppsDataReady()
     m_buffer[nread] = 0;
     pps_decoder_parse_pps_str(m_decoder, m_buffer);
     pps_decoder_push(m_decoder, NULL);
-#ifdef QQNXVIRTUALKEYBOARD_DEBUG
+#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
     pps_decoder_dump_tree(m_decoder, stderr);
 #endif
 
@@ -225,7 +225,7 @@ void QQnxVirtualKeyboard::ppsDataReady()
         qCritical("QQnxVirtualKeyboard: Unexpected keyboard PPS message type");
 }
 
-void QQnxVirtualKeyboard::handleKeyboardInfoMessage()
+void QQnxVirtualKeyboardPps::handleKeyboardInfoMessage()
 {
     int newHeight = 0;
     const char *value;
@@ -261,14 +261,14 @@ void QQnxVirtualKeyboard::handleKeyboardInfoMessage()
     const QLocale locale = QLocale(languageId + QLatin1Char('_') + countryId);
     setLocale(locale);
 
-#ifdef QQNXVIRTUALKEYBOARD_DEBUG
+#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
     qDebug() << "QQNX: handleKeyboardInfoMessage size=" << newHeight << "locale=" << locale;
 #endif
 }
 
-bool QQnxVirtualKeyboard::showKeyboard()
+bool QQnxVirtualKeyboardPps::showKeyboard()
 {
-#ifdef QQNXVIRTUALKEYBOARD_DEBUG
+#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
     qDebug() << "QQNX: showKeyboard()";
 #endif
 
@@ -300,9 +300,9 @@ bool QQnxVirtualKeyboard::showKeyboard()
     return true;
 }
 
-bool QQnxVirtualKeyboard::hideKeyboard()
+bool QQnxVirtualKeyboardPps::hideKeyboard()
 {
-#ifdef QQNXVIRTUALKEYBOARD_DEBUG
+#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
     qDebug() << "QQNX: hideKeyboard()";
 #endif
 
@@ -332,7 +332,7 @@ bool QQnxVirtualKeyboard::hideKeyboard()
     return true;
 }
 
-void QQnxVirtualKeyboard::applyKeyboardModeOptions(KeyboardMode mode)
+void QQnxVirtualKeyboardPps::applyKeyboardModeOptions(KeyboardMode mode)
 {
     // Try to connect.
     if (m_fd == -1 && !connect())
@@ -379,49 +379,49 @@ void QQnxVirtualKeyboard::applyKeyboardModeOptions(KeyboardMode mode)
     pps_encoder_reset(m_encoder);
 }
 
-void QQnxVirtualKeyboard::addDefaultModeOptions()
+void QQnxVirtualKeyboardPps::addDefaultModeOptions()
 {
     pps_encoder_add_string(m_encoder, "enter", "enter.default");
     pps_encoder_add_string(m_encoder, "type", "default");
 }
 
-void QQnxVirtualKeyboard::addUrlModeOptions()
+void QQnxVirtualKeyboardPps::addUrlModeOptions()
 {
     pps_encoder_add_string(m_encoder, "enter", "enter.default");
     pps_encoder_add_string(m_encoder, "type", "url");
 }
 
-void QQnxVirtualKeyboard::addEmailModeOptions()
+void QQnxVirtualKeyboardPps::addEmailModeOptions()
 {
     pps_encoder_add_string(m_encoder, "enter", "enter.default");
     pps_encoder_add_string(m_encoder, "type", "email");
 }
 
-void QQnxVirtualKeyboard::addWebModeOptions()
+void QQnxVirtualKeyboardPps::addWebModeOptions()
 {
     pps_encoder_add_string(m_encoder, "enter", "enter.default");
     pps_encoder_add_string(m_encoder, "type", "web");
 }
 
-void QQnxVirtualKeyboard::addNumPuncModeOptions()
+void QQnxVirtualKeyboardPps::addNumPuncModeOptions()
 {
     pps_encoder_add_string(m_encoder, "enter", "enter.default");
     pps_encoder_add_string(m_encoder, "type", "numPunc");
 }
 
-void QQnxVirtualKeyboard::addPhoneModeOptions()
+void QQnxVirtualKeyboardPps::addPhoneModeOptions()
 {
     pps_encoder_add_string(m_encoder, "enter", "enter.default");
     pps_encoder_add_string(m_encoder, "type", "phone");
 }
 
-void QQnxVirtualKeyboard::addPinModeOptions()
+void QQnxVirtualKeyboardPps::addPinModeOptions()
 {
     pps_encoder_add_string(m_encoder, "enter", "enter.default");
     pps_encoder_add_string(m_encoder, "type", "pin");
 }
 
-void QQnxVirtualKeyboard::addSymbolModeOptions()
+void QQnxVirtualKeyboardPps::addSymbolModeOptions()
 {
     pps_encoder_add_string(m_encoder, "enter", "enter.default");
     pps_encoder_add_string(m_encoder, "type", "symbol");

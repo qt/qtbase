@@ -84,11 +84,13 @@ contains(QT_CONFIG, opengles2) {
 CONFIG(blackberry) {
     SOURCES += qqnxnavigatorbps.cpp \
                qqnxeventdispatcher_blackberry.cpp \
-               qqnxbpseventfilter.cpp
+               qqnxbpseventfilter.cpp \
+               qqnxvirtualkeyboardbps.cpp
 
     HEADERS += qqnxnavigatorbps.h \
                qqnxeventdispatcher_blackberry.h \
-               qqnxbpseventfilter.h
+               qqnxbpseventfilter.h \
+               qqnxvirtualkeyboardbps.h
 
     LIBS += -lbps
 }
@@ -98,12 +100,12 @@ CONFIG(qqnx_pps) {
 
     SOURCES += qqnxnavigatorpps.cpp \
                qqnxnavigatoreventnotifier.cpp \
-               qqnxvirtualkeyboard.cpp \
+               qqnxvirtualkeyboardpps.cpp \
                qqnxclipboard.cpp
 
     HEADERS += qqnxnavigatorpps.h \
                qqnxnavigatoreventnotifier.h \
-               qqnxvirtualkeyboard.h \
+               qqnxvirtualkeyboardpps.h \
                qqnxclipboard.h
 
     LIBS += -lpps -lclipboard

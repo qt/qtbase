@@ -54,13 +54,14 @@
 #if defined(Q_OS_BLACKBERRY)
 #include "qqnxbpseventfilter.h"
 #include "qqnxnavigatorbps.h"
+#include "qqnxvirtualkeyboardbps.h"
 #elif defined(QQNX_PPS)
 #include "qqnxnavigatorpps.h"
+#include "qqnxvirtualkeyboardpps.h"
 #endif
 
 #if defined(QQNX_PPS)
 #  include "qqnxnavigatoreventnotifier.h"
-#  include "qqnxvirtualkeyboard.h"
 #  include "qqnxclipboard.h"
 
 #  if defined(QQNX_IMF)
@@ -159,20 +160,14 @@ QQnxIntegration::QQnxIntegration()
     m_screenEventThread->start();
 #endif
 
-#if defined(QQNX_PPS)
+    // Not on BlackBerry, it has specialised event dispatcher which also handles virtual keyboard events
+#if !defined(Q_OS_BLACKBERRY) && defined(QQNX_PPS)
     // Create/start the keyboard class.
-    m_virtualKeyboard = new QQnxVirtualKeyboard();
+    m_virtualKeyboard = new QQnxVirtualKeyboardPps();
 
     // delay invocation of start() to the time the event loop is up and running
     // needed to have the QThread internals of the main thread properly initialized
     QMetaObject::invokeMethod(m_virtualKeyboard, "start", Qt::QueuedConnection);
-
-    // TODO check if we need to do this for all screens or only the primary one
-    QObject::connect(m_virtualKeyboard, SIGNAL(heightChanged(int)),
-                     primaryDisplay(), SLOT(keyboardHeightChanged(int)));
-
-    // Set up the input context
-    m_inputContext = new QQnxInputContext(*m_virtualKeyboard);
 #endif
 
 #if defined(Q_OS_BLACKBERRY)
@@ -186,12 +181,26 @@ QQnxIntegration::QQnxIntegration()
         m_services = new QQnxServices(m_navigator);
 
 #if defined(Q_OS_BLACKBERRY)
-    m_bpsEventFilter = new QQnxBpsEventFilter(m_navigatorEventHandler, m_screenEventHandler);
+    QQnxVirtualKeyboardBps* virtualKeyboardBps = new QQnxVirtualKeyboardBps;
+    m_bpsEventFilter = new QQnxBpsEventFilter(m_navigatorEventHandler, m_screenEventHandler, virtualKeyboardBps);
     Q_FOREACH (QQnxScreen *screen, m_screens)
         m_bpsEventFilter->registerForScreenEvents(screen);
 
     m_bpsEventFilter->installOnEventDispatcher(m_eventDispatcher);
+
+    m_virtualKeyboard = virtualKeyboardBps;
 #endif
+
+    if (m_virtualKeyboard) {
+        // TODO check if we need to do this for all screens or only the primary one
+        QObject::connect(m_virtualKeyboard, SIGNAL(heightChanged(int)),
+                         primaryDisplay(), SLOT(keyboardHeightChanged(int)));
+
+#if defined(QQNX_PPS)
+        // Set up the input context
+        m_inputContext = new QQnxInputContext(*m_virtualKeyboard);
+#endif
+    }
 
 }
 

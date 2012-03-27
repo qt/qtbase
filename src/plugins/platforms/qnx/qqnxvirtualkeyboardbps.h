@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2012 Research In Motion
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,63 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef VIRTUALKEYBOARD_H_
-#define VIRTUALKEYBOARD_H_
+#ifndef QQNXVIRTUALKEYBOARDBPS_H
+#define QQNXVIRTUALKEYBOARDBPS_H
 
 #include "qqnxabstractvirtualkeyboard.h"
 
-#include <sys/pps.h>
+struct bps_event_t;
 
 QT_BEGIN_NAMESPACE
 
-class QSocketNotifier;
-
-/* Shamelessly copied from the browser - this should be rewritten once we have a proper PPS wrapper class */
-class QQnxVirtualKeyboard : public QQnxAbstractVirtualKeyboard
+class QQnxVirtualKeyboardBps : public QQnxAbstractVirtualKeyboard
 {
     Q_OBJECT
 public:
-    QQnxVirtualKeyboard();
-    ~QQnxVirtualKeyboard();
+    explicit QQnxVirtualKeyboardBps(QObject *parent = 0);
+
+    bool handleEvent(bps_event_t *event);
 
     bool showKeyboard();
     bool hideKeyboard();
 
-public Q_SLOTS:
-    void start();
-
 protected:
     void applyKeyboardMode(KeyboardMode mode);
 
-private Q_SLOTS:
-    void ppsDataReady();
-
 private:
-    // Will be called internally if needed.
-    bool connect();
-    void close();
-    bool queryPPSInfo();
-    void handleKeyboardInfoMessage();
-
-    void applyKeyboardModeOptions(KeyboardMode mode);
-    void addDefaultModeOptions();
-    void addUrlModeOptions();
-    void addEmailModeOptions();
-    void addWebModeOptions();
-    void addNumPuncModeOptions();
-    void addSymbolModeOptions();
-    void addPhoneModeOptions();
-    void addPinModeOptions();
-
-    pps_encoder_t  *m_encoder;
-    pps_decoder_t  *m_decoder;
-    char           *m_buffer;
-    int             m_fd;
-    QSocketNotifier *m_readNotifier;
-
-    // Path to keyboardManager in PPS.
-    static const char *ms_PPSPath;
-    static const size_t ms_bufferSize;
+    bool handleLocaleEvent(bps_event_t *event);
+    bool handleVirtualKeyboardEvent(bps_event_t *event);
 };
 
-#endif /* VIRTUALKEYBOARD_H_ */
+QT_END_NAMESPACE
+
+#endif // QQNXVIRTUALKEYBOARDBPS_H
