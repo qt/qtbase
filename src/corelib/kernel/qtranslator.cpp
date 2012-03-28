@@ -130,14 +130,82 @@ static uint elfHash(const char *name)
     return hash;
 }
 
+/*
+   \internal
+
+   Determines whether \a rules are valid "numerus rules". Test input with this
+   function before calling numerusHelper, below.
+ */
+static bool isValidNumerusRules(const uchar *rules, uint rulesSize)
+{
+    // Disabled computation of maximum numerus return value
+    // quint32 numerus = 0;
+
+    if (rulesSize == 0)
+        return true;
+
+    quint32 offset = 0;
+    do {
+        uchar opcode = rules[offset];
+        uchar op = opcode & Q_OP_MASK;
+
+        if (opcode & 0x80)
+            return false; // Bad op
+
+        if (++offset == rulesSize)
+            return false; // Missing operand
+
+        // right operand
+        ++offset;
+
+        switch (op)
+        {
+        case Q_EQ:
+        case Q_LT:
+        case Q_LEQ:
+            break;
+
+        case Q_BETWEEN:
+            if (offset != rulesSize) {
+                // third operand
+                ++offset;
+                break;
+            }
+            return false; // Missing operand
+
+        default:
+            return false; // Bad op (0)
+        }
+
+        // ++numerus;
+        if (offset == rulesSize)
+            return true;
+
+    } while (((rules[offset] == Q_AND)
+                || (rules[offset] == Q_OR)
+                || (rules[offset] == Q_NEWRULE))
+            && ++offset != rulesSize);
+
+    // Bad op
+    return false;
+}
+
+/*
+   \internal
+
+   This function does no validation of input and assumes it is well-behaved,
+   these assumptions can be checked with isValidNumerusRules, above.
+
+   Determines which translation to use based on the value of \a n. The return
+   value is an index identifying the translation to be used.
+
+   \a rules is a character array of size \a rulesSize containing bytecode that
+   operates on the value of \a n and ultimately determines the result.
+
+   This function has O(1) space and O(rulesSize) time complexity.
+ */
 static int numerusHelper(int n, const uchar *rules, uint rulesSize)
 {
-#define CHECK_RANGE \
-    do { \
-        if (i >= rulesSize) \
-            return -1; \
-    } while (0)
-
     int result = 0;
     uint i = 0;
 
@@ -152,8 +220,6 @@ static int numerusHelper(int n, const uchar *rules, uint rulesSize)
 
             for (;;) {
                 bool truthValue = true;
-
-                CHECK_RANGE;
                 int opcode = rules[i++];
 
                 int leftOperand = n;
@@ -167,13 +233,9 @@ static int numerusHelper(int n, const uchar *rules, uint rulesSize)
                 }
 
                 int op = opcode & Q_OP_MASK;
-
-                CHECK_RANGE;
                 int rightOperand = rules[i++];
 
                 switch (op) {
-                default:
-                    return -1;
                 case Q_EQ:
                     truthValue = (leftOperand == rightOperand);
                     break;
@@ -183,9 +245,8 @@ static int numerusHelper(int n, const uchar *rules, uint rulesSize)
                 case Q_LEQ:
                     truthValue = (leftOperand <= rightOperand);
                     break;
-		case Q_BETWEEN:
+                case Q_BETWEEN:
                     int bottom = rightOperand;
-                    CHECK_RANGE;
                     int top = rules[i++];
                     truthValue = (leftOperand >= bottom && leftOperand <= top);
                 }
@@ -215,10 +276,10 @@ static int numerusHelper(int n, const uchar *rules, uint rulesSize)
         if (i == rulesSize)
             return result;
 
-        if (rules[i++] != Q_NEWRULE)
-            break;
+        i++; // Q_NEWRULE
     }
-    return -1;
+
+    Q_ASSERT(false);
 }
 
 class QTranslatorPrivate : public QObjectPrivate
@@ -737,6 +798,8 @@ bool QTranslatorPrivate::do_load(const uchar *data, int len)
     }
 
     if (!offsetArray || !messageArray)
+        ok = false;
+    if (!isValidNumerusRules(numerusRulesArray, numerusRulesLength))
         ok = false;
 
     if (!ok) {
