@@ -108,7 +108,7 @@ QQnxIntegration::QQnxIntegration()
     QQnxGLContext::initialize();
 
     // Create/start event thread
-    m_eventThread = new QQnxEventThread(m_screenContext, *QQnxScreen::primaryDisplay());
+    m_eventThread = new QQnxEventThread(m_screenContext);
     m_eventThread->start();
 
     // Create/start navigator event handler
