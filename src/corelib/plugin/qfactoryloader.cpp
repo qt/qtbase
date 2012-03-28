@@ -188,7 +188,8 @@ void QFactoryLoader::update()
             }
 
             if (!metaDataOk) {
-                library->unload();
+                if (library->compatPlugin)
+                    library->unload();
                 library->release();
                 continue;
             }
