@@ -4976,6 +4976,11 @@ void DitaXmlGenerator::replaceTypesWithLinks(const Node* n,
                     else
                         addLink(linkForNode(tn,parent),arg,DT_apiRelation);
                 }
+                else {
+                    // Write simple arguments, like void and bool,
+                    // which do not have a Qt defined target.
+                    writeCharacters(arg.toString());
+                }
             }
         }
         else {
