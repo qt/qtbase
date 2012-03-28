@@ -365,6 +365,30 @@ NSWindow * QCocoaWindow::createNSWindow()
 
     NSUInteger styleMask;
     NSWindow *createdWindow = 0;
+    NSInteger windowLevel = -1;
+
+    if (type == Qt::Tool) {
+        windowLevel = NSFloatingWindowLevel;
+    } else if ((type & Qt::Popup) == Qt::Popup) {
+        // styleMask = NSBorderlessWindowMask;
+        windowLevel = NSPopUpMenuWindowLevel;
+
+        // Popup should be in at least the same level as its parent.
+        const QWindow * const transientParent = window()->transientParent();
+        const QCocoaWindow * const transientParentWindow = transientParent ? static_cast<QCocoaWindow *>(transientParent->handle()) : 0;
+        if (transientParentWindow)
+            windowLevel = qMax([transientParentWindow->m_nsWindow level], windowLevel);
+    }
+
+    // StayOnTop window should appear above Tool windows.
+    if (flags & Qt::WindowStaysOnTopHint)
+        windowLevel = NSPopUpMenuWindowLevel;
+    // Tooltips should appear above StayOnTop windows.
+    if (type == Qt::ToolTip)
+        windowLevel = NSScreenSaverWindowLevel;
+    // All other types are Normal level.
+    if (windowLevel == -1)
+        windowLevel = NSNormalWindowLevel;
 
     // Use NSPanel for popup-type windows. (Popup, Tool, ToolTip, SplashScreen)
     if ((type & Qt::Popup) == Qt::Popup) {
@@ -404,6 +428,9 @@ NSWindow * QCocoaWindow::createNSWindow()
 
         createdWindow = window;
     }
+
+    [createdWindow setLevel:windowLevel];
+
     return createdWindow;
 }
 
