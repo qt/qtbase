@@ -62,6 +62,10 @@
 #include <QtCore/qconfig.h>
 #endif
 
+/* These two macros makes it possible to turn the builtin line expander into a
+ * string literal. */
+#define QT_STRINGIFY2(x) #x
+#define QT_STRINGIFY(x) QT_STRINGIFY2(x)
 
 #include <QtCore/qsystemdetection.h>
 #include <QtCore/qcompilerdetection.h>
@@ -833,17 +837,7 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 #   if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC)
 #      define Q_FUNC_INFO __FILE__ "(line number unavailable)"
 #   else
-        /* These two macros makes it possible to turn the builtin line expander into a
-         * string literal. */
-#       define QT_STRINGIFY2(x) #x
-#       define QT_STRINGIFY(x) QT_STRINGIFY2(x)
 #       define Q_FUNC_INFO __FILE__ ":" QT_STRINGIFY(__LINE__)
-#   endif
-    /* The MIPSpro and RVCT compilers postpones macro expansion,
-       and therefore macros must be in scope when being used. */
-#   if !defined(Q_CC_MIPS) && !defined(Q_CC_RVCT)
-#       undef QT_STRINGIFY2
-#       undef QT_STRINGIFY
 #   endif
 #endif
 
