@@ -585,7 +585,6 @@ static void init_plugins(const QList<QByteArray> &pluginList)
 {
     for (int i = 0; i < pluginList.count(); ++i) {
         QByteArray pluginSpec = pluginList.at(i);
-        qDebug() << "init_plugins" << i << pluginSpec;
         int colonPos = pluginSpec.indexOf(':');
         QObject *plugin;
         if (colonPos < 0)
@@ -593,7 +592,6 @@ static void init_plugins(const QList<QByteArray> &pluginList)
         else
             plugin = QGenericPluginFactory::create(QLatin1String(pluginSpec.mid(0, colonPos)),
                                                    QLatin1String(pluginSpec.mid(colonPos+1)));
-        qDebug() << "   created" << plugin;
         if (plugin)
             QGuiApplicationPrivate::generic_plugin_list.append(plugin);
     }
