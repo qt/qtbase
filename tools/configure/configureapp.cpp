@@ -927,8 +927,6 @@ void Configure::parseCmdLine()
             sybase = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("SYBASE_LIBS=")) {
             sybaseLibs = configCmdLine.at(i);
-        } else if (configCmdLine.at(i) == "-qpa") {
-            dictionary["QPA"] = "yes";
         }
 
         else if ((configCmdLine.at(i) == "-override-version") || (configCmdLine.at(i) == "-version-override")){
@@ -1482,7 +1480,7 @@ bool Configure::displayHelp()
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
                     "[-no-webkit] [-webkit] [-webkit-debug]\n"
-                    "[-no-directwrite] [-directwrite] [-qpa] [-no-widgets] [-icu]\n\n", 0, 7);
+                    "[-no-directwrite] [-directwrite] [-no-widgets] [-icu]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -2653,13 +2651,14 @@ void Configure::generateQConfigPri()
             configStream << " incredibuild_xge";
         if (dictionary["PLUGIN_MANIFESTS"] == "no")
             configStream << " no_plugin_manifest";
-        if (dictionary["QPA"] == "yes")
-            configStream << " qpa";
         if (dictionary["CROSS_COMPILE"] == "yes")
             configStream << " cross_compile";
 
         if (dictionary["DIRECTWRITE"] == "yes")
             configStream << "directwrite";
+
+        // ### For compatibility only, should be removed later.
+        configStream << " qpa";
 
         configStream << endl;
         configStream << "QT_ARCH = " << dictionary["QT_ARCH"] << endl;
@@ -2797,8 +2796,8 @@ void Configure::generateConfigfiles()
             tmpStream << endl;
         }
 
-        if (dictionary[ "QPA" ] == "yes")
-            tmpStream << endl << "#define Q_WS_QPA" << endl;
+        // ### For compatibility only, should be removed later.
+        tmpStream << endl << "#define Q_WS_QPA" << endl;
 
         tmpStream << endl << "// Compile time features" << endl;
 
