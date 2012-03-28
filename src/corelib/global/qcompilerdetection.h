@@ -652,10 +652,10 @@
 #  define Q_UNLIKELY(x) (x)
 #endif
 #ifndef Q_ASSUME
-#  define Q_ASSUME(expr)
+#  define Q_ASSUME(expr) qt_noop()
 #endif
 #ifndef Q_UNREACHABLE
-#  define Q_UNREACHABLE()
+#  define Q_UNREACHABLE() qt_noop()
 #endif
 #ifndef Q_ALLOC_SIZE
 #  define Q_ALLOC_SIZE(x)
