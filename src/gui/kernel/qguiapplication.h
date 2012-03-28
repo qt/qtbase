@@ -88,6 +88,8 @@ public:
 
     static QString platformName();
 
+    static QWindow *modalWindow();
+
 #ifdef QT_DEPRECATED
     static QT_DEPRECATED QWindow *activeWindow() { return focusWindow(); }
 #endif

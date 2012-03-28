@@ -79,6 +79,7 @@ public:
         , windowOrientation(Qt::PrimaryOrientation)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
         , modality(Qt::NonModal)
+        , blockedByModalWindow(false)
         , transientParent(0)
         , screen(0)
     {
@@ -120,6 +121,8 @@ public:
     QSize sizeIncrement;
 
     Qt::WindowModality modality;
+    bool blockedByModalWindow;
+
     QPointer<QWindow> transientParent;
     QScreen *screen;
 };

@@ -7080,12 +7080,6 @@ void QWidgetPrivate::show_helper()
     QShowEvent showEvent;
     QApplication::sendEvent(q, &showEvent);
 
-    if (!isEmbedded && q->isModal() && q->isWindow())
-        // QApplicationPrivate::enterModal *before* show, otherwise the initial
-        // stacking might be wrong
-        QApplicationPrivate::enterModal(q);
-
-
     show_sys();
 
     if (!isEmbedded && q->windowType() == Qt::Popup)
@@ -7140,12 +7134,6 @@ void QWidgetPrivate::hide_helper()
 
     if (!isEmbedded && (q->windowType() == Qt::Popup))
         qApp->d_func()->closePopup(q);
-
-    // Move test modal here.  Otherwise, a modal dialog could get
-    // destroyed and we lose all access to its parent because we haven't
-    // left modality.  (Eg. modal Progress Dialog)
-    if (!isEmbedded && q->isModal() && q->isWindow())
-        QApplicationPrivate::leaveModal(q);
 
 #if defined(Q_WS_WIN)
     if (q->isWindow() && !(q->windowType() == Qt::Popup) && q->parentWidget()
@@ -10047,9 +10035,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_ShowModal:
         if (!on) {
-            if (isVisible())
-                QApplicationPrivate::leaveModal(this);
-            // reset modality type to Modeless when clearing WA_ShowModal
+            // reset modality type to NonModal when clearing WA_ShowModal
             data->window_modality = Qt::NonModal;
         } else if (data->window_modality == Qt::NonModal) {
             // determine the modality type if it hasn't been set prior
@@ -10067,10 +10053,9 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             data->window_modality = (w && w->testAttribute(Qt::WA_GroupLeader))
                                     ? Qt::WindowModal
                                     : Qt::ApplicationModal;
-            // Some window managers does not allow us to enter modal after the
-            // window is showing. Therefore, to be consistent, we cannot call
-            // QApplicationPrivate::enterModal(this) here. The window must be
-            // hidden before changing modality.
+            // Some window managers do not allow us to enter modality after the
+            // window is visible.The window must be hidden before changing the
+            // windowModality property and then reshown.
         }
         if (testAttribute(Qt::WA_WState_Created)) {
             // don't call setModal_sys() before create_sys()

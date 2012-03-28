@@ -241,6 +241,13 @@ void QWindow::setVisible(bool visible)
         QGuiApplication::sendEvent(this, &showEvent);
     }
 
+    if (isModal()) {
+        if (visible)
+            QGuiApplicationPrivate::showModalWindow(this);
+        else
+            QGuiApplicationPrivate::hideModalWindow(this);
+    }
+
     d->platformWindow->setVisible(visible);
 
     if (!visible) {

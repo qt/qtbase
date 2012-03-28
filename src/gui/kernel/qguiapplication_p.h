@@ -150,7 +150,11 @@ public:
     static QGuiApplicationPrivate *instance() { return self; }
 
     static QString *platform_name;
-    static bool app_do_modal;
+
+    QWindowList modalWindowList;
+    static void showModalWindow(QWindow *window);
+    static void hideModalWindow(QWindow *window);
+    virtual bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const;
 
     static Qt::MouseButtons buttons;
     static ulong mousePressTime;

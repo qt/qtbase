@@ -114,7 +114,6 @@ enum ApplicationResourceFlags
 static unsigned applicationResourceFlags = 0;
 
 QString *QGuiApplicationPrivate::platform_name = 0;
-bool QGuiApplicationPrivate::app_do_modal = false;
 
 QPalette *QGuiApplicationPrivate::app_pal = 0;        // default application palette
 
@@ -381,6 +380,132 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
 {
     self = this;
     application_type = QCoreApplication::GuiClient;
+}
+
+/*!
+    Returns the most recently shown modal window. If no modal windows are
+    visible, this function returns zero.
+
+    A modal window is a window which has its
+    \l{QWindow::windowModality}{windowModality} property set to Qt::WindowModal
+    or Qt::ApplicationModal. A modal window must be closed before the user can
+    continue with other parts of the program.
+
+    Modal window are organized in a stack. This function returns the modal
+    window at the top of the stack.
+
+    \sa Qt::WindowModality, QWindow::setWindowModality()
+*/
+QWindow *QGuiApplication::modalWindow()
+{
+    if (QGuiApplicationPrivate::self->modalWindowList.isEmpty())
+        return 0;
+    return QGuiApplicationPrivate::self->modalWindowList.first();
+}
+
+void QGuiApplicationPrivate::showModalWindow(QWindow *window)
+{
+    self->modalWindowList.prepend(window);
+
+    QEvent e(QEvent::WindowBlocked);
+    QWindowList windows = QGuiApplication::topLevelWindows();
+    for (int i = 0; i < windows.count(); ++i) {
+        QWindow *window = windows.at(i);
+        if (!window->d_func()->blockedByModalWindow && window->windowType() != Qt::Tool && self->isWindowBlocked(window)) {
+            window->d_func()->blockedByModalWindow = true;
+            QGuiApplication::sendEvent(window, &e);
+        }
+    }
+}
+
+void QGuiApplicationPrivate::hideModalWindow(QWindow *window)
+{
+    self->modalWindowList.removeAll(window);
+
+    QEvent e(QEvent::WindowUnblocked);
+    QWindowList windows = QGuiApplication::topLevelWindows();
+    for (int i = 0; i < windows.count(); ++i) {
+        QWindow *window = windows.at(i);
+        if (window->d_func()->blockedByModalWindow && window->windowType() != Qt::Tool && !self->isWindowBlocked(window)) {
+            window->d_func()->blockedByModalWindow = false;
+            QGuiApplication::sendEvent(window, &e);
+        }
+    }
+}
+
+/*
+    Returns true if \a window is blocked by a modal window. If \a
+    blockingWindow is non-zero, *blockingWindow will be set to the blocking
+    window (or to zero if \a window is not blocked).
+*/
+bool QGuiApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWindow) const
+{
+    QWindow *unused = 0;
+    if (!blockingWindow)
+        blockingWindow = &unused;
+
+    if (modalWindowList.isEmpty()) {
+        *blockingWindow = 0;
+        return false;
+    }
+
+    for (int i = 0; i < modalWindowList.count(); ++i) {
+        QWindow *modalWindow = modalWindowList.at(i);
+
+        {
+            // check if the modal window is our window or a (transient) parent of our window
+            QWindow *w = window;
+            while (w) {
+                if (w == modalWindow) {
+                    *blockingWindow = 0;
+                    return false;
+                }
+                QWindow *p = w->parent();
+                if (!p)
+                    p = w->transientParent();
+                w = p;
+            }
+        }
+
+        Qt::WindowModality windowModality = modalWindow->windowModality();
+        switch (windowModality) {
+        case Qt::ApplicationModal:
+        {
+            if (modalWindow != window) {
+                *blockingWindow = modalWindow;
+                return true;
+            }
+            break;
+        }
+        case Qt::WindowModal:
+        {
+            QWindow *w = window;
+            do {
+                QWindow *m = modalWindow;
+                do {
+                    if (m == w) {
+                        *blockingWindow = m;
+                        return true;
+                    }
+                    QWindow *p = m->parent();
+                    if (!p)
+                        p = m->transientParent();
+                    m = p;
+                } while (m);
+                QWindow *p = w->parent();
+                if (!p)
+                    p = w->transientParent();
+                w = p;
+            } while (w);
+            break;
+        }
+        default:
+            Q_ASSERT_X(false, "QGuiApplication", "internal error, a modal widget cannot be modeless");
+            break;
+        }
+    }
+    *blockingWindow = 0;
+    return false;
 }
 
 /*!
@@ -1058,6 +1183,11 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     }
 
     if (window) {
+        if (window->d_func()->blockedByModalWindow) {
+            // a modal window is blocking this window, don't allow mouse events through
+            return;
+        }
+
         QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers);
         ev.setTimestamp(e->timestamp);
 #ifndef QT_NO_CURSOR
@@ -1120,6 +1250,11 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
     QWindow *window = e->window.data();
 
     if (window) {
+        if (window->d_func()->blockedByModalWindow) {
+            // a modal window is blocking this window, don't allow wheel events through
+            return;
+        }
+
          QWheelEvent ev(e->localPos, e->globalPos, e->pixelDelta, e->angleDelta, e->qt4Delta, e->qt4Orientation, buttons, e->modifiers);
          ev.setTimestamp(e->timestamp);
          QGuiApplication::sendSpontaneousEvent(window, &ev);
@@ -1137,6 +1272,10 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
         window = QGuiApplication::activeWindow();
     if (!window)
         return;
+    if (window->d_func()->blockedByModalWindow) {
+        // a modal window is blocking this window, don't allow key events through
+        return;
+    }
 
     QKeyEventEx ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount,
                    e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers);
@@ -1148,6 +1287,10 @@ void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::En
 {
     if (!e->enter)
         return;
+    if (e->enter.data()->d_func()->blockedByModalWindow) {
+        // a modal window is blocking this window, don't allow enter events through
+        return;
+    }
 
     QEvent event(QEvent::Enter);
     QCoreApplication::sendSpontaneousEvent(e->enter.data(), &event);
@@ -1157,6 +1300,10 @@ void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Le
 {
     if (!e->leave)
         return;
+    if (e->leave.data()->d_func()->blockedByModalWindow) {
+        // a modal window is blocking this window, don't allow leave events through
+        return;
+    }
 
     QEvent event(QEvent::Leave);
     QCoreApplication::sendSpontaneousEvent(e->leave.data(), &event);
@@ -1271,6 +1418,10 @@ void QGuiApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::Cl
 {
     if (e->window.isNull())
         return;
+    if (e->window.data()->d_func()->blockedByModalWindow) {
+        // a modal window is blocking this window, don't allow close events through
+        return;
+    }
 
     QCloseEvent event;
     QGuiApplication::sendSpontaneousEvent(e->window.data(), &event);
@@ -1457,6 +1608,11 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         default:
             eventType = QEvent::TouchUpdate;
             break;
+        }
+
+        if (w->d_func()->blockedByModalWindow) {
+            // a modal window is blocking this window, don't allow touch events through
+            continue;
         }
 
         QTouchEvent touchEvent(eventType,

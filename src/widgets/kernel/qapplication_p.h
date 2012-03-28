@@ -198,10 +198,7 @@ public:
     static void dispatchEnterLeave(QWidget *enter, QWidget *leave);
 
     //modality
-    static void enterModal(QWidget*);
-    static void leaveModal(QWidget*);
-    static void enterModal_sys(QWidget*);
-    static void leaveModal_sys(QWidget*);
+    Q_DECL_OVERRIDE bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const;
     static bool isBlockedByModal(QWidget *widget);
     static bool modalState();
     static bool tryModalHelper(QWidget *widget, QWidget **rettop = 0);
@@ -278,10 +275,6 @@ public:
     static bool animate_toolbox;
     static bool widgetCount; // Coupled with -widgetcount switch
     static bool load_testability; // Coupled with -testability switch
-
-#ifdef Q_WS_MAC
-    static bool native_modal_dialog_active;
-#endif
 
     static void setSystemPalette(const QPalette &pal);
     static void setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash);
