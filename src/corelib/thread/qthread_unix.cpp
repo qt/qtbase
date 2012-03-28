@@ -90,7 +90,7 @@
 # endif
 #endif
 
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
 #include <sys/prctl.h>
 #endif
 
@@ -110,7 +110,8 @@ QT_BEGIN_NAMESPACE
 
 enum { ThreadPriorityResetFlag = 0x80000000 };
 
-#if defined(Q_OS_LINUX) && defined(__GLIBC__) && (defined(Q_CC_GNU) || defined(Q_CC_INTEL))
+#if defined(Q_OS_LINUX) && defined(__GLIBC__) && (defined(Q_CC_GNU) || defined(Q_CC_INTEL)) && !defined(QT_LINUXBASE)
+/* LSB doesn't have __thread, https://lsbbugs.linuxfoundation.org/show_bug.cgi?id=993 */
 #define HAVE_TLS
 #endif
 #if defined(Q_CC_XLC) || defined (Q_CC_SUN)
@@ -294,7 +295,7 @@ void *QThreadPrivate::start(void *arg)
     if (objectName.isEmpty())
         objectName = thr->metaObject()->className();
 
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
     prctl(PR_SET_NAME, (unsigned long)objectName.constData(), 0, 0, 0);
 #elif defined(Q_OS_MAC)
     pthread_setname_np(objectName.constData());
