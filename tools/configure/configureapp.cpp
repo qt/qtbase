@@ -958,7 +958,7 @@ void Configure::parseCmdLine()
             ++i;
             if (i == argCount)
                 break;
-            nobuildParts.removeAll(configCmdLine.at(i));
+            nobuildParts.append(configCmdLine.at(i));
         }
 
         // Directories ----------------------------------------------
