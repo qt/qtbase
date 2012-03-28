@@ -204,9 +204,9 @@ static bool isValidNumerusRules(const uchar *rules, uint rulesSize)
 
    This function has O(1) space and O(rulesSize) time complexity.
  */
-static int numerusHelper(int n, const uchar *rules, uint rulesSize)
+static uint numerusHelper(int n, const uchar *rules, uint rulesSize)
 {
-    int result = 0;
+    uint result = 0;
     uint i = 0;
 
     if (rulesSize == 0)
@@ -817,11 +817,10 @@ bool QTranslatorPrivate::do_load(const uchar *data, int len)
 }
 
 static QString getMessage(const uchar *m, const uchar *end, const char *context,
-                          const char *sourceText, const char *comment, int numerus)
+                          const char *sourceText, const char *comment, uint numerus)
 {
     const uchar *tn = 0;
     uint tn_length = 0;
-    int currentNumerus = -1;
 
     for (;;) {
         uchar tag = 0;
@@ -835,7 +834,7 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
             if (len % 1)
                 return QString();
             m += 4;
-            if (++currentNumerus == numerus) {
+            if (!numerus--) {
                 tn_length = len;
                 tn = m;
             }
@@ -925,7 +924,7 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
     if (!numItems)
         return QString();
 
-    int numerus = 0;
+    uint numerus = 0;
     if (n >= 0)
         numerus = numerusHelper(n, numerusRulesArray, numerusRulesLength);
 
