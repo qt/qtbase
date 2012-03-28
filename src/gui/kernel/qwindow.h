@@ -85,6 +85,7 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_DECLARE_PRIVATE(QWindow)
 
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
+    Q_PROPERTY(Qt::WindowModality windowModality READ windowModality WRITE setWindowModality NOTIFY windowModalityChanged)
     Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(int y READ y WRITE setY NOTIFY yChanged)
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
@@ -255,6 +256,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void backBufferReady();
     void screenChanged(QScreen *screen);
+    void windowModalityChanged(Qt::WindowModality windowModality);
 
     void xChanged(int arg);
     void yChanged(int arg);

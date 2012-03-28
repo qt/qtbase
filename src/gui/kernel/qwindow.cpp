@@ -363,6 +363,8 @@ bool QWindow::isTopLevel() const
     Returns whether the window is modal.
 
     A modal window prevents other windows from getting any input.
+
+    \sa QWindow::windowModality
 */
 bool QWindow::isModal() const
 {
@@ -370,25 +372,36 @@ bool QWindow::isModal() const
     return d->modality != Qt::NonModal;
 }
 
-/*!
-    Returns the window's modality.
+/*! \property QWindow::windowModality
+    \brief the modality of the window
 
-    \sa setWindowModality()
+    A modal window prevents other windows from receiving input events. Qt
+    supports two types of modality: Qt::WindowModal and Qt::ApplicationModal.
+
+    By default, this property is Qt::NonModal
+
+    \sa Qt::WindowModality
 */
+
 Qt::WindowModality QWindow::windowModality() const
 {
     Q_D(const QWindow);
     return d->modality;
 }
 
-/*!
-    Sets the window's modality to \a windowModality.
-*/
-void QWindow::setWindowModality(Qt::WindowModality windowModality)
+void QWindow::setWindowModality(Qt::WindowModality modality)
 {
     Q_D(QWindow);
-    d->modality = windowModality;
+    if (d->modality == modality)
+        return;
+    d->modality = modality;
+    emit windowModalityChanged(modality);
 }
+
+/*! \fn void QWindow::windowModalityChanged(Qt::WindowModality windowModality)
+
+    This signal is emitted when the Qwindow::windowModality property changes to \a windowModality.
+*/
 
 /*!
     Sets the window's surface \a format.
