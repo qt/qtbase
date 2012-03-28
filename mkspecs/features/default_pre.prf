@@ -4,35 +4,12 @@ CONFIG = lex yacc warn_on debug exceptions $$CONFIG
 !build_pass:exists($$_PRO_FILE_PWD_/sync.profile) {
     PRO_BASENAME = $$basename(_PRO_FILE_)
 
-    # Try to detect proper QTDIR path. We require QTDIR, as syncqt uses that to create qt_module.pri
-    # forwarding files. If we don't find QTDIR, we avoid creating the fwd files, since you then need
-    # to do a 'make install;' before you can use the module
-    # (ie. we don't use QT_INSTALL_DATA for fwd includes. This path needs a full copy)
-    isEmpty(QTDIR) {
-        QTDIR = $$(QTDIR)
-        isEmpty(QTDIR):QTDIR = $$QT_BUILD_TREE
-        isEmpty(QTDIR) { # figure out QTDIR based on qmake binary
-            QMAKE_BASED_QTDIR = $$dirname(QMAKE_QMAKE)
-            QTDIR = $$dirname(QMAKE_BASED_QTDIR)
-            unset(QMAKE_BASED_QTDIR)
-        }
-    }
-
-    QTFWD = -module-fwd $$OUT_PWD/module-paths/modules -cache-module-fwd
-    !isEmpty(QTDIR):exists($$QTDIR/.qmake.cache) {
-        # Only if QTDIR points to an actual build directory
-        # and this build directory is the install directory
-        # can we tell syncqt to do a -developer-build
-        win32 {
-            CMP_QDIR = $$upper($$QTDIR)
-            CMP_INSTALL_PREFIX = $$upper($$[QT_HOST_PREFIX])
-        } else {
-            CMP_QDIR = $$QTDIR
-            CMP_INSTALL_PREFIX = $$[QT_HOST_PREFIX]
-        }
-        contains(CMP_QDIR, $$CMP_INSTALL_PREFIX):QTFWD = -module-fwd $$QTDIR/mkspecs/modules -developer-build
-        unset(CMP_QDIR)
-        unset(CMP_INSTALL_PREFIX)
+    # If the install directory is a build directory, we tell syncqt to do a -developer-build.
+    QTDIR = $$[QT_HOST_DATA]
+    exists($$QTDIR/.qmake.cache) {
+        QTFWD = -module-fwd $$QTDIR/mkspecs/modules -developer-build
+    } else {
+        QTFWD = -module-fwd $$OUT_PWD/module-paths/modules -cache-module-fwd
     }
 
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
