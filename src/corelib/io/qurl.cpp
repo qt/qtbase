@@ -2197,24 +2197,44 @@ QByteArray QUrl::toAce(const QString &domain)
 */
 bool QUrl::operator <(const QUrl &url) const
 {
-    if (!d) return url.d;
-    if (d->scheme < url.d->scheme)
-        return true;
-    if (d->userName < url.d->userName)
-        return true;
-    if (d->password < url.d->password)
-        return true;
-    if (d->host < url.d->host)
-        return true;
-    if (d->port < url.d->port)
-        return true;
-    if (d->path < url.d->path)
-        return true;
-    if (d->query < url.d->query)
-        return true;
-    if (d->fragment < url.d->fragment)
-        return true;
-    return false;
+    if (!d || !url.d) {
+        bool thisIsEmpty = !d || d->isEmpty();
+        bool thatIsEmpty = !url.d || url.d->isEmpty();
+
+        // sort an empty URL first
+        return thisIsEmpty && !thatIsEmpty;
+    }
+
+    int cmp;
+    cmp = d->scheme.compare(url.d->scheme);
+    if (cmp != 0)
+        return cmp < 0;
+
+    cmp = d->userName.compare(url.d->userName);
+    if (cmp != 0)
+        return cmp < 0;
+
+    cmp = d->password.compare(url.d->password);
+    if (cmp != 0)
+        return cmp < 0;
+
+    cmp = d->host.compare(url.d->host);
+    if (cmp != 0)
+        return cmp < 0;
+
+    if (d->port != url.d->port)
+        return d->port < url.d->port;
+
+    cmp = d->path.compare(url.d->path);
+    if (cmp != 0)
+        return cmp < 0;
+
+    cmp = d->query.compare(url.d->query);
+    if (cmp != 0)
+        return cmp < 0;
+
+    cmp = d->fragment.compare(url.d->fragment);
+    return cmp < 0;
 }
 
 /*!
@@ -2223,8 +2243,12 @@ bool QUrl::operator <(const QUrl &url) const
 */
 bool QUrl::operator ==(const QUrl &url) const
 {
-    if (!d || !url.d)
-        return d == url.d;
+    if (!d && !url.d)
+        return true;
+    if (!d)
+        return url.d->isEmpty();
+    if (!url.d)
+        return d->isEmpty();
     return d->scheme == url.d->scheme &&
             d->userName == url.d->userName &&
             d->password == url.d->password &&

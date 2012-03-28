@@ -107,6 +107,8 @@ public:
 
     void parse(const QString &url, QUrl::ParsingMode parsingMode);
     void clear();
+    bool isEmpty() const
+    { return sectionIsPresent == 0 && port == -1 && path.isEmpty(); }
 
     // no QString scheme() const;
     void appendAuthority(QString &appendTo, QUrl::FormattingOptions options) const;

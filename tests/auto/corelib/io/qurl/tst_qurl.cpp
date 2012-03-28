@@ -66,6 +66,8 @@ private slots:
     void unc();
     void assignment();
     void comparison();
+    void comparison2_data();
+    void comparison2();
     void copying();
     void setUrl();
     void i18n_data();
@@ -284,6 +286,55 @@ void tst_QUrl::comparison()
     QUrl url6;
     url6.setEncodedQuery("a=%2A");
     QVERIFY(url5 == url6);
+}
+
+void tst_QUrl::comparison2_data()
+{
+    QTest::addColumn<QUrl>("url1");
+    QTest::addColumn<QUrl>("url2");
+    QTest::addColumn<int>("ordering"); // like strcmp
+
+    QTest::newRow("null-null") << QUrl() << QUrl() << 0;
+
+    QUrl empty;
+    empty.setPath("/hello"); // ensure it has detached
+    empty.setPath(QString());
+    QTest::newRow("null-empty") << QUrl() << empty << 0;
+
+    QTest::newRow("scheme-null") << QUrl("x:") << QUrl() << 1;
+    QTest::newRow("samescheme") << QUrl("x:") << QUrl("x:") << 0;
+
+    // the following three are by choice
+    // the order could be the opposite and it would still be correct
+    QTest::newRow("scheme-path") << QUrl("x:") << QUrl("/tmp") << +1;
+    QTest::newRow("fragment-path") << QUrl("#foo") << QUrl("/tmp") << -1;
+    QTest::newRow("fragment-scheme") << QUrl("#foo") << QUrl("x:") << -1;
+
+    QTest::newRow("noport-zeroport") << QUrl("http://example.com") << QUrl("http://example.com:0") << -1;
+}
+
+void tst_QUrl::comparison2()
+{
+    QFETCH(QUrl, url1);
+    QFETCH(QUrl, url2);
+    QFETCH(int, ordering);
+
+    QCOMPARE(url1.toString() == url2.toString(), ordering == 0);
+    QCOMPARE(url1 == url2, ordering == 0);
+    QCOMPARE(url1 != url2, ordering != 0);
+    if (ordering == 0)
+        QCOMPARE(qHash(url1), qHash(url2));
+
+    QCOMPARE(url1 < url2, ordering < 0);
+    QCOMPARE(!(url1 < url2), ordering >= 0);
+
+    QCOMPARE(url2 < url1, ordering > 0);
+    QCOMPARE(!(url2 < url1), ordering <= 0);
+
+    // redundant checks (the above should catch these)
+    QCOMPARE(url1 < url2 || url2 < url1, ordering != 0);
+    QVERIFY(!(url1 < url2 && url2 < url1));
+    QVERIFY(url1 < url2 || url1 == url2 || url2 < url1);
 }
 
 void tst_QUrl::copying()
