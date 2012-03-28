@@ -48,7 +48,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class Q_CORE_EXPORT QFlag
+class QFlag
 {
     int i;
 public:
@@ -58,7 +58,7 @@ public:
 
 inline QFlag::QFlag(int ai) : i(ai) {}
 
-class Q_CORE_EXPORT QIncompatibleFlag
+class QIncompatibleFlag
 {
     int i;
 public:
