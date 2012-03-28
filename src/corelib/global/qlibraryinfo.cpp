@@ -312,6 +312,8 @@ QLibraryInfo::rawLocation(LibraryLocation loc)
             }
 
             config->endGroup();
+
+            ret = QDir::fromNativeSeparators(ret);
         }
     }
 
