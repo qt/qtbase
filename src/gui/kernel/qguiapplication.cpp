@@ -52,6 +52,7 @@
 #include "qplatformintegration_qpa.h"
 
 #include <QtCore/QAbstractEventDispatcher>
+#include <QtCore/QVariant>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
 #include <QtCore/qmutex.h>
@@ -142,6 +143,8 @@ QWindow *QGuiApplicationPrivate::focus_window = 0;
 static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;
 bool QGuiApplicationPrivate::obey_desktop_settings = true;
+
+static qreal fontSmoothingGamma = 1.7;
 
 extern void qRegisterGuiVariant();
 extern void qUnregisterGuiVariant();
@@ -579,6 +582,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
             nativeInterface->setProperty(name.constData(), value);
         }
     }
+    fontSmoothingGamma = QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::FontSmoothingGamma).toReal();
 }
 
 static void init_plugins(const QList<QByteArray> &pluginList)
@@ -2174,8 +2178,7 @@ const QDrawHelperGammaTables *QGuiApplicationPrivate::gammaTables()
 {
     QDrawHelperGammaTables *result = m_gammaTables.load();
     if (!result){
-        const qreal smoothing = qApp->styleHints()->fontSmoothingGamma();
-        QDrawHelperGammaTables *tables = new QDrawHelperGammaTables(smoothing);
+        QDrawHelperGammaTables *tables = new QDrawHelperGammaTables(fontSmoothingGamma);
         if (!m_gammaTables.testAndSetRelease(0, tables))
             delete tables;
         result = m_gammaTables.load();
