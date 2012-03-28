@@ -91,6 +91,7 @@
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  define Q_NO_TEMPLATE_FRIENDS
 #  define Q_COMPILER_MANGLES_RETURN_TYPE
+#  define Q_FUNC_INFO __FUNCSIG__
 #  define Q_ALIGNOF(type) __alignof(type)
 #  define Q_DECL_ALIGN(n) __declspec(align(n))
 #  define Q_ASSUME(expr) __assume(expr)
@@ -191,6 +192,7 @@
 #    define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
 #  endif
 
+#  define Q_FUNC_INFO       __PRETTY_FUNCTION__
 #  define Q_ALIGNOF(type)   __alignof__(type)
 #  define Q_TYPEOF(expr)    __typeof__(expr)
 #  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
@@ -359,6 +361,7 @@
    (see __DCC__ above). This one is for C mode files (__EDG is not defined) */
 #elif defined(_DIAB_TOOL)
 #  define Q_CC_DIAB
+#  define Q_FUNC_INFO       __PRETTY_FUNCTION__
 
 /* Never tested! */
 #elif defined(__HIGHC__)
@@ -411,6 +414,7 @@
 #  if defined(__HP_aCC) || __cplusplus >= 199707L
 #    define Q_NO_TEMPLATE_FRIENDS
 #    define Q_CC_HPACC
+#    define Q_FUNC_INFO         __PRETTY_FUNCTION__
 #    if __HP_aCC-0 < 060000
 #      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
 #      define Q_DECL_EXPORT     __declspec(dllexport)
@@ -681,6 +685,13 @@
 #endif
 #ifndef Q_DECL_HIDDEN
 #  define Q_DECL_HIDDEN
+#endif
+#ifndef Q_FUNC_INFO
+#  if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC)
+#    define Q_FUNC_INFO __FILE__ "(line number unavailable)"
+#  else
+#    define Q_FUNC_INFO __FILE__ ":" QT_STRINGIFY(__LINE__)
+#  endif
 #endif
 
 /*

@@ -829,19 +829,6 @@ Q_CORE_EXPORT void qBadAlloc();
 template <typename T>
 inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 
-#if (defined(Q_CC_GNU) && !defined(Q_OS_SOLARIS)) || defined(Q_CC_HPACC) || defined(Q_CC_DIAB)
-#  define Q_FUNC_INFO __PRETTY_FUNCTION__
-#elif defined(_MSC_VER)
-#  define Q_FUNC_INFO __FUNCSIG__
-#else
-#   if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC)
-#      define Q_FUNC_INFO __FILE__ "(line number unavailable)"
-#   else
-#       define Q_FUNC_INFO __FILE__ ":" QT_STRINGIFY(__LINE__)
-#   endif
-#endif
-
-
 typedef void (*QFunctionPointer)();
 
 #if !defined(Q_UNIMPLEMENTED)
