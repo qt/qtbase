@@ -454,12 +454,20 @@ bool QTranslatorPrivate::do_load(const QString &realname)
     bool ok = false;
 
     QFile file(realname);
-    if (!file.open(QIODevice::ReadOnly))
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered))
         return false;
 
     qint64 fileSize = file.size();
-    if (!fileSize || quint32(-1) <= fileSize)
+    if (fileSize <= MagicLength || quint32(-1) <= fileSize)
         return false;
+
+    {
+        char magicBuffer[MagicLength];
+        if (MagicLength != file.read(magicBuffer, MagicLength)
+                || memcmp(magicBuffer, magic, MagicLength))
+            return false;
+    }
+
     d->unmapLength = quint32(fileSize);
 
 #ifdef QT_USE_MMAP
@@ -491,6 +499,7 @@ bool QTranslatorPrivate::do_load(const QString &realname)
     if (!ok) {
         d->unmapPointer = new char[d->unmapLength];
         if (d->unmapPointer) {
+            file.seek(0);
             qint64 readResult = file.read(d->unmapPointer, d->unmapLength);
             if (readResult == qint64(unmapLength))
                 ok = true;
@@ -670,6 +679,10 @@ bool QTranslator::load(const uchar *data, int len)
 {
     Q_D(QTranslator);
     d->clear();
+
+    if (!data || len < MagicLength || memcmp(data, magic, MagicLength))
+        return false;
+
     return d->do_load(data, len);
 }
 
@@ -690,9 +703,6 @@ static quint32 read32(const uchar *data)
 
 bool QTranslatorPrivate::do_load(const uchar *data, int len)
 {
-    if (!data || len < MagicLength || memcmp(data, magic, MagicLength))
-        return false;
-
     bool ok = true;
     const uchar *end = data + len;
 
