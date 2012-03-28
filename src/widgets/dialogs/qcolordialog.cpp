@@ -2000,12 +2000,3 @@ QT_END_NAMESPACE
 
 #endif // QT_NO_COLORDIALOG
 
-/*!
-    \fn QColor QColorDialog::getColor(const QColor &init, QWidget *parent, const char *name)
-    \compat
-*/
-
-/*!
-    \fn QRgb QColorDialog::getRgba(QRgb rgba, bool *ok, QWidget *parent, const char *name)
-    \compat
-*/

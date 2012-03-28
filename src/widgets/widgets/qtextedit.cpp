@@ -2491,19 +2491,6 @@ void QTextEdit::ensureCursorVisible()
 }
 
 /*!
-    \enum QTextEdit::KeyboardAction
-
-    \compat
-
-    \value ActionBackspace
-    \value ActionDelete
-    \value ActionReturn
-    \value ActionKill
-    \value ActionWordBackspace
-    \value ActionWordDelete
-*/
-
-/*!
     \fn bool QTextEdit::find(const QString &exp, bool cs, bool wo)
 
     Use the find() overload that takes a QTextDocument::FindFlags

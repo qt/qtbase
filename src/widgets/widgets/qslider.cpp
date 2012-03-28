@@ -536,20 +536,6 @@ QSlider::TickPosition QSlider::tickPosition() const
 }
 
 /*!
-    \fn TickPosition QSlider::tickmarks() const
-    \compat
-
-    Use tickPosition() instead.
-*/
-
-/*!
-    \fn QSlider::setTickmarks(TickPosition position)
-    \compat
-
-    Use setTickPosition() instead.
-*/
-
-/*!
     \property QSlider::tickInterval
     \brief the interval between tickmarks
 

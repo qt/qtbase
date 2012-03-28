@@ -39,30 +39,6 @@
 */
 
 /*!
-    \enum QSql::Confirm
-    \compat
-
-    This enum type describes edit confirmations.
-
-    \value Yes
-    \value No
-    \value Cancel
-*/
-
-/*!
-    \enum QSql::Op
-    \compat
-
-    This enum type describes edit operations.
-
-    \value None
-    \value Insert
-    \value Update
-    \value Delete
-*/
-
-
-/*!
     \enum QSql::Location
 
     This enum type describes special SQL navigation locations:

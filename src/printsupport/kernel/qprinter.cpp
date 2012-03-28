@@ -365,17 +365,6 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
 */
 
 /*!
-    \enum QPrinter::PrinterOption
-    \compat
-
-    Use QAbstractPrintDialog::PrintDialogOption instead.
-
-    \value PrintToFile
-    \value PrintSelection
-    \value PrintPageRange
-*/
-
-/*!
   \enum QPrinter::PaperSize
   \since 4.4
 
@@ -511,22 +500,6 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   \value CurrentPage Only the current page should be printed.
 
   \sa setPrintRange(), printRange()
-*/
-
-/*
-  \enum QPrinter::PrinterOption
-
-  This enum describes various printer options that appear in the
-  printer setup dialog. It is used to enable and disable these
-  options in the setup dialog.
-
-  \value PrintToFile Describes if print to file should be enabled.
-  \value PrintSelection Describes if printing selections should be enabled.
-  \value PrintPageRange Describes if printing page ranges (from, to) should
-  be enabled
-  \value PrintCurrentPage if Print Current Page option should be enabled
-
-  \sa setOptionEnabled(), isOptionEnabled()
 */
 
 /*!

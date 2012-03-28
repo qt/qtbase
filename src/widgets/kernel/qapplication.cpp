@@ -3925,13 +3925,6 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 */
 
 /*!
-    \typedef QApplication::ColorMode
-    \compat
-
-    Use ColorSpec instead.
-*/
-
-/*!
     \fn Qt::MacintoshVersion QApplication::macVersion()
 
     Use QSysInfo::MacintoshVersion instead.
@@ -4022,18 +4015,6 @@ bool QApplicationPrivate::inPopupMode() const
 {
     return QApplicationPrivate::popupWidgets != 0;
 }
-
-/*! \variable QApplication::NormalColors
-    \compat
-
-    Use \l NormalColor instead.
-*/
-
-/*! \variable QApplication::CustomColors
-    \compat
-
-    Use \l CustomColor instead.
-*/
 
 #ifdef QT_KEYPAD_NAVIGATION
 /*!
