@@ -2185,19 +2185,19 @@ if [ -z "$PLATFORM" ]; then
     case "$UNAME_SYSTEM:$UNAME_RELEASE" in
      Darwin:*)
          OSX_VERSION=`uname -r | cut -d. -f1`
-         if [ "$OSX_VERSION" -ge 11 ]; then
-             # We're on Lion or above. Check if we have a supported Clang version
+         # Select compiler. Use g++ unless we find a usable Clang version
+         PLATFORM=macx-g++
+         if [ "$OSX_VERSION" -ge 12 ]; then
+            # We're on Mountain Lion or above. Use Clang. Don't advertise gcc.
+            PLATFORM=macx-clang
+         elif [ "$OSX_VERSION" -eq 11 ]; then
+             # We're on Lion. Check if we have a supported Clang version
              case "$(clang -v 2>&1 | grep -Po '(?<=version )\d[\d.]+')" in
                  3.*)
                      PLATFORM=macx-clang
                      PLATFORM_NOTES="\n    - Also available for Mac OS X: macx-g++\n"
                      ;;
-                 *)
-                     PLATFORM=macx-g++
-                     ;;
              esac
-         else
-             PLATFORM=macx-g++
          fi
          ;;
      AIX:*)
