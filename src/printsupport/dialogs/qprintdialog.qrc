@@ -1,5 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/trolltech/dialogs/qprintpreviewdialog">
+<qresource prefix="/qt-project.org/dialogs/qprintpreviewdialog">
 <file>images/fit-page-24.png</file>
 <file>images/fit-page-32.png</file>
 <file>images/fit-width-24.png</file>
@@ -31,7 +31,7 @@
 <file>images/zoom-out-24.png</file>
 <file>images/zoom-out-32.png</file>
 </qresource>
-<qresource prefix="/trolltech/dialogs/qprintdialog">
+<qresource prefix="/qt-project.org/dialogs/qprintdialog">
 <file>images/status-color.png</file>
 <file>images/status-gray-scale.png</file>
 </qresource>

@@ -1771,7 +1771,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     msgBox->setText(translatedTextAboutQtCaption);
     msgBox->setInformativeText(translatedTextAboutQtText);
 
-    QPixmap pm(QLatin1String(":/trolltech/qmessagebox/images/qtlogo-64.png"));
+    QPixmap pm(QLatin1String(":/qt-project.org/qmessagebox/images/qtlogo-64.png"));
     if (!pm.isNull())
         msgBox->setIconPixmap(pm);
 #if defined(Q_OS_WINCE)

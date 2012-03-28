@@ -93,7 +93,10 @@ private:
         Dialog *dialog = new Dialog(parent);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         dialog->setWindowModality(windowModality);
-        dialog->show();
+        if (windowModality == Qt::ApplicationModal && applicationModalUseExecCheckBox->isChecked())
+            dialog->exec();
+        else
+            dialog->show();
     }
     void newChildWidget(Qt::WindowModality windowModality)
     {
@@ -107,7 +110,7 @@ private:
     bool event(QEvent *event)
     {
         if (event->type() == QEvent::WindowBlocked)
-            setPalette(Qt::red);
+            setPalette(Qt::darkGray);
         else if (event->type() == QEvent::WindowUnblocked)
             setPalette(QPalette());
         return QWidget::event(event);
@@ -156,7 +159,10 @@ private:
         Dialog *dialog = new Dialog(withParent ? this : 0);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         dialog->setWindowModality(windowModality);
-        dialog->show();
+        if (windowModality == Qt::ApplicationModal && applicationModalUseExecCheckBox->isChecked())
+            dialog->exec();
+        else
+            dialog->show();
     }
     void newChildWidget(Qt::WindowModality windowModality)
     {

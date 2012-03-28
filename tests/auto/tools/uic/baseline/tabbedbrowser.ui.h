@@ -125,7 +125,7 @@ public:
         hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
         toolClose = new QToolButton(frameFind);
         toolClose->setObjectName(QStringLiteral("toolClose"));
-        const QIcon icon = QIcon(QString::fromUtf8(":/trolltech/assistant/images/close.png"));
+        const QIcon icon = QIcon(QString::fromUtf8(":/qt-project.org/assistant/images/close.png"));
         toolClose->setIcon(icon);
         toolClose->setAutoRaise(true);
 
@@ -144,7 +144,7 @@ public:
 
         toolPrevious = new QToolButton(frameFind);
         toolPrevious->setObjectName(QStringLiteral("toolPrevious"));
-        const QIcon icon1 = QIcon(QString::fromUtf8(":/trolltech/assistant/images/win/previous.png"));
+        const QIcon icon1 = QIcon(QString::fromUtf8(":/qt-project.org/assistant/images/win/previous.png"));
         toolPrevious->setIcon(icon1);
         toolPrevious->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         toolPrevious->setAutoRaise(true);
@@ -154,7 +154,7 @@ public:
         toolNext = new QToolButton(frameFind);
         toolNext->setObjectName(QStringLiteral("toolNext"));
         toolNext->setMinimumSize(QSize(0, 0));
-        const QIcon icon2 = QIcon(QString::fromUtf8(":/trolltech/assistant/images/win/next.png"));
+        const QIcon icon2 = QIcon(QString::fromUtf8(":/qt-project.org/assistant/images/win/next.png"));
         toolNext->setIcon(icon2);
         toolNext->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         toolNext->setAutoRaise(true);
@@ -204,7 +204,7 @@ public:
         toolNext->setText(QApplication::translate("TabbedBrowser", "Next", 0, QApplication::UnicodeUTF8));
         checkCase->setText(QApplication::translate("TabbedBrowser", "Case Sensitive", 0, QApplication::UnicodeUTF8));
         checkWholeWords->setText(QApplication::translate("TabbedBrowser", "Whole words", 0, QApplication::UnicodeUTF8));
-        labelWrapped->setText(QApplication::translate("TabbedBrowser", "<img src=\":/trolltech/assistant/images/wrap.png\">&nbsp;Search wrapped", 0, QApplication::UnicodeUTF8));
+        labelWrapped->setText(QApplication::translate("TabbedBrowser", "<img src=\":/qt-project.org/assistant/images/wrap.png\">&nbsp;Search wrapped", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

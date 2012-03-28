@@ -1,106 +1,125 @@
-<ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>Widget</class>
- <widget class="QWidget" name="Widget" >
-  <property name="geometry" >
+ <widget class="QWidget" name="Widget">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>568</width>
-    <height>473</height>
+    <width>558</width>
+    <height>268</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" >
-   <property name="margin" >
-    <number>40</number>
-   </property>
-   <property name="spacing" >
-    <number>6</number>
-   </property>
+  <layout class="QVBoxLayout">
    <item>
-    <widget class="QGroupBox" name="groupBox" >
-     <property name="title" >
-      <string>New Window Type</string>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Select the type of window to create:</string>
      </property>
-     <layout class="QVBoxLayout" >
-      <property name="margin" >
-       <number>8</number>
-      </property>
-      <property name="spacing" >
-       <number>6</number>
-      </property>
-      <item>
-       <widget class="QPushButton" name="windowButton" >
-        <property name="text" >
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="windowButton">
+        <property name="text">
          <string>Window</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="groupLeaderButton" >
-        <property name="text" >
+      <item row="0" column="1">
+       <widget class="QPushButton" name="groupLeaderButton">
+        <property name="text">
          <string>Window (Group Leader)</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="modelessButton" >
-        <property name="text" >
+      <item row="1" column="0">
+       <widget class="QPushButton" name="modelessButton">
+        <property name="text">
          <string>Modeless Dialog</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="modelessNoParentButton" >
-        <property name="text" >
-         <string>Modeless Dialog w/ no parent</string>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="modelessNoParentButton">
+        <property name="text">
+         <string>Modeless Dialog (no parent)</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="windowModalButton" >
-        <property name="text" >
+      <item row="2" column="0">
+       <widget class="QPushButton" name="windowModalButton">
+        <property name="text">
          <string>Window Modal Dialog</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="windowModalNoParentButton" >
-        <property name="text" >
-         <string>Window Modal Dialog w/ no parent</string>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="windowModalNoParentButton">
+        <property name="text">
+         <string>Window Modal Dialog (no parent)</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="windowModalChildButton" >
-        <property name="text" >
-         <string>Window Modal Child Widget (hidden after 5 seconds)</string>
+      <item row="3" column="0" colspan="2">
+       <widget class="QCheckBox" name="applicationModalUseExecCheckBox">
+        <property name="font">
+         <font>
+          <pointsize>11</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Application Modal Dialogs use exec()</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="applicationModalButton" >
-        <property name="text" >
+      <item row="4" column="0">
+       <widget class="QPushButton" name="applicationModalButton">
+        <property name="text">
          <string>Application Modal Dialog</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="applicationModalNoParentButton" >
-        <property name="text" >
-         <string>Application Modal Dialog w/ no parent</string>
+      <item row="4" column="1">
+       <widget class="QPushButton" name="applicationModalNoParentButton">
+        <property name="text">
+         <string>Application Modal Dialog (no parent)</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="applicationModalChildButton" >
-        <property name="text" >
-         <string>Application Modal Child Widget (hidden after 5 seconds)</string>
+      <item row="5" column="0" colspan="2">
+       <widget class="QLabel" name="modalChildWidgetInfoLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>11</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Note: Modal Child Widgets are invisible and hidden after 5 seconds.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QPushButton" name="applicationModalChildButton">
+        <property name="text">
+         <string>Application Modal Child Widget</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QPushButton" name="windowModalChildButton">
+        <property name="text">
+         <string>Window Modal Child Widget</string>
         </property>
        </widget>
       </item>
@@ -109,7 +128,6 @@
    </item>
   </layout>
  </widget>
- <pixmapfunction></pixmapfunction>
  <resources/>
  <connections/>
 </ui>
