@@ -2567,6 +2567,27 @@ QString QUrl::errorString() const
     \internal
 */
 
+/*! \fn uint qHash(const QUrl &url)
+    \relates QHash
+
+    Returns the hash value for the \a url.
+*/
+uint qHash(const QUrl &url)
+{
+    if (!url.d)
+        return qHash(-1); // the hash of an unset port (-1)
+
+    return qHash(url.d->scheme) ^
+            qHash(url.d->userName) ^
+            qHash(url.d->password) ^
+            qHash(url.d->host) ^
+            qHash(url.d->port) ^
+            qHash(url.d->path) ^
+            qHash(url.d->query) ^
+            qHash(url.d->fragment);
+}
+
+
 // The following code has the following copyright:
 /*
    Copyright (C) Research In Motion Limited 2009. All rights reserved.

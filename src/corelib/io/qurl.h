@@ -304,6 +304,7 @@ public:
     static QByteArray toAce(const QString &);
     static QStringList idnWhitelist();
     static void setIdnWhitelist(const QStringList &);
+    friend Q_CORE_EXPORT uint qHash(const QUrl &url);
 
 private:
     QUrlPrivate *d;
@@ -313,11 +314,6 @@ public:
     typedef QUrlPrivate * DataPtr;
     inline DataPtr &data_ptr() { return d; }
 };
-
-inline uint qHash(const QUrl &url)
-{
-    return qHash(url.toString());
-}
 
 Q_DECLARE_TYPEINFO(QUrl, Q_MOVABLE_TYPE);
 Q_DECLARE_SHARED(QUrl)
