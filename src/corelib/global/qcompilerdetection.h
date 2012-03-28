@@ -86,13 +86,16 @@
 #  define Q_CC_MSVC_NET
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  define Q_NO_TEMPLATE_FRIENDS
+#  define Q_COMPILER_MANGLES_RETURN_TYPE
 #  define Q_ALIGNOF(type) __alignof(type)
 #  define Q_DECL_ALIGN(n) __declspec(align(n))
 #  define Q_ASSUME(expr) __assume(expr)
 #  define Q_UNREACHABLE() __assume(0)
 #  define Q_NORETURN __declspec(noreturn)
+#  define Q_DECL_DEPRECATED __declspec(deprecated)
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #  if defined(__INTEL_COMPILER)
+#    define Q_DECL_VARIABLE_DEPRECATED
 #    define Q_CC_INTEL
 #  endif
 /* MSVC does not support SSE/MMX on x64 */
@@ -139,6 +142,7 @@
 /* work-around for missing compiler intrinsics */
 #  define __is_empty(X) false
 #  define __is_pod(X) false
+#  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
 #elif defined(__GNUC__)
 #  define Q_CC_GNU
 #  define Q_C_CALLBACKS
@@ -165,10 +169,12 @@
 
 #  define Q_ALIGNOF(type)   __alignof__(type)
 #  define Q_TYPEOF(expr)    __typeof__(expr)
+#  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
 #  define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
 #  define Q_LIKELY(expr)    __builtin_expect(!!(expr), true)
 #  define Q_UNLIKELY(expr)  __builtin_expect(!!(expr), false)
 #  define Q_NORETURN        __attribute__((__noreturn__))
+#  define Q_REQUIRED_RESULT __attribute__ ((__warn_unused_result__))
 #  if !defined(QT_MOC_CPP)
 #    define Q_PACKED __attribute__ ((__packed__))
 #    define Q_NO_PACKED_REFERENCE
@@ -635,16 +641,13 @@
 #  define Q_ALLOC_SIZE(x)
 #endif
 #ifndef Q_REQUIRED_RESULT
-#  if defined(Q_CC_GNU)
-#    define Q_REQUIRED_RESULT __attribute__ ((warn_unused_result))
-#  else
-#    define Q_REQUIRED_RESULT
-#  endif
+#  define Q_REQUIRED_RESULT
 #endif
-#ifndef Q_COMPILER_MANGLES_RETURN_TYPE
-#  if defined(Q_CC_MSVC)
-#    define Q_COMPILER_MANGLES_RETURN_TYPE
-#  endif
+#ifndef Q_DECL_DEPRECATED
+#  define Q_DECL_DEPRECATED
+#endif
+#ifndef Q_DECL_VARIABLE_DEPRECATED
+#  define Q_DECL_VARIABLE_DEPRECATED Q_DECL_DEPRECATED
 #endif
 
 /*
@@ -657,23 +660,6 @@
 #else
 #  define QT_STATIC_CONST static const
 #  define QT_STATIC_CONST_IMPL const
-#endif
-
-/*
-   Warnings and errors when using deprecated methods
-*/
-#if defined(Q_CC_GNU) || defined(Q_CC_RVCT)
-#  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
-#elif defined(Q_CC_MSVC)
-#  define Q_DECL_DEPRECATED __declspec(deprecated)
-#  if defined (Q_CC_INTEL)
-#    define Q_DECL_VARIABLE_DEPRECATED
-#  endif
-#else
-#  define Q_DECL_DEPRECATED
-#endif
-#ifndef Q_DECL_VARIABLE_DEPRECATED
-#  define Q_DECL_VARIABLE_DEPRECATED Q_DECL_DEPRECATED
 #endif
 
 /*
