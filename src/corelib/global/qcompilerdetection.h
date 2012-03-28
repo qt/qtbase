@@ -40,6 +40,10 @@
 **
 ****************************************************************************/
 
+#ifndef QGLOBAL_H
+# include <QtCore/qglobal.h>
+#endif
+
 #ifndef QCOMPILERDETECTION_H
 #define QCOMPILERDETECTION_H
 

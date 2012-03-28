@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+#ifndef QGLOBAL_H
+# include <QtCore/qglobal.h>
+#endif
+
 #ifndef QSYSTEMDETECTION_H
 #define QSYSTEMDETECTION_H
 

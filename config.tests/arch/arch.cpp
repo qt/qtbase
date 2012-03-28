@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 // NOTE: This file is not meant to be compiled, only preprocessed.
+#define QGLOBAL_H
 #include "../../src/corelib/global/qprocessordetection.h"
 #undef alpha
 #undef arm

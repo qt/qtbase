@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+#ifndef QGLOBAL_H
+# include <QtCore/qglobal.h>
+#endif
+
 #ifndef QPROCESSORDETECTION_H
 #define QPROCESSORDETECTION_H
 
