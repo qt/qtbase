@@ -456,35 +456,6 @@ class QDataStream;
 
 #define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
 
-#if defined(Q_OS_LINUX) && defined(Q_CC_RVCT)
-#  define Q_DECL_EXPORT     __attribute__((visibility("default")))
-#  define Q_DECL_IMPORT     __attribute__((visibility("default")))
-#  define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
-#endif
-
-#ifndef Q_DECL_EXPORT
-#  if defined(Q_OS_WIN) || defined(Q_CC_RVCT)
-#    define Q_DECL_EXPORT __declspec(dllexport)
-#  elif defined(QT_VISIBILITY_AVAILABLE)
-#    define Q_DECL_EXPORT __attribute__((visibility("default")))
-#    define Q_DECL_HIDDEN __attribute__((visibility("hidden")))
-#  endif
-#  ifndef Q_DECL_EXPORT
-#    define Q_DECL_EXPORT
-#  endif
-#endif
-#ifndef Q_DECL_IMPORT
-#  if defined(Q_OS_WIN) || defined(Q_CC_RVCT)
-#    define Q_DECL_IMPORT __declspec(dllimport)
-#  else
-#    define Q_DECL_IMPORT
-#  endif
-#endif
-#ifndef Q_DECL_HIDDEN
-#  define Q_DECL_HIDDEN
-#endif
-
-
 /*
    Create Qt DLL if QT_DLL is defined (Windows only)
 */

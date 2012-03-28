@@ -93,6 +93,8 @@
 #  define Q_UNREACHABLE() __assume(0)
 #  define Q_NORETURN __declspec(noreturn)
 #  define Q_DECL_DEPRECATED __declspec(deprecated)
+#  define Q_DECL_EXPORT __declspec(dllexport)
+#  define Q_DECL_IMPORT __declspec(dllimport)
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #  if defined(__INTEL_COMPILER)
 #    define Q_DECL_VARIABLE_DEPRECATED
@@ -143,6 +145,15 @@
 #  define __is_empty(X) false
 #  define __is_pod(X) false
 #  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
+#  ifdef Q_OS_LINUX
+#    define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#    define Q_DECL_IMPORT     __attribute__((visibility("default")))
+#    define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
+#  else
+#    define Q_DECL_EXPORT     __declspec(dllexport)
+#    define Q_DECL_IMPORT     __declspec(dllimport)
+#  endif
+
 #elif defined(__GNUC__)
 #  define Q_CC_GNU
 #  define Q_C_CALLBACKS
@@ -165,6 +176,15 @@
 #      define Q_ASSUME(expr)  if (expr){} else __builtin_unreachable()
 #      define Q_UNREACHABLE() __builtin_unreachable()
 #    endif
+#  endif
+
+#  ifdef Q_OS_WIN
+#    define Q_DECL_EXPORT     __declspec(dllexport)
+#    define Q_DECL_IMPORT     __declspec(dllimport)
+#  elif defined(QT_VISIBILITY_AVAILABLE)
+#    define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#    define Q_DECL_IMPORT     __attribute__((visibility("default")))
+#    define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
 #  endif
 
 #  define Q_ALIGNOF(type)   __alignof__(type)
@@ -648,6 +668,15 @@
 #endif
 #ifndef Q_DECL_VARIABLE_DEPRECATED
 #  define Q_DECL_VARIABLE_DEPRECATED Q_DECL_DEPRECATED
+#endif
+#ifndef Q_DECL_EXPORT
+#  define Q_DECL_EXPORT
+#endif
+#ifndef Q_DECL_IMPORT
+#  define Q_DECL_IMPORT
+#endif
+#ifndef Q_DECL_HIDDEN
+#  define Q_DECL_HIDDEN
 #endif
 
 /*
