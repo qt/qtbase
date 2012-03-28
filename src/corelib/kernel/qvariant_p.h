@@ -440,6 +440,7 @@ public:
     void delegate(const T*)
     {
         Filtered<T> streamIt(m_debugStream, m_d);
+        Q_UNUSED(streamIt);
     }
 
     void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
