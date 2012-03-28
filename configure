@@ -3185,6 +3185,8 @@ Additional options:
 
     -xplatform target ... The target platform when cross-compiling.
 
+    -sysroot <dir> ...... Sets <dir> as the target compiler's and qmake's sysroot.
+
     -no-feature-<feature> Do not compile in <feature>.
     -feature-<feature> .. Compile in <feature>. The available features
                           are described in src/corelib/global/qfeatures.txt
