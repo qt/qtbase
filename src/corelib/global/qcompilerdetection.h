@@ -403,10 +403,6 @@
 #  error "Qt has not been tested with this compiler - see http://www.qt-project.org/"
 #endif
 
-#ifndef Q_NORETURN
-# define Q_NORETURN
-#endif
-
 /*
  * C++11 support
  *
@@ -573,9 +569,119 @@
 //#      define Q_COMPILER_INITIALIZER_LISTS
 #endif
 
+/*
+ * C++11 keywords and expressions
+ */
+#ifdef Q_COMPILER_NULLPTR
+# define Q_NULLPTR         nullptr
+#else
+# define Q_NULLPTR         0
+#endif
+
+#ifdef Q_COMPILER_DEFAULT_DELETE_MEMBERS
+# define Q_DECL_EQ_DELETE = delete
+#else
+# define Q_DECL_EQ_DELETE
+#endif
+
+#ifdef Q_COMPILER_CONSTEXPR
+# define Q_DECL_CONSTEXPR constexpr
+#else
+# define Q_DECL_CONSTEXPR
+#endif
+
+#ifdef Q_COMPILER_EXPLICIT_OVERRIDES
+# define Q_DECL_OVERRIDE override
+# define Q_DECL_FINAL final
+# ifdef  Q_COMPILER_DECLTYPE // required for class-level final to compile in qvariant_p.h
+#  define Q_DECL_FINAL_CLASS final
+# else
+#  define Q_DECL_FINAL_CLASS
+# endif
+#else
+# define Q_DECL_OVERRIDE
+# define Q_DECL_FINAL
+# define Q_DECL_FINAL_CLASS
+#endif
+
+#if defined(Q_COMPILER_ALIGNOF) && !defined(Q_ALIGNOF)
+#  define Q_ALIGNOF(x)  alignof(x)
+#endif
+
+/*
+ * Fallback macros to certain compiler features
+ */
+
+#ifndef Q_NORETURN
+# define Q_NORETURN
+#endif
+#ifndef Q_PACKED
+#  define Q_PACKED
+#  undef Q_NO_PACKED_REFERENCE
+#endif
+#ifndef Q_LIKELY
+#  define Q_LIKELY(x) (x)
+#endif
+#ifndef Q_UNLIKELY
+#  define Q_UNLIKELY(x) (x)
+#endif
+#ifndef Q_ASSUME
+#  define Q_ASSUME(expr)
+#endif
+#ifndef Q_UNREACHABLE
+#  define Q_UNREACHABLE()
+#endif
+#ifndef Q_ALLOC_SIZE
+#  define Q_ALLOC_SIZE(x)
+#endif
+#ifndef Q_REQUIRED_RESULT
+#  if defined(Q_CC_GNU)
+#    define Q_REQUIRED_RESULT __attribute__ ((warn_unused_result))
+#  else
+#    define Q_REQUIRED_RESULT
+#  endif
+#endif
 #ifndef Q_COMPILER_MANGLES_RETURN_TYPE
 #  if defined(Q_CC_MSVC)
 #    define Q_COMPILER_MANGLES_RETURN_TYPE
+#  endif
+#endif
+
+/*
+   Workaround for static const members on MSVC++.
+*/
+
+#if defined(Q_CC_MSVC)
+#  define QT_STATIC_CONST static
+#  define QT_STATIC_CONST_IMPL
+#else
+#  define QT_STATIC_CONST static const
+#  define QT_STATIC_CONST_IMPL const
+#endif
+
+/*
+   Warnings and errors when using deprecated methods
+*/
+#if defined(Q_CC_GNU) || defined(Q_CC_RVCT)
+#  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
+#elif defined(Q_CC_MSVC)
+#  define Q_DECL_DEPRECATED __declspec(deprecated)
+#  if defined (Q_CC_INTEL)
+#    define Q_DECL_VARIABLE_DEPRECATED
+#  endif
+#else
+#  define Q_DECL_DEPRECATED
+#endif
+#ifndef Q_DECL_VARIABLE_DEPRECATED
+#  define Q_DECL_VARIABLE_DEPRECATED Q_DECL_DEPRECATED
+#endif
+
+/*
+   Proper for-scoping in MIPSpro CC
+*/
+#ifndef QT_NO_KEYWORDS
+#  if defined(Q_CC_MIPS) || (defined(Q_CC_HPACC) && defined(__ia64))
+#    define for if (0) {} else for
 #  endif
 #endif
 

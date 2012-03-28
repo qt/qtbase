@@ -150,28 +150,6 @@ namespace QT_NAMESPACE {}
 #  define QT_LARGEFILE_SUPPORT 64
 #endif
 
-#ifndef Q_PACKED
-#  define Q_PACKED
-#  undef Q_NO_PACKED_REFERENCE
-#endif
-
-#ifndef Q_LIKELY
-#  define Q_LIKELY(x) (x)
-#endif
-#ifndef Q_UNLIKELY
-#  define Q_UNLIKELY(x) (x)
-#endif
-#ifndef Q_ASSUME
-#  define Q_ASSUME(expr)
-#endif
-#ifndef Q_UNREACHABLE
-#  define Q_UNREACHABLE()
-#endif
-
-#ifndef Q_ALLOC_SIZE
-#  define Q_ALLOC_SIZE(x)
-#endif
-
 #ifndef Q_CONSTRUCTOR_FUNCTION
 # define Q_CONSTRUCTOR_FUNCTION0(AFUNC) \
     namespace { \
@@ -192,14 +170,6 @@ namespace QT_NAMESPACE {}
     } AFUNC ## _dtor_instance_; \
     }
 # define Q_DESTRUCTOR_FUNCTION(AFUNC) Q_DESTRUCTOR_FUNCTION0(AFUNC)
-#endif
-
-#ifndef Q_REQUIRED_RESULT
-#  if defined(Q_CC_GNU)
-#    define Q_REQUIRED_RESULT __attribute__ ((warn_unused_result))
-#  else
-#    define Q_REQUIRED_RESULT
-#  endif
 #endif
 
 QT_BEGIN_HEADER
@@ -340,45 +310,6 @@ QT_END_INCLUDE_NAMESPACE
 #  endif
 #endif
 
-/*
-   Proper for-scoping in MIPSpro CC
-*/
-#ifndef QT_NO_KEYWORDS
-#  if defined(Q_CC_MIPS) || (defined(Q_CC_HPACC) && defined(__ia64))
-#    define for if(0){}else for
-#  endif
-#endif
-
-/*
-   Workaround for static const members on MSVC++.
-*/
-
-#if defined(Q_CC_MSVC)
-#  define QT_STATIC_CONST static
-#  define QT_STATIC_CONST_IMPL
-#else
-#  define QT_STATIC_CONST static const
-#  define QT_STATIC_CONST_IMPL const
-#endif
-
-/*
-   Warnings and errors when using deprecated methods
-*/
-#if defined(Q_CC_GNU) || defined(Q_CC_RVCT)
-#  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
-#elif defined(Q_CC_MSVC)
-#  define Q_DECL_DEPRECATED __declspec(deprecated)
-#  if defined (Q_CC_INTEL)
-#    define Q_DECL_VARIABLE_DEPRECATED
-#  else
-#  endif
-#else
-#  define Q_DECL_DEPRECATED
-#endif
-#ifndef Q_DECL_VARIABLE_DEPRECATED
-#  define Q_DECL_VARIABLE_DEPRECATED Q_DECL_DEPRECATED
-#endif
-
 #if defined(QT_NO_DEPRECATED)
 #  undef QT_DEPRECATED
 #  undef QT_DEPRECATED_VARIABLE
@@ -446,42 +377,6 @@ QT_END_INCLUDE_NAMESPACE
 #  endif
 #else
 #  define QT_FASTCALL
-#endif
-
-#ifdef Q_COMPILER_NULLPTR
-# define Q_NULLPTR         nullptr
-#else
-# define Q_NULLPTR         0
-#endif
-
-#ifdef Q_COMPILER_DEFAULT_DELETE_MEMBERS
-# define Q_DECL_EQ_DELETE = delete
-#else
-# define Q_DECL_EQ_DELETE
-#endif
-
-#ifdef Q_COMPILER_CONSTEXPR
-# define Q_DECL_CONSTEXPR constexpr
-#else
-# define Q_DECL_CONSTEXPR
-#endif
-
-#ifdef Q_COMPILER_EXPLICIT_OVERRIDES
-# define Q_DECL_OVERRIDE override
-# define Q_DECL_FINAL final
-# ifdef  Q_COMPILER_DECLTYPE // required for class-level final to compile in qvariant_p.h
-#  define Q_DECL_FINAL_CLASS final
-# else
-#  define Q_DECL_FINAL_CLASS
-# endif
-#else
-# define Q_DECL_OVERRIDE
-# define Q_DECL_FINAL
-# define Q_DECL_FINAL_CLASS
-#endif
-
-#if defined(Q_COMPILER_ALIGNOF) && !defined(Q_ALIGNOF)
-#  define Q_ALIGNOF(x)  alignof(x)
 #endif
 
 //defines the type for the WNDPROC on windows
