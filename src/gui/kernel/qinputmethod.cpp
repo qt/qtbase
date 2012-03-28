@@ -72,7 +72,7 @@ QInputMethod::~QInputMethod()
     information like virtual keyboard visibility and keyboard dimensions.
 
     Qt Quick also provides access to QInputMethod in QML through \l{QmlGlobalQtObject}{Qt global object}
-    as \c Qt.application.inputPanel property.
+    as \c Qt.inputMethod property.
 */
 
 /*!
