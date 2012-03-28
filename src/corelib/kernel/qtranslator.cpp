@@ -130,7 +130,7 @@ static uint elfHash(const char *name)
     return hash;
 }
 
-static int numerusHelper(int n, const uchar *rules, int rulesSize)
+static int numerusHelper(int n, const uchar *rules, uint rulesSize)
 {
 #define CHECK_RANGE \
     do { \
@@ -139,7 +139,7 @@ static int numerusHelper(int n, const uchar *rules, int rulesSize)
     } while (0)
 
     int result = 0;
-    int i = 0;
+    uint i = 0;
 
     if (rulesSize == 0)
         return 0;
