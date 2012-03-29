@@ -237,12 +237,13 @@ QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidati
         sizeof(QJsonPrivate::Header) + root.size > (uint)data.size())
         return QJsonDocument();
 
-    char *raw = (char *)malloc(data.size());
+    const uint size = sizeof(QJsonPrivate::Header) + root.size;
+    char *raw = (char *)malloc(size);
     if (!raw)
         return QJsonDocument();
 
-    memcpy(raw, data.constData(), data.size());
-    QJsonPrivate::Data *d = new QJsonPrivate::Data(raw, data.size());
+    memcpy(raw, data.constData(), size);
+    QJsonPrivate::Data *d = new QJsonPrivate::Data(raw, size);
 
     if (validation != BypassValidation && !d->valid()) {
         delete d;
