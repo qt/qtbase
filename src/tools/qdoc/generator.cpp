@@ -293,6 +293,13 @@ QString Generator::fileBase(const Node *node) const
         //Was QDOC2_COMPAT, required for index.html
         if (base.endsWith(".html"))
             base.truncate(base.length() - 5);
+
+        if (node->subType() == Node::QmlModule) {
+            base.prepend("qmlmodule-");
+        }
+        if (node->subType() == Node::Module) {
+            base.append("-module");
+        }
     }
 
     // the code below is effectively equivalent to:
