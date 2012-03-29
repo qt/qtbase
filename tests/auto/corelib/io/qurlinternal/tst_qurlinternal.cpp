@@ -104,6 +104,7 @@ private Q_SLOTS:
     void encodingRecodeInvalidUtf8_data();
     void encodingRecodeInvalidUtf8();
 };
+#include "tst_qurlinternal.moc"
 
 void tst_QUrlInternal::idna_testsuite_data()
 {
@@ -979,5 +980,3 @@ void tst_QUrlInternal::encodingRecodeInvalidUtf8()
 }
 
 QTEST_APPLESS_MAIN(tst_QUrlInternal)
-
-#include "tst_qurlinternal.moc"
