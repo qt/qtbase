@@ -44,53 +44,124 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QTimer>
+#include <QtWidgets/QColorDialog>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QFontDialog>
+#include <QtPrintSupport/QPageSetupDialog>
+#include <QtPrintSupport/QPrintDialog>
 
-class Dialog : public QDialog, public Ui::Dialog
+enum DialogType
+{
+    CustomDialogType,
+    ColorDialogType,
+    FileDialogType,
+    FontDialogType,
+    PageSetupDialogType,
+    PrintDialogType
+};
+
+class CustomDialog : public QDialog, public Ui::Dialog
 {
     Q_OBJECT
 public:
-    Dialog(QWidget *parent = 0)
+    CustomDialog(QWidget *parent = 0)
         : QDialog(parent)
     {
         setupUi(this);
-        connect(this, SIGNAL(finished(int)), SLOT(dialogFinished(int)));
-        connect(this, SIGNAL(accepted()), SLOT(dialogAccepted()));
-        connect(this, SIGNAL(rejected()), SLOT(dialogRejected()));
+
+        // hide the "Create new dialogs as siblings of this dialog" button when
+        // we don't have a parent of our own (they would be parentless anyway)
+        if (!parent) {
+            createSiblingDialogCheckBox->setChecked(false);
+            createSiblingDialogCheckBox->setVisible(false);
+        }
     }
 
 private slots:
-    void on_modelessButton_clicked()
-    { newDialog(Qt::NonModal, this); }
-    void on_modelessNoParentButton_clicked()
-    { newDialog(Qt::NonModal, 0); }
-    void on_windowModalButton_clicked()
-    { newDialog(Qt::WindowModal, this); }
-    void on_windowModalNoParentButton_clicked()
-    { newDialog(Qt::WindowModal, 0); }
-    void on_siblingWindowModalButton_clicked()
-    { newDialog(Qt::WindowModal, parentWidget()); }
-    void on_applicationModalButton_clicked()
-    { newDialog(Qt::ApplicationModal, this); }
-    void on_applicationModalNoParentButton_clicked()
-    { newDialog(Qt::ApplicationModal, 0); }
-    void on_siblingApplicationModalButton_clicked()
-    { newDialog(Qt::ApplicationModal, parentWidget()); }
+    void on_modelessCustomDialogButton_clicked()
+    { newDialog(CustomDialogType, Qt::NonModal); }
+    void on_modelessColorDialogButton_clicked()
+    { newDialog(ColorDialogType, Qt::NonModal); }
+    void on_modelessFontDialogButton_clicked()
+    { newDialog(FontDialogType, Qt::NonModal); }
 
-    void dialogFinished(int result)
-    { qDebug() << "Dialog finished, result" << result; }
-    void dialogAccepted()
-    { qDebug() << "Dialog accepted"; }
-    void dialogRejected()
-    { qDebug() << "Dialog rejected"; }
+    void on_windowModalCustomDialogButton_clicked()
+    { newDialog(CustomDialogType, Qt::WindowModal); }
+    void on_windowModalColorDialogButton_clicked()
+    { newDialog(ColorDialogType, Qt::WindowModal); }
+    void on_windowModalFileDialogButton_clicked()
+    { newDialog(FileDialogType, Qt::WindowModal); }
+    void on_windowModalFontDialogButton_clicked()
+    { newDialog(FontDialogType, Qt::WindowModal); }
+    void on_windowModalPageSetupDialogButton_clicked()
+    { newDialog(PageSetupDialogType, Qt::WindowModal); }
+    void on_windowModalPrintDialogButton_clicked()
+    { newDialog(PrintDialogType, Qt::WindowModal); }
+
+    void on_applicationModalCustomDialogButton_clicked()
+    { newDialog(CustomDialogType, Qt::ApplicationModal); }
+    void on_applicationModalColorDialogButton_clicked()
+    { newDialog(ColorDialogType, Qt::ApplicationModal); }
+    void on_applicationModalFileDialogButton_clicked()
+    { newDialog(FileDialogType, Qt::ApplicationModal); }
+    void on_applicationModalFontDialogButton_clicked()
+    { newDialog(FontDialogType, Qt::ApplicationModal); }
+    void on_applicationModalPageSetupDialogButton_clicked()
+    { newDialog(PageSetupDialogType, Qt::ApplicationModal); }
+    void on_applicationModalPrintDialogButton_clicked()
+    { newDialog(PrintDialogType, Qt::ApplicationModal); }
 
 private:
-    void newDialog(Qt::WindowModality windowModality, QWidget *parent)
+    void newDialog(DialogType dialogType, Qt::WindowModality windowModality)
     {
-        Dialog *dialog = new Dialog(parent);
+        QWidget *parent = 0;
+        if (useThisAsParentCheckBox->isChecked())
+            parent = this;
+        else if (createSiblingDialogCheckBox->isChecked())
+            parent = parentWidget();
+
+        QDialog *dialog;
+        switch (dialogType) {
+        case CustomDialogType:
+            dialog = new CustomDialog(parent);
+            break;
+        case ColorDialogType:
+            if (windowModality == Qt::ApplicationModal && applicationModalUseExecCheckBox->isChecked()) {
+                QColorDialog::getColor(Qt::white, parent);
+                return;
+            }
+            dialog = new QColorDialog(parent);
+            break;
+        case FileDialogType:
+            if (windowModality == Qt::ApplicationModal && applicationModalUseExecCheckBox->isChecked()) {
+                QFileDialog::getOpenFileName(parent);
+                return;
+            }
+            dialog = new QFileDialog(parent);
+            break;
+        case FontDialogType:
+            if (windowModality == Qt::ApplicationModal && applicationModalUseExecCheckBox->isChecked()) {
+                bool unused = false;
+                QFontDialog::getFont(&unused, parent);
+                return;
+            }
+            dialog = new QFontDialog(parent);
+            break;
+        case PageSetupDialogType:
+            dialog = new QPageSetupDialog(parent);
+            break;
+        case PrintDialogType:
+            dialog = new QPrintDialog(parent);
+            break;
+        }
+
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         dialog->setWindowModality(windowModality);
+
         if (windowModality == Qt::ApplicationModal && applicationModalUseExecCheckBox->isChecked())
             dialog->exec();
+        else if (windowModality == Qt::WindowModal)
+            dialog->open();
         else
             dialog->show();
     }
@@ -123,27 +194,89 @@ private slots:
         w->setAttribute(Qt::WA_GroupLeader);
         w->show();
     }
-    void on_modelessButton_clicked()
-    { newDialog(Qt::NonModal); }
-    void on_modelessNoParentButton_clicked()
-    { newDialog(Qt::NonModal, false); }
-    void on_windowModalButton_clicked()
-    { newDialog(Qt::WindowModal); }
-    void on_windowModalNoParentButton_clicked()
-    { newDialog(Qt::WindowModal, false); }
-    void on_applicationModalButton_clicked()
-    { newDialog(Qt::ApplicationModal); }
-    void on_applicationModalNoParentButton_clicked()
-    { newDialog(Qt::ApplicationModal, false); }
+
+    void on_modelessCustomDialogButton_clicked()
+    { newDialog(CustomDialogType, Qt::NonModal); }
+    void on_modelessColorDialogButton_clicked()
+    { newDialog(ColorDialogType, Qt::NonModal); }
+    void on_modelessFontDialogButton_clicked()
+    { newDialog(FontDialogType, Qt::NonModal); }
+
+    void on_windowModalCustomDialogButton_clicked()
+    { newDialog(CustomDialogType, Qt::WindowModal); }
+    void on_windowModalColorDialogButton_clicked()
+    { newDialog(ColorDialogType, Qt::WindowModal); }
+    void on_windowModalFileDialogButton_clicked()
+    { newDialog(FileDialogType, Qt::WindowModal); }
+    void on_windowModalFontDialogButton_clicked()
+    { newDialog(FontDialogType, Qt::WindowModal); }
+    void on_windowModalPageSetupDialogButton_clicked()
+    { newDialog(PageSetupDialogType, Qt::WindowModal); }
+    void on_windowModalPrintDialogButton_clicked()
+    { newDialog(PrintDialogType, Qt::WindowModal); }
+
+    void on_applicationModalCustomDialogButton_clicked()
+    { newDialog(CustomDialogType, Qt::ApplicationModal); }
+    void on_applicationModalColorDialogButton_clicked()
+    { newDialog(ColorDialogType, Qt::ApplicationModal); }
+    void on_applicationModalFileDialogButton_clicked()
+    { newDialog(FileDialogType, Qt::ApplicationModal); }
+    void on_applicationModalFontDialogButton_clicked()
+    { newDialog(FontDialogType, Qt::ApplicationModal); }
+    void on_applicationModalPageSetupDialogButton_clicked()
+    { newDialog(PageSetupDialogType, Qt::ApplicationModal); }
+    void on_applicationModalPrintDialogButton_clicked()
+    { newDialog(PrintDialogType, Qt::ApplicationModal); }
 
 private:
-    void newDialog(Qt::WindowModality windowModality, bool withParent = true)
+    void newDialog(DialogType dialogType, Qt::WindowModality windowModality)
     {
-        Dialog *dialog = new Dialog(withParent ? this : 0);
+        QWidget *parent = 0;
+        if (useThisAsParentCheckBox->isChecked())
+            parent = this;
+
+        QDialog *dialog;
+        switch (dialogType) {
+        case CustomDialogType:
+            dialog = new CustomDialog(parent);
+            break;
+        case ColorDialogType:
+            if (windowModality == Qt::ApplicationModal && applicationModalUseExecCheckBox->isChecked()) {
+                QColorDialog::getColor(Qt::white, parent);
+                return;
+            }
+            dialog = new QColorDialog(parent);
+            break;
+        case FileDialogType:
+            if (windowModality == Qt::ApplicationModal && applicationModalUseExecCheckBox->isChecked()) {
+                QFileDialog::getOpenFileName(parent);
+                return;
+            }
+            dialog = new QFileDialog(parent);
+            break;
+        case FontDialogType:
+            if (windowModality == Qt::ApplicationModal && applicationModalUseExecCheckBox->isChecked()) {
+                bool unused = false;
+                QFontDialog::getFont(&unused, parent);
+                return;
+            }
+            dialog = new QFontDialog(parent);
+            break;
+        case PageSetupDialogType:
+            dialog = new QPageSetupDialog(parent);
+            break;
+        case PrintDialogType:
+            dialog = new QPrintDialog(parent);
+            break;
+        }
+
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         dialog->setWindowModality(windowModality);
+
         if (windowModality == Qt::ApplicationModal && applicationModalUseExecCheckBox->isChecked())
             dialog->exec();
+        else if (windowModality == Qt::WindowModal)
+            dialog->open();
         else
             dialog->show();
     }
