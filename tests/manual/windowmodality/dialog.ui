@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>565</width>
-    <height>361</height>
+    <width>574</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,10 +20,10 @@
       <string>Select the type of dialog to create:</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="5" column="0">
+      <item row="6" column="0">
        <widget class="QPushButton" name="siblingApplicationModalButton">
         <property name="text">
-         <string>Sibling Application Modal Dialog</string>
+         <string>Application Modal Dialog (sibling)</string>
         </property>
        </widget>
       </item>
@@ -34,28 +34,14 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
-       <widget class="QPushButton" name="applicationModalChildButton">
+      <item row="5" column="1">
+       <widget class="QPushButton" name="applicationModalNoParentButton">
         <property name="text">
-         <string>Application Modal Child Widget</string>
+         <string>Application Modal Dialog (no parent)</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QPushButton" name="siblingWindowModalButton">
-        <property name="text">
-         <string>Sibling Window Modal Dialog</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="modelessNoParentButton">
-        <property name="text">
-         <string>Modeless Dialog (no parent)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
+      <item row="5" column="0">
        <widget class="QPushButton" name="applicationModalButton">
         <property name="text">
          <string>Application Modal</string>
@@ -69,46 +55,14 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
-       <widget class="QPushButton" name="windowModalChildButton">
+      <item row="0" column="1">
+       <widget class="QPushButton" name="modelessNoParentButton">
         <property name="text">
-         <string>Window Modal Child Widget</string>
+         <string>Modeless Dialog (no parent)</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
-       <widget class="QPushButton" name="applicationModalNoParentButton">
-        <property name="text">
-         <string>Application Modal Dialog (no parent)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" colspan="2">
-       <widget class="QLabel" name="modalChildWidgetInfoLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>11</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Note: Modal Child Widgets are invisible and hidden after 5 seconds.</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="modelessButton">
-        <property name="text">
-         <string>Modeless Dialog</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
+      <item row="4" column="0">
        <widget class="QCheckBox" name="applicationModalUseExecCheckBox">
         <property name="font">
          <font>
@@ -120,6 +74,20 @@
         </property>
         <property name="checked">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="modelessButton">
+        <property name="text">
+         <string>Modeless Dialog</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QPushButton" name="siblingWindowModalButton">
+        <property name="text">
+         <string>Window Modal Dialog (sibling)</string>
         </property>
        </widget>
       </item>

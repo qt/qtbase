@@ -67,16 +67,12 @@ private slots:
     { newDialog(Qt::WindowModal, this); }
     void on_windowModalNoParentButton_clicked()
     { newDialog(Qt::WindowModal, 0); }
-    void on_windowModalChildButton_clicked()
-    { newChildWidget(Qt::WindowModal); }
     void on_siblingWindowModalButton_clicked()
     { newDialog(Qt::WindowModal, parentWidget()); }
     void on_applicationModalButton_clicked()
     { newDialog(Qt::ApplicationModal, this); }
     void on_applicationModalNoParentButton_clicked()
     { newDialog(Qt::ApplicationModal, 0); }
-    void on_applicationModalChildButton_clicked()
-    { newChildWidget(Qt::ApplicationModal); }
     void on_siblingApplicationModalButton_clicked()
     { newDialog(Qt::ApplicationModal, parentWidget()); }
 
@@ -97,15 +93,6 @@ private:
             dialog->exec();
         else
             dialog->show();
-    }
-    void newChildWidget(Qt::WindowModality windowModality)
-    {
-        QWidget *w = new QWidget(this);
-        w->setAttribute(Qt::WA_DeleteOnClose);
-        w->setWindowModality(windowModality);
-        w->setGeometry(0, 0, 0, 0);
-        w->show();
-        QTimer::singleShot(5000, w, SLOT(close()));
     }
     bool event(QEvent *event)
     {
@@ -144,14 +131,10 @@ private slots:
     { newDialog(Qt::WindowModal); }
     void on_windowModalNoParentButton_clicked()
     { newDialog(Qt::WindowModal, false); }
-    void on_windowModalChildButton_clicked()
-    { newChildWidget(Qt::WindowModal); }
     void on_applicationModalButton_clicked()
     { newDialog(Qt::ApplicationModal); }
     void on_applicationModalNoParentButton_clicked()
     { newDialog(Qt::ApplicationModal, false); }
-    void on_applicationModalChildButton_clicked()
-    { newChildWidget(Qt::ApplicationModal); }
 
 private:
     void newDialog(Qt::WindowModality windowModality, bool withParent = true)
@@ -163,15 +146,6 @@ private:
             dialog->exec();
         else
             dialog->show();
-    }
-    void newChildWidget(Qt::WindowModality windowModality)
-    {
-        QWidget *w = new QWidget(this);
-        w->setAttribute(Qt::WA_DeleteOnClose);
-        w->setWindowModality(windowModality);
-        w->setGeometry(0, 0, 0, 0);
-        w->show();
-        QTimer::singleShot(5000, w, SLOT(close()));
     }
     bool event(QEvent *event)
     {
