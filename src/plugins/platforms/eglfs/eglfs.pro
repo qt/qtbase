@@ -12,6 +12,10 @@ DESTDIR = $$QT.gui.plugins/platforms
 #Avoid X11 header collision
 DEFINES += MESA_EGL_NO_X11_HEADERS
 
+#To test the hooks on x11 (xlib), comment the above define too
+#EGLFS_PLATFORM_HOOKS_SOURCES += qeglfs_hooks_x11.cpp
+#LIBS += -lX11
+
 SOURCES =   main.cpp \
             qeglfsintegration.cpp \
             qeglfswindow.cpp \
