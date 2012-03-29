@@ -42,16 +42,14 @@
 #include "qqnxscreen.h"
 #include "qqnxwindow.h"
 
-#include <QtCore/QDebug>
-#include <QtCore/QUuid>
+#ifdef QQNXSCREEN_DEBUG
+#    include <QtCore/QDebug>
+#endif
 #include <QtGui/QWindowSystemInterface>
 
 #include <errno.h>
 
 QT_BEGIN_NAMESPACE
-
-QList<QPlatformScreen *> QQnxScreen::ms_screens;
-QList<QQnxWindow*> QQnxScreen::ms_childWindows;
 
 QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display, bool primaryScreen)
     : m_screenContext(screenContext),
@@ -115,52 +113,7 @@ QQnxScreen::~QQnxScreen()
 #endif
 }
 
-/* static */
-void QQnxScreen::createDisplays(screen_context_t context)
-{
-#if defined(QQNXSCREEN_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
-    // Query number of displays
-    errno = 0;
-    int displayCount;
-    int result = screen_get_context_property_iv(context, SCREEN_PROPERTY_DISPLAY_COUNT, &displayCount);
-    if (result != 0) {
-        qFatal("QQnxScreen: failed to query display count, errno=%d", errno);
-    }
-
-    // Get all displays
-    errno = 0;
-    screen_display_t *displays = (screen_display_t *)alloca(sizeof(screen_display_t) * displayCount);
-    result = screen_get_context_property_pv(context, SCREEN_PROPERTY_DISPLAYS, (void **)displays);
-    if (result != 0) {
-        qFatal("QQnxScreen: failed to query displays, errno=%d", errno);
-    }
-
-    for (int i=0; i<displayCount; i++) {
-#if defined(QQNXSCREEN_DEBUG)
-        qDebug() << "QQnxScreen::Creating screen for display " << i;
-#endif
-        QQnxScreen *screen = new QQnxScreen(context, displays[i], i==0);
-        ms_screens.append(screen);
-    }
-}
-
-/* static */
-void QQnxScreen::destroyDisplays()
-{
-#if defined(QQNXSCREEN_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
-    qDeleteAll(ms_screens);
-    ms_screens.clear();
-
-    // We're not managing the child windows anymore so we need to clear the list.
-    ms_childWindows.clear();
-}
-
-/* static */
-int QQnxScreen::defaultDepth()
+static int defaultDepth()
 {
 #if defined(QQNXSCREEN_DEBUG)
     qDebug() << Q_FUNC_INFO;
@@ -185,6 +138,11 @@ QRect QQnxScreen::availableGeometry() const
     // available geometry = total geometry - keyboard
     return QRect(m_currentGeometry.x(), m_currentGeometry.y(),
                  m_currentGeometry.width(), m_currentGeometry.height() - m_keyboardHeight);
+}
+
+int QQnxScreen::depth() const
+{
+    return defaultDepth();
 }
 
 /*!
@@ -234,17 +192,28 @@ void QQnxScreen::setRotation(int rotation)
     }
 }
 
+QQnxWindow *QQnxScreen::findWindow(screen_window_t windowHandle)
+{
+    Q_FOREACH (QQnxWindow *window, m_childWindows) {
+        QQnxWindow * const result = window->findWindow(windowHandle);
+        if (result)
+            return result;
+    }
+
+    return 0;
+}
+
 void QQnxScreen::addWindow(QQnxWindow *window)
 {
 #if defined(QQNXSCREEN_DEBUG)
     qDebug() << Q_FUNC_INFO << "window =" << window;
 #endif
 
-    if (ms_childWindows.contains(window))
+    if (m_childWindows.contains(window))
         return;
 
-    ms_childWindows.push_back(window);
-    QQnxScreen::updateHierarchy();
+    m_childWindows.push_back(window);
+    updateHierarchy();
 }
 
 void QQnxScreen::removeWindow(QQnxWindow *window)
@@ -253,8 +222,8 @@ void QQnxScreen::removeWindow(QQnxWindow *window)
     qDebug() << Q_FUNC_INFO << "window =" << window;
 #endif
 
-    ms_childWindows.removeAll(window);
-    QQnxScreen::updateHierarchy();
+    m_childWindows.removeAll(window);
+    updateHierarchy();
 }
 
 void QQnxScreen::raiseWindow(QQnxWindow *window)
@@ -264,8 +233,8 @@ void QQnxScreen::raiseWindow(QQnxWindow *window)
 #endif
 
     removeWindow(window);
-    ms_childWindows.push_back(window);
-    QQnxScreen::updateHierarchy();
+    m_childWindows.push_back(window);
+    updateHierarchy();
 }
 
 void QQnxScreen::lowerWindow(QQnxWindow *window)
@@ -275,8 +244,8 @@ void QQnxScreen::lowerWindow(QQnxWindow *window)
 #endif
 
     removeWindow(window);
-    ms_childWindows.push_front(window);
-    QQnxScreen::updateHierarchy();
+    m_childWindows.push_front(window);
+    updateHierarchy();
 }
 
 void QQnxScreen::updateHierarchy()
@@ -285,15 +254,15 @@ void QQnxScreen::updateHierarchy()
     qDebug() << Q_FUNC_INFO;
 #endif
 
-    QList<QQnxWindow*>::iterator it;
+    QList<QQnxWindow*>::const_iterator it;
     int topZorder = 1; // root window is z-order 0, all "top" level windows are "above" it
 
-    for (it = ms_childWindows.begin(); it != ms_childWindows.end(); it++)
+    for (it = m_childWindows.constBegin(); it != m_childWindows.constEnd(); ++it)
         (*it)->updateZorder(topZorder);
 
     // After a hierarchy update, we need to force a flush on all screens.
     // Right now, all screens share a context.
-    screen_flush_context( primaryDisplay()->m_screenContext, 0 );
+    screen_flush_context( m_screenContext, 0 );
 }
 
 void QQnxScreen::onWindowPost(QQnxWindow *window)

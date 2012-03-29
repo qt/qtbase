@@ -100,10 +100,7 @@ QQnxIntegration::QQnxIntegration()
     }
 
     // Create displays for all possible screens (which may not be attached)
-    QQnxScreen::createDisplays(m_screenContext);
-    Q_FOREACH (QPlatformScreen *screen, QQnxScreen::screens()) {
-        screenAdded(screen);
-    }
+    createDisplays();
 
     // Initialize global OpenGL resources
     QQnxGLContext::initialize();
@@ -115,7 +112,7 @@ QQnxIntegration::QQnxIntegration()
     // Create/start navigator event handler
     // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
 #ifndef Q_OS_BLACKBERRY
-    m_navigatorEventHandler = new QQnxNavigatorEventHandler(*QQnxScreen::primaryDisplay());
+    m_navigatorEventHandler = new QQnxNavigatorEventHandler(*primaryDisplay());
 
     // delay invocation of start() to the time the event loop is up and running
     // needed to have the QThread internals of the main thread properly initialized
@@ -131,7 +128,7 @@ QQnxIntegration::QQnxIntegration()
 
     // TODO check if we need to do this for all screens or only the primary one
     QObject::connect(m_virtualKeyboard, SIGNAL(heightChanged(int)),
-                     QQnxScreen::primaryDisplay(), SLOT(keyboardHeightChanged(int)));
+                     primaryDisplay(), SLOT(keyboardHeightChanged(int)));
 
     // Set up the input context
     m_inputContext = new QQnxInputContext(*m_virtualKeyboard);
@@ -166,7 +163,7 @@ QQnxIntegration::~QQnxIntegration()
     delete m_navigatorEventHandler;
 
     // Destroy all displays
-    QQnxScreen::destroyDisplays();
+    destroyDisplays();
 
     // Close connection to QNX composition manager
     screen_destroy_context(m_screenContext);
@@ -204,7 +201,6 @@ QPlatformWindow *QQnxIntegration::createPlatformWindow(QWindow *window) const
 #if defined(QQNXINTEGRATION_DEBUG)
     qDebug() << Q_FUNC_INFO;
 #endif
-    // New windows are created on the primary display.
     return new QQnxWindow(window, m_screenContext);
 }
 
@@ -245,18 +241,10 @@ void QQnxIntegration::moveToScreen(QWindow *window, int screen)
     QQnxWindow *platformWindow = static_cast<QQnxWindow *>(window->handle());
 
     // lookup platform screen by index
-    QQnxScreen *platformScreen = static_cast<QQnxScreen*>(QQnxScreen::screens().at(screen));
+    QQnxScreen *platformScreen = m_screens.at(screen);
 
     // move the platform window to the platform screen
     platformWindow->setScreen(platformScreen);
-}
-
-QList<QPlatformScreen *> QQnxIntegration::screens() const
-{
-#if defined(QQNXINTEGRATION_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
-    return QQnxScreen::screens();
 }
 
 QAbstractEventDispatcher *QQnxIntegration::guiThreadEventDispatcher() const
@@ -324,6 +312,51 @@ void QQnxIntegration::removeWindow(screen_window_t qnxWindow)
     QMutexLocker locker(&ms_windowMapperMutex);
     Q_UNUSED(locker);
     ms_windowMapper.remove(qnxWindow);
+}
+
+void QQnxIntegration::createDisplays()
+{
+#if defined(QQNXINTEGRATION_DEBUG)
+    qDebug() << Q_FUNC_INFO;
+#endif
+    // Query number of displays
+    errno = 0;
+    int displayCount;
+    int result = screen_get_context_property_iv(m_screenContext, SCREEN_PROPERTY_DISPLAY_COUNT, &displayCount);
+    if (result != 0) {
+        qFatal("QQnxIntegration: failed to query display count, errno=%d", errno);
+    }
+
+    // Get all displays
+    errno = 0;
+    screen_display_t *displays = (screen_display_t *)alloca(sizeof(screen_display_t) * displayCount);
+    result = screen_get_context_property_pv(m_screenContext, SCREEN_PROPERTY_DISPLAYS, (void **)displays);
+    if (result != 0) {
+        qFatal("QQnxIntegration: failed to query displays, errno=%d", errno);
+    }
+
+    for (int i=0; i<displayCount; i++) {
+#if defined(QQNXINTEGRATION_DEBUG)
+        qDebug() << "QQnxIntegration::Creating screen for display " << i;
+#endif
+        QQnxScreen *screen = new QQnxScreen(m_screenContext, displays[i], i==0);
+        m_screens.append(screen);
+        screenAdded(screen);
+    }
+}
+
+void QQnxIntegration::destroyDisplays()
+{
+#if defined(QQNXINTEGRATION_DEBUG)
+    qDebug() << Q_FUNC_INFO;
+#endif
+    qDeleteAll(m_screens);
+    m_screens.clear();
+}
+
+QQnxScreen *QQnxIntegration::primaryDisplay() const
+{
+    return m_screens.first();
 }
 
 QT_END_NAMESPACE

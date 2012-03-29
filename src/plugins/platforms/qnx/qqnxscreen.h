@@ -46,7 +46,6 @@
 
 #include "qqnxrootwindow.h"
 
-#include <QtCore/QByteArray>
 #include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
 
@@ -60,15 +59,12 @@ class QQnxScreen : public QObject, public QPlatformScreen
 {
     Q_OBJECT
 public:
-    static QList<QPlatformScreen *> screens() { return ms_screens; }
-    static void createDisplays(screen_context_t context);
-    static void destroyDisplays();
-    static QQnxScreen *primaryDisplay() { return static_cast<QQnxScreen*>(ms_screens.at(0)); }
-    static int defaultDepth();
+    QQnxScreen(screen_context_t context, screen_display_t display, bool primaryScreen);
+    ~QQnxScreen();
 
    QRect geometry() const { return m_currentGeometry; }
    QRect availableGeometry() const;
-   int depth() const { return defaultDepth(); }
+   int depth() const;
    QImage::Format format() const { return (depth() == 32) ? QImage::Format_RGB32 : QImage::Format_RGB16; }
    QSizeF physicalSize() const { return m_currentPhysicalSize; }
 
@@ -82,12 +78,14 @@ public:
     screen_context_t nativeContext() const { return m_screenContext; }
     const char *windowGroupName() const { return m_rootWindow->groupName().constData(); }
 
+    QQnxWindow *findWindow(screen_window_t windowHandle);
+
     /* Window hierarchy management */
-    static void addWindow(QQnxWindow *child);
-    static void removeWindow(QQnxWindow *child);
-    static void raiseWindow(QQnxWindow *window);
-    static void lowerWindow(QQnxWindow *window);
-    static void updateHierarchy();
+    void addWindow(QQnxWindow *child);
+    void removeWindow(QQnxWindow *child);
+    void raiseWindow(QQnxWindow *window);
+    void lowerWindow(QQnxWindow *window);
+    void updateHierarchy();
 
     void onWindowPost(QQnxWindow *window);
 
@@ -97,11 +95,6 @@ private Q_SLOTS:
     void keyboardHeightChanged(int height);
 
 private:
-    QQnxScreen(screen_context_t context, screen_display_t display, bool primaryScreen);
-    ~QQnxScreen();
-
-    static bool orthogonal(int rotation1, int rotation2);
-
     screen_context_t m_screenContext;
     screen_display_t m_display;
     QSharedPointer<QQnxRootWindow> m_rootWindow;
@@ -117,8 +110,7 @@ private:
     QRect m_currentGeometry;
     QPlatformOpenGLContext *m_platformContext;
 
-    static QList<QPlatformScreen *> ms_screens;
-    static QList<QQnxWindow *> ms_childWindows;
+    QList<QQnxWindow *> m_childWindows;
 };
 
 QT_END_NAMESPACE

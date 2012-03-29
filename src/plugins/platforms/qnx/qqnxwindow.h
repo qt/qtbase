@@ -99,6 +99,8 @@ public:
     void setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContext);
     QQnxGLContext *platformOpenGLContext() const { return m_platformOpenGLContext; }
 
+    QQnxWindow *findWindow(screen_window_t windowHandle);
+
 private:
     void removeFromParent();
     void offset(const QPoint &offset);

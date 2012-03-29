@@ -56,6 +56,7 @@ class QQnxNavigatorEventHandler;
 class QQnxAbstractVirtualKeyboard;
 class QQnxWindow;
 class QQnxServices;
+class QQnxScreen;
 
 #ifndef QT_NO_CLIPBOARD
 class QQnxClipboard;
@@ -78,7 +79,6 @@ public:
 
     QPlatformInputContext *inputContext() const;
 
-    QList<QPlatformScreen *> screens() const;
     void moveToScreen(QWindow *window, int screen);
 
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
@@ -98,6 +98,10 @@ public:
     static QWindow *window(screen_window_t qnxWindow);
 
 private:
+    void createDisplays();
+    void destroyDisplays();
+    QQnxScreen *primaryDisplay() const;
+
     static void addWindow(screen_window_t qnxWindow, QWindow *window);
     static void removeWindow(screen_window_t qnxWindow);
 
@@ -110,6 +114,7 @@ private:
     bool m_paintUsingOpenGL;
     QAbstractEventDispatcher *m_eventDispatcher;
     QQnxServices *m_services;
+    QList<QQnxScreen*> m_screens;
 #ifndef QT_NO_CLIPBOARD
     mutable QQnxClipboard* m_clipboard;
 #endif
