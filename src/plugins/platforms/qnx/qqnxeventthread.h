@@ -48,10 +48,12 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQnxScreenEventHandler;
+
 class QQnxEventThread : public QThread
 {
 public:
-    explicit QQnxEventThread(screen_context_t context);
+    QQnxEventThread(screen_context_t context, QQnxScreenEventHandler *screenEventHandler);
     virtual ~QQnxEventThread();
 
     static void injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
@@ -63,6 +65,7 @@ private:
     void shutdown();
 
     screen_context_t m_screenContext;
+    QQnxScreenEventHandler *m_screenEventHandler;
     bool m_quit;
 };
 

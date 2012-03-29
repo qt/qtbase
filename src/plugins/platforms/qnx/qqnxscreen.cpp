@@ -42,6 +42,7 @@
 #include "qqnxscreen.h"
 #include "qqnxwindow.h"
 
+#include <QtCore/QThread>
 #ifdef QQNXSCREEN_DEBUG
 #    include <QtCore/QDebug>
 #endif
@@ -260,6 +261,13 @@ void QQnxScreen::updateHierarchy()
     for (it = m_childWindows.constBegin(); it != m_childWindows.constEnd(); ++it)
         (*it)->updateZorder(topZorder);
 
+    topZorder++;
+    Q_FOREACH (screen_window_t overlay, m_overlays) {
+        if (screen_set_window_property_iv(overlay, SCREEN_PROPERTY_ZORDER, &topZorder) != 0)
+            qWarning("QQnxScreen: failed to update z order for overlay, errno=%d", errno);
+        topZorder++;
+    }
+
     // After a hierarchy update, we need to force a flush on all screens.
     // Right now, all screens share a context.
     screen_flush_context( m_screenContext, 0 );
@@ -291,5 +299,44 @@ void QQnxScreen::keyboardHeightChanged(int height)
     QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), availableGeometry());
 }
 
+void QQnxScreen::addOverlayWindow(screen_window_t window)
+{
+    m_overlays.append(window);
+    updateHierarchy();
+}
+
+void QQnxScreen::removeOverlayWindow(screen_window_t window)
+{
+    const int numOverlaysRemoved = m_overlays.removeAll(window);
+    if (numOverlaysRemoved > 0)
+        updateHierarchy();
+}
+
+void QQnxScreen::newWindowCreated(void *window)
+{
+    Q_ASSERT(thread() == QThread::currentThread());
+    const screen_window_t windowHandle = reinterpret_cast<screen_window_t>(window);
+    screen_display_t display = NULL;
+    if (screen_get_window_property_pv(windowHandle, SCREEN_PROPERTY_DISPLAY, (void**)&display) != 0) {
+        qWarning("QQnx: Failed to get screen for window, errno=%d", errno);
+        return;
+    }
+
+    if (display == nativeDisplay()) {
+        // A window was created on this screen. If we don't know about this window yet, it means
+        // it was not created by Qt, but by some foreign library like the multimedia renderer, which
+        // creates an overlay window when playing a video.
+        // Treat all foreign windows as overlays here.
+        if (!findWindow(windowHandle))
+            addOverlayWindow(windowHandle);
+    }
+}
+
+void QQnxScreen::windowClosed(void *window)
+{
+    Q_ASSERT(thread() == QThread::currentThread());
+    const screen_window_t windowHandle = reinterpret_cast<screen_window_t>(window);
+    removeOverlayWindow(windowHandle);
+}
 
 QT_END_NAMESPACE

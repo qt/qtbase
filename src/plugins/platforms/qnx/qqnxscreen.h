@@ -91,10 +91,17 @@ public:
 
     QSharedPointer<QQnxRootWindow> rootWindow() const { return m_rootWindow; }
 
+public Q_SLOTS:
+    void newWindowCreated(void *window);
+    void windowClosed(void *window);
+
 private Q_SLOTS:
     void keyboardHeightChanged(int height);
 
 private:
+    void addOverlayWindow(screen_window_t window);
+    void removeOverlayWindow(screen_window_t window);
+
     screen_context_t m_screenContext;
     screen_display_t m_display;
     QSharedPointer<QQnxRootWindow> m_rootWindow;
@@ -111,6 +118,7 @@ private:
     QPlatformOpenGLContext *m_platformContext;
 
     QList<QQnxWindow *> m_childWindows;
+    QList<screen_window_t> m_overlays;
 };
 
 QT_END_NAMESPACE

@@ -57,6 +57,7 @@ class QQnxAbstractVirtualKeyboard;
 class QQnxWindow;
 class QQnxServices;
 class QQnxScreen;
+class QQnxScreenEventHandler;
 
 #ifndef QT_NO_CLIPBOARD
 class QQnxClipboard;
@@ -115,6 +116,7 @@ private:
     QAbstractEventDispatcher *m_eventDispatcher;
     QQnxServices *m_services;
     QList<QQnxScreen*> m_screens;
+    QQnxScreenEventHandler *m_screenEventHandler;
 #ifndef QT_NO_CLIPBOARD
     mutable QQnxClipboard* m_clipboard;
 #endif

@@ -48,8 +48,9 @@
 
 QT_BEGIN_NAMESPACE
 
-class QQnxScreenEventHandler
+class QQnxScreenEventHandler : public QObject
 {
+    Q_OBJECT
 public:
     QQnxScreenEventHandler();
 
@@ -58,11 +59,16 @@ public:
 
     static void injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
 
+Q_SIGNALS:
+    void newWindowCreated(void *window);
+    void windowClosed(void *window);
+
 private:
     void handleKeyboardEvent(screen_event_t event);
     void handlePointerEvent(screen_event_t event);
     void handleTouchEvent(screen_event_t event, int qnxType);
     void handleCloseEvent(screen_event_t event);
+    void handleCreateEvent(screen_event_t event);
 
 private:
     enum {

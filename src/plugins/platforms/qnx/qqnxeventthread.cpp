@@ -49,9 +49,11 @@
 
 #include <cctype>
 
-QQnxEventThread::QQnxEventThread(screen_context_t context)
+QQnxEventThread::QQnxEventThread(screen_context_t context,
+                                 QQnxScreenEventHandler *screenEventHandler)
     : QThread(),
       m_screenContext(context),
+      m_screenEventHandler(screenEventHandler),
       m_quit(false)
 {
 }
@@ -69,7 +71,6 @@ void QQnxEventThread::injectKeyboardEvent(int flags, int sym, int mod, int scan,
 
 void QQnxEventThread::run()
 {
-    QQnxScreenEventHandler eventHandler;
     screen_event_t event;
 
     // create screen event
@@ -106,7 +107,7 @@ void QQnxEventThread::run()
     #endif
             m_quit = true;
         } else {
-            eventHandler.handleEvent(event, qnxType);
+            m_screenEventHandler->handleEvent(event, qnxType);
         }
     }
 

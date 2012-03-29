@@ -46,6 +46,7 @@
 #include "qqnxnavigatoreventhandler.h"
 #include "qqnxrasterbackingstore.h"
 #include "qqnxscreen.h"
+#include "qqnxscreeneventhandler.h"
 #include "qqnxwindow.h"
 #include "qqnxvirtualkeyboard.h"
 #include "qqnxclipboard.h"
@@ -85,6 +86,7 @@ QQnxIntegration::QQnxIntegration()
     , m_paintUsingOpenGL(false)
     , m_eventDispatcher(createUnixEventDispatcher())
     , m_services(0)
+    , m_screenEventHandler(new QQnxScreenEventHandler())
 #ifndef QT_NO_CLIPBOARD
     , m_clipboard(0)
 #endif
@@ -106,7 +108,7 @@ QQnxIntegration::QQnxIntegration()
     QQnxGLContext::initialize();
 
     // Create/start event thread
-    m_eventThread = new QQnxEventThread(m_screenContext);
+    m_eventThread = new QQnxEventThread(m_screenContext, m_screenEventHandler);
     m_eventThread->start();
 
     // Create/start navigator event handler
@@ -144,6 +146,8 @@ QQnxIntegration::~QQnxIntegration()
 #if defined(QQNXINTEGRATION_DEBUG)
     qDebug() << "QQnx: platform plugin shutdown begin";
 #endif
+
+    delete m_screenEventHandler;
 
     // Destroy input context
     delete m_inputContext;
@@ -342,6 +346,11 @@ void QQnxIntegration::createDisplays()
         QQnxScreen *screen = new QQnxScreen(m_screenContext, displays[i], i==0);
         m_screens.append(screen);
         screenAdded(screen);
+
+        QObject::connect(m_screenEventHandler, SIGNAL(newWindowCreated(void *)),
+                         screen, SLOT(newWindowCreated(void *)));
+        QObject::connect(m_screenEventHandler, SIGNAL(windowClosed(void *)),
+                         screen, SLOT(windowClosed(void *)));
     }
 }
 
