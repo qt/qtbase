@@ -74,6 +74,7 @@ public:
     bool isInputPanelVisible() const;
 
     QLocale locale() const;
+    void setFocusObject(QObject *object);
 
 protected:
     // Filters only for IMF events.
@@ -82,7 +83,6 @@ protected:
 private Q_SLOTS:
     void keyboardVisibilityChanged(bool visible);
     void keyboardLocaleChanged(const QLocale &locale);
-    void inputItemChanged();
 
 private:
     // IMF Event dispatchers

@@ -58,9 +58,6 @@ QQnxInputContext::QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard) :
     connect(&keyboard, SIGNAL(localeChanged(QLocale)), this, SLOT(keyboardLocaleChanged(QLocale)));
     keyboardVisibilityChanged(keyboard.isVisible());
     keyboardLocaleChanged(keyboard.locale());
-
-    QInputMethod *inputMethod = qApp->inputMethod();
-    connect(inputMethod, SIGNAL(inputItemChanged()), this, SLOT(inputItemChanged()));
 }
 
 QQnxInputContext::~QQnxInputContext()
@@ -165,20 +162,17 @@ void QQnxInputContext::keyboardLocaleChanged(const QLocale &locale)
     }
 }
 
-void QQnxInputContext::inputItemChanged()
+void QQnxInputContext::setFocusObject(QObject *object)
 {
-    QInputMethod *inputMethod = qApp->inputMethod();
-    QObject *inputItem = inputMethod->inputItem();
-
 #if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << "input item=" << inputItem;
+    qDebug() << Q_FUNC_INFO << "input item=" << object;
 #endif
 
-    if (!inputItem) {
+    if (!inputMethodAccepted()) {
         if (m_inputPanelVisible)
             hideInputPanel();
     } else {
-        if (qobject_cast<QAbstractSpinBox*>(inputItem))
+        if (qobject_cast<QAbstractSpinBox*>(object))
             m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
         else
             m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);

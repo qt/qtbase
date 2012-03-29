@@ -68,11 +68,11 @@ public:
     bool isInputPanelVisible() const;
 
     QLocale locale() const;
+    void setFocusObject(QObject *object);
 
 private Q_SLOTS:
     void keyboardVisibilityChanged(bool visible);
     void keyboardLocaleChanged(const QLocale &locale);
-    void inputItemChanged();
 
 private:
     bool hasPhysicalKeyboard();
