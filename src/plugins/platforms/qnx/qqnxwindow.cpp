@@ -121,8 +121,7 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
         qFatal("QQnxWindow: failed to set window swap interval, errno=%d", errno);
     }
 
-    // Assign the window to the primary display (this is the default specified by screen).
-    setScreen(QQnxScreen::primaryDisplay());
+    setScreen(static_cast<QQnxScreen *>(window->screen()->handle()));
 
     // Add the window to the root of the hierarchy
     QQnxScreen::addWindow(this);
