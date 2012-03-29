@@ -273,7 +273,7 @@ void toString(QString &appendTo, IPv6Address address)
 
     // QString::reserve doesn't shrink, so it's fine to us
     appendTo.reserve(appendTo.size() +
-                     embeddedIp4 ? Ip6WithIp4AddressMaxLen : Ip6AddressMaxLen);
+                     (embeddedIp4 ? Ip6WithIp4AddressMaxLen : Ip6AddressMaxLen));
 
     // for finding where to place the "::"
     int zeroRunLength = 0; // in octets
