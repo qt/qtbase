@@ -4286,7 +4286,6 @@ QString DitaXmlGenerator::getLink(const Atom* atom,
     }
     if (!link.isEmpty() && link[0] == '#') {
         link.prepend(outFileName());
-        qDebug() << "LOCAL LINK:" << link;
     }
     return link;
 }
