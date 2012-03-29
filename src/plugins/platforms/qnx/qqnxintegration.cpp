@@ -43,6 +43,7 @@
 #include "qqnxeventthread.h"
 #include "qqnxglbackingstore.h"
 #include "qqnxglcontext.h"
+#include "qqnxnativeinterface.h"
 #include "qqnxnavigatoreventhandler.h"
 #include "qqnxrasterbackingstore.h"
 #include "qqnxscreen.h"
@@ -85,6 +86,7 @@ QQnxIntegration::QQnxIntegration()
     , m_fontDatabase(new QGenericUnixFontDatabase())
     , m_paintUsingOpenGL(false)
     , m_eventDispatcher(createUnixEventDispatcher())
+    , m_nativeInterface(new QQnxNativeInterface())
     , m_services(0)
     , m_screenEventHandler(new QQnxScreenEventHandler())
 #ifndef QT_NO_CLIPBOARD
@@ -148,6 +150,8 @@ QQnxIntegration::~QQnxIntegration()
 #endif
 
     delete m_screenEventHandler;
+
+    delete m_nativeInterface;
 
     // Destroy input context
     delete m_inputContext;
@@ -257,6 +261,11 @@ QAbstractEventDispatcher *QQnxIntegration::guiThreadEventDispatcher() const
     qDebug() << Q_FUNC_INFO;
 #endif
     return m_eventDispatcher;
+}
+
+QPlatformNativeInterface *QQnxIntegration::nativeInterface() const
+{
+    return m_nativeInterface;
 }
 
 #ifndef QT_NO_CLIPBOARD

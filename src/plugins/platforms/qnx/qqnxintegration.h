@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QQnxEventThread;
 class QQnxInputContext;
+class QQnxNativeInterface;
 class QQnxNavigatorEventHandler;
 class QQnxAbstractVirtualKeyboard;
 class QQnxWindow;
@@ -86,6 +87,8 @@ public:
 
     QPlatformFontDatabase *fontDatabase() const { return m_fontDatabase; }
 
+    QPlatformNativeInterface *nativeInterface() const;
+
 #ifndef QT_NO_CLIPBOARD
     QPlatformClipboard *clipboard() const;
 #endif
@@ -114,6 +117,7 @@ private:
     QPlatformFontDatabase *m_fontDatabase;
     bool m_paintUsingOpenGL;
     QAbstractEventDispatcher *m_eventDispatcher;
+    QQnxNativeInterface *m_nativeInterface;
     QQnxServices *m_services;
     QList<QQnxScreen*> m_screens;
     QQnxScreenEventHandler *m_screenEventHandler;
