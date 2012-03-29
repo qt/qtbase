@@ -928,26 +928,26 @@ void tst_QDBusMarshall::sendCallErrors_data()
             << "Method \"ping\" with signature \"\" on interface \"com.trolltech.autotests.qpong\" doesn't exist\n" << (const char*)0;
 
     QTest::newRow("invalid-service") << "this isn't valid" << objectPath << interfaceName << "ping" << QVariantList()
-            << "com.trolltech.QtDBus.Error.InvalidService"
+            << "org.qtproject.QtDBus.Error.InvalidService"
             << "Invalid service name: this isn't valid" << "";
 
     QTest::newRow("empty-path") << serviceName << "" << interfaceName << "ping" << QVariantList()
-            << "com.trolltech.QtDBus.Error.InvalidObjectPath"
+            << "org.qtproject.QtDBus.Error.InvalidObjectPath"
             << "Object path cannot be empty" << "";
     QTest::newRow("invalid-path") << serviceName << "//" << interfaceName << "ping" << QVariantList()
-            << "com.trolltech.QtDBus.Error.InvalidObjectPath"
+            << "org.qtproject.QtDBus.Error.InvalidObjectPath"
             << "Invalid object path: //" << "";
 
     // empty interfaces are valid
     QTest::newRow("invalid-interface") << serviceName << objectPath << "this isn't valid" << "ping" << QVariantList()
-            << "com.trolltech.QtDBus.Error.InvalidInterface"
+            << "org.qtproject.QtDBus.Error.InvalidInterface"
             << "Invalid interface class: this isn't valid" << "";
 
     QTest::newRow("empty-method") << serviceName << objectPath << interfaceName << "" << QVariantList()
-            << "com.trolltech.QtDBus.Error.InvalidMember"
+            << "org.qtproject.QtDBus.Error.InvalidMember"
             << "method name cannot be empty" << "";
     QTest::newRow("invalid-method") << serviceName << objectPath << interfaceName << "this isn't valid" << QVariantList()
-            << "com.trolltech.QtDBus.Error.InvalidMember"
+            << "org.qtproject.QtDBus.Error.InvalidMember"
             << "Invalid method name: this isn't valid" << "";
 
     QTest::newRow("invalid-variant1") << serviceName << objectPath << interfaceName << "ping"

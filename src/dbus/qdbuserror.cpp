@@ -93,12 +93,12 @@ org.freedesktop.DBus.Error.UnknownMethod
 org.freedesktop.DBus.Error.TimedOut
 org.freedesktop.DBus.Error.InvalidSignature
 org.freedesktop.DBus.Error.UnknownInterface
-com.trolltech.QtDBus.Error.InternalError
 org.freedesktop.DBus.Error.UnknownObject
-com.trolltech.QtDBus.Error.InvalidService
-com.trolltech.QtDBus.Error.InvalidObjectPath
-com.trolltech.QtDBus.Error.InvalidInterface
-com.trolltech.QtDBus.Error.InvalidMember
+org.qtproject.QtDBus.Error.InternalError
+org.qtproject.QtDBus.Error.InvalidService
+org.qtproject.QtDBus.Error.InvalidObjectPath
+org.qtproject.QtDBus.Error.InvalidInterface
+org.qtproject.QtDBus.Error.InvalidMember
 */
 
 // in the same order as KnownErrors!
@@ -122,19 +122,19 @@ static const char errorMessages_string[] =
     "org.freedesktop.DBus.Error.TimedOut\0"
     "org.freedesktop.DBus.Error.InvalidSignature\0"
     "org.freedesktop.DBus.Error.UnknownInterface\0"
-    "com.trolltech.QtDBus.Error.InternalError\0"
     "org.freedesktop.DBus.Error.UnknownObject\0"
-    "com.trolltech.QtDBus.Error.InvalidService\0"
-    "com.trolltech.QtDBus.Error.InvalidObjectPath\0"
-    "com.trolltech.QtDBus.Error.InvalidInterface\0"
-    "com.trolltech.QtDBus.Error.InvalidMember\0"
+    "org.qtproject.QtDBus.Error.InternalError\0"
+    "org.qtproject.QtDBus.Error.InvalidService\0"
+    "org.qtproject.QtDBus.Error.InvalidObjectPath\0"
+    "org.qtproject.QtDBus.Error.InvalidInterface\0"
+    "org.qtproject.QtDBus.Error.InvalidMember\0"
     "\0";
 
 static const int errorMessages_indices[] = {
-       0,    6,   40,   76,  118,  153,  191,  231,
-     273,  313,  349,  384,  421,  461,  501,  540,
-     581,  617,  661,  705,  746,  787,  829,  874,
-     918,    0
+    0,    6,   40,   76,  118,  153,  191,  231,
+    273,  313,  349,  384,  421,  461,  501,  540,
+    581,  617,  661,  705,  746,  787,  829,  874,
+    918,   -1
 };
 
 static const int errorMessages_count = sizeof errorMessages_indices /
@@ -226,9 +226,12 @@ static inline QDBusError::ErrorType get(const char *name)
                                 (\c org.freedesktop.DBus.Error.TimedOut)
     \value InvalidSignature     The type signature is not valid or compatible
                                 (\c org.freedesktop.DBus.Error.InvalidSignature)
-    \value UnknownInterface     The interface is not known
+    \value UnknownInterface     The interface is not known in this object
+                                (\c org.freedesktop.DBus.Error.UnknownInterface)
+    \value UnknownObject        The object path points to an object that does not exist
+                                (\c org.freedesktop.DBus.Error.UnknownObject)
+
     \value InternalError        An internal error occurred
-                                (\c com.trolltech.QtDBus.Error.InternalError)
 
     \value InvalidObjectPath    The object path provided is invalid.
 
@@ -237,8 +240,6 @@ static inline QDBusError::ErrorType get(const char *name)
     \value InvalidMember        The member is invalid.
 
     \value InvalidInterface     The interface is invalid.
-
-    \value UnknownObject        The remote object could not be found.
 */
 
 #ifndef QT_BOOTSTRAPPED
