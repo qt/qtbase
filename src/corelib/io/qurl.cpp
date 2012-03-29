@@ -115,9 +115,6 @@
     \list
     \li When creating an QString to contain a URL from a QByteArray or a
        char*, always use QString::fromUtf8().
-    \o Favor the use of QUrl::fromEncoded() and QUrl::toEncoded() instead of
-       QUrl(string) and QUrl::toString() when converting a QUrl to or from
-       a string.
     \endlist
 
     \sa QUrlInfo
