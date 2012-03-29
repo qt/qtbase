@@ -1379,7 +1379,7 @@ QUrl::~QUrl()
 }
 
 /*!
-    Returns true if the URL is valid; otherwise returns false.
+    Returns true if the URL is non-empty and valid; otherwise returns false.
 
     The URL is run through a conformance test. Every part of the URL
     must conform to the standard encoding rules of the URI standard
@@ -1389,7 +1389,7 @@ QUrl::~QUrl()
 */
 bool QUrl::isValid() const
 {
-    if (!d) return true;
+    if (isEmpty()) return false;
     return d->sectionHasError == 0;
 }
 
@@ -1399,17 +1399,7 @@ bool QUrl::isValid() const
 bool QUrl::isEmpty() const
 {
     if (!d) return true;
-
-    // cannot use sectionIsPresent here
-    // we may have only empty sections present
-    return d->scheme.isEmpty()
-            && d->userName.isEmpty()
-            && d->password.isEmpty()
-            && d->host.isEmpty()
-            && d->port == -1
-            && d->path.isEmpty()
-            && d->query.isEmpty()
-            && d->fragment.isEmpty();
+    return d->isEmpty();
 }
 
 /*!

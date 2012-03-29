@@ -206,7 +206,7 @@ void tst_QUrl::getSetCheck()
 void tst_QUrl::constructing()
 {
     QUrl url;
-    QVERIFY(url.isValid());
+    QVERIFY(!url.isValid());
     QVERIFY(url.isEmpty());
     QCOMPARE(url.port(), -1);
     QCOMPARE(url.toString(), QString());
@@ -1230,7 +1230,6 @@ void tst_QUrl::compat_isValid_02_data()
 
     QString n = "";
 
-    QTest::newRow( "ok_00" ) << n     << n     << n     << n                   << -1 << n << (bool)true;
     QTest::newRow( "ok_01" ) << n     << n     << n     << n                   << -1 << QString("path") << (bool)true;
     QTest::newRow( "ok_02" ) << QString("ftp") << n     << n     << QString("ftp.qt.nokia.com") << -1 << n      << (bool)true;
     QTest::newRow( "ok_03" ) << QString("ftp") << QString("foo") << n     << QString("ftp.qt.nokia.com") << -1 << n      << (bool)true;
@@ -1239,6 +1238,7 @@ void tst_QUrl::compat_isValid_02_data()
     QTest::newRow( "ok_06" ) << QString("ftp") << QString("foo") << n     << QString("ftp.qt.nokia.com") << -1 << QString("path") << (bool)true;
     QTest::newRow( "ok_07" ) << QString("ftp") << QString("foo") << QString("bar") << QString("ftp.qt.nokia.com") << -1 << QString("path")<< (bool)true;
 
+    QTest::newRow( "err_01" ) << n     << n     << n     << n                   << -1 << n << (bool)false;
     QTest::newRow( "err_02" ) << QString("ftp") << n     << n     << n                   << -1 << n << (bool)true;
     QTest::newRow( "err_03" ) << n     << QString("foo") << n     << n                   << -1 << n << (bool)true;
     QTest::newRow( "err_04" ) << n     << n     << QString("bar") << n                   << -1 << n << (bool)true;
@@ -1693,7 +1693,7 @@ void tst_QUrl::schemeValidator_data()
     QTest::addColumn<bool>("result");
     QTest::addColumn<QString>("toString");
 
-    QTest::newRow("empty") << QByteArray() << true << QString();
+    QTest::newRow("empty") << QByteArray() << false << QString();
 
     // ftp
     QTest::newRow("ftp:") << QByteArray("ftp:") << true << QString("ftp:");
