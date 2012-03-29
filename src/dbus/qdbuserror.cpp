@@ -94,6 +94,8 @@ org.freedesktop.DBus.Error.TimedOut
 org.freedesktop.DBus.Error.InvalidSignature
 org.freedesktop.DBus.Error.UnknownInterface
 org.freedesktop.DBus.Error.UnknownObject
+org.freedesktop.DBus.Error.UnknownProperty
+org.freedesktop.DBus.Error.PropertyReadOnly
 org.qtproject.QtDBus.Error.InternalError
 org.qtproject.QtDBus.Error.InvalidService
 org.qtproject.QtDBus.Error.InvalidObjectPath
@@ -123,6 +125,8 @@ static const char errorMessages_string[] =
     "org.freedesktop.DBus.Error.InvalidSignature\0"
     "org.freedesktop.DBus.Error.UnknownInterface\0"
     "org.freedesktop.DBus.Error.UnknownObject\0"
+    "org.freedesktop.DBus.Error.UnknownProperty\0"
+    "org.freedesktop.DBus.Error.PropertyReadOnly\0"
     "org.qtproject.QtDBus.Error.InternalError\0"
     "org.qtproject.QtDBus.Error.InvalidService\0"
     "org.qtproject.QtDBus.Error.InvalidObjectPath\0"
@@ -133,8 +137,8 @@ static const char errorMessages_string[] =
 static const int errorMessages_indices[] = {
     0,    6,   40,   76,  118,  153,  191,  231,
     273,  313,  349,  384,  421,  461,  501,  540,
-    581,  617,  661,  705,  746,  787,  829,  874,
-    918,   -1
+    581,  617,  661,  705,  746,  789,  833,  874,
+    916,  961, 1005,   -1
 };
 
 static const int errorMessages_count = sizeof errorMessages_indices /
@@ -230,6 +234,10 @@ static inline QDBusError::ErrorType get(const char *name)
                                 (\c org.freedesktop.DBus.Error.UnknownInterface)
     \value UnknownObject        The object path points to an object that does not exist
                                 (\c org.freedesktop.DBus.Error.UnknownObject)
+    \value UnknownProperty      The property does not exist in this interface
+                                (\c org.freedesktop.DBus.Error.UnknownProperty)
+    \value PropertyReadOnly     The property set failed because the property is read-only
+                                (\c org.freedesktop.DBus.Error.PropertyReadOnly)
 
     \value InternalError        An internal error occurred
 

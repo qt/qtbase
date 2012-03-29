@@ -81,6 +81,8 @@ public:
         InvalidSignature,
         UnknownInterface,
         UnknownObject,
+        UnknownProperty,
+        PropertyReadOnly,
         InternalError,
         InvalidService,
         InvalidObjectPath,
