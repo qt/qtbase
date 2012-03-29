@@ -160,7 +160,8 @@ void QQnxScreenEventHandler::injectKeyboardEvent(int flags, int sym, int modifie
             key = keyTranslator(cap);
         }
 
-        QWindowSystemInterface::handleKeyEvent(QGuiApplication::focusWindow(), type, key, qtMod, keyStr);
+        QWindowSystemInterface::handleExtendedKeyEvent(QGuiApplication::focusWindow(), type, key, qtMod,
+                scan, sym, modifiers, keyStr);
 #if defined(QQNXSCREENEVENT_DEBUG)
         qDebug() << "QQNX: Qt key t=" << type << ", k=" << key << ", s=" << keyStr;
 #endif
