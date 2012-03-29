@@ -182,8 +182,6 @@ QMaliitPlatformInputContext::QMaliitPlatformInputContext()
 {
     if (debug)
         qDebug() << "QMaliitPlatformInputContext::QMaliitPlatformInputContext()";
-    QInputMethod *im = qApp->inputMethod();
-    connect(im, SIGNAL(inputItemChanged()), this, SLOT(inputItemChanged()));
 }
 
 QMaliitPlatformInputContext::~QMaliitPlatformInputContext(void)
@@ -198,8 +196,7 @@ bool QMaliitPlatformInputContext::isValid() const
 
 void QMaliitPlatformInputContext::invokeAction(QInputMethod::Action action, int x)
 {
-    QObject *input = qApp->inputMethod()->inputItem();
-    if (!input)
+    if (!inputMethodAccepted())
         return;
 
     if (action == QInputMethod::Click) {
@@ -220,14 +217,12 @@ void QMaliitPlatformInputContext::invokeAction(QInputMethod::Action action, int 
 
 void QMaliitPlatformInputContext::reset()
 {
-    QObject *input = qApp->inputMethod()->inputItem();
-
     const bool hadPreedit = !d->preedit.isEmpty();
-    if (hadPreedit && input) {
+    if (hadPreedit && inputMethodAccepted()) {
         // ### selection
         QInputMethodEvent event;
         event.setCommitString(d->preedit);
-        QGuiApplication::sendEvent(input, &event);
+        QGuiApplication::sendEvent(qGuiApp->focusObject(), &event);
         d->preedit.clear();
     }
 
@@ -238,13 +233,11 @@ void QMaliitPlatformInputContext::reset()
 
 void QMaliitPlatformInputContext::update(Qt::InputMethodQueries queries)
 {
-    QInputMethod *method = qApp->inputMethod();
-    QObject *input = method->inputItem();
-    if (!input)
+    if (!qGuiApp->focusObject())
         return;
 
     QInputMethodQueryEvent query(queries);
-    QGuiApplication::sendEvent(input, &query);
+    QGuiApplication::sendEvent(qGuiApp->focusObject(), &query);
 
     if (queries & Qt::ImSurroundingText)
         d->imState["surroundingText"] = query.value(Qt::ImSurroundingText);
@@ -254,8 +247,8 @@ void QMaliitPlatformInputContext::update(Qt::InputMethodQueries queries)
         d->imState["anchorPosition"] = query.value(Qt::ImAnchorPosition);
     if (queries & Qt::ImCursorRectangle) {
         QRect rect = query.value(Qt::ImCursorRectangle).toRect();
-        rect = method->inputItemTransform().mapRect(rect);
-        QWindow *window = method->inputWindow();
+        rect = qGuiApp->inputMethod()->inputItemTransform().mapRect(rect);
+        QWindow *window = qGuiApp->focusWindow();
         if (window)
             d->imState["cursorRectangle"] = QRect(window->mapToGlobal(rect.topLeft()), rect.size());
     }
@@ -289,8 +282,7 @@ void QMaliitPlatformInputContext::activationLostEvent()
 
 void QMaliitPlatformInputContext::commitString(const QString &string, int replacementStart, int replacementLength, int /* cursorPos */)
 {
-    QObject *input = qApp->inputMethod()->inputItem();
-    if (!input)
+    if (!inputMethodAccepted())
         return;
 
     d->preedit.clear();
@@ -300,13 +292,12 @@ void QMaliitPlatformInputContext::commitString(const QString &string, int replac
     // ### start/cursorPos
     QInputMethodEvent event;
     event.setCommitString(string, replacementStart, replacementLength);
-    QCoreApplication::sendEvent(input, &event);
+    QCoreApplication::sendEvent(qGuiApp->focusObject(), &event);
 }
 
 void QMaliitPlatformInputContext::updatePreedit(const QDBusMessage &message)
 {
-    QObject *input = qApp->inputMethod()->inputItem();
-    if (!input)
+    if (!inputMethodAccepted())
         return;
 
     QList<QVariant> arguments = message.arguments();
@@ -375,7 +366,7 @@ void QMaliitPlatformInputContext::updatePreedit(const QDBusMessage &message)
     QInputMethodEvent event(d->preedit, attributes);
     if (replacementStart || replacementLength)
         event.setCommitString(QString(), replacementStart, replacementLength);
-    QCoreApplication::sendEvent(input, &event);
+    QCoreApplication::sendEvent(qGuiApp->focusObject(), &event);
 }
 
 void QMaliitPlatformInputContext::copy()
@@ -435,12 +426,11 @@ bool QMaliitPlatformInputContext::selection(QString &selection)
 {
     selection.clear();
 
-    QObject *input = qApp->inputMethod()->inputItem();
-    if (!input)
+    if (!inputMethodAccepted())
         return false;
 
     QInputMethodQueryEvent query(Qt::ImCurrentSelection);
-    QGuiApplication::sendEvent(input, &query);
+    QGuiApplication::sendEvent(qGuiApp->focusObject(), &query);
     QVariant value = query.value(Qt::ImCurrentSelection);
     if (!value.isValid())
         return false;
@@ -471,14 +461,13 @@ void QMaliitPlatformInputContext::setRedirectKeys(bool)
 
 void QMaliitPlatformInputContext::setSelection(int start, int length)
 {
-    QObject *input = qApp->inputMethod()->inputItem();
-    if (!input)
+    if (!inputMethodAccepted())
         return;
 
     QList<QInputMethodEvent::Attribute> attributes;
     attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, start, length, QVariant());
     QInputMethodEvent event(QString(), attributes);
-    QGuiApplication::sendEvent(input, &event);
+    QGuiApplication::sendEvent(qGuiApp->focusObject(), &event);
 }
 
 void QMaliitPlatformInputContext::updateInputMethodArea(int x, int y, int width, int height)
@@ -492,14 +481,12 @@ void QMaliitPlatformInputContext::updateServerWindowOrientation(Qt::ScreenOrient
     d->server->appOrientationChanged(orientationAngle(orientation));
 }
 
-void QMaliitPlatformInputContext::inputItemChanged()
+void QMaliitPlatformInputContext::setFocusObject(QObject *object)
 {
     if (!d->valid)
         return;
 
-    QInputMethod *method = qApp->inputMethod();
-    QObject *input = method->inputItem();
-    QWindow *window = method->inputWindow();
+    QWindow *window = qGuiApp->focusWindow();
     if (window != d->window.data()) {
        if (d->window)
            disconnect(d->window.data(), SIGNAL(contentOrientationChanged(Qt::ScreenOrientation)),
@@ -510,8 +497,8 @@ void QMaliitPlatformInputContext::inputItemChanged()
                     this, SLOT(updateServerWindowOrientation(Qt::ScreenOrientation)));
     }
 
-    d->imState["focusState"] = input != 0;
-    if (input) {
+    d->imState["focusState"] = (object != 0);
+    if (inputMethodAccepted()) {
         if (window)
             d->imState["winId"] = static_cast<qulonglong>(window->winId());
 
@@ -524,7 +511,7 @@ void QMaliitPlatformInputContext::inputItemChanged()
         }
     }
     d->sendStateUpdate(/*focusChanged*/true);
-    if (input && window && d->visibility == InputPanelShowRequested)
+    if (inputMethodAccepted() && window && d->visibility == InputPanelShowRequested)
         showInputPanel();
 }
 
@@ -533,8 +520,7 @@ void QMaliitPlatformInputContext::showInputPanel()
     if (debug)
         qDebug() << "showInputPanel";
 
-    QInputMethod *method = qApp->inputMethod();
-    if (!method->inputItem() || !method->inputWindow())
+    if (!inputMethodAccepted())
         d->visibility = InputPanelShowRequested;
     else {
         d->server->showInputMethod();
