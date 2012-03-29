@@ -343,17 +343,28 @@ static QByteArray qtTypeName(const QString &signature, const QDBusIntrospection:
 {
     int type = QDBusMetaType::signatureToType(signature.toLatin1());
     if (type == QVariant::Invalid) {
-        QString annotationName = QString::fromLatin1("com.trolltech.QtDBus.QtTypeName");
+        QString annotationName = QString::fromLatin1("org.qtproject.QtDBus.QtTypeName");
         if (paramId >= 0)
             annotationName += QString::fromLatin1(".%1%2").arg(QLatin1String(direction)).arg(paramId);
         QString qttype = annotations.value(annotationName);
         if (!qttype.isEmpty())
             return qttype.toLatin1();
 
-        fprintf(stderr, "Got unknown type `%s'\n", qPrintable(signature));
-        fprintf(stderr, "You should add <annotation name=\"%s\" value=\"<type>\"/> to the XML description\n",
-                qPrintable(annotationName));
-        exit(1);
+        QString oldAnnotationName = QString::fromLatin1("com.trolltech.QtDBus.QtTypeName");
+        if (paramId >= 0)
+            oldAnnotationName += QString::fromLatin1(".%1%2").arg(QLatin1String(direction)).arg(paramId);
+        qttype = annotations.value(annotationName);
+
+        if (qttype.isEmpty()) {
+            fprintf(stderr, "Got unknown type `%s'\n", qPrintable(signature));
+            fprintf(stderr, "You should add <annotation name=\"%s\" value=\"<type>\"/> to the XML description\n",
+                    qPrintable(annotationName));
+            exit(1);
+        }
+
+        fprintf(stderr, "Warning: deprecated annotation '%s' found; suggest updating to '%s'\n",
+                qPrintable(oldAnnotationName), qPrintable(annotationName));
+        return qttype.toLatin1();
     }
 
     return QVariant::typeToName(QVariant::Type(type));
@@ -442,21 +453,37 @@ static void writeArgList(QTextStream &ts, const QStringList &argNames,
 
 static QString propertyGetter(const QDBusIntrospection::Property &property)
 {
-    QString getter = property.annotations.value(QLatin1String("com.trolltech.QtDBus.propertyGetter"));
-    if (getter.isEmpty()) {
-        getter =  property.name;
-        getter[0] = getter[0].toLower();
+    QString getter = property.annotations.value(QLatin1String("org.qtproject.QtDBus.PropertyGetter"));
+    if (!getter.isEmpty())
+        return getter;
+
+    getter = property.annotations.value(QLatin1String("com.trolltech.QtDBus.propertyGetter"));
+    if (!getter.isEmpty()) {
+        fprintf(stderr, "Warning: deprecated annotation 'com.trolltech.QtDBus.propertyGetter' found;"
+                " suggest updating to 'org.qtproject.QtDBus.PropertyGetter'\n");
+        return getter;
     }
+
+    getter =  property.name;
+    getter[0] = getter[0].toLower();
     return getter;
 }
 
 static QString propertySetter(const QDBusIntrospection::Property &property)
 {
-    QString setter = property.annotations.value(QLatin1String("com.trolltech.QtDBus.propertySetter"));
-    if (setter.isEmpty()) {
-        setter = QLatin1String("set") + property.name;
-        setter[3] = setter[3].toUpper();
+    QString setter = property.annotations.value(QLatin1String("org.qtproject.QtDBus.PropertySetter"));
+    if (!setter.isEmpty())
+        return setter;
+
+    setter = property.annotations.value(QLatin1String("com.trolltech.QtDBus.propertySetter"));
+    if (!setter.isEmpty()) {
+        fprintf(stderr, "Warning: deprecated annotation 'com.trolltech.QtDBus.propertySetter' found;"
+                " suggest updating to 'org.qtproject.QtDBus.PropertySetter'\n");
+        return setter;
     }
+
+    setter = QLatin1String("set") + property.name;
+    setter[3] = setter[3].toUpper();
     return setter;
 }
 

@@ -129,7 +129,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
 
                     // do we need to describe this argument?
                     if (QDBusMetaType::signatureToType(typeName) == QVariant::Invalid)
-                        xml += QString::fromLatin1("      <annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"%1\"/>\n")
+                        xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"%1\"/>\n")
                             .arg(typeNameToXml(mm.normalizedType.constData()));
             } else {
                 return QString();
@@ -171,7 +171,7 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
         // do we need to describe this argument?
         if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
             const char *typeName = QMetaType::typeName(types.at(j));
-            xml += QString::fromLatin1("      <annotation name=\"com.trolltech.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
+            xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
                     .arg(isOutput ? QLatin1String("Out") : QLatin1String("In"))
                     .arg(isOutput && !isSignal ? j - inputCount : j - 1)
                     .arg(typeNameToXml(typeName));
@@ -233,7 +233,7 @@ static QString generateInterfaceXml(const ClassDef *mo)
                       .arg(QLatin1String(accessvalues[access]));
 
             if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
-                retval += QString::fromLatin1(">\n      <annotation name=\"com.trolltech.QtDBus.QtTypeName\" value=\"%3\"/>\n    </property>\n")
+                retval += QString::fromLatin1(">\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"%3\"/>\n    </property>\n")
                           .arg(typeNameToXml(mp.type.constData()));
             } else {
                 retval += QLatin1String("/>\n");
@@ -277,11 +277,11 @@ QString qDBusInterfaceFromClassDef(const ClassDef *mo)
     interface.replace(QLatin1String("::"), QLatin1String("."));
 
     if (interface.startsWith(QLatin1String("QDBus"))) {
-        interface.prepend(QLatin1String("com.trolltech.QtDBus."));
+        interface.prepend(QLatin1String("org.qtproject.QtDBus."));
     } else if (interface.startsWith(QLatin1Char('Q')) &&
                 interface.length() >= 2 && interface.at(1).isUpper()) {
         // assume it's Qt
-        interface.prepend(QLatin1String("local.com.trolltech.Qt."));
+        interface.prepend(QLatin1String("local.org.qtproject.Qt."));
     } else {
         interface.prepend(QLatin1String("local."));
     }
