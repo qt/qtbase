@@ -122,6 +122,7 @@ private Q_SLOTS:
     void assignArrays();
 
     void testTrailingComma();
+    void testDetachBug();
 private:
     QString testDataDir;
 };
@@ -1818,6 +1819,30 @@ void TestQtJson::testTrailingComma()
         QJsonDocument doc = QJsonDocument::fromJson(jsons[i], &error);
         QCOMPARE(error.error, QJsonParseError::MissingObject);
     }
+}
+
+void TestQtJson::testDetachBug()
+{
+    QJsonObject dynamic;
+    QJsonObject embedded;
+
+    QJsonObject local;
+
+    embedded.insert("Key1", QString("Value1"));
+    embedded.insert("Key2", QString("Value2"));
+    dynamic.insert(QStringLiteral("Bogus"), QString("bogusValue"));
+    dynamic.insert("embedded", embedded);
+    local = dynamic.value("embedded").toObject();
+
+    dynamic.remove("embedded");
+
+    QCOMPARE(local.keys().size(),2);
+    local.remove("Key1");
+    local.remove("Key2");
+    QCOMPARE(local.keys().size(), 0);
+
+    local.insert("Key1", QString("anotherValue"));
+    QCOMPARE(local.keys().size(), 1);
 }
 
 QTEST_MAIN(TestQtJson)
