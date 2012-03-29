@@ -3886,12 +3886,14 @@ QString DitaXmlGenerator::guidForNode(const Node* node)
 /*!
   Constructs a file name appropriate for the \a node and returns
   it. If the \a node is not a fake node, or if it is a fake node but
-  it is neither an external page node nor an image node, call the
-  PageGenerator::fileName() function.
+  it is neither an external page node nor an image node or a ditamap,
+  call the PageGenerator::fileName() function.
  */
 QString DitaXmlGenerator::fileName(const Node* node)
 {
     if (node->type() == Node::Fake) {
+        if (static_cast<const FakeNode*>(node)->pageType() == Node::DitaMapPage)
+            return node->name();
         if (static_cast<const FakeNode*>(node)->subType() == Node::ExternalPage)
             return node->name();
         if (static_cast<const FakeNode*>(node)->subType() == Node::Image)
@@ -5974,38 +5976,89 @@ void DitaXmlGenerator::writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle
         return;
     writeStartTag(DT_topicref);
     xmlWriter().writeAttribute("navtitle",navtitle);
-    NodeMultiMap::iterator i = nmm->begin();
-    while (i != nmm->end()) {
-        // Hardcode not writing index.dita multiple times in the tree.
-        // index.dita should only appear at the top of the ditamap.
-        if (fileName(i.value()) == "index.dita") {
-            i++;
-            continue;
+    NodeMultiMap::iterator i;
+    NodeMultiMap *ditaMaps = pageTypeMaps[Node::DitaMapPage];
+
+    /*!
+       Put all pages that are already in a hand-written ditamap not in
+       the qt.ditamap separately. It loops through all ditamaps recursively
+       before deciding to write an article to qt.ditamap.
+     */
+    if ((navtitle == "articles" && ditaMaps && ditaMaps->size() > 0)) {
+        NodeMultiMap::iterator mapIterator = ditaMaps->begin();
+        while (mapIterator != ditaMaps->end()) {
+            writeStartTag(DT_mapref);
+            xmlWriter().writeAttribute("navtitle",mapIterator.key());
+            xmlWriter().writeAttribute("href",fileName(mapIterator.value()));
+            writeEndTag();
+            ++mapIterator;
         }
-        writeStartTag(DT_topicref);
-        xmlWriter().writeAttribute("navtitle",i.key());
-        xmlWriter().writeAttribute("href",fileName(i.value()));
-        switch (i.value()->type()) {
-        case Node::Class: {
-            const NamespaceNode* nn = static_cast<const NamespaceNode*>(i.value());
-            const NodeList& c = nn->childNodes();
-            for (int j=0; j<c.size(); ++j) {
-                if (c[j]->isInternal() || c[j]->access() == Node::Private || c[j]->doc().isEmpty())
-                    continue;
-                if (c[j]->type() == Node::Class) {
-                    writeStartTag(DT_topicref);
-                    xmlWriter().writeAttribute("navtitle",c[j]->name());
-                    xmlWriter().writeAttribute("href",fileName(c[j]));
-                    writeEndTag(); // </topicref>
+        i = nmm->begin();
+        while (i != nmm->end()) {
+            // Hardcode not writing index.dita multiple times in the tree.
+            // index.dita should only appear at the top of the ditamap.
+            if (fileName(i.value()) == "index.dita") {
+                i++;
+                continue;
+            }
+            bool foundInDitaMap = false;
+            mapIterator = ditaMaps->begin();
+            while (mapIterator != ditaMaps->end()) {
+                const DitaMapNode *dmNode = static_cast<const DitaMapNode *>(mapIterator.value());
+                for (int count = 0; count < dmNode->map().count(); count++) {
+                    if (dmNode->map().at(count)->navtitle() == i.key()) {
+                        foundInDitaMap = true;
+                    }
+                    ++mapIterator;
                 }
             }
-            break;
+            if (!foundInDitaMap) {
+                writeStartTag(DT_topicref);
+                xmlWriter().writeAttribute("navtitle",i.key());
+                xmlWriter().writeAttribute("href",fileName(i.value()));
+                writeEndTag(); // </topicref>
+            }
+            ++i;
         }
-        default:
-            break;
+    }
+    /*!
+       Shortcut when there are no hand-written ditamaps or when we are
+       not generating the articles list.
+     */
+    else {
+        i = nmm->begin();
+        while (i != nmm->end()) {
+            // Hardcode not writing index.dita multiple times in the tree.
+            // index.dita should only appear at the top of the ditamap.
+            if (fileName(i.value()) == "index.dita") {
+                i++;
+                continue;
+            }
+            writeStartTag(DT_topicref);
+            xmlWriter().writeAttribute("navtitle",i.key());
+            xmlWriter().writeAttribute("href",fileName(i.value()));
+            switch (i.value()->type()) {
+            case Node::Class: {
+                const NamespaceNode* nn = static_cast<const NamespaceNode*>(i.value());
+                const NodeList& c = nn->childNodes();
+                for (int j=0; j<c.size(); ++j) {
+                    if (c[j]->isInternal() || c[j]->access() == Node::Private || c[j]->doc().isEmpty())
+                        continue;
+                    if (c[j]->type() == Node::Class) {
+                        writeStartTag(DT_topicref);
+                        xmlWriter().writeAttribute("navtitle",c[j]->name());
+                        xmlWriter().writeAttribute("href",fileName(c[j]));
+                        writeEndTag(); // </topicref>
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+            }
+            writeEndTag(); // </topicref>
+            ++i;
         }
-        writeEndTag(); // </topicref>
-        ++i;
     }
     writeEndTag(); // </topicref>
 }
