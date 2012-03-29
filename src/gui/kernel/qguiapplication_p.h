@@ -129,6 +129,8 @@ public:
 
     static bool processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
 
+    static void sendQWindowEventToQPlatformWindow(QWindow *window, QEvent *event);
+
     static inline Qt::Alignment visualAlignment(Qt::LayoutDirection direction, Qt::Alignment alignment)
     {
         if (!(alignment & Qt::AlignHorizontal_Mask))

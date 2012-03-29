@@ -1032,6 +1032,7 @@ bool QGuiApplication::notify(QObject *object, QEvent *event)
     }
 #endif
 
+    QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(qobject_cast<QWindow *>(object), event);
     return QCoreApplication::notify(object, event);
 }
 
@@ -1051,6 +1052,20 @@ bool QGuiApplication::event(QEvent *e)
 bool QGuiApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents)
 {
     return QCoreApplication::compressEvent(event, receiver, postedEvents);
+}
+
+void QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(QWindow *window, QEvent *event)
+{
+    if (!window)
+        return;
+    QPlatformWindow *platformWindow = window->handle();
+    if (!platformWindow)
+        return;
+    // spontaneous events come from the platform integration already, we don't need to send the events back
+    if (event->spontaneous())
+        return;
+    // let the platform window do any handling it needs to as well
+    platformWindow->windowEvent(event);
 }
 
 bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result)

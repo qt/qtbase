@@ -2992,6 +2992,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     d->checkReceiverThread(receiver);
 #endif
 
+    QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(qobject_cast<QWindow *>(receiver), e);
+
     // capture the current mouse/keyboard state
     if(e->spontaneous()) {
         if (e->type() == QEvent::MouseButtonPress

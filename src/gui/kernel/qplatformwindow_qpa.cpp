@@ -311,6 +311,18 @@ bool QPlatformWindow::setMouseGrabEnabled(bool grab)
 }
 
 /*!
+    Reimplement this method to be able to do any platform specific event
+    handling. All events for window() are passed to this function before being
+    sent to QWindow::event().
+
+    The default implementation is empty and does nothing with \a event.
+*/
+void QPlatformWindow::windowEvent(QEvent *event)
+{
+    Q_UNUSED(event);
+}
+
+/*!
     \class QPlatformWindow
     \since 4.8
     \internal

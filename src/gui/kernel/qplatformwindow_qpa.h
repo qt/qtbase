@@ -113,6 +113,8 @@ public:
     virtual bool setKeyboardGrabEnabled(bool grab);
     virtual bool setMouseGrabEnabled(bool grab);
 
+    virtual void windowEvent(QEvent *event);
+
 protected:
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 private:
