@@ -140,6 +140,13 @@ template <typename T1, typename T2>
 inline void qYouForgotTheQ_OBJECT_Macro(T1, T2) {}
 #endif // QT_NO_QOBJECT_CHECK
 
+#if defined(Q_CC_INTEL)
+// Cannot redefine the visibility of a method in an exported class
+# define Q_DECL_HIDDEN_STATIC_METACALL
+#else
+# define Q_DECL_HIDDEN_STATIC_METACALL Q_DECL_HIDDEN
+#endif
+
 /* tmake ignore Q_OBJECT */
 #define Q_OBJECT \
 public: \
@@ -151,7 +158,7 @@ public: \
     virtual int qt_metacall(QMetaObject::Call, int, void **); \
 private: \
     Q_DECL_HIDDEN static const QMetaObjectExtraData staticMetaObjectExtraData; \
-    Q_DECL_HIDDEN static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
+    Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
 
 /* tmake ignore Q_OBJECT */
 #define Q_OBJECT_FAKE Q_OBJECT

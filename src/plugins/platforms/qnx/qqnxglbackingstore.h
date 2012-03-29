@@ -58,11 +58,11 @@ class QQnxGLPaintDevice : public QGLPaintDevice
 {
 public:
     QQnxGLPaintDevice(QWindow *window);
-    virtual ~QQnxGLPaintDevice();
+    ~QQnxGLPaintDevice();
 
-    virtual QPaintEngine *paintEngine() const;
-    virtual QSize size() const;
-    virtual QGLContext *context() const { return m_glContext; }
+    QPaintEngine *paintEngine() const;
+    QSize size() const;
+    QGLContext *context() const { return m_glContext; }
 
 private:
     QQnxWindow *m_window;
@@ -73,13 +73,13 @@ class QQnxGLBackingStore : public QPlatformBackingStore
 {
 public:
     QQnxGLBackingStore(QWindow *window);
-    virtual ~QQnxGLBackingStore();
+    ~QQnxGLBackingStore();
 
-    virtual QPaintDevice *paintDevice() { return m_paintDevice; }
-    virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    virtual void resize(const QSize &size, const QRegion &staticContents);
-    virtual void beginPaint(const QRegion &region);
-    virtual void endPaint(const QRegion &region);
+    QPaintDevice *paintDevice() { return m_paintDevice; }
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
+    void resize(const QSize &size, const QRegion &staticContents);
+    void beginPaint(const QRegion &region);
+    void endPaint(const QRegion &region);
 
     void resizeSurface(const QSize &size);
 

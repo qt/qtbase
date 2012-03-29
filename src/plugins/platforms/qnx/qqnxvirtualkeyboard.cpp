@@ -42,9 +42,6 @@
 #include "qqnxvirtualkeyboard.h"
 #include "qqnxscreen.h"
 
-#include <QtGui/QPlatformScreen>
-#include <QtGui/QPlatformWindow>
-
 #include <QtCore/QDebug>
 #include <QtCore/QSocketNotifier>
 #include <QtCore/private/qcore_unix_p.h>
@@ -59,10 +56,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+QT_BEGIN_NAMESPACE
+
 const char  *QQnxVirtualKeyboard::ms_PPSPath = "/pps/services/input/control?wait";
 const size_t QQnxVirtualKeyboard::ms_bufferSize = 2048;
-
-static QQnxVirtualKeyboard *s_instance = 0;
 
 // Huge hack for keyboard shadow (see QNX PR 88400). Should be removed ASAP.
 #define KEYBOARD_SHADOW_HEIGHT 8
@@ -85,20 +82,6 @@ QQnxVirtualKeyboard::~QQnxVirtualKeyboard()
     close();
 }
 
-/* static */
-QQnxVirtualKeyboard& QQnxVirtualKeyboard::instance()
-{
-    if (!s_instance) {
-        s_instance = new QQnxVirtualKeyboard();
-
-        // delay invocation of start() to the time the event loop is up and running
-        // needed to have the QThread internals of the main thread properly initialized
-        QMetaObject::invokeMethod(s_instance, "start", Qt::QueuedConnection);
-    }
-
-    return *s_instance;
-}
-
 void QQnxVirtualKeyboard::start()
 {
 #ifdef QQNXVIRTUALKEYBOARD_DEBUG
@@ -106,15 +89,6 @@ void QQnxVirtualKeyboard::start()
 #endif
     if (!connect())
         return;
-}
-
-/* static */
-void QQnxVirtualKeyboard::destroy()
-{
-    if (s_instance) {
-        delete s_instance;
-        s_instance = 0;
-    }
 }
 
 void QQnxVirtualKeyboard::close()
@@ -292,7 +266,8 @@ void QQnxVirtualKeyboard::handleKeyboardInfoMessage()
 
     if (newHeight != m_height) {
         m_height = newHeight;
-        updateAvailableScreenGeometry();
+        if (m_visible)
+            emit heightChanged(m_height);
     }
 
     const QLocale locale = QLocale(languageId + QLatin1Char('_') + countryId);
@@ -312,25 +287,13 @@ void QQnxVirtualKeyboard::handleKeyboardStateChangeMessage(bool visible)
 #ifdef QQNXVIRTUALKEYBOARD_DEBUG
     qDebug() << "QQNX: handleKeyboardStateChangeMessage " << visible;
 #endif
-    updateAvailableScreenGeometry();
+    if (visible != m_visible)
+        emit heightChanged(height());
 
     if (visible)
         showKeyboard();
     else
         hideKeyboard();
-}
-
-void QQnxVirtualKeyboard::updateAvailableScreenGeometry()
-{
-#ifdef QQNXVIRTUALKEYBOARD_DEBUG
-    qDebug() << "QQNX: updateAvailableScreenGeometry: keyboard visible=" << m_visible << ", keyboard height=" << m_height;
-#endif
-
-    // TODO: What screen index should be used? I assume primaryScreen here because it works, and
-    //       we do it for handleScreenGeometryChange elsewhere but since we have support
-    //       for more than one screen, that's not going to always work.
-    QQnxScreen *platformScreen = QQnxScreen::primaryDisplay();
-    QWindowSystemInterface::handleScreenAvailableGeometryChange(platformScreen->screen(), platformScreen->availableGeometry());
 }
 
 bool QQnxVirtualKeyboard::showKeyboard()
@@ -346,6 +309,9 @@ bool QQnxVirtualKeyboard::showKeyboard()
     // NOTE:  This must be done everytime the keyboard is shown even if there is no change because
     // hiding the keyboard wipes the setting.
     applyKeyboardModeOptions();
+
+    if (m_visible)
+        return true;
 
     pps_encoder_reset(m_encoder);
 
@@ -398,7 +364,12 @@ bool QQnxVirtualKeyboard::hideKeyboard()
 
 void QQnxVirtualKeyboard::setKeyboardMode(KeyboardMode mode)
 {
+    if (m_keyboardMode == mode)
+        return;
+
     m_keyboardMode = mode;
+    if (m_visible)
+        applyKeyboardModeOptions();
 }
 
 void QQnxVirtualKeyboard::applyKeyboardModeOptions()
@@ -495,3 +466,5 @@ void QQnxVirtualKeyboard::addSymbolModeOptions()
     pps_encoder_add_string(m_encoder, "enter", "enter.default");
     pps_encoder_add_string(m_encoder, "type", "symbol");
 }
+
+QT_END_NAMESPACE

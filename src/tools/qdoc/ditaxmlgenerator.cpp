@@ -4818,13 +4818,13 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
             FunctionNode* fn = const_cast<FunctionNode*>(static_cast<const FunctionNode*>(*m));
             writeStartTag(DT_cxxFunction);
             xmlWriter().writeAttribute("id",fn->guid());
+            if (fn->metaness() == FunctionNode::Signal)
+                xmlWriter().writeAttribute("otherprops","signal");
+            else if (fn->metaness() == FunctionNode::Slot)
+                xmlWriter().writeAttribute("otherprops","slot");
             if (!attribute.isEmpty())
                 xmlWriter().writeAttribute("outputclass",attribute);
             writeStartTag(DT_apiName);
-            if (fn->metaness() == FunctionNode::Signal)
-                xmlWriter().writeAttribute("outputclass","signal");
-            else if (fn->metaness() == FunctionNode::Slot)
-                xmlWriter().writeAttribute("outputclass","slot");
             writeCharacters(fn->name());
             writeEndTag(); // </apiName>
             generateBrief(fn,marker);
@@ -4975,6 +4975,11 @@ void DitaXmlGenerator::replaceTypesWithLinks(const Node* n,
                         writeCharacters(arg.toString());
                     else
                         addLink(linkForNode(tn,parent),arg,DT_apiRelation);
+                }
+                else {
+                    // Write simple arguments, like void and bool,
+                    // which do not have a Qt defined target.
+                    writeCharacters(arg.toString());
                 }
             }
         }

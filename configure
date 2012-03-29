@@ -2538,15 +2538,10 @@ if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
     fi
 fi
 
-SYSROOT_FLAG=
 if [ -n "$CFG_SYSROOT" ]; then
-    if compilerSupportsFlag --sysroot="$CFG_SYSROOT"; then
-	[ "$OPT_VERBOSE" = "yes" ] && echo "Setting sysroot to: $CFG_SYSROOT"
-	SYSROOT_FLAG="--sysroot=$CFG_SYSROOT"
-    else
-	echo >&2 "The compiler doesn't support the --sysroot flag, I can't set the sysroot"
-	exit 1
-    fi
+    SYSROOT_FLAG="--sysroot=$CFG_SYSROOT"
+else
+    SYSROOT_FLAG=
 fi
 export SYSROOT_FLAG    # used by config.tests/unix/compile.test
 
@@ -3184,6 +3179,8 @@ Additional options:
  $EGLFSY  -eglfs ............. Compile EGLFS support.
 
     -xplatform target ... The target platform when cross-compiling.
+
+    -sysroot <dir> ...... Sets <dir> as the target compiler's and qmake's sysroot.
 
     -no-feature-<feature> Do not compile in <feature>.
     -feature-<feature> .. Compile in <feature>. The available features

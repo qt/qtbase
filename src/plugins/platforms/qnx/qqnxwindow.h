@@ -69,11 +69,11 @@ public:
     QQnxWindow(QWindow *window, screen_context_t context);
     virtual ~QQnxWindow();
 
-    virtual void setGeometry(const QRect &rect);
-    virtual void setVisible(bool visible);
-    virtual void setOpacity(qreal level);
+    void setGeometry(const QRect &rect);
+    void setVisible(bool visible);
+    void setOpacity(qreal level);
 
-    virtual WId winId() const { return (WId)m_window; }
+    WId winId() const { return (WId)m_window; }
     screen_window_t nativeHandle() const { return m_window; }
 
     void setBufferSize(const QSize &size);
@@ -86,10 +86,10 @@ public:
 
     void setScreen(QQnxScreen *platformScreen);
 
-    virtual void setParent(const QPlatformWindow *window);
-    virtual void raise();
-    virtual void lower();
-    virtual void requestActivateWindow();
+    void setParent(const QPlatformWindow *window);
+    void raise();
+    void lower();
+    void requestActivateWindow();
 
     void gainedFocus();
 

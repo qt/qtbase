@@ -52,6 +52,7 @@
 #include "qplatformintegration_qpa.h"
 
 #include <QtCore/QAbstractEventDispatcher>
+#include <QtCore/QVariant>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
 #include <QtCore/qmutex.h>
@@ -142,6 +143,8 @@ QWindow *QGuiApplicationPrivate::focus_window = 0;
 static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;
 bool QGuiApplicationPrivate::obey_desktop_settings = true;
+
+static qreal fontSmoothingGamma = 1.7;
 
 extern void qRegisterGuiVariant();
 extern void qUnregisterGuiVariant();
@@ -579,13 +582,13 @@ static void init_platform(const QString &pluginArgument, const QString &platform
             nativeInterface->setProperty(name.constData(), value);
         }
     }
+    fontSmoothingGamma = QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::FontSmoothingGamma).toReal();
 }
 
 static void init_plugins(const QList<QByteArray> &pluginList)
 {
     for (int i = 0; i < pluginList.count(); ++i) {
         QByteArray pluginSpec = pluginList.at(i);
-        qDebug() << "init_plugins" << i << pluginSpec;
         int colonPos = pluginSpec.indexOf(':');
         QObject *plugin;
         if (colonPos < 0)
@@ -593,7 +596,6 @@ static void init_plugins(const QList<QByteArray> &pluginList)
         else
             plugin = QGenericPluginFactory::create(QLatin1String(pluginSpec.mid(0, colonPos)),
                                                    QLatin1String(pluginSpec.mid(colonPos+1)));
-        qDebug() << "   created" << plugin;
         if (plugin)
             QGuiApplicationPrivate::generic_plugin_list.append(plugin);
     }
@@ -2176,8 +2178,7 @@ const QDrawHelperGammaTables *QGuiApplicationPrivate::gammaTables()
 {
     QDrawHelperGammaTables *result = m_gammaTables.load();
     if (!result){
-        const qreal smoothing = qApp->styleHints()->fontSmoothingGamma();
-        QDrawHelperGammaTables *tables = new QDrawHelperGammaTables(smoothing);
+        QDrawHelperGammaTables *tables = new QDrawHelperGammaTables(fontSmoothingGamma);
         if (!m_gammaTables.testAndSetRelease(0, tables))
             delete tables;
         result = m_gammaTables.load();

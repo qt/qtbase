@@ -40,11 +40,11 @@
 ****************************************************************************/
 
 #include "qqnxscreen.h"
-#include "qqnxvirtualkeyboard.h"
 #include "qqnxwindow.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QUuid>
+#include <QtGui/QWindowSystemInterface>
 
 #include <errno.h>
 
@@ -59,6 +59,7 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
       m_rootWindow(),
       m_primaryScreen(primaryScreen),
       m_posted(false),
+      m_keyboardHeight(0),
       m_platformContext(0)
 {
 #if defined(QQNXSCREEN_DEBUG)
@@ -182,9 +183,8 @@ QRect QQnxScreen::availableGeometry() const
     qDebug() << Q_FUNC_INFO;
 #endif
     // available geometry = total geometry - keyboard
-    int keyboardHeight = QQnxVirtualKeyboard::instance().height();
     return QRect(m_currentGeometry.x(), m_currentGeometry.y(),
-                 m_currentGeometry.width(), m_currentGeometry.height() - keyboardHeight);
+                 m_currentGeometry.width(), m_currentGeometry.height() - m_keyboardHeight);
 }
 
 /*!
@@ -311,5 +311,16 @@ void QQnxScreen::onWindowPost(QQnxWindow *window)
         m_posted = true;
     }
 }
+
+void QQnxScreen::keyboardHeightChanged(int height)
+{
+    if (height == m_keyboardHeight)
+        return;
+
+    m_keyboardHeight = height;
+
+    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), availableGeometry());
+}
+
 
 QT_END_NAMESPACE

@@ -51,9 +51,9 @@ class QQnxClipboard : public QPlatformClipboard
 {
 public:
     QQnxClipboard();
-    virtual ~QQnxClipboard();
-    virtual QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard);
-    virtual void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
+    ~QQnxClipboard();
+    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard);
+    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
 
 private:
     class MimeData;

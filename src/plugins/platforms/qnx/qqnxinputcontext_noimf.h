@@ -48,24 +48,26 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQnxVirtualKeyboard;
+
 class QQnxInputContext : public QPlatformInputContext
 {
     Q_OBJECT
 public:
-    explicit QQnxInputContext();
+    explicit QQnxInputContext(QQnxVirtualKeyboard &keyboard);
     ~QQnxInputContext();
 
-    virtual bool isValid() const;
+    bool isValid() const;
 
     void reset();
-    virtual bool filterEvent( const QEvent *event );
+    bool filterEvent( const QEvent *event );
     bool handleKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
 
-    virtual void showInputPanel();
-    virtual void hideInputPanel();
-    virtual bool isInputPanelVisible() const;
+    void showInputPanel();
+    void hideInputPanel();
+    bool isInputPanelVisible() const;
 
-    virtual QLocale locale() const;
+    QLocale locale() const;
 
 private Q_SLOTS:
     void keyboardVisibilityChanged(bool visible);
@@ -77,6 +79,7 @@ private:
 
     bool m_inputPanelVisible;
     QLocale m_inputPanelLocale;
+    QQnxVirtualKeyboard &m_virtualKeyboard;
 };
 
 QT_END_NAMESPACE

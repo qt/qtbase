@@ -52,6 +52,8 @@
 #include <QtCore/QStack>
 #include <QtCore/QXmlStreamReader>
 
+// Note: A copy of this file is used in Qt Designer (qttools/src/designer/src/lib/shared/rcc.cpp)
+
 QT_BEGIN_NAMESPACE
 
 enum {

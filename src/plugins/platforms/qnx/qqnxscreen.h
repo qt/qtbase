@@ -47,6 +47,7 @@
 #include "qqnxrootwindow.h"
 
 #include <QtCore/QByteArray>
+#include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
 
 #include <screen/screen.h>
@@ -55,8 +56,9 @@ QT_BEGIN_NAMESPACE
 
 class QQnxWindow;
 
-class QQnxScreen : public QPlatformScreen
+class QQnxScreen : public QObject, public QPlatformScreen
 {
+    Q_OBJECT
 public:
     static QList<QPlatformScreen *> screens() { return ms_screens; }
     static void createDisplays(screen_context_t context);
@@ -64,11 +66,11 @@ public:
     static QQnxScreen *primaryDisplay() { return static_cast<QQnxScreen*>(ms_screens.at(0)); }
     static int defaultDepth();
 
-    virtual QRect geometry() const { return m_currentGeometry; }
-    virtual QRect availableGeometry() const;
-    virtual int depth() const { return defaultDepth(); }
-    virtual QImage::Format format() const { return (depth() == 32) ? QImage::Format_RGB32 : QImage::Format_RGB16; }
-    virtual QSizeF physicalSize() const { return m_currentPhysicalSize; }
+   QRect geometry() const { return m_currentGeometry; }
+   QRect availableGeometry() const;
+   int depth() const { return defaultDepth(); }
+   QImage::Format format() const { return (depth() == 32) ? QImage::Format_RGB32 : QImage::Format_RGB16; }
+   QSizeF physicalSize() const { return m_currentPhysicalSize; }
 
     bool isPrimaryScreen() const { return m_primaryScreen; }
 
@@ -91,9 +93,12 @@ public:
 
     QSharedPointer<QQnxRootWindow> rootWindow() const { return m_rootWindow; }
 
+private Q_SLOTS:
+    void keyboardHeightChanged(int height);
+
 private:
     QQnxScreen(screen_context_t context, screen_display_t display, bool primaryScreen);
-    virtual ~QQnxScreen();
+    ~QQnxScreen();
 
     static bool orthogonal(int rotation1, int rotation2);
 
@@ -102,10 +107,10 @@ private:
     QSharedPointer<QQnxRootWindow> m_rootWindow;
     bool m_primaryScreen;
     bool m_posted;
-    bool m_usingOpenGL;
 
     int m_initialRotation;
     int m_currentRotation;
+    int m_keyboardHeight;
     QSize m_initialPhysicalSize;
     QSize m_currentPhysicalSize;
     QRect m_initialGeometry;
