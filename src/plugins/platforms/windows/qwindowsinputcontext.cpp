@@ -184,7 +184,7 @@ void QWindowsInputContext::reset()
     QPlatformInputContext::reset();
     if (!m_compositionContext.hwnd)
         return;
-    QObject *fo = qApp->inputMethod()->inputItem();
+    QObject *fo = qApp->focusObject();
     if (QWindowsContext::verboseInputMethods)
         qDebug() << __FUNCTION__<< fo;
     if (!fo)
@@ -329,11 +329,11 @@ static inline QTextFormat standardFormat(StandardFormat format)
 
 bool QWindowsInputContext::startComposition(HWND hwnd)
 {
-    const QObject *fo = qApp->inputMethod()->inputItem();
+    const QObject *fo = qApp->focusObject();
     if (!fo)
         return false;
     // This should always match the object.
-    QWindow *window = qApp->inputMethod()->inputWindow();
+    QWindow *window = qApp->focusWindow();
     if (!window)
         return false;
     if (QWindowsContext::verboseInputMethods)
@@ -397,7 +397,7 @@ static inline QList<QInputMethodEvent::Attribute>
 
 bool QWindowsInputContext::composition(HWND hwnd, LPARAM lParamIn)
 {
-    QObject *fo = qApp->inputMethod()->inputItem();
+    QObject *fo = qApp->focusObject();
     const int lParam = int(lParamIn);
     if (QWindowsContext::verboseInputMethods)
         qDebug() << '>' << __FUNCTION__ << fo << debugComposition(lParam)
@@ -459,7 +459,7 @@ bool QWindowsInputContext::endComposition(HWND hwnd)
     // against that.
     if (m_endCompositionRecursionGuard || m_compositionContext.hwnd != hwnd)
         return false;
-    QObject *fo = qApp->inputMethod()->inputItem();
+    QObject *fo = qApp->focusObject();
     if (!fo)
         return false;
 
@@ -537,7 +537,7 @@ bool QWindowsInputContext::handleIME_Request(WPARAM wParam,
 
 int QWindowsInputContext::reconvertString(RECONVERTSTRING *reconv)
 {
-    QObject *fo = qApp->inputMethod()->inputItem();
+    QObject *fo = qApp->focusObject();
     if (!fo)
         return false;
 
