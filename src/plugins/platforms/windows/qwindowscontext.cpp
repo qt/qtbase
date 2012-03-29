@@ -54,6 +54,7 @@
 #include <QtGui/QWindow>
 #include <QtGui/QWindowSystemInterface>
 #include <QtGui/QPlatformNativeInterface>
+#include <QtGui/QGuiApplication>
 
 #include <QtCore/QSet>
 #include <QtCore/QHash>
@@ -791,6 +792,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         if (QWindowsTheme *theme = QWindowsTheme::instance())
             theme->windowsThemeChanged(platformWindow->window());
         return true;
+    case QtWindows::ActivateWindowEvent:
+        if (platformWindow->testFlag(QWindowsWindow::BlockedByModal))
+            if (const QWindow *modalWindow = QGuiApplication::modalWindow())
+                QWindowsWindow::baseWindowOf(modalWindow)->alertWindow();
+        break;
     default:
         break;
     }

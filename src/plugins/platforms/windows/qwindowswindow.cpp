@@ -1194,6 +1194,22 @@ void QWindowsWindow::lower()
         SetWindowPos(m_data.hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 }
 
+void QWindowsWindow::windowEvent(QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::WindowBlocked: // Blocked by another modal window.
+        setEnabled(false);
+        setFlag(BlockedByModal);
+        break;
+    case QEvent::WindowUnblocked:
+        setEnabled(true);
+        clearFlag(BlockedByModal);
+        break;
+    default:
+        break;
+    }
+}
+
 void QWindowsWindow::propagateSizeHints()
 {
     if (QWindowsContext::verboseWindows)
@@ -1352,6 +1368,50 @@ QWindowsWindow *QWindowsWindow::childAt(const QPoint &clientPoint, unsigned cwex
         return childAtScreenPoint(QWindowsGeometryHint::mapToGlobal(m_data.hwnd, clientPoint),
                                   cwexflags);
     return 0;
+}
+
+void QWindowsWindow::alertWindow(int durationMs)
+{
+    DWORD timeOutMs = GetCaretBlinkTime();
+    if (!timeOutMs || timeOutMs == INFINITE)
+        timeOutMs = 250;
+
+    FLASHWINFO info;
+    info.cbSize = sizeof(info);
+    info.hwnd = m_data.hwnd;
+    info.dwFlags = FLASHW_TRAY;
+    info.dwTimeout = timeOutMs;
+    info.uCount = durationMs == 0 ? 10 : durationMs / timeOutMs;
+    FlashWindowEx(&info);
+}
+
+void QWindowsWindow::stopAlertWindow()
+{
+    FLASHWINFO info;
+    info.cbSize = sizeof(info);
+    info.hwnd = m_data.hwnd;
+    info.dwFlags = FLASHW_STOP;
+    info.dwTimeout = 0;
+    info.uCount = 0;
+    FlashWindowEx(&info);
+}
+
+bool QWindowsWindow::isEnabled() const
+{
+    return (style() & WS_DISABLED) == 0;
+}
+
+void QWindowsWindow::setEnabled(bool enabled)
+{
+    const unsigned oldStyle = style();
+    unsigned newStyle = oldStyle;
+    if (enabled) {
+        newStyle &= ~WS_DISABLED;
+    } else {
+        newStyle |= WS_DISABLED;
+    }
+    if (newStyle != oldStyle)
+        setStyle(newStyle);
 }
 
 QByteArray QWindowsWindow::debugWindowFlags(Qt::WindowFlags wf)
