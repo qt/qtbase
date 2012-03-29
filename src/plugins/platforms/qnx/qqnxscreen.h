@@ -62,11 +62,11 @@ public:
     QQnxScreen(screen_context_t context, screen_display_t display, bool primaryScreen);
     ~QQnxScreen();
 
-   QRect geometry() const { return m_currentGeometry; }
-   QRect availableGeometry() const;
-   int depth() const;
-   QImage::Format format() const { return (depth() == 32) ? QImage::Format_RGB32 : QImage::Format_RGB16; }
-   QSizeF physicalSize() const { return m_currentPhysicalSize; }
+    QRect geometry() const { return m_currentGeometry; }
+    QRect availableGeometry() const;
+    int depth() const;
+    QImage::Format format() const { return (depth() == 32) ? QImage::Format_RGB32 : QImage::Format_RGB16; }
+    QSizeF physicalSize() const { return m_currentPhysicalSize; }
 
     bool isPrimaryScreen() const { return m_primaryScreen; }
 
