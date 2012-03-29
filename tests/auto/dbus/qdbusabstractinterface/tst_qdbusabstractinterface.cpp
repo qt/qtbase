@@ -49,8 +49,8 @@
 #include "interface.h"
 #include "pinger.h"
 
-static const char serviceName[] = "com.trolltech.autotests.qpinger";
-static const char objectPath[] = "/com/trolltech/qpinger";
+static const char serviceName[] = "org.qtproject.autotests.qpinger";
+static const char objectPath[] = "/org/qtproject/qpinger";
 static const char *interfaceName = serviceName;
 
 typedef QSharedPointer<com::trolltech::QtDBus::Pinger> Pinger;
@@ -452,9 +452,9 @@ void tst_QDBusAbstractInterface::makeAsyncMultiOutCallPeer()
     QCoreApplication::instance()->processEvents();
 }
 
-static const char server_serviceName[] = "com.trolltech.autotests.dbusserver";
-static const char server_objectPath[] = "/com/trolltech/server";
-static const char server_interfaceName[] = "com.trolltech.QtDBus.Pinger";
+static const char server_serviceName[] = "org.qtproject.autotests.dbusserver";
+static const char server_objectPath[] = "/org/qtproject/server";
+static const char server_interfaceName[] = "org.qtproject.QtDBus.Pinger";
 
 class DBusServerThread : public QThread
 {
@@ -975,7 +975,7 @@ void tst_QDBusAbstractInterface::getComplexSignalPeer()
 
 void tst_QDBusAbstractInterface::followSignal()
 {
-    const QString serviceToFollow = "com.trolltech.tst_qdbusabstractinterface.FollowMe";
+    const QString serviceToFollow = "org.qtproject.tst_qdbusabstractinterface.FollowMe";
     Pinger p = getPinger(serviceToFollow);
     QVERIFY2(p, "Not connected to D-Bus");
 

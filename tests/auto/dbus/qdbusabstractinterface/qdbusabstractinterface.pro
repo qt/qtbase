@@ -3,4 +3,4 @@ TARGET = tst_qdbusabstractinterface
 TEMPLATE = subdirs
 CONFIG += ordered
 SUBDIRS = qpinger test
-OTHER_FILES += com.trolltech.QtDBus.Pinger.xml
+OTHER_FILES += org.qtproject.QtDBus.Pinger.xml

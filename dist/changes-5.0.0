@@ -423,6 +423,14 @@ QtNetwork
 * The openssl network backend now reads the ssl configuration file allowing
   the use of openssl engines.
 
+QtDBus
+------
+* QtDBus now generates property annotations for the Qt type names
+  in the org.qtproject.QtDBus namespace. When parsing such annotations
+  both the old and new namespaces are accepted.
+
+* QtDBus error codes have been updated to be on the org.qtproject.QtDBus.Error
+  namespace.
 
 QtOpenGL
 --------

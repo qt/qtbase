@@ -49,8 +49,8 @@
 
 #include <dbus/dbus.h>
 
-static const char serviceName[] = "com.trolltech.autotests.qpong";
-static const char objectPath[] = "/com/trolltech/qpong";
+static const char serviceName[] = "org.qtproject.autotests.qpong";
+static const char objectPath[] = "/org/qtproject/qpong";
 static const char *interfaceName = serviceName;
 
 class tst_QDBusMarshall: public QObject
@@ -925,7 +925,7 @@ void tst_QDBusMarshall::sendCallErrors_data()
     // this error comes from the bus server
     QTest::newRow("empty-service") << "" << objectPath << interfaceName << "ping" << QVariantList()
             << "org.freedesktop.DBus.Error.UnknownMethod"
-            << "Method \"ping\" with signature \"\" on interface \"com.trolltech.autotests.qpong\" doesn't exist\n" << (const char*)0;
+            << "Method \"ping\" with signature \"\" on interface \"org.qtproject.autotests.qpong\" doesn't exist\n" << (const char*)0;
 
     QTest::newRow("invalid-service") << "this isn't valid" << objectPath << interfaceName << "ping" << QVariantList()
             << "org.qtproject.QtDBus.Error.InvalidService"

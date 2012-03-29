@@ -297,7 +297,7 @@ signals:
 };
 const char TypesTest16_xml[] =
     "<signal name=\"signal\"><arg type=\"(ss)\"/>"
-    "<annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"StringPair\"></signal>";
+    "<annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"StringPair\"></signal>";
 
 class TypesTest17: public QObject
 {
@@ -308,7 +308,7 @@ signals:
 };
 const char TypesTest17_xml[] =
     "<signal name=\"signal\"><arg type=\"(s)\"/>"
-    "<annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"Struct1\"></signal>";
+    "<annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"Struct1\"></signal>";
 
 class TypesTest18: public QObject
 {
@@ -319,7 +319,7 @@ signals:
 };
 const char TypesTest18_xml[] =
     "<signal name=\"signal\"><arg type=\"(ssa(ss)sayasx)\"/>"
-    "<annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"Struct4\"></signal>";
+    "<annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"Struct4\"></signal>";
 
 class TypesTest19: public QObject
 {
@@ -330,7 +330,7 @@ signals:
 };
 const char TypesTest19_xml[] =
     "<signal name=\"signal\"><arg type=\"av\"/>"
-    "<annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"QVariantList\"></signal>";
+    "<annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"QVariantList\"></signal>";
 
 class TypesTest20: public QObject
 {
@@ -341,7 +341,11 @@ signals:
 };
 const char TypesTest20_xml[] =
     "<signal name=\"signal\"><arg type=\"a{sv}\"/>"
+    "<annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"QVariantMap\"></signal>";
+const char TypesTest20_oldxml[] =
+    "<signal name=\"signal\"><arg type=\"a{sv}\"/>"
     "<annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"QVariantMap\"></signal>";
+
 
 void tst_QDBusMetaObject::types_data()
 {
@@ -368,6 +372,7 @@ void tst_QDBusMetaObject::types_data()
     QTest::newRow("Struct4") << &TypesTest18::staticMetaObject << QString(TypesTest18_xml);
     QTest::newRow("QVariantList") << &TypesTest19::staticMetaObject << QString(TypesTest19_xml);
     QTest::newRow("QVariantMap") << &TypesTest20::staticMetaObject << QString(TypesTest20_xml);
+    QTest::newRow("QVariantMap-oldannotation") << &TypesTest20::staticMetaObject << QString(TypesTest20_oldxml);
 }
 
 void tst_QDBusMetaObject::types()
@@ -671,7 +676,7 @@ public:
 };
 const char PropertyTest4_xml[] =
     "<property name=\"property\" type=\"(s)\" access=\"write\">"
-    "<annotation name=\"com.trolltech.QtDBus.QtTypeName\" value=\"Struct1\"/>"
+    "<annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"Struct1\"/>"
     "</property>";
 
 class PropertyTest_b: public QObject

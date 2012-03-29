@@ -165,7 +165,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
     if (type == QVariant::Invalid && !qt_dbus_metaobject_skip_annotations) {
         // it's not a type normally handled by our meta type system
         // it must contain an annotation
-        QString annotationName = QString::fromLatin1("com.trolltech.QtDBus.QtTypeName");
+        QString annotationName = QString::fromLatin1("org.qtproject.QtDBus.QtTypeName");
         if (id >= 0)
             annotationName += QString::fromLatin1(".%1%2")
                               .arg(QLatin1String(direction))
@@ -175,6 +175,16 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
         QByteArray typeName = annotations.value(annotationName).toLatin1();
 
         // verify that it's a valid one
+        if (typeName.isEmpty()) {
+            // try the old annotation from Qt 4
+            annotationName = QString::fromLatin1("com.trolltech.QtDBus.QtTypeName");
+            if (id >= 0)
+                annotationName += QString::fromLatin1(".%1%2")
+                                  .arg(QLatin1String(direction))
+                                  .arg(id);
+            typeName = annotations.value(annotationName).toLatin1();
+        }
+
         if (!typeName.isEmpty()) {
             // type name found
             type = QMetaType::type(typeName);

@@ -115,7 +115,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
 
             if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
                 const char *typeName = QVariant::typeToName(QVariant::Type(typeId));
-                retval += QString::fromLatin1(">\n      <annotation name=\"com.trolltech.QtDBus.QtTypeName\" value=\"%3\"/>\n    </property>\n")
+                retval += QString::fromLatin1(">\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"%3\"/>\n    </property>\n")
                           .arg(typeNameToXml(typeName));
             } else {
                 retval += QLatin1String("/>\n");
@@ -157,7 +157,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
 
                 // do we need to describe this argument?
                 if (QDBusMetaType::signatureToType(typeName) == QVariant::Invalid)
-                    xml += QString::fromLatin1("      <annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"%1\"/>\n")
+                    xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"%1\"/>\n")
                         .arg(typeNameToXml(QVariant::typeToName(QVariant::Type(typeId))));
             } else
                 continue;
@@ -201,7 +201,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
             // do we need to describe this argument?
             if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
                 const char *typeName = QVariant::typeToName( QVariant::Type(types.at(j)) );
-                xml += QString::fromLatin1("      <annotation name=\"com.trolltech.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
+                xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
                        .arg(isOutput ? QLatin1String("Out") : QLatin1String("In"))
                        .arg(isOutput && !isSignal ? j - inputCount : j - 1)
                        .arg(typeNameToXml(typeName));
@@ -264,11 +264,11 @@ QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo, con
             interface.replace(QLatin1String("::"), QLatin1String("."));
 
             if (interface.startsWith(QLatin1String("QDBus"))) {
-                interface.prepend(QLatin1String("com.trolltech.QtDBus."));
+                interface.prepend(QLatin1String("org.qtproject.QtDBus."));
             } else if (interface.startsWith(QLatin1Char('Q')) &&
                        interface.length() >= 2 && interface.at(1).isUpper()) {
                 // assume it's Qt
-                interface.prepend(QLatin1String("com.trolltech.Qt."));
+                interface.prepend(QLatin1String("org.qtproject.Qt."));
             } else if (!QCoreApplication::instance()||
                        QCoreApplication::instance()->applicationName().isEmpty()) {
                 interface.prepend(QLatin1String("local."));

@@ -1,10 +1,10 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
-  <interface name="com.trolltech.QtDBus.Pinger">
+  <interface name="org.qtproject.QtDBus.Pinger">
     <property name="stringProp" type="s" access="readwrite"/>
     <property name="variantProp" type="v" access="readwrite"/>
     <property name="complexProp" type="(s)" access="readwrite">
-      <annotation name="com.trolltech.QtDBus.QtTypeName" value="RegisteredType"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName" value="RegisteredType"/>
     </property>
     <signal name="voidSignal"/>
     <signal name="stringSignal">
@@ -12,7 +12,7 @@
     </signal>
     <signal name="complexSignal">
        <arg name="" type="(s)"/>
-       <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="RegisteredType"/>
+       <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="RegisteredType"/>
     </signal>
     <method name="voidMethod" />
     <method name="sleepMethod">
@@ -24,7 +24,7 @@
     </method>
     <method name="complexMethod">
        <arg type="(s)" direction="out"/>
-       <annotation name="com.trolltech.QtDBus.QtTypeName.Out0" value="RegisteredType"/>
+       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="RegisteredType"/>
     </method>
     <method name="multiOutMethod">
        <arg type="s" direction="out"/>
