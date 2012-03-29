@@ -12,7 +12,7 @@ mac {
 
 win32: SUBDIRS += windows
 
-qnx-*-qcc {
+qnx {
     SUBDIRS += qnx
 }
 
