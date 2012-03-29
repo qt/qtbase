@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Intel Corporation
+** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
