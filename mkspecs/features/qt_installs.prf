@@ -1,10 +1,12 @@
-#always install the library
-win32 {
-   dlltarget.path=$$[QT_INSTALL_BINS]
-   INSTALLS += dlltarget
+#library
+!qt_no_install_library {
+    win32 {
+       dlltarget.path = $$[QT_INSTALL_BINS]
+       INSTALLS += dlltarget
+    }
+    target.path = $$[QT_INSTALL_LIBS]
+    INSTALLS += target
 }
-target.path=$$[QT_INSTALL_LIBS]
-INSTALLS += target
 
 #headers
 qt_install_headers {
