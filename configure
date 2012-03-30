@@ -2563,12 +2563,6 @@ if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" = "auto" ]; then
     fi
 fi
 
-# don't autodetect support for separate debug info on objcopy when
-# cross-compiling as lots of toolchains seems to have problems with this
-if [ "$QT_CROSS_COMPILE" = "yes" ] && [ "$CFG_SEPARATE_DEBUG_INFO" = "auto" ]; then
-    CFG_SEPARATE_DEBUG_INFO="no"
-fi
-
 # auto-detect support for separate debug info in objcopy
 if [ "$CFG_SEPARATE_DEBUG_INFO" != "no" ] && [ "$CFG_SHARED" = "yes" ]; then
     TEST_COMPILER_CFLAGS=`getXQMakeConf QMAKE_CFLAGS`
@@ -2897,20 +2891,12 @@ if [ "$OPT_HELP" = "yes" ]; then
         DBN=" "
     fi
 
-    if [ "$CFG_SEPARATE_DEBUG_INFO" = "auto" ]; then
-        if [ "$QT_CROSS_COMPILE" = "yes" ]; then
-            SBY=""
-            SBN="*"
-        else
-            SBY="*"
-            SBN=" "
-        fi
-    elif [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
-        SBY="*"
-        SBN=" "
-    else
+    if [ "$CFG_SEPARATE_DEBUG_INFO" = "no" ]; then
         SBY=" "
         SBN="*"
+    else
+        SBY="*"
+        SBN=" "
     fi
 
     if [ "$CFG_GLIB" = "no" ]; then
