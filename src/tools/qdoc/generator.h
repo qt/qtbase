@@ -46,6 +46,8 @@
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
+#include <QFile>
+#include <QFileInfo>
 #include <QList>
 #include <QMap>
 #include <QRegExp>
@@ -125,8 +127,7 @@ protected:
                               const Node *relative,
                               CodeMarker *marker);
     virtual QString imageFileName(const Node *relative, const QString& fileBase);
-    virtual QString outFileName() { return QString(); }
-    virtual int skipAtoms(const Atom *atom, Atom::Type type) const;
+        virtual int skipAtoms(const Atom *atom, Atom::Type type) const;
     virtual void startText(const Node *relative, CodeMarker *marker);
     virtual QString typeString(const Node *node);
 
@@ -158,6 +159,7 @@ protected:
     QStringList getMetadataElements(const InnerNode* inner, const QString& t);
     QString indent(int level, const QString& markedCode);
     QTextStream& out();
+    QString outFileName();
     bool parseArg(const QString& src,
                   const QString& tag,
                   int* pos,

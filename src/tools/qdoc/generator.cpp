@@ -1553,6 +1553,11 @@ QTextStream &Generator::out()
     return *outStreamStack.top();
 }
 
+QString Generator::outFileName()
+{
+    return QFileInfo(static_cast<QFile*>(out().device())->fileName()).fileName();
+}
+
 QString Generator::outputPrefix(const QString &nodeType)
 {
     return outputPrefixes[nodeType];
