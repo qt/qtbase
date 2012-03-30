@@ -382,7 +382,14 @@ static const ushort encodedPathActions[] = {
     leave('/'),  // 4
     0
 };
-static const ushort * const decodedPathInUrlActions = encodedPathActions + 2;
+static const ushort decodedPathInUrlActions[] = {
+    decode('{'), // 0
+    decode('}'), // 1
+    encode('?'), // 2
+    encode('#'), // 3
+    leave('/'),  // 4
+    0
+};
 static const ushort * const decodedPathInIsolationActions = encodedPathActions + 4; // leave('/')
 
 static const ushort encodedFragmentActions[] = {
@@ -425,12 +432,6 @@ static const ushort decodedQueryInIsolationActions[] = {
     0
 };
 static const ushort decodedQueryInUrlActions[] = {
-    decode('"'), // 0
-    decode('<'), // 1
-    decode('>'), // 2
-    decode('^'), // 3
-    decode('\\'),// 4
-    decode('|'), // 5
     decode('{'), // 6
     decode('}'), // 7
     encode('#'), // 8
@@ -2054,6 +2055,8 @@ QString QUrl::toString(FormattingOptions options) const
     }
 
     QString url;
+    if (!options.testFlag(DecodeReserved))
+        options &= ~DecodeReserved;
 
     if (!(options & QUrl::RemoveScheme) && d->hasScheme())
         url += d->scheme + QLatin1Char(':');

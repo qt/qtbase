@@ -142,9 +142,10 @@ public:
         DecodeSpaces = 0x100000,
         DecodeUnicode = 0x200000,
         DecodeDelimiters = 0x400000 | 0x800000,
-        DecodeReserved = 0x1000000,
+        PrettyDecodeReserved = 0x1000000,
+        DecodeReserved = PrettyDecodeReserved | 0x2000000,
 
-        PrettyDecoded = DecodeSpaces | DecodeDelimiters | DecodeReserved | DecodeUnicode,
+        PrettyDecoded = DecodeSpaces | DecodeDelimiters | PrettyDecodeReserved | DecodeUnicode,
         MostDecoded = PrettyDecoded
     };
     Q_DECLARE_FLAGS(ComponentFormattingOptions, ComponentFormattingOption)

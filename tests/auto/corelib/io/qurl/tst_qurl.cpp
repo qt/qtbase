@@ -2765,6 +2765,16 @@ void tst_QUrl::componentEncodings_data()
                                       << "host" << "%5B%3A%40/%5D:%5B:%40/%5D@host"
                                       << "/:@[?#]" << "[?%3F#]%5B:%3A@%40%5D" << "#"
                                       << "x://%5B%3A%40%2F%5D:%5B:%40%2F%5D@host/:@[%3F%23]?[?%3F%23]%5B:%3A@%40%5D##";
+
+    // the pretty form keeps the other characters decoded everywhere
+    // except when rebuilding the full URL, when we only allow "{}" to remain decoded
+    QTest::newRow("pretty-reserved") << QUrl("x://\"<>^\\{|}:\"<>^\\{|}@host/\"<>^\\{|}?\"<>^\\{|}#\"<>^\\{|}")
+                                     << int(QUrl::PrettyDecoded)
+                                     << "\"<>^\\{|}" << "\"<>^\\{|}" << "\"<>^\\{|}:\"<>^\\{|}"
+                                     << "host" << "\"<>^\\{|}:\"<>^\\{|}@host"
+                                     << "/\"<>^\\{|}" << "\"<>^\\{|}" << "\"<>^\\{|}"
+                                     << "x://%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D@host/%22%3C%3E%5E%5C{%7C}"
+                                        "?%22%3C%3E%5E%5C{%7C}#%22%3C%3E%5E%5C%7B%7C%7D";
 }
 
 void tst_QUrl::componentEncodings()
