@@ -392,24 +392,16 @@ static const ushort * const encodedQueryActions = encodedFragmentActions + 4; //
 
 
 static inline QString
-recode(const QString &input, const ushort *actions, QUrl::ComponentFormattingOptions encoding,
-                    int from, int iend)
+recodeFromUser(const QString &input, const ushort *actions, int from, int to)
 {
     QString output;
     const QChar *begin = input.constData() + from;
-    const QChar *end = input.constData() + iend;
-    if (qt_urlRecode(output, begin, end, encoding, actions))
+    const QChar *end = input.constData() + to;
+    if (qt_urlRecode(output, begin, end,
+                     QUrl::DecodeUnicode | QUrl::DecodeAllDelimiters | QUrl::DecodeSpaces, actions))
         return output;
 
-    return input.mid(from, iend - from);
-}
-
-static inline QString
-recodeFromUser(const QString &input, const ushort *actions, int from, int end)
-{
-    return recode(input, actions,
-                  QUrl::DecodeUnicode | QUrl::DecodeAllDelimiters | QUrl::DecodeSpaces,
-                  from, end);
+    return input.mid(from, to - from);
 }
 
 void QUrlPrivate::appendAuthority(QString &appendTo, QUrl::FormattingOptions options) const
