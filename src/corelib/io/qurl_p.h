@@ -72,7 +72,8 @@ public:
         Path = 0x20,
         Hierarchy = Authority | Path,
         Query = 0x40,
-        Fragment = 0x80
+        Fragment = 0x80,
+        FullUrl = 0xff
     };
 
     enum ErrorCode {
@@ -112,12 +113,12 @@ public:
     { return sectionIsPresent == 0 && port == -1 && path.isEmpty(); }
 
     // no QString scheme() const;
-    void appendAuthority(QString &appendTo, QUrl::FormattingOptions options) const;
-    void appendUserInfo(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
+    void appendUserInfo(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
     void appendUserName(QString &appendTo, QUrl::FormattingOptions options) const;
     void appendPassword(QString &appendTo, QUrl::FormattingOptions options) const;
     void appendHost(QString &appendTo, QUrl::FormattingOptions options) const;
-    void appendPath(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
     void appendQuery(QString &appendTo, QUrl::FormattingOptions options) const;
     void appendFragment(QString &appendTo, QUrl::FormattingOptions options) const;
 

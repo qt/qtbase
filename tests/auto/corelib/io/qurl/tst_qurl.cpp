@@ -225,7 +225,7 @@ void tst_QUrl::hashInPath()
 {
     QUrl withHashInPath;
     withHashInPath.setPath(QString::fromLatin1("hi#mum.txt"));
-    QCOMPARE(withHashInPath.path(), QString::fromLatin1("hi%23mum.txt"));
+    QCOMPARE(withHashInPath.path(), QString::fromLatin1("hi#mum.txt"));
     QCOMPARE(withHashInPath.path(QUrl::MostDecoded), QString::fromLatin1("hi#mum.txt"));
     QCOMPARE(withHashInPath.toString(QUrl::FullyEncoded), QString("hi%23mum.txt"));
     QCOMPARE(withHashInPath.toDisplayString(QUrl::PreferLocalFile), QString("hi%23mum.txt"));
@@ -236,10 +236,9 @@ void tst_QUrl::hashInPath()
     const QUrl localWithHash = QUrl::fromLocalFile("/hi#mum.txt");
     QCOMPARE(localWithHash.toEncoded(), QByteArray("file:///hi%23mum.txt"));
     QCOMPARE(localWithHash.toString(), QString("file:///hi%23mum.txt"));
-    QEXPECT_FAIL("", "Regression in the new QUrl, will fix soon", Abort);
     QCOMPARE(localWithHash.path(), QString::fromLatin1("/hi#mum.txt"));
-    QCOMPARE(localWithHash.toString(QUrl::PreferLocalFile), QString("/hi#mum.txt"));
-    QCOMPARE(localWithHash.toDisplayString(QUrl::PreferLocalFile), QString("/hi#mum.txt"));
+    QCOMPARE(localWithHash.toString(QUrl::PreferLocalFile | QUrl::PrettyDecoded), QString("/hi#mum.txt"));
+    QCOMPARE(localWithHash.toDisplayString(QUrl::PreferLocalFile | QUrl::PrettyDecoded), QString("/hi#mum.txt"));
 }
 
 void tst_QUrl::unc()
@@ -567,7 +566,7 @@ void tst_QUrl::setUrl()
     {
         QUrl carsten;
         carsten.setPath("/home/gis/src/kde/kdelibs/kfile/.#kfiledetailview.cpp.1.18");
-        QCOMPARE(carsten.path(), QString::fromLatin1("/home/gis/src/kde/kdelibs/kfile/.%23kfiledetailview.cpp.1.18"));
+        QCOMPARE(carsten.path(), QString::fromLatin1("/home/gis/src/kde/kdelibs/kfile/.#kfiledetailview.cpp.1.18"));
 
         QUrl charles;
         charles.setPath("/home/charles/foo%20moo");
