@@ -86,8 +86,8 @@ public:
     virtual void initializeGenerator(const Config& config);
     virtual void terminateGenerator();
     virtual QString format();
-    virtual void generateTree(const Tree *tree);
-    virtual void generateDisambiguationPages();
+    virtual void generateTree(Tree *tree);
+    void generateCollisionPages();
     void generateManifestFiles();
 
     QString protectEnc(const QString &string);
@@ -101,8 +101,8 @@ protected:
     virtual int generateAtom(const Atom *atom,
                              const Node *relative,
                              CodeMarker *marker);
-    virtual void generateClassLikeNode(const InnerNode *inner, CodeMarker *marker);
-    virtual void generateFakeNode(const FakeNode *fake, CodeMarker *marker);
+    virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
+    virtual void generateFakeNode(FakeNode* fake, CodeMarker* marker);
     virtual QString fileExtension(const Node *node) const;
     virtual QString refForNode(const Node *node);
     virtual QString linkForNode(const Node *node, const Node *relative);
@@ -176,12 +176,12 @@ private:
                          const Node *relative,
                          CodeMarker *marker,
                          bool summary);
-    void generateDetailedQmlMember(const Node *node,
+    void generateDetailedQmlMember(Node *node,
                                    const InnerNode *relative,
                                    CodeMarker *marker);
     void generateQmlInherits(const QmlClassNode* qcn, CodeMarker* marker);
-    void generateQmlInstantiates(const QmlClassNode* qcn, CodeMarker* marker);
-    void generateInstantiatedBy(const ClassNode* cn, CodeMarker* marker);
+    void generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* marker);
+    void generateInstantiatedBy(ClassNode* cn, CodeMarker* marker);
 
     void generateSection(const NodeList& nl,
                          const Node *relative,
@@ -227,7 +227,6 @@ private:
                     const Node *relative,
                     CodeMarker *marker,
                     const Node** node);
-    QString getDisambiguationLink(const Atom* atom, CodeMarker* marker);
     virtual void generateIndex(const QString &fileBase,
                                const QString &url,
                                const QString &title);
@@ -278,7 +277,6 @@ private:
     QString manifestDir;
     QStringList stylesheets;
     QStringList customHeadElements;
-    const Tree *myTree;
     bool obsoleteLinks;
     QMap<QString, NodeMap > moduleClassMap;
     QMap<QString, NodeMap > moduleNamespaceMap;

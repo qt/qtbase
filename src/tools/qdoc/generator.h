@@ -85,7 +85,7 @@ public:
 
     virtual bool canHandleFormat(const QString &format) { return format == this->format(); }
     virtual QString format() = 0;
-    virtual void generateTree(const Tree *tree);
+    virtual void generateTree(Tree *tree);
     virtual void initializeGenerator(const Config &config);
     virtual void terminateGenerator();
 
@@ -109,13 +109,13 @@ protected:
                              const Node *relative,
                              CodeMarker *marker);
     virtual void generateBody(const Node *node, CodeMarker *marker);
-    virtual void generateClassLikeNode(const InnerNode *inner, CodeMarker *marker);
-    virtual void generateFakeNode(const FakeNode *fake, CodeMarker *marker);
+    virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
+    virtual void generateFakeNode(FakeNode* fake, CodeMarker* marker);
     virtual void generateInheritedBy(const ClassNode *classe,
                                      CodeMarker *marker);
     virtual void generateInherits(const ClassNode *classe,
                                   CodeMarker *marker);
-    virtual void generateInnerNode(const InnerNode *node);
+    virtual void generateInnerNode(InnerNode* node);
     virtual void generateMaintainerList(const InnerNode* node, CodeMarker* marker);
     virtual void generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarker* marker);
     virtual void generateQmlInherits(const QmlClassNode* qcn, CodeMarker* marker);
@@ -155,6 +155,7 @@ protected:
     void generateSince(const Node *node, CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);
     void generateThreadSafeness(const Node *node, CodeMarker *marker);
+    QString getCollisionLink(const Atom* atom);
     QString getMetadataElement(const InnerNode* inner, const QString& t);
     QStringList getMetadataElements(const InnerNode* inner, const QString& t);
     QString indent(int level, const QString& markedCode);
@@ -230,6 +231,9 @@ private:
     QString lt;
     QString quot;
     QRegExp tag;
+
+ protected:
+    Tree* tree_;
 };
 
 QT_END_NAMESPACE

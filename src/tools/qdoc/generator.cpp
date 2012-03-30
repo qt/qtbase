@@ -102,7 +102,8 @@ Generator::Generator()
       gt("&gt;"),
       lt("&lt;"),
       quot("&quot;"),
-      tag("</?@[^>]*>")
+      tag("</?@[^>]*>"),
+      tree_(0)
 {
     generators.prepend(this);
 }
@@ -452,11 +453,12 @@ QString Generator::fullName(const Node *node,
 {
     if (node->type() == Node::Fake) {
         const FakeNode* fn = static_cast<const FakeNode *>(node);
-#if 0
+
         // Removed for QTBUG-22870
+        // Unremoved by mws 30/03/12
         if (!fn->qmlModuleIdentifier().isEmpty())
-            return fn->qmlModuleIdentifier() + QLatin1Char(' ') + fn->title();
-#endif
+            return fn->qmlModuleIdentifier() + "::" + fn->title();
+
         return fn->title();
     }
     else if (node->type() == Node::Class &&
@@ -700,8 +702,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
     }
 }
 
-void Generator::generateClassLikeNode(const InnerNode * /* classe */,
-                                      CodeMarker * /* marker */)
+void Generator::generateClassLikeNode(InnerNode* /* classe */, CodeMarker* /* marker */)
 {
 }
 
@@ -713,8 +714,7 @@ void Generator::generateExampleFiles(const FakeNode *fake, CodeMarker *marker)
     generateFileList(fake, marker, Node::Image, QString("Images:"));
 }
 
-void Generator::generateFakeNode(const FakeNode * /* fake */,
-                                 CodeMarker * /* marker */)
+void Generator::generateFakeNode(FakeNode* /* fake */, CodeMarker* /* marker */)
 {
 }
 
@@ -837,16 +837,16 @@ void Generator::generateInherits(const ClassNode *classe, CodeMarker *marker)
   Recursive writing of HTML files from the root \a node.
 
   \note NameCollisionNodes are skipped here and processed
-  later. See HtmlGenerator::generateDisambiguationPages()
-  for more on this.
+  later. See HtmlGenerator::generateCollisionPages() for
+  more on this.
  */
-void Generator::generateInnerNode(const InnerNode* node)
+void Generator::generateInnerNode(InnerNode* node)
 {
     if (!node->url().isNull())
         return;
 
     if (node->type() == Node::Fake) {
-        const FakeNode *fakeNode = static_cast<const FakeNode *>(node);
+        FakeNode* fakeNode = static_cast<FakeNode*>(node);
         if (fakeNode->subType() == Node::ExternalPage)
             return;
         if (fakeNode->subType() == Node::Image)
@@ -867,11 +867,11 @@ void Generator::generateInnerNode(const InnerNode* node)
     if (node->parent() != 0) {
         /*
           Skip name collision nodes here and process them
-          later in generateDisambiguationPages(). Each one
-          is appended to a list for later.
+          later in generateCollisionPages(). Each one is
+          appended to a list for later.
          */
         if ((node->type() == Node::Fake) && (node->subType() == Node::Collision)) {
-            const NameCollisionNode* ncn = static_cast<const NameCollisionNode*>(node);
+            NameCollisionNode* ncn = static_cast<NameCollisionNode*>(node);
             collisionNodes.append(const_cast<NameCollisionNode*>(ncn));
         }
         else {
@@ -880,7 +880,7 @@ void Generator::generateInnerNode(const InnerNode* node)
                 generateClassLikeNode(node, marker);
             }
             else if (node->type() == Node::Fake) {
-                generateFakeNode(static_cast<const FakeNode *>(node), marker);
+                generateFakeNode(static_cast<FakeNode*>(node), marker);
             }
             endSubPage();
         }
@@ -889,7 +889,7 @@ void Generator::generateInnerNode(const InnerNode* node)
     NodeList::ConstIterator c = node->childNodes().begin();
     while (c != node->childNodes().end()) {
         if ((*c)->isInnerNode() && (*c)->access() != Node::Private) {
-            generateInnerNode((const InnerNode *) *c);
+            generateInnerNode((InnerNode*)*c);
         }
         ++c;
     }
@@ -1249,8 +1249,9 @@ void Generator::generateThreadSafeness(const Node *node, CodeMarker *marker)
 /*!
   This function is recursive.
  */
-void Generator::generateTree(const Tree *tree)
+void Generator::generateTree(Tree *tree)
 {
+    tree_ = tree;
     generateInnerNode(tree->root());
 }
 
@@ -1264,6 +1265,40 @@ Generator *Generator::generatorForFormat(const QString& format)
     }
     return 0;
 }
+
+/*!
+  This function can be called if getLink() returns an empty
+  string. It tests the \a atom string to see if it is a link
+  of the form <element> :: <name>, where <element> is a QML
+  element or component without a module qualifier. If so, it
+  constructs a link to the <name> clause on the disambiguation
+  page for <element> and returns that link string. It also
+  adds the <name> as a target in the NameCollisionNode for
+  <element>. These clauses are then constructed when the
+  disambiguation page is actually generated.
+ */
+QString Generator::getCollisionLink(const Atom* atom)
+{
+    QString link;
+    if (!atom->string().contains("::"))
+        return link;
+    QStringList path = atom->string().split("::");
+    NameCollisionNode* ncn = tree_->findCollisionNode(path[0]);
+    if (ncn) {
+        QString label;
+        if (atom->next() && atom->next()->next()) {
+            if (atom->next()->type() == Atom::FormattingLeft &&
+                    atom->next()->next()->type() == Atom::String)
+                label = atom->next()->next()->string();
+        }
+        ncn->addLinkTarget(path[1],label);
+        link = fileName(ncn);
+        link += QLatin1Char('#');
+        link += Doc::canonicalTitle(path[1]);
+    }
+    return link;
+}
+
 
 /*!
   Looks up the tag \a t in the map of metadata values for the

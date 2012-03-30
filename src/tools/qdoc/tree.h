@@ -65,19 +65,39 @@ public:
     Tree();
     ~Tree();
 
-    Node* findNode(const QStringList &path,
-                   Node* relative=0,
-                   int findFlags=0,
-                   const Node* self=0);
-    Node* findNode(const QStringList &path,
-                   Node::Type type,
-                   Node* relative = 0,
-                   int findFlags = 0);
+    EnumNode* findEnumNode(const QStringList& path, Node* start = 0);
+    ClassNode* findClassNode(const QStringList& path, Node* start = 0);
+    QmlClassNode* findQmlClassNode(const QStringList& path, Node* start = 0);
+    NamespaceNode* findNamespaceNode(const QStringList& path, Node* start = 0);
+    FakeNode* findGroupNode(const QStringList& path, Node* start = 0);
+    FakeNode* findQmlModuleNode(const QStringList& path, Node* start = 0);
+
+    Node* findNodeByNameAndType(const QStringList& path,
+                                Node::Type type,
+                                Node::SubType subtype,
+                                Node* start,
+                                bool acceptCollision = false);
+
+    Node* findNodeRecursive(const QStringList& path,
+                            int pathIndex,
+                            Node* start,
+                            Node::Type type,
+                            Node::SubType subtype,
+                            bool acceptCollision = false);
+
+    const Node* findNode(const QStringList &path,
+                         const Node* relative = 0,
+                         int findFlags = 0,
+                         const Node* self=0) const;
+
+ private:
     const Node* findNode(const QStringList& path,
                          const Node* start,
                          int findFlags,
                          const Node* self,
                          bool qml) const;
+
+ public:
     QmlClassNode* findQmlClassNode(const QString& module, const QString& name);
     NameCollisionNode* checkForCollision(const QString& name) const;
     NameCollisionNode* findCollisionNode(const QString& name) const;
@@ -111,17 +131,8 @@ public:
     void fixInheritance(NamespaceNode *rootNode = 0);
     void setVersion(const QString &version) { vers = version; }
     NamespaceNode *root() { return &roo; }
-
     QString version() const { return vers; }
-    const Node* findNode(const QStringList &path,
-                         const Node* relative = 0,
-                         int findFlags = 0,
-                         const Node* self=0) const;
-    const Node* findNode(const QStringList &path,
-                         Node::Type type, const
-                         Node* relative = 0,
-                         int findFlags = 0) const;
-    const QmlClassNode* findQmlClassNode(const QString& module, const QString& element) const;
+
     const FunctionNode *findFunctionNode(const QStringList &path,
                                          const Node *relative = 0,
                                          int findFlags = 0) const;
@@ -134,19 +145,17 @@ public:
     Atom *findTarget(const QString &target, const Node *node) const;
     const NamespaceNode *root() const { return &roo; }
     void readIndexes(const QStringList &indexFiles);
-    bool generateIndexSection(QXmlStreamWriter &writer, const Node *node,
-                              bool generateInternalNodes = false) const;
-    void generateIndexSections(QXmlStreamWriter &writer, const Node *node,
-                               bool generateInternalNodes = false) const;
+    bool generateIndexSection(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
+    void generateIndexSections(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
     void generateIndex(const QString &fileName,
                        const QString &url,
                        const QString &title,
-                       bool generateInternalNodes = false) const;
+                       bool generateInternalNodes = false);
     void generateTagFileCompounds(QXmlStreamWriter &writer,
-                                  const InnerNode *inner) const;
+                                  const InnerNode *inner);
     void generateTagFileMembers(QXmlStreamWriter &writer,
-                                const InnerNode *inner) const;
-    void generateTagFile(const QString &fileName) const;
+                                const InnerNode *inner);
+    void generateTagFile(const QString &fileName);
     void addExternalLink(const QString &url, const Node *relative);
     QString fullDocumentLocation(const Node *node) const;
     void resolveQmlInheritance();
