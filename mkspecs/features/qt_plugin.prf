@@ -1,9 +1,5 @@
 TEMPLATE = lib
-isEmpty(QT_MAJOR_VERSION) {
-   VERSION=5.0.0
-} else {
-   VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
-}
+isEmpty(VERSION):VERSION = $$QT_VERSION
 CONFIG += qt plugin
 
 if(win32|mac):!wince*:!macx-xcode {

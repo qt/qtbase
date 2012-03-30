@@ -17,11 +17,7 @@ INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES
 INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES/$$TARGET
 INCLUDEPATH *= $$MODULE_INCLUDES $$MODULE_INCLUDES/.. #just for today to have some compat
 TEMPLATE        = lib
-isEmpty(QT_MAJOR_VERSION) {
-   VERSION=5.0.0
-} else {
-   VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
-}
+isEmpty(VERSION):VERSION = $$QT_VERSION
 
 #load up the headers info
 CONFIG += qt_install_headers
