@@ -94,6 +94,9 @@ QT_BEGIN_NAMESPACE
 # define MIB_IF_TYPE_LOOPBACK            24
 # define MIB_IF_TYPE_SLIP                28
 
+// definitions from Ipifcons.h
+#define IF_TYPE_PPP 23
+
 #endif
 // copied from qnativesocketengine_win.cpp
 struct qt_in6_addr {
