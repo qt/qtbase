@@ -140,10 +140,11 @@ public:
     enum ComponentFormattingOption {
         FullyEncoded = 0x000000,
         DecodeSpaces = 0x100000,
-        DecodeDelimiters = 0x200000 | 0x400000,
-        DecodeUnicode = 0x800000,
+        DecodeUnicode = 0x200000,
+        DecodeDelimiters = 0x400000 | 0x800000,
+        DecodeReserved = 0x1000000,
 
-        PrettyDecoded = DecodeSpaces | DecodeDelimiters | DecodeUnicode,
+        PrettyDecoded = DecodeSpaces | DecodeDelimiters | DecodeReserved | DecodeUnicode,
         MostDecoded = PrettyDecoded
     };
     Q_DECLARE_FLAGS(ComponentFormattingOptions, ComponentFormattingOption)

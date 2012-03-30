@@ -109,6 +109,116 @@ static const uchar defaultActionTable[96] = {
     2  // BSKP
 };
 
+// mask tables, in negative polarity
+// 0x00 if it belongs to this category
+// 0xff if it doesn't
+
+static const uchar delimsMask[96] = {
+    0xff, // space
+    0x00, // '!' (sub-delim)
+    0xff, // '"'
+    0x00, // '#' (gen-delim)
+    0x00, // '$' (gen-delim)
+    0xff, // '%' (percent)
+    0x00, // '&' (gen-delim)
+    0x00, // "'" (sub-delim)
+    0x00, // '(' (sub-delim)
+    0x00, // ')' (sub-delim)
+    0x00, // '*' (sub-delim)
+    0x00, // '+' (sub-delim)
+    0x00, // ',' (sub-delim)
+    0xff, // '-' (unreserved)
+    0xff, // '.' (unreserved)
+    0x00, // '/' (gen-delim)
+
+    0xff, 0xff, 0xff, 0xff, 0xff,  // '0' to '4' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // '5' to '9' (unreserved)
+    0x00, // ':' (gen-delim)
+    0x00, // ';' (sub-delim)
+    0xff, // '<'
+    0x00, // '=' (sub-delim)
+    0xff, // '>'
+    0x00, // '?' (gen-delim)
+
+    0x00, // '@' (gen-delim)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'A' to 'E' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'F' to 'J' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'K' to 'O' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'P' to 'T' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff,  // 'U' to 'Z' (unreserved)
+    0x00, // '[' (gen-delim)
+    0xff, // '\'
+    0x00, // ']' (gen-delim)
+    0xff, // '^'
+    0xff, // '_' (unreserved)
+
+    0xff, // '`'
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'a' to 'e' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'f' to 'j' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'k' to 'o' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'p' to 't' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff,  // 'u' to 'z' (unreserved)
+    0xff, // '{'
+    0xff, // '|'
+    0xff, // '}'
+    0xff, // '~' (unreserved)
+
+    0xff  // BSKP
+};
+
+static const uchar reservedMask[96] = {
+    0xff, // space
+    0xff, // '!' (sub-delim)
+    0x00, // '"'
+    0xff, // '#' (gen-delim)
+    0xff, // '$' (gen-delim)
+    0xff, // '%' (percent)
+    0xff, // '&' (gen-delim)
+    0xff, // "'" (sub-delim)
+    0xff, // '(' (sub-delim)
+    0xff, // ')' (sub-delim)
+    0xff, // '*' (sub-delim)
+    0xff, // '+' (sub-delim)
+    0xff, // ',' (sub-delim)
+    0xff, // '-' (unreserved)
+    0xff, // '.' (unreserved)
+    0xff, // '/' (gen-delim)
+
+    0xff, 0xff, 0xff, 0xff, 0xff,  // '0' to '4' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // '5' to '9' (unreserved)
+    0xff, // ':' (gen-delim)
+    0xff, // ';' (sub-delim)
+    0x00, // '<'
+    0xff, // '=' (sub-delim)
+    0x00, // '>'
+    0xff, // '?' (gen-delim)
+
+    0xff, // '@' (gen-delim)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'A' to 'E' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'F' to 'J' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'K' to 'O' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'P' to 'T' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff,  // 'U' to 'Z' (unreserved)
+    0xff, // '[' (gen-delim)
+    0x00, // '\'
+    0xff, // ']' (gen-delim)
+    0x00, // '^'
+    0xff, // '_' (unreserved)
+
+    0x00, // '`'
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'a' to 'e' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'f' to 'j' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'k' to 'o' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff,  // 'p' to 't' (unreserved)
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff,  // 'u' to 'z' (unreserved)
+    0x00, // '{'
+    0x00, // '|'
+    0x00, // '}'
+    0xff, // '~' (unreserved)
+
+    0xff  // BSKP
+};
+
 static inline bool isHex(ushort c)
 {
     return (c >= 'a' && c <= 'f') ||
@@ -464,12 +574,19 @@ non_trivial:
     return 0;
 }
 
+template <size_t N>
+static void maskTable(uchar (&table)[N], const uchar (&mask)[N])
+{
+    for (size_t i = 0; i < N; ++i)
+        table[i] &= mask[i];
+}
+
 Q_AUTOTEST_EXPORT int
 qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
              QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications)
 {
     uchar actionTable[sizeof defaultActionTable];
-    if (encoding & QUrl::DecodeDelimiters) {
+    if (encoding & QUrl::DecodeDelimiters && encoding & QUrl::DecodeReserved) {
         // reset the table
         memset(actionTable, DecodeCharacter, sizeof actionTable);
         if (!(encoding & QUrl::DecodeSpaces))
@@ -480,6 +597,10 @@ qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
         actionTable[0x7F - ' '] = EncodeCharacter;
     } else {
         memcpy(actionTable, defaultActionTable, sizeof actionTable);
+        if (encoding & QUrl::DecodeDelimiters)
+            maskTable(actionTable, delimsMask);
+        if (encoding & QUrl::DecodeReserved)
+            maskTable(actionTable, reservedMask);
         if (encoding & QUrl::DecodeSpaces)
             actionTable[0] = DecodeCharacter; // decode
     }

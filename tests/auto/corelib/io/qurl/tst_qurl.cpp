@@ -2713,9 +2713,9 @@ void tst_QUrl::componentEncodings_data()
                                             << QString() << "%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D" << QString()
                                             << "?%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D";
 
-    // other characters:  '"' / "<" / ">" / "^" / "\" / "{" / "|" "}"
+    // reserved characters:  '"' / "<" / ">" / "^" / "\" / "{" / "|" "}"
     // the RFC does not allow them undecoded anywhere, but we do
-    QTest::newRow("encoded-others") << QUrl("x://\"<>^\\{|}:\"<>^\\{|}@host/\"<>^\\{|}?\"<>^\\{|}#\"<>^\\{|}")
+    QTest::newRow("encoded-reserved") << QUrl("x://\"<>^\\{|}:\"<>^\\{|}@host/\"<>^\\{|}?\"<>^\\{|}#\"<>^\\{|}")
                                     << int(QUrl::FullyEncoded)
                                     << "%22%3C%3E%5E%5C%7B%7C%7D" << "%22%3C%3E%5E%5C%7B%7C%7D"
                                     << "%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D"
@@ -2724,9 +2724,9 @@ void tst_QUrl::componentEncodings_data()
                                     << "%22%3C%3E%5E%5C%7B%7C%7D"
                                     << "x://%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D@host/%22%3C%3E%5E%5C%7B%7C%7D"
                                        "?%22%3C%3E%5E%5C%7B%7C%7D#%22%3C%3E%5E%5C%7B%7C%7D";
-    QTest::newRow("decoded-others") << QUrl("x://%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D@host"
+    QTest::newRow("decoded-reserved") << QUrl("x://%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D@host"
                                             "/%22%3C%3E%5E%5C%7B%7C%7D?%22%3C%3E%5E%5C%7B%7C%7D#%22%3C%3E%5E%5C%7B%7C%7D")
-                                    << int(QUrl::DecodeDelimiters)
+                                    << int(QUrl::DecodeReserved)
                                     << "\"<>^\\{|}" << "\"<>^\\{|}" << "\"<>^\\{|}:\"<>^\\{|}"
                                     << "host" << "\"<>^\\{|}:\"<>^\\{|}@host"
                                     << "/\"<>^\\{|}" << "\"<>^\\{|}" << "\"<>^\\{|}"
