@@ -469,7 +469,7 @@ qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
              QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications)
 {
     uchar actionTable[sizeof defaultActionTable];
-    if (encoding & QUrl::DecodeAllDelimiters) {
+    if (encoding & QUrl::DecodeDelimiters) {
         // reset the table
         memset(actionTable, DecodeCharacter, sizeof actionTable);
         if (!(encoding & QUrl::DecodeSpaces))

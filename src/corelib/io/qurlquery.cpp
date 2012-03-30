@@ -208,7 +208,7 @@ inline QString QUrlQueryPrivate::recodeFromUser(const QString &input) const
     // note: duplicated in setQuery()
     QString output;
     if (qt_urlRecode(output, input.constData(), input.constData() + input.length(),
-                     QUrl::DecodeUnicode | QUrl::DecodeAllDelimiters | QUrl::DecodeSpaces,
+                     QUrl::MostDecoded,
                      prettyDecodedActions))
         return output;
     return input;
@@ -216,7 +216,7 @@ inline QString QUrlQueryPrivate::recodeFromUser(const QString &input) const
 
 inline bool idempotentRecodeToUser(QUrl::ComponentFormattingOptions encoding)
 {
-    return encoding == QUrl::PrettyDecoded || encoding == (QUrl::PrettyDecoded | QUrl::DecodeAllDelimiters);
+    return encoding == QUrl::PrettyDecoded;
 }
 
 inline QString QUrlQueryPrivate::recodeToUser(const QString &input, QUrl::ComponentFormattingOptions encoding) const
@@ -226,13 +226,10 @@ inline QString QUrlQueryPrivate::recodeToUser(const QString &input, QUrl::Compon
     if (idempotentRecodeToUser(encoding))
         return input;
 
-    bool decodeUnambiguous = encoding & QUrl::DecodeUnambiguousDelimiters;
-    encoding &= ~QUrl::DecodeAllDelimiters;
-
-    if (decodeUnambiguous) {
+    if (encoding & QUrl::DecodeDelimiters) {
         QString output;
         if (qt_urlRecode(output, input.constData(), input.constData() + input.length(),
-                         encoding | QUrl::DecodeAllDelimiters, prettyDecodedActions))
+                         encoding, prettyDecodedActions))
             return output;
         return input;
     }
@@ -270,7 +267,7 @@ void QUrlQueryPrivate::setQuery(const QString &query)
 
         QString key;
         if (!qt_urlRecode(key, begin, delimiter,
-                          QUrl::DecodeUnicode | QUrl::DecodeAllDelimiters | QUrl::DecodeSpaces,
+                          QUrl::MostDecoded,
                           prettyDecodedActions))
             key = QString(begin, delimiter - begin);
 
@@ -283,7 +280,7 @@ void QUrlQueryPrivate::setQuery(const QString &query)
         } else {
             QString value;
             if (!qt_urlRecode(value, delimiter + 1, pos,
-                              QUrl::DecodeUnicode | QUrl::DecodeAllDelimiters | QUrl::DecodeSpaces,
+                              QUrl::MostDecoded,
                               prettyDecodedActions))
                 value = QString(delimiter + 1, pos - delimiter - 1);
             itemList.append(qMakePair(key, value));
@@ -469,10 +466,9 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
         decode('#'),                         // 3
         0
     };
-    if (encoding & QUrl::DecodeAllDelimiters) {
+    if (encoding & QUrl::DecodeDelimiters) {
         // full decoding: we only encode the characters above
         tableActions[3] = 0;
-        encoding |= QUrl::DecodeAllDelimiters;
     } else {
         tableActions[3] = encode('#');
     }

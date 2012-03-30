@@ -2674,7 +2674,7 @@ void tst_QUrl::componentEncodings_data()
     // and test that %2f is *not* decoded to a slash in the path
     // don't test the query because in this mode it doesn't transform anything
     QTest::newRow("decoded-gendelims-unchanging") << QUrl("x://:%3a@host/%2f%3a%40#%23%3a%2f%3f%40")
-                                                  << int(QUrl::DecodeUnambiguousDelimiters)
+                                                  << int(QUrl::DecodeDelimiters)
                                                   << "" << ":" << "::"
                                                   << "host" << "::@host"
                                                   << "/%2F:@" << "" << "#:/?@"
@@ -2707,7 +2707,7 @@ void tst_QUrl::componentEncodings_data()
                                             << QString() << "!$()*+,;=:/?[]@" << QString()
                                             << "?!$()*+,;=:/?[]@";
     QTest::newRow("undecoded-delims-query") << QUrl("?%21%24%26%27%28%29%2a%2b%2c%2f%3a%3b%3d%3f%40%5b%5d")
-                                            << int(QUrl::DecodeUnambiguousDelimiters)
+                                            << int(QUrl::DecodeDelimiters)
                                             << QString() << QString() << QString()
                                             << QString() << QString()
                                             << QString() << "%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D" << QString()
@@ -2726,7 +2726,7 @@ void tst_QUrl::componentEncodings_data()
                                        "?%22%3C%3E%5E%5C%7B%7C%7D#%22%3C%3E%5E%5C%7B%7C%7D";
     QTest::newRow("decoded-others") << QUrl("x://%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D@host"
                                             "/%22%3C%3E%5E%5C%7B%7C%7D?%22%3C%3E%5E%5C%7B%7C%7D#%22%3C%3E%5E%5C%7B%7C%7D")
-                                    << int(QUrl::DecodeAllDelimiters)
+                                    << int(QUrl::DecodeDelimiters)
                                     << "\"<>^\\{|}" << "\"<>^\\{|}" << "\"<>^\\{|}:\"<>^\\{|}"
                                     << "host" << "\"<>^\\{|}:\"<>^\\{|}@host"
                                     << "/\"<>^\\{|}" << "\"<>^\\{|}" << "\"<>^\\{|}"

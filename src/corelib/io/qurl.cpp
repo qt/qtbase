@@ -445,7 +445,7 @@ recodeFromUser(const QString &input, const ushort *actions, int from, int to)
     const QChar *begin = input.constData() + from;
     const QChar *end = input.constData() + to;
     if (qt_urlRecode(output, begin, end,
-                     QUrl::DecodeUnicode | QUrl::DecodeAllDelimiters | QUrl::DecodeSpaces, actions))
+                     QUrl::MostDecoded, actions))
         return output;
 
     return input.mid(from, to - from);
@@ -466,7 +466,7 @@ static inline void appendToUser(QString &appendTo, const QString &value, QUrl::F
     }
 
     const ushort *actions = 0;
-    if (options & QUrl::DecodeAllDelimiters)
+    if (options & QUrl::DecodeDelimiters)
         actions = decodedActions;
     else
         actions = encodedActions;
@@ -494,7 +494,7 @@ void QUrlPrivate::appendUserInfo(QString &appendTo, QUrl::FormattingOptions opti
 
     const ushort *userNameActions;
     const ushort *passwordActions;
-    if (options & QUrl::DecodeAllDelimiters) {
+    if (options & QUrl::DecodeDelimiters) {
         switch (appendingTo) {
         case UserInfo:
             userNameActions = decodedUserNameInUserInfoActions;
@@ -540,7 +540,7 @@ inline void QUrlPrivate::appendPassword(QString &appendTo, QUrl::FormattingOptio
 
 inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
-    if (appendingTo != Path && options & QUrl::DecodeAllDelimiters) {
+    if (appendingTo != Path && options & QUrl::DecodeDelimiters) {
         if (!qt_urlRecode(appendTo, path.constData(), path.constEnd(), options, decodedPathInUrlActions))
             appendTo += path;
 
@@ -564,11 +564,11 @@ inline void QUrlPrivate::appendQuery(QString &appendTo, QUrl::FormattingOptions 
     }
 
     const ushort *actions = 0;
-    if (options & QUrl::DecodeAllDelimiters) {
+    if (options & QUrl::DecodeDelimiters) {
         // reset to default qt_urlRecode behaviour (leave delimiters alone)
-        options &= ~QUrl::DecodeAllDelimiters;
+        options &= ~QUrl::DecodeDelimiters;
         actions = appendingTo == Query ? decodedQueryInIsolationActions : decodedQueryInUrlActions;
-    } else if ((options & QUrl::DecodeAllDelimiters) == 0) {
+    } else if ((options & QUrl::DecodeDelimiters) == 0) {
         actions = encodedQueryActions;
     }
 

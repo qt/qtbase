@@ -605,8 +605,8 @@ void tst_QUrlQuery::encodedSetQueryItems_data()
     QTest::newRow("ampersand") << "%26=%26" << "%26" << "%26" << F(QUrl::PrettyDecoded)
                                << "%26=%26" << "&" << "&";
     QTest::newRow("hash") << "#=#" << "%23" << "%23" << F(QUrl::PrettyDecoded)
-                            << "%23=%23" << "#" << "#";
-    QTest::newRow("decode-hash") << "%23=%23" << "%23" << "%23" << F(QUrl::DecodeAllDelimiters)
+                            << "#=#" << "#" << "#";
+    QTest::newRow("decode-hash") << "%23=%23" << "%23" << "%23" << F(QUrl::DecodeDelimiters)
                                  << "#=#" << "#" << "#";
 
     QTest::newRow("percent") << "%25=%25" << "%25" << "%25" << F(QUrl::PrettyDecoded)
@@ -623,7 +623,7 @@ void tst_QUrlQuery::encodedSetQueryItems_data()
     // plus signs must not be touched
     QTest::newRow("encode-plus") << "+=+" << "+" << "+" << F(QUrl::FullyEncoded)
                             << "+=+" << "+" << "+";
-    QTest::newRow("decode-2b") << "%2b=%2b" << "%2b" << "%2b" << F(QUrl::DecodeAllDelimiters)
+    QTest::newRow("decode-2b") << "%2b=%2b" << "%2b" << "%2b" << F(QUrl::DecodeDelimiters)
                             << "%2B=%2B" << "%2B" << "%2B";
 
 
@@ -680,7 +680,7 @@ void tst_QUrlQuery::differentDelimiters()
         expected << qItem("foo", "bar") << qItem("hello", "world");
         COMPARE_ITEMS(query.queryItems(), expected);
         COMPARE_ITEMS(query.queryItems(QUrl::FullyEncoded), expected);
-        COMPARE_ITEMS(query.queryItems(QUrl::DecodeAllDelimiters), expected);
+        COMPARE_ITEMS(query.queryItems(QUrl::DecodeDelimiters), expected);
     }
 
     {
