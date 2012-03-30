@@ -1383,7 +1383,7 @@ void QWindow::resizeEvent(QResizeEvent *ev)
 /*!
     Override this to handle show events.
 
-    The show event is called when the window becomes visible in the windowing system.
+    This function is called when the window becomes visible in the windowing system.
 */
 void QWindow::showEvent(QShowEvent *ev)
 {
@@ -1391,9 +1391,9 @@ void QWindow::showEvent(QShowEvent *ev)
 }
 
 /*!
-    Override this to handle show events.
+    Override this to handle hide events.
 
-    The show event is called when the window becomes hidden in the windowing system.
+    This function is called when the window becomes hidden in the windowing system.
 */
 void QWindow::hideEvent(QHideEvent *ev)
 {
