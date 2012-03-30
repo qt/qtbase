@@ -86,6 +86,8 @@ public:
     virtual QString fontDir() const;
 
     virtual QFont defaultFont() const { return systemDefaultFont(); }
+    virtual bool fontsAlwaysScalable() const;
+
     static QFont systemDefaultFont();
 
     static QFontEngine *createEngine(int script, const QFontDef &request,

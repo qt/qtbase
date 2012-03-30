@@ -393,5 +393,16 @@ QFont QCoreTextFontDatabase::defaultFont() const
     return QFont(defaultFontName);
 }
 
+QList<int> QCoreTextFontDatabase::standardSizes() const
+{
+    QList<int> ret;
+    static const unsigned short standard[] =
+        { 9, 10, 11, 12, 13, 14, 18, 24, 36, 48, 64, 72, 96, 144, 288, 0 };
+    ret.reserve(int(sizeof(standard) / sizeof(standard[0])));
+    const unsigned short *sizes = standard;
+    while (*sizes) ret << *sizes++;
+    return ret;
+}
+
 QT_END_NAMESPACE
 

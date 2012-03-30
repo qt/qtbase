@@ -58,6 +58,8 @@ public:
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     void releaseHandle(void *handle);
     QFont defaultFont() const;
+    QList<int> standardSizes() const;
+
 private:
     mutable QString defaultFontName;
     QHash<QFont::StyleHint, QStringList> fallbackLists;

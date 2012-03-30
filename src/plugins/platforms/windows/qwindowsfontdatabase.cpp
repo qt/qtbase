@@ -900,6 +900,11 @@ QString QWindowsFontDatabase::fontDir() const
     return result;
 }
 
+bool QWindowsFontDatabase::fontsAlwaysScalable() const
+{
+    return true;
+}
+
 HFONT QWindowsFontDatabase::systemFont()
 {
     static const HFONT stock_sysfont = (HFONT)GetStockObject(SYSTEM_FONT);
