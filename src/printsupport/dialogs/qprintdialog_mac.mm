@@ -243,6 +243,7 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     Q_D(QPrintDialog);
     if (!warnIfNotNative(d->printer))
         return;
+    setAttribute(Qt::WA_DontShowOnScreen);
 }
 
 QPrintDialog::QPrintDialog(QWidget *parent)
@@ -251,6 +252,7 @@ QPrintDialog::QPrintDialog(QWidget *parent)
     Q_D(QPrintDialog);
     if (!warnIfNotNative(d->printer))
         return;
+    setAttribute(Qt::WA_DontShowOnScreen);
 }
 
 QPrintDialog::~QPrintDialog()
@@ -263,10 +265,15 @@ int QPrintDialog::exec()
     if (!warnIfNotNative(d->printer))
         return QDialog::Rejected;
 
+    QDialog::setVisible(true);
+
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     d->openCocoaPrintPanel(Qt::ApplicationModal);
     d->closeCocoaPrintPanel();
     [pool release];
+
+    QDialog::setVisible(false);
+
     return result();
 }
 
@@ -285,6 +292,8 @@ void QPrintDialog::setVisible(bool visible)
 
     if (d->printer->outputFormat() != QPrinter::NativeFormat)
         return;
+
+    QDialog::setVisible(visible);
 
     if (visible) {
         d->openCocoaPrintPanel(parentWidget() ? Qt::WindowModal

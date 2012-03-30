@@ -193,6 +193,7 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     if (!warnIfNotNative(d->printer))
         return;
     d->ep = static_cast<QWin32PrintEngine *>(d->printer->paintEngine())->d_func();
+    setAttribute(Qt::WA_DontShowOnScreen);
 }
 
 QPrintDialog::QPrintDialog(QWidget *parent)
@@ -202,6 +203,7 @@ QPrintDialog::QPrintDialog(QWidget *parent)
     if (!warnIfNotNative(d->printer))
         return;
     d->ep = static_cast<QWin32PrintEngine *>(d->printer->paintEngine())->d_func();
+    setAttribute(Qt::WA_DontShowOnScreen);
 }
 
 QPrintDialog::~QPrintDialog()
@@ -230,10 +232,7 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
     if (parent == 0)
         parent = q;
 
-    QWidget modal_widget;
-    modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);
-    modal_widget.setParent(parent, Qt::Window);
-    QApplicationPrivate::enterModal(&modal_widget);
+    q->QDialog::setVisible(true);
 
     HGLOBAL *tempDevNames = ep->createDevNames();
 
@@ -274,7 +273,7 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
         }
     } while (!done);
 
-    QApplicationPrivate::leaveModal(&modal_widget);
+    q->QDialog::setVisible(false);
 
 //    qt_win_eatMouseMove();
 
