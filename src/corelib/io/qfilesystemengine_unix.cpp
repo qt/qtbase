@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
 static inline bool _q_isMacHidden(const char *nativePath)
 {
     OSErr err;
@@ -142,7 +142,7 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, 
             ret.chop(1);
         return QFileSystemEntry(ret);
     }
-#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
     {
         FSRef fref;
         if (FSPathMakeRef((const UInt8 *)QFile::encodeName(QDir::cleanPath(link.filePath())).data(), &fref, 0) == noErr) {
@@ -174,7 +174,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
     return QFileSystemEntry(slowCanonicalized(absoluteName(entry).filePath()));
 #else
     char *ret = 0;
-# if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+# if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
     // Mac OS X 10.5.x doesn't support the realpath(X,0) extension we use here.
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) {
         ret = realpath(entry.nativeFilePath().constData(), (char*)0);
@@ -308,7 +308,7 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
     return QString();
 }
 
-#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
 //static
 QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
 {
@@ -328,7 +328,7 @@ QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
 bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
         QFileSystemMetaData::MetaDataFlags what)
 {
-#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
     if (what & QFileSystemMetaData::BundleType) {
         if (!data.hasFlags(QFileSystemMetaData::DirectoryType))
             what |= QFileSystemMetaData::DirectoryType;
@@ -339,7 +339,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         what |= QFileSystemMetaData::PosixStatFlags;
     }
 #   endif // MAC_OS_X_VERSION_MAX_ALLOWED...
-#endif // defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+#endif // defined(Q_OS_MAC) && !defined(Q_OS_IOS)
 
     if (what & QFileSystemMetaData::PosixStatFlags)
         what |= QFileSystemMetaData::PosixStatFlags;
@@ -400,7 +400,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
             | QFileSystemMetaData::ExistsAttribute;
     }
 
-#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
     if (what & QFileSystemMetaData::AliasType)
     {
         if (entryExists) {
@@ -446,7 +446,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         data.knownFlagsMask |= QFileSystemMetaData::HiddenAttribute;
     }
 
-#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
     if (what & QFileSystemMetaData::BundleType) {
         if (entryExists && data.isDirectory()) {
             QCFType<CFStringRef> path = CFStringCreateWithBytes(0,

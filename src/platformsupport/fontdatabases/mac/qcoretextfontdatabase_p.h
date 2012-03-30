@@ -55,7 +55,7 @@ public:
     QFontEngine *fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle);
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
     QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const;
-#ifndef QT_NO_CORESERVICES
+#ifndef Q_OS_IOS
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
 #endif
     void releaseHandle(void *handle);

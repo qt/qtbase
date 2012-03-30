@@ -113,7 +113,7 @@ win32 {
             SOURCES += io/qsettings_mac.cpp
         }
         macx-*: {
-            contains(QT_CONFIG, coreservices) {
+            !ios {
                 SOURCES += io/qstandardpaths_mac.cpp
             } else {
                 SOURCES += io/qstandardpaths_unix.cpp

@@ -45,7 +45,7 @@
 #include <private/qfontengine_p.h>
 #include <private/qcore_mac_p.h>
 
-#ifndef QT_NO_CORESERVICES
+#ifndef Q_OS_IOS
 #include <ApplicationServices/ApplicationServices.h>
 #else
 #include <CoreText/CoreText.h>

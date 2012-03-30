@@ -476,7 +476,7 @@ bool QProcessPrivate::createChannel(Channel &channel)
 }
 
 QT_BEGIN_INCLUDE_NAMESPACE
-#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
 #else
@@ -487,7 +487,7 @@ QT_END_INCLUDE_NAMESPACE
 QProcessEnvironment QProcessEnvironment::systemEnvironment()
 {
     QProcessEnvironment env;
-#if !defined(Q_OS_MAC) || !defined(QT_NO_CORESERVICES)
+#if !defined(Q_OS_IOS)
     const char *entry;
     for (int count = 0; (entry = environ[count]); ++count) {
         const char *equal = strchr(entry, '=');

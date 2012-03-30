@@ -63,7 +63,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
-#ifndef QT_NO_CORESERVICES
+#ifndef Q_OS_IOS
 #include <CoreServices/CoreServices.h>
 #endif
 

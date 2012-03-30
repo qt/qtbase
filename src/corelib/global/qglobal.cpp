@@ -72,7 +72,7 @@
 #  include <envLib.h>
 #endif
 
-#if defined(Q_OS_MACX) && !defined(QT_NO_CORESERVICES)
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
 #include <CoreServices/CoreServices.h>
 #endif
 
@@ -1602,7 +1602,7 @@ static const unsigned int qt_one = 1;
 const int QSysInfo::ByteOrder = ((*((unsigned char *) &qt_one) == 0) ? BigEndian : LittleEndian);
 #endif
 
-#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "private/qcore_mac_p.h"
@@ -1624,13 +1624,13 @@ Q_CORE_EXPORT void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding e
 Q_CORE_EXPORT QString qt_mac_from_pascal_string(const Str255 pstr) {
     return QCFString(CFStringCreateWithPascalString(0, pstr, CFStringGetSystemEncoding()));
 }
-#endif // defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
+#endif // defined(Q_OS_MAC) && !defined(Q_OS_IOS)
 
 #if defined(Q_OS_MAC)
 
 QSysInfo::MacVersion QSysInfo::macVersion()
 {
-#ifndef QT_NO_CORESERVICES
+#ifndef Q_OS_IOS
     SInt32 gestalt_version;
     if (Gestalt(gestaltSystemVersion, &gestalt_version) == noErr) {
         return QSysInfo::MacVersion(((gestalt_version & 0x00F0) >> 4) + 2);

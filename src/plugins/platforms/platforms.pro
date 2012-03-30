@@ -6,7 +6,7 @@ contains(QT_CONFIG, xcb) {
     SUBDIRS += xcb
 }
 
-mac:contains(QT_CONFIG, coreservices): SUBDIRS += cocoa
+mac:!ios: SUBDIRS += cocoa
 
 win32: SUBDIRS += windows
 

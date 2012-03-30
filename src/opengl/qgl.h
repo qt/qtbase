@@ -59,7 +59,7 @@ QT_BEGIN_HEADER
 #endif
 
 #if defined(Q_OS_MAC)
-# if !defined(QT_NO_CORESERVICES)
+# if !defined(Q_OS_IOS)
 # include <OpenGL/gl.h>
 # else
 #  if defined(QT_OPENGL_ES_2)

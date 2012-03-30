@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_CORESERVICES
+#ifndef Q_OS_IOS
 #import <Cocoa/Cocoa.h>
 #import <IOKit/graphics/IOGraphicsLib.h>
 #endif
@@ -120,7 +120,7 @@ static NSInteger languageMapSort(id obj1, id obj2, void *context)
 
 QCoreTextFontDatabase::QCoreTextFontDatabase()
 {
-#ifndef QT_NO_CORESERVICES
+#ifndef Q_OS_IOS
     QSettings appleSettings(QLatin1String("apple.com"));
     QVariant appleValue = appleSettings.value(QLatin1String("AppleAntiAliasingThreshold"));
     if (appleValue.isValid())
@@ -348,7 +348,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString family, cons
     return fallbackLists[styleHint];
 }
 
-#ifndef QT_NO_CORESERVICES
+#ifndef Q_OS_IOS
 OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref);
 QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {

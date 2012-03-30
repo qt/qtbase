@@ -34,6 +34,6 @@ win32: {
 integrity:SOURCES += kernel/qdnslookup_unix.cpp kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
 
 mac:LIBS_PRIVATE += -framework SystemConfiguration -framework CoreFoundation -framework CoreServices
-mac:contains(QT_CONFIG, coreservices):SOURCES += kernel/qnetworkproxy_mac.cpp
+mac:!ios:SOURCES += kernel/qnetworkproxy_mac.cpp
 else:win32:SOURCES += kernel/qnetworkproxy_win.cpp
 else:SOURCES += kernel/qnetworkproxy_generic.cpp

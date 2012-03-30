@@ -65,7 +65,7 @@ wince*::LIBS += libcmt.lib \
 
 mac {
     LIBS += -framework IOKit -framework Security
-    contains(QT_CONFIG, coreservices) {
+    !ios {
       LIBS_PRIVATE += -framework CoreServices
       LIBS += -framework ApplicationServices
     } else {
