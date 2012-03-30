@@ -180,7 +180,8 @@ template<> void QSharedDataPointer<QUrlQueryPrivate>::detach()
 // The strict definition of query says that it can have unencoded any
 // unreserved, sub-delim, ":", "@", "/" and "?". Or, by exclusion, excluded
 // delimiters are "#", "[" and "]" -- if those are present, they must be
-// percent-encoded.
+// percent-encoded. The fact that "[" and "]" should be encoded is probably a
+// mistake in the spec, so we ignore it and leave the decoded.
 //
 // The internal storage in the Map is equivalent to PrettyDecoded. That means
 // the getter methods, when called with the default encoding value, will not
@@ -194,8 +195,8 @@ template<> void QSharedDataPointer<QUrlQueryPrivate>::detach()
 // themselves.
 //
 // But when recreating the query string, in toString(), we must take care of
-// the special delimiters: the pair and value delimiters and those that the
-// definition says must be encoded ("#" / "[" / "]")
+// the special delimiters: the pair and value delimiters, as well as the "#"
+// character if unambiguous decoding is requested.
 
 #define decode(x) ushort(x)
 #define leave(x)  ushort(0x100 | (x))
@@ -236,10 +237,9 @@ inline QString QUrlQueryPrivate::recodeToUser(const QString &input, QUrl::Compon
         return input;
     }
 
-    // re-encode the gen-delims that the RFC says must be encoded the
-    // query delimiter pair; the non-delimiters will get encoded too
+    // re-encode the "#" character and the query delimiter pair
     ushort actions[] = { encode(pairDelimiter.unicode()), encode(valueDelimiter.unicode()),
-                         encode('#'), encode('['), encode(']'),  0 };
+                         encode('#'), 0 };
     QString output;
     if (qt_urlRecode(output, input.constData(), input.constData() + input.length(), encoding, actions))
         return output;
@@ -455,33 +455,26 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
     // unlike the component encoding, for the whole query we need to modify a little:
     //  - the "#" character is ambiguous, so we decode it only in DecodeAllDelimiters mode
     //  - the query delimiter pair must always be encoded
-    //  - the "[" and "]" sub-delimiters and the non-delimiters very on DecodeUnambiguousDelimiters
+    //  - the non-delimiters vary on DecodeUnambiguousDelimiters
     // so:
     //  - full encoding: encode the non-delimiters, the pair, "#", "[" and "]"
     //  - pretty decode: decode the non-delimiters, "[" and "]"; encode the pair and "#"
     //  - decode all: decode the non-delimiters, "[", "]", "#"; encode the pair
 
     // start with what's always encoded
-    ushort tableActions[7] = {
+    ushort tableActions[] = {
         leave('+'),                          // 0
         encode(d->pairDelimiter.unicode()),  // 1
         encode(d->valueDelimiter.unicode()), // 2
+        decode('#'),                         // 3
+        0
     };
-    if ((encoding & QUrl::DecodeAllDelimiters) == QUrl::DecodeAllDelimiters) {
+    if (encoding & QUrl::DecodeAllDelimiters) {
         // full decoding: we only encode the characters above
         tableActions[3] = 0;
         encoding |= QUrl::DecodeAllDelimiters;
     } else {
         tableActions[3] = encode('#');
-        if (encoding & QUrl::DecodeUnambiguousDelimiters) {
-            tableActions[4] = 0;
-            encoding |= QUrl::DecodeAllDelimiters;
-        } else {
-            tableActions[4] = encode('[');
-            tableActions[5] = encode(']');
-            tableActions[6] = 0;
-            encoding &= ~QUrl::DecodeAllDelimiters;
-        }
     }
 
     QString result;

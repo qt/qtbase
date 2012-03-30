@@ -1866,7 +1866,7 @@ void tst_QUrl::tolerantParser()
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]#%5B%5D"));
 
         url.setUrl("//[::56:56:56:56:56:56:56]?[]");
-        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]?%5B%5D"));
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]?[]"));
 
         url.setUrl("%hello.com/f%");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("%25hello.com/f%25"));
@@ -1891,7 +1891,7 @@ void tst_QUrl::tolerantParser()
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]#%5B%5D"));
 
         url.setEncodedUrl("//[::56:56:56:56:56:56:56]?[]");
-        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]?%5B%5D"));
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]?[]"));
 
         url.setEncodedUrl("data:text/css,div%20{%20border-right:%20solid;%20}");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("data:text/css,div%20%7B%20border-right:%20solid;%20%7D"));

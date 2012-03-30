@@ -119,7 +119,7 @@ public:
     void appendPassword(QString &appendTo, QUrl::FormattingOptions options) const;
     void appendHost(QString &appendTo, QUrl::FormattingOptions options) const;
     void appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
-    void appendQuery(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendQuery(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
     void appendFragment(QString &appendTo, QUrl::FormattingOptions options) const;
 
     // the "end" parameters are like STL iterators: they point to one past the last valid element

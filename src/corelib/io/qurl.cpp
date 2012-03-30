@@ -330,8 +330,11 @@ void QUrlPrivate::clear()
 //  - password: none, since it's the last
 //  - username: ":" is ambiguous
 
-// list the recoding table modifications to be used with the recodeFromUser
-// function, according to the rules above
+// list the recoding table modifications to be used with the recodeFromUser and
+// appendToUser functions, according to the rules above.
+// the encodedXXX tables are run with the delimiters set to "leave" by default;
+// the decodedXXX tables are run with the delimiters set to "decode" by default
+// (except for the query, which doesn't use these functions)
 
 #define decode(x) ushort(x)
 #define leave(x)  ushort(0x100 | (x))
@@ -399,8 +402,41 @@ static const ushort encodedFragmentActions[] = {
 static const ushort * const decodedFragmentInUrlActions = 0;
 static const ushort * const decodedFragmentInIsolationActions = 0;
 
-// the query is handled specially, since we prefer not to transform the delims
-static const ushort * const encodedQueryActions = encodedFragmentActions + 4; // encode "#" / "[" / "]"
+// the query is handled specially: the decodedQueryXXX tables are run with
+// the delimiters set to "leave" by default and the others set to "encode"
+static const ushort encodedQueryActions[] = {
+    //    query         = *( pchar / "/" / "?" )
+    // gen-delims permitted: ":" / "@" / "/" / "?"
+    // HOWEVER: we leave alone them alone, plus "[" and "]"
+    //   ->   must encode: "#"
+    encode('#'), // 0
+    0
+};
+static const ushort decodedQueryInIsolationActions[] = {
+    decode('"'), // 0
+    decode('<'), // 1
+    decode('>'), // 2
+    decode('^'), // 3
+    decode('\\'),// 4
+    decode('|'), // 5
+    decode('{'), // 6
+    decode('}'), // 7
+    decode('#'), // 8
+    0
+};
+static const ushort decodedQueryInUrlActions[] = {
+    decode('"'), // 0
+    decode('<'), // 1
+    decode('>'), // 2
+    decode('^'), // 3
+    decode('\\'),// 4
+    decode('|'), // 5
+    decode('{'), // 6
+    decode('}'), // 7
+    encode('#'), // 8
+    0
+};
+
 
 static inline QString
 recodeFromUser(const QString &input, const ushort *actions, int from, int to)
@@ -518,19 +554,20 @@ inline void QUrlPrivate::appendFragment(QString &appendTo, QUrl::FormattingOptio
     appendToUser(appendTo, fragment, options, encodedFragmentActions, decodedFragmentInIsolationActions);
 }
 
-inline void QUrlPrivate::appendQuery(QString &appendTo, QUrl::FormattingOptions options) const
+inline void QUrlPrivate::appendQuery(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
     // almost the same code as the previous functions
     // except we prefer not to touch the delimiters
-    if (options == QUrl::PrettyDecoded) {
+    if (options == QUrl::PrettyDecoded && appendingTo == Query) {
         appendTo += query;
         return;
     }
 
     const ushort *actions = 0;
-    if ((options & QUrl::DecodeAllDelimiters) == QUrl::DecodeUnambiguousDelimiters) {
+    if (options & QUrl::DecodeAllDelimiters) {
         // reset to default qt_urlRecode behaviour (leave delimiters alone)
         options &= ~QUrl::DecodeAllDelimiters;
+        actions = appendingTo == Query ? decodedQueryInIsolationActions : decodedQueryInUrlActions;
     } else if ((options & QUrl::DecodeAllDelimiters) == 0) {
         actions = encodedQueryActions;
     }
@@ -722,25 +759,12 @@ inline void QUrlPrivate::setQuery(const QString &value, int from, int iend)
     sectionIsPresent |= Query;
     sectionHasError &= ~Query;
 
-    // use the default actions for the query
-    static const ushort decodeActions[] = {
-        decode('"'),
-        decode('<'),
-        decode('>'),
-        decode('\\'),
-        decode('^'),
-        decode('`'),
-        decode('{'),
-        decode('|'),
-        decode('}'),
-        encode('#'),
-        0
-    };
+    // use the default actions for the query (don't set QUrl::DecodeAllDelimiters)
     QString output;
     const QChar *begin = value.constData() + from;
     const QChar *end = value.constData() + iend;
     if (qt_urlRecode(output, begin, end, QUrl::DecodeUnicode | QUrl::DecodeSpaces,
-                     decodeActions))
+                     decodedQueryInIsolationActions))
         query = output;
     else
         query = value.mid(from, iend - from);
@@ -1818,7 +1842,7 @@ QString QUrl::query(ComponentFormattingOptions options) const
     if (!d) return QString();
 
     QString result;
-    d->appendQuery(result, options);
+    d->appendQuery(result, options, QUrlPrivate::Query);
     if (d->hasQuery() && result.isNull())
         result.detach();
     return result;
@@ -2055,7 +2079,7 @@ QString QUrl::toString(FormattingOptions options) const
 
     if (!(options & QUrl::RemoveQuery) && d->hasQuery()) {
         url += QLatin1Char('?');
-        d->appendQuery(url, options);
+        d->appendQuery(url, options, QUrlPrivate::FullUrl);
     }
     if (!(options & QUrl::RemoveFragment) && d->hasFragment()) {
         url += QLatin1Char('#');
