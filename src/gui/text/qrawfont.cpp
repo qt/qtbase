@@ -672,7 +672,7 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
 */
 void QRawFont::setPixelSize(qreal pixelSize)
 {
-    if (d->fontEngine == 0)
+    if (d->fontEngine == 0 || qFuzzyCompare(d->fontEngine->fontDef.pixelSize, pixelSize))
         return;
 
     d.detach();
