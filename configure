@@ -686,7 +686,7 @@ CFG_NOBUILD_PARTS=""
 CFG_RELEASE_QMAKE=no
 CFG_AUDIO_BACKEND=auto
 CFG_V8SNAPSHOT=auto
-CFG_DECLARATIVE_DEBUG=yes
+CFG_QML_DEBUG=yes
 CFG_JAVASCRIPTCORE_JIT=auto
 
 # Target architecture
@@ -890,7 +890,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1763,12 +1763,12 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    declarative-debug)
+    qml-debug)
         if [ "$VAL" = "yes" ]; then
-            CFG_DECLARATIVE_DEBUG="yes"
+            CFG_QML_DEBUG="yes"
         else
             if [ "$VAL" = "no" ]; then
-                CFG_DECLARATIVE_DEBUG="no"
+                CFG_QML_DEBUG="no"
             else
                 UNKNOWN_OPT=yes
             fi
@@ -2941,7 +2941,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info]
         [-no-phonon-backend] [-phonon-backend] [-no-media-backend] [-media-backend]
         [-no-audio-backend] [-audio-backend]
-        [-no-javascript-jit] [-javascript-jit] [-no-declarative-debug] [-declarative-debug]
+        [-no-javascript-jit] [-javascript-jit] [-no-qml-debug] [-qml-debug]
         [-no-optimized-qmake] [-optimized-qmake]
         [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle]
@@ -3055,8 +3055,8 @@ Configure options:
     -no-javascript-jit . Do not build the JavaScriptCore JIT compiler.
  +  -javascript-jit .... Build the JavaScriptCore JIT compiler.
 
-    -no-declarative-debug ..... Do not build the declarative debugging support.
- +  -declarative-debug ....... Build the declarative debugging support.
+    -no-qml-debug ...... Do not build the in-process QML debugging support.
+ +  -qml-debug ......... Build the QML debugging support.
 
     -platform target ... The operating system and compiler you are building
                          on ($PLATFORM).
@@ -5407,8 +5407,8 @@ if [ "$CFG_V8SNAPSHOT" = "yes" ]; then
 fi
 
 # ### Vestige
-if [ "$CFG_DECLARATIVE_DEBUG" = "no" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QDECLARATIVE_NO_DEBUG_PROTOCOL"
+if [ "$CFG_QML_DEBUG" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_QML_NO_DEBUGGER"
 fi
 
 if [ "$CFG_EXCEPTIONS" = "no" ]; then
@@ -5938,7 +5938,7 @@ if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
 else
     echo "JavaScriptCore JIT ..... $CFG_JAVASCRIPTCORE_JIT"
 fi
-echo "Declarative debugging ...$CFG_DECLARATIVE_DEBUG"
+echo "QML debugging .......... $CFG_QML_DEBUG"
 echo "STL support ............ $CFG_STL"
 echo "PCH support ............ $CFG_PRECOMPILE"
 if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then

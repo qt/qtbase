@@ -215,7 +215,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "V8SNAPSHOT" ]      = "auto";
-    dictionary[ "DECLARATIVE_DEBUG" ]= "yes";
+    dictionary[ "QML_DEBUG" ]       = "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
     dictionary[ "DIRECTWRITE" ]     = "no";
 
@@ -845,10 +845,10 @@ void Configure::parseCmdLine()
             dictionary[ "PHONON_BACKEND" ] = "yes";
         } else if (configCmdLine.at(i) == "-phonon-wince-ds9") {
             dictionary[ "DIRECTSHOW" ] = "yes";
-        } else if (configCmdLine.at(i) == "-no-declarative-debug") {
-            dictionary[ "DECLARATIVE_DEBUG" ] = "no";
-        } else if (configCmdLine.at(i) == "-declarative-debug") {
-            dictionary[ "DECLARATIVE_DEBUG" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-qml-debug") {
+            dictionary[ "QML_DEBUG" ] = "no";
+        } else if (configCmdLine.at(i) == "-qml-debug") {
+            dictionary[ "QML_DEBUG" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-plugin-manifests") {
             dictionary[ "PLUGIN_MANIFESTS" ] = "no";
         } else if (configCmdLine.at(i) == "-plugin-manifests") {
@@ -1638,8 +1638,8 @@ bool Configure::displayHelp()
         desc("PHONON_BACKEND","yes","-phonon-backend",  "Compile in the platform-specific Phonon backend-plugin");
         desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into QtMultimedia");
         desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into QtMultimedia");
-        desc("DECLARATIVE_DEBUG", "no",    "-no-declarative-debug", "Do not build the declarative debugging support");
-        desc("DECLARATIVE_DEBUG", "yes",   "-declarative-debug",    "Build the declarative debugging support");
+        desc("QML_DEBUG", "no",    "-no-qml-debug",     "Do not build the QML debugging support");
+        desc("QML_DEBUG", "yes",   "-qml-debug",        "Build the QML debugging support");
         desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering");
         desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (experimental, requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)");
 
@@ -1999,8 +1999,8 @@ void Configure::autoDetection()
         dictionary["DBUS"] = checkAvailability("DBUS") ? "yes" : "no";
     if (dictionary["V8SNAPSHOT"] == "auto")
         dictionary["V8SNAPSHOT"] = (dictionary["V8"] == "yes") && checkAvailability("V8SNAPSHOT") ? "yes" : "no";
-    if (dictionary["DECLARATIVE_DEBUG"] == "auto")
-        dictionary["DECLARATIVE_DEBUG"] = dictionary["DECLARATIVE"] == "yes" ? "yes" : "no";
+    if (dictionary["QML_DEBUG"] == "auto")
+        dictionary["QML_DEBUG"] = dictionary["QML"] == "yes" ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
         dictionary["AUDIO_BACKEND"] = checkAvailability("AUDIO_BACKEND") ? "yes" : "no";
     if (dictionary["WMSDK"] == "auto")
@@ -2838,7 +2838,7 @@ void Configure::generateConfigfiles()
         }
         if (dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if (dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
-        if (dictionary["DECLARATIVE_DEBUG"] == "no") qconfigList += "QDECLARATIVE_NO_DEBUG_PROTOCOL";
+        if (dictionary["QML_DEBUG"] == "no")         qconfigList += "QT_QML_NO_DEBUGGER";
         if (dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
         if (dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
@@ -3061,7 +3061,7 @@ void Configure::displayConfig()
     cout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
     cout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
     cout << "QtWidgets module support...." << dictionary[ "WIDGETS" ] << endl;
-    cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
+    cout << "QML debugging..............." << dictionary[ "QML_DEBUG" ] << endl;
     cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
 
     cout << "Third Party Libraries:" << endl;
