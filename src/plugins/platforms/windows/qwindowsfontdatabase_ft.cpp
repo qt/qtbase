@@ -195,9 +195,11 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
         const QStringList allKeys = fontRegistry.allKeys();
         allFonts.reserve(allKeys.size());
         const QString trueType = QStringLiteral("(TrueType)");
+        const QRegExp sizeListMatch(QStringLiteral("\\s(\\d+,)+\\d+"));
         foreach (const QString &key, allKeys) {
             QString realKey = key;
             realKey.remove(trueType);
+            realKey.remove(sizeListMatch);
             QStringList fonts;
             const QStringList fontNames = realKey.trimmed().split(QLatin1Char('&'));
             foreach (const QString &fontName, fontNames)
