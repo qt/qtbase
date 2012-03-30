@@ -1205,7 +1205,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             QString images = "images";
             if (!baseDir().isEmpty())
                 images.prepend("../");
-            if (atom->string()[0] != '/')
+            if (!atom->string().isEmpty() && atom->string()[0] != '/')
                 images.append(QLatin1Char('/'));
             fileName = images + atom->string();
         }
@@ -1786,7 +1786,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateThreadSafeness(nsn, marker);
         generateSince(nsn, marker);
 
-        enterSection("h2","Detailed Description");
+        enterSection("","");
         generateBody(nsn, marker);
         generateAlsoList(nsn, marker);
         leaveSection();
@@ -1923,7 +1923,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateInheritedBy(cn, marker);
         generateThreadSafeness(cn, marker);
         generateSince(cn, marker);
-        enterSection("h2","Detailed Description");
+        enterSection("","");
         generateBody(cn, marker);
         generateAlsoList(cn, marker);
         leaveSection();
@@ -2048,7 +2048,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateThreadSafeness(fn, marker);
         generateSince(fn, marker);
         generateSince(fn, marker);
-        enterSection("h2","Detailed Description");
+        enterSection("","");
         generateBody(fn, marker);
         generateAlsoList(fn, marker);
         leaveSection();
@@ -2170,7 +2170,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateQmlInherits(qcn, marker);
         generateQmlInheritedBy(qcn, marker);
         generateSince(qcn, marker);
-        enterSection("h2","Detailed Description");
+        enterSection("","");
         generateBody(qcn, marker);
         if (cn) {
             generateQmlText(cn->doc().body(), cn, marker, qcn->name());
@@ -2310,7 +2310,7 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode* fake, CodeMarker* marker
     }
     else {
         if (fake->subType() == Node::Module) {
-            enterSection("h2","Detailed Description");
+            enterSection("","");
             generateBody(fake, marker);
             leaveSection();
         }
