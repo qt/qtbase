@@ -512,7 +512,7 @@ non_trivial:
 
             if (decoded >= 0x80) {
                 // decode the UTF-8 sequence
-                if (encoding & QUrl::DecodeUnicode &&
+                if (!(encoding & QUrl::EncodeUnicode) &&
                         encodedUtf8ToUtf16(result, output, begin, input, end, decoded))
                     continue;
 
@@ -523,7 +523,7 @@ non_trivial:
             }
         } else {
             decoded = c;
-            if (decoded >= 0x80 && (encoding & QUrl::DecodeUnicode) == 0) {
+            if (decoded >= 0x80 && encoding & QUrl::EncodeUnicode) {
                 // encode the UTF-8 sequence
                 unicodeToEncodedUtf8(result, output, begin, input, end, decoded);
                 continue;
@@ -581,15 +581,42 @@ static void maskTable(uchar (&table)[N], const uchar (&mask)[N])
         table[i] &= mask[i];
 }
 
+/*!
+    \internal
+
+    Recodes the string from \a begin to \a end. If any transformations are
+    done, append them to \a appendTo and return the number of characters added.
+    If no transformations were required, return 0.
+
+    The \a encoding option modifies the default behaviour:
+    \list
+    \li QUrl::EncodeDelimiters: if set, delimiters will be left untransformed (note: not encoded!);
+                                if unset, delimiters will be decoded
+    \li QUrl::DecodeReserved: if set, reserved characters will be decoded;
+                              if unset, reserved characters will be encoded
+    \li QUrl::EncodeSpaces: if set, spaces will be encoded to "%20"; if unset, they will be " "
+    \li QUrl::EncodeUnicode: if set, characters above U+0080 will be encoded to their UTF-8
+                             percent-encoded form; if unset, they will be decoded to UTF-16
+    \endlist
+
+    Other flags are ignored (including QUrl::EncodeReserved).
+
+    The \a tableModifications argument can be used to supply extra
+    modifications to the tables, to be applied after the flags above are
+    handled. It consists of a sequence of 16-bit values, where the low 8 bits
+    indicate the character in question and the high 8 bits are either \c
+    EncodeCharacter, \c LeaveCharacter or \c DecodeCharacter.
+ */
+
 Q_AUTOTEST_EXPORT int
 qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
              QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications)
 {
     uchar actionTable[sizeof defaultActionTable];
-    if (encoding & QUrl::DecodeDelimiters && encoding & QUrl::DecodeReserved) {
+    if (!(encoding & QUrl::EncodeDelimiters) && encoding & QUrl::DecodeReserved) {
         // reset the table
         memset(actionTable, DecodeCharacter, sizeof actionTable);
-        if (!(encoding & QUrl::DecodeSpaces))
+        if (encoding & QUrl::EncodeSpaces)
             actionTable[0] = EncodeCharacter;
 
         // these are always encoded
@@ -597,11 +624,11 @@ qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
         actionTable[0x7F - ' '] = EncodeCharacter;
     } else {
         memcpy(actionTable, defaultActionTable, sizeof actionTable);
-        if (encoding & QUrl::DecodeDelimiters)
+        if (!(encoding & QUrl::EncodeDelimiters))
             maskTable(actionTable, delimsMask);
         if (encoding & QUrl::DecodeReserved)
             maskTable(actionTable, reservedMask);
-        if (encoding & QUrl::DecodeSpaces)
+        if (!(encoding & QUrl::EncodeSpaces))
             actionTable[0] = DecodeCharacter; // decode
     }
 

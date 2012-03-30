@@ -2599,14 +2599,14 @@ void tst_QUrl::componentEncodings_data()
 
     // hostname cannot contain spaces
     QTest::newRow("encoded-space") << QUrl("x://user name:pass word@host/path name?query value#fragment value")
-                                   << int(QUrl::FullyEncoded)
+                                   << int(QUrl::EncodeSpaces)
                                    << "user%20name" << "pass%20word" << "user%20name:pass%20word"
                                    << "host" << "user%20name:pass%20word@host"
                                    << "/path%20name" << "query%20value" << "fragment%20value"
                                    << "x://user%20name:pass%20word@host/path%20name?query%20value#fragment%20value";
 
     QTest::newRow("decoded-space") << QUrl("x://user%20name:pass%20word@host/path%20name?query%20value#fragment%20value")
-                                   << int(QUrl::DecodeSpaces)
+                                   << int(QUrl::MostDecoded)
                                    << "user name" << "pass word" << "user name:pass word"
                                    << "host" << "user name:pass word@host"
                                    << "/path name" << "query value" << "fragment value"
@@ -2624,13 +2624,13 @@ void tst_QUrl::componentEncodings_data()
     // unicode tests
     // hostnames can participate in this test, but we need a top-level domain that accepts Unicode
     QTest::newRow("encoded-unicode") << QUrl(QString::fromUtf8("x://\xc2\x80:\xc3\x90@smørbrød.example.no/\xe0\xa0\x80?\xf0\x90\x80\x80#é"))
-                                     << int(QUrl::FullyEncoded)
+                                     << int(QUrl::EncodeUnicode)
                                      << "%C2%80" << "%C3%90" << "%C2%80:%C3%90"
                                      << "xn--smrbrd-cyad.example.no" << "%C2%80:%C3%90@xn--smrbrd-cyad.example.no"
                                      << "/%E0%A0%80" << "%F0%90%80%80" << "%C3%A9"
                                      << "x://%C2%80:%C3%90@xn--smrbrd-cyad.example.no/%E0%A0%80?%F0%90%80%80#%C3%A9";
     QTest::newRow("decoded-unicode") << QUrl("x://%C2%80:%C3%90@XN--SMRBRD-cyad.example.NO/%E0%A0%80?%F0%90%80%80#%C3%A9")
-                                     << int(QUrl::DecodeUnicode)
+                                     << int(QUrl::MostDecoded)
                                      << QString::fromUtf8("\xc2\x80") << QString::fromUtf8("\xc3\x90")
                                      << QString::fromUtf8("\xc2\x80:\xc3\x90")
                                      << QString::fromUtf8("smørbrød.example.no")
@@ -2661,8 +2661,10 @@ void tst_QUrl::componentEncodings_data()
 
     //    gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
     // these are the separators between fields
-    // they must appear encoded in proper URLs everywhere
-    // 1) test the delimiters that, if they were decoded, would change the URL parsing
+    // they must appear encoded in certain positions, no exceptions
+    // in other positions, they can appear decoded, so they always do
+    // 1) test the delimiters that must appear encoded
+    //    (if they were decoded, they'd would change the URL parsing)
     QTest::newRow("encoded-gendelims-changing") << QUrl("x://%5b%3a%2f%3f%23%40%5d:%5b%2f%3f%23%40%5d@host/%2f%3f%23?%23")
                                                 << int(QUrl::MostDecoded)
                                                 << "[:/?#@]" << "[/?#@]" << "[%3A/?#@]:[/?#@]"
@@ -2674,7 +2676,7 @@ void tst_QUrl::componentEncodings_data()
     // and test that %2f is *not* decoded to a slash in the path
     // don't test the query because in this mode it doesn't transform anything
     QTest::newRow("decoded-gendelims-unchanging") << QUrl("x://:%3a@host/%2f%3a%40#%23%3a%2f%3f%40")
-                                                  << int(QUrl::DecodeDelimiters)
+                                                  << int(QUrl::FullyEncoded)
                                                   << "" << ":" << "::"
                                                   << "host" << "::@host"
                                                   << "/%2F:@" << "" << "#:/?@"
@@ -2707,7 +2709,7 @@ void tst_QUrl::componentEncodings_data()
                                             << QString() << "!$()*+,;=:/?[]@" << QString()
                                             << "?!$()*+,;=:/?[]@";
     QTest::newRow("undecoded-delims-query") << QUrl("?%21%24%26%27%28%29%2a%2b%2c%2f%3a%3b%3d%3f%40%5b%5d")
-                                            << int(QUrl::DecodeDelimiters)
+                                            << int(QUrl::MostDecoded)
                                             << QString() << QString() << QString()
                                             << QString() << QString()
                                             << QString() << "%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D" << QString()

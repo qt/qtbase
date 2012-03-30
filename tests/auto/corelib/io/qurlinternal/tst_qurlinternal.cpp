@@ -812,7 +812,7 @@ void tst_QUrlInternal::correctEncodedMistakes()
     QString output = QTest::currentDataTag();
     expected.prepend(output);
 
-    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::DecodeUnicode))
+    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), 0))
         output += input;
     QCOMPARE(output, expected);
 }
@@ -822,7 +822,7 @@ static void addUtf8Data(const char *name, const char *data)
     QString encoded = QByteArray(data).toPercentEncoding();
     QString decoded = QString::fromUtf8(data);
 
-    QTest::newRow(QByteArray("decode-") + name) << encoded << QUrl::ComponentFormattingOptions(QUrl::DecodeUnicode) << decoded;
+    QTest::newRow(QByteArray("decode-") + name) << encoded << QUrl::ComponentFormattingOptions(QUrl::MostDecoded) << decoded;
     QTest::newRow(QByteArray("encode-") + name) << decoded << QUrl::ComponentFormattingOptions(QUrl::FullyEncoded) << encoded;
 }
 
@@ -877,17 +877,17 @@ void tst_QUrlInternal::encodingRecode_data()
     QTest::newRow("encode-nul") << QString::fromLatin1("abc\0def", 7) << F(QUrl::MostDecoded) << "abc%00def";
 
     // space
-    QTest::newRow("space-leave-decoded") << "Hello World " << F(QUrl::DecodeSpaces) << "Hello World ";
+    QTest::newRow("space-leave-decoded") << "Hello World " << F(QUrl::MostDecoded) << "Hello World ";
     QTest::newRow("space-leave-encoded") << "Hello%20World%20" << F(QUrl::FullyEncoded) << "Hello%20World%20";
     QTest::newRow("space-encode") << "Hello World " << F(QUrl::FullyEncoded) << "Hello%20World%20";
-    QTest::newRow("space-decode") << "Hello%20World%20" << F(QUrl::DecodeSpaces) << "Hello World ";
+    QTest::newRow("space-decode") << "Hello%20World%20" << F(QUrl::MostDecoded) << "Hello World ";
 
     // decode unreserved
     QTest::newRow("unreserved-decode") << "%66%6f%6f%42a%72" << F(QUrl::FullyEncoded) << "fooBar";
 
     // mix encoding with decoding
-    QTest::newRow("encode-control-decode-space") << "\1\2%200" << F(QUrl::DecodeSpaces) << "%01%02 0";
-    QTest::newRow("decode-space-encode-control") << "%20\1\2" << F(QUrl::DecodeSpaces) << " %01%02";
+    QTest::newRow("encode-control-decode-space") << "\1\2%200" << F(QUrl::MostDecoded) << "%01%02 0";
+    QTest::newRow("decode-space-encode-control") << "%20\1\2" << F(QUrl::MostDecoded) << " %01%02";
 
     // decode and encode valid UTF-8 data
     // invalid is tested in encodingRecodeInvalidUtf8
@@ -922,11 +922,11 @@ void tst_QUrlInternal::encodingRecode_data()
     QTest::newRow("ff") << "%ff" << F(QUrl::FullyEncoded) << "%FF";
 
     // decode UTF-8 mixed with non-UTF-8 and unreserved
-    QTest::newRow("utf8-mix-1") << "%80%C2%80" << F(QUrl::DecodeUnicode) << QString::fromUtf8("%80\xC2\x80");
-    QTest::newRow("utf8-mix-2") << "%C2%C2%80" << F(QUrl::DecodeUnicode) << QString::fromUtf8("%C2\xC2\x80");
-    QTest::newRow("utf8-mix-3") << "%E0%C2%80" << F(QUrl::DecodeUnicode) << QString::fromUtf8("%E0\xC2\x80");
-    QTest::newRow("utf8-mix-3") << "A%C2%80" << F(QUrl::DecodeUnicode) << QString::fromUtf8("A\xC2\x80");
-    QTest::newRow("utf8-mix-3") << "%C2%80A" << F(QUrl::DecodeUnicode) << QString::fromUtf8("\xC2\x80""A");
+    QTest::newRow("utf8-mix-1") << "%80%C2%80" << F(QUrl::MostDecoded) << QString::fromUtf8("%80\xC2\x80");
+    QTest::newRow("utf8-mix-2") << "%C2%C2%80" << F(QUrl::MostDecoded) << QString::fromUtf8("%C2\xC2\x80");
+    QTest::newRow("utf8-mix-3") << "%E0%C2%80" << F(QUrl::MostDecoded) << QString::fromUtf8("%E0\xC2\x80");
+    QTest::newRow("utf8-mix-3") << "A%C2%80" << F(QUrl::MostDecoded) << QString::fromUtf8("A\xC2\x80");
+    QTest::newRow("utf8-mix-3") << "%C2%80A" << F(QUrl::MostDecoded) << QString::fromUtf8("\xC2\x80""A");
 }
 
 void tst_QUrlInternal::encodingRecode()
@@ -955,9 +955,9 @@ void tst_QUrlInternal::encodingRecodeInvalidUtf8_data()
     extern void loadNonCharactersRows();
     loadNonCharactersRows();
 
-    QTest::newRow("utf8-mix-4") << QByteArray("\xE0!A2\x80");
-    QTest::newRow("utf8-mix-5") << QByteArray("\xE0\xA2!80");
-    QTest::newRow("utf8-mix-5") << QByteArray("\xE0\xA2\x33");
+    QTest::newRow("utf8-mix-4") << QByteArray("\xE0.A2\x80");
+    QTest::newRow("utf8-mix-5") << QByteArray("\xE0\xA2.80");
+    QTest::newRow("utf8-mix-6") << QByteArray("\xE0\xA2\x33");
 }
 
 void tst_QUrlInternal::encodingRecodeInvalidUtf8()
@@ -968,7 +968,7 @@ void tst_QUrlInternal::encodingRecodeInvalidUtf8()
     // prepend some data to be sure that it remains there
     QString output = QTest::currentDataTag();
 
-    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::DecodeUnicode))
+    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::MostDecoded))
         output += input;
     QCOMPARE(output, QTest::currentDataTag() + input);
 

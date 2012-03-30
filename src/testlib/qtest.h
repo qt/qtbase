@@ -142,7 +142,7 @@ template<> inline char *toString(const QRectF &s)
 
 template<> inline char *toString(const QUrl &uri)
 {
-    return qstrdup(uri.toEncoded(QUrl::DecodeDelimiters).constData());
+    return qstrdup(uri.toEncoded().constData());
 }
 
 template<> inline char *toString(const QVariant &v)

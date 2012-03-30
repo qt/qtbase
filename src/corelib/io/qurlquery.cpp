@@ -226,7 +226,7 @@ inline QString QUrlQueryPrivate::recodeToUser(const QString &input, QUrl::Compon
     if (idempotentRecodeToUser(encoding))
         return input;
 
-    if (encoding & QUrl::DecodeDelimiters) {
+    if (!(encoding & QUrl::EncodeDelimiters)) {
         QString output;
         if (qt_urlRecode(output, input.constData(), input.constData() + input.length(),
                          encoding, prettyDecodedActions))
@@ -466,10 +466,7 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
         decode('#'),                         // 3
         0
     };
-    if (encoding & QUrl::DecodeDelimiters) {
-        // full decoding: we only encode the characters above
-        tableActions[3] = 0;
-    } else {
+    if (encoding & QUrl::EncodeDelimiters) {
         tableActions[3] = encode('#');
     }
 

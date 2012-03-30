@@ -467,16 +467,16 @@ static inline void appendToUser(QString &appendTo, const QString &value, QUrl::F
     }
 
     const ushort *actions = 0;
-    if (options & QUrl::DecodeDelimiters)
-        actions = decodedActions;
-    else
+    if (options & QUrl::EncodeDelimiters)
         actions = encodedActions;
+    else
+        actions = decodedActions;
 
     if (!qt_urlRecode(appendTo, value.constData(), value.constEnd(), options, actions))
         appendTo += value;
 }
 
-void QUrlPrivate::appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
+inline void QUrlPrivate::appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
     if ((options & QUrl::RemoveUserInfo) != QUrl::RemoveUserInfo) {
         appendUserInfo(appendTo, options, appendingTo);
@@ -488,14 +488,17 @@ void QUrlPrivate::appendAuthority(QString &appendTo, QUrl::FormattingOptions opt
         appendTo += QLatin1Char(':') + QString::number(port);
 }
 
-void QUrlPrivate::appendUserInfo(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
+inline void QUrlPrivate::appendUserInfo(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
     if (Q_LIKELY(userName.isEmpty() && password.isEmpty()))
         return;
 
     const ushort *userNameActions;
     const ushort *passwordActions;
-    if (options & QUrl::DecodeDelimiters) {
+    if (options & QUrl::EncodeDelimiters) {
+        userNameActions = encodedUserNameActions;
+        passwordActions = encodedPasswordActions;
+    } else {
         switch (appendingTo) {
         case UserInfo:
             userNameActions = decodedUserNameInUserInfoActions;
@@ -513,10 +516,10 @@ void QUrlPrivate::appendUserInfo(QString &appendTo, QUrl::FormattingOptions opti
             passwordActions = decodedPasswordInUrlActions;
             break;
         }
-    } else {
-        userNameActions = encodedUserNameActions;
-        passwordActions = encodedPasswordActions;
     }
+
+    if ((options & QUrl::EncodeReserved) == 0)
+        options |= QUrl::DecodeReserved;
 
     if (!qt_urlRecode(appendTo, userName.constData(), userName.constEnd(), options, userNameActions))
         appendTo += userName;
@@ -541,7 +544,7 @@ inline void QUrlPrivate::appendPassword(QString &appendTo, QUrl::FormattingOptio
 
 inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
-    if (appendingTo != Path && options & QUrl::DecodeDelimiters) {
+    if (appendingTo != Path && !(options & QUrl::EncodeDelimiters)) {
         if (!qt_urlRecode(appendTo, path.constData(), path.constEnd(), options, decodedPathInUrlActions))
             appendTo += path;
 
@@ -565,12 +568,12 @@ inline void QUrlPrivate::appendQuery(QString &appendTo, QUrl::FormattingOptions 
     }
 
     const ushort *actions = 0;
-    if (options & QUrl::DecodeDelimiters) {
-        // reset to default qt_urlRecode behaviour (leave delimiters alone)
-        options &= ~QUrl::DecodeDelimiters;
-        actions = appendingTo == Query ? decodedQueryInIsolationActions : decodedQueryInUrlActions;
-    } else if ((options & QUrl::DecodeDelimiters) == 0) {
+    if (options & QUrl::EncodeDelimiters) {
         actions = encodedQueryActions;
+    } else {
+        // reset to default qt_urlRecode behaviour (leave delimiters alone)
+        options |= QUrl::EncodeDelimiters;
+        actions = appendingTo == Query ? decodedQueryInIsolationActions : decodedQueryInUrlActions;
     }
 
     if (!qt_urlRecode(appendTo, query.constData(), query.constData() + query.length(),
@@ -764,7 +767,9 @@ inline void QUrlPrivate::setQuery(const QString &value, int from, int iend)
     QString output;
     const QChar *begin = value.constData() + from;
     const QChar *end = value.constData() + iend;
-    if (qt_urlRecode(output, begin, end, QUrl::DecodeUnicode | QUrl::DecodeSpaces,
+
+    // leave delimiters alone but decode the rest
+    if (qt_urlRecode(output, begin, end, QUrl::EncodeDelimiters,
                      decodedQueryInIsolationActions))
         query = output;
     else
@@ -804,7 +809,7 @@ inline void QUrlPrivate::setQuery(const QString &value, int from, int iend)
 inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions options) const
 {
     // this is the only flag that matters
-    options &= QUrl::DecodeUnicode;
+    options &= QUrl::EncodeUnicode;
     if (host.isEmpty())
         return;
     if (host.at(0).unicode() == '[') {
@@ -813,10 +818,10 @@ inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions o
     } else {
         // this is either an IPv4Address or a reg-name
         // if it is a reg-name, it is already stored in Unicode form
-        if (options == QUrl::DecodeUnicode)
-            appendTo += host;
-        else
+        if (options == QUrl::EncodeUnicode)
             appendTo += qt_ACE_do(host, ToAceOnly);
+        else
+            appendTo += host;
     }
 }
 
@@ -1915,7 +1920,7 @@ bool QUrl::hasFragment() const
 QString QUrl::topLevelDomain(ComponentFormattingOptions options) const
 {
     QString tld = qTopLevelDomain(host());
-    if ((options & DecodeUnicode) == 0) {
+    if (options & EncodeUnicode) {
         return qt_ACE_do(tld, ToAceOnly);
     }
     return tld;
@@ -2055,8 +2060,12 @@ QString QUrl::toString(FormattingOptions options) const
     }
 
     QString url;
-    if (!options.testFlag(DecodeReserved))
-        options &= ~DecodeReserved;
+
+    // for the full URL, we consider that the reserved characters are prettier if encoded
+    if (options & DecodeReserved)
+        options &= ~EncodeReserved;
+    else
+        options |= EncodeReserved;
 
     if (!(options & QUrl::RemoveScheme) && d->hasScheme())
         url += d->scheme + QLatin1Char(':');
@@ -2123,9 +2132,8 @@ QString QUrl::toDisplayString(FormattingOptions options) const
 */
 QByteArray QUrl::toEncoded(FormattingOptions options) const
 {
-    QString stringForm = toString(options);
-    if (options & DecodeUnicode)
-        return stringForm.toUtf8();
+    options &= ~DecodeReserved;
+    QString stringForm = toString(options | FullyEncoded);
     return stringForm.toLatin1();
 }
 

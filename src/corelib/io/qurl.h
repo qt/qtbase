@@ -138,15 +138,15 @@ public:
     };
 
     enum ComponentFormattingOption {
-        FullyEncoded = 0x000000,
-        DecodeSpaces = 0x100000,
-        DecodeUnicode = 0x200000,
-        DecodeDelimiters = 0x400000 | 0x800000,
-        PrettyDecodeReserved = 0x1000000,
-        DecodeReserved = PrettyDecodeReserved | 0x2000000,
+        PrettyDecoded = 0x000000,
+        EncodeSpaces = 0x100000,
+        EncodeUnicode = 0x200000,
+        EncodeDelimiters = 0x400000 | 0x800000,
+        EncodeReserved = 0x1000000,
+        DecodeReserved = 0x2000000,
 
-        PrettyDecoded = DecodeSpaces | DecodeDelimiters | PrettyDecodeReserved | DecodeUnicode,
-        MostDecoded = PrettyDecoded
+        FullyEncoded = EncodeSpaces | EncodeUnicode | EncodeDelimiters | EncodeReserved,
+        MostDecoded = PrettyDecoded | DecodeReserved
     };
     Q_DECLARE_FLAGS(ComponentFormattingOptions, ComponentFormattingOption)
 #ifdef qdoc
@@ -331,8 +331,6 @@ inline QIncompatibleFlag operator|(QUrl::UrlFormattingOption f1, int f2)
 { return QIncompatibleFlag(int(f1) | f2); }
 
 // add operators for OR'ing the two types of flags
-inline QUrl::FormattingOptions &operator|=(QUrl::FormattingOptions &i, QUrl::ComponentFormattingOption f)
-{ i |= QUrl::UrlFormattingOption(int(f)); return i; }
 inline QUrl::FormattingOptions &operator|=(QUrl::FormattingOptions &i, QUrl::ComponentFormattingOptions f)
 { i |= QUrl::UrlFormattingOption(int(f)); return i; }
 Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption i, QUrl::ComponentFormattingOption f)
