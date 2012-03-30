@@ -1984,7 +1984,16 @@ bool QAbstractSocket::waitForConnected(int msecs)
             d->_q_startConnecting(QHostInfoPrivate::fromName(d->hostName, networkSession));
         } else
 #endif
-        d->_q_startConnecting(QHostInfo::fromName(d->hostName));
+        {
+            QHostAddress temp;
+            if (temp.setAddress(d->hostName)) {
+                QHostInfo info;
+                info.setAddresses(QList<QHostAddress>() << temp);
+                d->_q_startConnecting(info);
+            } else {
+                d->_q_startConnecting(QHostInfo::fromName(d->hostName));
+            }
+        }
     }
     if (state() == UnconnectedState)
         return false; // connect not im progress anymore!
