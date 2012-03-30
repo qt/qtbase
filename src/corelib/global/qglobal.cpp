@@ -2518,7 +2518,9 @@ int qrand()
 
     \list
     \li \c Q_PRIMITIVE_TYPE specifies that \a Type is a POD (plain old
-       data) type with no constructor or destructor.
+       data) type with no constructor or destructor, or else a type where
+       every bit pattern is a valid object and memcpy() creates a valid
+       independent copy of the object.
     \li \c Q_MOVABLE_TYPE specifies that \a Type has a constructor
        and/or a destructor but can be moved in memory using \c
        memcpy().
@@ -2530,6 +2532,11 @@ int qrand()
     Example of a "primitive" type:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 38
+
+    An example of a non-POD "primitive" type is QUuid: Even though
+    QUuid has constructors (and therefore isn't POD), every bit
+    pattern still represents a valid object, and memcpy() can be used
+    to create a valid independent copy of a QUuid object.
 
     Example of a movable type:
 
