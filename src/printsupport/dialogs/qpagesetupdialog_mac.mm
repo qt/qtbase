@@ -179,8 +179,12 @@ void QPageSetupDialog::setVisible(bool visible)
     QDialog::setVisible(visible);
 
     if (visible) {
-        d->openCocoaPageLayout(parentWidget() ? Qt::WindowModal
-                                              : Qt::ApplicationModal);
+        Qt::WindowModality modality = windowModality();
+        if (modality == Qt::NonModal) {
+            // NSPrintPanels can only be modal, so we must pick a type
+            modality = parentWidget() ? Qt::WindowModal : Qt::ApplicationModal;
+        }
+        d->openCocoaPageLayout(modality);
         return;
     } else {
         if (d->pageLayout) {
