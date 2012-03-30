@@ -539,6 +539,7 @@ void QSslSocketPrivate::deinitialize()
 {
     q_CRYPTO_set_id_callback(0);
     q_CRYPTO_set_locking_callback(0);
+    q_ERR_free_strings();
 }
 
 /*!
@@ -560,6 +561,7 @@ bool QSslSocketPrivate::ensureLibraryLoaded()
 
     // Check if the library itself needs to be initialized.
     QMutexLocker locker(openssl_locks()->initLock());
+
     if (!s_libraryLoaded) {
         s_libraryLoaded = true;
 

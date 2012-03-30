@@ -226,6 +226,7 @@ X509 *q_d2i_X509(X509 **a, unsigned char **b, long c);
 #endif
 char *q_ERR_error_string(unsigned long a, char *b);
 unsigned long q_ERR_get_error();
+void q_ERR_free_strings();
 const EVP_CIPHER *q_EVP_des_ede3_cbc();
 int q_EVP_PKEY_assign(EVP_PKEY *a, int b, char *c);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_RSA(EVP_PKEY *a, RSA *b);
