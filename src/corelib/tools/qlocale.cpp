@@ -1954,7 +1954,7 @@ QString QLocale::standaloneMonthName(int month, FormatType type) const
     default:
         return QString();
     }
-    QString name = getLocaleListData(standalone_months_data + idx, size, month - 1);
+    QString name = getLocaleListData(months_data + idx, size, month - 1);
     if (name.isEmpty())
         return monthName(month, type);
     return name;
