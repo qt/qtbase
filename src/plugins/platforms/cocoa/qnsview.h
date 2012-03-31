@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 class QCocoaWindow;
 QT_END_NAMESPACE
 
-@interface QNSView : NSView <NSTextInput> {
+@interface QNSView : NSView <NSTextInputClient> {
     CGImageRef m_cgImage;
     QWindow *m_window;
     QCocoaWindow *m_platformWindow;

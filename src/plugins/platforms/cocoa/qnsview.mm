@@ -681,8 +681,9 @@ static QTouchDevice *touchDevice = 0;
     [self tryToPerform:aSelector with:self];
 }
 
-- (void) insertText:(id)aString
+- (void) insertText:(id)aString replacementRange:(NSRange)replacementRange
 {
+    Q_UNUSED(replacementRange)
     QString commitString;
     if ([aString length]) {
         if ([aString isKindOfClass:[NSAttributedString class]]) {
@@ -707,12 +708,13 @@ static QTouchDevice *touchDevice = 0;
     m_composingText.clear();
  }
 
-- (void) setMarkedText:(id)aString selectedRange:(NSRange)selRange
+- (void) setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
+    Q_UNUSED(replacementRange)
     QString preeditString;
 
     QList<QInputMethodEvent::Attribute> attrs;
-    attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, selRange.location + selRange.length, 1, QVariant());
+    attrs<<QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, selectedRange.location + selectedRange.length, 1, QVariant());
 
     if ([aString isKindOfClass:[NSAttributedString class]]) {
         // Preedit string has attribution
@@ -793,13 +795,9 @@ static QTouchDevice *touchDevice = 0;
     return (m_composingText.isEmpty() ? NO: YES);
 }
 
-- (NSInteger) conversationIdentifier
+- (NSAttributedString *) attributedSubstringForProposedRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
 {
-    return (NSInteger)self;
-}
-
-- (NSAttributedString *) attributedSubstringFromRange:(NSRange)theRange
-{
+    Q_UNUSED(actualRange)
     QObject *fo = QGuiApplication::focusObject();
     if (!fo)
         return nil;
@@ -813,7 +811,7 @@ static QTouchDevice *touchDevice = 0;
     if (selectedText.isEmpty())
         return nil;
 
-    QCFString string(selectedText.mid(theRange.location, theRange.length));
+    QCFString string(selectedText.mid(aRange.location, aRange.length));
     const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
     return [[[NSAttributedString alloc]  initWithString:const_cast<NSString *>(tmpString)] autorelease];
 }
@@ -831,34 +829,34 @@ static QTouchDevice *touchDevice = 0;
     return range;
 }
 
-
 - (NSRange) selectedRange
 {
-    NSRange selRange = {NSNotFound, 0};
-    selRange.location = NSNotFound;
-    selRange.length = 0;
+    NSRange selectedRange = {NSNotFound, 0};
+    selectedRange.location = NSNotFound;
+    selectedRange.length = 0;
 
     QObject *fo = QGuiApplication::focusObject();
     if (!fo)
-        return selRange;
+        return selectedRange;
     QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImCurrentSelection);
     if (!QCoreApplication::sendEvent(fo, &queryEvent))
-        return selRange;
+        return selectedRange;
     if (!queryEvent.value(Qt::ImEnabled).toBool())
-        return selRange;
+        return selectedRange;
 
     QString selectedText = queryEvent.value(Qt::ImCurrentSelection).toString();
 
     if (!selectedText.isEmpty()) {
-        selRange.location = 0;
-        selRange.length = selectedText.length();
+        selectedRange.location = 0;
+        selectedRange.length = selectedText.length();
     }
-    return selRange;
+    return selectedRange;
 }
 
-- (NSRect) firstRectForCharacterRange:(NSRange)theRange
+- (NSRect) firstRectForCharacterRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
 {
-    Q_UNUSED(theRange);
+    Q_UNUSED(aRange)
+    Q_UNUSED(actualRange)
     QObject *fo = QGuiApplication::focusObject();
     if (!fo)
         return NSZeroRect;
@@ -884,10 +882,10 @@ static QTouchDevice *touchDevice = 0;
     return rect;
 }
 
-- (NSUInteger)characterIndexForPoint:(NSPoint)thePoint
+- (NSUInteger)characterIndexForPoint:(NSPoint)aPoint
 {
     // We dont support cursor movements using mouse while composing.
-    Q_UNUSED(thePoint);
+    Q_UNUSED(aPoint);
     return NSNotFound;
 }
 
