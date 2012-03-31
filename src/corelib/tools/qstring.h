@@ -69,17 +69,7 @@ class QLatin1String;
 class QStringRef;
 template <typename T> class QVector;
 
-struct QStringData {
-    QtPrivate::RefCount ref;
-    int size;
-    uint alloc : 31;
-    uint capacityReserved : 1;
-
-    qptrdiff offset;
-
-    inline ushort *data() { return reinterpret_cast<ushort *>(reinterpret_cast<char *>(this) + offset); }
-    inline const ushort *data() const { return reinterpret_cast<const ushort *>(reinterpret_cast<const char *>(this) + offset); }
-};
+typedef QTypedArrayData<ushort> QStringData;
 
 #if defined(Q_COMPILER_UNICODE_STRINGS)
 
@@ -162,13 +152,13 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 template <int N>
 struct QStaticStringData
 {
-    QStringData str;
+    QArrayData str;
     qunicodechar data[N + 1];
 
     QStringData *data_ptr() const
     {
         Q_ASSERT(str.ref.isStatic());
-        return const_cast<QStringData *>(&str);
+        return const_cast<QStringData *>(static_cast<const QStringData*>(&str));
     }
 };
 
@@ -621,9 +611,9 @@ public:
     // compatibility
     struct Null { };
     static const Null null;
-    inline QString(const Null &): d(shared_null.data_ptr()) {}
+    inline QString(const Null &): d(Data::sharedNull()) {}
     inline QString &operator=(const Null &) { *this = QString(); return *this; }
-    inline bool isNull() const { return d == &shared_null.str; }
+    inline bool isNull() const { return d == Data::sharedNull(); }
 
 
     bool isSimpleText() const;
@@ -642,11 +632,8 @@ private:
     QString &operator=(const QByteArray &a);
 #endif
 
-    static const QStaticStringData<1> shared_null;
-    static const QStaticStringData<1> shared_empty;
     Data *d;
 
-    static void free(Data *);
     void reallocData(uint alloc, bool grow = false);
     void expand(int i);
     void updateProperties() const;
@@ -903,8 +890,8 @@ inline void QCharRef::setRow(uchar arow) { QChar(*this).setRow(arow); }
 inline void QCharRef::setCell(uchar acell) { QChar(*this).setCell(acell); }
 
 
-inline QString::QString() : d(shared_null.data_ptr()) {}
-inline QString::~QString() { if (!d->ref.deref()) free(d); }
+inline QString::QString() : d(Data::sharedNull()) {}
+inline QString::~QString() { if (!d->ref.deref()) Data::deallocate(d); }
 
 inline void QString::reserve(int asize)
 {
@@ -1179,7 +1166,7 @@ public:
 
     inline const QChar *unicode() const {
         if (!m_string)
-            return reinterpret_cast<const QChar *>(QString::shared_null.str.data());
+            return reinterpret_cast<const QChar *>(QString::Data::sharedNull()->data());
         return m_string->unicode() + m_position;
     }
     inline const QChar *data() const { return unicode(); }
