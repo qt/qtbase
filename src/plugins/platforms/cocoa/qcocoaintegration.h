@@ -48,6 +48,7 @@
 #include "qcocoacursor.h"
 #include "qcocoaclipboard.h"
 #include "qcocoadrag.h"
+#include "qcocoaservices.h"
 
 #include <QtCore/QScopedPointer>
 #include <QtGui/QPlatformIntegration>
@@ -99,6 +100,7 @@ public:
 
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
+    QPlatformServices *services() const;
 
 private:
 
@@ -111,6 +113,7 @@ private:
     QList<QCocoaScreen *> mScreens;
     QCocoaClipboard  *mCocoaClipboard;
     QScopedPointer<QCocoaDrag> mCocoaDrag;
+    QScopedPointer<QCocoaServices> mServices;
 };
 
 QT_END_NAMESPACE

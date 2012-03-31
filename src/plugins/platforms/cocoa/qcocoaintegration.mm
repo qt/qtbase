@@ -99,6 +99,7 @@ QCocoaIntegration::QCocoaIntegration()
     , mAccessibility(new QPlatformAccessibility)
     , mCocoaClipboard(new QCocoaClipboard)
     , mCocoaDrag(new QCocoaDrag)
+    , mServices(new QCocoaServices)
 {
     QCocoaAutoReleasePool pool;
 
@@ -237,6 +238,11 @@ QPlatformTheme *QCocoaIntegration::createPlatformTheme(const QString &name) cons
     if (name == QLatin1String(QCocoaTheme::name))
         return new QCocoaTheme;
     return QPlatformIntegration::createPlatformTheme(name);
+}
+
+QPlatformServices *QCocoaIntegration::services() const
+{
+    return mServices.data();
 }
 
 QT_END_NAMESPACE
