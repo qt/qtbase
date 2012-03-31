@@ -584,7 +584,10 @@ QByteArray qUncompress(const uchar* data, int nbytes)
             d->offset = sizeof(QByteArrayData);
             d->data()[len] = 0;
 
-            return QByteArray(d.take(), 0, 0);
+            {
+                QByteArrayDataPtr dataPtr = { d.take() };
+                return QByteArray(dataPtr);
+            }
 
         case Z_MEM_ERROR:
             qWarning("qUncompress: Z_MEM_ERROR: Not enough memory");
@@ -912,9 +915,9 @@ QByteArray &QByteArray::operator=(const char *str)
 {
     Data *x;
     if (!str) {
-        x = const_cast<Data *>(&shared_null.ba);
+        x = shared_null.data_ptr();
     } else if (!*str) {
-        x = const_cast<Data *>(&shared_empty.ba);
+        x = shared_empty.data_ptr();
     } else {
         int len = strlen(str);
         if (d->ref.isShared() || len > int(d->alloc) || (len < d->size && len < int(d->alloc) >> 1))
@@ -1320,12 +1323,12 @@ void QByteArray::chop(int n)
 QByteArray::QByteArray(const char *data, int size)
 {
     if (!data) {
-        d = const_cast<Data *>(&shared_null.ba);
+        d = shared_null.data_ptr();
     } else {
         if (size < 0)
             size = strlen(data);
         if (!size) {
-            d = const_cast<Data *>(&shared_empty.ba);
+            d = shared_empty.data_ptr();
         } else {
             d = static_cast<Data *>(malloc(sizeof(Data) + size + 1));
             Q_CHECK_PTR(d);
@@ -1350,7 +1353,7 @@ QByteArray::QByteArray(const char *data, int size)
 QByteArray::QByteArray(int size, char ch)
 {
     if (size <= 0) {
-        d = const_cast<Data *>(&shared_empty.ba);
+        d = shared_empty.data_ptr();
     } else {
         d = static_cast<Data *>(malloc(sizeof(Data) + size + 1));
         Q_CHECK_PTR(d);
@@ -1406,7 +1409,7 @@ void QByteArray::resize(int size)
     }
 
     if (size == 0 && !d->capacityReserved) {
-        Data *x = const_cast<Data *>(&shared_empty.ba);
+        Data *x = shared_empty.data_ptr();
         if (!d->ref.deref())
             free(d);
         d = x;
@@ -2728,8 +2731,7 @@ void QByteArray::clear()
 {
     if (!d->ref.deref())
         free(d);
-    d = const_cast<Data *>(&shared_null.ba);
-    d->ref.ref();
+    d = shared_null.data_ptr();
 }
 
 #if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
@@ -3171,7 +3173,8 @@ QByteArray QByteArray::trimmed() const
     }
     int l = end - start + 1;
     if (l <= 0) {
-        return QByteArray(const_cast<Data *>(&shared_empty.ba), 0, 0);
+        QByteArrayDataPtr empty = { shared_empty.data_ptr() };
+        return QByteArray(empty);
     }
     return QByteArray(s+start, l);
 }
@@ -3878,9 +3881,9 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
 {
     Data *x;
     if (!data) {
-        x = const_cast<Data *>(&shared_null.ba);
+        x = shared_null.data_ptr();
     } else if (!size) {
-        x = const_cast<Data *>(&shared_empty.ba);
+        x = shared_empty.data_ptr();
     } else {
         x = static_cast<Data *>(malloc(sizeof(Data) + 1));
         Q_CHECK_PTR(x);
@@ -3890,7 +3893,8 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
         x->capacityReserved = false;
         x->offset = data - reinterpret_cast<char *>(x);
     }
-    return QByteArray(x, 0, 0);
+    QByteArrayDataPtr dataPtr = { x };
+    return QByteArray(dataPtr);
 }
 
 /*!

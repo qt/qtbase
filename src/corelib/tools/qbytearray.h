@@ -136,21 +136,31 @@ template<int N> struct QStaticByteArrayData
 {
     QByteArrayData ba;
     char data[N + 1];
+
+    QByteArrayData *data_ptr() const
+    {
+        Q_ASSERT(ba.ref.isStatic());
+        return const_cast<QByteArrayData *>(&ba);
+    }
 };
 
-template<int N> struct QStaticByteArrayDataPtr
+struct QByteArrayDataPtr
 {
-    const QStaticByteArrayData<N> *ptr;
+    QByteArrayData *ptr;
 };
 
 
 #if defined(Q_COMPILER_LAMBDA)
-#  define QByteArrayLiteral(str) ([]() -> QStaticByteArrayDataPtr<sizeof(str) - 1> { \
+
+#  define QByteArrayLiteral(str) \
+    ([]() -> QByteArrayDataPtr { \
         enum { Size = sizeof(str) - 1 }; \
         static const QStaticByteArrayData<Size> qbytearray_literal = \
         { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, sizeof(QByteArrayData) }, str }; \
-        QStaticByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
-    return holder; }())
+        QByteArrayDataPtr holder = { qbytearray_literal.data_ptr() }; \
+        return holder; \
+    }()) \
+    /**/
 
 #elif defined(Q_CC_GNU)
 // We need to create a QByteArrayData in the .rodata section of memory
@@ -162,8 +172,11 @@ template<int N> struct QStaticByteArrayDataPtr
         enum { Size = sizeof(str) - 1 }; \
         static const QStaticByteArrayData<Size> qbytearray_literal = \
         { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, sizeof(QByteArrayData) }, str }; \
-        QStaticByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
-        holder; })
+        QByteArrayDataPtr holder = { qbytearray_literal.data_ptr() }; \
+        holder; \
+    }) \
+    /**/
+
 #endif
 
 #ifndef QByteArrayLiteral
@@ -377,19 +390,13 @@ public:
     int length() const { return d->size; }
     bool isNull() const;
 
-    template <int n>
-    inline QByteArray(const QStaticByteArrayData<n> &dd)
-        : d(const_cast<QByteArrayData *>(&dd.ba)) {}
-    template <int N>
-    Q_DECL_CONSTEXPR inline QByteArray(QStaticByteArrayDataPtr<N> dd)
-        : d(const_cast<QByteArrayData *>(&dd.ptr->ba)) {}
+    Q_DECL_CONSTEXPR inline QByteArray(QByteArrayDataPtr dd) : d(dd.ptr) {}
 
 private:
     operator QNoImplicitBoolCast() const;
     static const QStaticByteArrayData<1> shared_null;
     static const QStaticByteArrayData<1> shared_empty;
     Data *d;
-    QByteArray(Data *dd, int /*dummy*/, int /*dummy*/) : d(dd) {}
     void realloc(int alloc);
     void expand(int i);
     QByteArray nulTerminated() const;
@@ -402,7 +409,7 @@ public:
     inline DataPtr &data_ptr() { return d; }
 };
 
-inline QByteArray::QByteArray(): d(const_cast<Data *>(&shared_null.ba)) { }
+inline QByteArray::QByteArray(): d(shared_null.data_ptr()) { }
 inline QByteArray::~QByteArray() { if (!d->ref.deref()) free(d); }
 inline int QByteArray::size() const
 { return d->size; }

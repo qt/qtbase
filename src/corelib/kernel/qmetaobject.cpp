@@ -159,7 +159,8 @@ static inline const QByteArrayData &stringData(const QMetaObject *mo, int index)
 
 static inline QByteArray toByteArray(const QByteArrayData &d)
 {
-    return QByteArray(reinterpret_cast<const QStaticByteArrayData<0> &>(d));
+    QByteArrayDataPtr holder = { const_cast<QByteArrayData *>(&d) };
+    return QByteArray(holder);
 }
 
 static inline const char *rawStringData(const QMetaObject *mo, int index)

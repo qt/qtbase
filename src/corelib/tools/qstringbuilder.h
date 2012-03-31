@@ -253,16 +253,16 @@ template <> struct QConcatenable<QString> : private QAbstractConcatenable
     }
 };
 
-template <int N> struct QConcatenable<QStaticStringDataPtr<N> > : private QAbstractConcatenable
+template <> struct QConcatenable<QStringDataPtr> : private QAbstractConcatenable
 {
-    typedef QStaticStringDataPtr<N> type;
+    typedef QStringDataPtr type;
     typedef QString ConvertTo;
     enum { ExactSize = true };
-    static int size(const type &) { return N; }
+    static int size(const type &a) { return a.ptr->size; }
     static inline void appendTo(const type &a, QChar *&out)
     {
-        memcpy(out, reinterpret_cast<const char*>(a.ptr->data), sizeof(QChar) * N);
-        out += N;
+        memcpy(out, reinterpret_cast<const char*>(a.ptr->data()), sizeof(QChar) * a.ptr->size);
+        out += a.ptr->size;
     }
 };
 
@@ -358,22 +358,22 @@ template <> struct QConcatenable<QByteArray> : private QAbstractConcatenable
     }
 };
 
-template <int N> struct QConcatenable<QStaticByteArrayDataPtr<N> > : private QAbstractConcatenable
+template <> struct QConcatenable<QByteArrayDataPtr> : private QAbstractConcatenable
 {
-    typedef QStaticByteArrayDataPtr<N> type;
+    typedef QByteArrayDataPtr type;
     typedef QByteArray ConvertTo;
     enum { ExactSize = false };
-    static int size(const type &) { return N; }
+    static int size(const type &ba) { return ba.ptr->size; }
 #ifndef QT_NO_CAST_FROM_ASCII
     static inline QT_ASCII_CAST_WARN void appendTo(const type &a, QChar *&out)
     {
-        QAbstractConcatenable::convertFromAscii(a.ptr->data, N, out);
+        QAbstractConcatenable::convertFromAscii(a.ptr->data(), a.ptr->size, out);
     }
 #endif
     static inline void appendTo(const type &ba, char *&out)
     {
-        ::memcpy(out, ba.ptr->data, N);
-        out += N;
+        ::memcpy(out, ba.ptr->data(), ba.ptr->size);
+        out += ba.ptr->size;
     }
 };
 

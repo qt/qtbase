@@ -1050,7 +1050,7 @@ int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
 QString::QString(const QChar *unicode, int size)
 {
    if (!unicode) {
-        d = const_cast<Data *>(&shared_null.str);
+        d = shared_null.data_ptr();
     } else {
         if (size < 0) {
             size = 0;
@@ -1058,7 +1058,7 @@ QString::QString(const QChar *unicode, int size)
                 ++size;
         }
         if (!size) {
-            d = const_cast<Data *>(&shared_empty.str);
+            d = shared_empty.data_ptr();
         } else {
             d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
             Q_CHECK_PTR(d);
@@ -1082,7 +1082,7 @@ QString::QString(const QChar *unicode, int size)
 QString::QString(int size, QChar ch)
 {
    if (size <= 0) {
-        d = const_cast<Data *>(&shared_empty.str);
+        d = shared_empty.data_ptr();
     } else {
         d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
         Q_CHECK_PTR(d);
@@ -1240,7 +1240,7 @@ void QString::resize(int size)
     }
 
     if (size == 0 && !d->capacityReserved) {
-        Data *x = const_cast<Data *>(&shared_empty.str);
+        Data *x = shared_empty.data_ptr();
         if (!d->ref.deref())
             QString::free(d);
         d = x;
@@ -4064,9 +4064,9 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
 {
     Data *d;
     if (!str) {
-        d = const_cast<Data *>(&shared_null.str);
+        d = shared_null.data_ptr();
     } else if (size == 0 || (!*str && size < 0)) {
-        d = const_cast<Data *>(&shared_empty.str);
+        d = shared_empty.data_ptr();
     } else {
         if (size < 0)
             size = qstrlen(str);
@@ -4141,8 +4141,10 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
 {
     if (!str)
         return QString();
-    if (size == 0 || (!*str && size < 0))
-        return QString(shared_empty);
+    if (size == 0 || (!*str && size < 0)) {
+        QStringDataPtr empty = { shared_empty.data_ptr() };
+        return QString(empty);
+    }
 #if !defined(QT_NO_TEXTCODEC)
     if (size < 0)
         size = qstrlen(str);
@@ -4309,7 +4311,8 @@ QString QString::simplified() const
             break;
         if (++from == fromEnd) {
             // All-whitespace string
-            return QString(shared_empty);
+            QStringDataPtr empty = { shared_empty.data_ptr() };
+            return QString(empty);
         }
     }
     // This loop needs no underflow check, as we already determined that
@@ -4403,7 +4406,8 @@ QString QString::trimmed() const
     }
     int l = end - start + 1;
     if (l <= 0) {
-        return QString(shared_empty);
+        QStringDataPtr empty = { shared_empty.data_ptr() };
+        return QString(empty);
     }
     return QString(s + start, l);
 }
@@ -7436,9 +7440,9 @@ QString QString::fromRawData(const QChar *unicode, int size)
 {
     Data *x;
     if (!unicode) {
-        x = const_cast<Data *>(&shared_null.str);
+        x = shared_null.data_ptr();
     } else if (!size) {
-        x = const_cast<Data *>(&shared_empty.str);
+        x = shared_empty.data_ptr();
     } else {
         x = static_cast<Data *>(::malloc(sizeof(Data) + sizeof(ushort)));
         Q_CHECK_PTR(x);
@@ -7448,7 +7452,8 @@ QString QString::fromRawData(const QChar *unicode, int size)
         x->capacityReserved = false;
         x->offset = reinterpret_cast<const char *>(unicode) - reinterpret_cast<char *>(x);
     }
-    return QString(x, 0);
+    QStringDataPtr dataPtr = { x };
+    return QString(dataPtr);
 }
 
 /*!

@@ -113,12 +113,16 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 #ifndef QT_NO_UNICODE_LITERAL
 #  define QT_UNICODE_LITERAL(str) QT_UNICODE_LITERAL_II(str)
 # if defined(Q_COMPILER_LAMBDA)
-#  define QStringLiteral(str) ([]() -> QStaticStringDataPtr<sizeof(QT_UNICODE_LITERAL(str))/2 - 1> { \
+
+#  define QStringLiteral(str) \
+    ([]() -> QStringDataPtr { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QStaticStringData<Size> qstring_literal = \
         { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, sizeof(QStringData) }, QT_UNICODE_LITERAL(str) }; \
-        QStaticStringDataPtr<Size> holder = { &qstring_literal }; \
-    return holder; }())
+        QStringDataPtr holder = { qstring_literal.data_ptr() }; \
+        return holder; \
+    }()) \
+    /**/
 
 # elif defined(Q_CC_GNU)
 // We need to create a QStringData in the .rodata section of memory
@@ -130,8 +134,11 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QStaticStringData<Size> qstring_literal = \
         { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, sizeof(QStringData) }, QT_UNICODE_LITERAL(str) }; \
-        QStaticStringDataPtr<Size> holder = { &qstring_literal }; \
-        holder; })
+        QStringDataPtr holder = { qstring_literal.data_ptr() }; \
+        holder; \
+    }) \
+    /**/
+
 # endif
 #endif // QT_NO_UNICODE_LITERAL
 
@@ -147,12 +154,17 @@ struct QStaticStringData
 {
     QStringData str;
     qunicodechar data[N + 1];
+
+    QStringData *data_ptr() const
+    {
+        Q_ASSERT(str.ref.isStatic());
+        return const_cast<QStringData *>(&str);
+    }
 };
 
-template <int N>
-struct QStaticStringDataPtr
+struct QStringDataPtr
 {
-    const QStaticStringData<N> *ptr;
+    QStringData *ptr;
 };
 
 class Q_CORE_EXPORT QString
@@ -421,11 +433,13 @@ public:
     // note - this are all inline so we can benefit from strlen() compile time optimizations
     static inline QString fromAscii(const char *str, int size = -1)
     {
-        return QString(fromAscii_helper(str, (str && size == -1) ? int(strlen(str)) : size), 0);
+        QStringDataPtr dataPtr = { fromAscii_helper(str, (str && size == -1) ? int(strlen(str)) : size) };
+        return QString(dataPtr);
     }
     static inline QString fromLatin1(const char *str, int size = -1)
     {
-        return QString(fromLatin1_helper(str, (str && size == -1) ? int(strlen(str)) : size), 0);
+        QStringDataPtr dataPtr = { fromLatin1_helper(str, (str && size == -1) ? int(strlen(str)) : size) };
+        return QString(dataPtr);
     }
     static inline QString fromUtf8(const char *str, int size = -1)
     {
@@ -600,7 +614,7 @@ public:
     // compatibility
     struct Null { };
     static const Null null;
-    inline QString(const Null &): d(const_cast<Data *>(&shared_null.str)) {}
+    inline QString(const Null &): d(shared_null.data_ptr()) {}
     inline QString &operator=(const Null &) { *this = QString(); return *this; }
     inline bool isNull() const { return d == &shared_null.str; }
 
@@ -609,10 +623,7 @@ public:
     bool isRightToLeft() const;
 
     QString(int size, Qt::Initialization);
-    template <int n>
-    inline QString(const QStaticStringData<n> &dd) : d(const_cast<QStringData *>(&dd.str)) {}
-    template <int N>
-    Q_DECL_CONSTEXPR inline QString(QStaticStringDataPtr<N> dd) : d(const_cast<QStringData *>(&dd.ptr->str)) {}
+    Q_DECL_CONSTEXPR inline QString(QStringDataPtr dd) : d(dd.ptr) {}
 
 private:
 #if defined(QT_NO_CAST_FROM_ASCII) && !defined(Q_NO_DECLARED_NOT_DEFINED)
@@ -627,7 +638,6 @@ private:
     static const QStaticStringData<1> shared_null;
     static const QStaticStringData<1> shared_empty;
     Data *d;
-    inline QString(Data *dd, int /*dummy*/) : d(dd) {}
 
     static int grow(int);
     static void free(Data *);
@@ -888,7 +898,7 @@ inline void QCharRef::setRow(uchar arow) { QChar(*this).setRow(arow); }
 inline void QCharRef::setCell(uchar acell) { QChar(*this).setCell(acell); }
 
 
-inline QString::QString() : d(const_cast<Data *>(&shared_null.str)) {}
+inline QString::QString() : d(shared_null.data_ptr()) {}
 inline QString::~QString() { if (!d->ref.deref()) free(d); }
 
 inline void QString::reserve(int asize)

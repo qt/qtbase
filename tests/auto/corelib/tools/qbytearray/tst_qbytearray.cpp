@@ -181,7 +181,7 @@ private slots:
     } while (false)                                                             \
     /**/
 
-struct StaticByteArrays {
+static const struct StaticByteArrays {
     struct Standard {
         QByteArrayData data;
         const char string[8];
@@ -207,10 +207,10 @@ struct StaticByteArrays {
             ,{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) + sizeof(char) }, 0, "dataBAD"}
             };
 
-static const QStaticByteArrayData<1> &staticStandard = reinterpret_cast<QStaticByteArrayData<1> &>(statics.standard);
-static const QStaticByteArrayData<1> &staticNotNullTerminated = reinterpret_cast<QStaticByteArrayData<1> &>(statics.notNullTerminated);
-static const QStaticByteArrayData<1> &staticShifted = reinterpret_cast<QStaticByteArrayData<1> &>(statics.shifted);
-static const QStaticByteArrayData<1> &staticShiftedNotNullTerminated = reinterpret_cast<QStaticByteArrayData<1> &>(statics.shiftedNotNullTerminated);
+static const QByteArrayDataPtr staticStandard = { const_cast<QByteArrayData *>(&statics.standard.data) };
+static const QByteArrayDataPtr staticNotNullTerminated = { const_cast<QByteArrayData *>(&statics.notNullTerminated.data) };
+static const QByteArrayDataPtr staticShifted = { const_cast<QByteArrayData *>(&statics.shifted.data) };
+static const QByteArrayDataPtr staticShiftedNotNullTerminated = { const_cast<QByteArrayData *>(&statics.shiftedNotNullTerminated.data) };
 
 tst_QByteArray::tst_QByteArray()
 {
