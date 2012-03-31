@@ -5,7 +5,7 @@ QT = core-private network-private
 LIBS += -framework Foundation -framework SystemConfiguration
 
 contains(QT_CONFIG, corewlan) {
-    isEmpty(QMAKE_MAC_SDK)|contains(QMAKE_MAC_SDK, "/Developer/SDKs/MacOSX10\.[67]\.sdk") {
+    !contains(QMAKE_MAC_SDK, ".*MacOSX10\\.[345]\\.sdk") {
          LIBS += -framework CoreWLAN -framework Security
     }
 }
