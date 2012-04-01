@@ -430,7 +430,6 @@ QMimeType QMimeDatabase::mimeTypeForFile(const QString &fileName, MatchMode mode
 }
 
 /*!
-    \fn QMimeType QMimeDatabase::findMimeTypesByFileName(const QString &fileName) const;
     Returns the MIME types for the file name \a fileName.
 
     If the file name doesn't match any known pattern, an empty list is returned.
