@@ -96,6 +96,7 @@ static const char matchMaskAttributeC[] = "mask";
 
 /*!
     \class QMimeTypeParserBase
+    \internal
     \brief The QMimeTypeParserBase class parses for a sequence of <mime-type> in a generic way.
 
     Calls abstract handler function process for QMimeType it finds.
