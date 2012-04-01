@@ -2503,8 +2503,7 @@ bool QVariant::canConvert(int targetTypeId) const
 
     if (targetTypeId == String && currentType == StringList)
         return v_cast<QStringList>(&d)->count() == 1;
-    else
-        return qCanConvertMatrix[targetTypeId] & (1 << currentType);
+    return qCanConvertMatrix[targetTypeId] & (1 << currentType);
 }
 
 /*!
