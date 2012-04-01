@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #define QT_NO_CAST_FROM_ASCII
 
 #include "qmimetypeparser_p.h"
@@ -92,7 +91,6 @@ static const char matchMaskAttributeC[] = "mask";
     \sa QMimeDatabase, QMimeMagicRuleMatcher, MagicRule, MagicStringRule, MagicByteRule, GlobPattern
     \sa QMimeTypeParser
 */
-
 
 /*!
     \class QMimeTypeParserBase

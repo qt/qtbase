@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #ifndef QMIMEMAGICRULEMATCHER_P_H
 #define QMIMEMAGICRULEMATCHER_P_H
 

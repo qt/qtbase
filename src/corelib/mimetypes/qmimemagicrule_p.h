@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #ifndef QMIMEMAGICRULE_P_H
 #define QMIMEMAGICRULE_P_H
 
