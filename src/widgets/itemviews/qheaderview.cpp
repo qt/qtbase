@@ -456,7 +456,7 @@ void QHeaderView::setOffset(int newOffset)
         d->viewport->scroll(isRightToLeft() ? -ndelta : ndelta, 0);
     else
         d->viewport->scroll(0, ndelta);
-    if (d->state == QHeaderViewPrivate::ResizeSection) {
+    if (d->state == QHeaderViewPrivate::ResizeSection && !d->preventCursorChangeInSetOffset) {
         QPoint cursorPos = QCursor::pos();
         if (d->orientation == Qt::Horizontal)
             QCursor::setPos(cursorPos.x() + ndelta, cursorPos.y());
@@ -827,6 +827,9 @@ void QHeaderView::swapSections(int first, int second)
     ResizeMode secondMode = d->headerSectionResizeMode(second);
     int secondLogical = d->logicalIndex(second);
 
+    if (d->state == QHeaderViewPrivate::ResizeSection)
+        d->preventCursorChangeInSetOffset = true;
+
     d->createSectionItems(second, second, firstSize, firstMode);
     d->createSectionItems(first, first, secondSize, secondMode);
 
@@ -875,6 +878,9 @@ void QHeaderView::resizeSection(int logical, int size)
     int visual = visualIndex(logical);
     if (visual == -1)
         return;
+
+    if (d->state == QHeaderViewPrivate::ResizeSection && !d->cascadingResizing && logical != d->section)
+        d->preventCursorChangeInSetOffset = true;
 
     int oldSize = d->headerSectionSize(visual);
     if (oldSize == size)
@@ -1716,6 +1722,9 @@ void QHeaderView::sectionsInserted(const QModelIndex &parent,
 
     d->invalidateCachedSizeHint();
 
+    if (d->state == QHeaderViewPrivate::ResizeSection)
+        d->preventCursorChangeInSetOffset = true;
+
     // add the new sections
     int insertAt = logicalFirst;
     int insertCount = logicalLast - logicalFirst + 1;
@@ -1848,6 +1857,9 @@ void QHeaderViewPrivate::_q_sectionsRemoved(const QModelIndex &parent,
         return;
     int oldCount = q->count();
     int changeCount = logicalLast - logicalFirst + 1;
+
+    if (state == QHeaderViewPrivate::ResizeSection)
+        preventCursorChangeInSetOffset = true;
 
     updateHiddenSections(logicalFirst, logicalLast);
 
@@ -2268,6 +2280,7 @@ void QHeaderView::mousePressEvent(QMouseEvent *e)
         d->originalSize = sectionSize(handle);
         d->state = QHeaderViewPrivate::ResizeSection;
         d->section = handle;
+        d->preventCursorChangeInSetOffset = false;
     }
 
     d->firstPos = pos;

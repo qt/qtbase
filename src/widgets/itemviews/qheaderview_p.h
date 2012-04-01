@@ -84,6 +84,7 @@ public:
           pressed(-1),
           hover(-1),
           length(0),
+          preventCursorChangeInSetOffset(false),
           movableSections(false),
           clickableSections(false),
           highlightSelected(false),
@@ -266,6 +267,7 @@ public:
     int hover;
 
     int length;
+    bool preventCursorChangeInSetOffset;
     bool movableSections;
     bool clickableSections;
     bool highlightSelected;
