@@ -863,7 +863,7 @@ void tst_QFileSystemModel::sort()
     QTest::qWait(500);
     QModelIndex parent = myModel->index(dirPath, 0);
     QList<QString> expectedOrder;
-    expectedOrder << tempFile2.fileName() << tempFile.fileName() << dirPath + QChar('/') + "." << dirPath + QChar('/') + "..";
+    expectedOrder << tempFile2.fileName() << tempFile.fileName() << dirPath + QChar('/') + ".." << dirPath + QChar('/') + ".";
     //File dialog Mode means sub trees are not sorted, only the current root
     if (fileDialogMode) {
        // FIXME: we were only able to disableRecursiveSort in developer builds, so we can only
