@@ -130,6 +130,7 @@ public:
     QMetaType::Destructor destructor;
     int size;
     quint32 flags; // same as QMetaType::TypeFlags
+    const QMetaObject *metaObject;
 };
 
 #ifndef QT_NO_DATASTREAM
@@ -147,6 +148,12 @@ public:
     QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(Type)
 #endif
 
+#ifndef QT_BOOTSTRAPPED
+#define METAOBJECT_DELEGATE(Type) (QtPrivate::MetaObjectForType<Type>::value())
+#else
+#define METAOBJECT_DELEGATE(Type) 0
+#endif
+
 #define QT_METATYPE_INTERFACE_INIT_IMPL(Type, DATASTREAM_DELEGATE) \
 { \
     /*creator*/(qMetaTypeCreateHelper<Type>), \
@@ -155,7 +162,8 @@ public:
     /*constructor*/(qMetaTypeConstructHelper<Type>), \
     /*destructor*/(qMetaTypeDestructHelper<Type>), \
     /*size*/(QTypeInfo<Type>::sizeOf), \
-    /*flags*/QtPrivate::QMetaTypeTypeFlags<Type>::Flags \
+    /*flags*/QtPrivate::QMetaTypeTypeFlags<Type>::Flags, \
+    /*metaObject*/METAOBJECT_DELEGATE(Type) \
 }
 
 
@@ -179,7 +187,8 @@ public:
     /*constructor*/ 0, \
     /*destructor*/ 0, \
     /*size*/ 0, \
-    /*flags*/ 0 \
+    /*flags*/ 0, \
+    /*metaObject*/ 0 \
 }
 
 namespace QtMetaTypePrivate {

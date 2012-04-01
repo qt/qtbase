@@ -42,6 +42,7 @@
 #include "qvariant.h"
 
 #include "qsizepolicy.h"
+#include "qwidget.h"
 
 #include "private/qvariant_p.h"
 #include <private/qmetatype_p.h>
@@ -151,10 +152,12 @@ static const QMetaTypeInterface qVariantWidgetsHelper[] = {
 }  // namespace
 
 extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeWidgetsHelper;
+extern Q_CORE_EXPORT const QMetaObject *qMetaObjectWidgetsHelper;
 
 void qRegisterWidgetsVariant()
 {
     qMetaTypeWidgetsHelper = qVariantWidgetsHelper;
+    qMetaObjectWidgetsHelper = &QWidget::staticMetaObject;
     QVariantPrivate::registerHandler(QModulesPrivate::Widgets, &widgets_handler);
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterWidgetsVariant)

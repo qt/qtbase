@@ -196,7 +196,7 @@ class Q_CORE_EXPORT QMetaType {
                          ConstructEx = 0x4, DestructEx = 0x8,
                          NameEx = 0x10, SizeEx = 0x20,
                          CtorEx = 0x40, DtorEx = 0x80,
-                         FlagsEx = 0x100
+                         FlagsEx = 0x100, MetaObjectEx = 0x200
                        };
 public:
 #ifndef Q_QDOC
@@ -290,6 +290,7 @@ public:
     static const char *typeName(int type);
     static int sizeOf(int type);
     static TypeFlags typeFlags(int type);
+    static const QMetaObject *metaObjectForType(int type);
     static bool isRegistered(int type);
     static void *create(int type, const void *copy = 0);
 #if QT_DEPRECATED_SINCE(5, 0)
@@ -312,6 +313,7 @@ public:
     inline bool isRegistered() const;
     inline int sizeOf() const;
     inline TypeFlags flags() const;
+    inline const QMetaObject *metaObject() const;
 
     inline void *create(const void *copy = 0) const;
     inline void destroy(void *data) const;
@@ -339,6 +341,7 @@ private:
     void dtor();
     uint sizeExtended() const;
     QMetaType::TypeFlags flagsExtended() const;
+    const QMetaObject *metaObjectExtended() const;
     void *createExtended(const void *copy = 0) const;
     void destroyExtended(void *data) const;
     void *constructExtended(void *where, const void *copy = 0) const;
@@ -355,7 +358,7 @@ private:
     uint m_typeFlags;
     uint m_extensionFlags;
     int m_typeId;
-    const QMetaObject *m_metaObject; // Placeholder for Qt 5.1 feature.
+    const QMetaObject *m_metaObject;
 };
 
 #undef QT_DEFINE_METATYPE_ID
@@ -466,10 +469,19 @@ namespace QtPrivate
     {
         static inline const QMetaObject *value() { return 0; }
     };
+
     template<typename T>
     struct MetaObjectForType<T*, /* isPointerToTypeDerivedFromQObject = */ true>
     {
         static inline const QMetaObject *value() { return &T::staticMetaObject; }
+    };
+
+    Q_CORE_EXPORT const QMetaObject *metaObjectForQWidget();
+
+    template<>
+    struct MetaObjectForType<QWidget*, /* isPointerToTypeDerivedFromQObject = */ true>
+    {
+        static const QMetaObject *value() { return metaObjectForQWidget(); }
     };
 
     template<typename T>
@@ -846,7 +858,7 @@ inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeI
                             uint size,
                             uint theTypeFlags,
                             int typeId,
-                            const QMetaObject *metaObject)
+                            const QMetaObject *_metaObject)
     : m_creator(creator)
     , m_deleter(deleter)
     , m_saveOp(saveOp)
@@ -858,7 +870,7 @@ inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeI
     , m_typeFlags(theTypeFlags)
     , m_extensionFlags(extensionFlags)
     , m_typeId(typeId)
-    , m_metaObject(metaObject)
+    , m_metaObject(_metaObject)
 {
     if (Q_UNLIKELY(isExtended(CtorEx) || typeId == QMetaType::Void))
         ctor(info);
@@ -922,6 +934,13 @@ inline QMetaType::TypeFlags QMetaType::flags() const
     if (Q_UNLIKELY(isExtended(FlagsEx)))
         return flagsExtended();
     return QMetaType::TypeFlags(m_typeFlags);
+}
+
+inline const QMetaObject *QMetaType::metaObject() const
+{
+    if (Q_UNLIKELY(isExtended(MetaObjectEx)))
+        return metaObjectExtended();
+    return m_metaObject;
 }
 
 QT_END_NAMESPACE

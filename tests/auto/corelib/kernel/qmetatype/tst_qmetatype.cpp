@@ -106,6 +106,7 @@ private slots:
     void saveAndLoadBuiltin_data();
     void saveAndLoadBuiltin();
     void saveAndLoadCustom();
+    void metaObject();
 };
 
 struct Foo { int i; };
@@ -1616,6 +1617,19 @@ void tst_QMetaType::saveAndLoadCustom()
 
     QVERIFY(QMetaType::load(stream, id, &t2)); // Hmmm, shouldn't it return false?
     QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
+}
+
+void tst_QMetaType::metaObject()
+{
+    QCOMPARE(QMetaType::metaObjectForType(QMetaType::QObjectStar), &QObject::staticMetaObject);
+    QCOMPARE(QMetaType::metaObjectForType(::qMetaTypeId<QFile*>()), &QFile::staticMetaObject);
+    QCOMPARE(QMetaType::metaObjectForType(::qMetaTypeId<MyObject*>()), &MyObject::staticMetaObject);
+    QCOMPARE(QMetaType::metaObjectForType(QMetaType::Int), static_cast<const QMetaObject *>(0));
+
+    QCOMPARE(QMetaType(QMetaType::QObjectStar).metaObject(), &QObject::staticMetaObject);
+    QCOMPARE(QMetaType(::qMetaTypeId<QFile*>()).metaObject(), &QFile::staticMetaObject);
+    QCOMPARE(QMetaType(::qMetaTypeId<MyObject*>()).metaObject(), &MyObject::staticMetaObject);
+    QCOMPARE(QMetaType(QMetaType::Int).metaObject(), static_cast<const QMetaObject *>(0));
 }
 
 // Compile-time test, it should be possible to register function pointer types

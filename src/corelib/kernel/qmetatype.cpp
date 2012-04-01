@@ -286,6 +286,7 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
 
 Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeGuiHelper = 0;
 Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeWidgetsHelper = 0;
+Q_CORE_EXPORT const QMetaObject *qMetaObjectWidgetsHelper = 0;
 
 class QCustomTypeInfo : public QMetaTypeInterface
 {
@@ -496,6 +497,7 @@ int QMetaType::registerNormalizedType(const NS(QByteArray) &normalizedTypeName, 
             inf.destructor = destructor;
             inf.size = size;
             inf.flags = flags;
+            inf.metaObject = metaObject;
             idx = ct->size() + User;
             ct->append(inf);
             return idx;
@@ -1521,6 +1523,51 @@ QMetaType::TypeFlags QMetaType::typeFlags(int type)
     return static_cast<QMetaType::TypeFlags>(QMetaTypeSwitcher::switcher<quint32>(flags, type, 0));
 }
 
+#ifndef QT_BOOTSTRAPPED
+namespace {
+class MetaObject
+{
+public:
+    MetaObject(const int type)
+        : m_type(type)
+    {}
+    template<typename T>
+    const QMetaObject *delegate(const T*) { return QtPrivate::MetaObjectForType<T>::value(); }
+    const QMetaObject *delegate(const void*) { return 0; }
+    const QMetaObject *delegate(const QMetaTypeSwitcher::UnknownType*) { return 0; }
+    const QMetaObject *delegate(const QMetaTypeSwitcher::NotBuiltinType*) { return customMetaObject(m_type); }
+private:
+    const int m_type;
+    static const QMetaObject *customMetaObject(const int type)
+    {
+        const QVector<QCustomTypeInfo> * const ct = customTypes();
+        if (Q_UNLIKELY(!ct || type < QMetaType::User))
+            return 0;
+        QReadLocker locker(customTypesLock());
+        if (Q_UNLIKELY(ct->count() <= type - QMetaType::User))
+            return 0;
+        return ct->at(type - QMetaType::User).metaObject;
+    }
+};
+}  // namespace
+#endif
+
+/*!
+    \since 5.0
+
+    Returns QMetaObject of a given \a type, if the \a type is a pointer to type derived from QObject.
+*/
+const QMetaObject *QMetaType::metaObjectForType(int type)
+{
+#ifndef QT_BOOTSTRAPPED
+    MetaObject mo(type);
+    return QMetaTypeSwitcher::switcher<const QMetaObject*>(mo, type, 0);
+#else
+    Q_UNUSED(type);
+    return 0;
+#endif
+}
+
 /*!
     \fn int qRegisterMetaType(const char *typeName)
     \relates QMetaType
@@ -1710,7 +1757,7 @@ QMetaType QMetaType::typeInfo(const int type)
                                  , typeInfo.info.size
                                  , typeInfo.info.flags
                                  , type
-                                 , 0)
+                                 , typeInfo.info.metaObject)
                 : QMetaType(UnknownType);
 }
 
@@ -1807,6 +1854,22 @@ uint QMetaType::sizeExtended() const
 QMetaType::TypeFlags QMetaType::flagsExtended() const
 {
     return 0;
+}
+
+const QMetaObject *QMetaType::metaObjectExtended() const
+{
+    return 0;
+}
+
+
+namespace QtPrivate
+{
+const QMetaObject *metaObjectForQWidget()
+{
+    if (!qMetaTypeWidgetsHelper)
+        return 0;
+    return qMetaObjectWidgetsHelper;
+}
 }
 
 QT_END_NAMESPACE
