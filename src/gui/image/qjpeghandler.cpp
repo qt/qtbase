@@ -873,20 +873,18 @@ bool QJpegHandlerPrivate::read(QImage *image)
 QJpegHandler::QJpegHandler()
     : d(new QJpegHandlerPrivate(this))
 {
-    const uint features = qDetectCPUFeatures();
-    Q_UNUSED(features);
 #if defined(QT_COMPILER_SUPPORTS_NEON)
     // from qimage_neon.cpp
     Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_neon(quint32 *dst, const uchar *src, int len);
 
-    if (features & NEON)
+    if (qCpuHasFeature(NEON))
         rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_neon;
 #endif // QT_COMPILER_SUPPORTS_NEON
 #if defined(QT_COMPILER_SUPPORTS_SSSE3)
     // from qimage_ssse3.cpp
     Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, const uchar *src, int len);
 
-    if (features & SSSE3)
+    if (qCpuHasFeature(SSSE3))
         rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_ssse3;
 #endif // QT_COMPILER_SUPPORTS_SSSE3
 }

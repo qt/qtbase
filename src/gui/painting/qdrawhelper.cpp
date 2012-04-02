@@ -5803,7 +5803,7 @@ void qInitDrawhelperAsm()
     CompositionFunction *functionForModeAsm = 0;
     CompositionFunctionSolid *functionForModeSolidAsm = 0;
 
-    const uint features = qDetectCPUFeatures();
+    const uint features = qCpuFeatures();
     if (false) {
 #ifdef QT_COMPILER_SUPPORTS_AVX
     } else if (features & AVX) {

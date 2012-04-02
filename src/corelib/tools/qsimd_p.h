@@ -43,6 +43,7 @@
 #define QSIMD_P_H
 
 #include <qglobal.h>
+#include <qatomic.h>
 
 QT_BEGIN_HEADER
 
@@ -172,7 +173,6 @@ QT_BEGIN_NAMESPACE
 
 
 enum CPUFeatures {
-    None        = 0,
     IWMMXT      = 0x1,
     NEON        = 0x2,
     SSE2        = 0x4,
@@ -183,10 +183,67 @@ enum CPUFeatures {
     AVX         = 0x80,
     AVX2        = 0x100,
     HLE         = 0x200,
-    RTM         = 0x400
+    RTM         = 0x400,
+
+    // used only to indicate that the CPU detection was initialised
+    QSimdInitialized = 0x80000000
 };
 
-Q_CORE_EXPORT uint qDetectCPUFeatures();
+static const uint qCompilerCpuFeatures = 0
+#if defined __RTM__
+        | RTM
+#endif
+#if defined __HLE__
+        | HLE
+#endif
+#if defined __AVX2__
+        | AVX2
+#endif
+#if defined __AVX__
+        | AVX
+#endif
+#if defined __SSE4_2__
+        | SSE4_2
+#endif
+#if defined __SSE4_1__
+        | SSE4_1
+#endif
+#if defined __SSSE3__
+        | SSSE3
+#endif
+#if defined __SSE3__
+        | SSE3
+#endif
+#if defined __SSE2__
+        | SSE2
+#endif
+#if defined __ARM_NEON__
+        | NEON
+#endif
+#if defined __IWMMXT__
+        | IWMMXT
+#endif
+        ;
+
+
+extern Q_CORE_EXPORT QBasicAtomicInt qt_cpu_features;
+Q_CORE_EXPORT void qDetectCpuFeatures();
+
+inline uint qCpuFeatures()
+{
+    int features = qt_cpu_features.load();
+    if (Q_UNLIKELY(features == 0)) {
+        qDetectCpuFeatures();
+        features = qt_cpu_features.load();
+        Q_ASSUME(features != 0);
+    }
+    return uint(features);
+}
+
+inline uint qCpuHasFeature(CPUFeatures feature)
+{
+    return qCompilerCpuFeatures & feature || qCpuFeatures() & feature;
+}
 
 
 #define ALIGNMENT_PROLOGUE_16BYTES(ptr, i, length) \
