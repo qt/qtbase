@@ -92,11 +92,9 @@ public:
     Qt::Orientation orientation() const;
 
     void setInvertedAppearance(bool invert);
-    bool invertedAppearance(); //### Qt5 make const
-    bool invertedAppearance() const { return const_cast<QProgressBar *>(this)->invertedAppearance(); }
+    bool invertedAppearance() const;
     void setTextDirection(QProgressBar::Direction textDirection);
-    QProgressBar::Direction textDirection(); //### Qt5 make const
-    QProgressBar::Direction textDirection() const { return const_cast<QProgressBar *>(this)->textDirection(); }
+    QProgressBar::Direction textDirection() const;
 
     void setFormat(const QString &format);
     QString format() const;
