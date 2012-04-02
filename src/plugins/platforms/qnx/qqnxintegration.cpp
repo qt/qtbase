@@ -149,7 +149,6 @@ QQnxIntegration::~QQnxIntegration()
     qDebug() << "QQnx: platform plugin shutdown begin";
 #endif
 
-    delete m_screenEventHandler;
 
     delete m_nativeInterface;
 
@@ -169,6 +168,8 @@ QQnxIntegration::~QQnxIntegration()
 
     // Stop/destroy navigator thread
     delete m_navigatorEventHandler;
+
+    delete m_screenEventHandler;
 
     // Destroy all displays
     destroyDisplays();
