@@ -59,8 +59,6 @@ public:
 
     void clear();
 
-    bool operator==(const QMimeTypePrivate &other) const;
-
     void addGlobPattern(const QString &pattern);
 
     QString name;

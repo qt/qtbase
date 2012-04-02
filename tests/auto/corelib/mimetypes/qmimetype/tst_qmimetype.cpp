@@ -176,20 +176,7 @@ void tst_qmimetype::genericIconName()
                   )
               );
 
-    QMimeType otherQMimeType (
-                  buildQMimeType (
-                      qMimeTypeName(),
-                      QString(),
-                      qMimeTypeGenericIconName(),
-                      qMimeTypeGlobPatterns()
-                  )
-              );
-
-    // Verify that the GenericIconName is part of the equality test:
     QCOMPARE(instantiatedQMimeType.genericIconName(), qMimeTypeGenericIconName());
-
-    QVERIFY(instantiatedQMimeType != otherQMimeType);
-    QVERIFY(!(instantiatedQMimeType == otherQMimeType));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -205,20 +192,7 @@ void tst_qmimetype::iconName()
                   )
               );
 
-    QMimeType otherQMimeType (
-                  buildQMimeType (
-                      qMimeTypeName(),
-                      qMimeTypeGenericIconName(),
-                      QString(),
-                      qMimeTypeGlobPatterns()
-                  )
-              );
-
-    // Verify that the IconName is part of the equality test:
     QCOMPARE(instantiatedQMimeType.iconName(), qMimeTypeIconName());
-
-    QVERIFY(instantiatedQMimeType != otherQMimeType);
-    QVERIFY(!(instantiatedQMimeType == otherQMimeType));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -234,21 +208,8 @@ void tst_qmimetype::suffixes()
                   )
               );
 
-    QMimeType otherQMimeType (
-                  buildQMimeType (
-                      qMimeTypeName(),
-                      qMimeTypeGenericIconName(),
-                      qMimeTypeIconName(),
-                      QStringList()
-                  )
-              );
-
-    // Verify that the Suffixes are part of the equality test:
     QCOMPARE(instantiatedQMimeType.globPatterns(), qMimeTypeGlobPatterns());
     QCOMPARE(instantiatedQMimeType.suffixes(), QStringList() << QString::fromLatin1("png"));
-
-    QVERIFY(instantiatedQMimeType != otherQMimeType);
-    QVERIFY(!(instantiatedQMimeType == otherQMimeType));
 }
 
 // ------------------------------------------------------------------------------------------------

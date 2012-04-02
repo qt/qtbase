@@ -77,23 +77,6 @@ void QMimeTypePrivate::clear()
     loaded = false;
 }
 
-/*!
-    \fn bool QMimeTypePrivate::operator==(const QMimeTypePrivate &other) const;
-    Returns true if \a other equals this QMimeTypePrivate object, otherwise returns false.
- */
-bool QMimeTypePrivate::operator==(const QMimeTypePrivate &other) const
-{
-    if (name == other.name &&
-            localeComments == other.localeComments &&
-            genericIconName == other.genericIconName &&
-            iconName == other.iconName &&
-            globPatterns == other.globPatterns) {
-        return true;
-    }
-
-    return false;
-}
-
 void QMimeTypePrivate::addGlobPattern(const QString &pattern)
 {
     globPatterns.append(pattern);
@@ -184,10 +167,12 @@ QMimeType::~QMimeType()
 /*!
     \fn bool QMimeType::operator==(const QMimeType &other) const;
     Returns true if \a other equals this QMimeType object, otherwise returns false.
+    The name is the unique identifier for a mimetype, so two mimetypes with
+    the same name, are equal.
  */
 bool QMimeType::operator==(const QMimeType &other) const
 {
-    return d == other.d || *d == *other.d;
+    return d == other.d || d->name == other.d->name;
 }
 
 /*!
