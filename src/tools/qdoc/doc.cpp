@@ -118,6 +118,7 @@ enum {
     CMD_GENERATELIST,
     CMD_GRANULARITY,
     CMD_HEADER,
+    CMD_HR,
     CMD_I,
     CMD_IF,
     CMD_IMAGE,
@@ -235,6 +236,7 @@ static struct {
     { "generatelist", CMD_GENERATELIST, 0 },
     { "granularity", CMD_GRANULARITY, 0 }, // ### don't document for now
     { "header", CMD_HEADER, 0 },
+    { "hr", CMD_HR, 0 },
     { "i", CMD_I, 0 },
     { "if", CMD_IF, 0 },
     { "image", CMD_IMAGE, 0 },
@@ -903,6 +905,10 @@ void DocParser::parse(const QString& source,
                     location().warning(tr("'\\i' is deprecated. Use '\\e' for italic or '\\li' for list item"));
                 case CMD_E:
                     startFormat(ATOM_FORMATTING_ITALIC, cmd);
+                    break;
+                case CMD_HR:
+                    leavePara();
+                    append(Atom::HR);
                     break;
                 case CMD_IF:
                     preprocessorSkipping.push(!Tokenizer::isTrue(getRestOfLine()));

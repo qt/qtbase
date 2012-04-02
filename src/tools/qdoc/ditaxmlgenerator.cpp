@@ -1194,6 +1194,11 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
     }
         break;
+    case Atom::HR: //<p outputclass="horizontal-rule" />
+        writeStartTag(DT_p);
+        xmlWriter().writeAttribute("outputclass","horizontal-rule");
+        writeEndTag(); // </p>
+        break;
     case Atom::Image:
     case Atom::InlineImage:
     {

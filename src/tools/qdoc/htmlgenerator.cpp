@@ -762,6 +762,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
     }
         break;
+    case Atom::HR:
+        out() << "<hr />\n";
+        break;
     case Atom::Image:
     case Atom::InlineImage:
     {

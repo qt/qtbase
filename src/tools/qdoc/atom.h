@@ -84,6 +84,7 @@ public:
         FormattingRight,
         GeneratedList,
         GuidLink,
+        HR,
         Image,
         ImageText,
         ImportantLeft,
