@@ -123,9 +123,6 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
 
     setScreen(static_cast<QQnxScreen *>(window->screen()->handle()));
 
-    // Add the window to the root of the hierarchy
-    m_screen->addWindow(this);
-
     // Add window to plugin's window mapper
     QQnxIntegration::addWindow(m_window, window);
 }
@@ -415,11 +412,9 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
     if (m_screen == platformScreen)
         return;
 
-    if (m_screen && m_screen->findWindow(m_window)) {
+    if (m_screen)
         m_screen->removeWindow(this);
-        platformScreen->addWindow(this);
-    }
-
+    platformScreen->addWindow(this);
     m_screen = platformScreen;
 
     // Move window to proper screen/display

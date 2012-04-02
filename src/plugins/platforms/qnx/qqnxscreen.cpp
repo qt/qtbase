@@ -223,8 +223,9 @@ void QQnxScreen::removeWindow(QQnxWindow *window)
     qDebug() << Q_FUNC_INFO << "window =" << window;
 #endif
 
-    m_childWindows.removeAll(window);
-    updateHierarchy();
+    const int numWindowsRemoved = m_childWindows.removeAll(window);
+    if (numWindowsRemoved > 0)
+        updateHierarchy();
 }
 
 void QQnxScreen::raiseWindow(QQnxWindow *window)
