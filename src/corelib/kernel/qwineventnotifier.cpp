@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QWinEventNotifier
+    \since 5.0
     \brief The QWinEventNotifier class provides support for the Windows Wait functions.
 
     The QWinEventNotifier class makes it possible to use the wait
