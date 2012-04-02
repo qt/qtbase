@@ -55,6 +55,7 @@ class QEglFSIntegration : public QPlatformIntegration
 {
 public:
     QEglFSIntegration();
+    ~QEglFSIntegration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
 
@@ -70,6 +71,7 @@ public:
 
 private:
     QPlatformFontDatabase *mFontDb;
+    QPlatformScreen *mScreen;
 };
 
 QT_END_NAMESPACE

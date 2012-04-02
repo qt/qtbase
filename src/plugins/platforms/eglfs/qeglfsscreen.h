@@ -56,7 +56,7 @@ class QEglFSScreen : public QPlatformScreen //huh: FullScreenScreen ;) just to f
 {
 public:
     QEglFSScreen(EGLNativeDisplayType display);
-    ~QEglFSScreen() {}
+    ~QEglFSScreen();
 
     QRect geometry() const;
     int depth() const;

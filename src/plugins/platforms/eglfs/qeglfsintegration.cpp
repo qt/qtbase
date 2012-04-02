@@ -57,13 +57,18 @@
 QT_BEGIN_NAMESPACE
 
 QEglFSIntegration::QEglFSIntegration()
-    : mFontDb(new QGenericUnixFontDatabase())
+    : mFontDb(new QGenericUnixFontDatabase()), mScreen(new QEglFSScreen(EGL_DEFAULT_DISPLAY))
 {
-    screenAdded(new QEglFSScreen(EGL_DEFAULT_DISPLAY));
+    screenAdded(mScreen);
 
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglIntegration\n");
 #endif
+}
+
+QEglFSIntegration::~QEglFSIntegration()
+{
+    delete mScreen;
 }
 
 bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const

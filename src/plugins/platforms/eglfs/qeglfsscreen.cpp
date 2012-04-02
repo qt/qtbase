@@ -146,6 +146,14 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
     eglSwapInterval(m_dpy, swapInterval);
 }
 
+QEglFSScreen::~QEglFSScreen()
+{
+    if (m_surface)
+        eglDestroySurface(m_dpy, m_surface);
+
+    eglTerminate(m_dpy);
+}
+
 void QEglFSScreen::createAndSetPlatformContext() const {
     const_cast<QEglFSScreen *>(this)->createAndSetPlatformContext();
 }
