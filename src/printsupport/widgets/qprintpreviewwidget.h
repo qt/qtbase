@@ -110,7 +110,6 @@ Q_SIGNALS:
     void previewChanged();
 
 private:
-    void *dummy; // ### remove in Qt 5.0
     Q_PRIVATE_SLOT(d_func(), void _q_fit())
     Q_PRIVATE_SLOT(d_func(), void _q_updateCurrentPage())
 };
