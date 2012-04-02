@@ -229,7 +229,7 @@ information about a particular change.
 
 - QSystemLocale has been removed from the public API.
 
-- QSqlQueryModel::indexInQuery() is now virtual. See note below under QSql.
+- QSqlQueryModel::indexInQuery() is now virtual. See note below under QtSql.
 
 - qMacVersion() has been removed. Use QSysInfo::macVersion() or
   QSysInfo::MacintoshVersion instead.
