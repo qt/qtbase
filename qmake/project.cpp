@@ -2744,6 +2744,8 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
                    return testFunctions.contains(args[0]);
                else if(args[1] == "replace")
                    return replaceFunctions.contains(args[0]);
+               else if(args[1] == "var")
+                   return place.contains(args[0]);
                fprintf(stderr, "%s:%d: defined(function, type): unexpected type [%s].\n",
                        parser.file.toLatin1().constData(), parser.line_no,
                        args[1].toLatin1().constData());
