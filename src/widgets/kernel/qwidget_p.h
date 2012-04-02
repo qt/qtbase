@@ -284,7 +284,8 @@ public:
         DrawInvisible = 0x08,
         DontSubtractOpaqueChildren = 0x10,
         DontDrawOpaqueChildren = 0x20,
-        DontDrawNativeChildren = 0x40
+        DontDrawNativeChildren = 0x40,
+        DontSetCompositionMode = 0x80
     };
 
     enum CloseMode {
