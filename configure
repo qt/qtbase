@@ -919,11 +919,6 @@ while [ "$#" -gt 0 ]; do
         VAR=`echo $1 | sed "s,^-no-\(.*\),\1,"`
         VAL=no
         ;;
-    #Qt style yes options
-    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-directfb|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-pkg-config|-force-pkg-config|-icu|-force-asserts|-testcocoon|-c++11)
-        VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
-        VAL=yes
-        ;;
     #Qt style options that pass an argument
     -qconfig)
         CFG_QCONFIG="$VAL"
@@ -1068,9 +1063,10 @@ while [ "$#" -gt 0 ]; do
         VAR="add_warn"
         VAL="$1"
         ;;
+    #General options, including Qt style yes options
     -*)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
-        VAL="unknown"
+        VAL="yes"
         ;;
     *)
         UNKNOWN_ARG=yes
