@@ -2170,7 +2170,8 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
     glyphRun.setFlags(flags);
     glyphRun.setRawFont(font);
 
-    glyphRun.setBoundingRect(QRectF(selectionX.toReal(), minY, selectionWidth.toReal(), height));
+    glyphRun.setBoundingRect(QRectF(selectionX.toReal(), minY - font.ascent(),
+                                    selectionWidth.toReal(), height));
 
     return glyphRun;
 }
