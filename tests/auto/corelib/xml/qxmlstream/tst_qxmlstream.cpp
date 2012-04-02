@@ -984,7 +984,7 @@ void tst_QXmlStream::writeAttributesWithSpace() const
     QXmlStreamWriter writer(&buffer);
     writer.writeStartDocument();
     writer.writeEmptyElement("A");
-    writer.writeAttribute("attribute", QString("value")+QChar::Nbsp);
+    writer.writeAttribute("attribute", QStringLiteral("value") + QChar(QChar::Nbsp));
     writer.writeEndDocument();
     QString s = QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><A attribute=\"value%1\"/>\n").arg(QChar(QChar::Nbsp));
     QCOMPARE(buffer.buffer().data(), s.toUtf8().data());
@@ -1512,35 +1512,38 @@ void tst_QXmlStream::hasError() const
         // Failure caused by write(QString)
         FakeBuffer fb;
         QVERIFY(fb.open(QBuffer::ReadWrite));
-        fb.setCapacity(strlen("<?xml version=\""));
+        const QByteArray expected = QByteArrayLiteral("<?xml version=\"");
+        fb.setCapacity(expected.size());
         QXmlStreamWriter writer(&fb);
         writer.writeStartDocument();
         QVERIFY(writer.hasError());
-        QCOMPARE(fb.data(), QByteArray("<?xml version=\""));
+        QCOMPARE(fb.data(), expected);
     }
 
     {
         // Failure caused by write(char *)
         FakeBuffer fb;
         QVERIFY(fb.open(QBuffer::ReadWrite));
-        fb.setCapacity(strlen("<?xml version=\"1.0"));
+        const QByteArray expected = QByteArrayLiteral("<?xml version=\"1.0");
+        fb.setCapacity(expected.size());
         QXmlStreamWriter writer(&fb);
         writer.writeStartDocument();
         QVERIFY(writer.hasError());
-        QCOMPARE(fb.data(), QByteArray("<?xml version=\"1.0"));
+        QCOMPARE(fb.data(), expected);
     }
 
     {
         // Failure caused by write(QStringRef)
         FakeBuffer fb;
         QVERIFY(fb.open(QBuffer::ReadWrite));
-        fb.setCapacity(strlen("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test xmlns:"));
+        const QByteArray expected = QByteArrayLiteral("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test xmlns:");
+        fb.setCapacity(expected.size());
         QXmlStreamWriter writer(&fb);
         writer.writeStartDocument();
         writer.writeStartElement("test");
         writer.writeNamespace("http://foo.bar", "foo");
         QVERIFY(writer.hasError());
-        QCOMPARE(fb.data(), QByteArray("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test xmlns:"));
+        QCOMPARE(fb.data(), expected);
     }
 
     {

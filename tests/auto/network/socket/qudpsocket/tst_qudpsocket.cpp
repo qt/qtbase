@@ -309,9 +309,10 @@ void tst_QUdpSocket::broadcasting()
                 QByteArray arr; arr.resize(serverSocket.pendingDatagramSize() + 1);
                 QHostAddress host;
                 quint16 port;
+                const int messageLength = int(strlen(message[i]));
                 QCOMPARE((int) serverSocket.readDatagram(arr.data(), arr.size() - 1, &host, &port),
-                    (int) strlen(message[i]));
-                arr.resize(strlen(message[i]));
+                         messageLength);
+                arr.resize(messageLength);
                 QCOMPARE(arr, QByteArray(message[i]));
             } while (serverSocket.hasPendingDatagrams());
         }

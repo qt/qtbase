@@ -3712,7 +3712,7 @@ void tst_QGraphicsView::render()
     view.show();
     QTest::qWaitForWindowShown(&view);
     QApplication::processEvents();
-    QTRY_VERIFY(view.painted > 0);
+    QTRY_VERIFY(view.painted);
 
     RenderTester *r1 = new RenderTester(QRectF(0, 0, 50, 50));
     RenderTester *r2 = new RenderTester(QRectF(50, 50, 50, 50));

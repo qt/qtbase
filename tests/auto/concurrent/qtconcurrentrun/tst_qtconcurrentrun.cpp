@@ -381,7 +381,7 @@ void tst_QtConcurrentRun::exceptions()
     bool caught = false;
     try  {
         QtConcurrent::run(throwFunction).waitForFinished();
-    } catch (Exception &e) {
+    } catch (Exception &) {
         caught = true;
     }
     if (!caught)
@@ -390,7 +390,7 @@ void tst_QtConcurrentRun::exceptions()
     caught = false;
     try  {
         QtConcurrent::run(throwFunctionReturn).waitForFinished();
-    } catch (Exception &e) {
+    } catch (Exception &) {
         caught = true;
     }
     if (!caught)

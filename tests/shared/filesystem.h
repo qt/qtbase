@@ -149,7 +149,7 @@ struct FileSystem
 
         memset( reparseInfo, 0, sizeof( *reparseInfo ));
         reparseInfo->ReparseTag = IO_REPARSE_TAG_MOUNT_POINT;
-        reparseInfo->ReparseTargetLength = target.size() * sizeof(wchar_t);
+        reparseInfo->ReparseTargetLength = DWORD(target.size() * sizeof(wchar_t));
         reparseInfo->ReparseTargetMaximumLength = reparseInfo->ReparseTargetLength + sizeof(wchar_t);
         target.toWCharArray(reparseInfo->ReparseTarget);
         reparseInfo->ReparseDataLength = reparseInfo->ReparseTargetLength + 12;

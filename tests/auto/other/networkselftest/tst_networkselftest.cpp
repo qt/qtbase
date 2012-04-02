@@ -863,7 +863,7 @@ static const char connect2[] = "\5\1\0\3\11localhost\0\25"; // Connect hostname 
 static const char connect2a[] = "\5\1\0\3"; // just "Connect to hostname"
 static const char connected[] = "\5\0\0";
 
-#define QBA(x) (QByteArray::fromRawData(x, -1 + sizeof(x)))
+#define QBA(x) (QByteArray::fromRawData(x, int(sizeof(x)) - 1))
 
 void tst_NetworkSelfTest::socks5Proxy()
 {
@@ -873,42 +873,48 @@ void tst_NetworkSelfTest::socks5Proxy()
     } ip4Address;
     ip4Address.data = qToBigEndian(serverIpAddress().toIPv4Address());
 
+    const QByteArray handshakeNoAuthData = QByteArray(handshakeNoAuth, int(sizeof handshakeNoAuth) - 1);
+    const QByteArray handshakeOkNoAuthData = QByteArray(handshakeOkNoAuth, int(sizeof handshakeOkNoAuth) - 1);
+    const QByteArray connect1Data = QByteArray(connect1, int(sizeof connect1) - 1);
+    const QByteArray connectedData = QByteArray(connected, int(sizeof connected) - 1);
+    const QByteArray connect2Data = QByteArray(connect2, int(sizeof connect2) - 1);
+
     netChat(1080, QList<Chat>()
             // IP address connection
-            << Chat::send(QByteArray(handshakeNoAuth, -1 + sizeof handshakeNoAuth))
-            << Chat::expect(QByteArray(handshakeOkNoAuth, -1 + sizeof handshakeOkNoAuth))
-            << Chat::send(QByteArray(connect1, -1 + sizeof connect1))
-            << Chat::expect(QByteArray(connected, -1 + sizeof connected))
+            << Chat::send(handshakeNoAuthData)
+            << Chat::expect(handshakeOkNoAuthData)
+            << Chat::send(connect1Data)
+            << Chat::expect(connectedData)
             << Chat::expect("\1") // IPv4 address following
             << Chat::skipBytes(6) // the server's local address and port
             << ftpChat()
 
             // connect by IP
             << Chat::Reconnect
-            << Chat::send(QByteArray(handshakeNoAuth, -1 + sizeof handshakeNoAuth))
-            << Chat::expect(QByteArray(handshakeOkNoAuth, -1 + sizeof handshakeOkNoAuth))
+            << Chat::send(handshakeNoAuthData)
+            << Chat::expect(handshakeOkNoAuthData)
             << Chat::send(QBA(connect1a) + QByteArray::fromRawData(ip4Address.buf, 4) + QBA(connect1b))
-            << Chat::expect(QByteArray(connected, -1 + sizeof connected))
+            << Chat::expect(connectedData)
             << Chat::expect("\1") // IPv4 address following
             << Chat::skipBytes(6) // the server's local address and port
             << ftpChat()
 
             // connect to "localhost" by hostname
             << Chat::Reconnect
-            << Chat::send(QByteArray(handshakeNoAuth, -1 + sizeof handshakeNoAuth))
-            << Chat::expect(QByteArray(handshakeOkNoAuth, -1 + sizeof handshakeOkNoAuth))
-            << Chat::send(QByteArray(connect2, -1 + sizeof connect2))
-            << Chat::expect(QByteArray(connected, -1 + sizeof connected))
+            << Chat::send(handshakeNoAuthData)
+            << Chat::expect(handshakeOkNoAuthData)
+            << Chat::send(connect2Data)
+            << Chat::expect(connectedData)
             << Chat::expect("\1") // IPv4 address following
             << Chat::skipBytes(6) // the server's local address and port
             << ftpChat()
 
             // connect to server by its official name
             << Chat::Reconnect
-            << Chat::send(QByteArray(handshakeNoAuth, -1 + sizeof handshakeNoAuth))
-            << Chat::expect(QByteArray(handshakeOkNoAuth, -1 + sizeof handshakeOkNoAuth))
+            << Chat::send(handshakeNoAuthData)
+            << Chat::expect(handshakeOkNoAuthData)
             << Chat::send(QBA(connect2a) + char(QtNetworkSettings::serverName().size()) + QtNetworkSettings::serverName().toLatin1() + QBA(connect1b))
-            << Chat::expect(QByteArray(connected, -1 + sizeof connected))
+            << Chat::expect(connectedData)
             << Chat::expect("\1") // IPv4 address following
             << Chat::skipBytes(6) // the server's local address and port
             << ftpChat()
@@ -917,18 +923,25 @@ void tst_NetworkSelfTest::socks5Proxy()
 
 void tst_NetworkSelfTest::socks5ProxyAuth()
 {
+    const QByteArray handshakeNoAuthData = QByteArray(handshakeNoAuth, int(sizeof handshakeNoAuth) - 1);
+    const QByteArray connect1Data = QByteArray(connect1, int(sizeof connect1) - 1);
+    const QByteArray connectedData = QByteArray(connected, int(sizeof connected) - 1);
+    const QByteArray handshakeAuthNotOkData = QByteArray(handshakeAuthNotOk, int(sizeof(handshakeAuthNotOk)) - 1);
+    const QByteArray handshakeAuthPasswordData = QByteArray(handshakeAuthPassword, int(sizeof(handshakeAuthPassword)) - 1);
+    const QByteArray handshakeOkPasswdAuthData = QByteArray(handshakeOkPasswdAuth, int(sizeof(handshakeOkPasswdAuth)) - 1);
+
     netChat(1081, QList<Chat>()
             // unauthenticated connect -- will get error
-            << Chat::send(QByteArray(handshakeNoAuth, -1 + sizeof handshakeNoAuth))
-            << Chat::expect(QByteArray(handshakeAuthNotOk, -1 + sizeof handshakeAuthNotOk))
+            << Chat::send(handshakeNoAuthData)
+            << Chat::expect(handshakeAuthNotOkData)
             << Chat::RemoteDisconnect
 
             // now try to connect with authentication
             << Chat::Reconnect
-            << Chat::send(QByteArray(handshakeAuthPassword, -1 + sizeof handshakeAuthPassword))
-            << Chat::expect(QByteArray(handshakeOkPasswdAuth, -1 + sizeof handshakeOkPasswdAuth))
-            << Chat::send(QByteArray(connect1, -1 + sizeof connect1))
-            << Chat::expect(QByteArray(connected, -1 + sizeof connected))
+            << Chat::send(handshakeAuthPasswordData)
+            << Chat::expect(handshakeOkPasswdAuthData)
+            << Chat::send(connect1Data)
+            << Chat::expect(connectedData)
             << Chat::expect("\1") // IPv4 address following
             << Chat::skipBytes(6) // the server's local address and port
             << ftpChat()

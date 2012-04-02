@@ -185,7 +185,7 @@ void tst_Utf8::charByChar()
         }
 
         if (encoded.startsWith(utf8bom))
-            encoded = encoded.mid(strlen(utf8bom));
+            encoded = encoded.mid(int(strlen(utf8bom)));
         QCOMPARE(encoded, utf8);
     }
     {
