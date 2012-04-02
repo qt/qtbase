@@ -263,8 +263,10 @@ void QQnxScreen::updateHierarchy()
 
     topZorder++;
     Q_FOREACH (screen_window_t overlay, m_overlays) {
-        if (screen_set_window_property_iv(overlay, SCREEN_PROPERTY_ZORDER, &topZorder) != 0)
-            qWarning("QQnxScreen: failed to update z order for overlay, errno=%d", errno);
+        // Do nothing when this fails. This can happen if we have stale windows in mOverlays,
+        // which in turn can happen because a window was removed but we didn't get a notification
+        // yet.
+        screen_set_window_property_iv(overlay, SCREEN_PROPERTY_ZORDER, &topZorder);
         topZorder++;
     }
 
