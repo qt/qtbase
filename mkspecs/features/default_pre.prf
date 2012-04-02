@@ -9,7 +9,9 @@ CONFIG = lex yacc warn_on debug exceptions $$CONFIG
     } else {
         isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$OUT_PWD
         modpath = $$MODULE_QMAKE_OUTDIR/mkspecs/modules
-        QTFWD = -module-fwd $$modpath -cache-module-fwd
+        QTFWD = -module-fwd $$modpath
+        !isEmpty(_QMAKE_SUPER_CACHE_):!contains(QMAKEMODULES, $$modpath): \
+            cache(QMAKEMODULES, add super, modpath)
         unset(modpath)
     }
 
