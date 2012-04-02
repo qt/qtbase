@@ -402,7 +402,6 @@ private slots:
     }
 };
 
-// ### make QGLContext a QObject in 5.0 and remove the proxy stuff
 class Q_OPENGL_EXPORT QGLSignalProxy : public QObject
 {
     Q_OBJECT

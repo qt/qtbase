@@ -277,7 +277,6 @@ public:
     QGLFormat requestedFormat() const;
     void setFormat(const QGLFormat& format);
 
-    // ### Qt 5: return bools + maybe remove virtuals
     virtual void makeCurrent();
     virtual void doneCurrent();
 
@@ -340,7 +339,7 @@ protected:
     void setWindowCreated(bool on);
     bool initialized() const;
     void setInitialized(bool on);
-    void generateFontDisplayLists(const QFont & fnt, int listBase); // ### Qt 5: remove
+    void generateFontDisplayLists(const QFont & fnt, int listBase);
 
     uint colorIndex(const QColor& c) const;
     void setValid(bool valid);
@@ -402,7 +401,6 @@ public:
     bool isValid() const;
     bool isSharing() const;
 
-    // ### Qt 5: return bools
     void makeCurrent();
     void doneCurrent();
 
@@ -474,7 +472,7 @@ protected:
 
     virtual void glInit();
     virtual void glDraw();
-    int fontDisplayListBase(const QFont & fnt, int listBase = 2000); // ### Qt 5: remove
+    int fontDisplayListBase(const QFont & fnt, int listBase = 2000);
 
     QGLWidget(QGLWidgetPrivate &dd,
               const QGLFormat &format = QGLFormat(),
