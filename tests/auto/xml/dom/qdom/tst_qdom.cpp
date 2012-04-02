@@ -1405,7 +1405,7 @@ void tst_QDom::normalizeEndOfLine() const
 
     const QString expected(QLatin1String("<a>\nc\nc\na\na</a>"));
 
-    // ### Qt 5: fix this, if we keep QDom at all
+    // ### Qt 6: fix this, if we keep QDom at all
     QEXPECT_FAIL("", "The parser doesn't perform newline normalization. Fixing that would change behavior.", Continue);
     QCOMPARE(doc.documentElement().text(), expected);
 }

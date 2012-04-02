@@ -194,7 +194,7 @@ public:
         PE_IndicatorItemViewItemDrop,
 
         PE_PanelItemViewItem,
-        PE_PanelItemViewRow, // ### Qt 5: remove
+        PE_PanelItemViewRow, // ### Qt 6: remove
 
         PE_PanelStatusBar,
 
@@ -303,7 +303,7 @@ public:
         SE_ProgressBarContents,
         SE_ProgressBarLabel,
 
-        // ### Qt 5: These values are unused; eliminate them
+        // ### Qt 6: These values are unused; eliminate them
         SE_DialogButtonAccept,
         SE_DialogButtonReject,
         SE_DialogButtonApply,
@@ -343,7 +343,7 @@ public:
         SE_CheckBoxLayoutItem,
         SE_ComboBoxLayoutItem,
         SE_DateTimeEditLayoutItem,
-        SE_DialogButtonBoxLayoutItem, // ### remove
+        SE_DialogButtonBoxLayoutItem, // ### Qt 6: remove
         SE_LabelLayoutItem,
         SE_ProgressBarLayoutItem,
         SE_PushButtonLayoutItem,

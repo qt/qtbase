@@ -830,7 +830,7 @@ QString QFileInfo::suffix() const
 QDir QFileInfo::dir() const
 {
     Q_D(const QFileInfo);
-    // ### Qt5: Maybe rename this to parentDirectory(), considering what it actually do?
+    // ### Qt 6: Maybe rename this to parentDirectory(), considering what it actually does?
     return QDir(d->fileEntry.path());
 }
 
