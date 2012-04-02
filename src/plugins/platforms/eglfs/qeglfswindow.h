@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLWINDOW_H
-#define QEGLWINDOW_H
+#ifndef QEGLFSWINDOW_H
+#define QEGLFSWINDOW_H
 
 #include "qeglfsintegration.h"
 #include "qeglfsscreen.h"
@@ -62,4 +62,4 @@ private:
     WId m_winid;
 };
 QT_END_NAMESPACE
-#endif // QEGLWINDOW_H
+#endif // QEGLFSWINDOW_H

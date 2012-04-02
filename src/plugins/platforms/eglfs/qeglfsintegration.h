@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef EGLINTEGRATION_H
-#define EGLINTEGRATION_H
+#ifndef QEGLFSINTEGRATION_H
+#define QEGLFSINTEGRATION_H
 
 #include "qeglfsscreen.h"
 
@@ -75,4 +75,4 @@ private:
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#endif
+#endif // QEGLFSINTEGRATION_H
