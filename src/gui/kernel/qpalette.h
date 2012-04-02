@@ -86,12 +86,12 @@ public:
     enum ColorRole { WindowText, Button, Light, Midlight, Dark, Mid,
                      Text, BrightText, ButtonText, Base, Window, Shadow,
                      Highlight, HighlightedText,
-                     Link, LinkVisited, // ### Qt 5: remove
+                     Link, LinkVisited,
                      AlternateBase,
-                     NoRole, // ### Qt 5: value should be 0 or -1
+                     NoRole,
                      ToolTipBase, ToolTipText,
                      NColorRoles = ToolTipText + 1,
-                     Foreground = WindowText, Background = Window // ### Qt 5: remove
+                     Foreground = WindowText, Background = Window
                    };
 
     inline ColorGroup currentColorGroup() const { return static_cast<ColorGroup>(current_group); }
