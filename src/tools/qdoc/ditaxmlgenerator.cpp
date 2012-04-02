@@ -718,40 +718,39 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::BaseName:
         break;
     case Atom::BriefLeft:
-        //if (relative->type() == Node::Fake) {
-        //skipAhead = skipAtoms(atom, Atom::BriefRight);
-        //break;
-        //}
-        if (inSection()) {
-            writeStartTag(DT_p);
-            xmlWriter().writeAttribute("outputclass","brief");
-        }
-        else {
-            noLinks = true;
-            writeStartTag(DT_shortdesc);
-        }
-        if (relative->type() == Node::Property ||
-                relative->type() == Node::Variable) {
-            xmlWriter().writeCharacters("This ");
-            if (relative->type() == Node::Property)
-                xmlWriter().writeCharacters("property");
-            else if (relative->type() == Node::Variable)
-                xmlWriter().writeCharacters("variable");
-            xmlWriter().writeCharacters(" holds ");
-        }
-        if (noLinks) {
-            atom = atom->next();
-            while (atom != 0 && atom->type() != Atom::BriefRight) {
-                if (atom->type() == Atom::String ||
-                        atom->type() == Atom::AutoLink)
-                    str += atom->string();
-                skipAhead++;
-                atom = atom->next();
+        {
+            Node::Type t = relative->type();
+            if (inSection()) {
+                writeStartTag(DT_p);
+                xmlWriter().writeAttribute("outputclass","brief");
             }
-            str[0] = str[0].toLower();
-            if (str.endsWith(QLatin1Char('.')))
-                str.truncate(str.length() - 1);
-            writeCharacters(str + QLatin1Char('.'));
+            else {
+                noLinks = true;
+                writeStartTag(DT_shortdesc);
+            }
+            if (t == Node::Property || t == Node::Variable) {
+                xmlWriter().writeCharacters("This ");
+                if (relative->type() == Node::Property)
+                    xmlWriter().writeCharacters("property");
+                else if (relative->type() == Node::Variable)
+                    xmlWriter().writeCharacters("variable");
+                xmlWriter().writeCharacters(" holds ");
+            }
+            if (noLinks) {
+                atom = atom->next();
+                while (atom != 0 && atom->type() != Atom::BriefRight) {
+                    if (atom->type() == Atom::String ||
+                        atom->type() == Atom::AutoLink)
+                        str += atom->string();
+                    skipAhead++;
+                    atom = atom->next();
+                }
+                if (t == Node::Property || t == Node::Variable)
+                    str[0] = str[0].toLower();
+                if (str.endsWith(QLatin1Char('.')))
+                    str.truncate(str.length() - 1);
+                writeCharacters(str + QLatin1Char('.'));
+            }
         }
         break;
     case Atom::BriefRight:
