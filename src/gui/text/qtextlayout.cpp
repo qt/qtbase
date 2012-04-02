@@ -2587,6 +2587,10 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     int pos = *cursorPos;
     int itm;
     const HB_CharAttributes *attributes = eng->attributes();
+    if (!attributes) {
+        *cursorPos = 0;
+        return x.toReal();
+    }
     while (pos < line.from + line.length && !attributes[pos].charStop)
         pos++;
     if (pos == line.from + (int)line.length) {
