@@ -1,19 +1,11 @@
-# This file is loaded by the mkspecs, before .qmake.cache has been loaded.
-# Consequently, we have to do some stunts to get values out of the cache.
-
-exists($$_QMAKE_CACHE_) {
-    QMAKE_EXTRA_MODULE_FORWARDS = $$fromfile($$_QMAKE_CACHE_, QMAKE_EXTRA_MODULE_FORWARDS)
-}
 QMAKE_QT_CONFIG = $$[QT_HOST_DATA/get]/mkspecs/qconfig.pri
 !exists($$QMAKE_QT_CONFIG)|!include($$QMAKE_QT_CONFIG, "", true) {
    debug(1, "Cannot load qconfig.pri!")
 } else {
    debug(1, "Loaded .qconfig.pri from ($$QMAKE_QT_CONFIG)")
-   for(dir, $$list($$unique($$list($$replace($$list($$split($$list($$[QMAKE_MKSPECS]), $$DIRLIST_SEPARATOR)), \
-                                             $, /modules) \
-                                   $$QMAKE_EXTRA_MODULE_FORWARDS)))) {
+   for(dir, $$list($$split($$list($$[QMAKE_MKSPECS]), $$DIRLIST_SEPARATOR))) {
       debug(1, "Loading modules from $${dir}")
-      for(mod, $$list($$files($$dir/qt_*.pri))) {
+      for(mod, $$list($$files($$dir/modules/qt_*.pri))) {
          # For installed Qt these paths will be common for all modules
          # For development these will vary per module, and syncqt will override the value in the
          # qt_<module>.pri forwarding file

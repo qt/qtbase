@@ -7,7 +7,7 @@ CONFIG = lex yacc warn_on debug exceptions $$CONFIG
     exists($$QTDIR/.qmake.cache) {
         QTFWD = -module-fwd $$QTDIR/mkspecs/modules -developer-build
     } else {
-        QTFWD = -module-fwd $$OUT_PWD/module-paths/modules -cache-module-fwd
+        QTFWD = -module-fwd $$OUT_PWD/mkspecs/modules -cache-module-fwd
     }
 
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
