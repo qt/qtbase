@@ -54,7 +54,11 @@
 #include <qstack.h>
 #include <qdebug.h>
 #ifdef Q_OS_UNIX
+#include <time.h>
+#include <utime.h>
+#include <errno.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <sys/utsname.h>
 #elif defined(Q_OS_WIN32)
 #include <windows.h>
@@ -119,7 +123,7 @@ enum TestFunc { T_REQUIRES=1, T_GREATERTHAN, T_LESSTHAN, T_EQUALS,
                 T_EXISTS, T_EXPORT, T_CLEAR, T_UNSET, T_EVAL, T_CONFIG, T_SYSTEM,
                 T_RETURN, T_BREAK, T_NEXT, T_DEFINED, T_CONTAINS, T_INFILE,
                 T_COUNT, T_ISEMPTY, T_INCLUDE, T_LOAD, T_DEBUG, T_ERROR,
-                T_MESSAGE, T_WARNING, T_IF, T_OPTION, T_CACHE, T_WRITE_FILE };
+                T_MESSAGE, T_WARNING, T_IF, T_OPTION, T_CACHE, T_WRITE_FILE, T_TOUCH };
 QHash<QString, TestFunc> qmake_testFunctions()
 {
     static QHash<QString, TestFunc> *qmake_test_functions = 0;
@@ -156,6 +160,7 @@ QHash<QString, TestFunc> qmake_testFunctions()
         qmake_test_functions->insert("option", T_OPTION);
         qmake_test_functions->insert("cache", T_CACHE);
         qmake_test_functions->insert("write_file", T_WRITE_FILE);
+        qmake_test_functions->insert("touch", T_TOUCH);
     }
     return *qmake_test_functions;
 }
@@ -1925,6 +1930,23 @@ getCommandOutput(const QString &args)
     return out;
 }
 
+#ifdef Q_OS_WIN
+static QString windowsErrorCode()
+{
+    wchar_t *string = 0;
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+                  NULL,
+                  GetLastError(),
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  (LPWSTR)&string,
+                  0,
+                  NULL);
+    QString ret = QString::fromWCharArray(string);
+    LocalFree((HLOCAL)string);
+    return ret;
+}
+#endif
+
 QStringList
 QMakeProject::doProjectExpand(QString func, const QString &params,
                               QHash<QString, QStringList> &place)
@@ -3076,6 +3098,57 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
             return false;
         }
         return true; }
+    case T_TOUCH: {
+        if (args.count() != 2) {
+            fprintf(stderr, "%s:%d: touch(file, reffile) requires two arguments.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+            return false;
+        }
+#ifdef Q_OS_UNIX
+        struct stat st;
+        if (stat(args.at(1).toLocal8Bit().constData(), &st)) {
+            fprintf(stderr, "%s:%d: ERROR: cannot stat() reference file %s: %s.\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    args.at(1).toLatin1().constData(), strerror(errno));
+            return false;
+        }
+        struct utimbuf utb;
+        utb.actime = time(0);
+        utb.modtime = st.st_mtime;
+        if (utime(args.at(0).toLocal8Bit().constData(), &utb)) {
+            fprintf(stderr, "%s:%d: ERROR: cannot touch %s: %s.\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    args.at(0).toLatin1().constData(), strerror(errno));
+            return false;
+        }
+#else
+        HANDLE rHand = CreateFile((wchar_t*)args.at(1).utf16(),
+                                  GENERIC_READ, FILE_SHARE_READ,
+                                  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (rHand == INVALID_HANDLE_VALUE) {
+            fprintf(stderr, "%s:%d: ERROR: cannot open() reference file %s: %s.\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    args.at(1).toLatin1().constData(),
+                    windowsErrorCode().toLatin1().constData());
+            return false;
+        }
+        FILETIME ft;
+        GetFileTime(rHand, 0, 0, &ft);
+        CloseHandle(rHand);
+        HANDLE wHand = CreateFile((wchar_t*)args.at(0).utf16(),
+                                  GENERIC_WRITE, FILE_SHARE_READ,
+                                  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (wHand == INVALID_HANDLE_VALUE) {
+            fprintf(stderr, "%s:%d: ERROR: cannot open %s: %s.\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    args.at(0).toLatin1().constData(),
+                    windowsErrorCode().toLatin1().constData());
+            return false;
+        }
+        SetFileTime(wHand, 0, 0, &ft);
+        CloseHandle(wHand);
+#endif
+        break; }
     default:
         fprintf(stderr, "%s:%d: Unknown test function: %s\n", parser.file.toLatin1().constData(), parser.line_no,
                 func.toLatin1().constData());
