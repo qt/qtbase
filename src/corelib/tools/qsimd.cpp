@@ -47,9 +47,7 @@
 #  if defined(Q_OS_WINCE)
 #    include <qt_windows.h>
 #  endif
-#  if defined(Q_OS_WIN64)
-#    include <intrin.h>
-#  endif
+#  include <intrin.h>
 #elif defined(Q_OS_LINUX) && defined(__arm__)
 #include "private/qcore_unix_p.h"
 
