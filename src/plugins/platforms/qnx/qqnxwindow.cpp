@@ -192,12 +192,12 @@ void QQnxWindow::setGeometry(const QRect &rect)
 
         QList<QQnxWindow*>::iterator it;
         for (it = m_childWindows.begin(); it != m_childWindows.end(); it++) {
-            (*it)->offset(offset);
+            (*it)->setOffset(offset);
         }
     }
 }
 
-void QQnxWindow::offset(const QPoint &offset)
+void QQnxWindow::setOffset(const QPoint &offset)
 {
 #if defined(QQNXWINDOW_DEBUG)
     qDebug() << Q_FUNC_INFO << "window =" << window();
@@ -221,7 +221,7 @@ void QQnxWindow::offset(const QPoint &offset)
 
     QList<QQnxWindow*>::iterator it;
     for (it = m_childWindows.begin(); it != m_childWindows.end(); it++) {
-        (*it)->offset(offset);
+        (*it)->setOffset(offset);
     }
 }
 

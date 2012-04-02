@@ -103,7 +103,7 @@ public:
 
 private:
     void removeFromParent();
-    void offset(const QPoint &offset);
+    void setOffset(const QPoint &setOffset);
     void updateVisibility(bool parentVisible);
     void updateZorder(int &topZorder);
 
