@@ -228,19 +228,20 @@ void tst_QUrl::hashInPath()
     QUrl withHashInPath;
     withHashInPath.setPath(QString::fromLatin1("hi#mum.txt"));
     QCOMPARE(withHashInPath.path(), QString::fromLatin1("hi#mum.txt"));
-    QCOMPARE(withHashInPath.path(QUrl::MostDecoded), QString::fromLatin1("hi#mum.txt"));
-    QCOMPARE(withHashInPath.toString(QUrl::FullyEncoded), QString("hi%23mum.txt"));
+    QCOMPARE(withHashInPath.toEncoded(), QByteArray("hi%23mum.txt"));
+    QCOMPARE(withHashInPath.toString(), QString("hi%23mum.txt"));
     QCOMPARE(withHashInPath.toDisplayString(QUrl::PreferLocalFile), QString("hi%23mum.txt"));
 
     QUrl fromHashInPath = QUrl::fromEncoded(withHashInPath.toEncoded());
     QVERIFY(withHashInPath == fromHashInPath);
 
     const QUrl localWithHash = QUrl::fromLocalFile("/hi#mum.txt");
+    QCOMPARE(localWithHash.path(), QString::fromLatin1("/hi#mum.txt"));
     QCOMPARE(localWithHash.toEncoded(), QByteArray("file:///hi%23mum.txt"));
     QCOMPARE(localWithHash.toString(), QString("file:///hi%23mum.txt"));
     QCOMPARE(localWithHash.path(), QString::fromLatin1("/hi#mum.txt"));
-    QCOMPARE(localWithHash.toString(QUrl::PreferLocalFile | QUrl::PrettyDecoded), QString("/hi#mum.txt"));
-    QCOMPARE(localWithHash.toDisplayString(QUrl::PreferLocalFile | QUrl::PrettyDecoded), QString("/hi#mum.txt"));
+    QCOMPARE(localWithHash.toString(QUrl::PreferLocalFile), QString("/hi#mum.txt"));
+    QCOMPARE(localWithHash.toDisplayString(QUrl::PreferLocalFile), QString("/hi#mum.txt"));
 }
 
 void tst_QUrl::unc()
@@ -278,7 +279,7 @@ void tst_QUrl::comparison()
     // 6.2.2 Syntax-based Normalization
     QUrl url3 = QUrl::fromEncoded("example://a/b/c/%7Bfoo%7D");
     QUrl url4 = QUrl::fromEncoded("eXAMPLE://a/./b/../b/%63/%7bfoo%7d");
-    QEXPECT_FAIL("", "Broken, FIXME", Continue);
+    QEXPECT_FAIL("", "Normalization not implemented, will probably not be implemented like this", Continue);
     QCOMPARE(url3, url4);
 
     // 6.2.2.1 Make sure hexdecimal characters in percent encoding are
@@ -375,7 +376,7 @@ void tst_QUrl::setUrl()
     }
 
     {
-        QUrl url("http://www.foo.bar:80");
+        QUrl url("hTTp://www.foo.bar:80");
         QVERIFY(url.isValid());
         QCOMPARE(url.scheme(), QString::fromLatin1("http"));
         QCOMPARE(url.path(), QString());
@@ -562,6 +563,7 @@ void tst_QUrl::setUrl()
 
         QUrl url15582("http://alain.knaff.linux.lu/bug-reports/kde/percentage%in%url.html");
         QCOMPARE(url15582.toString(), QString::fromLatin1("http://alain.knaff.linux.lu/bug-reports/kde/percentage%25in%25url.html"));
+        QCOMPARE(url15582.toEncoded(), QByteArray("http://alain.knaff.linux.lu/bug-reports/kde/percentage%25in%25url.html"));
         QCOMPARE(url15582.toString(QUrl::FullyEncoded), QString("http://alain.knaff.linux.lu/bug-reports/kde/percentage%25in%25url.html"));
     }
 
@@ -582,10 +584,13 @@ void tst_QUrl::setUrl()
 
     {
         QUrl udir;
+        QCOMPARE(udir.toEncoded(), QByteArray());
         QCOMPARE(udir.toString(QUrl::FullyEncoded), QString());
+        QVERIFY(!udir.isValid());
 
         udir = QUrl::fromLocalFile("/home/dfaure/file.txt");
         QCOMPARE(udir.path(), QString::fromLatin1("/home/dfaure/file.txt"));
+        QCOMPARE(udir.toEncoded(), QByteArray("file:///home/dfaure/file.txt"));
         QCOMPARE(udir.toString(QUrl::FullyEncoded), QString("file:///home/dfaure/file.txt"));
     }
 
@@ -1819,6 +1824,7 @@ void tst_QUrl::tolerantParser()
         QUrl url("http://www.example.com/path%20with spaces.html");
         QVERIFY(url.isValid());
         QCOMPARE(url.path(), QString("/path with spaces.html"));
+        QCOMPARE(url.toEncoded(), QByteArray("http://www.example.com/path%20with%20spaces.html"));
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://www.example.com/path%20with%20spaces.html"));
         url.setUrl("http://www.example.com/path%20with spaces.html", QUrl::StrictMode);
         QVERIFY(!url.isValid());
@@ -1854,24 +1860,39 @@ void tst_QUrl::tolerantParser()
         url.setUrl("http://foo.bar/[image][1].jpg");
         QVERIFY(url.isValid());
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://foo.bar/%5Bimage%5D%5B1%5D.jpg"));
+        QCOMPARE(url.toEncoded(), QByteArray("http://foo.bar/%5Bimage%5D%5B1%5D.jpg"));
+        QCOMPARE(url.toString(), QString("http://foo.bar/[image][1].jpg"));
 
         url.setUrl("[].jpg");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("%5B%5D.jpg"));
+        QCOMPARE(url.toEncoded(), QByteArray("%5B%5D.jpg"));
+        QCOMPARE(url.toString(), QString("[].jpg"));
 
         url.setUrl("/some/[path]/[]");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("/some/%5Bpath%5D/%5B%5D"));
+        QCOMPARE(url.toEncoded(), QByteArray("/some/%5Bpath%5D/%5B%5D"));
+        QCOMPARE(url.toString(), QString("/some/[path]/[]"));
 
         url.setUrl("//[::56:56:56:56:56:56:56]");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]"));
+        QCOMPARE(url.toEncoded(), QByteArray("//[0:56:56:56:56:56:56:56]"));
+        QCOMPARE(url.toString(), QString("//[0:56:56:56:56:56:56:56]"));
 
         url.setUrl("//[::56:56:56:56:56:56:56]#[]");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]#%5B%5D"));
+        QCOMPARE(url.toEncoded(), QByteArray("//[0:56:56:56:56:56:56:56]#%5B%5D"));
+        QCOMPARE(url.toString(), QString("//[0:56:56:56:56:56:56:56]#[]"));
 
         url.setUrl("//[::56:56:56:56:56:56:56]?[]");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]?[]"));
+        QCOMPARE(url.toEncoded(), QByteArray("//[0:56:56:56:56:56:56:56]?[]"));
+        QCOMPARE(url.toString(), QString("//[0:56:56:56:56:56:56:56]?[]"));
 
+        // invoke the tolerant parser's error correction
         url.setUrl("%hello.com/f%");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("%25hello.com/f%25"));
+        QCOMPARE(url.toEncoded(), QByteArray("%25hello.com/f%25"));
+        QCOMPARE(url.toString(), QString("%25hello.com/f%25"));
 
         url.setEncodedUrl("http://www.host.com/foo.php?P0=[2006-3-8]");
         QVERIFY(url.isValid());
@@ -1879,24 +1900,37 @@ void tst_QUrl::tolerantParser()
         url.setEncodedUrl("http://foo.bar/[image][1].jpg");
         QVERIFY(url.isValid());
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://foo.bar/%5Bimage%5D%5B1%5D.jpg"));
+        QCOMPARE(url.toEncoded(), QByteArray("http://foo.bar/%5Bimage%5D%5B1%5D.jpg"));
+        QCOMPARE(url.toString(), QString("http://foo.bar/[image][1].jpg"));
 
         url.setEncodedUrl("[].jpg");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("%5B%5D.jpg"));
+        QCOMPARE(url.toEncoded(), QByteArray("%5B%5D.jpg"));
+        QCOMPARE(url.toString(), QString("[].jpg"));
 
         url.setEncodedUrl("/some/[path]/[]");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("/some/%5Bpath%5D/%5B%5D"));
+        QCOMPARE(url.toEncoded(), QByteArray("/some/%5Bpath%5D/%5B%5D"));
+        QCOMPARE(url.toString(), QString("/some/[path]/[]"));
 
         url.setEncodedUrl("//[::56:56:56:56:56:56:56]");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]"));
+        QCOMPARE(url.toEncoded(), QByteArray("//[0:56:56:56:56:56:56:56]"));
 
         url.setEncodedUrl("//[::56:56:56:56:56:56:56]#[]");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]#%5B%5D"));
+        QCOMPARE(url.toEncoded(), QByteArray("//[0:56:56:56:56:56:56:56]#%5B%5D"));
+        QCOMPARE(url.toString(), QString("//[0:56:56:56:56:56:56:56]#[]"));
 
         url.setEncodedUrl("//[::56:56:56:56:56:56:56]?[]");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]?[]"));
+        QCOMPARE(url.toEncoded(), QByteArray("//[0:56:56:56:56:56:56:56]?[]"));
+        QCOMPARE(url.toString(), QString("//[0:56:56:56:56:56:56:56]?[]"));
 
         url.setEncodedUrl("data:text/css,div%20{%20border-right:%20solid;%20}");
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("data:text/css,div%20%7B%20border-right:%20solid;%20%7D"));
+        QCOMPARE(url.toEncoded(), QByteArray("data:text/css,div%20%7B%20border-right:%20solid;%20%7D"));
+        QCOMPARE(url.toString(), QString("data:text/css,div { border-right: solid; }"));
     }
 
     {
