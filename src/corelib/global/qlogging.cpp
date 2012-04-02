@@ -75,14 +75,14 @@ QT_BEGIN_NAMESPACE
     \brief The QMessageLogger class generates log messages.
     \since 5.0
 
-    QMessageLogger is used to generate messages for the Qt logging framework. Most of the time
-    is transparently used through the qDebug(), qWarning(), qCritical, or qFatal() functions,
+    QMessageLogger is used to generate messages for the Qt logging framework. Usually one uses
+    it through qDebug(), qWarning(), qCritical, or qFatal() functions,
     which are actually macros that expand to QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO).debug()
     et al.
 
     One example of direct use is to forward errors that stem from a scripting language, e.g. QML:
 
-    \snippet doc/src/snippets/code/qlogging/qlogging.cpp 1
+    \snippet doc/src/snippets/code/qlogging/qloggingsnippet.cpp 1
 
     \sa QMessageLogContext, qDebug(), qWarning(), qCritical(), qFatal()
 */
