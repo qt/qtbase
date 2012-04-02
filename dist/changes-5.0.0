@@ -470,6 +470,11 @@ side effect of submitting the cached row when invoked on a different row.
 *                          Database Drivers                                *
 ****************************************************************************
 
+sqlite
+------
+* QVariant::Bool type now mapped to integers 0/1 in SQL instead of strings
+'true' and 'false'. Sqlite does not have a boolean column type and it is
+customary to use integer. QTBUG-23895
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
