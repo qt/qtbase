@@ -83,46 +83,34 @@ struct QStringData {
     inline const ushort *data() const { return reinterpret_cast<const ushort *>(reinterpret_cast<const char *>(this) + offset); }
 };
 
-template<int N> struct QStaticStringData;
-template<int N> struct QStaticStringDataPtr
-{
-    const QStaticStringData<N> *ptr;
-};
-
 #if defined(Q_COMPILER_UNICODE_STRINGS)
-template<int N> struct QStaticStringData
-{
-    QStringData str;
-    char16_t data[N + 1];
-};
 
 #define QT_UNICODE_LITERAL_II(str) u"" str
+typedef char16_t qunicodechar;
 
 #elif defined(Q_OS_WIN) \
        || (defined(__SIZEOF_WCHAR_T__) && __SIZEOF_WCHAR_T__ == 2) \
        || (!defined(__SIZEOF_WCHAR_T__) && defined(WCHAR_MAX) && (WCHAR_MAX - 0 < 65536))
 // wchar_t is 2 bytes
-template<int N> struct QStaticStringData
-{
-    QStringData str;
-    wchar_t data[N + 1];
-};
 
 #if defined(Q_CC_MSVC)
 #    define QT_UNICODE_LITERAL_II(str) L##str
 #else
 #    define QT_UNICODE_LITERAL_II(str) L"" str
 #endif
+typedef wchar_t qunicodechar;
 
 #else
-template<int N> struct QStaticStringData
-{
-    QStringData str;
-    ushort data[N + 1];
-};
+
+#define QT_NO_UNICODE_LITERAL
+typedef ushort qunicodechar;
+
 #endif
 
-#if defined(QT_UNICODE_LITERAL_II)
+Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
+        "qunicodechar must typedef an integral type of size 2");
+
+#ifndef QT_NO_UNICODE_LITERAL
 #  define QT_UNICODE_LITERAL(str) QT_UNICODE_LITERAL_II(str)
 # if defined(Q_COMPILER_LAMBDA)
 #  define QStringLiteral(str) ([]() -> QStaticStringDataPtr<sizeof(QT_UNICODE_LITERAL(str))/2 - 1> { \
@@ -145,7 +133,7 @@ template<int N> struct QStaticStringData
         QStaticStringDataPtr<Size> holder = { &qstring_literal }; \
         holder; })
 # endif
-#endif
+#endif // QT_NO_UNICODE_LITERAL
 
 #ifndef QStringLiteral
 // no lambdas, not GCC, or GCC in C++98 mode with 4-byte wchar_t
@@ -153,6 +141,19 @@ template<int N> struct QStaticStringData
 
 # define QStringLiteral(str) QLatin1String(str)
 #endif
+
+template <int N>
+struct QStaticStringData
+{
+    QStringData str;
+    qunicodechar data[N + 1];
+};
+
+template <int N>
+struct QStaticStringDataPtr
+{
+    const QStaticStringData<N> *ptr;
+};
 
 class Q_CORE_EXPORT QString
 {
