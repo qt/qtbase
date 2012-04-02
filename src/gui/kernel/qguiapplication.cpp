@@ -711,6 +711,10 @@ void QGuiApplicationPrivate::init()
         argc = j;
     }
 
+    // Load environment exported generic plugins
+    foreach (const QByteArray &plugin, qgetenv("QT_QPA_GENERIC_PLUGINS").split(','))
+        pluginList << plugin;
+
     if (platform_integration == 0)
         createPlatformIntegration();
 
