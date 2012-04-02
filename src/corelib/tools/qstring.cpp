@@ -5056,7 +5056,7 @@ QString QString::toUpper() const
     return *this;
 }
 
-// ### Qt 5: Consider whether this function shouldn't be removed See task 202871.
+// ### Qt 6: Consider whether this function shouldn't be removed See task 202871.
 /*!
     Safely builds a formatted string from the format string \a cformat
     and an arbitrary list of arguments.

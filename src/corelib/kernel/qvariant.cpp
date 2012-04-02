@@ -1554,7 +1554,6 @@ void QVariant::detach()
     \internal
 */
 
-// ### Qt 5: change typeName()(and froends= to return a QString. Suggestion from Harald.
 /*!
     Returns the name of the type stored in the variant. The returned
     strings describe the C++ datatype used to store the data: for
