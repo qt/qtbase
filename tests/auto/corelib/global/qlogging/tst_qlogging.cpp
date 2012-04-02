@@ -73,13 +73,13 @@ int s_line;
 const char *s_function;
 static QString s_message;
 
-void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const char *msg)
+void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     s_type = type;
     s_file = context.file;
     s_line = context.line;
     s_function = context.function;
-    s_message = QString::fromLocal8Bit(msg);
+    s_message = msg;
 }
 
 void customMsgHandler(QtMsgType type, const char *msg)
@@ -101,7 +101,7 @@ void tst_qmessagehandler::initTestCase()
 void tst_qmessagehandler::cleanup()
 {
     qInstallMsgHandler(0);
-    qInstallMessageHandler(0);
+    qInstallMessageHandler((QtMessageHandler)0);
     s_type = QtFatalMsg;
     s_file = 0;
     s_line = 0;
@@ -117,7 +117,7 @@ void tst_qmessagehandler::defaultHandler()
 
 void tst_qmessagehandler::installMessageHandler()
 {
-    QMessageHandler oldHandler = qInstallMessageHandler(customMessageHandler);
+    QtMessageHandler oldHandler = qInstallMessageHandler(customMessageHandler);
 
     qDebug("installMessageHandler"); int line = __LINE__;
 
@@ -127,7 +127,7 @@ void tst_qmessagehandler::installMessageHandler()
     QCOMPARE(s_function, Q_FUNC_INFO);
     QCOMPARE(s_line, line);
 
-    QMessageHandler myHandler = qInstallMessageHandler(oldHandler);
+    QtMessageHandler myHandler = qInstallMessageHandler(oldHandler);
     QCOMPARE((void*)myHandler, (void*)customMessageHandler);
 }
 

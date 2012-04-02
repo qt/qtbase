@@ -141,29 +141,28 @@ public:
 };
 
 // defined in qlogging.cpp
-extern Q_CORE_EXPORT QByteArray qMessageFormatString(QtMsgType type,
-                                                     const QMessageLogContext &context,
-                                                     const char *str);
+extern Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type,
+                                                  const QMessageLogContext &context,
+                                                  const QString &str);
 
-Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogContext &context, const char *str)
+Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogContext &context, const QString &str)
 {
     // cannot use QMutex here, because qWarning()s in the QMutex
     // implementation may cause this function to recurse
     static QWinMsgHandlerCriticalSection staticCriticalSection;
 
-    QByteArray message = qMessageFormatString(t, context, str);
-    QString s(QString::fromLocal8Bit(message));
+    QString message = qMessageFormatString(t, context, str);
 
     // OutputDebugString is not threadsafe.
     staticCriticalSection.lock();
-    OutputDebugString((wchar_t*)s.utf16());
+    OutputDebugString((wchar_t*)message.utf16());
     staticCriticalSection.unlock();
 }
 
 Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char *str)
 {
     QMessageLogContext emptyContext;
-    qWinMessageHandler(t, emptyContext, str);
+    qWinMessageHandler(t, emptyContext, QString::fromLocal8Bit(str));
 }
 
 /*****************************************************************************
@@ -189,7 +188,7 @@ void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
     usingWinMain = true;
 
     // Install default debug handler
-    qInstallMsgHandler(qWinMsgHandler);
+    qInstallMessageHandler(qWinMessageHandler);
 
     // Create command line
     argv = qWinCmdLine<char>(cmdParam, int(strlen(cmdParam)), argc);
