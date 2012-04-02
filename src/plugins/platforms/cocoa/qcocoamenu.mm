@@ -133,7 +133,8 @@ void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *
 void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
 {
     [item->nsItem() setTarget:m_delegate];
-    [item->nsItem() setAction:@selector(itemFired:)];
+    if (!item->menu())
+        [item->nsItem() setAction:@selector(itemFired:)];
 
     if (item->isMerged())
         return;
