@@ -30,7 +30,7 @@ CONFIG = lex yacc warn_on debug exceptions $$CONFIG
             CMP_QDIR = $$QTDIR
             CMP_INSTALL_PREFIX = $$[QT_HOST_PREFIX]
         }
-        contains(CMP_QDIR, $$CMP_INSTALL_PREFIX):QTFWD = -qtdir $$QTDIR -module-fwd $$QTDIR/mkspecs/modules -developer-build
+        contains(CMP_QDIR, $$CMP_INSTALL_PREFIX):QTFWD = -module-fwd $$QTDIR/mkspecs/modules -developer-build
         unset(CMP_QDIR)
         unset(CMP_INSTALL_PREFIX)
     }
@@ -38,7 +38,7 @@ CONFIG = lex yacc warn_on debug exceptions $$CONFIG
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
 
     isEmpty(QMAKE_SYNCQT_OUTDIR): QMAKE_SYNCQT_OUTDIR = $$OUT_PWD
-    MSG = $$quote($$QMAKE_SYNCQT $$QTFWD -generator $$MAKEFILE_GENERATOR -outdir $$QMAKE_SYNCQT_OUTDIR $$_PRO_FILE_PWD_)
+    MSG = $$quote($$QMAKE_SYNCQT -qtdir $$[QT_HOST_DATA/get] $$QTFWD -generator $$MAKEFILE_GENERATOR -outdir $$QMAKE_SYNCQT_OUTDIR $$_PRO_FILE_PWD_)
     !silent:message($$MSG)
     system($$MSG) {
         # success! Nothing to do

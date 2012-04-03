@@ -83,12 +83,7 @@ our $quoted_basedir;
 # Make sure we use Windows line endings for chomp and friends on Windows.
 $INPUT_RECORD_SEPARATOR = "\r\n" if ($^O eq "msys");
 
-# try to figure out where QtBase is located
-# normally the script location should be enough, if not fall back to
-# QTDIR environment variable. If that doesn't work, later ask the
-# user to use the -qtdir option explicitly.
-my $qtbasedir = $ENV{"QTDIR"};
-$qtbasedir = dirname(dirname($0)) if (!$qtbasedir);
+my $qtbasedir = dirname(dirname($0));
 normalizePath(\$qtbasedir) if (defined $qtbasedir);
 
 # will be defined based on the modules sync.profile
