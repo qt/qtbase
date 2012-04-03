@@ -141,7 +141,7 @@ public:
         else sectionSelected.fill(false);
     }
 
-    inline int sectionCount() const {return sectionSpans.count();}
+    inline int sectionCount() const {return sectionItems.count();}
 
     inline bool reverse() const {
         return orientation == Qt::Horizontal && q_func()->isRightToLeft();
@@ -195,7 +195,7 @@ public:
     }
 
     inline void clearCascadingSections() {
-        firstCascadingSection = sectionSpans.count();
+        firstCascadingSection = sectionItems.count();
         lastCascadingSection = 0;
         cascadingSectionSize.clear();
     }
@@ -283,9 +283,9 @@ public:
     QHeaderView::ResizeMode globalResizeMode;
     QList<QPersistentModelIndex> persistentHiddenSections;
     mutable bool sectionStartposRecalc;
-    // header section spans
+    // header sections
 
-    struct SectionSpan {
+    struct SectionItem {
         int size;
         union { // This union is made in order to save space and ensure good vector performance (on remove)
             mutable int calculated_startpos; // <- this is the primary used member.
@@ -293,8 +293,8 @@ public:
             int tmpDataStreamSectionCount; // recalcSectionStartPos() or set sectionStartposRecalc to true
         };                                 // to ensure that calculated_startpos will be calculated afterwards.
         QHeaderView::ResizeMode resizeMode;
-        inline SectionSpan() : size(0), resizeMode(QHeaderView::Interactive) {}
-        inline SectionSpan(int length, QHeaderView::ResizeMode mode)
+        inline SectionItem() : size(0), resizeMode(QHeaderView::Interactive) {}
+        inline SectionItem(int length, QHeaderView::ResizeMode mode)
             : size(length), calculated_startpos(-1), resizeMode(mode) {}
         inline int sectionSize() const { return size; }
         inline int calculatedEndPos() const { return calculated_startpos + size; }
@@ -306,34 +306,34 @@ public:
 #endif
     };
 
-    QVector<SectionSpan> sectionSpans;
+    QVector<SectionItem> sectionItems;
 
-    void createSectionSpan(int start, int end, int size, QHeaderView::ResizeMode mode);
-    void removeSectionsFromSpans(int start, int end);
-    void resizeSectionSpan(int visualIndex, int oldSize, int newSize);
+    void createSectionItems(int start, int end, int size, QHeaderView::ResizeMode mode);
+    void removeSectionsFromSectionItems(int start, int end);
+    void resizeSectionItem(int visualIndex, int oldSize, int newSize);
     void setDefaultSectionSize(int size);
     void recalcSectionStartPos() const; // not really const
 
     inline int headerSectionCount() const { // for debugging
-        return sectionSpans.count();
+        return sectionItems.count();
     }
 
     inline int headerLength() const { // for debugging
         int len = 0;
-        for (int i = 0; i < sectionSpans.count(); ++i)
-            len += sectionSpans.at(i).size;
+        for (int i = 0; i < sectionItems.count(); ++i)
+            len += sectionItems.at(i).size;
         return len;
     }
 
     inline void removeSpans(const QList<int> &spans) {
         for (int i = spans.count() - 1; i >= 0; --i) {
-            length -= sectionSpans.at(spans.at(i)).size;
-            sectionSpans.remove(spans.at(i));
+            length -= sectionItems.at(spans.at(i)).size;
+            sectionItems.remove(spans.at(i));
         }
     }
 
     inline int sectionSpanIndex(int visual) const {
-        if (visual < sectionSpans.count() && visual >= 0) {
+        if (visual < sectionItems.count() && visual >= 0) {
             return visual;
         }
         return -1;

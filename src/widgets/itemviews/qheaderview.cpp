@@ -67,15 +67,15 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_DATASTREAM
-QDataStream &operator<<(QDataStream &out, const QHeaderViewPrivate::SectionSpan &span)
+QDataStream &operator<<(QDataStream &out, const QHeaderViewPrivate::SectionItem &section)
 {
-    span.write(out);
+    section.write(out);
     return out;
 }
 
-QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
+QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionItem &section)
 {
-    span.read(in);
+    section.read(in);
     return in;
 }
 #endif // QT_NO_DATASTREAM
@@ -789,18 +789,18 @@ void QHeaderView::moveSection(int from, int to)
 
     //Q_ASSERT(oldHeaderLength == length());
     // move sizes
-    // ### check for spans of section sizes here
+    // ### check for items of section sizes here
     if (to > from) {
         for (visual = from; visual <= to; ++visual) {
             int size = sizes[visual - from];
             ResizeMode mode = modes[visual - from];
-            d->createSectionSpan(visual, visual, size, mode);
+            d->createSectionItems(visual, visual, size, mode);
         }
     } else {
         for (visual = to; visual <= from; ++visual) {
             int size = sizes[visual - to];
             ResizeMode mode = modes[visual - to];
-            d->createSectionSpan(visual, visual, size, mode);
+            d->createSectionItems(visual, visual, size, mode);
         }
     }
     //Q_ASSERT(d->headerLength() == length());
@@ -839,8 +839,8 @@ void QHeaderView::swapSections(int first, int second)
     ResizeMode secondMode = d->headerSectionResizeMode(second);
     int secondLogical = d->logicalIndex(second);
 
-    d->createSectionSpan(second, second, firstSize, firstMode);
-    d->createSectionSpan(first, first, secondSize, secondMode);
+    d->createSectionItems(second, second, firstSize, firstMode);
+    d->createSectionItems(first, first, secondSize, secondMode);
 
     d->initializeIndexMapping();
 
@@ -898,7 +898,7 @@ void QHeaderView::resizeSection(int logical, int size)
     if (stretchLastSection() && visual == d->lastVisibleVisualIndex())
         d->lastSectionSize = size;
 
-    d->createSectionSpan(visual, visual, size, d->headerSectionResizeMode(visual));
+    d->createSectionItems(visual, visual, size, d->headerSectionResizeMode(visual));
 
     if (!updatesEnabled()) {
         if (d->hasAutoResizeSections())
@@ -1719,18 +1719,18 @@ void QHeaderView::sectionsInserted(const QModelIndex &parent,
     int insertAt = logicalFirst;
     int insertCount = logicalLast - logicalFirst + 1;
 
-    QHeaderViewPrivate::SectionSpan span(d->defaultSectionSize, d->globalResizeMode);
+    QHeaderViewPrivate::SectionItem section(d->defaultSectionSize, d->globalResizeMode);
     d->sectionStartposRecalc = true;
 
-    if (d->sectionSpans.isEmpty() || insertAt >= d->sectionSpans.count()) {
+    if (d->sectionItems.isEmpty() || insertAt >= d->sectionItems.count()) {
         int insertLength = d->defaultSectionSize * insertCount;
         d->length += insertLength;
-        d->sectionSpans.insert(d->sectionSpans.count(), insertCount, span); // append
+        d->sectionItems.insert(d->sectionItems.count(), insertCount, section); // append
     } else {
-        // separate them out into their own spans
+        // separate them out into their own sections
         int insertLength = d->defaultSectionSize * insertCount;
         d->length += insertLength;
-        d->sectionSpans.insert(insertAt, insertCount, span);
+        d->sectionItems.insert(insertAt, insertCount, section);
     }
 
     // update sorting column
@@ -1852,7 +1852,7 @@ void QHeaderViewPrivate::_q_sectionsRemoved(const QModelIndex &parent,
 
     if (visualIndices.isEmpty() && logicalIndices.isEmpty()) {
         //Q_ASSERT(headerSectionCount() == sectionCount);
-        removeSectionsFromSpans(logicalFirst, logicalLast);
+        removeSectionsFromSectionItems(logicalFirst, logicalLast);
     } else {
         if (logicalFirst == logicalLast) { // Remove just one index.
             int l = logicalFirst;
@@ -1869,21 +1869,21 @@ void QHeaderViewPrivate::_q_sectionsRemoved(const QModelIndex &parent,
             logicalIndices.remove(visual);
             visualIndices.remove(l);
             //Q_ASSERT(headerSectionCount() == sectionCount);
-            removeSectionsFromSpans(visual, visual);
+            removeSectionsFromSectionItems(visual, visual);
         } else {
             sectionStartposRecalc = true; // We will need to recalc positions after removing items
-            for (int u = 0; u < sectionSpans.count(); ++u)  // Store spans info
-                sectionSpans.at(u).tmpLogIdx = logicalIndices.at(u);
-            for (int v = sectionSpans.count() - 1; v >= 0; --v) {  // Remove the sections
-                if (logicalFirst <= sectionSpans.at(v).tmpLogIdx && sectionSpans.at(v).tmpLogIdx <= logicalLast)
-                    removeSectionsFromSpans(v, v); // Invalidates the spans variable
+            for (int u = 0; u < sectionItems.count(); ++u)  // Store section info
+                sectionItems.at(u).tmpLogIdx = logicalIndices.at(u);
+            for (int v = sectionItems.count() - 1; v >= 0; --v) {  // Remove the sections
+                if (logicalFirst <= sectionItems.at(v).tmpLogIdx && sectionItems.at(v).tmpLogIdx <= logicalLast)
+                    removeSectionsFromSectionItems(v, v);
             }
-            visualIndices.resize(sectionSpans.count());
-            logicalIndices.resize(sectionSpans.count());
+            visualIndices.resize(sectionItems.count());
+            logicalIndices.resize(sectionItems.count());
             int* visual_data = visualIndices.data();
             int* logical_data = logicalIndices.data();
-            for (int w = 0; w < sectionSpans.count(); ++w) { // Restore visual and logical indexes
-                int logindex = sectionSpans.at(w).tmpLogIdx;
+            for (int w = 0; w < sectionItems.count(); ++w) { // Restore visual and logical indexes
+                int logindex = sectionItems.at(w).tmpLogIdx;
                 if (logindex > logicalFirst)
                     logindex -= changeCount;
                 visual_data[logindex] = w;
@@ -2005,7 +2005,7 @@ void QHeaderView::initializeSections(int start, int end)
 
     if (end + 1 < d->sectionCount()) {
         int newCount = end + 1;
-        d->removeSectionsFromSpans(newCount, d->sectionCount() - 1);
+        d->removeSectionsFromSectionItems(newCount, d->sectionCount() - 1);
         if (!d->hiddenSectionSize.isEmpty()) {
             if (oldCount - newCount > d->hiddenSectionSize.count()) {
                 for (int i = end + 1; i < d->sectionCount(); ++i)
@@ -2055,7 +2055,7 @@ void QHeaderView::initializeSections(int start, int end)
         d->sectionHidden.resize(newSectionCount);
 
     if (newSectionCount > oldCount)
-        d->createSectionSpan(start, end, (end - start + 1) * d->defaultSectionSize, d->globalResizeMode);
+        d->createSectionItems(start, end, (end - start + 1) * d->defaultSectionSize, d->globalResizeMode);
     //Q_ASSERT(d->headerLength() == d->length);
 
     if (d->sectionCount() != oldCount)
@@ -2224,14 +2224,14 @@ void QHeaderView::paintEvent(QPaintEvent *e)
     }
 
 #if 0
-    // ### visualize section spans
-    for (int a = 0, i = 0; i < d->sectionSpans.count(); ++i) {
+    // ### visualize sections
+    for (int a = 0, i = 0; i < d->sectionItems.count(); ++i) {
         QColor color((i & 4 ? 255 : 0), (i & 2 ? 255 : 0), (i & 1 ? 255 : 0));
         if (d->orientation == Qt::Horizontal)
-            painter.fillRect(a - d->offset, 0, d->sectionSpans.at(i).size, 4, color);
+            painter.fillRect(a - d->offset, 0, d->sectionItems.at(i).size, 4, color);
         else
-            painter.fillRect(0, a - d->offset, 4, d->sectionSpans.at(i).size, color);
-        a += d->sectionSpans.at(i).size;
+            painter.fillRect(0, a - d->offset, 4, d->sectionItems.at(i).size, color);
+        a += d->sectionItems.at(i).size;
     }
 
 #endif
@@ -3108,6 +3108,7 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
         pixelReminder = lengthToStrech % numberOfStretchedSections;
     }
 
+    // ### The code below would be nicer if it was cleaned up a bit (since spans has been replaced with items)
     int spanStartSection = 0;
     int previousSectionLength = 0;
 
@@ -3149,7 +3150,7 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
         if ((previousSectionResizeMode != newSectionResizeMode
             || previousSectionLength != newSectionLength) && i > 0) {
             int spanLength = (i - spanStartSection) * previousSectionLength;
-            createSectionSpan(spanStartSection, i - 1, spanLength, previousSectionResizeMode);
+            createSectionItems(spanStartSection, i - 1, spanLength, previousSectionResizeMode);
             //Q_ASSERT(headerLength() == length);
             spanStartSection = i;
         }
@@ -3161,7 +3162,7 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
         previousSectionResizeMode = newSectionResizeMode;
     }
 
-    createSectionSpan(spanStartSection, sectionCount() - 1,
+    createSectionItems(spanStartSection, sectionCount() - 1,
                       (sectionCount() - spanStartSection) * previousSectionLength,
                       previousSectionResizeMode);
     //Q_ASSERT(headerLength() == length);
@@ -3169,14 +3170,14 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
     viewport->update();
 }
 
-void QHeaderViewPrivate::createSectionSpan(int start, int end, int size, QHeaderView::ResizeMode mode)
+void QHeaderViewPrivate::createSectionItems(int start, int end, int size, QHeaderView::ResizeMode mode)
 {
     int sizePerSection = size / (end - start + 1);
-    if (end >= sectionSpans.count()) {
-        sectionSpans.resize(end + 1);
+    if (end >= sectionItems.count()) {
+        sectionItems.resize(end + 1);
         sectionStartposRecalc = true;
     }
-    SectionSpan *sectiondata = sectionSpans.data();
+    SectionItem *sectiondata = sectionItems.data();
     for (int i = start; i <= end; ++i) {
         length += (sizePerSection - sectiondata[i].size);
         sectionStartposRecalc |= (sectiondata[i].size != sizePerSection);
@@ -3185,15 +3186,15 @@ void QHeaderViewPrivate::createSectionSpan(int start, int end, int size, QHeader
     }
 }
 
-void QHeaderViewPrivate::removeSectionsFromSpans(int start, int end)
+void QHeaderViewPrivate::removeSectionsFromSectionItems(int start, int end)
 {
     // remove sections
-    sectionStartposRecalc |= (end != sectionSpans.count() - 1);
+    sectionStartposRecalc |= (end != sectionItems.count() - 1);
     int removedlength = 0;
     for (int u = start; u <= end; ++u)
-        removedlength += sectionSpans.at(u).size;
+        removedlength += sectionItems.at(u).size;
     length -= removedlength;
-    sectionSpans.remove(start, end - start + 1);
+    sectionItems.remove(start, end - start + 1);
 }
 
 void QHeaderViewPrivate::clear()
@@ -3205,7 +3206,7 @@ void QHeaderViewPrivate::clear()
     sectionSelected.clear();
     sectionHidden.clear();
     hiddenSectionSize.clear();
-    sectionSpans.clear();
+    sectionItems.clear();
     }
 }
 
@@ -3242,7 +3243,7 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
                 int originalSectionSize = cascadingSectionSize.value(i);
                 if (currentSectionSize < originalSectionSize) {
                     int newSectionSize = currentSectionSize + delta;
-                    resizeSectionSpan(i, currentSectionSize, newSectionSize);
+                    resizeSectionItem(i, currentSectionSize, newSectionSize);
                     if (newSectionSize >= originalSectionSize && false)
                         cascadingSectionSize.remove(i); // the section is now restored
                     sectionResized = true;
@@ -3256,7 +3257,7 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
         if (!sectionResized) {
             newSize = qMax(newSize, minimumSize);
             if (oldSize != newSize)
-                resizeSectionSpan(visual, oldSize, newSize);
+                resizeSectionItem(visual, oldSize, newSize);
         }
 
         // cascade the section size change
@@ -3268,7 +3269,7 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
                 continue;
             int newSectionSize = qMax(currentSectionSize - delta, minimumSize);
             //qDebug() << "### cascading to" << i << newSectionSize - currentSectionSize << delta;
-            resizeSectionSpan(i, currentSectionSize, newSectionSize);
+            resizeSectionItem(i, currentSectionSize, newSectionSize);
             saveCascadingSectionSize(i, currentSectionSize);
             delta = delta - (currentSectionSize - newSectionSize);
             //qDebug() << "new delta" << delta;
@@ -3288,7 +3289,7 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
             if (currentSectionSize >= originalSectionSize)
                 continue;
             int newSectionSize = currentSectionSize - delta;
-            resizeSectionSpan(i, currentSectionSize, newSectionSize);
+            resizeSectionItem(i, currentSectionSize, newSectionSize);
             if (newSectionSize >= originalSectionSize && false) {
                 //qDebug() << "section" << i << "restored to" << originalSectionSize;
                 cascadingSectionSize.remove(i); // the section is now restored
@@ -3298,7 +3299,7 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
         }
 
         // resize the section
-        resizeSectionSpan(visual, oldSize, qMax(newSize, minimumSize));
+        resizeSectionItem(visual, oldSize, qMax(newSize, minimumSize));
 
         // cascade the section size change
         if (delta < 0 && newSize < minimumSize) {
@@ -3308,7 +3309,7 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
                 int sectionSize = headerSectionSize(i);
                 if (sectionSize <= minimumSize)
                     continue;
-                resizeSectionSpan(i, sectionSize, qMax(sectionSize + delta, minimumSize));
+                resizeSectionItem(i, sectionSize, qMax(sectionSize + delta, minimumSize));
                 saveCascadingSectionSize(i, sectionSize);
                 break;
             }
@@ -3321,7 +3322,7 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
                     continue;
                 int currentSectionSize = headerSectionSize(i);
                 int newSectionSize = qMax(currentSectionSize - delta, minimumSize);
-                resizeSectionSpan(i, currentSectionSize, newSectionSize);
+                resizeSectionItem(i, currentSectionSize, newSectionSize);
                 break;
             }
         }
@@ -3337,14 +3338,14 @@ void QHeaderViewPrivate::setDefaultSectionSize(int size)
 {
     Q_Q(QHeaderView);
     defaultSectionSize = size;
-    for (int i = 0; i < sectionSpans.count(); ++i) {
-        QHeaderViewPrivate::SectionSpan &span = sectionSpans[i];
+    for (int i = 0; i < sectionItems.count(); ++i) {
+        QHeaderViewPrivate::SectionItem &section = sectionItems[i];
         if (sectionHidden.isEmpty() || !sectionHidden.testBit(i)) { // resize on not hidden.
             const int newSize = size;
-            if (newSize != span.size) {
-                length += newSize - span.size; //the whole length is changed
-                const int oldSectionSize = span.sectionSize();
-                span.size = size;
+            if (newSize != section.size) {
+                length += newSize - section.size; //the whole length is changed
+                const int oldSectionSize = section.sectionSize();
+                section.size = size;
                 emit q->sectionResized(logicalIndex(i), oldSectionSize, size);
             }
         }
@@ -3354,25 +3355,25 @@ void QHeaderViewPrivate::setDefaultSectionSize(int size)
 void QHeaderViewPrivate::recalcSectionStartPos() const // linear (but fast)
 {
     int pixelpos = 0;
-    for (QVector<SectionSpan>::const_iterator i = sectionSpans.constBegin(); i != sectionSpans.constEnd(); ++i) {
+    for (QVector<SectionItem>::const_iterator i = sectionItems.constBegin(); i != sectionItems.constEnd(); ++i) {
         i->calculated_startpos = pixelpos; // write into const mutable
         pixelpos += i->size;
     }
     sectionStartposRecalc = false;
 }
 
-void QHeaderViewPrivate::resizeSectionSpan(int visualIndex, int oldSize, int newSize)
+void QHeaderViewPrivate::resizeSectionItem(int visualIndex, int oldSize, int newSize)
 {
     Q_Q(QHeaderView);
     QHeaderView::ResizeMode mode = headerSectionResizeMode(visualIndex);
-    createSectionSpan(visualIndex, visualIndex, newSize, mode);
+    createSectionItems(visualIndex, visualIndex, newSize, mode);
     emit q->sectionResized(logicalIndex(visualIndex), oldSize, newSize);
 }
 
 int QHeaderViewPrivate::headerSectionSize(int visual) const
 {
     if (visual < sectionCount() && visual >= 0)
-        return sectionSpans.at(visual).sectionSize();
+        return sectionItems.at(visual).sectionSize();
     return -1;
 }
 
@@ -3381,7 +3382,7 @@ int QHeaderViewPrivate::headerSectionPosition(int visual) const
     if (visual < sectionCount() && visual >= 0) {
         if (sectionStartposRecalc)
             recalcSectionStartPos();
-        return sectionSpans.at(visual).calculated_startpos;
+        return sectionItems.at(visual).calculated_startpos;
     }
     return -1;
 }
@@ -3391,13 +3392,13 @@ int QHeaderViewPrivate::headerVisualIndexAt(int position) const
     if (sectionStartposRecalc)
         recalcSectionStartPos();
     int startidx = 0;
-    int endidx = sectionSpans.count() - 1;
+    int endidx = sectionItems.count() - 1;
     while (startidx <= endidx) {
         int middle = (endidx + startidx) / 2;
-        if (sectionSpans.at(middle).calculated_startpos > position) {
+        if (sectionItems.at(middle).calculated_startpos > position) {
             endidx = middle - 1;
         } else {
-            if (sectionSpans.at(middle).calculatedEndPos() <= position)
+            if (sectionItems.at(middle).calculatedEndPos() <= position)
                 startidx = middle + 1;
             else // we found it.
                 return middle;
@@ -3409,7 +3410,7 @@ int QHeaderViewPrivate::headerVisualIndexAt(int position) const
 void QHeaderViewPrivate::setHeaderSectionResizeMode(int visual, QHeaderView::ResizeMode mode)
 {
     int size = headerSectionSize(visual);
-    createSectionSpan(visual, visual, size, mode);
+    createSectionItems(visual, visual, size, mode);
 }
 
 QHeaderView::ResizeMode QHeaderViewPrivate::headerSectionResizeMode(int visual) const
@@ -3417,14 +3418,14 @@ QHeaderView::ResizeMode QHeaderViewPrivate::headerSectionResizeMode(int visual) 
     int span = sectionSpanIndex(visual);
     if (span == -1)
         return globalResizeMode;
-    return sectionSpans.at(span).resizeMode;
+    return sectionItems.at(span).resizeMode;
 }
 
 void QHeaderViewPrivate::setGlobalHeaderResizeMode(QHeaderView::ResizeMode mode)
 {
     globalResizeMode = mode;
-    for (int i = 0; i < sectionSpans.count(); ++i)
-        sectionSpans[i].resizeMode = mode;
+    for (int i = 0; i < sectionItems.count(); ++i)
+        sectionItems[i].resizeMode = mode;
 }
 
 int QHeaderViewPrivate::viewSectionSizeHint(int logical) const
@@ -3442,7 +3443,7 @@ int QHeaderViewPrivate::adjustedVisualIndex(int visualIndex) const
     if (!sectionHidden.isEmpty()) {
         int adjustedVisualIndex = visualIndex;
         int currentVisualIndex = 0;
-        for (int i = 0; i < sectionSpans.count(); ++i) {
+        for (int i = 0; i < sectionItems.count(); ++i) {
             if (sectionHidden.testBit(i))
                 ++adjustedVisualIndex;
             else
@@ -3484,7 +3485,7 @@ void QHeaderViewPrivate::write(QDataStream &out) const
     out << int(defaultAlignment);
     out << int(globalResizeMode);
 
-    out << sectionSpans;
+    out << sectionItems;
 }
 
 bool QHeaderViewPrivate::read(QDataStream &in)
@@ -3524,15 +3525,17 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     in >> global;
     globalResizeMode = (QHeaderView::ResizeMode)global;
 
-    in >> sectionSpans;
-    // Spans in Qt5 only contains one element - but for backward compability with Qt4 we do the following
-    QVector<SectionSpan> newSectionSpans;
-    for (int u = 0; u < sectionSpans.count(); ++u) {
-        int count = sectionSpans.at(u).tmpDataStreamSectionCount;
+    in >> sectionItems;
+    // In Qt4 we had a vector of spans where one span could hold information on more sections.
+    // Now we have an itemvector where one items contains information about one section
+    // For backward compability with Qt4 we do the following
+    QVector<SectionItem> newSectionItems;
+    for (int u = 0; u < sectionItems.count(); ++u) {
+        int count = sectionItems.at(u).tmpDataStreamSectionCount;
         for (int n = 0; n < count; ++n)
-            newSectionSpans.append(sectionSpans[u]);
+            newSectionItems.append(sectionItems[u]);
     }
-    sectionSpans = newSectionSpans;
+    sectionItems = newSectionItems;
     recalcSectionStartPos();
     return true;
 }
