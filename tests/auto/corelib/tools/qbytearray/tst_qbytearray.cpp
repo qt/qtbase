@@ -180,6 +180,65 @@ static const QByteArrayDataPtr staticNotNullTerminated = { const_cast<QByteArray
 static const QByteArrayDataPtr staticShifted = { const_cast<QByteArrayData *>(&statics.shifted.data) };
 static const QByteArrayDataPtr staticShiftedNotNullTerminated = { const_cast<QByteArrayData *>(&statics.shiftedNotNullTerminated.data) };
 
+template <class T> const T &verifyZeroTermination(const T &t) { return t; }
+
+QByteArray verifyZeroTermination(const QByteArray &ba)
+{
+    // This test does some evil stuff, it's all supposed to work.
+
+    QByteArray::DataPtr baDataPtr = const_cast<QByteArray &>(ba).data_ptr();
+
+    // Skip if isStatic() or fromRawData(), as those offer no guarantees
+    if (baDataPtr->ref.isStatic()
+            || baDataPtr->offset != QByteArray().data_ptr()->offset)
+        return ba;
+
+    int baSize = ba.size();
+    char baTerminator = ba.constData()[baSize];
+    if ('\0' != baTerminator)
+        return QString::fromAscii(
+            "*** Result ('%1') not null-terminated: 0x%2 ***").arg(QString::fromAscii(ba))
+                .arg(baTerminator, 2, 16, QChar('0')).toAscii();
+
+    // Skip mutating checks on shared strings
+    if (baDataPtr->ref.isShared())
+        return ba;
+
+    const char *baData = ba.constData();
+    const QByteArray baCopy(baData, baSize); // Deep copy
+
+    const_cast<char *>(baData)[baSize] = 'x';
+    if ('x' != ba.constData()[baSize]) {
+        return QString::fromAscii("*** Failed to replace null-terminator in "
+                "result ('%1') ***").arg(QString::fromAscii(ba)).toAscii();
+    }
+    if (ba != baCopy) {
+        return QString::fromAscii( "*** Result ('%1') differs from its copy "
+                "after null-terminator was replaced ***").arg(QString::fromAscii(ba)).toAscii();
+    }
+    const_cast<char *>(baData)[baSize] = '\0'; // Restore sanity
+
+    return ba;
+}
+
+// Overriding QTest's QCOMPARE, to check QByteArray for null termination
+#undef QCOMPARE
+#define QCOMPARE(actual, expected)                                      \
+    do {                                                                \
+        if (!QTest::qCompare(verifyZeroTermination(actual), expected,   \
+                #actual, #expected, __FILE__, __LINE__))                \
+            return;                                                     \
+    } while (0)                                                         \
+    /**/
+#undef QTEST
+#define QTEST(actual, testElement)                                      \
+    do {                                                                \
+        if (!QTest::qTest(verifyZeroTermination(actual), testElement,   \
+                #actual, #testElement, __FILE__, __LINE__))             \
+            return;                                                     \
+    } while (0)                                                         \
+    /**/
+
 tst_QByteArray::tst_QByteArray()
 {
     qRegisterMetaType<qulonglong>("qulonglong");

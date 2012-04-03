@@ -1501,7 +1501,7 @@ QString& QString::insert(int i, QChar ch)
     if (i < 0)
         return *this;
     expand(qMax(i, d->size));
-    ::memmove(d->data() + i + 1, d->data() + i, (d->size - i) * sizeof(QChar));
+    ::memmove(d->data() + i + 1, d->data() + i, (d->size - i - 1) * sizeof(QChar));
     d->data()[i] = ch.unicode();
     return *this;
 }

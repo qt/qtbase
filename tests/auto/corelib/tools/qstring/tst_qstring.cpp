@@ -229,6 +229,65 @@ private slots:
     void assignQLatin1String();
 };
 
+template <class T> const T &verifyZeroTermination(const T &t) { return t; }
+
+QString verifyZeroTermination(const QString &str)
+{
+    // This test does some evil stuff, it's all supposed to work.
+
+    QString::DataPtr strDataPtr = const_cast<QString &>(str).data_ptr();
+
+    // Skip if isStatic() or fromRawData(), as those offer no guarantees
+    if (strDataPtr->ref.isStatic()
+            || strDataPtr->offset != QString().data_ptr()->offset)
+        return str;
+
+    int strSize = str.size();
+    QChar strTerminator = str.constData()[strSize];
+    if (QChar('\0') != strTerminator)
+        return QString::fromAscii(
+            "*** Result ('%1') not null-terminated: 0x%2 ***").arg(str)
+                .arg(strTerminator.unicode(), 4, 16, QChar('0'));
+
+    // Skip mutating checks on shared strings
+    if (strDataPtr->ref.isShared())
+        return str;
+
+    const QChar *strData = str.constData();
+    const QString strCopy(strData, strSize); // Deep copy
+
+    const_cast<QChar *>(strData)[strSize] = QChar('x');
+    if (QChar('x') != str.constData()[strSize]) {
+        return QString::fromAscii("*** Failed to replace null-terminator in "
+                "result ('%1') ***").arg(str);
+    }
+    if (str != strCopy) {
+        return QString::fromAscii( "*** Result ('%1') differs from its copy "
+                "after null-terminator was replaced ***").arg(str);
+    }
+    const_cast<QChar *>(strData)[strSize] = QChar('\0'); // Restore sanity
+
+    return str;
+}
+
+// Overriding QTest's QCOMPARE, to check QString for null termination
+#undef QCOMPARE
+#define QCOMPARE(actual, expected)                                      \
+    do {                                                                \
+        if (!QTest::qCompare(verifyZeroTermination(actual), expected,   \
+                #actual, #expected, __FILE__, __LINE__))                \
+            return;                                                     \
+    } while (0)                                                         \
+    /**/
+#undef QTEST
+#define QTEST(actual, testElement)                                      \
+    do {                                                                \
+        if (!QTest::qTest(verifyZeroTermination(actual), testElement,   \
+                #actual, #testElement, __FILE__, __LINE__))             \
+            return;                                                     \
+    } while (0)                                                         \
+    /**/
+
 typedef QList<int> IntList;
 
 Q_DECLARE_METATYPE(QList<QVariant>)
