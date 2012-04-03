@@ -247,6 +247,7 @@ QPlatformSharedGraphicsCache *QPlatformIntegration::createPlatformSharedGraphics
 */
 QPaintEngine *QPlatformIntegration::createImagePaintEngine(QPaintDevice *paintDevice) const
 {
+    Q_UNUSED(paintDevice)
     return 0;
 }
 

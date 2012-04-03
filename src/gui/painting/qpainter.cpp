@@ -7270,6 +7270,7 @@ void QPainter::setRedirected(const QPaintDevice *device,
                              const QPoint &offset)
 {
     Q_ASSERT(device != 0);
+    Q_UNUSED(device)
     Q_UNUSED(replacement)
     Q_UNUSED(offset)
     qWarning("QPainter::setRedirected(): ignoring call to deprecated function, use QWidget::render() instead");
