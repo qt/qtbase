@@ -71,7 +71,6 @@ public:
     bool isPrimaryScreen() const { return m_primaryScreen; }
 
     int rotation() const { return m_currentRotation; }
-    void setRotation(int rotation);
 
     int nativeFormat() const { return (depth() == 32) ? SCREEN_FORMAT_RGBA8888 : SCREEN_FORMAT_RGB565; }
     screen_display_t nativeDisplay() const { return m_display; }
@@ -92,6 +91,7 @@ public:
     QSharedPointer<QQnxRootWindow> rootWindow() const { return m_rootWindow; }
 
 public Q_SLOTS:
+    void setRotation(int rotation);
     void newWindowCreated(void *window);
     void windowClosed(void *window);
 

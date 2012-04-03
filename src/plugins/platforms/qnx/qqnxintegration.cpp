@@ -103,16 +103,6 @@ QQnxIntegration::QQnxIntegration()
         qFatal("QQnx: failed to connect to composition manager, errno=%d", errno);
     }
 
-    // Create displays for all possible screens (which may not be attached)
-    createDisplays();
-
-    // Initialize global OpenGL resources
-    QQnxGLContext::initialize();
-
-    // Create/start event thread
-    m_eventThread = new QQnxEventThread(m_screenContext, m_screenEventHandler);
-    m_eventThread->start();
-
     // Create/start navigator event handler
     // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
 #ifndef Q_OS_BLACKBERRY
@@ -122,6 +112,16 @@ QQnxIntegration::QQnxIntegration()
     // needed to have the QThread internals of the main thread properly initialized
     QMetaObject::invokeMethod(m_navigatorEventHandler, "start", Qt::QueuedConnection);
 #endif
+
+    // Create displays for all possible screens (which may not be attached)
+    createDisplays();
+
+    // Initialize global OpenGL resources
+    QQnxGLContext::initialize();
+
+    // Create/start event thread
+    m_eventThread = new QQnxEventThread(m_screenContext, m_screenEventHandler);
+    m_eventThread->start();
 
     // Create/start the keyboard class.
     m_virtualKeyboard = new QQnxVirtualKeyboard();
@@ -360,6 +360,10 @@ void QQnxIntegration::createDisplays()
                          screen, SLOT(newWindowCreated(void *)));
         QObject::connect(m_screenEventHandler, SIGNAL(windowClosed(void *)),
                          screen, SLOT(windowClosed(void *)));
+
+#ifndef Q_OS_BLACKBERRY
+        QObject::connect(m_navigatorEventHandler, SIGNAL(rotationChanged(int)), screen, SLOT(setRotation(int)));
+#endif
     }
 }
 
