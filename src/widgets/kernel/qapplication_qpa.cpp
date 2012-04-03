@@ -162,12 +162,11 @@ QWidget *qt_tlw_for_window(QWindow *wnd)
 void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
 {
     Q_UNUSED(previous);
-    Q_Q(QApplication);
     QWindow *wnd = QGuiApplicationPrivate::focus_window;
     if (inPopupMode()) // some delayed focus event to ignore
         return;
     QWidget *tlw = qt_tlw_for_window(wnd);
-    q->setActiveWindow(tlw);
+    QApplication::setActiveWindow(tlw);
 }
 
 static void ungrabKeyboardForPopup(QWidget *popup)
@@ -201,7 +200,6 @@ static void grabForPopup(QWidget *popup)
 
 void QApplicationPrivate::closePopup(QWidget *popup)
 {
-    Q_Q(QApplication);
     if (!popupWidgets)
         return;
     popupWidgets->removeAll(popup);
@@ -241,7 +239,7 @@ void QApplicationPrivate::closePopup(QWidget *popup)
                     fw->setFocus(Qt::PopupFocusReason);
                 } else {
                     QFocusEvent e(QEvent::FocusIn, Qt::PopupFocusReason);
-                    q->sendEvent(fw, &e);
+                    QCoreApplication::sendEvent(fw, &e);
                 }
             }
         }

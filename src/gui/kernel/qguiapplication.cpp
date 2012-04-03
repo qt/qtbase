@@ -604,12 +604,10 @@ static void init_plugins(const QList<QByteArray> &pluginList)
 
 void QGuiApplicationPrivate::createPlatformIntegration()
 {
-    Q_Q(QGuiApplication);
-
     // Use the Qt menus by default. Platform plugins that
     // want to enable a native menu implementation can clear
     // this flag.
-    q->setAttribute(Qt::AA_DontUseNativeMenuBar, true);
+    QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
 
     // Load the platform integration
     QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));

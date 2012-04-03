@@ -244,15 +244,14 @@ void QPlatformInputContext::setFocusObject(QObject *object)
  */
 bool QPlatformInputContext::inputMethodAccepted() const
 {
-    Q_D(const QPlatformInputContext);
-    return d->s_inputMethodAccepted;
+    return QPlatformInputContextPrivate::s_inputMethodAccepted;
 }
 
 bool QPlatformInputContextPrivate::s_inputMethodAccepted = false;
 
 void QPlatformInputContextPrivate::setInputMethodAccepted(bool accepted)
 {
-    s_inputMethodAccepted = accepted;
+    QPlatformInputContextPrivate::s_inputMethodAccepted = accepted;
 }
 
 

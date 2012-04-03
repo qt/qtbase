@@ -1977,12 +1977,11 @@ void QApplication::syncX()
 
 void QApplicationPrivate::notifyLayoutDirectionChange()
 {
-    Q_Q(QApplication);
-    QWidgetList list = q->topLevelWidgets();
+    QWidgetList list = QApplication::topLevelWidgets();
     for (int i = 0; i < list.size(); ++i) {
         QWidget *w = list.at(i);
         QEvent ev(QEvent::ApplicationLayoutDirectionChange);
-        q->sendEvent(w, &ev);
+        QCoreApplication::sendEvent(w, &ev);
     }
 }
 
