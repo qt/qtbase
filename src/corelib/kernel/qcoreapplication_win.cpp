@@ -109,7 +109,7 @@ Q_CORE_EXPORT QString qAppFileName()                // get application file name
         size = MAX_PATH * i;
         b = reinterpret_cast<wchar_t *>(realloc(b, (size + 1) * sizeof(wchar_t)));
         if (b)
-            v = GetModuleFileName(NULL, b, size);
+            v = GetModuleFileName(NULL, b, DWORD(size));
     } while (b && v == size);
 
     if (b)

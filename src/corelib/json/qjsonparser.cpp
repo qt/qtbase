@@ -821,7 +821,7 @@ bool Parser::parseString(bool *latin1)
     // no unicode string, we are done
     if (*latin1) {
         // write string length
-        *(QJsonPrivate::qle_ushort *)(data + stringPos) = current - outStart - sizeof(ushort);
+        *(QJsonPrivate::qle_ushort *)(data + stringPos) = ushort(current - outStart - sizeof(ushort));
         int pos = reserveSpace((4 - current) & 3);
         while (pos & 3)
             data[pos++] = 0;

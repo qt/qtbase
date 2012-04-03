@@ -267,7 +267,7 @@ QMimeMagicRule::QMimeMagicRule(QMimeMagicRule::Type theType,
             d->mask = QByteArray::fromHex(QByteArray::fromRawData(d->mask.constData() + 2, d->mask.size() - 2));
             Q_ASSERT(d->mask.size() == d->pattern.size());
         } else {
-            d->mask.fill(static_cast<char>(0xff), d->pattern.size());
+            d->mask.fill(char(-1), d->pattern.size());
         }
         d->mask.squeeze();
         d->matchFunction = matchString;
