@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
 
 //expand functions
 enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST,
-                  E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
+                  E_SPRINTF, E_FORMAT_NUMBER, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_VAL_ESCAPE, E_REPLACE,
                   E_SIZE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS, E_ENUMERATE_VARS,
@@ -97,6 +97,7 @@ QHash<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("eval", E_EVAL);
         qmake_expand_functions->insert("list", E_LIST);
         qmake_expand_functions->insert("sprintf", E_SPRINTF);
+        qmake_expand_functions->insert("format_number", E_FORMAT_NUMBER);
         qmake_expand_functions->insert("join", E_JOIN);
         qmake_expand_functions->insert("split", E_SPLIT);
         qmake_expand_functions->insert("basename", E_BASENAME);
@@ -2190,6 +2191,79 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             ret = split_value_list(tmp);
         }
         break; }
+    case E_FORMAT_NUMBER:
+        if (args.count() > 2) {
+            fprintf(stderr, "%s:%d: format_number(number[, options...]) requires one or two arguments.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        } else {
+            int ibase = 10;
+            int obase = 10;
+            int width = 0;
+            bool zeropad = false;
+            bool leftalign = false;
+            enum { DefaultSign, PadSign, AlwaysSign } sign = DefaultSign;
+            if (args.count() >= 2) {
+                foreach (const QString &opt, split_value_list(args.at(1))) {
+                    if (opt.startsWith(QLatin1String("ibase="))) {
+                        ibase = opt.mid(6).toInt();
+                    } else if (opt.startsWith(QLatin1String("obase="))) {
+                        obase = opt.mid(6).toInt();
+                    } else if (opt.startsWith(QLatin1String("width="))) {
+                        width = opt.mid(6).toInt();
+                    } else if (opt == QLatin1String("zeropad")) {
+                        zeropad = true;
+                    } else if (opt == QLatin1String("padsign")) {
+                        sign = PadSign;
+                    } else if (opt == QLatin1String("alwayssign")) {
+                        sign = AlwaysSign;
+                    } else if (opt == QLatin1String("leftalign")) {
+                        leftalign = true;
+                    } else {
+                        fprintf(stderr, "%s:%d: format_number(): invalid format option %s.\n",
+                                parser.file.toLatin1().constData(), parser.line_no,
+                                opt.toLatin1().constData());
+                        goto formfail;
+                    }
+                }
+            }
+            if (args.at(0).contains(QLatin1Char('.'))) {
+                fprintf(stderr, "%s:%d: format_number(): floats are currently not supported.\n",
+                        parser.file.toLatin1().constData(), parser.line_no);
+                break;
+            }
+            bool ok;
+            qlonglong num = args.at(0).toLongLong(&ok, ibase);
+            if (!ok) {
+                fprintf(stderr, "%s:%d: format_number(): malformed number %s for base %d.\n",
+                        parser.file.toLatin1().constData(), parser.line_no,
+                        args.at(0).toLatin1().constData(), ibase);
+                break;
+            }
+            QString outstr;
+            if (num < 0) {
+                num = -num;
+                outstr = QLatin1Char('-');
+            } else if (sign == AlwaysSign) {
+                outstr = QLatin1Char('+');
+            } else if (sign == PadSign) {
+                outstr = QLatin1Char(' ');
+            }
+            QString numstr = QString::number(num, obase);
+            int space = width - outstr.length() - numstr.length();
+            if (space <= 0) {
+                outstr += numstr;
+            } else if (leftalign) {
+                outstr += numstr + QString(space, QLatin1Char(' '));
+            } else if (zeropad) {
+                outstr += QString(space, QLatin1Char('0')) + numstr;
+            } else {
+                outstr.prepend(QString(space, QLatin1Char(' ')));
+                outstr += numstr;
+            }
+            ret += outstr;
+        }
+      formfail:
+        break;
     case E_JOIN: {
         if(args.count() < 1 || args.count() > 4) {
             fprintf(stderr, "%s:%d: join(var, glue, before, after) requires four"

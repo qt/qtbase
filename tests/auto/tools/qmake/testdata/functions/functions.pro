@@ -113,3 +113,17 @@ out = "easy \"less easy\" sca\$\${LITERAL_HASH}ry crazy\$\$escape_expand(\\\\t\\
 testReplace($$val_escape(in), $$out, "val_escape")
 
 testReplace($$shadowed($$PWD/something), $$OUT_PWD/something, "shadowed")
+
+#format_number
+spc = " "
+testReplace($$format_number(13), 13, "simple number format")
+testReplace($$format_number(-13), -13, "negative number format")
+testReplace($$format_number(13, ibase=16), 19, "hex input number format")
+testReplace($$format_number(13, obase=16), d, "hex output number format")
+testReplace($$format_number(13, width=5), " $$spc 13", "right aligned number format")
+testReplace($$format_number(13, width=5 leftalign), "13 $$spc ", "left aligned number format")
+testReplace($$format_number(13, width=5 zeropad), "00013", "zero-padded number format")
+testReplace($$format_number(13, width=5 alwayssign), "$$spc +13", "always signed number format")
+testReplace($$format_number(13, width=5 alwayssign zeropad), "+0013", "zero-padded always signed number format")
+testReplace($$format_number(13, width=5 padsign), " $$spc 13", "sign-padded number format")
+testReplace($$format_number(13, width=5 padsign zeropad), " 0013", "zero-padded sign-padded number format")
