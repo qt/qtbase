@@ -11,12 +11,6 @@
     # Permit modules to enforce being built outside QTDIR.
     force_independent: mod_component_base = $$MODULE_BASE_OUTDIR
 
-    # This check will be removed soon. Weird indentation to avoid reindenting the code later.
-    syncprofile = $$cat($$MODULE_PROFILE_DIR/sync.profile, lines)
-    contains(syncprofile, "^%modulepris.*") {
-        MODULE_FWD_PRI = $$mod_qmake_base/mkspecs/modules/$$replace(MODULE_PRI, ^.*/,)
-    } else {
-
     MODULE_FWD_PRI = $$mod_qmake_base/mkspecs/modules/qt_$${MODULE}.pri
 
     # Create a forwarding module .pri file
@@ -30,8 +24,6 @@
         "include($$MODULE_PRI)"
     write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error("Aborting.")
     touch($$MODULE_FWD_PRI, $$MODULE_PRI)
-
-    } # create forwarding module pris
 
     # Then, inject the new module into the current cache state
     !contains(QMAKE_INTERNAL_INCLUDED_FILES, $$MODULE_PRI) { # before the actual include()!

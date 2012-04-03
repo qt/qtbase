@@ -102,8 +102,6 @@ my $check_includes = 0;
 my $copy_headers = 0;
 my $create_uic_class_map = 0;
 my $create_private_headers = 1;
-my $module_fwd = "";
-my $developer_build = 0;
 my @modules_to_sync ;
 $force_relative = 1 if ( -d "/System/Library/Frameworks" );
 
@@ -136,10 +134,6 @@ sub showUsage
     print "                        Create headers for <NAME> with original headers in\n";
     print "                        <HEADERDIR> relative to <PROFILEDIR> \n";
     print "  -private              Force copy private headers         (default: " . ($create_private_headers ? "yes" : "no") . ")\n";
-    print "  -module-fwd <PATH>    Create fwd includes for module pri files in the given\n";
-    print "                        path (default: none)\n";
-    print "  -developer-build      Point libraries and binaries to a common directory for\n";
-    print "                        easy development\n";
     print "  -help                 This help\n";
     exit 0;
 }
@@ -625,12 +619,6 @@ while ( @ARGV ) {
             $arg eq "-relative" || $arg eq "-check-includes") {
         $var = substr($arg, 1);
         $val = "yes";
-    } elsif($arg eq "-module-fwd") {
-        $var = "module_fwd";
-        $val = shift @ARGV;
-    } elsif($arg eq "-developer-build") {
-        $var = "developer_build";
-        $val = "yes";
     } elsif($arg =~ /^-no-(.*)$/) {
         $var = $1;
         $val = "no";
@@ -739,10 +727,6 @@ while ( @ARGV ) {
         } else {
             die "The -qtdir option requires an argument";
         }
-    } elsif ($var eq "module_fwd") {
-        $module_fwd = $val;
-    } elsif ($var eq "developer_build") {
-        $developer_build = 1;
     } elsif ($var eq "output") {
         my $outdir = $val;
         if(checkRelative($outdir)) {
@@ -1129,30 +1113,6 @@ foreach my $lib (@modules_to_sync) {
             print HEADERS_PRI_FILE $headers_pri_contents;
             close HEADERS_PRI_FILE;
             print "$lib: created headers.pri file\n" if($verbose_level);
-        }
-
-        # create forwarding module pri in qtbase/mkspecs/modules
-        if ($module_fwd) {
-            my $modulepri = $modulepris{$lib};
-            if (defined $modulepri and -e $modulepri) {
-                my $modulepriname = basename($modulepri);
-                make_path($module_fwd, $lib, $verbose_level);
-                my $moduleprifwd = "$module_fwd/$modulepriname";
-                my $mod_base = $basedir;
-                my $mod_component_base = $developer_build ? $qtbasedir : $out_basedir;
-                open MODULE_PRI_FILE, ">$moduleprifwd" or die("Could not open $moduleprifwd for writing");
-                print MODULE_PRI_FILE "QT_MODULE_BASE = $mod_base\n";
-                print MODULE_PRI_FILE "QT_MODULE_BIN_BASE = $mod_component_base/bin\n";
-                print MODULE_PRI_FILE "QT_MODULE_INCLUDE_BASE = $out_basedir/include\n";
-                print MODULE_PRI_FILE "QT_MODULE_IMPORT_BASE = $mod_component_base/imports\n";
-                print MODULE_PRI_FILE "QT_MODULE_LIB_BASE = $mod_component_base/lib\n";
-                print MODULE_PRI_FILE "QT_MODULE_PLUGIN_BASE = $mod_component_base/plugins\n";
-                print MODULE_PRI_FILE "include($modulepri)\n";
-                close MODULE_PRI_FILE;
-                utime(time, (stat($modulepri))[9], $moduleprifwd);
-            } elsif ($modulepri) {
-                print "$lib: WARNING: Module\'s pri file '$modulepri' not found.\n$lib: Skipped creating forwarding pri.\n";
-            }
         }
     }
 }
