@@ -147,39 +147,7 @@ private slots:
     void movablity_data();
     void movablity();
     void literals();
-
-    void zeroTermination_data();
-    void zeroTermination();
 };
-
-// Except for QByteArrays initialized with fromRawData(), QByteArray ensures
-// that data() is null-terminated. VERIFY_ZERO_TERMINATION checks that
-// invariant and goes further by testing that the null-character is in writable
-// memory allocated by QByteArray. If the invariant is broken, tools like
-// valgrind should be able to detect this.
-#define VERIFY_ZERO_TERMINATION(ba)                                             \
-    do {                                                                        \
-        /* Statics could be anything, as can fromRawData() strings */           \
-        QByteArray::DataPtr baDataPtr = ba.data_ptr();                          \
-        if (!baDataPtr->ref.isStatic()                                          \
-                && baDataPtr->offset == QByteArray().data_ptr()->offset) {      \
-            int baSize = ba.size();                                             \
-            QCOMPARE(ba.constData()[baSize], '\0');                             \
-                                                                                \
-            QByteArray baCopy(ba.constData(), baSize);                          \
-            if (!baDataPtr->ref.isShared()) {                                   \
-                /* Don't detach, assumes no setSharable support */              \
-                char *baData = ba.data();                                       \
-                baData[baSize] = 'x';                                           \
-                                                                                \
-                QCOMPARE(ba.constData()[baSize], 'x');                          \
-                QCOMPARE(ba, baCopy);                                           \
-                                                                                \
-                baData[baSize] = '\0'; /* Sanity restored */                    \
-            }                                                                   \
-        }                                                                       \
-    } while (false)                                                             \
-    /**/
 
 static const struct StaticByteArrays {
     struct Standard {
@@ -256,13 +224,8 @@ void tst_QByteArray::qCompress_data()
 void tst_QByteArray::qCompress()
 {
     QFETCH( QByteArray, ba );
-
     QByteArray compressed = ::qCompress( ba );
-    QByteArray uncompressed = ::qUncompress(compressed);
-
-    QCOMPARE(uncompressed, ba);
-    VERIFY_ZERO_TERMINATION(compressed);
-    VERIFY_ZERO_TERMINATION(uncompressed);
+    QTEST( ::qUncompress( compressed ), "ba" );
 }
 
 void tst_QByteArray::qUncompressCorruptedData_data()
@@ -294,11 +257,9 @@ void tst_QByteArray::qUncompressCorruptedData()
     QByteArray res;
     res = ::qUncompress(in);
     QCOMPARE(res, QByteArray());
-    VERIFY_ZERO_TERMINATION(res);
 
     res = ::qUncompress(in + "blah");
     QCOMPARE(res, QByteArray());
-    VERIFY_ZERO_TERMINATION(res);
 #else
     QSKIP("This test freezes on this platform");
 #endif
@@ -308,7 +269,7 @@ void tst_QByteArray::qCompressionZeroTermination()
 {
     QString s = "Hello, I'm a string.";
     QByteArray ba = ::qUncompress(::qCompress(s.toLocal8Bit()));
-    VERIFY_ZERO_TERMINATION(ba);
+    QVERIFY((int) *(ba.data() + ba.size()) == 0);
 }
 
 #endif
@@ -328,7 +289,6 @@ void tst_QByteArray::constByteArray()
     QVERIFY(cba.constData()[1] == 'b');
     QVERIFY(cba.constData()[2] == 'c');
     QVERIFY(cba.constData()[3] == '\0');
-    VERIFY_ZERO_TERMINATION(cba);
 }
 
 void tst_QByteArray::leftJustified()
@@ -546,11 +506,9 @@ void tst_QByteArray::base64()
 
     QByteArray arr = QByteArray::fromBase64(base64);
     QCOMPARE(arr, rawdata);
-    VERIFY_ZERO_TERMINATION(arr);
 
     QByteArray arr64 = rawdata.toBase64();
     QCOMPARE(arr64, base64);
-    VERIFY_ZERO_TERMINATION(arr64);
 }
 
 //different from the previous test as the input are invalid
@@ -775,24 +733,17 @@ void tst_QByteArray::chop()
 
     src.chop(choplength);
     QCOMPARE(src, expected);
-    VERIFY_ZERO_TERMINATION(src);
 }
 
 void tst_QByteArray::prepend()
 {
     QByteArray ba("foo");
     QCOMPARE(ba.prepend((char*)0), QByteArray("foo"));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.prepend(QByteArray()), QByteArray("foo"));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.prepend("1"), QByteArray("1foo"));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.prepend(QByteArray("2")), QByteArray("21foo"));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.prepend('3'), QByteArray("321foo"));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.prepend("\0 ", 2), QByteArray::fromRawData("\0 321foo", 8));
-    VERIFY_ZERO_TERMINATION(ba);
 }
 
 void tst_QByteArray::prependExtended_data()
@@ -816,17 +767,11 @@ void tst_QByteArray::prependExtended()
     QCOMPARE(QByteArray("").prepend(array), QByteArray("data"));
 
     QCOMPARE(array.prepend((char*)0), QByteArray("data"));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.prepend(QByteArray()), QByteArray("data"));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.prepend("1"), QByteArray("1data"));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.prepend(QByteArray("2")), QByteArray("21data"));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.prepend('3'), QByteArray("321data"));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.prepend("\0 ", 2), QByteArray::fromRawData("\0 321data", 9));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.size(), 9);
 }
 
@@ -834,19 +779,12 @@ void tst_QByteArray::append()
 {
     QByteArray ba("foo");
     QCOMPARE(ba.append((char*)0), QByteArray("foo"));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.append(QByteArray()), QByteArray("foo"));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.append("1"), QByteArray("foo1"));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.append(QByteArray("2")), QByteArray("foo12"));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.append('3'), QByteArray("foo123"));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.append("\0"), QByteArray("foo123"));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.append("\0", 1), QByteArray::fromRawData("foo123\0", 7));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.size(), 7);
 }
 
@@ -863,19 +801,12 @@ void tst_QByteArray::appendExtended()
     QCOMPARE(QByteArray("").append(array), QByteArray("data"));
 
     QCOMPARE(array.append((char*)0), QByteArray("data"));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.append(QByteArray()), QByteArray("data"));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.append("1"), QByteArray("data1"));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.append(QByteArray("2")), QByteArray("data12"));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.append('3'), QByteArray("data123"));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.append("\0"), QByteArray("data123"));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.append("\0", 1), QByteArray::fromRawData("data123\0", 8));
-    VERIFY_ZERO_TERMINATION(array);
     QCOMPARE(array.size(), 8);
 }
 
@@ -883,28 +814,22 @@ void tst_QByteArray::insert()
 {
     QByteArray ba("Meal");
     QCOMPARE(ba.insert(1, QByteArray("ontr")), QByteArray("Montreal"));
-    VERIFY_ZERO_TERMINATION(ba);
     QCOMPARE(ba.insert(ba.size(), "foo"), QByteArray("Montrealfoo"));
-    VERIFY_ZERO_TERMINATION(ba);
 
     ba = QByteArray("13");
     QCOMPARE(ba.insert(1, QByteArray("2")), QByteArray("123"));
-    VERIFY_ZERO_TERMINATION(ba);
 
     ba = "ac";
     QCOMPARE(ba.insert(1, 'b'), QByteArray("abc"));
     QCOMPARE(ba.size(), 3);
-    VERIFY_ZERO_TERMINATION(ba);
 
     ba = "ikl";
     QCOMPARE(ba.insert(1, "j"), QByteArray("ijkl"));
     QCOMPARE(ba.size(), 4);
-    VERIFY_ZERO_TERMINATION(ba);
 
     ba = "ab";
     QCOMPARE(ba.insert(1, "\0X\0", 3), QByteArray::fromRawData("a\0X\0b", 5));
     QCOMPARE(ba.size(), 5);
-    VERIFY_ZERO_TERMINATION(ba);
 }
 
 void tst_QByteArray::insertExtended_data()
@@ -917,7 +842,6 @@ void tst_QByteArray::insertExtended()
     QFETCH(QByteArray, array);
     QCOMPARE(array.insert(1, "i"), QByteArray("diata"));
     QCOMPARE(array.size(), 5);
-    VERIFY_ZERO_TERMINATION(array);
 }
 
 void tst_QByteArray::remove_data()
@@ -948,7 +872,6 @@ void tst_QByteArray::remove()
     QFETCH(int, length);
     QFETCH(QByteArray, expected);
     QCOMPARE(src.remove(position, length), expected);
-    VERIFY_ZERO_TERMINATION(src);
 }
 
 void tst_QByteArray::replace_data()
@@ -990,8 +913,6 @@ void tst_QByteArray::replace()
 
     QCOMPARE(str1.replace(pos, len, after).constData(), expected.constData());
     QCOMPARE(str2.replace(pos, len, after.data()), expected);
-    VERIFY_ZERO_TERMINATION(str1);
-    VERIFY_ZERO_TERMINATION(str2);
 }
 
 void tst_QByteArray::replaceWithSpecifiedLength()
@@ -1004,7 +925,6 @@ void tst_QByteArray::replaceWithSpecifiedLength()
     const char _expected[] = "zxc\0vbcdefghjk";
     QByteArray expected(_expected,sizeof(_expected)-1);
     QCOMPARE(ba,expected);
-    VERIFY_ZERO_TERMINATION(ba);
 }
 
 void tst_QByteArray::indexOf_data()
@@ -1307,7 +1227,6 @@ void tst_QByteArray::appendAfterFromRawData()
         data[0] = 'Y';
     }
     QVERIFY(arr.at(0) == 'X');
-    VERIFY_ZERO_TERMINATION(arr);
 }
 
 void tst_QByteArray::toFromHex_data()
@@ -1379,17 +1298,15 @@ void tst_QByteArray::toFromHex()
     QFETCH(QByteArray, hex_alt1);
 
     {
-        QByteArray th = str.toHex();
+        const QByteArray th = str.toHex();
         QCOMPARE(th.size(), hex.size());
         QCOMPARE(th, hex);
-        VERIFY_ZERO_TERMINATION(th);
     }
 
     {
-        QByteArray fh = QByteArray::fromHex(hex);
+        const QByteArray fh = QByteArray::fromHex(hex);
         QCOMPARE(fh.size(), str.size());
         QCOMPARE(fh, str);
-        VERIFY_ZERO_TERMINATION(fh);
     }
 
     QCOMPARE(QByteArray::fromHex(hex_alt1), str);
@@ -1402,17 +1319,14 @@ void tst_QByteArray::toFromPercentEncoding()
     QByteArray data = arr.toPercentEncoding();
     QCOMPARE(QString(data), QString("Qt%20is%20great%21"));
     QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
-    VERIFY_ZERO_TERMINATION(data);
 
     data = arr.toPercentEncoding("! ", "Qt");
     QCOMPARE(QString(data), QString("%51%74 is grea%74!"));
     QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
-    VERIFY_ZERO_TERMINATION(data);
 
     data = arr.toPercentEncoding(QByteArray(), "abcdefghijklmnopqrstuvwxyz", 'Q');
     QCOMPARE(QString(data), QString("Q51Q74Q20Q69Q73Q20Q67Q72Q65Q61Q74Q21"));
     QCOMPARE(QByteArray::fromPercentEncoding(data, 'Q'), arr);
-    VERIFY_ZERO_TERMINATION(data);
 
     // verify that to/from percent encoding preserves nullity
     arr = "";
@@ -1422,7 +1336,6 @@ void tst_QByteArray::toFromPercentEncoding()
     QVERIFY(!arr.toPercentEncoding().isNull());
     QVERIFY(QByteArray::fromPercentEncoding("").isEmpty());
     QVERIFY(!QByteArray::fromPercentEncoding("").isNull());
-    VERIFY_ZERO_TERMINATION(arr);
 
     arr = QByteArray();
     QVERIFY(arr.isEmpty());
@@ -1431,7 +1344,6 @@ void tst_QByteArray::toFromPercentEncoding()
     QVERIFY(arr.toPercentEncoding().isNull());
     QVERIFY(QByteArray::fromPercentEncoding(QByteArray()).isEmpty());
     QVERIFY(QByteArray::fromPercentEncoding(QByteArray()).isNull());
-    VERIFY_ZERO_TERMINATION(arr);
 }
 
 void tst_QByteArray::fromPercentEncoding_data()
@@ -1673,9 +1585,6 @@ void tst_QByteArray::repeated() const
     QFETCH(int, count);
 
     QCOMPARE(string.repeated(count), expected);
-
-    QByteArray repeats = string.repeated(count);
-    VERIFY_ZERO_TERMINATION(repeats);
 }
 
 void tst_QByteArray::repeated_data() const
@@ -1767,7 +1676,6 @@ void tst_QByteArray::byteRefDetaching() const
         copy[0] = 'S';
 
         QCOMPARE(str, QByteArray("str"));
-        VERIFY_ZERO_TERMINATION(copy);
     }
 
     {
@@ -1776,7 +1684,6 @@ void tst_QByteArray::byteRefDetaching() const
         str[0] = 'S';
 
         QCOMPARE(buf[0], char('s'));
-        VERIFY_ZERO_TERMINATION(str);
     }
 
     {
@@ -1787,7 +1694,6 @@ void tst_QByteArray::byteRefDetaching() const
         str[0] = 'S';
 
         QCOMPARE(buf[0], char('s'));
-        VERIFY_ZERO_TERMINATION(str);
     }
 }
 
@@ -1797,25 +1703,19 @@ void tst_QByteArray::reserve()
     QByteArray qba;
     qba.reserve(capacity);
     QVERIFY(qba.capacity() == capacity);
-    VERIFY_ZERO_TERMINATION(qba);
-
     char *data = qba.data();
+
     for (int i = 0; i < capacity; i++) {
         qba.resize(i);
         QVERIFY(capacity == qba.capacity());
         QVERIFY(data == qba.data());
-        VERIFY_ZERO_TERMINATION(qba);
     }
 
     QByteArray nil1, nil2;
     nil1.reserve(0);
-    VERIFY_ZERO_TERMINATION(nil1);
     nil2.squeeze();
-    VERIFY_ZERO_TERMINATION(nil2);
     nil1.squeeze();
-    VERIFY_ZERO_TERMINATION(nil1);
     nil2.reserve(0);
-    VERIFY_ZERO_TERMINATION(nil2);
 }
 
 void tst_QByteArray::reserveExtended_data()
@@ -1826,16 +1726,12 @@ void tst_QByteArray::reserveExtended_data()
 void tst_QByteArray::reserveExtended()
 {
     QFETCH(QByteArray, array);
-
     array.reserve(1024);
     QVERIFY(array.capacity() == 1024);
     QCOMPARE(array, QByteArray("data"));
-    VERIFY_ZERO_TERMINATION(array);
-
     array.squeeze();
     QCOMPARE(array, QByteArray("data"));
     QCOMPARE(array.capacity(), array.size());
-    VERIFY_ZERO_TERMINATION(array);
 }
 
 void tst_QByteArray::movablity_data()
@@ -1928,7 +1824,6 @@ void tst_QByteArray::literals()
     QVERIFY(str == "abcd");
     QVERIFY(str.data_ptr()->ref.isStatic());
     QVERIFY(str.data_ptr()->offset == sizeof(QByteArrayData));
-    VERIFY_ZERO_TERMINATION(str);
 
     const char *s = str.constData();
     QByteArray str2 = str;
@@ -1936,25 +1831,12 @@ void tst_QByteArray::literals()
 
     // detach on non const access
     QVERIFY(str.data() != s);
-    VERIFY_ZERO_TERMINATION(str);
 
     QVERIFY(str2.constData() == s);
     QVERIFY(str2.data() != s);
-    VERIFY_ZERO_TERMINATION(str2);
 #else
     QSKIP("Only tested on c++0x compliant compiler or gcc");
 #endif
-}
-
-void tst_QByteArray::zeroTermination_data()
-{
-    movablity_data();
-}
-
-void tst_QByteArray::zeroTermination()
-{
-    QFETCH(QByteArray, array);
-    VERIFY_ZERO_TERMINATION(array);
 }
 
 const char globalChar = '1';
