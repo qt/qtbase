@@ -275,7 +275,7 @@ void QJsonArray::removeAt(int i)
     detach();
     a->removeItems(i, 1);
     ++d->compactionCounter;
-    if (d->compactionCounter > 32 && d->compactionCounter >= (int)a->length/2)
+    if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(a->length) / 2u)
         compact();
 }
 
@@ -379,7 +379,7 @@ void QJsonArray::replace(int i, const QJsonValue &value)
         QJsonPrivate::Value::copyData(value, (char *)a + valueOffset, compressed);
 
     ++d->compactionCounter;
-    if (d->compactionCounter > 32 && d->compactionCounter >= (int)a->length/2)
+    if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(a->length) / 2u)
         compact();
 }
 
