@@ -1,5 +1,7 @@
 contains(TEMPLATE, ".*(lib|app)"):CONFIG += have_target
 
+!have_target:!force_qt: CONFIG -= qt
+
 QT_BREAKPAD_ROOT_PATH = $$(QT_BREAKPAD_ROOT_PATH)
 !isEmpty(QT_BREAKPAD_ROOT_PATH): \   # quick test first whether requested ...
         !staticlib:!static:CONFIG(release, debug|release):have_target: \   # is it applicable?
