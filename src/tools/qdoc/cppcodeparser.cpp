@@ -1067,9 +1067,9 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
               If it wasn't a file, it should be either a class or a namespace.
              */
             QStringList newPath = arg.split("::");
-            n = tree_->findClassNode(QStringList(newPath));
+            n = tree_->findClassNode(newPath);
             if (!n)
-                n = tree_->findNamespaceNode(QStringList(newPath));
+                n = tree_->findNamespaceNode(newPath);
         }
 
         if (!n) {

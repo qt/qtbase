@@ -2407,6 +2407,8 @@ Node* Tree::findNodeRecursive(const QStringList& path,
  */
 EnumNode* Tree::findEnumNode(const QStringList& path, Node* start)
 {
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
     return static_cast<EnumNode*>(findNodeRecursive(path, 0, start, Node::Enum, Node::NoSubType));
 }
 
@@ -2418,6 +2420,8 @@ EnumNode* Tree::findEnumNode(const QStringList& path, Node* start)
  */
 ClassNode* Tree::findClassNode(const QStringList& path, Node* start)
 {
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
     return static_cast<ClassNode*>(findNodeRecursive(path, 0, start, Node::Class, Node::NoSubType));
 }
 
@@ -2441,6 +2445,8 @@ QmlClassNode* Tree::findQmlClassNode(const QStringList& path, Node* start)
             return qcn;
     }
 
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
     return static_cast<QmlClassNode*>(findNodeRecursive(path, 0, start, Node::Fake, Node::QmlClass));
 }
 
@@ -2452,6 +2458,8 @@ QmlClassNode* Tree::findQmlClassNode(const QStringList& path, Node* start)
  */
 NamespaceNode* Tree::findNamespaceNode(const QStringList& path, Node* start)
 {
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
     return static_cast<NamespaceNode*>(findNodeRecursive(path, 0, start, Node::Namespace, Node::NoSubType));
 }
 
@@ -2463,6 +2471,8 @@ NamespaceNode* Tree::findNamespaceNode(const QStringList& path, Node* start)
  */
 FakeNode* Tree::findGroupNode(const QStringList& path, Node* start)
 {
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
     return static_cast<FakeNode*>(findNodeRecursive(path, 0, start, Node::Fake, Node::Group));
 }
 
@@ -2474,6 +2484,8 @@ FakeNode* Tree::findGroupNode(const QStringList& path, Node* start)
  */
 FakeNode* Tree::findQmlModuleNode(const QStringList& path, Node* start)
 {
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
     return static_cast<FakeNode*>(findNodeRecursive(path, 0, start, Node::Fake, Node::QmlModule));
 }
 
