@@ -196,11 +196,11 @@ void Generator::generateCode()
     // stringdata.stringdata member, and 2) the stringdata.data index of the
     // QByteArrayData being defined. This calculation relies on the
     // QByteArrayData::data() implementation returning simply "this + offset".
-    fprintf(out, "#define QT_MOC_LITERAL(idx, ofs, len) { \\\n"
-            "    Q_REFCOUNT_INITIALIZE_STATIC, len, 0, 0, \\\n"
+    fprintf(out, "#define QT_MOC_LITERAL(idx, ofs, len) \\\n"
+            "    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \\\n"
             "    offsetof(qt_meta_stringdata_%s_t, stringdata) + ofs \\\n"
             "        - idx * sizeof(QByteArrayData) \\\n"
-            "    }\n",
+            "    )\n",
             qualifiedClassNameIdentifier.constData());
 
     fprintf(out, "static const qt_meta_stringdata_%s_t qt_meta_stringdata_%s = {\n",

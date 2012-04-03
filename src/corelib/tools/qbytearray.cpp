@@ -618,10 +618,8 @@ static inline char qToLower(char c)
         return c;
 }
 
-const QStaticByteArrayData<1> QByteArray::shared_null = { { Q_REFCOUNT_INITIALIZE_STATIC,
-                                                           0, 0, 0, sizeof(QByteArrayData) }, { 0 } };
-const QStaticByteArrayData<1> QByteArray::shared_empty = { { Q_REFCOUNT_INITIALIZE_STATIC,
-                                                            0, 0, 0, sizeof(QByteArrayData) }, { 0 } };
+const QStaticByteArrayData<1> QByteArray::shared_null = { Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(0), { 0 } };
+const QStaticByteArrayData<1> QByteArray::shared_empty = { Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(0), { 0 } };
 
 /*!
     \class QByteArray

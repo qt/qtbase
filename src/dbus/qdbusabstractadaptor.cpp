@@ -327,11 +327,11 @@ struct qt_meta_stringdata_QDBusAdaptorConnector_t {
     QByteArrayData data[10];
     char stringdata[96];
 };
-#define QT_MOC_LITERAL(idx, ofs, len) { \
-    Q_REFCOUNT_INITIALIZE_STATIC, len, 0, 0, \
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
         offsetof(qt_meta_stringdata_QDBusAdaptorConnector_t, stringdata) + ofs \
         - idx * sizeof(QByteArrayData) \
-    }
+    )
 static const qt_meta_stringdata_QDBusAdaptorConnector_t qt_meta_stringdata_QDBusAdaptorConnector = {
     {
 QT_MOC_LITERAL(0, 0, 21),

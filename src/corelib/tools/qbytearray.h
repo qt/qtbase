@@ -149,14 +149,22 @@ struct QByteArrayDataPtr
     QByteArrayData *ptr;
 };
 
+#define Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset) \
+    { Q_REFCOUNT_INITIALIZE_STATIC, size, 0, 0, offset } \
+    /**/
+
+#define Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(size) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, sizeof(QByteArrayData)) \
+    /**/
 
 #if defined(Q_COMPILER_LAMBDA)
 
 #  define QByteArrayLiteral(str) \
     ([]() -> QByteArrayDataPtr { \
         enum { Size = sizeof(str) - 1 }; \
-        static const QStaticByteArrayData<Size> qbytearray_literal = \
-        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, sizeof(QByteArrayData) }, str }; \
+        static const QStaticByteArrayData<Size> qbytearray_literal = { \
+            Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(Size), \
+            str }; \
         QByteArrayDataPtr holder = { qbytearray_literal.data_ptr() }; \
         return holder; \
     }()) \
@@ -170,8 +178,9 @@ struct QByteArrayDataPtr
 #  define QByteArrayLiteral(str) \
     __extension__ ({ \
         enum { Size = sizeof(str) - 1 }; \
-        static const QStaticByteArrayData<Size> qbytearray_literal = \
-        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, sizeof(QByteArrayData) }, str }; \
+        static const QStaticByteArrayData<Size> qbytearray_literal = { \
+            Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(Size), \
+            str }; \
         QByteArrayDataPtr holder = { qbytearray_literal.data_ptr() }; \
         holder; \
     }) \

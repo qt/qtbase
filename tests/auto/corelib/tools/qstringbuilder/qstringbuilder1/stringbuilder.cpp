@@ -109,7 +109,7 @@ void runScenario()
 
     {
         static const QStaticStringData<12> literalData = {
-                { Q_REFCOUNT_INITIALIZE_STATIC, 12, 0, 0, sizeof(QStringData) },
+                Q_STATIC_STRING_DATA_HEADER_INITIALIZER(12),
                 { 's', 'o', 'm', 'e', ' ', 'l', 'i', 't', 'e', 'r', 'a', 'l' }
             };
         static QStringDataPtr literal = { literalData.data_ptr() };
@@ -228,7 +228,7 @@ void runScenario()
 
     {
         static const QStaticByteArrayData<12> literalData = {
-                { Q_REFCOUNT_INITIALIZE_STATIC, 12, 0, 0, sizeof(QByteArrayData) },
+                Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER(12),
                 { 's', 'o', 'm', 'e', ' ', 'l', 'i', 't', 'e', 'r', 'a', 'l' }
             };
         static QByteArrayDataPtr literal = { literalData.data_ptr() };

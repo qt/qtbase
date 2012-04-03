@@ -796,8 +796,8 @@ const QString::Null QString::null = { };
     \sa split()
 */
 
-const QStaticStringData<1> QString::shared_null = { { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, false, sizeof(QStringData) }, { 0 } };
-const QStaticStringData<1> QString::shared_empty = { { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, false, sizeof(QStringData) }, { 0 } };
+const QStaticStringData<1> QString::shared_null = { Q_STATIC_STRING_DATA_HEADER_INITIALIZER(0), { 0 } };
+const QStaticStringData<1> QString::shared_empty = { Q_STATIC_STRING_DATA_HEADER_INITIALIZER(0), { 0 } };
 
 int QString::grow(int size)
 {

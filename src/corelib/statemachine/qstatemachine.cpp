@@ -2215,11 +2215,11 @@ struct qt_meta_stringdata_QSignalEventGenerator_t {
     QByteArrayData data[3];
     char stringdata[32];
 };
-#define QT_MOC_LITERAL(idx, ofs, len) { \
-    Q_REFCOUNT_INITIALIZE_STATIC, len, 0, 0, \
-    offsetof(qt_meta_stringdata_QSignalEventGenerator_t, stringdata) + ofs \
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+        offsetof(qt_meta_stringdata_QSignalEventGenerator_t, stringdata) + ofs \
         - idx * sizeof(QByteArrayData) \
-    }
+    )
 static const qt_meta_stringdata_QSignalEventGenerator_t qt_meta_stringdata_QSignalEventGenerator = {
     {
 QT_MOC_LITERAL(0, 0, 21),

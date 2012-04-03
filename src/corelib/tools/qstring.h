@@ -117,8 +117,9 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 #  define QStringLiteral(str) \
     ([]() -> QStringDataPtr { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
-        static const QStaticStringData<Size> qstring_literal = \
-        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, sizeof(QStringData) }, QT_UNICODE_LITERAL(str) }; \
+        static const QStaticStringData<Size> qstring_literal = { \
+            Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
+            QT_UNICODE_LITERAL(str) }; \
         QStringDataPtr holder = { qstring_literal.data_ptr() }; \
         return holder; \
     }()) \
@@ -132,8 +133,9 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 #  define QStringLiteral(str) \
     __extension__ ({ \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
-        static const QStaticStringData<Size> qstring_literal = \
-        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, sizeof(QStringData) }, QT_UNICODE_LITERAL(str) }; \
+        static const QStaticStringData<Size> qstring_literal = { \
+            Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
+            QT_UNICODE_LITERAL(str) }; \
         QStringDataPtr holder = { qstring_literal.data_ptr() }; \
         holder; \
     }) \
@@ -148,6 +150,14 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 
 # define QStringLiteral(str) QLatin1String(str)
 #endif
+
+#define Q_STATIC_STRING_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset) \
+    { Q_REFCOUNT_INITIALIZE_STATIC, size, 0, 0, offset } \
+    /**/
+
+#define Q_STATIC_STRING_DATA_HEADER_INITIALIZER(size) \
+    Q_STATIC_STRING_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, sizeof(QStringData)) \
+    /**/
 
 template <int N>
 struct QStaticStringData

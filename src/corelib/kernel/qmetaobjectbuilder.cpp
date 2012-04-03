@@ -1124,7 +1124,8 @@ void QMetaStringTable::writeBlob(char *out)
         int size = str.size();
         qptrdiff offset = offsetOfStringdataMember + stringdataOffset
                 - i * sizeof(QByteArrayData);
-        const QByteArrayData data = { Q_REFCOUNT_INITIALIZE_STATIC, size, 0, 0, offset };
+        const QByteArrayData data =
+            Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset);
 
         memcpy(out + i * sizeof(QByteArrayData), &data, sizeof(QByteArrayData));
 
