@@ -2,8 +2,6 @@ load(exclusive_builds)
 CONFIG = lex yacc warn_on debug exceptions $$CONFIG
 
 !build_pass:exists($$_PRO_FILE_PWD_/sync.profile) {
-    PRO_BASENAME = $$basename(_PRO_FILE_)
-
     # If the install directory is a build directory, we tell syncqt to do a -developer-build.
     QTDIR = $$[QT_HOST_DATA]
     exists($$QTDIR/.qmake.cache) {
@@ -24,7 +22,6 @@ CONFIG = lex yacc warn_on debug exceptions $$CONFIG
     }
 
     unset(QTFWD)
-    unset(PRO_BASENAME)
 }
 
 # Populate the installdir which will be passed to qdoc in the default_post.prf
