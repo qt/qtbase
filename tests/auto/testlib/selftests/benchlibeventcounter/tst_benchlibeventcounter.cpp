@@ -64,6 +64,11 @@ public:
     bool unregisterTimers(QObject*) { return false; }
     int remainingTime(int) { return 0; }
     void wakeUp() {}
+
+#ifdef Q_OS_WIN
+    bool registerEventNotifier(QWinEventNotifier *) { return false; }
+    void unregisterEventNotifier(QWinEventNotifier *) { }
+#endif
 };
 
 class tst_BenchlibEventCounter: public QObject

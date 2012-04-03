@@ -134,10 +134,12 @@ QWinEventNotifier::QWinEventNotifier(HANDLE hEvent, QObject *parent)
  : QObject(*new QWinEventNotifierPrivate(hEvent, false), parent)
 {
     Q_D(QWinEventNotifier);
-    QEventDispatcherWin32 *eventDispatcher = qobject_cast<QEventDispatcherWin32 *>(d->threadData->eventDispatcher);
-    Q_ASSERT_X(eventDispatcher, "QWinEventNotifier::QWinEventNotifier()",
-               "Cannot create a win event notifier without a QEventDispatcherWin32");
-    eventDispatcher->registerEventNotifier(this);
+    QAbstractEventDispatcher *eventDispatcher = d->threadData->eventDispatcher;
+    if (!eventDispatcher) {
+        qWarning("QWinEventNotifier: Can only be used with threads started with QThread");
+    } else {
+        eventDispatcher->registerEventNotifier(this);
+    }
     d->enabled = true;
 }
 
@@ -205,7 +207,7 @@ void QWinEventNotifier::setEnabled(bool enable)
         return;
     d->enabled = enable;
 
-    QEventDispatcherWin32 *eventDispatcher = qobject_cast<QEventDispatcherWin32 *>(d->threadData->eventDispatcher);
+    QAbstractEventDispatcher *eventDispatcher = d->threadData->eventDispatcher;
     if (!eventDispatcher) // perhaps application is shutting down
         return;
 

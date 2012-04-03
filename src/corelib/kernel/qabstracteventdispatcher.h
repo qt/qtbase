@@ -53,6 +53,10 @@ QT_BEGIN_NAMESPACE
 class QAbstractEventDispatcherPrivate;
 class QSocketNotifier;
 
+#ifdef Q_OS_WIN
+class QWinEventNotifier;
+#endif
+
 class Q_CORE_EXPORT QAbstractEventDispatcher : public QObject
 {
     Q_OBJECT
@@ -94,6 +98,11 @@ public:
     virtual QList<TimerInfo> registeredTimers(QObject *object) const = 0;
 
     virtual int remainingTime(int timerId) = 0;
+
+#ifdef Q_OS_WIN
+    virtual bool registerEventNotifier(QWinEventNotifier *notifier) = 0;
+    virtual void unregisterEventNotifier(QWinEventNotifier *notifier) = 0;
+#endif
 
     virtual void wakeUp() = 0;
     virtual void interrupt() = 0;

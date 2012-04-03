@@ -1239,6 +1239,11 @@ public:
     void interrupt() {}
     void flush() {}
 
+#ifdef Q_OS_WIN
+    bool registerEventNotifier(QWinEventNotifier *) { return false; }
+    void unregisterEventNotifier(QWinEventNotifier *) { }
+#endif
+
     bool visited;
 };
 
