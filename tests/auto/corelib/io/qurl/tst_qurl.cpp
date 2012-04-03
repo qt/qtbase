@@ -160,6 +160,8 @@ private slots:
     void emptyAuthorityRemovesExistingAuthority();
     void acceptEmptyAuthoritySegments();
     void lowercasesScheme();
+    void componentEncodings_data();
+    void componentEncodings();
 };
 
 // Testing get/set functions
@@ -2574,6 +2576,237 @@ void tst_QUrl::lowercasesScheme()
     QUrl url;
     url.setScheme("HELLO");
     QCOMPARE(url.scheme(), QString("hello"));
+}
+
+void tst_QUrl::componentEncodings_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<int>("encoding");
+    QTest::addColumn<QString>("userName");
+    QTest::addColumn<QString>("password");
+    QTest::addColumn<QString>("userInfo");
+    QTest::addColumn<QString>("host");
+    QTest::addColumn<QString>("authority");
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QString>("query");
+    QTest::addColumn<QString>("fragment");
+    QTest::addColumn<QString>("toString");
+
+    QTest::newRow("empty") << QUrl() << int(QUrl::FullyEncoded)
+                           << QString() << QString() << QString()
+                           << QString() << QString()
+                           << QString() << QString() << QString() << QString();
+
+    // hostname cannot contain spaces
+    QTest::newRow("encoded-space") << QUrl("x://user name:pass word@host/path name?query value#fragment value")
+                                   << int(QUrl::FullyEncoded)
+                                   << "user%20name" << "pass%20word" << "user%20name:pass%20word"
+                                   << "host" << "user%20name:pass%20word@host"
+                                   << "/path%20name" << "query%20value" << "fragment%20value"
+                                   << "x://user%20name:pass%20word@host/path%20name?query%20value#fragment%20value";
+
+    QTest::newRow("decoded-space") << QUrl("x://user%20name:pass%20word@host/path%20name?query%20value#fragment%20value")
+                                   << int(QUrl::DecodeSpaces)
+                                   << "user name" << "pass word" << "user name:pass word"
+                                   << "host" << "user name:pass word@host"
+                                   << "/path name" << "query value" << "fragment value"
+                                   << "x://user name:pass word@host/path name?query value#fragment value";
+
+    // binary data is always encoded
+    // this is also testing non-UTF8 data
+    QTest::newRow("binary") << QUrl("x://%c0%00:%c1%01@host/%c2%02?%c3%03#%d4%04")
+                            << int(QUrl::MostDecoded)
+                            << "%C0%00" << "%C1%01" << "%C0%00:%C1%01"
+                            << "host" << "%C0%00:%C1%01@host"
+                            << "/%C2%02" << "%C3%03" << "%D4%04"
+                            << "x://%C0%00:%C1%01@host/%C2%02?%C3%03#%D4%04";
+
+    // unicode tests
+    // hostnames can participate in this test, but we need a top-level domain that accepts Unicode
+    QTest::newRow("encoded-unicode") << QUrl(QString::fromUtf8("x://\xc2\x80:\xc3\x90@smørbrød.example.no/\xe0\xa0\x80?\xf0\x90\x80\x80#é"))
+                                     << int(QUrl::FullyEncoded)
+                                     << "%C2%80" << "%C3%90" << "%C2%80:%C3%90"
+                                     << "xn--smrbrd-cyad.example.no" << "%C2%80:%C3%90@xn--smrbrd-cyad.example.no"
+                                     << "/%E0%A0%80" << "%F0%90%80%80" << "%C3%A9"
+                                     << "x://%C2%80:%C3%90@xn--smrbrd-cyad.example.no/%E0%A0%80?%F0%90%80%80#%C3%A9";
+    QTest::newRow("decoded-unicode") << QUrl("x://%C2%80:%C3%90@XN--SMRBRD-cyad.example.NO/%E0%A0%80?%F0%90%80%80#%C3%A9")
+                                     << int(QUrl::DecodeUnicode)
+                                     << QString::fromUtf8("\xc2\x80") << QString::fromUtf8("\xc3\x90")
+                                     << QString::fromUtf8("\xc2\x80:\xc3\x90")
+                                     << QString::fromUtf8("smørbrød.example.no")
+                                     << QString::fromUtf8("\xc2\x80:\xc3\x90@smørbrød.example.no")
+                                     << QString::fromUtf8("/\xe0\xa0\x80")
+                                     << QString::fromUtf8("\xf0\x90\x80\x80") << QString::fromUtf8("é")
+                                     << QString::fromUtf8("x://\xc2\x80:\xc3\x90@smørbrød.example.no/\xe0\xa0\x80?\xf0\x90\x80\x80#é");
+
+    //    unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+    // these are always decoded
+    QTest::newRow("decoded-unreserved") << QUrl("x://%61:%71@%41%30%2eexample%2ecom/%7e?%5f#%51")
+                                        << int(QUrl::FullyEncoded)
+                                        << "a" << "q" << "a:q"
+                                        << "a0.example.com" << "a:q@a0.example.com"
+                                        << "/~" << "_" << "Q"
+                                        << "x://a:q@a0.example.com/~?_#Q";
+
+    //    sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+    //                  / "*" / "+" / "," / ";" / "="
+    // like the unreserved, these are decoded everywhere
+    // don't test in query because they might remain encoded
+    QTest::newRow("decoded-subdelims") << QUrl("x://%21%24%26:%27%28%29@host/%2a%2b%2c#%3b%3d")
+                                       << int(QUrl::FullyEncoded)
+                                       << "!$&" << "'()" << "!$&:'()"
+                                       << "host" << "!$&:'()@host"
+                                       << "/*+," << "" << ";="
+                                       << "x://!$&:'()@host/*+,#;=";
+
+    //    gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+    // these are the separators between fields
+    // they must appear encoded in proper URLs everywhere
+    // 1) test the delimiters that, if they were decoded, would change the URL parsing
+    QTest::newRow("encoded-gendelims-changing") << QUrl("x://%5b%3a%2f%3f%23%40%5d:%5b%2f%3f%23%40%5d@host/%2f%3f%23?%23")
+                                                << int(QUrl::MostDecoded)
+                                                << "[:/?#@]" << "[/?#@]" << "[%3A/?#@]:[/?#@]"
+                                                << "host" << "%5B%3A/?#%40%5D:%5B/?#%40%5D@host"
+                                                << "/%2F?#" << "#" << ""
+                                                << "x://%5B%3A%2F%3F%23%40%5D:%5B%2F%3F%23%40%5D@host/%2F%3F%23?%23";
+
+    // 2) test the delimiters that may appear decoded and would not change the meaning
+    // and test that %2f is *not* decoded to a slash in the path
+    // don't test the query because in this mode it doesn't transform anything
+    QTest::newRow("decoded-gendelims-unchanging") << QUrl("x://:%3a@host/%2f%3a%40#%23%3a%2f%3f%40")
+                                                  << int(QUrl::DecodeUnambiguousDelimiters)
+                                                  << "" << ":" << "::"
+                                                  << "host" << "::@host"
+                                                  << "/%2F:@" << "" << "#:/?@"
+                                                  << "x://::@host/%2F:@##:/?@";
+
+    // 3) test "[" and "]". Even though they are not ambiguous in the path, query or fragment
+    // the RFC does not allow them to appear there decoded. QUrl adheres strictly in FullyEncoded mode
+    QTest::newRow("encoded-square-brackets") << QUrl("x:/[]#[]")
+                                             << int(QUrl::FullyEncoded)
+                                             << "" << "" << ""
+                                             << "" << ""
+                                             << "/%5B%5D" << "" << "%5B%5D"
+                                             << "x:/%5B%5D#%5B%5D";
+
+    // 4) like above, but now decode them, which is allowed
+    QTest::newRow("decoded-square-brackets") << QUrl("x:/%5B%5D#%5B%5D")
+                                             << int(QUrl::MostDecoded)
+                                             << "" << "" << ""
+                                             << "" << ""
+                                             << "/[]" << "" << "[]"
+                                             << "x:/[]#[]";
+
+    // test the query
+    // since QUrl doesn't know what chars the user wants to use for the pair and value delimiters,
+    // it keeps the delimiters alone except for "#", which must always be encoded.
+    QTest::newRow("unencoded-delims-query") << QUrl("?!$()*+,;=:/?[]@")
+                                            << int(QUrl::FullyEncoded)
+                                            << QString() << QString() << QString()
+                                            << QString() << QString()
+                                            << QString() << "!$()*+,;=:/?[]@" << QString()
+                                            << "?!$()*+,;=:/?[]@";
+    QTest::newRow("undecoded-delims-query") << QUrl("?%21%24%26%27%28%29%2a%2b%2c%2f%3a%3b%3d%3f%40%5b%5d")
+                                            << int(QUrl::DecodeUnambiguousDelimiters)
+                                            << QString() << QString() << QString()
+                                            << QString() << QString()
+                                            << QString() << "%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D" << QString()
+                                            << "?%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D";
+
+    // other characters:  '"' / "<" / ">" / "^" / "\" / "{" / "|" "}"
+    // the RFC does not allow them undecoded anywhere, but we do
+    QTest::newRow("encoded-others") << QUrl("x://\"<>^\\{|}:\"<>^\\{|}@host/\"<>^\\{|}?\"<>^\\{|}#\"<>^\\{|}")
+                                    << int(QUrl::FullyEncoded)
+                                    << "%22%3C%3E%5E%5C%7B%7C%7D" << "%22%3C%3E%5E%5C%7B%7C%7D"
+                                    << "%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D"
+                                    << "host" << "%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D@host"
+                                    << "/%22%3C%3E%5E%5C%7B%7C%7D" << "%22%3C%3E%5E%5C%7B%7C%7D"
+                                    << "%22%3C%3E%5E%5C%7B%7C%7D"
+                                    << "x://%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D@host/%22%3C%3E%5E%5C%7B%7C%7D"
+                                       "?%22%3C%3E%5E%5C%7B%7C%7D#%22%3C%3E%5E%5C%7B%7C%7D";
+    QTest::newRow("decoded-others") << QUrl("x://%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D@host"
+                                            "/%22%3C%3E%5E%5C%7B%7C%7D?%22%3C%3E%5E%5C%7B%7C%7D#%22%3C%3E%5E%5C%7B%7C%7D")
+                                    << int(QUrl::DecodeAllDelimiters)
+                                    << "\"<>^\\{|}" << "\"<>^\\{|}" << "\"<>^\\{|}:\"<>^\\{|}"
+                                    << "host" << "\"<>^\\{|}:\"<>^\\{|}@host"
+                                    << "/\"<>^\\{|}" << "\"<>^\\{|}" << "\"<>^\\{|}"
+                                    << "x://\"<>^\\{|}:\"<>^\\{|}@host/\"<>^\\{|}?\"<>^\\{|}#\"<>^\\{|}";
+
+
+    // Beauty is in the eye of the beholder
+    // Test PrettyDecoder against our expectations
+
+    // spaces and unicode are considered pretty and are decoded
+    // this includes hostnames
+    QTest::newRow("pretty-spaces-unicode") << QUrl("x://%20%c3%a9:%c3%a9%20@XN--SMRBRD-cyad.example.NO/%c3%a9%20?%20%c3%a9#%c3%a9%20")
+                                           << int(QUrl::PrettyDecoded)
+                                           << QString::fromUtf8(" é") << QString::fromUtf8("é ")
+                                           << QString::fromUtf8(" é:é ")
+                                           << QString::fromUtf8("smørbrød.example.no")
+                                           << QString::fromUtf8(" é:é @smørbrød.example.no")
+                                           << QString::fromUtf8("/é ") << QString::fromUtf8(" é")
+                                           << QString::fromUtf8("é ")
+                                           << QString::fromUtf8("x:// é:é @smørbrød.example.no/é ? é#é ");
+
+    // the pretty form re-encodes the subdelims (except in the query, where they are left alone)
+    QTest::newRow("pretty-subdelims") << QUrl("x://%21%24%26:%27%28%29@host/%2a%2b%2c?%26=%26&%3d=%3d#%3b%3d")
+                                      << int(QUrl::PrettyDecoded)
+                                      << "!$&" << "'()" << "!$&:'()"
+                                      << "host" << "!$&:'()@host"
+                                      << "/*+," << "%26=%26&%3D=%3D" << ";="
+                                      << "x://!$&:'()@host/*+,?%26=%26&%3D=%3D#;=";
+
+    // the pretty form decodes all unambiguous gen-delims
+    // (except in query, where they are left alone)
+    QTest::newRow("pretty-gendelims") << QUrl("x://%5b%3a%40%2f%5d:%5b%3a%40%2f%5d@host"
+                                              "/%3a%40%5b%3f%23%5d?[?%3f%23]%5b:%3a@%40%5d#%23")
+                                      << int(QUrl::PrettyDecoded)
+                                      << "[:@/]" << "[:@/]" << "[%3A@/]:[:@/]"
+                                      << "host" << "%5B%3A%40/%5D:%5B:%40/%5D@host"
+                                      << "/:@[?#]" << "[?%3F#]%5B:%3A@%40%5D" << "#"
+                                      << "x://%5B%3A%40%2F%5D:%5B:%40%2F%5D@host/:@[%3F%23]?[?%3F%23]%5B:%3A@%40%5D##";
+}
+
+void tst_QUrl::componentEncodings()
+{
+    QFETCH(QUrl, url);
+    QFETCH(int, encoding);
+    QFETCH(QString, userName);
+    QFETCH(QString, password);
+    QFETCH(QString, userInfo);
+    QFETCH(QString, host);
+    QFETCH(QString, authority);
+    QFETCH(QString, path);
+    QFETCH(QString, query);
+    QFETCH(QString, fragment);
+    QFETCH(QString, toString);
+
+    QUrl::ComponentFormattingOptions formatting(encoding);
+    QCOMPARE(url.userName(formatting), userName);
+    QCOMPARE(url.password(formatting), password);
+    QCOMPARE(url.userInfo(formatting), userInfo);
+    QCOMPARE(url.host(formatting), host);
+    QCOMPARE(url.authority(formatting), authority);
+    QCOMPARE(url.path(formatting), path);
+    QCOMPARE(url.query(formatting), query);
+    QCOMPARE(url.fragment(formatting), fragment);
+    QCOMPARE(url.toString(formatting),
+             (((QString(toString ))))); // the weird () and space is to align the output
+
+    // repeat with the URL we got from toString
+    QUrl url2(toString);
+    QCOMPARE(url2.userName(formatting), userName);
+    QCOMPARE(url2.password(formatting), password);
+    QCOMPARE(url2.userInfo(formatting), userInfo);
+    QCOMPARE(url2.host(formatting), host);
+    QCOMPARE(url2.authority(formatting), authority);
+    QCOMPARE(url2.path(formatting), path);
+    QCOMPARE(url2.query(formatting), query);
+    QCOMPARE(url2.fragment(formatting), fragment);
+    QCOMPARE(url2.toString(formatting), toString);
+
+    // and use the comparison operator
+    QCOMPARE(url2, url);
 }
 
 QTEST_MAIN(tst_QUrl)
