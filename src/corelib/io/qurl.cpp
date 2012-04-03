@@ -2561,6 +2561,16 @@ uint qHash(const QUrl &url, uint seed)
             qHash(url.d->fragment);
 }
 
+static QUrl adjustFtpPath(QUrl url)
+{
+    if (url.scheme() == ftpScheme()) {
+        QString path = url.path();
+        if (path.startsWith("//"))
+            url.setPath(QLatin1String("/%2F") + path.midRef(2));
+    }
+    return url;
+}
+
 
 // The following code has the following copyright:
 /*
@@ -2640,7 +2650,7 @@ QUrl QUrl::fromUserInput(const QString &userInput)
         && !url.scheme().isEmpty()
         && (!url.host().isEmpty() || !url.path().isEmpty())
         && urlPrepended.port() == -1)
-        return url;
+        return adjustFtpPath(url);
 
     // Else, try the prepended one and adjust the scheme from the host name
     if (urlPrepended.isValid() && (!urlPrepended.host().isEmpty() || !urlPrepended.path().isEmpty()))
@@ -2649,7 +2659,7 @@ QUrl QUrl::fromUserInput(const QString &userInput)
         const QString hostscheme = trimmedString.left(dotIndex).toLower();
         if (hostscheme == ftpScheme())
             urlPrepended.setScheme(ftpScheme());
-        return urlPrepended;
+        return adjustFtpPath(urlPrepended);
     }
 
     return QUrl();
