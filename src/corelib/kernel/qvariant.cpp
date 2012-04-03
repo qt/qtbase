@@ -1582,9 +1582,6 @@ void QVariant::clear()
 */
 const char *QVariant::typeToName(int typeId)
 {
-    if (typeId == Invalid)
-        return 0;
-
     return QMetaType::typeName(typeId);
 }
 
@@ -1598,9 +1595,6 @@ const char *QVariant::typeToName(int typeId)
 */
 QVariant::Type QVariant::nameToType(const char *name)
 {
-    if (!name || !*name)
-        return Invalid;
-
     int metaType = QMetaType::type(name);
     return metaType <= int(UserType) ? QVariant::Type(metaType) : UserType;
 }
