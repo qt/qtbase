@@ -1797,6 +1797,23 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
     return IncludeSuccess;
 }
 
+static QByteArray
+getCommandOutput(const QString &args)
+{
+    QByteArray out;
+    if (FILE *proc = QT_POPEN(args.toLatin1().constData(), "r")) {
+        while (!feof(proc)) {
+            char buff[10 * 1024];
+            int read_in = int(fread(buff, 1, sizeof(buff), proc));
+            if (!read_in)
+                break;
+            out += QByteArray(buff, read_in);
+        }
+        QT_PCLOSE(proc);
+    }
+    return out;
+}
+
 QStringList
 QMakeProject::doProjectExpand(QString func, const QString &params,
                               QHash<QString, QStringList> &place)
@@ -1940,19 +1957,33 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         } else {
             QString file = Option::normalizePath(args[0]);
 
+            bool blob = false;
+            bool lines = false;
             bool singleLine = true;
-            if(args.count() > 1)
-                singleLine = (args[1].toLower() == "true");
-
+            if (args.count() > 1) {
+                if (!args.at(1).compare(QLatin1String("false"), Qt::CaseInsensitive))
+                    singleLine = false;
+                else if (!args.at(1).compare(QLatin1String("blob"), Qt::CaseInsensitive))
+                    blob = true;
+                else if (!args.at(1).compare(QLatin1String("lines"), Qt::CaseInsensitive))
+                    lines = true;
+            }
             QFile qfile(file);
             if(qfile.open(QIODevice::ReadOnly)) {
                 QTextStream stream(&qfile);
-                while(!stream.atEnd()) {
-                    ret += split_value_list(stream.readLine().trimmed());
-                    if(!singleLine)
-                        ret += "\n";
+                if (blob) {
+                    ret += stream.readAll();
+                } else {
+                    while (!stream.atEnd()) {
+                        if (lines) {
+                            ret += stream.readLine();
+                        } else {
+                            ret += split_value_list(stream.readLine().trimmed());
+                            if (!singleLine)
+                                ret += "\n";
+                        }
+                    }
                 }
-                qfile.close();
             }
         }
         break; }
@@ -2113,26 +2144,33 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             fprintf(stderr, "%s:%d system(execut) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         } else {
-            char buff[256];
+            bool blob = false;
+            bool lines = false;
             bool singleLine = true;
-            if(args.count() > 1)
-                singleLine = (args[1].toLower() == "true");
-            QString output;
-            FILE *proc = QT_POPEN(args[0].toLatin1().constData(), "r");
-            while(proc && !feof(proc)) {
-                int read_in = int(fread(buff, 1, 255, proc));
-                if(!read_in)
-                    break;
-                for(int i = 0; i < read_in; i++) {
-                    if((singleLine && buff[i] == '\n') || buff[i] == '\t')
-                        buff[i] = ' ';
-                }
-                buff[read_in] = '\0';
-                output += buff;
+            if (args.count() > 1) {
+                if (!args.at(1).compare(QLatin1String("false"), Qt::CaseInsensitive))
+                    singleLine = false;
+                else if (!args.at(1).compare(QLatin1String("blob"), Qt::CaseInsensitive))
+                    blob = true;
+                else if (!args.at(1).compare(QLatin1String("lines"), Qt::CaseInsensitive))
+                    lines = true;
             }
-            ret += split_value_list(output);
-            if(proc)
-                QT_PCLOSE(proc);
+            QByteArray bytes = getCommandOutput(args.at(0));
+            if (lines) {
+                QTextStream stream(bytes);
+                while (!stream.atEnd())
+                    ret += stream.readLine();
+            } else {
+                QString output = QString::fromLocal8Bit(bytes);
+                if (blob) {
+                    ret += output;
+                } else {
+                    output.replace(QLatin1Char('\t'), QLatin1Char(' '));
+                    if (singleLine)
+                        output.replace(QLatin1Char('\n'), QLatin1Char(' '));
+                    ret += split_value_list(output);
+                }
+            }
         }
         break; }
     case E_UNIQUE: {
