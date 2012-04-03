@@ -66,6 +66,7 @@
 #include <accctrl.h>
 #include <ctype.h>
 #include <limits.h>
+#include <stdio.h>
 #define SECURITY_WIN32
 #include <security.h>
 
