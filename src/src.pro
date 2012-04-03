@@ -74,44 +74,4 @@ sub_src_target.target = sub-src
 sub_src_target.recurse_target =
 QMAKE_EXTRA_TARGETS += sub_src_target
 
-# This gives us a top level debug/release
-for(subname, SRC_SUBDIRS) {
-   subdir = $$subname
-   !isEmpty($${subname}.subdir):subdir = $$eval($${subname}.subdir)
-   subpro = $$subdir/$${basename(subdir)}.pro
-   !exists($$subpro):next()
-   subtarget = $$replace(subdir, [^A-Za-z0-9], _)
-   reg_src = $$replace(QT_SOURCE_TREE, \\\\, \\\\)
-   subdir = $$replace(subdir, $$reg_src, $$QT_BUILD_TREE)
-   subdir = $$replace(subdir, /, $$QMAKE_DIR_SEP)
-   subdir = $$replace(subdir, \\\\, $$QMAKE_DIR_SEP)
-   include($$subpro, SUB)
-   !isEqual(subname, src_tools_bootstrap):if(isEqual(SUB.TEMPLATE, lib) | isEqual(SUB.TEMPLATE, subdirs)):!separate_debug_info {
-       #debug
-       debug-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS
-       debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) debug)
-       EXTRA_DEBUG_TARGETS += debug-$${subtarget}
-       QMAKE_EXTRA_TARGETS += debug-$${subtarget}
-       #release
-       release-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_RELEASE_TARGETS
-       release-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) release)
-       EXTRA_RELEASE_TARGETS += release-$${subtarget}
-       QMAKE_EXTRA_TARGETS += release-$${subtarget}
-    } else { #do not have a real debug target/release
-       #debug
-       debug-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS
-       debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) first)
-       EXTRA_DEBUG_TARGETS += debug-$${subtarget}
-       QMAKE_EXTRA_TARGETS += debug-$${subtarget}
-       #release
-       release-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_RELEASE_TARGETS
-       release-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) first)
-       EXTRA_RELEASE_TARGETS += release-$${subtarget}
-       QMAKE_EXTRA_TARGETS += release-$${subtarget}
-   }
-}
-debug.depends = $$EXTRA_DEBUG_TARGETS
-release.depends = $$EXTRA_RELEASE_TARGETS
-QMAKE_EXTRA_TARGETS += debug release
-
 SUBDIRS += $$SRC_SUBDIRS
