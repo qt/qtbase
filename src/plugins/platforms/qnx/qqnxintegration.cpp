@@ -104,14 +104,11 @@ QQnxIntegration::QQnxIntegration()
     }
 
     // Create/start navigator event handler
-    // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
-#ifndef Q_OS_BLACKBERRY
-    m_navigatorEventHandler = new QQnxNavigatorEventHandler(*primaryDisplay());
+    m_navigatorEventHandler = new QQnxNavigatorEventHandler;
 
     // delay invocation of start() to the time the event loop is up and running
     // needed to have the QThread internals of the main thread properly initialized
     QMetaObject::invokeMethod(m_navigatorEventHandler, "start", Qt::QueuedConnection);
-#endif
 
     // Create displays for all possible screens (which may not be attached)
     createDisplays();
