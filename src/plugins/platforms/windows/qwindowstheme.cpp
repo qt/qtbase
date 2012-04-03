@@ -68,12 +68,27 @@ static inline QTextStream& operator<<(QTextStream &str, const QColor &c)
     return str;
 }
 
+static inline void paletteRoleToString(const QPalette &palette,
+                                       const QPalette::ColorRole role,
+                                       QTextStream &str)
+{
+    str << "Role: ";
+    str.setFieldWidth(2);
+    str.setPadChar(QLatin1Char('0'));
+    str << role;
+    str.setFieldWidth(0);
+    str << " Active: "  << palette.color(QPalette::Active, role)
+        << " Disabled: "  << palette.color(QPalette::Disabled, role)
+        << " Inactive: " << palette.color(QPalette::Inactive, role)
+        << '\n';
+}
+
 static inline QString paletteToString(const QPalette &palette)
 {
     QString result;
     QTextStream str(&result);
-    str << "text=" << palette.color(QPalette::WindowText)
-        << " background=" << palette.color(QPalette::Window);
+    for (int r = 0; r < QPalette::NColorRoles; ++r)
+        paletteRoleToString(palette, static_cast<QPalette::ColorRole>(r), str);
     return result;
 }
 
@@ -105,9 +120,26 @@ static inline QColor getSysColor(int index)
     return qColorToCOLORREF(GetSysColor(index));
 }
 
+// from QStyle::standardPalette
+static inline QPalette standardPalette()
+{
+    QColor backgroundColor(0xd4, 0xd0, 0xc8); // win 2000 grey
+    QColor lightColor(backgroundColor.lighter());
+    QColor darkColor(backgroundColor.darker());
+    const QBrush darkBrush(darkColor);
+    QColor midColor(Qt::gray);
+    QPalette palette(Qt::black, backgroundColor, lightColor, darkColor,
+                     midColor, Qt::black, Qt::white);
+    palette.setBrush(QPalette::Disabled, QPalette::WindowText, darkBrush);
+    palette.setBrush(QPalette::Disabled, QPalette::Text, darkBrush);
+    palette.setBrush(QPalette::Disabled, QPalette::ButtonText, darkBrush);
+    palette.setBrush(QPalette::Disabled, QPalette::Base, QBrush(backgroundColor));
+    return palette;
+}
+
 static inline QPalette systemPalette()
 {
-    QPalette result;
+    QPalette result = standardPalette();
     result.setColor(QPalette::WindowText, getSysColor(COLOR_WINDOWTEXT));
     result.setColor(QPalette::Button, getSysColor(COLOR_BTNFACE));
     result.setColor(QPalette::Light, getSysColor(COLOR_BTNHIGHLIGHT));
