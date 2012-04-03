@@ -1623,7 +1623,6 @@ public:
     }
     template<typename T>
     void delegate(const T*) { TypeInfoImpl<T>(m_type, info); }
-    void delegate(const void*) {}
     void delegate(const QMetaTypeSwitcher::UnknownType*) {}
     void delegate(const QMetaTypeSwitcher::NotBuiltinType*) { customTypeInfo(m_type); }
 private:
@@ -1645,7 +1644,7 @@ QMetaType QMetaType::typeInfo(const int type)
 {
     TypeInfo typeInfo(type);
     QMetaTypeSwitcher::switcher<void>(typeInfo, type, 0);
-    return typeInfo.info.creator || type == Void ? QMetaType(QMetaType::NoExtensionFlags
+    return typeInfo.info.creator ? QMetaType(QMetaType::NoExtensionFlags
                                  , static_cast<const QMetaTypeInterface *>(0) // typeInfo::info is a temporary variable, we can't return address of it.
                                  , typeInfo.info.creator
                                  , typeInfo.info.deleter
