@@ -1073,14 +1073,6 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     int count = chars.count();
     QString string = translateKeySym(sym, state, qtcode, modifiers, chars, count);
 
-    if (inputContext) {
-        QKeyEvent event(type, qtcode, modifiers, string);
-        event.setTimestamp(time);
-        bool retval = inputContext->filterEvent(&event);
-        if (retval)
-            return;
-    }
-
     bool isAutoRepeat = false;
 
     if (type == QEvent::KeyPress) {
@@ -1099,13 +1091,28 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
         m_autorepeat_code = isAutoRepeat ? code : 0;
     }
 
-    QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
-                                                   code, 0, state, string.left(count), isAutoRepeat);
+    bool filtered = false;
+    if (inputContext) {
+        QKeyEvent event(type, qtcode, modifiers, string, isAutoRepeat);
+        event.setTimestamp(time);
+        filtered = inputContext->filterEvent(&event);
+    }
+
+    if (!filtered)
+        QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
+                                                       code, 0, state, string.left(count), isAutoRepeat);
 
     if (isAutoRepeat && type == QEvent::KeyRelease) {
         // since we removed it from the event queue using checkEvent we need to send the key press here
-        QWindowSystemInterface::handleExtendedKeyEvent(window, time, QEvent::KeyPress, qtcode, modifiers,
-                                                       code, 0, state, string.left(count), isAutoRepeat);
+        filtered = false;
+        if (inputContext) {
+            QKeyEvent event(QEvent::KeyPress, qtcode, modifiers, string, isAutoRepeat);
+            event.setTimestamp(time);
+            filtered = inputContext->filterEvent(&event);
+        }
+        if (!filtered)
+            QWindowSystemInterface::handleExtendedKeyEvent(window, time, QEvent::KeyPress, qtcode, modifiers,
+                                                           code, 0, state, string.left(count), isAutoRepeat);
     }
 }
 
