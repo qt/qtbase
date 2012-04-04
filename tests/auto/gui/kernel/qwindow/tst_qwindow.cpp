@@ -139,6 +139,9 @@ void tst_QWindow::positioning()
     QCOMPARE(window.geometry(), geometry);
     window.show();
 
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "This test fails on Mac OS X, see QTBUG-23059", Abort);
+#endif
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
     QTRY_COMPARE(window.received(QEvent::Map), 1);
 
@@ -188,6 +191,9 @@ void tst_QWindow::isActive()
     window.setGeometry(80, 80, 40, 40);
     window.show();
 
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "This test fails on Mac OS X, see QTBUG-23059", Abort);
+#endif
     QTRY_COMPARE(window.received(QEvent::Map), 1);
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
     QTRY_VERIFY(QGuiApplication::focusWindow() == &window);
