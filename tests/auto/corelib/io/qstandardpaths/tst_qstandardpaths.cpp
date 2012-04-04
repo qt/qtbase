@@ -173,14 +173,14 @@ void tst_qstandardpaths::enableTestMode()
 
     // GenericDataLocation
     const QString dataDir = qttestDir + QLatin1String("/share");
-    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::DataLocation), dataDir);
-    const QStringList gdDirs = QStandardPaths::standardLocations(QStandardPaths::DataLocation);
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation), dataDir);
+    const QStringList gdDirs = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
     QCOMPARE(gdDirs, QStringList() << dataDir << m_globalAppDir);
 
-    // CacheLocation
+    // GenericCacheLocation
     const QString cacheDir = qttestDir + QLatin1String("/cache");
-    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::CacheLocation), cacheDir);
-    const QStringList cacheDirs = QStandardPaths::standardLocations(QStandardPaths::CacheLocation);
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation), cacheDir);
+    const QStringList cacheDirs = QStandardPaths::standardLocations(QStandardPaths::GenericCacheLocation);
     QCOMPARE(cacheDirs, QStringList() << cacheDir);
 #endif
 
