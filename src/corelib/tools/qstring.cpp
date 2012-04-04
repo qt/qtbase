@@ -6474,15 +6474,6 @@ QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior)
 */
 
 /*!
-    \fn QString QString::normalized(NormalizationForm mode) const
-    Returns the string in the given Unicode normalization \a mode.
-*/
-QString QString::normalized(QString::NormalizationForm mode) const
-{
-    return normalized(mode, UNICODE_DATA_VERSION);
-}
-
-/*!
     \since 4.5
 
     Returns a copy of this string repeated the specified number of \a times.
@@ -6529,21 +6520,6 @@ QString QString::repeated(int times) const
     result.d->data()[resultSize] = '\0';
     result.d->size = resultSize;
     return result;
-}
-
-void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::UnicodeVersion version, int from);
-/*!
-    \overload
-    \fn QString QString::normalized(NormalizationForm mode, QChar::UnicodeVersion version) const
-
-    Returns the string in the given Unicode normalization \a mode,
-    according to the given \a version of the Unicode standard.
-*/
-QString QString::normalized(QString::NormalizationForm mode, QChar::UnicodeVersion version) const
-{
-    QString copy = *this;
-    qt_string_normalize(&copy, mode, version, 0);
-    return copy;
 }
 
 void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::UnicodeVersion version, int from)
@@ -6604,6 +6580,17 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
         return;
 
     composeHelper(data, version, from);
+}
+
+/*!
+    Returns the string in the given Unicode normalization \a mode,
+    according to the given \a version of the Unicode standard.
+*/
+QString QString::normalized(QString::NormalizationForm mode, QChar::UnicodeVersion version) const
+{
+    QString copy = *this;
+    qt_string_normalize(&copy, mode, version, 0);
+    return copy;
 }
 
 
