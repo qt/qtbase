@@ -131,6 +131,9 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     roaming to another access point. The request should be resubmitted
     and will be processed as soon as the connection is re-established.
 
+    \value NetworkSessionFailedError   the connection was broken due
+    to disconnection from the network or failure to start the network.
+
     \value ProxyConnectionRefusedError the connection to the proxy
     server was refused (the proxy server is not accepting requests)
 
