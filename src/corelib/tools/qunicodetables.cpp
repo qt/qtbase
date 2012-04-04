@@ -8029,6 +8029,7 @@ static const NormalizationCorrection uc_normalization_corrections[] = {
 };
 
 enum { NumNormalizationCorrections = 6 };
+enum { NormalizationCorrectionsVersionMax = 7 };
 
 enum { UnicodeBlockCount = 512 }; // number of unicode blocks
 enum { UnicodeBlockSize = 128 }; // size of each block

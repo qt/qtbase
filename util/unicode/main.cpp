@@ -1078,7 +1078,7 @@ static void readDerivedNormalizationProps()
 struct NormalizationCorrection {
     uint codepoint;
     uint mapped;
-    uint version;
+    int version;
 };
 
 static QByteArray createNormalizationCorrections()
@@ -1099,6 +1099,7 @@ static QByteArray createNormalizationCorrections()
 
            "static const NormalizationCorrection uc_normalization_corrections[] = {\n";
 
+    int maxVersion = 0;
     int numCorrections = 0;
     while (!f.atEnd()) {
         QByteArray line;
@@ -1135,11 +1136,13 @@ static QByteArray createNormalizationCorrections()
         out += "    { 0x" + QByteArray::number(c.codepoint, 16) + ", 0x" + QByteArray::number(c.mapped, 16)
              + ", " + QString::number(c.version) + " },\n";
         ++numCorrections;
+        maxVersion = qMax(c.version, maxVersion);
     }
 
     out += "};\n\n"
 
-           "enum { NumNormalizationCorrections = " + QByteArray::number(numCorrections) + " };\n\n";
+           "enum { NumNormalizationCorrections = " + QByteArray::number(numCorrections) + " };\n"
+           "enum { NormalizationCorrectionsVersionMax = " + QByteArray::number(maxVersion) + " };\n\n";
 
     return out;
 }
