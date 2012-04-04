@@ -3886,7 +3886,7 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
     } else if (!size) {
         x = shared_empty.data_ptr();
     } else {
-        x = static_cast<Data *>(malloc(sizeof(Data) + 1));
+        x = static_cast<Data *>(malloc(sizeof(Data)));
         Q_CHECK_PTR(x);
         x->ref.initializeOwned();
         x->size = size;
