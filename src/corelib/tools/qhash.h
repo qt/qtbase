@@ -109,7 +109,7 @@ template <typename T1, typename T2> inline uint qHash(const QPair<T1, T2> &key)
     return ((h1 << 16) | (h1 >> 16)) ^ h2;
 }
 
-template<typename T> inline uint qHash(const T &t, uint) { return qHash(t); }
+template<typename T> inline uint qHash(const T &t, uint seed) { return (qHash(t) ^ seed); }
 
 struct Q_CORE_EXPORT QHashData
 {
