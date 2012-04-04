@@ -44,6 +44,7 @@
 #include "private/qurltlds_p.h"
 #include "private/qtldurl_p.h"
 #include "QtCore/qstringlist.h"
+#include "QtCore/qhash.h"
 
 QT_BEGIN_NAMESPACE
 

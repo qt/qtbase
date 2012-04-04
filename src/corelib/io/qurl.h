@@ -46,7 +46,9 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qhash.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qpair.h>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
 
@@ -304,7 +306,7 @@ public:
     static QByteArray toAce(const QString &);
     static QStringList idnWhitelist();
     static void setIdnWhitelist(const QStringList &);
-    friend Q_CORE_EXPORT uint qHash(const QUrl &url);
+    friend Q_CORE_EXPORT uint qHash(const QUrl &url, uint seed = 0);
 
 private:
     QUrlPrivate *d;

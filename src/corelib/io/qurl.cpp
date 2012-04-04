@@ -180,19 +180,13 @@
     regardless of the Qt::FormattingOptions used.
 */
 
-/*!
- \fn uint qHash(const QUrl &url)
- \since 4.7
- \relates QUrl
-
- Computes a hash key from the normalized version of \a url.
- */
 #include "qurl.h"
 #include "qurl_p.h"
 #include "qplatformdefs.h"
 #include "qstring.h"
 #include "qstringlist.h"
 #include "qdebug.h"
+#include "qhash.h"
 #include "qdir.h"         // for QDir::fromNativeSeparators
 #include "qtldurl_p.h"
 #include "private/qipaddress_p.h"
@@ -2546,21 +2540,22 @@ QString QUrl::errorString() const
     \internal
 */
 
-/*! \fn uint qHash(const QUrl &url)
+/*! \fn uint qHash(const QUrl &url, uint seed = 0)
     \relates QHash
+    \since 5.0
 
     Returns the hash value for the \a url.
 */
-uint qHash(const QUrl &url)
+uint qHash(const QUrl &url, uint seed)
 {
     if (!url.d)
-        return qHash(-1); // the hash of an unset port (-1)
+        return qHash(-1, seed); // the hash of an unset port (-1)
 
     return qHash(url.d->scheme) ^
             qHash(url.d->userName) ^
             qHash(url.d->password) ^
             qHash(url.d->host) ^
-            qHash(url.d->port) ^
+            qHash(url.d->port, seed) ^
             qHash(url.d->path) ^
             qHash(url.d->query) ^
             qHash(url.d->fragment);
