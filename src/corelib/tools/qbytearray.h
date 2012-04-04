@@ -452,11 +452,11 @@ inline QByteArray::QByteArray(const QByteArray &a) : d(a.d)
 { d->ref.ref(); }
 
 inline int QByteArray::capacity() const
-{ return d->alloc; }
+{ return d->alloc ? d->alloc - 1 : 0; }
 
 inline void QByteArray::reserve(int asize)
 {
-    if (d->ref.isShared() || asize > int(d->alloc))
+    if (d->ref.isShared() || uint(asize) + 1u > d->alloc)
         reallocData(uint(asize) + 1u);
 
     if (!d->capacityReserved) {
@@ -467,7 +467,7 @@ inline void QByteArray::reserve(int asize)
 
 inline void QByteArray::squeeze()
 {
-    if (d->ref.isShared() || d->size < int(d->alloc))
+    if (d->ref.isShared() || uint(d->size) + 1u < d->alloc)
         reallocData(uint(d->size) + 1u);
 
     if (d->capacityReserved) {
