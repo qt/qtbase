@@ -1433,7 +1433,7 @@ void QByteArray::resize(int size)
         if (d->ref.isShared() || size > int(d->alloc)
             || (!d->capacityReserved && size < d->size && size < int(d->alloc) >> 1))
             reallocData(size, true);
-        if (int(d->alloc) >= size) {
+        if (d->alloc) {
             d->size = size;
             d->data()[size] = '\0';
         }
