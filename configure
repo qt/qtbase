@@ -688,6 +688,7 @@ CFG_AUDIO_BACKEND=auto
 CFG_V8SNAPSHOT=auto
 CFG_QML_DEBUG=yes
 CFG_JAVASCRIPTCORE_JIT=auto
+CFG_PKGCONFIG=auto
 
 # Target architecture
 CFG_ARCH=
@@ -890,7 +891,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-pkg-config|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1080,8 +1081,15 @@ while [ "$#" -gt 0 ]; do
     hostbindir)
         QT_HOST_BINS="$VAL"
         ;;
+    pkg-config)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_PKGCONFIG="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     force-pkg-config)
-        QT_FORCE_PKGCONFIG=yes
+        CFG_PKGCONFIG="force"
         ;;
     docdir)
         QT_INSTALL_DOCS="$VAL"
@@ -2465,50 +2473,6 @@ if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG build_all"
 fi
 
-if [ -z "$PKG_CONFIG" ]; then
-    # See if PKG_CONFIG is set in the mkspec:
-    PKG_CONFIG=`getXQMakeConf PKG_CONFIG`
-fi
-if [ -z "$PKG_CONFIG" ]; then
-    PKG_CONFIG=`"$WHICH" pkg-config 2>/dev/null`
-fi
-
-# Work out if we can use pkg-config
-if [ "$QT_CROSS_COMPILE" = "yes" ]; then
-    if [ "$QT_FORCE_PKGCONFIG" = "yes" ]; then
-        echo >&2 ""
-        echo >&2 "You have asked to use pkg-config and are cross-compiling."
-        echo >&2 "Please make sure you have a correctly set-up pkg-config"
-        echo >&2 "environment!"
-        echo >&2 ""
-        if [ -z "$PKG_CONFIG_LIBDIR" ]; then
-            echo >&2 ""
-            echo >&2 "Warning: PKG_CONFIG_LIBDIR has not been set.  This could mean"
-            echo >&2 "the host's .pc files will be used (even if you set PKG_CONFIG_PATH)."
-            echo >&2 "This is probably not what you want."
-            echo >&2 ""
-        elif [ -z "$PKG_CONFIG_SYSROOT" ] && [ -z "$PKG_CONFIG_SYSROOT_DIR" ]; then
-            echo >&2 ""
-            echo >&2 "Warning: PKG_CONFIG_SYSROOT/PKG_CONFIG_SYSROOT_DIR has not"
-            echo >&2 "been set. This means your toolchain's .pc files must contain"
-            echo >&2 "the paths to the toolchain's libraries & headers. If configure"
-            echo >&2 "tests are failing, please check these files."
-            echo >&2 ""
-        fi
-    else
-        echo >&2 ""
-        echo >&2 "You have not explicitly asked to use pkg-config and are cross-compiling."
-        echo >&2 "pkg-config will not be used to automatically query cflag/lib parameters for"
-        echo >&2 "dependencies"
-        echo >&2 ""
-        PKG_CONFIG=""
-    fi
-fi
-
-if [ ! -n "$PKG_CONFIG" ]; then
-    QT_CONFIG="$QT_CONFIG no-pkg-config"
-fi
-
 # pass on $CFG_SDK to the configure tests.
 if [ '!' -z "$CFG_SDK" ]; then
     MAC_CONFIG_TEST_COMMANDLINE="$MAC_CONFIG_TEST_COMMANDLINE -sdk $CFG_SDK"
@@ -3071,6 +3035,13 @@ Configure options:
     -D <string> ........ Add an explicit define to the preprocessor.
     -I <string> ........ Add an explicit include path.
     -L <string> ........ Add an explicit library path.
+
+ +  -pkg-config ........ Use pkg-config to detect include and library paths. By default,
+                         configure determines whether to use pkg-config or not with
+                         some heuristics such as checking the environment variables.
+    -no-pkg-config ..... Disable use of pkg-config.
+    -force-pkg-config .. Force usage of pkg-config (skips pkg-config usability
+                         detection heuristic).
 
     -help, -h .......... Display this information.
 
@@ -3642,6 +3613,70 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     [ '!' -z "$OLD_QCONFIG_H" ] && mv -f "${OLD_QCONFIG_H}.old" "$OLD_QCONFIG_H" #put back qconfig.h
     [ "$QMAKE_BUILD_ERROR" = "yes" ] && exit 2
 fi # Build qmake
+
+#-------------------------------------------------------------------------------
+# Detect pkg-config
+#-------------------------------------------------------------------------------
+if [ -z "$PKG_CONFIG" ]; then
+    # See if PKG_CONFIG is set in the mkspec:
+    PKG_CONFIG=`getXQMakeConf PKG_CONFIG`
+fi
+if [ -z "$PKG_CONFIG" ]; then
+    PKG_CONFIG=`"$WHICH" pkg-config 2>/dev/null`
+fi
+
+if [ "$CFG_PKGCONFIG" = "no" ]; then
+    PKG_CONFIG=
+elif [ "$CFG_PKGCONFIG" = "force" ]; then
+    echo >&2 ""
+    echo >&2 "You have asked to use pkg-config. Please make sure you have"
+    echo >&2 "a correctly setup pkg-config environment!"
+    echo >&2 ""
+elif [ -n "$PKG_CONFIG" ]; then
+    # found a pkg-config
+    if [ "$QT_CROSS_COMPILE" = "yes" ]; then
+        # when xcompiling, check environment to see if it's actually usable
+        if [ -z "$PKG_CONFIG_LIBDIR" ]; then
+            if [ -n "$CFG_SYSROOT" ] && [ -d "$CFG_SYSROOT/usr/lib/pkgconfig" ]; then
+                PKG_CONFIG_LIBDIR=$CFG_SYSROOT/usr/lib/pkgconfig:$CFG_SYSROOT/usr/share/pkgconfig
+                export PKG_CONFIG_LIBDIR
+                echo >&2 "Note: PKG_CONFIG_LIBDIR automatically set to $PKG_CONFIG_LIBDIR"
+            elif [ "$CFG_PKGCONFIG" = "yes" ]; then
+                echo >&2 "Error: PKG_CONFIG_LIBDIR has not been set. This could mean"
+                echo >&2 "the host's .pc files will be used (even if you set PKG_CONFIG_PATH)."
+                echo >&2 "Set this variable to the directory that contains target .pc files"
+                echo >&2 "for pkg-config to function correctly when cross-compiling or"
+                echo >&2 "use -force-pkg-config to override this test."
+                exit 101
+            else
+                PKG_CONFIG=
+                echo >&2 "Warning: Disabling pkg-config since PKG_CONFIG_LIBDIR is not set."
+            fi
+        fi
+        if [ -z "$PKG_CONFIG_SYSROOT_DIR" ]; then
+            if [ -n "$CFG_SYSROOT" ]; then
+                PKG_CONFIG_SYSROOT_DIR=$CFG_SYSROOT
+                export PKG_CONFIG_SYSROOT_DIR
+                echo >&2 "Note: PKG_CONFIG_SYSROOT_DIR automatically set to $PKG_CONFIG_SYSROOT_DIR"
+            elif [ "$CFG_PKGCONFIG" = "yes" ]; then
+                echo >&2 "Error: PKG_CONFIG_SYSROOT_DIR has not been set. Set this variable"
+                echo >&2 "to your sysroot for pkg-config to function correctly when cross-compiling"
+                echo >&2 "or use -force-pkg-config to override this test."
+                exit 101
+            else
+                PKG_CONFIG=
+                echo >&2 "Warning: Disabling pkg-config since PKG_CONFIG_SYSROOT_DIR is not set."
+            fi
+        fi
+    fi
+elif [ "$CFG_PKGCONFIG" = "yes" ]; then
+    echo >&2 "Could not detect pkg-config from mkspec or PATH."
+    exit 101
+fi
+
+if [ -z "$PKG_CONFIG" ]; then
+    QT_CONFIG="$QT_CONFIG no-pkg-config"
+fi
 
 #-------------------------------------------------------------------------------
 # tests that need qmake
@@ -5913,6 +5948,11 @@ if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
    fi
 else
    echo "Debug .................. $CFG_DEBUG"
+fi
+if [ -n "$PKG_CONFIG" ]; then
+    echo "pkg-config ............. yes"
+else
+    echo "pkg-config ............. no"
 fi
 [ "$CFG_DBUS" = "no" ]     && echo "QtDBus module .......... no"
 [ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module .......... yes (run-time)"
