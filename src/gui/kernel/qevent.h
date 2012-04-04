@@ -243,6 +243,9 @@ class Q_GUI_EXPORT QKeyEvent : public QInputEvent
 public:
     QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text = QString(),
               bool autorep = false, ushort count = 1);
+    QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
+              quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
+              const QString &text = QString(), bool autorep = false, ushort count = 1);
     ~QKeyEvent();
 
     int key() const { return k; }
@@ -254,22 +257,35 @@ public:
     inline bool isAutoRepeat() const { return autor; }
     inline int count() const { return int(c); }
 
+    inline quint32 nativeScanCode() const { return nScanCode; }
+    inline quint32 nativeVirtualKey() const { return nVirtualKey; }
+    inline quint32 nativeModifiers() const { return nModifiers; }
+
     // Functions for the extended key event information
-    static QKeyEvent *createExtendedKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
+#if QT_DEPRECATED_SINCE(5, 0)
+    static inline QKeyEvent *createExtendedKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
                                              quint32 nativeScanCode, quint32 nativeVirtualKey,
                                              quint32 nativeModifiers,
                                              const QString& text = QString(), bool autorep = false,
-                                             ushort count = 1);
-    inline bool hasExtendedInfo() const { return reinterpret_cast<const QKeyEvent*>(d) == this; }
-    quint32 nativeScanCode() const;
-    quint32 nativeVirtualKey() const;
-    quint32 nativeModifiers() const;
+                                             ushort count = 1)
+    {
+        return new QKeyEvent(type, key, modifiers,
+                             nativeScanCode, nativeVirtualKey, nativeModifiers,
+                             text, autorep, count);
+    }
+
+    inline bool hasExtendedInfo() const { return true; }
+#endif
 
 protected:
     QString txt;
     int k;
+    quint32 nScanCode;
+    quint32 nVirtualKey;
+    quint32 nModifiers;
     ushort c;
-    uint autor:1;
+    ushort autor:1;
+    // ushort reserved:15;
 };
 
 

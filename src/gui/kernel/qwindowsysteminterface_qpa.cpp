@@ -180,7 +180,7 @@ bool QWindowSystemInterface::tryHandleSynchronousExtendedShortcutEvent(QWindow *
 {
     QGuiApplicationPrivate::modifier_buttons = mods;
 
-    QKeyEventEx qevent(QEvent::ShortcutOverride, k, mods, text, autorep, count, nativeScanCode, nativeVirtualKey, nativeModifiers);
+    QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
     qevent.setTimestamp(timestamp);
     return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(w, &qevent);
 }

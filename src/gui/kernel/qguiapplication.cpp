@@ -1122,8 +1122,9 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     if (!window)
         return;
 
-    QKeyEventEx ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount,
-                   e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers);
+    QKeyEvent ev(e->keyType, e->key, e->modifiers,
+                 e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers,
+                 e->unicode, e->repeat, e->repeatCount);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(window, &ev);
 }
