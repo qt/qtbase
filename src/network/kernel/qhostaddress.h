@@ -123,6 +123,7 @@ public:
 
     static QPair<QHostAddress, int> parseSubnet(const QString &subnet);
 
+    friend Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed = 0);
 protected:
     QScopedPointer<QHostAddressPrivate> d;
 };
@@ -133,9 +134,6 @@ inline bool operator ==(QHostAddress::SpecialAddress address1, const QHostAddres
 #ifndef QT_NO_DEBUG_STREAM
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, const QHostAddress &);
 #endif
-
-
-Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed = 0);
 
 #ifndef QT_NO_DATASTREAM
 Q_NETWORK_EXPORT QDataStream &operator<<(QDataStream &, const QHostAddress &);

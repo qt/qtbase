@@ -323,6 +323,8 @@ void tst_QHostAddress::compare()
     QFETCH(bool, result);
 
     QCOMPARE(first == second, result);
+    if (result == true)
+        QVERIFY(qHash(first) == qHash(second));
 }
 
 void tst_QHostAddress::assignment()
