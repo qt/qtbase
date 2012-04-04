@@ -119,13 +119,13 @@
 */
 
 /*!
-    \fn bool QWaitCondition::wait(QMutex *mutex, unsigned long time)
+    \fn bool QWaitCondition::wait(QMutex *lockedMutex, unsigned long time)
 
-    Releases the locked \a mutex and waits on the wait condition.  The
-    \a mutex must be initially locked by the calling thread. If \a
-    mutex is not in a locked state, this function returns
-    immediately. If \a mutex is a recursive mutex, this function
-    returns immediately. The \a mutex will be unlocked, and the
+    Releases the \a lockedMutex and waits on the wait condition.  The
+    \a lockedMutex must be initially locked by the calling thread. If \a
+    lockedMutex is not in a locked state, this function returns
+    immediately. If \a lockedMutex is a recursive mutex, this function
+    returns immediately. The \a lockedMutex will be unlocked, and the
     calling thread will block until either of these conditions is met:
 
     \list
@@ -137,7 +137,7 @@
        wait timed out.
     \endlist
 
-    The mutex will be returned to the same locked state. This
+    The \a lockedMutex will be returned to the same locked state. This
     function is provided to allow the atomic transition from the
     locked state to the wait state.
 
@@ -145,15 +145,15 @@
 */
 
 /*!
-    \fn bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
+    \fn bool QWaitCondition::wait(QReadWriteLock *lockedReadWriteLock, unsigned long time)
     \since 4.4
 
-    Releases the locked \a readWriteLock and waits on the wait
-    condition.  The \a readWriteLock must be initially locked by the
-    calling thread. If \a readWriteLock is not in a locked state, this
-    function returns immediately. The \a readWriteLock must not be
+    Releases the \a lockedReadWriteLock and waits on the wait
+    condition.  The \a lockedReadWriteLock must be initially locked by the
+    calling thread. If \a lockedReadWriteLock is not in a locked state, this
+    function returns immediately. The \a lockedReadWriteLock must not be
     locked recursively, otherwise this function will not release the
-    lock properly. The \a readWriteLock will be unlocked, and the
+    lock properly. The \a lockedReadWriteLock will be unlocked, and the
     calling thread will block until either of these conditions is met:
 
     \list
@@ -165,7 +165,7 @@
        wait timed out.
     \endlist
 
-    The \a readWriteLock will be returned to the same locked
+    The \a lcokedReadWriteLock will be returned to the same locked
     state. This function is provided to allow the atomic transition
     from the locked state to the wait state.
 
