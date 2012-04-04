@@ -1330,11 +1330,6 @@ void QString::realloc(int alloc)
     }
 }
 
-void QString::realloc()
-{
-    realloc(d->size);
-}
-
 void QString::expand(int i)
 {
     int sz = d->size;
@@ -2823,7 +2818,7 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
     if (isEmpty() && rx2.indexIn(*this) == -1)
         return *this;
 
-    realloc();
+    realloc(d->size);
 
     int index = 0;
     int numCaptures = rx2.captureCount();
@@ -2986,7 +2981,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     if (!iterator.hasNext()) // no matches at all
         return *this;
 
-    realloc();
+    realloc(d->size);
 
     int numCaptures = re.captureCount();
 
@@ -5088,8 +5083,10 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
 
 const ushort *QString::utf16() const
 {
-    if (IS_RAW_DATA(d))
-        const_cast<QString*>(this)->realloc();   // ensure '\\0'-termination for ::fromRawData strings
+    if (IS_RAW_DATA(d)) {
+        // ensure '\0'-termination for ::fromRawData strings
+        const_cast<QString*>(this)->realloc(d->size);
+    }
     return d->data();
 }
 

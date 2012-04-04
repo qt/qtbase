@@ -651,7 +651,6 @@ private:
 
     static int grow(int);
     static void free(Data *);
-    void realloc();
     void realloc(int alloc);
     void expand(int i);
     void updateProperties() const;
@@ -748,7 +747,7 @@ inline QChar *QString::data()
 inline const QChar *QString::constData() const
 { return reinterpret_cast<const QChar*>(d->data()); }
 inline void QString::detach()
-{ if (d->ref.isShared() || (d->offset != sizeof(QStringData))) realloc(); }
+{ if (d->ref.isShared() || (d->offset != sizeof(QStringData))) realloc(d->size); }
 inline bool QString::isDetached() const
 { return !d->ref.isShared(); }
 inline QString &QString::operator=(const QLatin1String &s)
@@ -925,7 +924,7 @@ inline void QString::reserve(int asize)
 inline void QString::squeeze()
 {
     if (d->ref.isShared() || d->size < int(d->alloc))
-        realloc();
+        realloc(d->size);
 
     if (d->capacityReserved) {
         // cannot set unconditionally, since d could be shared_null or
