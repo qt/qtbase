@@ -555,8 +555,12 @@ static const uint *QT_FASTCALL fetchUntransformedRGB16(uint *buffer, const Opera
                                                        int length)
 {
     const quint16 *scanLine = (const quint16 *)data->texture.scanLine(y) + x;
+#ifdef QT_HAVE_MIPS_DSPR2
+    qConvertRgb16To32_asm_mips_dspr2(buffer, scanLine, length);
+#else
     for (int i = 0; i < length; ++i)
         buffer[i] = qConvertRgb16To32(scanLine[i]);
+#endif
     return buffer;
 }
 
