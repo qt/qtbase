@@ -149,6 +149,17 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QNetworkSession::UsagePolicies
+
+    These flags allow the system to inform the application of network usage restrictions that
+    may be in place.
+
+    \value NoPolicy                     No policy in force, usage is unrestricted.
+    \value NoBackgroundTrafficPolicy    Background network traffic (not user initiated) should be avoided
+                                        for example to save battery or data charges
+*/
+
+/*!
     \fn void QNetworkSession::stateChanged(QNetworkSession::State state)
 
     This signal is emitted whenever the state of the network session changes.
@@ -222,6 +233,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn void QNetworkSession::usagePoliciesChanged(UsagePolicies)
+
+    This signal is emitted when the usage policies in force are changed by the system.
+*/
+
+/*!
     Constructs a session based on \a connectionConfig with the given \a parent.
 
     \sa QNetworkConfiguration
@@ -247,6 +264,8 @@ QNetworkSession::QNetworkSession(const QNetworkConfiguration &connectionConfig, 
                         this, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)));
                 connect(d, SIGNAL(newConfigurationActivated()),
                         this, SIGNAL(newConfigurationActivated()));
+                connect(d, SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)),
+                        this, SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)));
                 break;
             }
         }
@@ -254,6 +273,7 @@ QNetworkSession::QNetworkSession(const QNetworkConfiguration &connectionConfig, 
 
     qRegisterMetaType<QNetworkSession::State>();
     qRegisterMetaType<QNetworkSession::SessionError>();
+    qRegisterMetaType<QNetworkSession::UsagePolicies>();
 }
 
 /*!
@@ -651,6 +671,26 @@ quint64 QNetworkSession::bytesReceived() const
 quint64 QNetworkSession::activeTime() const
 {
     return d ? d->activeTime() : Q_UINT64_C(0);
+}
+
+/*!
+    Returns the network usage policies currently in force by the system.
+*/
+QNetworkSession::UsagePolicies QNetworkSession::usagePolicies() const
+{
+    return d ? d->usagePolicies() : QNetworkSession::NoPolicy;
+}
+
+/*!
+    \internal
+    Change usage policies for unit testing.
+    In normal use, the policies are published by the bearer plugin
+*/
+void QNetworkSessionPrivate::setUsagePolicies(QNetworkSession &session, QNetworkSession::UsagePolicies policies)
+{
+    if (!session.d)
+        return;
+    session.d->setUsagePolicies(policies);
 }
 
 /*!

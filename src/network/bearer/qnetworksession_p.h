@@ -103,6 +103,10 @@ public:
     virtual quint64 bytesReceived() const = 0;
     virtual quint64 activeTime() const = 0;
 
+    virtual QNetworkSession::UsagePolicies usagePolicies() const = 0;
+    virtual void setUsagePolicies(QNetworkSession::UsagePolicies) = 0;
+
+    static void setUsagePolicies(QNetworkSession&, QNetworkSession::UsagePolicies); //for unit testing
 protected:
     inline QNetworkConfigurationPrivatePointer privateConfiguration(const QNetworkConfiguration &config) const
     {
@@ -124,6 +128,7 @@ Q_SIGNALS:
     void closed();
     void newConfigurationActivated();
     void preferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless);
+    void usagePoliciesChanged(QNetworkSession::UsagePolicies);
 
 protected:
     QNetworkSession *q;
