@@ -1242,7 +1242,7 @@ void QString::resize(int size)
     } else {
         if (d->ref.isShared() || size > int(d->alloc) ||
             (!d->capacityReserved && size < d->size && size < int(d->alloc) >> 1))
-            realloc(size, true);
+            reallocData(size, true);
         if (int(d->alloc) >= size) {
             d->size = size;
             d->data()[size] = '\0';
@@ -1300,8 +1300,7 @@ void QString::resize(int size)
     \sa reserve(), capacity()
 */
 
-// ### Qt 5: rename reallocData() to avoid confusion. 197625
-void QString::realloc(int alloc, bool grow)
+void QString::reallocData(int alloc, bool grow)
 {
     if (grow)
         alloc = qAllocMore((alloc+1) * sizeof(QChar), sizeof(Data)) / sizeof(QChar) - 1;
@@ -1532,7 +1531,7 @@ QString &QString::append(const QString &str)
             operator=(str);
         } else {
             if (d->ref.isShared() || d->size + str.d->size > int(d->alloc))
-                realloc(d->size + str.d->size, true);
+                reallocData(d->size + str.d->size, true);
             memcpy(d->data() + d->size, str.d->data(), str.d->size * sizeof(QChar));
             d->size += str.d->size;
             d->data()[d->size] = '\0';
@@ -1552,7 +1551,7 @@ QString &QString::append(const QLatin1String &str)
     if (s) {
         int len = str.size();
         if (d->ref.isShared() || d->size + len > int(d->alloc))
-            realloc(d->size + len, true);
+            reallocData(d->size + len, true);
         ushort *i = d->data() + d->size;
         while ((*i++ = *s++))
             ;
@@ -1595,7 +1594,7 @@ QString &QString::append(const QLatin1String &str)
 QString &QString::append(QChar ch)
 {
     if (d->ref.isShared() || d->size + 1 > int(d->alloc))
-        realloc(d->size + 1, true);
+        reallocData(d->size + 1, true);
     d->data()[d->size++] = ch.unicode();
     d->data()[d->size] = '\0';
     return *this;
@@ -2816,7 +2815,7 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
     if (isEmpty() && rx2.indexIn(*this) == -1)
         return *this;
 
-    realloc(d->size);
+    reallocData(d->size);
 
     int index = 0;
     int numCaptures = rx2.captureCount();
@@ -2979,7 +2978,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     if (!iterator.hasNext()) // no matches at all
         return *this;
 
-    realloc(d->size);
+    reallocData(d->size);
 
     int numCaptures = re.captureCount();
 
@@ -5083,7 +5082,7 @@ const ushort *QString::utf16() const
 {
     if (IS_RAW_DATA(d)) {
         // ensure '\0'-termination for ::fromRawData strings
-        const_cast<QString*>(this)->realloc(d->size);
+        const_cast<QString*>(this)->reallocData(d->size);
     }
     return d->data();
 }
