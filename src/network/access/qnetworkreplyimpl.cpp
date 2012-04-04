@@ -105,8 +105,11 @@ void QNetworkReplyImplPrivate::_q_startOperation()
             QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
                              q, SLOT(_q_networkSessionFailed()));
 
-            if (!session->isOpen())
+            if (!session->isOpen()) {
+                session->setSessionProperty(QStringLiteral("ConnectInBackground"),
+                    backend->request().attribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(false)));
                 session->open();
+            }
         } else {
             qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
             state = Working;
