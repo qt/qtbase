@@ -51,6 +51,7 @@
 
 #include <qlocale.h>
 #include <locale.h>
+#include <qhash.h>
 
 Q_DECLARE_METATYPE(qlonglong)
 
@@ -4928,6 +4929,13 @@ void tst_QString::compare()
     QCOMPARE(sign(QString::compare(s1, r2, Qt::CaseInsensitive)), cir);
     QCOMPARE(sign(QStringRef::compare(r1, r2, Qt::CaseSensitive)), csr);
     QCOMPARE(sign(QStringRef::compare(r1, r2, Qt::CaseInsensitive)), cir);
+
+    if (csr == 0) {
+        QVERIFY(qHash(s1) == qHash(s2));
+        QVERIFY(qHash(s1) == qHash(r2));
+        QVERIFY(qHash(r1) == qHash(s2));
+        QVERIFY(qHash(r1) == qHash(r2));
+    }
 
     if (!cir) {
         QCOMPARE(s1.toCaseFolded(), s2.toCaseFolded());
