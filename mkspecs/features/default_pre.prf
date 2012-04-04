@@ -16,13 +16,16 @@ CONFIG = lex yacc warn_on debug exceptions $$CONFIG
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
 
     isEmpty(MODULE_BASE_OUTDIR): MODULE_BASE_OUTDIR = $$OUT_PWD
-    MSG = $$quote($$QMAKE_SYNCQT -qtdir $$[QT_HOST_DATA/get] $$QTFWD -generator $$MAKEFILE_GENERATOR -outdir $$MODULE_BASE_OUTDIR $$_PRO_FILE_PWD_)
+    MSG = $$quote($$QMAKE_SYNCQT -qtdir $$[QT_HOST_DATA/get] $$QTFWD -outdir $$MODULE_BASE_OUTDIR $$_PRO_FILE_PWD_)
     !silent:message($$MSG)
     system($$MSG) {
         # success! Nothing to do
     } else {
         error("Failed to run: $$MSG")
     }
+
+    # Do configure tests now. Fatal tests have a non zero return.
+    system("perl $$[QT_HOST_BINS/get]/qtmodule-configtests $$_PRO_FILE_PWD_ $$OUT_PWD $$[QT_HOST_PREFIX/get] $$MAKEFILE_GENERATOR")|error("Aborting.")
 
     unset(QTFWD)
 }
