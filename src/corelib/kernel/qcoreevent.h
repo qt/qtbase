@@ -283,7 +283,9 @@ public:
     };
 
     explicit QEvent(Type type);
+    QEvent(const QEvent &other);
     virtual ~QEvent();
+    QEvent &operator=(const QEvent &other);
     inline Type type() const { return static_cast<Type>(t); }
     inline bool spontaneous() const { return spont; }
 

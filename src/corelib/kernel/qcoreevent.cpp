@@ -284,6 +284,45 @@ QEvent::QEvent(Type type)
 {}
 
 /*!
+    \internal
+    Attempts to copy the \a other event.
+
+    Copying events is a bad idea, yet some Qt 4 code does it (notably,
+    QApplication and the state machine).
+ */
+QEvent::QEvent(const QEvent &other)
+    : d(other.d), t(other.t), posted(other.posted), spont(other.spont),
+      m_accept(other.m_accept)
+{
+    if (t != QEvent::DeferredDelete) {
+        // if QEventPrivate becomes available, make sure to implement a
+        // virtual QEventPrivate *clone() const; function so we can copy here
+        Q_ASSERT_X(!d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
+    }
+}
+
+/*!
+    \internal
+    Attempts to copy the \a other event.
+
+    Copying events is a bad idea, yet some Qt 4 code does it (notably,
+    QApplication and the state machine).
+ */
+QEvent &QEvent::operator=(const QEvent &other)
+{
+    if (t != QEvent::DeferredDelete) {
+        // if QEventPrivate becomes available, make sure to implement a
+        // virtual QEventPrivate *clone() const; function so we can copy here
+        Q_ASSERT_X(!other.d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
+    }
+    t = other.t;
+    posted = other.posted;
+    spont = other.spont;
+    m_accept = other.m_accept;
+    return *this;
+}
+
+/*!
     Destroys the event. If it was \link
     QCoreApplication::postEvent() posted \endlink,
     it will be removed from the list of events to be posted.
@@ -293,6 +332,8 @@ QEvent::~QEvent()
 {
     if (posted && QCoreApplication::instance())
         QCoreApplicationPrivate::removePostedEvent(this);
+    if (t != QEvent::DeferredDelete)
+        Q_ASSERT_X(!d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
 }
 
 
