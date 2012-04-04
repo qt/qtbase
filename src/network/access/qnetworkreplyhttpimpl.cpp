@@ -1536,6 +1536,18 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
     }
     state = Working;
 
+#ifndef QT_NO_BEARERMANAGEMENT
+    // Do not start background requests if they are not allowed by session policy
+    QSharedPointer<QNetworkSession> session(manager->d_func()->networkSession);
+    QVariant isBackground = request.attribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(false));
+    if (isBackground.toBool() && session && session->usagePolicies().testFlag(QNetworkSession::NoBackgroundTrafficPolicy)) {
+        error(QNetworkReply::BackgroundRequestNotAllowedError,
+            QCoreApplication::translate("QNetworkReply", "Background request not allowed."));
+        finished();
+        return;
+    }
+#endif
+
     if (!start()) {
 #ifndef QT_NO_BEARERMANAGEMENT
         // backend failed to start because the session state is not Connected.

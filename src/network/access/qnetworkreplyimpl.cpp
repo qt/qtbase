@@ -90,6 +90,18 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     }
 
+#ifndef QT_NO_BEARERMANAGEMENT
+    // Do not start background requests if they are not allowed by session policy
+    QSharedPointer<QNetworkSession> session(manager->d_func()->networkSession);
+    QVariant isBackground = backend->request().attribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(false));
+    if (isBackground.toBool() && session && session->usagePolicies().testFlag(QNetworkSession::NoBackgroundTrafficPolicy)) {
+        error(QNetworkReply::BackgroundRequestNotAllowedError,
+            QCoreApplication::translate("QNetworkReply", "Background request not allowed."));
+        finished();
+        return;
+    }
+#endif
+
     if (!backend->start()) {
 #ifndef QT_NO_BEARERMANAGEMENT
         // backend failed to start because the session state is not Connected.
@@ -97,17 +109,14 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         // state changes.
         state = WaitingForSession;
 
-        QNetworkSession *session = manager->d_func()->networkSession.data();
-
         if (session) {
             Q_Q(QNetworkReplyImpl);
 
-            QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
+            QObject::connect(session.data(), SIGNAL(error(QNetworkSession::SessionError)),
                              q, SLOT(_q_networkSessionFailed()));
 
             if (!session->isOpen()) {
-                session->setSessionProperty(QStringLiteral("ConnectInBackground"),
-                    backend->request().attribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(false)));
+                session->setSessionProperty(QStringLiteral("ConnectInBackground"), isBackground);
                 session->open();
             }
         } else {
