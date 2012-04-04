@@ -370,7 +370,7 @@ public:
 
     inline QString &operator+=(QChar c) {
         if (d->ref.isShared() || d->size + 1 > int(d->alloc))
-            reallocData(d->size + 1, true);
+            reallocData(uint(d->size) + 2u, true);
         d->data()[d->size++] = c.unicode();
         d->data()[d->size] = '\0';
         return *this;
@@ -646,7 +646,7 @@ private:
     Data *d;
 
     static void free(Data *);
-    void reallocData(int alloc, bool grow = false);
+    void reallocData(uint alloc, bool grow = false);
     void expand(int i);
     void updateProperties() const;
     QString multiArg(int numArgs, const QString **args) const;
@@ -742,7 +742,7 @@ inline QChar *QString::data()
 inline const QChar *QString::constData() const
 { return reinterpret_cast<const QChar*>(d->data()); }
 inline void QString::detach()
-{ if (d->ref.isShared() || (d->offset != sizeof(QStringData))) reallocData(d->size); }
+{ if (d->ref.isShared() || (d->offset != sizeof(QStringData))) reallocData(uint(d->size) + 1u); }
 inline bool QString::isDetached() const
 { return !d->ref.isShared(); }
 inline QString &QString::operator=(const QLatin1String &s)
@@ -908,7 +908,7 @@ inline QString::~QString() { if (!d->ref.deref()) free(d); }
 inline void QString::reserve(int asize)
 {
     if (d->ref.isShared() || asize > int(d->alloc))
-        reallocData(asize);
+        reallocData(uint(asize) + 1u);
 
     if (!d->capacityReserved) {
         // cannot set unconditionally, since d could be the shared_null/shared_empty (which is const)
@@ -919,7 +919,7 @@ inline void QString::reserve(int asize)
 inline void QString::squeeze()
 {
     if (d->ref.isShared() || d->size < int(d->alloc))
-        reallocData(d->size);
+        reallocData(uint(d->size) + 1u);
 
     if (d->capacityReserved) {
         // cannot set unconditionally, since d could be shared_null or
