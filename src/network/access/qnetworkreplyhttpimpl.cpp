@@ -1726,8 +1726,13 @@ void QNetworkReplyHttpImplPrivate::_q_networkSessionFailed()
     // Abort waiting and working replies.
     if (state == WaitingForSession || state == Working) {
         state = Working;
-        error(QNetworkReplyImpl::UnknownNetworkError,
-              QCoreApplication::translate("QNetworkReply", "Network session error."));
+        QSharedPointer<QNetworkSession> session(manager->d_func()->networkSession);
+        QString errorStr;
+        if (session)
+            errorStr = session->errorString();
+        else
+            errorStr = QCoreApplication::translate("QNetworkReply", "Network session error.");
+        error(QNetworkReplyImpl::NetworkSessionFailedError, errorStr);
         finished();
     }
 }
