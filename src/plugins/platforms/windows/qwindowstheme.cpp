@@ -215,7 +215,7 @@ static inline QPalette toolTipPalette(const QPalette &systemPalette)
 static inline QPalette menuPalette(const QPalette &systemPalette)
 {
     QPalette result(systemPalette);
-    const QColor menuColor(getSysColor(COLOR_INFOBK));
+    const QColor menuColor(getSysColor(COLOR_MENU));
     const QColor menuTextColor(getSysColor(COLOR_MENUTEXT));
     const QColor disabled(getSysColor(COLOR_GRAYTEXT));
     const bool isFlat = booleanSystemParametersInfo(SPI_GETFLATMENU, false);
