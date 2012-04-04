@@ -359,9 +359,7 @@ void QQnxIntegration::createDisplays()
         QObject::connect(m_screenEventHandler, SIGNAL(windowClosed(void *)),
                          screen, SLOT(windowClosed(void *)));
 
-#ifndef Q_OS_BLACKBERRY
         QObject::connect(m_navigatorEventHandler, SIGNAL(rotationChanged(int)), screen, SLOT(setRotation(int)));
-#endif
     }
 }
 
