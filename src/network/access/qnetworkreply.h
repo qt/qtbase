@@ -78,6 +78,7 @@ public:
         SslHandshakeFailedError,
         TemporaryNetworkFailureError,
         NetworkSessionFailedError,
+        BackgroundRequestNotAllowedError,
         UnknownNetworkError = 99,
 
         // proxy errors (101-199):

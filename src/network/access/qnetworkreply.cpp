@@ -134,6 +134,9 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     \value NetworkSessionFailedError   the connection was broken due
     to disconnection from the network or failure to start the network.
 
+    \value BackgroundRequestNotAllowedError the background request
+    is not currently allowed due to platform policy.
+
     \value ProxyConnectionRefusedError the connection to the proxy
     server was refused (the proxy server is not accepting requests)
 
