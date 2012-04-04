@@ -607,7 +607,7 @@ public:
     int toInt(const QString &s, bool *ok = 0) const;
     uint toUInt(const QString &s, bool *ok = 0) const;
     qlonglong toLongLong(const QString &s, bool *ok = 0) const;
-    qlonglong toULongLong(const QString &s, bool *ok = 0) const;
+    qulonglong toULongLong(const QString &s, bool *ok = 0) const;
     float toFloat(const QString &s, bool *ok = 0) const;
     double toDouble(const QString &s, bool *ok = 0) const;
 
