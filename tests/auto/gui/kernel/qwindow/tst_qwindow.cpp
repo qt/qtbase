@@ -67,6 +67,7 @@ private slots:
     void close();
     void activateAndClose();
     void mouseEventSequence();
+    void windowModality();
 
     void initTestCase()
     {
@@ -756,6 +757,37 @@ void tst_QWindow::mouseEventSequence()
     QCOMPARE(window.mouseReleasedCount, 4);
     QCOMPARE(window.mouseDoubleClickedCount, 0);
     QCOMPARE(window.mouseSequenceSignature, QLatin1String("prprprpr"));
+}
+
+void tst_QWindow::windowModality()
+{
+    qRegisterMetaType<Qt::WindowModality>("Qt::WindowModality");
+
+    QWindow window;
+    QSignalSpy spy(&window, SIGNAL(windowModalityChanged(Qt::WindowModality)));
+
+    QCOMPARE(window.windowModality(), Qt::NonModal);
+    window.setWindowModality(Qt::NonModal);
+    QCOMPARE(window.windowModality(), Qt::NonModal);
+    QCOMPARE(spy.count(), 0);
+
+    window.setWindowModality(Qt::WindowModal);
+    QCOMPARE(window.windowModality(), Qt::WindowModal);
+    QCOMPARE(spy.count(), 1);
+    window.setWindowModality(Qt::WindowModal);
+    QCOMPARE(window.windowModality(), Qt::WindowModal);
+    QCOMPARE(spy.count(), 1);
+
+    window.setWindowModality(Qt::ApplicationModal);
+    QCOMPARE(window.windowModality(), Qt::ApplicationModal);
+    QCOMPARE(spy.count(), 2);
+    window.setWindowModality(Qt::ApplicationModal);
+    QCOMPARE(window.windowModality(), Qt::ApplicationModal);
+    QCOMPARE(spy.count(), 2);
+
+    window.setWindowModality(Qt::NonModal);
+    QCOMPARE(window.windowModality(), Qt::NonModal);
+    QCOMPARE(spy.count(), 3);
 }
 
 #include <tst_qwindow.moc>
