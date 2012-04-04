@@ -799,11 +799,6 @@ const QString::Null QString::null = { };
 const QStaticStringData<1> QString::shared_null = { Q_STATIC_STRING_DATA_HEADER_INITIALIZER(0), { 0 } };
 const QStaticStringData<1> QString::shared_empty = { Q_STATIC_STRING_DATA_HEADER_INITIALIZER(0), { 0 } };
 
-int QString::grow(int size)
-{
-    return qAllocMore(size * sizeof(QChar), sizeof(Data)) / sizeof(QChar);
-}
-
 /*! \typedef QString::ConstIterator
 
     Qt-style synonym for QString::const_iterator.
@@ -1247,7 +1242,7 @@ void QString::resize(int size)
     } else {
         if (d->ref.isShared() || size > int(d->alloc) ||
             (!d->capacityReserved && size < d->size && size < int(d->alloc) >> 1))
-            realloc(grow(size));
+            realloc(size, true);
         if (int(d->alloc) >= size) {
             d->size = size;
             d->data()[size] = '\0';
@@ -1306,8 +1301,11 @@ void QString::resize(int size)
 */
 
 // ### Qt 5: rename reallocData() to avoid confusion. 197625
-void QString::realloc(int alloc)
+void QString::realloc(int alloc, bool grow)
 {
+    if (grow)
+        alloc = qAllocMore((alloc+1) * sizeof(QChar), sizeof(Data)) / sizeof(QChar) - 1;
+
     if (d->ref.isShared() || IS_RAW_DATA(d)) {
         Data *x = static_cast<Data *>(::malloc(sizeof(Data) + (alloc+1) * sizeof(QChar)));
         Q_CHECK_PTR(x);
@@ -1534,7 +1532,7 @@ QString &QString::append(const QString &str)
             operator=(str);
         } else {
             if (d->ref.isShared() || d->size + str.d->size > int(d->alloc))
-                realloc(grow(d->size + str.d->size));
+                realloc(d->size + str.d->size, true);
             memcpy(d->data() + d->size, str.d->data(), str.d->size * sizeof(QChar));
             d->size += str.d->size;
             d->data()[d->size] = '\0';
@@ -1554,7 +1552,7 @@ QString &QString::append(const QLatin1String &str)
     if (s) {
         int len = str.size();
         if (d->ref.isShared() || d->size + len > int(d->alloc))
-            realloc(grow(d->size + len));
+            realloc(d->size + len, true);
         ushort *i = d->data() + d->size;
         while ((*i++ = *s++))
             ;
@@ -1597,7 +1595,7 @@ QString &QString::append(const QLatin1String &str)
 QString &QString::append(QChar ch)
 {
     if (d->ref.isShared() || d->size + 1 > int(d->alloc))
-        realloc(grow(d->size + 1));
+        realloc(d->size + 1, true);
     d->data()[d->size++] = ch.unicode();
     d->data()[d->size] = '\0';
     return *this;

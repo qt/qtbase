@@ -372,7 +372,7 @@ public:
 
     inline QString &operator+=(QChar c) {
         if (d->ref.isShared() || d->size + 1 > int(d->alloc))
-            realloc(grow(d->size + 1));
+            realloc(d->size + 1, true);
         d->data()[d->size++] = c.unicode();
         d->data()[d->size] = '\0';
         return *this;
@@ -649,9 +649,8 @@ private:
     static const QStaticStringData<1> shared_empty;
     Data *d;
 
-    static int grow(int);
     static void free(Data *);
-    void realloc(int alloc);
+    void realloc(int alloc, bool grow = false);
     void expand(int i);
     void updateProperties() const;
     QString multiArg(int numArgs, const QString **args) const;

@@ -406,7 +406,7 @@ private:
     static const QStaticByteArrayData<1> shared_null;
     static const QStaticByteArrayData<1> shared_empty;
     Data *d;
-    void realloc(int alloc);
+    void realloc(int alloc, bool grow = false);
     void expand(int i);
     QByteArray nulTerminated() const;
 
