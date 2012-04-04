@@ -43,6 +43,7 @@
 
 #include <qbytearray.h>
 #include <qfile.h>
+#include <qhash.h>
 #include <limits.h>
 #include <private/qtools_p.h>
 #if defined(Q_OS_WINCE)
@@ -1557,6 +1558,9 @@ void tst_QByteArray::compare()
     QCOMPARE(str2 <= str1, isGreater || isEqual);
     QCOMPARE(str2 >= str1, isLess || isEqual);
     QCOMPARE(str2 != str1, !isEqual);
+
+    if (isEqual)
+        QVERIFY(qHash(str1) == qHash(str2));
 }
 
 void tst_QByteArray::compareCharStar_data()
