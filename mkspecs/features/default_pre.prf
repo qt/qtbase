@@ -26,9 +26,6 @@ CONFIG = lex yacc warn_on debug exceptions $$CONFIG
         error("Failed to run: $$MSG")
     }
 
-    # Do configure tests now. Fatal tests have a non zero return.
-    system("perl $$[QT_HOST_BINS/get]/qtmodule-configtests $$_PRO_FILE_PWD_ $$OUT_PWD $$[QT_HOST_PREFIX/get] $$MAKEFILE_GENERATOR")|error("Aborting.")
-
     unset(QTFWD)
 }
 

@@ -80,11 +80,6 @@ syncqt.files = $$PWD/bin/syncqt
 win32:syncqt.files += $$PWD/bin/syncqt.bat
 INSTALLS += syncqt
 
-#qtmodule-configtests
-configtests.path = $$[QT_HOST_BINS]
-configtests.files = $$PWD/bin/qtmodule-configtests
-INSTALLS += configtests
-
 #mkspecs
 mkspecs.path = $$[QT_HOST_DATA]/mkspecs
 mkspecs.files = \
