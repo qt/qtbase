@@ -116,6 +116,7 @@ typedef struct _COMDLG_FILTERSPEC
 #define FOS_DEFAULTNOMINIMODE  0x20000000
 #define FOS_FORCEPREVIEWPANEON 0x40000000
 
+#if !defined(__MINGW64_VERSION_MAJOR) || (__MINGW64_VERSION_MAJOR < 2)
 typedef int GETPROPERTYSTOREFLAGS;
 #define GPS_DEFAULT               0x00000000
 #define GPS_HANDLERPROPERTIESONLY 0x00000001
@@ -126,6 +127,7 @@ typedef int GETPROPERTYSTOREFLAGS;
 #define GPS_DELAYCREATION         0x00000020
 #define GPS_BESTEFFORT            0x00000040
 #define GPS_MASK_VALID            0x0000007F
+#endif
 
 typedef int (QT_WIN_CALLBACK* BFFCALLBACK)(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData);
 // message from browser
@@ -288,7 +290,9 @@ DECLARE_INTERFACE_(IFileOpenDialog, IFileDialog)
     STDMETHOD(GetSelectedItems)(THIS_ IShellItemArray **ppsai) PURE;
 };
 
+#if !defined(__MINGW64_VERSION_MAJOR) || (__MINGW64_VERSION_MAJOR < 2)
 typedef IUnknown IPropertyStore;
+#endif
 typedef IUnknown IFileOperationProgressSink;
 
 DECLARE_INTERFACE_(IFileSaveDialog, IFileDialog)
