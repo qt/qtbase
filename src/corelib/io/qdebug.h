@@ -91,6 +91,8 @@ public:
             delete stream;
         }
     }
+    inline void swap(QDebug &other) { qSwap(stream, other.stream); }
+
     inline QDebug &space() { stream->space = true; stream->ts << ' '; return *this; }
     inline QDebug &nospace() { stream->space = false; return *this; }
     inline QDebug &maybeSpace() { if (stream->space) stream->ts << ' '; return *this; }

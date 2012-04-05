@@ -430,6 +430,14 @@ QFileInfo &QFileInfo::operator=(const QFileInfo &fileinfo)
 }
 
 /*!
+    \fn void QFileInfo::swap(QFileInfo &other)
+    \since 5.0
+
+    Swaps this file info with \a other. This function is very fast and
+    never fails.
+*/
+
+/*!
     Sets the file that the QFileInfo provides information about to \a
     file.
 

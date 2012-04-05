@@ -210,6 +210,8 @@ public:
 
     QDateTime &operator=(const QDateTime &other);
 
+    inline void swap(QDateTime &other) { qSwap(d, other.d); }
+
     bool isNull() const;
     bool isValid() const;
 

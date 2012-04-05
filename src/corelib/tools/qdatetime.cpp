@@ -2208,6 +2208,13 @@ QDateTime &QDateTime::operator=(const QDateTime &other)
     d = other.d;
     return *this;
 }
+/*!
+    \fn void QDateTime::swap(QDateTime &other)
+    \since 5.0
+
+    Swaps this date-time with \a other. This operation is very fast
+    and never fails.
+*/
 
 /*!
     Returns true if both the date and the time are null; otherwise

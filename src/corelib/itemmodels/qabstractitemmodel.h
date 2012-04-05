@@ -116,6 +116,7 @@ public:
     inline bool operator!=(const QPersistentModelIndex &other) const
     { return !operator==(other); }
     QPersistentModelIndex &operator=(const QPersistentModelIndex &other);
+    inline void swap(QPersistentModelIndex &other) { qSwap(d, other.d); }
     bool operator==(const QModelIndex &other) const;
     bool operator!=(const QModelIndex &other) const;
     QPersistentModelIndex &operator=(const QModelIndex &other);

@@ -72,6 +72,8 @@ public:
     ~QProcessEnvironment();
     QProcessEnvironment &operator=(const QProcessEnvironment &other);
 
+    inline void swap(QProcessEnvironment &other) { qSwap(d, other.d); }
+
     bool operator==(const QProcessEnvironment &other) const;
     inline bool operator!=(const QProcessEnvironment &other) const
     { return !(*this == other); }

@@ -1711,6 +1711,14 @@ QDir &QDir::operator=(const QString &path)
 }
 
 /*!
+    \fn void QDir::swap(QDir &other)
+    \since 5.0
+
+    Swaps this QDir instance with \a other. This function is very fast
+    and never fails.
+*/
+
+/*!
     \fn bool QDir::operator!=(const QDir &dir) const
 
     Returns true if directory \a dir and this directory have different

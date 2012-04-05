@@ -359,6 +359,13 @@ QUrlQuery &QUrlQuery::operator =(const QUrlQuery &other)
 }
 
 /*!
+    \fn void QUrlQuery::swap(QUrlQuery &other)
+
+    Swaps this URL query instance with \a other. This function is very
+    fast and never fails.
+*/
+
+/*!
     Destroys this QUrlQuery object.
 */
 QUrlQuery::~QUrlQuery()

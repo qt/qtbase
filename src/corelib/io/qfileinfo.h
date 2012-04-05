@@ -74,6 +74,10 @@ public:
     inline QFileInfo&operator=(QFileInfo &&other)
     { qSwap(d_ptr, other.d_ptr); return *this; }
 #endif
+
+    inline void swap(QFileInfo &other)
+    { qSwap(d_ptr, other.d_ptr); }
+
     bool operator==(const QFileInfo &fileinfo) const;
     inline bool operator!=(const QFileInfo &fileinfo) const { return !(operator==(fileinfo)); }
 

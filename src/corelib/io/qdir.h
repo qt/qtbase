@@ -115,6 +115,9 @@ public:
     { qSwap(d_ptr, other.d_ptr); return *this; }
 #endif
 
+    inline void swap(QDir &other)
+    { qSwap(d_ptr, other.d_ptr); }
+
     void setPath(const QString &path);
     QString path() const;
     QString absolutePath() const;
