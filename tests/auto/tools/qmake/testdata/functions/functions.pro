@@ -99,3 +99,7 @@ write_file($$fn, mooadd, append)|message("FAILED: write_file() failed (append)")
 moo += $$mooadd
 mooout = $$cat($$fn, line)
 equals(moo, $$mooout)|message("FAILED: write_file() wrote something wrong when appending")
+
+pn = $$OUT_PWD/testpath/subdir
+mkpath($$pn)|message("FAILED: mkpath() failed")
+exists($$pn)|message("FAILED: mkpath() didn't create anything")

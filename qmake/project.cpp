@@ -124,7 +124,7 @@ enum TestFunc { T_REQUIRES=1, T_GREATERTHAN, T_LESSTHAN, T_EQUALS,
                 T_RETURN, T_BREAK, T_NEXT, T_DEFINED, T_CONTAINS, T_INFILE,
                 T_COUNT, T_ISEMPTY, T_INCLUDE, T_LOAD,
                 T_DEBUG, T_ERROR, T_MESSAGE, T_WARNING, T_LOG,
-                T_IF, T_OPTION, T_CACHE, T_WRITE_FILE, T_TOUCH };
+                T_IF, T_OPTION, T_CACHE, T_MKPATH, T_WRITE_FILE, T_TOUCH };
 QHash<QString, TestFunc> qmake_testFunctions()
 {
     static QHash<QString, TestFunc> *qmake_test_functions = 0;
@@ -161,6 +161,7 @@ QHash<QString, TestFunc> qmake_testFunctions()
         qmake_test_functions->insert("log", T_LOG);
         qmake_test_functions->insert("option", T_OPTION);
         qmake_test_functions->insert("cache", T_CACHE);
+        qmake_test_functions->insert("mkpath", T_MKPATH);
         qmake_test_functions->insert("write_file", T_WRITE_FILE);
         qmake_test_functions->insert("touch", T_TOUCH);
     }
@@ -3074,6 +3075,19 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
 #endif
         }
         return true; }
+    case T_MKPATH:
+        if (args.count() != 1) {
+            fprintf(stderr, "%s:%d: mkpath(name) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+            return false;
+        }
+        if (!QDir::current().mkpath(args.at(0))) {
+            fprintf(stderr, "%s:%d: ERROR creating directory %s\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    QDir::toNativeSeparators(args.at(0)).toLatin1().constData());
+            return false;
+        }
+        return true;
     case T_WRITE_FILE: {
         if (args.count() > 3) {
             fprintf(stderr, "%s:%d: write_file(name, [content var, [append]]) requires one to three arguments.\n",
