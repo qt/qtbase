@@ -71,6 +71,8 @@ public:
     QGlyphRun(const QGlyphRun &other);
     ~QGlyphRun();
 
+    void swap(QGlyphRun &other) { qSwap(d, other.d); }
+
     QRawFont rawFont() const;
     void setRawFont(const QRawFont &rawFont);
 

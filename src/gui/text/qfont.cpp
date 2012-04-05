@@ -739,6 +739,14 @@ QFont &QFont::operator=(const QFont &font)
 }
 
 /*!
+    \fn void QFont::swap(QFont &other)
+    \since 5.0
+
+    Swaps this font instance with \a other. This function is very fast
+    and never fails.
+*/
+
+/*!
     Returns the requested font family name, i.e. the name set in the
     constructor or the last setFont() call.
 
@@ -2292,6 +2300,14 @@ QFontInfo &QFontInfo::operator=(const QFontInfo &fi)
     d = fi.d.data();
     return *this;
 }
+
+/*!
+    \fn void QFontInfo::swap(QFontInfo &other)
+    \since 5.0
+
+    Swaps this font info instance with \a other. This function is very
+    fast and never fails.
+*/
 
 /*!
     Returns the family name of the matched window system font.

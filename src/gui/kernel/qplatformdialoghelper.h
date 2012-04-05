@@ -117,6 +117,8 @@ public:
     QColorDialogOptions &operator=(const QColorDialogOptions &rhs);
     ~QColorDialogOptions();
 
+    void swap(QColorDialogOptions &other) { qSwap(d, other.d); }
+
     QString windowTitle() const;
     void setWindowTitle(const QString &);
 
@@ -170,6 +172,8 @@ public:
     QFontDialogOptions(const QFontDialogOptions &rhs);
     QFontDialogOptions &operator=(const QFontDialogOptions &rhs);
     ~QFontDialogOptions();
+
+    void swap(QFontDialogOptions &other) { qSwap(d, other.d); }
 
     QString windowTitle() const;
     void setWindowTitle(const QString &);
@@ -225,6 +229,8 @@ public:
     QFileDialogOptions(const QFileDialogOptions &rhs);
     QFileDialogOptions &operator=(const QFileDialogOptions &rhs);
     ~QFileDialogOptions();
+
+    void swap(QFileDialogOptions &other) { qSwap(d, other.d); }
 
     QString windowTitle() const;
     void setWindowTitle(const QString &);

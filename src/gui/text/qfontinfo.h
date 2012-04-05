@@ -59,6 +59,8 @@ public:
 
     QFontInfo &operator=(const QFontInfo &);
 
+    void swap(QFontInfo &other) { qSwap(d, other.d); }
+
     QString family() const;
     QString styleName() const;
     int pixelSize() const;

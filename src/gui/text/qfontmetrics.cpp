@@ -214,6 +214,14 @@ QFontMetrics &QFontMetrics::operator=(const QFontMetrics &fm)
 }
 
 /*!
+    \fn void QFontMetrics::swap(QFontMetrics &other)
+    \since 5.0
+
+    Swaps this font metrics instance with \a other. This function is
+    very fast and never fails.
+*/
+
+/*!
     Returns true if \a other is equal to this object; otherwise
     returns false.
 
@@ -1003,6 +1011,16 @@ QFontMetricsF &QFontMetricsF::operator=(const QFontMetrics &other)
     d = other.d.data();
     return *this;
 }
+
+/*!
+    \fn void QFontMetricsF::swap(QFontMetricsF &other)
+    \since 5.0
+
+    Swaps this font metrics instance with \a other. This function is
+    very fast and never fails.
+*/
+
+
 
 /*!
     Constructs a font metrics object for \a font.

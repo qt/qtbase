@@ -81,6 +81,8 @@ public:
 
     QRawFont &operator=(const QRawFont &other);
 
+    void swap(QRawFont &other) { qSwap(d, other.d); }
+
     bool operator==(const QRawFont &other) const;
     inline bool operator!=(const QRawFont &other) const
     { return !operator==(other); }

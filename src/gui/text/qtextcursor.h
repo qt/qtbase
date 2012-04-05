@@ -79,6 +79,8 @@ public:
     QTextCursor &operator=(const QTextCursor &other);
     ~QTextCursor();
 
+    void swap(QTextCursor &other) { qSwap(d, other.d); }
+
     bool isNull() const;
 
     enum MoveMode {

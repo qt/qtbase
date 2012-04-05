@@ -69,6 +69,8 @@ public:
     QStaticText(const QStaticText &other);
     ~QStaticText();
 
+    void swap(QStaticText &other) { qSwap(data, other.data); }
+
     void setText(const QString &text);
     QString text() const;
 

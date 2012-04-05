@@ -72,6 +72,8 @@ public:
     { qSwap(d, other.d); return *this; }
 #endif
 
+    void swap(QFontMetrics &other) { qSwap(d, other.d); }
+
     int ascent() const;
     int descent() const;
     int height() const;
@@ -139,6 +141,9 @@ public:
     inline QFontMetricsF &operator=(QFontMetricsF &&other)
     { qSwap(d, other.d); return *this; }
 #endif
+
+    void swap(QFontMetricsF &other) { qSwap(d, other.d); }
+
     qreal ascent() const;
     qreal descent() const;
     qreal height() const;

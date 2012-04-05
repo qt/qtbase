@@ -153,6 +153,14 @@ QGlyphRun &QGlyphRun::operator=(const QGlyphRun &other)
 }
 
 /*!
+    \fn void QGlyphRun::swap(QGlyphRun &other)
+    \since 5.0
+
+    Swaps this glyph run instance with \a other. This function is very
+    fast and never fails.
+*/
+
+/*!
     Compares \a other to this QGlyphRun object. Returns true if the list of glyph indexes,
     the list of positions and the font are all equal, otherwise returns false.
 */

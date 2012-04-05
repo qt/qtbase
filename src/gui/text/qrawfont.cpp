@@ -186,6 +186,14 @@ QRawFont &QRawFont::operator=(const QRawFont &other)
 }
 
 /*!
+  \fn void QRawFont::operator=(QRawFont &other)
+  \since 5.0
+
+  Swaps this raw font with \a other. This function is very fast and
+  never fails.
+*/
+
+/*!
    Returns true if the QRawFont is valid and false otherwise.
 */
 bool QRawFont::isValid() const

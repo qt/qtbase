@@ -224,6 +224,14 @@ QStaticText &QStaticText::operator=(const QStaticText &other)
 }
 
 /*!
+    \fn void QStaticText::swap(QStaticText &other)
+    \since 5.0
+
+    Swaps this static text instance with \a other. This function is
+    very fast and never fails.
+*/
+
+/*!
     Compares \a other to this QStaticText. Returns true if the texts, fonts and text widths
     are equal.
 */

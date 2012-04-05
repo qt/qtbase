@@ -161,6 +161,9 @@ public:
     QFont(const QFont &);
     ~QFont();
 
+    void swap(QFont &other)
+    { qSwap(d, other.d); qSwap(resolve_mask, other.resolve_mask); }
+
     QString family() const;
     void setFamily(const QString &);
 

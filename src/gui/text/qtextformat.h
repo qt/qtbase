@@ -291,6 +291,9 @@ public:
     QTextFormat &operator=(const QTextFormat &rhs);
     ~QTextFormat();
 
+    void swap(QTextFormat &other)
+    { qSwap(d, other.d); qSwap(format_type, other.format_type); }
+
     void merge(const QTextFormat &other);
 
     inline bool isValid() const { return type() != InvalidFormat; }
