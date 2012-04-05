@@ -101,6 +101,10 @@
 #    undef QT_HAVE_3DNOW
 #  endif
 
+#  if defined(Q_CC_MSVC) && _MSC_VER >= 1400
+#    define Q_COMPILER_VARIADIC_MACROS
+#  endif
+
 #if defined(Q_CC_MSVC) && _MSC_VER >= 1600
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_AUTO_TYPE
