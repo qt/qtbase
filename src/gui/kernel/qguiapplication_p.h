@@ -121,6 +121,8 @@ public:
 
     static void processExposeEvent(QWindowSystemInterfacePrivate::ExposeEvent *e);
 
+    static void processFileOpenEvent(QWindowSystemInterfacePrivate::FileOpenEvent *e);
+
     static QPlatformDragQtResponse processDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
     static QPlatformDropQtResponse processDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
 

@@ -80,6 +80,8 @@
 #include <qurl.h>
 #include <qdebug.h>
 #include <qguiapplication.h>
+#include "qt_mac_p.h"
+#include <QtGui/QWindowSystemInterface>
 
 QT_USE_NAMESPACE
 
@@ -217,7 +219,7 @@ static void cleanupCocoaApplicationDelegate()
 {
     Q_UNUSED(filenames);
     Q_UNUSED(sender);
-/*
+
     for (NSString *fileName in filenames) {
         QString qtFileName = QCFString::toQString(fileName);
         if (inLaunch) {
@@ -228,14 +230,13 @@ static void cleanupCocoaApplicationDelegate()
             if (qApp->arguments().contains(qtFileName))
                 continue;
         }
-        QFileOpenEvent foe(qtFileName);
-        qt_sendSpontaneousEvent(qAppInstance(), &foe);
+        QWindowSystemInterface::handleFileOpenEvent(qtFileName);
     }
 
     if (reflectionDelegate &&
         [reflectionDelegate respondsToSelector:@selector(application:openFiles:)])
         [reflectionDelegate application:sender openFiles:filenames];
-*/
+
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender

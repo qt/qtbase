@@ -148,6 +148,8 @@ public:
 
     static void handleThemeChange(QWindow *tlw);
 
+    static void handleFileOpenEvent(const QString& fileName);
+
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags);
     static int windowSystemEventsQueued();

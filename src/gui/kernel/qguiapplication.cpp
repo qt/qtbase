@@ -1412,6 +1412,15 @@ void QGuiApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::Cl
     QGuiApplication::sendSpontaneousEvent(e->window.data(), &event);
 }
 
+void QGuiApplicationPrivate::processFileOpenEvent(QWindowSystemInterfacePrivate::FileOpenEvent *e)
+{
+    if (e->fileName.isEmpty())
+        return;
+
+    QFileOpenEvent event(e->fileName);
+    QGuiApplication::sendSpontaneousEvent(qApp, &event);
+}
+
 Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k)
 {
     return qHash(k.device) + k.touchPointId;

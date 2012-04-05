@@ -68,7 +68,8 @@ public:
         ScreenLogicalDotsPerInch,
         ScreenRefreshRate,
         ThemeChange,
-        Expose
+        Expose,
+        FileOpen
     };
 
     class WindowSystemEvent {
@@ -255,6 +256,14 @@ public:
         QWeakPointer<QWindow> exposed;
         bool isExposed;
         QRegion region;
+    };
+
+    class FileOpenEvent : public WindowSystemEvent {
+    public:
+        FileOpenEvent(const QString& fileName)
+            : WindowSystemEvent(FileOpen), fileName(fileName)
+        { }
+        QString fileName;
     };
 
     static QList<WindowSystemEvent *> windowSystemEventQueue;

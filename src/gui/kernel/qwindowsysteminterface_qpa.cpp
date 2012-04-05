@@ -520,4 +520,10 @@ bool QWindowSystemInterface::handleNativeEvent(QWindow *window, const QByteArray
     return QGuiApplicationPrivate::processNativeEvent(window, eventType, message, result);
 }
 
+void QWindowSystemInterface::handleFileOpenEvent(const QString& fileName)
+{
+    QWindowSystemInterfacePrivate::FileOpenEvent e(fileName);
+    QGuiApplicationPrivate::processWindowSystemEvent(&e);
+}
+
 QT_END_NAMESPACE
