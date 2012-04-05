@@ -70,6 +70,9 @@ public:
     QNetworkCookie(const QNetworkCookie &other);
     ~QNetworkCookie();
     QNetworkCookie &operator=(const QNetworkCookie &other);
+
+    void swap(QNetworkCookie &other) { qSwap(d, other.d); }
+
     bool operator==(const QNetworkCookie &other) const;
     inline bool operator!=(const QNetworkCookie &other) const
     { return !(*this == other); }

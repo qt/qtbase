@@ -511,6 +511,14 @@ QNetworkProxy &QNetworkProxy::operator=(const QNetworkProxy &other)
 }
 
 /*!
+    \fn void QNetworkProxy::swap(QNetworkProxy &other)
+    \since 5.0
+
+    Swaps this network proxy instance with \a other. This function is
+    very fast and never fails.
+*/
+
+/*!
     Sets the proxy type for this instance to be \a type.
 
     Note that changing the type of a proxy does not change
@@ -1130,6 +1138,14 @@ QNetworkProxyQuery &QNetworkProxyQuery::operator=(const QNetworkProxyQuery &othe
     d = other.d;
     return *this;
 }
+
+/*!
+    \fn void QNetworkProxyQuery::swap(QNetworkProxyQuery &other)
+    \since 5.0
+
+    Swaps this network proxy query instance with \a other. This
+    function is very fast and never fails.
+*/
 
 /*!
     Returns true if this QNetworkProxyQuery object contains the same

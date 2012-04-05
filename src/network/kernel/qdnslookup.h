@@ -69,6 +69,8 @@ public:
     QDnsDomainNameRecord(const QDnsDomainNameRecord &other);
     ~QDnsDomainNameRecord();
 
+    void swap(QDnsDomainNameRecord &other) { qSwap(d, other.d); }
+
     QString name() const;
     quint32 timeToLive() const;
     QString value() const;
@@ -86,6 +88,8 @@ public:
     QDnsHostAddressRecord();
     QDnsHostAddressRecord(const QDnsHostAddressRecord &other);
     ~QDnsHostAddressRecord();
+
+    void swap(QDnsHostAddressRecord &other) { qSwap(d, other.d); }
 
     QString name() const;
     quint32 timeToLive() const;
@@ -105,6 +109,8 @@ public:
     QDnsMailExchangeRecord(const QDnsMailExchangeRecord &other);
     ~QDnsMailExchangeRecord();
 
+    void swap(QDnsMailExchangeRecord &other) { qSwap(d, other.d); }
+
     QString exchange() const;
     QString name() const;
     quint16 preference() const;
@@ -123,6 +129,8 @@ public:
     QDnsServiceRecord();
     QDnsServiceRecord(const QDnsServiceRecord &other);
     ~QDnsServiceRecord();
+
+    void swap(QDnsServiceRecord &other) { qSwap(d, other.d); }
 
     QString name() const;
     quint16 port() const;
@@ -144,6 +152,8 @@ public:
     QDnsTextRecord();
     QDnsTextRecord(const QDnsTextRecord &other);
     ~QDnsTextRecord();
+
+    void swap(QDnsTextRecord &other) { qSwap(d, other.d); }
 
     QString name() const;
     quint32 timeToLive() const;

@@ -114,6 +114,8 @@ public:
     ~QNetworkRequest();
     QNetworkRequest &operator=(const QNetworkRequest &other);
 
+    inline void swap(QNetworkRequest &other) { qSwap(d, other.d); }
+
     bool operator==(const QNetworkRequest &other) const;
     inline bool operator!=(const QNetworkRequest &other) const
     { return !operator==(other); }

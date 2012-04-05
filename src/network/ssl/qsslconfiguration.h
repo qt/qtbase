@@ -82,6 +82,9 @@ public:
     ~QSslConfiguration();
     QSslConfiguration &operator=(const QSslConfiguration &other);
 
+    inline void swap(QSslConfiguration &other)
+    { qSwap(d, other.d); }
+
     bool operator==(const QSslConfiguration &other) const;
     inline bool operator!=(const QSslConfiguration &other) const
     { return !(*this == other); }

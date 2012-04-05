@@ -149,6 +149,14 @@ QSslConfiguration &QSslConfiguration::operator=(const QSslConfiguration &other)
 }
 
 /*!
+    \fn void QSslConfiguration::swap(QSslConfiguration &other)
+    \since 5.0
+
+    Swaps this SSL configuration instance with \a other. This function
+    is very fast and never fails.
+*/
+
+/*!
     Returns true if this QSslConfiguration object is equal to \a
     other.
 

@@ -191,6 +191,14 @@ QSslCertificate &QSslCertificate::operator=(const QSslCertificate &other)
 }
 
 /*!
+    \fn void QSslCertificate::swap(QSslCertificate &other)
+    \since 5.0
+
+    Swaps this certificate instance with \a other. This function is
+    very fast and never fails.
+*/
+
+/*!
     Returns true if this certificate is the same as \a other; otherwise
     returns false.
 */

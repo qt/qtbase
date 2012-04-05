@@ -87,6 +87,10 @@ public:
     QSslCertificate(const QSslCertificate &other);
     ~QSslCertificate();
     QSslCertificate &operator=(const QSslCertificate &other);
+
+    inline void swap(QSslCertificate &other)
+    { qSwap(d, other.d); }
+
     bool operator==(const QSslCertificate &other) const;
     inline bool operator!=(const QSslCertificate &other) const { return !operator==(other); }
 

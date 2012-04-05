@@ -545,6 +545,12 @@ QDnsDomainNameRecord &QDnsDomainNameRecord::operator=(const QDnsDomainNameRecord
     d = other.d;
     return *this;
 }
+/*!
+    \fn void QDnsDomainNameRecord::swap(QDnsDomainNameRecord &other)
+
+    Swaps this domain-name record instance with \a other. This
+    function is very fast and never fails.
+*/
 
 /*!
     \class QDnsHostAddressRecord
@@ -623,6 +629,12 @@ QDnsHostAddressRecord &QDnsHostAddressRecord::operator=(const QDnsHostAddressRec
     d = other.d;
     return *this;
 }
+/*!
+    \fn void QDnsHostAddressRecord::swap(QDnsHostAddressRecord &other)
+
+    Swaps this host address record instance with \a other. This
+    function is very fast and never fails.
+*/
 
 /*!
     \class QDnsMailExchangeRecord
@@ -712,6 +724,12 @@ QDnsMailExchangeRecord &QDnsMailExchangeRecord::operator=(const QDnsMailExchange
     d = other.d;
     return *this;
 }
+/*!
+    \fn void QDnsMailExchangeRecord::swap(QDnsMailExchangeRecord &other)
+
+    Swaps this mail exchange record with \a other. This function is
+    very fast and never fails.
+*/
 
 /*!
     \class QDnsServiceRecord
@@ -826,6 +844,12 @@ QDnsServiceRecord &QDnsServiceRecord::operator=(const QDnsServiceRecord &other)
     d = other.d;
     return *this;
 }
+/*!
+    \fn void QDnsServiceRecord::swap(QDnsServiceRecord &other)
+
+    Swaps this service record instance with \a other. This function is
+    very fast and never fails.
+*/
 
 /*!
     \class QDnsTextRecord
@@ -906,6 +930,12 @@ QDnsTextRecord &QDnsTextRecord::operator=(const QDnsTextRecord &other)
     d = other.d;
     return *this;
 }
+/*!
+    \fn void QDnsTextRecord::swap(QDnsTextRecord &other)
+
+    Swaps this text record instance with \a other. This function is
+    very fast and never fails.
+*/
 
 void QDnsLookupPrivate::_q_lookupFinished(const QDnsLookupReply &_reply)
 {

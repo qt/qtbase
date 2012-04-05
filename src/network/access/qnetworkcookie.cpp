@@ -144,6 +144,14 @@ QNetworkCookie &QNetworkCookie::operator=(const QNetworkCookie &other)
 }
 
 /*!
+    \fn void QNetworkCookie::swap(QNetworkCookie &other)
+    \since 5.0
+
+    Swaps this cookie with \a other. This function is very fast and
+    never fails.
+*/
+
+/*!
     \fn bool QNetworkCookie::operator!=(const QNetworkCookie &other) const
 
     Returns true if this cookie is not equal to \a other.

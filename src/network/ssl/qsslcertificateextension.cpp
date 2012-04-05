@@ -166,6 +166,13 @@ QSslCertificateExtension &QSslCertificateExtension::operator=(const QSslCertific
 }
 
 /*!
+    \fn void QSslCertificateExtension::swap(QSslCertificateExtension &other)
+
+    Swaps this certificate extension instance with \a other. This
+    function is very fast and never fails.
+*/
+
+/*!
     Returns the ASN.1 OID of this extension.
  */
 QString QSslCertificateExtension::oid() const

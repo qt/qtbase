@@ -124,6 +124,14 @@ QSslCipher &QSslCipher::operator=(const QSslCipher &other)
 }
 
 /*!
+    \fn void QSslCipher::swap(QSslCipher &other)
+    \since 5.0
+
+    Swaps this cipher instance with \a other. This function is very
+    fast and never fails.
+*/
+
+/*!
     Returns true if this cipher is the same as \a other; otherwise,
     false is returned.
 */

@@ -149,6 +149,14 @@ QNetworkCacheMetaData &QNetworkCacheMetaData::operator=(const QNetworkCacheMetaD
 }
 
 /*!
+    \fn void QNetworkCacheMetaData::swap(QNetworkCacheMetaData &other)
+    \since 5.0
+
+    Swaps this metadata instance with \a other. This function is very
+    fast and never fails.
+ */
+
+/*!
     Returns true if this meta data is equal to the \a other meta data; otherwise returns false.
 
     \sa operator!=()

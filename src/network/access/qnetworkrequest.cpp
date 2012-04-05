@@ -396,6 +396,14 @@ QNetworkRequest &QNetworkRequest::operator=(const QNetworkRequest &other)
 }
 
 /*!
+    \fn void QNetworkRequest::swap(QNetworkRequest &other)
+    \since 5.0
+
+    Swaps this network request with \a other. This function is very
+    fast and never fails.
+*/
+
+/*!
     Returns the URL this network request is referring to.
 
     \sa setUrl()

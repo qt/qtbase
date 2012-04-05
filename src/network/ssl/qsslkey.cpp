@@ -313,6 +313,14 @@ QSslKey &QSslKey::operator=(const QSslKey &other)
 }
 
 /*!
+    \fn void QSslKey::swap(QSslKey &other)
+    \since 5.0
+
+    Swaps this ssl key with \a other. This function is very fast and
+    never fails.
+*/
+
+/*!
     Returns true if this is a null key; otherwise false.
 
     \sa clear()

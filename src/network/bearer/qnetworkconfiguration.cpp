@@ -234,6 +234,14 @@ QNetworkConfiguration &QNetworkConfiguration::operator=(const QNetworkConfigurat
 }
 
 /*!
+    \fn void QNetworkConfiguration::swap(QNetworkConfiguration &other)
+    \since 5.0
+
+    Swaps this network configuration with \a other. This function is
+    very fast and never fails.
+*/
+
+/*!
     Returns true, if this configuration is the same as the \a other
     configuration given; otherwise returns false.
 */

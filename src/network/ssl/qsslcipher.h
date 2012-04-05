@@ -63,6 +63,10 @@ public:
     QSslCipher(const QSslCipher &other);
     ~QSslCipher();
     QSslCipher &operator=(const QSslCipher &other);
+
+    inline void swap(QSslCipher &other)
+    { qSwap(d, other.d); }
+
     bool operator==(const QSslCipher &other) const;
     inline bool operator!=(const QSslCipher &other) const { return !operator==(other); }
 

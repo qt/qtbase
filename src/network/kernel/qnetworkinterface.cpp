@@ -185,6 +185,14 @@ QNetworkAddressEntry &QNetworkAddressEntry::operator=(const QNetworkAddressEntry
 }
 
 /*!
+    \fn void QNetworkAddressEntry::swap(QNetworkAddressEntry &other)
+    \since 5.0
+
+    Swaps this network address entry instance with \a other. This
+    function is very fast and never fails.
+*/
+
+/*!
     Destroys this QNetworkAddressEntry object.
 */
 QNetworkAddressEntry::~QNetworkAddressEntry()
@@ -415,6 +423,14 @@ QNetworkInterface &QNetworkInterface::operator=(const QNetworkInterface &other)
     d = other.d;
     return *this;
 }
+
+/*!
+    \fn void QNetworkInterface::swap(QNetworkInterface &other)
+    \since 5.0
+
+    Swaps this network interface instance with \a other. This function
+    is very fast and never fails.
+*/
 
 /*!
     Returns true if this QNetworkInterface object contains valid

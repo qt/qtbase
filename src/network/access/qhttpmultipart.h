@@ -62,6 +62,9 @@ public:
     QHttpPart(const QHttpPart &other);
     ~QHttpPart();
     QHttpPart &operator=(const QHttpPart &other);
+
+    void swap(QHttpPart &other) { qSwap(d, other.d); }
+
     bool operator==(const QHttpPart &other) const;
     inline bool operator!=(const QHttpPart &other) const
     { return !operator==(other); }

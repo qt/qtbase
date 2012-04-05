@@ -63,6 +63,9 @@ public:
     QNetworkAddressEntry(const QNetworkAddressEntry &other);
     QNetworkAddressEntry &operator=(const QNetworkAddressEntry &other);
     ~QNetworkAddressEntry();
+
+    void swap(QNetworkAddressEntry &other) { qSwap(d, other.d); }
+
     bool operator==(const QNetworkAddressEntry &other) const;
     inline bool operator!=(const QNetworkAddressEntry &other) const
     { return !(*this == other); }
@@ -100,6 +103,8 @@ public:
     QNetworkInterface(const QNetworkInterface &other);
     QNetworkInterface &operator=(const QNetworkInterface &other);
     ~QNetworkInterface();
+
+    void swap(QNetworkInterface &other) { qSwap(d, other.d); }
 
     bool isValid() const;
 

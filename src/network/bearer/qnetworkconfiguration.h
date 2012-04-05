@@ -61,6 +61,8 @@ public:
     QNetworkConfiguration &operator=(const QNetworkConfiguration &other);
     ~QNetworkConfiguration();
 
+    void swap(QNetworkConfiguration &other) { qSwap(d, other.d); }
+
     bool operator==(const QNetworkConfiguration &other) const;
     inline bool operator!=(const QNetworkConfiguration &other) const
     { return !operator==(other); }

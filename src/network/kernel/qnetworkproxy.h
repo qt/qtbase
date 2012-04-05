@@ -86,6 +86,9 @@ public:
 #endif
     ~QNetworkProxyQuery();
     QNetworkProxyQuery &operator=(const QNetworkProxyQuery &other);
+
+    void swap(QNetworkProxyQuery &other) { qSwap(d, other.d); }
+
     bool operator==(const QNetworkProxyQuery &other) const;
     inline bool operator!=(const QNetworkProxyQuery &other) const
     { return !(*this == other); }
@@ -147,6 +150,9 @@ public:
     QNetworkProxy(const QNetworkProxy &other);
     QNetworkProxy &operator=(const QNetworkProxy &other);
     ~QNetworkProxy();
+
+    void swap(QNetworkProxy &other) { qSwap(d, other.d); }
+
     bool operator==(const QNetworkProxy &other) const;
     inline bool operator!=(const QNetworkProxy &other) const
     { return !(*this == other); }

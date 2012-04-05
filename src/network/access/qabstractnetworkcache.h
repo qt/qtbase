@@ -71,6 +71,10 @@ public:
     ~QNetworkCacheMetaData();
 
     QNetworkCacheMetaData &operator=(const QNetworkCacheMetaData &other);
+
+    void swap(QNetworkCacheMetaData &other)
+    { qSwap(d, other.d); }
+
     bool operator==(const QNetworkCacheMetaData &other) const;
     inline bool operator!=(const QNetworkCacheMetaData &other) const
         { return !(*this == other); }

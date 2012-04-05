@@ -173,6 +173,14 @@ QSslError &QSslError::operator=(const QSslError &other)
 }
 
 /*!
+    \fn void QSslError::swap(QSslError &other)
+    \since 5.0
+
+    Swaps this error instance with \a other. This function is very
+    fast and never fails.
+*/
+
+/*!
     \since 4.4
 
     Returns true if this error is equal to \a other; otherwise returns false.

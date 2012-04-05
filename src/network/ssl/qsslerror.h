@@ -94,6 +94,9 @@ public:
 
     QSslError(const QSslError &other);
 
+    inline void swap(QSslError &other)
+    { qSwap(d, other.d); }
+
     ~QSslError();
     QSslError &operator=(const QSslError &other);
     bool operator==(const QSslError &other) const;
