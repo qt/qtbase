@@ -704,11 +704,13 @@ void QWindowsWindow::setVisible(bool visible)
     if (m_data.hwnd) {
         if (visible) {
             show_sys();
+            QWindowSystemInterface::handleSynchronousExposeEvent(window(),
+                                                                 QRect(QPoint(), geometry().size()));
         } else {
             hide_sys();
+            QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRegion());
         }
     }
-    QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
 }
 
 bool QWindowsWindow::isVisible() const
