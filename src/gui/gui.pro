@@ -35,8 +35,6 @@ include(animation/animation.pri)
 
 QMAKE_LIBS += $$QMAKE_LIBS_GUI
 
-DEFINES += Q_INTERNAL_QAPP_SRC
-
 neon:*-g++* {
     DEFINES += QT_HAVE_NEON
     HEADERS += $$NEON_HEADERS

@@ -96,11 +96,9 @@ class Q_WIDGETS_EXPORT QApplication : public QGuiApplication
 
 public:
 
-#ifndef qdoc
     QApplication(int &argc, char **argv, int = ApplicationFlags);
     QT_DEPRECATED QApplication(int &argc, char **argv, bool GUIenabled, int = ApplicationFlags);
     QApplication(int &argc, char **argv, Type, int = ApplicationFlags);
-#endif
     virtual ~QApplication();
 
     static Type type();
@@ -224,13 +222,6 @@ public Q_SLOTS:
 protected:
     bool event(QEvent *);
     bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
-
-
-#if defined(Q_INTERNAL_QAPP_SRC) || defined(qdoc)
-    QApplication(int &argc, char **argv);
-    QT_DEPRECATED QApplication(int &argc, char **argv, bool GUIenabled);
-    QApplication(int &argc, char **argv, Type);
-#endif
 
 private:
     Q_DISABLE_COPY(QApplication)

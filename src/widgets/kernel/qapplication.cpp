@@ -558,10 +558,6 @@ void QApplicationPrivate::process_cmdline()
     \sa arguments()
 */
 
-QApplication::QApplication(int &argc, char **argv)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, 0x040000))
-{ Q_D(QApplication); d->construct(); }
-
 QApplication::QApplication(int &argc, char **argv, int _internal)
     : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
 { Q_D(QApplication); d->construct(); }
@@ -584,10 +580,6 @@ QApplication::QApplication(int &argc, char **argv, int _internal)
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication.cpp 0
 */
 
-QApplication::QApplication(int &argc, char **argv, bool GUIenabled )
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, GUIenabled ? GuiClient : Tty, 0x040000))
-{ Q_D(QApplication); d->construct(); }
-
 QApplication::QApplication(int &argc, char **argv, bool GUIenabled , int _internal)
     : QGuiApplication(*new QApplicationPrivate(argc, argv, GUIenabled ? GuiClient : Tty, _internal))
 { Q_D(QApplication); d->construct();}
@@ -603,10 +595,6 @@ QApplication::QApplication(int &argc, char **argv, bool GUIenabled , int _intern
     be greater than zero and \a argv must contain at least one valid character
     string.
 */
-QApplication::QApplication(int &argc, char **argv, Type type)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, type, 0x040000))
-{ Q_D(QApplication); d->construct(); }
-
 QApplication::QApplication(int &argc, char **argv, Type type , int _internal)
     : QGuiApplication(*new QApplicationPrivate(argc, argv, type, _internal))
 { Q_D(QApplication); d->construct(); }
