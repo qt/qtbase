@@ -68,6 +68,8 @@ public:
     ~QDBusPendingCall();
     QDBusPendingCall &operator=(const QDBusPendingCall &other);
 
+    void swap(QDBusPendingCall &other) { qSwap(d, other.d); }
+
 #ifndef Q_QDOC
     // pretend that they aren't here
     bool isFinished() const;

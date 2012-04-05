@@ -68,6 +68,9 @@ public:
     QDBusUnixFileDescriptor &operator=(const QDBusUnixFileDescriptor &other);
     ~QDBusUnixFileDescriptor();
 
+    void swap(QDBusUnixFileDescriptor &other)
+    { qSwap(d, other.d); }
+
     bool isValid() const;
 
     int fileDescriptor() const;

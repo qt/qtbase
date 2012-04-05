@@ -187,6 +187,14 @@ QDBusUnixFileDescriptor::~QDBusUnixFileDescriptor()
 }
 
 /*!
+    \fn void QDBusUnixFileDescriptor::swap(QDBusUnixFileDescriptor &other)
+    \since 5.0
+
+    Swaps this file descriptor instance with \a other. This function
+    is very fast and never fails.
+*/
+
+/*!
     Returns true if this Unix file descriptor is valid. A valid Unix file
     descriptor is not -1.
 
