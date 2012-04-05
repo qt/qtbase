@@ -181,6 +181,7 @@ namespace std { \
 QT_BEGIN_NAMESPACE
 
 #define Q_DECLARE_SHARED(TYPE)                                          \
+Q_DECLARE_TYPEINFO(TYPE, Q_MOVABLE_TYPE); \
 template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \
 { value1.swap(value2); } \
 Q_DECLARE_SHARED_STL(TYPE)

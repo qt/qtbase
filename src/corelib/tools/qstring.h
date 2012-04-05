@@ -1161,7 +1161,6 @@ Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QString &);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QString &);
 #endif
 
-Q_DECLARE_TYPEINFO(QString, Q_MOVABLE_TYPE);
 Q_DECLARE_SHARED(QString)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QString::SectionFlags)
 

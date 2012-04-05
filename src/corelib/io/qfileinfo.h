@@ -150,7 +150,7 @@ private:
     }
 };
 
-Q_DECLARE_TYPEINFO(QFileInfo, Q_MOVABLE_TYPE);
+Q_DECLARE_SHARED(QFileInfo)
 
 typedef QList<QFileInfo> QFileInfoList;
 

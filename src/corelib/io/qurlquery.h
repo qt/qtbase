@@ -111,7 +111,6 @@ public:
     inline DataPtr &data_ptr() { return d; }
 };
 
-Q_DECLARE_TYPEINFO(QUrlQuery, Q_MOVABLE_TYPE);
 Q_DECLARE_SHARED(QUrlQuery)
 
 #if QT_DEPRECATED_SINCE(5,0)

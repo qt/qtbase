@@ -128,7 +128,6 @@ public:
 };
 
 Q_DECLARE_SHARED(QIcon)
-Q_DECLARE_TYPEINFO(QIcon, Q_MOVABLE_TYPE);
 
 #if !defined(QT_NO_DATASTREAM)
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QIcon &);

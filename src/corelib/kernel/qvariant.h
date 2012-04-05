@@ -576,7 +576,6 @@ inline QT_DEPRECATED bool qVariantCanConvert(const QVariant &variant)
 
 #endif
 Q_DECLARE_SHARED(QVariant)
-Q_DECLARE_TYPEINFO(QVariant, Q_MOVABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant &);

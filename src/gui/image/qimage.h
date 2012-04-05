@@ -304,7 +304,6 @@ public:
 };
 
 Q_DECLARE_SHARED(QImage)
-Q_DECLARE_TYPEINFO(QImage, Q_MOVABLE_TYPE);
 
 // Inline functions...
 

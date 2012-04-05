@@ -329,7 +329,6 @@ public:
     inline DataPtr &data_ptr() { return d; }
 };
 
-Q_DECLARE_TYPEINFO(QUrl, Q_MOVABLE_TYPE);
 Q_DECLARE_SHARED(QUrl)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::ComponentFormattingOptions)
 //Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::FormattingOptions)

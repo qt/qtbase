@@ -145,7 +145,6 @@ public:
 inline void QBrush::setColor(Qt::GlobalColor acolor)
 { setColor(QColor(acolor)); }
 
-Q_DECLARE_TYPEINFO(QBrush, Q_MOVABLE_TYPE);
 Q_DECLARE_SHARED(QBrush)
 
 /*****************************************************************************
