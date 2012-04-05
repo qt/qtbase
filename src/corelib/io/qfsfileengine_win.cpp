@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#define _POSIX_
 #include "qplatformdefs.h"
 #include "private/qabstractfileengine_p.h"
 #include "private/qfsfileengine_p.h"
