@@ -47,7 +47,9 @@
 #  if defined(Q_OS_WINCE)
 #    include <qt_windows.h>
 #  endif
-#  include <intrin.h>
+#  if !defined(Q_CC_GNU)
+#    include <intrin.h>
+#  endif
 #elif defined(Q_OS_LINUX) && defined(__arm__)
 #include "private/qcore_unix_p.h"
 
@@ -377,12 +379,16 @@ static const uint minFeature = None
                                ;
 
 #ifdef Q_OS_WIN
+#if defined(Q_CC_GNU)
+#  define ffs __builtin_ffs
+#else
 int ffs(int i)
 {
     unsigned long result;
     return _BitScanForward(&result, i) ? result : 0;
 }
 #endif
+#endif // Q_OS_WIN
 
 uint qDetectCPUFeatures()
 {

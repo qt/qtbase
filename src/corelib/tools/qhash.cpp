@@ -169,7 +169,7 @@ static uint qt_create_qhash_seed()
     }
 #endif // Q_OS_UNIX
 
-#ifdef Q_OS_WIN32
+#if defined(Q_OS_WIN32) && !defined(Q_CC_GNU)
     errno_t err;
     err = rand_s(&seed);
     if (err == 0)
