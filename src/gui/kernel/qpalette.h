@@ -74,11 +74,17 @@ public:
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QPalette &operator=(QPalette &&other)
     {
-        resolve_mask = other.resolve_mask;
-        current_group = other.current_group;
+        data.resolve_mask = other.data.resolve_mask;
+        data.current_group = other.data.current_group;
         qSwap(d, other.d); return *this;
     }
 #endif
+
+    void swap(QPalette &other) {
+        qSwap(d, other.d);
+        qSwap(for_faster_swapping_dont_use, other.for_faster_swapping_dont_use);
+    }
+
     operator QVariant() const;
 
     // Do not change the order, the serialization format depends on it
@@ -94,8 +100,8 @@ public:
                      Foreground = WindowText, Background = Window
                    };
 
-    inline ColorGroup currentColorGroup() const { return static_cast<ColorGroup>(current_group); }
-    inline void setCurrentColorGroup(ColorGroup cg) { current_group = cg; }
+    inline ColorGroup currentColorGroup() const { return static_cast<ColorGroup>(data.current_group); }
+    inline void setCurrentColorGroup(ColorGroup cg) { data.current_group = cg; }
 
     inline const QColor &color(ColorGroup cg, ColorRole cr) const
     { return brush(cg, cr).color(); }
@@ -145,8 +151,8 @@ public:
     qint64 cacheKey() const;
 
     QPalette resolve(const QPalette &) const;
-    inline uint resolve() const { return resolve_mask; }
-    inline void resolve(uint mask) { resolve_mask = mask; }
+    inline uint resolve() const { return data.resolve_mask; }
+    inline void resolve(uint mask) { data.resolve_mask = mask; }
 
 private:
     void setColorGroup(ColorGroup cr, const QBrush &windowText, const QBrush &button,
@@ -170,8 +176,13 @@ private:
     void detach();
 
     QPalettePrivate *d;
-    uint current_group : 4;
-    uint resolve_mask : 28;
+    union {
+        struct {
+            uint current_group : 4;
+            uint resolve_mask : 28;
+        } data;
+        quint32 for_faster_swapping_dont_use;
+    };
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &s, const QPalette &p);
 };
 

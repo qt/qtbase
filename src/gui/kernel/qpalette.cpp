@@ -512,8 +512,10 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     \sa QApplication::setPalette(), QApplication::palette()
 */
 QPalette::QPalette()
-    : d(0), current_group(Active), resolve_mask(0)
+    : d(0)
 {
+    data.current_group = Active;
+    data.resolve_mask = 0;
     // Initialize to application palette if present, else default to black.
     // This makes it possible to instantiate QPalette outside QGuiApplication,
     // for example in the platform plugins.
@@ -523,7 +525,7 @@ QPalette::QPalette()
     } else {
         init();
         qt_palette_from_color(*this, Qt::black);
-        resolve_mask = 0;
+        data.resolve_mask = 0;
     }
 }
 
@@ -627,11 +629,9 @@ QPalette::QPalette(const QColor &button, const QColor &window)
     This constructor is fast thanks to \l{implicit sharing}.
 */
 QPalette::QPalette(const QPalette &p)
+    : d(p.d), data(p.data)
 {
-    d = p.d;
     d->ref.ref();
-    resolve_mask = p.resolve_mask;
-    current_group = p.current_group;
 }
 
 /*!
@@ -646,8 +646,8 @@ QPalette::~QPalette()
 /*!\internal*/
 void QPalette::init() {
     d = new QPalettePrivate;
-    resolve_mask = 0;
-    current_group = Active; //as a default..
+    data.resolve_mask = 0;
+    data.current_group = Active; //as a default..
 }
 
 /*!
@@ -659,13 +659,20 @@ void QPalette::init() {
 QPalette &QPalette::operator=(const QPalette &p)
 {
     p.d->ref.ref();
-    resolve_mask = p.resolve_mask;
-    current_group = p.current_group;
+    data = p.data;
     if(!d->ref.deref())
         delete d;
     d = p.d;
     return *this;
 }
+
+/*!
+    \fn void QPalette::swap(QPalette &other)
+    \since 5.0
+
+    Swaps this palette instance with \a other. This function is very
+    fast and never fails.
+*/
 
 /*!
    Returns the palette as a QVariant
@@ -697,7 +704,7 @@ const QBrush &QPalette::brush(ColorGroup gr, ColorRole cr) const
     Q_ASSERT(cr < NColorRoles);
     if(gr >= (int)NColorGroups) {
         if(gr == Current) {
-            gr = (ColorGroup)current_group;
+            gr = (ColorGroup)data.current_group;
         } else {
             qWarning("QPalette::brush: Unknown ColorGroup: %d", (int)gr);
             gr = Active;
@@ -732,17 +739,17 @@ void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
         if(cg == All) {
             for(int i = 0; i < (int)NColorGroups; i++)
                 d->br[i][cr] = b;
-            resolve_mask |= (1<<cr);
+            data.resolve_mask |= (1<<cr);
             return;
         } else if(cg == Current) {
-            cg = (ColorGroup)current_group;
+            cg = (ColorGroup)data.current_group;
         } else {
             qWarning("QPalette::setBrush: Unknown ColorGroup: %d", (int)cg);
             cg = Active;
         }
     }
     d->br[cg][cr] = b;
-    resolve_mask |= (1<<cr);
+    data.resolve_mask |= (1<<cr);
 }
 
 /*!
@@ -756,7 +763,7 @@ void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
 bool QPalette::isBrushSet(ColorGroup cg, ColorRole cr) const
 {
     Q_UNUSED(cg);
-    return (resolve_mask & (1<<cr));
+    return (data.resolve_mask & (1<<cr));
 }
 
 /*!
@@ -821,7 +828,7 @@ bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2)
 {
     if(group1 >= (int)NColorGroups) {
         if(group1 == Current) {
-            group1 = (ColorGroup)current_group;
+            group1 = (ColorGroup)data.current_group;
         } else {
             qWarning("QPalette::brush: Unknown ColorGroup(1): %d", (int)group1);
             group1 = Active;
@@ -829,7 +836,7 @@ bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2)
     }
     if(group2 >= (int)NColorGroups) {
         if(group2 == Current) {
-            group2 = (ColorGroup)current_group;
+            group2 = (ColorGroup)data.current_group;
         } else {
             qWarning("QPalette::brush: Unknown ColorGroup(2): %d", (int)group2);
             group2 = Active;
@@ -879,10 +886,10 @@ qint64 QPalette::cacheKey() const
 */
 QPalette QPalette::resolve(const QPalette &other) const
 {
-    if ((*this == other && resolve_mask == other.resolve_mask)
-        || resolve_mask == 0) {
+    if ((*this == other && data.resolve_mask == other.data.resolve_mask)
+        || data.resolve_mask == 0) {
         QPalette o = other;
-        o.resolve_mask = resolve_mask;
+        o.data.resolve_mask = data.resolve_mask;
         return o;
     }
 
@@ -890,7 +897,7 @@ QPalette QPalette::resolve(const QPalette &other) const
     palette.detach();
 
     for(int role = 0; role < (int)NColorRoles; role++)
-        if (!(resolve_mask & (1<<role)))
+        if (!(data.resolve_mask & (1<<role)))
             for(int grp = 0; grp < (int)NColorGroups; grp++)
                 palette.d->br[grp][role] = other.d->br[grp][role];
 
@@ -1032,10 +1039,10 @@ void QPalette::setColorGroup(ColorGroup cg, const QBrush &windowText, const QBru
                   QBrush(Qt::blue), QBrush(Qt::magenta), QBrush(toolTipBase),
                   QBrush(toolTipText));
 
-    resolve_mask &= ~(1 << Highlight);
-    resolve_mask &= ~(1 << HighlightedText);
-    resolve_mask &= ~(1 << LinkVisited);
-    resolve_mask &= ~(1 << Link);
+    data.resolve_mask &= ~(1 << Highlight);
+    data.resolve_mask &= ~(1 << HighlightedText);
+    data.resolve_mask &= ~(1 << LinkVisited);
+    data.resolve_mask &= ~(1 << Link);
 }
 
 
