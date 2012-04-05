@@ -122,8 +122,9 @@ QHash<QString, ExpandFunc> qmake_expandFunctions()
 enum TestFunc { T_REQUIRES=1, T_GREATERTHAN, T_LESSTHAN, T_EQUALS,
                 T_EXISTS, T_EXPORT, T_CLEAR, T_UNSET, T_EVAL, T_CONFIG, T_SYSTEM,
                 T_RETURN, T_BREAK, T_NEXT, T_DEFINED, T_CONTAINS, T_INFILE,
-                T_COUNT, T_ISEMPTY, T_INCLUDE, T_LOAD, T_DEBUG, T_ERROR,
-                T_MESSAGE, T_WARNING, T_IF, T_OPTION, T_CACHE, T_WRITE_FILE, T_TOUCH };
+                T_COUNT, T_ISEMPTY, T_INCLUDE, T_LOAD,
+                T_DEBUG, T_ERROR, T_MESSAGE, T_WARNING, T_LOG,
+                T_IF, T_OPTION, T_CACHE, T_WRITE_FILE, T_TOUCH };
 QHash<QString, TestFunc> qmake_testFunctions()
 {
     static QHash<QString, TestFunc> *qmake_test_functions = 0;
@@ -157,6 +158,7 @@ QHash<QString, TestFunc> qmake_testFunctions()
         qmake_test_functions->insert("error", T_ERROR);
         qmake_test_functions->insert("message", T_MESSAGE);
         qmake_test_functions->insert("warning", T_WARNING);
+        qmake_test_functions->insert("log", T_LOG);
         qmake_test_functions->insert("option", T_OPTION);
         qmake_test_functions->insert("cache", T_CACHE);
         qmake_test_functions->insert("write_file", T_WRITE_FILE);
@@ -2916,6 +2918,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
         QString msg = fixEnvVariables(args[1]);
         debug_msg(args[0].toInt(), "Project DEBUG: %s", msg.toLatin1().constData());
         return true; }
+    case T_LOG:
     case T_ERROR:
     case T_MESSAGE:
     case T_WARNING: {
@@ -2925,13 +2928,17 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
             return false;
         }
         QString msg = fixEnvVariables(args.first());
-        fprintf(stderr, "Project %s: %s\n", func.toUpper().toLatin1().constData(), msg.toLatin1().constData());
-        if(func == "error")
+        if (func_t == T_LOG) {
+            fputs(msg.toLatin1().constData(), stderr);
+        } else {
+            fprintf(stderr, "Project %s: %s\n", func.toUpper().toLatin1().constData(), msg.toLatin1().constData());
+            if (func == "error")
 #if defined(QT_BUILD_QMAKE_LIBRARY)
-            return false;
+                return false;
 #else
-            exit(2);
+                exit(2);
 #endif
+        }
         return true; }
     case T_OPTION:
         if (args.count() != 1) {
