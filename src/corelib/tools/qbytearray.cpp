@@ -1412,7 +1412,7 @@ void QByteArray::resize(int size)
         if (!d->ref.deref())
             free(d);
         d = x;
-    } else if (d == &shared_null.ba || d == &shared_empty.ba) {
+    } else if (d->size == 0 && d->ref.isStatic()) {
         //
         // Optimize the idiom:
         //    QByteArray a;
@@ -1536,9 +1536,9 @@ QByteArray QByteArray::nulTerminated() const
 
 QByteArray &QByteArray::prepend(const QByteArray &ba)
 {
-    if ((d == &shared_null.ba || d == &shared_empty.ba) && !IS_RAW_DATA(ba.d)) {
+    if (d->size == 0 && d->ref.isStatic() && !IS_RAW_DATA(ba.d)) {
         *this = ba;
-    } else if (ba.d != &shared_null.ba) {
+    } else if (ba.d->size != 0) {
         QByteArray tmp = *this;
         *this = ba;
         append(tmp);
@@ -1620,9 +1620,9 @@ QByteArray &QByteArray::prepend(char ch)
 
 QByteArray &QByteArray::append(const QByteArray &ba)
 {
-    if ((d == &shared_null.ba || d == &shared_empty.ba) && !IS_RAW_DATA(ba.d)) {
+    if (d->size == 0 && d->ref.isStatic() && !IS_RAW_DATA(ba.d)) {
         *this = ba;
-    } else if (ba.d != &shared_null.ba) {
+    } else if (ba.d->size != 0) {
         if (d->ref.isShared() || uint(d->size + ba.d->size) + 1u > d->alloc)
             reallocData(uint(d->size + ba.d->size) + 1u, true);
         memcpy(d->data() + d->size, ba.d->data(), ba.d->size);
@@ -2663,7 +2663,7 @@ QByteArray QByteArray::right(int len) const
 
 QByteArray QByteArray::mid(int pos, int len) const
 {
-    if (d == &shared_null.ba || d == &shared_empty.ba || pos > d->size)
+    if ((d->size == 0 && d->ref.isStatic()) || pos > d->size)
         return QByteArray();
     if (len < 0)
         len = d->size - pos;
