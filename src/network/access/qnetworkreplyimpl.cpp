@@ -973,7 +973,7 @@ qint64 QNetworkReplyImpl::readData(char *data, qint64 maxlen)
         if (maxAvail == 0)
             return d->state == QNetworkReplyImplPrivate::Finished ? -1 : 0;
         // FIXME what about "Aborted" state?
-        qMemCopy(data, d->downloadBuffer + d->downloadBufferReadPosition, maxAvail);
+        memcpy(data, d->downloadBuffer + d->downloadBufferReadPosition, maxAvail);
         d->downloadBufferReadPosition += maxAvail;
         return maxAvail;
     }

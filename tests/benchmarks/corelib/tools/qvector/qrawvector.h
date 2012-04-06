@@ -379,7 +379,7 @@ QRawVector<T>::QRawVector(int asize)
         while (i != b)
             new (--i) T;
     } else {
-        qMemSet(m_begin, 0, asize * sizeof(T));
+        memset(m_begin, 0, asize * sizeof(T));
     }
 }
 
@@ -474,7 +474,7 @@ void QRawVector<T>::realloc(int asize, int aalloc, bool ref)
 
     } else if (asize > xsize) {
         // initialize newly allocated memory to 0
-        qMemSet(xbegin + xsize, 0, (asize - xsize) * sizeof(T));
+        memset(xbegin + xsize, 0, (asize - xsize) * sizeof(T));
     }
     xsize = asize;
 

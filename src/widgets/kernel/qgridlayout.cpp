@@ -779,7 +779,7 @@ void QGridLayoutPrivate::setupLayoutData(int hSpacing, int vSpacing)
         adjacent to which and compute the spacings correctly.
     */
     QVarLengthArray<QGridBox *> grid(rr * cc);
-    qMemSet(grid.data(), 0, rr * cc * sizeof(QGridBox *));
+    memset(grid.data(), 0, rr * cc * sizeof(QGridBox *));
 
     /*
         Initialize 'sizes' and 'grid' data structures, and insert

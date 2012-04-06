@@ -1000,7 +1000,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
         kerningEnabled = this->font(si).d->kerning;
 
     HB_ShaperItem entire_shaper_item;
-    qMemSet(&entire_shaper_item, 0, sizeof(entire_shaper_item));
+    memset(&entire_shaper_item, 0, sizeof(entire_shaper_item));
     entire_shaper_item.string = reinterpret_cast<const HB_UChar16 *>(layoutData->string.constData());
     entire_shaper_item.stringLength = layoutData->string.length();
     entire_shaper_item.item.script = (HB_Script)si.analysis.script;

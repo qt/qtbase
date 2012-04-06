@@ -232,7 +232,7 @@ quint64 ImageItem::computeChecksum(const QImage &image)
         uchar *p = img.bits() + bpl - padBytes;
         const int h = img.height();
         for (int y = 0; y < h; ++y) {
-            qMemSet(p, 0, padBytes);
+            memset(p, 0, padBytes);
             p += bpl;
         }
     }

@@ -1057,7 +1057,7 @@ QMetaProperty QMetaObject::property(int index) const
                 if (colon > enum_name) {
                     int len = colon-enum_name-1;
                     scope_buffer = (char *)malloc(len+1);
-                    qMemCopy(scope_buffer, enum_name, len);
+                    memcpy(scope_buffer, enum_name, len);
                     scope_buffer[len] = '\0';
                     scope_name = scope_buffer;
                     enum_name = colon+1;

@@ -418,7 +418,7 @@ QVector<T>::QVector(int asize)
         while (i != b)
             new (--i) T;
     } else {
-        qMemSet(d->begin(), 0, asize * sizeof(T));
+        memset(d->begin(), 0, asize * sizeof(T));
     }
 }
 
@@ -546,7 +546,7 @@ void QVector<T>::realloc(int asize, int aalloc)
 
     } else if (asize > x->size) {
         // initialize newly allocated memory to 0
-        qMemSet(x->end(), 0, (asize - x->size) * sizeof(T));
+        memset(x->end(), 0, (asize - x->size) * sizeof(T));
     }
     x->size = asize;
 

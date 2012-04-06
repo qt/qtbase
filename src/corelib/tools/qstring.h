@@ -814,7 +814,7 @@ inline QString QString::section(QChar asep, int astart, int aend, SectionFlags a
 inline int QString::toWCharArray(wchar_t *array) const
 {
     if (sizeof(wchar_t) == sizeof(QChar)) {
-        qMemCopy(array, d->data(), sizeof(QChar) * size());
+        memcpy(array, d->data(), sizeof(QChar) * size());
         return size();
     }
     return toUcs4_helper(d->data(), size(), reinterpret_cast<uint *>(array));

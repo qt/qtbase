@@ -151,7 +151,7 @@ static inline int bm_find(const ushort *uc, uint l, int index, const ushort *puc
 QStringMatcher::QStringMatcher()
     : d_ptr(0), q_cs(Qt::CaseSensitive)
 {
-    qMemSet(q_data, 0, sizeof(q_data));
+    memset(q_data, 0, sizeof(q_data));
 }
 
 /*!

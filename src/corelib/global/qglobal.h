@@ -1189,12 +1189,12 @@ inline void qSwap(T &value1, T &value2)
 Q_CORE_EXPORT QT_DEPRECATED void *qMalloc(size_t size) Q_ALLOC_SIZE(1);
 Q_CORE_EXPORT QT_DEPRECATED void qFree(void *ptr);
 Q_CORE_EXPORT QT_DEPRECATED void *qRealloc(void *ptr, size_t size) Q_ALLOC_SIZE(2);
+Q_CORE_EXPORT QT_DEPRECATED void *qMemCopy(void *dest, const void *src, size_t n);
+Q_CORE_EXPORT QT_DEPRECATED void *qMemSet(void *dest, int c, size_t n);
 #endif
 Q_CORE_EXPORT void *qMallocAligned(size_t size, size_t alignment) Q_ALLOC_SIZE(1);
 Q_CORE_EXPORT void *qReallocAligned(void *ptr, size_t size, size_t oldsize, size_t alignment) Q_ALLOC_SIZE(2);
 Q_CORE_EXPORT void qFreeAligned(void *ptr);
-Q_CORE_EXPORT void *qMemCopy(void *dest, const void *src, size_t n);
-Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 
 
 /*
@@ -1386,14 +1386,6 @@ inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase
 #  ifndef forever
 #    define forever Q_FOREVER
 #  endif
-#endif
-
-#if 0
-/* tell gcc to use its built-in methods for some common functions */
-#if defined(QT_NO_DEBUG) && defined(Q_CC_GNU)
-#  define qMemCopy __builtin_memcpy
-#  define qMemSet __builtin_memset
-#endif
 #endif
 
 template <typename T> static inline T *qGetPtrHelper(T *ptr) { return ptr; }

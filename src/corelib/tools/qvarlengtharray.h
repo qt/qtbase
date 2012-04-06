@@ -230,7 +230,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, in
         while (s < asize)
             new (ptr+(s++)) T(*abuf++);
     } else {
-        qMemCopy(&ptr[s], abuf, increment * sizeof(T));
+        memcpy(&ptr[s], abuf, increment * sizeof(T));
         s = asize;
     }
 }
@@ -268,7 +268,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
                     QT_RETHROW;
                 }
             } else {
-                qMemCopy(ptr, oldPtr, copySize * sizeof(T));
+                memcpy(ptr, oldPtr, copySize * sizeof(T));
             }
         } else {
             ptr = oldPtr;

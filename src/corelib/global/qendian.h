@@ -79,7 +79,7 @@ template <typename T> inline void qbswap(const T src, uchar *dest)
 // If you want to avoid the memcopy, you must write specializations for this function
 template <typename T> inline void qToUnaligned(const T src, uchar *dest)
 {
-    qMemCopy(dest, &src, sizeof(T));
+    memcpy(dest, &src, sizeof(T));
 }
 
 /* T qFromLittleEndian(const uchar *src)

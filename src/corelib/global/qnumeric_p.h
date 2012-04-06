@@ -100,7 +100,7 @@ static inline double qt_inf()
              : qt_le_inf_bytes);
 
     union { unsigned char c[8]; double d; } returnValue;
-    qMemCopy(returnValue.c, bytes, sizeof(returnValue.c));
+    memcpy(returnValue.c, bytes, sizeof(returnValue.c));
     return returnValue.d;
 }
 
@@ -115,7 +115,7 @@ static inline double qt_snan()
              : qt_le_snan_bytes);
 
     union { unsigned char c[8]; double d; } returnValue;
-    qMemCopy(returnValue.c, bytes, sizeof(returnValue.c));
+    memcpy(returnValue.c, bytes, sizeof(returnValue.c));
     return returnValue.d;
 }
 
@@ -130,7 +130,7 @@ static inline double qt_qnan()
              : qt_le_qnan_bytes);
 
     union { unsigned char c[8]; double d; } returnValue;
-    qMemCopy(returnValue.c, bytes, sizeof(returnValue.c));
+    memcpy(returnValue.c, bytes, sizeof(returnValue.c));
     return returnValue.d;
 }
 

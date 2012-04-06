@@ -1120,7 +1120,7 @@ void QPFGenerator::writeGMap()
     const int numBytes = glyphCount * sizeof(quint32);
     qint64 pos = buffer.size();
     buffer.resize(pos + numBytes);
-    qMemSet(buffer.data() + pos, 0xff, numBytes);
+    memset(buffer.data() + pos, 0xff, numBytes);
     dev->seek(pos + numBytes);
 }
 

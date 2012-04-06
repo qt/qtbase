@@ -400,7 +400,7 @@ bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringLi
         if (initial_files.at(i)[0] == '.') {
             QString hiddenFile = QDir::toNativeSeparators(file.fileName());
             wchar_t nativeHiddenFile[MAX_PATH];
-            qMemSet(nativeHiddenFile, 0, sizeof(nativeHiddenFile));
+            memset(nativeHiddenFile, 0, sizeof(nativeHiddenFile));
             hiddenFile.toWCharArray(nativeHiddenFile);
             DWORD currentAttributes = ::GetFileAttributes(nativeHiddenFile);
             if (currentAttributes == 0xFFFFFFFF) {

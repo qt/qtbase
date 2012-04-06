@@ -51,6 +51,8 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qevent.h>
 
+#include <stdlib.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -216,7 +218,7 @@ public:
         // quint64 alertHigh : 1;
 
         State() {
-            qMemSet(this, 0, sizeof(State));
+            memset(this, 0, sizeof(State));
         }
     };
 
