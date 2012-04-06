@@ -1459,7 +1459,6 @@ void QByteArray::reallocData(uint alloc, bool grow)
         Data *x = static_cast<Data *>(::realloc(d, sizeof(Data) + alloc));
         Q_CHECK_PTR(x);
         x->alloc = alloc;
-        x->offset = sizeof(QByteArrayData);
         d = x;
     }
 }
