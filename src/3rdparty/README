@@ -15,9 +15,3 @@ library directory, following the latest clean version update commit.
 The 'patches' subdirectory contains certain patches applied prior to
 the start of the public git history, where the library has not been
 updated since.
-
---
-
-The pvr2d.h & wsegl.h in the powervr directory are required for building
-the PowerVR plugin on Qt for Embedded Linux. These headers are for SGX
-based SoCs, but may also work on MBX SoCs.
