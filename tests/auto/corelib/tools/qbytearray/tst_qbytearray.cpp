@@ -1286,7 +1286,7 @@ void tst_QByteArray::appendAfterFromRawData()
         arr += QByteArray::fromRawData(data, sizeof(data));
         data[0] = 'Y';
     }
-    QVERIFY(arr.at(0) == 'X');
+    QCOMPARE(arr.at(0), 'X');
 }
 
 void tst_QByteArray::toFromHex_data()
