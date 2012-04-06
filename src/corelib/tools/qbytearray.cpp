@@ -917,7 +917,7 @@ QByteArray &QByteArray::operator=(const char *str)
         int len = strlen(str);
         if (d->ref.isShared() || uint(len) + 1u > d->alloc
                 || (len < d->size && uint(len) + 1u < uint(d->alloc >> 1)))
-            reallocData(uint(len) + 1u);
+            reallocData(uint(len) + 1u, d->detachFlags());
         x = d;
         memcpy(x->data(), str, uint(len) + 1u); // include null terminator
         x->size = len;
@@ -1414,7 +1414,7 @@ void QByteArray::resize(int size)
         if (d->ref.isShared() || uint(size) + 1u > d->alloc
                 || (!d->capacityReserved && size < d->size
                     && uint(size) + 1u < uint(d->alloc >> 1)))
-            reallocData(uint(size) + 1u, true);
+            reallocData(uint(size) + 1u, d->detachFlags() | Data::Grow);
         if (d->alloc) {
             d->size = size;
             d->data()[size] = '\0';
@@ -1441,13 +1441,10 @@ QByteArray &QByteArray::fill(char ch, int size)
     return *this;
 }
 
-void QByteArray::reallocData(uint alloc, bool grow)
+void QByteArray::reallocData(uint alloc, Data::AllocationOptions options)
 {
-    if (grow)
-        alloc = qAllocMore(alloc, sizeof(Data));
-
     if (d->ref.isShared() || IS_RAW_DATA(d)) {
-        Data *x = Data::allocate(alloc);
+        Data *x = Data::allocate(alloc, options);
         Q_CHECK_PTR(x);
         x->size = qMin(int(alloc) - 1, d->size);
         ::memcpy(x->data(), d->data(), x->size);
@@ -1456,9 +1453,12 @@ void QByteArray::reallocData(uint alloc, bool grow)
             Data::deallocate(d);
         d = x;
     } else {
+        if (options & Data::Grow)
+            alloc = qAllocMore(alloc, sizeof(Data));
         Data *x = static_cast<Data *>(::realloc(d, sizeof(Data) + alloc));
         Q_CHECK_PTR(x);
         x->alloc = alloc;
+        x->capacityReserved = (options & Data::CapacityReserved) ? 1 : 0;
         d = x;
     }
 }
@@ -1543,7 +1543,7 @@ QByteArray &QByteArray::prepend(const char *str, int len)
 {
     if (str) {
         if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
-            reallocData(uint(d->size + len) + 1u, true);
+            reallocData(uint(d->size + len) + 1u, d->detachFlags() | Data::Grow);
         memmove(d->data()+len, d->data(), d->size);
         memcpy(d->data(), str, len);
         d->size += len;
@@ -1561,7 +1561,7 @@ QByteArray &QByteArray::prepend(const char *str, int len)
 QByteArray &QByteArray::prepend(char ch)
 {
     if (d->ref.isShared() || uint(d->size) + 2u > d->alloc)
-        reallocData(uint(d->size) + 2u, true);
+        reallocData(uint(d->size) + 2u, d->detachFlags() | Data::Grow);
     memmove(d->data()+1, d->data(), d->size);
     d->data()[0] = ch;
     ++d->size;
@@ -1599,7 +1599,7 @@ QByteArray &QByteArray::append(const QByteArray &ba)
         *this = ba;
     } else if (ba.d->size != 0) {
         if (d->ref.isShared() || uint(d->size + ba.d->size) + 1u > d->alloc)
-            reallocData(uint(d->size + ba.d->size) + 1u, true);
+            reallocData(uint(d->size + ba.d->size) + 1u, d->detachFlags() | Data::Grow);
         memcpy(d->data() + d->size, ba.d->data(), ba.d->size);
         d->size += ba.d->size;
         d->data()[d->size] = '\0';
@@ -1633,7 +1633,7 @@ QByteArray& QByteArray::append(const char *str)
     if (str) {
         int len = strlen(str);
         if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
-            reallocData(uint(d->size + len) + 1u, true);
+            reallocData(uint(d->size + len) + 1u, d->detachFlags() | Data::Grow);
         memcpy(d->data() + d->size, str, len + 1); // include null terminator
         d->size += len;
     }
@@ -1658,7 +1658,7 @@ QByteArray &QByteArray::append(const char *str, int len)
         len = qstrlen(str);
     if (str && len) {
         if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
-            reallocData(uint(d->size + len) + 1u, true);
+            reallocData(uint(d->size + len) + 1u, d->detachFlags() | Data::Grow);
         memcpy(d->data() + d->size, str, len); // include null terminator
         d->size += len;
         d->data()[d->size] = '\0';
@@ -1675,7 +1675,7 @@ QByteArray &QByteArray::append(const char *str, int len)
 QByteArray& QByteArray::append(char ch)
 {
     if (d->ref.isShared() || uint(d->size) + 2u > d->alloc)
-        reallocData(uint(d->size) + 2u, true);
+        reallocData(uint(d->size) + 2u, d->detachFlags() | Data::Grow);
     d->data()[d->size++] = ch;
     d->data()[d->size] = '\0';
     return *this;
