@@ -796,6 +796,7 @@ struct QRegularExpressionPrivate : QSharedData
                                             int offset,
                                             QRegularExpression::MatchType matchType,
                                             QRegularExpression::MatchOptions matchOptions,
+                                            bool checkSubjectString = true,
                                             const QRegularExpressionMatchPrivate *previous = 0) const;
 
     int captureIndexForName(const QString &name) const;
@@ -1165,7 +1166,8 @@ static int pcre16SafeExec(const pcre16 *code, const pcre16_extra *extra,
     Performs a match of type \a matchType on the given \a subject string with
     options \a matchOptions and returns the QRegularExpressionMatchPrivate of
     the result. It also advances a match if a previous result is given as \a
-    previous.
+    previous. The \a subject string goes a Unicode validity check if
+    \a checkSubjectString is true (PCRE doesn't like illegal UTF-16 sequences).
 
     Advancing a match is a tricky algorithm. If the previous match matched a
     non-empty string, we just do an ordinary match at the offset position.
@@ -1182,6 +1184,7 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
                                                                    int offset,
                                                                    QRegularExpression::MatchType matchType,
                                                                    QRegularExpression::MatchOptions matchOptions,
+                                                                   bool checkSubjectString,
                                                                    const QRegularExpressionMatchPrivate *previous) const
 {
     if (offset < 0)
@@ -1210,6 +1213,9 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
         pcreOptions |= PCRE_PARTIAL_SOFT;
     else if (matchType == QRegularExpression::PartialPreferFirstMatch)
         pcreOptions |= PCRE_PARTIAL_HARD;
+
+    if (!checkSubjectString)
+        pcreOptions |= PCRE_NO_UTF16_CHECK;
 
     bool previousMatchWasEmpty = false;
     if (previous && previous->hasMatch &&
@@ -1318,10 +1324,15 @@ QRegularExpressionMatch QRegularExpressionMatchPrivate::nextMatch() const
     Q_ASSERT(isValid);
     Q_ASSERT(hasMatch || hasPartialMatch);
 
+    // Note the "false" passed for the check of the subject string:
+    // if we're advancing a match on the same subject,
+    // then that subject was already checked at least once (when this object
+    // was created, or when the object that created this one was created, etc.)
     QRegularExpressionMatchPrivate *nextPrivate = regularExpression.d->doMatch(subject,
                                                                                capturedOffsets.at(1),
                                                                                matchType,
                                                                                matchOptions,
+                                                                               false,
                                                                                this);
     return QRegularExpressionMatch(*nextPrivate);
 }
