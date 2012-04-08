@@ -543,10 +543,10 @@ void tst_QChar::decomposition()
 
     {
         QString str;
-        str += QChar( (0x1D157 - 0x10000) / 0x400 + 0xd800 );
-        str += QChar( ((0x1D157 - 0x10000) % 0x400) + 0xdc00 );
-        str += QChar( (0x1D165 - 0x10000) / 0x400 + 0xd800 );
-        str += QChar( ((0x1D165 - 0x10000) % 0x400) + 0xdc00 );
+        str += QChar(QChar::highSurrogate(0x1D157));
+        str += QChar(QChar::lowSurrogate(0x1D157));
+        str += QChar(QChar::highSurrogate(0x1D165));
+        str += QChar(QChar::lowSurrogate(0x1D165));
         QVERIFY(QChar::decomposition(0x1D15e) == str);
     }
 
@@ -629,14 +629,12 @@ void tst_QChar::normalization_data()
             for (int j = 0; j < c.size(); ++j) {
                 bool ok;
                 uint uc = c.at(j).toInt(&ok, 16);
-                if (uc < 0x10000)
+                if (!QChar::requiresSurrogates(uc)) {
                     columns[i].append(QChar(uc));
-                else {
+                } else {
                     // convert to utf16
-                    ushort high = QChar::highSurrogate(uc);
-                    ushort low = QChar::lowSurrogate(uc);
-                    columns[i].append(QChar(high));
-                    columns[i].append(QChar(low));
+                    columns[i].append(QChar(QChar::highSurrogate(uc)));
+                    columns[i].append(QChar(QChar::lowSurrogate(uc)));
                 }
             }
         }
