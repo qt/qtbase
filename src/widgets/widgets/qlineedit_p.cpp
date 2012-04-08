@@ -62,9 +62,10 @@ const int QLineEditPrivate::horizontalMargin(2);
 
 QRect QLineEditPrivate::adjustedControlRect(const QRect &rect) const
 {
+    QRect widgetRect = !rect.isEmpty() ? rect : q_func()->rect();
     QRect cr = adjustedContentsRect();
     int cix = cr.x() - hscroll + horizontalMargin;
-    return rect.translated(QPoint(cix, vscroll));
+    return widgetRect.translated(QPoint(cix, vscroll));
 }
 
 int QLineEditPrivate::xToPos(int x, QTextLine::CursorPosition betweenOrOn) const
