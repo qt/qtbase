@@ -203,23 +203,23 @@ public:
     };
     // ****** WHEN ADDING FUNCTIONS, CONSIDER ADDING TO QCharRef TOO
 
-    Category category() const;
-    Direction direction() const;
-    Joining joining() const;
+    inline Category category() const { return QChar::category(ucs); }
+    inline Direction direction() const { return QChar::direction(ucs); }
+    inline Joining joining() const { return QChar::joining(ucs); }
     bool hasMirrored() const;
-    unsigned char combiningClass() const;
+    inline unsigned char combiningClass() const { return QChar::combiningClass(ucs); }
 
-    QChar mirroredChar() const;
+    inline QChar mirroredChar() const { return QChar::mirroredChar(ucs); }
     QString decomposition() const;
     Decomposition decompositionTag() const;
 
-    int digitValue() const;
-    QChar toLower() const;
-    QChar toUpper() const;
-    QChar toTitleCase() const;
-    QChar toCaseFolded() const;
+    inline int digitValue() const { return QChar::digitValue(ucs); }
+    inline QChar toLower() const { return QChar::toLower(ucs); }
+    inline QChar toUpper() const { return QChar::toUpper(ucs); }
+    inline QChar toTitleCase() const { return QChar::toTitleCase(ucs); }
+    inline QChar toCaseFolded() const { return QChar::toCaseFolded(ucs); }
 
-    UnicodeVersion unicodeVersion() const;
+    inline UnicodeVersion unicodeVersion() const { return QChar::unicodeVersion(ucs); }
 
     inline char toAscii() const;
     inline char toLatin1() const;

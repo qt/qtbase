@@ -707,12 +707,10 @@ bool QChar::isSymbol() const
 */
 
 /*!
+    \fn int QChar::digitValue() const
+
     Returns the numeric value of the digit, or -1 if the character is not a digit.
 */
-int QChar::digitValue() const
-{
-    return qGetProp(ucs)->digitValue;
-}
 
 /*!
     \overload
@@ -737,12 +735,10 @@ int QChar::digitValue(uint ucs4)
 }
 
 /*!
+    \fn QChar::Category QChar::category() const
+
     Returns the character's category.
 */
-QChar::Category QChar::category() const
-{
-    return (QChar::Category) qGetProp(ucs)->category;
-}
 
 /*!
     \overload
@@ -766,12 +762,10 @@ QChar::Category QChar::category(ushort ucs2)
 
 
 /*!
+    \fn QChar::Direction QChar::direction() const
+
     Returns the character's direction.
 */
-QChar::Direction QChar::direction() const
-{
-    return (QChar::Direction) qGetProp(ucs)->direction;
-}
 
 /*!
     \overload
@@ -794,13 +788,11 @@ QChar::Direction QChar::direction(ushort ucs2)
 }
 
 /*!
+    \fn QChar::Joining QChar::joining() const
+
     Returns information about the joining properties of the character
     (needed for certain languages such as Arabic).
 */
-QChar::Joining QChar::joining() const
-{
-    return (QChar::Joining) qGetProp(ucs)->joining;
-}
 
 /*!
     \overload
@@ -865,15 +857,13 @@ bool QChar::hasMirrored() const
 */
 
 /*!
+    \fn QChar QChar::mirroredChar() const
+
     Returns the mirrored character if this character is a mirrored
     character; otherwise returns the character itself.
 
     \sa hasMirrored()
 */
-QChar QChar::mirroredChar() const
-{
-    return ucs + qGetProp(ucs)->mirrorDiff;
-}
 
 /*!
     \overload
@@ -990,6 +980,8 @@ QChar::Decomposition QChar::decompositionTag(uint ucs4)
 }
 
 /*!
+    \fn unsigned char QChar::combiningClass() const
+
     Returns the combining class for the character as defined in the
     Unicode standard. This is mainly useful as a positioning hint for
     marks attached to a base character.
@@ -997,10 +989,6 @@ QChar::Decomposition QChar::decompositionTag(uint ucs4)
     The Qt text rendering engine uses this information to correctly
     position non-spacing marks around a base character.
 */
-unsigned char QChar::combiningClass() const
-{
-    return (unsigned char) qGetProp(ucs)->combiningClass;
-}
 
 /*!
     \overload
@@ -1025,12 +1013,10 @@ unsigned char QChar::combiningClass(ushort ucs2)
 }
 
 /*!
+    \fn QChar::UnicodeVersion QChar::unicodeVersion() const
+
     Returns the Unicode version that introduced this character.
 */
-QChar::UnicodeVersion QChar::unicodeVersion() const
-{
-    return (QChar::UnicodeVersion) qGetProp(ucs)->unicodeVersion;
-}
 
 /*!
     \overload
@@ -1062,17 +1048,46 @@ QChar::UnicodeVersion QChar::currentUnicodeVersion()
     return UNICODE_DATA_VERSION;
 }
 
+
+template <typename T>
+static inline T toLowerCase_helper(T uc)
+{
+    const QUnicodeTables::Properties *p = qGetProp(uc);
+    if (!p->lowerCaseSpecial)
+        return uc + p->lowerCaseDiff;
+    return uc;
+}
+
+template <typename T>
+static inline T toUpperCase_helper(T uc)
+{
+    const QUnicodeTables::Properties *p = qGetProp(uc);
+    if (!p->upperCaseSpecial)
+        return uc + p->upperCaseDiff;
+    return uc;
+}
+
+template <typename T>
+static inline T toTitleCase_helper(T uc)
+{
+    const QUnicodeTables::Properties *p = qGetProp(uc);
+    if (!p->titleCaseSpecial)
+        return uc + p->titleCaseDiff;
+    return uc;
+}
+
+template <typename T>
+static inline T toCaseFolded_helper(T uc)
+{
+    return uc + qGetProp(uc)->caseFoldDiff;
+}
+
 /*!
+    \fn QChar QChar::toLower() const
+
     Returns the lowercase equivalent if the character is uppercase or titlecase;
     otherwise returns the character itself.
 */
-QChar QChar::toLower() const
-{
-    const QUnicodeTables::Properties *p = qGetProp(ucs);
-    if (!p->lowerCaseSpecial)
-        return ucs + p->lowerCaseDiff;
-    return ucs;
-}
 
 /*!
     \overload
@@ -1084,10 +1099,7 @@ uint QChar::toLower(uint ucs4)
 {
     if (ucs4 > UNICODE_LAST_CODEPOINT)
         return ucs4;
-    const QUnicodeTables::Properties *p = qGetProp(ucs4);
-    if (!p->lowerCaseSpecial)
-        return ucs4 + p->lowerCaseDiff;
-    return ucs4;
+    return toLowerCase_helper<uint>(ucs4);
 }
 
 /*!
@@ -1098,23 +1110,15 @@ uint QChar::toLower(uint ucs4)
 */
 ushort QChar::toLower(ushort ucs2)
 {
-    const QUnicodeTables::Properties *p = qGetProp(ucs2);
-    if (!p->lowerCaseSpecial)
-        return ucs2 + p->lowerCaseDiff;
-    return ucs2;
+    return toLowerCase_helper<ushort>(ucs2);
 }
 
 /*!
+    \fn QChar QChar::toUpper() const
+
     Returns the uppercase equivalent if the character is lowercase or titlecase;
     otherwise returns the character itself.
 */
-QChar QChar::toUpper() const
-{
-    const QUnicodeTables::Properties *p = qGetProp(ucs);
-    if (!p->upperCaseSpecial)
-        return ucs + p->upperCaseDiff;
-    return ucs;
-}
 
 /*!
     \overload
@@ -1126,10 +1130,7 @@ uint QChar::toUpper(uint ucs4)
 {
     if (ucs4 > UNICODE_LAST_CODEPOINT)
         return ucs4;
-    const QUnicodeTables::Properties *p = qGetProp(ucs4);
-    if (!p->upperCaseSpecial)
-        return ucs4 + p->upperCaseDiff;
-    return ucs4;
+    return toUpperCase_helper<uint>(ucs4);
 }
 
 /*!
@@ -1140,23 +1141,15 @@ uint QChar::toUpper(uint ucs4)
 */
 ushort QChar::toUpper(ushort ucs2)
 {
-    const QUnicodeTables::Properties *p = qGetProp(ucs2);
-    if (!p->upperCaseSpecial)
-        return ucs2 + p->upperCaseDiff;
-    return ucs2;
+    return toUpperCase_helper<ushort>(ucs2);
 }
 
 /*!
+    \fn QChar QChar::toTitleCase() const
+
     Returns the title case equivalent if the character is lowercase or uppercase;
     otherwise returns the character itself.
 */
-QChar QChar::toTitleCase() const
-{
-    const QUnicodeTables::Properties *p = qGetProp(ucs);
-    if (!p->titleCaseSpecial)
-        return ucs + p->titleCaseDiff;
-    return ucs;
-}
 
 /*!
     \overload
@@ -1168,10 +1161,7 @@ uint QChar::toTitleCase(uint ucs4)
 {
     if (ucs4 > UNICODE_LAST_CODEPOINT)
         return ucs4;
-    const QUnicodeTables::Properties *p = qGetProp(ucs4);
-    if (!p->titleCaseSpecial)
-        return ucs4 + p->titleCaseDiff;
-    return ucs4;
+    return toTitleCase_helper<uint>(ucs4);
 }
 
 /*!
@@ -1182,19 +1172,15 @@ uint QChar::toTitleCase(uint ucs4)
 */
 ushort QChar::toTitleCase(ushort ucs2)
 {
-    const QUnicodeTables::Properties *p = qGetProp(ucs2);
-    if (!p->titleCaseSpecial)
-        return ucs2 + p->titleCaseDiff;
-    return ucs2;
+    return toTitleCase_helper<ushort>(ucs2);
 }
-
 
 static inline uint foldCase(const ushort *ch, const ushort *start)
 {
     uint c = *ch;
     if (QChar(c).isLowSurrogate() && ch > start && QChar(*(ch - 1)).isHighSurrogate())
         c = QChar::surrogateToUcs4(*(ch - 1), c);
-    return *ch + qGetProp(c)->caseFoldDiff;
+    return toCaseFolded_helper<uint>(c);
 }
 
 static inline uint foldCase(uint ch, uint &last)
@@ -1203,22 +1189,20 @@ static inline uint foldCase(uint ch, uint &last)
     if (QChar(c).isLowSurrogate() && QChar(last).isHighSurrogate())
         c = QChar::surrogateToUcs4(last, c);
     last = ch;
-    return ch + qGetProp(c)->caseFoldDiff;
+    return toCaseFolded_helper<uint>(c);
 }
 
 static inline ushort foldCase(ushort ch)
 {
-    return ch + qGetProp(ch)->caseFoldDiff;
+    return toCaseFolded_helper<ushort>(ch);
 }
 
 /*!
-    Returns the case folded equivalent of the character. For most Unicode characters this
-    is the same as toLowerCase().
+    \fn QChar QChar::toCaseFolded() const
+
+    Returns the case folded equivalent of the character.
+    For most Unicode characters this is the same as toLowerCase().
 */
-QChar QChar::toCaseFolded() const
-{
-    return ucs + qGetProp(ucs)->caseFoldDiff;
-}
 
 /*!
     \overload
@@ -1229,7 +1213,7 @@ uint QChar::toCaseFolded(uint ucs4)
 {
     if (ucs4 > UNICODE_LAST_CODEPOINT)
         return ucs4;
-    return ucs4 + qGetProp(ucs4)->caseFoldDiff;
+    return toCaseFolded_helper<uint>(ucs4);
 }
 
 /*!
@@ -1239,7 +1223,7 @@ uint QChar::toCaseFolded(uint ucs4)
 */
 ushort QChar::toCaseFolded(ushort ucs2)
 {
-    return ucs2 + qGetProp(ucs2)->caseFoldDiff;
+    return toCaseFolded_helper<ushort>(ucs2);
 }
 
 /*!
