@@ -1487,7 +1487,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 #ifdef QTESTLIB_USE_PERF_EVENTS
         } else if (strcmp(argv[i], "-perf") == 0) {
             if (QBenchmarkPerfEventsMeasurer::isAvailable()) {
-                printf("perf available\n");
+                // perf available
+                QBenchmarkGlobalData::current->setMode(QBenchmarkGlobalData::PerfCounter);
             } else {
                 fprintf(stderr, "WARNING: Linux perf events not available. Using the walltime measurer.\n");
             }

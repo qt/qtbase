@@ -75,6 +75,9 @@ public:
 
     static bool isAvailable();
 private:
+    int fd;
+
+    qint64 readValue();
 };
 
 QT_END_NAMESPACE
