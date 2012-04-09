@@ -84,8 +84,28 @@
 
 QT_BEGIN_NAMESPACE
 
-static quint32 event_type = PERF_TYPE_HARDWARE;
-static quint64 event_id = PERF_COUNT_HW_CPU_CYCLES;
+static perf_event_attr attr;
+
+static void initPerf()
+{
+    static bool done;
+    if (!done) {
+        memset(&attr, 0, sizeof attr);
+        attr.size = sizeof attr;
+        attr.read_format = PERF_FORMAT_TOTAL_TIME_ENABLED | PERF_FORMAT_TOTAL_TIME_RUNNING;
+        attr.disabled = true; // we'll enable later
+        attr.inherit = true; // let children processes inherit the monitoring
+        attr.pinned = true; // keep it running in the hardware
+        attr.inherit_stat = true; // aggregate all the info from child processes
+        attr.task = true; // trace fork/exits
+
+        // set a default performance counter: CPU cycles
+        attr.type = PERF_TYPE_HARDWARE;
+        attr.config = PERF_COUNT_HW_CPU_CYCLES; // default
+
+        done = true;
+    }
+}
 
 /*!
     \class QBenchmarkPerfEvents
@@ -397,6 +417,7 @@ QTest::QBenchmarkMetric QBenchmarkPerfEventsMeasurer::metricForEvent(quint32 typ
 
 void QBenchmarkPerfEventsMeasurer::setCounter(const char *name)
 {
+    initPerf();
     const Events *ptr = eventlist;
     for ( ; ptr->type != PERF_TYPE_MAX; ++ptr) {
         int c = strcmp(name, eventlist_strings + ptr->offset);
@@ -408,8 +429,8 @@ void QBenchmarkPerfEventsMeasurer::setCounter(const char *name)
         }
     }
 
-    ::event_type = ptr->type;
-    ::event_id = ptr->event_id;
+    attr.type = ptr->type;
+    attr.config = ptr->event_id;
 }
 
 void QBenchmarkPerfEventsMeasurer::listCounters()
@@ -445,24 +466,8 @@ void QBenchmarkPerfEventsMeasurer::init()
 
 void QBenchmarkPerfEventsMeasurer::start()
 {
-    perf_event_attr attr;
-    memset(&attr, 0, sizeof attr);
 
-    // common init
-    attr.size = sizeof attr;
-    attr.sample_period = 0;
-    attr.sample_type = 0;
-    attr.read_format = PERF_FORMAT_TOTAL_TIME_ENABLED | PERF_FORMAT_TOTAL_TIME_RUNNING;
-    attr.disabled = true; // start disabled, we'll enable later
-    attr.inherit = true; // let children inherit, if the benchmark has child processes
-    attr.pinned = true; // keep it running on the PMU
-    attr.inherit_stat = true; // collapse all the info from child processes
-    attr.task = true; // trace fork and exit
-
-    // our event type
-    attr.type = ::event_type;
-    attr.config = ::event_id;
-
+    initPerf();
     // pid == 0 -> attach to the current process
     // cpu == -1 -> monitor on all CPUs
     // group_fd == -1 -> this is the group leader
@@ -512,7 +517,7 @@ int QBenchmarkPerfEventsMeasurer::adjustMedianCount(int)
 
 QTest::QBenchmarkMetric QBenchmarkPerfEventsMeasurer::metricType()
 {
-    return metricForEvent(event_type, event_id);
+    return metricForEvent(attr.type, attr.config);
 }
 
 static quint64 rawReadValue(int fd)
