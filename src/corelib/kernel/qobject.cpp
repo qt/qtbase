@@ -2817,7 +2817,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
 /*!
     \threadsafe
 
-    \fn bool QObject::disconnect(const char *signal, const QObject *receiver, const char *method)
+    \fn bool QObject::disconnect(const char *signal, const QObject *receiver, const char *method) const
     \overload disconnect()
 
     Disconnects \a signal from \a method of \a receiver.
@@ -2827,7 +2827,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
 */
 
 /*!
-    \fn bool QObject::disconnect(const QObject *receiver, const char *method)
+    \fn bool QObject::disconnect(const QObject *receiver, const char *method) const
     \overload disconnect()
 
     Disconnects all signals in this object from \a receiver's \a

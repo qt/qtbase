@@ -294,9 +294,9 @@ public:
     static bool disconnect(const QObject *sender, const QMetaMethod &signal,
                            const QObject *receiver, const QMetaMethod &member);
     inline bool disconnect(const char *signal = 0,
-                           const QObject *receiver = 0, const char *member = 0)
+                           const QObject *receiver = 0, const char *member = 0) const
         { return disconnect(this, signal, receiver, member); }
-    inline bool disconnect(const QObject *receiver, const char *member = 0)
+    inline bool disconnect(const QObject *receiver, const char *member = 0) const
         { return disconnect(this, 0, receiver, member); }
     static bool disconnect(const QMetaObject::Connection &);
 
