@@ -22,6 +22,11 @@ isEmpty(DEVICE_PRI) {
 
 exists($$DEVICE_PRI):include($$DEVICE_PRI)
 
+isEmpty(CROSS_COMPILE) {
+    #this variable can be persisted via qmake -set CROSS_COMPILE /foo
+    CROSS_COMPILE = $$[CROSS_COMPILE]
+}
+
 unset(DEVICE_PRI)
 unset(DIR)
 
