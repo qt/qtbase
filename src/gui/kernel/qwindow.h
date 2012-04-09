@@ -254,7 +254,6 @@ public Q_SLOTS:
     }
 
 Q_SIGNALS:
-    void backBufferReady();
     void screenChanged(QScreen *screen);
     void windowModalityChanged(Qt::WindowModality windowModality);
 
