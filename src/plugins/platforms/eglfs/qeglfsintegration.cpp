@@ -52,6 +52,7 @@
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
+#include <QtGui/QPlatformCursor>
 
 #include <EGL/egl.h>
 
@@ -93,6 +94,7 @@ QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 #endif
     QPlatformWindow *w = new QEglFSWindow(window);
     w->requestActivateWindow();
+
     return w;
 }
 

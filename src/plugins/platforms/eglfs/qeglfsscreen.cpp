@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qeglfscursor.h"
 #include "qeglfsscreen.h"
 #include "qeglfswindow.h"
 #include "qeglfshooks.h"
@@ -98,6 +99,16 @@ public:
         QEglFSScreen *screen = static_cast<QEglFSScreen *>(window->screen());
         return screen->surface();
     }
+
+    void swapBuffers(QPlatformSurface *surface)
+    {
+        QEglFSWindow *window = static_cast<QEglFSWindow *>(surface);
+        QEglFSScreen *screen = static_cast<QEglFSScreen *>(window->screen());
+        if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(screen->cursor()))
+            cursor->render();
+
+        QEGLPlatformContext::swapBuffers(surface);
+    }
 };
 
 QEglFSScreen::QEglFSScreen()
@@ -106,6 +117,7 @@ QEglFSScreen::QEglFSScreen()
     , m_platformContext(0)
     , m_surface(0)
     , m_window(0)
+    , m_cursor(0)
 {
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglScreen %p\n", this);
@@ -148,6 +160,8 @@ QEglFSScreen::QEglFSScreen()
 
 QEglFSScreen::~QEglFSScreen()
 {
+    delete m_cursor;
+
     if (m_surface)
         eglDestroySurface(m_dpy, m_surface);
 
@@ -246,6 +260,23 @@ QImage::Format QEglFSScreen::format() const
         createAndSetPlatformContext();
     return m_format;
 }
+
+QPlatformCursor *QEglFSScreen::cursor() const
+{
+    static int hideCursor = qgetenv("QT_QPA_EGLFS_HIDECURSOR").toInt();
+    if (hideCursor)
+        return 0;
+
+    if (!m_cursor) {
+        QEglFSScreen *that = const_cast<QEglFSScreen *>(this);
+        // cursor requires a gl context
+        if (!m_platformContext)
+            that->createAndSetPlatformContext();
+        that->m_cursor = new QEglFSCursor(that);
+    }
+    return m_cursor;
+}
+
 QPlatformOpenGLContext *QEglFSScreen::platformContext() const
 {
     if (!m_platformContext) {

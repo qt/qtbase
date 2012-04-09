@@ -39,49 +39,67 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSSCREEN_H
-#define QEGLFSSCREEN_H
+#ifndef QEGLFSCURSOR_H
+#define QEGLFSCURSOR_H
 
-#include <qpa/qplatformscreen.h>
-
-#include <QtCore/QTextStream>
-
-#include <EGL/egl.h>
+#include <qpa/qplatformcursor.h>
+#include "qeglfsscreen.h"
 
 QT_BEGIN_NAMESPACE
 
-class QPlatformOpenGLContext;
-class QEglFSCursor;
+class QOpenGLShaderProgram;
 
-class QEglFSScreen : public QPlatformScreen //huh: FullScreenScreen ;) just to follow namespace
+class QEglFSCursor : public QPlatformCursor
 {
 public:
-    QEglFSScreen();
-    ~QEglFSScreen();
+    QEglFSCursor(QEglFSScreen *screen);
+    ~QEglFSCursor();
 
-    QRect geometry() const;
-    int depth() const;
-    QImage::Format format() const;
+    void changeCursor(QCursor *cursor, QWindow *widget);
+    void pointerEvent(const QMouseEvent &event);
 
-    QPlatformCursor *cursor() const;
+    QPoint pos() const;
+    void setPos(const QPoint &pos);
 
-    QPlatformOpenGLContext *platformContext() const;
+    QRect cursorRect() const { return QRect(m_pos, m_cursor.size); }
 
-    EGLSurface surface() const { return m_surface; }
+    void render();
 
 private:
-    void createAndSetPlatformContext() const;
-    void createAndSetPlatformContext();
+    void createShaderPrograms();
+    static void createCursorTexture(uint *texture, const QImage &image);
+    void initCursorAtlas();
 
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
-    QPlatformOpenGLContext *m_platformContext;
-    EGLDisplay m_dpy;
-    EGLSurface m_surface;
-    EGLNativeWindowType m_window;
-    QEglFSCursor *m_cursor;
+    QPlatformScreen *m_screen;
+
+    // cursor atlas information
+    struct CursorAtlas {
+        CursorAtlas() : texture(0), cursorWidth(0), cursorHeight(0) { }
+        uint texture;
+        int width, height; // width and height of the the atlas
+        int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
+        QPoint hotSpot;
+    } m_cursorAtlas;
+
+    // current cursor information
+    struct Cursor {
+        Cursor() : texture(0), shape(Qt::BlankCursor) { }
+        uint texture; // a texture from 'image' or the atlas
+        Qt::CursorShape shape;
+        QRectF textureRect; // normalized rect inside texture
+        QSize size; // size of the cursor
+        QPoint hotSpot;
+    } m_cursor;
+
+    QPoint m_pos;
+
+    QOpenGLShaderProgram *m_program;
+    int m_vertexCoordEntry;
+    int m_textureCoordEntry;
+    int m_textureEntry;
 };
 
 QT_END_NAMESPACE
-#endif // QEGLFSSCREEN_H
+
+#endif // QEGLFSCURSOR_H
+

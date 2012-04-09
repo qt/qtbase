@@ -19,12 +19,15 @@ SOURCES =   main.cpp \
             qeglfswindow.cpp \
             qeglfsbackingstore.cpp \
             qeglfsscreen.cpp \
-            qeglfshooks_stub.cpp
+            qeglfshooks_stub.cpp \
+            qeglfscursor.cpp
 
 HEADERS =   qeglfsintegration.h \
             qeglfswindow.h \
             qeglfsbackingstore.h \
             qeglfsscreen.h \
+            qeglfshooks.h \
+            qeglfscursor.h \
             qeglfshooks.h
 
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
@@ -39,6 +42,8 @@ CONFIG += egl qpa/genericunixfontdatabase
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
+
+RESOURCES += cursor.qrc
 
 OTHER_FILES += \
     eglfs.json

@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qeglfsbackingstore.h"
+#include "qeglfscursor.h"
 
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLPaintDevice>
@@ -184,6 +185,10 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     glDisableVertexAttribArray(m_vertexCoordEntry);
     glDisableVertexAttribArray(m_textureCoordEntry);
 #endif
+
+    // draw the cursor
+    if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(window->screen()->handle()->cursor()))
+        cursor->render();
 
     m_context->swapBuffers(window);
 }
