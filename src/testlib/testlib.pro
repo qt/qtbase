@@ -16,6 +16,7 @@ HEADERS = qbenchmark.h \
     qbenchmarkmeasurement_p.h \
     qbenchmarkvalgrind_p.h \
     qbenchmarkevent_p.h \
+    qbenchmarkperfevents_p.h \
     qbenchmarkmetric_p.h \
     qsignalspy.h \
     qtestaccessible.h \
@@ -48,6 +49,7 @@ SOURCES = qtestcase.cpp \
     qbenchmarkmeasurement.cpp \
     qbenchmarkvalgrind.cpp \
     qbenchmarkevent.cpp \
+    qbenchmarkperfevents.cpp \
     qbenchmarkmetric.cpp \
     qtestelement.cpp \
     qtestelementattribute.cpp \

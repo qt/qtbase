@@ -87,6 +87,10 @@ QBenchmarkMeasurerBase * QBenchmarkGlobalData::createMeasurer()
     } else if (mode_ == CallgrindChildProcess || mode_ == CallgrindParentProcess) {
         measurer = new QBenchmarkCallgrindMeasurer;
 #endif
+#ifdef QTESTLIB_USE_PERF_EVENTS
+    } else if (mode_ == PerfCounter) {
+        measurer = new QBenchmarkPerfEventsMeasurer;
+#endif
 #ifdef HAVE_TICK_COUNTER
     } else if (mode_ == TickCounter) {
         measurer = new QBenchmarkTickMeasurer;

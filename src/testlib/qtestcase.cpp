@@ -1341,6 +1341,9 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 #ifdef QTESTLIB_USE_VALGRIND
          " -callgrind          : Use callgrind to time benchmarks\n"
 #endif
+#ifdef QTESTLIB_USE_PERF_EVENTS
+         " -perf               : Use Linux perf events to time benchmarks\n"
+#endif
 #ifdef HAVE_TICK_COUNTER
          " -tickcounter        : Use CPU tick counters to time benchmarks\n"
 #endif
@@ -1480,6 +1483,14 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             QBenchmarkGlobalData::current->setMode(QBenchmarkGlobalData::CallgrindChildProcess);
             QBenchmarkGlobalData::current->callgrindOutFileBase =
                 QBenchmarkValgrindUtils::outFileBase();
+#endif
+#ifdef QTESTLIB_USE_PERF_EVENTS
+        } else if (strcmp(argv[i], "-perf") == 0) {
+            if (QBenchmarkPerfEventsMeasurer::isAvailable()) {
+                printf("perf available\n");
+            } else {
+                fprintf(stderr, "WARNING: Linux perf events not available. Using the walltime measurer.\n");
+            }
 #endif
 #ifdef HAVE_TICK_COUNTER
         } else if (strcmp(argv[i], "-tickcounter") == 0) {
