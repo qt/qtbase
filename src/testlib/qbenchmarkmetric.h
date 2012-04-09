@@ -58,7 +58,28 @@ enum QBenchmarkMetric {
     InstructionReads,
     Events,
     WalltimeNanoseconds,
-    BytesAllocated
+    BytesAllocated,
+    CPUMigrations,
+    CPUCycles,
+    BusCycles,
+    StalledCycles,
+    Instructions,
+    BranchInstructions,
+    BranchMisses,
+    CacheReferences,
+    CacheReads,
+    CacheWrites,
+    CachePrefetches,
+    CacheMisses,
+    CacheReadMisses,
+    CacheWriteMisses,
+    CachePrefetchMisses,
+    ContextSwitches,
+    PageFaults,
+    MinorPageFaults,
+    MajorPageFaults,
+    AlignmentFaults,
+    EmulationFaults
 };
 
 }

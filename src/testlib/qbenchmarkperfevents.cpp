@@ -175,7 +175,7 @@ int QBenchmarkPerfEventsMeasurer::adjustMedianCount(int)
 
 QTest::QBenchmarkMetric QBenchmarkPerfEventsMeasurer::metricType()
 {
-    return QTest::Events;
+    return QTest::CPUCycles;
 }
 
 qint64 QBenchmarkPerfEventsMeasurer::readValue()
