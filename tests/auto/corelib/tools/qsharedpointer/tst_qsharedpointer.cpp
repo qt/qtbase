@@ -1623,7 +1623,8 @@ void hashAndMapTest()
     QVERIFY(it != c.end());
     QCOMPARE(it.key(), k1);
     ++it;
-    QVERIFY(it == c.end());
+    if (Ordered)
+        QVERIFY(it == c.end());
 }
 
 void tst_QSharedPointer::map()
