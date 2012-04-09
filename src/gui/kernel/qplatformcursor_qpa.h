@@ -38,8 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QGRAPHICSSYSTEMCURSOR_H
-#define QGRAPHICSSYSTEMCURSOR_H
+#ifndef QPLATFORMCURSOR_QPA_H
+#define QPLATFORMCURSOR_QPA_H
 
 #include <QtCore/QList>
 #include <QtGui/QImage>
@@ -97,4 +97,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QGRAPHICSSYSTEMCURSOR_H
+#endif // QPLATFORMCURSOR_QPA_H
