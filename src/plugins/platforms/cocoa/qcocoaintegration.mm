@@ -99,6 +99,7 @@ QCocoaIntegration::QCocoaIntegration()
     , mAccessibility(new QPlatformAccessibility)
     , mCocoaClipboard(new QCocoaClipboard)
     , mCocoaDrag(new QCocoaDrag)
+    , mNativeInterface(new QCocoaNativeInterface)
     , mServices(new QCocoaServices)
 {
     QCocoaAutoReleasePool pool;
@@ -205,7 +206,7 @@ QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const
 
 QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
 {
-    return new QCocoaNativeInterface();
+    return mNativeInterface.data();
 }
 
 QPlatformInputContext *QCocoaIntegration::inputContext() const

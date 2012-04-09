@@ -113,6 +113,7 @@ private:
     QList<QCocoaScreen *> mScreens;
     QCocoaClipboard  *mCocoaClipboard;
     QScopedPointer<QCocoaDrag> mCocoaDrag;
+    QScopedPointer<QPlatformNativeInterface> mNativeInterface;
     QScopedPointer<QCocoaServices> mServices;
 };
 
