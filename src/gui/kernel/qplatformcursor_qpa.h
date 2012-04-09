@@ -60,7 +60,7 @@ public:
     QPlatformCursorImage(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
     { set(data, mask, width, height, hotX, hotY); }
     QImage * image() { return &cursorImage; }
-    QPoint hotspot() { return hot; }
+    QPoint hotspot() const { return hot; }
     void set(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
     void set(const QImage &image, int hx, int hy);
     void set(Qt::CursorShape);
