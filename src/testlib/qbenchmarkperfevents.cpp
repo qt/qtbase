@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qbenchmarkperfevents_p.h"
+#include "qbenchmarkmetric.h"
 #include "qbenchmark_p.h"
 
 #ifdef QTESTLIB_USE_PERF_EVENTS
@@ -59,6 +60,9 @@
 #include "3rdparty/linux_perf_event_p.h"
 
 QT_BEGIN_NAMESPACE
+
+static quint32 event_type = PERF_TYPE_HARDWARE;
+static quint64 event_id = PERF_COUNT_HW_CPU_CYCLES;
 
 /*!
     \class QBenchmarkPerfEvents
@@ -92,6 +96,182 @@ bool QBenchmarkPerfEventsMeasurer::isAvailable()
     return perf_event_open(0, 0, 0, 0, 0) == -1 && errno != ENOSYS;
 }
 
+/* Event list structure
+   The following table provides the list of supported events
+
+   Event type   Event counter           Unit            Name and aliases
+   HARDWARE     CPU_CYCLES              CPUCycles       cycles  cpu-cycles
+   HARDWARE     INSTRUCTIONS            Instructions    instructions
+   HARDWARE     CACHE_REFERENCES        CacheReferences cache-references
+   HARDWARE     CACHE_MISSES            CacheMisses     cache-misses
+   HARDWARE     BRANCH_INSTRUCTIONS     BranchInstructions branch-instructions branches
+   HARDWARE     BRANCH_MISSES           BranchMisses    branch-misses
+   HARDWARE     BUS_CYCLES              BusCycles       bus-cycles
+   HARDWARE     STALLED_CYCLES_FRONTEND StalledCycles   stalled-cycles-frontend idle-cycles-frontend
+   HARDWARE     STALLED_CYCLES_BACKEND  StalledCycles   stalled-cycles-backend idle-cycles-backend
+   SOFTWARE     CPU_CLOCK               WalltimeMilliseconds cpu-clock
+   SOFTWARE     TASK_CLOCK              WalltimeMilliseconds task-clock
+   SOFTWARE     PAGE_FAULTS             PageFaults      page-faults faults
+   SOFTWARE     PAGE_FAULTS_MAJ         MajorPageFaults major-faults
+   SOFTWARE     PAGE_FAULTS_MIN         MinorPageFaults minor-faults
+   SOFTWARE     CONTEXT_SWITCHES        ContextSwitches context-switches cs
+   SOFTWARE     CPU_MIGRATIONS          CPUMigrations   cpu-migrations migrations
+   SOFTWARE     ALIGNMENT_FAULTS        AlignmentFaults alignment-faults
+   SOFTWARE     EMULATION_FAULTS        EmulationFaults emulation-faults
+
+   Use the following Perl script to re-generate the list
+=== cut perl ===
+#!/usr/bin/env perl
+# Load all entries into %map
+while (<STDIN>) {
+    m/^\s*(.*)\s*$/;
+    @_ = split /\s+/, $1;
+    $type = shift @_;
+    $id = ($type eq "HARDWARE" ? "PERF_COUNT_HW_" :
+       $type eq "SOFTWARE" ? "PERF_COUNT_SW_" :
+       $type eq "HW_CACHE" ? "CACHE_" : "") . shift @_;
+    $unit = shift @_;
+
+    for $string (@_) {
+    die "$string was already seen!" if defined($map{$string});
+    $map{$string} = [-1, $type, $id, $unit];
+    push @strings, $string;
+    }
+}
+
+# sort the map and print the string list
+@strings = sort @strings;
+print "static const char eventlist_strings[] = \n";
+$counter = 0;
+for $entry (@strings) {
+    print "    \"$entry\\0\"\n";
+    $map{$entry}[0] = $counter;
+    $counter += 1 + length $entry;
+}
+
+# print the table
+print "    \"\\0\";\n\nstatic const Events eventlist[] = {\n";
+for $entry (sort @strings) {
+    printf "    { %3d, PERF_TYPE_%s, %s, QTest::%s },\n",
+        $map{$entry}[0],
+    $map{$entry}[1],
+        $map{$entry}[2],
+        $map{$entry}[3];
+}
+print "    {   0, PERF_TYPE_MAX, 0, QTest::Events }\n};\n";
+=== cut perl ===
+*/
+
+struct Events {
+    unsigned offset;
+    quint32 type;
+    quint64 event_id;
+    QTest::QBenchmarkMetric metric;
+};
+
+/* -- BEGIN GENERATED CODE -- */
+static const char eventlist_strings[] =
+    "alignment-faults\0"
+    "branch-instructions\0"
+    "branch-misses\0"
+    "branches\0"
+    "bus-cycles\0"
+    "cache-misses\0"
+    "cache-references\0"
+    "context-switches\0"
+    "cpu-clock\0"
+    "cpu-cycles\0"
+    "cpu-migrations\0"
+    "cs\0"
+    "cycles\0"
+    "emulation-faults\0"
+    "faults\0"
+    "idle-cycles-backend\0"
+    "idle-cycles-frontend\0"
+    "instructions\0"
+    "major-faults\0"
+    "migrations\0"
+    "minor-faults\0"
+    "page-faults\0"
+    "stalled-cycles-backend\0"
+    "stalled-cycles-frontend\0"
+    "task-clock\0"
+    "\0";
+
+static const Events eventlist[] = {
+    {   0, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_ALIGNMENT_FAULTS, QTest::AlignmentFaults },
+    {  17, PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS, QTest::BranchInstructions },
+    {  37, PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES, QTest::BranchMisses },
+    {  51, PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS, QTest::BranchInstructions },
+    {  60, PERF_TYPE_HARDWARE, PERF_COUNT_HW_BUS_CYCLES, QTest::BusCycles },
+    {  71, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES, QTest::CacheMisses },
+    {  84, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES, QTest::CacheReferences },
+    { 101, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES, QTest::ContextSwitches },
+    { 118, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_CLOCK, QTest::WalltimeMilliseconds },
+    { 128, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, QTest::CPUCycles },
+    { 139, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_MIGRATIONS, QTest::CPUMigrations },
+    { 154, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES, QTest::ContextSwitches },
+    { 157, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, QTest::CPUCycles },
+    { 164, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_EMULATION_FAULTS, QTest::EmulationFaults },
+    { 181, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS, QTest::PageFaults },
+    { 188, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_BACKEND, QTest::StalledCycles },
+    { 208, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND, QTest::StalledCycles },
+    { 229, PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS, QTest::Instructions },
+    { 242, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ, QTest::MajorPageFaults },
+    { 255, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_MIGRATIONS, QTest::CPUMigrations },
+    { 266, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN, QTest::MinorPageFaults },
+    { 279, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS, QTest::PageFaults },
+    { 291, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_BACKEND, QTest::StalledCycles },
+    { 314, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND, QTest::StalledCycles },
+    { 338, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK, QTest::WalltimeMilliseconds },
+    {   0, PERF_TYPE_MAX, 0, QTest::Events }
+};
+/* -- END GENERATED CODE -- */
+
+QTest::QBenchmarkMetric QBenchmarkPerfEventsMeasurer::metricForEvent(quint32 type, quint64 event_id)
+{
+    const Events *ptr = eventlist;
+    for ( ; ptr->type != PERF_TYPE_MAX; ++ptr) {
+        if (ptr->type == type && ptr->event_id == event_id)
+            return ptr->metric;
+    }
+    return QTest::Events;
+}
+
+void QBenchmarkPerfEventsMeasurer::setCounter(const char *name)
+{
+    const Events *ptr = eventlist;
+    for ( ; ptr->type != PERF_TYPE_MAX; ++ptr) {
+        int c = strcmp(name, eventlist_strings + ptr->offset);
+        if (c == 0)
+            break;
+        if (c < 0) {
+            fprintf(stderr, "ERROR: Performance counter type '%s' is unknown\n", name);
+            exit(1);
+        }
+    }
+
+    ::event_type = ptr->type;
+    ::event_id = ptr->event_id;
+}
+
+void QBenchmarkPerfEventsMeasurer::listCounters()
+{
+    if (!isAvailable()) {
+        printf("Performance counters are not available on this system\n");
+        return;
+    }
+
+    printf("The following performance counters are available:\n");
+    const Events *ptr = eventlist;
+    for ( ; ptr->type != PERF_TYPE_MAX; ++ptr) {
+        printf("  %-30s [%s]\n", eventlist_strings + ptr->offset,
+               ptr->type == PERF_TYPE_HARDWARE ? "hardware" :
+               ptr->type == PERF_TYPE_SOFTWARE ? "software" :
+               ptr->type == PERF_TYPE_HW_CACHE ? "cache" : "other");
+    }
+}
+
 QBenchmarkPerfEventsMeasurer::QBenchmarkPerfEventsMeasurer()
     : fd(-1)
 {
@@ -103,6 +283,10 @@ QBenchmarkPerfEventsMeasurer::~QBenchmarkPerfEventsMeasurer()
 }
 
 void QBenchmarkPerfEventsMeasurer::init()
+{
+}
+
+void QBenchmarkPerfEventsMeasurer::start()
 {
     perf_event_attr attr;
     memset(&attr, 0, sizeof attr);
@@ -119,9 +303,8 @@ void QBenchmarkPerfEventsMeasurer::init()
     attr.task = true; // trace fork and exit
 
     // our event type
-    // ### FIXME hardcoded for now
-    attr.type = PERF_TYPE_HARDWARE;
-    attr.config = PERF_COUNT_HW_CPU_CYCLES;
+    attr.type = ::event_type;
+    attr.config = ::event_id;
 
     // pid == 0 -> attach to the current process
     // cpu == -1 -> monitor on all CPUs
@@ -134,10 +317,7 @@ void QBenchmarkPerfEventsMeasurer::init()
     } else {
         ::fcntl(fd, F_SETFD, FD_CLOEXEC);
     }
-}
 
-void QBenchmarkPerfEventsMeasurer::start()
-{
     // enable the counter
     ::ioctl(fd, PERF_EVENT_IOC_RESET);
     ::ioctl(fd, PERF_EVENT_IOC_ENABLE);
@@ -175,10 +355,10 @@ int QBenchmarkPerfEventsMeasurer::adjustMedianCount(int)
 
 QTest::QBenchmarkMetric QBenchmarkPerfEventsMeasurer::metricType()
 {
-    return QTest::CPUCycles;
+    return metricForEvent(event_type, event_id);
 }
 
-qint64 QBenchmarkPerfEventsMeasurer::readValue()
+static quint64 rawReadValue(int fd)
 {
     /* from the kernel docs:
      * struct read_format {
@@ -211,6 +391,16 @@ qint64 QBenchmarkPerfEventsMeasurer::readValue()
 
     // scale the results, though this shouldn't happen!
     return results.value * (double(results.time_running) / double(results.time_enabled));
+}
+
+qint64 QBenchmarkPerfEventsMeasurer::readValue()
+{
+    quint64 raw = rawReadValue(fd);
+    if (metricType() == QTest::WalltimeMilliseconds) {
+        // perf returns nanoseconds
+        return raw / 1000000;
+    }
+    return raw;
 }
 
 QT_END_NAMESPACE

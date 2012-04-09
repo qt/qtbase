@@ -1343,6 +1343,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 #endif
 #ifdef QTESTLIB_USE_PERF_EVENTS
          " -perf               : Use Linux perf events to time benchmarks\n"
+         " -perfcounter name   : Use the counter named 'name'\n"
+         " -perfcounterlist    : Lists the counters available\n"
 #endif
 #ifdef HAVE_TICK_COUNTER
          " -tickcounter        : Use CPU tick counters to time benchmarks\n"
@@ -1492,6 +1494,16 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             } else {
                 fprintf(stderr, "WARNING: Linux perf events not available. Using the walltime measurer.\n");
             }
+        } else if (strcmp(argv[i], "-perfcounter") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "-perfcounter needs an extra parameter with the name of the counter\n");
+                exit(1);
+            } else {
+                QBenchmarkPerfEventsMeasurer::setCounter(argv[++i]);
+            }
+        } else if (strcmp(argv[i], "-perfcounterlist") == 0) {
+            QBenchmarkPerfEventsMeasurer::listCounters();
+            exit(0);
 #endif
 #ifdef HAVE_TICK_COUNTER
         } else if (strcmp(argv[i], "-tickcounter") == 0) {

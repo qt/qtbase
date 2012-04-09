@@ -74,6 +74,9 @@ public:
     virtual QTest::QBenchmarkMetric metricType();
 
     static bool isAvailable();
+    static QTest::QBenchmarkMetric metricForEvent(quint32 type, quint64 event_id);
+    static void setCounter(const char *name);
+    static void listCounters();
 private:
     int fd;
 
