@@ -14,6 +14,11 @@ unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
     Library
 
 HEADERS = qbenchmark.h \
+    qbenchmark_p.h \
+    qbenchmarkmeasurement_p.h \
+    qbenchmarkvalgrind_p.h \
+    qbenchmarkevent_p.h \
+    qbenchmarkmetric_p.h \
     qsignalspy.h \
     qtestaccessible.h \
     qtestassert.h \
