@@ -202,29 +202,6 @@ DEFINES *= QT_DEPRECATED_WARNINGS
 
 TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
 
-qtPrepareTool(QMAKE_MOC, moc)
-qtPrepareTool(QMAKE_UIC, uic)
-qtPrepareTool(QMAKE_RCC, rcc)
-qtPrepareTool(QMAKE_LUPDATE, lupdate)
-qtPrepareTool(QMAKE_LRELEASE, lrelease)
-
-moc_dir.name = moc_location
-moc_dir.variable = QMAKE_MOC
-
-uic_dir.name = uic_location
-uic_dir.variable = QMAKE_UIC
-
-rcc_dir.name = rcc_location
-rcc_dir.variable = QMAKE_RCC
-
-lupdate_dir.name = lupdate_location
-lupdate_dir.variable = QMAKE_LUPDATE
-
-lrelease_dir.name = lrelease_location
-lrelease_dir.variable = QMAKE_LRELEASE
-
-QMAKE_PKGCONFIG_VARIABLES += moc_dir uic_dir rcc_dir lupdate_dir lrelease_dir
-
 load(qt_targets)
 
 win32:DEFINES+=_USE_MATH_DEFINES

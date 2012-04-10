@@ -52,3 +52,10 @@ INCLUDEPATH += ../3rdparty/harfbuzz/src
 win32:!contains(QT_CONFIG, directwrite) {
     DEFINES += QT_NO_DIRECTWRITE
 }
+
+load(uic)
+
+uic_dir.name = uic_location
+uic_dir.variable = QMAKE_UIC
+
+QMAKE_PKGCONFIG_VARIABLES += uic_dir
