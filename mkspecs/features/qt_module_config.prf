@@ -34,12 +34,8 @@ INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES
 INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES/$$TARGET
 INCLUDEPATH *= $$MODULE_INCLUDES $$MODULE_INCLUDES/.. #just for today to have some compat
 
-#headers.pri is loaded from the last include path
-LAST_MODULE_INCLUDE=$$MODULE_INCLUDES
-for(include_path, MODULE_INCLUDES):LAST_MODULE_INCLUDE=$${include_path}
-HEADERS_PRI = $$LAST_MODULE_INCLUDE/headers.pri
 #load up the headers info
-include($$HEADERS_PRI, "", true)|clear(HEADERS_PRI)
+include($$MODULE_BASE_OUTDIR/include/$$TARGET/headers.pri, "", true)
 
 #other
 TEMPLATE         = lib
