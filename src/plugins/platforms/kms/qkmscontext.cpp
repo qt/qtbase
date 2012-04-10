@@ -110,4 +110,11 @@ QSurfaceFormat QKmsContext::format() const
     return QSurfaceFormat();
 }
 
+GLuint QKmsContext::defaultFramebufferObject(QPlatformSurface *surface) const
+{
+    QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
+    QKmsScreen *screen = static_cast<QKmsScreen *> (QPlatformScreen::platformScreenForWindow(window->window()));
+    return screen->framebufferObject();
+}
+
 QT_END_NAMESPACE
