@@ -310,6 +310,8 @@ struct AccessibleRelation : public IAccessibleRelation
     }
 
 
+    virtual ~AccessibleRelation() {}
+
     /* IUnknown */
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface)
     {
