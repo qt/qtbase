@@ -557,17 +557,24 @@ bool QChar::isLetter(ushort ucs2)
 }
 
 /*!
+    \fn bool QChar::isNumber() const
+
     Returns true if the character is a number (Number_* categories,
     not just 0-9); otherwise returns false.
 
     \sa isDigit()
 */
-bool QChar::isNumber() const
+
+/*!
+    \internal
+    \overload
+*/
+bool QChar::isNumber(ushort ucs2)
 {
     const int test = FLAG(Number_DecimalDigit) |
                      FLAG(Number_Letter) |
                      FLAG(Number_Other);
-    return FLAG(qGetProp(ucs)->category) & test;
+    return FLAG(qGetProp(ucs2)->category) & test;
 }
 
 /*!

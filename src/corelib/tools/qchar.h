@@ -233,35 +233,31 @@ public:
     bool isPrint() const;
     bool isPunct() const;
     inline bool isSpace() const {
+        // note that [0x09..0x0d] + 0x85 are exceptional Cc-s and must be handled explicitly
         return ucs == 0x20 || (ucs <= 0x0D && ucs >= 0x09)
-                || (ucs > 127 && (ucs == 0x0085 || isSpace(ucs)));
+                || (ucs > 127 && (ucs == 0x85 || ucs == 0xa0 || isSpace(ucs)));
     }
     bool isMark() const;
     inline bool isLetter() const {
-        return (ucs >= 'a' && ucs <= 'z')
-                || (ucs <= 'Z' && ucs >= 'A')
+        return (ucs >= 'A' && ucs <= 'z' && (ucs >= 'a' || ucs <= 'Z'))
                 || (ucs > 127 && isLetter(ucs));
     }
-    bool isNumber() const;
+    inline bool isNumber() const
+    { return (ucs <= '9' && ucs >= '0') || (ucs > 127 && isNumber(ucs)); }
     inline bool isLetterOrNumber() const
     {
-        return (ucs >= 'a' && ucs <= 'z')
-                || (ucs <= 'Z' && ucs >= 'A')
-                || (ucs <= '9' && ucs >= '0')
+        return (ucs >= 'A' && ucs <= 'z' && (ucs >= 'a' || ucs <= 'Z'))
+                || (ucs >= '0' && ucs <= '9')
                 || (ucs > 127 && isLetterOrNumber(ucs));
     }
     inline bool isDigit() const
     { return (ucs <= '9' && ucs >= '0') || (ucs > 127 && isDigit(ucs)); }
     bool isSymbol() const;
-    inline bool isLower() const {
-        return (ucs >= 'a' && ucs <= 'z')
-                || (ucs > 127 && category(ucs) == Letter_Lowercase);
-    }
-    inline bool isUpper() const {
-        return (ucs <= 'Z' && ucs >= 'A')
-                || (ucs > 127 && category(ucs) == Letter_Uppercase);
-    }
-    inline bool isTitleCase() const { return category() == Letter_Titlecase; }
+    inline bool isLower() const
+    { return (ucs <= 'z' && ucs >= 'a') || (ucs > 127 && category() == Letter_Lowercase); }
+    inline bool isUpper() const
+    { return (ucs <= 'Z' && ucs >= 'A') || (ucs > 127 && category() == Letter_Uppercase); }
+    inline bool isTitleCase() const { return ucs > 127 && category() == Letter_Titlecase; }
 
     inline bool isHighSurrogate() const {
         return ((ucs & 0xfc00) == 0xd800);
@@ -331,6 +327,7 @@ public:
 private:
     static bool QT_FASTCALL isDigit(ushort ucs2);
     static bool QT_FASTCALL isLetter(ushort ucs2);
+    static bool QT_FASTCALL isNumber(ushort ucs2);
     static bool QT_FASTCALL isLetterOrNumber(ushort ucs2);
     static bool QT_FASTCALL isSpace(ushort ucs2);
 
