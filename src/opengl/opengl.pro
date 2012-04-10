@@ -1,7 +1,6 @@
 load(qt_module)
 
 TARGET     = QtOpenGL
-QPRO_PWD   = $$PWD
 QT         = core-private gui-private widgets-private
 
 DEFINES   += QT_BUILD_OPENGL_LIB

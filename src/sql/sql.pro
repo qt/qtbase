@@ -1,7 +1,6 @@
 load(qt_module)
 
 TARGET	   = QtSql
-QPRO_PWD   = $$PWD
 QT         = core-private
 
 DEFINES += QT_BUILD_SQL_LIB

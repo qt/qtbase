@@ -1,7 +1,6 @@
 load(qt_module)
 
 TARGET     = QtConcurrent
-QPRO_PWD   = $$PWD
 QT         = core-private
 CONFIG    += exceptions
 

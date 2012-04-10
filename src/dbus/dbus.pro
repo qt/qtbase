@@ -1,7 +1,6 @@
 load(qt_module)
 
 TARGET = QtDBus
-QPRO_PWD = $$PWD
 QT = core-private
 CONFIG += link_pkgconfig
 MODULE_CONFIG = dbusadaptors dbusinterfaces

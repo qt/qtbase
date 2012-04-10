@@ -1,7 +1,6 @@
 load(qt_module)
 
 TARGET     = QtXml
-QPRO_PWD   = $$PWD
 QT         = core-private
 
 DEFINES   += QT_BUILD_XML_LIB QT_NO_USING_NAMESPACE

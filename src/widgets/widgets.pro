@@ -1,7 +1,6 @@
 load(qt_module)
 
 TARGET     = QtWidgets
-QPRO_PWD   = $$PWD
 QT = core-private gui-private
 MODULE_CONFIG = uic
 

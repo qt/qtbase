@@ -1,7 +1,6 @@
 load(qt_module)
 
 TARGET     = QtPrintSupport
-QPRO_PWD   = $$PWD
 QT = core-private gui-private widgets-private
 
 DEFINES   += QT_BUILD_PRINTSUPPORT_LIB QT_NO_USING_NAMESPACE

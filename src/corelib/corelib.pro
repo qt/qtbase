@@ -1,7 +1,6 @@
 load(qt_module)
 
 TARGET	   = QtCore
-QPRO_PWD   = $$PWD
 QT         =
 CONFIG    += exceptions
 
