@@ -60,6 +60,7 @@ QT_END_HEADER
 #include <new>
 #include <QtCore/qatomic.h>
 #include <QtCore/qobject.h>    // for qobject_cast
+#include <QtCore/qhash.h>    // for qHash
 
 QT_BEGIN_HEADER
 
@@ -771,11 +772,10 @@ Q_INLINE_TEMPLATE bool operator<(T *ptr1, const QSharedPointer<X> &ptr2)
 //
 // qHash
 //
-template <class T> inline uint qHash(const T *key); // defined in qhash.h
 template <class T>
-Q_INLINE_TEMPLATE uint qHash(const QSharedPointer<T> &ptr)
+Q_INLINE_TEMPLATE uint qHash(const QSharedPointer<T> &ptr, uint seed = 0)
 {
-    return QT_PREPEND_NAMESPACE(qHash)<T>(ptr.data());
+    return QT_PREPEND_NAMESPACE(qHash)(ptr.data(), seed);
 }
 
 
