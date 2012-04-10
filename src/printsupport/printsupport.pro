@@ -6,8 +6,6 @@ QT = core-private gui-private widgets-private
 
 DEFINES   += QT_BUILD_PRINTSUPPORT_LIB QT_NO_USING_NAMESPACE
 
-unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
-
 load(qt_module_config)
 
 QMAKE_DOCS = $$PWD/doc/qtprintsupport.qdocconf

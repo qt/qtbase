@@ -194,6 +194,12 @@ unix {
    QMAKE_LIBTOOL_INSTALL_REPLACE += include_replace lib_replace
 }
 
+unix|win32-g++* {
+    for(i, QT):QMAKE_PKGCONFIG_REQUIRES += $$eval(QT.$${i}.name)
+    isEmpty(QMAKE_PKGCONFIG_DESCRIPTION): \
+        QMAKE_PKGCONFIG_DESCRIPTION = $$replace(TARGET, ^Qt, "Qt ") module
+}
+
 contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE
 DEFINES *= QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
 DEFINES *= QT_MOC_COMPAT #we don't need warnings from calling moc code in our generated code

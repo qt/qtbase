@@ -15,12 +15,6 @@ contains(QT_CONFIG, dbus-linked) {
 }
 
 # INCLUDEPATH += .
-unix|win32-g++* {
-    QMAKE_PKGCONFIG_DESCRIPTION = Qt \
-        DBus \
-        module
-    QMAKE_PKGCONFIG_REQUIRES = QtCore
-}
 win32 { 
     wince*:LIBS_PRIVATE += -lws2
     else:LIBS_PRIVATE += -lws2_32 \

@@ -7,8 +7,6 @@ MODULE_CONFIG = opengl
 
 DEFINES   += QT_BUILD_GUI_LIB QT_NO_USING_NAMESPACE
 
-unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
-
 load(qt_module_config)
 
 # Code coverage with TestCocoon

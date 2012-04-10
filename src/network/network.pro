@@ -15,8 +15,6 @@ DEFINES += QT_BUILD_NETWORK_LIB QT_NO_USING_NAMESPACE
 QT = core-private
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x64000000
 
-unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
-
 load(qt_module_config)
 
 QMAKE_DOCS = $$PWD/doc/qtnetwork.qdocconf
