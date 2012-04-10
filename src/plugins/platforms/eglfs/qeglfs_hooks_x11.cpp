@@ -88,3 +88,8 @@ void QEglFSHooks::destroyNativeWindow(EGLNativeWindowType window)
     XDestroyWindow(display, window);
 }
 
+bool QEglFSHooks::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    return false;
+}
+

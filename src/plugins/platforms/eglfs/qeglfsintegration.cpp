@@ -74,6 +74,10 @@ QEglFSIntegration::~QEglFSIntegration()
 
 bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
+    // We assume that devices will have more and not less capabilities
+    if (hooks && hooks->hasCapability(cap))
+        return true;
+
     switch (cap) {
     case ThreadedPixmaps: return true;
     case OpenGL: return true;

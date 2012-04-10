@@ -53,13 +53,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef EGLFS_PLATFORM_HOOKS
-extern QEglFSHooks platform_hooks;
-static QEglFSHooks *hooks = &platform_hooks;
-#else
-static QEglFSHooks *hooks = 0;
-#endif
-
 // #define QEGL_EXTRA_DEBUG
 
 #ifdef QEGL_EXTRA_DEBUG

@@ -140,4 +140,17 @@ void QEglFSHooks::destroyNativeWindow(EGLNativeWindowType window)
     delete eglWindow;
 }
 
+bool QEglFSHooks::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+        case QPlatformIntegration::ThreadedPixmaps:
+        case QPlatformIntegration::OpenGL:
+        case QPlatformIntegration::ThreadedOpenGL:
+        case QPlatformIntegration::BufferQueueingOpenGL:
+            return true;
+        default:
+            return false;
+    }
+}
+
 QEglFSHooks platform_hooks;

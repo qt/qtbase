@@ -54,7 +54,15 @@ struct QEglFSHooks {
     QSize screenSize() const;
     EGLNativeWindowType createNativeWindow(const QSize &size);
     void destroyNativeWindow(EGLNativeWindowType window);
+    bool hasCapability(QPlatformIntegration::Capability cap) const;
 };
+
+#ifdef EGLFS_PLATFORM_HOOKS
+extern QEglFSHooks platform_hooks;
+static QEglFSHooks *hooks = &platform_hooks;
+#else
+static QEglFSHooks *hooks = 0;
+#endif
 
 QT_END_NAMESPACE
 
