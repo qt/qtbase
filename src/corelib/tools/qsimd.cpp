@@ -168,7 +168,7 @@ static inline uint detectProcessorFeatures()
         asm ("xchg %%ebx, %2\n"
              "cpuid\n"
              "xchg %%ebx, %2\n"
-            : "=c" (feature_result), "=d" (result), "=&r" (tmp1)
+            : "=&c" (feature_result), "=d" (result), "=&r" (tmp1)
             : "a" (1));
 
         asm ("xchg %%ebx, %1\n"
@@ -182,7 +182,7 @@ static inline uint detectProcessorFeatures()
              "cpuid\n"
              "2:\n"
              "xchg %%ebx, %1\n"
-            : "=d" (extended_result), "=&r" (tmp1)
+            : "=&d" (extended_result), "=&r" (tmp1)
             : "a" (0x80000000)
             : "%ecx"
             );
@@ -284,7 +284,7 @@ static inline uint detectProcessorFeatures()
     asm ("xchg %%rbx, %1\n"
          "cpuid\n"
          "xchg %%rbx, %1\n"
-        : "=c" (feature_result), "=&r" (tmp)
+        : "=&c" (feature_result), "=&r" (tmp)
         : "a" (1)
         : "%edx"
         );
