@@ -395,6 +395,8 @@ void QCocoaColorDialogHelper::hide_sys()
 
 QCocoaColorDialogHelper::DialogCode QCocoaColorDialogHelper::dialogResultCode_sys()
 {
+    if (!mDelegate)
+        return QPlatformDialogHelper::Rejected;
     QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate);
     return [delegate dialogResultCode];
 }
@@ -429,6 +431,8 @@ void QCocoaColorDialogHelper::setCurrentColor_sys(const QColor &color)
 
 QColor QCocoaColorDialogHelper::currentColor_sys() const
 {
+    if (!mDelegate)
+        return QColor();
     return reinterpret_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate)->mQtColor;
 }
 
