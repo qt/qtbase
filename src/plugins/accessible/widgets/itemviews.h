@@ -42,11 +42,12 @@
 #ifndef ACCESSIBLE_ITEMVIEWS_H
 #define ACCESSIBLE_ITEMVIEWS_H
 
-#include <QtWidgets/qabstractitemview.h>
-#include <QtWidgets/qheaderview.h>
+#include "QtCore/qpointer.h"
 #include <QtGui/qaccessible.h>
 #include <QtGui/qaccessible2.h>
 #include <QtWidgets/qaccessiblewidget.h>
+#include <QtWidgets/qabstractitemview.h>
+#include <QtWidgets/qheaderview.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -65,7 +66,6 @@ public:
 
     virtual ~QAccessibleTable();
 
-    QObject *object() const { return view; }
     QAccessible::Role role() const;
     QAccessible::State state() const;
     QString text(QAccessible::Text t) const;
@@ -103,9 +103,11 @@ public:
     virtual bool unselectRow(int row);
     virtual bool unselectColumn(int column);
 
+    QAbstractItemView *view() const;
+
 protected:
-    QAbstractItemView* view;
     inline QAccessibleTableCell *cell(const QModelIndex &index) const;
+
     inline QAccessible::Role cellRole() const {
         switch (m_role) {
         case QAccessible::List:
@@ -193,7 +195,7 @@ public:
 private:
     QHeaderView *verticalHeader() const;
     QHeaderView *horizontalHeader() const;
-    QAbstractItemView *view;
+    QPointer<QAbstractItemView > view;
     QModelIndex m_index;
     QAccessible::Role m_role;
 
