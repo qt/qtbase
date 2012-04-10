@@ -75,6 +75,7 @@
 #include <QtNetwork/qnetworkconfigmanager.h>
 #include <QtNetwork/qnetworkconfiguration.h>
 #include <QtNetwork/qnetworksession.h>
+#include <QtNetwork/private/qnetworksession_p.h>
 #endif
 #ifdef QT_BUILD_INTERNAL
 #include <QtNetwork/private/qnetworkaccessmanager_p.h>
@@ -401,6 +402,9 @@ private Q_SLOTS:
 
     void ftpAuthentication_data();
     void ftpAuthentication();
+
+    void backgroundRequest_data();
+    void backgroundRequest();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -6778,7 +6782,6 @@ void tst_QNetworkReply::closeDuringDownload()
     QTest::qWait(1000); //cancelling ftp takes some time, this avoids a warning caused by test's cleanup() destroying the connection cache before the abort is finished
 }
 
-
 void tst_QNetworkReply::ftpAuthentication_data()
 {
     QTest::addColumn<QString>("referenceName");
@@ -6806,6 +6809,49 @@ void tst_QNetworkReply::ftpAuthentication()
     QCOMPARE(reply->error(), QNetworkReply::NetworkError(error));
 }
 
+void tst_QNetworkReply::backgroundRequest_data()
+{
+    QTest::addColumn<bool>("background");
+    QTest::addColumn<int>("policy");
+    QTest::addColumn<QNetworkReply::NetworkError>("error");
+
+    QTest::newRow("fg, normal") << false << 0 << QNetworkReply::NoError;
+    QTest::newRow("bg, normal") << true << 0 << QNetworkReply::NoError;
+    QTest::newRow("fg, nobg") << false << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::NoError;
+    QTest::newRow("bg, nobg") << true << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::BackgroundRequestNotAllowedError;
+
+}
+
+void tst_QNetworkReply::backgroundRequest()
+{
+#ifdef QT_BUILD_INTERNAL
+    QFETCH(bool, background);
+    QFETCH(int, policy);
+    QFETCH(QNetworkReply::NetworkError, error);
+
+    QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName()));
+
+    if (background)
+        request.setAttribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(true));
+
+    //this preconstructs the session so we can change policies in advance
+    manager.setConfiguration(networkConfiguration);
+
+    const QWeakPointer<const QNetworkSession> session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
+    QVERIFY(session);
+    QNetworkSession::UsagePolicies original = session.data()->usagePolicies();
+    QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), QNetworkSession::UsagePolicies(policy));
+
+    QNetworkReplyPtr reply(manager.get(request));
+
+    QVERIFY(waitForFinish(reply) != Timeout);
+    if (session)
+        QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), original);
+
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), error);
+#endif
+}
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()
