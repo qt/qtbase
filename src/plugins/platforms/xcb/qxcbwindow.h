@@ -59,6 +59,19 @@ class QXcbEGLSurface;
 class QXcbWindow : public QXcbObject, public QPlatformWindow
 {
 public:
+    enum NetWmState {
+        NetWmStateAbove = 0x1,
+        NetWmStateBelow = 0x2,
+        NetWmStateFullScreen = 0x4,
+        NetWmStateMaximizedHorz = 0x8,
+        NetWmStateMaximizedVert = 0x10,
+        NetWmStateModal = 0x20,
+        NetWmStateStaysOnTop = 0x40,
+        NetWmStateDemandsAttention = 0x80
+    };
+
+    Q_DECLARE_FLAGS(NetWmStates, NetWmState)
+
     QXcbWindow(QWindow *window);
     ~QXcbWindow();
 
@@ -121,9 +134,8 @@ public:
 
 private:
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
-    QVector<xcb_atom_t> getNetWmState();
-    void setNetWmState(const QVector<xcb_atom_t> &atoms);
-    void printNetWmState(const QVector<xcb_atom_t> &state);
+    NetWmStates netWmStates();
+    void setNetWmStates(NetWmStates);
 
     void setNetWmWindowFlags(Qt::WindowFlags flags);
     void setMotifWindowFlags(Qt::WindowFlags flags);
@@ -169,6 +181,7 @@ private:
     QRegion m_exposeRegion;
 
     xcb_visualid_t m_visualId;
+    int m_lastWindowStateEvent;
 };
 
 QT_END_NAMESPACE

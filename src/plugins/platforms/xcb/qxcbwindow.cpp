@@ -149,6 +149,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
 #if defined(XCB_USE_EGL)
     , m_eglSurface(0)
 #endif
+    , m_lastWindowStateEvent(-1)
 {
     m_screen = static_cast<QXcbScreen *>(window->screen()->handle());
 
@@ -636,29 +637,9 @@ static void setMotifWmHints(QXcbConnection *c, xcb_window_t window, const QtMoti
     }
 }
 
-void QXcbWindow::printNetWmState(const QVector<xcb_atom_t> &state)
+QXcbWindow::NetWmStates QXcbWindow::netWmStates()
 {
-    printf("_NET_WM_STATE (%d): ", state.size());
-    for (int i = 0; i < state.size(); ++i) {
-#define CHECK_WM_STATE(state_atom) \
-        if (state.at(i) == atom(QXcbAtom::state_atom))\
-            printf(#state_atom " ");
-        CHECK_WM_STATE(_NET_WM_STATE_ABOVE)
-        CHECK_WM_STATE(_NET_WM_STATE_BELOW)
-        CHECK_WM_STATE(_NET_WM_STATE_FULLSCREEN)
-        CHECK_WM_STATE(_NET_WM_STATE_MAXIMIZED_HORZ)
-        CHECK_WM_STATE(_NET_WM_STATE_MAXIMIZED_VERT)
-        CHECK_WM_STATE(_NET_WM_STATE_MODAL)
-        CHECK_WM_STATE(_NET_WM_STATE_STAYS_ON_TOP)
-        CHECK_WM_STATE(_NET_WM_STATE_DEMANDS_ATTENTION)
-#undef CHECK_WM_STATE
-    }
-    printf("\n");
-}
-
-QVector<xcb_atom_t> QXcbWindow::getNetWmState()
-{
-    QVector<xcb_atom_t> result;
+    NetWmStates result(0);
 
     xcb_get_property_cookie_t get_cookie =
         xcb_get_property_unchecked(xcb_connection(), 0, m_window, atom(QXcbAtom::_NET_WM_STATE),
@@ -668,15 +649,24 @@ QVector<xcb_atom_t> QXcbWindow::getNetWmState()
         xcb_get_property_reply(xcb_connection(), get_cookie, NULL);
 
     if (reply && reply->format == 32 && reply->type == XCB_ATOM_ATOM) {
-        result.resize(reply->length);
-
-        memcpy(result.data(), xcb_get_property_value(reply), reply->length * sizeof(xcb_atom_t));
-
-#ifdef NET_WM_STATE_DEBUG
-        printf("getting net wm state (%x)\n", m_window);
-        printNetWmState(result);
-#endif
-
+        const xcb_atom_t *states = static_cast<const xcb_atom_t *>(xcb_get_property_value(reply));
+        const xcb_atom_t *statesEnd = states + reply->length;
+        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_ABOVE)))
+            result |= NetWmStateAbove;
+        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_BELOW)))
+            result |= NetWmStateBelow;
+        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN)))
+            result |= NetWmStateFullScreen;
+        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ)))
+            result |= NetWmStateMaximizedHorz;
+        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT)))
+            result |= NetWmStateMaximizedVert;
+        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_MODAL)))
+            result |= NetWmStateModal;
+        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_STAYS_ON_TOP)))
+            result |= NetWmStateStaysOnTop;
+        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_DEMANDS_ATTENTION)))
+            result |= NetWmStateDemandsAttention;
         free(reply);
     } else {
 #ifdef NET_WM_STATE_DEBUG
@@ -687,8 +677,26 @@ QVector<xcb_atom_t> QXcbWindow::getNetWmState()
     return result;
 }
 
-void QXcbWindow::setNetWmState(const QVector<xcb_atom_t> &atoms)
+void QXcbWindow::setNetWmStates(NetWmStates states)
 {
+    QVector<xcb_atom_t> atoms;
+    if (states & NetWmStateAbove)
+        atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_ABOVE));
+    if (states & NetWmStateBelow)
+        atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_BELOW));
+    if (states & NetWmStateFullScreen)
+        atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
+    if (states & NetWmStateMaximizedHorz)
+        atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ));
+    if (states & NetWmStateMaximizedVert)
+        atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT));
+    if (states & NetWmStateModal)
+        atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_MODAL));
+    if (states & NetWmStateStaysOnTop)
+        atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_STAYS_ON_TOP));
+    if (states & NetWmStateDemandsAttention)
+        atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_DEMANDS_ATTENTION));
+
     if (atoms.isEmpty()) {
         Q_XCB_CALL(xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_STATE)));
     } else {
@@ -698,7 +706,6 @@ void QXcbWindow::setNetWmState(const QVector<xcb_atom_t> &atoms)
     }
     xcb_flush(xcb_connection());
 }
-
 
 Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
 {
@@ -966,30 +973,28 @@ void QXcbWindow::updateMotifWmHintsBeforeMap()
 
 void QXcbWindow::updateNetWmStateBeforeMap()
 {
-    QVector<xcb_atom_t> netWmState;
+    NetWmStates states(0);
 
-    Qt::WindowFlags flags = window()->windowFlags();
+    const Qt::WindowFlags flags = window()->windowFlags();
     if (flags & Qt::WindowStaysOnTopHint) {
-        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_ABOVE));
-        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_STAYS_ON_TOP));
+        states |= NetWmStateAbove;
+        states |= NetWmStateStaysOnTop;
     } else if (flags & Qt::WindowStaysOnBottomHint) {
-        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_BELOW));
+        states |= NetWmStateBelow;
     }
 
-    if (window()->windowState() & Qt::WindowFullScreen) {
-        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
-    }
+    if (window()->windowState() & Qt::WindowFullScreen)
+        states |= NetWmStateFullScreen;
 
     if (window()->windowState() & Qt::WindowMaximized) {
-        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ));
-        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT));
+        states |= NetWmStateMaximizedHorz;
+        states |= NetWmStateMaximizedVert;
     }
 
-    if (window()->windowModality() != Qt::NonModal) {
-        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_MODAL));
-    }
+    if (window()->windowModality() != Qt::NonModal)
+        states |= NetWmStateModal;
 
-    setNetWmState(netWmState);
+    setNetWmStates(states);
 }
 
 void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
@@ -1452,41 +1457,42 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
 {
     connection()->setTime(event->time);
 
-    bool propertyDeleted = event->state == XCB_PROPERTY_DELETE;
+    const bool propertyDeleted = event->state == XCB_PROPERTY_DELETE;
+    const xcb_atom_t netWmStateAtom = atom(QXcbAtom::_NET_WM_STATE);
+    const xcb_atom_t wmStateAtom = atom(QXcbAtom::WM_STATE);
 
-    if (event->atom == atom(QXcbAtom::_NET_WM_STATE) || event->atom == atom(QXcbAtom::WM_STATE)) {
+    if (event->atom == netWmStateAtom || event->atom == wmStateAtom) {
         if (propertyDeleted)
             return;
 
-        xcb_get_property_cookie_t get_cookie =
-            xcb_get_property(xcb_connection(), 0, m_window, atom(QXcbAtom::WM_STATE),
-                             XCB_ATOM_ANY, 0, 1024);
+        Qt::WindowState newState = Qt::WindowNoState;
+        if (event->atom == wmStateAtom) { // WM_STATE: Quick check for 'Minimize'.
+            const xcb_get_property_cookie_t get_cookie =
+                xcb_get_property(xcb_connection(), 0, m_window, wmStateAtom,
+                                 XCB_ATOM_ANY, 0, 1024);
 
-        xcb_get_property_reply_t *reply =
-            xcb_get_property_reply(xcb_connection(), get_cookie, NULL);
+            xcb_get_property_reply_t *reply =
+                xcb_get_property_reply(xcb_connection(), get_cookie, NULL);
 
-        xcb_atom_t wm_state = XCB_WM_STATE_WITHDRAWN;
-        if (reply && reply->format == 32 && reply->type == atom(QXcbAtom::WM_STATE)) {
-            if (reply->length != 0)
-                wm_state = ((long *)xcb_get_property_value(reply))[0];
-            free(reply);
+            if (reply && reply->format == 32 && reply->type == wmStateAtom) {
+                const long *data = (const long *)xcb_get_property_value(reply);
+                if (reply->length != 0 && XCB_WM_STATE_ICONIC == data[0])
+                    newState = Qt::WindowMinimized;
+                free(reply);
+            }
+        } // WM_STATE: Quick check for 'Minimize'.
+        if (newState != Qt::WindowMinimized) { // Something else changed, get _NET_WM_STATE.
+            const NetWmStates states = netWmStates();
+            if ((states & NetWmStateMaximizedHorz) && (states & NetWmStateMaximizedVert))
+                newState = Qt::WindowMaximized;
+            else if (states & NetWmStateFullScreen)
+                newState = Qt::WindowFullScreen;
         }
-
-        QVector<xcb_atom_t> netWmState = getNetWmState();
-
-        bool maximized = netWmState.contains(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ))
-            && netWmState.contains(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT));
-        bool fullscreen = netWmState.contains(atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
-
-        Qt::WindowState state = Qt::WindowNoState;
-        if (wm_state == XCB_WM_STATE_ICONIC)
-            state = Qt::WindowMinimized;
-        else if (maximized)
-            state = Qt::WindowMaximized;
-        else if (fullscreen)
-            state = Qt::WindowFullScreen;
-
-        QWindowSystemInterface::handleWindowStateChanged(window(), state);
+        // Send Window state, compress events in case other flags (modality, etc) are changed.
+        if (m_lastWindowStateEvent != newState) {
+            QWindowSystemInterface::handleWindowStateChanged(window(), newState);
+            m_lastWindowStateEvent = newState;
+        }
     }
 }
 
