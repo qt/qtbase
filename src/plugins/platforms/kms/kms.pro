@@ -1,11 +1,12 @@
 TARGET = qkms
-
 load(qt_plugin)
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
-QT = core-private gui-private platformsupport-private opengl-private
+QT += core-private gui-private platformsupport-private opengl-private
+DESTDIR = $$QT.gui.plugins/platforms
 
-CONFIG += link_pkgconfig qpa/genericunixfontdatabase
+DEFINES += MESA_EGL_NO_X11_HEADERS
+
+CONFIG += link_pkgconfig egl qpa/genericunixfontdatabase
 
 PKGCONFIG += libdrm egl gbm glesv2
 
@@ -30,13 +31,5 @@ HEADERS =   qkmsintegration.h \
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
 
-
-
-
-
-
-
-
-
-
-
+OTHER_FILES += \
+    kms.json
