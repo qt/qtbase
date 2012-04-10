@@ -48,6 +48,7 @@
 #ifndef QT_NO_BEARERMANAGEMENT
 #include <QtNetwork/qnetworkconfigmanager.h>
 #include <QtNetwork/qnetworksession.h>
+#include <private/qnetworksession_p.h>
 #endif
 
 QT_USE_NAMESPACE
@@ -92,6 +93,8 @@ private slots:
 
     void sessionAutoClose_data();
     void sessionAutoClose();
+
+    void usagePolicies();
 
 private:
     QNetworkConfigurationManager manager;
@@ -1261,6 +1264,34 @@ void tst_QNetworkSession::sessionAutoClose()
 
     QCOMPARE(autoCloseSession.toInt(), -1);
 }
+
+void tst_QNetworkSession::usagePolicies()
+{
+    QNetworkSession session(manager.defaultConfiguration());
+    QNetworkSession::UsagePolicies initial;
+    initial = session.usagePolicies();
+    if (initial != 0)
+        QNetworkSessionPrivate::setUsagePolicies(session, 0);
+    QSignalSpy spy(&session, SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)));
+    QNetworkSessionPrivate::setUsagePolicies(session, QNetworkSession::NoBackgroundTrafficPolicy);
+    QCOMPARE(spy.count(), 1);
+    QNetworkSession::UsagePolicies policies = qvariant_cast<QNetworkSession::UsagePolicies>(spy.at(0).at(0));
+    QCOMPARE(policies, QNetworkSession::NoBackgroundTrafficPolicy);
+    QCOMPARE(session.usagePolicies(), QNetworkSession::NoBackgroundTrafficPolicy);
+    QNetworkSessionPrivate::setUsagePolicies(session, initial);
+    spy.clear();
+
+    session.open();
+    QVERIFY(session.waitForOpened());
+
+    //policies may be changed when session is opened, if so, signal should have been emitted
+    if (session.usagePolicies() != initial)
+        QCOMPARE(spy.count(), 1);
+    else
+        QCOMPARE(spy.count(), 0);
+}
+
+
 #endif
 
 QTEST_MAIN(tst_QNetworkSession)
