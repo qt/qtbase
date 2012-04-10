@@ -3415,10 +3415,9 @@ void QHeaderViewPrivate::setHeaderSectionResizeMode(int visual, QHeaderView::Res
 
 QHeaderView::ResizeMode QHeaderViewPrivate::headerSectionResizeMode(int visual) const
 {
-    int span = sectionSpanIndex(visual);
-    if (span == -1)
+    if (visual < 0 || visual >= sectionItems.count())
         return globalResizeMode;
-    return sectionItems.at(span).resizeMode;
+    return sectionItems.at(visual).resizeMode;
 }
 
 void QHeaderViewPrivate::setGlobalHeaderResizeMode(QHeaderView::ResizeMode mode)

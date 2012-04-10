@@ -314,29 +314,11 @@ public:
     void setDefaultSectionSize(int size);
     void recalcSectionStartPos() const; // not really const
 
-    inline int headerSectionCount() const { // for debugging
-        return sectionItems.count();
-    }
-
     inline int headerLength() const { // for debugging
         int len = 0;
         for (int i = 0; i < sectionItems.count(); ++i)
             len += sectionItems.at(i).size;
         return len;
-    }
-
-    inline void removeSpans(const QList<int> &spans) {
-        for (int i = spans.count() - 1; i >= 0; --i) {
-            length -= sectionItems.at(spans.at(i)).size;
-            sectionItems.remove(spans.at(i));
-        }
-    }
-
-    inline int sectionSpanIndex(int visual) const {
-        if (visual < sectionItems.count() && visual >= 0) {
-            return visual;
-        }
-        return -1;
     }
 
     int headerSectionSize(int visual) const;
