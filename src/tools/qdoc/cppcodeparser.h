@@ -165,7 +165,7 @@ private:
     void createExampleFileNodes(FakeNode *fake);
 
     QMap<QString, Node::Type> nodeTypeMap;
-    Tree *tre;
+    Tree* tree_;
     Tokenizer *tokenizer;
     int tok;
     Node::Access access;
@@ -179,7 +179,7 @@ private:
     QString mutableSequentialIteratorDefinition;
     QString associativeIteratorDefinition;
     QString mutableAssociativeIteratorDefinition;
-    QSet<QString> usedNamespaces;
+    QSet<QString> activeNamespaces_;
     QMap<QString, QString> sequentialIteratorClasses;
     QMap<QString, QString> mutableSequentialIteratorClasses;
     QMap<QString, QString> associativeIteratorClasses;

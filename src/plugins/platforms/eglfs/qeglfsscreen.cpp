@@ -41,6 +41,7 @@
 
 #include "qeglfsscreen.h"
 #include "qeglfswindow.h"
+#include "qeglfs_hooks.h"
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
@@ -51,6 +52,13 @@
 #endif //Q_OPENKODE
 
 QT_BEGIN_NAMESPACE
+
+#ifdef EGLFS_PLATFORM_HOOKS
+extern QEglFSHooks platform_hooks;
+static QEglFSHooks *hooks = &platform_hooks;
+#else
+static QEglFSHooks *hooks = 0;
+#endif
 
 // #define QEGL_EXTRA_DEBUG
 
@@ -104,15 +112,19 @@ public:
     }
 };
 
-QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
+QEglFSScreen::QEglFSScreen()
     : m_depth(32)
     , m_format(QImage::Format_Invalid)
     , m_platformContext(0)
     , m_surface(0)
+    , m_window(0)
 {
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglScreen %p\n", this);
 #endif
+
+    if (hooks)
+        hooks->platformInit();
 
     EGLint major, minor;
 
@@ -121,7 +133,7 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
         qFatal("EGL error");
     }
 
-    m_dpy = eglGetDisplay(display);
+    m_dpy = eglGetDisplay(hooks ? hooks->platformDisplay() : EGL_DEFAULT_DISPLAY);
     if (m_dpy == EGL_NO_DISPLAY) {
         qWarning("Could not open egl display\n");
         qFatal("EGL error");
@@ -144,6 +156,20 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
             swapInterval = 1;
     }
     eglSwapInterval(m_dpy, swapInterval);
+}
+
+QEglFSScreen::~QEglFSScreen()
+{
+    if (m_surface)
+        eglDestroySurface(m_dpy, m_surface);
+
+    if (hooks)
+        hooks->destroyNativeWindow(m_window);
+
+    eglTerminate(m_dpy);
+
+    if (hooks)
+        hooks->platformDestroy();
 }
 
 void QEglFSScreen::createAndSetPlatformContext() const {
@@ -177,14 +203,16 @@ void QEglFSScreen::createAndSetPlatformContext()
 
     EGLConfig config = q_configFromGLFormat(m_dpy, platformFormat);
 
-    EGLNativeWindowType eglWindow = 0;
 #ifdef Q_OPENKODE
     if (kdInitializeNV() == KD_ENOTINITIALIZED) {
         qFatal("Did not manage to initialize openkode");
     }
     KDWindow *window = kdCreateWindow(m_dpy,config,0);
 
-    kdRealizeWindow(window,&eglWindow);
+    kdRealizeWindow(window, &m_window);
+#else
+    if (hooks)
+        m_window = hooks->createNativeWindow(hooks->screenSize());
 #endif
 
 #ifdef QEGL_EXTRA_DEBUG
@@ -201,7 +229,7 @@ void QEglFSScreen::createAndSetPlatformContext()
     qWarning("\n");
 #endif
 
-    m_surface = eglCreateWindowSurface(m_dpy, config, eglWindow, NULL);
+    m_surface = eglCreateWindowSurface(m_dpy, config, m_window, NULL);
     if (m_surface == EGL_NO_SURFACE) {
         qWarning("Could not create the egl surface: error = 0x%x\n", eglGetError());
         eglTerminate(m_dpy);

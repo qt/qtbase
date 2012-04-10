@@ -62,6 +62,10 @@
 #include <qabstracttextdocumentlayout.h>
 #include <qtextdocumentfragment.h>
 
+#include "../../../shared/platforminputcontext.h"
+#include <private/qinputmethod_p.h>
+
+
 //Used in copyAvailable
 typedef QPair<Qt::Key, Qt::KeyboardModifier> keyPairType;
 typedef QList<keyPairType> pairListType;
@@ -96,6 +100,8 @@ public:
     tst_QTextEdit();
 
 public slots:
+    void initTestCase();
+    void cleanupTestCase();
     void init();
     void cleanup();
 private slots:
@@ -211,6 +217,7 @@ private:
 
     QTextEdit *ed;
     qreal rootFrameMargin;
+    PlatformInputContext m_platformInputContext;
 };
 
 bool tst_QTextEdit::nativeClipboardWorking()
@@ -371,6 +378,18 @@ public:
 
 tst_QTextEdit::tst_QTextEdit()
 {}
+
+void tst_QTextEdit::initTestCase()
+{
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = &m_platformInputContext;
+}
+
+void tst_QTextEdit::cleanupTestCase()
+{
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = 0;
+}
 
 void tst_QTextEdit::init()
 {
@@ -2360,6 +2379,8 @@ void tst_QTextEdit::bidiLogicalMovement()
 
 void tst_QTextEdit::inputMethodEvent()
 {
+    ed->show();
+
     // test that text change with an input method event triggers change signal
     QSignalSpy spy(ed, SIGNAL(textChanged()));
 
@@ -2367,14 +2388,23 @@ void tst_QTextEdit::inputMethodEvent()
     event.setCommitString("text");
     QApplication::sendEvent(ed, &event);
     QCOMPARE(spy.count(), 1);
-    spy.clear();
+    QCOMPARE(ed->toPlainText(), QString("text"));
 
+    // test that input method gets chance to commit preedit when removing focus
+    ed->setText("");
+    QApplication::setActiveWindow(ed);
+    QTRY_VERIFY(QApplication::focusWindow());
+    QCOMPARE(qApp->focusObject(), ed);
+
+    m_platformInputContext.setCommitString("text");
+    m_platformInputContext.m_commitCallCount = 0;
     QList<QInputMethodEvent::Attribute> attributes;
-    QInputMethodEvent event2("preedit", attributes);
-    event2.setTentativeCommitString("string");
-    QApplication::sendEvent(ed, &event2);
-    QCOMPARE(spy.count(), 1);
-    QCOMPARE(ed->toPlainText(), QString("textstring"));
+    QInputMethodEvent preeditEvent("preedit text", attributes);
+    QApplication::sendEvent(ed, &preeditEvent);
+
+    ed->clearFocus();
+    QCOMPARE(m_platformInputContext.m_commitCallCount, 1);
+    QCOMPARE(ed->toPlainText(), QString("text"));
 }
 
 void tst_QTextEdit::inputMethodSelection()

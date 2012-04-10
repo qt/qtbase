@@ -399,6 +399,9 @@ private Q_SLOTS:
     void closeDuringDownload_data();
     void closeDuringDownload();
 
+    void ftpAuthentication_data();
+    void ftpAuthentication();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 private:
@@ -6774,6 +6777,35 @@ void tst_QNetworkReply::closeDuringDownload()
     reply->deleteLater();
     QTest::qWait(1000); //cancelling ftp takes some time, this avoids a warning caused by test's cleanup() destroying the connection cache before the abort is finished
 }
+
+
+void tst_QNetworkReply::ftpAuthentication_data()
+{
+    QTest::addColumn<QString>("referenceName");
+    QTest::addColumn<QString>("url");
+    QTest::addColumn<int>("error");
+
+    QTest::newRow("invalidPassword") << (testDataDir + "/rfc3252.txt") << "ftp://ftptest:invalid@" + QtNetworkSettings::serverName() + "/home/qt-test-server/ftp/qtest/rfc3252.txt" << int(QNetworkReply::AuthenticationRequiredError);
+    QTest::newRow("validPassword") << (testDataDir + "/rfc3252.txt") << "ftp://ftptest:password@" + QtNetworkSettings::serverName() + "/home/qt-test-server/ftp/qtest/rfc3252.txt" << int(QNetworkReply::NoError);
+}
+
+void tst_QNetworkReply::ftpAuthentication()
+{
+    QFETCH(QString, referenceName);
+    QFETCH(QString, url);
+    QFETCH(int, error);
+
+    QFile reference(referenceName);
+    QVERIFY(reference.open(QIODevice::ReadOnly));
+
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply;
+    runSimpleRequest(QNetworkAccessManager::GetOperation, request, reply);
+
+    QCOMPARE(reply->url(), request.url());
+    QCOMPARE(reply->error(), QNetworkReply::NetworkError(error));
+}
+
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()

@@ -115,6 +115,10 @@ private slots:
 
     void serverAddress_data();
     void serverAddress();
+
+    void qtbug6305_data() { serverAddress_data(); }
+    void qtbug6305();
+
 private:
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkSession *networkSession;
@@ -828,9 +832,27 @@ void tst_QTcpServer::serverAddress()
     QFETCH(QHostAddress, listenAddress);
     QFETCH(QHostAddress, serverAddress);
     QTcpServer server;
+
+    // TODO: why does this QSKIP?
     if (!server.listen(listenAddress))
         QSKIP(qPrintable(server.errorString()));
     QCOMPARE(server.serverAddress(), serverAddress);
+}
+
+// on OS X, calling listen() multiple times would succeed each time, which is
+// most definitely not wanted.
+void tst_QTcpServer::qtbug6305()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QFETCH(QHostAddress, listenAddress);
+    QTcpServer server;
+    QVERIFY2(server.listen(listenAddress), qPrintable(server.errorString()));
+
+    QTcpServer server2;
+    QVERIFY(!server2.listen(listenAddress, server.serverPort())); // second listen should fail
 }
 
 QTEST_MAIN(tst_QTcpServer)

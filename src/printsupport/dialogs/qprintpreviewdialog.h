@@ -93,8 +93,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_pageSetup())
     Q_PRIVATE_SLOT(d_func(), void _q_previewChanged())
     Q_PRIVATE_SLOT(d_func(), void _q_zoomFactorChanged())
-
-    void *dummy; // ### Qt 5 - remove me
 };
 
 

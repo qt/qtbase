@@ -96,10 +96,20 @@ public:
     static HFONT systemFont();
     static QFont LOGFONT_to_QFont(const LOGFONT& lf, int verticalDPI = 0);
 
+    static qreal fontSmoothingGamma();
+
 private:
     void populate(const QString &family = QString());
+    void removeApplicationFonts();
     QSharedPointer<QWindowsFontEngineData> m_fontEngineData;
     QSet<QString> m_families;
+
+    struct WinApplicationFont {
+        HANDLE handle;
+        QString fileName;
+    };
+
+    QList<WinApplicationFont> m_applicationFonts;
 };
 
 QT_END_NAMESPACE

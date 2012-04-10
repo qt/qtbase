@@ -125,8 +125,14 @@ void QImagePixmapCleanupHooks::executePlatformPixmapDestructionHooks(QPlatformPi
 
 void QImagePixmapCleanupHooks::executeImageHooks(qint64 key)
 {
-    for (int i = 0; i < qt_image_and_pixmap_cleanup_hooks()->imageHooks.count(); ++i)
-        qt_image_and_pixmap_cleanup_hooks()->imageHooks[i](key);
+    QImagePixmapCleanupHooks *h = qt_image_and_pixmap_cleanup_hooks();
+    // the global destructor for the pixmap and image hooks might have
+    // been called already if the app is "leaking" global
+    // pixmaps/images
+    if (!h)
+        return;
+    for (int i = 0; i < h->imageHooks.count(); ++i)
+        h->imageHooks[i](key);
 
     if (qt_image_cleanup_hook_64)
         qt_image_cleanup_hook_64(key);

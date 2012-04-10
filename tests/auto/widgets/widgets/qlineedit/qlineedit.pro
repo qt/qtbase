@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qlineedit
-QT += gui-private core-private widgets testlib
+QT += gui-private core-private widgets widgets-private testlib
 SOURCES  += tst_qlineedit.cpp
 
 # QTBUG-24518 - unstable test

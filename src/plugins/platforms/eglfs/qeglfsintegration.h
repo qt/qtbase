@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef EGLINTEGRATION_H
-#define EGLINTEGRATION_H
+#ifndef QEGLFSINTEGRATION_H
+#define QEGLFSINTEGRATION_H
 
 #include "qeglfsscreen.h"
 
@@ -55,6 +55,7 @@ class QEglFSIntegration : public QPlatformIntegration
 {
 public:
     QEglFSIntegration();
+    ~QEglFSIntegration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
 
@@ -70,9 +71,10 @@ public:
 
 private:
     QPlatformFontDatabase *mFontDb;
+    QPlatformScreen *mScreen;
 };
 
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#endif
+#endif // QEGLFSINTEGRATION_H

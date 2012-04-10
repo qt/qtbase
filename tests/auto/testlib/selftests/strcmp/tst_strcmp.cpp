@@ -65,7 +65,7 @@ void tst_StrCmp::compareCharStars() const
     QCOMPARE(str1, "foo");
     QCOMPARE(str1, str1);
 
-    char *str2 = "foo";
+    char *str2 = const_cast<char *>("foo");
     QCOMPARE("foo", str2);
     QCOMPARE(str2, "foo");
     QCOMPARE(str2, str2);
@@ -88,8 +88,8 @@ void tst_StrCmp::compareByteArray() const
     QCOMPARE(ba.constData(), "bar");
     QCOMPARE(ba.constData(), "foo");
 
-    char *bar = "bar";
-    char *foo = "foo";
+    char *bar = const_cast<char *>("bar");
+    char *foo = const_cast<char *>("foo");
 
     QEXPECT_FAIL("", "Next test should fail", Continue);
     QCOMPARE(ba.data(), bar);

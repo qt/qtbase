@@ -98,6 +98,9 @@ public:
         , m_threadChecks(false)
         , m_textLayoutThread(0)
  #endif
+#if defined(QT_BUILD_INTERNAL)
+        , m_passwordMaskDelayOverride(-1)
+#endif
         , m_keyboardScheme(0)
     {
         init(txt);
@@ -217,22 +220,13 @@ public:
     QString text() const
     {
         QString content = m_text;
-        if (!m_tentativeCommit.isEmpty())
-            content.insert(m_cursor, m_tentativeCommit);
         QString res = m_maskData ? stripString(content) : content;
-        return (res.isNull() ? QString::fromLatin1("") : res);
-    }
-    // like text() but doesn't include preedit
-    QString realText() const
-    {
-        QString res = m_maskData ? stripString(m_text) : m_text;
         return (res.isNull() ? QString::fromLatin1("") : res);
     }
     void setText(const QString &txt)
     {
         if (composeMode())
             qApp->inputMethod()->reset();
-        m_tentativeCommit.clear();
         internalSetText(txt, -1, false);
     }
     void commitPreedit();
@@ -286,7 +280,18 @@ public:
     bool hasAcceptableInput() const { return hasAcceptableInput(m_text); }
     bool fixup();
 
-    QString inputMask() const { return m_maskData ? m_inputMask + QLatin1Char(';') + m_blank : QString(); }
+    QString inputMask() const
+    {
+        QString mask;
+        if (m_maskData) {
+            mask = m_inputMask;
+            if (m_blank != QLatin1Char(' ')) {
+                mask += QLatin1Char(';');
+                mask += m_blank;
+            }
+        }
+        return mask;
+    }
     void setInputMask(const QString &mask)
     {
         parseInputMask(mask);
@@ -402,7 +407,6 @@ private:
     int m_cursor;
     int m_preeditCursor;
     int m_cursorWidth;
-    QString m_tentativeCommit;
     Qt::LayoutDirection m_layoutDirection;
     uint m_hideCursor : 1; // used to hide the m_cursor inside preedit areas
     uint m_separator : 1;
@@ -493,6 +497,11 @@ private:
 #if defined(Q_WS_MAC)
     bool m_threadChecks;
     mutable QThread *m_textLayoutThread;
+#endif
+
+public:
+#if defined(QT_BUILD_INTERNAL)
+    int m_passwordMaskDelayOverride;
 #endif
 
 Q_SIGNALS:

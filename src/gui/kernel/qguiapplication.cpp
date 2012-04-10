@@ -52,6 +52,7 @@
 #include "qplatformintegration_qpa.h"
 
 #include <QtCore/QAbstractEventDispatcher>
+#include <QtCore/QVariant>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
 #include <QtCore/qmutex.h>
@@ -61,13 +62,15 @@
 #include <qpalette.h>
 #include <qscreen.h>
 #include <private/qscreen_p.h>
+#include <private/qdrawhelper_p.h>
 
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QGenericPluginFactory>
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputpanel.h>
 #include <QtGui/qplatformtheme_qpa.h>
-
+#include <QtGui/qplatforminputcontext_qpa.h>
+#include <private/qplatforminputcontext_qpa_p.h>
 
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
@@ -141,6 +144,8 @@ QWindow *QGuiApplicationPrivate::focus_window = 0;
 static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;
 bool QGuiApplicationPrivate::obey_desktop_settings = true;
+
+static qreal fontSmoothingGamma = 1.7;
 
 extern void qRegisterGuiVariant();
 extern void qInitDrawhelperAsm();
@@ -575,13 +580,13 @@ static void init_platform(const QString &pluginArgument, const QString &platform
             nativeInterface->setProperty(name.constData(), value);
         }
     }
+    fontSmoothingGamma = QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::FontSmoothingGamma).toReal();
 }
 
 static void init_plugins(const QList<QByteArray> &pluginList)
 {
     for (int i = 0; i < pluginList.count(); ++i) {
         QByteArray pluginSpec = pluginList.at(i);
-        qDebug() << "init_plugins" << i << pluginSpec;
         int colonPos = pluginSpec.indexOf(':');
         QObject *plugin;
         if (colonPos < 0)
@@ -589,7 +594,6 @@ static void init_plugins(const QList<QByteArray> &pluginList)
         else
             plugin = QGenericPluginFactory::create(QLatin1String(pluginSpec.mid(0, colonPos)),
                                                    QLatin1String(pluginSpec.mid(colonPos+1)));
-        qDebug() << "   created" << plugin;
         if (plugin)
             QGuiApplicationPrivate::generic_plugin_list.append(plugin);
     }
@@ -597,12 +601,10 @@ static void init_plugins(const QList<QByteArray> &pluginList)
 
 void QGuiApplicationPrivate::createPlatformIntegration()
 {
-    Q_Q(QGuiApplication);
-
     // Use the Qt menus by default. Platform plugins that
     // want to enable a native menu implementation can clear
     // this flag.
-    q->setAttribute(Qt::AA_DontUseNativeMenuBar, true);
+    QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
 
     // Load the platform integration
     QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
@@ -706,6 +708,10 @@ void QGuiApplicationPrivate::init()
         argc = j;
     }
 
+    // Load environment exported generic plugins
+    foreach (const QByteArray &plugin, qgetenv("QT_QPA_GENERIC_PLUGINS").split(','))
+        pluginList << plugin;
+
     if (platform_integration == 0)
         createPlatformIntegration();
 
@@ -761,6 +767,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     delete  platform_theme;
     delete platform_integration;
     platform_integration = 0;
+    delete m_gammaTables.load();
 }
 
 #if 0
@@ -1168,7 +1175,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         QFocusEvent focusOut(QEvent::FocusOut);
         QCoreApplication::sendSpontaneousEvent(previous, &focusOut);
         QObject::disconnect(previous, SIGNAL(focusObjectChanged(QObject*)),
-                            qApp, SIGNAL(focusObjectChanged(QObject*)));
+                            qApp, SLOT(q_updateFocusObject(QObject*)));
     } else {
         QEvent appActivate(QEvent::ApplicationActivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
@@ -1178,17 +1185,18 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         QFocusEvent focusIn(QEvent::FocusIn);
         QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
         QObject::connect(QGuiApplicationPrivate::focus_window, SIGNAL(focusObjectChanged(QObject*)),
-                         qApp, SIGNAL(focusObjectChanged(QObject*)));
+                         qApp, SLOT(q_updateFocusObject(QObject*)));
     } else {
         QEvent appActivate(QEvent::ApplicationDeactivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
     }
 
-    if (self)
+    if (self) {
         self->notifyActiveWindowChange(previous);
 
-    if (previousFocusObject != qApp->focusObject())
-        emit qApp->focusObjectChanged(qApp->focusObject());
+        if (previousFocusObject != qApp->focusObject())
+            self->q_updateFocusObject(qApp->focusObject());
+    }
 }
 
 void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *wse)
@@ -2159,5 +2167,37 @@ void QGuiApplicationPrivate::notifyThemeChanged()
         initFontUnlocked();
     }
 }
+
+const QDrawHelperGammaTables *QGuiApplicationPrivate::gammaTables()
+{
+    QDrawHelperGammaTables *result = m_gammaTables.load();
+    if (!result){
+        QDrawHelperGammaTables *tables = new QDrawHelperGammaTables(fontSmoothingGamma);
+        if (!m_gammaTables.testAndSetRelease(0, tables))
+            delete tables;
+        result = m_gammaTables.load();
+    }
+    return result;
+}
+
+void QGuiApplicationPrivate::q_updateFocusObject(QObject *object)
+{
+    Q_Q(QGuiApplication);
+
+    bool enabled = false;
+    if (object) {
+        QInputMethodQueryEvent query(Qt::ImEnabled);
+        QGuiApplication::sendEvent(object, &query);
+        enabled = query.value(Qt::ImEnabled).toBool();
+    }
+
+    QPlatformInputContextPrivate::setInputMethodAccepted(enabled);
+    QPlatformInputContext *inputContext = platformIntegration()->inputContext();
+    if (inputContext)
+        inputContext->setFocusObject(object);
+    emit q->focusObjectChanged(object);
+}
+
+#include "moc_qguiapplication.cpp"
 
 QT_END_NAMESPACE

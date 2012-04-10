@@ -55,13 +55,26 @@ public:
         m_lastQueries(Qt::ImhNone),
         m_action(QInputMethod::Click),
         m_cursorPosition(0),
-        m_lastEventType(QEvent::None)
+        m_lastEventType(QEvent::None),
+        m_setFocusObjectCallCount(0)
     {}
 
     virtual QRectF keyboardRect() const { return m_keyboardRect; }
     virtual bool isAnimating() const { return m_animating; }
     virtual void reset() { m_resetCallCount++; }
-    virtual void commit() { m_commitCallCount++; }
+    virtual void commit() {
+        m_commitCallCount++;
+        QInputMethodEvent commitEvent;
+        commitEvent.setCommitString(m_commitString);
+        if (qGuiApp->focusObject())
+            qGuiApp->sendEvent(qGuiApp->focusObject(), &commitEvent);
+        else
+            qWarning("Test input context to commit without focused object");
+    }
+    void setCommitString(const QString &commitString)
+    {
+        m_commitString = commitString;
+    }
 
     virtual void update(Qt::InputMethodQueries queries)
     {
@@ -99,12 +112,18 @@ public:
         m_inputDirectionCallCount++;
         return Qt::LeftToRight;
     }
+    virtual void setFocusObject(QObject *object)
+    {
+        Q_UNUSED(object);
+        m_setFocusObjectCallCount++;
+    }
 
     bool m_animating;
     bool m_visible;
     int m_updateCallCount;
     int m_resetCallCount;
     int m_commitCallCount;
+    QString m_commitString;
     mutable int m_localeCallCount;
     mutable int m_inputDirectionCallCount;
     Qt::InputMethodQueries m_lastQueries;
@@ -112,4 +131,5 @@ public:
     int m_cursorPosition;
     int m_lastEventType;
     QRectF m_keyboardRect;
+    int m_setFocusObjectCallCount;
 };

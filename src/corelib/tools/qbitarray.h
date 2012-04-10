@@ -72,7 +72,6 @@ public:
     inline int size() const { return (d.size() << 3) - *d.constData(); }
     inline int count() const { return (d.size() << 3) - *d.constData(); }
     int count(bool on) const;
-    // ### Qt 5: Store the number of set bits separately
 
     inline bool isEmpty() const { return d.isEmpty(); }
     inline bool isNull() const { return d.isNull(); }

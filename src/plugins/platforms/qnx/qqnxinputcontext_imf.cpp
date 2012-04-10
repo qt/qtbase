@@ -41,7 +41,7 @@
 
 #include "qqnxinputcontext_imf.h"
 #include "qqnxeventthread.h"
-#include "qqnxvirtualkeyboard.h"
+#include "qqnxabstractvirtualkeyboard.h"
 
 #include <QtWidgets/QAbstractSpinBox>
 #include <QtWidgets/QAction>
@@ -674,12 +674,15 @@ static bool imfAvailable()
     return s_imfReady;
 }
 
-QQnxInputContext::QQnxInputContext():
+QT_BEGIN_NAMESPACE
+
+QQnxInputContext::QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard):
          QPlatformInputContext(),
          m_lastCaretPos(0),
          m_isComposing(false),
          m_inputPanelVisible(false),
-         m_inputPanelLocale(QLocale::c())
+         m_inputPanelLocale(QLocale::c()),
+         m_virtualKeyboad(keyboard)
 {
 #if defined(QQNXINPUTCONTEXT_DEBUG)
     qDebug() << Q_FUNC_INFO;
@@ -697,15 +700,10 @@ QQnxInputContext::QQnxInputContext():
 
     // p_vkb_init_selection_service();
 
-    QQnxVirtualKeyboard &keyboard = QQnxVirtualKeyboard::instance();
     connect(&keyboard, SIGNAL(visibilityChanged(bool)), this, SLOT(keyboardVisibilityChanged(bool)));
     connect(&keyboard, SIGNAL(localeChanged(QLocale)), this, SLOT(keyboardLocaleChanged(QLocale)));
     keyboardVisibilityChanged(keyboard.isVisible());
     keyboardLocaleChanged(keyboard.locale());
-
-    QInputMethod *inputMethod = qApp->inputMethod();
-    connect(inputMethod, SIGNAL(inputItemChanged()), this, SLOT(inputItemChanged()));
-
 }
 
 QQnxInputContext::~QQnxInputContext()
@@ -946,8 +944,7 @@ bool QQnxInputContext::hasSession()
 
 bool QQnxInputContext::hasSelectedText()
 {
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QObject *input = qGuiApp->focusObject();
     if (!input)
         return false;
 
@@ -959,13 +956,12 @@ bool QQnxInputContext::hasSelectedText()
 
 bool QQnxInputContext::dispatchRequestSoftwareInputPanel()
 {
-    QQnxVirtualKeyboard::instance().showKeyboard();
+    m_virtualKeyboard.showKeyboard();
 #if defined(QQNXINPUTCONTEXT_DEBUG)
     qDebug() << "QQNX: requesting virtual keyboard";
 #endif
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
-    if (!imfAvailable() || !input)
+    QObject *input = qGuiApp->focusObject();
+    if (!imfAvailable() || !input || !inputMethodAccepted())
         return true;
 
     if (!hasSession())
@@ -986,7 +982,7 @@ bool QQnxInputContext::dispatchRequestSoftwareInputPanel()
 
 bool QQnxInputContext::dispatchCloseSoftwareInputPanel()
 {
-    QQnxVirtualKeyboard::instance().hideKeyboard();
+    m_virtualKeyboard.hideKeyboard();
 #if defined(QQNXINPUTCONTEXT_DEBUG)
     qDebug() << "QQNX: hiding virtual keyboard";
 #endif
@@ -1138,8 +1134,7 @@ void QQnxInputContext::endComposition()
     if (!m_isComposing)
         return;
 
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QObject *input = qGuiApp->focusObject();
     if (!imfAvailable() || !input)
         return;
 
@@ -1161,8 +1156,7 @@ void QQnxInputContext::setComposingText(QString const& composingText)
     m_composingText = composingText;
     m_isComposing = true;
 
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QObject *input = qGuiApp->focusObject();
     if (!imfAvailable() || !input)
         return;
 
@@ -1273,8 +1267,7 @@ int32_t QQnxInputContext::onCommitText(input_session_t *ic, spannable_string_t *
     if (!isSessionOkay(ic))
         return 0;
 
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QObject *input = qGuiApp->focusObject();
     if (!imfAvailable() || !input)
         return 0;
 
@@ -1303,8 +1296,7 @@ int32_t QQnxInputContext::onDeleteSurroundingText(input_session_t *ic, int32_t l
     if (!isSessionOkay(ic))
         return 0;
 
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QObject *input = qGuiApp->focusObject();
     if (!imfAvailable() || !input)
         return 0;
 
@@ -1347,8 +1339,7 @@ int32_t QQnxInputContext::onFinishComposingText(input_session_t *ic)
     if (!isSessionOkay(ic))
         return 0;
 
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QObject *input = qGuiApp->focusObject();
     if (!imfAvailable() || !input)
         return 0;
 
@@ -1389,8 +1380,7 @@ int32_t QQnxInputContext::onGetCursorPosition(input_session_t *ic)
     if (!isSessionOkay(ic))
         return 0;
 
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QObject *input = qGuiApp->focusObject();
     if (!imfAvailable() || !input)
         return 0;
 
@@ -1432,8 +1422,7 @@ spannable_string_t *QQnxInputContext::onGetSelectedText(input_session_t *ic, int
     if (!isSessionOkay(ic))
         return toSpannableString("");
 
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QObject *input = qGuiApp->focusObject();
     if (!imfAvailable() || !input)
         return 0;
 
@@ -1454,8 +1443,7 @@ spannable_string_t *QQnxInputContext::onGetTextAfterCursor(input_session_t *ic, 
     if (!isSessionOkay(ic))
         return toSpannableString("");
 
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QObject *input = qGuiApp->focusObject();
     if (!imfAvailable() || !input)
         return toSpannableString("");
 
@@ -1477,8 +1465,7 @@ spannable_string_t *QQnxInputContext::onGetTextBeforeCursor(input_session_t *ic,
     if (!isSessionOkay(ic))
         return toSpannableString("");
 
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QObject *input = qGuiApp->focusObject();
     if (!imfAvailable() || !input)
         return toSpannableString("");
 
@@ -1559,8 +1546,7 @@ int32_t QQnxInputContext::onSetComposingRegion(input_session_t *ic, int32_t star
     if (!isSessionOkay(ic))
         return 0;
 
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QObject *input = qGuiApp->focusObject();
     if (!imfAvailable() || !input)
         return 0;
 
@@ -1594,8 +1580,7 @@ int32_t QQnxInputContext::onSetComposingText(input_session_t *ic, spannable_stri
     if (!isSessionOkay(ic))
         return 0;
 
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QObject *input = qGuiApp->focusObject();
     if (!imfAvailable() || !input)
         return 0;
 
@@ -1672,25 +1657,24 @@ void QQnxInputContext::keyboardLocaleChanged(const QLocale &locale)
     }
 }
 
-void QQnxInputContext::inputItemChanged()
+void QQnxInputContext::setFocusObject(QObject *object)
 {
-    QInputMethod *inputMethod = qApp->inputMethod();
-    QObject *inputItem = inputMethod->inputItem();
-
 #if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << "input item=" << inputItem;
+    qDebug() << Q_FUNC_INFO << "input item=" << object;
 #endif
 
-    if (!inputItem) {
+    if (!inputMethodAccepted()) {
         if (m_inputPanelVisible)
             hideInputPanel();
     } else {
-        if (qobject_cast<QAbstractSpinBox*>(inputItem)) {
-            QQnxVirtualKeyboard::instance().setKeyboardMode(QQnxVirtualKeyboard::NumPunc);
-        } else {
-            QQnxVirtualKeyboard::instance().setKeyboardMode(QQnxVirtualKeyboard::Default);
-        }
+        if (qobject_cast<QAbstractSpinBox*>(object))
+            m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
+        else
+            m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);
+
         if (!m_inputPanelVisible)
             showInputPanel();
     }
 }
+
+QT_END_NAMESPACE

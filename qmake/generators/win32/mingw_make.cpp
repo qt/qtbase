@@ -433,6 +433,7 @@ void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
     if (project->first("TEMPLATE") == "aux") {
         t << "first:" << endl;
+        t << "all:" << endl;
         return;
     }
 

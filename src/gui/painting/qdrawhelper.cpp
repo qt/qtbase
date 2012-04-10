@@ -39,6 +39,18 @@
 **
 ****************************************************************************/
 
+#if defined(__OPTIMIZE__) && !defined(__INTEL_COMPILER) && defined(__GNUC__) \
+    && (__GNUC__ * 100 + __GNUC_MINOR__ >= 404)
+// GCC 4.4 supports #pragma GCC optimize and #pragma GCC target
+#  pragma GCC optimize "O3"
+#  if defined(__i386__) && defined(__SSE2__) && !defined(__SSE2_MATH__)
+#   pragma GCC target "fpmath=sse"
+#  endif
+#endif
+
+#include <qstylehints.h>
+#include <qguiapplication.h>
+#include <qatomic.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qpainter_p.h>
@@ -51,6 +63,7 @@
 #include <private/qdrawhelper_mips_dsp_p.h>
 #endif
 #include <private/qmath_p.h>
+#include <private/qguiapplication_p.h>
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
@@ -5313,54 +5326,6 @@ inline static void qt_bitmapblit_quint16(QRasterBuffer *rasterBuffer,
                                     map, mapWidth, mapHeight, mapStride);
 }
 
-
-struct QDrawHelperGammaTables
-{
-    QDrawHelperGammaTables();
-
-    uchar qt_pow_rgb_gamma[256];
-    uchar qt_pow_rgb_invgamma[256];
-
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    uint qt_pow_gamma[256];
-    uchar qt_pow_invgamma[2048];
-#endif
-};
-
-QDrawHelperGammaTables::QDrawHelperGammaTables()
-{
-    qreal smoothing = qreal(1.7);
-
-    for (int i=0; i<256; ++i) {
-        qt_pow_rgb_gamma[i] = uchar(qRound(qPow(i / qreal(255.0), smoothing) * 255));
-        qt_pow_rgb_invgamma[i] = uchar(qRound(qPow(i / qreal(255.), 1 / smoothing) * 255));
-    }
-
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    const qreal gray_gamma = 2.31;
-    for (int i=0; i<256; ++i)
-        qt_pow_gamma[i] = uint(qRound(qPow(i / qreal(255.), gray_gamma) * 2047));
-    for (int i=0; i<2048; ++i)
-        qt_pow_invgamma[i] = uchar(qRound(qPow(i / qreal(2047.0), 1 / gray_gamma) * 255));
-#endif
-}
-
-Q_GLOBAL_STATIC(QDrawHelperGammaTables, qt_gamma_tables);
-
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-const uint *qt_pow_gamma()
-{
-    QDrawHelperGammaTables *tables = qt_gamma_tables();
-    return tables ? tables->qt_pow_gamma : 0;
-}
-#endif
-
-const uchar *qt_pow_rgb_gamma()
-{
-    QDrawHelperGammaTables *tables = qt_gamma_tables();
-    return tables ? tables->qt_pow_rgb_gamma : 0;
-}
-
 static void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
                                     int x, int y, quint32 color,
                                     const uchar *map,
@@ -5473,7 +5438,7 @@ static void qt_alphamapblit_quint32(QRasterBuffer *rasterBuffer,
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint32);
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    QDrawHelperGammaTables *tables = qt_gamma_tables();
+    const QDrawHelperGammaTables *tables = QGuiApplicationPrivate::instance()->gammaTables();
     if (!tables)
         return;
 
@@ -5570,7 +5535,7 @@ static void qt_alphargbblit_quint32(QRasterBuffer *rasterBuffer,
     int sb = qBlue(color);
     int sa = qAlpha(color);
 
-    QDrawHelperGammaTables *tables = qt_gamma_tables();
+    const QDrawHelperGammaTables *tables = QGuiApplicationPrivate::instance()->gammaTables();
     if (!tables)
         return;
 

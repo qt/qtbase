@@ -194,7 +194,7 @@ public:
     void clip(const QVectorPath &path, Qt::ClipOperation op);
     void clip(const QRect &rect, Qt::ClipOperation op);
     void clip(const QRegion &region, Qt::ClipOperation op);
-    inline const QClipData *clip() const;
+    inline const QClipData *clipData() const;
 
     void drawStaticTextItem(QStaticTextItem *textItem);
     virtual bool drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions,
@@ -492,7 +492,7 @@ inline const QClipData *QRasterPaintEnginePrivate::clip() const {
     return baseClip.data();
 }
 
-inline const QClipData *QRasterPaintEngine::clip() const {
+inline const QClipData *QRasterPaintEngine::clipData() const {
     Q_D(const QRasterPaintEngine);
     if (state() && state()->clip && state()->clip->enabled)
         return state()->clip;

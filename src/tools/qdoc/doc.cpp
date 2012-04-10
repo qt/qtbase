@@ -118,6 +118,7 @@ enum {
     CMD_GENERATELIST,
     CMD_GRANULARITY,
     CMD_HEADER,
+    CMD_HR,
     CMD_I,
     CMD_IF,
     CMD_IMAGE,
@@ -169,6 +170,7 @@ enum {
     CMD_TARGET,
     CMD_TOPICREF,
     CMD_TT,
+    CMD_UICONTROL,
     CMD_UNDERLINE,
     CMD_UNICODE,
     CMD_VALUE,
@@ -234,6 +236,7 @@ static struct {
     { "generatelist", CMD_GENERATELIST, 0 },
     { "granularity", CMD_GRANULARITY, 0 }, // ### don't document for now
     { "header", CMD_HEADER, 0 },
+    { "hr", CMD_HR, 0 },
     { "i", CMD_I, 0 },
     { "if", CMD_IF, 0 },
     { "image", CMD_IMAGE, 0 },
@@ -285,6 +288,7 @@ static struct {
     { "target", CMD_TARGET, 0 },
     { "topicref", CMD_TOPICREF, 0 },
     { "tt", CMD_TT, 0 },
+    { "uicontrol", CMD_UICONTROL, 0 },
     { "underline", CMD_UNDERLINE, 0 },
     { "unicode", CMD_UNICODE, 0 },
     { "value", CMD_VALUE, 0 },
@@ -902,6 +906,10 @@ void DocParser::parse(const QString& source,
                 case CMD_E:
                     startFormat(ATOM_FORMATTING_ITALIC, cmd);
                     break;
+                case CMD_HR:
+                    leavePara();
+                    append(Atom::HR);
+                    break;
                 case CMD_IF:
                     preprocessorSkipping.push(!Tokenizer::isTrue(getRestOfLine()));
                     if (preprocessorSkipping.top())
@@ -1312,6 +1320,9 @@ void DocParser::parse(const QString& source,
                     break;
                 case CMD_TT:
                     startFormat(ATOM_FORMATTING_TELETYPE, cmd);
+                    break;
+                case CMD_UICONTROL:
+                    startFormat(ATOM_FORMATTING_UICONTROL, cmd);
                     break;
                 case CMD_UNDERLINE:
                     startFormat(ATOM_FORMATTING_UNDERLINE, cmd);

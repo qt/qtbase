@@ -62,6 +62,8 @@
 #endif
 
 #include <qlineedit.h>
+#include <private/qlineedit_p.h>
+#include <private/qwidgetlinecontrol_p.h>
 #include <qmenu.h>
 #include <qlayout.h>
 #include <qspinbox.h>
@@ -71,6 +73,10 @@
 #include "qstyleoption.h"
 
 #include "qplatformdefs.h"
+
+#include "../../../shared/platforminputcontext.h"
+#include <private/qinputmethod_p.h>
+
 
 QT_BEGIN_NAMESPACE
 class QPainter;
@@ -275,7 +281,6 @@ private slots:
     void selectAndCursorPosition();
     void inputMethod();
     void inputMethodSelection();
-    void inputMethodTentativeCommit();
 
 protected slots:
     void editingFinished();
@@ -301,6 +306,7 @@ private:
     int newCursorPos;
     QLineEdit *testWidget;
     int m_keyboardScheme;
+    PlatformInputContext m_platformInputContext;
 };
 
 typedef QList<int> IntList;
@@ -357,21 +363,23 @@ void tst_QLineEdit::initTestCase()
 
     testWidget->resize(200,50);
     testWidget->show();
+    QTest::qWaitForWindowShown(testWidget);
     QApplication::setActiveWindow(testWidget);
-#ifdef Q_WS_X11
-    // to be safe and avoid failing setFocus with window managers
-    qt_x11_wait_for_window_manager(testWidget);
-#endif
     QTRY_VERIFY(testWidget->hasFocus());
 
     changed_count = 0;
     edited_count = 0;
     selection_count = 0;
+
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = &m_platformInputContext;
 }
 
 void tst_QLineEdit::cleanupTestCase()
 {
     delete testWidget;
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = 0;
 }
 
 void tst_QLineEdit::init()
@@ -659,14 +667,14 @@ void tst_QLineEdit::inputMask_data()
     QTest::newRow("nul 2") << QString() << QString();
 
     // try different masks
-    QTest::newRow("mask 1") << QString("000.000.000.000") << QString("000.000.000.000; ");
+    QTest::newRow("mask 1") << QString("000.000.000.000") << QString("000.000.000.000");
     QTest::newRow("mask 2") << QString("000.000.000.000;#") << QString("000.000.000.000;#");
-    QTest::newRow("mask 3") << QString("AAA.aa.999.###;") << QString("AAA.aa.999.###; ");
-    QTest::newRow("mask 4") << QString(">abcdef<GHIJK") << QString(">abcdef<GHIJK; ");
+    QTest::newRow("mask 3") << QString("AAA.aa.999.###;") << QString("AAA.aa.999.###");
+    QTest::newRow("mask 4") << QString(">abcdef<GHIJK") << QString(">abcdef<GHIJK");
 
     // set an invalid input mask...
     // the current behaviour is that this exact (faulty) string is returned.
-    QTest::newRow("invalid") << QString("ABCDEFGHIKLMNOP;") << QString("ABCDEFGHIKLMNOP; ");
+    QTest::newRow("invalid") << QString("ABCDEFGHIKLMNOP;") << QString("ABCDEFGHIKLMNOP");
 
     // verify that we can unset the mask again
     QTest::newRow("unset") << QString("") << QString();
@@ -1664,8 +1672,16 @@ void tst_QLineEdit::passwordEchoOnEdit()
 
 void tst_QLineEdit::passwordEchoDelay()
 {
-    if (qGuiApp->styleHints()->passwordMaskDelay() <= 0)
-        QSKIP("No mask delay in use");
+    int delay = qGuiApp->styleHints()->passwordMaskDelay();
+#if defined QT_BUILD_INTERNAL
+    QLineEditPrivate *priv = QLineEditPrivate::get(testWidget);
+    QWidgetLineControl *control = priv->control;
+    control->m_passwordMaskDelayOverride = 200;
+    delay = 200;
+#endif
+    if (delay <= 0)
+        QSKIP("Platform not defining echo delay and overriding only possible in internal build");
+
     QStyleOptionFrameV2 opt;
     QChar fillChar = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
 
@@ -1685,7 +1701,7 @@ void tst_QLineEdit::passwordEchoDelay()
     QCOMPARE(testWidget->displayText(), QString(4, fillChar));
     QTest::keyPress(testWidget, '4');
     QCOMPARE(testWidget->displayText(), QString(4, fillChar) + QLatin1Char('4'));
-    QTest::qWait(qGuiApp->styleHints()->passwordMaskDelay());
+    QTest::qWait(delay);
     QTRY_COMPARE(testWidget->displayText(), QString(5, fillChar));
     QTest::keyPress(testWidget, '5');
     QCOMPARE(testWidget->displayText(), QString(5, fillChar) + QLatin1Char('5'));
@@ -3828,6 +3844,23 @@ void tst_QLineEdit::inputMethod()
     testWidget->setEnabled(false);
     QApplication::sendEvent(testWidget, &queryEvent);
     QCOMPARE(queryEvent.value(Qt::ImEnabled).toBool(), false);
+    testWidget->setEnabled(true);
+
+    // removing focus allows input method to commit preedit
+    testWidget->setText("");
+    testWidget->activateWindow();
+    QTRY_VERIFY(testWidget->hasFocus());
+    QTRY_COMPARE(qApp->focusObject(), testWidget);
+
+    m_platformInputContext.setCommitString("text");
+    m_platformInputContext.m_commitCallCount = 0;
+    QList<QInputMethodEvent::Attribute> attributes;
+    QInputMethodEvent preeditEvent("preedit text", attributes);
+    QApplication::sendEvent(testWidget, &preeditEvent);
+
+    testWidget->clearFocus();
+    QCOMPARE(m_platformInputContext.m_commitCallCount, 1);
+    QCOMPARE(testWidget->text(), QString("text"));
 }
 
 void tst_QLineEdit::inputMethodSelection()
@@ -3864,37 +3897,6 @@ void tst_QLineEdit::inputMethodSelection()
     }
 
     QCOMPARE(selectionSpy.count(), 3);
-}
-
-void tst_QLineEdit::inputMethodTentativeCommit()
-{
-    // test that basic tentative commit gets to text property on preedit state
-    QList<QInputMethodEvent::Attribute> attributes;
-    QInputMethodEvent event("test", attributes);
-    event.setTentativeCommitString("test");
-    QApplication::sendEvent(testWidget, &event);
-    QCOMPARE(testWidget->text(), QString("test"));
-
-    // tentative commit not allowed present in surrounding text
-    QInputMethodQueryEvent queryEvent(Qt::ImSurroundingText);
-    QApplication::sendEvent(testWidget, &queryEvent);
-    QCOMPARE(queryEvent.value(Qt::ImSurroundingText).toString(), QString(""));
-
-    // if text with tentative commit does not validate, not allowed to be part of text property
-    testWidget->setText(""); // ensure input state is reset
-    QValidator *validator = new QIntValidator(0, 100);
-    testWidget->setValidator(validator);
-    QApplication::sendEvent(testWidget, &event);
-    QCOMPARE(testWidget->text(), QString(""));
-    testWidget->setValidator(0);
-    delete validator;
-
-    // text remains when focus is removed
-    testWidget->setText(""); // ensure input state is reset
-    QApplication::sendEvent(testWidget, &event);
-    QFocusEvent lostFocus(QEvent::FocusOut);
-    QApplication::sendEvent(testWidget, &lostFocus);
-    QCOMPARE(testWidget->text(), QString("test"));
 }
 
 

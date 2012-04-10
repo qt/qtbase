@@ -606,7 +606,7 @@ static bool checkStaticArray(int &val, const QByteArray &dateString, int at, con
                 val = j;
                 return true;
             }
-            i += strlen(str) + 1;
+            i += int(strlen(str)) + 1;
             ++j;
         }
     }

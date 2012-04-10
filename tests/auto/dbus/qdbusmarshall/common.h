@@ -350,8 +350,6 @@ QT_END_NAMESPACE
 
 #endif
 
-//bool compare(const QVariantList &l1, const QVariantList &l2);
-//bool compare(const QVariantMap &m1, const QVariantMap &m2);
 template<typename T>
 bool compare(const T &t1, const T &t2)
 { return t1 == t2; }

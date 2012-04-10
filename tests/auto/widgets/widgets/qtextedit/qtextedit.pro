@@ -1,7 +1,7 @@
 CONFIG += testcase
 TARGET = tst_qtextedit
 
-QT += widgets widgets-private gui-private testlib
+QT += widgets widgets-private gui-private core-private testlib
 INCLUDEPATH += ../
 
 HEADERS +=  

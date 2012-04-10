@@ -1,1 +1,2 @@
 DEFINES += QT_DECLARATIVE_DEBUG
+warning("CONFIG+=declarative_debug is deprecated. Use qml_debug instead!")

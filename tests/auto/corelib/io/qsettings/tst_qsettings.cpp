@@ -1486,11 +1486,9 @@ void tst_QSettings::sync()
     settings1.sync();
     QCOMPARE(settings1.allKeys().count(), 0);
 
-/*
-    // Now "some other app" will change software.org.conf
-    unlink((userConfDir + "software.org.ini").toLatin1());
-    rename((userConfDir + "other.software.org.ini").toLatin1(),
-            (userConfDir + "software.org.ini").toLatin1());
+    // Now "some other app" will change software.org.ini
+    QVERIFY(QFile::rename((userConfDir + "other.software.org.ini").toLatin1(),
+                          (userConfDir + "software.org.ini").toLatin1()));
 
     settings1.sync();
     QCOMPARE(settings1.value("alpha/beta/geometry").toInt(), -7);
@@ -1505,7 +1503,6 @@ void tst_QSettings::sync()
     QCOMPARE(settings1.value("moo/beta/geometry/height").toInt(), 4);
     QCOMPARE(settings1.value("moo/gamma/splitter").toInt(), 5);
     QCOMPARE(settings1.allKeys().count(), 11);
-*/
 }
 
 void tst_QSettings::setFallbacksEnabled_data()

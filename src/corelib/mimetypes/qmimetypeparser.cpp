@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #define QT_NO_CAST_FROM_ASCII
 
 #include "qmimetypeparser_p.h"
@@ -93,9 +92,9 @@ static const char matchMaskAttributeC[] = "mask";
     \sa QMimeTypeParser
 */
 
-
 /*!
     \class QMimeTypeParserBase
+    \internal
     \brief The QMimeTypeParserBase class parses for a sequence of <mime-type> in a generic way.
 
     Calls abstract handler function process for QMimeType it finds.

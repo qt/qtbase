@@ -108,22 +108,24 @@ static void printHelp()
 {
     Location::information(tr("Usage: qdoc [options] file1.qdocconf ...\n"
                              "Options:\n"
-                             "    -help          "
-                             "Display this information and exit\n"
-                             "    -version       "
-                             "Display version of qdoc and exit\n"
                              "    -D<name>       "
                              "Define <name> as a macro while parsing sources\n"
+                             "    -help          "
+                             "Display this information and exit\n"
                              "    -highlighting  "
                              "Turn on syntax highlighting (makes qdoc run slower)\n"
-                             "    -showinternal  "
-                             "Include stuff marked internal\n"
+                             "    -no-examples   "
+                             "Do not generate documentation for examples"
                              "    -obsoletelinks "
                              "Report links from obsolete items to non-obsolete items\n"
                              "    -outputdir     "
                              "Specify output directory, overrides setting in qdocconf file\n"
                              "    -outputformat  "
-                             "Specify output format, overrides setting in qdocconf file") );
+                             "Specify output format, overrides setting in qdocconf file"
+                             "    -showinternal  "
+                             "Include content marked internal\n"
+                             "    -version       "
+                             "Display version of qdoc and exit\n") );
 }
 
 /*!
@@ -426,6 +428,9 @@ int main(int argc, char **argv)
         }
         else if (opt == "-showinternal") {
             showInternal = true;
+        }
+        else if (opt == "-no-examples") {
+            Config::generateExamples = false;
         }
         else if (opt == "-obsoletelinks") {
             obsoleteLinks = true;

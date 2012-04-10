@@ -3712,7 +3712,7 @@ void tst_QGraphicsView::render()
     view.show();
     QTest::qWaitForWindowShown(&view);
     QApplication::processEvents();
-    QTRY_VERIFY(view.painted > 0);
+    QTRY_VERIFY(view.painted);
 
     RenderTester *r1 = new RenderTester(QRectF(0, 0, 50, 50));
     RenderTester *r2 = new RenderTester(QRectF(50, 50, 50, 50));
@@ -4187,21 +4187,22 @@ void tst_QGraphicsView::inputContextReset()
     item1->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
 
     inputContext.m_resetCallCount = 0;
+    inputContext.m_commitCallCount = 0;
     scene.addItem(item1);
     QCOMPARE(inputContext.m_resetCallCount, 0);
+    QCOMPARE(inputContext.m_commitCallCount, 0);
 
-    inputContext.m_resetCallCount = 0;
     scene.setFocusItem(item1);
     QCOMPARE(scene.focusItem(), (QGraphicsItem *)item1);
     QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
     QCOMPARE(inputContext.m_resetCallCount, 0);
+    QCOMPARE(inputContext.m_commitCallCount, 0);
 
-    inputContext.m_resetCallCount = 0;
     scene.setFocusItem(0);
     // the input context is reset twice, once because an item has lost focus and again because
     // the Qt::WA_InputMethodEnabled flag is cleared because no item has focus.
     //    QEXPECT_FAIL("", "QTBUG-22454", Abort);
-    QCOMPARE(inputContext.m_resetCallCount, 2);
+    QCOMPARE(inputContext.m_resetCallCount + inputContext.m_commitCallCount, 2);
 
     // introduce another item that is focusable but does not accept input methods
     QGraphicsItem *item2 = new QGraphicsRectItem;
@@ -4209,17 +4210,19 @@ void tst_QGraphicsView::inputContextReset()
     scene.addItem(item2);
 
     inputContext.m_resetCallCount = 0;
+    inputContext.m_commitCallCount = 0;
     scene.setFocusItem(item2);
     QCOMPARE(inputContext.m_resetCallCount, 0);
+    QCOMPARE(inputContext.m_commitCallCount, 0);
 
-    inputContext.m_resetCallCount = 0;
     scene.setFocusItem(item1);
     QCOMPARE(inputContext.m_resetCallCount, 0);
+    QCOMPARE(inputContext.m_commitCallCount, 0);
 
     // test changing between between items that accept input methods.
     item2->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
     scene.setFocusItem(item2);
-    QCOMPARE(inputContext.m_resetCallCount, 1);
+    QCOMPARE(inputContext.m_resetCallCount + inputContext.m_commitCallCount, 1);
 }
 
 void tst_QGraphicsView::indirectPainting()

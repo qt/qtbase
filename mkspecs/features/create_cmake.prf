@@ -17,10 +17,6 @@ defineReplace(cmakeModuleList) {
 
 CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
 
-CMAKE_MODULE_DEPS = $$cmakeModuleList($$eval(QT.$${MODULE}.depends))
-CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5::")
-!isEmpty(CMAKE_PARTIAL_MODULE_DEPS):CMAKE_QT5_MODULE_DEPS = "Qt5::$${CMAKE_PARTIAL_MODULE_DEPS}"
-
 CMAKE_QT_INSTALL_PREFIX = $$replace($$list($$[QT_INSTALL_PREFIX]), \\\\, /)/
 CMAKE_QT_INSTALL_PREFIX_ESCAPED = "^$$re_escape($$CMAKE_QT_INSTALL_PREFIX)"
 
@@ -114,11 +110,11 @@ macx {
     }
 }
 
-debug_type =
-release_type =
+CMAKE_DEBUG_TYPE =
+CMAKE_RELEASE_TYPE =
 
-debug_and_release|debug:debug_type = debug
-debug_and_release|release:release_type = release
+debug_and_release|debug:CMAKE_DEBUG_TYPE = debug
+debug_and_release|release:CMAKE_RELEASE_TYPE = release
 
 INSTALLS += cmake_qt5_module_files
 

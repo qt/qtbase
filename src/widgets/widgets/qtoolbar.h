@@ -147,9 +147,7 @@ Q_SIGNALS:
 protected:
     void actionEvent(QActionEvent *event);
     void changeEvent(QEvent *event);
-    void childEvent(QChildEvent *event);
     void paintEvent(QPaintEvent *event);
-    void resizeEvent(QResizeEvent *event);
     bool event(QEvent *event);
     void initStyleOption(QStyleOptionToolBar *option) const;
 

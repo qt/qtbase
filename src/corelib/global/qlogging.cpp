@@ -75,14 +75,14 @@ QT_BEGIN_NAMESPACE
     \brief The QMessageLogger class generates log messages.
     \since 5.0
 
-    QMessageLogger is used to generate messages for the Qt logging framework. Most of the time
-    is transparently used through the qDebug(), qWarning(), qCritical, or qFatal() functions,
+    QMessageLogger is used to generate messages for the Qt logging framework. Usually one uses
+    it through qDebug(), qWarning(), qCritical, or qFatal() functions,
     which are actually macros that expand to QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO).debug()
     et al.
 
     One example of direct use is to forward errors that stem from a scripting language, e.g. QML:
 
-    \snippet doc/src/snippets/code/qlogging/qlogging.cpp 1
+    \snippet doc/src/snippets/code/qlogging/qloggingsnippet.cpp 1
 
     \sa QMessageLogContext, qDebug(), qWarning(), qCritical(), qFatal()
 */
@@ -132,41 +132,6 @@ static void qt_message(QtMsgType msgType, const QMessageLogContext &context, con
 }
 
 #undef qDebug
-/*!
-    \fn qDebug(const char *message, ...)
-    \relates <QtGlobal>
-
-    Calls the message handler with the debug message \a msg. If no
-    message handler has been installed, the message is printed to
-    stderr. Under Windows, the message is sent to the console, if it is a
-    console application; otherwise, it is sent to the debugger. This
-    function does nothing if \c QT_NO_DEBUG_OUTPUT was defined
-    during compilation.
-
-    If you pass the function a format string and a list of arguments,
-    it works in similar way to the C printf() function. The format
-    should be a Latin-1 string.
-
-    Example:
-
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 24
-
-    If you include \c <QtDebug>, a more convenient syntax is also
-    available:
-
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 25
-
-    With this syntax, the function returns a QDebug object that is
-    configured to use the QtDebugMsg message type. It automatically
-    puts a single space between each item, and outputs a newline at
-    the end. It supports many C++ and Qt types.
-
-    To suppress the output at run-time, install your own message handler
-    with qInstallMessageHandler().
-
-    \sa qWarning(), qCritical(), qFatal(), qInstallMessageHandler(),
-        {Debugging Techniques}
-*/
 
 void QMessageLogger::debug(const char *msg, ...)
 {
@@ -182,9 +147,7 @@ QDebug QMessageLogger::debug()
 {
     QDebug dbg = QDebug(QtDebugMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.file = context.file;
-    ctxt.line = context.line;
-    ctxt.function = context.function;
+    ctxt.copy(context);
     return dbg;
 }
 
@@ -196,39 +159,6 @@ QNoDebug QMessageLogger::noDebug()
 #endif
 
 #undef qWarning
-/*!
-    \fn qWarning(const char *message, ...)
-    \relates <QtGlobal>
-
-    Calls the message handler with the warning message \a msg. If no
-    message handler has been installed, the message is printed to
-    stderr. Under Windows, the message is sent to the debugger. This
-    function does nothing if \c QT_NO_WARNING_OUTPUT was defined
-    during compilation; it exits if the environment variable \c
-    QT_FATAL_WARNINGS is defined.
-
-    This function takes a format string and a list of arguments,
-    similar to the C printf() function. The format should be a Latin-1
-    string.
-
-    Example:
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 26
-
-    If you include <QtDebug>, a more convenient syntax is
-    also available:
-
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 27
-
-    This syntax inserts a space between each item, and
-    appends a newline at the end.
-
-    To suppress the output at runtime, install your own message handler
-    with qInstallMessageHandler().
-
-    \sa qDebug(), qCritical(), qFatal(), qInstallMessageHandler(),
-        {Debugging Techniques}
-*/
-
 void QMessageLogger::warning(const char *msg, ...)
 {
     va_list ap;
@@ -242,43 +172,12 @@ QDebug QMessageLogger::warning()
 {
     QDebug dbg = QDebug(QtWarningMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.file = context.file;
-    ctxt.line = context.line;
-    ctxt.function = context.function;
+    ctxt.copy(context);
     return dbg;
 }
 #endif
 
 #undef qCritical
-/*!
-    \fn qCritical(const char *message, ...)
-    \relates <QtGlobal>
-
-    Calls the message handler with the critical message \a msg. If no
-    message handler has been installed, the message is printed to
-    stderr. Under Windows, the message is sent to the debugger.
-
-    This function takes a format string and a list of arguments,
-    similar to the C printf() function. The format should be a Latin-1
-    string.
-
-    Example:
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 28
-
-    If you include <QtDebug>, a more convenient syntax is
-    also available:
-
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 29
-
-    A space is inserted between the items, and a newline is
-    appended at the end.
-
-    To suppress the output at runtime, install your own message handler
-    with qInstallMessageHandler().
-
-    \sa qDebug(), qWarning(), qFatal(), qInstallMessageHandler(),
-        {Debugging Techniques}
-*/
 
 void QMessageLogger::critical(const char *msg, ...)
 {
@@ -293,39 +192,12 @@ QDebug QMessageLogger::critical()
 {
     QDebug dbg = QDebug(QtCriticalMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.file = context.file;
-    ctxt.line = context.line;
-    ctxt.function = context.function;
+    ctxt.copy(context);
     return dbg;
 }
 #endif
 
 #undef qFatal
-/*!
-    \fn qFatal(const char *message, ...)
-    \relates <QtGlobal>
-
-    Calls the message handler with the fatal message \a msg. If no
-    message handler has been installed, the message is printed to
-    stderr. Under Windows, the message is sent to the debugger.
-
-    If you are using the \b{default message handler} this function will
-    abort on Unix systems to create a core dump. On Windows, for debug builds,
-    this function will report a _CRT_ERROR enabling you to connect a debugger
-    to the application.
-
-    This function takes a format string and a list of arguments,
-    similar to the C printf() function.
-
-    Example:
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 30
-
-    To suppress the output at runtime, install your own message handler
-    with qInstallMessageHandler().
-
-    \sa qDebug(), qCritical(), qWarning(), qInstallMessageHandler(),
-        {Debugging Techniques}
-*/
 
 void QMessageLogger::fatal(const char *msg, ...)
 {
@@ -491,6 +363,7 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
 }
 
 // tokens as recognized in QT_MESSAGE_PATTERN
+static const char categoryTokenC[] = "%{category}";
 static const char typeTokenC[] = "%{type}";
 static const char messageTokenC[] = "%{message}";
 static const char fileTokenC[] = "%{file}";
@@ -560,7 +433,9 @@ QMessagePattern::QMessagePattern()
             // placeholder
             if (lexeme == QLatin1String(typeTokenC)) {
                 tokens[i] = typeTokenC;
-            } else if (lexeme == QLatin1String(messageTokenC))
+            } else if (lexeme == QLatin1String(categoryTokenC))
+                tokens[i] = categoryTokenC;
+            else if (lexeme == QLatin1String(messageTokenC))
                 tokens[i] = messageTokenC;
             else if (lexeme == QLatin1String(fileTokenC))
                 tokens[i] = fileTokenC;
@@ -627,6 +502,8 @@ Q_CORE_EXPORT QByteArray qMessageFormatString(QtMsgType type, const QMessageLogC
         const char *token = pattern->tokens[i];
         if (token == messageTokenC) {
             message.append(str);
+        } else if (token == categoryTokenC) {
+            message.append(context.category);
         } else if (token == typeTokenC) {
             switch (type) {
             case QtDebugMsg:   message.append("debug"); break;
@@ -775,68 +652,6 @@ extern Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogConte
                                              const char *str);
 #endif
 
-/*!
-    \typedef QtMsgHandler
-    \relates <QtGlobal>
-    \deprecated
-
-    This is a typedef for a pointer to a function with the following
-    signature:
-
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 7
-
-    This typedef is deprecated, you should use QMessageHandler instead.
-    \sa QtMsgType, QMessageHandler, qInstallMsgHandler(), qInstallMessageHandler()
-*/
-
-/*!
-    \typedef QMessageHandler
-    \relates <QtGlobal>
-    \since 5.0
-
-    This is a typedef for a pointer to a function with the following
-    signature:
-
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 49
-
-    \sa QtMsgType, qInstallMessageHandler()
-*/
-
-/*!
-    \fn QMessageHandler qInstallMessageHandler(QMessageHandler handler)
-    \relates <QtGlobal>
-    \since 5.0
-
-    Installs a Qt message \a handler which has been defined
-    previously. Returns a pointer to the previous message handler
-    (which may be 0).
-
-    The message handler is a function that prints out debug messages,
-    warnings, critical and fatal error messages. The Qt library (debug
-    mode) contains hundreds of warning messages that are printed
-    when internal errors (usually invalid function arguments)
-    occur. Qt built in release mode also contains such warnings unless
-    QT_NO_WARNING_OUTPUT and/or QT_NO_DEBUG_OUTPUT have been set during
-    compilation. If you implement your own message handler, you get total
-    control of these messages.
-
-    The default message handler prints the message to the standard
-    output under X11 or to the debugger under Windows. If it is a
-    fatal message, the application aborts immediately.
-
-    Only one message handler can be defined, since this is usually
-    done on an application-wide basis to control debug output.
-
-    To restore the message handler, call \c qInstallMessageHandler(0).
-
-    Example:
-
-    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 23
-
-    \sa qDebug(), qWarning(), qCritical(), qFatal(), QtMsgType,
-    {Debugging Techniques}
-*/
-
 QMessageHandler qInstallMessageHandler(QMessageHandler h)
 {
     if (!messageHandler)
@@ -849,17 +664,6 @@ QMessageHandler qInstallMessageHandler(QMessageHandler h)
 #endif
     return old;
 }
-
-/*!
-    \fn QtMsgHandler qInstallMsgHandler(QtMsgHandler handler)
-    \relates <QtGlobal>
-    \deprecated
-
-    Installs a Qt message \a handler which has been defined
-    previously. This method is deprecated, use qInstallMessageHandler
-    instead.
-    \sa QtMsgHandler, qInstallMessageHandler
-*/
 
 QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
 {
@@ -876,4 +680,11 @@ QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
     return old;
 }
 
+void QMessageLogContext::copy(const QMessageLogContext &logContext)
+{
+    this->category = logContext.category;
+    this->file = logContext.file;
+    this->line = logContext.line;
+    this->function = logContext.function;
+}
 QT_END_NAMESPACE

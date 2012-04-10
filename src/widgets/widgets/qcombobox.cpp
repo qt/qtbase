@@ -2468,7 +2468,7 @@ void QComboBox::showPopup()
     }
     container->setGeometry(listRect);
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     const bool updatesEnabled = container->updatesEnabled();
 #endif
 
@@ -2484,7 +2484,7 @@ void QComboBox::showPopup()
 // If updates are disabled at this point we'll miss our chance at painting the popup
 // menu before it's shown, causing flicker since the window then displays the standard gray
 // background.
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     container->setUpdatesEnabled(false);
 #endif
 
@@ -2498,7 +2498,7 @@ void QComboBox::showPopup()
                              ? QAbstractItemView::PositionAtCenter
                              : QAbstractItemView::EnsureVisible);
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     container->setUpdatesEnabled(updatesEnabled);
 #endif
 

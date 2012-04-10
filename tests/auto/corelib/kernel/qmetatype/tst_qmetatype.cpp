@@ -450,7 +450,7 @@ template<> struct TestValueFactory<QMetaType::UChar> {
     static uchar *create() { return new uchar('u'); }
 };
 template<> struct TestValueFactory<QMetaType::Float> {
-    static float *create() { return new float(3.14); }
+    static float *create() { return new float(3.14f); }
 };
 template<> struct TestValueFactory<QMetaType::QObjectStar> {
     static QObject * *create() { return new QObject *(0); }

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLSCREEN_H
-#define QEGLSCREEN_H
+#ifndef QEGLFSSCREEN_H
+#define QEGLFSSCREEN_H
 
 #include <QPlatformScreen>
 
@@ -55,8 +55,8 @@ class QPlatformOpenGLContext;
 class QEglFSScreen : public QPlatformScreen //huh: FullScreenScreen ;) just to follow namespace
 {
 public:
-    QEglFSScreen(EGLNativeDisplayType display);
-    ~QEglFSScreen() {}
+    QEglFSScreen();
+    ~QEglFSScreen();
 
     QRect geometry() const;
     int depth() const;
@@ -76,7 +76,8 @@ private:
     QPlatformOpenGLContext *m_platformContext;
     EGLDisplay m_dpy;
     EGLSurface m_surface;
+    EGLNativeWindowType m_window;
 };
 
 QT_END_NAMESPACE
-#endif // QEGLSCREEN_H
+#endif // QEGLFSSCREEN_H

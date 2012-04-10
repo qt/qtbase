@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <qmatrix.h>
-#include <math.h>
+#include <qmath.h>
 #include <qpolygon.h>
 
 Q_DECLARE_METATYPE(QRect)

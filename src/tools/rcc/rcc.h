@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+// Note: A copy of this file is used in Qt Designer (qttools/src/designer/src/lib/shared/rcc_p.h)
+
 #ifndef RCC_H
 #define RCC_H
 

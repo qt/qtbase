@@ -178,6 +178,10 @@ QUdpSocket::~QUdpSocket()
     interface chosen by the operating system. The socket must be in BoundState,
     otherwise an error occurs.
 
+    Note that if you are attempting to join an IPv4 group, your socket must not
+    be bound using IPv6 (or in dual mode, using QHostAddress::Any). You must use
+    QHostAddress::AnyIPv4 instead.
+
     This function returns true if successful; otherwise it returns false
     and sets the socket error accordingly.
 

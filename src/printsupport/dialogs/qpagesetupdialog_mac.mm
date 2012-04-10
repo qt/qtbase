@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#ifndef QT_NO_PRINTDIALOG
+
 #include <Cocoa/Cocoa.h>
 
 #include "qpagesetupdialog.h"
@@ -46,8 +48,6 @@
 
 #include <QtGui/qplatformnativeinterface_qpa.h>
 #include <QtPrintSupport/qprintengine.h>
-
-#ifndef QT_NO_PRINTDIALOG
 
 QT_USE_NAMESPACE
 
@@ -155,11 +155,15 @@ void QPageSetupDialogPrivate::closeCocoaPageLayout()
 
 QPageSetupDialog::QPageSetupDialog(QPrinter *printer, QWidget *parent)
     : QAbstractPageSetupDialog(*(new QPageSetupDialogPrivate), printer, parent)
-{ }
+{
+    setAttribute(Qt::WA_DontShowOnScreen);
+}
 
 QPageSetupDialog::QPageSetupDialog(QWidget *parent)
     : QAbstractPageSetupDialog(*(new QPageSetupDialogPrivate), 0, parent)
-{ }
+{
+    setAttribute(Qt::WA_DontShowOnScreen);
+}
 
 void QPageSetupDialog::setVisible(bool visible)
 {
@@ -171,6 +175,8 @@ void QPageSetupDialog::setVisible(bool visible)
     bool isCurrentlyVisible = (d->pageLayout != 0);
     if (!visible == !isCurrentlyVisible)
         return;
+
+    QDialog::setVisible(visible);
 
     if (visible) {
         d->openCocoaPageLayout(parentWidget() ? Qt::WindowModal
@@ -191,10 +197,15 @@ int QPageSetupDialog::exec()
     if (d->printer->outputFormat() != QPrinter::NativeFormat)
         return Rejected;
 
+    QDialog::setVisible(true);
+
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     d->openCocoaPageLayout(Qt::ApplicationModal);
     d->closeCocoaPageLayout();
     [pool release];
+
+    QDialog::setVisible(false);
+
     return result();
 }
 

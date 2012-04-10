@@ -40,18 +40,17 @@
 ****************************************************************************/
 
 #include "qqnxscreen.h"
-#include "qqnxvirtualkeyboard.h"
 #include "qqnxwindow.h"
 
-#include <QtCore/QDebug>
-#include <QtCore/QUuid>
+#include <QtCore/QThread>
+#ifdef QQNXSCREEN_DEBUG
+#    include <QtCore/QDebug>
+#endif
+#include <QtGui/QWindowSystemInterface>
 
 #include <errno.h>
 
 QT_BEGIN_NAMESPACE
-
-QList<QPlatformScreen *> QQnxScreen::ms_screens;
-QList<QQnxWindow*> QQnxScreen::ms_childWindows;
 
 QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display, bool primaryScreen)
     : m_screenContext(screenContext),
@@ -59,6 +58,7 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
       m_rootWindow(),
       m_primaryScreen(primaryScreen),
       m_posted(false),
+      m_keyboardHeight(0),
       m_platformContext(0)
 {
 #if defined(QQNXSCREEN_DEBUG)
@@ -114,52 +114,7 @@ QQnxScreen::~QQnxScreen()
 #endif
 }
 
-/* static */
-void QQnxScreen::createDisplays(screen_context_t context)
-{
-#if defined(QQNXSCREEN_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
-    // Query number of displays
-    errno = 0;
-    int displayCount;
-    int result = screen_get_context_property_iv(context, SCREEN_PROPERTY_DISPLAY_COUNT, &displayCount);
-    if (result != 0) {
-        qFatal("QQnxScreen: failed to query display count, errno=%d", errno);
-    }
-
-    // Get all displays
-    errno = 0;
-    screen_display_t *displays = (screen_display_t *)alloca(sizeof(screen_display_t) * displayCount);
-    result = screen_get_context_property_pv(context, SCREEN_PROPERTY_DISPLAYS, (void **)displays);
-    if (result != 0) {
-        qFatal("QQnxScreen: failed to query displays, errno=%d", errno);
-    }
-
-    for (int i=0; i<displayCount; i++) {
-#if defined(QQNXSCREEN_DEBUG)
-        qDebug() << "QQnxScreen::Creating screen for display " << i;
-#endif
-        QQnxScreen *screen = new QQnxScreen(context, displays[i], i==0);
-        ms_screens.append(screen);
-    }
-}
-
-/* static */
-void QQnxScreen::destroyDisplays()
-{
-#if defined(QQNXSCREEN_DEBUG)
-    qDebug() << Q_FUNC_INFO;
-#endif
-    qDeleteAll(ms_screens);
-    ms_screens.clear();
-
-    // We're not managing the child windows anymore so we need to clear the list.
-    ms_childWindows.clear();
-}
-
-/* static */
-int QQnxScreen::defaultDepth()
+static int defaultDepth()
 {
 #if defined(QQNXSCREEN_DEBUG)
     qDebug() << Q_FUNC_INFO;
@@ -182,9 +137,13 @@ QRect QQnxScreen::availableGeometry() const
     qDebug() << Q_FUNC_INFO;
 #endif
     // available geometry = total geometry - keyboard
-    int keyboardHeight = QQnxVirtualKeyboard::instance().height();
     return QRect(m_currentGeometry.x(), m_currentGeometry.y(),
-                 m_currentGeometry.width(), m_currentGeometry.height() - keyboardHeight);
+                 m_currentGeometry.width(), m_currentGeometry.height() - m_keyboardHeight);
+}
+
+int QQnxScreen::depth() const
+{
+    return defaultDepth();
 }
 
 /*!
@@ -231,7 +190,24 @@ void QQnxScreen::setRotation(int rotation)
 
         // Save new rotation
         m_currentRotation = rotation;
+
+        // TODO: check if other screens are supposed to rotate as well and/or whether this depends
+        // on if clone mode is being used.
+        // Rotating only the primary screen is what we had in the navigator event handler before refactoring
+        if (m_primaryScreen)
+            QWindowSystemInterface::handleScreenGeometryChange(screen(), m_currentGeometry);
     }
+}
+
+QQnxWindow *QQnxScreen::findWindow(screen_window_t windowHandle)
+{
+    Q_FOREACH (QQnxWindow *window, m_childWindows) {
+        QQnxWindow * const result = window->findWindow(windowHandle);
+        if (result)
+            return result;
+    }
+
+    return 0;
 }
 
 void QQnxScreen::addWindow(QQnxWindow *window)
@@ -240,11 +216,11 @@ void QQnxScreen::addWindow(QQnxWindow *window)
     qDebug() << Q_FUNC_INFO << "window =" << window;
 #endif
 
-    if (ms_childWindows.contains(window))
+    if (m_childWindows.contains(window))
         return;
 
-    ms_childWindows.push_back(window);
-    QQnxScreen::updateHierarchy();
+    m_childWindows.push_back(window);
+    updateHierarchy();
 }
 
 void QQnxScreen::removeWindow(QQnxWindow *window)
@@ -253,8 +229,9 @@ void QQnxScreen::removeWindow(QQnxWindow *window)
     qDebug() << Q_FUNC_INFO << "window =" << window;
 #endif
 
-    ms_childWindows.removeAll(window);
-    QQnxScreen::updateHierarchy();
+    const int numWindowsRemoved = m_childWindows.removeAll(window);
+    if (numWindowsRemoved > 0)
+        updateHierarchy();
 }
 
 void QQnxScreen::raiseWindow(QQnxWindow *window)
@@ -264,8 +241,8 @@ void QQnxScreen::raiseWindow(QQnxWindow *window)
 #endif
 
     removeWindow(window);
-    ms_childWindows.push_back(window);
-    QQnxScreen::updateHierarchy();
+    m_childWindows.push_back(window);
+    updateHierarchy();
 }
 
 void QQnxScreen::lowerWindow(QQnxWindow *window)
@@ -275,8 +252,8 @@ void QQnxScreen::lowerWindow(QQnxWindow *window)
 #endif
 
     removeWindow(window);
-    ms_childWindows.push_front(window);
-    QQnxScreen::updateHierarchy();
+    m_childWindows.push_front(window);
+    updateHierarchy();
 }
 
 void QQnxScreen::updateHierarchy()
@@ -285,15 +262,24 @@ void QQnxScreen::updateHierarchy()
     qDebug() << Q_FUNC_INFO;
 #endif
 
-    QList<QQnxWindow*>::iterator it;
+    QList<QQnxWindow*>::const_iterator it;
     int topZorder = 1; // root window is z-order 0, all "top" level windows are "above" it
 
-    for (it = ms_childWindows.begin(); it != ms_childWindows.end(); it++)
+    for (it = m_childWindows.constBegin(); it != m_childWindows.constEnd(); ++it)
         (*it)->updateZorder(topZorder);
+
+    topZorder++;
+    Q_FOREACH (screen_window_t overlay, m_overlays) {
+        // Do nothing when this fails. This can happen if we have stale windows in mOverlays,
+        // which in turn can happen because a window was removed but we didn't get a notification
+        // yet.
+        screen_set_window_property_iv(overlay, SCREEN_PROPERTY_ZORDER, &topZorder);
+        topZorder++;
+    }
 
     // After a hierarchy update, we need to force a flush on all screens.
     // Right now, all screens share a context.
-    screen_flush_context( primaryDisplay()->m_screenContext, 0 );
+    screen_flush_context( m_screenContext, 0 );
 }
 
 void QQnxScreen::onWindowPost(QQnxWindow *window)
@@ -310,6 +296,56 @@ void QQnxScreen::onWindowPost(QQnxWindow *window)
         m_rootWindow->post();
         m_posted = true;
     }
+}
+
+void QQnxScreen::keyboardHeightChanged(int height)
+{
+    if (height == m_keyboardHeight)
+        return;
+
+    m_keyboardHeight = height;
+
+    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), availableGeometry());
+}
+
+void QQnxScreen::addOverlayWindow(screen_window_t window)
+{
+    m_overlays.append(window);
+    updateHierarchy();
+}
+
+void QQnxScreen::removeOverlayWindow(screen_window_t window)
+{
+    const int numOverlaysRemoved = m_overlays.removeAll(window);
+    if (numOverlaysRemoved > 0)
+        updateHierarchy();
+}
+
+void QQnxScreen::newWindowCreated(void *window)
+{
+    Q_ASSERT(thread() == QThread::currentThread());
+    const screen_window_t windowHandle = reinterpret_cast<screen_window_t>(window);
+    screen_display_t display = NULL;
+    if (screen_get_window_property_pv(windowHandle, SCREEN_PROPERTY_DISPLAY, (void**)&display) != 0) {
+        qWarning("QQnx: Failed to get screen for window, errno=%d", errno);
+        return;
+    }
+
+    if (display == nativeDisplay()) {
+        // A window was created on this screen. If we don't know about this window yet, it means
+        // it was not created by Qt, but by some foreign library like the multimedia renderer, which
+        // creates an overlay window when playing a video.
+        // Treat all foreign windows as overlays here.
+        if (!findWindow(windowHandle))
+            addOverlayWindow(windowHandle);
+    }
+}
+
+void QQnxScreen::windowClosed(void *window)
+{
+    Q_ASSERT(thread() == QThread::currentThread());
+    const screen_window_t windowHandle = reinterpret_cast<screen_window_t>(window);
+    removeOverlayWindow(windowHandle);
 }
 
 QT_END_NAMESPACE

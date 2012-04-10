@@ -113,12 +113,48 @@ typedef HINTERNET (WINAPI * PtrWinHttpOpen)(LPCWSTR, DWORD, LPCWSTR, LPCWSTR,DWO
 typedef BOOL (WINAPI * PtrWinHttpGetDefaultProxyConfiguration)(WINHTTP_PROXY_INFO*);
 typedef BOOL (WINAPI * PtrWinHttpGetIEProxyConfigForCurrentUser)(WINHTTP_CURRENT_USER_IE_PROXY_CONFIG*);
 typedef BOOL (WINAPI * PtrWinHttpCloseHandle)(HINTERNET);
+typedef SC_HANDLE (WINAPI * PtrOpenSCManager)(LPCWSTR lpMachineName, LPCWSTR lpDatabaseName, DWORD dwDesiredAccess);
+typedef BOOL (WINAPI * PtrEnumServicesStatusEx)(SC_HANDLE hSCManager, SC_ENUM_TYPE InfoLevel, DWORD dwServiceType, DWORD dwServiceState, LPBYTE lpServices, DWORD cbBufSize, LPDWORD pcbBytesNeeded,
+    LPDWORD lpServicesReturned, LPDWORD lpResumeHandle, LPCWSTR pszGroupName);
+typedef BOOL (WINAPI * PtrCloseServiceHandle)(SC_HANDLE hSCObject);
 static PtrWinHttpGetProxyForUrl ptrWinHttpGetProxyForUrl = 0;
 static PtrWinHttpOpen ptrWinHttpOpen = 0;
 static PtrWinHttpGetDefaultProxyConfiguration ptrWinHttpGetDefaultProxyConfiguration = 0;
 static PtrWinHttpGetIEProxyConfigForCurrentUser ptrWinHttpGetIEProxyConfigForCurrentUser = 0;
 static PtrWinHttpCloseHandle ptrWinHttpCloseHandle = 0;
+static PtrOpenSCManager ptrOpenSCManager = 0;
+static PtrEnumServicesStatusEx ptrEnumServicesStatusEx = 0;
+static PtrCloseServiceHandle ptrCloseServiceHandle = 0;
 
+
+static bool currentProcessIsService()
+{
+    if (!ptrOpenSCManager || !ptrEnumServicesStatusEx|| !ptrCloseServiceHandle)
+        return false;
+
+    SC_HANDLE hSCM = ptrOpenSCManager(0, 0, SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_CONNECT);
+    if (!hSCM)
+        return false;
+
+    ULONG bufSize = 0;
+    ULONG nbServices = 0;
+    if (ptrEnumServicesStatusEx(hSCM, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_ACTIVE, 0, bufSize, &bufSize, &nbServices, 0, 0))
+        return false; //error case
+
+    LPENUM_SERVICE_STATUS_PROCESS info = reinterpret_cast<LPENUM_SERVICE_STATUS_PROCESS>(malloc(bufSize));
+    bool foundService = false;
+    if (ptrEnumServicesStatusEx(hSCM, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_ACTIVE, (LPBYTE)info, bufSize, &bufSize, &nbServices, 0, 0)) {
+        DWORD currProcId = GetCurrentProcessId();
+        for (ULONG i = 0; i < nbServices && !foundService; i++) {
+            if (info[i].ServiceStatusProcess.dwProcessId == currProcId)
+                foundService = true;
+        }
+    }
+
+    ptrCloseServiceHandle(hSCM);
+    free(info);
+    return foundService;
+}
 
 static QStringList splitSpaceSemicolon(const QString &source)
 {
@@ -364,10 +400,14 @@ void QWindowsSystemProxy::init()
     ptrWinHttpGetProxyForUrl = (PtrWinHttpGetProxyForUrl)lib.resolve("WinHttpGetProxyForUrl");
     ptrWinHttpGetDefaultProxyConfiguration = (PtrWinHttpGetDefaultProxyConfiguration)lib.resolve("WinHttpGetDefaultProxyConfiguration");
     ptrWinHttpGetIEProxyConfigForCurrentUser = (PtrWinHttpGetIEProxyConfigForCurrentUser)lib.resolve("WinHttpGetIEProxyConfigForCurrentUser");
+    ptrOpenSCManager = (PtrOpenSCManager) QSystemLibrary(L"advapi32").resolve("OpenSCManagerW");
+    ptrEnumServicesStatusEx = (PtrEnumServicesStatusEx) QSystemLibrary(L"advapi32").resolve("EnumServicesStatusExW");
+    ptrCloseServiceHandle = (PtrCloseServiceHandle) QSystemLibrary(L"advapi32").resolve("CloseServiceHandle");
 
     // Try to obtain the Internet Explorer configuration.
     WINHTTP_CURRENT_USER_IE_PROXY_CONFIG ieProxyConfig;
-    if (ptrWinHttpGetIEProxyConfigForCurrentUser(&ieProxyConfig)) {
+    const bool hasIEConfig = ptrWinHttpGetIEProxyConfigForCurrentUser(&ieProxyConfig);
+    if (hasIEConfig) {
         if (ieProxyConfig.lpszAutoConfigUrl) {
             autoConfigUrl = QString::fromWCharArray(ieProxyConfig.lpszAutoConfigUrl);
             GlobalFree(ieProxyConfig.lpszAutoConfigUrl);
@@ -383,9 +423,13 @@ void QWindowsSystemProxy::init()
             proxyBypass = splitSpaceSemicolon(QString::fromWCharArray(ieProxyConfig.lpszProxyBypass));
             GlobalFree(ieProxyConfig.lpszProxyBypass);
         }
-    } else {
+    }
+
+    if (!hasIEConfig ||
+        (currentProcessIsService() && proxyServerList.isEmpty() && proxyBypass.isEmpty())) {
         // no user configuration
         // attempt to get the default configuration instead
+        // that config will serve as default if WPAD fails
         WINHTTP_PROXY_INFO proxyInfo;
         if (ptrWinHttpGetDefaultProxyConfiguration(&proxyInfo) &&
             proxyInfo.dwAccessType == WINHTTP_ACCESS_TYPE_NAMED_PROXY) {

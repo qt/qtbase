@@ -53,25 +53,28 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQnxAbstractVirtualKeyboard;
+
 class QQnxInputContext : public QPlatformInputContext
 {
     Q_OBJECT
 public:
-    QQnxInputContext();
+    explicit QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard);
     ~QQnxInputContext();
 
-    virtual bool isValid() const;
+    bool isValid() const;
 
-    virtual bool filterEvent(const QEvent *event);
-    virtual void reset();
-    virtual void update(Qt::InputMethodQueries);
+    bool filterEvent(const QEvent *event);
+    void reset();
+    void update(Qt::InputMethodQueries);
     bool handleKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
 
-    virtual void showInputPanel();
-    virtual void hideInputPanel();
-    virtual bool isInputPanelVisible() const;
+    void showInputPanel();
+    void hideInputPanel();
+    bool isInputPanelVisible() const;
 
-    virtual QLocale locale() const;
+    QLocale locale() const;
+    void setFocusObject(QObject *object);
 
 protected:
     // Filters only for IMF events.
@@ -80,7 +83,6 @@ protected:
 private Q_SLOTS:
     void keyboardVisibilityChanged(bool visible);
     void keyboardLocaleChanged(const QLocale &locale);
-    void inputItemChanged();
 
 private:
     // IMF Event dispatchers
@@ -123,6 +125,7 @@ private:
     QString m_composingText;
     bool m_inputPanelVisible;
     QLocale m_inputPanelLocale;
+    QQnxAbstractVirtualKeyboard &m_virtualKeyboad;
 };
 
 Q_DECLARE_METATYPE(extracted_text_t*)

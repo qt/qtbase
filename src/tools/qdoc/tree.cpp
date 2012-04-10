@@ -124,18 +124,7 @@ Tree::~Tree()
     delete priv;
 }
 
-/*!
-  This function simply calls the const version of itself and
-  returns the result.
- */
-Node* Tree::findNode(const QStringList& path, Node* relative, int findFlags, const Node* self)
-{
-    return const_cast<Node*>(const_cast<const Tree*>(this)->findNode(path,
-                                                                     relative,
-                                                                     findFlags,
-                                                                     self));
-}
-
+// 1 calls 2
 /*!
   Searches the tree for a node that matches the \a path. The
   search begins at \a start but can move up the parent chain
@@ -162,16 +151,16 @@ const Node* Tree::findNode(const QStringList& path,
     return n;
 }
 
+// 2 is private; it is only called by 1.
 /*!
-  This code in this function was extracted from the other
-  version of findNode() that has the same signature without
-  the last bool parameter \a qml. This function is called
-  only by that other findNode(). It can be called a second
-  time if the first call returns null. If \a qml is false,
-  the search will only match a node that is not a QML node.
-  If \a qml is true, the search will only match a node that
-  is a QML node.
- */
+  This overload function was extracted from the one above that has the
+  same signature without the last bool parameter, \a qml. This version
+  is called only by that other one. It is therefore private.  It can
+  be called a second time by that other version, if the first call
+  returns null. If \a qml is false, the search will only match a node
+  that is not a QML node.  If \a qml is true, the search will only
+  match a node that is a QML node.
+*/
 const Node* Tree::findNode(const QStringList& path,
                            const Node* start,
                            int findFlags,
@@ -204,7 +193,7 @@ const Node* Tree::findNode(const QStringList& path,
             if (node == 0 || !node->isInnerNode())
                 break;
 
-            const Node* next = static_cast<const InnerNode*>(node)->findNode(path.at(i), qml);
+            const Node* next = static_cast<const InnerNode*>(node)->findChildNodeByName(path.at(i), qml);
 
             if (!next && (findFlags & SearchEnumValues) && i == path.size()-1)
                 next = static_cast<const InnerNode*>(node)->findEnumNodeForValue(path.at(i));
@@ -212,10 +201,9 @@ const Node* Tree::findNode(const QStringList& path,
             if (!next && !qml && node->type() == Node::Class && (findFlags & SearchBaseClasses)) {
                 NodeList baseClasses = allBaseClasses(static_cast<const ClassNode*>(node));
                 foreach (const Node* baseClass, baseClasses) {
-                    next = static_cast<const InnerNode*>(baseClass)->findNode(path.at(i));
+                    next = static_cast<const InnerNode*>(baseClass)->findChildNodeByName(path.at(i));
                     if (!next && (findFlags & SearchEnumValues) && i == path.size() - 1)
-                        next = static_cast<const InnerNode*>(baseClass)
-                                ->findEnumNodeForValue(path.at(i));
+                        next = static_cast<const InnerNode*>(baseClass)->findEnumNodeForValue(path.at(i));
                     if (next)
                         break;
                 }
@@ -239,45 +227,6 @@ const Node* Tree::findNode(const QStringList& path,
 }
 
 /*!
-  Find the node with the specified \a path name of the
-  specified \a type.
- */
-Node* Tree::findNode(const QStringList& path,
-                     Node::Type type,
-                     Node* relative,
-                     int findFlags)
-{
-    return const_cast<Node*>(const_cast<const Tree*>(this)->findNode(path,
-                                                                     type,
-                                                                     relative,
-                                                                     findFlags));
-}
-
-/*!
-  This function just calls the const version of itself and returns
-  a pointer to the QML class node, or null.
- */
-QmlClassNode* Tree::findQmlClassNode(const QString& module, const QString& element)
-{
-    return const_cast<QmlClassNode*>(const_cast<const Tree*>(this)->findQmlClassNode(module, element));
-}
-
-/*!
-  Find the node with the specified \a path name of the
-  specified \a type.
- */
-const Node* Tree::findNode(const QStringList& path,
-                           Node::Type type,
-                           const Node* relative,
-                           int findFlags) const
-{
-    const Node* node = findNode(path, relative, findFlags);
-    if (node != 0 && node->type() == type)
-        return node;
-    return 0;
-}
-
-/*!
   Find the QML class node for the specified \a module and \a name
   identifiers. The \a module identifier may be empty. If the module
   identifier is empty, then begin by finding the FakeNode that has
@@ -286,17 +235,17 @@ const Node* Tree::findNode(const QStringList& path,
   child is a QML class. If the collision node does not have a child
   that is a QML class node, return 0.
  */
-const QmlClassNode* Tree::findQmlClassNode(const QString& module, const QString& name) const
+QmlClassNode* Tree::findQmlClassNode(const QString& module, const QString& name)
 {
     if (module.isEmpty()) {
-        const Node* n = findNode(QStringList(name), Node::Fake);
+        Node* n = findQmlClassNode(QStringList(name));
         if (n) {
             if (n->subType() == Node::QmlClass)
-                return static_cast<const QmlClassNode*>(n);
+                return static_cast<QmlClassNode*>(n);
             else if (n->subType() == Node::Collision) {
-                const NameCollisionNode* ncn;
-                ncn = static_cast<const NameCollisionNode*>(n);
-                return static_cast<const QmlClassNode*>(ncn->findAny(Node::Fake,Node::QmlClass));
+                NameCollisionNode* ncn;
+                ncn = static_cast<NameCollisionNode*>(n);
+                return static_cast<QmlClassNode*>(ncn->findAny(Node::Fake,Node::QmlClass));
             }
         }
         return 0;
@@ -397,16 +346,15 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
             if (i == path.size() - 1)
                 next = ((InnerNode*) node)->findFunctionNode(path.at(i));
             else
-                next = ((InnerNode*) node)->findNode(path.at(i));
+                next = ((InnerNode*) node)->findChildNodeByName(path.at(i));
 
-            if (!next && node->type() == Node::Class &&
-                    (findFlags & SearchBaseClasses)) {
+            if (!next && node->type() == Node::Class && (findFlags & SearchBaseClasses)) {
                 NodeList baseClasses = allBaseClasses(static_cast<const ClassNode*>(node));
                 foreach (const Node* baseClass, baseClasses) {
                     if (i == path.size() - 1)
                         next = static_cast<const InnerNode*>(baseClass)->findFunctionNode(path.at(i));
                     else
-                        next = static_cast<const InnerNode*>(baseClass)->findNode(path.at(i));
+                        next = static_cast<const InnerNode*>(baseClass)->findChildNodeByName(path.at(i));
 
                     if (next)
                         break;
@@ -474,6 +422,7 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& parentPath,
         return ((InnerNode*)parent)->findFunctionNode(clone);
     }
 }
+//findNode(parameter.leftType().split("::"), 0, SearchBaseClasses|NonFunction);
 
 static const int NumSuffixes = 3;
 static const char*  const suffixes[NumSuffixes] = { "", "s", "es" };
@@ -768,17 +717,12 @@ void Tree::resolveInheritance(int pass, ClassNode* classe)
         QList<InheritanceBound> bounds = priv->unresolvedInheritanceMap[classe];
         QList<InheritanceBound>::ConstIterator b = bounds.begin();
         while (b != bounds.end()) {
-            ClassNode* baseClass = (ClassNode*)findNode((*b).basePath,
-                                                        Node::Class);
-            if (!baseClass && (*b).parent) {
-                baseClass = (ClassNode*)findNode((*b).basePath,
-                                                 Node::Class,
-                                                 (*b).parent);
+            Node* n = findClassNode((*b).basePath);
+            if (!n && (*b).parent) {
+                n = findClassNode((*b).basePath, (*b).parent);
             }
-            if (baseClass) {
-                classe->addBaseClass((*b).access,
-                                     baseClass,
-                                     (*b).dataTypeWithTemplateArgs);
+            if (n) {
+                classe->addBaseClass((*b).access, static_cast<ClassNode*>(n), (*b).dataTypeWithTemplateArgs);
             }
             ++b;
         }
@@ -814,11 +758,9 @@ void Tree::resolveGroups()
         if (i.value()->access() == Node::Private)
             continue;
 
-        FakeNode* fake =
-                static_cast<FakeNode*>(findNode(QStringList(i.key()),Node::Fake));
-        if (fake && fake->subType() == Node::Group) {
-            fake->addGroupMember(i.value());
-        }
+        Node* n = findGroupNode(QStringList(i.key()));
+        if (n)
+            n->addGroupMember(i.value());
     }
 }
 
@@ -830,11 +772,9 @@ void Tree::resolveQmlModules()
 {
     NodeMultiMap::const_iterator i;
     for (i = priv->qmlModuleMap.constBegin(); i != priv->qmlModuleMap.constEnd(); ++i) {
-        FakeNode* fake =
-                static_cast<FakeNode*>(findNode(QStringList(i.key()),Node::Fake));
-        if (fake && fake->subType() == Node::QmlModule) {
-            fake->addQmlModuleMember(i.value());
-        }
+        Node* n = findQmlModuleNode(QStringList(i.key()));
+        if (n)
+            n->addQmlModuleMember(i.value());
     }
 }
 
@@ -978,15 +918,13 @@ FunctionNode* Tree::findVirtualFunctionInBaseClasses(ClassNode* classe,
 
 /*!
  */
-void Tree::fixPropertyUsingBaseClasses(ClassNode* classe,
-                                       PropertyNode* property)
+void Tree::fixPropertyUsingBaseClasses(ClassNode* classe, PropertyNode* property)
 {
     QList<RelatedClass>::const_iterator r = classe->baseClasses().begin();
     while (r != classe->baseClasses().end()) {
-        PropertyNode* baseProperty =
-                static_cast<PropertyNode*>(r->node->findNode(property->name(),
-                                                             Node::Property));
-        if (baseProperty) {
+        Node* n = r->node->findChildNodeByNameAndType(property->name(), Node::Property);
+        if (n) {
+            PropertyNode* baseProperty = static_cast<PropertyNode*>(n);
             fixPropertyUsingBaseClasses(r->node, baseProperty);
             property->setOverriddenFrom(baseProperty);
         }
@@ -1414,10 +1352,9 @@ void Tree::resolveIndex()
 
     foreach (pair, priv->basesList) {
         foreach (const QString& base, pair.second.split(QLatin1Char(','))) {
-            Node* baseClass = root()->findNode(base, Node::Class);
-            if (baseClass) {
-                pair.first->addBaseClass(Node::Public,
-                                         static_cast<ClassNode*>(baseClass));
+            Node* n = root()->findChildNodeByNameAndType(base, Node::Class);
+            if (n) {
+                pair.first->addBaseClass(Node::Public, static_cast<ClassNode*>(n));
             }
         }
     }
@@ -1425,9 +1362,9 @@ void Tree::resolveIndex()
     QPair<FunctionNode*,QString> relatedPair;
 
     foreach (relatedPair, priv->relatedList) {
-        Node* classNode = root()->findNode(relatedPair.second, Node::Class);
-        if (classNode)
-            relatedPair.first->setRelates(static_cast<ClassNode*>(classNode));
+        Node* n = root()->findChildNodeByNameAndType(relatedPair.second, Node::Class);
+        if (n)
+            relatedPair.first->setRelates(static_cast<ClassNode*>(n));
     }
 }
 
@@ -1437,8 +1374,8 @@ void Tree::resolveIndex()
   false.
  */
 bool Tree::generateIndexSection(QXmlStreamWriter& writer,
-                                const Node* node,
-                                bool generateInternalNodes) const
+                                Node* node,
+                                bool generateInternalNodes)
 {
     if (!node->url().isEmpty())
         return false;
@@ -1472,9 +1409,6 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
         break;
     case Node::Variable:
         nodeName = "variable";
-        break;
-    case Node::Target:
-        nodeName = "target";
         break;
     case Node::QmlProperty:
         nodeName = "qmlproperty";
@@ -1716,7 +1650,7 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
 
     case Node::QmlProperty:
     {
-        const QmlPropertyNode* qpn = static_cast<const QmlPropertyNode*>(node);
+        QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
         writer.writeAttribute("type", qpn->dataType());
         writer.writeAttribute("attached", qpn->isAttached() ? "true" : "false");
         writer.writeAttribute("writable", qpn->isWritable(this) ? "true" : "false");
@@ -1840,22 +1774,18 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
 
         foreach (const Parameter& parameter, functionNode->parameters()) {
             QString leftType = parameter.leftType();
-            const Node* leftNode =
-                    const_cast<Tree*>(this)->findNode(parameter.leftType().split("::"),
-                                                      Node::Typedef, 0, SearchBaseClasses|NonFunction);
-            if (!leftNode) {
-                leftNode = const_cast<Tree*>(this)->findNode(
-                            parameter.leftType().split("::"), Node::Typedef,
+            const Node* leftNode = const_cast<Tree*>(this)->findNode(parameter.leftType().split("::"),
+                                                      0, SearchBaseClasses|NonFunction);
+            if (!leftNode || leftNode->type() != Node::Typedef) {
+                leftNode = const_cast<Tree*>(this)->findNode(parameter.leftType().split("::"),
                             node->parent(), SearchBaseClasses|NonFunction);
             }
-            if (leftNode) {
+            if (leftNode && leftNode->type() == Node::Typedef) {
                 if (leftNode->type() == Node::Typedef) {
                     const TypedefNode* typedefNode =
                             static_cast<const TypedefNode*>(leftNode);
                     if (typedefNode->associatedEnum()) {
-                        leftType = "QFlags<" +
-                                typedefNode->associatedEnum()->fullDocumentName() +
-                                QLatin1Char('>');
+                        leftType = "QFlags<" + typedefNode->associatedEnum()->fullDocumentName() + QLatin1Char('>');
                     }
                 }
                 else
@@ -1973,8 +1903,8 @@ bool compareNodes(const Node* n1, const Node* n2)
     they will be omitted.
 */
 void Tree::generateIndexSections(QXmlStreamWriter& writer,
-                                 const Node* node,
-                                 bool generateInternalNodes) const
+                                 Node* node,
+                                 bool generateInternalNodes)
 {
     if (generateIndexSection(writer, node, generateInternalNodes)) {
 
@@ -1984,7 +1914,7 @@ void Tree::generateIndexSections(QXmlStreamWriter& writer,
             NodeList cnodes = inner->childNodes();
             qSort(cnodes.begin(), cnodes.end(), compareNodes);
 
-            foreach (const Node* child, cnodes) {
+            foreach (Node* child, cnodes) {
                 /*
                   Don't generate anything for a QML property group node.
                   It is just a place holder for a collection of QML property
@@ -1993,7 +1923,7 @@ void Tree::generateIndexSections(QXmlStreamWriter& writer,
                  */
                 if (child->subType() == Node::QmlPropertyGroup) {
                     const InnerNode* pgn = static_cast<const InnerNode*>(child);
-                    foreach (const Node* c, pgn->childNodes()) {
+                    foreach (Node* c, pgn->childNodes()) {
                         generateIndexSections(writer, c, generateInternalNodes);
                     }
                 }
@@ -2018,7 +1948,7 @@ void Tree::generateIndexSections(QXmlStreamWriter& writer,
 void Tree::generateIndex(const QString& fileName,
                          const QString& url,
                          const QString& title,
-                         bool generateInternalNodes) const
+                         bool generateInternalNodes)
 {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text))
@@ -2047,8 +1977,7 @@ void Tree::generateIndex(const QString& fileName,
   specified, returning true if an element was written; otherwise returns
   false.
  */
-void Tree::generateTagFileCompounds(QXmlStreamWriter& writer,
-                                    const InnerNode* inner) const
+void Tree::generateTagFileCompounds(QXmlStreamWriter& writer, const InnerNode* inner)
 {
     foreach (const Node* node, inner->childNodes()) {
 
@@ -2068,7 +1997,6 @@ void Tree::generateTagFileCompounds(QXmlStreamWriter& writer,
         case Node::Property:
         case Node::Function:
         case Node::Variable:
-        case Node::Target:
         default:
             continue;
         }
@@ -2130,8 +2058,7 @@ void Tree::generateTagFileCompounds(QXmlStreamWriter& writer,
 
 /*!
  */
-void Tree::generateTagFileMembers(QXmlStreamWriter& writer,
-                                  const InnerNode* inner) const
+void Tree::generateTagFileMembers(QXmlStreamWriter& writer, const InnerNode* inner)
 {
     foreach (const Node* node, inner->childNodes()) {
 
@@ -2164,7 +2091,6 @@ void Tree::generateTagFileMembers(QXmlStreamWriter& writer,
             nodeName = "class";
             break;
         case Node::Variable:
-        case Node::Target:
         default:
             continue;
         }
@@ -2247,18 +2173,15 @@ void Tree::generateTagFileMembers(QXmlStreamWriter& writer,
             foreach (const Parameter& parameter, functionNode->parameters()) {
                 QString leftType = parameter.leftType();
                 const Node* leftNode = const_cast<Tree*>(this)->findNode(parameter.leftType().split("::"),
-                                                                         Node::Typedef, 0, SearchBaseClasses|NonFunction);
-                if (!leftNode) {
-                    leftNode = const_cast<Tree*>(this)->findNode(
-                                parameter.leftType().split("::"), Node::Typedef,
-                                node->parent(), SearchBaseClasses|NonFunction);
+                                                                         0, SearchBaseClasses|NonFunction);
+                if (!leftNode || leftNode->type() != Node::Typedef) {
+                    leftNode = const_cast<Tree*>(this)->findNode(parameter.leftType().split("::"),
+                                                      node->parent(), SearchBaseClasses|NonFunction);
                 }
-                if (leftNode) {
+                if (leftNode && leftNode->type() == Node::Typedef) {
                     const TypedefNode* typedefNode = static_cast<const TypedefNode*>(leftNode);
                     if (typedefNode->associatedEnum()) {
-                        leftType = "QFlags<" +
-                                typedefNode->associatedEnum()->fullDocumentName() +
-                                QLatin1Char('>');
+                        leftType = "QFlags<" + typedefNode->associatedEnum()->fullDocumentName() + QLatin1Char('>');
                     }
                 }
                 signatureList.append(leftType + QLatin1Char(' ') + parameter.name());
@@ -2324,7 +2247,6 @@ void Tree::generateTagFileMembers(QXmlStreamWriter& writer,
             break;
 
         case Node::Variable:
-        case Node::Target:
         default:
             break;
         }
@@ -2332,8 +2254,9 @@ void Tree::generateTagFileMembers(QXmlStreamWriter& writer,
 }
 
 /*!
+  Writes a tag file named \a fileName.
  */
-void Tree::generateTagFile(const QString& fileName) const
+void Tree::generateTagFile(const QString& fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text))
@@ -2366,4 +2289,251 @@ void Tree::addExternalLink(const QString& url, const Node* relative)
     fakeNode->setDoc(doc);
 }
 
+/*!
+  Find the node with the specified \a path name that is of
+  the specified \a type and \a subtype. Begin the search at
+  the \a start node. If the \a start node is 0, begin the
+  search at the tree root. \a subtype is not used unless
+  \a type is \c{Fake}.
+ */
+Node* Tree::findNodeByNameAndType(const QStringList& path,
+                                  Node::Type type,
+                                  Node::SubType subtype,
+                                  Node* start,
+                                  bool acceptCollision)
+{
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
+    Node* result = findNodeRecursive(path, 0, start, type, subtype, acceptCollision);
+    return result;
+}
+
+#if 0
+    if (result)
+        qDebug() << "FOUND:" << path << Node::nodeTypeString(type)
+                 << Node::nodeSubtypeString(subtype);
+    else
+        qDebug() << "NOT FOUND:" << path << Node::nodeTypeString(type)
+                 << Node::nodeSubtypeString(subtype);
+#endif
+
+/*!
+  Recursive search for a node identified by \a path. Each
+  path element is a name. \a pathIndex specifies the index
+  of the name in \a path to try to match. \a start is the
+  node whose children shoulod be searched for one that has
+  that name. Each time a match is found, increment the
+  \a pathIndex and call this function recursively.
+
+  If the end of the path is reached (i.e. if a matching
+  node is found for each name in the \a path), the \a type
+  must match the type of the last matching node, and if the
+  type is \e{Fake}, the \a subtype must match as well.
+
+  If the algorithm is successful, the pointer to the final
+  node is returned. Otherwise 0 is returned.
+ */
+Node* Tree::findNodeRecursive(const QStringList& path,
+                              int pathIndex,
+                              Node* start,
+                              Node::Type type,
+                              Node::SubType subtype,
+                              bool acceptCollision)
+{
+    if (!start || path.isEmpty())
+        return 0; // no place to start, or nothing to search for.
+    if (start->isLeaf()) {
+        if (pathIndex >= path.size())
+            return start; // found a match.
+        return 0; // premature leaf
+    }
+    if (pathIndex >= path.size())
+        return 0; // end of search path.
+
+    InnerNode* current = static_cast<InnerNode*>(start);
+    const NodeList& children = current->childNodes();
+    const QString& name = path.at(pathIndex);
+    for (int i=0; i<children.size(); ++i) {
+        Node* n = children.at(i);
+        if (!n)
+            continue;
+        if (n->isQmlPropertyGroup()) {
+            if (type == Node::QmlProperty) {
+                n = findNodeRecursive(path, pathIndex, n, type, subtype);
+                if (n)
+                    return n;
+            }
+        }
+        else if (n->name() == name) {
+            if (pathIndex+1 >= path.size()) {
+                if (n->type() == type) {
+                    if (type == Node::Fake) {
+                        if (n->subType() == subtype)
+                            return n;
+                        else if (n->subType() == Node::Collision && acceptCollision)
+                            return n;
+                        else if (subtype == Node::NoSubType)
+                            return n; // don't care what subtype is.
+                        return 0;
+                    }
+                    else
+                        return n;
+                }
+                else if (n->isCollisionNode()) {
+                    if (acceptCollision)
+                        return n;
+                    return n = findNodeRecursive(path, pathIndex, n, type, subtype);
+                    if (n)
+                        return n;
+                }
+                else
+                    return 0;
+            }
+            else { // Not at the end of the path.
+                n = findNodeRecursive(path, pathIndex+1, n, type, subtype);
+                if (n)
+                    return n;
+            }
+        }
+    }
+    return 0;
+}
+
+/*!
+  Find the Enum type node named \a path. Begin the search at the
+  \a start node. If the \a start node is 0, begin the search
+  at the root of the tree. Only an Enum type node named \a path is
+  acceptible. If one is not found, 0 is returned.
+ */
+EnumNode* Tree::findEnumNode(const QStringList& path, Node* start)
+{
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
+    return static_cast<EnumNode*>(findNodeRecursive(path, 0, start, Node::Enum, Node::NoSubType));
+}
+
+/*!
+  Find the C++ class node named \a path. Begin the search at the
+  \a start node. If the \a start node is 0, begin the search
+  at the root of the tree. Only a C++ class node named \a path is
+  acceptible. If one is not found, 0 is returned.
+ */
+ClassNode* Tree::findClassNode(const QStringList& path, Node* start)
+{
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
+    return static_cast<ClassNode*>(findNodeRecursive(path, 0, start, Node::Class, Node::NoSubType));
+}
+
+/*!
+  Find the Qml class node named \a path. Begin the search at the
+  \a start node. If the \a start node is 0, begin the search
+  at the root of the tree. Only a Qml class node named \a path is
+  acceptible. If one is not found, 0 is returned.
+ */
+QmlClassNode* Tree::findQmlClassNode(const QStringList& path, Node* start)
+{
+    /*
+      If the path contains one or two double colons ("::"),
+      check first to see if the first two path strings refer
+      to a QML element. If yes, that reference identifies a
+      QML class node.
+    */
+    if (path.size() >= 2) {
+        QmlClassNode* qcn = QmlClassNode::moduleMap.value(path[0]+ "::" +path[1]);
+        if (qcn)
+            return qcn;
+    }
+
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
+    return static_cast<QmlClassNode*>(findNodeRecursive(path, 0, start, Node::Fake, Node::QmlClass));
+}
+
+/*!
+  Find the Namespace node named \a path. Begin the search at the
+  \a start node. If the \a start node is 0, begin the search
+  at the root of the tree. Only a Namespace node named \a path is
+  acceptible. If one is not found, 0 is returned.
+ */
+NamespaceNode* Tree::findNamespaceNode(const QStringList& path, Node* start)
+{
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
+    return static_cast<NamespaceNode*>(findNodeRecursive(path, 0, start, Node::Namespace, Node::NoSubType));
+}
+
+/*!
+  Find the Group node named \a path. Begin the search at the
+  \a start node. If the \a start node is 0, begin the search
+  at the root of the tree. Only a Group node named \a path is
+  acceptible. If one is not found, 0 is returned.
+ */
+FakeNode* Tree::findGroupNode(const QStringList& path, Node* start)
+{
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
+    return static_cast<FakeNode*>(findNodeRecursive(path, 0, start, Node::Fake, Node::Group));
+}
+
+/*!
+  Find the Qml module node named \a path. Begin the search at the
+  \a start node. If the \a start node is 0, begin the search
+  at the root of the tree. Only a Qml module node named \a path is
+  acceptible. If one is not found, 0 is returned.
+ */
+FakeNode* Tree::findQmlModuleNode(const QStringList& path, Node* start)
+{
+    if (!start)
+        start = const_cast<NamespaceNode*>(root());
+    return static_cast<FakeNode*>(findNodeRecursive(path, 0, start, Node::Fake, Node::QmlModule));
+}
+
 QT_END_NAMESPACE
+
+#if 0
+const Node* Tree::findNodeXXX(const QStringList& path, bool qml) const
+{
+    const Node* current = root();
+    do {
+        const Node* node = current;
+        int i;
+        int start_idx = 0;
+
+        /*
+          If the path contains one or two double colons ("::"),
+          check first to see if the first two path strings refer
+          to a QML element. If yes, that reference identifies a
+          QML class node.
+        */
+        if (qml && path.size() >= 2) {
+            QmlClassNode* qcn = QmlClassNode::moduleMap.value(path[0]+ "::" +path[1]);
+            if (qcn) {
+                node = qcn;
+                if (path.size() == 2)
+                    return node;
+                start_idx = 2;
+            }
+        }
+
+        for (i = start_idx; i < path.size(); ++i) {
+            if (node == 0 || !node->isInnerNode())
+                break;
+
+            const Node* next = static_cast<const InnerNode*>(node)->findChildNodeByName(path.at(i), qml);
+            node = next;
+        }
+        if (node && i == path.size()) {
+            if (node->subType() != Node::QmlPropertyGroup) {
+                if (node->subType() == Node::Collision) {
+                    node = node->applyModuleIdentifier(start);
+                }
+                return node;
+            }
+        }
+        current = current->parent();
+    } while (current);
+
+    return 0;
+}
+#endif

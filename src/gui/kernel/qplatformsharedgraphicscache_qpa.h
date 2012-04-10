@@ -76,17 +76,18 @@ public:
                                          const QVector<QImage> &items) = 0;
     Q_INVOKABLE virtual void releaseItems(const QByteArray &cacheId, const QVector<quint32> &itemIds) = 0;
 
-    virtual void serializeBuffer(void *bufferId, QByteArray *serializedData, int *fileDescriptor) const = 0;
     virtual uint textureIdForBuffer(void *bufferId) = 0;
     virtual void referenceBuffer(void *bufferId) = 0;
     virtual bool dereferenceBuffer(void *bufferId) = 0;
+    virtual QSize sizeOfBuffer(void *bufferId) = 0;
+    virtual void *eglImageForBuffer(void *bufferId) = 0;
 
 Q_SIGNALS:
     void itemsMissing(const QByteArray &cacheId, const QVector<quint32> &itemIds);
-    void itemsAvailable(const QByteArray &cacheId, void *bufferId, const QSize &bufferSize,
+    void itemsAvailable(const QByteArray &cacheId, void *bufferId,
                         const QVector<quint32> &itemIds, const QVector<QPoint> &positionsInBuffer);
     void itemsInvalidated(const QByteArray &cacheId, const QVector<quint32> &itemIds);
-    void itemsUpdated(const QByteArray &cacheId, void *bufferId, const QSize &bufferSize,
+    void itemsUpdated(const QByteArray &cacheId, void *bufferId,
                       const QVector<quint32> &itemIds, const QVector<QPoint> &positionsInBuffer);
 };
 

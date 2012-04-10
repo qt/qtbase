@@ -287,17 +287,15 @@ void tst_QGraphicsLayoutItem::setMaximumSize()
 void tst_QGraphicsLayoutItem::setMinimumSize_data()
 {
     QTest::addColumn<QSizeF>("size");
-    QTest::addColumn<QSizeF>("outputSize");
-    QTest::newRow("-1") << QSizeF(-1, -1) << QSizeF(0, 0);
-    QTest::newRow("0") << QSizeF(0, 0) << QSizeF(0, 0);
-    QTest::newRow("10") << QSizeF(10, 10) << QSizeF(10, 10);
+    QTest::newRow("-1") << QSizeF(-1, -1);
+    QTest::newRow("0") << QSizeF(0, 0);
+    QTest::newRow("10") << QSizeF(10, 10);
 }
 
 // void setMinimumSize(QSizeF const& size) public
 void tst_QGraphicsLayoutItem::setMinimumSize()
 {
     QFETCH(QSizeF, size);
-    QFETCH(QSizeF, outputSize);
     SubQGraphicsLayoutItem layoutItem;
     QSizeF oldSize = layoutItem.minimumSize();
 

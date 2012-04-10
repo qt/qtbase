@@ -7,5 +7,5 @@ mac {
     OBJECTIVE_SOURCES += \
         $$PWD/cglconvenience.mm
 
-    LIBS += -framework Cocoa -framework OpenGl
+    LIBS += -framework Cocoa -framework OpenGL
 }

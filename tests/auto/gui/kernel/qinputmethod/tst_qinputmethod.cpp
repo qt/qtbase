@@ -122,6 +122,8 @@ private slots:
     void update();
     void query();
     void inputDirection();
+    void inputMethodAccepted();
+
 private:
     InputItem m_inputItem;
     PlatformInputContext m_platformInputContext;
@@ -302,6 +304,24 @@ void tst_qinputmethod::inputDirection()
     QCOMPARE(m_platformInputContext.m_localeCallCount, 0);
     qApp->inputMethod()->locale();
     QCOMPARE(m_platformInputContext.m_localeCallCount, 1);
+}
+
+void tst_qinputmethod::inputMethodAccepted()
+{
+    InputItem disabledItem;
+    disabledItem.setEnabled(false);
+
+    DummyWindow window;
+    window.show();
+    QTest::qWaitForWindowShown(&window);
+    window.requestActivateWindow();
+    QTRY_COMPARE(qApp->focusWindow(), &window);
+    window.setFocusObject(&disabledItem);
+
+    QCOMPARE(m_platformInputContext.inputMethodAccepted(), false);
+
+    window.setFocusObject(&m_inputItem);
+    QCOMPARE(m_platformInputContext.inputMethodAccepted(), true);
 }
 
 QTEST_MAIN(tst_qinputmethod)

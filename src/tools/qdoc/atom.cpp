@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <qregexp.h>
+#include <QRegExp>
 #include "atom.h"
 #include "location.h"
 #include <stdio.h>
@@ -55,6 +55,7 @@ QLatin1String Atom::SPAN_          ("span");
 QLatin1String Atom::SUBSCRIPT_     ("subscript");
 QLatin1String Atom::SUPERSCRIPT_   ("superscript");
 QLatin1String Atom::TELETYPE_      ("teletype");
+QLatin1String Atom::UICONTROL_     ("uicontrol");
 QLatin1String Atom::UNDERLINE_     ("underline");
 
 QLatin1String Atom::BULLET_        ("bullet");
@@ -196,6 +197,7 @@ static const struct {
     { "FormattingRight", Atom::FormattingRight },
     { "GeneratedList", Atom::GeneratedList },
     { "GuidLink", Atom::GuidLink},
+    { "hr", Atom::HR},
     { "Image", Atom::Image },
     { "ImageText", Atom::ImageText },
     { "ImportantLeft", Atom::ImportantLeft },

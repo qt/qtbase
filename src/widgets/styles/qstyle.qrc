@@ -1,5 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/trolltech/styles/commonstyle">
+<qresource prefix="/qt-project.org/styles/commonstyle">
 <file>images/filelink-16.png</file>
 <file>images/filelink-32.png</file>
 <file>images/filelink-128.png</file>
@@ -126,7 +126,7 @@
 <file>images/media-volume-16.png</file>
 <file>images/media-volume-muted-16.png</file>
 </qresource>
-<qresource prefix="/trolltech/styles/macstyle">
+<qresource prefix="/qt-project.org/styles/macstyle">
 <file>images/closedock-16.png</file>
 <file>images/closedock-down-16.png</file>
 <file>images/dockdock-16.png</file>

@@ -589,16 +589,6 @@
 */
 
 /*!
-    \fn QSet<T> QSet::operator-(const QSet<T> &other)
-    \fn QSet<T> QSet::operator|(const QSet<T> &other)
-    \fn QSet<T> QSet::operator+(const QSet<T> &other)
-    \fn QSet<T> QSet::operator&(const QSet<T> &other)
-    \internal
-
-    These will go away in Qt 5.
-*/
-
-/*!
     \class QSet::iterator
     \since 4.2
     \brief The QSet::iterator class provides an STL-style non-const iterator for QSet.

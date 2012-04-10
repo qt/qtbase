@@ -199,7 +199,8 @@ QString tst_QPrinterInfo::getOutputFromCommand(const QStringList& command)
         return QString(array);
     }
 #else
-	return QString();
+    Q_UNUSED(command)
+    return QString();
 #endif
 }
 

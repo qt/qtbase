@@ -121,7 +121,8 @@ void tst_QCoreApplication::qAppName()
     int argc = 1;
     char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
     QCoreApplication app(argc, argv);
-    QVERIFY(!::qAppName().isEmpty());
+    QCOMPARE(::qAppName(), QString::fromLatin1("tst_qcoreapplication"));
+    QCOMPARE(QCoreApplication::applicationName(), QString::fromLatin1("tst_qcoreapplication"));
 }
 
 void tst_QCoreApplication::argc()

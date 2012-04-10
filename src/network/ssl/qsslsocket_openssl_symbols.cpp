@@ -53,6 +53,9 @@
 #if defined(Q_OS_UNIX)
 #include <QtCore/qdir.h>
 #endif
+#ifdef Q_OS_LINUX
+#include <link.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -347,6 +350,23 @@ static bool libGreaterThan(const QString &lhs, const QString &rhs)
     return true;
 }
 
+#ifdef Q_OS_LINUX
+static int dlIterateCallback(struct dl_phdr_info *info, size_t size, void *data)
+{
+    if (size < sizeof (info->dlpi_addr) + sizeof (info->dlpi_name))
+        return 1;
+    QSet<QString> *paths = (QSet<QString> *)data;
+    QString path = QString::fromLocal8Bit(info->dlpi_name);
+    if (!path.isEmpty()) {
+        QFileInfo fi(path);
+        path = fi.absolutePath();
+        if (!path.isEmpty())
+            paths->insert(path);
+    }
+    return 0;
+}
+#endif
+
 static QStringList findAllLibSsl()
 {
     QStringList paths;
@@ -358,6 +378,12 @@ static QStringList findAllLibSsl()
             .split(QLatin1Char(':'), QString::SkipEmptyParts);
 #  endif
     paths << QLatin1String("/lib") << QLatin1String("/usr/lib") << QLatin1String("/usr/local/lib");
+#ifdef Q_OS_LINUX
+    // discover paths of already loaded libraries
+    QSet<QString> loadedPaths;
+    dl_iterate_phdr(dlIterateCallback, &loadedPaths);
+    paths.append(loadedPaths.toList());
+#endif
 
     QStringList foundSsls;
     foreach (const QString &path, paths) {

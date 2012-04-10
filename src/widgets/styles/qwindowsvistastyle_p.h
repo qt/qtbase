@@ -205,12 +205,13 @@ public:
     QWindowsVistaAnimation* widgetAnimation(const QWidget *) const;
     void timerEvent();
     bool transitionsEnabled() const;
-    QWidget *treeViewHelper();
 
 private:
+    bool initTreeViewTheming();
+
     QList <QWindowsVistaAnimation*> animations;
     QBasicTimer animationTimer;
-    QWidget *m_treeViewHelper;
+    HWND m_treeViewHelper;
 };
 
 QT_END_NAMESPACE

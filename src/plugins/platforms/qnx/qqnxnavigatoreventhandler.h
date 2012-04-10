@@ -46,15 +46,17 @@
 
 QT_BEGIN_NAMESPACE
 
-class QQnxScreen;
 class QSocketNotifier;
 
 class QQnxNavigatorEventHandler : public QObject
 {
     Q_OBJECT
 public:
-    QQnxNavigatorEventHandler(QQnxScreen &primaryScreen);
-    virtual ~QQnxNavigatorEventHandler();
+    explicit QQnxNavigatorEventHandler(QObject *parent = 0);
+    ~QQnxNavigatorEventHandler();
+
+Q_SIGNALS:
+    void rotationChanged(int angle);
 
 public Q_SLOTS:
     void start();
@@ -67,7 +69,6 @@ private:
     void replyPPS(const QByteArray &res, const QByteArray &id, const QByteArray &dat);
     void handleMessage(const QByteArray &msg, const QByteArray &dat, const QByteArray &id);
 
-    QQnxScreen &m_primaryScreen;
     int m_fd;
     QSocketNotifier *m_readNotifier;
 };

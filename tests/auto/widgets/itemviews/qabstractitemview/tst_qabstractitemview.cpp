@@ -238,10 +238,9 @@ public:
         openedEditor = new QWidget(parent);
         return openedEditor;
     }
-    void destroyEditor(QWidget *editor, const QModelIndex &index) const
+    void destroyEditor(QWidget *editor, const QModelIndex &) const
     {
         calledVirtualDtor = true;
-        // QAbstractItemDelegate::destroyEditor(editor,index);
         editor->deleteLater();
     }
 

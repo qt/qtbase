@@ -309,9 +309,10 @@ void tst_QUdpSocket::broadcasting()
                 QByteArray arr; arr.resize(serverSocket.pendingDatagramSize() + 1);
                 QHostAddress host;
                 quint16 port;
+                const int messageLength = int(strlen(message[i]));
                 QCOMPARE((int) serverSocket.readDatagram(arr.data(), arr.size() - 1, &host, &port),
-                    (int) strlen(message[i]));
-                arr.resize(strlen(message[i]));
+                         messageLength);
+                arr.resize(messageLength);
                 QCOMPARE(arr, QByteArray(message[i]));
             } while (serverSocket.hasPendingDatagrams());
         }
@@ -1202,6 +1203,7 @@ void tst_QUdpSocket::multicast_data()
     QHostAddress groupAddress = QHostAddress("239.255.118.62");
     QHostAddress any6Address = QHostAddress(QHostAddress::AnyIPv6);
     QHostAddress group6Address = QHostAddress("FF01::114");
+    QHostAddress dualAddress = QHostAddress(QHostAddress::Any);
 
     QTest::addColumn<QHostAddress>("bindAddress");
     QTest::addColumn<bool>("bindResult");
@@ -1213,6 +1215,8 @@ void tst_QUdpSocket::multicast_data()
     QTest::newRow("valid bind, group ipv6 address") << any6Address << true << group6Address << true;
     QTest::newRow("valid bind, invalid group ipv6 address") << any6Address << true << any6Address << false;
     QTest::newRow("same bind, group ipv6 address") << group6Address << true << group6Address << true;
+    QTest::newRow("dual bind, group ipv4 address") << dualAddress << true << groupAddress << false;
+    QTest::newRow("dual bind, group ipv6 address") << dualAddress << true << group6Address << true;
 }
 
 void tst_QUdpSocket::multicast()

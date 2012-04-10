@@ -223,6 +223,7 @@ void QNetworkAccessFtpBackend::ftpDone()
         if (ftp->state() == QFtp::Connected) {
             // the login did not succeed
             QUrl newUrl = url();
+            QString userInfo = newUrl.userInfo();
             newUrl.setUserInfo(QString());
             setUrl(newUrl);
 
@@ -235,6 +236,10 @@ void QNetworkAccessFtpBackend::ftpDone()
                 ftp->login(auth.user(), auth.password());
                 return;
             }
+
+            // Re insert the user info so that we can remove the cache entry.
+            newUrl.setUserInfo(userInfo);
+            setUrl(newUrl);
 
             error(QNetworkReply::AuthenticationRequiredError,
                   tr("Logging in to %1 failed: authentication required")

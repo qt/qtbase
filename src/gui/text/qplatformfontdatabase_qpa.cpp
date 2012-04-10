@@ -250,10 +250,10 @@ QPlatformFontDatabase::~QPlatformFontDatabase()
 void QPlatformFontDatabase::populateFontDatabase()
 {
     QString fontpath = fontDir();
-
     if(!QFile::exists(fontpath)) {
-        qFatal("QFontDatabase: Cannot find font directory %s - is Qt installed correctly?",
-               qPrintable(fontpath));
+        qWarning("QFontDatabase: Cannot find font directory '%s' - is Qt installed correctly?",
+                 qPrintable(QDir::toNativeSeparators(fontpath)));
+        return;
     }
 
     QDir dir(fontpath);

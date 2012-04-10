@@ -133,10 +133,11 @@ QSqlDriver::~QSqlDriver()
 /*!
     \since 5.0
 
-    \fn QSqlDriver::notification(const QString &name, NotificationSource source)
+    \fn QSqlDriver::notification(const QString &name, NotificationSource source, const QString & payload)
 
     This signal is emitted when the database posts an event notification
-    that the driver subscribes to. \a name identifies the event notification, \a source indicates the signal source.
+    that the driver subscribes to. \a name identifies the event notification, \a source indicates the signal source,
+    \a payload holds the extra data optionally delivered with the notification.
 
     \sa subscribeToNotification()
 */

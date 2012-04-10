@@ -1906,16 +1906,6 @@ QAction *QMenuBar::defaultAction() const
 */
 
 /*!
-    \enum QMenuBar::Separator
-
-    \compat
-
-    \value Never
-    \value InWindowsStyle
-
-*/
-
-/*!
     \fn void QMenuBar::addAction(QAction *action)
     \overload
 

@@ -122,7 +122,8 @@ public:
         StartDragTime,
         KeyboardAutoRepeatRate,
         ShowIsFullScreen,
-        PasswordMaskDelay
+        PasswordMaskDelay,
+        FontSmoothingGamma
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

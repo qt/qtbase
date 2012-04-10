@@ -51,6 +51,7 @@
 
 #include <QtCore/qmath.h>
 #include <QtCore/QDebug>
+#include <QtCore/QtEndian>
 
 #include <wchar.h>
 
@@ -68,8 +69,10 @@ QT_BEGIN_NAMESPACE
 */
 
 QWindowsFontEngineData::QWindowsFontEngineData()
+    : clearTypeEnabled(false)
+    , fontSmoothingGamma(QWindowsFontDatabase::fontSmoothingGamma())
 #if !defined(QT_NO_DIRECTWRITE)
-    : directWriteFactory(0)
+    , directWriteFactory(0)
     , directWriteGdiInterop(0)
 #endif
 {
@@ -77,17 +80,6 @@ QWindowsFontEngineData::QWindowsFontEngineData()
     UINT result = 0;
     if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &result, 0))
         clearTypeEnabled = (result == FE_FONTSMOOTHINGCLEARTYPE);
-
-    int winSmooth;
-    if (SystemParametersInfo(0x200C /* SPI_GETFONTSMOOTHINGCONTRAST */, 0, &winSmooth, 0)) {
-        fontSmoothingGamma = winSmooth / qreal(1000.0);
-    } else {
-        fontSmoothingGamma = 1.0;
-    }
-
-    // Safeguard ourselves against corrupt registry values...
-    if (fontSmoothingGamma > 5 || fontSmoothingGamma < 1)
-        fontSmoothingGamma = qreal(1.4);
 
     const qreal gray_gamma = 2.31;
     for (int i=0; i<256; ++i)
@@ -108,6 +100,19 @@ QWindowsFontEngineData::~QWindowsFontEngineData()
     if (directWriteFactory)
         directWriteFactory->Release();
 #endif
+}
+
+qreal QWindowsFontDatabase::fontSmoothingGamma()
+{
+    int winSmooth;
+    qreal result = 1;
+    if (SystemParametersInfo(0x200C /* SPI_GETFONTSMOOTHINGCONTRAST */, 0, &winSmooth, 0))
+        result = qreal(winSmooth) / qreal(1000.0);
+
+    // Safeguard ourselves against corrupt registry values...
+    if (result > 5 || result < 1)
+        result = qreal(1.4);
+    return result;
 }
 
 #if !defined(QT_NO_DIRECTWRITE)
@@ -614,14 +619,14 @@ static int CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
 
 void QWindowsFontDatabase::populateFontDatabase()
 {
-    if (m_families.isEmpty()) {
-        QPlatformFontDatabase::populateFontDatabase();
-        populate(); // Called multiple times.
-        // Work around EnumFontFamiliesEx() not listing the system font, see below.
-        const QString sysFontFamily = QGuiApplication::font().family();
-        if (!m_families.contains(sysFontFamily))
-             populate(sysFontFamily);
-    }
+    m_families.clear();
+    removeApplicationFonts();
+    QPlatformFontDatabase::populateFontDatabase();
+    populate(); // Called multiple times.
+    // Work around EnumFontFamiliesEx() not listing the system font, see below.
+    const QString sysFontFamily = QGuiApplication::font().family();
+    if (!m_families.contains(sysFontFamily))
+         populate(sysFontFamily);
 }
 
 /*!
@@ -665,6 +670,7 @@ QWindowsFontDatabase::QWindowsFontDatabase() :
 
 QWindowsFontDatabase::~QWindowsFontDatabase()
 {
+    removeApplicationFonts();
 }
 
 QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef,
@@ -698,11 +704,160 @@ QStringList QWindowsFontDatabase::fallbacksForFamily(const QString family, const
     return result;
 }
 
+static QList<quint32> getTrueTypeFontOffsets(const uchar *fontData)
+{
+    QList<quint32> offsets;
+    const quint32 headerTag = *reinterpret_cast<const quint32 *>(fontData);
+    if (headerTag != MAKE_TAG('t', 't', 'c', 'f')) {
+        if (headerTag != MAKE_TAG(0, 1, 0, 0)
+            && headerTag != MAKE_TAG('O', 'T', 'T', 'O')
+            && headerTag != MAKE_TAG('t', 'r', 'u', 'e')
+            && headerTag != MAKE_TAG('t', 'y', 'p', '1'))
+            return offsets;
+        offsets << 0;
+        return offsets;
+    }
+    const quint32 numFonts = qFromBigEndian<quint32>(fontData + 8);
+    for (uint i = 0; i < numFonts; ++i) {
+        offsets << qFromBigEndian<quint32>(fontData + 12 + i * 4);
+    }
+    return offsets;
+}
+
+static void getFontTable(const uchar *fileBegin, const uchar *data, quint32 tag, const uchar **table, quint32 *length)
+{
+    const quint16 numTables = qFromBigEndian<quint16>(data + 4);
+    for (uint i = 0; i < numTables; ++i) {
+        const quint32 offset = 12 + 16 * i;
+        if (*reinterpret_cast<const quint32 *>(data + offset) == tag) {
+            *table = fileBegin + qFromBigEndian<quint32>(data + offset + 8);
+            *length = qFromBigEndian<quint32>(data + offset + 12);
+            return;
+        }
+    }
+    *table = 0;
+    *length = 0;
+    return;
+}
+
+static void getFamiliesAndSignatures(const QByteArray &fontData,
+                                     QStringList *families,
+                                     QVector<FONTSIGNATURE> *signatures)
+{
+    const uchar *data = reinterpret_cast<const uchar *>(fontData.constData());
+
+    QList<quint32> offsets = getTrueTypeFontOffsets(data);
+    if (offsets.isEmpty())
+        return;
+
+    for (int i = 0; i < offsets.count(); ++i) {
+        const uchar *font = data + offsets.at(i);
+        const uchar *table;
+        quint32 length;
+        getFontTable(data, font, MAKE_TAG('n', 'a', 'm', 'e'), &table, &length);
+        if (!table)
+            continue;
+        QString name = getEnglishName(table, length);
+        if (name.isEmpty())
+            continue;
+
+        families->append(name);
+
+        if (signatures) {
+            FONTSIGNATURE signature;
+            getFontTable(data, font, MAKE_TAG('O', 'S', '/', '2'), &table, &length);
+            if (table && length >= 86) {
+                // Offsets taken from OS/2 table in the TrueType spec
+                signature.fsUsb[0] = qFromBigEndian<quint32>(table + 42);
+                signature.fsUsb[1] = qFromBigEndian<quint32>(table + 46);
+                signature.fsUsb[2] = qFromBigEndian<quint32>(table + 50);
+                signature.fsUsb[3] = qFromBigEndian<quint32>(table + 54);
+
+                signature.fsCsb[0] = qFromBigEndian<quint32>(table + 78);
+                signature.fsCsb[1] = qFromBigEndian<quint32>(table + 82);
+            } else {
+                memset(&signature, 0, sizeof(signature));
+            }
+            signatures->append(signature);
+        }
+    }
+}
+
 QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
-    const QStringList result = QPlatformFontDatabase::addApplicationFont(fontData, fileName);
-    Q_UNIMPLEMENTED();
-    return result;
+    WinApplicationFont font;
+    font.fileName = fileName;
+    QVector<FONTSIGNATURE> signatures;
+    QStringList families;
+
+    if (!fontData.isEmpty()) {
+        getFamiliesAndSignatures(fontData, &families, &signatures);
+        if (families.isEmpty())
+            return families;
+
+        DWORD dummy = 0;
+        font.handle = AddFontMemResourceEx((void *)fontData.constData(), fontData.size(), 0,
+                                             &dummy);
+        if (font.handle == 0)
+            return QStringList();
+
+        // Memory fonts won't show up in enumeration, so do add them the hard way.
+        for (int j = 0; j < families.count(); ++j) {
+            const QString familyName = families.at(j);
+            HDC hdc = GetDC(0);
+            LOGFONT lf;
+            memset(&lf, 0, sizeof(LOGFONT));
+            memcpy(lf.lfFaceName, familyName.utf16(), sizeof(wchar_t) * qMin(LF_FACESIZE, familyName.size()));
+            lf.lfCharSet = DEFAULT_CHARSET;
+            HFONT hfont = CreateFontIndirect(&lf);
+            HGDIOBJ oldobj = SelectObject(hdc, hfont);
+
+            TEXTMETRIC textMetrics;
+            GetTextMetrics(hdc, &textMetrics);
+
+            addFontToDatabase(familyName, QString(), &textMetrics, &signatures.at(j),
+                              TRUETYPE_FONTTYPE);
+
+            SelectObject(hdc, oldobj);
+            DeleteObject(hfont);
+            ReleaseDC(0, hdc);
+        }
+    } else {
+        QFile f(fileName);
+        if (!f.open(QIODevice::ReadOnly))
+            return families;
+        QByteArray data = f.readAll();
+        f.close();
+
+        getFamiliesAndSignatures(data, &families, 0);
+        if (families.isEmpty())
+            return families;
+
+        if (AddFontResourceExW((wchar_t*)fileName.utf16(), FR_PRIVATE, 0) == 0)
+            return QStringList();
+
+        font.handle = 0;
+
+        // Fonts based on files are added via populate, as they will show up in font enumeration.
+        for (int j = 0; j < families.count(); ++j)
+            populate(families.at(j));
+    }
+
+    m_applicationFonts << font;
+
+    return families;
+}
+
+void QWindowsFontDatabase::removeApplicationFonts()
+{
+    foreach (const WinApplicationFont &font, m_applicationFonts) {
+        if (font.handle) {
+            RemoveFontMemResourceEx(font.handle);
+        } else {
+            RemoveFontResourceExW((LPCWSTR)font.fileName.utf16(), FR_PRIVATE, 0);
+        }
+    }
+    m_applicationFonts.clear();
 }
 
 void QWindowsFontDatabase::releaseHandle(void *handle)

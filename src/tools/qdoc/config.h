@@ -110,6 +110,7 @@ public:
 
     QT_STATIC_CONST QString dot;
 
+    static bool generateExamples;
     static QString overrideOutputDir;
     static QSet<QString> overrideOutputFormats;
 

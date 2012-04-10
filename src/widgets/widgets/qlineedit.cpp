@@ -1669,7 +1669,7 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property) const
     case Qt::ImCursorPosition:
         return QVariant(d->control->cursor());
     case Qt::ImSurroundingText:
-        return QVariant(d->control->realText());
+        return QVariant(d->control->text());
     case Qt::ImCurrentSelection:
         return QVariant(selectedText());
     case Qt::ImMaximumTextLength:
@@ -1748,7 +1748,6 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
         reason != Qt::PopupFocusReason)
         deselect();
 
-    d->control->commitPreedit();
     d->setCursorVisible(false);
     d->control->setCursorBlinkPeriod(0);
 #ifdef QT_KEYPAD_NAVIGATION

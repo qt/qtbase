@@ -39,12 +39,10 @@
 **
 ****************************************************************************/
 
-
 #ifndef QMIMEDATABASE_H
 #define QMIMEDATABASE_H
 
-#include "qmimetype.h"
-
+#include <QtCore/qmimetype.h>
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE

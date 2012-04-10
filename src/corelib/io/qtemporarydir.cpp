@@ -99,11 +99,11 @@ static char *mkdtemp(char *templateName)
 {
     static const char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    const int length = strlen(templateName);
+    const size_t length = strlen(templateName);
 
     char *XXXXXX = templateName + length - 6;
 
-    if ((length < 6) || strncmp(XXXXXX, "XXXXXX", 6))
+    if ((length < 6u) || strncmp(XXXXXX, "XXXXXX", 6))
         return 0;
 
     for (int i = 0; i < 256; ++i) {

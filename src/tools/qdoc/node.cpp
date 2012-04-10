@@ -237,8 +237,6 @@ QString Node::nodeTypeString(unsigned t)
         return "property";
     case Variable:
         return "variable";
-    case Target:
-        return "target";
     case QmlProperty:
         return "QML property";
     case QmlSignal:
@@ -524,14 +522,14 @@ QString Node::ditaXmlHref()
   If it is a child of a QML class node, return a pointer to
   the QML class node. Otherwise, return 0;
  */
-const QmlClassNode* Node::qmlClassNode() const
+QmlClassNode* Node::qmlClassNode()
 {
     if (isQmlNode()) {
-        const Node* n = this;
+        Node* n = this;
         while (n && n->subType() != Node::QmlClass)
             n = n->parent();
         if (n && n->subType() == Node::QmlClass)
-            return static_cast<const QmlClassNode*>(n);
+            return static_cast<QmlClassNode*>(n);
     }
     return 0;
 }
@@ -543,12 +541,27 @@ const QmlClassNode* Node::qmlClassNode() const
   class node is a component. It will be non-null if
   the QML class node is a QML element.
  */
-const ClassNode* Node::declarativeCppNode() const
+ClassNode* Node::declarativeCppNode()
 {
-    const QmlClassNode* qcn = qmlClassNode();
+    QmlClassNode* qcn = qmlClassNode();
     if (qcn)
         return qcn->classNode();
     return 0;
+}
+
+/*!
+  Returns true if the node's status is Internal, or if its
+  parent is a class with internal status.
+ */
+bool Node::isInternal() const
+{
+    if (status() == Internal)
+        return true;
+    if (parent() && parent()->status() == Internal)
+        return true;
+    if (relates() && relates()->status() == Internal)
+        return true;
+    return false;
 }
 
 /*!
@@ -571,7 +584,7 @@ InnerNode::~InnerNode()
   sure to also look in the children of its property
   group nodes. Return the matching node or 0.
  */
-Node *InnerNode::findNode(const QString& name)
+Node *InnerNode::findChildNodeByName(const QString& name)
 {
     Node *node = childMap.value(name);
     if (node && node->subType() != QmlPropertyGroup)
@@ -580,7 +593,7 @@ Node *InnerNode::findNode(const QString& name)
         for (int i=0; i<children.size(); ++i) {
             Node* n = children.at(i);
             if (n->subType() == QmlPropertyGroup) {
-                node = static_cast<InnerNode*>(n)->findNode(name);
+                node = static_cast<InnerNode*>(n)->findChildNodeByName(name);
                 if (node)
                     return node;
             }
@@ -604,7 +617,7 @@ void InnerNode::findNodes(const QString& name, QList<Node*>& n)
             for (int i=0; i<children.size(); ++i) {
                 node = children.at(i);
                 if (node->subType() == QmlPropertyGroup) {
-                    node = static_cast<InnerNode*>(node)->findNode(name);
+                    node = static_cast<InnerNode*>(node)->findChildNodeByName(name);
                     if (node) {
                         n.append(node);
                         return;
@@ -628,7 +641,7 @@ void InnerNode::findNodes(const QString& name, QList<Node*>& n)
             if (node->subType() != QmlPropertyGroup)
                 n.append(node);
             else {
-                node = static_cast<InnerNode*>(node)->findNode(name);
+                node = static_cast<InnerNode*>(node)->findChildNodeByName(name);
                 if (node)
                     n.append(node);
             }
@@ -644,13 +657,14 @@ void InnerNode::findNodes(const QString& name, QList<Node*>& n)
 /*!
   Find the node in this node's children that has the given \a name. If
   this node is a QML class node, be sure to also look in the children
-  of its property group nodes. Return the matching node or 0.
+  of its property group nodes. Return the matching node or 0. This is
+  not a recearsive search.
 
   If \a qml is true, only match a node for which node->isQmlNode()
   returns true. If \a qml is false, only match a node for which
   node->isQmlNode() returns false.
  */
-Node* InnerNode::findNode(const QString& name, bool qml)
+Node* InnerNode::findChildNodeByName(const QString& name, bool qml)
 {
     QList<Node*> nodes = childMap.values(name);
     if (!nodes.isEmpty()) {
@@ -668,7 +682,7 @@ Node* InnerNode::findNode(const QString& name, bool qml)
         for (int i=0; i<children.size(); ++i) {
             Node* node = children.at(i);
             if (node->subType() == QmlPropertyGroup) {
-                node = static_cast<InnerNode*>(node)->findNode(name);
+                node = static_cast<InnerNode*>(node)->findChildNodeByName(name);
                 if (node)
                     return node;
             }
@@ -678,28 +692,31 @@ Node* InnerNode::findNode(const QString& name, bool qml)
 }
 
 /*!
-  Same as the other findNode(), but if the node with the
-  specified \a name is not of the specified \a type, return
-  0.
+  This function is like findChildNodeByName(), but if a node
+  with the specified \a name is found but it is not of the
+  specified \a type, 0 is returned.
+
+  This function is not recursive and therefore can't handle
+  collisions. If it finds a collision node named \a name, it
+  will return that node. But it might not find the collision
+  node because it looks up \a name in the child map, not the
+  list.
  */
-Node *InnerNode::findNode(const QString& name, Type type)
+Node* InnerNode::findChildNodeByNameAndType(const QString& name, Type type)
 {
-    if (type == Function) {
+    if (type == Function)
         return primaryFunctionMap.value(name);
-    }
     else {
         Node *node = childMap.value(name);
-        if (node && node->type() == type) {
+        if (node && node->type() == type)
             return node;
-        }
-        else {
-            return 0;
-        }
     }
+    return 0;
 }
 
 /*!
-  Find the function node in this node for the function named \a name.
+  Find a function node that is a child of this nose, such
+  that the function node has the specified \a name.
  */
 FunctionNode *InnerNode::findFunctionNode(const QString& name)
 {
@@ -707,12 +724,13 @@ FunctionNode *InnerNode::findFunctionNode(const QString& name)
 }
 
 /*!
-  Find the function node in this node that has the same name as \a clone.
+  Find the function node that is a child of this node, such
+  that the function has the same name and signature as the
+  \a clone node.
  */
 FunctionNode *InnerNode::findFunctionNode(const FunctionNode *clone)
 {
-    QMap<QString, Node *>::ConstIterator c =
-            primaryFunctionMap.find(clone->name());
+    QMap<QString,Node*>::ConstIterator c = primaryFunctionMap.find(clone->name());
     if (c != primaryFunctionMap.end()) {
         if (isSameSignature(clone, (FunctionNode *) *c)) {
             return (FunctionNode *) *c;
@@ -907,10 +925,10 @@ void InnerNode::deleteChildren()
 
 /*!
  */
-const Node *InnerNode::findNode(const QString& name) const
+const Node *InnerNode::findChildNodeByName(const QString& name) const
 {
     InnerNode *that = (InnerNode *) this;
-    return that->findNode(name);
+    return that->findChildNodeByName(name);
 }
 
 /*!
@@ -918,22 +936,26 @@ const Node *InnerNode::findNode(const QString& name) const
   returns true. If \a qml is false, only match a node for which
   node->isQmlNode() returns false.
  */
-const Node* InnerNode::findNode(const QString& name, bool qml) const
+const Node* InnerNode::findChildNodeByName(const QString& name, bool qml) const
 {
     InnerNode*that = (InnerNode*) this;
-    return that->findNode(name, qml);
+    return that->findChildNodeByName(name, qml);
 }
 
 /*!
+  Searches this node's children for a child named \a name
+  with the specified node \a type.
  */
-const Node *InnerNode::findNode(const QString& name, Type type) const
+const Node* InnerNode::findChildNodeByNameAndType(const QString& name, Type type) const
 {
     InnerNode *that = (InnerNode *) this;
-    return that->findNode(name, type);
+    return that->findChildNodeByNameAndType(name, type);
 }
 
 /*!
-  Find the function node in this node that has the given \a name.
+  Find a function node that is a child of this nose, such
+  that the function node has the specified \a name. This
+  function calls the non-const version of itself.
  */
 const FunctionNode *InnerNode::findFunctionNode(const QString& name) const
 {
@@ -942,7 +964,9 @@ const FunctionNode *InnerNode::findFunctionNode(const QString& name) const
 }
 
 /*!
-  Find the function node in this node that has the same name as \a clone.
+  Find the function node that is a child of this node, such
+  that the function has the same name and signature as the
+  \a clone node. This function calls the non-const version.
  */
 const FunctionNode *InnerNode::findFunctionNode(const FunctionNode *clone) const
 {
@@ -1196,13 +1220,9 @@ void InnerNode::removeRelated(Node *pseudoChild)
   \class LeafNode
  */
 
-/*!
+/*! \fn bool LeafNode::isInnerNode() const
   Returns false because this is a LeafNode.
  */
-bool LeafNode::isInnerNode() const
-{
-    return false;
-}
 
 /*!
   Constructs a leaf node named \a name of the specified
@@ -1339,19 +1359,19 @@ void ClassNode::fixBaseClasses()
   Search the child list to find the property node with the
   specified \a name.
  */
-const PropertyNode *ClassNode::findPropertyNode(const QString &name) const
+PropertyNode* ClassNode::findPropertyNode(const QString& name)
 {
-    const Node *n = findNode(name, Node::Property);
+    Node* n = findChildNodeByNameAndType(name, Node::Property);
 
     if (n)
-        return static_cast<const PropertyNode*>(n);
+        return static_cast<PropertyNode*>(n);
 
-    const PropertyNode *pn = 0;
+    PropertyNode* pn = 0;
 
     const QList<RelatedClass> &bases = baseClasses();
     if (!bases.isEmpty()) {
         for (int i = 0; i < bases.size(); ++i) {
-            const ClassNode *cn = bases[i].node;
+            ClassNode* cn = bases[i].node;
             pn = cn->findPropertyNode(name);
             if (pn)
                 break;
@@ -1360,7 +1380,7 @@ const PropertyNode *ClassNode::findPropertyNode(const QString &name) const
     const QList<RelatedClass>& ignoredBases = ignoredBaseClasses();
     if (!ignoredBases.isEmpty()) {
         for (int i = 0; i < ignoredBases.size(); ++i) {
-            const ClassNode *cn = ignoredBases[i].node;
+            ClassNode* cn = ignoredBases[i].node;
             pn = cn->findPropertyNode(name);
             if (pn)
                 break;
@@ -1376,20 +1396,20 @@ const PropertyNode *ClassNode::findPropertyNode(const QString &name) const
   finds one, it returns the pointer to that QML element. If
   it doesn't find one, it returns null.
  */
-const QmlClassNode* ClassNode::findQmlBaseNode() const
+QmlClassNode* ClassNode::findQmlBaseNode()
 {
-    const QmlClassNode* result = 0;
+    QmlClassNode* result = 0;
     const QList<RelatedClass>& bases = baseClasses();
 
     if (!bases.isEmpty()) {
         for (int i = 0; i < bases.size(); ++i) {
-            const ClassNode* cn = bases[i].node;
+            ClassNode* cn = bases[i].node;
             if (cn && cn->qmlElement()) {
                 return cn->qmlElement();
             }
         }
         for (int i = 0; i < bases.size(); ++i) {
-            const ClassNode* cn = bases[i].node;
+            ClassNode* cn = bases[i].node;
             if (cn) {
                 result = cn->findQmlBaseNode();
                 if (result != 0) {
@@ -1467,11 +1487,14 @@ QString FakeNode::fullTitle() const
         else
             return title();
     }
-    else if ((nodeSubtype_ == HeaderFile) || (nodeSubtype_ == Collision)) {
+    else if (nodeSubtype_ == HeaderFile) {
         if (title().isEmpty())
             return name();
         else
             return name() + " - " + title();
+    }
+    else if (nodeSubtype_ == Collision) {
+        return title();
     }
     else {
         return title();
@@ -1833,21 +1856,6 @@ QString FunctionNode::signature(bool values) const
 }
 
 /*!
-  Returns true if the node's status is Internal, or if its
-  parent is a class with internal status.
- */
-bool FunctionNode::isInternal() const
-{
-    if (status() == Internal)
-        return true;
-    if (parent() && parent()->status() == Internal)
-        return true;
-    if (relates() && relates()->status() == Internal)
-        return true;
-    return false;
-}
-
-/*!
   Print some debugging stuff.
  */
 void FunctionNode::debug() const
@@ -1964,25 +1972,6 @@ bool PropertyNode::fromTrool(Trool troolean, bool defaultValue)
     }
 }
 
-/*!
-  \class TargetNode
- */
-
-/*!
- */
-TargetNode::TargetNode(InnerNode *parent, const QString& name)
-    : LeafNode(Target, parent, name)
-{
-}
-
-/*!
-  Returns false because this is a TargetNode.
- */
-bool TargetNode::isInnerNode() const
-{
-    return false;
-}
-
 bool QmlClassNode::qmlOnly = false;
 QMultiMap<QString,Node*> QmlClassNode::inheritedBy;
 QMap<QString, QmlClassNode*> QmlClassNode::moduleMap;
@@ -1996,7 +1985,7 @@ QMap<QString, QmlClassNode*> QmlClassNode::moduleMap;
  */
 QmlClassNode::QmlClassNode(InnerNode *parent,
                            const QString& name,
-                           const ClassNode* cn)
+                           ClassNode* cn)
     : FakeNode(parent, name, QmlClass, Node::ApiPage),
       abstract(false),
       cnode_(cn),
@@ -2132,15 +2121,15 @@ void QmlClassNode::clearCurrentChild()
   to output the line in the documentation that specifies the
   QML element that a QML element inherits.
  */
-void QmlClassNode::resolveInheritance(const Tree* tree)
+void QmlClassNode::resolveInheritance(Tree* tree)
 {
     if (!links().empty() && links().contains(Node::InheritsLink)) {
         QPair<QString,QString> linkPair;
         linkPair = links()[Node::InheritsLink];
         QStringList strList = linkPair.first.split("::");
-        const Node* n = tree->findNode(strList,Node::Fake);
-        if (n && (n->subType() == Node::QmlClass || n->subType() == Node::Collision)) {
-            base_ = static_cast<const FakeNode*>(n);
+        Node* n = tree->findQmlClassNode(strList);
+        if (n) {
+            base_ = static_cast<FakeNode*>(n);
             if (base_ && base_->subType() == Node::QmlClass) {
                 return;
             }
@@ -2152,7 +2141,7 @@ void QmlClassNode::resolveInheritance(const Tree* tree)
                 QString qmid = importList_.at(i).first + importList_.at(i).second;
                 for (int j=0; j<children.size(); ++j) {
                     if (qmid == children.at(j)->qmlModuleIdentifier()) {
-                        base_ = static_cast<const FakeNode*>(children.at(j));
+                        base_ = static_cast<FakeNode*>(children.at(j));
                         return;
                     }
                 }
@@ -2160,7 +2149,7 @@ void QmlClassNode::resolveInheritance(const Tree* tree)
             QString qmid = qmlModuleIdentifier();
             for (int k=0; k<children.size(); ++k) {
                 if (qmid == children.at(k)->qmlModuleIdentifier()) {
-                    base_ = static_cast<const QmlClassNode*>(children.at(k));
+                    base_ = static_cast<QmlClassNode*>(children.at(k));
                     return;
                 }
             }
@@ -2169,7 +2158,7 @@ void QmlClassNode::resolveInheritance(const Tree* tree)
             return;
     }
     if (cnode_) {
-        const QmlClassNode* qcn = cnode_->findQmlBaseNode();
+        QmlClassNode* qcn = cnode_->findQmlBaseNode();
         if (qcn != 0)
             base_ = qcn;
     }
@@ -2302,12 +2291,12 @@ bool QmlPropertyNode::fromTrool(Trool troolean, bool defaultValue)
   doesn't work for qmlproperty bool PropertyChanges::explicit,
   because the tokenizer gets confused on "explicit".
  */
-bool QmlPropertyNode::isWritable(const Tree* tree) const
+bool QmlPropertyNode::isWritable(Tree* tree)
 {
     if (wri != Trool_Default)
         return fromTrool(wri, false);
 
-    const PropertyNode *pn = correspondingProperty(tree);
+    PropertyNode* pn = correspondingProperty(tree);
     if (pn)
         return pn->isWritable();
     else {
@@ -2316,16 +2305,16 @@ bool QmlPropertyNode::isWritable(const Tree* tree) const
     }
 }
 
-const PropertyNode *QmlPropertyNode::correspondingProperty(const Tree *tree) const
+PropertyNode* QmlPropertyNode::correspondingProperty(Tree *tree)
 {
-    const PropertyNode *pn;
+    PropertyNode* pn;
 
     Node* n = parent();
     while (n && n->subType() != Node::QmlClass)
         n = n->parent();
     if (n) {
-        const QmlClassNode* qcn = static_cast<const QmlClassNode*>(n);
-        const ClassNode* cn = qcn->classNode();
+        QmlClassNode* qcn = static_cast<QmlClassNode*>(n);
+        ClassNode* cn = qcn->classNode();
         if (cn) {
             QStringList dotSplit = name().split(QChar('.'));
             pn = cn->findPropertyNode(dotSplit[0]);
@@ -2335,10 +2324,10 @@ const PropertyNode *QmlPropertyNode::correspondingProperty(const Tree *tree) con
                     // the property group, <group>.<property>.
 
                     QStringList path(extractClassName(pn->qualifiedDataType()));
-                    const Node* nn = tree->findNode(path,Class);
+                    Node* nn = tree->findClassNode(path);
                     if (nn) {
-                        const ClassNode* cn = static_cast<const ClassNode*>(nn);
-                        const PropertyNode *pn2 = cn->findPropertyNode(dotSplit[1]);
+                        ClassNode* cn = static_cast<ClassNode*>(nn);
+                        PropertyNode *pn2 = cn->findPropertyNode(dotSplit[1]);
                         if (pn2)
                             return pn2; // Return the property for the QML property.
                         else
@@ -2374,7 +2363,7 @@ const PropertyNode *QmlPropertyNode::correspondingProperty(const Tree *tree) con
 NameCollisionNode::NameCollisionNode(InnerNode* child)
     : FakeNode(child->parent(), child->name(), Collision, Node::NoPageType)
 {
-    setTitle("Name Collisions For: " + child->name());
+    setTitle("Name Collision: " + child->name());
     addCollision(child);
     current = 0;
 }
@@ -2431,7 +2420,7 @@ bool NameCollisionNode::isQmlNode() const
   Find any of this collision node's children that has type \a t
   and subtype \a st and return a pointer to it.
 */
-const InnerNode* NameCollisionNode::findAny(Node::Type t, Node::SubType st) const
+InnerNode* NameCollisionNode::findAny(Node::Type t, Node::SubType st)
 {
     if (current) {
         if (current->type() == t && current->subType() == st)
@@ -2441,7 +2430,7 @@ const InnerNode* NameCollisionNode::findAny(Node::Type t, Node::SubType st) cons
     NodeList::ConstIterator i = cn.begin();
     while (i != cn.end()) {
         if ((*i)->type() == t && (*i)->subType() == st)
-            return static_cast<const InnerNode*>(*i);
+            return static_cast<InnerNode*>(*i);
         ++i;
     }
     return 0;
@@ -2755,9 +2744,6 @@ QString Node::idForNode() const
         break;
     case Node::Variable:
         str = "var-" + name();
-        break;
-    case Node::Target:
-        str = name();
         break;
     default:
         qDebug() << "ERROR: A case was not handled in Node::idForNode():"

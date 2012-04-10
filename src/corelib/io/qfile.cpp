@@ -577,6 +577,11 @@ QFile::remove(const QString &fileName)
 
     The file is closed before it is renamed.
 
+    If the rename operation fails, Qt will attempt to copy this file's
+    contents to \a newName, and then remove this file, keeping only
+    \a newName. If that copy operation fails or this file can't be removed,
+    the destination file \a newName is removed to restore the old state.
+
     \sa setFileName()
 */
 

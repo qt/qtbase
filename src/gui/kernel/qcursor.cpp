@@ -205,6 +205,13 @@ QT_BEGIN_NAMESPACE
     You can call QWidget::mapFromGlobal() to translate it to widget
     coordinates.
 
+    \note The position is queried from the windowing system. If mouse events are generated
+    via other means (e.g., via QWindowSystemInterface in a unit test), those fake mouse
+    moves will not be reflected in the returned value.
+
+    \note On platforms where there is no windowing system or cursors are not available, the returned
+    position is based on the mouse move events generated via QWindowSystemInterface.
+
     \sa setPos(), QWidget::mapFromGlobal(), QWidget::mapToGlobal(), QGuiApplication::primaryScreen()
 */
 
@@ -217,6 +224,16 @@ QT_BEGIN_NAMESPACE
 
     You can call QWidget::mapToGlobal() to translate widget
     coordinates to global screen coordinates.
+
+    \note Calling this function results in changing the cursor position through the windowing
+    system. The windowing system will typically respond by sending mouse events to the application's
+    window. This means that the usage of this function should be avoided in unit tests and
+    everywhere where fake mouse events are being injected via QWindowSystemInterface because the
+    windowing system's mouse state (with regards to buttons for example) may not match the state in
+    the application-generated events.
+
+    \note On platforms where there is no windowing system or cursors are not available, this
+    function may do nothing.
 
     \sa pos(), QWidget::mapFromGlobal(), QWidget::mapToGlobal()
 */

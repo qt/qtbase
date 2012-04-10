@@ -649,7 +649,6 @@ QStringList CodeMarker::macRefsForNode(Node *node)
     }
     case Node::Namespace:
     case Node::Fake:
-    case Node::Target:
     default:
         return QStringList();
     }

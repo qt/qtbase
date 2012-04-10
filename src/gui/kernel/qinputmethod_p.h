@@ -71,6 +71,7 @@ public:
     }
     void q_connectFocusObject();
     void q_checkFocusObject(QObject *object);
+    bool objectAcceptsInputMethod(QObject *object);
 
     QTransform inputItemTransform;
     QWeakPointer<QObject> inputItem;

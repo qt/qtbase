@@ -117,13 +117,10 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     typeHash["function"] = Node::Function;
     typeHash["property"] = Node::Property;
     typeHash["variable"] = Node::Variable;
-    typeHash["target"] = Node::Target;
-#ifdef QDOC_QML
     typeHash["qmlproperty"] = Node::QmlProperty;
     typeHash["qmlsignal"] = Node::QmlSignal;
     typeHash["qmlsignalhandler"] = Node::QmlSignalHandler;
     typeHash["qmlmethod"] = Node::QmlMethod;
-#endif
 
     QHash<QString, Node::SubType> subTypeHash;
     subTypeHash["example"] = Node::Example;
@@ -133,11 +130,9 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     subTypeHash["module"] = Node::Module;
     subTypeHash["page"] = Node::Page;
     subTypeHash["externalpage"] = Node::ExternalPage;
-#ifdef QDOC_QML
     subTypeHash["qmlclass"] = Node::QmlClass;
     subTypeHash["qmlpropertygroup"] = Node::QmlPropertyGroup;
     subTypeHash["qmlbasictype"] = Node::QmlBasicType;
-#endif
 
     QSet<Node::SubType> allSubTypes = QSet<Node::SubType>::fromList(subTypeHash.values());
 

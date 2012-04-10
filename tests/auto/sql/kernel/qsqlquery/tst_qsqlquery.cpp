@@ -215,6 +215,8 @@ private slots:
     void QTBUG_21884();
     void QTBUG_16967_data() { generic_data("QSQLITE"); }
     void QTBUG_16967(); //clean close
+    void QTBUG_23895_data() { generic_data("QSQLITE"); }
+    void QTBUG_23895(); //sqlite boolean type
 
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
@@ -331,6 +333,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName("bug5765", __FILE__)
                << qTableName("bug6852", __FILE__)
                << qTableName("bug21884", __FILE__)
+               << qTableName("bug23895", __FILE__)
                << qTableName( "qtest_lockedtable", __FILE__ )
                << qTableName( "Planet", __FILE__ )
                << qTableName( "task_250026", __FILE__ )
@@ -1651,6 +1654,24 @@ void tst_QSqlQuery::synonyms()
     QCOMPARE( rec.field( 2 ).name().toLower(), QString( "t_varchar" ) );
 }
 
+// This class is used to test protected QSqlResult methods
+class ResultHelper: public QSqlResult
+{
+
+public:
+    ResultHelper(): QSqlResult( 0 ) {} // don't call, it's only for stupid compilers
+
+    bool execBatch( bool bindArray = false )
+    {
+        return QSqlResult::execBatch( bindArray );
+    }
+
+    QString boundValueName( int pos ) const
+    {
+        return QSqlResult::boundValueName( pos );
+    }
+};
+
 // It doesn't make sense to split this into several tests
 void tst_QSqlQuery::prepare_bind_exec()
 {
@@ -1683,11 +1704,11 @@ void tst_QSqlQuery::prepare_bind_exec()
             QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
         if ( tst_Databases::isSqlServer( db ) || db.driverName().startsWith( "QTDS" ) )
-            createQuery = "create table " + qtest_prepare + " (id int primary key, name nvarchar(200) null)";
+            createQuery = "create table " + qtest_prepare + " (id int primary key, name nvarchar(200) null, name2 nvarchar(200) null)";
         else if ( tst_Databases::isMySQL(db) && useUnicode )
-            createQuery = "create table " + qtest_prepare + " (id int not null primary key, name varchar(200) character set utf8)";
+            createQuery = "create table " + qtest_prepare + " (id int not null primary key, name varchar(200) character set utf8, name2 varchar(200) character set utf8)";
         else
-            createQuery = "create table " + qtest_prepare + " (id int not null primary key, name varchar(200))";
+            createQuery = "create table " + qtest_prepare + " (id int not null primary key, name varchar(200), name2 varchar(200))";
 
         QVERIFY_SQL( q, exec( createQuery ) );
 
@@ -1756,7 +1777,7 @@ void tst_QSqlQuery::prepare_bind_exec()
             QCOMPARE( q.value( 0 ).toInt(), i );
             QCOMPARE( q.value( 1 ).toString().trimmed(), values[ i ] );
             QSqlRecord rInf = q.record();
-            QCOMPARE(( int )rInf.count(), 2 );
+            QCOMPARE(( int )rInf.count(), 3 );
             QCOMPARE( rInf.field( 0 ).name().toUpper(), QString( "ID" ) );
             QCOMPARE( rInf.field( 1 ).name().toUpper(), QString( "NAME" ) );
             QVERIFY( !q.next() );
@@ -1764,33 +1785,90 @@ void tst_QSqlQuery::prepare_bind_exec()
 
         QVERIFY_SQL( q, exec( "DELETE FROM " + qtest_prepare ) );
 
+        /*** Below we test QSqlQuery::boundValues() with position arguments.
+         *   Due to the fact that the name of a positional argument is not
+         *   specified by the Qt docs, we only test that the QMap contains
+         *   the correct values and that QSqlResult::boundValueName returns
+         *   the key that corrosponds to the correct value. ***/
         QVERIFY( q.prepare( "insert into " + qtest_prepare + " (id, name) values (?, ?)" ) );
         q.bindValue( 0, 0 );
         q.bindValue( 1, values[ 0 ] );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 0 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[0] );
         QVERIFY_SQL( q, exec() );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 0 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[0] );
+
         q.addBindValue( 1 );
         q.addBindValue( values[ 1 ] );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 1 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[1] );
         QVERIFY_SQL( q, exec() );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 1 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[1] );
+
         q.addBindValue( 2 );
         q.addBindValue( values[ 2 ] );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[2] );
         QVERIFY_SQL( q, exec() );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[2] );
+
         q.addBindValue( 3 );
         q.addBindValue( values[ 3 ] );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 3 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[3] );
         QVERIFY_SQL( q, exec() );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 3 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[3] );
+
         q.addBindValue( 4 );
         q.addBindValue( values[ 4 ] );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 4 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[4] );
         QVERIFY_SQL( q, exec() );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 4 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[4] );
+
         q.bindValue( 1, values[ 5 ] );
         q.bindValue( 0, 5 );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 5 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[5] );
         QVERIFY_SQL( q, exec() );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 5 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), values[5] );
+
         q.bindValue( 0, 6 );
         q.bindValue( 1, QString() );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 6 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), QString() );
         QVERIFY_SQL( q, exec() );
+        QCOMPARE( q.boundValues().size(), 2 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 6 );
+        QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), QString() );
 
         if ( db.driver()->hasFeature( QSqlDriver::Unicode ) ) {
             q.bindValue( 0, 7 );
             q.bindValue( 1, utf8str );
+            QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 7 );
+            QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), utf8str );
             QVERIFY_SQL( q, exec() );
+            QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(0) ].toInt(), 7 );
+            QCOMPARE( q.boundValues()[ ((ResultHelper*)q.result())->boundValueName(1) ].toString(), utf8str );
         }
 
         QVERIFY_SQL( q, exec( "SELECT * FROM " + qtest_prepare + " order by id" ) );
@@ -1838,6 +1916,20 @@ void tst_QSqlQuery::prepare_bind_exec()
         QVERIFY( q.lastError().isValid() );
 
         QVERIFY( !q.isActive() );
+
+        QVERIFY( q.prepare( "insert into " + qtest_prepare + " (id, name, name2) values (:id, :name, :name)" ) );
+        for ( i = 101; i < 103; ++i ) {
+            q.bindValue( ":id", i );
+            q.bindValue( ":name", "name" );
+            QVERIFY( q.exec() );
+        }
+
+        // Test for QTBUG-6420
+        QVERIFY( q.exec( "select * from " + qtest_prepare + " where id > 100 order by id" ) );
+        QVERIFY( q.next() );
+        QCOMPARE( q.value(0).toInt(), 101 );
+        QCOMPARE( q.value(1).toString(), QString("name") );
+        QCOMPARE( q.value(2).toString(), QString("name") );
 
     } // end of SQLite scope
 }
@@ -1946,18 +2038,6 @@ void tst_QSqlQuery::invalidQuery()
     QVERIFY( !q.isActive() );
     QVERIFY( !q.next() );
 }
-
-class ResultHelper: public QSqlResult
-{
-
-public:
-    ResultHelper(): QSqlResult( 0 ) {} // don't call, it's only for stupid compilers
-
-    bool execBatch( bool bindArray = false )
-    {
-        return QSqlResult::execBatch( bindArray );
-    }
-};
 
 void tst_QSqlQuery::batchExec()
 {
@@ -3185,6 +3265,64 @@ void tst_QSqlQuery::QTBUG_16967()
         db.close();
         QCOMPARE(db.lastError().type(), QSqlError::NoError);
     }
+}
+
+/**
+  * In SQLite when a boolean value is bound to a placeholder, it should be converted
+  * into integer 0/1 rather than text "false"/"true". According to documentation,
+  * SQLite does not have separate Boolean storage class. Instead, Boolean values are
+  * stored as integers.
+  */
+void tst_QSqlQuery::QTBUG_23895()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+
+    QString tableName(qTableName("bug23895", __FILE__ ));
+    q.prepare("create table " + tableName + "(id integer primary key, val1 bool, val2 boolean)");
+    QVERIFY_SQL(q, exec());
+    q.prepare("insert into " + tableName + "(id, val1, val2) values(?, ?, ?);");
+    q.addBindValue(1);
+    q.addBindValue(true);
+    q.addBindValue(false);
+    QVERIFY_SQL(q, exec());
+
+    QString sql="select * from " + tableName;
+    QVERIFY_SQL(q, exec(sql));
+    QVERIFY_SQL(q, next());
+
+    QCOMPARE(q.record().field(0).type(), QVariant::Int);
+    QCOMPARE(q.value(0).type(), QVariant::LongLong);
+    QCOMPARE(q.value(0).toInt(), 1);
+    QCOMPARE(q.record().field(1).type(), QVariant::Bool);
+    QCOMPARE(q.value(1).type(), QVariant::LongLong);
+    QCOMPARE(q.value(1).toBool(), true);
+    QCOMPARE(q.record().field(2).type(), QVariant::Bool);
+    QCOMPARE(q.value(2).type(), QVariant::LongLong);
+    QCOMPARE(q.value(2).toBool(), false);
+
+    q.prepare("insert into " + tableName + "(id, val1, val2) values(?, ?, ?);");
+    q.addBindValue(2);
+    q.addBindValue(false);
+    q.addBindValue(false);
+    QVERIFY_SQL(q, exec());
+
+    sql="select * from " + tableName + " where val1";
+    QVERIFY_SQL(q, exec(sql));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 1);
+    QVERIFY(!q.next());
+
+    sql="select * from " + tableName + " where not val2";
+    QVERIFY_SQL(q, exec(sql));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 1);
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 2);
+    QVERIFY(!q.next());
 }
 
 void tst_QSqlQuery::oraOCINumber()

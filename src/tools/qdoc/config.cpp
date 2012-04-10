@@ -148,6 +148,7 @@ QStringList MetaStack::getExpanded(const Location& location)
 }
 
 QT_STATIC_CONST_IMPL QString Config::dot = QLatin1String(".");
+bool Config::generateExamples = true;
 QString Config::overrideOutputDir;
 QSet<QString> Config::overrideOutputFormats;
 QMap<QString, QString> Config::extractedDirs;

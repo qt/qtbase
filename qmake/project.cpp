@@ -1721,7 +1721,8 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         function_blocks.push(defined);
         QStringList ret;
         defined->exec(args_list, this, place, ret);
-        Q_ASSERT(function_blocks.pop() == defined);
+        bool correct = function_blocks.pop() == defined;
+        Q_ASSERT(correct); Q_UNUSED(correct);
         return ret;
     }
 
@@ -2206,7 +2207,8 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
         QStringList ret;
         function_blocks.push(defined);
         defined->exec(args_list, this, place, ret);
-        Q_ASSERT(function_blocks.pop() == defined);
+        bool correct = function_blocks.pop() == defined;
+        Q_ASSERT(correct); Q_UNUSED(correct);
 
         if(ret.isEmpty()) {
             return true;

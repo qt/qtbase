@@ -232,9 +232,6 @@ QWindow *QWindowsAccessibility::windowHelper(const QAccessibleInterface *iface)
 */
 IAccessible *QWindowsAccessibility::wrap(QAccessibleInterface *acc)
 {
-#ifdef Q_CC_MINGW
-    return 0;
-#else
     if (!acc)
         return 0;
 #ifdef Q_CC_MINGW
@@ -245,7 +242,6 @@ IAccessible *QWindowsAccessibility::wrap(QAccessibleInterface *acc)
     IAccessible *iacc = 0;
     wacc->QueryInterface(IID_IAccessible, (void**)&iacc);
     return iacc;
-#endif
 }
 
 /*!

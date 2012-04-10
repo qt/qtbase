@@ -637,6 +637,19 @@ bool QNativeSocketEngine::joinMulticastGroup(const QHostAddress &groupAddress,
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::joinMulticastGroup(), false);
     Q_CHECK_STATE(QNativeSocketEngine::joinMulticastGroup(), QAbstractSocket::BoundState, false);
     Q_CHECK_TYPE(QNativeSocketEngine::joinMulticastGroup(), QAbstractSocket::UdpSocket, false);
+
+    // if the user binds a socket to an IPv6 address (or QHostAddress::Any) and
+    // then attempts to join an IPv4 multicast group, this won't work on
+    // Windows. In order to make this cross-platform, we warn & fail on all
+    // platforms.
+    if (groupAddress.protocol() == QAbstractSocket::IPv4Protocol &&
+        (d->socketProtocol == QAbstractSocket::IPv6Protocol ||
+         d->socketProtocol == QAbstractSocket::AnyIPProtocol)) {
+        qWarning("QAbstractSocket: cannot bind to QHostAddress::Any (or an IPv6 address) and join an IPv4 multicast group");
+        qWarning("QAbstractSocket: bind to QHostAddress::AnyIPv4 instead if you want to do this");
+        return false;
+    }
+
     return d->nativeJoinMulticastGroup(groupAddress, iface);
 }
 

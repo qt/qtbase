@@ -116,7 +116,7 @@ static int hashKword(const char *s, int len)
 
 static void insertKwordIntoHash(const char *s, int number)
 {
-    int k = hashKword(s, strlen(s));
+    int k = hashKword(s, int(strlen(s)));
     while (kwordHashTable[k]) {
         if (++k == KwordHashTableSize)
             k = 0;
@@ -166,7 +166,7 @@ int Tokenizer::getToken()
                 yyCh = getChar();
             } while (isalnum(yyCh) || yyCh == '_');
 
-            int k = hashKword(yyLex, yyLexLen);
+            int k = hashKword(yyLex, int(yyLexLen));
             for (;;) {
                 int i = kwordHashTable[k];
                 if (i == 0) {

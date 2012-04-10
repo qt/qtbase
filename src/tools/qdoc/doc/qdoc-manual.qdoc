@@ -301,6 +301,7 @@
     \li \l {11-qdoc-commands-specialcontent.html#tableofcontents-command} {\\tableofcontents}
     \li \l {08-qdoc-commands-creatinglinks.html#target-command} {\\target}
     \li \l {04-qdoc-commands-textmarkup.html#tt-command} {\\tt}
+    \li \l {04-qdoc-commands-textmarkup.html#uicontrol-command} {\\uicontrol} {(new 25/3/2012)}
     \li \l {04-qdoc-commands-textmarkup.html#underline-command} {\\underline}
     \li \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\unicode}
     \li \l {11-qdoc-commands-specialcontent.html#warning-command} {\\warning}
@@ -836,6 +837,15 @@
 
     If the argument contains spaces or other punctuation, enclose the
     argument in curly brackets.
+
+    \target uicontrol-command
+    \section1 \\uicontrol
+
+    The \\uicontrol command is used to mark content as being used for UI
+    control elements. When using HTML the output is rendered in bold.
+    When using DITA XML the content is enclosed in a \c{uicontrol} tag.
+
+    \sa \\b
 
     \target underline-command
     \section1 \\underline
@@ -5541,25 +5551,18 @@
     \target qmlsignal-command
     \section1 \\qmlsignal
 
-    The \\qmlsignal command is for documenting a
-    \l{http://doc.qt.nokia.com/4.7/qdeclarativeintroduction.html#signal-handlers}
-    {signal handler}.
-    The argument is the rest of the line. It should be the QML type where the
-    signal handler is declared, the \c{::} qualifier, and finally the signal
-    handler name. If we have a QML signal handler named \c onAdd() in QML
-    element \c MouseArea, the \\qmlsignal for it would look like this:
+    The \\qmlsignal command is for documenting a QML signal.
+    The argument is the rest of the line. The arguments should be: the QML type
+    where the signal is declared, the \c{::} qualifier, and finally the signal
+    name. If we have a QML signal named \c clicked(), the documentation for it
+    would look like this:
 
     \code
     / *!
-        \qmlsignal MouseArea::onEntered()
-
-        This handler is called when the mouse enters the mouse area.
-
-        By default the onEntered handler is only called while a button is
-        pressed. Setting hoverEnabled to true enables handling of
-        onEntered when no mouse button is pressed.
-
-        \sa hoverEnabled
+    \qmlsignal UIComponents::Button::clicked()
+    This signal is emitted when the user clicks the button. A click is defined
+    as a press followed by a release. The corresponding handler is
+    \c onClicked.
     * /
     \endcode
 
@@ -8751,6 +8754,7 @@
     \li \l {21-0-qdoc-creating-dita-maps.html#topicref-command} {\\topicref} \span {class="newStuff"} {(new 05/03/12)}
     \li \l {04-qdoc-commands-textmarkup.html#tt-command} {\\tt}
     \li \l {13-qdoc-commands-topics.html#typedef-command} {\\typedef}
+    \li \l {04-qdoc-commands-textmarkup.html#uicontrol-command} {\\uicontrol} {(new 25/3/2012)}
     \li \l {04-qdoc-commands-textmarkup.html#underline-command} {\\underline}
     \li \l {13-qdoc-commands-topics.html#variable-command} {\\variable}
     \li \l {10-qdoc-commands-tablesandlists.html#value-command} {\\value}

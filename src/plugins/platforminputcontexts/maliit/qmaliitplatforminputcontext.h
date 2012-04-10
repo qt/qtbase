@@ -67,10 +67,9 @@ public:
     virtual void showInputPanel();
     virtual void hideInputPanel();
     virtual bool isInputPanelVisible() const;
+    void setFocusObject(QObject *object);
 
 public Q_SLOTS:
-    void inputItemChanged();
-
     void activationLostEvent();
     void commitString(const QString &in0, int in1, int in2, int in3);
     void updatePreedit(const QDBusMessage &message);

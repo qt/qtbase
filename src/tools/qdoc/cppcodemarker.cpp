@@ -826,61 +826,38 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
     return sections;
 }
 
+/*!
+  Search the \a tree for a node named \a target
+ */
 const Node *CppCodeMarker::resolveTarget(const QString& target,
                                          const Tree* tree,
                                          const Node* relative,
                                          const Node* self)
 {
+    const Node* node = 0;
     if (target.endsWith("()")) {
-        const FunctionNode *func;
         QString funcName = target;
         funcName.chop(2);
-
         QStringList path = funcName.split("::");
-        if ((func = tree->findFunctionNode(path,
-                                           relative,
-                                           Tree::SearchBaseClasses))
-                && func->metaness() != FunctionNode::MacroWithoutParams)
-            return func;
+        const FunctionNode* fn = tree->findFunctionNode(path, relative, Tree::SearchBaseClasses);
+        if (fn) {
+            /*
+              Why is this case not accepted?
+             */
+            if (fn->metaness() != FunctionNode::MacroWithoutParams)
+                node = fn;
+        }
     }
     else if (target.contains(QLatin1Char('#'))) {
-        // ### this doesn't belong here; get rid of TargetNode hack
-        int hashAt = target.indexOf(QLatin1Char('#'));
-        QString link = target.left(hashAt);
-        QString ref = target.mid(hashAt + 1);
-        const Node *node;
-        if (link.isEmpty()) {
-            node = relative;
-        }
-        else {
-            QStringList path(link);
-            node = tree->findNode(path, tree->root(), Tree::SearchBaseClasses);
-        }
-        if (node && node->isInnerNode()) {
-            const Atom *atom = node->doc().body().firstAtom();
-            while (atom) {
-                if (atom->type() == Atom::Target && atom->string() == ref) {
-                    Node *parentNode = const_cast<Node *>(node);
-                    return new TargetNode(static_cast<InnerNode*>(parentNode),
-                                          ref);
-                }
-                atom = atom->next();
-            }
-        }
+        // This error message is never printed; I think we can remove the case.
+        qDebug() << "qdoc: target case not handled:" << target;
     }
     else {
         QStringList path = target.split("::");
-        const Node *node;
-        int flags = Tree::SearchBaseClasses |
-                Tree::SearchEnumValues |
-                Tree::NonFunction;
-        if ((node = tree->findNode(path,
-                                   relative,
-                                   flags,
-                                   self)))
-            return node;
+        int flags = Tree::SearchBaseClasses | Tree::SearchEnumValues | Tree::NonFunction;
+        node = tree->findNode(path, relative, flags, self);
     }
-    return 0;
+    return node;
 }
 
 static const char * const typeTable[] = {

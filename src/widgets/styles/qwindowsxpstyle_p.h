@@ -209,9 +209,9 @@ QT_BEGIN_NAMESPACE
 class XPThemeData
 {
 public:
-    XPThemeData(const QWidget *w = 0, QPainter *p = 0, const QString &theme = QString(),
+    XPThemeData(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
                 int part = 0, int state = 0, const QRect &r = QRect())
-        : widget(w), painter(p), name(theme), htheme(0), partId(part), stateId(state),
+        : widget(w), painter(p), theme(themeIn), htheme(0), partId(part), stateId(state),
           mirrorHorizontally(false), mirrorVertically(false), noBorder(false),
           noContent(false), rotate(0), rect(r)
     {}
@@ -224,7 +224,8 @@ public:
 
     const QWidget *widget;
     QPainter *painter;
-    QString name;
+
+    int theme;
     HTHEME htheme;
     int partId;
     int stateId;
@@ -238,7 +239,7 @@ public:
 };
 
 struct ThemeMapKey {
-    QString name;
+    int theme;
     int partId;
     int stateId;
     bool noBorder;
@@ -246,17 +247,17 @@ struct ThemeMapKey {
 
     ThemeMapKey() : partId(-1), stateId(-1) {}
     ThemeMapKey(const XPThemeData &data)
-        : name(data.name), partId(data.partId), stateId(data.stateId),
+        : theme(data.theme), partId(data.partId), stateId(data.stateId),
         noBorder(data.noBorder), noContent(data.noContent) {}
 
 };
 
 inline uint qHash(const ThemeMapKey &key)
-{ return qHash(key.name) ^ key.partId ^ key.stateId; }
+{ return key.theme ^ key.partId ^ key.stateId; }
 
 inline bool operator==(const ThemeMapKey &k1, const ThemeMapKey &k2)
 {
-    return k1.name == k2.name
+    return k1.theme == k2.theme
            && k1.partId == k2.partId
            && k1.stateId == k2.stateId;
 }
@@ -286,7 +287,27 @@ class QWindowsXPStylePrivate : public QWindowsStylePrivate
 {
     Q_DECLARE_PUBLIC(QWindowsXPStyle)
 public:
-    typedef QMap<QString, HTHEME> ThemeHandleMap;
+    enum Theme {
+        ButtonTheme,
+        ComboboxTheme,
+        EditTheme,
+        HeaderTheme,
+        ListViewTheme,
+        MenuTheme,
+        ProgressTheme,
+        RebarTheme,
+        ScrollBarTheme,
+        SpinTheme,
+        TabTheme,
+        TaskDialogTheme,
+        ToolBarTheme,
+        ToolTipTheme,
+        TrackBarTheme,
+        TreeViewTheme,
+        WindowTheme,
+        StatusTheme,
+        NThemes
+    };
 
     QWindowsXPStylePrivate()
         : QWindowsStylePrivate(), hasInitColors(false), bufferDC(0), bufferBitmap(0), nullBitmap(0),
@@ -328,7 +349,8 @@ public:
     QRgb sliderTickColor;
     bool hasInitColors;
 
-    static ThemeHandleMap *handleMap;
+    static HTHEME createTheme(int theme, HWND hwnd);
+    static QString themeName(int theme);
 
     QIcon dockFloat, dockClose;
 
@@ -348,6 +370,8 @@ private:
     HBITMAP nullBitmap;
     uchar *bufferPixels;
     int bufferW, bufferH;
+
+    static HTHEME m_themes[NThemes];
 };
 
 #endif // QT_NO_STYLE_WINDOWS

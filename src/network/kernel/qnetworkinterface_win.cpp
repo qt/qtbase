@@ -182,6 +182,8 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
             iface->flags |= QNetworkInterface::IsUp | QNetworkInterface::IsRunning;
         if ((ptr->Flags & IP_ADAPTER_NO_MULTICAST) == 0)
             iface->flags |= QNetworkInterface::CanMulticast;
+        if (ptr->IfType == IF_TYPE_PPP)
+            iface->flags |= QNetworkInterface::IsPointToPoint;
 
         iface->name = QString::fromLocal8Bit(ptr->AdapterName);
         iface->friendlyName = QString::fromWCharArray(ptr->FriendlyName);

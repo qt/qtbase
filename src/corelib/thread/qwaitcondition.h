@@ -63,8 +63,8 @@ public:
     QWaitCondition();
     ~QWaitCondition();
 
-    bool wait(QMutex *mutex, unsigned long time = ULONG_MAX);
-    bool wait(QReadWriteLock *readWriteLock, unsigned long time = ULONG_MAX);
+    bool wait(QMutex *lockedMutex, unsigned long time = ULONG_MAX);
+    bool wait(QReadWriteLock *lockedReadWriteLock, unsigned long time = ULONG_MAX);
 
     void wakeOne();
     void wakeAll();

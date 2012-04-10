@@ -1965,12 +1965,11 @@ void QApplication::syncX()
 
 void QApplicationPrivate::notifyLayoutDirectionChange()
 {
-    Q_Q(QApplication);
-    QWidgetList list = q->topLevelWidgets();
+    QWidgetList list = QApplication::topLevelWidgets();
     for (int i = 0; i < list.size(); ++i) {
         QWidget *w = list.at(i);
         QEvent ev(QEvent::ApplicationLayoutDirectionChange);
-        q->sendEvent(w, &ev);
+        QCoreApplication::sendEvent(w, &ev);
     }
 }
 
@@ -2030,7 +2029,7 @@ void QApplication::setActiveWindow(QWidget* act)
 
     if (QApplicationPrivate::focus_widget) {
         if (QApplicationPrivate::focus_widget->testAttribute(Qt::WA_InputMethodEnabled))
-            qApp->inputMethod()->reset();
+            qApp->inputMethod()->commit();
 
         QFocusEvent focusAboutToChange(QEvent::FocusAboutToChange, Qt::ActiveWindowFocusReason);
         QApplication::sendEvent(QApplicationPrivate::focus_widget, &focusAboutToChange);
@@ -3913,13 +3912,6 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 */
 
 /*!
-    \typedef QApplication::ColorMode
-    \compat
-
-    Use ColorSpec instead.
-*/
-
-/*!
     \fn Qt::MacintoshVersion QApplication::macVersion()
 
     Use QSysInfo::MacintoshVersion instead.
@@ -4010,18 +4002,6 @@ bool QApplicationPrivate::inPopupMode() const
 {
     return QApplicationPrivate::popupWidgets != 0;
 }
-
-/*! \variable QApplication::NormalColors
-    \compat
-
-    Use \l NormalColor instead.
-*/
-
-/*! \variable QApplication::CustomColors
-    \compat
-
-    Use \l CustomColor instead.
-*/
 
 #ifdef QT_KEYPAD_NAVIGATION
 /*!

@@ -63,7 +63,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static const float smallCapsFraction = 0.7;
+static const float smallCapsFraction = 0.7f;
 
 namespace {
 // Helper class used in QTextEngine::itemize

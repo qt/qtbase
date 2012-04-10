@@ -246,7 +246,7 @@ information about a particular change.
 
 - QSystemLocale has been removed from the public API.
 
-- QSqlQueryModel::indexInQuery() is now virtual. See note below under QSql.
+- QSqlQueryModel::indexInQuery() is now virtual. See note below under QtSql.
 
 - QSqlDriver::subscribeToNotification, unsubscribeFromNotification,
   subscribedToNotifications, isIdentifierEscaped, and stripDelimiters
@@ -506,6 +506,11 @@ now that QSqlDriver subclasses can reimplement these directly.
 *                          Database Drivers                                *
 ****************************************************************************
 
+sqlite
+------
+* QVariant::Bool type now mapped to integers 0/1 in SQL instead of strings
+'true' and 'false'. Sqlite does not have a boolean column type and it is
+customary to use integer. QTBUG-23895
 
 ****************************************************************************
 *                      Platform Specific Changes                           *

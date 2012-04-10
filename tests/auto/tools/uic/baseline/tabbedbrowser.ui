@@ -99,7 +99,7 @@
          <string/>
         </property>
         <property name="icon" >
-         <iconset resource="assistant.qrc" >:/trolltech/assistant/images/close.png</iconset>
+         <iconset resource="assistant.qrc" >:/qt-project.org/assistant/images/close.png</iconset>
         </property>
         <property name="autoRaise" >
          <bool>true</bool>
@@ -130,7 +130,7 @@
          <string>Previous</string>
         </property>
         <property name="icon" >
-         <iconset resource="assistant.qrc" >:/trolltech/assistant/images/win/previous.png</iconset>
+         <iconset resource="assistant.qrc" >:/qt-project.org/assistant/images/win/previous.png</iconset>
         </property>
         <property name="toolButtonStyle" >
          <enum>Qt::ToolButtonTextBesideIcon</enum>
@@ -152,7 +152,7 @@
          <string>Next</string>
         </property>
         <property name="icon" >
-         <iconset resource="assistant.qrc" >:/trolltech/assistant/images/win/next.png</iconset>
+         <iconset resource="assistant.qrc" >:/qt-project.org/assistant/images/win/next.png</iconset>
         </property>
         <property name="toolButtonStyle" >
          <enum>Qt::ToolButtonTextBesideIcon</enum>
@@ -194,7 +194,7 @@
          </size>
         </property>
         <property name="text" >
-         <string>&lt;img src=":/trolltech/assistant/images/wrap.png">&amp;nbsp;Search wrapped</string>
+         <string>&lt;img src=":/qt-project.org/assistant/images/wrap.png">&amp;nbsp;Search wrapped</string>
         </property>
         <property name="textFormat" >
          <enum>Qt::RichText</enum>

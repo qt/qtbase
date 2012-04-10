@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qqnxnavigatoreventhandler.h"
-#include "qqnxscreen.h"
 
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
@@ -61,8 +60,8 @@
 static const char *navigatorControlPath = "/pps/services/navigator/control";
 static const int ppsBufferSize = 4096;
 
-QQnxNavigatorEventHandler::QQnxNavigatorEventHandler(QQnxScreen& primaryScreen)
-    : m_primaryScreen(primaryScreen),
+QQnxNavigatorEventHandler::QQnxNavigatorEventHandler(QObject *parent)
+    : QObject(parent),
       m_fd(-1),
       m_readNotifier(0)
 {
@@ -202,8 +201,7 @@ void QQnxNavigatorEventHandler::handleMessage(const QByteArray &msg, const QByte
 #if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
         qDebug() << "PPS: orientation, o=" << dat;
 #endif
-        m_primaryScreen.setRotation( dat.toInt() );
-        QWindowSystemInterface::handleScreenGeometryChange(0, m_primaryScreen.geometry());
+        Q_EMIT rotationChanged(dat.toInt());
         replyPPS(msg, id, "");
 
     } else if (msg == "SWIPE_DOWN") {

@@ -53,7 +53,7 @@
 #include "../../../network-settings.h"
 #endif
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(_WIN32_WINNT)
 #define _WIN32_WINNT  0x500
 #endif
 

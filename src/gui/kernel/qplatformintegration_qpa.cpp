@@ -247,6 +247,7 @@ QPlatformSharedGraphicsCache *QPlatformIntegration::createPlatformSharedGraphics
 */
 QPaintEngine *QPlatformIntegration::createImagePaintEngine(QPaintDevice *paintDevice) const
 {
+    Q_UNUSED(paintDevice)
     return 0;
 }
 
@@ -293,6 +294,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return false;
     case PasswordMaskDelay:
         return 0;
+    case FontSmoothingGamma:
+        return qreal(1.7);
     }
 
     return 0;

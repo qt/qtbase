@@ -75,6 +75,7 @@ SOURCES += \
         SOURCES +=                                      \
                 painting/qpaintengine_raster.cpp        \
                 painting/qdrawhelper.cpp                \
+                painting/qgammatables.cpp               \
                 painting/qimagescale.cpp                \
                 painting/qgrayraster.c                  \
                 painting/qpaintengine_blitter.cpp       \

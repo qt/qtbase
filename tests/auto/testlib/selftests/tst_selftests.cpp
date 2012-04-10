@@ -135,7 +135,7 @@ static QList<QByteArray> splitLines(QByteArray ba)
             if (index == -1) {
                 continue;
             }
-            int end = line.indexOf('"', index + strlen(markers[j][0]));
+            const int end = line.indexOf('"', index + int(strlen(markers[j][0])));
             if (end == -1) {
                 continue;
             }
@@ -686,11 +686,12 @@ QString extractXmlAttribute(const QString &line, const char *attribute)
     int index = line.indexOf(attribute);
     if (index == -1)
         return QString();
-    int end = line.indexOf('"', index + strlen(attribute));
+    const int attributeLength = int(strlen(attribute));
+    const int end = line.indexOf('"', index + attributeLength);
     if (end == -1)
         return QString();
 
-    QString result = line.mid(index + strlen(attribute), end - index - strlen(attribute));
+    const QString result = line.mid(index + attributeLength, end - index - attributeLength);
     if (result.isEmpty())
         return ""; // ensure empty but not null
     return result;

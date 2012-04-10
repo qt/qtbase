@@ -21,7 +21,16 @@ SOURCES =   main.cpp \
 HEADERS =   qeglfsintegration.h \
             qeglfswindow.h \
             qeglfsbackingstore.h \
-            qeglfsscreen.h
+            qeglfsscreen.h \
+            qeglfs_hooks.h
+
+QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
+
+!isEmpty(EGLFS_PLATFORM_HOOKS_SOURCES) {
+    HEADERS += $$EGLFS_PLATFORM_HOOKS_HEADERS
+    SOURCES += $$EGLFS_PLATFORM_HOOKS_SOURCES
+    DEFINES += EGLFS_PLATFORM_HOOKS
+}
 
 CONFIG += egl qpa/genericunixfontdatabase
 

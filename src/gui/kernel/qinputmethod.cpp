@@ -43,6 +43,7 @@
 #include <private/qinputmethod_p.h>
 #include <qguiapplication.h>
 #include <qtimer.h>
+#include <private/qplatforminputcontext_qpa_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -72,7 +73,7 @@ QInputMethod::~QInputMethod()
     information like virtual keyboard visibility and keyboard dimensions.
 
     Qt Quick also provides access to QInputMethod in QML through \l{QmlGlobalQtObject}{Qt global object}
-    as \c Qt.application.inputPanel property.
+    as \c Qt.inputMethod property.
 */
 
 /*!
@@ -295,8 +296,12 @@ void QInputMethod::update(Qt::InputMethodQueries queries)
 {
     Q_D(QInputMethod);
 
-    if (queries & Qt::ImEnabled)
-        d->q_checkFocusObject(qApp->focusObject());
+    if (queries & Qt::ImEnabled) {
+        QObject *focus = qApp->focusObject();
+        bool enabled = d->objectAcceptsInputMethod(focus);
+        setInputItem(enabled ? focus : 0);
+        QPlatformInputContextPrivate::setInputMethodAccepted(enabled);
+    }
 
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
@@ -361,14 +366,20 @@ void QInputMethodPrivate::q_connectFocusObject()
 void QInputMethodPrivate::q_checkFocusObject(QObject *object)
 {
     Q_Q(QInputMethod);
+    bool enabled = objectAcceptsInputMethod(object);
+    q->setInputItem(enabled ? object : 0);
+}
 
+bool QInputMethodPrivate::objectAcceptsInputMethod(QObject *object)
+{
     bool enabled = false;
     if (object) {
         QInputMethodQueryEvent query(Qt::ImEnabled);
         QGuiApplication::sendEvent(object, &query);
         enabled = query.value(Qt::ImEnabled).toBool();
     }
-    q->setInputItem(enabled ? object : 0);
+
+    return enabled;
 }
 
 QT_END_NAMESPACE

@@ -54,14 +54,14 @@ class QQnxRasterBackingStore : public QPlatformBackingStore
 {
 public:
     QQnxRasterBackingStore(QWindow *window);
-    virtual ~QQnxRasterBackingStore();
+    ~QQnxRasterBackingStore();
 
-    virtual QPaintDevice *paintDevice();
-    virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    virtual void resize(const QSize &size, const QRegion &staticContents);
-    virtual bool scroll(const QRegion &area, int dx, int dy);
-    virtual void beginPaint(const QRegion &region);
-    virtual void endPaint(const QRegion &region);
+    QPaintDevice *paintDevice();
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
+    void resize(const QSize &size, const QRegion &staticContents);
+    bool scroll(const QRegion &area, int dx, int dy);
+    void beginPaint(const QRegion &region);
+    void endPaint(const QRegion &region);
 
 private:
     class ScrollOp {

@@ -178,7 +178,6 @@ private:
     const ppd_file_t* cupsPPD;
 #endif
 };
-#endif
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
 class QOptionTreeItem
@@ -386,9 +385,9 @@ void QPrintDialogPrivate::init()
     bottom = new QWidget(q);
     options.setupUi(bottom);
     options.color->setIconSize(QSize(32, 32));
-    options.color->setIcon(QIcon(QLatin1String(":/trolltech/dialogs/qprintdialog/images/status-color.png")));
+    options.color->setIcon(QIcon(QLatin1String(":/qt-project.org/dialogs/qprintdialog/images/status-color.png")));
     options.grayscale->setIconSize(QSize(32, 32));
-    options.grayscale->setIcon(QIcon(QLatin1String(":/trolltech/dialogs/qprintdialog/images/status-gray-scale.png")));
+    options.grayscale->setIcon(QIcon(QLatin1String(":/qt-project.org/dialogs/qprintdialog/images/status-gray-scale.png")));
     top->d->setOptionsPane(this);
 
     buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, q);
@@ -1245,7 +1244,8 @@ void QPPDOptionsEditor::cbChanged(int)
 */
 }
 
-#endif
+#endif // !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+#endif // defined (Q_OS_UNIX)
 
 QT_END_NAMESPACE
 

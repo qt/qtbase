@@ -56,6 +56,7 @@ public:
     ~QIBusPlatformInputContext();
 
     bool isValid() const;
+    void setFocusObject(QObject *object);
 
     void invokeAction(QInputMethod::Action a, int x);
     void reset();
@@ -67,7 +68,6 @@ public:
 public Q_SLOTS:
     void commitText(const QDBusVariant &text);
     void updatePreeditText(const QDBusVariant &text, uint cursor_pos, bool visible);
-    void inputItemChanged();
     void cursorRectChanged();
 
 private:

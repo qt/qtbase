@@ -25,3 +25,14 @@ exists($$DEVICE_PRI):include($$DEVICE_PRI)
 unset(DEVICE_PRI)
 unset(DIR)
 
+# Provide a function to be used by mkspecs
+defineTest(deviceSanityCheckCompiler) {
+    # Check if the binary exists, e.g. with an absolute path
+    exists($$QMAKE_CXX):return()
+
+    # Check if the compiler is in the path
+    system("which $$QMAKE_CXX > /dev/null"):return()
+
+    error("Compiler $$QMAKE_CXX not found")
+}
+

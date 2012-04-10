@@ -184,21 +184,15 @@ void QWidgetLineControl::paste(QClipboard::Mode clipboardMode)
 
 /*!
     \internal
-
-    Exits preedit mode and commits parts marked as tentative commit
 */
 void QWidgetLineControl::commitPreedit()
 {
     if (!composeMode())
         return;
 
-    qApp->inputMethod()->reset();
-
-    if (!m_tentativeCommit.isEmpty()) {
-        internalInsert(m_tentativeCommit);
-        m_tentativeCommit.clear();
-        finishChange(-1, true/*not used, not documented*/, false);
-    }
+    qApp->inputMethod()->commit();
+    if (!composeMode())
+        return;
 
     m_preeditCursor = 0;
     setPreeditArea(-1, QString());
@@ -573,13 +567,7 @@ void QWidgetLineControl::processInputMethodEvent(QInputMethodEvent *event)
     else if (m_preeditCursor != oldPreeditCursor)
         emit updateMicroFocus();
 
-    bool tentativeCommitChanged = (m_tentativeCommit != event->tentativeCommitString());
-    if (tentativeCommitChanged) {
-        m_textDirty = true;
-        m_tentativeCommit = event->tentativeCommitString();
-    }
-
-    if (isGettingInput || tentativeCommitChanged)
+    if (isGettingInput)
         finishChange(priorState);
 
     if (selectionChange)
@@ -687,15 +675,6 @@ bool QWidgetLineControl::finishChange(int validateFromState, bool update, bool e
                     return true;
                 }
                 m_cursor = cursorCopy;
-
-                if (!m_tentativeCommit.isEmpty()) {
-                    textCopy.insert(m_cursor, m_tentativeCommit);
-                    bool validInput = (m_validator->validate(textCopy, cursorCopy) != QValidator::Invalid);
-                    if (!validInput)
-                        m_tentativeCommit.clear();
-                }
-            } else {
-                m_tentativeCommit.clear();
             }
         }
 #endif
@@ -806,6 +785,11 @@ void QWidgetLineControl::internalInsert(const QString &s)
         if (m_passwordEchoTimer != 0)
             killTimer(m_passwordEchoTimer);
         int delay = qGuiApp->styleHints()->passwordMaskDelay();
+#ifdef QT_BUILD_INTERNAL
+        if (m_passwordMaskDelayOverride >= 0)
+            delay = m_passwordMaskDelayOverride;
+#endif
+
         if (delay > 0)
             m_passwordEchoTimer = startTimer(delay);
     }

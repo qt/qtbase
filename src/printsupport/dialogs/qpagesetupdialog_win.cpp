@@ -58,11 +58,13 @@ class QPageSetupDialogPrivate : public QAbstractPageSetupDialogPrivate
 QPageSetupDialog::QPageSetupDialog(QPrinter *printer, QWidget *parent)
     : QAbstractPageSetupDialog(*(new QPageSetupDialogPrivate), printer, parent)
 {
+    setAttribute(Qt::WA_DontShowOnScreen);
 }
 
 QPageSetupDialog::QPageSetupDialog(QWidget *parent)
     : QAbstractPageSetupDialog(*(new QPageSetupDialogPrivate), 0, parent)
 {
+    setAttribute(Qt::WA_DontShowOnScreen);
 }
 
 int QPageSetupDialog::exec()
@@ -124,7 +126,9 @@ int QPageSetupDialog::exec()
     psd.rtMargin.right  = marginRect.width()  / multiplier;;
     psd.rtMargin.bottom = marginRect.height() / multiplier;;
 
+    QDialog::setVisible(true);
     bool result = PageSetupDlg(&psd);
+    QDialog::setVisible(false);
     if (result) {
         ep->readDevnames(psd.hDevNames);
         ep->readDevmode(psd.hDevMode);

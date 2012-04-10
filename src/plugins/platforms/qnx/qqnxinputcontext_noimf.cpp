@@ -40,25 +40,24 @@
 ****************************************************************************/
 
 #include "qqnxinputcontext_noimf.h"
-#include "qqnxvirtualkeyboard.h"
+#include "qqnxabstractvirtualkeyboard.h"
 
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>
 #include <QtWidgets/QAbstractSpinBox>
 
-QQnxInputContext::QQnxInputContext() :
+QT_BEGIN_NAMESPACE
+
+QQnxInputContext::QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard) :
     QPlatformInputContext(),
     m_inputPanelVisible(false),
-    m_inputPanelLocale(QLocale::c())
+    m_inputPanelLocale(QLocale::c()),
+    m_virtualKeyboard(keyboard)
 {
-    QQnxVirtualKeyboard &keyboard = QQnxVirtualKeyboard::instance();
     connect(&keyboard, SIGNAL(visibilityChanged(bool)), this, SLOT(keyboardVisibilityChanged(bool)));
     connect(&keyboard, SIGNAL(localeChanged(QLocale)), this, SLOT(keyboardLocaleChanged(QLocale)));
     keyboardVisibilityChanged(keyboard.isVisible());
     keyboardLocaleChanged(keyboard.locale());
-
-    QInputMethod *inputMethod = qApp->inputMethod();
-    connect(inputMethod, SIGNAL(inputItemChanged()), this, SLOT(inputItemChanged()));
 }
 
 QQnxInputContext::~QQnxInputContext()
@@ -86,7 +85,7 @@ bool QQnxInputContext::filterEvent( const QEvent *event )
         return false;
 
     if (event->type() == QEvent::CloseSoftwareInputPanel) {
-        QQnxVirtualKeyboard::instance().hideKeyboard();
+        m_virtualKeyboard.hideKeyboard();
 #if defined(QQNXINPUTCONTEXT_DEBUG)
         qDebug() << "QQNX: hiding virtual keyboard";
 #endif
@@ -94,7 +93,7 @@ bool QQnxInputContext::filterEvent( const QEvent *event )
     }
 
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
-        QQnxVirtualKeyboard::instance().showKeyboard();
+        m_virtualKeyboard.showKeyboard();
 #if defined(QQNXINPUTCONTEXT_DEBUG)
         qDebug() << "QQNX: requesting virtual keyboard";
 #endif
@@ -120,7 +119,7 @@ void QQnxInputContext::showInputPanel()
 #if defined(QQNXINPUTCONTEXT_DEBUG)
     qDebug() << Q_FUNC_INFO;
 #endif
-    QQnxVirtualKeyboard::instance().showKeyboard();
+    m_virtualKeyboard.showKeyboard();
 }
 
 void QQnxInputContext::hideInputPanel()
@@ -128,7 +127,7 @@ void QQnxInputContext::hideInputPanel()
 #if defined(QQNXINPUTCONTEXT_DEBUG)
     qDebug() << Q_FUNC_INFO;
 #endif
-    QQnxVirtualKeyboard::instance().hideKeyboard();
+    m_virtualKeyboard.hideKeyboard();
 }
 
 bool QQnxInputContext::isInputPanelVisible() const
@@ -163,25 +162,24 @@ void QQnxInputContext::keyboardLocaleChanged(const QLocale &locale)
     }
 }
 
-void QQnxInputContext::inputItemChanged()
+void QQnxInputContext::setFocusObject(QObject *object)
 {
-    QInputMethod *inputMethod = qApp->inputMethod();
-    QObject *inputItem = inputMethod->inputItem();
-
 #if defined(QQNXINPUTCONTEXT_DEBUG)
-    qDebug() << Q_FUNC_INFO << "input item=" << inputItem;
+    qDebug() << Q_FUNC_INFO << "input item=" << object;
 #endif
 
-    if (!inputItem) {
+    if (!inputMethodAccepted()) {
         if (m_inputPanelVisible)
             hideInputPanel();
     } else {
-        if (qobject_cast<QAbstractSpinBox*>(inputItem)) {
-            QQnxVirtualKeyboard::instance().setKeyboardMode(QQnxVirtualKeyboard::NumPunc);
-        } else {
-            QQnxVirtualKeyboard::instance().setKeyboardMode(QQnxVirtualKeyboard::Default);
-        }
+        if (qobject_cast<QAbstractSpinBox*>(object))
+            m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
+        else
+            m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);
+
         if (!m_inputPanelVisible)
             showInputPanel();
     }
 }
+
+QT_END_NAMESPACE

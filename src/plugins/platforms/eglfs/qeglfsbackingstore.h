@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLWINDOWSURFACE_H
-#define QEGLWINDOWSURFACE_H
+#ifndef QEGLFSBACKINGSTORE_H
+#define QEGLFSBACKINGSTORE_H
 
 #include <QtGui/qplatformbackingstore_qpa.h>
 
@@ -70,4 +70,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QEGLWINDOWSURFACE_H
+#endif // QEGLFSBACKINGSTORE_H

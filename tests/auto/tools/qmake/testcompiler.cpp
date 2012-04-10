@@ -128,7 +128,7 @@ TestCompiler::~TestCompiler()
 
 bool TestCompiler::errorOut()
 {
-    qDebug(qPrintable(testOutput_.join("\n")));
+    qDebug("%s", qPrintable(testOutput_.join(QStringLiteral("\n"))));
     return false;
 }
 

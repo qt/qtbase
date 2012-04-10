@@ -506,6 +506,7 @@ QString QTextLayout::preeditAreaText() const
 
 /*!
     Sets the additional formats supported by the text layout to \a formatList.
+    The formats are applied with preedit area text in place.
 
     \sa additionalFormats(), clearAdditionalFormats()
 */
@@ -2169,7 +2170,8 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
     glyphRun.setFlags(flags);
     glyphRun.setRawFont(font);
 
-    glyphRun.setBoundingRect(QRectF(selectionX.toReal(), minY, selectionWidth.toReal(), height));
+    glyphRun.setBoundingRect(QRectF(selectionX.toReal(), minY - font.ascent(),
+                                    selectionWidth.toReal(), height));
 
     return glyphRun;
 }
@@ -2586,6 +2588,10 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     int pos = *cursorPos;
     int itm;
     const HB_CharAttributes *attributes = eng->attributes();
+    if (!attributes) {
+        *cursorPos = 0;
+        return x.toReal();
+    }
     while (pos < line.from + line.length && !attributes[pos].charStop)
         pos++;
     if (pos == line.from + (int)line.length) {
@@ -2703,6 +2709,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
 
     Converts the x-coordinate \a x, to the nearest matching cursor
     position, depending on the cursor position type, \a cpos.
+    Note that result cursor position includes possible preedit area text.
 
     \sa cursorToX()
 */

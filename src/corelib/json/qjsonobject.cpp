@@ -335,7 +335,7 @@ void QJsonObject::remove(const QString &key)
     detach();
     o->removeItems(index, 1);
     ++d->compactionCounter;
-    if (d->compactionCounter > 32 && d->compactionCounter >= (int)o->length/2)
+    if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
         compact();
 }
 
@@ -361,7 +361,7 @@ QJsonValue QJsonObject::take(const QString &key)
     QJsonPrivate::Entry *e = o->entryAt(index);
     o->removeItems(index, 1);
     ++d->compactionCounter;
-    if (d->compactionCounter > 32 && d->compactionCounter >= (int)o->length/2)
+    if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
         compact();
 
     return QJsonValue(d, o, e->value);
@@ -432,7 +432,7 @@ QJsonObject::iterator QJsonObject::erase(QJsonObject::iterator it)
 
     o->removeItems(index, 1);
     ++d->compactionCounter;
-    if (d->compactionCounter > 32 && d->compactionCounter >= (int)o->length/2)
+    if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
         compact();
 
     // iterator hasn't changed

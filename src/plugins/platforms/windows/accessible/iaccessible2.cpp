@@ -169,7 +169,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryInterface(REFIID id, LPVOI
 {
     HRESULT hr = QWindowsMsaaAccessible::QueryInterface(id, iface);
     if (!SUCCEEDED(hr)) {
-        if (id == IID_IAccessible2) {
+        if (id == IID_IServiceProvider) {
+            *iface = (IServiceProvider*)this;
+        } else if (id == IID_IAccessible2) {
             *iface = (IAccessible2*)this;
         } else if (id == IID_IAccessibleAction) {
             if (accessible->actionInterface())

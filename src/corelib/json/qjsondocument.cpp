@@ -224,23 +224,26 @@ const char *QJsonDocument::rawData(int *size) const
  */
 QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidation validation)
 {
+    if (data.size() < (int)(sizeof(QJsonPrivate::Header) + sizeof(QJsonPrivate::Base)))
+        return QJsonDocument();
+
     QJsonPrivate::Header h;
     memcpy(&h, data.constData(), sizeof(QJsonPrivate::Header));
     QJsonPrivate::Base root;
     memcpy(&root, data.constData() + sizeof(QJsonPrivate::Header), sizeof(QJsonPrivate::Base));
 
     // do basic checks here, so we don't try to allocate more memory than we can.
-    if (data.size() < (int)(sizeof(QJsonPrivate::Header) + sizeof(QJsonPrivate::Base)) ||
-        h.tag != QJsonDocument::BinaryFormatTag || h.version != 1u ||
+    if (h.tag != QJsonDocument::BinaryFormatTag || h.version != 1u ||
         sizeof(QJsonPrivate::Header) + root.size > (uint)data.size())
         return QJsonDocument();
 
-    char *raw = (char *)malloc(data.size());
+    const uint size = sizeof(QJsonPrivate::Header) + root.size;
+    char *raw = (char *)malloc(size);
     if (!raw)
         return QJsonDocument();
 
-    memcpy(raw, data.constData(), data.size());
-    QJsonPrivate::Data *d = new QJsonPrivate::Data(raw, data.size());
+    memcpy(raw, data.constData(), size);
+    QJsonPrivate::Data *d = new QJsonPrivate::Data(raw, size);
 
     if (validation != BypassValidation && !d->valid()) {
         delete d;

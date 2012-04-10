@@ -370,8 +370,6 @@ QListView::LayoutMode QListView::layoutMode() const
 
     \sa viewMode
 */
-// ### Qt5: Use same semantic as layouts (spacing is the size of space
-// *between* items)
 void QListView::setSpacing(int space)
 {
     Q_D(QListView);

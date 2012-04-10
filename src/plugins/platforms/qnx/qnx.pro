@@ -20,6 +20,7 @@ QT += opengl opengl-private platformsupport platformsupport-private widgets-priv
 #DEFINES += QQNXRASTERBACKINGSTORE_DEBUG
 #DEFINES += QQNXROOTWINDOW_DEBUG
 #DEFINES += QQNXSCREEN_DEBUG
+#DEFINES += QQNXSCREENEVENT_DEBUG
 #DEFINES += QQNXVIRTUALKEYBOARD_DEBUG
 #DEFINES += QQNXWINDOW_DEBUG
 
@@ -35,8 +36,10 @@ SOURCES =   main.cpp \
             qqnxrasterbackingstore.cpp \
             qqnxvirtualkeyboard.cpp \
             qqnxclipboard.cpp \
-            qqnxrootwindow.cpp
-
+            qqnxrootwindow.cpp \
+            qqnxscreeneventhandler.cpp \
+            qqnxabstractvirtualkeyboard.cpp \
+            qqnxnativeinterface.cpp
 
 HEADERS =   qqnxbuffer.h \
             qqnxeventthread.h \
@@ -50,7 +53,10 @@ HEADERS =   qqnxbuffer.h \
             qqnxrasterbackingstore.h \
             qqnxvirtualkeyboard.h \
             qqnxclipboard.h \
-            qqnxrootwindow.h
+            qqnxrootwindow.h \
+            qqnxscreeneventhandler.h \
+            qqnxabstractvirtualkeyboard.h \
+            qqnxnativeinterface.h
 
 CONFIG(blackberry) {
     SOURCES += qqnxservices.cpp

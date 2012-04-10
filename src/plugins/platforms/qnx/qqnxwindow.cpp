@@ -121,11 +121,7 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
         qFatal("QQnxWindow: failed to set window swap interval, errno=%d", errno);
     }
 
-    // Assign the window to the primary display (this is the default specified by screen).
-    setScreen(QQnxScreen::primaryDisplay());
-
-    // Add the window to the root of the hierarchy
-    QQnxScreen::addWindow(this);
+    setScreen(static_cast<QQnxScreen *>(window->screen()->handle()));
 
     // Add window to plugin's window mapper
     QQnxIntegration::addWindow(m_window, window);
@@ -141,7 +137,7 @@ QQnxWindow::~QQnxWindow()
 
     // Remove from parent's Hierarchy.
     removeFromParent();
-    QQnxScreen::updateHierarchy();
+    m_screen->updateHierarchy();
 
     // We shouldn't allow this case unless QT allows it. Does it? Or should we send the
     // handleCloseEvent on all children when this window is deleted?
@@ -196,12 +192,12 @@ void QQnxWindow::setGeometry(const QRect &rect)
 
         QList<QQnxWindow*>::iterator it;
         for (it = m_childWindows.begin(); it != m_childWindows.end(); it++) {
-            (*it)->offset(offset);
+            (*it)->setOffset(offset);
         }
     }
 }
 
-void QQnxWindow::offset(const QPoint &offset)
+void QQnxWindow::setOffset(const QPoint &offset)
 {
 #if defined(QQNXWINDOW_DEBUG)
     qDebug() << Q_FUNC_INFO << "window =" << window();
@@ -225,7 +221,7 @@ void QQnxWindow::offset(const QPoint &offset)
 
     QList<QQnxWindow*>::iterator it;
     for (it = m_childWindows.begin(); it != m_childWindows.end(); it++) {
-        (*it)->offset(offset);
+        (*it)->setOffset(offset);
     }
 }
 
@@ -416,6 +412,9 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
     if (m_screen == platformScreen)
         return;
 
+    if (m_screen)
+        m_screen->removeWindow(this);
+    platformScreen->addWindow(this);
     m_screen = platformScreen;
 
     // Move window to proper screen/display
@@ -441,7 +440,7 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
             (*it)->setScreen(platformScreen);
     }
 
-    QQnxScreen::updateHierarchy();
+    m_screen->updateHierarchy();
 }
 
 void QQnxWindow::removeFromParent()
@@ -456,7 +455,7 @@ void QQnxWindow::removeFromParent()
         else
             qFatal("QQnxWindow: Window Hierarchy broken; window has parent, but parent hasn't got child.");
     } else {
-        QQnxScreen::removeWindow(this);
+        m_screen->removeWindow(this);
     }
 }
 
@@ -484,10 +483,10 @@ void QQnxWindow::setParent(const QPlatformWindow *window)
 
         m_parentWindow->m_childWindows.push_back(this);
     } else {
-        QQnxScreen::addWindow(this);
+        m_screen->addWindow(this);
     }
 
-    QQnxScreen::updateHierarchy();
+    m_screen->updateHierarchy();
 }
 
 void QQnxWindow::raise()
@@ -501,10 +500,10 @@ void QQnxWindow::raise()
         removeFromParent();
         oldParent->m_childWindows.push_back(this);
     } else {
-        QQnxScreen::raiseWindow(this);
+        m_screen->raiseWindow(this);
     }
 
-    QQnxScreen::updateHierarchy();
+    m_screen->updateHierarchy();
 }
 
 void QQnxWindow::lower()
@@ -518,10 +517,10 @@ void QQnxWindow::lower()
         removeFromParent();
         oldParent->m_childWindows.push_front(this);
     } else {
-        QQnxScreen::lowerWindow(this);
+        m_screen->lowerWindow(this);
     }
 
-    QQnxScreen::updateHierarchy();
+    m_screen->updateHierarchy();
 }
 
 void QQnxWindow::requestActivateWindow()
@@ -551,6 +550,20 @@ void QQnxWindow::setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContext)
     // This function does not take ownership of the platform gl context.
     // It is owned by the frontend QOpenGLContext
     m_platformOpenGLContext = platformOpenGLContext;
+}
+
+QQnxWindow *QQnxWindow::findWindow(screen_window_t windowHandle)
+{
+    if (m_window == windowHandle)
+        return this;
+
+    Q_FOREACH (QQnxWindow *window, m_childWindows) {
+        QQnxWindow * const result = window->findWindow(windowHandle);
+        if (result)
+            return result;
+    }
+
+    return 0;
 }
 
 void QQnxWindow::updateZorder(int &topZorder)

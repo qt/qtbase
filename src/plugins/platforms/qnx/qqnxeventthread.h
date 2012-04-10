@@ -44,45 +44,29 @@
 
 #include <QtCore/QThread>
 
-#include <QtGui/QPlatformScreen>
-#include <QtGui/QWindowSystemInterface>
-
 #include <screen/screen.h>
 
 QT_BEGIN_NAMESPACE
 
+class QQnxScreenEventHandler;
+
 class QQnxEventThread : public QThread
 {
 public:
-    QQnxEventThread(screen_context_t context, QPlatformScreen& screen);
+    QQnxEventThread(screen_context_t context, QQnxScreenEventHandler *screenEventHandler);
     virtual ~QQnxEventThread();
 
     static void injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
 
 protected:
-    virtual void run();
+    void run();
 
 private:
-    enum {
-        MaximumTouchPoints = 10
-    };
-
     void shutdown();
-    void dispatchEvent(screen_event_t event);
-    void handleKeyboardEvent(screen_event_t event);
-    void handlePointerEvent(screen_event_t event);
-    void handleTouchEvent(screen_event_t event, int type);
-    void handleCloseEvent(screen_event_t event);
 
     screen_context_t m_screenContext;
-    QPlatformScreen& m_platformScreen;
+    QQnxScreenEventHandler *m_screenEventHandler;
     bool m_quit;
-    QPoint m_lastGlobalMousePoint;
-    QPoint m_lastLocalMousePoint;
-    Qt::MouseButtons m_lastButtonState;
-    screen_window_t m_lastMouseWindow;
-    QTouchDevice *m_touchDevice;
-    QWindowSystemInterface::TouchPoint m_touchPoints[MaximumTouchPoints];
 };
 
 QT_END_NAMESPACE

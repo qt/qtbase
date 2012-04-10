@@ -63,6 +63,7 @@ public:
     int cursorFlashTime() const;
     bool showIsFullScreen() const;
     int passwordMaskDelay() const;
+    qreal fontSmoothingGamma() const;
 
 private:
     friend class QGuiApplication;

@@ -48,6 +48,7 @@
 
 #include <QtCore/QDebug>
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QScreen>
 
 QT_BEGIN_NAMESPACE
 
@@ -103,7 +104,7 @@ QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
     // Check if all channels are don't care
     if (alphaSize == -1 && redSize == -1 && greenSize == -1 && blueSize == -1) {
         // Set colour channels based on depth of window's screen
-        QQnxScreen *screen = static_cast<QQnxScreen*>(QQnxScreen::screens().first());
+        QQnxScreen *screen = static_cast<QQnxScreen*>(glContext->screen()->handle());
         int depth = screen->depth();
         if (depth == 32) {
             // SCREEN_FORMAT_RGBA8888

@@ -97,6 +97,7 @@ void QSqlTableModelPrivate::initRecordAndPrimaryIndex()
 {
     rec = db.record(tableName);
     primaryIndex = db.primaryIndex(tableName);
+    initColOffsets(rec.count());
 }
 
 void QSqlTableModelPrivate::clear()
@@ -332,7 +333,6 @@ void QSqlTableModel::setTable(const QString &tableName)
     clear();
     d->tableName = tableName;
     d->initRecordAndPrimaryIndex();
-    d->initColOffsets(d->rec.count());
 
     if (d->rec.count() == 0)
         d->error = QSqlError(QLatin1String("Unable to find table ") + d->tableName, QString(),
