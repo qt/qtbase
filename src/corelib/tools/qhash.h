@@ -95,9 +95,9 @@ Q_CORE_EXPORT uint qt_hash(const QString &key);
 #pragma warning( push )
 #pragma warning( disable : 4311 ) // disable pointer truncation warning
 #endif
-template <class T> inline uint qHash(const T *key)
+template <class T> inline uint qHash(const T *key, uint seed = 0)
 {
-    return qHash(reinterpret_cast<quintptr>(key));
+    return qHash(reinterpret_cast<quintptr>(key), seed);
 }
 #if defined(Q_CC_MSVC)
 #pragma warning( pop )
