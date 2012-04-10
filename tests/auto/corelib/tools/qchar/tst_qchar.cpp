@@ -523,6 +523,9 @@ void tst_QChar::digitValue()
     QVERIFY(QChar::digitValue((ushort)0x1040) == 0);
     QVERIFY(QChar::digitValue((uint)0x1049) == 9);
     QVERIFY(QChar::digitValue((uint)0x1040) == 0);
+
+    QVERIFY(QChar::digitValue((ushort)0xd800) == -1);
+    QVERIFY(QChar::digitValue((uint)UNICODE_LAST_CODEPOINT + 1) == -1);
 }
 
 void tst_QChar::decomposition()

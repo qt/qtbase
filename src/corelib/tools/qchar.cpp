@@ -717,7 +717,7 @@ int QChar::digitValue(ushort ucs2)
 int QChar::digitValue(uint ucs4)
 {
     if (ucs4 > UNICODE_LAST_CODEPOINT)
-        return 0;
+        return -1;
     return qGetProp(ucs4)->digitValue;
 }
 
