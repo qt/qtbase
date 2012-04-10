@@ -45,8 +45,12 @@ defineTest(qtAddModule) {
     CONFIG += $$eval(QT.$${1}.CONFIG)
     DEFINES += $$eval(QT.$${1}.DEFINES)
 
-    INCLUDEPATH -= $$MODULE_INCLUDES
-    INCLUDEPATH = $$MODULE_INCLUDES $$INCLUDEPATH
+    unix {
+        MODULE_INCLUDES -= /usr/include /usr/local/include
+        MODULE_LIBS -= /usr/lib /usr/local/lib
+    }
+
+    INCLUDEPATH *= $$MODULE_INCLUDES
     isEqual(2, UsePrivate) { # Tests function parameter 2 ($$2) being equal to 'UsePrivate'
         # This adds both
         #     <module privates include path>/
@@ -54,8 +58,7 @@ defineTest(qtAddModule) {
         # since we have code using both #include <QtCore/private/foo> and #include <private/foo>
         # Both need to be supported with the new private includes structure
         MODULE_INCLUDES_PRIVATES = $$eval(QT.$${1}.private_includes)
-        INCLUDEPATH -= $$MODULE_INCLUDES_PRIVATES $$MODULE_INCLUDES_PRIVATES/$$MODULE_NAME
-        INCLUDEPATH = $$MODULE_INCLUDES_PRIVATES $$MODULE_INCLUDES_PRIVATES/$$MODULE_NAME $$INCLUDEPATH
+        INCLUDEPATH += $$MODULE_INCLUDES_PRIVATES $$MODULE_INCLUDES_PRIVATES/$$MODULE_NAME
     }
 
     unset(LINKAGE)
@@ -63,20 +66,16 @@ defineTest(qtAddModule) {
         !contains(MODULE_CONFIG,staticlib):CONFIG(qt_framework, qt_framework|qt_no_framework) { #forced
           QMAKE_FRAMEWORKPATH *= $${MODULE_LIBS}
           FRAMEWORK_INCLUDE = $$MODULE_INCLUDES.framework/Headers
-          !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE) {
-               INCLUDEPATH -= $$FRAMEWORK_INCLUDE
-               INCLUDEPATH = $$FRAMEWORK_INCLUDE $$INCLUDEPATH
-           }
+          !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE): \
+               INCLUDEPATH *= $$FRAMEWORK_INCLUDE
            LINKAGE = -framework $${MODULE_NAME}$${QT_LIBINFIX}
         } else:!qt_no_framework { #detection
            for(frmwrk_dir, $$list($$MODULE_LIBS $$QMAKE_LIBDIR $$(DYLD_FRAMEWORK_PATH) /Library/Frameworks)) {
               exists($${frmwrk_dir}/$${MODULE_NAME}.framework) {
                 QMAKE_FRAMEWORKPATH *= $${frmwrk_dir}
                 FRAMEWORK_INCLUDE = $$frmwrk_dir/$${MODULE_NAME}.framework/Headers
-                !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE) {
-                    INCLUDEPATH -= $$FRAMEWORK_INCLUDE
-                    INCLUDEPATH = $$FRAMEWORK_INCLUDE $$INCLUDEPATH
-                }
+                !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE): \
+                    INCLUDEPATH *= $$FRAMEWORK_INCLUDE
                 LINKAGE = -framework $${MODULE_NAME}
                 break()
               }
