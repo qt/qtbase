@@ -46,7 +46,9 @@
 #include <QGuiApplication>
 #include <QDebug>
 #include <QtCore/private/qcore_unix_p.h>
+#ifndef QT_NO_LIBUDEV
 #include <QtPlatformSupport/private/qudevicehelper_p.h>
+#endif // QT_NO_LIBUDEV
 #include <linux/input.h>
 
 #ifdef USE_MTDEV
@@ -147,6 +149,7 @@ QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
 
     QString dev;
 
+#ifndef QT_NO_LIBUDEV
     // try to let udev scan for already connected devices
     QScopedPointer<QUDeviceHelper> udeviceHelper(QUDeviceHelper::createUDeviceHelper(QUDeviceHelper::UDev_Touchpad | QUDeviceHelper::UDev_Touchscreen, this));
     if (udeviceHelper) {
@@ -156,6 +159,7 @@ QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
         if (devices.size() > 0)
             dev = devices[0];
     }
+#endif // QT_NO_LIBUDEV
 
     if (dev.isEmpty())
         dev = QLatin1String("/dev/input/event0");

@@ -48,7 +48,6 @@
 
 #include <qplatformdefs.h>
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
-#include <QtPlatformSupport/private/qudevicehelper_p.h>
 
 #include <errno.h>
 
