@@ -1526,10 +1526,14 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
 {
     QString &s = *str;
     const int l = s.length()-1;
+
+    uint u1, u2;
+    ushort c1, c2;
+
     int pos = from;
     while (pos < l) {
         int p2 = pos+1;
-        uint u1 = s.at(pos).unicode();
+        u1 = s.at(pos).unicode();
         if (QChar(u1).isHighSurrogate()) {
             ushort low = s.at(p2).unicode();
             if (QChar(low).isLowSurrogate()) {
@@ -1539,7 +1543,10 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
                 ++p2;
             }
         }
-        uint u2 = s.at(p2).unicode();
+        c1 = 0;
+
+    advance:
+        u2 = s.at(p2).unicode();
         if (QChar(u2).isHighSurrogate() && p2 < l) {
             ushort low = s.at(p2+1).unicode();
             if (QChar(low).isLowSurrogate()) {
@@ -1548,7 +1555,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
             }
         }
 
-        ushort c2 = 0;
+        c2 = 0;
         {
             const QUnicodeTables::Properties *p = qGetProp(u2);
             if (p->unicodeVersion <= version && p->unicodeVersion != QChar::Unicode_Unassigned)
@@ -1559,8 +1566,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
             continue;
         }
 
-        ushort c1 = 0;
-        {
+        if (c1 == 0) {
             const QUnicodeTables::Properties *p = qGetProp(u1);
             if (p->unicodeVersion <= version && p->unicodeVersion != QChar::Unicode_Unassigned)
                 c1 = p->combiningClass;
@@ -1590,6 +1596,16 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
             ++pos;
             if (QChar::requiresSurrogates(u1))
                 ++pos;
+
+            u1 = u2;
+            c1 = c2; // != 0
+            p2 = pos + 1;
+            if (QChar::requiresSurrogates(u1))
+                ++p2;
+            if (p2 > l)
+                break;
+
+            goto advance;
         }
     }
 }
