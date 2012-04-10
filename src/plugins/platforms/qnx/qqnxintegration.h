@@ -54,6 +54,7 @@ class QQnxEventThread;
 class QQnxInputContext;
 class QQnxNativeInterface;
 class QQnxNavigatorEventHandler;
+class QQnxNavigatorEventNotifier;
 class QQnxAbstractVirtualKeyboard;
 class QQnxWindow;
 class QQnxServices;
@@ -112,6 +113,7 @@ private:
     screen_context_t m_screenContext;
     QQnxEventThread *m_eventThread;
     QQnxNavigatorEventHandler *m_navigatorEventHandler;
+    QQnxNavigatorEventNotifier *m_navigatorEventNotifier;
     QQnxAbstractVirtualKeyboard *m_virtualKeyboard;
     QQnxInputContext *m_inputContext;
     QPlatformFontDatabase *m_fontDatabase;

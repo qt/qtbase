@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2012 Research In Motion
+** Copyright (C) 2011 - 2012 Research In Motion
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,28 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QQNXNAVIGATOREVENTHANDLER_H
-#define QQNXNAVIGATOREVENTHANDLER_H
+#ifndef QQNXNAVIGATOREVENTNOTIFIER_H
+#define QQNXNAVIGATOREVENTNOTIFIER_H
 
 #include <QObject>
 
 QT_BEGIN_NAMESPACE
 
-class QQnxNavigatorEventHandler : public QObject
+class QQnxNavigatorEventHandler;
+class QSocketNotifier;
+
+class QQnxNavigatorEventNotifier : public QObject
 {
     Q_OBJECT
 public:
-    explicit QQnxNavigatorEventHandler(QObject *parent = 0);
+    explicit QQnxNavigatorEventNotifier(QQnxNavigatorEventHandler *eventHandler, QObject *parent = 0);
+    ~QQnxNavigatorEventNotifier();
 
-    bool handleOrientationCheck(int angle);
-    void handleOrientationChange(int angle);
-    void handleSwipeDown();
-    void handleExit();
+public Q_SLOTS:
+    void start();
 
-Q_SIGNALS:
-    void rotationChanged(int angle);
+private Q_SLOTS:
+    void readData();
+
+private:
+    void parsePPS(const QByteArray &ppsData, QByteArray &msg, QByteArray &dat, QByteArray &id);
+    void replyPPS(const QByteArray &res, const QByteArray &id, const QByteArray &dat);
+    void handleMessage(const QByteArray &msg, const QByteArray &dat, const QByteArray &id);
+
+    int m_fd;
+    QSocketNotifier *m_readNotifier;
+    QQnxNavigatorEventHandler *m_eventHandler;
 };
 
 QT_END_NAMESPACE
 
-#endif // QQNXNAVIGATOREVENTHANDLER_H
+#endif // QQNXNAVIGATOREVENTNOTIFIER_H
