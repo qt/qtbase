@@ -122,10 +122,10 @@ public:
     inline void setTabStop(qreal tabStop);
     inline qreal tabStop() const { return tab; }
 
-    void setTabArray(QList<qreal> tabStops);
+    void setTabArray(const QList<qreal> &tabStops);
     QList<qreal> tabArray() const;
 
-    void setTabs(QList<Tab> tabStops);
+    void setTabs(const QList<Tab> &tabStops);
     QList<Tab> tabs() const;
 
     void setUseDesignMetrics(bool b) { design = b; }
