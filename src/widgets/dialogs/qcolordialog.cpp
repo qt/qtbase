@@ -1247,7 +1247,7 @@ inline bool QColorDialogPrivate::isAlphaVisible() const { return cs->isAlphaVisi
 
 QColor QColorDialogPrivate::currentQColor() const
 {
-    if (nativeDialogInUse)
+    if (!options->testOption(QColorDialogOptions::DontUseNativeDialog) && nativeDialogInUse)
         return platformColorDialogHelper()->currentColor_sys();
     return cs->currentQColor();
 }
@@ -1706,8 +1706,7 @@ void QColorDialog::setCurrentColor(const QColor &color)
     d->selectColor(color);
     d->setCurrentAlpha(color.alpha());
 
-    // ### fixme: Call helper
-    if (d->nativeDialogInUse)
+    if (!testOption(QColorDialog::DontUseNativeDialog) && d->nativeDialogInUse)
         d->platformColorDialogHelper()->setCurrentColor_sys(color);
 }
 

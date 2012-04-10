@@ -171,11 +171,6 @@ void QFontDialogPrivate::init()
 {
     Q_Q(QFontDialog);
 
-#ifdef Q_WS_MAC
-    nativeDialogInUse = false;
-    delegate = 0;
-#endif
-
     q->setSizeGripEnabled(true);
     q->setWindowTitle(QFontDialog::tr("Select Font"));
 
@@ -805,8 +800,10 @@ void QFontDialog::setCurrentFont(const QFont &font)
     d->strikeout->setChecked(font.strikeOut());
     d->underline->setChecked(font.underline());
     d->updateFamilies();
-    if (QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
-        helper->setCurrentFont_sys(font);
+    if (d->canBeNativeDialog()) {
+        if (QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
+            helper->setCurrentFont_sys(font);
+    }
 
 #ifdef Q_WS_MAC
     if (d->delegate)
@@ -824,8 +821,10 @@ void QFontDialog::setCurrentFont(const QFont &font)
 QFont QFontDialog::currentFont() const
 {
     Q_D(const QFontDialog);
-    if (const QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
-        return helper->currentFont_sys();
+    if (d->canBeNativeDialog()) {
+        if (const QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
+            return helper->currentFont_sys();
+    }
     return d->sampleEdit->font();
 }
 
@@ -1013,9 +1012,9 @@ void QFontDialog::done(int result)
     d->memberToDisconnectOnClose.clear();
 }
 
-bool QFontDialogPrivate::canBeNativeDialog()
+bool QFontDialogPrivate::canBeNativeDialog() const
 {
-    Q_Q(QFontDialog);
+    Q_Q(const QFontDialog);
     if (nativeDialogInUse)
         return true;
     if (q->testAttribute(Qt::WA_DontShowOnScreen))

@@ -160,12 +160,9 @@ class FriendlyFontDialog : public QFontDialog
 
 void tst_QFontDialog::task256466_wrongStyle()
 {
-#ifdef Q_OS_MAC
-    QSKIP("Test crashes on Mac OS X, see QTBUG-24321");
-#endif
-
     QFontDatabase fdb;
     FriendlyFontDialog dialog;
+    dialog.setOption(QFontDialog::DontUseNativeDialog);
     QListView *familyList = reinterpret_cast<QListView*>(dialog.d_func()->familyList);
     QListView *styleList = reinterpret_cast<QListView*>(dialog.d_func()->styleList);
     QListView *sizeList = reinterpret_cast<QListView*>(dialog.d_func()->sizeList);
