@@ -50,18 +50,11 @@
 #include "qchar.h"
 
 #include "qdatastream.h"
-#include "qtextcodec.h"
 
 #include "qunicodetables_p.h"
 #include "qunicodetables.cpp"
 
 QT_BEGIN_NAMESPACE
-
-#ifndef QT_NO_CODEC_FOR_C_STRINGS
-#  ifdef QT_NO_TEXTCODEC
-#    define QT_NO_CODEC_FOR_C_STRINGS
-#  endif
-#endif
 
 #define FLAG(x) (1 << (x))
 
@@ -71,8 +64,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup string-processing
 
-    This class is only useful to avoid the codec for C strings business
-    in the QChar(ch) constructor. You can avoid it by writing QChar(ch, 0).
+    This class is only useful to construct a QChar with 8-bit character.
 
     \sa QChar, QLatin1String, QString
 */
