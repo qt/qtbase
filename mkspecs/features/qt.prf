@@ -173,12 +173,6 @@ for(QTLIB, QT) {
     message("This is not a bug, but a result of using Qt internals. You have been warned!")
 }
 
-qt_compat {
-   !qt_compat_no_warning:QTDIR_build:warning(***USE of COMPAT inside of QTDIR!**) #just for us
-   INCLUDEPATH *= $$QT.core.includes
-   DEFINES *= QT_COMPAT
-}
-
 wince*:static:gui {
    QTLIB += qmenu_wce.res
 }
