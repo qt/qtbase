@@ -129,7 +129,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QFileSystemModel::rmdir(const QModelIndex &index) const
+    \fn bool QFileSystemModel::rmdir(const QModelIndex &index)
 
     Removes the directory corresponding to the model item \a index in the
     file system model and \b{deletes the corresponding directory from the
@@ -185,7 +185,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QFileSystemModel::remove(const QModelIndex &index) const
+    \fn bool QFileSystemModel::remove(const QModelIndex &index)
 
     Removes the model item \a index from the file system model and \b{deletes the
     corresponding file from the file system}, returning true if successful. If the
@@ -197,7 +197,7 @@ QT_BEGIN_NAMESPACE
     \sa rmdir()
 */
 
-bool QFileSystemModel::remove(const QModelIndex &aindex) const
+bool QFileSystemModel::remove(const QModelIndex &aindex)
 {
     //### TODO optim
     QString path = filePath(aindex);
@@ -1653,7 +1653,7 @@ bool QFileSystemModel::event(QEvent *event)
     return QAbstractItemModel::event(event);
 }
 
-bool QFileSystemModel::rmdir(const QModelIndex &aindex) const
+bool QFileSystemModel::rmdir(const QModelIndex &aindex)
 {
     QString path = filePath(aindex);
     QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
@@ -1985,8 +1985,7 @@ bool QFileSystemModelPrivate::filtersAcceptsNode(const QFileSystemNode *node) co
     const bool hideDot           = (filters & QDir::NoDot);
     const bool hideDotDot        = (filters & QDir::NoDotDot);
 
-    // Note that we match the behavior of entryList and not QFileInfo on this and this
-    // incompatibility won't be fixed until Qt 5 at least
+    // Note that we match the behavior of entryList and not QFileInfo on this.
     bool isDot    = (node->fileName == QLatin1String("."));
     bool isDotDot = (node->fileName == QLatin1String(".."));
     if (   (hideHidden && !(isDot || isDotDot) && node->isHidden())
