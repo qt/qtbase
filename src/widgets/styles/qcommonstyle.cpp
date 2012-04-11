@@ -4444,6 +4444,9 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_ScrollView_ScrollBarSpacing:
         ret = 2 * proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget);
         break;
+    case PM_ScrollView_ScrollBarOverlap:
+        ret = 0;
+        break;
     case PM_SubMenuOverlap:
         ret = -proxy()->pixelMetric(QStyle::PM_MenuPanelWidth, opt, widget);
         break;

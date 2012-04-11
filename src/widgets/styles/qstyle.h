@@ -553,6 +553,7 @@ public:
         PM_TabCloseIndicatorHeight,
 
         PM_ScrollView_ScrollBarSpacing,
+        PM_ScrollView_ScrollBarOverlap,
         PM_SubMenuOverlap,
 
         // do not add any values below/greater than this

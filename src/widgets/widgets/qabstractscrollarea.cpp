@@ -52,6 +52,7 @@
 #include "qboxlayout.h"
 #include "qpainter.h"
 #include "qmargins.h"
+#include "qheaderview.h"
 
 #include <QDebug>
 
@@ -327,6 +328,11 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     bool needv = (vbarpolicy == Qt::ScrollBarAlwaysOn
                   || (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
 
+    QStyleOption opt(0);
+    opt.init(q);
+    const int scrollOverlap = q->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarOverlap,
+                                                      &opt, q);
+
 #ifdef Q_WS_MAC
     QWidget * const window = q->window();
 
@@ -365,8 +371,6 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     const QSize extSize(vsbExt, hsbExt);
 
     const QRect widgetRect = q->rect();
-    QStyleOption opt(0);
-    opt.init(q);
 
     const bool hasCornerWidget = (cornerWidget != 0);
 
@@ -394,7 +398,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     }
 #endif
 
-    QPoint cornerOffset(needv ? vsbExt : 0, needh ? hsbExt : 0);
+    QPoint cornerOffset((needv && scrollOverlap == 0) ? vsbExt : 0, (needh && scrollOverlap == 0) ? hsbExt : 0);
     QRect controlsRect;
     QRect viewportRect;
 
@@ -403,7 +407,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     if ((frameStyle != QFrame::NoFrame) &&
         q->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents, &opt, q)) {
         controlsRect = widgetRect;
-        const int extra = q->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarSpacing, &opt, q);
+        const int extra = scrollOverlap;
         const QPoint cornerExtra(needv ? extra : 0, needh ? extra : 0);
         QRect frameRect = widgetRect;
         frameRect.adjust(0, 0, -cornerOffset.x() - cornerExtra.x(), -cornerOffset.y() - cornerExtra.y());
@@ -418,9 +422,11 @@ void QAbstractScrollAreaPrivate::layoutChildren()
         viewportRect = QRect(controlsRect.topLeft(), controlsRect.bottomRight() - cornerOffset);
     }
 
+    cornerOffset = QPoint(needv ? vsbExt : 0, needh ? hsbExt : 0);
+
     // If we have a corner widget and are only showing one scroll bar, we need to move it
     // to make room for the corner widget.
-    if (hasCornerWidget && (needv || needh))
+    if (hasCornerWidget && (needv || needh) && scrollOverlap == 0)
         cornerOffset =  extPoint;
 
 #ifdef Q_WS_MAC
@@ -436,7 +442,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     // Some styles paints the corner if both scorllbars are showing and there is
     // no corner widget. Also, on the Mac we paint if there is a native
     // (transparent) sizegrip in the area where a corner widget would be.
-    if ((needv && needh && hasCornerWidget == false)
+    if ((needv && needh && hasCornerWidget == false && scrollOverlap == 0)
         || ((needv || needh) 
 #ifdef Q_WS_MAC
         && hasMacSizeGrip
@@ -455,8 +461,24 @@ void QAbstractScrollAreaPrivate::layoutChildren()
         reverseCornerPaintingRect = QRect();
 #endif
 
+    // move the scrollbars away from top/left headers
+    int vHeaderRight = 0;
+    int hHeaderBottom = 0;
+    if (scrollOverlap > 0 && (needv || needh)) {
+        const QList<QHeaderView *> headers = q->findChildren<QHeaderView*>();
+        if (headers.count() <= 2) {
+            Q_FOREACH (const QHeaderView *header, headers) {
+                const QRect geo = header->geometry();
+                if (header->orientation() == Qt::Vertical && header->isVisible() && QStyle::visualRect(opt.direction, opt.rect, geo).left() <= opt.rect.width() / 2)
+                    vHeaderRight = QStyle::visualRect(opt.direction, opt.rect, geo).right();
+                else if (header->orientation() == Qt::Horizontal && header->isVisible() && geo.top() <= q->frameWidth())
+                    hHeaderBottom = geo.bottom();
+             }
+         }
+    }
+
     if (needh) {
-        QRect horizontalScrollBarRect(QPoint(controlsRect.left(), cornerPoint.y()), QPoint(cornerPoint.x() - 1, controlsRect.bottom()));
+        QRect horizontalScrollBarRect(QPoint(controlsRect.left() + vHeaderRight, cornerPoint.y()), QPoint(cornerPoint.x() - 1, controlsRect.bottom()));
 #ifdef Q_WS_MAC
         if (hasMacReverseSizeGrip)
             horizontalScrollBarRect.adjust(vsbExt, 0, 0, 0);
@@ -466,7 +488,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     }
 
     if (needv) {
-        const QRect verticalScrollBarRect  (QPoint(cornerPoint.x(), controlsRect.top()),  QPoint(controlsRect.right(), cornerPoint.y() - 1));
+        const QRect verticalScrollBarRect  (QPoint(cornerPoint.x(), controlsRect.top() + hHeaderBottom),  QPoint(controlsRect.right(), cornerPoint.y() - 1));
         scrollBarContainers[Qt::Vertical]->setGeometry(QStyle::visualRect(opt.direction, opt.rect, verticalScrollBarRect));
         scrollBarContainers[Qt::Vertical]->raise();
     }

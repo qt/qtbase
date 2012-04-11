@@ -1497,6 +1497,8 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value PM_ScrollView_ScrollBarSpacing  Distance between frame and scrollbar
                                                 with SH_ScrollView_FrameOnlyAroundContents set.
+    \value PM_ScrollView_ScrollBarOverlap  Overlap between scroll bars and scroll content
+
     \value PM_SubMenuOverlap The horizontal overlap between a submenu and its parent.
 
 

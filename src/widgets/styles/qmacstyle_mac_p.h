@@ -155,13 +155,14 @@ public:
     static const int BevelButtonW;
     static const int BevelButtonH;
     static const int PushButtonContentPadding;
-
+    static const qreal ScrollBarFadeOutDuration;
+    static const qreal ScrollBarFadeOutDelay;
 
     // Stuff from QAquaAnimate:
     bool addWidget(QWidget *);
     void removeWidget(QWidget *);
 
-    enum Animates { AquaPushButton, AquaProgressBar, AquaListViewItemOpen };
+    enum Animates { AquaPushButton, AquaProgressBar, AquaListViewItemOpen, AquaScrollBar };
     bool animatable(Animates, const QWidget *) const;
     void stopAnimate(Animates, QWidget *);
     void startAnimate(Animates, QWidget *);
@@ -210,6 +211,28 @@ public:
     QPointer<QPushButton> defaultButton; //default push buttons
     int timerID;
     QList<QPointer<QWidget> > progressBars; //existing progress bars that need animation
+    QList<QPointer<QWidget> > scrollBars; //existing scroll bars that need animation
+
+    struct OverlayScrollBarInfo {
+        OverlayScrollBarInfo()
+            : lastValue(-1),
+              lastMinimum(-1),
+              lastMaximum(-1),
+              lastUpdate(QDateTime::currentDateTime()),
+              hovered(false),
+              lastHovered(QDateTime::fromTime_t(0)),
+              cleared(false)
+        {}
+        int lastValue;
+        int lastMinimum;
+        int lastMaximum;
+        QSize lastSize;
+        QDateTime lastUpdate;
+        bool hovered;
+        QDateTime lastHovered;
+        bool cleared;
+    };
+    QMap<const QWidget*, OverlayScrollBarInfo> scrollBarInfos;
 
     struct ButtonState {
         int frame;
@@ -220,6 +243,10 @@ public:
     CFAbsoluteTime defaultButtonStart;
     QMacStyle *q;
     bool mouseDown;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    void* receiver;
+    void *nsscroller;
+#endif
 };
 
 QT_END_NAMESPACE
