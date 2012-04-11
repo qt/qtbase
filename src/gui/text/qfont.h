@@ -257,7 +257,10 @@ public:
     static QStringList substitutions();
     static void insertSubstitution(const QString&, const QString &);
     static void insertSubstitutions(const QString&, const QStringList &);
-    static void removeSubstitution(const QString &);
+    static void removeSubstitutions(const QString &);
+#if QT_DEPRECATED_SINCE(5, 0)
+    static QT_DEPRECATED void removeSubstitution(const QString &family) { removeSubstitutions(family); }
+#endif
     static void initialize();
     static void cleanup();
     static void cacheStatistics();
