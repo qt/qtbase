@@ -416,7 +416,9 @@ public:
 void QZipPrivate::fillFileInfo(int index, QZipReader::FileInfo &fileInfo) const
 {
     FileHeader header = fileHeaders.at(index);
-    fileInfo.filePath = QString::fromLocal8Bit(header.file_name);
+    // if bit 11 is set, the filename and comment fields must be encoded using UTF-8
+    const bool inUtf8 = (readUShort(header.h.general_purpose_bits) & 0x0800) != 0;
+    fileInfo.filePath = inUtf8 ? QString::fromUtf8(header.file_name) : QString::fromLocal8Bit(header.file_name);
     const quint32 mode = (qFromLittleEndian<quint32>(&header.h.external_file_attributes[0]) >> 16) & 0xFFFF;
     fileInfo.isDir = S_ISDIR(mode);
     fileInfo.isFile = S_ISREG(mode);
@@ -629,7 +631,12 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
     crc_32 = ::crc32(crc_32, (const uchar *)contents.constData(), contents.length());
     writeUInt(header.h.crc_32, crc_32);
 
-    header.file_name = fileName.toLocal8Bit();
+    // if bit 11 is set, the filename and comment fields must be encoded using UTF-8
+    ushort general_purpose_bits = 0x0800; // always use utf-8
+    writeUShort(header.h.general_purpose_bits, general_purpose_bits);
+
+    const bool inUtf8 = (general_purpose_bits & 0x0800) != 0;
+    header.file_name = inUtf8 ? fileName.toUtf8() : fileName.toLocal8Bit();
     if (header.file_name.size() > 0xffff) {
         qWarning("QZip: Filename too long, chopping it to 65535 characters");
         header.file_name = header.file_name.left(0xffff);
