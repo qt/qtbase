@@ -808,7 +808,7 @@ our @ignore_for_include_check = ();
 our @ignore_for_qt_begin_header_check = ();
 our @ignore_for_qt_begin_namespace_check = ();
 our @ignore_for_qt_module_check = ();
-my %inject_headers = ( "$basedir/src/corelib/global" => ( "qconfig.h" ) ); # all from build dir
+our %inject_headers = ();
 
 # load the module's sync.profile here, before we can
 loadSyncProfile(\$basedir, \$out_basedir);
@@ -985,7 +985,7 @@ foreach my $lib (@modules_to_sync) {
             foreach my $subdir (@subdirs) {
                 my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
                 if (defined $inject_headers{$subdir}) {
-                    foreach my $if ($inject_headers{$subdir}) {
+                    foreach my $if (@{$inject_headers{$subdir}}) {
                         @headers = grep(!/^\Q$if\E$/, @headers); #in case we configure'd previously
                         push @headers, "*".$if;
                     }
