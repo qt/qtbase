@@ -1238,7 +1238,21 @@ ushort QChar::toCaseFolded(ushort ucs2)
     Returns the Latin-1 character equivalent to the QChar, or 0. This
     is mainly useful for non-internationalized software.
 
+    \note It is not possible to distinguish a non-Latin-1 character from a Latin-1 0
+    (NUL) character. Prefer to use unicode(), which does not have this ambiguity.
+
     \sa toAscii(), unicode()
+*/
+
+/*!
+    \fn QChar QChar::fromLatin1(char)
+
+    Converts the Latin-1 character \a c to its equivalent QChar. This
+    is mainly useful for non-internationalized software.
+
+    An alternative is to use QLatin1Char.
+
+    \sa fromAscii(), unicode()
 */
 
 /*!
@@ -1253,6 +1267,9 @@ ushort QChar::toCaseFolded(ushort ucs2)
 
     \note It is not possible to distinguish a non-Latin 1 character from an ASCII 0
     (NUL) character. Prefer to use unicode(), which does not have this ambiguity.
+
+    \note This function does not check whether the character value is inside
+    the valid range of US-ASCII.
 
     \sa toLatin1(), unicode()
 */
@@ -1307,7 +1324,7 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 /*!
     \fn ushort QChar::unicode() const
 
-    \overload
+    Returns the numeric Unicode value of the QChar.
 */
 
 /*****************************************************************************
