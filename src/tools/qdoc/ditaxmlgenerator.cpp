@@ -4420,14 +4420,11 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
                 writeStartTag(DT_li);
                 writeGuidAttribute((Node*)qpn);
                 QString attr;
-                int ro = qpn->getReadOnly();
-                if (ro < 0) {
-                    if (!qpn->isWritable(tree_))
-                        attr = "read-only";
-                }
-                else if (ro > 0)
+                if (!qpn->isReadOnlySet())
+                    qpn->setReadOnly(!qpn->isWritable(tree_));
+                if (qpn->isReadOnly())
                     attr = "read-only";
-                if (qpgn->isDefault()) {
+                if (qpn->isDefault()) {
                     if (!attr.isEmpty())
                         attr += QLatin1Char(' ');
                     attr += "default";
@@ -4462,13 +4459,11 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
             writeStartTag(DT_li);
             writeGuidAttribute((Node*)qpn);
             QString attr;
-            int ro = qpn->getReadOnly();
-            if (ro < 0) {
-                const ClassNode* cn = qpn->declarativeCppNode();
-                if (cn && !qpn->isWritable(tree_))
-                    attr = "read-only";
+            if (!qpn->isReadOnlySet()) {
+                if (qpn->declarativeCppNode())
+                    qpn->setReadOnly(!qpn->isWritable(tree_));
             }
-            else if (ro > 0)
+            if (qpn->isReadOnly())
                 attr = "read-only";
             if (qpn->isDefault()) {
                 if (!attr.isEmpty())
@@ -4495,12 +4490,9 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
                     writeStartTag(DT_li);
                     writeGuidAttribute((Node*)q);
                     QString attr;
-                    int ro = qpn->getReadOnly();
-                    if (ro < 0) {
-                        if (!qpn->isWritable(tree_))
-                            attr = "read-only";
-                    }
-                    else if (ro > 0)
+                    if (!qpn->isReadOnlySet())
+                        qpn->setReadOnly(!qpn->isWritable(tree_));
+                    if (qpn->isReadOnly())
                         attr = "read-only";
                     if (qpn->isDefault()) {
                         if (!attr.isEmpty())

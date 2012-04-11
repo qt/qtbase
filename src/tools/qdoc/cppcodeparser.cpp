@@ -937,7 +937,7 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
         if (splitQmlPropertyArg(doc,(*arg),type,module,element,property)) {
             QmlClassNode* qmlClass = tree_->findQmlClassNode(module,element);
             if (qmlClass) {
-                qmlPropGroup = new QmlPropGroupNode(qmlClass,property,attached);
+                qmlPropGroup = new QmlPropGroupNode(qmlClass,property); //,attached);
             }
         }
         if (qmlPropGroup) {
@@ -950,7 +950,7 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
             }
             if (correspondingProperty) {
                 bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
-                qmlPropNode->setWritable(writableList || correspondingProperty->isWritable());
+                qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));
             }
             ++arg;
             while (arg != args.end()) {
@@ -961,7 +961,7 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
                                                                        attached);
                     if (correspondingProperty) {
                         bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
-                        qmlPropNode->setWritable(writableList || correspondingProperty->isWritable());
+                        qmlPropNode->setReadOnly(!(writableList || correspondingProperty->isWritable()));
                     }
                 }
                 ++arg;
@@ -1117,7 +1117,14 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         }
         else if (node->type() == Node::Fake && node->subType() == Node::QmlPropertyGroup) {
             QmlPropGroupNode* qpgn = static_cast<QmlPropGroupNode*>(node);
-            qpgn->setDefault();
+            NodeList::ConstIterator p = qpgn->childNodes().begin();
+            while (p != qpgn->childNodes().end()) {
+                if ((*p)->type() == Node::QmlProperty) {
+                    QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(*p);
+                    qpn->setDefault();
+                }
+                ++p;
+            }
         }
     }
     else if (command == COMMAND_QMLREADONLY) {
@@ -1127,7 +1134,6 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         }
         else if (node->type() == Node::Fake && node->subType() == Node::QmlPropertyGroup) {
             QmlPropGroupNode* qpgn = static_cast<QmlPropGroupNode*>(node);
-            qpgn->setReadOnly(1);
             NodeList::ConstIterator p = qpgn->childNodes().begin();
             while (p != qpgn->childNodes().end()) {
                 if ((*p)->type() == Node::QmlProperty) {

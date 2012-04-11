@@ -156,6 +156,12 @@ public:
         OnBeyondZebra
     };
 
+    enum FlagValue {
+        FlagValueDefault = -1,
+        FlagValueFalse = 0,
+        FlagValueTrue = 1
+    };
+
     virtual ~Node();
 
     void setAccess(Access access) { access_ = access; }
@@ -238,6 +244,9 @@ public:
     QString fullDocumentName() const;
     static QString cleanId(QString str);
     QString idForNode() const;
+
+    static FlagValue toFlagValue(bool b);
+    static bool fromFlagValue(FlagValue fv, bool defaultValue);
 
     static QString pageTypeString(unsigned t);
     static QString nodeTypeString(unsigned t);
@@ -553,9 +562,8 @@ public:
 class QmlPropGroupNode : public FakeNode
 {
 public:
-    QmlPropGroupNode(QmlClassNode* parent,
-                     const QString& name,
-                     bool attached);
+    QmlPropGroupNode(QmlClassNode* parent, const QString& name);
+    //bool attached);
     virtual ~QmlPropGroupNode() { }
     virtual bool isQmlNode() const { return true; }
     virtual bool isQtQuickNode() const { return parent()->isQtQuickNode(); }
@@ -564,6 +572,7 @@ public:
     virtual QString qmlModuleIdentifier() const { return parent()->qmlModuleIdentifier(); }
 
     const QString& element() const { return parent()->name(); }
+#if 0
     void setDefault() { isdefault_ = true; }
     void setReadOnly(int ro) { readOnly_ = ro; }
     int getReadOnly() const { return readOnly_; }
@@ -575,6 +584,7 @@ private:
     bool    isdefault_;
     bool    attached_;
     int     readOnly_;
+#endif
 };
 
 class QmlPropertyNode;
@@ -597,21 +607,20 @@ public:
     virtual ~QmlPropertyNode() { }
 
     void setDataType(const QString& dataType) { type_ = dataType; }
-    void setStored(bool stored) { sto = toTrool(stored); }
-    void setDesignable(bool designable) { des = toTrool(designable); }
-    void setWritable(bool writable) { wri = toTrool(writable); }
+    void setStored(bool stored) { stored_ = toFlagValue(stored); }
+    void setDesignable(bool designable) { designable_ = toFlagValue(designable); }
+    void setReadOnly(bool ro) { readOnly_ = toFlagValue(ro); }
+    void setDefault() { isdefault_ = true; }
 
     const QString &dataType() const { return type_; }
     QString qualifiedDataType() const { return type_; }
-    void setDefault() { isdefault_ = true; }
-    void setReadOnly(int ro) { readOnly_ = ro; }
-    int getReadOnly() const { return readOnly_; }
+    bool isReadOnlySet() const { return (readOnly_ != FlagValueDefault); }
     bool isDefault() const { return isdefault_; }
-    bool isStored() const { return fromTrool(sto,true); }
-    bool isDesignable() const { return fromTrool(des,false); }
+    bool isStored() const { return fromFlagValue(stored_,true); }
+    bool isDesignable() const { return fromFlagValue(designable_,false); }
     bool isWritable(Tree* tree);
     bool isAttached() const { return attached_; }
-    bool isReadOnly() const { return (readOnly_ > 0); }
+    bool isReadOnly() const { return fromFlagValue(readOnly_,false); }
     virtual bool isQmlNode() const { return true; }
     virtual bool isQtQuickNode() const { return parent()->isQtQuickNode(); }
     virtual QString qmlModuleName() const { return parent()->qmlModuleName(); }
@@ -625,18 +634,12 @@ public:
     const NodeList& qmlPropNodes() const { return qmlPropNodes_; }
 
 private:
-    enum Trool { Trool_True, Trool_False, Trool_Default };
-
-    static Trool toTrool(bool boolean);
-    static bool fromTrool(Trool troolean, bool defaultValue);
-
     QString type_;
-    Trool   sto;
-    Trool   des;
-    Trool   wri;
+    FlagValue   stored_;
+    FlagValue   designable_;
     bool    isdefault_;
     bool    attached_;
-    int     readOnly_;
+    FlagValue   readOnly_;
     NodeList qmlPropNodes_;
 };
 
@@ -842,11 +845,11 @@ public:
     void setDataType(const QString& dataType) { type_ = dataType; }
     void addFunction(FunctionNode* function, FunctionRole role);
     void addSignal(FunctionNode* function, FunctionRole role);
-    void setStored(bool stored) { sto = toTrool(stored); }
-    void setDesignable(bool designable) { des = toTrool(designable); }
-    void setScriptable(bool scriptable) { scr = toTrool(scriptable); }
-    void setWritable(bool writable) { wri = toTrool(writable); }
-    void setUser(bool user) { usr = toTrool(user); }
+    void setStored(bool stored) { stored_ = toFlagValue(stored); }
+    void setDesignable(bool designable) { designable_ = toFlagValue(designable); }
+    void setScriptable(bool scriptable) { scriptable_ = toFlagValue(scriptable); }
+    void setWritable(bool writable) { writable_ = toFlagValue(writable); }
+    void setUser(bool user) { user_ = toFlagValue(user); }
     void setOverriddenFrom(const PropertyNode* baseProperty);
     void setRuntimeDesFunc(const QString& rdf) { runtimeDesFunc = rdf; }
     void setRuntimeScrFunc(const QString& scrf) { runtimeScrFunc = scrf; }
@@ -862,13 +865,13 @@ public:
     NodeList setters() const { return functions(Setter); }
     NodeList resetters() const { return functions(Resetter); }
     NodeList notifiers() const { return functions(Notifier); }
-    bool isStored() const { return fromTrool(sto, storedDefault()); }
-    bool isDesignable() const { return fromTrool(des, designableDefault()); }
-    bool isScriptable() const { return fromTrool(scr, scriptableDefault()); }
+    bool isStored() const { return fromFlagValue(stored_, storedDefault()); }
+    bool isDesignable() const { return fromFlagValue(designable_, designableDefault()); }
+    bool isScriptable() const { return fromFlagValue(scriptable_, scriptableDefault()); }
     const QString& runtimeDesignabilityFunction() const { return runtimeDesFunc; }
     const QString& runtimeScriptabilityFunction() const { return runtimeScrFunc; }
-    bool isWritable() const { return fromTrool(wri, writableDefault()); }
-    bool isUser() const { return fromTrool(usr, userDefault()); }
+    bool isWritable() const { return fromFlagValue(writable_, writableDefault()); }
+    bool isUser() const { return fromFlagValue(user_, userDefault()); }
     bool isConstant() const { return cst; }
     bool isFinal() const { return fnl; }
     const PropertyNode* overriddenFrom() const { return overrides; }
@@ -880,20 +883,15 @@ public:
     bool writableDefault() const { return !setters().isEmpty(); }
 
 private:
-    enum Trool { Trool_True, Trool_False, Trool_Default };
-
-    static Trool toTrool(bool boolean);
-    static bool fromTrool(Trool troolean, bool defaultValue);
-
     QString type_;
     QString runtimeDesFunc;
     QString runtimeScrFunc;
     NodeList funcs[NumFunctionRoles];
-    Trool sto;
-    Trool des;
-    Trool scr;
-    Trool wri;
-    Trool usr;
+    FlagValue stored_;
+    FlagValue designable_;
+    FlagValue scriptable_;
+    FlagValue writable_;
+    FlagValue user_;
     bool cst;
     bool fnl;
     int rev;
