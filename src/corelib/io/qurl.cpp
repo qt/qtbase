@@ -2645,7 +2645,7 @@ static QUrl adjustFtpPath(QUrl url)
 {
     if (url.scheme() == ftpScheme()) {
         QString path = url.path();
-        if (path.startsWith("//"))
+        if (path.startsWith(QLatin1String("//")))
             url.setPath(QLatin1String("/%2F") + path.midRef(2));
     }
     return url;
