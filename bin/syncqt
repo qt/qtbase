@@ -597,6 +597,12 @@ sub basePrettify {
     $$arg =~ s,^\Q$out_basedir\E,<outbase>,;
 }
 
+sub cleanPath {
+    my ($arg) = @_;
+    while ($arg =~ s,[^/]+/\.\.(/|$),,) {}
+    return $arg;
+}
+
 sub locateSyncProfile
 {
     my ($directory) = @_;
@@ -876,6 +882,15 @@ foreach my $lib (@modules_to_sync) {
 
     #remove the old files
     if($remove_stale) {
+        my %injections = ();
+        for my $p (keys %inject_headers) {
+            next unless ($p =~ /^\Q$dir\E(\/|$)/);
+            my $sp = $p;
+            $sp =~ s,^\Q$basedir\E/,$out_basedir/,;
+            for my $n (@{$inject_headers{$p}}) {
+                $injections{$sp."/".$n} = 1;
+            }
+        }
         my @subdirs = ("$out_basedir/include/$lib");
         foreach my $subdir (@subdirs) {
             if (opendir DIR, $subdir) {
@@ -894,7 +909,7 @@ foreach my $lib (@modules_to_sync) {
                                     if($line =~ /^\#include \"([^\"]*)\"$/) {
                                         my $include = $1;
                                         $include = $subdir . "/" . $include unless(substr($include, 0, 1) eq "/");
-                                        $remove_file = 1 unless(-e $include);
+                                        $remove_file = 1 unless(-e $include or defined $injections{cleanPath($include)});
                                     } else {
                                         $remove_file = 0;
                                         last;
