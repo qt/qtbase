@@ -480,7 +480,9 @@ inline void QUrlPrivate::appendAuthority(QString &appendTo, QUrl::FormattingOpti
 {
     if ((options & QUrl::RemoveUserInfo) != QUrl::RemoveUserInfo) {
         appendUserInfo(appendTo, options, appendingTo);
-        if (hasUserInfo())
+
+        // add '@' only if we added anything
+        if (hasUserName() || (hasPassword() && (options & QUrl::RemovePassword) == 0))
             appendTo += QLatin1Char('@');
     }
     appendHost(appendTo, options);

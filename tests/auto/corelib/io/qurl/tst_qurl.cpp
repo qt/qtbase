@@ -808,9 +808,20 @@ void tst_QUrl::toString_data()
                         << uint(QUrl::RemovePassword)
                         << QString::fromLatin1("http://ole@www.troll.no:9090/index.html?ole=semann&gud=hei#top");
 
+    // show that QUrl keeps the empty-but-present username if you remove the password
+    // see data3-bis for another case
+    QTest::newRow("data2-bis") << QString::fromLatin1("http://:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemovePassword)
+                        << QString::fromLatin1("http://@www.troll.no:9090/index.html?ole=semann&gud=hei#top");
+
     QTest::newRow("data3") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
                         << uint(QUrl::RemoveUserInfo)
                         << QString::fromLatin1("http://www.troll.no:9090/index.html?ole=semann&gud=hei#top");
+
+    // show that QUrl keeps the empty-but-preset hostname if you remove the userinfo
+    QTest::newRow("data3-bis") << QString::fromLatin1("http://ole:password@/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemoveUserInfo)
+                        << QString::fromLatin1("http:///index.html?ole=semann&gud=hei#top");
 
     QTest::newRow("data4") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
                         << uint(QUrl::RemovePort)
@@ -926,20 +937,26 @@ void tst_QUrl::toString_constructed_data()
     QTest::addColumn<QString>("fragment");
     QTest::addColumn<QString>("asString");
     QTest::addColumn<QByteArray>("asEncoded");
+    QTest::addColumn<uint>("options");
 
     QString n("");
 
     QTest::newRow("data1") << n << n << n << QString::fromLatin1("qt.nokia.com") << -1 << QString::fromLatin1("index.html")
                         << QByteArray() << n << QString::fromLatin1("//qt.nokia.com/index.html")
-                        << QByteArray("//qt.nokia.com/index.html");
+                        << QByteArray("//qt.nokia.com/index.html") << 0u;
     QTest::newRow("data2") << QString::fromLatin1("file") << n << n << n << -1 << QString::fromLatin1("/root") << QByteArray()
-                        << n << QString::fromLatin1("file:///root") << QByteArray("file:///root");
+                        << n << QString::fromLatin1("file:///root") << QByteArray("file:///root") << 0u;
     QTest::newRow("userAndPass") << QString::fromLatin1("http") << QString::fromLatin1("dfaure") << QString::fromLatin1("kde")
                         << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
-                        << QString::fromLatin1("http://dfaure:kde@kde.org:443/") << QByteArray("http://dfaure:kde@kde.org:443/");
+                        << QString::fromLatin1("http://dfaure:kde@kde.org:443/") << QByteArray("http://dfaure:kde@kde.org:443/")
+                        << 0u;
     QTest::newRow("PassWithoutUser") << QString::fromLatin1("http") << n << QString::fromLatin1("kde")
                         << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
-                        << QString::fromLatin1("http://:kde@kde.org:443/") << QByteArray("http://:kde@kde.org:443/");
+                        << QString::fromLatin1("http://:kde@kde.org:443/") << QByteArray("http://:kde@kde.org:443/") << 0u;
+    QTest::newRow("PassWithoutUser-RemovePassword") << QString::fromLatin1("http") << n << QString::fromLatin1("kde")
+                        << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
+                        << QString::fromLatin1("http://kde.org:443/") << QByteArray("http://kde.org:443/")
+                        << uint(QUrl::RemovePassword);
 }
 
 void tst_QUrl::toString_constructed()
@@ -954,6 +971,7 @@ void tst_QUrl::toString_constructed()
     QFETCH(QString, fragment);
     QFETCH(QString, asString);
     QFETCH(QByteArray, asEncoded);
+    QFETCH(uint, options);
 
     QUrl url;
     if (!scheme.isEmpty())
@@ -974,9 +992,11 @@ void tst_QUrl::toString_constructed()
         url.setFragment(fragment);
 
     QVERIFY(url.isValid());
-    QCOMPARE(url.toString(), asString);
-    QCOMPARE(QString::fromLatin1(url.toEncoded()), QString::fromLatin1(asEncoded)); // readable in case of differences
-    QCOMPARE(url.toEncoded(), asEncoded);
+
+    QUrl::FormattingOptions formattingOptions(options);
+    QCOMPARE(url.toString(formattingOptions), asString);
+    QCOMPARE(QString::fromLatin1(url.toEncoded(formattingOptions)), QString::fromLatin1(asEncoded)); // readable in case of differences
+    QCOMPARE(url.toEncoded(formattingOptions), asEncoded);
 }
 
 
