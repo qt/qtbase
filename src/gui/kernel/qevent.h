@@ -53,6 +53,7 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qset.h>
+#include <QtCore/qurl.h>
 #include <QtCore/qfile.h>
 #include <QtGui/qvector2d.h>
 #include <QtGui/qtouchdevice.h>
@@ -646,10 +647,11 @@ public:
     ~QFileOpenEvent();
 
     inline QString file() const { return f; }
-    QUrl url() const;
+    QUrl url() const { return m_url; }
     bool openFile(QFile &file, QIODevice::OpenMode flags) const;
 private:
     QString f;
+    QUrl m_url;
 };
 
 #ifndef QT_NO_TOOLBAR
@@ -847,7 +849,6 @@ protected:
 Q_DECLARE_TYPEINFO(QTouchEvent::TouchPoint, Q_MOVABLE_TYPE);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchEvent::TouchPoint::InfoFlags)
 
-class QScrollPrepareEventPrivate;
 class Q_GUI_EXPORT QScrollPrepareEvent : public QEvent
 {
 public:
@@ -865,12 +866,14 @@ public:
     void setContentPos(const QPointF &pos);
 
 private:
-    QScrollPrepareEventPrivate *d_func();
-    const QScrollPrepareEventPrivate *d_func() const;
+    QObject* m_target;
+    QPointF m_startPos;
+    QSizeF m_viewportSize;
+    QRectF m_contentPosRange;
+    QPointF m_contentPos;
 };
 
 
-class QScrollEventPrivate;
 class Q_GUI_EXPORT QScrollEvent : public QEvent
 {
 public:
@@ -889,11 +892,11 @@ public:
     ScrollState scrollState() const;
 
 private:
-    QScrollEventPrivate *d_func();
-    const QScrollEventPrivate *d_func() const;
+    QPointF m_contentPos;
+    QPointF m_overshoot;
+    QScrollEvent::ScrollState m_state;
 };
 
-class QScreenOrientationChangeEventPrivate;
 class Q_GUI_EXPORT QScreenOrientationChangeEvent : public QEvent
 {
 public:
@@ -904,8 +907,8 @@ public:
     Qt::ScreenOrientation orientation() const;
 
 private:
-    QScreenOrientationChangeEventPrivate *d_func();
-    const QScreenOrientationChangeEventPrivate *d_func() const;
+    QScreen *m_screen;
+    Qt::ScreenOrientation m_orientation;
 };
 
 QT_END_NAMESPACE
