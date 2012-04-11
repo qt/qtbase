@@ -689,9 +689,11 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         return node;
     }
     else if (command == COMMAND_EXAMPLE) {
-        ExampleNode* en = new ExampleNode(tree_->root(), arg);
-        createExampleFileNodes(en);
-        return en;
+        if (Config::generateExamples) {
+            ExampleNode* en = new ExampleNode(tree_->root(), arg);
+            createExampleFileNodes(en);
+            return en;
+        }
     }
     else if (command == COMMAND_EXTERNALPAGE) {
         return new FakeNode(tree_->root(), arg, Node::ExternalPage, Node::ArticlePage);
