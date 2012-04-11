@@ -255,6 +255,10 @@ information about a particular change.
 - qMacVersion() has been removed. Use QSysInfo::macVersion() or
   QSysInfo::MacintoshVersion instead.
 
+- QColorDialog::customColor() now returns a QColor value instead of QRgb.
+  QColorDialog::setCustomColor() and QColorDialog::setStandardColor() now
+  take a QColor value for their second parameter instead of QRgb.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
