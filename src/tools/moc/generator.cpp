@@ -1036,8 +1036,14 @@ void Generator::generateSignal(FunctionDef *def,int index)
         fprintf(out, "%s _t%d%s", a.type.name.constData(), offset++, a.rightType.constData());
     }
     fprintf(out, ")%s\n{\n", constQualifier);
-    if (def->type.name.size() && def->normalizedType.size())
-        fprintf(out, "    %s _t0 = %s();\n", noRef(def->normalizedType).constData(), noRef(def->normalizedType).constData());
+    if (def->type.name.size() && def->normalizedType.size()) {
+        QByteArray returnType = noRef(def->normalizedType);
+        if (returnType.endsWith('*')) {
+            fprintf(out, "    %s _t0 = 0;\n", returnType.constData());
+        } else {
+            fprintf(out, "    %s _t0 = %s();\n", returnType.constData(), returnType.constData());
+        }
+    }
 
     fprintf(out, "    void *_a[] = { ");
     if (def->normalizedType.isEmpty()) {
