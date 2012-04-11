@@ -4,7 +4,7 @@ TARGET     = QtGui
 QT = core-private
 MODULE_CONFIG = opengl
 
-DEFINES   += QT_BUILD_GUI_LIB QT_NO_USING_NAMESPACE
+DEFINES   += QT_NO_USING_NAMESPACE
 
 load(qt_module_config)
 

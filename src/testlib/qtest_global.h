@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 #if !defined(QT_SHARED) && !defined(QT_DLL)
 # define Q_TESTLIB_EXPORT
 #else
-# ifdef QTESTLIB_MAKEDLL
+# ifdef QT_BUILD_TESTLIB_LIB
 #  define Q_TESTLIB_EXPORT Q_DECL_EXPORT
 # else
 #  define Q_TESTLIB_EXPORT Q_DECL_IMPORT

@@ -3,7 +3,7 @@ load(qt_module)
 TARGET     = QtXml
 QT         = core-private
 
-DEFINES   += QT_BUILD_XML_LIB QT_NO_USING_NAMESPACE
+DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x61000000
 
 load(qt_module_config)

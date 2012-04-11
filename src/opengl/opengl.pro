@@ -3,7 +3,6 @@ load(qt_module)
 TARGET     = QtOpenGL
 QT         = core-private gui-private widgets-private
 
-DEFINES   += QT_BUILD_OPENGL_LIB
 DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x63000000
 solaris-cc*:QMAKE_CXXFLAGS_RELEASE -= -O2

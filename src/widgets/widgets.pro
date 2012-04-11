@@ -4,7 +4,7 @@ TARGET     = QtWidgets
 QT = core-private gui-private
 MODULE_CONFIG = uic
 
-DEFINES   += QT_BUILD_WIDGETS_LIB QT_NO_USING_NAMESPACE
+DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 

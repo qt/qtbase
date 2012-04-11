@@ -58,7 +58,6 @@ SOURCES = qtestcase.cpp \
     qxunittestlogger.cpp
 DEFINES *= QT_NO_CAST_TO_ASCII \
     QT_NO_CAST_FROM_ASCII \
-    QTESTLIB_MAKEDLL \
     QT_NO_DATASTREAM
 embedded:QMAKE_CXXFLAGS += -fno-rtti
 wince*::LIBS += libcmt.lib \

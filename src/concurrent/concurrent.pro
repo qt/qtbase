@@ -4,7 +4,7 @@ TARGET     = QtConcurrent
 QT         = core-private
 CONFIG    += exceptions
 
-DEFINES   += QT_BUILD_CONCURRENT_LIB QT_NO_USING_NAMESPACE
+DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x66000000
 
 load(qt_module_config)

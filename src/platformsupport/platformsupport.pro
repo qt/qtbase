@@ -5,8 +5,6 @@ QT         = core-private gui-private
 CONFIG += staticlib
 mac:LIBS += -lz -framework CoreFoundation -framework Carbon
 
-DEFINES += QT_BUILD_PLATFORMSUPPORT_LIB
-
 load(qt_module_config)
 
 DEFINES += QT_NO_CAST_FROM_ASCII

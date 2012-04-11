@@ -3,7 +3,7 @@ load(qt_module)
 TARGET     = QtPrintSupport
 QT = core-private gui-private widgets-private
 
-DEFINES   += QT_BUILD_PRINTSUPPORT_LIB QT_NO_USING_NAMESPACE
+DEFINES   += QT_NO_USING_NAMESPACE
 
 load(qt_module_config)
 

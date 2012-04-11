@@ -110,6 +110,11 @@ linux*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
 !isEmpty(DESTDIR):CONFIG += create_cmake
 
+contains(TARGET, QtAddOn.*): \
+    DEFINES += QT_BUILD_ADDON_$${ucmodule}_LIB
+else: \
+    DEFINES += QT_BUILD_$${ucmodule}_LIB
+
 contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 unix:contains(QT_CONFIG, reduce_relocations):CONFIG += bsymbolic_functions
 contains(QT_CONFIG, largefile):CONFIG += largefile
