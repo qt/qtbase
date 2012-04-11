@@ -39,46 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_KMS_H
-#define QPLATFORMINTEGRATION_KMS_H
+#ifndef QKMSNATIVEINTERFACE_H
+#define QKMSNATIVEINTERFACE_H
 
-#include <QtGui/QPlatformIntegration>
+#include "qkmsscreen.h"
+
 #include <QtGui/QPlatformNativeInterface>
 
-QT_BEGIN_NAMESPACE
-
-class QKmsScreen;
-class QKmsDevice;
-
-class QKmsIntegration : public QPlatformIntegration
+class QKmsNativeInterface : public QPlatformNativeInterface
 {
 public:
-    QKmsIntegration();
-    ~QKmsIntegration();
+    enum ResourceType {
+        EglDisplay,
+        EglContext
+    };
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+    void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-
-    void addScreen(QKmsScreen *screen);
-
-    QPlatformNativeInterface *nativeInterface() const;
+    void *eglDisplayForWindow(QWindow *window);
+    void *eglContextForWindow(QWindow *window);
 
 private:
-    QStringList findDrmDevices();
-
-    QList<QPlatformScreen *> m_screens;
-    QList<QKmsDevice *> m_devices;
-    QPlatformFontDatabase *m_fontDatabase;
-    QAbstractEventDispatcher *m_eventDispatcher;
-    QPlatformNativeInterface *m_nativeInterface;
+    static QKmsScreen *qPlatformScreenForWindow(QWindow *window);
 };
 
-QT_END_NAMESPACE
 
-#endif
+#endif // QKMSNATIVEINTERFACE_H

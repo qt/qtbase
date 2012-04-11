@@ -45,6 +45,7 @@
 #include "qkmswindow.h"
 #include "qkmsbackingstore.h"
 #include "qkmscontext.h"
+#include "qkmsnativeinterface.h"
 
 #include <QtPlatformSupport/private/qgenericunixprintersupport_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
@@ -58,7 +59,8 @@ QT_BEGIN_NAMESPACE
 QKmsIntegration::QKmsIntegration()
     : QPlatformIntegration(),
       m_fontDatabase(new QGenericUnixFontDatabase()),
-      m_eventDispatcher(createUnixEventDispatcher())
+      m_eventDispatcher(createUnixEventDispatcher()),
+      m_nativeInterface(new QKmsNativeInterface)
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
     setenv("EGL_PLATFORM", "drm",1);
@@ -127,6 +129,11 @@ void QKmsIntegration::addScreen(QKmsScreen *screen)
 QAbstractEventDispatcher *QKmsIntegration::guiThreadEventDispatcher() const
 {
     return m_eventDispatcher;
+}
+
+QPlatformNativeInterface *QKmsIntegration::nativeInterface() const
+{
+    return m_nativeInterface;
 }
 
 QT_END_NAMESPACE
