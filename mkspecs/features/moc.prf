@@ -86,13 +86,6 @@ contains(QMAKE_HOST.os,Windows):moc_dir_short ~= s,^.:,/,
 contains(moc_dir_short, ^[/\\\\].*):INCLUDEPATH += $$MOC_DIR
 else:INCLUDEPATH += $$OUT_PWD/$$MOC_DIR
 
-# Backwards compatibility: Make shadow builds with default MOC_DIR work
-# if the user did not add the source dir explicitly.
-equals(MOC_DIR, .) {
-    CONFIG -= include_source_dir
-    CONFIG = include_source_dir $$CONFIG
-}
-
 #auto depend on moc
 unix:!no_mocdepend {
      moc_source.depends += $$first(QMAKE_MOC)

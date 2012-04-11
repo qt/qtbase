@@ -33,13 +33,6 @@ isEmpty(QMAKE_MOD_UIC):QMAKE_MOD_UIC = ui_
     else:INCLUDEPATH += $$OUT_PWD/$$UI_HEADERS_DIR
 }
 
-# Backwards compatibility: Make shadow builds with default UI_DIR work
-# if the user did not add the source dir explicitly.
-equals(UI_DIR, .) {
-    CONFIG -= include_source_dir
-    CONFIG = include_source_dir $$CONFIG
-}
-
 uic3 {
     isEmpty(FORMS3) {
         UIC3_FORMS = FORMS
