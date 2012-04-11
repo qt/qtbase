@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qeglfs_hooks.h"
+#include "qeglfshooks.h"
 
 #include <bcm_host.h>
 
@@ -55,23 +55,35 @@
 static DISPMANX_DISPLAY_HANDLE_T dispman_display = 0;
 static DISPMANX_UPDATE_HANDLE_T dispman_update = 0;
 
-void QEglFSHooks::platformInit()
+class QEglFSPiHooks : public QEglFSHooks
+{
+public:
+    virtual void platformInit();
+    virtual void platformDestroy();
+    virtual EGLNativeDisplayType platformDisplay() const;
+    virtual QSize screenSize() const;
+    virtual EGLNativeWindowType createNativeWindow(const QSize &size);
+    virtual void destroyNativeWindow(EGLNativeWindowType window);
+    virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
+};
+
+void QEglFSPiHooks::platformInit()
 {
     bcm_host_init();
 }
 
-EGLNativeDisplayType QEglFSHooks::platformDisplay() const
+EGLNativeDisplayType QEglFSPiHooks::platformDisplay() const
 {
     dispman_display = vc_dispmanx_display_open(0/* LCD */);
     return EGL_DEFAULT_DISPLAY;
 }
 
-void QEglFSHooks::platformDestroy()
+void QEglFSPiHooks::platformDestroy()
 {
     vc_dispmanx_display_close(dispman_display);
 }
 
-QSize QEglFSHooks::screenSize() const
+QSize QEglFSPiHooks::screenSize() const
 {
     //both mechanisms work
 #if 1
@@ -98,7 +110,7 @@ QSize QEglFSHooks::screenSize() const
 #endif
 }
 
-EGLNativeWindowType QEglFSHooks::createNativeWindow(const QSize &size)
+EGLNativeWindowType QEglFSPiHooks::createNativeWindow(const QSize &size)
 {
     VC_RECT_T dst_rect;
     dst_rect.x = 0;
@@ -133,14 +145,14 @@ EGLNativeWindowType QEglFSHooks::createNativeWindow(const QSize &size)
     return eglWindow;
 }
 
-void QEglFSHooks::destroyNativeWindow(EGLNativeWindowType window)
+void QEglFSPiHooks::destroyNativeWindow(EGLNativeWindowType window)
 {
     EGL_DISPMANX_WINDOW_T *eglWindow = static_cast<EGL_DISPMANX_WINDOW_T *>(window);
     vc_dispmanx_element_remove(dispman_update, eglWindow->element);
     delete eglWindow;
 }
 
-bool QEglFSHooks::hasCapability(QPlatformIntegration::Capability cap) const
+bool QEglFSPiHooks::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
         case QPlatformIntegration::ThreadedPixmaps:
@@ -153,4 +165,5 @@ bool QEglFSHooks::hasCapability(QPlatformIntegration::Capability cap) const
     }
 }
 
-QEglFSHooks platform_hooks;
+QEglFSPiHooks eglFSPiHooks;
+QEglFSHooks *platformHooks = &eglFSPiHooks;

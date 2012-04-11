@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qeglfs_hooks.h"
+#include "qeglfshooks.h"
 #include <EGL/fbdev_window.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
@@ -48,20 +48,15 @@
 #include <fcntl.h>
 #include <linux/fb.h>
 
-void QEglFSHooks::platformInit()
+class QEglFS8726MHooks : public QEglFSHooks
 {
-}
+public:
+    virtual QSize screenSize() const;
+    virtual EGLNativeWindowType createNativeWindow(const QSize &size);
+    virtual void destroyNativeWindow(EGLNativeWindowType window);
+};
 
-void QEglFSHooks::platformDestroy()
-{
-}
-
-EGLNativeDisplayType QEglFSHooks::platformDisplay() const
-{
-    return EGL_DEFAULT_DISPLAY;
-}
-
-QSize QEglFSHooks::screenSize() const
+QSize QEglFS8726MHooks::screenSize() const
 {
     int fd = open("/dev/fb0", O_RDONLY);
     if (fd == -1) {
@@ -78,7 +73,7 @@ QSize QEglFSHooks::screenSize() const
     return QSize(vinfo.xres, vinfo.yres);
 }
 
-EGLNativeWindowType QEglFSHooks::createNativeWindow(const QSize &size)
+EGLNativeWindowType QEglFS8726MHooks::createNativeWindow(const QSize &size)
 {
     fbdev_window *window = new fbdev_window;
     window->width = size.width();
@@ -87,14 +82,11 @@ EGLNativeWindowType QEglFSHooks::createNativeWindow(const QSize &size)
     return window;
 }
 
-void QEglFSHooks::destroyNativeWindow(EGLNativeWindowType window)
+void QEglFS8726MHooks::destroyNativeWindow(EGLNativeWindowType window)
 {
     delete window;
 }
 
-bool QEglFSHooks::hasCapability(QPlatformIntegration::Capability cap) const
-{
-    return false;
-}
+QEglFS8726MHooks eglFS8726MHooks;
+QEglFSHooks *platformHooks = &eglFS8726MHooks;
 
-QEglFSHooks platform_hooks;

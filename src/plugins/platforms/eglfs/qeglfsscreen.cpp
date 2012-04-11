@@ -41,7 +41,7 @@
 
 #include "qeglfsscreen.h"
 #include "qeglfswindow.h"
-#include "qeglfs_hooks.h"
+#include "qeglfshooks.h"
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>

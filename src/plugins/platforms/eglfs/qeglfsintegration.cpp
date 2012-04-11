@@ -43,7 +43,7 @@
 
 #include "qeglfswindow.h"
 #include "qeglfsbackingstore.h"
-#include "qeglfs_hooks.h"
+#include "qeglfshooks.h"
 
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>

@@ -39,31 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFS_HOOKS_H
-#define QEGLFS_HOOKS_H
+#ifndef QEGLFSHOOKS_H
+#define QEGLFSHOOKS_H
 
 #include "qplatformintegration_qpa.h"
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
-struct QEglFSHooks {
-    void platformInit();
-    void platformDestroy();
-    EGLNativeDisplayType platformDisplay() const;
-    QSize screenSize() const;
-    EGLNativeWindowType createNativeWindow(const QSize &size);
-    void destroyNativeWindow(EGLNativeWindowType window);
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+class QEglFSHooks
+{
+public:
+    virtual void platformInit();
+    virtual void platformDestroy();
+    virtual EGLNativeDisplayType platformDisplay() const;
+    virtual QSize screenSize() const;
+    virtual EGLNativeWindowType createNativeWindow(const QSize &size);
+    virtual void destroyNativeWindow(EGLNativeWindowType window);
+    virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
 };
 
 #ifdef EGLFS_PLATFORM_HOOKS
-extern QEglFSHooks platform_hooks;
-static QEglFSHooks *hooks = &platform_hooks;
+extern QEglFSHooks *platformHooks;
+static QEglFSHooks *hooks = platformHooks;
 #else
-static QEglFSHooks *hooks = 0;
+extern QEglFSHooks stubHooks;
+static QEglFSHooks *hooks = &stubHooks;
 #endif
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QEGLFSHOOKS_H

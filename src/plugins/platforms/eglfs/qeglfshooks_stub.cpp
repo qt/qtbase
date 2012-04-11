@@ -39,57 +39,43 @@
 **
 ****************************************************************************/
 
-#include "qeglfs_hooks.h"
-
-#include <X11/Xlib.h>
-
-QEglFSHooks platform_hooks;
-static Display *display = 0;
+#include "qeglfshooks.h"
 
 void QEglFSHooks::platformInit()
 {
-    display = XOpenDisplay(NULL);
-    if (!display)
-        qFatal("Could not open display");
 }
 
 void QEglFSHooks::platformDestroy()
 {
-    XCloseDisplay(display);
 }
 
 EGLNativeDisplayType QEglFSHooks::platformDisplay() const
 {
-    return display;
+    return EGL_DEFAULT_DISPLAY;
 }
 
 QSize QEglFSHooks::screenSize() const
 {
-    QList<QByteArray> env = qgetenv("EGLFS_X11_SIZE").split('x');
-    if (env.length() != 2)
-        return QSize(640, 480);
-    return QSize(env.at(0).toInt(), env.at(1).toInt());
+    return QSize();
 }
 
 EGLNativeWindowType QEglFSHooks::createNativeWindow(const QSize &size)
 {
-    Window root = DefaultRootWindow(display);
-    XSetWindowAttributes swa;
-    memset(&swa, 0, sizeof(swa));
-    Window win  = XCreateWindow(display, root, 0, 0, size.width(), size.height(), 0, CopyFromParent,
-                                InputOutput, CopyFromParent, CWEventMask, &swa);
-    XMapWindow(display, win);
-    XStoreName(display, win, "EGLFS");
-    return win;
+    Q_UNUSED(size);
+    return 0;
 }
 
 void QEglFSHooks::destroyNativeWindow(EGLNativeWindowType window)
 {
-    XDestroyWindow(display, window);
+    Q_UNUSED(window);
 }
 
 bool QEglFSHooks::hasCapability(QPlatformIntegration::Capability cap) const
 {
+    Q_UNUSED(cap);
     return false;
 }
 
+#ifndef EGLFS_PLATFORM_HOOKS
+QEglFSHooks stubHooks;
+#endif
