@@ -45,6 +45,7 @@
 #include <qvariant.h>
 #include <qvector.h>
 #include <qbuffer.h>
+#include <qmath.h>
 #include <private/qsimd_p.h>
 
 #include <stdio.h>      // jpeglib needs this to be pre-included
@@ -321,27 +322,31 @@ static bool read_jpeg_image(QImage *outImage,
         }
 
         // Determine the scale factor to pass to libjpeg for quick downscaling.
-        if (!scaledSize.isEmpty()) {
+        if (!scaledSize.isEmpty() && info->image_width && info->image_height) {
             if (clipRect.isEmpty()) {
-                info->scale_denom =
-                    qMin(info->image_width / scaledSize.width(),
-                         info->image_height / scaledSize.height());
-            } else {
-                info->scale_denom =
-                    qMin(clipRect.width() / scaledSize.width(),
-                         clipRect.height() / scaledSize.height());
-            }
-            if (info->scale_denom < 2) {
-                info->scale_denom = 1;
-            } else if (info->scale_denom < 4) {
-                info->scale_denom = 2;
-            } else if (info->scale_denom < 8) {
-                info->scale_denom = 4;
-            } else {
+                double f = qMin(double(info->image_width) / scaledSize.width(),
+                                double(info->image_height) / scaledSize.height());
+
+                // libjpeg supports M/8 scaling with M=[1,16]. All downscaling factors
+                // are a speed improvement, but upscaling during decode is slower.
+                info->scale_num   = qBound(1, qCeil(8/f), 8);
                 info->scale_denom = 8;
-            }
-            info->scale_num = 1;
-            if (!clipRect.isEmpty()) {
+            } else {
+                info->scale_denom = qMin(clipRect.width() / scaledSize.width(),
+                                         clipRect.height() / scaledSize.height());
+
+                // Only scale by powers of two when clipping so we can
+                // keep the exact pixel boundaries
+                if (info->scale_denom < 2)
+                    info->scale_denom = 1;
+                else if (info->scale_denom < 4)
+                    info->scale_denom = 2;
+                else if (info->scale_denom < 8)
+                    info->scale_denom = 4;
+                else
+                    info->scale_denom = 8;
+                info->scale_num = 1;
+
                 // Correct the scale factor so that we clip accurately.
                 // It is recommended that the clip rectangle be aligned
                 // on an 8-pixel boundary for best performance.
