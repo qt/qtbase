@@ -181,10 +181,6 @@ QWindow::~QWindow()
     destroy();
 }
 
-QSurface::~QSurface()
-{
-}
-
 /*!
     Set the \a surfaceType of the window.
 
