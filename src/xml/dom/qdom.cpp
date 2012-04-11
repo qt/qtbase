@@ -4559,14 +4559,14 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
     QString qName(name);
     QString nsDecl(QLatin1String(""));
     if (!namespaceURI.isNull()) {
-        /** ### Qt 5:
+        /** ###
          *
          * If we still have QDom, optimize this so that we only declare namespaces that are not
          * yet declared. We loose default namespace mappings, so maybe we should rather store
          * the information that we get from startPrefixMapping()/endPrefixMapping() and use them.
          * Modifications becomes more complex then, however.
          *
-         * We cannot do this during the Qt 4 series because it would require too invasive changes, and
+         * We cannot do this in a patch release because it would require too invasive changes, and
          * hence possibly behavioral changes.
          */
         if (prefix.isEmpty()) {
