@@ -321,7 +321,7 @@ void tst_Utf8::nonCharacters_data()
     // U+FDEF (inclusive)
 
     // U+FDD0 through U+FDEF
-    for (int i = 0; i < 16; ++i) {
+    for (int i = 0; i < 32; ++i) {
         char utf8[] = { char(0357), char(0267), char(0220 + i), 0 };
         QString utf16 = QChar(0xfdd0 + i);
         QTest::newRow(qPrintable(QString::number(0xfdd0 + i, 16))) << QByteArray(utf8) << utf16;

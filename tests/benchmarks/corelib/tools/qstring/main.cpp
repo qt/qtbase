@@ -1944,7 +1944,7 @@ static inline bool isUnicodeNonCharacter(uint ucs4)
     // U+FDEF (inclusive)
 
     return (ucs4 & 0xfffe) == 0xfffe
-            || (ucs4 - 0xfdd0U) < 16;
+            || (ucs4 - 0xfdd0U) < 32;
 }
 
 int fromUtf8_qt47(ushort *dst, const char *chars, int len)
