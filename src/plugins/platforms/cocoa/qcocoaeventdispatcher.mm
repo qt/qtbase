@@ -104,12 +104,28 @@ static inline CFRunLoopRef mainRunLoop()
     return CFRunLoopGetMain();
 }
 
+static Boolean runLoopSourceEqualCallback(const void *info1, const void *info2)
+{
+    return info1 == info2;
+}
+
 /*****************************************************************************
   Timers stuff
  *****************************************************************************/
 
 /* timer call back */
-void QCocoaEventDispatcherPrivate::activateTimer(CFRunLoopTimerRef, void *info)
+void QCocoaEventDispatcherPrivate::runLoopTimerCallback(CFRunLoopTimerRef, void *info)
+{
+    QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
+    if ((d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
+        // processEvents() was called "manually," ignore this source for now
+        d->maybeCancelWaitForMoreEvents();
+        return;
+    }
+    CFRunLoopSourceSignal(d->activateTimersSourceRef);
+}
+
+void QCocoaEventDispatcherPrivate::activateTimersSourceCallback(void *info)
 {
     QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
     (void) d->timerInfoList.activateTimers();
@@ -145,7 +161,7 @@ void QCocoaEventDispatcherPrivate::maybeStartCFRunLoopTimer()
         CFRunLoopTimerContext info = { 0, this, 0, 0, 0 };
         // create the timer with a large interval, as recommended by the CFRunLoopTimerSetNextFireDate()
         // documentation, since we will adjust the timer's time-to-fire as needed to keep Qt timers working
-        runLoopTimerRef = CFRunLoopTimerCreate(0, ttf, oneyear, 0, 0, QCocoaEventDispatcherPrivate::activateTimer, &info);
+        runLoopTimerRef = CFRunLoopTimerCreate(0, ttf, oneyear, 0, 0, QCocoaEventDispatcherPrivate::runLoopTimerCallback, &info);
         Q_ASSERT(runLoopTimerRef != 0);
 
         CFRunLoopAddTimer(mainRunLoop(), runLoopTimerRef, kCFRunLoopCommonModes);
@@ -513,10 +529,10 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     emit awake();
 
-    bool excludeUserEvents = flags & QEventLoop::ExcludeUserInputEvents;
-    bool retVal = false;
     uint oldflags = d->processEventsFlags;
     d->processEventsFlags = flags;
+    bool excludeUserEvents = d->processEventsFlags & QEventLoop::ExcludeUserInputEvents;
+    bool retVal = false;
     forever {
         if (d->interrupt)
             break;
@@ -544,8 +560,9 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
         // Finally, if we are to exclude user input events, we cannot call [NSApp run]
         // as we then loose control over which events gets dispatched:
         const bool canExec_3rdParty = d->nsAppRunCalledByQt || ![NSApp isRunning];
-        const bool canExec_Qt = !excludeUserEvents &&
-                (flags & QEventLoop::DialogExec || flags & QEventLoop::EventLoopExec) ;
+        const bool canExec_Qt = (!excludeUserEvents
+                                 && ((d->processEventsFlags & QEventLoop::DialogExec)
+                                     || (d->processEventsFlags & QEventLoop::EventLoopExec)));
 
         if (canExec_Qt && canExec_3rdParty) {
             // We can use exec-mode, meaning that we can stay in a tight loop until
@@ -632,9 +649,11 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                 }
             } while (!d->interrupt && event != nil);
 
-            if ((flags & QEventLoop::WaitForMoreEvents) == 0) {
-                // when called "manually", always send posted events
+            if ((d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
+                // when called "manually", always send posted events and timers
                 d->processPostedEvents();
+                retVal = d->timerInfoList.activateTimers() > 0 || retVal;
+                d->maybeStartCFRunLoopTimer();
             }
 
             // be sure to return true if the posted event source fired
@@ -651,12 +670,12 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
         bool canWait = (d->threadData->canWait
                 && !retVal
                 && !d->interrupt
-                && (flags & QEventLoop::WaitForMoreEvents));
+                && (d->processEventsFlags & QEventLoop::WaitForMoreEvents));
         if (canWait) {
             // INVARIANT: We haven't processed any events yet. And we're told
             // to stay inside this function until at least one event is processed.
             qt_mac_waitForMoreEvents();
-            flags &= ~QEventLoop::WaitForMoreEvents;
+            d->processEventsFlags &= ~QEventLoop::WaitForMoreEvents;
         } else {
             // Done with event processing for now.
             // Leave the function:
@@ -904,15 +923,28 @@ QCocoaEventDispatcher::QCocoaEventDispatcher(QObject *parent)
     : QAbstractEventDispatcher(*new QCocoaEventDispatcherPrivate, parent)
 {
     Q_D(QCocoaEventDispatcher);
+
+    // keep our sources running when modal loops are running
+    CFRunLoopAddCommonMode(mainRunLoop(), (CFStringRef) NSModalPanelRunLoopMode);
+
     CFRunLoopSourceContext context;
     bzero(&context, sizeof(CFRunLoopSourceContext));
     context.info = d;
-    context.equal = QCocoaEventDispatcherPrivate::postedEventSourceEqualCallback;
-    context.perform = QCocoaEventDispatcherPrivate::postedEventsSourcePerformCallback;
-    d->postedEventsSource = CFRunLoopSourceCreate(0, 0, &context);
+    context.equal = runLoopSourceEqualCallback;
+
+    // source used to activate timers
+    context.perform = QCocoaEventDispatcherPrivate::activateTimersSourceCallback;
+    d->activateTimersSourceRef = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &context);
+    Q_ASSERT(d->activateTimersSourceRef);
+    CFRunLoopAddSource(mainRunLoop(), d->activateTimersSourceRef, kCFRunLoopCommonModes);
+
+    // source used to send posted events
+    context.perform = QCocoaEventDispatcherPrivate::postedEventsSourceCallback;
+    d->postedEventsSource = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &context);
     Q_ASSERT(d->postedEventsSource);
     CFRunLoopAddSource(mainRunLoop(), d->postedEventsSource, kCFRunLoopCommonModes);
 
+    // observer to emit aboutToBlock() and awake()
     CFRunLoopObserverContext observerContext;
     bzero(&observerContext, sizeof(CFRunLoopObserverContext));
     observerContext.info = this;
@@ -946,11 +978,6 @@ void QCocoaEventDispatcherPrivate::waitingObserverCallback(CFRunLoopObserverRef,
         emit static_cast<QCocoaEventDispatcher*>(info)->aboutToBlock();
     else
         emit static_cast<QCocoaEventDispatcher*>(info)->awake();
-}
-
-Boolean QCocoaEventDispatcherPrivate::postedEventSourceEqualCallback(const void *info1, const void *info2)
-{
-    return info1 == info2;
 }
 
 void QCocoaEventDispatcherPrivate::processPostedEvents()
@@ -1017,9 +1044,14 @@ void QCocoaEventDispatcherPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
     static_cast<QCocoaEventDispatcherPrivate *>(info)->processPostedEvents();
 }
 
-void QCocoaEventDispatcherPrivate::postedEventsSourcePerformCallback(void *info)
+void QCocoaEventDispatcherPrivate::postedEventsSourceCallback(void *info)
 {
     QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
+    if ((d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
+        // processEvents() was called "manually," ignore this source for now
+        d->maybeCancelWaitForMoreEvents();
+        return;
+    }
     d->processPostedEvents();
     d->maybeCancelWaitForMoreEvents();
 }
@@ -1069,6 +1101,8 @@ QCocoaEventDispatcher::~QCocoaEventDispatcher()
 
     qDeleteAll(d->timerInfoList);
     d->maybeStopCFRunLoopTimer();
+    CFRunLoopRemoveSource(mainRunLoop(), d->activateTimersSourceRef, kCFRunLoopCommonModes);
+    CFRelease(d->activateTimersSourceRef);
 
     // Remove CFSockets from the runloop.
     for (MacSocketHash::ConstIterator it = d->macSockets.constBegin(); it != d->macSockets.constEnd(); ++it) {

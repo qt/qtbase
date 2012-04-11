@@ -116,7 +116,6 @@ public:
     explicit QCocoaEventDispatcher(QObject *parent = 0);
     ~QCocoaEventDispatcher();
 
-
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();
 
@@ -154,9 +153,11 @@ public:
     // timer handling
     QTimerInfoList timerInfoList;
     CFRunLoopTimerRef runLoopTimerRef;
+    CFRunLoopSourceRef activateTimersSourceRef;
     void maybeStartCFRunLoopTimer();
     void maybeStopCFRunLoopTimer();
-    static void activateTimer(CFRunLoopTimerRef, void *info);
+    static void runLoopTimerCallback(CFRunLoopTimerRef, void *info);
+    static void activateTimersSourceCallback(void *info);
 
     // Set 'blockSendPostedEvents' to true if you _really_ need
     // to make sure that qt events are not posted while calling
@@ -188,8 +189,7 @@ public:
     int lastSerial;
     bool interrupt;
 
-    static Boolean postedEventSourceEqualCallback(const void *info1, const void *info2);
-    static void postedEventsSourcePerformCallback(void *info);
+    static void postedEventsSourceCallback(void *info);
     static void waitingObserverCallback(CFRunLoopObserverRef observer,
                                         CFRunLoopActivity activity, void *info);
     static void firstLoopEntry(CFRunLoopObserverRef ref, CFRunLoopActivity activity, void *info);
