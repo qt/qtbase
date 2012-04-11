@@ -454,10 +454,38 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
 {
     // QWindow does currently not know 'active'.
     Qt::WindowStates eventState = event->oldState();
-    if (m_widget->windowState() & Qt::WindowActive)
+    Qt::WindowStates widgetState = m_widget->windowState();
+    if (widgetState & Qt::WindowActive)
         eventState |= Qt::WindowActive;
-    QWindowStateChangeEvent widgetEvent(eventState);
-    QGuiApplication::sendSpontaneousEvent(m_widget, &widgetEvent);
+
+    // Determine the new widget state, remember maximized/full screen
+    // during minimized.
+    switch (windowState()) {
+    case Qt::WindowNoState:
+        widgetState &= ~(Qt::WindowMinimized | Qt::WindowMaximized | Qt::WindowFullScreen);
+        break;
+    case Qt::WindowMinimized:
+        widgetState |= Qt::WindowMinimized;
+        break;
+    case Qt::WindowMaximized:
+        widgetState &= ~Qt::WindowFullScreen;
+        widgetState |= Qt::WindowMaximized;
+        break;
+    case Qt::WindowFullScreen:
+        widgetState &= ~Qt::WindowMaximized;
+        widgetState |= Qt::WindowFullScreen;
+        break;
+    case Qt::WindowActive: // Not handled by QWindow
+        break;
+    }
+
+    // Sent event if the state changed (that is, it is not triggered by
+    // QWidget::setWindowState(), which also sends an event to the widget).
+    if (widgetState != m_widget->data->window_state) {
+        m_widget->data->window_state = widgetState;
+        QWindowStateChangeEvent widgetEvent(eventState);
+        QGuiApplication::sendSpontaneousEvent(m_widget, &widgetEvent);
+    }
 }
 
 bool QWidgetWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
