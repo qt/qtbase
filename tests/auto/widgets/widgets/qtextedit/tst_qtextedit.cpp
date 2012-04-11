@@ -58,6 +58,7 @@
 #include <qimagewriter.h>
 #include <qcommonstyle.h>
 #include <qlayout.h>
+#include <qdir.h>
 
 #include <qabstracttextdocumentlayout.h>
 #include <qtextdocumentfragment.h>
@@ -218,6 +219,7 @@ private:
     QTextEdit *ed;
     qreal rootFrameMargin;
     PlatformInputContext m_platformInputContext;
+    const QString m_fullWidthSelectionImagesFolder;
 };
 
 bool tst_QTextEdit::nativeClipboardWorking()
@@ -376,13 +378,17 @@ public:
     int &iterationCounter;
 };
 
-tst_QTextEdit::tst_QTextEdit()
-{}
+tst_QTextEdit::tst_QTextEdit() :
+    m_fullWidthSelectionImagesFolder(QFINDTESTDATA("fullWidthSelection"))
+{
+
+}
 
 void tst_QTextEdit::initTestCase()
 {
     QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
     inputMethodPrivate->testContext = &m_platformInputContext;
+    QVERIFY2(!m_fullWidthSelectionImagesFolder.isEmpty(), qPrintable(QString::fromLatin1("Cannot locate 'fullWidthSelection' starting from %1").arg(QDir::currentPath())));
 }
 
 void tst_QTextEdit::cleanupTestCase()
@@ -1934,12 +1940,18 @@ void tst_QTextEdit::fullWidthSelection_data()
     QTest::addColumn<int>("cursorTo");
     QTest::addColumn<QString>("imageFileName");
 
-    QTest::newRow("centered fully selected") << 0 << 15 << QString("fullWidthSelection/centered-fully-selected.png");
-    QTest::newRow("centered partly selected") << 2 << 15 << QString("fullWidthSelection/centered-partly-selected.png");
-    QTest::newRow("last char on line") << 42 << 44 << QString("fullWidthSelection/last-char-on-line.png");
-    QTest::newRow("last char on parag") << 545 << 548 << QString("fullWidthSelection/last-char-on-parag.png");
-    QTest::newRow("multiple full width lines") << 20 << 60 << QString("fullWidthSelection/multiple-full-width-lines.png");
-    QTest::newRow("single full width line") << 20 << 30 << QString("fullWidthSelection/single-full-width-line.png");
+    QTest::newRow("centered fully selected")
+        << 0 << 15 << (m_fullWidthSelectionImagesFolder + QStringLiteral("/centered-fully-selected.png"));
+    QTest::newRow("centered partly selected")
+       << 2 << 15 << (m_fullWidthSelectionImagesFolder + QStringLiteral("/centered-partly-selected.png"));
+    QTest::newRow("last char on line")
+       << 42 << 44 << (m_fullWidthSelectionImagesFolder + QStringLiteral("/last-char-on-line.png"));
+    QTest::newRow("last char on parag")
+       << 545 << 548 << (m_fullWidthSelectionImagesFolder + QStringLiteral("/last-char-on-parag.png"));
+    QTest::newRow("multiple full width lines")
+       << 20 << 60 << (m_fullWidthSelectionImagesFolder + QStringLiteral("/multiple-full-width-lines.png"));
+    QTest::newRow("single full width line")
+       << 20 << 30 << (m_fullWidthSelectionImagesFolder + QStringLiteral("/single-full-width-line.png"));
 }
 
 void tst_QTextEdit::fullWidthSelection()
@@ -2053,11 +2065,12 @@ void tst_QTextEdit::compareWidgetAndImage(QTextEdit &widget, const QString &imag
     QPainter painter(&image);
     widget.viewport()->render(&painter);
     painter.end();
-    // qDebug() << "file: " << QString(SRCDIR) + imageFileName;
-    QImageReader reader(QString(SRCDIR) + imageFileName, "PNG");
+    QImageReader reader(imageFileName, "PNG");
+
     QImage original = reader.read();
 
-    QCOMPARE(original.isNull(), false);
+    QVERIFY2(!original.isNull(),
+             qPrintable(QString::fromLatin1("Unable to read image %1: %2").arg(imageFileName, reader.errorString())));
     QCOMPARE(original.size(), image.size());
     QCOMPARE(image.depth(), 32);
     QCOMPARE(original.depth(), image.depth());
