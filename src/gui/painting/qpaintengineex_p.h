@@ -71,19 +71,6 @@ class QPaintEngineExPrivate;
 class QStaticTextItem;
 struct StrokeHandler;
 
-struct QIntRect {
-    int x1, y1, x2, y2;
-    inline void set(const QRect &r) {
-        x1 = r.x();
-        y1 = r.y();
-        x2 = r.right() + 1;
-        y2 = r.bottom() + 1;
-        // We will assume normalized for later...
-        Q_ASSERT(x2 >= x1);
-        Q_ASSERT(y2 >= y1);
-    }
-};
-
 #ifndef QT_NO_DEBUG_STREAM
 QDebug Q_GUI_EXPORT &operator<<(QDebug &, const QVectorPath &path);
 #endif
