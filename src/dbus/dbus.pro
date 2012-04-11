@@ -33,8 +33,6 @@ win32 {
 }
 load(qt_module_config)
 
-HEADERS += $$QT_SOURCE_TREE/src/dbus/qtdbusversion.h
-
 QMAKE_DOCS = $$PWD/doc/qtdbus.qdocconf
 QMAKE_DOCS_INDEX = ../../doc
 

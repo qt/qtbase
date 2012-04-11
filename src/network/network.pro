@@ -21,8 +21,6 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 load(qt_module_config)
 
-HEADERS += $$QT_SOURCE_TREE/src/network/qtnetworkversion.h
-
 QMAKE_DOCS = $$PWD/doc/qtnetwork.qdocconf
 QMAKE_DOCS_INDEX = ../../doc
 

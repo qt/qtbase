@@ -1,4 +1,13 @@
 #load up the headers info
 include($$MODULE_BASE_OUTDIR/include/$$TARGET/headers.pri, "", true)
 
+lctarget = $$lower($$TARGET)
+
+MODULE_VERSION_HEADER = $$find(SYNCQT.HEADER_FILES, (^|/)$${lctarget}version\\.h$)
+count(MODULE_VERSION_HEADER, 1) {
+    MODULE_VERSION_HEADER = $$absolute_path($$MODULE_VERSION_HEADER, $$_PRO_FILE_PWD_)
+
+    HEADERS += $$MODULE_VERSION_HEADER
+}
+
 CONFIG += qt_install_headers

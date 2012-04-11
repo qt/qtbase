@@ -16,8 +16,6 @@ load(qt_module_config)
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 
-HEADERS += $$PWD/qtplatformsupportversion.h
-
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 

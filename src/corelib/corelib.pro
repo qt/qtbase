@@ -14,8 +14,6 @@ irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 load(qt_module_config)
 
-HEADERS += $$QT_SOURCE_TREE/src/corelib/qtcoreversion.h
-
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
 QMAKE_DOCS_INDEX = ../../doc
 
