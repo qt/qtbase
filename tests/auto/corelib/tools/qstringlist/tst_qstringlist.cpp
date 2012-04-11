@@ -44,10 +44,13 @@
 #include <qregularexpression.h>
 #include <qstringlist.h>
 
+#include <locale.h>
+
 class tst_QStringList : public QObject
 {
     Q_OBJECT
 private slots:
+    void sort();
     void filter();
     void replaceInStrings();
     void removeDuplicates();
@@ -197,6 +200,23 @@ void tst_QStringList::filter()
     list5 = list5.filter( QRegularExpression("[i]ll") );
     list6 << "Bill Gates" << "Bill Clinton";
     QCOMPARE( list5, list6 );
+}
+
+void tst_QStringList::sort()
+{
+    QStringList list1, list2;
+    list1 << "alpha" << "beta" << "BETA" << "gamma" << "Gamma" << "gAmma" << "epsilon";
+    list1.sort();
+    list2 << "BETA" << "Gamma" << "alpha" << "beta" << "epsilon" << "gAmma" << "gamma";
+    QCOMPARE( list1, list2 );
+
+    char *current_locale = setlocale(LC_ALL, "C");
+    QStringList list3, list4;
+    list3 << "alpha" << "beta" << "BETA" << "gamma" << "Gamma" << "gAmma" << "epsilon";
+    list3.sort(Qt::CaseInsensitive);
+    list4 << "alpha" << "beta" << "BETA" << "epsilon" << "Gamma" << "gAmma" << "gamma";
+    QCOMPARE( list3, list4 );
+    setlocale(LC_ALL, current_locale);
 }
 
 void tst_QStringList::replaceInStrings()

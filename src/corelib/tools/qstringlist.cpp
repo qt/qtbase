@@ -213,9 +213,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QStringList::sort()
+    \fn void QStringList::sort(Qt::CaseSensitivity cs)
 
-    Sorts the list of strings in ascending order (case sensitively).
+    Sorts the list of strings in ascending order.
+    If \a cs is \l Qt::CaseSensitive (the default), the string comparison
+    is case sensitive; otherwise the comparison is case insensitive.
 
     Sorting is performed using Qt's qSort() algorithm,
     which operates in \l{linear-logarithmic time}, i.e. O(\e{n} log \e{n}).
@@ -229,9 +231,18 @@ QT_BEGIN_NAMESPACE
 
     \sa qSort()
 */
-void QtPrivate::QStringList_sort(QStringList *that)
+
+static inline bool caseInsensitiveLessThan(const QString &s1, const QString &s2)
 {
-    qSort(*that);
+   return s1.compare(s2, Qt::CaseInsensitive) < 0;
+}
+
+void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
+{
+    if (cs == Qt::CaseSensitive)
+        qSort(that->begin(), that->end());
+    else
+        qSort(that->begin(), that->end(), caseInsensitiveLessThan);
 }
 
 
