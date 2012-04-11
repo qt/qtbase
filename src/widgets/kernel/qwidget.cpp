@@ -6730,7 +6730,6 @@ void QWidget::setContentsMargins(int left, int top, int right, int bottom)
     else
         updateGeometry();
 
-    // ### Qt 5: compat, remove
     if (isVisible()) {
         update();
         QResizeEvent e(data->crect.size(), data->crect.size());
