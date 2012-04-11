@@ -139,7 +139,16 @@ public:
     inline int elementCount() const { return m_count; }
     inline const QPainterPath convertToPainterPath() const;
 
-    static inline uint polygonFlags(QPaintEngine::PolygonDrawMode mode);
+    static inline uint polygonFlags(QPaintEngine::PolygonDrawMode mode)
+    {
+        switch (mode) {
+        case QPaintEngine::ConvexMode: return ConvexPolygonHint | ImplicitClose;
+        case QPaintEngine::OddEvenMode: return PolygonHint | OddEvenFill | ImplicitClose;
+        case QPaintEngine::WindingMode: return PolygonHint | WindingFill | ImplicitClose;
+        case QPaintEngine::PolylineMode: return PolygonHint;
+        default: return 0;
+        }
+    }
 
     struct CacheEntry {
         QPaintEngineEx *engine;

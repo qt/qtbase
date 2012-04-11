@@ -204,16 +204,6 @@ public:
     QRect exDeviceRect;
 };
 
-inline uint QVectorPath::polygonFlags(QPaintEngine::PolygonDrawMode mode) {
-    switch (mode) {
-    case QPaintEngine::ConvexMode: return ConvexPolygonHint | ImplicitClose;
-    case QPaintEngine::OddEvenMode: return PolygonHint | OddEvenFill | ImplicitClose;
-    case QPaintEngine::WindingMode: return PolygonHint | WindingFill | ImplicitClose;
-    case QPaintEngine::PolylineMode: return PolygonHint;
-    default: return 0;
-    }
-}
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
