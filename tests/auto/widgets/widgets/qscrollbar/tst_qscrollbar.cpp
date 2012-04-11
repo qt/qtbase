@@ -136,9 +136,6 @@ void tst_QScrollBar::task_209492()
     QApplication::sendEvent(verticalScrollBar, &mouseReleaseEvent);
 
     // Check that the action was triggered once.
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "Fix does does not work on Mac due to paint architechure differences.", Abort);
-#endif
     QCOMPARE(scrollArea.scrollCount, 1);
     QCOMPARE(spy.count(), 1);
 }
