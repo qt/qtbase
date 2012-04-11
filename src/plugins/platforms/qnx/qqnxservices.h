@@ -46,10 +46,12 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQnxAbstractNavigator;
+
 class QQnxServices : public QPlatformServices
 {
 public:
-    QQnxServices();
+    explicit QQnxServices(QQnxAbstractNavigator *navigator);
     ~QQnxServices();
 
     bool openUrl(const QUrl &url);
@@ -57,6 +59,9 @@ public:
 
 private:
     bool navigatorInvoke(const QUrl &url);
+
+private:
+    QQnxAbstractNavigator *m_navigator;
 };
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2012 Research In Motion
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,34 +39,35 @@
 **
 ****************************************************************************/
 
-#include "qqnxservices.h"
+#ifndef QQNXNAVIGATORPPS_H
+#define QQNXNAVIGATORPPS_H
 
 #include "qqnxabstractnavigator.h"
 
 QT_BEGIN_NAMESPACE
 
-QQnxServices::QQnxServices(QQnxAbstractNavigator *navigator)
-    : m_navigator(navigator)
-{
-}
+template <typename K, typename V> class QHash;
 
-QQnxServices::~QQnxServices()
+class QQnxNavigatorPps : public QQnxAbstractNavigator
 {
-}
+    Q_OBJECT
+public:
+    explicit QQnxNavigatorPps(QObject *parent = 0);
+    ~QQnxNavigatorPps();
 
-bool QQnxServices::openUrl(const QUrl &url)
-{
-    return navigatorInvoke(url);
-}
+protected:
+    bool requestInvokeUrl(const QByteArray &encodedUrl);
 
-bool QQnxServices::openDocument(const QUrl &url)
-{
-    return navigatorInvoke(url);
-}
+private:
+    bool openPpsConnection();
 
-bool QQnxServices::navigatorInvoke(const QUrl &url)
-{
-    return m_navigator->invokeUrl(url);
-}
+    bool sendPpsMessage(const QByteArray &message, const QByteArray &data);
+    void parsePPS(const QByteArray &ppsData, QHash<QByteArray, QByteArray> &messageFields);
+
+private:
+    int m_fd;
+};
 
 QT_END_NAMESPACE
+
+#endif // QQNXNAVIGATORPPS_H

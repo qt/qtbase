@@ -11,6 +11,13 @@ contains(QT_CONFIG, opengles2) {
 # Uncomment this to build with support for IMF once it becomes available in the BBNDK
 #CONFIG += qqnx_imf
 
+# Uncomment this to build with support for PPS based platform integration
+#CONFIG += qqnx_pps
+
+CONFIG(blackberry) {
+    CONFIG += qqnx_pps
+}
+
 # Uncomment these to enable debugging output for various aspects of the plugin
 #DEFINES += QQNXBUFFER_DEBUG
 #DEFINES += QQNXCLIPBOARD_DEBUG
@@ -28,6 +35,7 @@ contains(QT_CONFIG, opengles2) {
 #DEFINES += QQNXSCREENEVENT_DEBUG
 #DEFINES += QQNXVIRTUALKEYBOARD_DEBUG
 #DEFINES += QQNXWINDOW_DEBUG
+#DEFINES += QQNXNAVIGATOR_DEBUG
 
 SOURCES =   main.cpp \
             qqnxbuffer.cpp \
@@ -38,20 +46,11 @@ SOURCES =   main.cpp \
             qqnxrasterbackingstore.cpp \
             qqnxrootwindow.cpp \
             qqnxscreeneventhandler.cpp \
-            qqnxnativeinterface.cpp
-
-CONFIG(blackberry) {
-    SOURCES += qqnxnavigatoreventhandler.cpp \
-               qqnxnavigatoreventnotifier.cpp \
-               qqnxvirtualkeyboard.cpp \
-               qqnxclipboard.cpp \
-               qqnxabstractvirtualkeyboard.cpp
-}
-
-contains(QT_CONFIG, opengles2) {
-    SOURCES += qqnxglcontext.cpp \
-               qqnxglbackingstore.cpp
-}
+            qqnxnativeinterface.cpp \
+            qqnxnavigatoreventhandler.cpp \
+            qqnxabstractnavigator.cpp \
+            qqnxabstractvirtualkeyboard.cpp \
+            qqnxservices.cpp
 
 HEADERS =   main.h \
             qqnxbuffer.h \
@@ -63,25 +62,46 @@ HEADERS =   main.h \
             qqnxrasterbackingstore.h \
             qqnxrootwindow.h \
             qqnxscreeneventhandler.h \
-            qqnxnativeinterface.h
+            qqnxnativeinterface.h \
+            qqnxnavigatoreventhandler.h \
+            qqnxabstractnavigator.h \
+            qqnxabstractvirtualkeyboard.h \
+            qqnxservices.h
 
-CONFIG(blackberry) {
-    HEADERS += qqnxnavigatoreventhandler.h \
-               qqnxnavigatoreventnotifier.h \
-               qqnxvirtualkeyboard.h \
-               qqnxclipboard.h \
-               qqnxabstractvirtualkeyboard.h
-}
+LIBS += -lscreen
 
 contains(QT_CONFIG, opengles2) {
+    SOURCES += qqnxglcontext.cpp \
+               qqnxglbackingstore.cpp
+
     HEADERS += qqnxglcontext.h \
                qqnxglbackingstore.h
+
+    LIBS += -lEGL
 }
 
-
 CONFIG(blackberry) {
-    SOURCES += qqnxservices.cpp
-    HEADERS += qqnxservices.h
+    SOURCES += qqnxnavigatorbps.cpp
+
+    HEADERS += qqnxnavigatorbps.h
+
+    LIBS += -lbps
+}
+
+CONFIG(qqnx_pps) {
+    DEFINES += QQNX_PPS
+
+    SOURCES += qqnxnavigatorpps.cpp \
+               qqnxnavigatoreventnotifier.cpp \
+               qqnxvirtualkeyboard.cpp \
+               qqnxclipboard.cpp
+
+    HEADERS += qqnxnavigatorpps.h \
+               qqnxnavigatoreventnotifier.h \
+               qqnxvirtualkeyboard.h \
+               qqnxclipboard.h
+
+    LIBS += -lpps -lclipboard
 
     CONFIG(qqnx_imf) {
         DEFINES += QQNX_IMF
@@ -96,16 +116,6 @@ CONFIG(blackberry) {
 OTHER_FILES += qnx.json
 
 QMAKE_CXXFLAGS += -I./private
-
-LIBS += -lscreen
-
-contains(QT_CONFIG, opengles2) {
-    LIBS += -lEGL
-}
-
-CONFIG(blackberry) {
-    LIBS += -lbps -lpps -lclipboard
-}
 
 include (../../../platformsupport/eglconvenience/eglconvenience.pri)
 include (../../../platformsupport/fontdatabases/fontdatabases.pri)

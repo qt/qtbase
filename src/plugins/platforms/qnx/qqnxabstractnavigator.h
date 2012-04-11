@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2012 Research In Motion
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,34 +39,28 @@
 **
 ****************************************************************************/
 
-#include "qqnxservices.h"
+#ifndef QQNXABSTRACTNAVIGATOR_H
+#define QQNXABSTRACTNAVIGATOR_H
 
-#include "qqnxabstractnavigator.h"
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 
-QQnxServices::QQnxServices(QQnxAbstractNavigator *navigator)
-    : m_navigator(navigator)
-{
-}
+class QUrl;
 
-QQnxServices::~QQnxServices()
+class QQnxAbstractNavigator : public QObject
 {
-}
+    Q_OBJECT
+public:
+    explicit QQnxAbstractNavigator(QObject *parent = 0);
+    ~QQnxAbstractNavigator();
 
-bool QQnxServices::openUrl(const QUrl &url)
-{
-    return navigatorInvoke(url);
-}
+    bool invokeUrl(const QUrl &url);
 
-bool QQnxServices::openDocument(const QUrl &url)
-{
-    return navigatorInvoke(url);
-}
-
-bool QQnxServices::navigatorInvoke(const QUrl &url)
-{
-    return m_navigator->invokeUrl(url);
-}
+protected:
+    virtual bool requestInvokeUrl(const QByteArray &encodedUrl) = 0;
+};
 
 QT_END_NAMESPACE
+
+#endif // QQNXABSTRACTNAVIGATOR_H

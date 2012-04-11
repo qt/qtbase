@@ -55,16 +55,17 @@ class QQnxNativeInterface;
 class QQnxWindow;
 class QQnxScreen;
 class QQnxScreenEventHandler;
-
-#ifdef Q_OS_BLACKBERRY
-class QQnxInputContext;
 class QQnxNavigatorEventHandler;
-class QQnxNavigatorEventNotifier;
+class QQnxAbstractNavigator;
 class QQnxAbstractVirtualKeyboard;
 class QQnxServices;
+
+#if defined(QQNX_PPS)
+class QQnxInputContext;
+class QQnxNavigatorEventNotifier;
 #endif
 
-#ifndef QT_NO_CLIPBOARD
+#if !defined(QT_NO_CLIPBOARD)
 class QQnxClipboard;
 #endif
 
@@ -82,11 +83,11 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL)
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 #endif
 
-#ifdef Q_OS_BLACKBERRY
+#if defined(QQNX_PPS)
     QPlatformInputContext *inputContext() const;
 #endif
 
@@ -98,19 +99,17 @@ public:
 
     QPlatformNativeInterface *nativeInterface() const;
 
-#ifndef QT_NO_CLIPBOARD
+#if !defined(QT_NO_CLIPBOARD)
     QPlatformClipboard *clipboard() const;
 #endif
 
     QVariant styleHint(StyleHint hint) const;
 
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL)
     bool paintUsingOpenGL() const { return m_paintUsingOpenGL; }
 #endif
 
-#ifdef Q_OS_BLACKBERRY
     QPlatformServices *services() const;
-#endif
 
     static QWindow *window(screen_window_t qnxWindow);
 
@@ -124,24 +123,26 @@ private:
 
     screen_context_t m_screenContext;
     QQnxEventThread *m_eventThread;
-#ifdef Q_OS_BLACKBERRY
     QQnxNavigatorEventHandler *m_navigatorEventHandler;
-    QQnxNavigatorEventNotifier *m_navigatorEventNotifier;
     QQnxAbstractVirtualKeyboard *m_virtualKeyboard;
+#if defined(QQNX_PPS)
+    QQnxNavigatorEventNotifier *m_navigatorEventNotifier;
     QQnxInputContext *m_inputContext;
-    QQnxServices *m_services;
 #endif
+    QQnxServices *m_services;
     QPlatformFontDatabase *m_fontDatabase;
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL)
     bool m_paintUsingOpenGL;
 #endif
     QAbstractEventDispatcher *m_eventDispatcher;
     QQnxNativeInterface *m_nativeInterface;
     QList<QQnxScreen*> m_screens;
     QQnxScreenEventHandler *m_screenEventHandler;
-#ifndef QT_NO_CLIPBOARD
+#if !defined(QT_NO_CLIPBOARD)
     mutable QQnxClipboard* m_clipboard;
 #endif
+
+    QQnxAbstractNavigator *m_navigator;
 
     static QQnxWindowMapper ms_windowMapper;
     static QMutex ms_windowMapperMutex;

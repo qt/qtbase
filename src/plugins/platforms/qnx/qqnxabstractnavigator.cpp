@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2012 Research In Motion
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,34 +39,36 @@
 **
 ****************************************************************************/
 
-#include "qqnxservices.h"
-
 #include "qqnxabstractnavigator.h"
+
+#include <QDebug>
+#include <QUrl>
 
 QT_BEGIN_NAMESPACE
 
-QQnxServices::QQnxServices(QQnxAbstractNavigator *navigator)
-    : m_navigator(navigator)
+QQnxAbstractNavigator::QQnxAbstractNavigator(QObject *parent)
+    : QObject(parent)
 {
 }
 
-QQnxServices::~QQnxServices()
+QQnxAbstractNavigator::~QQnxAbstractNavigator()
 {
 }
 
-bool QQnxServices::openUrl(const QUrl &url)
+bool QQnxAbstractNavigator::invokeUrl(const QUrl &url)
 {
-    return navigatorInvoke(url);
-}
+    if (!url.isValid() || url.isRelative())
+        return false;
 
-bool QQnxServices::openDocument(const QUrl &url)
-{
-    return navigatorInvoke(url);
-}
+    // not using QUrl::toEncoded() because for e.g. camera:// it creates camera:
+    // which is not recognized by the navigator anymore
+    const bool result = requestInvokeUrl(url.toString().toUtf8());
 
-bool QQnxServices::navigatorInvoke(const QUrl &url)
-{
-    return m_navigator->invokeUrl(url);
+#if defined(QQNXNAVIGATOR_DEBUG)
+    qDebug() << Q_FUNC_INFO << "url=" << url << "result=" << result;
+#endif
+
+    return result;
 }
 
 QT_END_NAMESPACE

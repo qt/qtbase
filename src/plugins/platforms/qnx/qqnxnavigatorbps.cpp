@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2012 Research In Motion
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,34 +39,36 @@
 **
 ****************************************************************************/
 
-#include "qqnxservices.h"
+#include "qqnxnavigatorbps.h"
 
-#include "qqnxabstractnavigator.h"
+#include <QDebug>
+
+#include <bps/navigator.h>
 
 QT_BEGIN_NAMESPACE
 
-QQnxServices::QQnxServices(QQnxAbstractNavigator *navigator)
-    : m_navigator(navigator)
+QQnxNavigatorBps::QQnxNavigatorBps(QObject *parent)
+    : QQnxAbstractNavigator(parent)
 {
+    bps_initialize();
 }
 
-QQnxServices::~QQnxServices()
+QQnxNavigatorBps::~QQnxNavigatorBps()
 {
+    bps_shutdown();
 }
 
-bool QQnxServices::openUrl(const QUrl &url)
+bool QQnxNavigatorBps::requestInvokeUrl(const QByteArray &encodedUrl)
 {
-    return navigatorInvoke(url);
-}
+    char *error = 0;
 
-bool QQnxServices::openDocument(const QUrl &url)
-{
-    return navigatorInvoke(url);
-}
+    int ret = navigator_invoke(encodedUrl, &error);
+    if (error) {
+        qWarning() << Q_FUNC_INFO << "error=" << error;
+        bps_free(error);
+    }
 
-bool QQnxServices::navigatorInvoke(const QUrl &url)
-{
-    return m_navigator->invokeUrl(url);
+    return (ret == BPS_SUCCESS);
 }
 
 QT_END_NAMESPACE
