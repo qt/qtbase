@@ -19,5 +19,3 @@ TESTDATA += \
     ../qtextstream.qrc \
     ../tst_qtextstream.cpp \
     ../resources
-
-mac: CONFIG += insignificant_test # QTBUG-22767
