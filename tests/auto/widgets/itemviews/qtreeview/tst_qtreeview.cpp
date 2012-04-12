@@ -2990,6 +2990,19 @@ void tst_QTreeView::styleOptionViewItem()
     view.setFirstColumnSpanned(2, QModelIndex(), true);
     view.setAlternatingRowColors(true);
 
+#ifdef QT_BUILD_INTERNAL
+    {
+        // Test the rendering to pixmap before painting the widget.
+        // The rendering to pixmap should not depend on having been
+        // painted already yet.
+        delegate.count = 0;
+        QItemSelection sel(model.index(0,0), model.index(0,modelColumns-1));
+        QRect rect;
+        view.aiv_priv()->renderToPixmap(sel.indexes(), &rect);
+        QTRY_VERIFY(delegate.count == visibleColumns);
+    }
+#endif
+
     delegate.count = 0;
     delegate.allCollapsed = true;
     view.showMaximized();
