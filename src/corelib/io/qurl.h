@@ -259,6 +259,15 @@ public:
     QT_DEPRECATED inline void removeQueryItem(const QString &key);
     QT_DEPRECATED inline void removeAllQueryItems(const QString &key);
 
+    QT_DEPRECATED inline void setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &query);
+    QT_DEPRECATED inline void addEncodedQueryItem(const QByteArray &key, const QByteArray &value);
+    QT_DEPRECATED inline QList<QPair<QByteArray, QByteArray> > encodedQueryItems() const;
+    QT_DEPRECATED inline bool hasEncodedQueryItem(const QByteArray &key) const;
+    QT_DEPRECATED inline QByteArray encodedQueryItemValue(const QByteArray &key) const;
+    QT_DEPRECATED inline QList<QByteArray> allEncodedQueryItemValues(const QByteArray &key) const;
+    QT_DEPRECATED inline void removeEncodedQueryItem(const QByteArray &key);
+    QT_DEPRECATED inline void removeAllEncodedQueryItems(const QByteArray &key);
+
     QT_DEPRECATED void setEncodedUrl(const QByteArray &u, ParsingMode mode = TolerantMode)
     { setUrl(QString::fromUtf8(u.constData(), u.size()), mode); }
 

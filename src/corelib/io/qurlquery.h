@@ -131,6 +131,45 @@ inline void QUrl::removeQueryItem(const QString &key)
 { QUrlQuery q(*this); q.removeQueryItem(key); setQuery(q); }
 inline void QUrl::removeAllQueryItems(const QString &key)
 { QUrlQuery q(*this); q.removeAllQueryItems(key); }
+
+inline void QUrl::addEncodedQueryItem(const QByteArray &key, const QByteArray &value)
+{ QUrlQuery q(*this); q.addQueryItem(QString::fromUtf8(key), QString::fromUtf8(value)); setQuery(q); }
+inline bool QUrl::hasEncodedQueryItem(const QByteArray &key) const
+{ return QUrlQuery(*this).hasQueryItem(QString::fromUtf8(key)); }
+inline QByteArray QUrl::encodedQueryItemValue(const QByteArray &key) const
+{ return QUrlQuery(*this).queryItemValue(QString::fromUtf8(key), QUrl::FullyEncoded).toLatin1(); }
+inline void QUrl::removeEncodedQueryItem(const QByteArray &key)
+{ QUrlQuery q(*this); q.removeQueryItem(QString::fromUtf8(key)); setQuery(q); }
+inline void QUrl::removeAllEncodedQueryItems(const QByteArray &key)
+{ QUrlQuery q(*this); q.removeAllQueryItems(QString::fromUtf8(key)); }
+
+inline void QUrl::setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &qry)
+{
+    QUrlQuery q(*this);
+    QList<QPair<QByteArray, QByteArray> >::ConstIterator it = qry.constBegin();
+    for ( ; it != qry.constEnd(); ++it)
+        q.addQueryItem(QString::fromUtf8(it->first), QString::fromUtf8(it->second));
+    setQuery(q);
+}
+inline QList<QPair<QByteArray, QByteArray> > QUrl::encodedQueryItems() const
+{
+    QList<QPair<QString, QString> > items = QUrlQuery(*this).queryItems(QUrl::FullyEncoded);
+    QList<QPair<QString, QString> >::ConstIterator it = items.constBegin();
+    QList<QPair<QByteArray, QByteArray> > result;
+    result.reserve(items.size());
+    for ( ; it != items.constEnd(); ++it)
+        result << qMakePair(it->first.toLatin1(), it->second.toLatin1());
+    return result;
+}
+inline QList<QByteArray> QUrl::allEncodedQueryItemValues(const QByteArray &key) const
+{
+    QStringList items = QUrlQuery(*this).allQueryItemValues(QString::fromUtf8(key), QUrl::FullyEncoded);
+    QList<QByteArray> result;
+    result.reserve(items.size());
+    Q_FOREACH (const QString &item, items)
+        result << item.toLatin1();
+    return result;
+}
 #endif
 
 QT_END_NAMESPACE
