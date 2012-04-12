@@ -8,7 +8,7 @@ DEFINES += MESA_EGL_NO_X11_HEADERS
 
 CONFIG += link_pkgconfig egl qpa/genericunixfontdatabase
 
-PKGCONFIG += libdrm egl gbm glesv2
+PKGCONFIG += libdrm libudev egl gbm glesv2
 
 SOURCES =   main.cpp \
             qkmsintegration.cpp \
@@ -19,7 +19,9 @@ SOURCES =   main.cpp \
             qkmsdevice.cpp \
             qkmsbuffermanager.cpp \
             qkmsbackingstore.cpp \
-            qkmsnativeinterface.cpp
+            qkmsnativeinterface.cpp \
+            qkmsudevlistener.cpp \
+            qkmsudevhandler.cpp
 HEADERS =   qkmsintegration.h \
             qkmsscreen.h \
             qkmscontext.h \
@@ -28,7 +30,9 @@ HEADERS =   qkmsintegration.h \
             qkmsdevice.h \
             qkmsbuffermanager.h \
             qkmsbackingstore.h \
-            qkmsnativeinterface.h
+            qkmsnativeinterface.h \
+            qkmsudevlistener.h \
+            qkmsudevhandler.h
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
