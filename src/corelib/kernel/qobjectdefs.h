@@ -462,7 +462,7 @@ public:
     Connection();
     Connection(const Connection &other);
     Connection &operator=(const Connection &other);
-#ifdef qdoc
+#ifdef Q_QDOC
     operator bool() const;
 #else
     typedef void *Connection::*RestrictedBool;

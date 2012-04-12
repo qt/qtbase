@@ -199,8 +199,8 @@ public:
                         const char *member, Qt::ConnectionType type = Qt::AutoConnection) const;
 
 #ifdef Q_QDOC
-    QMetaObject::Connection QObject::connect(const QObject *sender, (T::*signal)(...), const QObject *receiver, (T::*method)(...), Qt::ConnectionType type)
-    QMetaObject::Connection QObject::connect(const QObject *sender, (T::*signal)(...), Functor functor)
+    static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type);
+    static QMetaObject::Connection connect(const QObject *sender, PointerToMemberFunction signal, Functor functor);
 #else
     //Connect a signal to a pointer to qobject member function
     template <typename Func1, typename Func2>
@@ -279,7 +279,7 @@ public:
     static bool disconnect(const QMetaObject::Connection &);
 
 #ifdef Q_QDOC
-    bool QObject::disconnect(const QObject *sender, (T::*signal)(...), const Qbject *receiver, (T::*method)(...))
+    static bool disconnect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method);
 #else
     template <typename Func1, typename Func2>
     static inline bool disconnect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
