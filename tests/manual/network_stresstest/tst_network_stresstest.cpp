@@ -537,7 +537,7 @@ void tst_NetworkStressTest::blockingMultipleRequests()
                     qWarning() << "no content-length:" << QString(buffer);
                     break;
                 }
-                pos += strlen("\r\ncontent-length: ");
+                pos += int(strlen("\r\ncontent-length: "));
 
                 int eol = buffer.indexOf("\r\n", pos + 2);
                 if (eol == -1) {
