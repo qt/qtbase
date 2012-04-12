@@ -1502,8 +1502,7 @@ bool QODBCResult::exec()
                     int strSize = str.length() * sizeof(SQLTCHAR);
 
                     if (bindValueType(i) & QSql::Out) {
-                        QVarLengthArray<SQLTCHAR> a(toSQLTCHAR(str));
-                        a.reserve(str.capacity());
+                        const QVarLengthArray<SQLTCHAR> a(toSQLTCHAR(str));
                         QByteArray ba((const char *)a.constData(), a.size() * sizeof(SQLTCHAR));
                         r = SQLBindParameter(d->hStmt,
                                             i + 1,
