@@ -573,6 +573,11 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, const QODBCDriverPrivate*
     QString fname = qGetStringData(hStmt, 3, -1, p->unicode);
     int type = qGetIntData(hStmt, 4).toInt(); // column type
     QSqlField f(fname, qDecodeODBCType(type, p));
+    QVariant var = qGetIntData(hStmt, 6);
+    f.setLength(var.isNull() ? -1 : var.toInt()); // column size
+    var = qGetIntData(hStmt, 8).toInt();
+    f.setPrecision(var.isNull() ? -1 : var.toInt()); // precision
+    f.setSqlType(type);
     int required = qGetIntData(hStmt, 10).toInt(); // nullable-flag
     // required can be SQL_NO_NULLS, SQL_NULLABLE or SQL_NULLABLE_UNKNOWN
     if (required == SQL_NO_NULLS)
@@ -580,11 +585,6 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, const QODBCDriverPrivate*
     else if (required == SQL_NULLABLE)
         f.setRequired(false);
     // else we don't know
-    QVariant var = qGetIntData(hStmt, 6);
-    f.setLength(var.isNull() ? -1 : var.toInt()); // column size
-    var = qGetIntData(hStmt, 8).toInt();
-    f.setPrecision(var.isNull() ? -1 : var.toInt()); // precision
-    f.setSqlType(type);
     return f;
 }
 
