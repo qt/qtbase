@@ -1996,7 +1996,7 @@ int fromUtf8_qt47(ushort *dst, const char *chars, int len)
                     bool nonCharacter;
                     if (!headerdone && uc == 0xfeff) {
                         // don't do anything, just skip the BOM
-                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && uc > 0xffff && uc < 0x110000) {
+                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc < 0x110000) {
                         // surrogate pair
                         //Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
                         *qch++ = QChar::highSurrogate(uc);
@@ -2102,7 +2102,7 @@ int fromUtf8_qt47_stateless(ushort *dst, const char *chars, int len)
                     bool nonCharacter;
                     if (!headerdone && uc == 0xfeff) {
                         // don't do anything, just skip the BOM
-                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && uc > 0xffff && uc < 0x110000) {
+                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc < 0x110000) {
                         // surrogate pair
                         //Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
                         *qch++ = QChar::highSurrogate(uc);
@@ -2258,7 +2258,7 @@ static inline void extract_utf8_multibyte(ushort *&dst, const char *&chars, qptr
         // dst[counter] will correspond to chars[counter..counter+2], so adjust
         chars += 3;
         len -= 3;
-        if (trusted || (ucs >= 0x10000 && ucs < 0x110000 && !isUnicodeNonCharacter(ucs))) {
+        if (trusted || (QChar::requiresSurrogates(ucs) && ucs < 0x110000 && !isUnicodeNonCharacter(ucs))) {
             dst[counter + 0] = QChar::highSurrogate(ucs);
             dst[counter + 1] = QChar::lowSurrogate(ucs);
             counter += 2;

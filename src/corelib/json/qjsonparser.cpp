@@ -769,9 +769,10 @@ static inline bool scanUtf8Char(const char *&json, const char *end, uint *result
         uc = (uc << 6) | (ch & 0x3f);
     }
 
-    if (isUnicodeNonCharacter(uc) || uc >= 0x110000 ||
-        (uc < min_uc) || (uc >= 0xd800 && uc <= 0xdfff))
+    if (uc < min_uc || isUnicodeNonCharacter(uc) ||
+        (uc >= 0xd800 && uc <= 0xdfff) || uc >= 0x110000) {
         return false;
+    }
 
     *result = uc;
     return true;
@@ -850,7 +851,7 @@ bool Parser::parseString(bool *latin1)
                 return false;
             }
         }
-        if (ch > 0xffff) {
+        if (QChar::requiresSurrogates(ch)) {
             int pos = reserveSpace(4);
             *(QJsonPrivate::qle_ushort *)(data + pos) = QChar::highSurrogate(ch);
             *(QJsonPrivate::qle_ushort *)(data + pos + 2) = QChar::lowSurrogate(ch);

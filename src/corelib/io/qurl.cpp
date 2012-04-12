@@ -2388,7 +2388,7 @@ static void mapToLowerCase(QString *str, int from)
                 while (l < 4 && entry->mapping[l])
                     ++l;
                 if (l > 1) {
-                    if (uc <= 0xffff)
+                    if (!QChar::requiresSurrogates(uc))
                         str->replace(i, 1, reinterpret_cast<const QChar *>(&entry->mapping[0]), l);
                     else
                         str->replace(i-1, 2, reinterpret_cast<const QChar *>(&entry->mapping[0]), l);
@@ -2434,7 +2434,7 @@ static void stripProhibitedOutput(QString *str, int from)
                 uc = QChar::surrogateToUcs4(uc, low);
             }
         }
-        if (uc <= 0xFFFF) {
+        if (!QChar::requiresSurrogates(uc)) {
             if (uc < 0x80 ||
                 !(uc <= 0x009F
                 || uc == 0x00A0
@@ -2991,7 +2991,7 @@ void qt_nameprep(QString *source, int from)
             }
         }
         if (!isMappedToNothing(uc)) {
-            if (uc <= 0xFFFF) {
+            if (!QChar::requiresSurrogates(uc)) {
                 *out++ = *in;
             } else {
                 *out++ = QChar::highSurrogate(uc);
