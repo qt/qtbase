@@ -607,7 +607,6 @@ public:
 
     QBackingStore *backingStore() const;
 
-    void setWindowHandle(QWindow *window);
     QWindow *windowHandle() const;
 
     friend class QDesktopScreenWidget;
