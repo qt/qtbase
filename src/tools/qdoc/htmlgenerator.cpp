@@ -775,6 +775,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         if (atom->type() == Atom::Image)
             out() << "<p class=\"centerAlign\">";
         if (fileName.isEmpty()) {
+            relative->location().warning(tr("Missing image: %1").arg(protectEnc(atom->string())));
             out() << "<font color=\"red\">[Missing image "
                   << protectEnc(atom->string()) << "]</font>";
         }

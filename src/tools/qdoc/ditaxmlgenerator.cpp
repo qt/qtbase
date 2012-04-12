@@ -1206,6 +1206,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         if (atom->next() != 0)
             text = atom->next()->string();
         if (fileName.isEmpty()) {
+            relative->location().warning(tr("Missing image: %1").arg(protectEnc(atom->string())));
             QString images = "images";
             if (!baseDir().isEmpty())
                 images.prepend("../");
