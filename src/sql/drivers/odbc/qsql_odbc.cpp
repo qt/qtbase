@@ -1502,8 +1502,9 @@ bool QODBCResult::exec()
                     int strSize = str.length() * sizeof(SQLTCHAR);
 
                     if (bindValueType(i) & QSql::Out) {
-                        QVarLengthArray<SQLTCHAR> ba(toSQLTCHAR(str));
-                        ba.reserve(str.capacity());
+                        QVarLengthArray<SQLTCHAR> a(toSQLTCHAR(str));
+                        a.reserve(str.capacity());
+                        QByteArray ba((const char *)a.constData(), a.size() * sizeof(SQLTCHAR));
                         r = SQLBindParameter(d->hStmt,
                                             i + 1,
                                             qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
@@ -1511,10 +1512,10 @@ bool QODBCResult::exec()
                                             strSize > 254 ? SQL_WLONGVARCHAR : SQL_WVARCHAR,
                                             0, // god knows... don't change this!
                                             0,
-                                            (void *)ba.constData(),
+                                            (void *)ba.data(),
                                             ba.size(),
                                             ind);
-                        tmpStorage.append(QByteArray((const char *)ba.constData(), ba.size()*sizeof(SQLTCHAR)));
+                        tmpStorage.append(ba);
                         break;
                     }
                     QByteArray strba((const char *)toSQLTCHAR(str).constData(), str.size()*sizeof(SQLTCHAR));
@@ -1638,7 +1639,7 @@ bool QODBCResult::exec()
                         QByteArray first = tmpStorage.takeFirst();
                         QVarLengthArray<SQLTCHAR> array;
                         array.append((SQLTCHAR *)first.constData(), first.size());
-                        values[i] = fromSQLTCHAR(array, first.size()/sizeof(SQLTCHAR*));
+                        values[i] = fromSQLTCHAR(array, first.size()/sizeof(SQLTCHAR));
                     }
                     break;
                 }

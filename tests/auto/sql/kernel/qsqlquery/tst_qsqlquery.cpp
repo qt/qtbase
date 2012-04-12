@@ -211,6 +211,8 @@ private slots:
     void QTBUG_5765();
     void QTBUG_14132_data() { generic_data("QOCI"); }
     void QTBUG_14132();
+    void QTBUG_18435_data() { generic_data("QODBC"); }
+    void QTBUG_18435();
     void QTBUG_21884_data() { generic_data("QSQLITE"); }
     void QTBUG_21884();
     void QTBUG_16967_data() { generic_data("QSQLITE"); }
@@ -3022,6 +3024,36 @@ void tst_QSqlQuery::QTBUG_14132()
     q.addBindValue(placeholder, QSql::Out);
     QVERIFY_SQL(q, exec());
     QCOMPARE(q.boundValue(0).toString(), QLatin1String("OUTSTRING"));
+}
+
+void tst_QSqlQuery::QTBUG_18435()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    if (!db.driverName().startsWith("QODBC") || !tst_Databases::isSqlServer(db))
+        return;
+
+    QSqlQuery q(db);
+    QString procName(qTableName("qtbug_18435_proc", __FILE__));
+
+    q.exec("DROP PROCEDURE " + procName);
+    const QString stmt =
+    "CREATE PROCEDURE " + procName + " @key nvarchar(50) OUTPUT AS\n"
+    "BEGIN\n"
+    "  SET NOCOUNT ON\n"
+    "  SET @key = 'TEST'\n"
+    "END\n";
+
+    QVERIFY_SQL(q, exec(stmt));
+    QVERIFY_SQL(q, prepare("{CALL "+ procName +"(?)}"));
+    const QString testStr = "0123";
+    q.bindValue(0, testStr, QSql::Out);
+    QVERIFY_SQL(q, exec());
+    QCOMPARE(q.boundValue(0).toString(), QLatin1String("TEST"));
+
+    QVERIFY_SQL(q, exec("DROP PROCEDURE " + procName));
 }
 
 void tst_QSqlQuery::QTBUG_5251()
