@@ -959,6 +959,9 @@ foreach my $lib (@modules_to_sync) {
             #calc subdirs
             my @subdirs = ($headers_dir);
             foreach my $subdir (@subdirs) {
+                if ($subdir =~ /\/doc$/) {
+                    next;
+                }
                 opendir DIR, $subdir or next;
                 foreach my $t (sort readdir(DIR)) {
                     push @subdirs, "$subdir/$t" if(-d "$subdir/$t" && !($t eq ".") &&
