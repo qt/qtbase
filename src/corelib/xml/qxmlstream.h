@@ -301,8 +301,7 @@ public:
         IncludeChildElements,
         SkipChildElements
     };
-    QString readElementText(ReadElementTextBehaviour behaviour);
-    QString readElementText();
+    QString readElementText(ReadElementTextBehaviour behaviour = ErrorOnUnexpectedElement);
 
     QStringRef name() const;
     QStringRef namespaceUri() const;
