@@ -772,7 +772,8 @@ static pid_t doSpawn(int fd_count, int fd_map[], char **argv, char **envp,
             qWarning("ThreadCtl(): cannot hold threads: %s", qPrintable(qt_error_string(errno)));
 
         oldWorkingDir = QT_GETCWD(buff, PATH_MAX + 1);
-        QT_CHDIR(workingDir);
+        if (QT_CHDIR(workingDir) == -1)
+            qWarning("ThreadCtl(): failed to chdir to %s", workingDir);
     }
 
     pid_t childPid;
@@ -783,7 +784,8 @@ static pid_t doSpawn(int fd_count, int fd_map[], char **argv, char **envp,
     }
 
     if (oldWorkingDir) {
-        QT_CHDIR(oldWorkingDir);
+        if (QT_CHDIR(oldWorkingDir) == -1)
+            qWarning("ThreadCtl(): failed to chdir to %s", oldWorkingDir);
 
         if (ThreadCtl(_NTO_TCTL_THREADS_CONT, 0) == -1)
             qFatal("ThreadCtl(): cannot resume threads: %s", qPrintable(qt_error_string(errno)));
@@ -853,8 +855,10 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
     qt_safe_close(childStartedPipe[0]);
 
     // enter the working directory
-    if (workingDir)
-        QT_CHDIR(workingDir);
+    if (workingDir) {
+        if (QT_CHDIR(workingDir) == -1)
+            qWarning("QProcessPrivate::execChild() failed to chdir to %s", workingDir);
+    }
 
     // this is a virtual call, and it base behavior is to do nothing.
     q->setupChildProcess();
@@ -1372,8 +1376,10 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
         if (doubleForkPid == 0) {
             qt_safe_close(pidPipe[1]);
 
-            if (!encodedWorkingDirectory.isEmpty())
-                QT_CHDIR(encodedWorkingDirectory.constData());
+            if (!encodedWorkingDirectory.isEmpty()) {
+                if (QT_CHDIR(encodedWorkingDirectory.constData()) == -1)
+                    qWarning("QProcessPrivate::startDetached: failed to chdir to %s", encodedWorkingDirectory.constData());
+            }
 
             char **argv = new char *[arguments.size() + 2];
             for (int i = 0; i < arguments.size(); ++i) {
@@ -1426,7 +1432,8 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 
         qt_safe_close(startedPipe[1]);
         qt_safe_write(pidPipe[1], (const char *)&doubleForkPid, sizeof(pid_t));
-        QT_CHDIR("/");
+        if (QT_CHDIR("/") == -1)
+            qWarning("QProcessPrivate::startDetached: failed to chdir to /");
         ::_exit(1);
     }
 
