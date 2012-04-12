@@ -57,11 +57,6 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qgraphicseffect_p.h>
 
-#ifdef Q_WS_QWS
-#include <QtGui/qwsmanager_qws.h>
-#include <private/qwsmanager_p.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 extern QRegion qt_dirtyRegion(QWidget *);
@@ -153,13 +148,6 @@ static void showYellowThing_win(QWidget *widget, const QRegion &region, int msec
 
 void QWidgetBackingStore::showYellowThing(QWidget *widget, const QRegion &toBePainted, int msec, bool unclipped)
 {
-#ifdef Q_WS_QWS
-    Q_UNUSED(widget);
-    Q_UNUSED(unclipped);
-    static QWSYellowSurface surface(true);
-    surface.setDelay(msec);
-    surface.flush(widget, toBePainted, QPoint());
-#else
     QRegion paintRegion = toBePainted;
     QRect widgetRect = widget->rect();
 
@@ -224,7 +212,6 @@ void QWidgetBackingStore::showYellowThing(QWidget *widget, const QRegion &toBePa
     ::usleep(1000 * msec);
 #endif
 #endif // Q_WS_WIN
-#endif // Q_WS_QWS
 }
 
 bool QWidgetBackingStore::flushPaint(QWidget *widget, const QRegion &rgn)
@@ -633,7 +620,7 @@ void QWidgetBackingStore::markDirtyOnScreen(const QRegion &region, QWidget *widg
     if (!widget || widget->d_func()->paintOnScreen() || region.isEmpty())
         return;
 
-#if defined(Q_WS_QWS) || defined(Q_WS_MAC)
+#if defined(Q_WS_MAC)
     if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
         dirtyOnScreen += region.translated(topLevelOffset);
     return;
@@ -751,11 +738,6 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
     QPoint toplevelOffset = pw->mapTo(tlw, QPoint());
     QWidgetPrivate *pd = pw->d_func();
     QRect clipR(pd->clipRect());
-#ifdef Q_WS_QWS
-    QWidgetBackingStore *wbs = x->backingStore.data();
-    QWSWindowSurface *surface = static_cast<QWSWindowSurface*>(wbs->windowSurface);
-    clipR = clipR.intersected(surface->clipRegion().translated(-toplevelOffset).boundingRect());
-#endif
     const QRect newRect(rect.translated(dx, dy));
     QRect destRect = rect.intersected(clipR);
     if (destRect.isValid())
@@ -839,26 +821,6 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
     bool accelerateScroll = accelEnv && isOpaque
                             && !(overlapped = isOverlapped(scrollRect.translated(data.crect.topLeft())));
 
-#if defined(Q_WS_QWS)
-    QWSWindowSurface *surface;
-    surface = static_cast<QWSWindowSurface*>(wbs->windowSurface);
-
-    if (accelerateScroll && !surface->isBuffered()) {
-        const QRegion surfaceClip = surface->clipRegion();
-        const QRegion outsideClip = QRegion(rect) - surfaceClip;
-        if (!outsideClip.isEmpty()) {
-            const QVector<QRect> clipped = (surfaceClip & rect).rects();
-            if (clipped.size() < 8) {
-                for (int i = 0; i < clipped.size(); ++i)
-                    this->scrollRect(clipped.at(i), dx, dy);
-                return;
-            } else {
-                accelerateScroll = false;
-            }
-        }
-    }
-#endif // Q_WS_QWS
-
     if (!accelerateScroll) {
         if (overlapped) {
             QRegion region(scrollRect);
@@ -869,12 +831,6 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
         }
     } else {
         const QPoint toplevelOffset = q->mapTo(tlw, QPoint());
-#ifdef Q_WS_QWS
-        QWSWindowSurface *surface = static_cast<QWSWindowSurface*>(wbs->windowSurface);
-        const QRegion clip = surface->clipRegion().translated(-toplevelOffset) & scrollRect;
-        const QRect clipBoundingRect = clip.boundingRect();
-        scrollRect &= clipBoundingRect;
-#endif
         const QRect destRect = scrollRect.translated(dx, dy) & scrollRect;
         const QRect sourceRect = destRect.translated(-dx, -dy);
 

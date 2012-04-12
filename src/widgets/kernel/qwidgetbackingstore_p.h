@@ -87,9 +87,6 @@ public:
     {
         return !(dirtyWidgets.isEmpty() && dirty.isEmpty() && !hasDirtyFromPreviousSync
                  && !fullUpdatePending
-#if defined(Q_WS_QWS) && !defined(QT_NO_QWS_MANAGER)
-                 && !hasDirtyWindowDecoration()
-#endif
                 );
     }
 
@@ -130,10 +127,6 @@ private:
 
     void removeDirtyWidget(QWidget *w);
 
-#if defined(Q_WS_QWS) && !defined(QT_NO_QWS_MANAGER)
-    bool hasDirtyWindowDecoration() const;
-    void paintWindowDecoration();
-#endif
     void updateLists(QWidget *widget);
 
     inline void addDirtyWidget(QWidget *widget, const QRegion &rgn)
@@ -199,11 +192,7 @@ private:
 
     inline QRect topLevelRect() const
     {
-#ifdef Q_WS_QWS
-        return tlw->frameGeometry();
-#else
         return tlw->data->crect;
-#endif
     }
 
     inline void appendDirtyOnScreenWidget(QWidget *widget)
