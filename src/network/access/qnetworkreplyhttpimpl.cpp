@@ -513,69 +513,71 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
     QDateTime currentDateTime = QDateTime::currentDateTime();
     QDateTime expirationDate = metaData.expirationDate();
 
-#if 0
-    /*
-     * age_value
-     *      is the value of Age: header received by the cache with
-     *              this response.
-     * date_value
-     *      is the value of the origin server's Date: header
-     * request_time
-     *      is the (local) time when the cache made the request
-     *              that resulted in this cached response
-     * response_time
-     *      is the (local) time when the cache received the
-     *              response
-     * now
-     *      is the current (local) time
-     */
-    int age_value = 0;
-    it = cacheHeaders.findRawHeader("age");
-    if (it != cacheHeaders.rawHeaders.constEnd())
-        age_value = it->second.toInt();
-
-    QDateTime dateHeader;
-    int date_value = 0;
-    it = cacheHeaders.findRawHeader("date");
-    if (it != cacheHeaders.rawHeaders.constEnd()) {
-        dateHeader = QNetworkHeadersPrivate::fromHttpDate(it->second);
-        date_value = dateHeader.toTime_t();
-    }
-
-    int now = currentDateTime.toUTC().toTime_t();
-    int request_time = now;
-    int response_time = now;
-
-    // Algorithm from RFC 2616 section 13.2.3
-    int apparent_age = qMax(0, response_time - date_value);
-    int corrected_received_age = qMax(apparent_age, age_value);
-    int response_delay = response_time - request_time;
-    int corrected_initial_age = corrected_received_age + response_delay;
-    int resident_time = now - response_time;
-    int current_age   = corrected_initial_age + resident_time;
-
-    // RFC 2616 13.2.4 Expiration Calculations
+    bool response_is_fresh;
     if (!expirationDate.isValid()) {
-        if (lastModified.isValid()) {
-            int diff = currentDateTime.secsTo(lastModified);
-            expirationDate = lastModified;
-            expirationDate.addSecs(diff / 10);
-            if (httpRequest.headerField("Warning").isEmpty()) {
-                QDateTime dt;
-                dt.setTime_t(current_age);
-                if (dt.daysTo(currentDateTime) > 1)
-                    httpRequest.setHeaderField("Warning", "113");
+        /*
+         * age_value
+         *      is the value of Age: header received by the cache with
+         *              this response.
+         * date_value
+         *      is the value of the origin server's Date: header
+         * request_time
+         *      is the (local) time when the cache made the request
+         *              that resulted in this cached response
+         * response_time
+         *      is the (local) time when the cache received the
+         *              response
+         * now
+         *      is the current (local) time
+         */
+        int age_value = 0;
+        it = cacheHeaders.findRawHeader("age");
+        if (it != cacheHeaders.rawHeaders.constEnd())
+            age_value = it->second.toInt();
+
+        QDateTime dateHeader;
+        int date_value = 0;
+        it = cacheHeaders.findRawHeader("date");
+        if (it != cacheHeaders.rawHeaders.constEnd()) {
+            dateHeader = QNetworkHeadersPrivate::fromHttpDate(it->second);
+            date_value = dateHeader.toTime_t();
+        }
+
+        int now = currentDateTime.toUTC().toTime_t();
+        int request_time = now;
+        int response_time = now;
+
+        // Algorithm from RFC 2616 section 13.2.3
+        int apparent_age = qMax(0, response_time - date_value);
+        int corrected_received_age = qMax(apparent_age, age_value);
+        int response_delay = response_time - request_time;
+        int corrected_initial_age = corrected_received_age + response_delay;
+        int resident_time = now - response_time;
+        int current_age   = corrected_initial_age + resident_time;
+
+        // RFC 2616 13.2.4 Expiration Calculations
+        if (!expirationDate.isValid()) {
+            if (lastModified.isValid()) {
+                int diff = currentDateTime.secsTo(lastModified);
+                expirationDate = lastModified;
+                expirationDate.addSecs(diff / 10);
+                if (httpRequest.headerField("Warning").isEmpty()) {
+                    QDateTime dt;
+                    dt.setTime_t(current_age);
+                    if (dt.daysTo(currentDateTime) > 1)
+                        httpRequest.setHeaderField("Warning", "113");
+                }
             }
         }
-    }
 
-    // the cache-saving code below sets the expirationDate with date+max_age
-    // if "max-age" is present, or to Expires otherwise
-    int freshness_lifetime = dateHeader.secsTo(expirationDate);
-    bool response_is_fresh = (freshness_lifetime > current_age);
-#else
-    bool response_is_fresh = currentDateTime.secsTo(expirationDate) >= 0;
-#endif
+        // the cache-saving code below sets the expirationDate with date+max_age
+        // if "max-age" is present, or to Expires otherwise
+        int freshness_lifetime = dateHeader.secsTo(expirationDate);
+        response_is_fresh = (freshness_lifetime > current_age);
+    } else {
+        // expiration date was calculated earlier (e.g. when storing object to the cache)
+        response_is_fresh = currentDateTime.secsTo(expirationDate) >= 0;
+    }
 
     if (!response_is_fresh)
         return false;
