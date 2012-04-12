@@ -46,6 +46,8 @@
 #include "qkmsbackingstore.h"
 #include "qkmscontext.h"
 #include "qkmsnativeinterface.h"
+#include "qkmsudevlistener.h"
+#include "qkmsudevdrmhandler.h"
 
 #include <QtPlatformSupport/private/qgenericunixprintersupport_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
@@ -60,14 +62,13 @@ QKmsIntegration::QKmsIntegration()
     : QPlatformIntegration(),
       m_fontDatabase(new QGenericUnixFontDatabase()),
       m_eventDispatcher(createUnixEventDispatcher()),
-      m_nativeInterface(new QKmsNativeInterface)
+      m_nativeInterface(new QKmsNativeInterface),
+      m_udevListener(new QKmsUdevListener)
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
     setenv("EGL_PLATFORM", "drm",1);
-    QStringList drmDevices = findDrmDevices();
-    foreach (QString path, drmDevices) {
-        m_devices.append(new QKmsDevice(path, this));
-    }
+    m_drmHandler = new QKmsUdevDRMHandler(this);
+    m_udevListener->addHandler(m_drmHandler);
 }
 
 QKmsIntegration::~QKmsIntegration()
@@ -79,6 +80,14 @@ QKmsIntegration::~QKmsIntegration()
         delete screen;
     }
     delete m_fontDatabase;
+    delete m_udevListener;
+}
+
+QObject *QKmsIntegration::createDevice(const char *path)
+{
+    QKmsDevice *device = new QKmsDevice(path, this);
+    m_devices.append(device);
+    return device;
 }
 
 bool QKmsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -110,14 +119,6 @@ QPlatformBackingStore *QKmsIntegration::createPlatformBackingStore(QWindow *wind
 QPlatformFontDatabase *QKmsIntegration::fontDatabase() const
 {
     return m_fontDatabase;
-}
-
-QStringList QKmsIntegration::findDrmDevices()
-{
-    //Return a list addresses of DRM supported devices
-    //Hardcoded now, but could use udev to return a list
-    //of multiple devices.
-    return QStringList(QString::fromLatin1("/dev/dri/card0"));
 }
 
 void QKmsIntegration::addScreen(QKmsScreen *screen)

@@ -39,51 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_KMS_H
-#define QPLATFORMINTEGRATION_KMS_H
+#include <QtCore/QRegExp>
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformNativeInterface>
+#include <qkmsintegration.h>
+#include <qkmsudevdrmhandler.h>
 
 QT_BEGIN_NAMESPACE
 
-class QKmsScreen;
-class QKmsDevice;
-class QKmsUdevListener;
-class QKmsUdevDRMHandler;
-
-class QKmsIntegration : public QPlatformIntegration
+QKmsUdevDRMHandler::QKmsUdevDRMHandler(QKmsIntegration *integration)
+    : m_integration(integration)
 {
-public:
-    QKmsIntegration();
-    ~QKmsIntegration();
+}
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+QObject *QKmsUdevDRMHandler::create(struct udev_device *device)
+{
+    if (strcmp(udev_device_get_subsystem(device), "drm"))
+        return 0;
 
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QRegExp regexp("^card\\d+$");
+    if (!regexp.exactMatch(udev_device_get_sysname(device)))
+        return 0;
 
-    QPlatformFontDatabase *fontDatabase() const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-
-    QPlatformNativeInterface *nativeInterface() const;
-
-    void addScreen(QKmsScreen *screen);
-    QObject *createDevice(const char *);
-
-private:
-    QStringList findDrmDevices();
-
-    QList<QPlatformScreen *> m_screens;
-    QList<QKmsDevice *> m_devices;
-    QPlatformFontDatabase *m_fontDatabase;
-    QAbstractEventDispatcher *m_eventDispatcher;
-    QPlatformNativeInterface *m_nativeInterface;
-    QKmsUdevListener *m_udevListener;
-    QKmsUdevDRMHandler *m_drmHandler;
-};
+    return m_integration->createDevice(udev_device_get_devnode(device));
+}
 
 QT_END_NAMESPACE
-
-#endif

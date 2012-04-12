@@ -21,7 +21,8 @@ SOURCES =   main.cpp \
             qkmsbackingstore.cpp \
             qkmsnativeinterface.cpp \
             qkmsudevlistener.cpp \
-            qkmsudevhandler.cpp
+            qkmsudevhandler.cpp \
+            qkmsudevdrmhandler.cpp
 HEADERS =   qkmsintegration.h \
             qkmsscreen.h \
             qkmscontext.h \
@@ -32,7 +33,8 @@ HEADERS =   qkmsintegration.h \
             qkmsbackingstore.h \
             qkmsnativeinterface.h \
             qkmsudevlistener.h \
-            qkmsudevhandler.h
+            qkmsudevhandler.h \
+            qkmsudevdrmhandler.h
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
