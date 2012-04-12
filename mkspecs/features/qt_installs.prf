@@ -11,10 +11,6 @@
 #headers
 qt_install_headers {
     INSTALL_HEADERS = $$SYNCQT.HEADER_FILES
-    equals(TARGET, QtCore) {
-       #headers created by configure
-       INSTALL_HEADERS *= $$QT_BUILD_TREE/src/corelib/global/qconfig.h
-    }
 
     equals(TARGET, phonon) {
         class_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET
