@@ -113,6 +113,8 @@ public:
     virtual bool setKeyboardGrabEnabled(bool grab);
     virtual bool setMouseGrabEnabled(bool grab);
 
+    virtual bool setWindowModified(bool modified);
+
     virtual void windowEvent(QEvent *event);
 
 protected:

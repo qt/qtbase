@@ -311,6 +311,17 @@ bool QPlatformWindow::setMouseGrabEnabled(bool grab)
 }
 
 /*!
+    Reimplement to be able to let Qt indicate that the window has been
+    modified. Return true if the native window supports setting the modified
+    flag, false otherwise.
+*/
+bool QPlatformWindow::setWindowModified(bool modified)
+{
+    Q_UNUSED(modified);
+    return false;
+}
+
+/*!
     Reimplement this method to be able to do any platform specific event
     handling. All events for window() are passed to this function before being
     sent to QWindow::event().

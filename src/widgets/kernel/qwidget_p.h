@@ -466,6 +466,7 @@ public:
 
     void setWindowTitle_helper(const QString &cap);
     void setWindowFilePath_helper(const QString &filePath);
+    void setWindowModified_helper();
 
     bool setMinimumSize_helper(int &minw, int &minh);
     bool setMaximumSize_helper(int &maxw, int &maxh);
@@ -745,7 +746,6 @@ public:
     void update_sys(const QRect &rect);
     void update_sys(const QRegion &rgn);
     void setGeometry_sys_helper(int, int, int, int, bool);
-    void setWindowModified_sys(bool b);
     void updateMaximizeButton_sys();
     void setWindowFilePath_sys(const QString &filePath);
     void createWindow_sys();

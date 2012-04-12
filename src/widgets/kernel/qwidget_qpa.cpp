@@ -140,6 +140,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             q->setAttribute(Qt::WA_PaintOnScreen, true);
     }
 
+    setWindowModified_helper();
     setWinId(win->winId());
 
 //    first check children. and create them if necessary

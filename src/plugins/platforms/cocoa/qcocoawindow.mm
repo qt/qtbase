@@ -503,3 +503,10 @@ QCocoaWindow *QCocoaWindow::parentCocoaWindow() const
     return 0;
 }
 
+bool QCocoaWindow::setWindowModified(bool modified)
+{
+    if (!m_nsWindow)
+        return false;
+    [m_nsWindow setDocumentEdited:(modified?YES:NO)];
+    return true;
+}

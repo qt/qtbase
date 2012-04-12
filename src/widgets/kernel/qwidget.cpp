@@ -10322,18 +10322,28 @@ void QWidget::setWindowModified(bool mod)
     Q_D(QWidget);
     setAttribute(Qt::WA_WindowModified, mod);
 
-#ifndef Q_WS_MAC
-    if (!windowTitle().contains(QLatin1String("[*]")) && mod)
-        qWarning("QWidget::setWindowModified: The window title does not contain a '[*]' placeholder");
-#endif
-    d->setWindowTitle_helper(windowTitle());
-    d->setWindowIconText_helper(windowIconText());
-#ifdef Q_WS_MAC
-    d->setWindowModified_sys(mod);
-#endif
+    d->setWindowModified_helper();
 
     QEvent e(QEvent::ModifiedChange);
     QApplication::sendEvent(this, &e);
+}
+
+void QWidgetPrivate::setWindowModified_helper()
+{
+    Q_Q(QWidget);
+    QWindow *window = q->windowHandle();
+    if (!window)
+        return;
+    QPlatformWindow *platformWindow = window->handle();
+    if (!platformWindow)
+        return;
+    bool on = q->testAttribute(Qt::WA_WindowModified);
+    if (!platformWindow->setWindowModified(on)) {
+        if (!q->windowTitle().contains(QLatin1String("[*]")) && on)
+            qWarning("QWidget::setWindowModified: The window title does not contain a '[*]' placeholder");
+        setWindowTitle_helper(q->windowTitle());
+        setWindowIconText_helper(q->windowIconText());
+    }
 }
 
 #ifndef QT_NO_TOOLTIP
