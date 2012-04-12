@@ -223,6 +223,7 @@ private slots:
     void eventFilter();
     void dateTimeEditor_data();
     void dateTimeEditor();
+    void dateAndTimeEditorTest2();
     void decoration_data();
     void decoration();
     void editorEvent_data();
@@ -818,6 +819,129 @@ void tst_QItemDelegate::dateTimeEditor()
     QVERIFY(item1->data(Qt::EditRole).userType() == QMetaType::QTime);
     QVERIFY(item2->data(Qt::EditRole).userType() == QMetaType::QDate);
     QVERIFY(item3->data(Qt::EditRole).userType() == QMetaType::QDateTime);
+}
+
+// A delegate where we can either enforce a certain widget or use the standard widget.
+class ChooseEditorDelegate : public QItemDelegate
+{
+public:
+    virtual QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &o, const QModelIndex &i) const
+    {
+        if (m_editor) {
+            m_editor->setParent(parent);
+            return m_editor;
+        }
+        m_editor = QItemDelegate::createEditor(parent, o, i);
+        return m_editor;
+    }
+
+    virtual void destroyEditor(QWidget *editor, const QModelIndex &i) const
+    {   // This is a reimplementation of QAbstractItemDelegate::destroyEditor just set the variable m_editor to 0
+        // The only reason we do this is to avoid the not recomended direct delete of editor (destroyEditor uses deleteLater)
+        QItemDelegate::destroyEditor(editor, i); // Allow destroy
+        m_editor = 0;                            // but clear the variable
+    }
+
+    ChooseEditorDelegate(QObject *parent = 0) : QItemDelegate(parent) { }
+    void setNextOpenEditor(QWidget *w) { m_editor = w; }
+    QWidget* currentEditor() const { return m_editor; }
+private:
+    mutable QPointer<QWidget> m_editor;
+};
+
+// We could (nearly) use a normal QTableView but in order not to add many seconds to the autotest
+// (and save a few lines) we do this
+class FastEditItemView : public QTableView
+{
+public:
+    QWidget* fastEdit(const QModelIndex &i) // Consider this as QAbstractItemView::edit( )
+    {
+        QWidget *v = itemDelegate()->createEditor(viewport(), viewOptions(), i);
+        if (v)
+            itemDelegate()->setEditorData(v, i);
+        return v;
+    }
+    void doCloseEditor(QWidget *editor) // Consider this as QAbstractItemView::closeEditor( )
+    {
+        itemDelegate()->destroyEditor(editor, QModelIndex());
+    }
+};
+
+void tst_QItemDelegate::dateAndTimeEditorTest2()
+{
+    // prepare createeditor
+    FastEditItemView w;
+    QStandardItemModel s;
+    s.setRowCount(2);
+    s.setColumnCount(1);
+    w.setModel(&s);
+    ChooseEditorDelegate *d = new ChooseEditorDelegate(&w);
+    w.setItemDelegate(d);
+    const QTime time1(3, 13, 37);
+    const QDate date1(2013, 3, 7);
+
+    QPointer<QTimeEdit> timeEdit;
+    QPointer<QDateEdit> dateEdit;
+    QPointer<QDateTimeEdit> dateTimeEdit;
+
+    // Do some checks
+    // a. Open time editor on empty cell + write QTime data
+    const QModelIndex i1 = s.index(0, 0);
+    timeEdit = new QTimeEdit();
+    d->setNextOpenEditor(timeEdit);
+    QCOMPARE(w.fastEdit(i1), timeEdit.data());
+    timeEdit->setTime(time1);
+    d->setModelData(timeEdit, &s, i1);
+    QCOMPARE(s.data(i1).type(), QVariant::Time); // ensure that we wrote a time variant.
+    QCOMPARE(s.data(i1).toTime(), time1);        // ensure that it is the correct time.
+    w.doCloseEditor(timeEdit);
+    QVERIFY(d->currentEditor() == 0); // should happen at doCloseEditor. We only test this once.
+
+    // b. Test that automatic edit of a QTime value is QTimeEdit (and not QDateTimeEdit)
+    QWidget *editor = w.fastEdit(i1);
+    timeEdit = qobject_cast<QTimeEdit*>(editor);
+    QVERIFY(timeEdit);
+    QCOMPARE(timeEdit->time(), time1);
+    w.doCloseEditor(timeEdit);
+
+    const QTime time2(4, 14, 37);
+    const QDate date2(2014, 4, 7);
+    const QDateTime datetime1(date1, time1);
+    const QDateTime datetime2(date2, time2);
+
+    // c. Test that the automatic open of an QDateTime is QDateTimeEdit + value check + set check
+    s.setData(i1, datetime2);
+    editor = w.fastEdit(i1);
+    timeEdit = qobject_cast<QTimeEdit*>(editor);
+    QVERIFY(timeEdit == 0);
+    dateEdit = qobject_cast<QDateEdit*>(editor);
+    QVERIFY(dateEdit == 0);
+    dateTimeEdit =  qobject_cast<QDateTimeEdit*>(editor);
+    QVERIFY(dateTimeEdit);
+    QCOMPARE(dateTimeEdit->dateTime(), datetime2);
+    dateTimeEdit->setDateTime(datetime1);
+    d->setModelData(dateTimeEdit, &s, i1);
+    QCOMPARE(s.data(i1).type(), QVariant::DateTime); // ensure that we wrote a datetime variant.
+    QCOMPARE(s.data(i1).toDateTime(), datetime1);
+    w.doCloseEditor(dateTimeEdit);
+
+    // d. Open date editor on empty cell + write QDate data (similar to a)
+    const QModelIndex i2 = s.index(1, 0);
+    dateEdit = new QDateEdit();
+    d->setNextOpenEditor(dateEdit);
+    QCOMPARE(w.fastEdit(i2), dateEdit.data());
+    dateEdit->setDate(date1);
+    d->setModelData(dateEdit, &s, i2);
+    QCOMPARE(s.data(i2).type(), QVariant::Date); // ensure that we wrote a time variant.
+    QCOMPARE(s.data(i2).toDate(), date1);        // ensure that it is the correct date.
+    w.doCloseEditor(dateEdit);
+
+    // e. Test that the default editor editor (QDateEdit) on a QDate (index i2)  (similar to b)
+    editor = w.fastEdit(i2);
+    dateEdit = qobject_cast<QDateEdit*>(editor);
+    QVERIFY(dateEdit);
+    QCOMPARE(dateEdit->date(), date1);
+    w.doCloseEditor(dateEdit);
 }
 
 void tst_QItemDelegate::decoration_data()
