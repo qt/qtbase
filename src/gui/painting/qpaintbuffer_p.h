@@ -421,41 +421,6 @@ public:
     mutable QPainterState *m_created_state;
 };
 
-class Q_GUI_EXPORT QPaintBufferSignalProxy : public QObject
-{
-    Q_OBJECT
-public:
-    QPaintBufferSignalProxy() : QObject() {}
-    void emitAboutToDestroy(const QPaintBufferPrivate *buffer) {
-        emit aboutToDestroy(buffer);
-    }
-    static QPaintBufferSignalProxy *instance();
-Q_SIGNALS:
-    void aboutToDestroy(const QPaintBufferPrivate *buffer);
-};
-
-// One resource per paint buffer and vice versa.
-class Q_GUI_EXPORT QPaintBufferResource : public QObject
-{
-    Q_OBJECT
-public:
-    typedef void (*FreeFunc)(void *);
-
-    QPaintBufferResource(FreeFunc f, QObject *parent = 0);
-    ~QPaintBufferResource();
-    // Set resource 'value' for 'key'.
-    void insert(const QPaintBufferPrivate *key, void *value);
-    // Return resource for 'key'.
-    void *value(const QPaintBufferPrivate *key);
-public slots:
-    // Remove entry 'key' from cache and delete resource.
-    void remove(const QPaintBufferPrivate *key);
-private:
-    typedef QHash<const QPaintBufferPrivate *, void *> Cache;
-    Cache m_cache;
-    FreeFunc free;
-};
-
 QT_END_NAMESPACE
 
 #endif // QPAINTBUFFER_P_H
