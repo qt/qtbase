@@ -277,7 +277,7 @@ QWindowsContext::QWindowsContext() :
 #    pragma warning( disable : 4996 )
 #endif
     m_instance = this;
-    if (const char *v = getenv("QT_LIGHTHOUSE_WINDOWS_VERBOSE")) {
+    if (const char *v = getenv("QT_QPA_VERBOSE")) {
         QWindowsContext::verboseIntegration = componentVerbose(v, "integration");
         QWindowsContext::verboseWindows = componentVerbose(v, "windows");
         QWindowsContext::verboseEvents = componentVerbose(v, "events");

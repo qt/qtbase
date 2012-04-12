@@ -228,8 +228,6 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 
 QPlatformPixmap *QWindowsIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    if (QWindowsContext::verboseIntegration)
-        qDebug() << __FUNCTION__ << type;
     return new QRasterPlatformPixmap(type);
 }
 
