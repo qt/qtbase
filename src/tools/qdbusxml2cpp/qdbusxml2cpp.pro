@@ -4,9 +4,6 @@ TARGET = qdbusxml2cpp
 
 DESTDIR = ../../../bin
 
-INCLUDEPATH += .
-DEPENDPATH += .
-
 include(../bootstrap/bootstrap.pri)
 
 INCLUDEPATH += $$QT_BUILD_TREE/include \

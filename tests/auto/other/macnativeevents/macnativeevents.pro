@@ -1,8 +1,5 @@
 CONFIG += testcase
 TARGET = tst_macnativeevents
-TEMPLATE = app
-DEPENDPATH += .
-INCLUDEPATH += .
 LIBS += -framework Carbon
 QT += widgets testlib
 HEADERS += qnativeevents.h nativeeventlist.h expectedeventlist.h

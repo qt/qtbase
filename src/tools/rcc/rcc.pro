@@ -4,8 +4,6 @@ TARGET = rcc
 
 DESTDIR = ../../../bin
 DEFINES += QT_RCC
-INCLUDEPATH += .
-DEPENDPATH += .
 
 include(rcc.pri)
 HEADERS += ../../corelib/kernel/qcorecmdlineargs_p.h

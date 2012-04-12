@@ -6,9 +6,6 @@ DESTDIR = ../../../bin
 
 include(../moc/moc.pri)
 
-INCLUDEPATH += .
-DEPENDPATH += .
-
 INCLUDEPATH += $$QT_BUILD_TREE/include \
                    $$QT_BUILD_TREE/include/QtDBus \
                    $$QT_BUILD_TREE/include/QtDBus/$$QT.dbus.VERSION \
