@@ -81,7 +81,9 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
     foreach (const QString &device, devices)
         addMouse(device);
 
-#ifndef QT_NO_LIBUDEV
+#ifdef QT_NO_LIBUDEV
+    Q_UNUSED(useUDev)
+#else
     if (useUDev) {
 #ifdef QT_QPA_MOUSEMANAGER_DEBUG
         qWarning() << "Use UDev for device discovery";
