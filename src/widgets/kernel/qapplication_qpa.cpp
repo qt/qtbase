@@ -437,12 +437,6 @@ void QApplication::alert(QWidget *, int)
 {
 }
 
-QPlatformNativeInterface *QApplication::platformNativeInterface()
-{
-    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-    return pi->nativeInterface();
-}
-
 void qt_init(QApplicationPrivate *priv, int type)
 {
     Q_UNUSED(priv);
