@@ -696,8 +696,7 @@ void QWidgetBackingStore::updateLists(QWidget *cur)
 }
 
 QWidgetBackingStore::QWidgetBackingStore(QWidget *topLevel)
-    : tlw(topLevel), dirtyOnScreenWidgets(0), hasDirtyFromPreviousSync(false)
-    , fullUpdatePending(0)
+    : tlw(topLevel), dirtyOnScreenWidgets(0), fullUpdatePending(0)
 {
     store = tlw->backingStore();
     Q_ASSERT(store);
@@ -981,9 +980,6 @@ void QWidgetBackingStore::sync()
 
     if (updatesDisabled)
         return;
-
-    if (hasDirtyFromPreviousSync)
-        dirty += dirtyFromPreviousSync;
 
     // Contains everything that needs repaint.
     QRegion toClean(dirty);
