@@ -5993,9 +5993,10 @@ void DitaXmlGenerator::writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle
                 for (int count = 0; count < dmNode->map().count(); count++) {
                     if (dmNode->map().at(count)->navtitle() == i.key()) {
                         foundInDitaMap = true;
+                        break;
                     }
-                    ++mapIterator;
                 }
+                ++mapIterator;
             }
             if (!foundInDitaMap) {
                 writeStartTag(DT_topicref);
