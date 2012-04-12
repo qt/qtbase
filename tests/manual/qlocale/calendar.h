@@ -41,7 +41,7 @@
 #ifndef CALENDAR_H
 #define CALENDAR_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class CalendarWidget : public QWidget
 {

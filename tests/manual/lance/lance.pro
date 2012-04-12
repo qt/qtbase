@@ -1,8 +1,8 @@
-LANCELOT_DIR = $$PWD/../../auto/lancelot
+LANCELOT_DIR = $$PWD/../../auto/other/lancelot
 CONFIG+=console moc
 TEMPLATE = app
 INCLUDEPATH += . $$LANCELOT_DIR
-QT += core-private gui-private
+QT += core-private gui-private widgets printsupport
 
 HEADERS += widgets.h \
            interactivewidget.h \

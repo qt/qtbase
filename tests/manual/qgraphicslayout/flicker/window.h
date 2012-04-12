@@ -43,7 +43,7 @@
 #define WINDOW_H
 
 
-#include <QtGui>
+#include <QtWidgets>
 
 struct Statistics {
     Statistics() : output(0),

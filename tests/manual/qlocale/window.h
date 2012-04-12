@@ -41,7 +41,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "calendar.h"
 #include "currency.h"

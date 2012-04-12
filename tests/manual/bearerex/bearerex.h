@@ -42,7 +42,7 @@
 #ifndef ACCESSPOINTMANAGEREX_H
 #define ACCESSPOINTMANAGEREX_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "ui_detailedinfodialog.h"
 

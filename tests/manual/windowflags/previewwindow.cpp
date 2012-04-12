@@ -39,7 +39,9 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets/QTextEdit>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QVBoxLayout>
 
 #include "previewwindow.h"
 

@@ -338,13 +338,13 @@ void tst_NetworkStressTest::nativeNonBlockingConnectDisconnect()
             QVERIFY(fd != INVALID_SOCKET);
 
             // set the socket to non-blocking and start connecting
-            unsigned long buf = v;
+            unsigned long buf = 0;
             unsigned long outBuf;
             DWORD sizeWritten = 0;
             QVERIFY(::WSAIoctl(fd, FIONBIO, &buf, sizeof(unsigned long), &outBuf, sizeof(unsigned long), &sizeWritten, 0,0) != SOCKET_ERROR);
 
             while (true) {
-                int connectResult = ::WSAConnect(fd, sockAddrPtr, sockAddrSize, 0,0,0,0);
+                int connectResult = ::WSAConnect(fd, (sockaddr *)addr.data(), addr.size(), 0,0,0,0);
                 if (connectResult == 0 || WSAGetLastError() == WSAEISCONN) {
                     break; // connected
                 } else {

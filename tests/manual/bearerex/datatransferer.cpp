@@ -134,47 +134,6 @@ void DataTransfererQTcp::error(QAbstractSocket::SocketError socketError)
     emit finished(socketError, 0, "QAbstractSocket::SocketError");
 }
 
-// -------- Based on QHttp
-
-DataTransfererQHttp::DataTransfererQHttp(QObject* parent)
-:   DataTransferer(parent)
-{
-    connect(&m_qhttp, SIGNAL(done(bool)), this, SLOT(done(bool)));
-    qDebug("BearerEx DataTransferer QHttp created.");
-}
-
-DataTransfererQHttp::~DataTransfererQHttp()
-{
-    qDebug("BearerEx DataTransferer QHttp destroyed.");
-}
-
-bool DataTransfererQHttp::transferData()
-{
-    qDebug("BearerEx datatransfer for QHttp requested.");
-    if (m_dataTransferOngoing) {
-        return false;
-    }
-    QString urlstring("http://www.google.com");
-    QUrl url(urlstring);
-    m_qhttp.setHost(url.host(), QHttp::ConnectionModeHttp, url.port() == -1 ? 0 : url.port());
-    m_qhttp.get(urlstring);
-    m_dataTransferOngoing = true;
-    return true;
-}
-
-void DataTransfererQHttp::done(bool /*error*/ )
-{
-    qDebug("BearerEx DatatransfererQHttp reply was finished (error code is type QHttp::Error).");
-    qint64 dataReceived = 0;
-    quint32 errorCode = m_qhttp.error();
-    if (m_qhttp.error() == QHttp::NoError) {
-        QString result(m_qhttp.readAll());
-        dataReceived = result.length();
-    }
-    m_dataTransferOngoing = false;
-    emit finished(errorCode, dataReceived, "QHttp::Error");
-}
-
 // -------- Based on QNetworkAccessManager
 
 DataTransfererQNam::DataTransfererQNam(QObject* parent)

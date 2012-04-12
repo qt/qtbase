@@ -43,7 +43,8 @@
 #include "paintcommands.h"
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
+#include <QtPrintSupport>
 #include <qimage.h>
 #include <QPicture>
 
@@ -612,14 +613,11 @@ int main(int argc, char **argv)
                 pcmd.setType(type);
                 pcmd.setCheckersBackground(checkers_background);
                 pcmd.setContents(content);
-                bool ps = type == PsType;
                 QPrinter p(highres ? QPrinter::HighResolution : QPrinter::ScreenResolution);
                 QFileInfo input(files.at(j));
-                QString file = QString("%1_%2.%3")
-                               .arg(input.baseName())
-                               .arg(input.suffix())
-                               .arg(ps ? "ps" : "pdf");
-                p.setOutputFormat(ps ? QPrinter::PdfFormat : QPrinter::PostScriptFormat);
+                const QString file = input.baseName() + QLatin1Char('_')
+                                     + input.suffix() + QStringLiteral(".pdf");
+                p.setOutputFormat(QPrinter::PdfFormat);
                 p.setOutputFileName(file);
                 p.setPageSize(QPrinter::A4);
                 QPainter pt(&p);

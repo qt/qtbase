@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include "ui_keypadnavigation.h"
 
 class KeypadNavigation : public QMainWindow

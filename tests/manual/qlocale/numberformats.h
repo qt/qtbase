@@ -41,7 +41,7 @@
 #ifndef NUMBERFORMATS_H
 #define NUMBERFORMATS_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class NumberFormatsWidget : public QWidget
 {
