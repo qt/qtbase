@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGUIAPPLICATION_QPA_P_H
-#define QGUIAPPLICATION_QPA_P_H
+#ifndef QGUIAPPLICATION_P_H
+#define QGUIAPPLICATION_P_H
 
 #include <QtGui/qguiapplication.h>
 
@@ -233,4 +233,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QGUIAPPLICATION_QPA_P_H
+#endif // QGUIAPPLICATION_P_H
