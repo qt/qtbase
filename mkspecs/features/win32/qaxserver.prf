@@ -10,7 +10,6 @@ DEFINES += QAXSERVER
 INCLUDEPATH += $$QT.activeqt.includes
 
 contains(TEMPLATE, "vc.*") {
-    ACTIVEQT_IDC = $${QMAKE_IDC}   ### Qt5: remove me
     qtPrepareTool(ACTIVEQT_IDC, idc)
     ACTIVEQT_IDL = $${QMAKE_IDL}
     ACTIVEQT_TARGET = "$(TargetPath)"
