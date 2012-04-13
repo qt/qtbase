@@ -102,8 +102,6 @@ public:
     void setSurfaceType(SurfaceType surfaceType);
     SurfaceType surfaceType() const;
 
-    QT_DEPRECATED bool visible() const;
-
     bool isVisible() const;
 
     void create();
