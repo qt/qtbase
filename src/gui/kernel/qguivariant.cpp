@@ -108,15 +108,6 @@ struct GuiTypesFilter {
 static void construct(QVariant::Private *x, const void *copy)
 {
     const int type = x->type;
-    if (Q_UNLIKELY(type == 62)) {
-        // small 'trick' to let a QVariant(Qt::blue) create a variant
-        // of type QColor
-        // TODO Get rid of this hack.
-        x->type = QVariant::Color;
-        QColor color(*reinterpret_cast<const Qt::GlobalColor *>(copy));
-        v_construct<QColor>(x, &color);
-        return;
-    }
     QVariantConstructor<GuiTypesFilter> constructor(x, copy);
     QMetaTypeSwitcher::switcher<void>(constructor, type, 0);
 }
