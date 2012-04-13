@@ -1402,6 +1402,11 @@ void tst_QNetworkReply::cleanup()
 
     // clear cookies
     cookieJar->setAllCookies(QList<QNetworkCookie>());
+
+    // disconnect manager signals
+    manager.disconnect(SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)));
+    manager.disconnect(SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 }
 
 void tst_QNetworkReply::stateChecking()
@@ -6811,31 +6816,55 @@ void tst_QNetworkReply::ftpAuthentication()
 
 void tst_QNetworkReply::backgroundRequest_data()
 {
+    QTest::addColumn<QUrl>("url");
     QTest::addColumn<bool>("background");
     QTest::addColumn<int>("policy");
     QTest::addColumn<QNetworkReply::NetworkError>("error");
 
-    QTest::newRow("fg, normal") << false << 0 << QNetworkReply::NoError;
-    QTest::newRow("bg, normal") << true << 0 << QNetworkReply::NoError;
-    QTest::newRow("fg, nobg") << false << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::NoError;
-    QTest::newRow("bg, nobg") << true << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::BackgroundRequestNotAllowedError;
+    QUrl httpurl("http://" + QtNetworkSettings::serverName());
+    QUrl httpsurl("https://" + QtNetworkSettings::serverName());
+    QUrl ftpurl("ftp://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+
+    QTest::newRow("http, fg, normal") << httpurl << false << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
+    QTest::newRow("http, bg, normal") << httpurl << true << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
+    QTest::newRow("http, fg, nobg") << httpurl << false << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::NoError;
+    QTest::newRow("http, bg, nobg") << httpurl << true << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::BackgroundRequestNotAllowedError;
+
+#ifndef QT_NO_SSL
+    QTest::newRow("https, fg, normal") << httpsurl << false << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
+    QTest::newRow("https, bg, normal") << httpsurl << true << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
+    QTest::newRow("https, fg, nobg") << httpsurl << false << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::NoError;
+    QTest::newRow("https, bg, nobg") << httpsurl << true << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::BackgroundRequestNotAllowedError;
+#endif
+
+    QTest::newRow("ftp, fg, normal") << ftpurl << false << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
+    QTest::newRow("ftp, bg, normal") << ftpurl << true << (int)QNetworkSession::NoPolicy << QNetworkReply::NoError;
+    QTest::newRow("ftp, fg, nobg") << ftpurl << false << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::NoError;
+    QTest::newRow("ftp, bg, nobg") << ftpurl << true << (int)QNetworkSession::NoBackgroundTrafficPolicy << QNetworkReply::BackgroundRequestNotAllowedError;
 
 }
 
 void tst_QNetworkReply::backgroundRequest()
 {
 #ifdef QT_BUILD_INTERNAL
+#ifndef QT_NO_BEARERMANAGEMENT
+    QFETCH(QUrl, url);
     QFETCH(bool, background);
     QFETCH(int, policy);
     QFETCH(QNetworkReply::NetworkError, error);
 
-    QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName()));
+    QNetworkRequest request(url);
 
     if (background)
         request.setAttribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(true));
 
     //this preconstructs the session so we can change policies in advance
     manager.setConfiguration(networkConfiguration);
+
+#ifndef QT_NO_SSL
+    connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
+        SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
+#endif
 
     const QWeakPointer<const QNetworkSession> session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
     QVERIFY(session);
@@ -6850,6 +6879,7 @@ void tst_QNetworkReply::backgroundRequest()
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), error);
+#endif
 #endif
 }
 
