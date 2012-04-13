@@ -87,7 +87,7 @@ my $qtbasedir = dirname(dirname($0));
 normalizePath(\$qtbasedir) if (defined $qtbasedir);
 
 # will be defined based on the modules sync.profile
-our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %mastercontent, %modulepris, %explicitheaders, %deprecatedheaders);
+our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %modulepris, %explicitheaders, %deprecatedheaders);
 
 # global variables (modified by options)
 my $isunix = 0;
@@ -176,30 +176,6 @@ sub checkRelative {
     my ($dir) = @_;
     return 0 if($dir =~ /^\//);
     return 0 if(!checkUnix() && $dir =~ /[a-zA-Z]:[\/\\]/);
-    return 1;
-}
-
-######################################################################
-# Syntax:  shouldMasterInclude(iheader)
-# Params:  iheader, string, filename to verify inclusion
-#
-# Purpose: Determines if header should be in the master include file.
-# Returns: 0 if file contains "#pragma qt_no_master_include" or not
-#          able to open, else 1.
-######################################################################
-sub shouldMasterInclude {
-    my ($iheader) = @_;
-    return 0 if(basename($iheader) =~ /_/);
-    return 0 if(basename($iheader) =~ /qconfig/);
-    if(open(F, "<$iheader")) {
-        while(<F>) {
-            chomp;
-            return 0 if(/^\#pragma qt_no_master_include$/);
-        }
-        close(F);
-    } else {
-        return 0;
-    }
     return 1;
 }
 
@@ -845,28 +821,6 @@ foreach my $lib (@modules_to_sync) {
     my $pri_install_pfiles = "";
     my $pri_install_qpafiles = "";
 
-    my $libcapitals = $lib;
-    $libcapitals =~ y/a-z/A-Z/;
-    my $master_contents = "#ifndef QT_".$libcapitals."_MODULE_H\n#define QT_".$libcapitals."_MODULE_H\n";
-
-    #get dependencies
-    if(-e "$dir/" . basename($dir) . ".pro") {
-        if(open(F, "<$dir/" . basename($dir) . ".pro")) {
-            while(my $line = <F>) {
-                chomp $line;
-                if($line =~ /^ *QT *\+?= *([^\r\n]*)/) {
-                    foreach(split(/ /, $1)) {
-                        $_ =~ s/-private$//;
-                        my $content = $mastercontent{$_};
-                        $master_contents .= $content if ($content);
-                    }
-                    last; #consecutive appearances are assumed to be private dependencies
-                }
-            }
-            close(F);
-        }
-    }
-
     push @{$inject_headers{$dir}}, lc($lib)."version.h";
     $classnames{lc($lib)."version.h"} = $lib."Version";
 
@@ -1026,9 +980,6 @@ foreach my $lib (@modules_to_sync) {
                             }
 
                             if($public_header) {
-                                #put it into the master file
-                                $master_contents .= "#include \"$public_header\"\n" if(shouldMasterInclude($iheader));
-
                                 #deal with the install directives
                                 if($public_header) {
                                     my $pri_install_iheader = fixPaths($iheader, $current_dir);
@@ -1085,9 +1036,6 @@ foreach my $lib (@modules_to_sync) {
             }
         }
     }
-
-    # close the master include:
-    $master_contents .= "#endif\n";
 
     unless($showonly) {
         # create deprecated headers
@@ -1151,35 +1099,9 @@ foreach my $lib (@modules_to_sync) {
             print " }\n" unless ($first);
         }
 
-        my @master_includes;
-        push @master_includes, "$out_basedir/include/$lib/$lib";
-        foreach my $master_include (@master_includes) {
-            #generate the "master" include file
-            my @tmp = split(/;/,$modules{$lib});
-            $pri_install_files .= fixPaths($master_include, $tmp[0]) . " "; #get the master file installed too
-            if($master_include && -e $master_include) {
-                open MASTERINCLUDE, "<$master_include";
-                local $/;
-                binmode MASTERINCLUDE;
-                my $oldmaster = <MASTERINCLUDE>;
-                close MASTERINCLUDE;
-                $oldmaster =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
-                $master_include = 0 if($oldmaster eq $master_contents);
-            }
-            if($master_include && $master_contents) {
-                my $master_dir = dirname($master_include);
-                make_path($master_dir, $lib, $verbose_level);
-                open MASTERINCLUDE, ">$master_include";
-                print MASTERINCLUDE $master_contents;
-                close MASTERINCLUDE;
-                print "$lib: created header (master) file\n" if($verbose_level);
-            }
-        }
-
         # KDE-Compat master header for Phonon
         if ($lib eq "phonon") {
             syncHeader($lib, "$out_basedir/include/phonon_compat/Phonon/Phonon", "$out_basedir/include/phonon/phonon", 0);
-            $pri_install_files .= fixPaths("$out_basedir/include/phonon/phonon", "$basedir/src/phonon") . " ";
         }
 
         #handle the headers.pri for each module
@@ -1198,7 +1120,7 @@ foreach my $lib (@modules_to_sync) {
             $old_headers_pri_contents =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
             $headers_pri_file = 0 if($old_headers_pri_contents eq $headers_pri_contents);
         }
-        if($headers_pri_file && $master_contents) {
+        if($headers_pri_file) {
             my $headers_pri_dir = dirname($headers_pri_file);
             make_path($headers_pri_dir, $lib, $verbose_level);
             open HEADERS_PRI_FILE, ">$headers_pri_file";

@@ -32,16 +32,6 @@
     "qtconcurrentfilter.h" => "QtConcurrentFilter",
     "qtconcurrentrun.h" => "QtConcurrentRun",
 );
-%mastercontent = (
-    "core" => "#include <QtCore/QtCore>\n",
-    "gui" => "#include <QtGui/QtGui>\n",
-    "printsupport" => "#include <QtPrintSupport/QtPrintSupport>\n",
-    "widgets" => "#include <QtWidgets/QtWidgets>\n",
-    "network" => "#include <QtNetwork/QtNetwork>\n",
-    "opengl" => "#include <QtOpenGL/QtOpenGL>\n",
-    "xml" => "#include <QtXml/QtXml>\n",
-    "concurrent" => "#include <QtConcurrent/QtConcurrent>\n",
-);
 %deprecatedheaders = (
     "QtGui" =>  {
         "qplatformaccessibility_qpa.h" => "qpa/qplatformaccessibility.h",
