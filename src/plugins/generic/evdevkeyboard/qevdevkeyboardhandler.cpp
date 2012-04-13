@@ -168,16 +168,20 @@ void QEvdevKeyboardHandler::readKeycode()
     int n = 0;
 
     forever {
-        n = qt_safe_read(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
+        int result = qt_safe_read(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
 
-        if (n == 0) {
+        if (result == 0) {
             qWarning("Got EOF from the input device.");
             return;
-        } else if (n < 0 && (errno != EINTR && errno != EAGAIN)) {
-           qWarning("Could not read from input device: %s", strerror(errno));
-            return;
-        } else if (n % sizeof(buffer[0]) == 0) {
-            break;
+        } else if (result < 0) {
+            if (errno != EINTR && errno != EAGAIN) {
+                qWarning("Could not read from input device: %s", strerror(errno));
+                return;
+            }
+        } else {
+            n += result;
+            if (n % sizeof(buffer[0]) == 0)
+                break;
         }
     }
 

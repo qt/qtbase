@@ -253,26 +253,30 @@ void QTouchScreenHandler::readData()
     int n = 0;
     for (; ;) {
 #ifdef USE_MTDEV
-        n = mtdev_get(m_mtdev, m_fd, buffer, sizeof(buffer) / sizeof(::input_event));
-        if (n > 0)
-            n *= sizeof(::input_event);
+        int result = mtdev_get(m_mtdev, m_fd, buffer, sizeof(buffer) / sizeof(::input_event));
+        if (result > 0)
+            result *= sizeof(::input_event);
 #else
-        n = QT_READ(m_fd, reinterpret_cast<char*>(buffer) + n, sizeof(buffer) - n);
+        int result = QT_READ(m_fd, reinterpret_cast<char*>(buffer) + n, sizeof(buffer) - n);
 #endif
-        if (!n) {
+        if (!result) {
             qWarning("Got EOF from input device");
             return;
-        } else if (n < 0 && (errno != EINTR && errno != EAGAIN)) {
-            qWarning("Could not read from input device: %s", strerror(errno));
-            if (errno == ENODEV) { // device got disconnected -> stop reading
-                delete m_notify;
-                m_notify = 0;
-                QT_CLOSE(m_fd);
-                m_fd = -1;
+        } else if (result < 0) {
+            if (errno != EINTR && errno != EAGAIN) {
+                qWarning("Could not read from input device: %s", strerror(errno));
+                if (errno == ENODEV) { // device got disconnected -> stop reading
+                    delete m_notify;
+                    m_notify = 0;
+                    QT_CLOSE(m_fd);
+                    m_fd = -1;
+                }
+                return;
             }
-            return;
-        } else if (n % sizeof(::input_event) == 0) {
-            break;
+        } else {
+            n += result;
+            if (n % sizeof(::input_event) == 0)
+                break;
         }
     }
 
