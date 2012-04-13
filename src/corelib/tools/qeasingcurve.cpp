@@ -349,7 +349,7 @@ struct TCBPoint {
     TCBPoint() {}
     TCBPoint(QPointF point, qreal t, qreal c, qreal b) : _point(point), _t(t), _c(c), _b(b) {}
 
-    bool operator==(const TCBPoint& other)
+    bool operator==(const TCBPoint &other) const
     {
         return _point == other._point &&
                 qFuzzyCompare(_t, other._t) &&
@@ -373,7 +373,7 @@ public:
     virtual ~QEasingCurveFunction() {}
     virtual qreal value(qreal t);
     virtual QEasingCurveFunction *copy() const;
-    bool operator==(const QEasingCurveFunction& other);
+    bool operator==(const QEasingCurveFunction &other) const;
 
     Type _t;
     qreal _p;
@@ -397,7 +397,7 @@ QEasingCurveFunction *QEasingCurveFunction::copy() const
     return rv;
 }
 
-bool QEasingCurveFunction::operator==(const QEasingCurveFunction& other)
+bool QEasingCurveFunction::operator==(const QEasingCurveFunction &other) const
 {
     return _t == other._t &&
            qFuzzyCompare(_p, other._p) &&
