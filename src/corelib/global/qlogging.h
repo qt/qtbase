@@ -168,6 +168,8 @@ Q_CORE_EXPORT QtMessageHandler qInstallMessageHandler(QtMessageHandler);
 typedef void (*QMessageHandler)(QtMsgType, const QMessageLogContext &, const char *);
 Q_CORE_EXPORT QMessageHandler qInstallMessageHandler(QMessageHandler);
 
+Q_CORE_EXPORT void qSetMessagePattern(const QString &messagePattern);
+
 QT_END_HEADER
 QT_END_NAMESPACE
 

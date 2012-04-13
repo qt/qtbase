@@ -45,6 +45,7 @@
 #include "qstring.h"
 #include "qvarlengtharray.h"
 #include "qdebug.h"
+#include "qmutex.h"
 #ifndef QT_BOOTSTRAPPED
 #include "qcoreapplication.h"
 #include "qthread.h"
@@ -400,21 +401,53 @@ static const char appnameTokenC[] = "%{appname}";
 static const char threadidTokenC[] = "%{threadid}";
 static const char emptyTokenC[] = "";
 
+static const char defaultPattern[] = "%{message}";
+
+
 struct QMessagePattern {
     QMessagePattern();
     ~QMessagePattern();
 
+    void setPattern(const QString &pattern);
+
     // 0 terminated arrays of literal tokens / literal or placeholder tokens
     const char **literals;
     const char **tokens;
+
+    bool fromEnvironment;
+    static QBasicMutex mutex;
 };
 
+QBasicMutex QMessagePattern::mutex;
+
 QMessagePattern::QMessagePattern()
+    : literals(0)
+    , tokens(0)
+    , fromEnvironment(false)
 {
-    QString pattern = QString::fromLocal8Bit(qgetenv("QT_MESSAGE_PATTERN"));
-    if (pattern.isEmpty()) {
-        pattern = QLatin1String("%{message}");
+    const QString envPattern = QString::fromLocal8Bit(qgetenv("QT_MESSAGE_PATTERN"));
+    if (envPattern.isEmpty()) {
+        setPattern(QLatin1String(defaultPattern));
+    } else {
+        setPattern(envPattern);
+        fromEnvironment = true;
     }
+}
+
+QMessagePattern::~QMessagePattern()
+{
+    for (int i = 0; literals[i] != 0; ++i)
+        delete [] literals[i];
+    delete [] literals;
+    literals = 0;
+    delete [] tokens;
+    tokens = 0;
+}
+
+void QMessagePattern::setPattern(const QString &pattern)
+{
+    delete [] tokens;
+    delete [] literals;
 
     // scanner
     QList<QString> lexemes;
@@ -495,16 +528,6 @@ QMessagePattern::QMessagePattern()
     memcpy(literals, literalsVar.constData(), literalsVar.size() * sizeof(const char*));
 }
 
-QMessagePattern::~QMessagePattern()
-{
-    for (int i = 0; literals[i] != 0; ++i)
-        delete [] literals[i];
-    delete [] literals;
-    literals = 0;
-    delete [] tokens;
-    tokens = 0;
-}
-
 Q_GLOBAL_STATIC(QMessagePattern, qMessagePattern)
 
 /*!
@@ -515,6 +538,8 @@ Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogCont
 {
     QString message;
 
+    QMutexLocker lock(&QMessagePattern::mutex);
+
     QMessagePattern *pattern = qMessagePattern();
     if (!pattern) {
         // after destruction of static QMessagePattern instance
@@ -522,6 +547,10 @@ Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogCont
         message.append(QLatin1Char('\n'));
         return message;
     }
+
+    // don't print anything if pattern was empty
+    if (pattern->tokens[0] == 0)
+        return message;
 
     // we do not convert file, function, line literals to local encoding due to overhead
     for (int i = 0; pattern->tokens[i] != 0; ++i) {
@@ -741,6 +770,14 @@ QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
     return old;
 }
 
+void qSetMessagePattern(const QString &pattern)
+{
+    QMutexLocker lock(&QMessagePattern::mutex);
+
+    if (!qMessagePattern()->fromEnvironment)
+        qMessagePattern()->setPattern(pattern);
+}
+
 void QMessageLogContext::copy(const QMessageLogContext &logContext)
 {
     this->category = logContext.category;
@@ -748,4 +785,5 @@ void QMessageLogContext::copy(const QMessageLogContext &logContext)
     this->line = logContext.line;
     this->function = logContext.function;
 }
+
 QT_END_NAMESPACE

@@ -3088,5 +3088,38 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     instead.
     \sa QtMsgHandler, qInstallMessageHandler
 */
+/*!
+    \fn void qSetMessagePattern(const QString &pattern)
+    \relates <QtGlobal>
+    \since 5.0
+
+    \brief Changes the output of the default message handler.
+
+    Allows to tweak the output of qDebug(), qWarning(), qCritical() and qFatal().
+
+    Following placeholders are supported:
+
+    \table
+    \header \li Placeholder \li Description
+    \row \li \c %{appname} \li QCoreApplication::applicationName()
+    \row \li \c %{file} \li Path to source file
+    \row \li \c %{function} \li Function
+    \row \li \c %{line} \li Line in source file
+    \row \li \c %{message} \li The actual message
+    \row \li \c %{pid} \li QCoreApplication::applicationPid()
+    \row \li \c %{threadid} \li ID of current thread
+    \row \li \c %{type} \li "debug", "warning", "critical" or "fatal"
+    \endtable
+
+    The default pattern is "%{message}".
+
+    The pattern can also be changed at runtime by setting the QT_MESSAGE_PATTERN
+    environment variable; if both qSetMessagePattern() is called and QT_MESSAGE_PATTERN is
+    set, the environment variable takes precedence.
+
+    qSetMessagePattern() has no effect if a custom message handler is installed.
+
+    \sa qInstallMessageHandler, Debugging Techniques
+ */
 
 QT_END_NAMESPACE
