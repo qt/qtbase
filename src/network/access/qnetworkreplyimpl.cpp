@@ -114,6 +114,8 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 
             QObject::connect(session.data(), SIGNAL(error(QNetworkSession::SessionError)),
                              q, SLOT(_q_networkSessionFailed()));
+            QObject::connect(session.data(), SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)),
+                             q, SLOT(_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies)));
 
             if (!session->isOpen()) {
                 session->setSessionProperty(QStringLiteral("ConnectInBackground"), isBackground);
@@ -317,6 +319,11 @@ void QNetworkReplyImplPrivate::_q_networkSessionFailed()
         error(QNetworkReplyImpl::NetworkSessionFailedError, errorStr);
         finished();
     }
+}
+
+void QNetworkReplyImplPrivate::_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies)
+{
+
 }
 #endif
 

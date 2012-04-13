@@ -66,6 +66,7 @@
 #include <private/qbytedata_p.h>
 #include <private/qnetworkreply_p.h>
 #include <QtNetwork/QNetworkProxy>
+#include <QtNetwork/QNetworkSession>
 
 #ifndef QT_NO_SSL
 #include <QtNetwork/QSslConfiguration>
@@ -102,6 +103,7 @@ public:
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionConnected())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionFailed())
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies))
 #endif
     Q_PRIVATE_SLOT(d_func(), void _q_finished())
     Q_PRIVATE_SLOT(d_func(), void _q_error(QNetworkReply::NetworkError, const QString &))
@@ -173,6 +175,7 @@ public:
 #ifndef QT_NO_BEARERMANAGEMENT
     void _q_networkSessionConnected();
     void _q_networkSessionFailed();
+    void _q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies);
 #endif
     void _q_finished();
 

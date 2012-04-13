@@ -63,6 +63,7 @@
 #include "private/qringbuffer_p.h"
 #include "private/qbytedata_p.h"
 #include <QSharedPointer>
+#include <QtNetwork/QNetworkSession>
 
 QT_BEGIN_NAMESPACE
 
@@ -96,6 +97,7 @@ public:
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionConnected())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionFailed())
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies))
 #endif
 
 #ifndef QT_NO_SSL
@@ -140,6 +142,7 @@ public:
 #ifndef QT_NO_BEARERMANAGEMENT
     void _q_networkSessionConnected();
     void _q_networkSessionFailed();
+    void _q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies);
 #endif
 
     void setup(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
