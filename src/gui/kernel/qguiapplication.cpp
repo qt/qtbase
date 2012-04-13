@@ -521,6 +521,13 @@ QWindow *QGuiApplication::focusWindow()
 */
 
 /*!
+    \fn QGuiApplication::focusWindowChanged(QWindow *focusWindow)
+
+    This signal is emitted when the focused window changes.
+    \sa focusWindow()
+*/
+
+/*!
     Returns the QObject in currently active window that will be final receiver of events
     tied to focus, such as key events.
  */
@@ -1337,6 +1344,8 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         if (previousFocusObject != qApp->focusObject())
             self->q_updateFocusObject(qApp->focusObject());
     }
+
+    emit qApp->focusWindowChanged(newFocus);
 }
 
 void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *wse)

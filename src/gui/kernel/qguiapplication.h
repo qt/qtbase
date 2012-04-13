@@ -148,6 +148,7 @@ Q_SIGNALS:
     void screenAdded(QScreen *screen);
     void lastWindowClosed();
     void focusObjectChanged(QObject *focusObject);
+    void focusWindowChanged(QWindow *focusWindow);
 
 protected:
     bool event(QEvent *);
