@@ -526,14 +526,14 @@ void tst_QHash::key()
         hash2.insert(3, "two");
         QCOMPARE(hash2.key("one"), 1);
         QCOMPARE(hash2.key("one", def), 1);
-        QCOMPARE(hash2.key("two"), 2);
-        QCOMPARE(hash2.key("two", def), 2);
+        QVERIFY(hash2.key("two") == 2 || hash2.key("two") == 3);
+        QVERIFY(hash2.key("two", def) == 2 || hash2.key("two", def) == 3);
         QCOMPARE(hash2.key("three"), 0);
         QCOMPARE(hash2.key("three", def), def);
 
         hash2.insert(-1, "two");
-        QCOMPARE(hash2.key("two"), -1);
-        QCOMPARE(hash2.key("two", def), -1);
+        QVERIFY(hash2.key("two") == 2 || hash2.key("two") == 3 || hash2.key("two") == -1);
+        QVERIFY(hash2.key("two", def) == 2 || hash2.key("two", def) == 3 || hash2.key("two", def) == -1);
 
         hash2.insert(0, "zero");
         QCOMPARE(hash2.key("zero"), 0);
