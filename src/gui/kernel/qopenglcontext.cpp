@@ -541,9 +541,9 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
 
     Returns 0 if no such function can be found.
 */
-QFunctionPointer QOpenGLContext::getProcAddress(const QByteArray &procName)
+QFunctionPointer QOpenGLContext::getProcAddress(const QByteArray &procName) const
 {
-    Q_D(QOpenGLContext);
+    Q_D(const QOpenGLContext);
     if (!d->platformGLContext)
         return 0;
     return d->platformGLContext->getProcAddress(procName);
