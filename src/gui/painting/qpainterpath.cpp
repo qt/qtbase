@@ -478,13 +478,25 @@ static void qt_debug_path(const QPainterPath &path)
     \sa ElementType, elementAt(), isEmpty()
 */
 
+int QPainterPath::elementCount() const
+{
+    return d_ptr ? d_ptr->elements.size() : 0;
+}
+
 /*!
-    \fn const QPainterPath::Element &QPainterPath::elementAt(int index) const
+    \fn QPainterPath::Element QPainterPath::elementAt(int index) const
 
     Returns the element at the given \a index in the painter path.
 
     \sa ElementType, elementCount(), isEmpty()
 */
+
+QPainterPath::Element QPainterPath::elementAt(int i) const
+{
+    Q_ASSERT(d_ptr);
+    Q_ASSERT(i >= 0 && i < elementCount());
+    return d_ptr->elements.at(i);
+}
 
 /*!
     \fn void QPainterPath::setElementPositionAt(int index, qreal x, qreal y)
@@ -493,6 +505,17 @@ static void qt_debug_path(const QPainterPath &path)
     Sets the x and y coordinate of the element at index \a index to \a
     x and \a y.
 */
+
+void QPainterPath::setElementPositionAt(int i, qreal x, qreal y)
+{
+    Q_ASSERT(d_ptr);
+    Q_ASSERT(i >= 0 && i < elementCount());
+    detach();
+    QPainterPath::Element &e = d_ptr->elements[i];
+    e.x = x;
+    e.y = y;
+}
+
 
 /*###
     \fn QPainterPath &QPainterPath::operator +=(const QPainterPath &other)
@@ -533,6 +556,13 @@ QPainterPath::QPainterPath(const QPointF &startPoint)
 {
     Element e = { startPoint.x(), startPoint.y(), MoveToElement };
     d_func()->elements << e;
+}
+
+void QPainterPath::detach()
+{
+    if (d_ptr->ref.load() != 1)
+        detach_helper();
+    setDirty(true);
 }
 
 /*!
@@ -1450,6 +1480,11 @@ QRectF QPainterPath::controlPointRect() const
 
     \sa elementCount()
 */
+
+bool QPainterPath::isEmpty() const
+{
+    return !d_ptr || (d_ptr->elements.size() == 1 && d_ptr->elements.first().type == MoveToElement);
+}
 
 /*!
     Creates and returns a reversed copy of the path.
