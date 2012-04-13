@@ -2280,7 +2280,7 @@ bool QmlPropertyNode::isWritable(Tree* tree)
         return pn->isWritable();
     }
     else {
-        location().warning(tr("Can't detect if QML property %1 isread-only; writable assumed.").arg(name()));
+        location().warning(tr("Can't detect if QML property %1 is read-only; writable assumed.").arg(name()));
         return true;
     }
 }

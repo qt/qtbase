@@ -288,7 +288,7 @@ QT_BEGIN_NAMESPACE
     Partial matching is mainly useful in two scenarios: validating user input
     in real time and incremental/multi-segment matching.
 
-    \target
+    \target validating user input
     \section2 Validating user input
 
     Suppose that we would like the user to input a date in a specific
