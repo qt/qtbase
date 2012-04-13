@@ -2801,9 +2801,9 @@ void tst_QSqlQuery::task_250026()
     data258.fill( 'A', 258 );
     data1026.fill( 'A', 1026 );
     QVERIFY_SQL( q, prepare( "insert into " + tableName + "(longfield) VALUES (:longfield)" ) );
-    q.bindValue( "longfield", data258 );
+    q.bindValue( ":longfield", data258 );
     QVERIFY_SQL( q, exec() );
-    q.bindValue( "longfield", data1026 );
+    q.bindValue( ":longfield", data1026 );
     QVERIFY_SQL( q, exec() );
     QVERIFY_SQL( q, exec( "select * from " + tableName ) );
     QVERIFY_SQL( q, next() );
@@ -3494,7 +3494,10 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         // First test without any entries
         QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
         QVERIFY(q.next());
-        QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+        if (db.driverName().startsWith("QSQLITE"))
+            QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+        else
+            QCOMPARE(q.record().field(0).type(), QVariant::Int);
 
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (1)"));
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (2)"));
@@ -3506,8 +3509,13 @@ void tst_QSqlQuery::aggregateFunctionTypes()
 
         QVERIFY_SQL(q, exec("SELECT AVG(id) FROM " + tableName));
         QVERIFY(q.next());
-        QCOMPARE(q.value(0).toDouble(), 1.5);
-        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        if (db.driverName().startsWith("QSQLITE")) {
+            QCOMPARE(q.value(0).toDouble(), 1.5);
+            QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        } else {
+            QCOMPARE(q.value(0).toInt(), 1);
+            QCOMPARE(q.record().field(0).type(), QVariant::Int);
+        }
 
         QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
         QVERIFY(q.next());
@@ -3529,12 +3537,15 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         tst_Databases::safeDropTable( db, tableName );
 
         QSqlQuery q(db);
-        QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id DOUBLE)"));
+        QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id REAL)"));
 
         // First test without any entries
         QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
         QVERIFY(q.next());
-        QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+        if (db.driverName().startsWith("QSQLITE"))
+            QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+        else
+            QCOMPARE(q.record().field(0).type(), QVariant::Double);
 
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (1.5)"));
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (2.5)"));
@@ -3583,7 +3594,10 @@ void tst_QSqlQuery::aggregateFunctionTypes()
 
         QVERIFY_SQL(q, exec("SELECT MAX(txt) FROM " + tableName));
         QVERIFY(q.next());
-        QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+        if (db.driverName().startsWith("QSQLITE"))
+            QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+        else
+            QCOMPARE(q.record().field(0).type(), QVariant::String);
 
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, txt) VALUES (1, 'lower')"));
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, txt) VALUES (2, 'upper')"));
