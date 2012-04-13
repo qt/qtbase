@@ -401,7 +401,7 @@ static int log2(uint i)
 
     Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */
-int QScreen::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b)
+int QScreen::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b) const
 {
     if (a == Qt::PrimaryOrientation)
         a = primaryOrientation();
@@ -436,7 +436,7 @@ int QScreen::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b)
 
     Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */
-QTransform QScreen::transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target)
+QTransform QScreen::transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target) const
 {
     if (a == Qt::PrimaryOrientation)
         a = primaryOrientation();
@@ -477,7 +477,7 @@ QTransform QScreen::transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientat
 
     Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */
-QRect QScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect)
+QRect QScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect) const
 {
     if (a == Qt::PrimaryOrientation)
         a = primaryOrientation();
@@ -503,7 +503,7 @@ QRect QScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, cons
 
     Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */
-bool QScreen::isPortrait(Qt::ScreenOrientation o)
+bool QScreen::isPortrait(Qt::ScreenOrientation o) const
 {
     return o == Qt::PortraitOrientation || o == Qt::InvertedPortraitOrientation
         || (o == Qt::PrimaryOrientation && primaryOrientation() == Qt::PortraitOrientation);
@@ -515,7 +515,7 @@ bool QScreen::isPortrait(Qt::ScreenOrientation o)
 
     Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */
-bool QScreen::isLandscape(Qt::ScreenOrientation o)
+bool QScreen::isLandscape(Qt::ScreenOrientation o) const
 {
     return o == Qt::LandscapeOrientation || o == Qt::InvertedLandscapeOrientation
         || (o == Qt::PrimaryOrientation && primaryOrientation() == Qt::LandscapeOrientation);
@@ -580,7 +580,7 @@ void QScreenPrivate::updatePrimaryOrientation()
     safe. This depends on the underlying window system.
 */
 
-QPixmap QScreen::grabWindow(WId window, int x, int y, int w, int h) const
+QPixmap QScreen::grabWindow(WId window, int x, int y, int w, int h)
 {
     const QPlatformScreen *platformScreen = handle();
     if (!platformScreen) {
