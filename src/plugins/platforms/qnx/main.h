@@ -39,25 +39,17 @@
 **
 ****************************************************************************/
 
-#include "main.h"
-#include "qqnxintegration.h"
+#include <QtGui/QPlatformIntegrationPlugin>
 
 QT_BEGIN_NAMESPACE
 
-QStringList QQnxIntegrationPlugin::keys() const
+class QQnxIntegrationPlugin : public QPlatformIntegrationPlugin
 {
-    QStringList list;
-    list << QLatin1String("qnx");
-    return list;
-}
-
-QPlatformIntegration *QQnxIntegrationPlugin::create(const QString& system, const QStringList& paramList)
-{
-    Q_UNUSED(paramList);
-    if (system.toLower() == QLatin1String("qnx"))
-        return new QQnxIntegration;
-
-    return 0;
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface" FILE "qnx.json")
+public:
+    QStringList keys() const;
+    QPlatformIntegration *create(const QString&, const QStringList&);
+};
 
 QT_END_NAMESPACE

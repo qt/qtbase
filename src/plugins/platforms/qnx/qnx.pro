@@ -43,7 +43,8 @@ SOURCES =   main.cpp \
             qqnxabstractvirtualkeyboard.cpp \
             qqnxnativeinterface.cpp
 
-HEADERS =   qqnxbuffer.h \
+HEADERS =   main.h \
+            qqnxbuffer.h \
             qqnxeventthread.h \
             qqnxkeytranslator.h \
             qqnxintegration.h \
@@ -74,6 +75,8 @@ CONFIG(qqnx_imf) {
     HEADERS += qqnxinputcontext_noimf.h
     SOURCES += qqnxinputcontext_noimf.cpp
 }
+
+OTHER_FILES += qnx.json
 
 QMAKE_CXXFLAGS += -I./private
 
