@@ -249,7 +249,7 @@ QAccessible::State QAccessibleMenuItem::state() const
     QAccessible::State s;
     QWidget *own = owner();
 
-    if (own && own->testAttribute(Qt::WA_WState_Visible) == false || m_action->isVisible() == false) {
+    if (own && (own->testAttribute(Qt::WA_WState_Visible) == false || m_action->isVisible() == false)) {
         s.invisible = true;
     }
 
