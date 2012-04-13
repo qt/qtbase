@@ -6,7 +6,6 @@ QT += core-private gui-private
 
 SOURCES  += tst_qgraphicsproxywidget.cpp
 
-# ### fixme: QTBUG-20756 crashes on xcb
-contains(QT_CONFIG,xcb):CONFIG+=insignificant_test
+contains(QT_CONFIG,xcb):CONFIG+=insignificant_test  # QTBUG-25294
 
 win32:CONFIG += insignificant_test # QTBUG-24294

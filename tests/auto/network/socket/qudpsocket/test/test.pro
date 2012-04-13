@@ -22,4 +22,4 @@ wince* {
 
 TARGET = tst_qudpsocket
 
-CONFIG+=insignificant_test
+CONFIG+=insignificant_test # QTBUG-15111
