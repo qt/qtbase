@@ -1976,12 +1976,11 @@ void QGuiApplication::restoreOverrideCursor()
 
   \sa QStyleHints
   */
-QStyleHints *QGuiApplication::styleHints() const
+QStyleHints *QGuiApplication::styleHints()
 {
-    Q_D(const QGuiApplication);
-    if (!d->styleHints)
-        const_cast<QGuiApplicationPrivate *>(d)->styleHints = new QStyleHints();
-    return d->styleHints;
+    if (!qGuiApp->d_func()->styleHints)
+        qGuiApp->d_func()->styleHints = new QStyleHints();
+    return qGuiApp->d_func()->styleHints;
 }
 
 /*!

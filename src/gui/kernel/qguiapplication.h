@@ -124,7 +124,7 @@ public:
     static inline bool isRightToLeft() { return layoutDirection() == Qt::RightToLeft; }
     static inline bool isLeftToRight() { return layoutDirection() == Qt::LeftToRight; }
 
-    QStyleHints *styleHints() const;
+    static QStyleHints *styleHints();
     static void setDesktopSettingsAware(bool on);
     static bool desktopSettingsAware();
 
