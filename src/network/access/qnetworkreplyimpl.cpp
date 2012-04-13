@@ -73,6 +73,8 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
 
 void QNetworkReplyImplPrivate::_q_startOperation()
 {
+    Q_Q(QNetworkReplyImpl);
+
     // ensure this function is only being called once
     if (state == Working || state == Finished) {
         qDebug("QNetworkReplyImpl::_q_startOperation was called more than once");
@@ -110,12 +112,8 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         state = WaitingForSession;
 
         if (session) {
-            Q_Q(QNetworkReplyImpl);
-
             QObject::connect(session.data(), SIGNAL(error(QNetworkSession::SessionError)),
                              q, SLOT(_q_networkSessionFailed()));
-            QObject::connect(session.data(), SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)),
-                             q, SLOT(_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies)));
 
             if (!session->isOpen()) {
                 session->setSessionProperty(QStringLiteral("ConnectInBackground"), isBackground);
@@ -136,6 +134,12 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         finished();
 #endif
         return;
+    }
+
+    if (session) {
+        //get notification of policy changes.
+        QObject::connect(session.data(), SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)),
+                    q, SLOT(_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies)));
     }
 
     if (backend && backend->isSynchronous()) {
@@ -321,9 +325,20 @@ void QNetworkReplyImplPrivate::_q_networkSessionFailed()
     }
 }
 
-void QNetworkReplyImplPrivate::_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies)
+void QNetworkReplyImplPrivate::_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies newPolicies)
 {
-
+    if (backend->request().attribute(QNetworkRequest::BackgroundRequestAttribute).toBool()) {
+        if (newPolicies & QNetworkSession::NoBackgroundTrafficPolicy) {
+            // Abort waiting and working replies.
+            if (state == WaitingForSession || state == Working) {
+                state = Working;
+                error(QNetworkReply::BackgroundRequestNotAllowedError,
+                    QCoreApplication::translate("QNetworkReply", "Background request not allowed."));
+                finished();
+            }
+            // ### if backend->canResume(), then we could resume automatically, however no backend supports resuming
+        }
+    }
 }
 #endif
 

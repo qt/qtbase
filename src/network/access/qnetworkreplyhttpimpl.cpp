@@ -1521,6 +1521,9 @@ bool QNetworkReplyHttpImplPrivate::start()
 
     if (managerPrivate->networkSession->isOpen() &&
         managerPrivate->networkSession->state() == QNetworkSession::Connected) {
+        Q_Q(QNetworkReplyHttpImpl);
+        QObject::connect(managerPrivate->networkSession.data(), SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)),
+                            q, SLOT(_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies)));
         postRequest();
         return true;
     }
@@ -1564,8 +1567,6 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
         if (session) {
             QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
                              q, SLOT(_q_networkSessionFailed()));
-            QObject::connect(session, SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)),
-                             q, SLOT(_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies)));
 
             if (!session->isOpen()) {
                 session->setSessionProperty(QStringLiteral("ConnectInBackground"), isBackground);
@@ -1767,8 +1768,20 @@ void QNetworkReplyHttpImplPrivate::_q_networkSessionFailed()
     }
 }
 
-void QNetworkReplyHttpImplPrivate::_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies)
+void QNetworkReplyHttpImplPrivate::_q_networkSessionUsagePoliciesChanged(QNetworkSession::UsagePolicies newPolicies)
 {
+    if (request.attribute(QNetworkRequest::BackgroundRequestAttribute).toBool()) {
+        if (newPolicies & QNetworkSession::NoBackgroundTrafficPolicy) {
+            // Abort waiting and working replies.
+            if (state == WaitingForSession || state == Working) {
+                state = Working;
+                error(QNetworkReply::BackgroundRequestNotAllowedError,
+                    QCoreApplication::translate("QNetworkReply", "Background request not allowed."));
+                finished();
+            }
+            // ### if canResume(), then we could resume automatically
+        }
+    }
 
 }
 #endif
