@@ -92,6 +92,7 @@ class QWindowsMsaaAccessible : public
 public:
     QWindowsMsaaAccessible(QAccessibleInterface *a)
         : accessible(a)
+        , ref(0)
     {
     }
 
