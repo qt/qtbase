@@ -98,10 +98,9 @@ static inline void triggerSignal(QMdiSubWindow *window, QMdiArea *workspace,
         window->showMaximized();
         qApp->processEvents();
         window->showNormal();
-        qApp->processEvents();
-        QVERIFY(!window->isMinimized());
-        QVERIFY(!window->isMaximized());
-        QVERIFY(!window->isShaded());
+        QTRY_VERIFY(!window->isMinimized());
+        QTRY_VERIFY(!window->isMaximized());
+        QTRY_VERIFY(!window->isShaded());
     } else if (signal == SIGNAL(aboutToActivate())) {
         if (window->parent()) {
             workspace->setActiveSubWindow(window);
