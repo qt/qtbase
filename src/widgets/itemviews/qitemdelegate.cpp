@@ -113,6 +113,7 @@ public:
 
     static QString valueToText(const QVariant &value, const QStyleOptionViewItem &option);
 
+    bool tryFixup(QWidget *editor);
     void _q_commitDataAndCloseEditor(QWidget *editor);
 
     QItemEditorFactory *f;
@@ -384,6 +385,24 @@ QString QItemDelegatePrivate::valueToText(const QVariant &value, const QStyleOpt
             break;
     }
     return text;
+}
+
+bool QItemDelegatePrivate::tryFixup(QWidget *editor)
+{
+#ifndef QT_NO_LINEEDIT
+    if (QLineEdit *e = qobject_cast<QLineEdit*>(editor)) {
+        if (!e->hasAcceptableInput()) {
+            if (const QValidator *validator = e->validator()) {
+                QString text = e->text();
+                validator->fixup(text);
+                e->setText(text);
+            }
+            return e->hasAcceptableInput();
+        }
+    }
+#endif // QT_NO_LINEEDIT
+
+    return true;
 }
 
 /*!
@@ -1154,18 +1173,24 @@ QRect QItemDelegate::textRectangle(QPainter * /*painter*/, const QRect &rect,
 
 bool QItemDelegate::eventFilter(QObject *object, QEvent *event)
 {
+    Q_D(QItemDelegate);
+
     QWidget *editor = qobject_cast<QWidget*>(object);
     if (!editor)
         return false;
     if (event->type() == QEvent::KeyPress) {
         switch (static_cast<QKeyEvent *>(event)->key()) {
         case Qt::Key_Tab:
-            emit commitData(editor);
-            emit closeEditor(editor, QAbstractItemDelegate::EditNextItem);
+            if (d->tryFixup(editor)) {
+                emit commitData(editor);
+                emit closeEditor(editor, EditNextItem);
+            }
             return true;
         case Qt::Key_Backtab:
-            emit commitData(editor);
-            emit closeEditor(editor, QAbstractItemDelegate::EditPreviousItem);
+            if (d->tryFixup(editor)) {
+                emit commitData(editor);
+                emit closeEditor(editor, EditPreviousItem);
+            }
             return true;
         case Qt::Key_Enter:
         case Qt::Key_Return:
@@ -1176,11 +1201,9 @@ bool QItemDelegate::eventFilter(QObject *object, QEvent *event)
             // before committing the data (e.g. so it can do
             // validation/fixup of the input).
 #endif // QT_NO_TEXTEDIT
-#ifndef QT_NO_LINEEDIT
-            if (QLineEdit *e = qobject_cast<QLineEdit*>(editor))
-                if (!e->hasAcceptableInput())
-                    return false;
-#endif // QT_NO_LINEEDIT
+            if (!d->tryFixup(editor))
+                return true;
+
             QMetaObject::invokeMethod(this, "_q_commitDataAndCloseEditor",
                                       Qt::QueuedConnection, Q_ARG(QWidget*, editor));
             return false;
@@ -1211,8 +1234,9 @@ bool QItemDelegate::eventFilter(QObject *object, QEvent *event)
                 return false;
             }
 #endif
+            if (d->tryFixup(editor))
+                emit commitData(editor);
 
-            emit commitData(editor);
             emit closeEditor(editor, NoHint);
         }
     } else if (event->type() == QEvent::ShortcutOverride) {
