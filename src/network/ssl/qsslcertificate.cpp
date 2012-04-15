@@ -797,6 +797,8 @@ QByteArray QSslCertificate::toDer() const
 /*!
     Returns this certificate converted to a human-readable text
     representation.
+
+    \since 5.0
 */
 QByteArray QSslCertificate::toText() const
 {
@@ -906,6 +908,8 @@ QList<QSslCertificate> QSslCertificate::fromData(const QByteArray &data, QSsl::E
     this will be looked up automatically either using the CA list specified by
     QSslSocket::defaultCaCertificates() or, if possible, it will be loaded on demand
     on Unix.
+
+    \since 5.0
  */
 QList<QSslError> QSslCertificate::verify(QList<QSslCertificate> certificateChain, const QString &hostName)
 {
