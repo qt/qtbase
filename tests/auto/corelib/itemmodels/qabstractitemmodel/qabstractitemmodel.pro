@@ -6,3 +6,4 @@ mtdir = ../../../other/modeltest
 INCLUDEPATH += $$PWD/$${mtdir}
 SOURCES = tst_qabstractitemmodel.cpp $${mtdir}/dynamictreemodel.cpp $${mtdir}/modeltest.cpp
 HEADERS = $${mtdir}/dynamictreemodel.h $${mtdir}/modeltest.h
+CONFIG += insignificant_test # QTBUG-25325
