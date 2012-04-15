@@ -138,15 +138,24 @@ QSslCertificateExtension::QSslCertificateExtension()
 {
 }
 
+/*!
+    Constructs a copy of \a other.
+ */
 QSslCertificateExtension::QSslCertificateExtension(const QSslCertificateExtension &other)
     : d(other.d)
 {
 }
 
+/*!
+    Destroys the extension.
+ */
 QSslCertificateExtension::~QSslCertificateExtension()
 {
 }
 
+/*!
+    Assigns \a other to this extension and returns a reference to this extension.
+ */
 QSslCertificateExtension &QSslCertificateExtension::operator=(const QSslCertificateExtension &other)
 {
     d = other.d;
