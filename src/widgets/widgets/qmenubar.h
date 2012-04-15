@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 class QMenuBarPrivate;
 class QStyleOptionMenuItem;
 class QWindowsStyle;
+class QPlatformMenuBar;
 
 class Q_WIDGETS_EXPORT QMenuBar : public QWidget
 {

@@ -46,7 +46,6 @@
 #include <QtCore/qstring.h>
 #include <QtWidgets/qicon.h>
 #include <QtWidgets/qaction.h>
-#include <QtWidgets/qplatformmenu_qpa.h>
 
 #ifdef Q_OS_WINCE
 #include <windef.h> // for HMENU
@@ -61,6 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class QMenuPrivate;
 class QStyleOptionMenuItem;
+class QPlatformMenu;
 
 class Q_WIDGETS_EXPORT QMenu : public QWidget
 {
