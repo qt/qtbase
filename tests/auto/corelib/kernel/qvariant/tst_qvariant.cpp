@@ -3666,6 +3666,11 @@ protected:
             // Chars insert '\0' into the qdebug stream, it is not possible to find a real string length
             return;
         }
+        if (QMetaType::typeFlags(currentId) & QMetaType::PointerToQObject) {
+            QByteArray currentName = QMetaType::typeName(currentId);
+            currentName.chop(1);
+            ok &= (msg.contains(", " + currentName) || msg.contains(", 0x0"));
+        }
         ok &= msg.endsWith(") ");
         QVERIFY2(ok, (QString::fromLatin1("Message is not correctly finished: '") + msg + '\'').toLatin1().constData());
 
@@ -3694,6 +3699,7 @@ void tst_QVariant::debugStream_data()
     QTest::newRow("CustomStreamableClass") << QVariant(qMetaTypeId<CustomStreamableClass>(), 0) << qMetaTypeId<CustomStreamableClass>();
     QTest::newRow("MyClass") << QVariant(qMetaTypeId<MyClass>(), 0) << qMetaTypeId<MyClass>();
     QTest::newRow("InvalidVariant") << QVariant() << int(QMetaType::UnknownType);
+    QTest::newRow("CustomQObject") << QVariant::fromValue(this) << qMetaTypeId<tst_QVariant*>();
 }
 
 void tst_QVariant::debugStream()

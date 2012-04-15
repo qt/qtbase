@@ -834,7 +834,13 @@ static bool customConvert(const QVariant::Private *, int, void *, bool *ok)
 }
 
 #if !defined(QT_NO_DEBUG_STREAM)
-static void customStreamDebug(QDebug, const QVariant &) {}
+static void customStreamDebug(QDebug dbg, const QVariant &variant) {
+#ifndef QT_BOOTSTRAPPED
+    QMetaType::TypeFlags flags = QMetaType::typeFlags(variant.userType());
+    if (flags & QMetaType::PointerToQObject)
+        dbg.nospace() << variant.value<QObject*>();
+#endif
+}
 #endif
 
 const QVariant::Handler qt_custom_variant_handler = {
