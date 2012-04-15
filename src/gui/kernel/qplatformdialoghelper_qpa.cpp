@@ -54,6 +54,8 @@ QT_BEGIN_NAMESPACE
     \class QPlatformDialogHelper
     \since 5.0
     \internal
+    \ingroup qpa
+
     \brief The QPlatformDialogHelper class allows for platform-specific customization of dialogs.
 
 */
@@ -159,6 +161,15 @@ QFontDialogOptions::FontDialogOptions QFontDialogOptions::options() const
     return d->options;
 }
 
+/*!
+    \class QPlatformFontDialogHelper
+    \since 5.0
+    \internal
+    \ingroup qpa
+
+    \brief The QPlatformFontDialogHelper class allows for platform-specific customization of font dialogs.
+
+*/
 const QSharedPointer<QFontDialogOptions> &QPlatformFontDialogHelper::options() const
 {
     return m_options;
@@ -327,6 +338,15 @@ void QColorDialogOptions::setStandardColor(int index, QRgb color)
     qColorDialogStaticData()->standardRgb[index] = color;
 }
 
+/*!
+    \class QPlatformColorDialogHelper
+    \since 5.0
+    \internal
+    \ingroup qpa
+
+    \brief The QPlatformColorDialogHelper class allows for platform-specific customization of color dialogs.
+
+*/
 const QSharedPointer<QColorDialogOptions> &QPlatformColorDialogHelper::options() const
 {
     return m_options;
@@ -543,6 +563,15 @@ void QFileDialogOptions::setInitiallySelectedFiles(const QStringList &files)
     d->initiallySelectedFiles = files;
 }
 
+/*!
+    \class QPlatformFileDialogHelper
+    \since 5.0
+    \internal
+    \ingroup qpa
+
+    \brief The QPlatformFileDialogHelper class allows for platform-specific customization of file dialogs.
+
+*/
 const QSharedPointer<QFileDialogOptions> &QPlatformFileDialogHelper::options() const
 {
     return m_options;

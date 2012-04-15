@@ -62,6 +62,10 @@ QList<QPlatformCursor *> QPlatformCursorPrivate::getInstances()
 
 /*!
     \class QPlatformCursor
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
 
     \brief The QPlatformCursor class provides information about
     pointer device events (movement, buttons), and requests to change
@@ -124,6 +128,10 @@ void QPlatformCursor::setPos(const QPoint &pos)
 
 /*!
     \class QPlatformCursorImage
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
 
     \brief The QPlatformCursorImage class provides a set of graphics
     intended to be used as cursors.

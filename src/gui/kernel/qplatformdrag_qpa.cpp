@@ -82,6 +82,15 @@ public:
     Qt::DropAction cursor_drop_action;
 };
 
+/*!
+    \class QPlatformDrag
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformDrag class provides an abstraction for drag.
+ */
 QPlatformDrag::QPlatformDrag() : d_ptr(new QPlatformDragPrivate)
 {
 }

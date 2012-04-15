@@ -49,6 +49,15 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QPlatformPixmap
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformPixmap class provides an abstraction for native pixmaps.
+ */
 QPlatformPixmap *QPlatformPixmap::create(int w, int h, PixelType type)
 {
     QPlatformPixmap *data = QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(static_cast<QPlatformPixmap::PixelType>(type));

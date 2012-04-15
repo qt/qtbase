@@ -79,6 +79,16 @@ QClipboardData::~QClipboardData()
 
 Q_GLOBAL_STATIC(QClipboardData,q_clipboardData);
 
+/*!
+    \class QPlatformClipboard
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformClipboard class provides an abstraction for the system clipboard.
+ */
+
 QPlatformClipboard::~QPlatformClipboard()
 {
 

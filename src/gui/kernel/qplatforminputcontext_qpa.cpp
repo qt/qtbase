@@ -49,6 +49,10 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QPlatformInputContext
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
     \brief The QPlatformInputContext class abstracts the input method dependent data and composing state.
 
     An input method is responsible for inputting complex text that cannot

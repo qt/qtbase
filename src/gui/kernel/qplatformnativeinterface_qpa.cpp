@@ -43,6 +43,17 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QPlatformNativeInterface
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformNativeInterface class provides an abstraction for retrieving native
+    resource handles.
+ */
+
 void *QPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
     Q_UNUSED(resource);

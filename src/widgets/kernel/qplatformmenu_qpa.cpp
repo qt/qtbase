@@ -43,18 +43,30 @@
 
 QT_BEGIN_NAMESPACE
 
-//
-// QPlatformMenuAction
-//
+/*!
+    \class QPlatformMenuAction
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformMenuAction class provides an abstraction for menu actions.
+ */
 
 QPlatformMenuAction::~QPlatformMenuAction()
 {
 
 }
 
-//
-// QPlatformMenu
-//
+/*!
+    \class QPlatformMenu
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformMenu class provides an abstraction for menus.
+ */
 QPlatformMenu::QPlatformMenu()
 {
 }
@@ -74,9 +86,15 @@ void QPlatformMenu::syncSeparatorsCollapsible(bool enable)
     Q_UNUSED(enable);
 }
 
-//
-// QPlatformMenuBar
-//
+/*!
+    \class QPlatformMenuBar
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformMenuBar class provides an abstraction for menu bars.
+ */
 QPlatformMenuBar::QPlatformMenuBar()
 {
 

@@ -59,11 +59,14 @@ Q_GLOBAL_STATIC(QVector<QAccessibleBridge *>, bridges)
 
 /*!
     \class QPlatformAccessibility
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+    \ingroup accessibility
+
     \brief The QPlatformAccessibility class is the base class for
     integrating accessibility backends
-
-    \preliminary
-    \ingroup accessibility
 
     \sa QAccessible
 */

@@ -415,10 +415,14 @@ bool QPlatformFontDatabase::fontsAlwaysScalable() const
 
 /*!
     \class QPlatformFontDatabase
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+    \ingroup painting
+
     \brief The QPlatformFontDatabase class makes it possible to customize how fonts
     are discovered and how they are rendered
-
-    \ingroup painting
 
     QPlatformFontDatabase is the superclass which is intended to let platform implementations use
     native font handling.

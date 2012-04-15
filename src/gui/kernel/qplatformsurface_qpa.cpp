@@ -43,6 +43,15 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QPlatformSurface
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformSurface class provides an abstraction for a surface.
+ */
 QPlatformSurface::~QPlatformSurface()
 {
 

@@ -43,6 +43,15 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QPlatformScreenBuffer
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformScreenBuffer class provides an abstraction for screen buffers.
+ */
 QPlatformScreenBuffer::QPlatformScreenBuffer()
     : m_destroyed(false)
     , m_ready(true)
@@ -72,6 +81,18 @@ void QPlatformScreenBuffer::aboutToBeDisplayed()
 void QPlatformScreenBuffer::displayed()
 {
 }
+
+
+/*!
+    \class QPlatformScreenPageFlipper
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformScreenPageFlipper class provides an abstraction for flipping the screen
+    page.
+ */
 
 QPlatformScreenPageFlipper::QPlatformScreenPageFlipper(QObject *parent)
     :QObject(parent)

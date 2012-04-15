@@ -49,6 +49,16 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QPlatformPrinterSupport
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformPrinterSupport class provides an abstraction for print support.
+ */
+
 QPlatformPrinterSupport::QPlatformPrinterSupport()
 {
 }
