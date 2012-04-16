@@ -1945,10 +1945,7 @@ void QNetworkReplyHttpImplPrivate::createCache()
 {
     // check if we can save and if we're allowed to
     if (!managerPrivate->networkCache
-        || !request.attribute(QNetworkRequest::CacheSaveControlAttribute, true).toBool()
-        || request.attribute(QNetworkRequest::CacheLoadControlAttribute,
-                             QNetworkRequest::PreferNetwork).toInt()
-            == QNetworkRequest::AlwaysNetwork)
+        || !request.attribute(QNetworkRequest::CacheSaveControlAttribute, true).toBool())
         return;
     cacheEnabled = true;
 }
