@@ -2185,7 +2185,6 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         QString tmp_cmd_name = Project->project->variables()[extraCompilerName + ".name"].join(" ");
         QStringList tmp_dep = Project->project->variables()[extraCompilerName + ".depends"];
         QString tmp_dep_cmd = Project->project->variables()[extraCompilerName + ".depend_command"].join(" ");
-        QStringList vars = Project->project->variables()[extraCompilerName + ".variables"];
         QStringList configs = Project->project->variables()[extraCompilerName + ".CONFIG"];
         bool combined = configs.indexOf("combine") != -1;
 
