@@ -44,10 +44,16 @@
 
 #include <QtGui/qplatformbackingstore_qpa.h>
 
+#include <QImage>
+#include <QRegion>
+
+#define EGLFS_BACKINGSTORE_USE_IMAGE
+
 QT_BEGIN_NAMESPACE
 
 class QOpenGLContext;
 class QOpenGLPaintDevice;
+class QOpenGLShaderProgram;
 
 class QEglFSBackingStore : public QPlatformBackingStore
 {
@@ -64,8 +70,19 @@ public:
     void resize(const QSize &size, const QRegion &staticContents);
 
 private:
+    void makeCurrent();
+
     QOpenGLContext *m_context;
+#ifdef EGLFS_BACKINGSTORE_USE_IMAGE
+    QImage m_image;
+    uint m_texture;
+    QRegion m_dirty;
+    QOpenGLShaderProgram *m_program;
+    int m_vertexCoordEntry;
+    int m_textureCoordEntry;
+#else
     QOpenGLPaintDevice *m_device;
+#endif
 };
 
 QT_END_NAMESPACE
