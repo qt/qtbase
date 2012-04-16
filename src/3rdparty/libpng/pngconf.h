@@ -1,9 +1,9 @@
 
 /* pngconf.h - machine configurable file for libpng
  *
- * libpng version 1.5.1 - February 3, 2011
+ * libpng version 1.5.10 - March 29, 2012
  *
- * Copyright (c) 1998-2011 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2012 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -22,35 +22,37 @@
 #ifndef PNGCONF_H
 #define PNGCONF_H
 
+#ifndef PNG_BUILDING_SYMBOL_TABLE
 /* PNG_NO_LIMITS_H may be used to turn off the use of the standard C
  * definition file for  machine specific limits, this may impact the
  * correctness of the definitons below (see uses of INT_MAX).
  */
-#ifndef PNG_NO_LIMITS_H
-#  include <limits.h>
-#endif
+#  ifndef PNG_NO_LIMITS_H
+#    include <limits.h>
+#  endif
 
 /* For the memory copy APIs (i.e. the standard definitions of these),
  * because this file defines png_memcpy and so on the base APIs must
  * be defined here.
  */
-#if defined(BSD) && !defined(VXWORKS)
-#  include <strings.h>
-#else
-#  include <string.h>
-#endif
+#  ifdef BSD
+#    include <strings.h>
+#  else
+#    include <string.h>
+#  endif
 
 /* For png_FILE_p - this provides the standard definition of a
  * FILE
  */
-#ifdef PNG_STDIO_SUPPORTED
-#  include <stdio.h>
+#  ifdef PNG_STDIO_SUPPORTED
+#    include <stdio.h>
+#  endif
 #endif
 
 /* This controls optimization of the reading of 16 and 32 bit values
  * from PNG files.  It can be set on a per-app-file basis - it
- * just changes whether a macro is used to the function is called.
- * The library builder sets the default, if read functions are not
+ * just changes whether a macro is used when the function is called.
+ * The library builder sets the default; if read functions are not
  * built into the library the macro implementation is forced on.
  */
 #ifndef PNG_READ_INT_FUNCTIONS_SUPPORTED
@@ -162,7 +164,9 @@
  *                       'type', compiler specific.
  *
  * PNG_DLL_EXPORT Set to the magic to use during a libpng build to
- *                make a symbol exported from the DLL.
+ *                make a symbol exported from the DLL.  Not used in the
+ *                public header files; see pngpriv.h for how it is used
+ *                in the libpng build.
  *
  * PNG_DLL_IMPORT Set to the magic to force the libpng symbols to come
  *                from a DLL - used to define PNG_IMPEXP when
@@ -195,7 +199,7 @@
 #    define PNGCAPI __watcall
 #  endif
 
-#  if defined(__GNUC__) || (defined (_MSC_VER) && (_MSC_VER >= 800)) || defined(__WINSCW__)
+#  if defined(__GNUC__) || (defined (_MSC_VER) && (_MSC_VER >= 800))
 #    define PNGCAPI __cdecl
 #    if PNG_API_RULE == 1
 #      define PNGAPI __stdcall
@@ -256,25 +260,14 @@
 #  define PNGAPI PNGCAPI
 #endif
 
-/* The default for PNG_IMPEXP depends on whether the library is
- * being built or used.
+/* PNG_IMPEXP may be set on the compilation system command line or (if not set)
+ * then in an internal header file when building the library, otherwise (when
+ * using the library) it is set here.
  */
 #ifndef PNG_IMPEXP
-#  ifdef PNGLIB_BUILD
-    /* Building the library */
-#    if (defined(DLL_EXPORT)/*from libtool*/ ||\
-        defined(_WINDLL) || defined(_DLL) || defined(__DLL__) ||\
-        defined(_USRDLL) ||\
-        defined(PNG_BUILD_DLL)) && defined(PNG_DLL_EXPORT)
-      /* Building a DLL. */
-#      define PNG_IMPEXP PNG_DLL_EXPORT
-#    endif /* DLL */
-#  else
-    /* Using the library */
-#    if defined(PNG_USE_DLL) && defined(PNG_DLL_IMPORT)
-      /* This forces use of a DLL, disallowing static linking */
-#      define PNG_IMPEXP PNG_DLL_IMPORT
-#    endif
+#  if defined(PNG_USE_DLL) && defined(PNG_DLL_IMPORT)
+     /* This forces use of a DLL, disallowing static linking */
+#    define PNG_IMPEXP PNG_DLL_IMPORT
 #  endif
 
 #  ifndef PNG_IMPEXP
@@ -282,23 +275,15 @@
 #  endif
 #endif
 
-/* THe following complexity is concerned with getting the 'attributes' of the
- * declared function in the correct place.  This potentially requires a separate
- * PNG_EXPORT function for every compiler.
+/* In 1.5.2 the definition of PNG_FUNCTION has been changed to always treat
+ * 'attributes' as a storage class - the attributes go at the start of the
+ * function definition, and attributes are always appended regardless of the
+ * compiler.  This considerably simplifies these macros but may cause problems
+ * if any compilers both need function attributes and fail to handle them as
+ * a storage class (this is unlikely.)
  */
 #ifndef PNG_FUNCTION
-#  ifdef __GNUC__
-#     define PNG_FUNCTION(type, name, args, attributes)\
-         attributes type name args
-#  else /* !GNUC */
-#     ifdef _MSC_VER
-#        define PNG_FUNCTION(type, name, args, attributes)\
-         attributes type name args
-#     else /* !MSC */
-#        define PNG_FUNCTION(type, name, args, attributes)\
-            type name args
-#     endif
-#  endif
+#  define PNG_FUNCTION(type, name, args, attributes) attributes type name args
 #endif
 
 #ifndef PNG_EXPORT_TYPE
@@ -310,13 +295,19 @@
     * scripts directory.
     */
 #ifndef PNG_EXPORTA
+
 #  define PNG_EXPORTA(ordinal, type, name, args, attributes)\
-      extern PNG_FUNCTION(PNG_EXPORT_TYPE(type),(PNGAPI name),PNGARG(args),\
-         attributes)
+      PNG_FUNCTION(PNG_EXPORT_TYPE(type),(PNGAPI name),PNGARG(args), \
+        extern attributes)
 #endif
 
+/* ANSI-C (C90) does not permit a macro to be invoked with an empty argument,
+ * so make something non-empty to satisfy the requirement:
+ */
+#define PNG_EMPTY /*empty list*/
+
 #define PNG_EXPORT(ordinal, type, name, args)\
-   PNG_EXPORTA(ordinal, type, name, args, )
+   PNG_EXPORTA(ordinal, type, name, args, PNG_EMPTY)
 
 /* Use PNG_REMOVED to comment out a removed interface. */
 #ifndef PNG_REMOVED
@@ -324,8 +315,7 @@
 #endif
 
 #ifndef PNG_CALLBACK
-#  define PNG_CALLBACK(type, name, args, attributes)\
-   type (PNGCBAPI name) PNGARG(args) attributes
+#  define PNG_CALLBACK(type, name, args) type (PNGCBAPI name) PNGARG(args)
 #endif
 
 /* Support for compiler specific function attributes.  These are used
@@ -347,72 +337,49 @@
    * functions in png.h will generate compiler warnings.  Added at libpng
    * version 1.2.41.
    */
-#  ifdef __GNUC__
+#  if defined(__GNUC__)
 #    ifndef PNG_USE_RESULT
 #      define PNG_USE_RESULT __attribute__((__warn_unused_result__))
 #    endif
 #    ifndef PNG_NORETURN
 #      define PNG_NORETURN   __attribute__((__noreturn__))
 #    endif
-#    ifndef PNG_PTR_NORETURN
-#      define PNG_PTR_NORETURN   __attribute__((__noreturn__))
-#    endif
 #    ifndef PNG_ALLOCATED
 #      define PNG_ALLOCATED  __attribute__((__malloc__))
 #    endif
-
-    /* This specifically protects structure members that should only be
-     * accessed from within the library, therefore should be empty during
-     * a library build.
-     */
-#    ifndef PNGLIB_BUILD
-#      ifndef PNG_DEPRECATED
-#        define PNG_DEPRECATED __attribute__((__deprecated__))
+#    ifndef PNG_DEPRECATED
+#      define PNG_DEPRECATED __attribute__((__deprecated__))
+#    endif
+#    ifndef PNG_PRIVATE
+#      if 0 /* Doesn't work so we use deprecated instead*/
+#        define PNG_PRIVATE \
+          __attribute__((warning("This function is not exported by libpng.")))
+#      else
+#        define PNG_PRIVATE \
+          __attribute__((__deprecated__))
 #      endif
-#      ifndef PNG_DEPSTRUCT
-#        define PNG_DEPSTRUCT  __attribute__((__deprecated__))
-#      endif
-#      ifndef PNG_PRIVATE
-#        if 0 /* Doesn't work so we use deprecated instead*/
-#          define PNG_PRIVATE \
-            __attribute__((warning("This function is not exported by libpng.")))
-#        else
-#          define PNG_PRIVATE \
-            __attribute__((__deprecated__))
-#        endif
-#      endif /* PNG_PRIVATE */
-#    endif /* PNGLIB_BUILD */
+#    endif
 #  endif /* __GNUC__ */
-#  ifdef _MSC_VER /* may need to check value */
+
+#  if defined(_MSC_VER)  && (_MSC_VER >= 1300)
 #    ifndef PNG_USE_RESULT
-#      define PNG_USE_RESULT /*not supported*/
+#      define PNG_USE_RESULT /* not supported */
 #    endif
 #    ifndef PNG_NORETURN
-#      define PNG_NORETURN   __declspec(noreturn)
-#    endif
-#    ifndef PNG_PTR_NORETURN
-#      define PNG_PTR_NORETURN /*not supported*/
+#      define PNG_NORETURN __declspec(noreturn)
 #    endif
 #    ifndef PNG_ALLOCATED
-#      define PNG_ALLOCATED __declspec(restrict)
+#      if (_MSC_VER >= 1400)
+#        define PNG_ALLOCATED __declspec(restrict)
+#      endif
 #    endif
-
-    /* This specifically protects structure members that should only be
-     * accessed from within the library, therefore should be empty during
-     * a library build.
-     */
-#    ifndef PNGLIB_BUILD
-#      ifndef PNG_DEPRECATED
-#        define PNG_DEPRECATED __declspec(deprecated)
-#      endif
-#      ifndef PNG_DEPSTRUCT
-#        define PNG_DEPSTRUCT  __declspec(deprecated)
-#      endif
-#      ifndef PNG_PRIVATE
-#        define PNG_PRIVATE __declspec(deprecated)
-#      endif /* PNG_PRIVATE */
-#    endif /* PNGLIB_BUILD */
-#  endif /* __GNUC__ */
+#    ifndef PNG_DEPRECATED
+#      define PNG_DEPRECATED __declspec(deprecated)
+#    endif
+#    ifndef PNG_PRIVATE
+#      define PNG_PRIVATE __declspec(deprecated)
+#    endif
+#  endif /* _MSC_VER */
 #endif /* PNG_PEDANTIC_WARNINGS */
 
 #ifndef PNG_DEPRECATED
@@ -426,9 +393,6 @@
 #endif
 #ifndef PNG_ALLOCATED
 #  define PNG_ALLOCATED   /* The result of the function is new memory */
-#endif
-#ifndef PNG_DEPSTRUCT
-#  define PNG_DEPSTRUCT   /* Access to this struct member is deprecated */
 #endif
 #ifndef PNG_PRIVATE
 #  define PNG_PRIVATE     /* This is a private libpng function */
