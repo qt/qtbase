@@ -14,3 +14,5 @@ installTestHelperApp("../testProcessSpacesArgs/nospace",testProcessSpacesArgs,no
 installTestHelperApp("../testProcessSpacesArgs/one space",testProcessSpacesArgs,"one space")
 installTestHelperApp("../testProcessSpacesArgs/two space s",testProcessSpacesArgs,"two space s")
 installTestHelperApp("../test Space In Name/testSpaceInName","test Space In Name",testSpaceInName)
+
+win32:CONFIG += insignificant_test # QTBUG-25342 - sometimes hangs
