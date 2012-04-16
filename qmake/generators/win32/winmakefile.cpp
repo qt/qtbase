@@ -420,6 +420,8 @@ void Win32MakefileGenerator::processRcFileVar()
             productName = project->values("TARGET").first();
 
         QString originalName = project->values("TARGET").first() + project->values("TARGET_EXT").first();
+        int rcLang = project->intValue("RC_LANG", 1033);            // default: English(USA)
+        int rcCodePage = project->intValue("RC_CODEPAGE", 1200);    // default: Unicode
 
         ts << "# if defined(UNDER_CE)" << endl;
         ts << "#  include <winbase.h>" << endl;
@@ -445,7 +447,9 @@ void Win32MakefileGenerator::processRcFileVar()
         ts << "\tBEGIN" << endl;
         ts << "\t\tBLOCK \"StringFileInfo\"" << endl;
         ts << "\t\tBEGIN" << endl;
-        ts << "\t\t\tBLOCK \"040904B0\"" << endl;
+        ts << "\t\t\tBLOCK \""
+           << QString("%1%2").arg(rcLang, 4, 16, QLatin1Char('0')).arg(rcCodePage, 4, 16, QLatin1Char('0'))
+           << "\"" << endl;
         ts << "\t\t\tBEGIN" << endl;
         ts << "\t\t\t\tVALUE \"CompanyName\", \"" << companyName << "\\0\"" << endl;
         ts << "\t\t\t\tVALUE \"FileDescription\", \"" <<  description << "\\0\"" << endl;
@@ -454,6 +458,12 @@ void Win32MakefileGenerator::processRcFileVar()
         ts << "\t\t\t\tVALUE \"OriginalFilename\", \"" << originalName << "\\0\"" << endl;
         ts << "\t\t\t\tVALUE \"ProductName\", \"" << productName << "\\0\"" << endl;
         ts << "\t\t\tEND" << endl;
+        ts << "\t\tEND" << endl;
+        ts << "\t\tBLOCK \"VarFileInfo\"" << endl;
+        ts << "\t\tBEGIN" << endl;
+        ts << "\t\t\tVALUE \"Translation\", "
+           << QString("0x%1").arg(rcLang, 4, 16, QLatin1Char('0'))
+           << ", " << QString("%1").arg(rcCodePage, 4) << endl;
         ts << "\t\tEND" << endl;
         ts << "\t\tBLOCK \"VarFileInfo\"" << endl;
         ts << "\t\tBEGIN" << endl;
