@@ -4695,8 +4695,8 @@ if [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ]; then
             ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] ); then
         echo "No QPA platform plugin enabled!"
         echo " If you really want to build without a QPA platform plugin you must pass"
-        echo " -no-xcb, -no-eglfs and -no-directfb to configure. Doing this will"
-        echo " produce a Qt that cannot run GUI applications."
+        echo " -no-qpa-platform-guard to configure. Doing this will"
+        echo " produce a Qt that can not run GUI applications."
         echo " The dependencies needed for xcb to build are listed in"
         echo " src/plugins/platforms/xcb/README"
         exit 1
