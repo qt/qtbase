@@ -94,7 +94,6 @@ QString Option::user_template_prefix;
 QStringList Option::shellPath;
 Option::HOST_MODE Option::host_mode = Option::HOST_UNKNOWN_MODE;
 Option::TARG_MODE Option::target_mode = Option::TARG_UNKNOWN_MODE;
-bool Option::target_mode_overridden = false;
 
 //QMAKE_*_PROPERTY stuff
 QStringList Option::prop::properties;
@@ -262,20 +261,11 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             } else if(opt == "tp" || opt == "template_prefix") {
                 Option::user_template_prefix = argv[++x];
             } else if(opt == "macx") {
-                fprintf(stderr, "-macx is deprecated.\n");
                 Option::host_mode = HOST_MACX_MODE;
-                Option::target_mode = TARG_MACX_MODE;
-                Option::target_mode_overridden = true;
             } else if(opt == "unix") {
-                fprintf(stderr, "-unix is deprecated.\n");
                 Option::host_mode = HOST_UNIX_MODE;
-                Option::target_mode = TARG_UNIX_MODE;
-                Option::target_mode_overridden = true;
             } else if(opt == "win32") {
-                fprintf(stderr, "-win32 is deprecated.\n");
                 Option::host_mode = HOST_WIN_MODE;
-                Option::target_mode = TARG_WIN_MODE;
-                Option::target_mode_overridden = true;
             } else if(opt == "integrity") {
                 Option::target_mode = TARG_INTEGRITY_MODE;
             } else if(opt == "d") {

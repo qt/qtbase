@@ -2196,14 +2196,6 @@ QString MakefileGenerator::buildArgs(const QString &outdir)
         ret += " -spec " + fixifySpecdir(Option::mkfile::qmakespec, outdir);
     if (!Option::mkfile::xqmakespec_commandline.isEmpty())
         ret += " -xspec " + fixifySpecdir(Option::mkfile::xqmakespec, outdir);
-    if (Option::target_mode_overridden) {
-        if (Option::target_mode == Option::TARG_MACX_MODE)
-            ret += " -macx";
-        else if (Option::target_mode == Option::TARG_UNIX_MODE)
-            ret += " -unix";
-        else if (Option::target_mode == Option::TARG_WIN_MODE)
-            ret += " -win32";
-    }
 
     //arguments
     for(QStringList::Iterator it = Option::before_user_vars.begin();
