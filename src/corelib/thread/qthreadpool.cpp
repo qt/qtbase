@@ -47,15 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-inline bool operator<(int priority, const QPair<QRunnable *, int> &p)
-{
-    return p.second < priority;
-}
-inline bool operator<(const QPair<QRunnable *, int> &p, int priority)
-{
-    return priority < p.second;
-}
-
 Q_GLOBAL_STATIC(QThreadPool, theInstance)
 
 /*
@@ -209,15 +200,22 @@ bool QThreadPoolPrivate::tryStart(QRunnable *task)
     return true;
 }
 
+inline bool operator<(int priority, const QPair<QRunnable *, int> &p)
+{ return p.second < priority; }
+inline bool operator<(const QPair<QRunnable *, int> &p, int priority)
+{ return priority < p.second; }
+
 void QThreadPoolPrivate::enqueueTask(QRunnable *runnable, int priority)
 {
     if (runnable->autoDelete())
         ++runnable->ref;
 
     // put it on the queue
-    QList<QPair<QRunnable *, int> >::iterator at =
-        qUpperBound(queue.begin(), queue.end(), priority);
-    queue.insert(at, qMakePair(runnable, priority));
+    QList<QPair<QRunnable *, int> >::const_iterator begin = queue.constBegin();
+    QList<QPair<QRunnable *, int> >::const_iterator it = queue.constEnd();
+    if (it != begin && priority < (*(it - 1)).second)
+        it = qUpperBound(begin, --it, priority);
+    queue.insert(it - begin, qMakePair(runnable, priority));
     runnableReady.wakeOne();
 }
 
