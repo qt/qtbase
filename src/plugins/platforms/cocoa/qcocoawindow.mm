@@ -479,7 +479,6 @@ void QCocoaWindow::clearNSWindow(NSWindow *window)
 {
     [window setDelegate:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:m_contentView];
-    [m_contentView removeFromSuperviewWithoutNeedingDisplay];
 }
 
 // Returns the current global screen geometry for the nswindow associated with this window.
