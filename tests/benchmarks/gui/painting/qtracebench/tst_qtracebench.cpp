@@ -179,6 +179,7 @@ ReplayWidget::ReplayWidget(const QString &filename_)
     }
 
     QDataStream in(&file);
+    in.setVersion(QDataStream::Qt_4_7);
 
     char *data;
     uint size;
