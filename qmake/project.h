@@ -156,6 +156,7 @@ public:
     bool isEmpty(const QString &v); // With compat mapping, but no magic variables
     QStringList &values(const QString &v); // With compat mapping and magic variables
     QString first(const QString &v); // ditto
+    int intValue(const QString &v, int defaultValue = 0); // ditto
     QHash<QString, QStringList> &variables(); // No compat mapping and magic, obviously
 
     bool isRecursive() const { return recursive; }
@@ -187,6 +188,18 @@ inline QString QMakeProject::first(const QString &v)
     if(vals.isEmpty())
         return QString("");
     return vals.first();
+}
+
+inline int QMakeProject::intValue(const QString &v, int defaultValue)
+{
+    const QString str = first(v);
+    if (!str.isEmpty()) {
+        bool ok;
+        int i = str.toInt(&ok);
+        if (ok)
+            return i;
+    }
+    return defaultValue;
 }
 
 inline QHash<QString, QStringList> &QMakeProject::variables()
