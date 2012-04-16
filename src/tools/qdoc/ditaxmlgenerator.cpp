@@ -6048,23 +6048,32 @@ void DitaXmlGenerator::writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle
             xmlWriter().writeAttribute("navtitle",i.key());
             xmlWriter().writeAttribute("href",fileName(i.value()));
             switch (i.value()->type()) {
-            case Node::Class: {
-                const NamespaceNode* nn = static_cast<const NamespaceNode*>(i.value());
-                const NodeList& c = nn->childNodes();
-                for (int j=0; j<c.size(); ++j) {
-                    if (c[j]->isInternal() || c[j]->access() == Node::Private || c[j]->doc().isEmpty())
-                        continue;
-                    if (c[j]->type() == Node::Class) {
-                        writeStartTag(DT_topicref);
-                        xmlWriter().writeAttribute("navtitle",c[j]->name());
-                        xmlWriter().writeAttribute("href",fileName(c[j]));
-                        writeEndTag(); // </topicref>
+                case Node::Class:
+                case Node::Namespace: {
+                    const NamespaceNode* nn = static_cast<const NamespaceNode*>(i.value());
+                    const NodeList& c = nn->childNodes();
+                    QMap<QString, const Node*> tempMap;
+                    for (int j=0; j<c.size(); ++j) {
+                        if (c[j]->isInternal() || c[j]->access() == Node::Private || c[j]->doc().isEmpty())
+                            continue;
+                        if (c[j]->type() == Node::Class) {
+                            tempMap.insert(c[j]->name(), c[j]);
+                        }
                     }
+                    QMap<QString, const Node*>::iterator classIterator = tempMap.begin();
+                    while (classIterator != tempMap.end()) {
+                        const Node* currentNode = static_cast<const Node*>(classIterator.value());
+                        writeStartTag(DT_topicref);
+                        xmlWriter().writeAttribute("navtitle",currentNode->name());
+                        xmlWriter().writeAttribute("href",fileName(currentNode));
+                        writeEndTag(); // </topicref>
+                        ++classIterator;
+                    }
+
+                    break;
                 }
-                break;
-            }
-            default:
-                break;
+                default:
+                    break;
             }
             writeEndTag(); // </topicref>
             ++i;
