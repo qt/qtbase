@@ -407,7 +407,8 @@ private Q_SLOTS:
     void backgroundRequest();
     void backgroundRequestInterruption_data();
     void backgroundRequestInterruption();
-
+    void backgroundRequestConnectInBackground_data();
+    void backgroundRequestConnectInBackground();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -6952,6 +6953,68 @@ void tst_QNetworkReply::backgroundRequestInterruption()
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), error);
+#endif
+#endif
+}
+
+void tst_QNetworkReply::backgroundRequestConnectInBackground_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<bool>("background");
+
+    QUrl httpurl("http://" + QtNetworkSettings::serverName());
+    QUrl ftpurl("ftp://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+
+    QTest::newRow("http, fg") << httpurl << false;
+    QTest::newRow("http, bg") << httpurl << true;
+
+    QTest::newRow("ftp, fg") << ftpurl << false;
+    QTest::newRow("ftp, bg") << ftpurl << true;
+}
+
+//test purpose: check that backgroundness is propagated to the network session
+void tst_QNetworkReply::backgroundRequestConnectInBackground()
+{
+#ifdef QT_BUILD_INTERNAL
+#ifndef QT_NO_BEARERMANAGEMENT
+    QFETCH(QUrl, url);
+    QFETCH(bool, background);
+
+    QNetworkRequest request(url);
+
+    if (background)
+        request.setAttribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(true));
+
+    QWeakPointer<const QNetworkSession> session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
+    //force QNAM to reopen the session.
+    if (session && session.data()->isOpen()) {
+        const_cast<QNetworkSession *>(session.data())->close();
+        QCoreApplication::processEvents(); //let signals propagate inside QNAM
+    }
+
+    //this preconstructs the session so we can change policies in advance
+    manager.setConfiguration(networkConfiguration);
+
+    session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
+    QVERIFY(session);
+    QNetworkSession::UsagePolicies original = session.data()->usagePolicies();
+    QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), QNetworkSession::NoPolicy);
+
+    QNetworkReplyPtr reply(manager.get(request));
+
+    QVERIFY(waitForFinish(reply) != Timeout);
+    session = QNetworkAccessManagerPrivate::getNetworkSession(&manager);
+    if (session) {
+        QVariant cib = session.data()->sessionProperty(QStringLiteral("ConnectInBackground"));
+        if (!cib.isValid())
+            QSKIP("inconclusive - ConnectInBackground session property not supported by the bearer plugin");
+        QCOMPARE(cib.toBool(), background);
+        QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), original);
+    } else {
+        QSKIP("inconclusive - network session has been destroyed");
+    }
+
+    QVERIFY(reply->isFinished());
 #endif
 #endif
 }
