@@ -660,6 +660,13 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
                 << valueTagT(ts);
         }
 
+        const triState generateManifest = tool.SingleProjects.at(i).Configuration.linker.GenerateManifest;
+        if (generateManifest != unset) {
+            xml << tag("GenerateManifest")
+                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(tool.SingleProjects.at(i).Configuration.Name))
+                << valueTagT(generateManifest);
+        }
+
         if ( tool.SingleProjects.at(i).Configuration.preBuild.ExcludedFromBuild != unset )
         {
             xml << tag("PreBuildEventUseInBuild")
