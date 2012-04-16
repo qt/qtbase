@@ -85,15 +85,4 @@
 #define QT_SNPRINTF		::snprintf
 #define QT_VSNPRINTF		::vsnprintf
 
-// Older FreeBSD versions may still use the a.out format instead of ELF.
-// From the FreeBSD man pages:
-// 	In previous implementations, it was necessary to prepend an
-// 	underscore to all external symbols in order to gain symbol
-// 	compatibility with object code compiled from the C language.
-// 	This is still the case when using the (obsolete) -aout option to
-// 	the C language compiler.
-#ifndef __ELF__
-#define QT_AOUT_UNDERSCORE
-#endif
-
 #endif // QPLATFORMDEFS_H
