@@ -79,17 +79,8 @@
 #include "../common/posix/qplatformdefs.h"
 
 #undef QT_OPEN_LARGEFILE
-#undef QT_SOCKLEN_T
 
 #define QT_OPEN_LARGEFILE       0
-
-#if !defined(__DragonFly__) && (__FreeBSD_version < 400000)
-// FreeBSD 1.0 - 3.5.1
-#define QT_SOCKLEN_T            int
-#else
-// FreeBSD 4.0 and better
-#define QT_SOCKLEN_T            socklen_t
-#endif
 
 #define QT_SNPRINTF		::snprintf
 #define QT_VSNPRINTF		::vsnprintf
