@@ -608,6 +608,14 @@ void tst_QChar::mirroredChar()
 
 void tst_QChar::decomposition()
 {
+    // Hangul syllables
+    for (uint ucs = 0xac00; ucs <= 0xd7af; ++ucs) {
+        QChar::Decomposition expected = QChar::unicodeVersion(ucs) > QChar::Unicode_Unassigned ? QChar::Canonical : QChar::NoDecomposition;
+        QString desc = QString::fromLatin1("ucs = 0x%1, tag = %2, expected = %3")
+                .arg(QString::number(ucs, 16)).arg(QChar::decompositionTag(ucs)).arg(expected);
+        QVERIFY2(QChar::decompositionTag(ucs) == expected, desc.toLatin1());
+    }
+
     QVERIFY(QChar((ushort)0xa0).decompositionTag() == QChar::NoBreak);
     QVERIFY(QChar((ushort)0xa8).decompositionTag() == QChar::Compat);
     QVERIFY(QChar((ushort)0x41).decompositionTag() == QChar::NoDecomposition);
@@ -804,6 +812,25 @@ void tst_QChar::normalization_manual()
         QVERIFY(composed.normalized(QString::NormalizationForm_C) == composed);
         QVERIFY(composed.normalized(QString::NormalizationForm_KD) == decomposed);
         QVERIFY(composed.normalized(QString::NormalizationForm_KC) == decomposed);
+    }
+    {   // hangul
+        QString composed;
+        composed += QChar(0xc154);
+        composed += QChar(0x11f0);
+        QString decomposed;
+        decomposed += QChar(0x1109);
+        decomposed += QChar(0x1167);
+        decomposed += QChar(0x11f0);
+
+        QVERIFY(composed.normalized(QString::NormalizationForm_D) == decomposed);
+        QVERIFY(composed.normalized(QString::NormalizationForm_C) == composed);
+        QVERIFY(composed.normalized(QString::NormalizationForm_KD) == decomposed);
+        QVERIFY(composed.normalized(QString::NormalizationForm_KC) == composed);
+
+        QVERIFY(decomposed.normalized(QString::NormalizationForm_D) == decomposed);
+        QVERIFY(decomposed.normalized(QString::NormalizationForm_C) == composed);
+        QVERIFY(decomposed.normalized(QString::NormalizationForm_KD) == decomposed);
+        QVERIFY(decomposed.normalized(QString::NormalizationForm_KC) == composed);
     }
 }
 

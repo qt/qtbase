@@ -981,6 +981,8 @@ QChar::Decomposition QChar::decompositionTag(uint ucs4)
 {
     if (ucs4 > UNICODE_LAST_CODEPOINT)
         return QChar::NoDecomposition;
+    if (ucs4 >= Hangul_SBase && ucs4 < Hangul_SBase + Hangul_SCount)
+        return QChar::Canonical;
     const unsigned short index = GET_DECOMPOSITION_INDEX(ucs4);
     if (index == 0xffff)
         return QChar::NoDecomposition;
