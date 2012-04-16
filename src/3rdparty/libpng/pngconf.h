@@ -35,7 +35,7 @@
  * because this file defines png_memcpy and so on the base APIs must
  * be defined here.
  */
-#  ifdef BSD
+#  if defined(BSD) && !defined(VXWORKS)
 #    include <strings.h>
 #  else
 #    include <string.h>

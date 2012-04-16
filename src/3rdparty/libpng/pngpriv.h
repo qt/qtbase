@@ -25,6 +25,12 @@
 #ifndef PNGPRIV_H
 #define PNGPRIV_H
 
+#ifdef _MSC_VER
+#  ifndef _CRT_SECURE_NO_DEPRECATE
+#    define _CRT_SECURE_NO_DEPRECATE
+#  endif
+#endif
+
 /* Feature Test Macros.  The following are defined here to ensure that correctly
  * implemented libraries reveal the APIs libpng needs to build and hide those
  * that are not needed and potentially damaging to the compilation.
@@ -96,6 +102,11 @@
 #     endif
 #  endif
 #endif /* Setting PNG_BUILD_DLL if required */
+
+/* Modfied for usage in Qt: Do not export the libpng APIs */
+#ifdef PNG_BUILD_DLL
+#undef PNG_BUILD_DLL
+#endif
 
 /* See pngconf.h for more details: the builder of the library may set this on
  * the command line to the right thing for the specific compilation system or it
@@ -360,7 +371,7 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
 
 /* Memory model/platform independent fns */
 #ifndef PNG_ABORT
-#  ifdef _WINDOWS_
+#  if defined(_WINDOWS_) || defined(_WIN32_WCE)
 #    define PNG_ABORT() ExitProcess(0)
 #  else
 #    define PNG_ABORT() abort()
