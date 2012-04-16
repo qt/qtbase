@@ -68,6 +68,7 @@
 #include <QtGui/QGenericPluginFactory>
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputpanel.h>
+#include <QtGui/qpixmapcache.h>
 #include <QtGui/qplatformtheme_qpa.h>
 #include <QtGui/qplatforminputcontext_qpa.h>
 #include <private/qplatforminputcontext_qpa_p.h>
@@ -891,6 +892,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     delete inputMethod;
 
     qt_cleanupFontDatabase();
+
+    QPixmapCache::clear();
 
     delete  platform_theme;
     delete platform_integration;
