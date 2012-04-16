@@ -7,8 +7,6 @@ DESTDIR = $$QT.gui.plugins/platforms
 
 #DEFINES += QEGL_EXTRA_DEBUG
 
-#DEFINES += Q_OPENKODE
-
 #Avoid X11 header collision
 DEFINES += MESA_EGL_NO_X11_HEADERS
 

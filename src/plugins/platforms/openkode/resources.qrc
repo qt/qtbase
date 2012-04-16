@@ -1,6 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-    <file>shaders/vert.glslv</file>
-    <file>shaders/frag.glslf</file>
-</qresource>
-</RCC>
