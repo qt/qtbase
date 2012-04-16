@@ -121,7 +121,7 @@ bool QBasicMutex::lockInternal(int timeout)
                 struct timespec ts, *pts = 0;
                 if (timeout >= 1) {
                     // recalculate the timeout
-                    qint64 xtimeout = timeout * 1000 * 1000;
+                    qint64 xtimeout = qint64(timeout) * 1000 * 1000;
                     xtimeout -= elapsedTimer.nsecsElapsed();
                     if (xtimeout <= 0) {
                         // timer expired after we returned
