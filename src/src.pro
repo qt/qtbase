@@ -65,7 +65,7 @@ src_concurrent.target = sub-concurrent
    src_plugins.depends = src_gui src_sql src_xml src_platformsupport
 }
 
-contains(QT_CONFIG, no-widgets): SRC_SUBDIRS -= src_opengl src_widgets src_printsupport src_testlib
+contains(QT_CONFIG, no-widgets): SRC_SUBDIRS -= src_opengl src_widgets src_printsupport
 
 # This creates a sub-src rule
 sub_src_target.CONFIG = recursive
