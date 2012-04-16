@@ -369,6 +369,8 @@ void tst_QTimeLine::interpolation()
     QCOMPARE(timeLine.state(), QTimeLine::Running);
 
     // Smooth accellerates slowly so in the beginning so it is farther behind
+    if (firstValue >= timeLine.currentFrame())
+        QEXPECT_FAIL("", "QTBUG-24796: QTimeLine exhibits inconsistent timing behaviour", Abort);
     QVERIFY(firstValue < timeLine.currentFrame());
     QTest::qWait(200);
     QVERIFY(endValue > timeLine.currentFrame());
@@ -457,24 +459,33 @@ void tst_QTimeLine::toggleDirection()
 void tst_QTimeLine::frameChanged()
 {
     QTimeLine timeLine;
+    timeLine.setCurveShape(QTimeLine::LinearCurve);
     timeLine.setFrameRange(0,9);
-    timeLine.setUpdateInterval(1000);
+    timeLine.setUpdateInterval(800);
     QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
     QVERIFY(spy.isValid());
-    timeLine.start();
-    QTest::qWait(timeLine.duration()*2);
-    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    // Probably 10
-    QVERIFY(spy.count() <= 10 && spy.count() > 0);
 
+    // Test what happens when duration expires before all frames are emitted.
+    timeLine.start();
+    QTest::qWait(timeLine.duration()/2);
+    QCOMPARE(timeLine.state(), QTimeLine::Running);
+    QCOMPARE(spy.count(), 0);
+    QTest::qWait(timeLine.duration());
+    if (timeLine.state() != QTimeLine::NotRunning)
+        QEXPECT_FAIL("", "QTBUG-24796: QTimeLine runs slower than it should", Abort);
+    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
+    if (spy.count() != 1)
+        QEXPECT_FAIL("", "QTBUG-24796: QTimeLine runs slower than it should", Abort);
+    QCOMPARE(spy.count(), 1);
+
+    // Test what happens when the frames are all emitted well before duration expires.
     timeLine.setUpdateInterval(5);
     spy.clear();
     timeLine.setCurrentTime(0);
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    // Probably 1
-    QVERIFY(spy.count() <= 10 && spy.count() > 0);
+    QCOMPARE(spy.count(), 10);
 }
 
 void tst_QTimeLine::stopped()
