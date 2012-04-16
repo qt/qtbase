@@ -3148,7 +3148,7 @@ Additional options:
  $XCBY  -xcb ............... Compile Xcb support.
 
  $EGLFSN  -no-eglfs .......... Do not compile EGLFS (EGL Full Screen/Single Surface) support.
- $EGLFSY  -eglfs ............. Compile EGLFS support.
+ $EGLFSY  -eglfs ............. Compile EGLFS support (Requires OpenGL ES 2 support).
 
  $DFBN  -no-directfb ....... Do not compile DirectFB support.
  $DFBY  -directfb .......... Compile DirectFB support.
@@ -3927,6 +3927,11 @@ if [ "$CFG_EGLFS" = "yes" ]; then
         echo "The EGLFS plugin requires EGL support and cannot be built"
         exit 101
     fi
+    if [ "$CFG_OPENGL" != "es2" ]; then
+        echo "The EGLFS plugin requires OpenGL ES 2 support and cannot be built"
+        exit 101
+    fi
+    CFG_OPENGL="es2"
     CFG_EGL=yes
 fi
 
@@ -4668,7 +4673,11 @@ elif [ "$CFG_OPENGL" = "desktop" ]; then
 fi
 
 if [ "$CFG_EGLFS" != "no" ]; then
-    CFG_EGLFS="$CFG_EGL"
+    if [ "$CFG_OPENGL" = "es2" ]; then
+        CFG_EGLFS="$CFG_EGL"
+    else
+        CFG_EGLFS="no"
+    fi
 fi
 
 if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then

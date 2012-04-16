@@ -105,7 +105,7 @@ SOURCES += \
         kernel/qplatformservices_qpa.cpp \
         kernel/qplatformscreenpageflipper_qpa.cpp
 
-contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2)|contains(QT_CONFIG, egl) {
+contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
     HEADERS += \
             kernel/qplatformopenglcontext_qpa.h \
             kernel/qopenglcontext.h \

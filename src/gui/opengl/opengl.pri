@@ -4,7 +4,7 @@ contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
 contains(QT_CONFIG, egl):CONFIG += egl
 
-contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2)|contains(QT_CONFIG, egl) {
+contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
 
     HEADERS += opengl/qopengl.h \
                opengl/qopengl_p.h \
