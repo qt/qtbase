@@ -52,6 +52,7 @@
 #include <string.h>
 #include <qt_windows.h>
 #include <wininet.h>
+#include "qnetworkfunctions_wince.h"
 
 /*
  * Information on the WinHTTP DLL:
