@@ -106,7 +106,6 @@ struct Option
 
     //both of these must be called..
     static int init(int argc=0, char **argv=0); //parse cmdline
-    static void applyHostMode();
     static void prepareProject(const QString &pfile);
     static bool postProcessProject(QMakeProject *);
 

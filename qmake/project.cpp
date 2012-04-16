@@ -1600,37 +1600,27 @@ QMakeProject::read(uchar cmd)
 
 void QMakeProject::validateModes()
 {
-    if (Option::host_mode == Option::HOST_UNKNOWN_MODE
-        || Option::target_mode == Option::TARG_UNKNOWN_MODE) {
-        Option::HOST_MODE host_mode;
+    if (Option::target_mode == Option::TARG_UNKNOWN_MODE) {
         Option::TARG_MODE target_mode;
         const QStringList &gen = base_vars.value("MAKEFILE_GENERATOR");
         if (gen.isEmpty()) {
             fprintf(stderr, "%s:%d: Using OS scope before setting MAKEFILE_GENERATOR\n",
                             parser.file.toLatin1().constData(), parser.line_no);
-        } else if (MetaMakefileGenerator::modesForGenerator(gen.first(),
-                                                            &host_mode, &target_mode)) {
-            if (Option::host_mode == Option::HOST_UNKNOWN_MODE) {
-                Option::host_mode = host_mode;
-                Option::applyHostMode();
-            }
-
-            if (Option::target_mode == Option::TARG_UNKNOWN_MODE) {
-                const QStringList &tgt = base_vars.value("TARGET_PLATFORM");
-                if (!tgt.isEmpty()) {
-                    const QString &os = tgt.first();
-                    if (os == "unix")
-                        Option::target_mode = Option::TARG_UNIX_MODE;
-                    else if (os == "macx")
-                        Option::target_mode = Option::TARG_MACX_MODE;
-                    else if (os == "win32")
-                        Option::target_mode = Option::TARG_WIN_MODE;
-                    else
-                        fprintf(stderr, "Unknown target platform specified: %s\n",
-                                os.toLatin1().constData());
-                } else {
-                    Option::target_mode = target_mode;
-                }
+        } else if (MetaMakefileGenerator::modeForGenerator(gen.first(), &target_mode)) {
+            const QStringList &tgt = base_vars.value("TARGET_PLATFORM");
+            if (!tgt.isEmpty()) {
+                const QString &os = tgt.first();
+                if (os == "unix")
+                    Option::target_mode = Option::TARG_UNIX_MODE;
+                else if (os == "macx")
+                    Option::target_mode = Option::TARG_MACX_MODE;
+                else if (os == "win32")
+                    Option::target_mode = Option::TARG_WIN_MODE;
+                else
+                    fprintf(stderr, "Unknown target platform specified: %s\n",
+                            os.toLatin1().constData());
+            } else {
+                Option::target_mode = target_mode;
             }
         }
     }
@@ -1752,7 +1742,6 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
     if(flags & IncludeFlagFeature) {
         if(!file.endsWith(Option::prf_ext))
             file += Option::prf_ext;
-        validateModes(); // init dir_sep
         if(file.indexOf(QLatin1Char('/')) == -1 || !QFile::exists(file)) {
             QStringList *&feature_roots = all_feature_roots[host_build];
             if(!feature_roots) {
@@ -3737,7 +3726,6 @@ QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringLis
         var = ".BUILTIN." + var;
         place[var] = QStringList(qmake_getpwd());
     } else if(var == QLatin1String("DIR_SEPARATOR")) {
-        validateModes();
         var = ".BUILTIN." + var;
         place[var] =  QStringList(Option::dir_sep);
     } else if(var == QLatin1String("DIRLIST_SEPARATOR")) {

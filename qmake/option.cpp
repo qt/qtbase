@@ -401,6 +401,13 @@ static QStringList detectShellPath()
 int
 Option::init(int argc, char **argv)
 {
+#if defined(Q_OS_MAC)
+    Option::host_mode = Option::HOST_MACX_MODE;
+#elif defined(Q_OS_UNIX)
+    Option::host_mode = Option::HOST_UNIX_MODE;
+#else
+    Option::host_mode = Option::HOST_WIN_MODE;
+#endif
     Option::application_argv0 = 0;
     Option::cpp_moc_mod = "";
     Option::h_moc_mod = "moc_";
@@ -554,32 +561,24 @@ Option::init(int argc, char **argv)
         }
     } else if (Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT) {
 #if defined(Q_OS_MAC)
-        Option::host_mode = Option::HOST_MACX_MODE;
         Option::target_mode = Option::TARG_MACX_MODE;
 #elif defined(Q_OS_UNIX)
-        Option::host_mode = Option::HOST_UNIX_MODE;
         Option::target_mode = Option::TARG_UNIX_MODE;
 #else
-        Option::host_mode = Option::HOST_WIN_MODE;
         Option::target_mode = Option::TARG_WIN_MODE;
 #endif
     }
 
     //defaults for globals
-    if (Option::host_mode != Option::HOST_UNKNOWN_MODE)
-        applyHostMode();
-    return QMAKE_CMDLINE_SUCCESS;
-}
+    if (Option::host_mode == Option::HOST_WIN_MODE) {
+        Option::dir_sep = "\\";
+        Option::obj_ext = ".obj";
+    } else {
+        Option::dir_sep = "/";
+        Option::obj_ext = ".o";
+    }
 
-void Option::applyHostMode()
-{
-   if (Option::host_mode == Option::HOST_WIN_MODE) {
-       Option::dir_sep = "\\";
-       Option::obj_ext = ".obj";
-   } else {
-       Option::dir_sep = "/";
-       Option::obj_ext = ".o";
-   }
+    return QMAKE_CMDLINE_SUCCESS;
 }
 
 void Option::prepareProject(const QString &pfile)
