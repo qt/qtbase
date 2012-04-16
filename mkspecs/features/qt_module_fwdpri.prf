@@ -1,0 +1,52 @@
+!build_pass {
+
+    QTDIR = $$[QT_HOST_PREFIX]
+    exists($$QTDIR/.qmake.cache) {
+        mod_component_base = $$QTDIR
+        mod_qmake_base = $$QTDIR
+    } else {
+        mod_component_base = $$MODULE_BASE_OUTDIR
+        mod_qmake_base = $$MODULE_QMAKE_OUTDIR
+    }
+    # Permit modules to enforce being built outside QTDIR.
+    force_independent: mod_component_base = $$MODULE_BASE_OUTDIR
+
+    # This check will be removed soon. Weird indentation to avoid reindenting the code later.
+    syncprofile = $$cat($$MODULE_PROFILE_DIR/sync.profile, lines)
+    contains(syncprofile, "^%modulepris.*") {
+        MODULE_FWD_PRI = $$mod_qmake_base/mkspecs/modules/$$replace(MODULE_PRI, ^.*/,)
+    } else {
+
+    MODULE_FWD_PRI = $$mod_qmake_base/mkspecs/modules/qt_$${MODULE}.pri
+
+    # Create a forwarding module .pri file
+    MODULE_FWD_PRI_CONT = \
+        "QT_MODULE_BASE = $$MODULE_BASE_DIR" \
+        "QT_MODULE_BIN_BASE = $$mod_component_base/bin" \
+        "QT_MODULE_INCLUDE_BASE = $$MODULE_BASE_OUTDIR/include" \
+        "QT_MODULE_IMPORT_BASE = $$mod_component_base/imports" \
+        "QT_MODULE_LIB_BASE = $$mod_component_base/lib" \
+        "QT_MODULE_PLUGIN_BASE = $$mod_component_base/plugins" \
+        "include($$MODULE_PRI)"
+    write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error("Aborting.")
+    touch($$MODULE_FWD_PRI, $$MODULE_PRI)
+
+    } # create forwarding module pris
+
+    # Then, inject the new module into the current cache state
+    !contains(QMAKE_INTERNAL_INCLUDED_FILES, $$MODULE_PRI) { # before the actual include()!
+        added = $$MODULE_PRI $$MODULE_FWD_PRI
+        cache(QMAKE_INTERNAL_INCLUDED_FILES, add transient, added)
+        unset(added)
+    }
+    include($$MODULE_FWD_PRI)
+    for(var, $$list(VERSION MAJOR_VERSION MINOR_VERSION PATCH_VERSION \
+                    name depends module_config CONFIG DEFINES sources \
+                    includes private_includes bins libs plugins imports \
+            )):defined(QT.$${MODULE}.$$var, var):cache(QT.$${MODULE}.$$var, transient)
+    cache(QT_CONFIG, transient)
+
+} # !build_pass
+
+# Schedule the regular .pri file for installation
+CONFIG += qt_install_module

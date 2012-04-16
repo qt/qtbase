@@ -1232,7 +1232,7 @@ foreach my $lib (@modules_to_sync) {
         # create forwarding module pri in qtbase/mkspecs/modules
         if ($module_fwd) {
             my $modulepri = $modulepris{$lib};
-            if (-e $modulepri) {
+            if (defined $modulepri and -e $modulepri) {
                 my $modulepriname = basename($modulepri);
                 make_path($module_fwd, $lib, $verbose_level);
                 my $moduleprifwd = "$module_fwd/$modulepriname";
