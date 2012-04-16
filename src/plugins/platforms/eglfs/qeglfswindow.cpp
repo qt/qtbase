@@ -54,10 +54,7 @@ QEglFSWindow::QEglFSWindow(QWindow *w)
     qWarning("QEglWindow %p: %p 0x%x\n", this, w, uint(m_winid));
 #endif
 
-    QRect screenGeometry(screen()->availableGeometry());
-    if (w->geometry() != screenGeometry) {
-        QWindowSystemInterface::handleGeometryChange(w, screenGeometry);
-    }
+    setWindowState(Qt::WindowFullScreen);
 }
 
 void QEglFSWindow::setGeometry(const QRect &)
@@ -67,6 +64,12 @@ void QEglFSWindow::setGeometry(const QRect &)
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 
     QPlatformWindow::setGeometry(rect);
+}
+
+Qt::WindowState QEglFSWindow::setWindowState(Qt::WindowState state)
+{
+    setGeometry(QRect());
+    return Qt::WindowFullScreen;
 }
 
 WId QEglFSWindow::winId() const

@@ -56,6 +56,7 @@ public:
     QEglFSWindow(QWindow *w);
 
     void setGeometry(const QRect &);
+    Qt::WindowState setWindowState(Qt::WindowState state);
     WId winId() const;
 
 private:
