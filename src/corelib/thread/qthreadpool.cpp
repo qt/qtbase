@@ -410,8 +410,7 @@ QThreadPool::QThreadPool(QObject *parent)
 */
 QThreadPool::~QThreadPool()
 {
-    d_func()->waitForDone();
-    d_func()->reset();
+    waitForDone();
 }
 
 /*!
@@ -593,22 +592,10 @@ void QThreadPool::releaseThread()
 }
 
 /*!
-    Waits for each thread to exit and removes all threads from the thread pool.
-*/
-void QThreadPool::waitForDone()
-{
-    Q_D(QThreadPool);
-    d->waitForDone();
-    d->reset();
-}
-
-/*!
-    \overload waitForDone()
-    \since 4.8
-
     Waits up to \a msecs milliseconds for all threads to exit and removes all 
     threads from the thread pool. Returns true if all threads were removed; 
-    otherwise it returns false.
+    otherwise it returns false. If \a msecs is -1 (the default), the timeout
+    is ignored (waits for the last thread to exit).
 */
 bool QThreadPool::waitForDone(int msecs)
 {
