@@ -157,8 +157,10 @@
 #    define Q_UNREACHABLE() __builtin_unreachable()
 #  else
 /* Plain GCC */
-#    define Q_ASSUME(expr)  if (expr){} else __builtin_unreachable()
-#    define Q_UNREACHABLE() __builtin_unreachable()
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
+#      define Q_ASSUME(expr)  if (expr){} else __builtin_unreachable()
+#      define Q_UNREACHABLE() __builtin_unreachable()
+#    endif
 #  endif
 
 #  define Q_ALIGNOF(type)   __alignof__(type)

@@ -327,6 +327,38 @@ void Node::setPageType(const QString& t)
         pageType_ = DitaMapPage;
 }
 
+/*! Converts the boolean value \a b to an enum representation
+  of the boolean type, which includes an enum value for the
+  \e {default value} of the item, i.e. true, false, or default.
+ */
+Node::FlagValue Node::toFlagValue(bool b)
+{
+    return b ? FlagValueTrue : FlagValueFalse;
+}
+
+/*!
+  Converts the enum \a fv back to a boolean value.
+  If \a fv is neither the true enum value nor the
+  false enum value, the boolean value returned is
+  \a defaultValue.
+
+  Note that runtimeDesignabilityFunction() should be called
+  first. If that function returns the name of a function, it
+  means the function must be called at runtime to determine
+  whether the property is Designable.
+ */
+bool Node::fromFlagValue(FlagValue fv, bool defaultValue)
+{
+    switch (fv) {
+    case FlagValueTrue:
+        return true;
+    case FlagValueFalse:
+        return false;
+    default:
+        return defaultValue;
+    }
+}
+
 /*!
   Sets the pointer to the node that this node relates to.
  */
@@ -1876,11 +1908,11 @@ void FunctionNode::debug() const
  */
 PropertyNode::PropertyNode(InnerNode *parent, const QString& name)
     : LeafNode(Property, parent, name),
-      sto(Trool_Default),
-      des(Trool_Default),
-      scr(Trool_Default),
-      wri(Trool_Default),
-      usr(Trool_Default),
+      stored_(FlagValueDefault),
+      designable_(FlagValueDefault),
+      scriptable_(FlagValueDefault),
+      writable_(FlagValueDefault),
+      user_(FlagValueDefault),
       cst(false),
       fnl(false),
       rev(-1),
@@ -1905,16 +1937,16 @@ void PropertyNode::setOverriddenFrom(const PropertyNode* baseProperty)
         if (funcs[i].isEmpty())
             funcs[i] = baseProperty->funcs[i];
     }
-    if (sto == Trool_Default)
-        sto = baseProperty->sto;
-    if (des == Trool_Default)
-        des = baseProperty->des;
-    if (scr == Trool_Default)
-        scr = baseProperty->scr;
-    if (wri == Trool_Default)
-        wri = baseProperty->wri;
-    if (usr == Trool_Default)
-        usr = baseProperty->usr;
+    if (stored_ == FlagValueDefault)
+        stored_ = baseProperty->stored_;
+    if (designable_ == FlagValueDefault)
+        designable_ = baseProperty->designable_;
+    if (scriptable_ == FlagValueDefault)
+        scriptable_ = baseProperty->scriptable_;
+    if (writable_ == FlagValueDefault)
+        writable_ = baseProperty->writable_;
+    if (user_ == FlagValueDefault)
+        user_ = baseProperty->user_;
     overrides = baseProperty;
 }
 
@@ -1937,38 +1969,6 @@ QString PropertyNode::qualifiedDataType() const
     }
     else {
         return type_;
-    }
-}
-
-/*! Converts the \a boolean value to an enum representation
-  of the boolean type, which includes an enum  value for the
-  \e {default value} of the item, i.e. true, false, or default.
- */
-PropertyNode::Trool PropertyNode::toTrool(bool boolean)
-{
-    return boolean ? Trool_True : Trool_False;
-}
-
-/*!
-  Converts the enum \a troolean back to a boolean value.
-  If \a troolean is neither the true enum value nor the
-  false enum value, the boolean value returned is
-  \a defaultValue.
-
-  Note that runtimeDesignabilityFunction() should be called
-  first. If that function returns the name of a function, it
-  means the function must be called at runtime to determine
-  whether the property is Designable.
- */
-bool PropertyNode::fromTrool(Trool troolean, bool defaultValue)
-{
-    switch (troolean) {
-    case Trool_True:
-        return true;
-    case Trool_False:
-        return false;
-    default:
-        return defaultValue;
     }
 }
 
@@ -2181,13 +2181,14 @@ QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
   Constructor for the Qml property group node. \a parent is
   always a QmlClassNode.
  */
-QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent,
-                                   const QString& name,
-                                   bool attached)
-    : FakeNode(parent, name, QmlPropertyGroup, Node::ApiPage),
+QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent, const QString& name)
+    //bool attached)
+    : FakeNode(parent, name, QmlPropertyGroup, Node::ApiPage)
+#if 0
       isdefault_(false),
       attached_(attached),
       readOnly_(-1)
+#endif
 {
     // nothing.
 }
@@ -2207,11 +2208,11 @@ QmlPropertyNode::QmlPropertyNode(QmlPropGroupNode *parent,
                                  bool attached)
     : LeafNode(QmlProperty, parent, name),
       type_(type),
-      sto(Trool_Default),
-      des(Trool_Default),
+      stored_(FlagValueDefault),
+      designable_(FlagValueDefault),
       isdefault_(false),
       attached_(attached),
-      readOnly_(-1)
+      readOnly_(FlagValueDefault)
 {
     setPageType(ApiPage);
 }
@@ -2226,11 +2227,11 @@ QmlPropertyNode::QmlPropertyNode(QmlClassNode *parent,
                                  bool attached)
     : LeafNode(QmlProperty, parent, name),
       type_(type),
-      sto(Trool_Default),
-      des(Trool_Default),
+      stored_(FlagValueDefault),
+      designable_(FlagValueDefault),
       isdefault_(false),
       attached_(attached),
-      readOnly_(-1)
+      readOnly_(FlagValueDefault)
 {
     setPageType(ApiPage);
 }
@@ -2252,36 +2253,13 @@ QmlPropertyNode::QmlPropertyNode(QmlPropertyNode* parent,
                                  bool attached)
     : LeafNode(parent->parent(), QmlProperty, name),
       type_(type),
-      sto(Trool_Default),
-      des(Trool_Default),
+      stored_(FlagValueDefault),
+      designable_(FlagValueDefault),
       isdefault_(false),
       attached_(attached),
-      readOnly_(-1)
+      readOnly_(FlagValueDefault)
 {
     setPageType(ApiPage);
-}
-
-/*!
-  I don't know what this is.
- */
-QmlPropertyNode::Trool QmlPropertyNode::toTrool(bool boolean)
-{
-    return boolean ? Trool_True : Trool_False;
-}
-
-/*!
-  I don't know what this is either.
- */
-bool QmlPropertyNode::fromTrool(Trool troolean, bool defaultValue)
-{
-    switch (troolean) {
-    case Trool_True:
-        return true;
-    case Trool_False:
-        return false;
-    default:
-        return defaultValue;
-    }
 }
 
 /*!
@@ -2293,14 +2271,16 @@ bool QmlPropertyNode::fromTrool(Trool troolean, bool defaultValue)
  */
 bool QmlPropertyNode::isWritable(Tree* tree)
 {
-    if (wri != Trool_Default)
-        return fromTrool(wri, false);
+    if (readOnly_ != FlagValueDefault) {
+        return !fromFlagValue(readOnly_, false);
+    }
 
     PropertyNode* pn = correspondingProperty(tree);
-    if (pn)
+    if (pn) {
         return pn->isWritable();
+    }
     else {
-        location().warning(tr("Can't determine read-only status of QML property %1; writable assumed.").arg(name()));
+        location().warning(tr("Can't detect if QML property %1 is read-only; writable assumed.").arg(name()));
         return true;
     }
 }

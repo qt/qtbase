@@ -129,6 +129,10 @@ void tst_QSqlDriver::record()
     QSqlRecord rec = db.driver()->record(tablename);
     QCOMPARE(rec.count(), 4);
 
+    // QTBUG-1363: QSqlField::length() always return -1 when using QODBC3 driver and QSqlDatabase::record()
+    if (db.driverName().startsWith("QODBC") && tst_Databases::isSqlServer(db))
+        QCOMPARE(rec.field(1).length(), 20);
+
     if (db.driverName().startsWith("QIBASE")|| db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2"))
         for(int i = 0; i < fields.count(); ++i)
             fields[i] = fields[i].toUpper();

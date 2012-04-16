@@ -1,3 +1,4 @@
+QT += widgets
 SOURCES = main.cpp
 OTHER_FILES = glyphshaping_data.xml
 glyphshaping_data.path = .

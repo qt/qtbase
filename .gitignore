@@ -215,6 +215,7 @@ examples/tools/plugandpaint/plugins
 include/*
 include/*/*
 lib/*
+imports/*
 !lib/fonts
 !lib/README
 plugins/*/*

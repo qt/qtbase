@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
 #define kSecTrustSettingsDomainSystem 2 // so we do not need to include the header file
     PtrSecCertificateGetData QSslSocketPrivate::ptrSecCertificateGetData = 0;
     PtrSecTrustSettingsCopyCertificates QSslSocketPrivate::ptrSecTrustSettingsCopyCertificates = 0;
@@ -612,7 +612,7 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
     resetDefaultCiphers();
 
     //load symbols needed to receive certificates from system store
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
     QLibrary securityLib("/System/Library/Frameworks/Security.framework/Versions/Current/Security");
     if (securityLib.load()) {
         ptrSecCertificateGetData = (PtrSecCertificateGetData) securityLib.resolve("SecCertificateGetData");
@@ -661,6 +661,15 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
     // if on-demand loading was not enabled, load the certs now
     if (!s_loadRootCertsOnDemand)
         setDefaultCaCertificates(systemCaCertificates());
+#ifdef Q_OS_WIN
+    //Enabled for fetching additional root certs from windows update on windows 6+
+    //This flag is set false by setDefaultCaCertificates() indicating the app uses
+    //its own cert bundle rather than the system one.
+    //Same logic that disables the unix on demand cert loading.
+    //Unlike unix, we do preload the certificates from the cert store.
+    if ((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) >= QSysInfo::WV_6_0)
+        s_loadRootCertsOnDemand = true;
+#endif
 }
 
 /*!
@@ -736,7 +745,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     timer.start();
 #endif
     QList<QSslCertificate> systemCerts;
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
     CFArrayRef cfCerts;
     OSStatus status = 1;
 
@@ -1221,22 +1230,28 @@ bool QSslSocketBackendPrivate::startHandshake()
 
     if (!errors.isEmpty()) {
         sslErrors = errors;
-        emit q->sslErrors(errors);
 
-        bool doEmitSslError = !verifyErrorsHaveBeenIgnored();
-        // check whether we need to emit an SSL handshake error
-        if (doVerifyPeer && doEmitSslError) {
-            if (q->pauseMode() & QAbstractSocket::PauseOnNotify) {
-                pauseSocketNotifiers(q);
-                paused = true;
-            } else {
-                q->setErrorString(sslErrors.first().errorString());
-                q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
-                emit q->error(QAbstractSocket::SslHandshakeFailedError);
-                plainSocket->disconnectFromHost();
+#ifdef Q_OS_WIN
+        //Skip this if not using system CAs, or if the SSL errors are configured in advance to be ignorable
+        if (s_loadRootCertsOnDemand
+            && allowRootCertOnDemandLoading
+            && !verifyErrorsHaveBeenIgnored()) {
+            //Windows desktop versions starting from vista ship with minimal set of roots
+            //and download on demand from the windows update server CA roots that are
+            //trusted by MS.
+            //However, this is only transparent if using WinINET - we have to trigger it
+            //ourselves.
+            for (int i=0; i< sslErrors.count(); i++) {
+                if (sslErrors.at(i).error() == QSslError::UnableToGetLocalIssuerCertificate) {
+                    fetchCaRootForCert(sslErrors.at(i).certificate());
+                    return false;
+                }
             }
-            return false;
         }
+#endif
+
+        if (!checkSslErrors())
+            return false;
     } else {
         sslErrors.clear();
     }
@@ -1244,6 +1259,201 @@ bool QSslSocketBackendPrivate::startHandshake()
     continueHandshake();
     return true;
 }
+
+bool QSslSocketBackendPrivate::checkSslErrors()
+{
+    Q_Q(QSslSocket);
+    if (sslErrors.isEmpty())
+        return true;
+
+    emit q->sslErrors(sslErrors);
+
+    bool doVerifyPeer = configuration.peerVerifyMode == QSslSocket::VerifyPeer
+                        || (configuration.peerVerifyMode == QSslSocket::AutoVerifyPeer
+                            && mode == QSslSocket::SslClientMode);
+    bool doEmitSslError = !verifyErrorsHaveBeenIgnored();
+    // check whether we need to emit an SSL handshake error
+    if (doVerifyPeer && doEmitSslError) {
+        if (q->pauseMode() & QAbstractSocket::PauseOnNotify) {
+            pauseSocketNotifiers(q);
+            paused = true;
+        } else {
+            q->setErrorString(sslErrors.first().errorString());
+            q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
+            emit q->error(QAbstractSocket::SslHandshakeFailedError);
+            plainSocket->disconnectFromHost();
+        }
+        return false;
+    }
+    return true;
+}
+
+#ifdef Q_OS_WIN
+
+void QSslSocketBackendPrivate::fetchCaRootForCert(const QSslCertificate &cert)
+{
+    Q_Q(QSslSocket);
+    //The root certificate is downloaded from windows update, which blocks for 15 seconds in the worst case
+    //so the request is done in a worker thread.
+    QWindowsCaRootFetcher *fetcher = new QWindowsCaRootFetcher(cert, mode);
+    QObject::connect(fetcher, SIGNAL(finished(QSslCertificate,QSslCertificate)), q, SLOT(_q_caRootLoaded(QSslCertificate,QSslCertificate)), Qt::QueuedConnection);
+    QMetaObject::invokeMethod(fetcher, "start", Qt::QueuedConnection);
+    pauseSocketNotifiers(q);
+    paused = true;
+}
+
+//This is the callback from QWindowsCaRootFetcher, trustedRoot will be invalid (default constructed) if it failed.
+void QSslSocketBackendPrivate::_q_caRootLoaded(QSslCertificate cert, QSslCertificate trustedRoot)
+{
+    Q_Q(QSslSocket);
+    if (trustedRoot.isValid()) {
+        if (s_loadRootCertsOnDemand) {
+            //Add the new root cert to default cert list for use by future sockets
+            QSslSocket::addDefaultCaCertificate(trustedRoot);
+        }
+        //Add the new root cert to this socket for future connections
+        q->addCaCertificate(trustedRoot);
+        //Remove the broken chain ssl errors (as chain is verified by windows)
+        for (int i=sslErrors.count() - 1; i >= 0; --i) {
+            if (sslErrors.at(i).certificate() == cert) {
+                switch (sslErrors.at(i).error()) {
+                case QSslError::UnableToGetLocalIssuerCertificate:
+                case QSslError::CertificateUntrusted:
+                case QSslError::UnableToVerifyFirstCertificate:
+                    // error can be ignored if OS says the chain is trusted
+                    sslErrors.removeAt(i);
+                    break;
+                default:
+                    // error cannot be ignored
+                    break;
+                }
+            }
+        }
+    }
+    // Continue with remaining errors
+    if (plainSocket)
+        plainSocket->resume();
+    paused = false;
+    if (checkSslErrors())
+        continueHandshake();
+}
+
+Q_DECLARE_METATYPE(QSslCertificate);
+
+class QWindowsCaRootFetcherThread : public QThread
+{
+public:
+    QWindowsCaRootFetcherThread()
+    {
+        qRegisterMetaType<QSslCertificate>();
+        setObjectName(QStringLiteral("QWindowsCaRootFetcher"));
+        start();
+    }
+    ~QWindowsCaRootFetcherThread()
+    {
+        quit();
+        wait(15500); // worst case, a running request can block for 15 seconds
+    }
+};
+
+Q_GLOBAL_STATIC(QWindowsCaRootFetcherThread, windowsCaRootFetcherThread);
+
+QWindowsCaRootFetcher::QWindowsCaRootFetcher(const QSslCertificate &certificate, QSslSocket::SslMode sslMode)
+    : cert(certificate), mode(sslMode)
+{
+    moveToThread(windowsCaRootFetcherThread());
+}
+
+QWindowsCaRootFetcher::~QWindowsCaRootFetcher()
+{
+}
+
+void QWindowsCaRootFetcher::start()
+{
+    QByteArray der = cert.toDer();
+    PCCERT_CONTEXT wincert = CertCreateCertificateContext(X509_ASN_ENCODING, (const BYTE *)der.constData(), der.length());
+    if (!wincert) {
+#ifdef QSSLSOCKET_DEBUG
+        qDebug("QWindowsCaRootFetcher failed to convert certificate to windows form");
+#endif
+        emit finished(cert, QSslCertificate());
+        deleteLater();
+        return;
+    }
+
+    CERT_CHAIN_PARA parameters;
+    memset(&parameters, 0, sizeof(parameters));
+    parameters.cbSize = sizeof(parameters);
+    // set key usage constraint
+    parameters.RequestedUsage.dwType = USAGE_MATCH_TYPE_AND;
+    parameters.RequestedUsage.Usage.cUsageIdentifier = 1;
+    LPSTR oid = (mode == QSslSocket::SslClientMode ? szOID_PKIX_KP_SERVER_AUTH : szOID_PKIX_KP_CLIENT_AUTH);
+    parameters.RequestedUsage.Usage.rgpszUsageIdentifier = &oid;
+
+#ifdef QSSLSOCKET_DEBUG
+    QElapsedTimer stopwatch;
+    stopwatch.start();
+#endif
+    PCCERT_CHAIN_CONTEXT chain;
+    BOOL result = CertGetCertificateChain(
+        0, //default engine
+        wincert,
+        0, //current date/time
+        0, //default store
+        &parameters,
+        0, //default dwFlags
+        0, //reserved
+        &chain);
+#ifdef QSSLSOCKET_DEBUG
+    qDebug() << "QWindowsCaRootFetcher" << stopwatch.elapsed() << "ms to get chain";
+#endif
+
+    QSslCertificate trustedRoot;
+    if (result) {
+#ifdef QSSLSOCKET_DEBUG
+        qDebug() << "QWindowsCaRootFetcher - examining windows chains";
+        if (chain->TrustStatus.dwErrorStatus == CERT_TRUST_NO_ERROR)
+            qDebug() << " - TRUSTED";
+        else
+            qDebug() << " - NOT TRUSTED" << chain->TrustStatus.dwErrorStatus;
+        if (chain->TrustStatus.dwInfoStatus & CERT_TRUST_IS_SELF_SIGNED)
+            qDebug() << " - SELF SIGNED";
+        qDebug() << "QSslSocketBackendPrivate::fetchCaRootForCert - dumping simple chains";
+        for (unsigned int i = 0; i < chain->cChain; i++) {
+            if (chain->rgpChain[i]->TrustStatus.dwErrorStatus == CERT_TRUST_NO_ERROR)
+                qDebug() << " - TRUSTED SIMPLE CHAIN" << i;
+            else
+                qDebug() << " - UNTRUSTED SIMPLE CHAIN" << i << "reason:" << chain->rgpChain[i]->TrustStatus.dwErrorStatus;
+            for (unsigned int j = 0; j < chain->rgpChain[i]->cElement; j++) {
+                QSslCertificate foundCert(QByteArray((const char *)chain->rgpChain[i]->rgpElement[j]->pCertContext->pbCertEncoded
+                    , chain->rgpChain[i]->rgpElement[j]->pCertContext->cbCertEncoded), QSsl::Der);
+                qDebug() << "   - " << foundCert;
+            }
+        }
+        qDebug() << " - and" << chain->cLowerQualityChainContext << "low quality chains"; //expect 0, we haven't asked for them
+#endif
+
+        //based on http://msdn.microsoft.com/en-us/library/windows/desktop/aa377182%28v=vs.85%29.aspx
+        //about the final chain rgpChain[cChain-1] which must begin with a trusted root to be valid
+        if (chain->TrustStatus.dwErrorStatus == CERT_TRUST_NO_ERROR
+            && chain->cChain > 0) {
+            const PCERT_SIMPLE_CHAIN finalChain = chain->rgpChain[chain->cChain - 1];
+            // http://msdn.microsoft.com/en-us/library/windows/desktop/aa377544%28v=vs.85%29.aspx
+            // rgpElement[0] is the end certificate chain element. rgpElement[cElement-1] is the self-signed "root" certificate element.
+            if (finalChain->TrustStatus.dwErrorStatus == CERT_TRUST_NO_ERROR
+                && finalChain->cElement > 0) {
+                    trustedRoot = QSslCertificate(QByteArray((const char *)finalChain->rgpElement[finalChain->cElement - 1]->pCertContext->pbCertEncoded
+                        , finalChain->rgpElement[finalChain->cElement - 1]->pCertContext->cbCertEncoded), QSsl::Der);
+            }
+        }
+        CertFreeCertificateChain(chain);
+    }
+    CertFreeCertificateContext(wincert);
+
+    emit finished(cert, trustedRoot);
+    deleteLater();
+}
+#endif
 
 void QSslSocketBackendPrivate::disconnectFromHost()
 {

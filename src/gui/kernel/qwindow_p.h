@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOW_QPA_P_H
-#define QWINDOW_QPA_P_H
+#ifndef QWINDOW_P_H
+#define QWINDOW_P_H
 
 #include <QtGui/qwindow.h>
 #include <QtGui/qplatformwindow_qpa.h>
@@ -81,6 +81,7 @@ public:
         , windowOrientation(Qt::PrimaryOrientation)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
         , modality(Qt::NonModal)
+        , blockedByModalWindow(false)
         , transientParent(0)
         , screen(0)
     {
@@ -123,6 +124,8 @@ public:
     QSize sizeIncrement;
 
     Qt::WindowModality modality;
+    bool blockedByModalWindow;
+
     QPointer<QWindow> transientParent;
     QScreen *screen;
 };
@@ -132,4 +135,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QWINDOW_QPA_P_H
+#endif // QWINDOW_P_H

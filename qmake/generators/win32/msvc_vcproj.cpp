@@ -115,11 +115,13 @@ DotNET which_dotnet_version()
     current_version = NET2002;
 
     QStringList warnPath;
+    QHash<DotNET, QString> installPaths;
     int installed = 0;
     int i = 0;
     for(; dotNetCombo[i].version; ++i) {
         QString path = qt_readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey);
-        if(!path.isEmpty()) {
+        if (!path.isEmpty() && installPaths.value(dotNetCombo[i].version) != path) {
+            installPaths.insert(dotNetCombo[i].version, path);
             ++installed;
             current_version = dotNetCombo[i].version;
                         warnPath += QString("%1").arg(dotNetCombo[i].versionStr);

@@ -1,3 +1,5 @@
+QT += widgets
+
 SOURCES += main.cpp \
     imageitem.cpp \
     gestures.cpp \

@@ -193,10 +193,6 @@ QWindow::~QWindow()
     destroy();
 }
 
-QSurface::~QSurface()
-{
-}
-
 /*!
     Set the \a surfaceType of the window.
 
@@ -251,6 +247,13 @@ void QWindow::setVisible(bool visible)
 
         QShowEvent showEvent;
         QGuiApplication::sendEvent(this, &showEvent);
+    }
+
+    if (isModal()) {
+        if (visible)
+            QGuiApplicationPrivate::showModalWindow(this);
+        else
+            QGuiApplicationPrivate::hideModalWindow(this);
     }
 
     d->platformWindow->setVisible(visible);
@@ -1396,7 +1399,7 @@ void QWindow::resizeEvent(QResizeEvent *ev)
 /*!
     Override this to handle show events.
 
-    The show event is called when the window has requested becoming visible.
+    The function is called when the window has requested becoming visible.
 
     If the window is successfully shown by the windowing system, this will
     be followed by a resize and an expose event.
@@ -1409,7 +1412,7 @@ void QWindow::showEvent(QShowEvent *ev)
 /*!
     Override this to handle hide evens.
 
-    The hide event is called when the window has requested being hidden in the
+    The function is called when the window has requested being hidden in the
     windowing system.
 */
 void QWindow::hideEvent(QHideEvent *ev)

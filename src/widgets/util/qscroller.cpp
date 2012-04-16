@@ -58,6 +58,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QDesktopWidget>
+#include <QVector2D>
 #include <QtCore/qmath.h>
 #include <QtGui/qevent.h>
 #include <qnumeric.h>
@@ -1160,11 +1161,10 @@ void QScrollerPrivate::recalcScrollingSegments(bool forceRecalc)
 
     releaseVelocity = q->velocity();
 
-    if (forceRecalc || !scrollingSegmentsValid(Qt::Horizontal))
-        createScrollingSegments(releaseVelocity.x(), contentPosition.x() + overshootPosition.x(), ppm.x(), Qt::Horizontal);
-
-    if (forceRecalc || !scrollingSegmentsValid(Qt::Vertical))
-        createScrollingSegments(releaseVelocity.y(), contentPosition.y() + overshootPosition.y(), ppm.y(), Qt::Vertical);
+    if (forceRecalc ||
+        !scrollingSegmentsValid(Qt::Horizontal) ||
+        !scrollingSegmentsValid(Qt::Vertical))
+        createScrollingSegments(releaseVelocity, contentPosition + overshootPosition, ppm);
 }
 
 /*! \internal
@@ -1256,7 +1256,9 @@ void QScrollerPrivate::createScrollToSegments(qreal v, qreal deltaTime, qreal en
 
 /*! \internal
 */
-void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal ppm, Qt::Orientation orientation)
+void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos,
+                                               qreal deltaTime, qreal deltaPos,
+                                               Qt::Orientation orientation)
 {
     const QScrollerPropertiesPrivate *sp = properties.d.data();
 
@@ -1287,25 +1289,19 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
 
     qScrollerDebug() << "v = " << v << ", decelerationFactor = " << sp->decelerationFactor << ", curveType = " << sp->scrollingCurve.type();
 
-    // This is only correct for QEasingCurve::OutQuad (linear velocity,
-    // constant deceleration), but the results look and feel ok for OutExpo
-    // and OutSine as well
-
-    // v(t) = deltaTime * a * 0.5 * differentialForProgress(t / deltaTime)
-    // v(0) = vrelease
-    // v(deltaTime) = 0
-    // deltaTime = (2 * vrelease) / (a * differntial(0))
-
-    // pos(t) = integrate(v(t)dt)
-    // pos(t) = vrelease * t - 0.5 * a * t * t
-    // pos(t) = deltaTime * a * 0.5 * progress(t / deltaTime) * deltaTime
-    // deltaPos = pos(deltaTime)
-
-    qreal deltaTime = (qreal(2) * qAbs(v)) / (sp->decelerationFactor * differentialForProgress(sp->scrollingCurve, 0));
-    qreal deltaPos = qSign(v) * deltaTime * deltaTime * qreal(0.5) * sp->decelerationFactor * ppm;
     qreal endPos = startPos + deltaPos;
 
     qScrollerDebug() << "  Real Delta:" << deltaPos;
+
+    // -- check if are in overshoot and end in overshoot
+    if ((startPos < minPos && endPos < minPos) ||
+        (startPos > maxPos && endPos > maxPos)) {
+        qreal stopPos = endPos < minPos ? minPos : maxPos;
+        qreal oDeltaTime = sp->overshootScrollTime;
+
+        pushSegment(ScrollTypeOvershoot, oDeltaTime * qreal(0.7), qreal(1.0), startPos, stopPos - startPos, stopPos, sp->scrollingCurve.type(), orientation);
+        return;
+    }
 
     // -- determine snap points
     qreal nextSnap = nextSnapPos(endPos, 0, orientation);
@@ -1319,16 +1315,6 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
         higherSnapPos = nextSnap;
     if (nextSnap < lowerSnapPos || qIsNaN(lowerSnapPos))
         lowerSnapPos = nextSnap;
-
-    // -- check if are in overshoot and end in overshoot
-    if ((startPos < minPos && endPos < minPos) ||
-        (startPos > maxPos && endPos > maxPos)) {
-        qreal stopPos = endPos < minPos ? minPos : maxPos;
-        qreal oDeltaTime = sp->overshootScrollTime;
-
-        pushSegment(ScrollTypeOvershoot, oDeltaTime * qreal(0.7), qreal(1.0), startPos, stopPos - startPos, stopPos, sp->scrollingCurve.type(), orientation);
-        return;
-    }
 
     if (qAbs(v) < sp->minimumVelocity) {
 
@@ -1413,6 +1399,36 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
     pushSegment(ScrollTypeFlick, deltaTime, qreal(1.0), startPos, deltaPos, endPos, sp->scrollingCurve.type(), orientation);
 }
 
+
+void QScrollerPrivate::createScrollingSegments(const QPointF &v,
+                                               const QPointF &startPos,
+                                               const QPointF &ppm)
+{
+    const QScrollerPropertiesPrivate *sp = properties.d.data();
+
+    // This is only correct for QEasingCurve::OutQuad (linear velocity,
+    // constant deceleration), but the results look and feel ok for OutExpo
+    // and OutSine as well
+
+    // v(t) = deltaTime * a * 0.5 * differentialForProgress(t / deltaTime)
+    // v(0) = vrelease
+    // v(deltaTime) = 0
+    // deltaTime = (2 * vrelease) / (a * differntial(0))
+
+    // pos(t) = integrate(v(t)dt)
+    // pos(t) = vrelease * t - 0.5 * a * t * t
+    // pos(t) = deltaTime * a * 0.5 * progress(t / deltaTime) * deltaTime
+    // deltaPos = pos(deltaTime)
+
+    QVector2D vel(v);
+    qreal deltaTime = (qreal(2) * vel.length()) / (sp->decelerationFactor * differentialForProgress(sp->scrollingCurve, 0));
+    QPointF deltaPos = (vel.normalized() * QVector2D(ppm)).toPointF() * deltaTime * deltaTime * qreal(0.5) * sp->decelerationFactor;
+
+    createScrollingSegments(v.x(), startPos.x(), deltaTime, deltaPos.x(),
+                            Qt::Horizontal);
+    createScrollingSegments(v.y(), startPos.y(), deltaTime, deltaPos.y(),
+                            Qt::Vertical);
+}
 
 /*! \internal
     Prepares scrolling by sending a QScrollPrepareEvent to the receiver widget.
@@ -1650,8 +1666,7 @@ bool QScrollerPrivate::releaseWhileDragging(const QPointF &position, qint64 time
     }
 
     QPointF ppm = q->pixelPerMeter();
-    createScrollingSegments(releaseVelocity.x(), contentPosition.x() + overshootPosition.x(), ppm.x(), Qt::Horizontal);
-    createScrollingSegments(releaseVelocity.y(), contentPosition.y() + overshootPosition.y(), ppm.y(), Qt::Vertical);
+    createScrollingSegments(releaseVelocity, contentPosition + overshootPosition, ppm);
 
     qScrollerDebug() << "QScroller::releaseWhileDragging() -- velocity:" << releaseVelocity << "-- minimum velocity:" << sp->minimumVelocity << "overshoot" << overshootPosition;
 

@@ -99,6 +99,8 @@ QCocoaIntegration::QCocoaIntegration()
     , mAccessibility(new QPlatformAccessibility)
     , mCocoaClipboard(new QCocoaClipboard)
     , mCocoaDrag(new QCocoaDrag)
+    , mNativeInterface(new QCocoaNativeInterface)
+    , mServices(new QCocoaServices)
 {
     QCocoaAutoReleasePool pool;
 
@@ -204,7 +206,7 @@ QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const
 
 QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
 {
-    return new QCocoaNativeInterface();
+    return mNativeInterface.data();
 }
 
 QPlatformInputContext *QCocoaIntegration::inputContext() const
@@ -237,6 +239,11 @@ QPlatformTheme *QCocoaIntegration::createPlatformTheme(const QString &name) cons
     if (name == QLatin1String(QCocoaTheme::name))
         return new QCocoaTheme;
     return QPlatformIntegration::createPlatformTheme(name);
+}
+
+QPlatformServices *QCocoaIntegration::services() const
+{
+    return mServices.data();
 }
 
 QT_END_NAMESPACE

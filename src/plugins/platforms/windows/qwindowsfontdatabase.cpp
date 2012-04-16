@@ -698,6 +698,32 @@ QStringList QWindowsFontDatabase::fallbacksForFamily(const QString family, const
     QStringList result = QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script);
     if (!result.isEmpty())
         return result;
+
+    switch (styleHint) {
+        case QFont::Times:
+            result << QString::fromLatin1("Times New Roman");
+            break;
+        case QFont::Courier:
+            result << QString::fromLatin1("Courier New");
+            break;
+        case QFont::Monospace:
+            result << QString::fromLatin1("Courier New");
+            break;
+        case QFont::Cursive:
+            result << QString::fromLatin1("Comic Sans MS");
+            break;
+        case QFont::Fantasy:
+            result << QString::fromLatin1("Impact");
+            break;
+        case QFont::Decorative:
+            result << QString::fromLatin1("Old English");
+            break;
+        case QFont::Helvetica:
+        case QFont::System:
+        default:
+            result << QString::fromLatin1("Arial");
+    }
+
     if (QWindowsContext::verboseFonts)
         qDebug() << __FUNCTION__ << family << style << styleHint
                  << script << result << m_families.size();
@@ -872,6 +898,11 @@ QString QWindowsFontDatabase::fontDir() const
     if (QWindowsContext::verboseFonts)
         qDebug() << __FUNCTION__ << result;
     return result;
+}
+
+bool QWindowsFontDatabase::fontsAlwaysScalable() const
+{
+    return true;
 }
 
 HFONT QWindowsFontDatabase::systemFont()

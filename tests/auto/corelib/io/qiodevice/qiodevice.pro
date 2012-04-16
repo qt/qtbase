@@ -5,5 +5,3 @@ SOURCES = tst_qiodevice.cpp
 
 TESTDATA += tst_qiodevice.cpp
 MOC_DIR=tmp
-
-mac: CONFIG += insignificant_test # QTBUG-22766

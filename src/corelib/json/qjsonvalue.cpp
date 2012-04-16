@@ -449,9 +449,17 @@ bool QJsonValue::operator==(const QJsonValue &other) const
     case String:
         return toString() == other.toString();
     case Array:
+        if (base == other.base)
+            return true;
+        if (!base || !other.base)
+            return false;
         return QJsonArray(d, static_cast<QJsonPrivate::Array *>(base))
                 == QJsonArray(other.d, static_cast<QJsonPrivate::Array *>(other.base));
     case Object:
+        if (base == other.base)
+            return true;
+        if (!base || !other.base)
+            return false;
         return QJsonObject(d, static_cast<QJsonPrivate::Object *>(base))
                 == QJsonObject(other.d, static_cast<QJsonPrivate::Object *>(other.base));
     }

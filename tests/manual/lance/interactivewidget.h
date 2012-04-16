@@ -44,7 +44,7 @@
 #include "widgets.h"
 #include "paintcommands.h"
 
-#include <QtGui>
+#include <QMainWindow>
 
 #include <private/qmath_p.h>
 

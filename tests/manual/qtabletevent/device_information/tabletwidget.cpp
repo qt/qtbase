@@ -94,7 +94,7 @@ bool TabletWidget::eventFilter(QObject *, QEvent *ev)
     return false;
 }
 
-void TabletWidget::paintEvent(QPaintEvent *event)
+void TabletWidget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
 

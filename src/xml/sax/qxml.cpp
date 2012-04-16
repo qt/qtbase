@@ -99,7 +99,7 @@ static const signed char cltSq      = 13; // '
 static const signed char cltUnknown = 14;
 
 // Hack for letting QDom know where the skipped entity occurred
-// ### Qt5: the use of this variable means the code isn't reentrant.
+// ### the use of this variable means the code isn't reentrant.
 bool qt_xml_skipped_entity_in_content;
 
 // character lookup table
@@ -1330,7 +1330,7 @@ QXmlInputSource::QXmlInputSource(QIODevice *dev)
 */
 QXmlInputSource::~QXmlInputSource()
 {
-    // ### Qt 5: close the input device. See task 153111
+    // ### close the input device.
 #ifndef QT_NO_TEXTCODEC
     delete d->encMapper;
 #endif
@@ -3133,16 +3133,17 @@ bool QXmlSimpleReader::feature(const QString& name, bool *ok) const
 {
     const QXmlSimpleReaderPrivate *d = d_func();
 
-    // Qt5 ###: Change these strings to qt.nokia.com
     if (ok != 0)
         *ok = true;
     if (name == QLatin1String("http://xml.org/sax/features/namespaces")) {
         return d->useNamespaces;
     } else if (name == QLatin1String("http://xml.org/sax/features/namespace-prefixes")) {
         return d->useNamespacePrefixes;
-    } else if (name == QLatin1String("http://trolltech.com/xml/features/report-whitespace-only-CharData")) { // Shouldn't change in Qt 4
+    } else if (name == QLatin1String("http://trolltech.com/xml/features/report-whitespace-only-CharData") // For compat with Qt 4
+               || name == QLatin1String("http://qt-project.org/xml/features/report-whitespace-only-CharData")) {
         return d->reportWhitespaceCharData;
-    } else if (name == QLatin1String("http://trolltech.com/xml/features/report-start-end-entity")) { // Shouldn't change in Qt 4
+    } else if (name == QLatin1String("http://trolltech.com/xml/features/report-start-end-entity") // For compat with Qt 4
+               || name == QLatin1String("http://qt-project.org/xml/features/report-start-end-entity")) {
         return d->reportEntities;
     } else {
         qWarning("Unknown feature %s", name.toLatin1().data());
@@ -3168,11 +3169,28 @@ bool QXmlSimpleReader::feature(const QString& name, bool *ok) const
             reported.
     \row \li \e http://trolltech.com/xml/features/report-whitespace-only-CharData
          \li true
+         \li Obsolete, use the following string instead.
+            If enabled, CharData that consist of
+            only whitespace characters are reported
+            using QXmlContentHandler::characters(). If disabled, whitespace is silently
+            discarded.
+    \row \li \e http://qt-project.org/xml/features/report-whitespace-only-CharData
+         \li true
          \li If enabled, CharData that consist of
             only whitespace characters are reported
             using QXmlContentHandler::characters(). If disabled, whitespace is silently
             discarded.
     \row \li \e http://trolltech.com/xml/features/report-start-end-entity
+         \li false
+         \li Obsolete, use the following string instead.
+            If enabled, the parser reports
+            QXmlContentHandler::startEntity() and
+            QXmlContentHandler::endEntity() events, so character data
+            might be reported in chunks.
+            If disabled, the parser does not report these events, but
+            silently substitutes the entities, and reports the character
+            data in one chunk.
+    \row \li \e http://qt-project.org/xml/features/report-start-end-entity
          \li false
          \li If enabled, the parser reports
             QXmlContentHandler::startEntity() and
@@ -3188,14 +3206,15 @@ bool QXmlSimpleReader::feature(const QString& name, bool *ok) const
 void QXmlSimpleReader::setFeature(const QString& name, bool enable)
 {
     Q_D(QXmlSimpleReader);
-    // Qt5 ###: Change these strings to qt.nokia.com
     if (name == QLatin1String("http://xml.org/sax/features/namespaces")) {
         d->useNamespaces = enable;
     } else if (name == QLatin1String("http://xml.org/sax/features/namespace-prefixes")) {
         d->useNamespacePrefixes = enable;
-    } else if (name == QLatin1String("http://trolltech.com/xml/features/report-whitespace-only-CharData")) { // Shouldn't change in Qt 4
+    } else if (name == QLatin1String("http://trolltech.com/xml/features/report-whitespace-only-CharData") // For compat with Qt 4
+               || name == QLatin1String("http://qt-project.org/xml/features/report-whitespace-only-CharData")) {
         d->reportWhitespaceCharData = enable;
-    } else if (name == QLatin1String("http://trolltech.com/xml/features/report-start-end-entity")) { // Shouldn't change in Qt 4
+    } else if (name == QLatin1String("http://trolltech.com/xml/features/report-start-end-entity") // For compat with Qt 4
+               || name == QLatin1String("http://trolltech.com/xml/features/report-start-end-entity")) {
         d->reportEntities = enable;
     } else {
         qWarning("Unknown feature %s", name.toLatin1().data());
@@ -3206,11 +3225,12 @@ void QXmlSimpleReader::setFeature(const QString& name, bool enable)
 */
 bool QXmlSimpleReader::hasFeature(const QString& name) const
 {
-    // Qt5 ###: Change these strings to qt.nokia.com
     if (name == QLatin1String("http://xml.org/sax/features/namespaces")
         || name == QLatin1String("http://xml.org/sax/features/namespace-prefixes")
-        || name == QLatin1String("http://trolltech.com/xml/features/report-whitespace-only-CharData") // Shouldn't change in Qt 4
-        || name == QLatin1String("http://trolltech.com/xml/features/report-start-end-entity")) { // Shouldn't change in Qt 4
+        || name == QLatin1String("http://trolltech.com/xml/features/report-whitespace-only-CharData") // For compat with Qt 4
+        || name == QLatin1String("http://qt-project.org/xml/features/report-whitespace-only-CharData")
+        || name == QLatin1String("http://trolltech.com/xml/features/report-start-end-entity") // For compat with Qt 4
+        || name == QLatin1String("http://qt-project.org/xml/features/report-start-end-entity")) {
         return true;
     } else {
         return false;

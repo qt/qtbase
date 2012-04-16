@@ -202,6 +202,7 @@ QT_BEGIN_NAMESPACE
     \value OkRequest                        Ok button in decoration pressed. Supported only for Windows CE.
     \value TabletEnterProximity             Wacom tablet enter proximity event (QTabletEvent), sent to QApplication.
     \value TabletLeaveProximity             Wacom tablet leave proximity event (QTabletEvent), sent to QApplication.
+    \value ThreadChange                     The object is moved to another thread. This is the last event sent to this object in the previous thread. See QObject::moveToThread().
     \value Timer                            Regular timer events (QTimerEvent).
     \value ToolBarChange                    The toolbar button is toggled on Mac OS X.
     \value ToolTip                          A tooltip was requested (QHelpEvent).
@@ -264,7 +265,6 @@ QT_BEGIN_NAMESPACE
     \omitvalue ShowWindowRequest
     \omitvalue Speech
     \omitvalue Style
-    \omitvalue ThreadChange
     \omitvalue ZeroTimerEvent
     \omitvalue ApplicationActivated
     \omitvalue ApplicationDeactivated

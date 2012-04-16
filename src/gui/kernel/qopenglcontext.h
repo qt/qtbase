@@ -51,8 +51,10 @@
 #include <QtGui/QSurfaceFormat>
 
 #ifdef __GLEW_H__
+#if defined(Q_CC_GNU)
 #warning qopenglfunctions.h is not compatible with GLEW, GLEW defines will be undefined
 #warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h
+#endif
 #endif
 
 #include <QtGui/qopengl.h>

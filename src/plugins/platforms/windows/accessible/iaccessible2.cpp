@@ -114,6 +114,68 @@ HRESULT STDMETHODCALLTYPE AccessibleApplication::get_toolkitVersion(/* [retval][
 }
 
 
+/**************************************************************\
+ *                     AccessibleRelation                     *
+ **************************************************************/
+AccessibleRelation::AccessibleRelation(const QList<QAccessibleInterface *> &targets,
+                    QAccessible::Relation relation)
+    : m_targets(targets), m_relation(relation), m_ref(1)
+{
+    Q_ASSERT(m_targets.count());
+}
+
+/* IUnknown */
+HRESULT STDMETHODCALLTYPE AccessibleRelation::QueryInterface(REFIID id, LPVOID *iface)
+{
+    *iface = 0;
+    if (id == IID_IUnknown)
+        *iface = (IUnknown*)this;
+
+    if (*iface) {
+        AddRef();
+        return S_OK;
+    }
+
+    return E_NOINTERFACE;
+}
+
+ULONG STDMETHODCALLTYPE AccessibleRelation::AddRef()
+{
+    return ++m_ref;
+}
+
+ULONG STDMETHODCALLTYPE AccessibleRelation::Release()
+{
+    if (!--m_ref) {
+        delete this;
+        return 0;
+    }
+    return m_ref;
+}
+
+/* IAccessibleRelation */
+HRESULT STDMETHODCALLTYPE AccessibleRelation::get_relationType(
+    /* [retval][out] */ BSTR *relationType)
+{
+    *relationType = relationToBSTR(m_relation);
+    return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE AccessibleRelation::get_localizedRelationType(
+    /* [retval][out] */ BSTR *localizedRelationType)
+{
+    // Who ever needs this???
+    *localizedRelationType = relationToBSTR(m_relation);
+    return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE AccessibleRelation::get_nTargets(
+    /* [retval][out] */ long *nTargets)
+{
+    // ### always one target
+    *nTargets = m_targets.count();
+    return S_OK;
+}
 
 /*!
   \internal
@@ -140,7 +202,7 @@ HRESULT STDMETHODCALLTYPE AccessibleRelation::get_target(
   (see "Special Consideration when using Arrays", in Accessible2.idl)
   */
 HRESULT STDMETHODCALLTYPE AccessibleRelation::get_targets(
-    /* [in] */ long maxTargets,     // Hmmm, ignore ???
+    /* [in] */ long maxTargets,
     /* [length_is][size_is][out] */ IUnknown **targets,
     /* [retval][out] */ long *nTargets)
 {
@@ -215,6 +277,10 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryInterface(REFIID id, LPVOI
     return hr;
 }
 
+
+/* Note that IUnknown is inherited from several interfaces. Therefore we must reimplement all its
+   functions in the concrete class to avoid ambiguity.
+*/
 ULONG STDMETHODCALLTYPE QWindowsIA2Accessible::AddRef()
 {
     return QWindowsMsaaAccessible::AddRef();

@@ -102,6 +102,8 @@ public:
     virtual QFont defaultFont() const;
 
     virtual QString resolveFontFamilyAlias(const QString &family) const;
+    virtual bool fontsAlwaysScalable() const;
+    virtual QList<int> standardSizes() const;
 
     //callback
     static void registerQPF2Font(const QByteArray &dataArray, void *handle);

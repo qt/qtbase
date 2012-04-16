@@ -88,7 +88,7 @@ public:
 #endif
         SettingsPath = 100
     };
-    static QString location(LibraryLocation); // ### Qt 5: consider renaming it to path()
+    static QString location(LibraryLocation); // ### Qt 6: consider renaming it to path()
 #ifdef QT_BUILD_QMAKE
     static QString rawLocation(LibraryLocation);
 #endif

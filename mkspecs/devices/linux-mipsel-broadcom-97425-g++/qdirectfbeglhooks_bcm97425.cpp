@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,27 +39,33 @@
 **
 ****************************************************************************/
 
-#include "qpaintdevice.h"
-#include "qpainter.h"
-#include "qbitmap.h"
-#include "qguiapplication.h"
+#include "qdirectfbeglhooks.h"
+#include "qdirectfbconvenience.h"
 
-QT_BEGIN_NAMESPACE
+#include "default_directfb.h"
 
-int QPaintDevice::metric(PaintDeviceMetric m) const
+// Exported to the directfb plugin
+QDirectFBEGLHooks platform_hook;
+static void *dbpl_handle;
+
+void QDirectFBEGLHooks::platformInit()
 {
-    qWarning("QPaintDevice::metrics: Device has no metric information");
-    if (m == PdmDpiX) {
-        return 72;
-    } else if (m == PdmDpiY) {
-        return 72;
-    } else if (m == PdmNumColors) {
-        // FIXME: does this need to be a real value?
-        return 256;
-    } else {
-        qDebug("Unrecognised metric %d!",m);
-        return 0;
+    DBPL_RegisterDirectFBDisplayPlatform(&dbpl_handle, QDirectFbConvenience::dfbInterface());
+}
+
+void QDirectFBEGLHooks::platformDestroy()
+{
+    DBPL_UnregisterDirectFBDisplayPlatform(&dbpl_handle);
+    dbpl_handle = 0;
+}
+
+bool QDirectFBEGLHooks::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case QPlatformIntegration::ThreadedOpenGL:
+        return true;
+    default:
+        return false;
     }
 }
 
-QT_END_NAMESPACE

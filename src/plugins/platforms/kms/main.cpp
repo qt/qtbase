@@ -46,6 +46,8 @@ QT_BEGIN_NAMESPACE
 
 class QKmsIntegrationPlugin : public QPlatformIntegrationPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformIntegrationFactoryInterface" FILE "kms.json")
 public:
     QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&);
@@ -67,6 +69,6 @@ QPlatformIntegration *QKmsIntegrationPlugin::create(const QString& system, const
     return 0;
 }
 
-Q_EXPORT_PLUGIN2(kms, QKmsIntegrationPlugin)
-
 QT_END_NAMESPACE
+
+#include "main.moc"

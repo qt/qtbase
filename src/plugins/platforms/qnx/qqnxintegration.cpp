@@ -45,6 +45,7 @@
 #include "qqnxglcontext.h"
 #include "qqnxnativeinterface.h"
 #include "qqnxnavigatoreventhandler.h"
+#include "qqnxnavigatoreventnotifier.h"
 #include "qqnxrasterbackingstore.h"
 #include "qqnxscreen.h"
 #include "qqnxscreeneventhandler.h"
@@ -80,7 +81,8 @@ QMutex QQnxIntegration::ms_windowMapperMutex;
 QQnxIntegration::QQnxIntegration()
     : QPlatformIntegration()
     , m_eventThread(0)
-    , m_navigatorEventHandler(0)
+    , m_navigatorEventHandler(new QQnxNavigatorEventHandler())
+    , m_navigatorEventNotifier(0)
     , m_virtualKeyboard(0)
     , m_inputContext(0)
     , m_fontDatabase(new QGenericUnixFontDatabase())
@@ -103,12 +105,12 @@ QQnxIntegration::QQnxIntegration()
         qFatal("QQnx: failed to connect to composition manager, errno=%d", errno);
     }
 
-    // Create/start navigator event handler
-    m_navigatorEventHandler = new QQnxNavigatorEventHandler;
+    // Create/start navigator event notifier
+    m_navigatorEventNotifier = new QQnxNavigatorEventNotifier(m_navigatorEventHandler);
 
     // delay invocation of start() to the time the event loop is up and running
     // needed to have the QThread internals of the main thread properly initialized
-    QMetaObject::invokeMethod(m_navigatorEventHandler, "start", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(m_navigatorEventNotifier, "start", Qt::QueuedConnection);
 
     // Create displays for all possible screens (which may not be attached)
     createDisplays();
@@ -160,12 +162,12 @@ QQnxIntegration::~QQnxIntegration()
     delete m_clipboard;
 #endif
 
-    // Stop/destroy event thread
-    delete m_eventThread;
-
-    // Stop/destroy navigator thread
+    // Stop/destroy navigator event notifier
+    delete m_navigatorEventNotifier;
     delete m_navigatorEventHandler;
 
+    // Stop/destroy event thread
+    delete m_eventThread;
     delete m_screenEventHandler;
 
     // Destroy all displays

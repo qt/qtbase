@@ -96,13 +96,12 @@ public:
 
     QSizeF effectiveSizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
 
-    virtual void updateGeometry();  //### rename to sizeHintChanged()
+    virtual void updateGeometry();
 
     QGraphicsLayoutItem *parentLayoutItem() const;
     void setParentLayoutItem(QGraphicsLayoutItem *parent);
 
     bool isLayout() const;
-    // ###Qt5: Make automatic reparenting work regardless of item/object/widget type.
     QGraphicsItem *graphicsItem() const;
     bool ownedByLayout() const;
 

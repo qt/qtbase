@@ -42,6 +42,7 @@
 #include "qdirectfb_egl.h"
 #include "qdirectfbwindow.h"
 #include "qdirectfbscreen.h"
+#include "qdirectfbeglhooks.h"
 
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QPlatformOpenGLContext>
@@ -53,6 +54,13 @@
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
+
+#ifdef DIRECTFB_PLATFORM_HOOKS
+extern QDirectFBEGLHooks platform_hook;
+static QDirectFBEGLHooks *hooks = &platform_hook;
+#else
+static QDirectFBEGLHooks *hooks = 0;
+#endif
 
 /**
  * This provides OpenGL ES 2.0 integration with DirectFB. It assumes that
@@ -137,12 +145,14 @@ void QDirectFbScreenEGL::initializeEGL()
 
 void QDirectFbScreenEGL::platformInit()
 {
-    // Place vendor init code here.
+    if (hooks)
+        hooks->platformInit();
 }
 
 void QDirectFbScreenEGL::platformDestroy()
 {
-    // Place vendor finalize code here.
+    if (hooks)
+        hooks->platformDestroy();
 }
 
 QDirectFbWindowEGL::QDirectFbWindowEGL(QWindow *tlw, QDirectFbInput *input)
@@ -207,6 +217,14 @@ void QDirectFbIntegrationEGL::initializeScreen()
 {
     m_primaryScreen.reset(new QDirectFbScreenEGL(0));
     screenAdded(m_primaryScreen.data());
+}
+
+bool QDirectFbIntegrationEGL::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    // We assume that devices will have more and not less capabilities
+    if (hooks && hooks->hasCapability(cap))
+        return true;
+    return QDirectFbIntegration::hasCapability(cap);
 }
 
 QT_END_NAMESPACE

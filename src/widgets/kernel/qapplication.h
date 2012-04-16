@@ -173,8 +173,6 @@ public:
     static bool isEffectEnabled(Qt::UIEffect);
     static void setEffectEnabled(Qt::UIEffect, bool enable = true);
 
-    static QPlatformNativeInterface *platformNativeInterface();
-
 #ifndef QT_NO_SESSIONMANAGER
     // session management
     bool isSessionRestored() const;

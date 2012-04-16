@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "imageitem.h"
 #include "gestures.h"

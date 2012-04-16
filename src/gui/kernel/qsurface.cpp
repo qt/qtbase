@@ -88,7 +88,9 @@ QSurface::QSurface(SurfaceClass type)
 {
 }
 
-
+QSurface::~QSurface()
+{
+}
 
 QSurface::SurfaceClass QSurface::surfaceClass() const
 {

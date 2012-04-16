@@ -39,8 +39,10 @@
 **
 ****************************************************************************/
 
+#ifndef QT_NO_CORESERVICES
 #import <Cocoa/Cocoa.h>
 #import <IOKit/graphics/IOGraphicsLib.h>
+#endif
 
 #include "qcoretextfontdatabase_p.h"
 #include "qfontengine_coretext_p.h"
@@ -118,6 +120,7 @@ static NSInteger languageMapSort(id obj1, id obj2, void *context)
 
 QCoreTextFontDatabase::QCoreTextFontDatabase()
 {
+#ifndef QT_NO_CORESERVICES
     QSettings appleSettings(QLatin1String("apple.com"));
     QVariant appleValue = appleSettings.value(QLatin1String("AppleAntiAliasingThreshold"));
     if (appleValue.isValid())
@@ -152,6 +155,9 @@ QCoreTextFontDatabase::QCoreTextFontDatabase()
     QCoreTextFontEngine::defaultGlyphFormat = (font_smoothing > 0
                                                ? QFontEngineGlyphCache::Raster_RGBMask
                                                : QFontEngineGlyphCache::Raster_A8);
+#else
+    QCoreTextFontEngine::defaultGlyphFormat = QFontEngineGlyphCache::Raster_A8;
+#endif
 }
 
 QCoreTextFontDatabase::~QCoreTextFontDatabase()
@@ -342,6 +348,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString family, cons
     return fallbackLists[styleHint];
 }
 
+#ifndef QT_NO_CORESERVICES
 OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref);
 QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
@@ -382,6 +389,7 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
 
     return QStringList();
 }
+#endif
 
 QFont QCoreTextFontDatabase::defaultFont() const
 {
@@ -391,6 +399,17 @@ QFont QCoreTextFontDatabase::defaultFont() const
     }
 
     return QFont(defaultFontName);
+}
+
+QList<int> QCoreTextFontDatabase::standardSizes() const
+{
+    QList<int> ret;
+    static const unsigned short standard[] =
+        { 9, 10, 11, 12, 13, 14, 18, 24, 36, 48, 64, 72, 96, 144, 288, 0 };
+    ret.reserve(int(sizeof(standard) / sizeof(standard[0])));
+    const unsigned short *sizes = standard;
+    while (*sizes) ret << *sizes++;
+    return ret;
 }
 
 QT_END_NAMESPACE

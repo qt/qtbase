@@ -41,7 +41,7 @@
 #ifndef INFO_H
 #define INFO_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class InfoWidget : public QWidget
 {

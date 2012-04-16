@@ -368,6 +368,13 @@ signals:
     void signalInIf3();
 #endif
 
+# //QTBUG-22717
+ # /*  */
+#
+
+ # \
+
+//
 public slots:
     void const slotWithSillyConst() {}
 

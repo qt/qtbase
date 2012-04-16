@@ -457,6 +457,7 @@ private:
     void writeDitaRefs(const DitaRefList& ditarefs);
     void writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle);
     bool isDuplicate(NodeMultiMap* nmm, const QString& key, Node* node);
+    void debugPara(const QString& t);
 
 private:
     /*

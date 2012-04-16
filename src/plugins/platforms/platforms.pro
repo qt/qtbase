@@ -6,9 +6,7 @@ contains(QT_CONFIG, xcb) {
     SUBDIRS += xcb
 }
 
-mac {
-    SUBDIRS += cocoa
-}
+mac:contains(QT_CONFIG, coreservices): SUBDIRS += cocoa
 
 win32: SUBDIRS += windows
 
@@ -18,4 +16,8 @@ qnx {
 
 contains(QT_CONFIG, eglfs) {
     SUBDIRS += eglfs
+}
+
+contains(QT_CONFIG, directfb) {
+    SUBDIRS += directfb
 }

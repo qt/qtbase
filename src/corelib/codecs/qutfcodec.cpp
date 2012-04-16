@@ -58,7 +58,7 @@ static inline bool isUnicodeNonCharacter(uint ucs4)
     // U+FDEF (inclusive)
 
     return (ucs4 & 0xfffe) == 0xfffe
-            || (ucs4 - 0xfdd0U) < 16;
+            || (ucs4 - 0xfdd0U) < 32;
 }
 
 QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::ConverterState *state)
@@ -127,7 +127,7 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
                     continue;
                 }
 
-                if (u > 0xffff) {
+                if (QChar::requiresSurrogates(u)) {
                     *cursor++ = 0xf0 | ((uchar) (u >> 18));
                     *cursor++ = 0x80 | (((uchar) (u >> 12)) & 0x3f);
                 } else {
@@ -196,7 +196,7 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
                     bool nonCharacter;
                     if (!headerdone && uc == 0xfeff) {
                         // don't do anything, just skip the BOM
-                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && uc > 0xffff && uc < 0x110000) {
+                    } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc < 0x110000) {
                         // surrogate pair
                         Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
                         *qch++ = QChar::highSurrogate(uc);
@@ -487,7 +487,7 @@ QString QUtf32::convertToUnicode(const char *chars, int len, QTextCodec::Convert
                 }
             }
             uint code = (endian == BigEndianness) ? qFromBigEndian<quint32>(tuple) : qFromLittleEndian<quint32>(tuple);
-            if (code >= 0x10000) {
+            if (QChar::requiresSurrogates(code)) {
                 *qch++ = QChar::highSurrogate(code);
                 *qch++ = QChar::lowSurrogate(code);
             } else {

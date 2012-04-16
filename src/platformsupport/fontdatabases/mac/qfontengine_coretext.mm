@@ -413,7 +413,11 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     QImage im(qRound(br.width)+2, qRound(br.height)+2, QImage::Format_RGB32);
     im.fill(0);
 
+#ifndef QT_NO_CORESERVICES
     CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+#else
+    CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
+#endif
     uint cgflags = kCGImageAlphaNoneSkipFirst;
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
     cgflags |= kCGBitmapByteOrder32Host;

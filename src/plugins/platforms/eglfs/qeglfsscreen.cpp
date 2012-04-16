@@ -41,7 +41,7 @@
 
 #include "qeglfsscreen.h"
 #include "qeglfswindow.h"
-#include "qeglfs_hooks.h"
+#include "qeglfshooks.h"
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
@@ -52,13 +52,6 @@
 #endif //Q_OPENKODE
 
 QT_BEGIN_NAMESPACE
-
-#ifdef EGLFS_PLATFORM_HOOKS
-extern QEglFSHooks platform_hooks;
-static QEglFSHooks *hooks = &platform_hooks;
-#else
-static QEglFSHooks *hooks = 0;
-#endif
 
 // #define QEGL_EXTRA_DEBUG
 

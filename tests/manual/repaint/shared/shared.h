@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 class StaticWidget : public QWidget
 {
 Q_OBJECT

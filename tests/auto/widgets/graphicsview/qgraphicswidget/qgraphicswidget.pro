@@ -6,5 +6,4 @@ QT += core-private gui-private
 
 SOURCES  += tst_qgraphicswidget.cpp
 
-# QTBUG-23616 - unstable test
-linux-*:system(". /etc/lsb-release && [ $DISTRIB_CODENAME = oneiric ]"):CONFIG += insignificant_test
+linux-*:system(". /etc/lsb-release && [ $DISTRIB_CODENAME = oneiric ]"):CONFIG += insignificant_test # QTBUG-23616

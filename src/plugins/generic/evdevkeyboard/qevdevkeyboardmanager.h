@@ -44,7 +44,9 @@
 
 #include "qevdevkeyboardhandler.h"
 
+#ifndef QT_NO_LIBUDEV
 #include <QtPlatformSupport/private/qudevicehelper_p.h>
+#endif // QT_NO_LIBUDEV
 
 #include <QObject>
 #include <QHash>
@@ -68,7 +70,9 @@ private slots:
 private:
     QString m_spec;
     QHash<QString,QEvdevKeyboardHandler*> m_keyboards;
+#ifndef QT_NO_LIBUDEV
     QUDeviceHelper *m_udeviceHelper;
+#endif // QT_NO_LIBUDEV
 };
 
 QT_END_HEADER

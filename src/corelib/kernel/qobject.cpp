@@ -3949,8 +3949,8 @@ void qDeleteInEventHandler(QObject *o)
 }
 
 /*!
-    \fn QMetaObject::Connection QObject::connect(const QObject *sender, (T::*signal)(...), const QObject *receiver, (T::*method)(...), Qt::ConnectionType type)
-
+    \fn QMetaObject::Connection QObject::connect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type)
+    \overload connect()
     \threadsafe
 
     Creates a connection of the given \a type from the \a signal in
@@ -4006,18 +4006,14 @@ void qDeleteInEventHandler(QObject *o)
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 25
 
     make sure to declare the argument type with Q_DECLARE_METATYPE
-
-    A signal is emitted for every connection you make;
-    two signals are emitted for duplicate connections.
-    This overload does not support the type Qt::UniqueConnection
  */
 
 
 /*!
-    \fn QMetaObject::Connection QObject::connect(const QObject *sender, (T::*signal)(...), Functor functor)
+    \fn QMetaObject::Connection QObject::connect(const QObject *sender, PointerToMemberFunction signal, Functor functor)
 
     \threadsafe
-    \overload
+    \overload connect()
 
     Creates a connection of the given \a type from the \a signal in
     the \a sender object to the \a functor and returns a handle to the connection
@@ -4166,9 +4162,9 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     return true;
 }
 
-/*! \fn bool QObject::disconnect(const QObject *sender, (T::*signal)(...), const Qbject *receiver, (T::*method)(...))
+/*! \fn bool QObject::disconnect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method)
+    \overload diconnect()
     \threadsafe
-    \overload
 
     Disconnects \a signal in object \a sender from \a method in object
     \a receiver. Returns true if the connection is successfully broken;
@@ -4225,6 +4221,7 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
 
     \sa connect()
 */
+
 bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject *receiver, void **slot, const QMetaObject *senderMetaObject)
 {
     if (sender == 0 || (receiver == 0 && slot != 0)) {
@@ -4286,7 +4283,7 @@ QMetaObject::Connection::~Connection()
 }
 
 /*!
-    \fn bool QMetaObject::Connection::operator bool()
+    \fn QMetaObject::Connection::operator bool() const
 
     Returns true if the connection is valid.
 

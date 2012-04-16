@@ -179,7 +179,7 @@ XmlOutput& XmlOutput::operator<<(const xml_output& o)
         break;
     case tTagValue:
         addRaw(QString("\n%1<%2>").arg(currentIndent).arg(o.xo_text));
-        addRaw(QString("%1").arg(o.xo_value));
+        addRaw(doConversion(o.xo_value));
         addRaw(QString("</%1>").arg(o.xo_text));
         break;
     case tValueTag:

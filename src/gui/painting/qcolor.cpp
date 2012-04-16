@@ -2260,7 +2260,7 @@ QColor QColor::light(int factor) const
 
     QColor hsv = toHsv();
     int s = hsv.ct.ahsv.saturation;
-    int v = hsv.ct.ahsv.value;
+    uint v = hsv.ct.ahsv.value;
 
     v = (factor*v)/100;
     if (v > USHRT_MAX) {

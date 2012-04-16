@@ -76,4 +76,20 @@ Q_GUI_EXPORT int qt_paint_device_metric(const QPaintDevice *device, QPaintDevice
     return device->metric(metric);
 }
 
+int QPaintDevice::metric(PaintDeviceMetric m) const
+{
+    qWarning("QPaintDevice::metrics: Device has no metric information");
+    if (m == PdmDpiX) {
+        return 72;
+    } else if (m == PdmDpiY) {
+        return 72;
+    } else if (m == PdmNumColors) {
+        // FIXME: does this need to be a real value?
+        return 256;
+    } else {
+        qDebug("Unrecognised metric %d!",m);
+        return 0;
+    }
+}
+
 QT_END_NAMESPACE

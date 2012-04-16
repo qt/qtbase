@@ -323,7 +323,7 @@ void QWindowsXPStylePrivate::cleanupHandleMap()
 HTHEME QWindowsXPStylePrivate::createTheme(int theme, HWND hwnd)
 {
     if (theme < 0 || theme >= NThemes || !hwnd) {
-        qWarning("%s: Invalid parameters #%d, %p", theme, hwnd);
+        qWarning("%s: Invalid parameters #%d, %p", Q_FUNC_INFO, theme, hwnd);
         return 0;
     }
     if (!m_themes[theme]) {

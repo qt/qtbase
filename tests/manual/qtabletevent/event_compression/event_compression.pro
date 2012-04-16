@@ -1,4 +1,4 @@
-QT += testlib
+QT += widgets testlib
 
 SOURCES += main.cpp \
     mousestatwidget.cpp

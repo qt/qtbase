@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include "../shared/shared.h"
 
 class CellWidget : public QWidget

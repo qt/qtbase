@@ -59,9 +59,6 @@
 #include <QSignalMapper>
 #include <QAction>
 
-
-#include <private/qwindowsurface_p.h>
-
 #include <qmath.h>
 
 const int CP_RADIUS = 10;
@@ -236,12 +233,7 @@ public:
         }
 
         if (m_render_view.isNull()) {
-
-            if (T::window()->windowSurface())
-                m_render_view = T::window()->windowSurface()->grabWidget(this);
-            else
-                m_render_view = QPixmap::grabWidget(this);
-
+            m_render_view = QPixmap::grabWidget(this);
             m_render_view.save("renderView.png");
         }
     }

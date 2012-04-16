@@ -130,7 +130,7 @@ public:
     void removePage(int id);
     QWizardPage *page(int id) const;
     bool hasVisitedPage(int id) const;
-    QList<int> visitedPages() const;    // ### visitedIds()?
+    QList<int> visitedPages() const;    // ### Qt 6: visitedIds()?
     QList<int> pageIds() const;
     void setStartId(int id);
     int startId() const;

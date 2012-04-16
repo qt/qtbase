@@ -100,16 +100,14 @@ static QString buddyString(const QWidget *widget)
     return QString();
 }
 
-QString Q_WIDGETS_EXPORT qt_accStripAmp(const QString &text)
-{
-    return QString(text).remove(QLatin1Char('&'));
-}
-
-QString Q_WIDGETS_EXPORT qt_accHotKey(const QString &text)
+/* This function will return the offset of the '&' in the text that would be
+   preceding the accelerator character.
+   If this text does not have an accelerator, -1 will be returned. */
+static int qt_accAmpIndex(const QString &text)
 {
 #ifndef QT_NO_SHORTCUT
     if (text.isEmpty())
-        return text;
+        return -1;
 
     int fa = 0;
     QChar ac;
@@ -118,21 +116,40 @@ QString Q_WIDGETS_EXPORT qt_accHotKey(const QString &text)
         if (fa < text.length()) {
             // ignore "&&"
             if (text.at(fa) == QLatin1Char('&')) {
+
                 ++fa;
                 continue;
             } else {
-                ac = text.at(fa);
+                return fa - 1;
                 break;
             }
         }
     }
-    if (ac.isNull())
-        return QString();
-    return QKeySequence(Qt::ALT).toString(QKeySequence::NativeText) + ac.toUpper();
+
+    return -1;
 #else
     Q_UNUSED(text);
-    return QString();
+    return -1;
 #endif
+}
+
+QString Q_WIDGETS_EXPORT qt_accStripAmp(const QString &text)
+{
+    QString newText(text);
+    int ampIndex = qt_accAmpIndex(newText);
+    if (ampIndex != -1)
+        newText.remove(ampIndex, 1);
+
+    return newText.replace(QLatin1String("&&"), QLatin1String("&"));
+}
+
+QString Q_WIDGETS_EXPORT qt_accHotKey(const QString &text)
+{
+    int ampIndex = qt_accAmpIndex(text);
+    if (ampIndex != -1)
+        return (QString)QKeySequence(Qt::ALT) + text.at(ampIndex + 1);
+
+    return QString();
 }
 
 class QAccessibleWidgetPrivate

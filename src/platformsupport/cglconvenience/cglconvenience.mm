@@ -89,6 +89,18 @@ void *qcgl_createNSOpenGLPixelFormat(const QSurfaceFormat &format)
 
     attrs.append(NSOpenGLPFADoubleBuffer);
 
+    if (format.profile() == QSurfaceFormat::CoreProfile) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+        if ((format.majorVersion() == 3 && format.minorVersion() >= 2)
+          || format.majorVersion() > 3 ) {
+            attrs << NSOpenGLPFAOpenGLProfile;
+            attrs << NSOpenGLProfileVersion3_2Core;
+        }
+#else
+        qWarning("Mac OSX >= 10.7 is needed for OpenGL Core Profile support");
+#endif
+    }
+
     if (format.depthBufferSize() > 0)
         attrs <<  NSOpenGLPFADepthSize << format.depthBufferSize();
     if (format.stencilBufferSize() > 0)

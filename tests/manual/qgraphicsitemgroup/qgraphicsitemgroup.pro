@@ -1,4 +1,5 @@
 TARGET = qgraphicsitemgroup
+QT += widgets
 TEMPLATE = app
 SOURCES += main.cpp \
     widget.cpp \

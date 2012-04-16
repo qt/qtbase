@@ -1,8 +1,7 @@
 TEMPLATE = app
 TARGET = tst_inputmethodhints
 
-QT        += core \
-    gui 
+QT        += widgets
 
 HEADERS   += inputmethodhints.h
 SOURCES   += main.cpp \

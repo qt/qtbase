@@ -41,7 +41,7 @@
 #ifndef DATEFORMATS_H
 #define DATEFORMATS_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class DateFormatsWidget : public QWidget
 {

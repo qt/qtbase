@@ -145,7 +145,7 @@ QTextOption &QTextOption::operator=(const QTextOption &o)
 
     \sa tabArray(), setTabStop(), setTabs()
 */
-void QTextOption::setTabArray(QList<qreal> tabStops) // Qt5: const ref
+void QTextOption::setTabArray(const QList<qreal> &tabStops)
 {
     if (!d)
         d = new QTextOptionPrivate;
@@ -165,7 +165,7 @@ void QTextOption::setTabArray(QList<qreal> tabStops) // Qt5: const ref
 
     \sa tabStops()
 */
-void QTextOption::setTabs(QList<QTextOption::Tab> tabStops) // Qt5: const ref
+void QTextOption::setTabs(const QList<QTextOption::Tab> &tabStops)
 {
     if (!d)
         d = new QTextOptionPrivate;

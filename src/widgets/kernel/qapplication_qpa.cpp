@@ -75,8 +75,6 @@ QT_BEGIN_NAMESPACE
 static QString appName;
 static QString appFont;
 static bool popupGrabOk;
-extern bool app_do_modal;
-extern QWidgetList *qt_modal_stack;
 extern QWidget *qt_button_down;
 extern QWidget *qt_popup_down;
 extern bool qt_replay_popup_mouse_event;
@@ -126,28 +124,9 @@ bool qt_try_modal(QWidget *widget, QEvent::Type type)
     return !block_event;
 }
 
-void QApplicationPrivate::enterModal_sys(QWidget *widget)
-{
-    if (!qt_modal_stack)
-        qt_modal_stack = new QWidgetList;
-    qt_modal_stack->insert(0, widget);
-    app_do_modal = true;
-}
-
-void QApplicationPrivate::leaveModal_sys(QWidget *widget)
-{
-    if (qt_modal_stack && qt_modal_stack->removeAll(widget)) {
-        if (qt_modal_stack->isEmpty()) {
-            delete qt_modal_stack;
-            qt_modal_stack = 0;
-        }
-    }
-    app_do_modal = qt_modal_stack != 0;
-}
-
 bool QApplicationPrivate::modalState()
 {
-    return app_do_modal;
+    return !self->modalWindowList.isEmpty();
 }
 
 QWidget *qt_tlw_for_window(QWindow *wnd)
@@ -451,12 +430,6 @@ void QApplication::beep()
 
 void QApplication::alert(QWidget *, int)
 {
-}
-
-QPlatformNativeInterface *QApplication::platformNativeInterface()
-{
-    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-    return pi->nativeInterface();
 }
 
 void qt_init(QApplicationPrivate *priv, int type)

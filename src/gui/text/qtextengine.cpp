@@ -2185,7 +2185,7 @@ int QTextEngine::formatIndex(const QScriptItem *si) const
     int pos = si->position;
     if (specialData && si->position >= specialData->preeditPosition) {
         if (si->position < specialData->preeditPosition + specialData->preeditText.length())
-            pos = qMax(specialData->preeditPosition - 1, 0);
+            pos = qMax(qMin(block.length(), specialData->preeditPosition) - 1, 0);
         else
             pos -= specialData->preeditText.length();
     }

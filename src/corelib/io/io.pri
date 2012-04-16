@@ -113,9 +113,15 @@ win32 {
             SOURCES += io/qsettings_mac.cpp
         }
         macx-*: {
-            SOURCES += io/qstandardpaths_mac.cpp
+            contains(QT_CONFIG, coreservices) {
+                SOURCES += io/qstandardpaths_mac.cpp
+            } else {
+                SOURCES += io/qstandardpaths_unix.cpp
+            }
         } else:standardpathsjson {
             SOURCES += io/qstandardpaths_json.cpp
+        } else:blackberry {
+            SOURCES += io/qstandardpaths_blackberry.cpp
         } else {
             SOURCES += io/qstandardpaths_unix.cpp
         }

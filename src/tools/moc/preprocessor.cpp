@@ -915,6 +915,8 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
         case PP_ENDIF:
             until(PP_NEWLINE);
             continue;
+        case PP_NEWLINE:
+            continue;
         case SIGNALS:
         case SLOTS: {
             Symbol sym = symbol();

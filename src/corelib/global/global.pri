@@ -13,7 +13,8 @@ HEADERS +=  \
         global/qtypeinfo.h \
         global/qsysinfo.h \
         global/qisenum.h \
-        global/qtypetraits.h
+        global/qtypetraits.h \
+        global/qflags.h
 
 SOURCES += \
 	global/qglobal.cpp \

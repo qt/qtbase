@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QApplication>
 #include "tabletwidget.h"
 
 int main(int argc, char **argv) {

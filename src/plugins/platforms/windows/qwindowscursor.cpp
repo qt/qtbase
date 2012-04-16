@@ -369,8 +369,6 @@ QPoint QWindowsCursor::mousePosition()
 {
     POINT p;
     GetCursorPos(&p);
-    if (QWindowsContext::verboseWindows)
-        qDebug("%s %ld,%ld", __FUNCTION__, p.x, p.y);
     return QPoint(p.x, p.y);
 }
 

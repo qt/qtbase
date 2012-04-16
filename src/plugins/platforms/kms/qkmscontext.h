@@ -65,6 +65,8 @@ public:
 
     EGLContext eglContext() const;
 
+    GLuint defaultFramebufferObject(QPlatformSurface *surface) const;
+
 private:
 
     QKmsDevice *m_device;

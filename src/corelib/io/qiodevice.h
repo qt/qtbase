@@ -102,7 +102,7 @@ public:
     virtual bool open(OpenMode mode);
     virtual void close();
 
-    // ### Qt 5: pos() and seek() should not be virtual, and
+    // ### Qt 6: pos() and seek() should not be virtual, and
     // ### seek() should call a virtual seekData() function.
     virtual qint64 pos() const;
     virtual qint64 size() const;

@@ -121,6 +121,8 @@ void QKmsBufferManager::setupBuffersForMode(const drmModeModeInfo &mode, int num
                               GL_COLOR_ATTACHMENT0,
                               GL_RENDERBUFFER,
                               this->renderTargetBuffer());
+
+    eglMakeCurrent(m_screen->device()->eglDisplay(), EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
 void QKmsBufferManager::clearBuffers()

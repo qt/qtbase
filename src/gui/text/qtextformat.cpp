@@ -3010,7 +3010,6 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
 */
 
 
-// ### Qt5 qreal replace with a QTextLength
 /*!
     \fn qreal QTextImageFormat::width() const
 
@@ -3029,7 +3028,6 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
 */
 
 
-// ### Qt5 qreal replace with a QTextLength
 /*!
     \fn qreal QTextImageFormat::height() const
 

@@ -131,7 +131,10 @@ public:
     qreal scrollingSegmentsEndPos(Qt::Orientation orientation) const;
     bool scrollingSegmentsValid(Qt::Orientation orientation);
     void createScrollToSegments(qreal v, qreal deltaTime, qreal endPos, Qt::Orientation orientation, ScrollType type);
-    void createScrollingSegments(qreal v, qreal startPos, qreal ppm, Qt::Orientation orientation);
+    void createScrollingSegments(qreal v, qreal startPos,
+                                 qreal deltaTime, qreal deltaPos,
+                                 Qt::Orientation orientation);
+    void createScrollingSegments(const QPointF &v, const QPointF &startPos, const QPointF &ppm);
 
     void setContentPositionHelperDragging(const QPointF &deltaPos);
     void setContentPositionHelperScrolling();

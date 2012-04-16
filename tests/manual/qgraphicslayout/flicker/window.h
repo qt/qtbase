@@ -43,11 +43,11 @@
 #define WINDOW_H
 
 
-#include <QtGui>
+#include <QtWidgets>
 
 struct Statistics {
-    Statistics() : output(0),
-        setGeometryCount(0), currentBenchmarkIteration(0), relayoutClicked(false), sleepMsecs(0)
+    Statistics() : setGeometryCount(0), sleepMsecs(0), output(0),
+        currentBenchmarkIteration(0), relayoutClicked(false)
     {
     }
     QMap<QGraphicsWidget*, int> setGeometryTracker;

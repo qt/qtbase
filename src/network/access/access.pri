@@ -65,3 +65,5 @@ SOURCES += \
     access/qhttpmultipart.cpp
 
 include($$PWD/../../3rdparty/zlib_dependency.pri)
+
+mac:LIBS_PRIVATE += -framework Security

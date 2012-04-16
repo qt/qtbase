@@ -414,6 +414,8 @@ void QCocoaFontDialogHelper::hide_sys()
 
 QCocoaFontDialogHelper::DialogCode QCocoaFontDialogHelper::dialogResultCode_sys()
 {
+    if (!mDelegate)
+        return QPlatformDialogHelper::Rejected;
     QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate);
     return [delegate dialogResultCode];
 }
@@ -448,6 +450,8 @@ void QCocoaFontDialogHelper::setCurrentFont_sys(const QFont &font)
 
 QFont QCocoaFontDialogHelper::currentFont_sys() const
 {
+    if (!mDelegate)
+        return QFont();
     return reinterpret_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate)->mQtFont;
 }
 

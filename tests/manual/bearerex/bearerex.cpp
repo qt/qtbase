@@ -43,6 +43,7 @@
 #include "datatransferer.h"
 
 #include <QtNetwork>
+#include <QtWidgets>
 
 Q_DECLARE_METATYPE(QNetworkConfiguration)
 
@@ -284,7 +285,7 @@ SessionTab::SessionTab(QNetworkConfiguration* apNetworkConfiguration,
     } else if (apNetworkConfiguration->type() == QNetworkConfiguration::ServiceNetwork) {
         snapLineEdit->setText(apNetworkConfiguration->name()+" ("+apNetworkConfiguration->identifier()+")");
     }
-    bearerLineEdit->setText(apNetworkConfiguration->bearerName());
+    bearerLineEdit->setText(apNetworkConfiguration->bearerTypeName());
     sentRecDataLineEdit->setText(QString::number(m_NetworkSession->bytesWritten())+
                                  QString(" / ")+
                                  QString::number(m_NetworkSession->bytesReceived()));
@@ -314,8 +315,6 @@ void SessionTab::on_createQNetworkAccessManagerButton_clicked()
         m_dataTransferer = new DataTransfererQNam(this);
     } else if (type == "QTcpSocket") {
         m_dataTransferer = new DataTransfererQTcp(this);
-    } else if (type == "QHttp") {
-        m_dataTransferer = new DataTransfererQHttp(this);
     } else {
         qDebug("BearerEx Warning, unknown data transfer object requested, not creating anything.");
         return;
@@ -512,10 +511,10 @@ void SessionTab::newState(QNetworkSession::State state)
         QNetworkConfiguration config = m_ConfigManager->configurationFromIdentifier(configId);
         if (config.isValid()) {
             iapLineEdit->setText(config.name()+" ("+config.identifier()+")");
-            bearerLineEdit->setText(config.bearerName());
+            bearerLineEdit->setText(config.bearerTypeName());
         }
     } else {
-        bearerLineEdit->setText(m_NetworkSession->configuration().bearerName());
+        bearerLineEdit->setText(m_NetworkSession->configuration().bearerTypeName());
     }
 
     QString active;

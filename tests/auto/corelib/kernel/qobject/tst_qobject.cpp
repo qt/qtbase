@@ -4850,6 +4850,8 @@ signals:
     int returnInt(int);
     void returnVoid(int);
     CustomType returnCustomType(int);
+
+    QObject *returnPointer();
 public slots:
     QVariant returnVariantSlot(int i) { return i; }
     QString returnStringSlot(int i) { return QString::number(i); }
@@ -4858,6 +4860,8 @@ public slots:
     void returnVoidSlot() {}
     int return23() { return 23; }
     QString returnHello() { return QStringLiteral("hello"); }
+    QObject *returnThisSlot1() { return this; }
+    ReturnValue *returnThisSlot2() { return this; }
 public:
     struct VariantFunctor {
         QVariant operator()(int i) { return i; }
@@ -4910,6 +4914,7 @@ void tst_QObject::returnValue()
         QCOMPARE(emit r.returnInt(45), int());
         emit r.returnVoid(45);
         QCOMPARE((emit r.returnCustomType(45)).value(), CustomType().value());
+        QCOMPARE((emit r.returnPointer()), static_cast<QObject *>(0));
     }
     { // connected to a slot returning the same type
         CheckInstanceCount checker;
@@ -4922,6 +4927,8 @@ void tst_QObject::returnValue()
         QCOMPARE(emit r.returnInt(45), int(45));
         QVERIFY(connect(&r, &ReturnValue::returnCustomType, &receiver, &ReturnValue::returnCustomTypeSlot, type));
         QCOMPARE((emit r.returnCustomType(45)).value(), CustomType(45).value());
+        QVERIFY(connect(&r, &ReturnValue::returnPointer, &receiver, &ReturnValue::returnThisSlot1, type));
+        QCOMPARE((emit r.returnPointer()), static_cast<QObject *>(&receiver));
     }
     if (!isBlockingQueued) { // connected to simple functions or functor
         CheckInstanceCount checker;
@@ -4950,6 +4957,8 @@ void tst_QObject::returnValue()
         QCOMPARE((emit r.returnCustomType(48)).value(), CustomType(48).value());
         QVERIFY(connect(&r, &ReturnValue::returnVoid, &receiver, &ReturnValue::returnCustomTypeSlot, type));
         emit r.returnVoid(48);
+        QVERIFY(connect(&r, &ReturnValue::returnPointer, &receiver, &ReturnValue::returnThisSlot2, type));
+        QCOMPARE((emit r.returnPointer()), static_cast<QObject *>(&receiver));
     }
     if (!isBlockingQueued) { // connected to functor with different type
         CheckInstanceCount checker;
@@ -4974,6 +4983,8 @@ void tst_QObject::returnValue()
         QCOMPARE(emit r.returnInt(45), int());
         QVERIFY(connect(&r, &ReturnValue::returnCustomType, &receiver, &ReturnValue::returnVoidSlot, type));
         QCOMPARE((emit r.returnCustomType(45)).value(), CustomType().value());
+        QVERIFY(connect(&r, &ReturnValue::returnPointer, &receiver, &ReturnValue::returnVoidSlot, type));
+        QCOMPARE((emit r.returnPointer()), static_cast<QObject *>(0));
     }
     if (!isBlockingQueued) {
         // queued connection should not forward the return value
@@ -4987,6 +4998,9 @@ void tst_QObject::returnValue()
         QCOMPARE(emit r.returnInt(45), int());
         QVERIFY(connect(&r, &ReturnValue::returnCustomType, &receiver, &ReturnValue::returnCustomTypeSlot, Qt::QueuedConnection));
         QCOMPARE((emit r.returnCustomType(45)).value(), CustomType().value());
+        QVERIFY(connect(&r, &ReturnValue::returnPointer, &receiver, &ReturnValue::returnThisSlot1, Qt::QueuedConnection));
+        QCOMPARE((emit r.returnPointer()), static_cast<QObject *>(0));
+
         QCoreApplication::processEvents();
 
         QVERIFY(connect(&r, &ReturnValue::returnVariant, &receiver, &ReturnValue::returnStringSlot, Qt::QueuedConnection));

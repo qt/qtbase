@@ -82,7 +82,7 @@ public:
         DockWidgetVerticalTitleBar = 0x08,
 
         DockWidgetFeatureMask = 0x0f,
-        AllDockWidgetFeatures = DockWidgetClosable|DockWidgetMovable|DockWidgetFloatable, // ### remove in 5.0
+        AllDockWidgetFeatures = DockWidgetClosable|DockWidgetMovable|DockWidgetFloatable, // ### Qt 6: remove
         NoDockWidgetFeatures  = 0x00,
 
         Reserved              = 0xff

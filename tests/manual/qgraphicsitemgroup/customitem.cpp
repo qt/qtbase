@@ -80,7 +80,7 @@ CustomGroup::CustomGroup() :
     setFlag(QGraphicsItem::ItemIsSelectable);
 }
 
-void CustomGroup::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void CustomGroup::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     if (option->state & QStyle::State_Selected)
         painter->setOpacity(1.);

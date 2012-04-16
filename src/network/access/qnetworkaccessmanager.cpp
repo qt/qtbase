@@ -82,6 +82,64 @@ Q_GLOBAL_STATIC(QNetworkAccessFtpBackendFactory, ftpBackend)
 Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 #endif
 
+#ifdef Q_OS_MAC
+
+#include <CoreServices/CoreServices.h>
+#include <SystemConfiguration/SystemConfiguration.h>
+#include <Security/SecKeychain.h>
+
+bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& username, QString& password)
+{
+    OSStatus err;
+    SecKeychainItemRef itemRef;
+    bool retValue = false;
+    SecProtocolType protocolType = kSecProtocolTypeAny;
+    if (scheme.compare(QLatin1String("ftp"),Qt::CaseInsensitive)==0) {
+        protocolType = kSecProtocolTypeFTP;
+    } else if (scheme.compare(QLatin1String("http"),Qt::CaseInsensitive)==0) {
+        protocolType = kSecProtocolTypeHTTP;
+    } else if (scheme.compare(QLatin1String("https"),Qt::CaseInsensitive)==0) {
+        protocolType = kSecProtocolTypeHTTPS;
+    }
+    QByteArray proxyHostnameUtf8(proxyHostname.toUtf8());
+    err = SecKeychainFindInternetPassword(NULL,
+                                          proxyHostnameUtf8.length(), proxyHostnameUtf8.constData(),
+                                          0,NULL,
+                                          0, NULL,
+                                          0, NULL,
+                                          0,
+                                          protocolType,
+                                          kSecAuthenticationTypeAny,
+                                          0, NULL,
+                                          &itemRef);
+    if (err == noErr) {
+
+        SecKeychainAttribute attr;
+        SecKeychainAttributeList attrList;
+        UInt32 length;
+        void *outData;
+
+        attr.tag = kSecAccountItemAttr;
+        attr.length = 0;
+        attr.data = NULL;
+
+        attrList.count = 1;
+        attrList.attr = &attr;
+
+        if (SecKeychainItemCopyContent(itemRef, NULL, &attrList, &length, &outData) == noErr) {
+            username = QString::fromUtf8((const char*)attr.data, attr.length);
+            password = QString::fromUtf8((const char*)outData, length);
+            SecKeychainItemFreeContent(&attrList,outData);
+            retValue = true;
+        }
+        CFRelease(itemRef);
+    }
+    return retValue;
+}
+#endif
+
+
+
 static void ensureInitialized()
 {
 #ifndef QT_NO_FTP
@@ -1128,6 +1186,18 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authen
             return;
         }
     }
+#ifdef Q_OS_MAC
+    //now we try to get the username and password from keychain
+    //if not successful signal will be emitted
+    QString username;
+    QString password;
+    if (getProxyAuth(proxy.hostName(),reply->request().url().scheme(),username,password)) {
+        authenticator->setUser(username);
+        authenticator->setPassword(password);
+        authenticationManager->cacheProxyCredentials(proxy, authenticator);
+        return;
+    }
+#endif
 
     // if we emit a signal here in synchronous mode, the user might spin
     // an event loop, which might recurse and lead to problems

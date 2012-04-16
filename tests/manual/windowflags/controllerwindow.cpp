@@ -39,7 +39,14 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QRadioButton>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QHBoxLayout>
 
 #include "controllerwindow.h"
 
@@ -72,7 +79,8 @@ ControllerWindow::ControllerWindow()
     mainLayout->addLayout(bottomLayout);
     setLayout(mainLayout);
 
-    setWindowTitle(tr("Window Flags"));
+    setWindowTitle(tr("Window Flags (Qt version %1, %2)")
+                   .arg(QLatin1String(qVersion()), qApp->platformName()));
     updatePreview();
 }
 

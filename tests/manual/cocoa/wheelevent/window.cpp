@@ -45,7 +45,7 @@
 
 #include <QBackingStore>
 #include <QPainter>
-#include <QtGui>
+#include <QtWidgets>
 
 static int colorIndexId = 0;
 
