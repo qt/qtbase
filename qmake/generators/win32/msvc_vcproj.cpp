@@ -476,10 +476,13 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         // and to be able to extract all the dependencies
                         Option::QMAKE_MODE old_mode = Option::qmake_mode;
                         Option::qmake_mode = Option::QMAKE_GENERATE_NOTHING;
+                        QString old_output_dir = Option::output_dir;
+                        Option::output_dir = QFileInfo(fileFixify(dir, qmake_getpwd(), Option::output_dir)).canonicalFilePath();
                         VcprojGenerator tmp_vcproj;
                         tmp_vcproj.setNoIO(true);
                         tmp_vcproj.setProjectFile(&tmp_proj);
                         Option::qmake_mode = old_mode;
+                        Option::output_dir = old_output_dir;
                         if(Option::debug_level) {
                             debug_msg(1, "Dumping all variables:");
                             QHash<QString, QStringList> &vars = tmp_proj.variables();
