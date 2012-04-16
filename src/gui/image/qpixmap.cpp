@@ -715,7 +715,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         return false;
 
     QFileInfo info(fileName);
-    QString key = QLatin1Literal("qt_pixmap")
+    QString key = QLatin1String("qt_pixmap")
                   % info.absoluteFilePath()
                   % HexString<uint>(info.lastModified().toTime_t())
                   % HexString<quint64>(info.size())

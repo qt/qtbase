@@ -68,7 +68,6 @@ void runScenario()
 {
     // this code is latin1. TODO: replace it with the utf8 block below, once
     // strings default to utf8.
-    QLatin1Literal l1literal(LITERAL);
     QLatin1String l1string(LITERAL);
     QString string(l1string);
     QStringRef stringref(&string, 2, 10);
@@ -78,14 +77,10 @@ void runScenario()
     QString r3 = QString::fromUtf8(UTF8_LITERAL UTF8_LITERAL);
     QString r;
 
-    r = l1literal Q l1literal;
-    QCOMPARE(r, r2);
     r = string P string;
     QCOMPARE(r, r2);
     r = stringref Q stringref;
     QCOMPARE(r, QString(stringref.toString() + stringref.toString()));
-    r = string Q l1literal;
-    QCOMPARE(r, r2);
     r = string P l1string;
     QCOMPARE(r, r2);
     r = string Q QStringLiteral(LITERAL);

@@ -100,7 +100,7 @@ QPixmap qt_pixmapForBrush(int brushStyle, bool invert)
 {
 
     QPixmap pm;
-    QString key = QLatin1Literal("$qt-brush$")
+    QString key = QLatin1String("$qt-brush$")
                   % HexString<uint>(brushStyle)
                   % QLatin1Char(invert ? '1' : '0');
     if (!QPixmapCache::find(key, pm)) {

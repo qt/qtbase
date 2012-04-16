@@ -266,7 +266,7 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
         actualSize.scale(size, Qt::KeepAspectRatio);
 
     // #### Qt5 no idea what this really does, but we need to remove the QApp and style references
-    QString key = QLatin1Literal("qt_")
+    QString key = QLatin1String("qt_")
                   % HexString<quint64>(pm.cacheKey())
                   % HexString<uint>(pe->mode)
                   % HexString<quint64>(QApplication::palette().cacheKey())

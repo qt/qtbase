@@ -1153,7 +1153,7 @@ void tst_QLocalSocket::verifyListenWithDescriptor_data()
     QTest::addColumn<bool>("abstract");
     QTest::addColumn<bool>("bound");
 
-    QTest::newRow("normal") << QDir::tempPath() + QLatin1Literal("/testsocket") << false << true;
+    QTest::newRow("normal") << QDir::tempPath() + QLatin1String("/testsocket") << false << true;
 #ifdef Q_OS_LINUX
     QTest::newRow("absrtact") << QString::fromLatin1("abstractsocketname") << true << true;
     QTest::newRow("abstractwithslash") << QString::fromLatin1("abstractsocketwitha/inthename") << true << true;

@@ -707,7 +707,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         // thin rectangular images
         const int pmSize = 64;
         const int border = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
-        const QString pmKey = QLatin1Literal("windowframe") % HexString<uint>(option->state);
+        const QString pmKey = QLatin1String("windowframe") % HexString<uint>(option->state);
 
         QPixmap pixmap;
         QRect pmRect(QPoint(0,0), QSize(pmSize, pmSize));

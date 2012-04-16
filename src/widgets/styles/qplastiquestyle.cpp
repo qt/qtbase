@@ -487,7 +487,7 @@ static void qBrushSetAlphaF(QBrush *brush, qreal alpha)
         // Modify the texture - ridiculously expensive.
         QPixmap texture = brush->texture();
         QPixmap pixmap;
-        QString name = QLatin1Literal("qbrushtexture-alpha")
+        QString name = QLatin1String("qbrushtexture-alpha")
                        % HexString<qreal>(alpha)
                        % HexString<qint64>(texture.cacheKey());
         if (!QPixmapCache::find(name, pixmap)) {
@@ -550,7 +550,7 @@ static QBrush qBrushLight(QBrush brush, int light)
         // Modify the texture - ridiculously expensive.
         QPixmap texture = brush.texture();
         QPixmap pixmap;
-        QString name = QLatin1Literal("qbrushtexture-light")
+        QString name = QLatin1String("qbrushtexture-light")
                        % HexString<int>(light)
                        % HexString<qint64>(texture.cacheKey());
 
@@ -612,7 +612,7 @@ static QBrush qBrushDark(QBrush brush, int dark)
         // Modify the texture - ridiculously expensive.
         QPixmap texture = brush.texture();
         QPixmap pixmap;
-        QString name = QLatin1Literal("qbrushtexture-dark")
+        QString name = QLatin1String("qbrushtexture-dark")
                        % HexString<int>(dark)
                        % HexString<qint64>(texture.cacheKey());
 
@@ -739,7 +739,7 @@ static QColor mergedColors(const QColor &colorA, const QColor &colorB, int facto
 static void qt_plastique_draw_gradient(QPainter *painter, const QRect &rect, const QColor &gradientStart,
                                        const QColor &gradientStop)
 {
-    QString gradientName = QLatin1Literal("qplastique-g")
+    QString gradientName = QLatin1String("qplastique-g")
                    % HexString<int>(rect.width())
                    % HexString<int>(rect.height())
                    % HexString<QRgb>(gradientStart.rgba())
