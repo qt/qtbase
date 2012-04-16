@@ -10,24 +10,23 @@ load(qt_module) # loads qmodule.pri if hasn't been loaded already
 
 isEmpty(MODULE):MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
 isEmpty(TARGET):error("You must set TARGET before include()'ing $${_FILE_}")
+isEmpty(VERSION):VERSION = $$QT_VERSION
 
 MODULE_INCLUDES = $$eval(QT.$${MODULE}.includes)
 MODULE_PRIVATE_INCLUDES = $$eval(QT.$${MODULE}.private_includes)
 INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES
 INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES/$$TARGET
 INCLUDEPATH *= $$MODULE_INCLUDES $$MODULE_INCLUDES/.. #just for today to have some compat
-TEMPLATE        = lib
-isEmpty(VERSION):VERSION = $$QT_VERSION
 
-#load up the headers info
-CONFIG += qt_install_headers
 #headers.pri is loaded from the last include path
 LAST_MODULE_INCLUDE=$$MODULE_INCLUDES
 for(include_path, MODULE_INCLUDES):LAST_MODULE_INCLUDE=$${include_path}
 HEADERS_PRI = $$LAST_MODULE_INCLUDE/headers.pri
+#load up the headers info
 include($$HEADERS_PRI, "", true)|clear(HEADERS_PRI)
 
 #other
+TEMPLATE         = lib
 DESTDIR          = $$eval(QT.$${MODULE}.libs)
 win32:!wince*:DLLDESTDIR = $$[QT_INSTALL_PREFIX]/bin
 
@@ -105,6 +104,7 @@ aix-g++* {
 
 #install directives
 CONFIG += qt_install_module
+CONFIG += qt_install_headers
 load(qt_installs)
 
 unix|win32-g++* {
