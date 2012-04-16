@@ -2288,7 +2288,13 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
         iterator.getSelectionBounds(&x, &width);
 
         if (glyphLayout.numGlyphs > 0) {
-            QFontEngine *mainFontEngine = eng->fontEngine(si);
+            QFontEngine *mainFontEngine;
+#ifndef QT_NO_RAWFONT
+            if (eng->useRawFont && eng->rawFont.isValid())
+                mainFontEngine= eng->fontEngine(si);
+            else
+#endif
+                mainFontEngine = font.d->engineForScript(si.analysis.script);
 
             if (mainFontEngine->type() == QFontEngine::Multi) {
                 QFontEngineMulti *multiFontEngine = static_cast<QFontEngineMulti *>(mainFontEngine);
