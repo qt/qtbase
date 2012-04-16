@@ -276,8 +276,65 @@ void tst_QChar::isLetterOrNumber()
 
 void tst_QChar::isPrint()
 {
+    // noncharacters, reserved (General_Gategory =Cn)
+    QVERIFY(!QChar(0x2064).isPrint());
+    QVERIFY(!QChar(0x2069).isPrint());
+    QVERIFY(!QChar(0xfdd0).isPrint());
+    QVERIFY(!QChar(0xfdef).isPrint());
+    QVERIFY(!QChar(0xfff0).isPrint());
+    QVERIFY(!QChar(0xfff8).isPrint());
+    QVERIFY(!QChar(0xfffe).isPrint());
+    QVERIFY(!QChar(0xffff).isPrint());
+/*
+    QVERIFY(!QChar::isPrint(0xe0000u));
+    QVERIFY(!QChar::isPrint(0xe0002u));
+    QVERIFY(!QChar::isPrint(0xe001fu));
+    QVERIFY(!QChar::isPrint(0xe0080u));
+    QVERIFY(!QChar::isPrint(0xe00ffu));
+*/
+
+    // Other_Default_Ignorable_Code_Point, Variation_Selector
+    QVERIFY(QChar(0x034f).isPrint());
+    QVERIFY(QChar(0x115f).isPrint());
+    QVERIFY(QChar(0x180b).isPrint());
+    QVERIFY(QChar(0x180d).isPrint());
+    QVERIFY(QChar(0x3164).isPrint());
+    QVERIFY(QChar(0xfe00).isPrint());
+    QVERIFY(QChar(0xfe0f).isPrint());
+    QVERIFY(QChar(0xffa0).isPrint());
+/*
+    QVERIFY(QChar::isPrint(0xe0100u));
+    QVERIFY(QChar::isPrint(0xe01efu));
+*/
+
+    // Cf, Cs, Cc, White_Space, Annotation Characters
+    QVERIFY(!QChar(0x0008).isPrint());
+    QVERIFY(!QChar(0x000a).isPrint());
+    QVERIFY(QChar(0x0020).isPrint());
+    QVERIFY(QChar(0x00a0).isPrint());
+    QVERIFY(!QChar(0x00ad).isPrint());
+    QVERIFY(!QChar(0x0085).isPrint());
+    QVERIFY(!QChar(0xd800).isPrint());
+    QVERIFY(!QChar(0xdc00).isPrint());
+    QVERIFY(!QChar(0xfeff).isPrint());
+/*
+    QVERIFY(!QChar::isPrint(0x1d173u));
+*/
+
+    QVERIFY(QChar('0').isPrint());
     QVERIFY(QChar('A').isPrint());
-    QVERIFY(!QChar(0x1aff).isPrint()); // General_Gategory =Cn
+    QVERIFY(QChar('a').isPrint());
+
+    QVERIFY(!QChar(0x0370).isPrint()); // assigned in 5.1
+    QVERIFY(!QChar(0x0524).isPrint()); // assigned in 5.2
+    QVERIFY(!QChar(0x0526).isPrint()); // assigned in 6.0
+    QVERIFY(!QChar(0x08a0).isPrint()); // assigned in 6.1
+    QVERIFY(!QChar(0x1aff).isPrint()); // not assigned
+    QVERIFY(!QChar(0x1e9e).isPrint()); // assigned in 5.1
+/*
+    QVERIFY(!QChar::isPrint(0x1b000u)); // assigned in 6.0
+    QVERIFY(!QChar::isPrint(0x110d0u)); // assigned in 5.1
+*/
 }
 
 void tst_QChar::isUpper()

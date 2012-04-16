@@ -108,8 +108,8 @@ QT_BEGIN_NAMESPACE
 
     The classification functions include functions like those in the
     standard C++ header \<cctype\> (formerly \<ctype.h\>), but
-    operating on the full range of Unicode characters. They all
-    return true if the character is a certain type of character;
+    operating on the full range of Unicode characters, not just for the ASCII
+    range. They all return true if the character is a certain type of character;
     otherwise they return false. These classification functions are
     isNull() (returns true if the character is '\\0'), isPrint()
     (true if the character is any sort of printable character,
@@ -118,7 +118,9 @@ QT_BEGIN_NAMESPACE
     sort of numeric character, not just 0-9), isLetterOrNumber(), and
     isDigit() (decimal digits). All of these are wrappers around
     category() which return the Unicode-defined category of each
-    character.
+    character. Some of these also calculate the derived properties
+    (i.e. isSpace() returns true if the character is of category
+    Separator_* or an exceptional code point from Other_Control category).
 
     QChar also provides direction(), which indicates the "natural"
     writing direction of this character. The joining() function
@@ -152,6 +154,9 @@ QT_BEGIN_NAMESPACE
     explicitly call fromAscii() or fromLatin1(), or use QLatin1Char,
     to construct a QChar from an 8-bit \c char, and you will need to
     call toAscii() or toLatin1() to get the 8-bit value back.
+
+    For more information see
+    \l{http://www.unicode.org/ucd/}{"About the Unicode Character Database"}.
 
     \sa Unicode, QString, QLatin1Char
 */
@@ -473,7 +478,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     Returns true if the character is a printable character; otherwise
-    returns false. This is any character not of category Cc or Cn.
+    returns false. This is any character not of category Other_*.
 
     Note that this gives no indication of whether the character is
     available in a particular font.
@@ -481,6 +486,9 @@ QT_BEGIN_NAMESPACE
 bool QChar::isPrint() const
 {
     const int test = FLAG(Other_Control) |
+                     FLAG(Other_Format) |
+                     FLAG(Other_Surrogate) |
+                     FLAG(Other_PrivateUse) |
                      FLAG(Other_NotAssigned);
     return !(FLAG(qGetProp(ucs)->category) & test);
 }
