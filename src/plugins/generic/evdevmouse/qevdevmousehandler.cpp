@@ -44,6 +44,8 @@
 #include <QSocketNotifier>
 #include <QStringList>
 #include <QPoint>
+#include <QGuiApplication>
+#include <QScreen>
 #include <QWindowSystemInterface>
 
 #include <qplatformdefs.h>
@@ -70,6 +72,7 @@ QEvdevMouseHandler *QEvdevMouseHandler::createLinuxInputMouseHandler(const QStri
 
     QString device = "/dev/input/event0";
     bool compression = true;
+    bool clamp = true;
     bool smooth = false;
     int jitterLimit = 0;
     int xoffset = 0;
@@ -79,6 +82,8 @@ QEvdevMouseHandler *QEvdevMouseHandler::createLinuxInputMouseHandler(const QStri
     foreach (const QString &arg, args) {
         if (arg == "nocompress")
             compression = false;
+        else if (arg == "noclamp")
+            clamp = false;
         else if (arg.startsWith("dejitter="))
             jitterLimit = arg.mid(9).toInt();
         else if (arg.startsWith("xoffset="))
@@ -96,16 +101,16 @@ QEvdevMouseHandler *QEvdevMouseHandler::createLinuxInputMouseHandler(const QStri
     int fd;
     fd = qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (fd >= 0) {
-        return new QEvdevMouseHandler(fd, compression, smooth, jitterLimit, xoffset, yoffset);
+        return new QEvdevMouseHandler(fd, compression, clamp, smooth, jitterLimit, xoffset, yoffset);
     } else {
         qWarning("Cannot open mouse input device '%s': %s", qPrintable(device), strerror(errno));
         return 0;
     }
 }
 
-QEvdevMouseHandler::QEvdevMouseHandler(int deviceDescriptor, bool compression, bool smooth, int jitterLimit, int xoffset, int yoffset)
+QEvdevMouseHandler::QEvdevMouseHandler(int deviceDescriptor, bool compression, bool clamp, bool smooth, int jitterLimit, int xoffset, int yoffset)
     : m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0),
-      m_fd(deviceDescriptor), m_compression(compression), m_smooth(smooth),
+      m_fd(deviceDescriptor), m_compression(compression), m_clamp(clamp), m_smooth(smooth),
       m_xoffset(xoffset), m_yoffset(yoffset), m_buttons(0)
 {
     setObjectName(QLatin1String("Evdev Mouse Handler"));
@@ -126,6 +131,19 @@ QEvdevMouseHandler::~QEvdevMouseHandler()
 
 void QEvdevMouseHandler::sendMouseEvent()
 {
+    if (m_clamp) {
+        QRect g = QGuiApplication::primaryScreen()->virtualGeometry();
+        if (m_x + m_xoffset < g.left())
+            m_x = g.left() - m_xoffset;
+        else if (m_x + m_xoffset > g.right())
+            m_x = g.right() - m_xoffset;
+
+        if (m_y + m_yoffset < g.top())
+            m_y = g.top() - m_yoffset;
+        else if (m_y + m_yoffset > g.bottom())
+            m_y = g.bottom() - m_yoffset;
+    }
+
     QPoint pos(m_x + m_xoffset, m_y + m_yoffset);
 
 #ifdef QT_QPA_MOUSE_HANDLER_DEBUG

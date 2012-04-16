@@ -62,7 +62,7 @@ private slots:
     void readMouseData();
 
 private:
-    QEvdevMouseHandler(int deviceDescriptor, bool compression, bool smooth, int jitterLimit, int xoffset, int yoffset);
+    QEvdevMouseHandler(int deviceDescriptor, bool compression, bool clamp, bool smooth, int jitterLimit, int xoffset, int yoffset);
 
     void sendMouseEvent();
 
@@ -71,6 +71,7 @@ private:
     int m_prevx, m_prevy;
     int m_fd;
     bool m_compression;
+    bool m_clamp;
     bool m_smooth;
     int m_xoffset, m_yoffset;
     Qt::MouseButtons m_buttons;
