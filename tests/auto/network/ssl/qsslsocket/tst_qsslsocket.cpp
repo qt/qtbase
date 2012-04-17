@@ -189,6 +189,8 @@ private slots:
     void encryptWithoutConnecting();
     void resume_data();
     void resume();
+    void qtbug18498_peek();
+    void qtbug18498_peek2();
     void setEmptyDefaultConfiguration(); // this test should be last
 
     static void exitLoop()
@@ -2196,6 +2198,261 @@ void tst_QSslSocket::resume()
         QCOMPARE(errorSpy.count(), 1);
         QCOMPARE(socket.error(), QAbstractSocket::SslHandshakeFailedError);
     }
+}
+
+class WebSocket : public QSslSocket
+{
+    Q_OBJECT
+public:
+    explicit WebSocket(qintptr socketDescriptor,
+                       const QString &keyFile = SRCDIR "certs/fluke.key",
+                       const QString &certFile = SRCDIR "certs/fluke.cert");
+
+protected slots:
+    void onReadyReadFirstBytes(void);
+
+private:
+    void _startServerEncryption(void);
+
+    QString m_keyFile;
+    QString m_certFile;
+
+private:
+    Q_DISABLE_COPY(WebSocket)
+};
+
+WebSocket::WebSocket (qintptr socketDescriptor, const QString &keyFile, const QString &certFile)
+    : m_keyFile(keyFile),
+      m_certFile(certFile)
+{
+    QVERIFY(setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState, QIODevice::ReadWrite | QIODevice::Unbuffered));
+    connect (this, SIGNAL(readyRead()), this, SLOT(onReadyReadFirstBytes()));
+}
+
+void WebSocket::_startServerEncryption (void)
+{
+    QFile file(m_keyFile);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
+    QVERIFY(!key.isNull());
+    setPrivateKey(key);
+
+    QList<QSslCertificate> localCert = QSslCertificate::fromPath(m_certFile);
+    QVERIFY(!localCert.isEmpty());
+    QVERIFY(localCert.first().handle());
+    setLocalCertificate(localCert.first());
+
+    QVERIFY(!peerAddress().isNull());
+    QVERIFY(peerPort() != 0);
+    QVERIFY(!localAddress().isNull());
+    QVERIFY(localPort() != 0);
+
+    setProtocol(QSsl::AnyProtocol);
+    setPeerVerifyMode(QSslSocket::VerifyNone);
+    ignoreSslErrors();
+    startServerEncryption();
+}
+
+void WebSocket::onReadyReadFirstBytes (void)
+{
+    peek(1);
+    disconnect(this,SIGNAL(readyRead()), this, SLOT(onReadyReadFirstBytes()));
+    _startServerEncryption();
+}
+
+class SslServer4 : public QTcpServer
+{
+    Q_OBJECT
+public:
+    SslServer4() : socket(0) {}
+    WebSocket *socket;
+
+protected:
+    void incomingConnection(qintptr socketDescriptor)
+    {
+        socket =  new WebSocket(socketDescriptor);
+    }
+};
+
+void tst_QSslSocket::qtbug18498_peek()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    SslServer4 server;
+    QSslSocket *client = new QSslSocket(this);
+
+    QVERIFY(server.listen(QHostAddress::LocalHost));
+    client->connectToHost("127.0.0.1", server.serverPort());
+    QVERIFY(client->waitForConnected(5000));
+    QVERIFY(server.waitForNewConnection(1000));
+    client->setObjectName("client");
+    client->ignoreSslErrors();
+
+    connect(client, SIGNAL(encrypted()), this, SLOT(exitLoop()));
+    connect(client, SIGNAL(disconnected()), this, SLOT(exitLoop()));
+
+    client->startClientEncryption();
+    WebSocket *serversocket = server.socket;
+    QVERIFY(serversocket);
+    serversocket->setObjectName("server");
+
+    enterLoop(1);
+    QVERIFY(!timeout());
+    QVERIFY(serversocket->isEncrypted());
+    QVERIFY(client->isEncrypted());
+
+    QByteArray data("abc123");
+    client->write(data.data());
+
+    connect(serversocket, SIGNAL(readyRead()), this, SLOT(exitLoop()));
+    enterLoop(1);
+    QVERIFY(!timeout());
+
+    QByteArray peek1_data;
+    peek1_data.reserve(data.size());
+    QByteArray peek2_data;
+    QByteArray read_data;
+
+    int lngth = serversocket->peek(peek1_data.data(), 10);
+    peek1_data.resize(lngth);
+
+    peek2_data = serversocket->peek(10);
+    read_data = serversocket->readAll();
+
+    QCOMPARE(peek1_data, data);
+    QCOMPARE(peek2_data, data);
+    QCOMPARE(read_data, data);
+}
+
+class SslServer5 : public QTcpServer
+{
+    Q_OBJECT
+public:
+    SslServer5() : socket(0) {}
+    QSslSocket *socket;
+
+protected:
+    void incomingConnection(qintptr socketDescriptor)
+    {
+        socket =  new QSslSocket;
+        socket->setSocketDescriptor(socketDescriptor);
+    }
+};
+
+void tst_QSslSocket::qtbug18498_peek2()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    SslServer5 listener;
+    QVERIFY(listener.listen(QHostAddress::Any));
+    QScopedPointer<QSslSocket> client(new QSslSocket);
+    client->connectToHost(QHostAddress::LocalHost, listener.serverPort());
+    QVERIFY(client->waitForConnected(5000));
+    QVERIFY(listener.waitForNewConnection(1000));
+
+    QScopedPointer<QSslSocket> server(listener.socket);
+
+    QVERIFY(server->write("HELLO\r\n", 7));
+    QElapsedTimer stopwatch;
+    stopwatch.start();
+    while (client->bytesAvailable() < 7 && stopwatch.elapsed() < 5000)
+        QTest::qWait(100);
+    char c;
+    QVERIFY(client->peek(&c,1) == 1);
+    QCOMPARE(c, 'H');
+    QVERIFY(client->read(&c,1) == 1);
+    QCOMPARE(c, 'H');
+    QByteArray b = client->peek(2);
+    QCOMPARE(b, QByteArray("EL"));
+    char a[3];
+    QVERIFY(client->peek(a, 2) == 2);
+    QCOMPARE(a[0], 'E');
+    QCOMPARE(a[1], 'L');
+    QCOMPARE(client->readAll(), QByteArray("ELLO\r\n"));
+
+    //check data split between QIODevice and plain socket buffers.
+    QByteArray bigblock;
+    bigblock.fill('#', QIODEVICE_BUFFERSIZE + 1024);
+    QVERIFY(client->write(QByteArray("head")));
+    QVERIFY(client->write(bigblock));
+    while (server->bytesAvailable() < bigblock.length() + 4 && stopwatch.elapsed() < 5000)
+        QTest::qWait(100);
+    QCOMPARE(server->read(4), QByteArray("head"));
+    QCOMPARE(server->peek(bigblock.length()), bigblock);
+    b.reserve(bigblock.length());
+    b.resize(server->peek(b.data(), bigblock.length()));
+    QCOMPARE(b, bigblock);
+
+    //check oversized peek
+    QCOMPARE(server->peek(bigblock.length() * 3), bigblock);
+    b.reserve(bigblock.length() * 3);
+    b.resize(server->peek(b.data(), bigblock.length() * 3));
+    QCOMPARE(b, bigblock);
+
+    QCOMPARE(server->readAll(), bigblock);
+
+    QVERIFY(client->write("STARTTLS\r\n"));
+    stopwatch.start();
+    // ### Qt5 use QTRY_VERIFY
+    while (server->bytesAvailable() < 10 && stopwatch.elapsed() < 5000)
+        QTest::qWait(100);
+    QVERIFY(server->peek(&c,1) == 1);
+    QCOMPARE(c, 'S');
+    b = server->peek(3);
+    QCOMPARE(b, QByteArray("STA"));
+    QCOMPARE(server->read(5), QByteArray("START"));
+    QVERIFY(server->peek(a, 3) == 3);
+    QCOMPARE(a[0], 'T');
+    QCOMPARE(a[1], 'L');
+    QCOMPARE(a[2], 'S');
+    QCOMPARE(server->readAll(), QByteArray("TLS\r\n"));
+
+    QFile file(SRCDIR "certs/fluke.key");
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
+    QVERIFY(!key.isNull());
+    server->setPrivateKey(key);
+
+    QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
+    QVERIFY(!localCert.isEmpty());
+    QVERIFY(localCert.first().handle());
+    server->setLocalCertificate(localCert.first());
+
+    server->setProtocol(QSsl::AnyProtocol);
+    server->setPeerVerifyMode(QSslSocket::VerifyNone);
+
+    server->ignoreSslErrors();
+    client->ignoreSslErrors();
+
+    server->startServerEncryption();
+    client->startClientEncryption();
+
+    QVERIFY(server->write("hello\r\n", 7));
+    stopwatch.start();
+    while (client->bytesAvailable() < 7 && stopwatch.elapsed() < 5000)
+        QTest::qWait(100);
+    QVERIFY(server->mode() == QSslSocket::SslServerMode && client->mode() == QSslSocket::SslClientMode);
+    QVERIFY(client->peek(&c,1) == 1);
+    QCOMPARE(c, 'h');
+    QVERIFY(client->read(&c,1) == 1);
+    QCOMPARE(c, 'h');
+    b = client->peek(2);
+    QCOMPARE(b, QByteArray("el"));
+    QCOMPARE(client->readAll(), QByteArray("ello\r\n"));
+
+    QVERIFY(client->write("goodbye\r\n"));
+    stopwatch.start();
+    while (server->bytesAvailable() < 9 && stopwatch.elapsed() < 5000)
+        QTest::qWait(100);
+    QVERIFY(server->peek(&c,1) == 1);
+    QCOMPARE(c, 'g');
+    QCOMPARE(server->readAll(), QByteArray("goodbye\r\n"));
+    client->disconnectFromHost();
+    QVERIFY(client->waitForDisconnected(5000));
 }
 
 void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last, as it has some side effects

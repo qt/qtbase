@@ -166,6 +166,9 @@ public:
     virtual void _q_caRootLoaded(QSslCertificate,QSslCertificate) = 0;
 #endif
 
+    virtual qint64 peek(char *data, qint64 maxSize);
+    virtual QByteArray peek(qint64 maxSize);
+
     // Platform specific functions
     virtual void startClientEncryption() = 0;
     virtual void startServerEncryption() = 0;

@@ -110,6 +110,11 @@ public:
         first += r;
         return r;
     }
+    int peek(char* target, int size) {
+        int r = qMin(size, len);
+        memcpy(target, first, r);
+        return r;
+    }
     char* reserve(int size) {
         makeSpace(size + len, freeSpaceAtEnd);
         char* writePtr = first + len;

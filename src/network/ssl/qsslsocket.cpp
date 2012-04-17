@@ -2332,6 +2332,57 @@ bool QSslSocketPrivate::verifyErrorsHaveBeenIgnored()
 /*!
     \internal
 */
+qint64 QSslSocketPrivate::peek(char *data, qint64 maxSize)
+{
+    if (mode == QSslSocket::UnencryptedMode && !autoStartHandshake) {
+        //unencrypted mode - do not use QIODevice::peek, as it reads ahead data from the plain socket
+        //peek at data already in the QIODevice buffer (from a previous read)
+        qint64 r = buffer.peek(data, maxSize);
+        if (r == maxSize)
+            return r;
+        data += r;
+        //peek at data in the plain socket
+        if (plainSocket) {
+            qint64 r2 = plainSocket->peek(data, maxSize - r);
+            if (r2 < 0)
+                return (r > 0 ? r : r2);
+            return r + r2;
+        } else {
+            return -1;
+        }
+    } else {
+        //encrypted mode - the socket engine will read and decrypt data into the QIODevice buffer
+        return QTcpSocketPrivate::peek(data, maxSize);
+    }
+}
+
+/*!
+    \internal
+*/
+QByteArray QSslSocketPrivate::peek(qint64 maxSize)
+{
+    if (mode == QSslSocket::UnencryptedMode && !autoStartHandshake) {
+        //unencrypted mode - do not use QIODevice::peek, as it reads ahead data from the plain socket
+        //peek at data already in the QIODevice buffer (from a previous read)
+        QByteArray ret;
+        ret.reserve(maxSize);
+        ret.resize(buffer.peek(ret.data(), maxSize));
+        if (ret.length() == maxSize)
+            return ret;
+        //peek at data in the plain socket
+        if (plainSocket)
+            return ret + plainSocket->peek(maxSize - ret.length());
+        else
+            return QByteArray();
+    } else {
+        //encrypted mode - the socket engine will read and decrypt data into the QIODevice buffer
+        return QTcpSocketPrivate::peek(maxSize);
+    }
+}
+
+/*!
+    \internal
+*/
 QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
 {
     return QList<QByteArray>() <<  "/etc/ssl/certs/" // (K)ubuntu, OpenSUSE, Mandriva, MeeGo ...
