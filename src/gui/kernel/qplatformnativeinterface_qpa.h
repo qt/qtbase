@@ -76,6 +76,15 @@ public:
     virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
     virtual void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *backingStore);
 
+    typedef void * (*NativeResourceForIntegrationFunction)();
+    typedef void * (*NativeResourceForContextFunction)(QOpenGLContext *context);
+    typedef void * (*NativeResourceForWindowFunction)(QWindow *window);
+    typedef void * (*NativeResourceForBackingStoreFunction)(QBackingStore *backingStore);
+    virtual NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource);
+    virtual NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource);
+    virtual NativeResourceForWindowFunction nativeResourceFunctionForWindow(const QByteArray &resource);
+    virtual NativeResourceForBackingStoreFunction nativeResourceFunctionForBackingStore(const QByteArray &resource);
+
     virtual QVariantMap windowProperties(QPlatformWindow *window) const;
     virtual QVariant windowProperty(QPlatformWindow *window, const QString &name) const;
     virtual QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const;

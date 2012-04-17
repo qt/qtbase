@@ -80,6 +80,30 @@ void * QPlatformNativeInterface::nativeResourceForBackingStore(const QByteArray 
     return 0;
 }
 
+QPlatformNativeInterface::NativeResourceForIntegrationFunction QPlatformNativeInterface::nativeResourceFunctionForIntegration(const QByteArray &resource)
+{
+    Q_UNUSED(resource);
+    return 0;
+}
+
+QPlatformNativeInterface::NativeResourceForContextFunction QPlatformNativeInterface::nativeResourceFunctionForContext(const QByteArray &resource)
+{
+    Q_UNUSED(resource);
+    return 0;
+}
+
+QPlatformNativeInterface::NativeResourceForWindowFunction QPlatformNativeInterface::nativeResourceFunctionForWindow(const QByteArray &resource)
+{
+    Q_UNUSED(resource);
+    return 0;
+}
+
+QPlatformNativeInterface::NativeResourceForBackingStoreFunction QPlatformNativeInterface::nativeResourceFunctionForBackingStore(const QByteArray &resource)
+{
+    Q_UNUSED(resource);
+    return 0;
+}
+
 /*!
     Contains generic window properties that the platform may utilize.
 */
