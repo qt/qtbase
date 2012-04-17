@@ -84,11 +84,11 @@ public:
 
     operator QVariant() const;
 
-    bool isNull() const; // ### Qt 5: make inline
+    bool isNull() const;
     int devType() const;
 
-    int width() const; // ### Qt 5: make inline
-    int height() const; // ### Qt 5: make inline
+    int width() const;
+    int height() const;
     QSize size() const;
     QRect rect() const;
     int depth() const;

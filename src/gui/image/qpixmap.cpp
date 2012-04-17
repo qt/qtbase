@@ -934,8 +934,6 @@ static void sendResizeEvents(QWidget *target)
 QPixmap QPixmap::grabWidget(QObject *widget, const QRect &rectangle)
 {
     QPixmap pixmap;
-    // ### Qt5: should we keep or remove this method?
-    // SC solution would be to install a callback form QtWidgets, but ugly.
     qWarning("QPixmap::grabWidget is deprecated, use QWidget::grab() instead");
     if (!widget)
         return pixmap;
