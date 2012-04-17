@@ -145,16 +145,37 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
-    foreach (const QRect &rect, m_dirty.rects()) {
-        if (rect == m_image.rect()) {
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE, m_image.constBits());
-        } else {
-            glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
-                m_image.copy(rect).constBits());
-        }
-    }
+    if (!m_dirty.isNull()) {
+        QRect imageRect = m_image.rect();
 
-    m_dirty = QRegion();
+        QRegion fixed;
+        foreach (const QRect &rect, m_dirty.rects()) {
+            // intersect with image rect to be sure
+            QRect r = imageRect & rect;
+
+            // if the rect is wide enough it's cheaper to just
+            // extend it instead of doing an image copy
+            if (r.width() >= imageRect.width() / 2) {
+                r.setX(0);
+                r.setWidth(imageRect.width());
+            }
+
+            fixed |= r;
+        }
+
+        foreach (const QRect &rect, fixed.rects()) {
+            // if the sub-rect is full-width we can pass the image data directly to
+            // OpenGL instead of copying, since there's no gap between scanlines
+            if (rect.width() == imageRect.width()) {
+                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE, m_image.constScanLine(rect.y()));
+            } else {
+                glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
+                    m_image.copy(rect).constBits());
+            }
+        }
+
+        m_dirty = QRegion();
+    }
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
