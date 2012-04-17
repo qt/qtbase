@@ -169,7 +169,7 @@ struct QTypedArrayData
 
             result->offset = reinterpret_cast<const char *>(data)
                 - reinterpret_cast<const char *>(result);
-            result->size = n;
+            result->size = int(n);
         }
         return result;
     }

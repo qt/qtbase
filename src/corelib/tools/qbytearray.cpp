@@ -131,7 +131,7 @@ char *qstrcpy(char *dst, const char *src)
     if (!src)
         return 0;
 #if defined(_MSC_VER) && _MSC_VER >= 1400
-    int len = strlen(src);
+    const int len = int(strlen(src));
 	// This is actually not secure!!! It will be fixed
 	// properly in a later release!
     if (len >= 0 && strcpy_s(dst, len+1, src) == 0)
@@ -914,12 +914,13 @@ QByteArray &QByteArray::operator=(const char *str)
     } else if (!*str) {
         x = Data::allocate(0);
     } else {
-        int len = strlen(str);
-        if (d->ref.isShared() || uint(len) + 1u > d->alloc
-                || (len < d->size && uint(len) + 1u < uint(d->alloc >> 1)))
-            reallocData(uint(len) + 1u, d->detachFlags());
+        const int len = int(strlen(str));
+        const uint fullLen = len + 1;
+        if (d->ref.isShared() || fullLen > d->alloc
+                || (len < d->size && fullLen < uint(d->alloc >> 1)))
+            reallocData(fullLen, d->detachFlags());
         x = d;
-        memcpy(x->data(), str, uint(len) + 1u); // include null terminator
+        memcpy(x->data(), str, fullLen); // include null terminator
         x->size = len;
     }
     x->ref.ref();
@@ -1322,7 +1323,7 @@ QByteArray::QByteArray(const char *data, int size)
         d = Data::sharedNull();
     } else {
         if (size < 0)
-            size = strlen(data);
+            size = int(strlen(data));
         if (!size) {
             d = Data::allocate(0);
         } else {
@@ -1631,7 +1632,7 @@ QByteArray &QByteArray::append(const QByteArray &ba)
 QByteArray& QByteArray::append(const char *str)
 {
     if (str) {
-        int len = strlen(str);
+        const int len = int(strlen(str));
         if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
             reallocData(uint(d->size + len) + 1u, d->detachFlags() | Data::Grow);
         memcpy(d->data() + d->size, str, len + 1); // include null terminator
@@ -2515,7 +2516,7 @@ bool QByteArray::startsWith(const char *str) const
 {
     if (!str || !*str)
         return true;
-    int len = strlen(str);
+    const int len = int(strlen(str));
     if (d->size < len)
         return false;
     return qstrncmp(d->data(), str, len) == 0;
@@ -2560,7 +2561,7 @@ bool QByteArray::endsWith(const char *str) const
 {
     if (!str || !*str)
         return true;
-    int len = strlen(str);
+    const int len = int(strlen(str));
     if (d->size < len)
         return false;
     return qstrncmp(d->data() + d->size - len, str, len) == 0;
