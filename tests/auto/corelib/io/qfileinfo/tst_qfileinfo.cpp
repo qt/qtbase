@@ -460,6 +460,8 @@ void tst_QFileInfo::absolutePath_data()
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("c:\\autoexec.bat") << "c:\\autoexec.bat" << "C:/"
                                       << "autoexec.bat";
+    QTest::newRow("c:autoexec.bat") << QDir::currentPath().left(2) + "autoexec.bat" << QDir::currentPath()
+                                    << "autoexec.bat";
 #endif
     QTest::newRow("QTBUG-19995.1") << drivePrefix + "/System/Library/StartupItems/../Frameworks"
                                    << drivePrefix + "/System/Library"
@@ -500,6 +502,7 @@ void tst_QFileInfo::absFilePath_data()
     QString nonCurrentDrivePrefix =
         drivePrefix.left(1).compare("X", Qt::CaseInsensitive) == 0 ? QString("Y:") : QString("X:");
 
+    QTest::newRow("absFilePathWithoutSlash") << drivePrefix + "tmp.txt" << QDir::currentPath() + "/tmp.txt";
     QTest::newRow("<current drive>:my.dll") << drivePrefix + "temp/my.dll" << QDir::currentPath() + "/temp/my.dll";
     QTest::newRow("<not current drive>:my.dll") << nonCurrentDrivePrefix + "temp/my.dll"
                                                 << nonCurrentDrivePrefix + "/temp/my.dll";
@@ -642,6 +645,7 @@ void tst_QFileInfo::fileName_data()
     QTest::newRow("relativeFileInSubDir") << "temp/tmp.txt" << "tmp.txt";
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("absFilePath") << "c:\\home\\andy\\tmp.txt" << "tmp.txt";
+    QTest::newRow("driveWithNoSlash") << "c:tmp.txt" << "tmp.txt";
 #else
     QTest::newRow("absFilePath") << "/home/andy/tmp.txt" << "tmp.txt";
 #endif
@@ -698,6 +702,10 @@ void tst_QFileInfo::dir_data()
     QTest::newRow("absFilePath") << QDir::currentPath() + "/tmp.txt" << false << QDir::currentPath();
     QTest::newRow("absFilePathAbsPath") << QDir::currentPath() + "/tmp.txt" << true << QDir::currentPath();
     QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << true << ":/tst_qfileinfo/resources";
+#ifdef Q_OS_WIN
+    QTest::newRow("driveWithSlash") << "C:/file1.ext1.ext2" << true << "C:/";
+    QTest::newRow("driveWithoutSlash") << QDir::currentPath().left(2) + "file1.ext1.ext2" << false << QDir::currentPath();
+#endif
 }
 
 void tst_QFileInfo::dir()
@@ -739,6 +747,10 @@ void tst_QFileInfo::suffix_data()
     QTest::newRow("hidden2") << ".ex.ext2" << "ext2";
     QTest::newRow("hidden2") << ".e.ext2" << "ext2";
     QTest::newRow("hidden2") << "..ext2" << "ext2";
+#ifdef Q_OS_WIN
+    QTest::newRow("driveWithSlash") << "c:/file1.ext1.ext2" << "ext2";
+    QTest::newRow("driveWithoutSlash") << "c:file1.ext1.ext2" << "ext2";
+#endif
 }
 
 void tst_QFileInfo::suffix()
@@ -764,6 +776,10 @@ void tst_QFileInfo::completeSuffix_data()
     QTest::newRow("data3") << "/path/file.tar" << "tar";
     QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << "ext1";
     QTest::newRow("resource2") << ":/tst_qfileinfo/resources/file1.ext1.ext2" << "ext1.ext2";
+#ifdef Q_OS_WIN
+    QTest::newRow("driveWithSlash") << "c:/file1.ext1.ext2" << "ext1.ext2";
+    QTest::newRow("driveWithoutSlash") << "c:file1.ext1.ext2" << "ext1.ext2";
+#endif
 }
 
 void tst_QFileInfo::completeSuffix()
@@ -787,6 +803,10 @@ void tst_QFileInfo::baseName_data()
     QTest::newRow("data4") << "/path/file" << "file";
     QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << "file1";
     QTest::newRow("resource2") << ":/tst_qfileinfo/resources/file1.ext1.ext2" << "file1";
+#ifdef Q_OS_WIN
+    QTest::newRow("driveWithSlash") << "c:/file1.ext1.ext2" << "file1";
+    QTest::newRow("driveWithoutSlash") << "c:file1.ext1.ext2" << "file1";
+#endif
 }
 
 void tst_QFileInfo::baseName()
@@ -810,6 +830,10 @@ void tst_QFileInfo::completeBaseName_data()
     QTest::newRow("data4") << "/path/file" << "file";
     QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << "file1";
     QTest::newRow("resource2") << ":/tst_qfileinfo/resources/file1.ext1.ext2" << "file1.ext1";
+#ifdef Q_OS_WIN
+    QTest::newRow("driveWithSlash") << "c:/file1.ext1.ext2" << "file1.ext1";
+    QTest::newRow("driveWithoutSlash") << "c:file1.ext1.ext2" << "file1.ext1";
+#endif
 }
 
 void tst_QFileInfo::completeBaseName()
@@ -1684,7 +1708,7 @@ void tst_QFileInfo::owner()
                                             dwPrefMaxLen, &dwEntriesRead, &dwTotalEntries);
             // Check if the current user is a member of Administrators group
             if (nStatus == NERR_Success && pBuf){
-                for (int i = 0; i < dwEntriesRead; i++) {
+                for (int i = 0; i < (int)dwEntriesRead; i++) {
                     QString groupName = QString::fromWCharArray(pBuf[i].lgrui0_name);
                     if (!groupName.compare(QLatin1String("Administrators")))
                         userName = groupName;

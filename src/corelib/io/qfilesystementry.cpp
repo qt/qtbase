@@ -189,7 +189,7 @@ QString QFileSystemEntry::path() const
     if (m_lastSeparator == -1) {
 #if defined(Q_OS_WIN)
         if (m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
-            return m_filePath.left(2);
+            return QFSFileEngine::currentPath(m_filePath.left(2));
 #endif
         return QString(QLatin1Char('.'));
     }
@@ -205,32 +205,32 @@ QString QFileSystemEntry::path() const
 QString QFileSystemEntry::baseName() const
 {
     findFileNameSeparators();
-#if defined(Q_OS_WIN)
-    if (m_lastSeparator == -1 && m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
-        return m_filePath.mid(2);
-#endif
     int length = -1;
     if (m_firstDotInFileName >= 0) {
         length = m_firstDotInFileName;
         if (m_lastSeparator != -1) // avoid off by one
             length--;
     }
+#if defined(Q_OS_WIN)
+    if (m_lastSeparator == -1 && m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
+        return m_filePath.mid(2, length - 2);
+#endif
     return m_filePath.mid(m_lastSeparator + 1, length);
 }
 
 QString QFileSystemEntry::completeBaseName() const
 {
     findFileNameSeparators();
-#if defined(Q_OS_WIN)
-    if (m_lastSeparator == -1 && m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
-        return m_filePath.mid(2);
-#endif
     int length = -1;
     if (m_firstDotInFileName >= 0) {
         length = m_firstDotInFileName + m_lastDotInFileName;
         if (m_lastSeparator != -1) // avoid off by one
             length--;
     }
+#if defined(Q_OS_WIN)
+    if (m_lastSeparator == -1 && m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
+        return m_filePath.mid(2, length - 2);
+#endif
     return m_filePath.mid(m_lastSeparator + 1, length);
 }
 
