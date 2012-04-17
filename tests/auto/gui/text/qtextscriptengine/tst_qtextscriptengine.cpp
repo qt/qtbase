@@ -1178,6 +1178,7 @@ void tst_QTextScriptEngine::combiningMarks_qtbug15675()
     e->shape(0);
 
     QVERIFY(e->layoutData->items[0].num_glyphs == 4);
+    QEXPECT_FAIL("", "QTBUG-23064", Abort);
     QVERIFY(e->layoutData->glyphLayout.advances_y[2] > 0);
 #elif defined(Q_WS_X11)
     QFontDatabase db;
@@ -1317,6 +1318,9 @@ void tst_QTextScriptEngine::thaiWithZWJ()
         QCOMPARE(logClusters[i], ushort(i));
     for (int i = 0; i < 10; i++)
         QCOMPARE(logClusters[i+7], ushort(0));
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23064", Abort);
+#endif
     QCOMPARE(logClusters[17], ushort(1));
 
     // The only characters that we should be hiding are the ZWJ and ZWNJ characters in position 1
