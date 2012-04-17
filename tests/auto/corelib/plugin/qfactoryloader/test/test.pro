@@ -18,4 +18,3 @@ win32 {
 }
 
 mac: CONFIG -= app_bundle
-mac: CONFIG += insignificant_test # QTBUG-22765

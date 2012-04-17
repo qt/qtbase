@@ -13,5 +13,3 @@ win32 {
 }
 
 TESTDATA += ../elftest
-
-mac: CONFIG += insignificant_test # QTBUG-22765
