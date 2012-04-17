@@ -210,6 +210,8 @@ private slots:
     void indexRowSizeHint();
     void addRowsWhileSectionsAreHidden();
     void filterProxyModelCrash();
+    void renderToPixmap_data();
+    void renderToPixmap();
     void styleOptionViewItem();
     void keyboardNavigationWithDisabled();
 
@@ -2888,6 +2890,37 @@ void tst_QTreeView::filterProxyModelCrash()
 
     proxy.invalidate();
     view.repaint(); //used to crash
+}
+
+void tst_QTreeView::renderToPixmap_data()
+{
+    QTest::addColumn<int>("row");
+    QTest::newRow("row-0") << 0;
+    QTest::newRow("row-1") << 1;
+}
+
+void tst_QTreeView::renderToPixmap()
+{
+    QFETCH(int, row);
+    PublicView view;
+    QStandardItemModel model;
+
+    model.appendRow(new QStandardItem("Spanning"));
+    model.appendRow(QList<QStandardItem*>() << new QStandardItem("Not") << new QStandardItem("Spanning"));
+
+    view.setModel(&model);
+    view.setFirstColumnSpanned(0, QModelIndex(), true);
+
+#ifdef QT_BUILD_INTERNAL
+    {
+        // We select the index at row=0 because it spans the
+        // column (regression test for an assert)
+        // We select the index at row=1 for coverage.
+        QItemSelection sel(model.index(row,0), model.index(row,1));
+        QRect rect;
+        view.aiv_priv()->renderToPixmap(sel.indexes(), &rect);
+    }
+#endif
 }
 
 void tst_QTreeView::styleOptionViewItem()
