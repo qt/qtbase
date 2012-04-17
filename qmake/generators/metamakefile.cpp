@@ -530,7 +530,7 @@ MetaMakefileGenerator::modeForGenerator(const QString &gen, Option::TARG_MODE *t
     } else if (gen == "PROJECTBUILDER" || gen == "XCODE") {
         *target_mode = Option::TARG_MACX_MODE;
     } else if (gen == "GBUILD") {
-        *target_mode = Option::TARG_INTEGRITY_MODE;
+        *target_mode = Option::TARG_UNIX_MODE;
     } else {
         fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
         return false;

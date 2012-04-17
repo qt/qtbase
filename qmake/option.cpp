@@ -266,8 +266,6 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                 Option::host_mode = HOST_UNIX_MODE;
             } else if(opt == "win32") {
                 Option::host_mode = HOST_WIN_MODE;
-            } else if(opt == "integrity") {
-                Option::target_mode = TARG_INTEGRITY_MODE;
             } else if(opt == "d") {
                 Option::debug_level++;
             } else if(opt == "version" || opt == "v" || opt == "-version") {
