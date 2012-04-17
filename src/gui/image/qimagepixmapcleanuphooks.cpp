@@ -46,15 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// Legacy, single instance hooks: ### Qt 5: remove
-typedef void (*_qt_pixmap_cleanup_hook)(int);
-typedef void (*_qt_pixmap_cleanup_hook_64)(qint64);
-typedef void (*_qt_image_cleanup_hook)(int);
-Q_GUI_EXPORT _qt_pixmap_cleanup_hook qt_pixmap_cleanup_hook = 0;
-Q_GUI_EXPORT _qt_pixmap_cleanup_hook_64 qt_pixmap_cleanup_hook_64 = 0;
-Q_GUI_EXPORT _qt_image_cleanup_hook qt_image_cleanup_hook = 0;
-Q_GUI_EXPORT _qt_image_cleanup_hook_64 qt_image_cleanup_hook_64 = 0;
-
 Q_GLOBAL_STATIC(QImagePixmapCleanupHooks, qt_image_and_pixmap_cleanup_hooks)
 
 QImagePixmapCleanupHooks *QImagePixmapCleanupHooks::instance()
@@ -103,9 +94,6 @@ void QImagePixmapCleanupHooks::executePlatformPixmapModificationHooks(QPlatformP
         return;
     for (int i = 0; i < h->pixmapModificationHooks.count(); ++i)
         h->pixmapModificationHooks[i](pmd);
-
-    if (qt_pixmap_cleanup_hook_64)
-        qt_pixmap_cleanup_hook_64(pmd->cacheKey());
 }
 
 void QImagePixmapCleanupHooks::executePlatformPixmapDestructionHooks(QPlatformPixmap* pmd)
@@ -118,9 +106,6 @@ void QImagePixmapCleanupHooks::executePlatformPixmapDestructionHooks(QPlatformPi
         return;
     for (int i = 0; i < h->pixmapDestructionHooks.count(); ++i)
         h->pixmapDestructionHooks[i](pmd);
-
-    if (qt_pixmap_cleanup_hook_64)
-        qt_pixmap_cleanup_hook_64(pmd->cacheKey());
 }
 
 void QImagePixmapCleanupHooks::executeImageHooks(qint64 key)
@@ -133,9 +118,6 @@ void QImagePixmapCleanupHooks::executeImageHooks(qint64 key)
         return;
     for (int i = 0; i < h->imageHooks.count(); ++i)
         h->imageHooks[i](key);
-
-    if (qt_image_cleanup_hook_64)
-        qt_image_cleanup_hook_64(key);
 }
 
 

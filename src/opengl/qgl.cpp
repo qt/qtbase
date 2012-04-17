@@ -1648,13 +1648,6 @@ int qt_next_power_of_two(int v)
     return v;
 }
 
-typedef void (*_qt_pixmap_cleanup_hook_64)(qint64);
-typedef void (*_qt_image_cleanup_hook_64)(qint64);
-
-extern Q_GUI_EXPORT _qt_pixmap_cleanup_hook_64 qt_pixmap_cleanup_hook_64;
-extern Q_GUI_EXPORT _qt_image_cleanup_hook_64 qt_image_cleanup_hook_64;
-
-
 Q_GLOBAL_STATIC(QGLTextureCache, qt_gl_texture_cache)
 
 QGLTextureCache::QGLTextureCache()
