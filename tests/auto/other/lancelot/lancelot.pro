@@ -11,5 +11,3 @@ RESOURCES += images.qrc
 include($$PWD/../../../baselineserver/shared/qbaselinetest.pri)
 
 TESTDATA += scripts/*
-
-CONFIG += insignificant_test # QTBUG-21402
