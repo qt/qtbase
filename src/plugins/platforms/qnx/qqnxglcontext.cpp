@@ -141,7 +141,6 @@ QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
     format.setRedBufferSize(redSize);
     format.setGreenBufferSize(greenSize);
     format.setBlueBufferSize(blueSize);
-    format.setSamples(2);
 
     // Select EGL config based on requested window format
     m_eglConfig = q_configFromGLFormat(ms_eglDisplay, format);
