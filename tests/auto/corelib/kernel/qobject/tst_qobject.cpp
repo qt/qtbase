@@ -45,6 +45,7 @@
 #include <qpointer.h>
 #include <qtimer.h>
 #include <qregexp.h>
+#include <qregularexpression.h>
 #include <qmetaobject.h>
 #include <qvariant.h>
 #include <QTcpServer>
@@ -164,6 +165,7 @@ signals:
     void signal3();
     void signal4();
     QT_MOC_COMPAT void signal5();
+    void signal6(void);
 
 public slots:
     void aPublicSlot() { aPublicSlotCalled++; }
@@ -656,6 +658,26 @@ void tst_QObject::findChildren()
     l = qFindChildren<QObject*>(&o, QRegExp("harry"));
     QCOMPARE(l.size(), 0);
 
+    l = o.findChildren<QObject*>(QRegularExpression("o.*"));
+    QCOMPARE(l.size(), 5);
+    QVERIFY(l.contains(&o1));
+    QVERIFY(l.contains(&o2));
+    QVERIFY(l.contains(&o11));
+    QVERIFY(l.contains(&o12));
+    QVERIFY(l.contains(&o111));
+    l = o.findChildren<QObject*>(QRegularExpression("t.*"));
+    QCOMPARE(l.size(), 2);
+    QVERIFY(l.contains(&t1));
+    QVERIFY(l.contains(&t121));
+    tl = o.findChildren<QTimer*>(QRegularExpression(".*"));
+    QCOMPARE(tl.size(), 3);
+    QVERIFY(tl.contains(&t1));
+    QVERIFY(tl.contains(&t121));
+    tl = o.findChildren<QTimer*>(QRegularExpression("o.*"));
+    QCOMPARE(tl.size(), 0);
+    l = o.findChildren<QObject*>(QRegularExpression("harry"));
+    QCOMPARE(l.size(), 0);
+
     // empty and null string check
     op = qFindChild<QObject*>(&o);
     QCOMPARE(op, &o1);
@@ -803,6 +825,8 @@ void tst_QObject::connectDisconnectNotify_data()
     QTest::newRow("combo2") << SIGNAL( signal2(void) )    << SLOT( slot2(  ) );
     QTest::newRow("combo3") << SIGNAL( signal3(  ) )      << SLOT( slot3(void) );
     QTest::newRow("combo4") << SIGNAL(  signal4( void )  )<< SLOT(  slot4( void )  );
+    QTest::newRow("combo5") << SIGNAL( signal6( void ) )  << SLOT( slot4() );
+    QTest::newRow("combo6") << SIGNAL( signal6() )        << SLOT( slot4() );
 }
 
 void tst_QObject::connectDisconnectNotify()
@@ -1793,56 +1817,56 @@ void tst_QObject::metamethod()
     QMetaMethod m;
 
     m = mobj->method(mobj->indexOfMethod("invoke1()"));
-    QVERIFY(QByteArray(m.signature()) == "invoke1()");
+    QVERIFY(m.methodSignature() == "invoke1()");
     QVERIFY(m.methodType() == QMetaMethod::Method);
     QVERIFY(m.access() == QMetaMethod::Public);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("sinvoke1()"));
-    QVERIFY(QByteArray(m.signature()) == "sinvoke1()");
+    QVERIFY(m.methodSignature() == "sinvoke1()");
     QVERIFY(m.methodType() == QMetaMethod::Method);
     QVERIFY(m.access() == QMetaMethod::Public);
     QVERIFY((m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("invoke2()"));
-    QVERIFY(QByteArray(m.signature()) == "invoke2()");
+    QVERIFY(m.methodSignature() == "invoke2()");
     QVERIFY(m.methodType() == QMetaMethod::Method);
     QVERIFY(m.access() == QMetaMethod::Protected);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY((m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("sinvoke2()"));
-    QVERIFY(QByteArray(m.signature()) == "sinvoke2()");
+    QVERIFY(m.methodSignature() == "sinvoke2()");
     QVERIFY(m.methodType() == QMetaMethod::Method);
     QVERIFY(m.access() == QMetaMethod::Protected);
     QVERIFY((m.attributes() & QMetaMethod::Scriptable));
     QVERIFY((m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("invoke3()"));
-    QVERIFY(QByteArray(m.signature()) == "invoke3()");
+    QVERIFY(m.methodSignature() == "invoke3()");
     QVERIFY(m.methodType() == QMetaMethod::Method);
     QVERIFY(m.access() == QMetaMethod::Private);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("sinvoke3()"));
-    QVERIFY(QByteArray(m.signature()) == "sinvoke3()");
+    QVERIFY(m.methodSignature() == "sinvoke3()");
     QVERIFY(m.methodType() == QMetaMethod::Method);
     QVERIFY(m.access() == QMetaMethod::Private);
     QVERIFY((m.attributes() & QMetaMethod::Scriptable));
     QVERIFY(!(m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("signal5()"));
-    QVERIFY(QByteArray(m.signature()) == "signal5()");
+    QVERIFY(m.methodSignature() == "signal5()");
     QVERIFY(m.methodType() == QMetaMethod::Signal);
     QVERIFY(m.access() == QMetaMethod::Protected);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY((m.attributes() & QMetaMethod::Compatibility));
 
     m = mobj->method(mobj->indexOfMethod("aPublicSlot()"));
-    QVERIFY(QByteArray(m.signature()) == "aPublicSlot()");
+    QVERIFY(m.methodSignature() == "aPublicSlot()");
     QVERIFY(m.methodType() == QMetaMethod::Slot);
     QVERIFY(m.access() == QMetaMethod::Public);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
@@ -2291,8 +2315,6 @@ public slots:
     void constTemplateSlot3(const Template< const int >) {}
 };
 
-#include "oldnormalizeobject.h"
-
 void tst_QObject::normalize()
 {
     NormalizeObject object;
@@ -2602,82 +2624,6 @@ void tst_QObject::normalize()
     QVERIFY(object.connect(&object,
                            SIGNAL(typeConstRefSignal(Template<Class const &> const &)),
                            SLOT(typeConstRefSlot(Template<Class const &> const &))));
-
-    // same test again, this time with an object compiled with old moc output... we know that
-    // it is not possible to connect everything, whic is the purpose for this test
-    OldNormalizeObject oldobject;
-
-    QVERIFY(oldobject.connect(&oldobject,
-                              SIGNAL(constTypeRefSignal(const Template<const Class &> &)),
-                              SLOT(constTypeRefSlot(const Template<const Class &> &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                              SIGNAL(constTypeRefSignal(const Template<const Class &> &)),
-                              SLOT(constTypeRefSlot(const Template<Class const &> &))));
-    // this fails in older versions, but passes now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(const Template<const Class &> &)),
-                               SLOT(constTypeRefSlot(Template<Class const &> const &))));
-    // this fails in older versions, but passes now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(Template<const Class &> const &)),
-                               SLOT(constTypeRefSlot(Template<Class const &> const &))));
-    // this fails in older versions, but passes now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(Template<Class const &> const &)),
-                               SLOT(constTypeRefSlot(Template<Class const &> const &))));
-
-    // these fail in older Qt versions, but pass now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(const Template<const Class &> &)),
-                               SLOT(typeConstRefSlot(const Template<const Class &> &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(const Template<const Class &> &)),
-                               SLOT(typeConstRefSlot(const Template<Class const &> &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(const Template<const Class &> &)),
-                               SLOT(typeConstRefSlot(Template<Class const &> const &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(Template<const Class &> const &)),
-                               SLOT(typeConstRefSlot(Template<Class const &> const &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(constTypeRefSignal(Template<Class const &> const &)),
-                               SLOT(typeConstRefSlot(Template<Class const &> const &))));
-
-    // these also fail in older Qt versions, but pass now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(const Template<const Class &> &)),
-                               SLOT(constTypeRefSlot(const Template<const Class &> &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(const Template<const Class &> &)),
-                               SLOT(constTypeRefSlot(const Template<Class const &> &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(const Template<const Class &> &)),
-                               SLOT(constTypeRefSlot(Template<Class const &> const &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(Template<const Class &> const &)),
-                               SLOT(constTypeRefSlot(Template<Class const &> const &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(Template<Class const &> const &)),
-                               SLOT(constTypeRefSlot(Template<Class const &> const &))));
-
-    // this fails in older versions, but passes now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(const Template<const Class &> &)),
-                               SLOT(typeConstRefSlot(const Template<const Class &> &))));
-    // this fails in older versions, but passes now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(const Template<const Class &> &)),
-                               SLOT(typeConstRefSlot(const Template<Class const &> &))));
-    // this fails in older versions, but passes now due to proper normalizing
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(const Template<const Class &> &)),
-                               SLOT(typeConstRefSlot(Template<Class const &> const &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(Template<const Class &> const &)),
-                               SLOT(typeConstRefSlot(Template<Class const &> const &))));
-    QVERIFY(oldobject.connect(&oldobject,
-                               SIGNAL(typeConstRefSignal(Template<Class const &> const &)),
-                               SLOT(typeConstRefSlot(Template<Class const &> const &))));
 
     QVERIFY(object.connect(&object,
                            SIGNAL(typePointerConstRefSignal(Class*const&)),

@@ -41,6 +41,7 @@
 
 #include "qhostaddress.h"
 #include "qhostaddress_p.h"
+#include "private/qipaddress_p.h"
 #include "qdebug.h"
 #if defined(Q_OS_WIN)
 #include <winsock2.h>
@@ -107,13 +108,14 @@ public:
     bool parse();
     void clear();
 
+    QString ipString;
+    QString scopeId;
+
     quint32 a;    // IPv4 address
     Q_IPV6ADDR a6; // IPv6 address
     QAbstractSocket::NetworkLayerProtocol protocol;
 
-    QString ipString;
     bool isParsed;
-    QString scopeId;
 
     friend class QHostAddress;
 };
@@ -175,28 +177,7 @@ void QHostAddressPrivate::setAddress(const Q_IPV6ADDR &a_)
     isParsed = true;
 }
 
-static bool parseIp4(const QString& address, quint32 *addr)
-{
-    QStringList ipv4 = address.split(QLatin1String("."));
-    if (ipv4.count() != 4)
-        return false;
-
-    quint32 ipv4Address = 0;
-    for (int i = 0; i < 4; ++i) {
-        bool ok = false;
-        uint byteValue = ipv4.at(i).toUInt(&ok);
-        if (!ok || byteValue > 255)
-            return false;
-
-        ipv4Address <<= 8;
-        ipv4Address += byteValue;
-    }
-
-    *addr = ipv4Address;
-    return true;
-}
-
-static bool parseIp6(const QString &address, quint8 *addr, QString *scopeId)
+static bool parseIp6(const QString &address, QIPAddressUtils::IPv6Address &addr, QString *scopeId)
 {
     QString tmp = address;
     int scopeIdPos = tmp.lastIndexOf(QLatin1Char('%'));
@@ -206,77 +187,7 @@ static bool parseIp6(const QString &address, quint8 *addr, QString *scopeId)
     } else {
         scopeId->clear();
     }
-
-    QStringList ipv6 = tmp.split(QLatin1String(":"));
-    int count = ipv6.count();
-    if (count < 3 || count > 8)
-        return false;
-
-    int colonColon = tmp.count(QLatin1String("::"));
-    if(count == 8 && colonColon > 1)
-        return false;
-
-    // address can be compressed with a "::", but that
-    // may only appear once (see RFC 1884)
-    // the statement below means:
-    // if(shortened notation is not used AND
-    // ((pure IPv6 notation AND less than 8 parts) OR
-    // ((mixed IPv4/6 notation AND less than 7 parts)))
-    if(colonColon != 1 && count < (tmp.contains(QLatin1Char('.')) ? 7 : 8))
-        return false;
-
-    int mc = 16;
-    int fillCount = 9 - count;  // number of 0 words to fill in the middle
-    for (int i = count - 1; i >= 0; --i) {
-        if (mc <= 0)
-            return false;
-
-        if (ipv6.at(i).isEmpty()) {
-            if (i == count - 1) {
-                // special case: ":" is last character
-                if (!ipv6.at(i - 1).isEmpty())
-                    return false;
-                addr[--mc] = 0;
-                addr[--mc] = 0;
-            } else if (i == 0) {
-                // special case: ":" is first character
-                if (!ipv6.at(i + 1).isEmpty())
-                    return false;
-                addr[--mc] = 0;
-                addr[--mc] = 0;
-            } else {
-                for (int j = 0; j < fillCount; ++j) {
-                    if (mc <= 0)
-                        return false;
-                    addr[--mc] = 0;
-                    addr[--mc] = 0;
-                }
-            }
-        } else {
-            bool ok = false;
-            uint byteValue = ipv6.at(i).toUInt(&ok, 16);
-            if (ok && byteValue <= 0xffff) {
-                addr[--mc] = byteValue & 0xff;
-                addr[--mc] = (byteValue >> 8) & 0xff;
-            } else {
-                if (i != count - 1)
-                    return false;
-
-                // parse the ipv4 part of a mixed type
-                quint32 maybeIp4;
-                if (!parseIp4(ipv6.at(i), &maybeIp4))
-                    return false;
-
-                addr[--mc] = maybeIp4 & 0xff;
-                addr[--mc] = (maybeIp4 >> 8) & 0xff;
-                addr[--mc] = (maybeIp4 >> 16) & 0xff;
-                addr[--mc] = (maybeIp4 >> 24) & 0xff;
-                --fillCount;
-            }
-        }
-    }
-
-    return true;
+    return QIPAddressUtils::parseIp6(addr, tmp.constBegin(), tmp.constEnd());
 }
 
 bool QHostAddressPrivate::parse()
@@ -284,6 +195,8 @@ bool QHostAddressPrivate::parse()
     isParsed = true;
     protocol = QAbstractSocket::UnknownNetworkLayerProtocol;
     QString a = ipString.simplified();
+    if (a.isEmpty())
+        return false;
 
     // All IPv6 addresses contain a ':', and may contain a '.'.
     if (a.contains(QLatin1Char(':'))) {
@@ -295,14 +208,11 @@ bool QHostAddressPrivate::parse()
         }
     }
 
-    // All IPv4 addresses contain a '.'.
-    if (a.contains(QLatin1Char('.'))) {
-        quint32 maybeIp4 = 0;
-        if (parseIp4(a, &maybeIp4)) {
-            setAddress(maybeIp4);
-            protocol = QAbstractSocket::IPv4Protocol;
-            return true;
-        }
+    quint32 maybeIp4 = 0;
+    if (QIPAddressUtils::parseIp4(maybeIp4, a.constBegin(), a.constEnd())) {
+        setAddress(maybeIp4);
+        protocol = QAbstractSocket::IPv4Protocol;
+        return true;
     }
 
     return false;
@@ -556,23 +466,27 @@ QHostAddress::QHostAddress(const QHostAddress &address)
 QHostAddress::QHostAddress(SpecialAddress address)
     : d(new QHostAddressPrivate)
 {
+    Q_IPV6ADDR ip6;
+    memset(&ip6, 0, sizeof ip6);
+
     switch (address) {
     case Null:
         break;
     case Broadcast:
-        setAddress(QLatin1String("255.255.255.255"));
+        d->setAddress(quint32(-1));
         break;
     case LocalHost:
-        setAddress(QLatin1String("127.0.0.1"));
+        d->setAddress(0x7f000001);
         break;
     case LocalHostIPv6:
-        setAddress(QLatin1String("::1"));
+        ip6[15] = 1;
+        d->setAddress(ip6);
         break;
     case AnyIPv4:
-        setAddress(QLatin1String("0.0.0.0"));
+        setAddress(0u);
         break;
     case AnyIPv6:
-        setAddress(QLatin1String("::"));
+        d->setAddress(ip6);
         break;
     case Any:
         d->clear();
@@ -761,42 +675,13 @@ QString QHostAddress::toString() const
         || d->protocol == QAbstractSocket::AnyIPProtocol) {
         quint32 i = toIPv4Address();
         QString s;
-        s.sprintf("%d.%d.%d.%d", (i>>24) & 0xff, (i>>16) & 0xff,
-                (i >> 8) & 0xff, i & 0xff);
+        QIPAddressUtils::toString(s, i);
         return s;
     }
 
     if (d->protocol == QAbstractSocket::IPv6Protocol) {
-        quint16 ugle[8];
-        for (int i = 0; i < 8; i++) {
-            ugle[i] = (quint16(d->a6[2*i]) << 8) | quint16(d->a6[2*i+1]);
-        }
         QString s;
-        QString temp;
-        bool zeroDetected = false;
-        bool zeroShortened = false;
-        for (int i = 0; i < 8; i++) {
-            if ((ugle[i] != 0) || zeroShortened) {
-                temp.sprintf("%X", ugle[i]);
-                s.append(temp);
-                if (zeroDetected)
-                    zeroShortened = true;
-            } else {
-                if (!zeroDetected) {
-                    if (i<7 && (ugle[i+1] == 0)) {
-                        s.append(QLatin1Char(':'));
-                        zeroDetected = true;
-                    } else {
-                        temp.sprintf("%X", ugle[i]);
-                        s.append(temp);
-                        if (i<7)
-                            s.append(QLatin1Char(':'));
-                    }
-                }
-            }
-            if (i<7 && ((ugle[i] != 0) || zeroShortened || (i==0 && zeroDetected)))
-                s.append(QLatin1Char(':'));
-        }
+        QIPAddressUtils::toString(s, d->a6.c);
 
         if (!d->scopeId.isEmpty())
             s.append(QLatin1Char('%') + d->scopeId);
@@ -1142,9 +1027,10 @@ QDebug operator<<(QDebug d, const QHostAddress &address)
 }
 #endif
 
-uint qHash(const QHostAddress &key)
+uint qHash(const QHostAddress &key, uint seed)
 {
-    return qHash(key.toString());
+    QT_ENSURE_PARSED(&key);
+    return qHash(QByteArray::fromRawData(reinterpret_cast<const char *>(key.d->a6.c), 16), seed);
 }
 
 #ifndef QT_NO_DATASTREAM

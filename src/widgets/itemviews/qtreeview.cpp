@@ -1849,7 +1849,7 @@ void QTreeView::mousePressEvent(QMouseEvent *event)
 {
 	Q_D(QTreeView);
     bool handled = false;
-    if (style()->styleHint(QStyle::SH_Q3ListViewExpand_SelectMouseType, 0, this) == QEvent::MouseButtonPress)
+    if (style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, 0, this) == QEvent::MouseButtonPress)
         handled = d->expandOrCollapseItemAtPos(event->pos());
 	if (!handled && d->itemDecorationAt(event->pos()) == -1)
         QAbstractItemView::mousePressEvent(event);
@@ -1866,7 +1866,7 @@ void QTreeView::mouseReleaseEvent(QMouseEvent *event)
     } else {
         if (state() == QAbstractItemView::DragSelectingState)
             setState(QAbstractItemView::NoState);
-        if (style()->styleHint(QStyle::SH_Q3ListViewExpand_SelectMouseType, 0, this) == QEvent::MouseButtonRelease)
+        if (style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, 0, this) == QEvent::MouseButtonRelease)
             d->expandOrCollapseItemAtPos(event->pos());
     }
 }

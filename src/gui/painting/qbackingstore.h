@@ -62,7 +62,7 @@ class QPlatformBackingStore;
 class Q_GUI_EXPORT QBackingStore
 {
 public:
-    QBackingStore(QWindow *window);
+    explicit QBackingStore(QWindow *window);
     ~QBackingStore();
 
     QWindow *window() const;

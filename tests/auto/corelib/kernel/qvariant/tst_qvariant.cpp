@@ -58,6 +58,7 @@
 #include <qmatrix4x4.h>
 #include <qpen.h>
 #include <qpolygon.h>
+#include <qpalette.h>
 #include <qtransform.h>
 #include <qvector2d.h>
 #include <qvector3d.h>
@@ -192,6 +193,7 @@ private slots:
     void toLocale();
 
     void toRegExp();
+    void toRegularExpression();
 
     void matrix();
 
@@ -274,6 +276,8 @@ private slots:
     void forwardDeclare();
     void debugStream_data();
     void debugStream();
+    void debugStreamType_data();
+    void debugStreamType();
 
     void loadQt4Stream_data();
     void loadQt4Stream();
@@ -283,6 +287,9 @@ private slots:
     void loadQt5Stream();
     void saveQt5Stream_data();
     void saveQt5Stream();
+
+    void guiVariantAtExit();
+    void widgetsVariantAtExit();
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -1319,6 +1326,21 @@ void tst_QVariant::toRegExp()
     rx = variant.toRegExp();
 }
 
+void tst_QVariant::toRegularExpression()
+{
+    QVariant variant;
+    QRegularExpression re = variant.toRegularExpression();
+    QCOMPARE(re, QRegularExpression());
+
+    variant = QRegularExpression("abc.*def");
+    re = variant.toRegularExpression();
+    QCOMPARE(re, QRegularExpression("abc.*def"));
+
+    variant = QVariant::fromValue(QRegularExpression("[ab]\\w+"));
+    re = variant.value<QRegularExpression>();
+    QCOMPARE(re, QRegularExpression("[ab]\\w+"));
+}
+
 void tst_QVariant::matrix()
 {
     QVariant variant;
@@ -1519,6 +1541,8 @@ void tst_QVariant::writeToReadFromDataStream_data()
     QTest::newRow( "qchar_null" ) << QVariant(QChar(0)) << true;
     QTest::newRow( "regexp" ) << QVariant(QRegExp("foo", Qt::CaseInsensitive)) << false;
     QTest::newRow( "regexp_empty" ) << QVariant(QRegExp()) << false;
+    QTest::newRow( "regularexpression" ) << QVariant(QRegularExpression("abc.*def")) << false;
+    QTest::newRow( "regularexpression_empty" ) << QVariant(QRegularExpression()) << false;
 
     // types known to QMetaType, but not part of QVariant::Type
     QTest::newRow("QMetaType::Long invalid") << QVariant(QMetaType::Long, (void *) 0) << false;
@@ -1625,8 +1649,8 @@ void tst_QVariant::writeToReadFromOldDataStream()
 
 void tst_QVariant::checkDataStream()
 {
-    QTest::ignoreMessage(QtWarningMsg, "Trying to construct an instance of an invalid type, type id: 46");
-    const QByteArray settingsHex("0000002effffffffff");
+    QTest::ignoreMessage(QtWarningMsg, "Trying to construct an instance of an invalid type, type id: 49");
+    const QByteArray settingsHex("00000031ffffffffff");
     const QByteArray settings = QByteArray::fromHex(settingsHex);
     QDataStream in(settings);
     QVariant v;
@@ -1944,6 +1968,7 @@ void tst_QVariant::typeName_data()
     QTest::newRow("48") << int(QVariant::Vector3D) << QByteArray("QVector3D");
     QTest::newRow("49") << int(QVariant::Vector4D) << QByteArray("QVector4D");
     QTest::newRow("50") << int(QVariant::Quaternion) << QByteArray("QQuaternion");
+    QTest::newRow("51") << int(QVariant::RegularExpression) << QByteArray("QRegularExpression");
 }
 
 void tst_QVariant::typeName()
@@ -2547,8 +2572,23 @@ public:
 };
 Q_DECLARE_METATYPE(CustomQObjectDerived*)
 
+class CustomQObjectDerivedNoMetaType : public CustomQObject {
+    Q_OBJECT
+public:
+    CustomQObjectDerivedNoMetaType(QObject *parent = 0) : CustomQObject(parent) {}
+};
+
 void tst_QVariant::qvariant_cast_QObject_derived()
 {
+    {
+        CustomQObjectDerivedNoMetaType *object = new CustomQObjectDerivedNoMetaType(this);
+        QVariant data = QVariant::fromValue(object);
+        QVERIFY(data.userType() == qMetaTypeId<CustomQObjectDerivedNoMetaType*>());
+        QCOMPARE(data.value<QObject *>(), object);
+        QCOMPARE(data.value<CustomQObjectDerivedNoMetaType *>(), object);
+        QCOMPARE(data.value<CustomQObject *>(), object);
+        QVERIFY(data.value<CustomQWidget*>() == 0);
+    }
     {
         CustomQObjectDerived *object = new CustomQObjectDerived(this);
         QVariant data = QVariant::fromValue(object);
@@ -2787,7 +2827,7 @@ Q_DECLARE_METATYPE( MyClass )
 void tst_QVariant::loadUnknownUserType()
 {
     qRegisterMetaType<MyClass>("MyClass");
-    char data[] = {0, 0, 1, 0, 0, 0, 0, 0, 8, 77, 121, 67, 108, 97, 115, 115, 0};
+    char data[] = {0, 0, QMetaType::User >> 8 , char(QMetaType::User), 0, 0, 0, 0, 8, 'M', 'y', 'C', 'l', 'a', 's', 's', 0};
 
     QByteArray ba(data, sizeof(data));
     QDataStream ds(&ba, QIODevice::ReadOnly);
@@ -3548,6 +3588,10 @@ void tst_QVariant::loadQVariantFromDataStream(QDataStream::Version version)
     stream >> typeName >> loadedVariant;
 
     const int id = QMetaType::type(typeName.toLatin1());
+    if (id == QMetaType::Void) {
+        // Void type is not supported by QVariant
+        return;
+    }
 
     QVariant constructedVariant(static_cast<QVariant::Type>(id));
     QCOMPARE(constructedVariant.userType(), id);
@@ -3567,6 +3611,10 @@ void tst_QVariant::saveQVariantFromDataStream(QDataStream::Version version)
     dataFileStream >> typeName;
     QByteArray data = file.readAll();
     const int id = QMetaType::type(typeName.toLatin1());
+    if (id == QMetaType::Void) {
+        // Void type is not supported by QVariant
+        return;
+    }
 
     QBuffer buffer;
     buffer.open(QIODevice::ReadWrite);
@@ -3588,8 +3636,8 @@ void tst_QVariant::saveQVariantFromDataStream(QDataStream::Version version)
 
 class MessageHandler {
 public:
-    MessageHandler(const int typeId)
-        : oldMsgHandler(qInstallMsgHandler(handler))
+    MessageHandler(const int typeId, QtMsgHandler msgHandler = handler)
+        : oldMsgHandler(qInstallMsgHandler(msgHandler))
     {
         currentId = typeId;
     }
@@ -3603,13 +3651,29 @@ public:
     {
         return ok;
     }
-private:
+protected:
     static void handler(QtMsgType, const char *txt)
     {
         QString msg = QString::fromLatin1(txt);
         // Format itself is not important, but basic data as a type name should be included in the output
-        ok = msg.startsWith("QVariant(") + QMetaType::typeName(currentId);
-        QVERIFY2(ok, (QString::fromLatin1("Message is not valid: '") + msg + '\'').toLatin1().constData());
+        ok = msg.startsWith("QVariant(");
+        QVERIFY2(ok, (QString::fromLatin1("Message is not started correctly: '") + msg + '\'').toLatin1().constData());
+        ok &= (currentId == QMetaType::UnknownType
+             ? msg.contains("Invalid")
+             : msg.contains(QMetaType::typeName(currentId)));
+        QVERIFY2(ok, (QString::fromLatin1("Message doesn't contain type name: '") + msg + '\'').toLatin1().constData());
+        if (currentId == QMetaType::Char || currentId == QMetaType::QChar) {
+            // Chars insert '\0' into the qdebug stream, it is not possible to find a real string length
+            return;
+        }
+        if (QMetaType::typeFlags(currentId) & QMetaType::PointerToQObject) {
+            QByteArray currentName = QMetaType::typeName(currentId);
+            currentName.chop(1);
+            ok &= (msg.contains(", " + currentName) || msg.contains(", 0x0"));
+        }
+        ok &= msg.endsWith(") ");
+        QVERIFY2(ok, (QString::fromLatin1("Message is not correctly finished: '") + msg + '\'').toLatin1().constData());
+
     }
 
     QtMsgHandler oldMsgHandler;
@@ -3627,11 +3691,15 @@ void tst_QVariant::debugStream_data()
         const char *tagName = QMetaType::typeName(id);
         if (!tagName)
             continue;
-        QTest::newRow(tagName) << QVariant(static_cast<QVariant::Type>(id)) << id;
+        if (id != QMetaType::Void) {
+            QTest::newRow(tagName) << QVariant(static_cast<QVariant::Type>(id)) << id;
+        }
     }
     QTest::newRow("QBitArray(111)") << QVariant(QBitArray(3, true)) << qMetaTypeId<QBitArray>();
     QTest::newRow("CustomStreamableClass") << QVariant(qMetaTypeId<CustomStreamableClass>(), 0) << qMetaTypeId<CustomStreamableClass>();
     QTest::newRow("MyClass") << QVariant(qMetaTypeId<MyClass>(), 0) << qMetaTypeId<MyClass>();
+    QTest::newRow("InvalidVariant") << QVariant() << int(QMetaType::UnknownType);
+    QTest::newRow("CustomQObject") << QVariant::fromValue(this) << qMetaTypeId<tst_QVariant*>();
 }
 
 void tst_QVariant::debugStream()
@@ -3642,6 +3710,63 @@ void tst_QVariant::debugStream()
     MessageHandler msgHandler(typeId);
     qDebug() << variant;
     QVERIFY(msgHandler.testPassed());
+}
+
+struct MessageHandlerType : public MessageHandler
+{
+    MessageHandlerType(const int typeId)
+        : MessageHandler(typeId, handler)
+    {}
+    static void handler(QtMsgType, const char *txt)
+    {
+        QString msg = QString::fromLatin1(txt);
+        // Format itself is not important, but basic data as a type name should be included in the output
+        ok = msg.startsWith("QVariant::");
+        QVERIFY2(ok, (QString::fromLatin1("Message is not started correctly: '") + msg + '\'').toLatin1().constData());
+        ok &= (currentId == QMetaType::UnknownType
+                ? msg.contains("Invalid")
+                : msg.contains(QMetaType::typeName(currentId)));
+        QVERIFY2(ok, (QString::fromLatin1("Message doesn't contain type name: '") + msg + '\'').toLatin1().constData());
+    }
+};
+
+void tst_QVariant::debugStreamType_data()
+{
+    debugStream_data();
+}
+
+void tst_QVariant::debugStreamType()
+{
+    QFETCH(QVariant, variant);
+    QFETCH(int, typeId);
+
+    MessageHandlerType msgHandler(typeId);
+    qDebug() << QVariant::Type(typeId);
+    QVERIFY(msgHandler.testPassed());
+}
+
+void tst_QVariant::guiVariantAtExit()
+{
+    // crash test, it should not crash at QGuiApplication exit
+    static QVariant cursor = QCursor();
+    static QVariant point = QPoint();
+    static QVariant image = QImage();
+    static QVariant pallete = QPalette();
+    Q_UNUSED(cursor);
+    Q_UNUSED(point);
+    Q_UNUSED(image);
+    Q_UNUSED(pallete);
+    QVERIFY(true);
+}
+
+void tst_QVariant::widgetsVariantAtExit()
+{
+    // crash test, it should not crash at QGuiApplication exit
+    static QVariant icon= QIcon();
+    static QVariant sizePolicy = QSizePolicy();
+    Q_UNUSED(icon);
+    Q_UNUSED(sizePolicy);
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_QVariant)

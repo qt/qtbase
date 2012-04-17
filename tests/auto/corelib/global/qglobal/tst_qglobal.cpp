@@ -56,6 +56,7 @@ private slots:
     void qstaticassert();
     void qConstructorFunction();
     void isEnum();
+    void qAlignOf();
 };
 
 void tst_QGlobal::qIsNull()
@@ -414,6 +415,116 @@ void tst_QGlobal::isEnum()
 #undef IS_ENUM_TRUE
 #undef IS_ENUM_FALSE
 }
+
+struct Empty {};
+template <class T> struct AlignmentInStruct { T dummy; };
+
+typedef int (*fun) ();
+typedef int (Empty::*memFun) ();
+
+#define TEST_AlignOf(type, alignment)                                       \
+    do {                                                                    \
+        TEST_AlignOf_impl(type, alignment);                                 \
+                                                                            \
+        TEST_AlignOf_impl(type &, alignment);                               \
+        TEST_AlignOf_RValueRef(type &&, alignment);                         \
+                                                                            \
+        TEST_AlignOf_impl(type [5], alignment);                             \
+        TEST_AlignOf_impl(type (&) [5], alignment);                         \
+                                                                            \
+        TEST_AlignOf_impl(AlignmentInStruct<type>, alignment);              \
+                                                                            \
+        /* Some internal sanity validation, just for fun */                 \
+        TEST_AlignOf_impl(AlignmentInStruct<type [5]>, alignment);          \
+        TEST_AlignOf_impl(AlignmentInStruct<type &>, Q_ALIGNOF(void *));    \
+        TEST_AlignOf_impl(AlignmentInStruct<type (&) [5]>,                  \
+                Q_ALIGNOF(void *));                                         \
+        TEST_AlignOf_RValueRef(AlignmentInStruct<type &&>,                  \
+                Q_ALIGNOF(void *));                                         \
+    } while (false)                                                         \
+    /**/
+
+#ifdef Q_COMPILER_RVALUE_REFS
+#define TEST_AlignOf_RValueRef(type, alignment) \
+        TEST_AlignOf_impl(type, alignment)
+#else
+#define TEST_AlignOf_RValueRef(type, alignment) do {} while (false)
+#endif
+
+#define TEST_AlignOf_impl(type, alignment) \
+    do { \
+        QCOMPARE(Q_ALIGNOF(type), size_t(alignment)); \
+        /* Compare to native operator for compilers that support it,
+           otherwise...  erm... check consistency! :-) */ \
+        QCOMPARE(QT_EMULATED_ALIGNOF(type), Q_ALIGNOF(type)); \
+    } while (false)
+    /**/
+
+void tst_QGlobal::qAlignOf()
+{
+    // Built-in types, except 64-bit integers and double
+    TEST_AlignOf(char, 1);
+    TEST_AlignOf(signed char, 1);
+    TEST_AlignOf(unsigned char, 1);
+    TEST_AlignOf(qint8, 1);
+    TEST_AlignOf(quint8, 1);
+    TEST_AlignOf(qint16, 2);
+    TEST_AlignOf(quint16, 2);
+    TEST_AlignOf(qint32, 4);
+    TEST_AlignOf(quint32, 4);
+    TEST_AlignOf(void *, sizeof(void *));
+
+    // Depends on platform and compiler, disabling test for now
+    // TEST_AlignOf(long double, 16);
+
+    // Empty struct
+    TEST_AlignOf(Empty, 1);
+
+    // Function pointers
+    TEST_AlignOf(fun, Q_ALIGNOF(void *));
+    TEST_AlignOf(memFun, Q_ALIGNOF(void *));
+
+
+    // 64-bit integers and double
+    TEST_AlignOf_impl(qint64, 8);
+    TEST_AlignOf_impl(quint64, 8);
+    TEST_AlignOf_impl(double, 8);
+
+    TEST_AlignOf_impl(qint64 &, 8);
+    TEST_AlignOf_impl(quint64 &, 8);
+    TEST_AlignOf_impl(double &, 8);
+
+    TEST_AlignOf_RValueRef(qint64 &&, 8);
+    TEST_AlignOf_RValueRef(quint64 &&, 8);
+    TEST_AlignOf_RValueRef(double &&, 8);
+
+    // 32-bit x86 ABI idiosyncrasies
+#if defined(Q_PROCESSOR_X86_32) && !defined(Q_OS_WIN)
+    TEST_AlignOf_impl(AlignmentInStruct<qint64>, 4);
+#else
+    TEST_AlignOf_impl(AlignmentInStruct<qint64>, 8);
+#endif
+
+    TEST_AlignOf_impl(AlignmentInStruct<quint64>, Q_ALIGNOF(AlignmentInStruct<qint64>));
+    TEST_AlignOf_impl(AlignmentInStruct<double>, Q_ALIGNOF(AlignmentInStruct<qint64>));
+
+    // 32-bit x86 ABI, Clang disagrees with gcc
+#if !defined(Q_PROCESSOR_X86_32) || !defined(Q_CC_CLANG)
+    TEST_AlignOf_impl(qint64 [5],       Q_ALIGNOF(qint64));
+#else
+    TEST_AlignOf_impl(qint64 [5],       Q_ALIGNOF(AlignmentInStruct<qint64>));
+#endif
+
+    TEST_AlignOf_impl(qint64 (&) [5],   Q_ALIGNOF(qint64 [5]));
+    TEST_AlignOf_impl(quint64 [5],      Q_ALIGNOF(quint64 [5]));
+    TEST_AlignOf_impl(quint64 (&) [5],  Q_ALIGNOF(quint64 [5]));
+    TEST_AlignOf_impl(double [5],       Q_ALIGNOF(double [5]));
+    TEST_AlignOf_impl(double (&) [5],   Q_ALIGNOF(double [5]));
+}
+
+#undef TEST_AlignOf
+#undef TEST_AlignOf_RValueRef
+#undef TEST_AlignOf_impl
 
 QTEST_MAIN(tst_QGlobal)
 #include "tst_qglobal.moc"

@@ -293,6 +293,19 @@ quint64 QNetworkSessionPrivateImpl::activeTime() const
     return Q_UINT64_C(0);
 }
 
+QNetworkSession::UsagePolicies QNetworkSessionPrivateImpl::usagePolicies() const
+{
+    return currentPolicies;
+}
+
+void QNetworkSessionPrivateImpl::setUsagePolicies(QNetworkSession::UsagePolicies newPolicies)
+{
+    if (newPolicies != currentPolicies) {
+        currentPolicies = newPolicies;
+        emit usagePoliciesChanged(currentPolicies);
+    }
+}
+
 void QNetworkSessionPrivateImpl::updateStateFromServiceNetwork()
 {
     QNetworkSession::State oldState = state;

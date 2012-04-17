@@ -66,8 +66,8 @@ class Q_GUI_EXPORT QSyntaxHighlighter : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QSyntaxHighlighter)
 public:
-    QSyntaxHighlighter(QObject *parent);
-    QSyntaxHighlighter(QTextDocument *parent);
+    explicit QSyntaxHighlighter(QObject *parent);
+    explicit QSyntaxHighlighter(QTextDocument *parent);
     virtual ~QSyntaxHighlighter();
 
     void setDocument(QTextDocument *doc);

@@ -3,7 +3,7 @@ TOOLSRC = $(QTSRC)tools
 CONFSRC = $(TOOLSRC)\configure
 
 PCH           = configure_pch.pch
-DEFINES       = -DUNICODE -DQT_NODLL -DQT_NO_CODECS -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NO_STL -DQT_NO_COMPRESS -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -D_CRT_SECURE_NO_DEPRECATE -DQT_BOOTSTRAPPED -DCOMMERCIAL_VERSION
+DEFINES       = -DUNICODE -DQT_NODLL -DQT_NO_CODECS -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NO_COMPRESS -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -D_CRT_SECURE_NO_DEPRECATE -DQT_BOOTSTRAPPED -DCOMMERCIAL_VERSION
 INCPATH       = -I"..\..\include" -I"..\..\include\QtCore" -I"..\..\include\QtCore\$(QTVERSION)" -I"..\..\include\QtCore\$(QTVERSION)\QtCore" -I"$(TOOLSRC)\shared" -I"$(QTSRC)mkspecs\win32-msvc2008"
 CXXFLAGS_BARE = -nologo -Zm200 -Zc:wchar_t -MT -W3 -GR -EHsc -w34100 -w34189 $(EXTRA_CXXFLAGS) $(DEFINES) $(INCPATH)
 CXXFLAGS      = -FIconfigure_pch.h -Yuconfigure_pch.h -Fp$(PCH) -MP $(CXXFLAGS_BARE)
@@ -18,6 +18,7 @@ OBJECTS = \
     configureapp.obj \
     environment.obj \
     tools.obj \
+    qarraydata.obj \
     qbytearray.obj \
     qbytearraymatcher.obj \
     qhash.obj \
@@ -34,6 +35,7 @@ OBJECTS = \
     qdatastream.obj \
     qdir.obj \
     qdiriterator.obj \
+    qfiledevice.obj \
     qfile.obj \
     qfileinfo.obj \
     qabstractfileengine.obj \
@@ -58,7 +60,6 @@ OBJECTS = \
     qvsnprintf.obj \
     qvariant.obj \
     qsystemerror.obj \
-    qurl.obj \
     qmetatype.obj \
     qmalloc.obj \
     qxmlstream.obj \
@@ -87,6 +88,7 @@ configureapp.obj: $(CONFSRC)\configureapp.cpp $(CONFSRC)\configureapp.h $(CONFSR
 environment.obj: $(CONFSRC)\environment.cpp $(CONFSRC)\environment.h $(PCH)
 tools.obj: $(CONFSRC)\tools.cpp $(CONFSRC)\tools.h $(PCH)
 registry.obj: $(TOOLSRC)\shared\windows\registry.cpp $(PCH)
+qarraydata.obj: $(CORESRC)\tools\qarraydata.cpp $(PCH)
 qbytearray.obj: $(CORESRC)\tools\qbytearray.cpp $(PCH)
 qbytearraymatcher.obj: $(CORESRC)\tools\qbytearraymatcher.cpp $(PCH)
 qhash.obj: $(CORESRC)\tools\qhash.cpp $(PCH)
@@ -103,6 +105,7 @@ qbuffer.obj: $(CORESRC)\io\qbuffer.cpp $(PCH)
 qdatastream.obj: $(CORESRC)\io\qdatastream.cpp $(PCH)
 qdir.obj: $(CORESRC)\io\qdir.cpp $(PCH)
 qdiriterator.obj: $(CORESRC)\io\qdiriterator.cpp $(PCH)
+qfiledevice.obj: $(CORESRC)\io\qfiledevice.cpp $(PCH)
 qfile.obj: $(CORESRC)\io\qfile.cpp $(PCH)
 qfileinfo.obj: $(CORESRC)\io\qfileinfo.cpp $(PCH)
 qabstractfileengine.obj: $(CORESRC)\io\qabstractfileengine.cpp $(PCH)
@@ -126,7 +129,6 @@ qstringlist.obj: $(CORESRC)\tools\qstringlist.cpp $(PCH)
 qvsnprintf.obj: $(CORESRC)\tools\qvsnprintf.cpp $(PCH)
 qvariant.obj: $(CORESRC)\kernel\qvariant.cpp $(PCH)
 qsystemerror.obj: $(CORESRC)\kernel\qsystemerror.cpp $(PCH)
-qurl.obj: $(CORESRC)\io\qurl.cpp $(PCH)
 qline.obj: $(CORESRC)\tools\qline.cpp $(PCH)
 qsize.obj: $(CORESRC)\tools\qsize.cpp $(PCH)
 qpoint.obj: $(CORESRC)\tools\qpoint.cpp $(PCH)

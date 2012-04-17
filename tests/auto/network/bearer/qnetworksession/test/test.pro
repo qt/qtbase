@@ -2,7 +2,7 @@ CONFIG += testcase
 SOURCES  += tst_qnetworksession.cpp
 HEADERS  += ../../qbearertestcommon.h
 
-QT = core network testlib
+QT = core network testlib network-private
 
 TARGET = tst_qnetworksession
 CONFIG(debug_and_release) {

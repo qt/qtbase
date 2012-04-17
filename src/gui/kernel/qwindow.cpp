@@ -109,6 +109,18 @@ QT_BEGIN_NAMESPACE
     called whenever the windows exposure in the windowing system changes.  On
     windowing systems that do not make this information visible to the
     application, isExposed() will simply return the same value as isVisible().
+
+    \section1 Rendering
+
+    There are two Qt APIs that can be used to render content into a window,
+    QBackingStore for rendering with a QPainter and flushing the contents
+    to a window with type QSurface::RasterSurface, and QOpenGLContext for
+    rendering with OpenGL to a window with type QSurface::OpenGLSurface.
+
+    The application can start rendering as soon as isExposed() returns true,
+    and can keep rendering until it isExposed() returns false. To find out when
+    isExposed() changes, reimplement exposeEvent(). The window will always get
+    a resize event before the first expose event.
 */
 
 /*!
@@ -593,9 +605,7 @@ void QWindow::requestActivateWindow()
 bool QWindow::isExposed() const
 {
     Q_D(const QWindow);
-    if (d->platformWindow)
-        return d->platformWindow->isExposed();
-    return false;
+    return d->exposed;
 }
 
 /*!
@@ -1084,6 +1094,9 @@ void QWindow::destroy()
     }
     setVisible(false);
     delete d->platformWindow;
+    d->resizeEventPending = true;
+    d->receivedExpose = false;
+    d->exposed = false;
     d->platformWindow = 0;
 }
 
@@ -1343,11 +1356,18 @@ bool QWindow::close()
     The expose event is sent by the window system whenever the window's
     exposure on screen changes.
 
+    The application can start rendering into the window with QBackingStore
+    and QOpenGLContext as soon as it gets an exposeEvent() such that
+    isExposed() is true.
+
     If the window is moved off screen, is made totally obscured by another
     window, iconified or similar, this function might be called and the
     value of isExposed() might change to false. When this happens,
     an application should stop its rendering as it is no longer visible
     to the user.
+
+    A resize event will always be sent before the expose event the first time
+    a window is shown.
 
     \sa isExposed()
 */
@@ -1379,7 +1399,10 @@ void QWindow::resizeEvent(QResizeEvent *ev)
 /*!
     Override this to handle show events.
 
-    This function is called when the window becomes visible in the windowing system.
+    The function is called when the window has requested becoming visible.
+
+    If the window is successfully shown by the windowing system, this will
+    be followed by a resize and an expose event.
 */
 void QWindow::showEvent(QShowEvent *ev)
 {
@@ -1387,9 +1410,10 @@ void QWindow::showEvent(QShowEvent *ev)
 }
 
 /*!
-    Override this to handle hide events.
+    Override this to handle hide evens.
 
-    This function is called when the window becomes hidden in the windowing system.
+    The function is called when the window has requested being hidden in the
+    windowing system.
 */
 void QWindow::hideEvent(QHideEvent *ev)
 {

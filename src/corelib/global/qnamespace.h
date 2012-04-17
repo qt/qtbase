@@ -342,7 +342,6 @@ public:
         WA_UpdatesDisabled = 10,
         WA_Mapped = 11,
         WA_MacNoClickThrough = 12, // Mac only
-        WA_PaintOutsidePaintEvent = 13,
         WA_InputMethodEnabled = 14,
         WA_WState_Visible = 15,
         WA_WState_Hidden = 16,
@@ -1101,20 +1100,13 @@ public:
     enum TextFormat {
         PlainText,
         RichText,
-        AutoText,
-        LogText
+        AutoText
     };
 
     enum AspectRatioMode {
         IgnoreAspectRatio,
         KeepAspectRatio,
         KeepAspectRatioByExpanding
-    };
-
-    // This is for Q3TextEdit only, actually.
-    enum AnchorAttribute {
-        AnchorName,
-        AnchorHref
     };
 
     enum DockWidgetArea {
@@ -1200,7 +1192,6 @@ public:
         AutoConnection,
         DirectConnection,
         QueuedConnection,
-        AutoCompatConnection,
         BlockingQueuedConnection,
         UniqueConnection =  0x80
     };

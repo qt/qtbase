@@ -118,7 +118,7 @@ private slots:
     void callVirtualObjectLocal();
 
 public:
-    QString serviceName() const { return "com.trolltech.Qt.Autotests.QDBusConnection"; }
+    QString serviceName() const { return "org.qtproject.Qt.Autotests.QDBusConnection"; }
     bool callMethod(const QDBusConnection &conn, const QString &path);
     bool callMethodPeer(const QDBusConnection &conn, const QString &path);
 };
@@ -970,7 +970,7 @@ void tst_QDBusConnection::slotsWithLessParameters()
 {
     QDBusConnection con = QDBusConnection::sessionBus();
 
-    QDBusMessage signal = QDBusMessage::createSignal("/", "com.trolltech.TestCase",
+    QDBusMessage signal = QDBusMessage::createSignal("/", "org.qtproject.TestCase",
                                                      "oneSignal");
     signal << "one parameter";
 
@@ -1051,7 +1051,7 @@ void tst_QDBusConnection::serviceRegistrationRaceCondition()
 
     // connect to the signal:
     RaceConditionSignalWaiter recv;
-    session.connect(serviceName, "/", "com.trolltech.TestCase", "oneSignal", &recv, SLOT(countUp()));
+    session.connect(serviceName, "/", "org.qtproject.TestCase", "oneSignal", &recv, SLOT(countUp()));
 
     // create a secondary connection and register a name
     QDBusConnection connection = QDBusConnection::connectToBus(QDBusConnection::SessionBus, connectionName);
@@ -1060,7 +1060,7 @@ void tst_QDBusConnection::serviceRegistrationRaceCondition()
     QVERIFY(connection.registerService(serviceName));
 
     // send a signal
-    QDBusMessage msg = QDBusMessage::createSignal("/", "com.trolltech.TestCase", "oneSignal");
+    QDBusMessage msg = QDBusMessage::createSignal("/", "org.qtproject.TestCase", "oneSignal");
     connection.send(msg);
 
     // make a blocking call just to be sure that the buffer was flushed

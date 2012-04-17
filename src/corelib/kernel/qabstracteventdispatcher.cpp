@@ -295,6 +295,16 @@ int QAbstractEventDispatcher::registerTimer(int interval, Qt::TimerType timerTyp
     \sa Qt::TimerType
 */
 
+/*!
+    \fn int QAbstractEventDispatcher::remainingTime(int timerId)
+
+    Returns the remaining time in milliseconds with the given \a timerId.
+    If the timer is inactive, the returned value will be -1. If the timer is
+    overdue, the returned value will be 0.
+
+    \sa Qt::TimerType
+*/
+
 /*! \fn void QAbstractEventDispatcher::wakeUp()
     \threadsafe
 

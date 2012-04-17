@@ -51,8 +51,6 @@ testcocoon {
     load(testcocoon)
 }
 
-DEFINES += Q_INTERNAL_QAPP_SRC
-
 INCLUDEPATH += ../3rdparty/harfbuzz/src
 
 win32:!contains(QT_CONFIG, directwrite) {

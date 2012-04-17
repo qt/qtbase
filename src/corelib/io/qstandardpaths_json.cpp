@@ -48,6 +48,7 @@
 #include <QFile>
 #include <QDir>
 #include <QAtomicPointer>
+#include <QCoreApplication>
 
 #ifndef QT_NO_STANDARDPATHS
 
@@ -62,6 +63,23 @@ public:
 
 Q_GLOBAL_STATIC(QStandardPathsPrivate, configCache);
 
+static bool qsp_testMode = false;
+
+void QStandardPaths::enableTestMode(bool testMode)
+{
+    qsp_testMode = testMode;
+}
+
+static void appendOrganizationAndApp(QString &path)
+{
+    const QString org = QCoreApplication::organizationName();
+    if (!org.isEmpty())
+        path += QLatin1Char('/') + org;
+    const QString appName = QCoreApplication::applicationName();
+    if (!appName.isEmpty())
+        path += QLatin1Char('/') + appName;
+}
+
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
     switch (type) {
@@ -72,6 +90,30 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     default:
         break;
     }
+
+    if (qsp_testMode) {
+        const QString qttestDir = QDir::homePath() + QLatin1String("/.qttest");
+        QString path;
+        switch (type) {
+        case GenericDataLocation:
+        case DataLocation:
+            path = qttestDir + QLatin1String("/share");
+            if (type == DataLocation)
+                appendOrganizationAndApp(path);
+            return path;
+        case GenericCacheLocation:
+        case CacheLocation:
+            path = qttestDir + QLatin1String("/cache");
+            if (type == CacheLocation)
+                appendOrganizationAndApp(path);
+            return path;
+        case ConfigLocation:
+            return qttestDir + QLatin1String("/config");
+        default:
+            break;
+        }
+    }
+
 
     QJsonObject * localConfigObject = configCache()->object.loadAcquire();
     if (localConfigObject == 0) {

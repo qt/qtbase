@@ -1792,8 +1792,15 @@ void tst_QDom::doubleNamespaceDeclarations() const
     QXmlInputSource source(&file);
     QVERIFY(doc.setContent(&source, &reader));
 
-    QVERIFY(doc.toString(0) == QString::fromLatin1("<a>\n<b p:c=\"\" xmlns:p=\"NS\" p:d=\"\"/>\n</a>\n") ||
-            doc.toString(0) == QString::fromLatin1("<a>\n<b p:c=\"\" p:d=\"\" xmlns:p=\"NS\"/>\n</a>\n"));
+    // tst_QDom relies on a specific QHash ordering, see QTBUG-25071
+    QString docAsString = doc.toString(0);
+    QVERIFY(docAsString == QString::fromLatin1("<a>\n<b p:c=\"\" xmlns:p=\"NS\" p:d=\"\"/>\n</a>\n") ||
+            docAsString == QString::fromLatin1("<a>\n<b p:c=\"\" p:d=\"\" xmlns:p=\"NS\"/>\n</a>\n") ||
+            docAsString == QString::fromLatin1("<a>\n<b p:d=\"\" p:c=\"\" xmlns:p=\"NS\"/>\n</a>\n") ||
+            docAsString == QString::fromLatin1("<a>\n<b p:d=\"\" xmlns:p=\"NS\" p:c=\"\"/>\n</a>\n") ||
+            docAsString == QString::fromLatin1("<a>\n<b xmlns:p=\"NS\" p:c=\"\" p:d=\"\"/>\n</a>\n") ||
+            docAsString == QString::fromLatin1("<a>\n<b xmlns:p=\"NS\" p:d=\"\" p:c=\"\"/>\n</a>\n")
+            );
 }
 
 void tst_QDom::setContentQXmlReaderOverload() const
@@ -1922,7 +1929,7 @@ void tst_QDom::cloneDTD_QTBUG8398() const
     QVERIFY(domDocument.setContent(dtd));
     QDomDocument domDocument2 = domDocument.cloneNode(true).toDocument();
 
-    // for some reason, our DOM implementation reverts the order of entities
+    // this string is relying on a specific QHash ordering, QTBUG-25071
     QString expected("<?xml version='1.0' encoding='UTF-8'?>\n"
                    "<!DOCTYPE first [\n"
                    "<!ENTITY thirdFile SYSTEM 'third.xml'>\n"
@@ -1932,7 +1939,8 @@ void tst_QDom::cloneDTD_QTBUG8398() const
     QString output;
     QTextStream stream(&output);
     domDocument2.save(stream, 0);
-    QCOMPARE(output, expected);
+    // check against the original string and the expected one, QTBUG-25071
+    QVERIFY(output == dtd || output == expected);
 }
 
 void tst_QDom::DTDNotationDecl()

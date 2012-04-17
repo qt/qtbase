@@ -75,9 +75,7 @@ static QByteArray normalizeType(const QByteArray &ba, bool fixScope = false)
         }
     }
     *d = '\0';
-    QByteArray result;
-    if (strncmp("void", buf, d - buf) != 0)
-        result = normalizeTypeInternal(buf, d, fixScope);
+    QByteArray result = normalizeTypeInternal(buf, d, fixScope);
     if (buf != stackbuf)
         delete [] buf;
     return result;
@@ -822,8 +820,8 @@ void Moc::generate(FILE *out)
     if (classList.size() && classList.first().classname == "Qt")
         fprintf(out, "#include <QtCore/qobject.h>\n");
 
-    if (mustIncludeQMetaTypeH)
-        fprintf(out, "#include <QtCore/qmetatype.h>\n");
+    fprintf(out, "#include <QtCore/qbytearray.h>\n"); // For QByteArrayData
+    fprintf(out, "#include <QtCore/qmetatype.h>\n");  // For QMetaType::Type
     if (mustIncludeQPluginH)
         fprintf(out, "#include <QtCore/qplugin.h>\n");
 
@@ -981,8 +979,6 @@ void Moc::createPropertyDef(PropertyDef &propDef)
         type = "qlonglong";
     else if (type == "ULongLong")
         type = "qulonglong";
-    else if (type == "qreal")
-        mustIncludeQMetaTypeH = true;
 
     propDef.type = type;
 

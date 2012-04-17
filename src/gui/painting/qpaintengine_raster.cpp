@@ -84,6 +84,54 @@
 
 QT_BEGIN_NAMESPACE
 
+class QRectVectorPath : public QVectorPath {
+public:
+    inline void set(const QRect &r) {
+        qreal left = r.x();
+        qreal right = r.x() + r.width();
+        qreal top = r.y();
+        qreal bottom = r.y() + r.height();
+        pts[0] = left;
+        pts[1] = top;
+        pts[2] = right;
+        pts[3] = top;
+        pts[4] = right;
+        pts[5] = bottom;
+        pts[6] = left;
+        pts[7] = bottom;
+    }
+
+    inline void set(const QRectF &r) {
+        qreal left = r.x();
+        qreal right = r.x() + r.width();
+        qreal top = r.y();
+        qreal bottom = r.y() + r.height();
+        pts[0] = left;
+        pts[1] = top;
+        pts[2] = right;
+        pts[3] = top;
+        pts[4] = right;
+        pts[5] = bottom;
+        pts[6] = left;
+        pts[7] = bottom;
+    }
+    inline QRectVectorPath(const QRect &r)
+        : QVectorPath(pts, 4, 0, QVectorPath::RectangleHint | QVectorPath::ImplicitClose)
+    {
+        set(r);
+    }
+    inline QRectVectorPath(const QRectF &r)
+        : QVectorPath(pts, 4, 0, QVectorPath::RectangleHint | QVectorPath::ImplicitClose)
+    {
+        set(r);
+    }
+    inline QRectVectorPath()
+        : QVectorPath(pts, 4, 0, QVectorPath::RectangleHint | QVectorPath::ImplicitClose)
+    { }
+
+    qreal pts[8];
+};
+
 Q_GUI_EXPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 
 #define qreal_to_fixed_26_6(f) (int(f * 64))

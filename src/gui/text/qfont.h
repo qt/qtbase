@@ -55,7 +55,6 @@ QT_BEGIN_NAMESPACE
 class QFontPrivate;                                     /* don't touch */
 class QStringList;
 class QVariant;
-class Q3TextFormatCollection;
 
 class Q_GUI_EXPORT QFont
 {
@@ -272,7 +271,7 @@ public:
     inline void resolve(uint mask) { resolve_mask = mask; }
 
 private:
-    QFont(QFontPrivate *);
+    explicit QFont(QFontPrivate *);
 
     void detach();
 
@@ -288,7 +287,6 @@ private:
     friend class QApplication;
     friend class QWidget;
     friend class QWidgetPrivate;
-    friend class Q3TextFormatCollection;
     friend class QTextLayout;
     friend class QTextEngine;
     friend class QStackTextEngine;

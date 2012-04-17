@@ -148,7 +148,6 @@ bool QGuiApplicationPrivate::obey_desktop_settings = true;
 static qreal fontSmoothingGamma = 1.7;
 
 extern void qRegisterGuiVariant();
-extern void qUnregisterGuiVariant();
 extern void qInitDrawhelperAsm();
 extern void qInitImageConversions();
 
@@ -362,8 +361,6 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::qt_clipboard = 0;
 
     clearPalette();
-
-    qUnregisterGuiVariant();
 
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();
@@ -1127,12 +1124,6 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::processThemeChanged(
                     static_cast<QWindowSystemInterfacePrivate::ThemeChangeEvent *>(e));
         break;
-    case QWindowSystemInterfacePrivate::Map:
-        QGuiApplicationPrivate::processMapEvent(static_cast<QWindowSystemInterfacePrivate::MapEvent *>(e));
-        break;
-    case QWindowSystemInterfacePrivate::Unmap:
-        QGuiApplicationPrivate::processUnmapEvent(static_cast<QWindowSystemInterfacePrivate::UnmapEvent *>(e));
-        break;
     case QWindowSystemInterfacePrivate::Expose:
         QGuiApplicationPrivate::processExposeEvent(static_cast<QWindowSystemInterfacePrivate::ExposeEvent *>(e));
         break;
@@ -1295,8 +1286,9 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
         return;
     }
 
-    QKeyEventEx ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount,
-                   e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers);
+    QKeyEvent ev(e->keyType, e->key, e->modifiers,
+                 e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers,
+                 e->unicode, e->repeat, e->repeatCount);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(window, &ev);
 }
@@ -1788,30 +1780,28 @@ void QGuiApplicationPrivate::reportLogicalDotsPerInchChange(QWindowSystemInterfa
     emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
 }
 
-void QGuiApplicationPrivate::processMapEvent(QWindowSystemInterfacePrivate::MapEvent *e)
-{
-    if (!e->mapped)
-        return;
-
-    QEvent event(QEvent::Map);
-    QCoreApplication::sendSpontaneousEvent(e->mapped.data(), &event);
-}
-
-void QGuiApplicationPrivate::processUnmapEvent(QWindowSystemInterfacePrivate::UnmapEvent *e)
-{
-    if (!e->unmapped)
-        return;
-
-    QEvent event(QEvent::Unmap);
-    QCoreApplication::sendSpontaneousEvent(e->unmapped.data(), &event);
-}
-
 void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::ExposeEvent *e)
 {
     if (!e->exposed)
         return;
 
     QWindow *window = e->exposed.data();
+    QWindowPrivate *p = qt_window_private(window);
+
+    if (!p->receivedExpose) {
+        if (p->resizeEventPending) {
+            // as a convenience for plugins, send a resize event before the first expose event if they haven't done so
+            QSize size = p->geometry.size();
+            QResizeEvent e(size, size);
+            QGuiApplication::sendSpontaneousEvent(window, &e);
+
+            p->resizeEventPending = false;
+        }
+
+        p->receivedExpose = true;
+    }
+
+    p->exposed = e->isExposed;
 
     QExposeEvent exposeEvent(e->region);
     QCoreApplication::sendSpontaneousEvent(window, &exposeEvent);
@@ -2160,12 +2150,11 @@ void QGuiApplication::restoreOverrideCursor()
 
   \sa QStyleHints
   */
-QStyleHints *QGuiApplication::styleHints() const
+QStyleHints *QGuiApplication::styleHints()
 {
-    Q_D(const QGuiApplication);
-    if (!d->styleHints)
-        const_cast<QGuiApplicationPrivate *>(d)->styleHints = new QStyleHints();
-    return d->styleHints;
+    if (!qGuiApp->d_func()->styleHints)
+        qGuiApp->d_func()->styleHints = new QStyleHints();
+    return qGuiApp->d_func()->styleHints;
 }
 
 /*!

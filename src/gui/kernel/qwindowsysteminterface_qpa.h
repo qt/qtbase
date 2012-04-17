@@ -110,7 +110,7 @@ public:
         Qt::TouchPointState state; //Qt::TouchPoint{Pressed|Moved|Stationary|Released}
         QVector2D velocity;     // in screen coordinate system, pixels / seconds
         QTouchEvent::TouchPoint::InfoFlags flags;
-        QList<QPointF> rawPositions; // in screen coordinates
+        QVector<QPointF> rawPositions; // in screen coordinates
     };
 
     static void registerTouchDevice(QTouchDevice *device);
@@ -130,9 +130,7 @@ public:
     static void handleWindowActivated(QWindow *w);
     static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
 
-    static void handleMapEvent(QWindow *w);
-    static void handleUnmapEvent(QWindow *w);
-
+    static void handleExposeEvent(QWindow *tlw, const QRegion &region);
     static void handleSynchronousExposeEvent(QWindow *tlw, const QRegion &region);
 
     // Drag and drop. These events are sent immediately.

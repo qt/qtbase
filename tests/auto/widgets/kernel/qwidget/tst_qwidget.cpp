@@ -377,9 +377,6 @@ private slots:
 #endif
     void windowFlags();
     void initialPosForDontShowOnScreenWidgets();
-#ifdef Q_WS_X11
-    void paintOutsidePaintEvent();
-#endif
     void updateOnDestroyedSignal();
     void toplevelLineEditFocus();
     void inputFocus_task257832();
@@ -8710,42 +8707,6 @@ void tst_QWidget::initialPosForDontShowOnScreenWidgets()
         QCOMPARE(widget.geometry().topLeft(), expectedPos);
     }
 }
-
-#ifdef Q_WS_X11
-void tst_QWidget::paintOutsidePaintEvent()
-{
-    QWidget widget;
-    widget.resize(200, 200);
-
-    QWidget child1(&widget);
-    child1.resize(100, 100);
-    child1.setPalette(Qt::red);
-    child1.setAutoFillBackground(true);
-
-    QWidget child2(&widget);
-    child2.setGeometry(50, 50, 100, 100);
-    child2.setPalette(Qt::blue);
-    child2.setAutoFillBackground(true);
-
-    widget.show();
-    QTest::qWaitForWindowShown(&widget);
-    QTest::qWait(60);
-
-    const QPixmap before = QPixmap::grabWindow(widget.winId());
-
-    // Child 1 should be clipped by child 2, so nothing should change.
-    child1.setAttribute(Qt::WA_PaintOutsidePaintEvent);
-    QPainter painter(&child1);
-    painter.fillRect(child1.rect(), Qt::red);
-    painter.end();
-    XSync(QX11Info::display(), false); // Flush output buffer.
-    QTest::qWait(60);
-
-    const QPixmap after = QPixmap::grabWindow(widget.winId());
-
-    QCOMPARE(before, after);
-}
-#endif
 
 class MyEvilObject : public QObject
 {

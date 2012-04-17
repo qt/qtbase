@@ -402,7 +402,7 @@ public:
         if (readSize < 0)
             return -1;
 
-        qMemCopy(data, openFile_->content.constData() + position_, readSize);
+        memcpy(data, openFile_->content.constData() + position_, readSize);
         position_ += readSize;
 
         return readSize;

@@ -184,7 +184,7 @@ void CALLBACK_CALL_TYPE iod_read_fn(png_structp png_ptr, png_bytep data, png_siz
     if (d->state == QPngHandlerPrivate::ReadingEnd && !in->isSequential() && (in->size() - in->pos()) < 4 && length == 4) {
         // Workaround for certain malformed PNGs that lack the final crc bytes
         uchar endcrc[4] = { 0xae, 0x42, 0x60, 0x82 };
-        qMemCopy(data, endcrc, 4);
+        memcpy(data, endcrc, 4);
         in->seek(in->size());
         return;
     }
@@ -664,7 +664,7 @@ static void set_text(const QImage &image, png_structp png_ptr, png_infop info_pt
         return;
 
     png_textp text_ptr = new png_text[text.size()];
-    qMemSet(text_ptr, 0, text.size() * sizeof(png_text));
+    memset(text_ptr, 0, text.size() * sizeof(png_text));
 
     QMap<QString, QString>::ConstIterator it = text.constBegin();
     int i = 0;

@@ -59,11 +59,6 @@ QT_BEGIN_NAMESPACE
 # endif
 #endif
 
-#if defined (Q_CC_SUN) || defined (Q_CC_XLC)
-# define QTEST_NO_SPECIALIZATIONS
-#endif
-
-
 #if (defined Q_CC_HPACC) && (defined __ia64)
 # ifdef Q_TESTLIB_EXPORT
 #  undef Q_TESTLIB_EXPORT

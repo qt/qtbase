@@ -118,14 +118,14 @@ public:
     Qt::ScreenOrientation primaryOrientation() const;
     Qt::ScreenOrientation orientation() const;
 
-    int angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b);
-    QTransform transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target);
-    QRect mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect);
+    int angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b) const;
+    QTransform transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target) const;
+    QRect mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect) const;
 
-    bool isPortrait(Qt::ScreenOrientation orientation);
-    bool isLandscape(Qt::ScreenOrientation orientation);
+    bool isPortrait(Qt::ScreenOrientation orientation) const;
+    bool isLandscape(Qt::ScreenOrientation orientation) const;
 
-    QPixmap grabWindow(WId window, int x, int y, int w, int h) const;
+    QPixmap grabWindow(WId window, int x, int y, int w, int h);
 
 Q_SIGNALS:
     void sizeChanged(const QSize &size);
@@ -142,7 +142,7 @@ Q_SIGNALS:
     void orientationChanged(Qt::ScreenOrientation orientation);
 
 private:
-    QScreen(QPlatformScreen *screen);
+    explicit QScreen(QPlatformScreen *screen);
 
     Q_DISABLE_COPY(QScreen)
     friend class QGuiApplicationPrivate;

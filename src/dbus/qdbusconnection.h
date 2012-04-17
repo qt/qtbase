@@ -127,7 +127,7 @@ public:
     };
     Q_DECLARE_FLAGS(ConnectionCapabilities, ConnectionCapability)
 
-    QDBusConnection(const QString &name);
+    explicit QDBusConnection(const QString &name);
     QDBusConnection(const QDBusConnection &other);
     ~QDBusConnection();
 

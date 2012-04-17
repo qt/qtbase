@@ -116,6 +116,8 @@ public:
     bool unregisterTimers(QObject *object);
     QList<TimerInfo> registeredTimers(QObject *object) const;
 
+    int remainingTime(int timerId);
+
     void wakeUp();
     void interrupt();
     void flush();

@@ -2453,7 +2453,7 @@ void QTextEdit::setText(const QString &text)
     if (d->textFormat == Qt::AutoText)
         format = Qt::mightBeRichText(text) ? Qt::RichText : Qt::PlainText;
 #ifndef QT_NO_TEXTHTMLPARSER
-    if (format == Qt::RichText || format == Qt::LogText)
+    if (format == Qt::RichText)
         setHtml(text);
     else
 #endif

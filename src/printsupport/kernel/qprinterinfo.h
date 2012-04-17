@@ -59,7 +59,7 @@ class Q_PRINTSUPPORT_EXPORT QPrinterInfo
 public:
     QPrinterInfo();
     QPrinterInfo(const QPrinterInfo &other);
-    QPrinterInfo(const QPrinter &printer);
+    explicit QPrinterInfo(const QPrinter &printer);
     ~QPrinterInfo();
 
     QPrinterInfo &operator=(const QPrinterInfo &other);
@@ -73,7 +73,7 @@ public:
     static QPrinterInfo defaultPrinter();
 
 private:
-    QPrinterInfo(const QString &name);
+    explicit QPrinterInfo(const QString &name);
 
 private:
     friend class QPlatformPrinterSupport;

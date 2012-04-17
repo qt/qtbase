@@ -42,6 +42,7 @@
 #define QWINDOWSYSTEMINTERFACE_QPA_P_H
 
 #include "qwindowsysteminterface_qpa.h"
+
 #include <QElapsedTimer>
 
 QT_BEGIN_HEADER
@@ -66,8 +67,6 @@ public:
         ScreenAvailableGeometry,
         ScreenLogicalDotsPerInch,
         ThemeChange,
-        Map,
-        Unmap,
         Expose
     };
 
@@ -241,28 +240,11 @@ public:
         QWeakPointer<QWindow> window;
     };
 
-    class MapEvent : public WindowSystemEvent {
-    public:
-        MapEvent(QWindow *mapped)
-            : WindowSystemEvent(Map), mapped(mapped)
-        { }
-        QWeakPointer<QWindow> mapped;
-    };
-
-    class UnmapEvent : public WindowSystemEvent {
-    public:
-        UnmapEvent(QWindow *unmapped)
-            : WindowSystemEvent(Unmap), unmapped(unmapped)
-        { }
-        QWeakPointer<QWindow> unmapped;
-    };
-
     class ExposeEvent : public WindowSystemEvent {
     public:
-        ExposeEvent(QWindow *exposed, const QRegion &region)
-            : WindowSystemEvent(Expose), exposed(exposed), region(region)
-        { }
+        ExposeEvent(QWindow *exposed, const QRegion &region);
         QWeakPointer<QWindow> exposed;
+        bool isExposed;
         QRegion region;
     };
 

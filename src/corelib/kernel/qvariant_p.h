@@ -172,7 +172,12 @@ class QVariantComparator {
     };
     template<typename T>
     struct FilteredComparator<T, /* IsAcceptedType = */ false> {
-        static bool compare(const QVariant::Private *, const QVariant::Private *) { return false; }
+        static bool compare(const QVariant::Private *, const QVariant::Private *)
+        {
+            // It is not possible to construct a QVariant containing not fully defined type
+            Q_ASSERT(false);
+            return false;
+        }
     };
 public:
     QVariantComparator(const QVariant::Private *a, const QVariant::Private *b)
@@ -187,7 +192,11 @@ public:
         return FilteredComparator<T>::compare(m_a, m_b);
     }
 
-    bool delegate(const void*) { return true; }
+    bool delegate(const void*) { Q_ASSERT(false); return true; }
+    bool delegate(const QMetaTypeSwitcher::UnknownType*)
+    {
+        return true; // for historical reason invalid variant == invalid variant
+    }
     bool delegate(const QMetaTypeSwitcher::NotBuiltinType*) { return false; }
 protected:
     const QVariant::Private *m_a;
@@ -203,6 +212,19 @@ class QVariantIsNull
     /// \internal
     /// This class checks if a type T has method called isNull. Result is kept in the Value property
     /// TODO Can we somehow generalize it? A macro version?
+#if defined(Q_COMPILER_DECLTYPE) // C++11 version
+    template<typename T>
+    class HasIsNullMethod {
+        struct Yes { char unused[1]; };
+        struct No { char unused[2]; };
+        Q_STATIC_ASSERT(sizeof(Yes) != sizeof(No));
+
+        template<class C> static decltype(static_cast<const C*>(0)->isNull(), Yes()) test(int);
+        template<class C> static No test(...);
+    public:
+        static const bool Value = (sizeof(test<T>(0)) == sizeof(Yes));
+    };
+#else // C++98 version (doesn't work for final classes)
     template<typename T, bool IsClass = QTypeInfo<T>::isComplex>
     class HasIsNullMethod
     {
@@ -211,7 +233,7 @@ class QVariantIsNull
         Q_STATIC_ASSERT(sizeof(Yes) != sizeof(No));
 
         struct FallbackMixin { bool isNull() const; };
-        struct Derived : public T, public FallbackMixin {};
+        struct Derived : public T, public FallbackMixin {}; // <- doesn't work for final classes
         template<class C, C> struct TypeCheck {};
 
         template<class C> static Yes test(...);
@@ -227,6 +249,7 @@ class QVariantIsNull
     public:
         static const bool Value = false;
     };
+#endif
 
     // TODO This part should go to autotests during HasIsNullMethod generalization.
     Q_STATIC_ASSERT(!HasIsNullMethod<bool>::Value);
@@ -236,6 +259,12 @@ class QVariantIsNull
     Q_STATIC_ASSERT(!HasIsNullMethod<SelfTest2>::Value);
     struct SelfTest3 : public SelfTest1 {};
     Q_STATIC_ASSERT(HasIsNullMethod<SelfTest3>::Value);
+    struct SelfTestFinal1 Q_DECL_FINAL_CLASS { bool isNull() const; };
+    Q_STATIC_ASSERT(HasIsNullMethod<SelfTestFinal1>::Value);
+    struct SelfTestFinal2 Q_DECL_FINAL_CLASS {};
+    Q_STATIC_ASSERT(!HasIsNullMethod<SelfTestFinal2>::Value);
+    struct SelfTestFinal3 Q_DECL_FINAL_CLASS : public SelfTest1 {};
+    Q_STATIC_ASSERT(HasIsNullMethod<SelfTestFinal3>::Value);
 
     template<typename T, bool HasIsNull = HasIsNullMethod<T>::Value>
     struct CallFilteredIsNull
@@ -281,8 +310,14 @@ public:
         return CallIsNull<T>::isNull(m_d);
     }
     // we need that as sizof(void) is undefined and it is needed in HasIsNullMethod
-    bool delegate(const void *) { return m_d->is_null; }
-    bool delegate(const QMetaTypeSwitcher::NotBuiltinType *) { return m_d->is_null; }
+    bool delegate(const void *) { Q_ASSERT(false); return m_d->is_null; }
+    bool delegate(const QMetaTypeSwitcher::UnknownType *) { return m_d->is_null; }
+    bool delegate(const QMetaTypeSwitcher::NotBuiltinType *)
+    {
+        // QVariantIsNull is used only for built-in types
+        Q_ASSERT(false);
+        return m_d->is_null;
+    }
 protected:
     const QVariant::Private *m_d;
 };
@@ -348,14 +383,24 @@ public:
 
     void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
     {
-        qWarning("Trying to construct an instance of an invalid type, type id: %i", m_x->type);
-        m_x->type = QVariant::Invalid;
+        // QVariantConstructor is used only for built-in types.
+        Q_ASSERT(false);
     }
 
     void delegate(const void*)
     {
-        // QMetaType::Void == QVariant::Invalid, creating an invalid value creates invalid QVariant
-        // TODO it might go away, check is needed
+        qWarning("Trying to create a QVariant instance of QMetaType::Void type, an invalid QVariant will be constructed instead");
+        m_x->type = QMetaType::UnknownType;
+        m_x->is_shared = false;
+        m_x->is_null = !m_copy;
+    }
+
+    void delegate(const QMetaTypeSwitcher::UnknownType*)
+    {
+        if (m_x->type != QMetaType::UnknownType) {
+            qWarning("Trying to construct an instance of an invalid type, type id: %i", m_x->type);
+            m_x->type = QMetaType::UnknownType;
+        }
         m_x->is_shared = false;
         m_x->is_null = !m_copy;
     }
@@ -376,7 +421,11 @@ class QVariantDestructor
     };
     template<typename T>
     struct FilteredDestructor<T, /* IsAcceptedType = */ false> {
-        FilteredDestructor(QVariant::Private *) {} // ignore non accessible types
+        FilteredDestructor(QVariant::Private *)
+        {
+            // It is not possible to create not accepted type
+            Q_ASSERT(false);
+        }
     };
 
 public:
@@ -398,17 +447,18 @@ public:
 
     void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
     {
-        qWarning("Trying to destruct an instance of an invalid type, type id: %i", m_d->type);
+        // QVariantDestructor class is used only for a built-in type
+        Q_ASSERT(false);
     }
     // Ignore nonconstructible type
-    void delegate(const void*) {}
+    void delegate(const QMetaTypeSwitcher::UnknownType*) {}
+    void delegate(const void*) { Q_ASSERT(false); }
 private:
     QVariant::Private *m_d;
 };
 
 namespace QVariantPrivate {
 Q_CORE_EXPORT void registerHandler(const int /* Modules::Names */ name, const QVariant::Handler *handler);
-Q_CORE_EXPORT void unregisterHandler(const int /* Modules::Names */ name);
 }
 
 #if !defined(QT_NO_DEBUG_STREAM)
@@ -424,9 +474,10 @@ class QVariantDebugStream
     };
     template<typename T>
     struct Filtered<T, /* IsAcceptedType = */ false> {
-        Filtered(QDebug dbg, QVariant::Private *d)
+        Filtered(QDebug /* dbg */, QVariant::Private *)
         {
-            dbg.nospace() << "QVariant::Type(" << d->type << ")";
+            // It is not possible to construct not acccepted type, QVariantConstructor creates an invalid variant for them
+            Q_ASSERT(false);
         }
     };
 
@@ -445,12 +496,14 @@ public:
 
     void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
     {
-        qWarning("Trying to stream an instance of an invalid type, type id: %i", m_d->type);
+        // QVariantDebugStream class is used only for a built-in type
+        Q_ASSERT(false);
     }
-    void delegate(const void*)
+    void delegate(const QMetaTypeSwitcher::UnknownType*)
     {
         m_debugStream.nospace() << "QVariant::Invalid";
     }
+    void delegate(const void*) { Q_ASSERT(false); }
 private:
     QDebug m_debugStream;
     QVariant::Private *m_d;

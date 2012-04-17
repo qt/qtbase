@@ -167,9 +167,9 @@ public:
         return item;
     }
 
-    void getItemPosition(int index, int *row, int *column, int *rowSpan, int *columnSpan) {
+    void getItemPosition(int index, int *row, int *column, int *rowSpan, int *columnSpan) const {
         if (index < things.count()) {
-            QGridBox *b =  things.at(index);
+            const QGridBox *b =  things.at(index);
             int toRow = b->toRow(rr);
             int toCol = b->toCol(cc);
             *row = b->row;
@@ -779,7 +779,7 @@ void QGridLayoutPrivate::setupLayoutData(int hSpacing, int vSpacing)
         adjacent to which and compute the spacings correctly.
     */
     QVarLengthArray<QGridBox *> grid(rr * cc);
-    qMemSet(grid.data(), 0, rr * cc * sizeof(QGridBox *));
+    memset(grid.data(), 0, rr * cc * sizeof(QGridBox *));
 
     /*
         Initialize 'sizes' and 'grid' data structures, and insert
@@ -1347,9 +1347,9 @@ QLayoutItem *QGridLayout::takeAt(int index)
 
   \sa itemAtPosition(), itemAt()
 */
-void QGridLayout::getItemPosition(int index, int *row, int *column, int *rowSpan, int *columnSpan)
+void QGridLayout::getItemPosition(int index, int *row, int *column, int *rowSpan, int *columnSpan) const
 {
-    Q_D(QGridLayout);
+    Q_D(const QGridLayout);
     d->getItemPosition(index, row, column, rowSpan, columnSpan);
 }
 

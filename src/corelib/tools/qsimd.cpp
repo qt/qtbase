@@ -47,7 +47,7 @@
 #  if defined(Q_OS_WINCE)
 #    include <qt_windows.h>
 #  endif
-#  if defined(Q_OS_WIN64)
+#  if !defined(Q_CC_GNU)
 #    include <intrin.h>
 #  endif
 #elif defined(Q_OS_LINUX) && defined(__arm__)
@@ -88,14 +88,10 @@ static inline uint detectProcessorFeatures()
     }
 #elif defined(_X86_)
     features = 0;
-#if defined QT_HAVE_MMX
-    if (IsProcessorFeaturePresent(PF_MMX_INSTRUCTIONS_AVAILABLE))
-        features |= MMX;
-#endif
-#if defined QT_HAVE_3DNOW
-    if (IsProcessorFeaturePresent(PF_3DNOW_INSTRUCTIONS_AVAILABLE))
-        features |= MMX3DNOW;
-#endif
+    if (IsProcessorFeaturePresent(PF_XMMI64_INSTRUCTIONS_AVAILABLE))
+        features |= SSE2;
+    if (IsProcessorFeaturePresent(PF_SSE3_INSTRUCTIONS_AVAILABLE))
+        features |= SSE3;
     return features;
 #endif
     features = 0;
@@ -172,7 +168,7 @@ static inline uint detectProcessorFeatures()
         asm ("xchg %%ebx, %2\n"
              "cpuid\n"
              "xchg %%ebx, %2\n"
-            : "=c" (feature_result), "=d" (result), "=&r" (tmp1)
+            : "=&c" (feature_result), "=d" (result), "=&r" (tmp1)
             : "a" (1));
 
         asm ("xchg %%ebx, %1\n"
@@ -186,7 +182,7 @@ static inline uint detectProcessorFeatures()
              "cpuid\n"
              "2:\n"
              "xchg %%ebx, %1\n"
-            : "=d" (extended_result), "=&r" (tmp1)
+            : "=&d" (extended_result), "=&r" (tmp1)
             : "a" (0x80000000)
             : "%ecx"
             );
@@ -255,18 +251,6 @@ static inline uint detectProcessorFeatures()
 
 
     // result now contains the standard feature bits
-    if (result & (1u << 15))
-        features |= CMOV;
-    if (result & (1u << 23))
-        features |= MMX;
-    if (extended_result & (1u << 22))
-        features |= MMXEXT;
-    if (extended_result & (1u << 31))
-        features |= MMX3DNOW;
-    if (extended_result & (1u << 30))
-        features |= MMX3DNOWEXT;
-    if (result & (1u << 25))
-        features |= SSE;
     if (result & (1u << 26))
         features |= SSE2;
     if (feature_result & (1u))
@@ -286,7 +270,7 @@ static inline uint detectProcessorFeatures()
 #elif defined(__x86_64) || defined(Q_OS_WIN64)
 static inline uint detectProcessorFeatures()
 {
-    uint features = MMX|SSE|SSE2|CMOV;
+    uint features = SSE2;
     uint feature_result = 0;
 
 #if defined (Q_OS_WIN64)
@@ -300,7 +284,7 @@ static inline uint detectProcessorFeatures()
     asm ("xchg %%rbx, %1\n"
          "cpuid\n"
          "xchg %%rbx, %1\n"
-        : "=c" (feature_result), "=&r" (tmp)
+        : "=&c" (feature_result), "=&r" (tmp)
         : "a" (1)
         : "%edx"
         );
@@ -330,15 +314,9 @@ static inline uint detectProcessorFeatures()
 /*
  * Use kdesdk/scripts/generate_string_table.pl to update the table below.
  * Here's the data (don't forget the ONE leading space):
- mmx
- mmxext
- mmx3dnow
- mmx3dnowext
- sse
- sse2
- cmov
  iwmmxt
  neon
+ sse2
  sse3
  ssse3
  sse4.1
@@ -348,15 +326,9 @@ static inline uint detectProcessorFeatures()
 
 // begin generated
 static const char features_string[] =
-    " mmx\0"
-    " mmxext\0"
-    " mmx3dnow\0"
-    " mmx3dnowext\0"
-    " sse\0"
-    " sse2\0"
-    " cmov\0"
     " iwmmxt\0"
     " neon\0"
+    " sse2\0"
     " sse3\0"
     " ssse3\0"
     " sse4.1\0"
@@ -365,12 +337,58 @@ static const char features_string[] =
     "\0";
 
 static const int features_indices[] = {
-       0,    5,   13,   23,   36,   41,   47,   53,
-      61,   67,   73,   80,   88,   96,   -1
+    0,    8,   14,   20,   26,   33,   41,   49,
+    -1
 };
 // end generated
 
-const int features_count = (sizeof features_indices - 1) / (sizeof features_indices[0]);
+static const int features_count = (sizeof features_indices - 1) / (sizeof features_indices[0]);
+
+static const uint minFeature = None
+#if defined __RTM__
+                               | RTM
+#endif
+// don't define for HLE, since the HLE prefix can be run on older CPUs
+#if defined __AVX2__
+                               | AVX2
+#endif
+#if defined __AVX__
+                               | AVX
+#endif
+#if defined __SSE4_2__
+                               | SSE4_2
+#endif
+#if defined __SSE4_1__
+                               | SSE4_1
+#endif
+#if defined __SSSE3__
+                               | SSSE3
+#endif
+#if defined __SSE3__
+                               | SSE3
+#endif
+#if defined __SSE2__
+                               | SSE2
+#endif
+#if defined __ARM_NEON__
+                               | NEON
+#endif
+#if defined __IWMMXT__
+                               | IWMMXT
+#endif
+                               ;
+
+#ifdef Q_OS_WIN
+#if defined(Q_CC_GNU)
+#  define ffs __builtin_ffs
+#else
+int ffs(int i)
+{
+    unsigned long result;
+    return _BitScanForward(&result, i) ? result : 0;
+}
+#endif
+#endif // Q_OS_WIN
 
 uint qDetectCPUFeatures()
 {
@@ -388,6 +406,19 @@ uint qDetectCPUFeatures()
         }
     }
 
+    if (minFeature != 0 && (f & minFeature) != minFeature) {
+        uint missing = minFeature & ~f;
+        fprintf(stderr, "Incompatible processor. This Qt build requires the following features:\n   ");
+        for (int i = 0; i < features_count; ++i) {
+            if (missing & (1 << i))
+                fprintf(stderr, "%s", features_string + features_indices[i]);
+        }
+        fprintf(stderr, "\n");
+        fflush(stderr);
+        qFatal("Aborted. Incompatible processor: missing feature 0x%x -%s.", missing,
+               features_string + features_indices[ffs(missing) - 1]);
+    }
+
     features.store(f);
     return f;
 }
@@ -398,7 +429,8 @@ void qDumpCPUFeatures()
     printf("Processor features: ");
     for (int i = 0; i < features_count; ++i) {
         if (features & (1 << i))
-            printf("%s", features_string + features_indices[i]);
+            printf("%s%s", features_string + features_indices[i],
+                   minFeature & (1 << i) ? "[required]" : "");
     }
     puts("");
 }

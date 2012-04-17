@@ -198,8 +198,6 @@ namespace QTest
     Q_TESTLIB_EXPORT Qt::Key asciiToKey(char ascii);
     Q_TESTLIB_EXPORT char keyToAscii(Qt::Key key);
 
-    Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *msg, const char *file,
-                                          int line);
     Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *failureMsg,
                                          char *val1, char *val2,
                                          const char *actual, const char *expected,
@@ -256,7 +254,6 @@ namespace QTest
     QTEST_COMPARE_DECL(bool)
 #endif
 
-#ifndef QTEST_NO_SPECIALIZATIONS
     template <typename T1, typename T2>
     bool qCompare(T1 const &, T2 const &, const char *, const char *, const char *, int);
 
@@ -312,34 +309,17 @@ namespace QTest
     {
         return compare_string_helper(t1, t2, actual, expected, file, line);
     }
-#else  /* QTEST_NO_SPECIALIZATIONS */
-    inline bool qCompare(const char *t1, const char *t2, const char *actual,
-                         const char *expected, const char *file, int line)
-    {
-        return compare_string_helper(t1, t2, actual, expected, file, line);
-    }
-
-    inline bool qCompare(char *t1, char *t2, const char *actual, const char *expected,
-                         const char *file, int line)
-    {
-        return compare_string_helper(t1, t2, actual, expected, file, line);
-    }
-#endif
 
     /* The next two specializations are for MSVC that shows problems with implicit
        conversions
      */
-#ifndef QTEST_NO_SPECIALIZATIONS
     template<>
-#endif
     inline bool qCompare(char *t1, const char *t2, const char *actual,
                          const char *expected, const char *file, int line)
     {
         return compare_string_helper(t1, t2, actual, expected, file, line);
     }
-#ifndef QTEST_NO_SPECIALIZATIONS
     template<>
-#endif
     inline bool qCompare(const char *t1, char *t2, const char *actual,
                          const char *expected, const char *file, int line)
     {
@@ -347,9 +327,7 @@ namespace QTest
     }
 
     // NokiaX86 and RVCT do not like implicitly comparing bool with int
-#ifndef QTEST_NO_SPECIALIZATIONS
     template <>
-#endif
     inline bool qCompare(bool const &t1, int const &t2,
                     const char *actual, const char *expected, const char *file, int line)
     {

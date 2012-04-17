@@ -44,40 +44,60 @@
 
 #include <QtCore/qsharedpointer.h>
 
+#ifndef QT_NO_QOBJECT
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 
-template <class T>
-class QPointer
+class QPointerBase
 {
-    QWeakPointer<T> wp;
+    QWeakPointer<QObject> wp;
 
-public:
-    inline QPointer() : wp() { }
-    inline QPointer(T *p) : wp(p) { }
-    inline QPointer(const QPointer<T> &p) : wp(p.wp) { }
-    inline ~QPointer() { }
+protected:
+    inline QPointerBase() : wp() { }
+    inline QPointerBase(QObject *p) : wp(p) { }
+    // compiler-generated copy/move ctor/assignment operators are fine! (even though public)
+    inline ~QPointerBase() { }
 
-    inline QPointer<T> &operator=(const QPointer<T> &p)
-    { wp = p.wp; return *this; }
-    inline QPointer<T> &operator=(T* p)
-    { wp = p; return *this; }
+    inline QObject* data() const
+    { return wp.data(); }
+
+    inline void assign(QObject *p)
+    { wp = p; }
 
     inline bool isNull() const
     { return wp.isNull(); }
-
-    inline T* operator->() const
-    { return wp.data(); }
-    inline T& operator*() const
-    { return *wp.data(); }
-    inline operator T*() const
-    { return wp.data(); }
-    inline T* data() const
-    { return wp.data(); }
 };
 
+template <class T>
+class QPointer : private QPointerBase
+{
+public:
+    inline QPointer() { }
+    inline QPointer(T *p) : QPointerBase(p) { }
+    // compiler-generated copy/move ctor/assignment operators are fine!
+    inline ~QPointer() { }
+
+    inline QPointer<T> &operator=(T* p)
+    { QPointerBase::assign(p); return *this; }
+
+    inline T* data() const
+    { return static_cast<T*>(QPointerBase::data()); }
+    inline T* operator->() const
+    { return data(); }
+    inline T& operator*() const
+    { return *data(); }
+    inline operator T*() const
+    { return data(); }
+#ifdef qdoc
+    inline bool isNull() const;
+#else
+    using QPointerBase::isNull;
+#endif
+};
+template <class T> Q_DECLARE_TYPEINFO_BODY(QPointer<T>, Q_MOVABLE_TYPE);
 
 #if (!defined(Q_CC_SUN) || (__SUNPRO_CC >= 0x580)) // ambiguity between const T * and T *
 
@@ -162,5 +182,7 @@ inline bool operator!= (int i, const QPointer<T> &p)
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_QOBJECT
 
 #endif // QPOINTER_H

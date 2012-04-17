@@ -138,12 +138,12 @@ public:
     QDateTime lastModified(const QModelIndex &index) const;
 
     QModelIndex mkdir(const QModelIndex &parent, const QString &name);
-    bool rmdir(const QModelIndex &index) const; // ### Qt5: should not be const
+    bool rmdir(const QModelIndex &index);
     inline QString fileName(const QModelIndex &index) const;
     inline QIcon fileIcon(const QModelIndex &index) const;
     QFile::Permissions permissions(const QModelIndex &index) const;
     inline QFileInfo fileInfo(const QModelIndex &index) const;
-    bool remove(const QModelIndex &index) const;
+    bool remove(const QModelIndex &index);
 
 protected:
     QFileSystemModel(QFileSystemModelPrivate &, QObject *parent = 0);

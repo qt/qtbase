@@ -221,7 +221,7 @@ QVector<quint32> QGlyphRun::glyphIndexes() const
         return d->glyphIndexes;
     } else {
         QVector<quint32> indexes(d->glyphIndexDataSize);
-        qMemCopy(indexes.data(), d->glyphIndexData, d->glyphIndexDataSize * sizeof(quint32));
+        memcpy(indexes.data(), d->glyphIndexData, d->glyphIndexDataSize * sizeof(quint32));
         return indexes;
     }
 }
@@ -247,7 +247,7 @@ QVector<QPointF> QGlyphRun::positions() const
         return d->glyphPositions;
     } else {
         QVector<QPointF> glyphPositions(d->glyphPositionDataSize);
-        qMemCopy(glyphPositions.data(), d->glyphPositionData,
+        memcpy(glyphPositions.data(), d->glyphPositionData,
                  d->glyphPositionDataSize * sizeof(QPointF));
         return glyphPositions;
     }

@@ -184,12 +184,4 @@ void qRegisterWidgetsVariant()
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterWidgetsVariant)
 
-void qUnregisterWidgetsVariant()
-{
-    QVariantPrivate::unregisterHandler(QModulesPrivate::Widgets);
-    qMetaTypeWidgetsHelper = 0;
-}
-Q_DESTRUCTOR_FUNCTION(qUnregisterWidgetsVariant)
-
-
 QT_END_NAMESPACE

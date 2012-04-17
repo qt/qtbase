@@ -699,6 +699,19 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
     return retVal;
 }
 
+int QCocoaEventDispatcher::remainingTime(int timerId)
+{
+#ifndef QT_NO_DEBUG
+    if (timerId < 1) {
+        qWarning("QCocoaEventDispatcher::remainingTime: invalid argument");
+        return -1;
+    }
+#endif
+
+    Q_D(QCocoaEventDispatcher);
+    return d->timerInfoList.timerRemainingTime(timerId);
+}
+
 void QCocoaEventDispatcher::wakeUp()
 {
     Q_D(QCocoaEventDispatcher);

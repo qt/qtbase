@@ -44,6 +44,8 @@
 
 #include <QtCore/qglobal.h>
 
+#include <stdlib.h>
+
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
@@ -79,7 +81,7 @@ struct QScopedPointerArrayDeleter
 
 struct QScopedPointerPodDeleter
 {
-    static inline void cleanup(void *pointer) { if (pointer) qFree(pointer); }
+    static inline void cleanup(void *pointer) { if (pointer) free(pointer); }
 };
 
 template <typename T, typename Cleanup = QScopedPointerDeleter<T> >
@@ -183,7 +185,6 @@ template <class T, class Cleanup>
 Q_INLINE_TEMPLATE void qSwap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2)
 { p1.swap(p2); }
 
-#ifndef QT_NO_STL
 QT_END_NAMESPACE
 namespace std {
     template <class T, class Cleanup>
@@ -191,7 +192,6 @@ namespace std {
     { p1.swap(p2); }
 }
 QT_BEGIN_NAMESPACE
-#endif
 
 
 

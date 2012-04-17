@@ -76,7 +76,8 @@ class QRect;
 class QRectF;
 #ifndef QT_NO_REGEXP
 class QRegExp;
-#endif
+class QRegularExpression;
+#endif // QT_NO_REGEXP
 class QTextFormat;
 class QTextLength;
 class QUrl;
@@ -126,7 +127,7 @@ class Q_CORE_EXPORT QVariant
 {
  public:
     enum Type {
-        Invalid = QMetaType::Void,
+        Invalid = QMetaType::UnknownType,
         Bool = QMetaType::Bool,
         Int = QMetaType::Int,
         UInt = QMetaType::UInt,
@@ -154,6 +155,7 @@ class Q_CORE_EXPORT QVariant
         Point = QMetaType::QPoint,
         PointF = QMetaType::QPointF,
         RegExp = QMetaType::QRegExp,
+        RegularExpression = QMetaType::QRegularExpression,
         Hash = QMetaType::QVariantHash,
         EasingCurve = QMetaType::QEasingCurve,
         Uuid = QMetaType::QUuid,
@@ -235,12 +237,15 @@ class Q_CORE_EXPORT QVariant
     QVariant(const QRect &rect);
     QVariant(const QRectF &rect);
 #endif
-    QVariant(const QUrl &url);
     QVariant(const QLocale &locale);
 #ifndef QT_NO_REGEXP
     QVariant(const QRegExp &regExp);
-#endif
+#ifndef QT_BOOTSRAPPED
+    QVariant(const QRegularExpression &re);
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
 #ifndef QT_BOOTSTRAPPED
+    QVariant(const QUrl &url);
     QVariant(const QEasingCurve &easing);
 #endif
     QVariant(Qt::GlobalColor color);
@@ -298,12 +303,15 @@ class Q_CORE_EXPORT QVariant
     QLineF toLineF() const;
     QRectF toRectF() const;
 #endif
-    QUrl toUrl() const;
     QLocale toLocale() const;
 #ifndef QT_NO_REGEXP
     QRegExp toRegExp() const;
-#endif
 #ifndef QT_BOOTSTRAPPED
+    QRegularExpression toRegularExpression() const;
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
+#ifndef QT_BOOTSTRAPPED
+    QUrl toUrl() const;
     QEasingCurve toEasingCurve() const;
 #endif
 

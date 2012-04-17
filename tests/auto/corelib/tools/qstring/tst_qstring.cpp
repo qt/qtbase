@@ -41,6 +41,7 @@
 
 #include <QtTest/QtTest>
 #include <qregexp.h>
+#include <qregularexpression.h>
 #include <qtextcodec.h>
 #include <qtextstream.h>
 #include <qstringlist.h>
@@ -50,6 +51,7 @@
 
 #include <qlocale.h>
 #include <locale.h>
+#include <qhash.h>
 
 Q_DECLARE_METATYPE(qlonglong)
 
@@ -194,6 +196,7 @@ private slots:
     void localeAwareCompare();
     void split_data();
     void split();
+    void split_regexp_data();
     void split_regexp();
     void fromUtf16_data();
     void fromUtf16();
@@ -226,6 +229,65 @@ private slots:
     void fromQLatin1StringWithLength();
     void assignQLatin1String();
 };
+
+template <class T> const T &verifyZeroTermination(const T &t) { return t; }
+
+QString verifyZeroTermination(const QString &str)
+{
+    // This test does some evil stuff, it's all supposed to work.
+
+    QString::DataPtr strDataPtr = const_cast<QString &>(str).data_ptr();
+
+    // Skip if isStatic() or fromRawData(), as those offer no guarantees
+    if (strDataPtr->ref.isStatic()
+            || strDataPtr->offset != QString().data_ptr()->offset)
+        return str;
+
+    int strSize = str.size();
+    QChar strTerminator = str.constData()[strSize];
+    if (QChar('\0') != strTerminator)
+        return QString::fromAscii(
+            "*** Result ('%1') not null-terminated: 0x%2 ***").arg(str)
+                .arg(strTerminator.unicode(), 4, 16, QChar('0'));
+
+    // Skip mutating checks on shared strings
+    if (strDataPtr->ref.isShared())
+        return str;
+
+    const QChar *strData = str.constData();
+    const QString strCopy(strData, strSize); // Deep copy
+
+    const_cast<QChar *>(strData)[strSize] = QChar('x');
+    if (QChar('x') != str.constData()[strSize]) {
+        return QString::fromAscii("*** Failed to replace null-terminator in "
+                "result ('%1') ***").arg(str);
+    }
+    if (str != strCopy) {
+        return QString::fromAscii( "*** Result ('%1') differs from its copy "
+                "after null-terminator was replaced ***").arg(str);
+    }
+    const_cast<QChar *>(strData)[strSize] = QChar('\0'); // Restore sanity
+
+    return str;
+}
+
+// Overriding QTest's QCOMPARE, to check QString for null termination
+#undef QCOMPARE
+#define QCOMPARE(actual, expected)                                      \
+    do {                                                                \
+        if (!QTest::qCompare(verifyZeroTermination(actual), expected,   \
+                #actual, #expected, __FILE__, __LINE__))                \
+            return;                                                     \
+    } while (0)                                                         \
+    /**/
+#undef QTEST
+#define QTEST(actual, testElement)                                      \
+    do {                                                                \
+        if (!QTest::qTest(verifyZeroTermination(actual), testElement,   \
+                #actual, #testElement, __FILE__, __LINE__))             \
+            return;                                                     \
+    } while (0)                                                         \
+    /**/
 
 typedef QList<int> IntList;
 
@@ -823,7 +885,6 @@ void tst_QString::constructorQByteArray()
 
 void tst_QString::STL()
 {
-#ifndef QT_NO_STL
 #ifndef QT_NO_CAST_TO_ASCII
     QString qt( "QString" );
 
@@ -867,9 +928,6 @@ void tst_QString::STL()
 
     QCOMPARE(s, QString::fromLatin1("hello"));
     QCOMPARE(stlStr, s.toStdWString());
-#else
-    QSKIP( "Not tested without STL support");
-#endif
 }
 
 void tst_QString::truncate()
@@ -1089,6 +1147,17 @@ void tst_QString::indexOf()
         QCOMPARE( rx2.matchedLength(), -1 );
     }
 
+    {
+        QRegularExpression::PatternOptions options = QRegularExpression::NoPatternOption;
+        if (!bcs)
+            options |= QRegularExpression::CaseInsensitiveOption;
+
+        QRegularExpression re(QRegularExpression::escape(needle), options);
+        QEXPECT_FAIL("data58", "QRegularExpression does not support case folding", Continue);
+        QEXPECT_FAIL("data59", "QRegularExpression does not support case folding", Continue);
+        QCOMPARE( haystack.indexOf(re, startpos), resultpos );
+    }
+
     if (cs == Qt::CaseSensitive) {
         QCOMPARE( haystack.indexOf(needle, startpos), resultpos );
         QCOMPARE( haystack.indexOf(ref, startpos), resultpos );
@@ -1276,6 +1345,15 @@ void tst_QString::lastIndexOf()
             QCOMPARE(rx1.matchedLength(), -1);
             QCOMPARE(rx2.matchedLength(), -1);
         }
+
+        {
+            QRegularExpression::PatternOptions options = QRegularExpression::NoPatternOption;
+            if (!caseSensitive)
+                options |= QRegularExpression::CaseInsensitiveOption;
+
+            QRegularExpression re(QRegularExpression::escape(needle), options);
+            QCOMPARE(haystack.lastIndexOf(re, from), expected);
+        }
     }
 
     if (cs == Qt::CaseSensitive) {
@@ -1311,6 +1389,9 @@ void tst_QString::count()
     QCOMPARE(a.count( "", Qt::CaseInsensitive), 16);
     QCOMPARE(a.count(QRegExp("[FG][HI]")),1);
     QCOMPARE(a.count(QRegExp("[G][HE]")),2);
+    QCOMPARE(a.count(QRegularExpression("[FG][HI]")), 1);
+    QCOMPARE(a.count(QRegularExpression("[G][HE]")), 2);
+
 
     CREATE_REF(QLatin1String("FG"));
     QCOMPARE(a.count(ref),2);
@@ -1336,6 +1417,8 @@ void tst_QString::contains()
     QVERIFY(a.contains( "", Qt::CaseInsensitive));
     QVERIFY(a.contains(QRegExp("[FG][HI]")));
     QVERIFY(a.contains(QRegExp("[G][HE]")));
+    QVERIFY(a.contains(QRegularExpression("[FG][HI]")));
+    QVERIFY(a.contains(QRegularExpression("[G][HE]")));
 
     CREATE_REF(QLatin1String("FG"));
     QVERIFY(a.contains(ref));
@@ -1430,16 +1513,69 @@ void tst_QString::mid()
     QVERIFY(a.mid(9999).isNull());
     QVERIFY(a.mid(9999,1).isNull());
 
+    QCOMPARE(a.mid(-1, 6), a.mid(0, 5));
+    QVERIFY(a.mid(-100, 6).isEmpty());
+    QVERIFY(a.mid(INT_MIN, 0).isEmpty());
+    QCOMPARE(a.mid(INT_MIN, -1), a);
+    QVERIFY(a.mid(INT_MIN, INT_MAX).isNull());
+    QVERIFY(a.mid(INT_MIN + 1, INT_MAX).isEmpty());
+    QCOMPARE(a.mid(INT_MIN + 2, INT_MAX), a.left(1));
+    QCOMPARE(a.mid(INT_MIN + a.size() + 1, INT_MAX), a);
+    QVERIFY(a.mid(INT_MAX).isNull());
+    QVERIFY(a.mid(INT_MAX, INT_MAX).isNull());
+    QCOMPARE(a.mid(-5, INT_MAX), a);
+    QCOMPARE(a.mid(-1, INT_MAX), a);
+    QCOMPARE(a.mid(0, INT_MAX), a);
+    QCOMPARE(a.mid(1, INT_MAX), QString("BCDEFGHIEfGEFG"));
+    QCOMPARE(a.mid(5, INT_MAX), QString("FGHIEfGEFG"));
+    QVERIFY(a.mid(20, INT_MAX).isNull());
+    QCOMPARE(a.mid(-1, -1), a);
+
     QString n;
     QVERIFY(n.mid(3,3).isNull());
     QVERIFY(n.mid(0,0).isNull());
     QVERIFY(n.mid(9999,0).isNull());
     QVERIFY(n.mid(9999,1).isNull());
 
+    QVERIFY(n.mid(-1, 6).isNull());
+    QVERIFY(n.mid(-100, 6).isNull());
+    QVERIFY(n.mid(INT_MIN, 0).isNull());
+    QVERIFY(n.mid(INT_MIN, -1).isNull());
+    QVERIFY(n.mid(INT_MIN, INT_MAX).isNull());
+    QVERIFY(n.mid(INT_MIN + 1, INT_MAX).isNull());
+    QVERIFY(n.mid(INT_MIN + 2, INT_MAX).isNull());
+    QVERIFY(n.mid(INT_MIN + n.size() + 1, INT_MAX).isNull());
+    QVERIFY(n.mid(INT_MAX).isNull());
+    QVERIFY(n.mid(INT_MAX, INT_MAX).isNull());
+    QVERIFY(n.mid(-5, INT_MAX).isNull());
+    QVERIFY(n.mid(-1, INT_MAX).isNull());
+    QVERIFY(n.mid(0, INT_MAX).isNull());
+    QVERIFY(n.mid(1, INT_MAX).isNull());
+    QVERIFY(n.mid(5, INT_MAX).isNull());
+    QVERIFY(n.mid(20, INT_MAX).isNull());
+    QVERIFY(n.mid(-1, -1).isNull());
+
     QString x = "Nine pineapples";
     QCOMPARE(x.mid(5, 4), QString("pine"));
     QCOMPARE(x.mid(5), QString("pineapples"));
 
+    QCOMPARE(x.mid(-1, 6), x.mid(0, 5));
+    QVERIFY(x.mid(-100, 6).isEmpty());
+    QVERIFY(x.mid(INT_MIN, 0).isEmpty());
+    QCOMPARE(x.mid(INT_MIN, -1), x);
+    QVERIFY(x.mid(INT_MIN, INT_MAX).isNull());
+    QVERIFY(x.mid(INT_MIN + 1, INT_MAX).isEmpty());
+    QCOMPARE(x.mid(INT_MIN + 2, INT_MAX), x.left(1));
+    QCOMPARE(x.mid(INT_MIN + x.size() + 1, INT_MAX), x);
+    QVERIFY(x.mid(INT_MAX).isNull());
+    QVERIFY(x.mid(INT_MAX, INT_MAX).isNull());
+    QCOMPARE(x.mid(-5, INT_MAX), x);
+    QCOMPARE(x.mid(-1, INT_MAX), x);
+    QCOMPARE(x.mid(0, INT_MAX), x);
+    QCOMPARE(x.mid(1, INT_MAX), QString("ine pineapples"));
+    QCOMPARE(x.mid(5, INT_MAX), QString("pineapples"));
+    QVERIFY(x.mid(20, INT_MAX).isNull());
+    QCOMPARE(x.mid(-1, -1), x);
 }
 
 void tst_QString::midRef()
@@ -1456,16 +1592,69 @@ void tst_QString::midRef()
     QVERIFY(a.midRef(9999).toString().isEmpty());
     QVERIFY(a.midRef(9999,1).toString().isEmpty());
 
+    QCOMPARE(a.midRef(-1, 6), a.midRef(0, 5));
+    QVERIFY(a.midRef(-100, 6).isEmpty());
+    QVERIFY(a.midRef(INT_MIN, 0).isEmpty());
+    QCOMPARE(a.midRef(INT_MIN, -1).toString(), a);
+    QVERIFY(a.midRef(INT_MIN, INT_MAX).isNull());
+    QVERIFY(a.midRef(INT_MIN + 1, INT_MAX).isEmpty());
+    QCOMPARE(a.midRef(INT_MIN + 2, INT_MAX), a.leftRef(1));
+    QCOMPARE(a.midRef(INT_MIN + a.size() + 1, INT_MAX).toString(), a);
+    QVERIFY(a.midRef(INT_MAX).isNull());
+    QVERIFY(a.midRef(INT_MAX, INT_MAX).isNull());
+    QCOMPARE(a.midRef(-5, INT_MAX).toString(), a);
+    QCOMPARE(a.midRef(-1, INT_MAX).toString(), a);
+    QCOMPARE(a.midRef(0, INT_MAX).toString(), a);
+    QCOMPARE(a.midRef(1, INT_MAX).toString(), QString("BCDEFGHIEfGEFG"));
+    QCOMPARE(a.midRef(5, INT_MAX).toString(), QString("FGHIEfGEFG"));
+    QVERIFY(a.midRef(20, INT_MAX).isNull());
+    QCOMPARE(a.midRef(-1, -1).toString(), a);
+
     QString n;
     QVERIFY(n.midRef(3,3).toString().isEmpty());
     QVERIFY(n.midRef(0,0).toString().isEmpty());
     QVERIFY(n.midRef(9999,0).toString().isEmpty());
     QVERIFY(n.midRef(9999,1).toString().isEmpty());
 
+    QVERIFY(n.midRef(-1, 6).isNull());
+    QVERIFY(n.midRef(-100, 6).isNull());
+    QVERIFY(n.midRef(INT_MIN, 0).isNull());
+    QVERIFY(n.midRef(INT_MIN, -1).isNull());
+    QVERIFY(n.midRef(INT_MIN, INT_MAX).isNull());
+    QVERIFY(n.midRef(INT_MIN + 1, INT_MAX).isNull());
+    QVERIFY(n.midRef(INT_MIN + 2, INT_MAX).isNull());
+    QVERIFY(n.midRef(INT_MIN + n.size() + 1, INT_MAX).isNull());
+    QVERIFY(n.midRef(INT_MAX).isNull());
+    QVERIFY(n.midRef(INT_MAX, INT_MAX).isNull());
+    QVERIFY(n.midRef(-5, INT_MAX).isNull());
+    QVERIFY(n.midRef(-1, INT_MAX).isNull());
+    QVERIFY(n.midRef(0, INT_MAX).isNull());
+    QVERIFY(n.midRef(1, INT_MAX).isNull());
+    QVERIFY(n.midRef(5, INT_MAX).isNull());
+    QVERIFY(n.midRef(20, INT_MAX).isNull());
+    QVERIFY(n.midRef(-1, -1).isNull());
+
     QString x = "Nine pineapples";
     QCOMPARE(x.midRef(5, 4).toString(), QString("pine"));
     QCOMPARE(x.midRef(5).toString(), QString("pineapples"));
 
+    QCOMPARE(x.midRef(-1, 6), x.midRef(0, 5));
+    QVERIFY(x.midRef(-100, 6).isEmpty());
+    QVERIFY(x.midRef(INT_MIN, 0).isEmpty());
+    QCOMPARE(x.midRef(INT_MIN, -1).toString(), x);
+    QVERIFY(x.midRef(INT_MIN, INT_MAX).isNull());
+    QVERIFY(x.midRef(INT_MIN + 1, INT_MAX).isEmpty());
+    QCOMPARE(x.midRef(INT_MIN + 2, INT_MAX), x.leftRef(1));
+    QCOMPARE(x.midRef(INT_MIN + x.size() + 1, INT_MAX).toString(), x);
+    QVERIFY(x.midRef(INT_MAX).isNull());
+    QVERIFY(x.midRef(INT_MAX, INT_MAX).isNull());
+    QCOMPARE(x.midRef(-5, INT_MAX).toString(), x);
+    QCOMPARE(x.midRef(-1, INT_MAX).toString(), x);
+    QCOMPARE(x.midRef(0, INT_MAX).toString(), x);
+    QCOMPARE(x.midRef(1, INT_MAX).toString(), QString("ine pineapples"));
+    QCOMPARE(x.midRef(5, INT_MAX).toString(), QString("pineapples"));
+    QVERIFY(x.midRef(20, INT_MAX).isNull());
+    QCOMPARE(x.midRef(-1, -1).toString(), x);
 }
 
 void tst_QString::stringRef()
@@ -2075,6 +2264,9 @@ void tst_QString::replace_regexp()
     QString s2 = string;
     s2.replace( QRegExp(regexp), after );
     QTEST( s2, "result" );
+    s2 = string;
+    s2.replace( QRegularExpression(regexp), after );
+    QTEST( s2, "result" );
 }
 
 void tst_QString::remove_uint_uint()
@@ -2139,8 +2331,13 @@ void tst_QString::remove_regexp()
     QFETCH( QString, after );
 
     if ( after.length() == 0 ) {
-        string.remove( QRegExp(regexp) );
-        QTEST( string, "result" );
+        QString s2 = string;
+        s2.remove( QRegExp(regexp) );
+        QTEST( s2, "result" );
+
+        s2 = string;
+        s2.remove( QRegularExpression(regexp) );
+        QTEST( s2, "result" );
     } else {
         QCOMPARE( 0, 0 ); // shut QtTest
     }
@@ -3168,7 +3365,6 @@ void tst_QString::fromStdString()
 #ifdef Q_CC_HPACC
     QSKIP("This test crashes on HP-UX with aCC");
 #endif
-#if !defined(QT_NO_STL)
     std::string stroustrup = "foo";
     QString eng = QString::fromStdString( stroustrup );
     QCOMPARE( eng, QString("foo") );
@@ -3176,7 +3372,6 @@ void tst_QString::fromStdString()
     std::string stdnull( cnull, sizeof(cnull)-1 );
     QString qtnull = QString::fromStdString( stdnull );
     QCOMPARE( qtnull.size(), int(stdnull.size()) );
-#endif
 }
 
 void tst_QString::toStdString()
@@ -3184,7 +3379,6 @@ void tst_QString::toStdString()
 #ifdef Q_CC_HPACC
     QSKIP("This test crashes on HP-UX with aCC");
 #endif
-#if !defined(QT_NO_STL)
     QString nord = "foo";
     std::string stroustrup1 = nord.toStdString();
     QVERIFY( qstrcmp(stroustrup1.c_str(), "foo") == 0 );
@@ -3198,7 +3392,6 @@ void tst_QString::toStdString()
     QString qtnull( qcnull, sizeof(qcnull)/sizeof(QChar) );
     std::string stdnull = qtnull.toStdString();
     QCOMPARE( int(stdnull.size()), qtnull.size() );
-#endif
 }
 
 void tst_QString::utf8()
@@ -3881,8 +4074,12 @@ void tst_QString::section()
     QFETCH( bool, regexp );
     if (regexp) {
         QCOMPARE( wholeString.section( QRegExp(sep), start, end, QString::SectionFlag(flags) ), sectionString );
+        QCOMPARE( wholeString.section( QRegularExpression(sep), start, end, QString::SectionFlag(flags) ), sectionString );
     } else {
         QCOMPARE( wholeString.section( sep, start, end, QString::SectionFlag(flags) ), sectionString );
+        QCOMPARE( wholeString.section( QRegExp(QRegExp::escape(sep)), start, end, QString::SectionFlag(flags) ), sectionString );
+        QCOMPARE( wholeString.section( QRegularExpression(QRegularExpression::escape(sep)), start, end, QString::SectionFlag(flags) ), sectionString );
+
     }
 }
 
@@ -4403,12 +4600,15 @@ void tst_QString::split()
     QFETCH(QStringList, result);
 
     QRegExp rx = QRegExp(QRegExp::escape(sep));
+    QRegularExpression re(QRegularExpression::escape(sep));
 
     QStringList list;
 
     list = str.split(sep);
     QVERIFY(list == result);
     list = str.split(rx);
+    QVERIFY(list == result);
+    list = str.split(re);
     QVERIFY(list == result);
     if (sep.size() == 1) {
         list = str.split(sep.at(0));
@@ -4418,6 +4618,8 @@ void tst_QString::split()
     list = str.split(sep, QString::KeepEmptyParts);
     QVERIFY(list == result);
     list = str.split(rx, QString::KeepEmptyParts);
+    QVERIFY(list == result);
+    list = str.split(re, QString::KeepEmptyParts);
     QVERIFY(list == result);
     if (sep.size() == 1) {
         list = str.split(sep.at(0), QString::KeepEmptyParts);
@@ -4429,39 +4631,51 @@ void tst_QString::split()
     QVERIFY(list == result);
     list = str.split(rx, QString::SkipEmptyParts);
     QVERIFY(list == result);
+    list = str.split(re, QString::SkipEmptyParts);
+    QVERIFY(list == result);
     if (sep.size() == 1) {
         list = str.split(sep.at(0), QString::SkipEmptyParts);
         QVERIFY(list == result);
     }
 }
 
+void tst_QString::split_regexp_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<QStringList>("result");
+
+    QTest::newRow("data01") << "Some  text\n\twith  strange whitespace."
+                            << "\\s+"
+                            << (QStringList() << "Some" << "text" << "with" << "strange" << "whitespace." );
+
+    QTest::newRow("data02") << "This time, a normal English sentence."
+                            << "\\W+"
+                            << (QStringList() << "This" << "time" << "a" << "normal" << "English" << "sentence" << "");
+
+    QTest::newRow("data03") << "Now: this sentence fragment."
+                            << "\\b"
+                            << (QStringList() << "" << "Now" << ": " << "this" << " " << "sentence" << " " << "fragment" << ".");
+}
+
 void tst_QString::split_regexp()
 {
-    QString str1 = "Some  text\n\twith  strange whitespace.";
-    QStringList list1 = str1.split(QRegExp("\\s+"));
-    QStringList result1;
-    result1 << "Some" << "text" << "with" << "strange" << "whitespace.";
-    QVERIFY(list1 == result1);
-    list1 = str1.split(QRegExp("\\s"), QString::SkipEmptyParts);
-    QVERIFY(list1 == result1);
+    QFETCH(QString, string);
+    QFETCH(QString, pattern);
+    QFETCH(QStringList, result);
 
-    QString str2 = "This time, a normal English sentence.";
-    QStringList list2 = str2.split(QRegExp("\\W+"));
-    QStringList result2;
-    result2 << "This" << "time" << "a" << "normal" << "English" << "sentence" << "";
-    QVERIFY(list2 == result2);
-    list2 = str2.split(QRegExp("\\W"), QString::SkipEmptyParts);
-    result2.removeAll(QString());
-    QVERIFY(list2 == result2);
+    QStringList list;
+    list = string.split(QRegExp(pattern));
+    QCOMPARE(list, result);
+    list = string.split(QRegularExpression(pattern));
+    QCOMPARE(list, result);
 
-    QString str3 = "Now: this sentence fragment.";
-    QStringList list3 = str3.split(QRegExp("\\b"));
-    QStringList result3;
-    result3 << "" << "Now" << ": " << "this" << " " << "sentence" << " " << "fragment" << ".";
-    QVERIFY(list3 == result3);
-    list3 = str3.split(QRegExp("\\b"), QString::SkipEmptyParts);
-    result3.removeAll(QString());
-    QVERIFY(list3 == result3);
+    result.removeAll(QString());
+
+    list = string.split(QRegExp(pattern), QString::SkipEmptyParts);
+    QCOMPARE(list, result);
+    list = string.split(QRegularExpression(pattern), QString::SkipEmptyParts);
+    QCOMPARE(list, result);
 }
 
 void tst_QString::fromUtf16_data()
@@ -4716,6 +4930,13 @@ void tst_QString::compare()
     QCOMPARE(sign(QString::compare(s1, r2, Qt::CaseInsensitive)), cir);
     QCOMPARE(sign(QStringRef::compare(r1, r2, Qt::CaseSensitive)), csr);
     QCOMPARE(sign(QStringRef::compare(r1, r2, Qt::CaseInsensitive)), cir);
+
+    if (csr == 0) {
+        QVERIFY(qHash(s1) == qHash(s2));
+        QVERIFY(qHash(s1) == qHash(r2));
+        QVERIFY(qHash(r1) == qHash(s2));
+        QVERIFY(qHash(r1) == qHash(r2));
+    }
 
     if (!cir) {
         QCOMPARE(s1.toCaseFolded(), s2.toCaseFolded());
@@ -5065,8 +5286,8 @@ void tst_QString::literals()
 
     QVERIFY(str.length() == 4);
     QVERIFY(str == QLatin1String("abcd"));
-    QVERIFY(str.data_ptr()->ref == -1);
-    QVERIFY(str.data_ptr()->offset == 0);
+    QVERIFY(str.data_ptr()->ref.isStatic());
+    QVERIFY(str.data_ptr()->offset == sizeof(QStringData));
 
     const QChar *s = str.constData();
     QString str2 = str;

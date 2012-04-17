@@ -698,6 +698,35 @@
 */
 
 /*!
+    \fn void QSharedPointer::reset()
+    \since 5.0
+
+    Same as clear(). For std::shared_ptr compatibility.
+*/
+
+/*!
+    \fn void QSharedPointer::reset(T *t)
+    \since 5.0
+
+    Resets this QSharedPointer object to point to \a t
+    instead. Equivalent to:
+    \code
+    QSharedPointer<T> other(t); this->swap(other);
+    \endcode
+*/
+
+/*!
+    \fn void QSharedPointer::reset(T *t, Deleter deleter)
+    \since 5.0
+
+    Resets this QSharedPointer object to point to \a t
+    instead, with deleter \a deleter. Equivalent to:
+    \code
+    QSharedPointer<T> other(t, deleter); this->swap(other);
+    \endcode
+*/
+
+/*!
     \fn QWeakPointer::QWeakPointer()
 
     Creates a QWeakPointer that points to nothing.
@@ -1380,47 +1409,14 @@ Q_GLOBAL_STATIC(KnownPointers, knownPointers)
 QT_BEGIN_NAMESPACE
 
 namespace QtSharedPointer {
-    Q_CORE_EXPORT void internalSafetyCheckAdd(const volatile void *);
-    Q_CORE_EXPORT void internalSafetyCheckRemove(const volatile void *);
     Q_AUTOTEST_EXPORT void internalSafetyCheckCleanCheck();
 }
 
 /*!
     \internal
 */
-void QtSharedPointer::internalSafetyCheckAdd(const volatile void *)
+void QtSharedPointer::internalSafetyCheckAdd(const void *d_ptr, const volatile void *ptr)
 {
-    // Qt 4.5 compatibility
-    // this function is broken by design, so it was replaced with internalSafetyCheckAdd2
-    //
-    // it's broken because we tracked the pointers added and
-    // removed from QSharedPointer, converted to void*.
-    // That is, this is supposed to track the "top-of-object" pointer in
-    // case of multiple inheritance.
-    //
-    // However, it doesn't work well in some compilers:
-    // if you create an object with a class of type A and the last reference
-    // is dropped of type B, then the value passed to internalSafetyCheckRemove could
-    // be different than was added. That would leave dangling addresses.
-    //
-    // So instead, we track the pointer by the d-pointer instead.
-}
-
-/*!
-    \internal
-*/
-void QtSharedPointer::internalSafetyCheckRemove(const volatile void *)
-{
-    // Qt 4.5 compatibility
-    // see comments above
-}
-
-/*!
-    \internal
-*/
-void QtSharedPointer::internalSafetyCheckAdd2(const void *d_ptr, const volatile void *ptr)
-{
-    // see comments above for the rationale for this function
     KnownPointers *const kp = knownPointers();
     if (!kp)
         return;                 // end-game: the application is being destroyed already
@@ -1453,7 +1449,7 @@ void QtSharedPointer::internalSafetyCheckAdd2(const void *d_ptr, const volatile 
 /*!
     \internal
 */
-void QtSharedPointer::internalSafetyCheckRemove2(const void *d_ptr)
+void QtSharedPointer::internalSafetyCheckRemove(const void *d_ptr)
 {
     KnownPointers *const kp = knownPointers();
     if (!kp)

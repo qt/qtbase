@@ -854,7 +854,7 @@ int QWindowsNativeFileDialogBase::itemPaths(IShellItemArray *items,
 static inline void toBuffer(const QString &what, WCHAR **ptr)
 {
     const int length = 1 + what.size();
-    qMemCopy(*ptr, what.utf16(), length * sizeof(WCHAR));
+    memcpy(*ptr, what.utf16(), length * sizeof(WCHAR));
     *ptr += length;
 }
 

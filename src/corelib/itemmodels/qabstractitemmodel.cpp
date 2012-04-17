@@ -2096,7 +2096,9 @@ QModelIndex QAbstractItemModel::buddy(const QModelIndex &index) const
     Returns a list of indexes for the items in the column of the \a start index
     where data stored under the given \a role matches the specified \a value.
     The way the search is performed is defined by the \a flags given. The list
-    that is returned may be empty.
+    that is returned may be empty. Note also that the order of results in the
+    list may not correspond to the order in the model, if for example a proxy
+    model is used. The order of the results can not be relied upon.
 
     The search begins from the \a start index, and continues until the number
     of matching data items equals \a hits, the search reaches the last row, or

@@ -346,41 +346,6 @@ void QMotifStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QP
                                 const QWidget *w) const
 {
     switch(pe) {
-    case PE_Q3CheckListExclusiveIndicator:
-        if (const QStyleOptionQ3ListView *lv = qstyleoption_cast<const QStyleOptionQ3ListView *>(opt)) {
-            if (lv->items.isEmpty())
-                return;
-
-            if (lv->state & State_Enabled)
-                p->setPen(QPen(opt->palette.text().color()));
-            else
-                p->setPen(QPen(lv->palette.color(QPalette::Disabled, QPalette::Text)));
-            QPolygon a;
-
-            int cx = opt->rect.width()/2 - 1;
-            int cy = opt->rect.height()/2;
-            int e = opt->rect.width()/2 - 1;
-            for (int i = 0; i < 3; i++) { //penWidth 2 doesn't quite work
-                a.setPoints(4, cx-e, cy, cx, cy-e, cx+e, cy, cx, cy+e);
-                p->drawPolygon(a);
-                e--;
-            }
-            if (opt->state & State_On) {
-                if (lv->state & State_Enabled)
-                    p->setPen(QPen(opt->palette.text().color()));
-                else
-                    p->setPen(QPen(lv->palette.color(QPalette::Disabled,
-                                                     QPalette::Text)));
-                QBrush saveBrush = p->brush();
-                p->setBrush(opt->palette.text());
-                e = e - 2;
-                a.setPoints(4, cx-e, cy, cx, cy-e, cx+e, cy, cx, cy+e);
-                p->drawPolygon(a);
-                p->setBrush(saveBrush);
-            }
-        }
-        break;
-
     case PE_FrameTabWidget:
     case PE_FrameWindow:
         qDrawShadePanel(p, opt->rect, opt->palette, QStyle::State_None, proxy()->pixelMetric(PM_DefaultFrameWidth));
@@ -1672,105 +1637,6 @@ void QMotifStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
         break; }
 #endif
 
-    case CC_Q3ListView:
-        if (opt->subControls & (SC_Q3ListViewBranch | SC_Q3ListViewExpand)) {
-            int i;
-            if (opt->subControls & SC_Q3ListView)
-                QCommonStyle::drawComplexControl(cc, opt, p, widget);
-            if (const QStyleOptionQ3ListView *lv = qstyleoption_cast<const QStyleOptionQ3ListView *>(opt)) {
-                QStyleOptionQ3ListViewItem item = lv->items.at(0);
-                int y = opt->rect.y();
-                int c;
-                QPolygon dotlines;
-                if ((opt->activeSubControls & SC_All) && (opt->subControls & SC_Q3ListViewExpand)) {
-                    c = 2;
-                    dotlines.resize(2);
-                    dotlines[0] = QPoint(opt->rect.right(), opt->rect.top());
-                    dotlines[1] = QPoint(opt->rect.right(), opt->rect.bottom());
-                } else {
-                    int linetop = 0, linebot = 0;
-                    // each branch needs at most two lines, ie. four end points
-                    dotlines.resize(item.childCount * 4);
-                    c = 0;
-
-                    // skip the stuff above the exposed rectangle
-                    for (i = 1; i < lv->items.size(); ++i) {
-                        QStyleOptionQ3ListViewItem child = lv->items.at(i);
-                        if (child.height + y > 0)
-                            break;
-                        y += child.totalHeight;
-                    }
-
-                    int bx = opt->rect.width() / 2;
-
-                    // paint stuff in the magical area
-                    while (i < lv->items.size() && y < lv->rect.height()) {
-                        QStyleOptionQ3ListViewItem child = lv->items.at(i);
-                        if (child.features & QStyleOptionQ3ListViewItem::Visible) {
-                            int lh;
-                            if (!(item.features & QStyleOptionQ3ListViewItem::MultiLine))
-                                lh = child.height;
-                            else
-                                lh = p->fontMetrics().height() + 2 * lv->itemMargin;
-                            lh = qMax(lh, QApplication::globalStrut().height());
-                            if (lh % 2 > 0)
-                                lh++;
-                            linebot = y + lh/2;
-                            if ((child.features & QStyleOptionQ3ListViewItem::Expandable || child.childCount > 0) &&
-                                child.height > 0) {
-                                // needs a box
-                                p->setPen(opt->palette.text().color());
-                                p->drawRect(bx-4, linebot-4, 9, 9);
-                                QPolygon a;
-                                if ((child.state & State_Open))
-                                    a.setPoints(3, bx-2, linebot-2,
-                                                bx, linebot+2,
-                                                bx+2, linebot-2); //Qt::RightArrow
-                                else
-                                    a.setPoints(3, bx-2, linebot-2,
-                                                bx+2, linebot,
-                                                bx-2, linebot+2); //Qt::DownArrow
-                                p->setBrush(opt->palette.text());
-                                p->drawPolygon(a);
-                                p->setBrush(Qt::NoBrush);
-                                // dotlinery
-                                dotlines[c++] = QPoint(bx, linetop);
-                                dotlines[c++] = QPoint(bx, linebot - 5);
-                                dotlines[c++] = QPoint(bx + 5, linebot);
-                                dotlines[c++] = QPoint(opt->rect.width(), linebot);
-                                linetop = linebot + 5;
-                            } else {
-                                // just dotlinery
-                                dotlines[c++] = QPoint(bx+1, linebot);
-                                dotlines[c++] = QPoint(opt->rect.width(), linebot);
-                            }
-                            y += child.totalHeight;
-                        }
-                        ++i;
-                    }
-
-                    // Expand line height to edge of rectangle if there's any
-                    // visible child below
-                    while (i < lv->items.size() && lv->items.at(i).height <= 0)
-                        ++i;
-                    if (i < lv->items.size())
-                        linebot = opt->rect.height();
-
-                    if (linetop < linebot) {
-                        dotlines[c++] = QPoint(bx, linetop);
-                        dotlines[c++] = QPoint(bx, linebot);
-                    }
-                }
-
-                int line; // index into dotlines
-                p->setPen(opt->palette.text().color());
-                if (opt->subControls & SC_Q3ListViewBranch) for(line = 0; line < c; line += 2) {
-                    p->drawLine(dotlines[line].x(), dotlines[line].y(),
-                                dotlines[line+1].x(), dotlines[line+1].y());
-                }
-            }
-            break; }
-
     default:
         QCommonStyle::drawComplexControl(cc, opt, p, widget);
         break;
@@ -2122,20 +1988,6 @@ QMotifStyle::subElementRect(SubElement sr, const QStyleOption *opt, const QWidge
         rect.setRect(ax-2, ay-2, awh+4, awh+sh+dh+4);
         break;
     }
-
-    case SE_Q3DockWindowHandleRect:
-        if (const QStyleOptionQ3DockWindow *dw = qstyleoption_cast<const QStyleOptionQ3DockWindow *>(opt)) {
-            if (!dw->docked || !dw->closeEnabled)
-                rect.setRect(0, 0, opt->rect.width(), opt->rect.height());
-            else {
-                if (dw->state == State_Horizontal)
-                    rect.setRect(2, 15, opt->rect.width()-2, opt->rect.height() - 15);
-                else
-                    rect.setRect(0, 2, opt->rect.width() - 15, opt->rect.height() - 2);
-            }
-            rect = visualRect(dw->direction, dw->rect, rect);
-        }
-        break;
 
     case SE_ProgressBarLabel:
     case SE_ProgressBarGroove:

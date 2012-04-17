@@ -54,8 +54,10 @@ class tst_QWindow: public QObject
     Q_OBJECT
 
 private slots:
+    void eventOrderOnShow();
     void mapGlobal();
     void positioning();
+    void isExposed();
     void isActive();
     void testInputEvents();
     void touchToMouseTranslation();
@@ -117,6 +119,7 @@ public:
     bool event(QEvent *event)
     {
         m_received[event->type()]++;
+        m_order << event->type();
 
         return QWindow::event(event);
     }
@@ -126,9 +129,31 @@ public:
         return m_received.value(type, 0);
     }
 
+    int eventIndex(QEvent::Type type)
+    {
+        return m_order.indexOf(type);
+    }
+
 private:
     QHash<QEvent::Type, int> m_received;
+    QVector<QEvent::Type> m_order;
 };
+
+void tst_QWindow::eventOrderOnShow()
+{
+    QRect geometry(80, 80, 40, 40);
+
+    Window window;
+    window.setGeometry(geometry);
+    window.show();
+
+    QTRY_COMPARE(window.received(QEvent::Show), 1);
+    QTRY_COMPARE(window.received(QEvent::Resize), 1);
+    QTRY_VERIFY(window.isExposed());
+
+    QVERIFY(window.eventIndex(QEvent::Show) < window.eventIndex(QEvent::Resize));
+    QVERIFY(window.eventIndex(QEvent::Resize) < window.eventIndex(QEvent::Expose));
+}
 
 void tst_QWindow::positioning()
 {
@@ -139,11 +164,8 @@ void tst_QWindow::positioning()
     QCOMPARE(window.geometry(), geometry);
     window.show();
 
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "This test fails on Mac OS X, see QTBUG-23059", Abort);
-#endif
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
-    QTRY_COMPARE(window.received(QEvent::Map), 1);
+    QTRY_VERIFY(window.received(QEvent::Expose) > 0);
 
     QMargins originalMargins = window.frameMargins();
 
@@ -154,6 +176,9 @@ void tst_QWindow::positioning()
     QPoint originalFramePos = window.framePos();
 
     window.setWindowState(Qt::WindowFullScreen);
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("", "QTBUG-24904 - Too many resize events on setting window state", Continue);
+#endif
     QTRY_COMPARE(window.received(QEvent::Resize), 2);
 
     window.setWindowState(Qt::WindowNoState);
@@ -185,16 +210,35 @@ void tst_QWindow::positioning()
     }
 }
 
+void tst_QWindow::isExposed()
+{
+    QRect geometry(80, 80, 40, 40);
+
+    Window window;
+    window.setGeometry(geometry);
+    QCOMPARE(window.geometry(), geometry);
+    window.show();
+
+    QTRY_VERIFY(window.received(QEvent::Expose) > 0);
+    QTRY_VERIFY(window.isExposed());
+
+    window.hide();
+
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "This test fails on Mac OS X, see QTBUG-23059", Abort);
+#endif
+    QTRY_VERIFY(window.received(QEvent::Expose) > 1);
+    QTRY_VERIFY(!window.isExposed());
+}
+
+
 void tst_QWindow::isActive()
 {
     Window window;
     window.setGeometry(80, 80, 40, 40);
     window.show();
 
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "This test fails on Mac OS X, see QTBUG-23059", Abort);
-#endif
-    QTRY_COMPARE(window.received(QEvent::Map), 1);
+    QTRY_VERIFY(window.isExposed());
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
     QTRY_VERIFY(QGuiApplication::focusWindow() == &window);
     QVERIFY(window.isActive());
@@ -204,15 +248,14 @@ void tst_QWindow::isActive()
     child.setGeometry(10, 10, 20, 20);
     child.show();
 
-    QTRY_COMPARE(child.received(QEvent::Map), 1);
+    QTRY_VERIFY(child.isExposed());
 
     child.requestActivateWindow();
 
     QTRY_VERIFY(QGuiApplication::focusWindow() == &child);
     QVERIFY(child.isActive());
 
-    // parent shouldn't receive new map or resize events from child being shown
-    QTRY_COMPARE(window.received(QEvent::Map), 1);
+    // parent shouldn't receive new resize events from child being shown
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
     QTRY_COMPARE(window.received(QEvent::FocusIn), 1);
     QTRY_COMPARE(window.received(QEvent::FocusOut), 1);
@@ -228,7 +271,7 @@ void tst_QWindow::isActive()
 
     dialog.requestActivateWindow();
 
-    QTRY_COMPARE(dialog.received(QEvent::Map), 1);
+    QTRY_VERIFY(dialog.isExposed());
     QTRY_COMPARE(dialog.received(QEvent::Resize), 1);
     QTRY_VERIFY(QGuiApplication::focusWindow() == &dialog);
     QVERIFY(dialog.isActive());

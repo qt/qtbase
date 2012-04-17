@@ -85,7 +85,7 @@ QT_END_NAMESPACE
     virtual object. It must return xml of the form:
 
     \code
-<interface name="com.trolltech.QtDBus.MyObject" >
+<interface name="org.qtproject.QtDBus.MyObject" >
     <property access="readwrite" type="i" name="prop1" />
 </interface>
     \endcode

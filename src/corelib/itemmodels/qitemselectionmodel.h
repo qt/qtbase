@@ -92,9 +92,12 @@ public:
     }
 
     bool intersects(const QItemSelectionRange &other) const;
-    QItemSelectionRange intersect(const QItemSelectionRange &other) const; // ### Qt 5: make QT4_SUPPORT
-    inline QItemSelectionRange intersected(const QItemSelectionRange &other) const
-        { return intersect(other); }
+#if QT_DEPRECATED_SINCE(5, 0)
+    inline QItemSelectionRange intersect(const QItemSelectionRange &other) const
+        { return intersected(other); }
+#endif
+    QItemSelectionRange intersected(const QItemSelectionRange &other) const;
+
 
     inline bool operator==(const QItemSelectionRange &other) const
         { return (tl == other.tl && br == other.br); }

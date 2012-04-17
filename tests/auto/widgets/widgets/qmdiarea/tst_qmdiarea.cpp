@@ -199,7 +199,7 @@ static bool verifyArrangement(QMdiArea *mdiArea, Arrangement arrangement, const 
         if (qobject_cast<QMacStyle *>(firstSubWindow->style()))
             titleBarHeight -= 4;
 #endif
-        const QFontMetrics fontMetrics = QFontMetrics(QApplication::font("QWorkspaceTitleBar"));
+        const QFontMetrics fontMetrics = QFontMetrics(QApplication::font("QMdiSubWindowTitleBar"));
         const int dy = qMax(titleBarHeight - (titleBarHeight - fontMetrics.height()) / 2, 1);
         const int dx = 10;
 
@@ -1275,7 +1275,7 @@ static int numberOfConnectedSignals(MySubWindow *subWindow)
         QMetaMethod method = subWindow->metaObject()->method(i);
         if (method.methodType() == QMetaMethod::Signal) {
             QString signature(QLatin1String("2"));
-            signature += QLatin1String(method.signature());
+            signature += QLatin1String(method.methodSignature().constData());
             numConnectedSignals += subWindow->receivers(signature.toLatin1());
         }
     }
@@ -1823,7 +1823,7 @@ void tst_QMdiArea::cascadeAndTileSubWindows()
     // ### Remove this after the mac style has been fixed
     if (windows.at(1)->style()->inherits("QMacStyle"))
         titleBarHeight -= 4;
-    const QFontMetrics fontMetrics = QFontMetrics(QApplication::font("QWorkspaceTitleBar"));
+    const QFontMetrics fontMetrics = QFontMetrics(QApplication::font("QMdiSubWindowTitleBar"));
     const int dy = qMax(titleBarHeight - (titleBarHeight - fontMetrics.height()) / 2, 1);
     QCOMPARE(windows.at(2)->geometry().top() - windows.at(1)->geometry().top(), dy);
 

@@ -934,16 +934,6 @@ QKeySequence::QKeySequence()
     Note the "File|Open" translator comment. It is by no means
     necessary, but it provides some context for the human translator.
 */
-QKeySequence::QKeySequence(const QString &key)
-{
-    d = new QKeySequencePrivate();
-    assign(key);
-}
-
-/*!
-    \since 4.7
-    Creates a key sequence from the \a key string based on \a format.
-*/
 QKeySequence::QKeySequence(const QString &key, QKeySequence::SequenceFormat format)
 {
     d = new QKeySequencePrivate();

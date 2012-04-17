@@ -372,7 +372,17 @@ void ModelChangeChildrenLayoutsCommand::doCommand()
         }
     }
 
-    foreach (const QModelIndex &idx, m_model->persistentIndexList()) {
+    // If we're changing one of the parent indexes, we need to ensure that we do that before
+    // changing any children of that parent. The reason is that we're keeping parent1 and parent2
+    // around as QPersistentModelIndex instances, and we query idx.parent() in the loop.
+    QModelIndexList persistent = m_model->persistentIndexList();
+    foreach (const QModelIndex &parent, parents) {
+        int idx = persistent.indexOf(parent);
+        if (idx != -1)
+            persistent.move(idx, 0);
+    }
+
+    foreach (const QModelIndex &idx, persistent) {
         if (idx.parent() == parent1) {
             if (idx.row() == rowSize1 - 1) {
                 m_model->changePersistentIndex(idx, m_model->createIndex(0, idx.column(), idx.internalPointer()));

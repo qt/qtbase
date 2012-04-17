@@ -9,14 +9,13 @@ HEADERS += \
     arch/qatomic_armv7.h \
     arch/qatomic_bfin.h \
     arch/qatomic_bootstrap.h \
-    arch/qatomic_i386.h \
     arch/qatomic_ia64.h \
     arch/qatomic_mips.h \
     arch/qatomic_power.h \
     arch/qatomic_s390.h \
     arch/qatomic_sh4a.h \
     arch/qatomic_sparc.h \
-    arch/qatomic_x86_64.h \
+    arch/qatomic_x86.h \
     arch/qatomic_gcc.h \
     arch/qatomic_cxx11.h
 

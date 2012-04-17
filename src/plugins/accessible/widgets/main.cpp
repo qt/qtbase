@@ -116,7 +116,6 @@ QStringList AccessibleFactory::keys() const
     list << QLatin1String("QHeaderView");
     list << QLatin1String("QTabBar");
     list << QLatin1String("QToolBar");
-    list << QLatin1String("QWorkspaceChild");
     list << QLatin1String("QSizeGrip");
     list << QLatin1String("QAbstractItemView");
     list << QLatin1String("QWidget");
@@ -133,7 +132,6 @@ QStringList AccessibleFactory::keys() const
     list << QLatin1String("QToolBox");
     list << QLatin1String("QMdiArea");
     list << QLatin1String("QMdiSubWindow");
-    list << QLatin1String("QWorkspace");
     list << QLatin1String("QDialogButtonBox");
 #ifndef QT_NO_DIAL
     list << QLatin1String("QDial");
@@ -276,8 +274,6 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
     } else if (classname == QLatin1String("QTabBar")) {
         iface = new QAccessibleTabBar(widget);
 #endif
-    } else if (classname == QLatin1String("QWorkspaceChild")) {
-        iface = new QAccessibleWidget(widget, QAccessible::Window);
     } else if (classname == QLatin1String("QSizeGrip")) {
         iface = new QAccessibleWidget(widget, QAccessible::Grip);
 #ifndef QT_NO_SPLITTER
@@ -307,10 +303,6 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
         iface = new QAccessibleMdiArea(widget);
     } else if (classname == QLatin1String("QMdiSubWindow")) {
         iface = new QAccessibleMdiSubWindow(widget);
-#endif
-#ifndef QT_NO_WORKSPACE
-    } else if (classname == QLatin1String("QWorkspace")) {
-        iface = new QAccessibleWorkspace(widget);
 #endif
     } else if (classname == QLatin1String("QDialogButtonBox")) {
         iface = new QAccessibleDialogButtonBox(widget);

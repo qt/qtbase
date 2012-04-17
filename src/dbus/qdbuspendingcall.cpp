@@ -372,7 +372,7 @@ QDBusError QDBusPendingCall::error() const
 {
     if (d) {
         QMutexLocker locker(&d->mutex);
-        return d->replyMessage;
+        return QDBusError(d->replyMessage);
     }
 
     // not connected, return an error

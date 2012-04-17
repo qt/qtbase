@@ -2305,7 +2305,7 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
         bar.rect.adjust(frameWidth, frameWidth, -frameWidth, 0);
 
     painter->save();
-    painter->setFont(QApplication::font("QWorkspaceTitleBar"));
+    painter->setFont(QApplication::font("QMdiSubWindowTitleBar"));
     style()->drawComplexControl(QStyle::CC_TitleBar, &bar, painter, widget);
     painter->restore();
     if (setMask)

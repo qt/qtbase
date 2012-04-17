@@ -134,15 +134,14 @@ public:
     QString escapeIdentifier(const QString &identifier, IdentifierType type) const;
     QString formatValue(const QSqlField &field, bool trimStrings) const;
 
+    bool subscribeToNotification(const QString &name);
+    bool unsubscribeFromNotification(const QString &name);
+    QStringList subscribedToNotifications() const;
+
 protected:
     bool beginTransaction();
     bool commitTransaction();
     bool rollbackTransaction();
-
-protected Q_SLOTS:
-    bool subscribeToNotificationImplementation(const QString &name);
-    bool unsubscribeFromNotificationImplementation(const QString &name);
-    QStringList subscribedToNotificationsImplementation() const;
 
 private Q_SLOTS:
     void _q_handleNotification(int);

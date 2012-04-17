@@ -66,6 +66,7 @@ class QEventDispatcherWin32Private;
 
 // forward declaration
 LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
+int qt_msectime();
 
 class Q_CORE_EXPORT QEventDispatcherWin32 : public QAbstractEventDispatcher
 {
@@ -93,6 +94,8 @@ public:
     bool registerEventNotifier(QWinEventNotifier *notifier);
     void unregisterEventNotifier(QWinEventNotifier *notifier);
     void activateEventNotifiers();
+
+    int remainingTime(int timerId);
 
     void wakeUp();
     void interrupt();
@@ -123,6 +126,7 @@ struct WinTimerInfo {                           // internal timer info
     int timerId;
     int interval;
     Qt::TimerType timerType;
+    quint64 timeout;                            // - when to actually fire
     QObject *obj;                               // - object to receive events
     bool inTimerEvent;
     int fastTimerId;

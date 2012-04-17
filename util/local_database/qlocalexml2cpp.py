@@ -504,7 +504,6 @@ def main():
     date_format_data = StringData()
     time_format_data = StringData()
     months_data = StringData()
-    standalone_months_data = StringData()
     days_data = StringData()
     am_data = StringData()
     pm_data = StringData()
@@ -546,9 +545,9 @@ def main():
                         date_format_data.append(l.longDateFormat),
                         time_format_data.append(l.shortTimeFormat),
                         time_format_data.append(l.longTimeFormat),
-                        standalone_months_data.append(l.standaloneShortMonths),
-                        standalone_months_data.append(l.standaloneLongMonths),
-                        standalone_months_data.append(l.standaloneNarrowMonths),
+                        months_data.append(l.standaloneShortMonths),
+                        months_data.append(l.standaloneLongMonths),
+                        months_data.append(l.standaloneNarrowMonths),
                         months_data.append(l.shortMonths),
                         months_data.append(l.longMonths),
                         months_data.append(l.narrowMonths),
@@ -608,14 +607,6 @@ def main():
     #check_static_char_array_length("months", months_data.data)
     data_temp_file.write("static const ushort months_data[] = {\n")
     data_temp_file.write(wrap_list(months_data.data))
-    data_temp_file.write("\n};\n")
-
-    data_temp_file.write("\n")
-
-    # Standalone months data
-    #check_static_char_array_length("standalone_months", standalone_months_data.data)
-    data_temp_file.write("static const ushort standalone_months_data[] = {\n")
-    data_temp_file.write(wrap_list(standalone_months_data.data))
     data_temp_file.write("\n};\n")
 
     data_temp_file.write("\n")

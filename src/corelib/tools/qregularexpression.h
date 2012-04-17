@@ -239,8 +239,6 @@ Q_DECLARE_TYPEINFO(QRegularExpressionMatchIterator, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QRegularExpression)
-
 QT_END_HEADER
 
 #endif // QT_NO_REGEXP

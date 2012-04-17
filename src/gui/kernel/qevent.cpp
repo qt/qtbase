@@ -717,9 +717,39 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 */
 QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text,
                      bool autorep, ushort count)
-    : QInputEvent(type, modifiers), txt(text), k(key), c(count), autor(autorep)
+    : QInputEvent(type, modifiers), txt(text), k(key),
+      nScanCode(0), nVirtualKey(0), nModifiers(0),
+      c(count), autor(autorep)
 {
 }
+
+/*!
+    Constructs a key event object.
+
+    The \a type parameter must be QEvent::KeyPress, QEvent::KeyRelease,
+    or QEvent::ShortcutOverride.
+
+    Int \a key is the code for the Qt::Key that the event loop should listen
+    for. If \a key is 0, the event is not a result of a known key; for
+    example, it may be the result of a compose sequence or keyboard macro.
+    The \a modifiers holds the keyboard modifiers, and the given \a text
+    is the Unicode text that the key generated. If \a autorep is true,
+    isAutoRepeat() will be true. \a count is the number of keys involved
+    in the event.
+
+    In addition to the normal key event data, also contains \a nativeScanCode,
+    \a nativeVirtualKey and \a nativeModifiers. This extra data is used by the
+    shortcut system, to determine which shortcuts to trigger.
+*/
+QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
+                     quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
+                     const QString &text, bool autorep, ushort count)
+    : QInputEvent(type, modifiers), txt(text), k(key),
+      nScanCode(nativeScanCode), nVirtualKey(nativeVirtualKey), nModifiers(nativeModifiers),
+      c(count), autor(autorep)
+{
+}
+
 
 /*!
   \internal
@@ -729,16 +759,9 @@ QKeyEvent::~QKeyEvent()
 }
 
 /*!
+    \fn QKeyEvent *QKeyEvent::createExtendedKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers, const QString& text, bool autorep, ushort count)
     \internal
 */
-QKeyEvent *QKeyEvent::createExtendedKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
-                                             quint32 nativeScanCode, quint32 nativeVirtualKey,
-                                             quint32 nativeModifiers,
-                                             const QString& text, bool autorep, ushort count)
-{
-    return new QKeyEventEx(type, key, modifiers, text, autorep, count,
-                           nativeScanCode, nativeVirtualKey, nativeModifiers);
-}
 
 /*!
     \fn bool QKeyEvent::hasExtendedInfo() const
@@ -746,6 +769,7 @@ QKeyEvent *QKeyEvent::createExtendedKeyEvent(Type type, int key, Qt::KeyboardMod
 */
 
 /*!
+  \fn quint32 QKeyEvent::nativeScanCode() const
   \since 4.2
 
   Returns the native scan code of the key event.  If the key event
@@ -758,13 +782,9 @@ QKeyEvent *QKeyEvent::createExtendedKeyEvent(Type type, int key, Qt::KeyboardMod
   way to get the scan code from Carbon or Cocoa. The function always
   returns 1 (or 0 in the case explained above).
 */
-quint32 QKeyEvent::nativeScanCode() const
-{
-    return (reinterpret_cast<const QKeyEvent*>(d) != this
-            ? 0 : reinterpret_cast<const QKeyEventEx*>(this)->nScanCode);
-}
 
 /*!
+    \fn quint32 QKeyEvent::nativeVirtualKey() const
     \since 4.2
 
     Returns the native virtual key, or key sym of the key event.
@@ -772,13 +792,9 @@ quint32 QKeyEvent::nativeScanCode() const
 
     Note: The native virtual key may be 0, even if the key event contains extended information.
 */
-quint32 QKeyEvent::nativeVirtualKey() const
-{
-    return (reinterpret_cast<const QKeyEvent*>(d) != this
-            ? 0 : reinterpret_cast<const QKeyEventEx*>(this)->nVirtualKey);
-}
 
 /*!
+    \fn quint32 QKeyEvent::nativeModifiers() const
     \since 4.2
 
     Returns the native modifiers of a key event.
@@ -786,44 +802,6 @@ quint32 QKeyEvent::nativeVirtualKey() const
 
     Note: The native modifiers may be 0, even if the key event contains extended information.
 */
-quint32 QKeyEvent::nativeModifiers() const
-{
-    return (reinterpret_cast<const QKeyEvent*>(d) != this
-            ? 0 : reinterpret_cast<const QKeyEventEx*>(this)->nModifiers);
-}
-
-/*!
-    \internal
-    Creates an extended key event object, which in addition to the normal key event data, also
-    contains the native scan code, virtual key and modifiers. This extra data is used by the
-    shortcut system, to determine which shortcuts to trigger.
-*/
-QKeyEventEx::QKeyEventEx(Type type, int key, Qt::KeyboardModifiers modifiers,
-                         const QString &text, bool autorep, ushort count,
-                         quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers)
-    : QKeyEvent(type, key, modifiers, text, autorep, count),
-      nScanCode(nativeScanCode), nVirtualKey(nativeVirtualKey), nModifiers(nativeModifiers)
-{
-    d = reinterpret_cast<QEventPrivate*>(this);
-}
-
-/*!
-    \internal
-    Creates a copy of an other extended key event.
-*/
-QKeyEventEx::QKeyEventEx(const QKeyEventEx &other)
-    : QKeyEvent(QEvent::Type(other.t), other.k, other.modState, other.txt, other.autor, other.c),
-      nScanCode(other.nScanCode), nVirtualKey(other.nVirtualKey), nModifiers(other.nModifiers)
-{
-    d = reinterpret_cast<QEventPrivate*>(this);
-}
-
-/*!
-    \internal
-*/
-QKeyEventEx::~QKeyEventEx()
-{
-}
 
 /*!
     \fn int QKeyEvent::key() const
@@ -3627,7 +3605,7 @@ QTouchEvent::TouchPoint::TouchPoint(const QTouchEvent::TouchPoint &other)
 */
 QTouchEvent::TouchPoint::~TouchPoint()
 {
-    if (!d->ref.deref())
+    if (d && !d->ref.deref())
         delete d;
 }
 
@@ -3869,10 +3847,11 @@ QTouchEvent::TouchPoint::InfoFlags QTouchEvent::TouchPoint::flags() const
 }
 
 /*!
+  \since 5.0
   Returns the raw, unfiltered positions for the touch point. The positions are in native screen coordinates.
   To get local coordinates you can use mapFromGlobal() of the QWindow returned by QTouchEvent::window().
 
-  \note Returns an empty list if the touch device's capabilities do not include QTouchDevice::RawPositions.
+  \note Returns an empty vector if the touch device's capabilities do not include QTouchDevice::RawPositions.
 
   \note Native screen coordinates refer to the native orientation of the screen which, in case of
   mobile devices, is typically portrait. This means that on systems capable of screen orientation
@@ -3881,7 +3860,7 @@ QTouchEvent::TouchPoint::InfoFlags QTouchEvent::TouchPoint::flags() const
 
   \sa QTouchDevice::capabilities(), device(), window()
   */
-QList<QPointF> QTouchEvent::TouchPoint::rawScreenPositions() const
+QVector<QPointF> QTouchEvent::TouchPoint::rawScreenPositions() const
 {
     return d->rawScreenPositions;
 }
@@ -4039,7 +4018,7 @@ void QTouchEvent::TouchPoint::setVelocity(const QVector2D &v)
 }
 
 /*! \internal */
-void QTouchEvent::TouchPoint::setRawScreenPositions(const QList<QPointF> &positions)
+void QTouchEvent::TouchPoint::setRawScreenPositions(const QVector<QPointF> &positions)
 {
     if (d->ref.load() != 1)
         d = d->detach();
@@ -4054,16 +4033,15 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
     d->flags = flags;
 }
 
-/*! \internal */
-QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::TouchPoint &other)
-{
-    other.d->ref.ref();
-    if (!d->ref.deref())
-        delete d;
-    d = other.d;
-    return *this;
-}
+/*!
+    \fn QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::TouchPoint &other)
+    \internal
+ */
 
+/*!
+    \fn void QTouchEvent::TouchPoint::swap(TouchPoint &other);
+    \internal
+*/
 
 /*!
     \class QScrollPrepareEvent

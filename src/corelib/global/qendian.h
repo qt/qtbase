@@ -79,7 +79,7 @@ template <typename T> inline void qbswap(const T src, uchar *dest)
 // If you want to avoid the memcopy, you must write specializations for this function
 template <typename T> inline void qToUnaligned(const T src, uchar *dest)
 {
-    qMemCopy(dest, &src, sizeof(T));
+    memcpy(dest, &src, sizeof(T));
 }
 
 /* T qFromLittleEndian(const uchar *src)
@@ -170,6 +170,11 @@ template <> inline qint32 qFromLittleEndian<qint32>(const uchar *src)
 template <> inline qint16 qFromLittleEndian<qint16>(const uchar *src)
 { return static_cast<qint16>(qFromLittleEndian<quint16>(src)); }
 #endif
+
+template <> inline quint8 qFromLittleEndian<quint8>(const uchar *src)
+{ return static_cast<quint8>(src[0]); }
+template <> inline qint8 qFromLittleEndian<qint8>(const uchar *src)
+{ return static_cast<qint8>(src[0]); }
 
 /* This function will read a big-endian (also known as network order) encoded value from \a src
  * and return the value in host-endian encoding.
@@ -263,6 +268,12 @@ template <> inline qint32 qFromBigEndian<qint32>(const uchar *src)
 template <> inline qint16 qFromBigEndian<qint16>(const uchar *src)
 { return static_cast<qint16>(qFromBigEndian<quint16>(src)); }
 #endif
+
+template <> inline quint8 qFromBigEndian<quint8>(const uchar *src)
+{ return static_cast<quint8>(src[0]); }
+template <> inline qint8 qFromBigEndian<qint8>(const uchar *src)
+{ return static_cast<qint8>(src[0]); }
+
 /*
  * T qbswap(T source).
  * Changes the byte order of a value from big endian to little endian or vice versa.
@@ -363,6 +374,11 @@ template <typename T> inline void qToLittleEndian(T src, uchar *dest)
 #endif // Q_BYTE_ORDER == Q_BIG_ENDIAN
 
 template <> inline quint8 qbswap<quint8>(quint8 source)
+{
+    return source;
+}
+
+template <> inline qint8 qbswap<qint8>(qint8 source)
 {
     return source;
 }

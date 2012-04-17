@@ -640,12 +640,10 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
             continue;
 
         // check name:
-        QByteArray slotname = mm.signature();
-        int paren = slotname.indexOf('(');
-        if (paren != name.length() || !slotname.startsWith(name))
+        if (mm.name() != name)
             continue;
 
-        int returnType = QMetaType::type(mm.typeName());
+        int returnType = mm.returnType();
         bool isAsync = qDBusCheckAsyncTag(mm.tag());
         bool isScriptable = mm.attributes() & QMetaMethod::Scriptable;
 
@@ -686,7 +684,7 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
             ++i;
 
         // make sure that the output parameters have signatures too
-        if (returnType != 0 && QDBusMetaType::typeToSignature(returnType) == 0)
+        if (returnType != QMetaType::UnknownType && returnType != QMetaType::Void && QDBusMetaType::typeToSignature(returnType) == 0)
             continue;
 
         bool ok = true;
@@ -919,7 +917,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     // output arguments
     QVariantList outputArgs;
     void *null = 0;
-    if (metaTypes[0] != QMetaType::Void) {
+    if (metaTypes[0] != QMetaType::Void && metaTypes[0] != QMetaType::UnknownType) {
         QVariant arg(metaTypes[0], null);
         outputArgs.append( arg );
         params[0] = const_cast<void*>(outputArgs.at( outputArgs.count() - 1 ).constData());
@@ -1188,8 +1186,7 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
     QString interface = qDBusInterfaceFromMetaObject(mo);
 
     QMetaMethod mm = mo->method(signalId);
-    QByteArray memberName = mm.signature();
-    memberName.truncate(memberName.indexOf('('));
+    QByteArray memberName = mm.name();
 
     // check if it's scriptable
     bool isScriptable = mm.attributes() & QMetaMethod::Scriptable;
@@ -1928,7 +1925,7 @@ QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
         }
 
         QDBusMessage reply = pcall->replyMessage;
-        lastError = reply;      // set or clear error
+        lastError = QDBusError(reply);      // set or clear error
 
         delete pcall;
         return reply;
@@ -2368,7 +2365,7 @@ QDBusConnectionPrivate::findMetaObject(const QString &service, const QString &pa
             // fetch the XML description
             xml = reply.arguments().at(0).toString();
     } else {
-        error = reply;
+        error = QDBusError(reply);
         lastError = error;
         if (reply.type() != QDBusMessage::ErrorMessage || error.type() != QDBusError::UnknownMethod)
             return 0; // error

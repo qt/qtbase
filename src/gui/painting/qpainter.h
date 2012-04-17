@@ -465,7 +465,6 @@ public:
 
 private:
     Q_DISABLE_COPY(QPainter)
-    friend class Q3Painter;
 
     QScopedPointer<QPainterPrivate> d_ptr;
 

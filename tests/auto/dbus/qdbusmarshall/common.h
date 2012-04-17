@@ -85,8 +85,8 @@ Q_DECLARE_METATYPE(QList<QList<QDBusSignature> >)
 typedef QMap<int, QString> IntStringMap;
 typedef QMap<QString, QString> StringStringMap;
 typedef QMap<QDBusObjectPath, QString> ObjectPathStringMap;
-typedef QHash<qlonglong, QDateTime> LLDateTimeMap;
-typedef QHash<QDBusSignature, QString> SignatureStringMap;
+typedef QMap<qlonglong, QDateTime> LLDateTimeMap;
+typedef QMap<QDBusSignature, QString> SignatureStringMap;
 Q_DECLARE_METATYPE(IntStringMap)
 Q_DECLARE_METATYPE(StringStringMap)
 Q_DECLARE_METATYPE(ObjectPathStringMap)
@@ -209,8 +209,8 @@ void commonInit()
     qDBusRegisterMetaType<QMap<int, QString> >();
     qDBusRegisterMetaType<QMap<QString, QString> >();
     qDBusRegisterMetaType<QMap<QDBusObjectPath, QString> >();
-    qDBusRegisterMetaType<QHash<qlonglong, QDateTime> >();
-    qDBusRegisterMetaType<QHash<QDBusSignature, QString> >();
+    qDBusRegisterMetaType<QMap<qlonglong, QDateTime> >();
+    qDBusRegisterMetaType<QMap<QDBusSignature, QString> >();
 
     qDBusRegisterMetaType<MyStruct>();
     qDBusRegisterMetaType<MyVariantMapStruct>();
@@ -418,23 +418,6 @@ bool compare(const QMap<Key, T> &m1, const QMap<Key, T> &m2)
     return true;
 }
 
-template<typename Key, typename T>
-bool compare(const QHash<Key, T> &m1, const QHash<Key, T> &m2)
-{
-    if (m1.count() != m2.size())
-        return false;
-    typename QHash<Key, T>::ConstIterator i1 = m1.constBegin();
-    typename QHash<Key, T>::ConstIterator end = m1.constEnd();
-    for ( ; i1 != end; ++i1) {
-        typename QHash<Key, T>::ConstIterator i2 = m2.find(i1.key());
-        if (i2 == m2.constEnd())
-            return false;
-        if (!compare(*i1, *i2))
-            return false;
-    }
-    return true;
-}
-
 template<typename T>
 inline bool compare(const QDBusArgument &arg, const QVariant &v2, T * = 0)
 {
@@ -536,10 +519,10 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
             return compare<QMap<QString, QString> >(arg, v2);
         else if (id == qMetaTypeId<QMap<QDBusObjectPath, QString> >())
             return compare<QMap<QDBusObjectPath, QString> >(arg, v2);
-        else if (id == qMetaTypeId<QHash<qlonglong, QDateTime> >())
-            return compare<QHash<qlonglong, QDateTime> >(arg, v2);
-        else if (id == qMetaTypeId<QHash<QDBusSignature, QString> >())
-            return compare<QHash<QDBusSignature, QString> >(arg, v2);
+        else if (id == qMetaTypeId<QMap<qlonglong, QDateTime> >())
+            return compare<QMap<qlonglong, QDateTime> >(arg, v2);
+        else if (id == qMetaTypeId<QMap<QDBusSignature, QString> >())
+            return compare<QMap<QDBusSignature, QString> >(arg, v2);
 
         else if (id == qMetaTypeId<QList<QByteArray> >())
             return compare<QList<QByteArray> >(arg, v2);
@@ -701,11 +684,11 @@ template<> bool compare(const QVariant &v1, const QVariant &v2)
     else if (id == qMetaTypeId<QMap<QDBusObjectPath, QString> >())
         return compare(qvariant_cast<QMap<QDBusObjectPath, QString> >(v1), qvariant_cast<QMap<QDBusObjectPath, QString> >(v2));
 
-    else if (id == qMetaTypeId<QHash<qlonglong, QDateTime> >()) // lldtmap
-        return compare(qvariant_cast<QHash<qint64, QDateTime> >(v1), qvariant_cast<QHash<qint64, QDateTime> >(v2));
+    else if (id == qMetaTypeId<QMap<qlonglong, QDateTime> >()) // lldtmap
+        return compare(qvariant_cast<QMap<qint64, QDateTime> >(v1), qvariant_cast<QMap<qint64, QDateTime> >(v2));
 
-    else if (id == qMetaTypeId<QHash<QDBusSignature, QString> >())
-        return compare(qvariant_cast<QHash<QDBusSignature, QString> >(v1), qvariant_cast<QHash<QDBusSignature, QString> >(v2));
+    else if (id == qMetaTypeId<QMap<QDBusSignature, QString> >())
+        return compare(qvariant_cast<QMap<QDBusSignature, QString> >(v1), qvariant_cast<QMap<QDBusSignature, QString> >(v2));
 
     else if (id == qMetaTypeId<MyStruct>()) // (is)
             return qvariant_cast<MyStruct>(v1) == qvariant_cast<MyStruct>(v2);

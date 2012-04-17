@@ -165,8 +165,6 @@ public:
     inline bool validIndex(int index) const { return index >= 0 && index < tabList.count(); }
     void setCurrentNextEnabledIndex(int offset);
 
-    QSize minimumTabSizeHint(int index);
-
     QToolButton* rightB; // right or bottom
     QToolButton* leftB; // left or top
 

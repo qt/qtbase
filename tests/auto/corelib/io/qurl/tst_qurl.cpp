@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -39,37 +40,18 @@
 **
 ****************************************************************************/
 
+#define QT_DEPRECATED
+#define QT_DISABLE_DEPRECATED_BEFORE 0
+#include <qurl.h>
 #include <QtTest/QtTest>
 #include <QtCore/QDebug>
 
 #include <qcoreapplication.h>
 
 #include <qfileinfo.h>
-#include <qurl.h>
 #include <qtextcodec.h>
 #include <qmap.h>
-#include "private/qtldurl_p.h"
 
-// For testsuites
-#define IDNA_ACE_PREFIX "xn--"
-#define IDNA_SUCCESS 1
-#define STRINGPREP_NO_UNASSIGNED 1
-#define STRINGPREP_CONTAINS_UNASSIGNED 2
-#define STRINGPREP_CONTAINS_PROHIBITED 3
-#define STRINGPREP_BIDI_BOTH_L_AND_RAL 4
-#define STRINGPREP_BIDI_LEADTRAIL_NOT_RAL 5
-
-struct ushortarray {
-    ushortarray(unsigned short *array = 0)
-    {
-        if (array)
-            memcpy(points, array, sizeof(points));
-    }
-
-    unsigned short points[100];
-};
-
-Q_DECLARE_METATYPE(ushortarray)
 Q_DECLARE_METATYPE(QUrl::FormattingOptions)
 
 class tst_QUrl : public QObject
@@ -85,12 +67,12 @@ private slots:
     void unc();
     void assignment();
     void comparison();
+    void comparison2_data();
+    void comparison2();
     void copying();
     void setUrl();
     void i18n_data();
     void i18n();
-    void punycode_data();
-    void punycode();
     void resolving_data();
     void resolving();
     void toString_data();
@@ -136,34 +118,20 @@ private slots:
     void toPercentEncoding();
     void isRelative_data();
     void isRelative();
-    void setQueryItems();
-    void queryItems();
     void hasQuery_data();
     void hasQuery();
-    void hasQueryItem_data();
-    void hasQueryItem();
     void nameprep();
     void isValid();
     void schemeValidator_data();
     void schemeValidator();
     void invalidSchemeValidator();
+    void strictParser_data();
+    void strictParser();
     void tolerantParser();
     void correctEncodedMistakes_data();
     void correctEncodedMistakes();
     void correctDecodedMistakes_data();
     void correctDecodedMistakes();
-    void idna_testsuite_data();
-    void idna_testsuite();
-    void nameprep_testsuite_data();
-    void nameprep_testsuite();
-    void nameprep_highcodes_data();
-    void nameprep_highcodes();
-    void ace_testsuite_data();
-    void ace_testsuite();
-    void std3violations_data();
-    void std3violations();
-    void std3deviations_data();
-    void std3deviations();
     void tldRestrictions_data();
     void tldRestrictions();
     void emptyQueryOrFragment();
@@ -180,7 +148,6 @@ private slots:
     void toEncoded();
     void setAuthority_data();
     void setAuthority();
-    void errorString();
     void clear();
     void resolvedWithAbsoluteSchemes() const;
     void resolvedWithAbsoluteSchemes_data() const;
@@ -192,8 +159,9 @@ private slots:
     void toEncodedNotUsingUninitializedPath();
     void emptyAuthorityRemovesExistingAuthority();
     void acceptEmptyAuthoritySegments();
-    void removeAllEncodedQueryItems_data();
-    void removeAllEncodedQueryItems();
+    void lowercasesScheme();
+    void componentEncodings_data();
+    void componentEncodings();
 };
 
 // Testing get/set functions
@@ -262,9 +230,18 @@ void tst_QUrl::hashInPath()
     QCOMPARE(withHashInPath.path(), QString::fromLatin1("hi#mum.txt"));
     QCOMPARE(withHashInPath.toEncoded(), QByteArray("hi%23mum.txt"));
     QCOMPARE(withHashInPath.toString(), QString("hi%23mum.txt"));
+    QCOMPARE(withHashInPath.toDisplayString(QUrl::PreferLocalFile), QString("hi%23mum.txt"));
 
     QUrl fromHashInPath = QUrl::fromEncoded(withHashInPath.toEncoded());
     QVERIFY(withHashInPath == fromHashInPath);
+
+    const QUrl localWithHash = QUrl::fromLocalFile("/hi#mum.txt");
+    QCOMPARE(localWithHash.path(), QString::fromLatin1("/hi#mum.txt"));
+    QCOMPARE(localWithHash.toEncoded(), QByteArray("file:///hi%23mum.txt"));
+    QCOMPARE(localWithHash.toString(), QString("file:///hi%23mum.txt"));
+    QCOMPARE(localWithHash.path(), QString::fromLatin1("/hi#mum.txt"));
+    QCOMPARE(localWithHash.toString(QUrl::PreferLocalFile), QString("/hi#mum.txt"));
+    QCOMPARE(localWithHash.toDisplayString(QUrl::PreferLocalFile), QString("/hi#mum.txt"));
 }
 
 void tst_QUrl::unc()
@@ -302,7 +279,8 @@ void tst_QUrl::comparison()
     // 6.2.2 Syntax-based Normalization
     QUrl url3 = QUrl::fromEncoded("example://a/b/c/%7Bfoo%7D");
     QUrl url4 = QUrl::fromEncoded("eXAMPLE://a/./b/../b/%63/%7bfoo%7d");
-    QVERIFY(url3 == url4);
+    QEXPECT_FAIL("", "Normalization not implemented, will probably not be implemented like this", Continue);
+    QCOMPARE(url3, url4);
 
     // 6.2.2.1 Make sure hexdecimal characters in percent encoding are
     // treated case-insensitively
@@ -311,13 +289,55 @@ void tst_QUrl::comparison()
     QUrl url6;
     url6.setEncodedQuery("a=%2A");
     QVERIFY(url5 == url6);
+}
 
-    // ensure that encoded characters in the query do not match
-    QUrl url7;
-    url7.setEncodedQuery("a=%63");
-    QUrl url8;
-    url8.setEncodedQuery("a=c");
-    QVERIFY(url7 != url8);
+void tst_QUrl::comparison2_data()
+{
+    QTest::addColumn<QUrl>("url1");
+    QTest::addColumn<QUrl>("url2");
+    QTest::addColumn<int>("ordering"); // like strcmp
+
+    QTest::newRow("null-null") << QUrl() << QUrl() << 0;
+
+    QUrl empty;
+    empty.setPath("/hello"); // ensure it has detached
+    empty.setPath(QString());
+    QTest::newRow("null-empty") << QUrl() << empty << 0;
+
+    QTest::newRow("scheme-null") << QUrl("x:") << QUrl() << 1;
+    QTest::newRow("samescheme") << QUrl("x:") << QUrl("x:") << 0;
+
+    // the following three are by choice
+    // the order could be the opposite and it would still be correct
+    QTest::newRow("scheme-path") << QUrl("x:") << QUrl("/tmp") << +1;
+    QTest::newRow("fragment-path") << QUrl("#foo") << QUrl("/tmp") << -1;
+    QTest::newRow("fragment-scheme") << QUrl("#foo") << QUrl("x:") << -1;
+
+    QTest::newRow("noport-zeroport") << QUrl("http://example.com") << QUrl("http://example.com:0") << -1;
+}
+
+void tst_QUrl::comparison2()
+{
+    QFETCH(QUrl, url1);
+    QFETCH(QUrl, url2);
+    QFETCH(int, ordering);
+
+    QCOMPARE(url1.toString() == url2.toString(), ordering == 0);
+    QCOMPARE(url1 == url2, ordering == 0);
+    QCOMPARE(url1 != url2, ordering != 0);
+    if (ordering == 0)
+        QCOMPARE(qHash(url1), qHash(url2));
+
+    QCOMPARE(url1 < url2, ordering < 0);
+    QCOMPARE(!(url1 < url2), ordering >= 0);
+
+    QCOMPARE(url2 < url1, ordering > 0);
+    QCOMPARE(!(url2 < url1), ordering <= 0);
+
+    // redundant checks (the above should catch these)
+    QCOMPARE(url1 < url2 || url2 < url1, ordering != 0);
+    QVERIFY(!(url1 < url2 && url2 < url1));
+    QVERIFY(url1 < url2 || url1 == url2 || url2 < url1);
 }
 
 void tst_QUrl::copying()
@@ -352,6 +372,7 @@ void tst_QUrl::setUrl()
         QCOMPARE(url.port(), -1);
         QCOMPARE(url.toString(), QString::fromLatin1("file:///"));
         QCOMPARE(url.toDisplayString(), QString::fromLatin1("file:///"));
+        QCOMPARE(url.toDisplayString(QUrl::PreferLocalFile), QString::fromLatin1("/"));
     }
 
     {
@@ -367,6 +388,7 @@ void tst_QUrl::setUrl()
         QCOMPARE(url.port(), 80);
         QCOMPARE(url.toString(), QString::fromLatin1("http://www.foo.bar:80"));
         QCOMPARE(url.toDisplayString(), QString::fromLatin1("http://www.foo.bar:80"));
+        QCOMPARE(url.toDisplayString(QUrl::PreferLocalFile), QString::fromLatin1("http://www.foo.bar:80"));
 
         QUrl url2("//www1.foo.bar");
         QCOMPARE(url.resolved(url2).toString(), QString::fromLatin1("http://www1.foo.bar"));
@@ -380,11 +402,11 @@ void tst_QUrl::setUrl()
         QVERIFY(url.encodedQuery().isEmpty());
         QCOMPARE(url.userInfo(), QString::fromLatin1("user:pass"));
         QVERIFY(url.fragment().isEmpty());
-        QCOMPARE(url.host(), QString::fromLatin1("56::56:56:56:127.0.0.1"));
-        QCOMPARE(url.authority(), QString::fromLatin1("user:pass@[56::56:56:56:127.0.0.1]:99"));
+        QCOMPARE(url.host(), QString::fromLatin1("56::56:56:56:7f00:1"));
+        QCOMPARE(url.authority(), QString::fromLatin1("user:pass@[56::56:56:56:7f00:1]:99"));
         QCOMPARE(url.port(), 99);
-        QCOMPARE(url.url(), QString::fromLatin1("http://user:pass@[56::56:56:56:127.0.0.1]:99"));
-        QCOMPARE(url.toDisplayString(), QString::fromLatin1("http://user@[56::56:56:56:127.0.0.1]:99"));
+        QCOMPARE(url.url(), QString::fromLatin1("http://user:pass@[56::56:56:56:7f00:1]:99"));
+        QCOMPARE(url.toDisplayString(), QString::fromLatin1("http://user@[56::56:56:56:7f00:1]:99"));
     }
 
     {
@@ -451,15 +473,7 @@ void tst_QUrl::setUrl()
         QUrl url = u1;
         QVERIFY(url.isValid());
         QCOMPARE(url.toString(), QString::fromLatin1("file:///home/dfaure/my#myref"));
-        QCOMPARE(url.fragment(), QString::fromLatin1("myref"));
-    }
-
-    {
-        QString u1 = "file:/home/dfaure/my#myref";
-        QUrl url = u1;
-        QVERIFY(url.isValid());
-
-        QCOMPARE(url.toString(), QString::fromLatin1("file:///home/dfaure/my#myref"));
+        QCOMPARE(url.toString(QUrl::PreferLocalFile), QString::fromLatin1("file:///home/dfaure/my#myref"));
         QCOMPARE(url.fragment(), QString::fromLatin1("myref"));
     }
 
@@ -550,6 +564,7 @@ void tst_QUrl::setUrl()
         QUrl url15582("http://alain.knaff.linux.lu/bug-reports/kde/percentage%in%url.html");
         QCOMPARE(url15582.toString(), QString::fromLatin1("http://alain.knaff.linux.lu/bug-reports/kde/percentage%25in%25url.html"));
         QCOMPARE(url15582.toEncoded(), QByteArray("http://alain.knaff.linux.lu/bug-reports/kde/percentage%25in%25url.html"));
+        QCOMPARE(url15582.toString(QUrl::FullyEncoded), QString("http://alain.knaff.linux.lu/bug-reports/kde/percentage%25in%25url.html"));
     }
 
     {
@@ -559,20 +574,24 @@ void tst_QUrl::setUrl()
 
         QUrl charles;
         charles.setPath("/home/charles/foo%20moo");
-        QCOMPARE(charles.path(), QString::fromLatin1("/home/charles/foo%20moo"));
+        QCOMPARE(charles.path(), QString::fromLatin1("/home/charles/foo moo"));
+        QCOMPARE(charles.path(QUrl::FullyEncoded), QString::fromLatin1("/home/charles/foo%20moo"));
 
         QUrl charles2("file:/home/charles/foo%20moo");
         QCOMPARE(charles2.path(), QString::fromLatin1("/home/charles/foo moo"));
+        QCOMPARE(charles2.path(QUrl::FullyEncoded), QString::fromLatin1("/home/charles/foo%20moo"));
     }
 
     {
         QUrl udir;
         QCOMPARE(udir.toEncoded(), QByteArray());
+        QCOMPARE(udir.toString(QUrl::FullyEncoded), QString());
         QVERIFY(!udir.isValid());
 
         udir = QUrl::fromLocalFile("/home/dfaure/file.txt");
         QCOMPARE(udir.path(), QString::fromLatin1("/home/dfaure/file.txt"));
         QCOMPARE(udir.toEncoded(), QByteArray("file:///home/dfaure/file.txt"));
+        QCOMPARE(udir.toString(QUrl::FullyEncoded), QString("file:///home/dfaure/file.txt"));
     }
 
     {
@@ -630,7 +649,7 @@ void tst_QUrl::setUrl()
         QCOMPARE(url.scheme(), QString("data"));
         QCOMPARE(url.host(), QString());
         QCOMPARE(url.path(), QString("text/javascript,d5 = 'five\\u0027s';"));
-        QCOMPARE(url.encodedPath().constData(), "text/javascript,d5%20%3D%20'five%5Cu0027s'%3B");
+        QCOMPARE(url.encodedPath().constData(), "text/javascript,d5%20=%20'five%5Cu0027s';");
     }
 
     { //check it calls detach
@@ -789,9 +808,20 @@ void tst_QUrl::toString_data()
                         << uint(QUrl::RemovePassword)
                         << QString::fromLatin1("http://ole@www.troll.no:9090/index.html?ole=semann&gud=hei#top");
 
+    // show that QUrl keeps the empty-but-present username if you remove the password
+    // see data3-bis for another case
+    QTest::newRow("data2-bis") << QString::fromLatin1("http://:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemovePassword)
+                        << QString::fromLatin1("http://@www.troll.no:9090/index.html?ole=semann&gud=hei#top");
+
     QTest::newRow("data3") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
                         << uint(QUrl::RemoveUserInfo)
                         << QString::fromLatin1("http://www.troll.no:9090/index.html?ole=semann&gud=hei#top");
+
+    // show that QUrl keeps the empty-but-preset hostname if you remove the userinfo
+    QTest::newRow("data3-bis") << QString::fromLatin1("http://ole:password@/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemoveUserInfo)
+                        << QString::fromLatin1("http:///index.html?ole=semann&gud=hei#top");
 
     QTest::newRow("data4") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
                         << uint(QUrl::RemovePort)
@@ -907,20 +937,26 @@ void tst_QUrl::toString_constructed_data()
     QTest::addColumn<QString>("fragment");
     QTest::addColumn<QString>("asString");
     QTest::addColumn<QByteArray>("asEncoded");
+    QTest::addColumn<uint>("options");
 
     QString n("");
 
     QTest::newRow("data1") << n << n << n << QString::fromLatin1("qt.nokia.com") << -1 << QString::fromLatin1("index.html")
                         << QByteArray() << n << QString::fromLatin1("//qt.nokia.com/index.html")
-                        << QByteArray("//qt.nokia.com/index.html");
+                        << QByteArray("//qt.nokia.com/index.html") << 0u;
     QTest::newRow("data2") << QString::fromLatin1("file") << n << n << n << -1 << QString::fromLatin1("/root") << QByteArray()
-                        << n << QString::fromLatin1("file:///root") << QByteArray("file:///root");
+                        << n << QString::fromLatin1("file:///root") << QByteArray("file:///root") << 0u;
     QTest::newRow("userAndPass") << QString::fromLatin1("http") << QString::fromLatin1("dfaure") << QString::fromLatin1("kde")
                         << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
-                        << QString::fromLatin1("http://dfaure:kde@kde.org:443/") << QByteArray("http://dfaure:kde@kde.org:443/");
+                        << QString::fromLatin1("http://dfaure:kde@kde.org:443/") << QByteArray("http://dfaure:kde@kde.org:443/")
+                        << 0u;
     QTest::newRow("PassWithoutUser") << QString::fromLatin1("http") << n << QString::fromLatin1("kde")
                         << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
-                        << QString::fromLatin1("http://:kde@kde.org:443/") << QByteArray("http://:kde@kde.org:443/");
+                        << QString::fromLatin1("http://:kde@kde.org:443/") << QByteArray("http://:kde@kde.org:443/") << 0u;
+    QTest::newRow("PassWithoutUser-RemovePassword") << QString::fromLatin1("http") << n << QString::fromLatin1("kde")
+                        << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
+                        << QString::fromLatin1("http://kde.org:443/") << QByteArray("http://kde.org:443/")
+                        << uint(QUrl::RemovePassword);
 }
 
 void tst_QUrl::toString_constructed()
@@ -935,6 +971,7 @@ void tst_QUrl::toString_constructed()
     QFETCH(QString, fragment);
     QFETCH(QString, asString);
     QFETCH(QByteArray, asEncoded);
+    QFETCH(uint, options);
 
     QUrl url;
     if (!scheme.isEmpty())
@@ -955,9 +992,11 @@ void tst_QUrl::toString_constructed()
         url.setFragment(fragment);
 
     QVERIFY(url.isValid());
-    QCOMPARE(url.toString(), asString);
-    QCOMPARE(QString::fromLatin1(url.toEncoded()), QString::fromLatin1(asEncoded)); // readable in case of differences
-    QCOMPARE(url.toEncoded(), asEncoded);
+
+    QUrl::FormattingOptions formattingOptions(options);
+    QCOMPARE(url.toString(formattingOptions), asString);
+    QCOMPARE(QString::fromLatin1(url.toEncoded(formattingOptions)), QString::fromLatin1(asEncoded)); // readable in case of differences
+    QCOMPARE(url.toEncoded(formattingOptions), asEncoded);
 }
 
 
@@ -1001,6 +1040,7 @@ void tst_QUrl::toLocalFile()
 
     QUrl url(theUrl);
     QCOMPARE(url.toLocalFile(), theFile);
+    QCOMPARE(url.isLocalFile(), !theFile.isEmpty());
 }
 
 void tst_QUrl::fromLocalFile_data()
@@ -1201,7 +1241,7 @@ void tst_QUrl::compat_isValid_01()
     QFETCH( bool, res );
 
     QUrl url( urlStr );
-    QVERIFY( url.isValid() == res );
+    QCOMPARE( url.isValid(), res );
 }
 
 void tst_QUrl::compat_isValid_02_data()
@@ -1449,8 +1489,6 @@ void tst_QUrl::symmetry()
     QCOMPARE(url.path(), QString::fromLatin1("/pub"));
     // this will be encoded ...
     QCOMPARE(url.encodedQuery().constData(), QString::fromLatin1("a=b&a=d%C3%B8&a=f").toLatin1().constData());
-    // unencoded
-    QCOMPARE(url.allQueryItemValues("a").join(""), QString::fromUtf8("bdøf"));
     QCOMPARE(url.fragment(), QString::fromUtf8("vræl"));
 
     QUrl onlyHost("//qt.nokia.com");
@@ -1481,40 +1519,58 @@ void tst_QUrl::ipv6_data()
 {
     QTest::addColumn<QString>("ipv6Auth");
     QTest::addColumn<bool>("isValid");
+    QTest::addColumn<QString>("output");
 
-    QTest::newRow("case 1") << QString::fromLatin1("//[56:56:56:56:56:56:56:56]") << true;
-    QTest::newRow("case 2") << QString::fromLatin1("//[::56:56:56:56:56:56:56]") << true;
-    QTest::newRow("case 3") << QString::fromLatin1("//[56::56:56:56:56:56:56]") << true;
-    QTest::newRow("case 4") << QString::fromLatin1("//[56:56::56:56:56:56:56]") << true;
-    QTest::newRow("case 5") << QString::fromLatin1("//[56:56:56::56:56:56:56]") << true;
-    QTest::newRow("case 6") << QString::fromLatin1("//[56:56:56:56::56:56:56]") << true;
-    QTest::newRow("case 7") << QString::fromLatin1("//[56:56:56:56:56::56:56]") << true;
-    QTest::newRow("case 8") << QString::fromLatin1("//[56:56:56:56:56:56::56]") << true;
-    QTest::newRow("case 9") << QString::fromLatin1("//[56:56:56:56:56:56:56::]") << true;
-    QTest::newRow("case 4 with one less") << QString::fromLatin1("//[56::56:56:56:56:56]") << true;
-    QTest::newRow("case 4 with less and ip4") << QString::fromLatin1("//[56::56:56:56:127.0.0.1]") << true;
-    QTest::newRow("case 7 with one and ip4") << QString::fromLatin1("//[56::255.0.0.0]") << true;
-    QTest::newRow("case 2 with ip4") << QString::fromLatin1("//[::56:56:56:56:56:0.0.0.255]") << true;
-    QTest::newRow("case 2 with half ip4") << QString::fromLatin1("//[::56:56:56:56:56:56:0.255]") << false;
-    QTest::newRow("case 4 with less and ip4 and port and useinfo") << QString::fromLatin1("//user:pass@[56::56:56:56:127.0.0.1]:99") << true;
-    QTest::newRow("case :,") << QString::fromLatin1("//[:,]") << false;
-    QTest::newRow("case ::bla") << QString::fromLatin1("//[::bla]") << false;
+    QTest::newRow("case 1") << QString::fromLatin1("//[56:56:56:56:56:56:56:56]") << true
+                            << "//[56:56:56:56:56:56:56:56]";
+    QTest::newRow("case 2") << QString::fromLatin1("//[::56:56:56:56:56:56:56]") << true
+                            << "//[0:56:56:56:56:56:56:56]";
+    QTest::newRow("case 3") << QString::fromLatin1("//[56::56:56:56:56:56:56]") << true
+                            << "//[56:0:56:56:56:56:56:56]";
+    QTest::newRow("case 4") << QString::fromLatin1("//[56:56::56:56:56:56:56]") << true
+                            << "//[56:56:0:56:56:56:56:56]";
+    QTest::newRow("case 5") << QString::fromLatin1("//[56:56:56::56:56:56:56]") << true
+                            << "//[56:56:56:0:56:56:56:56]";
+    QTest::newRow("case 6") << QString::fromLatin1("//[56:56:56:56::56:56:56]") << true
+                            << "//[56:56:56:56:0:56:56:56]";
+    QTest::newRow("case 7") << QString::fromLatin1("//[56:56:56:56:56::56:56]") << true
+                            << "//[56:56:56:56:56:0:56:56]";
+    QTest::newRow("case 8") << QString::fromLatin1("//[56:56:56:56:56:56::56]") << true
+                            << "//[56:56:56:56:56:56:0:56]";
+    QTest::newRow("case 9") << QString::fromLatin1("//[56:56:56:56:56:56:56::]") << true
+                            << "//[56:56:56:56:56:56:56:0]";
+    QTest::newRow("case 4 with one less") << QString::fromLatin1("//[56::56:56:56:56:56]") << true
+                                          << "//[56::56:56:56:56:56]";
+    QTest::newRow("case 4 with less and ip4") << QString::fromLatin1("//[56::56:56:56:127.0.0.1]") << true
+                                              << "//[56::56:56:56:7f00:1]";
+    QTest::newRow("case 7 with one and ip4") << QString::fromLatin1("//[56::255.0.0.0]") << true
+                                             << "//[56::ff00:0]";
+    QTest::newRow("case 2 with ip4") << QString::fromLatin1("//[::56:56:56:56:56:0.0.0.255]") << true
+                                     << "//[0:56:56:56:56:56:0:ff]";
+    QTest::newRow("case 2 with half ip4") << QString::fromLatin1("//[::56:56:56:56:56:56:0.255]") << false << "";
+    QTest::newRow("case 4 with less and ip4 and port and useinfo")
+            << QString::fromLatin1("//user:pass@[56::56:56:56:127.0.0.1]:99") << true
+            << "//user:pass@[56::56:56:56:7f00:1]:99";
+    QTest::newRow("case :,") << QString::fromLatin1("//[:,]") << false << "";
+    QTest::newRow("case ::bla") << QString::fromLatin1("//[::bla]") << false << "";
+    QTest::newRow("case v4-mapped") << "//[0:0:0:0:0:ffff:7f00:1]" << true << "//[::ffff:127.0.0.1]";
 }
 
 void tst_QUrl::ipv6()
 {
     QFETCH(QString, ipv6Auth);
     QFETCH(bool, isValid);
+    QFETCH(QString, output);
 
     QUrl url(ipv6Auth);
 
     QCOMPARE(url.isValid(), isValid);
     if (url.isValid()) {
-        QCOMPARE(url.toString(), ipv6Auth);
+        QCOMPARE(url.toString(), output);
         url.setHost(url.host());
-        QCOMPARE(url.toString(), ipv6Auth);
+        QCOMPARE(url.toString(), output);
     }
-};
+}
 
 void tst_QUrl::ipv6_2_data()
 {
@@ -1547,26 +1603,6 @@ void tst_QUrl::moreIpv6()
     QCOMPARE(QString::fromLatin1(waba1.toEncoded()), QString::fromLatin1("http://[::ffff:129.144.52.38]/cgi/test.cgi"));
 }
 
-void tst_QUrl::punycode_data()
-{
-    QTest::addColumn<QString>("original");
-    QTest::addColumn<QByteArray>("encoded");
-
-    QTest::newRow("øl") << QString::fromUtf8("øl") << QByteArray("xn--l-4ga");
-    QTest::newRow("Bühler") << QString::fromUtf8("Bühler") << QByteArray("xn--Bhler-kva");
-    QTest::newRow("räksmörgås") << QString::fromUtf8("räksmörgås") << QByteArray("xn--rksmrgs-5wao1o");
-}
-
-void tst_QUrl::punycode()
-{
-    QFETCH(QString, original);
-    QFETCH(QByteArray, encoded);
-
-    QCOMPARE(QUrl::fromPunycode(encoded), original);
-    QCOMPARE(QUrl::fromPunycode(QUrl::toPunycode(original)), original);
-    QCOMPARE(QUrl::toPunycode(original).constData(), encoded.constData());
-}
-
 void tst_QUrl::isRelative_data()
 {
     QTest::addColumn<QString>("url");
@@ -1580,7 +1616,7 @@ void tst_QUrl::isRelative_data()
     QTest::newRow("man: URL, is relative") << "man:mmap" << false;
     QTest::newRow("javascript: URL, is relative") << "javascript:doSomething()" << false;
     QTest::newRow("file: URL, is relative") << "file:/blah" << false;
-    QTest::newRow("/path, is relative") << "/path" << true;
+    QTest::newRow("/path, is relative") << "/path" << false;
     QTest::newRow("something, is relative") << "something" << true;
     // end kde
 }
@@ -1591,93 +1627,6 @@ void tst_QUrl::isRelative()
     QFETCH(bool, trueFalse);
 
     QCOMPARE(QUrl(url).isRelative(), trueFalse);
-}
-
-void tst_QUrl::setQueryItems()
-{
-    QUrl url;
-
-    QList<QPair<QString, QString> > query;
-    query += qMakePair(QString("type"), QString("login"));
-    query += qMakePair(QString("name"), QString::fromUtf8("åge nissemannsen"));
-    query += qMakePair(QString("ole&du"), QString::fromUtf8("anne+jørgen=sant"));
-    query += qMakePair(QString("prosent"), QString("%"));
-    url.setQueryItems(query);
-    QVERIFY(!url.isEmpty());
-
-    QCOMPARE(url.encodedQuery().constData(),
-            QByteArray("type=login&name=%C3%A5ge%20nissemannsen&ole%26du="
-                       "anne+j%C3%B8rgen%3Dsant&prosent=%25").constData());
-
-    url.setQueryDelimiters('>', '/');
-    url.setQueryItems(query);
-
-    QCOMPARE(url.encodedQuery(),
-            QByteArray("type>login/name>%C3%A5ge%20nissemannsen/ole&du>"
-                       "anne+j%C3%B8rgen=sant/prosent>%25"));
-
-    url.setFragment(QString::fromLatin1("top"));
-    QCOMPARE(url.fragment(), QString::fromLatin1("top"));
-
-    url.setScheme("http");
-    url.setHost("qt.nokia.com");
-
-    QCOMPARE(url.toEncoded().constData(),
-             "http://qt.nokia.com?type>login/name>%C3%A5ge%20nissemannsen/ole&du>"
-             "anne+j%C3%B8rgen=sant/prosent>%25#top");
-    QCOMPARE(url.toString(),
-            QString::fromUtf8("http://qt.nokia.com?type>login/name>åge nissemannsen"
-                              "/ole&du>anne+jørgen=sant/prosent>%25#top"));
-}
-
-void tst_QUrl::queryItems()
-{
-    QUrl url;
-    QVERIFY(!url.hasQuery());
-
-    QList<QPair<QString, QString> > newItems;
-    newItems += qMakePair(QString("2"), QString("b"));
-    newItems += qMakePair(QString("1"), QString("a"));
-    newItems += qMakePair(QString("3"), QString("c"));
-    newItems += qMakePair(QString("4"), QString("a b"));
-    newItems += qMakePair(QString("5"), QString("&"));
-    newItems += qMakePair(QString("foo bar"), QString("hello world"));
-    newItems += qMakePair(QString("foo+bar"), QString("hello+world"));
-    newItems += qMakePair(QString("tex"), QString("a + b = c"));
-    url.setQueryItems(newItems);
-    QVERIFY(url.hasQuery());
-
-    QList<QPair<QString, QString> > setItems = url.queryItems();
-    QVERIFY(newItems == setItems);
-
-    url.addQueryItem("1", "z");
-
-    QVERIFY(url.hasQueryItem("1"));
-    QCOMPARE(url.queryItemValue("1").toLatin1().constData(), "a");
-
-    url.addQueryItem("1", "zz");
-
-    QStringList expected;
-    expected += "a";
-    expected += "z";
-    expected += "zz";
-    QCOMPARE(expected, url.allQueryItemValues("1"));
-
-    url.removeQueryItem("1");
-    QCOMPARE(url.allQueryItemValues("1").size(), 2);
-    QCOMPARE(url.queryItemValue("1").toLatin1().constData(), "z");
-
-    url.removeAllQueryItems("1");
-    QVERIFY(!url.hasQueryItem("1"));
-
-    QCOMPARE(url.queryItemValue("4").toLatin1().constData(), "a b");
-    QCOMPARE(url.queryItemValue("5").toLatin1().constData(), "&");
-    QCOMPARE(url.queryItemValue("tex").toLatin1().constData(), "a + b = c");
-    QCOMPARE(url.queryItemValue("foo bar").toLatin1().constData(), "hello world");
-    url.setUrl("http://www.google.com/search?q=a+b");
-    QCOMPARE(url.queryItemValue("q"), QString("a+b"));
-    url.setUrl("http://www.google.com/search?q=a=b"); // invalid, but should be tolerated
-    QCOMPARE(url.queryItemValue("q"), QString("a=b"));
 }
 
 void tst_QUrl::hasQuery_data()
@@ -1709,27 +1658,6 @@ void tst_QUrl::hasQuery()
     QCOMPARE(qurl.encodedQuery().isNull(), !trueFalse);
 }
 
-void tst_QUrl::hasQueryItem_data()
-{
-    QTest::addColumn<QString>("url");
-    QTest::addColumn<QString>("item");
-    QTest::addColumn<bool>("trueFalse");
-
-    QTest::newRow("no query items") << "http://www.foo.bar" << "baz" << false;
-    QTest::newRow("query item: hello") << "http://www.foo.bar?hello=world" << "hello" << true;
-    QTest::newRow("no query item: world") << "http://www.foo.bar?hello=world" << "world" << false;
-    QTest::newRow("query item: qt") << "http://www.foo.bar?hello=world&qt=rocks" << "qt" << true;
-}
-
-void tst_QUrl::hasQueryItem()
-{
-    QFETCH(QString, url);
-    QFETCH(QString, item);
-    QFETCH(bool, trueFalse);
-
-    QCOMPARE(QUrl(url).hasQueryItem(item), trueFalse);
-}
-
 void tst_QUrl::nameprep()
 {
     QUrl url(QString::fromUtf8("http://www.fu""\xc3""\x9f""ball.de/"));
@@ -1754,6 +1682,7 @@ void tst_QUrl::isValid()
         QUrl url = QUrl::fromEncoded("http://strange<username>@ok-hostname/");
         QVERIFY(url.isValid());
         // < and > are allowed in tolerant mode
+        QCOMPARE(url.toEncoded(), QByteArray("http://strange%3Cusername%3E@ok-hostname/"));
     }
     {
         QUrl url = QUrl::fromEncoded("http://strange;hostname/here");
@@ -1765,7 +1694,7 @@ void tst_QUrl::isValid()
         QVERIFY(url.isValid());
         url.setAuthority("strange;hostname");
         QVERIFY(!url.isValid());
-        QVERIFY(url.errorString().contains("invalid hostname"));
+        QVERIFY(url.errorString().contains("Hostname contains invalid characters"));
     }
 
     {
@@ -1778,7 +1707,8 @@ void tst_QUrl::isValid()
         QVERIFY(url.isValid());
         url.setHost("stuff;1");
         QVERIFY(!url.isValid());
-        QVERIFY(url.errorString().contains("invalid hostname"));
+        QVERIFY2(url.errorString().contains("Hostname contains invalid characters"),
+                 qPrintable(url.errorString()));
     }
 
 }
@@ -1822,6 +1752,8 @@ void tst_QUrl::schemeValidator()
     QFETCH(QString, toString);
 
     QUrl url = QUrl::fromEncoded(encodedUrl);
+    QEXPECT_FAIL("ftp:/index.html", "high-level URL validation not reimplemented yet", Continue);
+    QEXPECT_FAIL("mailto://smtp.trolltech.com/ole@bull.name", "high-level URL validation not reimplemented yet", Continue);
     QCOMPARE(url.isValid(), result);
 }
 
@@ -1829,33 +1761,81 @@ void tst_QUrl::invalidSchemeValidator()
 {
     // test that if scheme does not start with an ALPHA, QUrl::isValid() returns false
     {
-        QUrl url("1http://qt.nokia.com", QUrl::StrictMode);
-        QCOMPARE(url.isValid(), false);
+        QUrl url("1http://qt.nokia.com");
+        QVERIFY(url.scheme().isEmpty());
+        QVERIFY(url.path().startsWith("1http"));
     }
     {
         QUrl url("http://qt.nokia.com");
         url.setScheme("111http://qt.nokia.com");
         QCOMPARE(url.isValid(), false);
     }
-    {
-        QUrl url = QUrl::fromEncoded("1http://qt.nokia.com", QUrl::StrictMode);
-        QCOMPARE(url.isValid(), false);
-    }
-
     // non-ALPHA character at other positions in the scheme are ok
     {
         QUrl url("ht111tp://qt.nokia.com", QUrl::StrictMode);
         QVERIFY(url.isValid());
+        QCOMPARE(url.scheme(), QString("ht111tp"));
     }
     {
         QUrl url("http://qt.nokia.com");
         url.setScheme("ht123tp://qt.nokia.com");
+        QVERIFY(!url.isValid());
+        url.setScheme("http");
         QVERIFY(url.isValid());
     }
     {
         QUrl url = QUrl::fromEncoded("ht321tp://qt.nokia.com", QUrl::StrictMode);
         QVERIFY(url.isValid());
     }
+}
+
+void tst_QUrl::strictParser_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("needle");
+
+    // cannot test bad schemes here, as they are parsed as paths instead
+    //QTest::newRow("invalid-scheme") << "ht%://example.com" << "Invalid scheme";
+    //QTest::newRow("empty-scheme") << ":/" << "Empty scheme";
+
+    QTest::newRow("invalid-user1") << "http://bad<user_name>@ok-hostname" << "Invalid user name";
+    QTest::newRow("invalid-user2") << "http://bad%@ok-hostname" << "Invalid user name";
+
+    QTest::newRow("invalid-password") << "http://user:pass\x7F@ok-hostname" << "Invalid password";
+
+    QTest::newRow("invalid-regname") << "http://bad<hostname>" << "Hostname contains invalid characters";
+    QTest::newRow("invalid-ipv6") << "http://[:::]" << "Invalid IPv6 address";
+    QTest::newRow("invalid-ipvfuture-1") << "http://[v7]" << "Invalid IPvFuture address";
+    QTest::newRow("invalid-ipvfuture-2") << "http://[v7.]" << "Invalid IPvFuture address";
+    QTest::newRow("invalid-ipvfuture-3") << "http://[v789]" << "Invalid IPvFuture address";
+    QTest::newRow("unbalanced-brackets") << "http://[ff02::1" << "Expected ']'";
+
+    QTest::newRow("empty-port") << "http://example.com:" << "Invalid port";
+    QTest::newRow("invalid-port-1") << "http://example.com:-1" << "Invalid port";
+    QTest::newRow("invalid-port-2") << "http://example.com:abc" << "Invalid port";
+    QTest::newRow("invalid-port-3") << "http://example.com:9a" << "Invalid port";
+    QTest::newRow("port-range") << "http://example.com:65536" << "out of range";
+
+    QTest::newRow("invalid-path") << "foo:/path%\x1F" << "Invalid path";
+    // not yet checked:
+    //QTest::newRow("path-colon-before-slash") << "foo::/" << "':' before any '/'";
+
+    QTest::newRow("invalid-query") << "foo:?\\#" << "Invalid query";
+
+    QTest::newRow("invalid-fragment") << "#{}" << "Invalid fragment";
+}
+
+void tst_QUrl::strictParser()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, needle);
+
+    QUrl url(input, QUrl::StrictMode);
+    QVERIFY(!url.isValid());
+    QVERIFY(!url.errorString().isEmpty());
+    if (!url.errorString().contains(needle))
+        qWarning("Error string changed and does not contain \"%s\" anymore: %s",
+                 qPrintable(needle), qPrintable(url.errorString()));
 }
 
 void tst_QUrl::tolerantParser()
@@ -1865,6 +1845,7 @@ void tst_QUrl::tolerantParser()
         QVERIFY(url.isValid());
         QCOMPARE(url.path(), QString("/path with spaces.html"));
         QCOMPARE(url.toEncoded(), QByteArray("http://www.example.com/path%20with%20spaces.html"));
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://www.example.com/path%20with%20spaces.html"));
         url.setUrl("http://www.example.com/path%20with spaces.html", QUrl::StrictMode);
         QVERIFY(!url.isValid());
     }
@@ -1886,58 +1867,90 @@ void tst_QUrl::tolerantParser()
         QUrl webkit22616 =
             QUrl::fromEncoded("http://example.com/testya.php?browser-info=s:1400x1050x24:f:9.0%20r152:t:%u0442%u0435%u0441%u0442");
         QVERIFY(webkit22616.isValid());
+
+        // Qt 5 behaviour change: one broken % means all % are considered broken
+//      QCOMPARE(webkit22616.toEncoded().constData(),
+//               "http://example.com/testya.php?browser-info=s:1400x1050x24:f:9.0%20r152:t:%25u0442%25u0435%25u0441%25u0442");
         QCOMPARE(webkit22616.toEncoded().constData(),
-                 "http://example.com/testya.php?browser-info=s:1400x1050x24:f:9.0%20r152:t:%25u0442%25u0435%25u0441%25u0442");
+                 "http://example.com/testya.php?browser-info=s:1400x1050x24:f:9.0%2520r152:t:%25u0442%25u0435%25u0441%25u0442");
     }
 
     {
         QUrl url;
         url.setUrl("http://foo.bar/[image][1].jpg");
         QVERIFY(url.isValid());
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://foo.bar/%5Bimage%5D%5B1%5D.jpg"));
         QCOMPARE(url.toEncoded(), QByteArray("http://foo.bar/%5Bimage%5D%5B1%5D.jpg"));
+        QCOMPARE(url.toString(), QString("http://foo.bar/[image][1].jpg"));
 
         url.setUrl("[].jpg");
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("%5B%5D.jpg"));
         QCOMPARE(url.toEncoded(), QByteArray("%5B%5D.jpg"));
+        QCOMPARE(url.toString(), QString("[].jpg"));
 
         url.setUrl("/some/[path]/[]");
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("/some/%5Bpath%5D/%5B%5D"));
         QCOMPARE(url.toEncoded(), QByteArray("/some/%5Bpath%5D/%5B%5D"));
+        QCOMPARE(url.toString(), QString("/some/[path]/[]"));
 
         url.setUrl("//[::56:56:56:56:56:56:56]");
-        QCOMPARE(url.toEncoded(), QByteArray("//[::56:56:56:56:56:56:56]"));
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]"));
+        QCOMPARE(url.toEncoded(), QByteArray("//[0:56:56:56:56:56:56:56]"));
+        QCOMPARE(url.toString(), QString("//[0:56:56:56:56:56:56:56]"));
 
         url.setUrl("//[::56:56:56:56:56:56:56]#[]");
-        QCOMPARE(url.toEncoded(), QByteArray("//[::56:56:56:56:56:56:56]#%5B%5D"));
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]#%5B%5D"));
+        QCOMPARE(url.toEncoded(), QByteArray("//[0:56:56:56:56:56:56:56]#%5B%5D"));
+        QCOMPARE(url.toString(), QString("//[0:56:56:56:56:56:56:56]#[]"));
 
         url.setUrl("//[::56:56:56:56:56:56:56]?[]");
-        QCOMPARE(url.toEncoded(), QByteArray("//[::56:56:56:56:56:56:56]?%5B%5D"));
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]?[]"));
+        QCOMPARE(url.toEncoded(), QByteArray("//[0:56:56:56:56:56:56:56]?[]"));
+        QCOMPARE(url.toString(), QString("//[0:56:56:56:56:56:56:56]?[]"));
 
+        // invoke the tolerant parser's error correction
         url.setUrl("%hello.com/f%");
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("%25hello.com/f%25"));
         QCOMPARE(url.toEncoded(), QByteArray("%25hello.com/f%25"));
+        QCOMPARE(url.toString(), QString("%25hello.com/f%25"));
 
         url.setEncodedUrl("http://www.host.com/foo.php?P0=[2006-3-8]");
         QVERIFY(url.isValid());
 
         url.setEncodedUrl("http://foo.bar/[image][1].jpg");
         QVERIFY(url.isValid());
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://foo.bar/%5Bimage%5D%5B1%5D.jpg"));
         QCOMPARE(url.toEncoded(), QByteArray("http://foo.bar/%5Bimage%5D%5B1%5D.jpg"));
+        QCOMPARE(url.toString(), QString("http://foo.bar/[image][1].jpg"));
 
         url.setEncodedUrl("[].jpg");
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("%5B%5D.jpg"));
         QCOMPARE(url.toEncoded(), QByteArray("%5B%5D.jpg"));
+        QCOMPARE(url.toString(), QString("[].jpg"));
 
         url.setEncodedUrl("/some/[path]/[]");
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("/some/%5Bpath%5D/%5B%5D"));
         QCOMPARE(url.toEncoded(), QByteArray("/some/%5Bpath%5D/%5B%5D"));
+        QCOMPARE(url.toString(), QString("/some/[path]/[]"));
 
         url.setEncodedUrl("//[::56:56:56:56:56:56:56]");
-        QCOMPARE(url.toEncoded(), QByteArray("//[::56:56:56:56:56:56:56]"));
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]"));
+        QCOMPARE(url.toEncoded(), QByteArray("//[0:56:56:56:56:56:56:56]"));
 
         url.setEncodedUrl("//[::56:56:56:56:56:56:56]#[]");
-        QCOMPARE(url.toEncoded(), QByteArray("//[::56:56:56:56:56:56:56]#%5B%5D"));
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]#%5B%5D"));
+        QCOMPARE(url.toEncoded(), QByteArray("//[0:56:56:56:56:56:56:56]#%5B%5D"));
+        QCOMPARE(url.toString(), QString("//[0:56:56:56:56:56:56:56]#[]"));
 
         url.setEncodedUrl("//[::56:56:56:56:56:56:56]?[]");
-        QCOMPARE(url.toEncoded(), QByteArray("//[::56:56:56:56:56:56:56]?%5B%5D"));
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("//[0:56:56:56:56:56:56:56]?[]"));
+        QCOMPARE(url.toEncoded(), QByteArray("//[0:56:56:56:56:56:56:56]?[]"));
+        QCOMPARE(url.toString(), QString("//[0:56:56:56:56:56:56:56]?[]"));
 
         url.setEncodedUrl("data:text/css,div%20{%20border-right:%20solid;%20}");
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("data:text/css,div%20%7B%20border-right:%20solid;%20%7D"));
         QCOMPARE(url.toEncoded(), QByteArray("data:text/css,div%20%7B%20border-right:%20solid;%20%7D"));
+        QCOMPARE(url.toString(), QString("data:text/css,div { border-right: solid; }"));
     }
 
     {
@@ -1962,16 +1975,15 @@ void tst_QUrl::correctEncodedMistakes_data()
     QTest::addColumn<QByteArray>("encodedUrl");
     QTest::addColumn<bool>("result");
     QTest::addColumn<QString>("toDecoded");
-    QTest::addColumn<QByteArray>("toEncoded");
 
-    QTest::newRow("%") << QByteArray("%") << true << QString("%") << QByteArray("%25");
-    QTest::newRow("3%") << QByteArray("3%") << true << QString("3%") << QByteArray("3%25");
-    QTest::newRow("13%") << QByteArray("13%") << true << QString("13%") << QByteArray("13%25");
-    QTest::newRow("13%!") << QByteArray("13%!") << true << QString("13%!") << QByteArray("13%25!");
-    QTest::newRow("13%!!") << QByteArray("13%!!") << true << QString("13%!!") << QByteArray("13%25!!");
-    QTest::newRow("13%a") << QByteArray("13%a") << true << QString("13%a") << QByteArray("13%25a");
-    QTest::newRow("13%az") << QByteArray("13%az") << true << QString("13%az") << QByteArray("13%25az");
-    QTest::newRow("13%25") << QByteArray("13%25") << true << QString("13%") << QByteArray("13%25");
+    QTest::newRow("%") << QByteArray("%") << true << QString("%25");
+    QTest::newRow("3%") << QByteArray("3%") << true << QString("3%25");
+    QTest::newRow("13%") << QByteArray("13%") << true << QString("13%25");
+    QTest::newRow("13%!") << QByteArray("13%!") << true << QString("13%25!");
+    QTest::newRow("13%!!") << QByteArray("13%!!") << true << QString("13%25!!");
+    QTest::newRow("13%a") << QByteArray("13%a") << true << QString("13%25a");
+    QTest::newRow("13%az") << QByteArray("13%az") << true << QString("13%25az");
+    QTest::newRow("13%25") << QByteArray("13%25") << true << QString("13%25");
 }
 
 void tst_QUrl::correctEncodedMistakes()
@@ -1979,14 +1991,11 @@ void tst_QUrl::correctEncodedMistakes()
     QFETCH(QByteArray, encodedUrl);
     QFETCH(bool, result);
     QFETCH(QString, toDecoded);
-    QFETCH(QByteArray, toEncoded);
 
     QUrl url = QUrl::fromEncoded(encodedUrl);
     QCOMPARE(url.isValid(), result);
     if (url.isValid()) {
-        Q_UNUSED(toDecoded); // no full-decoding available at the moment
-        QCOMPARE(url.toString(), QString::fromLatin1(toEncoded));
-        QCOMPARE(url.toEncoded(), toEncoded);
+        QCOMPARE(url.toString(), toDecoded);
     }
 }
 
@@ -1995,16 +2004,14 @@ void tst_QUrl::correctDecodedMistakes_data()
     QTest::addColumn<QString>("decodedUrl");
     QTest::addColumn<bool>("result");
     QTest::addColumn<QString>("toDecoded");
-    QTest::addColumn<QByteArray>("toEncoded");
 
-    QTest::newRow("%") << QString("%") << true << QString("%") << QByteArray("%25");
-    QTest::newRow("3%") << QString("3%") << true << QString("3%") << QByteArray("3%25");
-    QTest::newRow("13%") << QString("13%") << true << QString("13%") << QByteArray("13%25");
-    QTest::newRow("13%!") << QString("13%!") << true << QString("13%!") << QByteArray("13%25!");
-    QTest::newRow("13%!!") << QString("13%!!") << true << QString("13%!!") << QByteArray("13%25!!");
-    QTest::newRow("13%a") << QString("13%a") << true << QString("13%a") << QByteArray("13%25a");
-    QTest::newRow("13%az") << QString("13%az") << true << QString("13%az") << QByteArray("13%25az");
-    QTest::newRow("13%25") << QString("13%25") << true << QString("13%25") << QByteArray("13%25");
+    QTest::newRow("%") << QString("%") << true << QString("%25");
+    QTest::newRow("3%") << QString("3%") << true << QString("3%25");
+    QTest::newRow("13%") << QString("13%") << true << QString("13%25");
+    QTest::newRow("13%!") << QString("13%!") << true << QString("13%25!");
+    QTest::newRow("13%!!") << QString("13%!!") << true << QString("13%25!!");
+    QTest::newRow("13%a") << QString("13%a") << true << QString("13%25a");
+    QTest::newRow("13%az") << QString("13%az") << true << QString("13%25az");
 }
 
 void tst_QUrl::correctDecodedMistakes()
@@ -2012,669 +2019,12 @@ void tst_QUrl::correctDecodedMistakes()
     QFETCH(QString, decodedUrl);
     QFETCH(bool, result);
     QFETCH(QString, toDecoded);
-    QFETCH(QByteArray, toEncoded);
 
     QUrl url(decodedUrl);
     QCOMPARE(url.isValid(), result);
     if (url.isValid()) {
-        Q_UNUSED(toDecoded); // no full-decoding available at the moment
-        QCOMPARE(url.toString(), QString::fromLatin1(toEncoded));
-        QCOMPARE(url.toEncoded(), toEncoded);
+        QCOMPARE(url.toString(), toDecoded);
     }
-}
-
-void tst_QUrl::idna_testsuite_data()
-{
-    QTest::addColumn<int>("numchars");
-    QTest::addColumn<ushortarray>("unicode");
-    QTest::addColumn<QByteArray>("punycode");
-    QTest::addColumn<int>("allowunassigned");
-    QTest::addColumn<int>("usestd3asciirules");
-    QTest::addColumn<int>("toasciirc");
-    QTest::addColumn<int>("tounicoderc");
-
-    unsigned short d1[] = { 0x0644, 0x064A, 0x0647, 0x0645, 0x0627, 0x0628, 0x062A, 0x0643,
-                            0x0644, 0x0645, 0x0648, 0x0634, 0x0639, 0x0631, 0x0628, 0x064A,
-                            0x061F };
-    QTest::newRow("Arabic (Egyptian)") << 17 << ushortarray(d1)
-                                    << QByteArray(IDNA_ACE_PREFIX "egbpdaj6bu4bxfgehfvwxn")
-                                    << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d2[] = { 0x4ED6, 0x4EEC, 0x4E3A, 0x4EC0, 0x4E48, 0x4E0D, 0x8BF4, 0x4E2D,
-                            0x6587 };
-    QTest::newRow("Chinese (simplified)") << 9 << ushortarray(d2)
-                                       << QByteArray(IDNA_ACE_PREFIX "ihqwcrb4cv8a8dqg056pqjye")
-                                       << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d3[] = { 0x4ED6, 0x5011, 0x7232, 0x4EC0, 0x9EBD, 0x4E0D, 0x8AAA, 0x4E2D,
-                            0x6587 };
-    QTest::newRow("Chinese (traditional)") << 9 << ushortarray(d3)
-                                        << QByteArray(IDNA_ACE_PREFIX "ihqwctvzc91f659drss3x8bo0yb")
-                                        << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d4[] = { 0x0050, 0x0072, 0x006F, 0x010D, 0x0070, 0x0072, 0x006F, 0x0073,
-                            0x0074, 0x011B, 0x006E, 0x0065, 0x006D, 0x006C, 0x0075, 0x0076,
-                            0x00ED, 0x010D, 0x0065, 0x0073, 0x006B, 0x0079 };
-    QTest::newRow("Czech") << 22 << ushortarray(d4)
-                        << QByteArray(IDNA_ACE_PREFIX "Proprostnemluvesky-uyb24dma41a")
-                        << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d5[] = { 0x05DC, 0x05DE, 0x05D4, 0x05D4, 0x05DD, 0x05E4, 0x05E9, 0x05D5,
-                            0x05D8, 0x05DC, 0x05D0, 0x05DE, 0x05D3, 0x05D1, 0x05E8, 0x05D9,
-                            0x05DD, 0x05E2, 0x05D1, 0x05E8, 0x05D9, 0x05EA };
-    QTest::newRow("Hebrew") << 22 << ushortarray(d5)
-                         << QByteArray(IDNA_ACE_PREFIX "4dbcagdahymbxekheh6e0a7fei0b")
-                         << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d6[] = { 0x092F, 0x0939, 0x0932, 0x094B, 0x0917, 0x0939, 0x093F, 0x0928,
-                            0x094D, 0x0926, 0x0940, 0x0915, 0x094D, 0x092F, 0x094B, 0x0902,
-                            0x0928, 0x0939, 0x0940, 0x0902, 0x092C, 0x094B, 0x0932, 0x0938,
-                            0x0915, 0x0924, 0x0947, 0x0939, 0x0948, 0x0902 };
-    QTest::newRow("Hindi (Devanagari)") << 30 << ushortarray(d6)
-                                     << QByteArray(IDNA_ACE_PREFIX "i1baa7eci9glrd9b2ae1bj0hfcgg6iyaf8o0a1dig0cd")
-                                     << 0 << 0 << IDNA_SUCCESS;
-
-    unsigned short d7[] = { 0x306A, 0x305C, 0x307F, 0x3093, 0x306A, 0x65E5, 0x672C, 0x8A9E,
-                            0x3092, 0x8A71, 0x3057, 0x3066, 0x304F, 0x308C, 0x306A, 0x3044,
-                            0x306E, 0x304B };
-    QTest::newRow("Japanese (kanji and hiragana)") << 18 << ushortarray(d7)
-                                                << QByteArray(IDNA_ACE_PREFIX "n8jok5ay5dzabd5bym9f0cm5685rrjetr6pdxa")
-                                                << 0 << 0 << IDNA_SUCCESS;
-
-    unsigned short d8[] = { 0x043F, 0x043E, 0x0447, 0x0435, 0x043C, 0x0443, 0x0436, 0x0435,
-                            0x043E, 0x043D, 0x0438, 0x043D, 0x0435, 0x0433, 0x043E, 0x0432,
-                            0x043E, 0x0440, 0x044F, 0x0442, 0x043F, 0x043E, 0x0440, 0x0443,
-                            0x0441, 0x0441, 0x043A, 0x0438 };
-    QTest::newRow("Russian (Cyrillic)") << 28 << ushortarray(d8)
-                                     << QByteArray(IDNA_ACE_PREFIX "b1abfaaepdrnnbgefbadotcwatmq2g4l")
-                                     << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d9[] = { 0x0050, 0x006F, 0x0072, 0x0071, 0x0075, 0x00E9, 0x006E, 0x006F,
-                            0x0070, 0x0075, 0x0065, 0x0064, 0x0065, 0x006E, 0x0073, 0x0069,
-                            0x006D, 0x0070, 0x006C, 0x0065, 0x006D, 0x0065, 0x006E, 0x0074,
-                            0x0065, 0x0068, 0x0061, 0x0062, 0x006C, 0x0061, 0x0072, 0x0065,
-                            0x006E, 0x0045, 0x0073, 0x0070, 0x0061, 0x00F1, 0x006F, 0x006C };
-    QTest::newRow("Spanish") << 40 << ushortarray(d9)
-                          << QByteArray(IDNA_ACE_PREFIX "PorqunopuedensimplementehablarenEspaol-fmd56a")
-                          << 0 << 0 << IDNA_SUCCESS;
-
-    unsigned short d10[] = { 0x0054, 0x1EA1, 0x0069, 0x0073, 0x0061, 0x006F, 0x0068, 0x1ECD,
-                             0x006B, 0x0068, 0x00F4, 0x006E, 0x0067, 0x0074, 0x0068, 0x1EC3,
-                             0x0063, 0x0068, 0x1EC9, 0x006E, 0x00F3, 0x0069, 0x0074, 0x0069,
-                             0x1EBF, 0x006E, 0x0067, 0x0056, 0x0069, 0x1EC7, 0x0074 };
-    QTest::newRow("Vietnamese") << 31 << ushortarray(d10)
-                             << QByteArray(IDNA_ACE_PREFIX "TisaohkhngthchnitingVit-kjcr8268qyxafd2f1b9g")
-                             << 0 << 0 << IDNA_SUCCESS;
-
-    unsigned short d11[] = { 0x0033, 0x5E74, 0x0042, 0x7D44, 0x91D1, 0x516B, 0x5148, 0x751F };
-    QTest::newRow("Japanese") << 8 << ushortarray(d11)
-                           << QByteArray(IDNA_ACE_PREFIX "3B-ww4c5e180e575a65lsy2b")
-                           << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d12[] = { 0x5B89, 0x5BA4, 0x5948, 0x7F8E, 0x6075, 0x002D, 0x0077, 0x0069,
-                             0x0074, 0x0068, 0x002D, 0x0053, 0x0055, 0x0050, 0x0045, 0x0052,
-                             0x002D, 0x004D, 0x004F, 0x004E, 0x004B, 0x0045, 0x0059, 0x0053 };
-    QTest::newRow("Japanese2") << 24 << ushortarray(d12)
-                            << QByteArray(IDNA_ACE_PREFIX "-with-SUPER-MONKEYS-pc58ag80a8qai00g7n9n")
-                            << 0 << 0 << IDNA_SUCCESS;
-
-    unsigned short d13[] = { 0x0048, 0x0065, 0x006C, 0x006C, 0x006F, 0x002D, 0x0041, 0x006E,
-                             0x006F, 0x0074, 0x0068, 0x0065, 0x0072, 0x002D, 0x0057, 0x0061,
-                             0x0079, 0x002D, 0x305D, 0x308C, 0x305E, 0x308C, 0x306E, 0x5834,
-                             0x6240 };
-    QTest::newRow("Japanese3") << 25 << ushortarray(d13)
-                            << QByteArray(IDNA_ACE_PREFIX "Hello-Another-Way--fc4qua05auwb3674vfr0b")
-                            << 0 << 0 << IDNA_SUCCESS;
-
-    unsigned short d14[] = { 0x3072, 0x3068, 0x3064, 0x5C4B, 0x6839, 0x306E, 0x4E0B, 0x0032 };
-    QTest::newRow("Japanese4") << 8 << ushortarray(d14)
-                            << QByteArray(IDNA_ACE_PREFIX "2-u9tlzr9756bt3uc0v")
-                            << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d15[] = { 0x004D, 0x0061, 0x006A, 0x0069, 0x3067, 0x004B, 0x006F, 0x0069,
-                             0x3059, 0x308B, 0x0035, 0x79D2, 0x524D };
-    QTest::newRow("Japanese5") << 13 << ushortarray(d15)
-                            << QByteArray(IDNA_ACE_PREFIX "MajiKoi5-783gue6qz075azm5e")
-                            << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d16[] = { 0x30D1, 0x30D5, 0x30A3, 0x30FC, 0x0064, 0x0065, 0x30EB, 0x30F3, 0x30D0 };
-    QTest::newRow("Japanese6") << 9 << ushortarray(d16)
-                            << QByteArray(IDNA_ACE_PREFIX "de-jg4avhby1noc0d")
-                            << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d17[] = { 0x305D, 0x306E, 0x30B9, 0x30D4, 0x30FC, 0x30C9, 0x3067 };
-    QTest::newRow("Japanese7") << 7 << ushortarray(d17)
-                            << QByteArray(IDNA_ACE_PREFIX "d9juau41awczczp")
-                            << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d18[] = { 0x03b5, 0x03bb, 0x03bb, 0x03b7, 0x03bd, 0x03b9, 0x03ba, 0x03ac };
-    QTest::newRow("Greek") << 8 << ushortarray(d18)
-                        << QByteArray(IDNA_ACE_PREFIX "hxargifdar")
-                        << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d19[] = { 0x0062, 0x006f, 0x006e, 0x0121, 0x0075, 0x0073, 0x0061, 0x0127,
-                             0x0127, 0x0061 };
-    QTest::newRow("Maltese (Malti)") << 10 << ushortarray(d19)
-                                  << QByteArray(IDNA_ACE_PREFIX "bonusaa-5bb1da")
-                                  << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-
-    unsigned short d20[] = {0x043f, 0x043e, 0x0447, 0x0435, 0x043c, 0x0443, 0x0436, 0x0435,
-                            0x043e, 0x043d, 0x0438, 0x043d, 0x0435, 0x0433, 0x043e, 0x0432,
-                            0x043e, 0x0440, 0x044f, 0x0442, 0x043f, 0x043e, 0x0440, 0x0443,
-                            0x0441, 0x0441, 0x043a, 0x0438 };
-    QTest::newRow("Russian (Cyrillic)") << 28 << ushortarray(d20)
-                                     << QByteArray(IDNA_ACE_PREFIX "b1abfaaepdrnnbgefbadotcwatmq2g4l")
-                                     << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
-}
-
-void tst_QUrl::idna_testsuite()
-{
-    QFETCH(int, numchars);
-    QFETCH(ushortarray, unicode);
-    QFETCH(QByteArray, punycode);
-
-    QString s = QString::fromUtf16(unicode.points, numchars);
-    QCOMPARE(punycode, QUrl::toPunycode(s));
-}
-
-void tst_QUrl::nameprep_testsuite_data()
-{
-    QTest::addColumn<QString>("in");
-    QTest::addColumn<QString>("out");
-    QTest::addColumn<QString>("profile");
-    QTest::addColumn<int>("flags");
-    QTest::addColumn<int>("rc");
-
-    QTest::newRow("Map to nothing")
-        << QString::fromUtf8("foo\xC2\xAD\xCD\x8F\xE1\xA0\x86\xE1\xA0\x8B"
-                             "bar""\xE2\x80\x8B\xE2\x81\xA0""baz\xEF\xB8\x80\xEF\xB8\x88"
-                             "\xEF\xB8\x8F\xEF\xBB\xBF")
-        << QString::fromUtf8("foobarbaz")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Case folding ASCII U+0043 U+0041 U+0046 U+0045")
-        << QString::fromUtf8("CAFE")
-        << QString::fromUtf8("cafe")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Case folding 8bit U+00DF (german sharp s)")
-        << QString::fromUtf8("\xC3\x9F")
-        << QString("ss")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Case folding U+0130 (turkish capital I with dot)")
-        << QString::fromUtf8("\xC4\xB0")
-        << QString::fromUtf8("i\xcc\x87")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Case folding multibyte U+0143 U+037A")
-        << QString::fromUtf8("\xC5\x83\xCD\xBA")
-        << QString::fromUtf8("\xC5\x84 \xCE\xB9")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Case folding U+2121 U+33C6 U+1D7BB")
-        << QString::fromUtf8("\xE2\x84\xA1\xE3\x8F\x86\xF0\x9D\x9E\xBB")
-        << QString::fromUtf8("telc\xE2\x88\x95""kg\xCF\x83")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Normalization of U+006a U+030c U+00A0 U+00AA")
-        << QString::fromUtf8("\x6A\xCC\x8C\xC2\xA0\xC2\xAA")
-        << QString::fromUtf8("\xC7\xB0 a")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Case folding U+1FB7 and normalization")
-        << QString::fromUtf8("\xE1\xBE\xB7")
-        << QString::fromUtf8("\xE1\xBE\xB6\xCE\xB9")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Self-reverting case folding U+01F0 and normalization")
-//        << QString::fromUtf8("\xC7\xF0") ### typo in the original testsuite
-        << QString::fromUtf8("\xC7\xB0")
-        << QString::fromUtf8("\xC7\xB0")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Self-reverting case folding U+0390 and normalization")
-        << QString::fromUtf8("\xCE\x90")
-        << QString::fromUtf8("\xCE\x90")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Self-reverting case folding U+03B0 and normalization")
-        << QString::fromUtf8("\xCE\xB0")
-        << QString::fromUtf8("\xCE\xB0")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Self-reverting case folding U+1E96 and normalization")
-        << QString::fromUtf8("\xE1\xBA\x96")
-        << QString::fromUtf8("\xE1\xBA\x96")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Self-reverting case folding U+1F56 and normalization")
-        << QString::fromUtf8("\xE1\xBD\x96")
-        << QString::fromUtf8("\xE1\xBD\x96")
-        << QString() << 0 << 0;
-
-    QTest::newRow("ASCII space character U+0020")
-        << QString::fromUtf8("\x20")
-        << QString::fromUtf8("\x20")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Non-ASCII 8bit space character U+00A0")
-        << QString::fromUtf8("\xC2\xA0")
-        << QString::fromUtf8("\x20")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Non-ASCII multibyte space character U+1680")
-        << QString::fromUtf8("\xE1\x9A\x80")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Non-ASCII multibyte space character U+2000")
-        << QString::fromUtf8("\xE2\x80\x80")
-        << QString::fromUtf8("\x20")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Zero Width Space U+200b")
-        << QString::fromUtf8("\xE2\x80\x8b")
-        << QString()
-        << QString() << 0 << 0;
-
-    QTest::newRow("Non-ASCII multibyte space character U+3000")
-        << QString::fromUtf8("\xE3\x80\x80")
-        << QString::fromUtf8("\x20")
-        << QString() << 0 << 0;
-
-    QTest::newRow("ASCII control characters U+0010 U+007F")
-        << QString::fromUtf8("\x10\x7F")
-        << QString::fromUtf8("\x10\x7F")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Non-ASCII 8bit control character U+0085")
-        << QString::fromUtf8("\xC2\x85")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Non-ASCII multibyte control character U+180E")
-        << QString::fromUtf8("\xE1\xA0\x8E")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Zero Width No-Break Space U+FEFF")
-        << QString::fromUtf8("\xEF\xBB\xBF")
-        << QString()
-        << QString() << 0 << 0;
-
-    QTest::newRow("Non-ASCII control character U+1D175")
-        << QString::fromUtf8("\xF0\x9D\x85\xB5")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Plane 0 private use character U+F123")
-        << QString::fromUtf8("\xEF\x84\xA3")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Plane 15 private use character U+F1234")
-        << QString::fromUtf8("\xF3\xB1\x88\xB4")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Plane 16 private use character U+10F234")
-        << QString::fromUtf8("\xF4\x8F\x88\xB4")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Non-character code point U+8FFFE")
-        << QString::fromUtf8("\xF2\x8F\xBF\xBE")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Non-character code point U+10FFFF")
-        << QString::fromUtf8("\xF4\x8F\xBF\xBF")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Surrogate code U+DF42")
-        << QString::fromUtf8("\xED\xBD\x82")
-        << QString()
-        << QString("Nameprep") << 0 <<  STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Non-plain text character U+FFFD")
-        << QString::fromUtf8("\xEF\xBF\xBD")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Ideographic description character U+2FF5")
-        << QString::fromUtf8("\xE2\xBF\xB5")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Display property character U+0341")
-        << QString::fromUtf8("\xCD\x81")
-        << QString::fromUtf8("\xCC\x81")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Left-to-right mark U+200E")
-        << QString::fromUtf8("\xE2\x80\x8E")
-        << QString::fromUtf8("\xCC\x81")
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Deprecated U+202A")
-        << QString::fromUtf8("\xE2\x80\xAA")
-        << QString::fromUtf8("\xCC\x81")
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Language tagging character U+E0001")
-        << QString::fromUtf8("\xF3\xA0\x80\x81")
-        << QString::fromUtf8("\xCC\x81")
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Language tagging character U+E0042")
-        << QString::fromUtf8("\xF3\xA0\x81\x82")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
-
-    QTest::newRow("Bidi: RandALCat character U+05BE and LCat characters")
-        << QString::fromUtf8("foo\xD6\xBE""bar")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_BIDI_BOTH_L_AND_RAL;
-
-    QTest::newRow("Bidi: RandALCat character U+FD50 and LCat characters")
-        << QString::fromUtf8("foo\xEF\xB5\x90""bar")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_BIDI_BOTH_L_AND_RAL;
-
-    QTest::newRow("Bidi: RandALCat character U+FB38 and LCat characters")
-        << QString::fromUtf8("foo\xEF\xB9\xB6""bar")
-        << QString::fromUtf8("foo \xd9\x8e""bar")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Bidi: RandALCat without trailing RandALCat U+0627 U+0031")
-        << QString::fromUtf8("\xD8\xA7\x31")
-        << QString()
-        << QString("Nameprep") << 0 << STRINGPREP_BIDI_LEADTRAIL_NOT_RAL;
-
-    QTest::newRow("Bidi: RandALCat character U+0627 U+0031 U+0628")
-        << QString::fromUtf8("\xD8\xA7\x31\xD8\xA8")
-        << QString::fromUtf8("\xD8\xA7\x31\xD8\xA8")
-        << QString() << 0 << 0;
-
-    QTest::newRow("Unassigned code point U+E0002")
-        << QString::fromUtf8("\xF3\xA0\x80\x82")
-        << QString()
-        << QString("Nameprep") << STRINGPREP_NO_UNASSIGNED << STRINGPREP_CONTAINS_UNASSIGNED;
-
-    QTest::newRow("Larger test (shrinking)")
-        << QString::fromUtf8("X\xC2\xAD\xC3\x9F\xC4\xB0\xE2\x84\xA1\x6a\xcc\x8c\xc2\xa0\xc2"
-                             "\xaa\xce\xb0\xe2\x80\x80")
-        << QString::fromUtf8("xssi\xcc\x87""tel\xc7\xb0 a\xce\xb0 ")
-        << QString("Nameprep") << 0 << 0;
-
-    QTest::newRow("Larger test (expanding)")
-        << QString::fromUtf8("X\xC3\x9F\xe3\x8c\x96\xC4\xB0\xE2\x84\xA1\xE2\x92\x9F\xE3\x8c\x80")
-        << QString::fromUtf8("xss\xe3\x82\xad\xe3\x83\xad\xe3\x83\xa1\xe3\x83\xbc\xe3\x83\x88"
-                             "\xe3\x83\xab""i\xcc\x87""tel\x28""d\x29\xe3\x82\xa2\xe3\x83\x91"
-                             "\xe3\x83\xbc\xe3\x83\x88")
-        << QString() << 0 << 0;
-}
-
-#ifdef QT_BUILD_INTERNAL
-QT_BEGIN_NAMESPACE
-extern void qt_nameprep(QString *source, int from);
-extern bool qt_check_std3rules(const QChar *, int);
-QT_END_NAMESPACE
-#endif
-
-void tst_QUrl::nameprep_testsuite()
-{
-#ifdef QT_BUILD_INTERNAL
-    QFETCH(QString, in);
-    QFETCH(QString, out);
-    QFETCH(QString, profile);
-
-    QEXPECT_FAIL("Left-to-right mark U+200E",
-                 "Investigate further", Continue);
-    QEXPECT_FAIL("Deprecated U+202A",
-                 "Investigate further", Continue);
-    QEXPECT_FAIL("Language tagging character U+E0001",
-                 "Investigate further", Continue);
-    qt_nameprep(&in, 0);
-    QCOMPARE(in, out);
-#endif
-}
-
-void tst_QUrl::nameprep_highcodes_data()
-{
-    QTest::addColumn<QString>("in");
-    QTest::addColumn<QString>("out");
-    QTest::addColumn<QString>("profile");
-    QTest::addColumn<int>("flags");
-    QTest::addColumn<int>("rc");
-
-    {
-        QChar st[] = { '-', 0xd801, 0xdc1d, 'a' };
-        QChar se[] = { '-', 0xd801, 0xdc45, 'a' };
-        QTest::newRow("highcodes (U+1041D)")
-            << QString(st, sizeof(st)/sizeof(st[0]))
-            << QString(se, sizeof(se)/sizeof(se[0]))
-            << QString() << 0 << 0;
-    }
-    {
-        QChar st[] = { 0x011C, 0xd835, 0xdf6e, 0x0110 };
-        QChar se[] = { 0x011D, 0x03C9, 0x0111 };
-        QTest::newRow("highcodes (U+1D76E)")
-            << QString(st, sizeof(st)/sizeof(st[0]))
-            << QString(se, sizeof(se)/sizeof(se[0]))
-            << QString() << 0 << 0;
-    }
-    {
-        QChar st[] = { 'D', 0xdb40, 0xdc20, 'o', 0xd834, 0xdd7a, '\'', 0x2060, 'h' };
-        QChar se[] = { 'd', 'o', '\'', 'h' };
-        QTest::newRow("highcodes (D, U+E0020, o, U+1D17A, ', U+2060, h)")
-            << QString(st, sizeof(st)/sizeof(st[0]))
-            << QString(se, sizeof(se)/sizeof(se[0]))
-            << QString() << 0 << 0;
-    }
-}
-
-void tst_QUrl::nameprep_highcodes()
-{
-#ifdef QT_BUILD_INTERNAL
-    QFETCH(QString, in);
-    QFETCH(QString, out);
-    QFETCH(QString, profile);
-
-    qt_nameprep(&in, 0);
-    QCOMPARE(in, out);
-#endif
-}
-
-void tst_QUrl::ace_testsuite_data()
-{
-    QTest::addColumn<QString>("in");
-    QTest::addColumn<QString>("toace");
-    QTest::addColumn<QString>("fromace");
-    QTest::addColumn<QString>("unicode");
-
-    QTest::newRow("ascii-lower") << "fluke" << "fluke" << "fluke" << "fluke";
-    QTest::newRow("ascii-mixed") << "FLuke" << "fluke" << "fluke" << "fluke";
-    QTest::newRow("ascii-upper") << "FLUKE" << "fluke" << "fluke" << "fluke";
-
-    QTest::newRow("asciifolded") << QString::fromLatin1("stra\337e") << "strasse" << "." << "strasse";
-    QTest::newRow("asciifolded-dotcom") << QString::fromLatin1("stra\337e.example.com") << "strasse.example.com" << "." << "strasse.example.com";
-    QTest::newRow("greek-mu") << QString::fromLatin1("\265V")
-                              <<"xn--v-lmb"
-                              << "."
-                              << QString::fromUtf8("\316\274v");
-
-    QTest::newRow("non-ascii-lower") << QString::fromLatin1("alqualond\353")
-                                     << "xn--alqualond-34a"
-                                     << "."
-                                     << QString::fromLatin1("alqualond\353");
-    QTest::newRow("non-ascii-mixed") << QString::fromLatin1("Alqualond\353")
-                                     << "xn--alqualond-34a"
-                                     << "."
-                                     << QString::fromLatin1("alqualond\353");
-    QTest::newRow("non-ascii-upper") << QString::fromLatin1("ALQUALOND\313")
-                                     << "xn--alqualond-34a"
-                                     << "."
-                                     << QString::fromLatin1("alqualond\353");
-
-    QTest::newRow("idn-lower") << "xn--alqualond-34a" << "xn--alqualond-34a"
-                               << QString::fromLatin1("alqualond\353")
-                               << QString::fromLatin1("alqualond\353");
-    QTest::newRow("idn-mixed") << "Xn--alqualond-34a" << "xn--alqualond-34a"
-                               << QString::fromLatin1("alqualond\353")
-                               << QString::fromLatin1("alqualond\353");
-    QTest::newRow("idn-mixed2") << "XN--alqualond-34a" << "xn--alqualond-34a"
-                                << QString::fromLatin1("alqualond\353")
-                                << QString::fromLatin1("alqualond\353");
-    QTest::newRow("idn-mixed3") << "xn--ALQUALOND-34a" << "xn--alqualond-34a"
-                                << QString::fromLatin1("alqualond\353")
-                                << QString::fromLatin1("alqualond\353");
-    QTest::newRow("idn-mixed4") << "xn--alqualond-34A" << "xn--alqualond-34a"
-                                << QString::fromLatin1("alqualond\353")
-                                << QString::fromLatin1("alqualond\353");
-    QTest::newRow("idn-upper") << "XN--ALQUALOND-34A" << "xn--alqualond-34a"
-                               << QString::fromLatin1("alqualond\353")
-                               << QString::fromLatin1("alqualond\353");
-
-    QTest::newRow("separator-3002") << QString::fromUtf8("example\343\200\202com")
-                                    << "example.com" << "." << "example.com";
-
-    QString egyptianIDN =
-        QString::fromUtf8("\331\210\330\262\330\247\330\261\330\251\055\330\247\331\204\330"
-                          "\243\330\252\330\265\330\247\331\204\330\247\330\252.\331\205"
-                          "\330\265\330\261");
-    QTest::newRow("egyptian-tld-ace")
-        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
-        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
-        << "."
-        << egyptianIDN;
-    QTest::newRow("egyptian-tld-unicode")
-        << egyptianIDN
-        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
-        << "."
-        << egyptianIDN;
-    QTest::newRow("egyptian-tld-mix1")
-        << QString::fromUtf8("\331\210\330\262\330\247\330\261\330\251\055\330\247\331\204\330"
-                             "\243\330\252\330\265\330\247\331\204\330\247\330\252.xn--wgbh1c")
-        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
-        << "."
-        << egyptianIDN;
-    QTest::newRow("egyptian-tld-mix2")
-        << QString::fromUtf8("xn----rmckbbajlc6dj7bxne2c.\331\205\330\265\330\261")
-        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
-        << "."
-        << egyptianIDN;
-}
-
-void tst_QUrl::ace_testsuite()
-{
-    static const char canonsuffix[] = ".troll.no";
-    QFETCH(QString, in);
-    QFETCH(QString, toace);
-    QFETCH(QString, fromace);
-    QFETCH(QString, unicode);
-
-    const char *suffix = canonsuffix;
-    if (toace.contains('.'))
-        suffix = 0;
-
-    QString domain = in + suffix;
-    QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
-    if (fromace != ".")
-        QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
-    QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
-
-    domain = in + (suffix ? ".troll.No" : "");
-    QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
-    if (fromace != ".")
-        QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
-    QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
-
-    domain = in + (suffix ? ".troll.NO" : "");
-    QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
-    if (fromace != ".")
-        QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
-    QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
-}
-
-void tst_QUrl::std3violations_data()
-{
-    QTest::addColumn<QString>("source");
-    QTest::addColumn<bool>("validUrl");
-
-    QTest::newRow("too-long") << "this-domain-is-far-too-long-for-its-own-good-and-should-have-been-limited-to-63-chars" << false;
-    QTest::newRow("dash-begin") << "-x-foo" << false;
-    QTest::newRow("dash-end") << "x-foo-" << false;
-    QTest::newRow("dash-begin-end") << "-foo-" << false;
-
-    QTest::newRow("control") << "\033foo" << false;
-    QTest::newRow("bang") << "foo!" << false;
-    QTest::newRow("plus") << "foo+bar" << false;
-    QTest::newRow("dot") << "foo.bar";
-    QTest::newRow("startingdot") << ".bar" << false;
-    QTest::newRow("startingdot2") << ".example.com" << false;
-    QTest::newRow("slash") << "foo/bar" << true;
-    QTest::newRow("colon") << "foo:80" << true;
-    QTest::newRow("question") << "foo?bar" << true;
-    QTest::newRow("at") << "foo@bar" << true;
-    QTest::newRow("backslash") << "foo\\bar" << false;
-
-    // these characters are transformed by NFKC to non-LDH characters
-    QTest::newRow("dot-like") << QString::fromUtf8("foo\342\200\244bar") << false;  // U+2024 ONE DOT LEADER
-    QTest::newRow("slash-like") << QString::fromUtf8("foo\357\274\217bar") << false;    // U+FF0F FULLWIDTH SOLIDUS
-
-    // The following should be invalid but isn't
-    // the DIVISON SLASH doesn't case-fold to a slash
-    // is this a problem with RFC 3490?
-    //QTest::newRow("slash-like2") << QString::fromUtf8("foo\342\210\225bar") << false; // U+2215 DIVISION SLASH
-}
-
-void tst_QUrl::std3violations()
-{
-    QFETCH(QString, source);
-
-#ifdef QT_BUILD_INTERNAL
-    {
-        QString prepped = source;
-        qt_nameprep(&prepped, 0);
-        QVERIFY(!qt_check_std3rules(prepped.constData(), prepped.length()));
-    }
-#endif
-
-    if (source.contains('.'))
-        return; // this test ends here
-
-    QUrl url;
-    url.setHost(source);
-    QVERIFY(url.host().isEmpty());
-
-    QFETCH(bool, validUrl);
-    if (validUrl)
-        return;  // test ends here for these cases
-
-    url = QUrl("http://" + source + "/some/path");
-    QVERIFY(!url.isValid());
-}
-
-void tst_QUrl::std3deviations_data()
-{
-    QTest::addColumn<QString>("source");
-
-    QTest::newRow("ending-dot") << "example.com.";
-    QTest::newRow("ending-dot3002") << QString("example.com") + QChar(0x3002);
-    QTest::newRow("underline") << "foo_bar";  //QTBUG-7434
-}
-
-void tst_QUrl::std3deviations()
-{
-    QFETCH(QString, source);
-    QVERIFY(!QUrl::toAce(source).isEmpty());
-
-    QUrl url;
-    url.setHost(source);
-    QVERIFY(!url.host().isEmpty());
 }
 
 void tst_QUrl::tldRestrictions_data()
@@ -2784,13 +2134,13 @@ void tst_QUrl::emptyQueryOrFragment()
         QVERIFY(url.encodedQuery().isNull());
 
         // add encodedQuery
-        url.setEncodedQuery("abc=def");
+        url.setQuery("abc=def");
         QVERIFY(url.hasQuery());
-        QCOMPARE(QString(url.encodedQuery()), QString(QLatin1String("abc=def")));
+        QCOMPARE(url.query(), QString(QLatin1String("abc=def")));
         QCOMPARE(url.toString(), QString(QLatin1String("http://www.foo.bar/baz?abc=def")));
 
         // remove encodedQuery
-        url.setEncodedQuery(0);
+        url.setQuery(QString());
         QVERIFY(!url.hasQuery());
         QVERIFY(url.encodedQuery().isNull());
         QCOMPARE(url.toString(), QString(QLatin1String("http://www.foo.bar/baz")));
@@ -2862,8 +2212,8 @@ void tst_QUrl::setEncodedFragment()
 void tst_QUrl::fromEncoded()
 {
     QUrl qurl2 = QUrl::fromEncoded("print:/specials/Print%20To%20File%20(PDF%252FAcrobat)", QUrl::TolerantMode);
-    QCOMPARE(qurl2.path(), QString::fromLatin1("/specials/Print To File (PDF%2FAcrobat)"));
-    QCOMPARE(QFileInfo(qurl2.path()).fileName(), QString::fromLatin1("Print To File (PDF%2FAcrobat)"));
+    QCOMPARE(qurl2.path(), QString::fromLatin1("/specials/Print To File (PDF%252FAcrobat)"));
+    QCOMPARE(QFileInfo(qurl2.path()).fileName(), QString::fromLatin1("Print To File (PDF%252FAcrobat)"));
     QCOMPARE(qurl2.toEncoded().constData(), "print:/specials/Print%20To%20File%20(PDF%252FAcrobat)");
 
     QUrl qurl = QUrl::fromEncoded("http://\303\244.de");
@@ -2903,10 +2253,10 @@ void tst_QUrl::hosts_data()
     QTest::newRow("empty3") << QString("http:///file") << QString("");
     QTest::newRow("empty4") << QString("http:/file") << QString("");
 
-    // numeric hostnames
-    QTest::newRow("http://123/") << QString("http://123/") << QString("123");
-    QTest::newRow("http://456/") << QString("http://456/") << QString("456");
-    QTest::newRow("http://1000/") << QString("http://1000/") << QString("1000");
+    // numeric hostnames -> decoded as IPv4 as per inet_aton(3)
+    QTest::newRow("http://123/") << QString("http://123/") << QString("0.0.0.123");
+    QTest::newRow("http://456/") << QString("http://456/") << QString("0.0.1.200");
+    QTest::newRow("http://1000/") << QString("http://1000/") << QString("0.0.3.232");
 
     // IP literals
     QTest::newRow("normal-ip-literal") << QString("http://1.2.3.4") << QString("1.2.3.4");
@@ -2920,12 +2270,18 @@ void tst_QUrl::hosts_data()
                                                  << QString("2001:200:0:8002:203:47ff:fea5:3085");
     QTest::newRow("ipv6-literal-v4compat") << QString("http://[::255.254.253.252]")
                                            << QString("::255.254.253.252");
-    QTest::newRow("ipv6-literal-v4compat-2") << QString("http://[1000::ffff:127.128.129.1]")
-                                             << QString("1000::ffff:127.128.129.1");
-    QTest::newRow("long-ipv6-literal-v4compat") << QString("http://[fec0:8000::8002:1000:ffff:200.100.50.250]")
-                                                << QString("fec0:8000::8002:1000:ffff:200.100.50.250");
-    QTest::newRow("longer-ipv6-literal-v4compat") << QString("http://[fec0:8000:4000:8002:1000:ffff:200.100.50.250]")
-                                                  << QString("fec0:8000:4000:8002:1000:ffff:200.100.50.250");
+    QTest::newRow("ipv6-literal-v4mapped") << QString("http://[::ffff:255.254.253.252]")
+                                           << QString("::ffff:255.254.253.252");
+    QTest::newRow("ipv6-literal-v4mapped-2") << QString("http://[::ffff:fffe:fdfc]")
+                                           << QString("::ffff:255.254.253.252");
+
+    // no embedded v4 unless the cases above
+    QTest::newRow("ipv6-literal-v4decoded") << QString("http://[1000::ffff:127.128.129.1]")
+                                            << QString("1000::ffff:7f80:8101");
+    QTest::newRow("long-ipv6-literal-v4decoded") << QString("http://[fec0:8000::8002:1000:ffff:200.100.50.250]")
+                                                 << QString("fec0:8000:0:8002:1000:ffff:c864:32fa");
+    QTest::newRow("longer-ipv6-literal-v4decoded") << QString("http://[fec0:8000:4000:8002:1000:ffff:200.100.50.250]")
+                                                   << QString("fec0:8000:4000:8002:1000:ffff:c864:32fa");
 
     // normal hostnames
     QTest::newRow("normal") << QString("http://intern") << QString("intern");
@@ -2948,16 +2304,19 @@ void tst_QUrl::setPort()
     {
         QUrl url;
         QVERIFY(url.toString().isEmpty());
+        url.setHost("a");
         url.setPort(80);
         QCOMPARE(url.port(), 80);
-        QCOMPARE(url.toString(), QString::fromLatin1("//:80"));
+        QCOMPARE(url.toString(), QString::fromLatin1("//a:80"));
         url.setPort(-1);
+        url.setHost(QString());
         QCOMPARE(url.port(), -1);
-        QVERIFY(url.toString().isEmpty());
+        QCOMPARE(url.toString(), QString());
         url.setPort(80);
         QTest::ignoreMessage(QtWarningMsg, "QUrl::setPort: Out of range");
         url.setPort(65536);
         QCOMPARE(url.port(), -1);
+        QVERIFY(url.errorString().contains("out of range"));
     }
 }
 
@@ -3003,19 +2362,6 @@ void tst_QUrl::setAuthority()
     QCOMPARE(u.toString(), url);
 }
 
-void tst_QUrl::errorString()
-{
-    QUrl u = QUrl::fromEncoded("http://strange<username>@bad_hostname/", QUrl::StrictMode);
-    QVERIFY(!u.isValid());
-    QString errorString = "Invalid URL \"http://strange<username>@bad_hostname/\": "
-                          "error at position 14: expected end of URL, but found '<'";
-    QCOMPARE(u.errorString(), errorString);
-
-    QUrl v;
-    errorString = "Invalid URL \"\": ";
-    QCOMPARE(v.errorString(), errorString);
-}
-
 void tst_QUrl::clear()
 {
     QUrl url("a");
@@ -3044,7 +2390,7 @@ void tst_QUrl::binaryData_data()
     QTest::newRow("file-hash") << "http://foo/abc%23_def";
     QTest::newRow("file-question") << "http://foo/abc%3F_def";
     QTest::newRow("file-nonutf8") << "http://foo/abc%E1_def";
-    QTest::newRow("file-slash") << "http://foo/abc%2f_def";
+    QTest::newRow("file-slash") << "http://foo/abc%2F_def";
 
     QTest::newRow("ref") << "http://foo/file#a%01%0D%0A%7F";
     QTest::newRow("ref-nul") << "http://foo/file#abc%00_def";
@@ -3119,7 +2465,7 @@ void tst_QUrl::fromUserInput_data()
     portUrl.setPort(80);
     QTest::newRow("port-0") << "example.org:80" << portUrl;
     QTest::newRow("port-1") << "http://example.org:80" << portUrl;
-    portUrl.setPath("path");
+    portUrl.setPath("/path");
     QTest::newRow("port-2") << "example.org:80/path" << portUrl;
     QTest::newRow("port-3") << "http://example.org:80/path" << portUrl;
 
@@ -3138,6 +2484,10 @@ void tst_QUrl::fromUserInput_data()
     // FYI: The scheme in the resulting url user
     QUrl authUrl("user:pass@domain.com");
     QTest::newRow("misc-1") << "user:pass@domain.com" << authUrl;
+
+    // FTP with double slashes in path
+    QTest::newRow("ftp-double-slash-1") << "ftp.example.com//path" << QUrl("ftp://ftp.example.com/%2Fpath");
+    QTest::newRow("ftp-double-slash-1") << "ftp://ftp.example.com//path" << QUrl("ftp://ftp.example.com/%2Fpath");
 }
 
 void tst_QUrl::fromUserInput()
@@ -3275,27 +2625,254 @@ void tst_QUrl::effectiveTLDs()
     QCOMPARE(domain.topLevelDomain(), TLD);
 }
 
-void tst_QUrl::removeAllEncodedQueryItems_data()
+void tst_QUrl::lowercasesScheme()
 {
-    QTest::addColumn<QUrl>("url");
-    QTest::addColumn<QByteArray>("key");
-    QTest::addColumn<QUrl>("result");
-
-    QTest::newRow("test1") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("bbb") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&ccc=c");
-    QTest::newRow("test2") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("aaa") << QUrl::fromEncoded("http://qt.nokia.com/foo?bbb=b&ccc=c");
-//    QTest::newRow("test3") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("ccc") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b");
-    QTest::newRow("test4") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("b%62b") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c");
-    QTest::newRow("test5") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&b%62b=b&ccc=c") << QByteArray("b%62b") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&ccc=c");
-    QTest::newRow("test6") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&b%62b=b&ccc=c") << QByteArray("bbb") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&b%62b=b&ccc=c");
+    QUrl url;
+    url.setScheme("HELLO");
+    QCOMPARE(url.scheme(), QString("hello"));
 }
 
-void tst_QUrl::removeAllEncodedQueryItems()
+void tst_QUrl::componentEncodings_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<int>("encoding");
+    QTest::addColumn<QString>("userName");
+    QTest::addColumn<QString>("password");
+    QTest::addColumn<QString>("userInfo");
+    QTest::addColumn<QString>("host");
+    QTest::addColumn<QString>("authority");
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QString>("query");
+    QTest::addColumn<QString>("fragment");
+    QTest::addColumn<QString>("toString");
+
+    QTest::newRow("empty") << QUrl() << int(QUrl::FullyEncoded)
+                           << QString() << QString() << QString()
+                           << QString() << QString()
+                           << QString() << QString() << QString() << QString();
+
+    // hostname cannot contain spaces
+    QTest::newRow("encoded-space") << QUrl("x://user name:pass word@host/path name?query value#fragment value")
+                                   << int(QUrl::EncodeSpaces)
+                                   << "user%20name" << "pass%20word" << "user%20name:pass%20word"
+                                   << "host" << "user%20name:pass%20word@host"
+                                   << "/path%20name" << "query%20value" << "fragment%20value"
+                                   << "x://user%20name:pass%20word@host/path%20name?query%20value#fragment%20value";
+
+    QTest::newRow("decoded-space") << QUrl("x://user%20name:pass%20word@host/path%20name?query%20value#fragment%20value")
+                                   << int(QUrl::MostDecoded)
+                                   << "user name" << "pass word" << "user name:pass word"
+                                   << "host" << "user name:pass word@host"
+                                   << "/path name" << "query value" << "fragment value"
+                                   << "x://user name:pass word@host/path name?query value#fragment value";
+
+    // binary data is always encoded
+    // this is also testing non-UTF8 data
+    QTest::newRow("binary") << QUrl("x://%c0%00:%c1%01@host/%c2%02?%c3%03#%d4%04")
+                            << int(QUrl::MostDecoded)
+                            << "%C0%00" << "%C1%01" << "%C0%00:%C1%01"
+                            << "host" << "%C0%00:%C1%01@host"
+                            << "/%C2%02" << "%C3%03" << "%D4%04"
+                            << "x://%C0%00:%C1%01@host/%C2%02?%C3%03#%D4%04";
+
+    // unicode tests
+    // hostnames can participate in this test, but we need a top-level domain that accepts Unicode
+    QTest::newRow("encoded-unicode") << QUrl(QString::fromUtf8("x://\xc2\x80:\xc3\x90@smørbrød.example.no/\xe0\xa0\x80?\xf0\x90\x80\x80#é"))
+                                     << int(QUrl::EncodeUnicode)
+                                     << "%C2%80" << "%C3%90" << "%C2%80:%C3%90"
+                                     << "xn--smrbrd-cyad.example.no" << "%C2%80:%C3%90@xn--smrbrd-cyad.example.no"
+                                     << "/%E0%A0%80" << "%F0%90%80%80" << "%C3%A9"
+                                     << "x://%C2%80:%C3%90@xn--smrbrd-cyad.example.no/%E0%A0%80?%F0%90%80%80#%C3%A9";
+    QTest::newRow("decoded-unicode") << QUrl("x://%C2%80:%C3%90@XN--SMRBRD-cyad.example.NO/%E0%A0%80?%F0%90%80%80#%C3%A9")
+                                     << int(QUrl::MostDecoded)
+                                     << QString::fromUtf8("\xc2\x80") << QString::fromUtf8("\xc3\x90")
+                                     << QString::fromUtf8("\xc2\x80:\xc3\x90")
+                                     << QString::fromUtf8("smørbrød.example.no")
+                                     << QString::fromUtf8("\xc2\x80:\xc3\x90@smørbrød.example.no")
+                                     << QString::fromUtf8("/\xe0\xa0\x80")
+                                     << QString::fromUtf8("\xf0\x90\x80\x80") << QString::fromUtf8("é")
+                                     << QString::fromUtf8("x://\xc2\x80:\xc3\x90@smørbrød.example.no/\xe0\xa0\x80?\xf0\x90\x80\x80#é");
+
+    //    unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+    // these are always decoded
+    QTest::newRow("decoded-unreserved") << QUrl("x://%61:%71@%41%30%2eexample%2ecom/%7e?%5f#%51")
+                                        << int(QUrl::FullyEncoded)
+                                        << "a" << "q" << "a:q"
+                                        << "a0.example.com" << "a:q@a0.example.com"
+                                        << "/~" << "_" << "Q"
+                                        << "x://a:q@a0.example.com/~?_#Q";
+
+    //    sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+    //                  / "*" / "+" / "," / ";" / "="
+    // like the unreserved, these are decoded everywhere
+    // don't test in query because they might remain encoded
+    QTest::newRow("decoded-subdelims") << QUrl("x://%21%24%26:%27%28%29@host/%2a%2b%2c#%3b%3d")
+                                       << int(QUrl::FullyEncoded)
+                                       << "!$&" << "'()" << "!$&:'()"
+                                       << "host" << "!$&:'()@host"
+                                       << "/*+," << "" << ";="
+                                       << "x://!$&:'()@host/*+,#;=";
+
+    //    gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+    // these are the separators between fields
+    // they must appear encoded in certain positions, no exceptions
+    // in other positions, they can appear decoded, so they always do
+    // 1) test the delimiters that must appear encoded
+    //    (if they were decoded, they'd would change the URL parsing)
+    QTest::newRow("encoded-gendelims-changing") << QUrl("x://%5b%3a%2f%3f%23%40%5d:%5b%2f%3f%23%40%5d@host/%2f%3f%23?%23")
+                                                << int(QUrl::MostDecoded)
+                                                << "[:/?#@]" << "[/?#@]" << "[%3A/?#@]:[/?#@]"
+                                                << "host" << "%5B%3A/?#%40%5D:%5B/?#%40%5D@host"
+                                                << "/%2F?#" << "#" << ""
+                                                << "x://%5B%3A%2F%3F%23%40%5D:%5B%2F%3F%23%40%5D@host/%2F%3F%23?%23";
+
+    // 2) test the delimiters that may appear decoded and would not change the meaning
+    // and test that %2f is *not* decoded to a slash in the path
+    // don't test the query because in this mode it doesn't transform anything
+    QTest::newRow("decoded-gendelims-unchanging") << QUrl("x://:%3a@host/%2f%3a%40#%23%3a%2f%3f%40")
+                                                  << int(QUrl::FullyEncoded)
+                                                  << "" << ":" << "::"
+                                                  << "host" << "::@host"
+                                                  << "/%2F:@" << "" << "#:/?@"
+                                                  << "x://::@host/%2F:@##:/?@";
+
+    // 3) test "[" and "]". Even though they are not ambiguous in the path, query or fragment
+    // the RFC does not allow them to appear there decoded. QUrl adheres strictly in FullyEncoded mode
+    QTest::newRow("encoded-square-brackets") << QUrl("x:/[]#[]")
+                                             << int(QUrl::FullyEncoded)
+                                             << "" << "" << ""
+                                             << "" << ""
+                                             << "/%5B%5D" << "" << "%5B%5D"
+                                             << "x:/%5B%5D#%5B%5D";
+
+    // 4) like above, but now decode them, which is allowed
+    QTest::newRow("decoded-square-brackets") << QUrl("x:/%5B%5D#%5B%5D")
+                                             << int(QUrl::MostDecoded)
+                                             << "" << "" << ""
+                                             << "" << ""
+                                             << "/[]" << "" << "[]"
+                                             << "x:/[]#[]";
+
+    // test the query
+    // since QUrl doesn't know what chars the user wants to use for the pair and value delimiters,
+    // it keeps the delimiters alone except for "#", which must always be encoded.
+    QTest::newRow("unencoded-delims-query") << QUrl("?!$()*+,;=:/?[]@")
+                                            << int(QUrl::FullyEncoded)
+                                            << QString() << QString() << QString()
+                                            << QString() << QString()
+                                            << QString() << "!$()*+,;=:/?[]@" << QString()
+                                            << "?!$()*+,;=:/?[]@";
+    QTest::newRow("undecoded-delims-query") << QUrl("?%21%24%26%27%28%29%2a%2b%2c%2f%3a%3b%3d%3f%40%5b%5d")
+                                            << int(QUrl::MostDecoded)
+                                            << QString() << QString() << QString()
+                                            << QString() << QString()
+                                            << QString() << "%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D" << QString()
+                                            << "?%21%24%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D";
+
+    // reserved characters:  '"' / "<" / ">" / "^" / "\" / "{" / "|" "}"
+    // the RFC does not allow them undecoded anywhere, but we do
+    QTest::newRow("encoded-reserved") << QUrl("x://\"<>^\\{|}:\"<>^\\{|}@host/\"<>^\\{|}?\"<>^\\{|}#\"<>^\\{|}")
+                                    << int(QUrl::FullyEncoded)
+                                    << "%22%3C%3E%5E%5C%7B%7C%7D" << "%22%3C%3E%5E%5C%7B%7C%7D"
+                                    << "%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D"
+                                    << "host" << "%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D@host"
+                                    << "/%22%3C%3E%5E%5C%7B%7C%7D" << "%22%3C%3E%5E%5C%7B%7C%7D"
+                                    << "%22%3C%3E%5E%5C%7B%7C%7D"
+                                    << "x://%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D@host/%22%3C%3E%5E%5C%7B%7C%7D"
+                                       "?%22%3C%3E%5E%5C%7B%7C%7D#%22%3C%3E%5E%5C%7B%7C%7D";
+    QTest::newRow("decoded-reserved") << QUrl("x://%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D@host"
+                                            "/%22%3C%3E%5E%5C%7B%7C%7D?%22%3C%3E%5E%5C%7B%7C%7D#%22%3C%3E%5E%5C%7B%7C%7D")
+                                    << int(QUrl::DecodeReserved)
+                                    << "\"<>^\\{|}" << "\"<>^\\{|}" << "\"<>^\\{|}:\"<>^\\{|}"
+                                    << "host" << "\"<>^\\{|}:\"<>^\\{|}@host"
+                                    << "/\"<>^\\{|}" << "\"<>^\\{|}" << "\"<>^\\{|}"
+                                    << "x://\"<>^\\{|}:\"<>^\\{|}@host/\"<>^\\{|}?\"<>^\\{|}#\"<>^\\{|}";
+
+
+    // Beauty is in the eye of the beholder
+    // Test PrettyDecoder against our expectations
+
+    // spaces and unicode are considered pretty and are decoded
+    // this includes hostnames
+    QTest::newRow("pretty-spaces-unicode") << QUrl("x://%20%c3%a9:%c3%a9%20@XN--SMRBRD-cyad.example.NO/%c3%a9%20?%20%c3%a9#%c3%a9%20")
+                                           << int(QUrl::PrettyDecoded)
+                                           << QString::fromUtf8(" é") << QString::fromUtf8("é ")
+                                           << QString::fromUtf8(" é:é ")
+                                           << QString::fromUtf8("smørbrød.example.no")
+                                           << QString::fromUtf8(" é:é @smørbrød.example.no")
+                                           << QString::fromUtf8("/é ") << QString::fromUtf8(" é")
+                                           << QString::fromUtf8("é ")
+                                           << QString::fromUtf8("x:// é:é @smørbrød.example.no/é ? é#é ");
+
+    // the pretty form re-encodes the subdelims (except in the query, where they are left alone)
+    QTest::newRow("pretty-subdelims") << QUrl("x://%21%24%26:%27%28%29@host/%2a%2b%2c?%26=%26&%3d=%3d#%3b%3d")
+                                      << int(QUrl::PrettyDecoded)
+                                      << "!$&" << "'()" << "!$&:'()"
+                                      << "host" << "!$&:'()@host"
+                                      << "/*+," << "%26=%26&%3D=%3D" << ";="
+                                      << "x://!$&:'()@host/*+,?%26=%26&%3D=%3D#;=";
+
+    // the pretty form decodes all unambiguous gen-delims
+    // (except in query, where they are left alone)
+    QTest::newRow("pretty-gendelims") << QUrl("x://%5b%3a%40%2f%5d:%5b%3a%40%2f%5d@host"
+                                              "/%3a%40%5b%3f%23%5d?[?%3f%23]%5b:%3a@%40%5d#%23")
+                                      << int(QUrl::PrettyDecoded)
+                                      << "[:@/]" << "[:@/]" << "[%3A@/]:[:@/]"
+                                      << "host" << "%5B%3A%40/%5D:%5B:%40/%5D@host"
+                                      << "/:@[?#]" << "[?%3F#]%5B:%3A@%40%5D" << "#"
+                                      << "x://%5B%3A%40%2F%5D:%5B:%40%2F%5D@host/:@[%3F%23]?[?%3F%23]%5B:%3A@%40%5D##";
+
+    // the pretty form keeps the other characters decoded everywhere
+    // except when rebuilding the full URL, when we only allow "{}" to remain decoded
+    QTest::newRow("pretty-reserved") << QUrl("x://\"<>^\\{|}:\"<>^\\{|}@host/\"<>^\\{|}?\"<>^\\{|}#\"<>^\\{|}")
+                                     << int(QUrl::PrettyDecoded)
+                                     << "\"<>^\\{|}" << "\"<>^\\{|}" << "\"<>^\\{|}:\"<>^\\{|}"
+                                     << "host" << "\"<>^\\{|}:\"<>^\\{|}@host"
+                                     << "/\"<>^\\{|}" << "\"<>^\\{|}" << "\"<>^\\{|}"
+                                     << "x://%22%3C%3E%5E%5C%7B%7C%7D:%22%3C%3E%5E%5C%7B%7C%7D@host/%22%3C%3E%5E%5C{%7C}"
+                                        "?%22%3C%3E%5E%5C{%7C}#%22%3C%3E%5E%5C%7B%7C%7D";
+}
+
+void tst_QUrl::componentEncodings()
 {
     QFETCH(QUrl, url);
-    QFETCH(QByteArray, key);
-    QFETCH(QUrl, result);
-    url.removeAllEncodedQueryItems(key);
-    QCOMPARE(url, result);
+    QFETCH(int, encoding);
+    QFETCH(QString, userName);
+    QFETCH(QString, password);
+    QFETCH(QString, userInfo);
+    QFETCH(QString, host);
+    QFETCH(QString, authority);
+    QFETCH(QString, path);
+    QFETCH(QString, query);
+    QFETCH(QString, fragment);
+    QFETCH(QString, toString);
+
+    QUrl::ComponentFormattingOptions formatting(encoding);
+    QCOMPARE(url.userName(formatting), userName);
+    QCOMPARE(url.password(formatting), password);
+    QCOMPARE(url.userInfo(formatting), userInfo);
+    QCOMPARE(url.host(formatting), host);
+    QCOMPARE(url.authority(formatting), authority);
+    QCOMPARE(url.path(formatting), path);
+    QCOMPARE(url.query(formatting), query);
+    QCOMPARE(url.fragment(formatting), fragment);
+    QCOMPARE(url.toString(formatting),
+             (((QString(toString ))))); // the weird () and space is to align the output
+
+    // repeat with the URL we got from toString
+    QUrl url2(toString);
+    QCOMPARE(url2.userName(formatting), userName);
+    QCOMPARE(url2.password(formatting), password);
+    QCOMPARE(url2.userInfo(formatting), userInfo);
+    QCOMPARE(url2.host(formatting), host);
+    QCOMPARE(url2.authority(formatting), authority);
+    QCOMPARE(url2.path(formatting), path);
+    QCOMPARE(url2.query(formatting), query);
+    QCOMPARE(url2.fragment(formatting), fragment);
+    QCOMPARE(url2.toString(formatting), toString);
+
+    // and use the comparison operator
+    QCOMPARE(url2, url);
 }
 
 QTEST_MAIN(tst_QUrl)

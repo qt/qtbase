@@ -265,7 +265,6 @@ private slots:
     void mdiSubWindowTest();
     void lineEditTest();
     void groupBoxTest();
-    void workspaceTest();
     void dialogButtonBoxTest();
     void dialTest();
     void rubberBandTest();
@@ -601,7 +600,7 @@ static QWidget *createWidgets()
     /* Not in the list
      * QAbstractItemView, QGraphicsView, QScrollArea,
      * QToolButton, QDockWidget, QFocusFrame, QMainWindow, QMenu, QMenuBar, QSizeGrip, QSplashScreen, QSplitterHandle,
-     * QStatusBar, QSvgWidget, QTabBar, QToolBar, QWorkspace, QSplitter
+     * QStatusBar, QSvgWidget, QTabBar, QToolBar, QSplitter
      */
     return w;
 }
@@ -2054,32 +2053,6 @@ void tst_QAccessibility::groupBoxTest()
     delete iface;
     delete groupBox;
     }
-}
-
-void tst_QAccessibility::workspaceTest()
-{
-    {
-    QWorkspace workspace;
-    workspace.resize(400,300);
-    workspace.show();
-    const int subWindowCount =  3;
-    for (int i = 0; i < subWindowCount; ++i) {
-        QWidget *window = workspace.addWindow(new QWidget);
-        if (i > 0)
-            window->move(window->x() + 1, window->y());
-        window->show();
-        window->resize(70, window->height());
-    }
-
-    QWidgetList subWindows = workspace.windowList();
-    QCOMPARE(subWindows.count(), subWindowCount);
-
-    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&workspace);
-    QVERIFY(interface);
-    QCOMPARE(interface->childCount(), subWindowCount);
-
-    }
-    QTestAccessibility::clearEvents();
 }
 
 bool accessibleInterfaceLeftOf(const QAccessibleInterface *a1, const QAccessibleInterface *a2)

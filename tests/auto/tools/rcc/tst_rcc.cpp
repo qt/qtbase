@@ -52,6 +52,7 @@
 #include <QtCore/QList>
 #include <QtCore/QResource>
 #include <QtCore/QLocale>
+#include <QtCore/QtGlobal>
 
 typedef QMap<QString, QString> QStringMap;
 Q_DECLARE_METATYPE(QStringMap)
@@ -61,6 +62,8 @@ class tst_rcc : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     void rcc_data();
     void rcc();
     void binary_data();
@@ -68,6 +71,13 @@ private slots:
 
     void cleanupTestCase();
 };
+
+void tst_rcc::initTestCase()
+{
+    // rcc uses a QHash to store files in the resource system.
+    // we must force a certain hash order when testing or tst_rcc will fail, see QTBUG-25078
+    QVERIFY(qputenv("QT_RCC_TEST", "1"));
+}
 
 QString findExpectedFile(const QString &base)
 {

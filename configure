@@ -718,20 +718,17 @@ CFG_GSTREAMER=auto
 CFG_QGTKSTYLE=auto
 CFG_LARGEFILE=auto
 CFG_OPENSSL=auto
-CFG_STL=auto
 CFG_PRECOMPILE=auto
 CFG_SEPARATE_DEBUG_INFO=no
 CFG_SEPARATE_DEBUG_INFO_NOCOPY=no
 CFG_REDUCE_EXPORTS=auto
-CFG_MMX=auto
-CFG_3DNOW=auto
-CFG_SSE=auto
 CFG_SSE2=auto
 CFG_SSE3=auto
 CFG_SSSE3=auto
 CFG_SSE4_1=auto
 CFG_SSE4_2=auto
 CFG_AVX=auto
+CFG_AVX2=auto
 CFG_REDUCE_RELOCATIONS=auto
 CFG_ACCESSIBILITY=auto
 CFG_IWMMXT=no
@@ -892,7 +889,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-directfb|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-pkg-config|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-directfb|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-pkg-config|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1428,13 +1425,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    stl)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_STL="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     pch)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_PRECOMPILE="$VAL"
@@ -1455,27 +1445,6 @@ while [ "$#" -gt 0 ]; do
     reduce-exports)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_REDUCE_EXPORTS="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    mmx)
-        if [ "$VAL" = "no" ]; then
-            CFG_MMX="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    3dnow)
-        if [ "$VAL" = "no" ]; then
-            CFG_3DNOW="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    sse)
-        if [ "$VAL" = "no" ]; then
-            CFG_SSE="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -1518,6 +1487,13 @@ while [ "$#" -gt 0 ]; do
     avx)
         if [ "$VAL" = "no" ]; then
             CFG_AVX="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    avx2)
+        if [ "$VAL" = "no" ]; then
+            CFG_AVX2="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2816,13 +2792,6 @@ if [ "$OPT_HELP" = "yes" ]; then
         LFSY="*"
         LFSN=" "
     fi
-    if [ "$CFG_STL" = "auto" ] || [ "$CFG_STL" = "yes" ]; then
-        SHY="*"
-        SHN=" "
-    else
-        SHY=" "
-        SHN="*"
-    fi
     if [ "$CFG_PRECOMPILE" = "auto" ] || [ "$CFG_PRECOMPILE" = "no" ]; then
         PHY=" "
         PHN="*"
@@ -2893,7 +2862,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-release] [-debug] [-debug-and-release]
         [-developer-build] [-shared] [-static] [-no-fast] [-fast] [-no-largefile]
         [-largefile] [-no-exceptions] [-exceptions] [-no-accessibility]
-        [-accessibility] [-no-stl] [-stl] [-no-sql-<driver>] [-sql-<driver>]
+        [-accessibility] [-no-sql-<driver>] [-sql-<driver>]
         [-plugin-sql-<driver>] [-system-sqlite]
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
         [-qt-zlib] [-system-zlib] [-no-gif] [-no-libpng] [-qt-libpng] [-system-libpng]
@@ -2901,7 +2870,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
         [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked] [-no-gui]
-        [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
+        [-no-separate-debug-info] [-no-sse2]
         [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx] [-no-neon]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info]
         [-no-phonon-backend] [-phonon-backend] [-no-media-backend] [-media-backend]
@@ -3000,9 +2969,6 @@ Configure options:
     -no-accessibility .. Do not compile Accessibility support.
  *  -accessibility ..... Compile Accessibility support.
 
- $SHN  -no-stl ............ Do not compile STL support.
- $SHY  -stl ............... Compile STL support.
-
     -no-sql-<driver> ... Disable SQL <driver> entirely.
     -qt-sql-<driver> ... Enable a SQL <driver> in the QtSql library, by default
                          none are turned on.
@@ -3029,15 +2995,13 @@ Configure options:
                          See the README file for a list of supported
                          operating systems and compilers.
 
-    -no-mmx ............ Do not compile with use of MMX instructions.
-    -no-3dnow .......... Do not compile with use of 3DNOW instructions.
-    -no-sse ............ Do not compile with use of SSE instructions.
     -no-sse2 ........... Do not compile with use of SSE2 instructions.
     -no-sse3 ........... Do not compile with use of SSE3 instructions.
     -no-ssse3 .......... Do not compile with use of SSSE3 instructions.
     -no-sse4.1.......... Do not compile with use of SSE4.1 instructions.
     -no-sse4.2.......... Do not compile with use of SSE4.2 instructions.
     -no-avx ............ Do not compile with use of AVX instructions.
+    -no-avx2 ........... Do not compile with use of AVX2 instructions.
     -no-neon ........... Do not compile with use of NEON instructions.
     -no-mips_dsp ....... Do not compile with use of MIPS DSP instructions.
     -no-mips_dspr2 ..... Do not compile with use of MIPS DSP rev2 instructions.
@@ -3733,33 +3697,6 @@ else
     CFG_USE_FLOATMATH=no
 fi
 
-# detect mmx support
-if [ "${CFG_MMX}" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mmx "mmx" $L_FLAGS $I_FLAGS $l_FLAGS "-mmmx"; then
-	CFG_MMX=yes
-    else
-	CFG_MMX=no
-    fi
-fi
-
-# detect 3dnow support
-if [ "${CFG_3DNOW}" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/3dnow "3dnow" $L_FLAGS $I_FLAGS $l_FLAGS "-m3dnow"; then
-	CFG_3DNOW=yes
-    else
-	CFG_3DNOW=no
-    fi
-fi
-
-# detect sse support
-if [ "${CFG_SSE}" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/sse "sse" $L_FLAGS $I_FLAGS $l_FLAGS "-msse"; then
-	CFG_SSE=yes
-    else
-	CFG_SSE=no
-    fi
-fi
-
 # detect sse2 support
 if [ "${CFG_SSE2}" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/sse2 "sse2" $L_FLAGS $I_FLAGS $l_FLAGS "-msse2"; then
@@ -3811,6 +3748,15 @@ if [ "${CFG_AVX}" = "auto" ]; then
        CFG_AVX=yes
     else
        CFG_AVX=no
+    fi
+fi
+
+# detect avx2 support
+if [ "${CFG_AVX2}" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/avx2 "avx2" $L_FLAGS $I_FLAGS $l_FLAGS "-march=core-avx2"; then
+       CFG_AVX2=yes
+    else
+       CFG_AVX2=no
     fi
 fi
 
@@ -4725,26 +4671,13 @@ if [ "$CFG_LIBFREETYPE" = "auto" ]; then
     fi
 fi
 
-HAVE_STL=no
-if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS; then
-    HAVE_STL=yes
+if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS &&
+    [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+    echo "STL functionality check failed! Cannot build Qt with this STL library."
+    echo " Turn on verbose messaging (-v) to $0 to see the final report."
+    exit 101
 fi
 
-if [ "$CFG_STL" != "no" ]; then
-    if [ "$HAVE_STL" = "yes" ]; then
-        CFG_STL=yes
-    else
-        if [ "$CFG_STL" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-            echo "STL support cannot be enabled due to functionality tests!"
-            echo " Turn on verbose messaging (-v) to $0 to see the final report."
-            echo " If you believe this message is in error you may use the continue"
-            echo " switch (-continue) to $0 to continue."
-            exit 101
-        else
-            CFG_STL=no
-        fi
-    fi
-fi
 
 # detect POSIX clock_gettime()
 if [ "$CFG_CLOCK_GETTIME" = "auto" ]; then
@@ -5086,11 +5019,6 @@ QMakeVar set UI_DIR ".uic/$QMAKE_OUTDIR"
 if [ "$CFG_LARGEFILE" = "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG largefile"
 fi
-if [ "$CFG_STL" = "no" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STL"
-else
-    QMAKE_CONFIG="$QMAKE_CONFIG stl"
-fi
 if [ "$CFG_USE_GNUMAKE" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG GNUmake"
 fi
@@ -5105,15 +5033,13 @@ fi
 if [ "$CFG_SEPARATE_DEBUG_INFO_NOCOPY" = "yes" ] ; then
     QT_CONFIG="$QT_CONFIG separate_debug_info_nocopy"
 fi
-[ "$CFG_MMX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mmx"
-[ "$CFG_3DNOW" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG 3dnow"
-[ "$CFG_SSE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse"
 [ "$CFG_SSE2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse2"
 [ "$CFG_SSE3" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse3"
 [ "$CFG_SSSE3" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG ssse3"
 [ "$CFG_SSE4_1" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse4_1"
 [ "$CFG_SSE4_2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse4_2"
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
+[ "$CFG_AVX2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx2"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
 if [ "$CFG_ARCH" = "mips" ]; then
@@ -5750,9 +5676,6 @@ elif [ "$CFG_DEBUG" = "no" ]; then
     fi
     QT_CONFIG="$QT_CONFIG release"
 fi
-if [ "$CFG_STL" = "yes" ]; then
-    QTCONFIG_CONFIG="$QTCONFIG_CONFIG stl"
-fi
 if [ "$CFG_FRAMEWORK" = "no" ]; then
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG qt_no_framework"
 else
@@ -6008,12 +5931,11 @@ else
     echo "JavaScriptCore JIT ..... $CFG_JAVASCRIPTCORE_JIT"
 fi
 echo "QML debugging .......... $CFG_QML_DEBUG"
-echo "STL support ............ $CFG_STL"
 echo "PCH support ............ $CFG_PRECOMPILE"
 if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
-    echo "MMX/3DNOW/SSE/SSE2/SSE3. ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}/${CFG_SSE3}"
-    echo "SSSE3/SSE4.1/SSE4.2..... ${CFG_SSSE3}/${CFG_SSE4_1}/${CFG_SSE4_2}"
-    echo "AVX..................... ${CFG_AVX}"
+    echo "SSE2/SSE3/SSSE3......... ${CFG_SSE2}/${CFG_SSE3}/${CFG_SSSE3}"
+    echo "SSE4.1/SSE4.2........... ${CFG_SSSE3}/${CFG_SSE4_1}/${CFG_SSE4_2}"
+    echo "AVX/AVX2................ ${CFG_AVX}/${CFG_AVX2}"
 elif [ "$CFG_ARCH" = "arm" ]; then
     echo "iWMMXt support ......... ${CFG_IWMMXT}"
     echo "NEON support ........... ${CFG_NEON}"
@@ -6317,7 +6239,7 @@ for file in .projects .projects.3; do
             fi
             SPEC=$XQMAKESPEC ;;
         */qmake/qmake.pro) continue ;;
-        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*tools/qdoc*) SPEC=$QMAKESPEC ;;
+        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*tools/qdoc*|*tools/qdbusxml2cpp*|*tools/qdbuscpp2xml*) SPEC=$QMAKESPEC ;;
         *) if [ "$CFG_NOPROCESS" = "yes" ]; then
               continue
            else

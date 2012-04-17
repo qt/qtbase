@@ -40,18 +40,17 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QWidget>
 #include <qtranslator.h>
 #include <qfile.h>
 
-class tst_QTranslator : public QWidget
+class tst_QTranslator : public QObject
 {
     Q_OBJECT
 
 public:
     tst_QTranslator();
 protected:
-    bool event(QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
 private slots:
     void initTestCase();
 
@@ -71,8 +70,7 @@ private:
 tst_QTranslator::tst_QTranslator()
     : languageChangeEventCounter(0)
 {
-    show();
-    hide();
+    qApp->installEventFilter(this);
 }
 
 void tst_QTranslator::initTestCase()
@@ -83,11 +81,11 @@ void tst_QTranslator::initTestCase()
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
 }
 
-bool tst_QTranslator::event(QEvent *event)
+bool tst_QTranslator::eventFilter(QObject *, QEvent *event)
 {
     if (event->type() == QEvent::LanguageChange)
         ++languageChangeEventCounter;
-    return QWidget::event(event);
+    return false;
 }
 
 void tst_QTranslator::load()

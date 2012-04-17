@@ -1549,6 +1549,7 @@ void QDateTimeEdit::mousePressEvent(QMouseEvent *event)
 QTimeEdit::QTimeEdit(QWidget *parent)
     : QDateTimeEdit(QDATETIMEEDIT_TIME_MIN, QVariant::Time, parent)
 {
+    connect(this, SIGNAL(timeChanged(QTime)), SIGNAL(userTimeChanged(QTime)));
 }
 
 /*!
@@ -1560,6 +1561,15 @@ QTimeEdit::QTimeEdit(const QTime &time, QWidget *parent)
     : QDateTimeEdit(time, QVariant::Time, parent)
 {
 }
+
+/*!
+  \fn void QTimeEdit::userTimeChanged(const QTime &time)
+
+  This signal only exists to fully implement the time Q_PROPERTY on the class.
+  Normally timeChanged should be used instead.
+
+  \internal
+*/
 
 
 /*!
@@ -1603,6 +1613,7 @@ QTimeEdit::QTimeEdit(const QTime &time, QWidget *parent)
 QDateEdit::QDateEdit(QWidget *parent)
     : QDateTimeEdit(QDATETIMEEDIT_DATE_INITIAL, QVariant::Date, parent)
 {
+    connect(this, SIGNAL(dateChanged(QDate)), SIGNAL(userDateChanged(QDate)));
 }
 
 /*!
@@ -1614,6 +1625,15 @@ QDateEdit::QDateEdit(const QDate &date, QWidget *parent)
     : QDateTimeEdit(date, QVariant::Date, parent)
 {
 }
+
+/*!
+  \fn void QDateEdit::userDateChanged(const QDate &date)
+
+  This signal only exists to fully implement the date Q_PROPERTY on the class.
+  Normally dateChanged should be used instead.
+
+  \internal
+*/
 
 
 // --- QDateTimeEditPrivate ---

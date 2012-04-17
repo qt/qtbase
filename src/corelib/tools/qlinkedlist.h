@@ -45,10 +45,8 @@
 #include <QtCore/qiterator.h>
 #include <QtCore/qrefcount.h>
 
-#ifndef QT_NO_STL
 #include <iterator>
 #include <list>
-#endif
 
 QT_BEGIN_HEADER
 
@@ -94,8 +92,8 @@ public:
 
     inline int size() const { return d->size; }
     inline void detach()
-    { if (d->ref != 1) detach_helper(); }
-    inline bool isDetached() const { return d->ref == 1; }
+    { if (d->ref.isShared()) detach_helper(); }
+    inline bool isDetached() const { return !d->ref.isShared(); }
     inline void setSharable(bool sharable) { if (!sharable) detach(); if (d != &QLinkedListData::shared_null) d->sharable = sharable; }
     inline bool isSharedWith(const QLinkedList<T> &other) const { return d == other.d; }
 
@@ -221,12 +219,10 @@ public:
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
 
-#ifndef QT_NO_STL
     static inline QLinkedList<T> fromStdList(const std::list<T> &list)
     { QLinkedList<T> tmp; qCopy(list.begin(), list.end(), std::back_inserter(tmp)); return tmp; }
     inline std::list<T> toStdList() const
     { std::list<T> tmp; qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
-#endif
 
     // comfort
     QLinkedList<T> &operator+=(const QLinkedList<T> &l);
@@ -243,8 +239,6 @@ private:
 template <typename T>
 inline QLinkedList<T>::~QLinkedList()
 {
-    if (!d)
-        return;
     if (!d->ref.deref())
         free(d);
 }
@@ -254,7 +248,7 @@ void QLinkedList<T>::detach_helper()
 {
     union { QLinkedListData *d; Node *e; } x;
     x.d = new QLinkedListData;
-    x.d->ref = 1;
+    x.d->ref.initializeOwned();
     x.d->size = d->size;
     x.d->sharable = true;
     Node *original = e->n;
@@ -267,6 +261,7 @@ void QLinkedList<T>::detach_helper()
             copy = copy->n;
         } QT_CATCH(...) {
             copy->n = x.e;
+            Q_ASSERT(!x.d->ref.deref()); // Don't trigger assert in free
             free(x.d);
             QT_RETHROW;
         }
@@ -283,14 +278,13 @@ void QLinkedList<T>::free(QLinkedListData *x)
 {
     Node *y = reinterpret_cast<Node*>(x);
     Node *i = y->n;
-    if (x->ref == 0) {
-        while(i != y) {
-            Node *n = i;
-            i = i->n;
-            delete n;
-        }
-        delete x;
+    Q_ASSERT(x->ref.atomic.load() == 0);
+    while (i != y) {
+        Node *n = i;
+        i = i->n;
+        delete n;
     }
+    delete x;
 }
 
 template <typename T>

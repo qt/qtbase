@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include "qwindowsysteminterface_qpa.h"
+#include "qplatformwindow_qpa.h"
 #include "qwindowsysteminterface_qpa_p.h"
 #include "private/qguiapplication_p.h"
 #include "private/qevent_p.h"
@@ -179,7 +180,7 @@ bool QWindowSystemInterface::tryHandleSynchronousExtendedShortcutEvent(QWindow *
 {
     QGuiApplicationPrivate::modifier_buttons = mods;
 
-    QKeyEventEx qevent(QEvent::ShortcutOverride, k, mods, text, autorep, count, nativeScanCode, nativeVirtualKey, nativeModifiers);
+    QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
     qevent.setTimestamp(timestamp);
     return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(w, &qevent);
 }
@@ -276,6 +277,15 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, con
     // Qt 4 compatibility horizontal angle delta.
     e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, local, global, QPoint(), QPoint(), angleDelta.x(), Qt::Horizontal, mods);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+
+QWindowSystemInterfacePrivate::ExposeEvent::ExposeEvent(QWindow *exposed, const QRegion &region)
+    : WindowSystemEvent(Expose)
+    , exposed(exposed)
+    , isExposed(exposed && exposed->handle() ? exposed->handle()->isExposed() : false)
+    , region(region)
+{
 }
 
 int QWindowSystemInterfacePrivate::windowSystemEventsQueued()
@@ -430,15 +440,9 @@ void QWindowSystemInterface::handleThemeChange(QWindow *tlw)
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleMapEvent(QWindow *tlw)
+void QWindowSystemInterface::handleExposeEvent(QWindow *tlw, const QRegion &region)
 {
-    QWindowSystemInterfacePrivate::MapEvent *e = new QWindowSystemInterfacePrivate::MapEvent(tlw);
-    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
-}
-
-void QWindowSystemInterface::handleUnmapEvent(QWindow *tlw)
-{
-    QWindowSystemInterfacePrivate::UnmapEvent *e = new QWindowSystemInterfacePrivate::UnmapEvent(tlw);
+    QWindowSystemInterfacePrivate::ExposeEvent *e = new QWindowSystemInterfacePrivate::ExposeEvent(tlw, region);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 

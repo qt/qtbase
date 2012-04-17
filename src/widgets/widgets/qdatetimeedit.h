@@ -168,8 +168,8 @@ public:
 
     bool event(QEvent *event);
 Q_SIGNALS:
-    void dateTimeChanged(const QDateTime &date);
-    void timeChanged(const QTime &date);
+    void dateTimeChanged(const QDateTime &dateTime);
+    void timeChanged(const QTime &time);
     void dateChanged(const QDate &date);
 
 public Q_SLOTS:
@@ -205,17 +205,25 @@ private:
 class Q_WIDGETS_EXPORT QTimeEdit : public QDateTimeEdit
 {
     Q_OBJECT
+    Q_PROPERTY(QTime time READ time WRITE setTime NOTIFY userTimeChanged USER true)
 public:
     QTimeEdit(QWidget *parent = 0);
     QTimeEdit(const QTime &time, QWidget *parent = 0);
+
+Q_SIGNALS:
+    void userTimeChanged(const QTime &time);
 };
 
 class Q_WIDGETS_EXPORT QDateEdit : public QDateTimeEdit
 {
     Q_OBJECT
+    Q_PROPERTY(QDate date READ date WRITE setDate NOTIFY userDateChanged USER true)
 public:
     QDateEdit(QWidget *parent = 0);
     QDateEdit(const QDate &date, QWidget *parent = 0);
+
+Q_SIGNALS:
+    void userDateChanged(const QDate &date);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeEdit::Sections)

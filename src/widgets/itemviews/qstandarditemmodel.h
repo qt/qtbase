@@ -66,7 +66,7 @@ class Q_WIDGETS_EXPORT QStandardItem
 {
 public:
     QStandardItem();
-    QStandardItem(const QString &text);
+    explicit QStandardItem(const QString &text);
     QStandardItem(const QIcon &icon, const QString &text);
     explicit QStandardItem(int rows, int columns = 1);
     virtual ~QStandardItem();

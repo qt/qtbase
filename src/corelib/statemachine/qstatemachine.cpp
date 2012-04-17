@@ -1657,7 +1657,7 @@ void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalInd
 
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": sending signal event ( sender =" << sender
-             << ", signal =" << sender->metaObject()->method(signalIndex).signature() << ')';
+             << ", signal =" << sender->metaObject()->method(signalIndex).methodSignature().constData() << ')';
 #endif
     postInternalEvent(new QStateMachine::SignalEvent(sender, signalIndex, vargs));
     processEvents(DirectProcessing);
@@ -2211,10 +2211,29 @@ void QStateMachine::removeDefaultAnimation(QAbstractAnimation *animation)
 
 
 // Begin moc-generated code -- modify carefully (check "HAND EDIT" parts)!
+struct qt_meta_stringdata_QSignalEventGenerator_t {
+    QByteArrayData data[3];
+    char stringdata[32];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+        offsetof(qt_meta_stringdata_QSignalEventGenerator_t, stringdata) + ofs \
+        - idx * sizeof(QByteArrayData) \
+    )
+static const qt_meta_stringdata_QSignalEventGenerator_t qt_meta_stringdata_QSignalEventGenerator = {
+    {
+QT_MOC_LITERAL(0, 0, 21),
+QT_MOC_LITERAL(1, 22, 7),
+QT_MOC_LITERAL(2, 30, 0)
+    },
+    "QSignalEventGenerator\0execute\0\0"
+};
+#undef QT_MOC_LITERAL
+
 static const uint qt_meta_data_QSignalEventGenerator[] = {
 
  // content:
-       6,       // revision
+       7,       // revision
        0,       // classname
        0,    0, // classinfo
        1,   14, // methods
@@ -2224,14 +2243,13 @@ static const uint qt_meta_data_QSignalEventGenerator[] = {
        0,       // flags
        0,       // signalCount
 
- // slots: signature, parameters, type, tag, flags
-      23,   22,   22,   22, 0x0a,
+ // slots: name, argc, parameters, tag, flags
+       1,    0,   19,    2, 0x0a,
+
+ // slots: parameters
+    QMetaType::Void,
 
        0        // eod
-};
-
-static const char qt_meta_stringdata_QSignalEventGenerator[] = {
-    "QSignalEventGenerator\0\0execute()\0"
 };
 
 void QSignalEventGenerator::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -2252,7 +2270,7 @@ const QMetaObjectExtraData QSignalEventGenerator::staticMetaObjectExtraData = {
 };
 
 const QMetaObject QSignalEventGenerator::staticMetaObject = {
-    { &QObject::staticMetaObject, qt_meta_stringdata_QSignalEventGenerator,
+    { &QObject::staticMetaObject, qt_meta_stringdata_QSignalEventGenerator.data,
       qt_meta_data_QSignalEventGenerator, &staticMetaObjectExtraData }
 };
 
@@ -2264,7 +2282,7 @@ const QMetaObject *QSignalEventGenerator::metaObject() const
 void *QSignalEventGenerator::qt_metacast(const char *_clname)
 {
     if (!_clname) return 0;
-    if (!strcmp(_clname, qt_meta_stringdata_QSignalEventGenerator))
+    if (!strcmp(_clname, qt_meta_stringdata_QSignalEventGenerator.stringdata))
         return static_cast<void*>(const_cast< QSignalEventGenerator*>(this));
     return QObject::qt_metacast(_clname);
 }

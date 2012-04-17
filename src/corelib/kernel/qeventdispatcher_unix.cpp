@@ -628,6 +628,19 @@ bool QEventDispatcherUNIX::hasPendingEvents()
     return qGlobalPostedEventsCount();
 }
 
+int QEventDispatcherUNIX::remainingTime(int timerId)
+{
+#ifndef QT_NO_DEBUG
+    if (timerId < 1) {
+        qWarning("QEventDispatcherUNIX::remainingTime: invalid argument");
+        return -1;
+    }
+#endif
+
+    Q_D(QEventDispatcherUNIX);
+    return d->timerList.timerRemainingTime(timerId);
+}
+
 void QEventDispatcherUNIX::wakeUp()
 {
     Q_D(QEventDispatcherUNIX);

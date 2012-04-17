@@ -109,7 +109,7 @@ public:
 class Q_GUI_EXPORT QAccessibleSimpleEditableTextInterface: public QAccessibleEditableTextInterface
 {
 public:
-    QAccessibleSimpleEditableTextInterface(QAccessibleInterface *accessibleInterface);  //###
+    explicit QAccessibleSimpleEditableTextInterface(QAccessibleInterface *accessibleInterface);  //###
 
     void copyText(int startOffset, int endOffset) const;
     void deleteText(int startOffset, int endOffset);

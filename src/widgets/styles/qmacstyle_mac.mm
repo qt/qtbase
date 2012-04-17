@@ -2145,20 +2145,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         else
             ret = sz.height();
         break; }
-    case PM_CheckListButtonSize: {
-        switch (d->aquaSizeConstrain(opt, widget)) {
-        case QAquaSizeUnknown:
-        case QAquaSizeLarge:
-            GetThemeMetric(kThemeMetricCheckBoxWidth, &ret);
-            break;
-        case QAquaSizeMini:
-            GetThemeMetric(kThemeMetricMiniCheckBoxWidth, &ret);
-            break;
-        case QAquaSizeSmall:
-            GetThemeMetric(kThemeMetricSmallCheckBoxWidth, &ret);
-            break;
-        }
-        break; }
     case PM_DialogButtonsButtonWidth: {
         QSize sz;
         ret = d->aquaSizeConstrain(opt, 0, QStyle::CT_PushButton, QSize(-1, -1), &sz);
@@ -2198,8 +2184,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         if (widget && (widget->isWindow() || !widget->parentWidget()
                 || (qobject_cast<const QMainWindow*>(widget->parentWidget())
                    && static_cast<QMainWindow *>(widget->parentWidget())->centralWidget() == widget))
-                && (qobject_cast<const QAbstractScrollArea *>(widget)
-                    || widget->inherits("QWorkspaceChild")))
+                && qobject_cast<const QAbstractScrollArea *>(widget))
             ret = 0;
         else
 #endif
@@ -2561,12 +2546,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = Qt::AlignTop;
         break;
     case SH_ScrollView_FrameOnlyAroundContents:
-        if (w && (w->isWindow() || !w->parentWidget() || w->parentWidget()->isWindow())
-                && (w->inherits("QWorkspaceChild")
-                ))
-            ret = true;
-        else
-            ret = QWindowsStyle::styleHint(sh, opt, w, hret);
+        ret = QWindowsStyle::styleHint(sh, opt, w, hret);
         break;
     case SH_Menu_FillScreenWithScroll:
         ret = false;
@@ -2583,7 +2563,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_ScrollBar_StopMouseOverSlider:
         ret = true;
         break;
-    case SH_Q3ListViewExpand_SelectMouseType:
+    case SH_ListViewExpand_SelectMouseType:
         ret = QEvent::MouseButtonRelease;
         break;
     case SH_TabBar_SelectMouseType:
@@ -3094,8 +3074,6 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         p->restore();
         break; }
     case PE_IndicatorViewItemCheck:
-    case PE_Q3CheckListExclusiveIndicator:
-    case PE_Q3CheckListIndicator:
     case PE_IndicatorRadioButton:
     case PE_IndicatorCheckBox: {
         bool drawColorless = (!(opt->state & State_Active))
@@ -3108,8 +3086,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         bdi.adornment = kThemeDrawIndicatorOnly;
         if (opt->state & State_HasFocus)
             bdi.adornment |= kThemeAdornmentFocus;
-        bool isRadioButton = (pe == PE_Q3CheckListExclusiveIndicator
-                              || pe == PE_IndicatorRadioButton);
+        bool isRadioButton = (pe == PE_IndicatorRadioButton);
         switch (d->aquaSizeConstrain(opt, w)) {
         case QAquaSizeUnknown:
         case QAquaSizeLarge:
@@ -3137,11 +3114,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             bdi.value = kThemeButtonOn;
         else
             bdi.value = kThemeButtonOff;
-        HIRect macRect;
-        if (pe == PE_Q3CheckListExclusiveIndicator || pe == PE_Q3CheckListIndicator)
-            macRect = qt_hirectForQRect(opt->rect);
-        else
-            macRect = qt_hirectForQRect(opt->rect);
+        HIRect macRect = qt_hirectForQRect(opt->rect);
         if (!drawColorless)
             HIThemeDrawButton(&macRect, &bdi, cg, kHIThemeOrientationNormal, 0);
         else
@@ -4927,35 +4900,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                               cg,
                                               kHIThemeOrientationNormal);
 
-                }
-            }
-        }
-        break;
-    case CC_Q3ListView:
-        if (const QStyleOptionQ3ListView *lv = qstyleoption_cast<const QStyleOptionQ3ListView *>(opt)) {
-            if (lv->subControls & SC_Q3ListView)
-                QWindowsStyle::drawComplexControl(cc, lv, p, widget);
-            if (lv->subControls & (SC_Q3ListViewBranch | SC_Q3ListViewExpand)) {
-                int y = lv->rect.y();
-                int h = lv->rect.height();
-                int x = lv->rect.right() - 10;
-                for (int i = 1; i < lv->items.size() && y < h; ++i) {
-                    QStyleOptionQ3ListViewItem item = lv->items.at(i);
-                    if (y + item.height > 0 && (item.childCount > 0
-                        || (item.features & (QStyleOptionQ3ListViewItem::Expandable
-                                            | QStyleOptionQ3ListViewItem::Visible))
-                            == (QStyleOptionQ3ListViewItem::Expandable
-                                | QStyleOptionQ3ListViewItem::Visible))) {
-                        QStyleOption treeOpt(0);
-                        treeOpt.rect.setRect(x, y + item.height / 2 - 4, 9, 9);
-                        treeOpt.palette = lv->palette;
-                        treeOpt.state = lv->state;
-                        treeOpt.state |= State_Children;
-                        if (item.state & State_Open)
-                            treeOpt.state |= State_Open;
-                        proxy()->drawPrimitive(PE_IndicatorBranch, &treeOpt, p, widget);
-                    }
-                    y += item.totalHeight;
                 }
             }
         }

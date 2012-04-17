@@ -17,10 +17,8 @@ DEFINES += \
         QT_NO_CAST_TO_ASCII \
         QT_NO_CODECS \
         QT_NO_DATASTREAM \
-        QT_NO_GEOM_VARIANT \
         QT_NO_LIBRARY \
         QT_NO_QOBJECT \
-        QT_NO_STL \
         QT_NO_SYSTEMLOCALE \
         QT_NO_THREAD \
         QT_NO_UNICODETABLES \
@@ -63,15 +61,16 @@ SOURCES += \
            ../../corelib/io/qfsfileengine.cpp \
            ../../corelib/io/qfsfileengine_iterator.cpp \
            ../../corelib/io/qiodevice.cpp \
+           ../../corelib/io/qfiledevice.cpp \
            ../../corelib/io/qtemporaryfile.cpp \
            ../../corelib/io/qtextstream.cpp \
-           ../../corelib/io/qurl.cpp \
            ../../corelib/kernel/qmetatype.cpp \
            ../../corelib/kernel/qvariant.cpp \
            ../../corelib/kernel/qsystemerror.cpp \
            ../../corelib/plugin/quuid.cpp \
            ../../corelib/tools/qbitarray.cpp \
            ../../corelib/tools/qbytearray.cpp \
+           ../../corelib/tools/qarraydata.cpp \
            ../../corelib/tools/qbytearraymatcher.cpp \
            ../../corelib/tools/qdatetime.cpp \
            ../../corelib/tools/qhash.cpp \
@@ -80,6 +79,10 @@ SOURCES += \
            ../../corelib/tools/qlocale_tools.cpp \
            ../../corelib/tools/qmap.cpp \
            ../../corelib/tools/qregexp.cpp \
+           ../../corelib/tools/qpoint.cpp \
+           ../../corelib/tools/qrect.cpp \
+           ../../corelib/tools/qsize.cpp \
+           ../../corelib/tools/qline.cpp \
            ../../corelib/tools/qstring.cpp \
            ../../corelib/tools/qstringlist.cpp \
            ../../corelib/tools/qvector.cpp \

@@ -243,6 +243,9 @@ class Q_GUI_EXPORT QKeyEvent : public QInputEvent
 public:
     QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text = QString(),
               bool autorep = false, ushort count = 1);
+    QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
+              quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
+              const QString &text = QString(), bool autorep = false, ushort count = 1);
     ~QKeyEvent();
 
     int key() const { return k; }
@@ -254,22 +257,35 @@ public:
     inline bool isAutoRepeat() const { return autor; }
     inline int count() const { return int(c); }
 
+    inline quint32 nativeScanCode() const { return nScanCode; }
+    inline quint32 nativeVirtualKey() const { return nVirtualKey; }
+    inline quint32 nativeModifiers() const { return nModifiers; }
+
     // Functions for the extended key event information
-    static QKeyEvent *createExtendedKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
+#if QT_DEPRECATED_SINCE(5, 0)
+    static inline QKeyEvent *createExtendedKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
                                              quint32 nativeScanCode, quint32 nativeVirtualKey,
                                              quint32 nativeModifiers,
                                              const QString& text = QString(), bool autorep = false,
-                                             ushort count = 1);
-    inline bool hasExtendedInfo() const { return reinterpret_cast<const QKeyEvent*>(d) == this; }
-    quint32 nativeScanCode() const;
-    quint32 nativeVirtualKey() const;
-    quint32 nativeModifiers() const;
+                                             ushort count = 1)
+    {
+        return new QKeyEvent(type, key, modifiers,
+                             nativeScanCode, nativeVirtualKey, nativeModifiers,
+                             text, autorep, count);
+    }
+
+    inline bool hasExtendedInfo() const { return true; }
+#endif
 
 protected:
     QString txt;
     int k;
+    quint32 nScanCode;
+    quint32 nVirtualKey;
+    quint32 nModifiers;
     ushort c;
-    uint autor:1;
+    ushort autor:1;
+    // ushort reserved:15;
 };
 
 
@@ -713,8 +729,18 @@ public:
         Q_DECLARE_FLAGS(InfoFlags, InfoFlag)
 
         explicit TouchPoint(int id = -1);
-        TouchPoint(const QTouchEvent::TouchPoint &other);
+        TouchPoint(const TouchPoint &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+        TouchPoint(TouchPoint &&other) : d(other.d) { other.d = 0; }
+        TouchPoint &operator=(TouchPoint &&other)
+        { qSwap(d, other.d); return *this; }
+#endif
         ~TouchPoint();
+
+        TouchPoint &operator=(const TouchPoint &other)
+        { if ( d != other.d ) { TouchPoint copy(other); swap(copy); } return *this; }
+
+        void swap(TouchPoint &other) { qSwap(d, other.d); }
 
         int id() const;
 
@@ -743,7 +769,7 @@ public:
         qreal pressure() const;
         QVector2D velocity() const;
         InfoFlags flags() const;
-        QList<QPointF> rawScreenPositions() const;
+        QVector<QPointF> rawScreenPositions() const;
 
         // internal
         void setId(int id);
@@ -766,8 +792,7 @@ public:
         void setPressure(qreal pressure);
         void setVelocity(const QVector2D &v);
         void setFlags(InfoFlags flags);
-        void setRawScreenPositions(const QList<QPointF> &positions);
-        QTouchEvent::TouchPoint &operator=(const QTouchEvent::TouchPoint &other);
+        void setRawScreenPositions(const QVector<QPointF> &positions);
 
     private:
         QTouchEventTouchPointPrivate *d;
@@ -819,7 +844,7 @@ protected:
     friend class QApplication;
     friend class QApplicationPrivate;
 };
-
+Q_DECLARE_TYPEINFO(QTouchEvent::TouchPoint, Q_MOVABLE_TYPE);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchEvent::TouchPoint::InfoFlags)
 
 class QScrollPrepareEventPrivate;

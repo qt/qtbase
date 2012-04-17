@@ -1,5 +1,6 @@
 TEMPLATE=subdirs
 SUBDIRS=\
+   qbackingstore \
    qclipboard \
    qdrag \
    qevent \

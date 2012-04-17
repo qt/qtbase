@@ -41,6 +41,7 @@
 
 #include "qstringlist.h"
 #include "qregexp.h"
+#include "qregularexpression.h"
 #include "qunicodetables_p.h"
 #ifndef QT_NO_TEXTCODEC
 #include <qtextcodec.h>
@@ -93,6 +94,8 @@
 #ifndef ULLONG_MAX
 #define ULLONG_MAX quint64_C(18446744073709551615)
 #endif
+
+#define IS_RAW_DATA(d) ((d)->offset != sizeof(QStringData))
 
 QT_BEGIN_NAMESPACE
 
@@ -793,13 +796,8 @@ const QString::Null QString::null = { };
     \sa split()
 */
 
-const QConstStringData<1> QString::shared_null = { { Q_REFCOUNT_INITIALIZER(-1), 0, 0, false, { 0 } }, { 0 } };
-const QConstStringData<1> QString::shared_empty = { { Q_REFCOUNT_INITIALIZER(-1), 0, 0, false, { 0 } }, { 0 } };
-
-int QString::grow(int size)
-{
-    return qAllocMore(size * sizeof(QChar), sizeof(Data)) / sizeof(QChar);
-}
+const QStaticStringData<1> QString::shared_null = { Q_STATIC_STRING_DATA_HEADER_INITIALIZER(0), { 0 } };
+const QStaticStringData<1> QString::shared_empty = { Q_STATIC_STRING_DATA_HEADER_INITIALIZER(0), { 0 } };
 
 /*! \typedef QString::ConstIterator
 
@@ -946,9 +944,6 @@ int QString::grow(int size)
     windows) and ucs4 if the size of wchar_t is 4 bytes (most Unix
     systems).
 
-    This method is only available if Qt is configured with STL
-    compatibility enabled and if QT_NO_STL is not defined.
-
     \sa fromUtf16(), fromLatin1(), fromLocal8Bit(), fromUtf8(), fromUcs4()
 */
 
@@ -973,9 +968,6 @@ int QString::grow(int size)
 
     This operator is mostly useful to pass a QString to a function
     that accepts a std::wstring object.
-
-    This operator is only available if Qt is configured with STL
-    compatibility enabled and if QT_NO_STL is not defined.
 
     \sa utf16(), toAscii(), toLatin1(), toUtf8(), toLocal8Bit()
 */
@@ -1033,61 +1025,42 @@ int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
     Constructs a string initialized with the first \a size characters
     of the QChar array \a unicode.
 
+    If \a unicode is 0, a null string is constructed.
+
+    If \a size is negative, \a unicode is assumed to point to a nul-terminated
+    array and its length is determined dynamically. The terminating
+    nul-character is not considered part of the string.
+
     QString makes a deep copy of the string data. The unicode data is copied as
     is and the Byte Order Mark is preserved if present.
+
+    \sa fromRawData()
 */
 QString::QString(const QChar *unicode, int size)
 {
    if (!unicode) {
-        d = const_cast<Data *>(&shared_null.str);
-    } else if (size <= 0) {
-        d = const_cast<Data *>(&shared_empty.str);
+        d = shared_null.data_ptr();
     } else {
-        d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
-        Q_CHECK_PTR(d);
-        d->ref = 1;
-        d->size = size;
-        d->alloc = (uint) size;
-        d->capacityReserved = false;
-        d->offset = 0;
-        memcpy(d->data(), unicode, size * sizeof(QChar));
-        d->data()[size] = '\0';
+        if (size < 0) {
+            size = 0;
+            while (unicode[size] != 0)
+                ++size;
+        }
+        if (!size) {
+            d = shared_empty.data_ptr();
+        } else {
+            d = (Data*) ::malloc(sizeof(Data) + (uint(size) + 1u) * sizeof(QChar));
+            Q_CHECK_PTR(d);
+            d->ref.initializeOwned();
+            d->size = size;
+            d->alloc = uint(size) + 1u;
+            d->capacityReserved = false;
+            d->offset = sizeof(QStringData);
+            memcpy(d->data(), unicode, size * sizeof(QChar));
+            d->data()[size] = '\0';
+        }
     }
 }
-
-/*!
-    \since 4.7
-
-    Constructs a string initialized with the characters of the QChar array
-    \a unicode, which must be terminated with a 0.
-
-    QString makes a deep copy of the string data. The unicode data is copied as
-    is and the Byte Order Mark is preserved if present.
-*/
-QString::QString(const QChar *unicode)
-{
-     if (!unicode) {
-         d = const_cast<Data *>(&shared_null.str);
-     } else {
-         int size = 0;
-         while (unicode[size] != 0)
-             ++size;
-         if (!size) {
-             d = const_cast<Data *>(&shared_empty.str);
-         } else {
-             d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
-             Q_CHECK_PTR(d);
-             d->ref = 1;
-             d->size = size;
-             d->alloc = (uint) size;
-             d->capacityReserved = false;
-             d->offset = 0;
-             memcpy(d->data(), unicode, size * sizeof(QChar));
-             d->data()[size] = '\0';
-         }
-     }
-}
-
 
 /*!
     Constructs a string of the given \a size with every character set
@@ -1098,15 +1071,15 @@ QString::QString(const QChar *unicode)
 QString::QString(int size, QChar ch)
 {
    if (size <= 0) {
-        d = const_cast<Data *>(&shared_empty.str);
+        d = shared_empty.data_ptr();
     } else {
-        d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
+        d = (Data*) ::malloc(sizeof(Data) + (uint(size) + 1u) * sizeof(QChar));
         Q_CHECK_PTR(d);
-        d->ref = 1;
+        d->ref.initializeOwned();
         d->size = size;
-        d->alloc = (uint) size;
+        d->alloc = uint(size) + 1u;
         d->capacityReserved = false;
-        d->offset = 0;
+        d->offset = sizeof(QStringData);
         d->data()[size] = '\0';
         ushort *i = d->data() + size;
         ushort *b = d->data();
@@ -1124,13 +1097,13 @@ QString::QString(int size, QChar ch)
 */
 QString::QString(int size, Qt::Initialization)
 {
-    d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
+    d = (Data*) ::malloc(sizeof(Data) + (uint(size) + 1u) * sizeof(QChar));
     Q_CHECK_PTR(d);
-    d->ref = 1;
+    d->ref.initializeOwned();
     d->size = size;
-    d->alloc = (uint) size;
+    d->alloc = uint(size) + 1u;
     d->capacityReserved = false;
-    d->offset = 0;
+    d->offset = sizeof(QStringData);
     d->data()[size] = '\0';
 }
 
@@ -1148,11 +1121,11 @@ QString::QString(QChar ch)
 {
     d = (Data *) ::malloc(sizeof(Data) + 2*sizeof(QChar));
     Q_CHECK_PTR(d);
-    d->ref = 1;
+    d->ref.initializeOwned();
     d->size = 1;
-    d->alloc = 1;
+    d->alloc = 2u;
     d->capacityReserved = false;
-    d->offset = 0;
+    d->offset = sizeof(QStringData);
     d->data()[0] = ch.unicode();
     d->data()[1] = '\0';
 }
@@ -1250,21 +1223,22 @@ void QString::resize(int size)
     if (size < 0)
         size = 0;
 
-    if (d->offset && d->ref == 1 && size < d->size) {
+    if (IS_RAW_DATA(d) && !d->ref.isShared() && size < d->size) {
         d->size = size;
         return;
     }
 
     if (size == 0 && !d->capacityReserved) {
-        Data *x = const_cast<Data *>(&shared_empty.str);
+        Data *x = shared_empty.data_ptr();
         if (!d->ref.deref())
             QString::free(d);
         d = x;
     } else {
-        if (d->ref != 1 || size > int(d->alloc) ||
-            (!d->capacityReserved && size < d->size && size < int(d->alloc) >> 1))
-            realloc(grow(size));
-        if (int(d->alloc) >= size) {
+        if (d->ref.isShared() || uint(size) + 1u > d->alloc
+                || (!d->capacityReserved && size < d->size
+                    && uint(size) + 1u < uint(d->alloc >> 1)))
+            reallocData(uint(size) + 1u, true);
+        if (d->alloc) {
             d->size = size;
             d->data()[size] = '\0';
         }
@@ -1321,34 +1295,31 @@ void QString::resize(int size)
     \sa reserve(), capacity()
 */
 
-// ### Qt 5: rename reallocData() to avoid confusion. 197625
-void QString::realloc(int alloc)
+void QString::reallocData(uint alloc, bool grow)
 {
-    if (d->ref != 1 || d->offset) {
-        Data *x = static_cast<Data *>(::malloc(sizeof(Data) + (alloc+1) * sizeof(QChar)));
+    if (grow)
+        alloc = qAllocMore(alloc * sizeof(QChar), sizeof(Data)) / sizeof(QChar);
+
+    if (d->ref.isShared() || IS_RAW_DATA(d)) {
+        Data *x = static_cast<Data *>(::malloc(sizeof(Data) + alloc * sizeof(QChar)));
         Q_CHECK_PTR(x);
-        x->ref = 1;
-        x->size = qMin(alloc, d->size);
-        x->alloc = (uint) alloc;
+        x->ref.initializeOwned();
+        x->size = qMin(int(alloc) - 1, d->size);
+        x->alloc = alloc;
         x->capacityReserved = d->capacityReserved;
-        x->offset =0;
+        x->offset = sizeof(QStringData);
         ::memcpy(x->data(), d->data(), x->size * sizeof(QChar));
         x->data()[x->size] = 0;
         if (!d->ref.deref())
             QString::free(d);
         d = x;
     } else {
-        Data *p = static_cast<Data *>(::realloc(d, sizeof(Data) + (alloc+1) * sizeof(QChar)));
+        Data *p = static_cast<Data *>(::realloc(d, sizeof(Data) + alloc * sizeof(QChar)));
         Q_CHECK_PTR(p);
         d = p;
         d->alloc = alloc;
-        d->offset = 0;
+        d->offset = sizeof(QStringData);
     }
-}
-
-void QString::realloc()
-{
-    realloc(d->size);
 }
 
 void QString::expand(int i)
@@ -1525,7 +1496,7 @@ QString& QString::insert(int i, QChar ch)
     if (i < 0)
         return *this;
     expand(qMax(i, d->size));
-    ::memmove(d->data() + i + 1, d->data() + i, (d->size - i) * sizeof(QChar));
+    ::memmove(d->data() + i + 1, d->data() + i, (d->size - i - 1) * sizeof(QChar));
     d->data()[i] = ch.unicode();
     return *this;
 }
@@ -1554,8 +1525,8 @@ QString &QString::append(const QString &str)
         if (d == &shared_null.str) {
             operator=(str);
         } else {
-            if (d->ref != 1 || d->size + str.d->size > int(d->alloc))
-                realloc(grow(d->size + str.d->size));
+            if (d->ref.isShared() || uint(d->size + str.d->size) + 1u > d->alloc)
+                reallocData(uint(d->size + str.d->size) + 1u, true);
             memcpy(d->data() + d->size, str.d->data(), str.d->size * sizeof(QChar));
             d->size += str.d->size;
             d->data()[d->size] = '\0';
@@ -1574,8 +1545,8 @@ QString &QString::append(const QLatin1String &str)
     const uchar *s = (const uchar *)str.latin1();
     if (s) {
         int len = str.size();
-        if (d->ref != 1 || d->size + len > int(d->alloc))
-            realloc(grow(d->size + len));
+        if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
+            reallocData(uint(d->size + len) + 1u, true);
         ushort *i = d->data() + d->size;
         while ((*i++ = *s++))
             ;
@@ -1617,8 +1588,8 @@ QString &QString::append(const QLatin1String &str)
 */
 QString &QString::append(QChar ch)
 {
-    if (d->ref != 1 || d->size + 1 > int(d->alloc))
-        realloc(grow(d->size + 1));
+    if (d->ref.isShared() || uint(d->size) + 2u > d->alloc)
+        reallocData(uint(d->size) + 2u, true);
     d->data()[d->size++] = ch.unicode();
     d->data()[d->size] = '\0';
     return *this;
@@ -1771,6 +1742,18 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
   string, and returns a reference to the string. For example:
 
   \snippet doc/src/snippets/qstring/main.cpp 39
+
+  \sa indexOf(), lastIndexOf(), replace()
+*/
+
+/*!
+  \fn QString &QString::remove(const QRegularExpression &re)
+  \since 5.0
+
+  Removes every occurrence of the regular expression \a re in the
+  string, and returns a reference to the string. For example:
+
+  \snippet doc/src/snippets/qstring/main.cpp 96
 
   \sa indexOf(), lastIndexOf(), replace()
 */
@@ -2827,7 +2810,7 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
     if (isEmpty() && rx2.indexIn(*this) == -1)
         return *this;
 
-    realloc();
+    reallocData(uint(d->size) + 1u);
 
     int index = 0;
     int numCaptures = rx2.captureCount();
@@ -2957,6 +2940,138 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
     return *this;
 }
 #endif
+
+#ifndef QT_NO_REGEXP
+#ifndef QT_BOOTSTRAPPED
+/*!
+  \overload replace()
+  \since 5.0
+
+  Replaces every occurrence of the regular expression \a re in the
+  string with \a after. Returns a reference to the string. For
+  example:
+
+  \snippet doc/src/snippets/qstring/main.cpp 87
+
+  For regular expressions containing capturing groups,
+  occurrences of \bold{\\1}, \bold{\\2}, ..., in \a after are replaced
+  with the string captured by the corresponding capturing group.
+
+  \snippet doc/src/snippets/qstring/main.cpp 88
+
+  \sa indexOf(), lastIndexOf(), remove(), QRegularExpression, QRegularExpressionMatch
+*/
+QString &QString::replace(const QRegularExpression &re, const QString &after)
+{
+    if (!re.isValid()) {
+        qWarning("QString::replace: invalid QRegularExpresssion object");
+        return *this;
+    }
+
+    const QString copy(*this);
+    QRegularExpressionMatchIterator iterator = re.globalMatch(copy);
+    if (!iterator.hasNext()) // no matches at all
+        return *this;
+
+    reallocData(uint(d->size) + 1u);
+
+    int numCaptures = re.captureCount();
+
+    // 1. build the backreferences vector, holding where the backreferences
+    // are in the replacement string
+    QVector<QStringCapture> backReferences;
+    const int al = after.length();
+    const QChar *ac = after.unicode();
+
+    for (int i = 0; i < al - 1; i++) {
+        if (ac[i] == QLatin1Char('\\')) {
+            int no = ac[i + 1].digitValue();
+            if (no > 0 && no <= numCaptures) {
+                QStringCapture backReference;
+                backReference.pos = i;
+                backReference.len = 2;
+
+                if (i < al - 2) {
+                    int secondDigit = ac[i + 2].digitValue();
+                    if (secondDigit != -1 && ((no * 10) + secondDigit) <= numCaptures) {
+                        no = (no * 10) + secondDigit;
+                        ++backReference.len;
+                    }
+                }
+
+                backReference.no = no;
+                backReferences.append(backReference);
+            }
+        }
+    }
+
+    // 2. iterate on the matches. For every match, copy in chunks
+    // - the part before the match
+    // - the after string, with the proper replacements for the backreferences
+
+    int newLength = 0; // length of the new string, with all the replacements
+    int lastEnd = 0;
+    QVector<QStringRef> chunks;
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        int len;
+        // add the part before the match
+        len = match.capturedStart() - lastEnd;
+        if (len > 0) {
+            chunks << copy.midRef(lastEnd, len);
+            newLength += len;
+        }
+
+        lastEnd = 0;
+        // add the after string, with replacements for the backreferences
+        foreach (const QStringCapture &backReference, backReferences) {
+            // part of "after" before the backreference
+            len = backReference.pos - lastEnd;
+            if (len > 0) {
+                chunks << after.midRef(lastEnd, len);
+                newLength += len;
+            }
+
+            // backreference itself
+            len = match.capturedLength(backReference.no);
+            if (len > 0) {
+                chunks << copy.midRef(match.capturedStart(backReference.no), len);
+                newLength += len;
+            }
+
+            lastEnd = backReference.pos + backReference.len;
+        }
+
+        // add the last part of the after string
+        len = after.length() - lastEnd;
+        if (len > 0) {
+            chunks << after.midRef(lastEnd, len);
+            newLength += len;
+        }
+
+        lastEnd = match.capturedEnd();
+    }
+
+    // 3. trailing string after the last match
+    if (copy.length() > lastEnd) {
+        chunks << copy.midRef(lastEnd);
+        newLength += copy.length() - lastEnd;
+    }
+
+    // 4. assemble the chunks together
+    resize(newLength);
+    int i = 0;
+    QChar *uc = data();
+    foreach (const QStringRef &chunk, chunks) {
+        int len = chunk.length();
+        memcpy(uc + i, chunk.unicode(), len * sizeof(QChar));
+        i += len;
+    }
+
+    return *this;
+}
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
 
 /*!
     Returns the number of (potentially overlapping) occurrences of
@@ -3157,6 +3272,118 @@ int QString::count(const QRegExp& rx) const
 }
 #endif // QT_NO_REGEXP
 
+#ifndef QT_NO_REGEXP
+#ifndef QT_BOOTSTRAPPED
+/*!
+    \overload indexOf()
+    \since 5.0
+
+    Returns the index position of the first match of the regular
+    expression \a re in the string, searching forward from index
+    position \a from. Returns -1 if \a re didn't match anywhere.
+
+    Example:
+
+    \snippet doc/src/snippets/qstring/main.cpp 93
+*/
+int QString::indexOf(const QRegularExpression& re, int from) const
+{
+    if (!re.isValid()) {
+        qWarning("QString::indexOf: invalid QRegularExpresssion object");
+        return -1;
+    }
+
+    QRegularExpressionMatch match = re.match(*this, from);
+    if (match.hasMatch())
+        return match.capturedStart();
+
+    return -1;
+}
+
+/*!
+    \overload lastIndexOf()
+    \since 5.0
+
+    Returns the index position of the last match of the regular
+    expression \a re in the string, which starts before the index
+    position \a from. Returns -1 if \a re didn't match anywhere.
+
+    Example:
+
+    \snippet doc/src/snippets/qstring/main.cpp 94
+*/
+int QString::lastIndexOf(const QRegularExpression &re, int from) const
+{
+    if (!re.isValid()) {
+        qWarning("QString::lastIndexOf: invalid QRegularExpresssion object");
+        return -1;
+    }
+
+    int endpos = (from < 0) ? (size() + from + 1) : (from + 1);
+
+    QRegularExpressionMatchIterator iterator = re.globalMatch(*this);
+    int lastIndex = -1;
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        int start = match.capturedStart();
+        if (start < endpos)
+            lastIndex = start;
+        else
+            break;
+    }
+
+    return lastIndex;
+}
+
+/*! \overload contains()
+    \since 5.0
+
+    Returns true if the regular expression \a re matches somewhere in
+    this string; otherwise returns false.
+*/
+bool QString::contains(const QRegularExpression &re) const
+{
+    if (!re.isValid()) {
+        qWarning("QString::contains: invalid QRegularExpresssion object");
+        return false;
+    }
+    QRegularExpressionMatch match = re.match(*this);
+    return match.hasMatch();
+}
+
+/*!
+    \overload count()
+    \since 5.0
+
+    Returns the number of times the regular expression \a re matches
+    in the string.
+
+    This function counts overlapping matches, so in the example
+    below, there are four instances of "ana" or "ama":
+
+    \snippet doc/src/snippets/qstring/main.cpp 95
+*/
+int QString::count(const QRegularExpression &re) const
+{
+    if (!re.isValid()) {
+        qWarning("QString::count: invalid QRegularExpresssion object");
+        return 0;
+    }
+    int count = 0;
+    int index = -1;
+    int len = length();
+    while (index < len - 1) {
+        QRegularExpressionMatch match = re.match(*this, index + 1);
+        if (!match.hasMatch())
+            break;
+        index = match.capturedStart();
+        count++;
+    }
+    return count;
+}
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
+
 /*! \fn int QString::count() const
 
     \overload count()
@@ -3284,6 +3511,49 @@ public:
     QString string;
 };
 
+static QString extractSections(const QList<qt_section_chunk> &sections,
+                               int start,
+                               int end,
+                               QString::SectionFlags flags)
+{
+    if (start < 0)
+        start += sections.count();
+    if (end < 0)
+        end += sections.count();
+
+    QString ret;
+    int x = 0;
+    int first_i = start, last_i = end;
+    for (int i = 0; x <= end && i < sections.size(); ++i) {
+        const qt_section_chunk &section = sections.at(i);
+        const bool empty = (section.length == section.string.length());
+        if (x >= start) {
+            if (x == start)
+                first_i = i;
+            if (x == end)
+                last_i = i;
+            if (x != start)
+                ret += section.string;
+            else
+                ret += section.string.mid(section.length);
+        }
+        if (!empty || !(flags & QString::SectionSkipEmpty))
+            x++;
+    }
+
+    if ((flags & QString::SectionIncludeLeadingSep) && first_i < sections.size()) {
+        const qt_section_chunk &section = sections.at(first_i);
+        ret.prepend(section.string.left(section.length));
+    }
+
+    if ((flags & QString::SectionIncludeTrailingSep) && last_i+1 <= sections.size()-1) {
+        const qt_section_chunk &section = sections.at(last_i+1);
+        ret += section.string.left(section.length);
+    }
+
+    return ret;
+}
+
 /*!
     \overload section()
 
@@ -3317,41 +3587,57 @@ QString QString::section(const QRegExp &reg, int start, int end, SectionFlags fl
     }
     sections.append(qt_section_chunk(last_len, QString(uc + last_m, n - last_m)));
 
-    if(start < 0)
-        start += sections.count();
-    if(end < 0)
-        end += sections.count();
-
-    QString ret;
-    int x = 0;
-    int first_i = start, last_i = end;
-    for (int i = 0; x <= end && i < sections.size(); ++i) {
-        const qt_section_chunk &section = sections.at(i);
-        const bool empty = (section.length == section.string.length());
-        if (x >= start) {
-            if(x == start)
-                first_i = i;
-            if(x == end)
-                last_i = i;
-            if(x != start)
-                ret += section.string;
-            else
-                ret += section.string.mid(section.length);
-        }
-        if (!empty || !(flags & SectionSkipEmpty))
-            x++;
-    }
-    if((flags & SectionIncludeLeadingSep) && first_i < sections.size()) {
-        const qt_section_chunk &section = sections.at(first_i);
-        ret.prepend(section.string.left(section.length));
-    }
-    if((flags & SectionIncludeTrailingSep) && last_i+1 <= sections.size()-1) {
-        const qt_section_chunk &section = sections.at(last_i+1);
-        ret += section.string.left(section.length);
-    }
-    return ret;
+    return extractSections(sections, start, end, flags);
 }
 #endif
+
+#ifndef QT_NO_REGEXP
+#ifndef QT_BOOTSTRAPPED
+/*!
+    \overload section()
+    \since 5.0
+
+    This string is treated as a sequence of fields separated by the
+    regular expression, \a re.
+
+    \snippet doc/src/snippets/qstring/main.cpp 89
+
+    \warning Using this QRegularExpression version is much more expensive than
+    the overloaded string and character versions.
+
+    \sa split() simplified()
+*/
+QString QString::section(const QRegularExpression &re, int start, int end, SectionFlags flags) const
+{
+    if (!re.isValid()) {
+        qWarning("QString::section: invalid QRegularExpression object");
+        return QString();
+    }
+
+    const QChar *uc = unicode();
+    if (!uc)
+        return QString();
+
+    QRegularExpression sep(re);
+    if (flags & SectionCaseInsensitiveSeps)
+        sep.setPatternOptions(sep.patternOptions() | QRegularExpression::CaseInsensitiveOption);
+
+    QList<qt_section_chunk> sections;
+    int n = length(), m = 0, last_m = 0, last_len = 0;
+    QRegularExpressionMatchIterator iterator = sep.globalMatch(*this);
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        m = match.capturedStart();
+        sections.append(qt_section_chunk(last_len, QString(uc + last_m, m - last_m)));
+        last_m = m;
+        last_len = match.capturedLength();
+    }
+    sections.append(qt_section_chunk(last_len, QString(uc + last_m, n - last_m)));
+
+    return extractSections(sections, start, end, flags);
+}
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
 
 /*!
     Returns a substring that contains the \a n leftmost characters
@@ -3408,15 +3694,17 @@ QString QString::right(int n) const
 
 QString QString::mid(int position, int n) const
 {
-    if (d == &shared_null.str || position > d->size)
+    if (position > d->size)
         return QString();
-    if (n < 0)
-        n = d->size - position;
     if (position < 0) {
+        if (n < 0 || n + position >= d->size)
+            return *this;
+        if (n + position <= 0)
+            return QString();
+
         n += position;
         position = 0;
-    }
-    if (n + position > d->size)
+    } else if (n < 0 || n > d->size - position)
         n = d->size - position;
     if (position == 0 && n == d->size)
         return *this;
@@ -3763,19 +4051,19 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
 {
     Data *d;
     if (!str) {
-        d = const_cast<Data *>(&shared_null.str);
+        d = shared_null.data_ptr();
     } else if (size == 0 || (!*str && size < 0)) {
-        d = const_cast<Data *>(&shared_empty.str);
+        d = shared_empty.data_ptr();
     } else {
         if (size < 0)
             size = qstrlen(str);
-        d = static_cast<Data *>(::malloc(sizeof(Data) + (size+1) * sizeof(QChar)));
+        d = static_cast<Data *>(::malloc(sizeof(Data) + (uint(size) + 1u) * sizeof(QChar)));
         Q_CHECK_PTR(d);
-        d->ref = 1;
+        d->ref.initializeOwned();
         d->size = size;
-        d->alloc = (uint) size;
+        d->alloc = uint(size) + 1u;
         d->capacityReserved = false;
-        d->offset = 0;
+        d->offset = sizeof(QStringData);
         d->data()[size] = '\0';
         ushort *dst = d->data();
         /* SIMD:
@@ -3840,8 +4128,10 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
 {
     if (!str)
         return QString();
-    if (size == 0 || (!*str && size < 0))
-        return QString(shared_empty);
+    if (size == 0 || (!*str && size < 0)) {
+        QStringDataPtr empty = { shared_empty.data_ptr() };
+        return QString(empty);
+    }
 #if !defined(QT_NO_TEXTCODEC)
     if (size < 0)
         size = qstrlen(str);
@@ -4008,7 +4298,8 @@ QString QString::simplified() const
             break;
         if (++from == fromEnd) {
             // All-whitespace string
-            return QString(shared_empty);
+            QStringDataPtr empty = { shared_empty.data_ptr() };
+            return QString(empty);
         }
     }
     // This loop needs no underflow check, as we already determined that
@@ -4102,7 +4393,8 @@ QString QString::trimmed() const
     }
     int l = end - start + 1;
     if (l <= 0) {
-        return QString(shared_empty);
+        QStringDataPtr empty = { shared_empty.data_ptr() };
+        return QString(empty);
     }
     return QString(s + start, l);
 }
@@ -4783,8 +5075,10 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
 
 const ushort *QString::utf16() const
 {
-    if (d->offset)
-        const_cast<QString*>(this)->realloc();   // ensure '\\0'-termination for ::fromRawData strings
+    if (IS_RAW_DATA(d)) {
+        // ensure '\0'-termination for ::fromRawData strings
+        const_cast<QString*>(this)->reallocData(uint(d->size) + 1u);
+    }
     return d->data();
 }
 
@@ -6110,6 +6404,62 @@ QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
 }
 #endif
 
+#ifndef QT_NO_REGEXP
+#ifndef QT_BOOTSTRAPPED
+/*!
+    \overload
+    \since 5.0
+
+    Splits the string into substrings wherever the regular expression
+    \a re matches, and returns the list of those strings. If \a re
+    does not match anywhere in the string, split() returns a
+    single-element list containing this string.
+
+    Here's an example where we extract the words in a sentence
+    using one or more whitespace characters as the separator:
+
+    \snippet doc/src/snippets/qstring/main.cpp 90
+
+    Here's a similar example, but this time we use any sequence of
+    non-word characters as the separator:
+
+    \snippet doc/src/snippets/qstring/main.cpp 91
+
+    Here's a third example where we use a zero-length assertion,
+    \bold{\\b} (word boundary), to split the string into an
+    alternating sequence of non-word and word tokens:
+
+    \snippet doc/src/snippets/qstring/main.cpp 92
+
+    \sa QStringList::join(), section()
+*/
+QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior) const
+{
+    QStringList list;
+    if (!re.isValid()) {
+        qWarning("QString::split: invalid QRegularExpression object");
+        return list;
+    }
+
+    int start = 0;
+    int end = 0;
+    QRegularExpressionMatchIterator iterator = re.globalMatch(*this);
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        end = match.capturedStart();
+        if (start != end || behavior == KeepEmptyParts)
+            list.append(mid(start, end - start));
+        start = match.capturedEnd();
+    }
+
+    if (start != size() || behavior == KeepEmptyParts)
+        list.append(mid(start));
+
+    return list;
+}
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
+
 /*!
     \enum QString::NormalizationForm
 
@@ -6123,15 +6473,6 @@ QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
     \sa normalized(),
         {http://www.unicode.org/reports/tr15/}{Unicode Standard Annex #15}
 */
-
-/*!
-    \fn QString QString::normalized(NormalizationForm mode) const
-    Returns the string in the given Unicode normalization \a mode.
-*/
-QString QString::normalized(QString::NormalizationForm mode) const
-{
-    return normalized(mode, UNICODE_DATA_VERSION);
-}
 
 /*!
     \since 4.5
@@ -6162,7 +6503,7 @@ QString QString::repeated(int times) const
 
     QString result;
     result.reserve(resultSize);
-    if (int(result.d->alloc) != resultSize)
+    if (result.d->alloc != uint(resultSize) + 1u)
         return QString(); // not enough memory
 
     memcpy(result.d->data(), d->data(), d->size * sizeof(ushort));
@@ -6180,21 +6521,6 @@ QString QString::repeated(int times) const
     result.d->data()[resultSize] = '\0';
     result.d->size = resultSize;
     return result;
-}
-
-void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::UnicodeVersion version, int from);
-/*!
-    \overload
-    \fn QString QString::normalized(NormalizationForm mode, QChar::UnicodeVersion version) const
-
-    Returns the string in the given Unicode normalization \a mode,
-    according to the given \a version of the Unicode standard.
-*/
-QString QString::normalized(QString::NormalizationForm mode, QChar::UnicodeVersion version) const
-{
-    QString copy = *this;
-    qt_string_normalize(&copy, mode, version, 0);
-    return copy;
 }
 
 void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::UnicodeVersion version, int from)
@@ -6255,6 +6581,17 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
         return;
 
     composeHelper(data, version, from);
+}
+
+/*!
+    Returns the string in the given Unicode normalization \a mode,
+    according to the given \a version of the Unicode standard.
+*/
+QString QString::normalized(QString::NormalizationForm mode, QChar::UnicodeVersion version) const
+{
+    QString copy = *this;
+    qt_string_normalize(&copy, mode, version, 0);
+    return copy;
 }
 
 
@@ -7044,9 +7381,6 @@ bool QString::isRightToLeft() const
     If the QString contains non-Latin1 Unicode characters, using this
     can lead to loss of information.
 
-    This operator is only available if Qt is configured with STL
-    compatibility enabled and if QT_NO_STL is not defined.
-
     \sa toAscii(), toLatin1(), toUtf8(), toLocal8Bit()
 */
 
@@ -7079,19 +7413,20 @@ QString QString::fromRawData(const QChar *unicode, int size)
 {
     Data *x;
     if (!unicode) {
-        x = const_cast<Data *>(&shared_null.str);
+        x = shared_null.data_ptr();
     } else if (!size) {
-        x = const_cast<Data *>(&shared_empty.str);
+        x = shared_empty.data_ptr();
     } else {
-        x = static_cast<Data *>(::malloc(sizeof(Data) + sizeof(ushort)));
+        x = static_cast<Data *>(::malloc(sizeof(Data)));
         Q_CHECK_PTR(x);
-        x->ref = 1;
+        x->ref.initializeOwned();
         x->size = size;
         x->alloc = 0;
         x->capacityReserved = false;
-        x->offset = (const ushort *)unicode - (x->d + sizeof(qptrdiff)/sizeof(ushort));
+        x->offset = reinterpret_cast<const char *>(unicode) - reinterpret_cast<char *>(x);
     }
-    return QString(x, 0);
+    QStringDataPtr dataPtr = { x };
+    return QString(dataPtr);
 }
 
 /*!
@@ -7110,14 +7445,14 @@ QString QString::fromRawData(const QChar *unicode, int size)
 */
 QString &QString::setRawData(const QChar *unicode, int size)
 {
-    if (d->ref != 1 || d->alloc) {
+    if (d->ref.isShared() || d->alloc) {
         *this = fromRawData(unicode, size);
     } else {
         if (unicode) {
             d->size = size;
-            d->offset = (const ushort *)unicode - (d->d + sizeof(qptrdiff)/sizeof(ushort));
+            d->offset = reinterpret_cast<const char *>(unicode) - reinterpret_cast<char *>(d);
         } else {
-            d->offset = 0;
+            d->offset = sizeof(QStringData);
             d->size = 0;
         }
     }
@@ -7189,6 +7524,17 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Constructs a QLatin1String object that stores \a str with \a size.
     Note that if \a str is 0, an empty string is created; this case
     is handled by QString.
+
+    The string data is \e not copied. The caller must be able to
+    guarantee that \a str will not be deleted or modified as long as
+    the QLatin1String object exists.
+
+    \sa latin1()
+*/
+
+/*! \fn QLatin1String::QLatin1String(const QByteArray &str)
+
+    Constructs a QLatin1String object that stores \a str.
 
     The string data is \e not copied. The caller must be able to
     guarantee that \a str will not be deleted or modified as long as
@@ -8077,15 +8423,17 @@ QStringRef QString::rightRef(int n) const
 
 QStringRef QString::midRef(int position, int n) const
 {
-    if (d == &shared_null.str || position > d->size)
+    if (position > d->size)
         return QStringRef();
-    if (n < 0)
-        n = d->size - position;
     if (position < 0) {
+        if (n < 0 || n + position >= d->size)
+            return QStringRef(this, 0, d->size);
+        if (n + position <= 0)
+            return QStringRef();
+
         n += position;
         position = 0;
-    }
-    if (n + position > d->size)
+    } else if (n < 0 || n > d->size - position)
         n = d->size - position;
     return QStringRef(this, position, n);
 }

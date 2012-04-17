@@ -52,6 +52,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
+class QDirIterator;
 class QDirPrivate;
 
 class Q_CORE_EXPORT QDir
@@ -210,6 +211,7 @@ protected:
     QSharedDataPointer<QDirPrivate> d_ptr;
 
 private:
+    friend class QDirIterator;
     // Q_DECLARE_PRIVATE equivalent for shared data pointers
     QDirPrivate* d_func();
     inline const QDirPrivate* d_func() const

@@ -2135,8 +2135,8 @@ void tst_QAbstractItemModel::testChildrenLayoutsChanged()
 
         QVERIFY(p1FirstPersistent.row() == 1);
         QVERIFY(p1LastPersistent.row() == 0);
-        QVERIFY(p2FirstPersistent.row() == 9);
-        QVERIFY(p2LastPersistent.row() == 8);
+        QCOMPARE(p2FirstPersistent.row(), 9);
+        QCOMPARE(p2LastPersistent.row(), 8);
     }
 }
 

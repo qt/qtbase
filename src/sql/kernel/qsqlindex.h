@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 class Q_SQL_EXPORT QSqlIndex : public QSqlRecord
 {
 public:
-    QSqlIndex(const QString &cursorName = QString(), const QString &name = QString());
+    explicit QSqlIndex(const QString &cursorName = QString(), const QString &name = QString());
     QSqlIndex(const QSqlIndex &other);
     ~QSqlIndex();
     QSqlIndex &operator=(const QSqlIndex &other);

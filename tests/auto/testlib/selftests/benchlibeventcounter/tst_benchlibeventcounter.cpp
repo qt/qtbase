@@ -62,6 +62,7 @@ public:
     void unregisterSocketNotifier(QSocketNotifier*) {}
     bool unregisterTimer(int) { return false; }
     bool unregisterTimers(QObject*) { return false; }
+    int remainingTime(int) { return 0; }
     void wakeUp() {}
 };
 

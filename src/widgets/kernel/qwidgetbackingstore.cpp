@@ -869,29 +869,7 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
 
 static inline bool discardSyncRequest(QWidget *tlw, QTLWExtra *tlwExtra)
 {
-    if (!tlw || !tlwExtra)
-        return true;
-
-#ifdef Q_WS_X11
-    // Delay the sync until we get an Expose event from X11 (initial show).
-    // Qt::WA_Mapped is set to true, but the actual mapping has not yet occurred.
-    // However, we must repaint immediately regardless of the state if someone calls repaint().
-    if (tlwExtra->waitingForMapNotify && !tlwExtra->inRepaint)
-        return true;
-#endif
-
-    if (!tlw->testAttribute(Qt::WA_Mapped))
-        return true;
-
-    if (!tlw->isVisible()
-#ifndef Q_WS_X11
-        // If we're minimized on X11, WA_Mapped will be false and we
-        // will return in the case above. Some window managers on X11
-        // sends us the PropertyNotify to change the minimized state
-        // *AFTER* we've received the expose event, which is baaad.
-        || tlw->isMinimized()
-#endif
-        )
+    if (!tlw || !tlwExtra || !tlw->testAttribute(Qt::WA_Mapped) || !tlw->isVisible())
         return true;
 
     return false;
@@ -1297,6 +1275,9 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
         return;
 
     Q_Q(QWidget);
+    if (discardSyncRequest(q, maybeTopData()))
+        return;
+
     if (q->testAttribute(Qt::WA_StaticContents)) {
         if (!extra)
             createExtra();
@@ -1335,7 +1316,7 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
         QWidgetBackingStore::unflushPaint(q, toBePainted);
 #endif
 
-    if (!q->testAttribute(Qt::WA_PaintOutsidePaintEvent) && q->paintingActive())
+    if (q->paintingActive())
         qWarning("QWidget::repaint: It is dangerous to leave painters active on a widget outside of the PaintEvent");
 }
 

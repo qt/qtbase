@@ -88,6 +88,8 @@ class QDBusAbstractInterface;
 class QDBusConnectionInterface;
 class QDBusPendingCallPrivate;
 
+#ifndef QT_BOOTSTRAPPED
+
 class QDBusErrorInternal
 {
     mutable DBusError error;
@@ -336,7 +338,10 @@ public:
 
 // in qdbusmisc.cpp
 extern int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes);
+#endif // QT_BOOTSTRAPPED
+extern int qDBusParametersForMethod(const QList<QByteArray> &parameters, QVector<int>& metaTypes);
 extern bool qDBusCheckAsyncTag(const char *tag);
+#ifndef QT_BOOTSTRAPPED
 extern bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name);
 extern QString qDBusInterfaceFromMetaObject(const QMetaObject *mo);
 
@@ -348,6 +353,7 @@ extern QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNod
                                      const QDBusMessage &msg);
 extern QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &node,
                                         const QDBusMessage &msg);
+#endif // QT_BOOTSTRAPPED
 
 QT_END_NAMESPACE
 

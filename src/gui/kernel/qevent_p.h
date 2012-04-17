@@ -60,24 +60,6 @@ QT_BEGIN_NAMESPACE
 // We mean it.
 //
 
-// ### Qt 5: remove
-class QKeyEventEx : public QKeyEvent
-{
-public:
-    QKeyEventEx(Type type, int key, Qt::KeyboardModifiers modifiers,
-                const QString &text, bool autorep, ushort count,
-                quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers);
-    QKeyEventEx(const QKeyEventEx &other);
-
-    ~QKeyEventEx();
-
-protected:
-    quint32 nScanCode;
-    quint32 nVirtualKey;
-    quint32 nModifiers;
-    friend class QKeyEvent;
-};
-
 class QTouchEventTouchPointPrivate
 {
 public:
@@ -107,7 +89,7 @@ public:
     qreal pressure;
     QVector2D velocity;
     QTouchEvent::TouchPoint::InfoFlags flags;
-    QList<QPointF> rawScreenPositions;
+    QVector<QPointF> rawScreenPositions;
 };
 
 class QFileOpenEventPrivate

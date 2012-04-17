@@ -50,11 +50,12 @@ QT_BEGIN_NAMESPACE
 
 
 class QByteArray;
+struct QByteArrayData;
 
 class QString;
 
 #ifndef Q_MOC_OUTPUT_REVISION
-#define Q_MOC_OUTPUT_REVISION 64
+#define Q_MOC_OUTPUT_REVISION 65
 #endif
 
 // The following macros are our "extensions" to C++
@@ -333,6 +334,8 @@ struct Q_CORE_EXPORT QMetaObject
     QMetaProperty userProperty() const;
 
     static bool checkConnectArgs(const char *signal, const char *method);
+    static bool checkConnectArgs(const QMetaMethod &signal,
+                                 const QMetaMethod &method);
     static QByteArray normalizedSignature(const char *method);
     static QByteArray normalizedType(const char *type);
 
@@ -446,7 +449,7 @@ struct Q_CORE_EXPORT QMetaObject
 
     struct { // private data
         const QMetaObject *superdata;
-        const char *stringdata;
+        const QByteArrayData *stringdata;
         const uint *data;
         const void *extradata;
     } d;
@@ -486,9 +489,6 @@ struct QMetaObjectExtraData
     //typedef int (*StaticMetaCall)(QMetaObject::Call, int, void **); //used from revison 2 until revison 5
     StaticMetacallFunction static_metacall;
 };
-
-inline const char *QMetaObject::className() const
-{ return d.stringdata; }
 
 inline const QMetaObject *QMetaObject::superClass() const
 { return d.superdata; }

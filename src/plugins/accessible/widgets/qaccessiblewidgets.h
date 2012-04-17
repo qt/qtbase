@@ -56,7 +56,6 @@ class QStackedWidget;
 class QToolBox;
 class QMdiArea;
 class QMdiSubWindow;
-class QWorkspace;
 class QRubberBand;
 class QTextBrowser;
 class QCalendarWidget;
@@ -175,21 +174,6 @@ protected:
     QMdiSubWindow *mdiSubWindow() const;
 };
 #endif // QT_NO_MDIAREA
-
-#ifndef QT_NO_WORKSPACE
-class QAccessibleWorkspace : public QAccessibleWidget
-{
-public:
-    explicit QAccessibleWorkspace(QWidget *widget);
-
-    int childCount() const;
-    QAccessibleInterface *child(int index) const;
-    int indexOfChild(const QAccessibleInterface *child) const;
-
-protected:
-    QWorkspace *workspace() const;
-};
-#endif
 
 class QAccessibleDialogButtonBox : public QAccessibleWidget
 {

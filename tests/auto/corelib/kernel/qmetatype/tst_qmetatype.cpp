@@ -97,9 +97,25 @@ private slots:
     void isEnum();
     void registerStreamBuiltin();
     void automaticTemplateRegistration();
+    void saveAndLoadBuiltin_data();
+    void saveAndLoadBuiltin();
+    void saveAndLoadCustom();
 };
 
 struct Foo { int i; };
+
+
+class CustomQObject : public QObject
+{
+    Q_OBJECT
+public:
+    CustomQObject(QObject *parent = 0)
+      : QObject(parent)
+    {
+    }
+};
+
+class CustomNonQObject {};
 
 void tst_QMetaType::defined()
 {
@@ -107,6 +123,10 @@ void tst_QMetaType::defined()
     QCOMPARE(int(QMetaTypeId2<Foo>::Defined), 0);
     QCOMPARE(int(QMetaTypeId2<void*>::Defined), 1);
     QCOMPARE(int(QMetaTypeId2<int*>::Defined), 0);
+    QVERIFY(QMetaTypeId2<CustomQObject*>::Defined);
+    QVERIFY(!QMetaTypeId2<CustomQObject>::Defined);
+    QVERIFY(!QMetaTypeId2<CustomNonQObject>::Defined);
+    QVERIFY(!QMetaTypeId2<CustomNonQObject*>::Defined);
 }
 
 struct Bar
@@ -312,6 +332,7 @@ void tst_QMetaType::typeName_data()
     QTest::addColumn<QString>("aTypeName");
 
     QT_FOR_EACH_STATIC_TYPE(TYPENAME_DATA)
+    QTest::newRow("QMetaType::UnknownType") << QMetaType::UnknownType << static_cast<const char*>(0);
 
     QTest::newRow("Whity<double>") << static_cast<QMetaType::Type>(::qMetaTypeId<Whity<double> >()) << QString::fromLatin1("Whity<double>");
     QTest::newRow("Whity<int>") << static_cast<QMetaType::Type>(::qMetaTypeId<Whity<int> >()) << QString::fromLatin1("Whity<int>");
@@ -510,6 +531,46 @@ template<> struct TestValueFactory<QMetaType::QRegExp> {
 #endif
     }
 };
+template<> struct TestValueFactory<QMetaType::QRegularExpression> {
+    static QRegularExpression *create()
+    {
+#ifndef QT_NO_REGEXP
+        return new QRegularExpression("abc.*def");
+#else
+        return 0;
+#endif
+    }
+};
+template<> struct TestValueFactory<QMetaType::QJsonValue> {
+    static QJsonValue *create() { return new QJsonValue(123.); }
+};
+template<> struct TestValueFactory<QMetaType::QJsonObject> {
+    static QJsonObject *create() {
+        QJsonObject *o = new QJsonObject();
+        o->insert("a", 123.);
+        o->insert("b", true);
+        o->insert("c", QJsonValue::Null);
+        o->insert("d", QLatin1String("ciao"));
+        return o;
+    }
+};
+template<> struct TestValueFactory<QMetaType::QJsonArray> {
+    static QJsonArray *create() {
+        QJsonArray *a = new QJsonArray();
+        a->append(123.);
+        a->append(true);
+        a->append(QJsonValue::Null);
+        a->append(QLatin1String("ciao"));
+        return a;
+    }
+};
+template<> struct TestValueFactory<QMetaType::QJsonDocument> {
+    static QJsonDocument *create() {
+        return new QJsonDocument(
+            QJsonDocument::fromJson("{ 'foo': 123, 'bar': [true, null, 'ciao'] }")
+        );
+    }
+};
 template<> struct TestValueFactory<QMetaType::QVariant> {
     static QVariant *create() { return new QVariant(QStringList(QStringList() << "Q" << "t")); }
 };
@@ -630,6 +691,8 @@ void tst_QMetaType::sizeOf_data()
 {
     QTest::addColumn<QMetaType::Type>("type");
     QTest::addColumn<size_t>("size");
+
+    QTest::newRow("QMetaType::UnknownType") << QMetaType::UnknownType << size_t(0);
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
     QTest::newRow(#RealType) << QMetaType::MetaTypeName << size_t(QTypeInfo<RealType>::sizeOf);
 FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
@@ -805,41 +868,15 @@ void tst_QMetaType::construct_data()
     create_data();
 }
 
-#ifndef Q_ALIGNOF
-template<uint N>
-struct RoundToNextHighestPowerOfTwo
-{
-private:
-    enum { V1 = N-1 };
-    enum { V2 = V1 | (V1 >> 1) };
-    enum { V3 = V2 | (V2 >> 2) };
-    enum { V4 = V3 | (V3 >> 4) };
-    enum { V5 = V4 | (V4 >> 8) };
-    enum { V6 = V5 | (V5 >> 16) };
-public:
-    enum { Value = V6 + 1 };
-};
-#endif
-
-template<class T>
-struct TypeAlignment
-{
-#ifdef Q_ALIGNOF
-    enum { Value = Q_ALIGNOF(T) };
-#else
-    enum { Value = RoundToNextHighestPowerOfTwo<sizeof(T)>::Value };
-#endif
-};
-
 template<int ID>
 static void testConstructHelper()
 {
     typedef typename MetaEnumToType<ID>::Type Type;
     QMetaType info(ID);
     int size = info.sizeOf();
-    void *storage1 = qMallocAligned(size, TypeAlignment<Type>::Value);
+    void *storage1 = qMallocAligned(size, Q_ALIGNOF(Type));
     void *actual1 = QMetaType::construct(ID, storage1, /*copy=*/0);
-    void *storage2 = qMallocAligned(size, TypeAlignment<Type>::Value);
+    void *storage2 = qMallocAligned(size, Q_ALIGNOF(Type));
     void *actual2 = info.construct(storage2, /*copy=*/0);
     QCOMPARE(actual1, storage1);
     QCOMPARE(actual2, storage2);
@@ -908,9 +945,9 @@ static void testConstructCopyHelper()
     QMetaType info(ID);
     int size = QMetaType::sizeOf(ID);
     QCOMPARE(info.sizeOf(), size);
-    void *storage1 = qMallocAligned(size, TypeAlignment<Type>::Value);
+    void *storage1 = qMallocAligned(size, Q_ALIGNOF(Type));
     void *actual1 = QMetaType::construct(ID, storage1, expected);
-    void *storage2 = qMallocAligned(size, TypeAlignment<Type>::Value);
+    void *storage2 = qMallocAligned(size, Q_ALIGNOF(Type));
     void *actual2 = info.construct(storage2, expected);
     QCOMPARE(actual1, storage1);
     QCOMPARE(actual2, storage2);
@@ -1052,6 +1089,7 @@ void tst_QMetaType::isRegistered_data()
     QTest::newRow("-1") << -1 << false;
     QTest::newRow("-42") << -42 << false;
     QTest::newRow("IsRegisteredDummyType + 1") << (dummyTypeId + 1) << false;
+    QTest::newRow("QMetaType::UnknownType") << int(QMetaType::UnknownType) << false;
 }
 
 void tst_QMetaType::isRegistered()
@@ -1289,6 +1327,133 @@ void tst_QMetaType::automaticTemplateRegistration()
     typedef QList<UnregisteredType> UnregisteredTypeList;
     QVERIFY(qRegisterMetaType<UnregisteredTypeList>("UnregisteredTypeList") > 0);
   }
+}
+
+template <typename T>
+struct StreamingTraits
+{
+    enum { isStreamable = 1 }; // Streamable by default
+};
+
+// Non-streamable types
+
+#define DECLARE_NONSTREAMABLE(Type) \
+    template<> struct StreamingTraits<Type> { enum { isStreamable = 0 }; };
+
+DECLARE_NONSTREAMABLE(void)
+DECLARE_NONSTREAMABLE(void*)
+DECLARE_NONSTREAMABLE(QModelIndex)
+DECLARE_NONSTREAMABLE(QJsonValue)
+DECLARE_NONSTREAMABLE(QJsonObject)
+DECLARE_NONSTREAMABLE(QJsonArray)
+DECLARE_NONSTREAMABLE(QJsonDocument)
+DECLARE_NONSTREAMABLE(QObject*)
+DECLARE_NONSTREAMABLE(QWidget*)
+
+#define DECLARE_GUI_CLASS_NONSTREAMABLE(MetaTypeName, MetaTypeId, RealType) \
+    DECLARE_NONSTREAMABLE(RealType)
+QT_FOR_EACH_STATIC_GUI_CLASS(DECLARE_GUI_CLASS_NONSTREAMABLE)
+#undef DECLARE_GUI_CLASS_NONSTREAMABLE
+
+#define DECLARE_WIDGETS_CLASS_NONSTREAMABLE(MetaTypeName, MetaTypeId, RealType) \
+    DECLARE_NONSTREAMABLE(RealType)
+QT_FOR_EACH_STATIC_WIDGETS_CLASS(DECLARE_WIDGETS_CLASS_NONSTREAMABLE)
+#undef DECLARE_WIDGETS_CLASS_NONSTREAMABLE
+
+#undef DECLARE_NONSTREAMABLE
+
+void tst_QMetaType::saveAndLoadBuiltin_data()
+{
+    QTest::addColumn<int>("type");
+    QTest::addColumn<bool>("isStreamable");
+
+#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
+    QTest::newRow(#RealType) << MetaTypeId << bool(StreamingTraits<RealType>::isStreamable);
+    QT_FOR_EACH_STATIC_TYPE(ADD_METATYPE_TEST_ROW)
+#undef ADD_METATYPE_TEST_ROW
+}
+
+void tst_QMetaType::saveAndLoadBuiltin()
+{
+    QFETCH(int, type);
+    QFETCH(bool, isStreamable);
+
+    void *value = QMetaType::create(type);
+
+    QByteArray ba;
+    QDataStream stream(&ba, QIODevice::ReadWrite);
+    QCOMPARE(QMetaType::save(stream, type, value), isStreamable);
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    if (isStreamable) {
+        QVERIFY(QMetaType::load(stream, type, value)); // Hmmm, shouldn't it return false?
+        QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
+    }
+
+    stream.device()->seek(0);
+    stream.resetStatus();
+    QCOMPARE(QMetaType::load(stream, type, value), isStreamable);
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    if (isStreamable) {
+        QVERIFY(QMetaType::load(stream, type, value)); // Hmmm, shouldn't it return false?
+        QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
+    }
+
+    QMetaType::destroy(type, value);
+}
+
+struct CustomStreamableType
+{
+    int a;
+};
+Q_DECLARE_METATYPE(CustomStreamableType)
+
+QDataStream &operator<<(QDataStream &out, const CustomStreamableType &t)
+{
+    out << t.a; return out;
+}
+
+QDataStream &operator>>(QDataStream &in, CustomStreamableType &t)
+{
+    int a;
+    in >> a;
+    if (in.status() == QDataStream::Ok)
+        t.a = a;
+    return in;
+}
+
+void tst_QMetaType::saveAndLoadCustom()
+{
+    CustomStreamableType t;
+    t.a = 123;
+
+    int id = ::qMetaTypeId<CustomStreamableType>();
+    QByteArray ba;
+    QDataStream stream(&ba, QIODevice::ReadWrite);
+    QVERIFY(!QMetaType::save(stream, id, &t));
+    QCOMPARE(stream.status(), QDataStream::Ok);
+    QVERIFY(!QMetaType::load(stream, id, &t));
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    qRegisterMetaTypeStreamOperators<CustomStreamableType>("CustomStreamableType");
+    QVERIFY(QMetaType::save(stream, id, &t));
+    QCOMPARE(stream.status(), QDataStream::Ok);
+
+    CustomStreamableType t2;
+    t2.a = -1;
+    QVERIFY(QMetaType::load(stream, id, &t2)); // Hmmm, shouldn't it return false?
+    QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
+    QCOMPARE(t2.a, -1);
+
+    stream.device()->seek(0);
+    stream.resetStatus();
+    QVERIFY(QMetaType::load(stream, id, &t2));
+    QCOMPARE(stream.status(), QDataStream::Ok);
+    QCOMPARE(t2.a, t.a);
+
+    QVERIFY(QMetaType::load(stream, id, &t2)); // Hmmm, shouldn't it return false?
+    QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
 }
 
 // Compile-time test, it should be possible to register function pointer types

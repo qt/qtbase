@@ -117,30 +117,19 @@ QT_BEGIN_HEADER
 #endif
 #endif
 
-// 3D now intrinsics
-#if defined(QT_HAVE_3DNOW)
-#include <mm3dnow.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 
 enum CPUFeatures {
     None        = 0,
-    MMX         = 0x1,
-    MMXEXT      = 0x2,
-    MMX3DNOW    = 0x4,
-    MMX3DNOWEXT = 0x8,
-    SSE         = 0x10,
-    SSE2        = 0x20,
-    CMOV        = 0x40,
-    IWMMXT      = 0x80,
-    NEON        = 0x100,
-    SSE3        = 0x200,
-    SSSE3       = 0x400,
-    SSE4_1      = 0x800,
-    SSE4_2      = 0x1000,
-    AVX         = 0x2000
+    IWMMXT      = 0x1,
+    NEON        = 0x2,
+    SSE2        = 0x4,
+    SSE3        = 0x8,
+    SSSE3       = 0x10,
+    SSE4_1      = 0x20,
+    SSE4_2      = 0x40,
+    AVX         = 0x80
 };
 
 Q_CORE_EXPORT uint qDetectCPUFeatures();

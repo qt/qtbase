@@ -264,14 +264,13 @@ void QWindowsCEStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
                           option->rect.x() + 1, option->rect.y() + option->rect.height() - 1);
         //fall through...
     }
-    case PE_IndicatorViewItemCheck:
-    case PE_Q3CheckListIndicator: {
+    case PE_IndicatorViewItemCheck: {
         if (!doRestore) {
             painter->save();
             doRestore = true;
         }
         int arrowSize= 2;
-        if (element == PE_Q3CheckListIndicator || element == PE_IndicatorViewItemCheck) {
+        if (element == PE_IndicatorViewItemCheck) {
             QLinearGradient linearGradient(QPoint(option->rect.x(),option->rect.y()), QPoint(option->rect.x()+option->rect.width(),
                                            option->rect.y()+option->rect.height()));
             linearGradient.setColorAt(0, windowsCECheckBoxGradientColorBegin);

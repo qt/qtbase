@@ -1095,19 +1095,16 @@ int Q_TESTLIB_EXPORT defaultKeyDelay()
 
 static bool isValidSlot(const QMetaMethod &sl)
 {
-    if (sl.access() != QMetaMethod::Private || !sl.parameterTypes().isEmpty()
-        || qstrlen(sl.typeName()) || sl.methodType() != QMetaMethod::Slot)
+    if (sl.access() != QMetaMethod::Private || sl.parameterCount() != 0
+        || sl.returnType() != QMetaType::Void || sl.methodType() != QMetaMethod::Slot)
         return false;
-    const char *sig = sl.signature();
-    int len = qstrlen(sig);
-    if (len < 2)
+    QByteArray name = sl.name();
+    if (name.isEmpty())
         return false;
-    if (sig[len - 2] != '(' || sig[len - 1] != ')')
+    if (name.endsWith("_data"))
         return false;
-    if (len > 7 && strcmp(sig + (len - 7), "_data()") == 0)
-        return false;
-    if (strcmp(sig, "initTestCase()") == 0 || strcmp(sig, "cleanupTestCase()") == 0
-        || strcmp(sig, "cleanup()") == 0 || strcmp(sig, "init()") == 0)
+    if (name == "initTestCase" || name == "cleanupTestCase"
+        || name == "cleanup" || name == "init")
         return false;
     return true;
 }
@@ -1121,7 +1118,7 @@ static void qPrintTestSlots(FILE *stream)
     for (int i = 0; i < QTest::currentTestObject->metaObject()->methodCount(); ++i) {
         QMetaMethod sl = QTest::currentTestObject->metaObject()->method(i);
         if (isValidSlot(sl))
-            fprintf(stream, "%s\n", sl.signature());
+            fprintf(stream, "%s\n", sl.methodSignature().constData());
     }
 }
 
@@ -1146,7 +1143,7 @@ static void qPrintDataTags(FILE *stream)
             // Retrieve local tags:
             QStringList localTags;
             QTestTable table;
-            char *slot = qstrdup(tf.signature());
+            char *slot = qstrdup(tf.methodSignature().constData());
             slot[strlen(slot) - 2] = '\0';
             QByteArray member;
             member.resize(qstrlen(slot) + qstrlen("_data()") + 1);
@@ -1818,7 +1815,7 @@ static void qInvokeTestMethods(QObject *testObject)
 
             if (QTest::testFuncs) {
                 for (int i = 0; i != QTest::testFuncCount; i++) {
-                    if (!qInvokeTestMethod(metaObject->method(QTest::testFuncs[i].function()).signature(),
+                    if (!qInvokeTestMethod(metaObject->method(QTest::testFuncs[i].function()).methodSignature().constData(),
                                                               QTest::testFuncs[i].data())) {
                         break;
                     }
@@ -1832,7 +1829,7 @@ static void qInvokeTestMethods(QObject *testObject)
                 for (int i = 0; i != methodCount; i++) {
                     if (!isValidSlot(testMethods[i]))
                         continue;
-                    if (!qInvokeTestMethod(testMethods[i].signature()))
+                    if (!qInvokeTestMethod(testMethods[i].methodSignature().constData()))
                         break;
                 }
                 delete[] testMethods;
@@ -2437,21 +2434,6 @@ void QTest::qSleep(int ms)
 QObject *QTest::testObject()
 {
     return currentTestObject;
-}
-
-/*! \internal
- */
-bool QTest::compare_helper(bool success, const char *msg, const char *file, int line)
-{
-    static bool warned = false;
-    if (!warned) {
-        warned = true;
-        QTest::qWarn("QTest::compare_helper(bool, const char *, const char *, int) is obsolete "
-                     "and will soon be removed. Please update your code to use the other "
-                     "version of this function.");
-    }
-
-    return QTestResult::compare(success, msg, file, line);
 }
 
 /*! \internal

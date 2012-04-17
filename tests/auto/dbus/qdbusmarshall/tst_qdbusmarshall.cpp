@@ -49,8 +49,8 @@
 
 #include <dbus/dbus.h>
 
-static const char serviceName[] = "com.trolltech.autotests.qpong";
-static const char objectPath[] = "/com/trolltech/qpong";
+static const char serviceName[] = "org.qtproject.autotests.qpong";
+static const char objectPath[] = "/org/qtproject/qpong";
 static const char *interfaceName = serviceName;
 
 class tst_QDBusMarshall: public QObject
@@ -502,7 +502,7 @@ void tst_QDBusMarshall::sendMaps_data()
     QTest::newRow("os-map") << qVariantFromValue(osmap) << "a{os}"
             << "[Argument: a{os} {[ObjectPath: /] = \"root\", [ObjectPath: /bar/baz] = \"bar and baz\", [ObjectPath: /foo] = \"foo\"}]";
 
-    QHash<QDBusSignature, QString> gsmap;
+    QMap<QDBusSignature, QString> gsmap;
     QTest::newRow("empty-gs-map") << qVariantFromValue(gsmap) << "a{gs}"
             << "[Argument: a{gs} {}]";
     gsmap[QDBusSignature("i")] = "int32";
@@ -601,7 +601,7 @@ void tst_QDBusMarshall::sendComplex_data()
     QTest::newRow("datetimelist") << qVariantFromValue(dtlist) << "a((iii)(iiii)i)"
             << "[Argument: a((iii)(iiii)i) {[Argument: ((iii)(iiii)i) [Argument: (iii) 0, 0, 0], [Argument: (iiii) -1, -1, -1, -1], 0], [Argument: ((iii)(iiii)i) [Argument: (iii) 1977, 9, 13], [Argument: (iiii) 0, 0, 0, 0], 0], [Argument: ((iii)(iiii)i) [Argument: (iii) 2006, 6, 18], [Argument: (iiii) 13, 14, 0, 0], 0]}]";
 
-    QHash<qlonglong, QDateTime> lldtmap;
+    QMap<qlonglong, QDateTime> lldtmap;
     QTest::newRow("empty-lldtmap") << qVariantFromValue(lldtmap) << "a{x((iii)(iiii)i)}"
             << "[Argument: a{x((iii)(iiii)i)} {}]";
     lldtmap[0] = QDateTime();
@@ -621,7 +621,7 @@ void tst_QDBusMarshall::sendComplex_data()
     ssmap["c"] = "b";
     ssmap["b"] = "c";
 
-    QHash<QDBusSignature, QString> gsmap;
+    QMap<QDBusSignature, QString> gsmap;
     gsmap[QDBusSignature("i")] = "int32";
     gsmap[QDBusSignature("s")] = "string";
     gsmap[QDBusSignature("a{gs}")] = "array of dict_entry of (signature, string)";
@@ -925,29 +925,29 @@ void tst_QDBusMarshall::sendCallErrors_data()
     // this error comes from the bus server
     QTest::newRow("empty-service") << "" << objectPath << interfaceName << "ping" << QVariantList()
             << "org.freedesktop.DBus.Error.UnknownMethod"
-            << "Method \"ping\" with signature \"\" on interface \"com.trolltech.autotests.qpong\" doesn't exist\n" << (const char*)0;
+            << "Method \"ping\" with signature \"\" on interface \"org.qtproject.autotests.qpong\" doesn't exist\n" << (const char*)0;
 
     QTest::newRow("invalid-service") << "this isn't valid" << objectPath << interfaceName << "ping" << QVariantList()
-            << "com.trolltech.QtDBus.Error.InvalidService"
+            << "org.qtproject.QtDBus.Error.InvalidService"
             << "Invalid service name: this isn't valid" << "";
 
     QTest::newRow("empty-path") << serviceName << "" << interfaceName << "ping" << QVariantList()
-            << "com.trolltech.QtDBus.Error.InvalidObjectPath"
+            << "org.qtproject.QtDBus.Error.InvalidObjectPath"
             << "Object path cannot be empty" << "";
     QTest::newRow("invalid-path") << serviceName << "//" << interfaceName << "ping" << QVariantList()
-            << "com.trolltech.QtDBus.Error.InvalidObjectPath"
+            << "org.qtproject.QtDBus.Error.InvalidObjectPath"
             << "Invalid object path: //" << "";
 
     // empty interfaces are valid
     QTest::newRow("invalid-interface") << serviceName << objectPath << "this isn't valid" << "ping" << QVariantList()
-            << "com.trolltech.QtDBus.Error.InvalidInterface"
+            << "org.qtproject.QtDBus.Error.InvalidInterface"
             << "Invalid interface class: this isn't valid" << "";
 
     QTest::newRow("empty-method") << serviceName << objectPath << interfaceName << "" << QVariantList()
-            << "com.trolltech.QtDBus.Error.InvalidMember"
+            << "org.qtproject.QtDBus.Error.InvalidMember"
             << "method name cannot be empty" << "";
     QTest::newRow("invalid-method") << serviceName << objectPath << interfaceName << "this isn't valid" << QVariantList()
-            << "com.trolltech.QtDBus.Error.InvalidMember"
+            << "org.qtproject.QtDBus.Error.InvalidMember"
             << "Invalid method name: this isn't valid" << "";
 
     QTest::newRow("invalid-variant1") << serviceName << objectPath << interfaceName << "ping"

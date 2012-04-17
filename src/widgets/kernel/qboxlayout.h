@@ -84,6 +84,7 @@ public:
     void insertSpacerItem(int index, QSpacerItem *spacerItem);
     void insertWidget(int index, QWidget *widget, int stretch = 0, Qt::Alignment alignment = 0);
     void insertLayout(int index, QLayout *layout, int stretch = 0);
+    void insertItem(int index, QLayoutItem *);
 
     int spacing() const;
     void setSpacing(int spacing);
@@ -107,9 +108,6 @@ public:
     QLayoutItem *takeAt(int);
     int count() const;
     void setGeometry(const QRect&);
-protected:
-    // ### Qt 5: make public
-    void insertItem(int index, QLayoutItem *);
 
 private:
     Q_DISABLE_COPY(QBoxLayout)

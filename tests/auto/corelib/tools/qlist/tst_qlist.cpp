@@ -48,6 +48,9 @@ class tst_QList : public QObject
     Q_OBJECT
 
 private slots:
+    void init();
+    void cleanup();
+
     void length() const;
     void lengthSignature() const;
     void append() const;
@@ -84,7 +87,99 @@ private slots:
     void initializeList() const;
 
     void const_shared_null() const;
+    void setSharable1_data() const;
+    void setSharable1() const;
+    void setSharable2_data() const;
+    void setSharable2() const;
+
+private:
+    int dummyForGuard;
 };
+
+struct Complex
+{
+    Complex(int val)
+        : value(val)
+        , checkSum(this)
+    {
+        ++liveCount;
+    }
+
+    Complex(Complex const &other)
+        : value(other.value)
+        , checkSum(this)
+    {
+        ++liveCount;
+    }
+
+    Complex &operator=(Complex const &other)
+    {
+        check(); other.check();
+
+        value = other.value;
+        return *this;
+    }
+
+    ~Complex()
+    {
+        --liveCount;
+        check();
+    }
+
+    operator int() const { return value; }
+
+    bool operator==(Complex const &other) const
+    {
+        check(); other.check();
+        return value == other.value;
+    }
+
+    bool check() const
+    {
+        if (this != checkSum) {
+            ++errorCount;
+            return false;
+        }
+        return true;
+    }
+
+    struct Guard
+    {
+        Guard() : initialLiveCount(liveCount) {}
+        ~Guard() { if (liveCount != initialLiveCount) ++errorCount; }
+
+    private:
+        Q_DISABLE_COPY(Guard);
+        int initialLiveCount;
+    };
+
+    static void resetErrors() { errorCount = 0; }
+    static int errors() { return errorCount; }
+
+private:
+    static int errorCount;
+    static int liveCount;
+
+    int value;
+    void *checkSum;
+};
+
+int Complex::errorCount = 0;
+int Complex::liveCount = 0;
+
+void tst_QList::init()
+{
+    Complex::resetErrors();
+    new (&dummyForGuard) Complex::Guard();
+}
+
+void tst_QList::cleanup()
+{
+    QCOMPARE(Complex::errors(), 0);
+
+    reinterpret_cast<Complex::Guard *>(&dummyForGuard)->~Guard();
+    QCOMPARE(Complex::errors(), 0);
+}
 
 void tst_QList::length() const
 {
@@ -688,6 +783,83 @@ void tst_QList::const_shared_null() const
     QList<int> list2;
     list2.setSharable(true);
     QVERIFY(!list2.isDetached());
+}
+
+Q_DECLARE_METATYPE(QList<int>);
+Q_DECLARE_METATYPE(QList<Complex>);
+
+template <class T>
+void generateSetSharableData()
+{
+    QTest::addColumn<QList<T> >("list");
+    QTest::addColumn<int>("size");
+
+    QTest::newRow("null") << QList<T>() << 0;
+    QTest::newRow("non-empty") << (QList<T>() << T(0) << T(1) << T(2) << T(3) << T(4)) << 5;
+}
+
+template <class T>
+void runSetSharableTest()
+{
+    QFETCH(QList<T>, list);
+    QFETCH(int, size);
+
+    QVERIFY(!list.isDetached()); // Shared with QTest
+
+    list.setSharable(true);
+
+    QCOMPARE(list.size(), size);
+
+    {
+        QList<T> copy(list);
+        QVERIFY(!copy.isDetached());
+        QVERIFY(copy.isSharedWith(list));
+    }
+
+    list.setSharable(false);
+    QVERIFY(list.isDetached() || list.isSharedWith(QList<T>()));
+
+    {
+        QList<T> copy(list);
+
+        QVERIFY(copy.isDetached() || copy.isSharedWith(QList<T>()));
+        QCOMPARE(copy.size(), size);
+        QCOMPARE(copy, list);
+    }
+
+    list.setSharable(true);
+
+    {
+        QList<T> copy(list);
+
+        QVERIFY(!copy.isDetached());
+        QVERIFY(copy.isSharedWith(list));
+    }
+
+    for (int i = 0; i < list.size(); ++i)
+        QCOMPARE(int(list[i]), i);
+
+    QCOMPARE(list.size(), size);
+}
+
+void tst_QList::setSharable1_data() const
+{
+    generateSetSharableData<int>();
+}
+
+void tst_QList::setSharable2_data() const
+{
+    generateSetSharableData<Complex>();
+}
+
+void tst_QList::setSharable1() const
+{
+    runSetSharableTest<int>();
+}
+
+void tst_QList::setSharable2() const
+{
+    runSetSharableTest<Complex>();
 }
 
 QTEST_APPLESS_MAIN(tst_QList)

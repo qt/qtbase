@@ -48,8 +48,8 @@
 #include "../qdbusmarshall/common.h"
 #include "myobject.h"
 
-static const char serviceName[] = "com.trolltech.autotests.qmyserver";
-static const char objectPath[] = "/com/trolltech/qmyserver";
+static const char serviceName[] = "org.qtproject.autotests.qmyserver";
+static const char objectPath[] = "/org/qtproject/qmyserver";
 static const char *interfaceName = serviceName;
 
 const char *slotSpy;
@@ -644,7 +644,7 @@ void tst_QDBusAbstractAdaptor::signalEmissions()
 
     QDBusConnection con = QDBusConnection::sessionBus();
     QVERIFY(con.isConnected());
-    con.registerService("com.trolltech.tst_QDBusAbstractAdaptor");
+    con.registerService("org.qtproject.tst_QDBusAbstractAdaptor");
 
     MyObject obj(3);
     con.registerObject("/", &obj, QDBusConnection::ExportAdaptors

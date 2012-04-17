@@ -57,6 +57,7 @@ class Q_CORE_EXPORT QTimer : public QObject
     Q_OBJECT
     Q_PROPERTY(bool singleShot READ isSingleShot WRITE setSingleShot)
     Q_PROPERTY(int interval READ interval WRITE setInterval)
+    Q_PROPERTY(int remainingTime READ remainingTime)
     Q_PROPERTY(Qt::TimerType timerType READ timerType WRITE setTimerType)
     Q_PROPERTY(bool active READ isActive)
 public:
@@ -68,6 +69,8 @@ public:
 
     void setInterval(int msec);
     int interval() const { return inter; }
+
+    int remainingTime() const;
 
     void setTimerType(Qt::TimerType atype) { this->type = atype; }
     Qt::TimerType timerType() const { return Qt::TimerType(type); }

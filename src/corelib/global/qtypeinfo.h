@@ -172,9 +172,6 @@ Q_DECLARE_TYPEINFO_BODY(QFlags<T>, Q_PRIMITIVE_TYPE);
    types must declare a 'bool isDetached(void) const;' member for this
    to work.
 */
-#ifdef QT_NO_STL
-#define Q_DECLARE_SHARED_STL(TYPE)
-#else
 #define Q_DECLARE_SHARED_STL(TYPE) \
 QT_END_NAMESPACE \
 namespace std { \
@@ -182,7 +179,6 @@ namespace std { \
     { swap(value1.data_ptr(), value2.data_ptr()); } \
 } \
 QT_BEGIN_NAMESPACE
-#endif
 
 #define Q_DECLARE_SHARED(TYPE)                                          \
 template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \

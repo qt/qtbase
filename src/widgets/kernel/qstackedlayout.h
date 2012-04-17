@@ -94,6 +94,8 @@ public:
     QLayoutItem *itemAt(int) const;
     QLayoutItem *takeAt(int);
     void setGeometry(const QRect &rect);
+    bool hasHeightForWidth() const;
+    int heightForWidth(int width) const;
 
 Q_SIGNALS:
     void widgetRemoved(int index);

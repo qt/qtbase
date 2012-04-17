@@ -73,6 +73,7 @@ private slots:
     void noNeedlessRehashes();
 
     void const_shared_null();
+    void twoArguments_qHash();
 };
 
 struct Foo {
@@ -525,14 +526,14 @@ void tst_QHash::key()
         hash2.insert(3, "two");
         QCOMPARE(hash2.key("one"), 1);
         QCOMPARE(hash2.key("one", def), 1);
-        QCOMPARE(hash2.key("two"), 2);
-        QCOMPARE(hash2.key("two", def), 2);
+        QVERIFY(hash2.key("two") == 2 || hash2.key("two") == 3);
+        QVERIFY(hash2.key("two", def) == 2 || hash2.key("two", def) == 3);
         QCOMPARE(hash2.key("three"), 0);
         QCOMPARE(hash2.key("three", def), def);
 
         hash2.insert(-1, "two");
-        QCOMPARE(hash2.key("two"), -1);
-        QCOMPARE(hash2.key("two", def), -1);
+        QVERIFY(hash2.key("two") == 2 || hash2.key("two") == 3 || hash2.key("two") == -1);
+        QVERIFY(hash2.key("two", def) == 2 || hash2.key("two", def) == 3 || hash2.key("two", def) == -1);
 
         hash2.insert(0, "zero");
         QCOMPARE(hash2.key("zero"), 0);
@@ -1201,6 +1202,102 @@ void tst_QHash::const_shared_null()
     QHash<int, QString> hash2;
     hash2.setSharable(true);
     QVERIFY(!hash2.isDetached());
+}
+
+// This gets set to != 0 in wrong qHash overloads
+static int wrongqHashOverload = 0;
+
+struct OneArgumentQHashStruct1 {};
+bool operator==(const OneArgumentQHashStruct1 &, const OneArgumentQHashStruct1 &) { return false; }
+uint qHash(OneArgumentQHashStruct1) { return 0; }
+
+struct OneArgumentQHashStruct2 {};
+bool operator==(const OneArgumentQHashStruct2 &, const OneArgumentQHashStruct2 &) { return false; }
+uint qHash(const OneArgumentQHashStruct2 &) { return 0; }
+
+struct OneArgumentQHashStruct3 {};
+bool operator==(const OneArgumentQHashStruct3 &, const OneArgumentQHashStruct3 &) { return false; }
+uint qHash(OneArgumentQHashStruct3) { return 0; }
+uint qHash(OneArgumentQHashStruct3 &, uint) { wrongqHashOverload = 1; return 0; }
+
+struct OneArgumentQHashStruct4 {};
+bool operator==(const OneArgumentQHashStruct4 &, const OneArgumentQHashStruct4 &) { return false; }
+uint qHash(const OneArgumentQHashStruct4 &) { return 0; }
+uint qHash(OneArgumentQHashStruct4 &, uint) { wrongqHashOverload = 1; return 0; }
+
+
+struct TwoArgumentsQHashStruct1 {};
+bool operator==(const TwoArgumentsQHashStruct1 &, const TwoArgumentsQHashStruct1 &) { return false; }
+uint qHash(const TwoArgumentsQHashStruct1 &) { wrongqHashOverload = 1; return 0; }
+uint qHash(const TwoArgumentsQHashStruct1 &, uint) { return 0; }
+
+struct TwoArgumentsQHashStruct2 {};
+bool operator==(const TwoArgumentsQHashStruct2 &, const TwoArgumentsQHashStruct2 &) { return false; }
+uint qHash(TwoArgumentsQHashStruct2) { wrongqHashOverload = 1; return 0; }
+uint qHash(const TwoArgumentsQHashStruct2 &, uint) { return 0; }
+
+struct TwoArgumentsQHashStruct3 {};
+bool operator==(const TwoArgumentsQHashStruct3 &, const TwoArgumentsQHashStruct3 &) { return false; }
+uint qHash(const TwoArgumentsQHashStruct3 &) { wrongqHashOverload = 1; return 0; }
+uint qHash(TwoArgumentsQHashStruct3, uint) { return 0; }
+
+struct TwoArgumentsQHashStruct4 {};
+bool operator==(const TwoArgumentsQHashStruct4 &, const TwoArgumentsQHashStruct4 &) { return false; }
+uint qHash(TwoArgumentsQHashStruct4) { wrongqHashOverload = 1; return 0; }
+uint qHash(TwoArgumentsQHashStruct4, uint) { return 0; }
+
+/*!
+    \internal
+
+    Check that QHash picks up the right overload.
+    The best one, for a type T, is the two-args version of qHash:
+    either uint qHash(T, uint) or uint qHash(const T &, uint).
+
+    If neither of these exists, then one between
+    uint qHash(T) or uint qHash(const T &) must exist
+    (and it gets selected instead).
+*/
+void tst_QHash::twoArguments_qHash()
+{
+    QHash<OneArgumentQHashStruct1, int> oneArgHash1;
+    OneArgumentQHashStruct1 oneArgObject1;
+    oneArgHash1[oneArgObject1] = 1;
+    QCOMPARE(wrongqHashOverload, 0);
+
+    QHash<OneArgumentQHashStruct2, int> oneArgHash2;
+    OneArgumentQHashStruct2 oneArgObject2;
+    oneArgHash2[oneArgObject2] = 1;
+    QCOMPARE(wrongqHashOverload, 0);
+
+    QHash<OneArgumentQHashStruct3, int> oneArgHash3;
+    OneArgumentQHashStruct3 oneArgObject3;
+    oneArgHash3[oneArgObject3] = 1;
+    QCOMPARE(wrongqHashOverload, 0);
+
+    QHash<OneArgumentQHashStruct4, int> oneArgHash4;
+    OneArgumentQHashStruct4 oneArgObject4;
+    oneArgHash4[oneArgObject4] = 1;
+    QCOMPARE(wrongqHashOverload, 0);
+
+    QHash<TwoArgumentsQHashStruct1, int> twoArgsHash1;
+    TwoArgumentsQHashStruct1 twoArgsObject1;
+    twoArgsHash1[twoArgsObject1] = 1;
+    QCOMPARE(wrongqHashOverload, 0);
+
+    QHash<TwoArgumentsQHashStruct2, int> twoArgsHash2;
+    TwoArgumentsQHashStruct2 twoArgsObject2;
+    twoArgsHash2[twoArgsObject2] = 1;
+    QCOMPARE(wrongqHashOverload, 0);
+
+    QHash<TwoArgumentsQHashStruct3, int> twoArgsHash3;
+    TwoArgumentsQHashStruct3 twoArgsObject3;
+    twoArgsHash3[twoArgsObject3] = 1;
+    QCOMPARE(wrongqHashOverload, 0);
+
+    QHash<TwoArgumentsQHashStruct4, int> twoArgsHash4;
+    TwoArgumentsQHashStruct4 twoArgsObject4;
+    twoArgsHash4[twoArgsObject4] = 1;
+    QCOMPARE(wrongqHashOverload, 0);
 }
 
 QTEST_APPLESS_MAIN(tst_QHash)

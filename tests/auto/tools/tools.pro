@@ -5,3 +5,4 @@ SUBDIRS=\
    moc \
    rcc \
 
+contains(QT_CONFIG, dbus):SUBDIRS += qdbuscpp2xml

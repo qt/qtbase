@@ -43,9 +43,6 @@
 #ifndef QT_NO_QUUID_STRING
 #  define QT_NO_QUUID_STRING
 #endif
-#ifndef QT_NO_STL
-#  define QT_NO_STL
-#endif
 
 /* Dialogs */
 #ifndef QT_NO_COLORDIALOG
@@ -281,9 +278,6 @@
 #endif
 #ifndef QT_NO_MENUBAR
 #  define QT_NO_MENUBAR
-#endif
-#ifndef QT_NO_WORKSPACE
-#  define QT_NO_WORKSPACE
 #endif
 #ifndef QT_NO_PROGRESSBAR
 #  define QT_NO_PROGRESSBAR

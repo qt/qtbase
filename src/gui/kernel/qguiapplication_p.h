@@ -119,9 +119,6 @@ public:
     static void reportLogicalDotsPerInchChange(QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e);
     static void processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce);
 
-    static void processMapEvent(QWindowSystemInterfacePrivate::MapEvent *e);
-    static void processUnmapEvent(QWindowSystemInterfacePrivate::UnmapEvent *e);
-
     static void processExposeEvent(QWindowSystemInterfacePrivate::ExposeEvent *e);
 
     static QPlatformDragQtResponse processDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);

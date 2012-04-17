@@ -86,7 +86,7 @@ public:
     };
 
     QTextOption();
-    QTextOption(Qt::Alignment alignment);
+    /*implicit*/ QTextOption(Qt::Alignment alignment);
     ~QTextOption();
 
     QTextOption(const QTextOption &o);

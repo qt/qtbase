@@ -43,6 +43,7 @@
 
 #include <qbytearray.h>
 #include <qfile.h>
+#include <qhash.h>
 #include <limits.h>
 #include <private/qtools_p.h>
 #if defined(Q_OS_WINCE)
@@ -91,8 +92,14 @@ private slots:
     void chop_data();
     void chop();
     void prepend();
+    void prependExtended_data();
+    void prependExtended();
     void append();
+    void appendExtended_data();
+    void appendExtended();
     void insert();
+    void insertExtended_data();
+    void insertExtended();
     void remove_data();
     void remove();
     void replace_data();
@@ -117,6 +124,12 @@ private slots:
     void toFromHex_data();
     void toFromHex();
     void toFromPercentEncoding();
+    void fromPercentEncoding_data();
+    void fromPercentEncoding();
+    void toPercentEncoding_data();
+    void toPercentEncoding();
+    void toPercentEncoding2_data();
+    void toPercentEncoding2();
 
     void compare_data();
     void compare();
@@ -130,10 +143,102 @@ private slots:
     void byteRefDetaching() const;
 
     void reserve();
+    void reserveExtended_data();
+    void reserveExtended();
     void movablity_data();
     void movablity();
     void literals();
 };
+
+static const struct StaticByteArrays {
+    struct Standard {
+        QByteArrayData data;
+        const char string[8];
+    } standard;
+    struct NotNullTerminated {
+        QByteArrayData data;
+        const char string[8];
+    } notNullTerminated;
+    struct Shifted {
+        QByteArrayData data;
+        const char dummy;  // added to change offset of string
+        const char string[8];
+    } shifted;
+    struct ShiftedNotNullTerminated {
+        QByteArrayData data;
+        const char dummy;  // added to change offset of string
+        const char string[8];
+    } shiftedNotNullTerminated;
+
+} statics = {{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) }, "data"}
+            ,{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) }, "dataBAD"}
+            ,{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) + sizeof(char) }, 0, "data"}
+            ,{{ Q_REFCOUNT_INITIALIZE_STATIC, /* length = */ 4, 0, 0, sizeof(QByteArrayData) + sizeof(char) }, 0, "dataBAD"}
+            };
+
+static const QByteArrayDataPtr staticStandard = { const_cast<QByteArrayData *>(&statics.standard.data) };
+static const QByteArrayDataPtr staticNotNullTerminated = { const_cast<QByteArrayData *>(&statics.notNullTerminated.data) };
+static const QByteArrayDataPtr staticShifted = { const_cast<QByteArrayData *>(&statics.shifted.data) };
+static const QByteArrayDataPtr staticShiftedNotNullTerminated = { const_cast<QByteArrayData *>(&statics.shiftedNotNullTerminated.data) };
+
+template <class T> const T &verifyZeroTermination(const T &t) { return t; }
+
+QByteArray verifyZeroTermination(const QByteArray &ba)
+{
+    // This test does some evil stuff, it's all supposed to work.
+
+    QByteArray::DataPtr baDataPtr = const_cast<QByteArray &>(ba).data_ptr();
+
+    // Skip if isStatic() or fromRawData(), as those offer no guarantees
+    if (baDataPtr->ref.isStatic()
+            || baDataPtr->offset != QByteArray().data_ptr()->offset)
+        return ba;
+
+    int baSize = ba.size();
+    char baTerminator = ba.constData()[baSize];
+    if ('\0' != baTerminator)
+        return QString::fromAscii(
+            "*** Result ('%1') not null-terminated: 0x%2 ***").arg(QString::fromAscii(ba))
+                .arg(baTerminator, 2, 16, QChar('0')).toAscii();
+
+    // Skip mutating checks on shared strings
+    if (baDataPtr->ref.isShared())
+        return ba;
+
+    const char *baData = ba.constData();
+    const QByteArray baCopy(baData, baSize); // Deep copy
+
+    const_cast<char *>(baData)[baSize] = 'x';
+    if ('x' != ba.constData()[baSize]) {
+        return QString::fromAscii("*** Failed to replace null-terminator in "
+                "result ('%1') ***").arg(QString::fromAscii(ba)).toAscii();
+    }
+    if (ba != baCopy) {
+        return QString::fromAscii( "*** Result ('%1') differs from its copy "
+                "after null-terminator was replaced ***").arg(QString::fromAscii(ba)).toAscii();
+    }
+    const_cast<char *>(baData)[baSize] = '\0'; // Restore sanity
+
+    return ba;
+}
+
+// Overriding QTest's QCOMPARE, to check QByteArray for null termination
+#undef QCOMPARE
+#define QCOMPARE(actual, expected)                                      \
+    do {                                                                \
+        if (!QTest::qCompare(verifyZeroTermination(actual), expected,   \
+                #actual, #expected, __FILE__, __LINE__))                \
+            return;                                                     \
+    } while (0)                                                         \
+    /**/
+#undef QTEST
+#define QTEST(actual, testElement)                                      \
+    do {                                                                \
+        if (!QTest::qTest(verifyZeroTermination(actual), testElement,   \
+                #actual, #testElement, __FILE__, __LINE__))             \
+            return;                                                     \
+    } while (0)                                                         \
+    /**/
 
 tst_QByteArray::tst_QByteArray()
 {
@@ -517,7 +622,7 @@ void tst_QByteArray::fromBase64()
 void tst_QByteArray::qvsnprintf()
 {
     char buf[20];
-    qMemSet(buf, 42, sizeof(buf));
+    memset(buf, 42, sizeof(buf));
 
     QCOMPARE(::qsnprintf(buf, 10, "%s", "bubu"), 4);
     QCOMPARE(static_cast<const char *>(buf), "bubu");
@@ -526,12 +631,12 @@ void tst_QByteArray::qvsnprintf()
     QCOMPARE(buf[5], char(42));
 #endif
 
-    qMemSet(buf, 42, sizeof(buf));
+    memset(buf, 42, sizeof(buf));
     QCOMPARE(::qsnprintf(buf, 5, "%s", "bubu"), 4);
     QCOMPARE(static_cast<const char *>(buf), "bubu");
     QCOMPARE(buf[5], char(42));
 
-    qMemSet(buf, 42, sizeof(buf));
+    memset(buf, 42, sizeof(buf));
 #ifdef Q_OS_WIN
     // VS 2005 uses the Qt implementation of vsnprintf.
 # if defined(_MSC_VER) && _MSC_VER >= 1400 && !defined(Q_OS_WINCE)
@@ -556,7 +661,7 @@ void tst_QByteArray::qvsnprintf()
     QCOMPARE(buf[4], char(42));
 
 #ifndef Q_OS_WIN
-    qMemSet(buf, 42, sizeof(buf));
+    memset(buf, 42, sizeof(buf));
     QCOMPARE(::qsnprintf(buf, 10, ""), 0);
 #endif
 }
@@ -701,6 +806,35 @@ void tst_QByteArray::prepend()
     QCOMPARE(ba.prepend("\0 ", 2), QByteArray::fromRawData("\0 321foo", 8));
 }
 
+void tst_QByteArray::prependExtended_data()
+{
+    QTest::addColumn<QByteArray>("array");
+    QTest::newRow("literal") << QByteArray(QByteArrayLiteral("data"));
+    QTest::newRow("standard") << QByteArray(staticStandard);
+    QTest::newRow("shifted") << QByteArray(staticShifted);
+    QTest::newRow("notNullTerminated") << QByteArray(staticNotNullTerminated);
+    QTest::newRow("shiftedNotNullTerminated") << QByteArray(staticShiftedNotNullTerminated);
+    QTest::newRow("non static data") << QByteArray("data");
+    QTest::newRow("from raw data") << QByteArray::fromRawData("data", 4);
+    QTest::newRow("from raw data not terminated") << QByteArray::fromRawData("dataBAD", 4);
+}
+
+void tst_QByteArray::prependExtended()
+{
+    QFETCH(QByteArray, array);
+
+    QCOMPARE(QByteArray().prepend(array), QByteArray("data"));
+    QCOMPARE(QByteArray("").prepend(array), QByteArray("data"));
+
+    QCOMPARE(array.prepend((char*)0), QByteArray("data"));
+    QCOMPARE(array.prepend(QByteArray()), QByteArray("data"));
+    QCOMPARE(array.prepend("1"), QByteArray("1data"));
+    QCOMPARE(array.prepend(QByteArray("2")), QByteArray("21data"));
+    QCOMPARE(array.prepend('3'), QByteArray("321data"));
+    QCOMPARE(array.prepend("\0 ", 2), QByteArray::fromRawData("\0 321data", 9));
+    QCOMPARE(array.size(), 9);
+}
+
 void tst_QByteArray::append()
 {
     QByteArray ba("foo");
@@ -712,6 +846,28 @@ void tst_QByteArray::append()
     QCOMPARE(ba.append("\0"), QByteArray("foo123"));
     QCOMPARE(ba.append("\0", 1), QByteArray::fromRawData("foo123\0", 7));
     QCOMPARE(ba.size(), 7);
+}
+
+void tst_QByteArray::appendExtended_data()
+{
+    prependExtended_data();
+}
+
+void tst_QByteArray::appendExtended()
+{
+    QFETCH(QByteArray, array);
+
+    QCOMPARE(QByteArray().append(array), QByteArray("data"));
+    QCOMPARE(QByteArray("").append(array), QByteArray("data"));
+
+    QCOMPARE(array.append((char*)0), QByteArray("data"));
+    QCOMPARE(array.append(QByteArray()), QByteArray("data"));
+    QCOMPARE(array.append("1"), QByteArray("data1"));
+    QCOMPARE(array.append(QByteArray("2")), QByteArray("data12"));
+    QCOMPARE(array.append('3'), QByteArray("data123"));
+    QCOMPARE(array.append("\0"), QByteArray("data123"));
+    QCOMPARE(array.append("\0", 1), QByteArray::fromRawData("data123\0", 8));
+    QCOMPARE(array.size(), 8);
 }
 
 void tst_QByteArray::insert()
@@ -734,6 +890,18 @@ void tst_QByteArray::insert()
     ba = "ab";
     QCOMPARE(ba.insert(1, "\0X\0", 3), QByteArray::fromRawData("a\0X\0b", 5));
     QCOMPARE(ba.size(), 5);
+}
+
+void tst_QByteArray::insertExtended_data()
+{
+    prependExtended_data();
+}
+
+void tst_QByteArray::insertExtended()
+{
+    QFETCH(QByteArray, array);
+    QCOMPARE(array.insert(1, "i"), QByteArray("diata"));
+    QCOMPARE(array.size(), 5);
 }
 
 void tst_QByteArray::remove_data()
@@ -1078,18 +1246,25 @@ void tst_QByteArray::toULongLong()
 // global function defined in qbytearray.cpp
 void tst_QByteArray::qAllocMore()
 {
-    static const int t[] = {
-        INT_MIN, INT_MIN + 1, -1234567, -66000, -1025,
-        -3, -1, 0, +1, +3, +1025, +66000, +1234567, INT_MAX - 1, INT_MAX,
-        INT_MAX/3
-    };
-    static const int N = sizeof(t)/sizeof(t[0]);
+    using QT_PREPEND_NAMESPACE(qAllocMore);
 
-    // make sure qAllocMore() doesn't loop infinitely on any input
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            ::qAllocMore(t[i], t[j]);
-        }
+    // Not very important, but please behave :-)
+    QVERIFY(qAllocMore(0, 0) >= 0);
+
+    for (int i = 1; i < 1 << 8; i <<= 1)
+        QVERIFY(qAllocMore(i, 0) >= i);
+
+    for (int i = 1 << 8; i < 1 << 30; i <<= 1) {
+        const int alloc = qAllocMore(i, 0);
+
+        QVERIFY(alloc >= i);
+        QCOMPARE(qAllocMore(i - 8, 8), alloc - 8);
+        QCOMPARE(qAllocMore(i - 16, 16), alloc - 16);
+        QCOMPARE(qAllocMore(i - 24, 24), alloc - 24);
+        QCOMPARE(qAllocMore(i - 32, 32), alloc - 32);
+
+        QVERIFY(qAllocMore(i - 1, 0) >= i - 1);
+        QVERIFY(qAllocMore(i + 1, 0) >= i + 1);
     }
 }
 
@@ -1111,7 +1286,7 @@ void tst_QByteArray::appendAfterFromRawData()
         arr += QByteArray::fromRawData(data, sizeof(data));
         data[0] = 'Y';
     }
-    QVERIFY(arr.at(0) == 'X');
+    QCOMPARE(arr.at(0), 'X');
 }
 
 void tst_QByteArray::toFromHex_data()
@@ -1231,6 +1406,91 @@ void tst_QByteArray::toFromPercentEncoding()
     QVERIFY(QByteArray::fromPercentEncoding(QByteArray()).isNull());
 }
 
+void tst_QByteArray::fromPercentEncoding_data()
+{
+    QTest::addColumn<QByteArray>("encodedString");
+    QTest::addColumn<QByteArray>("decodedString");
+
+    QTest::newRow("NormalString") << QByteArray("filename") << QByteArray("filename");
+    QTest::newRow("NormalStringEncoded") << QByteArray("file%20name") << QByteArray("file name");
+    QTest::newRow("JustEncoded") << QByteArray("%20") << QByteArray(" ");
+    QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QByteArray("http://qt.nokia.com");
+    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt%20nokia%20com") << QByteArray("http://qt nokia com");
+    QTest::newRow("EmptyString") << QByteArray("") << QByteArray("");
+    QTest::newRow("Task27166") << QByteArray("Fran%C3%A7aise") << QByteArray("Française");
+}
+
+void tst_QByteArray::fromPercentEncoding()
+{
+    QFETCH(QByteArray, encodedString);
+    QFETCH(QByteArray, decodedString);
+
+    QCOMPARE(QByteArray::fromPercentEncoding(encodedString), decodedString);
+}
+
+void tst_QByteArray::toPercentEncoding_data()
+{
+    QTest::addColumn<QByteArray>("decodedString");
+    QTest::addColumn<QByteArray>("encodedString");
+
+    QTest::newRow("NormalString") << QByteArray("filename") << QByteArray("filename");
+    QTest::newRow("NormalStringEncoded") << QByteArray("file name") << QByteArray("file%20name");
+    QTest::newRow("JustEncoded") << QByteArray(" ") << QByteArray("%20");
+    QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QByteArray("http%3A//qt.nokia.com");
+    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt nokia com") << QByteArray("http%3A//qt%20nokia%20com");
+    QTest::newRow("EmptyString") << QByteArray("") << QByteArray("");
+    QTest::newRow("Task27166") << QByteArray("Française") << QByteArray("Fran%C3%A7aise");
+}
+
+void tst_QByteArray::toPercentEncoding()
+{
+    QFETCH(QByteArray, decodedString);
+    QFETCH(QByteArray, encodedString);
+
+    QCOMPARE(decodedString.toPercentEncoding("/.").constData(), encodedString.constData());
+}
+
+void tst_QByteArray::toPercentEncoding2_data()
+{
+    QTest::addColumn<QByteArray>("original");
+    QTest::addColumn<QByteArray>("encoded");
+    QTest::addColumn<QByteArray>("excludeInEncoding");
+    QTest::addColumn<QByteArray>("includeInEncoding");
+
+    QTest::newRow("test_01") << QByteArray("abcdevghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678-._~")
+                          << QByteArray("abcdevghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678-._~")
+                          << QByteArray("")
+                          << QByteArray("");
+    QTest::newRow("test_02") << QByteArray("{\t\n\r^\"abc}")
+                          << QByteArray("%7B%09%0A%0D%5E%22abc%7D")
+                          << QByteArray("")
+                          << QByteArray("");
+    QTest::newRow("test_03") << QByteArray("://?#[]@!$&'()*+,;=")
+                          << QByteArray("%3A%2F%2F%3F%23%5B%5D%40%21%24%26%27%28%29%2A%2B%2C%3B%3D")
+                          << QByteArray("")
+                          << QByteArray("");
+    QTest::newRow("test_04") << QByteArray("://?#[]@!$&'()*+,;=")
+                          << QByteArray("%3A%2F%2F%3F%23%5B%5D%40!$&'()*+,;=")
+                          << QByteArray("!$&'()*+,;=")
+                          << QByteArray("");
+    QTest::newRow("test_05") << QByteArray("abcd")
+                          << QByteArray("a%62%63d")
+                          << QByteArray("")
+                          << QByteArray("bc");
+}
+
+void tst_QByteArray::toPercentEncoding2()
+{
+    QFETCH(QByteArray, original);
+    QFETCH(QByteArray, encoded);
+    QFETCH(QByteArray, excludeInEncoding);
+    QFETCH(QByteArray, includeInEncoding);
+
+    QByteArray encodedData = original.toPercentEncoding(excludeInEncoding, includeInEncoding);
+    QCOMPARE(encodedData.constData(), encoded.constData());
+    QCOMPARE(original, QByteArray::fromPercentEncoding(encodedData));
+}
+
 void tst_QByteArray::compare_data()
 {
     QTest::addColumn<QByteArray>("str1");
@@ -1298,6 +1558,9 @@ void tst_QByteArray::compare()
     QCOMPARE(str2 <= str1, isGreater || isEqual);
     QCOMPARE(str2 >= str1, isLess || isEqual);
     QCOMPARE(str2 != str1, !isEqual);
+
+    if (isEqual)
+        QVERIFY(qHash(str1) == qHash(str2));
 }
 
 void tst_QByteArray::compareCharStar_data()
@@ -1449,6 +1712,23 @@ void tst_QByteArray::repeated_data() const
         << QByteArray(("abc"))
         << QByteArray(("abcabcabcabc"))
         << 4;
+
+    QTest::newRow("static not null terminated")
+        << QByteArray(staticNotNullTerminated)
+        << QByteArray("datadatadatadata")
+        << 4;
+    QTest::newRow("static standard")
+        << QByteArray(staticStandard)
+        << QByteArray("datadatadatadata")
+        << 4;
+    QTest::newRow("static shifted not null terminated")
+        << QByteArray(staticShiftedNotNullTerminated)
+        << QByteArray("datadatadatadata")
+        << 4;
+    QTest::newRow("static shifted")
+        << QByteArray(staticShifted)
+        << QByteArray("datadatadatadata")
+        << 4;
 }
 
 void tst_QByteArray::byteRefDetaching() const
@@ -1501,6 +1781,22 @@ void tst_QByteArray::reserve()
     nil2.reserve(0);
 }
 
+void tst_QByteArray::reserveExtended_data()
+{
+    prependExtended_data();
+}
+
+void tst_QByteArray::reserveExtended()
+{
+    QFETCH(QByteArray, array);
+    array.reserve(1024);
+    QVERIFY(array.capacity() == 1024);
+    QCOMPARE(array, QByteArray("data"));
+    array.squeeze();
+    QCOMPARE(array, QByteArray("data"));
+    QCOMPARE(array.capacity(), array.size());
+}
+
 void tst_QByteArray::movablity_data()
 {
     QTest::addColumn<QByteArray>("array");
@@ -1511,6 +1807,8 @@ void tst_QByteArray::movablity_data()
     QTest::newRow("empty") << QByteArray("");
     QTest::newRow("null") << QByteArray();
     QTest::newRow("sss") << QByteArray(3, 's');
+
+    prependExtended_data();
 }
 
 void tst_QByteArray::movablity()
@@ -1587,8 +1885,8 @@ void tst_QByteArray::literals()
 
     QVERIFY(str.length() == 4);
     QVERIFY(str == "abcd");
-    QVERIFY(str.data_ptr()->ref == -1);
-    QVERIFY(str.data_ptr()->offset == 0);
+    QVERIFY(str.data_ptr()->ref.isStatic());
+    QVERIFY(str.data_ptr()->offset == sizeof(QByteArrayData));
 
     const char *s = str.constData();
     QByteArray str2 = str;

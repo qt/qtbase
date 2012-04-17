@@ -88,7 +88,7 @@ static const char propertiesInterfaceXml[] =
     "    <method name=\"GetAll\">\n"
     "      <arg name=\"interface_name\" type=\"s\" direction=\"in\"/>\n"
     "      <arg name=\"values\" type=\"a{sv}\" direction=\"out\"/>\n"
-    "      <annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"QVariantMap\"/>\n"
+    "      <annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"QVariantMap\"/>\n"
     "    </method>\n"
     "  </interface>\n";
 
@@ -197,7 +197,7 @@ static inline QDBusMessage interfaceNotFoundError(const QDBusMessage &msg, const
 static inline QDBusMessage
 propertyNotFoundError(const QDBusMessage &msg, const QString &interface_name, const QByteArray &property_name)
 {
-    return msg.createErrorReply(QDBusError::InvalidArgs,
+    return msg.createErrorReply(QDBusError::UnknownProperty,
                                 QString::fromLatin1("Property %1%2%3 was not found in object %4")
                                 .arg(interface_name,
                                      QString::fromLatin1(interface_name.isEmpty() ? "" : "."),
@@ -277,6 +277,7 @@ enum PropertyWriteResult {
     PropertyWriteSuccess = 0,
     PropertyNotFound,
     PropertyTypeMismatch,
+    PropertyReadOnly,
     PropertyWriteFailed
 };
 
@@ -289,6 +290,12 @@ static QDBusMessage propertyWriteReply(const QDBusMessage &msg, const QString &i
     case PropertyTypeMismatch:
         return msg.createErrorReply(QDBusError::InvalidArgs,
                                     QString::fromLatin1("Invalid arguments for writing to property %1%2%3")
+                                    .arg(interface_name,
+                                         QString::fromLatin1(interface_name.isEmpty() ? "" : "."),
+                                         QString::fromLatin1(property_name)));
+    case PropertyReadOnly:
+        return msg.createErrorReply(QDBusError::PropertyReadOnly,
+                                    QString::fromLatin1("Property %1%2%3 is read-only")
                                     .arg(interface_name,
                                          QString::fromLatin1(interface_name.isEmpty() ? "" : "."),
                                          QString::fromLatin1(property_name)));
@@ -314,6 +321,10 @@ static int writeProperty(QObject *obj, const QByteArray &property_name, QVariant
     }
 
     QMetaProperty mp = mo->property(pidx);
+
+    // check if this property is writable
+    if (!mp.isWritable())
+        return PropertyReadOnly;
 
     // check if this property is exported
     bool isScriptable = mp.isScriptable();

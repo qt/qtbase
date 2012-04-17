@@ -280,7 +280,7 @@ int QDBusInterfacePrivate::metacall(QMetaObject::Call c, int id, void **argv)
         } else if (mm.methodType() == QMetaMethod::Slot || mm.methodType() == QMetaMethod::Method) {
             // method call relay from Qt world to D-Bus world
             // get D-Bus equivalent signature
-            QString methodName = QLatin1String(metaObject->dbusNameForMethod(id));
+            QString methodName = QString::fromLatin1(mm.name());
             const int *inputTypes = metaObject->inputTypesForMethod(id);
             int inputTypesCount = *inputTypes;
 
@@ -300,7 +300,7 @@ int QDBusInterfacePrivate::metacall(QMetaObject::Call c, int id, void **argv)
                 const int *outputTypes = metaObject->outputTypesForMethod(id);
                 int outputTypesCount = *outputTypes++;
 
-                if (*mm.typeName()) {
+                if (mm.returnType() != QMetaType::UnknownType && mm.returnType() != QMetaType::Void) {
                     // this method has a return type
                     if (argv[0] && it != args.constEnd())
                         copyArgument(argv[0], *outputTypes++, *it);
@@ -316,7 +316,7 @@ int QDBusInterfacePrivate::metacall(QMetaObject::Call c, int id, void **argv)
             }
 
             // done
-            lastError = reply;
+            lastError = QDBusError(reply);
             return -1;
         }
     }

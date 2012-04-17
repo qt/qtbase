@@ -122,16 +122,7 @@ protected:
 };
 
 
-class QNetworkReplyPtr: public QSharedPointer<QNetworkReply>
-{
-public:
-    inline QNetworkReplyPtr(QNetworkReply *ptr = 0)
-        : QSharedPointer<QNetworkReply>(ptr)
-    { }
-
-    inline operator QNetworkReply *() const { return data(); }
-};
-
+typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 
 class DataReader: public QObject
 {
@@ -141,6 +132,10 @@ public:
     QByteArray data;
     QIODevice *device;
     bool accumulate;
+    DataReader(const QNetworkReplyPtr &dev, bool acc = true) : totalBytes(0), device(dev.data()), accumulate(acc)
+    {
+        connect(device, SIGNAL(readyRead()), SLOT(doRead()));
+    }
     DataReader(QIODevice *dev, bool acc = true) : totalBytes(0), device(dev), accumulate(acc)
     {
         connect(device, SIGNAL(readyRead()), SLOT(doRead()));
@@ -453,6 +448,11 @@ class tst_qnetworkreply : public QObject
     Q_OBJECT
 
     QNetworkAccessManager manager;
+
+public:
+    using QObject::connect;
+    bool connect(const QNetworkReplyPtr &sender, const char *signal, const QObject *receiver, const char *slot, Qt::ConnectionType ct = Qt::AutoConnection)
+    { return connect(sender.data(), signal, receiver, slot, ct); }
 private slots:
     void initTestCase();
     void httpLatency();
@@ -531,7 +531,7 @@ void tst_qnetworkreply::downloadPerformance()
     // and measures how fast it was.
     TimedSender sender(5000);
     QNetworkRequest request(QUrl(QStringLiteral("debugpipe://127.0.0.1:") + QString::number(sender.serverPort()) + QStringLiteral("/?bare=1")));
-    QNetworkReplyPtr reply = manager.get(request);
+    QNetworkReplyPtr reply(manager.get(request));
     DataReader reader(reply, false);
 
     QTime loopTime;
@@ -553,7 +553,7 @@ void tst_qnetworkreply::uploadPerformance()
 
 
       QNetworkRequest request(QUrl(QStringLiteral("debugpipe://127.0.0.1:") + QString::number(reader.serverPort()) + QStringLiteral("/?bare=1")));
-      QNetworkReplyPtr reply = manager.put(request, &generator);
+      QNetworkReplyPtr reply(manager.put(request, &generator));
       generator.start();
       connect(&reader, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
       QTimer::singleShot(5000, &generator, SLOT(stop()));
@@ -577,7 +577,7 @@ void tst_qnetworkreply::httpUploadPerformance()
       QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(reader.serverPort()) + "/?bare=1"));
       request.setHeader(QNetworkRequest::ContentLengthHeader,UploadSize);
 
-      QNetworkReplyPtr reply = manager.put(request, &generator);
+      QNetworkReplyPtr reply(manager.put(request, &generator));
 
       connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
@@ -645,10 +645,10 @@ void tst_qnetworkreply::httpDownloadPerformance()
     HttpDownloadPerformanceServer server(UploadSize, serverSendsContentLength, chunkedEncoding);
 
     QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/?bare=1"));
-    QNetworkReplyPtr reply = manager.get(request);
+    QNetworkReplyPtr reply(manager.get(request));
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
-    HttpDownloadPerformanceClient client(reply);
+    HttpDownloadPerformanceClient client(reply.data());
 
     QTime time;
     time.start();
@@ -734,9 +734,9 @@ void tst_qnetworkreply::httpDownloadPerformanceDownloadBuffer()
         request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 1024*1024*128); // 128 MB is max allowed
 
     QNetworkAccessManager manager;
-    QNetworkReplyPtr reply = manager.get(request);
+    QNetworkReplyPtr reply(manager.get(request));
 
-    HttpDownloadPerformanceClientDownloadBuffer client(reply, testType, UploadSize);
+    HttpDownloadPerformanceClientDownloadBuffer client(reply.data(), testType, UploadSize);
 
     QBENCHMARK_ONCE {
         QTestEventLoop::instance().enterLoop(40);

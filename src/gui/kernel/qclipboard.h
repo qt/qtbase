@@ -59,7 +59,7 @@ class Q_GUI_EXPORT QClipboard : public QObject
 {
     Q_OBJECT
 private:
-    QClipboard(QObject *parent);
+    explicit QClipboard(QObject *parent);
     ~QClipboard();
 
 public:

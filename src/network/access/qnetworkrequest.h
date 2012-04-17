@@ -87,6 +87,7 @@ public:
         MaximumDownloadBufferSizeAttribute, // internal
         DownloadBufferAttribute, // internal
         SynchronousRequestAttribute, // internal
+        BackgroundRequestAttribute,
 
         User = 1000,
         UserMax = 32767

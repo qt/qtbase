@@ -2655,16 +2655,6 @@ QTreeWidgetItem *QTreeWidget::takeTopLevelItem(int index)
 }
 
 /*!
-    \internal
-*/
-int QTreeWidget::indexOfTopLevelItem(QTreeWidgetItem *item)
-{
-    Q_D(QTreeWidget);
-    d->treeModel()->executePendingSort();
-    return d->treeModel()->rootItem->children.indexOf(item);
-}
-
-/*!
   Returns the index of the given top-level \a item, or -1 if the item
   cannot be found.
 
@@ -2897,26 +2887,6 @@ void QTreeWidget::sortItems(int column, Qt::SortOrder order)
     Q_D(QTreeWidget);
     header()->setSortIndicator(column, order);
     d->model->sort(column, order);
-}
-
-/*!
-    \internal
-
-    ### Qt 5: remove
-*/
-void QTreeWidget::setSortingEnabled(bool enable)
-{
-    QTreeView::setSortingEnabled(enable);
-}
-
-/*!
-    \internal
-
-    ### Qt 5: remove
-*/
-bool QTreeWidget::isSortingEnabled() const
-{
-    return QTreeView::isSortingEnabled();
 }
 
 /*!

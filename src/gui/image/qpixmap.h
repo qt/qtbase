@@ -67,10 +67,10 @@ public:
     QPixmap();
     explicit QPixmap(QPlatformPixmap *data);
     QPixmap(int w, int h);
-    QPixmap(const QSize &);
+    explicit QPixmap(const QSize &);
     QPixmap(const QString& fileName, const char *format = 0, Qt::ImageConversionFlags flags = Qt::AutoColor);
 #ifndef QT_NO_IMAGEFORMAT_XPM
-    QPixmap(const char * const xpm[]);
+    explicit QPixmap(const char * const xpm[]);
 #endif
     QPixmap(const QPixmap &);
     ~QPixmap();

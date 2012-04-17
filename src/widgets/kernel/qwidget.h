@@ -243,7 +243,7 @@ public:
     void setWindowModality(Qt::WindowModality windowModality);
 
     bool isEnabled() const;
-    bool isEnabledTo(QWidget*) const;
+    bool isEnabledTo(const QWidget *) const;
     bool isEnabledToTLW() const;
 
 public Q_SLOTS:
@@ -306,8 +306,8 @@ public:
     QPoint mapFromGlobal(const QPoint &) const;
     QPoint mapToParent(const QPoint &) const;
     QPoint mapFromParent(const QPoint &) const;
-    QPoint mapTo(QWidget *, const QPoint &) const;
-    QPoint mapFrom(QWidget *, const QPoint &) const;
+    QPoint mapTo(const QWidget *, const QPoint &) const;
+    QPoint mapFrom(const QWidget *, const QPoint &) const;
 
     QWidget *window() const;
     QWidget *nativeParentWidget() const;
@@ -505,8 +505,7 @@ public:
     bool restoreGeometry(const QByteArray &geometry);
     void adjustSize();
     bool isVisible() const;
-    bool isVisibleTo(QWidget*) const;
-    // ### Qt 5: bool isVisibleTo(_const_ QWidget *) const
+    bool isVisibleTo(const QWidget *) const;
     inline bool isHidden() const;
 
     bool isMinimized() const;

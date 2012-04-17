@@ -516,7 +516,7 @@ void QNetworkManagerEngine::activationFinished(QDBusPendingCallWatcher *watcher)
 {
     QMutexLocker locker(&mutex);
 
-    QDBusPendingReply<QDBusObjectPath> reply = *watcher;
+    QDBusPendingReply<QDBusObjectPath> reply(*watcher);
     if (!reply.isError()) {
         QDBusObjectPath result = reply.value();
 

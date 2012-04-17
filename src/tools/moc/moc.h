@@ -200,7 +200,7 @@ class Moc : public Parser
 public:
     Moc(Preprocessor &p)
         : preprocessor(p), noInclude(false), generatedCode(false),
-          mustIncludeQMetaTypeH(false), mustIncludeQPluginH(false)
+          mustIncludeQPluginH(false)
         {}
 
     QByteArray filename;
@@ -208,7 +208,6 @@ public:
     Preprocessor &preprocessor;
     bool noInclude;
     bool generatedCode;
-    bool mustIncludeQMetaTypeH;
     bool mustIncludeQPluginH;
     QByteArray includePath;
     QList<QByteArray> includeFiles;

@@ -102,12 +102,11 @@ public:
     // obsolete
     static QRgb getRgba(QRgb rgba = 0xffffffff, bool *ok = 0, QWidget *parent = 0);
 
-    // ### Qt 5: use QColor in signatures
     static int customCount();
-    static QRgb customColor(int index);
-    static void setCustomColor(int index, QRgb color);
-    static void setStandardColor(int index, QRgb color);
-
+    static QColor customColor(int index);
+    static void setCustomColor(int index, QColor color);
+    static QColor standardColor(int index);
+    static void setStandardColor(int index, QColor color);
 
 Q_SIGNALS:
     void currentColorChanged(const QColor &color);

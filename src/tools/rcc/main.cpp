@@ -47,6 +47,8 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
+#include <QAtomicInt>
+#include <QtGlobal>
 
 QT_BEGIN_NAMESPACE
 
@@ -254,9 +256,16 @@ int runRcc(int argc, char *argv[])
     return library.output(out, errorDevice) ? 0 : 1;
 }
 
+Q_CORE_EXPORT extern QBasicAtomicInt qt_qhash_seed; // from qhash.cpp
+
 QT_END_NAMESPACE
 
 int main(int argc, char *argv[])
 {
+    // rcc uses a QHash to store files in the resource system.
+    // we must force a certain hash order when testing or tst_rcc will fail, see QTBUG-25078
+    if (!qgetenv("QT_RCC_TEST").isEmpty() && !qt_qhash_seed.testAndSetRelaxed(-1, 0))
+        qFatal("Cannot force QHash seed for testing as requested");
+
     return QT_PREPEND_NAMESPACE(runRcc)(argc, argv);
 }
