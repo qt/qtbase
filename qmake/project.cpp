@@ -627,7 +627,12 @@ QStringList qmake_feature_paths(QMakeProperty *prop, bool host_build)
                                                     QLibraryInfo::EffectivePaths) +
                           mkspecs_concat + (*concat_it));
     feature_roots.removeDuplicates();
-    return feature_roots;
+
+    QStringList ret;
+    foreach (const QString &root, feature_roots)
+        if (QFileInfo(root).exists())
+            ret << root;
+    return ret;
 }
 
 QStringList qmake_mkspec_paths()
