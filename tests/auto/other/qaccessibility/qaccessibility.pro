@@ -12,8 +12,6 @@ wince*: {
 	DEPLOYMENT += accessneeded
 }
 
-mac: CONFIG += insignificant_test # QTBUG-22812
-
 win32 {
     !*g++: include(../../../../src/3rdparty/iaccessible2/iaccessible2.pri)
     LIBS += -loleacc -loleaut32 -lole32

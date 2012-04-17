@@ -1747,6 +1747,9 @@ void tst_QAccessibility::mdiSubWindowTest()
     const QRect widgetGeometry = testWindow->contentsRect();
     const QPoint globalWidgetPos = QPoint(globalPos.x() + widgetGeometry.x(),
                                           globalPos.y() + widgetGeometry.y());
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-22812", Abort);
+#endif
     QCOMPARE(childRect(interface), QRect(globalWidgetPos, widgetGeometry.size()));
 
     // childAt
