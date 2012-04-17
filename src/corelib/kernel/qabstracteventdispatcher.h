@@ -93,6 +93,8 @@ public:
     virtual bool unregisterTimers(QObject *object) = 0;
     virtual QList<TimerInfo> registeredTimers(QObject *object) const = 0;
 
+    virtual int remainingTime(int timerId) = 0;
+
     virtual void wakeUp() = 0;
     virtual void interrupt() = 0;
     virtual void flush() = 0;

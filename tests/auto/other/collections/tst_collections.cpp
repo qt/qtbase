@@ -78,9 +78,7 @@ void foo()
 
 #include <QtTest/QtTest>
 
-#ifndef QT_NO_STL
-#  include <algorithm>
-#endif
+#include <algorithm>
 
 #include "qalgorithms.h"
 #include "qbitarray.h"
@@ -136,14 +134,12 @@ private slots:
     void conversions();
     void javaStyleIterators();
     void constAndNonConstStlIterators();
-#ifndef QT_NO_STL
     void vector_stl_data();
     void vector_stl();
     void list_stl_data();
     void list_stl();
     void linkedlist_stl_data();
     void linkedlist_stl();
-#endif
     void q_init();
     void pointersize();
     void containerInstantiation();
@@ -228,7 +224,7 @@ void tst_Collections::list()
 	QVERIFY(list.size() == 6);
 	QVERIFY(list.end() - list.begin() == list.size());
 
-#if !defined(QT_NO_STL) && !defined(Q_CC_MSVC) && !defined(Q_CC_SUN)
+#if !defined(Q_CC_MSVC) && !defined(Q_CC_SUN)
 	QVERIFY(std::binary_search(list.begin(), list.end(), 2) == true);
 	QVERIFY(std::binary_search(list.begin(), list.end(), 9) == false);
 #endif
@@ -1038,10 +1034,8 @@ void tst_Collections::vector()
     v.prepend(1);
 
     v << 3 << 4 << 5 << 6;
-#if !defined(QT_NO_STL)
     QVERIFY(std::binary_search(v.begin(), v.end(), 2) == true);
     QVERIFY(std::binary_search(v.begin(), v.end(), 9) == false);
-#endif
     QVERIFY(qBinaryFind(v.begin(), v.end(), 2) == v.begin() + 1);
     QVERIFY(qLowerBound(v.begin(), v.end(), 2) == v.begin() + 1);
     QVERIFY(qUpperBound(v.begin(), v.end(), 2) == v.begin() + 2);
@@ -2870,7 +2864,6 @@ void tst_Collections::constAndNonConstStlIterators()
     testMapLikeStlIterators<QMultiHash<QString, QString> >();
 }
 
-#ifndef QT_NO_STL
 void tst_Collections::vector_stl_data()
 {
     QTest::addColumn<QStringList>("elements");
@@ -2953,7 +2946,6 @@ void tst_Collections::list_stl()
 
     QCOMPARE(QList<QString>::fromStdList(stdList), list);
 }
-#endif
 
 template <typename T>
 T qtInit(T * = 0)
@@ -3014,7 +3006,6 @@ void instantiateContainer()
     ContainerType container;
     const ContainerType constContainer(container);
 
-#ifndef QT_NO_STL
     typename ContainerType::const_iterator constIt;
     constIt = constContainer.begin();
     constIt = container.cbegin();
@@ -3024,7 +3015,7 @@ void instantiateContainer()
     constIt = constContainer.cend();
     container.constEnd();
     Q_UNUSED(constIt)
-#endif
+
     container.clear();
     container.contains(value);
     container.count();
@@ -3032,8 +3023,8 @@ void instantiateContainer()
     container.isEmpty();
     container.size();
 
-    container != constContainer;
-    container == constContainer;
+    Q_UNUSED((container != constContainer));
+    Q_UNUSED((container == constContainer));
     container = constContainer;
 }
 
@@ -3043,12 +3034,10 @@ void instantiateMutableIterationContainer()
     instantiateContainer<ContainerType, ValueType>();
     ContainerType container;
 
-#ifndef QT_NO_STL
     typename ContainerType::iterator it;
     it = container.begin();
     it = container.end();
     Q_UNUSED(it)
-#endif
 
     // QSet lacks count(T).
     const ValueType value = ValueType();
@@ -3097,8 +3086,8 @@ void instantiateAssociative()
     container.intersect(constContainer);
     container.subtract(constContainer);
 
-    container != constContainer;
-    container == constContainer;
+    Q_UNUSED((container != constContainer));
+    Q_UNUSED((container == constContainer));
     container & constContainer;
     container &= constContainer;
     container &= value;
@@ -3318,30 +3307,28 @@ class Q_DECL_ALIGN(4) Aligned4
     char i;
 public:
     Aligned4(int i = 0) : i(i) {}
-    bool checkAligned() const
-    {
-        return (quintptr(this) & 3) == 0;
-    }
+
+    enum { PreferredAlignment = 4 };
 
     inline bool operator==(const Aligned4 &other) const { return i == other.i; }
     inline bool operator<(const Aligned4 &other) const { return i < other.i; }
     friend inline int qHash(const Aligned4 &a) { return qHash(a.i); }
 };
+Q_STATIC_ASSERT(Q_ALIGNOF(Aligned4) % 4 == 0);
 
 class Q_DECL_ALIGN(128) Aligned128
 {
     char i;
 public:
     Aligned128(int i = 0) : i(i) {}
-    bool checkAligned() const
-    {
-        return (quintptr(this) & 127) == 0;
-    }
+
+    enum { PreferredAlignment = 128 };
 
     inline bool operator==(const Aligned128 &other) const { return i == other.i; }
     inline bool operator<(const Aligned128 &other) const { return i < other.i; }
     friend inline int qHash(const Aligned128 &a) { return qHash(a.i); }
 };
+Q_STATIC_ASSERT(Q_ALIGNOF(Aligned128) % 128 == 0);
 
 template<typename C>
 void testVectorAlignment()
@@ -3349,13 +3336,13 @@ void testVectorAlignment()
     typedef typename C::value_type Aligned;
     C container;
     container.append(Aligned());
-    QVERIFY(container[0].checkAligned());
+    QCOMPARE(quintptr(&container[0]) % Aligned::PreferredAlignment, quintptr(0));
 
     for (int i = 0; i < 200; ++i)
         container.append(Aligned());
     
     for (int i = 0; i < container.size(); ++i)
-        QVERIFY(container.at(i).checkAligned());
+        QCOMPARE(quintptr(&container.at(i)) % Aligned::PreferredAlignment, quintptr(0));
 }
 
 template<typename C>
@@ -3364,13 +3351,13 @@ void testContiguousCacheAlignment()
     typedef typename C::value_type Aligned;
     C container(150);
     container.append(Aligned());
-    QVERIFY(container[container.firstIndex()].checkAligned());
+    QCOMPARE(quintptr(&container[container.firstIndex()]) % Aligned::PreferredAlignment, quintptr(0));
 
     for (int i = 0; i < 200; ++i)
         container.append(Aligned());
 
     for (int i = container.firstIndex(); i < container.lastIndex(); ++i)
-        QVERIFY(container.at(i).checkAligned());
+        QCOMPARE(quintptr(&container.at(i)) % Aligned::PreferredAlignment, quintptr(0));
 }
 
 template<typename C>
@@ -3382,8 +3369,8 @@ void testAssociativeContainerAlignment()
     container.insert(Key(), Value());
 
     typename C::const_iterator it = container.constBegin();
-    QVERIFY(it.key().checkAligned());
-    QVERIFY(it.value().checkAligned());
+    QCOMPARE(quintptr(&it.key()) % Key::PreferredAlignment, quintptr(0));
+    QCOMPARE(quintptr(&it.value()) % Value::PreferredAlignment, quintptr(0));
 
     // add some more elements
     for (int i = 0; i < 200; ++i)
@@ -3391,8 +3378,8 @@ void testAssociativeContainerAlignment()
 
     it = container.constBegin();
     for ( ; it != container.constEnd(); ++it) {
-        QVERIFY(it.key().checkAligned());
-        QVERIFY(it.value().checkAligned());
+        QCOMPARE(quintptr(&it.key()) % Key::PreferredAlignment, quintptr(0));
+        QCOMPARE(quintptr(&it.value()) % Value::PreferredAlignment, quintptr(0));
     }
 }
 
@@ -3624,10 +3611,8 @@ struct IntOrString
     IntOrString(const QString &v) : val(v.toInt()) { }
     operator int() { return val; }
     operator QString() { return QString::number(val); }
-#ifndef QT_NO_STL
     operator std::string() { return QString::number(val).toStdString(); }
     IntOrString(const std::string &v) : val(QString::fromStdString(v).toInt()) { }
-#endif
 };
 
 template<class Container> void insert_remove_loop_impl()
@@ -3744,14 +3729,12 @@ void tst_Collections::insert_remove_loop()
     insert_remove_loop_impl<QVarLengthArray<int, 15> >();
     insert_remove_loop_impl<QVarLengthArray<QString, 15> >();
 
-#ifndef QT_NO_STL
     insert_remove_loop_impl<ExtList<std::string> >();
     insert_remove_loop_impl<QVector<std::string> >();
     insert_remove_loop_impl<QVarLengthArray<std::string> >();
     insert_remove_loop_impl<QVarLengthArray<std::string, 10> >();
     insert_remove_loop_impl<QVarLengthArray<std::string, 3> >();
     insert_remove_loop_impl<QVarLengthArray<std::string, 15> >();
-#endif
 }
 
 

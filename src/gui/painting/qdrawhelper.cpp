@@ -5827,66 +5827,7 @@ void qInitDrawhelperAsm()
         qScaleFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_sse2;
         qScaleFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_sse2;
 #endif
-#ifdef QT_HAVE_SSE
-    } else if (features & SSE) {
-//        qt_memfill32 = qt_memfill32_sse;
-        qDrawHelper[QImage::Format_RGB16].bitmapBlit = qt_bitmapblit16_sse;
-#ifdef QT_HAVE_3DNOW
-        if (features & MMX3DNOW) {
-            qt_memfill32 = qt_memfill32_sse3dnow;
-            qDrawHelper[QImage::Format_RGB16].bitmapBlit = qt_bitmapblit16_sse3dnow;
-        }
-#endif
-#endif // SSE
     }
-#ifdef QT_HAVE_MMX
-    if (features & MMX) {
-        functionForModeAsm = qt_functionForMode_MMX;
-
-        functionForModeSolidAsm = qt_functionForModeSolid_MMX;
-        qDrawHelper[QImage::Format_ARGB32_Premultiplied].blendColor = qt_blend_color_argb_mmx;
-#ifdef QT_HAVE_3DNOW
-        if (features & MMX3DNOW) {
-            functionForModeAsm = qt_functionForMode_MMX3DNOW;
-            functionForModeSolidAsm = qt_functionForModeSolid_MMX3DNOW;
-            qDrawHelper[QImage::Format_ARGB32_Premultiplied].blendColor = qt_blend_color_argb_mmx3dnow;
-        }
-#endif // 3DNOW
-
-        extern void qt_blend_rgb32_on_rgb32_mmx(uchar *destPixels, int dbpl,
-                                                const uchar *srcPixels, int sbpl,
-                                                int w, int h,
-                                                int const_alpha);
-        extern void qt_blend_argb32_on_argb32_mmx(uchar *destPixels, int dbpl,
-                                                  const uchar *srcPixels, int sbpl,
-                                                  int w, int h,
-                                                  int const_alpha);
-
-        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_mmx;
-        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_mmx;
-        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_mmx;
-        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_mmx;
-
-    }
-#endif // MMX
-
-#ifdef QT_HAVE_SSE
-    if (features & SSE) {
-        extern void qt_blend_rgb32_on_rgb32_sse(uchar *destPixels, int dbpl,
-                                                const uchar *srcPixels, int sbpl,
-                                                int w, int h,
-                                                int const_alpha);
-        extern void qt_blend_argb32_on_argb32_sse(uchar *destPixels, int dbpl,
-                                                  const uchar *srcPixels, int sbpl,
-                                                  int w, int h,
-                                                  int const_alpha);
-
-        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse;
-        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse;
-        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse;
-        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse;
-    }
-#endif // SSE
 
 #ifdef QT_HAVE_SSE2
     if (features & SSE2) {
@@ -5924,44 +5865,12 @@ void qInitDrawhelperAsm()
 
 #endif // SSE2
 
-#ifdef QT_HAVE_SSE
-    if (features & SSE) {
-        functionForModeAsm = qt_functionForMode_SSE;
-        functionForModeSolidAsm = qt_functionForModeSolid_SSE;
-        qDrawHelper[QImage::Format_ARGB32_Premultiplied].blendColor = qt_blend_color_argb_sse;
-#ifdef QT_HAVE_3DNOW
-        if (features & MMX3DNOW) {
-            functionForModeAsm = qt_functionForMode_SSE3DNOW;
-            functionForModeSolidAsm = qt_functionForModeSolid_SSE3DNOW;
-            qDrawHelper[QImage::Format_ARGB32_Premultiplied].blendColor = qt_blend_color_argb_sse3dnow;
-        }
-#endif // 3DNOW
-
-
 #ifdef QT_HAVE_SSE2
-        if (features & SSE2) {
-            extern void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels,
-                                                              const uint *srcPixels,
-                                                              int length,
-                                                              uint const_alpha);
-            extern void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha);
-            extern void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uint const_alpha);
-            extern void QT_FASTCALL comp_func_Source_sse2(uint *dst, const uint *src, int length, uint const_alpha);
-
-            functionForModeAsm[0] = comp_func_SourceOver_sse2;
-            functionForModeAsm[QPainter::CompositionMode_Source] = comp_func_Source_sse2;
-            functionForModeAsm[QPainter::CompositionMode_Plus] = comp_func_Plus_sse2;
-            functionForModeSolidAsm[0] = comp_func_solid_SourceOver_sse2;
-        }
-#endif
-    }
-#elif defined(QT_HAVE_SSE2)
-    // this is the special case when SSE2 is usable but MMX/SSE is not usable (e.g.: Windows x64 + visual studio)
     if (features & SSE2) {
-        functionForModeAsm = qt_functionForMode_onlySSE2;
-        functionForModeSolidAsm = qt_functionForModeSolid_onlySSE2;
+        functionForModeAsm = qt_functionForMode_SSE2;
+        functionForModeSolidAsm = qt_functionForModeSolid_SSE2;
     }
-#endif
+#endif // SSE2
 
 #ifdef QT_HAVE_IWMMXT
     if (features & IWMMXT) {

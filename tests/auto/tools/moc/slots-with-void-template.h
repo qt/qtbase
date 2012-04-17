@@ -51,9 +51,11 @@ class SlotsWithVoidTemplateTest : public QObject
     Q_OBJECT
 public slots:
     inline void dummySlot() {}
+    inline void dummySlot2(void) {}
     inline void anotherSlot(const TestTemplate<void> &) {}
     inline TestTemplate<void> mySlot() { return TestTemplate<void>(); }
 signals:
     void mySignal(const TestTemplate<void> &);
     void myVoidSignal();
+    void myVoidSignal2(void);
 };

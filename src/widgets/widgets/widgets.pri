@@ -73,7 +73,6 @@ HEADERS += \
         widgets/qwidgetresizehandler_p.h \
         widgets/qfocusframe.h \
         widgets/qscrollarea.h \
-        widgets/qworkspace.h \
         widgets/qwidgetanimator_p.h \
         widgets/qwidgettextcontrol_p.h \
         widgets/qwidgettextcontrol_p_p.h \
@@ -135,7 +134,6 @@ SOURCES += \
         widgets/qwidgetresizehandler.cpp \
         widgets/qfocusframe.cpp \
         widgets/qscrollarea.cpp \
-        widgets/qworkspace.cpp \
         widgets/qwidgetanimator.cpp \
         widgets/qwidgettextcontrol.cpp \
         widgets/qwidgetlinecontrol.cpp \

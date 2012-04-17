@@ -255,9 +255,6 @@ void tst_QLabel::setTextFormat()
     testWidget->setTextFormat( Qt::RichText );
     QVERIFY( testWidget->textFormat() == Qt::RichText );
 
-    testWidget->setTextFormat( Qt::LogText );
-    QVERIFY( testWidget->textFormat() == Qt::LogText );
-
     testWidget->setTextFormat( Qt::AutoText );
     QVERIFY( testWidget->textFormat() == Qt::AutoText );
 }

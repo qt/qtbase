@@ -41,6 +41,7 @@
 
 #include <qstringlist.h>
 #include <qset.h>
+#include <qregularexpression.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -212,9 +213,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QStringList::sort()
+    \fn void QStringList::sort(Qt::CaseSensitivity cs)
 
-    Sorts the list of strings in ascending order (case sensitively).
+    Sorts the list of strings in ascending order.
+    If \a cs is \l Qt::CaseSensitive (the default), the string comparison
+    is case sensitive; otherwise the comparison is case insensitive.
 
     Sorting is performed using Qt's qSort() algorithm,
     which operates in \l{linear-logarithmic time}, i.e. O(\e{n} log \e{n}).
@@ -228,9 +231,18 @@ QT_BEGIN_NAMESPACE
 
     \sa qSort()
 */
-void QtPrivate::QStringList_sort(QStringList *that)
+
+static inline bool caseInsensitiveLessThan(const QString &s1, const QString &s2)
 {
-    qSort(*that);
+   return s1.compare(s2, Qt::CaseInsensitive) < 0;
+}
+
+void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
+{
+    if (cs == Qt::CaseSensitive)
+        qSort(that->begin(), that->end());
+    else
+        qSort(that->begin(), that->end(), caseInsensitiveLessThan);
 }
 
 
@@ -304,6 +316,28 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegExp
 }
 #endif
 
+#ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGEXP
+/*!
+    \fn QStringList QStringList::filter(const QRegularExpression &re) const
+    \overload
+    \since 5.0
+
+    Returns a list of all the strings that match the regular
+    expression \a re.
+*/
+QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegularExpression &re)
+{
+    QStringList res;
+    for (int i = 0; i < that->size(); ++i) {
+        if (that->at(i).contains(re))
+            res << that->at(i);
+    }
+    return res;
+}
+#endif // QT_NO_REGEXP
+#endif // QT_BOOTSTRAPPED
+
 /*!
     \fn QStringList &QStringList::replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs)
 
@@ -356,6 +390,39 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegExp &r
         (*that)[i].replace(rx, after);
 }
 #endif
+
+#ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGEXP
+/*!
+    \fn QStringList &QStringList::replaceInStrings(const QRegularExpression &re, const QString &after)
+    \overload
+    \since 5.0
+
+    Replaces every occurrence of the regular expression \a re, in each of the
+    string lists's strings, with \a after. Returns a reference to the string
+    list.
+
+    For example:
+
+    \snippet doc/src/snippets/qstringlist/main.cpp 5
+    \snippet doc/src/snippets/qstringlist/main.cpp 16
+
+    For regular expressions that contain capturing groups,
+    occurrences of \b{\\1}, \b{\\2}, ..., in \a after are
+    replaced with the string captured by the corresponding capturing group.
+
+    For example:
+
+    \snippet doc/src/snippets/qstringlist/main.cpp 5
+    \snippet doc/src/snippets/qstringlist/main.cpp 17
+*/
+void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegularExpression &re, const QString &after)
+{
+    for (int i = 0; i < that->size(); ++i)
+        (*that)[i].replace(re, after);
+}
+#endif // QT_NO_REGEXP
+#endif // QT_BOOTSTRAPPED
 
 /*!
     \fn QString QStringList::join(const QString &separator) const
@@ -541,6 +608,67 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, QRegExp &rx, int
     return lastIndexOfMutating(that, rx, from);
 }
 #endif
+
+#ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGEXP
+/*!
+    \fn int QStringList::indexOf(const QRegularExpression &re, int from) const
+    \overload
+    \since 5.0
+
+    Returns the index position of the first match of \a re in
+    the list, searching forward from index position \a from. Returns
+    -1 if no item matched.
+
+    \sa lastIndexOf()
+*/
+int QtPrivate::QStringList_indexOf(const QStringList *that, const QRegularExpression &re, int from)
+{
+    if (from < 0)
+        from = qMax(from + that->size(), 0);
+
+    QString exactPattern = QLatin1String("\\A(?:") + re.pattern() + QLatin1String(")\\z");
+    QRegularExpression exactRe(exactPattern, re.patternOptions());
+
+    for (int i = from; i < that->size(); ++i) {
+        QRegularExpressionMatch m = exactRe.match(that->at(i));
+        if (m.hasMatch())
+            return i;
+    }
+    return -1;
+}
+
+/*!
+    \fn int QStringList::lastIndexOf(const QRegularExpression &re, int from) const
+    \overload
+    \since 5.0
+
+    Returns the index position of the last exact match of \a re in
+    the list, searching backward from index position \a from. If \a
+    from is -1 (the default), the search starts at the last item.
+    Returns -1 if no item matched.
+
+    \sa indexOf()
+*/
+int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegularExpression &re, int from)
+{
+    if (from < 0)
+        from += that->size();
+    else if (from >= that->size())
+        from = that->size() - 1;
+
+    QString exactPattern = QLatin1String("\\A(?:") + re.pattern() + QLatin1String(")\\z");
+    QRegularExpression exactRe(exactPattern, re.patternOptions());
+
+    for (int i = from; i >= 0; --i) {
+        QRegularExpressionMatch m = exactRe.match(that->at(i));
+        if (m.hasMatch())
+            return i;
+    }
+    return -1;
+}
+#endif // QT_NO_REGEXP
+#endif // QT_BOOTSTRAPPED
 
 /*!
     \fn int QStringList::indexOf(const QString &value, int from = 0) const

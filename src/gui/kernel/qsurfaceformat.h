@@ -75,7 +75,7 @@ public:
     };
 
     QSurfaceFormat();
-    QSurfaceFormat(FormatOptions options);
+    /*implicit*/ QSurfaceFormat(FormatOptions options);
     QSurfaceFormat(const QSurfaceFormat &other);
     QSurfaceFormat &operator=(const QSurfaceFormat &other);
     ~QSurfaceFormat();

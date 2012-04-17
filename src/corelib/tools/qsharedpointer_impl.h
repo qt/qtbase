@@ -60,6 +60,7 @@ QT_END_HEADER
 #include <new>
 #include <QtCore/qatomic.h>
 #include <QtCore/qobject.h>    // for qobject_cast
+#include <QtCore/qhash.h>    // for qHash
 
 QT_BEGIN_HEADER
 
@@ -105,8 +106,8 @@ namespace QtSharedPointer {
     template <class X, class Y> QSharedPointer<X> copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
 
     // used in debug mode to verify the reuse of pointers
-    Q_CORE_EXPORT void internalSafetyCheckAdd2(const void *, const volatile void *);
-    Q_CORE_EXPORT void internalSafetyCheckRemove2(const void *);
+    Q_CORE_EXPORT void internalSafetyCheckAdd(const void *, const volatile void *);
+    Q_CORE_EXPORT void internalSafetyCheckRemove(const void *);
 
     template <class T, typename Klass, typename RetVal>
     inline void executeDeleter(T *t, RetVal (Klass:: *memberDeleter)())
@@ -247,7 +248,7 @@ namespace QtSharedPointer {
         }
         static void safetyCheckDeleter(ExternalRefCountData *self)
         {
-            internalSafetyCheckRemove2(self);
+            internalSafetyCheckRemove(self);
             deleter(self);
         }
 
@@ -290,7 +291,7 @@ namespace QtSharedPointer {
         }
         static void safetyCheckDeleter(ExternalRefCountData *self)
         {
-            internalSafetyCheckRemove2(self);
+            internalSafetyCheckRemove(self);
             deleter(self);
         }
 
@@ -374,7 +375,7 @@ namespace QtSharedPointer {
             Basic<T>::internalConstruct(ptr);
             if (ptr) d->setQObjectShared(ptr, true);
 #ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-            if (ptr) internalSafetyCheckAdd2(d, ptr);
+            if (ptr) internalSafetyCheckAdd(d, ptr);
 #endif
         }
 
@@ -509,6 +510,13 @@ public:
 
     inline void swap(QSharedPointer &other)
     { QSharedPointer<T>::internalSwap(other); }
+
+    inline void reset() { clear(); }
+    inline void reset(T *t)
+    { QSharedPointer copy(t); swap(copy); }
+    template <typename Deleter>
+    inline void reset(T *t, Deleter deleter)
+    { QSharedPointer copy(t, deleter); swap(copy); }
 
     template <class X>
     QSharedPointer<X> staticCast() const
@@ -764,11 +772,10 @@ Q_INLINE_TEMPLATE bool operator<(T *ptr1, const QSharedPointer<X> &ptr2)
 //
 // qHash
 //
-template <class T> inline uint qHash(const T *key); // defined in qhash.h
 template <class T>
-Q_INLINE_TEMPLATE uint qHash(const QSharedPointer<T> &ptr)
+Q_INLINE_TEMPLATE uint qHash(const QSharedPointer<T> &ptr, uint seed = 0)
 {
-    return QT_PREPEND_NAMESPACE(qHash)<T>(ptr.data());
+    return QT_PREPEND_NAMESPACE(qHash)(ptr.data(), seed);
 }
 
 
@@ -784,7 +791,6 @@ inline void qSwap(QSharedPointer<T> &p1, QSharedPointer<T> &p2)
     p1.swap(p2);
 }
 
-#ifndef QT_NO_STL
 QT_END_NAMESPACE
 namespace std {
     template <class T>
@@ -792,7 +798,6 @@ namespace std {
     { p1.swap(p2); }
 }
 QT_BEGIN_NAMESPACE
-#endif
 
 namespace QtSharedPointer {
 // helper functions:

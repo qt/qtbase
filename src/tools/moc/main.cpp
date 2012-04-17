@@ -143,7 +143,7 @@ QByteArray composePreprocessorOutput(const Symbols &symbols) {
         const int padding = sym.lineNum - lineNum;
         if (padding > 0) {
             output.resize(output.size() + padding);
-            qMemSet(output.data() + output.size() - padding, '\n', padding);
+            memset(output.data() + output.size() - padding, '\n', padding);
             lineNum = sym.lineNum;
         }
 

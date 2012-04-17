@@ -169,17 +169,13 @@ template<> inline char *toString(const QVariant &v)
     return qstrdup(vstring.constData());
 }
 
-#ifndef QTEST_NO_SPECIALIZATIONS
 template<>
-#endif
 inline bool qCompare(QString const &t1, QLatin1String const &t2, const char *actual,
                     const char *expected, const char *file, int line)
 {
     return qCompare<QString>(t1, QString(t2), actual, expected, file, line);
 }
-#ifndef QTEST_NO_SPECIALIZATIONS
 template<>
-#endif
 inline bool qCompare(QLatin1String const &t1, QString const &t2, const char *actual,
                     const char *expected, const char *file, int line)
 {

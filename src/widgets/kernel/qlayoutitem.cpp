@@ -414,17 +414,6 @@ int QLayoutItem::heightForWidth(int /* w */) const
 */
 QSizePolicy::ControlTypes QLayoutItem::controlTypes() const
 {
-    // ### Qt 5: This function should probably be virtual instead
-    if (const QWidget *widget = const_cast<QLayoutItem*>(this)->widget()) {
-        return widget->sizePolicy().controlType();
-    } else if (const QLayout *layout = const_cast<QLayoutItem*>(this)->layout()) {
-        if (layout->count() == 0)
-            return QSizePolicy::DefaultType;
-        QSizePolicy::ControlTypes types;
-        for (int i = layout->count() - 1; i >= 0; --i)
-            types |= layout->itemAt(i)->controlTypes();
-        return types;
-    }
     return QSizePolicy::DefaultType;
 }
 
@@ -686,6 +675,11 @@ bool QSpacerItem::isEmpty() const
 bool QWidgetItem::isEmpty() const
 {
     return wid->isHidden() || wid->isWindow();
+}
+
+QSizePolicy::ControlTypes QWidgetItem::controlTypes() const
+{
+    return wid->sizePolicy().controlType();
 }
 
 /*!

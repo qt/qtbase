@@ -62,6 +62,7 @@ typedef SubArray MacroName;
 typedef QHash<MacroName, Macro> Macros;
 typedef QVector<MacroName> MacroSafeSet;
 
+class QIODevice;
 
 class Preprocessor : public Parser
 {
@@ -80,6 +81,7 @@ public:
     QSet<QByteArray> preprocessedIncludes;
     Macros macros;
     Symbols preprocessed(const QByteArray &filename, FILE *file);
+    Symbols preprocessed(const QByteArray &filename, QIODevice *device);
 
 
     void skipUntilEndif();

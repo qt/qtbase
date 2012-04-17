@@ -50,11 +50,11 @@
 #include "../qdbusmarshall/common.h"
 #include "myobject.h"
 
-#define TEST_INTERFACE_NAME "com.trolltech.QtDBus.MyObject"
+#define TEST_INTERFACE_NAME "org.qtproject.QtDBus.MyObject"
 #define TEST_SIGNAL_NAME "somethingHappened"
 
-static const char serviceName[] = "com.trolltech.autotests.qmyserver";
-static const char objectPath[] = "/com/trolltech/qmyserver";
+static const char serviceName[] = "org.qtproject.autotests.qmyserver";
+static const char objectPath[] = "/org/qtproject/qmyserver";
 static const char *interfaceName = serviceName;
 
 int MyObject::callCount = 0;
@@ -63,9 +63,9 @@ QVariantList MyObject::callArgs;
 class MyObjectUnknownType: public QObject
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "com.trolltech.QtDBus.MyObject")
+    Q_CLASSINFO("D-Bus Interface", "org.qtproject.QtDBus.MyObject")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"com.trolltech.QtDBus.MyObjectUnknownTypes\" >\n"
+"  <interface name=\"org.qtproject.QtDBus.MyObjectUnknownTypes\" >\n"
 "    <property access=\"readwrite\" type=\"~\" name=\"prop1\" />\n"
 "    <signal name=\"somethingHappened\" >\n"
 "      <arg direction=\"out\" type=\"~\" />\n"
@@ -381,7 +381,7 @@ void tst_QDBusInterface::introspectUnknownTypes()
     MyObjectUnknownType obj;
     con.registerObject("/unknownTypes", &obj, QDBusConnection::ExportAllContents);
     QDBusInterface iface(QDBusConnection::sessionBus().baseService(), QLatin1String("/unknownTypes"),
-                         "com.trolltech.QtDBus.MyObjectUnknownTypes");
+                         "org.qtproject.QtDBus.MyObjectUnknownTypes");
 
     const QMetaObject *mo = iface.metaObject();
     QVERIFY(mo->indexOfMethod("regularMethod()") != -1); // this is the control
@@ -414,7 +414,7 @@ public:
         if (path == "/some/path/superNode")
             return "zitroneneis";
         if (path == "/some/path/superNode/foo")
-            return  "  <interface name=\"com.trolltech.QtDBus.VirtualObject\">\n"
+            return  "  <interface name=\"org.qtproject.QtDBus.VirtualObject\">\n"
                     "    <method name=\"klingeling\" />\n"
                     "  </interface>\n" ;
         return QString();
@@ -460,7 +460,7 @@ void tst_QDBusInterface::introspectVirtualObject()
     QDBusMessage message2 = QDBusMessage::createMethodCall(con.baseService(), path + "/foo", "org.freedesktop.DBus.Introspectable", "Introspect");
     QDBusMessage reply2 = con.call(message2, QDBus::Block, 5000);
     QVERIFY(reply2.arguments().at(0).toString().contains(
-        QRegExp("<node>.*<interface name=\"com.trolltech.QtDBus.VirtualObject\">"
+        QRegExp("<node>.*<interface name=\"org.qtproject.QtDBus.VirtualObject\">"
                 ".*<method name=\"klingeling\" />\n"
                 ".*</interface>.*<interface name=") ));
 }

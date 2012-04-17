@@ -335,7 +335,7 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
     const int verticalCenter = (btnTop + btnHeight / 2) - 1;
 
     const QString text = wizard->window()->windowTitle();
-    const QFont font = QApplication::font("QWorkspaceTitleBar");
+    const QFont font = QApplication::font("QMdiSubWindowTitleBar");
     const QFontMetrics fontMetrics(font);
     const QRect brect = fontMetrics.boundingRect(text);
     int textHeight = brect.height();

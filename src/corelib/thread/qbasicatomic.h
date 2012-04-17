@@ -80,10 +80,8 @@
 #  include "QtCore/qatomic_sh4a.h"
 #elif defined(Q_PROCESSOR_SPARC)
 #  include "QtCore/qatomic_sparc.h"
-#elif defined(Q_PROCESSOR_X86_32)
-#  include <QtCore/qatomic_i386.h>
-#elif defined(Q_PROCESSOR_X86_64)
-#  include <QtCore/qatomic_x86_64.h>
+#elif defined(Q_PROCESSOR_X86)
+#  include <QtCore/qatomic_x86.h>
 
 // Fallback compiler dependent implementation
 #elif defined(Q_COMPILER_ATOMICS) && defined(Q_COMPILER_CONSTEXPR)

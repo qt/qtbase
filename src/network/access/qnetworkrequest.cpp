@@ -237,6 +237,14 @@ QT_BEGIN_NAMESPACE
 
     \omitvalue SynchronousRequestAttribute
 
+    \value BackgroundRequestAttribute
+        Type: QVariant::Bool (default: false)
+        Indicates that this is a background transfer, rather than a user initiated
+        transfer. Depending on the platform, background transfers may be subject
+        to different policies.
+        The QNetworkSession ConnectInBackground property will be set according to
+        this attribute.
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default

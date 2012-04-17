@@ -1384,7 +1384,6 @@ void tst_QGraphicsWidget::setAttribute_data()
     QTest::newRow("WA_RightToLeft") << Qt::WA_RightToLeft << true;
     QTest::newRow("WA_SetStyle") << Qt::WA_SetStyle << true;
     QTest::newRow("WA_Resized") << Qt::WA_Resized << true;
-    QTest::newRow("unsupported") << Qt::WA_PaintOutsidePaintEvent << false;
 }
 
 // void setAttribute(Qt::WidgetAttribute attribute, bool on = true) public
@@ -1393,8 +1392,6 @@ void tst_QGraphicsWidget::setAttribute()
     QFETCH(Qt::WidgetAttribute, attribute);
     QFETCH(bool, supported);
     SubQGraphicsWidget widget;
-    if (attribute == Qt::WA_PaintOutsidePaintEvent)
-        QTest::ignoreMessage(QtWarningMsg, "QGraphicsWidget::setAttribute: unsupported attribute 13");
     widget.setAttribute(attribute);
     QCOMPARE(widget.testAttribute(attribute), supported);
 }

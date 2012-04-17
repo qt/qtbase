@@ -400,7 +400,7 @@ bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringLi
         if (initial_files.at(i)[0] == '.') {
             QString hiddenFile = QDir::toNativeSeparators(file.fileName());
             wchar_t nativeHiddenFile[MAX_PATH];
-            qMemSet(nativeHiddenFile, 0, sizeof(nativeHiddenFile));
+            memset(nativeHiddenFile, 0, sizeof(nativeHiddenFile));
             hiddenFile.toWCharArray(nativeHiddenFile);
             DWORD currentAttributes = ::GetFileAttributes(nativeHiddenFile);
             if (currentAttributes == 0xFFFFFFFF) {
@@ -863,7 +863,7 @@ void tst_QFileSystemModel::sort()
     QTest::qWait(500);
     QModelIndex parent = myModel->index(dirPath, 0);
     QList<QString> expectedOrder;
-    expectedOrder << tempFile2.fileName() << tempFile.fileName() << dirPath + QChar('/') + "." << dirPath + QChar('/') + "..";
+    expectedOrder << tempFile2.fileName() << tempFile.fileName() << dirPath + QChar('/') + ".." << dirPath + QChar('/') + ".";
     //File dialog Mode means sub trees are not sorted, only the current root
     if (fileDialogMode) {
        // FIXME: we were only able to disableRecursiveSort in developer builds, so we can only

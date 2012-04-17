@@ -112,7 +112,7 @@ static void initializePadding(QImage *image)
     if (paddingBytes == 0)
         return;
     for (int y = 0; y < image->height(); ++y) {
-        qMemSet(image->scanLine(y) + effectiveBytesPerLine, 0, paddingBytes);
+        memset(image->scanLine(y) + effectiveBytesPerLine, 0, paddingBytes);
     }
 }
 
@@ -454,7 +454,7 @@ void tst_QImageWriter::saveWithNoFormat()
     SKIP_IF_UNSUPPORTED(format);
 
     QImage niceImage(64, 64, QImage::Format_ARGB32);
-    qMemSet(niceImage.bits(), 0, niceImage.byteCount());
+    memset(niceImage.bits(), 0, niceImage.byteCount());
 
     QImageWriter writer(fileName /* , 0 - no format! */);
     if (error != 0) {

@@ -95,8 +95,8 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
 
 public:
 
-    QWindow(QScreen *screen = 0);
-    QWindow(QWindow *parent);
+    explicit QWindow(QScreen *screen = 0);
+    explicit QWindow(QWindow *parent);
     virtual ~QWindow();
 
     void setSurfaceType(SurfaceType surfaceType);
@@ -182,11 +182,6 @@ public:
 
     inline QSize size() const { return geometry().size(); }
     inline QPoint pos() const { return geometry().topLeft(); }
-
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED inline void move(const QPoint &pt) { setPos(pt); }
-    QT_DEPRECATED inline void move(int posx, int posy) { setPos(posx, posy); }
-#endif
 
     inline void setPos(const QPoint &pt) { setGeometry(QRect(pt, size())); }
     inline void setPos(int posx, int posy) { setPos(QPoint(posx, posy)); }

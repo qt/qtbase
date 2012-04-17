@@ -71,67 +71,6 @@ class QPaintEngineExPrivate;
 class QStaticTextItem;
 struct StrokeHandler;
 
-struct QIntRect {
-    int x1, y1, x2, y2;
-    inline void set(const QRect &r) {
-        x1 = r.x();
-        y1 = r.y();
-        x2 = r.right() + 1;
-        y2 = r.bottom() + 1;
-        // We will assume normalized for later...
-        Q_ASSERT(x2 >= x1);
-        Q_ASSERT(y2 >= y1);
-    }
-};
-
-class QRectVectorPath : public QVectorPath {
-public:
-    inline void set(const QRect &r) {
-        qreal left = r.x();
-        qreal right = r.x() + r.width();
-        qreal top = r.y();
-        qreal bottom = r.y() + r.height();
-        pts[0] = left;
-        pts[1] = top;
-        pts[2] = right;
-        pts[3] = top;
-        pts[4] = right;
-        pts[5] = bottom;
-        pts[6] = left;
-        pts[7] = bottom;
-    }
-
-    inline void set(const QRectF &r) {
-        qreal left = r.x();
-        qreal right = r.x() + r.width();
-        qreal top = r.y();
-        qreal bottom = r.y() + r.height();
-        pts[0] = left;
-        pts[1] = top;
-        pts[2] = right;
-        pts[3] = top;
-        pts[4] = right;
-        pts[5] = bottom;
-        pts[6] = left;
-        pts[7] = bottom;
-    }
-    inline QRectVectorPath(const QRect &r)
-        : QVectorPath(pts, 4, 0, QVectorPath::RectangleHint | QVectorPath::ImplicitClose)
-    {
-        set(r);
-    }
-    inline QRectVectorPath(const QRectF &r)
-        : QVectorPath(pts, 4, 0, QVectorPath::RectangleHint | QVectorPath::ImplicitClose)
-    {
-        set(r);
-    }
-    inline QRectVectorPath()
-        : QVectorPath(pts, 4, 0, QVectorPath::RectangleHint | QVectorPath::ImplicitClose)
-    { }
-
-    qreal pts[8];
-};
-
 #ifndef QT_NO_DEBUG_STREAM
 QDebug Q_GUI_EXPORT &operator<<(QDebug &, const QVectorPath &path);
 #endif
@@ -250,16 +189,6 @@ public:
 
     QRect exDeviceRect;
 };
-
-inline uint QVectorPath::polygonFlags(QPaintEngine::PolygonDrawMode mode) {
-    switch (mode) {
-    case QPaintEngine::ConvexMode: return ConvexPolygonHint | ImplicitClose;
-    case QPaintEngine::OddEvenMode: return PolygonHint | OddEvenFill | ImplicitClose;
-    case QPaintEngine::WindingMode: return PolygonHint | WindingFill | ImplicitClose;
-    case QPaintEngine::PolylineMode: return PolygonHint;
-    default: return 0;
-    }
-}
 
 QT_END_NAMESPACE
 

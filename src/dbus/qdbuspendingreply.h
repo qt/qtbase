@@ -132,9 +132,9 @@ public:
     inline QDBusPendingReply(const QDBusPendingReply &other)
         : QDBusPendingReplyData(other)
     { }
-    inline QDBusPendingReply(const QDBusPendingCall &call)
+    inline /*implicit*/ QDBusPendingReply(const QDBusPendingCall &call) // required by qdbusxml2cpp-generated code
     { *this = call; }
-    inline QDBusPendingReply(const QDBusMessage &message)
+    inline /*implicit*/ QDBusPendingReply(const QDBusMessage &message)
     { *this = message; }
     inline QDBusPendingReply &operator=(const QDBusPendingReply &other)
     { assign(other); return *this; }

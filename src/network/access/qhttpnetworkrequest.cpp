@@ -116,19 +116,18 @@ QByteArray QHttpNetworkRequestPrivate::methodName() const
 
 QByteArray QHttpNetworkRequestPrivate::uri(bool throughProxy) const
 {
-    QUrl::FormattingOptions format(QUrl::RemoveFragment);
+    QUrl::FormattingOptions format(QUrl::RemoveFragment | QUrl::RemoveUserInfo | QUrl::FullyEncoded);
 
     // for POST, query data is send as content
     if (operation == QHttpNetworkRequest::Post && !uploadByteDevice)
         format |= QUrl::RemoveQuery;
     // for requests through proxy, the Request-URI contains full url
-    if (throughProxy)
-        format |= QUrl::RemoveUserInfo;
-    else
+    if (!throughProxy)
         format |= QUrl::RemoveScheme | QUrl::RemoveAuthority;
-    QByteArray uri = url.toEncoded(format);
-    if (uri.isEmpty() || (throughProxy && url.path().isEmpty()))
-        uri += '/';
+    QUrl copy = url;
+    if (copy.path().isEmpty())
+        copy.setPath(QStringLiteral("/"));
+    QByteArray uri = copy.toEncoded(format);
     return uri;
 }
 
@@ -163,7 +162,7 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
             ba += "Content-Type: application/octet-stream\r\n";
         }
         if (!request.d->uploadByteDevice && request.d->url.hasQuery()) {
-            QByteArray query = request.d->url.encodedQuery();
+            QByteArray query = request.d->url.query(QUrl::FullyEncoded).toLatin1();
             ba += "Content-Length: ";
             ba += QByteArray::number(query.size());
             ba += "\r\n\r\n";

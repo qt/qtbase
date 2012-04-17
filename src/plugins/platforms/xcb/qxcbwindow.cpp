@@ -162,6 +162,8 @@ void QXcbWindow::create()
 {
     destroy();
 
+    m_deferredExpose = false;
+    m_configureNotifyPending = true;
     m_windowState = Qt::WindowNoState;
 
     Qt::WindowType type = window()->windowType();
@@ -1234,7 +1236,7 @@ void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 
     // if count is non-zero there are more expose events pending
     if (event->count == 0) {
-        QWindowSystemInterface::handleSynchronousExposeEvent(window(), m_exposeRegion);
+        QWindowSystemInterface::handleExposeEvent(window(), m_exposeRegion);
         m_exposeRegion = QRegion();
     }
 }
@@ -1299,6 +1301,13 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 
+    m_configureNotifyPending = false;
+
+    if (m_deferredExpose) {
+        m_deferredExpose = false;
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
+    }
+
     m_dirtyFrameMargins = true;
 
 #if XCB_USE_DRI2
@@ -1307,13 +1316,21 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
 #endif
 }
 
+bool QXcbWindow::isExposed() const
+{
+    return m_mapped;
+}
+
 void QXcbWindow::handleMapNotifyEvent(const xcb_map_notify_event_t *event)
 {
     if (event->window == m_window) {
         m_mapped = true;
         if (m_deferredActivation)
             requestActivateWindow();
-        QWindowSystemInterface::handleMapEvent(window());
+        if (m_configureNotifyPending)
+            m_deferredExpose = true;
+        else
+            QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
     }
 }
 
@@ -1321,7 +1338,7 @@ void QXcbWindow::handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event)
 {
     if (event->window == m_window) {
         m_mapped = false;
-        QWindowSystemInterface::handleUnmapEvent(window());
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion());
     }
 }
 

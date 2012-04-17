@@ -207,13 +207,6 @@ public:
     ClipType clipType() const;
     QRect clipBoundingRect() const;
 
-#ifdef Q_NO_USING_KEYWORD
-    inline void drawEllipse(const QRect &rect) { QPaintEngineEx::drawEllipse(rect); }
-#else
-    using QPaintEngineEx::drawPolygon;
-    using QPaintEngineEx::drawEllipse;
-#endif
-
     void releaseBuffer();
 
     QSize size() const;

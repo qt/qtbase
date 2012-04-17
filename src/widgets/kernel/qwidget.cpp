@@ -2892,7 +2892,7 @@ void QWidget::showNormal()
     \sa setEnabled() enabled
 */
 
-bool QWidget::isEnabledTo(QWidget* ancestor) const
+bool QWidget::isEnabledTo(const QWidget *ancestor) const
 {
     const QWidget * w = this;
     while (!w->testAttribute(Qt::WA_ForceDisabled)
@@ -3868,13 +3868,13 @@ void QWidget::setFixedHeight(int h)
     \sa mapFrom() mapToParent() mapToGlobal() underMouse()
 */
 
-QPoint QWidget::mapTo(QWidget * parent, const QPoint & pos) const
+QPoint QWidget::mapTo(const QWidget * parent, const QPoint & pos) const
 {
     QPoint p = pos;
     if (parent) {
         const QWidget * w = this;
         while (w != parent) {
-            Q_ASSERT_X(w, "QWidget::mapTo(QWidget *parent, const QPoint &pos)",
+            Q_ASSERT_X(w, "QWidget::mapTo(const QWidget *parent, const QPoint &pos)",
                        "parent must be in parent hierarchy");
             p = w->mapToParent(p);
             w = w->parentWidget();
@@ -3892,13 +3892,13 @@ QPoint QWidget::mapTo(QWidget * parent, const QPoint & pos) const
     \sa mapTo() mapFromParent() mapFromGlobal() underMouse()
 */
 
-QPoint QWidget::mapFrom(QWidget * parent, const QPoint & pos) const
+QPoint QWidget::mapFrom(const QWidget * parent, const QPoint & pos) const
 {
     QPoint p(pos);
     if (parent) {
         const QWidget * w = this;
         while (w != parent) {
-            Q_ASSERT_X(w, "QWidget::mapFrom(QWidget *parent, const QPoint &pos)",
+            Q_ASSERT_X(w, "QWidget::mapFrom(const QWidget *parent, const QPoint &pos)",
                        "parent must be in parent hierarchy");
 
             p = w->mapFromParent(p);
@@ -5136,7 +5136,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 paintEngine->d_func()->systemClip = QRegion();
             }
             q->setAttribute(Qt::WA_WState_InPaintEvent, false);
-            if (q->paintingActive() && !q->testAttribute(Qt::WA_PaintOutsidePaintEvent))
+            if (q->paintingActive())
                 qWarning("QWidget::repaint: It is dangerous to leave painters active on a widget outside of the PaintEvent");
 
             if (paintEngine && paintEngine->autoDestruct()) {
@@ -7571,7 +7571,7 @@ bool QWidget::close()
     \sa show() hide() isVisible()
 */
 
-bool QWidget::isVisibleTo(QWidget* ancestor) const
+bool QWidget::isVisibleTo(const QWidget *ancestor) const
 {
     if (!ancestor)
         return isVisible();
@@ -8438,7 +8438,7 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void QWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    Q_UNUSED(event)
+    Q_UNUSED(event);
 }
 
 #ifndef QT_NO_WHEELEVENT

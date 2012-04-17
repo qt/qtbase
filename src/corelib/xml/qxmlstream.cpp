@@ -2092,7 +2092,7 @@ void QXmlStreamReader::addExtraNamespaceDeclarations(const QXmlStreamNamespaceDe
   The \a behaviour defines what happens in case anything else is
   read before reaching EndElement. The function can include the text from
   child elements (useful for example for HTML), ignore child elements, or
-  raise an UnexpectedElementError and return what was read so far.
+  raise an UnexpectedElementError and return what was read so far (default).
 
   \since 4.6
  */
@@ -2131,16 +2131,6 @@ QString QXmlStreamReader::readElementText(ReadElementTextBehaviour behaviour)
         }
     }
     return QString();
-}
-
-/*!
-  \overload readElementText()
-
-  Calling this function is equivalent to calling readElementText(ErrorOnUnexpectedElement).
- */
-QString QXmlStreamReader::readElementText()
-{
-    return readElementText(ErrorOnUnexpectedElement);
 }
 
 /*!  Raises a custom error with an optional error \a message.

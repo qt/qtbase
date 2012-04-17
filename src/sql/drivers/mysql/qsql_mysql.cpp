@@ -1534,7 +1534,7 @@ QString QMYSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType
     return res;
 }
 
-bool QMYSQLDriver::isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const
+bool QMYSQLDriver::isIdentifierEscaped(const QString &identifier, IdentifierType type) const
 {
     Q_UNUSED(type);
     return identifier.size() > 2

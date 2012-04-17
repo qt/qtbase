@@ -69,9 +69,7 @@
 
 #ifdef __cplusplus
 
-#ifndef QT_NO_STL
 #include <algorithm>
-#endif
 
 #ifndef QT_NAMESPACE /* user namespace */
 
@@ -254,6 +252,56 @@ typedef quint64 qulonglong;
 
 #if defined(__cplusplus)
 
+namespace QtPrivate {
+    template <class T>
+    struct AlignOfHelper
+    {
+        char c;
+        T type;
+
+        AlignOfHelper();
+        ~AlignOfHelper();
+    };
+
+    template <class T>
+    struct AlignOf_Default
+    {
+        enum { Value = sizeof(AlignOfHelper<T>) - sizeof(T) };
+    };
+
+    template <class T> struct AlignOf : AlignOf_Default<T> { };
+    template <class T> struct AlignOf<T &> : AlignOf<T> {};
+    template <size_t N, class T> struct AlignOf<T[N]> : AlignOf<T> {};
+
+#ifdef Q_COMPILER_RVALUE_REFS
+    template <class T> struct AlignOf<T &&> : AlignOf<T> {};
+#endif
+
+#if defined(Q_PROCESSOR_X86_32) && !defined(Q_OS_WIN)
+    template <class T> struct AlignOf_WorkaroundForI386Abi { enum { Value = sizeof(T) }; };
+
+    // x86 ABI weirdness
+    // Alignment of naked type is 8, but inside struct has alignment 4.
+    template <> struct AlignOf<double>  : AlignOf_WorkaroundForI386Abi<double> {};
+    template <> struct AlignOf<qint64>  : AlignOf_WorkaroundForI386Abi<qint64> {};
+    template <> struct AlignOf<quint64> : AlignOf_WorkaroundForI386Abi<quint64> {};
+#ifdef Q_CC_CLANG
+    // GCC and Clang seem to disagree wrt to alignment of arrays
+    template <size_t N> struct AlignOf<double[N]>   : AlignOf_Default<double> {};
+    template <size_t N> struct AlignOf<qint64[N]>   : AlignOf_Default<qint64> {};
+    template <size_t N> struct AlignOf<quint64[N]>  : AlignOf_Default<quint64> {};
+#endif
+#endif
+} // namespace QtPrivate
+
+#define QT_EMULATED_ALIGNOF(T) \
+    (size_t(QT_PREPEND_NAMESPACE(QtPrivate)::AlignOf<T>::Value))
+
+#ifndef Q_ALIGNOF
+#define Q_ALIGNOF(T) QT_EMULATED_ALIGNOF(T)
+#endif
+
+
 /*
   quintptr and qptrdiff is guaranteed to be the same size as a pointer, i.e.
 
@@ -421,9 +469,15 @@ QT_END_INCLUDE_NAMESPACE
 #ifdef Q_COMPILER_EXPLICIT_OVERRIDES
 # define Q_DECL_OVERRIDE override
 # define Q_DECL_FINAL final
+# ifdef  Q_COMPILER_DECLTYPE // required for class-level final to compile in qvariant_p.h
+#  define Q_DECL_FINAL_CLASS final
+# else
+#  define Q_DECL_FINAL_CLASS
+# endif
 #else
 # define Q_DECL_OVERRIDE
 # define Q_DECL_FINAL
+# define Q_DECL_FINAL_CLASS
 #endif
 
 #if defined(Q_COMPILER_ALIGNOF) && !defined(Q_ALIGNOF)
@@ -1127,28 +1181,20 @@ static inline bool qIsNull(float f)
 template <typename T>
 inline void qSwap(T &value1, T &value2)
 {
-#ifdef QT_NO_STL
-    const T t = value1;
-    value1 = value2;
-    value2 = t;
-#else
     using std::swap;
     swap(value1, value2);
-#endif
 }
 
-/*
-   These functions make it possible to use standard C++ functions with
-   a similar name from Qt header files (especially template classes).
-*/
-Q_CORE_EXPORT void *qMalloc(size_t size) Q_ALLOC_SIZE(1);
-Q_CORE_EXPORT void qFree(void *ptr);
-Q_CORE_EXPORT void *qRealloc(void *ptr, size_t size) Q_ALLOC_SIZE(2);
+#if QT_DEPRECATED_SINCE(5, 0)
+Q_CORE_EXPORT QT_DEPRECATED void *qMalloc(size_t size) Q_ALLOC_SIZE(1);
+Q_CORE_EXPORT QT_DEPRECATED void qFree(void *ptr);
+Q_CORE_EXPORT QT_DEPRECATED void *qRealloc(void *ptr, size_t size) Q_ALLOC_SIZE(2);
+Q_CORE_EXPORT QT_DEPRECATED void *qMemCopy(void *dest, const void *src, size_t n);
+Q_CORE_EXPORT QT_DEPRECATED void *qMemSet(void *dest, int c, size_t n);
+#endif
 Q_CORE_EXPORT void *qMallocAligned(size_t size, size_t alignment) Q_ALLOC_SIZE(1);
 Q_CORE_EXPORT void *qReallocAligned(void *ptr, size_t size, size_t oldsize, size_t alignment) Q_ALLOC_SIZE(2);
 Q_CORE_EXPORT void qFreeAligned(void *ptr);
-Q_CORE_EXPORT void *qMemCopy(void *dest, const void *src, size_t n);
-Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 
 
 /*
@@ -1256,14 +1302,6 @@ inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase
 #  ifndef forever
 #    define forever Q_FOREVER
 #  endif
-#endif
-
-#if 0
-/* tell gcc to use its built-in methods for some common functions */
-#if defined(QT_NO_DEBUG) && defined(Q_CC_GNU)
-#  define qMemCopy __builtin_memcpy
-#  define qMemSet __builtin_memset
-#endif
 #endif
 
 template <typename T> static inline T *qGetPtrHelper(T *ptr) { return ptr; }

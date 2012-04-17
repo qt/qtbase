@@ -72,8 +72,10 @@ public:
         , parentWindow(0)
         , platformWindow(0)
         , visible(false)
+        , exposed(false)
         , windowState(Qt::WindowNoState)
         , resizeEventPending(true)
+        , receivedExpose(false)
         , positionPolicy(WindowFrameExclusive)
         , contentOrientation(Qt::PrimaryOrientation)
         , windowOrientation(Qt::PrimaryOrientation)
@@ -100,17 +102,18 @@ public:
         return offset;
     }
 
-
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;
     QWindow *parentWindow;
     QPlatformWindow *platformWindow;
     bool visible;
+    bool exposed;
     QSurfaceFormat requestedFormat;
     QString windowTitle;
     QRect geometry;
     Qt::WindowState windowState;
     bool resizeEventPending;
+    bool receivedExpose;
     PositionPolicy positionPolicy;
     Qt::ScreenOrientation contentOrientation;
     Qt::ScreenOrientation windowOrientation;

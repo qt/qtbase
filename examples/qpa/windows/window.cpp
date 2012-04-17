@@ -103,9 +103,9 @@ void Window::mouseMoveEvent(QMouseEvent *event)
         p.setRenderHint(QPainter::Antialiasing);
         p.drawLine(m_lastPos, event->pos());
         m_lastPos = event->pos();
-    }
 
-    scheduleRender();
+        scheduleRender();
+    }
 }
 
 void Window::mouseReleaseEvent(QMouseEvent *event)
@@ -115,9 +115,9 @@ void Window::mouseReleaseEvent(QMouseEvent *event)
         p.setRenderHint(QPainter::Antialiasing);
         p.drawLine(m_lastPos, event->pos());
         m_lastPos = QPoint(-1, -1);
-    }
 
-    scheduleRender();
+        scheduleRender();
+    }
 }
 
 void Window::exposeEvent(QExposeEvent *)
@@ -139,8 +139,7 @@ void Window::resizeEvent(QResizeEvent *)
         QPainter p(&m_image);
         p.drawImage(0, 0, old);
     }
-
-    render();
+    scheduleRender();
 }
 
 void Window::keyPressEvent(QKeyEvent *event)
@@ -168,7 +167,8 @@ void Window::scheduleRender()
 
 void Window::timerEvent(QTimerEvent *)
 {
-    render();
+    if (isExposed())
+        render();
     killTimer(m_renderTimer);
     m_renderTimer = 0;
 }

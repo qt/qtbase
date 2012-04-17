@@ -49,11 +49,13 @@
 #include <qreadwritelock.h>
 #include <qvector.h>
 
-#include "qdbusmessage.h"
-#include "qdbusunixfiledescriptor.h"
-#include "qdbusutil_p.h"
 #include "qdbusmetatype_p.h"
 #include "qdbusargument_p.h"
+#include "qdbusutil_p.h"
+#include "qdbusunixfiledescriptor.h"
+#ifndef QT_BOOTSTRAPPED
+#include "qdbusmessage.h"
+#endif
 
 #ifndef QT_NO_DBUS
 
@@ -76,7 +78,7 @@ QT_BEGIN_NAMESPACE
 class QDBusCustomTypeInfo
 {
 public:
-    QDBusCustomTypeInfo() : signature(0, '\0'), marshall(0), demarshall(0)
+    QDBusCustomTypeInfo() : signature(), marshall(0), demarshall(0)
     { }
 
     // Suggestion:
@@ -111,13 +113,15 @@ void QDBusMetaTypeId::init()
     // reentrancy is not a problem since everything else is locked on their own
     // set the guard variable at the end
     if (!initialized) {
+#ifndef QT_BOOTSTRAPPED
         // register our types with QtCore
         message = qRegisterMetaType<QDBusMessage>("QDBusMessage");
+        error = qRegisterMetaType<QDBusError>("QDBusError");
+#endif
         argument = qRegisterMetaType<QDBusArgument>("QDBusArgument");
         variant = qRegisterMetaType<QDBusVariant>("QDBusVariant");
         objectpath = qRegisterMetaType<QDBusObjectPath>("QDBusObjectPath");
         signature = qRegisterMetaType<QDBusSignature>("QDBusSignature");
-        error = qRegisterMetaType<QDBusError>("QDBusError");
         unixfd = qRegisterMetaType<QDBusUnixFileDescriptor>("QDBusUnixFileDescriptor");
 
 #ifndef QDBUS_NO_SPECIALTYPES
@@ -150,6 +154,11 @@ void QDBusMetaTypeId::init()
         qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >();
 #endif
 
+#if QT_BOOTSTRAPPED
+        const int lastId = qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >();
+        message = lastId + 1;
+        error = lastId + 2;
+#endif
         initialized = true;
     }
 }
@@ -290,9 +299,14 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, int id, void *data)
         } else
             df = info.demarshall;
     }
-
+#ifndef QT_BOOTSTRAPPED
     QDBusArgument copy = arg;
     df(copy, data);
+#else
+    Q_UNUSED(arg);
+    Q_UNUSED(data);
+    Q_UNUSED(df);
+#endif
     return true;
 }
 
@@ -311,7 +325,7 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, int id, void *data)
 int QDBusMetaType::signatureToType(const char *signature)
 {
     if (!signature)
-        return QVariant::Invalid;
+        return QMetaType::UnknownType;
 
     QDBusMetaTypeId::init();
     switch (signature[0])
@@ -378,7 +392,7 @@ int QDBusMetaType::signatureToType(const char *signature)
         }
         // fall through
     default:
-        return QVariant::Invalid;
+        return QMetaType::UnknownType;
     }
 }
 

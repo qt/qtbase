@@ -1041,7 +1041,7 @@ void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
         // The response to a 303 MUST NOT be cached, while the response to
         // all of the others is cacheable if the headers indicate it to be
         QByteArray header = q->rawHeader("location");
-        QUrl url = QUrl::fromEncoded(header);
+        QUrl url = QUrl(QString::fromUtf8(header));
         if (!url.isValid())
             url = QUrl(QLatin1String(header));
         // FIXME?
@@ -1531,12 +1531,27 @@ bool QNetworkReplyHttpImplPrivate::start()
 
 void QNetworkReplyHttpImplPrivate::_q_startOperation()
 {
+    Q_Q(QNetworkReplyHttpImpl);
+
     // ensure this function is only being called once
     if (state == Working) {
         qDebug("QNetworkReplyImpl::_q_startOperation was called more than once");
         return;
     }
     state = Working;
+
+#ifndef QT_NO_BEARERMANAGEMENT
+    // Do not start background requests if they are not allowed by session policy
+    QSharedPointer<QNetworkSession> session(manager->d_func()->networkSession);
+    QVariant isBackground = request.attribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(false));
+    if (isBackground.toBool() && session && session->usagePolicies().testFlag(QNetworkSession::NoBackgroundTrafficPolicy)) {
+        QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
+            Q_ARG(QNetworkReply::NetworkError, QNetworkReply::BackgroundRequestNotAllowedError),
+            Q_ARG(QString, QCoreApplication::translate("QNetworkReply", "Background request not allowed.")));
+        QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
+        return;
+    }
+#endif
 
     if (!start()) {
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -1547,8 +1562,6 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
         QNetworkSession *session = managerPrivate->networkSession.data();
 
         if (session) {
-            Q_Q(QNetworkReplyHttpImpl);
-
             QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
                              q, SLOT(_q_networkSessionFailed()));
 
@@ -1556,9 +1569,20 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
                 session->open();
         } else {
             qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
+            QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
+                Q_ARG(QNetworkReply::NetworkError, QNetworkReply::NetworkSessionFailedError),
+                Q_ARG(QString, QCoreApplication::translate("QNetworkReply", "Network session error.")));
+            QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
+            return;
         }
-#endif
+#else
+        qWarning("Backend start failed");
+        QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
+            Q_ARG(QNetworkReply::NetworkError, QNetworkReply::UnknownNetworkError),
+            Q_ARG(QString, QCoreApplication::translate("QNetworkReply", "backend start error.")));
+        QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
         return;
+#endif
     }
 
     if (synchronous) {
@@ -1728,8 +1752,13 @@ void QNetworkReplyHttpImplPrivate::_q_networkSessionFailed()
     // Abort waiting and working replies.
     if (state == WaitingForSession || state == Working) {
         state = Working;
-        error(QNetworkReplyImpl::UnknownNetworkError,
-              QCoreApplication::translate("QNetworkReply", "Network session error."));
+        QSharedPointer<QNetworkSession> session(manager->d_func()->networkSession);
+        QString errorStr;
+        if (session)
+            errorStr = session->errorString();
+        else
+            errorStr = QCoreApplication::translate("QNetworkReply", "Network session error.");
+        error(QNetworkReplyImpl::NetworkSessionFailedError, errorStr);
         finished();
     }
 }

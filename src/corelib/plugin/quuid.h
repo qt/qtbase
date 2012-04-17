@@ -216,7 +216,7 @@ public:
     uchar   data4[8];
 };
 
-Q_DECLARE_TYPEINFO(QUuid, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QUuid, Q_PRIMITIVE_TYPE);
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QUuid &);

@@ -374,7 +374,7 @@ private:
     \brief The QEventLoopLocker class provides a means to quit an event loop when it is no longer needed.
 
     The QEventLoopLocker operates on particular objects - either a QCoreApplication
-    instance or a QEventLoop instance.
+    instance, a QEventLoop instance or a QThread instance.
 
     This makes it possible to, for example, run a batch of jobs with an event loop
     and exit that event loop after the last job is finished. That is accomplished
@@ -388,7 +388,7 @@ private:
 */
 
 /*!
-    Creates an event locker operating on the \p app.
+    Creates an event locker operating on the QCoreApplication.
 
     The application will quit when there are no more QEventLoopLockers operating on it.
 
@@ -401,7 +401,7 @@ QEventLoopLocker::QEventLoopLocker()
 }
 
 /*!
-    Creates an event locker operating on the \p app.
+    Creates an event locker operating on the \p loop.
 
     This particular QEventLoop will quit when there are no more QEventLoopLockers operating on it.
 
@@ -413,6 +413,13 @@ QEventLoopLocker::QEventLoopLocker(QEventLoop *loop)
 
 }
 
+/*!
+    Creates an event locker operating on the \p thread.
+
+    This particular QThread will quit when there are no more QEventLoopLockers operating on it.
+
+    \sa QThread::quit()
+ */
 QEventLoopLocker::QEventLoopLocker(QThread *thread)
   : d_ptr(new QEventLoopLockerPrivate(static_cast<QThreadPrivate*>(QObjectPrivate::get(thread))))
 {

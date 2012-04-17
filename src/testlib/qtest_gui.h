@@ -88,9 +88,7 @@ inline bool qCompare(QIcon const &t1, QIcon const &t2, const char *actual, const
 }
 #endif
 
-#ifndef QTEST_NO_SPECIALIZATIONS
 template<>
-#endif
 inline bool qCompare(QImage const &t1, QImage const &t2,
                      const char *actual, const char *expected, const char *file, int line)
 {
@@ -125,9 +123,7 @@ inline bool qCompare(QImage const &t1, QImage const &t2,
                           toString(t1), toString(t2), actual, expected, file, line);
 }
 
-#ifndef QTEST_NO_SPECIALIZATIONS
 template<>
-#endif
 inline bool qCompare(QPixmap const &t1, QPixmap const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {

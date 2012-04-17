@@ -83,6 +83,13 @@ public:
         InvalidConfigurationError
     };
 
+    enum UsagePolicy {
+        NoPolicy = 0,
+        NoBackgroundTrafficPolicy = 1
+    };
+
+    Q_DECLARE_FLAGS(UsagePolicies, UsagePolicy)
+
     explicit QNetworkSession(const QNetworkConfiguration &connConfig, QObject *parent = 0);
     virtual ~QNetworkSession();
 
@@ -101,7 +108,9 @@ public:
     quint64 bytesWritten() const;
     quint64 bytesReceived() const;
     quint64 activeTime() const;
-    
+
+    QNetworkSession::UsagePolicies usagePolicies() const;
+
     bool waitForOpened(int msecs = 30000);
 
 public Q_SLOTS:
@@ -122,6 +131,7 @@ Q_SIGNALS:
     void error(QNetworkSession::SessionError);
     void preferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless);
     void newConfigurationActivated();
+    void usagePoliciesChanged(QNetworkSession::UsagePolicies);
 
 protected:
     virtual void connectNotify(const char *signal);
@@ -136,6 +146,7 @@ private:
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QNetworkSession::State)
 Q_DECLARE_METATYPE(QNetworkSession::SessionError)
+Q_DECLARE_METATYPE(QNetworkSession::UsagePolicies)
 
 QT_END_HEADER
 

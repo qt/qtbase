@@ -80,8 +80,10 @@ public:
         TimedOut,
         InvalidSignature,
         UnknownInterface,
-        InternalError,
         UnknownObject,
+        UnknownProperty,
+        PropertyReadOnly,
+        InternalError,
         InvalidService,
         InvalidObjectPath,
         InvalidInterface,
@@ -93,11 +95,16 @@ public:
 #endif
     };
 
-    QDBusError(const DBusError *error = 0);
-    QDBusError(const QDBusMessage& msg);
+#ifndef QT_BOOTSTRAPPED
+    explicit QDBusError(const DBusError *error = 0);
+    /*implicit*/ QDBusError(const QDBusMessage& msg);
+#endif
     QDBusError(ErrorType error, const QString &message);
     QDBusError(const QDBusError &other);
     QDBusError &operator=(const QDBusError &other);
+#ifndef QT_BOOTSTRAPPED
+    QDBusError &operator=(const QDBusMessage &msg);
+#endif
 
     ErrorType type() const;
     QString name() const;

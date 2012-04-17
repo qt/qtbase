@@ -1751,7 +1751,7 @@ void tst_QLocale::dayName_data()
     QTest::newRow("C narrow")  << QString("C") << QString("7") << 7 << QLocale::NarrowFormat;
 
     QTest::newRow("ru_RU long")  << QString("ru_RU") << QString::fromUtf8("\320\262\320\276\321\201\320\272\321\200\320\265\321\201\320\265\320\275\321\214\320\265") << 7 << QLocale::LongFormat;
-    QTest::newRow("ru_RU short")  << QString("ru_RU") << QString::fromUtf8("\320\222\321\201") << 7 << QLocale::ShortFormat;
+    QTest::newRow("ru_RU short")  << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
     QTest::newRow("ru_RU narrow")  << QString("ru_RU") << QString::fromUtf8("\320\222") << 7 << QLocale::NarrowFormat;
 }
 

@@ -65,7 +65,6 @@ struct TestIterator
 };
 
 #include <qiterator.h>
-#ifndef QT_NO_STL
 namespace std {
 template <>
 struct iterator_traits<TestIterator>
@@ -79,7 +78,6 @@ int distance(TestIterator &a, TestIterator &b)
 }
 
 }
-#endif
 
 #include <qtconcurrentiteratekernel.h>
 #include <QtTest/QtTest>
@@ -96,10 +94,8 @@ private slots:
     void stresstest();
     void noIterations();
     void throttling();
-#ifndef QT_NO_STL
     void blockSize();
     void multipleResults();
-#endif
 };
 
 QAtomicInt iterations;
@@ -268,8 +264,6 @@ public:
     }
 };
 
-// Missing stl iterators prevent correct block size calculation.
-#ifndef QT_NO_STL
 void tst_QtConcurrentIterateKernel::blockSize()
 {
     const int expectedMinimumBlockSize = 1024 / QThread::idealThreadCount();
@@ -278,7 +272,6 @@ void tst_QtConcurrentIterateKernel::blockSize()
         qDebug() << "block size" << peakBlockSize;
     QVERIFY(peakBlockSize >= expectedMinimumBlockSize);
 }
-#endif
 
 class MultipleResultsFor : public IterateKernel<TestIterator, int>
 {
@@ -292,8 +285,6 @@ public:
     }
 };
 
-// Missing stl iterators prevent correct summation.
-#ifndef QT_NO_STL
 void tst_QtConcurrentIterateKernel::multipleResults()
 {
     QFuture<int> f = startThreadEngine(new MultipleResultsFor(0, 10)).startAsynchronously();
@@ -303,7 +294,6 @@ void tst_QtConcurrentIterateKernel::multipleResults()
     QCOMPARE(f.resultAt(9), 9);
     f.waitForFinished();
 }
-#endif
 
 QTEST_MAIN(tst_QtConcurrentIterateKernel)
 

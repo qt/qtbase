@@ -67,7 +67,7 @@ public:
         Depth
     };
 
-    QOpenGLFramebufferObject(const QSize &size, GLenum target = GL_TEXTURE_2D);
+    explicit QOpenGLFramebufferObject(const QSize &size, GLenum target = GL_TEXTURE_2D);
     QOpenGLFramebufferObject(int width, int height, GLenum target = GL_TEXTURE_2D);
 #if !defined(QT_OPENGL_ES) || defined(Q_QDOC)
     QOpenGLFramebufferObject(const QSize &size, Attachment attachment,

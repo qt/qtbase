@@ -102,7 +102,7 @@ private:
 #endif
     T m[N][M];    // Column-major order to match OpenGL.
 
-    QGenericMatrix(int) {}       // Construct without initializing identity matrix.
+    explicit QGenericMatrix(int) {}       // Construct without initializing identity matrix.
 
 #if !defined(Q_NO_TEMPLATE_FRIENDS)
     template <int NN, int MM, typename TT>

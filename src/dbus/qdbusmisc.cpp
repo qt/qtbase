@@ -41,14 +41,17 @@
 
 #include <string.h>
 
+#ifndef QT_BOOTSTRAPPED
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qmetaobject.h>
 
 #include "qdbusutil_p.h"
 #include "qdbusconnection_p.h"
-#include "qdbusmetatype_p.h"
 #include "qdbusabstractadaptor_p.h" // for QCLASSINFO_DBUS_*
+#endif
+#include <QtCore/qvector.h>
+#include "qdbusmetatype_p.h"
 
 #ifndef QT_NO_DBUS
 
@@ -69,6 +72,8 @@ bool qDBusCheckAsyncTag(const char *tag)
     return false;
 }
 
+#ifndef QT_BOOTSTRAPPED
+
 QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
 {
     QString interface;
@@ -81,11 +86,11 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
         interface.replace(QLatin1String("::"), QLatin1String("."));
 
         if (interface.startsWith(QLatin1String("QDBus"))) {
-            interface.prepend(QLatin1String("com.trolltech.QtDBus."));
+            interface.prepend(QLatin1String("org.qtproject.QtDBus."));
         } else if (interface.startsWith(QLatin1Char('Q')) &&
                    interface.length() >= 2 && interface.at(1).isUpper()) {
             // assume it's Qt
-            interface.prepend(QLatin1String("com.trolltech.Qt."));
+            interface.prepend(QLatin1String("org.qtproject.Qt."));
         } else if (!QCoreApplication::instance()||
                    QCoreApplication::instance()->applicationName().isEmpty()) {
             interface.prepend(QLatin1String("local."));
@@ -128,9 +133,14 @@ bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name)
 // sig must be the normalised signature for the method
 int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes)
 {
-    QDBusMetaTypeId::init();
+    return qDBusParametersForMethod(mm.parameterTypes(), metaTypes);
+}
 
-    QList<QByteArray> parameterTypes = mm.parameterTypes();
+#endif // QT_BOOTSTRAPPED
+
+int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<int>& metaTypes)
+{
+    QDBusMetaTypeId::init();
     metaTypes.clear();
 
     metaTypes.append(0);        // return type
@@ -141,7 +151,7 @@ int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes)
     for ( ; it != end; ++it) {
         const QByteArray &type = *it;
         if (type.endsWith('*')) {
-            //qWarning("Could not parse the method '%s'", mm.signature());
+            //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
             // pointer?
             return -1;
         }
@@ -152,7 +162,7 @@ int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes)
 
             int id = QMetaType::type(basictype);
             if (id == 0) {
-                //qWarning("Could not parse the method '%s'", mm.signature());
+                //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
                 // invalid type in method parameter list
                 return -1;
             } else if (QDBusMetaType::typeToSignature(id) == 0)
@@ -164,14 +174,14 @@ int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes)
         }
 
         if (seenMessage) {      // && !type.endsWith('&')
-            //qWarning("Could not parse the method '%s'", mm.signature());
+            //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
             // non-output parameters after message or after output params
             return -1;          // not allowed
         }
 
         int id = QMetaType::type(type);
-        if (id == 0) {
-            //qWarning("Could not parse the method '%s'", mm.signature());
+        if (id == QMetaType::UnknownType) {
+            //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
             // invalid type in method parameter list
             return -1;
         }

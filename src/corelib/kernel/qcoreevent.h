@@ -192,9 +192,6 @@ public:
 #endif
         AcceptDropsChange = 152,
 
-        MenubarUpdated = 153,                    // Support event for Q3MainWindow, which needs to
-                                                 // knwow when QMenubar is updated.
-
         ZeroTimerEvent = 154,                   // Used for Windows Zero timer events
 
         GraphicsSceneMouseMove = 155,           // GraphicsView
@@ -269,17 +266,14 @@ public:
         ScrollPrepare = 204,
         Scroll = 205,
 
-        Map = 206,
-        Unmap = 207,
+        Expose = 206,
 
-        Expose = 208,
+        InputMethodQuery = 207,
+        OrientationChange = 208,                // Screen orientation has changed
 
-        InputMethodQuery = 209,
-        OrientationChange = 210,                // Screen orientation has changed
+        TouchCancel = 209,
 
-        TouchCancel = 211,
-
-        ThemeChange = 212,
+        ThemeChange = 210,
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event

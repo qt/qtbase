@@ -36,6 +36,13 @@ information about a particular change.
 - QCoreApplication::translate() will no longer return the source text when
   the translation is empty. Use lrelease -removeidentical for optimization.
 
+- QString and QByteArray constructors that take a size argument will now treat
+  negative sizes to indicate nul-terminated strings (a nul-terminated array of
+  QChar, in the case of QString). In Qt 4, negative sizes were ignored and
+  result in empty QString and QByteArray, respectively. The size argument to
+  those constructors now has a default value of -1, thus replacing the separate
+  constructors that did the same.
+
 - Qt::escape() is deprecated (but can be enabled via
   QT_DISABLE_DEPRECATED_BEFORE), use QString::toHtmlEscaped() instead.
 
@@ -50,6 +57,16 @@ information about a particular change.
 - QMetaType:
   * QMetaType::construct() has been renamed to QMetaType::create().
   * QMetaType::unregisterType() has been removed.
+
+- QMetaMethod:
+  * QMetaMethod::signature() has been renamed to QMetaMethod::methodSignature(),
+    and the return type has been changed to QByteArray. This was done to be able
+    to generate the signature string on demand, rather than always storing it in
+    the meta-data.
+  * QMetaMethod::typeName() no longer returns an empty string when the return
+    type is void; it returns "void". The recommended way of checking whether a
+    method returns void is to compare the return value of QMetaMethod::returnType()
+    to QMetaType::Void.
 
 - QTestLib:
   * The plain-text, xml and lightxml test output formats have been changed to
@@ -231,8 +248,16 @@ information about a particular change.
 
 - QSqlQueryModel::indexInQuery() is now virtual. See note below under QtSql.
 
+- QSqlDriver::subscribeToNotification, unsubscribeFromNotification,
+  subscribedToNotifications, isIdentifierEscaped, and stripDelimiters
+  are now virtual. See note below under QtSql.
+
 - qMacVersion() has been removed. Use QSysInfo::macVersion() or
   QSysInfo::MacintoshVersion instead.
+
+- QColorDialog::customColor() now returns a QColor value instead of QRgb.
+  QColorDialog::setCustomColor() and QColorDialog::setStandardColor() now
+  take a QColor value for their second parameter instead of QRgb.
 
 ****************************************************************************
 *                           General                                        *
@@ -325,6 +350,10 @@ QtCore
 * QEvent::AccessibilityPrepare, AccessibilityHelp and AccessibilityDescription removed:
   * The enum values simply didn't make sense in the first place and should simply be dropped.
 
+* [QTBUG-23529] QHash is now more resilient to a family of denial of service
+  attacks exploiting algorithmic complexity, by supporting two-arguments overloads
+  of the qHash() hashing function.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via
@@ -378,6 +407,11 @@ QtWidgets
   * ResizeMode resizeMode(int logicalindex) const -
     use sectionResizeMode(int logicalindex) instead.
 
+* QDateEdit and QTimeEdit have re-gained a USER property. These were originally removed
+    before Qt 4.7.0, and are re-added for 5.0. This means that the userProperty for
+    those classes are now QDate and QTime respectively, not QDateTime as they have been
+    for the 4.7 and 4.8 releases.
+
 QtNetwork
 ---------
 * QHostAddress::isLoopback() API added. Returns true if the address is
@@ -389,6 +423,14 @@ QtNetwork
 * The openssl network backend now reads the ssl configuration file allowing
   the use of openssl engines.
 
+QtDBus
+------
+* QtDBus now generates property annotations for the Qt type names
+  in the org.qtproject.QtDBus namespace. When parsing such annotations
+  both the old and new namespaces are accepted.
+
+* QtDBus error codes have been updated to be on the org.qtproject.QtDBus.Error
+  namespace.
 
 QtOpenGL
 --------
@@ -466,6 +508,12 @@ changes. insertRows() and insertRecord() also respect the edit strategy.
 
 * QSqlTableModel::setData() and setRecord() in OnRowChange no longer have the
 side effect of submitting the cached row when invoked on a different row.
+
+* QSqlDriver::subscribeToNotification, unsubscribeFromNotification,
+subscribedToNotifications, isIdentifierEscaped, and stripDelimiters
+are now virtual. Their xxxImplemenation counterparts have been removed
+now that QSqlDriver subclasses can reimplement these directly.
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
@@ -579,6 +627,20 @@ Qt for Windows CE
   * Definition of QVariant::UserType changed. Currently it is the same as
     QMetaType::User, which means that it points to the first registered custom
     type, instead of a nonexistent type.
+
+- QMetaType
+
+  * Interpretation of QMetaType::Void was changed. Before, in some cases
+    it was returned as an invalid type id, but sometimes it was used as a valid
+    type (C++ "void"). In Qt5, new QMetaType::UnknownType was introduced to
+    distinguish between these two. QMetaType::UnknownType is an invalid type id
+    signaling that a type is unknown to QMetaType, and QMetaType::Void
+    is a valid type id of C++ void type. The difference will be visible for
+    example in call to QMetaType::typeName(), this function will return null for
+    QMetaType::UnknownType and a pointer to "void" string for
+    QMetaType::Void.
+    Please, notice that QMetaType::UnknownType has value 0, which previously was
+    reserved for QMetaType::Void.
 
 
 - QMessageBox

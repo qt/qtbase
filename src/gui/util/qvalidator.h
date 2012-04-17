@@ -176,7 +176,7 @@ class Q_GUI_EXPORT QRegExpValidator : public QValidator
 
 public:
     explicit QRegExpValidator(QObject *parent = 0);
-    QRegExpValidator(const QRegExp& rx, QObject *parent = 0);
+    explicit QRegExpValidator(const QRegExp& rx, QObject *parent = 0);
     ~QRegExpValidator();
 
     virtual QValidator::State validate(QString& input, int& pos) const;

@@ -3770,7 +3770,7 @@ void QGLWidget::setFormat(const QGLFormat &format)
 
 void QGLWidget::updateGL()
 {
-    if (updatesEnabled())
+    if (updatesEnabled() && testAttribute(Qt::WA_Mapped))
         glDraw();
 }
 

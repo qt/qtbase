@@ -433,36 +433,45 @@ int QColorDialog::customCount()
 /*!
     \since 4.5
 
-    Returns the custom color at the given \a index as a QRgb value.
+    Returns the custom color at the given \a index as a QColor value.
 */
-QRgb QColorDialog::customColor(int index)
+QColor QColorDialog::customColor(int index)
 {
-    return QColorDialogOptions::customColor(index);
+    return QColor(QColorDialogOptions::customColor(index));
 }
 
 /*!
-    Sets the custom color at \a index to the QRgb \a color value.
+    Sets the custom color at \a index to the QColor \a color value.
 
     \note This function does not apply to the Native Color Dialog on the Mac
     OS X platform. If you still require this function, use the
     QColorDialog::DontUseNativeDialog option.
 */
-void QColorDialog::setCustomColor(int index, QRgb color)
+void QColorDialog::setCustomColor(int index, QColor color)
 {
-    QColorDialogOptions::setCustomColor(index, color);
+    QColorDialogOptions::setCustomColor(index, color.rgba());
 }
 
 /*!
-    Sets the standard color at \a  index to the QRgb \a color value.
+    \since 5.0
+
+    Returns the standard color at the given \a index as a QColor value.
+*/
+QColor QColorDialog::standardColor(int index)
+{
+    return QColor(QColorDialogOptions::standardColor(index));
+}
+
+/*!
+    Sets the standard color at \a index to the QColor \a color value.
 
     \note This function does not apply to the Native Color Dialog on the Mac
     OS X platform. If you still require this function, use the
     QColorDialog::DontUseNativeDialog option.
 */
-
-void QColorDialog::setStandardColor(int index, QRgb color)
+void QColorDialog::setStandardColor(int index, QColor color)
 {
-    QColorDialogOptions::setStandardColor(index, color);
+    QColorDialogOptions::setStandardColor(index, color.rgba());
 }
 
 static inline void rgb2hsv(QRgb rgb, int &h, int &s, int &v)

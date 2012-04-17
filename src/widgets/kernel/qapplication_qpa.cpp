@@ -282,7 +282,6 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ToolButtonPalette), "QToolButton");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ButtonPalette), "QAbstractButton");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::HeaderPalette), "QHeaderView");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::HeaderPalette), "Q3Header");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ItemViewPalette), "QAbstractItemView");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::MessageBoxLabelPelette), "QMessageBoxLabel");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::TabBarPalette), "QTabBar");
@@ -317,10 +316,8 @@ void QApplicationPrivate::initializeWidgetFontHash()
         fontHash->insert(QByteArrayLiteral("QTitleBar"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::StatusBarFont))
         fontHash->insert(QByteArrayLiteral("QStatusBar"), *font);
-    if (const QFont *font = theme->font(QPlatformTheme::MdiSubWindowTitleFont)) {
-        fontHash->insert(QByteArrayLiteral("QWorkspaceTitleBar"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::MdiSubWindowTitleFont))
         fontHash->insert(QByteArrayLiteral("QMdiSubWindowTitleBar"), *font);
-    }
     if (const QFont *font = theme->font(QPlatformTheme::DockWidgetTitleFont))
         fontHash->insert(QByteArrayLiteral("QDockWidgetTitle"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::PushButtonFont))
@@ -331,10 +328,8 @@ void QApplicationPrivate::initializeWidgetFontHash()
         fontHash->insert(QByteArrayLiteral("QAbstractItemView"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::ListViewFont))
         fontHash->insert(QByteArrayLiteral("QListViewFont"), *font);
-    if (const QFont *font = theme->font(QPlatformTheme::HeaderViewFont)) {
+    if (const QFont *font = theme->font(QPlatformTheme::HeaderViewFont))
         fontHash->insert(QByteArrayLiteral("QHeaderViewFont"), *font);
-        fontHash->insert(QByteArrayLiteral("Q3Header"), *font);
-    }
     if (const QFont *font = theme->font(QPlatformTheme::ListBoxFont))
         fontHash->insert(QByteArrayLiteral("QListBox"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::ComboMenuItemFont))

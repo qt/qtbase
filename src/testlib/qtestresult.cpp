@@ -247,15 +247,6 @@ bool QTestResult::verify(bool statement, const char *statementStr,
     return checkStatement(statement, msg, file, line);
 }
 
-bool QTestResult::compare(bool success, const char *msg, const char *file, int line)
-{
-    if (QTestLog::verboseLevel() >= 2) {
-        QTestLog::info(msg, file, line);
-    }
-
-    return checkStatement(success, msg, file, line);
-}
-
 bool QTestResult::compare(bool success, const char *failureMsg,
                           char *val1, char *val2,
                           const char *actual, const char *expected,

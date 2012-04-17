@@ -504,7 +504,7 @@ QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyph
 
     int numGlyphs = glyphIndexes.size();
     QVarLengthGlyphLayoutArray glyphs(numGlyphs);
-    qMemCopy(glyphs.glyphs, glyphIndexes.data(), numGlyphs * sizeof(quint32));
+    memcpy(glyphs.glyphs, glyphIndexes.data(), numGlyphs * sizeof(quint32));
 
     d->fontEngine->recalcAdvances(&glyphs, 0);
 

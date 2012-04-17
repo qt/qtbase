@@ -369,7 +369,7 @@ void QMessageBoxPrivate::updateSize()
         label->setSizePolicy(policy);
     }
 
-    QFontMetrics fm(QApplication::font("QWorkspaceTitleBar"));
+    QFontMetrics fm(QApplication::font("QMdiSubWindowTitleBar"));
     int windowTitleWidth = qMin(fm.width(q->windowTitle()) + 50, hardLimit);
     if (windowTitleWidth > width)
         width = windowTitleWidth;

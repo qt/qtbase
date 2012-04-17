@@ -1968,13 +1968,6 @@ Q_CORE_EXPORT unsigned int qt_int_sqrt(unsigned int n)
     return p;
 }
 
-#if defined(qMemCopy)
-#  undef qMemCopy
-#endif
-#if defined(qMemSet)
-#  undef qMemSet
-#endif
-
 void *qMemCopy(void *dest, const void *src, size_t n) { return memcpy(dest, src, n); }
 void *qMemSet(void *dest, int c, size_t n) { return memset(dest, c, n); }
 

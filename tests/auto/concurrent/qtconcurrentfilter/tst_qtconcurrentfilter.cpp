@@ -57,9 +57,7 @@ private slots:
     void resultAt();
     void incrementalResults();
     void noDetach();
-#ifndef QT_NO_STL
     void stlContainers();
-#endif
 };
 
 void tst_QtConcurrentFilter::filter()
@@ -1496,7 +1494,6 @@ void tst_QtConcurrentFilter::noDetach()
     }
 }
 
-#ifndef QT_NO_STL
 void tst_QtConcurrentFilter::stlContainers()
 {
     std::vector<int> vector;
@@ -1523,7 +1520,6 @@ void tst_QtConcurrentFilter::stlContainers()
     QCOMPARE(list2.size(), (std::list<int>::size_type)(1));
     QCOMPARE(*list2.begin(), 1);
 }
-#endif
 
 QTEST_MAIN(tst_QtConcurrentFilter)
 #include "tst_qtconcurrentfilter.moc"

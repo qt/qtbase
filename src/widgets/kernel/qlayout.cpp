@@ -527,6 +527,19 @@ bool QLayout::isEmpty() const
 /*!
     \reimp
 */
+QSizePolicy::ControlTypes QLayout::controlTypes() const
+{
+    if (count() == 0)
+        return QSizePolicy::DefaultType;
+    QSizePolicy::ControlTypes types;
+    for (int i = count() - 1; i >= 0; --i)
+        types |= itemAt(i)->controlTypes();
+    return types;
+}
+
+/*!
+    \reimp
+*/
 void QLayout::setGeometry(const QRect &r)
 {
     Q_D(QLayout);

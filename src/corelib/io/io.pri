@@ -11,8 +11,11 @@ HEADERS +=  \
         io/qdir_p.h \
         io/qdiriterator.h \
         io/qfile.h \
+        io/qfiledevice.h \
+        io/qfiledevice_p.h \
         io/qfileinfo.h \
         io/qfileinfo_p.h \
+        io/qipaddress_p.h \
         io/qiodevice.h \
         io/qiodevice_p.h \
         io/qnoncontiguousbytedevice_p.h \
@@ -25,6 +28,8 @@ HEADERS +=  \
         io/qresource_iterator_p.h \
         io/qstandardpaths.h \
         io/qurl.h \
+        io/qurl_p.h \
+        io/qurlquery.h \
         io/qurltlds_p.h \
         io/qtldurl_p.h \
         io/qsettings.h \
@@ -49,7 +54,9 @@ SOURCES += \
         io/qdir.cpp \
         io/qdiriterator.cpp \
         io/qfile.cpp \
+        io/qfiledevice.cpp \
         io/qfileinfo.cpp \
+        io/qipaddress.cpp \
         io/qiodevice.cpp \
         io/qnoncontiguousbytedevice.cpp \
         io/qprocess.cpp \
@@ -60,6 +67,9 @@ SOURCES += \
         io/qresource_iterator.cpp \
         io/qstandardpaths.cpp \
         io/qurl.cpp \
+        io/qurlidna.cpp \
+        io/qurlquery.cpp \
+        io/qurlrecode.cpp \
         io/qsettings.cpp \
         io/qfsfileengine.cpp \
         io/qfsfileengine_iterator.cpp \

@@ -91,6 +91,9 @@ void tst_QWidget_window::cleanupTestCase()
 
 void tst_QWidget_window::tst_move_show()
 {
+#ifdef Q_OS_WIN
+    QSKIP("QTBUG-25331");
+#endif
     QWidget w;
     w.move(100, 100);
     w.show();

@@ -410,9 +410,7 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
 */
 QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
 {
-    // little trick to get hold of the QDirPrivate while there is no API on QDir to give it to us
-    class MyQDir : public QDir { public: const QDirPrivate *priv() const { return d_ptr.constData(); } };
-    const QDirPrivate *other = static_cast<const MyQDir*>(&dir)->priv();
+    const QDirPrivate *other = dir.d_ptr.constData();
     d.reset(new QDirIteratorPrivate(other->dirEntry, other->nameFilters, other->filters, flags, !other->fileEngine.isNull()));
 }
 

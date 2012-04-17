@@ -136,12 +136,6 @@ public:
 
 
     enum PrimitiveElement {
-        PE_Q3CheckListController,
-        PE_Q3CheckListExclusiveIndicator,
-        PE_Q3CheckListIndicator,
-        PE_Q3DockWindowSeparator,
-        PE_Q3Separator,
-
         PE_Frame,
         PE_FrameDefaultButton,
         PE_FrameDockWidget,
@@ -243,7 +237,6 @@ public:
         CE_HeaderSection,
         CE_HeaderLabel,
 
-        CE_Q3DockWindowEmptyArea,
         CE_ToolBoxTab,
         CE_SizeGrip,
         CE_Splitter,
@@ -297,22 +290,9 @@ public:
 
         SE_SliderFocusRect,
 
-        SE_Q3DockWindowHandleRect,
-
         SE_ProgressBarGroove,
         SE_ProgressBarContents,
         SE_ProgressBarLabel,
-
-        // ### Qt 6: These values are unused; eliminate them
-        SE_DialogButtonAccept,
-        SE_DialogButtonReject,
-        SE_DialogButtonApply,
-        SE_DialogButtonHelp,
-        SE_DialogButtonAll,
-        SE_DialogButtonAbort,
-        SE_DialogButtonIgnore,
-        SE_DialogButtonRetry,
-        SE_DialogButtonCustom,
 
         SE_ToolBoxTabContents,
 
@@ -383,7 +363,6 @@ public:
         CC_Slider,
         CC_ToolButton,
         CC_TitleBar,
-        CC_Q3ListView,
         CC_Dial,
         CC_GroupBox,
         CC_MdiControls,
@@ -430,10 +409,6 @@ public:
         SC_TitleBarUnshadeButton = 0x00000040,
         SC_TitleBarContextHelpButton = 0x00000080,
         SC_TitleBarLabel =         0x00000100,
-
-        SC_Q3ListView =            0x00000001,
-        SC_Q3ListViewBranch =      0x00000002,
-        SC_Q3ListViewExpand =      0x00000004,
 
         SC_DialGroove =            0x00000001,
         SC_DialHandle =            0x00000002,
@@ -514,8 +489,6 @@ public:
         PM_IndicatorHeight,
         PM_ExclusiveIndicatorWidth,
         PM_ExclusiveIndicatorHeight,
-        PM_CheckListButtonSize,
-        PM_CheckListControllerSize,
 
         PM_DialogButtonsSeparator,
         PM_DialogButtonsButtonWidth,
@@ -596,7 +569,6 @@ public:
         CT_ToolButton,
         CT_ComboBox,
         CT_Splitter,
-        CT_Q3DockWindow,
         CT_ProgressBar,
         CT_MenuItem,
         CT_MenuBarItem,
@@ -605,7 +577,6 @@ public:
         CT_TabBarTab,
         CT_Slider,
         CT_ScrollBar,
-        CT_Q3Header,
         CT_LineEdit,
         CT_SpinBox,
         CT_SizeGrip,
@@ -669,7 +640,7 @@ public:
         SH_ToolBox_SelectedPageTitleBold,
         SH_TabBar_PreferNoArrows,
         SH_ScrollBar_LeftClickAbsolutePosition,
-        SH_Q3ListViewExpand_SelectMouseType,
+        SH_ListViewExpand_SelectMouseType,
         SH_UnderlineShortcut,
         SH_SpinBox_AnimateButton,
         SH_SpinBox_KeyPressAutoRepeatRate,

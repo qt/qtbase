@@ -48,6 +48,7 @@
 #include "qdatetime.h"
 #include "qeasingcurve.h"
 #include "qlist.h"
+#include "qregularexpression.h"
 #include "qstring.h"
 #include "qstringlist.h"
 #include "qurl.h"
@@ -55,6 +56,10 @@
 #include "quuid.h"
 #ifndef QT_BOOTSTRAPPED
 #include "qabstractitemmodel.h"
+#include "qjsonvalue.h"
+#include "qjsonobject.h"
+#include "qjsonarray.h"
+#include "qjsondocument.h"
 #endif
 #include "private/qvariant_p.h"
 #include "qmetatype_p.h"
@@ -91,40 +96,17 @@ public:
     {
         Handlers[name] = handler;
     }
-
-    inline void unregisterHandler(const QModulesPrivate::Names name);
 };
 }  // namespace
 
 namespace {
-template<typename T>
-struct TypeDefinition {
-    static const bool IsAvailable = true;
-};
-
-// Ignore these types, as incomplete
-#ifdef QT_BOOTSTRAPPED
-template<> struct TypeDefinition<QEasingCurve> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
-#endif
-#ifdef QT_NO_GEOM_VARIANT
-template<> struct TypeDefinition<QRect> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QRectF> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QSize> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QSizeF> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QLine> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QLineF> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QPoint> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QPointF> { static const bool IsAvailable = false; };
-#endif
-
 struct CoreTypesFilter {
     template<typename T>
     struct Acceptor {
-        static const bool IsAccepted = QTypeModuleInfo<T>::IsCore && TypeDefinition<T>::IsAvailable;
+        static const bool IsAccepted = QTypeModuleInfo<T>::IsCore && QtMetaTypePrivate::TypeDefinition<T>::IsAvailable;
     };
 };
-} // annonymous used to hide TypeDefinition
+} // annonymous
 
 namespace { // annonymous used to hide QVariant handlers
 
@@ -289,6 +271,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         ok = &dummy;
 
     switch (uint(t)) {
+#ifndef QT_BOOTSTRAPPED
     case QVariant::Url:
         switch (d->type) {
         case QVariant::String:
@@ -298,6 +281,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             return false;
         }
         break;
+#endif
     case QVariant::String: {
         QString *str = static_cast<QString *>(result);
         switch (d->type) {
@@ -347,9 +331,11 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             if (v_cast<QStringList>(d)->count() == 1)
                 *str = v_cast<QStringList>(d)->at(0);
             break;
+#ifndef QT_BOOTSTRAPPED
         case QVariant::Url:
             *str = v_cast<QUrl>(d)->toString();
             break;
+#endif
         case QVariant::Uuid:
             *str = v_cast<QUuid>(d)->toString();
             break;
@@ -848,7 +834,13 @@ static bool customConvert(const QVariant::Private *, int, void *, bool *ok)
 }
 
 #if !defined(QT_NO_DEBUG_STREAM)
-static void customStreamDebug(QDebug, const QVariant &) {}
+static void customStreamDebug(QDebug dbg, const QVariant &variant) {
+#ifndef QT_BOOTSTRAPPED
+    QMetaType::TypeFlags flags = QMetaType::typeFlags(variant.userType());
+    if (flags & QMetaType::PointerToQObject)
+        dbg.nospace() << variant.value<QObject*>();
+#endif
+}
 #endif
 
 const QVariant::Handler qt_custom_variant_handler = {
@@ -882,19 +874,9 @@ Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler()
     return &qt_kernel_variant_handler;
 }
 
-inline void HandlersManager::unregisterHandler(const QModulesPrivate::Names name)
-{
-    Handlers[name] = &qt_dummy_variant_handler;
-}
-
 Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names */name, const QVariant::Handler *handler)
 {
     handlerManager.registerHandler(static_cast<QModulesPrivate::Names>(name), handler);
-}
-
-Q_CORE_EXPORT void QVariantPrivate::unregisterHandler(const int /* Modules::Names */ name)
-{
-    handlerManager.unregisterHandler(static_cast<QModulesPrivate::Names>(name));
 }
 
 /*!
@@ -1028,6 +1010,7 @@ Q_CORE_EXPORT void QVariantPrivate::unregisterHandler(const int /* Modules::Name
     \value Rect  a QRect
     \value RectF  a QRectF
     \value RegExp  a QRegExp
+    \value RegularExpression  a QRegularExpression
     \value Region  a QRegion
     \value Size  a QSize
     \value SizeF  a QSizeF
@@ -1358,6 +1341,14 @@ QVariant::QVariant(const char *val)
   Constructs a new variant with the regexp value \a regExp.
 */
 
+/*!
+  \fn QVariant::QVariant(const QRegularExpression &re)
+
+  \since 5.0
+
+  Constructs a new variant with the regular expression value \a re.
+*/
+
 /*! \since 4.2
   \fn QVariant::QVariant(Qt::GlobalColor color)
 
@@ -1442,11 +1433,16 @@ QVariant::QVariant(const QRect &r) { d.is_null = false; d.type = Rect; v_constru
 QVariant::QVariant(const QSize &s) { d.is_null = false; d.type = Size; v_construct<QSize>(&d, s); }
 QVariant::QVariant(const QSizeF &s) { d.is_null = false; d.type = SizeF; v_construct<QSizeF>(&d, s); }
 #endif
+#ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QUrl &u) { d.is_null = false; d.type = Url; v_construct<QUrl>(&d, u); }
+#endif
 QVariant::QVariant(const QLocale &l) { d.is_null = false; d.type = Locale; v_construct<QLocale>(&d, l); }
 #ifndef QT_NO_REGEXP
 QVariant::QVariant(const QRegExp &regExp) { d.is_null = false; d.type = RegExp; v_construct<QRegExp>(&d, regExp); }
-#endif
+#ifndef QT_BOOTSTRAPPED
+QVariant::QVariant(const QRegularExpression &re) { d.is_null = false; d.type = QMetaType::QRegularExpression; v_construct<QRegularExpression>(&d, re); }
+#endif // QT_BOOTSTRAPPED
+#endif // QT_NO_REGEXP
 QVariant::QVariant(Qt::GlobalColor color) { create(62, &color); }
 
 /*!
@@ -1696,7 +1692,7 @@ void QVariant::load(QDataStream &s)
         QByteArray name;
         s >> name;
         typeId = QMetaType::type(name.constData());
-        if (!typeId) {
+        if (typeId == QMetaType::UnknownType) {
             s.setStatus(QDataStream::ReadCorruptData);
             return;
         }
@@ -2083,6 +2079,7 @@ QPointF QVariant::toPointF() const
 
 #endif // QT_NO_GEOM_VARIANT
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     \fn QUrl QVariant::toUrl() const
 
@@ -2095,6 +2092,7 @@ QUrl QVariant::toUrl() const
 {
     return qVariantToHelper<QUrl>(d, handlerManager);
 }
+#endif
 
 /*!
     \fn QLocale QVariant::toLocale() const
@@ -2123,6 +2121,24 @@ QRegExp QVariant::toRegExp() const
 {
     return qVariantToHelper<QRegExp>(d, handlerManager);
 }
+#endif
+
+/*!
+    \fn QRegularExpression QVariant::toRegularExpression() const
+    \since 5.0
+
+    Returns the variant as a QRegularExpression if the variant has type() \l
+    QRegularExpression; otherwise returns an empty QRegularExpression.
+
+    \sa canConvert(), convert()
+*/
+#ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGEXP
+QRegularExpression QVariant::toRegularExpression() const
+{
+    return qVariantToHelper<QRegularExpression>(d, handlerManager);
+}
+#endif
 #endif
 
 /*!
@@ -2493,8 +2509,7 @@ bool QVariant::canConvert(int targetTypeId) const
 
     if (targetTypeId == String && currentType == StringList)
         return v_cast<QStringList>(&d)->count() == 1;
-    else
-        return qCanConvertMatrix[targetTypeId] & (1 << currentType);
+    return qCanConvertMatrix[targetTypeId] & (1 << currentType);
 }
 
 /*!
@@ -2645,15 +2660,24 @@ bool QVariant::isNull() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QVariant &v)
 {
-    dbg.nospace() << "QVariant(" << QMetaType::typeName(v.userType()) << ", ";
-    handlerManager[v.d.type]->debugStream(dbg, v);
+    const uint typeId = v.d.type;
+    dbg.nospace() << "QVariant(";
+    if (typeId != QMetaType::UnknownType) {
+        dbg.nospace() << QMetaType::typeName(typeId) << ", ";
+        handlerManager[typeId]->debugStream(dbg, v);
+    } else {
+        dbg.nospace() << "Invalid";
+    }
     dbg.nospace() << ')';
     return dbg.space();
 }
 
 QDebug operator<<(QDebug dbg, const QVariant::Type p)
 {
-    dbg.nospace() << "QVariant::" << QMetaType::typeName(p);
+    dbg.nospace() << "QVariant::"
+                  << (int(p) != int(QMetaType::UnknownType)
+                     ? QMetaType::typeName(p)
+                     : "Invalid");
     return dbg.space();
 }
 #endif

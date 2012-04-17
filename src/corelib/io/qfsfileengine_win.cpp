@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#define _POSIX_
 #include "qplatformdefs.h"
 #include "private/qabstractfileengine_p.h"
 #include "private/qfsfileengine_p.h"
@@ -66,6 +65,7 @@
 #include <accctrl.h>
 #include <ctype.h>
 #include <limits.h>
+#include <stdio.h>
 #define SECURITY_WIN32
 #include <security.h>
 

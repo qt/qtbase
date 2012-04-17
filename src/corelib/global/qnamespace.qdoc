@@ -537,13 +537,6 @@
            same pair of objects, then the connection will fail. This
            connection type was introduced in Qt 4.6.
 
-    \value AutoCompatConnection
-           The default type when Qt 3 support is enabled. Same as
-           AutoConnection but will also cause warnings to be output in
-           certain situations. See \l{Porting to Qt 4#Compatibility
-           Signals and Slots}{Compatibility Signals and Slots} for
-           further information.
-
     With queued connections, the parameters must be of types that are
     known to Qt's meta-object system, because Qt needs to copy the
     arguments to store them in an event behind the scenes. If you try
@@ -999,11 +992,6 @@
     widget's author. To render outside of Qt's paint system, e.g., if you
     require native painting primitives, you need to reimplement
     QWidget::paintEngine() to return 0 and set this flag.
-
-    \value WA_PaintOutsidePaintEvent Makes it possible to use QPainter to
-    paint on the widget outside \l{QWidget::paintEvent()}{paintEvent()}. This
-    flag is not supported on Windows, Mac OS X or Embedded Linux. We recommend
-    that you use it only when porting Qt 3 code to Qt 4.
 
     \value WA_PaintUnclipped Makes all painters operating on this widget
     unclipped. Children of this widget or other widgets in front of it do not
@@ -2309,9 +2297,6 @@
     \value AutoText The text string is interpreted as for
         Qt::RichText if Qt::mightBeRichText() returns true, otherwise
         as Qt::PlainText.
-
-    \value LogText A special, limited text format which is only used
-    by Q3TextEdit in an optimized mode.
 */
 
 /*!

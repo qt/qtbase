@@ -62,8 +62,8 @@ class QSqlQueryPrivate;
 class Q_SQL_EXPORT QSqlQuery
 {
 public:
-    QSqlQuery(QSqlResult *r);
-    QSqlQuery(const QString& query = QString(), QSqlDatabase db = QSqlDatabase());
+    explicit QSqlQuery(QSqlResult *r);
+    explicit QSqlQuery(const QString& query = QString(), QSqlDatabase db = QSqlDatabase());
     explicit QSqlQuery(QSqlDatabase db);
     QSqlQuery(const QSqlQuery& other);
     QSqlQuery& operator=(const QSqlQuery& other);

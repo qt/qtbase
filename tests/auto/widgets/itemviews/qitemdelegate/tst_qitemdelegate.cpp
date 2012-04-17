@@ -58,6 +58,7 @@
 #include <qtreewidget.h>
 
 #include <QItemDelegate>
+#include <QComboBox>
 #include <QAbstractItemDelegate>
 #include <QTextEdit>
 #include <QPlainTextEdit>
@@ -228,6 +229,7 @@ private slots:
     void editorEvent();
     void enterKey_data();
     void enterKey();
+    void comboBox();
 
     void task257859_finalizeEdit();
     void QTBUG4435_keepSelectionOnCheck();
@@ -780,6 +782,9 @@ void tst_QItemDelegate::dateTimeEditor()
     QTimeEdit *timeEditor = qFindChild<QTimeEdit *>(widget.viewport());
     QVERIFY(timeEditor);
     QCOMPARE(timeEditor->time(), time);
+    // The data must actually be different in order for the model
+    // to be updated.
+    timeEditor->setTime(time.addSecs(60));
 
     widget.clearFocus();
     qApp->setActiveWindow(&widget);
@@ -791,6 +796,7 @@ void tst_QItemDelegate::dateTimeEditor()
     QDateEdit *dateEditor = qFindChild<QDateEdit *>(widget.viewport());
     QVERIFY(dateEditor);
     QCOMPARE(dateEditor->date(), date);
+    dateEditor->setDate(date.addDays(60));
 
     widget.clearFocus();
     widget.setFocus();
@@ -806,6 +812,12 @@ void tst_QItemDelegate::dateTimeEditor()
     QVERIFY(dateTimeEditor);
     QCOMPARE(dateTimeEditor->date(), date);
     QCOMPARE(dateTimeEditor->time(), time);
+    dateTimeEditor->setTime(time.addSecs(600));
+    widget.clearFocus();
+
+    QVERIFY(item1->data(Qt::EditRole).userType() == QMetaType::QTime);
+    QVERIFY(item2->data(Qt::EditRole).userType() == QMetaType::QDate);
+    QVERIFY(item3->data(Qt::EditRole).userType() == QMetaType::QDateTime);
 }
 
 void tst_QItemDelegate::decoration_data()
@@ -873,7 +885,7 @@ void tst_QItemDelegate::decoration()
     }
     case QVariant::Image: {
         QImage img(size, QImage::Format_Mono);
-        qMemSet(img.bits(), 0, img.byteCount());
+        memset(img.bits(), 0, img.byteCount());
         value = img;
         break;
     }
@@ -1193,6 +1205,35 @@ void tst_QItemDelegate::QTBUG4435_keepSelectionOnCheck()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, pos);
     QTRY_VERIFY(view.selectionModel()->isColumnSelected(0, QModelIndex()));
     QCOMPARE(model.item(0)->checkState(), Qt::Checked);
+}
+
+void tst_QItemDelegate::comboBox()
+{
+    QTableWidgetItem *item1 = new QTableWidgetItem;
+    item1->setData(Qt::DisplayRole, true);
+
+    QTableWidget widget(1, 1);
+    widget.setItem(0, 0, item1);
+    widget.show();
+
+    widget.editItem(item1);
+
+    QTestEventLoop::instance().enterLoop(1);
+
+    QComboBox *boolEditor = qFindChild<QComboBox*>(widget.viewport());
+    QVERIFY(boolEditor);
+    QCOMPARE(boolEditor->currentIndex(), 1); // True is selected initially.
+    // The data must actually be different in order for the model
+    // to be updated.
+    boolEditor->setCurrentIndex(0);
+    QCOMPARE(boolEditor->currentIndex(), 0); // Changed to false.
+
+    widget.clearFocus();
+    widget.setFocus();
+
+    QVariant data = item1->data(Qt::EditRole);
+    QCOMPARE(data.userType(), (int)QMetaType::Bool);
+    QCOMPARE(data.toBool(), false);
 }
 
 

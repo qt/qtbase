@@ -70,7 +70,7 @@ class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
 
 public:
     QNetworkSessionPrivateImpl()
-        : startTime(0), sessionTimeout(-1)
+        : engine(0), startTime(0), lastError(QNetworkSession::UnknownSessionError), sessionTimeout(-1), currentPolicies(QNetworkSession::NoPolicy), opened(false)
     {}
     ~QNetworkSessionPrivateImpl()
     {}
@@ -102,6 +102,9 @@ public:
     quint64 bytesReceived() const;
     quint64 activeTime() const;
 
+    QNetworkSession::UsagePolicies usagePolicies() const;
+    void setUsagePolicies(QNetworkSession::UsagePolicies);
+
 private Q_SLOTS:
     void networkConfigurationsChanged();
     void configurationChanged(QNetworkConfigurationPrivatePointer config);
@@ -121,6 +124,7 @@ private:
     QNetworkSession::SessionError lastError;
 
     int sessionTimeout;
+    QNetworkSession::UsagePolicies currentPolicies;
 
     bool opened;
 };

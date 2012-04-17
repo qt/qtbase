@@ -1026,7 +1026,7 @@ QMakeProject::parse(const QString &t, QHash<QString, QStringList> &place, int nu
         debug_msg(1, "Project Parser: %s:%d : Entering block %d (%d). [%s]", parser.file.toLatin1().constData(),
                   parser.line_no, scope_blocks.count(), scope_failed, s.toLatin1().constData());
     } else if(iterator) {
-        iterator->parselist.append(var+s.mid(d_off));
+        iterator->parselist.append(QString(var+s.mid(d_off)));
         bool ret = iterator->exec(this, place);
         delete iterator;
         return ret;

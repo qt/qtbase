@@ -55,17 +55,24 @@ public:
     Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, FILE *outfile = 0);
     void generateCode();
 private:
+    void registerClassInfoStrings();
     void generateClassInfos();
-    void generateFunctions(const QList<FunctionDef> &list, const char *functype, int type);
+    void registerFunctionStrings(const QList<FunctionDef> &list);
+    void generateFunctions(const QList<FunctionDef> &list, const char *functype, int type, int &paramsIndex);
     void generateFunctionRevisions(const QList<FunctionDef>& list, const char *functype);
+    void generateFunctionParameters(const QList<FunctionDef> &list, const char *functype);
+    void generateTypeInfo(const QByteArray &typeName, bool allowEmptyName = false);
+    void registerEnumStrings();
     void generateEnums(int index);
+    void registerPropertyStrings();
     void generateProperties();
     void generateMetacall();
     void generateStaticMetacall();
     void generateSignal(FunctionDef *def, int index);
     void generatePluginMetaData();
 
-    int strreg(const QByteArray &); // registers a string and returns its id
+    void strreg(const QByteArray &); // registers a string
+    int stridx(const QByteArray &); // returns a string's id
     QList<QByteArray> strings;
     QByteArray purestSuperClass;
     QList<QByteArray> metaTypes;

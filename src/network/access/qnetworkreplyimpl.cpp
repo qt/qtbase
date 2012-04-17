@@ -90,6 +90,18 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     }
 
+#ifndef QT_NO_BEARERMANAGEMENT
+    // Do not start background requests if they are not allowed by session policy
+    QSharedPointer<QNetworkSession> session(manager->d_func()->networkSession);
+    QVariant isBackground = backend->request().attribute(QNetworkRequest::BackgroundRequestAttribute, QVariant::fromValue(false));
+    if (isBackground.toBool() && session && session->usagePolicies().testFlag(QNetworkSession::NoBackgroundTrafficPolicy)) {
+        error(QNetworkReply::BackgroundRequestNotAllowedError,
+            QCoreApplication::translate("QNetworkReply", "Background request not allowed."));
+        finished();
+        return;
+    }
+#endif
+
     if (!backend->start()) {
 #ifndef QT_NO_BEARERMANAGEMENT
         // backend failed to start because the session state is not Connected.
@@ -97,20 +109,20 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         // state changes.
         state = WaitingForSession;
 
-        QNetworkSession *session = manager->d_func()->networkSession.data();
-
         if (session) {
             Q_Q(QNetworkReplyImpl);
 
-            QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
+            QObject::connect(session.data(), SIGNAL(error(QNetworkSession::SessionError)),
                              q, SLOT(_q_networkSessionFailed()));
 
-            if (!session->isOpen())
+            if (!session->isOpen()) {
+                session->setSessionProperty(QStringLiteral("ConnectInBackground"), isBackground);
                 session->open();
+            }
         } else {
             qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
             state = Working;
-            error(QNetworkReplyImpl::UnknownNetworkError,
+            error(QNetworkReplyImpl::NetworkSessionFailedError,
                   QCoreApplication::translate("QNetworkReply", "Network session error."));
             finished();
         }
@@ -296,8 +308,13 @@ void QNetworkReplyImplPrivate::_q_networkSessionFailed()
     // Abort waiting and working replies.
     if (state == WaitingForSession || state == Working) {
         state = Working;
-        error(QNetworkReplyImpl::UnknownNetworkError,
-              QCoreApplication::translate("QNetworkReply", "Network session error."));
+        QSharedPointer<QNetworkSession> session(manager->d_func()->networkSession);
+        QString errorStr;
+        if (session)
+            errorStr = session->errorString();
+        else
+            errorStr = QCoreApplication::translate("QNetworkReply", "Network session error.");
+        error(QNetworkReplyImpl::NetworkSessionFailedError, errorStr);
         finished();
     }
 }
@@ -970,7 +987,7 @@ qint64 QNetworkReplyImpl::readData(char *data, qint64 maxlen)
         if (maxAvail == 0)
             return d->state == QNetworkReplyImplPrivate::Finished ? -1 : 0;
         // FIXME what about "Aborted" state?
-        qMemCopy(data, d->downloadBuffer + d->downloadBufferReadPosition, maxAvail);
+        memcpy(data, d->downloadBuffer + d->downloadBufferReadPosition, maxAvail);
         d->downloadBufferReadPosition += maxAvail;
         return maxAvail;
     }

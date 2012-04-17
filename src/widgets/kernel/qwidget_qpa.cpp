@@ -441,12 +441,12 @@ static inline QRect positionTopLevelWindow(QRect geometry, const QScreen *screen
 void QWidgetPrivate::show_sys()
 {
     Q_Q(QWidget);
-    q->setAttribute(Qt::WA_Mapped);
 
     QWindow *window = q->windowHandle();
 
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         invalidateBuffer(q->rect());
+        q->setAttribute(Qt::WA_Mapped);
         if (q->isWindow() && q->windowModality() != Qt::NonModal && window) {
             // add our window to the modal window list
             QGuiApplicationPrivate::showModalWindow(window);
@@ -488,7 +488,6 @@ void QWidgetPrivate::show_sys()
 void QWidgetPrivate::hide_sys()
 {
     Q_Q(QWidget);
-    q->setAttribute(Qt::WA_Mapped, false);
 
     QWindow *window = q->windowHandle();
 
@@ -501,6 +500,7 @@ void QWidgetPrivate::hide_sys()
     }
 
     deactivateWidgetCleanup();
+
     if (!q->isWindow()) {
         QWidget *p = q->parentWidget();
         if (p &&p->isVisible()) {
@@ -509,8 +509,13 @@ void QWidgetPrivate::hide_sys()
         return;
     }
 
-    if (window)
-        window->setVisible(false);
+    invalidateBuffer(q->rect());
+
+    if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
+        q->setAttribute(Qt::WA_Mapped, false);
+    } else if (window) {
+         window->setVisible(false);
+    }
 }
 
 void QWidgetPrivate::setMaxWindowState_helper()

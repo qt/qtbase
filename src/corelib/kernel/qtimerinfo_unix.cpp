@@ -412,6 +412,37 @@ bool QTimerInfoList::timerWait(timeval &tm)
     return true;
 }
 
+/*
+  Returns the timer's remaining time in milliseconds with the given timerId, or
+  null if there is nothing left. If the timer id is not found in the list, the
+  returned value will be -1. If the timer is overdue, the returned value will be 0.
+*/
+int QTimerInfoList::timerRemainingTime(int timerId)
+{
+    timeval currentTime = updateCurrentTime();
+    repairTimersIfNeeded();
+    timeval tm = {0, 0};
+
+    for (int i = 0; i < count(); ++i) {
+        register QTimerInfo *t = at(i);
+        if (t->id == timerId) {
+            if (currentTime < t->timeout) {
+                // time to wait
+                tm = roundToMillisecond(t->timeout - currentTime);
+                return tm.tv_sec*1000 + tm.tv_usec/1000;
+            } else {
+                return 0;
+            }
+        }
+    }
+
+#ifndef QT_NO_DEBUG
+    qWarning("QTimerInfoList::timerRemainingTime: timer id %i not found", timerId);
+#endif
+
+    return -1;
+}
+
 void QTimerInfoList::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
 {
     QTimerInfo *t = new QTimerInfo;

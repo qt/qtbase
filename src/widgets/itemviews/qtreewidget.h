@@ -69,7 +69,7 @@ class Q_WIDGETS_EXPORT QTreeWidgetItem
 public:
     enum ItemType { Type = 0, UserType = 1000 };
     explicit QTreeWidgetItem(int type = Type);
-    QTreeWidgetItem(const QStringList &strings, int type = Type);
+    explicit QTreeWidgetItem(const QStringList &strings, int type = Type);
     explicit QTreeWidgetItem(QTreeWidget *view, int type = Type);
     QTreeWidgetItem(QTreeWidget *view, const QStringList &strings, int type = Type);
     QTreeWidgetItem(QTreeWidget *view, QTreeWidgetItem *after, int type = Type);
@@ -277,7 +277,6 @@ public:
     void insertTopLevelItem(int index, QTreeWidgetItem *item);
     void addTopLevelItem(QTreeWidgetItem *item);
     QTreeWidgetItem *takeTopLevelItem(int index);
-    int indexOfTopLevelItem(QTreeWidgetItem *item); // ### Qt 5: remove me
     int indexOfTopLevelItem(QTreeWidgetItem *item) const;
 
     void insertTopLevelItems(int index, const QList<QTreeWidgetItem*> &items);
@@ -300,8 +299,6 @@ public:
 
     int sortColumn() const;
     void sortItems(int column, Qt::SortOrder order);
-    void setSortingEnabled(bool enable);
-    bool isSortingEnabled() const;
 
     void editItem(QTreeWidgetItem *item, int column = 0);
     void openPersistentEditor(QTreeWidgetItem *item, int column = 0);

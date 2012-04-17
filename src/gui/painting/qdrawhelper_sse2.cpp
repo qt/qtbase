@@ -310,7 +310,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, u
     }
 }
 
-CompositionFunctionSolid qt_functionForModeSolid_onlySSE2[numCompositionFunctions] = {
+CompositionFunctionSolid qt_functionForModeSolid_SSE2[numCompositionFunctions] = {
     comp_func_solid_SourceOver_sse2,
     comp_func_solid_DestinationOver,
     comp_func_solid_Clear,
@@ -346,7 +346,7 @@ CompositionFunctionSolid qt_functionForModeSolid_onlySSE2[numCompositionFunction
     rasterop_solid_SourceAndNotDestination
 };
 
-CompositionFunction qt_functionForMode_onlySSE2[numCompositionFunctions] = {
+CompositionFunction qt_functionForMode_SSE2[numCompositionFunctions] = {
     comp_func_SourceOver_sse2,
     comp_func_DestinationOver,
     comp_func_Clear,

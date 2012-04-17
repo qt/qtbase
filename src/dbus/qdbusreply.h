@@ -152,7 +152,7 @@ public:
     }
     inline QDBusReply& operator=(const QDBusMessage &reply)
     {
-        m_error = reply;
+        m_error = QDBusError(reply);
         return *this;
     }
     inline QDBusReply(const QDBusError &dbusError = QDBusError())

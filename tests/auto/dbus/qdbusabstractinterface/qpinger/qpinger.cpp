@@ -42,14 +42,14 @@
 #include <QtDBus/QtDBus>
 #include "../interface.h"
 
-static const char serviceName[] = "com.trolltech.autotests.qpinger";
-static const char objectPath[] = "/com/trolltech/qpinger";
+static const char serviceName[] = "org.qtproject.autotests.qpinger";
+static const char objectPath[] = "/org/qtproject/qpinger";
 //static const char *interfaceName = serviceName;
 
 class PingerServer : public QDBusServer
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "com.trolltech.autotests.qpinger")
+    Q_CLASSINFO("D-Bus Interface", "org.qtproject.autotests.qpinger")
 public:
     PingerServer(QString addr = "unix:tmpdir=/tmp", QObject* parent = 0)
         : QDBusServer(addr, parent),

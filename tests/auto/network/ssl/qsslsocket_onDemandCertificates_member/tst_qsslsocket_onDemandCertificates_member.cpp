@@ -51,15 +51,7 @@
 #include "../../../network-settings.h"
 
 #ifndef QT_NO_OPENSSL
-class QSslSocketPtr: public QSharedPointer<QSslSocket>
-{
-public:
-    inline QSslSocketPtr(QSslSocket *ptr = 0)
-        : QSharedPointer<QSslSocket>(ptr)
-    { }
-
-    inline operator QSslSocket *() const { return data(); }
-};
+typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 #endif
 
 class tst_QSslSocket_onDemandCertificates_member : public QObject
@@ -201,28 +193,28 @@ void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMe
 
     // not using any root certs -> should not work
     QSslSocketPtr socket2 = newSocket();
-    this->socket = socket2;
+    this->socket = socket2.data();
     socket2->setCaCertificates(QList<QSslCertificate>());
     socket2->connectToHostEncrypted(host, 443);
     QVERIFY(!socket2->waitForEncrypted());
 
     // default: using on demand loading -> should work
     QSslSocketPtr socket = newSocket();
-    this->socket = socket;
+    this->socket = socket.data();
     socket->connectToHostEncrypted(host, 443);
     QEXPECT_FAIL("", "QTBUG-20983 fails", Abort);
     QVERIFY2(socket->waitForEncrypted(), qPrintable(socket->errorString()));
 
     // not using any root certs again -> should not work
     QSslSocketPtr socket3 = newSocket();
-    this->socket = socket3;
+    this->socket = socket3.data();
     socket3->setCaCertificates(QList<QSslCertificate>());
     socket3->connectToHostEncrypted(host, 443);
     QVERIFY(!socket3->waitForEncrypted());
 
     // setting empty SSL configuration explicitly -> should not work
     QSslSocketPtr socket4 = newSocket();
-    this->socket = socket4;
+    this->socket = socket4.data();
     socket4->setSslConfiguration(QSslConfiguration());
     socket4->connectToHostEncrypted(host, 443);
     QVERIFY(!socket4->waitForEncrypted());

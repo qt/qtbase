@@ -59,7 +59,7 @@ class Q_CORE_EXPORT QAbstractProxyModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    QAbstractProxyModel(QObject *parent = 0);
+    explicit QAbstractProxyModel(QObject *parent = 0);
     ~QAbstractProxyModel();
 
     virtual void setSourceModel(QAbstractItemModel *sourceModel);

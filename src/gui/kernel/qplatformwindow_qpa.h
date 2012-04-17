@@ -74,7 +74,7 @@ class Q_GUI_EXPORT QPlatformWindow : public QPlatformSurface
 {
     Q_DECLARE_PRIVATE(QPlatformWindow)
 public:
-    QPlatformWindow(QWindow *window);
+    explicit QPlatformWindow(QWindow *window);
     virtual ~QPlatformWindow();
 
     QWindow *window() const;

@@ -91,8 +91,8 @@ Q_SIGNALS:
     void rejected();
 
 public Q_SLOTS:
-    void open();
-    int exec();
+    virtual void open();
+    virtual int exec();
     virtual void done(int);
     virtual void accept();
     virtual void reject();

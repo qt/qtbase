@@ -38,7 +38,7 @@ CFLAGS_BARE = -c -Fo./ \
               -I$(BUILD_PATH)\src\corelib\global \
               -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \
               -I$(SOURCE_PATH)\tools\shared \
-              -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NODLL -DQT_NO_STL \
+              -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NODLL \
               -DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP -DQT_BUILD_QMAKE -DQT_NO_THREAD \
               -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM -DQT_BOOTSTRAPPED
 CFLAGS   = -Yuqmake_pch.h -FIqmake_pch.h -Fpqmake_pch.pch $(CFLAGS_BARE) $(CFLAGS)
@@ -78,12 +78,14 @@ QTOBJS= \
 	qfilesystemiterator_win.obj \
 	qfsfileengine.obj \
 	qfsfileengine_iterator.obj \
+	qarraydata.obj \
 	qbytearray.obj \
 	qvsnprintf.obj \
 	qbytearraymatcher.obj \
 	qdatetime.obj \
 	qdir.obj \
 	qdiriterator.obj \
+	qfiledevice.obj \
 	qfile.obj \
 	qtemporaryfile.obj \
 	qabstractfileengine.obj \
@@ -105,6 +107,7 @@ QTOBJS= \
 	qutfcodec.obj \
 	qstring.obj \
 	qstringlist.obj \
+	qstringbuilder.obj \
 	qsystemerror.obj \
 	qtextstream.obj \
 	qdatastream.obj \
@@ -113,7 +116,6 @@ QTOBJS= \
 	qsettings.obj \
 	qlibraryinfo.obj \
 	qvariant.obj \
-	qurl.obj \
 	qsettings_win.obj \
 	qmetatype.obj \
 	qxmlstream.obj \

@@ -336,7 +336,7 @@ void QWidgetResizeHandler::setMouseCursor(MousePosition m)
     QObjectList children = widget->children();
     for (int i = 0; i < children.size(); ++i) {
         if (QWidget *w = qobject_cast<QWidget*>(children.at(i))) {
-            if (!w->testAttribute(Qt::WA_SetCursor) && !w->inherits("QWorkspaceTitleBar")) {
+            if (!w->testAttribute(Qt::WA_SetCursor)) {
                 w->setCursor(Qt::ArrowCursor);
             }
         }

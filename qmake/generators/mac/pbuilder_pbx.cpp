@@ -1928,7 +1928,7 @@ ProjectBuilderMakefileGenerator::writeSettings(QString var, QStringList vals, in
 {
     QString ret;
     const QString quote = (flags & SettingsNoQuote) ? "" : "\"";
-    const QString escape_quote = quote.isEmpty() ? "" : "\\" + quote;
+    const QString escape_quote = quote.isEmpty() ? "" : QString("\\" + quote);
     QString newline = "\n";
     for(int i = 0; i < indent_level; ++i)
         newline += "\t";

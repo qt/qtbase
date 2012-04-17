@@ -76,7 +76,7 @@ class tst_BadXmlSub : public tst_BadXml
 public:
     tst_BadXmlSub()
         : className("tst_BadXml"), mo(0) {}
-    ~tst_BadXmlSub() { qFree(mo); }
+    ~tst_BadXmlSub() { free(mo); }
 
     const QMetaObject* metaObject() const;
 
@@ -88,7 +88,7 @@ private:
 const QMetaObject* tst_BadXmlSub::metaObject() const
 {
     if (!mo || (mo->className() != className)) {
-        qFree(mo);
+        free(mo);
         QMetaObjectBuilder builder(&EmptyClass::staticMetaObject);
         builder.setClassName(className);
         const_cast<tst_BadXmlSub *>(this)->mo = builder.toMetaObject();

@@ -755,7 +755,7 @@ void tst_Moc::classinfoWithEscapes()
     QCOMPARE(mobj->methodCount() - mobj->methodOffset(), 1);
 
     QMetaMethod mm = mobj->method(mobj->methodOffset());
-    QCOMPARE(mm.signature(), "slotWithAReallyLongName(int)");
+    QCOMPARE(mm.methodSignature(), QByteArray("slotWithAReallyLongName(int)"));
 }
 
 void tst_Moc::trNoopInClassInfo()
@@ -881,6 +881,8 @@ void tst_Moc::slotsWithVoidTemplate()
                              &test, SLOT(dummySlot(void))));
     QVERIFY(QObject::connect(&test, SIGNAL(mySignal(const TestTemplate<void> &)),
                              &test, SLOT(anotherSlot(const TestTemplate<void> &))));
+    QVERIFY(QObject::connect(&test, SIGNAL(myVoidSignal2()),
+                             &test, SLOT(dummySlot2())));
 }
 
 void tst_Moc::structQObject()
@@ -1100,14 +1102,14 @@ void tst_Moc::invokable()
     {
         const QMetaObject &mobj = InvokableBeforeReturnType::staticMetaObject;
         QCOMPARE(mobj.methodCount(), 6);
-        QVERIFY(mobj.method(5).signature() == QByteArray("foo()"));
+        QVERIFY(mobj.method(5).methodSignature() == QByteArray("foo()"));
     }
 
     {
         const QMetaObject &mobj = InvokableBeforeInline::staticMetaObject;
         QCOMPARE(mobj.methodCount(), 7);
-        QVERIFY(mobj.method(5).signature() == QByteArray("foo()"));
-        QVERIFY(mobj.method(6).signature() == QByteArray("bar()"));
+        QVERIFY(mobj.method(5).methodSignature() == QByteArray("foo()"));
+        QVERIFY(mobj.method(6).methodSignature() == QByteArray("bar()"));
     }
 }
 
@@ -1116,22 +1118,22 @@ void tst_Moc::singleFunctionKeywordSignalAndSlot()
     {
         const QMetaObject &mobj = SingleFunctionKeywordBeforeReturnType::staticMetaObject;
         QCOMPARE(mobj.methodCount(), 7);
-        QVERIFY(mobj.method(5).signature() == QByteArray("mySignal()"));
-        QVERIFY(mobj.method(6).signature() == QByteArray("mySlot()"));
+        QVERIFY(mobj.method(5).methodSignature() == QByteArray("mySignal()"));
+        QVERIFY(mobj.method(6).methodSignature() == QByteArray("mySlot()"));
     }
 
     {
         const QMetaObject &mobj = SingleFunctionKeywordBeforeInline::staticMetaObject;
         QCOMPARE(mobj.methodCount(), 7);
-        QVERIFY(mobj.method(5).signature() == QByteArray("mySignal()"));
-        QVERIFY(mobj.method(6).signature() == QByteArray("mySlot()"));
+        QVERIFY(mobj.method(5).methodSignature() == QByteArray("mySignal()"));
+        QVERIFY(mobj.method(6).methodSignature() == QByteArray("mySlot()"));
     }
 
     {
         const QMetaObject &mobj = SingleFunctionKeywordAfterInline::staticMetaObject;
         QCOMPARE(mobj.methodCount(), 7);
-        QVERIFY(mobj.method(5).signature() == QByteArray("mySignal()"));
-        QVERIFY(mobj.method(6).signature() == QByteArray("mySlot()"));
+        QVERIFY(mobj.method(5).methodSignature() == QByteArray("mySignal()"));
+        QVERIFY(mobj.method(6).methodSignature() == QByteArray("mySlot()"));
     }
 }
 
@@ -1238,7 +1240,7 @@ void tst_Moc::constructors()
         QMetaMethod mm = mo->constructor(0);
         QCOMPARE(mm.access(), QMetaMethod::Public);
         QCOMPARE(mm.methodType(), QMetaMethod::Constructor);
-        QCOMPARE(mm.signature(), "CtorTestClass(QObject*)");
+        QCOMPARE(mm.methodSignature(), QByteArray("CtorTestClass(QObject*)"));
         QCOMPARE(mm.typeName(), "");
         QList<QByteArray> paramNames = mm.parameterNames();
         QCOMPARE(paramNames.size(), 1);
@@ -1251,7 +1253,7 @@ void tst_Moc::constructors()
         QMetaMethod mm = mo->constructor(1);
         QCOMPARE(mm.access(), QMetaMethod::Public);
         QCOMPARE(mm.methodType(), QMetaMethod::Constructor);
-        QCOMPARE(mm.signature(), "CtorTestClass()");
+        QCOMPARE(mm.methodSignature(), QByteArray("CtorTestClass()"));
         QCOMPARE(mm.typeName(), "");
         QCOMPARE(mm.parameterNames().size(), 0);
         QCOMPARE(mm.parameterTypes().size(), 0);
@@ -1260,7 +1262,7 @@ void tst_Moc::constructors()
         QMetaMethod mm = mo->constructor(2);
         QCOMPARE(mm.access(), QMetaMethod::Public);
         QCOMPARE(mm.methodType(), QMetaMethod::Constructor);
-        QCOMPARE(mm.signature(), "CtorTestClass(QString)");
+        QCOMPARE(mm.methodSignature(), QByteArray("CtorTestClass(QString)"));
         QCOMPARE(mm.typeName(), "");
         QList<QByteArray> paramNames = mm.parameterNames();
         QCOMPARE(paramNames.size(), 1);

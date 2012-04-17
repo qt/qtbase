@@ -52,6 +52,7 @@ class tst_QAtomicInt : public QObject
 
 private slots:
     void warningFree();
+    void alignment();
 
     // QAtomicInt members
     void constructor_data();
@@ -92,33 +93,101 @@ private:
     static void warningFreeHelper();
 };
 
+template <int I>
+static inline void assemblyMarker(void *ptr = 0)
+{
+    puts((char *)ptr + I);
+}
+
+QT_BEGIN_NAMESPACE
+template <typename T> class QBasicAtomicInteger; // even if it this class isn't supported
+QT_END_NAMESPACE
+
+template <typename  T, typename Atomic>
+static void warningFreeHelperTemplate()
+{
+    T expectedValue = 0;
+    T newValue = 0;
+    T valueToAdd = 0;
+
+    // the marker calls are here only to provide a divider for
+    // those reading the assembly output
+    assemblyMarker<0>();
+    Atomic i = Q_BASIC_ATOMIC_INITIALIZER(0);
+    printf("%d\n", int(i.loadAcquire()));
+    assemblyMarker<1>(&i);
+
+    // the loads sometimes generate no assembly output
+    i.load();
+    assemblyMarker<11>(&i);
+    i.loadAcquire();
+    assemblyMarker<12>(&i);
+
+    i.store(newValue);
+    assemblyMarker<21>(&i);
+    i.storeRelease(newValue);
+    assemblyMarker<22>(&i);
+
+    i.ref();
+    assemblyMarker<31>(&i);
+    i.deref();
+    assemblyMarker<32>(&i);
+
+    i.testAndSetRelaxed(expectedValue, newValue);
+    assemblyMarker<41>(&i);
+    i.testAndSetAcquire(expectedValue, newValue);
+    assemblyMarker<42>(&i);
+    i.testAndSetRelease(expectedValue, newValue);
+    assemblyMarker<43>(&i);
+    i.testAndSetOrdered(expectedValue, newValue);
+    assemblyMarker<44>(&i);
+
+    i.fetchAndStoreRelaxed(newValue);
+    assemblyMarker<51>(&i);
+    i.fetchAndStoreAcquire(newValue);
+    assemblyMarker<52>(&i);
+    i.fetchAndStoreRelease(newValue);
+    assemblyMarker<53>(&i);
+    i.fetchAndStoreOrdered(newValue);
+    assemblyMarker<54>(&i);
+
+    i.fetchAndAddRelaxed(valueToAdd);
+    assemblyMarker<61>(&i);
+    i.fetchAndAddAcquire(valueToAdd);
+    assemblyMarker<62>(&i);
+    i.fetchAndAddRelease(valueToAdd);
+    assemblyMarker<63>(&i);
+    i.fetchAndAddOrdered(valueToAdd);
+    assemblyMarker<64>(&i);
+}
+
 void tst_QAtomicInt::warningFreeHelper()
 {
     qFatal("This code is bogus, and shouldn't be run. We're looking for compiler warnings only.");
+    warningFreeHelperTemplate<int, QBasicAtomicInt>();
 
-    QBasicAtomicInt i = Q_BASIC_ATOMIC_INITIALIZER(0);
+#ifdef Q_ATOMIC_INT32_IS_SUPPORTED
+    warningFreeHelperTemplate<int, QBasicAtomicInteger<int> >();
+    warningFreeHelperTemplate<unsigned int, QBasicAtomicInteger<unsigned int> >();
+#endif
 
-    int expectedValue = 0;
-    int newValue = 0;
-    int valueToAdd = 0;
+#ifdef Q_ATOMIC_INT16_IS_SUPPORTED
+    warningFreeHelperTemplate<qint16, QBasicAtomicInteger<qint16> >();
+    warningFreeHelperTemplate<quint16, QBasicAtomicInteger<quint16> >();
+#endif
 
-    i.ref();
-    i.deref();
+#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
+    warningFreeHelperTemplate<char, QBasicAtomicInteger<char> >();
+    warningFreeHelperTemplate<signed char, QBasicAtomicInteger<signed char> >();
+    warningFreeHelperTemplate<unsigned char, QBasicAtomicInteger<unsigned char> >();
+#endif
 
-    i.testAndSetRelaxed(expectedValue, newValue);
-    i.testAndSetAcquire(expectedValue, newValue);
-    i.testAndSetRelease(expectedValue, newValue);
-    i.testAndSetOrdered(expectedValue, newValue);
-
-    i.fetchAndStoreRelaxed(newValue);
-    i.fetchAndStoreAcquire(newValue);
-    i.fetchAndStoreRelease(newValue);
-    i.fetchAndStoreOrdered(newValue);
-
-    i.fetchAndAddRelaxed(valueToAdd);
-    i.fetchAndAddAcquire(valueToAdd);
-    i.fetchAndAddRelease(valueToAdd);
-    i.fetchAndAddOrdered(valueToAdd);
+#ifdef Q_ATOMIC_INT64_IS_SUPPORTED
+#if !defined(__i386__) || (defined(Q_CC_GNU) && defined(__OPTIMIZE__))
+    warningFreeHelperTemplate<qlonglong, QBasicAtomicInteger<qlonglong> >();
+    warningFreeHelperTemplate<qulonglong, QBasicAtomicInteger<qulonglong> >();
+#endif
+#endif
 }
 
 void tst_QAtomicInt::warningFree()
@@ -128,6 +197,35 @@ void tst_QAtomicInt::warningFree()
 
     void (*foo)() = &warningFreeHelper;
     (void)foo;
+}
+
+template <typename T> struct TypeInStruct { T type; };
+
+void tst_QAtomicInt::alignment()
+{
+#ifdef Q_ALIGNOF
+    // this will cause a build error if the alignment isn't the same
+    char dummy1[Q_ALIGNOF(QBasicAtomicInt) == Q_ALIGNOF(TypeInStruct<int>) ? 1 : -1];
+    char dummy2[Q_ALIGNOF(QAtomicInt) == Q_ALIGNOF(TypeInStruct<int>) ? 1 : -1];
+    (void)dummy1; (void)dummy2;
+
+#ifdef Q_ATOMIC_INT32_IS_SUPPORTED
+    QCOMPARE(Q_ALIGNOF(QBasicAtomicInteger<int>), Q_ALIGNOF(TypeInStruct<int>));
+#endif
+
+#ifdef Q_ATOMIC_INT16_IS_SUPPORTED
+    QCOMPARE(Q_ALIGNOF(QBasicAtomicInteger<short>), Q_ALIGNOF(TypeInStruct<short>));
+#endif
+
+#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
+    QCOMPARE(Q_ALIGNOF(QBasicAtomicInteger<char>), Q_ALIGNOF(TypeInStruct<char>));
+#endif
+
+#ifdef Q_ATOMIC_INT64_IS_SUPPORTED
+    QCOMPARE(Q_ALIGNOF(QBasicAtomicInteger<qlonglong>), Q_ALIGNOF(TypeInStruct<qlonglong>));
+#endif
+
+#endif
 }
 
 void tst_QAtomicInt::constructor_data()

@@ -659,9 +659,10 @@ void tst_NetworkSelfTest::httpServerFiles()
 {
     QFETCH(QString, uri);
     QFETCH(int, size);
+    QUrl url(uri);
 
     QList<Chat> chat;
-    chat << Chat::send("HEAD " + QUrl::toPercentEncoding(uri, "/") + " HTTP/1.0\r\n"
+    chat << Chat::send("HEAD " + url.toEncoded() + " HTTP/1.0\r\n"
                        "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
                        "Connection: close\r\n"
                        "Authorization: Basic cXNvY2tzdGVzdDpwYXNzd29yZA==\r\n"

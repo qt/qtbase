@@ -55,6 +55,8 @@
 
 #include "QtCore/qbytearray.h"
 
+#include <stdlib.h>
+
 QT_BEGIN_NAMESPACE
 
 template <typename Type> class QDataBuffer
@@ -64,7 +66,7 @@ public:
     {
         capacity = res;
         if (res)
-            buffer = (Type*) qMalloc(capacity * sizeof(Type));
+            buffer = (Type*) malloc(capacity * sizeof(Type));
         else
             buffer = 0;
         siz = 0;
@@ -73,7 +75,7 @@ public:
     ~QDataBuffer()
     {
         if (buffer)
-            qFree(buffer);
+            free(buffer);
     }
 
     inline void reset() { siz = 0; }
@@ -112,16 +114,16 @@ public:
                 capacity = 1;
             while (capacity < size)
                 capacity *= 2;
-            buffer = (Type*) qRealloc(buffer, capacity * sizeof(Type));
+            buffer = (Type*) realloc(buffer, capacity * sizeof(Type));
         }
     }
 
     inline void shrink(int size) {
         capacity = size;
         if (size)
-            buffer = (Type*) qRealloc(buffer, capacity * sizeof(Type));
+            buffer = (Type*) realloc(buffer, capacity * sizeof(Type));
         else {
-            qFree(buffer);
+            free(buffer);
             buffer = 0;
         }
     }

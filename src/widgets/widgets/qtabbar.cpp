@@ -429,7 +429,7 @@ void QTabBarPrivate::layoutTabs()
             tabList[i].maxRect = QRect(x, 0, sz.width(), sz.height());
             x += sz.width();
             maxHeight = qMax(maxHeight, sz.height());
-            sz = minimumTabSizeHint(i);
+            sz = q->minimumTabSizeHint(i);
             tabList[i].minRect = QRect(minx, 0, sz.width(), sz.height());
             minx += sz.width();
             tabChain[tabChainIndex].init();
@@ -454,7 +454,7 @@ void QTabBarPrivate::layoutTabs()
             tabList[i].maxRect = QRect(0, y, sz.width(), sz.height());
             y += sz.height();
             maxWidth = qMax(maxWidth, sz.width());
-            sz = minimumTabSizeHint(i);
+            sz = q->minimumTabSizeHint(i);
             tabList[i].minRect = QRect(0, miny, sz.width(), sz.height());
             miny += sz.height();
             tabChain[tabChainIndex].init();
@@ -1296,13 +1296,18 @@ static QString computeElidedText(Qt::TextElideMode mode, const QString &text)
     return ret;
 }
 
-QSize QTabBarPrivate::minimumTabSizeHint(int index)
+/*!
+    Returns the minimum tab size hint for the tab at position \a index.
+    \since Qt 5.0
+*/
+
+QSize QTabBar::minimumTabSizeHint(int index) const
 {
-    Q_Q(QTabBar);
-    Tab &tab = tabList[index];
+    Q_D(const QTabBar);
+    QTabBarPrivate::Tab &tab = const_cast<QTabBarPrivate::Tab&>(d->tabList[index]);
     QString oldText = tab.text;
-    tab.text = computeElidedText(elideMode, oldText);
-    QSize size = q->tabSizeHint(index);
+    tab.text = computeElidedText(d->elideMode, oldText);
+    QSize size = tabSizeHint(index);
     tab.text = oldText;
     return size;
 }

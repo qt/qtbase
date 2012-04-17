@@ -83,7 +83,6 @@ static const int blueFrameWidth =  2;  // with of line edit focus frame
 #include <qtoolbar.h>
 #include <qtoolbox.h>
 #include <qtoolbutton.h>
-#include <qworkspace.h>
 #include <qprocess.h>
 #include <qvarlengtharray.h>
 #include <limits.h>
@@ -5629,10 +5628,8 @@ void QPlastiqueStyle::polish(QWidget *widget)
         widget->setAttribute(Qt::WA_Hover);
     }
 
-    if (widget->inherits("QWorkspaceTitleBar")
-        || widget->inherits("QDockSeparator")
-        || widget->inherits("QDockWidgetSeparator")
-        || widget->inherits("Q3DockWindowResizeHandle")) {
+    if (widget->inherits("QDockSeparator")
+        || widget->inherits("QDockWidgetSeparator")) {
         widget->setAttribute(Qt::WA_Hover);
     }
 
@@ -5685,10 +5682,8 @@ void QPlastiqueStyle::unpolish(QWidget *widget)
         widget->setAttribute(Qt::WA_Hover, false);
     }
 
-    if (widget->inherits("QWorkspaceTitleBar")
-        || widget->inherits("QDockSeparator")
-        || widget->inherits("QDockWidgetSeparator")
-        || widget->inherits("Q3DockWindowResizeHandle")) {
+    if (widget->inherits("QDockSeparator")
+        || widget->inherits("QDockWidgetSeparator")) {
         widget->setAttribute(Qt::WA_Hover, false);
     }
 

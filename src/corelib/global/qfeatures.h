@@ -208,9 +208,6 @@
 // Status Tip
 //#define QT_NO_STATUSTIP
 
-// Standard Template Library
-//#define QT_NO_STL
-
 // QMotifStyle
 //#define QT_NO_STYLE_MOTIF
 
@@ -487,11 +484,6 @@
 #define QT_NO_STYLE_STYLESHEET
 #endif
 
-// Q3TabDialog
-#if !defined(QT_NO_TABDIALOG) && (defined(QT_NO_TABBAR))
-#define QT_NO_TABDIALOG
-#endif
-
 // QColorDialog
 #if !defined(QT_NO_COLORDIALOG) && (defined(QT_NO_SPINBOX))
 #define QT_NO_COLORDIALOG
@@ -660,11 +652,6 @@
 // QPrintPreviewWidget
 #if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER) || defined(QT_NO_MAINWINDOW))
 #define QT_NO_PRINTPREVIEWWIDGET
-#endif
-
-// QWorkSpace
-#if !defined(QT_NO_WORKSPACE) && (defined(QT_NO_SCROLLBAR) || defined(QT_NO_MAINWINDOW) || defined(QT_NO_MENUBAR))
-#define QT_NO_WORKSPACE
 #endif
 
 // QCalendarWidget

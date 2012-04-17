@@ -131,6 +131,7 @@ public:
     virtual int indexOf(QWidget *) const;
     virtual int count() const = 0;
     bool isEmpty() const;
+    QSizePolicy::ControlTypes controlTypes() const;
 
     int totalHeightForWidth(int w) const;
     QSize totalMinimumSize() const;

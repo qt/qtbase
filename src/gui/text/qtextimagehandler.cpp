@@ -59,7 +59,7 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format)
     QString name = format.name();
     if (name.startsWith(QLatin1String(":/"))) // auto-detect resources
         name.prepend(QLatin1String("qrc"));
-    QUrl url = QUrl::fromEncoded(name.toUtf8());
+    QUrl url = QUrl(name);
     const QVariant data = doc->resource(QTextDocument::ImageResource, url);
     if (data.type() == QVariant::Pixmap || data.type() == QVariant::Image) {
         pm = qvariant_cast<QPixmap>(data);
@@ -134,7 +134,7 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format)
     QString name = format.name();
     if (name.startsWith(QLatin1String(":/"))) // auto-detect resources
         name.prepend(QLatin1String("qrc"));
-    QUrl url = QUrl::fromEncoded(name.toUtf8());
+    QUrl url = QUrl(name);
     const QVariant data = doc->resource(QTextDocument::ImageResource, url);
     if (data.type() == QVariant::Image) {
         image = qvariant_cast<QImage>(data);

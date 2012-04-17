@@ -314,6 +314,11 @@ void Widget::countFunction()
     QString str = "banana and panama";
     str.count(QRegExp("a[nm]a"));    // returns 4
     //! [18]
+
+    //! [95]
+    QString str = "banana and panama";
+    str.count(QRegularExpression("a[nm]a"));    // returns 4
+    //! [95]
 }
 
 void Widget::dataFunction()
@@ -384,6 +389,11 @@ void Widget::firstIndexOfFunction()
     QString str = "the minimum";
     str.indexOf(QRegExp("m[aeiou]"), 0);       // returns 4
     //! [25]
+
+    //! [93]
+    QString str = "the minimum";
+    str.indexOf(QRegularExpression("m[aeiou]"), 0);       // returns 4
+    //! [93]
 }
 
 void Widget::insertFunction()
@@ -429,6 +439,11 @@ void Widget::lastIndexOfFunction()
     QString str = "the minimum";
     str.lastIndexOf(QRegExp("m[aeiou]"));      // returns 8
     //! [30]
+
+    //! [94]
+    QString str = "the minimum";
+    str.lastIndexOf(QRegularExpression("m[aeiou]"));      // returns 8
+    //! [94]
 }
 
 void Widget::leftFunction()
@@ -499,6 +514,12 @@ void Widget::removeFunction()
     r.remove(QRegExp("[aeiou]."));
     // r == "The"
     //! [39]
+
+    //! [96]
+    QString r = "Telephone";
+    r.remove(QRegularExpression("[aeiou]."));
+    // r == "The"
+    //! [96]
 }
 
 void Widget::replaceFunction()
@@ -533,6 +554,18 @@ void Widget::replaceFunction()
     equis.replace("xx", "x");
     // equis == "xxx"    
     //! [86]
+
+    //! [87]
+    QString s = "Banana";
+    s.replace(QRegularExpression("a[mn]"), "ox");
+    // s == "Boxoxa"
+    //! [87]
+
+    //! [88]
+    QString t = "A <i>bon mot</i>.";
+    t.replace(QRegularExpression("<i>([^<]*)</i>"), "\\emph{\\1}");
+    // t == "A \\emph{bon mot}."
+    //! [88]
 }
 
 void Widget::reserveFunction()
@@ -627,9 +660,16 @@ void Widget::sectionFunction()
     //! [55]
     QString line = "forename\tmiddlename  surname \t \t phone";
     QRegExp sep("\\s+");
-    str = line.section(sep, 2, 2); // s == "surname"
-    str = line.section(sep, -3, -2); // s == "middlename  surname"
+    str = line.section(sep, 2, 2); // str == "surname"
+    str = line.section(sep, -3, -2); // str == "middlename  surname"
     //! [55]
+
+    //! [89]
+    QString line = "forename\tmiddlename  surname \t \t phone";
+    QRegularExpression sep("\\s+");
+    str = line.section(sep, 2, 2); // str == "surname"
+    str = line.section(sep, -3, -2); // str == "middlename  surname"
+    //! [89]
 }
 
 void Widget::setNumFunction()
@@ -682,6 +722,27 @@ void Widget::splitFunction()
     list = str.split(QRegExp("\\b"));
     // list: [ "", "Now", ": ", "this", " ", "sentence", " ", "fragment", "." ]
     //! [61]
+
+    //! [90]
+    QString str;
+    QStringList list;
+
+    str = "Some  text\n\twith  strange whitespace.";
+    list = str.split(QRegularExpression("\\s+"));
+    // list: [ "Some", "text", "with", "strange", "whitespace." ]
+    //! [90]
+
+    //! [91]
+    str = "This time, a normal English sentence.";
+    list = str.split(QRegularExpression("\\W+"), QString::SkipEmptyParts);
+    // list: [ "This", "time", "a", "normal", "English", "sentence" ]
+    //! [91]
+
+    //! [92]
+    str = "Now: this sentence fragment.";
+    list = str.split(QRegularExpression("\\b"));
+    // list: [ "", "Now", ": ", "this", " ", "sentence", " ", "fragment", "." ]
+    //! [92]
 }
 
 void Widget::splitCaseSensitiveFunction()

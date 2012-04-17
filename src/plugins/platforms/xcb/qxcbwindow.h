@@ -85,6 +85,8 @@ public:
     WId winId() const;
     void setParent(const QPlatformWindow *window);
 
+    bool isExposed() const;
+
     void setWindowTitle(const QString &title);
     void raise();
     void lower();
@@ -167,6 +169,8 @@ private:
     bool m_mapped;
     bool m_transparent;
     bool m_deferredActivation;
+    bool m_deferredExpose;
+    bool m_configureNotifyPending;
     xcb_window_t m_netWmUserTimeWindow;
 
     QSurfaceFormat m_format;

@@ -50,170 +50,316 @@
 
 QT_BEGIN_NAMESPACE
 
-const QMapData QMapData::shared_null = {
-    const_cast<QMapData *>(&shared_null),
-    { const_cast<QMapData *>(&shared_null), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    Q_REFCOUNT_INITIALIZER(-1), 0, 0, 0, false, true, false, 0
-};
+const QMapDataBase QMapDataBase::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, { 0, 0, 0 } };
 
-QMapData *QMapData::createData(int alignment)
+const QMapNodeBase *QMapNodeBase::nextNode() const
 {
-    QMapData *d = new QMapData;
-    Q_CHECK_PTR(d);
-    Node *e = reinterpret_cast<Node *>(d);
-    e->backward = e;
-    e->forward[0] = e;
-    d->ref = 1;
-    d->topLevel = 0;
+    const QMapNodeBase *n = this;
+    if (n->right) {
+        n = n->right;
+        while (n->left)
+            n = n->left;
+    } else {
+        const QMapNodeBase *y = n->parent();
+        while (y && n == y->right) {
+            n = y;
+            y = n->parent();
+        }
+        n = y;
+    }
+    return n;
+}
+
+const QMapNodeBase *QMapNodeBase::previousNode() const
+{
+    const QMapNodeBase *n = this;
+    if (n->left) {
+        n = n->left;
+        while (n->right)
+            n = n->right;
+    } else {
+        const QMapNodeBase *y = n->parent();
+        while (y && n == y->left) {
+            n = y;
+            y = n->parent();
+        }
+        n = y;
+    }
+    return n;
+}
+
+
+void QMapDataBase::rotateLeft(QMapNodeBase *x)
+{
+    QMapNodeBase *&root = header.left;
+    QMapNodeBase *y = x->right;
+    x->right = y->left;
+    if (y->left != 0)
+        y->left->setParent(x);
+    y->setParent(x->parent());
+    if (x == root)
+        root = y;
+    else if (x == x->parent()->left)
+        x->parent()->left = y;
+    else
+        x->parent()->right = y;
+    y->left = x;
+    x->setParent(y);
+}
+
+
+void QMapDataBase::rotateRight(QMapNodeBase *x)
+{
+    QMapNodeBase *&root = header.left;
+    QMapNodeBase *y = x->left;
+    x->left = y->right;
+    if (y->right != 0)
+        y->right->setParent(x);
+    y->setParent(x->parent());
+    if (x == root)
+        root = y;
+    else if (x == x->parent()->right)
+        x->parent()->right = y;
+    else
+        x->parent()->left = y;
+    y->right = x;
+    x->setParent(y);
+}
+
+
+void QMapDataBase::rebalance(QMapNodeBase *x)
+{
+    QMapNodeBase *&root = header.left;
+    x->setColor(QMapNodeBase::Red);
+    while (x != root && x->parent()->color() == QMapNodeBase::Red) {
+        if (x->parent() == x->parent()->parent()->left) {
+            QMapNodeBase *y = x->parent()->parent()->right;
+            if (y && y->color() == QMapNodeBase::Red) {
+                x->parent()->setColor(QMapNodeBase::Black);
+                y->setColor(QMapNodeBase::Black);
+                x->parent()->parent()->setColor(QMapNodeBase::Red);
+                x = x->parent()->parent();
+            } else {
+                if (x == x->parent()->right) {
+                    x = x->parent();
+                    rotateLeft(x);
+                }
+                x->parent()->setColor(QMapNodeBase::Black);
+                x->parent()->parent()->setColor(QMapNodeBase::Red);
+                rotateRight (x->parent()->parent());
+            }
+        } else {
+            QMapNodeBase *y = x->parent()->parent()->left;
+            if (y && y->color() == QMapNodeBase::Red) {
+                x->parent()->setColor(QMapNodeBase::Black);
+                y->setColor(QMapNodeBase::Black);
+                x->parent()->parent()->setColor(QMapNodeBase::Red);
+                x = x->parent()->parent();
+            } else {
+                if (x == x->parent()->left) {
+                    x = x->parent();
+                    rotateRight(x);
+                }
+                x->parent()->setColor(QMapNodeBase::Black);
+                x->parent()->parent()->setColor(QMapNodeBase::Red);
+                rotateLeft(x->parent()->parent());
+            }
+        }
+    }
+    root->setColor(QMapNodeBase::Black);
+}
+
+void QMapDataBase::freeNodeAndRebalance(QMapNodeBase *z)
+{
+    QMapNodeBase *&root = header.left;
+    QMapNodeBase *y = z;
+    QMapNodeBase *x;
+    QMapNodeBase *x_parent;
+    if (y->left == 0) {
+        x = y->right;
+    } else {
+        if (y->right == 0) {
+            x = y->left;
+        } else {
+            y = y->right;
+            while (y->left != 0)
+                y = y->left;
+            x = y->right;
+        }
+    }
+    if (y != z) {
+        z->left->setParent(y);
+        y->left = z->left;
+        if (y != z->right) {
+            x_parent = y->parent();
+            if (x)
+                x->setParent(y->parent());
+            y->parent()->left = x;
+            y->right = z->right;
+            z->right->setParent(y);
+        } else {
+            x_parent = y;
+        }
+        if (root == z)
+            root = y;
+        else if (z->parent()->left == z)
+            z->parent()->left = y;
+        else
+            z->parent()->right = y;
+        y->setParent(z->parent());
+        // Swap the colors
+        QMapNodeBase::Color c = y->color();
+        y->setColor(z->color());
+        z->setColor(c);
+        y = z;
+    } else {
+        x_parent = y->parent();
+        if (x)
+            x->setParent(y->parent());
+        if (root == z)
+            root = x;
+        else if (z->parent()->left == z)
+            z->parent()->left = x;
+        else
+            z->parent()->right = x;
+    }
+    if (y->color() != QMapNodeBase::Red) {
+        while (x != root && (x == 0 || x->color() == QMapNodeBase::Black)) {
+            if (x == x_parent->left) {
+                QMapNodeBase *w = x_parent->right;
+                if (w->color() == QMapNodeBase::Red) {
+                    w->setColor(QMapNodeBase::Black);
+                    x_parent->setColor(QMapNodeBase::Red);
+                    rotateLeft(x_parent);
+                    w = x_parent->right;
+                }
+                if ((w->left == 0 || w->left->color() == QMapNodeBase::Black) &&
+                    (w->right == 0 || w->right->color() == QMapNodeBase::Black)) {
+                    w->setColor(QMapNodeBase::Red);
+                    x = x_parent;
+                    x_parent = x_parent->parent();
+                } else {
+                    if (w->right == 0 || w->right->color() == QMapNodeBase::Black) {
+                        if (w->left)
+                            w->left->setColor(QMapNodeBase::Black);
+                        w->setColor(QMapNodeBase::Red);
+                        rotateRight(w);
+                        w = x_parent->right;
+                    }
+                    w->setColor(x_parent->color());
+                    x_parent->setColor(QMapNodeBase::Black);
+                    if (w->right)
+                        w->right->setColor(QMapNodeBase::Black);
+                    rotateLeft(x_parent);
+                    break;
+                }
+            } else {
+            QMapNodeBase *w = x_parent->left;
+            if (w->color() == QMapNodeBase::Red) {
+                w->setColor(QMapNodeBase::Black);
+                x_parent->setColor(QMapNodeBase::Red);
+                rotateRight(x_parent);
+                w = x_parent->left;
+            }
+            if ((w->right == 0 || w->right->color() == QMapNodeBase::Black) &&
+                (w->left == 0 || w->left->color() == QMapNodeBase::Black)) {
+                w->setColor(QMapNodeBase::Red);
+                x = x_parent;
+                x_parent = x_parent->parent();
+            } else {
+                if (w->left == 0 || w->left->color() == QMapNodeBase::Black) {
+                    if (w->right)
+                        w->right->setColor(QMapNodeBase::Black);
+                    w->setColor(QMapNodeBase::Red);
+                    rotateLeft(w);
+                    w = x_parent->left;
+                }
+                w->setColor(x_parent->color());
+                x_parent->setColor(QMapNodeBase::Black);
+                if (w->left)
+                    w->left->setColor(QMapNodeBase::Black);
+                rotateRight(x_parent);
+                break;
+            }
+        }
+    }
+    if (x)
+        x->setColor(QMapNodeBase::Black);
+    }
+    free(y);
+    --size;
+}
+
+static inline int qMapAlignmentThreshold()
+{
+    // malloc on 32-bit platforms should return pointers that are 8-byte
+    // aligned or more while on 64-bit platforms they should be 16-byte aligned
+    // or more
+    return 2 * sizeof(void*);
+}
+
+static inline void *qMapAllocate(int alloc, int alignment)
+{
+    return alignment > qMapAlignmentThreshold()
+        ? qMallocAligned(alloc, alignment)
+        : ::malloc(alloc);
+}
+
+static inline void qMapDeallocate(QMapNodeBase *node, int alignment)
+{
+    if (alignment > qMapAlignmentThreshold())
+        qFreeAligned(node);
+    else
+        ::free(node);
+}
+
+QMapNodeBase *QMapDataBase::createNode(int alloc, int alignment, QMapNodeBase *parent, bool left)
+{
+    QMapNodeBase *node = static_cast<QMapNodeBase *>(qMapAllocate(alloc, alignment));
+    Q_CHECK_PTR(node);
+
+    memset(node, 0, alloc);
+    ++size;
+
+    if (parent) {
+        if (left) {
+            parent->left = node;
+        } else {
+            parent->right = node;
+        }
+        node->setParent(parent);
+        rebalance(node);
+    }
+    return node;
+}
+
+void QMapDataBase::freeTree(QMapNodeBase *root, int alignment)
+{
+    if (root->left)
+        freeTree(root->left, alignment);
+    if (root->right)
+        freeTree(root->right, alignment);
+    qMapDeallocate(root, alignment);
+}
+
+QMapDataBase *QMapDataBase::createData()
+{
+    QMapDataBase *d = new QMapDataBase;
+
+    d->ref.initializeOwned();
     d->size = 0;
-    d->randomBits = 0;
-    d->insertInOrder = false;
-    d->sharable = true;
-    d->strictAlignment = alignment > 8;
-    d->reserved = 0;
+
+    d->header.p = 0;
+    d->header.left = 0;
+    d->header.right = 0;
+
     return d;
 }
 
-void QMapData::continueFreeData(int offset)
+void QMapDataBase::freeData(QMapDataBase *d)
 {
-    Node *e = reinterpret_cast<Node *>(this);
-    Node *cur = e->forward[0];
-    Node *prev;
-    while (cur != e) {
-        prev = cur;
-        cur = cur->forward[0];
-        if (strictAlignment)
-            qFreeAligned(reinterpret_cast<char *>(prev) - offset);
-        else
-            free(reinterpret_cast<char *>(prev) - offset);
-    }
-    delete this;
+    delete d;
 }
-
-/*!
-    Creates a new node inside the data structure.
-
-    \a update is an array with pointers to the node after which the new node
-    should be inserted. Because of the strange skip list data structure there
-    could be several pointers to this node on different levels.
-    \a offset is an amount of bytes that needs to reserved just before the
-    QMapData::Node structure.
-
-    \a alignment dictates the alignment for the data.
-
-    \internal
-    \since 4.6
-*/
-QMapData::Node *QMapData::node_create(Node *update[], int offset, int alignment)
-{
-    int level = 0;
-    uint mask = (1 << Sparseness) - 1;
-
-    while ((randomBits & mask) == mask && level < LastLevel) {
-        ++level;
-        mask <<= Sparseness;
-    }
-
-    if (level > topLevel) {
-        Node *e = reinterpret_cast<Node *>(this);
-        level = ++topLevel;
-        e->forward[level] = e;
-        update[level] = e;
-    }
-
-    ++randomBits;
-    if (level == 3 && !insertInOrder)
-        randomBits = qrand();
-
-    void *concreteNode = strictAlignment ?
-                         qMallocAligned(offset + sizeof(Node) + level * sizeof(Node *), alignment) :
-                         malloc(offset + sizeof(Node) + level * sizeof(Node *));
-    Q_CHECK_PTR(concreteNode);
-
-    Node *abstractNode = reinterpret_cast<Node *>(reinterpret_cast<char *>(concreteNode) + offset);
-
-    abstractNode->backward = update[0];
-    update[0]->forward[0]->backward = abstractNode;
-
-    for (int i = level; i >= 0; i--) {
-        abstractNode->forward[i] = update[i]->forward[i];
-        update[i]->forward[i] = abstractNode;
-        update[i] = abstractNode;
-    }
-    ++size;
-    return abstractNode;
-}
-
-void QMapData::node_delete(Node *update[], int offset, Node *node)
-{
-    node->forward[0]->backward = node->backward;
-
-    for (int i = 0; i <= topLevel; ++i) {
-        if (update[i]->forward[i] != node)
-            break;
-        update[i]->forward[i] = node->forward[i];
-    }
-    --size;
-    if (strictAlignment)
-        qFreeAligned(reinterpret_cast<char *>(node) - offset);
-    else
-        free(reinterpret_cast<char *>(node) - offset);
-}
-
-#ifdef QT_QMAP_DEBUG
-
-uint QMapData::adjust_ptr(Node *node)
-{
-    if (node == reinterpret_cast<Node *>(this)) {
-       return (uint)0xDEADBEEF;
-    } else {
-        return (uint)node;
-    }
-}
-
-void QMapData::dump()
-{
-    qDebug("Map data (ref = %d, size = %d, randomBits = %#.8x)", int(ref), size, randomBits);
-
-    QString preOutput;
-    QVector<QString> output(topLevel + 1);
-    Node *e = reinterpret_cast<Node *>(this);
-
-    QString str;
-    str.sprintf("    %.8x", adjust_ptr(reinterpret_cast<Node *>(this)));
-    preOutput += str;
-
-    Node *update[LastLevel + 1];
-    for (int i = 0; i <= topLevel; ++i) {
-        str.sprintf("%d: [%.8x] -", i, adjust_ptr(reinterpret_cast<Node *>(forward[i])));
-        output[i] += str;
-        update[i] = reinterpret_cast<Node *>(forward[i]);
-    }
-
-    Node *node = reinterpret_cast<Node *>(forward[0]);
-    while (node != e) {
-        int level = 0;
-        while (level < topLevel && update[level + 1] == node)
-            ++level;
-
-        str.sprintf("       %.8x", adjust_ptr(node));
-        preOutput += str;
-
-        for (int i = 0; i <= level; ++i) {
-            str.sprintf("-> [%.8x] -", adjust_ptr(node->forward[i]));
-            output[i] += str;
-            update[i] = node->forward[i];
-        }
-        for (int j = level + 1; j <= topLevel; ++j)
-            output[j] += QLatin1String("---------------");
-        node = node->forward[0];
-    }
-
-    qDebug("%s", preOutput.ascii());
-    for (int i = 0; i <= topLevel; ++i)
-        qDebug("%s", output[i].ascii());
-}
-#endif
 
 /*!
     \class QMap
@@ -482,11 +628,6 @@ void QMapData::dump()
     \internal
 */
 
-/*! \fn void QMap::setInsertInOrder(bool sharable)
-
-    \internal
-*/
-
 /*! \fn void QMap::clear()
 
     Removes all items from the map.
@@ -529,22 +670,21 @@ void QMapData::dump()
 
 /*! \fn const T QMap::value(const Key &key) const
 
-    Returns the value associated with the key \a key.
-
-    If the map contains no item with key \a key, the function
-    returns a \l{default-constructed value}. If there are multiple
-    items for \a key in the map, the value of the most recently
-    inserted one is returned.
-
-    \sa key(), values(), contains(), operator[]()
 */
 
 /*! \fn const T QMap::value(const Key &key, const T &defaultValue) const
 
     \overload
 
+    Returns the value associated with the key \a key.
+
     If the map contains no item with key \a key, the function returns
-    \a defaultValue.
+    \a defaultValue. If no \a defaultValue is specified, the function
+    returns a \l{default-constructed value}. If there are multiple
+    items for \a key in the map, the value of the most recently
+    inserted one is returned.
+
+    \sa key(), values(), contains(), operator[]()
 */
 
 /*! \fn T &QMap::operator[](const Key &key)
@@ -606,32 +746,21 @@ void QMapData::dump()
     by value.
 */
 
-/*! \fn Key QMap::key(const T &value) const
-
-    Returns the first key with value \a value.
-
-    If the map contains no item with value \a value, the function
-    returns a \link {default-constructed value} default-constructed
-    key \endlink.
-
-    This function can be slow (\l{linear time}), because QMap's
-    internal data structure is optimized for fast lookup by key, not
-    by value.
-
-    \sa value(), keys()
-*/
-
 /*!
     \fn Key QMap::key(const T &value, const Key &defaultKey) const
     \since 4.3
     \overload
 
     Returns the first key with value \a value, or \a defaultKey if
-    the map contains no item with value \a value.
+    the map contains no item with value \a value. If no \a defaultKey
+    is provided the function returns a \link {default-constructed value}
+    default-constructed key \endlink.
 
     This function can be slow (\l{linear time}), because QMap's
     internal data structure is optimized for fast lookup by key, not
     by value.
+
+    \sa value(), keys()
 */
 
 /*! \fn QList<T> QMap::values() const

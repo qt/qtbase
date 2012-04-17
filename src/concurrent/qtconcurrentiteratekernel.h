@@ -50,9 +50,7 @@
 #include <QtConcurrent/qtconcurrentmedian.h>
 #include <QtConcurrent/qtconcurrentthreadengine.h>
 
-#ifndef QT_NO_STL
-#  include <iterator>
-#endif
+#include <iterator>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
@@ -62,15 +60,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtConcurrent {
 
-#ifndef QT_NO_STL
     using std::advance;
-#else
-    template <typename It, typename T>
-    void advance(It &it, T value)
-    {
-        it+=value;
-    }
-#endif
 
 /*
     The BlockSizeManager class manages how many iterations a thread should
@@ -149,7 +139,6 @@ public:
     inline void * getPointer() { return 0; }
 };
 
-#ifndef QT_NO_STL
 inline bool selectIteration(std::bidirectional_iterator_tag)
 {
     return false; // while
@@ -164,14 +153,6 @@ inline bool selectIteration(std::random_access_iterator_tag)
 {
     return true; // for
 }
-#else
-// no stl support, always use while iteration
-template <typename T>
-inline bool selectIteration(T)
-{
-    return false; // while
-}
-#endif
 
 template <typename Iterator, typename T>
 class IterateKernel : public ThreadEngine<T>
@@ -180,20 +161,10 @@ public:
     typedef T ResultType;
 
     IterateKernel(Iterator _begin, Iterator _end)
-#if defined (QT_NO_STL)
-        : begin(_begin), end(_end), current(_begin), currentIndex(0),
-           forIteration(false), progressReportingEnabled(true)
-#else
         : begin(_begin), end(_end), current(_begin), currentIndex(0),
            forIteration(selectIteration(typename std::iterator_traits<Iterator>::iterator_category())), progressReportingEnabled(true)
-#endif
     {
-#if defined (QT_NO_STL)
-       iterationCount = 0;
-#else
         iterationCount =  forIteration ? std::distance(_begin, _end) : 0;
-
-#endif
     }
 
     virtual ~IterateKernel() { }

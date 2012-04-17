@@ -102,7 +102,7 @@ private slots:
 class TypesInterface: public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "com.trolltech.Qt.Autotests.TypesInterface")
+    Q_CLASSINFO("D-Bus Interface", "org.qtproject.Qt.Autotests.TypesInterface")
 public:
     TypesInterface(QObject *parent)
         : QDBusAbstractAdaptor(parent)
@@ -226,7 +226,7 @@ tst_QDBusReply::tst_QDBusReply()
     QDBusConnection::sessionBus().registerObject("/", this);
 
     iface = new QDBusInterface(QDBusConnection::sessionBus().baseService(), "/",
-                               "com.trolltech.Qt.Autotests.TypesInterface",
+                               "org.qtproject.Qt.Autotests.TypesInterface",
                                QDBusConnection::sessionBus(),
                                this);
 }

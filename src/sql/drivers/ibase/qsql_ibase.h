@@ -113,10 +113,9 @@ public:
 
     QString escapeIdentifier(const QString &identifier, IdentifierType type) const;
 
-protected Q_SLOTS:
-    bool subscribeToNotificationImplementation(const QString &name);
-    bool unsubscribeFromNotificationImplementation(const QString &name);
-    QStringList subscribedToNotificationsImplementation() const;
+    bool subscribeToNotification(const QString &name);
+    bool unsubscribeFromNotification(const QString &name);
+    QStringList subscribedToNotifications() const;
 
 private Q_SLOTS:
     void qHandleEventNotification(void* updatedResultBuffer);

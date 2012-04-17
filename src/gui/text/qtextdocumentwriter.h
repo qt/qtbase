@@ -59,7 +59,7 @@ class Q_GUI_EXPORT QTextDocumentWriter
 public:
     QTextDocumentWriter();
     QTextDocumentWriter(QIODevice *device, const QByteArray &format);
-    QTextDocumentWriter(const QString &fileName, const QByteArray &format = QByteArray());
+    explicit QTextDocumentWriter(const QString &fileName, const QByteArray &format = QByteArray());
     ~QTextDocumentWriter();
 
     void setFormat (const QByteArray &format);

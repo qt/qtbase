@@ -15,4 +15,4 @@ contains(QT_CONFIG, separate_debug_info_nocopy):CONFIG += separate_debug_info_no
 load(qt_targets)
 
 wince*:LIBS += $$QMAKE_LIBS_GUI
-
+QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF

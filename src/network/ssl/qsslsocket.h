@@ -80,7 +80,7 @@ public:
         AutoVerifyPeer
     };
 
-    QSslSocket(QObject *parent = 0);
+    explicit QSslSocket(QObject *parent = 0);
     ~QSslSocket();
     void resume(); // to continue after proxy authentication required, SSL errors etc.
 

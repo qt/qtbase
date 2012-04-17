@@ -387,6 +387,25 @@ void QTimer::setInterval(int msec)
 }
 
 /*!
+    \property QTimer::remainingTime
+    \brief the remaining time in milliseconds
+
+    Returns the timer's remaining value in milliseconds left until the timeout.
+    If the timer is inactive, the returned value will be -1. If the timer is
+    overdue, the returned value will be 0.
+
+    \sa interval
+*/
+int QTimer::remainingTime() const
+{
+    if (id != INV_TIMER) {
+        return QAbstractEventDispatcher::instance()->remainingTime(id);
+    }
+
+    return -1;
+}
+
+/*!
     \property QTimer::timerType
     \brief controls the accuracy of the timer
 

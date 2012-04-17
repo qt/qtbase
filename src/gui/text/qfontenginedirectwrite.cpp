@@ -247,7 +247,7 @@ bool QFontEngineDirectWrite::getSfntTableData(uint tag, uchar *buffer, uint *len
                 return false;
             }
 
-            qMemCopy(buffer, tableData, tableSize);
+            memcpy(buffer, tableData, tableSize);
             m_directWriteFontFace->ReleaseFontTable(tableContext);
 
             return true;
@@ -597,7 +597,7 @@ QImage QFontEngineDirectWrite::imageForGlyph(glyph_t t,
         int size = width * height * 3;
         if (size > 0) {
             BYTE *alphaValues = new BYTE[size];
-            qMemSet(alphaValues, size, 0);
+            memset(alphaValues, size, 0);
 
             hr = glyphAnalysis->CreateAlphaTexture(DWRITE_TEXTURE_CLEARTYPE_3x1,
                                                    &rect,

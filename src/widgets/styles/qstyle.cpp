@@ -596,8 +596,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PE_IndicatorCheckBox  On/off indicator, for example, a QCheckBox.
     \value PE_IndicatorRadioButton  Exclusive on/off indicator, for example, a QRadioButton.
 
-    \value PE_Q3DockWindowSeparator  Item separator for Qt 3 compatible dock window
-                                     and toolbar contents.
     \value PE_IndicatorDockWidgetResizeHandle  Resize handle for dock windows.
 
     \value PE_Frame  Generic frame
@@ -619,15 +617,9 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value PE_FrameWindow  Frame around a MDI window or a docking window.
 
-    \value PE_Q3Separator  Qt 3 compatible generic separator.
-
     \value PE_IndicatorMenuCheckMark  Check mark used in a menu.
 
     \value PE_IndicatorProgressChunk  Section of a progress bar indicator; see also QProgressBar.
-
-    \value PE_Q3CheckListController  Qt 3 compatible controller part of a list view item.
-    \value PE_Q3CheckListIndicator  Qt 3 compatible checkbox part of a list view item.
-    \value PE_Q3CheckListExclusiveIndicator  Qt 3 compatible radio button part of a list view item.
 
     \value PE_IndicatorBranch  Lines used to represent the branch of a tree in a tree view.
     \value PE_IndicatorToolBarHandle  The handle of a toolbar.
@@ -740,9 +732,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \row \li \l State_On \li Indicates the indicator is checked.
     \row \li \l PE_IndicatorRadioButton \li \l QStyleOptionButton
           \li \l State_On \li Indicates that a radio button is selected.
-    \row \li{1,3} \l PE_Q3CheckListExclusiveIndicator, \l PE_Q3CheckListIndicator
-         \li{1,3} \l QStyleOptionQ3ListView \li \l State_On
-         \li Indicates whether or not the controller is selected.
     \row \li \l State_NoChange \li Indicates a "tri-state" controller.
     \row \li \l State_Enabled \li Indicates the controller is enabled.
     \row \li{1,4} \l PE_IndicatorBranch \li{1,4} \l QStyleOption
@@ -759,9 +748,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
          \li Indicates that the Frame should be sunken.
     \row \li \l PE_IndicatorToolBarHandle \li \l QStyleOption
          \li \l State_Horizontal \li Indicates that the window handle is horizontal
-         instead of vertical.
-    \row \li \l PE_Q3DockWindowSeparator \li \l QStyleOption
-         \li \l State_Horizontal \li Indicates that the separator is horizontal
          instead of vertical.
     \row \li \l PE_IndicatorSpinPlus, \l PE_IndicatorSpinMinus, \l PE_IndicatorSpinUp,
             \l PE_IndicatorSpinDown,
@@ -825,8 +811,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value CE_MenuEmptyArea  The area in a menu without menu items.
     \value CE_MenuHMargin  The horizontal extra space on the left/right of a menu.
     \value CE_MenuVMargin  The vertical extra space on the top/bottom of a menu.
-
-    \value CE_Q3DockWindowEmptyArea  The empty area of a QDockWidget.
 
     \value CE_ToolBoxTab  The toolbox's tab and label within a QToolBox.
     \value CE_SizeGrip  Window resize handle; see also QSizeGrip.
@@ -988,22 +972,11 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SE_SpinBoxLayoutItem  Area that counts for the parent layout.
 
-    \value SE_Q3DockWindowHandleRect  Area for the tear-off handle.
-
     \value SE_ProgressBarGroove  Area for the groove.
     \value SE_ProgressBarContents  Area for the progress indicator.
     \value SE_ProgressBarLabel  Area for the text label.
     \value SE_ProgressBarLayoutItem Area that counts for the parent layout.
 
-    \omitvalue SE_DialogButtonAccept
-    \omitvalue SE_DialogButtonReject
-    \omitvalue SE_DialogButtonApply
-    \omitvalue SE_DialogButtonHelp
-    \omitvalue SE_DialogButtonAll
-    \omitvalue SE_DialogButtonRetry
-    \omitvalue SE_DialogButtonAbort
-    \omitvalue SE_DialogButtonIgnore
-    \omitvalue SE_DialogButtonCustom
     \omitvalue SE_ViewItemCheckIndicator
 
     \value SE_FrameContents  Area for a frame's contents.
@@ -1087,7 +1060,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \row \li \l SE_RadioButtonContents  \li \l QStyleOptionButton
     \row \li \l SE_RadioButtonFocusRect \li \l QStyleOptionButton
     \row \li \l SE_ComboBoxFocusRect    \li \l QStyleOptionComboBox
-    \row \li \l SE_Q3DockWindowHandleRect \li \l QStyleOptionQ3DockWindow
     \row \li \l SE_ProgressBarGroove    \li \l QStyleOptionProgressBar
     \row \li \l SE_ProgressBarContents  \li \l QStyleOptionProgressBar
     \row \li \l SE_ProgressBarLabel     \li \l QStyleOptionProgressBar
@@ -1107,7 +1079,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value CC_Slider            A slider, like QSlider.
     \value CC_ToolButton        A tool button, like QToolButton.
     \value CC_TitleBar          A Title bar, like those used in QMdiSubWindow.
-    \value CC_Q3ListView        Used for drawing the Q3ListView class.
     \value CC_GroupBox          A group box, like QGroupBox.
     \value CC_Dial              A dial, like QDial.
     \value CC_MdiControls       The minimize, close, and normal
@@ -1157,7 +1128,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SC_ToolButton  Tool button (see also QToolButton).
     \value SC_ToolButtonMenu  Sub-control for opening a popup menu in a
-        tool button; see also Q3PopupMenu.
+        tool button.
 
     \value SC_TitleBarSysMenu  System menu button (i.e., restore, close, etc.).
     \value SC_TitleBarMinButton  Minimize button.
@@ -1168,9 +1139,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SC_TitleBarShadeButton  Shade button.
     \value SC_TitleBarUnshadeButton  Unshade button.
     \value SC_TitleBarContextHelpButton Context Help button.
-
-    \value SC_Q3ListView  The list view area.
-    \value SC_Q3ListViewExpand  Expand item (i.e., show/hide child items).
 
     \value SC_DialHandle The handle of the dial (i.e. what you use to control the dial).
     \value SC_DialGroove The groove for the dial.
@@ -1189,7 +1157,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
                              in the menu bar.
 
     \value SC_All  Special value that matches all sub-controls.
-    \omitvalue SC_Q3ListViewBranch
     \omitvalue SC_CustomBase
 
     \sa ComplexControl
@@ -1256,9 +1223,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \row \li \l{CC_TitleBar} \li \l QStyleOptionTitleBar
          \li \l State_Enabled \li Set if the title bar is enabled.
-
-    \row \li \l{CC_Q3ListView} \li \l QStyleOptionQ3ListView
-         \li \l State_Enabled \li Set if the list view is enabled.
 
     \endtable
 
@@ -1418,11 +1382,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_MenuTearoffHeight  Height of a tear off area in a QMenu.
     \value PM_MenuDesktopFrameWidth The frame width for the menu on the desktop.
 
-    \value PM_CheckListButtonSize  Area (width/height) of the
-        checkbox/radio button in a Q3CheckListItem.
-    \value PM_CheckListControllerSize  Area (width/height) of the
-        controller in a Q3CheckListItem.
-
     \omitvalue PM_DialogButtonsSeparator
     \omitvalue PM_DialogButtonsButtonWidth
     \omitvalue PM_DialogButtonsButtonHeight
@@ -1520,11 +1479,9 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value CT_CheckBox A check box, like QCheckBox.
     \value CT_ComboBox A combo box, like QComboBox.
     \omitvalue CT_DialogButtons
-    \value CT_Q3DockWindow A Q3DockWindow.
     \value CT_HeaderSection A header section, like QHeader.
     \value CT_LineEdit A line edit, like QLineEdit.
     \value CT_Menu A menu, like QMenu.
-    \value CT_Q3Header A Qt 3 header section, like Q3Header.
     \value CT_MenuBar A menu bar, like QMenuBar.
     \value CT_MenuBarItem A menu bar item, like the buttons in a QMenuBar.
     \value CT_MenuItem A menu item, like QMenuItem.
@@ -1575,7 +1532,6 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \row \li \l CT_ToolButton   \li \l QStyleOptionToolButton
     \row \li \l CT_ComboBox     \li \l QStyleOptionComboBox
     \row \li \l CT_Splitter     \li \l QStyleOption
-    \row \li \l CT_Q3DockWindow \li \l QStyleOptionQ3DockWindow
     \row \li \l CT_ProgressBar  \li \l QStyleOptionProgressBar
     \row \li \l CT_MenuItem     \li \l QStyleOptionMenuItem
     \endtable
@@ -1712,7 +1668,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SH_TabBar_SelectMouseType  Which type of mouse event should
         cause a tab to be selected.
 
-    \value SH_Q3ListViewExpand_SelectMouseType  Which type of mouse event should
+    \value SH_ListViewExpand_SelectMouseType  Which type of mouse event should
         cause a list view expansion to be selected.
 
     \value SH_TabBar_PreferNoArrows  Whether a tab bar should suggest a size

@@ -130,7 +130,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionItem &sectio
     A header will emit sectionMoved() if the user moves a section,
     sectionResized() if the user resizes a section, and sectionClicked() as
     well as sectionHandleDoubleClicked() in response to mouse clicks. A header
-    will also emit sectionCountChanged() and sectionAutoResize().
+    will also emit sectionCountChanged().
 
     You can identify a section using the logicalIndex() and logicalIndexAt()
     functions, or by its index position, using the visualIndex() and
@@ -280,18 +280,6 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionItem &sectio
 
     \sa setSortIndicator()
 */
-
-/*!
-    \fn void QHeaderView::sectionAutoResize(int logicalIndex,
-    QHeaderView::ResizeMode mode)
-
-    This signal is emitted when a section is automatically resized. The
-    section's logical index is specified by \a logicalIndex, and the resize
-    mode by \a mode.
-
-    \sa setResizeMode(), stretchLastSection()
-*/
-// ### Qt 5: change to sectionAutoResized()
 
 /*!
     \fn void QHeaderView::geometriesChanged()
@@ -1195,7 +1183,7 @@ bool QHeaderView::highlightSections() const
     Sets the constraints on how the header can be resized to those described
     by the given \a mode.
 
-    \sa resizeMode(), length(), sectionResized(), sectionAutoResize()
+    \sa resizeMode(), length(), sectionResized()
 */
 
 void QHeaderView::setResizeMode(ResizeMode mode)

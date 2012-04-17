@@ -828,26 +828,6 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
             }
             painter->setBrush(brush);
             break;
-// #ifdef Q_Q3PAINTER
-//         case QPicturePrivate::PdcSetTabStops:
-//                 s >> i_16;
-//                 painter->setTabStops(i_16);
-//                 break;
-//             case QPicturePrivate::PdcSetTabArray:
-//                 s >> i_16;
-//                 if (i_16 == 0) {
-//                     painter->setTabArray(0);
-//                 } else {
-//                     int *ta = new int[i_16];
-//                     for (int i=0; i<i_16; i++) {
-//                         s >> i1_16;
-//                         ta[i] = i1_16;
-//                     }
-//                     painter->setTabArray(ta);
-//                     delete [] ta;
-//                 }
-//                 break;
-// #endif
         case QPicturePrivate::PdcSetVXform:
             s >> i_8;
             painter->setViewTransformEnabled(i_8);
@@ -884,14 +864,6 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
             // i_8 is always false due to updateXForm() in qpaintengine_pic.cpp
             painter->setTransform(matrix * worldMatrix, i_8);
             break;
-// #ifdef Q_Q3PAINTER
-//             case QPicturePrivate::PdcSaveWMatrix:
-//                 painter->saveWorldMatrix();
-//                 break;
-//             case QPicturePrivate::PdcRestoreWMatrix:
-//                 painter->restoreWorldMatrix();
-//                 break;
-// #endif
         case QPicturePrivate::PdcSetClip:
             s >> i_8;
             painter->setClipping(i_8);

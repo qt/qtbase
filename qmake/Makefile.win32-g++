@@ -49,7 +49,7 @@ CFLAGS	    =	-c -o$@ -O \
 		-I$(SOURCE_PATH)/mkspecs/win32-g++  \
 		-I$(SOURCE_PATH)/tools/shared \
 		-DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT \
-		-DQT_NODLL -DQT_NO_STL -DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP \
+		-DQT_NODLL -DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP \
 		-DQT_BUILD_QMAKE -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
 		-DQT_BOOTSTRAPPED
 CXXFLAGS    =   $(CFLAGS)
@@ -74,6 +74,7 @@ endif
 QTOBJS= \
 	qbitarray.o \
 	qbuffer.o \
+	qarraydata.o \
 	qbytearray.o \
 	qcryptographichash.o \
 	qvsnprintf.o \
@@ -82,6 +83,7 @@ QTOBJS= \
 	qdatetime.o \
 	qdir.o \
 	qdiriterator.o \
+	qfiledevice.o \
 	qfile.o \
 	qtemporaryfile.o \
 	qfileinfo.o \
@@ -109,12 +111,12 @@ QTOBJS= \
 	qutfcodec.o \
 	qstring.o \
 	qstringlist.o \
+	qstringbuilder.o \
 	qsystemerror.o \
 	qsystemlibrary.o \
 	qtextstream.o \
 	quuid.o \
 	qvector.o \
-	qurl.o \
 	qsettings.o \
 	qsettings_win.o \
 	qvariant.o \

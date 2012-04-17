@@ -4875,13 +4875,12 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
         }
         //fall through...
     }
-    case PE_IndicatorViewItemCheck:
-    case PE_Q3CheckListIndicator: {
+    case PE_IndicatorViewItemCheck: {
         if (!doRestore) {
             painter->save();
             doRestore = true;
         }
-        if (element == PE_Q3CheckListIndicator || element == PE_IndicatorViewItemCheck) {
+        if (element == PE_IndicatorViewItemCheck) {
             painter->setPen(option->palette.shadow().color());
             if (option->state & State_NoChange)
                 painter->setBrush(option->palette.brush(QPalette::Button));

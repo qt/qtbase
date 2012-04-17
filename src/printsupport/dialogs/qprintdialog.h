@@ -63,7 +63,7 @@ class Q_PRINTSUPPORT_EXPORT QUnixPrintWidget : public QWidget
     Q_OBJECT
 
 public:
-    QUnixPrintWidget(QPrinter *printer, QWidget *parent = 0);
+    explicit QUnixPrintWidget(QPrinter *printer, QWidget *parent = 0);
     ~QUnixPrintWidget();
     void updatePrinter();
 

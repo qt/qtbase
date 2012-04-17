@@ -1489,6 +1489,16 @@ void QAbstractScrollArea::setupViewport(QWidget *viewport)
     Q_UNUSED(viewport);
 }
 
+/*!
+    \internal
+
+    This method is reserved for future use.
+*/
+QSize QAbstractScrollArea::viewportSizeHint() const
+{
+    return QSize();
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qabstractscrollarea.cpp"

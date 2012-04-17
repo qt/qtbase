@@ -58,44 +58,46 @@ class QByteArray;
 class QString;
 class QStringRef;
 
-inline uint qHash(char key) { return uint(key); }
-inline uint qHash(uchar key) { return uint(key); }
-inline uint qHash(signed char key) { return uint(key); }
-inline uint qHash(ushort key) { return uint(key); }
-inline uint qHash(short key) { return uint(key); }
-inline uint qHash(uint key) { return key; }
-inline uint qHash(int key) { return uint(key); }
-inline uint qHash(ulong key)
+inline uint qHash(char key, uint seed = 0) { return uint(key) ^ seed; }
+inline uint qHash(uchar key, uint seed = 0) { return uint(key) ^ seed; }
+inline uint qHash(signed char key, uint seed = 0) { return uint(key) ^ seed; }
+inline uint qHash(ushort key, uint seed = 0) { return uint(key) ^ seed; }
+inline uint qHash(short key, uint seed = 0) { return uint(key) ^ seed; }
+inline uint qHash(uint key, uint seed = 0) { return key ^ seed; }
+inline uint qHash(int key, uint seed = 0) { return uint(key) ^ seed; }
+inline uint qHash(ulong key, uint seed = 0)
 {
     if (sizeof(ulong) > sizeof(uint)) {
-        return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U));
+        return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U)) ^ seed;
     } else {
-        return uint(key & (~0U));
+        return uint(key & (~0U)) ^ seed;
     }
 }
-inline uint qHash(long key) { return qHash(ulong(key)); }
-inline uint qHash(quint64 key)
+inline uint qHash(long key, uint seed = 0) { return qHash(ulong(key), seed); }
+inline uint qHash(quint64 key, uint seed = 0)
 {
     if (sizeof(quint64) > sizeof(uint)) {
-        return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U));
+        return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U)) ^ seed;
     } else {
-        return uint(key & (~0U));
+        return uint(key & (~0U)) ^ seed;
     }
 }
-inline uint qHash(qint64 key) { return qHash(quint64(key)); }
-inline uint qHash(QChar key) { return qHash(key.unicode()); }
-Q_CORE_EXPORT uint qHash(const QByteArray &key);
-Q_CORE_EXPORT uint qHash(const QString &key);
-Q_CORE_EXPORT uint qHash(const QStringRef &key);
-Q_CORE_EXPORT uint qHash(const QBitArray &key);
+inline uint qHash(qint64 key, uint seed = 0) { return qHash(quint64(key), seed); }
+inline uint qHash(QChar key, uint seed = 0) { return qHash(key.unicode(), seed); }
+Q_CORE_EXPORT uint qHash(const QByteArray &key, uint seed = 0);
+Q_CORE_EXPORT uint qHash(const QString &key, uint seed = 0);
+Q_CORE_EXPORT uint qHash(const QStringRef &key, uint seed = 0);
+Q_CORE_EXPORT uint qHash(const QBitArray &key, uint seed = 0);
+Q_CORE_EXPORT uint qHash(const QLatin1String &key, uint seed = 0);
+Q_CORE_EXPORT uint qt_hash(const QString &key);
 
 #if defined(Q_CC_MSVC)
 #pragma warning( push )
 #pragma warning( disable : 4311 ) // disable pointer truncation warning
 #endif
-template <class T> inline uint qHash(const T *key)
+template <class T> inline uint qHash(const T *key, uint seed = 0)
 {
-    return qHash(reinterpret_cast<quintptr>(key));
+    return qHash(reinterpret_cast<quintptr>(key), seed);
 }
 #if defined(Q_CC_MSVC)
 #pragma warning( pop )
@@ -107,6 +109,8 @@ template <typename T1, typename T2> inline uint qHash(const QPair<T1, T2> &key)
     uint h2 = qHash(key.second);
     return ((h1 << 16) | (h1 >> 16)) ^ h2;
 }
+
+template<typename T> inline uint qHash(const T &t, uint seed) { return (qHash(t) ^ seed); }
 
 struct Q_CORE_EXPORT QHashData
 {
@@ -123,6 +127,7 @@ struct Q_CORE_EXPORT QHashData
     short userNumBits;
     short numBits;
     int numBuckets;
+    uint seed;
     uint sharable : 1;
     uint strictAlignment : 1;
     uint reserved : 30;
@@ -213,7 +218,19 @@ struct QHashNode
     inline bool same_key(uint h0, const Key &key0) { return h0 == h && key0 == key; }
 };
 
-
+#if 0
+// ###
+// The introduction of the QHash random seed breaks this optimization, as it
+// relies on qHash(int i) = i. If the hash value is salted, then the hash
+// table becomes corrupted.
+//
+// A bit more research about whether it makes sense or not to salt integer
+// keys (and in general keys whose hash value is easy to invert)
+// is needed, or about how keep this optimization and the seed (f.i. by
+// specializing QHash for integer values, and re-apply the seed during lookup).
+//
+// Be aware that such changes can easily be binary incompatible, and therefore
+// cannot be made during the Qt 5 lifetime.
 #define Q_HASH_DECLARE_INT_NODES(key_type) \
     template <class T> \
     struct QHashDummyNode<key_type, T> { \
@@ -241,6 +258,7 @@ Q_HASH_DECLARE_INT_NODES(ushort);
 Q_HASH_DECLARE_INT_NODES(int);
 Q_HASH_DECLARE_INT_NODES(uint);
 #undef Q_HASH_DECLARE_INT_NODES
+#endif // #if 0
 
 template <class Key, class T>
 class QHash
@@ -257,13 +275,8 @@ class QHash
         return reinterpret_cast<Node *>(node);
     }
 
-#ifdef Q_ALIGNOF
     static inline int alignOfNode() { return qMax<int>(sizeof(void*), Q_ALIGNOF(Node)); }
     static inline int alignOfDummyNode() { return qMax<int>(sizeof(void*), Q_ALIGNOF(DummyNode)); }
-#else
-    static inline int alignOfNode() { return 0; }
-    static inline int alignOfDummyNode() { return 0; }
-#endif
 
 public:
     inline QHash() : d(const_cast<QHashData *>(&QHashData::shared_null)) { }
@@ -288,8 +301,8 @@ public:
     void reserve(int size);
     inline void squeeze() { reserve(1); }
 
-    inline void detach() { if (d->ref != 1) detach_helper(); }
-    inline bool isDetached() const { return d->ref == 1; }
+    inline void detach() { if (d->ref.isShared()) detach_helper(); }
+    inline bool isDetached() const { return !d->ref.isShared(); }
     inline void setSharable(bool sharable) { if (!sharable) detach(); if (d != &QHashData::shared_null) d->sharable = sharable; }
     inline bool isSharedWith(const QHash<Key, T> &other) const { return d == other.d; }
 
@@ -861,7 +874,7 @@ Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::Node **QHash<Key, T>::findNode(cons
     uint h = 0;
 
     if (d->numBuckets || ahp) {
-        h = qHash(akey);
+        h = qHash(akey, d->seed);
         if (ahp)
             *ahp = h;
     }

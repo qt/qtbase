@@ -407,13 +407,6 @@ Requires: RUBBERBAND MAINWINDOW
 Name: QDockwidget
 SeeAlso: ???
 
-Feature: WORKSPACE
-Description: Supports workspace windows, e.g. used in an MDI application.
-Section: Widgets
-Requires: SCROLLBAR MAINWINDOW MENUBAR
-Name: QWorkSpace
-SeeAlso: ???
-
 Feature: MDIAREA
 Description: Provides an area in which MDI windows are displayed.
 Section: Widgets
@@ -642,13 +635,6 @@ Description: Supports a simple convenience dialog to get a single value from the
 Section: Dialogs
 Requires: COMBOBOX SPINBOX STACKEDWIDGET
 Name: QInputDialog
-SeeAlso: ???
-
-Feature: TABDIALOG
-Description: Supports a stack of tabbed widgets.
-Section: Dialogs
-Requires: TABBAR
-Name: Q3TabDialog
 SeeAlso: ???
 
 Feature: ERRORMESSAGE

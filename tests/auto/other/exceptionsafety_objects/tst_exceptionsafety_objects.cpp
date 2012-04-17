@@ -449,7 +449,6 @@ void tst_ExceptionSafety_Objects::widgets_data()
     NEWROW(QToolButton);
     NEWROW(QTreeView);
     NEWROW(QTreeWidget);
-    NEWROW(QWorkspace);
 }
 
 void tst_ExceptionSafety_Objects::widgets()
@@ -486,8 +485,7 @@ void tst_ExceptionSafety_Objects::widgets()
         || tag == QLatin1String("QToolBar")
         || tag == QLatin1String("QToolBox")
         || tag == QLatin1String("QTreeView")
-        || tag == QLatin1String("QTreeWidget")
-        || tag == QLatin1String("QWorkspace"))
+        || tag == QLatin1String("QTreeWidget"))
         QSKIP("This type of widget is not currently strongly exception safe");
 
     if (tag == QLatin1String("QWidget"))

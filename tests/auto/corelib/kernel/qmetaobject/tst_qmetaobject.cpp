@@ -816,9 +816,22 @@ void tst_QMetaObject::normalizedSignature_data()
 
     QTest::newRow("function") << "void foo()" << "void foo()";
     QTest::newRow("spaces") << " void  foo( ) " << "void foo()";
+    QTest::newRow("void") << "void foo(void)" << "void foo()";
+    QTest::newRow("void spaces") << "void foo( void )" << "void foo()";
+    QTest::newRow("void*") << "void foo(void*)" << "void foo(void*)";
+    QTest::newRow("void* spaces") << "void foo( void * )" << "void foo(void*)";
+    QTest::newRow("function ptr") << "void foo(void(*)(void))" << "void foo(void(*)())";
+    QTest::newRow("function ptr spaces") << "void foo( void ( * ) ( void ))" << "void foo(void(*)())";
+    QTest::newRow("function ptr void*") << "void foo(void(*)(void*))" << "void foo(void(*)(void*))";
+    QTest::newRow("function ptr void* spaces") << "void foo( void ( * ) ( void * ))" << "void foo(void(*)(void*))";
     QTest::newRow("template args") << " void  foo( QMap<a, a>, QList<b>) "
                                    << "void foo(QMap<a,a>,QList<b>)";
+    QTest::newRow("void template args") << " void  foo( Foo<void>, Bar<void> ) "
+                                   << "void foo(Foo<void>,Bar<void>)";
+    QTest::newRow("void* template args") << " void  foo( Foo<void*>, Bar<void *> ) "
+                                   << "void foo(Foo<void*>,Bar<void*>)";
     QTest::newRow("rettype") << "QList<int, int> foo()" << "QList<int,int>foo()";
+    QTest::newRow("rettype void template") << "Foo<void> foo()" << "Foo<void>foo()";
     QTest::newRow("const rettype") << "const QString *foo()" << "const QString*foo()";
     QTest::newRow("const ref") << "const QString &foo()" << "const QString&foo()";
     QTest::newRow("reference") << "QString &foo()" << "QString&foo()";
@@ -877,6 +890,7 @@ void tst_QMetaObject::normalizedType_data()
     QTest::newRow("struct") << "const struct foo*" << "const foo*";
     QTest::newRow("struct2") << "struct foo const*" << "const foo*";
     QTest::newRow("enum") << "enum foo" << "foo";
+    QTest::newRow("void") << "void" << "void";
 }
 
 void tst_QMetaObject::normalizedType()
@@ -978,25 +992,25 @@ void tst_QMetaObject::propertyNotify()
     QVERIFY(prop.isValid());
     QVERIFY(prop.hasNotifySignal());
     QMetaMethod signal = prop.notifySignal();
-    QCOMPARE(signal.signature(), "value6Changed()");
+    QCOMPARE(signal.methodSignature(), QByteArray("value6Changed()"));
 
     prop = mo->property(mo->indexOfProperty("value7"));
     QVERIFY(prop.isValid());
     QVERIFY(prop.hasNotifySignal());
     signal = prop.notifySignal();
-    QCOMPARE(signal.signature(), "value7Changed(QString)");
+    QCOMPARE(signal.methodSignature(), QByteArray("value7Changed(QString)"));
 
     prop = mo->property(mo->indexOfProperty("value8"));
     QVERIFY(prop.isValid());
     QVERIFY(!prop.hasNotifySignal());
     signal = prop.notifySignal();
-    QCOMPARE(signal.signature(), (const char *)0);
+    QCOMPARE(signal.methodSignature(), QByteArray());
 
     prop = mo->property(mo->indexOfProperty("value"));
     QVERIFY(prop.isValid());
     QVERIFY(!prop.hasNotifySignal());
     signal = prop.notifySignal();
-    QCOMPARE(signal.signature(), (const char *)0);
+    QCOMPARE(signal.methodSignature(), QByteArray());
 }
 
 void tst_QMetaObject::propertyConstant()
@@ -1114,7 +1128,7 @@ void tst_QMetaObject::indexOfMethod()
     QFETCH(bool, isSignal);
     int idx = object->metaObject()->indexOfMethod(name);
     QVERIFY(idx >= 0);
-    QCOMPARE(object->metaObject()->method(idx).signature(), name.constData());
+    QCOMPARE(object->metaObject()->method(idx).methodSignature(), name);
     QCOMPARE(object->metaObject()->indexOfSlot(name), isSignal ? -1 : idx);
     QCOMPARE(object->metaObject()->indexOfSignal(name), !isSignal ? -1 : idx);
 }

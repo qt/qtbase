@@ -49,8 +49,8 @@
 #include "interface.h"
 #include "pinger.h"
 
-static const char serviceName[] = "com.trolltech.autotests.qpinger";
-static const char objectPath[] = "/com/trolltech/qpinger";
+static const char serviceName[] = "org.qtproject.autotests.qpinger";
+static const char objectPath[] = "/org/qtproject/qpinger";
 static const char *interfaceName = serviceName;
 
 typedef QSharedPointer<com::trolltech::QtDBus::Pinger> Pinger;
@@ -452,9 +452,9 @@ void tst_QDBusAbstractInterface::makeAsyncMultiOutCallPeer()
     QCoreApplication::instance()->processEvents();
 }
 
-static const char server_serviceName[] = "com.trolltech.autotests.dbusserver";
-static const char server_objectPath[] = "/com/trolltech/server";
-static const char server_interfaceName[] = "com.trolltech.QtDBus.Pinger";
+static const char server_serviceName[] = "org.qtproject.autotests.dbusserver";
+static const char server_objectPath[] = "/org/qtproject/server";
+static const char server_interfaceName[] = "org.qtproject.QtDBus.Pinger";
 
 class DBusServerThread : public QThread
 {
@@ -975,7 +975,7 @@ void tst_QDBusAbstractInterface::getComplexSignalPeer()
 
 void tst_QDBusAbstractInterface::followSignal()
 {
-    const QString serviceToFollow = "com.trolltech.tst_qdbusabstractinterface.FollowMe";
+    const QString serviceToFollow = "org.qtproject.tst_qdbusabstractinterface.FollowMe";
     Pinger p = getPinger(serviceToFollow);
     QVERIFY2(p, "Not connected to D-Bus");
 
@@ -1034,9 +1034,9 @@ void tst_QDBusAbstractInterface::createErrors_data()
     QTest::addColumn<QString>("path");
     QTest::addColumn<QString>("errorName");
 
-    QTest::newRow("invalid-service") << "this isn't valid" << "/" << "com.trolltech.QtDBus.Error.InvalidService";
+    QTest::newRow("invalid-service") << "this isn't valid" << "/" << "org.qtproject.QtDBus.Error.InvalidService";
     QTest::newRow("invalid-path") << QDBusConnection::sessionBus().baseService() << "this isn't valid"
-            << "com.trolltech.QtDBus.Error.InvalidObjectPath";
+            << "org.qtproject.QtDBus.Error.InvalidObjectPath";
 }
 
 void tst_QDBusAbstractInterface::createErrors()
@@ -1055,7 +1055,7 @@ void tst_QDBusAbstractInterface::createErrorsPeer_data()
     QTest::addColumn<QString>("path");
     QTest::addColumn<QString>("errorName");
 
-    QTest::newRow("invalid-path") << "this isn't valid" << "com.trolltech.QtDBus.Error.InvalidObjectPath";
+    QTest::newRow("invalid-path") << "this isn't valid" << "org.qtproject.QtDBus.Error.InvalidObjectPath";
 }
 
 void tst_QDBusAbstractInterface::createErrorsPeer()
@@ -1071,10 +1071,10 @@ void tst_QDBusAbstractInterface::createErrorsPeer()
 void tst_QDBusAbstractInterface::callErrors_data()
 {
     createErrors_data();
-    QTest::newRow("service-wildcard") << QString() << "/" << "com.trolltech.QtDBus.Error.InvalidService";
+    QTest::newRow("service-wildcard") << QString() << "/" << "org.qtproject.QtDBus.Error.InvalidService";
     QTest::newRow("path-wildcard") << QDBusConnection::sessionBus().baseService() << QString()
-            << "com.trolltech.QtDBus.Error.InvalidObjectPath";
-    QTest::newRow("full-wildcard") << QString() << QString() << "com.trolltech.QtDBus.Error.InvalidService";
+            << "org.qtproject.QtDBus.Error.InvalidObjectPath";
+    QTest::newRow("full-wildcard") << QString() << QString() << "org.qtproject.QtDBus.Error.InvalidService";
 }
 
 void tst_QDBusAbstractInterface::callErrors()
@@ -1113,7 +1113,7 @@ void tst_QDBusAbstractInterface::asyncCallErrors()
 void tst_QDBusAbstractInterface::callErrorsPeer_data()
 {
     createErrorsPeer_data();
-    QTest::newRow("path-wildcard") << QString() << "com.trolltech.QtDBus.Error.InvalidObjectPath";
+    QTest::newRow("path-wildcard") << QString() << "org.qtproject.QtDBus.Error.InvalidObjectPath";
 }
 
 void tst_QDBusAbstractInterface::callErrorsPeer()

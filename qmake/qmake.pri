@@ -1,7 +1,7 @@
 CONFIG += depend_includepath
 
 SKIP_DEPENDS += qconfig.h qmodules.h
-DEFINES += QT_NO_TEXTCODEC QT_NO_LIBRARY QT_NO_STL QT_NO_COMPRESS QT_NO_UNICODETABLES \
+DEFINES += QT_NO_TEXTCODEC QT_NO_LIBRARY QT_NO_COMPRESS QT_NO_UNICODETABLES \
            QT_NO_GEOM_VARIANT QT_NO_DATASTREAM
 
 #qmake code
@@ -35,12 +35,14 @@ bootstrap { #Qt code
    SOURCES+= \
         qbitarray.cpp \
         qbuffer.cpp \
+        qarraydata.cpp \
         qbytearray.cpp \
         qbytearraymatcher.cpp \
         qcryptographichash.cpp \
         qdatetime.cpp \
         qdir.cpp \
         qdiriterator.cpp \
+        qfiledevice.cpp \
         qfile.cpp \
         qabstractfileengine.cpp \
         qfileinfo.cpp \
@@ -66,7 +68,6 @@ bootstrap { #Qt code
         qstringlist.cpp \
         qtemporaryfile.cpp \
         qtextstream.cpp \
-        qurl.cpp \
         quuid.cpp \
         qsettings.cpp \
         qlibraryinfo.cpp \
@@ -81,7 +82,10 @@ bootstrap { #Qt code
    HEADERS+= \
         qbitarray.h \
         qbuffer.h \
+        qarraydata.h \
         qbytearray.h \
+        qarraydataops.h \
+        qarraydatapointer.h \
         qbytearraymatcher.h \
         qchar.h \
         qcryptographichash.h \
@@ -113,7 +117,6 @@ bootstrap { #Qt code
         qsystemerror_p.h \
         qtemporaryfile.h \
         qtextstream.h \
-        qurl.h \
         quuid.h \
         qvector.h \
         qxmlstream.h \

@@ -98,19 +98,6 @@ QTextItemIntCopy::~QTextItemIntCopy()
 
 /************************************************************************
  *
- * QPaintBufferSignalProxy
- *
- ************************************************************************/
-
-Q_GLOBAL_STATIC(QPaintBufferSignalProxy, theSignalProxy)
-
-QPaintBufferSignalProxy *QPaintBufferSignalProxy::instance()
-{
-    return theSignalProxy();
-}
-
-/************************************************************************
- *
  * QPaintBufferPrivate
  *
  ************************************************************************/
@@ -124,8 +111,6 @@ QPaintBufferPrivate::QPaintBufferPrivate()
 
 QPaintBufferPrivate::~QPaintBufferPrivate()
 {
-    QPaintBufferSignalProxy::instance()->emitAboutToDestroy(this);
-
     for (int i = 0; i < commands.size(); ++i) {
         const QPaintBufferCommand &cmd = commands.at(i);
         if (cmd.id == QPaintBufferPrivate::Cmd_DrawTextItem)
@@ -2055,45 +2040,6 @@ void QPaintEngineExReplayer::process(const QPaintBufferCommand &cmd)
     default:
         QPainterReplayer::process(cmd);
         break;
-    }
-}
-
-QPaintBufferResource::QPaintBufferResource(FreeFunc f, QObject *parent) : QObject(parent), free(f)
-{
-    connect(QPaintBufferSignalProxy::instance(), SIGNAL(aboutToDestroy(const QPaintBufferPrivate*)), this, SLOT(remove(const QPaintBufferPrivate*)));
-}
-
-QPaintBufferResource::~QPaintBufferResource()
-{
-    for (Cache::iterator it = m_cache.begin(); it != m_cache.end(); ++it)
-        free(it.value());
-}
-
-void QPaintBufferResource::insert(const QPaintBufferPrivate *key, void *value)
-{
-    Cache::iterator it = m_cache.find(key);
-    if (it != m_cache.end()) {
-        free(it.value());
-        it.value() = value;
-    } else {
-        m_cache.insert(key, value);
-    }
-}
-
-void *QPaintBufferResource::value(const QPaintBufferPrivate *key)
-{
-    Cache::iterator it = m_cache.find(key);
-    if (it != m_cache.end())
-        return it.value();
-    return 0;
-}
-
-void QPaintBufferResource::remove(const QPaintBufferPrivate *key)
-{
-    Cache::iterator it = m_cache.find(key);
-    if (it != m_cache.end()) {
-        free(it.value());
-        m_cache.erase(it);
     }
 }
 

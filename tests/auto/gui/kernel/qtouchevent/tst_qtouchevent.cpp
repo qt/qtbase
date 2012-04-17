@@ -595,7 +595,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
     rawTouchPoint.setState(Qt::TouchPointPressed);
     rawTouchPoint.setScreenPos(screenPos);
     rawTouchPoint.setNormalizedPos(normalized(rawTouchPoint.pos(), screenGeometry));
-    QList<QPointF> rawPosList;
+    QVector<QPointF> rawPosList;
     rawPosList << QPointF(12, 34) << QPointF(56, 78);
     rawTouchPoint.setRawScreenPositions(rawPosList);
     const ulong timestamp = 1234;

@@ -1234,6 +1234,7 @@ public:
     bool unregisterTimer(int ) { return false; }
     bool unregisterTimers(QObject *) { return false; }
     QList<TimerInfo> registeredTimers(QObject *) const { return QList<TimerInfo>(); }
+    int remainingTime(int) { return 0; }
     void wakeUp() {}
     void interrupt() {}
     void flush() {}

@@ -57,6 +57,7 @@
 #include "qhash.h"
 #include "qtranslator_p.h"
 #include "qlocale.h"
+#include "qendian.h"
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
 #define QT_USE_MMAP
@@ -101,36 +102,112 @@ static bool match(const uchar* found, const char* target, uint len)
     return (memcmp(found, target, len) == 0 && target[len] == '\0');
 }
 
-static uint elfHash(const char *name)
+static void elfHash_continue(const char *name, uint &h)
 {
     const uchar *k;
-    uint h = 0;
     uint g;
 
-    if (name) {
-        k = (const uchar *) name;
-        while (*k) {
-            h = (h << 4) + *k++;
-            if ((g = (h & 0xf0000000)) != 0)
-                h ^= g >> 24;
-            h &= ~g;
-        }
+    k = (const uchar *) name;
+    while (*k) {
+        h = (h << 4) + *k++;
+        if ((g = (h & 0xf0000000)) != 0)
+            h ^= g >> 24;
+        h &= ~g;
     }
-    if (!h)
-        h = 1;
-    return h;
 }
 
-static int numerusHelper(int n, const uchar *rules, int rulesSize)
+static void elfHash_finish(uint &h)
 {
-#define CHECK_RANGE \
-    do { \
-        if (i >= rulesSize) \
-            return -1; \
-    } while (0)
+    if (!h)
+        h = 1;
+}
 
-    int result = 0;
-    int i = 0;
+static uint elfHash(const char *name)
+{
+    uint hash = 0;
+    elfHash_continue(name, hash);
+    elfHash_finish(hash);
+    return hash;
+}
+
+/*
+   \internal
+
+   Determines whether \a rules are valid "numerus rules". Test input with this
+   function before calling numerusHelper, below.
+ */
+static bool isValidNumerusRules(const uchar *rules, uint rulesSize)
+{
+    // Disabled computation of maximum numerus return value
+    // quint32 numerus = 0;
+
+    if (rulesSize == 0)
+        return true;
+
+    quint32 offset = 0;
+    do {
+        uchar opcode = rules[offset];
+        uchar op = opcode & Q_OP_MASK;
+
+        if (opcode & 0x80)
+            return false; // Bad op
+
+        if (++offset == rulesSize)
+            return false; // Missing operand
+
+        // right operand
+        ++offset;
+
+        switch (op)
+        {
+        case Q_EQ:
+        case Q_LT:
+        case Q_LEQ:
+            break;
+
+        case Q_BETWEEN:
+            if (offset != rulesSize) {
+                // third operand
+                ++offset;
+                break;
+            }
+            return false; // Missing operand
+
+        default:
+            return false; // Bad op (0)
+        }
+
+        // ++numerus;
+        if (offset == rulesSize)
+            return true;
+
+    } while (((rules[offset] == Q_AND)
+                || (rules[offset] == Q_OR)
+                || (rules[offset] == Q_NEWRULE))
+            && ++offset != rulesSize);
+
+    // Bad op
+    return false;
+}
+
+/*
+   \internal
+
+   This function does no validation of input and assumes it is well-behaved,
+   these assumptions can be checked with isValidNumerusRules, above.
+
+   Determines which translation to use based on the value of \a n. The return
+   value is an index identifying the translation to be used.
+
+   \a rules is a character array of size \a rulesSize containing bytecode that
+   operates on the value of \a n and ultimately determines the result.
+
+   This function has O(1) space and O(rulesSize) time complexity.
+ */
+static uint numerusHelper(int n, const uchar *rules, uint rulesSize)
+{
+    uint result = 0;
+    uint i = 0;
 
     if (rulesSize == 0)
         return 0;
@@ -143,8 +220,6 @@ static int numerusHelper(int n, const uchar *rules, int rulesSize)
 
             for (;;) {
                 bool truthValue = true;
-
-                CHECK_RANGE;
                 int opcode = rules[i++];
 
                 int leftOperand = n;
@@ -158,13 +233,9 @@ static int numerusHelper(int n, const uchar *rules, int rulesSize)
                 }
 
                 int op = opcode & Q_OP_MASK;
-
-                CHECK_RANGE;
                 int rightOperand = rules[i++];
 
                 switch (op) {
-                default:
-                    return -1;
                 case Q_EQ:
                     truthValue = (leftOperand == rightOperand);
                     break;
@@ -174,9 +245,8 @@ static int numerusHelper(int n, const uchar *rules, int rulesSize)
                 case Q_LEQ:
                     truthValue = (leftOperand <= rightOperand);
                     break;
-		case Q_BETWEEN:
+                case Q_BETWEEN:
                     int bottom = rightOperand;
-                    CHECK_RANGE;
                     int top = rules[i++];
                     truthValue = (leftOperand >= bottom && leftOperand <= top);
                 }
@@ -206,10 +276,10 @@ static int numerusHelper(int n, const uchar *rules, int rulesSize)
         if (i == rulesSize)
             return result;
 
-        if (rules[i++] != Q_NEWRULE)
-            break;
+        i++; // Q_NEWRULE
     }
-    return -1;
+
+    Q_ASSERT(false);
 }
 
 class QTranslatorPrivate : public QObjectPrivate
@@ -218,17 +288,22 @@ class QTranslatorPrivate : public QObjectPrivate
 public:
     enum { Contexts = 0x2f, Hashes = 0x42, Messages = 0x69, NumerusRules = 0x88 };
 
-    QTranslatorPrivate()
-        : used_mmap(0), unmapPointer(0), unmapLength(0),
+    QTranslatorPrivate() :
+#if defined(QT_USE_MMAP)
+          used_mmap(0),
+#endif
+          unmapPointer(0), unmapLength(0),
           messageArray(0), offsetArray(0), contextArray(0), numerusRulesArray(0),
           messageLength(0), offsetLength(0), contextLength(0), numerusRulesLength(0) {}
 
-    // for mmap'ed files, this is what needs to be unmapped.
+#if defined(QT_USE_MMAP)
     bool used_mmap : 1;
-    char *unmapPointer;
-    unsigned int unmapLength;
+#endif
+    char *unmapPointer;     // owned memory (mmap or new)
+    quint32 unmapLength;
 
-    // for squeezed but non-file data, this is what needs to be deleted
+    // Pointers and offsets into unmapPointer[unmapLength] array, or user
+    // provided data array
     const uchar *messageArray;
     const uchar *offsetArray;
     const uchar *contextArray;
@@ -439,6 +514,23 @@ bool QTranslatorPrivate::do_load(const QString &realname)
     QTranslatorPrivate *d = this;
     bool ok = false;
 
+    QFile file(realname);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered))
+        return false;
+
+    qint64 fileSize = file.size();
+    if (fileSize <= MagicLength || quint32(-1) <= fileSize)
+        return false;
+
+    {
+        char magicBuffer[MagicLength];
+        if (MagicLength != file.read(magicBuffer, MagicLength)
+                || memcmp(magicBuffer, magic, MagicLength))
+            return false;
+    }
+
+    d->unmapLength = quint32(fileSize);
+
 #ifdef QT_USE_MMAP
 
 #ifndef MAP_FILE
@@ -448,54 +540,48 @@ bool QTranslatorPrivate::do_load(const QString &realname)
 #define MAP_FAILED -1
 #endif
 
-    int fd = -1;
-    if (!realname.startsWith(QLatin1Char(':')))
-        fd = QT_OPEN(QFile::encodeName(realname), O_RDONLY,
-#if defined(Q_OS_WIN)
-                     _S_IREAD | _S_IWRITE
-#else
-                     0666
-#endif
-            );
+    int fd = file.handle();
     if (fd >= 0) {
-        QT_STATBUF st;
-        if (!QT_FSTAT(fd, &st)) {
-            char *ptr;
-            ptr = reinterpret_cast<char *>(
-                mmap(0, st.st_size,             // any address, whole file
-                     PROT_READ,                 // read-only memory
-                     MAP_FILE | MAP_PRIVATE,    // swap-backed map from file
-                     fd, 0));                   // from offset 0 of fd
-            if (ptr && ptr != reinterpret_cast<char *>(MAP_FAILED)) {
-                d->used_mmap = true;
-                d->unmapPointer = ptr;
-                d->unmapLength = st.st_size;
-                ok = true;
-            }
+        char *ptr;
+        ptr = reinterpret_cast<char *>(
+            mmap(0, d->unmapLength,         // any address, whole file
+                 PROT_READ,                 // read-only memory
+                 MAP_FILE | MAP_PRIVATE,    // swap-backed map from file
+                 fd, 0));                   // from offset 0 of fd
+        if (ptr && ptr != reinterpret_cast<char *>(MAP_FAILED)) {
+            file.close();
+            d->used_mmap = true;
+            d->unmapPointer = ptr;
+            ok = true;
         }
-        ::close(fd);
     }
 #endif // QT_USE_MMAP
 
     if (!ok) {
-        QFile file(realname);
-        d->unmapLength = file.size();
-        if (!d->unmapLength)
-            return false;
         d->unmapPointer = new char[d->unmapLength];
-
-        if (file.open(QIODevice::ReadOnly))
-            ok = (d->unmapLength == (uint)file.read(d->unmapPointer, d->unmapLength));
-
-        if (!ok) {
-            delete [] d->unmapPointer;
-            d->unmapPointer = 0;
-            d->unmapLength = 0;
-            return false;
+        if (d->unmapPointer) {
+            file.seek(0);
+            qint64 readResult = file.read(d->unmapPointer, d->unmapLength);
+            if (readResult == qint64(unmapLength))
+                ok = true;
         }
     }
 
-    return d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength);
+    if (ok && d->do_load(reinterpret_cast<const uchar *>(d->unmapPointer), d->unmapLength))
+        return true;
+
+#if defined(QT_USE_MMAP)
+    if (used_mmap) {
+        used_mmap = false;
+        munmap(unmapPointer, unmapLength);
+    } else
+#endif
+        delete [] unmapPointer;
+
+    d->unmapPointer = 0;
+    d->unmapLength = 0;
+
+    return false;
 }
 
 static QString find_translation(const QLocale & locale,
@@ -654,32 +740,30 @@ bool QTranslator::load(const uchar *data, int len)
 {
     Q_D(QTranslator);
     d->clear();
+
+    if (!data || len < MagicLength || memcmp(data, magic, MagicLength))
+        return false;
+
     return d->do_load(data, len);
 }
 
 static quint8 read8(const uchar *data)
 {
-    return *data;
+    return qFromBigEndian<quint8>(data);
 }
 
 static quint16 read16(const uchar *data)
 {
-    return (data[0] << 8) | (data[1]);
+    return qFromBigEndian<quint16>(data);
 }
 
 static quint32 read32(const uchar *data)
 {
-    return (data[0] << 24)
-        | (data[1] << 16)
-        | (data[2] << 8)
-        | (data[3]);
+    return qFromBigEndian<quint32>(data);
 }
 
 bool QTranslatorPrivate::do_load(const uchar *data, int len)
 {
-    if (!data || len < MagicLength || memcmp(data, magic, MagicLength))
-        return false;
-
     bool ok = true;
     const uchar *end = data + len;
 
@@ -691,7 +775,7 @@ bool QTranslatorPrivate::do_load(const uchar *data, int len)
         data += 4;
         if (!tag || !blockLen)
             break;
-        if (data + blockLen > end) {
+        if (end - data < blockLen) {
             ok = false;
             break;
         }
@@ -713,15 +797,30 @@ bool QTranslatorPrivate::do_load(const uchar *data, int len)
         data += blockLen;
     }
 
+    if (!offsetArray || !messageArray)
+        ok = false;
+    if (!isValidNumerusRules(numerusRulesArray, numerusRulesLength))
+        ok = false;
+
+    if (!ok) {
+        messageArray = 0;
+        contextArray = 0;
+        offsetArray = 0;
+        numerusRulesArray = 0;
+        messageLength = 0;
+        contextLength = 0;
+        offsetLength = 0;
+        numerusRulesLength = 0;
+    }
+
     return ok;
 }
 
 static QString getMessage(const uchar *m, const uchar *end, const char *context,
-                          const char *sourceText, const char *comment, int numerus)
+                          const char *sourceText, const char *comment, uint numerus)
 {
     const uchar *tn = 0;
     uint tn_length = 0;
-    int currentNumerus = -1;
 
     for (;;) {
         uchar tag = 0;
@@ -735,7 +834,7 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
             if (len % 1)
                 return QString();
             m += 4;
-            if (++currentNumerus == numerus) {
+            if (!numerus--) {
                 tn_length = len;
                 tn = m;
             }
@@ -825,12 +924,15 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
     if (!numItems)
         return QString();
 
-    int numerus = 0;
+    uint numerus = 0;
     if (n >= 0)
         numerus = numerusHelper(n, numerusRulesArray, numerusRulesLength);
 
     for (;;) {
-        quint32 h = elfHash(QByteArray(QByteArray(sourceText) + comment).constData());
+        quint32 h = 0;
+        elfHash_continue(sourceText, h);
+        elfHash_continue(comment, h);
+        elfHash_finish(h);
 
         const uchar *start = offsetArray;
         const uchar *end = start + ((numItems-1) << 3);
@@ -883,9 +985,10 @@ void QTranslatorPrivate::clear()
     Q_Q(QTranslator);
     if (unmapPointer && unmapLength) {
 #if defined(QT_USE_MMAP)
-        if (used_mmap)
+        if (used_mmap) {
+            used_mmap = false;
             munmap(unmapPointer, unmapLength);
-        else
+        } else
 #endif
             delete [] unmapPointer;
     }

@@ -3,7 +3,7 @@ DESTDIR   = $$PWD/../..  # build directly in source dir
 
 CONFIG   += console flat stl rtti_off
 CONFIG   -= moc qt
-DEFINES  = UNICODE QT_NODLL QT_NO_CODECS QT_NO_TEXTCODEC QT_NO_UNICODETABLES QT_LITE_COMPONENT QT_NO_STL QT_NO_COMPRESS QT_NO_THREAD QT_NO_QOBJECT QT_NO_GEOM_VARIANT _CRT_SECURE_NO_DEPRECATE
+DEFINES  = UNICODE QT_NODLL QT_NO_CODECS QT_NO_TEXTCODEC QT_NO_UNICODETABLES QT_LITE_COMPONENT QT_NO_COMPRESS QT_NO_THREAD QT_NO_QOBJECT QT_NO_GEOM_VARIANT _CRT_SECURE_NO_DEPRECATE
 DEFINES  += QT_BOOTSTRAPPED
 
 win32 : LIBS += -lole32 -ladvapi32
@@ -32,7 +32,10 @@ INCLUDEPATH += \
            $$QT_SOURCE_TREE/tools/shared
 
 HEADERS  = configureapp.h environment.h tools.h\
+           $$QT_SOURCE_TREE/src/corelib/tools/qarraydata.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearray.h \
+           $$QT_SOURCE_TREE/src/corelib/tools/qarraydatapointer.h \
+           $$QT_SOURCE_TREE/src/corelib/tools/qarraydataops.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearraymatcher.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qchar.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qhash.h \
@@ -48,6 +51,7 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/io/qdatastream.h \
            $$QT_SOURCE_TREE/src/corelib/io/qdir.h \
            $$QT_SOURCE_TREE/src/corelib/io/qdiriterator.h \
+           $$QT_SOURCE_TREE/src/corelib/io/qfiledevice.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfile.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfileinfo.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfilesystementry_p.h \
@@ -75,6 +79,7 @@ HEADERS  = configureapp.h environment.h tools.h\
 
 SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearray.cpp \
+           $$QT_SOURCE_TREE/src/corelib/tools/qarraydata.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearraymatcher.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qchar.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qhash.cpp \
@@ -92,6 +97,7 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qdatastream.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qdir.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qdiriterator.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfiledevice.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfile.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfileinfo.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qabstractfileengine.cpp \

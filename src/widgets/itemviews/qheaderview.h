@@ -191,7 +191,6 @@ Q_SIGNALS:
     void sectionDoubleClicked(int logicalIndex);
     void sectionCountChanged(int oldCount, int newCount);
     void sectionHandleDoubleClicked(int logicalIndex);
-    void sectionAutoResize(int logicalIndex, QHeaderView::ResizeMode mode);
     void geometriesChanged();
     void sortIndicatorChanged(int logicalIndex, Qt::SortOrder order);
 
