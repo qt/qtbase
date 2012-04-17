@@ -565,28 +565,14 @@ static void qmake_error_msg(const QString &msg)
    1) features/(unix|win32|macx)/
    2) features/
 */
-QStringList qmake_feature_paths(QMakeProperty *prop, bool host_build)
+QStringList QMakeProject::qmakeFeaturePaths()
 {
     const QString mkspecs_concat = QLatin1String("/mkspecs");
     const QString base_concat = QLatin1String("/features");
     QStringList concat;
-    {
-        switch(Option::target_mode) {
-        case Option::TARG_MACX_MODE:                     //also a unix
-            concat << base_concat + QLatin1String("/mac");
-            concat << base_concat + QLatin1String("/macx");
-            concat << base_concat + QLatin1String("/unix");
-            break;
-        default: // Can't happen, just make the compiler shut up
-        case Option::TARG_UNIX_MODE:
-            concat << base_concat + QLatin1String("/unix");
-            break;
-        case Option::TARG_WIN_MODE:
-            concat << base_concat + QLatin1String("/win32");
-            break;
-        }
-        concat << base_concat;
-    }
+    foreach (const QString &sfx, values("QMAKE_PLATFORM"))
+        concat << base_concat + QLatin1Char('/') + sfx;
+    concat << base_concat;
 
     QStringList feature_roots = splitPathList(QString::fromLocal8Bit(qgetenv("QMAKEFEATURES")));
     feature_roots += cached_qmakefeatures;
@@ -1489,7 +1475,8 @@ QMakeProject::read(uchar cmd)
                 return false;
             }
             doProjectInclude("spec_post", IncludeFlagFeature, vars);
-            validateModes();
+            // The spec extends the feature search path, so invalidate the cache.
+            invalidateFeatureRoots();
 
             if (!conffile.isEmpty()) {
                 debug_msg(1, "Project config file: reading %s", conffile.toLatin1().constData());
@@ -1607,34 +1594,6 @@ QMakeProject::read(uchar cmd)
     return true;
 }
 
-void QMakeProject::validateModes()
-{
-    if (Option::target_mode == Option::TARG_UNKNOWN_MODE) {
-        Option::TARG_MODE target_mode;
-        const QStringList &gen = vars.value("MAKEFILE_GENERATOR");
-        if (gen.isEmpty()) {
-            fprintf(stderr, "%s:%d: Using OS scope before setting MAKEFILE_GENERATOR\n",
-                            parser.file.toLatin1().constData(), parser.line_no);
-        } else if (MetaMakefileGenerator::modeForGenerator(gen.first(), &target_mode)) {
-            const QStringList &tgt = vars.value("TARGET_PLATFORM");
-            if (!tgt.isEmpty()) {
-                const QString &os = tgt.first();
-                if (os == "unix")
-                    Option::target_mode = Option::TARG_UNIX_MODE;
-                else if (os == "macx")
-                    Option::target_mode = Option::TARG_MACX_MODE;
-                else if (os == "win32")
-                    Option::target_mode = Option::TARG_WIN_MODE;
-                else
-                    fprintf(stderr, "Unknown target platform specified: %s\n",
-                            os.toLatin1().constData());
-            } else {
-                Option::target_mode = target_mode;
-            }
-        }
-    }
-}
-
 void
 QMakeProject::resolveSpec(QString *spec, const QString &qmakespec)
 {
@@ -1676,18 +1635,6 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QHash<QString, QStrin
         return true;
     else if(x == "false")
         return false;
-
-    if (x == "unix") {
-        validateModes();
-        return Option::target_mode == Option::TARG_UNIX_MODE
-               || Option::target_mode == Option::TARG_MACX_MODE;
-    } else if (x == "macx" || x == "mac") {
-        validateModes();
-        return Option::target_mode == Option::TARG_MACX_MODE;
-    } else if (x == "win32") {
-        validateModes();
-        return Option::target_mode == Option::TARG_WIN_MODE;
-    }
 
     if (x == "host_build")
         return host_build;
@@ -1758,7 +1705,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
                 qmakeAddCacheClear(qmakeDeleteCacheClear<QStringList>, (void**)&feature_roots);
             }
             if (feature_roots->isEmpty())
-                *feature_roots = qmake_feature_paths(prop, host_build);
+                *feature_roots = qmakeFeaturePaths();
             debug_msg(2, "Looking for feature '%s' in (%s)", file.toLatin1().constData(),
 			feature_roots->join("::").toLatin1().constData());
             int start_root = 0;

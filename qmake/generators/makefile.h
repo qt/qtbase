@@ -91,6 +91,8 @@ class MakefileGenerator : protected QMakeSourceFileInfo
     mutable QHash<ReplaceExtraCompilerCacheKey, QString> extraCompilerVariablesCache;
 
 protected:
+    enum TARG_MODE { TARG_UNIX_MODE, TARG_MACX_MODE, TARG_WIN_MODE } target_mode;
+
     QStringList createObjectList(const QStringList &sources);
 
     //makefile style generator functions

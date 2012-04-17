@@ -114,8 +114,8 @@ class QMakeProject
     void init(QMakeProperty *);
     void cleanup();
     QStringList &values(const QString &v, QHash<QString, QStringList> &place);
-    void validateModes();
     void resolveSpec(QString *spec, const QString &qmakespec);
+    QStringList qmakeFeaturePaths();
 
 public:
     QMakeProject(QMakeProperty *p = 0) { init(p); }

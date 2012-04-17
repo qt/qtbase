@@ -491,9 +491,9 @@ UnixMakefileGenerator::findLibraries()
                     } else {
                         stub = opt.mid(2);
                     }
-                } else if(Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-F")) {
+                } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-F")) {
                     frameworkdirs.append(QMakeLocalFileName(opt.right(opt.length()-2)));
-                } else if(Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-framework")) {
+                } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-framework")) {
                     if(opt.length() > 11) {
                         opt = opt.mid(11);
                     } else {
@@ -612,11 +612,11 @@ UnixMakefileGenerator::processPrlFiles()
                             break;
                         }
                     }
-                } else if(Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-F")) {
+                } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-F")) {
                     QMakeLocalFileName f(opt.right(opt.length()-2));
                     if(!frameworkdirs.contains(f))
                         frameworkdirs.append(f);
-                } else if(Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-framework")) {
+                } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-framework")) {
                     if(opt.length() > 11)
                         opt = opt.mid(11);
                     else
@@ -655,7 +655,7 @@ UnixMakefileGenerator::processPrlFiles()
                 QString arch("default");
                 QString opt = l.at(lit).trimmed();
                 if(opt.startsWith("-")) {
-                    if (Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-Xarch")) {
+                    if (target_mode == TARG_MACX_MODE && opt.startsWith("-Xarch")) {
                         if (opt.length() > 7) {
                             arch = opt.mid(7);
                             opt = l.at(++lit);
@@ -663,7 +663,7 @@ UnixMakefileGenerator::processPrlFiles()
                     }
 
                     if(opt.startsWith("-L") ||
-                       (Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-F"))) {
+                       (target_mode == TARG_MACX_MODE && opt.startsWith("-F"))) {
                         if(!lflags[arch].contains(opt))
                             lflags[arch].append(opt);
                     } else if(opt.startsWith("-l") || opt == "-pthread") {
@@ -671,12 +671,12 @@ UnixMakefileGenerator::processPrlFiles()
                         if (lflags[arch].contains(opt))
                             lflags[arch].removeAll(opt);
                         lflags[arch].append(opt);
-                    } else if(Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-framework")) {
+                    } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-framework")) {
                         if(opt.length() > 11)
                             opt = opt.mid(11);
                         else {
                             opt = l.at(++lit);
-                            if (Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-Xarch"))
+                            if (target_mode == TARG_MACX_MODE && opt.startsWith("-Xarch"))
                                 opt = l.at(++lit); // The user has done the right thing and prefixed each part
                         }
                         bool found = false;
@@ -838,8 +838,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
             uninst.append("-$(DEL_FILE) \"" + dst_targ + "\"");
         if(!links.isEmpty()) {
             for(int i = 0; i < links.size(); ++i) {
-                if(Option::target_mode == Option::TARG_UNIX_MODE ||
-                   Option::target_mode == Option::TARG_MACX_MODE) {
+                if (target_mode == TARG_UNIX_MODE || target_mode == TARG_MACX_MODE) {
                     QString link = Option::fixPathToTargetOS(destdir + links[i], false);
                     int lslash = link.lastIndexOf(Option::dir_sep);
                     if(lslash != -1)

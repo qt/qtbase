@@ -514,28 +514,5 @@ MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &na
 
 #endif // QT_QMAKE_PARSER_ONLY
 
-bool
-MetaMakefileGenerator::modeForGenerator(const QString &gen, Option::TARG_MODE *target_mode)
-{
-    if (gen == "UNIX") {
-#ifdef Q_OS_MAC
-        *target_mode = Option::TARG_MACX_MODE;
-#else
-        *target_mode = Option::TARG_UNIX_MODE;
-#endif
-    } else if (gen == "MSVC.NET" || gen == "BMAKE" || gen == "MSBUILD") {
-        *target_mode = Option::TARG_WIN_MODE;
-    } else if (gen == "MINGW") {
-        *target_mode = Option::TARG_WIN_MODE;
-    } else if (gen == "PROJECTBUILDER" || gen == "XCODE") {
-        *target_mode = Option::TARG_MACX_MODE;
-    } else if (gen == "GBUILD") {
-        *target_mode = Option::TARG_UNIX_MODE;
-    } else {
-        fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
-        return false;
-    }
-    return true;
-}
 
 QT_END_NAMESPACE

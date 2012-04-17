@@ -93,7 +93,6 @@ QString Option::user_template;
 QString Option::user_template_prefix;
 QStringList Option::shellPath;
 Option::HOST_MODE Option::host_mode = Option::HOST_UNKNOWN_MODE;
-Option::TARG_MODE Option::target_mode = Option::TARG_UNKNOWN_MODE;
 
 //QMAKE_*_PROPERTY stuff
 QStringList Option::prop::properties;
@@ -557,14 +556,6 @@ Option::init(int argc, char **argv)
             }
 #endif
         }
-    } else if (Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT) {
-#if defined(Q_OS_MAC)
-        Option::target_mode = Option::TARG_MACX_MODE;
-#elif defined(Q_OS_UNIX)
-        Option::target_mode = Option::TARG_UNIX_MODE;
-#else
-        Option::target_mode = Option::TARG_WIN_MODE;
-#endif
     }
 
     //defaults for globals
