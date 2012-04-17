@@ -1371,7 +1371,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
             for (int i = 0; i < buttons.count(); ++i) {
                 QAbstractButton *pb = buttons.at(i);
                 QKeySequence shortcut = pb->shortcut();
-                if (!shortcut.isEmpty() && key == (shortcut[0] & ~Qt::MODIFIER_MASK)) {
+                if (!shortcut.isEmpty() && key == int(shortcut[0] & ~Qt::MODIFIER_MASK)) {
                     pb->animateClick();
                     return;
                 }
