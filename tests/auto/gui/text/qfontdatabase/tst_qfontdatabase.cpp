@@ -265,7 +265,10 @@ void tst_QFontDatabase::addAppFont()
     QVERIFY(QFontDatabase::removeApplicationFont(id));
     QCOMPARE(fontDbChangedSpy.count(), 2);
 
-    QVERIFY(db.families() == oldFamilies);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("font file", "QTBUG-23062", Continue);
+#endif
+    QCOMPARE(db.families(), oldFamilies);
 }
 
 QTEST_MAIN(tst_QFontDatabase)

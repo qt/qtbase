@@ -9,5 +9,3 @@ wince* {
     additionalFiles.path = .
     DEPLOYMENT += additionalFiles
 }
-
-mac: CONFIG += insignificant_test # QTBUG-23062
