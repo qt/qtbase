@@ -378,6 +378,9 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
 #if defined(Q_OS_IRIX)
     QEXPECT_FAIL("", "IRIX requires explicit activateWindow(), so this test does not make any sense.", Abort);
 #endif
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-22815", Abort);
+#endif
     QTRY_VERIFY(childFocusWidgetOne->focusInEventRecieved);
     QVERIFY(childFocusWidgetOne->focusInEventGotFocus);
 
