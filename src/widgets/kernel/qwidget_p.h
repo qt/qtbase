@@ -157,7 +157,7 @@ struct QTLWExtra {
 
     // *************************** Cross-platform bit fields ****************************
     uint opacity : 8;
-    uint posFromMove : 1;
+    uint posIncludesFrame : 1;
     uint sizeAdjusted : 1;
     uint inTopLevelResize : 1;
     uint inRepaint : 1;
@@ -432,6 +432,7 @@ public:
     void scroll_sys(int dx, int dy, const QRect &r);
     void deactivateWidgetCleanup();
     void setGeometry_sys(int, int, int, int, bool);
+    void fixPosIncludesFrame();
     void sendPendingMoveAndResizeEvents(bool recursive = false, bool disableUpdates = false);
     void activateChildLayoutsRecursively();
     void show_recursive();

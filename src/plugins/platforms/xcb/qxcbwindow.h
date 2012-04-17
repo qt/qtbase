@@ -148,6 +148,8 @@ private:
     void setTransparentForMouseEvents(bool transparent);
     void updateDoesNotAcceptFocus(bool doesNotAcceptFocus);
 
+    QRect windowToWmGeometry(QRect r) const;
+
     void create();
     void destroy();
 
@@ -165,6 +167,8 @@ private:
     xcb_sync_counter_t m_syncCounter;
 
     Qt::WindowState m_windowState;
+
+    xcb_gravity_t m_gravity;
 
     bool m_mapped;
     bool m_transparent;

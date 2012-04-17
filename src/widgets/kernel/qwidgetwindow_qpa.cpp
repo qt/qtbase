@@ -327,10 +327,13 @@ void QWidgetWindow::updateGeometry()
     if (m_widget->testAttribute(Qt::WA_OutsideWSRange))
         return;
 
-    QMargins margins = frameMargins();
+    const QMargins margins = frameMargins();
 
     m_widget->data->crect = geometry();
-    m_widget->d_func()->topData()->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
+    QTLWExtra *te = m_widget->d_func()->topData();
+    te->posIncludesFrame= false;
+    te->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
+    m_widget->data->fstrut_dirty = false;
 }
 
 void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
@@ -447,6 +450,8 @@ void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
     }
 }
 
+Qt::WindowState effectiveState(Qt::WindowStates state);
+
 void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event)
 {
     // QWindow does currently not know 'active'.
@@ -465,10 +470,16 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
         widgetState |= Qt::WindowMinimized;
         break;
     case Qt::WindowMaximized:
+        if (effectiveState(widgetState) == Qt::WindowNoState)
+            if (QTLWExtra *tle = m_widget->d_func()->maybeTopData())
+                tle->normalGeometry = m_widget->geometry();
         widgetState &= ~Qt::WindowFullScreen;
         widgetState |= Qt::WindowMaximized;
         break;
     case Qt::WindowFullScreen:
+        if (effectiveState(widgetState) == Qt::WindowNoState)
+            if (QTLWExtra *tle = m_widget->d_func()->maybeTopData())
+                tle->normalGeometry = m_widget->geometry();
         widgetState &= ~Qt::WindowMaximized;
         widgetState |= Qt::WindowFullScreen;
         break;

@@ -388,9 +388,6 @@ void tst_QDialog::toolDialogPosition()
 #if defined(Q_OS_WINCE)
     QSKIP("No real support for Qt::Tool on WinCE");
 #endif
-#ifdef Q_OS_WIN
-    QSKIP("QTBUG-25331 - positioning failure");
-#endif
     QDialog dialog(0, Qt::Tool);
     dialog.move(QPoint(100,100));
     const QPoint beforeShowPosition = dialog.pos();

@@ -1530,7 +1530,7 @@ void QWidgetPrivate::createTLExtra()
         x->normalGeometry = QRect(0,0,-1,-1);
         x->savedFlags = 0;
         x->opacity = 255;
-        x->posFromMove = false;
+        x->posIncludesFrame = 0;
         x->sizeAdjusted = false;
         x->inTopLevelResize = false;
         x->inRepaint = false;
@@ -3242,11 +3242,11 @@ int QWidget::y() const
 QPoint QWidget::pos() const
 {
     Q_D(const QWidget);
-    if (isWindow() && ! (windowType() == Qt::Popup)) {
-        QRect fs = d->frameStrut();
-        return QPoint(data->crect.x() - fs.left(), data->crect.y() - fs.top());
-    }
-    return data->crect.topLeft();
+    QPoint result = data->crect.topLeft();
+    if (isWindow() && ! (windowType() == Qt::Popup))
+        if (!d->maybeTopData() || !d->maybeTopData()->posIncludesFrame)
+            result -= d->frameStrut().topLeft();
+    return result;
 }
 
 /*!
@@ -6475,14 +6475,17 @@ void QWidget::move(const QPoint &p)
 {
     Q_D(QWidget);
     setAttribute(Qt::WA_Moved);
-    if (isWindow())
-        d->topData()->posFromMove = true;
     if (testAttribute(Qt::WA_WState_Created)) {
+        if (isWindow())
+            d->topData()->posIncludesFrame = false;
         d->setGeometry_sys(p.x() + geometry().x() - QWidget::x(),
                        p.y() + geometry().y() - QWidget::y(),
                        width(), height(), true);
         d->setDirtyOpaqueRegion();
     } else {
+        // no frame yet: see also QWidgetPrivate::fixPosIncludesFrame(), QWindowPrivate::PositionPolicy.
+        if (isWindow())
+            d->topData()->posIncludesFrame = true;
         data->crect.moveTopLeft(p); // no frame yet
         setAttribute(Qt::WA_PendingMoveEvent);
     }
@@ -6499,6 +6502,7 @@ void QWidget::resize(const QSize &s)
     Q_D(QWidget);
     setAttribute(Qt::WA_Resized);
     if (testAttribute(Qt::WA_WState_Created)) {
+        d->fixPosIncludesFrame();
         d->setGeometry_sys(geometry().x(), geometry().y(), s.width(), s.height(), false);
         d->setDirtyOpaqueRegion();
     } else {
@@ -6513,7 +6517,7 @@ void QWidget::setGeometry(const QRect &r)
     setAttribute(Qt::WA_Resized);
     setAttribute(Qt::WA_Moved);
     if (isWindow())
-        d->topData()->posFromMove = false;
+        d->topData()->posIncludesFrame = 0;
     if (testAttribute(Qt::WA_WState_Created)) {
         d->setGeometry_sys(r.x(), r.y(), r.width(), r.height(), true);
         d->setDirtyOpaqueRegion();
@@ -6681,11 +6685,11 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     restoredNormalGeometry.moveTop(qMax(restoredNormalGeometry.top(), availableGeometry.top() + frameHeight));
 
     if (maximized || fullScreen) {
-        // set geomerty before setting the window state to make
+        // set geometry before setting the window state to make
         // sure the window is maximized to the right screen.
         // Skip on windows: the window is restored into a broken
         // half-maximized state.
-#ifndef Q_WS_WIN
+#ifndef Q_OS_WIN
         setGeometry(restoredNormalGeometry);
 #endif
         Qt::WindowStates ws = windowState();

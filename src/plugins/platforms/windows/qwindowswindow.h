@@ -66,6 +66,8 @@ struct QWindowsGeometryHint
     static inline QPoint mapFromGlobal(const HWND hwnd, const QPoint &);
     static inline QPoint mapFromGlobal(const QWindow *w, const QPoint &);
 
+    static bool positionIncludesFrame(const QWindow *w);
+
     QSize minimumSize;
     QSize maximumSize;
 };

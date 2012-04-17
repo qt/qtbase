@@ -244,8 +244,10 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
             = QWindowsWindow::WindowData::create(window, requested, window->windowTitle());
     if (QWindowsContext::verboseIntegration || QWindowsContext::verboseWindows)
         qDebug().nospace()
-            << __FUNCTION__ << ' ' << window << '\n'
-            << "    Requested: " << requested.geometry << " Flags="
+            << __FUNCTION__ << '<' << window << '\n'
+            << "    Requested: " << requested.geometry << "frame incl.: "
+            << QWindowsGeometryHint::positionIncludesFrame(window)
+            <<   " Flags="
             << QWindowsWindow::debugWindowFlags(requested.flags) << '\n'
             << "    Obtained : " << obtained.geometry << " Margins "
             << obtained.frame  << " Flags="
@@ -255,8 +257,6 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
         return 0;
     if (requested.flags != obtained.flags)
         window->setWindowFlags(obtained.flags);
-    if (requested.geometry != obtained.geometry)
-        QWindowSystemInterface::handleGeometryChange(window, obtained.geometry);
     return new QWindowsWindow(window, obtained);
 }
 

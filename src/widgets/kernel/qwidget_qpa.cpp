@@ -55,6 +55,7 @@
 #include <qpa/qplatformcursor.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
+#include <QtCore/QMargins>
 
 QT_BEGIN_NAMESPACE
 
@@ -105,6 +106,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
 
     win->setWindowFlags(data.window_flags);
+    fixPosIncludesFrame();
     win->setGeometry(q->geometry());
     win->setScreen(QGuiApplication::screens().value(topData()->screenIndex, 0));
 
@@ -126,7 +128,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         }
     }
 
-    qt_window_private(win)->positionPolicy = topData()->posFromMove ? QWindowPrivate::WindowFrameInclusive : QWindowPrivate::WindowFrameExclusive;
+    qt_window_private(win)->positionPolicy = topData()->posIncludesFrame ?
+        QWindowPrivate::WindowFrameInclusive : QWindowPrivate::WindowFrameExclusive;
     win->create();
 
     data.window_flags = win->windowFlags();
@@ -438,6 +441,31 @@ static inline QRect positionTopLevelWindow(QRect geometry, const QScreen *screen
     return geometry;
 }
 
+// move() was invoked with Qt::WA_WState_Created not set (frame geometry
+// unknown), that is, crect has a position including the frame.
+// If we can determine the frame strut, fix that and clear the flag.
+void QWidgetPrivate::fixPosIncludesFrame()
+{
+    Q_Q(QWidget);
+    if (QTLWExtra *te = maybeTopData()) {
+        if (te->posIncludesFrame) {
+            // For Qt::WA_DontShowOnScreen, assume a frame of 0 (for
+            // example, in QGraphicsProxyWidget).
+            if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
+                te->posIncludesFrame = 0;
+            } else {
+                if (q->windowHandle()) {
+                    updateFrameStrut();
+                    if (!q->data->fstrut_dirty) {
+                        data.crect.translate(te->frameStrut.x(), te->frameStrut.y());
+                        te->posIncludesFrame = 0;
+                    }
+                } // windowHandle()
+            } // !WA_DontShowOnScreen
+        } // posIncludesFrame
+    } // QTLWExtra
+}
+
 void QWidgetPrivate::show_sys()
 {
     Q_Q(QWidget);
@@ -460,6 +488,8 @@ void QWidgetPrivate::show_sys()
         return;
 
     if (window) {
+        if (q->isWindow())
+            fixPosIncludesFrame();
         QRect geomRect = q->geometry();
         if (q->isWindow()) {
             if (!q->testAttribute(Qt::WA_Moved))
@@ -545,7 +575,7 @@ void QWidgetPrivate::setFullScreenSize_helper()
     data.in_set_window_state = old_state;
 }
 
-static Qt::WindowState effectiveState(Qt::WindowStates state)
+Qt::WindowState effectiveState(Qt::WindowStates state)
  {
      if (state & Qt::WindowMinimized)
          return Qt::WindowMinimized;
@@ -707,7 +737,6 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
         if (!q->testAttribute(Qt::WA_DontShowOnScreen) && !q->testAttribute(Qt::WA_OutsideWSRange)) {
             if (q->windowHandle()) {
                 if (q->isWindow()) {
-                    qt_window_private(q->windowHandle())->positionPolicy = topData()->posFromMove ? QWindowPrivate::WindowFrameInclusive : QWindowPrivate::WindowFrameExclusive;
                     q->windowHandle()->setGeometry(q->geometry());
                 } else {
                     QPoint posInNativeParent =  q->mapTo(q->nativeParentWidget(),QPoint());
@@ -763,8 +792,10 @@ void QWidgetPrivate::setConstraints_sys()
             winp->sizeIncrement = QSize(extra->topextra->incw, extra->topextra->inch);
         }
 
-        if (winp->platformWindow)
+        if (winp->platformWindow) {
+            fixPosIncludesFrame();
             winp->platformWindow->propagateSizeHints();
+        }
     }
 }
 
@@ -895,7 +926,20 @@ void QWidgetPrivate::setMask_sys(const QRegion &region)
 
 void QWidgetPrivate::updateFrameStrut()
 {
-    // XXX
+    Q_Q(QWidget);
+    if (q->data->fstrut_dirty) {
+        if (QTLWExtra *te = maybeTopData()) {
+            if (te->window) {
+                if (const QPlatformWindow *pw = te->window->handle()) {
+                    const QMargins margins = pw->frameMargins();
+                    if (!margins.isNull()) {
+                        te->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
+                        q->data->fstrut_dirty = false;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void QWidgetPrivate::setWindowOpacity_sys(qreal level)

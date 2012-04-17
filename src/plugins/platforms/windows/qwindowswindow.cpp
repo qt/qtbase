@@ -542,6 +542,12 @@ void QWindowsGeometryHint::applyToMinMaxInfo(DWORD style, DWORD exStyle, MINMAXI
                            << " out " << *mmi;
 }
 
+bool QWindowsGeometryHint::positionIncludesFrame(const QWindow *w)
+{
+    return qt_window_private(const_cast<QWindow *>(w))->positionPolicy
+           == QWindowPrivate::WindowFrameInclusive;
+}
+
 /*!
     \class QWindowCreationContext
     \brief Active Context for creating windows.
@@ -576,17 +582,24 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
     // CW_USEDEFAULT unless set. For now, assume that 0,0 means 'default'
     // for toplevels.
     if (geometry.isValid()) {
-        if (!w->isTopLevel() || geometry.y() >= margins.top()) {
-            frameX = geometry.x() - margins.left();
-            frameY = geometry.y() - margins.top();
+        frameX = geometry.x();
+        frameY = geometry.y();
+        frameWidth = margins.left() + geometry.width() + margins.right();
+        frameHeight = margins.top() + geometry.height() + margins.bottom();
+        const bool isDefaultPosition = !frameX && !frameY && w->isTopLevel();
+        if (!QWindowsGeometryHint::positionIncludesFrame(w) && !isDefaultPosition) {
+            frameX -= margins.left();
+            frameY -= margins.top();
         }
-        frameWidth = geometry.width() + margins.left() + margins.right();
-        frameHeight = geometry.height() + margins.top() + margins.bottom();
     }
     if (QWindowsContext::verboseWindows)
         qDebug().nospace()
-                << __FUNCTION__ << ' ' << w << " min" << geometryHint.minimumSize
-                << " min" << geometryHint.maximumSize;
+                << __FUNCTION__ << ' ' << w << geometry
+                << " pos incl. frame" << QWindowsGeometryHint::positionIncludesFrame(w)
+                << " frame: " << frameWidth << 'x' << frameHeight << '+'
+                << frameX << '+' << frameY
+                << " min" << geometryHint.minimumSize
+                << " max" << geometryHint.maximumSize;
 }
 
 /*!
@@ -819,7 +832,7 @@ void QWindowsWindow::setGeometry(const QRect &rectIn)
     QRect rect = rectIn;
     // This means it is a call from QWindow::setFramePos() and
     // the coordinates include the frame (size is still the contents rectangle).
-    if (qt_window_private(window())->positionPolicy == QWindowPrivate::WindowFrameInclusive) {
+    if (QWindowsGeometryHint::positionIncludesFrame(window())) {
         const QMargins margins = frameMargins();
         rect.moveTopLeft(rect.topLeft() + QPoint(margins.left(), margins.top()));
     }
@@ -1004,21 +1017,30 @@ Qt::WindowFlags QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
         qDebug() << '>' << __FUNCTION__ << this << window() << "\n    from: "
                  << QWindowsWindow::debugWindowFlags(m_data.flags)
                  << "\n    to: " << QWindowsWindow::debugWindowFlags(flags);
+    const QRect oldGeometry = geometry();
     if (m_data.flags != flags) {
         m_data.flags = flags;
         if (m_data.hwnd)
             m_data = setWindowFlags_sys(flags);
     }
+    // When switching to a frameless window, geometry
+    // may change without a WM_MOVE. Report change manually.
+    // Do not send synchronously as not to clobber the widget
+    // geometry in a sequence of setting flags and geometry.
+    const QRect newGeometry = geometry_sys();
+    if (oldGeometry != newGeometry)
+        handleGeometryChange();
+
     if (QWindowsContext::verboseWindows)
         qDebug() << '<' << __FUNCTION__ << "\n    returns: "
-                 << QWindowsWindow::debugWindowFlags(m_data.flags);
+                 << QWindowsWindow::debugWindowFlags(m_data.flags)
+                 << " geometry " << oldGeometry << "->" << newGeometry;
     return m_data.flags;
 }
 
 QWindowsWindow::WindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
                                                               unsigned flags) const
 {
-    // Geometry changes have not been observed here. Frames change, though.
     WindowCreationData creationData;
     creationData.fromWindow(window(), wt, flags);
     creationData.applyWindowFlags(m_data.hwnd);
