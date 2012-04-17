@@ -170,6 +170,10 @@
 #define QT_VSNPRINTF		::vsnprintf
 #endif
 
+// INTEGRITY doesn't enable the declaration in _POSIX_SOURCE mode,
+// because strdup() is not part of strict Posix; declare it here
+extern "C" char *strdup(const char *src);
+
 #ifndef MAXNAMLEN
 #  define MAXNAMLEN NAME_MAX
 #endif
