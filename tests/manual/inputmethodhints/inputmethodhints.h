@@ -42,8 +42,8 @@
 #ifndef INPUTMETHODHINTS_H
 #define INPUTMETHODHINTS_H
 
-#include <QtGui/QMainWindow>
-#include "ui_tst_inputmethodhints.h"
+#include <QtWidgets/QMainWindow>
+#include "ui_inputmethodhints.h"
 
 class inputmethodhints : public QMainWindow
 {

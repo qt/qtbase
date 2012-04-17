@@ -228,8 +228,6 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 
 QPlatformPixmap *QWindowsIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    if (QWindowsContext::verboseIntegration)
-        qDebug() << __FUNCTION__ << type;
     return new QRasterPlatformPixmap(type);
 }
 
@@ -279,17 +277,44 @@ QPlatformOpenGLContext
     return 0;
 }
 
+/* Workaround for QTBUG-24205: In 'Auto', pick the FreeType engine for
+ * QML2 applications. */
+
+enum FontDatabaseOption {
+    FontDatabaseAuto,
+    FontDatabaseFreeType,
+    FontDatabaseNative
+};
+
+static inline FontDatabaseOption fontDatabaseOption(const QObject &nativeInterface)
+{
+    const QVariant argumentV = nativeInterface.property("fontengine");
+    if (argumentV.isValid()) {
+        const QString argument = argumentV.toString();
+        if (argument == QLatin1String("freetype"))
+            return FontDatabaseFreeType;
+        if (argument == QLatin1String("native"))
+            return FontDatabaseNative;
+    }
+    return FontDatabaseAuto;
+}
+
 QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
 {
     if (!d->m_fontDatabase) {
-#ifndef QT_NO_FREETYPE
-        const QVariant argument = d->m_nativeInterface.property("fontengine");
-        if (argument.isValid() && argument.toString() == QLatin1String("freetype"))
-            d->m_fontDatabase = new QWindowsFontDatabaseFT();
-        else
-            d->m_fontDatabase = new QWindowsFontDatabase();
-#else
+#ifdef QT_NO_FREETYPE
         d->m_fontDatabase = new QWindowsFontDatabase();
+#else
+        FontDatabaseOption option = fontDatabaseOption(d->m_nativeInterface);
+        if (option == FontDatabaseAuto) {
+            option = QCoreApplication::applicationName() == QStringLiteral("QtQmlViewer") ?
+                     FontDatabaseFreeType : FontDatabaseNative;
+        }
+        if (option == FontDatabaseFreeType) {
+            d->m_fontDatabase = new QWindowsFontDatabaseFT;
+        } else {
+            d->m_fontDatabase = new QWindowsFontDatabase;
+        }
 #endif
     }
     return d->m_fontDatabase;

@@ -688,6 +688,7 @@ CFG_AUDIO_BACKEND=auto
 CFG_V8SNAPSHOT=auto
 CFG_QML_DEBUG=yes
 CFG_JAVASCRIPTCORE_JIT=auto
+CFG_PKGCONFIG=auto
 
 # Target architecture
 CFG_ARCH=
@@ -704,6 +705,7 @@ CFG_XKB=auto
 CFG_XCB=auto
 CFG_XCB_LIMITED=yes
 CFG_EGLFS=auto
+CFG_DIRECTFB=auto
 CFG_LIBUDEV=auto
 CFG_OBSOLETE_WAYLAND=no
 CFG_EVDEV=auto
@@ -887,7 +889,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-eglfs|-directfb|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-qml-debug|-javascript-jit|-rpath|-pkg-config|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1077,8 +1079,15 @@ while [ "$#" -gt 0 ]; do
     hostbindir)
         QT_HOST_BINS="$VAL"
         ;;
+    pkg-config)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_PKGCONFIG="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     force-pkg-config)
-        QT_FORCE_PKGCONFIG=yes
+        CFG_PKGCONFIG="force"
         ;;
     docdir)
         QT_INSTALL_DOCS="$VAL"
@@ -1619,6 +1628,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    directfb)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_DIRECTFB="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     libudev)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_LIBUDEV="$VAL"
@@ -2153,19 +2169,19 @@ if [ -z "$PLATFORM" ]; then
     case "$UNAME_SYSTEM:$UNAME_RELEASE" in
      Darwin:*)
          OSX_VERSION=`uname -r | cut -d. -f1`
-         if [ "$OSX_VERSION" -ge 11 ]; then
-             # We're on Lion or above. Check if we have a supported Clang version
+         # Select compiler. Use g++ unless we find a usable Clang version
+         PLATFORM=macx-g++
+         if [ "$OSX_VERSION" -ge 12 ]; then
+            # We're on Mountain Lion or above. Use Clang. Don't advertise gcc.
+            PLATFORM=macx-clang
+         elif [ "$OSX_VERSION" -eq 11 ]; then
+             # We're on Lion. Check if we have a supported Clang version
              case "$(clang -v 2>&1 | grep -Po '(?<=version )\d[\d.]+')" in
                  3.*)
                      PLATFORM=macx-clang
                      PLATFORM_NOTES="\n    - Also available for Mac OS X: macx-g++\n"
                      ;;
-                 *)
-                     PLATFORM=macx-g++
-                     ;;
              esac
-         else
-             PLATFORM=macx-g++
          fi
          ;;
      AIX:*)
@@ -2439,50 +2455,6 @@ if [ "$CFG_DEBUG" = "auto" ]; then
 fi
 if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG build_all"
-fi
-
-if [ -z "$PKG_CONFIG" ]; then
-    # See if PKG_CONFIG is set in the mkspec:
-    PKG_CONFIG=`getXQMakeConf PKG_CONFIG`
-fi
-if [ -z "$PKG_CONFIG" ]; then
-    PKG_CONFIG=`"$WHICH" pkg-config 2>/dev/null`
-fi
-
-# Work out if we can use pkg-config
-if [ "$QT_CROSS_COMPILE" = "yes" ]; then
-    if [ "$QT_FORCE_PKGCONFIG" = "yes" ]; then
-        echo >&2 ""
-        echo >&2 "You have asked to use pkg-config and are cross-compiling."
-        echo >&2 "Please make sure you have a correctly set-up pkg-config"
-        echo >&2 "environment!"
-        echo >&2 ""
-        if [ -z "$PKG_CONFIG_LIBDIR" ]; then
-            echo >&2 ""
-            echo >&2 "Warning: PKG_CONFIG_LIBDIR has not been set.  This could mean"
-            echo >&2 "the host's .pc files will be used (even if you set PKG_CONFIG_PATH)."
-            echo >&2 "This is probably not what you want."
-            echo >&2 ""
-        elif [ -z "$PKG_CONFIG_SYSROOT" ] && [ -z "$PKG_CONFIG_SYSROOT_DIR" ]; then
-            echo >&2 ""
-            echo >&2 "Warning: PKG_CONFIG_SYSROOT/PKG_CONFIG_SYSROOT_DIR has not"
-            echo >&2 "been set. This means your toolchain's .pc files must contain"
-            echo >&2 "the paths to the toolchain's libraries & headers. If configure"
-            echo >&2 "tests are failing, please check these files."
-            echo >&2 ""
-        fi
-    else
-        echo >&2 ""
-        echo >&2 "You have not explicitly asked to use pkg-config and are cross-compiling."
-        echo >&2 "pkg-config will not be used to automatically query cflag/lib parameters for"
-        echo >&2 "dependencies"
-        echo >&2 ""
-        PKG_CONFIG=""
-    fi
-fi
-
-if [ ! -n "$PKG_CONFIG" ]; then
-    QT_CONFIG="$QT_CONFIG no-pkg-config"
 fi
 
 # pass on $CFG_SDK to the configure tests.
@@ -2844,6 +2816,13 @@ if [ "$OPT_HELP" = "yes" ]; then
         EGLFSN=" "
     fi
 
+    if [ "$CFG_DIRECTFB" = "no"]; then
+        DFBY=" "
+        DFBN="*"
+    else
+        DFBY="*"
+        DFBN=" "
+    fi
     if [ "$CFG_XINPUT2" = "no" ]; then
         X2Y=" "
         X2N="*"
@@ -3036,6 +3015,13 @@ Configure options:
     -I <string> ........ Add an explicit include path.
     -L <string> ........ Add an explicit library path.
 
+ +  -pkg-config ........ Use pkg-config to detect include and library paths. By default,
+                         configure determines whether to use pkg-config or not with
+                         some heuristics such as checking the environment variables.
+    -no-pkg-config ..... Disable use of pkg-config.
+    -force-pkg-config .. Force usage of pkg-config (skips pkg-config usability
+                         detection heuristic).
+
     -help, -h .......... Display this information.
 
 Third Party Libraries:
@@ -3127,6 +3113,9 @@ Additional options:
 
  $EGLFSN  -no-eglfs .......... Do not compile EGLFS (EGL Full Screen/Single Surface) support.
  $EGLFSY  -eglfs ............. Compile EGLFS support.
+
+ $DFBN  -no-directfb ....... Do not compile DirectFB support.
+ $DFBY  -directfb .......... Compile DirectFB support.
 
     -xplatform target ... The target platform when cross-compiling.
 
@@ -3606,6 +3595,70 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     [ '!' -z "$OLD_QCONFIG_H" ] && mv -f "${OLD_QCONFIG_H}.old" "$OLD_QCONFIG_H" #put back qconfig.h
     [ "$QMAKE_BUILD_ERROR" = "yes" ] && exit 2
 fi # Build qmake
+
+#-------------------------------------------------------------------------------
+# Detect pkg-config
+#-------------------------------------------------------------------------------
+if [ -z "$PKG_CONFIG" ]; then
+    # See if PKG_CONFIG is set in the mkspec:
+    PKG_CONFIG=`getXQMakeConf PKG_CONFIG`
+fi
+if [ -z "$PKG_CONFIG" ]; then
+    PKG_CONFIG=`"$WHICH" pkg-config 2>/dev/null`
+fi
+
+if [ "$CFG_PKGCONFIG" = "no" ]; then
+    PKG_CONFIG=
+elif [ "$CFG_PKGCONFIG" = "force" ]; then
+    echo >&2 ""
+    echo >&2 "You have asked to use pkg-config. Please make sure you have"
+    echo >&2 "a correctly setup pkg-config environment!"
+    echo >&2 ""
+elif [ -n "$PKG_CONFIG" ]; then
+    # found a pkg-config
+    if [ "$QT_CROSS_COMPILE" = "yes" ]; then
+        # when xcompiling, check environment to see if it's actually usable
+        if [ -z "$PKG_CONFIG_LIBDIR" ]; then
+            if [ -n "$CFG_SYSROOT" ] && [ -d "$CFG_SYSROOT/usr/lib/pkgconfig" ]; then
+                PKG_CONFIG_LIBDIR=$CFG_SYSROOT/usr/lib/pkgconfig:$CFG_SYSROOT/usr/share/pkgconfig
+                export PKG_CONFIG_LIBDIR
+                echo >&2 "Note: PKG_CONFIG_LIBDIR automatically set to $PKG_CONFIG_LIBDIR"
+            elif [ "$CFG_PKGCONFIG" = "yes" ]; then
+                echo >&2 "Error: PKG_CONFIG_LIBDIR has not been set. This could mean"
+                echo >&2 "the host's .pc files will be used (even if you set PKG_CONFIG_PATH)."
+                echo >&2 "Set this variable to the directory that contains target .pc files"
+                echo >&2 "for pkg-config to function correctly when cross-compiling or"
+                echo >&2 "use -force-pkg-config to override this test."
+                exit 101
+            else
+                PKG_CONFIG=
+                echo >&2 "Warning: Disabling pkg-config since PKG_CONFIG_LIBDIR is not set."
+            fi
+        fi
+        if [ -z "$PKG_CONFIG_SYSROOT_DIR" ]; then
+            if [ -n "$CFG_SYSROOT" ]; then
+                PKG_CONFIG_SYSROOT_DIR=$CFG_SYSROOT
+                export PKG_CONFIG_SYSROOT_DIR
+                echo >&2 "Note: PKG_CONFIG_SYSROOT_DIR automatically set to $PKG_CONFIG_SYSROOT_DIR"
+            elif [ "$CFG_PKGCONFIG" = "yes" ]; then
+                echo >&2 "Error: PKG_CONFIG_SYSROOT_DIR has not been set. Set this variable"
+                echo >&2 "to your sysroot for pkg-config to function correctly when cross-compiling"
+                echo >&2 "or use -force-pkg-config to override this test."
+                exit 101
+            else
+                PKG_CONFIG=
+                echo >&2 "Warning: Disabling pkg-config since PKG_CONFIG_SYSROOT_DIR is not set."
+            fi
+        fi
+    fi
+elif [ "$CFG_PKGCONFIG" = "yes" ]; then
+    echo >&2 "Could not detect pkg-config from mkspec or PATH."
+    exit 101
+fi
+
+if [ -z "$PKG_CONFIG" ]; then
+    QT_CONFIG="$QT_CONFIG no-pkg-config"
+fi
 
 #-------------------------------------------------------------------------------
 # tests that need qmake
@@ -4404,6 +4457,7 @@ fi
 # Save these for a check later
 ORIG_CFG_XCB="$CFG_XCB"
 ORIG_CFG_EGLFS="$CFG_EGLFS"
+ORIG_CFG_DIRECTFB="$CFG_DIRECTFB"
 
 if [ "$CFG_LIBUDEV" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists libudev 2>/dev/null; then
@@ -4511,6 +4565,16 @@ if [ "$CFG_XCB" != "no" ]; then
     fi
 fi
 
+if [ "$CFG_DIRECTFB" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists directfb 2>/dev/null; then
+        QMAKE_CFLAGS_DIRECTFB=`$PKG_CONFIG --cflags directfb 2>/dev/null`
+        QMAKE_LIBS_DIRECTFB=`$PKG_CONFIG --libs directfb 2>/dev/null`
+        QT_CONFIG="$QT_CONFIG directfb"
+    else
+        CFG_DIRECTFB=no
+    fi
+fi
+
 # Detect libxkbcommon
 if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
     QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
@@ -4558,6 +4622,10 @@ if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
     QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
     QMakeVar set QMAKE_DEFINES_XCB "$QMAKE_DEFINES_XCB"
 fi
+if [ -n "$QMAKE_CFLAGS_DIRECTFB" ] || [ -n "$QMAKE_LIBS_DIRECTFB" ]; then
+    QMakeVar set QMAKE_CFLAGS_DIRECTFB "$QMAKE_CFLAGS_DIRECTFB"
+    QMakeVar set QMAKE_LIBS_DIRECTFB "$QMAKE_LIBS_DIRECTFB"
+fi
 
 if [ "$BUILD_ON_MAC" = "yes" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
@@ -4568,12 +4636,12 @@ if [ "$BUILD_ON_MAC" = "yes" ]; then
 fi
 
 if [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ]; then
-    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ]; then
+    if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ]; then
         if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
-            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] ); then
+            ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] ); then
         echo "No QPA platform plugin enabled!"
         echo " If you really want to build without a QPA platform plugin you must pass"
-        echo " -no-xcb and -no-eglfs to configure. Doing this will"
+        echo " -no-xcb, -no-eglfs and -no-directfb to configure. Doing this will"
         echo " produce a Qt that cannot run GUI applications."
         echo " The dependencies needed for xcb to build are listed in"
         echo " src/plugins/platforms/xcb/README"
@@ -5759,6 +5827,7 @@ fi
 #-------------------------------------------------------------------------------
 # give feedback on configuration
 #-------------------------------------------------------------------------------
+exec 3>&1 1>$outpath/config.summary # redirect output temporarily to config.summary
 
 case "$COMPILER" in
 g++*)
@@ -5835,6 +5904,11 @@ if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
    fi
 else
    echo "Debug .................. $CFG_DEBUG"
+fi
+if [ -n "$PKG_CONFIG" ]; then
+    echo "pkg-config ............. yes"
+else
+    echo "pkg-config ............. no"
 fi
 [ "$CFG_DBUS" = "no" ]     && echo "QtDBus module .......... no"
 [ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module .......... yes (run-time)"
@@ -5949,6 +6023,7 @@ if [ "$XPLATFORM_MAEMO" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
     echo "XInput2 support ........ $CFG_XINPUT2"
 fi
 echo "EGLFS support .......... $CFG_EGLFS"
+echo "DirectFB support ....... $CFG_DIRECTFB"
 echo
 
 # complain about not being able to use dynamic plugins if we are using a static build
@@ -5967,6 +6042,10 @@ if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo "    OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
     echo
 fi
+
+exec 1>&3 3>&- # restore stdout
+cat $outpath/config.summary # display config feedback to user
+
 if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_DEBUG" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "no" ]; then
     echo
     echo "Error: debug-only framework builds are not supported. Configure with -no-framework"

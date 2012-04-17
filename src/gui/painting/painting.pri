@@ -53,7 +53,6 @@ SOURCES += \
         painting/qoutlinemapper.cpp \
         painting/qpagedpaintdevice.cpp \
         painting/qpaintdevice.cpp \
-        painting/qpaintdevice_qpa.cpp \
         painting/qpaintengine.cpp \
         painting/qpaintengineex.cpp \
         painting/qpainter.cpp \

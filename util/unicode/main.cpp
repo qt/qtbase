@@ -465,7 +465,7 @@ static int appendToSpecialCaseMap(const QList<int> &map)
     QList<int> utf16map;
     for (int i = 0; i < map.size(); ++i) {
         int val = map.at(i);
-        if (val >= 0x10000) {
+        if (QChar::requiresSurrogates(val)) {
             utf16map << QChar::highSurrogate(val);
             utf16map << QChar::lowSurrogate(val);
         } else {
@@ -789,7 +789,7 @@ static void readUnicodeData()
                 qWarning() << "upperCaseDiff exceeded (" << hex << codepoint << "->" << upperCase << ")";
             data.p.upperCaseDiff = diff;
             maxUpperCaseDiff = qMax(maxUpperCaseDiff, qAbs(diff));
-            if (codepoint >= 0x10000 || upperCase >= 0x10000) {
+            if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(upperCase)) {
                 // if the conditions below doesn't hold anymore we need to modify our upper casing code
                 Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(upperCase));
                 Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(upperCase));
@@ -803,7 +803,7 @@ static void readUnicodeData()
                 qWarning() << "lowerCaseDiff exceeded (" << hex << codepoint << "->" << lowerCase << ")";
             data.p.lowerCaseDiff = diff;
             maxLowerCaseDiff = qMax(maxLowerCaseDiff, qAbs(diff));
-            if (codepoint >= 0x10000 || lowerCase >= 0x10000) {
+            if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(lowerCase)) {
                 // if the conditions below doesn't hold anymore we need to modify our lower casing code
                 Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(lowerCase));
                 Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(lowerCase));
@@ -820,7 +820,7 @@ static void readUnicodeData()
                 qWarning() << "titleCaseDiff exceeded (" << hex << codepoint << "->" << titleCase << ")";
             data.p.titleCaseDiff = diff;
             maxTitleCaseDiff = qMax(maxTitleCaseDiff, qAbs(diff));
-            if (codepoint >= 0x10000 || titleCase >= 0x10000) {
+            if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(titleCase)) {
                 // if the conditions below doesn't hold anymore we need to modify our title casing code
                 Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(titleCase));
                 Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(titleCase));
@@ -1078,7 +1078,7 @@ static void readDerivedNormalizationProps()
 struct NormalizationCorrection {
     uint codepoint;
     uint mapped;
-    uint version;
+    int version;
 };
 
 static QByteArray createNormalizationCorrections()
@@ -1099,6 +1099,7 @@ static QByteArray createNormalizationCorrections()
 
            "static const NormalizationCorrection uc_normalization_corrections[] = {\n";
 
+    int maxVersion = 0;
     int numCorrections = 0;
     while (!f.atEnd()) {
         QByteArray line;
@@ -1135,11 +1136,13 @@ static QByteArray createNormalizationCorrections()
         out += "    { 0x" + QByteArray::number(c.codepoint, 16) + ", 0x" + QByteArray::number(c.mapped, 16)
              + ", " + QString::number(c.version) + " },\n";
         ++numCorrections;
+        maxVersion = qMax(c.version, maxVersion);
     }
 
     out += "};\n\n"
 
-           "enum { NumNormalizationCorrections = " + QByteArray::number(numCorrections) + " };\n\n";
+           "enum { NumNormalizationCorrections = " + QByteArray::number(numCorrections) + " };\n"
+           "enum { NormalizationCorrectionsVersionMax = " + QByteArray::number(maxVersion) + " };\n\n";
 
     return out;
 }
@@ -1250,7 +1253,7 @@ static void readSpecialCasing()
 
         // if the condition below doesn't hold anymore we need to modify our
         // lower/upper/title casing code and case folding code
-        Q_ASSERT(codepoint < 0x10000);
+        Q_ASSERT(!QChar::requiresSurrogates(codepoint));
 
 //         qDebug() << "codepoint" << hex << codepoint;
 //         qDebug() << line;
@@ -1356,7 +1359,7 @@ static void readCaseFolding()
                 qWarning() << "caseFoldDiff exceeded (" << hex << codepoint << "->" << caseFolded << ")";
             ud.p.caseFoldDiff = diff;
             maxCaseFoldDiff = qMax(maxCaseFoldDiff, qAbs(diff));
-            if (codepoint >= 0x10000 || caseFolded >= 0x10000) {
+            if (QChar::requiresSurrogates(codepoint) || QChar::requiresSurrogates(caseFolded)) {
                 // if the conditions below doesn't hold anymore we need to modify our case folding code
                 Q_ASSERT(QChar::highSurrogate(codepoint) == QChar::highSurrogate(caseFolded));
                 Q_ASSERT(QChar::lowSurrogate(codepoint) + diff == QChar::lowSurrogate(caseFolded));
@@ -2314,11 +2317,11 @@ static QByteArray createCompositionInfo()
             if (!d.decomposition.isEmpty()) {
                 int utf16Chars = 0;
                 for (int j = 0; j < d.decomposition.size(); ++j)
-                    utf16Chars += d.decomposition.at(j) >= 0x10000 ? 2 : 1;
+                    utf16Chars += QChar::requiresSurrogates(d.decomposition.at(j)) ? 2 : 1;
                 decompositions.append(d.decompositionType + (utf16Chars<<8));
                 for (int j = 0; j < d.decomposition.size(); ++j) {
                     int code = d.decomposition.at(j);
-                    if (code >= 0x10000) {
+                    if (QChar::requiresSurrogates(code)) {
                         // save as surrogate pair
                         ushort high = QChar::highSurrogate(code);
                         ushort low = QChar::lowSurrogate(code);
@@ -2355,11 +2358,11 @@ static QByteArray createCompositionInfo()
             if (!d.decomposition.isEmpty()) {
                 int utf16Chars = 0;
                 for (int j = 0; j < d.decomposition.size(); ++j)
-                    utf16Chars += d.decomposition.at(j) >= 0x10000 ? 2 : 1;
+                    utf16Chars += QChar::requiresSurrogates(d.decomposition.at(j)) ? 2 : 1;
                 decompositions.append(d.decompositionType + (utf16Chars<<8));
                 for (int j = 0; j < d.decomposition.size(); ++j) {
                     int code = d.decomposition.at(j);
-                    if (code >= 0x10000) {
+                    if (QChar::requiresSurrogates(code)) {
                         // save as surrogate pair
                         ushort high = QChar::highSurrogate(code);
                         ushort low = QChar::lowSurrogate(code);

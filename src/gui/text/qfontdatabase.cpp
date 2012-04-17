@@ -735,12 +735,13 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
         fontDef->family += QLatin1Char(']');
     }
 
-    if (desc.style->smoothScalable)
+    if (desc.style->smoothScalable
+        || QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fontsAlwaysScalable()
+        || (desc.style->bitmapScalable && (request.styleStrategy & QFont::PreferMatch))) {
         fontDef->pixelSize = request.pixelSize;
-    else if ((desc.style->bitmapScalable && (request.styleStrategy & QFont::PreferMatch)))
-        fontDef->pixelSize = request.pixelSize;
-    else
+    } else {
         fontDef->pixelSize = desc.size->pixelSize;
+    }
 
     fontDef->styleHint     = request.styleHint;
     fontDef->styleStrategy = request.styleStrategy;
@@ -1534,6 +1535,9 @@ bool  QFontDatabase::isScalable(const QString &family,
 QList<int> QFontDatabase::pointSizes(const QString &family,
                                            const QString &styleName)
 {
+    if (QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fontsAlwaysScalable())
+        return standardSizes();
+
     bool smoothScalable = false;
     QString familyName, foundryName;
     parseFontName(family, foundryName, familyName);
@@ -1634,6 +1638,9 @@ QFont QFontDatabase::font(const QString &family, const QString &style,
 QList<int> QFontDatabase::smoothSizes(const QString &family,
                                             const QString &styleName)
 {
+    if (QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fontsAlwaysScalable())
+        return standardSizes();
+
     bool smoothScalable = false;
     QString familyName, foundryName;
     parseFontName(family, foundryName, familyName);
@@ -1689,12 +1696,7 @@ QList<int> QFontDatabase::smoothSizes(const QString &family,
 */
 QList<int> QFontDatabase::standardSizes()
 {
-    QList<int> ret;
-    static const unsigned short standard[] =
-        { 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72, 0 };
-    const unsigned short *sizes = standard;
-    while (*sizes) ret << *sizes++;
-    return ret;
+    return QGuiApplicationPrivate::platformIntegration()->fontDatabase()->standardSizes();
 }
 
 

@@ -123,6 +123,8 @@ private Q_SLOTS:
 
     void testTrailingComma();
     void testDetachBug();
+
+    void valueEquals();
 private:
     QString testDataDir;
 };
@@ -1843,6 +1845,52 @@ void TestQtJson::testDetachBug()
 
     local.insert("Key1", QString("anotherValue"));
     QCOMPARE(local.keys().size(), 1);
+}
+
+void TestQtJson::valueEquals()
+{
+    QVERIFY(QJsonValue() == QJsonValue());
+    QVERIFY(QJsonValue() != QJsonValue(QJsonValue::Undefined));
+    QVERIFY(QJsonValue() != QJsonValue(true));
+    QVERIFY(QJsonValue() != QJsonValue(1.));
+    QVERIFY(QJsonValue() != QJsonValue(QJsonArray()));
+    QVERIFY(QJsonValue() != QJsonValue(QJsonObject()));
+
+    QVERIFY(QJsonValue(true) == QJsonValue(true));
+    QVERIFY(QJsonValue(true) != QJsonValue(false));
+    QVERIFY(QJsonValue(true) != QJsonValue(QJsonValue::Undefined));
+    QVERIFY(QJsonValue(true) != QJsonValue());
+    QVERIFY(QJsonValue(true) != QJsonValue(1.));
+    QVERIFY(QJsonValue(true) != QJsonValue(QJsonArray()));
+    QVERIFY(QJsonValue(true) != QJsonValue(QJsonObject()));
+
+    QVERIFY(QJsonValue(1.) == QJsonValue(1.));
+    QVERIFY(QJsonValue(1.) != QJsonValue(2.));
+    QVERIFY(QJsonValue(1.) != QJsonValue(QJsonValue::Undefined));
+    QVERIFY(QJsonValue(1.) != QJsonValue());
+    QVERIFY(QJsonValue(1.) != QJsonValue(true));
+    QVERIFY(QJsonValue(1.) != QJsonValue(QJsonArray()));
+    QVERIFY(QJsonValue(1.) != QJsonValue(QJsonObject()));
+
+    QVERIFY(QJsonValue(QJsonArray()) == QJsonValue(QJsonArray()));
+    QJsonArray nonEmptyArray;
+    nonEmptyArray.append(true);
+    QVERIFY(QJsonValue(QJsonArray()) != nonEmptyArray);
+    QVERIFY(QJsonValue(QJsonArray()) != QJsonValue(QJsonValue::Undefined));
+    QVERIFY(QJsonValue(QJsonArray()) != QJsonValue());
+    QVERIFY(QJsonValue(QJsonArray()) != QJsonValue(true));
+    QVERIFY(QJsonValue(QJsonArray()) != QJsonValue(1.));
+    QVERIFY(QJsonValue(QJsonArray()) != QJsonValue(QJsonObject()));
+
+    QVERIFY(QJsonValue(QJsonObject()) == QJsonValue(QJsonObject()));
+    QJsonObject nonEmptyObject;
+    nonEmptyObject.insert("Key", true);
+    QVERIFY(QJsonValue(QJsonObject()) != nonEmptyObject);
+    QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(QJsonValue::Undefined));
+    QVERIFY(QJsonValue(QJsonObject()) != QJsonValue());
+    QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(true));
+    QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(1.));
+    QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(QJsonArray()));
 }
 
 QTEST_MAIN(TestQtJson)

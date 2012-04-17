@@ -56,6 +56,7 @@ private slots:
     void abortQuitOnShow();
     void changeFocusWindow();
     void keyboardModifiers();
+    void modalWindow();
 };
 
 class DummyWindow : public QWindow
@@ -313,6 +314,184 @@ void tst_QGuiApplication::keyboardModifiers()
 
     window->close();
     delete window;
+}
+
+class BlockableWindow : public QWindow
+{
+    Q_OBJECT
+public:
+    int blocked;
+
+    inline BlockableWindow()
+        : QWindow()
+    {
+        blocked = false;
+    }
+
+    bool event(QEvent *e)
+    {
+        switch (e->type()) {
+        case QEvent::WindowBlocked:
+            ++blocked;
+            break;
+        case QEvent::WindowUnblocked:
+            --blocked;
+            break;
+        default:
+            break;
+        }
+        return QWindow::event(e);
+    }
+};
+
+void tst_QGuiApplication::modalWindow()
+{
+    int argc = 0;
+    QGuiApplication app(argc, 0);
+
+    BlockableWindow *window1 = new BlockableWindow;
+
+    BlockableWindow *window2 = new BlockableWindow;
+
+    BlockableWindow *windowModalWindow1 = new BlockableWindow;
+    windowModalWindow1->setTransientParent(window1);
+    windowModalWindow1->setWindowModality(Qt::WindowModal);
+
+    BlockableWindow *windowModalWindow2 = new BlockableWindow;
+    windowModalWindow2->setTransientParent(windowModalWindow1);
+    windowModalWindow2->setWindowModality(Qt::WindowModal);
+
+    BlockableWindow *applicationModalWindow1 = new BlockableWindow;
+    applicationModalWindow1->setWindowModality(Qt::ApplicationModal);
+
+    // show the 2 windows, nothing is blocked
+    window1->show();
+    window2->show();
+    QTest::qWaitForWindowShown(window1);
+    QTest::qWaitForWindowShown(window2);
+    QCOMPARE(app.modalWindow(), static_cast<QWindow *>(0));
+    QCOMPARE(window1->blocked, 0);
+    QCOMPARE(window2->blocked, 0);
+    QCOMPARE(windowModalWindow1->blocked, 0);
+    QCOMPARE(windowModalWindow2->blocked, 0);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    // show applicationModalWindow1, everything is blocked
+    applicationModalWindow1->show();
+    QCOMPARE(app.modalWindow(), applicationModalWindow1);
+    QCOMPARE(window1->blocked, 1);
+    QCOMPARE(window2->blocked, 1);
+    QCOMPARE(windowModalWindow1->blocked, 1);
+    QCOMPARE(windowModalWindow2->blocked, 1);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    // everything is unblocked when applicationModalWindow1 is hidden
+    applicationModalWindow1->hide();
+    QCOMPARE(app.modalWindow(), static_cast<QWindow *>(0));
+    QCOMPARE(window1->blocked, 0);
+    QCOMPARE(window2->blocked, 0);
+    QCOMPARE(windowModalWindow1->blocked, 0);
+    QCOMPARE(windowModalWindow2->blocked, 0);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    // show the windowModalWindow1, only window1 is blocked
+    windowModalWindow1->show();
+    QCOMPARE(app.modalWindow(), windowModalWindow1);
+    QCOMPARE(window1->blocked, 1);
+    QCOMPARE(window2->blocked, 0);
+    QCOMPARE(windowModalWindow1->blocked, 0);
+    QCOMPARE(windowModalWindow2->blocked, 0);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    // show the windowModalWindow2, windowModalWindow1 is blocked as well
+    windowModalWindow2->show();
+    QCOMPARE(app.modalWindow(), windowModalWindow2);
+    QCOMPARE(window1->blocked, 1);
+    QCOMPARE(window2->blocked, 0);
+    QCOMPARE(windowModalWindow1->blocked, 1);
+    QCOMPARE(windowModalWindow2->blocked, 0);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    // hide windowModalWindow1, nothing is unblocked
+    windowModalWindow1->hide();
+    QCOMPARE(app.modalWindow(), windowModalWindow2);
+    QCOMPARE(window1->blocked, 1);
+    QCOMPARE(window2->blocked, 0);
+    QCOMPARE(windowModalWindow1->blocked, 1);
+    QCOMPARE(windowModalWindow2->blocked, 0);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    // hide windowModalWindow2, windowModalWindow1 and window1 are unblocked
+    windowModalWindow2->hide();
+    QCOMPARE(app.modalWindow(), static_cast<QWindow *>(0));
+    QCOMPARE(window1->blocked, 0);
+    QCOMPARE(window2->blocked, 0);
+    QCOMPARE(windowModalWindow1->blocked, 0);
+    QCOMPARE(windowModalWindow2->blocked, 0);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    // show windowModalWindow1 again, window1 is blocked
+    windowModalWindow1->show();
+    QCOMPARE(app.modalWindow(), windowModalWindow1);
+    QCOMPARE(window1->blocked, 1);
+    QCOMPARE(window2->blocked, 0);
+    QCOMPARE(windowModalWindow1->blocked, 0);
+    QCOMPARE(windowModalWindow2->blocked, 0);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    // show windowModalWindow2 again, windowModalWindow1 is also blocked
+    windowModalWindow2->show();
+    QCOMPARE(app.modalWindow(), windowModalWindow2);
+    QCOMPARE(window1->blocked, 1);
+    QCOMPARE(window2->blocked, 0);
+    QCOMPARE(windowModalWindow1->blocked, 1);
+    QCOMPARE(windowModalWindow2->blocked, 0);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    // show applicationModalWindow1, everything is blocked
+    applicationModalWindow1->show();
+    QCOMPARE(app.modalWindow(), applicationModalWindow1);
+    QCOMPARE(window1->blocked, 1);
+    QCOMPARE(window2->blocked, 1);
+    QCOMPARE(windowModalWindow1->blocked, 1);
+    QCOMPARE(windowModalWindow2->blocked, 1);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    // hide applicationModalWindow1, windowModalWindow1 and window1 are blocked
+    applicationModalWindow1->hide();
+    QCOMPARE(app.modalWindow(), windowModalWindow2);
+    QCOMPARE(window1->blocked, 1);
+    QCOMPARE(window2->blocked, 0);
+    QCOMPARE(windowModalWindow1->blocked, 1);
+    QCOMPARE(windowModalWindow2->blocked, 0);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    // hide windowModalWindow2, window1 is blocked
+    windowModalWindow2->hide();
+    QCOMPARE(app.modalWindow(), windowModalWindow1);
+    QCOMPARE(window1->blocked, 1);
+    QCOMPARE(window2->blocked, 0);
+    QCOMPARE(windowModalWindow1->blocked, 0);
+    QCOMPARE(windowModalWindow2->blocked, 0);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    // hide windowModalWindow1, everything is unblocked
+    windowModalWindow1->hide();
+    QCOMPARE(app.modalWindow(), static_cast<QWindow *>(0));
+    QCOMPARE(window1->blocked, 0);
+    QCOMPARE(window2->blocked, 0);
+    QCOMPARE(windowModalWindow1->blocked, 0);
+    QCOMPARE(windowModalWindow2->blocked, 0);
+    QCOMPARE(applicationModalWindow1->blocked, 0);
+
+    window2->hide();
+    window1->hide();
+
+    delete applicationModalWindow1;
+    delete windowModalWindow2;
+    delete windowModalWindow1;
+    delete window2;
+    delete window1;
 }
 
 QTEST_APPLESS_MAIN(tst_QGuiApplication)

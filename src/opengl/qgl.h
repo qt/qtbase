@@ -59,24 +59,25 @@ QT_BEGIN_HEADER
 #endif
 
 #if defined(Q_OS_MAC)
+# if !defined(QT_NO_CORESERVICES)
 # include <OpenGL/gl.h>
-#elif defined(QT_OPENGL_ES_2)
-# if defined(Q_OS_MAC)
-#  include <OpenGLES/ES2/gl.h>
 # else
-#  include <GLES2/gl2.h>
+#  if defined(QT_OPENGL_ES_2)
+#   include <OpenGLES/ES2/gl.h>
+#  endif
 # endif
+#elif defined(QT_OPENGL_ES_2)
+# include <GLES2/gl2.h>
+# else
+# include <GL/gl.h>
+# endif
+
+#if defined(QT_OPENGL_ES_2)
 # ifndef GL_DOUBLE
 #  define GL_DOUBLE GL_FLOAT
 # endif
 # ifndef GLdouble
 typedef GLfloat GLdouble;
-# endif
-#else
-# if defined(Q_OS_MAC)
-#  include <OpenGL/gl.h>
-# else
-#  include <GL/gl.h>
 # endif
 #endif
 
@@ -277,7 +278,6 @@ public:
     QGLFormat requestedFormat() const;
     void setFormat(const QGLFormat& format);
 
-    // ### Qt 5: return bools + maybe remove virtuals
     virtual void makeCurrent();
     virtual void doneCurrent();
 
@@ -340,7 +340,7 @@ protected:
     void setWindowCreated(bool on);
     bool initialized() const;
     void setInitialized(bool on);
-    void generateFontDisplayLists(const QFont & fnt, int listBase); // ### Qt 5: remove
+    void generateFontDisplayLists(const QFont & fnt, int listBase);
 
     uint colorIndex(const QColor& c) const;
     void setValid(bool valid);
@@ -402,7 +402,6 @@ public:
     bool isValid() const;
     bool isSharing() const;
 
-    // ### Qt 5: return bools
     void makeCurrent();
     void doneCurrent();
 
@@ -474,7 +473,7 @@ protected:
 
     virtual void glInit();
     virtual void glDraw();
-    int fontDisplayListBase(const QFont & fnt, int listBase = 2000); // ### Qt 5: remove
+    int fontDisplayListBase(const QFont & fnt, int listBase = 2000);
 
     QGLWidget(QGLWidgetPrivate &dd,
               const QGLFormat &format = QGLFormat(),

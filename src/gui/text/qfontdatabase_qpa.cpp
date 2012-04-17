@@ -161,9 +161,12 @@ QFontEngine *loadSingleEngine(int script,
     Q_UNUSED(foundry);
 
     Q_ASSERT(size);
+    QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
     int pixelSize = size->pixelSize;
-    if (!pixelSize || (style->smoothScalable && pixelSize == SMOOTH_SCALABLE))
+    if (!pixelSize || (style->smoothScalable && pixelSize == SMOOTH_SCALABLE)
+        || pfdb->fontsAlwaysScalable()) {
         pixelSize = request.pixelSize;
+    }
 
     QFontDef def = request;
     def.pixelSize = pixelSize;
@@ -171,7 +174,6 @@ QFontEngine *loadSingleEngine(int script,
     QFontCache::Key key(def,script);
     QFontEngine *engine = QFontCache::instance()->findEngine(key);
     if (!engine) {
-        QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         engine = pfdb->fontEngine(def,QUnicodeTables::Script(script),size->handle);
         if (engine) {
             QFontCache::Key key(def,script);

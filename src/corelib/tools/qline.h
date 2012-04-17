@@ -245,7 +245,7 @@ public:
     QLineF unitVector() const;
     Q_DECL_CONSTEXPR inline QLineF normalVector() const;
 
-    // ### Qt 5: rename intersects() or intersection() and rename IntersectType IntersectionType
+    // ### Qt 6: rename intersects() or intersection() and rename IntersectType IntersectionType
     IntersectType intersect(const QLineF &l, QPointF *intersectionPoint) const;
 
     qreal angle(const QLineF &l) const;

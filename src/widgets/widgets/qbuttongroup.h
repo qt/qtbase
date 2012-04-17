@@ -67,8 +67,7 @@ public:
     void setExclusive(bool);
     bool exclusive() const;
 
-    void addButton(QAbstractButton *);
-    void addButton(QAbstractButton *, int id);
+    void addButton(QAbstractButton *, int id = -1);
     void removeButton(QAbstractButton *);
 
     QList<QAbstractButton*> buttons() const;

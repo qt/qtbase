@@ -77,6 +77,7 @@ private slots:
     void joining();
     void combiningClass();
     void digitValue();
+    void mirroredChar();
     void decomposition();
     void lineBreakClass();
     void normalization_data();
@@ -523,6 +524,29 @@ void tst_QChar::digitValue()
     QVERIFY(QChar::digitValue((ushort)0x1040) == 0);
     QVERIFY(QChar::digitValue((uint)0x1049) == 9);
     QVERIFY(QChar::digitValue((uint)0x1040) == 0);
+
+    QVERIFY(QChar::digitValue((ushort)0xd800) == -1);
+    QVERIFY(QChar::digitValue((uint)UNICODE_LAST_CODEPOINT + 1) == -1);
+}
+
+void tst_QChar::mirroredChar()
+{
+    QVERIFY(QChar(0x169B).hasMirrored());
+    QVERIFY(QChar(0x169B).mirroredChar() == QChar(0x169C));
+    QVERIFY(QChar(0x169C).hasMirrored());
+    QVERIFY(QChar(0x169C).mirroredChar() == QChar(0x169B));
+
+    QVERIFY(QChar(0x301A).hasMirrored());
+    QVERIFY(QChar(0x301A).mirroredChar() == QChar(0x301B));
+    QVERIFY(QChar(0x301B).hasMirrored());
+    QVERIFY(QChar(0x301B).mirroredChar() == QChar(0x301A));
+
+    if (QChar::currentUnicodeVersion() <= QChar::Unicode_5_0) {
+        QVERIFY(!QChar(0x201C).hasMirrored());
+        QVERIFY(QChar(0x201C).mirroredChar() != QChar(0x201D));
+        QVERIFY(!QChar(0x201D).hasMirrored());
+        QVERIFY(QChar(0x201D).mirroredChar() != QChar(0x201C));
+    }
 }
 
 void tst_QChar::decomposition()
@@ -540,10 +564,10 @@ void tst_QChar::decomposition()
 
     {
         QString str;
-        str += QChar( (0x1D157 - 0x10000) / 0x400 + 0xd800 );
-        str += QChar( ((0x1D157 - 0x10000) % 0x400) + 0xdc00 );
-        str += QChar( (0x1D165 - 0x10000) / 0x400 + 0xd800 );
-        str += QChar( ((0x1D165 - 0x10000) % 0x400) + 0xdc00 );
+        str += QChar(QChar::highSurrogate(0x1D157));
+        str += QChar(QChar::lowSurrogate(0x1D157));
+        str += QChar(QChar::highSurrogate(0x1D165));
+        str += QChar(QChar::lowSurrogate(0x1D165));
         QVERIFY(QChar::decomposition(0x1D15e) == str);
     }
 
@@ -626,14 +650,12 @@ void tst_QChar::normalization_data()
             for (int j = 0; j < c.size(); ++j) {
                 bool ok;
                 uint uc = c.at(j).toInt(&ok, 16);
-                if (uc < 0x10000)
+                if (!QChar::requiresSurrogates(uc)) {
                     columns[i].append(QChar(uc));
-                else {
+                } else {
                     // convert to utf16
-                    ushort high = QChar::highSurrogate(uc);
-                    ushort low = QChar::lowSurrogate(uc);
-                    columns[i].append(QChar(high));
-                    columns[i].append(QChar(low));
+                    columns[i].append(QChar(QChar::highSurrogate(uc)));
+                    columns[i].append(QChar(QChar::lowSurrogate(uc)));
                 }
             }
         }

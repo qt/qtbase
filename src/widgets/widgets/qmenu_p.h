@@ -61,6 +61,8 @@
 #include "QtCore/qbasictimer.h"
 #include "private/qwidget_p.h"
 
+#include <qplatformmenu_qpa.h>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MENU

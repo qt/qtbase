@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 #include "interactivewidget.h"
-#include <QtGui/QToolBox>
+#include <QtWidgets>
 
 InteractiveWidget::InteractiveWidget()
 {

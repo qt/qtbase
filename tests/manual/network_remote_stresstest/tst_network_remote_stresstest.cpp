@@ -235,6 +235,10 @@ void tst_NetworkRemoteStressTest::blockingSequentialRemoteHosts()
     QElapsedTimer outerTimer;
     outerTimer.start();
 
+#ifdef QT_NO_SSL
+    QVERIFY(!useSslSocket);
+#endif // QT_NO_SSL
+
     for (int i = 0; i < urlList.size(); ++i) {
         const QUrl &url = urlList.at(i);
         bool isHttps = url.scheme() == "https";
@@ -243,21 +247,24 @@ void tst_NetworkRemoteStressTest::blockingSequentialRemoteHosts()
         timeout.start();
 
         QSharedPointer<QTcpSocket> socket;
-        if (useSslSocket || isHttps) {
+#ifndef QT_NO_SSL
+        if (useSslSocket || isHttps)
             socket = QSharedPointer<QTcpSocket>(new QSslSocket);
-        } else {
+#endif // QT_NO_SSL
+        if (socket.isNull())
             socket = QSharedPointer<QTcpSocket>(new QTcpSocket);
-        }
 
         socket->connectToHost(url.host(), url.port(isHttps ? 443 : 80));
         QVERIFY2(socket->waitForConnected(10000), "Timeout connecting to " + url.encodedHost());
 
+#ifndef QT_NO_SSL
         if (isHttps) {
             static_cast<QSslSocket *>(socket.data())->setProtocol(QSsl::TlsV1_0);
             static_cast<QSslSocket *>(socket.data())->startClientEncryption();
             static_cast<QSslSocket *>(socket.data())->ignoreSslErrors();
             QVERIFY2(static_cast<QSslSocket *>(socket.data())->waitForEncrypted(10000), "Timeout starting TLS with " + url.encodedHost());
         }
+#endif // QT_NO_SSL
 
         socket->write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment) + " HTTP/1.0\r\n"
                       "Connection: close\r\n"
@@ -288,6 +295,10 @@ void tst_NetworkRemoteStressTest::sequentialRemoteHosts()
     QFETCH_GLOBAL(QVector<QUrl>, urlList);
     QFETCH_GLOBAL(bool, useSslSocket);
 
+#ifdef QT_NO_SSL
+    QVERIFY(!useSslSocket);
+#endif // QT_NO_SSL
+
     qint64 totalBytes = 0;
     QElapsedTimer outerTimer;
     outerTimer.start();
@@ -300,15 +311,18 @@ void tst_NetworkRemoteStressTest::sequentialRemoteHosts()
         timeout.start();
 
         QSharedPointer<QTcpSocket> socket;
-        if (useSslSocket || isHttps) {
+#ifndef QT_NO_SSL
+        if (useSslSocket || isHttps)
             socket = QSharedPointer<QTcpSocket>(new QSslSocket);
-        } else {
+#endif // QT_NO_SSL
+        if (socket.isNull())
             socket = QSharedPointer<QTcpSocket>(new QTcpSocket);
-        }
         if (isHttps) {
+#ifndef QT_NO_SSL
             static_cast<QSslSocket *>(socket.data())->setProtocol(QSsl::TlsV1_0);
             static_cast<QSslSocket *>(socket.data())->connectToHostEncrypted(url.host(), url.port(443));
             static_cast<QSslSocket *>(socket.data())->ignoreSslErrors();
+#endif // QT_NO_SSL
         } else {
             socket->connectToHost(url.host(), url.port(80));
         }
@@ -356,6 +370,10 @@ void tst_NetworkRemoteStressTest::parallelRemoteHosts()
 
     QFETCH(int, parallelAttempts);
 
+#ifdef QT_NO_SSL
+    QVERIFY(!useSslSocket);
+#endif // QT_NO_SSL
+
     qint64 totalBytes = 0;
     QElapsedTimer outerTimer;
     outerTimer.start();
@@ -371,15 +389,19 @@ void tst_NetworkRemoteStressTest::parallelRemoteHosts()
         for (int j = 0; j < parallelAttempts && it != urlList.constEnd(); ++j, ++it) {
             const QUrl &url = *it;
             bool isHttps = url.scheme() == "https";
-            QTcpSocket *socket;
+            QTcpSocket *socket = 0;
+#ifndef QT_NO_SSL
             if (useSslSocket || isHttps)
                 socket = new QSslSocket;
-            else
+#endif // QT_NO_SSL
+            if (!socket)
                 socket = new QTcpSocket;
             if (isHttps) {
+#ifndef QT_NO_SSL
                 static_cast<QSslSocket *>(socket)->setProtocol(QSsl::TlsV1_0);
                 static_cast<QSslSocket *>(socket)->connectToHostEncrypted(url.host(), url.port(443));
                 static_cast<QSslSocket *>(socket)->ignoreSslErrors();
+#endif // QT_NO_SSL
             } else {
                 socket->connectToHost(url.host(), url.port(isHttps ? 443 : 80));
             }

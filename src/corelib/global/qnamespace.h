@@ -153,7 +153,7 @@ public:
         NoButton         = 0x00000000,
         LeftButton       = 0x00000001,
         RightButton      = 0x00000002,
-        MidButton        = 0x00000004, // ### Qt 5: remove me
+        MidButton        = 0x00000004, // ### Qt 6: remove me
         MiddleButton     = MidButton,
         XButton1         = 0x00000008,
         BackButton       = XButton1,

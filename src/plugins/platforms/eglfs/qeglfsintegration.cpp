@@ -43,7 +43,7 @@
 
 #include "qeglfswindow.h"
 #include "qeglfsbackingstore.h"
-#include "qeglfs_hooks.h"
+#include "qeglfshooks.h"
 
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
@@ -74,6 +74,10 @@ QEglFSIntegration::~QEglFSIntegration()
 
 bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
+    // We assume that devices will have more and not less capabilities
+    if (hooks && hooks->hasCapability(cap))
+        return true;
+
     switch (cap) {
     case ThreadedPixmaps: return true;
     case OpenGL: return true;

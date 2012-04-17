@@ -37,7 +37,7 @@ contains( styles, all ) {
 	styles = mac windows windowsxp windowsvista
 }
 
-!macx-*:styles -= mac
+!macx-*|!contains(QT_CONFIG, coreservices):styles -= mac
 
 x11{
     QMAKE_CXXFLAGS += $$QT_CFLAGS_QGTKSTYLE

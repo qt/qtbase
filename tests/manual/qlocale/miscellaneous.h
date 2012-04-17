@@ -41,7 +41,7 @@
 #ifndef MISCELLANEOUS_H
 #define MISCELLANEOUS_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class MiscWidget : public QWidget
 {

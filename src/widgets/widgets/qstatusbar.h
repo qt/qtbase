@@ -87,7 +87,7 @@ protected:
     void paintEvent(QPaintEvent *);
     void resizeEvent(QResizeEvent *);
 
-    // ### Qt 5: consider making reformat() and hideOrShow() private
+    // ### Qt 6: consider making reformat() and hideOrShow() private
     void reformat();
     void hideOrShow();
     bool event(QEvent *);

@@ -17,4 +17,6 @@ SOURCES = main.cpp \
 OTHER_FILES += \
     evdevmouse.json
 
-LIBS += $$QMAKE_LIBS_LIBUDEV
+contains(QT_CONFIG, libudev) {
+    LIBS += $$QMAKE_LIBS_LIBUDEV
+}

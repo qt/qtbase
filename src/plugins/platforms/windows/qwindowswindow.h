@@ -100,7 +100,8 @@ public:
         FrameDirty = 0x4,            //! Frame outdated by setStyle, recalculate in next query.
         OpenGLSurface = 0x10,
         OpenGLDoubleBuffered = 0x20,
-        OpenGlPixelFormatInitialized = 0x40
+        OpenGlPixelFormatInitialized = 0x40,
+        BlockedByModal = 0x80
     };
 
     struct WindowData
@@ -136,6 +137,8 @@ public:
     virtual void setWindowTitle(const QString &title);
     virtual void raise();
     virtual void lower();
+
+    void windowEvent(QEvent *event);
 
     virtual void propagateSizeHints();
     virtual QMargins frameMargins() const;
@@ -188,6 +191,12 @@ public:
     inline bool testFlag(unsigned f) const  { return (m_flags & f) != 0; }
     inline void setFlag(unsigned f) const   { m_flags |= f; }
     inline void clearFlag(unsigned f) const { m_flags &= ~f; }
+
+    void setEnabled(bool enabled);
+    bool isEnabled() const;
+
+    void alertWindow(int durationMs = 0);
+    void stopAlertWindow();
 
 private:
     inline void show_sys() const;

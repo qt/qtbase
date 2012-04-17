@@ -6538,8 +6538,8 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
         return;
 
     if (version == QChar::Unicode_Unassigned) {
-        version = UNICODE_DATA_VERSION;
-    } else if (version != UNICODE_DATA_VERSION) {
+        version = QChar::currentUnicodeVersion();
+    } else if (int(version) <= NormalizationCorrectionsVersionMax) {
         const QString &s = *data;
         QChar *d = 0;
         for (int i = 0; i < NumNormalizationCorrections; ++i) {

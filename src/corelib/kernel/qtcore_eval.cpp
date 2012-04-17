@@ -555,13 +555,8 @@ void qt_eval_init_widget(QWidget *w)
 {
     if (qt_eval_days_left() == -2)
         return;
-    if (w->isTopLevel()) {
-        QString windowTitle = w->windowTitle();
-        if (windowTitle.isEmpty()) {
-            w->setWindowTitle(QLatin1String(" "));
-        } else if (!windowTitle.startsWith(qt_eval_title_prefix())) {
-            qt_eval_adapt_window_title(windowTitle);
-        }
+    if (w->isTopLevel() && w->windowTitle().isEmpty() && w->windowType() != Qt::Desktop ) {
+        w->setWindowTitle(QLatin1String(" "));
     }
 }
 #endif

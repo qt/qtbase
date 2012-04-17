@@ -150,7 +150,6 @@ public:
     virtual void beginNativePainting() {}
     virtual void endNativePainting() {}
 
-    // ### Qt5: remove, once QtGui is merged into QtGui and QtWidgets
     // Return a pixmap filter of "type" that can render the parameters
     // in "prototype".  The returned filter is owned by the engine and
     // will be destroyed when the engine is destroyed.  The "prototype"

@@ -329,7 +329,7 @@ bool QPlatformWindow::setMouseGrabEnabled(bool grab)
     However, it is not concerned with how Qt renders into the window it represents.
 
     Visible QWindows will always have a QPlatformWindow. However, it is not necessary for
-    all windows to have a QWindowSurface. This is the case for QOpenGLWidget. And could be the case for
+    all windows to have a QBackingStore. This is the case for QOpenGLWidget. And could be the case for
     windows where some  3.party renders into it.
 
     The platform specific window handle can be retrieved by the winId function.
@@ -340,7 +340,7 @@ bool QPlatformWindow::setMouseGrabEnabled(bool grab)
     The only way to retrieve a QPlatformOpenGLContext in QPA is by calling the glContext() function
     on QPlatformWindow.
 
-    \sa QWindowSurface, QWindow
+    \sa QBackingStore, QWindow
 */
 
 QT_END_NAMESPACE

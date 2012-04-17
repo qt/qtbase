@@ -76,8 +76,7 @@ void QGLPaintDevice::beginPaint()
 {
     // Make sure our context is the current one:
     QGLContext *ctx = context();
-    if (ctx != QGLContext::currentContext())
-        ctx->makeCurrent();
+    ctx->makeCurrent();
 
     // Record the currently bound FBO so we can restore it again
     // in endPaint() and bind this device's FBO

@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2012 Research In Motion
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -46,31 +46,19 @@
 
 QT_BEGIN_NAMESPACE
 
-class QSocketNotifier;
-
 class QQnxNavigatorEventHandler : public QObject
 {
     Q_OBJECT
 public:
     explicit QQnxNavigatorEventHandler(QObject *parent = 0);
-    ~QQnxNavigatorEventHandler();
+
+    bool handleOrientationCheck(int angle);
+    void handleOrientationChange(int angle);
+    void handleSwipeDown();
+    void handleExit();
 
 Q_SIGNALS:
     void rotationChanged(int angle);
-
-public Q_SLOTS:
-    void start();
-
-private Q_SLOTS:
-    void readData();
-
-private:
-    void parsePPS(const QByteArray &ppsData, QByteArray &msg, QByteArray &dat, QByteArray &id);
-    void replyPPS(const QByteArray &res, const QByteArray &id, const QByteArray &dat);
-    void handleMessage(const QByteArray &msg, const QByteArray &dat, const QByteArray &id);
-
-    int m_fd;
-    QSocketNotifier *m_readNotifier;
 };
 
 QT_END_NAMESPACE

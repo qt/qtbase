@@ -99,6 +99,9 @@ void tst_QScrollBar::scrollSingleStep()
     QTest::mouseClick(testWidget, Qt::LeftButton, Qt::NoModifier, QPoint(sr.x(), sr.y()));
     QTest::qWait(510); // initial delay is 500 for setRepeatAction
     disconnect(testWidget, SIGNAL(actionTriggered(int)), 0, 0);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "This test fails on Mac OS X, see QTBUG-25272", Abort);
+#endif
     QCOMPARE(testWidget->value(), testWidget->singleStep());
 }
 
@@ -136,9 +139,6 @@ void tst_QScrollBar::task_209492()
     QApplication::sendEvent(verticalScrollBar, &mouseReleaseEvent);
 
     // Check that the action was triggered once.
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "Fix does does not work on Mac due to paint architechure differences.", Abort);
-#endif
     QCOMPARE(scrollArea.scrollCount, 1);
     QCOMPARE(spy.count(), 1);
 }

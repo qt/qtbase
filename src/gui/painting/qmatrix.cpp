@@ -44,6 +44,7 @@
 #include "qmatrix.h"
 #include "qregion.h"
 #include "qpainterpath.h"
+#include "qpainterpath_p.h"
 #include "qvariant.h"
 #include <qmath.h>
 

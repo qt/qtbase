@@ -295,13 +295,14 @@ QFixed QWindowsFontEngineDirectWrite::emSquareSize() const
         return QFontEngine::emSquareSize();
 }
 
+// ### Qt 5.1: replace with QStringIterator
 inline unsigned int getChar(const QChar *str, int &i, const int len)
 {
-    unsigned int uc = str[i].unicode();
-    if (uc >= 0xd800 && uc < 0xdc00 && i < len-1) {
+    uint uc = str[i].unicode();
+    if (QChar::isHighSurrogate(uc) && i < len-1) {
         uint low = str[i+1].unicode();
-       if (low >= 0xdc00 && low < 0xe000) {
-            uc = (uc - 0xd800)*0x400 + (low - 0xdc00) + 0x10000;
+        if (QChar::isLowSurrogate(low)) {
+            uc = QChar::surrogateToUcs4(uc, low);
             ++i;
         }
     }

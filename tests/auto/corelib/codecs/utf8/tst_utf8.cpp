@@ -233,6 +233,38 @@ void tst_Utf8::nonCharacters_data()
     QTest::addColumn<QByteArray>("utf8");
     QTest::addColumn<QString>("utf16");
 
+    // Unicode has a couple of "non-characters" that one can use internally,
+    // but are not allowed to be used for text interchange.
+    //
+    // Those are the last two entries each Unicode Plane (U+FFFE, U+FFFF,
+    // U+1FFFE, U+1FFFF, etc.) as well as the entries between U+FDD0 and
+    // U+FDEF (inclusive)
+
+    // U+FDD0 through U+FDEF
+    for (int i = 0; i < 32; ++i) {
+        char utf8[] = { char(0357), char(0267), char(0220 + i), 0 };
+        QString utf16 = QChar(0xfdd0 + i);
+        QTest::newRow(qPrintable(QString::number(0xfdd0 + i, 16))) << QByteArray(utf8) << utf16;
+    }
+
+    // the last two in Planes 1 through 16
+    for (uint plane = 1; plane <= 16; ++plane) {
+        for (uint lower = 0xfffe; lower < 0x10000; ++lower) {
+            uint ucs4 = (plane << 16) | lower;
+            char utf8[] = { char(0xf0 | uchar(ucs4 >> 18)),
+                            char(0x80 | (uchar(ucs4 >> 12) & 0x3f)),
+                            char(0x80 | (uchar(ucs4 >> 6) & 0x3f)),
+                            char(0x80 | (uchar(ucs4) & 0x3f)),
+                            0 };
+            ushort utf16[] = { QChar::highSurrogate(ucs4), QChar::lowSurrogate(ucs4), 0 };
+
+            QTest::newRow(qPrintable(QString::number(ucs4, 16))) << QByteArray(utf8) << QString::fromUtf16(utf16);
+        }
+    }
+
+    QTest::newRow("fffe") << QByteArray("\xEF\xBF\xBE") << QString(QChar(0xfffe));
+    QTest::newRow("ffff") << QByteArray("\xEF\xBF\xBF") << QString(QChar(0xffff));
+
     extern void loadNonCharactersRows();
     loadNonCharactersRows();
 }

@@ -1258,8 +1258,20 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                 NodeList::ConstIterator c = qcn->childNodes().begin();
                 while (c != qcn->childNodes().end()) {
                     if ((*c)->subType() == Node::QmlPropertyGroup) {
+                        bool attached = false;
                         const QmlPropGroupNode* pgn = static_cast<const QmlPropGroupNode*>(*c);
-                        if (pgn->isAttached())
+                        NodeList::ConstIterator C = pgn->childNodes().begin();
+                        while (C != pgn->childNodes().end()) {
+                            if ((*C)->type() == Node::QmlProperty) {
+                                const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*C);
+                                if (pn->isAttached()) {
+                                    attached = true;
+                                    break;
+                                }
+                            }
+                            ++C;
+                        }
+                        if (attached)
                             insert(qmlattachedproperties,*c,style,Okay);
                         else
                             insert(qmlproperties,*c,style,Okay);

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGUIAPPLICATION_QPA_H
-#define QGUIAPPLICATION_QPA_H
+#ifndef QGUIAPPLICATION_H
+#define QGUIAPPLICATION_H
 
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qwindowdefs.h>
@@ -87,6 +87,8 @@ public:
     static QWindow *topLevelAt(const QPoint &pos);
 
     static QString platformName();
+
+    static QWindow *modalWindow();
 
 #ifdef QT_DEPRECATED
     static QT_DEPRECATED QWindow *activeWindow() { return focusWindow(); }
@@ -168,4 +170,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QGUIAPPLICATION_QPA_H
+#endif // QGUIAPPLICATION_H

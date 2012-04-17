@@ -56,7 +56,11 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
 {
     Q_UNUSED(key);
 
+#ifndef QT_NO_LIBUDEV
     bool useUDev = true;
+#else
+    bool useUDev = false;
+#endif // QT_NO_LIBUDEV
     QStringList args = specification.split(QLatin1Char(':'));
     QStringList devices;
 
@@ -77,6 +81,9 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
     foreach (const QString &device, devices)
         addMouse(device);
 
+#ifdef QT_NO_LIBUDEV
+    Q_UNUSED(useUDev)
+#else
     if (useUDev) {
 #ifdef QT_QPA_MOUSEMANAGER_DEBUG
         qWarning() << "Use UDev for device discovery";
@@ -94,6 +101,7 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
             connect(m_udeviceHelper, SIGNAL(deviceRemoved(QString,QUDeviceTypes)), this, SLOT(removeMouse(QString)));
         }
     }
+#endif // QT_NO_LIBUDEV
 }
 
 QEvdevMouseManager::~QEvdevMouseManager()

@@ -385,6 +385,35 @@ QString QPlatformFontDatabase::resolveFontFamilyAlias(const QString &family) con
 }
 
 /*!
+    Return true if all fonts are considered scalable when using this font database.
+    Defaults to false.
+
+    \since 5.0
+ */
+
+bool QPlatformFontDatabase::fontsAlwaysScalable() const
+{
+    return false;
+}
+
+/*!
+    Return list of standard font sizes when using this font database.
+
+    \since 5.0
+ */
+
+ QList<int> QPlatformFontDatabase::standardSizes() const
+{
+    QList<int> ret;
+    static const unsigned short standard[] =
+        { 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72, 0 };
+    ret.reserve(int(sizeof(standard) / sizeof(standard[0])));
+    const unsigned short *sizes = standard;
+    while (*sizes) ret << *sizes++;
+    return ret;
+}
+
+/*!
     \class QPlatformFontDatabase
     \brief The QPlatformFontDatabase class makes it possible to customize how fonts
     are discovered and how they are rendered

@@ -50,18 +50,11 @@
 #include "qchar.h"
 
 #include "qdatastream.h"
-#include "qtextcodec.h"
 
 #include "qunicodetables_p.h"
 #include "qunicodetables.cpp"
 
 QT_BEGIN_NAMESPACE
-
-#ifndef QT_NO_CODEC_FOR_C_STRINGS
-#  ifdef QT_NO_TEXTCODEC
-#    define QT_NO_CODEC_FOR_C_STRINGS
-#  endif
-#endif
 
 #define FLAG(x) (1 << (x))
 
@@ -71,8 +64,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup string-processing
 
-    This class is only useful to avoid the codec for C strings business
-    in the QChar(ch) constructor. You can avoid it by writing QChar(ch, 0).
+    This class is only useful to construct a QChar with 8-bit character.
 
     \sa QChar, QLatin1String, QString
 */
@@ -565,17 +557,24 @@ bool QChar::isLetter(ushort ucs2)
 }
 
 /*!
+    \fn bool QChar::isNumber() const
+
     Returns true if the character is a number (Number_* categories,
     not just 0-9); otherwise returns false.
 
     \sa isDigit()
 */
-bool QChar::isNumber() const
+
+/*!
+    \internal
+    \overload
+*/
+bool QChar::isNumber(ushort ucs2)
 {
     const int test = FLAG(Number_DecimalDigit) |
                      FLAG(Number_Letter) |
                      FLAG(Number_Other);
-    return FLAG(qGetProp(ucs)->category) & test;
+    return FLAG(qGetProp(ucs2)->category) & test;
 }
 
 /*!
@@ -725,7 +724,7 @@ int QChar::digitValue(ushort ucs2)
 int QChar::digitValue(uint ucs4)
 {
     if (ucs4 > UNICODE_LAST_CODEPOINT)
-        return 0;
+        return -1;
     return qGetProp(ucs4)->digitValue;
 }
 
@@ -1239,7 +1238,21 @@ ushort QChar::toCaseFolded(ushort ucs2)
     Returns the Latin-1 character equivalent to the QChar, or 0. This
     is mainly useful for non-internationalized software.
 
+    \note It is not possible to distinguish a non-Latin-1 character from a Latin-1 0
+    (NUL) character. Prefer to use unicode(), which does not have this ambiguity.
+
     \sa toAscii(), unicode()
+*/
+
+/*!
+    \fn QChar QChar::fromLatin1(char)
+
+    Converts the Latin-1 character \a c to its equivalent QChar. This
+    is mainly useful for non-internationalized software.
+
+    An alternative is to use QLatin1Char.
+
+    \sa fromAscii(), unicode()
 */
 
 /*!
@@ -1254,6 +1267,9 @@ ushort QChar::toCaseFolded(ushort ucs2)
 
     \note It is not possible to distinguish a non-Latin 1 character from an ASCII 0
     (NUL) character. Prefer to use unicode(), which does not have this ambiguity.
+
+    \note This function does not check whether the character value is inside
+    the valid range of US-ASCII.
 
     \sa toLatin1(), unicode()
 */
@@ -1308,7 +1324,7 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 /*!
     \fn ushort QChar::unicode() const
 
-    \overload
+    Returns the numeric Unicode value of the QChar.
 */
 
 /*****************************************************************************

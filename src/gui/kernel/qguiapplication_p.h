@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGUIAPPLICATION_QPA_P_H
-#define QGUIAPPLICATION_QPA_P_H
+#ifndef QGUIAPPLICATION_P_H
+#define QGUIAPPLICATION_P_H
 
 #include <QtGui/qguiapplication.h>
 
@@ -147,7 +147,11 @@ public:
     static QGuiApplicationPrivate *instance() { return self; }
 
     static QString *platform_name;
-    static bool app_do_modal;
+
+    QWindowList modalWindowList;
+    static void showModalWindow(QWindow *window);
+    static void hideModalWindow(QWindow *window);
+    virtual bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const;
 
     static Qt::MouseButtons buttons;
     static ulong mousePressTime;
@@ -226,4 +230,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QGUIAPPLICATION_QPA_P_H
+#endif // QGUIAPPLICATION_P_H

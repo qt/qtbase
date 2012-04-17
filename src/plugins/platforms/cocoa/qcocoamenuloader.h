@@ -88,6 +88,7 @@
 - (IBAction)qtDispatcherToQAction:(id)sender;
 - (void)qtUpdateMenubar;
 - (void)orderFrontCharacterPalette:(id)sender;
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem;
 @end
 
 void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader);

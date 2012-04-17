@@ -2973,6 +2973,13 @@
            * /
            \endcode
 
+    \note This doesn't work in DITA XML, so don't use it because it
+    produces a DITA XML file that doesn't validate. There probably is
+    a way to do this in DITA, so if we figure it out, we will put it
+    in. But this capability is not used anywhere other than right
+    here, so it probably isn't important. For now, if you use this
+    option, qdoc will ignore it and produce a list without it.
+
     QDoc renders this as:
 
            \list G

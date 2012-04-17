@@ -87,6 +87,8 @@ QJsonArray::QJsonArray()
 QJsonArray::QJsonArray(QJsonPrivate::Data *data, QJsonPrivate::Array *array)
     : d(data), a(array)
 {
+    Q_ASSERT(data);
+    Q_ASSERT(array);
     d->ref.ref();
 }
 

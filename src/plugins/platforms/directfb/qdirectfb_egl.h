@@ -53,6 +53,8 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 
+    bool hasCapability(QPlatformIntegration::Capability cap) const;
+
 protected:
     void initializeScreen();
 };

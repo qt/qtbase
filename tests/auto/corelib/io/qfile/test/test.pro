@@ -10,5 +10,3 @@ TESTDATA += ../dosfile.txt ../noendofline.txt ../testfile.txt \
             ../resources/file1.ext1
 
 win32: LIBS+=-lole32 -luuid
-
-mac*:CONFIG+=insignificant_test

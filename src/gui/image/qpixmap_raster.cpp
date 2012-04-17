@@ -151,7 +151,7 @@ void QRasterPlatformPixmap::fromImageReader(QImageReader *imageReader,
     createPixmapForImage(image, flags, /* inplace = */true);
 }
 
-// from qwindowsurface.cpp
+// from qbackingstore.cpp
 extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
 
 void QRasterPlatformPixmap::copy(const QPlatformPixmap *data, const QRect &rect)

@@ -440,9 +440,16 @@ static inline QRect positionTopLevelWindow(QRect geometry, const QScreen *screen
 void QWidgetPrivate::show_sys()
 {
     Q_Q(QWidget);
+
+    QWindow *window = q->windowHandle();
+
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         invalidateBuffer(q->rect());
         q->setAttribute(Qt::WA_Mapped);
+        if (q->isWindow() && q->windowModality() != Qt::NonModal && window) {
+            // add our window to the modal window list
+            QGuiApplicationPrivate::showModalWindow(window);
+        }
         return;
     }
 
@@ -451,7 +458,6 @@ void QWidgetPrivate::show_sys()
     if (!q->isWindow() && !q->testAttribute(Qt::WA_NativeWindow))
         return;
 
-    QWindow *window = q->windowHandle();
     if (window) {
         QRect geomRect = q->geometry();
         if (q->isWindow()) {
@@ -473,9 +479,7 @@ void QWidgetPrivate::show_sys()
         }
 
         invalidateBuffer(q->rect());
-
-        if (window)
-            window->setVisible(true);
+        window->setVisible(true);
     }
 }
 
@@ -483,6 +487,17 @@ void QWidgetPrivate::show_sys()
 void QWidgetPrivate::hide_sys()
 {
     Q_Q(QWidget);
+
+    QWindow *window = q->windowHandle();
+
+    if (q->testAttribute(Qt::WA_DontShowOnScreen)
+        && q->isWindow()
+        && q->windowModality() != Qt::NonModal
+        && window) {
+        // remove our window from the modal window list
+        QGuiApplicationPrivate::hideModalWindow(window);
+    }
+
     deactivateWidgetCleanup();
 
     if (!q->isWindow()) {
@@ -497,7 +512,7 @@ void QWidgetPrivate::hide_sys()
 
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         q->setAttribute(Qt::WA_Mapped, false);
-    } else if (QWindow *window = q->windowHandle()) {
+    } else if (window) {
          window->setVisible(false);
     }
 }

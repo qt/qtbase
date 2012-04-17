@@ -611,6 +611,8 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                         node->doc().location().warning(
                                     tr("No such enum item '%1' in %2").arg(*a).arg(marker->plainFullName(node)),
                                     details);
+                        if (*a == "Void")
+                            qDebug() << "VOID:" << node->name() << definedItems;
                     }
                     else if (!documentedItems.contains(*a)) {
                         node->doc().location().warning(

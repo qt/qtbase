@@ -47,7 +47,6 @@
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
 #include <QTcpSocket>
-#include <QHttp>
 #include <QDebug>
 
 // Interface-class for data transferring object
@@ -109,22 +108,6 @@ public slots:
 
 private:
     QNetworkAccessManager m_qnam;
-};
-
-class DataTransfererQHttp : public DataTransferer
-{
-    Q_OBJECT
-public:
-    DataTransfererQHttp(QObject* parent = 0);
-    ~DataTransfererQHttp();
-
-    virtual bool transferData();
-
-public slots:
-    void done(bool error);
-
-private:
-    QHttp m_qhttp;
 };
 
 #endif // DATATRANSFERER_H

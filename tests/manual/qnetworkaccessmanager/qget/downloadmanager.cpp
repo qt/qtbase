@@ -83,7 +83,7 @@ void DownloadManager::upload(const QUrl &url, const QString &user, const QString
     connect(ul, SIGNAL(downloadFinished(TransferItem*)), SLOT(downloadFinished(TransferItem*)));
 }
 
-void DownloadManager::finished(QNetworkReply *reply)
+void DownloadManager::finished(QNetworkReply *)
 {
 }
 
@@ -121,7 +121,7 @@ void DownloadManager::authenticationRequired(QNetworkReply *reply, QAuthenticato
     qDebug() << "authenticationRequired" << reply;
     TransferItem *transfer = findTransfer(reply);
     //provide the credentials exactly once, so that it fails if credentials are incorrect.
-    if (transfer && !transfer->user.isEmpty() || !transfer->password.isEmpty()) {
+    if ((transfer && !transfer->user.isEmpty()) || !transfer->password.isEmpty()) {
         auth->setUser(transfer->user);
         auth->setPassword(transfer->password);
         transfer->user.clear();
@@ -129,7 +129,7 @@ void DownloadManager::authenticationRequired(QNetworkReply *reply, QAuthenticato
     }
 }
 
-void DownloadManager::proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth)
+void DownloadManager::proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth)
 {
     //provide the credentials exactly once, so that it fails if credentials are incorrect.
     if (!proxyUser.isEmpty() || !proxyPassword.isEmpty()) {

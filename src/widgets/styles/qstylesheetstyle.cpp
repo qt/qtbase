@@ -991,9 +991,8 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QWidget
                        hintValue = (int) decl.colorValue().rgba();
                    } else if (hintName.endsWith(QLatin1String("size"))) {
                        hintValue = decl.sizeValue();
-                       // ### Qt5
-//                   } else if (hintName.endsWith(QLatin1String("icon"))) {
-//                       hintValue = decl.iconValue();
+                   } else if (hintName.endsWith(QLatin1String("icon"))) {
+                       hintValue = cssIconValueToIcon(decl.iconValue());
                    } else if (hintName == QLatin1String("button-layout")
                               && decl.d->values.count() != 0 && decl.d->values.at(0).type == Value::String) {
                        hintValue = subControlLayout(decl.d->values.at(0).variant.toString());

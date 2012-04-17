@@ -75,10 +75,8 @@ private slots:
     void serializeSpacing();
     void lastResortFont();
     void styleName();
-#ifdef QT_BUILD_INTERNAL
     void defaultFamily_data();
     void defaultFamily();
-#endif
 };
 
 // Testing get/set functions
@@ -623,36 +621,62 @@ void tst_QFont::styleName()
 #endif
 }
 
-#ifdef QT_BUILD_INTERNAL
+QString getPlatformGenericFont(const char* genericName)
+{
+#if defined(Q_OS_UNIX) && !defined(QT_NO_FONTCONFIG)
+    QProcess p;
+    p.start(QLatin1String("fc-match"), (QStringList() << "-f%{family}" << genericName));
+    if (!p.waitForStarted())
+        qWarning("fc-match cannot be started: %s", qPrintable(p.errorString()));
+    if (p.waitForFinished())
+        return QString::fromLatin1(p.readAllStandardOutput());
+#endif
+    return QLatin1String(genericName);
+}
+
+static inline QByteArray msgNotAcceptableFont(const QString &defaultFamily, const QStringList &acceptableFamilies)
+{
+    QString res = QString::fromLatin1("Font family '%1' is not one of the following accaptable results: ").arg(defaultFamily);
+    Q_FOREACH (const QString &family, acceptableFamilies)
+        res += QString::fromLatin1("\n %1").arg(family);
+    return res.toLocal8Bit();
+}
+
 Q_DECLARE_METATYPE(QFont::StyleHint)
 void tst_QFont::defaultFamily_data()
 {
     QTest::addColumn<QFont::StyleHint>("styleHint");
-    QTest::addColumn<QString>("defaultFamily");
+    QTest::addColumn<QStringList>("acceptableFamilies");
 
-    QTest::newRow("serif") << QFont::Times << "serif";
-    QTest::newRow("monospace") << QFont::Monospace << "monospace";
-    QTest::newRow("sans-serif") << QFont::SansSerif << "sans-serif";
-    QTest::newRow("cursive") << QFont::Cursive << "cursive";
-    QTest::newRow("fantasy") << QFont::Fantasy << "fantasy";
-    QTest::newRow("old english") << QFont::OldEnglish << "Old English";
+    QTest::newRow("serif") << QFont::Serif << (QStringList() << "Times New Roman" << "Times" << getPlatformGenericFont("serif"));
+    QTest::newRow("monospace") << QFont::Monospace << (QStringList() << "Courier New" << "Monaco" << getPlatformGenericFont("monospace"));
+    QTest::newRow("cursive") << QFont::Cursive << (QStringList() << "Comic Sans MS" << "Apple Chancery" << getPlatformGenericFont("cursive"));
+    QTest::newRow("fantasy") << QFont::Fantasy << (QStringList() << "Impact" << "Zapfino"  << getPlatformGenericFont("fantasy"));
+    QTest::newRow("sans-serif") << QFont::SansSerif << (QStringList() << "Arial" << "Lucida Grande" << getPlatformGenericFont("sans-serif"));
 }
 
 void tst_QFont::defaultFamily()
 {
     QFETCH(QFont::StyleHint, styleHint);
-    QFETCH(QString, defaultFamily);
-
-    QFontDatabase db;
-    if (!db.hasFamily(defaultFamily))
-        QSKIP("Font family is not available on the system");
+    QFETCH(QStringList, acceptableFamilies);
 
     QFont f;
+    QFontDatabase db;
     f.setStyleHint(styleHint);
-    QCOMPARE(QFontDatabase::resolveFontFamilyAlias(f.defaultFamily()), QFontDatabase::resolveFontFamilyAlias(defaultFamily));
+    const QString familyForHint(f.defaultFamily());
 
+    // it should at least return a family that is available.
+    QVERIFY(db.hasFamily(familyForHint));
+
+    bool isAcceptable = false;
+    Q_FOREACH (const QString& family, acceptableFamilies) {
+        if (!familyForHint.compare(family, Qt::CaseInsensitive)) {
+            isAcceptable = true;
+            break;
+        }
+    }
+    QVERIFY2(isAcceptable, msgNotAcceptableFont(familyForHint, acceptableFamilies));
 }
-#endif // QT_BUILD_INTERNAL
 
 QTEST_MAIN(tst_QFont)
 #include "tst_qfont.moc"

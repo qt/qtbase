@@ -75,35 +75,12 @@ void QFont::setRawName(const QString &)
 
 QString QFont::defaultFamily() const
 {
-    QString familyName;
-    switch(d->request.styleHint) {
-        case QFont::SansSerif:
-            familyName = QString::fromLatin1("sans-serif");
-            break;
-        case QFont::Serif:
-            familyName = QString::fromLatin1("serif");
-            break;
-        case QFont::TypeWriter:
-        case QFont::Monospace:
-            familyName = QString::fromLatin1("monospace");
-            break;
-        case QFont::Cursive:
-            familyName = QString::fromLatin1("cursive");
-            break;
-        case QFont::Fantasy:
-            familyName = QString::fromLatin1("fantasy");
-            break;
-        case QFont::Decorative:
-            familyName = QString::fromLatin1("decorative");
-            break;
-        case QFont::System:
-        default:
-            familyName = QString();
-            break;
-    }
-
-    return QGuiApplicationPrivate::platformIntegration()->fontDatabase()->resolveFontFamilyAlias(familyName);
-
+    QPlatformFontDatabase *fontDB = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+    const QStringList fallbacks = fontDB->fallbacksForFamily(QString(), QFont::StyleNormal
+                                      , QFont::StyleHint(d->request.styleHint), QUnicodeTables::Common);
+    if (!fallbacks.isEmpty())
+        return fallbacks.first();
+    return QString();
 }
 
 QString QFont::lastResortFamily() const

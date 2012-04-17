@@ -249,7 +249,7 @@ QAccessible::State QAccessibleMenuItem::state() const
     QAccessible::State s;
     QWidget *own = owner();
 
-    if (own->testAttribute(Qt::WA_WState_Visible) == false || m_action->isVisible() == false) {
+    if (own && own->testAttribute(Qt::WA_WState_Visible) == false || m_action->isVisible() == false) {
         s.invisible = true;
     }
 
@@ -262,7 +262,7 @@ QAccessible::State QAccessibleMenuItem::state() const
             s.focused = true;
 #endif
     }
-    if (own->style()->styleHint(QStyle::SH_Menu_MouseTracking))
+    if (own && own->style()->styleHint(QStyle::SH_Menu_MouseTracking))
         s.hotTracked = true;
     if (m_action->isSeparator() || !m_action->isEnabled())
         s.disabled = true;

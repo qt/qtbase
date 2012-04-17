@@ -61,7 +61,7 @@ static inline bool isUnicodeNonCharacter(uint ucs4)
     // U+FDEF (inclusive)
 
     return (ucs4 & 0xfffe) == 0xfffe
-            || (ucs4 - 0xfdd0U) < 16;
+            || (ucs4 - 0xfdd0U) < 32;
 }
 
 static inline uchar hexdig(uint u)
@@ -160,7 +160,7 @@ static QByteArray escapedString(const QString &s)
                     continue;
                 }
 
-                if (u > 0xffff) {
+                if (QChar::requiresSurrogates(u)) {
                     *cursor++ = 0xf0 | ((uchar) (u >> 18));
                     *cursor++ = 0x80 | (((uchar) (u >> 12)) & 0x3f);
                 } else {

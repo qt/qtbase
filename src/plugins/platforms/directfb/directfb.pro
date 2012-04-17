@@ -4,15 +4,8 @@ DESTDIR = $$QT.gui.plugins/platforms
 
 QT += core-private gui-private platformsupport-private
 
-isEmpty(DIRECTFB_LIBS) {
-    DIRECTFB_LIBS = -ldirectfb -lfusion -ldirect -lpthread
-}
-isEmpty(DIRECTFB_INCLUDEPATH) {
-    DIRECTFB_INCLUDEPATH = /usr/include/directfb
-}
-
-INCLUDEPATH += $$DIRECTFB_INCLUDEPATH
-LIBS += $$DIRECTFB_LIBS
+LIBS += $$QMAKE_LIBS_DIRECTFB
+QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_DIRECTFB
 
 SOURCES = main.cpp \
     qdirectfbintegration.cpp \
@@ -30,13 +23,25 @@ HEADERS = qdirectfbintegration.h \
     qdirectfbinput.h \
     qdirectfbcursor.h \
     qdirectfbwindow.h \
-    qdirectfbscreen.h
+    qdirectfbscreen.h \
+    qdirectfbeglhooks.h
 
 # ### port the GL context
-directfbegl: {
+directfb_egl {
     HEADERS += qdirectfb_egl.h
     SOURCES += qdirectfb_egl.cpp
     DEFINES += DIRECTFB_GL_EGL
+}
+
+!isEmpty(DIRECTFB_PLATFORM_HOOKS_SOURCES) {
+    HEADERS += $$DIRECTFB_PLATFORM_HOOKS_HEADERS
+    SOURCES += $$DIRECTFB_PLATFORM_HOOKS_SOURCES
+    DEFINES += DIRECTFB_PLATFORM_HOOKS
+    LIBS += $$DIRECTFB_PLATFORM_HOOKS_LIBS
+    QMAKE_LIBDIR += $$DIRECTFB_PLATFORM_HOOKS_LIBDIR
+    INCLUDEPATH += $$DIRECTFB_PLATFORM_HOOKS_INCLUDEPATH
+} else {
+    SOURCES += qdirectfbeglhooks_stub.cpp
 }
 
 

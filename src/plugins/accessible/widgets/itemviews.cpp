@@ -67,6 +67,12 @@ TABLE/LIST/TREE
   ...
 */
 
+
+QAbstractItemView *QAccessibleTable::view() const
+{
+    return qobject_cast<QAbstractItemView*>(object());
+}
+
 int QAccessibleTable::logicalIndex(const QModelIndex &index) const
 {
     if (!index.isValid())
@@ -79,11 +85,14 @@ int QAccessibleTable::logicalIndex(const QModelIndex &index) const
 
 QAccessibleInterface *QAccessibleTable::childFromLogical(int logicalIndex) const
 {
+    if (!isValid())
+        return 0;
+
     logicalIndex--; // one based counting ftw
     int vHeader = verticalHeader() ? 1 : 0;
     int hHeader = horizontalHeader() ? 1 : 0;
 
-    int columns = view->model()->columnCount() + vHeader;
+    int columns = view()->model()->columnCount() + vHeader;
 
     int row = logicalIndex / columns;
     int column = logicalIndex % columns;
@@ -91,32 +100,31 @@ QAccessibleInterface *QAccessibleTable::childFromLogical(int logicalIndex) const
     if (vHeader) {
         if (column == 0) {
             if (row == 0) {
-                return new QAccessibleTableCornerButton(view);
+                return new QAccessibleTableCornerButton(view());
             }
-            return new QAccessibleTableHeaderCell(view, row-1, Qt::Vertical);
+            return new QAccessibleTableHeaderCell(view(), row-1, Qt::Vertical);
         }
         --column;
     }
     if (hHeader) {
         if (row == 0) {
-            return new QAccessibleTableHeaderCell(view, column, Qt::Horizontal);
+            return new QAccessibleTableHeaderCell(view(), column, Qt::Horizontal);
         }
         --row;
     }
-    return new QAccessibleTableCell(view, view->model()->index(row, column), cellRole());
+    return new QAccessibleTableCell(view(), view()->model()->index(row, column), cellRole());
 }
 
 QAccessibleTable::QAccessibleTable(QWidget *w)
     : QAccessibleObject(w)
 {
-    view = qobject_cast<QAbstractItemView *>(w);
-    Q_ASSERT(view);
+    Q_ASSERT(view());
 
-    if (qobject_cast<const QTableView*>(view)) {
+    if (qobject_cast<const QTableView*>(view())) {
         m_role = QAccessible::Table;
-    } else if (qobject_cast<const QTreeView*>(view)) {
+    } else if (qobject_cast<const QTreeView*>(view())) {
         m_role = QAccessible::Tree;
-    } else if (qobject_cast<const QListView*>(view)) {
+    } else if (qobject_cast<const QListView*>(view())) {
         m_role = QAccessible::List;
     } else {
         // is this our best guess?
@@ -133,11 +141,11 @@ QHeaderView *QAccessibleTable::horizontalHeader() const
     QHeaderView *header = 0;
     if (false) {
 #ifndef QT_NO_TABLEVIEW
-    } else if (const QTableView *tv = qobject_cast<const QTableView*>(view)) {
+    } else if (const QTableView *tv = qobject_cast<const QTableView*>(view())) {
         header = tv->horizontalHeader();
 #endif
 #ifndef QT_NO_TREEVIEW
-    } else if (const QTreeView *tv = qobject_cast<const QTreeView*>(view)) {
+    } else if (const QTreeView *tv = qobject_cast<const QTreeView*>(view())) {
         header = tv->header();
 #endif
     }
@@ -149,7 +157,7 @@ QHeaderView *QAccessibleTable::verticalHeader() const
     QHeaderView *header = 0;
     if (false) {
 #ifndef QT_NO_TABLEVIEW
-    } else if (const QTableView *tv = qobject_cast<const QTableView*>(view)) {
+    } else if (const QTableView *tv = qobject_cast<const QTableView*>(view())) {
         header = tv->verticalHeader();
 #endif
     }
@@ -159,16 +167,16 @@ QHeaderView *QAccessibleTable::verticalHeader() const
 QAccessibleTableCell *QAccessibleTable::cell(const QModelIndex &index) const
 {
     if (index.isValid())
-        return new QAccessibleTableCell(view, index, cellRole());
+        return new QAccessibleTableCell(view(), index, cellRole());
     return 0;
 }
 
 QAccessibleInterface *QAccessibleTable::cellAt(int row, int column) const
 {
     Q_ASSERT(role() != QAccessible::Tree);
-    QModelIndex index = view->model()->index(row, column);
+    QModelIndex index = view()->model()->index(row, column);
     if (!index.isValid()) {
-        qWarning() << "QAccessibleTable::cellAt: invalid index: " << index << " for " << view;
+        qWarning() << "QAccessibleTable::cellAt: invalid index: " << index << " for " << view();
         return 0;
     }
     return cell(index);
@@ -181,43 +189,43 @@ QAccessibleInterface *QAccessibleTable::caption() const
 
 QString QAccessibleTable::columnDescription(int column) const
 {
-    return view->model()->headerData(column, Qt::Horizontal).toString();
+    return view()->model()->headerData(column, Qt::Horizontal).toString();
 }
 
 int QAccessibleTable::columnCount() const
 {
-    return view->model()->columnCount();
+    return view()->model()->columnCount();
 }
 
 int QAccessibleTable::rowCount() const
 {
-    return view->model()->rowCount();
+    return view()->model()->rowCount();
 }
 
 int QAccessibleTable::selectedCellCount() const
 {
-    return view->selectionModel()->selectedIndexes().count();
+    return view()->selectionModel()->selectedIndexes().count();
 }
 
 int QAccessibleTable::selectedColumnCount() const
 {
-    return view->selectionModel()->selectedColumns().count();
+    return view()->selectionModel()->selectedColumns().count();
 }
 
 int QAccessibleTable::selectedRowCount() const
 {
-    return view->selectionModel()->selectedRows().count();
+    return view()->selectionModel()->selectedRows().count();
 }
 
 QString QAccessibleTable::rowDescription(int row) const
 {
-    return view->model()->headerData(row, Qt::Vertical).toString();
+    return view()->model()->headerData(row, Qt::Vertical).toString();
 }
 
 QList<QAccessibleInterface *> QAccessibleTable::selectedCells() const
 {
     QList<QAccessibleInterface*> cells;
-    Q_FOREACH (const QModelIndex &index, view->selectionModel()->selectedIndexes()) {
+    Q_FOREACH (const QModelIndex &index, view()->selectionModel()->selectedIndexes()) {
         cells.append(cell(index));
     }
     return cells;
@@ -226,7 +234,7 @@ QList<QAccessibleInterface *> QAccessibleTable::selectedCells() const
 QList<int> QAccessibleTable::selectedColumns() const
 {
     QList<int> columns;
-    Q_FOREACH (const QModelIndex &index, view->selectionModel()->selectedColumns()) {
+    Q_FOREACH (const QModelIndex &index, view()->selectionModel()->selectedColumns()) {
         columns.append(index.column());
     }
     return columns;
@@ -235,7 +243,7 @@ QList<int> QAccessibleTable::selectedColumns() const
 QList<int> QAccessibleTable::selectedRows() const
 {
     QList<int> rows;
-    Q_FOREACH (const QModelIndex &index, view->selectionModel()->selectedRows()) {
+    Q_FOREACH (const QModelIndex &index, view()->selectionModel()->selectedRows()) {
         rows.append(index.row());
     }
     return rows;
@@ -248,47 +256,47 @@ QAccessibleInterface *QAccessibleTable::summary() const
 
 bool QAccessibleTable::isColumnSelected(int column) const
 {
-    return view->selectionModel()->isColumnSelected(column, QModelIndex());
+    return view()->selectionModel()->isColumnSelected(column, QModelIndex());
 }
 
 bool QAccessibleTable::isRowSelected(int row) const
 {
-    return view->selectionModel()->isRowSelected(row, QModelIndex());
+    return view()->selectionModel()->isRowSelected(row, QModelIndex());
 }
 
 bool QAccessibleTable::selectRow(int row)
 {
-    QModelIndex index = view->model()->index(row, 0);
-    if (!index.isValid() || view->selectionMode() & QAbstractItemView::NoSelection)
+    QModelIndex index = view()->model()->index(row, 0);
+    if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
         return false;
-    view->selectionModel()->select(index, QItemSelectionModel::Select);
+    view()->selectionModel()->select(index, QItemSelectionModel::Select);
     return true;
 }
 
 bool QAccessibleTable::selectColumn(int column)
 {
-    QModelIndex index = view->model()->index(0, column);
-    if (!index.isValid() || view->selectionMode() & QAbstractItemView::NoSelection)
+    QModelIndex index = view()->model()->index(0, column);
+    if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
         return false;
-    view->selectionModel()->select(index, QItemSelectionModel::Select);
+    view()->selectionModel()->select(index, QItemSelectionModel::Select);
     return true;
 }
 
 bool QAccessibleTable::unselectRow(int row)
 {
-    QModelIndex index = view->model()->index(row, 0);
-    if (!index.isValid() || view->selectionMode() & QAbstractItemView::NoSelection)
+    QModelIndex index = view()->model()->index(row, 0);
+    if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
         return false;
-    view->selectionModel()->select(index, QItemSelectionModel::Deselect);
+    view()->selectionModel()->select(index, QItemSelectionModel::Deselect);
     return true;
 }
 
 bool QAccessibleTable::unselectColumn(int column)
 {
-    QModelIndex index = view->model()->index(0, column);
-    if (!index.isValid() || view->selectionMode() & QAbstractItemView::NoSelection)
+    QModelIndex index = view()->model()->index(0, column);
+    if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
         return false;
-    view->selectionModel()->select(index, QItemSelectionModel::Columns & QItemSelectionModel::Deselect);
+    view()->selectionModel()->select(index, QItemSelectionModel::Columns & QItemSelectionModel::Deselect);
     return true;
 }
 
@@ -304,11 +312,11 @@ QAccessible::State QAccessibleTable::state() const
 
 QAccessibleInterface *QAccessibleTable::childAt(int x, int y) const
 {
-    QPoint viewportOffset = view->viewport()->mapTo(view, QPoint(0,0));
-    QPoint indexPosition = view->mapFromGlobal(QPoint(x, y) - viewportOffset);
+    QPoint viewportOffset = view()->viewport()->mapTo(view(), QPoint(0,0));
+    QPoint indexPosition = view()->mapFromGlobal(QPoint(x, y) - viewportOffset);
     // FIXME: if indexPosition < 0 in one coordinate, return header
 
-    QModelIndex index = view->indexAt(indexPosition);
+    QModelIndex index = view()->indexAt(indexPosition);
     if (index.isValid()) {
         return childFromLogical(logicalIndex(index));
     }
@@ -317,11 +325,11 @@ QAccessibleInterface *QAccessibleTable::childAt(int x, int y) const
 
 int QAccessibleTable::childCount() const
 {
-    if (!view->model())
+    if (!view()->model())
         return 0;
     int vHeader = verticalHeader() ? 1 : 0;
     int hHeader = horizontalHeader() ? 1 : 0;
-    return (view->model()->rowCount()+hHeader) * (view->model()->columnCount()+vHeader);
+    return (view()->model()->rowCount()+hHeader) * (view()->model()->columnCount()+vHeader);
 }
 
 int QAccessibleTable::indexOfChild(const QAccessibleInterface *iface) const
@@ -335,7 +343,7 @@ int QAccessibleTable::indexOfChild(const QAccessibleInterface *iface) const
         return cell->index + (verticalHeader() ? 1 : 0);
     } else if (iface->role() == QAccessible::RowHeader){
         const QAccessibleTableHeaderCell* cell = static_cast<const QAccessibleTableHeaderCell*>(iface);
-        return (cell->index+1) * (view->model()->rowCount()+1);
+        return (cell->index+1) * (view()->model()->rowCount()+1);
     } else if (iface->role() == QAccessible::Pane) {
         return 0; // corner button
     } else {
@@ -349,25 +357,25 @@ int QAccessibleTable::indexOfChild(const QAccessibleInterface *iface) const
 QString QAccessibleTable::text(QAccessible::Text t) const
 {
     if (t == QAccessible::Description)
-        return view->accessibleDescription();
-    return view->accessibleName();
+        return view()->accessibleDescription();
+    return view()->accessibleName();
 }
 
 QRect QAccessibleTable::rect() const
 {
-    if (!view->isVisible())
+    if (!view()->isVisible())
         return QRect();
-    QPoint pos = view->mapToGlobal(QPoint(0, 0));
-    return QRect(pos.x(), pos.y(), view->width(), view->height());
+    QPoint pos = view()->mapToGlobal(QPoint(0, 0));
+    return QRect(pos.x(), pos.y(), view()->width(), view()->height());
 }
 
 QAccessibleInterface *QAccessibleTable::parent() const
 {
-    if (view->parent()) {
-        if (qstrcmp("QComboBoxPrivateContainer", view->parent()->metaObject()->className()) == 0) {
-            return QAccessible::queryAccessibleInterface(view->parent()->parent());
+    if (view()->parent()) {
+        if (qstrcmp("QComboBoxPrivateContainer", view()->parent()->metaObject()->className()) == 0) {
+            return QAccessible::queryAccessibleInterface(view()->parent()->parent());
         }
-        return QAccessible::queryAccessibleInterface(view->parent());
+        return QAccessible::queryAccessibleInterface(view()->parent());
     }
     return 0;
 }
@@ -389,42 +397,45 @@ void *QAccessibleTable::interface_cast(QAccessible::InterfaceType t)
 
 QModelIndex QAccessibleTree::indexFromLogical(int row, int column) const
 {
-    const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
+    if (!isValid())
+        return QModelIndex();
+
+    const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
     QModelIndex modelIndex = treeView->d_func()->viewItems.at(row).index;
 
     if (modelIndex.isValid() && column > 0) {
-        modelIndex = view->model()->index(modelIndex.row(), column, modelIndex.parent());
+        modelIndex = view()->model()->index(modelIndex.row(), column, modelIndex.parent());
     }
     return modelIndex;
 }
 
 QAccessibleInterface *QAccessibleTree::childAt(int x, int y) const
 {
-    QPoint viewportOffset = view->viewport()->mapTo(view, QPoint(0,0));
-    QPoint indexPosition = view->mapFromGlobal(QPoint(x, y) - viewportOffset);
+    QPoint viewportOffset = view()->viewport()->mapTo(view(), QPoint(0,0));
+    QPoint indexPosition = view()->mapFromGlobal(QPoint(x, y) - viewportOffset);
 
-    QModelIndex index = view->indexAt(indexPosition);
+    QModelIndex index = view()->indexAt(indexPosition);
     if (!index.isValid())
         return 0;
 
-    const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
+    const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
     int row = treeView->d_func()->viewIndex(index) + (horizontalHeader() ? 1 : 0);
     int column = index.column();
 
-    int i = row * view->model()->columnCount() + column + 1;
-    Q_ASSERT(i > view->model()->columnCount());
+    int i = row * view()->model()->columnCount() + column + 1;
+    Q_ASSERT(i > view()->model()->columnCount());
     return child(i - 1);
 }
 
 int QAccessibleTree::childCount() const
 {
-    const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
+    const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
     Q_ASSERT(treeView);
-    if (!view->model())
+    if (!view()->model())
         return 0;
 
     int hHeader = horizontalHeader() ? 1 : 0;
-    return (treeView->d_func()->viewItems.count() + hHeader)* view->model()->columnCount();
+    return (treeView->d_func()->viewItems.count() + hHeader)* view()->model()->columnCount();
 }
 
 
@@ -434,15 +445,15 @@ QAccessibleInterface *QAccessibleTree::child(int index) const
     int hHeader = horizontalHeader() ? 1 : 0;
 
     if (hHeader) {
-        if (index < view->model()->columnCount()) {
-            return new QAccessibleTableHeaderCell(view, index, Qt::Horizontal);
+        if (index < view()->model()->columnCount()) {
+            return new QAccessibleTableHeaderCell(view(), index, Qt::Horizontal);
         } else {
-            index -= view->model()->columnCount();
+            index -= view()->model()->columnCount();
         }
     }
 
-    int row = index / view->model()->columnCount();
-    int column = index % view->model()->columnCount();
+    int row = index / view()->model()->columnCount();
+    int column = index % view()->model()->columnCount();
     QModelIndex modelIndex = indexFromLogical(row, column);
     if (modelIndex.isValid()) {
         return cell(modelIndex);
@@ -452,7 +463,7 @@ QAccessibleInterface *QAccessibleTree::child(int index) const
 
 int QAccessibleTree::rowCount() const
 {
-    const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
+    const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
     Q_ASSERT(treeView);
     return treeView->d_func()->viewItems.count();
 }
@@ -461,12 +472,12 @@ int QAccessibleTree::indexOfChild(const QAccessibleInterface *iface) const
 {
      if (iface->role() == QAccessible::TreeItem) {
         const QAccessibleTableCell* cell = static_cast<const QAccessibleTableCell*>(iface);
-        const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
+        const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
         Q_ASSERT(treeView);
         int row = treeView->d_func()->viewIndex(cell->m_index) + (horizontalHeader() ? 1 : 0);
         int column = cell->m_index.column();
 
-        int index = row * view->model()->columnCount() + column;
+        int index = row * view()->model()->columnCount() + column;
         //qDebug() << "QAccessibleTree::indexOfChild r " << row << " c " << column << "index " << index;
         Q_ASSERT(index >= treeView->model()->columnCount());
         return index;
@@ -489,7 +500,7 @@ QAccessibleInterface *QAccessibleTree::cellAt(int row, int column) const
         qWarning() << "Requested invalid tree cell: " << row << column;
         return 0;
     }
-    return new QAccessibleTableCell(view, index, cellRole());
+    return new QAccessibleTableCell(view(), index, cellRole());
 }
 
 QString QAccessibleTree::rowDescription(int) const
@@ -500,15 +511,15 @@ QString QAccessibleTree::rowDescription(int) const
 bool QAccessibleTree::isRowSelected(int row) const
 {
     QModelIndex index = indexFromLogical(row);
-    return view->selectionModel()->isRowSelected(index.row(), index.parent());
+    return view()->selectionModel()->isRowSelected(index.row(), index.parent());
 }
 
 bool QAccessibleTree::selectRow(int row)
 {
     QModelIndex index = indexFromLogical(row);
-    if (!index.isValid() || view->selectionMode() & QAbstractItemView::NoSelection)
+    if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
         return false;
-    view->selectionModel()->select(index, QItemSelectionModel::Select);
+    view()->selectionModel()->select(index, QItemSelectionModel::Select);
     return true;
 }
 

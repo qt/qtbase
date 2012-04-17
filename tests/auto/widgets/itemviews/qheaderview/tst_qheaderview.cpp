@@ -1947,8 +1947,8 @@ void tst_QHeaderView::noSectionsWithNegativeSize()
 
 void tst_QHeaderView::emptySectionSpan()
 {
-    QHeaderViewPrivate::SectionSpan span;
-    QCOMPARE(span.sectionSize(), 0);
+    QHeaderViewPrivate::SectionItem section;
+    QCOMPARE(section.sectionSize(), 0);
 }
 
 void tst_QHeaderView::task236450_hidden_data()

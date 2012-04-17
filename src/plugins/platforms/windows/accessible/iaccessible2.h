@@ -298,83 +298,27 @@ private:
 
 
 /**************************************************************\
- *                     IAccessibleRelation                     *
+ *                     AccessibleRelation                      *
  **************************************************************/
-struct AccessibleRelation : public IAccessibleRelation
+class AccessibleRelation : public IAccessibleRelation
 {
+public:
     AccessibleRelation(const QList<QAccessibleInterface *> &targets,
-                        QAccessible::Relation relation)
-        : m_targets(targets), m_relation(relation), m_ref(1)
-    {
-        Q_ASSERT(m_targets.count());
-    }
+                       QAccessible::Relation relation);
 
+    virtual ~AccessibleRelation() {}
 
     /* IUnknown */
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface)
-    {
-        *iface = 0;
-        if (id == IID_IUnknown)
-            *iface = (IUnknown*)this;
-
-        if (*iface) {
-            AddRef();
-            return S_OK;
-        }
-
-        return E_NOINTERFACE;
-    }
-
-    ULONG STDMETHODCALLTYPE AddRef()
-    {
-        return ++m_ref;
-    }
-
-    ULONG STDMETHODCALLTYPE Release()
-    {
-        if (!--m_ref) {
-            delete this;
-            return 0;
-        }
-        return m_ref;
-    }
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface);
+    ULONG STDMETHODCALLTYPE AddRef();
+    ULONG STDMETHODCALLTYPE Release();
 
     /* IAccessibleRelation */
-    HRESULT STDMETHODCALLTYPE get_relationType(
-        /* [retval][out] */ BSTR *relationType)
-    {
-        *relationType = relationToBSTR(m_relation);
-        return S_OK;
-    }
-
-    HRESULT STDMETHODCALLTYPE get_localizedRelationType(
-        /* [retval][out] */ BSTR *localizedRelationType)
-    {
-        // Who ever needs this???
-        *localizedRelationType = relationToBSTR(m_relation);
-        return S_OK;
-    }
-
-    HRESULT STDMETHODCALLTYPE get_nTargets(
-        /* [retval][out] */ long *nTargets)
-    {
-        // ### always one target
-        *nTargets = m_targets.count();
-        return S_OK;
-    }
-
+    HRESULT STDMETHODCALLTYPE get_relationType(BSTR *relationType);
+    HRESULT STDMETHODCALLTYPE get_localizedRelationType(BSTR *localizedRelationType);
+    HRESULT STDMETHODCALLTYPE get_nTargets(long *nTargets);
     HRESULT STDMETHODCALLTYPE get_target(long targetIndex, IUnknown **target);
-
-
-    /*!
-      \internal
-      Client allocates and deallocates \a targets array
-      (see "Special Consideration when using Arrays", in Accessible2.idl)
-      */
-    HRESULT STDMETHODCALLTYPE get_targets(
-        /* [in] */ long maxTargets,     // Hmmm, ignore ???
-        /* [length_is][size_is][out] */ IUnknown **targets,
-        /* [retval][out] */ long *nTargets);
+    HRESULT STDMETHODCALLTYPE get_targets(long maxTargets, IUnknown **targets, long *nTargets);
 
 private:
     static BSTR relationToBSTR(QAccessible::Relation relation)

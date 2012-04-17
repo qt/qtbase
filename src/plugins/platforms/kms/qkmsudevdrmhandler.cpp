@@ -39,23 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFS_HOOKS_H
-#define QEGLFS_HOOKS_H
+#include <QtCore/QRegExp>
 
-#include "qplatformintegration_qpa.h"
-#include <EGL/egl.h>
+#include <qkmsintegration.h>
+#include <qkmsudevdrmhandler.h>
 
 QT_BEGIN_NAMESPACE
 
-struct QEglFSHooks {
-    void platformInit();
-    void platformDestroy();
-    EGLNativeDisplayType platformDisplay() const;
-    QSize screenSize() const;
-    EGLNativeWindowType createNativeWindow(const QSize &size);
-    void destroyNativeWindow(EGLNativeWindowType window);
-};
+QKmsUdevDRMHandler::QKmsUdevDRMHandler(QKmsIntegration *integration)
+    : m_integration(integration)
+{
+}
+
+QObject *QKmsUdevDRMHandler::create(struct udev_device *device)
+{
+    if (strcmp(udev_device_get_subsystem(device), "drm"))
+        return 0;
+
+    QRegExp regexp("^card\\d+$");
+    if (!regexp.exactMatch(udev_device_get_sysname(device)))
+        return 0;
+
+    return m_integration->createDevice(udev_device_get_devnode(device));
+}
 
 QT_END_NAMESPACE
-
-#endif

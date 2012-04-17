@@ -3,6 +3,7 @@ TARGET = BearerEx
 
 QT += core \
       gui \
+      widgets \
       network
 
 FORMS += detailedinfodialog.ui

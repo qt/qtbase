@@ -38,8 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QGRAPHICSSYSTEMCURSOR_H
-#define QGRAPHICSSYSTEMCURSOR_H
+#ifndef QPLATFORMCURSOR_QPA_H
+#define QPLATFORMCURSOR_QPA_H
 
 #include <QtCore/QList>
 #include <QtGui/QImage>
@@ -60,7 +60,7 @@ public:
     QPlatformCursorImage(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
     { set(data, mask, width, height, hotX, hotY); }
     QImage * image() { return &cursorImage; }
-    QPoint hotspot() { return hot; }
+    QPoint hotspot() const { return hot; }
     void set(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
     void set(const QImage &image, int hx, int hy);
     void set(Qt::CursorShape);
@@ -97,4 +97,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QGRAPHICSSYSTEMCURSOR_H
+#endif // QPLATFORMCURSOR_QPA_H

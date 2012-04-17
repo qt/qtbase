@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the qmake spec of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,57 +39,20 @@
 **
 ****************************************************************************/
 
-#include "qeglfs_hooks.h"
-#include <EGL/fbdev_window.h>
-#include <stdio.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <linux/fb.h>
+#ifndef QCOCOADESKTOPSERVICES_H
+#define QCOCOADESKTOPSERVICES_H
 
-void QEglFSHooks::platformInit()
+#include <QtGui/qplatformservices_qpa.h>
+
+QT_BEGIN_NAMESPACE
+
+class QCocoaServices : public QPlatformServices
 {
-}
+public:
+    bool openUrl(const QUrl &url);
+    bool openDocument(const QUrl &url);
+};
 
-void QEglFSHooks::platformDestroy()
-{
-}
+QT_END_NAMESPACE
 
-EGLNativeDisplayType QEglFSHooks::platformDisplay() const
-{
-    return EGL_DEFAULT_DISPLAY;
-}
-
-QSize QEglFSHooks::screenSize() const
-{
-    int fd = open("/dev/fb0", O_RDONLY);
-    if (fd == -1) {
-        qFatal("Failed to open fb to detect screen resolution!");
-    }
-
-    struct fb_var_screeninfo vinfo;
-    if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1) {
-        qFatal("Could not get variable screen info");
-    }
-
-    close(fd);
-
-    return QSize(vinfo.xres, vinfo.yres);
-}
-
-EGLNativeWindowType QEglFSHooks::createNativeWindow(const QSize &size)
-{
-    fbdev_window *window = new fbdev_window;
-    window->width = size.width();
-    window->height = size.height();
-
-    return window;
-}
-
-void QEglFSHooks::destroyNativeWindow(EGLNativeWindowType window)
-{
-    delete window;
-}
-
-QEglFSHooks platform_hooks;
+#endif // QCOCOADESKTOPSERVICES_H

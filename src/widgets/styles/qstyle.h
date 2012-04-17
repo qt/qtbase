@@ -188,7 +188,7 @@ public:
         PE_IndicatorItemViewItemDrop,
 
         PE_PanelItemViewItem,
-        PE_PanelItemViewRow, // ### Qt 5: remove
+        PE_PanelItemViewRow, // ### Qt 6: remove
 
         PE_PanelStatusBar,
 
@@ -323,7 +323,7 @@ public:
         SE_CheckBoxLayoutItem,
         SE_ComboBoxLayoutItem,
         SE_DateTimeEditLayoutItem,
-        SE_DialogButtonBoxLayoutItem, // ### remove
+        SE_DialogButtonBoxLayoutItem, // ### Qt 6: remove
         SE_LabelLayoutItem,
         SE_ProgressBarLayoutItem,
         SE_PushButtonLayoutItem,

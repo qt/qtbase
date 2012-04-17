@@ -249,6 +249,14 @@ QString DitaXmlGenerator::ditaTags[] =
     ""
 };
 
+void DitaXmlGenerator::debugPara(const QString& t)
+{
+    writeStartTag(DT_p);
+    xmlWriter().writeAttribute("outputclass",t);
+    xmlWriter().writeCharacters(t);
+    writeEndTag(); // </p>
+}
+
 static bool showBrokenLinks = false;
 
 /*!
@@ -693,6 +701,13 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     static bool in_para = false;
     QString guid, hc, attr;
 
+#if 0
+    // Leave this here for debugging.
+    if (outFileName() == "modules.dita") {
+        QString comment = "ATOM:" + atom->typeString();
+        xmlWriter().writeComment(comment);
+    }
+#endif
     switch (atom->type()) {
     case Atom::AbstractLeft:
         break;
@@ -721,6 +736,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         {
             Node::Type t = relative->type();
             if (inSection()) {
+                in_para = true;
                 writeStartTag(DT_p);
                 xmlWriter().writeAttribute("outputclass","brief");
             }
@@ -756,6 +772,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::BriefRight:
         //        if (relative->type() != Node::Fake)
         writeEndTag(); // </shortdesc> or </p>
+        if (in_para)
+            in_para = false;
         noLinks = false;
         break;
     case Atom::C:
@@ -769,13 +787,13 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         writeEndTag(); // see writeStartElement() above
         break;
     case Atom::Code:
-    {
-        writeStartTag(DT_codeblock);
-        xmlWriter().writeAttribute("outputclass","cpp");
-        QString chars = trimmedTrailing(atom->string());
-        writeText(chars, marker, relative);
-        writeEndTag(); // </codeblock>
-    }
+        {
+            writeStartTag(DT_codeblock);
+            xmlWriter().writeAttribute("outputclass","cpp");
+            QString chars = trimmedTrailing(atom->string());
+            writeText(chars, marker, relative);
+            writeEndTag(); // </codeblock>
+        }
         break;
     case Atom::Qml:
         writeStartTag(DT_codeblock);
@@ -866,71 +884,71 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::FormatIf:
         break;
     case Atom::FormattingLeft:
-    {
-        DitaTag t = DT_LAST;
-        if (atom->string() == ATOM_FORMATTING_BOLD)
-            t = DT_b;
-        else if (atom->string() == ATOM_FORMATTING_PARAMETER)
-            t = DT_i;
-        else if (atom->string() == ATOM_FORMATTING_ITALIC)
-            t = DT_i;
-        else if (atom->string() == ATOM_FORMATTING_TELETYPE)
-            t = DT_tt;
-        else if (atom->string().startsWith("span ")) {
-            t = DT_keyword;
-        }
-        else if (atom->string() == ATOM_FORMATTING_UICONTROL)
-            t = DT_uicontrol;
-        else if (atom->string() == ATOM_FORMATTING_UNDERLINE)
-            t = DT_u;
-        else if (atom->string() == ATOM_FORMATTING_INDEX)
-            t = DT_comment;
-        else if (atom->string() == ATOM_FORMATTING_SUBSCRIPT)
-            t = DT_sub;
-        else if (atom->string() == ATOM_FORMATTING_SUPERSCRIPT)
-            t = DT_sup;
-        else
-            qDebug() << "DT_LAST";
-        writeStartTag(t);
-        if (atom->string() == ATOM_FORMATTING_PARAMETER) {
-            if (atom->next() != 0 && atom->next()->type() == Atom::String) {
-                QRegExp subscriptRegExp("([a-z]+)_([0-9n])");
-                if (subscriptRegExp.exactMatch(atom->next()->string())) {
-                    xmlWriter().writeCharacters(subscriptRegExp.cap(1));
-                    writeStartTag(DT_sub);
-                    xmlWriter().writeCharacters(subscriptRegExp.cap(2));
-                    writeEndTag(); // </sub>
-                    skipAhead = 1;
+        {
+            DitaTag t = DT_LAST;
+            if (atom->string() == ATOM_FORMATTING_BOLD)
+                t = DT_b;
+            else if (atom->string() == ATOM_FORMATTING_PARAMETER)
+                t = DT_i;
+            else if (atom->string() == ATOM_FORMATTING_ITALIC)
+                t = DT_i;
+            else if (atom->string() == ATOM_FORMATTING_TELETYPE)
+                t = DT_tt;
+            else if (atom->string().startsWith("span ")) {
+                t = DT_keyword;
+            }
+            else if (atom->string() == ATOM_FORMATTING_UICONTROL)
+                t = DT_uicontrol;
+            else if (atom->string() == ATOM_FORMATTING_UNDERLINE)
+                t = DT_u;
+            else if (atom->string() == ATOM_FORMATTING_INDEX)
+                t = DT_comment;
+            else if (atom->string() == ATOM_FORMATTING_SUBSCRIPT)
+                t = DT_sub;
+            else if (atom->string() == ATOM_FORMATTING_SUPERSCRIPT)
+                t = DT_sup;
+            else
+                qDebug() << "DT_LAST";
+            writeStartTag(t);
+            if (atom->string() == ATOM_FORMATTING_PARAMETER) {
+                if (atom->next() != 0 && atom->next()->type() == Atom::String) {
+                    QRegExp subscriptRegExp("([a-z]+)_([0-9n])");
+                    if (subscriptRegExp.exactMatch(atom->next()->string())) {
+                        xmlWriter().writeCharacters(subscriptRegExp.cap(1));
+                        writeStartTag(DT_sub);
+                        xmlWriter().writeCharacters(subscriptRegExp.cap(2));
+                        writeEndTag(); // </sub>
+                        skipAhead = 1;
+                    }
                 }
             }
-        }
-        else if (t == DT_keyword) {
-            QString attr = atom->string().mid(5);
-            if (!attr.isEmpty()) {
-                if (attr.contains('=')) {
-                    int index = 0;
-                    int from = 0;
-                    QString values;
-                    while (index >= 0) {
-                        index = attr.indexOf('"',from);
-                        if (index >= 0) {
-                            ++index;
-                            from = index;
+            else if (t == DT_keyword) {
+                QString attr = atom->string().mid(5);
+                if (!attr.isEmpty()) {
+                    if (attr.contains('=')) {
+                        int index = 0;
+                        int from = 0;
+                        QString values;
+                        while (index >= 0) {
                             index = attr.indexOf('"',from);
-                            if (index > from) {
-                                if (!values.isEmpty())
-                                    values.append(' ');
-                                values += attr.mid(from,index-from);
-                                from = index+1;
+                            if (index >= 0) {
+                                ++index;
+                                from = index;
+                                index = attr.indexOf('"',from);
+                                if (index > from) {
+                                    if (!values.isEmpty())
+                                        values.append(' ');
+                                    values += attr.mid(from,index-from);
+                                    from = index+1;
+                                }
                             }
                         }
+                        attr = values;
                     }
-                    attr = values;
                 }
+                xmlWriter().writeAttribute("outputclass", attr);
             }
-            xmlWriter().writeAttribute("outputclass", attr);
         }
-    }
         break;
     case Atom::FormattingRight:
         if (atom->string() == ATOM_FORMATTING_LINK) {
@@ -941,17 +959,17 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::AnnotatedList:
-    {
-        QList<Node*> values = tree_->groups().values(atom->string());
-        NodeMap nodeMap;
-        for (int i = 0; i < values.size(); ++i) {
-            const Node* n = values.at(i);
-            if ((n->status() != Node::Internal) && (n->access() != Node::Private)) {
-                nodeMap.insert(n->nameForLists(),n);
+        {
+            QList<Node*> values = tree_->groups().values(atom->string());
+            NodeMap nodeMap;
+            for (int i = 0; i < values.size(); ++i) {
+                const Node* n = values.at(i);
+                if ((n->status() != Node::Internal) && (n->access() != Node::Private)) {
+                    nodeMap.insert(n->nameForLists(),n);
+                }
             }
+            generateAnnotatedList(relative, marker, nodeMap);
         }
-        generateAnnotatedList(relative, marker, nodeMap);
-    }
         break;
     case Atom::GeneratedList:
         if (atom->string() == "annotatedclasses") {
@@ -1206,6 +1224,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         if (atom->next() != 0)
             text = atom->next()->string();
         if (fileName.isEmpty()) {
+            relative->location().warning(tr("Missing image: %1").arg(protectEnc(atom->string())));
             QString images = "images";
             if (!baseDir().isEmpty())
                 images.prepend("../");
@@ -1269,34 +1288,34 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         //xmlWriter().writeEmptyElement("br");
         break;
     case Atom::Link:
-    {
-        const Node *node = 0;
-        QString myLink = getLink(atom, relative, marker, &node);
-        if (myLink.isEmpty()) {
-            myLink = getCollisionLink(atom);
+        {
+            const Node *node = 0;
+            QString myLink = getLink(atom, relative, marker, &node);
+            if (myLink.isEmpty()) {
+                myLink = getCollisionLink(atom);
+            }
+            if (myLink.isEmpty()) {
+                relative->doc().location().warning(tr("Can't link to '%1'")
+                                                   .arg(atom->string()));
+            }
+            else if (!inSectionHeading) {
+                beginLink(myLink);
+            }
+            skipAhead = 1;
         }
-        if (myLink.isEmpty()) {
-            relative->doc().location().warning(tr("Can't link to '%1'")
-                                               .arg(atom->string()));
-        }
-        else if (!inSectionHeading) {
-            beginLink(myLink);
-        }
-        skipAhead = 1;
-    }
         break;
     case Atom::GuidLink:
-    {
-        beginLink(atom->string());
-        skipAhead = 1;
-    }
+        {
+            beginLink(atom->string());
+            skipAhead = 1;
+        }
         break;
     case Atom::LinkNode:
-    {
-        const Node* node = CodeMarker::nodeForString(atom->string());
-        beginLink(linkForNode(node, relative));
-        skipAhead = 1;
-    }
+        {
+            const Node* node = CodeMarker::nodeForString(atom->string());
+            beginLink(linkForNode(node, relative));
+            skipAhead = 1;
+        }
         break;
     case Atom::ListLeft:
         if (in_para) {
@@ -1352,8 +1371,13 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             else // (atom->string() == ATOM_LIST_NUMERIC)
                 xmlWriter().writeAttribute("outputclass","numeric");
             if (atom->next() != 0 && atom->next()->string().toInt() != 1) {
-                // I don't think this attribute is supported.
-                xmlWriter().writeAttribute("start",atom->next()->string());
+                /*
+                  This attribute is not supported in DITA, and at the
+                  moment, including it is causing a validation error
+                  wherever it is used. I think it is onlym used in the
+                  qdoc manual.
+                 */
+                //xmlWriter().writeAttribute("start",atom->next()->string());
             }
         }
         break;
@@ -1628,47 +1652,48 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         writeEndTag(); // </row>
         break;
     case Atom::TableItemLeft:
-    {
-        QString values;
-        writeStartTag(DT_entry);
-        for (int i=0; i<atom->count(); ++i) {
-            attr = atom->string(i);
-            if (attr.contains('=')) {
-                int index = 0;
-                int from = 0;
-                while (index >= 0) {
-                    index = attr.indexOf('"',from);
-                    if (index >= 0) {
-                        ++index;
-                        from = index;
+        {
+            QString values;
+            writeStartTag(DT_entry);
+            for (int i=0; i<atom->count(); ++i) {
+                attr = atom->string(i);
+                if (attr.contains('=')) {
+                    int index = 0;
+                    int from = 0;
+                    while (index >= 0) {
                         index = attr.indexOf('"',from);
-                        if (index > from) {
-                            if (!values.isEmpty())
-                                values.append(' ');
-                            values += attr.mid(from,index-from);
-                            from = index+1;
+                        if (index >= 0) {
+                            ++index;
+                            from = index;
+                            index = attr.indexOf('"',from);
+                            if (index > from) {
+                                if (!values.isEmpty())
+                                    values.append(' ');
+                                values += attr.mid(from,index-from);
+                                from = index+1;
+                            }
+                        }
+                    }
+                }
+                else {
+                    QStringList spans = attr.split(QLatin1Char(','));
+                    if (spans.size() == 2) {
+                        if ((spans[0].toInt()>1) || (spans[1].toInt()>1)) {
+                            values += "span(" + spans[0] + QLatin1Char(',') + spans[1] + QLatin1Char(')');
                         }
                     }
                 }
             }
-            else {
-                QStringList spans = attr.split(QLatin1Char(','));
-                if (spans.size() == 2) {
-                    if ((spans[0].toInt()>1) || (spans[1].toInt()>1)) {
-                        values += "span(" + spans[0] + QLatin1Char(',') + spans[1] + QLatin1Char(')');
-                    }
-                }
-            }
+            if (!values.isEmpty())
+                xmlWriter().writeAttribute("outputclass",values);
+            if (matchAhead(atom, Atom::ParaLeft))
+                skipAhead = 1;
         }
-        if (!values.isEmpty())
-            xmlWriter().writeAttribute("outputclass",values);
-        if (matchAhead(atom, Atom::ParaLeft))
-            skipAhead = 1;
-    }
         break;
     case Atom::TableItemRight:
-        if (inTableHeader)
+        if (inTableHeader) {
             writeEndTag(); // </entry>
+        }
         else {
             writeEndTag(); // </entry>
         }
@@ -1676,33 +1701,33 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             skipAhead = 1;
         break;
     case Atom::TableOfContents:
-    {
-        int numColumns = 1;
-        const Node* node = relative;
+        {
+            int numColumns = 1;
+            const Node* node = relative;
 
-        Doc::Sections sectionUnit = Doc::Section4;
-        QStringList params = atom->string().split(QLatin1Char(','));
-        QString columnText = params.at(0);
-        QStringList pieces = columnText.split(QLatin1Char(' '), QString::SkipEmptyParts);
-        if (pieces.size() >= 2) {
-            columnText = pieces.at(0);
-            pieces.pop_front();
-            QString path = pieces.join(" ").trimmed();
-            node = findNodeForTarget(path, relative, marker, atom);
+            Doc::Sections sectionUnit = Doc::Section4;
+            QStringList params = atom->string().split(QLatin1Char(','));
+            QString columnText = params.at(0);
+            QStringList pieces = columnText.split(QLatin1Char(' '), QString::SkipEmptyParts);
+            if (pieces.size() >= 2) {
+                columnText = pieces.at(0);
+                pieces.pop_front();
+                QString path = pieces.join(" ").trimmed();
+                node = findNodeForTarget(path, relative, marker, atom);
+            }
+
+            if (params.size() == 2) {
+                numColumns = qMax(columnText.toInt(), numColumns);
+                sectionUnit = (Doc::Sections)params.at(1).toInt();
+            }
+
+            if (node)
+                generateTableOfContents(node,
+                                        marker,
+                                        sectionUnit,
+                                        numColumns,
+                                        relative);
         }
-
-        if (params.size() == 2) {
-            numColumns = qMax(columnText.toInt(), numColumns);
-            sectionUnit = (Doc::Sections)params.at(1).toInt();
-        }
-
-        if (node)
-            generateTableOfContents(node,
-                                    marker,
-                                    sectionUnit,
-                                    numColumns,
-                                    relative);
-    }
         break;
     case Atom::Target:
         if (in_para) {
@@ -2277,7 +2302,7 @@ void DitaXmlGenerator::generateFakeNode(FakeNode* fake, CodeMarker* marker)
     writeProlog(fake);
 
     writeStartTag(DT_body);
-    enterSection(QString(),QString());
+    enterSection("","");
     if (fake->subType() == Node::Module) {
         generateStatus(fake, marker);
         if (moduleNamespaceMap.contains(fake->name())) {
@@ -4420,14 +4445,11 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
                 writeStartTag(DT_li);
                 writeGuidAttribute((Node*)qpn);
                 QString attr;
-                int ro = qpn->getReadOnly();
-                if (ro < 0) {
-                    if (!qpn->isWritable(tree_))
-                        attr = "read-only";
-                }
-                else if (ro > 0)
+                if (!qpn->isReadOnlySet())
+                    qpn->setReadOnly(!qpn->isWritable(tree_));
+                if (qpn->isReadOnly())
                     attr = "read-only";
-                if (qpgn->isDefault()) {
+                if (qpn->isDefault()) {
                     if (!attr.isEmpty())
                         attr += QLatin1Char(' ');
                     attr += "default";
@@ -4462,13 +4484,11 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
             writeStartTag(DT_li);
             writeGuidAttribute((Node*)qpn);
             QString attr;
-            int ro = qpn->getReadOnly();
-            if (ro < 0) {
-                const ClassNode* cn = qpn->declarativeCppNode();
-                if (cn && !qpn->isWritable(tree_))
-                    attr = "read-only";
+            if (!qpn->isReadOnlySet()) {
+                if (qpn->declarativeCppNode())
+                    qpn->setReadOnly(!qpn->isWritable(tree_));
             }
-            else if (ro > 0)
+            if (qpn->isReadOnly())
                 attr = "read-only";
             if (qpn->isDefault()) {
                 if (!attr.isEmpty())
@@ -4495,12 +4515,9 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
                     writeStartTag(DT_li);
                     writeGuidAttribute((Node*)q);
                     QString attr;
-                    int ro = qpn->getReadOnly();
-                    if (ro < 0) {
-                        if (!qpn->isWritable(tree_))
-                            attr = "read-only";
-                    }
-                    else if (ro > 0)
+                    if (!qpn->isReadOnlySet())
+                        qpn->setReadOnly(!qpn->isWritable(tree_));
+                    if (qpn->isReadOnly())
                         attr = "read-only";
                     if (qpn->isDefault()) {
                         if (!attr.isEmpty())
@@ -6000,9 +6017,10 @@ void DitaXmlGenerator::writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle
                 for (int count = 0; count < dmNode->map().count(); count++) {
                     if (dmNode->map().at(count)->navtitle() == i.key()) {
                         foundInDitaMap = true;
+                        break;
                     }
-                    ++mapIterator;
                 }
+                ++mapIterator;
             }
             if (!foundInDitaMap) {
                 writeStartTag(DT_topicref);
@@ -6418,7 +6436,7 @@ void DitaXmlGenerator::generateCollisionPages()
         generateHeader(ncn, ditaTitle);
         writeProlog(ncn);
         writeStartTag(DT_body);
-        enterSection(QString(),QString());
+        enterSection("","");
 
         NodeMap nm;
         for (int i=0; i<collisions.size(); ++i) {

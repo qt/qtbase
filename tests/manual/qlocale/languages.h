@@ -41,7 +41,7 @@
 #ifndef LANGUAGES_H
 #define LANGUAGES_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class LanguagesWidget : public QWidget
 {
