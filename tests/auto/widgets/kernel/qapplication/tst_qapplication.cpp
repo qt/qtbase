@@ -605,8 +605,6 @@ public slots:
 
 void tst_QApplication::quitOnLastWindowClosed()
 {
-#ifndef Q_OS_MAC
-    // Test hangs on Mac OS X, see QTBUG-24319
     {
         int argc = 0;
         QApplication app(argc, 0, QApplication::GuiServer);
@@ -621,7 +619,6 @@ void tst_QApplication::quitOnLastWindowClosed()
         // lastWindowClosed() signal should only be sent after the last dialog is closed
         QCOMPARE(appSpy.count(), 2);
     }
-#endif
     {
         int argc = 0;
         QApplication app(argc, 0, QApplication::GuiServer);
