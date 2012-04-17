@@ -3376,11 +3376,10 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     // Update and hide.
     proxy->update();
     proxy->hide();
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-23700", Abort);
-#endif
-
     QTRY_COMPARE(view.npaints, 1);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23700", Continue);
+#endif
     QCOMPARE(view.paintEventRegion, expectedRegion);
 
     proxy->show();
