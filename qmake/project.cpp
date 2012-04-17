@@ -1479,6 +1479,7 @@ QMakeProject::read(uchar cmd)
             }
 
             // parse qmake configuration
+            doProjectInclude("spec_pre", IncludeFlagFeature, vars);
             while(qmakespec.endsWith(QLatin1Char('/')))
                 qmakespec.truncate(qmakespec.length()-1);
             QString spec = qmakespec + QLatin1String("/qmake.conf");
@@ -1487,6 +1488,7 @@ QMakeProject::read(uchar cmd)
                 fprintf(stderr, "Failure to read QMAKESPEC conf file %s.\n", spec.toLatin1().constData());
                 return false;
             }
+            doProjectInclude("spec_post", IncludeFlagFeature, vars);
             validateModes();
 
             if (!conffile.isEmpty()) {
