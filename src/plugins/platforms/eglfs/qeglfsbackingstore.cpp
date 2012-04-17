@@ -100,7 +100,7 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
             "uniform sampler2D texture;\n"
             "varying highp vec2 textureCoord;\n"
             "void main() {\n"
-            "   gl_FragColor = texture2D(texture, textureCoord);\n"
+            "   gl_FragColor = texture2D(texture, textureCoord).bgra;\n"
             "}\n";
 
         m_program = new QOpenGLShaderProgram;
