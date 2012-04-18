@@ -85,6 +85,8 @@ struct QGLGlyphTexture : public QOpenGLSharedResource
         const QGLContext *ctx = QGLContext::fromOpenGLContext(context);
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
         qDebug("~QGLGlyphTexture() %p for context %p.", this, ctx);
+#else
+        Q_UNUSED(ctx);
 #endif
         if (m_fbo)
             glDeleteFramebuffers(1, &m_fbo);
