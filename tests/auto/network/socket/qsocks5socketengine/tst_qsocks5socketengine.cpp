@@ -551,7 +551,16 @@ void tst_QSocks5SocketEngine::udpTest()
     QVERIFY(udpSocket.state() == QAbstractSocket::UnconnectedState);
 
     // Bind #1
+#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
+    {
+        bool bindSuccessful = udpSocket.bind(QHostAddress("0.0.0.0"), 0);
+        if (!bindSuccessful)
+            QEXPECT_FAIL("", "QTBUG-23380: Fails on some Ubuntu 11.10 x64 configurations", Abort);
+        QVERIFY(bindSuccessful);
+    }
+#else
     QVERIFY(udpSocket.bind(QHostAddress("0.0.0.0"), 0));
+#endif
     QVERIFY(udpSocket.state() == QAbstractSocket::BoundState);
     QVERIFY(udpSocket.localPort() != 0);
 
