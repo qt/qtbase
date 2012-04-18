@@ -60,7 +60,10 @@ public:
         UDev_Mouse = 0x01,
         UDev_Touchpad = 0x02,
         UDev_Touchscreen = 0x04,
-        UDev_Keyboard = 0x08
+        UDev_Keyboard = 0x08,
+        UDev_DRM = 0x10,
+        UDev_InputMask = UDev_Mouse | UDev_Touchpad | UDev_Touchscreen | UDev_Keyboard,
+        UDev_VideoMask = UDev_DRM
     };
     Q_DECLARE_FLAGS(QUDeviceTypes, QUDeviceType)
 

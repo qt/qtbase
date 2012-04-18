@@ -96,6 +96,7 @@ QUDeviceHelper::QUDeviceHelper(QUDeviceTypes types, struct udev *udev, QObject *
     }
 
     udev_monitor_filter_add_match_subsystem_devtype(m_udevMonitor, "input", 0);
+    udev_monitor_filter_add_match_subsystem_devtype(m_udevMonitor, "drm", 0);
     udev_monitor_enable_receiving(m_udevMonitor);
     m_udevMonitorFileDescriptor = udev_monitor_get_fd(m_udevMonitor);
 
@@ -121,6 +122,7 @@ QStringList QUDeviceHelper::scanConnectedDevices()
 
     udev_enumerate *ue = udev_enumerate_new(m_udev);
     udev_enumerate_add_match_subsystem(ue, "input");
+    udev_enumerate_add_match_subsystem(ue, "drm");
 
     if (m_types & UDev_Mouse)
         udev_enumerate_add_match_property(ue, "ID_INPUT_MOUSE", "1");
@@ -143,7 +145,9 @@ QStringList QUDeviceHelper::scanConnectedDevices()
         const char *syspath = udev_list_entry_get_name(entry);
         udev_device *udevice = udev_device_new_from_syspath(m_udev, syspath);
         QString candidate = QString::fromUtf8(udev_device_get_devnode(udevice));
-        if (candidate.startsWith(QLatin1String("/dev/input/event")))
+        if ((m_types & UDev_InputMask) && candidate.startsWith(QLatin1String("/dev/input/event")))
+            devices << candidate;
+        if ((m_types & UDev_VideoMask) && candidate.startsWith(QLatin1String("/dev/dri/card")))
             devices << candidate;
 
         udev_device_unref(udevice);
@@ -180,12 +184,16 @@ void QUDeviceHelper::handleUDevNotification()
     if (!str)
         goto cleanup;
 
+    const char *subsystem;
     devNode = QString::fromUtf8(str);
-    if (!devNode.startsWith(QLatin1String("/dev/input/event")))
-        goto cleanup;
+    if (devNode.startsWith(QLatin1String("/dev/input/event")))
+        subsystem = "input";
+    else if (devNode.startsWith(QLatin1String("/dev/dri/card")))
+        subsystem = "drm";
+    else goto cleanup;
 
     // does not increase the refcount
-    dev = udev_device_get_parent_with_subsystem_devtype(dev, "input", 0);
+    dev = udev_device_get_parent_with_subsystem_devtype(dev, subsystem, 0);
     if (!dev)
         goto cleanup;
 
@@ -228,6 +236,9 @@ QUDeviceHelper::QUDeviceTypes QUDeviceHelper::checkDeviceType(udev_device *dev)
 
     if ((m_types & UDev_Touchscreen) && (qstrcmp(udev_device_get_property_value(dev, "ID_INPUT_TOUCHSCREEN"), "1") == 0))
         types |= UDev_Touchscreen;
+
+    if ((m_types & UDev_DRM) && (qstrcmp(udev_device_get_subsystem(dev), "drm") == 0))
+        types |= UDev_DRM;
 
     return types;
 }
