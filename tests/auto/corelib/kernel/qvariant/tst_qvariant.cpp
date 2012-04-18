@@ -102,6 +102,8 @@ private slots:
 
     void constructor();
     void copy_constructor();
+    void constructor_invalid_data();
+    void constructor_invalid();
     void isNull();
     void swap();
 
@@ -346,6 +348,67 @@ void tst_QVariant::constructor()
     var8.setValue<int>(5);
     QVERIFY(var8.isValid());
     QVERIFY(!var8.isNull());
+}
+
+void tst_QVariant::constructor_invalid_data()
+{
+    QTest::addColumn<uint>("typeId");
+
+    QTest::newRow("-1") << uint(-1);
+    QTest::newRow("-122234567") << uint(-122234567);
+    QTest::newRow("0xfffffffff") << uint(0xfffffffff);
+    QTest::newRow("LastCoreType + 1") << uint(QMetaType::LastCoreType + 1);
+    QVERIFY(!QMetaType::isRegistered(QMetaType::LastCoreType + 1));
+    QTest::newRow("LastGuiType + 1") << uint(QMetaType::LastGuiType + 1);
+    QVERIFY(!QMetaType::isRegistered(QMetaType::LastGuiType + 1));
+    QTest::newRow("LastWidgetsType + 1") << uint(QMetaType::LastWidgetsType + 1);
+    QVERIFY(!QMetaType::isRegistered(QMetaType::LastWidgetsType + 1));
+}
+
+struct MessageHandlerInvalidType
+{
+    MessageHandlerInvalidType()
+        : oldMsgHandler(qInstallMsgHandler(handler))
+    {
+        ok = false;
+    }
+
+    ~MessageHandlerInvalidType()
+    {
+        qInstallMsgHandler(oldMsgHandler);
+    }
+
+    QtMsgHandler oldMsgHandler;
+
+    static void handler(QtMsgType type, const char *txt)
+    {
+        QString msg = QString::fromLatin1(txt);
+        // uint(-1) can be platform dependent so we check only beginning of the message.
+        ok = msg.startsWith("Trying to construct an instance of an invalid type, type id:");
+        QVERIFY2(ok, (QString::fromLatin1("Message is not started correctly: '") + msg + '\'').toLatin1().constData());
+    }
+    static bool ok;
+};
+bool MessageHandlerInvalidType::ok;
+
+void tst_QVariant::constructor_invalid()
+{
+
+    QFETCH(uint, typeId);
+    {
+        MessageHandlerInvalidType msg;
+        QVariant variant(static_cast<QVariant::Type>(typeId));
+        QVERIFY(!variant.isValid());
+        QVERIFY(variant.userType() == QMetaType::UnknownType);
+        QVERIFY(msg.ok);
+    }
+    {
+        MessageHandlerInvalidType msg;
+        QVariant variant(typeId, /* copy */ 0);
+        QVERIFY(!variant.isValid());
+        QVERIFY(variant.userType() == QMetaType::UnknownType);
+        QVERIFY(msg.ok);
+    }
 }
 
 void tst_QVariant::copy_constructor()

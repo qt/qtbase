@@ -62,7 +62,8 @@ static void construct(QVariant::Private *x, const void *copy)
         v_construct<QSizePolicy>(x, copy);
         break;
     default:
-        Q_ASSERT(false);
+        qWarning("Trying to construct an instance of an invalid type, type id: %i", x->type);
+        x->type = QVariant::Invalid;
         return;
     }
     x->is_null = !copy;

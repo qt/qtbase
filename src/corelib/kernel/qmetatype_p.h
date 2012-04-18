@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 namespace QModulesPrivate {
 enum Names { Core, Gui, Widgets, Unknown, ModulesCount /* ModulesCount has to be at the end */ };
 
-static inline int moduleForType(const int typeId)
+static inline int moduleForType(const uint typeId)
 {
     if (typeId <= QMetaType::LastCoreType)
         return Core;

@@ -87,7 +87,7 @@ class HandlersManager
 {
     static const QVariant::Handler *Handlers[QModulesPrivate::ModulesCount];
 public:
-    const QVariant::Handler *operator[] (const int typeId) const
+    const QVariant::Handler *operator[] (const uint typeId) const
     {
         return Handlers[QModulesPrivate::moduleForType(typeId)];
     }
@@ -776,6 +776,7 @@ static void customConstruct(QVariant::Private *d, const void *copy)
     const QMetaType type(d->type);
     const uint size = type.sizeOf();
     if (!size) {
+        qWarning("Trying to construct an instance of an invalid type, type id: %i", d->type);
         d->type = QVariant::Invalid;
         return;
     }
@@ -1700,7 +1701,7 @@ void QVariant::load(QDataStream &s)
             return;
         }
     }
-    create(static_cast<int>(typeId), 0);
+    create(typeId, 0);
     d.is_null = is_null;
 
     if (!isValid()) {
