@@ -131,7 +131,7 @@ public:
     static bool desktopSettingsAware();
 
     QT_DEPRECATED QInputPanel *inputPanel() const;
-    QInputMethod *inputMethod() const;
+    static QInputMethod *inputMethod();
 
     static QPlatformNativeInterface *platformNativeInterface();
 

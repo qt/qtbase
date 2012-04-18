@@ -2166,12 +2166,20 @@ bool QGuiApplication::desktopSettingsAware()
     return QGuiApplicationPrivate::obey_desktop_settings;
 }
 
-QInputMethod *QGuiApplication::inputMethod() const
+/*!
+  returns the input method.
+
+  The input method returns properties about the state and position of
+  the virtual keyboard. It also provides information about the position of the
+  current focused input element.
+
+  \sa QInputPanel
+  */
+QInputMethod *QGuiApplication::inputMethod()
 {
-    Q_D(const QGuiApplication);
-    if (!d->inputMethod)
-        const_cast<QGuiApplicationPrivate *>(d)->inputMethod = new QInputMethod();
-    return d->inputMethod;
+    if (!qGuiApp->d_func()->inputMethod)
+        qGuiApp->d_func()->inputMethod = new QInputMethod();
+    return qGuiApp->d_func()->inputMethod;
 }
 
 /*!
