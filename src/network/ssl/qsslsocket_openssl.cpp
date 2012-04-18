@@ -1387,7 +1387,7 @@ void QWindowsCaRootFetcher::start()
     // set key usage constraint
     parameters.RequestedUsage.dwType = USAGE_MATCH_TYPE_AND;
     parameters.RequestedUsage.Usage.cUsageIdentifier = 1;
-    LPSTR oid = (mode == QSslSocket::SslClientMode ? szOID_PKIX_KP_SERVER_AUTH : szOID_PKIX_KP_CLIENT_AUTH);
+    LPSTR oid = (LPSTR)(mode == QSslSocket::SslClientMode ? szOID_PKIX_KP_SERVER_AUTH : szOID_PKIX_KP_CLIENT_AUTH);
     parameters.RequestedUsage.Usage.rgpszUsageIdentifier = &oid;
 
 #ifdef QSSLSOCKET_DEBUG
