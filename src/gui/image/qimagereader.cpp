@@ -1197,11 +1197,7 @@ bool QImageReader::read(QImage *image)
             }
         }
     } else {
-        if (d->handler->supportsOption(QImageIOHandler::ScaledSize) && d->scaledSize.isValid()) {
-            // in this case, there's nothing we can do. if the
-            // plugin supports scaled size but not ClipRect, then
-            // we have to ignore ClipRect."
-
+        if (d->handler->supportsOption(QImageIOHandler::ScaledSize) && d->scaledSize.isValid() && d->clipRect.isNull()) {
             if (d->handler->supportsOption(QImageIOHandler::ScaledClipRect) && !d->scaledClipRect.isNull()) {
                 // nothing to do (ClipRect is ignored!)
             } else {
