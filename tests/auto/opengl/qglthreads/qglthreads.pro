@@ -10,4 +10,4 @@ x11 {
     LIBS += $$QMAKE_LIBS_X11
 }
 
-CONFIG+=insignificant_test # QTBUG-22560
+win32|linux-*:CONFIG+=insignificant_test # QTBUG-22560
