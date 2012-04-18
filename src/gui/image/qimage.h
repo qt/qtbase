@@ -308,10 +308,10 @@ Q_DECLARE_TYPEINFO(QImage, Q_MOVABLE_TYPE);
 
 // Inline functions...
 
-Q_GUI_EXPORT_INLINE bool QImage::valid(const QPoint &pt) const { return valid(pt.x(), pt.y()); }
-Q_GUI_EXPORT_INLINE int QImage::pixelIndex(const QPoint &pt) const { return pixelIndex(pt.x(), pt.y());}
-Q_GUI_EXPORT_INLINE QRgb QImage::pixel(const QPoint &pt) const { return pixel(pt.x(), pt.y()); }
-Q_GUI_EXPORT_INLINE void QImage::setPixel(const QPoint &pt, uint index_or_rgb) { setPixel(pt.x(), pt.y(), index_or_rgb); }
+inline bool QImage::valid(const QPoint &pt) const { return valid(pt.x(), pt.y()); }
+inline int QImage::pixelIndex(const QPoint &pt) const { return pixelIndex(pt.x(), pt.y());}
+inline QRgb QImage::pixel(const QPoint &pt) const { return pixel(pt.x(), pt.y()); }
+inline void QImage::setPixel(const QPoint &pt, uint index_or_rgb) { setPixel(pt.x(), pt.y(), index_or_rgb); }
 
 #if QT_DEPRECATED_SINCE(5, 0)
 #ifndef QT_NO_IMAGE_TEXT
