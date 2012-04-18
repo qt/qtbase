@@ -45,6 +45,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qvarlengtharray.h>
 #include <QtCore/qisenum.h>
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobjectdefs.h>
@@ -598,9 +599,14 @@ struct QMetaTypeIdQObject<T*, /* isPointerToTypeDerivedFromQObject */ true>
     static int qt_metatype_id()
     {
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
-        if (!metatype_id.load())
-            metatype_id.storeRelease(qRegisterMetaType<T*>(QByteArray(T::staticMetaObject.className() + QByteArray("*")).constData(),
+        if (!metatype_id.load()) {
+            int len = strlen(T::staticMetaObject.className());
+            QVarLengthArray<char, 16> classNameStar;
+            classNameStar.append(T::staticMetaObject.className(), len);
+            classNameStar.append("*\0", 2);
+            metatype_id.storeRelease(qRegisterMetaType<T*>(classNameStar.constData(),
                         reinterpret_cast<T**>(quintptr(-1))));
+        }
         return metatype_id.loadAcquire();
     }
 };
