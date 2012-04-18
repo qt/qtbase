@@ -1698,7 +1698,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
     if(flags & IncludeFlagFeature) {
         if(!file.endsWith(Option::prf_ext))
             file += Option::prf_ext;
-        if(file.indexOf(QLatin1Char('/')) == -1 || !QFile::exists(file)) {
+        {
             QStringList *&feature_roots = all_feature_roots[host_build];
             if(!feature_roots) {
                 feature_roots = new QStringList;
@@ -1736,8 +1736,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
         if(place["QMAKE_INTERNAL_INCLUDED_FEATURES"].indexOf(file) != -1)
             return IncludeFeatureAlreadyLoaded;
         place["QMAKE_INTERNAL_INCLUDED_FEATURES"].append(file);
-    }
-    if(QDir::isRelativePath(file)) {
+    } else if (QDir::isRelativePath(file)) {
         QStringList include_roots;
         if(Option::output_dir != qmake_getpwd())
             include_roots << qmake_getpwd();
