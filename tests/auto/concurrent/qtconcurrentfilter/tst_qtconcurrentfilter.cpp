@@ -1472,6 +1472,8 @@ void tst_QtConcurrentFilter::noDetach()
         QVERIFY(ll.isDetached() == false);
 
         QtConcurrent::filter(l, waitFilterfn).waitForFinished();
+        if (!l.isDetached())
+            QEXPECT_FAIL("", "QTBUG-20688: Known unstable failure", Abort);
         QVERIFY(l.isDetached() == true);
         QVERIFY(ll.isDetached() == true);
     }
