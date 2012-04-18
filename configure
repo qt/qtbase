@@ -2816,7 +2816,7 @@ if [ "$OPT_HELP" = "yes" ]; then
         EGLFSN=" "
     fi
 
-    if [ "$CFG_DIRECTFB" = "no"]; then
+    if [ "$CFG_DIRECTFB" = "no" ]; then
         DFBY=" "
         DFBN="*"
     else
