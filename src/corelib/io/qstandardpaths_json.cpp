@@ -193,7 +193,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     QString value = iter.value().toString();
 
     // optimize for a common case
-    value.replace(QLatin1String("${HOME}"), QFile::decodeName(qgetenv("HOME")));
+    value.replace(QLatin1String("${HOME}"), QDir::homePath());
 
     // Do ${} format environment variable substitution if necessary
     if (!value.isEmpty() && value.contains(QLatin1String("${"))) {

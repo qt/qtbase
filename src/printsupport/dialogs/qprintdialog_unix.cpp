@@ -825,7 +825,7 @@ void QUnixPrintWidgetPrivate::applyPrinterProperties(QPrinter *p)
         return;
     printer = p;
     if (p->outputFileName().isEmpty()) {
-        QString home = QString::fromLocal8Bit(qgetenv("HOME").constData());
+        QString home = QDir::homePath();
         QString cur = QDir::currentPath();
         if (home.at(home.length()-1) != QLatin1Char('/'))
             home += QLatin1Char('/');
