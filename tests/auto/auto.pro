@@ -14,6 +14,7 @@ SUBDIRS += \
     other \
     widgets \
     printsupport \
+    cmake
 
 cross_compile:                              SUBDIRS -= tools
 !contains(QT_CONFIG, opengl):               SUBDIRS -= opengl
