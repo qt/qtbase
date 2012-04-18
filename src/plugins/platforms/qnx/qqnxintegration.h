@@ -81,7 +81,10 @@ public:
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+
+#ifndef QT_NO_OPENGL
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+#endif
 
 #ifdef Q_OS_BLACKBERRY
     QPlatformInputContext *inputContext() const;
@@ -101,7 +104,9 @@ public:
 
     QVariant styleHint(StyleHint hint) const;
 
+#ifndef QT_NO_OPENGL
     bool paintUsingOpenGL() const { return m_paintUsingOpenGL; }
+#endif
 
 #ifdef Q_OS_BLACKBERRY
     QPlatformServices *services() const;
@@ -127,7 +132,9 @@ private:
     QQnxServices *m_services;
 #endif
     QPlatformFontDatabase *m_fontDatabase;
+#ifndef QT_NO_OPENGL
     bool m_paintUsingOpenGL;
+#endif
     QAbstractEventDispatcher *m_eventDispatcher;
     QQnxNativeInterface *m_nativeInterface;
     QList<QQnxScreen*> m_screens;

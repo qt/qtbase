@@ -2,7 +2,11 @@ TARGET = qnx
 include(../../qpluginbase.pri)
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
-QT += opengl opengl-private platformsupport platformsupport-private widgets-private
+QT += platformsupport platformsupport-private widgets-private
+
+contains(QT_CONFIG, opengles2) {
+    QT += opengl opengl-private
+}
 
 # Uncomment this to build with support for IMF once it becomes available in the BBNDK
 #CONFIG += qqnx_imf
@@ -28,8 +32,6 @@ QT += opengl opengl-private platformsupport platformsupport-private widgets-priv
 SOURCES =   main.cpp \
             qqnxbuffer.cpp \
             qqnxeventthread.cpp \
-            qqnxglcontext.cpp \
-            qqnxglbackingstore.cpp \
             qqnxintegration.cpp \
             qqnxscreen.cpp \
             qqnxwindow.cpp \
@@ -46,13 +48,16 @@ CONFIG(blackberry) {
                qqnxabstractvirtualkeyboard.cpp
 }
 
+contains(QT_CONFIG, opengles2) {
+    SOURCES += qqnxglcontext.cpp \
+               qqnxglbackingstore.cpp
+}
+
 HEADERS =   main.h \
             qqnxbuffer.h \
             qqnxeventthread.h \
             qqnxkeytranslator.h \
             qqnxintegration.h \
-            qqnxglcontext.h \
-            qqnxglbackingstore.h \
             qqnxscreen.h \
             qqnxwindow.h \
             qqnxrasterbackingstore.h \
@@ -66,6 +71,11 @@ CONFIG(blackberry) {
                qqnxvirtualkeyboard.h \
                qqnxclipboard.h \
                qqnxabstractvirtualkeyboard.h
+}
+
+contains(QT_CONFIG, opengles2) {
+    HEADERS += qqnxglcontext.h \
+               qqnxglbackingstore.h
 }
 
 
@@ -87,7 +97,11 @@ OTHER_FILES += qnx.json
 
 QMAKE_CXXFLAGS += -I./private
 
-LIBS += -lscreen -lEGL
+LIBS += -lscreen
+
+contains(QT_CONFIG, opengles2) {
+    LIBS += -lEGL
+}
 
 CONFIG(blackberry) {
     LIBS += -lbps -lpps -lclipboard

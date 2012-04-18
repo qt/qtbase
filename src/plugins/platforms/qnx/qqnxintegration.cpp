@@ -41,14 +41,11 @@
 
 #include "qqnxintegration.h"
 #include "qqnxeventthread.h"
-#include "qqnxglbackingstore.h"
-#include "qqnxglcontext.h"
 #include "qqnxnativeinterface.h"
 #include "qqnxrasterbackingstore.h"
 #include "qqnxscreen.h"
 #include "qqnxscreeneventhandler.h"
 #include "qqnxwindow.h"
-#include "qqnxglcontext.h"
 
 #ifdef Q_OS_BLACKBERRY
 #include "qqnxnavigatoreventhandler.h"
@@ -69,7 +66,13 @@
 
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QWindowSystemInterface>
+
+#ifndef QT_NO_OPENGL
+#include "qqnxglbackingstore.h"
+#include "qqnxglcontext.h"
+
 #include <QtGui/QOpenGLContext>
+#endif
 
 #include <QtCore/QDebug>
 #include <QtCore/QHash>
@@ -92,7 +95,9 @@ QQnxIntegration::QQnxIntegration()
     , m_services(0)
 #endif
     , m_fontDatabase(new QGenericUnixFontDatabase())
+#ifndef QT_NO_OPENGL
     , m_paintUsingOpenGL(false)
+#endif
     , m_eventDispatcher(createUnixEventDispatcher())
     , m_nativeInterface(new QQnxNativeInterface())
     , m_screenEventHandler(new QQnxScreenEventHandler())
@@ -122,8 +127,10 @@ QQnxIntegration::QQnxIntegration()
     // Create displays for all possible screens (which may not be attached)
     createDisplays();
 
+#ifndef QT_NO_OPENGL
     // Initialize global OpenGL resources
     QQnxGLContext::initialize();
+#endif
 
     // Create/start event thread
     m_eventThread = new QQnxEventThread(m_screenContext, m_screenEventHandler);
@@ -185,8 +192,10 @@ QQnxIntegration::~QQnxIntegration()
     // Close connection to QNX composition manager
     screen_destroy_context(m_screenContext);
 
+#ifndef QT_NO_OPENGL
     // Cleanup global OpenGL resources
     QQnxGLContext::shutdown();
+#endif
 
     // Destroy services class
 #ifdef Q_OS_BLACKBERRY
@@ -226,12 +235,15 @@ QPlatformBackingStore *QQnxIntegration::createPlatformBackingStore(QWindow *wind
 #if defined(QQNXINTEGRATION_DEBUG)
     qDebug() << Q_FUNC_INFO;
 #endif
+#ifndef QT_NO_OPENGL
     if (paintUsingOpenGL())
         return new QQnxGLBackingStore(window);
     else
+#endif
         return new QQnxRasterBackingStore(window);
 }
 
+#ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QQnxIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
 #if defined(QQNXINTEGRATION_DEBUG)
@@ -239,6 +251,7 @@ QPlatformOpenGLContext *QQnxIntegration::createPlatformOpenGLContext(QOpenGLCont
 #endif
     return new QQnxGLContext(context);
 }
+#endif
 
 #ifdef Q_OS_BLACKBERRY
 QPlatformInputContext *QQnxIntegration::inputContext() const
