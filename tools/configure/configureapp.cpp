@@ -2859,6 +2859,8 @@ void Configure::generateConfigfiles()
         if (dictionary[ "QT_SXE" ] == "no")
           tmpStream<<"#define QT_NO_SXE"<<endl;
 
+        tmpStream<<"#define QT_QPA_DEFAULT_PLATFORM_NAME \"windows\""<<endl;
+
         tmpStream.flush();
         tmpFile.flush();
 

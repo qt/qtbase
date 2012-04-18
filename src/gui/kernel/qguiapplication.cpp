@@ -624,33 +624,6 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         }
     }
 
-    if (name.isEmpty()) {
-        const QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
-#if defined(Q_OS_MAC)
-        const QString defaultPlatform = QLatin1String("cocoa");
-#elif defined (Q_OS_WIN)
-        const QString defaultPlatform = QLatin1String("windows");
-#elif defined (Q_OS_QNX)
-        const QString defaultPlatform = QLatin1String("qnx");
-#elif !defined (QT_NO_XCB)
-        const QString defaultPlatform = QLatin1String("xcb");
-#elif !defined (QT_NO_WAYLAND)
-        const QString defaultPlatform = QLatin1String("wayland");
-#elif !defined (QT_NO_EGLFS)
-        const QString defaultPlatform = QLatin1String("eglfs");
-#else
-        const QString defaultPlatform = QLatin1String("minimal");
-#endif
-        if (keys.contains(defaultPlatform)) {
-            qWarning("No platform plugin argument was specified, defaulting to \"%s\".",
-                     qPrintable(defaultPlatform));
-            name = defaultPlatform;
-        } else {
-            qFatal("No platform plugin argument was specified and the default plugin \"%s\" is not available",
-                   qPrintable(defaultPlatform));
-        }
-    }
-
    // Create the platform integration.
     QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, platformPluginPath);
     if (QGuiApplicationPrivate::platform_integration) {

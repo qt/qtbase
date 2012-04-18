@@ -818,6 +818,9 @@ QT_LIBS_GLIB=
 QT_CFLAGS_GSTREAMER=
 QT_LIBS_GSTREAMER=
 
+# default qpa platform
+QT_QPA_DEFAULT_PLATFORM=
+
 #-------------------------------------------------------------------------------
 # check SQL drivers available in this package
 #-------------------------------------------------------------------------------
@@ -900,7 +903,7 @@ while [ "$#" -gt 0 ]; do
         shift
         VAL=$1
         ;;
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1291,6 +1294,9 @@ while [ "$#" -gt 0 ]; do
         DEV_VAR=`echo $VAL | sed "s,^\(.*\)=.*,\1,"`
         DEV_VAL=`echo $VAL | sed "s,^.*=\(.*\),\1,"`
         DeviceVar set $DEV_VAR $DEV_VAL
+        ;;
+    qpa)
+        QT_QPA_DEFAULT_PLATFORM="$VAL"
         ;;
     debug-and-release)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -3109,6 +3115,8 @@ Additional options:
  $DFBN  -no-directfb ....... Do not compile DirectFB support.
  $DFBY  -directfb .......... Compile DirectFB support.
 
+    -qpa <name> ......... Sets the default QPA platform (e.g xcb, cocoa, windows).
+
     -xplatform target ... The target platform when cross-compiling.
 
     -sysroot <dir> ...... Sets <dir> as the target compiler's and qmake's sysroot.
@@ -4637,6 +4645,21 @@ if [ "$CFG_EGLFS" != "no" ]; then
     fi
 fi
 
+# Determine the default QPA platform
+if [ -z "$QT_QPA_DEFAULT_PLATFORM" ]; then
+    # check the mkspec
+    QT_QPA_DEFAULT_PLATFORM=`getXQMakeConf QT_QPA_DEFAULT_PLATFORM`
+    if [ -z "$QT_QPA_DEFAULT_PLATFORM" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
+            QT_QPA_DEFAULT_PLATFORM="cocoa"
+        elif [ "$UNAME_SYSTEM" = "QNX" ]; then
+            QT_QPA_DEFAULT_PLATFORM="qnx"
+        else
+            QT_QPA_DEFAULT_PLATFORM="xcb"
+        fi
+    fi
+fi
+
 if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
     QMakeVar set QMAKE_CFLAGS_XCB "$QMAKE_CFLAGS_XCB"
     QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
@@ -5656,6 +5679,8 @@ cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
 
 EOF
 fi
+
+echo "#define QT_QPA_DEFAULT_PLATFORM_NAME \"$QT_QPA_DEFAULT_PLATFORM\"" >>"$outpath/src/corelib/global/qconfig.h.new"
 
 # avoid unecessary rebuilds by copying only if qconfig.h has changed
 if cmp -s "$outpath/src/corelib/global/qconfig.h" "$outpath/src/corelib/global/qconfig.h.new"; then
