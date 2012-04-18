@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 #include <QtCore/qglobal.h>
+#ifndef QT_BOOTSTRAPPED
 #include <QtCore/qlibrary.h>
+#endif
 #include <QtCore/qmutex.h>
 #include <private/qmutexpool_p.h>
 
