@@ -574,7 +574,7 @@ struct QMetaTypeIdQObject<T*, /* isPointerToTypeDerivedFromQObject */ true>
     {
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
         if (!metatype_id.load())
-            metatype_id.storeRelease(qRegisterMetaType<T*>(QByteArray(T::staticMetaObject.className() + QByteArrayLiteral("*")).constData(),
+            metatype_id.storeRelease(qRegisterMetaType<T*>(QByteArray(T::staticMetaObject.className() + QByteArray("*")).constData(),
                         reinterpret_cast<T**>(quintptr(-1))));
         return metatype_id.loadAcquire();
     }
